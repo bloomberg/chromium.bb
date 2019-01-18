@@ -107,12 +107,17 @@ class InternalImpl {
   void NavigationFrom(const GURL& previous_url,
                       content::WebContents* web_contents);
 
+  // Tab event methods.
+  void TabClosed(int android_tab_id);
+  void TabModelReady();
+
   base::WeakPtr<InternalImpl> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
 
  private:
   void SetNotificationStateToShown(int64_t request_id);
+  void UpdateNotificationStateForAllRequests();
 
   AutoFetchNotifier* notifier_;
   Delegate* delegate_;
@@ -122,6 +127,7 @@ class InternalImpl {
   // |RequestAdded| and |RequestRemoved| should be ignored, as per the
   // documentation in |RequestCoordinator::Observer|.
   bool requests_initialized_ = false;
+  bool tab_model_ready_ = false;
   std::vector<GURL> pages_loaded_before_observer_ready_;
 
   base::WeakPtrFactory<InternalImpl> weak_ptr_factory_{this};
@@ -134,6 +140,7 @@ class InternalImpl {
 // - If URL is loaded successfully on tab, cancel the auto-fetch request.
 // - If a different URL is loaded successfully on tab, trigger the in-progress
 //   notification.
+// - If tab is closed, trigger the in-progress notification.
 // - If an auto-fetch request is removed, update the in-progress notification's
 //   displayed request count.
 //
@@ -160,6 +167,7 @@ class AutoFetchPageLoadWatcher
 
  private:
   class NavigationObserver;
+  class TabWatcher;
   base::WeakPtr<AutoFetchPageLoadWatcher> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
@@ -181,6 +189,7 @@ class AutoFetchPageLoadWatcher
 
   RequestCoordinator* request_coordinator_;  // Not owned.
   auto_fetch_internal::InternalImpl impl_;
+  std::unique_ptr<TabWatcher> tab_watcher_;
   base::WeakPtrFactory<AutoFetchPageLoadWatcher> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AutoFetchPageLoadWatcher);

@@ -32,6 +32,10 @@ public class DeviceConditions {
     private int mNetConnectionType = ConnectionType.CONNECTION_NONE;
     private boolean mActiveNetworkMetered;
 
+    // If true, getCurrentNetConnectionType() will always return CONNECTION_NONE.
+    @VisibleForTesting
+    public static boolean mForceNoConnectionForTesting;
+
     /**
      * Creates a DeviceConditions instance that stores a snapshot of the current set of device
      * network and power conditions. Also used when setting up tests simulating specific conditions.
@@ -119,6 +123,9 @@ public class DeviceConditions {
      */
     public static int getCurrentNetConnectionType(Context context) {
         int connectionType = ConnectionType.CONNECTION_NONE;
+        if (mForceNoConnectionForTesting) {
+            return connectionType;
+        }
 
         // If we are starting in the background, native portion might not be initialized.
         if (NetworkChangeNotifier.isInitialized()) {

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/offline_pages/android/offline_page_auto_fetcher_service.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
@@ -11,10 +13,9 @@
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/offline_pages/test_request_coordinator_builder.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/offline_pages/core/auto_fetch.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
+#include "components/offline_pages/core/background/request_coordinator_stub_taco.h"
 #include "components/offline_pages/core/background/test_request_queue_store.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/stub_offline_page_model.h"
@@ -60,47 +61,44 @@ class TestOfflinePageModel : public StubOfflinePageModel {
 class OfflinePageAutoFetcherServiceTest : public testing::Test {
  public:
   void SetUp() override {
-    RequestCoordinator* coordinator = static_cast<RequestCoordinator*>(
-        RequestCoordinatorFactory::GetInstance()->SetTestingFactoryAndUse(
-            &profile_, base::BindRepeating(&BuildTestRequestCoordinator)));
-
-    queue_store_ = static_cast<TestRequestQueueStore*>(
-        coordinator->queue_for_testing()->GetStoreForTesting());
-
+    request_coordinator_taco_.CreateRequestCoordinator();
     service_ = std::make_unique<OfflinePageAutoFetcherService>(
-        coordinator, &offline_page_model_, &delegate_);
+        request_coordinator(), &offline_page_model_, &delegate_);
   }
 
   void TearDown() override {
-    browser_thread_bundle_.RunUntilIdle();
+    thread_bundle_.RunUntilIdle();
     ASSERT_TRUE(service_->IsTaskQueueEmptyForTesting());
+    service_.reset();
   }
-
-  TestRequestQueueStore* queue_store() { return queue_store_; }
+  RequestCoordinator* request_coordinator() {
+    return request_coordinator_taco_.request_coordinator();
+  }
+  TestRequestQueueStore* queue_store() {
+    return static_cast<TestRequestQueueStore*>(
+        request_coordinator()->queue_for_testing()->GetStoreForTesting());
+  }
 
   std::vector<std::unique_ptr<SavePageRequest>> GetRequestsSync() {
     bool completed = false;
     std::vector<std::unique_ptr<SavePageRequest>> result;
-    queue_store_->GetRequests(base::BindLambdaForTesting(
+    queue_store()->GetRequests(base::BindLambdaForTesting(
         [&](bool success,
             std::vector<std::unique_ptr<SavePageRequest>> requests) {
           completed = true;
           result = std::move(requests);
         }));
-    browser_thread_bundle_.RunUntilIdle();
+    thread_bundle_.RunUntilIdle();
     CHECK(completed);
     return result;
   }
 
  protected:
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::TestBrowserThreadBundle thread_bundle_;
   MockDelegate delegate_;
   TestOfflinePageModel offline_page_model_;
-  TestingProfile profile_;
 
-  // Owned by the request queue.
-  TestRequestQueueStore* queue_store_ = nullptr;
-
+  RequestCoordinatorStubTaco request_coordinator_taco_;
   std::unique_ptr<OfflinePageAutoFetcherService> service_;
 };
 
@@ -112,7 +110,7 @@ TEST_F(OfflinePageAutoFetcherServiceTest, TryScheduleSuccess) {
               Run(OfflinePageAutoFetcherScheduleResult::kScheduled));
   service_->TrySchedule(false, GURL("http://foo.com"), kTabId,
                         result_callback.Get());
-  browser_thread_bundle_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(1ul, GetRequestsSync().size());
 }
 
@@ -124,7 +122,7 @@ TEST_F(OfflinePageAutoFetcherServiceTest, AttemptInvalidURL) {
               Run(OfflinePageAutoFetcherScheduleResult::kOtherError));
   service_->TrySchedule(false, GURL("ftp://foo.com"), kTabId,
                         result_callback.Get());
-  browser_thread_bundle_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(0ul, GetRequestsSync().size());
 }
 
@@ -143,7 +141,7 @@ TEST_F(OfflinePageAutoFetcherServiceTest, TryScheduleDuplicate) {
                         result_callback.Get());
   service_->TrySchedule(false, GURL("http://foo.com#Z"), kTabId,
                         result_callback.Get());
-  browser_thread_bundle_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(1ul, GetRequestsSync().size());
 }
 
@@ -178,7 +176,7 @@ TEST_F(OfflinePageAutoFetcherServiceTest, AttemptAutoScheduleMoreThanMaximum) {
   service_->TrySchedule(true, GURL("http://foo.com/5"), kTabId,
                         result_callback.Get());
 
-  browser_thread_bundle_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
 }
 
 TEST_F(OfflinePageAutoFetcherServiceTest,
@@ -197,30 +195,30 @@ TEST_F(OfflinePageAutoFetcherServiceTest,
                         result_callback.Get());
   service_->TrySchedule(true, GURL("http://foo.com/4"), kTabId,
                         result_callback.Get());
-  browser_thread_bundle_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
 }
 
 TEST_F(OfflinePageAutoFetcherServiceTest, CancelSuccess) {
   service_->TrySchedule(false, GURL("http://foo.com"), kTabId,
                         base::DoNothing());
-  browser_thread_bundle_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   service_->CancelSchedule(GURL("http://foo.com"));
-  browser_thread_bundle_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(0ul, GetRequestsSync().size());
 }
 
 TEST_F(OfflinePageAutoFetcherServiceTest, CancelNotExist) {
   service_->TrySchedule(false, GURL("http://foo.com"), kTabId,
                         base::DoNothing());
-  browser_thread_bundle_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   service_->CancelSchedule(GURL("http://NOT-FOO.com"));
-  browser_thread_bundle_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(1ul, GetRequestsSync().size());
 }
 
 TEST_F(OfflinePageAutoFetcherServiceTest, CancelQueueEmpty) {
   service_->CancelSchedule(GURL("http://foo.com"));
-  browser_thread_bundle_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
 }
 
 // Simulate a completed auto fetch request, and verify that
@@ -240,8 +238,7 @@ TEST_F(OfflinePageAutoFetcherServiceTest, NotifyOnAutoFetchCompleted) {
                              kTabId, kOfflineId));
   service_->OnCompleted(kTestRequest,
                         RequestNotifier::BackgroundSavePageResult::SUCCESS);
-
-  browser_thread_bundle_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
 }
 
 // Simulate a failed auto-fetch request, and verify that
@@ -251,8 +248,7 @@ TEST_F(OfflinePageAutoFetcherServiceTest, DontNotifyOnAutoFetchFail) {
   EXPECT_CALL(offline_page_model_, GetPageByOfflineId_(_)).Times(0);
   service_->OnCompleted(
       kTestRequest, RequestNotifier::BackgroundSavePageResult::LOADING_FAILURE);
-
-  browser_thread_bundle_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
 }
 
 // Simulate a completed non-auto-fetch request, and verify that
@@ -264,7 +260,7 @@ TEST_F(OfflinePageAutoFetcherServiceTest, DontNotifyOnOtherRequestCompleted) {
   service_->OnCompleted(kTestRequest,
                         RequestNotifier::BackgroundSavePageResult::SUCCESS);
 
-  browser_thread_bundle_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
 }
 
 }  // namespace
