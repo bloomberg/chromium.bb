@@ -38,7 +38,7 @@ class GuardedPageAllocator;
 class AllocatorState {
  public:
   // Maximum number of pages this class can allocate.
-  static constexpr size_t kGpaMaxPages = 256;
+  static constexpr size_t kGpaMaxPages = 128;
 
   enum class ErrorType {
     kUseAfterFree = 0,
