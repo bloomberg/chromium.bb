@@ -208,7 +208,7 @@ TEST_F(AndroidStreamReaderURLLoaderTest, NullInputStream) {
       CreateLoader(request, client.get(), nullptr);
   loader->Start();
   client->RunUntilComplete();
-  EXPECT_EQ(net::ERR_FAILED, client->completion_status().error_code);
+  EXPECT_EQ(net::OK, client->completion_status().error_code);
   EXPECT_EQ("HTTP/1.1 404 Not Found",
             client->response_head().headers->GetStatusLine());
 }

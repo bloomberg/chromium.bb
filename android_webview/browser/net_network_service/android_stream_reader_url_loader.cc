@@ -170,11 +170,6 @@ void AndroidStreamReaderURLLoader::HeadersComplete(
   DCHECK(client_.is_bound());
   client_->OnReceiveResponse(head);
 
-  if (status_code != net::HTTP_OK) {
-    RequestComplete(net::ERR_FAILED);
-    return;
-  }
-
   SendBody();
 }
 
@@ -214,6 +209,14 @@ void AndroidStreamReaderURLLoader::ReadMore() {
   }
   scoped_refptr<net::IOBuffer> buffer(
       new network::NetToMojoIOBuffer(pending_buffer_.get()));
+
+  if (!input_stream_reader_wrapper_.get()) {
+    // This will happen if opening the InputStream fails in which case the
+    // error is communicated by setting the HTTP response status header rather
+    // than failing the request during the header fetch phase.
+    DidRead(0);
+    return;
+  }
 
   // TODO(timvolodine): consider using a sequenced task runner.
   base::PostTaskWithTraitsAndReplyWithResult(
