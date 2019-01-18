@@ -70,9 +70,6 @@ enum CanonicalAxisIndex {
   AXIS_INDEX_COUNT
 };
 
-// Matches XInput's trigger deadzone
-const float kDefaultButtonPressedThreshold = 30.f / 255.f;
-
 // Common mapping functions
 GamepadButton AxisToButton(float input);
 GamepadButton AxisNegativeAsButton(float input);
