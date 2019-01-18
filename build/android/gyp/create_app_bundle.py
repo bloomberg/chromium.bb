@@ -76,6 +76,17 @@ def _ParseArgs(args):
                       'This is a string to allow @FileArg usage.')
   parser.add_argument('--split-dimensions',
                       help="GN-list of split dimensions to support.")
+  parser.add_argument(
+      '--base-module-rtxt-path',
+      help='Optional path to the base module\'s R.txt file, only used with '
+      'language split dimension.')
+  parser.add_argument(
+      '--base-whitelist-rtxt-path',
+      help='Optional path to an R.txt file, string resources '
+      'listed there _and_ in --base-module-rtxt-path will '
+      'be kept in the base bundle module, even if language'
+      ' splitting is enabled.')
+
   parser.add_argument('--keystore-path', help='Keystore path')
   parser.add_argument('--keystore-password', help='Keystore password')
   parser.add_argument('--key-name', help='Keystore key name')
@@ -123,6 +134,21 @@ def _ParseArgs(args):
         parser.error('Invalid split dimension "%s" (expected one of: %s)' % (
             dim, ', '.join(x.lower() for x in _ALL_SPLIT_DIMENSIONS)))
 
+  # As a special case, --base-whitelist-rtxt-path can be empty to indicate
+  # that the module doesn't need such a whitelist. That's because it is easier
+  # to check this condition here than through GN rules :-(
+  if options.base_whitelist_rtxt_path == '':
+    options.base_module_rtxt_path = None
+
+  # Check --base-module-rtxt-path and --base-whitelist-rtxt-path usage.
+  if options.base_module_rtxt_path:
+    if not options.base_whitelist_rtxt_path:
+      parser.error(
+          '--base-module-rtxt-path requires --base-whitelist-rtxt-path')
+    if 'language' not in options.split_dimensions:
+      parser.error('--base-module-rtxt-path is only valid with '
+                   'language-based splits.')
+
   return options
 
 
@@ -131,9 +157,8 @@ def _MakeSplitDimension(value, enabled):
   return {'value': value, 'negate': not enabled}
 
 
-def _GenerateBundleConfigJson(uncompressed_assets,
-                              uncompress_shared_libraries,
-                              split_dimensions):
+def _GenerateBundleConfigJson(uncompressed_assets, uncompress_shared_libraries,
+                              split_dimensions, base_master_resource_ids):
   """Generate a dictionary that can be written to a JSON BuildConfig.
 
   Args:
@@ -141,6 +166,8 @@ def _GenerateBundleConfigJson(uncompressed_assets,
       be stored uncompressed.
     uncompress_shared_libraries: Boolean, whether to uncompress all native libs.
     split_dimensions: list of split dimensions.
+    base_master_resource_ids: Optional list of 32-bit resource IDs to keep
+      inside the base module, even when split dimensions are enabled.
   Returns:
     A dictionary that can be written as a json file.
   """
@@ -177,6 +204,11 @@ def _GenerateBundleConfigJson(uncompressed_assets,
        'uncompressedGlob': sorted(uncompressed_globs),
     },
   }
+
+  if base_master_resource_ids:
+    data['master_resources'] = {
+        'resource_ids': list(base_master_resource_ids),
+    }
 
   return json.dumps(data, indent=2)
 
@@ -263,6 +295,21 @@ def _SplitModuleForAssetTargeting(src_module_zip, tmp_dir, split_dimensions):
     return tmp_zip
 
 
+def _GenerateBaseResourcesWhitelist(base_module_rtxt_path,
+                                    base_whitelist_rtxt_path):
+  """Generate a whitelist of base master resource ids.
+
+  Args:
+    base_module_rtxt_path: Path to base module R.txt file.
+    base_whitelist_rtxt_path: Path to base whitelist R.txt file.
+  Returns:
+    list of resource ids.
+  """
+  ids_map = resource_utils.GenerateStringResourcesWhitelist(
+      base_module_rtxt_path, base_whitelist_rtxt_path)
+  return ids_map.keys()
+
+
 def main(args):
   args = build_utils.ExpandFileArgs(args)
   options = _ParseArgs(args)
@@ -271,13 +318,20 @@ def main(args):
   if options.split_dimensions:
     split_dimensions = [x.upper() for x in options.split_dimensions]
 
-  bundle_config = _GenerateBundleConfigJson(options.uncompressed_assets,
-                                            options.uncompress_shared_libraries,
-                                            split_dimensions)
+
   with build_utils.TempDir() as tmp_dir:
     module_zips = [
         _SplitModuleForAssetTargeting(module, tmp_dir, split_dimensions) \
         for module in options.module_zips]
+
+    base_master_resource_ids = None
+    if options.base_module_rtxt_path:
+      base_master_resource_ids = _GenerateBaseResourcesWhitelist(
+          options.base_module_rtxt_path, options.base_whitelist_rtxt_path)
+
+    bundle_config = _GenerateBundleConfigJson(
+        options.uncompressed_assets, options.uncompress_shared_libraries,
+        split_dimensions, base_master_resource_ids)
 
     tmp_bundle = os.path.join(tmp_dir, 'tmp_bundle')
 
@@ -291,6 +345,8 @@ def main(args):
 
     with open(tmp_bundle_config, 'w') as f:
       f.write(bundle_config)
+
+    print str(bundle_config)
 
     cmd_args = ['java', '-jar', bundletool.BUNDLETOOL_JAR_PATH, 'build-bundle']
     cmd_args += ['--modules=%s' % ','.join(module_zips)]
