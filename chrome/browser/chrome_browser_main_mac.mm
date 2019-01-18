@@ -6,6 +6,9 @@
 
 #import <Cocoa/Cocoa.h>
 #include <libproc.h>
+#include <stdlib.h>
+#include <sys/mount.h>
+#include <sys/param.h>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -16,6 +19,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
@@ -251,12 +255,151 @@ void InstallFastUserSwitchStatRecorder() {
               }];
 }
 
+bool IsDirectoryWriteable(NSString* dir_path) {
+  NSString* file_path = [dir_path stringByAppendingPathComponent:@"tempfile"];
+  NSData* data = [NSData dataWithBytes:"\01\02\03\04\05" length:5];
+  BOOL success = [data writeToFile:file_path atomically:NO];
+  if (success)
+    [[NSFileManager defaultManager] removeItemAtPath:file_path error:nil];
+
+  return success;
+}
+
+bool IsOnSameFilesystemAsChromium(NSString* dir_path) {
+  static const base::Optional<fsid_t> cr_fsid = []() -> base::Optional<fsid_t> {
+    struct statfs buf;
+    int result = statfs(
+        [[base::mac::OuterBundle() bundlePath] fileSystemRepresentation], &buf);
+    if (result != 0)
+      return base::nullopt;
+    return buf.f_fsid;
+  }();
+
+  if (!cr_fsid)
+    return false;
+
+  struct statfs buf;
+  int result = statfs([dir_path fileSystemRepresentation], &buf);
+  if (result != 0)
+    return false;
+
+  return cr_fsid->val[0] == buf.f_fsid.val[0] &&
+         cr_fsid->val[1] == buf.f_fsid.val[1];
+}
+
+// Used for UMA; never alter existing values.
+enum class StagingDirectoryStep {
+  kFailedToFindDirectory,
+  kItemReplacementDirectory,
+  kSiblingDirectory,
+  kNSTemporaryDirectory,
+  kTMPDIRDirectory,
+  kTmpDirectory,
+  kMaxValue = kTmpDirectory,
+};
+
+void LogStagingDirectoryLocation(StagingDirectoryStep step) {
+  UMA_HISTOGRAM_ENUMERATION("OSX.StagingDirectoryLocation", step);
+}
+
+void RecordStagingDirectoryStats() {
+  NSURL* bundle_url = [base::mac::OuterBundle() bundleURL];
+  NSFileManager* file_manager = [NSFileManager defaultManager];
+
+  // 1. NSItemReplacementDirectory
+
+  NSError* error = nil;
+  NSURL* item_replacement_dir =
+      [file_manager URLForDirectory:NSItemReplacementDirectory
+                           inDomain:NSUserDomainMask
+                  appropriateForURL:bundle_url
+                             create:YES
+                              error:&error];
+  if (item_replacement_dir && !error &&
+      IsDirectoryWriteable([item_replacement_dir path])) {
+    LogStagingDirectoryLocation(
+        StagingDirectoryStep::kItemReplacementDirectory);
+    return;
+  }
+
+  // 2. A directory alongside Chromium.
+
+  NSURL* bundle_parent_url =
+      [[bundle_url URLByStandardizingPath] URLByDeletingLastPathComponent];
+  NSURL* sibling_dir =
+      [bundle_parent_url URLByAppendingPathComponent:@".GoogleChromeStaging"
+                                         isDirectory:YES];
+  NSString* sibling_dir_path = [sibling_dir path];
+
+  BOOL is_directory;
+  BOOL path_existed = [file_manager fileExistsAtPath:sibling_dir_path
+                                         isDirectory:&is_directory];
+
+  BOOL success = true;
+  error = nil;
+  if (!path_existed) {
+    success = [file_manager createDirectoryAtURL:sibling_dir
+                     withIntermediateDirectories:YES
+                                      attributes:nil
+                                           error:&error];
+  } else if (!is_directory) {
+    // There is a non-directory there; don't attempt to use this location
+    // further.
+    success = false;
+  }
+
+  if (success) {
+    success &= !error && IsDirectoryWriteable(sibling_dir_path);
+
+    // Only delete this directory if this was the code that created it.
+    if (!path_existed)
+      [file_manager removeItemAtURL:sibling_dir error:nil];
+  }
+
+  if (success) {
+    LogStagingDirectoryLocation(StagingDirectoryStep::kSiblingDirectory);
+    return;
+  }
+
+  // 3. NSTemporaryDirectory()
+
+  NSString* ns_temporary_dir = NSTemporaryDirectory();
+  if (ns_temporary_dir && IsOnSameFilesystemAsChromium(ns_temporary_dir) &&
+      IsDirectoryWriteable(ns_temporary_dir)) {
+    LogStagingDirectoryLocation(StagingDirectoryStep::kNSTemporaryDirectory);
+    return;
+  }
+
+  // 4. $TMPDIR
+
+  const char* tmpdir_cstr = getenv("TMPDIR");
+  NSString* tmpdir = tmpdir_cstr ? @(tmpdir_cstr) : nil;
+  if (tmpdir && IsOnSameFilesystemAsChromium(tmpdir) &&
+      IsDirectoryWriteable(tmpdir)) {
+    LogStagingDirectoryLocation(StagingDirectoryStep::kTMPDIRDirectory);
+    return;
+  }
+
+  // 5. /tmp
+
+  NSString* tmp = @"/tmp";
+  if (IsOnSameFilesystemAsChromium(tmp) && IsDirectoryWriteable(tmp)) {
+    LogStagingDirectoryLocation(StagingDirectoryStep::kTmpDirectory);
+    return;
+  }
+
+  // 6. Give up.
+
+  LogStagingDirectoryLocation(StagingDirectoryStep::kFailedToFindDirectory);
+}
+
 // Records various bits of information about the local Chromium installation in
 // UMA.
 void RecordInstallationStats() {
   RecordFilesystemStats();
   RecordInstanceStats();
   InstallFastUserSwitchStatRecorder();
+  RecordStagingDirectoryStats();
 }
 
 }  // namespace
