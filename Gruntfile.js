@@ -1,12 +1,11 @@
 module.exports = function(grunt) {
-  const mkRun = (...args) => {
+  const mkRun = (inspect, ...args) => {
     return {
-      cmd: "npx",
+      cmd: "node",
       args: [
-        "ts-node",
-        "--transpile-only",
-        '-O{"module":"commonjs"}',
-        "node-run.js",
+        ...(inspect ? ["--inspect-brk"] : []),
+        "-r", "ts-node/register/transpile-only",
+        "./node-run.js",
         ...args
       ]
     };
@@ -19,12 +18,15 @@ module.exports = function(grunt) {
     clean: ["out/"],
 
     run: {
-      "list-cts": mkRun("src/cts", "--generate-listing=out/cts/listing.json"),
-      "run-cts": mkRun("src/cts", "--run"),
-      "list-unittests": mkRun("src/unittests", "--generate-listing=out/unittests/listing.json"),
-      "run-unittests": mkRun("src/unittests", "--run"),
-      "list-demos": mkRun("src/demos", "--generate-listing=out/demos/listing.json"),
-      "run-demos": mkRun("src/demos", "--run"),
+      "cts":       mkRun(false, "src/cts", "--run"),
+      "debug-cts": mkRun(true,  "src/cts", "--run"),
+      "list-cts":  mkRun(false, "src/cts", "--generate-listing=out/cts/listing.json"),
+      "unittests":       mkRun(false, "src/unittests", "--run"),
+      "debug-unittests": mkRun(true,  "src/unittests", "--run"),
+      "list-unittests":  mkRun(false, "src/unittests", "--generate-listing=out/unittests/listing.json"),
+      "demos":       mkRun(false, "src/demos", "--run"),
+      "debug-demos": mkRun(true,  "src/demos", "--run"),
+      "list-demos":  mkRun(false, "src/demos", "--generate-listing=out/demos/listing.json"),
     },
 
     "http-server": {
@@ -46,12 +48,9 @@ module.exports = function(grunt) {
 
       "out/": {
         tsconfig: {
-          tsconfig: "tsconfig.json",
+          tsconfig: "tsconfig.web.json",
           passThrough: true,
         },
-        options: {
-          additionalFlags: "--noEmit false --outDir out/",
-        }
       },
     },
 
@@ -80,7 +79,7 @@ module.exports = function(grunt) {
   publishTask("check", "Check Typescript build", [
     "ts:check",
   ]);
-  publishedTasks.push({name: "tslint", desc: "Run tslint"});
+  publishedTasks.push({ name: "tslint", desc: "Run tslint" });
   publishTask("build", "Build out/", [
     "ts:out/",
     "run:list-cts",
@@ -90,14 +89,13 @@ module.exports = function(grunt) {
   publishTask("serve", "Serve out/ on 127.0.0.1:8080", [
     "http-server:.",
   ]);
-  publishedTasks.push({name: "clean", desc: "Clean out/"});
+  publishedTasks.push({ name: "clean", desc: "Clean out/" });
 
-  publishTask("run-cts", "(Node) Run CTS", [ "run:run-cts" ]);
-  publishTask("run-unittests", "(Node) Run unittests", [ "run:run-unittests" ]);
-  publishTask("run-demos", "(Node) Run demos", [ "run:run-demos" ]);
+  publishedTasks.push({ name: "run:{cts,unittests,demos}", desc: "(Node) Run {cts,unittests,demos}" });
+  publishedTasks.push({ name: "run:debug-{cts,unittests,demos}", desc: "(Node) Debug {cts,unittests,demos}" });
 
   grunt.registerTask("default", "", () => {
-    console.log("Available tasks (see grunt --help for more):");
+    console.log("Available tasks (see grunt --help for info):");
     for (const {name, desc} of publishedTasks) {
       console.log(`$ grunt ${name}`);
       console.log(`  ${desc}`);

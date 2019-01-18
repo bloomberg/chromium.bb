@@ -5,7 +5,7 @@
 
     /* Output options */
     "sourceMap": true,
-    "module": "esnext",
+    "module": "commonjs",
     "noEmit": true,
 
     /* Strict type-checking options */
