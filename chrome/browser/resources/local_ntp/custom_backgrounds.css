@@ -177,17 +177,11 @@ html[dir=rtl] .bg-option-img {
   line-height: normal;
   max-width: 250px;
   overflow: hidden;
-  padding-left: 16px;
-  text-align: left;
+  padding-inline-start: 16px;
+  text-align: start;
   text-overflow: ellipsis;
   vertical-align: middle;
   white-space: nowrap;
-}
-
-html[dir=rtl] .bg-option-text {
-  padding-left: auto;
-  padding-right: 16px;
-  text-align: right;
 }
 
 #bg-sel-menu::backdrop {
@@ -227,7 +221,7 @@ right, so that every text can stay on its row even on the smallest window */
 #bg-sel-tiles {
   height: 284px;
   overflow-y: scroll;
-  padding-left: 8px;
+  padding-inline-start: 8px;
 }
 
 #bg-sel-tiles::-webkit-scrollbar-track {
@@ -236,16 +230,6 @@ right, so that every text can stay on its row even on the smallest window */
 
 .using-mouse-nav :focus {
   outline: none;
-}
-
-html[dir=rtl] #bg-sel-tiles {
-  padding-left: auto;
-  padding-right: 8px;
-}
-
-html[dir=rtl] #bg-sel-tiles {
-  padding-left: 0;
-  padding-right: 8px;
 }
 
 #bg-sel-title-bar {
@@ -284,12 +268,12 @@ html[dir=rtl] #bg-sel-tiles {
 
 .is-col-sel #bg-sel-back {
   display: none;
-  text-align: left;
+  text-align: start;
 }
 
 .is-col-sel #bg-sel-back-circle {
   display: none;
-  text-align: left;
+  text-align: start;
 }
 
 .is-img-sel #bg-sel-back-circle {
@@ -326,7 +310,7 @@ html[dir=rtl] .is-img-sel #bg-sel-back {
 }
 
 .is-col-sel #bg-sel-title {
-  padding-left: 0;
+  padding-inline-start: 0;
   text-align: center;
 }
 
@@ -338,7 +322,7 @@ html[dir=rtl] .is-img-sel #bg-sel-back {
 html[dir=rtl] .is-img-sel #bg-sel-title {
   float: right;
   margin: 16px 8px 0 0;
-  text-align: left;
+  text-align: start;
 }
 
 #bg-sel-footer {
@@ -346,15 +330,11 @@ html[dir=rtl] .is-img-sel #bg-sel-title {
   bottom: 0;
   color: rgb(var(--GG800-rgb));
   height: 64px;
-  padding-left: 0;
+  padding-inline-start: 0;
   position: absolute;
-  text-align: right;
+  text-align: end;
   user-select: none;
   width: 100%;
-}
-
-html[dir=rtl] #bg-sel-footer {
-  text-align: left;
 }
 
 .bg-sel-footer-button {
@@ -383,23 +363,14 @@ html[dir=rtl] #bg-sel-footer {
 #bg-sel-footer-done {
   background-color: rgb(var(--GG100-rgb));
   color: rgb(var(--GG600-rgb));
-  margin-right: 16px;
-}
-
-html[dir=rtl] #bg-sel-footer-done {
-  margin-left: 16px;
-  margin-right: 0;
+  margin-inline-end: 16px;
 }
 
 #bg-sel-footer-cancel {
   background-color: white;
   border: 1px solid rgb(var(--GG300-rgb));
   color: rgb(var(--GB600-rgb));
-  margin-right: 8px;
-}
-
-html[dir=rtl] #bg-sel-footer-cancel {
-  margin-left: 8px;
+  margin-inline-end: 8px;
 }
 
 #bg-sel-footer-cancel:hover {
@@ -629,7 +600,7 @@ html[dir=rtl] #custom-bg-attr {
   background-size: 10px 10px;
   display: inline-block;
   height: 10px;
-  margin-right: 8px;
+  margin-inline-end: 8px;
   vertical-align: middle;
   width: 10px;
 }
@@ -638,9 +609,4 @@ html[dir=rtl] #custom-bg-attr {
   background-size: 16px 16px;
   height: 18px;
   width: 16px;
-}
-
-html[dir=rtl] #link-icon {
-  margin-left: 8px;
-  margin-right: auto;
 }

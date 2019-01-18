@@ -60,7 +60,7 @@
 .overlay-hidden {
   background: white;
   opacity: 0;
-  text-align: left;
+  text-align: start;
   transition: visibility 0s linear 218ms, background-color 218ms;
   visibility: hidden;
   z-index: 10000;
@@ -266,23 +266,19 @@ html[dir=rtl] .overlay-hidden .button-container {
   opacity: 0;
   pointer-events: none;
   position: absolute;
-  text-align: left;
-  transition: opacity 100ms ease-in, margin-left 500ms ease-in,
+  text-align: start;
+  transition: opacity 100ms ease-in, margin-inline-start 500ms ease-in,
               top 0s linear 218ms;
-}
-
-html[dir=rtl] .voice-text {
-  text-align: right;
 }
 
 /* Recognition results text hidden in the Full Page UI. */
 .overlay-hidden .voice-text {
-  margin-left: 44px;
+  margin-inline-start: 44px;
 }
 
 html[dir=rtl] .overlay-hidden .voice-text {
-  margin-left: 0;
-  margin-right: 44px;
+  margin-inline-end: 44px;
+  margin-inline-start: 0;
 }
 
 /* Styles applied to the text output elements. Common style for the text area
@@ -304,14 +300,14 @@ html[dir=rtl] .overlay-hidden .voice-text {
 
 /* Common style for when the text areas are made visible. */
 .overlay .voice-text {
-  margin-left: 0;
+  margin-inline-start: 0;
   opacity: 1;
-  transition: opacity 500ms ease-out, margin-left 500ms ease-out;
+  transition: opacity 500ms ease-out, margin-inline-start 500ms ease-out;
 }
 
 html[dir=rtl] .overlay .voice-text {
-  margin-left: auto;
-  margin-right: 0;
+  margin-inline-end: 0;
+  margin-inline-start: auto;
 }
 
 /* Interim (low confidence) text. */

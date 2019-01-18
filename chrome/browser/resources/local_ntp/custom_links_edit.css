@@ -73,7 +73,7 @@ input {
 }
 
 html[dir=rtl] input {
-  text-align: right;
+  text-align: end;
 }
 
 input::placeholder {
@@ -132,12 +132,8 @@ input:focus + .underline {
   margin-top: 24px;
 }
 
-html:not([dir=rtl]) .buttons-container span + span {
-  margin-left: 16px;
-}
-
-html[dir=rtl] .buttons-container span + span {
-  margin-right: 16px;
+.buttons-container span + span {
+  margin-inline-start: 16px;
 }
 
 button {
@@ -202,10 +198,6 @@ button.secondary:active:not(:disabled) {
       0 3px 6px 2px rgba(var(--GG800-rgb), 0.15);
 }
 
-html:not([dir=rtl]) #cancel {
-  margin-right: 8px;
-}
-
-html[dir=rtl] #cancel {
-  margin-left: 8px;
+#cancel {
+  margin-inline-end: 8px;
 }

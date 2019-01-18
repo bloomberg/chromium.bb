@@ -137,7 +137,7 @@ body.alternate-logo #logo-non-white {
   animation: anim-z-order 3520ms linear infinite;
   height: 37.5%;
   left: 50%;
-  margin-left: -18.75%;
+  margin-inline-start: -18.75%;
   margin-top: -18.75%;
   position: absolute;
   top: 50%;
@@ -217,7 +217,7 @@ body.alternate-logo #logo-non-white {
   padding: 22px;
   position: absolute;
   right: 0;
-  text-align: left;
+  text-align: start;
   top: 30%;
   width: 300px;
   z-index: 9001;
@@ -308,5 +308,5 @@ body.alternate-logo #logo-non-white {
 #ddlsd-text-ctr {
   display: block;
   overflow: hidden;
-  padding-right: 36px;
+  padding-inline-end: 36px;
 }
