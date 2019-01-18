@@ -6,6 +6,8 @@
 
 #include <stdlib.h>
 #include <cstdlib>
+#include <memory>
+#include <string>
 
 #include "base/allocator/allocator_shim.h"
 #include "base/allocator/buildflags.h"
@@ -35,6 +37,11 @@ static size_t GetAllocatedSize(void *mem) {
 #include <malloc/malloc.h>
 static size_t GetAllocatedSize(void* mem) {
   return malloc_size(mem);
+}
+#elif defined(OS_LINUX)
+#include <malloc.h>
+static size_t GetAllocatedSize(void* mem) {
+  return malloc_usable_size(mem);
 }
 #else
 #error "Needs to be implemented for platform."
