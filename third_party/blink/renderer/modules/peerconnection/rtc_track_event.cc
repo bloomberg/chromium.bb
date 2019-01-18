@@ -49,7 +49,7 @@ MediaStreamTrack* RTCTrackEvent::track() const {
   return track_;
 }
 
-HeapVector<Member<MediaStream>> RTCTrackEvent::streams() const {
+const HeapVector<Member<MediaStream>>& RTCTrackEvent::streams() const {
   return streams_;
 }
 
