@@ -87,16 +87,10 @@ SearchResultView::SearchResultView(SearchResultListView* list_view,
 }
 
 SearchResultView::~SearchResultView() {
-  ClearResultNoRepaint();
+  ClearResult();
 }
 
-void SearchResultView::SetResult(SearchResult* result) {
-  ClearResultNoRepaint();
-
-  result_ = result;
-  if (result_)
-    result_->AddObserver(this);
-
+void SearchResultView::OnResultChanged() {
   OnMetadataChanged();
   UpdateTitleText();
   UpdateDetailsText();
@@ -105,18 +99,12 @@ void SearchResultView::SetResult(SearchResult* result) {
   SchedulePaint();
 }
 
-void SearchResultView::ClearResultNoRepaint() {
-  if (result_)
-    result_->RemoveObserver(this);
-  result_ = NULL;
-}
-
 void SearchResultView::ClearSelectedAction() {
   actions_view_->SetSelectedAction(-1);
 }
 
 void SearchResultView::UpdateTitleText() {
-  if (!result_ || result_->title().empty())
+  if (!result() || result()->title().empty())
     title_text_.reset();
   else
     CreateTitleRenderText();
@@ -125,7 +113,7 @@ void SearchResultView::UpdateTitleText() {
 }
 
 void SearchResultView::UpdateDetailsText() {
-  if (!result_ || result_->details().empty())
+  if (!result() || result()->details().empty())
     details_text_.reset();
   else
     CreateDetailsRenderText();
@@ -134,13 +122,13 @@ void SearchResultView::UpdateDetailsText() {
 }
 
 base::string16 SearchResultView::ComputeAccessibleName() const {
-  if (!result_)
+  if (!result())
     return base::string16();
 
-  base::string16 accessible_name = result_->title();
-  if (!result_->title().empty() && !result_->details().empty())
+  base::string16 accessible_name = result()->title();
+  if (!result()->title().empty() && !result()->details().empty())
     accessible_name += base::ASCIIToUTF16(", ");
-  accessible_name += result_->details();
+  accessible_name += result()->details();
 
   return accessible_name;
 }
@@ -151,7 +139,7 @@ void SearchResultView::UpdateAccessibleName() {
 
 void SearchResultView::CreateTitleRenderText() {
   auto render_text = gfx::RenderText::CreateHarfBuzzInstance();
-  render_text->SetText(result_->title());
+  render_text->SetText(result()->title());
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   render_text->SetFontList(
       rb.GetFontList(kSearchResultTitleFontStyle)
@@ -159,15 +147,15 @@ void SearchResultView::CreateTitleRenderText() {
   // When result is an omnibox non-url search, the matched tag indicates
   // proposed query. For all other cases, the matched tag indicates typed search
   // query.
-  render_text->SetColor(result_->is_omnibox_search() ? kDefaultTextColor
-                                                     : kMatchedTextColor);
-  const SearchResult::Tags& tags = result_->title_tags();
+  render_text->SetColor(result()->is_omnibox_search() ? kDefaultTextColor
+                                                      : kMatchedTextColor);
+  const SearchResult::Tags& tags = result()->title_tags();
   for (const auto& tag : tags) {
     if (tag.styles & SearchResult::Tag::URL) {
       render_text->ApplyColor(kUrlColor, tag.range);
     } else if (tag.styles & SearchResult::Tag::MATCH) {
       render_text->ApplyColor(
-          result_->is_omnibox_search() ? kMatchedTextColor : kDefaultTextColor,
+          result()->is_omnibox_search() ? kMatchedTextColor : kDefaultTextColor,
           tag.range);
     }
   }
@@ -176,16 +164,16 @@ void SearchResultView::CreateTitleRenderText() {
 
 void SearchResultView::CreateDetailsRenderText() {
   // Ensures single line row for omnibox non-url search result.
-  if (result_->is_omnibox_search()) {
+  if (result()->is_omnibox_search()) {
     details_text_.reset();
     return;
   }
   auto render_text = gfx::RenderText::CreateHarfBuzzInstance();
-  render_text->SetText(result_->details());
+  render_text->SetText(result()->details());
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   render_text->SetFontList(rb.GetFontList(ui::ResourceBundle::BaseFont));
   render_text->SetColor(kDefaultTextColor);
-  const SearchResult::Tags& tags = result_->details_tags();
+  const SearchResult::Tags& tags = result()->details_tags();
   for (const auto& tag : tags) {
     if (tag.styles & SearchResult::Tag::URL)
       render_text->ApplyColor(kUrlColor, tag.range);
@@ -263,8 +251,8 @@ void SearchResultView::Layout() {
 }
 
 bool SearchResultView::OnKeyPressed(const ui::KeyEvent& event) {
-  // |result_| could be NULL when result list is changing.
-  if (!result_)
+  // |result()| could be NULL when result list is changing.
+  if (!result())
     return false;
 
   switch (event.key_code()) {
@@ -398,14 +386,14 @@ void SearchResultView::OnMetadataChanged() {
   // looks nicer to keep the stale icon for a little while on screen instead of
   // clearing it out. It should work correctly as long as the SearchResult does
   // not forget to SetIcon when it's ready.
-  const gfx::ImageSkia icon(result_ ? result_->icon() : gfx::ImageSkia());
+  const gfx::ImageSkia icon(result() ? result()->icon() : gfx::ImageSkia());
   if (!icon.isNull())
     SetIconImage(icon, icon_,
                  AppListConfig::instance().search_list_icon_dimension());
 
   // Updates |badge_icon_|.
-  const gfx::ImageSkia badge_icon(result_ ? result_->badge_icon()
-                                          : gfx::ImageSkia());
+  const gfx::ImageSkia badge_icon(result() ? result()->badge_icon()
+                                           : gfx::ImageSkia());
   if (badge_icon.isNull()) {
     badge_icon_->SetVisible(false);
   } else {
@@ -415,8 +403,8 @@ void SearchResultView::OnMetadataChanged() {
   }
 
   // Updates |actions_view_|.
-  actions_view_->SetActions(result_ ? result_->actions()
-                                    : SearchResult::Actions());
+  actions_view_->SetActions(result() ? result()->actions()
+                                     : SearchResult::Actions());
 }
 
 void SearchResultView::SetIconImage(const gfx::ImageSkia& source,
@@ -430,32 +418,29 @@ void SearchResultView::SetIconImage(const gfx::ImageSkia& source,
 }
 
 void SearchResultView::OnIsInstallingChanged() {
-  const bool is_installing = result_ && result_->is_installing();
+  const bool is_installing = result() && result()->is_installing();
   actions_view_->SetVisible(!is_installing);
   progress_bar_->SetVisible(is_installing);
 }
 
 void SearchResultView::OnPercentDownloadedChanged() {
-  progress_bar_->SetValue(result_ ? result_->percent_downloaded() / 100.0 : 0);
+  progress_bar_->SetValue(result() ? result()->percent_downloaded() / 100.0
+                                   : 0);
 }
 
 void SearchResultView::OnItemInstalled() {
   list_view_->OnSearchResultInstalled(this);
 }
 
-void SearchResultView::OnResultDestroying() {
-  SetResult(nullptr);
-}
-
 void SearchResultView::OnSearchResultActionActivated(size_t index,
                                                      int event_flags) {
-  // |result_| could be NULL when result list is changing.
-  if (!result_)
+  // |result()| could be NULL when result list is changing.
+  if (!result())
     return;
 
-  DCHECK_LT(index, result_->actions().size());
+  DCHECK_LT(index, result()->actions().size());
 
-  if (result_->is_omnibox_search()) {
+  if (result()->is_omnibox_search()) {
     ash::OmniBoxZeroStateAction button_action =
         ash::GetOmniBoxZeroStateAction(index);
 
@@ -488,14 +473,14 @@ bool SearchResultView::IsSearchResultHoveredOrSelected() {
 void SearchResultView::ShowContextMenuForView(views::View* source,
                                               const gfx::Point& point,
                                               ui::MenuSourceType source_type) {
-  // |result_| could be NULL when result list is changing.
-  if (!result_)
+  // |result()| could be NULL when result list is changing.
+  if (!result())
     return;
 
   view_delegate_->GetSearchResultContextMenuModel(
-      result_->id(), base::BindOnce(&SearchResultView::OnGetContextMenu,
-                                    weak_ptr_factory_.GetWeakPtr(), source,
-                                    point, source_type));
+      result()->id(), base::BindOnce(&SearchResultView::OnGetContextMenu,
+                                     weak_ptr_factory_.GetWeakPtr(), source,
+                                     point, source_type));
 }
 
 void SearchResultView::OnGetContextMenu(
@@ -516,9 +501,9 @@ void SearchResultView::OnGetContextMenu(
 }
 
 void SearchResultView::ExecuteCommand(int command_id, int event_flags) {
-  if (result_) {
+  if (result()) {
     view_delegate_->SearchResultContextMenuItemSelected(
-        result_->id(), command_id, event_flags);
+        result()->id(), command_id, event_flags);
   }
 }
 

@@ -56,7 +56,7 @@ SearchResultView* SearchResultListView::GetResultViewAt(size_t index) {
 void SearchResultListView::ListItemsRemoved(size_t start, size_t count) {
   size_t last = std::min(start + count, search_result_views_.size());
   for (size_t i = start; i < last; ++i)
-    GetResultViewAt(i)->ClearResultNoRepaint();
+    GetResultViewAt(i)->ClearResult();
 
   SearchResultContainerView::ListItemsRemoved(start, count);
 }

@@ -15,7 +15,6 @@
 namespace app_list {
 
 class AppListViewDelegate;
-class SearchResult;
 
 // A chip view that displays a search result.
 class APP_LIST_EXPORT SearchResultSuggestionChipView
@@ -24,13 +23,11 @@ class APP_LIST_EXPORT SearchResultSuggestionChipView
   explicit SearchResultSuggestionChipView(AppListViewDelegate* view_delegate);
   ~SearchResultSuggestionChipView() override;
 
-  SearchResult* result() { return item_; }
-  void SetSearchResult(SearchResult* item);
+  void OnResultChanged() override;
   void SetIndexInSuggestionChipContainer(size_t index);
 
   // SearchResultObserver:
   void OnMetadataChanged() override;
-  void OnResultDestroying() override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -49,9 +46,6 @@ class APP_LIST_EXPORT SearchResultSuggestionChipView
   void UpdateSuggestionChipView();
 
   AppListViewDelegate* const view_delegate_;  // Owned by AppListView.
-
-  // Owned by the model provided by the AppListViewDelegate.
-  SearchResult* item_ = nullptr;
 
   // The view that actually shows the icon and title.
   SuggestionChipView* suggestion_chip_view_ = nullptr;

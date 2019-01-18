@@ -56,11 +56,7 @@ class APP_LIST_EXPORT SearchResultView
   ~SearchResultView() override;
 
   // Sets/gets SearchResult displayed by this view.
-  void SetResult(SearchResult* result);
-  SearchResult* result() { return result_; }
-
-  // Clears reference to SearchResult but don't schedule repaint.
-  void ClearResultNoRepaint();
+  void OnResultChanged() override;
 
   // Clears the selected action.
   void ClearSelectedAction();
@@ -123,7 +119,6 @@ class APP_LIST_EXPORT SearchResultView
   void OnIsInstallingChanged() override;
   void OnPercentDownloadedChanged() override;
   void OnItemInstalled() override;
-  void OnResultDestroying() override;
 
   void SetIconImage(const gfx::ImageSkia& source,
                     views::ImageView* const icon,
@@ -132,8 +127,6 @@ class APP_LIST_EXPORT SearchResultView
   // SearchResultActionsViewDelegate overrides:
   void OnSearchResultActionActivated(size_t index, int event_flags) override;
   bool IsSearchResultHoveredOrSelected() override;
-
-  SearchResult* result_ = nullptr;  // Owned by SearchModel::SearchResults.
 
   bool is_last_result_ = false;
 
