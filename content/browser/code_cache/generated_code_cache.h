@@ -125,15 +125,11 @@ class CONTENT_EXPORT GeneratedCodeCache {
   // Write entry to cache
   void WriteDataImpl(const std::string& key,
                      scoped_refptr<net::IOBufferWithSize> buffer);
-  void OpenCompleteForWriteData(
+  void CompleteForWriteData(
       scoped_refptr<net::IOBufferWithSize> buffer,
       const std::string& key,
-      scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry,
-      int rv);
-  void CreateCompleteForWriteData(
-      const std::string& key,
-      scoped_refptr<net::IOBufferWithSize> buffer,
-      scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry,
+      scoped_refptr<base::RefCountedData<disk_cache::EntryWithOpened>>
+          entry_struct,
       int rv);
   void WriteDataCompleted(const std::string& key, int rv);
 
