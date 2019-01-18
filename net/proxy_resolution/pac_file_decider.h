@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -15,7 +16,6 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "net/base/address_list.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/dns/host_resolver.h"
@@ -199,9 +199,9 @@ class NET_EXPORT_PRIVATE PacFileDecider {
   ProxyConfigWithAnnotation effective_config_;
   scoped_refptr<PacFileData> script_data_;
 
-  AddressList wpad_addresses_;
+  std::unique_ptr<HostResolver::ResolveHostRequest> resolve_request_;
+
   base::OneShotTimer quick_check_timer_;
-  std::unique_ptr<HostResolver::Request> request_;
   base::Time quick_check_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(PacFileDecider);
