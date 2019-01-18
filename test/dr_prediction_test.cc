@@ -397,6 +397,7 @@ INSTANTIATE_TEST_CASE_P(
                           &z1_wrapper_hbd<av1_highbd_dr_prediction_z1_c>,
                           &z1_wrapper_hbd<av1_highbd_dr_prediction_z1_avx2>,
                           AOM_BITS_12, kZ1Start),
+                      /* TODO(https://crbug.com/aomedia/2288)
                       DrPredFunc<DrPred_Hbd>(
                           &z2_wrapper_hbd<av1_highbd_dr_prediction_z2_c>,
                           &z2_wrapper_hbd<av1_highbd_dr_prediction_z2_avx2>,
@@ -409,6 +410,7 @@ INSTANTIATE_TEST_CASE_P(
                           &z2_wrapper_hbd<av1_highbd_dr_prediction_z2_c>,
                           &z2_wrapper_hbd<av1_highbd_dr_prediction_z2_avx2>,
                           AOM_BITS_12, kZ2Start),
+                          */
                       DrPredFunc<DrPred_Hbd>(
                           &z3_wrapper_hbd<av1_highbd_dr_prediction_z3_c>,
                           &z3_wrapper_hbd<av1_highbd_dr_prediction_z3_avx2>,
