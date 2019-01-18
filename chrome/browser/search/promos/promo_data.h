@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "url/gurl.h"
+
 // This struct contains all the data needed to inject a middle-slot Promo into
 // a page.
 struct PromoData {
@@ -20,6 +22,9 @@ struct PromoData {
 
   // The main HTML for the promo.
   std::string promo_html;
+
+  // URL to ping to log a promo impression.
+  GURL promo_log_url;
 };
 
 bool operator==(const PromoData& lhs, const PromoData& rhs);
