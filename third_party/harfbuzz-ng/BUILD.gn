@@ -24,20 +24,9 @@ if (use_system_harfbuzz) {
   }
 
   config("harfbuzz_warnings") {
-    cflags = []
-    if (is_clang) {
-      cflags += [
-        "-Wno-unused-value",
-
-        # Harfbuzz uses unused typedefs for its static asserts (and its
-        # static asserts are strange enough that they can't be replaced
-        # by static_assert).
-        "-Wno-unused-local-typedef",
-      ]
-    }
     if (is_win) {
       # Result of 32-bit shift implicitly converted to 64 bits.
-      cflags += [ "/wd4334" ]
+      cflags = [ "/wd4334" ]
     }
   }
 
