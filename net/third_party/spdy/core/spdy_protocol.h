@@ -22,8 +22,8 @@
 #include "base/macros.h"
 #include "net/third_party/spdy/core/spdy_alt_svc_wire_format.h"
 #include "net/third_party/spdy/core/spdy_bitmasks.h"
-#include "net/third_party/spdy/core/spdy_bug_tracker.h"
 #include "net/third_party/spdy/core/spdy_header_block.h"
+#include "net/third_party/spdy/platform/api/spdy_bug_tracker.h"
 #include "net/third_party/spdy/platform/api/spdy_export.h"
 #include "net/third_party/spdy/platform/api/spdy_ptr_util.h"
 #include "net/third_party/spdy/platform/api/spdy_string.h"
@@ -40,6 +40,9 @@ using SpdySettingsId = uint16_t;
 // Specifies the stream ID used to denote the current session (for
 // flow control).
 const SpdyStreamId kSessionFlowControlStreamId = 0;
+
+// 0 is not a valid stream ID for any other purpose than flow control.
+const SpdyStreamId kInvalidStreamId = 0;
 
 // Max stream id.
 const SpdyStreamId kMaxStreamId = 0x7fffffff;

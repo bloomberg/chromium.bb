@@ -4,9 +4,9 @@
 
 #include "net/third_party/spdy/core/priority_write_scheduler.h"
 
-#include "net/test/gtest_util.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
 #include "net/third_party/spdy/core/spdy_test_utils.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace spdy {
 namespace test {
@@ -69,9 +69,8 @@ TEST_F(PriorityWriteSchedulerTest, RegisterUnregisterStreams) {
 TEST_F(PriorityWriteSchedulerTest, RegisterStreamWithHttp2StreamDependency) {
   EXPECT_FALSE(scheduler_.HasReadyStreams());
   EXPECT_FALSE(scheduler_.StreamRegistered(1));
-  EXPECT_SPDY_BUG(scheduler_.RegisterStream(
-                      1, SpdyStreamPrecedence(kHttp2RootStreamId, 123, false)),
-                  "Expected SPDY priority");
+  scheduler_.RegisterStream(
+      1, SpdyStreamPrecedence(kHttp2RootStreamId, 123, false));
   EXPECT_TRUE(scheduler_.StreamRegistered(1));
   EXPECT_TRUE(scheduler_.GetStreamPrecedence(1).is_spdy3_priority());
   EXPECT_EQ(3, scheduler_.GetStreamPrecedence(1).spdy3_priority());
@@ -79,15 +78,13 @@ TEST_F(PriorityWriteSchedulerTest, RegisterStreamWithHttp2StreamDependency) {
 
   EXPECT_SPDY_BUG(scheduler_.RegisterStream(
                       1, SpdyStreamPrecedence(kHttp2RootStreamId, 256, false)),
-                  "Expected SPDY priority");
+                  "Stream 1 already registered");
   EXPECT_TRUE(scheduler_.GetStreamPrecedence(1).is_spdy3_priority());
   EXPECT_EQ(3, scheduler_.GetStreamPrecedence(1).spdy3_priority());
 
-  // Registering stream with a non-existent parent stream is permissible, but
-  // parent stream will always be reset to 0.
-  EXPECT_SPDY_BUG(
-      scheduler_.RegisterStream(2, SpdyStreamPrecedence(3, 123, false)),
-      "Expected SPDY priority");
+  // Registering stream with a non-existent parent stream is permissible, per
+  // b/15676312, but parent stream will always be reset to 0.
+  scheduler_.RegisterStream(2, SpdyStreamPrecedence(3, 123, false));
   EXPECT_TRUE(scheduler_.StreamRegistered(2));
   EXPECT_FALSE(scheduler_.StreamRegistered(3));
   EXPECT_EQ(kHttp2RootStreamId, scheduler_.GetStreamPrecedence(2).parent_id());
@@ -186,22 +183,16 @@ TEST_F(PriorityWriteSchedulerTest, UpdateStreamPrecedence) {
 TEST_F(PriorityWriteSchedulerTest,
        UpdateStreamPrecedenceWithHttp2StreamDependency) {
   // Unknown streams tolerated due to b/15676312, but should have no effect.
-  EXPECT_SPDY_BUG(
-      scheduler_.UpdateStreamPrecedence(3, SpdyStreamPrecedence(0, 100, false)),
-      "Expected SPDY priority");
+  scheduler_.UpdateStreamPrecedence(3, SpdyStreamPrecedence(0, 100, false));
   EXPECT_FALSE(scheduler_.StreamRegistered(3));
 
   scheduler_.RegisterStream(3, SpdyStreamPrecedence(3));
-  EXPECT_SPDY_BUG(
-      scheduler_.UpdateStreamPrecedence(3, SpdyStreamPrecedence(0, 100, false)),
-      "Expected SPDY priority");
+  scheduler_.UpdateStreamPrecedence(3, SpdyStreamPrecedence(0, 100, false));
   EXPECT_TRUE(scheduler_.GetStreamPrecedence(3).is_spdy3_priority());
   EXPECT_EQ(4, scheduler_.GetStreamPrecedence(3).spdy3_priority());
 
   scheduler_.UnregisterStream(3);
-  EXPECT_SPDY_BUG(
-      scheduler_.UpdateStreamPrecedence(3, SpdyStreamPrecedence(0, 100, false)),
-      "Expected SPDY priority");
+  scheduler_.UpdateStreamPrecedence(3, SpdyStreamPrecedence(0, 100, false));
   EXPECT_FALSE(scheduler_.StreamRegistered(3));
 }
 

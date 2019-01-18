@@ -8,7 +8,6 @@
 #include <limits>
 #include <memory>
 
-#include "net/test/gtest_util.h"
 #include "net/third_party/spdy/core/spdy_bitmasks.h"
 #include "net/third_party/spdy/core/spdy_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"

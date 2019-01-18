@@ -24,15 +24,6 @@
 
 namespace spdy {
 
-class HttpNetworkLayer;
-class HttpNetworkTransactionTest;
-class HttpProxyClientSocketPoolTest;
-class SpdyHttpStreamTest;
-class SpdyNetworkTransactionTest;
-class SpdyProxyClientSocketTest;
-class SpdySessionTest;
-class SpdyStreamTest;
-
 namespace test {
 
 class SpdyFramerPeer;
@@ -220,9 +211,6 @@ class SPDY_EXPORT_PRIVATE SpdyFramer {
   // Updates the maximum size of the header encoder compression table.
   void UpdateHeaderEncoderTableSize(uint32_t value);
 
-  // Updates the maximum size of the header decoder compression table.
-  void UpdateHeaderDecoderTableSize(uint32_t value);
-
   // Returns the maximum size of the header encoder compression table.
   size_t header_encoder_table_size() const;
 
@@ -236,15 +224,6 @@ class SPDY_EXPORT_PRIVATE SpdyFramer {
   size_t EstimateMemoryUsage() const;
 
  protected:
-  friend class BufferedSpdyFramer;
-  friend class HttpNetworkLayer;  // This is temporary for the server.
-  friend class HttpNetworkTransactionTest;
-  friend class HttpProxyClientSocketPoolTest;
-  friend class SpdyHttpStreamTest;
-  friend class SpdyNetworkTransactionTest;
-  friend class SpdyProxyClientSocketTest;
-  friend class SpdySessionTest;
-  friend class SpdyStreamTest;
   friend class test::SpdyFramerPeer;
   friend class test::SpdyFramerTest_MultipleContinuationFramesWithIterator_Test;
   friend class test::SpdyFramerTest_PushPromiseFramesWithIterator_Test;

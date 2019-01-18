@@ -7,19 +7,15 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <map>
-#include <memory>
 
-#include "net/test/gtest_util.h"
 #include "net/third_party/quiche/src/http2/platform/api/http2_test_helpers.h"
-#include "net/third_party/spdy/core/spdy_bug_tracker.h"
 #include "net/third_party/spdy/core/spdy_header_block.h"
 #include "net/third_party/spdy/core/spdy_headers_handler_interface.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
+#include "net/third_party/spdy/platform/api/spdy_bug_tracker.h"
 #include "net/third_party/spdy/platform/api/spdy_string.h"
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
-
-#define EXPECT_SPDY_BUG EXPECT_DFATAL
+#include "net/third_party/spdy/platform/api/spdy_test_helpers.h"
 
 namespace spdy {
 

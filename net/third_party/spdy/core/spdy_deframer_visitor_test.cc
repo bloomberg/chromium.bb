@@ -152,12 +152,12 @@ TEST_F(SpdyDeframerVisitorTest, HeaderFrameWithContinuation) {
 
 TEST_F(SpdyDeframerVisitorTest, PriorityFrame) {
   const char kFrameData[] = {
-      0x00,  0x00, 0x05,        // Length: 5
-      0x02,                     //   Type: PRIORITY
-      0x00,                     //  Flags: none
-      0x00,  0x00, 0x00, 0x65,  // Stream: 101
-      0x80u, 0x00, 0x00, 0x01,  // Parent: 1 (Exclusive)
-      0x10,                     // Weight: 17
+      0x00,   0x00, 0x05,        // Length: 5
+      0x02,                      //   Type: PRIORITY
+      0x00,                      //  Flags: none
+      0x00,   0x00, 0x00, 0x65,  // Stream: 101
+      '\x80', 0x00, 0x00, 0x01,  // Parent: 1 (Exclusive)
+      0x10,                      // Weight: 17
   };
 
   EXPECT_TRUE(DeframeInput(kFrameData, sizeof kFrameData));
@@ -185,14 +185,14 @@ TEST_F(SpdyDeframerVisitorTest, SettingsFrame) {
   // values. The last one will be in the decoded SpdySettingsIR, but the vector
   // of settings will have both, in the same order.
   const char kFrameData[] = {
-      0x00, 0x00, 0x0c,        // Length
-      0x04,                    // Type (SETTINGS)
-      0x00,                    // Flags
-      0x00, 0x00, 0x00, 0x00,  // Stream id (must be zero)
-      0x00, 0x04,              // Setting id (SETTINGS_INITIAL_WINDOW_SIZE)
-      0x0a, 0x0b, 0x0c, 0x0d,  // Setting value
-      0x00, 0x04,              // Setting id (SETTINGS_INITIAL_WINDOW_SIZE)
-      0x00, 0x00, 0x00, 0xffu  // Setting value
+      0x00, 0x00, 0x0c,          // Length
+      0x04,                      // Type (SETTINGS)
+      0x00,                      // Flags
+      0x00, 0x00, 0x00, 0x00,    // Stream id (must be zero)
+      0x00, 0x04,                // Setting id (SETTINGS_INITIAL_WINDOW_SIZE)
+      0x0a, 0x0b, 0x0c, 0x0d,    // Setting value
+      0x00, 0x04,                // Setting id (SETTINGS_INITIAL_WINDOW_SIZE)
+      0x00, 0x00, 0x00, '\xff',  // Setting value
   };
 
   EXPECT_TRUE(DeframeInput(kFrameData, sizeof kFrameData));

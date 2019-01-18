@@ -573,8 +573,8 @@ class TestExtension : public ExtensionVisitorInterface {
 // Exposes SpdyUnknownIR::set_length() for testing purposes.
 class TestSpdyUnknownIR : public SpdyUnknownIR {
  public:
-  using SpdyUnknownIR::SpdyUnknownIR;
   using SpdyUnknownIR::set_length;
+  using SpdyUnknownIR::SpdyUnknownIR;
 };
 
 enum Output { USE, NOT_USE };
@@ -1468,6 +1468,11 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
     SpdySerializedFrame frame(framer_.SerializeData(data_ir));
     CompareFrame(kDescription, frame, kH2FrameData,
                  SPDY_ARRAYSIZE(kH2FrameData));
+
+    frame = framer_.SerializeDataFrameHeaderWithPaddingLengthField(data_ir);
+    CompareCharArraysWithHexError(
+        kDescription, reinterpret_cast<const unsigned char*>(frame.data()),
+        kDataFrameMinimumSize, kH2FrameData, kDataFrameMinimumSize);
   }
 
   {
@@ -1570,8 +1575,6 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
 }
 
 TEST_P(SpdyFramerTest, CreateRstStream) {
-  SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
-
   {
     const char kDescription[] = "RST_STREAM frame";
     const unsigned char kH2FrameData[] = {
@@ -2858,8 +2861,7 @@ TEST_P(SpdyFramerTest, ControlFrameMuchTooLarge) {
       kHttp2DefaultFramePayloadLimit / kHeaderBufferChunks;
   const size_t kBigValueSize = kHeaderBufferSize * 2;
   SpdyString big_value(kBigValueSize, 'x');
-  SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
-  SpdyHeadersIR headers(1);
+  SpdyHeadersIR headers(/* stream_id = */ 1);
   headers.set_fin(true);
   headers.SetHeader("aa", big_value);
   SpdySerializedFrame control_frame(SpdyFramerPeer::SerializeHeaders(
@@ -4303,7 +4305,7 @@ TEST_P(SpdyFramerTest, OnAltSvcWithOrigin) {
   SpdySerializedFrame frame(framer_.SerializeFrame(altsvc_ir));
   if (use_output_) {
     output_.Reset();
-    EXPECT_GT(framer_.SerializeFrame(altsvc_ir, &output_), 0u);
+    EXPECT_EQ(framer_.SerializeFrame(altsvc_ir, &output_), frame.size());
     frame = SpdySerializedFrame(output_.Begin(), output_.Size(), false);
   }
   deframer_.ProcessInput(frame.data(), frame.size());
@@ -4361,7 +4363,7 @@ TEST_P(SpdyFramerTest, OnAltSvcEmptyProtocolId) {
   SpdySerializedFrame frame(framer_.SerializeFrame(altsvc_ir));
   if (use_output_) {
     output_.Reset();
-    EXPECT_GT(framer_.SerializeFrame(altsvc_ir, &output_), 0u);
+    EXPECT_EQ(framer_.SerializeFrame(altsvc_ir, &output_), frame.size());
     frame = SpdySerializedFrame(output_.Begin(), output_.Size(), false);
   }
   deframer_.ProcessInput(frame.data(), frame.size());
