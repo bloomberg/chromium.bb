@@ -5942,3 +5942,4 @@ crbug.com/923064 fast/loader/document-open-iframe-then-detach.html [ Failure Pas
 
 # Sheriff 2019-01-18
 crbug.com/922970 [ Mac ] external/wpt/css/css-transitions/CSSTransition-startTime.tentative.html [ Failure Pass ]
+crbug.com/923244 [ Mac ] external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Failure Pass ]
