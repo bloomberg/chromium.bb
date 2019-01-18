@@ -64,7 +64,7 @@ class Lock::ThenFunction final : public ScriptFunction {
 Lock* Lock::Create(ScriptState* script_state,
                    const String& name,
                    mojom::blink::LockMode mode,
-                   mojom::blink::LockHandlePtr handle,
+                   mojom::blink::LockHandleAssociatedPtr handle,
                    LockManager* manager) {
   return MakeGarbageCollected<Lock>(script_state, name, mode, std::move(handle),
                                     manager);
@@ -73,7 +73,7 @@ Lock* Lock::Create(ScriptState* script_state,
 Lock::Lock(ScriptState* script_state,
            const String& name,
            mojom::blink::LockMode mode,
-           mojom::blink::LockHandlePtr handle,
+           mojom::blink::LockHandleAssociatedPtr handle,
            LockManager* manager)
     : ContextLifecycleObserver(ExecutionContext::From(script_state)),
       name_(name),

@@ -27,13 +27,13 @@ class Lock final : public ScriptWrappable, public ContextLifecycleObserver {
   static Lock* Create(ScriptState*,
                       const String& name,
                       mojom::blink::LockMode,
-                      mojom::blink::LockHandlePtr,
+                      mojom::blink::LockHandleAssociatedPtr,
                       LockManager*);
 
   Lock(ScriptState*,
        const String& name,
        mojom::blink::LockMode,
-       mojom::blink::LockHandlePtr,
+       mojom::blink::LockHandleAssociatedPtr,
        LockManager*);
   ~Lock() override;
 
@@ -68,7 +68,7 @@ class Lock final : public ScriptWrappable, public ContextLifecycleObserver {
 
   // An opaque handle; this one end of a mojo pipe. When this is closed,
   // the lock is released by the back end.
-  mojom::blink::LockHandlePtr handle_;
+  mojom::blink::LockHandleAssociatedPtr handle_;
 
   // LockManager::OnLockReleased() is called when this lock is released, to
   // stop artificially keeping this instance alive. It is necessary in the
