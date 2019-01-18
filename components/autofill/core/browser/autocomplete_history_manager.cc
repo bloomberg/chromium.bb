@@ -246,7 +246,13 @@ void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
     WebDataServiceBase::Handle current_handle,
     std::unique_ptr<WDTypedResult> result) {
   DCHECK(current_handle);
-  DCHECK(result);
+
+  if (!result) {
+    // Returning early here if |result| is null.  We've seen this happen on
+    // Linux due to NFS dismounting and causing sql failures.
+    // See http://crbug.com/68783.
+    return;
+  }
 
   WDResultType result_type = result->GetType();
 
@@ -290,6 +296,7 @@ void AutocompleteHistoryManager::SendSuggestions(
 void AutocompleteHistoryManager::OnAutofillValuesReturned(
     WebDataServiceBase::Handle current_handle,
     std::unique_ptr<WDTypedResult> result) {
+  DCHECK(result);
   DCHECK_EQ(AUTOFILL_VALUE_RESULT, result->GetType());
 
   auto pending_queries_iter = pending_queries_.find(current_handle);
@@ -304,16 +311,6 @@ void AutocompleteHistoryManager::OnAutofillValuesReturned(
   // Removing the query, as it is no longer pending.
   pending_queries_.erase(pending_queries_iter);
 
-  // Returning early here if |result| is NULL.  We've seen this happen on
-  // Linux due to NFS dismounting and causing sql failures.
-  // See http://crbug.com/68783.
-  if (!result) {
-    SendSuggestions({}, query_handler);
-    uma_recorder_.OnWebDataServiceRequestDone(current_handle,
-                                              false /* has_suggestion */);
-    return;
-  }
-
   const WDResult<std::vector<AutofillEntry>>* autofill_result =
       static_cast<const WDResult<std::vector<AutofillEntry>>*>(result.get());
   std::vector<AutofillEntry> entries = autofill_result->GetValue();
@@ -325,6 +322,7 @@ void AutocompleteHistoryManager::OnAutofillValuesReturned(
 void AutocompleteHistoryManager::OnAutofillCleanupReturned(
     WebDataServiceBase::Handle current_handle,
     std::unique_ptr<WDTypedResult> result) {
+  DCHECK(result);
   DCHECK_EQ(AUTOFILL_CLEANUP_RESULT, result->GetType());
 
   const WDResult<size_t>* cleanup_wdresult =
