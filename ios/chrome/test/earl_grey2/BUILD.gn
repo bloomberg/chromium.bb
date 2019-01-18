@@ -15,9 +15,6 @@ group("all_tests") {
 }
 
 chrome_ios_eg2_test_app_host("ios_chrome_eg2_test_app_host") {
-  deps = [
-    ":earl_grey2_host_distant_object_sources",
-  ]
 }
 
 chrome_ios_eg2_test("ios_chrome_smoke_eg2tests") {
@@ -28,31 +25,43 @@ chrome_ios_eg2_test("ios_chrome_smoke_eg2tests") {
   ]
 }
 
-source_set("earl_grey2_host_distant_object_headers") {
+source_set("shared_helper_headers") {
   testonly = true
   sources = [
     "//ios/chrome/test/earl_grey2/chrome_earl_grey_edo.h",
   ]
 }
 
-source_set("earl_grey2_host_distant_object_sources") {
-  configs += [ "//build/config/compiler:enable_arc" ]
+source_set("eg_app_support+eg2") {
   testonly = true
+  configs += [ "//build/config/compiler:enable_arc" ]
+
   sources = [
-    "//ios/chrome/test/earl_grey2/chrome_earl_grey_edo.mm",
+    "chrome_earl_grey_edo.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//ios/chrome/test/app:test_support",
+    "//ios/testing/earl_grey:eg_app_support+eg2",
+    "//ios/third_party/earl_grey2:app_framework+link",
+  ]
+
+  public_deps = [
+    ":shared_helper_headers",
   ]
 
   include_dirs = [
     "//ios/third_party/earl_grey2/src",
     "//ios/third_party/edo/src",
   ]
+}
 
-  deps = [
-    ":earl_grey2_host_distant_object_headers",
-    "//base",
-    "//base/test:test_support",
-    "//ios/chrome/test/app:test_support",
-    "//ios/third_party/earl_grey2:app_framework+link",
+group("eg_test_support+eg2") {
+  testonly = true
+  public_deps = [
+    ":shared_helper_headers",
   ]
 }
 
@@ -70,7 +79,7 @@ source_set("eg2_tests") {
   include_dirs = [ "//ios/third_party/edo/src" ]
 
   deps = [
-    "//ios/chrome/test/earl_grey2:earl_grey2_host_distant_object_headers",
+    ":eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
   ]
 

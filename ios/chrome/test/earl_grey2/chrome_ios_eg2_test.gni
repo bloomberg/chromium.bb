@@ -90,6 +90,7 @@ template("chrome_ios_eg2_test_app_host") {
       ":$_deps_group_name",
       "//ios/chrome/app:main",
       "//ios/chrome/test/earl_grey:hooks",
+      "//ios/chrome/test/earl_grey2:eg_app_support+eg2",
       "//ios/testing:http_server_bundle_data",
       "//ios/third_party/earl_grey2:app_framework+link",
     ]
@@ -145,6 +146,11 @@ template("chrome_ios_eg2_test") {
                              "xcode_test_application_name",
                              "deps",
                            ])
+
+    if (!defined(deps)) {
+      deps = []
+    }
+    deps += [ "//ios/chrome/test/earl_grey2:eg_test_support+eg2" ]
   }
 }
 
