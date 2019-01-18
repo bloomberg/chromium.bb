@@ -39303,6 +39303,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="(non-invalidated) replies received"/>
 </enum>
 
+<enum name="OmniboxEditUrlSuggestionAction">
+  <int value="0" label="Edit tapped."/>
+  <int value="1" label="Copy tapped."/>
+  <int value="2" label="Share tapped."/>
+  <int value="3" label="Suggestion tapped."/>
+</enum>
+
 <enum name="OmniboxEnteredKeywordMode">
   <obsolete>
     Deprecated 10/2018 and replaced with OmniboxEnteredKeywordMode2.
