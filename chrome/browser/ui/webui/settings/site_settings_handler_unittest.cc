@@ -385,6 +385,71 @@ class SiteSettingsHandlerTest : public testing::Test {
     incognito_profile_ = nullptr;
   }
 
+  // TODO(https://crbug.com/835712): Currently only set up the cookies and local
+  // storage nodes, will update all other nodes in the future.
+  void SetUpCookiesTreeModel() {
+    scoped_refptr<MockBrowsingDataCookieHelper>
+        mock_browsing_data_cookie_helper;
+    scoped_refptr<MockBrowsingDataLocalStorageHelper>
+        mock_browsing_data_local_storage_helper;
+
+    mock_browsing_data_cookie_helper =
+        new MockBrowsingDataCookieHelper(profile());
+    mock_browsing_data_local_storage_helper =
+        new MockBrowsingDataLocalStorageHelper(profile());
+
+    auto container = std::make_unique<LocalDataContainer>(
+        mock_browsing_data_cookie_helper,
+        /*database_helper=*/nullptr, mock_browsing_data_local_storage_helper,
+        /*session_storage_helper=*/nullptr,
+        /*appcache_helper=*/nullptr,
+        /*indexed_db_helper=*/nullptr,
+        /*file_system_helper=*/nullptr,
+        /*quota_helper=*/nullptr,
+        /*service_worker_helper=*/nullptr,
+        /*data_shared_worker_helper=*/nullptr,
+        /*cache_storage_helper=*/nullptr,
+        /*flash_lso_helper=*/nullptr,
+        /*media_license_helper=*/nullptr);
+    auto mock_cookies_tree_model = std::make_unique<CookiesTreeModel>(
+        std::move(container), profile()->GetExtensionSpecialStoragePolicy());
+
+    mock_browsing_data_local_storage_helper->AddLocalStorageForOrigin(
+        GURL("https://www.example.com/"), 2);
+
+    mock_browsing_data_local_storage_helper->AddLocalStorageForOrigin(
+        GURL("https://www.google.com/"), 5);
+    mock_browsing_data_local_storage_helper->Notify();
+
+    mock_browsing_data_cookie_helper->AddCookieSamples(
+        GURL("http://example.com"), "A=1");
+    mock_browsing_data_cookie_helper->AddCookieSamples(
+        GURL("http://www.example.com/"), "B=1");
+    mock_browsing_data_cookie_helper->AddCookieSamples(
+        GURL("http://abc.example.com"), "C=1");
+    mock_browsing_data_cookie_helper->AddCookieSamples(
+        GURL("http://google.com"), "A=1");
+    mock_browsing_data_cookie_helper->AddCookieSamples(
+        GURL("http://google.com"), "B=1");
+    mock_browsing_data_cookie_helper->AddCookieSamples(
+        GURL("http://google.com.au"), "A=1");
+    mock_browsing_data_cookie_helper->Notify();
+
+    handler()->SetCookiesTreeModelForTesting(
+        std::move(mock_cookies_tree_model));
+  }
+
+  const base::ListValue* GetOnStorageFetchedSentListValue() {
+    handler()->ClearAllSitesMapForTesting();
+    handler()->OnStorageFetched();
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    std::string callback_id;
+    data.arg1()->GetAsString(&callback_id);
+    const base::ListValue* storage_and_cookie_list;
+    data.arg2()->GetAsList(&storage_and_cookie_list);
+    return storage_and_cookie_list;
+  }
+
   // Content setting group name for the relevant ContentSettingsType.
   const std::string kNotifications;
   const std::string kCookies;
@@ -618,55 +683,9 @@ TEST_F(SiteSettingsHandlerTest, GetAllSites) {
   run_loop.RunUntilIdle();
 }
 
-// TODO(https://crbug.com/835712): Currently only set up the cookies and local
-// storage nodes, will update all other nodes in the future.
 TEST_F(SiteSettingsHandlerTest, OnStorageFetched) {
-  scoped_refptr<MockBrowsingDataCookieHelper> mock_browsing_data_cookie_helper;
-  scoped_refptr<MockBrowsingDataLocalStorageHelper>
-      mock_browsing_data_local_storage_helper;
+  SetUpCookiesTreeModel();
 
-  mock_browsing_data_cookie_helper =
-      new MockBrowsingDataCookieHelper(profile());
-  mock_browsing_data_local_storage_helper =
-      new MockBrowsingDataLocalStorageHelper(profile());
-
-  auto container = std::make_unique<LocalDataContainer>(
-      mock_browsing_data_cookie_helper,
-      /*database_helper=*/nullptr, mock_browsing_data_local_storage_helper,
-      /*session_storage_helper=*/nullptr,
-      /*appcache_helper=*/nullptr,
-      /*indexed_db_helper=*/nullptr,
-      /*file_system_helper=*/nullptr,
-      /*quota_helper=*/nullptr,
-      /*service_worker_helper=*/nullptr,
-      /*data_shared_worker_helper=*/nullptr,
-      /*cache_storage_helper=*/nullptr,
-      /*flash_lso_helper=*/nullptr,
-      /*media_license_helper=*/nullptr);
-  auto mock_cookies_tree_model = std::make_unique<CookiesTreeModel>(
-      std::move(container), profile()->GetExtensionSpecialStoragePolicy());
-
-  mock_browsing_data_local_storage_helper->AddLocalStorageForOrigin(
-      GURL("https://www.example.com/"), 2);
-  mock_browsing_data_local_storage_helper->AddLocalStorageForOrigin(
-      GURL("https://www.google.com/"), 5);
-  mock_browsing_data_local_storage_helper->Notify();
-
-  mock_browsing_data_cookie_helper->AddCookieSamples(GURL("http://example.com"),
-                                                     "A=1");
-  mock_browsing_data_cookie_helper->AddCookieSamples(
-      GURL("http://www.example.com/"), "B=1");
-  mock_browsing_data_cookie_helper->AddCookieSamples(
-      GURL("http://abc.example.com"), "C=1");
-  mock_browsing_data_cookie_helper->AddCookieSamples(GURL("http://google.com"),
-                                                     "A=1");
-  mock_browsing_data_cookie_helper->AddCookieSamples(GURL("http://google.com"),
-                                                     "B=1");
-  mock_browsing_data_cookie_helper->AddCookieSamples(
-      GURL("http://google.com.au"), "A=1");
-  mock_browsing_data_cookie_helper->Notify();
-
-  handler()->SetCookiesTreeModelForTesting(std::move(mock_cookies_tree_model));
   handler()->ClearAllSitesMapForTesting();
 
   handler()->OnStorageFetched();
@@ -1678,4 +1697,52 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
   }
 }
 
+TEST_F(SiteSettingsHandlerTest, HandleClearEtldPlus1DataAndCookies) {
+  SetUpCookiesTreeModel();
+
+  EXPECT_EQ(22, handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
+
+  const base::ListValue* storage_and_cookie_list =
+      GetOnStorageFetchedSentListValue();
+  EXPECT_EQ(3U, storage_and_cookie_list->GetSize());
+  const base::DictionaryValue* site_group;
+  ASSERT_TRUE(storage_and_cookie_list->GetDictionary(0, &site_group));
+  std::string etld_plus1_string;
+  ASSERT_TRUE(site_group->GetString("etldPlus1", &etld_plus1_string));
+  ASSERT_EQ("example.com", etld_plus1_string);
+
+  base::ListValue args;
+  args.AppendString("example.com");
+  handler()->HandleClearEtldPlus1DataAndCookies(&args);
+  EXPECT_EQ(11, handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
+
+  storage_and_cookie_list = GetOnStorageFetchedSentListValue();
+  EXPECT_EQ(2U, storage_and_cookie_list->GetSize());
+  ASSERT_TRUE(storage_and_cookie_list->GetDictionary(0, &site_group));
+  ASSERT_TRUE(site_group->GetString("etldPlus1", &etld_plus1_string));
+  ASSERT_EQ("google.com", etld_plus1_string);
+
+  args.Clear();
+  args.AppendString("google.com");
+
+  handler()->HandleClearEtldPlus1DataAndCookies(&args);
+
+  EXPECT_EQ(4, handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
+
+  storage_and_cookie_list = GetOnStorageFetchedSentListValue();
+  EXPECT_EQ(1U, storage_and_cookie_list->GetSize());
+  ASSERT_TRUE(storage_and_cookie_list->GetDictionary(0, &site_group));
+  ASSERT_TRUE(site_group->GetString("etldPlus1", &etld_plus1_string));
+  ASSERT_EQ("google.com.au", etld_plus1_string);
+
+  args.Clear();
+  args.AppendString("google.com.au");
+
+  handler()->HandleClearEtldPlus1DataAndCookies(&args);
+
+  EXPECT_EQ(1, handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
+
+  storage_and_cookie_list = GetOnStorageFetchedSentListValue();
+  EXPECT_EQ(0U, storage_and_cookie_list->GetSize());
+}
 }  // namespace settings

@@ -140,48 +140,93 @@ suite('SiteEntry', function() {
     assertTrue(overflowMenuButton.closest('.row-aligned').hidden);
   });
 
+  function resetSettingsViaOverflowMenu(buttonType) {
+    assertTrue(buttonType == 'cancel-button' || buttonType == 'action-button');
+    Polymer.dom.flush();
+    const overflowMenuButton = testElement.$.overflowMenuButton;
+    assertFalse(overflowMenuButton.closest('.row-aligned').hidden);
+    // Open the reset settings dialog and make sure both cancelling the
+    // action and resetting all permissions work.
+    const overflowMenu = testElement.$.menu.get();
+    const menuItems = overflowMenu.querySelectorAll('.dropdown-item');
+
+    // Test clicking on the overflow menu button opens the menu.
+    assertFalse(overflowMenu.open);
+    overflowMenuButton.click();
+    assertTrue(overflowMenu.open);
+
+    // Open the reset settings dialog and tap the |buttonType| button.
+    assertFalse(testElement.$.confirmResetSettings.open);
+    menuItems[0].click();
+    assertTrue(testElement.$.confirmResetSettings.open);
+    const actionButtonList =
+        testElement.$.confirmResetSettings.getElementsByClassName(buttonType);
+    assertEquals(1, actionButtonList.length);
+    actionButtonList[0].click();
+
+    // Check the dialog and overflow menu are now both closed.
+    assertFalse(testElement.$.confirmResetSettings.open);
+    assertFalse(overflowMenu.open);
+  }
+
+  test('cancelling the confirm dialog on resetting settings works', function() {
+    testElement.siteGroup = TEST_MULTIPLE_SITE_GROUP;
+    resetSettingsViaOverflowMenu('cancel-button');
+  });
+
   test(
       'with multiple origins can reset settings via overflow menu', function() {
-        testElement.siteGroup = TEST_MULTIPLE_SITE_GROUP;
-        Polymer.dom.flush();
-        const overflowMenuButton = testElement.$.overflowMenuButton;
-        assertFalse(overflowMenuButton.closest('.row-aligned').hidden);
-
-        // Open the reset settings dialog and make sure both cancelling the
-        // action and resetting all permissions work.
-        const overflowMenu = testElement.$.menu.get();
-        const menuItems = overflowMenu.querySelectorAll('.dropdown-item');
-        ['cancel-button', 'action-button'].forEach(buttonType => {
-          // Test clicking on the overflow menu button opens the menu.
-          assertFalse(overflowMenu.open);
-          overflowMenuButton.click();
-          assertTrue(overflowMenu.open);
-
-          // Open the reset settings dialog and tap the |buttonType| button.
-          assertFalse(testElement.$.confirmResetSettings.open);
-          menuItems[0].click();
-          assertTrue(testElement.$.confirmResetSettings.open);
-          const actionButtonList =
-              testElement.$.confirmResetSettings.getElementsByClassName(
-                  buttonType);
-          assertEquals(1, actionButtonList.length);
-          actionButtonList[0].click();
-
-          // Check the dialog and overflow menu are now both closed.
-          assertFalse(testElement.$.confirmResetSettings.open);
-          assertFalse(overflowMenu.open);
+        let deleteCurrentEntryCalled = false;
+        testElement.addEventListener('delete-current-entry', function() {
+          deleteCurrentEntryCalled = true;
         });
 
+        // Test when entire siteGroup has no data or cookies.
+        // Clone this object to avoid propagating changes made in this test.
+        testElement.siteGroup =
+            JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+        resetSettingsViaOverflowMenu('action-button');
         // Ensure a call was made to setOriginPermissions for each origin.
         assertEquals(
             TEST_MULTIPLE_SITE_GROUP.origins.length,
             browserProxy.getCallCount('setOriginPermissions'));
+        assertTrue(deleteCurrentEntryCalled);
+
+        // Test when one origin has data and cookies.
+        // Clone this object to avoid propagating changes made in this test.
+        testElement.siteGroup =
+            JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+        testElement.siteGroup.origins[0].hasPermissionSettings = true;
+        testElement.siteGroup.origins[0].usage = 100;
+        testElement.siteGroup.origins[0].numCookies = 2;
+        deleteCurrentEntryCalled = false;
+        resetSettingsViaOverflowMenu('action-button');
+        assertFalse(deleteCurrentEntryCalled);
+        assertEquals(1, testElement.siteGroup.origins.length);
+        assertFalse(testElement.siteGroup.origins[0].hasPermissionSettings);
+        assertEquals(testElement.siteGroup.origins[0].usage, 100);
+        assertEquals(testElement.siteGroup.origins[0].numCookies, 2);
+
+        // Test when none of origin have data or cookies, but etld+1 has
+        // cookies. In this case, a placeholder origin will be created with the
+        // Etld+1 cookies number. Clone this object to avoid propagating changes
+        // made in this test.
+        testElement.siteGroup =
+            JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+        testElement.siteGroup.numCookies = 5;
+        deleteCurrentEntryCalled = false;
+        resetSettingsViaOverflowMenu('action-button');
+        assertFalse(deleteCurrentEntryCalled);
+        assertEquals(1, testElement.siteGroup.origins.length);
+        assertFalse(testElement.siteGroup.origins[0].hasPermissionSettings);
+        assertEquals(testElement.siteGroup.origins[0].usage, 0);
+        assertEquals(testElement.siteGroup.origins[0].numCookies, 5);
       });
 
   test(
       'moving from grouped to ungrouped does not get stuck in opened state',
       function() {
-        // Clone this object to avoid propogating changes made in this test.
+        // Clone this object to avoid propagating changes made in this test.
         testElement.siteGroup =
             JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
         Polymer.dom.flush();
@@ -242,7 +287,7 @@ suite('SiteEntry', function() {
   });
 
   test('data usage shown correctly for grouped entries', function() {
-    // Clone this object to avoid propogating changes made in this test.
+    // Clone this object to avoid propagating changes made in this test.
     const testSiteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
     const numBytes1 = 74622;
     const numBytes2 = 1274;
@@ -262,7 +307,7 @@ suite('SiteEntry', function() {
   });
 
   test('data usage shown correctly for ungrouped entries', function() {
-    // Clone this object to avoid propogating changes made in this test.
+    // Clone this object to avoid propagating changes made in this test.
     const testSiteGroup = JSON.parse(JSON.stringify(TEST_SINGLE_SITE_GROUP));
     const numBytes = 74622;
     testSiteGroup.origins[0].usage = numBytes;
@@ -275,5 +320,79 @@ suite('SiteEntry', function() {
               .textContent.trim());
 
     });
+  });
+
+  function clearDataViaOverflowMenu(buttonType) {
+    assertTrue(buttonType == 'cancel-button' || buttonType == 'action-button');
+    Polymer.dom.flush();
+    const overflowMenuButton = testElement.$.overflowMenuButton;
+    assertFalse(overflowMenuButton.closest('.row-aligned').hidden);
+
+    // Open the clear data dialog and make sure both cancelling the
+    // action and resetting all permissions work.
+    const overflowMenu = testElement.$.menu.get();
+    const menuItems = overflowMenu.querySelectorAll('.dropdown-item');
+    // Test clicking on the overflow menu button opens the menu.
+    assertFalse(overflowMenu.open);
+    overflowMenuButton.click();
+    assertTrue(overflowMenu.open);
+
+    // Open the clear data dialog and tap the |buttonType| button.
+    assertFalse(testElement.$.confirmClearData.open);
+    menuItems[1].click();
+    assertTrue(testElement.$.confirmClearData.open);
+    const actionButtonList =
+        testElement.$.confirmClearData.getElementsByClassName(buttonType);
+    assertEquals(1, actionButtonList.length);
+    actionButtonList[0].click();
+
+    // Check the dialog and overflow menu are now both closed.
+    assertFalse(testElement.$.confirmClearData.open);
+    assertFalse(overflowMenu.open);
+  }
+
+  test('cancelling the confirm dialog on clear data works', function() {
+    testElement.siteGroup = TEST_MULTIPLE_SITE_GROUP;
+    clearDataViaOverflowMenu('cancel-button');
+  });
+
+  test('with multiple origins can clear data via overflow menu', function() {
+    let deleteCurrentEntryCalled = false;
+    testElement.addEventListener('delete-current-entry', function() {
+      deleteCurrentEntryCalled = true;
+    });
+    // Test when all origins has no permission settings and no data.
+    // Clone this object to avoid propagating changes made in this test.
+    testElement.siteGroup =
+        JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    clearDataViaOverflowMenu('action-button');
+    // Ensure a call was made to clearEtldPlus1DataAndCookies.
+    assertEquals(1, browserProxy.getCallCount('clearEtldPlus1DataAndCookies'));
+    assertTrue(deleteCurrentEntryCalled);
+
+    // Test when there is one origin has permissions settings.
+    // Clone this object to avoid propagating changes made in this test.
+    testElement.siteGroup =
+        JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    deleteCurrentEntryCalled = false;
+    testElement.siteGroup.origins[0].hasPermissionSettings = true;
+    clearDataViaOverflowMenu('action-button');
+    assertFalse(deleteCurrentEntryCalled);
+    assertEquals(testElement.siteGroup.origins.length, 1);
+
+    // Test when one origin has permission settings and data, clear data only
+    // clears the data and cookies.
+    testElement.siteGroup =
+        JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    deleteCurrentEntryCalled = false;
+    testElement.siteGroup.origins[0].hasPermissionSettings = true;
+    testElement.siteGroup.origins[0].usage = 100;
+    testElement.siteGroup.origins[0].numCookies = 3;
+    clearDataViaOverflowMenu('action-button');
+    assertFalse(deleteCurrentEntryCalled);
+    assertEquals(testElement.siteGroup.origins.length, 1);
+    assertTrue(testElement.siteGroup.origins[0].hasPermissionSettings);
+    assertEquals(testElement.siteGroup.origins[0].usage, 0);
+    assertEquals(testElement.siteGroup.origins[0].numCookies, 0);
   });
 });
