@@ -1182,6 +1182,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   bool force_enable_zoom_ = false;
 
   RenderFrameMetadataProviderImpl render_frame_metadata_provider_;
+  bool surface_id_allocation_suppressed_ = false;
 
   const viz::FrameSinkId frame_sink_id_;
 

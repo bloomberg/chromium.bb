@@ -1654,6 +1654,7 @@ TEST_F(LayerWithRealCompositorTest, BackgroundBlurChangeDeviceScale) {
   // baseline.
   EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img1, cc::ExactPixelComparator(true)));
 
+  allocator.GenerateId();
   // Now change the scale, and make sure the bounds are still correct.
   GetCompositor()->SetScaleAndSize(
       2.0f, gfx::Size(200, 200),

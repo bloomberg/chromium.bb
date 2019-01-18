@@ -1003,9 +1003,12 @@ void RenderWidgetHostImpl::SynchronizeVisualPropertiesIgnoringPendingAck() {
 bool RenderWidgetHostImpl::SynchronizeVisualProperties(
     bool scroll_focused_node_into_view) {
   // Skip if the |delegate_| has already been detached because
-  // it's web contents is being deleted.
+  // it's web contents is being deleted, or if LocalSurfaceIdAllocation is
+  // suppressed, as we are first updating our internal state from a child's
+  // request, before subsequently merging ids to send.
   if (visual_properties_ack_pending_ || !process_->IsInitializedAndNotDead() ||
-      !view_ || !view_->HasSize() || !renderer_initialized_ || !delegate_) {
+      !view_ || !view_->HasSize() || !renderer_initialized_ || !delegate_ ||
+      surface_id_allocation_suppressed_) {
     return false;
   }
 
@@ -1020,6 +1023,32 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
   bool width_changed =
       !old_visual_properties_ || old_visual_properties_->new_size.width() !=
                                      visual_properties->new_size.width();
+
+  // TODO(jonross): Enable on ChromeOS once blocking mus bugs are fixed:
+  // https://crbug.com/920642 https://crbug.com/920006
+#if !defined(OS_CHROMEOS)
+  // When the size has changed, we must ensure that there is a new, updated
+  // viz::LocalSurfaceId. Otherwise we encounter Surface Invariants Violation at
+  // the time of frame submission. Check for this violation here in order to
+  // detect the source of the bug.
+  if (old_visual_properties_ &&
+      old_visual_properties_->new_size != visual_properties->new_size &&
+      old_visual_properties_->local_surface_id_allocation &&
+      visual_properties->local_surface_id_allocation) {
+    // We suspect that we may not be updating viz::LocalSurfaceIds correctly
+    // when auto-resize is enabled. Logging this additional information to
+    // confirm if that is the case. https://crbug.com/900948
+    CHECK_NE(old_visual_properties_->local_surface_id_allocation.value(),
+             visual_properties->local_surface_id_allocation.value())
+        << "Invalid Surface Id State: size changed without a change in "
+           "LocalSurfaceId: auto_resize_enabled "
+        << visual_properties->auto_resize_enabled << " old "
+        << old_visual_properties_->local_surface_id_allocation->ToString()
+        << " new "
+        << visual_properties->local_surface_id_allocation->ToString();
+  }
+#endif
+
   bool sent_visual_properties = false;
   if (Send(new WidgetMsg_SynchronizeVisualProperties(routing_id_,
                                                      *visual_properties))) {
@@ -2331,6 +2360,7 @@ void RenderWidgetHostImpl::DidUpdateVisualProperties(
 
   viz::ScopedSurfaceIdAllocator scoped_allocator =
       view_->DidUpdateVisualProperties(metadata);
+  base::AutoReset<bool> auto_reset(&surface_id_allocation_suppressed_, true);
 
   if (auto_resize_enabled_ && delegate_) {
     // TODO(fsamuel): The fact that we translate the viewport_size from pixels
