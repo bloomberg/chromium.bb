@@ -1024,4 +1024,14 @@ TEST_F(AutocompleteHistoryManagerTest, EntriesCleanup_Success) {
   histogram_tester.ExpectBucketCount("Autocomplete.Cleanup", cleanup_result, 1);
 }
 
+// Tests that AutocompleteHistoryManager::OnWebDataServiceRequestDone does not
+// crash on empty results.
+TEST_F(AutocompleteHistoryManagerTest, EmptyResult_DoesNotCrash) {
+  auto empty_unique_ptr = std::unique_ptr<WDTypedResult>(nullptr);
+
+  // The expectation in this test is that the following call doesn't crash.
+  autocomplete_manager_->OnWebDataServiceRequestDone(
+      1, std::move(empty_unique_ptr));
+}
+
 }  // namespace autofill
