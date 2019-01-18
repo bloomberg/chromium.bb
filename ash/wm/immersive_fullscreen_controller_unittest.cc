@@ -185,9 +185,6 @@ class ImmersiveFullscreenControllerTest : public AshTestBase {
     controller_->Init(delegate_.get(), widget_, top_container_);
     ImmersiveFullscreenControllerTestApi(controller_.get()).SetupForTest();
 
-    // Explicitly enable the app window dragging feature for the tests.
-    scoped_feature_list_.InitAndEnableFeature(features::kDragAppsInTabletMode);
-
     // The mouse is moved so that it is not over |top_container_| by
     // AshTestBase.
   }

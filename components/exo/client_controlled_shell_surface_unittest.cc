@@ -8,7 +8,6 @@
 #include "ash/frame/header_view.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/frame/wide_frame_view.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/caption_buttons/caption_button_model.h"
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/window_properties.h"
@@ -29,7 +28,6 @@
 #include "ash/wm/workspace_controller_test_api.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "cc/paint/display_item_list.h"
 #include "components/exo/buffer.h"
 #include "components/exo/display.h"
@@ -1090,8 +1088,6 @@ TEST_F(ClientControlledShellSurfaceTest, ClientIniatedResize) {
 // Test the functionalities of dragging a window from top in tablet mode.
 TEST_F(ClientControlledShellSurfaceTest, DragWindowFromTopInTabletMode) {
   UpdateDisplay("800x600");
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(ash::features::kDragAppsInTabletMode);
   ash::Shell* shell = ash::Shell::Get();
   shell->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   std::unique_ptr<Surface> surface(new Surface());

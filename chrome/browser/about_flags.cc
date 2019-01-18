@@ -3855,11 +3855,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableDragTabsInTabletModeName,
      flag_descriptions::kEnableDragTabsInTabletModeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kDragTabsInTabletMode)},
-
-    {"enable-drag-apps-in-tablet-mode",
-     flag_descriptions::kEnableDragAppsInTabletModeName,
-     flag_descriptions::kEnableDragAppsInTabletModeDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kDragAppsInTabletMode)},
 #endif  // OS_CHROMEOS
 
     {"enable-accessibility-object-model",
