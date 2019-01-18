@@ -72,7 +72,6 @@ public class TabModelImpl extends TabModelJniBridge {
             TabModelOrderController orderController, TabContentManager tabContentManager,
             TabPersistentStore tabSaver, TabModelDelegate modelDelegate, boolean supportUndo) {
         super(incognito, isTabbedActivity);
-        initializeNative();
         mRegularTabCreator = regularTabCreator;
         mIncognitoTabCreator = incognitoTabCreator;
         mUma = uma;
@@ -82,6 +81,10 @@ public class TabModelImpl extends TabModelJniBridge {
         mModelDelegate = modelDelegate;
         mIsUndoSupported = supportUndo;
         mObservers = new ObserverList<TabModelObserver>();
+        // The call to initializeNative() should be as late as possible, as it results in calling
+        // observers on the native side, which may in turn call |addObserver()| on this object. This
+        // needs to be before the call to getProfile() to ensure native is running.
+        initializeNative();
         mRecentlyClosedBridge = new RecentlyClosedBridge(getProfile());
     }
 

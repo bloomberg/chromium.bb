@@ -79,7 +79,7 @@ public class OfflinePageAutoFetchTest {
             if (!NetworkChangeNotifier.isInitialized()) {
                 NetworkChangeNotifier.init();
             }
-            NetworkChangeNotifier.forceConnectivityState(false);
+            forceConnectivityState(false);
 
             OfflinePageBridge.getForProfile(mProfile).addObserver(
                     new OfflinePageBridge.OfflinePageModelObserver() {
@@ -120,7 +120,7 @@ public class OfflinePageAutoFetchTest {
         // appear.
         waitForInProgressNotification();
         OfflineTestUtil.clearIntercepts();
-        ThreadUtils.runOnUiThreadBlocking(() -> NetworkChangeNotifier.forceConnectivityState(true));
+        forceConnectivityState(true);
         OfflineTestUtil.startRequestCoordinatorProcessing();
 
         // Wait for the background request to complete.
@@ -172,18 +172,16 @@ public class OfflinePageAutoFetchTest {
 
         // The original request should remain. Allow the request to complete.
         closeTab(activityTab());
-        // TODO(crbug.com/883486): Check for in-progress notification.
+        waitForInProgressNotification();
         OfflineTestUtil.clearIntercepts();
-        ThreadUtils.runOnUiThreadBlocking(() -> NetworkChangeNotifier.forceConnectivityState(true));
+        forceConnectivityState(true);
         OfflineTestUtil.startRequestCoordinatorProcessing();
         waitForPageAdded();
     }
 
-    // TODO(crbug.com/883486): Handling tab close is not yet implemented, so this test fails.
     @Test
-    @DisabledTest
-    // @MediumTest
-    // @Feature({"OfflineAutoFetch"})
+    @MediumTest
+    @Feature({"OfflineAutoFetch"})
     public void testAutoFetchNotifyOnTabClose() throws Exception {
         final String testUrl = "http://www.offline.com";
         // Make |testUrl| return an offline error and attempt to load the page.
@@ -259,5 +257,12 @@ public class OfflinePageAutoFetchTest {
         // Attempt to close the tab, which will delay closing until the undo timeout goes away.
         ThreadUtils.runOnUiThreadBlocking(
                 () -> { TabModelUtils.closeTabById(model, tab.getId(), true); });
+    }
+
+    private void forceConnectivityState(boolean connected) {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            NetworkChangeNotifier.forceConnectivityState(connected);
+            DeviceConditions.mForceNoConnectionForTesting = !connected;
+        });
     }
 }

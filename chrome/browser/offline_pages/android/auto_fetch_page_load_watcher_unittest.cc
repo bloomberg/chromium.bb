@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "chrome/browser/offline_pages/android/offline_page_auto_fetcher_service.h"
-#include "chrome/browser/offline_pages/android/offline_page_auto_fetcher_service_factory.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -124,6 +123,7 @@ TEST_F(AutoFetchInternalImplTest, NoInitialization) {
 }
 
 TEST_F(AutoFetchInternalImplTest, RemoveRequestOnSuccessfulNavigation) {
+  impl_.TabModelReady();
   tab_finder_->SetTabs(std::map<int, GURL>{{kDefaultTabId, TestURL()}});
   impl_.RequestListInitialized(
       std::vector<RequestInfo>{TestInfo(1, TestURL())});
@@ -134,6 +134,7 @@ TEST_F(AutoFetchInternalImplTest, RemoveRequestOnSuccessfulNavigation) {
 
 TEST_F(AutoFetchInternalImplTest,
        RemoveRequestOnSuccessfulNavigationBeforeInitialization) {
+  impl_.TabModelReady();
   tab_finder_->SetTabs(std::map<int, GURL>{{kDefaultTabId, TestURL()}});
   impl_.SuccessfulPageNavigation(TestURL());
   impl_.RequestListInitialized(
@@ -142,9 +143,20 @@ TEST_F(AutoFetchInternalImplTest,
   EXPECT_EQ(std::vector<int64_t>({1}), delegate_.removed_requests);
 }
 
+TEST_F(AutoFetchInternalImplTest,
+       RemoveRequestOnSuccessfulNavigationBeforeTabModelReady) {
+  impl_.SuccessfulPageNavigation(TestURL());
+  impl_.RequestListInitialized(
+      std::vector<RequestInfo>{TestInfo(1, TestURL())});
+  tab_finder_->SetTabs(std::map<int, GURL>{{kDefaultTabId, TestURL()}});
+  impl_.TabModelReady();
+  EXPECT_EQ(std::vector<int64_t>({1}), delegate_.removed_requests);
+}
+
 // Successful navigation to a URL that we are not auto fetching should not
 // remove any requests from the list of in progress auto fetches.
 TEST_F(AutoFetchInternalImplTest, SuccessfulNavigationToOtherURL) {
+  impl_.TabModelReady();
   tab_finder_->SetTabs(std::map<int, GURL>{{kDefaultTabId, TestURL()}});
   impl_.RequestListInitialized(
       std::vector<RequestInfo>{TestInfo(1, TestURL())});
@@ -155,6 +167,7 @@ TEST_F(AutoFetchInternalImplTest, SuccessfulNavigationToOtherURL) {
 
 TEST_F(AutoFetchInternalImplTest,
        SuccessfulNavigationToOtherURLBeforeInitialization) {
+  impl_.TabModelReady();
   tab_finder_->SetTabs(std::map<int, GURL>{{kDefaultTabId, TestURL()}});
   impl_.SuccessfulPageNavigation(OtherURL());
   impl_.RequestListInitialized(
@@ -164,6 +177,7 @@ TEST_F(AutoFetchInternalImplTest,
 }
 
 TEST_F(AutoFetchInternalImplTest, NavigatingFromNotifies) {
+  impl_.TabModelReady();
   tab_finder_->SetTabs(std::map<int, GURL>{{kDefaultTabId, TestURL()}});
   impl_.RequestListInitialized(
       std::vector<RequestInfo>{TestInfo(1, TestURL())});
@@ -178,6 +192,7 @@ TEST_F(AutoFetchInternalImplTest, NavigatingFromNotifies) {
 }
 
 TEST_F(AutoFetchInternalImplTest, CompletedRequestUpdatesInProgressCount) {
+  impl_.TabModelReady();
   tab_finder_->SetTabs(std::map<int, GURL>{{kDefaultTabId, TestURL()}});
   impl_.RequestListInitialized(
       std::vector<RequestInfo>{TestInfo(1, TestURL())});
@@ -189,6 +204,7 @@ TEST_F(AutoFetchInternalImplTest, CompletedRequestUpdatesInProgressCount) {
 }
 
 TEST_F(AutoFetchInternalImplTest, NavigatingFromNotifiesTwoRequests) {
+  impl_.TabModelReady();
   tab_finder_->SetTabs(std::map<int, GURL>{{kDefaultTabId, TestURL()}});
   impl_.RequestListInitialized(
       {TestInfo(1, TestURL()), TestInfo(2, TestURL())});
@@ -204,6 +220,7 @@ TEST_F(AutoFetchInternalImplTest, NavigatingFromNotifiesTwoRequests) {
 }
 
 TEST_F(AutoFetchInternalImplTest, NavigatingFromBeforeInitialization) {
+  impl_.TabModelReady();
   tab_finder_->SetTabs(std::map<int, GURL>{{kDefaultTabId, OtherURL()}});
   impl_.RequestListInitialized(
       {TestInfo(1, TestURL()), TestInfo(2, TestURL())});
@@ -217,9 +234,12 @@ TEST_F(AutoFetchInternalImplTest, NavigatingFromBeforeInitialization) {
 }
 
 TEST_F(AutoFetchInternalImplTest, TabCloseNotifies) {
-  tab_finder_->SetTabs(std::map<int, GURL>{{kDefaultTabId + 1, TestURL()}});
+  impl_.TabModelReady();
+  tab_finder_->SetTabs(std::map<int, GURL>{{kDefaultTabId, TestURL()}});
   impl_.RequestListInitialized(
       std::vector<RequestInfo>{TestInfo(1, TestURL())});
+
+  impl_.TabClosed(kDefaultTabId);
 
   EXPECT_EQ(std::vector<int64_t>({1}),
             delegate_.set_notification_state_requests);
@@ -229,6 +249,7 @@ TEST_F(AutoFetchInternalImplTest, TabCloseNotifies) {
 }
 
 TEST_F(AutoFetchInternalImplTest, RequestRemovedWhileSettingNotificationState) {
+  impl_.TabModelReady();
   tab_finder_->SetTabs(std::map<int, GURL>{{kDefaultTabId, OtherURL()}});
   impl_.RequestListInitialized(
       std::vector<RequestInfo>{TestInfo(1, TestURL())});
@@ -240,6 +261,17 @@ TEST_F(AutoFetchInternalImplTest, RequestRemovedWhileSettingNotificationState) {
 
   EXPECT_CALL(notifier_, NotifyInProgress(1)).Times(0);
   impl_.SetNotificationStateComplete(1, false);
+}
+
+TEST_F(AutoFetchInternalImplTest, OtherTabClosedDoesNotNotify) {
+  impl_.TabModelReady();
+  tab_finder_->SetTabs(std::map<int, GURL>{{kDefaultTabId, TestURL()}});
+  impl_.RequestListInitialized(
+      std::vector<RequestInfo>{TestInfo(1, TestURL())});
+
+  impl_.TabClosed(kDefaultTabId + 1);
+
+  EXPECT_EQ(std::vector<int64_t>(), delegate_.set_notification_state_requests);
 }
 
 }  // namespace

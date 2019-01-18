@@ -16,6 +16,8 @@
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_list_observer.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_observer.h"
 #include "components/offline_pages/core/auto_fetch.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/background/save_page_request.h"
@@ -154,6 +156,13 @@ void InternalImpl::RequestListInitialized(std::vector<RequestInfo> request) {
   }
   pages_loaded_before_observer_ready_.clear();
 
+  if (tab_model_ready_)
+    UpdateNotificationStateForAllRequests();
+}
+
+void InternalImpl::UpdateNotificationStateForAllRequests() {
+  DCHECK(requests_initialized_);
+  DCHECK(tab_model_ready_);
   // Now that we have the full list of requests, we need to verify that the
   // notification state is correct. For instance, if a tab was closed or
   // naviagated away from the request URL, we need to trigger the in-progress
@@ -194,6 +203,11 @@ void InternalImpl::RequestAdded(RequestInfo request) {
   // notification.
   if (request.notification_state ==
       SavePageRequest::AutoFetchNotificationState::kShown)
+    return;
+
+  // If the tab model isn't ready yet, don't do anything yet. Everything will be
+  // reconciled in |UpdateNotificationStateForAllRequests()| later.
+  if (!tab_model_ready_)
     return;
 
   const std::map<int, TabInfo> android_tabs =
@@ -289,14 +303,112 @@ void InternalImpl::SetNotificationStateToShown(int64_t request_id) {
   delegate_->SetNotificationStateToShown(request_id);
 }
 
+void InternalImpl::TabClosed(int android_tab_id) {
+  // List of requests is reconciled when the request list is initialized, so
+  // ignore if initialization isn't complete.
+  if (!requests_initialized_)
+    return;
+
+  // Find requests for the closing tab, and ensure the in-progress
+  // notification is fired.
+  for (RequestInfo& request : requests_) {
+    if (request.metadata.android_tab_id == android_tab_id &&
+        request.notification_state ==
+            SavePageRequest::AutoFetchNotificationState::kUnknown) {
+      SetNotificationStateToShown(request.request_id);
+    }
+  }
+}
+
+void InternalImpl::TabModelReady() {
+  // Note that typically the tab model is ready immediately, but it's not
+  // available when Chrome runs in the background.
+  tab_model_ready_ = true;
+  if (requests_initialized_)
+    UpdateNotificationStateForAllRequests();
+}
+
 }  // namespace auto_fetch_internal
+
+// Watches out for tab events, and calls |InternalImpl::TabModelReady| and
+// |InternalImpl::TabClosed|.
+class AutoFetchPageLoadWatcher::TabWatcher : public TabModelListObserver,
+                                             public TabModelObserver {
+ public:
+  explicit TabWatcher(InternalImpl* impl) : impl_(impl) {
+    // PostTask is used to avoid interfering with the tab model while a tab is
+    // being created, as this has previously resulted in crashes.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&TabWatcher::RegisterTabObserver, GetWeakPtr()));
+  }
+
+  ~TabWatcher() override {
+    if (observed_tab_model_)
+      observed_tab_model_->RemoveObserver(this);
+    TabModelList::RemoveObserver(this);
+  }
+
+  void RegisterTabObserver() {
+    if (!TabModelList::empty()) {
+      OnTabModelAdded();
+    } else {
+      TabModelList::AddObserver(this);
+    }
+  }
+
+  // TabModelObserver.
+  void TabPendingClosure(TabAndroid* tab) override {
+    impl_->TabClosed(tab->GetAndroidId());
+  }
+
+  // TabModelListObserver.
+  void OnTabModelAdded() override {
+    if (observed_tab_model_)
+      return;
+    // The assumption is that there can be at most one non-off-the-record tab
+    // model. Observe it if it exists.
+    for (auto model = TabModelList::begin(); model != TabModelList::end();
+         ++model) {
+      if (!(*model)->IsOffTheRecord()) {
+        observed_tab_model_ = *model;
+        observed_tab_model_->AddObserver(this);
+        impl_->TabModelReady();
+        break;
+      }
+    }
+  }
+
+  void OnTabModelRemoved() override {
+    if (!observed_tab_model_)
+      return;
+
+    for (auto remaining_model = TabModelList::begin();
+         remaining_model != TabModelList::end(); ++remaining_model) {
+      if (observed_tab_model_ == *remaining_model)
+        return;
+    }
+    observed_tab_model_ = nullptr;
+  }
+
+ private:
+  base::WeakPtr<TabWatcher> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
+  InternalImpl* impl_;
+  // The observed tab model. May be null if not yet observing.
+  TabModel* observed_tab_model_ = nullptr;
+  base::WeakPtrFactory<TabWatcher> weak_ptr_factory_{this};
+};
 
 AutoFetchPageLoadWatcher::AutoFetchPageLoadWatcher(
     AutoFetchNotifier* notifier,
     RequestCoordinator* request_coordinator,
     std::unique_ptr<AndroidTabFinder> tab_finder)
     : request_coordinator_(request_coordinator),
-      impl_(notifier, this, std::move(tab_finder)) {
+      impl_(notifier, this, std::move(tab_finder)),
+      tab_watcher_(std::make_unique<TabWatcher>(&impl_)) {
   request_coordinator_->AddObserver(this);
   request_coordinator_->GetAllRequests(base::BindOnce(
       &AutoFetchPageLoadWatcher::InitializeRequestList, GetWeakPtr()));
