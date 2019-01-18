@@ -959,6 +959,11 @@ public class CustomTabsConnection {
         return mClientManager.shouldHideDomainForSession(session);
     }
 
+    /** @see ClientManager#shouldHideTopBarOnModuleManagedUrlsForSession(CustomTabsSessionToken) */
+    public boolean shouldHideTopBarOnModuleManagedUrlsForSession(CustomTabsSessionToken session) {
+        return mClientManager.shouldHideTopBarOnModuleManagedUrlsForSession(session);
+    }
+
     /** @see ClientManager#shouldSpeculateLoadOnCellularForSession(CustomTabsSessionToken) */
     public boolean shouldSpeculateLoadOnCellularForSession(CustomTabsSessionToken session) {
         return mClientManager.shouldSpeculateLoadOnCellularForSession(session);

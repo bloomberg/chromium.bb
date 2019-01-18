@@ -2252,6 +2252,11 @@ const char kCCTModulePostMessageDescription[] =
     "Enables the postMessage API exposed to dynamically loaded modules in "
     "Chrome Custom Tabs.";
 
+const char kCCTModuleUseIntentExtrasName[] =
+    "Chrome Custom Tabs Module Intent Extras Usage";
+const char kCCTModuleUseIntentExtrasDescription[] =
+    "Enables usage of Intent's extras in Chrome Custom Tabs Module";
+
 const char kChromeDuetName[] = "Chrome Duet";
 const char kChromeDuetDescription[] =
     "Enables Chrome Duet, split toolbar Chrome Home, on Android.";

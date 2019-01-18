@@ -30928,6 +30928,7 @@ from previous Chrome versions.
   <int value="-1075089382" label="enable-physical-web"/>
   <int value="-1074107607" label="data-reduction-proxy-experiment"/>
   <int value="-1073479583" label="ShowArcFilesApp:disabled"/>
+  <int value="-1069453905" label="CCTModuleUseIntentExtras:disabled"/>
   <int value="-1067635248" label="SpeculativeResourcePrefetching:disabled"/>
   <int value="-1064733740" label="ui-show-composited-layer-borders"/>
   <int value="-1062119671" label="enable-password-force-saving"/>
@@ -31098,6 +31099,7 @@ from previous Chrome versions.
   <int value="-771080109" label="GrantNotificationsToDSE:disabled"/>
   <int value="-770319039" label="enable-touch-editing"/>
   <int value="-769865314" label="AutofillCacheQueryResponses:disabled"/>
+  <int value="-763900417" label="CCTModuleUseIntentExtras:enabled"/>
   <int value="-763759697" label="enable-audio-support-for-desktop-share"/>
   <int value="-762687134" label="ExperimentalCrostiniUI:enabled"/>
   <int value="-759830869" label="enable-tab-discarding"/>

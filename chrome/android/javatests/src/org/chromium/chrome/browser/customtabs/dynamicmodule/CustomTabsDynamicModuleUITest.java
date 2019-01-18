@@ -356,7 +356,8 @@ public class CustomTabsDynamicModuleUITest {
     @Test
     @SmallTest
     @Features.EnableFeatures({
-            ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER})
+            ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER,
+            ChromeFeatureList.CCT_MODULE_USE_INTENT_EXTRAS})
     public void testSetTopBarContentView_notModuleManagedHost_cctHeaderVisible() throws Exception {
         String url = mTestServer.getURLWithHostName("non-managed-domain", MODULE_MANAGED_PAGE);
         Intent intent = new IntentBuilder(url)
@@ -375,7 +376,8 @@ public class CustomTabsDynamicModuleUITest {
     @Test
     @SmallTest
     @Features.EnableFeatures({
-            ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER})
+            ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER,
+            ChromeFeatureList.CCT_MODULE_USE_INTENT_EXTRAS})
     public void testSetTopBarContentView_withModuleAndExtras_cctHeaderHidden() throws Exception {
         Intent intent = new IntentBuilder(mModuleManagedPage)
                 .setModuleManagedUrlRegex(getModuleManagedRegex())
@@ -400,6 +402,7 @@ public class CustomTabsDynamicModuleUITest {
 
     @Test
     @SmallTest
+    @Features.EnableFeatures(ChromeFeatureList.CCT_MODULE_USE_INTENT_EXTRAS)
     @Features.DisableFeatures(ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER)
     public void testSetTopBarHeight_featureDisabled_heightNotChanged() throws Exception {
         Intent intent = new IntentBuilder(mModuleManagedPage)
@@ -421,7 +424,8 @@ public class CustomTabsDynamicModuleUITest {
     @Test
     @SmallTest
     @Features.EnableFeatures({
-            ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER})
+            ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER,
+            ChromeFeatureList.CCT_MODULE_USE_INTENT_EXTRAS})
     public void testSetTopBarHeight_cctHeaderNotHidden_heightNotChanged() throws Exception {
         Intent intent = new IntentBuilder(mModuleManagedPage)
                 .setModuleManagedUrlRegex(getModuleManagedRegex())
@@ -441,7 +445,8 @@ public class CustomTabsDynamicModuleUITest {
     @Test
     @SmallTest
     @Features.EnableFeatures({
-            ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER})
+            ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER,
+            ChromeFeatureList.CCT_MODULE_USE_INTENT_EXTRAS})
     public void testSetTopBarHeight_withModuleAndExtras_heightUpdated() throws Exception {
         Intent intent = new IntentBuilder(mModuleManagedPage)
                 .setModuleManagedUrlRegex(getModuleManagedRegex())
@@ -460,6 +465,7 @@ public class CustomTabsDynamicModuleUITest {
 
     @Test
     @SmallTest
+    @Features.EnableFeatures(ChromeFeatureList.CCT_MODULE_USE_INTENT_EXTRAS)
     @Features.DisableFeatures(ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER)
     public void testSetTopBarContentView_featureDisabled_progressBarNoChange() throws Exception {
         Intent intent = new IntentBuilder(mModuleManagedPage)
@@ -474,7 +480,8 @@ public class CustomTabsDynamicModuleUITest {
     @Test
     @SmallTest
     @Features.
-    EnableFeatures({ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER})
+    EnableFeatures({ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER,
+                    ChromeFeatureList.CCT_MODULE_USE_INTENT_EXTRAS})
     public void testSetTopBarContentView_cctHeaderNotHidden_progressBarNoChange() throws Exception {
         Intent intent = new IntentBuilder(mModuleManagedPage)
                                 .setModuleManagedUrlRegex(getModuleManagedRegex())
@@ -488,7 +495,8 @@ public class CustomTabsDynamicModuleUITest {
     @Test
     @SmallTest
     @Features.
-    EnableFeatures({ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER})
+    EnableFeatures({ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER,
+                    ChromeFeatureList.CCT_MODULE_USE_INTENT_EXTRAS})
     public void testSetTopBarContentView_withModuleAndExtras_progressBarChanged() throws Exception {
         Intent intent = new IntentBuilder(mModuleManagedPage)
                                 .setModuleManagedUrlRegex(getModuleManagedRegex())
