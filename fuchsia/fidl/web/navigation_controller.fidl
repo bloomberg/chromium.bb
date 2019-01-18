@@ -32,6 +32,9 @@ struct LoadUrlParams {
   // The URL that linked to the resource being requested.
   string referrer;
 
+  // Should be set to true if the action was initiated by the user.
+  bool was_activated = false;
+
   // Custom HTTP headers.
   vector<vector<uint8>> headers;
 };
