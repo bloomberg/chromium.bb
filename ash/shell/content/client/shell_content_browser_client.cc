@@ -7,18 +7,21 @@
 #include <utility>
 
 #include "ash/ash_service.h"
+#include "ash/components/quick_launch/manifest.h"
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
+#include "ash/components/shortcut_viewer/manifest.h"
 #include "ash/components/shortcut_viewer/public/mojom/shortcut_viewer.mojom.h"
+#include "ash/components/tap_visualizer/manifest.h"
 #include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"
+#include "ash/manifest.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
 #include "ash/shell/content/client/shell_browser_main_parts.h"
-#include "ash/shell/grit/ash_shell_resources.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/json/json_reader.h"
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_context.h"
@@ -26,15 +29,46 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/utility/content_utility_client.h"
+#include "services/device/public/mojom/constants.mojom.h"
+#include "services/service_manager/public/cpp/manifest.h"
+#include "services/service_manager/public/cpp/manifest_builder.h"
+#include "services/ws/ime/test_ime_driver/manifest.h"
 #include "services/ws/ime/test_ime_driver/public/mojom/constants.mojom.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "services/ws/window_service.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace ash {
 namespace shell {
+
+namespace {
+
+const service_manager::Manifest& GetAshShellBrowserOverlayManifest() {
+  static base::NoDestructor<service_manager::Manifest> manifest{
+      service_manager::ManifestBuilder()
+          .RequireCapability(device::mojom::kServiceName, "device:fingerprint")
+          .RequireCapability(shortcut_viewer::mojom::kServiceName,
+                             "shortcut_viewer")
+          .RequireCapability(tap_visualizer::mojom::kServiceName,
+                             "tap_visualizer")
+          .Build()};
+  return *manifest;
+}
+
+const service_manager::Manifest& GetAshShellPackagedServicesOverlayManifest() {
+  static base::NoDestructor<service_manager::Manifest> manifest{
+      service_manager::ManifestBuilder()
+          .PackageService(ash::GetManifest())
+          .PackageService(quick_launch_app::GetManifest())
+          .PackageService(shortcut_viewer_app::GetManifest())
+          .PackageService(tap_visualizer_app::GetManifest())
+          .PackageService(test_ime_driver::GetManifest())
+          .Build()};
+  return *manifest;
+}
+
+}  // namespace
 
 ShellContentBrowserClient::ShellContentBrowserClient()
     : shell_browser_main_parts_(nullptr) {}
@@ -57,38 +91,15 @@ void ShellContentBrowserClient::GetQuotaSettings(
 
 base::Optional<service_manager::Manifest>
 ShellContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
-  if (name == content::mojom::kBrowserServiceName) {
-    // This is necessary for outgoing interface requests (such as the keyboard
-    // shortcut viewer).
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    base::StringPiece manifest_contents = rb.GetRawDataResourceForScale(
-        IDR_ASH_SHELL_CONTENT_BROWSER_MANIFEST_OVERLAY,
-        ui::ScaleFactor::SCALE_FACTOR_NONE);
-    return service_manager::Manifest::FromValueDeprecated(
-        base::JSONReader::Read(manifest_contents));
-  }
-  if (name == content::mojom::kPackagedServicesServiceName) {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    base::StringPiece manifest_contents = rb.GetRawDataResourceForScale(
-        IDR_ASH_SHELL_CONTENT_PACKAGED_SERVICES_MANIFEST_OVERLAY,
-        ui::ScaleFactor::SCALE_FACTOR_NONE);
-    return service_manager::Manifest::FromValueDeprecated(
-        base::JSONReader::Read(manifest_contents));
-  }
-  return base::nullopt;
-}
+  // This is necessary for outgoing interface requests (such as the keyboard
+  // shortcut viewer).
+  if (name == content::mojom::kBrowserServiceName)
+    return GetAshShellBrowserOverlayManifest();
 
-std::vector<content::ContentBrowserClient::ServiceManifestInfo>
-ShellContentBrowserClient::GetExtraServiceManifests() {
-  return {
-      {quick_launch::mojom::kServiceName, IDR_ASH_SHELL_QUICK_LAUNCH_MANIFEST},
-      {shortcut_viewer::mojom::kServiceName,
-       IDR_ASH_SHELL_SHORTCUT_VIEWER_MANIFEST},
-      {tap_visualizer::mojom::kServiceName,
-       IDR_ASH_SHELL_TAP_VISUALIZER_MANIFEST},
-      {test_ime_driver::mojom::kServiceName,
-       IDR_ASH_SHELL_TEST_IME_DRIVER_MANIFEST},
-  };
+  if (name == content::mojom::kPackagedServicesServiceName)
+    return GetAshShellPackagedServicesOverlayManifest();
+
+  return base::nullopt;
 }
 
 void ShellContentBrowserClient::RegisterOutOfProcessServices(

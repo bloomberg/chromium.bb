@@ -6,5 +6,6 @@ include_rules = [
   "+content/public",
   "+content/shell",
   "+storage/browser/quota",
+  "+services/device/public",
   "+services/ws/ime/test_ime_driver",
 ]

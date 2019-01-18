@@ -111,7 +111,7 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Manifest {
     // The type of sandboxing required by instances of this service.
     //
     // TODO(https://crbug.com/915806): Make this field a SandboxType enum.
-    std::string sandbox_type{"none"};
+    std::string sandbox_type{"utility"};
   };
 
   // Represents a file required by instances of the service despite being
