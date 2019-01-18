@@ -12,6 +12,7 @@
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
+#include "content/renderer/service_worker/web_service_worker_network_provider_base_impl.h"
 #include "ipc/ipc_sync_channel.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -50,18 +51,19 @@ bool IsFrameSecure(blink::WebFrame* frame) {
 
 // An WebServiceWorkerNetworkProvider for frame. This wraps
 // ServiceWorkerNetworkProvider implementation and is owned by blink.
+// TODO(nhiroki): Move this class into its own file.
 class WebServiceWorkerNetworkProviderImplForFrame
-    : public blink::WebServiceWorkerNetworkProvider {
+    : public WebServiceWorkerNetworkProviderBaseImpl {
  public:
   explicit WebServiceWorkerNetworkProviderImplForFrame(
       std::unique_ptr<ServiceWorkerNetworkProvider> provider)
-      : provider_(std::move(provider)) {}
+      : WebServiceWorkerNetworkProviderBaseImpl(std::move(provider)) {}
 
   void WillSendRequest(blink::WebURLRequest& request) override {
     if (!request.GetExtraData())
       request.SetExtraData(std::make_unique<RequestExtraData>());
     auto* extra_data = static_cast<RequestExtraData*>(request.GetExtraData());
-    extra_data->set_service_worker_provider_id(provider_->provider_id());
+    extra_data->set_service_worker_provider_id(provider()->provider_id());
 
     // If the provider does not have a controller at this point, the renderer
     // expects the request to never be handled by a service worker, so call
@@ -73,7 +75,7 @@ class WebServiceWorkerNetworkProviderImplForFrame
             network::mojom::RequestContextFrameType::kTopLevel &&
         request.GetFrameType() !=
             network::mojom::RequestContextFrameType::kNested &&
-        provider_->IsControlledByServiceWorker() ==
+        IsControlledByServiceWorker() ==
             blink::mojom::ControllerServiceWorkerMode::kNoController) {
       request.SetSkipServiceWorker(true);
     }
@@ -83,22 +85,10 @@ class WebServiceWorkerNetworkProviderImplForFrame
     // requests or non-S13nSW case, the browser process sets the id on the
     // request when dispatching the fetch event to the service worker. But it
     // doesn't hurt to set it always.
-    if (provider_->context())
-      request.SetFetchWindowId(provider_->context()->fetch_request_window_id());
+    if (provider()->context())
+      request.SetFetchWindowId(
+          provider()->context()->fetch_request_window_id());
   }
-
-  blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
-      override {
-    return provider_->IsControlledByServiceWorker();
-  }
-
-  int64_t ControllerServiceWorkerID() override {
-    if (provider_->context())
-      return provider_->context()->GetControllerVersionId();
-    return blink::mojom::kInvalidServiceWorkerVersionId;
-  }
-
-  ServiceWorkerNetworkProvider* provider() { return provider_.get(); }
 
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const blink::WebURLRequest& request,
@@ -115,8 +105,8 @@ class WebServiceWorkerNetworkProviderImplForFrame
 
     // We need SubresourceLoaderFactory populated in order to create our own
     // URLLoader for subresource loading.
-    if (!provider_->context() ||
-        !provider_->context()->GetSubresourceLoaderFactory())
+    if (!provider()->context() ||
+        !provider()->context()->GetSubresourceLoaderFactory())
       return nullptr;
 
     // If the URL is not http(s) or otherwise whitelisted, do not intercept the
@@ -141,13 +131,10 @@ class WebServiceWorkerNetworkProviderImplForFrame
         RenderThreadImpl::current()->resource_dispatcher(),
         std::move(task_runner_handle),
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-            provider_->context()->GetSubresourceLoaderFactory()));
+            provider()->context()->GetSubresourceLoaderFactory()));
   }
 
-  void DispatchNetworkQuiet() override { provider_->DispatchNetworkQuiet(); }
-
- private:
-  std::unique_ptr<ServiceWorkerNetworkProvider> provider_;
+  void DispatchNetworkQuiet() override { provider()->DispatchNetworkQuiet(); }
 };
 
 }  // namespace
@@ -238,7 +225,7 @@ ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
     DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
     return nullptr;
   }
-  return static_cast<WebServiceWorkerNetworkProviderImplForFrame*>(provider)
+  return static_cast<WebServiceWorkerNetworkProviderBaseImpl*>(provider)
       ->provider();
 }
 
