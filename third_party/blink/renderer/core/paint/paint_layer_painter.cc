@@ -58,9 +58,9 @@ static ShouldRespectOverflowClipType ShouldRespectOverflowClip(
              : kRespectOverflowClip;
 }
 
-bool PaintLayerPainter::PaintedOutputInvisible(
-    const ComputedStyle& style,
-    GlobalPaintFlags global_paint_flags) const {
+bool PaintLayerPainter::PaintedOutputInvisible(const ComputedStyle& style) {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+
   if (style.HasBackdropFilter())
     return false;
 
@@ -70,27 +70,14 @@ bool PaintLayerPainter::PaintedOutputInvisible(
   if (style.HasWillChangeOpacityHint())
     return false;
 
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    if (style.Opacity())
-      return false;
-
-    const auto* properties =
-        paint_layer_.GetLayoutObject().FirstFragment().PaintProperties();
-    if (properties && properties->Effect() &&
-        properties->Effect()->RequiresCompositingForAnimation())
-      return false;
-  }
-
   // 0.0004f < 1/2048. With 10-bit color channels (only available on the
   // newest Macs; otherwise it's 8-bit), we see that an alpha of 1/2048 or
   // less leads to a color output of less than 0.5 in all channels, hence
   // not visible.
   static const float kMinimumVisibleOpacity = 0.0004f;
-  if (paint_layer_.PaintsWithTransparency(global_paint_flags)) {
-    if (style.Opacity() < kMinimumVisibleOpacity) {
-      return true;
-    }
-  }
+  if (style.Opacity() < kMinimumVisibleOpacity)
+    return true;
+
   return false;
 }
 
@@ -134,10 +121,13 @@ PaintResult PaintLayerPainter::Paint(
   // we simplify this optimization by painting even when effectively invisible
   // but skipping the painted content during layerization in
   // PaintArtifactCompositor.
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      PaintedOutputInvisible(paint_layer_.GetLayoutObject().StyleRef(),
-                             painting_info.GetGlobalPaintFlags())) {
-    return kFullyPainted;
+  if (paint_layer_.PaintsWithTransparency(
+          painting_info.GetGlobalPaintFlags())) {
+    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+        PaintedOutputInvisible(paint_layer_.GetLayoutObject().StyleRef()))
+      return kFullyPainted;
+
+    paint_flags |= kPaintLayerHaveTransparency;
   }
 
   // If the transform can't be inverted, then don't paint anything.
@@ -146,9 +136,6 @@ PaintResult PaintLayerPainter::Paint(
            .IsInvertible()) {
     return kFullyPainted;
   }
-
-  if (paint_layer_.PaintsWithTransparency(painting_info.GetGlobalPaintFlags()))
-    paint_flags |= kPaintLayerHaveTransparency;
 
   paint_flags |= kPaintLayerPaintingCompositingAllPhases;
   return PaintLayerContents(context, painting_info, paint_flags);
