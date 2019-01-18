@@ -143,10 +143,8 @@
   alwaysTranslateLanguageItem.title =
       base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(
           IDS_TRANSLATE_INFOBAR_OPTIONS_ALWAYS, originalLanguageName));
-  if (self.infobarDelegate->ShouldAlwaysTranslate()) {
-    alwaysTranslateLanguageItem.accessoryType =
-        UITableViewCellAccessoryCheckmark;
-  }
+  alwaysTranslateLanguageItem.selected =
+      self.infobarDelegate->ShouldAlwaysTranslate();
 
   TranslatePopupMenuItem* neverTranslateLanguageItem =
       [[TranslatePopupMenuItem alloc] initWithType:kItemTypeEnumZero];
