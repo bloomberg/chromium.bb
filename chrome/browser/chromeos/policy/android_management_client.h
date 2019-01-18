@@ -14,15 +14,22 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 
 namespace enterprise_management {
 class DeviceManagementResponse;
 }
 
+namespace identity {
+class AccessTokenFetcher;
+class IdentityManager;
+struct AccessTokenInfo;
+}  // namespace identity
+
 namespace network {
 class SharedURLLoaderFactory;
 }
+
+class GoogleServiceAuthError;
 
 namespace policy {
 
@@ -32,7 +39,7 @@ class DeviceManagementService;
 // Interacts with the device management service and determines whether Android
 // management is enabled for the user or not. Uses the OAuth2TokenService to
 // acquire access tokens for the device management.
-class AndroidManagementClient : public OAuth2TokenService::Consumer {
+class AndroidManagementClient {
  public:
   // Indicates result of the android management check.
   enum class Result {
@@ -48,8 +55,8 @@ class AndroidManagementClient : public OAuth2TokenService::Consumer {
       DeviceManagementService* service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& account_id,
-      OAuth2TokenService* token_service);
-  ~AndroidManagementClient() override;
+      identity::IdentityManager* identity_manager);
+  ~AndroidManagementClient();
 
   // Starts sending of check Android management request to DM server, issues
   // access token if neccessary. |callback| is called on check Android
@@ -61,12 +68,8 @@ class AndroidManagementClient : public OAuth2TokenService::Consumer {
   static void SetAccessTokenForTesting(const char* access_token);
 
  private:
-  // OAuth2TokenService::Consumer:
-  void OnGetTokenSuccess(
-      const OAuth2TokenService::Request* request,
-      const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                         const GoogleServiceAuthError& error) override;
+  void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
+                                  identity::AccessTokenInfo token_info);
 
   // Requests an access token.
   void RequestAccessToken();
@@ -87,10 +90,9 @@ class AndroidManagementClient : public OAuth2TokenService::Consumer {
 
   // The account ID that will be used for the access token fetch.
   const std::string account_id_;
-  // The token service used to retrieve the access token.
-  OAuth2TokenService* const token_service_;
-  // The OAuth request to receive the access token.
-  std::unique_ptr<OAuth2TokenService::Request> token_request_;
+
+  identity::IdentityManager* identity_manager_;
+  std::unique_ptr<identity::AccessTokenFetcher> access_token_fetcher_;
 
   StatusCallback callback_;
 

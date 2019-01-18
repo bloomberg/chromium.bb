@@ -13,6 +13,9 @@
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "services/identity/public/cpp/access_token_fetcher.h"
+#include "services/identity/public/cpp/access_token_info.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace em = enterprise_management;
@@ -23,12 +26,11 @@ AndroidManagementClient::AndroidManagementClient(
     DeviceManagementService* device_management_service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& account_id,
-    OAuth2TokenService* token_service)
-    : OAuth2TokenService::Consumer("android_management_client"),
-      device_management_service_(device_management_service),
+    identity::IdentityManager* identity_manager)
+    : device_management_service_(device_management_service),
       url_loader_factory_(url_loader_factory),
       account_id_(account_id),
-      token_service_(token_service),
+      identity_manager_(identity_manager),
       weak_ptr_factory_(this) {}
 
 AndroidManagementClient::~AndroidManagementClient() {}
@@ -42,35 +44,35 @@ void AndroidManagementClient::StartCheckAndroidManagement(
   RequestAccessToken();
 }
 
-void AndroidManagementClient::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
-    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
-  DCHECK_EQ(token_request_.get(), request);
-  token_request_.reset();
+void AndroidManagementClient::OnAccessTokenFetchComplete(
+    GoogleServiceAuthError error,
+    identity::AccessTokenInfo token_info) {
+  access_token_fetcher_.reset();
 
-  CheckAndroidManagement(token_response.access_token);
-}
+  if (error.state() != GoogleServiceAuthError::NONE) {
+    LOG(ERROR) << "Token request failed: " << error.ToString();
+    DCHECK(!callback_.is_null());
+    std::move(callback_).Run(Result::ERROR);
+    return;
+  }
 
-void AndroidManagementClient::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
-    const GoogleServiceAuthError& error) {
-  DCHECK_EQ(token_request_.get(), request);
-  DCHECK(!callback_.is_null());
-  token_request_.reset();
-  LOG(ERROR) << "Token request failed: " << error.ToString();
-
-  base::ResetAndReturn(&callback_).Run(Result::ERROR);
+  CheckAndroidManagement(token_info.token);
 }
 
 void AndroidManagementClient::RequestAccessToken() {
-  DCHECK(!token_request_);
+  DCHECK(!access_token_fetcher_);
   // The user must be signed in already.
-  DCHECK(token_service_->RefreshTokenIsAvailable(account_id_));
+  DCHECK(identity_manager_->HasAccountWithRefreshToken(account_id_));
 
-  OAuth2TokenService::ScopeSet scopes;
+  identity::ScopeSet scopes;
   scopes.insert(GaiaConstants::kDeviceManagementServiceOAuth);
   scopes.insert(GaiaConstants::kOAuthWrapBridgeUserInfoScope);
-  token_request_ = token_service_->StartRequest(account_id_, scopes, this);
+
+  access_token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForAccount(
+      account_id_, "android_management_client", scopes,
+      base::BindOnce(&AndroidManagementClient::OnAccessTokenFetchComplete,
+                     base::Unretained(this)),
+      identity::AccessTokenFetcher::Mode::kImmediate);
 }
 
 void AndroidManagementClient::CheckAndroidManagement(
