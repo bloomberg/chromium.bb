@@ -1,34 +1,24 @@
 <!DOCTYPE html>
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
+<meta charset="utf-8">
+<title>navigator.clipboard.readText() fails when permission denied</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script src="../../http/tests/resources/permissions-helper.js"></script>
-</head>
-<body>
 <script>
-description("Tests navigator.clipboard.readText() permission failure.");
-
-shouldBeDefined("PermissionsHelper.setPermission");
-
-function successCallback(access) {
-  testFailed(
-    "clipboard.readText() does not fail (even though it really should have).");
-  finishJSTest();
-}
-
-function errorCallback(error) {
-  testPassed("clipboard.readText() fail (as expected).");
-  finishJSTest();
-}
-
-window.jsTestIsAsync = true;
-
-PermissionsHelper.setPermission('clipboard-read', 'denied').then(function() {
-  shouldBeNonNull("navigator.clipboard");
-  navigator.clipboard.readText().then(successCallback, errorCallback);
-});
-
-
+promise_test(async t => {
+  await PermissionsHelper.setPermission('clipboard-read', 'denied');
+  // Note: Failure returns a rejected promise of type undefined, so
+  // promise_rejects doesn't seem to work here.
+  let promise_rejected = false;
+  try {
+    await navigator.clipboard.readText();
+  }
+  catch {
+    promise_rejected = true;
+  }
+  if(promise_rejected === false) {
+    throw "readText should have failed with permission denied, but succeeded "
+          + "instead";
+  }
+}, "navigator.clipboard.readText() fails when permission denied");
 </script>
-</body>
-</html>
