@@ -229,16 +229,21 @@ class SharedImageRepresentationGLTexturePassthroughImpl
 
 class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
  public:
-  SharedImageRepresentationSkiaImpl(SharedImageManager* manager,
-                                    SharedImageBacking* backing,
-                                    MemoryTypeTracker* tracker,
-                                    GLenum target,
-                                    GLuint service_id)
-      : SharedImageRepresentationSkia(manager, backing, tracker) {
-    GrBackendTexture backend_texture;
-    GetGrBackendTexture(gl::GLContext::GetCurrent()->GetVersionInfo(), target,
-                        size(), service_id, format(), &backend_texture);
-    promise_texture_ = SkPromiseImageTexture::Make(backend_texture);
+  SharedImageRepresentationSkiaImpl(
+      SharedImageManager* manager,
+      SharedImageBacking* backing,
+      sk_sp<SkPromiseImageTexture> cached_promise_texture,
+      MemoryTypeTracker* tracker,
+      GLenum target,
+      GLuint service_id)
+      : SharedImageRepresentationSkia(manager, backing, tracker),
+        promise_texture_(cached_promise_texture) {
+    if (!promise_texture_) {
+      GrBackendTexture backend_texture;
+      GetGrBackendTexture(gl::GLContext::GetCurrent()->GetVersionInfo(), target,
+                          size(), service_id, format(), &backend_texture);
+      promise_texture_ = SkPromiseImageTexture::Make(backend_texture);
+    }
 #if DCHECK_IS_ON()
     context_ = gl::GLContext::GetCurrent();
 #endif
@@ -283,6 +288,8 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
   void EndReadAccess() override {
     // TODO(ericrk): Handle begin/end correctness checks.
   }
+
+  sk_sp<SkPromiseImageTexture> promise_texture() { return promise_texture_; }
 
  private:
   void CheckContext() {
@@ -389,12 +396,16 @@ class SharedImageBackingGLTexture : public SharedImageBacking {
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker) override {
-    return std::make_unique<SharedImageRepresentationSkiaImpl>(
-        manager, this, tracker, texture_->target(), texture_->service_id());
+    auto result = std::make_unique<SharedImageRepresentationSkiaImpl>(
+        manager, this, cached_promise_texture_, tracker, texture_->target(),
+        texture_->service_id());
+    cached_promise_texture_ = result->promise_texture();
+    return result;
   }
 
  private:
   gles2::Texture* texture_ = nullptr;
+  sk_sp<SkPromiseImageTexture> cached_promise_texture_;
 };
 
 // Implementation of SharedImageBacking that creates a GL Texture and stores it
@@ -485,13 +496,17 @@ class SharedImageBackingPassthroughGLTexture : public SharedImageBacking {
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker) override {
-    return std::make_unique<SharedImageRepresentationSkiaImpl>(
-        manager, this, tracker, texture_passthrough_->target(),
-        texture_passthrough_->service_id());
+    auto result = std::make_unique<SharedImageRepresentationSkiaImpl>(
+        manager, this, cached_promise_texture_, tracker,
+        texture_passthrough_->target(), texture_passthrough_->service_id());
+    cached_promise_texture_ = result->promise_texture();
+    return result;
   }
 
  private:
   scoped_refptr<gles2::TexturePassthrough> texture_passthrough_;
+  sk_sp<SkPromiseImageTexture> cached_promise_texture_;
+
   bool is_cleared_ = false;
 };
 

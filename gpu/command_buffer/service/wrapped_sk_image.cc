@@ -82,11 +82,7 @@ class WrappedSkImage : public SharedImageBacking {
         final_msaa_count, color_type, /*colorSpace=*/nullptr, &surface_props);
   }
 
-  bool GetGrBackendTexture(GrBackendTexture* gr_texture) const {
-    context_state_->need_context_state_reset = true;
-    *gr_texture = image_->getBackendTexture(/*flushPendingGrContextIO=*/true);
-    return gr_texture->isValid();
-  }
+  sk_sp<SkPromiseImageTexture> promise_texture() { return promise_texture_; }
 
  protected:
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
@@ -147,6 +143,7 @@ class WrappedSkImage : public SharedImageBacking {
         image_->getBackendTexture(/*flushPendingGrContextIO=*/false);
     if (!gr_texture.isValid())
       return false;
+    promise_texture_ = SkPromiseImageTexture::Make(gr_texture);
 
     switch (gr_texture.backend()) {
       case GrBackendApi::kOpenGL: {
@@ -171,6 +168,8 @@ class WrappedSkImage : public SharedImageBacking {
   RasterDecoderContextState* const context_state_;
 
   sk_sp<SkImage> image_;
+  sk_sp<SkPromiseImageTexture> promise_texture_;
+
   bool cleared_ = false;
 
   uint64_t tracing_id_ = 0;
@@ -207,12 +206,7 @@ class WrappedSkImageRepresentation : public SharedImageRepresentationSkia {
   }
 
   sk_sp<SkPromiseImageTexture> BeginReadAccess(SkSurface* sk_surface) override {
-    if (!promise_texture_) {
-      GrBackendTexture backend_texture;
-      wrapped_sk_image()->GetGrBackendTexture(&backend_texture);
-      promise_texture_ = SkPromiseImageTexture::Make(backend_texture);
-    }
-    return promise_texture_;
+    return wrapped_sk_image()->promise_texture();
   }
 
   void EndReadAccess() override {
@@ -225,7 +219,6 @@ class WrappedSkImageRepresentation : public SharedImageRepresentationSkia {
   }
 
   SkSurface* write_surface_ = nullptr;
-  sk_sp<SkPromiseImageTexture> promise_texture_;
 };
 
 }  // namespace
