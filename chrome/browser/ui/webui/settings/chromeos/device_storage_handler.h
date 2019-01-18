@@ -44,7 +44,7 @@ class StorageHandler : public ::settings::SettingsPageUIHandler {
   // SettingsPageUIHandler implementation.
   void RegisterMessages() override;
   void OnJavascriptAllowed() override {}
-  void OnJavascriptDisallowed() override {}
+  void OnJavascriptDisallowed() override;
 
  private:
   // Handlers of JS messages.

@@ -102,6 +102,11 @@ void StorageHandler::RegisterMessages() {
                           base::Unretained(this)));
 }
 
+void StorageHandler::OnJavascriptDisallowed() {
+  // Ensure that pending callbacks do not complete and cause JS to be evaluated.
+  weak_ptr_factory_.InvalidateWeakPtrs();
+}
+
 void StorageHandler::HandleUpdateStorageInfo(const base::ListValue* args) {
   AllowJavascript();
 
