@@ -4315,6 +4315,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsMac | kOsWin | kOsLinux,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillSettingsCardTypeSplit)},
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+    {"hardware-media-key-handling",
+     flag_descriptions::kHardwareMediaKeyHandling,
+     flag_descriptions::kHardwareMediaKeyHandlingDescription, kOsWin | kOsCrOS,
+     FEATURE_VALUE_TYPE(media::kHardwareMediaKeyHandling)},
+#endif
 };
 
 class FlagsStateSingleton {

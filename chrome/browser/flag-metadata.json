@@ -2358,6 +2358,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "hardware-media-key-handling",
+    "owners": [ "steimel", "media-dev" ],
+    "expiry_milestone": 77
+  },
+  {
     "name": "harmony-await-optimization",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

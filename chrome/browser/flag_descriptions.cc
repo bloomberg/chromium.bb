@@ -1101,6 +1101,11 @@ const char kHandwritingGestureName[] = "Handwriting Gestures";
 const char kHandwritingGestureDescription[] =
     "Enables handwriting gestures within the virtual keyboard";
 
+const char kHardwareMediaKeyHandling[] = "Hardware Media Key Handling";
+const char kHardwareMediaKeyHandlingDescription[] =
+    "Enables using media keys to control the active media session. This "
+    "requires MediaSessionService to be enabled too";
+
 const char kHideActiveAppsFromShelfName[] =
     "Hide running apps (that are not pinned) from the shelf";
 const char kHideActiveAppsFromShelfDescription[] =
