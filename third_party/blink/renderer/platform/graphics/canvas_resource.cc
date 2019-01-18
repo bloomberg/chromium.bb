@@ -82,12 +82,10 @@ static void ReleaseFrameResources(
     const gpu::SyncToken& sync_token,
     bool lost_resource) {
   resource->WaitSyncToken(sync_token);
-  if (lost_resource) {
+  if (lost_resource)
     resource->Abandon();
-  }
-  if (resource_provider && !lost_resource && resource->IsRecycleable()) {
+  if (resource_provider && !lost_resource && resource->IsRecycleable())
     resource_provider->RecycleResource(std::move(resource));
-  }
 }
 
 bool CanvasResource::PrepareTransferableResource(
@@ -116,7 +114,8 @@ bool CanvasResource::PrepareAcceleratedTransferableResource(
   // Gpu compositing is a prerequisite for compositing an accelerated resource
   DCHECK(SharedGpuContext::IsGpuCompositingEnabled());
   auto* gl = ContextGL();
-  DCHECK(gl);
+  if (!gl)
+    return false;
   const gpu::Mailbox& mailbox = GetOrCreateGpuMailbox(sync_mode);
   if (mailbox.IsZero())
     return false;
@@ -413,7 +412,6 @@ void CanvasResourceGpuMemoryBuffer::Abandon() {
 const gpu::Mailbox& CanvasResourceGpuMemoryBuffer::GetOrCreateGpuMailbox(
     MailboxSyncMode sync_mode) {
   auto* gl = ContextGL();
-  DCHECK(gl);  // caller should already have early exited if !gl.
   if (gpu_mailbox_.IsZero() && gl) {
     gl->ProduceTextureDirectCHROMIUM(texture_id_, gpu_mailbox_.name);
     mailbox_needs_new_sync_token_ = true;
@@ -431,16 +429,17 @@ GLuint CanvasResourceGpuMemoryBuffer::GetBackingTextureHandleForOverwrite() {
 }
 
 const gpu::SyncToken CanvasResourceGpuMemoryBuffer::GetSyncToken() {
-  if (mailbox_needs_new_sync_token_) {
-    auto* gl = ContextGL();
-    DCHECK(gl);  // caller should already have early exited if !gl.
-    mailbox_needs_new_sync_token_ = false;
-    if (mailbox_sync_mode_ == kVerifiedSyncToken) {
-      gl->GenSyncTokenCHROMIUM(sync_token_.GetData());
-    } else {
-      gl->GenUnverifiedSyncTokenCHROMIUM(sync_token_.GetData());
-    }
-  }
+  if (!mailbox_needs_new_sync_token_)
+    return sync_token_;
+  auto* gl = ContextGL();
+  if (!gl)
+    return sync_token_;
+  mailbox_needs_new_sync_token_ = false;
+  if (mailbox_sync_mode_ == kVerifiedSyncToken)
+    gl->GenSyncTokenCHROMIUM(sync_token_.GetData());
+  else
+    gl->GenUnverifiedSyncTokenCHROMIUM(sync_token_.GetData());
+
   return sync_token_;
 }
 
