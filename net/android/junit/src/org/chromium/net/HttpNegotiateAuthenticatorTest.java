@@ -39,7 +39,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,7 +48,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -97,12 +95,6 @@ public class HttpNegotiateAuthenticatorTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        ApplicationStatus.initialize(RuntimeEnvironment.application);
-    }
-
-    @After
-    public void tearDown() {
-        ApplicationStatus.destroyForJUnitTests();
     }
 
     /**

@@ -4,7 +4,6 @@
 
 package org.chromium.base;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.SharedPreferences;
@@ -96,13 +95,6 @@ public class ContextUtils {
      */
     @VisibleForTesting
     public static void initApplicationContextForTests(Context appContext) {
-        // ApplicationStatus.initialize should be called to setup activity tracking for tests
-        // that use Robolectric and set the application context manually. Instead of changing all
-        // tests that do so, the call was put here instead.
-        // TODO(mheikal): Require param to be of type Application
-        if (appContext instanceof Application) {
-            ApplicationStatus.initialize((Application) appContext);
-        }
         initJavaSideApplicationContext(appContext);
         Holder.sSharedPreferences = fetchAppSharedPreferences();
     }
