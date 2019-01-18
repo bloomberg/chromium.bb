@@ -1067,7 +1067,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
     return;
 
   _visible = visible;
-  [self updateBroadcastState];
 }
 
 - (void)setViewVisible:(BOOL)viewVisible {
@@ -1076,6 +1075,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   _viewVisible = viewVisible;
   self.visible = viewVisible;
   [self updateDialogPresenterActiveState];
+  [self updateBroadcastState];
 }
 
 - (void)setBroadcasting:(BOOL)broadcasting {
@@ -1644,7 +1644,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   self.viewVisible = YES;
   [self updateDialogPresenterActiveState];
   [self updateBroadcastState];
-  [_toolbarUIUpdater updateState];
 
   // |viewDidAppear| can be called after |browserState| is destroyed. Since
   // |presentBubblesIfEligible| requires that |self.browserState| is not NULL,
@@ -1751,7 +1750,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
     self.currentWebState->GetWebViewProxy().contentInset = contentPadding;
   }
 
-  [_toolbarUIUpdater updateState];
+  if (self.traitCollection.preferredContentSizeCategory !=
+      previousTraitCollection.preferredContentSizeCategory) {
+    [_toolbarUIUpdater updateState];
+  }
 
   // If the device's size class has changed from RegularXRegular to another and
   // vice-versa, the find bar should switch between regular mode and compact
@@ -2445,12 +2447,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
     // Make new content visible, resizing it first as the orientation may
     // have changed from the last time it was displayed.
-    if (base::FeatureList::IsEnabled(
-            web::features::kBrowserContainerFullscreen)) {
-      [_toolbarUIUpdater updateState];
-    } else {
-      [self viewForTab:tab].frame = self.contentArea.bounds;
-    }
+    [self viewForTab:tab].frame = self.contentArea.bounds;
     NewTabPageTabHelper* NTPHelper =
         NewTabPageTabHelper::FromWebState(tab.webState);
     if (NTPHelper && NTPHelper->IsActive()) {
@@ -2535,7 +2532,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 }
 
 - (void)updateBroadcastState {
-  self.broadcasting = self.active && self.visible;
+  self.broadcasting = self.active && self.viewVisible;
 }
 
 - (void)updateDialogPresenterActiveState {
