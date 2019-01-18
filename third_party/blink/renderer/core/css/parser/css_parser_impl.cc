@@ -572,9 +572,8 @@ StyleRuleBase* CSSParserImpl::ConsumeQualifiedRule(
     CSSParserTokenStream::BlockGuard guard(stream);
     StyleRuleKeyframe* keyframe_style_rule =
         ConsumeKeyframeStyleRule(prelude, prelude_offset, stream);
-    if (context_->IsLayoutAnimationsPolicyEnforced()) {
+    if (keyframe_style_rule)
       context_->ReportLayoutAnimationsViolationIfNeeded(*keyframe_style_rule);
-    }
     return keyframe_style_rule;
   }
   if (allowed_rules == kFontFeatureRules) {

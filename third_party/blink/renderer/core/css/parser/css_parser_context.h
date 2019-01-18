@@ -127,7 +127,6 @@ class CORE_EXPORT CSSParserContext
   // report CSS transitions as well (https://crbug.com/906147).
   // TODO(ekaramad): We should provide a source location in the violation
   // report (https://crbug.com/906150, ).
-  bool IsLayoutAnimationsPolicyEnforced() const;
   void ReportLayoutAnimationsViolationIfNeeded(const StyleRuleKeyframe&) const;
 
   void Trace(blink::Visitor*);
