@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_NETWORK_TRAY_VPN_H_
-#define ASH_SYSTEM_NETWORK_TRAY_VPN_H_
+#ifndef ASH_SYSTEM_NETWORK_VPN_UTIL_H_
+#define ASH_SYSTEM_NETWORK_VPN_UTIL_H_
 
 namespace ash {
-namespace tray {
+namespace vpn_util {
 
-// TODO(tetsui): Move them to VpnList.  https://crbug.com/901714
 extern bool IsVPNVisibleInSystemTray();
 extern bool IsVPNEnabled();
 extern bool IsVPNConnected();
 
-}  // namespace tray
+}  // namespace vpn_util
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_NETWORK_TRAY_VPN_H_
+#endif  // ASH_SYSTEM_NETWORK_VPN_UTIL_H_

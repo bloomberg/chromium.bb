@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/network/tray_vpn.h"
+#include "ash/system/network/vpn_util.h"
 
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -16,7 +16,7 @@ using chromeos::NetworkStateHandler;
 using chromeos::NetworkTypePattern;
 
 namespace ash {
-namespace tray {
+namespace vpn_util {
 
 bool IsVPNVisibleInSystemTray() {
   LoginStatus login_status = Shell::Get()->session_controller()->login_status();
@@ -49,5 +49,5 @@ bool IsVPNConnected() {
          (vpn->IsConnectedState() || vpn->IsConnectingState());
 }
 
-}  // namespace tray
+}  // namespace vpn_util
 }  // namespace ash
