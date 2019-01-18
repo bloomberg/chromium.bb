@@ -105,6 +105,7 @@ class CSPParser {
 // Returns the sanitized policy.
 std::string SanitizeContentSecurityPolicy(
     const std::string& policy,
+    std::string manifest_key,
     int options,
     std::vector<InstallWarning>* warnings);
 
@@ -118,6 +119,7 @@ std::string SanitizeContentSecurityPolicy(
 // If |warnings| is not nullptr, any validation errors are appended to
 // |warnings|.
 std::string GetEffectiveSandoxedPageCSP(const std::string& policy,
+                                        std::string manifest_key,
                                         std::vector<InstallWarning>* warnings);
 
 // Checks whether the given |policy| enforces a unique origin sandbox as

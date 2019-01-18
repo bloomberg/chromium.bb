@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <initializer_list>
 #include <iterator>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -202,14 +203,11 @@ bool IsHashSource(base::StringPiece source) {
   return false;
 }
 
-InstallWarning CSPInstallWarning(const std::string& csp_warning) {
-  return InstallWarning(csp_warning, manifest_keys::kContentSecurityPolicy);
-}
-
 std::string GetSecureDirectiveValues(
     int options,
     const std::string& directive_name,
     const std::vector<base::StringPiece>& directive_values,
+    const std::string& manifest_key,
     std::vector<InstallWarning>* warnings) {
   std::vector<base::StringPiece> sane_csp_parts{directive_name};
   for (base::StringPiece source_literal : directive_values) {
@@ -248,9 +246,11 @@ std::string GetSecureDirectiveValues(
     if (is_secure_csp_token) {
       sane_csp_parts.push_back(source_literal);
     } else if (warnings) {
-      warnings->push_back(CSPInstallWarning(ErrorUtils::FormatErrorMessage(
-          manifest_errors::kInvalidCSPInsecureValue, source_literal.as_string(),
-          directive_name)));
+      warnings->push_back(InstallWarning(
+          ErrorUtils::FormatErrorMessage(
+              manifest_errors::kInvalidCSPInsecureValue, manifest_key,
+              source_literal.as_string(), directive_name),
+          manifest_key));
     }
   }
   // End of CSP directive that was started at the beginning of this method. If
@@ -269,6 +269,7 @@ std::string GetSecureDirectiveValues(
 std::string GetAppSandboxSecureDirectiveValues(
     const std::string& directive_name,
     const std::vector<base::StringPiece>& directive_values,
+    const std::string& manifest_key,
     std::vector<InstallWarning>* warnings) {
   std::vector<std::string> sane_csp_parts{directive_name};
   bool seen_self_or_none = false;
@@ -283,9 +284,11 @@ std::string GetAppSandboxSecureDirectiveValues(
       seen_self_or_none |= source_lower == "'none'" || source_lower == "'self'";
       sane_csp_parts.push_back(source_lower);
     } else if (warnings) {
-      warnings->push_back(CSPInstallWarning(ErrorUtils::FormatErrorMessage(
-          manifest_errors::kInvalidCSPInsecureValue, source_literal.as_string(),
-          directive_name)));
+      warnings->push_back(InstallWarning(
+          ErrorUtils::FormatErrorMessage(
+              manifest_errors::kInvalidCSPInsecureValue, manifest_key,
+              source_literal.as_string(), directive_name),
+          manifest_key));
     }
   }
 
@@ -332,6 +335,7 @@ bool AllowedToHaveInsecureObjectSrc(int options,
 using SecureDirectiveValueFunction = base::Callback<std::string(
     const std::string& directive_name,
     const std::vector<base::StringPiece>& directive_values,
+    const std::string& manifest_key,
     std::vector<InstallWarning>* warnings)>;
 
 // Represents a token in CSP string.
@@ -347,6 +351,7 @@ class CSPDirectiveToken {
   // directive values are secured by |secure_function|.
   bool MatchAndUpdateStatus(DirectiveStatus* status,
                             const SecureDirectiveValueFunction& secure_function,
+                            const std::string& manifest_key,
                             std::vector<InstallWarning>* warnings) {
     if (!status->Matches(directive_.directive_name))
       return false;
@@ -355,7 +360,7 @@ class CSPDirectiveToken {
     status->set_seen_in_policy();
 
     secure_value_ = secure_function.Run(
-        directive_.directive_name, directive_.directive_values,
+        directive_.directive_name, directive_.directive_values, manifest_key,
         // Don't show any errors for duplicate CSP directives, because it will
         // be ignored by the CSP parser
         // (http://www.w3.org/TR/CSP2/#policy-parsing). Therefore, set warnings
@@ -387,9 +392,11 @@ class CSPDirectiveToken {
 // will use default secure values (via GetDefaultCSPValue).
 class CSPEnforcer {
  public:
-  CSPEnforcer(bool show_missing_csp_warnings,
+  CSPEnforcer(std::string manifest_key,
+              bool show_missing_csp_warnings,
               const SecureDirectiveValueFunction& secure_function)
-      : show_missing_csp_warnings_(show_missing_csp_warnings),
+      : manifest_key_(std::move(manifest_key)),
+        show_missing_csp_warnings_(show_missing_csp_warnings),
         secure_function_(secure_function) {}
   virtual ~CSPEnforcer() {}
 
@@ -407,6 +414,7 @@ class CSPEnforcer {
   std::vector<std::unique_ptr<DirectiveStatus>> secure_directives_;
 
  private:
+  const std::string manifest_key_;
   const bool show_missing_csp_warnings_;
   const SecureDirectiveValueFunction secure_function_;
 
@@ -428,14 +436,15 @@ std::string CSPEnforcer::Enforce(const DirectiveList& directives,
     bool matches_enforcing_directive = false;
     for (const std::unique_ptr<DirectiveStatus>& status : secure_directives_) {
       if (csp_directive_token.MatchAndUpdateStatus(
-              status.get(), secure_function_, warnings)) {
+              status.get(), secure_function_, manifest_key_, warnings)) {
         matches_enforcing_directive = true;
         break;
       }
     }
     if (!matches_enforcing_directive) {
-      csp_directive_token.MatchAndUpdateStatus(
-          &default_src_status, secure_function_, &default_src_csp_warnings);
+      csp_directive_token.MatchAndUpdateStatus(&default_src_status,
+                                               secure_function_, manifest_key_,
+                                               &default_src_csp_warnings);
     }
 
     enforced_csp_parts.push_back(csp_directive_token.ToString());
@@ -464,8 +473,11 @@ std::string CSPEnforcer::Enforce(const DirectiveList& directives,
       enforced_csp_parts.push_back(GetDefaultCSPValue(*status));
 
       if (warnings && show_missing_csp_warnings_) {
-        warnings->push_back(CSPInstallWarning(ErrorUtils::FormatErrorMessage(
-            manifest_errors::kInvalidCSPMissingSecureSrc, status->name())));
+        warnings->push_back(
+            InstallWarning(ErrorUtils::FormatErrorMessage(
+                               manifest_errors::kInvalidCSPMissingSecureSrc,
+                               manifest_key_, status->name()),
+                           manifest_key_));
       }
     }
   }
@@ -475,8 +487,12 @@ std::string CSPEnforcer::Enforce(const DirectiveList& directives,
 
 class ExtensionCSPEnforcer : public CSPEnforcer {
  public:
-  ExtensionCSPEnforcer(bool allow_insecure_object_src, int options)
-      : CSPEnforcer(true, base::Bind(&GetSecureDirectiveValues, options)) {
+  ExtensionCSPEnforcer(std::string manifest_key,
+                       bool allow_insecure_object_src,
+                       int options)
+      : CSPEnforcer(std::move(manifest_key),
+                    true,
+                    base::Bind(&GetSecureDirectiveValues, options)) {
     secure_directives_.emplace_back(new DirectiveStatus({kScriptSrc}));
     if (!allow_insecure_object_src)
       secure_directives_.emplace_back(new DirectiveStatus({kObjectSrc}));
@@ -496,8 +512,10 @@ class ExtensionCSPEnforcer : public CSPEnforcer {
 
 class AppSandboxPageCSPEnforcer : public CSPEnforcer {
  public:
-  AppSandboxPageCSPEnforcer()
-      : CSPEnforcer(false, base::Bind(&GetAppSandboxSecureDirectiveValues)) {
+  AppSandboxPageCSPEnforcer(std::string manifest_key)
+      : CSPEnforcer(std::move(manifest_key),
+                    false,
+                    base::Bind(&GetAppSandboxSecureDirectiveValues)) {
     secure_directives_.emplace_back(
         new DirectiveStatus({kChildSrc, kFrameSrc}));
     secure_directives_.emplace_back(new DirectiveStatus({kScriptSrc}));
@@ -574,6 +592,7 @@ void CSPParser::Parse() {
 
 std::string SanitizeContentSecurityPolicy(
     const std::string& policy,
+    std::string manifest_key,
     int options,
     std::vector<InstallWarning>* warnings) {
   CSPParser csp_parser(policy);
@@ -581,14 +600,16 @@ std::string SanitizeContentSecurityPolicy(
   bool allow_insecure_object_src =
       AllowedToHaveInsecureObjectSrc(options, csp_parser.directives());
 
-  ExtensionCSPEnforcer csp_enforcer(allow_insecure_object_src, options);
+  ExtensionCSPEnforcer csp_enforcer(std::move(manifest_key),
+                                    allow_insecure_object_src, options);
   return csp_enforcer.Enforce(csp_parser.directives(), warnings);
 }
 
 std::string GetEffectiveSandoxedPageCSP(const std::string& policy,
+                                        std::string manifest_key,
                                         std::vector<InstallWarning>* warnings) {
   CSPParser csp_parser(policy);
-  AppSandboxPageCSPEnforcer csp_enforcer;
+  AppSandboxPageCSPEnforcer csp_enforcer(std::move(manifest_key));
   return csp_enforcer.Enforce(csp_parser.directives(), warnings);
 }
 

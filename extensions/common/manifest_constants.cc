@@ -358,10 +358,10 @@ const char kInvalidContentScript[] =
 const char kInvalidContentScriptsList[] =
     "Invalid value for 'content_scripts'.";
 const char kInvalidCSPInsecureValue[] =
-    "Ignored insecure CSP value \"*\" in directive '*'.";
+    "'*': Ignored insecure CSP value \"*\" in directive '*'.";
 const char kInvalidCSPMissingSecureSrc[] =
-    "CSP directive '*' must be specified (either explicitly, or implicitly via"
-    " 'default-src') and must whitelist only secure resources.";
+    "'*': CSP directive '*' must be specified (either explicitly, or "
+    "implicitly via 'default-src') and must whitelist only secure resources.";
 const char kInvalidCss[] =
     "Invalid value for 'content_scripts[*].css[*]'.";
 const char kInvalidCssList[] =

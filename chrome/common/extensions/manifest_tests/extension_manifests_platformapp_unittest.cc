@@ -20,6 +20,7 @@
 namespace extensions {
 
 namespace errors = manifest_errors;
+namespace keys = manifest_keys;
 
 class PlatformAppsManifestTest : public ChromeManifestTest {
 };
@@ -100,6 +101,7 @@ TEST_F(PlatformAppsManifestTest, PlatformAppContentSecurityPolicy) {
   LoadAndExpectWarning(
       "init_platform_app_csp_insecure.json",
       ErrorUtils::FormatErrorMessage(errors::kInvalidCSPInsecureValue,
+                                     keys::kPlatformAppContentSecurityPolicy,
                                      "http://www.google.com", "default-src"));
 }
 
