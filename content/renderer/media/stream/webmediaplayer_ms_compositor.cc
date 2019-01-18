@@ -215,7 +215,6 @@ void WebMediaPlayerMSCompositor::EnableSubmission(
     base::TimeTicks local_surface_id_allocation_time,
     media::VideoRotation rotation,
     bool force_submit,
-    bool is_opaque,
     blink::WebFrameSinkDestroyedCallback frame_sink_destroyed_callback) {
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
 
@@ -227,7 +226,6 @@ void WebMediaPlayerMSCompositor::EnableSubmission(
 
   submitter_->SetRotation(rotation);
   submitter_->SetForceSubmit(force_submit);
-  submitter_->SetIsOpaque(is_opaque);
   submitter_->EnableSubmission(id, local_surface_id_allocation_time,
                                std::move(frame_sink_destroyed_callback));
   video_frame_provider_client_ = submitter_.get();
@@ -573,8 +571,6 @@ void WebMediaPlayerMSCompositor::CheckForFrameChanges(
     main_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&WebMediaPlayerMS::OnOpacityChanged, player_,
                                   new_frame_is_opaque));
-    if (submitter_)
-      submitter_->SetIsOpaque(new_frame_is_opaque);
   }
   if (old_frame->natural_size() != new_frame->natural_size()) {
     main_task_runner_->PostTask(

@@ -28,19 +28,18 @@ namespace blink {
 
 // This single-threaded class facilitates the communication between the media
 // stack and browser renderer, providing compositor frames containing video
-// frames and corresponding resources to the |compositor_frame_sink_|. This
-// class has dependencies on classes that use the media thread's OpenGL
-// ContextProvider, and thus, besides construction, should be consistently ran
-// from the same media SingleThreadTaskRunner.
+// frames and corresponding resources to the |compositor_frame_sink_|.
+//
+// This class requires and uses a viz::ContextProvider, and thus, besides
+// construction, must be consistently accessed from the same thread.
 class PLATFORM_EXPORT VideoFrameSubmitter
     : public WebVideoFrameSubmitter,
       public viz::ContextLostObserver,
       public viz::SharedBitmapReporter,
       public viz::mojom::blink::CompositorFrameSinkClient {
  public:
-  explicit VideoFrameSubmitter(WebContextProviderCallback,
-                               std::unique_ptr<VideoFrameResourceProvider>);
-
+  VideoFrameSubmitter(WebContextProviderCallback,
+                      std::unique_ptr<VideoFrameResourceProvider>);
   ~VideoFrameSubmitter() override;
 
   bool Rendering() { return is_rendering_; }
@@ -61,7 +60,6 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   // WebVideoFrameSubmitter implementation.
   void Initialize(cc::VideoFrameProvider*) override;
   void SetRotation(media::VideoRotation) override;
-  void SetIsOpaque(bool) override;
   void EnableSubmission(viz::SurfaceId,
                         base::TimeTicks local_surface_id_allocation_time,
                         WebFrameSinkDestroyedCallback) override;
@@ -102,15 +100,15 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   friend class VideoFrameSubmitterTest;
 
   void StartSubmitting();
-  void UpdateSubmissionStateInternal();
+  void UpdateSubmissionState();
+
   // Returns whether a frame was submitted.
   bool SubmitFrame(const viz::BeginFrameAck&, scoped_refptr<media::VideoFrame>);
   void SubmitEmptyFrame();
 
-  // Pulls frame and submits it to compositor.
-  // Used in cases like PaintSingleFrame, which occurs before video rendering
-  // has started to post a poster image, or to submit a final frame before
-  // ending rendering.
+  // Pulls frame and submits it to compositor. Used in cases like
+  // DidReceiveFrame(), which occurs before video rendering has started to post
+  // the first frame or to submit a final frame before ending rendering.
   void SubmitSingleFrame();
 
   // Return whether the submitter should submit frames based on its current
@@ -142,7 +140,6 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   // Needs to be initialized in implementation because media isn't a public_dep
   // of blink/platform.
   media::VideoRotation rotation_;
-  bool is_opaque_ = true;
 
   viz::FrameSinkId frame_sink_id_;
 
@@ -158,7 +155,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   const bool enable_surface_synchronization_;
   viz::FrameTokenGenerator next_frame_token_;
 
-  THREAD_CHECKER(media_thread_checker_);
+  THREAD_CHECKER(thread_checker_);
 
   base::WeakPtrFactory<VideoFrameSubmitter> weak_ptr_factory_;
 

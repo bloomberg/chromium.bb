@@ -50,10 +50,10 @@ class BLINK_PLATFORM_EXPORT WebVideoFrameSubmitter
   virtual void Initialize(cc::VideoFrameProvider*) = 0;
 
   // Set the rotation state of the video to be used while appending frames.
+  //
+  // TODO(dalecurtis): This could be removed in favor of getting it from each
+  // VideoFrame, but today that information isn't set everywhere.
   virtual void SetRotation(media::VideoRotation) = 0;
-
-  // Set if the video is opaque or not.
-  virtual void SetIsOpaque(bool) = 0;
 
   // Prepares the compositor frame sink to accept frames by providing
   // a SurfaceId, with its associated allocation time. The callback is to be

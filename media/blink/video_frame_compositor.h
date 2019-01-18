@@ -83,7 +83,6 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
       base::TimeTicks local_surface_id_allocation_time,
       VideoRotation rotation,
       bool force_submit,
-      bool is_opaque,
       blink::WebFrameSinkDestroyedCallback frame_sink_destroyed_callback);
 
   // cc::VideoFrameProvider implementation. These methods must be called on the
@@ -135,9 +134,6 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
 
   // Notifies the |submitter_| that the frames must be submitted.
   void SetForceSubmit(bool force_submit);
-
-  // Updates the opacity information for frames given to |submitter_|.
-  void UpdateIsOpaque(bool is_opaque);
 
   void set_tick_clock_for_testing(const base::TickClock* tick_clock) {
     tick_clock_ = tick_clock;

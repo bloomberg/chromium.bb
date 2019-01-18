@@ -90,7 +90,6 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
       base::TimeTicks local_surface_id_allocation_time,
       media::VideoRotation rotation,
       bool force_submit,
-      bool is_opaque,
       blink::WebFrameSinkDestroyedCallback frame_sink_destroyed_callback);
 
   // Notifies the |submitter_| that the frames must be submitted.

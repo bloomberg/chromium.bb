@@ -427,7 +427,6 @@ class MockWebVideoFrameSubmitter : public blink::WebVideoFrameSubmitter {
   MOCK_METHOD0(StopRendering, void());
   MOCK_METHOD1(MockInitialize, void(cc::VideoFrameProvider*));
   MOCK_METHOD1(SetRotation, void(media::VideoRotation));
-  MOCK_METHOD1(MockSetIsOpaque, void(bool));
   MOCK_METHOD1(SetIsSurfaceVisible, void(bool));
   MOCK_METHOD1(SetIsPageVisible, void(bool));
   MOCK_METHOD1(SetForceSubmit, void(bool));
@@ -436,13 +435,6 @@ class MockWebVideoFrameSubmitter : public blink::WebVideoFrameSubmitter {
   void Initialize(cc::VideoFrameProvider* provider) override {
     provider_ = provider;
     MockInitialize(provider);
-  }
-
-  // This method may try accessing frames, see deadlock case in
-  // https://crbug.com/901744.
-  void SetIsOpaque(bool opaque) override {
-    auto frame = provider_->GetCurrentFrame();
-    MockSetIsOpaque(opaque);
   }
 
  private:
@@ -1188,7 +1180,6 @@ TEST_P(WebMediaPlayerMSTest, OpacityChange) {
   provider->QueueFrames(timestamps, false);
   if (enable_surface_layer_for_video_) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
-    EXPECT_CALL(*submitter_ptr_, MockSetIsOpaque(false));
   }
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
@@ -1203,7 +1194,6 @@ TEST_P(WebMediaPlayerMSTest, OpacityChange) {
   provider->QueueFrames(timestamps, true);
   if (enable_surface_layer_for_video_) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(true));
-    EXPECT_CALL(*submitter_ptr_, MockSetIsOpaque(true));
   }
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
