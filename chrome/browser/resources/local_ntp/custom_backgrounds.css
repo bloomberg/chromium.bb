@@ -32,11 +32,11 @@ html[dir=rtl] #edit-bg {
 }
 
 #edit-bg:hover {
-  background-color: rgba(32, 33, 36, .1);
+  background-color: rgba(var(--GG900-rgb), .1);
 }
 
 #edit-bg:active {
-  background-color: rgba(32, 33, 36, .16);
+  background-color: rgba(var(--GG900-rgb), .16);
 }
 
 .non-white-bg #edit-bg:hover {
@@ -74,7 +74,8 @@ html[dir=rtl] #edit-bg {
   border-radius: 8px;
   border-width: thin;
   bottom: 44px;
-  box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
+  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), 0.3),
+      0 4px 8px 3px rgba(var(--GG800-rgb), 0.15);
   left: auto;
   padding: 0;
   position: fixed;
@@ -92,7 +93,7 @@ html[dir=rtl] #edit-bg-dialog {
 }
 
 #edit-bg-title {
-  color: rgb(32, 33, 36);
+  color: rgb(var(--GG900-rgb));
   font-family: 'Roboto', arial, sans-serif;
   font-size: 15px;
   height: 30px;
@@ -104,7 +105,7 @@ html[dir=rtl] #edit-bg-title {
 }
 
 .bg-option {
-  color: rgb(60, 64, 67);
+  color: rgb(var(--GG800-rgb));
   font-family: 'Roboto', arial, sans-serif;
   font-size: 13px;
   height: 40px;
@@ -112,7 +113,7 @@ html[dir=rtl] #edit-bg-title {
 }
 
 .bg-option:hover {
-  background-color: rgb(241, 243, 244);
+  background-color: rgb(var(--GG100-rgb));
 }
 
 .bg-option-img {
@@ -151,23 +152,23 @@ html[dir=rtl] .bg-option-img {
 }
 
 #edit-bg-upload-image .bg-option-img {
-  background: rgb(241, 243, 244) url(icons/upload.svg) no-repeat center;
+  background: rgb(var(--GG100-rgb)) url(icons/upload.svg) no-repeat center;
   border-radius: 50%;
 }
 
 #edit-bg-divider {
-  border-bottom: 1px solid rgb(232, 234, 237);
+  border-bottom: 1px solid rgb(var(--GG200-rgb));
   margin: 8px 0;
   width: 100%;
 }
 
 #custom-links-restore-default .bg-option-img {
-  background: rgb(241, 243, 244) url(icons/link_gray.svg) no-repeat center;
+  background: rgb(var(--GG100-rgb)) url(icons/link_gray.svg) no-repeat center;
   border-radius: 50%;
 }
 
 #edit-bg-restore-default .bg-option-img {
-  background: rgb(241, 243, 244) url(icons/chrome.svg)  no-repeat center;
+  background: rgb(var(--GG100-rgb)) url(icons/chrome.svg)  no-repeat center;
   border-radius: 50%;
 }
 
@@ -199,7 +200,8 @@ html[dir=rtl] .bg-option-text {
   border: none;
   border-radius: 8px;
   bottom: 0;
-  box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
+  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), 0.3),
+      0 4px 8px 3px rgba(var(--GG800-rgb), 0.15);
   font-family: 'Roboto', arial, sans-serif;
   height: 400px;
   left: 0;
@@ -247,7 +249,7 @@ html[dir=rtl] #bg-sel-tiles {
 }
 
 #bg-sel-title-bar {
-  border-bottom: 1px solid rgb(232, 234, 237);
+  border-bottom: 1px solid rgb(var(--GG200-rgb));
   font-size: 15px;
   height: 51px;
   line-height: 52px;
@@ -275,7 +277,7 @@ html[dir=rtl] #bg-sel-tiles {
 
 #bg-sel-back-circle:active,
 #bg-sel-back-circle:focus {
-  background: rgb(218, 220, 224);
+  background: rgb(var(--GG300-rgb));
   background-position: center;
   background-size: 36px 36px;
 }
@@ -315,7 +317,7 @@ html[dir=rtl] .is-img-sel #bg-sel-back {
 }
 
 #bg-sel-title {
-  color: rgb(32, 33, 36);
+  color: rgb(var(--GG900-rgb));
   display: inline-block;
   height: 20px;
   line-height: 20px;
@@ -340,9 +342,9 @@ html[dir=rtl] .is-img-sel #bg-sel-title {
 }
 
 #bg-sel-footer {
-  border-top: 1px solid rgba(232, 234, 237, 1);
+  border-top: 1px solid rgb(var(--GG200-rgb));
   bottom: 0;
-  color: rgb(60, 64, 67);
+  color: rgb(var(--GG800-rgb));
   height: 64px;
   padding-left: 0;
   position: absolute;
@@ -379,8 +381,8 @@ html[dir=rtl] #bg-sel-footer {
 }
 
 #bg-sel-footer-done {
-  background-color: rgb(241, 243, 244);
-  color: rgb(128, 134, 139);
+  background-color: rgb(var(--GG100-rgb));
+  color: rgb(var(--GG600-rgb));
   margin-right: 16px;
 }
 
@@ -391,8 +393,8 @@ html[dir=rtl] #bg-sel-footer-done {
 
 #bg-sel-footer-cancel {
   background-color: white;
-  border: 1px solid rgb(218, 220, 224);
-  color: rgb(26, 115, 232);
+  border: 1px solid rgb(var(--GG300-rgb));
+  color: rgb(var(--GB600-rgb));
   margin-right: 8px;
 }
 
@@ -401,31 +403,31 @@ html[dir=rtl] #bg-sel-footer-cancel {
 }
 
 #bg-sel-footer-cancel:hover {
-  background-color: rgba(66, 133, 244, 0.04);
-  border-color: rgb(210, 227, 252);
+  background-color: rgba(var(--GB500-rgb), 0.04);
+  border-color: rgb(var(--GB100-rgb));
 }
 
 #bg-sel-footer-cancel:active {
   background-color: white;
   border-color: white;
-  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3),
-  0 3px 6px 2px rgba(60, 64, 67, 0.15);
+  box-shadow: 0 1px 2px 0 rgba(var(--GG800-rgb), 0.3),
+      0 3px 6px 2px rgba(var(--GG800-rgb), 0.15);
 }
 
 #bg-sel-footer-done:not(:disabled) {
-  background-color: rgb(26, 115, 232);
+  background-color: rgb(var(--GB600-rgb));
   color: white;
 }
 
 #bg-sel-footer-done:hover:not(:disabled) {
   background-color: rgb(41, 123, 231);
-  box-shadow: 0 1px 2px 0 rgba(66, 133, 244, 0.3),
-      0 1px 3px 1px rgba(66, 133, 244, 0.15);
+  box-shadow: 0 1px 2px 0 rgba(var(--GB500-rgb), 0.3),
+      0 1px 3px 1px rgba(var(--GB500-rgb), 0.15);
 }
 
 #bg-sel-footer-done:active:not(:disabled) {
-  box-shadow: 0 1px 2px 0 rgba(66, 133, 244, 0.3),
-      0 3px 6px 2px rgba(66, 133, 244, 0.15);
+  box-shadow: 0 1px 2px 0 rgba(var(--GB500-rgb), 0.3),
+      0 3px 6px 2px rgba(var(--GB500-rgb), 0.15);
 }
 
 #bg-sel-footer-toggle-text {
@@ -445,7 +447,7 @@ html[dir=rtl] .bg-sel-tile-bg {
 }
 
 .bg-sel-tile-bg {
-  background-color: rgb(241, 243, 244);
+  background-color: rgb(var(--GG100-rgb));
   background-size: cover;
   display: inline-block;
   height: 117px;
@@ -483,7 +485,7 @@ html[dir=rtl] .bg-sel-tile-bg {
 }
 
 .selected-border {
-  border: 2px solid rgba(26, 115, 232, .4);
+  border: 2px solid rgba(var(--GB600-rgb), .4);
   border-radius: 4px;
   box-sizing: border-box;
   height: 100%;
@@ -522,7 +524,7 @@ html[dir=rtl] .selected-check {
 }
 
 .bg-sel-tile-title {
-  background-color: rgba(32, 33, 36, 0.71);
+  background-color: rgba(var(--GG900-rgb), 0.71);
   bottom: 0;
   box-sizing: border-box;
   color: #FFF;
@@ -613,7 +615,7 @@ html[dir=rtl] #custom-bg-attr {
 }
 
 #custom-bg-attr.attr-link:hover {
-  background: rgba(32, 33, 36, .1);
+  background: rgba(var(--GG900-rgb), .1);
 }
 
 .attr1.attr-link,

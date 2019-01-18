@@ -15,8 +15,8 @@ body {
   border: none;
   border-radius: 8px;
   bottom: 0;
-  box-shadow:
-      0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
+  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), 0.3),
+      0 4px 8px 3px rgba(var(--GG800-rgb), 0.15);
   font-family: 'Roboto', arial, sans-serif;
   margin: auto;
   min-width: 320px;
@@ -34,7 +34,7 @@ body {
 }
 
 #dialog-title {
-  color: rgb(32, 33, 36);
+  color: rgb(var(--GG900-rgb));
   font-family: 'Roboto', arial, sans-serif;
   font-size: 15px;
   line-height: 24px;
@@ -46,7 +46,7 @@ body {
 }
 
 .field-title {
-  color: rgb(95, 99, 104);
+  color: rgb(var(--GG700-rgb));
   font-size: 10px;
   font-weight: 500;
   margin-bottom: 4px;
@@ -57,11 +57,11 @@ body {
 }
 
 input {
-  background-color: rgb(241, 243, 244);
+  background-color: rgb(var(--GG100-rgb));
   border: none;
   border-radius: 4px;
-  caret-color: rgb(26, 115, 232);
-  color: rgb(32, 33, 36);
+  caret-color: rgb(var(--GB600-rgb));
+  color: rgb(var(--GG900-rgb));
   font-family: 'Roboto', arial, sans-serif;
   font-size: 13px;
   height: 32px;
@@ -77,11 +77,11 @@ html[dir=rtl] input {
 }
 
 input::placeholder {
-  color: rgba(32, 33, 36, 0.38);
+  color: rgba(var(--GG900-rgb), 0.38);
 }
 
 .underline {
-  border-bottom: 2px solid rgb(26, 115, 232);
+  border-bottom: 2px solid rgb(var(--GB600-rgb));
   bottom: 0;
   box-sizing: border-box;
   left: 0;
@@ -100,11 +100,11 @@ input:focus + .underline {
 }
 
 .field-title.focused {
-  color: rgb(26, 115, 232);
+  color: rgb(var(--GB600-rgb));
 }
 
 .error-msg {
-  color: rgb(217, 48, 37);
+  color: rgb(var(--GR600-rgb));
   display: none;
   font-size: 10px;
   font-weight: 400;
@@ -112,7 +112,7 @@ input:focus + .underline {
 }
 
 .invalid label {
-  color: rgb(217, 48, 37);
+  color: rgb(var(--GR600-rgb));
 }
 
 .invalid .error-msg {
@@ -120,7 +120,7 @@ input:focus + .underline {
 }
 
 .invalid .underline {
-  border-color: rgb(217, 48, 37);
+  border-color: rgb(var(--GR600-rgb));
   opacity: 1;
   transition: width 180ms ease-out, opacity 120ms ease-in;
   width: 100%;
@@ -159,47 +159,47 @@ button:disabled {
 }
 
 button.primary {
-  background-color: rgb(26, 115, 232);
+  background-color: rgb(var(--GB600-rgb));
   color: white;
 }
 
 button.primary:disabled {
-  background-color: rgb(241, 243, 244);
-  color: rgb(128, 134, 139);
+  background-color: rgb(var(--GG100-rgb));
+  color: rgb(var(--GG600-rgb));
 }
 
 button.primary:hover:not(:disabled) {
   background-color: rgb(41, 123, 231);
-  box-shadow: 0 1px 2px 0 rgba(66, 133, 244, 0.3),
-      0 1px 3px 1px rgba(66, 133, 244, 0.15);
+  box-shadow: 0 1px 2px 0 rgba(var(--GB500-rgb), 0.3),
+      0 1px 3px 1px rgba(var(--GB500-rgb), 0.15);
 }
 
 button.primary:active:not(:disabled) {
-  box-shadow: 0 1px 2px 0 rgba(66, 133, 244, 0.3),
-      0 3px 6px 2px rgba(66, 133, 244, 0.15);
+  box-shadow: 0 1px 2px 0 rgba(var(--GB500-rgb), 0.3),
+      0 3px 6px 2px rgba(var(--GB500-rgb), 0.15);
 }
 
 button.secondary {
   background-color: white;
-  border: 1px solid rgb(218, 220, 224);
-  color: rgb(26, 115, 232);
+  border: 1px solid rgb(var(--GG300-rgb));
+  color: rgb(var(--GB600-rgb));
 }
 
 button.secondary:disabled {
-  border-color: rgb(241, 243, 244);
-  color: rgb(128, 134, 139);
+  border-color: rgb(var(--GG100-rgb));
+  color: rgb(var(--GG600-rgb));
 }
 
 button.secondary:hover:not(:disabled) {
-  background-color: rgba(66, 133, 244, 0.04);
-  border-color: rgb(210, 227, 252);
+  background-color: rgba(var(--GB500-rgb), 0.04);
+  border-color: rgb(var(--GB100-rgb));
 }
 
 button.secondary:active:not(:disabled) {
   background-color: white;
   border-color: white;
-  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3),
-      0 3px 6px 2px rgba(60, 64, 67, 0.15);
+  box-shadow: 0 1px 2px 0 rgba(var(--GG800-rgb), 0.3),
+      0 3px 6px 2px rgba(var(--GG800-rgb), 0.15);
 }
 
 html:not([dir=rtl]) #cancel {

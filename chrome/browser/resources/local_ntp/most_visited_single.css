@@ -24,19 +24,6 @@ html {
   --md-title-height: 24px;
   --md-title-max-height: 28px;
 
-  /* Material Design colors */
-  --dark-mode-bg-rgb: 50, 54, 57;
-  --GG900-rgb: 32, 33, 36;
-  --GG800-rgb: 60, 64, 67;
-  --GG700-rgb: 95, 99, 104;
-  --GG600-rgb: 128, 134, 139;
-  --GG500-rgb: 154, 160, 166;
-  --GG400-rgb: 189, 193, 198;
-  --GG300-rgb: 218, 220, 224;
-  --GG200-rgb: 232, 234, 237;
-  --GG100-rgb: 241, 243, 244;
-  --GG50-rgb: 248, 249, 250;
-
   /* May be overridden by themes (on the body element). */
   --tile-title-color: #323232;
 }
@@ -255,7 +242,7 @@ html[darkmode=true] .md-title {
 
 /* Apply when a custom background is set. */
 body.dark-theme .md-tile-container:not(.reorder) .md-title {
-  color: rgb(var(--GG50-rgb));
+  color: rgb(var(--GG050-rgb));
   filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.35));
 }
 

@@ -15,6 +15,7 @@
       <include name="IDR_CUSTOM_LINKS_EDIT_CSS" file="local_ntp\custom_links_edit.css" type="BINDATA" />
       <include name="IDR_CUSTOM_LINKS_EDIT_JS" file="local_ntp\custom_links_edit.js" type="BINDATA" />
       <include name="IDR_CUSTOM_LINKS_EDIT_MENU_SVG" file="local_ntp\icons\edit_menu.svg" type="BINDATA" />
+      <include name="IDR_LOCAL_NTP_CONSTANTS_CSS" file="local_ntp\constants.css" type="BINDATA" />
       <include name="IDR_LOCAL_NTP_ANIMATIONS_CSS" file="local_ntp\animations.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_LOCAL_NTP_ANIMATIONS_JS" file="local_ntp\animations.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_LOCAL_NTP_CSS" file="local_ntp\local_ntp.css" flattenhtml="true" type="BINDATA" />
