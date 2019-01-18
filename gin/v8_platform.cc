@@ -29,6 +29,9 @@ namespace {
 
 base::LazyInstance<V8Platform>::Leaky g_v8_platform = LAZY_INSTANCE_INITIALIZER;
 
+constexpr base::TaskTraits kLowPriorityTaskTraits = {
+    base::TaskPriority::BEST_EFFORT};
+
 constexpr base::TaskTraits kDefaultTaskTraits = {
     base::TaskPriority::USER_VISIBLE};
 
@@ -386,6 +389,12 @@ void V8Platform::CallOnWorkerThread(std::unique_ptr<v8::Task> task) {
 void V8Platform::CallBlockingTaskOnWorkerThread(
     std::unique_ptr<v8::Task> task) {
   base::PostTaskWithTraits(FROM_HERE, kBlockingTaskTraits,
+                           base::BindOnce(&v8::Task::Run, std::move(task)));
+}
+
+void V8Platform::CallLowPriorityTaskOnWorkerThread(
+    std::unique_ptr<v8::Task> task) {
+  base::PostTaskWithTraits(FROM_HERE, kLowPriorityTaskTraits,
                            base::BindOnce(&v8::Task::Run, std::move(task)));
 }
 
