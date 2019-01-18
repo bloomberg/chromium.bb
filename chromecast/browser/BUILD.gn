@@ -53,6 +53,8 @@ cast_source_set("browser") {
     "cast_network_delegate.h",
     "cast_network_request_interceptor.cc",
     "cast_network_request_interceptor.h",
+    "cast_overlay_manifests.cc",
+    "cast_overlay_manifests.h",
     "cast_permission_manager.cc",
     "cast_permission_manager.h",
     "cast_quota_permission_context.cc",
@@ -129,7 +131,6 @@ cast_source_set("browser") {
     "//chromecast/base",
     "//chromecast/base:cast_sys_info",
     "//chromecast/base:cast_version",
-    "//chromecast/browser:resources",
     "//chromecast/browser/bluetooth/public/mojom",
     "//chromecast/common",
     "//chromecast/common/media",
@@ -163,7 +164,9 @@ cast_source_set("browser") {
     "//gpu",
     "//ipc",
     "//media",
+    "//media/mojo/services:media_manifest",
     "//net",
+    "//services/service_manager/public/cpp",
     "//ui/base",
     "//ui/compositor",
     "//ui/display",
@@ -353,6 +356,16 @@ cast_source_set("browser") {
   }
 
   configs += [ "//media/audio:platform_config" ]
+
+  if (chromecast_branding != "public") {
+    deps += [
+      "//chromecast/internal/shell/browser:cast_content_browser_internal_manifest_overlay",
+      "//chromecast/internal/shell/browser:cast_content_packaged_services_internal_manifest_overlay",
+      "//chromecast/internal/shell/browser:cast_content_renderer_internal_manifest_overlay",
+    ]
+
+    defines = [ "USE_INTERNAL_OVERLAY_MANIFESTS=1" ]
+  }
 }
 
 cast_source_set("network_context_manager") {
@@ -393,77 +406,6 @@ cast_source_set("public") {
     "//content",
     "//ui/events",
     "//url",
-  ]
-}
-
-# This target generates an "overlay" interface spec, allowing the Cast build to
-# declare specific behavior and requirements for the "content_browser" service.
-# This is accomplished by generating a JSON file, which is packed into
-# cast_shell.pak, and loaded at runtime. This can be used to host additional
-# interfaces in "content_browser".
-#
-# NOTE: Do not add packaged_services here! packaged_services should instead be
-# added to "cast_content_packaged_services_manifest_overlay" below or
-# its internal counterpart. Please see that target for more details.
-service_manifest("cast_content_browser_manifest_overlay") {
-  source = "cast_content_browser_manifest_overlay.json"
-
-  if (chromecast_branding != "public") {
-    overlays = [ "//chromecast/internal/shell/browser:cast_content_browser_internal_manifest_overlay" ]
-  }
-}
-
-# This target generates an "overlay" interface spec, allowing the Cast build to
-# declare specific behavior and requirements for the "content_renderer" service.
-# This is accomplished by generating a JSON file, which is packed into
-# cast_shell.pak, and loaded at runtime. This can be used to host additional
-# interfaces in "content_renderer".
-service_manifest("cast_content_renderer_manifest_overlay") {
-  source = "cast_content_renderer_manifest_overlay.json"
-
-  if (chromecast_branding != "public") {
-    overlays = [ "//chromecast/internal/shell/browser:cast_content_renderer_internal_manifest_overlay" ]
-  }
-}
-
-# This target is for packaged services that will run in the main (browser)
-# process. To host an embedded service, add the service's manifest target to the
-# list of "packaged_services" in this target, like so:
-#
-#   package_services += [ "//path/to/foo/service:foo_manifest" ]
-#
-# You must also register the "foo" service with the content client. See
-# CastContentBrowserClient::RegisterInProcessServices() for details.
-#
-# NOTE: If your service's manifest is in chromecast/internal, do not add it
-# here! Instead, add the service to the internal counterpart, which is
-# referenced below.
-service_manifest("cast_content_packaged_services_manifest_overlay") {
-  source = "cast_content_packaged_services_manifest_overlay.json"
-
-  packaged_services = [ "//media/mojo/services:media_manifest" ]
-
-  if (chromecast_branding != "public") {
-    overlays = [ "//chromecast/internal/shell/browser:cast_content_packaged_services_internal_manifest_overlay" ]
-  }
-}
-
-grit("resources") {
-  visibility = [
-    ":browser",
-    "//chromecast:cast_shell_pak",
-  ]
-  source = "cast_browser_resources.grd"
-  output_dir = "$root_gen_dir/chromecast/browser"
-  outputs = [
-    "grit/cast_browser_resources.h",
-    "cast_browser_resources.pak",
-  ]
-
-  deps = [
-    ":cast_content_browser_manifest_overlay",
-    ":cast_content_packaged_services_manifest_overlay",
-    ":cast_content_renderer_manifest_overlay",
   ]
 }
 
