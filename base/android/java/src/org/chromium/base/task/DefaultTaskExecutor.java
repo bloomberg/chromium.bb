@@ -30,6 +30,8 @@ class DefaultTaskExecutor implements TaskExecutor {
 
     @Override
     public void postDelayedTask(TaskTraits taskTraits, Runnable task, long delay) {
-        createTaskRunner(taskTraits).postDelayedTask(task, delay);
+        TaskRunner runner = createTaskRunner(taskTraits);
+        runner.postDelayedTask(task, delay);
+        runner.destroy();
     }
 }
