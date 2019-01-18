@@ -141,12 +141,6 @@ class CORE_EXPORT InspectorOverlayAgent final
   class InspectorOverlayChromeClient;
   class InspectorPageOverlayDelegate;
 
-  enum SearchMode {
-    kNotSearching,
-    kSearchingForNormal,
-    kSearchingForUAShadow,
-  };
-
   // InspectorOverlayHost::Listener implementation.
   void OverlayResumed() override;
   void OverlaySteppedOver() override;
@@ -180,10 +174,10 @@ class CORE_EXPORT InspectorOverlayAgent final
 
   protocol::Response CompositingEnabled();
 
-  bool ShouldSearchForNode();
+  bool InSomeInspectMode();
   void NodeHighlightRequested(Node*);
   protocol::Response SetSearchingForNode(
-      SearchMode,
+      String search_mode,
       protocol::Maybe<protocol::Overlay::HighlightConfig>);
   protocol::Response HighlightConfigFromInspectorObject(
       protocol::Maybe<protocol::Overlay::HighlightConfig>
@@ -223,9 +217,9 @@ class CORE_EXPORT InspectorOverlayAgent final
   std::unique_ptr<FrameOverlay> frame_overlay_;
   Member<Node> hovered_node_for_inspect_mode_;
   bool swallow_next_mouse_up_;
+  bool swallow_next_escape_up_;
   std::unique_ptr<InspectorHighlightConfig> inspect_mode_highlight_config_;
   DOMNodeId backend_node_id_to_inspect_;
-  bool screenshot_mode_ = false;
   IntPoint screenshot_anchor_;
   IntPoint screenshot_position_;
   InspectorAgentState::Boolean enabled_;
@@ -238,7 +232,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   InspectorAgentState::Boolean show_hit_test_borders_;
   InspectorAgentState::Boolean show_size_on_resize_;
   InspectorAgentState::String paused_in_debugger_message_;
-  InspectorAgentState::Integer inspect_mode_;
+  InspectorAgentState::String inspect_mode_;
   InspectorAgentState::String inspect_mode_protocol_config_;
   DISALLOW_COPY_AND_ASSIGN(InspectorOverlayAgent);
 };
