@@ -2489,6 +2489,8 @@ jumbo_split_static_library("browser") {
       "media/android/cdm/media_drm_license_manager.h",
       "media/android/cdm/media_drm_storage_factory.cc",
       "media/android/cdm/media_drm_storage_factory.h",
+      "media/android/cdm/per_device_provisioning_permission.cc",
+      "media/android/cdm/per_device_provisioning_permission.h",
       "media/android/remote/flinging_controller_bridge.cc",
       "media/android/remote/flinging_controller_bridge.h",
       "media/android/remote/record_cast_action.cc",
