@@ -89,6 +89,10 @@ public class PostTaskTest {
         TaskRunner taskQueue = PostTask.createTaskRunner(new TaskTraits());
 
         // This should not timeout.
-        SchedulerTestHelpers.postTaskAndBlockUntilRun(taskQueue);
+        try {
+            SchedulerTestHelpers.postTaskAndBlockUntilRun(taskQueue);
+        } finally {
+            taskQueue.destroy();
+        }
     }
 }

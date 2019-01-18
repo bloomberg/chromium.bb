@@ -115,7 +115,11 @@ public class NativePostTaskTest {
         startNativeScheduler();
         TaskRunner taskQueue = PostTask.createTaskRunner(new TaskTraits());
         // This should not time out.
-        SchedulerTestHelpers.postDelayedTaskAndBlockUntilRun(taskQueue, 1);
+        try {
+            SchedulerTestHelpers.postDelayedTaskAndBlockUntilRun(taskQueue, 1);
+        } finally {
+            taskQueue.destroy();
+        }
     }
 
     private void testRunningTasksInSequence(TaskRunner taskQueue) {
