@@ -29,7 +29,7 @@
             android:paddingEnd="24dp"
             android:maxLines="4"
             android:ellipsize="end"
-            android:textAppearance="@style/TextAppearance.BlackTitle2"/>
+            android:textAppearance="@style/TextAppearance.AssistantBlackTitle"/>
 
         <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/feedback_button"
