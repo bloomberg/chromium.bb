@@ -22,7 +22,7 @@ namespace {
 #include "components/language/content/browser/ulp_language_code_locator/ulp_language_code_locator_helper.h"
 }  // namespace
 
-const std::map<S2LatLng, std::string> GetData() {
+const std::map<S2LatLng, std::string> GetData(int rank) {
   std::map<S2LatLng, std::string> latlng_to_lang;
 
   std::string data;
@@ -30,8 +30,8 @@ const std::map<S2LatLng, std::string> GetData() {
   CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_dir));
   base::FilePath data_dir =
       source_dir.AppendASCII("components/test/data/language/");
-  base::FilePath data_filepath =
-      data_dir.AppendASCII("celltolang-data_rank0.csv");
+  base::FilePath data_filepath = data_dir.AppendASCII(
+      "celltolang-data_rank" + std::to_string(rank) + ".csv");
 
   if (!base::ReadFileToString(data_filepath, &data))
     LOG(FATAL) << "Could not read data from `" << data_filepath << "`.";
@@ -52,14 +52,30 @@ const std::map<S2LatLng, std::string> GetData() {
   return latlng_to_lang;
 }
 
-TEST(UlpLanguageCodeLocatorDataTest, TreeContainsData) {
-  const S2LangQuadTreeNode root =
-      S2LangQuadTreeNode::Deserialize(GetLanguages(), GetTreeSerialized());
-  const std::map<S2LatLng, std::string> data = GetData();
+void ExpectTreeContainsData(const S2LangQuadTreeNode& root,
+                            const std::map<S2LatLng, std::string>& data) {
   for (const auto& latlng_lang : data) {
     S2CellId cell(latlng_lang.first);
     EXPECT_EQ(latlng_lang.second, root.Get(cell));
   }
+}
+
+TEST(UlpLanguageCodeLocatorDataTest, TreeContainsDataRank0) {
+  ExpectTreeContainsData(S2LangQuadTreeNode::Deserialize(
+                             GetLanguagesRank0(), GetTreeSerializedRank0()),
+                         GetData(0));
+}
+
+TEST(UlpLanguageCodeLocatorDataTest, TreeContainsDataRank1) {
+  ExpectTreeContainsData(S2LangQuadTreeNode::Deserialize(
+                             GetLanguagesRank1(), GetTreeSerializedRank1()),
+                         GetData(1));
+}
+
+TEST(UlpLanguageCodeLocatorDataTest, TreeContainsDataRank2) {
+  ExpectTreeContainsData(S2LangQuadTreeNode::Deserialize(
+                             GetLanguagesRank2(), GetTreeSerializedRank2()),
+                         GetData(2));
 }
 
 }  // namespace language

@@ -152,8 +152,8 @@ void GeoLanguageProvider::OnIpGeolocationResponse(
   DCHECK_CALLED_ON_VALID_SEQUENCE(background_sequence_checker_);
 
   const std::vector<std::string> languages =
-      language_code_locator_->GetLanguageCode(geoposition->latitude,
-                                              geoposition->longitude);
+      language_code_locator_->GetLanguageCodes(geoposition->latitude,
+                                               geoposition->longitude);
 
   // Update current languages on UI thread.
   creation_task_runner_->PostTask(

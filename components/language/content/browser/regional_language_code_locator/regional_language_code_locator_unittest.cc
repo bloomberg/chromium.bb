@@ -16,7 +16,7 @@ TEST(RegionalLanguageCodeLocatorTest, LocatedLanguageOne) {
   RegionalLanguageCodeLocator locator;
   std::vector<std::string> expected_langs = {"hi", "mr", "ur"};
   // Random place in Madhya Pradesh, expected langs should be hi;mr;ur.
-  const auto& result = locator.GetLanguageCode(23.0, 80.0);
+  const auto& result = locator.GetLanguageCodes(23.0, 80.0);
   EXPECT_EQ(expected_langs, result);
 }
 
@@ -24,7 +24,7 @@ TEST(RegionalLanguageCodeLocatorTest, LocatedLanguageTwo) {
   RegionalLanguageCodeLocator locator;
   std::vector<std::string> expected_langs = {"bn"};
   // Random place in Tripura, expected langs should be bn.
-  const auto& result = locator.GetLanguageCode(23.7f, 91.7f);
+  const auto& result = locator.GetLanguageCodes(23.7f, 91.7f);
   EXPECT_EQ(expected_langs, result);
 }
 
@@ -32,7 +32,7 @@ TEST(RegionalLanguageCodeLocatorTest, NotFoundLanguage) {
   RegionalLanguageCodeLocator locator;
   std::vector<std::string> expected_langs = {};
   // Random place outside India.
-  const auto& result = locator.GetLanguageCode(10.0, 10.0);
+  const auto& result = locator.GetLanguageCodes(10.0, 10.0);
   EXPECT_EQ(expected_langs, result);
 }
 

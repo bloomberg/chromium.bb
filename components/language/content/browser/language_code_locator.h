@@ -17,8 +17,8 @@ class LanguageCodeLocator {
   virtual ~LanguageCodeLocator(){};
   // Get suitable language codes given a coordinate.
   // If the latitude, longitude pair is not found, will return an empty vector.
-  virtual std::vector<std::string> GetLanguageCode(double latitude,
-                                                   double longitude) const = 0;
+  virtual std::vector<std::string> GetLanguageCodes(double latitude,
+                                                    double longitude) const = 0;
 };
 
 }  // namespace language

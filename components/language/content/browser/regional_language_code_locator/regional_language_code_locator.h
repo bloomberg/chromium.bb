@@ -20,8 +20,8 @@ class RegionalLanguageCodeLocator : public LanguageCodeLocator {
   ~RegionalLanguageCodeLocator() override;
 
   // LanguageCodeLocator implementation.
-  std::vector<std::string> GetLanguageCode(double latitude,
-                                           double longitude) const override;
+  std::vector<std::string> GetLanguageCodes(double latitude,
+                                            double longitude) const override;
 
  private:
   // Map from s2 cellid to ';' delimited list of language codes enum.

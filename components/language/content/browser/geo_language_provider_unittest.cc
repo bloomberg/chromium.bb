@@ -104,12 +104,12 @@ TEST_F(GeoLanguageProviderTest, GetCurrentGeoLanguages) {
 
 TEST_F(GeoLanguageProviderTest, GetCurrentGeoLanguagesImproved_India) {
   scoped_feature_list_.InitAndEnableFeature(kImprovedGeoLanguageData);
-  // Setup a random place in Madhya Pradesh, India.
-  MoveToLocation(23.0, 80.0);
+  // Setup a random place in West Bengal, India.
+  MoveToLocation(23.0, 85.7);
   StartGeoLanguageProvider();
   scoped_task_environment_.RunUntilIdle();
 
-  std::vector<std::string> expected_langs = {"hi"};
+  std::vector<std::string> expected_langs = {"hi", "bn", "en"};
   EXPECT_EQ(expected_langs, GetCurrentGeoLanguages());
 }
 

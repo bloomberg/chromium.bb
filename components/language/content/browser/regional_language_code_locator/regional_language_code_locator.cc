@@ -30,7 +30,7 @@ RegionalLanguageCodeLocator::RegionalLanguageCodeLocator() {
 
 RegionalLanguageCodeLocator::~RegionalLanguageCodeLocator() {}
 
-std::vector<std::string> RegionalLanguageCodeLocator::GetLanguageCode(
+std::vector<std::string> RegionalLanguageCodeLocator::GetLanguageCodes(
     double latitude,
     double longitude) const {
   S2CellId current_cell(S2LatLng::FromDegrees(latitude, longitude));
