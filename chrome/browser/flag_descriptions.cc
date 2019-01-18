@@ -3307,12 +3307,6 @@ const char kEnableImeMenuName[] = "Enable opt-in IME menu";
 const char kEnableImeMenuDescription[] =
     "Enable access to the new IME menu in the Language Settings page.";
 
-const char kEnableMediaSessionAshMediaKeysName[] =
-    "Enable media session media key handling";
-const char kEnableMediaSessionAshMediaKeysDescription[] =
-    "Enable the media session service to handle media keys. This requires "
-    "the audio focus flag to be enabled too.";
-
 const char kEnableOobeRecommendAppsScreenName[] =
     "Enable OOBE Recommend Apps Screen";
 const char kEnableOobeRecommendAppsScreenDescription[] =

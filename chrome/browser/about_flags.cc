@@ -4168,11 +4168,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableGoogleAssistantDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::switches::kAssistantFeature)},
 
-    {"enable-media-session-ash-media-keys",
-     flag_descriptions::kEnableMediaSessionAshMediaKeysName,
-     flag_descriptions::kEnableMediaSessionAshMediaKeysDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kMediaSessionAccelerators)},
-
     {"enable-assistant-voice-match",
      flag_descriptions::kEnableAssistantVoiceMatchName,
      flag_descriptions::kEnableAssistantVoiceMatchDescription, kOsCrOS,

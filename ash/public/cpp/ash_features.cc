@@ -26,9 +26,6 @@ const base::Feature kLockScreenHideSensitiveNotificationsSupport{
     "LockScreenHideSensitiveNotificationsSupport",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kMediaSessionAccelerators{
-    "MediaSessionAccelerators", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kMediaSessionNotification{
     "MediaSessionNotification", base::FEATURE_DISABLED_BY_DEFAULT};
 
