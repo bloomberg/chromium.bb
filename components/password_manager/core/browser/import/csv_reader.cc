@@ -81,7 +81,7 @@ class FieldParser {
     kPlain,
     // When inside a quotation-mark-escaped block.
     kQuoted,
-    // When after reading a block starting and ending with quotation maks. For
+    // When after reading a block starting and ending with quotation marks. For
     // the following input, the state would be visited after reading characters
     // 4 and 7:
     // a,"b""c",d
