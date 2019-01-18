@@ -51,7 +51,10 @@ public interface ChromeNotificationBuilder {
 
     ChromeNotificationBuilder addAction(Notification.Action action);
 
+    @Deprecated
     ChromeNotificationBuilder setDeleteIntent(PendingIntent intent);
+
+    ChromeNotificationBuilder setDeleteIntent(PendingIntentProvider intent);
 
     /**
      * Sets the priority of single notification on Android versions prior to Oreo.
