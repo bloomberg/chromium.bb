@@ -1668,8 +1668,9 @@ void WebContentsImpl::WasShown() {
 
 void WebContentsImpl::WasHidden() {
   // If there are entities capturing screenshots or video (e.g. mirroring),
-  // don't activate the "disable rendering" optimization.
-  if (!IsBeingCaptured()) {
+  // or in Picture-in-Picture mode, don't activate the "disable rendering"
+  // optimization.
+  if (!IsBeingCaptured() && !HasPictureInPictureVideo()) {
     // This hides the individual RenderWidgets before hiding the Page, as
     // RenderWidgets will work to produce compositor frames and handle input
     // until they are hidden. But the Page and other classes do not expect to
@@ -1687,9 +1688,12 @@ void WebContentsImpl::WasHidden() {
 
     if (!ShowingInterstitialPage())
       SetVisibilityForChildViews(false);
-
-    SendPageMessage(new PageMsg_WasHidden(MSG_ROUTING_NONE));
   }
+
+  // Inform the renderer that the page was hidden if there are no entities
+  // capturing screenshots or video (e.g. mirroring).
+  if (!IsBeingCaptured())
+    SendPageMessage(new PageMsg_WasHidden(MSG_ROUTING_NONE));
 
   SetVisibility(Visibility::HIDDEN);
 }
