@@ -42,9 +42,7 @@ namespace {
 
 class NullFetchContext final : public FetchContext {
  public:
-  explicit NullFetchContext(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : FetchContext(std::move(task_runner)) {}
+  NullFetchContext() = default;
 
   void CountUsage(mojom::WebFeature) const override {}
   void CountDeprecation(mojom::WebFeature) const override {}
@@ -52,15 +50,12 @@ class NullFetchContext final : public FetchContext {
 
 }  // namespace
 
-FetchContext& FetchContext::NullInstance(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return *(MakeGarbageCollected<NullFetchContext>(std::move(task_runner)));
+FetchContext& FetchContext::NullInstance() {
+  return *MakeGarbageCollected<NullFetchContext>();
 }
 
-FetchContext::FetchContext(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : platform_probe_sink_(MakeGarbageCollected<PlatformProbeSink>()),
-      task_runner_(std::move(task_runner)) {
+FetchContext::FetchContext()
+    : platform_probe_sink_(MakeGarbageCollected<PlatformProbeSink>()) {
   platform_probe_sink_->addPlatformTraceEvents(
       MakeGarbageCollected<PlatformTraceEventsAgent>());
 }
@@ -183,5 +178,10 @@ void FetchContext::PopulateResourceRequest(
     const ClientHintsPreferences&,
     const FetchParameters::ResourceWidth&,
     ResourceRequest&) {}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+FetchContext::GetLoadingTaskRunner() {
+  return fetcher_->GetTaskRunner();
+}
 
 }  // namespace blink

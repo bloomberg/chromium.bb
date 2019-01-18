@@ -28,6 +28,7 @@
 namespace blink {
 
 class FontResourceTest : public testing::Test {
+ public:
   void TearDown() override {
     Platform::Current()
         ->GetURLLoaderMockFactory()
@@ -48,8 +49,8 @@ TEST_F(FontResourceTest,
 
   MockFetchContext* context = MakeGarbageCollected<MockFetchContext>();
   auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
-  auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
-      ResourceFetcherInit(*properties, context));
+  auto* fetcher = MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
+      *properties, context, base::MakeRefCounted<scheduler::FakeTaskRunner>()));
 
   // Fetch to cache a resource.
   ResourceRequest request1(url);

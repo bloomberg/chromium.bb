@@ -123,7 +123,6 @@ class ModuleScriptLoaderTest : public PageTestBase {
 
  public:
   ModuleScriptLoaderTest();
-  void SetUp() override;
 
   void InitializeForDocument();
   void InitializeForWorklet();
@@ -139,9 +138,8 @@ class ModuleScriptLoaderTest : public PageTestBase {
   ModuleScriptLoaderTestModulator* GetModulator() { return modulator_.Get(); }
 
   void RunUntilIdle() {
-    base::SingleThreadTaskRunner* runner =
-        fetcher_->Context().GetLoadingTaskRunner().get();
-    static_cast<scheduler::FakeTaskRunner*>(runner)->RunUntilIdle();
+    static_cast<scheduler::FakeTaskRunner*>(fetcher_->GetTaskRunner().get())
+        ->RunUntilIdle();
   }
 
  protected:
@@ -158,29 +156,28 @@ class ModuleScriptLoaderTest : public PageTestBase {
 
 ModuleScriptLoaderTest::ModuleScriptLoaderTest()
     : url_("https://example.test"),
-      security_origin_(SecurityOrigin::Create(url_)) {}
-
-void ModuleScriptLoaderTest::SetUp() {
+      security_origin_(SecurityOrigin::Create(url_)) {
   platform_->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
-  PageTestBase::SetUp(IntSize(500, 500));
 }
 
 void ModuleScriptLoaderTest::InitializeForDocument() {
-  auto* fetch_context = MakeGarbageCollected<MockFetchContext>(nullptr);
+  auto* fetch_context = MakeGarbageCollected<MockFetchContext>();
   auto* properties =
       MakeGarbageCollected<TestResourceFetcherProperties>(security_origin_);
   fetcher_ = MakeGarbageCollected<ResourceFetcher>(
-      ResourceFetcherInit(*properties, fetch_context));
+      ResourceFetcherInit(*properties, fetch_context,
+                          base::MakeRefCounted<scheduler::FakeTaskRunner>()));
   modulator_ = MakeGarbageCollected<ModuleScriptLoaderTestModulator>(
       ToScriptStateForMainWorld(&GetFrame()));
 }
 
 void ModuleScriptLoaderTest::InitializeForWorklet() {
-  auto* fetch_context = MakeGarbageCollected<MockFetchContext>(nullptr);
+  auto* fetch_context = MakeGarbageCollected<MockFetchContext>();
   auto* properties =
       MakeGarbageCollected<TestResourceFetcherProperties>(security_origin_);
   fetcher_ = MakeGarbageCollected<ResourceFetcher>(
-      ResourceFetcherInit(*properties, fetch_context));
+      ResourceFetcherInit(*properties, fetch_context,
+                          base::MakeRefCounted<scheduler::FakeTaskRunner>()));
   reporting_proxy_ = std::make_unique<MockWorkerReportingProxy>();
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
       url_, mojom::ScriptType::kModule,

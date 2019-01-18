@@ -85,7 +85,7 @@ ScriptResource* ScriptResource::Fetch(FetchParameters& params,
   if (streaming_allowed == kAllowStreaming) {
     // Start streaming the script as soon as we get it.
     if (RuntimeEnabledFeatures::ScriptStreamingOnPreloadEnabled()) {
-      resource->StartStreaming(fetcher->Context().GetLoadingTaskRunner());
+      resource->StartStreaming(fetcher->GetTaskRunner());
     }
   } else {
     // Advance the |streaming_state_| to kStreamingNotAllowed by calling
@@ -99,7 +99,7 @@ ScriptResource* ScriptResource::Fetch(FetchParameters& params,
     // clients were already finished. If this behaviour becomes necessary, we
     // would have to either check that streaming wasn't started (if that would
     // be a logic error), or cancel any existing streaming.
-    fetcher->Context().GetLoadingTaskRunner()->PostTask(
+    fetcher->GetTaskRunner()->PostTask(
         FROM_HERE, WTF::Bind(&ScriptResource::SetClientIsWaitingForFinished,
                              WrapWeakPersistent(resource)));
   }

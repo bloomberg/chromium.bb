@@ -61,6 +61,10 @@ class ResourceLoaderTest : public testing::Test {
     }
   };
 
+  static scoped_refptr<base::SingleThreadTaskRunner> CreateTaskRunner() {
+    return base::MakeRefCounted<scheduler::FakeTaskRunner>();
+  }
+
  private:
   class TestWebURLLoader final : public WebURLLoader {
    public:
@@ -162,7 +166,7 @@ TEST_F(ResourceLoaderTest, ResponseType) {
     FetchContext* context = MakeGarbageCollected<MockFetchContext>(
         nullptr, std::make_unique<TestWebURLLoaderFactory>());
     auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
-        ResourceFetcherInit(*properties, context));
+        ResourceFetcherInit(*properties, context, CreateTaskRunner()));
 
     ResourceRequest request;
     request.SetURL(test.url);
@@ -203,7 +207,7 @@ class ResourceLoaderIsolatedCodeCacheTest : public ResourceLoaderTest {
     FetchContext* context = MakeGarbageCollected<MockFetchContext>(
         nullptr, std::make_unique<TestWebURLLoaderFactory>());
     auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
-        ResourceFetcherInit(*properties, context));
+        ResourceFetcherInit(*properties, context, CreateTaskRunner()));
 
     ResourceRequest request;
     request.SetURL(foo_url_);

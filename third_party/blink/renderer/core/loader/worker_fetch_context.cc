@@ -39,8 +39,7 @@ WorkerFetchContext::WorkerFetchContext(
     WorkerOrWorkletGlobalScope& global_scope,
     scoped_refptr<WebWorkerFetchContext> web_context,
     SubresourceFilter* subresource_filter)
-    : BaseFetchContext(global_scope.GetTaskRunner(TaskType::kInternalLoading)),
-      global_scope_(global_scope),
+    : global_scope_(global_scope),
       web_context_(std::move(web_context)),
       subresource_filter_(subresource_filter),
       save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled()) {

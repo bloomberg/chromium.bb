@@ -85,11 +85,9 @@ class PLATFORM_EXPORT FetchContext
   WTF_MAKE_NONCOPYABLE(FetchContext);
 
  public:
-  explicit FetchContext(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  FetchContext();
 
-  static FetchContext& NullInstance(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  static FetchContext& NullInstance();
 
   virtual ~FetchContext() = default;
 
@@ -230,18 +228,11 @@ class PLATFORM_EXPORT FetchContext
   // May return nullptr if a frame is not attached or detached.
   virtual FrameScheduler* GetFrameScheduler() const { return nullptr; }
 
-  // Returns a task runner intended for loading tasks. The returned
-  // base::SingleThreadTaskRunner will keep working even after the context
-  // detaches.
-  scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner() {
-    return task_runner_;
-  }
-
   // Called when the underlying context is detached. Note that some
   // FetchContexts continue working after detached (e.g., for fetch() operations
   // with "keepalive" specified).
   // Returns a "detached" fetch context which cannot be null.
-  virtual FetchContext* Detach() { return &NullInstance(task_runner_); }
+  virtual FetchContext* Detach() { return &NullInstance(); }
 
   // Returns the updated priority of the resource based on the experiments that
   // may be currently enabled.
@@ -261,17 +252,15 @@ class PLATFORM_EXPORT FetchContext
   virtual void DispatchNetworkQuiet() {}
 
  protected:
-  // This is needed to make FetchContext cleanup smoother.
-  // TODO(yhirano): Remove this.
+  // The following methods are needed to make FetchContext cleanup smoother.
+  // Do not use these functions for other purposes.
+  // TODO(yhirano): Remove these.
   virtual bool IsDetached() const { return false; }
-
-  // This is needed to make FetchContext cleanup smoother. Do not use this
-  // function for other purposes.
+  scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner();
   ResourceFetcher* GetFetcher() { return fetcher_; }
 
  private:
   Member<PlatformProbeSink> platform_probe_sink_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   Member<ResourceFetcher> fetcher_;
 };
 

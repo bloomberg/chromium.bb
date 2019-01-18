@@ -32,10 +32,10 @@ class MockFetchContext : public FetchContext {
   MockFetchContext(
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner = nullptr,
       std::unique_ptr<WebURLLoaderFactory> url_loader_factory = nullptr)
-      : FetchContext(loading_task_runner
-                         ? std::move(loading_task_runner)
-                         : base::MakeRefCounted<scheduler::FakeTaskRunner>()),
-        frame_scheduler_(new MockFrameScheduler(GetLoadingTaskRunner())),
+      : frame_scheduler_(new MockFrameScheduler(
+            loading_task_runner
+                ? std::move(loading_task_runner)
+                : base::MakeRefCounted<scheduler::FakeTaskRunner>())),
         url_loader_factory_(std::move(url_loader_factory)),
         transfer_size_(-1) {}
   ~MockFetchContext() override = default;

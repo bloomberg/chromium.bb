@@ -23,14 +23,13 @@ namespace blink {
 
 class WorkletModuleResponsesMapTest : public testing::Test {
  public:
-  WorkletModuleResponsesMapTest() = default;
-
-  void SetUp() override {
+  WorkletModuleResponsesMapTest() {
     platform_->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
     auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
     auto* context = MakeGarbageCollected<MockFetchContext>();
     fetcher_ = MakeGarbageCollected<ResourceFetcher>(
-        ResourceFetcherInit(*properties, context));
+        ResourceFetcherInit(*properties, context,
+                            base::MakeRefCounted<scheduler::FakeTaskRunner>()));
     map_ = MakeGarbageCollected<WorkletModuleResponsesMap>();
   }
 
@@ -47,15 +46,15 @@ class WorkletModuleResponsesMapTest : public testing::Test {
   }
 
   void RunUntilIdle() {
-    base::SingleThreadTaskRunner* runner =
-        fetcher_->Context().GetLoadingTaskRunner().get();
-    static_cast<scheduler::FakeTaskRunner*>(runner)->RunUntilIdle();
+    static_cast<scheduler::FakeTaskRunner*>(fetcher_->GetTaskRunner().get())
+        ->RunUntilIdle();
   }
 
  protected:
   ScopedTestingPlatformSupport<FetchTestingPlatformSupport> platform_;
   Persistent<ResourceFetcher> fetcher_;
   Persistent<WorkletModuleResponsesMap> map_;
+  const scoped_refptr<scheduler::FakeTaskRunner> task_runner_;
 };
 
 TEST_F(WorkletModuleResponsesMapTest, Basic) {

@@ -309,7 +309,7 @@ ResourceLoader::ResourceLoader(ResourceFetcher* fetcher,
       inflight_keepalive_bytes_(inflight_keepalive_bytes),
       is_cache_aware_loading_activated_(false),
       progress_binding_(this),
-      cancel_timer_(Context().GetLoadingTaskRunner(),
+      cancel_timer_(fetcher_->GetTaskRunner(),
                     this,
                     &ResourceLoader::CancelTimerFired) {
   DCHECK(resource_);
@@ -1183,7 +1183,7 @@ bool ResourceLoader::ShouldBeKeptAliveWhenDetached() const {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 ResourceLoader::GetLoadingTaskRunner() {
-  return Context().GetLoadingTaskRunner();
+  return fetcher_->GetTaskRunner();
 }
 
 void ResourceLoader::OnProgress(uint64_t delta) {

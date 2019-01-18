@@ -69,9 +69,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   // |document_loader_| will be set to nullptr.
   static ResourceFetcher* CreateFetcherForImportedDocument(Document* document);
 
-  FrameFetchContext(
-      scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
-      const FrameOrImportedDocument&);
+  explicit FrameFetchContext(const FrameOrImportedDocument&);
   ~FrameFetchContext() override = default;
 
   void AddAdditionalRequestHeaders(ResourceRequest&,

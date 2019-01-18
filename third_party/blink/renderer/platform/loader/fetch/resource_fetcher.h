@@ -29,6 +29,7 @@
 
 #include <memory>
 
+#include "base/single_thread_task_runner.h"
 #include "services/network/public/cpp/cors/preflight_timing_info.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-blink.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -65,20 +66,25 @@ struct PLATFORM_EXPORT ResourceFetcherInit final {
   STACK_ALLOCATED();
 
  public:
-  // |context| must not be null.
+  // |context| and |task_runner| must not be null.
   // The given ResourceFetcherProperties is kept until ClearContext() is called.
   ResourceFetcherInit(const ResourceFetcherProperties& properties,
-                      FetchContext* context);
+                      FetchContext* context,
+                      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ResourceFetcherInit(const ResourceFetcherProperties& properties,
                       FetchContext* context,
+                      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                       ConsoleLogger& console_logger)
       : properties(properties),
         context(context),
+        task_runner(std::move(task_runner)),
         console_logger(console_logger) {
-    DCHECK(context);
+    DCHECK(this->context);
+    DCHECK(this->task_runner);
   }
   const Member<const ResourceFetcherProperties> properties;
   const Member<FetchContext> context;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner;
   ResourceLoadScheduler::ThrottlingPolicy initial_throttling_policy =
       ResourceLoadScheduler::ThrottlingPolicy::kNormal;
   const Member<ConsoleLogger> console_logger;
@@ -129,6 +135,13 @@ class PLATFORM_EXPORT ResourceFetcher
                             ResourceClient*,
                             const SubstituteData& = SubstituteData(),
                             unsigned long identifier = 0);
+
+  // Returns the task runner used by this fetcher, and loading operations
+  // this fetcher initiates. The returned task runner will keep working even
+  // after ClearContext is called.
+  const scoped_refptr<base::SingleThreadTaskRunner>& GetTaskRunner() const {
+    return task_runner_;
+  }
 
   Resource* CachedResource(const KURL&) const;
 
@@ -335,6 +348,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
   Member<DetachableProperties> properties_;
   Member<FetchContext> context_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   Member<ConsoleLogger> console_logger_;
   Member<ResourceLoadScheduler> scheduler_;
 

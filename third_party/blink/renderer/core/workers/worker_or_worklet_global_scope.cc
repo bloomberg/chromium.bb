@@ -145,10 +145,11 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
   } else {
     // This code path is for unittests.
     properties = MakeGarbageCollected<NullResourceFetcherProperties>();
-    context = &FetchContext::NullInstance(GetTaskRunner(TaskType::kNetworking));
+    context = &FetchContext::NullInstance();
   }
-  auto* resource_fetcher = MakeGarbageCollected<ResourceFetcher>(
-      ResourceFetcherInit(*properties, context, *this));
+  auto* resource_fetcher =
+      MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
+          *properties, context, GetTaskRunner(TaskType::kNetworking), *this));
   if (IsContextPaused())
     resource_fetcher->SetDefersLoading(true);
   resource_fetchers_.insert(resource_fetcher);
