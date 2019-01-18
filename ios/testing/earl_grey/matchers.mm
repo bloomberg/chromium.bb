@@ -8,6 +8,15 @@
 #error "This file requires ARC support."
 #endif
 
+#if defined(CHROME_EARL_GREY_1)
+#import <EarlGrey/EarlGrey.h>
+#endif
+
+#if defined(CHROME_EARL_GREY_2)
+#import <AppFramework/EarlGreyApp.h>
+#import <AppFramework/Matcher/GREYMatchersShorthand.h>
+#endif
+
 namespace testing {
 
 id<GREYMatcher> ButtonWithAccessibilityLabel(NSString* label) {
