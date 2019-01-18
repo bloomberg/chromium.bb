@@ -11,6 +11,19 @@
 namespace media_session {
 namespace test {
 
+namespace {
+
+bool IsMetadataNonEmpty(const base::Optional<MediaMetadata>& metadata) {
+  if (!metadata.has_value())
+    return false;
+
+  return !metadata->title.empty() || !metadata->artist.empty() ||
+         !metadata->album.empty() || !metadata->source_title.empty() ||
+         !metadata->artwork.empty();
+}
+
+}  // namespace
+
 MockMediaSessionMojoObserver::MockMediaSessionMojoObserver(
     mojom::MediaSession& media_session)
     : binding_(this) {
@@ -46,7 +59,7 @@ void MockMediaSessionMojoObserver::MediaSessionMetadataChanged(
   if (waiting_for_metadata_) {
     run_loop_->Quit();
     waiting_for_metadata_ = false;
-  } else if (waiting_for_non_empty_metadata_ && metadata.has_value()) {
+  } else if (waiting_for_non_empty_metadata_ && IsMetadataNonEmpty(metadata)) {
     run_loop_->Quit();
     waiting_for_non_empty_metadata_ = false;
   }

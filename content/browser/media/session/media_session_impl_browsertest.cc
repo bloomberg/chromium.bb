@@ -235,6 +235,11 @@ class MediaSessionImplBrowserTest : public content::ContentBrowserTest {
 
   bool IsDucking() const { return media_session_->is_ducking_; }
 
+  base::string16 GetExpectedSourceTitle() {
+    return base::ASCIIToUTF16(
+        shell()->web_contents()->GetLastCommittedURL().GetOrigin().host());
+  }
+
  protected:
   MediaSessionImpl* media_session_;
   std::unique_ptr<content::MockMediaSessionObserver>
@@ -1853,7 +1858,10 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
 IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
                        AddingMojoObserverNotifiesCurrentInformation_EmptyInfo) {
   media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
-  EXPECT_FALSE(observer.WaitForMetadata());
+
+  media_session::MediaMetadata expected_metadata;
+  expected_metadata.source_title = GetExpectedSourceTitle();
+  EXPECT_EQ(expected_metadata, observer.WaitForMetadata());
 }
 
 IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
@@ -1875,6 +1883,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
     StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
     ResolveAudioFocusSuccess();
+
+    metadata.source_title = GetExpectedSourceTitle();
     EXPECT_EQ(metadata, observer.WaitForNonEmptyMetadata());
   }
 }

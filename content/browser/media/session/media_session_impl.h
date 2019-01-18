@@ -93,8 +93,7 @@ class MediaSessionImpl : public MediaSession,
   }
 #endif  // defined(OS_ANDROID)
 
-  void NotifyMediaSessionMetadataChange(
-      const base::Optional<media_session::MediaMetadata>& metadata);
+  void NotifyMediaSessionMetadataChange();
 
   // Adds the given player to the current media session. Returns whether the
   // player was successfully added. If it returns false, AddPlayer() should be
@@ -335,6 +334,9 @@ class MediaSessionImpl : public MediaSession,
 
   CONTENT_EXPORT bool AddOneShotPlayer(MediaSessionPlayerObserver* observer,
                                        int player_id);
+
+  // Returns the current media metadata associated with this session.
+  media_session::MediaMetadata GetMediaMetadata() const;
 
   // MediaSessionService-related methods
 

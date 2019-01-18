@@ -131,6 +131,11 @@ class MediaSessionImplServiceRoutingTest
         ->RemovePlayer(players_[frame].get(), kPlayerId);
   }
 
+  base::string16 GetExpectedSourceTitle() {
+    return base::ASCIIToUTF16(
+        contents()->GetLastCommittedURL().GetOrigin().host());
+  }
+
   MockMediaSessionPlayerObserver* GetPlayerForFrame(
       TestRenderFrameHost* frame) {
     auto iter = players_.find(frame);
@@ -279,13 +284,17 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 
 TEST_F(MediaSessionImplServiceRoutingTest,
        NotifyMetadataAndActionsChangeWhenControllable) {
+  media_session::MediaMetadata empty_metadata;
+  empty_metadata.source_title = GetExpectedSourceTitle();
+
   media_session::MediaMetadata expected_metadata;
   expected_metadata.title = base::ASCIIToUTF16("title");
   expected_metadata.artist = base::ASCIIToUTF16("artist");
   expected_metadata.album = base::ASCIIToUTF16("album");
+  expected_metadata.source_title = GetExpectedSourceTitle();
 
   EXPECT_CALL(*mock_media_session_observer(),
-              MediaSessionMetadataChanged(Eq(base::nullopt)))
+              MediaSessionMetadataChanged(Eq(empty_metadata)))
       .Times(AnyNumber());
   EXPECT_CALL(*mock_media_session_observer(),
               MediaSessionActionsChanged(Eq(default_actions())))
@@ -312,6 +321,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   expected_metadata.title = base::ASCIIToUTF16("title");
   expected_metadata.artist = base::ASCIIToUTF16("artist");
   expected_metadata.album = base::ASCIIToUTF16("album");
+  expected_metadata.source_title = GetExpectedSourceTitle();
 
   EXPECT_CALL(*mock_media_session_observer(),
               MediaSessionMetadataChanged(Eq(expected_metadata)))
@@ -330,11 +340,15 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 }
 
 TEST_F(MediaSessionImplServiceRoutingTest,
-       DontNotifyMetadataAndActionsChangeWhenTurningUncontrollable) {
+       NotifyMetadataAndNotActionsChangeWhenTurningUncontrollable) {
   media_session::MediaMetadata expected_metadata;
   expected_metadata.title = base::ASCIIToUTF16("title");
   expected_metadata.artist = base::ASCIIToUTF16("artist");
   expected_metadata.album = base::ASCIIToUTF16("album");
+  expected_metadata.source_title = GetExpectedSourceTitle();
+
+  media_session::MediaMetadata empty_metadata;
+  empty_metadata.source_title = GetExpectedSourceTitle();
 
   std::set<MediaSessionAction> empty_actions;
   std::set<MediaSessionAction> expected_actions;
@@ -345,8 +359,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   EXPECT_CALL(*mock_media_session_observer(), MediaSessionActionsChanged(_))
       .Times(AnyNumber());
   EXPECT_CALL(*mock_media_session_observer(),
-              MediaSessionMetadataChanged(Eq(base::nullopt)))
-      .Times(0);
+              MediaSessionMetadataChanged(Eq(empty_metadata)));
   EXPECT_CALL(*mock_media_session_observer(),
               MediaSessionActionsChanged(Eq(empty_actions)))
       .Times(0);
@@ -530,6 +543,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   expected_metadata.title = base::ASCIIToUTF16("title");
   expected_metadata.artist = base::ASCIIToUTF16("artist");
   expected_metadata.album = base::ASCIIToUTF16("album");
+  expected_metadata.source_title = GetExpectedSourceTitle();
 
   CreateServiceForFrame(main_frame_);
   StartPlayerForFrame(main_frame_);
@@ -547,15 +561,17 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   CreateServiceForFrame(main_frame_);
   StartPlayerForFrame(main_frame_);
 
+  media_session::MediaMetadata expected_metadata;
+  expected_metadata.source_title = GetExpectedSourceTitle();
+
   {
     media_session::test::MockMediaSessionMojoObserver observer(
         *GetMediaSession());
     services_[main_frame_]->SetMetadata(base::nullopt);
 
-    // When the session becomes controllable we should receive empty metadata
-    // because we have not set any. The |is_controllable| boolean will also
-    // become true.
-    EXPECT_FALSE(observer.WaitForMetadata());
+    // When the session becomes controllable we should receive default
+    // metadata. The |is_controllable| boolean will also become true.
+    EXPECT_EQ(expected_metadata, observer.WaitForMetadata());
     EXPECT_TRUE(observer.session_info()->is_controllable);
   }
 }
@@ -642,6 +658,16 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   std::set<MediaSessionAction> expected_actions;
   expected_actions.insert(MediaSessionAction::kPlay);
   EXPECT_EQ(expected_actions, observer.actions_set());
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest, NotifyMojoObserverOnNavigation) {
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+  contents()->NavigateAndCommit(GURL("http://www.google.com"));
+
+  media_session::MediaMetadata expected_metadata;
+  expected_metadata.source_title = base::ASCIIToUTF16("www.google.com");
+  EXPECT_EQ(expected_metadata, observer.WaitForNonEmptyMetadata());
 }
 
 }  // namespace content

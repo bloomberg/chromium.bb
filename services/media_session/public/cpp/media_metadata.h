@@ -75,6 +75,11 @@ struct COMPONENT_EXPORT(MEDIA_SESSION_CPP) MediaMetadata {
 
   // Artwork associated to the MediaSession.
   std::vector<MediaImage> artwork;
+
+  // The |source_title| is a human readable title for the source of the media
+  // session. This could be the name of the app or the name of the site playing
+  // media.
+  base::string16 source_title;
 };
 
 }  // namespace media_session

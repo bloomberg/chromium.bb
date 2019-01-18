@@ -54,6 +54,11 @@ struct StructTraits<media_session::mojom::MediaMetadataDataView,
     return metadata.artwork;
   }
 
+  static const base::string16& source_title(
+      const media_session::MediaMetadata& metadata) {
+    return metadata.source_title;
+  }
+
   static bool Read(media_session::mojom::MediaMetadataDataView data,
                    media_session::MediaMetadata* out);
 };
