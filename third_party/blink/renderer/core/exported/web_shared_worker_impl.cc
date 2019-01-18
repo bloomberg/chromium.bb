@@ -320,8 +320,11 @@ void WebSharedWorkerImpl::ContinueOnScriptLoaderFinished() {
 
   auto global_scope_creation_params =
       std::make_unique<GlobalScopeCreationParams>(
-          script_response_url, script_type, document->UserAgent(),
-          std::move(web_worker_fetch_context),
+          script_response_url, script_type,
+          // TODO(nhiroki): Implement off-the-main-thread worker script fetch
+          // for shared workers (https://crbug.com/835717).
+          OffMainThreadWorkerScriptFetchOption::kDisabled,
+          document->UserAgent(), std::move(web_worker_fetch_context),
           content_security_policy ? content_security_policy->Headers()
                                   : Vector<CSPHeaderAndType>(),
           referrer_policy, outside_settings_object->GetSecurityOrigin(),
