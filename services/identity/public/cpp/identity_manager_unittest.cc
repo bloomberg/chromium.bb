@@ -1376,6 +1376,19 @@ TEST_F(IdentityManagerTest, ObserveAccessTokenFetch) {
             identity_manager_diagnostics_observer()->token_requestor_scopes());
 }
 
+// Tests that requesting a load of accounts results in the notification
+// firing that tokens were loaded.
+TEST_F(IdentityManagerTest, LegacyLoadCredentials) {
+  base::RunLoop run_loop;
+  identity_manager_observer()->set_on_refresh_tokens_loaded_callback(
+      run_loop.QuitClosure());
+
+  // Load the accounts and ensure that we see the resulting notification that
+  // they were loaded.
+  identity_manager()->LegacyLoadCredentials("");
+  run_loop.Run();
+}
+
 #if !defined(OS_CHROMEOS)
 TEST_F(
     IdentityManagerTest,

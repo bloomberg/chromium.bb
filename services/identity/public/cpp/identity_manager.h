@@ -313,6 +313,15 @@ class IdentityManager : public SigninManagerBase::Observer,
   // returns null.
   AccountsMutator* GetAccountsMutator();
 
+  // Loads credentials from a backing persistent store to make them available
+  // after service is used between profile restarts.
+  // NOTE: In normal usage this method SHOULD NOT be called as the loading of
+  // accounts from disk occurs as part of the internal startup flow. The method
+  // is only used in production for a very small number of corner case startup
+  // flows.
+  // TODO(https://crbug.com/922450): Eliminate the need to expose this.
+  void LegacyLoadCredentials(const std::string& primary_account_id);
+
   // Methods to register or remove observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
