@@ -36,6 +36,7 @@
 #
 # There are overall very few WebUI interactive_ui_tests, so list them here
 # explicitly, instead of running all interactive_ui_tests.
+BookmarksFocusTest.All
 CrElementsActionMenuTest.All
 CrElementsCheckboxTest.All
 CrElementsInputTest.All
@@ -44,7 +45,6 @@ CrElementsToggleTest.All
 CrSettingsAnimatedPagesTest.All
 CrSettingsFocusRowBehavior.FocusTest
 CrSettingsSyncPageTest.All
-MaterialBookmarksFocusTest.All
 MaterialHistoryFocusTest.All
 PrintPreviewDestinationDialogInteractiveTest.*
 PrintPreviewNumberSettingsSectionInteractiveTest.BlurResetsEmptyInput

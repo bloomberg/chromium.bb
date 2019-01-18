@@ -1,4 +1,4 @@
-# Material Design Bookmark Manager
+# Bookmark Manager
 
 The bookmark manager (BMM) is a WebUI surface with a large amount of
 functionality for managing bookmarks across a relatively simple UI. This

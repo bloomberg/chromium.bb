@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Closure typedefs for MD Bookmarks.
+ * @fileoverview Closure typedefs for Bookmarks.
  */
 
 /**

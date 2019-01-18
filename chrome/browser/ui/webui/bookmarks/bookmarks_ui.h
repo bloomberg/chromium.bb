@@ -13,15 +13,15 @@ namespace base {
 class RefCountedMemory;
 }
 
-class MdBookmarksUI : public content::WebUIController {
+class BookmarksUI : public content::WebUIController {
  public:
-  explicit MdBookmarksUI(content::WebUI* web_ui);
+  explicit BookmarksUI(content::WebUI* web_ui);
 
   static base::RefCountedMemory* GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MdBookmarksUI);
+  DISALLOW_COPY_AND_ASSIGN(BookmarksUI);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_BOOKMARKS_BOOKMARKS_UI_H_

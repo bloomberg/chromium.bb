@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Test suite for the Material Design bookmarks page.
+ * @fileoverview Test suite for the bookmarks page.
  */
 const ROOT_PATH = '../../../../../';
 
@@ -12,14 +12,14 @@ GEN_INCLUDE(
 GEN('#include "chrome/browser/prefs/incognito_mode_prefs.h"');
 GEN('#include "chrome/browser/ui/webui/bookmarks/bookmarks_browsertest.h"');
 
-function MaterialBookmarksBrowserTest() {}
+function BookmarksBrowserTest() {}
 
-MaterialBookmarksBrowserTest.prototype = {
+BookmarksBrowserTest.prototype = {
   __proto__: PolymerTest.prototype,
 
   browsePreload: 'chrome://bookmarks',
 
-  typedefCppFixture: 'MdBookmarksBrowserTest',
+  typedefCppFixture: 'BookmarksBrowserTest',
 
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     '../test_store.js',
@@ -33,56 +33,56 @@ MaterialBookmarksBrowserTest.prototype = {
   runAccessibilityChecks: true,
 };
 
-function MaterialBookmarksActionsTest() {}
+function BookmarksActionsTest() {}
 
-MaterialBookmarksActionsTest.prototype = {
-  __proto__: MaterialBookmarksBrowserTest.prototype,
+BookmarksActionsTest.prototype = {
+  __proto__: BookmarksBrowserTest.prototype,
 
-  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
+  extraLibraries: BookmarksBrowserTest.prototype.extraLibraries.concat([
     'actions_test.js',
   ]),
 };
 
-TEST_F('MaterialBookmarksActionsTest', 'All', function() {
+TEST_F('BookmarksActionsTest', 'All', function() {
   mocha.run();
 });
 
-function MaterialBookmarksAppTest() {}
+function BookmarksAppTest() {}
 
-MaterialBookmarksAppTest.prototype = {
-  __proto__: MaterialBookmarksBrowserTest.prototype,
+BookmarksAppTest.prototype = {
+  __proto__: BookmarksBrowserTest.prototype,
 
-  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
+  extraLibraries: BookmarksBrowserTest.prototype.extraLibraries.concat([
     'app_test.js',
     ROOT_PATH + 'ui/webui/resources/js/util.js',
   ]),
 };
 
-TEST_F('MaterialBookmarksAppTest', 'All', function() {
+TEST_F('BookmarksAppTest', 'All', function() {
   mocha.run();
 });
 
-function MaterialBookmarksCommandManagerTest() {}
+function BookmarksCommandManagerTest() {}
 
-MaterialBookmarksCommandManagerTest.prototype = {
-  __proto__: MaterialBookmarksBrowserTest.prototype,
+BookmarksCommandManagerTest.prototype = {
+  __proto__: BookmarksBrowserTest.prototype,
 
-  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
+  extraLibraries: BookmarksBrowserTest.prototype.extraLibraries.concat([
     '../settings/test_util.js',
     'command_manager_test.js',
   ]),
 };
 
-TEST_F('MaterialBookmarksCommandManagerTest', 'All', function() {
+TEST_F('BookmarksCommandManagerTest', 'All', function() {
   mocha.run();
 });
 
-function MaterialBookmarksDNDManagerTest() {}
+function BookmarksDNDManagerTest() {}
 
-MaterialBookmarksDNDManagerTest.prototype = {
-  __proto__: MaterialBookmarksBrowserTest.prototype,
+BookmarksDNDManagerTest.prototype = {
+  __proto__: BookmarksBrowserTest.prototype,
 
-  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
+  extraLibraries: BookmarksBrowserTest.prototype.extraLibraries.concat([
     'dnd_manager_test.js',
   ]),
 };
@@ -94,165 +94,165 @@ GEN('#else');
 GEN('#define MAYBE_All All');
 GEN('#endif');
 
-TEST_F('MaterialBookmarksDNDManagerTest', 'MAYBE_All', function() {
+TEST_F('BookmarksDNDManagerTest', 'MAYBE_All', function() {
   mocha.run();
 });
 
-function MaterialBookmarksEditDialogTest() {}
+function BookmarksEditDialogTest() {}
 
-MaterialBookmarksEditDialogTest.prototype = {
-  __proto__: MaterialBookmarksBrowserTest.prototype,
+BookmarksEditDialogTest.prototype = {
+  __proto__: BookmarksBrowserTest.prototype,
 
-  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
+  extraLibraries: BookmarksBrowserTest.prototype.extraLibraries.concat([
     'edit_dialog_test.js',
   ]),
 };
 
-TEST_F('MaterialBookmarksEditDialogTest', 'All', function() {
+TEST_F('BookmarksEditDialogTest', 'All', function() {
   mocha.run();
 });
 
-function MaterialBookmarksItemTest() {}
+function BookmarksItemTest() {}
 
-MaterialBookmarksItemTest.prototype = {
-  __proto__: MaterialBookmarksBrowserTest.prototype,
+BookmarksItemTest.prototype = {
+  __proto__: BookmarksBrowserTest.prototype,
 
-  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
+  extraLibraries: BookmarksBrowserTest.prototype.extraLibraries.concat([
     'item_test.js',
   ]),
 };
 
-TEST_F('MaterialBookmarksItemTest', 'All', function() {
+TEST_F('BookmarksItemTest', 'All', function() {
   mocha.run();
 });
 
-function MaterialBookmarksListTest() {}
+function BookmarksListTest() {}
 
-MaterialBookmarksListTest.prototype = {
-  __proto__: MaterialBookmarksBrowserTest.prototype,
+BookmarksListTest.prototype = {
+  __proto__: BookmarksBrowserTest.prototype,
 
-  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
+  extraLibraries: BookmarksBrowserTest.prototype.extraLibraries.concat([
     'list_test.js',
   ]),
 };
 
-TEST_F('MaterialBookmarksListTest', 'All', function() {
+TEST_F('BookmarksListTest', 'All', function() {
   mocha.run();
 });
 
-function MaterialBookmarksReducersTest() {}
+function BookmarksReducersTest() {}
 
-MaterialBookmarksReducersTest.prototype = {
-  __proto__: MaterialBookmarksBrowserTest.prototype,
+BookmarksReducersTest.prototype = {
+  __proto__: BookmarksBrowserTest.prototype,
 
-  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
+  extraLibraries: BookmarksBrowserTest.prototype.extraLibraries.concat([
     'reducers_test.js',
   ]),
 };
 
-TEST_F('MaterialBookmarksReducersTest', 'All', function() {
+TEST_F('BookmarksReducersTest', 'All', function() {
   mocha.run();
 });
 
-function MaterialBookmarksRouterTest() {}
+function BookmarksRouterTest() {}
 
-MaterialBookmarksRouterTest.prototype = {
-  __proto__: MaterialBookmarksBrowserTest.prototype,
+BookmarksRouterTest.prototype = {
+  __proto__: BookmarksBrowserTest.prototype,
 
-  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
+  extraLibraries: BookmarksBrowserTest.prototype.extraLibraries.concat([
     'router_test.js',
   ]),
 };
 
-TEST_F('MaterialBookmarksRouterTest', 'All', function() {
+TEST_F('BookmarksRouterTest', 'All', function() {
   mocha.run();
 });
 
-function MaterialBookmarksFolderNodeTest() {}
+function BookmarksFolderNodeTest() {}
 
-MaterialBookmarksFolderNodeTest.prototype = {
-  __proto__: MaterialBookmarksBrowserTest.prototype,
+BookmarksFolderNodeTest.prototype = {
+  __proto__: BookmarksBrowserTest.prototype,
 
-  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
+  extraLibraries: BookmarksBrowserTest.prototype.extraLibraries.concat([
     'folder_node_test.js',
   ]),
 };
 
-TEST_F('MaterialBookmarksFolderNodeTest', 'All', function() {
+TEST_F('BookmarksFolderNodeTest', 'All', function() {
   mocha.run();
 });
 
-function MaterialBookmarksToastManagerTest() {}
+function BookmarksToastManagerTest() {}
 
-MaterialBookmarksToastManagerTest.prototype = {
-  __proto__: MaterialBookmarksBrowserTest.prototype,
+BookmarksToastManagerTest.prototype = {
+  __proto__: BookmarksBrowserTest.prototype,
 
-  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
+  extraLibraries: BookmarksBrowserTest.prototype.extraLibraries.concat([
     'toast_manager_test.js',
   ]),
 };
 
-TEST_F('MaterialBookmarksToastManagerTest', 'All', function() {
+TEST_F('BookmarksToastManagerTest', 'All', function() {
   mocha.run();
 });
 
-function MaterialBookmarksPolicyTest() {}
+function BookmarksPolicyTest() {}
 
-MaterialBookmarksPolicyTest.prototype = {
-  __proto__: MaterialBookmarksBrowserTest.prototype,
+BookmarksPolicyTest.prototype = {
+  __proto__: BookmarksBrowserTest.prototype,
 
   testGenPreamble: function() {
     GEN('SetIncognitoAvailability(IncognitoModePrefs::DISABLED);');
     GEN('SetCanEditBookmarks(false);');
   },
 
-  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
+  extraLibraries: BookmarksBrowserTest.prototype.extraLibraries.concat([
     'policy_test.js',
   ]),
 };
 
-TEST_F('MaterialBookmarksPolicyTest', 'All', function() {
+TEST_F('BookmarksPolicyTest', 'All', function() {
   mocha.run();
 });
 
-function MaterialBookmarksStoreTest() {}
+function BookmarksStoreTest() {}
 
-MaterialBookmarksStoreTest.prototype = {
-  __proto__: MaterialBookmarksBrowserTest.prototype,
+BookmarksStoreTest.prototype = {
+  __proto__: BookmarksBrowserTest.prototype,
 
-  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
+  extraLibraries: BookmarksBrowserTest.prototype.extraLibraries.concat([
     'store_test.js',
   ]),
 };
 
-TEST_F('MaterialBookmarksStoreTest', 'All', function() {
+TEST_F('BookmarksStoreTest', 'All', function() {
   mocha.run();
 });
 
-function MaterialBookmarksToolbarTest() {}
+function BookmarksToolbarTest() {}
 
-MaterialBookmarksToolbarTest.prototype = {
-  __proto__: MaterialBookmarksBrowserTest.prototype,
+BookmarksToolbarTest.prototype = {
+  __proto__: BookmarksBrowserTest.prototype,
 
-  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
+  extraLibraries: BookmarksBrowserTest.prototype.extraLibraries.concat([
     'toolbar_test.js',
   ]),
 };
 
-TEST_F('MaterialBookmarksToolbarTest', 'All', function() {
+TEST_F('BookmarksToolbarTest', 'All', function() {
   mocha.run();
 });
 
-function MaterialBookmarksUtilTest() {}
+function BookmarksUtilTest() {}
 
-MaterialBookmarksUtilTest.prototype = {
-  __proto__: MaterialBookmarksBrowserTest.prototype,
+BookmarksUtilTest.prototype = {
+  __proto__: BookmarksBrowserTest.prototype,
 
-  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
+  extraLibraries: BookmarksBrowserTest.prototype.extraLibraries.concat([
     'util_test.js',
   ]),
 };
 
-TEST_F('MaterialBookmarksUtilTest', 'All', function() {
+TEST_F('BookmarksUtilTest', 'All', function() {
   mocha.run();
 });
