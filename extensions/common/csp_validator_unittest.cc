@@ -26,15 +26,21 @@ using extensions::Manifest;
 
 namespace {
 
-std::string InsecureValueWarning(const std::string& directive,
-                                 const std::string& value) {
+std::string InsecureValueWarning(
+    const std::string& directive,
+    const std::string& value,
+    const std::string& manifest_key =
+        extensions::manifest_keys::kContentSecurityPolicy) {
   return ErrorUtils::FormatErrorMessage(
-      extensions::manifest_errors::kInvalidCSPInsecureValue, value, directive);
+      extensions::manifest_errors::kInvalidCSPInsecureValue, manifest_key,
+      value, directive);
 }
 
-std::string MissingSecureSrcWarning(const std::string& directive) {
+std::string MissingSecureSrcWarning(const std::string& manifest_key,
+                                    const std::string& directive) {
   return ErrorUtils::FormatErrorMessage(
-      extensions::manifest_errors::kInvalidCSPMissingSecureSrc, directive);
+      extensions::manifest_errors::kInvalidCSPMissingSecureSrc, manifest_key,
+      directive);
 }
 
 bool CSPEquals(const std::string& csp1, const std::string& csp2) {
@@ -54,13 +60,16 @@ struct SanitizedCSPResult {
 
 SanitizedCSPResult SanitizeCSP(const std::string& policy, int options) {
   SanitizedCSPResult result;
-  result.csp = SanitizeContentSecurityPolicy(policy, options, &result.warnings);
+  result.csp = SanitizeContentSecurityPolicy(
+      policy, extensions::manifest_keys::kContentSecurityPolicy, options,
+      &result.warnings);
   return result;
 }
 
 SanitizedCSPResult SanitizeSandboxPageCSP(const std::string& policy) {
   SanitizedCSPResult result;
-  result.csp = GetEffectiveSandoxedPageCSP(policy, &result.warnings);
+  result.csp = GetEffectiveSandoxedPageCSP(
+      policy, extensions::manifest_keys::kSandboxedPagesCSP, &result.warnings);
   return result;
 }
 
@@ -146,62 +155,67 @@ TEST(ExtensionCSPValidator, IsLegal) {
 }
 
 TEST(ExtensionCSPValidator, IsSecure) {
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(std::string(), OPTIONS_ALLOW_UNSAFE_EVAL),
-      "script-src 'self'; object-src 'self';",
-      MissingSecureSrcWarning("script-src"),
-      MissingSecureSrcWarning("object-src")));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "img-src https://google.com", OPTIONS_ALLOW_UNSAFE_EVAL),
-      "img-src https://google.com; script-src 'self'; object-src 'self';",
-      MissingSecureSrcWarning("script-src"),
-      MissingSecureSrcWarning("object-src")));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "script-src a b", OPTIONS_ALLOW_UNSAFE_EVAL),
-      "script-src; object-src 'self';",
-      InsecureValueWarning("script-src", "a"),
-      InsecureValueWarning("script-src", "b"),
-      MissingSecureSrcWarning("object-src")));
+  auto missing_secure_src_warning = [](const std::string& directive) {
+    return MissingSecureSrcWarning(
+        extensions::manifest_keys::kContentSecurityPolicy, directive);
+  };
 
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src *", OPTIONS_ALLOW_UNSAFE_EVAL),
-      "default-src;",
-      InsecureValueWarning("default-src", "*")));
+  EXPECT_TRUE(CheckCSP(SanitizeCSP(std::string(), OPTIONS_ALLOW_UNSAFE_EVAL),
+                       "script-src 'self'; object-src 'self';",
+                       missing_secure_src_warning("script-src"),
+                       missing_secure_src_warning("object-src")));
+  EXPECT_TRUE(CheckCSP(
+      SanitizeCSP("img-src https://google.com", OPTIONS_ALLOW_UNSAFE_EVAL),
+      "img-src https://google.com; script-src 'self'; object-src 'self';",
+      missing_secure_src_warning("script-src"),
+      missing_secure_src_warning("object-src")));
+  EXPECT_TRUE(CheckCSP(SanitizeCSP("script-src a b", OPTIONS_ALLOW_UNSAFE_EVAL),
+                       "script-src; object-src 'self';",
+                       InsecureValueWarning("script-src", "a"),
+                       InsecureValueWarning("script-src", "b"),
+                       missing_secure_src_warning("object-src")));
+
+  EXPECT_TRUE(CheckCSP(SanitizeCSP("default-src *", OPTIONS_ALLOW_UNSAFE_EVAL),
+                       "default-src;",
+                       InsecureValueWarning("default-src", "*")));
   EXPECT_TRUE(CheckCSP(SanitizeCSP(
       "default-src 'self';", OPTIONS_ALLOW_UNSAFE_EVAL)));
   EXPECT_TRUE(CheckCSP(SanitizeCSP(
       "default-src 'none';", OPTIONS_ALLOW_UNSAFE_EVAL)));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self' ftp://google.com", OPTIONS_ALLOW_UNSAFE_EVAL),
-      "default-src 'self';",
-      InsecureValueWarning("default-src", "ftp://google.com")));
+  EXPECT_TRUE(
+      CheckCSP(SanitizeCSP("default-src 'self' ftp://google.com",
+                           OPTIONS_ALLOW_UNSAFE_EVAL),
+               "default-src 'self';",
+               InsecureValueWarning("default-src", "ftp://google.com")));
   EXPECT_TRUE(CheckCSP(SanitizeCSP(
       "default-src 'self' https://google.com;", OPTIONS_ALLOW_UNSAFE_EVAL)));
 
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src *; default-src 'self'", OPTIONS_ALLOW_UNSAFE_EVAL),
-      "default-src; default-src 'self';",
-      InsecureValueWarning("default-src", "*")));
+  EXPECT_TRUE(CheckCSP(SanitizeCSP("default-src *; default-src 'self'",
+                                   OPTIONS_ALLOW_UNSAFE_EVAL),
+                       "default-src; default-src 'self';",
+                       InsecureValueWarning("default-src", "*")));
   EXPECT_TRUE(CheckCSP(SanitizeCSP(
       "default-src 'self'; default-src *;", OPTIONS_ALLOW_UNSAFE_EVAL),
       "default-src 'self'; default-src;"));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self'; default-src *; script-src *; script-src 'self'",
-      OPTIONS_ALLOW_UNSAFE_EVAL),
+  EXPECT_TRUE(CheckCSP(
+      SanitizeCSP(
+          "default-src 'self'; default-src *; script-src *; script-src 'self'",
+          OPTIONS_ALLOW_UNSAFE_EVAL),
       "default-src 'self'; default-src; script-src; script-src 'self';",
       InsecureValueWarning("script-src", "*")));
   EXPECT_TRUE(CheckCSP(SanitizeCSP(
       "default-src 'self'; default-src *; script-src 'self'; script-src *;",
       OPTIONS_ALLOW_UNSAFE_EVAL),
       "default-src 'self'; default-src; script-src 'self'; script-src;"));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src *; script-src 'self'", OPTIONS_ALLOW_UNSAFE_EVAL),
-      "default-src; script-src 'self';",
-      InsecureValueWarning("default-src", "*")));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src *; script-src 'self'; img-src 'self'",
-      OPTIONS_ALLOW_UNSAFE_EVAL),
-      "default-src; script-src 'self'; img-src 'self';",
-      InsecureValueWarning("default-src", "*")));
+  EXPECT_TRUE(CheckCSP(SanitizeCSP("default-src *; script-src 'self'",
+                                   OPTIONS_ALLOW_UNSAFE_EVAL),
+                       "default-src; script-src 'self';",
+                       InsecureValueWarning("default-src", "*")));
+  EXPECT_TRUE(
+      CheckCSP(SanitizeCSP("default-src *; script-src 'self'; img-src 'self'",
+                           OPTIONS_ALLOW_UNSAFE_EVAL),
+               "default-src; script-src 'self'; img-src 'self';",
+               InsecureValueWarning("default-src", "*")));
   EXPECT_TRUE(CheckCSP(SanitizeCSP(
       "default-src *; script-src 'self'; object-src 'self';",
       OPTIONS_ALLOW_UNSAFE_EVAL),
@@ -211,22 +225,21 @@ TEST(ExtensionCSPValidator, IsSecure) {
   EXPECT_TRUE(CheckCSP(SanitizeCSP(
       "default-src 'unsafe-eval';", OPTIONS_ALLOW_UNSAFE_EVAL)));
 
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'unsafe-eval'", OPTIONS_NONE),
-      "default-src;",
-      InsecureValueWarning("default-src", "'unsafe-eval'")));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'unsafe-inline'", OPTIONS_ALLOW_UNSAFE_EVAL),
-      "default-src;",
-      InsecureValueWarning("default-src", "'unsafe-inline'")));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'unsafe-inline' 'none'", OPTIONS_ALLOW_UNSAFE_EVAL),
-      "default-src 'none';",
-      InsecureValueWarning("default-src", "'unsafe-inline'")));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self' http://google.com", OPTIONS_ALLOW_UNSAFE_EVAL),
-      "default-src 'self';",
-      InsecureValueWarning("default-src", "http://google.com")));
+  EXPECT_TRUE(CheckCSP(SanitizeCSP("default-src 'unsafe-eval'", OPTIONS_NONE),
+                       "default-src;",
+                       InsecureValueWarning("default-src", "'unsafe-eval'")));
+  EXPECT_TRUE(CheckCSP(
+      SanitizeCSP("default-src 'unsafe-inline'", OPTIONS_ALLOW_UNSAFE_EVAL),
+      "default-src;", InsecureValueWarning("default-src", "'unsafe-inline'")));
+  EXPECT_TRUE(CheckCSP(SanitizeCSP("default-src 'unsafe-inline' 'none'",
+                                   OPTIONS_ALLOW_UNSAFE_EVAL),
+                       "default-src 'none';",
+                       InsecureValueWarning("default-src", "'unsafe-inline'")));
+  EXPECT_TRUE(
+      CheckCSP(SanitizeCSP("default-src 'self' http://google.com",
+                           OPTIONS_ALLOW_UNSAFE_EVAL),
+               "default-src 'self';",
+               InsecureValueWarning("default-src", "http://google.com")));
   EXPECT_TRUE(CheckCSP(SanitizeCSP(
       "default-src 'self' https://google.com;", OPTIONS_ALLOW_UNSAFE_EVAL)));
   EXPECT_TRUE(CheckCSP(SanitizeCSP(
@@ -237,84 +250,83 @@ TEST(ExtensionCSPValidator, IsSecure) {
   EXPECT_TRUE(CheckCSP(SanitizeCSP(
       "default-src 'self' chrome-extension-resource://aabbcc;",
       OPTIONS_ALLOW_UNSAFE_EVAL)));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self' https:", OPTIONS_ALLOW_UNSAFE_EVAL),
-      "default-src 'self';",
-      InsecureValueWarning("default-src", "https:")));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self' http:", OPTIONS_ALLOW_UNSAFE_EVAL),
-      "default-src 'self';",
-      InsecureValueWarning("default-src", "http:")));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self' google.com", OPTIONS_ALLOW_UNSAFE_EVAL),
+  EXPECT_TRUE(CheckCSP(
+      SanitizeCSP("default-src 'self' https:", OPTIONS_ALLOW_UNSAFE_EVAL),
+      "default-src 'self';", InsecureValueWarning("default-src", "https:")));
+  EXPECT_TRUE(CheckCSP(
+      SanitizeCSP("default-src 'self' http:", OPTIONS_ALLOW_UNSAFE_EVAL),
+      "default-src 'self';", InsecureValueWarning("default-src", "http:")));
+  EXPECT_TRUE(CheckCSP(
+      SanitizeCSP("default-src 'self' google.com", OPTIONS_ALLOW_UNSAFE_EVAL),
       "default-src 'self';",
       InsecureValueWarning("default-src", "google.com")));
 
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self' *", OPTIONS_ALLOW_UNSAFE_EVAL),
-      "default-src 'self';",
-      InsecureValueWarning("default-src", "*")));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self' *:*", OPTIONS_ALLOW_UNSAFE_EVAL),
-      "default-src 'self';",
-      InsecureValueWarning("default-src", "*:*")));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self' *:*/", OPTIONS_ALLOW_UNSAFE_EVAL),
-      "default-src 'self';",
-      InsecureValueWarning("default-src", "*:*/")));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self' *:*/path", OPTIONS_ALLOW_UNSAFE_EVAL),
-      "default-src 'self';",
-      InsecureValueWarning("default-src", "*:*/path")));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self' https://", OPTIONS_ALLOW_UNSAFE_EVAL),
-      "default-src 'self';",
-      InsecureValueWarning("default-src", "https://")));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self' https://*:*", OPTIONS_ALLOW_UNSAFE_EVAL),
+  EXPECT_TRUE(CheckCSP(
+      SanitizeCSP("default-src 'self' *", OPTIONS_ALLOW_UNSAFE_EVAL),
+      "default-src 'self';", InsecureValueWarning("default-src", "*")));
+  EXPECT_TRUE(CheckCSP(
+      SanitizeCSP("default-src 'self' *:*", OPTIONS_ALLOW_UNSAFE_EVAL),
+      "default-src 'self';", InsecureValueWarning("default-src", "*:*")));
+  EXPECT_TRUE(CheckCSP(
+      SanitizeCSP("default-src 'self' *:*/", OPTIONS_ALLOW_UNSAFE_EVAL),
+      "default-src 'self';", InsecureValueWarning("default-src", "*:*/")));
+  EXPECT_TRUE(CheckCSP(
+      SanitizeCSP("default-src 'self' *:*/path", OPTIONS_ALLOW_UNSAFE_EVAL),
+      "default-src 'self';", InsecureValueWarning("default-src", "*:*/path")));
+  EXPECT_TRUE(CheckCSP(
+      SanitizeCSP("default-src 'self' https://", OPTIONS_ALLOW_UNSAFE_EVAL),
+      "default-src 'self';", InsecureValueWarning("default-src", "https://")));
+  EXPECT_TRUE(CheckCSP(
+      SanitizeCSP("default-src 'self' https://*:*", OPTIONS_ALLOW_UNSAFE_EVAL),
       "default-src 'self';",
       InsecureValueWarning("default-src", "https://*:*")));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self' https://*:*/", OPTIONS_ALLOW_UNSAFE_EVAL),
+  EXPECT_TRUE(CheckCSP(
+      SanitizeCSP("default-src 'self' https://*:*/", OPTIONS_ALLOW_UNSAFE_EVAL),
       "default-src 'self';",
       InsecureValueWarning("default-src", "https://*:*/")));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self' https://*:*/path", OPTIONS_ALLOW_UNSAFE_EVAL),
-      "default-src 'self';",
-      InsecureValueWarning("default-src", "https://*:*/path")));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self' https://*.com", OPTIONS_ALLOW_UNSAFE_EVAL),
-      "default-src 'self';",
-      InsecureValueWarning("default-src", "https://*.com")));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self' https://*.*.google.com/", OPTIONS_ALLOW_UNSAFE_EVAL),
-      "default-src 'self';",
-      InsecureValueWarning("default-src", "https://*.*.google.com/")));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self' https://*.*.google.com:*/", OPTIONS_ALLOW_UNSAFE_EVAL),
+  EXPECT_TRUE(
+      CheckCSP(SanitizeCSP("default-src 'self' https://*:*/path",
+                           OPTIONS_ALLOW_UNSAFE_EVAL),
+               "default-src 'self';",
+               InsecureValueWarning("default-src", "https://*:*/path")));
+  EXPECT_TRUE(CheckCSP(SanitizeCSP("default-src 'self' https://*.com",
+                                   OPTIONS_ALLOW_UNSAFE_EVAL),
+                       "default-src 'self';",
+                       InsecureValueWarning("default-src", "https://*.com")));
+  EXPECT_TRUE(
+      CheckCSP(SanitizeCSP("default-src 'self' https://*.*.google.com/",
+                           OPTIONS_ALLOW_UNSAFE_EVAL),
+               "default-src 'self';",
+               InsecureValueWarning("default-src", "https://*.*.google.com/")));
+  EXPECT_TRUE(CheckCSP(
+      SanitizeCSP("default-src 'self' https://*.*.google.com:*/",
+                  OPTIONS_ALLOW_UNSAFE_EVAL),
       "default-src 'self';",
       InsecureValueWarning("default-src", "https://*.*.google.com:*/")));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self' https://www.*.google.com/", OPTIONS_ALLOW_UNSAFE_EVAL),
+  EXPECT_TRUE(CheckCSP(
+      SanitizeCSP("default-src 'self' https://www.*.google.com/",
+                  OPTIONS_ALLOW_UNSAFE_EVAL),
       "default-src 'self';",
       InsecureValueWarning("default-src", "https://www.*.google.com/")));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self' https://www.*.google.com:*/",
-      OPTIONS_ALLOW_UNSAFE_EVAL),
+  EXPECT_TRUE(CheckCSP(
+      SanitizeCSP("default-src 'self' https://www.*.google.com:*/",
+                  OPTIONS_ALLOW_UNSAFE_EVAL),
       "default-src 'self';",
       InsecureValueWarning("default-src", "https://www.*.google.com:*/")));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self' chrome://*", OPTIONS_ALLOW_UNSAFE_EVAL),
+  EXPECT_TRUE(CheckCSP(
+      SanitizeCSP("default-src 'self' chrome://*", OPTIONS_ALLOW_UNSAFE_EVAL),
       "default-src 'self';",
       InsecureValueWarning("default-src", "chrome://*")));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self' chrome-extension://*", OPTIONS_ALLOW_UNSAFE_EVAL),
-      "default-src 'self';",
-      InsecureValueWarning("default-src", "chrome-extension://*")));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self' chrome-extension://", OPTIONS_ALLOW_UNSAFE_EVAL),
-      "default-src 'self';",
-      InsecureValueWarning("default-src", "chrome-extension://")));
+  EXPECT_TRUE(
+      CheckCSP(SanitizeCSP("default-src 'self' chrome-extension://*",
+                           OPTIONS_ALLOW_UNSAFE_EVAL),
+               "default-src 'self';",
+               InsecureValueWarning("default-src", "chrome-extension://*")));
+  EXPECT_TRUE(
+      CheckCSP(SanitizeCSP("default-src 'self' chrome-extension://",
+                           OPTIONS_ALLOW_UNSAFE_EVAL),
+               "default-src 'self';",
+               InsecureValueWarning("default-src", "chrome-extension://")));
 
   EXPECT_TRUE(CheckCSP(SanitizeCSP(
       "default-src 'self' https://*.google.com;", OPTIONS_ALLOW_UNSAFE_EVAL)));
@@ -342,28 +354,30 @@ TEST(ExtensionCSPValidator, IsSecure) {
       "default-src 'self' http://127.0.0.1:9999;", OPTIONS_ALLOW_UNSAFE_EVAL)));
   EXPECT_TRUE(CheckCSP(SanitizeCSP(
       "default-src 'self' http://localhost:8888;", OPTIONS_ALLOW_UNSAFE_EVAL)));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self' http://127.0.0.1.example.com",
-      OPTIONS_ALLOW_UNSAFE_EVAL),
+  EXPECT_TRUE(CheckCSP(
+      SanitizeCSP("default-src 'self' http://127.0.0.1.example.com",
+                  OPTIONS_ALLOW_UNSAFE_EVAL),
       "default-src 'self';",
       InsecureValueWarning("default-src", "http://127.0.0.1.example.com")));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self' http://localhost.example.com",
-      OPTIONS_ALLOW_UNSAFE_EVAL),
+  EXPECT_TRUE(CheckCSP(
+      SanitizeCSP("default-src 'self' http://localhost.example.com",
+                  OPTIONS_ALLOW_UNSAFE_EVAL),
       "default-src 'self';",
       InsecureValueWarning("default-src", "http://localhost.example.com")));
 
   EXPECT_TRUE(CheckCSP(SanitizeCSP(
       "default-src 'self' blob:;", OPTIONS_ALLOW_UNSAFE_EVAL)));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self' blob:http://example.com/XXX",
-      OPTIONS_ALLOW_UNSAFE_EVAL), "default-src 'self';",
+  EXPECT_TRUE(CheckCSP(
+      SanitizeCSP("default-src 'self' blob:http://example.com/XXX",
+                  OPTIONS_ALLOW_UNSAFE_EVAL),
+      "default-src 'self';",
       InsecureValueWarning("default-src", "blob:http://example.com/XXX")));
   EXPECT_TRUE(CheckCSP(SanitizeCSP(
       "default-src 'self' filesystem:;", OPTIONS_ALLOW_UNSAFE_EVAL)));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src 'self' filesystem:http://example.com/XX",
-      OPTIONS_ALLOW_UNSAFE_EVAL), "default-src 'self';",
+  EXPECT_TRUE(CheckCSP(
+      SanitizeCSP("default-src 'self' filesystem:http://example.com/XX",
+                  OPTIONS_ALLOW_UNSAFE_EVAL),
+      "default-src 'self';",
       InsecureValueWarning("default-src", "filesystem:http://example.com/XX")));
 
   EXPECT_TRUE(CheckCSP(SanitizeCSP(
@@ -373,28 +387,27 @@ TEST(ExtensionCSPValidator, IsSecure) {
       "default-src 'self' https://x.googleapis.com;",
       OPTIONS_ALLOW_UNSAFE_EVAL)));
 
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "script-src 'self'; object-src *", OPTIONS_NONE),
-      "script-src 'self'; object-src;",
-      InsecureValueWarning("object-src", "*")));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "script-src 'self'; object-src *", OPTIONS_ALLOW_INSECURE_OBJECT_SRC),
-      "script-src 'self'; object-src;",
-      InsecureValueWarning("object-src", "*")));
+  EXPECT_TRUE(
+      CheckCSP(SanitizeCSP("script-src 'self'; object-src *", OPTIONS_NONE),
+               "script-src 'self'; object-src;",
+               InsecureValueWarning("object-src", "*")));
+  EXPECT_TRUE(CheckCSP(SanitizeCSP("script-src 'self'; object-src *",
+                                   OPTIONS_ALLOW_INSECURE_OBJECT_SRC),
+                       "script-src 'self'; object-src;",
+                       InsecureValueWarning("object-src", "*")));
   EXPECT_TRUE(CheckCSP(SanitizeCSP(
       "script-src 'self'; object-src *; plugin-types application/pdf;",
       OPTIONS_ALLOW_INSECURE_OBJECT_SRC)));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "script-src 'self'; object-src *; "
-      "plugin-types application/x-shockwave-flash",
-      OPTIONS_ALLOW_INSECURE_OBJECT_SRC),
-      "script-src 'self'; object-src; "
-      "plugin-types application/x-shockwave-flash;",
-      InsecureValueWarning("object-src", "*")));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "script-src 'self'; object-src *; "
-      "plugin-types application/x-shockwave-flash application/pdf;",
-      OPTIONS_ALLOW_INSECURE_OBJECT_SRC),
+  EXPECT_TRUE(CheckCSP(SanitizeCSP("script-src 'self'; object-src *; "
+                                   "plugin-types application/x-shockwave-flash",
+                                   OPTIONS_ALLOW_INSECURE_OBJECT_SRC),
+                       "script-src 'self'; object-src; "
+                       "plugin-types application/x-shockwave-flash;",
+                       InsecureValueWarning("object-src", "*")));
+  EXPECT_TRUE(CheckCSP(
+      SanitizeCSP("script-src 'self'; object-src *; "
+                  "plugin-types application/x-shockwave-flash application/pdf;",
+                  OPTIONS_ALLOW_INSECURE_OBJECT_SRC),
       "script-src 'self'; object-src; "
       "plugin-types application/x-shockwave-flash application/pdf;",
       InsecureValueWarning("object-src", "*")));
@@ -410,9 +423,9 @@ TEST(ExtensionCSPValidator, IsSecure) {
       "script-src 'self'; object-src http://*.example.com; "
       "plugin-types application/pdf;",
       OPTIONS_ALLOW_INSECURE_OBJECT_SRC)));
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "script-src *; object-src *; plugin-types application/pdf;",
-      OPTIONS_ALLOW_INSECURE_OBJECT_SRC),
+  EXPECT_TRUE(CheckCSP(
+      SanitizeCSP("script-src *; object-src *; plugin-types application/pdf;",
+                  OPTIONS_ALLOW_INSECURE_OBJECT_SRC),
       "script-src; object-src *; plugin-types application/pdf;",
       InsecureValueWarning("script-src", "*")));
 
@@ -426,16 +439,20 @@ TEST(ExtensionCSPValidator, IsSecure) {
       OPTIONS_NONE)));
 
   // Reject non-standard algorithms, even if they are still supported by Blink.
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src; script-src 'sha1-eYyYGmKWdhpUewohaXk9o8IaLSw=';",
-      OPTIONS_NONE), "default-src; script-src;",
+  EXPECT_TRUE(CheckCSP(
+      SanitizeCSP(
+          "default-src; script-src 'sha1-eYyYGmKWdhpUewohaXk9o8IaLSw=';",
+          OPTIONS_NONE),
+      "default-src; script-src;",
       InsecureValueWarning("script-src",
                            "'sha1-eYyYGmKWdhpUewohaXk9o8IaLSw='")));
 
-  EXPECT_TRUE(CheckCSP(SanitizeCSP(
-      "default-src; script-src 'sha256-hndjYvzUzy2Ykuad81Cwsl1FOXX/qYs/aDVyUyNZ"
-      "wBw= sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=';",
-      OPTIONS_NONE), "default-src; script-src;",
+  EXPECT_TRUE(CheckCSP(
+      SanitizeCSP("default-src; script-src "
+                  "'sha256-hndjYvzUzy2Ykuad81Cwsl1FOXX/qYs/aDVyUyNZ"
+                  "wBw= sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=';",
+                  OPTIONS_NONE),
+      "default-src; script-src;",
       InsecureValueWarning(
           "script-src", "'sha256-hndjYvzUzy2Ykuad81Cwsl1FOXX/qYs/aDVyUyNZwBw="),
       InsecureValueWarning(
@@ -478,17 +495,23 @@ TEST(ExtensionCSPValidator, IsSandboxed) {
 }
 
 TEST(ExtensionCSPValidator, EffectiveSandboxedPageCSP) {
+  auto insecure_value_warning = [](const std::string& directive,
+                                   const std::string& value) {
+    return InsecureValueWarning(directive, value,
+                                extensions::manifest_keys::kSandboxedPagesCSP);
+  };
+
   EXPECT_TRUE(CheckCSP(
       SanitizeSandboxPageCSP(""),
       "child-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval';"));
   EXPECT_TRUE(CheckCSP(
       SanitizeSandboxPageCSP("child-src http://www.google.com"),
       "child-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval';",
-      InsecureValueWarning("child-src", "http://www.google.com")));
+      insecure_value_warning("child-src", "http://www.google.com")));
   EXPECT_TRUE(CheckCSP(
       SanitizeSandboxPageCSP("child-src *"),
       "child-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval';",
-      InsecureValueWarning("child-src", "*")));
+      insecure_value_warning("child-src", "*")));
   EXPECT_TRUE(CheckCSP(
       SanitizeSandboxPageCSP("child-src 'none'"),
       "child-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval';"));
@@ -501,7 +524,7 @@ TEST(ExtensionCSPValidator, EffectiveSandboxedPageCSP) {
       SanitizeSandboxPageCSP(
           "script-src 'none'; frame-src 'self' http://www.google.com;"),
       "frame-src 'self'; script-src 'none';",
-      InsecureValueWarning("frame-src", "http://www.google.com")));
+      insecure_value_warning("frame-src", "http://www.google.com")));
 
   // script-src will add 'unsafe-inline' and 'unsafe-eval' only if script-src is
   // not specified.
@@ -521,20 +544,20 @@ TEST(ExtensionCSPValidator, EffectiveSandboxedPageCSP) {
       SanitizeSandboxPageCSP(
           "script-src 'none'; frame-src 'self' http://www.google.com;"),
       "frame-src 'self'; script-src 'none';",
-      InsecureValueWarning("frame-src", "http://www.google.com")));
+      insecure_value_warning("frame-src", "http://www.google.com")));
   EXPECT_TRUE(CheckCSP(
       SanitizeSandboxPageCSP(
           "script-src 'none'; child-src 'self' http://www.google.com;"),
       "child-src 'self'; script-src 'none';",
-      InsecureValueWarning("child-src", "http://www.google.com")));
+      insecure_value_warning("child-src", "http://www.google.com")));
 
   // Multiple insecure values.
   EXPECT_TRUE(CheckCSP(
       SanitizeSandboxPageCSP(
           "script-src 'none'; child-src http://bar.com 'self' http://foo.com;"),
       "child-src 'self'; script-src 'none';",
-      InsecureValueWarning("child-src", "http://bar.com"),
-      InsecureValueWarning("child-src", "http://foo.com")));
+      insecure_value_warning("child-src", "http://bar.com"),
+      insecure_value_warning("child-src", "http://foo.com")));
 }
 
 namespace extensions {

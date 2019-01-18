@@ -9,6 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace errors = extensions::manifest_errors;
+namespace keys = extensions::manifest_keys;
 using extensions::ErrorUtils;
 
 class ContentSecurityPolicyManifestTest : public ChromeManifestTest {
@@ -19,12 +20,15 @@ TEST_F(ContentSecurityPolicyManifestTest, InsecureContentSecurityPolicy) {
       Testcase(
           "insecure_contentsecuritypolicy_1.json",
           ErrorUtils::FormatErrorMessage(errors::kInvalidCSPInsecureValue,
+                                         keys::kContentSecurityPolicy,
                                          "http://example.com", "script-src")),
       Testcase("insecure_contentsecuritypolicy_2.json",
                ErrorUtils::FormatErrorMessage(errors::kInvalidCSPInsecureValue,
+                                              keys::kContentSecurityPolicy,
                                               "'unsafe-inline'", "script-src")),
       Testcase("insecure_contentsecuritypolicy_3.json",
                ErrorUtils::FormatErrorMessage(
-                   errors::kInvalidCSPMissingSecureSrc, "object-src"))};
+                   errors::kInvalidCSPMissingSecureSrc,
+                   keys::kContentSecurityPolicy, "object-src"))};
   RunTestcases(testcases, base::size(testcases), EXPECT_TYPE_WARNING);
 }

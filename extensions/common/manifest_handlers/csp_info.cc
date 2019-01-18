@@ -189,7 +189,7 @@ bool CSPHandler::ParseExtensionPagesCSP(
     base::StringPiece manifest_key,
     const base::Value* content_security_policy) {
   if (!content_security_policy)
-    return SetDefaultExtensionPagesCSP(extension);
+    return SetDefaultExtensionPagesCSP(extension, manifest_key);
 
   if (!content_security_policy->is_string()) {
     *error = GetInvalidManifestKeyError(manifest_key);
@@ -208,7 +208,8 @@ bool CSPHandler::ParseExtensionPagesCSP(
   // extension provided csp value and raising install warnings, see if we want
   // to raise errors and prevent the extension from loading.
   std::string sanitized_content_security_policy = SanitizeContentSecurityPolicy(
-      content_security_policy_str, GetValidatorOptions(extension), &warnings);
+      content_security_policy_str, manifest_key.as_string(),
+      GetValidatorOptions(extension), &warnings);
   extension->AddInstallWarnings(std::move(warnings));
 
   extension->SetManifestData(
@@ -241,13 +242,15 @@ bool CSPHandler::ParseSandboxCSP(Extension* extension,
 
   std::vector<InstallWarning> warnings;
   std::string effective_sandbox_csp =
-      csp_validator::GetEffectiveSandoxedPageCSP(sandbox_csp_str, &warnings);
+      csp_validator::GetEffectiveSandoxedPageCSP(
+          sandbox_csp_str, manifest_key.as_string(), &warnings);
   SetSandboxCSP(extension, std::move(effective_sandbox_csp));
   extension->AddInstallWarnings(std::move(warnings));
   return true;
 }
 
-bool CSPHandler::SetDefaultExtensionPagesCSP(Extension* extension) {
+bool CSPHandler::SetDefaultExtensionPagesCSP(Extension* extension,
+                                             base::StringPiece manifest_key) {
   // TODO(abarth): Should we continue to let extensions override the
   //               default Content-Security-Policy?
   const char* content_security_policy =
@@ -255,10 +258,10 @@ bool CSPHandler::SetDefaultExtensionPagesCSP(Extension* extension) {
           ? kDefaultPlatformAppContentSecurityPolicy
           : kDefaultContentSecurityPolicy;
 
-  DCHECK_EQ(
-      content_security_policy,
-      SanitizeContentSecurityPolicy(content_security_policy,
-                                    GetValidatorOptions(extension), nullptr));
+  DCHECK_EQ(content_security_policy,
+            SanitizeContentSecurityPolicy(
+                content_security_policy, manifest_key.as_string(),
+                GetValidatorOptions(extension), nullptr));
   extension->SetManifestData(
       keys::kContentSecurityPolicy,
       std::make_unique<CSPInfo>(content_security_policy));

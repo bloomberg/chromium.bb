@@ -470,7 +470,6 @@ extern const char kInvalidWebviewPartitionsList[];
 extern const char kInvalidWebURL[];
 extern const char kInvalidWebURLs[];
 extern const char kInvalidZipHash[];
-extern const char kInsecureContentSecurityPolicy[];
 extern const char kKeyIsDeprecatedWithReplacement[];
 extern const char kLauncherPagePageRequired[];
 extern const char kLaunchPathAndExtentAreExclusive[];

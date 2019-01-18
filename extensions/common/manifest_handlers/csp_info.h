@@ -76,7 +76,8 @@ class CSPHandler : public ManifestHandler {
                        const base::Value* sandbox_csp);
 
   // Sets the default CSP value for the extension.
-  bool SetDefaultExtensionPagesCSP(Extension* extension);
+  bool SetDefaultExtensionPagesCSP(Extension* extension,
+                                   base::StringPiece manifest_key);
 
   // Helper to set the sandbox content security policy manifest data.
   void SetSandboxCSP(Extension* extension, std::string sandbox_csp);
