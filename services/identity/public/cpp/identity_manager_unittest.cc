@@ -279,6 +279,10 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
     return batch_change_records_;
   }
 
+  const AccountInfo& account_from_account_updated_callback() {
+    return account_from_account_updated_callback_;
+  }
+
  private:
   // IdentityManager::Observer:
   void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override {
@@ -351,6 +355,10 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
     is_inside_batch_ = false;
   }
 
+  void OnAccountUpdated(const AccountInfo& info) override {
+    account_from_account_updated_callback_ = info;
+  }
+
   IdentityManager* identity_manager_;
   base::OnceClosure on_primary_account_set_callback_;
   base::OnceClosure on_primary_account_cleared_callback_;
@@ -366,6 +374,7 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   AccountInfo account_from_refresh_token_updated_callback_;
   std::string account_from_refresh_token_removed_callback_;
   AccountInfo account_from_error_state_of_refresh_token_updated_callback_;
+  AccountInfo account_from_account_updated_callback_;
   GoogleServiceAuthError
       error_from_error_state_of_refresh_token_updated_callback_;
   AccountsInCookieJarInfo accounts_info_from_cookie_change_callback_;
@@ -2111,6 +2120,27 @@ TEST_F(IdentityManagerTest, AreRefreshTokensLoaded) {
   token_service()->LoadCredentials("");
   run_loop.Run();
   EXPECT_TRUE(identity_manager()->AreRefreshTokensLoaded());
+}
+
+// Checks that IdentityManager::Observer gets OnAccountUpdated when account info
+// is updated.
+TEST_F(IdentityManagerTest, ObserveOnAccountUpdated) {
+  const AccountInfo account_info =
+      MakeAccountAvailable(identity_manager(), kTestEmail3);
+
+  base::DictionaryValue user_info;
+  user_info.SetString("id", account_info.account_id);
+  user_info.SetString("email", account_info.email);
+  account_tracker()->SetAccountInfoFromUserInfo(account_info.account_id,
+                                                &user_info);
+
+  EXPECT_EQ(account_info.account_id,
+            identity_manager_observer()
+                ->account_from_account_updated_callback()
+                .account_id);
+  EXPECT_EQ(account_info.email, identity_manager_observer()
+                                    ->account_from_account_updated_callback()
+                                    .email);
 }
 
 }  // namespace identity
