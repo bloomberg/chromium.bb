@@ -5,12 +5,14 @@
 package org.chromium.chrome.browser.omnibox.suggestions.editurl;
 
 import android.content.Context;
+import android.support.annotation.IntDef;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 
+import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -22,6 +24,9 @@ import org.chromium.chrome.browser.share.ShareMenuActionHandler;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.modelutil.PropertyModel;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * This class controls the interaction of the "edit url" suggestion item with the rest of the
@@ -49,6 +54,22 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
          */
         void setOmniboxEditingText(String text);
     }
+
+    /** The actions that can be performed on the suggestion view provided by this class. */
+    @IntDef({SuggestionAction.EDIT, SuggestionAction.COPY, SuggestionAction.SHARE,
+            SuggestionAction.TAP})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SuggestionAction {
+        int EDIT = 0;
+        int COPY = 1;
+        int SHARE = 2;
+        int TAP = 3;
+        int NUM_ENTRIES = 4;
+    }
+
+    private static final EnumeratedHistogramSample ENUMERATED_SUGGESTION_ACTION =
+            new EnumeratedHistogramSample(
+                    "Omnibox.EditUrlSuggestionAction", SuggestionAction.NUM_ENTRIES);
 
     /** The name of the parameter for getting the experiment variation. */
     private static final String FIELD_TRIAL_PARAM_NAME = "variation";
@@ -191,16 +212,20 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
         assert activityTab != null : "A tab is required to make changes to the location bar.";
 
         if (R.id.url_copy_icon == view.getId()) {
+            ENUMERATED_SUGGESTION_ACTION.record(SuggestionAction.COPY);
             Clipboard.getInstance().copyUrlToClipboard(mLastProcessedSuggestion.getUrl());
         } else if (R.id.url_share_icon == view.getId()) {
+            ENUMERATED_SUGGESTION_ACTION.record(SuggestionAction.SHARE);
             mLocationBarDelegate.clearOmniboxFocus();
             // TODO(mdjones): This should only share the displayed URL instead of the background
             //                tab.
             ShareMenuActionHandler.getInstance().onShareMenuItemSelected(
                     activityTab.getActivity(), activityTab, false, activityTab.isIncognito());
         } else if (R.id.url_edit_icon == view.getId()) {
+            ENUMERATED_SUGGESTION_ACTION.record(SuggestionAction.EDIT);
             mLocationBarDelegate.setOmniboxEditingText(mLastProcessedSuggestion.getUrl());
         } else {
+            ENUMERATED_SUGGESTION_ACTION.record(SuggestionAction.TAP);
             // If the event wasn't on any of the buttons, treat is as a tap on the general
             // suggestion.
             if (mSelectionHandler != null) {
