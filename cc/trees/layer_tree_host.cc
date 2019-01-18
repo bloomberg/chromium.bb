@@ -1135,6 +1135,8 @@ void LayerTreeHost::SetViewportSizeAndScale(
     float device_scale_factor,
     const viz::LocalSurfaceIdAllocation&
         local_surface_id_allocation_from_parent) {
+  const viz::LocalSurfaceId previous_local_surface_id =
+      local_surface_id_allocation_from_parent_.local_surface_id();
   SetLocalSurfaceIdAllocationFromParent(
       local_surface_id_allocation_from_parent);
 
@@ -1163,9 +1165,6 @@ void LayerTreeHost::SetViewportSizeAndScale(
       device_scale_factor_changed) {
     SetPropertyTreesNeedRebuild();
     SetNeedsCommit();
-#if defined(OS_MACOSX)
-    // TODO(ccameron): This check is not valid on Aura or Mus yet, but should
-    // be.
     CHECK(!has_pushed_local_surface_id_from_parent_ ||
           new_local_surface_id_request_ ||
           !local_surface_id_allocation_from_parent_.IsValid())
@@ -1176,8 +1175,9 @@ void LayerTreeHost::SetViewportSizeAndScale(
         << ". Changed state: device_viewport_size "
         << device_viewport_size_changed << " painted_device_scale_factor "
         << painted_device_scale_factor_changed << " device_scale_factor "
-        << device_scale_factor_changed;
-#endif
+        << device_scale_factor_changed << " cached LSId "
+        << previous_local_surface_id.ToString() << " new LSId "
+        << local_surface_id_allocation_from_parent.ToString();
   }
 }
 
