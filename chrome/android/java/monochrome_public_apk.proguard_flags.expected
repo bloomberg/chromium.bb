@@ -246,6 +246,18 @@
 }
 
 ################################################################################
+# ../../base/android/proguard/dcheck_is_off.flags
+################################################################################
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Contains flags that are applied only when ENABLE_DCHECK=false.
+
+# Ensure that GcStateAssert is fully optimized away.
+-checkdiscard class org.chromium.base.GcStateAssert$WrappedReference { *; }
+
+################################################################################
 # ../../base/android/proguard/enable_obfuscation.flags
 ################################################################################
 # Copyright 2016 The Chromium Authors. All rights reserved.

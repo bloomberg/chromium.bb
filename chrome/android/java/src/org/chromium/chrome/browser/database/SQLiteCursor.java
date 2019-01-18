@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.database;
 
 import android.database.AbstractCursor;
 import android.database.CursorWindow;
-import android.util.Log;
 
+import org.chromium.base.GcStateAssert;
 import org.chromium.base.annotations.CalledByNative;
 
 import java.sql.Types;
@@ -32,6 +32,8 @@ public class SQLiteCursor extends AbstractCursor {
     // the callback result in native side.
     private final Object mMoveLock = new Object();
     private final Object mGetBlobLock = new Object();
+
+    private final GcStateAssert mGcStateAssert = GcStateAssert.create(this);
 
     private SQLiteCursor(long nativeSQLiteCursor) {
         mNativeSQLiteCursor = nativeSQLiteCursor;
@@ -97,6 +99,7 @@ public class SQLiteCursor extends AbstractCursor {
             if (mNativeSQLiteCursor != 0) {
                 nativeDestroy(mNativeSQLiteCursor);
                 mNativeSQLiteCursor = 0;
+                GcStateAssert.setSafeToGc(mGcStateAssert, true);
             }
         }
     }
@@ -119,15 +122,6 @@ public class SQLiteCursor extends AbstractCursor {
     @Deprecated
     public boolean supportsUpdates() {
         return false;
-    }
-
-    @Override
-    protected void finalize() {
-        super.finalize();
-        if (!isClosed()) {
-            Log.w(TAG, "Cursor hasn't been closed");
-            close();
-        }
     }
 
     @Override
