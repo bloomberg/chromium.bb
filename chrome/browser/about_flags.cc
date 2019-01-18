@@ -3000,14 +3000,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLeftToRightUrlsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kLeftToRightUrls)},
 
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN) || \
-    defined(OS_ANDROID)
+#if defined(OS_ANDROID)
     {"omnibox-new-answer-layout",
      flag_descriptions::kOmniboxNewAnswerLayoutName,
-     flag_descriptions::kOmniboxNewAnswerLayoutDescription,
-     kOsAndroid | kOsDesktop,
+     flag_descriptions::kOmniboxNewAnswerLayoutDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxNewAnswerLayout)},
-#endif
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
     {"omnibox-reverse-answers", flag_descriptions::kOmniboxReverseAnswersName,
