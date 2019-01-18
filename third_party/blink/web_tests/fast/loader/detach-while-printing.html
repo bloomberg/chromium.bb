@@ -1,10 +1,14 @@
 <script>
-if (window.testRunner)
+if (window.testRunner) {
   testRunner.dumpAsText();
+  testRunner.waitUntilDone();
+}
 print();
 setTimeout(() => {
   var child = document.querySelector('object');
   child.parentNode.removeChild(child);
+  if (window.testRunner)
+    testRunner.notifyDone();
 });
 </script>
 <object data="/404-dir-should-not-exist/"></object>
