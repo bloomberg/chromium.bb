@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/c++/c++.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/jumbo.gni")
 import("//build/util/lastchange.gni")
@@ -604,14 +605,18 @@ if (is_mac) {
       "$root_out_dir/crashpad_handler",
     ]
 
-    if (is_component_build) {
-      sources += [ "$root_out_dir/libbase.dylib" ]
-    }
-
     deps = [
       "//base",
       "//third_party/crashpad/crashpad/handler:crashpad_handler",
     ]
+
+    if (is_component_build) {
+      sources += [ "$root_out_dir/libbase.dylib" ]
+      if (use_custom_libcxx) {
+        sources += [ "$root_out_dir/libc++.dylib" ]
+        deps += [ "//buildtools/third_party/libc++:libc++" ]
+      }
+    }
 
     outputs = [
       "$root_out_dir/Helpers/{{source_file_part}}",

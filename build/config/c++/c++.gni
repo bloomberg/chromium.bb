@@ -5,13 +5,13 @@
 import("//build/config/sanitizers/sanitizers.gni")
 
 declare_args() {
-  # Use libc++ (buildtools/third_party/libc++ and
-  # buildtools/third_party/libc++abi) instead of stdlibc++ as standard
-  # library.
+  # Use in-tree libc++ (buildtools/third_party/libc++ and
+  # buildtools/third_party/libc++abi) instead of the system C++ library for C++
+  # standard library support.
   # Don't check in changes that set this to false for more platforms; doing so
   # is not supported.
   use_custom_libcxx =
-      is_msan || is_fuchsia || is_android ||
+      is_fuchsia || is_android || is_mac ||
       (is_linux &&
        (!is_chromeos || default_toolchain != "//build/toolchain/cros:target"))
 

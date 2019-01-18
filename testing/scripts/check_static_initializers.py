@@ -19,7 +19,9 @@ EXPECTED_LINUX_SI_COUNTS = {
     'nacl_helper_bootstrap': 0,
 }
 
-EXPECTED_MAC_SI_COUNT = 0
+# A static initializer is needed on Mac for libc++ to set up std::cin/cout/cerr
+# before main() runs.
+EXPECTED_MAC_SI_COUNT = 1
 
 
 def run_process(command):
