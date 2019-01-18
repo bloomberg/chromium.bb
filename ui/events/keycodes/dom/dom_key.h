@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 
 namespace ui {
@@ -97,12 +98,20 @@ class DomKey {
     DCHECK(value == 0 || IsValid()) << value;
   }
 
+  // Factory that returns a DomKey for the specified value. Returns nullopt if
+  // |value| is not a valid value (or NONE).
+  static base::Optional<DomKey> FromBase(Base value) {
+    if (value != 0 && !IsValidValue(value))
+      return base::nullopt;
+    return Base(value);
+  }
+
   // Obtain the encoded integer representation of the DomKey.
   operator Base() const { return value_; }
 
   // True if the value is a valid DomKey (which excludes DomKey::NONE and
   // integers not following the DomKey format).
-  bool IsValid() const { return (value_ & TYPE_MASK) != 0; }
+  bool IsValid() const { return IsValidValue(value_); }
 
   // True if the value is a Unicode code point.
   bool IsCharacter() const { return (value_ & TYPE_MASK) == TYPE_UNICODE; }
@@ -148,6 +157,8 @@ class DomKey {
   };
 
  private:
+  static bool IsValidValue(Base value) { return (value & TYPE_MASK) != 0; }
+
   Base value_;
 };
 

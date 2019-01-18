@@ -902,10 +902,12 @@ KeyEvent::KeyEvent(EventType type,
                    DomCode code,
                    int flags,
                    DomKey key,
-                   base::TimeTicks time_stamp)
+                   base::TimeTicks time_stamp,
+                   bool is_char)
     : Event(type, time_stamp, flags),
       key_code_(key_code),
       code_(code),
+      is_char_(is_char),
       key_(key) {}
 
 KeyEvent::KeyEvent(base::char16 character,
