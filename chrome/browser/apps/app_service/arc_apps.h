@@ -60,12 +60,24 @@ class ArcApps : public KeyedService,
   void OnConnectionReady() override;
 
   // ArcAppListPrefs::Observer overrides.
-  // TODO(crbug.com/826982): implement.
+  void OnAppRegistered(const std::string& app_id,
+                       const ArcAppListPrefs::AppInfo& app_info) override;
+  void OnAppStatesChanged(const std::string& app_id,
+                          const ArcAppListPrefs::AppInfo& app_info) override;
+  void OnAppRemoved(const std::string& app_id) override;
+  void OnAppIconUpdated(const std::string& app_id,
+                        const ArcAppIconDescriptor& descriptor) override;
+  void OnAppNameUpdated(const std::string& app_id,
+                        const std::string& name) override;
+  void OnAppLastLaunchTimeUpdated(const std::string& app_id) override;
 
   void ObservePrefs();
 
   apps::mojom::AppPtr Convert(const std::string& app_id,
                               const ArcAppListPrefs::AppInfo& app_info);
+  apps::mojom::IconKeyPtr NewIconKey(const std::string& app_id);
+  static apps::mojom::Readiness NewReadiness(bool ready);
+  void Publish(apps::mojom::AppPtr app);
 
   mojo::Binding<apps::mojom::Publisher> binding_;
   mojo::InterfacePtrSet<apps::mojom::Subscriber> subscribers_;
