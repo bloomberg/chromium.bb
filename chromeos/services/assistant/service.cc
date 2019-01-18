@@ -20,7 +20,7 @@
 #include "chromeos/services/assistant/assistant_settings_manager.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "services/identity/public/cpp/scope_set.h"
 #include "services/identity/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -255,7 +255,7 @@ void Service::GetPrimaryAccountInfoCallback(
   }
   account_id_ = AccountId::FromUserEmailGaiaId(account_info.value().email,
                                                account_info.value().gaia);
-  OAuth2TokenService::ScopeSet scopes;
+  identity::ScopeSet scopes;
   scopes.insert(kScopeAssistant);
   scopes.insert(kScopeAuthGcm);
   identity_manager_->GetAccessToken(
