@@ -60,17 +60,17 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
         readingListModel:(ReadingListModel*)readingListModel {
   self = [super init];
   if (self) {
-    _mostVisitedSites = std::move(mostVisitedSites);
-    _mostVisitedBridge =
-        std::make_unique<ntp_tiles::MostVisitedSitesObserverBridge>(self);
-    _mostVisitedSites->SetMostVisitedURLsObserver(_mostVisitedBridge.get(),
-                                                  kMaxNumMostVisitedTiles);
-
     _faviconAttributesProvider = [[FaviconAttributesProvider alloc]
         initWithFaviconSize:kFaviconSize
              minFaviconSize:kFaviconMinimalSize
            largeIconService:largeIconService];
     _faviconAttributesProvider.cache = largeIconCache;
+
+    _mostVisitedSites = std::move(mostVisitedSites);
+    _mostVisitedBridge =
+        std::make_unique<ntp_tiles::MostVisitedSitesObserverBridge>(self);
+    _mostVisitedSites->SetMostVisitedURLsObserver(_mostVisitedBridge.get(),
+                                                  kMaxNumMostVisitedTiles);
 
     _readingListModelBridge =
         std::make_unique<ReadingListModelBridge>(self, readingListModel);
