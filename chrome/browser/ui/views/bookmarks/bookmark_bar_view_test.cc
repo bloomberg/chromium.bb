@@ -766,9 +766,8 @@ class BookmarkBarViewTest5 : public BookmarkBarViewEventTestBase {
 
   GURL url_dragging_;
 };
-// flaky on Windows: https://crbug.com/400578
-// flaky on ChromeOS: https://crbug.com/758210
-#if !defined(OS_WIN) && !defined(OS_CHROMEOS)
+// flaky on LinuxChromeOS: https://crbug.com/758210
+#if !defined(OS_LINUX) && !defined(OS_CHROMEOS)
 VIEW_TEST(BookmarkBarViewTest5, DND)
 #endif
 
