@@ -135,7 +135,6 @@ NavigationHandleImpl::NavigationHandleImpl(
     const GURL& url,
     const base::Optional<url::Origin>& initiator_origin,
     const std::vector<GURL>& redirect_chain,
-    FrameTreeNode* frame_tree_node,
     bool is_renderer_initiated,
     bool is_same_document,
     base::TimeTicks navigation_start,
@@ -175,7 +174,6 @@ NavigationHandleImpl::NavigationHandleImpl(
       method_(method),
       request_headers_(std::move(request_headers)),
       state_(INITIAL),
-      frame_tree_node_(frame_tree_node),
       navigation_start_(navigation_start),
       input_start_(input_start),
       pending_nav_entry_id_(pending_nav_entry_id),
@@ -201,13 +199,21 @@ NavigationHandleImpl::NavigationHandleImpl(
       weak_factory_(this) {
   TRACE_EVENT_ASYNC_BEGIN2("navigation", "NavigationHandle", this,
                            "frame_tree_node",
-                           frame_tree_node_->frame_tree_node_id(), "url",
+                           frame_tree_node()->frame_tree_node_id(), "url",
                            url_.possibly_invalid_spec());
   DCHECK(!navigation_start.is_null());
   DCHECK(!IsRendererDebugURL(url));
 
+  site_url_ = SiteInstance::GetSiteForURL(frame_tree_node()
+                                              ->current_frame_host()
+                                              ->GetSiteInstance()
+                                              ->GetBrowserContext(),
+                                          url_);
+  if (redirect_chain_.empty())
+    redirect_chain_.push_back(url);
+
   starting_site_instance_ =
-      frame_tree_node_->current_frame_host()->GetSiteInstance();
+      frame_tree_node()->current_frame_host()->GetSiteInstance();
 
   site_url_ = SiteInstanceImpl::GetSiteForURL(
       starting_site_instance_->GetBrowserContext(),
@@ -238,7 +244,7 @@ NavigationHandleImpl::NavigationHandleImpl(
   // to its tab closing.
   NavigationControllerImpl* nav_controller =
       static_cast<NavigationControllerImpl*>(
-          frame_tree_node_->navigator()->GetController());
+          frame_tree_node()->navigator()->GetController());
   if (pending_nav_entry_id_ && nav_controller) {
     NavigationEntryImpl* nav_entry =
         nav_controller->GetEntryWithUniqueID(pending_nav_entry_id_);
@@ -277,7 +283,7 @@ NavigationHandleImpl::~NavigationHandleImpl() {
         RenderProcessHost::FromID(expected_render_process_host_id_);
     if (process) {
       RenderProcessHostImpl::RemoveExpectedNavigationToSite(
-          frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
+          frame_tree_node()->navigator()->GetController()->GetBrowserContext(),
           process, site_url_);
     }
   }
@@ -293,7 +299,7 @@ NavigationHandleImpl::~NavigationHandleImpl() {
 }
 
 NavigatorDelegate* NavigationHandleImpl::GetDelegate() const {
-  return frame_tree_node_->navigator()->GetDelegate();
+  return frame_tree_node()->navigator()->GetDelegate();
 }
 
 int64_t NavigationHandleImpl::GetNavigationId() const {
@@ -309,12 +315,12 @@ SiteInstanceImpl* NavigationHandleImpl::GetStartingSiteInstance() {
 }
 
 bool NavigationHandleImpl::IsInMainFrame() {
-  return frame_tree_node_->IsMainFrame();
+  return frame_tree_node()->IsMainFrame();
 }
 
 bool NavigationHandleImpl::IsParentMainFrame() {
-  if (frame_tree_node_->parent())
-    return frame_tree_node_->parent()->IsMainFrame();
+  if (frame_tree_node()->parent())
+    return frame_tree_node()->parent()->IsMainFrame();
 
   return false;
 }
@@ -332,14 +338,14 @@ const std::vector<GURL>& NavigationHandleImpl::GetRedirectChain() {
 }
 
 int NavigationHandleImpl::GetFrameTreeNodeId() {
-  return frame_tree_node_->frame_tree_node_id();
+  return frame_tree_node()->frame_tree_node_id();
 }
 
 RenderFrameHostImpl* NavigationHandleImpl::GetParentFrame() {
-  if (frame_tree_node_->IsMainFrame())
+  if (IsInMainFrame())
     return nullptr;
 
-  return frame_tree_node_->parent()->current_frame_host();
+  return frame_tree_node()->parent()->current_frame_host();
 }
 
 base::TimeTicks NavigationHandleImpl::NavigationStart() {
@@ -536,12 +542,8 @@ void NavigationHandleImpl::RegisterSubresourceOverride(
   if (!transferrable_loader)
     return;
 
-  NavigationRequest* request = frame_tree_node_->navigation_request();
-  if (!request)
-    request = frame_tree_node_->current_frame_host()->navigation_request();
-
-  if (request)
-    request->RegisterSubresourceOverride(std::move(transferrable_loader));
+  navigation_request_->RegisterSubresourceOverride(
+      std::move(transferrable_loader));
 }
 
 const GlobalRequestID& NavigationHandleImpl::GetGlobalRequestID() {
@@ -776,7 +778,7 @@ void NavigationHandleImpl::ReadyToCommitNavigation(
   if (!IsSameDocument() && !is_error) {
     is_same_process_ =
         render_frame_host_->GetProcess()->GetID() ==
-        frame_tree_node_->current_frame_host()->GetProcess()->GetID();
+        frame_tree_node()->current_frame_host()->GetProcess()->GetID();
     LogIsSameProcess(transition_, is_same_process_);
 
     // Don't log process-priority-specific UMAs for TimeToReadyToCommit2 metric
@@ -818,7 +820,7 @@ void NavigationHandleImpl::DidCommitNavigation(
     NavigationType navigation_type,
     RenderFrameHostImpl* render_frame_host) {
   DCHECK(!render_frame_host_ || render_frame_host_ == render_frame_host);
-  DCHECK_EQ(frame_tree_node_, render_frame_host->frame_tree_node());
+  DCHECK_EQ(frame_tree_node(), render_frame_host->frame_tree_node());
   CHECK_EQ(url_, params.url);
 
   did_replace_entry_ = did_replace_entry;
@@ -923,7 +925,7 @@ void NavigationHandleImpl::SetExpectedProcess(
       RenderProcessHost::FromID(expected_render_process_host_id_);
   if (old_process) {
     RenderProcessHostImpl::RemoveExpectedNavigationToSite(
-        frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
+        frame_tree_node()->navigator()->GetController()->GetBrowserContext(),
         old_process, site_url_);
   }
 
@@ -936,7 +938,7 @@ void NavigationHandleImpl::SetExpectedProcess(
   // navigation to |site_url_|.
   expected_render_process_host_id_ = expected_process->GetID();
   RenderProcessHostImpl::AddExpectedNavigationToSite(
-      frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
+      frame_tree_node()->navigator()->GetController()->GetBrowserContext(),
       expected_process, site_url_);
 }
 
@@ -1085,7 +1087,7 @@ bool NavigationHandleImpl::IsSelfReferentialURL() {
   // We allow one level of self-reference because some sites depend on that,
   // but we don't allow more than one.
   bool found_self_reference = false;
-  for (const FrameTreeNode* node = frame_tree_node_->parent(); node;
+  for (const FrameTreeNode* node = frame_tree_node()->parent(); node;
        node = node->parent()) {
     if (node->current_url().EqualsIgnoringRef(url_)) {
       if (found_self_reference)
@@ -1101,7 +1103,7 @@ void NavigationHandleImpl::UpdateSiteURL(
   // TODO(alexmos): Using |starting_site_instance_|'s IsolationContext may not
   // be correct for cross-BrowsingInstance redirects.
   GURL new_site_url = SiteInstanceImpl::GetSiteForURL(
-      frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
+      frame_tree_node()->navigator()->GetController()->GetBrowserContext(),
       starting_site_instance_->GetIsolationContext(), url_);
   int post_redirect_process_id = post_redirect_process
                                      ? post_redirect_process->GetID()
