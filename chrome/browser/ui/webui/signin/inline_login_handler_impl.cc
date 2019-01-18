@@ -35,7 +35,6 @@
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/local_auth.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -58,7 +57,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/about_signin_internals.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/browser/signin_investigator.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -70,6 +68,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
+#include "services/identity/public/cpp/accounts_mutator.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -306,6 +305,8 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
   about_signin_internals->OnRefreshTokenReceived("Successful");
 
   // Prime the account tracker with this combination of gaia id/display email.
+  // TODO(crbug.com/922026): Migrate to AccountsMutator, figuring out how to
+  // integrate with the call to AddOrUpdateAccount() below.
   AccountTrackerService* account_tracker_service =
       AccountTrackerServiceFactory::GetForProfile(profile_);
   std::string account_id =
@@ -338,12 +339,11 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
   if (reason == signin_metrics::Reason::REASON_REAUTHENTICATION ||
       reason == signin_metrics::Reason::REASON_UNLOCK ||
       reason == signin_metrics::Reason::REASON_ADD_SECONDARY_ACCOUNT) {
-    account_tracker_service->SetIsAdvancedProtectionAccount(
-        account_id, result.is_under_advanced_protection);
-    ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)
-        ->UpdateCredentials(account_id, result.refresh_token,
-                            signin_metrics::SourceForRefreshTokenOperation::
-                                kInlineLoginHandler_Signin);
+    identity_manager->GetAccountsMutator()->AddOrUpdateAccount(
+        gaia_id_, email_, result.refresh_token,
+        result.is_under_advanced_protection,
+        signin_metrics::SourceForRefreshTokenOperation::
+            kInlineLoginHandler_Signin);
 
     if (signin::IsAutoCloseEnabledInEmbeddedURL(current_url_)) {
       // Close the gaia sign in tab via a task to make sure we aren't in the
@@ -358,9 +358,8 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
 
     if (reason == signin_metrics::Reason::REASON_REAUTHENTICATION ||
         reason == signin_metrics::Reason::REASON_UNLOCK) {
-      auto* account_mutator = identity_manager->GetPrimaryAccountMutator();
-      DCHECK(account_mutator);
-      account_mutator->LegacyMergeSigninCredentialIntoCookieJar();
+      identity_manager->GetPrimaryAccountMutator()
+          ->LegacyMergeSigninCredentialIntoCookieJar();
     }
     LogSigninReason(reason);
   } else {
