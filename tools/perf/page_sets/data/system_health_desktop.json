@@ -81,6 +81,9 @@
         "browse:social:tumblr_infinite_scroll": {
             "DEFAULT": "system_health_desktop_056.wprgo"
         },
+        "browse:social:tumblr_infinite_scroll:2018": {
+            "DEFAULT": "system_health_desktop_049d29ed85.wprgo"
+        },
         "browse:social:twitter": {
             "DEFAULT": "system_health_desktop_053.wprgo"
         },
