@@ -11,8 +11,8 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
-#include "content/public/renderer/media_stream_sink.h"
 #include "media/capture/video_capturer_source.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_sink.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 
 namespace content {
@@ -24,7 +24,7 @@ namespace content {
 //
 // http://dev.w3.org/2011/webrtc/editor/getusermedia.html
 // All methods calls will be done from the main render thread.
-class CONTENT_EXPORT MediaStreamVideoSink : public MediaStreamSink {
+class CONTENT_EXPORT MediaStreamVideoSink : public blink::WebMediaStreamSink {
  protected:
   MediaStreamVideoSink();
   ~MediaStreamVideoSink() override;
@@ -59,7 +59,6 @@ class CONTENT_EXPORT MediaStreamVideoSink : public MediaStreamSink {
   // Set by ConnectToTrack() and cleared by DisconnectFromTrack().
   blink::WebMediaStreamTrack connected_track_;
 };
-
 
 }  // namespace content
 

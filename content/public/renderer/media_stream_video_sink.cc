@@ -8,7 +8,7 @@
 
 namespace content {
 
-MediaStreamVideoSink::MediaStreamVideoSink() : MediaStreamSink() {}
+MediaStreamVideoSink::MediaStreamVideoSink() : blink::WebMediaStreamSink() {}
 
 MediaStreamVideoSink::~MediaStreamVideoSink() {
   // Ensure this sink has disconnected from the track.

@@ -9,7 +9,7 @@
 
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/public/renderer/media_stream_sink.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_sink.h"
 
 namespace blink {
 class WebMediaStreamTrack;
@@ -22,7 +22,7 @@ class AudioParameters;
 
 namespace content {
 
-class CONTENT_EXPORT MediaStreamAudioSink : public MediaStreamSink {
+class CONTENT_EXPORT MediaStreamAudioSink : public blink::WebMediaStreamSink {
  public:
   // Adds a MediaStreamAudioSink to the audio track to receive audio data from
   // the track.
