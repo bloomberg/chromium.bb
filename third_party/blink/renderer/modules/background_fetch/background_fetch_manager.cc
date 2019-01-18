@@ -123,9 +123,6 @@ scoped_refptr<BlobDataHandle> ExtractBlobHandle(
     ExceptionState& exception_state) {
   DCHECK(request);
 
-  if (!RuntimeEnabledFeatures::BackgroundFetchUploadsEnabled())
-    return nullptr;
-
   if (request->IsBodyLocked(exception_state) == Body::BodyLocked::kLocked ||
       request->IsBodyUsed(exception_state) == Body::BodyUsed::kUsed) {
     DCHECK(!exception_state.HadException());
@@ -183,15 +180,6 @@ ScriptPromise BackgroundFetchManager::fetch(
   // Record whether any requests had a body. If there were, reject the promise.
   UMA_HISTOGRAM_BOOLEAN("BackgroundFetch.HasRequestsWithBody",
                         has_requests_with_body);
-
-  if (has_requests_with_body &&
-      !RuntimeEnabledFeatures::BackgroundFetchUploadsEnabled()) {
-    return ScriptPromise::Reject(
-        script_state, V8ThrowException::CreateTypeError(
-                          script_state->GetIsolate(),
-                          "Requests with a body are not yet supported. "
-                          "For updates check http://crbug.com/774054"));
-  }
 
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
 

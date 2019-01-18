@@ -122,10 +122,6 @@
       status: "experimental",
     },
     {
-      name: "BackgroundFetchUploads",
-      status: "experimental",
-    },
-    {
       name: "BackgroundVideoTrackOptimization",
       status: "stable",
     },

@@ -10,7 +10,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_impl.h"
 #include "chrome/browser/browser_process.h"
@@ -32,7 +31,6 @@
 #include "components/offline_items_collection/core/offline_item.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -229,13 +227,6 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
       : offline_content_provider_observer_(
             std::make_unique<OfflineContentProviderObserver>()) {}
   ~BackgroundFetchBrowserTest() override = default;
-
-  // InProcessBrowserTest overrides:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kBackgroundFetchUploads);
-    InProcessBrowserTest::SetUp();
-  }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Background Fetch is available as an experimental Web Platform feature.
@@ -479,8 +470,6 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
 
   Browser* active_browser_ = nullptr;
-
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchBrowserTest);
 };
