@@ -27,6 +27,7 @@ public class BaseRobolectricTestRunner extends LocalRobolectricTestRunner {
         @Override
         public void beforeTest(Method method) {
             ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
+            ApplicationStatus.initialize(RuntimeEnvironment.application);
             CommandLine.init(null);
             super.beforeTest(method);
         }

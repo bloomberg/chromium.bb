@@ -109,7 +109,6 @@ public class OfflineBackgroundTaskTest {
         CommandLine.init(new String[] {"testcommand", IS_LOW_END_DEVICE_SWITCH});
 
         // Set up single, stopped Activity.
-        ApplicationStatus.destroyForJUnitTests();
         mTestActivity = new Activity();
         ApplicationStatus.onStateChangeForTesting(mTestActivity, ActivityState.CREATED);
         ApplicationStatus.onStateChangeForTesting(mTestActivity, ActivityState.STOPPED);
@@ -120,7 +119,6 @@ public class OfflineBackgroundTaskTest {
         // Clean up static state for subsequent Robolectric tests.
         CommandLine.reset();
         SysUtils.resetForTesting();
-        ApplicationStatus.destroyForJUnitTests();
     }
 
     private void setupScheduledProcessingWithResult(boolean result) {
