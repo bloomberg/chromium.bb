@@ -431,6 +431,9 @@ TimeRanges* MediaSource::Buffered() const {
 }
 
 TimeRanges* MediaSource::Seekable() const {
+  DCHECK(attached_element_)
+      << "Seekable should only be used when attached to HTMLMediaElement";
+
   // Implements MediaSource algorithm for HTMLMediaElement.seekable.
   // http://w3c.github.io/media-source/#htmlmediaelement-extensions
 
@@ -441,7 +444,7 @@ TimeRanges* MediaSource::Seekable() const {
 
   // If duration equals positive Infinity:
   if (source_duration == std::numeric_limits<double>::infinity()) {
-    TimeRanges* buffered = attached_element_->buffered();
+    TimeRanges* buffered = Buffered();
 
     // 1. If live seekable range is not empty:
     if (live_seekable_range_->length() != 0) {
