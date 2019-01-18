@@ -37,18 +37,6 @@ PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::ResolutionImpl(
 
 PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::~ResolutionImpl() {}
 
-const std::string&
-PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::GetName() {
-  return name_;
-}
-
-void PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::Start(
-    const ResultCallback& callback) {
-  endpoint_resolver_->Start(name_,
-                            base::Bind(&ResolutionImpl::ResolveComplete,
-                                       base::Unretained(this), callback));
-}
-
 void PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::Start(
     const net::HostPortPair& address,
     const ResultCallback& callback) {

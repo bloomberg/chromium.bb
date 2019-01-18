@@ -67,12 +67,6 @@ class MockPrivetHttpFactory : public PrivetHTTPAsynchronousFactory {
       callback.Run(std::move(privet_http_client));
     }
 
-    void Start(const ResultCallback& callback) override {
-      Start(net::HostPortPair(), callback);
-    }
-
-    const std::string& GetName() override { return name_; }
-
    private:
     std::string name_;
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

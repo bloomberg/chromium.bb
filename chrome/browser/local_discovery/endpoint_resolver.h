@@ -32,15 +32,9 @@ class EndpointResolver {
   EndpointResolver();
   ~EndpointResolver();
 
-  void Start(const std::string& service_name, ResultCallback callback);
-
   void Start(const net::HostPortPair& address, ResultCallback callback);
 
  private:
-  void ServiceResolveComplete(ResultCallback callback,
-                              ServiceResolver::RequestStatus result,
-                              const ServiceDescription& description);
-
   void DomainResolveComplete(uint16_t port,
                              ResultCallback callback,
                              bool success,

@@ -20,25 +20,6 @@ EndpointResolver::EndpointResolver() {
 
 EndpointResolver::~EndpointResolver() {}
 
-void EndpointResolver::Start(const std::string& service_name,
-                             ResultCallback callback) {
-  service_resolver_ = service_discovery_client_->CreateServiceResolver(
-      service_name,
-      base::BindOnce(&EndpointResolver::ServiceResolveComplete,
-                     base::Unretained(this), std::move(callback)));
-  service_resolver_->StartResolving();
-}
-
-void EndpointResolver::ServiceResolveComplete(
-    ResultCallback callback,
-    ServiceResolver::RequestStatus result,
-    const ServiceDescription& description) {
-  if (result != ServiceResolver::STATUS_SUCCESS)
-    return std::move(callback).Run(net::IPEndPoint());
-
-  Start(description.address, std::move(callback));
-}
-
 void EndpointResolver::Start(const net::HostPortPair& address,
                              ResultCallback callback) {
 #if defined(OS_MACOSX)
