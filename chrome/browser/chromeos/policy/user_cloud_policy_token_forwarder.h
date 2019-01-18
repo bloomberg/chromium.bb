@@ -45,6 +45,10 @@ class UserCloudPolicyTokenForwarder : public KeyedService,
   // returned invalid data.
   static const net::BackoffEntry::Policy kFetchTokenRetryBackoffPolicy;
 
+  // Histogram to log errors occurred while fetching OAuth token for child user.
+  static constexpr char kUMAChildUserOAuthTokenError[] =
+      "Enterprise.UserPolicyChromeOS.ChildUser.OAuthTokenError";
+
   // The factory of this PKS depends on the factories of these two arguments,
   // so this object will be Shutdown() first and these pointers can be used
   // until that point.

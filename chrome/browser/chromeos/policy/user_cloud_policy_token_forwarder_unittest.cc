@@ -14,6 +14,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
@@ -195,8 +196,9 @@ class UserCloudPolicyTokenForwarderTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
 
-  std::unique_ptr<MockUserCloudPolicyManagerChromeOS> user_policy_manager_;
+  base::HistogramTester histogram_tester_;
 
+  std::unique_ptr<MockUserCloudPolicyManagerChromeOS> user_policy_manager_;
   scoped_refptr<base::TestMockTimeTaskRunner> mock_time_task_runner_;
 
  private:
@@ -233,6 +235,9 @@ TEST_F(UserCloudPolicyTokenForwarderTest,
   IssueOAuthToken(kOAuthToken, mock_time_task_runner_->Now() + kTokenLifetime);
   EXPECT_FALSE(token_forwarder->IsTokenFetchInProgressForTesting());
   EXPECT_FALSE(token_forwarder->IsTokenRefreshScheduledForTesting());
+
+  histogram_tester_.ExpectTotalCount(
+      UserCloudPolicyTokenForwarder::kUMAChildUserOAuthTokenError, 0);
 }
 
 TEST_F(UserCloudPolicyTokenForwarderTest, RegularUserServiceInitialized) {
@@ -247,6 +252,9 @@ TEST_F(UserCloudPolicyTokenForwarderTest, RegularUserServiceInitialized) {
       CreateTokenForwarder();
   EXPECT_TRUE(token_forwarder->IsTokenFetchInProgressForTesting());
   EXPECT_FALSE(token_forwarder->IsTokenRefreshScheduledForTesting());
+
+  histogram_tester_.ExpectTotalCount(
+      UserCloudPolicyTokenForwarder::kUMAChildUserOAuthTokenError, 0);
 }
 
 TEST_F(UserCloudPolicyTokenForwarderTest,
@@ -266,6 +274,9 @@ TEST_F(UserCloudPolicyTokenForwarderTest,
   token_forwarder->Shutdown();
   EXPECT_FALSE(token_forwarder->IsTokenFetchInProgressForTesting());
   EXPECT_FALSE(token_forwarder->IsTokenRefreshScheduledForTesting());
+
+  histogram_tester_.ExpectTotalCount(
+      UserCloudPolicyTokenForwarder::kUMAChildUserOAuthTokenError, 0);
 }
 
 TEST_F(UserCloudPolicyTokenForwarderTest, RegularUserTokenFetchFailed) {
@@ -283,6 +294,9 @@ TEST_F(UserCloudPolicyTokenForwarderTest, RegularUserTokenFetchFailed) {
   IssueOAuthTokenError();
   EXPECT_FALSE(token_forwarder->IsTokenFetchInProgressForTesting());
   EXPECT_FALSE(token_forwarder->IsTokenRefreshScheduledForTesting());
+
+  histogram_tester_.ExpectTotalCount(
+      UserCloudPolicyTokenForwarder::kUMAChildUserOAuthTokenError, 0);
 }
 
 TEST_F(UserCloudPolicyTokenForwarderTest,
@@ -311,6 +325,10 @@ TEST_F(UserCloudPolicyTokenForwarderTest,
   token_forwarder->Shutdown();
   EXPECT_FALSE(token_forwarder->IsTokenFetchInProgressForTesting());
   EXPECT_FALSE(token_forwarder->IsTokenRefreshScheduledForTesting());
+
+  histogram_tester_.ExpectUniqueSample(
+      UserCloudPolicyTokenForwarder::kUMAChildUserOAuthTokenError,
+      GoogleServiceAuthError::State::NONE, 1);
 }
 
 TEST_F(UserCloudPolicyTokenForwarderTest, ChildUserServiceInitialized) {
@@ -325,6 +343,9 @@ TEST_F(UserCloudPolicyTokenForwarderTest, ChildUserServiceInitialized) {
       CreateTokenForwarder();
   EXPECT_TRUE(token_forwarder->IsTokenFetchInProgressForTesting());
   EXPECT_FALSE(token_forwarder->IsTokenRefreshScheduledForTesting());
+
+  histogram_tester_.ExpectTotalCount(
+      UserCloudPolicyTokenForwarder::kUMAChildUserOAuthTokenError, 0);
 }
 
 TEST_F(UserCloudPolicyTokenForwarderTest, ChildUserShutdownBeforeTokenFetched) {
@@ -343,6 +364,9 @@ TEST_F(UserCloudPolicyTokenForwarderTest, ChildUserShutdownBeforeTokenFetched) {
   token_forwarder->Shutdown();
   EXPECT_FALSE(token_forwarder->IsTokenFetchInProgressForTesting());
   EXPECT_FALSE(token_forwarder->IsTokenRefreshScheduledForTesting());
+
+  histogram_tester_.ExpectTotalCount(
+      UserCloudPolicyTokenForwarder::kUMAChildUserOAuthTokenError, 0);
 }
 
 TEST_F(UserCloudPolicyTokenForwarderTest, ChildUserExpiredToken) {
@@ -373,6 +397,10 @@ TEST_F(UserCloudPolicyTokenForwarderTest, ChildUserExpiredToken) {
   token_forwarder->Shutdown();
   EXPECT_FALSE(token_forwarder->IsTokenFetchInProgressForTesting());
   EXPECT_FALSE(token_forwarder->IsTokenRefreshScheduledForTesting());
+
+  histogram_tester_.ExpectUniqueSample(
+      UserCloudPolicyTokenForwarder::kUMAChildUserOAuthTokenError,
+      GoogleServiceAuthError::State::NONE, 1);
 }
 
 TEST_F(UserCloudPolicyTokenForwarderTest, ChildUserTokenFetchFailed) {
@@ -404,6 +432,10 @@ TEST_F(UserCloudPolicyTokenForwarderTest, ChildUserTokenFetchFailed) {
   token_forwarder->Shutdown();
   EXPECT_FALSE(token_forwarder->IsTokenFetchInProgressForTesting());
   EXPECT_FALSE(token_forwarder->IsTokenRefreshScheduledForTesting());
+
+  histogram_tester_.ExpectUniqueSample(
+      UserCloudPolicyTokenForwarder::kUMAChildUserOAuthTokenError,
+      GoogleServiceAuthError::State::SERVICE_UNAVAILABLE, 1);
 }
 
 TEST_F(UserCloudPolicyTokenForwarderTest, ChildUserRecurringTokenFetch) {
@@ -435,6 +467,10 @@ TEST_F(UserCloudPolicyTokenForwarderTest, ChildUserRecurringTokenFetch) {
             kTokenLifetime * 2);
 
   token_forwarder->Shutdown();
+
+  histogram_tester_.ExpectUniqueSample(
+      UserCloudPolicyTokenForwarder::kUMAChildUserOAuthTokenError,
+      GoogleServiceAuthError::NONE, 2);
 }
 
 }  // namespace policy
