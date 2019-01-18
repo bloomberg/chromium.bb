@@ -21,8 +21,7 @@ crx_file::VerifierFormat GetPolicyVerifierFormat(
 }
 
 crx_file::VerifierFormat GetExternalVerifierFormat() {
-  // TODO(crbug.com/740715): Eliminate CRX2.
-  return crx_file::VerifierFormat::CRX2_OR_CRX3;
+  return crx_file::VerifierFormat::CRX3;
 }
 
 crx_file::VerifierFormat GetTestVerifierFormat() {
