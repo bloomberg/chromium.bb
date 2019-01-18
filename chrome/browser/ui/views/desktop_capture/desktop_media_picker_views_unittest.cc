@@ -139,10 +139,8 @@ TEST_F(DesktopMediaPickerViewsTest, SelectMediaSourceViewOnSingleClick) {
     DesktopMediaSourceView* source_view_1 =
         GetPickerDialogView()->GetMediaSourceViewForTesting(1);
 
-    // By default, the first screen is selected, but not for other sharing
-    // types.
-    EXPECT_EQ(source_type == DesktopMediaID::TYPE_SCREEN,
-              source_view_0->is_selected());
+    // By default, nothing should be selected.
+    EXPECT_FALSE(source_view_0->is_selected());
     EXPECT_FALSE(source_view_1->is_selected());
 
     // Source view 0 is selected with mouse click.
