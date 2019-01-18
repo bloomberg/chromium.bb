@@ -12,13 +12,14 @@
 
 #include "base/files/scoped_file.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/overlay_transform.h"
 #include "ui/gl/gl_export.h"
 
 extern "C" {
-typedef struct ASurface ASurface;
+typedef struct ASurfaceControl ASurfaceControl;
 typedef struct ASurfaceTransaction ASurfaceTransaction;
-typedef void (*TransactionCompletedFunc)(void* context,
-                                         int64_t present_time_ns);
+typedef void (*ASurfaceTransaction_OnComplete)(void* context,
+                                               int32_t present_fence);
 }
 
 namespace gl {
@@ -37,10 +38,10 @@ class GL_EXPORT SurfaceControl {
     Surface(Surface&& other);
     Surface& operator=(Surface&& other);
 
-    ASurface* surface() const { return surface_; }
+    ASurfaceControl* surface() const { return surface_; }
 
    private:
-    ASurface* surface_ = nullptr;
+    ASurfaceControl* surface_ = nullptr;
   };
 
   class GL_EXPORT Transaction {
@@ -53,11 +54,13 @@ class GL_EXPORT SurfaceControl {
     void SetBuffer(const Surface& surface,
                    AHardwareBuffer* buffer,
                    base::ScopedFD fence_fd);
-    void SetCropRect(const Surface& surface, const gfx::Rect& rect);
-    void SetDisplayFrame(const Surface& surface, const gfx::Rect& rect);
+    void SetGeometry(const Surface& surface,
+                     const gfx::Rect& src,
+                     const gfx::Rect& dst,
+                     gfx::OverlayTransform transform);
     void SetOpaque(const Surface& surface, bool opaque);
     void SetDamageRect(const Surface& surface, const gfx::Rect& rect);
-    void SetCompletedFunc(TransactionCompletedFunc func, void* ctx);
+    void SetOnCompleteFunc(ASurfaceTransaction_OnComplete func, void* ctx);
     void Apply();
 
    private:

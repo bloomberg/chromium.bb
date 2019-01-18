@@ -24,16 +24,16 @@ gfx::Size GetBufferSize(const AHardwareBuffer* buffer) {
 
 struct TransactionAckCtx {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner;
-  base::OnceCallback<void(int64_t)> callback;
+  base::OnceCallback<void(int32_t)> callback;
 };
 
 // Note that the framework API states that this callback can be dispatched on
 // any thread (in practice it should be the binder thread), so we need to post
 // a task back to the GPU thread.
-void OnTransactionCompletedOnAnyThread(void* ctx, int64_t present_time_ns) {
+void OnTransactionCompletedOnAnyThread(void* ctx, int32_t present_fence) {
   auto* ack_ctx = static_cast<TransactionAckCtx*>(ctx);
   ack_ctx->task_runner->PostTask(
-      FROM_HERE, base::BindOnce(std::move(ack_ctx->callback), present_time_ns));
+      FROM_HERE, base::BindOnce(std::move(ack_ctx->callback), present_fence));
   delete ack_ctx;
 }
 
@@ -124,8 +124,8 @@ void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
       base::BindOnce(&GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread,
                      weak_factory_.GetWeakPtr(), completion_callback,
                      present_callback, std::move(resources_to_release));
-  pending_transaction_->SetCompletedFunc(&OnTransactionCompletedOnAnyThread,
-                                         ack_ctx);
+  pending_transaction_->SetOnCompleteFunc(&OnTransactionCompletedOnAnyThread,
+                                          ack_ctx);
 
   pending_transaction_->Apply();
   pending_transaction_.reset();
@@ -151,8 +151,6 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
     const gfx::RectF& crop_rect,
     bool enable_blend,
     std::unique_ptr<gfx::GpuFence> gpu_fence) {
-  DCHECK_EQ(transform, gfx::OVERLAY_TRANSFORM_NONE);
-
   if (!pending_transaction_)
     pending_transaction_.emplace();
 
@@ -193,24 +191,24 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
                                     std::move(fence_fd));
   }
 
-  if (uninitialized || surface_state.bounds_rect != bounds_rect) {
-    surface_state.bounds_rect = bounds_rect;
-    pending_transaction_->SetDisplayFrame(surface_state.surface, bounds_rect);
-  }
-
-  gfx::Rect enclosed_crop_rect;
   if (hardware_buffer) {
+    gfx::Rect dst = bounds_rect;
+
     gfx::Size buffer_size = GetBufferSize(hardware_buffer);
     gfx::RectF scaled_rect =
         gfx::RectF(crop_rect.x() * buffer_size.width(),
                    crop_rect.y() * buffer_size.height(),
                    crop_rect.width() * buffer_size.width(),
                    crop_rect.height() * buffer_size.height());
-    enclosed_crop_rect = gfx::ToEnclosedRect(scaled_rect);
-    if (uninitialized || surface_state.crop_rect != enclosed_crop_rect) {
-      surface_state.crop_rect = enclosed_crop_rect;
-      pending_transaction_->SetCropRect(surface_state.surface,
-                                        enclosed_crop_rect);
+    gfx::Rect src = gfx::ToEnclosedRect(scaled_rect);
+
+    if (uninitialized || surface_state.src != src || surface_state.dst != dst ||
+        surface_state.transform != transform) {
+      surface_state.src = src;
+      surface_state.dst = dst;
+      surface_state.transform = transform;
+      pending_transaction_->SetGeometry(surface_state.surface, src, dst,
+                                        transform);
     }
   }
 
@@ -256,14 +254,27 @@ void GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread(
     SwapCompletionCallback completion_callback,
     PresentationCallback presentation_callback,
     ResourceRefs released_resources,
-    int64_t present_time_ns) {
+    int32_t present_fence) {
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
+
+  // Insert a service wait for this fence to ensure any resource reuse is after
+  // it is signaled.
+  gfx::GpuFenceHandle handle;
+  handle.type = gfx::GpuFenceHandleType::kAndroidNativeFenceSync;
+  handle.native_fd = base::FileDescriptor(present_fence, /*auto_close=*/true);
+  gfx::GpuFence gpu_fence(handle);
+  // TODO(khushalsagar): But what about vulkan?
+  auto gl_fence = GLFence::CreateFromGpuFence(gpu_fence);
+  gl_fence->ServerWait();
 
   // The presentation feedback callback must run after swap completion.
   completion_callback.Run(gfx::SwapResult::SWAP_ACK, nullptr);
-  gfx::PresentationFeedback feedback(
-      base::TimeTicks::FromInternalValue(present_time_ns), base::TimeDelta(),
-      0 /* flags */);
+
+  // TODO(khushalsagar): Maintain a queue of fences so we poll to see if they
+  // are signaled every frame, and get a signal timestamp to feed into this
+  // feedback.
+  gfx::PresentationFeedback feedback(base::TimeTicks::Now(), base::TimeDelta(),
+                                     0 /* flags */);
   presentation_callback.Run(feedback);
   released_resources.clear();
 }
