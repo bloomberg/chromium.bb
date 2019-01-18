@@ -1347,7 +1347,8 @@ Response InspectorDOMAgent::getNodeForLocation(
 Response InspectorDOMAgent::resolveNode(
     protocol::Maybe<int> node_id,
     protocol::Maybe<int> backend_node_id,
-    Maybe<String> object_group,
+    protocol::Maybe<String> object_group,
+    protocol::Maybe<int> execution_context_id,
     std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject>*
         result) {
   String object_group_name = object_group.fromMaybe("");
@@ -1363,7 +1364,8 @@ Response InspectorDOMAgent::resolveNode(
 
   if (!node)
     return Response::Error("No node with given id found");
-  *result = ResolveNode(v8_session_, node, object_group_name);
+  *result = ResolveNode(v8_session_, node, object_group_name,
+                        std::move(execution_context_id));
   if (!*result) {
     return Response::Error(
         "Node with given id does not belong to the document");
