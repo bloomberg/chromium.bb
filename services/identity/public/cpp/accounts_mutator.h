@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "components/signin/core/browser/signin_metrics.h"
 
 namespace identity {
@@ -27,6 +28,12 @@ class AccountsMutator {
       const std::string& refresh_token,
       bool is_under_advanced_protection,
       signin_metrics::SourceForRefreshTokenOperation source) = 0;
+
+  // Updates the information about account identified by |account_id|.
+  virtual void UpdateAccountInfo(
+      const std::string& account_id,
+      base::Optional<bool> is_child_account,
+      base::Optional<bool> is_under_advanced_protection) = 0;
 
   // Removes the account given by |account_id|. Also revokes the token
   // server-side if needed.

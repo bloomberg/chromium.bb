@@ -41,6 +41,21 @@ std::string AccountsMutatorImpl::AddOrUpdateAccount(
   return account_id;
 }
 
+void AccountsMutatorImpl::UpdateAccountInfo(
+    const std::string& account_id,
+    base::Optional<bool> is_child_account,
+    base::Optional<bool> is_under_advanced_protection) {
+  if (is_child_account.has_value()) {
+    account_tracker_service_->SetIsChildAccount(account_id,
+                                                is_child_account.value());
+  }
+
+  if (is_under_advanced_protection.has_value()) {
+    account_tracker_service_->SetIsAdvancedProtectionAccount(
+        account_id, is_under_advanced_protection.value());
+  }
+}
+
 void AccountsMutatorImpl::RemoveAccount(
     const std::string& account_id,
     signin_metrics::SourceForRefreshTokenOperation source) {
