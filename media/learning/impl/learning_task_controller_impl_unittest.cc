@@ -31,22 +31,6 @@ class LearningTaskControllerImplTest : public testing::Test {
     int num_correct_ = 0;
   };
 
-  LearningTaskControllerImplTest()
-      : predicted_target_(123), not_predicted_target_(456) {
-    // Don't require too many training examples per report.
-    task_.max_data_set_size = 20;
-    task_.min_new_data_fraction = 0.1;
-
-    std::unique_ptr<FakeDistributionReporter> reporter =
-        std::make_unique<FakeDistributionReporter>(task_);
-    reporter_raw_ = reporter.get();
-
-    controller_ = std::make_unique<LearningTaskControllerImpl>(
-        task_, std::move(reporter));
-    controller_->SetTrainingCBForTesting(base::BindRepeating(
-        &LearningTaskControllerImplTest::OnTrain, base::Unretained(this)));
-  }
-
   // Model that always predicts a constant.
   class FakeModel : public Model {
    public:
@@ -65,18 +49,48 @@ class LearningTaskControllerImplTest : public testing::Test {
     TargetValue target_;
   };
 
-  // Note that this trains models synchronously.
-  void OnTrain(TrainingData training_data, TrainedModelCB model_cb) {
-    num_models_++;
-    std::move(model_cb).Run(std::make_unique<FakeModel>(predicted_target_));
+  class FakeTrainer : public TrainingAlgorithm {
+   public:
+    // |num_models| is where we'll record how many models we've trained.
+    // |target_value| is the prediction that our trained model will make.
+    FakeTrainer(int* num_models, TargetValue target_value)
+        : num_models_(num_models), target_value_(target_value) {}
+    ~FakeTrainer() override {}
+
+    void Train(const LearningTask& task,
+               const TrainingData& training_data,
+               TrainedModelCB model_cb) override {
+      (*num_models_)++;
+      std::move(model_cb).Run(std::make_unique<FakeModel>(target_value_));
+    }
+
+   private:
+    int* num_models_ = nullptr;
+    TargetValue target_value_;
+  };
+
+  LearningTaskControllerImplTest()
+      : predicted_target_(123), not_predicted_target_(456) {
+    // Don't require too many training examples per report.
+    task_.max_data_set_size = 20;
+    task_.min_new_data_fraction = 0.1;
+
+    std::unique_ptr<FakeDistributionReporter> reporter =
+        std::make_unique<FakeDistributionReporter>(task_);
+    reporter_raw_ = reporter.get();
+
+    controller_ = std::make_unique<LearningTaskControllerImpl>(
+        task_, std::move(reporter));
+    controller_->SetTrainerForTesting(
+        std::make_unique<FakeTrainer>(&num_models_, predicted_target_));
   }
 
   // Number of models that we trained.
   int num_models_ = 0;
 
   // Two distinct targets.
-  TargetValue predicted_target_;
-  TargetValue not_predicted_target_;
+  const TargetValue predicted_target_;
+  const TargetValue not_predicted_target_;
 
   FakeDistributionReporter* reporter_raw_ = nullptr;
 

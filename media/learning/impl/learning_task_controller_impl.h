@@ -34,11 +34,10 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
   void AddExample(const LabelledExample& example) override;
 
  private:
-  // Override the training CB for testing.
-  void SetTrainingCBForTesting(TrainingAlgorithmCB cb);
-
   // Called by |training_cb_| when the model is trained.
   void OnModelTrained(std::unique_ptr<Model> model);
+
+  void SetTrainerForTesting(std::unique_ptr<TrainingAlgorithm> trainer);
 
   LearningTask task_;
 
@@ -55,7 +54,8 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
   // This helps us decide when to train a new model.
   int num_untrained_examples_ = 0;
 
-  TrainingAlgorithmCB training_cb_;
+  // Training algorithm that we'll use.
+  std::unique_ptr<TrainingAlgorithm> trainer_;
 
   // Optional reporter for training accuracy.
   std::unique_ptr<DistributionReporter> reporter_;
