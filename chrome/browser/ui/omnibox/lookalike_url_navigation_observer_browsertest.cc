@@ -25,6 +25,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "ui/base/window_open_disposition.h"
@@ -63,6 +65,12 @@ struct SiteEngagementTestCase {
     {"síté4.com", "www.sité4.com"},
     {"mail.síté4.com", "www.sité4.com"},
 };
+
+static std::unique_ptr<net::test_server::HttpResponse>
+NetworkErrorResponseHandler(const net::test_server::HttpRequest& request) {
+  return std::unique_ptr<net::test_server::HttpResponse>(
+      new net::test_server::RawHttpResponse("", ""));
+}
 
 }  // namespace
 
@@ -262,7 +270,7 @@ INSTANTIATE_TEST_CASE_P(,
 
 // Navigating to a non-IDN shouldn't show an infobar or record metrics.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
-                       NonIdn_NoInfobar) {
+                       NonIdn_NoMatch) {
   TestInfobarNotShown(browser(), GetURL("google.com"));
   CheckNoUkm();
 }
@@ -279,7 +287,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
 // and the infobar shouldn't be shown, even if the domain is visually similar
 // to a top domain.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
-                       TopDomainIdn_EngagedSite_NoInfobar) {
+                       Idn_TopDomain_EngagedSite_NoMatch) {
   const GURL url = GetURL("googlé.com");
   SetEngagementScore(browser(), url, kHighEngagement);
   TestInfobarNotShown(browser(), url);
@@ -311,7 +319,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
 // Should not record metrics. The top domain list doesn't contain any IDN, so
 // this only tests the case where the subdomains are IDNs.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
-                       TopDomainIdnSubdomain_NoInfobar) {
+                       TopDomainIdnSubdomain_NoMatch) {
   TestInfobarNotShown(browser(), GetURL("tést.google.com"));
   CheckNoUkm();
 
@@ -325,7 +333,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
 
 // Schemes other than HTTP and HTTPS should be ignored.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
-                       TopDomainChromeUrl_NoInfobar) {
+                       TopDomainChromeUrl_NoMatch) {
   TestInfobarNotShown(browser(), GURL("chrome://googlé.com"));
   CheckNoUkm();
 }
@@ -334,7 +342,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
 // This should record metrics. It should also show a "Did you mean to go to ..."
 // infobar if configured via a feature param.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
-                       Idn_TopDomainEditDistance_Match) {
+                       EditDistance_TopDomain_Match) {
   base::HistogramTester histograms;
 
   // The skeleton of this domain, gooogle.corn, is one 1 edit away from
@@ -355,7 +363,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
 
 // Tests negative examples for the edit distance.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
-                       Idn_TopDomainEditDistance_NoMatch) {
+                       EditDistance_TopDomain_NoMatch) {
   // Matches google.com.tr but only differs in registry.
   TestInfobarNotShown(browser(), GetURL("google.com.tw"));
   CheckNoUkm();
@@ -366,6 +374,30 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
 
   // Matches ask.com but is too short.
   TestInfobarNotShown(browser(), GetURL("bsk.com"));
+  CheckNoUkm();
+}
+
+// Test that the heuristics aren't triggered on net errors.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
+                       NetError_NoMatch) {
+  // Create a test server that returns invalid responses.
+  net::EmbeddedTestServer custom_test_server;
+  custom_test_server.RegisterRequestHandler(
+      base::BindRepeating(&NetworkErrorResponseHandler));
+  ASSERT_TRUE(custom_test_server.Start());
+
+  // Matches google.com but page returns an invalid response.
+  TestInfobarNotShown(browser(),
+                      custom_test_server.GetURL("gooogle.com", "/title1.html"));
+  CheckNoUkm();
+
+  TestInfobarNotShown(browser(),
+                      custom_test_server.GetURL("googlé.com", "/title1.html"));
+  CheckNoUkm();
+
+  SetEngagementScore(browser(), GURL("http://site1.com"), kHighEngagement);
+  TestInfobarNotShown(browser(),
+                      custom_test_server.GetURL("sité1.com", "/title1.html"));
   CheckNoUkm();
 }
 
