@@ -95,8 +95,6 @@ source_set("libjingle_webrtc_common") {
 
   deps = [
     ":webrtc",
-    "//third_party/libsrtp",
-    "//third_party/usrsctp",
     "//third_party/webrtc/media:rtc_media",
     "//third_party/webrtc/media:rtc_media_base",
     "//third_party/webrtc/modules/video_capture",
