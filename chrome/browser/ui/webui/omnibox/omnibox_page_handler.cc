@@ -191,12 +191,13 @@ struct TypeConverter<mojom::AutocompleteResultsForProviderPtr,
                      scoped_refptr<AutocompleteProvider>> {
   static mojom::AutocompleteResultsForProviderPtr Convert(
       const scoped_refptr<AutocompleteProvider>& input) {
-    mojom::AutocompleteResultsForProviderPtr result(
+    mojom::AutocompleteResultsForProviderPtr resultsForProvider(
         mojom::AutocompleteResultsForProvider::New());
-    result->provider_name = input->GetName();
-    result->results = mojo::ConvertTo<std::vector<mojom::AutocompleteMatchPtr>>(
-        input->matches());
-    return result;
+    resultsForProvider->provider_name = input->GetName();
+    resultsForProvider->results =
+        mojo::ConvertTo<std::vector<mojom::AutocompleteMatchPtr>>(
+            input->matches());
+    return resultsForProvider;
   }
 };
 
@@ -223,27 +224,27 @@ void OmniboxPageHandler::OnOmniboxQuery(AutocompleteController* controller) {
 void OmniboxPageHandler::OnOmniboxResultChanged(
     bool default_match_changed,
     AutocompleteController* controller) {
-  mojom::OmniboxResultPtr result(mojom::OmniboxResult::New());
-  result->done = controller->done();
-  result->time_since_omnibox_started_ms =
+  mojom::OmniboxResponsePtr response(mojom::OmniboxResponse::New());
+  response->done = controller->done();
+  response->time_since_omnibox_started_ms =
       (base::Time::Now() - time_omnibox_started_).InMilliseconds();
   const base::string16 host =
       input_.text().substr(input_.parts().host.begin, input_.parts().host.len);
-  result->host = base::UTF16ToUTF8(host);
-  result->type = AutocompleteInput::TypeToString(input_.type());
+  response->host = base::UTF16ToUTF8(host);
+  response->type = AutocompleteInput::TypeToString(input_.type());
   bool is_typed_host;
   if (!LookupIsTypedHost(host, &is_typed_host))
     is_typed_host = false;
-  result->is_typed_host = is_typed_host;
+  response->is_typed_host = is_typed_host;
 
   {
     // Copy to an ACMatches to make conversion easier. Since this isn't
     // performance critical we don't worry about the cost here.
     ACMatches matches(controller->result().begin(), controller->result().end());
-    result->combined_results =
+    response->combined_results =
         mojo::ConvertTo<std::vector<mojom::AutocompleteMatchPtr>>(matches);
   }
-  result->results_by_provider =
+  response->results_by_provider =
       mojo::ConvertTo<std::vector<mojom::AutocompleteResultsForProviderPtr>>(
           controller->providers());
 
@@ -251,13 +252,13 @@ void OmniboxPageHandler::OnOmniboxResultChanged(
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile_);
   if (bookmark_model) {
-    for (size_t i = 0; i < result->combined_results.size(); ++i) {
-      result->combined_results[i]->starred = bookmark_model->IsBookmarked(
-          GURL(result->combined_results[i]->destination_url));
+    for (size_t i = 0; i < response->combined_results.size(); ++i) {
+      response->combined_results[i]->starred = bookmark_model->IsBookmarked(
+          GURL(response->combined_results[i]->destination_url));
     }
-    for (size_t i = 0; i < result->results_by_provider.size(); ++i) {
+    for (size_t i = 0; i < response->results_by_provider.size(); ++i) {
       const mojom::AutocompleteResultsForProvider& result_by_provider =
-          *result->results_by_provider[i];
+          *response->results_by_provider[i];
       for (size_t j = 0; j < result_by_provider.results.size(); ++j) {
         result_by_provider.results[j]->starred = bookmark_model->IsBookmarked(
             GURL(result_by_provider.results[j]->destination_url));
@@ -267,17 +268,17 @@ void OmniboxPageHandler::OnOmniboxResultChanged(
 
   // Obtain a vector of all image urls required.
   std::vector<std::string> image_urls;
-  for (size_t i = 0; i < result->combined_results.size(); ++i)
-    image_urls.push_back(result->combined_results[i]->image);
-  for (size_t i = 0; i < result->results_by_provider.size(); ++i) {
+  for (size_t i = 0; i < response->combined_results.size(); ++i)
+    image_urls.push_back(response->combined_results[i]->image);
+  for (size_t i = 0; i < response->results_by_provider.size(); ++i) {
     const mojom::AutocompleteResultsForProvider& result_by_provider =
-        *result->results_by_provider[i];
+        *response->results_by_provider[i];
     for (size_t j = 0; j < result_by_provider.results.size(); ++j)
       image_urls.push_back(result_by_provider.results[j]->image);
   }
 
-  page_->HandleNewAutocompleteResult(std::move(result),
-                                     controller == controller_.get());
+  page_->handleNewAutocompleteResponse(std::move(response),
+                                       controller == controller_.get());
 
   // Fill in image data
   BitmapFetcherService* image_service =

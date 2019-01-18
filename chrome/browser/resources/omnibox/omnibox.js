@@ -22,7 +22,7 @@
  * @typedef {{
  *   queryInputs: QueryInputs,
  *   displayInputs: DisplayInputs,
- *   responsesHistory: !Array<!Array<!mojom.OmniboxResult>>,
+ *   responsesHistory: !Array<!Array<!mojom.OmniboxResponse>>,
  * }}
  */
 let OmniboxExport;
@@ -42,11 +42,7 @@ class BrowserProxy {
     /** @private {!mojom.OmniboxPageCallbackRouter} */
     this.callbackRouter_ = new mojom.OmniboxPageCallbackRouter;
 
-    // TODO (manukh) rename method to handleNewAutocompleteResponse in order
-    // to keep terminology consistent. Result refers to a single autocomplete
-    // match. Response refers to the data returned from the C++
-    // AutocompleteController.
-    this.callbackRouter_.handleNewAutocompleteResult.addListener(
+    this.callbackRouter_.handleNewAutocompleteResponse.addListener(
         (response, isPageController) => {
           // When unfocusing the browser omnibox, the autocomplete controller
           // sends a response with no combined results. This response is ignored
