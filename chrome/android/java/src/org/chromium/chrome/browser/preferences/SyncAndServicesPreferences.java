@@ -103,7 +103,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private static final String PREF_GOOGLE_ACTIVITY_CONTROLS = "google_activity_controls";
     private static final String PREF_ENCRYPTION = "encryption";
     private static final String PREF_SYNC_MANAGE_DATA = "sync_manage_data";
-    private static final String PREF_CONTEXTUAL_SUGGESTIONS = "contextual_suggestions";
 
     private static final String PREF_SERVICES_CATEGORY = "services_category";
     private static final String PREF_SEARCH_SUGGESTIONS = "search_suggestions";
@@ -115,6 +114,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private static final String PREF_USAGE_AND_CRASH_REPORTING = "usage_and_crash_reports";
     private static final String PREF_URL_KEYED_ANONYMIZED_DATA = "url_keyed_anonymized_data";
     private static final String PREF_CONTEXTUAL_SEARCH = "contextual_search";
+    private static final String PREF_CONTEXTUAL_SUGGESTIONS = "contextual_suggestions";
 
     @IntDef({SyncError.NO_ERROR, SyncError.ANDROID_SYNC_DISABLED, SyncError.AUTH_ERROR,
             SyncError.PASSPHRASE_REQUIRED, SyncError.CLIENT_OUT_OF_DATE, SyncError.OTHER_ERRORS})
@@ -839,13 +839,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             getPreferenceScreen().removePreference(mSyncCategory);
         }
 
-        if (mContextualSuggestions != null) {
-            mContextualSuggestions.setSummary(
-                    ContextualSuggestionsEnabledStateUtils.getEnabledState()
-                            ? R.string.text_on
-                            : R.string.text_off);
-        }
-
         mSearchSuggestions.setChecked(mPrefServiceBridge.isSearchSuggestEnabled());
         mSearchSuggestions.setEnabled(!useSyncAndAllServices);
         mNetworkPredictions.setChecked(mPrefServiceBridge.getNetworkPredictionEnabled());
@@ -868,6 +861,12 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             boolean isContextualSearchEnabled = !mPrefServiceBridge.isContextualSearchDisabled();
             mContextualSearch.setSummary(
                     isContextualSearchEnabled ? R.string.text_on : R.string.text_off);
+        }
+
+        if (mContextualSuggestions != null) {
+            mContextualSuggestions.setSummary(
+                    ContextualSuggestionsEnabledStateUtils.getEnabledState() ? R.string.text_on
+                                                                             : R.string.text_off);
         }
     }
 
