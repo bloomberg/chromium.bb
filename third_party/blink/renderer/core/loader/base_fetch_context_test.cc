@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/testing/test_resource_fetcher_properties.h"
+#include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
@@ -45,9 +46,7 @@ namespace blink {
 class MockBaseFetchContext final : public BaseFetchContext {
  public:
   explicit MockBaseFetchContext(ExecutionContext* execution_context)
-      : BaseFetchContext(
-            execution_context->GetTaskRunner(blink::TaskType::kInternalTest)),
-        execution_context_(execution_context) {}
+      : execution_context_(execution_context) {}
   ~MockBaseFetchContext() override = default;
 
   // BaseFetchContext overrides:
@@ -132,7 +131,8 @@ class BaseFetchContextTest : public testing::Test {
         *MakeGarbageCollected<FetchClientSettingsObjectImpl>(
             *execution_context_));
     resource_fetcher_ = MakeGarbageCollected<ResourceFetcher>(
-        ResourceFetcherInit(*properties, fetch_context_));
+        ResourceFetcherInit(*properties, fetch_context_,
+                            base::MakeRefCounted<scheduler::FakeTaskRunner>()));
   }
 
   Persistent<ExecutionContext> execution_context_;

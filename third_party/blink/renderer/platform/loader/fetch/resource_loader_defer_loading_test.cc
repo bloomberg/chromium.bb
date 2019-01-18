@@ -35,6 +35,10 @@ class ResourceLoaderDefersLoadingTest : public testing::Test {
     code_cache_response_callback_ = std::move(callback);
   }
 
+  static scoped_refptr<base::SingleThreadTaskRunner> CreateTaskRunner() {
+    return base::MakeRefCounted<scheduler::FakeTaskRunner>();
+  }
+
   CodeCacheLoader::FetchCodeCacheCallback code_cache_response_callback_;
   // Passed to TestWebURLLoader (via |platform_|) and updated when its
   // SetDefersLoading method is called.
@@ -163,7 +167,7 @@ ResourceLoaderDefersLoadingTest::ResourceLoaderDefersLoadingTest()
 TEST_F(ResourceLoaderDefersLoadingTest, CodeCacheFetchCheckDefers) {
   auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
   auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
-      ResourceFetcherInit(*properties, context_));
+      ResourceFetcherInit(*properties, context_, CreateTaskRunner()));
 
   ResourceRequest request;
   request.SetURL(test_url_);
@@ -192,7 +196,7 @@ TEST_F(ResourceLoaderDefersLoadingTest, CodeCacheFetchSyncReturn) {
 
   auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
   auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
-      ResourceFetcherInit(*properties, context_));
+      ResourceFetcherInit(*properties, context_, CreateTaskRunner()));
 
   ResourceRequest request;
   request.SetURL(test_url_);
@@ -211,7 +215,7 @@ TEST_F(ResourceLoaderDefersLoadingTest, CodeCacheFetchSyncReturn) {
 TEST_F(ResourceLoaderDefersLoadingTest, ChangeDefersToFalse) {
   auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
   auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
-      ResourceFetcherInit(*properties, context_));
+      ResourceFetcherInit(*properties, context_, CreateTaskRunner()));
 
   ResourceRequest request;
   request.SetURL(test_url_);
@@ -234,7 +238,7 @@ TEST_F(ResourceLoaderDefersLoadingTest, ChangeDefersToFalse) {
 TEST_F(ResourceLoaderDefersLoadingTest, ChangeDefersToTrue) {
   auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
   auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
-      ResourceFetcherInit(*properties, context_));
+      ResourceFetcherInit(*properties, context_, CreateTaskRunner()));
 
   ResourceRequest request;
   request.SetURL(test_url_);
@@ -261,7 +265,7 @@ TEST_F(ResourceLoaderDefersLoadingTest, ChangeDefersToTrue) {
 TEST_F(ResourceLoaderDefersLoadingTest, ChangeDefersMultipleTimes) {
   auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
   auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
-      ResourceFetcherInit(*properties, context_));
+      ResourceFetcherInit(*properties, context_, CreateTaskRunner()));
 
   ResourceRequest request;
   request.SetURL(test_url_);

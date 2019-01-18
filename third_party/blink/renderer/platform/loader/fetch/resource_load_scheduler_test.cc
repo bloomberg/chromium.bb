@@ -68,7 +68,8 @@ class ResourceLoadSchedulerTest : public testing::Test {
     properties->SetShouldBlockLoadingSubResource(true);
     auto* context = MakeGarbageCollected<MockFetchContext>();
     MakeGarbageCollected<ResourceFetcher>(
-        ResourceFetcherInit(*properties, context));
+        ResourceFetcherInit(*properties, context,
+                            base::MakeRefCounted<scheduler::FakeTaskRunner>()));
     scheduler_ = MakeGarbageCollected<ResourceLoadScheduler>(
         ResourceLoadScheduler::ThrottlingPolicy::kTight, context);
     Scheduler()->SetOutstandingLimitForTesting(1);

@@ -262,9 +262,11 @@ bool MatchesStaleWhileRevalidateAllowList(const String& host) {
 
 ResourceFetcherInit::ResourceFetcherInit(
     const ResourceFetcherProperties& properties,
-    FetchContext* context)
+    FetchContext* context,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : ResourceFetcherInit(properties,
                           context,
+                          std::move(task_runner),
                           *MakeGarbageCollected<NullConsoleLogger>()) {}
 
 ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
@@ -463,10 +465,11 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
     : properties_(
           *MakeGarbageCollected<DetachableProperties>(*init.properties)),
       context_(init.context),
+      task_runner_(init.task_runner),
       console_logger_(init.console_logger),
       archive_(init.archive),
       resource_timing_report_timer_(
-          Context().GetLoadingTaskRunner(),
+          task_runner_,
           this,
           &ResourceFetcher::ResourceTimingReportTimerFired),
       auto_load_images_(true),
@@ -655,7 +658,7 @@ Resource* ResourceFetcher::ResourceForStaticData(
     resource->SetResourceBuffer(data);
   resource->SetIdentifier(CreateUniqueIdentifier());
   resource->SetCacheIdentifier(cache_identifier);
-  resource->Finish(TimeTicks(), Context().GetLoadingTaskRunner().get());
+  resource->Finish(TimeTicks(), task_runner_.get());
 
   if (!substitute_data.IsValid())
     AddToMemoryCacheIfNeeded(params, resource);
@@ -671,10 +674,10 @@ Resource* ResourceFetcher::ResourceForBlockedRequest(
   Resource* resource = factory.Create(
       params.GetResourceRequest(), params.Options(), params.DecoderOptions());
   if (client)
-    client->SetResource(resource, Context().GetLoadingTaskRunner().get());
+    client->SetResource(resource, task_runner_.get());
   resource->FinishAsError(ResourceError::CancelledDueToAccessCheckError(
                               params.Url(), blocked_reason),
-                          Context().GetLoadingTaskRunner().get());
+                          task_runner_.get());
   return resource;
 }
 
@@ -1005,7 +1008,7 @@ Resource* ResourceFetcher::RequestResource(
     resource->SetIdentifier(identifier);
 
   if (client)
-    client->SetResource(resource, Context().GetLoadingTaskRunner().get());
+    client->SetResource(resource, task_runner_.get());
 
   // TODO(yoav): It is not clear why preloads are exempt from this check. Can we
   // remove the exemption?
@@ -1038,7 +1041,7 @@ Resource* ResourceFetcher::RequestResource(
   if (ResourceNeedsLoad(resource, params, policy)) {
     if (!StartLoad(resource)) {
       resource->FinishAsError(ResourceError::CancelledError(params.Url()),
-                              Context().GetLoadingTaskRunner().get());
+                              task_runner_.get());
     }
   }
 
@@ -1202,7 +1205,7 @@ Resource* ResourceFetcher::MatchPreload(const FetchParameters& params,
     return nullptr;
   }
 
-  if (!resource->MatchPreload(params, Context().GetLoadingTaskRunner().get())) {
+  if (!resource->MatchPreload(params, task_runner_.get())) {
     PrintPreloadWarning(resource, Resource::MatchStatus::kUnknownFailure);
     return nullptr;
   }
@@ -1575,7 +1578,7 @@ void ResourceFetcher::ClearContext() {
     // to keep the ResourceFetcher and ResourceLoaders alive until the requests
     // complete or the timer fires.
     keepalive_loaders_task_handle_ = PostDelayedCancellableTask(
-        *Context().GetLoadingTaskRunner(), FROM_HERE,
+        *task_runner_, FROM_HERE,
         WTF::Bind(&ResourceFetcher::StopFetchingIncludingKeepaliveLoaders,
                   WrapPersistent(this)),
         kKeepaliveLoadersTimeout);
@@ -1747,7 +1750,7 @@ void ResourceFetcher::HandleLoaderFinish(
       resource->GetResponse().DecodedBodyLength(), should_report_corb_blocking);
 
   if (type == kDidFinishLoading) {
-    resource->Finish(finish_time, Context().GetLoadingTaskRunner().get());
+    resource->Finish(finish_time, task_runner_.get());
 
     // Since this resource came from the network stack we only schedule a stale
     // while revalidate request if the network asked us to. If we called
@@ -1802,7 +1805,7 @@ void ResourceFetcher::HandleLoaderError(Resource* resource,
 
   if (error.IsCancellation())
     RemovePreload(resource);
-  resource->FinishAsError(error, Context().GetLoadingTaskRunner().get());
+  resource->FinishAsError(error, task_runner_.get());
 
   HandleLoadCompletion(resource);
 }
@@ -2026,7 +2029,7 @@ void ResourceFetcher::ScheduleStaleRevalidate(Resource* stale_resource) {
   if (stale_resource->StaleRevalidationStarted())
     return;
   stale_resource->SetStaleRevalidationStarted();
-  Context().GetLoadingTaskRunner()->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
       WTF::Bind(&ResourceFetcher::RevalidateStaleResource,
                 WrapWeakPersistent(this), WrapPersistent(stale_resource)));

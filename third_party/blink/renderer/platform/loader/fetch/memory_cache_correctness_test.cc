@@ -116,13 +116,14 @@ class MemoryCacheCorrectnessTest : public testing::Test {
         MemoryCache::Create(platform_->test_task_runner()));
 
     security_origin_ = SecurityOrigin::CreateUniqueOpaque();
-    MockFetchContext* context = MakeGarbageCollected<MockFetchContext>(nullptr);
+    MockFetchContext* context = MakeGarbageCollected<MockFetchContext>();
     auto* properties =
         MakeGarbageCollected<TestResourceFetcherProperties>(security_origin_);
     properties->SetShouldBlockLoadingMainResource(true);
     properties->SetShouldBlockLoadingSubResource(true);
     fetcher_ = MakeGarbageCollected<ResourceFetcher>(
-        ResourceFetcherInit(*properties, context));
+        ResourceFetcherInit(*properties, context,
+                            base::MakeRefCounted<scheduler::FakeTaskRunner>()));
   }
   void TearDown() override {
     GetMemoryCache()->EvictResources();

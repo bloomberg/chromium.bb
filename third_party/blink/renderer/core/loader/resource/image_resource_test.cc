@@ -354,8 +354,9 @@ void TestThatIsNotPlaceholderRequestAndServeResponse(
 
 ResourceFetcher* CreateFetcher() {
   auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
-  return MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
-      *properties, MakeGarbageCollected<MockFetchContext>()));
+  return MakeGarbageCollected<ResourceFetcher>(
+      ResourceFetcherInit(*properties, MakeGarbageCollected<MockFetchContext>(),
+                          base::MakeRefCounted<scheduler::FakeTaskRunner>()));
 }
 
 TEST(ImageResourceTest, MultipartImage) {
@@ -489,8 +490,7 @@ TEST(ImageResourceTest, CancelOnRemoveObserver) {
 
   ResourceFetcher* fetcher = CreateFetcher();
   scheduler::FakeTaskRunner* task_runner =
-      static_cast<scheduler::FakeTaskRunner*>(
-          fetcher->Context().GetLoadingTaskRunner().get());
+      static_cast<scheduler::FakeTaskRunner*>(fetcher->GetTaskRunner().get());
   task_runner->SetTime(1);
 
   // Emulate starting a real load.
@@ -552,8 +552,8 @@ TEST(ImageResourceTest, CancelWithImageAndFinishObserver) {
   GetMemoryCache()->Add(image_resource);
 
   Persistent<MockFinishObserver> finish_observer = MockFinishObserver::Create();
-  image_resource->AddFinishObserver(
-      finish_observer, fetcher->Context().GetLoadingTaskRunner().get());
+  image_resource->AddFinishObserver(finish_observer,
+                                    fetcher->GetTaskRunner().get());
 
   // Send the image response.
   ResourceResponse resource_response(NullURL());
@@ -1865,11 +1865,13 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
   KURL test_url(kTestURL);
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
 
-  MockFetchContext* context = MakeGarbageCollected<MockFetchContext>(
-      page_holder->GetFrame().GetTaskRunner(TaskType::kInternalTest));
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      page_holder->GetFrame().GetTaskRunner(TaskType::kInternalTest);
+  MockFetchContext* context =
+      MakeGarbageCollected<MockFetchContext>(task_runner);
   auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
   auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
-      ResourceFetcherInit(*properties, context));
+      ResourceFetcherInit(*properties, context, task_runner));
   auto* scheduler = MakeGarbageCollected<ResourceLoadScheduler>(
       ResourceLoadScheduler::ThrottlingPolicy::kNormal, context);
   ImageResource* image_resource = ImageResource::CreateForTest(test_url);
@@ -1992,8 +1994,7 @@ class ImageResourceCounterTest : public testing::Test {
     ResourceRequest request = ResourceRequest(test_url);
     FetchParameters fetch_params(request);
     scheduler::FakeTaskRunner* task_runner =
-        static_cast<scheduler::FakeTaskRunner*>(
-            fetcher->Context().GetLoadingTaskRunner().get());
+        static_cast<scheduler::FakeTaskRunner*>(fetcher->GetTaskRunner().get());
     task_runner->SetTime(1);
 
     // Mark it as coming from a UA stylesheet (if needed).

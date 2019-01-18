@@ -43,7 +43,12 @@ class MockConsoleLogger : public GarbageCollectedFinalized<MockConsoleLogger>,
 
 }  // namespace
 
-class AllowedByNosniffTest : public testing::Test {};
+class AllowedByNosniffTest : public testing::Test {
+ public:
+  static scoped_refptr<base::SingleThreadTaskRunner> CreateTaskRunner() {
+    return base::MakeRefCounted<scheduler::FakeTaskRunner>();
+  }
+};
 
 TEST_F(AllowedByNosniffTest, AllowedOrNot) {
   struct {
@@ -102,7 +107,7 @@ TEST_F(AllowedByNosniffTest, AllowedOrNot) {
     auto* context = CountUsageMockFetchContext::Create();
     // Bind |properties| to |context| through a ResourceFetcher.
     MakeGarbageCollected<ResourceFetcher>(
-        ResourceFetcherInit(*properties, context));
+        ResourceFetcherInit(*properties, context, CreateTaskRunner()));
     Persistent<MockConsoleLogger> logger =
         MakeGarbageCollected<MockConsoleLogger>();
     ResourceResponse response(url);
@@ -213,7 +218,7 @@ TEST_F(AllowedByNosniffTest, Counters) {
     auto* context = CountUsageMockFetchContext::Create();
     // Bind |properties| to |context| through a ResourceFetcher.
     MakeGarbageCollected<ResourceFetcher>(
-        ResourceFetcherInit(*properties, context));
+        ResourceFetcherInit(*properties, context, CreateTaskRunner()));
     Persistent<MockConsoleLogger> logger =
         MakeGarbageCollected<MockConsoleLogger>();
     ResourceResponse response(KURL(testcase.url));
@@ -258,7 +263,7 @@ TEST_F(AllowedByNosniffTest, AllTheSchemes) {
     auto* context = CountUsageMockFetchContext::Create();
     // Bind |properties| to |context| through a ResourceFetcher.
     MakeGarbageCollected<ResourceFetcher>(
-        ResourceFetcherInit(*properties, context));
+        ResourceFetcherInit(*properties, context, CreateTaskRunner()));
     Persistent<MockConsoleLogger> logger =
         MakeGarbageCollected<MockConsoleLogger>();
     EXPECT_CALL(*logger, AddErrorMessage(_, _)).Times(::testing::AnyNumber());

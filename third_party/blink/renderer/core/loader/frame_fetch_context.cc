@@ -271,11 +271,10 @@ ResourceFetcher* FrameFetchContext::CreateFetcher(
   const FrameOrImportedDocument& frame_or_imported_document =
       properties.GetFrameOrImportedDocument();
   LocalFrame& frame = frame_or_imported_document.GetFrame();
-  ResourceFetcherInit init(properties,
-                           MakeGarbageCollected<FrameFetchContext>(
-                               frame.GetTaskRunner(TaskType::kNetworking),
-                               frame_or_imported_document),
-                           frame.Console());
+  ResourceFetcherInit init(
+      properties,
+      MakeGarbageCollected<FrameFetchContext>(frame_or_imported_document),
+      frame.GetTaskRunner(TaskType::kNetworking), frame.Console());
   // Frame loading should normally start with |kTight| throttling, as the
   // frame will be in layout-blocking state until the <body> tag is inserted
   init.initial_throttling_policy =
@@ -305,18 +304,15 @@ ResourceFetcher* FrameFetchContext::CreateFetcherForImportedDocument(
   ResourceFetcherInit init(
       *MakeGarbageCollected<FrameResourceFetcherProperties>(
           *frame_or_imported_document),
-      MakeGarbageCollected<FrameFetchContext>(
-          document->GetTaskRunner(blink::TaskType::kNetworking),
-          *frame_or_imported_document),
+      MakeGarbageCollected<FrameFetchContext>(*frame_or_imported_document),
+      document->GetTaskRunner(blink::TaskType::kNetworking),
       frame_or_imported_document->GetFrame().Console());
   return MakeGarbageCollected<ResourceFetcher>(init);
 }
 
 FrameFetchContext::FrameFetchContext(
-    scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
     const FrameOrImportedDocument& frame_or_imported_document)
-    : BaseFetchContext(loading_task_runner),
-      frame_or_imported_document_(frame_or_imported_document),
+    : frame_or_imported_document_(frame_or_imported_document),
       save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled() &&
                          !GetSettings()->GetDataSaverHoldbackWebApi()) {}
 
