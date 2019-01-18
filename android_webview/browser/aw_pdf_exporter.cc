@@ -64,7 +64,7 @@ void AwPdfExporter::ExportToPdf(JNIEnv* env,
   JNI_AwPdfExporter_GetPageRanges(env, pages, &page_ranges);
   InitPdfSettings(env, obj, page_ranges, print_settings);
   AwPrintManager* print_manager = AwPrintManager::CreateForWebContents(
-      web_contents_, print_settings, base::FileDescriptor(fd, false),
+      web_contents_, print_settings, fd,
       base::Bind(&AwPdfExporter::DidExportPdf, base::Unretained(this)));
 
   if (!print_manager->PrintNow())

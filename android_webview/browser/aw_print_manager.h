@@ -22,12 +22,17 @@ class AwPrintManager : public printing::PrintManager,
   static AwPrintManager* CreateForWebContents(
       content::WebContents* contents,
       const printing::PrintSettings& settings,
-      const base::FileDescriptor& file_descriptor,
+      int file_descriptor,
       PdfWritingDoneCallback callback);
 
   ~AwPrintManager() override;
 
+  // printing::PrintManager:
+  void PdfWritingDone(int page_count) override;
+
   bool PrintNow();
+
+  int fd() const { return fd_; }
 
  private:
   friend class content::WebContentsUserData<AwPrintManager>;
@@ -35,7 +40,7 @@ class AwPrintManager : public printing::PrintManager,
 
   AwPrintManager(content::WebContents* contents,
                  const printing::PrintSettings& settings,
-                 const base::FileDescriptor& file_descriptor,
+                 int file_descriptor,
                  PdfWritingDoneCallback callback);
 
   // printing::PrintManager:
@@ -50,6 +55,9 @@ class AwPrintManager : public printing::PrintManager,
                        IPC::Message* reply_msg);
 
   printing::PrintSettings settings_;
+
+  // The file descriptor into which the PDF of the document will be written.
+  int fd_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
