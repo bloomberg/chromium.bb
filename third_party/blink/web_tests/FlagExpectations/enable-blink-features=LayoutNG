@@ -135,7 +135,6 @@ crbug.com/40634 external/wpt/css/css-text/white-space/trailing-space-before-br-0
 crbug.com/591099 external/wpt/css/css-text/word-break/word-break-break-all-004.html [ Pass ]
 crbug.com/591099 external/wpt/css/css-text/word-break/word-break-keep-all-003.html [ Pass ]
 crbug.com/591099 external/wpt/css/css-ui/text-overflow-010.html [ Pass ]
-crbug.com/893550 external/wpt/css/css-ui/text-overflow-015.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-writing-modes/abs-pos-non-replaced-icb-vlr-003.xht [ Pass ]
 crbug.com/591099 external/wpt/css/css-writing-modes/abs-pos-non-replaced-icb-vlr-005.xht [ Pass ]
 crbug.com/591099 external/wpt/css/css-writing-modes/abs-pos-non-replaced-icb-vlr-011.xht [ Pass ]
