@@ -2582,6 +2582,10 @@ def BuildAutotestTarballsForHWTest(buildroot, cwd, tarball_dir):
 
   Returns:
     A list of paths of the generated tarballs.
+
+  TODO(crbug.com/924655): Has been ported to a build API endpoint. Remove this
+  function and any unused child functions when the stages have been updated to
+  use the API call.
   """
   return [
       BuildAutotestControlFilesTarball(buildroot, cwd, tarball_dir),

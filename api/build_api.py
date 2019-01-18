@@ -16,6 +16,7 @@ from google.protobuf import symbol_database
 
 from chromite.api import service
 from chromite.api.gen import build_api_pb2
+from chromite.api.gen import autotest_pb2
 from chromite.lib import commandline
 from chromite.lib import osutils
 
@@ -207,7 +208,7 @@ def RegisterServices(router):
   Args:
     router (Router): The router.
   """
-  pass
+  router.Register(autotest_pb2)
 
 
 def main(argv):
