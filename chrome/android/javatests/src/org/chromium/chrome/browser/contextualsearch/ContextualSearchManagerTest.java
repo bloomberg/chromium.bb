@@ -2631,8 +2631,9 @@ public class ContextualSearchManagerTest {
      * Tests that a tap followed by closing the Panel removes the loaded URL from history.
      */
     @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
+    // @SmallTest
+    // @Feature({"ContextualSearch"})
+    @DisabledTest(message = "http://crbug.com/923404")
     public void testTapCloseRemovedFromHistory() throws InterruptedException, TimeoutException {
         // Simulate a tap and make sure a URL was loaded.
         simulateTapSearch("search");
