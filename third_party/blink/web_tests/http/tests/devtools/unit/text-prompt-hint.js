@@ -91,22 +91,6 @@
 
   function typeCharacter(character)
   {
-      var keyboardEvent = new KeyboardEvent("keydown", {
-          key: character || "Backspace",
-          charCode: character ? character.charCodeAt(0) : ""
-      });
-      element.dispatchEvent(keyboardEvent);
-
-      var selection = element.getComponentSelection();
-      var range = selection.getRangeAt(0);
-      var textNode = prompt._ghostTextElement.parentNode ? prompt._ghostTextElement.previousSibling : element.childTextNodes()[element.childTextNodes().length - 1];
-      if (!character)
-          textNode.textContent = textNode.textContent.substring(0,textNode.textContent.length-1);
-      else
-          textNode.textContent += character;
-      range.setStart(range.startContainer, range.startContainer.textContent.length);
-      selection.removeAllRanges();
-      selection.addRange(range);
-      element.dispatchEvent(new Event("input", {bubbles: true, cancelable: false}));
+    eventSender.keyDown(character || 'Backspace');
   }
 })();

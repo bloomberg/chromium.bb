@@ -69,11 +69,11 @@
       TestRunner.addResult('Not editing');
       return;
     }
-    TestRunner.addResult('Editing: "' + document.deepActiveElement().textContent + '"');
+    TestRunner.addResult('Editing: "' + TestRunner.textContentWithoutStyles(document.deepActiveElement()) + '"');
   }
 
   function mouseDown(element, offset = 0) {
-    TestRunner.addResult('mouse down: ' + element.tagName + ':' + element.textContent);
+    TestRunner.addResult('mouse down: ' + element.tagName + ':' + TestRunner.textContentWithoutStyles(element));
     var rect = element.getBoundingClientRect();
     eventSender.mouseMoveTo((rect.left + rect.right) / 2 + offset, (rect.top + rect.bottom) / 2);
     eventSender.mouseDown();
@@ -81,7 +81,7 @@
   }
 
   function mouseUp(element, offset = 0) {
-    TestRunner.addResult('mouse up: ' + element.tagName + ':' + element.textContent);
+    TestRunner.addResult('mouse up: ' + element.tagName + ':' + TestRunner.textContentWithoutStyles(element));
     var rect = element.getBoundingClientRect();
     eventSender.mouseMoveTo((rect.left + rect.right) / 2 + offset, (rect.top + rect.bottom) / 2);
     eventSender.mouseUp();
