@@ -2636,12 +2636,17 @@ class VEATestSuite : public base::TestSuite {
  public:
   VEATestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
 
-  int Run() {
+ private:
+  void Initialize() override {
+    base::TestSuite::Initialize();
+
 #if defined(OS_CHROMEOS)
-    base::test::ScopedTaskEnvironment scoped_task_environment(
-        base::test::ScopedTaskEnvironment::MainThreadType::UI);
+    scoped_task_environment_ =
+        std::make_unique<base::test::ScopedTaskEnvironment>(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI);
 #else
-    base::test::ScopedTaskEnvironment scoped_task_environment;
+    scoped_task_environment_ =
+        std::make_unique<base::test::ScopedTaskEnvironment>();
 #endif
     media::g_env =
         reinterpret_cast<media::VideoEncodeAcceleratorTestEnvironment*>(
@@ -2657,8 +2662,15 @@ class VEATestSuite : public base::TestSuite {
 #elif defined(OS_WIN)
     media::MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization();
 #endif
-    return base::TestSuite::Run();
   }
+
+  void Shutdown() override {
+    scoped_task_environment_.reset();
+    base::TestSuite::Shutdown();
+  }
+
+ private:
+  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
 };
 
 }  // namespace
