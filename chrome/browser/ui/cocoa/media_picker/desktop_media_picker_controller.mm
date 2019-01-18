@@ -743,11 +743,7 @@ NSString* const kDesktopMediaPickerTitleId = @"title";
     // Memorizing selection.
     [self setTabBrowserIndex:selectedIndex];
   } else if (sourceType == DesktopMediaID::TYPE_SCREEN) {
-    if ([items count] == 1) {
-      // Preselect the first screen source.
-      [browser setSelectionIndexes:[NSIndexSet indexSetWithIndex:0]
-              byExtendingSelection:NO];
-    } else if ([items count] == 2) {
+    if ([items count] == 2) {
       // Switch to multiple sources mode.
       [browser setCellSize:NSMakeSize(kDesktopMediaPickerMultipleScreenWidth,
                                       kDesktopMediaPickerMultipleScreenHeight)];

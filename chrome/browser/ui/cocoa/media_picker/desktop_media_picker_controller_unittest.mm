@@ -184,17 +184,22 @@ TEST_F(DesktopMediaPickerControllerTest, ClickShareScreen) {
   EXPECT_FALSE([[controller_ shareButton] isEnabled]);
   AddScreen(0);
   screen_list_->SetSourceThumbnail(0);
-  // First screen will be automatically selected.
-  EXPECT_TRUE([[controller_ shareButton] isEnabled]);
+  // Nothing should be selected automatically.
+  EXPECT_FALSE([[controller_ shareButton] isEnabled]);
 
   AddScreen(1);
   screen_list_->SetSourceThumbnail(1);
 
   EXPECT_EQ(2U, [[controller_ screenItems] count]);
 
+  NSIndexSet* index_set = [NSIndexSet indexSetWithIndex:1];
+  [[controller_ screenBrowser] setSelectionIndexes:index_set
+                              byExtendingSelection:NO];
+  EXPECT_TRUE([[controller_ shareButton] isEnabled]);
+
   [[controller_ shareButton] performClick:nil];
   EXPECT_TRUE(WaitForCallback());
-  EXPECT_EQ(screen_list_->GetSource(0).id, source_reported_);
+  EXPECT_EQ(screen_list_->GetSource(1).id, source_reported_);
 }
 
 TEST_F(DesktopMediaPickerControllerTest, ClickShareWindow) {
