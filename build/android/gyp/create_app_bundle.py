@@ -346,8 +346,6 @@ def main(args):
     with open(tmp_bundle_config, 'w') as f:
       f.write(bundle_config)
 
-    print str(bundle_config)
-
     cmd_args = ['java', '-jar', bundletool.BUNDLETOOL_JAR_PATH, 'build-bundle']
     cmd_args += ['--modules=%s' % ','.join(module_zips)]
     cmd_args += ['--output=%s' % tmp_unsigned_bundle]
