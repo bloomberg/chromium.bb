@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/modules/cache_storage/cache_storage.h"
 #include "third_party/blink/renderer/modules/cache_storage/cache_storage_error.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -496,13 +497,6 @@ class Cache::CodeCacheHandleCallbackForPut final
                                    base::Time response_time,
                                    base::TimeTicks) {
     ServiceWorkerGlobalScope* global_scope = GetServiceWorkerGlobalScope();
-    // |cache_ptr_| can be disconnected when the wrapper of CacheStorage is
-    // gone.
-    if (!cache_->cache_ptr_.is_bound()) {
-      global_scope->DidEndTask(task_id);
-      return;
-    }
-
     scoped_refptr<CachedMetadata> cached_metadata =
         GenerateFullCodeCache(array_buffer);
     if (!cached_metadata) {
@@ -534,9 +528,11 @@ class Cache::CodeCacheHandleCallbackForPut final
 
 Cache* Cache::Create(
     GlobalFetch::ScopedFetcher* fetcher,
+    CacheStorage* cache_storage,
     mojom::blink::CacheStorageCacheAssociatedPtrInfo cache_ptr_info,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return MakeGarbageCollected<Cache>(fetcher, std::move(cache_ptr_info),
+  return MakeGarbageCollected<Cache>(fetcher, cache_storage,
+                                     std::move(cache_ptr_info),
                                      std::move(task_runner));
 }
 
@@ -671,14 +667,16 @@ mojom::blink::QueryParamsPtr Cache::ToQueryParams(
 }
 
 Cache::Cache(GlobalFetch::ScopedFetcher* fetcher,
+             CacheStorage* cache_storage,
              mojom::blink::CacheStorageCacheAssociatedPtrInfo cache_ptr_info,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : scoped_fetcher_(fetcher) {
+    : scoped_fetcher_(fetcher), cache_storage_(cache_storage) {
   cache_ptr_.Bind(std::move(cache_ptr_info), std::move(task_runner));
 }
 
 void Cache::Trace(blink::Visitor* visitor) {
   visitor->Trace(scoped_fetcher_);
+  visitor->Trace(cache_storage_);
   ScriptWrappable::Trace(visitor);
 }
 
