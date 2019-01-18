@@ -13,6 +13,11 @@ const string kAppType_Property = "ash:app-type";
 const string kBlockedForAssistantSnapshot_Property =
   "ash:blocked-for-assistant-snapshot";
 
+// A bool to indicate whether the window can attach into another window. Used
+// by tab-dragging.
+const string kCanAttachToAnotherWindow_Property =
+  "ash:can-attach-to-another-window";
+
 // V1 apps can intercept system keys. This will let the app handle F-keys instead
 // of the window manager.
 const string kCanConsumeSystemKeys_Property =
