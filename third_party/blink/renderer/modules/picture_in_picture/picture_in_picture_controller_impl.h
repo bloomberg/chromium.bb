@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_CONTROLLER_IMPL_H_
 
 #include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
+#include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 
 namespace blink {
 
@@ -22,7 +23,8 @@ struct WebSize;
 // PictureInPictureControllerImpl instance is associated to a Document. It is
 // supplement and therefore can be lazy-initiated. Callers should consider
 // whether they want to instantiate an object when they make a call.
-class PictureInPictureControllerImpl : public PictureInPictureController {
+class PictureInPictureControllerImpl : public PictureInPictureController,
+                                       public PageVisibilityObserver {
   USING_GARBAGE_COLLECTED_MIXIN(PictureInPictureControllerImpl);
   WTF_MAKE_NONCOPYABLE(PictureInPictureControllerImpl);
 
@@ -50,6 +52,18 @@ class PictureInPictureControllerImpl : public PictureInPictureController {
   Element* PictureInPictureElement() const;
   Element* PictureInPictureElement(TreeScope&) const;
 
+  // Add video element to the list of video elements for the associated document
+  // that are eligible to Auto Picture-in-Picture.
+  void AddToAutoPictureInPictureElementsList(HTMLVideoElement*);
+
+  // Remove video element from the list of video elements for the associated
+  // document that are eligible to Auto Picture-in-Picture.
+  void RemoveFromAutoPictureInPictureElementsList(HTMLVideoElement*);
+
+  // Returns video element whose autoPictureInPicture attribute was set most
+  // recently.
+  HTMLVideoElement* AutoPictureInPictureElement() const;
+
   // Implementation of PictureInPictureController.
   void EnterPictureInPicture(HTMLVideoElement*,
                              ScriptPromiseResolver*) override;
@@ -59,6 +73,9 @@ class PictureInPictureControllerImpl : public PictureInPictureController {
       const std::vector<PictureInPictureControlInfo>&) override;
   Status IsElementAllowed(const HTMLVideoElement&) const override;
   bool IsPictureInPictureElement(const Element*) const override;
+
+  // PageVisibilityObserver implementation.
+  void PageVisibilityChanged() override;
 
   void Trace(blink::Visitor*) override;
 
@@ -71,6 +88,10 @@ class PictureInPictureControllerImpl : public PictureInPictureController {
 
   // The Picture-in-Picture element for the associated document.
   Member<HTMLVideoElement> picture_in_picture_element_;
+
+  // The list of video elements for the associated document that are eligible
+  // to Auto Picture-in-Picture.
+  HeapDeque<Member<HTMLVideoElement>> auto_picture_in_picture_elements_;
 
   // The Picture-in-Picture window for the associated document.
   Member<PictureInPictureWindow> picture_in_picture_window_;

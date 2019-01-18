@@ -445,7 +445,8 @@ class AppWindow : public content::WebContentsDelegate,
       content::RenderFrameHost* frame,
       const content::BluetoothChooser::EventHandler& event_handler) override;
   bool TakeFocus(content::WebContents* source, bool reverse) override;
-  gfx::Size EnterPictureInPicture(const viz::SurfaceId& surface_id,
+  gfx::Size EnterPictureInPicture(content::WebContents* web_contents,
+                                  const viz::SurfaceId& surface_id,
                                   const gfx::Size& natural_size) override;
   void ExitPictureInPicture() override;
 

@@ -112,6 +112,10 @@
       settable_from_internals: true,
     },
     {
+      name: "AutoPictureInPicture",
+      status: "experimental",
+    },
+    {
       // Flag set by the media::kAutoplayIgnoreWebAudio feature flag.
       name: "AutoplayIgnoresWebAudio",
       settable_from_internals: true,

@@ -1117,6 +1117,7 @@ html element video
     property NETWORK_NO_SOURCE
     property addTextTrack
     property audioTracks
+    property autoPictureInPicture
     property autoplay
     property buffered
     property canPlayType

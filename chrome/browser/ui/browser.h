@@ -526,7 +526,8 @@ class Browser : public TabStripModelObserver,
                                          const GURL& resource_url) override;
   void OnDidBlockFramebust(content::WebContents* web_contents,
                            const GURL& url) override;
-  gfx::Size EnterPictureInPicture(const viz::SurfaceId&,
+  gfx::Size EnterPictureInPicture(content::WebContents* web_contents,
+                                  const viz::SurfaceId&,
                                   const gfx::Size&) override;
   void ExitPictureInPicture() override;
   std::unique_ptr<content::WebContents> SwapWebContents(

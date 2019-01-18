@@ -21300,6 +21300,11 @@ Called by update_net_error_codes.py.-->
   <int value="2730" label="QuirkyLineBoxBackgroundSize"/>
   <int value="2731" label="DirectlyCompositedImage"/>
   <int value="2732" label="ForbiddenSyncXhrInPageDismissal"/>
+  <int value="2733"
+      label="V8HTMLVideoElement_AutoPictureInPicture_AttributeGetter"/>
+  <int value="2734"
+      label="V8HTMLVideoElement_AutoPictureInPicture_AttributeSetter"/>
+  <int value="2735" label="AutoPictureInPictureAttribute"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

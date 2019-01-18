@@ -613,7 +613,8 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Notifies the Picture-in-Picture controller that there is a new player
   // entering Picture-in-Picture.
   // Returns the size of the Picture-in-Picture window.
-  virtual gfx::Size EnterPictureInPicture(const viz::SurfaceId&,
+  virtual gfx::Size EnterPictureInPicture(WebContents* web_contents,
+                                          const viz::SurfaceId&,
                                           const gfx::Size& natural_size);
 
   // Updates the Picture-in-Picture controller with a signal that

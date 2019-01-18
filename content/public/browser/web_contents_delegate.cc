@@ -284,7 +284,8 @@ bool WebContentsDelegate::DoBrowserControlsShrinkRendererSize(
   return false;
 }
 
-gfx::Size WebContentsDelegate::EnterPictureInPicture(const viz::SurfaceId&,
+gfx::Size WebContentsDelegate::EnterPictureInPicture(WebContents* web_contents,
+                                                     const viz::SurfaceId&,
                                                      const gfx::Size&) {
   return gfx::Size();
 }

@@ -128,7 +128,8 @@ class ExtensionHost : public DeferredStartRenderHost,
                                   const GURL& security_origin,
                                   blink::MediaStreamType type) override;
   bool IsNeverVisible(content::WebContents* web_contents) override;
-  gfx::Size EnterPictureInPicture(const viz::SurfaceId& surface_id,
+  gfx::Size EnterPictureInPicture(content::WebContents* web_contents,
+                                  const viz::SurfaceId& surface_id,
                                   const gfx::Size& natural_size) override;
   void ExitPictureInPicture() override;
 

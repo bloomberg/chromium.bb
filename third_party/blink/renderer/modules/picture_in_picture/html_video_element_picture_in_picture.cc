@@ -119,7 +119,8 @@ void HTMLVideoElementPictureInPicture::setPictureInPictureControls(
 bool HTMLVideoElementPictureInPicture::FastHasAttribute(
     const QualifiedName& name,
     const HTMLVideoElement& element) {
-  DCHECK(name == html_names::kDisablepictureinpictureAttr);
+  DCHECK(name == html_names::kDisablepictureinpictureAttr ||
+         name == html_names::kAutopictureinpictureAttr);
   return element.FastHasAttribute(name);
 }
 
@@ -128,17 +129,24 @@ void HTMLVideoElementPictureInPicture::SetBooleanAttribute(
     const QualifiedName& name,
     HTMLVideoElement& element,
     bool value) {
-  DCHECK(name == html_names::kDisablepictureinpictureAttr);
+  DCHECK(name == html_names::kDisablepictureinpictureAttr ||
+         name == html_names::kAutopictureinpictureAttr);
   element.SetBooleanAttribute(name, value);
-
-  if (!value)
-    return;
 
   Document& document = element.GetDocument();
   TreeScope& scope = element.GetTreeScope();
   PictureInPictureControllerImpl& controller =
       PictureInPictureControllerImpl::From(document);
-  if (controller.PictureInPictureElement(scope) == &element) {
+
+  if (name == html_names::kAutopictureinpictureAttr) {
+    if (value)
+      controller.AddToAutoPictureInPictureElementsList(&element);
+    else
+      controller.RemoveFromAutoPictureInPictureElementsList(&element);
+  }
+
+  if (name == html_names::kDisablepictureinpictureAttr && value &&
+      controller.PictureInPictureElement(scope) == &element) {
     controller.ExitPictureInPicture(&element, nullptr);
   }
 }

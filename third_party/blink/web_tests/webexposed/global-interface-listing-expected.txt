@@ -3895,6 +3895,7 @@ interface HTMLUnknownElement : HTMLElement
     method constructor
 interface HTMLVideoElement : HTMLMediaElement
     attribute @@toStringTag
+    getter autoPictureInPicture
     getter disablePictureInPicture
     getter height
     getter intrinsicSize
@@ -3917,6 +3918,7 @@ interface HTMLVideoElement : HTMLMediaElement
     method webkitEnterFullscreen
     method webkitExitFullScreen
     method webkitExitFullscreen
+    setter autoPictureInPicture
     setter disablePictureInPicture
     setter height
     setter intrinsicSize

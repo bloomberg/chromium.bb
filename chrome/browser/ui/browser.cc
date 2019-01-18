@@ -1251,10 +1251,11 @@ void Browser::OnDidBlockFramebust(content::WebContents* web_contents,
   }
 }
 
-gfx::Size Browser::EnterPictureInPicture(const viz::SurfaceId& surface_id,
+gfx::Size Browser::EnterPictureInPicture(content::WebContents* web_contents,
+                                         const viz::SurfaceId& surface_id,
                                          const gfx::Size& natural_size) {
   return PictureInPictureWindowManager::GetInstance()->EnterPictureInPicture(
-      tab_strip_model_->GetActiveWebContents(), surface_id, natural_size);
+      web_contents, surface_id, natural_size);
 }
 
 void Browser::ExitPictureInPicture() {
