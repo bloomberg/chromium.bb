@@ -639,6 +639,9 @@ void CleanerLoggingService::AddShortcutData(
 void CleanerLoggingService::SetFoundModifiedChromeShortcuts(
     bool /*found_modified_shortcuts*/) {}
 
+void CleanerLoggingService::SetScannedLocations(
+    const std::vector<UwS::TraceLocation>& /*scanned_locations*/) {}
+
 void CleanerLoggingService::LogProcessInformation(
     SandboxType process_type,
     const SystemResourceUsage& usage) {

@@ -296,6 +296,13 @@ void ReporterLoggingService::SetFoundModifiedChromeShortcuts(
   reporter_logs_.set_found_modified_chrome_shortcuts(found_modified_shortcuts);
 }
 
+void ReporterLoggingService::SetScannedLocations(
+    const std::vector<UwS::TraceLocation>& scanned_locations) {
+  base::AutoLock lock(lock_);
+  for (UwS::TraceLocation location : scanned_locations)
+    reporter_logs_.add_scanned_locations(location);
+}
+
 void ReporterLoggingService::LogProcessInformation(
     SandboxType process_type,
     const SystemResourceUsage& usage) {

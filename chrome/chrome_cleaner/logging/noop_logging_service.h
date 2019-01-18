@@ -82,6 +82,7 @@ class NoOpLoggingService : public LoggingServiceAPI {
       const std::string& executable_hash,
       const std::vector<base::string16>& command_line_arguments) override;
   void SetFoundModifiedChromeShortcuts(bool found_modified_shortcuts) override;
+  void SetScannedLocations(const std::vector<UwS::TraceLocation>&) override;
 
   void LogProcessInformation(SandboxType process_type,
                              const SystemResourceUsage& usage) override;

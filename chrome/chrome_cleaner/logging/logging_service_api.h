@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/chrome_cleaner/logging/utils.h"
+#include "chrome/chrome_cleaner/os/disk_util_types.h"
 #include "chrome/chrome_cleaner/os/process.h"
 #include "chrome/chrome_cleaner/pup_data/pup_data.h"
 #include "chrome/chrome_cleaner/settings/settings_types.h"
@@ -182,6 +183,10 @@ class LoggingServiceAPI {
   // Set |found_modified_shortcuts| in the |reporter_logs|.
   virtual void SetFoundModifiedChromeShortcuts(
       bool found_modified_shortcuts) = 0;
+
+  // Set |scanned_locations| in the reporter log.
+  virtual void SetScannedLocations(
+      const std::vector<UwS::TraceLocation>& scanned_locations) = 0;
 
   // Log resource usage of a Chrome Cleanup process identified by
   // |process_type|.

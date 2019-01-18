@@ -16,6 +16,7 @@
 #include "chrome/chrome_cleaner/logging/proto/reporter_logs.pb.h"
 #include "chrome/chrome_cleaner/logging/safe_browsing_reporter.h"
 #include "chrome/chrome_cleaner/logging/test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_cleaner {
@@ -262,6 +263,17 @@ TEST_F(ReporterLoggingServiceTest, SetFoundModifiedChromeShortcuts) {
   ASSERT_TRUE(
       report.ParseFromString(reporter_logging_service_->RawReportContent()));
   EXPECT_FALSE(report.found_modified_chrome_shortcuts());
+}
+
+TEST_F(ReporterLoggingServiceTest, SetScannedLocations) {
+  const std::vector<UwS::TraceLocation> locations = {
+      UwS::FOUND_IN_STARTUP, UwS::FOUND_IN_SHELL, UwS::FOUND_IN_PROGRAMFILES};
+  reporter_logging_service_->SetScannedLocations(locations);
+
+  FoilReporterLogs report;
+  ASSERT_TRUE(
+      report.ParseFromString(reporter_logging_service_->RawReportContent()));
+  EXPECT_THAT(report.scanned_locations(), testing::ElementsAreArray(locations));
 }
 
 }  // namespace chrome_cleaner
