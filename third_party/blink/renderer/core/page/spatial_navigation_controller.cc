@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 
+#include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
@@ -16,10 +17,13 @@
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
 
 namespace blink {
 
@@ -148,7 +152,30 @@ bool SpatialNavigationController::HandleArrowKeyboardEvent(
   return Advance(direction);
 }
 
+Element* SpatialNavigationController::GetInterestedElement() const {
+  if (RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled())
+    return interest_element_;
+
+  Frame* frame = page_->GetFocusController().FocusedOrMainFrame();
+  if (!frame->IsLocalFrame())
+    return nullptr;
+
+  Document* document = ToLocalFrame(frame)->GetDocument();
+  if (!document)
+    return nullptr;
+
+  return document->ActiveElement();
+}
+
+void SpatialNavigationController::DidDetachFrameView() {
+  // If the interested element's view was lost (frame detached, navigated,
+  // etc.) then reset navigation.
+  if (interest_element_ && !interest_element_->GetDocument().View())
+    interest_element_ = nullptr;
+}
+
 void SpatialNavigationController::Trace(blink::Visitor* visitor) {
+  visitor->Trace(interest_element_);
   visitor->Trace(page_);
 }
 
@@ -223,10 +250,10 @@ FocusCandidate SpatialNavigationController::FindNextCandidateInContainer(
     if (element == interest_child_in_container)
       continue;
 
-    if (!element->IsKeyboardFocusable())
+    if (HasRemoteFrame(element))
       continue;
 
-    if (HasRemoteFrame(element))
+    if (!IsValidCandidate(*element))
       continue;
 
     FocusCandidate candidate = FocusCandidate(element, direction);
@@ -265,6 +292,25 @@ bool SpatialNavigationController::AdvanceWithinContainer(
 }
 
 Node* SpatialNavigationController::StartingNode() {
+  if (RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled()) {
+    if (interest_element_) {
+      // If an iframe is interested, start the search from its document node.
+      // This matches the behavior in the focus case below where focusing a
+      // frame means the focused document doesn't have a focused element and so
+      // we return the document itself.
+      if (interest_element_->IsFrameOwnerElement())
+        return ToHTMLFrameOwnerElement(interest_element_)->contentDocument();
+
+      return interest_element_;
+    }
+
+    Frame* main_frame = page_->MainFrame();
+    if (main_frame && main_frame->IsLocalFrame())
+      return ToLocalFrame(main_frame)->GetDocument();
+
+    return nullptr;
+  }
+
   // FIXME: Directional focus changes don't yet work with RemoteFrames.
   Frame* focused_frame = page_->GetFocusController().FocusedOrMainFrame();
   if (!focused_frame->IsLocalFrame())
@@ -285,16 +331,45 @@ Node* SpatialNavigationController::StartingNode() {
 }
 
 void SpatialNavigationController::MoveInterestTo(Node* next_node) {
+  DCHECK(next_node->IsElementNode());
+  Element* element = ToElement(next_node);
+
+  if (RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled()) {
+    if (interest_element_) {
+      interest_element_->SetNeedsStyleRecalc(
+          kLocalStyleChange, StyleChangeReasonForTracing::Create(
+                                 style_change_reason::kPseudoClass));
+    }
+
+    interest_element_ = element;
+
+    if (interest_element_) {
+      interest_element_->SetNeedsStyleRecalc(
+          kLocalStyleChange, StyleChangeReasonForTracing::Create(
+                                 style_change_reason::kPseudoClass));
+    }
+
+    LayoutObject* layout_object = element->GetLayoutObject();
+    DCHECK(layout_object);
+
+    layout_object->ScrollRectToVisible(element->BoundingBoxForScrollIntoView(),
+                                       WebScrollIntoViewParams());
+    return;
+  }
+
   // Before focusing the new element, check if we're leaving an iframe (= moving
   // focus out of an iframe). In this case, we want the exited [nested] iframes
   // to lose focus. This is tested in snav-iframe-nested.html.
   LocalFrame* old_frame = page_->GetFocusController().FocusedFrame();
   ClearFocusInExitedFrames(old_frame, next_node->GetDocument().GetFrame());
 
-  DCHECK(next_node->IsElementNode());
-  ToElement(next_node)->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
-                                          kWebFocusTypeSpatialNavigation,
-                                          nullptr));
+  element->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
+                             kWebFocusTypeSpatialNavigation, nullptr));
+}
+
+bool SpatialNavigationController::IsValidCandidate(
+    const Element& element) const {
+  return element.IsKeyboardFocusable();
 }
 
 }  // namespace blink

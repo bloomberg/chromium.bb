@@ -29,6 +29,12 @@ class CORE_EXPORT SpatialNavigationController
 
   bool HandleArrowKeyboardEvent(KeyboardEvent* event);
 
+  // Returns the element that's currently interested. i.e. the Element that's
+  // currently indicated to the user.
+  Element* GetInterestedElement() const;
+
+  void DidDetachFrameView();
+
   void Trace(blink::Visitor*);
 
  private:
@@ -68,6 +74,12 @@ class CORE_EXPORT SpatialNavigationController
   Node* StartingNode();
   void MoveInterestTo(Node* next_node);
 
+  // Returns true if the element should be considered for navigation.
+  bool IsValidCandidate(const Element& element) const;
+
+  // The currently indicated element or nullptr if no node is indicated by
+  // spatial navigation.
+  WeakMember<Element> interest_element_;
   Member<Page> page_;
 };
 
