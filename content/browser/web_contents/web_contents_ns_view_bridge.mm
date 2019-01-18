@@ -4,34 +4,31 @@
 
 #include "content/browser/web_contents/web_contents_ns_view_bridge.h"
 
-#include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
+#import "content/browser/web_contents/web_contents_view_cocoa.h"
 
 namespace content {
 
 WebContentsNSViewBridge::WebContentsNSViewBridge(
     uint64_t view_id,
-    mojom::WebContentsNSViewClientAssociatedPtr client,
-    mojom::WebContentsNSViewBridgeAssociatedRequest bridge_request)
-    : client_(std::move(client)), binding_(this) {
-  binding_.Bind(std::move(bridge_request),
-                ui::WindowResizeHelperMac::Get()->task_runner());
-  // This object will be destroyed when its connection is closed.
-  binding_.set_connection_error_handler(base::BindOnce(
-      &WebContentsNSViewBridge::OnConnectionError, base::Unretained(this)));
+    mojom::WebContentsNSViewClientAssociatedPtr client)
+    : client_(std::move(client)) {
+  cocoa_view_.reset(
+      [[WebContentsViewCocoa alloc] initWithWebContentsViewMac:nullptr]);
+  view_id_ =
+      std::make_unique<ui::ScopedNSViewIdMapping>(view_id, cocoa_view_.get());
+}
 
-  // Note that this is an ordinary NSView (as opposed to a full
-  // WebContentsViewCocoa).
-  cocoa_view_.reset([[NSView alloc] initWithFrame:NSZeroRect]);
+WebContentsNSViewBridge::WebContentsNSViewBridge(
+    uint64_t view_id,
+    WebContentsViewMac* web_contents_view) {
+  cocoa_view_.reset([[WebContentsViewCocoa alloc]
+      initWithWebContentsViewMac:web_contents_view]);
   view_id_ =
       std::make_unique<ui::ScopedNSViewIdMapping>(view_id, cocoa_view_.get());
 }
 
 WebContentsNSViewBridge::~WebContentsNSViewBridge() {
   [cocoa_view_ removeFromSuperview];
-}
-
-void WebContentsNSViewBridge::OnConnectionError() {
-  delete this;
 }
 
 void WebContentsNSViewBridge::SetParentViewsNSView(uint64_t parent_ns_view_id) {
