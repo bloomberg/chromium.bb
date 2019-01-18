@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "components/zucchini/address_translator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace zucchini {
@@ -30,7 +31,7 @@ uint32_t kCleanSlateBLX_A2 = 0xFA000000;  // A24.
 uint16_t kCleanSlateB_T1 = 0xD000;        // T8.
 uint16_t kCleanSlateB_T2 = 0xE000;        // T11.
 uint32_t kCleanSlateB_T3 = 0xF0008000;    // T20.
-// For T4 encodings, |disp| = 0 means J1 = J2 = 1, so include 0x00002800.
+// For T24 encodings, |disp| = 0 means J1 = J2 = 1, so include 0x00002800.
 uint32_t kCleanSlateB_T4 = 0xF0009000 | 0x00002800;    // T24.
 uint32_t kCleanSlateBL_T1 = 0xF000D000 | 0x00002800;   // T24.
 uint32_t kCleanSlateBLX_T2 = 0xF000C000 | 0x00002800;  // T24.
@@ -134,7 +135,7 @@ struct ArmRelInstruction {
   INT_T clean_slate_code;
 };
 
-// Tester for Decode/Encode functions for ARM.
+// Tester for ARM Encode / Decode functions for |disp| <-> |code|.
 template <typename TRAITS>
 class ArmTranslatorEncodeDecodeTest {
  public:
@@ -199,6 +200,60 @@ class ArmTranslatorEncodeDecodeTest {
         EXPECT_FALSE((*encode_fun)(disp, &code)) << disp;
         // Value does not get modified after failure.
         EXPECT_EQ(instr.clean_slate_code, code);
+      }
+    }
+  }
+};
+
+// Tester for ARM Write / Read functions for |target_rva| <-> |code|.
+template <typename TRAITS>
+class ArmTranslatorWriteReadTest {
+ public:
+  using CODE_T = typename TRAITS::code_t;
+
+  ArmTranslatorWriteReadTest() {}
+
+  // Expects successful Write() to |clean_slate_code| for each |target_rva_list|
+  // RVA, using each |instr_rva_list| RVA, and that the resulting |code| leads
+  // to successful Read(), which recovers |instr_rva|.
+  void Accept(CODE_T clean_slate_code,
+              const std::vector<rva_t>& instr_rva_list,
+              const std::vector<rva_t>& target_rva_list) {
+    bool (*read_fun)(rva_t, CODE_T, rva_t*) = TRAITS::Read;
+    bool (*write_fun)(rva_t, rva_t, CODE_T*) = TRAITS::Write;
+
+    for (rva_t instr_rva : instr_rva_list) {
+      for (rva_t target_rva : target_rva_list) {
+        CODE_T code = clean_slate_code;
+        // Write |target_rva| to |code|.
+        EXPECT_TRUE((*write_fun)(instr_rva, target_rva, &code)) << target_rva;
+        rva_t target_rva_out = kInvalidRva;
+
+        // Read |code| to |target_rva_out|, check fidelity.
+        EXPECT_TRUE((*read_fun)(instr_rva, code, &target_rva_out));
+        EXPECT_EQ(target_rva, target_rva_out);
+
+        // Sanity check: Rewrite |target_rva| into |code|, ensure no change.
+        CODE_T code_copy = code;
+        EXPECT_TRUE((*write_fun)(instr_rva, target_rva, &code));
+        EXPECT_EQ(code_copy, code);
+      }
+    }
+  }
+
+  // Expects failed Write() to |clean_slate_code| for each |target_rva_list|
+  // RVA, using each |instr_rva_list| RVA.
+  void Reject(CODE_T clean_slate_code,
+              const std::vector<rva_t>& instr_rva_list,
+              const std::vector<rva_t>& target_rva_list) {
+    bool (*write_fun)(rva_t, rva_t, CODE_T*) = TRAITS::Write;
+
+    for (rva_t instr_rva : instr_rva_list) {
+      for (rva_t target_rva : target_rva_list) {
+        CODE_T code = clean_slate_code;
+        EXPECT_FALSE((*write_fun)(instr_rva, target_rva, &code)) << target_rva;
+        // Output variable is unmodified after failure.
+        EXPECT_EQ(clean_slate_code, code);
       }
     }
   }
@@ -377,7 +432,108 @@ TEST(Arm32Rel32Translator, EncodeDecode) {
 }
 
 TEST(Arm32Rel32Translator, WriteRead) {
-  // TODO(huangs): Implement.
+  std::vector<rva_t> aligned4;
+  std::vector<rva_t> misaligned4;
+  std::vector<rva_t> aligned2;
+  std::vector<rva_t> misaligned2;
+  for (rva_t rva = 0x1FFC; rva <= 0x2010; ++rva) {
+    ((rva % 4 == 0) ? aligned4 : misaligned4).push_back(rva);
+    ((rva % 2 == 0) ? aligned2 : misaligned2).push_back(rva);
+  }
+  CHECK_EQ(6U, aligned4.size());
+  CHECK_EQ(15U, misaligned4.size());
+  CHECK_EQ(11U, aligned2.size());
+  CHECK_EQ(10U, misaligned2.size());
+
+  // Helpers to convert an instruction's RVA to PC.
+  auto pcArm = [](rva_t instr_rva) -> rva_t { return instr_rva + 8; };
+  auto pcThumb2 = [](rva_t instr_rva) -> rva_t { return instr_rva + 4; };
+
+  // A24 tests.
+  ArmTranslatorWriteReadTest<Arm32Rel32Translator::AddrTraits_A24> test_A24;
+  for (uint32_t clean_slate_code : {kCleanSlateB_A1, kCleanSlateBL_A1}) {
+    test_A24.Accept(clean_slate_code, aligned4, aligned4);
+    test_A24.Reject(clean_slate_code, aligned4, misaligned4);
+    test_A24.Reject(clean_slate_code, misaligned4, aligned4);
+    test_A24.Reject(clean_slate_code, misaligned4, misaligned4);
+    // Signed (24 + 2)-bit range, 4-byte aligned: [-0x02000000, 0x01FFFFFC].
+    test_A24.Accept(clean_slate_code, {0x15000000},
+                    {pcArm(0x13000000), pcArm(0x16FFFFFC)});
+    test_A24.Reject(clean_slate_code, {0x15000000},
+                    {pcArm(0x13000000 - 4), pcArm(0x16FFFFFC + 4)});
+  }
+
+  // BLX complication: ARM -> THUMB2.
+  test_A24.Accept(kCleanSlateBLX_A2, aligned4, aligned2);
+  test_A24.Reject(kCleanSlateBLX_A2, aligned4, misaligned2);
+  test_A24.Reject(kCleanSlateBLX_A2, misaligned4, aligned2);
+  test_A24.Reject(kCleanSlateBLX_A2, misaligned4, misaligned2);
+  test_A24.Accept(kCleanSlateBLX_A2, {0x15000000},
+                  {pcArm(0x13000000), pcArm(0x16FFFFFE)});
+  test_A24.Reject(kCleanSlateBLX_A2, {0x15000000},
+                  {pcArm(0x13000000 - 4), pcArm(0x13000000 - 2),
+                   pcArm(0x16FFFFFE + 2), pcArm(0x16FFFFFE + 4)});
+
+  // T8 tests.
+  ArmTranslatorWriteReadTest<Arm32Rel32Translator::AddrTraits_T8> test_T8;
+  test_T8.Accept(kCleanSlateB_T1, aligned2, aligned2);
+  test_T8.Reject(kCleanSlateB_T1, aligned2, misaligned2);
+  test_T8.Reject(kCleanSlateB_T1, misaligned2, aligned2);
+  test_T8.Reject(kCleanSlateB_T1, misaligned2, misaligned2);
+  // Signed (8 + 1)-bit range, 2-byte aligned: [-0x0100, 0x00FE].
+  test_T8.Accept(kCleanSlateB_T1, {0x10000500},
+                 {pcThumb2(0x10000400), pcThumb2(0x100005FE)});
+  test_T8.Reject(kCleanSlateB_T1, {0x10000500},
+                 {pcThumb2(0x10000400 - 2), pcThumb2(0x100005FE + 2)});
+
+  // T11 tests.
+  ArmTranslatorWriteReadTest<Arm32Rel32Translator::AddrTraits_T11> test_T11;
+  test_T11.Accept(kCleanSlateB_T2, aligned2, aligned2);
+  test_T11.Reject(kCleanSlateB_T2, aligned2, misaligned2);
+  test_T11.Reject(kCleanSlateB_T2, misaligned2, aligned2);
+  test_T11.Reject(kCleanSlateB_T2, misaligned2, misaligned2);
+  // Signed (11 + 1)-bit range, 2-byte aligned: [-0x0800, 0x07FE].
+  test_T11.Accept(kCleanSlateB_T2, {0x10003000},
+                  {pcThumb2(0x10002800), pcThumb2(0x100037FE)});
+  test_T11.Reject(kCleanSlateB_T2, {0x10003000},
+                  {pcThumb2(0x10002800 - 2), pcThumb2(0x100037FE + 2)});
+
+  // T20 tests.
+  ArmTranslatorWriteReadTest<Arm32Rel32Translator::AddrTraits_T20> test_T20;
+  test_T20.Accept(kCleanSlateB_T3, aligned2, aligned2);
+  test_T20.Reject(kCleanSlateB_T3, aligned2, misaligned2);
+  test_T20.Reject(kCleanSlateB_T3, misaligned2, aligned2);
+  test_T20.Reject(kCleanSlateB_T3, misaligned2, misaligned2);
+  // Signed (20 + 1)-bit range, 2-byte aligned: [-0x00100000, 0x000FFFFE].
+  test_T20.Accept(kCleanSlateB_T3, {0x10300000},
+                  {pcThumb2(0x10200000), pcThumb2(0x103FFFFE)});
+  test_T20.Reject(kCleanSlateB_T3, {0x10300000},
+                  {pcThumb2(0x10200000 - 2), pcThumb2(0x103FFFFE + 2)});
+
+  // T24 tests.
+  ArmTranslatorWriteReadTest<Arm32Rel32Translator::AddrTraits_T24> test_T24;
+  for (uint32_t clean_slate_code : {kCleanSlateB_T4, kCleanSlateBL_T1}) {
+    test_T24.Accept(clean_slate_code, aligned2, aligned2);
+    test_T24.Reject(clean_slate_code, aligned2, misaligned2);
+    test_T24.Reject(clean_slate_code, misaligned2, aligned2);
+    test_T24.Reject(clean_slate_code, misaligned2, misaligned2);
+    // Signed (24 + 1)-bit range, 2-byte aligned: [-0x01000000, 0x00FFFFFE].
+    test_T24.Accept(clean_slate_code, {0x16000000},
+                    {pcThumb2(0x15000000), pcThumb2(0x16FFFFFE)});
+    test_T24.Reject(clean_slate_code, {0x16000000},
+                    {pcThumb2(0x15000000 - 2), pcThumb2(0x16FFFFFE + 2)});
+  }
+
+  // BLX complication: THUMB2 -> ARM.
+  test_T24.Accept(kCleanSlateBLX_T2, aligned2, aligned4);
+  test_T24.Reject(kCleanSlateBLX_T2, aligned2, misaligned4);
+  test_T24.Reject(kCleanSlateBLX_T2, misaligned2, aligned4);
+  test_T24.Reject(kCleanSlateBLX_T2, misaligned2, misaligned4);
+  test_T24.Accept(kCleanSlateBLX_T2, {0x16000000},
+                  {pcThumb2(0x15000000), pcThumb2(0x16FFFFFC)});
+  test_T24.Reject(kCleanSlateBLX_T2, {0x16000000},
+                  {pcThumb2(0x15000000 - 4), pcThumb2(0x15000000 - 2),
+                   pcThumb2(0x16FFFFFC + 2), pcThumb2(0x16FFFFFC + 4)});
 }
 
 // Typical usage in |target_rva| extraction.
@@ -609,7 +765,64 @@ TEST(AArch64Rel32Translator, EncodeDecode) {
 }
 
 TEST(AArch64Rel32Translator, WriteRead) {
-  // TODO(huangs): Implement.
+  std::vector<rva_t> aligned4;
+  std::vector<rva_t> misaligned4;
+  for (rva_t rva = 0x1FFC; rva <= 0x2010; ++rva) {
+    ((rva % 4 == 0) ? aligned4 : misaligned4).push_back(rva);
+  }
+  CHECK_EQ(6U, aligned4.size());
+  CHECK_EQ(15U, misaligned4.size());
+
+  // Helper to convert an instruction's RVA to PC.
+  auto pcAArch64 = [](rva_t instr_rva) -> rva_t { return instr_rva; };
+
+  // Immd14 tests.
+  ArmTranslatorWriteReadTest<AArch64Rel32Translator::AddrTraits_Immd14>
+      test_immd14;
+  for (uint32_t clean_slate_code : {kCleanSlate64TBZw, kCleanSlate64TBZz,
+                                    kCleanSlate64TBNZw, kCleanSlate64TBNZz}) {
+    test_immd14.Accept(clean_slate_code, aligned4, aligned4);
+    test_immd14.Reject(clean_slate_code, aligned4, misaligned4);
+    test_immd14.Reject(clean_slate_code, misaligned4, aligned4);
+    test_immd14.Reject(clean_slate_code, misaligned4, misaligned4);
+    // Signed (14 + 2)-bit range, 4-byte aligned: [-0x00008000, 0x00007FFC].
+    test_immd14.Accept(clean_slate_code, {0x10040000},
+                       {pcAArch64(0x10038000), pcAArch64(0x10047FFC)});
+    test_immd14.Reject(clean_slate_code, {0x15000000},
+                       {pcAArch64(0x10038000 - 4), pcAArch64(0x10047FFC + 4)});
+  }
+
+  // Immd19 tests.
+  ArmTranslatorWriteReadTest<AArch64Rel32Translator::AddrTraits_Immd19>
+      test_immd19;
+  for (uint32_t clean_slate_code :
+       {kCleanSlate64Bcond, kCleanSlate64CBZw, kCleanSlate64CBZz,
+        kCleanSlate64CBNZw, kCleanSlate64CBNZz}) {
+    test_immd19.Accept(clean_slate_code, aligned4, aligned4);
+    test_immd19.Reject(clean_slate_code, aligned4, misaligned4);
+    test_immd19.Reject(clean_slate_code, misaligned4, aligned4);
+    test_immd19.Reject(clean_slate_code, misaligned4, misaligned4);
+    // Signed (19 + 2)-bit range, 4-byte aligned: [-0x00100000, 0x000FFFFC].
+    test_immd19.Accept(clean_slate_code, {0x10300000},
+                       {pcAArch64(0x10200000), pcAArch64(0x103FFFFC)});
+    test_immd19.Reject(clean_slate_code, {0x10300000},
+                       {pcAArch64(0x10200000 - 4), pcAArch64(0x103FFFFC + 4)});
+  }
+
+  // Immd26 tests.
+  ArmTranslatorWriteReadTest<AArch64Rel32Translator::AddrTraits_Immd26>
+      test_immd26;
+  for (uint32_t clean_slate_code : {kCleanSlate64B, kCleanSlate64BL}) {
+    test_immd26.Accept(clean_slate_code, aligned4, aligned4);
+    test_immd26.Reject(clean_slate_code, aligned4, misaligned4);
+    test_immd26.Reject(clean_slate_code, misaligned4, aligned4);
+    test_immd26.Reject(clean_slate_code, misaligned4, misaligned4);
+    // Signed (26 + 2)-bit range, 4-byte aligned: [-0x08000000, 0x07FFFFFC].
+    test_immd26.Accept(clean_slate_code, {0x30000000},
+                       {pcAArch64(0x28000000), pcAArch64(0x37FFFFFC)});
+    test_immd26.Reject(clean_slate_code, {0x30000000},
+                       {pcAArch64(0x28000000 - 4), pcAArch64(0x37FFFFFC + 4)});
+  }
 }
 
 // Typical usage in |target_rva| extraction.
