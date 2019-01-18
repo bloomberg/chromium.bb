@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/webui/md_downloads/downloads_list_tracker.h"
 #include "chrome/browser/ui/webui/md_downloads/md_downloads.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_ui_message_handler.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
@@ -33,20 +32,13 @@ class DownloadItem;
 // also observes changes to the download manager.
 // TODO(calamity): Remove WebUIMessageHandler.
 class MdDownloadsDOMHandler : public content::WebContentsObserver,
-                              public md_downloads::mojom::PageHandler,
-                              public content::WebUIMessageHandler {
+                              public md_downloads::mojom::PageHandler {
  public:
   MdDownloadsDOMHandler(md_downloads::mojom::PageHandlerRequest request,
                         md_downloads::mojom::PagePtr page,
                         content::DownloadManager* download_manager,
                         content::WebUI* web_ui);
   ~MdDownloadsDOMHandler() override;
-
-  // content::WebUIMessageHandler:
-  void RegisterMessages() override;
-  // TODO(calamity): Decouple OnJavascriptDisallowed from WebUIMessageHandler
-  // and remove superclass.
-  void OnJavascriptDisallowed() override;
 
   // WebContentsObserver implementation.
   void RenderProcessGone(base::TerminationStatus status) override;

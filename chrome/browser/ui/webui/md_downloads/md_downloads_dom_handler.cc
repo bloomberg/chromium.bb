@@ -92,19 +92,11 @@ MdDownloadsDOMHandler::MdDownloadsDOMHandler(
 }
 
 MdDownloadsDOMHandler::~MdDownloadsDOMHandler() {
-  FinalizeRemovals();
-}
-
-// MdDownloadsDOMHandler, public: ---------------------------------------------
-
-void MdDownloadsDOMHandler::RegisterMessages() {
-}
-
-void MdDownloadsDOMHandler::OnJavascriptDisallowed() {
   list_tracker_.Stop();
   list_tracker_.Reset();
   if (!render_process_gone_)
     CheckForRemovedFiles();
+  FinalizeRemovals();
 }
 
 void MdDownloadsDOMHandler::RenderProcessGone(base::TerminationStatus status) {

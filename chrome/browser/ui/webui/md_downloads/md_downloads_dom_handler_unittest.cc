@@ -70,7 +70,6 @@ TEST_F(MdDownloadsDOMHandlerTest, ChecksForRemovedFiles) {
   testing::Mock::VerifyAndClear(manager());
 
   EXPECT_CALL(*manager(), CheckForHistoryFilesRemoval());
-  handler.OnJavascriptDisallowed();
 }
 
 TEST_F(MdDownloadsDOMHandlerTest, HandleGetDownloads) {
