@@ -4,6 +4,10 @@
 
 #include "chrome/browser/browser_switcher/browser_switcher_sitelist.h"
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -97,24 +101,11 @@ bool StringSizeCompare(const base::StringPiece& a, const base::StringPiece& b) {
 
 BrowserSwitcherSitelist::~BrowserSwitcherSitelist() = default;
 
-BrowserSwitcherSitelistImpl::BrowserSwitcherSitelistImpl(PrefService* prefs)
-    : prefs_(prefs) {
-  DCHECK(prefs_);
-  change_registrar_.Init(prefs);
-  change_registrar_.Add(
-      prefs::kUrlList,
-      base::BindRepeating(&BrowserSwitcherSitelistImpl::OnUrlListChanged,
-                          base::Unretained(this)));
-  change_registrar_.Add(
-      prefs::kUrlGreylist,
-      base::BindRepeating(&BrowserSwitcherSitelistImpl::OnGreylistChanged,
-                          base::Unretained(this)));
-  // Ensure |chrome_policies_| is initialized.
-  OnUrlListChanged();
-  OnGreylistChanged();
-}
+BrowserSwitcherSitelistImpl::BrowserSwitcherSitelistImpl(
+    const BrowserSwitcherPrefs* prefs)
+    : prefs_(prefs) {}
 
-BrowserSwitcherSitelistImpl::~BrowserSwitcherSitelistImpl() {}
+BrowserSwitcherSitelistImpl::~BrowserSwitcherSitelistImpl() = default;
 
 bool BrowserSwitcherSitelistImpl::ShouldSwitch(const GURL& url) const {
   // Don't record metrics for LBS non-users.
@@ -138,7 +129,7 @@ bool BrowserSwitcherSitelistImpl::ShouldSwitchImpl(const GURL& url) const {
 
   base::StringPiece reason_to_go = std::max(
       {
-          MatchUrlToList(no_copy_url, chrome_policies_.sitelist, true),
+          MatchUrlToList(no_copy_url, prefs_->GetRules().sitelist, true),
           MatchUrlToList(no_copy_url, ieem_sitelist_.sitelist, true),
           MatchUrlToList(no_copy_url, external_sitelist_.sitelist, true),
       },
@@ -151,7 +142,7 @@ bool BrowserSwitcherSitelistImpl::ShouldSwitchImpl(const GURL& url) const {
 
   base::StringPiece reason_to_stay = std::max(
       {
-          MatchUrlToList(no_copy_url, chrome_policies_.greylist, false),
+          MatchUrlToList(no_copy_url, prefs_->GetRules().greylist, false),
           MatchUrlToList(no_copy_url, ieem_sitelist_.greylist, false),
           MatchUrlToList(no_copy_url, external_sitelist_.greylist, false),
       },
@@ -184,54 +175,8 @@ void BrowserSwitcherSitelistImpl::SetExternalSitelist(ParsedXml&& parsed_xml) {
   external_sitelist_.greylist = std::move(parsed_xml.greylist);
 }
 
-void BrowserSwitcherSitelistImpl::OnUrlListChanged() {
-  const base::ListValue* url_list = prefs_->GetList(prefs::kUrlList);
-  const base::ListValue empty_list;
-
-  // This pref is sensitive. Only set through policies.
-  if (!prefs_->IsManagedPreference(prefs::kUrlList))
-    url_list = &empty_list;
-
-  UMA_HISTOGRAM_COUNTS_100000(
-      "BrowserSwitcher.UrlListSize",
-      prefs_->GetList(prefs::kUrlList)->GetList().size());
-
-  chrome_policies_.sitelist.clear();
-  bool has_wildcard = false;
-  for (const auto& url : *url_list) {
-    chrome_policies_.sitelist.push_back(url.GetString());
-    if (url.GetString() == "*")
-      has_wildcard = true;
-  }
-
-  UMA_HISTOGRAM_BOOLEAN("BrowserSwitcher.UrlListWildcard", has_wildcard);
-}
-
-void BrowserSwitcherSitelistImpl::OnGreylistChanged() {
-  const base::ListValue* greylist = prefs_->GetList(prefs::kUrlGreylist);
-  const base::ListValue empty_list;
-
-  // This pref is sensitive. Only set through policies.
-  if (!prefs_->IsManagedPreference(prefs::kUrlGreylist))
-    greylist = &empty_list;
-
-  UMA_HISTOGRAM_COUNTS_100000(
-      "BrowserSwitcher.GreylistSize",
-      prefs_->GetList(prefs::kUrlGreylist)->GetList().size());
-
-  chrome_policies_.greylist.clear();
-  bool has_wildcard = false;
-  for (const auto& url : *greylist) {
-    chrome_policies_.greylist.push_back(url.GetString());
-    if (url.GetString() == "*")
-      has_wildcard = true;
-  }
-
-  UMA_HISTOGRAM_BOOLEAN("BrowserSwitcher.GreylistWildcard", has_wildcard);
-}
-
 bool BrowserSwitcherSitelistImpl::IsActive() const {
-  const RuleSet* rulesets[] = {&chrome_policies_, &ieem_sitelist_,
+  const RuleSet* rulesets[] = {&prefs_->GetRules(), &ieem_sitelist_,
                                &external_sitelist_};
   for (const RuleSet* rules : rulesets) {
     if (!rules->sitelist.empty() || !rules->greylist.empty())

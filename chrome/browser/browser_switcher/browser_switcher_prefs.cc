@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_switcher/alternative_browser_driver.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 
@@ -17,9 +16,7 @@ namespace browser_switcher {
 RuleSet::RuleSet() = default;
 RuleSet::~RuleSet() = default;
 
-BrowserSwitcherPrefs::BrowserSwitcherPrefs(PrefService* prefs,
-                                           AlternativeBrowserDriver* driver)
-    : prefs_(prefs), driver_(driver) {
+BrowserSwitcherPrefs::BrowserSwitcherPrefs(PrefService* prefs) : prefs_(prefs) {
   DCHECK(prefs_);
 
   change_registrar_.Init(prefs_);
@@ -60,33 +57,27 @@ void BrowserSwitcherPrefs::RegisterProfilePrefs(
 #endif
 }
 
-const std::string& BrowserSwitcherPrefs::GetAlternativeBrowserPath() {
+const std::string& BrowserSwitcherPrefs::GetAlternativeBrowserPath() const {
   return alt_browser_path_;
 }
 
-std::string BrowserSwitcherPrefs::GetAlternativeBrowserPathRaw() {
-  if (!prefs_->IsManagedPreference(prefs::kAlternativeBrowserPath))
-    return std::string();
-  return prefs_->GetString(prefs::kAlternativeBrowserPath);
-}
-
 const std::vector<std::string>&
-BrowserSwitcherPrefs::GetAlternativeBrowserParameters() {
+BrowserSwitcherPrefs::GetAlternativeBrowserParameters() const {
   return alt_browser_params_;
 }
 
-const RuleSet& BrowserSwitcherPrefs::GetRules() {
+const RuleSet& BrowserSwitcherPrefs::GetRules() const {
   return rules_;
 }
 
-GURL BrowserSwitcherPrefs::GetExternalSitelistUrl() {
+GURL BrowserSwitcherPrefs::GetExternalSitelistUrl() const {
   if (!prefs_->IsManagedPreference(prefs::kExternalSitelistUrl))
     return GURL();
   return GURL(prefs_->GetString(prefs::kExternalSitelistUrl));
 }
 
 #if defined(OS_WIN)
-bool BrowserSwitcherPrefs::UseIeSitelist() {
+bool BrowserSwitcherPrefs::UseIeSitelist() const {
   if (!prefs_->IsManagedPreference(prefs::kUseIeSitelist))
     return false;
   return prefs_->GetBoolean(prefs::kUseIeSitelist);
@@ -97,8 +88,6 @@ void BrowserSwitcherPrefs::AlternativeBrowserPathChanged() {
   alt_browser_path_.clear();
   if (prefs_->IsManagedPreference(prefs::kAlternativeBrowserPath))
     alt_browser_path_ = prefs_->GetString(prefs::kAlternativeBrowserPath);
-  driver_->ExpandPresetBrowsers(&alt_browser_path_);
-  driver_->ExpandEnvVars(&alt_browser_path_);
 }
 
 void BrowserSwitcherPrefs::AlternativeBrowserParametersChanged() {
@@ -109,7 +98,6 @@ void BrowserSwitcherPrefs::AlternativeBrowserParametersChanged() {
       prefs_->GetList(prefs::kAlternativeBrowserParameters);
   for (const auto& param : *params) {
     std::string param_string = param.GetString();
-    driver_->ExpandEnvVars(&param_string);
     alt_browser_params_.push_back(param_string);
   }
 }

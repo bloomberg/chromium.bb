@@ -4,17 +4,17 @@
 
 #include "chrome/browser/browser_switcher/alternative_browser_driver.h"
 
+#include <stdlib.h>
+
 #include "base/files/file_path.h"
 #include "base/process/launch.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_switcher/alternative_browser_launcher.h"
+#include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #include "url/gurl.h"
 
 #include "third_party/re2/src/re2/re2.h"
-
-#include <stdlib.h>
 
 namespace browser_switcher {
 
@@ -103,7 +103,6 @@ bool ContainsUrlVarName(const std::vector<std::string>& tokens) {
 }
 #endif  // defined(OS_MACOSX)
 
-// static
 void AppendCommandLineArguments(base::CommandLine* cmd_line,
                                 const std::vector<std::string>& raw_args,
                                 const GURL& url,
@@ -121,31 +120,7 @@ void AppendCommandLineArguments(base::CommandLine* cmd_line,
     cmd_line->AppendArg(url.spec());
 }
 
-}  // namespace
-
-AlternativeBrowserDriver::~AlternativeBrowserDriver() {}
-
-AlternativeBrowserDriverImpl::AlternativeBrowserDriverImpl() {}
-
-AlternativeBrowserDriverImpl::~AlternativeBrowserDriverImpl() {}
-
-void AlternativeBrowserDriverImpl::SetBrowserPath(base::StringPiece path) {
-  browser_path_ = path.as_string();
-  ExpandPresetBrowsers(&browser_path_);
-}
-
-void AlternativeBrowserDriverImpl::SetBrowserParameters(
-    const base::ListValue* parameters) {
-  browser_params_.clear();
-  browser_params_.reserve(parameters->GetList().size());
-  for (const auto& param : *parameters) {
-    DCHECK(param.is_string());
-    browser_params_.push_back(param.GetString());
-  }
-}
-
-void AlternativeBrowserDriverImpl::ExpandPresetBrowsers(
-    std::string* str) const {
+void ExpandPresetBrowsers(std::string* str) {
 #if defined(OS_MACOSX)
   // Unlike most POSIX platforms, MacOS always has another browser than Chrome,
   // so admins don't have to explicitly configure one.
@@ -162,20 +137,25 @@ void AlternativeBrowserDriverImpl::ExpandPresetBrowsers(
   }
 }
 
-void AlternativeBrowserDriverImpl::ExpandEnvVars(std::string* str) const {
-  ExpandTilde(str);
-  ExpandEnvironmentVariables(str);
-}
+}  // namespace
+
+AlternativeBrowserDriver::~AlternativeBrowserDriver() {}
+
+AlternativeBrowserDriverImpl::AlternativeBrowserDriverImpl(
+    const BrowserSwitcherPrefs* prefs)
+    : prefs_(prefs) {}
+
+AlternativeBrowserDriverImpl::~AlternativeBrowserDriverImpl() {}
 
 bool AlternativeBrowserDriverImpl::TryLaunch(const GURL& url) {
-  if (browser_path_.empty()) {
+  if (prefs_->GetAlternativeBrowserPath().empty()) {
     LOG(ERROR) << "Alternative browser not configured. "
                << "Aborting browser switch.";
     return false;
   }
 
   VLOG(2) << "Launching alternative browser...";
-  VLOG(2) << "  path = " << browser_path_;
+  VLOG(2) << "  path = " << prefs_->GetAlternativeBrowserPath();
   VLOG(2) << "  url = " << url.spec();
 
   CHECK(url.SchemeIsHTTPOrHTTPS() || url.SchemeIsFile());
@@ -193,9 +173,13 @@ bool AlternativeBrowserDriverImpl::TryLaunch(const GURL& url) {
 
 base::CommandLine AlternativeBrowserDriverImpl::CreateCommandLine(
     const GURL& url) {
-  std::string path = browser_path_;
+  std::string path = prefs_->GetAlternativeBrowserPath();
+  ExpandPresetBrowsers(&path);
   ExpandTilde(&path);
   ExpandEnvironmentVariables(&path);
+
+  const std::vector<std::string>& params =
+      prefs_->GetAlternativeBrowserParameters();
 
 #if defined(OS_MACOSX)
   // On MacOS, if the path doesn't start with a '/', it's probably not an
@@ -209,25 +193,25 @@ base::CommandLine AlternativeBrowserDriverImpl::CreateCommandLine(
   //     open -a <browser_path> --args <browser_params...>
   //
   // Safari only supports the first syntax.
-  if (!browser_path_.empty() && browser_path_[0] != '/') {
+  if (!path.empty() && path[0] != '/') {
     base::CommandLine cmd_line(std::vector<std::string>{"open"});
     cmd_line.AppendArg("-a");
     cmd_line.AppendArg(path);
-    if (!ContainsUrlVarName(browser_params_)) {
+    if (!ContainsUrlVarName(params)) {
       // First syntax.
       cmd_line.AppendArg(url.spec());
     }
-    if (!browser_params_.empty()) {
+    if (!params.empty()) {
       // First or second syntax, depending on what is in |browser_params_|.
       cmd_line.AppendArg("--args");
-      AppendCommandLineArguments(&cmd_line, browser_params_, url,
+      AppendCommandLineArguments(&cmd_line, params, url,
                                  /* always_append_url */ false);
     }
     return cmd_line;
   }
 #endif
   base::CommandLine cmd_line(std::vector<std::string>{path});
-  AppendCommandLineArguments(&cmd_line, browser_params_, url,
+  AppendCommandLineArguments(&cmd_line, params, url,
                              /* always_append_url */ true);
   return cmd_line;
 }

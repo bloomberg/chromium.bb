@@ -4,12 +4,16 @@
 
 #include "chrome/browser/browser_switcher/alternative_browser_driver.h"
 
+#include <algorithm>
+#include <memory>
+#include <vector>
+
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-
-#include <algorithm>
 
 namespace browser_switcher {
 
@@ -38,14 +42,38 @@ base::ListValue UTF8VectorToListValue(
 
 }  // namespace
 
-class AlternativeBrowserDriverTest : public testing::Test {};
+class AlternativeBrowserDriverTest : public testing::Test {
+ public:
+  void SetUp() override {
+    BrowserSwitcherPrefs::RegisterProfilePrefs(prefs_backend_.registry());
+    prefs_ = std::make_unique<BrowserSwitcherPrefs>(&prefs_backend_);
+    driver_ = std::make_unique<AlternativeBrowserDriverImpl>(prefs_.get());
+  }
+
+  void SetBrowserPath(const std::string& path) {
+    prefs_backend_.SetManagedPref(prefs::kAlternativeBrowserPath,
+                                  std::make_unique<base::Value>(path));
+  }
+
+  void SetBrowserParameters(const base::ListValue* params) {
+    prefs_backend_.SetManagedPref(
+        prefs::kAlternativeBrowserParameters,
+        base::Value::ToUniquePtrValue(params->Clone()));
+  }
+
+  AlternativeBrowserDriverImpl* driver() { return driver_.get(); }
+
+ private:
+  sync_preferences::TestingPrefServiceSyncable prefs_backend_;
+  std::unique_ptr<BrowserSwitcherPrefs> prefs_;
+  std::unique_ptr<AlternativeBrowserDriverImpl> driver_;
+};
 
 TEST_F(AlternativeBrowserDriverTest, CreateCommandLine) {
-  AlternativeBrowserDriverImpl driver;
-  driver.SetBrowserPath("/usr/bin/true");
+  SetBrowserPath("/usr/bin/true");
   auto params = UTF8VectorToListValue({"a", "b", "c"});
-  driver.SetBrowserParameters(&params);
-  auto cmd_line = driver.CreateCommandLine(GURL("http://example.com/"));
+  SetBrowserParameters(&params);
+  auto cmd_line = driver()->CreateCommandLine(GURL("http://example.com/"));
   const base::CommandLine::StringVector& argv = cmd_line.argv();
   EXPECT_EQ(5u, argv.size());
   EXPECT_EQ(UTF8ToNative("/usr/bin/true"), argv[0]);
@@ -56,11 +84,10 @@ TEST_F(AlternativeBrowserDriverTest, CreateCommandLine) {
 }
 
 TEST_F(AlternativeBrowserDriverTest, CreateCommandLineExpandsUrl) {
-  AlternativeBrowserDriverImpl driver;
-  driver.SetBrowserPath("/usr/bin/true");
+  SetBrowserPath("/usr/bin/true");
   auto params = UTF8VectorToListValue({"--flag=${url}#fragment"});
-  driver.SetBrowserParameters(&params);
-  auto cmd_line = driver.CreateCommandLine(GURL("http://example.com/"));
+  SetBrowserParameters(&params);
+  auto cmd_line = driver()->CreateCommandLine(GURL("http://example.com/"));
   const base::CommandLine::StringVector& argv = cmd_line.argv();
   EXPECT_EQ(2u, argv.size());
   EXPECT_EQ(UTF8ToNative("/usr/bin/true"), argv[0]);
@@ -73,12 +100,11 @@ TEST_F(AlternativeBrowserDriverTest, CreateCommandLineExpandsEnvVars) {
   _putenv("B=BBB");
   _putenv("CC=CCC");
   _putenv("D=DDD");
-  AlternativeBrowserDriverImpl driver;
-  driver.SetBrowserPath("something.exe");
+  SetBrowserPath("something.exe");
   auto params = UTF8VectorToListValue(
       {"%A%", "%B%", "before_%CC%_between_%D%_after", "%NONEXISTENT%"});
-  driver.SetBrowserParameters(&params);
-  auto cmd_line = driver.CreateCommandLine(GURL("http://example.com/"));
+  SetBrowserParameters(&params);
+  auto cmd_line = driver()->CreateCommandLine(GURL("http://example.com/"));
   const base::CommandLine::StringVector& argv = cmd_line.argv();
   EXPECT_EQ(6u, argv.size());
   EXPECT_EQ(L"something.exe", argv[0]);
@@ -92,16 +118,15 @@ TEST_F(AlternativeBrowserDriverTest, CreateCommandLineExpandsEnvVars) {
 TEST_F(AlternativeBrowserDriverTest,
        AppendCommandLineArgumentDoesntExpandUrlContent) {
   _putenv("A=AAA");
-  AlternativeBrowserDriverImpl driver;
-  driver.SetBrowserPath("something.exe");
-  auto cmd_line = driver.CreateCommandLine(GURL("http://evil.com/%A%"));
+  SetBrowserPath("something.exe");
+  auto cmd_line = driver()->CreateCommandLine(GURL("http://evil.com/%A%"));
   EXPECT_EQ(2u, cmd_line.argv().size());
   EXPECT_EQ(L"something.exe", cmd_line.argv()[0]);
   EXPECT_EQ(L"http://evil.com/%A%", cmd_line.argv()[1]);
 
   auto params = UTF8VectorToListValue({"${url}"});
-  driver.SetBrowserParameters(&params);
-  cmd_line = driver.CreateCommandLine(GURL("http://evil.com/%A%"));
+  SetBrowserParameters(&params);
+  cmd_line = driver()->CreateCommandLine(GURL("http://evil.com/%A%"));
   EXPECT_EQ(2u, cmd_line.argv().size());
   EXPECT_EQ(L"something.exe", cmd_line.argv()[0]);
   EXPECT_EQ(L"http://evil.com/%A%", cmd_line.argv()[1]);
@@ -111,11 +136,10 @@ TEST_F(AlternativeBrowserDriverTest,
 #if defined(OS_MACOSX)
 TEST_F(AlternativeBrowserDriverTest, CreateCommandLineUsesOpen) {
   // Use `open(1)' to launch browser paths that aren't absolute.
-  AlternativeBrowserDriverImpl driver;
 
   // Default to launching Safari.
-  driver.SetBrowserPath("");
-  auto cmd_line = driver.CreateCommandLine(GURL("http://example.com/"));
+  SetBrowserPath("");
+  auto cmd_line = driver()->CreateCommandLine(GURL("http://example.com/"));
   EXPECT_EQ(4u, cmd_line.argv().size());
   EXPECT_EQ("open", cmd_line.argv()[0]);
   EXPECT_EQ("-a", cmd_line.argv()[1]);
@@ -123,8 +147,8 @@ TEST_F(AlternativeBrowserDriverTest, CreateCommandLineUsesOpen) {
   EXPECT_EQ("http://example.com/", cmd_line.argv()[3]);
 
   // Expand some "${...}" variables.
-  driver.SetBrowserPath("${safari}");
-  cmd_line = driver.CreateCommandLine(GURL("http://example.com/"));
+  SetBrowserPath("${safari}");
+  cmd_line = driver()->CreateCommandLine(GURL("http://example.com/"));
   EXPECT_EQ(4u, cmd_line.argv().size());
   EXPECT_EQ("open", cmd_line.argv()[0]);
   EXPECT_EQ("-a", cmd_line.argv()[1]);
@@ -132,8 +156,8 @@ TEST_F(AlternativeBrowserDriverTest, CreateCommandLineUsesOpen) {
   EXPECT_EQ("http://example.com/", cmd_line.argv()[3]);
 
   // Path looks like an application name => use `open'.
-  driver.SetBrowserPath("Safari");
-  cmd_line = driver.CreateCommandLine(GURL("http://example.com/"));
+  SetBrowserPath("Safari");
+  cmd_line = driver()->CreateCommandLine(GURL("http://example.com/"));
   EXPECT_EQ(4u, cmd_line.argv().size());
   EXPECT_EQ("open", cmd_line.argv()[0]);
   EXPECT_EQ("-a", cmd_line.argv()[1]);
@@ -143,14 +167,13 @@ TEST_F(AlternativeBrowserDriverTest, CreateCommandLineUsesOpen) {
 
 TEST_F(AlternativeBrowserDriverTest, CreateCommandLineContainsUrl) {
   // Use `open(1)' to launch browser paths that aren't absolute.
-  AlternativeBrowserDriverImpl driver;
 
   // Args come after `--args', e.g.:
   //     open -a Safari http://example.com/ --args abc def
-  driver.SetBrowserPath("");
+  SetBrowserPath("");
   auto params = UTF8VectorToListValue({"abc", "def"});
-  driver.SetBrowserParameters(&params);
-  auto cmd_line = driver.CreateCommandLine(GURL("http://example.com/"));
+  SetBrowserParameters(&params);
+  auto cmd_line = driver()->CreateCommandLine(GURL("http://example.com/"));
   EXPECT_EQ(7u, cmd_line.argv().size());
   EXPECT_EQ("open", cmd_line.argv()[0]);
   EXPECT_EQ("-a", cmd_line.argv()[1]);
@@ -164,8 +187,8 @@ TEST_F(AlternativeBrowserDriverTest, CreateCommandLineContainsUrl) {
   // args. e.g.:
   //     open -a Safari --args abc http://example.com/ def
   params = UTF8VectorToListValue({"abc", "${url}", "def"});
-  driver.SetBrowserParameters(&params);
-  cmd_line = driver.CreateCommandLine(GURL("http://example.com/"));
+  SetBrowserParameters(&params);
+  cmd_line = driver()->CreateCommandLine(GURL("http://example.com/"));
   EXPECT_EQ(7u, cmd_line.argv().size());
   EXPECT_EQ("open", cmd_line.argv()[0]);
   EXPECT_EQ("-a", cmd_line.argv()[1]);
@@ -181,11 +204,10 @@ TEST_F(AlternativeBrowserDriverTest, CreateCommandLineContainsUrl) {
 TEST_F(AlternativeBrowserDriverTest, CreateCommandLineExpandsTilde) {
   setenv("HOME", "/home/foobar", true);
 
-  AlternativeBrowserDriverImpl driver;
-  driver.SetBrowserPath("/usr/bin/true");
+  SetBrowserPath("/usr/bin/true");
   auto params = UTF8VectorToListValue({"~/file.txt", "/tmp/backup.txt~"});
-  driver.SetBrowserParameters(&params);
-  auto cmd_line = driver.CreateCommandLine(GURL("http://example.com/"));
+  SetBrowserParameters(&params);
+  auto cmd_line = driver()->CreateCommandLine(GURL("http://example.com/"));
   const base::CommandLine::StringVector& argv = cmd_line.argv();
   EXPECT_EQ(4u, argv.size());
   EXPECT_EQ(UTF8ToNative("/usr/bin/true"), argv[0]);
@@ -200,12 +222,11 @@ TEST_F(AlternativeBrowserDriverTest, CreateCommandLineExpandsEnvVars) {
   setenv("CC", "CCC", true);
   setenv("D", "DDD", true);
 
-  AlternativeBrowserDriverImpl driver;
-  driver.SetBrowserPath("/usr/bin/true");
+  SetBrowserPath("/usr/bin/true");
   auto params = UTF8VectorToListValue(
       {"$A", "${B}", "before_${CC}_between_${D}_after", "$NONEXISTENT"});
-  driver.SetBrowserParameters(&params);
-  auto cmd_line = driver.CreateCommandLine(GURL("http://example.com/"));
+  SetBrowserParameters(&params);
+  auto cmd_line = driver()->CreateCommandLine(GURL("http://example.com/"));
   const base::CommandLine::StringVector& argv = cmd_line.argv();
   EXPECT_EQ(6u, argv.size());
   EXPECT_EQ(UTF8ToNative("/usr/bin/true"), argv[0]);
@@ -220,16 +241,15 @@ TEST_F(AlternativeBrowserDriverTest, CreateCommandLineDoesntExpandUrlContent) {
   setenv("A", "AAA", true);
   setenv("B", "BBB", true);
 
-  AlternativeBrowserDriverImpl driver;
-  driver.SetBrowserPath("/usr/bin/true");
-  auto cmd_line = driver.CreateCommandLine(GURL("http://evil.com/$A${B}"));
+  SetBrowserPath("/usr/bin/true");
+  auto cmd_line = driver()->CreateCommandLine(GURL("http://evil.com/$A${B}"));
   EXPECT_EQ(2u, cmd_line.argv().size());
   EXPECT_EQ(UTF8ToNative("/usr/bin/true"), cmd_line.argv()[0]);
   EXPECT_EQ("http://evil.com/$A$%7BB%7D", cmd_line.argv()[1]);
 
   auto params = UTF8VectorToListValue({"${url}"});
-  driver.SetBrowserParameters(&params);
-  cmd_line = driver.CreateCommandLine(GURL("http://evil.com/$A${B}"));
+  SetBrowserParameters(&params);
+  cmd_line = driver()->CreateCommandLine(GURL("http://evil.com/$A${B}"));
   EXPECT_EQ(2u, cmd_line.argv().size());
   EXPECT_EQ(UTF8ToNative("/usr/bin/true"), cmd_line.argv()[0]);
   EXPECT_EQ("http://evil.com/$A$%7BB%7D", cmd_line.argv()[1]);

@@ -9,11 +9,11 @@
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #include "components/prefs/pref_change_registrar.h"
 
-class PrefService;
 class GURL;
 
 namespace browser_switcher {
 
+class BrowserSwitcherPrefs;
 class ParsedXml;
 
 // Interface that decides whether a navigation should trigger a browser
@@ -41,7 +41,7 @@ class BrowserSwitcherSitelist {
 // switch.
 class BrowserSwitcherSitelistImpl : public BrowserSwitcherSitelist {
  public:
-  explicit BrowserSwitcherSitelistImpl(PrefService* prefs);
+  explicit BrowserSwitcherSitelistImpl(const BrowserSwitcherPrefs* prefs);
   ~BrowserSwitcherSitelistImpl() override;
 
   // BrowserSwitcherSitelist
@@ -50,20 +50,15 @@ class BrowserSwitcherSitelistImpl : public BrowserSwitcherSitelist {
   void SetExternalSitelist(ParsedXml&& sitelist) override;
 
  private:
-  void OnUrlListChanged();
-  void OnGreylistChanged();
-
   // Returns true if there are any rules configured.
   bool IsActive() const;
 
   bool ShouldSwitchImpl(const GURL& url) const;
 
-  RuleSet chrome_policies_;
   RuleSet ieem_sitelist_;
   RuleSet external_sitelist_;
 
-  PrefService* const prefs_;
-  PrefChangeRegistrar change_registrar_;
+  const BrowserSwitcherPrefs* const prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserSwitcherSitelistImpl);
 };

@@ -75,6 +75,7 @@ CrComponentsNetworkConfigTest.prototype = {
   __proto__: CrComponentsBrowserTest.prototype,
 
   /** @override */
+
   browsePreload: 'chrome://internet-config-dialog',
 
   /** @override */

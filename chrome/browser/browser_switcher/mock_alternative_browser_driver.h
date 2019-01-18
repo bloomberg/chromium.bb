@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_BROWSER_SWITCHER_MOCK_ALTERNATIVE_BROWSER_DRIVER_H_
 #define CHROME_BROWSER_BROWSER_SWITCHER_MOCK_ALTERNATIVE_BROWSER_DRIVER_H_
 
+#include <string>
+
 #include "chrome/browser/browser_switcher/alternative_browser_driver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
@@ -16,8 +18,6 @@ class MockAlternativeBrowserDriver : public AlternativeBrowserDriver {
   MockAlternativeBrowserDriver();
   ~MockAlternativeBrowserDriver() override;
 
-  MOCK_METHOD1(SetBrowserPath, void(base::StringPiece));
-  MOCK_METHOD1(SetBrowserParameters, void(const base::ListValue*));
   MOCK_CONST_METHOD1(ExpandEnvVars, void(std::string*));
   MOCK_CONST_METHOD1(ExpandPresetBrowsers, void(std::string*));
   MOCK_METHOD1(TryLaunch, bool(const GURL&));

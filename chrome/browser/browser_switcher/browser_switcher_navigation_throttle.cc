@@ -4,10 +4,13 @@
 
 #include "chrome/browser/browser_switcher/browser_switcher_navigation_throttle.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/browser_switcher/alternative_browser_launcher.h"
+#include "chrome/browser/browser_switcher/alternative_browser_driver.h"
 #include "chrome/browser/browser_switcher/browser_switcher_service.h"
 #include "chrome/browser/browser_switcher/browser_switcher_service_factory.h"
 #include "chrome/browser/browser_switcher/browser_switcher_sitelist.h"
@@ -33,7 +36,9 @@ bool MaybeLaunchAlternativeBrowser(
       BrowserSwitcherServiceFactory::GetForBrowserContext(
           web_contents->GetBrowserContext());
   const GURL& url = params.url();
-  if (!service->sitelist()->ShouldSwitch(url))
+  bool should_switch = service->sitelist()->ShouldSwitch(url);
+
+  if (!should_switch)
     return false;
 
   // Redirect top-level navigations only. This excludes iframes and webviews
@@ -52,7 +57,12 @@ bool MaybeLaunchAlternativeBrowser(
 
   // TODO(nicolaso): Once the chrome://browserswitch page is implemented, open
   // that instead of immediately launching the browser/closing the tab.
-  bool success = service->launcher()->Launch(url);
+  bool success;
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER("BrowserSwitcher.LaunchTime");
+    success = service->driver()->TryLaunch(url);
+    UMA_HISTOGRAM_BOOLEAN("BrowserSwitcher.LaunchSuccess", success);
+  }
   if (success) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&content::WebContents::ClosePage,

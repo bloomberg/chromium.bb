@@ -5,23 +5,24 @@
 #ifndef CHROME_BROWSER_BROWSER_SWITCHER_BROWSER_SWITCHER_SERVICE_H_
 #define CHROME_BROWSER_BROWSER_SWITCHER_BROWSER_SWITCHER_SERVICE_H_
 
+#include <memory>
+#include <string>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
 
-#include <memory>
-
-class PrefService;
 class Profile;
 
 namespace browser_switcher {
 
-class AlternativeBrowserLauncher;
+class AlternativeBrowserDriver;
 class BrowserSwitcherSitelist;
 class ParsedXml;
 class XmlDownloader;
@@ -32,11 +33,11 @@ class BrowserSwitcherService : public KeyedService {
   explicit BrowserSwitcherService(Profile* profile);
   ~BrowserSwitcherService() override;
 
-  AlternativeBrowserLauncher* launcher();
+  AlternativeBrowserDriver* driver();
   BrowserSwitcherSitelist* sitelist();
+  const BrowserSwitcherPrefs& prefs() const;
 
-  void SetLauncherForTesting(
-      std::unique_ptr<AlternativeBrowserLauncher> launcher);
+  void SetDriverForTesting(std::unique_ptr<AlternativeBrowserDriver> driver);
   void SetSitelistForTesting(std::unique_ptr<BrowserSwitcherSitelist> sitelist);
 
   static void SetFetchDelayForTesting(base::TimeDelta delay);
@@ -67,11 +68,11 @@ class BrowserSwitcherService : public KeyedService {
 
   std::unique_ptr<XmlDownloader> external_sitelist_downloader_;
 
-  // Per-profile helpers.
-  std::unique_ptr<AlternativeBrowserLauncher> launcher_;
-  std::unique_ptr<BrowserSwitcherSitelist> sitelist_;
+  BrowserSwitcherPrefs prefs_;
 
-  PrefService* const prefs_;
+  // Per-profile helpers.
+  std::unique_ptr<AlternativeBrowserDriver> driver_;
+  std::unique_ptr<BrowserSwitcherSitelist> sitelist_;
 
   base::WeakPtrFactory<BrowserSwitcherService> weak_ptr_factory_;
 
