@@ -12,9 +12,9 @@
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
-#include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
@@ -99,8 +99,8 @@ void ModuleScriptLoader::FetchInternal(
     ResourceFetcher* fetch_client_settings_object_fetcher,
     ModuleGraphLevel level,
     ModuleScriptCustomFetchType custom_fetch_type) {
-  const FetchClientSettingsObject* fetch_client_settings_object =
-      fetch_client_settings_object_fetcher->Context()
+  const FetchClientSettingsObject& fetch_client_settings_object =
+      fetch_client_settings_object_fetcher->GetProperties()
           .GetFetchClientSettingsObject();
 
   // Step 4. "Set moduleMap[url] to "fetching"." [spec text]
@@ -163,20 +163,20 @@ void ModuleScriptLoader::FetchInternal(
   network::mojom::ReferrerPolicy referrer_policy =
       module_request.Options().GetReferrerPolicy();
   if (referrer_policy == network::mojom::ReferrerPolicy::kDefault)
-    referrer_policy = fetch_client_settings_object->GetReferrerPolicy();
+    referrer_policy = fetch_client_settings_object.GetReferrerPolicy();
 
   // Step 5. "... mode is "cors", ..."
   // [SMSR] "... and its credentials mode to options's credentials mode."
   // [spec text]
   fetch_params.SetCrossOriginAccessControl(
-      fetch_client_settings_object->GetSecurityOrigin(),
+      fetch_client_settings_object.GetSecurityOrigin(),
       options_.CredentialsMode());
 
   // Step 5. "... referrer is referrer, ..." [spec text]
   // Note: For now this is done below with SetHTTPReferrer()
   String referrer_string = module_request.ReferrerString();
   if (referrer_string == Referrer::ClientReferrerString())
-    referrer_string = fetch_client_settings_object->GetOutgoingReferrer();
+    referrer_string = fetch_client_settings_object.GetOutgoingReferrer();
 
   // TODO(domfarolino): Stop storing ResourceRequest's referrer as a
   // blink::Referrer (https://crbug.com/850813).

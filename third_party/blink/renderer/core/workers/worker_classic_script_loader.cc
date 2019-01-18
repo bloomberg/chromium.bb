@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
@@ -179,9 +180,9 @@ void WorkerClassicScriptLoader::DidReceiveResponse(
   if (!AllowedByNosniff::MimeTypeAsScript(
           fetch_client_settings_object_fetcher_->Context(),
           fetch_client_settings_object_fetcher_->GetConsoleLogger(), response,
-          fetch_client_settings_object_fetcher_->Context()
+          fetch_client_settings_object_fetcher_->GetProperties()
               .GetFetchClientSettingsObject()
-              ->MimeTypeCheckForClassicWorkerScript(),
+              .MimeTypeCheckForClassicWorkerScript(),
           is_worker_global_scope_)) {
     NotifyError();
     return;

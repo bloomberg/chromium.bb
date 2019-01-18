@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_settings.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -474,8 +475,10 @@ bool MixedContentChecker::ShouldBlockFetchOnWorker(
     const KURL& url,
     SecurityViolationReportingPolicy reporting_policy,
     bool is_worklet_global_scope) {
-  if (!MixedContentChecker::IsMixedContent(
-          *worker_fetch_context.GetFetchClientSettingsObject(), url)) {
+  const FetchClientSettingsObject& fetch_client_settings_object =
+      worker_fetch_context.GetResourceFetcherProperties()
+          .GetFetchClientSettingsObject();
+  if (!MixedContentChecker::IsMixedContent(fetch_client_settings_object, url)) {
     return false;
   }
 
@@ -511,10 +514,11 @@ bool MixedContentChecker::ShouldBlockFetchOnWorker(
               worker_fetch_context.GetWorkerContentSettingsClient()
                   ->AllowRunningInsecureContent(
                       settings->GetAllowRunningOfInsecureContent(),
-                      worker_fetch_context.GetSecurityOrigin(), url);
+                      fetch_client_settings_object.GetSecurityOrigin(), url);
     if (allowed) {
       worker_fetch_context.GetWebWorkerFetchContext()->DidRunInsecureContent(
-          WebSecurityOrigin(worker_fetch_context.GetSecurityOrigin()), url);
+          WebSecurityOrigin(fetch_client_settings_object.GetSecurityOrigin()),
+          url);
       worker_fetch_context.CountUsage(
           WebFeature::kMixedContentBlockableAllowed);
     }
@@ -584,8 +588,10 @@ bool MixedContentChecker::IsWebSocketAllowed(
 bool MixedContentChecker::IsWebSocketAllowed(
     const WorkerFetchContext& worker_fetch_context,
     const KURL& url) {
-  if (!MixedContentChecker::IsMixedContent(
-          *worker_fetch_context.GetFetchClientSettingsObject(), url)) {
+  const FetchClientSettingsObject& fetch_client_settings_object =
+      worker_fetch_context.GetResourceFetcherProperties()
+          .GetFetchClientSettingsObject();
+  if (!MixedContentChecker::IsMixedContent(fetch_client_settings_object, url)) {
     return true;
   }
 
@@ -595,7 +601,7 @@ bool MixedContentChecker::IsWebSocketAllowed(
   SecurityContext* security_context =
       &worker_fetch_context.GetSecurityContext();
   const SecurityOrigin* security_origin =
-      worker_fetch_context.GetSecurityOrigin();
+      fetch_client_settings_object.GetSecurityOrigin();
 
   bool allowed = IsWebSocketAllowedImpl(worker_fetch_context, security_context,
                                         settings, url);

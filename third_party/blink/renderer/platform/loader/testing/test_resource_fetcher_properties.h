@@ -30,15 +30,16 @@ class TestResourceFetcherProperties final : public ResourceFetcherProperties {
       const override {
     return *fetch_client_settings_object_;
   }
-  bool IsMainFrame() const override { return false; }
+  bool IsMainFrame() const override { return is_main_frame_; }
   ControllerServiceWorkerMode GetControllerServiceWorkerMode() const override {
-    return ControllerServiceWorkerMode::kNoController;
+    return service_worker_mode_;
   }
   int64_t ServiceWorkerId() const override {
-    NOTREACHED();
-    return 0;
+    DCHECK_NE(GetControllerServiceWorkerMode(),
+              ControllerServiceWorkerMode::kNoController);
+    return service_worker_id_;
   }
-  bool IsPaused() const override { return false; }
+  bool IsPaused() const override { return paused_; }
   bool IsDetached() const override { return false; }
   bool IsLoadComplete() const override { return load_complete_; }
   bool ShouldBlockLoadingMainResource() const override {
@@ -48,6 +49,12 @@ class TestResourceFetcherProperties final : public ResourceFetcherProperties {
     return should_block_loading_sub_resource_;
   }
 
+  void SetIsMainFrame(bool value) { is_main_frame_ = value; }
+  void SetControllerServiceWorkerMode(ControllerServiceWorkerMode mode) {
+    service_worker_mode_ = mode;
+  }
+  void SetServiceWorkerId(int64_t id) { service_worker_id_ = id; }
+  void SetIsPaused(bool value) { paused_ = value; }
   void SetIsLoadComplete(bool value) { load_complete_ = value; }
   void SetShouldBlockLoadingMainResource(bool value) {
     should_block_loading_main_resource_ = value;
@@ -58,6 +65,11 @@ class TestResourceFetcherProperties final : public ResourceFetcherProperties {
 
  private:
   const Member<const FetchClientSettingsObject> fetch_client_settings_object_;
+  bool is_main_frame_ = false;
+  ControllerServiceWorkerMode service_worker_mode_ =
+      ControllerServiceWorkerMode::kNoController;
+  int64_t service_worker_id_ = 0;
+  bool paused_ = false;
   bool load_complete_ = false;
   bool should_block_loading_main_resource_ = false;
   bool should_block_loading_sub_resource_ = false;

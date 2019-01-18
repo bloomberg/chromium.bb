@@ -416,6 +416,7 @@ class ResourceFetcher::DetachableProperties final
   }
 
   // ResourceFetcherProperties implementation
+  // Add a test in resource_fetcher_test.cc when you change behaviors.
   const FetchClientSettingsObject& GetFetchClientSettingsObject()
       const override {
     return properties_ ? properties_->GetFetchClientSettingsObject()
@@ -502,9 +503,9 @@ Resource* ResourceFetcher::CachedResource(const KURL& resource_url) const {
   return resource.Get();
 }
 
-blink::mojom::ControllerServiceWorkerMode
+mojom::ControllerServiceWorkerMode
 ResourceFetcher::IsControlledByServiceWorker() const {
-  return Context().IsControlledByServiceWorker();
+  return properties_->GetControllerServiceWorkerMode();
 }
 
 bool ResourceFetcher::ResourceNeedsLoad(Resource* resource,
@@ -789,7 +790,7 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   if (resource_request.GetRequestContext() ==
       mojom::RequestContextType::UNSPECIFIED) {
     resource_request.SetRequestContext(DetermineRequestContext(
-        resource_type, kImageNotImageSet, Context().IsMainFrame()));
+        resource_type, kImageNotImageSet, properties_->IsMainFrame()));
   }
   if (resource_type == ResourceType::kLinkPrefetch)
     resource_request.SetHTTPHeaderField(http_names::kPurpose, "prefetch");
@@ -912,8 +913,10 @@ Resource* ResourceFetcher::RequestResource(
 
   // |resource_request|'s origin can be null here, corresponding to the "client"
   // value in the spec. In that case client's origin is used.
-  if (!resource_request.RequestorOrigin())
-    resource_request.SetRequestorOrigin(Context().GetSecurityOrigin());
+  if (!resource_request.RequestorOrigin()) {
+    resource_request.SetRequestorOrigin(
+        properties_->GetFetchClientSettingsObject().GetSecurityOrigin());
+  }
 
   base::Optional<ResourceRequestBlockedReason> blocked_reason =
       PrepareRequest(params, factory, substitute_data, identifier);
@@ -1072,8 +1075,8 @@ void ResourceFetcher::InitializeRevalidation(
   DCHECK(resource->IsLoaded());
   DCHECK(resource->CanUseCacheValidator());
   DCHECK(!resource->IsCacheValidator());
-  DCHECK(Context().IsControlledByServiceWorker() ==
-         blink::mojom::ControllerServiceWorkerMode::kNoController);
+  DCHECK_EQ(properties_->GetControllerServiceWorkerMode(),
+            mojom::ControllerServiceWorkerMode::kNoController);
   // RawResource doesn't support revalidation.
   CHECK(!IsRawResource(*resource));
 
@@ -1420,7 +1423,7 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
   // XHRs fall into this category and may have user-set Cache-Control: headers
   // or other factors that require separate requests.
   if (type != ResourceType::kRaw) {
-    if (!Context().IsLoadComplete() &&
+    if (!properties_->IsLoadComplete() &&
         cached_resources_map_.Contains(
             MemoryCache::RemoveFragmentIdentifierIfNeeded(
                 existing_resource.Url())))
@@ -1485,8 +1488,8 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
     // non-S13nSW, we don't know what controller the request will ultimately go
     // to (due to skipWaiting) so be conservative.
     if (existing_resource.CanUseCacheValidator() &&
-        Context().IsControlledByServiceWorker() ==
-            blink::mojom::ControllerServiceWorkerMode::kNoController) {
+        properties_->GetControllerServiceWorkerMode() ==
+            mojom::ControllerServiceWorkerMode::kNoController) {
       // If the resource is already a cache validator but not started yet, the
       // |Use| policy should be applied to subsequent requests.
       if (existing_resource.IsCacheValidator()) {
@@ -1641,7 +1644,7 @@ ArchiveResource* ResourceFetcher::CreateArchive(
     const KURL& url,
     scoped_refptr<const SharedBuffer> buffer) {
   // Only the top-frame can load MHTML.
-  if (!Context().IsMainFrame()) {
+  if (!properties_->IsMainFrame()) {
     console_logger_->AddErrorMessage(
         ConsoleLogger::Source::kScript,
         "Attempted to load a multipart archive into an subframe: " +
@@ -1957,9 +1960,9 @@ void ResourceFetcher::ReloadLoFiImages() {
 }
 
 String ResourceFetcher::GetCacheIdentifier() const {
-  if (Context().IsControlledByServiceWorker() !=
-      blink::mojom::ControllerServiceWorkerMode::kNoController)
-    return String::Number(Context().ServiceWorkerID());
+  if (properties_->GetControllerServiceWorkerMode() !=
+      mojom::ControllerServiceWorkerMode::kNoController)
+    return String::Number(properties_->ServiceWorkerId());
   return MemoryCache::DefaultCacheIdentifier();
 }
 

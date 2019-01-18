@@ -150,6 +150,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
@@ -10058,16 +10059,16 @@ TEST_F(WebFrameTest, PausedPageLoadWithRemoteMainFrame) {
   LocalFrame* local_child = web_local_child->GetFrame();
   EXPECT_FALSE(page->Paused());
   EXPECT_FALSE(
-      local_child->GetDocument()->Fetcher()->Context().DefersLoading());
+      local_child->GetDocument()->Fetcher()->GetProperties().IsPaused());
   {
     ScopedPagePauser pauser;
     EXPECT_TRUE(page->Paused());
     EXPECT_TRUE(
-        local_child->GetDocument()->Fetcher()->Context().DefersLoading());
+        local_child->GetDocument()->Fetcher()->GetProperties().IsPaused());
   }
   EXPECT_FALSE(page->Paused());
   EXPECT_FALSE(
-      local_child->GetDocument()->Fetcher()->Context().DefersLoading());
+      local_child->GetDocument()->Fetcher()->GetProperties().IsPaused());
 }
 
 class OverscrollWebWidgetClient

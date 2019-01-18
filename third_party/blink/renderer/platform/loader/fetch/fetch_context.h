@@ -62,7 +62,6 @@
 namespace blink {
 
 class ClientHintsPreferences;
-class FetchClientSettingsObject;
 class KURL;
 class PlatformProbeSink;
 class ResourceError;
@@ -101,7 +100,6 @@ class PLATFORM_EXPORT FetchContext
   virtual void AddAdditionalRequestHeaders(ResourceRequest&, FetchResourceType);
 
   const ResourceFetcherProperties& GetResourceFetcherProperties() const;
-  const FetchClientSettingsObject* GetFetchClientSettingsObject() const;
 
   // Returns the cache policy for the resource. ResourceRequest is not passed as
   // a const reference as a header needs to be added for doc.write blocking
@@ -188,17 +186,8 @@ class PLATFORM_EXPORT FetchContext
     return ResourceRequestBlockedReason::kOther;
   }
 
-  mojom::ControllerServiceWorkerMode IsControlledByServiceWorker() const;
-  int64_t ServiceWorkerID() const;
-
-  bool IsMainFrame() const;
-  bool DefersLoading() const;
-  bool IsLoadComplete() const;
-
   virtual void CountUsage(mojom::WebFeature) const = 0;
   virtual void CountDeprecation(mojom::WebFeature) const = 0;
-
-  const SecurityOrigin* GetSecurityOrigin() const;
 
   // Populates the ResourceRequest using the given values and information
   // stored in the FetchContext implementation. Used by ResourceFetcher to

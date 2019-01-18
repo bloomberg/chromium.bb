@@ -593,7 +593,8 @@ void FrameFetchContext::DispatchDidReceiveResponse(
   // main frame) or the origin of the response should match the origin of the
   // top level frame.
   if (resource_type == ResourceType::kMainResource &&
-      (IsMainFrame() || IsFirstPartyOrigin(response.CurrentRequestUrl()))) {
+      (GetResourceFetcherProperties().IsMainFrame() ||
+       IsFirstPartyOrigin(response.CurrentRequestUrl()))) {
     ParseAndPersistClientHints(response);
   }
 
@@ -1099,7 +1100,10 @@ bool FrameFetchContext::ShouldBlockFetchAsCredentialedSubresource(
   // TODO(mkwst): This doesn't work when the subresource is an iframe.
   // See https://crbug.com/756846.
   if (Url().User() == url.User() && Url().Pass() == url.Pass() &&
-      SecurityOrigin::Create(url)->IsSameSchemeHostPort(GetSecurityOrigin())) {
+      SecurityOrigin::Create(url)->IsSameSchemeHostPort(
+          GetResourceFetcherProperties()
+              .GetFetchClientSettingsObject()
+              .GetSecurityOrigin())) {
     return false;
   }
 

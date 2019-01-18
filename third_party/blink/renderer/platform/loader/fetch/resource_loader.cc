@@ -428,19 +428,19 @@ void ResourceLoader::StartWith(const ResourceRequest& request) {
   DCHECK(loader_);
 
   if (resource_->Options().synchronous_policy == kRequestSynchronously &&
-      Context().DefersLoading()) {
+      fetcher_->GetProperties().IsPaused()) {
     Cancel();
     return;
   }
 
   is_downloading_to_blob_ = request.DownloadToBlob();
 
-  SetDefersLoading(Context().DefersLoading());
+  SetDefersLoading(fetcher_->GetProperties().IsPaused());
 
   if (ShouldFetchCodeCache()) {
     code_cache_request_ = std::make_unique<CodeCacheRequest>(
         Context().CreateCodeCacheLoader(), request.Url(),
-        Context().DefersLoading());
+        fetcher_->GetProperties().IsPaused());
   }
 
   if (is_cache_aware_loading_activated_) {

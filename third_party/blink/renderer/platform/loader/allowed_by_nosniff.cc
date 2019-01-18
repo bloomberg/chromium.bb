@@ -5,7 +5,9 @@
 #include "third_party/blink/renderer/platform/loader/allowed_by_nosniff.h"
 
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
@@ -164,8 +166,10 @@ bool AllowedByNosniff::MimeTypeAsScript(FetchContext& context,
   // Check for certain non-executable MIME types.
   // See:
   // https://fetch.spec.whatwg.org/#should-response-to-request-be-blocked-due-to-mime-type
-  bool same_origin =
-      context.GetSecurityOrigin()->CanRequest(response.CurrentRequestUrl());
+  bool same_origin = context.GetResourceFetcherProperties()
+                         .GetFetchClientSettingsObject()
+                         .GetSecurityOrigin()
+                         ->CanRequest(response.CurrentRequestUrl());
 
   // For any MIME type, we can do three things: accept/reject it, print a
   // warning into the console, and count it using a use counter.

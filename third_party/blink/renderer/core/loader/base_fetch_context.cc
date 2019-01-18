@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
 #include "third_party/blink/renderer/platform/weborigin/origin_access_entry.h"
@@ -93,6 +94,8 @@ const char* GetDestinationFromContext(mojom::RequestContextType context) {
 
 void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
                                                    FetchResourceType type) {
+  const FetchClientSettingsObject& fetch_client_settings_object =
+      GetResourceFetcherProperties().GetFetchClientSettingsObject();
   bool is_main_resource = type == kFetchMainResource;
   if (!is_main_resource) {
     // TODO(domfarolino): we can probably *just set* the HTTP `Referer` here
@@ -103,18 +106,19 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
           request.GetReferrerPolicy();
 
       if (referrer_to_use == Referrer::ClientReferrerString())
-        referrer_to_use = GetFetchClientSettingsObject()->GetOutgoingReferrer();
+        referrer_to_use = fetch_client_settings_object.GetOutgoingReferrer();
 
       if (referrer_policy_to_use == network::mojom::ReferrerPolicy::kDefault) {
         referrer_policy_to_use =
-            GetFetchClientSettingsObject()->GetReferrerPolicy();
+            fetch_client_settings_object.GetReferrerPolicy();
       }
 
       // TODO(domfarolino): Stop storing ResourceRequest's referrer as a header
       // and store it elsewhere. See https://crbug.com/850813.
       request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
           referrer_policy_to_use, request.Url(), referrer_to_use));
-      request.SetHTTPOriginIfNeeded(GetSecurityOrigin());
+      request.SetHTTPOriginIfNeeded(
+          fetch_client_settings_object.GetSecurityOrigin());
     } else {
       CHECK_EQ(SecurityPolicy::GenerateReferrer(request.GetReferrerPolicy(),
                                                 request.Url(),
@@ -143,14 +147,16 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
         request.GetRequestContext() != mojom::RequestContextType::INTERNAL) {
       const char* site_value = "cross-site";
       if (SecurityOrigin::Create(request.Url())
-              ->IsSameSchemeHostPort(GetSecurityOrigin())) {
+              ->IsSameSchemeHostPort(
+                  fetch_client_settings_object.GetSecurityOrigin())) {
         site_value = "same-origin";
       } else {
         OriginAccessEntry access_entry(
             request.Url().Protocol(), request.Url().Host(),
             network::mojom::CorsOriginAccessMatchMode::
                 kAllowRegisterableDomains);
-        if (access_entry.MatchesOrigin(*GetSecurityOrigin()) ==
+        if (access_entry.MatchesOrigin(
+                *fetch_client_settings_object.GetSecurityOrigin()) ==
             network::cors::OriginAccessEntry::kMatchesOrigin) {
           site_value = "same-site";
         }
@@ -340,8 +346,11 @@ BaseFetchContext::CanRequestInternal(
   if (frame_type != network::mojom::RequestContextFrameType::kTopLevel) {
     bool is_subresource =
         frame_type == network::mojom::RequestContextFrameType::kNone;
+    const FetchClientSettingsObject& fetch_client_settings_object =
+        GetResourceFetcherProperties().GetFetchClientSettingsObject();
     const SecurityOrigin* embedding_origin =
-        is_subresource ? GetSecurityOrigin() : GetParentSecurityOrigin();
+        is_subresource ? fetch_client_settings_object.GetSecurityOrigin()
+                       : GetParentSecurityOrigin();
     DCHECK(embedding_origin);
     if (SchemeRegistry::ShouldTreatURLSchemeAsLegacy(url.Protocol()) &&
         !SchemeRegistry::ShouldTreatURLSchemeAsLegacy(
