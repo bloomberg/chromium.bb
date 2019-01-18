@@ -54,8 +54,7 @@ struct TextInputState {
   bool first_update_after_operation;
   // The range of the composition text in 16-bit code units index
   // in the overall text of the text field.
-  [MinVersion=6] int32 composition_text_range_start;
-  [MinVersion=6] int32 composition_text_range_end;
+  [MinVersion=6] Range? composition_text_range;
 };
 
 // This interface provides methods to control a text field.
