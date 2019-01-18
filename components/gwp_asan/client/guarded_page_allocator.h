@@ -82,8 +82,11 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // Returns the size of the virtual memory region used to store allocations.
   size_t RegionSize() const;
 
-  // Mark page read-write or inaccessible.
+  // Mark page read-write.
   void MarkPageReadWrite(void*);
+
+  // Mark page inaccessible and decommit the memory from use to save memory
+  // used by the quarantine.
   void MarkPageInaccessible(void*);
 
   // Reserves and returns a slot. Returns SIZE_MAX if no slots available.
