@@ -565,6 +565,8 @@ source_set("chromeos") {
     "arc/tracing/arc_tracing_event.h",
     "arc/tracing/arc_tracing_event_matcher.cc",
     "arc/tracing/arc_tracing_event_matcher.h",
+    "arc/tracing/arc_tracing_graphics_model.cc",
+    "arc/tracing/arc_tracing_graphics_model.h",
     "arc/tracing/arc_tracing_model.cc",
     "arc/tracing/arc_tracing_model.h",
     "arc/tts/arc_tts_service.cc",

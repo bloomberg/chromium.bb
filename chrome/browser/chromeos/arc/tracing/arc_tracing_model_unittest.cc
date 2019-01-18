@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/arc/tracing/arc_tracing_model.h"
+#include <set>
+#include <string>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
@@ -11,6 +13,8 @@
 #include "base/path_service.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_event.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_event_matcher.h"
+#include "chrome/browser/chromeos/arc/tracing/arc_tracing_graphics_model.h"
+#include "chrome/browser/chromeos/arc/tracing/arc_tracing_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/compression_utils.h"
@@ -18,6 +22,9 @@
 namespace arc {
 
 namespace {
+
+using GraphicsEvents = ArcTracingGraphicsModel::BufferEvents;
+using GraphicsEventType = ArcTracingGraphicsModel::BufferEventType;
 
 constexpr char kAcquireBufferQuery[] =
     "android:onMessageReceived/android:handleMessageInvalidate/"
@@ -45,6 +52,39 @@ constexpr char kPhaseX = 'X';
 constexpr char kPhaseP = 'P';
 constexpr char kSurfaceAttach[] = "Surface::Attach";
 constexpr char kSurfaceAttachBad[] = "_Surface::Attach";
+
+// Validates that events have increasing timestamp, have only allowed types and
+// each type is found at least once.
+bool ValidateGrahpicsEvent(const GraphicsEvents& events,
+                           const std::set<GraphicsEventType>& allowed_types) {
+  if (events.empty())
+    return false;
+  int64_t previous_timestamp = 0;
+  std::set<GraphicsEventType> used_types;
+  for (const auto& event : events) {
+    if (event.timestamp < previous_timestamp)
+      return false;
+    previous_timestamp = event.timestamp;
+    if (!allowed_types.count(event.type))
+      return false;
+    used_types.insert(event.type);
+  }
+  if (used_types.size() != allowed_types.size())
+    return false;
+  return true;
+}
+
+bool TestGraphicsModelLoad(const std::string& name) {
+  base::FilePath base_path;
+  base::PathService::Get(chrome::DIR_TEST_DATA, &base_path);
+  const base::FilePath tracing_path =
+      base_path.Append("arc_graphics_tracing").Append(name);
+  std::string json_data;
+  base::ReadFileToString(tracing_path, &json_data);
+  DCHECK(!json_data.empty());
+  ArcTracingGraphicsModel model;
+  return model.LoadFromJson(json_data);
+}
 
 }  // namespace
 
@@ -82,6 +122,70 @@ TEST_F(ArcTracingModelTest, TopLevel) {
   std::stringstream ss;
   model.Dump(ss);
   EXPECT_FALSE(ss.str().empty());
+
+  // Continue in this test to avoid heavy calculations for building base model.
+  // Make sure we can createe graphics model.
+  ArcTracingGraphicsModel graphics_model;
+  ASSERT_TRUE(graphics_model.Build(model));
+
+  EXPECT_TRUE(ValidateGrahpicsEvent(
+      graphics_model.android_top_level(),
+      {GraphicsEventType::kVsync,
+       GraphicsEventType::kSurfaceFlingerInvalidationStart,
+       GraphicsEventType::kSurfaceFlingerInvalidationDone,
+       GraphicsEventType::kSurfaceFlingerCompositionStart,
+       GraphicsEventType::kSurfaceFlingerCompositionDone}));
+  EXPECT_TRUE(
+      ValidateGrahpicsEvent(graphics_model.chrome_top_level(),
+                            {
+                                GraphicsEventType::kChromeOSDraw,
+                                GraphicsEventType::kChromeOSSwap,
+                                GraphicsEventType::kChromeOSWaitForAck,
+                                GraphicsEventType::kChromeOSWaitForPresentation,
+                                GraphicsEventType::kChromeOSDrawFinished,
+                            }));
+  EXPECT_FALSE(graphics_model.view_buffers().empty());
+  for (const auto& view : graphics_model.view_buffers()) {
+    // At least one buffer.
+    EXPECT_GT(view.first.task_id, 0);
+    EXPECT_NE(std::string(), view.first.activity);
+    EXPECT_FALSE(view.second.empty());
+    for (const auto& buffer : view.second) {
+      EXPECT_TRUE(ValidateGrahpicsEvent(
+          buffer, {
+                      GraphicsEventType::kBufferQueueDequeueStart,
+                      GraphicsEventType::kBufferQueueDequeueDone,
+                      GraphicsEventType::kBufferQueueQueueStart,
+                      GraphicsEventType::kBufferQueueQueueDone,
+                      GraphicsEventType::kBufferQueueAcquire,
+                      GraphicsEventType::kBufferQueueReleased,
+                      GraphicsEventType::kExoSurfaceAttach,
+                      GraphicsEventType::kExoProduceResource,
+                      GraphicsEventType::kExoBound,
+                      GraphicsEventType::kExoPendingQuery,
+                      GraphicsEventType::kExoReleased,
+                      GraphicsEventType::kChromeBarrierOrder,
+                      GraphicsEventType::kChromeBarrierFlush,
+                  }));
+    }
+  }
+  EXPECT_GT(graphics_model.duration(), 0U);
+
+  // Serialize and restore;
+  const std::string graphics_model_data = graphics_model.SerializeToJson();
+  EXPECT_FALSE(graphics_model_data.empty());
+
+  ArcTracingGraphicsModel graphics_model_loaded;
+  EXPECT_TRUE(graphics_model_loaded.LoadFromJson(graphics_model_data));
+
+  // Models should match.
+  EXPECT_EQ(graphics_model.android_top_level(),
+            graphics_model_loaded.android_top_level());
+  EXPECT_EQ(graphics_model.chrome_top_level(),
+            graphics_model_loaded.chrome_top_level());
+  EXPECT_EQ(graphics_model.view_buffers(),
+            graphics_model_loaded.view_buffers());
+  EXPECT_EQ(graphics_model.duration(), graphics_model_loaded.duration());
 }
 
 TEST_F(ArcTracingModelTest, Event) {
@@ -218,6 +322,13 @@ TEST_F(ArcTracingModelTest, EventMatcher) {
   EXPECT_FALSE(
       ArcTracingEventMatcher("_exo:_Surface::Attach(buffer_id=_0x7f9f5110690)")
           .Match(event));
+}
+
+TEST_F(ArcTracingModelTest, GraphicsModelLoad) {
+  EXPECT_TRUE(TestGraphicsModelLoad("gm_good.json"));
+  EXPECT_FALSE(TestGraphicsModelLoad("gm_bad_no_view_buffers.json"));
+  EXPECT_FALSE(TestGraphicsModelLoad("gm_bad_no_view_desc.json"));
+  EXPECT_FALSE(TestGraphicsModelLoad("gm_bad_wrong_timestamp.json"));
 }
 
 }  // namespace arc
