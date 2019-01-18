@@ -338,6 +338,11 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
     public void onItemUpdated(OfflineItem item) {
         if (!isVisibleToUser(item)) return;
 
+        if (item.state == OfflineItemState.CANCELLED) {
+            onItemRemoved(item.id);
+            return;
+        }
+
         computeNextStepForUpdate(item);
     }
 
@@ -453,7 +458,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
                     if (currentlyShowingPending && itemResumedFromPending) {
                         nextState = DownloadInfoBarState.DOWNLOADING;
                     }
-                    if (itemWasRemoved && mTrackedItems.size() == 0) {
+                    if ((itemWasPaused || itemWasRemoved) && mTrackedItems.size() == 0) {
                         nextState = DownloadInfoBarState.INITIAL;
                     }
                 }
