@@ -66,12 +66,13 @@ class PromoService : public KeyedService {
   void PromoDataLoaded(Status status, const base::Optional<PromoData>& data);
 
  private:
-  void LoadDone(std::unique_ptr<std::string> response_body);
-  void JsonParsed(std::unique_ptr<base::Value> value);
-  void JsonParseFailed(const std::string& message);
+  void OnLoadDone(std::unique_ptr<std::string> response_body);
+  void OnJsonParsed(std::unique_ptr<base::Value> value);
+  void OnJsonParseFailed(const std::string& message);
 
   void NotifyObservers();
 
+  GURL GetGoogleBaseUrl() const;
   GURL GetApiUrl() const;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

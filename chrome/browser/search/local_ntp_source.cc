@@ -405,10 +405,12 @@ std::unique_ptr<base::DictionaryValue> ConvertOGBDataToDict(
 std::unique_ptr<base::DictionaryValue> ConvertPromoDataToDict(
     const base::Optional<PromoData>& promo) {
   auto result = std::make_unique<base::DictionaryValue>();
-  if (promo.has_value())
+  if (promo.has_value()) {
     result->SetString("promoHtml", promo->promo_html);
-  else
+    result->SetString("promoLogUrl", promo->promo_log_url.spec());
+  } else {
     result->SetString("promoHtml", std::string());
+  }
   return result;
 }
 

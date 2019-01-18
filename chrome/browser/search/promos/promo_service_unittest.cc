@@ -125,12 +125,28 @@ TEST_F(PromoServiceTest, BadPromoResponse) {
   EXPECT_EQ(service()->promo_status(), Status::FATAL_ERROR);
 }
 
+TEST_F(PromoServiceTest, BadPromoResponseNoLogUrl) {
+  SetUpResponseWithData(
+      service()->GetLoadURLForTesting(),
+      "{\"update\":{\"promos\":{\"middle\":\"<style></style><div><script></"
+      "script></div>\"}}}");
+
+  ASSERT_EQ(service()->promo_data(), base::nullopt);
+
+  service()->Refresh();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(service()->promo_data(), base::nullopt);
+  EXPECT_EQ(service()->promo_status(), Status::FATAL_ERROR);
+}
+
 TEST_F(PromoServiceTest, GoodPromoResponse) {
   std::string response_string =
       "{\"update\":{\"promos\":{\"middle\":\"<style></style><div><script></"
-      "script></div>\"}}}";
+      "script></div>\", \"log_url\":\"/log_url?param=1\"}}}";
   PromoData promo;
   promo.promo_html = "<style></style><div><script></script></div>";
+  promo.promo_log_url = GURL("https://www.google.com/log_url?param=1");
 
   SetUpResponseWithData(service()->GetLoadURLForTesting(), response_string);
 

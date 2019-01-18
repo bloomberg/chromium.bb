@@ -1219,6 +1219,10 @@ function injectPromo(promo) {
   promoContainer.id = IDS.PROMO;
   promoContainer.innerHTML += promo.promoHtml;
   $(IDS.NTP_CONTENTS).appendChild(promoContainer);
+
+  if (promo.promoLogUrl) {
+    navigator.sendBeacon(promo.promoLogUrl);
+  }
 }
 
 
