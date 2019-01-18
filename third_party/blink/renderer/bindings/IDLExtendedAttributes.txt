@@ -37,7 +37,7 @@ AllowShared
 CEReactions
 CachedAccessor
 CachedAttribute=*
-CallWith=ExecutionContext|ScriptState|ScriptArguments|CurrentWindow|EnteredWindow|ThisValue
+CallWith=CurrentWindow|EnteredWindow|ExecutionContext|Isolate|ScriptArguments|ScriptState|ThisValue
 CheckSecurity=Receiver|ReturnValue
 Clamp
 Constructor
