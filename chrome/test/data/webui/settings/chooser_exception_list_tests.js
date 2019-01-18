@@ -492,8 +492,9 @@ suite('ChooserExceptionList', function() {
               settings.ChooserType.USB_DEVICES, testElement.chooserType);
 
           cr.webUIListenerCallback(
-              'contentSettingSitePermissionChanged',
-              settings.ContentSettingsTypes.USB_DEVICES);
+              'contentSettingChooserPermissionChanged',
+              settings.ContentSettingsTypes.USB_DEVICES,
+              settings.ChooserType.USB_DEVICES);
           return browserProxy.whenCalled('getChooserExceptionList');
         })
         .then(function(chooserType) {

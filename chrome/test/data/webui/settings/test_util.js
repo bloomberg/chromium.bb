@@ -247,6 +247,22 @@ cr.define('test_util', function() {
   }
 
   /**
+   * Helper to retrieve the category of a permission from the given
+   * |chooserType|.
+   * @param {settings.ChooserType} chooserType The chooser type of the
+   *     permission.
+   * @return {?settings.ContentSettingsType}
+   */
+  function getContentSettingsTypeFromChooserType(chooserType) {
+    switch (chooserType) {
+      case settings.ChooserType.USB_DEVICES:
+        return settings.ContentSettingsTypes.USB_DEVICES;
+      default:
+        return null;
+    }
+  }
+
+  /**
    * Converts beforeNextRender() API to promise-based.
    * @param {!Element} element
    * @return {!Promise}
@@ -273,6 +289,8 @@ cr.define('test_util', function() {
     createSiteSettingsPrefs: createSiteSettingsPrefs,
     eventToPromise: eventToPromise,
     fakeDataBind: fakeDataBind,
+    getContentSettingsTypeFromChooserType:
+        getContentSettingsTypeFromChooserType,
     waitForRender: waitForRender,
     whenAttributeIs: whenAttributeIs,
   };

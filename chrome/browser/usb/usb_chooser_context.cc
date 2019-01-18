@@ -105,17 +105,13 @@ std::unique_ptr<base::DictionaryValue> DeviceIdsToDictValue(int vendor_id,
 
 }  // namespace
 
-void UsbChooserContext::Observer::OnDeviceAdded(
+void UsbChooserContext::DeviceObserver::OnDeviceAdded(
     const device::mojom::UsbDeviceInfo& device_info) {}
 
-void UsbChooserContext::Observer::OnDeviceRemoved(
+void UsbChooserContext::DeviceObserver::OnDeviceRemoved(
     const device::mojom::UsbDeviceInfo& device_info) {}
 
-void UsbChooserContext::Observer::OnPermissionRevoked(
-    const GURL& requesting_origin,
-    const GURL& embedding_origin) {}
-
-void UsbChooserContext::Observer::OnDeviceManagerConnectionError() {}
+void UsbChooserContext::DeviceObserver::OnDeviceManagerConnectionError() {}
 
 UsbChooserContext::UsbChooserContext(Profile* profile)
     : ChooserContextBase(profile,
@@ -312,17 +308,15 @@ void UsbChooserContext::RevokeObjectPermission(
       it->second.erase(guid);
       if (it->second.empty())
         ephemeral_devices_.erase(it);
+      NotifyPermissionRevoked(requesting_origin, embedding_origin);
     }
+
     RecordPermissionRevocation(WEBUSB_PERMISSION_REVOKED_EPHEMERAL);
   } else {
     ChooserContextBase::RevokeObjectPermission(requesting_origin,
                                                embedding_origin, object);
     RecordPermissionRevocation(WEBUSB_PERMISSION_REVOKED);
   }
-
-  // Notify observers about the permission revocation.
-  for (auto& observer : observer_list_)
-    observer.OnPermissionRevoked(requesting_origin, embedding_origin);
 }
 
 void UsbChooserContext::GrantDevicePermission(
@@ -335,6 +329,7 @@ void UsbChooserContext::GrantDevicePermission(
   } else {
     ephemeral_devices_[std::make_pair(requesting_origin, embedding_origin)]
         .insert(device_info.guid);
+    NotifyPermissionChanged();
   }
 }
 
@@ -410,13 +405,13 @@ const device::mojom::UsbDeviceInfo* UsbChooserContext::GetDeviceInfo(
   return it == devices_.end() ? nullptr : it->second.get();
 }
 
-void UsbChooserContext::AddObserver(Observer* observer) {
+void UsbChooserContext::AddObserver(DeviceObserver* observer) {
   EnsureConnectionWithDeviceManager();
-  observer_list_.AddObserver(observer);
+  device_observer_list_.AddObserver(observer);
 }
 
-void UsbChooserContext::RemoveObserver(Observer* observer) {
-  observer_list_.RemoveObserver(observer);
+void UsbChooserContext::RemoveObserver(DeviceObserver* observer) {
+  device_observer_list_.RemoveObserver(observer);
 }
 
 base::WeakPtr<UsbChooserContext> UsbChooserContext::AsWeakPtr() {
@@ -446,7 +441,7 @@ void UsbChooserContext::OnDeviceAdded(
   devices_.insert(std::make_pair(device_info->guid, device_info->Clone()));
 
   // Notify all observers.
-  for (auto& observer : observer_list_)
+  for (auto& observer : device_observer_list_)
     observer.OnDeviceAdded(*device_info);
 }
 
@@ -457,12 +452,29 @@ void UsbChooserContext::OnDeviceRemoved(
   DCHECK(base::ContainsKey(devices_, device_info->guid));
   devices_.erase(device_info->guid);
 
-  // Notify all observers.
-  for (auto& observer : observer_list_)
+  // Notify all device observers.
+  for (auto& observer : device_observer_list_)
     observer.OnDeviceRemoved(*device_info);
 
-  for (auto& map_entry : ephemeral_devices_)
-    map_entry.second.erase(device_info->guid);
+  // If the device was persistent, return. Otherwise, notify all permission
+  // observers that its permissions were revoked.
+  if (device_info->serial_number &&
+      !device_info->serial_number.value().empty()) {
+    return;
+  }
+
+  std::vector<std::pair<GURL, GURL>> revoked_url_pairs;
+  for (auto& map_entry : ephemeral_devices_) {
+    if (map_entry.second.erase(device_info->guid) > 0)
+      revoked_url_pairs.push_back(map_entry.first);
+  }
+
+  for (auto& observer : permission_observer_list_) {
+    observer.OnChooserObjectPermissionChanged(guard_content_settings_type_,
+                                              data_content_settings_type_);
+    for (auto& url_pair : revoked_url_pairs)
+      observer.OnPermissionRevoked(url_pair.first, url_pair.second);
+  }
 }
 
 void UsbChooserContext::OnDeviceManagerConnectionError() {
@@ -470,11 +482,24 @@ void UsbChooserContext::OnDeviceManagerConnectionError() {
   client_binding_.Close();
   devices_.clear();
   is_initialized_ = false;
+
+  // Store the revoked URLs to notify observers of the revoked permissions.
+  std::vector<std::pair<GURL, GURL>> revoked_url_pairs;
+  for (auto& map_entry : ephemeral_devices_)
+    revoked_url_pairs.push_back(map_entry.first);
   ephemeral_devices_.clear();
 
-  // Notify all observers.
-  for (auto& observer : observer_list_)
+  // Notify all device observers.
+  for (auto& observer : device_observer_list_)
     observer.OnDeviceManagerConnectionError();
+
+  // Notify all permission observers.
+  for (auto& observer : permission_observer_list_) {
+    observer.OnChooserObjectPermissionChanged(guard_content_settings_type_,
+                                              data_content_settings_type_);
+    for (auto& url_pair : revoked_url_pairs)
+      observer.OnPermissionRevoked(url_pair.first, url_pair.second);
+  }
 }
 
 void UsbChooserContext::SetDeviceManagerForTesting(

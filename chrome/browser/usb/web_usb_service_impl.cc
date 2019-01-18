@@ -20,7 +20,8 @@ WebUsbServiceImpl::WebUsbServiceImpl(
     base::WeakPtr<WebUsbChooser> usb_chooser)
     : render_frame_host_(render_frame_host),
       usb_chooser_(std::move(usb_chooser)),
-      observer_(this),
+      device_observer_(this),
+      permission_observer_(this),
       weak_factory_(this) {
   DCHECK(render_frame_host_);
   content::WebContents* web_contents =
@@ -50,8 +51,10 @@ void WebUsbServiceImpl::BindRequest(
   // the OnDeviceRemoved event will be delivered here after it is delivered
   // to UsbChooserContext, meaning that all ephemeral permission checks in
   // OnDeviceRemoved() will fail.
-  if (!observer_.IsObservingSources())
-    observer_.Add(chooser_context_);
+  if (!device_observer_.IsObservingSources())
+    device_observer_.Add(chooser_context_);
+  if (!permission_observer_.IsObservingSources())
+    permission_observer_.Add(chooser_context_);
 }
 
 bool WebUsbServiceImpl::HasDevicePermission(
@@ -124,6 +127,24 @@ void WebUsbServiceImpl::SetClient(
   clients_.AddPtr(std::move(client_ptr));
 }
 
+void WebUsbServiceImpl::OnPermissionRevoked(const GURL& requesting_origin,
+                                            const GURL& embedding_origin) {
+  if (requesting_origin_ != requesting_origin ||
+      embedding_origin_ != embedding_origin) {
+    return;
+  }
+
+  // Close the connection between Blink and the device if the device lost
+  // permission.
+  base::EraseIf(device_client_bindings_, [this](const auto& entry) {
+    auto* device_info = chooser_context_->GetDeviceInfo(entry.first);
+    if (!device_info)
+      return true;
+
+    return !HasDevicePermission(*device_info);
+  });
+}
+
 void WebUsbServiceImpl::OnDeviceAdded(
     const device::mojom::UsbDeviceInfo& device_info) {
   if (!HasDevicePermission(device_info))
@@ -147,31 +168,14 @@ void WebUsbServiceImpl::OnDeviceRemoved(
       });
 }
 
-void WebUsbServiceImpl::OnPermissionRevoked(const GURL& requesting_origin,
-                                            const GURL& embedding_origin) {
-  if (requesting_origin_ != requesting_origin ||
-      embedding_origin_ != embedding_origin) {
-    return;
-  }
-
-  // Close the connection between Blink and the device if the device lost
-  // permission.
-  base::EraseIf(device_client_bindings_, [this](const auto& entry) {
-    auto* device_info = chooser_context_->GetDeviceInfo(entry.first);
-    if (!device_info)
-      return true;
-
-    return !HasDevicePermission(*device_info);
-  });
-}
-
 void WebUsbServiceImpl::OnDeviceManagerConnectionError() {
   // Close the connection with blink.
   clients_.CloseAll();
   bindings_.CloseAllBindings();
 
   // Remove itself from UsbChooserContext's ObserverList.
-  observer_.RemoveAll();
+  device_observer_.RemoveAll();
+  permission_observer_.RemoveAll();
 }
 
 // device::mojom::UsbDeviceClient implementation:
@@ -192,6 +196,8 @@ void WebUsbServiceImpl::OnDeviceClosed() {
 }
 
 void WebUsbServiceImpl::OnBindingConnectionError() {
-  if (bindings_.empty())
-    observer_.RemoveAll();
+  if (bindings_.empty()) {
+    device_observer_.RemoveAll();
+    permission_observer_.RemoveAll();
+  }
 }

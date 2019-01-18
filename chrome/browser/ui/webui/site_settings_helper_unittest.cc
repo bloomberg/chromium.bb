@@ -314,6 +314,8 @@ void ExpectValidSiteExceptionObject(const base::Value& actual_site_object,
 }  // namespace
 
 TEST_F(SiteSettingsHelperTest, CreateChooserExceptionObject) {
+  const std::string kUsbChooserGroupName =
+      ContentSettingsTypeToGroupName(CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA);
   const std::string& kPolicySource =
       SiteSettingSourceToString(SiteSettingSource::kPolicy);
   const std::string& kPreferenceSource =
@@ -335,11 +337,11 @@ TEST_F(SiteSettingsHelperTest, CreateChooserExceptionObject) {
     auto exception = CreateChooserExceptionObject(
         /*display_name=*/kObjectName,
         /*object=*/*chooser_object,
-        /*chooser_type=*/kGroupTypeUsb,
+        /*chooser_type=*/kUsbChooserGroupName,
         /*chooser_exception_details=*/exception_details,
         /*incognito=*/false);
     ExpectValidChooserExceptionObject(
-        *exception, /*chooser_type=*/kGroupTypeUsb,
+        *exception, /*chooser_type=*/kUsbChooserGroupName,
         /*display_name=*/kObjectName, *chooser_object);
 
     const auto& sites_list = exception->FindKey(kSites)->GetList();
@@ -360,11 +362,11 @@ TEST_F(SiteSettingsHelperTest, CreateChooserExceptionObject) {
     auto exception = CreateChooserExceptionObject(
         /*display_name=*/kObjectName,
         /*object=*/*chooser_object,
-        /*chooser_type=*/kGroupTypeUsb,
+        /*chooser_type=*/kUsbChooserGroupName,
         /*chooser_exception_details=*/exception_details,
         /*incognito=*/true);
     ExpectValidChooserExceptionObject(*exception,
-                                      /*chooser_type=*/kGroupTypeUsb,
+                                      /*chooser_type=*/kUsbChooserGroupName,
                                       /*display_name=*/kObjectName,
                                       *chooser_object);
 
@@ -391,11 +393,11 @@ TEST_F(SiteSettingsHelperTest, CreateChooserExceptionObject) {
     auto exception = CreateChooserExceptionObject(
         /*display_name=*/kObjectName,
         /*object=*/*chooser_object,
-        /*chooser_type=*/kGroupTypeUsb,
+        /*chooser_type=*/kUsbChooserGroupName,
         /*chooser_exception_details=*/exception_details,
         /*incognito=*/false);
     ExpectValidChooserExceptionObject(*exception,
-                                      /*chooser_type=*/kGroupTypeUsb,
+                                      /*chooser_type=*/kUsbChooserGroupName,
                                       /*display_name=*/kObjectName,
                                       *chooser_object);
 
@@ -511,8 +513,10 @@ void ExpectDisplayNameEq(const base::Value& actual_exception_object,
 // added for the wildcard devices with the new chooser exception order.
 TEST_F(SiteSettingsHelperChooserExceptionTest,
        GetChooserExceptionListFromProfile) {
+  const std::string kUsbChooserGroupName =
+      ContentSettingsTypeToGroupName(CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA);
   const ChooserTypeNameEntry* chooser_type =
-      ChooserTypeFromGroupName(kGroupTypeUsb);
+      ChooserTypeFromGroupName(kUsbChooserGroupName);
   const std::string& kPolicySource =
       SiteSettingSourceToString(SiteSettingSource::kPolicy);
   const std::string& kPreferenceSource =
@@ -526,7 +530,7 @@ TEST_F(SiteSettingsHelperChooserExceptionTest,
   std::unique_ptr<base::ListValue> exceptions =
       GetChooserExceptionListFromProfile(profile(), /*incognito=*/false,
                                          *chooser_type);
-  ASSERT_EQ(exceptions->GetSize(), 4ul);
+  ASSERT_EQ(exceptions->GetSize(), 4u);
   auto& exceptions_list = exceptions->GetList();
 
   // This exception should describe the permissions for the "Gizmo" device.
@@ -547,7 +551,7 @@ TEST_F(SiteSettingsHelperChooserExceptionTest,
     ExpectDisplayNameEq(exception, /*display_name=*/"Gizmo");
 
     const auto& sites_list = exception.FindKey(kSites)->GetList();
-    ASSERT_EQ(sites_list.size(), 2ul);
+    ASSERT_EQ(sites_list.size(), 2u);
     ExpectValidSiteExceptionObject(sites_list[0],
                                    /*origin=*/kChromiumOrigin,
                                    /*source=*/kPolicySource,

@@ -66,9 +66,6 @@ constexpr char kSetting[] = "setting";
 constexpr char kSites[] = "sites";
 constexpr char kSource[] = "source";
 
-// Group types.
-constexpr char kGroupTypeUsb[] = "usb-devices";
-
 enum class SiteSettingSource {
   kAdsFilterBlacklist,
   kDefault,
