@@ -181,7 +181,7 @@ void WebContentsViewMac::SetInitialFocus() {
     delegate()->ResetStoredFocus();
 
   if (web_contents_->FocusLocationBarByDefault())
-    web_contents_->SetFocusToLocationBar(false);
+    web_contents_->SetFocusToLocationBar();
   else
     Focus();
 }

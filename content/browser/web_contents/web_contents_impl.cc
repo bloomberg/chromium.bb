@@ -4153,9 +4153,9 @@ bool WebContentsImpl::FocusLocationBarByDefault() {
   return delegate_ && delegate_->ShouldFocusLocationBarByDefault(this);
 }
 
-void WebContentsImpl::SetFocusToLocationBar(bool select_all) {
+void WebContentsImpl::SetFocusToLocationBar() {
   if (delegate_)
-    delegate_->SetFocusToLocationBar(select_all);
+    delegate_->SetFocusToLocationBar();
 }
 
 void WebContentsImpl::DidStartNavigation(NavigationHandle* navigation_handle) {

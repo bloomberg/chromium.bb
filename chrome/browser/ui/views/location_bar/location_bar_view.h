@@ -200,7 +200,7 @@ class LocationBarView : public LocationBar,
   bool ActivateFirstInactiveBubbleForAccessibility();
 
   // LocationBar:
-  void FocusLocation(bool select_all) override;
+  void FocusLocation() override;
   void Revert() override;
   OmniboxView* GetOmniboxView() override;
 
@@ -355,7 +355,7 @@ class LocationBarView : public LocationBar,
   const LocationBarModel* GetLocationBarModel() const override;
 
   // DropdownBarHostDelegate:
-  void SetFocusAndSelection(bool select_all) override;
+  void FocusAndSelectAll() override;
 
   // ui::MaterialDesignControllerObserver:
   void OnTouchUiChanged() override;

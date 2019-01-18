@@ -97,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, Basic) {
   // TODO(phajdan.jr): check state of IsSelectAll when it's consistent across
   // platforms.
 
-  location_bar->FocusLocation(true);
+  location_bar->FocusLocation();
 
   EXPECT_FALSE(location_bar->GetDestinationURL().is_valid());
   EXPECT_EQ(base::UTF8ToUTF16(url::kAboutBlankURL), omnibox_view->GetText());

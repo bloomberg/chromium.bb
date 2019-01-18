@@ -754,7 +754,7 @@ void WebContentsViewAura::SetInitialFocus() {
     delegate_->ResetStoredFocus();
 
   if (web_contents_->FocusLocationBarByDefault())
-    web_contents_->SetFocusToLocationBar(false);
+    web_contents_->SetFocusToLocationBar();
   else
     Focus();
 }

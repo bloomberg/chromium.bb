@@ -219,7 +219,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Sets focus to the location bar or some other place that is appropriate.
   // This is called when the tab wants to encourage user input, like for the
   // new tab page.
-  virtual void SetFocusToLocationBar(bool select_all) {}
+  virtual void SetFocusToLocationBar() {}
 
   // Returns whether the page should be focused when transitioning from crashed
   // to live. Default is true.

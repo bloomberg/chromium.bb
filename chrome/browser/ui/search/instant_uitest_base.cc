@@ -35,7 +35,7 @@ void InstantUITestBase::FocusOmnibox() {
         ->OmniboxFocusChanged(OMNIBOX_FOCUS_VISIBLE,
                               OMNIBOX_FOCUS_CHANGE_EXPLICIT);
   } else {
-    instant_browser()->window()->GetLocationBar()->FocusLocation(false);
+    instant_browser()->window()->GetLocationBar()->FocusLocation();
   }
 }
 

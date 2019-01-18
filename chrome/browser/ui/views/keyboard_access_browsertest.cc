@@ -211,7 +211,7 @@ void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence,
                                      browser(), false);
 
   if (focus_omnibox)
-    browser()->window()->GetLocationBar()->FocusLocation(false);
+    browser()->window()->GetLocationBar()->FocusLocation();
 
 #if defined(OS_CHROMEOS)
   // Chrome OS doesn't have a way to just focus the app menu, so we use Alt+F to
@@ -321,7 +321,7 @@ void KeyboardAccessTest::TestMenuKeyboardAccessAndDismiss() {
   SendKeysMenuListener menu_listener(browser_view->toolbar()->app_menu_button(),
                                      browser(), true);
 
-  browser()->window()->GetLocationBar()->FocusLocation(false);
+  browser()->window()->GetLocationBar()->FocusLocation();
 
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_F10, false, false, false, false));
