@@ -24,7 +24,7 @@ namespace ash {
 namespace wm {
 
 // A view that mirrors the client area of a single (source) window.
-class WindowMirrorView : public views::View {
+class ASH_EXPORT WindowMirrorView : public views::View {
  public:
   WindowMirrorView(aura::Window* source, bool trilinear_filtering_on_init);
   ~WindowMirrorView() override;
