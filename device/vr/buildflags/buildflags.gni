@@ -33,21 +33,19 @@ declare_args() {
 }
 
 declare_args() {
-  # TODO(crbug.com/837999, crbug.com/841389): We currently only support arm and
-  # we are limiting to canary and dev until binary size issues are resolved.
-  # TODO(crbug.com/836524): once we've refactored AR code out from vr
-  # directories, we can stop requiring |enable_vr| here.
+  # Controls whether the ARCore SDK is packaged into the APK.
+  # It is not used for bundle builds.
+  # TODO(crbug.com/920424): Remove this variable once it is no longer necessary.
+  # TODO(crbug.com/843374): AR should not depend on |enable_vr|.
   package_arcore = enable_vr && is_android && !is_chromecast &&
                    (current_cpu == "arm" || current_cpu == "arm64") &&
                    (android_channel == "default" ||
                     android_channel == "canary" || android_channel == "dev")
 
-  # TODO(crbug.com/841389): We should eventually have a single flag for
-  # enabling arcore, but we currently don't support ARCore in 64bit, and we do
-  # not support all channels. This flag governs the inclusion of code that must
-  # be identical across configs.
-  # TODO(crbug.com/836524): once we've refactored AR code out from vr
-  # directories, we can stop requiring |enable_vr| here.
+  # Controls inclusion of code for ARCore that must be identical across configs.
+  # Once crbug.com/920424 is resolved, this will exactly control whether ARCore
+  # is supported.
+  # TODO(crbug.com/843374): AR should not depend on |enable_vr|.
   enable_arcore = enable_vr && is_android && !is_chromecast &&
                   (current_cpu == "arm" || current_cpu == "arm64")
 
