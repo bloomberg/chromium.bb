@@ -2947,7 +2947,7 @@ TEST_F(ViewportTest, viewportLimitsAdjustedForUserScale) {
   EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
 }
 
-TEST_F(ViewportTest, viewportTriggersGpuRasterization) {
+TEST_F(ViewportTest, ViewportTriggersGpuRasterization) {
   frame_test_helpers::WebViewHelper web_view_helper;
 
   RegisterMockedHttpURLLoad(
@@ -2957,24 +2957,24 @@ TEST_F(ViewportTest, viewportTriggersGpuRasterization) {
           "viewport/viewport-gpu-rasterization-disabled-without-viewport.html",
       nullptr, nullptr, nullptr, SetViewportSettings);
   web_view_helper.GetWebView()->MainFrameWidget()->Resize(WebSize(640, 480));
-  EXPECT_FALSE(web_view_helper.GetWebView()
-                   ->MatchesHeuristicsForGpuRasterizationForTesting());
+  content::LayerTreeView* compositor = web_view_helper.GetLayerTreeView();
+  EXPECT_FALSE(compositor->layer_tree_host()->has_gpu_rasterization_trigger());
   // Also test that setting enableViewport to false (as on desktop Chrome)
   // supports GPU raster unconditionally.
   web_view_helper.InitializeAndLoad(
       base_url_ +
       "viewport/viewport-gpu-rasterization-disabled-without-viewport.html");
   web_view_helper.GetWebView()->MainFrameWidget()->Resize(WebSize(640, 480));
-  EXPECT_TRUE(web_view_helper.GetWebView()
-                  ->MatchesHeuristicsForGpuRasterizationForTesting());
+  compositor = web_view_helper.GetLayerTreeView();
+  EXPECT_TRUE(compositor->layer_tree_host()->has_gpu_rasterization_trigger());
 
   RegisterMockedHttpURLLoad("viewport/viewport-gpu-rasterization.html");
   web_view_helper.InitializeAndLoad(
       base_url_ + "viewport/viewport-gpu-rasterization.html", nullptr, nullptr,
       nullptr, SetViewportSettings);
   web_view_helper.GetWebView()->MainFrameWidget()->Resize(WebSize(640, 480));
-  EXPECT_TRUE(web_view_helper.GetWebView()
-                  ->MatchesHeuristicsForGpuRasterizationForTesting());
+  compositor = web_view_helper.GetLayerTreeView();
+  EXPECT_TRUE(compositor->layer_tree_host()->has_gpu_rasterization_trigger());
 
   RegisterMockedHttpURLLoad(
       "viewport/viewport-gpu-rasterization-expanded-heuristics.html");
@@ -2983,48 +2983,48 @@ TEST_F(ViewportTest, viewportTriggersGpuRasterization) {
           "viewport/viewport-gpu-rasterization-expanded-heuristics.html",
       nullptr, nullptr, nullptr, SetViewportSettings);
   web_view_helper.GetWebView()->MainFrameWidget()->Resize(WebSize(640, 480));
-  EXPECT_TRUE(web_view_helper.GetWebView()
-                  ->MatchesHeuristicsForGpuRasterizationForTesting());
+  compositor = web_view_helper.GetLayerTreeView();
+  EXPECT_TRUE(compositor->layer_tree_host()->has_gpu_rasterization_trigger());
 
   RegisterMockedHttpURLLoad("viewport/viewport-1.html");
   web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-1.html",
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
   web_view_helper.GetWebView()->MainFrameWidget()->Resize(WebSize(640, 480));
-  EXPECT_TRUE(web_view_helper.GetWebView()
-                  ->MatchesHeuristicsForGpuRasterizationForTesting());
+  compositor = web_view_helper.GetLayerTreeView();
+  EXPECT_TRUE(compositor->layer_tree_host()->has_gpu_rasterization_trigger());
 
   RegisterMockedHttpURLLoad("viewport/viewport-15.html");
   web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-15.html",
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
   web_view_helper.GetWebView()->MainFrameWidget()->Resize(WebSize(640, 480));
-  EXPECT_TRUE(web_view_helper.GetWebView()
-                  ->MatchesHeuristicsForGpuRasterizationForTesting());
+  compositor = web_view_helper.GetLayerTreeView();
+  EXPECT_TRUE(compositor->layer_tree_host()->has_gpu_rasterization_trigger());
 
   RegisterMockedHttpURLLoad("viewport/viewport-130.html");
   web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-130.html",
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
   web_view_helper.GetWebView()->MainFrameWidget()->Resize(WebSize(640, 480));
-  EXPECT_TRUE(web_view_helper.GetWebView()
-                  ->MatchesHeuristicsForGpuRasterizationForTesting());
+  compositor = web_view_helper.GetLayerTreeView();
+  EXPECT_TRUE(compositor->layer_tree_host()->has_gpu_rasterization_trigger());
 
   RegisterMockedHttpURLLoad("viewport/viewport-legacy-handheldfriendly.html");
   web_view_helper.InitializeAndLoad(
       base_url_ + "viewport/viewport-legacy-handheldfriendly.html", nullptr,
       nullptr, nullptr, SetViewportSettings);
   web_view_helper.GetWebView()->MainFrameWidget()->Resize(WebSize(640, 480));
-  EXPECT_TRUE(web_view_helper.GetWebView()
-                  ->MatchesHeuristicsForGpuRasterizationForTesting());
+  compositor = web_view_helper.GetLayerTreeView();
+  EXPECT_TRUE(compositor->layer_tree_host()->has_gpu_rasterization_trigger());
 
   RegisterMockedHttpURLLoad("viewport/viewport-legacy-mobileoptimized.html");
   web_view_helper.InitializeAndLoad(
       base_url_ + "viewport/viewport-legacy-handheldfriendly.html", nullptr,
       nullptr, nullptr, SetViewportSettings);
   web_view_helper.GetWebView()->MainFrameWidget()->Resize(WebSize(640, 480));
-  EXPECT_TRUE(web_view_helper.GetWebView()
-                  ->MatchesHeuristicsForGpuRasterizationForTesting());
+  compositor = web_view_helper.GetLayerTreeView();
+  EXPECT_TRUE(compositor->layer_tree_host()->has_gpu_rasterization_trigger());
 }
 
 class ConsoleMessageWebFrameClient

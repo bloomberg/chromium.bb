@@ -355,10 +355,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
     return animation_host_.get();
   }
 
-  bool MatchesHeuristicsForGpuRasterizationForTesting() const {
-    return matches_heuristics_for_gpu_rasterization_;
-  }
-
   BrowserControls& GetBrowserControls();
   // Called anytime browser controls layout height or content offset have
   // changed.

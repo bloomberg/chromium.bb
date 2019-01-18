@@ -2471,8 +2471,13 @@ void WebViewImpl::RefreshPageScaleFactor() {
 
 void WebViewImpl::UpdatePageDefinedViewportConstraints(
     const ViewportDescription& description) {
-  if (!GetPage() || (!size_.width && !size_.height) ||
-      !GetPage()->MainFrame()->IsLocalFrame())
+  if (!GetPage() || (!size_.width && !size_.height))
+    return;
+  // The viewport is a property of the main frame and its widget, so ignore it
+  // when the main frame is remote.
+  // TODO(danakj): Remove calls to this method from ChromeClient and DCHECK this
+  // instead.
+  if (!GetPage()->MainFrame()->IsLocalFrame())
     return;
 
   // When viewport is disabled (non-mobile), we always use gpu rasterization.
@@ -2488,12 +2493,16 @@ void WebViewImpl::UpdatePageDefinedViewportConstraints(
   // for non-viewport-specified pages in order to avoid crashes or other
   // problems on mobile devices with gpu rasterization.
   bool viewport_enabled = GetSettings()->ViewportEnabled();
-  matches_heuristics_for_gpu_rasterization_ =
+  bool gpu_rasterization_allowed =
       viewport_enabled ? description.MatchesHeuristicsForGpuRasterization()
                        : true;
+
+  // 1. Non-composited WebViews do not worry about gpu rasterization.
+  // 2. After removing the LayerTreeView during shutdown, but before the frame
+  //    is detached, we may do layout still.
   if (layer_tree_view_) {
     layer_tree_view_->HeuristicsForGpuRasterizationUpdated(
-        matches_heuristics_for_gpu_rasterization_);
+        gpu_rasterization_allowed);
   }
 
   if (!viewport_enabled) {
