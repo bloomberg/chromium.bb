@@ -8,6 +8,7 @@
 #include <array>
 #include <atomic>
 
+#include "base/compiler_specific.h"
 #include "base/debug/stack_trace.h"
 #include "base/gtest_prod_util.h"
 #include "base/no_destructor.h"
@@ -109,8 +110,9 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // Record an allocation or deallocation for a given slot index. This
   // encapsulates the logic for updating the stack traces and metadata for a
   // given slot.
+  ALWAYS_INLINE
   void RecordAllocationInSlot(size_t slot, size_t size, void* ptr);
-  void RecordDeallocationInSlot(size_t slot);
+  ALWAYS_INLINE void RecordDeallocationInSlot(size_t slot);
 
   // Allocator state shared with with the crash analyzer.
   AllocatorState state_;
