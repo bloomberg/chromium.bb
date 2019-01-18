@@ -814,7 +814,10 @@ void WindowSelector::OnSplitViewDividerPositionChanged() {
 void WindowSelector::ResetFocusRestoreWindow(bool focus) {
   if (!restore_focus_window_)
     return;
-  if (focus) {
+
+  // Ensure the window is still in the window hierarchy and not in the middle
+  // of teardown.
+  if (focus && restore_focus_window_->GetRootWindow()) {
     base::AutoReset<bool> restoring_focus(&ignore_activations_, true);
     wm::ActivateWindow(restore_focus_window_);
   }
