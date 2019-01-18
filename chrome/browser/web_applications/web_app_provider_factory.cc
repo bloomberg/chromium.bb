@@ -47,4 +47,10 @@ bool WebAppProviderFactory::ServiceIsCreatedWithBrowserContext() const {
   return true;
 }
 
+content::BrowserContext* WebAppProviderFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  Profile* profile = Profile::FromBrowserContext(context);
+  return profile ? profile->GetOriginalProfile() : nullptr;
+}
+
 }  //  namespace web_app
