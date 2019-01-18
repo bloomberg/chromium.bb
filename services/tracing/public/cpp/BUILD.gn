@@ -6,8 +6,6 @@ component("cpp") {
   sources = [
     "base_agent.cc",
     "base_agent.h",
-    "perfetto/heap_scattered_stream_delegate.cc",
-    "perfetto/heap_scattered_stream_delegate.h",
     "perfetto/producer_client.cc",
     "perfetto/producer_client.h",
     "perfetto/shared_memory.cc",

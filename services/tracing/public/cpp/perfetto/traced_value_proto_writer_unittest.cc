@@ -8,8 +8,9 @@
 #include <string>
 
 #include "base/trace_event/traced_value.h"
-#include "services/tracing/public/cpp/perfetto/heap_scattered_stream_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/perfetto/include/perfetto/protozero/scattered_heap_buffer.h"
+#include "third_party/perfetto/include/perfetto/protozero/scattered_stream_writer.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pb.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
 #include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream.h"
@@ -22,24 +23,24 @@ namespace {
 
 class ProtoInputStream : public google::protobuf::io::ZeroCopyInputStream {
  public:
-  explicit ProtoInputStream(HeapScatteredStreamWriterDelegate* delegate)
-      : delegate_(delegate) {
-    delegate->AdjustUsedSizeOfCurrentChunk();
+  explicit ProtoInputStream(protozero::ScatteredHeapBuffer* buffer)
+      : buffer_(buffer) {
+    buffer->AdjustUsedSizeOfCurrentSlice();
   }
 
   // google::protobuf::io::ZeroCopyInputStream implementation.
   bool Next(const void** data, int* size) override {
     DCHECK(!has_backed_up_);
 
-    auto& chunks = delegate_->chunks();
-    if (chunks.size() <= chunks_read_) {
+    auto& slices = buffer_->slices();
+    if (slices.size() <= slices_read_) {
       return false;
     }
 
-    *data = chunks[chunks_read_].start();
-    *size = chunks[chunks_read_].size() - chunks[chunks_read_].unused_bytes();
+    *data = slices[slices_read_].start();
+    *size = slices[slices_read_].size() - slices[slices_read_].unused_bytes();
 
-    chunks_read_++;
+    slices_read_++;
     return true;
   }
 
@@ -61,8 +62,8 @@ class ProtoInputStream : public google::protobuf::io::ZeroCopyInputStream {
   }
 
  private:
-  const HeapScatteredStreamWriterDelegate* delegate_;
-  size_t chunks_read_ = 0;
+  const protozero::ScatteredHeapBuffer* buffer_;
+  size_t slices_read_ = 0;
   bool has_backed_up_ = false;
 };
 
@@ -112,19 +113,19 @@ bool IsValue(const perfetto::protos::ChromeTracedValue* proto_value,
 
 perfetto::protos::ChromeTracedValue GetProtoFromTracedValue(
     TracedValue* traced_value) {
-  HeapScatteredStreamWriterDelegate delegate_(100);
-  protozero::ScatteredStreamWriter stream_(&delegate_);
+  protozero::ScatteredHeapBuffer buffer(100);
+  protozero::ScatteredStreamWriter stream(&buffer);
   perfetto::protos::pbzero::ChromeTraceEvent_Arg proto;
-  proto.Reset(&stream_);
-  delegate_.set_writer(&stream_);
+  proto.Reset(&stream);
+  buffer.set_writer(&stream);
 
   PerfettoProtoAppender proto_appender(&proto);
   EXPECT_TRUE(traced_value->AppendToProto(&proto_appender));
   uint32_t size = proto.Finalize();
-  ProtoInputStream stream(&delegate_);
+  ProtoInputStream proto_stream(&buffer);
 
   perfetto::protos::ChromeTraceEvent_Arg full_proto;
-  EXPECT_TRUE(full_proto.ParseFromBoundedZeroCopyStream(&stream, size));
+  EXPECT_TRUE(full_proto.ParseFromBoundedZeroCopyStream(&proto_stream, size));
   EXPECT_TRUE(full_proto.has_traced_value());
 
   return full_proto.traced_value();
