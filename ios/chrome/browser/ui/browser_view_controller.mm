@@ -2364,11 +2364,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
     // Make new content visible, resizing it first as the orientation may
     // have changed from the last time it was displayed.
+    [self viewForTab:tab].frame = self.contentArea.bounds;
     if (base::FeatureList::IsEnabled(
             web::features::kBrowserContainerFullscreen)) {
       [_toolbarUIUpdater updateState];
-    } else {
-      [self viewForTab:tab].frame = self.contentArea.bounds;
     }
     NewTabPageTabHelper* NTPHelper =
         NewTabPageTabHelper::FromWebState(tab.webState);
