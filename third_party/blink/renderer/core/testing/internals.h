@@ -495,6 +495,8 @@ class Internals final : public ScriptWrappable {
 
   bool ignoreLayoutWithPendingStylesheets(Document*);
 
+  Element* interestedElement();
+
   void setNetworkConnectionInfoOverride(bool,
                                         const String&,
                                         const String&,

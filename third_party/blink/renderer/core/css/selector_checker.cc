@@ -59,6 +59,7 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
+#include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
@@ -1398,6 +1399,14 @@ bool SelectorChecker::MatchesSpatialNavigationFocusPseudoClass(
     const Element& element) {
   if (!IsSpatialNavigationEnabled(element.GetDocument().GetFrame()))
     return false;
+  if (RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled()) {
+    DCHECK(element.GetDocument().GetPage());
+    Element* interested_element = element.GetDocument()
+                                      .GetPage()
+                                      ->GetSpatialNavigationController()
+                                      .GetInterestedElement();
+    return interested_element && *interested_element == element;
+  }
   if (RuntimeEnabledFeatures::SpatialNavigationForcesOutlineEnabled()) {
     // TODO(mthiesse): Decouple spatial navigation target from focus, so that
     // if spat nav is enabled, but not used, we don't override focus ring

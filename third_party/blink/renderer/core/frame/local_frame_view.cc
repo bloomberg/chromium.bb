@@ -104,6 +104,7 @@
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator_context.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
+#include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/core/paint/block_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
@@ -1908,6 +1909,12 @@ Color LocalFrameView::DocumentBackgroundColor() const {
 void LocalFrameView::WillBeRemovedFromFrame() {
   if (paint_artifact_compositor_)
     paint_artifact_compositor_->WillBeRemovedFromFrame();
+
+  if (Settings* settings = frame_->GetSettings()) {
+    DCHECK(frame_->GetPage());
+    if (settings->GetSpatialNavigationEnabled())
+      frame_->GetPage()->GetSpatialNavigationController().DidDetachFrameView();
+  }
 }
 
 LocalFrameView* LocalFrameView::ParentFrameView() const {

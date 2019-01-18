@@ -120,6 +120,7 @@
 #include "third_party/blink/renderer/core/page/scrolling/root_scroller_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/scroll_state.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator_context.h"
+#include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/compositing/graphics_layer_tree_as_text.h"
@@ -3215,6 +3216,23 @@ void Internals::setInitialFocus(bool reverse) {
 bool Internals::ignoreLayoutWithPendingStylesheets(Document* document) {
   DCHECK(document);
   return document->IgnoreLayoutWithPendingStylesheets();
+}
+
+Element* Internals::interestedElement() {
+  if (!GetFrame() || !GetFrame()->GetPage())
+    return nullptr;
+
+  if (!RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled()) {
+    return ToLocalFrame(
+               GetFrame()->GetPage()->GetFocusController().FocusedOrMainFrame())
+        ->GetDocument()
+        ->ActiveElement();
+  }
+
+  return GetFrame()
+      ->GetPage()
+      ->GetSpatialNavigationController()
+      .GetInterestedElement();
 }
 
 void Internals::setNetworkConnectionInfoOverride(

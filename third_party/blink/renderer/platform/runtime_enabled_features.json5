@@ -499,6 +499,10 @@
       name: "FirstContentfulPaintPlusPlus",
     },
     {
+      name: "FocuslessSpatialNavigation",
+      settable_from_internals: true,
+    },
+    {
       name: "FontCacheScaling",
       status: "test",
     },
