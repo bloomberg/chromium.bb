@@ -6,12 +6,15 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_SITE_SETTINGS_HANDLER_H_
 
 #include <list>
+#include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/scoped_observer.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
+#include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/storage/storage_info_fetcher.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
@@ -36,6 +39,7 @@ namespace settings {
 class SiteSettingsHandler : public SettingsPageUIHandler,
                             public content_settings::Observer,
                             public content::NotificationObserver,
+                            public ChooserContextBase::PermissionObserver,
                             public CookiesTreeModel::Observer {
  public:
   explicit SiteSettingsHandler(Profile* profile);
@@ -83,6 +87,11 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // ChooserContextBase::PermissionObserver implementation:
+  void OnChooserObjectPermissionChanged(
+      ContentSettingsType guard_content_settings_type,
+      ContentSettingsType data_content_settings_type) override;
+
   // content::HostZoomMap subscription.
   void OnZoomLevelChanged(const content::HostZoomMap::ZoomLevelChange& change);
 
@@ -122,6 +131,9 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
 
   // Creates the CookiesTreeModel if necessary.
   void EnsureCookiesTreeModelCreated();
+
+  // Add this class as an observer for content settings and chooser contexts.
+  void ObserveSources();
 
   // Calculates the data storage that has been used for each origin, and
   // stores the information in the |all_sites_map| and |origin_size_map|.
@@ -250,6 +262,10 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
 
   // Change observer for content settings.
   ScopedObserver<HostContentSettingsMap, content_settings::Observer> observer_;
+
+  // Change observer for chooser permissions.
+  ScopedObserver<ChooserContextBase, ChooserContextBase::PermissionObserver>
+      chooser_observer_;
 
   // Change observer for prefs.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;

@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "base/values.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -38,6 +40,25 @@ class ChooserContextBase : public KeyedService {
     content_settings::SettingSource source;
     bool incognito;
   };
+
+  // This observer can be used to be notified of changes to the permission of a
+  // chooser object.
+  class PermissionObserver : public base::CheckedObserver {
+   public:
+    // Notify observers that an object permission changed for the chooser
+    // context represented by |guard_content_settings_type| and
+    // |data_content_settings_type|.
+    virtual void OnChooserObjectPermissionChanged(
+        ContentSettingsType guard_content_settings_type,
+        ContentSettingsType data_content_settings_type);
+    // Notify obsever that an object permission was revoked for
+    // |requesting_origin| and |embedding_origin|.
+    virtual void OnPermissionRevoked(const GURL& requesting_origin,
+                                     const GURL& embedding_origin);
+  };
+
+  void AddObserver(PermissionObserver* observer);
+  void RemoveObserver(PermissionObserver* observer);
 
   ChooserContextBase(Profile* profile,
                      ContentSettingsType guard_content_settings_type,
@@ -90,6 +111,15 @@ class ChooserContextBase : public KeyedService {
   // Returns the human readable string representing the given object.
   virtual std::string GetObjectName(const base::DictionaryValue& object) = 0;
 
+ protected:
+  void NotifyPermissionChanged();
+  void NotifyPermissionRevoked(const GURL& requesting_origin,
+                               const GURL& embedding_origin);
+
+  const ContentSettingsType guard_content_settings_type_;
+  const ContentSettingsType data_content_settings_type_;
+  base::ObserverList<PermissionObserver> permission_observer_list_;
+
  private:
   std::unique_ptr<base::DictionaryValue> GetWebsiteSetting(
       const GURL& requesting_origin,
@@ -100,8 +130,6 @@ class ChooserContextBase : public KeyedService {
                          std::unique_ptr<base::Value> value);
 
   HostContentSettingsMap* const host_content_settings_map_;
-  const ContentSettingsType guard_content_settings_type_;
-  const ContentSettingsType data_content_settings_type_;
 };
 
 #endif  // CHROME_BROWSER_PERMISSIONS_CHOOSER_CONTEXT_BASE_H_

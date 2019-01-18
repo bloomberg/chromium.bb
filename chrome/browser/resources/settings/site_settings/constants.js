@@ -60,7 +60,7 @@ settings.ContentSetting = {
  */
 settings.ChooserType = {
   NONE: '',
-  USB_DEVICES: 'usb-devices',
+  USB_DEVICES: 'usb-devices-data',
 };
 
 /**

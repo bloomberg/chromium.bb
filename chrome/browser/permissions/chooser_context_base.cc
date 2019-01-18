@@ -15,10 +15,10 @@ ChooserContextBase::ChooserContextBase(
     Profile* profile,
     const ContentSettingsType guard_content_settings_type,
     const ContentSettingsType data_content_settings_type)
-    : host_content_settings_map_(
-          HostContentSettingsMapFactory::GetForProfile(profile)),
-      guard_content_settings_type_(guard_content_settings_type),
-      data_content_settings_type_(data_content_settings_type) {
+    : guard_content_settings_type_(guard_content_settings_type),
+      data_content_settings_type_(data_content_settings_type),
+      host_content_settings_map_(
+          HostContentSettingsMapFactory::GetForProfile(profile)) {
   DCHECK(host_content_settings_map_);
 }
 
@@ -37,6 +37,22 @@ ChooserContextBase::Object::Object(GURL requesting_origin,
 }
 
 ChooserContextBase::Object::~Object() = default;
+
+void ChooserContextBase::PermissionObserver::OnChooserObjectPermissionChanged(
+    ContentSettingsType data_content_settings_type,
+    ContentSettingsType guard_content_settings_type) {}
+
+void ChooserContextBase::PermissionObserver::OnPermissionRevoked(
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) {}
+
+void ChooserContextBase::AddObserver(PermissionObserver* observer) {
+  permission_observer_list_.AddObserver(observer);
+}
+
+void ChooserContextBase::RemoveObserver(PermissionObserver* observer) {
+  permission_observer_list_.RemoveObserver(observer);
+}
 
 bool ChooserContextBase::CanRequestObjectPermission(
     const GURL& requesting_origin,
@@ -140,6 +156,7 @@ void ChooserContextBase::GrantObjectPermission(
   }
   object_list->AppendIfNotPresent(std::move(object));
   SetWebsiteSetting(requesting_origin, embedding_origin, std::move(setting));
+  NotifyPermissionChanged();
 }
 
 void ChooserContextBase::RevokeObjectPermission(
@@ -157,6 +174,23 @@ void ChooserContextBase::RevokeObjectPermission(
     return;
   object_list->Remove(object, nullptr);
   SetWebsiteSetting(requesting_origin, embedding_origin, std::move(setting));
+  NotifyPermissionRevoked(requesting_origin, embedding_origin);
+}
+
+void ChooserContextBase::NotifyPermissionChanged() {
+  for (auto& observer : permission_observer_list_) {
+    observer.OnChooserObjectPermissionChanged(guard_content_settings_type_,
+                                              data_content_settings_type_);
+  }
+}
+
+void ChooserContextBase::NotifyPermissionRevoked(const GURL& requesting_origin,
+                                                 const GURL& embedding_origin) {
+  for (auto& observer : permission_observer_list_) {
+    observer.OnChooserObjectPermissionChanged(guard_content_settings_type_,
+                                              data_content_settings_type_);
+    observer.OnPermissionRevoked(requesting_origin, embedding_origin);
+  }
 }
 
 std::unique_ptr<base::DictionaryValue> ChooserContextBase::GetWebsiteSetting(

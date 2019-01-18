@@ -105,6 +105,13 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
             exceptionList[i].origin, '');
       }
     }
+    for (const type in this.prefs_.chooserExceptions) {
+      let chooserExceptionList = this.prefs_.chooserExceptions[type];
+      for (let i = 0; i < chooserExceptionList.length; ++i) {
+        cr.webUIListenerCallback(
+            'contentSettingChooserPermissionChanged', type);
+      }
+    }
   }
 
   /**
@@ -273,7 +280,16 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
 
   /** @override */
   getChooserExceptionList(chooserType) {
-    let pref = this.prefs_.chooserExceptions[chooserType];
+    // The UI uses the |chooserType| to retrieve the prefs for a chooser
+    // permission, however the test stores the permissions with the setting
+    // category, so we need to get the content settings type that pertains to
+    // this chooser type.
+    let setting = test_util.getContentSettingsTypeFromChooserType(chooserType);
+    assert(
+        settings != null,
+        'ContentSettingsType mapping missing for ' + chooserType);
+
+    let pref = this.prefs_.chooserExceptions[setting];
     assert(pref != undefined, 'Pref is missing for ' + chooserType);
 
     if (this.hasIncognito_) {

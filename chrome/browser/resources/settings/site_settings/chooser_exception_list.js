@@ -60,18 +60,21 @@ Polymer({
   /** @override */
   attached: function() {
     this.addWebUIListener(
-        'contentSettingSitePermissionChanged',
+        'contentSettingChooserPermissionChanged',
         this.objectWithinChooserTypeChanged_.bind(this));
   },
 
   /**
-   * Called when a chooser exception changes permission.
-   * @param {string} category The category of the exception that changed.
-   * @param {string} site The site that changed.
+   * Called when a chooser exception changes permission and updates the element
+   * if |category| is equal to the settings category of this element.
+   * @param {settings.ContentSettingsTypes} category The content settings type
+   *     that represents this permission category.
+   * @param {settings.ChooserType} chooserType The content settings type that
+   *     represents the chooser data for this permission.
    * @private
    */
-  objectWithinChooserTypeChanged_: function(category, site) {
-    if (category === this.category) {
+  objectWithinChooserTypeChanged_: function(category, chooserType) {
+    if (category === this.category && chooserType === this.chooserType) {
       this.chooserTypeChanged_();
     }
   },

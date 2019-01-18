@@ -49,6 +49,9 @@ typedef std::map<GURL, SortedObjects> OneOriginObjects;
 typedef std::map<std::pair<GURL, std::string>, OneOriginObjects>
     AllOriginObjects;
 
+// Chooser data group names.
+const char kUsbChooserDataGroupType[] = "usb-devices-data";
+
 const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     // The following ContentSettingsTypes have UI in Content Settings
     // and require a mapping from their Javascript string representation in
@@ -75,11 +78,11 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {CONTENT_SETTINGS_TYPE_SENSORS, "sensors"},
     {CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER, "payment-handler"},
     {CONTENT_SETTINGS_TYPE_USB_GUARD, "usb-devices"},
+    {CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA, kUsbChooserDataGroupType},
 
     // Add new content settings here if a corresponding Javascript string
-    // representation for it is not required. Note some exceptions, such as
-    // USB_CHOOSER_DATA, do have UI in Content Settings but do not require a
-    // separate string.
+    // representation for it is not required. Note some exceptions do have UI in
+    // Content Settings but do not require a separate string.
     {CONTENT_SETTINGS_TYPE_DEFAULT, nullptr},
     {CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, nullptr},
     {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, nullptr},
@@ -87,7 +90,6 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {CONTENT_SETTINGS_TYPE_APP_BANNER, nullptr},
     {CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, nullptr},
     {CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, nullptr},
-    {CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA, nullptr},
     {CONTENT_SETTINGS_TYPE_BLUETOOTH_GUARD, nullptr},
     {CONTENT_SETTINGS_TYPE_AUTOPLAY, nullptr},
     {CONTENT_SETTINGS_TYPE_IMPORTANT_SITE_INFO, nullptr},
@@ -236,7 +238,7 @@ ChooserContextBase* GetUsbChooserContext(Profile* profile) {
 }
 
 const ChooserTypeNameEntry kChooserTypeGroupNames[] = {
-    {&GetUsbChooserContext, kGroupTypeUsb},
+    {&GetUsbChooserContext, kUsbChooserDataGroupType},
 };
 
 }  // namespace

@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
+#include "chrome/browser/permissions/chooser_context_base_mock_permission_observer.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -1458,8 +1459,18 @@ constexpr char kUsbPolicySetting[] = R"(
 class SiteSettingsHandlerChooserExceptionTest : public SiteSettingsHandlerTest {
  protected:
   void SetUp() override {
-    SiteSettingsHandlerTest::SetUp();
+    // Set up UsbChooserContext first, since the granting of device permissions
+    // causes the WebUI listener callbacks for
+    // contentSettingSitePermissionChanged and
+    // contentSettingChooserPermissionChanged to be fired. The base class SetUp
+    // method reset the WebUI call data.
     SetUpUsbChooserContext();
+    SiteSettingsHandlerTest::SetUp();
+  }
+
+  void TearDown() override {
+    auto* chooser_context = UsbChooserContextFactory::GetForProfile(profile());
+    chooser_context->ChooserContextBase::RemoveObserver(&observer_);
   }
 
   // Sets up the UsbChooserContext with two devices and permissions for these
@@ -1503,6 +1514,9 @@ class SiteSettingsHandlerChooserExceptionTest : public SiteSettingsHandlerTest {
     DCHECK(policy_value);
     profile()->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
                                *policy_value);
+
+    // Add the observer for permission changes.
+    chooser_context->ChooserContextBase::AddObserver(&observer_);
   }
 
   // Call SiteSettingsHandler::HandleGetChooserExceptionList for |chooser_type|
@@ -1582,46 +1596,63 @@ class SiteSettingsHandlerChooserExceptionTest : public SiteSettingsHandlerTest {
   device::mojom::UsbDeviceInfoPtr ephemeral_device_info_;
   device::mojom::UsbDeviceInfoPtr user_granted_device_info_;
 
+  MockPermissionObserver observer_;
+
  private:
   device::FakeUsbDeviceManager device_manager_;
 };
 
 TEST_F(SiteSettingsHandlerChooserExceptionTest,
        HandleGetChooserExceptionListForUsb) {
+  const std::string kUsbChooserGroupName =
+      site_settings::ContentSettingsTypeToGroupName(
+          CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA);
+
   const base::Value& exceptions = GetChooserExceptionListFromWebUiCallData(
-      site_settings::kGroupTypeUsb, /*expected_total_calls=*/1ul);
-  EXPECT_EQ(exceptions.GetList().size(), 5ul);
+      kUsbChooserGroupName, /*expected_total_calls=*/1u);
+  EXPECT_EQ(exceptions.GetList().size(), 5u);
 }
 
 TEST_F(SiteSettingsHandlerChooserExceptionTest,
        HandleResetChooserExceptionForSiteForUsb) {
+  const std::string kUsbChooserGroupName =
+      site_settings::ContentSettingsTypeToGroupName(
+          CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA);
   const std::string kAndroidOriginStr = kAndroidOrigin.GetOrigin().spec();
   const std::string kChromiumOriginStr = kChromiumOrigin.GetOrigin().spec();
 
   {
     const base::Value& exceptions = GetChooserExceptionListFromWebUiCallData(
-        site_settings::kGroupTypeUsb, /*expected_total_calls=*/1ul);
-    EXPECT_EQ(exceptions.GetList().size(), 5ul);
+        kUsbChooserGroupName, /*expected_total_calls=*/1u);
+    EXPECT_EQ(exceptions.GetList().size(), 5u);
   }
 
   // User granted USB permissions for devices also containing policy permissions
   // should be able to be reset without removing the chooser exception object
   // from the list.
   base::ListValue args;
-  args.AppendString(site_settings::kGroupTypeUsb);
+  args.AppendString(kUsbChooserGroupName);
   args.AppendString(kAndroidOriginStr);
   args.AppendString(kChromiumOriginStr);
   args.Append(
       UsbChooserContext::DeviceInfoToDictValue(*persistent_device_info_));
 
+  EXPECT_CALL(observer_, OnChooserObjectPermissionChanged(
+                             CONTENT_SETTINGS_TYPE_USB_GUARD,
+                             CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
+  EXPECT_CALL(observer_, OnPermissionRevoked(kAndroidOrigin, kChromiumOrigin));
   handler()->HandleResetChooserExceptionForSite(&args);
 
+  // The HandleResetChooserExceptionForSite() method should have also caused the
+  // WebUIListenerCallbacks for contentSettingSitePermissionChanged and
+  // contentSettingChooserPermissionChanged to fire.
+  EXPECT_EQ(web_ui()->call_data().size(), 3u);
   {
     // The exception list size should not have been reduced since there is still
     // a policy granted permission for the "Gizmo" device.
     const base::Value& exceptions = GetChooserExceptionListFromWebUiCallData(
-        site_settings::kGroupTypeUsb, /*expected_total_calls=*/2ul);
-    EXPECT_EQ(exceptions.GetList().size(), 5ul);
+        kUsbChooserGroupName, /*expected_total_calls=*/4u);
+    EXPECT_EQ(exceptions.GetList().size(), 5u);
 
     // Ensure that the sites list does not contain the URLs of the removed
     // permission.
@@ -1632,16 +1663,16 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
   // User granted USB permissions that are also granted by policy should not
   // be able to be reset.
   args.Clear();
-  args.AppendString(site_settings::kGroupTypeUsb);
+  args.AppendString(kUsbChooserGroupName);
   args.AppendString(kChromiumOriginStr);
   args.AppendString(kChromiumOriginStr);
   args.Append(
       UsbChooserContext::DeviceInfoToDictValue(*persistent_device_info_));
 
   {
-    const base::Value& exceptions = GetChooserExceptionListFromWebUiCallData(
-        site_settings::kGroupTypeUsb, 3ul);
-    EXPECT_EQ(exceptions.GetList().size(), 5ul);
+    const base::Value& exceptions =
+        GetChooserExceptionListFromWebUiCallData(kUsbChooserGroupName, 5u);
+    EXPECT_EQ(exceptions.GetList().size(), 5u);
 
     // User granted exceptions that are also granted by policy are only
     // displayed through the policy granted site exception, so ensure that a
@@ -1653,12 +1684,20 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
         exceptions, "Gizmo", kChromiumOriginStr, kChromiumOriginStr));
   }
 
+  EXPECT_CALL(observer_, OnChooserObjectPermissionChanged(
+                             CONTENT_SETTINGS_TYPE_USB_GUARD,
+                             CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
+  EXPECT_CALL(observer_, OnPermissionRevoked(kChromiumOrigin, kChromiumOrigin));
   handler()->HandleResetChooserExceptionForSite(&args);
 
+  // The HandleResetChooserExceptionForSite() method should have also caused the
+  // WebUIListenerCallbacks for contentSettingSitePermissionChanged and
+  // contentSettingChooserPermissionChanged to fire.
+  EXPECT_EQ(web_ui()->call_data().size(), 7u);
   {
     const base::Value& exceptions = GetChooserExceptionListFromWebUiCallData(
-        site_settings::kGroupTypeUsb, /*expected_total_calls=*/4ul);
-    EXPECT_EQ(exceptions.GetList().size(), 5ul);
+        kUsbChooserGroupName, /*expected_total_calls=*/8u);
+    EXPECT_EQ(exceptions.GetList().size(), 5u);
 
     // Ensure that the sites list still displays a site exception entry for a
     // requesting origin of kChromiumOriginStr and a wildcard embedding origin.
@@ -1672,26 +1711,34 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
   // to be reset and the chooser exception entry should be removed from the list
   // when the exception only has one site exception granted to it..
   args.Clear();
-  args.AppendString(site_settings::kGroupTypeUsb);
+  args.AppendString(kUsbChooserGroupName);
   args.AppendString(kAndroidOriginStr);
   args.AppendString(kAndroidOriginStr);
   args.Append(
       UsbChooserContext::DeviceInfoToDictValue(*user_granted_device_info_));
 
   {
-    const base::Value& exceptions = GetChooserExceptionListFromWebUiCallData(
-        site_settings::kGroupTypeUsb, 5ul);
-    EXPECT_EQ(exceptions.GetList().size(), 5ul);
+    const base::Value& exceptions =
+        GetChooserExceptionListFromWebUiCallData(kUsbChooserGroupName, 9u);
+    EXPECT_EQ(exceptions.GetList().size(), 5u);
     EXPECT_TRUE(ChooserExceptionContainsSiteException(
         exceptions, "Widget", kAndroidOriginStr, kAndroidOriginStr));
   }
 
+  EXPECT_CALL(observer_, OnChooserObjectPermissionChanged(
+                             CONTENT_SETTINGS_TYPE_USB_GUARD,
+                             CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
+  EXPECT_CALL(observer_, OnPermissionRevoked(kAndroidOrigin, kAndroidOrigin));
   handler()->HandleResetChooserExceptionForSite(&args);
 
+  // The HandleResetChooserExceptionForSite() method should have also caused the
+  // WebUIListenerCallbacks for contentSettingSitePermissionChanged and
+  // contentSettingChooserPermissionChanged to fire.
+  EXPECT_EQ(web_ui()->call_data().size(), 11u);
   {
     const base::Value& exceptions = GetChooserExceptionListFromWebUiCallData(
-        site_settings::kGroupTypeUsb, /*expected_total_calls=*/6ul);
-    EXPECT_EQ(exceptions.GetList().size(), 4ul);
+        kUsbChooserGroupName, /*expected_total_calls=*/12u);
+    EXPECT_EQ(exceptions.GetList().size(), 4u);
     EXPECT_FALSE(ChooserExceptionContainsSiteException(
         exceptions, "Widget", kAndroidOriginStr, kAndroidOriginStr));
   }

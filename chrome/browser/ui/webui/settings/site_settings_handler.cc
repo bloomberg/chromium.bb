@@ -36,6 +36,8 @@
 #include "chrome/browser/ui/page_info/page_info_infobar_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/site_settings_helper.h"
+#include "chrome/browser/usb/usb_chooser_context.h"
+#include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -300,7 +302,10 @@ void UpdateDataFromCookiesTree(
 }  // namespace
 
 SiteSettingsHandler::SiteSettingsHandler(Profile* profile)
-    : profile_(profile), observer_(this), pref_change_registrar_(nullptr) {}
+    : profile_(profile),
+      observer_(this),
+      chooser_observer_(this),
+      pref_change_registrar_(nullptr) {}
 
 SiteSettingsHandler::~SiteSettingsHandler() {
   if (cookies_tree_model_)
@@ -414,13 +419,7 @@ void SiteSettingsHandler::RegisterMessages() {
 }
 
 void SiteSettingsHandler::OnJavascriptAllowed() {
-  observer_.Add(HostContentSettingsMapFactory::GetForProfile(profile_));
-  if (profile_->HasOffTheRecordProfile()) {
-    auto* map = HostContentSettingsMapFactory::GetForProfile(
-        profile_->GetOffTheRecordProfile());
-    if (!observer_.IsObserving(map))
-      observer_.Add(map);
-  }
+  ObserveSources();
 
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_PROFILE_CREATED,
@@ -458,6 +457,7 @@ void SiteSettingsHandler::OnJavascriptAllowed() {
 
 void SiteSettingsHandler::OnJavascriptDisallowed() {
   observer_.RemoveAll();
+  chooser_observer_.RemoveAll();
   notification_registrar_.RemoveAll();
   host_zoom_map_subscription_.reset();
   pref_change_registrar_->Remove(prefs::kBlockAutoplayEnabled);
@@ -569,6 +569,21 @@ void SiteSettingsHandler::Observe(
   }
 }
 
+void SiteSettingsHandler::OnChooserObjectPermissionChanged(
+    ContentSettingsType guard_content_settings_type,
+    ContentSettingsType data_content_settings_type) {
+  if (!site_settings::HasRegisteredGroupName(guard_content_settings_type) ||
+      !site_settings::HasRegisteredGroupName(data_content_settings_type)) {
+    return;
+  }
+
+  FireWebUIListener("contentSettingChooserPermissionChanged",
+                    base::Value(site_settings::ContentSettingsTypeToGroupName(
+                        guard_content_settings_type)),
+                    base::Value(site_settings::ContentSettingsTypeToGroupName(
+                        data_content_settings_type)));
+}
+
 void SiteSettingsHandler::OnZoomLevelChanged(
     const content::HostZoomMap::ZoomLevelChange& change) {
   SendZoomLevels();
@@ -629,8 +644,10 @@ void SiteSettingsHandler::HandleFetchUsbDevices(const base::ListValue* args) {
   CHECK(args->Get(0, &callback_id));
 
   base::ListValue exceptions;
+  const std::string group_name = site_settings::ContentSettingsTypeToGroupName(
+      CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA);
   const site_settings::ChooserTypeNameEntry* chooser_type =
-      site_settings::ChooserTypeFromGroupName(site_settings::kGroupTypeUsb);
+      site_settings::ChooserTypeFromGroupName(group_name);
   // TODO(finnur): Figure out whether incognito permissions are also needed.
   site_settings::GetChooserExceptionsFromProfile(
       profile_, false, *chooser_type, &exceptions);
@@ -653,8 +670,10 @@ void SiteSettingsHandler::HandleRemoveUsbDevice(const base::ListValue* args) {
   const base::DictionaryValue* object = nullptr;
   CHECK(args->GetDictionary(2, &object));
 
+  const std::string group_name = site_settings::ContentSettingsTypeToGroupName(
+      CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA);
   const site_settings::ChooserTypeNameEntry* chooser_type =
-      site_settings::ChooserTypeFromGroupName(site_settings::kGroupTypeUsb);
+      site_settings::ChooserTypeFromGroupName(group_name);
   ChooserContextBase* chooser_context = chooser_type->get_context(profile_);
   chooser_context->RevokeObjectPermission(requesting_origin, embedding_origin,
                                           *object);
@@ -1379,9 +1398,10 @@ void SiteSettingsHandler::SendBlockAutoplayStatus() {
   status.SetKey("pref", std::move(pref));
 
   // Whether the block autoplay toggle should be enabled.
-  status.SetKey("enabled",
-                base::Value(UnifiedAutoplayConfig::IsBlockAutoplayUserModifiable(
-                    profile_)));
+  status.SetKey(
+      "enabled",
+      base::Value(
+          UnifiedAutoplayConfig::IsBlockAutoplayUserModifiable(profile_)));
 
   FireWebUIListener("onBlockAutoplayStatusChanged", status);
 }
@@ -1405,6 +1425,24 @@ void SiteSettingsHandler::EnsureCookiesTreeModelCreated() {
     return;
   cookies_tree_model_ = CookiesTreeModel::CreateForProfile(profile_);
   cookies_tree_model_->AddCookiesTreeObserver(this);
+}
+
+void SiteSettingsHandler::ObserveSources() {
+  observer_.Add(HostContentSettingsMapFactory::GetForProfile(profile_));
+  chooser_observer_.Add(UsbChooserContextFactory::GetForProfile(profile_));
+
+  if (!profile_->HasOffTheRecordProfile())
+    return;
+
+  auto* map = HostContentSettingsMapFactory::GetForProfile(
+      profile_->GetOffTheRecordProfile());
+  if (!observer_.IsObserving(map))
+    observer_.Add(map);
+
+  auto* usb_context = UsbChooserContextFactory::GetForProfile(
+      profile_->GetOffTheRecordProfile());
+  if (!chooser_observer_.IsObserving(usb_context))
+    chooser_observer_.Add(usb_context);
 }
 
 void SiteSettingsHandler::TreeNodesAdded(ui::TreeModel* model,
