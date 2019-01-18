@@ -12,12 +12,12 @@ import android.support.v7.widget.RecyclerView.AdapterDataObserver;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
-import android.widget.FrameLayout;
 
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
+import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.FakeboxDelegate;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
@@ -35,7 +35,7 @@ import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
  * The native new tab page, represented by some basic data such as title and url, and an Android
  * View that displays the page.
  */
-public class NewTabPageView extends FrameLayout {
+public class NewTabPageView extends HistoryNavigationLayout {
     private static final String TAG = "NewTabPageView";
 
     private NewTabPageRecyclerView mRecyclerView;
@@ -226,6 +226,11 @@ public class NewTabPageView extends FrameLayout {
      */
     NewTabPageLayout getNewTabPageLayout() {
         return mNewTabPageLayout;
+    }
+
+    @Override
+    public boolean wasLastSideSwipeGestureConsumed() {
+        return mRecyclerView.isCardBeingSwiped();
     }
 
     /**
