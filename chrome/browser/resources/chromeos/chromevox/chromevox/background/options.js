@@ -100,6 +100,14 @@ cvox.OptionsPage.init = function() {
     }
   }
 
+  chrome.commandLinePrivate.hasSwitch(
+      'enable-experimental-accessibility-chromevox-language-switching',
+      function(enabled) {
+        if (!enabled) {
+          $('languageSwitchingOption').hidden = true;
+        }
+      });
+
   var registerEventStreamFiltersListener = function() {
     $('toggleEventStreamFilters').addEventListener('click', function(evt) {
       if ($('eventStreamFilters').hidden) {
