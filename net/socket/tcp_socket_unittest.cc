@@ -22,6 +22,7 @@
 #include "net/base/sockaddr_storage.h"
 #include "net/base/test_completion_callback.h"
 #include "net/log/net_log_source.h"
+#include "net/socket/socket_descriptor.h"
 #include "net/socket/socket_performance_watcher.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/tcp_client_socket.h"
@@ -596,13 +597,7 @@ TEST_F(TCPSocketTest, CancelPendingReadIfReady) {
   ASSERT_EQ(0, memcmp(&kMsg, read_buffer->data(), msg_size));
 }
 
-// Flaky on iOS device, see crbug.com/921852
-#if defined(OS_IOS) && !(TARGET_OS_SIMULATOR)
-#define MAYBE_IsConnected FLAKY_IsConnected
-#else
-#define MAYBE_IsConnected IsConnected
-#endif  // defined(OS_IOS) && !(TARGET_OS_SIMULATOR)
-TEST_F(TCPSocketTest, MAYBE_IsConnected) {
+TEST_F(TCPSocketTest, IsConnected) {
   ASSERT_NO_FATAL_FAILURE(SetUpListenIPv4());
 
   TestCompletionCallback accept_callback;
@@ -642,8 +637,16 @@ TEST_F(TCPSocketTest, MAYBE_IsConnected) {
               1);
   accepted_socket.reset();
 
-  // |connecting_socket| should have data to read, so should still be reported
-  // as connected, but not idle.
+  // Wait until |connecting_socket| is signalled as having data to read.
+  fd_set read_fds;
+  FD_ZERO(&read_fds);
+  SocketDescriptor connecting_fd =
+      connecting_socket.SocketDescriptorForTesting();
+  FD_SET(connecting_fd, &read_fds);
+  ASSERT_EQ(select(FD_SETSIZE, &read_fds, nullptr, nullptr, nullptr), 1);
+  ASSERT_TRUE(FD_ISSET(connecting_fd, &read_fds));
+
+  // It should now be reported as connected, but not as idle.
   EXPECT_TRUE(connecting_socket.IsConnected());
   EXPECT_FALSE(connecting_socket.IsConnectedAndIdle());
 
