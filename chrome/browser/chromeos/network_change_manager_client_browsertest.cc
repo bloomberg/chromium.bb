@@ -128,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(NetworkChangeManagerClientBrowserTest,
   EXPECT_EQ(2, network_service_observer.change_count);
   EXPECT_EQ(network::mojom::ConnectionType::CONNECTION_WIFI,
             network_service_observer.last_connection_type);
-};
+}
 
 // Tests that the NetworkChangeManagerClient reconnects to the network service
 // after it gets disconnected.
@@ -167,6 +167,6 @@ IN_PROC_BROWSER_TEST_F(NetworkChangeManagerClientBrowserTest,
   EXPECT_EQ(2, network_service_observer.change_count);
   EXPECT_EQ(network::mojom::ConnectionType::CONNECTION_WIFI,
             network_service_observer.last_connection_type);
-};
+}
 
 }  // namespace chromeos
