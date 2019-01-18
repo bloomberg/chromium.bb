@@ -37,9 +37,8 @@ public class ContextualSearchContextForTest extends ContextualSearchContext {
     protected void nativeDestroy(long nativeContextualSearchContext) {}
 
     @Override
-    protected void nativeSetResolveProperties(long nativeContextualSearchContext,
-            String homeCountry, boolean maySendBasePageUrl, long previousEventId,
-            int previousEventResults) {}
+    protected void nativeSetResolveProperties(
+            long nativeContextualSearchContext, String homeCountry, boolean maySendBasePageUrl) {}
 
     @Override
     protected void nativeAdjustSelection(
