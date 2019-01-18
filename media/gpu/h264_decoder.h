@@ -54,8 +54,8 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
       // operation later, once the data has been provided.
       kTryAgain,
 
-      // Operation is not supported. Used by SetStream() and ParseSliceHeader()
-      // to indicate that the Accelerator can not handle this operation.
+      // Operation is not supported. Used by SetStream() to indicate that the
+      // Accelerator can not handle this operation.
       kNotSupported,
     };
 
@@ -141,14 +141,6 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
     // kNotSupported.
     virtual Status SetStream(base::span<const uint8_t> stream,
                              const DecryptConfig* decrypt_config);
-
-    // Parse a slice header, returning it in |*slice_header|. |slice_nalu| must
-    // be a slice NALU. On success, this populates |*slice_header|. If the
-    // Accelerator doesn't handle this slice header, then it should return
-    // kNotSupported. This method has a default implementation that returns
-    // kNotSupported.
-    virtual Status ParseSliceHeader(const H264NALU& slice_nalu,
-                                    H264SliceHeader* slice_header);
 
    private:
     DISALLOW_COPY_AND_ASSIGN(H264Accelerator);

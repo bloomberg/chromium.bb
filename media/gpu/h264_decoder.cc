@@ -26,12 +26,6 @@ H264Decoder::H264Accelerator::Status H264Decoder::H264Accelerator::SetStream(
   return H264Decoder::H264Accelerator::Status::kNotSupported;
 }
 
-H264Decoder::H264Accelerator::Status
-H264Decoder::H264Accelerator::ParseSliceHeader(const H264NALU& slice_nalu,
-                                               H264SliceHeader* slice_header) {
-  return H264Decoder::H264Accelerator::Status::kNotSupported;
-}
-
 H264Decoder::H264Decoder(std::unique_ptr<H264Accelerator> accelerator,
                          const VideoColorSpace& container_color_space)
     : state_(kNeedStreamMetadata),
@@ -1319,32 +1313,12 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
         // the call that failed previously. If it succeeds (it may not if no
         // additional key has been provided, for example), then the remaining
         // steps will be executed.
-
         if (!curr_slice_hdr_) {
           curr_slice_hdr_.reset(new H264SliceHeader());
-          // If the accelerator handles the slice header, let it handle it.
-          // If not, use the parser.
-          H264Accelerator::Status result = accelerator_->ParseSliceHeader(
-              *curr_nalu_, curr_slice_hdr_.get());
-          switch (result) {
-            case H264Accelerator::Status::kOk:
-              break;
-            case H264Accelerator::Status::kTryAgain:
-              DVLOG(1) << "ParseSliceHeader() needs to try again";
-              // reset |curr_slice_hdr_| so ParseSliceHeader() is tried again.
-              curr_slice_hdr_.reset();
-              return H264Decoder::kTryAgain;
-            case H264Accelerator::Status::kNotSupported:
-              // Let the parser try to handle it.
-              par_res =
-                  parser_.ParseSliceHeader(*curr_nalu_, curr_slice_hdr_.get());
-              if (par_res == H264Parser::kOk)
-                break;
-              FALLTHROUGH;
-            case H264Accelerator::Status::kFail:
-              SET_ERROR_AND_RETURN();
-          }
-
+          par_res =
+              parser_.ParseSliceHeader(*curr_nalu_, curr_slice_hdr_.get());
+          if (par_res != H264Parser::kOk)
+            SET_ERROR_AND_RETURN();
           state_ = kTryPreprocessCurrentSlice;
         }
 
