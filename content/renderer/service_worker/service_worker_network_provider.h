@@ -97,8 +97,6 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory);
 
-  // Valid only for WebServiceWorkerNetworkProvider created by
-  // CreateForNavigation.
   static ServiceWorkerNetworkProvider* FromWebServiceWorkerNetworkProvider(
       blink::WebServiceWorkerNetworkProvider*);
 

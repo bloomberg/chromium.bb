@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_SHARED_WORKER_WEB_SERVICE_WORKER_NETWORK_PROVIDER_IMPL_FOR_WORKER_H_
 #define CONTENT_RENDERER_SHARED_WORKER_WEB_SERVICE_WORKER_NETWORK_PROVIDER_IMPL_FOR_WORKER_H_
 
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
+#include "content/renderer/service_worker/web_service_worker_network_provider_base_impl.h"
 
 namespace content {
 
@@ -16,7 +16,7 @@ struct NavigationResponseOverrideParameters;
 // shared workers and owned by Blink. All functions are called on the main
 // thread only.
 class WebServiceWorkerNetworkProviderImplForWorker final
-    : public blink::WebServiceWorkerNetworkProvider {
+    : public WebServiceWorkerNetworkProviderBaseImpl {
  public:
   WebServiceWorkerNetworkProviderImplForWorker(
       std::unique_ptr<ServiceWorkerNetworkProvider> provider,
@@ -28,20 +28,12 @@ class WebServiceWorkerNetworkProviderImplForWorker final
   // we tag them with the provider id.
   void WillSendRequest(blink::WebURLRequest& request) override;
 
-  blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
-      override;
-
-  int64_t ControllerServiceWorkerID() override;
-
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const blink::WebURLRequest& request,
       std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
           task_runner_handle) override;
 
-  ServiceWorkerNetworkProvider* provider() { return provider_.get(); }
-
  private:
-  std::unique_ptr<ServiceWorkerNetworkProvider> provider_;
   const bool is_secure_context_;
   std::unique_ptr<NavigationResponseOverrideParameters> response_override_;
 };
