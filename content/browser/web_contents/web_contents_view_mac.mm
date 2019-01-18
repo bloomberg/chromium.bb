@@ -19,6 +19,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/web_contents/web_contents_ns_view_bridge.h"
 #import "content/browser/web_contents/web_contents_view_cocoa.h"
 #import "content/browser/web_contents/web_drag_dest_mac.h"
 #include "content/public/browser/interstitial_page.h"
@@ -89,12 +90,17 @@ WebContentsViewMac::~WebContentsViewMac() {
   // while the user was operating a UI control which resulted in a
   // close.  In that case, the Cocoa view outlives the
   // WebContentsViewMac instance due to Cocoa retain count.
-  [cocoa_view_ cancelDeferredClose];
-  [cocoa_view_ clearWebContentsView];
+  [cocoa_view() cancelDeferredClose];
+  [cocoa_view() clearWebContentsView];
+  ns_view_bridge_local_.reset();
+}
+
+WebContentsViewCocoa* WebContentsViewMac::cocoa_view() const {
+  return ns_view_bridge_local_ ? ns_view_bridge_local_->cocoa_view() : nil;
 }
 
 gfx::NativeView WebContentsViewMac::GetNativeView() const {
-  return cocoa_view_.get();
+  return cocoa_view();
 }
 
 gfx::NativeView WebContentsViewMac::GetContentNativeView() const {
@@ -105,16 +111,16 @@ gfx::NativeView WebContentsViewMac::GetContentNativeView() const {
 }
 
 gfx::NativeWindow WebContentsViewMac::GetTopLevelNativeWindow() const {
-  NSWindow* window = [cocoa_view_.get() window];
+  NSWindow* window = [cocoa_view() window];
   return window ? window : delegate_->GetNativeWindow();
 }
 
 void WebContentsViewMac::GetContainerBounds(gfx::Rect* out) const {
-  NSWindow* window = [cocoa_view_.get() window];
-  NSRect bounds = [cocoa_view_.get() bounds];
+  NSWindow* window = [cocoa_view() window];
+  NSRect bounds = [cocoa_view() bounds];
   if (window)  {
     // Convert bounds to window coordinate space.
-    bounds = [cocoa_view_.get() convertRect:bounds toView:nil];
+    bounds = [cocoa_view() convertRect:bounds toView:nil];
 
     // Convert bounds to screen coordinate space.
     bounds = [window convertRectToScreen:bounds];
@@ -145,11 +151,11 @@ void WebContentsViewMac::StartDragging(
   NSPoint offset = NSPointFromCGPoint(
       gfx::PointAtOffsetFromOrigin(image_offset).ToCGPoint());
   [drag_dest_ setDragStartTrackersForProcess:source_rwh->GetProcess()->GetID()];
-  [cocoa_view_ startDragWithDropData:drop_data
-                           sourceRWH:source_rwh
-                   dragOperationMask:mask
-                               image:gfx::NSImageFromImageSkia(image)
-                              offset:offset];
+  [cocoa_view() startDragWithDropData:drop_data
+                            sourceRWH:source_rwh
+                    dragOperationMask:mask
+                                image:gfx::NSImageFromImageSkia(image)
+                               offset:offset];
 }
 
 void WebContentsViewMac::SizeContents(const gfx::Size& size) {
@@ -244,9 +250,9 @@ void WebContentsViewMac::TakeFocus(bool reverse) {
   if (delegate() && delegate()->TakeFocus(reverse))
     return;
   if (reverse) {
-    [[cocoa_view_ window] selectPreviousKeyView:cocoa_view_.get()];
+    [[cocoa_view() window] selectPreviousKeyView:cocoa_view()];
   } else {
-    [[cocoa_view_ window] selectNextKeyView:cocoa_view_.get()];
+    [[cocoa_view() window] selectNextKeyView:cocoa_view()];
   }
 }
 
@@ -291,18 +297,17 @@ void WebContentsViewMac::OnMenuClosed() {
 }
 
 gfx::Rect WebContentsViewMac::GetViewBounds() const {
-  NSRect window_bounds =
-      [cocoa_view_ convertRect:[cocoa_view_ bounds] toView:nil];
+  NSRect window_bounds = [cocoa_view() convertRect:[cocoa_view() bounds]
+                                            toView:nil];
   window_bounds.origin = ui::ConvertPointFromWindowToScreen(
-      [cocoa_view_ window], window_bounds.origin);
+      [cocoa_view() window], window_bounds.origin);
   return gfx::ScreenRectFromNSRect(window_bounds);
 }
 
 void WebContentsViewMac::CreateView(
     const gfx::Size& initial_size, gfx::NativeView context) {
-  WebContentsViewCocoa* view =
-      [[WebContentsViewCocoa alloc] initWithWebContentsViewMac:this];
-  cocoa_view_.reset(view);
+  ns_view_bridge_local_ =
+      std::make_unique<WebContentsNSViewBridge>(ns_view_id_, this);
 
   drag_dest_.reset([[WebDragDest alloc] initWithWebContentsImpl:web_contents_]);
   if (delegate_)
@@ -351,20 +356,18 @@ RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForWidget(
   // to make sure the content area is on the bottom so other things draw over
   // it.
   NSView* view_view = view->GetNativeView().GetNativeNSView();
-  [view_view setFrame:[cocoa_view_.get() bounds]];
+  [view_view setFrame:[cocoa_view() bounds]];
   [view_view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
   // Add the new view below all other views; this also keeps it below any
   // overlay view installed.
-  [cocoa_view_.get() addSubview:view_view
-                     positioned:NSWindowBelow
-                     relativeTo:nil];
+  [cocoa_view() addSubview:view_view positioned:NSWindowBelow relativeTo:nil];
   // For some reason known only to Cocoa, the autorecalculation of the key view
   // loop set on the window doesn't set the next key view when the subview is
   // added. On 10.6 things magically work fine; on 10.5 they fail
   // <http://crbug.com/61493>. Digging into Cocoa key view loop code yielded
   // madness; TODO(avi,rohit): look at this again and figure out what's really
   // going on.
-  [cocoa_view_.get() setNextKeyView:view_view];
+  [cocoa_view() setNextKeyView:view_view];
   return view;
 }
 
@@ -410,10 +413,10 @@ bool WebContentsViewMac::IsEventTracking() const {
 // will fire when the event-tracking loop polls for events.  So we
 // need to bounce the message via Cocoa, instead.
 void WebContentsViewMac::CloseTabAfterEventTracking() {
-  [cocoa_view_ cancelDeferredClose];
-  [cocoa_view_ performSelector:@selector(closeTabAfterEvent)
-                    withObject:nil
-                    afterDelay:0.0];
+  [cocoa_view() cancelDeferredClose];
+  [cocoa_view() performSelector:@selector(closeTabAfterEvent)
+                     withObject:nil
+                     afterDelay:0.0];
 }
 
 void WebContentsViewMac::CloseTab() {
@@ -538,7 +541,7 @@ void WebContentsViewMac::PerformDragOperation(
 void WebContentsViewMac::OnViewsHostableAttached(
     ViewsHostableView::Host* host) {
   views_host_ = host;
-  [cocoa_view_
+  [cocoa_view()
       setAccessibilityParentElement:views_host_->GetAccessibilityElement()];
 
   // Create an NSView in the target process, if one exists.
@@ -578,7 +581,7 @@ void WebContentsViewMac::OnViewsHostableDetached() {
     rwhv_mac->SetParentUiLayer(nullptr);
   }
 
-  [cocoa_view_ setAccessibilityParentElement:nil];
+  [cocoa_view() setAccessibilityParentElement:nil];
 
   // Disconnect from the bridge. This will have the effect of destroying the
   // associated bridge instance with its NSView.

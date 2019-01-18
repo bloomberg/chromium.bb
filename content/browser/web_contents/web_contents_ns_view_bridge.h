@@ -13,22 +13,31 @@
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/public/common/web_contents_ns_view_bridge.mojom.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "ui/base/cocoa/ns_view_ids.h"
+
+@class WebContentsViewCocoa;
 
 namespace content {
 
-// A C++ wrapper around a WebContentsView's NSView in a non-browser process.
+class WebContentsViewMac;
+
+// A wrapper around a WebContentsViewCocoa, to be accessed via the mojo
+// interface WebContentsNSViewBridge.
 class CONTENT_EXPORT WebContentsNSViewBridge
     : public mojom::WebContentsNSViewBridge {
  public:
   // Create a bridge that will access its client in another process via a mojo
-  // interface. This object will be deleted when |bridge_request|'s connection
-  // closes.
-  WebContentsNSViewBridge(
-      uint64_t view_id,
-      mojom::WebContentsNSViewClientAssociatedPtr client,
-      mojom::WebContentsNSViewBridgeAssociatedRequest bridge_request);
+  // interface.
+  WebContentsNSViewBridge(uint64_t view_id,
+                          mojom::WebContentsNSViewClientAssociatedPtr client);
+  // Create a bridge that will access its client directly in-process.
+  // TODO(ccameron): Change this to expose only the mojom::WebContentsNSView
+  // when all communication is through mojo.
+  WebContentsNSViewBridge(uint64_t view_id,
+                          WebContentsViewMac* web_contents_view);
+  ~WebContentsNSViewBridge() override;
+
+  WebContentsViewCocoa* cocoa_view() const { return cocoa_view_.get(); }
 
   // mojom::WebContentsNSViewBridge:
   void SetParentViewsNSView(uint64_t parent_ns_view_id) override;
@@ -37,12 +46,8 @@ class CONTENT_EXPORT WebContentsNSViewBridge
   void MakeFirstResponder() override;
 
  private:
-  ~WebContentsNSViewBridge() override;
-  void OnConnectionError();
-
-  base::scoped_nsobject<NSView> cocoa_view_;
+  base::scoped_nsobject<WebContentsViewCocoa> cocoa_view_;
   mojom::WebContentsNSViewClientAssociatedPtr client_;
-  mojo::AssociatedBinding<mojom::WebContentsNSViewBridge> binding_;
 
   std::unique_ptr<ui::ScopedNSViewIdMapping> view_id_;
 

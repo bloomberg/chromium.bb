@@ -30,6 +30,7 @@
 
 namespace content {
 class RenderWidgetHostViewMac;
+class WebContentsNSViewBridge;
 class WebContentsImpl;
 class WebContentsViewDelegate;
 class WebContentsViewMac;
@@ -133,6 +134,8 @@ class WebContentsViewMac : public WebContentsView,
       RenderWidgetHostViewCreateFunction create_render_widget_host_view);
 
  private:
+  WebContentsViewCocoa* cocoa_view() const;
+
   // mojom::WebContentsNSViewClient:
   void OnMouseEvent(bool motion, bool exited) override;
   void OnBecameFirstResponder(mojom::SelectionDirection direction) override;
@@ -161,9 +164,6 @@ class WebContentsViewMac : public WebContentsView,
   // The WebContentsImpl whose contents we display.
   WebContentsImpl* web_contents_;
 
-  // The Cocoa NSView that lives in the view hierarchy.
-  base::scoped_nsobject<WebContentsViewCocoa> cocoa_view_;
-
   // Destination for drag-drop.
   base::scoped_nsobject<WebDragDest> drag_dest_;
 
@@ -184,6 +184,11 @@ class WebContentsViewMac : public WebContentsView,
 
   // The id that may be used to look up this NSView.
   const uint64_t ns_view_id_;
+
+  // The WebContentsViewCocoa that lives in the NSView hierarchy in this
+  // process. This is always non-null, even when the view is being displayed
+  // in another process.
+  std::unique_ptr<WebContentsNSViewBridge> ns_view_bridge_local_;
 
   // Mojo bindings for an out of process instance of this NSView.
   mojom::WebContentsNSViewBridgeAssociatedPtr ns_view_bridge_remote_;
