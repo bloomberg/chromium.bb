@@ -63,7 +63,7 @@
         --hover-bg-action: var(--flat-bg-action)
             linear-gradient(rgba(0, 0, 0, .08), rgba(0, 0, 0, .08));
         --hover-bg-color: rgba(var(--google-blue-refresh-300-rgb), .08);
-        /* No change in secondary background or border color on hover
+        /* No change in secondary box-shadow or border color on hover
          * (--hover-border-color, --hover-shadow-action-rgb) in dark mode. */
 
         --paper-button-ink-color: var(--google-blue-refresh-300);
@@ -102,6 +102,9 @@
 
       paper-button:not(.action-button):hover {
         background-color: var(--hover-bg-color);
+      }
+
+      :host-context(html:not([dark])) paper-button:not(.action-button):hover {
         border-color: var(--hover-border-color);
       }
 
@@ -114,6 +117,9 @@
 
       paper-button:not([raised]).action-button:hover {
         background: var(--hover-bg-action);
+      }
+
+      :host-context(html:not([dark])) paper-button.action-button:hover {
         box-shadow:
             0 1px 2px 0 rgba(var(--hover-shadow-action-rgb), .3),
             0 1px 3px 1px rgba(var(--hover-shadow-action-rgb), .15);
