@@ -39,6 +39,10 @@ class UsageStatsDatabase {
   // Initializes the database with user |profile|.
   explicit UsageStatsDatabase(Profile* profile);
 
+  // Initializes the database with a |ProtoDatabase|. Useful for testing.
+  explicit UsageStatsDatabase(
+      std::unique_ptr<leveldb_proto::ProtoDatabase<UsageStat>> proto_db);
+
   ~UsageStatsDatabase();
 
   void GetAllEvents(EventsCallback callback);
@@ -73,6 +77,13 @@ class UsageStatsDatabase {
                         StatusCallback callback);
 
  private:
+  void OnLoadEntriesForGetAllSuspensions(
+      SuspensionCallback callback,
+      bool success,
+      std::unique_ptr<std::vector<UsageStat>> suspensions);
+
+  void OnUpdateEntriesForSetSuspensions(StatusCallback callback, bool success);
+
   std::unique_ptr<leveldb_proto::ProtoDatabase<UsageStat>> proto_db_;
 
   base::WeakPtrFactory<UsageStatsDatabase> weak_ptr_factory_;
