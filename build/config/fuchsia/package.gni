@@ -84,16 +84,36 @@ template("fuchsia_package") {
     depfile = _depfile
 
     args = [
+      "--root-dir",
       rebase_path("//"),
+      "--out-dir",
       rebase_path(root_out_dir),
+      "--app-name",
       pkg.package_name,
+      "--app-filename",
       get_label_info(pkg.binary, "name"),
+      "--sandbox-policy-path",
       rebase_path(pkg.sandbox_policy),
+      "--runtime-deps-file",
       rebase_path(_runtime_deps_file),
+      "--depfile-path",
       rebase_path(_depfile),
-      rebase_path(dist_libroot) + "," + rebase_path("${sysroot}/dist"),
+      "--dynlib-path",
+      rebase_path(dist_libroot),
+      "--dynlib-path",
+      rebase_path("${sysroot}/dist"),
+      "--output-path",
       rebase_path(_archive_manifest),
     ]
+
+    if (defined(pkg.excluded_files)) {
+      foreach(filename, pkg.excluded_files) {
+        args += [
+          "--exclude-file",
+          filename,
+        ]
+      }
+    }
 
     write_runtime_deps = _runtime_deps_file
   }

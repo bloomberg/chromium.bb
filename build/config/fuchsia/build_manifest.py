@@ -2,20 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Creates a archive manifest used for Fuchsia package generation.
+"""Creates a archive manifest used for Fuchsia package generation."""
 
-Arguments:
-  root_dir: The absolute path to the Chromium source tree root.
-
-  out_dir: The absolute path to the Chromium build directory.
-
-  app_name: The filename of the package's executable target.
-
-  runtime_deps: The path to the GN runtime deps file.
-
-  output_path: The path of the manifest file which will be written.
-"""
-
+import argparse
 import json
 import os
 import re
@@ -148,10 +137,9 @@ def _IsBinary(path):
   return file_tag == '\x7fELF'
 
 
-def BuildManifest(root_dir, out_dir, app_name, app_filename,
-                  sandbox_policy_path, runtime_deps_file, depfile_path,
-                  dynlib_paths, output_path):
-  with open(output_path, 'w') as manifest, open(depfile_path, 'w') as depfile:
+def BuildManifest(args):
+  with open(args.output_path, 'w') as manifest, \
+       open(args.depfile_path, 'w') as depfile:
     # Process the runtime deps file for file paths, recursively walking
     # directories as needed. File paths are stored in absolute form,
     # so that MakePackagePath() may relativize to either the source root or
@@ -159,7 +147,7 @@ def BuildManifest(root_dir, out_dir, app_name, app_filename,
     # runtime_deps may contain duplicate paths, so use a set for
     # de-duplication.
     expanded_files = set()
-    for next_path in open(runtime_deps_file, 'r'):
+    for next_path in open(args.runtime_deps_file, 'r'):
       next_path = next_path.strip()
       if os.path.isdir(next_path):
         for root, _, files in os.walk(next_path):
@@ -173,7 +161,7 @@ def BuildManifest(root_dir, out_dir, app_name, app_filename,
 
     # Get set of dist libraries available for dynamic linking.
     dist_libs = set()
-    for next_dir in dynlib_paths.split(','):
+    for next_dir in args.dynlib_path:
       dist_libs = dist_libs.union(EnumerateDirectoryFiles(next_dir))
 
     # Compute the set of dynamic libraries used by the application or its
@@ -184,55 +172,90 @@ def BuildManifest(root_dir, out_dir, app_name, app_filename,
     # (binaries and libraries) are included as well.
     expanded_files = expanded_files.union(
        ComputeTransitiveLibDeps(
-           app_filename,
+           args.app_filename,
            {os.path.basename(f): f for f in expanded_files.union(dist_libs)}))
 
     # Format and write out the manifest contents.
-    gen_dir = os.path.join(out_dir, "gen")
+    gen_dir = os.path.join(args.out_dir, "gen")
     app_found = False
+    excluded_files_set = set(args.exclude_file)
     for current_file in expanded_files:
       if _IsBinary(current_file):
         current_file = _GetStrippedPath(current_file)
 
-      in_package_path = MakePackagePath(os.path.join(out_dir, current_file),
-                                        [gen_dir, root_dir, out_dir])
-      if in_package_path == app_filename:
+      absolute_file_path = os.path.join(args.out_dir, current_file)
+      in_package_path = MakePackagePath(absolute_file_path,
+                                        [gen_dir, args.root_dir, args.out_dir])
+      if in_package_path == args.app_filename:
         app_found = True
+
+      if in_package_path in excluded_files_set:
+        excluded_files_set.remove(in_package_path)
+        continue
 
       # The source path is relativized so that it can be used on multiple
       # environments with differing parent directory structures,
       # e.g. builder bots and swarming clients.
       manifest.write('%s=%s\n' % (in_package_path,
-                                  os.path.relpath(current_file, out_dir)))
+                                  os.path.relpath(current_file, args.out_dir)))
+
+    if len(excluded_files_set) > 0:
+      raise Exception('Some files were excluded with --exclude-file, but '
+                      'not found in the deps list: %s' %
+                          ', '.join(excluded_files_set));
 
     if not app_found:
       raise Exception('Could not locate executable inside runtime_deps.')
 
     # Write meta/package manifest file.
-    with open(os.path.join(os.path.dirname(output_path), 'package'), 'w') \
+    with open(os.path.join(os.path.dirname(args.output_path), 'package'), 'w') \
         as package_json:
-      json.dump({'version': '0', 'name': app_name}, package_json)
+      json.dump({'version': '0', 'name': args.app_name}, package_json)
       manifest.write('meta/package=%s\n' %
-                   os.path.relpath(package_json.name, out_dir))
+                   os.path.relpath(package_json.name, args.out_dir))
 
     # Write component manifest file.
-    with open(os.path.join(os.path.dirname(output_path),
-                           app_name + '.cmx'), 'w') as component_manifest_file:
+    cmx_file_path = os.path.join(os.path.dirname(args.output_path),
+                                 args.app_name + '.cmx')
+    with open(cmx_file_path, 'w') as component_manifest_file:
       component_manifest = {
-          'program': { 'binary': app_filename },
-          'sandbox': json.load(open(sandbox_policy_path, 'r')),
+          'program': { 'binary': args.app_filename },
+          'sandbox': json.load(open(args.sandbox_policy_path, 'r')),
       }
       json.dump(component_manifest, component_manifest_file)
+
       manifest.write('meta/%s=%s\n' %
                      (os.path.basename(component_manifest_file.name),
-                      os.path.relpath(component_manifest_file.name, out_dir)))
+                      os.path.relpath(cmx_file_path, args.out_dir)))
 
     depfile.write(
-        "%s: %s" % (os.path.relpath(output_path, out_dir),
-                    " ".join([os.path.relpath(f, out_dir)
+        "%s: %s" % (os.path.relpath(args.output_path, args.out_dir),
+                    " ".join([os.path.relpath(f, args.out_dir)
                               for f in expanded_files])))
   return 0
 
+def main():
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--root-dir', required=True, help='Build root directory')
+  parser.add_argument('--out-dir', required=True, help='Build output directory')
+  parser.add_argument('--app-name', required=True, help='Package name')
+  parser.add_argument('--app-filename', required=True,
+      help='Path to the main application binary relative to the output dir.')
+  parser.add_argument('--sandbox-policy-path', required=True,
+      help='Path to the sandbox policy file relative to the output dir.')
+  parser.add_argument('--runtime-deps-file', required=True,
+      help='File with the list of runtime dependencies.')
+  parser.add_argument('--depfile-path', required=True,
+      help='Path to write GN deps file.')
+  parser.add_argument('--exclude-file', action='append', default=[],
+      help='Package-relative file path to exclude from the package.')
+  parser.add_argument('--dynlib-path', action='append', default=[],
+      help='Paths for the dynamic libraries relative to the output dir.')
+  parser.add_argument('--output-path', required=True, help='Output file path.')
+
+  args = parser.parse_args()
+
+  return BuildManifest(args)
 
 if __name__ == '__main__':
-  sys.exit(BuildManifest(*sys.argv[1:]))
+  sys.exit(main())
