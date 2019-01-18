@@ -99,6 +99,9 @@ public class OriginVerifier {
     @VisibleForTesting
     public static void clearCachedVerificationsForTesting() {
         VerificationResultStore.clearStoredRelationships();
+        if (sVerificationOverrides.get() != null) {
+            sVerificationOverrides.get().clear();
+        }
     }
 
     /**
