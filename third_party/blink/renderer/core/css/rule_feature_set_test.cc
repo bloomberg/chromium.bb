@@ -110,23 +110,31 @@ class RuleFeatureSetTest : public testing::Test {
     rule_feature_set_.CollectNthInvalidationSet(invalidation_lists);
   }
 
-  const HashSet<AtomicString>& ClassSet(
-      const InvalidationSet& invalidation_set) {
-    return invalidation_set.ClassSetForTesting();
+  using BackingType = InvalidationSet::BackingType;
+
+  template <BackingType type>
+  HashSet<AtomicString> ToHashSet(
+      typename InvalidationSet::Backing<type>::Range range) {
+    HashSet<AtomicString> hash_set;
+    for (auto str : range)
+      hash_set.insert(str);
+    return hash_set;
   }
 
-  const HashSet<AtomicString>& IdSet(const InvalidationSet& invalidation_set) {
-    return invalidation_set.IdSetForTesting();
+  HashSet<AtomicString> ClassSet(const InvalidationSet& invalidation_set) {
+    return ToHashSet<BackingType::kClasses>(invalidation_set.Classes());
   }
 
-  const HashSet<AtomicString>& TagNameSet(
-      const InvalidationSet& invalidation_set) {
-    return invalidation_set.TagNameSetForTesting();
+  HashSet<AtomicString> IdSet(const InvalidationSet& invalidation_set) {
+    return ToHashSet<BackingType::kIds>(invalidation_set.Ids());
   }
 
-  const HashSet<AtomicString>& AttributeSet(
-      const InvalidationSet& invalidation_set) {
-    return invalidation_set.AttributeSetForTesting();
+  HashSet<AtomicString> TagNameSet(const InvalidationSet& invalidation_set) {
+    return ToHashSet<BackingType::kTagNames>(invalidation_set.TagNames());
+  }
+
+  HashSet<AtomicString> AttributeSet(const InvalidationSet& invalidation_set) {
+    return ToHashSet<BackingType::kAttributes>(invalidation_set.Attributes());
   }
 
   void ExpectNoInvalidation(InvalidationSetVector& invalidation_sets) {
