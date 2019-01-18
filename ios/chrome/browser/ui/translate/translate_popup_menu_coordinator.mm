@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_table_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_ui_constants.h"
 #import "ios/chrome/browser/ui/translate/cells/select_language_popup_menu_item.h"
+#import "ios/chrome/browser/ui/translate/translate_notification_presenter.h"
 #import "ios/chrome/browser/ui/translate/translate_popup_menu_mediator.h"
 #import "ios/chrome/browser/ui/util/layout_guide_names.h"
 
@@ -35,9 +36,12 @@
 // The WebStateList this coordinator observes.
 @property(nonatomic, assign) WebStateList* webStateList;
 // Presenter for the popup menu, managing the animations.
-@property(nonatomic, strong) PopupMenuPresenter* presenter;
+@property(nonatomic, strong) PopupMenuPresenter* popupMenuPresenter;
 // Mediator for the popup menu.
 @property(nonatomic, strong) TranslatePopupMenuMediator* mediator;
+// Presenter for the translate notifications.
+@property(nonatomic, strong)
+    TranslateNotificationPresenter* notificationPresenter;
 // ViewController for this coordinator.
 @property(nonatomic, strong) PopupMenuTableViewController* viewController;
 // Language selection delegate.
@@ -72,8 +76,11 @@
   if (self.started)
     return;
 
-  self.mediator =
-      [[TranslatePopupMenuMediator alloc] initWithSelectionHandler:self];
+  self.notificationPresenter = [[TranslateNotificationPresenter alloc] init];
+
+  self.mediator = [[TranslatePopupMenuMediator alloc]
+      initWithSelectionHandler:self
+           notificationHandler:self.notificationPresenter];
   self.mediator.webStateList = self.webStateList;
 
   self.started = YES;
@@ -86,8 +93,9 @@
   [self dismissPopupMenu];
   [self.mediator disconnect];
   self.mediator = nil;
+  self.notificationPresenter = nil;
   self.webStateList = nullptr;
-  self.presenter = nil;
+  self.popupMenuPresenter = nil;
   self.viewController = nil;
   self.languageSelectionDelegate = nil;
   self.translateOptionSelectionDelegate = nil;
@@ -100,7 +108,7 @@
 - (void)showLanguageSelectorWithContext:(LanguageSelectionContext*)context
                                delegate:
                                    (id<LanguageSelectionDelegate>)delegate {
-  if (self.presenter)
+  if (self.popupMenuPresenter)
     return;
 
   self.translateOptionSelectionDelegate = nil;
@@ -114,7 +122,7 @@
 }
 
 - (void)dismissLanguageSelector {
-  if (!self.presenter)
+  if (!self.popupMenuPresenter)
     return;
 
   [self dismissPopupMenu];
@@ -128,7 +136,7 @@
                                           delegate:
                                               (id<TranslateOptionSelectionDelegate>)
                                                   delegate {
-  if (self.presenter)
+  if (self.popupMenuPresenter)
     return;
 
   self.translateOptionSelectionDelegate = delegate;
@@ -142,7 +150,7 @@
 }
 
 - (void)dismissTranslateOptionSelector {
-  if (!self.presenter)
+  if (!self.popupMenuPresenter)
     return;
 
   [self dismissPopupMenu];
@@ -226,18 +234,18 @@
 
   self.mediator.consumer = self.viewController;
 
-  self.presenter = [[PopupMenuPresenter alloc] init];
-  self.presenter.baseViewController = self.baseViewController;
-  self.presenter.presentedViewController = self.viewController;
-  self.presenter.guideName = kTranslateInfobarOptionsGuide;
-  self.presenter.delegate = self;
-  [self.presenter prepareForPresentation];
-  [self.presenter presentAnimated:YES];
+  self.popupMenuPresenter = [[PopupMenuPresenter alloc] init];
+  self.popupMenuPresenter.baseViewController = self.baseViewController;
+  self.popupMenuPresenter.presentedViewController = self.viewController;
+  self.popupMenuPresenter.guideName = kTranslateInfobarOptionsGuide;
+  self.popupMenuPresenter.delegate = self;
+  [self.popupMenuPresenter prepareForPresentation];
+  [self.popupMenuPresenter presentAnimated:YES];
 }
 
 - (void)dismissPopupMenu {
-  [self.presenter dismissAnimated:NO];
-  self.presenter = nil;
+  [self.popupMenuPresenter dismissAnimated:NO];
+  self.popupMenuPresenter = nil;
 }
 
 @end

@@ -41,8 +41,17 @@ source_set("translate_ui") {
     "language_selection_provider.h",
     "language_selection_view_controller.h",
     "language_selection_view_controller.mm",
+    "translate_notification_delegate.h",
+    "translate_notification_handler.h",
+    "translate_notification_presenter.h",
+    "translate_notification_presenter.mm",
   ]
   deps = [
     "//base",
+    "//components/strings:components_strings",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/ui/util",
+    "//ios/third_party/material_components_ios",
+    "//ui/base",
   ]
 }

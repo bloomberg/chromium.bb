@@ -14,6 +14,7 @@ class TranslateInfoBarDelegate;
 @class LanguageSelectionContext;
 @protocol LanguageSelectionHandler;
 @protocol PopupMenuConsumer;
+@protocol TranslateNotificationHandler;
 @protocol TranslateOptionSelectionHandler;
 class WebStateList;
 
@@ -27,10 +28,15 @@ typedef NS_ENUM(NSInteger, TranslatePopupMenuType) {
 // language selection and translate option popup menus.
 @interface TranslatePopupMenuMediator : NSObject
 
-// |handler| presents and dismisses the language selection UI as well as the
-// translate option selection UI.
-- (instancetype)initWithSelectionHandler:
-    (id<LanguageSelectionHandler, TranslateOptionSelectionHandler>)handler
+// |selectionHandler| presents and dismisses the language selection UI as well
+// as the translate option selection UI. |notificationHandler| presents and
+// dismisses translate related notification UI.
+- (instancetype)
+    initWithSelectionHandler:
+        (id<LanguageSelectionHandler, TranslateOptionSelectionHandler>)
+            selectionHandler
+         notificationHandler:
+             (id<TranslateNotificationHandler>)notificationHandler
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
