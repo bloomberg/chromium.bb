@@ -16,6 +16,9 @@
 // Title of the item.
 @property(nonatomic, copy) NSString* title;
 
+// Whether the item is selected.
+@property(nonatomic, getter=isSelected) BOOL selected;
+
 @end
 
 // Associated cell for a TranslatePopupMenuItem.
