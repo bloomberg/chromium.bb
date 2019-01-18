@@ -287,7 +287,6 @@ void LoopbackStream::FlowNetwork::Start() {
   DCHECK(!is_started());
 
   timer_.emplace(clock_);
-  timer_->SetTaskRunner(flow_task_runner_);
   // Note: GenerateMoreAudio() will schedule the timer.
 
   HelpDiagnoseCauseOfLoopbackCrash("starting");
