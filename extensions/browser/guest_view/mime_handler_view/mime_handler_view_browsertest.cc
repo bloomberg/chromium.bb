@@ -37,6 +37,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "services/network/public/cpp/features.h"
+#include "ui/base/ui_base_features.h"
 #include "url/url_constants.h"
 
 using extensions::ExtensionsAPIClient;
@@ -331,6 +332,10 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Basic) {
 }
 
 IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Iframe) {
+  // TODO(https://crbug.com/923051): Flaky in single process mash.
+  if (features::IsSingleProcessMash())
+    return;
+
   RunTest("test_iframe.html");
 }
 
