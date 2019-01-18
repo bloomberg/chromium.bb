@@ -287,8 +287,10 @@ class PreflightController::PreflightLoader final {
     timing_info_.finish_time = base::TimeTicks::Now();
     timing_info_.alpn_negotiated_protocol = head.alpn_negotiated_protocol;
     timing_info_.connection_info = head.connection_info;
-    head.headers->GetNormalizedHeader("Timing-Allow-Origin",
-                                      &timing_info_.timing_allow_origin);
+    if (head.headers) {
+      head.headers->GetNormalizedHeader("Timing-Allow-Origin",
+                                        &timing_info_.timing_allow_origin);
+    }
     timing_info_.transfer_size = head.encoded_data_length;
 
     base::Optional<CorsErrorStatus> detected_error_status;
