@@ -89,7 +89,7 @@
         <item name="android:textStyle">bold</item>
     </style>
     <!-- This style is overridden downstream to set accent_font_medium as the font family. -->
-    <style name="TextAppearance.ButtonMediumStyle" parent="TextAppearance.RobotoMediumStyle" />
+    <style name="TextAppearance.AccentMediumStyle" parent="TextAppearance.RobotoMediumStyle" />
 
     <!-- Black Text Styles -->
     <!-- TODO(huayinz): remove tools:ignore once these text styles are all used in ui/android -->
@@ -142,7 +142,7 @@
         <item name="android:textColor">@color/default_text_color_secondary_list</item>
         <item name="android:textSize">@dimen/text_size_small</item>
     </style>
-    <style name="TextAppearance.BlackButtonText" parent="TextAppearance.ButtonMediumStyle" tools:ignore="UnusedResources">
+    <style name="TextAppearance.BlackButtonText" parent="TextAppearance.AccentMediumStyle" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/default_text_color_secondary_list</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
@@ -174,7 +174,7 @@
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
-    <style name="TextAppearance.WhiteButtonText" parent="TextAppearance.ButtonMediumStyle">
+    <style name="TextAppearance.WhiteButtonText" parent="TextAppearance.AccentMediumStyle">
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
@@ -189,11 +189,11 @@
         <item name="android:textColor">@color/blue_when_enabled</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
-    <style name="TextAppearance.BlueButtonText1" parent="TextAppearance.ButtonMediumStyle" tools:ignore="UnusedResources">
+    <style name="TextAppearance.BlueButtonText1" parent="TextAppearance.AccentMediumStyle" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/modern_blue_300</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
-    <style name="TextAppearance.BlueButtonText2" parent="TextAppearance.ButtonMediumStyle">
+    <style name="TextAppearance.BlueButtonText2" parent="TextAppearance.AccentMediumStyle">
         <item name="android:textColor">@color/blue_when_enabled</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
