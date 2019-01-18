@@ -2582,17 +2582,13 @@ if (enable_java_templates) {
           proguard_configs = [ _jar_path ]
           proguard_mapping_path = _proguard_mapping_path
         } else {
+          input_jars = [ _lib_dex_path ]
+          input_dex_classpath =
+              "${_rebased_build_config}:final_dex:dependency_dex_files"
           if (_enable_multidex) {
-            # .jar already included in java_runtime_classpath.
-            input_jars = []
-            _dex_arg_key =
+            input_jar_classpath =
                 "${_rebased_build_config}:deps_info:java_runtime_classpath"
-          } else {
-            input_jars = [ _lib_dex_path ]
-            _dex_arg_key =
-                "${_rebased_build_config}:final_dex:dependency_dex_files"
           }
-          input_jars_file_arg = "@FileArg($_dex_arg_key)"
         }
 
         output = _final_dex_path
