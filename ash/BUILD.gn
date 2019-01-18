@@ -1873,6 +1873,7 @@ test("ash_unittests") {
     "wm/window_dimmer_unittest.cc",
     "wm/window_finder_unittest.cc",
     "wm/window_manager_unittest.cc",
+    "wm/window_mirror_view_unittest.cc",
     "wm/window_modality_controller_unittest.cc",
     "wm/window_positioner_unittest.cc",
     "wm/window_preview_view_unittest.cc",
