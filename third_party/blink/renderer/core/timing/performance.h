@@ -73,8 +73,8 @@ class SubTaskAttribution;
 class UserTiming;
 class V8ObjectBuilder;
 
-using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
-using PerformanceEntryDeque = HeapDeque<Member<PerformanceEntry>>;
+using PerformanceEntryVector = HeapVector<TraceWrapperMember<PerformanceEntry>>;
+using PerformanceEntryDeque = HeapDeque<TraceWrapperMember<PerformanceEntry>>;
 
 class CORE_EXPORT Performance : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
@@ -314,7 +314,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   PerformanceEntryVector element_timing_buffer_;
   unsigned element_timing_buffer_max_size_;
   Member<PerformanceEntry> navigation_timing_;
-  Member<UserTiming> user_timing_;
+  TraceWrapperMember<UserTiming> user_timing_;
   Member<PerformanceEntry> first_paint_timing_;
   Member<PerformanceEntry> first_contentful_paint_timing_;
   Member<PerformanceEventTiming> first_input_timing_;

@@ -22,7 +22,7 @@ class PerformanceObserver;
 class PerformanceObserverInit;
 class V8PerformanceObserverCallback;
 
-using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
+using PerformanceEntryVector = HeapVector<TraceWrapperMember<PerformanceEntry>>;
 
 class CORE_EXPORT PerformanceObserver final
     : public ScriptWrappable,

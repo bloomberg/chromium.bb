@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_ALLOCATOR_H_
 
 #include "build/build_config.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_buildflags.h"
 #include "third_party/blink/renderer/platform/heap/marking_visitor.h"
@@ -132,6 +133,17 @@ class PLATFORM_EXPORT HeapAllocator {
   }
 
   static void BackingWriteBarrier(void* address) {
+    MarkingVisitor::WriteBarrier(address);
+  }
+
+  template <typename T>
+  static void BackingWriteBarrier(TraceWrapperMember<T>* address, size_t size) {
+    MarkingVisitor::WriteBarrier(address);
+    ScriptWrappableMarkingVisitor::WriteBarrier(address, size);
+  }
+
+  template <typename T>
+  static void BackingWriteBarrier(T* address, size_t size) {
     MarkingVisitor::WriteBarrier(address);
   }
 
@@ -719,7 +731,8 @@ struct VectorTraits<blink::TraceWrapperMember<T>>
   static const bool kCanInitializeWithMemset = true;
   static const bool kCanClearUnusedSlotsWithMemset = true;
   static const bool kCanMoveWithMemcpy = true;
-  static const bool kCanSwapUsingCopyOrMove = false;
+  static const bool kCanCopyWithMemcpy = true;
+  static const bool kCanSwapUsingCopyOrMove = true;
 };
 
 template <typename T>
