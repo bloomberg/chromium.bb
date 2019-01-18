@@ -259,10 +259,9 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
         data.media_type = WebContextMenuData::kMediaTypeVideo;
       if (media_element->SupportsPictureInPicture()) {
         data.media_flags |= WebContextMenuData::kMediaCanPictureInPicture;
-        if (PictureInPictureController::From(media_element->GetDocument())
-                .IsPictureInPictureElement(media_element)) {
+        if (PictureInPictureController::IsElementInPictureInPicture(
+                media_element))
           data.media_flags |= WebContextMenuData::kMediaPictureInPicture;
-        }
       }
     } else if (IsHTMLAudioElement(*media_element))
       data.media_type = WebContextMenuData::kMediaTypeAudio;

@@ -75,8 +75,7 @@ void VideoWakeLock::Update() {
 bool VideoWakeLock::ShouldBeActive() const {
   bool page_visible = GetPage() && GetPage()->IsPageVisible();
   bool in_picture_in_picture =
-      PictureInPictureController::From(VideoElement().GetDocument())
-          .IsPictureInPictureElement(&VideoElement());
+      PictureInPictureController::IsElementInPictureInPicture(&VideoElement());
   return playing_ && (page_visible || in_picture_in_picture) &&
          remote_playback_state_ != WebRemotePlaybackState::kConnected;
 }
