@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/trace_constants.h"
 #include "net/dns/host_resolver.h"
@@ -190,6 +191,40 @@ HostCache::Entry HostCache::Entry::MergeEntries(Entry front, Entry back) {
 NetLogParametersCallback HostCache::Entry::CreateNetLogCallback() const {
   return base::BindRepeating(&HostCache::Entry::NetLogCallback,
                              base::Unretained(this));
+}
+
+HostCache::Entry HostCache::Entry::CopyWithDefaultPort(uint16_t port) const {
+  Entry copy(*this);
+
+  if (addresses() &&
+      std::any_of(addresses().value().begin(), addresses().value().end(),
+                  [](const IPEndPoint& e) { return e.port() == 0; })) {
+    AddressList addresses_with_port;
+    addresses_with_port.set_canonical_name(
+        addresses().value().canonical_name());
+    for (const IPEndPoint& endpoint : addresses().value()) {
+      if (endpoint.port() == 0)
+        addresses_with_port.push_back(IPEndPoint(endpoint.address(), port));
+      else
+        addresses_with_port.push_back(endpoint);
+    }
+    copy.set_addresses(addresses_with_port);
+  }
+
+  if (hostnames() &&
+      std::any_of(hostnames().value().begin(), hostnames().value().end(),
+                  [](const HostPortPair& h) { return h.port() == 0; })) {
+    std::vector<HostPortPair> hostnames_with_port;
+    for (const HostPortPair& hostname : hostnames().value()) {
+      if (hostname.port() == 0)
+        hostnames_with_port.push_back(HostPortPair(hostname.host(), port));
+      else
+        hostnames_with_port.push_back(hostname);
+    }
+    copy.set_hostnames(std::move(hostnames_with_port));
+  }
+
+  return copy;
 }
 
 HostCache::Entry& HostCache::Entry::operator=(const Entry& entry) = default;

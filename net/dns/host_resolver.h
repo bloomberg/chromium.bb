@@ -242,6 +242,45 @@ class NET_EXPORT HostResolver {
     bool is_speculative = false;
   };
 
+  // Handler for an ongoing MDNS listening operation. Created by
+  // HostResolver::CreateMdnsListener().
+  class MdnsListener {
+   public:
+    // Delegate type for result update notifications from MdnsListener. All
+    // methods have a |result_type| field to allow a single delegate to be
+    // passed to multiple MdnsListeners and be used to listen for updates for
+    // multiple types for the same host.
+    class Delegate {
+     public:
+      enum class UpdateType { ADDED, CHANGED, REMOVED };
+
+      virtual ~Delegate() {}
+
+      virtual void OnAddressResult(UpdateType update_type,
+                                   DnsQueryType result_type,
+                                   IPEndPoint address) = 0;
+      virtual void OnTextResult(UpdateType update_type,
+                                DnsQueryType result_type,
+                                std::vector<std::string> text_records) = 0;
+      virtual void OnHostnameResult(UpdateType update_type,
+                                    DnsQueryType result_type,
+                                    HostPortPair host) = 0;
+
+      // For results which may be valid MDNS but are not handled/parsed by
+      // HostResolver, e.g. pointers to the root domain.
+      virtual void OnUnhandledResult(UpdateType update_type,
+                                     DnsQueryType result_type) = 0;
+    };
+
+    // Destruction cancels the listening operation.
+    virtual ~MdnsListener() {}
+
+    // Begins the listening operation, invoking |delegate| whenever results are
+    // updated. |delegate| will no longer be called once the listening operation
+    // is cancelled (via destruction of |this|).
+    virtual int Start(Delegate* delegate) = 0;
+  };
+
   // Set Options.max_concurrent_resolves to this to select a default level
   // of concurrency.
   static const size_t kDefaultParallelism = 0;
@@ -319,6 +358,11 @@ class NET_EXPORT HostResolver {
                                     AddressList* addresses,
                                     HostCache::EntryStaleness* stale_info,
                                     const NetLogWithSource& source_net_log) = 0;
+
+  // Create a listener to watch for updates to an MDNS result.
+  virtual std::unique_ptr<MdnsListener> CreateMdnsListener(
+      const HostPortPair& host,
+      DnsQueryType query_type);
 
   // Enable or disable the built-in asynchronous DnsClient.
   virtual void SetDnsClientEnabled(bool enabled);

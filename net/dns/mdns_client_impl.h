@@ -190,6 +190,11 @@ class NET_EXPORT_PRIVATE MDnsClientImpl : public MDnsClient {
   };
 
   MDnsClientImpl();
+
+  // Test constructor, takes a mock clock and mock timer.
+  MDnsClientImpl(base::Clock* clock,
+                 std::unique_ptr<base::OneShotTimer> cleanup_timer);
+
   ~MDnsClientImpl() override;
 
   // MDnsClient implementation:
@@ -211,12 +216,6 @@ class NET_EXPORT_PRIVATE MDnsClientImpl : public MDnsClient {
   Core* core() { return core_.get(); }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(MDnsTest, CacheCleanupWithShortTTL);
-
-  // Test constructor, takes a mock clock and mock timer.
-  MDnsClientImpl(base::Clock* clock,
-                 std::unique_ptr<base::OneShotTimer> cleanup_timer);
-
   std::unique_ptr<Core> core_;
   base::Clock* clock_;
   std::unique_ptr<base::OneShotTimer> cleanup_timer_;

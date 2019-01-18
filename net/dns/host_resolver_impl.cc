@@ -23,7 +23,6 @@
 #include <memory>
 #include <unordered_set>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -33,6 +32,7 @@
 #include "base/containers/linked_list.h"
 #include "base/debug/debugger.h"
 #include "base/debug/stack_trace.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
@@ -67,6 +67,7 @@
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_transaction.h"
 #include "net/dns/dns_util.h"
+#include "net/dns/host_resolver_mdns_listener_impl.h"
 #include "net/dns/host_resolver_mdns_task.h"
 #include "net/dns/host_resolver_proc.h"
 #include "net/dns/mdns_client.h"
@@ -196,42 +197,6 @@ const base::FeatureParam<base::TaskPriority> priority_mode{
     base::TaskPriority::USER_VISIBLE, &prio_modes};
 
 //-----------------------------------------------------------------------------
-
-// Creates a copy of |results| with the port of all address and hostname values
-// set to |port| if the current port is 0. Preserves any non-zero ports.
-HostCache::Entry SetPortOnResults(HostCache::Entry results, uint16_t port) {
-  if (results.addresses() &&
-      std::any_of(results.addresses().value().begin(),
-                  results.addresses().value().end(),
-                  [](const IPEndPoint& e) { return e.port() == 0; })) {
-    AddressList addresses_with_port;
-    addresses_with_port.set_canonical_name(
-        results.addresses().value().canonical_name());
-    for (const IPEndPoint& endpoint : results.addresses().value()) {
-      if (endpoint.port() == 0)
-        addresses_with_port.push_back(IPEndPoint(endpoint.address(), port));
-      else
-        addresses_with_port.push_back(endpoint);
-    }
-    results.set_addresses(addresses_with_port);
-  }
-
-  if (results.hostnames() &&
-      std::any_of(results.hostnames().value().begin(),
-                  results.hostnames().value().end(),
-                  [](const HostPortPair& h) { return h.port() == 0; })) {
-    std::vector<HostPortPair> hostnames_with_port;
-    for (const HostPortPair& hostname : results.hostnames().value()) {
-      if (hostname.port() == 0)
-        hostnames_with_port.push_back(HostPortPair(hostname.host(), port));
-      else
-        hostnames_with_port.push_back(hostname);
-    }
-    results.set_hostnames(std::move(hostnames_with_port));
-  }
-
-  return results;
-}
 
 // Returns true if |addresses| contains only IPv4 loopback addresses.
 bool IsAllIPv4Loopback(const AddressList& addresses) {
@@ -2125,7 +2090,8 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
             tick_clock_->NowTicks() - req->request_time());
       }
       if (results.error() == OK && !req->parameters().is_speculative) {
-        req->set_results(SetPortOnResults(results, req->request_host().port()));
+        req->set_results(
+            results.CopyWithDefaultPort(req->request_host().port()));
       }
       req->OnJobCompleted(this, results.error());
 
@@ -2408,6 +2374,22 @@ int HostResolverImpl::ResolveStaleFromCache(
   return results.error();
 }
 
+std::unique_ptr<HostResolver::MdnsListener>
+HostResolverImpl::CreateMdnsListener(const HostPortPair& host,
+                                     DnsQueryType query_type) {
+  DCHECK_NE(DnsQueryType::UNSPECIFIED, query_type);
+
+  auto listener =
+      std::make_unique<HostResolverMdnsListenerImpl>(host, query_type);
+
+  MDnsClient* client = GetOrCreateMdnsClient();
+  std::unique_ptr<net::MDnsListener> inner_listener = client->CreateListener(
+      DnsQueryTypeToQtype(query_type), host.host(), listener.get());
+
+  listener->set_inner_listener(std::move(inner_listener));
+  return listener;
+}
+
 void HostResolverImpl::SetDnsClientEnabled(bool enabled) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 #if defined(ENABLE_BUILT_IN_DNS)
@@ -2557,7 +2539,7 @@ int HostResolverImpl::Resolve(RequestImpl* request) {
       nullptr /* stale_info */, request->source_net_log(), &key);
   if (results.error() == OK && !request->parameters().is_speculative) {
     request->set_results(
-        SetPortOnResults(results, request->request_host().port()));
+        results.CopyWithDefaultPort(request->request_host().port()));
   }
   if (results.error() != ERR_DNS_CACHE_MISS) {
     LogFinishRequest(request->source_net_log(), results.error());
