@@ -5,6 +5,9 @@
 #include "components/password_manager/core/browser/sync/password_sync_bridge.h"
 
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/common/password_form.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_type_change_processor.h"
 #include "net/base/escape.h"
@@ -12,11 +15,93 @@
 
 namespace password_manager {
 
+namespace {
+
+sync_pb::PasswordSpecifics SpecificsFromPassword(
+    const autofill::PasswordForm& password_form) {
+  sync_pb::PasswordSpecifics specifics;
+  sync_pb::PasswordSpecificsData* password_data =
+      specifics.mutable_client_only_encrypted_data();
+  password_data->set_scheme(password_form.scheme);
+  password_data->set_signon_realm(password_form.signon_realm);
+  password_data->set_origin(password_form.origin.spec());
+  password_data->set_action(password_form.action.spec());
+  password_data->set_username_element(
+      base::UTF16ToUTF8(password_form.username_element));
+  password_data->set_password_element(
+      base::UTF16ToUTF8(password_form.password_element));
+  password_data->set_username_value(
+      base::UTF16ToUTF8(password_form.username_value));
+  password_data->set_password_value(
+      base::UTF16ToUTF8(password_form.password_value));
+  password_data->set_preferred(password_form.preferred);
+  password_data->set_date_created(
+      password_form.date_created.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  password_data->set_blacklisted(password_form.blacklisted_by_user);
+  password_data->set_type(password_form.type);
+  password_data->set_times_used(password_form.times_used);
+  password_data->set_display_name(
+      base::UTF16ToUTF8(password_form.display_name));
+  password_data->set_avatar_url(password_form.icon_url.spec());
+  password_data->set_federation_url(
+      password_form.federation_origin.opaque()
+          ? std::string()
+          : password_form.federation_origin.Serialize());
+  return specifics;
+}
+
+std::unique_ptr<syncer::EntityData> CreateEntityData(
+    const autofill::PasswordForm& form) {
+  auto entity_data = std::make_unique<syncer::EntityData>();
+  *entity_data->specifics.mutable_password() = SpecificsFromPassword(form);
+  entity_data->non_unique_name = form.signon_realm;
+  return entity_data;
+}
+
+}  // namespace
+
 PasswordSyncBridge::PasswordSyncBridge(
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor)
     : ModelTypeSyncBridge(std::move(change_processor)) {}
 
 PasswordSyncBridge::~PasswordSyncBridge() = default;
+
+void PasswordSyncBridge::ActOnPasswordStoreChanges(
+    const PasswordStoreChangeList& local_changes) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // It's the responsibility of the callers to call this method within the same
+  // transaction as the data changes to fulfill atomic writes of data and
+  // metadata constraint.
+
+  // TODO(mamir):ActOnPasswordStoreChanges() DCHECK we are inside a
+  // transaction!;
+
+  if (!change_processor()->IsTrackingMetadata()) {
+    return;  // Sync processor not yet ready, don't sync.
+  }
+
+  // TODO(mamir):ActOnPasswordStoreChanges() can be called from
+  // ApplySyncChanges(). Do nothing in this case.
+  std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
+      CreateMetadataChangeList();
+
+  for (const PasswordStoreChange& change : local_changes) {
+    const std::string storage_key = base::NumberToString(change.primary_key());
+    switch (change.type()) {
+      case PasswordStoreChange::ADD:
+      case PasswordStoreChange::UPDATE: {
+        change_processor()->Put(storage_key, CreateEntityData(change.form()),
+                                metadata_change_list.get());
+        break;
+      }
+      case PasswordStoreChange::REMOVE: {
+        change_processor()->Delete(storage_key, metadata_change_list.get());
+        break;
+      }
+    }
+  }
+  // TODO(mamir): Persist the metadata.
+}
 
 void PasswordSyncBridge::OnSyncStarting(
     const syncer::DataTypeActivationRequest& request) {
