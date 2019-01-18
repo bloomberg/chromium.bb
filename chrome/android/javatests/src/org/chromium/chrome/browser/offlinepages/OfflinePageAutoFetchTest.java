@@ -152,6 +152,7 @@ public class OfflinePageAutoFetchTest {
     }
 
     @Test
+    @DisabledTest(message = "crbug.com/923212")
     @MediumTest
     @Feature({"OfflineAutoFetch"})
     public void testAutoFetchRequestRetainedOnOtherTabClosed() throws Exception {
