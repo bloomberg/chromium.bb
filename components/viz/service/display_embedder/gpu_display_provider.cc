@@ -143,18 +143,9 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
     // Retry creating and binding |context_provider| on transient failures.
     gpu::ContextResult context_result = gpu::ContextResult::kTransientFailure;
     while (context_result != gpu::ContextResult::kSuccess) {
-#if defined(OS_ANDROID)
-      gpu::SharedMemoryLimits memory_limits =
-          gpu::SharedMemoryLimits::ForDisplayCompositor(
-              renderer_settings.initial_screen_size);
-#else
-      gpu::SharedMemoryLimits memory_limits =
-          gpu::SharedMemoryLimits::ForDisplayCompositor();
-#endif
       context_provider = base::MakeRefCounted<VizProcessContextProvider>(
           task_executor_, surface_handle, gpu_memory_buffer_manager_.get(),
-          image_factory_, gpu_channel_manager_delegate_, memory_limits,
-          renderer_settings.requires_alpha_channel);
+          image_factory_, gpu_channel_manager_delegate_, renderer_settings);
       context_result = context_provider->BindToCurrentThread();
 
       if (IsFatalOrSurfaceFailure(context_result)) {
