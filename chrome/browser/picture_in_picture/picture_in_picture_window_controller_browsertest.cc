@@ -2186,3 +2186,47 @@ IN_PROC_BROWSER_TEST_F(
       web_contents(), "isInPictureInPicture();", &in_picture_in_picture));
   EXPECT_TRUE(in_picture_in_picture);
 }
+
+// Check that video with no audio that is paused when hidden resumes playback
+// when it enters Picture-in-Picture.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       VideoWithNoAudioPausedWhenHiddenResumesPlayback) {
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_NE(nullptr, active_web_contents);
+
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "changeVideoSrcToNoAudioTrackVideo();", &result));
+  EXPECT_TRUE(result);
+
+  ASSERT_TRUE(
+      content::ExecuteScript(active_web_contents, "addPauseEventListener();"));
+
+  // Hide page and check that the video is paused first.
+  active_web_contents->WasHidden();
+  base::string16 expected_title = base::ASCIIToUTF16("pause");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+
+  ASSERT_TRUE(
+      content::ExecuteScript(active_web_contents, "addPlayEventListener();"));
+
+  // Enter Picture-in-Picture.
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "enterPictureInPicture();", &result));
+  EXPECT_TRUE(result);
+
+  // Check that video playback has resumed.
+  expected_title = base::ASCIIToUTF16("play");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+}
