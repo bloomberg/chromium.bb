@@ -1189,6 +1189,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-experimental-accessibility-language-detection",
+    "owners": [ "chrishall", "//ui/accessibility/OWNERS" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "enable-experimental-accessibility-switch-access",
     "owners": [ "anastasi@google.com", "dmazzoni", "dtseng" ],
     "expiry_milestone": 76

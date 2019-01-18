@@ -723,6 +723,12 @@ const char kExperimentalAccessibilityLabelsName[] =
 const char kExperimentalAccessibilityLabelsDescription[] =
     "Enable additional features for image labels for accessibility.";
 
+const char kExperimentalAccessibilityLanguageDetectionName[] =
+    "Experimental accessibility language detection";
+const char kExperimentalAccessibilityLanguageDetectionDescription[] =
+    "Enable language detection for in-page content which is then exposed to "
+    "accessiblity technologies such as screen readers.";
+
 const char kExperimentalAccessibilitySwitchAccessName[] =
     "Experimental feature Switch Access";
 const char kExperimentalAccessibilitySwitchAccessDescription[] =
