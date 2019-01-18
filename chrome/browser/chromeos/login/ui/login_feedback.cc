@@ -32,10 +32,6 @@ namespace chromeos {
 
 namespace {
 
-// Temporarily disable Feedback in the login screen until we're able to delete
-// the signin profile once logged in. See https://crbug.com/899092.
-bool g_login_feedback_enabled = false;
-
 extensions::ComponentLoader* GetComponentLoader(
     content::BrowserContext* context) {
   extensions::ExtensionSystem* extension_system =
@@ -172,16 +168,6 @@ LoginFeedback::LoginFeedback(Profile* signin_profile)
     : profile_(signin_profile), weak_factory_(this) {}
 
 LoginFeedback::~LoginFeedback() {}
-
-// static
-bool LoginFeedback::IsEnabled() {
-  return g_login_feedback_enabled;
-}
-
-// static
-void LoginFeedback::EnableForTesting() {
-  g_login_feedback_enabled = true;
-}
 
 void LoginFeedback::Request(const std::string& description,
                             base::OnceClosure finished_callback) {
