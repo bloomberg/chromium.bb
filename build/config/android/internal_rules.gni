@@ -1271,9 +1271,9 @@ if (enable_java_templates) {
             ]
           }
 
-          if (defined(invoker.input_jars_file_arg)) {
+          if (defined(invoker.input_jar_classpath)) {
             inputs += [ invoker.build_config ]
-            args += [ "--inputs=${invoker.input_jars_file_arg}" ]
+            args += [ "--inputs=@FileArg(${invoker.input_jar_classpath})" ]
           }
 
           inputs += _dexing_jars
@@ -1319,9 +1319,9 @@ if (enable_java_templates) {
           inputs += [ _main_dex_list_path ]
         }
 
-        if (defined(invoker.input_jars_file_arg)) {
+        if (defined(invoker.input_dex_classpath)) {
           inputs += [ invoker.build_config ]
-          args += [ "--inputs=${invoker.input_jars_file_arg}" ]
+          args += [ "--inputs=@FileArg(${invoker.input_dex_classpath})" ]
         }
 
         inputs += _dexing_jars
