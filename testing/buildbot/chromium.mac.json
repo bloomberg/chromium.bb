@@ -4558,16 +4558,9 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13"
             }
           ],
-          "optional_dimensions": {
-            "1200": [
-              {
-                "os": "Mac-10.13"
-              }
-            ]
-          },
           "shards": 12
         }
       },
