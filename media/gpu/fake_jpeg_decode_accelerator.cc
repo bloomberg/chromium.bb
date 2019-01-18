@@ -45,8 +45,6 @@ void FakeJpegDecodeAccelerator::Decode(
       new WritableUnalignedMapping(bitstream_buffer.handle(),
                                    bitstream_buffer.size(),
                                    bitstream_buffer.offset()));
-  // The handle is no longer needed.
-  bitstream_buffer.handle().Close();
   if (!src_shm->IsValid()) {
     DLOG(ERROR) << "Unable to map shared memory in FakeJpegDecodeAccelerator";
     NotifyError(bitstream_buffer.id(), JpegDecodeAccelerator::UNREADABLE_INPUT);
