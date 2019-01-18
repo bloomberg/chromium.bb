@@ -68,7 +68,7 @@ int SuggestionChipContainerView::DoUpdate() {
   // Update search results here, but wait until layout to add them as child
   // views when we know this view's bounds.
   for (size_t i = 0; i < static_cast<size_t>(kNumStartPageTiles); ++i) {
-    suggestion_chip_views_[i]->SetSearchResult(
+    suggestion_chip_views_[i]->SetResult(
         i < display_results.size() ? display_results[i] : nullptr);
   }
 

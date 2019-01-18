@@ -640,7 +640,7 @@ TEST_P(AppListViewFocusTest, LinearFocusTraversalInHalfState) {
     forward_view_list.push_back(tile_views[i]);
   forward_view_list.push_back(contents_view()
                                   ->search_result_answer_card_view_for_test()
-                                  ->GetSearchAnswerContainerViewForTest());
+                                  ->GetAnswerCardResultViewForTest());
   SearchResultListView* list_view =
       contents_view()->search_result_list_view_for_test();
   for (int i = 0; i < kListResults; ++i)
@@ -787,7 +787,7 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInHalfState) {
   forward_view_list.push_back(tile_views[0]);
   forward_view_list.push_back(contents_view()
                                   ->search_result_answer_card_view_for_test()
-                                  ->GetSearchAnswerContainerViewForTest());
+                                  ->GetAnswerCardResultViewForTest());
   SearchResultListView* list_view =
       contents_view()->search_result_list_view_for_test();
   for (int i = 0; i < kListResults; ++i)
@@ -803,7 +803,7 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInHalfState) {
     backward_view_list.push_back(list_view->GetResultViewAt(i));
   backward_view_list.push_back(contents_view()
                                    ->search_result_answer_card_view_for_test()
-                                   ->GetSearchAnswerContainerViewForTest());
+                                   ->GetAnswerCardResultViewForTest());
   backward_view_list.push_back(tile_views[kTileResults - 1]);
   backward_view_list.push_back(search_box_view()->search_box());
 
@@ -1098,7 +1098,7 @@ TEST_F(AppListViewFocusTest, FirstResultSelectedAfterSearchResultsUpdated) {
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
   EXPECT_EQ(contents_view()
                 ->search_result_answer_card_view_for_test()
-                ->GetSearchAnswerContainerViewForTest(),
+                ->GetAnswerCardResultViewForTest(),
             contents_view()->search_results_page_view()->first_result_view());
 
   // Clear up all search results.

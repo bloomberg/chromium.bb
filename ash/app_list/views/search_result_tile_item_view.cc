@@ -77,8 +77,8 @@ SearchResultTileItemView::SearchResultTileItemView(
       weak_ptr_factory_(this) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
-  // When |item_| is null, the tile is invisible. Calling SetSearchResult with a
-  // non-null item makes the tile visible.
+  // When |result_| is null, the tile is invisible. Calling SetSearchResult with
+  // a non-null item makes the tile visible.
   SetVisible(false);
 
   // Prevent the icon view from interfering with our mouse events.
@@ -133,31 +133,22 @@ SearchResultTileItemView::SearchResultTileItemView(
 }
 
 SearchResultTileItemView::~SearchResultTileItemView() {
-  if (item_)
-    item_->RemoveObserver(this);
+  ClearResult();
 }
 
-void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
+void SearchResultTileItemView::OnResultChanged() {
   // Handle the case where this may be called from a nested run loop while its
   // context menu is showing. This cancels the menu (it's for the old item).
   context_menu_.reset();
 
-  SetVisible(!!item);
+  SetVisible(!!result());
 
-  SearchResult* old_item = item_;
-  if (old_item)
-    old_item->RemoveObserver(this);
-
-  item_ = item;
-
-  if (!item)
+  if (!result())
     return;
 
-  item_->AddObserver(this);
-
-  SetTitle(item_->title());
-  SetRating(item_->rating());
-  SetPrice(item_->formatted_price());
+  SetTitle(result()->title());
+  SetRating(result()->rating());
+  SetPrice(result()->formatted_price());
 
   const gfx::FontList& font = AppListConfig::instance().app_title_font();
   if (IsSuggestedAppTileShownInAppPage()) {
@@ -202,18 +193,18 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
 
   title_->SetMaxLines(2);
   title_->SetMultiLine(
-      (item_->display_type() == ash::SearchResultDisplayType::kTile ||
+      (result()->display_type() == ash::SearchResultDisplayType::kTile ||
        (IsSuggestedAppTile() && !show_in_apps_page_)) &&
-      item_->result_type() == ash::SearchResultType::kInstalledApp);
+      result()->result_type() == ash::SearchResultType::kInstalledApp);
 
   // If the new icon is null, it's being decoded asynchronously. Not updating it
   // now to prevent flickering from showing an empty icon while decoding.
-  if (!item->icon().isNull())
+  if (!result()->icon().isNull())
     OnMetadataChanged();
 
   base::string16 accessible_name;
-  if (!item_->accessible_name().empty())
-    accessible_name = item_->accessible_name();
+  if (!result()->accessible_name().empty())
+    accessible_name = result()->accessible_name();
   else
     accessible_name = title_->text();
 
@@ -238,9 +229,9 @@ void SearchResultTileItemView::ButtonPressed(views::Button* sender,
   if (IsSuggestedAppTile())
     LogAppLaunch();
 
-  RecordSearchResultOpenSource(item_, view_delegate_->GetModel(),
+  RecordSearchResultOpenSource(result(), view_delegate_->GetModel(),
                                view_delegate_->GetSearchModel());
-  view_delegate_->OpenSearchResult(item_->id(), event.flags());
+  view_delegate_->OpenSearchResult(result()->id(), event.flags());
 }
 
 void SearchResultTileItemView::GetAccessibleNodeData(
@@ -262,18 +253,18 @@ void SearchResultTileItemView::GetAccessibleNodeData(
 }
 
 bool SearchResultTileItemView::OnKeyPressed(const ui::KeyEvent& event) {
-  // Return early if |item_| was deleted due to the search result list changing.
-  // see crbug.com/801142
-  if (!item_)
+  // Return early if |result()| was deleted due to the search result list
+  // changing. see crbug.com/801142
+  if (!result())
     return true;
 
   if (event.key_code() == ui::VKEY_RETURN) {
     if (IsSuggestedAppTile())
       LogAppLaunch();
 
-    RecordSearchResultOpenSource(item_, view_delegate_->GetModel(),
+    RecordSearchResultOpenSource(result(), view_delegate_->GetModel(),
                                  view_delegate_->GetSearchModel());
-    view_delegate_->OpenSearchResult(item_->id(), event.flags());
+    view_delegate_->OpenSearchResult(result()->id(), event.flags());
     return true;
   }
 
@@ -303,7 +294,7 @@ void SearchResultTileItemView::StateChanged(ButtonState old_state) {
 }
 
 void SearchResultTileItemView::PaintButtonContents(gfx::Canvas* canvas) {
-  if (!item_ || !background_highlighted())
+  if (!result() || !background_highlighted())
     return;
 
   gfx::Rect rect(GetContentsBounds());
@@ -326,34 +317,24 @@ void SearchResultTileItemView::PaintButtonContents(gfx::Canvas* canvas) {
 }
 
 void SearchResultTileItemView::OnMetadataChanged() {
-  SetIcon(item_->icon());
-  SetTitle(item_->title());
-  SetBadgeIcon(item_->badge_icon());
-  SetRating(item_->rating());
-  SetPrice(item_->formatted_price());
+  SetIcon(result()->icon());
+  SetTitle(result()->title());
+  SetBadgeIcon(result()->badge_icon());
+  SetRating(result()->rating());
+  SetPrice(result()->formatted_price());
   Layout();
-}
-
-void SearchResultTileItemView::OnResultDestroying() {
-  // The menu comes from |item_|. If we're showing a menu we need to cancel it.
-  context_menu_.reset();
-
-  if (item_)
-    item_->RemoveObserver(this);
-
-  SetSearchResult(nullptr);
 }
 
 void SearchResultTileItemView::ShowContextMenuForView(
     views::View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type) {
-  // |item_| could be null when result list is changing.
-  if (!item_)
+  // |result()| could be null when result list is changing.
+  if (!result())
     return;
 
   view_delegate_->GetSearchResultContextMenuModel(
-      item_->id(),
+      result()->id(),
       base::BindOnce(&SearchResultTileItemView::OnGetContextMenuModel,
                      weak_ptr_factory_.GetWeakPtr(), source, point,
                      source_type));
@@ -372,7 +353,7 @@ void SearchResultTileItemView::OnGetContextMenuModel(
   anchor_rect.ClampToCenteredSize(AppListConfig::instance().grid_focus_size());
 
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(
-      item_->id(), this, source_type, this, GetAppType(),
+      result()->id(), this, source_type, this, GetAppType(),
       base::BindOnce(&SearchResultTileItemView::OnMenuClosed,
                      weak_ptr_factory_.GetWeakPtr()));
   context_menu_->Build(std::move(menu));
@@ -389,9 +370,9 @@ void SearchResultTileItemView::OnMenuClosed() {
 }
 
 void SearchResultTileItemView::ExecuteCommand(int command_id, int event_flags) {
-  if (item_) {
-    view_delegate_->SearchResultContextMenuItemSelected(item_->id(), command_id,
-                                                        event_flags);
+  if (result()) {
+    view_delegate_->SearchResultContextMenuItemSelected(
+        result()->id(), command_id, event_flags);
   }
 }
 
@@ -483,8 +464,8 @@ SearchResultTileItemView::GetAppType() const {
 }
 
 bool SearchResultTileItemView::IsSuggestedAppTile() const {
-  return item_ &&
-         item_->display_type() == ash::SearchResultDisplayType::kRecommendation;
+  return result() && result()->display_type() ==
+                         ash::SearchResultDisplayType::kRecommendation;
 }
 
 bool SearchResultTileItemView::IsSuggestedAppTileShownInAppPage() const {
@@ -511,7 +492,7 @@ void SearchResultTileItemView::UpdateBackgroundColor() {
 
 void SearchResultTileItemView::Layout() {
   gfx::Rect rect(GetContentsBounds());
-  if (rect.IsEmpty() || !item_)
+  if (rect.IsEmpty() || !result())
     return;
 
   if (IsSuggestedAppTileShownInAppPage()) {
@@ -575,7 +556,7 @@ const char* SearchResultTileItemView::GetClassName() const {
 }
 
 gfx::Size SearchResultTileItemView::CalculatePreferredSize() const {
-  if (!item_)
+  if (!result())
     return gfx::Size();
 
   if (IsSuggestedAppTileShownInAppPage()) {

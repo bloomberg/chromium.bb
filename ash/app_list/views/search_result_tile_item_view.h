@@ -38,8 +38,7 @@ class APP_LIST_EXPORT SearchResultTileItemView
                            bool show_in_apps_page);
   ~SearchResultTileItemView() override;
 
-  SearchResult* result() { return item_; }
-  void SetSearchResult(SearchResult* item);
+  void OnResultChanged() override;
 
   // Informs the SearchResultTileItemView of its parent's background color. The
   // controls within the SearchResultTileItemView will adapt to suit the given
@@ -59,7 +58,6 @@ class APP_LIST_EXPORT SearchResultTileItemView
 
   // Overridden from SearchResultObserver:
   void OnMetadataChanged() override;
-  void OnResultDestroying() override;
 
   // views::ContextMenuController overrides:
   void ShowContextMenuForView(views::View* source,
@@ -106,9 +104,6 @@ class APP_LIST_EXPORT SearchResultTileItemView
 
   AppListViewDelegate* const view_delegate_;           // Owned by AppListView.
   PaginationModel* const pagination_model_;            // Owned by AppsGridView.
-
-  // Owned by the model provided by the AppListViewDelegate.
-  SearchResult* item_ = nullptr;
 
   views::ImageView* icon_ = nullptr;         // Owned by views hierarchy.
   views::ImageView* badge_ = nullptr;        // Owned by views hierarchy.

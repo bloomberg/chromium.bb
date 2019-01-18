@@ -45,21 +45,11 @@ SearchResultSuggestionChipView::SearchResultSuggestionChipView(
 }
 
 SearchResultSuggestionChipView::~SearchResultSuggestionChipView() {
-  SetSearchResult(nullptr);
+  ClearResult();
 }
 
-void SearchResultSuggestionChipView::SetSearchResult(SearchResult* item) {
-  if (item == item_)
-    return;
-
-  // Replace old item with new item.
-  if (item_)
-    item_->RemoveObserver(this);
-  item_ = item;
-  if (item_)
-    item_->AddObserver(this);
-
-  SetVisible(!!item_);
+void SearchResultSuggestionChipView::OnResultChanged() {
+  SetVisible(!!result());
   UpdateSuggestionChipView();
 }
 
@@ -72,22 +62,18 @@ void SearchResultSuggestionChipView::OnMetadataChanged() {
   UpdateSuggestionChipView();
 }
 
-void SearchResultSuggestionChipView::OnResultDestroying() {
-  SetSearchResult(nullptr);
-}
-
 void SearchResultSuggestionChipView::ButtonPressed(views::Button* sender,
                                                    const ui::Event& event) {
-  DCHECK(item_);
+  DCHECK(result());
   LogAppLaunch(index_in_suggestion_chip_container_);
-  RecordSearchResultOpenSource(item_, view_delegate_->GetModel(),
+  RecordSearchResultOpenSource(result(), view_delegate_->GetModel(),
                                view_delegate_->GetSearchModel());
-  view_delegate_->OpenSearchResult(item_->id(), event.flags());
+  view_delegate_->OpenSearchResult(result()->id(), event.flags());
 }
 
 void SearchResultSuggestionChipView::Layout() {
   gfx::Rect rect(GetContentsBounds());
-  if (rect.IsEmpty() || !item_)
+  if (rect.IsEmpty() || !result())
     return;
 
   suggestion_chip_view_->SetBoundsRect(rect);
@@ -116,18 +102,18 @@ bool SearchResultSuggestionChipView::OnKeyPressed(const ui::KeyEvent& event) {
 }
 
 void SearchResultSuggestionChipView::UpdateSuggestionChipView() {
-  if (!item_) {
+  if (!result()) {
     suggestion_chip_view_->SetIcon(gfx::ImageSkia());
     suggestion_chip_view_->SetText(base::string16());
     suggestion_chip_view_->SetAccessibleName(base::string16());
     return;
   }
 
-  suggestion_chip_view_->SetIcon(item_->chip_icon());
-  suggestion_chip_view_->SetText(item_->title());
+  suggestion_chip_view_->SetIcon(result()->chip_icon());
+  suggestion_chip_view_->SetText(result()->title());
 
-  base::string16 accessible_name = item_->title();
-  if (item_->id() == app_list::kInternalAppIdContinueReading) {
+  base::string16 accessible_name = result()->title();
+  if (result()->id() == app_list::kInternalAppIdContinueReading) {
     accessible_name = l10n_util::GetStringFUTF16(
         IDS_APP_LIST_CONTINUE_READING_ACCESSIBILE_NAME, accessible_name);
   }

@@ -97,13 +97,14 @@ bool ParseResponseHeaders(const net::HttpResponseHeaders* headers,
 
 }  // namespace
 
-// Container of the search answer view.
-class SearchResultAnswerCardView::SearchAnswerContainerView
+// Answer Card Search Results that are contained within
+// |SearchResultAnswerCardView|
+class SearchResultAnswerCardView::AnswerCardResultView
     : public SearchResultBaseView,
       public content::NavigableContentsObserver {
  public:
-  SearchAnswerContainerView(SearchResultContainerView* container,
-                            AppListViewDelegate* view_delegate)
+  AnswerCardResultView(SearchResultContainerView* container,
+                       AppListViewDelegate* view_delegate)
       : container_(container), view_delegate_(view_delegate) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
     // Center the card horizontally in the container. Padding is set on the
@@ -127,10 +128,9 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
     contents_->AddObserver(this);
   }
 
-  ~SearchAnswerContainerView() override {
+  ~AnswerCardResultView() override {
     contents_->RemoveObserver(this);
-    if (search_result_)
-      search_result_->RemoveObserver(this);
+    ClearResult();
   }
 
   bool has_valid_answer_card() const {
@@ -146,25 +146,20 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
     is_current_navigation_valid_answer_card_ = false;
   }
 
-  void SetSearchResult(SearchResult* search_result) {
+  void OnResultChanging(SearchResult* new_result) override {
     // Remove the card contents from the UI temporarily while we attempt to
     // navigate it to the new query URL.
     base::Optional<GURL> previous_url;
-    if (search_result_) {
-      previous_url = search_result_->query_url();
-      search_result_->RemoveObserver(this);
-      search_result_ = nullptr;
+    if (result()) {
+      previous_url = result()->query_url();
     }
 
-    if (!search_result || !search_result->query_url()) {
+    if (!new_result || !new_result->query_url()) {
       HideCard();
       return;
     }
 
-    search_result_ = search_result;
-    search_result_->AddObserver(this);
-
-    if (search_result_->query_url() == previous_url &&
+    if (new_result->query_url() == previous_url &&
         is_current_navigation_valid_answer_card_) {
       // The new search result is for a query URL identical to the previous one,
       // so we don't bother hiding or navigating the existing card contents.
@@ -178,7 +173,7 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
 
     base::RecordAction(base::UserMetricsAction("SearchAnswer_UserInteraction"));
 
-    contents_->Navigate(*search_result_->query_url());
+    contents_->Navigate(*new_result->query_url());
   }
 
   void OnVisibilityChanged(bool is_visible) {
@@ -192,9 +187,7 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
   }
 
   // views::Button overrides:
-  const char* GetClassName() const override {
-    return "SearchAnswerContainerView";
-  }
+  const char* GetClassName() const override { return "AnswerCardResultView"; }
 
   void OnBlur() override { SetBackgroundHighlighted(false); }
 
@@ -228,17 +221,11 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
   // views::ButtonListener overrides:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     DCHECK(sender == this);
-    if (search_result_) {
-      RecordSearchResultOpenSource(search_result_, view_delegate_->GetModel(),
+    if (result()) {
+      RecordSearchResultOpenSource(result(), view_delegate_->GetModel(),
                                    view_delegate_->GetSearchModel());
-      view_delegate_->OpenSearchResult(search_result_->id(), event.flags());
+      view_delegate_->OpenSearchResult(result()->id(), event.flags());
     }
-  }
-
-  // SearchResultObserver overrides:
-  void OnResultDestroying() override {
-    HideCard();
-    search_result_ = nullptr;
   }
 
  private:
@@ -278,10 +265,9 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
       AddChildView(content_view);
       ExcludeCardFromEventHandling(contents_->GetView()->native_view());
 
-      if (search_result_ &&
-          search_result_->equivalent_result_id().has_value()) {
+      if (result() && result()->equivalent_result_id().has_value()) {
         view_delegate_->GetSearchModel()->DeleteResultById(
-            search_result_->equivalent_result_id().value());
+            result()->equivalent_result_id().value());
       }
     }
     SetPreferredSize(content_view->GetPreferredSize());
@@ -310,7 +296,6 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
 
   SearchResultContainerView* const container_;  // Not owned.
   AppListViewDelegate* const view_delegate_;    // Not owned.
-  SearchResult* search_result_ = nullptr;       // Not owned.
   content::mojom::NavigableContentsFactoryPtr contents_factory_;
   std::unique_ptr<content::NavigableContents> contents_;
 
@@ -321,13 +306,13 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
   // Tracks the last time this view was made visible, if still visible.
   base::Optional<base::Time> last_shown_time_;
 
-  DISALLOW_COPY_AND_ASSIGN(SearchAnswerContainerView);
+  DISALLOW_COPY_AND_ASSIGN(AnswerCardResultView);
 };
 
 SearchResultAnswerCardView::SearchResultAnswerCardView(
     AppListViewDelegate* view_delegate)
     : search_answer_container_view_(
-          new SearchAnswerContainerView(this, view_delegate)) {
+          new AnswerCardResultView(this, view_delegate)) {
   AddChildView(search_answer_container_view_);
   SetLayoutManager(std::make_unique<views::FillLayout>());
 }
@@ -351,7 +336,7 @@ int SearchResultAnswerCardView::DoUpdate() {
 
   const bool has_valid_answer_card =
       search_answer_container_view_->has_valid_answer_card();
-  search_answer_container_view_->SetSearchResult(top_result);
+  search_answer_container_view_->SetResult(top_result);
   parent()->SetVisible(has_valid_answer_card);
 
   set_container_score(
@@ -373,7 +358,7 @@ SearchResultBaseView* SearchResultAnswerCardView::GetFirstResultView() {
   return num_results() <= 0 ? nullptr : search_answer_container_view_;
 }
 
-views::View* SearchResultAnswerCardView::GetSearchAnswerContainerViewForTest()
+views::View* SearchResultAnswerCardView::GetAnswerCardResultViewForTest()
     const {
   return search_answer_container_view_;
 }

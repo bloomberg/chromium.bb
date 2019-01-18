@@ -115,12 +115,12 @@ int SearchResultTileItemListView::DoUpdate() {
     if (i >= display_results.size()) {
       if (is_play_store_app_search_enabled_)
         separator_views_[i]->SetVisible(false);
-      tile_views_[i]->SetSearchResult(nullptr);
+      tile_views_[i]->SetResult(nullptr);
       continue;
     }
 
     SearchResult* item = display_results[i];
-    tile_views_[i]->SetSearchResult(item);
+    tile_views_[i]->SetResult(item);
 
     if (is_play_store_app_search_enabled_) {
       if (i > 0 && item->result_type() != previous_type) {
