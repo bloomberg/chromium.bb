@@ -154,7 +154,7 @@ class DiceResponseHandlerTest : public testing::Test,
       signin::AccountConsistencyMethod account_consistency) {
     DCHECK(!dice_response_handler_);
     dice_response_handler_ = std::make_unique<DiceResponseHandler>(
-        &signin_client_, &token_service_, identity_test_env_.identity_manager(),
+        &signin_client_, identity_test_env_.identity_manager(),
         &account_tracker_service_, account_reconcilor_.get(),
         &about_signin_internals_, account_consistency, temp_dir_.GetPath());
   }
