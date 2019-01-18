@@ -85,6 +85,23 @@ class TestResponseDelegate
     return std::move(input_stream_);
   }
 
+  bool GetMimeType(JNIEnv* env,
+                   const GURL& url,
+                   android_webview::InputStream* stream,
+                   std::string* mime_type) override {
+    return false;
+  }
+
+  bool GetCharset(JNIEnv* env,
+                  const GURL& url,
+                  android_webview::InputStream* stream,
+                  std::string* charset) override {
+    return false;
+  }
+
+  void AppendResponseHeaders(JNIEnv* env,
+                             net::HttpResponseHeaders* headers) override {}
+
  private:
   std::unique_ptr<InputStream> input_stream_;
 };

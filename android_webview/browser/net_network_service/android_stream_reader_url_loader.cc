@@ -138,14 +138,13 @@ void AndroidStreamReaderURLLoader::OnInputStreamOpened(
 void AndroidStreamReaderURLLoader::OnReaderSeekCompleted(int result) {
   if (result >= 0) {
     // we've got the expected content size here
+    expected_content_size_ = result;
     HeadersComplete(net::HTTP_OK, kHTTPOkText);
   } else {
     RequestComplete(net::ERR_FAILED);
   }
 }
 
-// TODO(timvolodine): move this to delegate to make this more generic,
-// to also support streams other than for shouldInterceptRequest.
 void AndroidStreamReaderURLLoader::HeadersComplete(
     int status_code,
     const std::string& status_text) {
@@ -161,10 +160,40 @@ void AndroidStreamReaderURLLoader::HeadersComplete(
   head.response_start = base::TimeTicks::Now();
   head.headers = new net::HttpResponseHeaders(status);
 
-  // TODO(timvolodine): add content length header
-  // TODO(timvolodine): add proper mime information
+  JNIEnv* env = base::android::AttachCurrentThread();
+  DCHECK(env);
+
+  if (status_code == net::HTTP_OK) {
+    response_delegate_->GetCharset(env, resource_request_.url,
+                                   input_stream_reader_wrapper_->input_stream(),
+                                   &head.charset);
+
+    if (expected_content_size_ != -1) {
+      std::string content_length_header(
+          net::HttpRequestHeaders::kContentLength);
+      content_length_header.append(": ");
+      content_length_header.append(base::Int64ToString(expected_content_size_));
+      head.headers->AddHeader(content_length_header);
+    }
+
+    std::string mime_type;
+    if (response_delegate_->GetMimeType(
+            env, resource_request_.url,
+            input_stream_reader_wrapper_->input_stream(), &mime_type) &&
+        !mime_type.empty()) {
+      std::string content_type_header(net::HttpRequestHeaders::kContentType);
+      content_type_header.append(": ");
+      content_type_header.append(mime_type);
+      head.headers->AddHeader(content_type_header);
+      head.mime_type = mime_type;
+    }
+  }
+
+  response_delegate_->AppendResponseHeaders(env, head.headers.get());
 
   // Indicate that the response had been obtained via shouldInterceptRequest.
+  // TODO(jam): why is this added for protocol handler (e.g. content scheme and
+  // file resources?). The old path does this as well.
   head.headers->AddHeader(kResponseHeaderViaShouldInterceptRequest);
 
   DCHECK(client_.is_bound());
