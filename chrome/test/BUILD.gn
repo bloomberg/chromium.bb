@@ -5218,6 +5218,8 @@ if (!is_android && !is_chromecast) {
     sources = [
       "../app/chrome_version.rc.version",
       "../browser/extensions/api/cast_streaming/performance_test.cc",
+      "../browser/extensions/api/tab_capture/tab_capture_performance_test_base.cc",
+      "../browser/extensions/api/tab_capture/tab_capture_performance_test_base.h",
       "../browser/extensions/api/tab_capture/tab_capture_performancetest.cc",
       "../browser/extensions/chrome_extension_test_notification_observer.cc",
       "../browser/extensions/chrome_extension_test_notification_observer.h",
