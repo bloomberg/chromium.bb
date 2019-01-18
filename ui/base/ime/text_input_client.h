@@ -118,27 +118,27 @@ class UI_BASE_IME_EXPORT TextInputClient {
 
   // Document content operations ----------------------------------------------
 
-  // Retrieves the UTF-16 based character range containing accessible text in
+  // Retrieves the UTF-16 code unit range containing accessible text in
   // the View. It must cover the composition and selection range.
   // Returns false if the information cannot be retrieved right now.
   virtual bool GetTextRange(gfx::Range* range) const = 0;
 
-  // Retrieves the UTF-16 based character range of current composition text.
+  // Retrieves the UTF-16 code unit range of current composition text.
   // Returns false if the information cannot be retrieved right now.
   virtual bool GetCompositionTextRange(gfx::Range* range) const = 0;
 
-  // Retrieves the UTF-16 based character range of current selection in the text
+  // Retrieves the UTF-16 code unit range of current selection in the text
   // input. Returns false if the information cannot be retrieved right now.
   // Returns false if the selected text is outside of the text input (== the
   // text input is not focused)
   virtual bool GetEditableSelectionRange(gfx::Range* range) const = 0;
 
-  // Selects the given UTF-16 based character range. Current composition text
+  // Selects the given UTF-16 code unit range. Current composition text
   // will be confirmed before selecting the range.
   // Returns false if the operation is not supported.
   virtual bool SetEditableSelectionRange(const gfx::Range& range) = 0;
 
-  // Deletes contents in the given UTF-16 based character range. Current
+  // Deletes contents in the given UTF-16 code unit range. Current
   // composition text will be confirmed before deleting the range.
   // The input caret will be moved to the place where the range gets deleted.
   // ExtendSelectionAndDelete should be used instead as far as you are deleting
@@ -148,7 +148,7 @@ class UI_BASE_IME_EXPORT TextInputClient {
   // supported.
   virtual bool DeleteRange(const gfx::Range& range) = 0;
 
-  // Retrieves the text content in a given UTF-16 based character range.
+  // Retrieves the text content in a given UTF-16 code unit range.
   // The result will be stored into |*text|.
   // Returns false if the operation is not supported or the specified range
   // is out of the text range returned by GetTextRange().
@@ -168,7 +168,7 @@ class UI_BASE_IME_EXPORT TextInputClient {
   virtual bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) = 0;
 
-  // Deletes the current selection plus the specified number of characters
+  // Deletes the current selection plus the specified number of char16 values
   // before and after the selection or caret. This function should be used
   // instead of calling DeleteRange with GetEditableSelectionRange, because
   // GetEditableSelectionRange may not be the latest value due to asynchronous
