@@ -2577,6 +2577,18 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
   )
 
   site_config.Add(
+      'amd64-generic-msan-fuzzer',
+      site_config.templates.fuzzer,
+      boards=['amd64-generic'],
+      profile='msan-fuzzer',
+      description='Build for msan fuzzing testing',
+      gs_path='gs://chromeos-fuzzing-artifacts/libfuzzer-msan',
+      disk_layout='4gb-rootfs',
+      # Every 3 hours.
+      schedule='0 */3 * * *'
+  )
+
+  site_config.Add(
       'amd64-generic-ubsan',
       site_config.templates.ubsan,
       site_config.templates.incremental,

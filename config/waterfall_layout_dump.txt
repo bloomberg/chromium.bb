@@ -240,6 +240,7 @@
 == informational ==
   amd64-generic-asan
   amd64-generic-fuzzer
+  amd64-generic-msan-fuzzer
   amd64-generic-tot-asan-informational
   amd64-generic-ubsan
   amd64-generic-ubsan-fuzzer
@@ -574,6 +575,7 @@
   amd64-generic-incremental-tryjob
   amd64-generic-llvm-next-toolchain-tryjob
   amd64-generic-llvm-toolchain-tryjob
+  amd64-generic-msan-fuzzer-tryjob
   amd64-generic-no-vmtest-pre-cq
   amd64-generic-nowithdebug-paladin-tryjob
   amd64-generic-paladin-tryjob
