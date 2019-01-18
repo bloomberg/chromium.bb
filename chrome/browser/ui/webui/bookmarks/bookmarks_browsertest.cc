@@ -11,35 +11,34 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/prefs/pref_service.h"
 
-MdBookmarksBrowserTest::MdBookmarksBrowserTest() {}
+BookmarksBrowserTest::BookmarksBrowserTest() {}
 
-MdBookmarksBrowserTest::~MdBookmarksBrowserTest() {}
+BookmarksBrowserTest::~BookmarksBrowserTest() {}
 
-void MdBookmarksBrowserTest::RegisterMessages() {
+void BookmarksBrowserTest::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "testSetIncognito",
-      base::BindRepeating(
-          &MdBookmarksBrowserTest::HandleSetIncognitoAvailability,
-          base::Unretained(this)));
+      base::BindRepeating(&BookmarksBrowserTest::HandleSetIncognitoAvailability,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "testSetCanEdit",
-      base::BindRepeating(&MdBookmarksBrowserTest::HandleSetCanEditBookmarks,
+      base::BindRepeating(&BookmarksBrowserTest::HandleSetCanEditBookmarks,
                           base::Unretained(this)));
 }
 
-void MdBookmarksBrowserTest::SetIncognitoAvailability(int availability) {
+void BookmarksBrowserTest::SetIncognitoAvailability(int availability) {
   ASSERT_TRUE(availability >= 0 &&
               availability < IncognitoModePrefs::AVAILABILITY_NUM_TYPES);
   browser()->profile()->GetPrefs()->SetInteger(
       prefs::kIncognitoModeAvailability, availability);
 }
 
-void MdBookmarksBrowserTest::SetCanEditBookmarks(bool canEdit) {
+void BookmarksBrowserTest::SetCanEditBookmarks(bool canEdit) {
   browser()->profile()->GetPrefs()->SetBoolean(
       bookmarks::prefs::kEditBookmarksEnabled, canEdit);
 }
 
-void MdBookmarksBrowserTest::HandleSetIncognitoAvailability(
+void BookmarksBrowserTest::HandleSetIncognitoAvailability(
     const base::ListValue* args) {
   AllowJavascript();
 
@@ -54,7 +53,7 @@ void MdBookmarksBrowserTest::HandleSetIncognitoAvailability(
   ResolveJavascriptCallback(*callback_id, base::Value());
 }
 
-void MdBookmarksBrowserTest::HandleSetCanEditBookmarks(
+void BookmarksBrowserTest::HandleSetCanEditBookmarks(
     const base::ListValue* args) {
   AllowJavascript();
 
@@ -69,6 +68,6 @@ void MdBookmarksBrowserTest::HandleSetCanEditBookmarks(
   ResolveJavascriptCallback(*callback_id, base::Value());
 }
 
-content::WebUIMessageHandler* MdBookmarksBrowserTest::GetMockMessageHandler() {
+content::WebUIMessageHandler* BookmarksBrowserTest::GetMockMessageHandler() {
   return this;
 }

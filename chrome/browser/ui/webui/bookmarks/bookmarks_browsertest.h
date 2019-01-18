@@ -8,11 +8,11 @@
 #include "chrome/test/base/web_ui_browser_test.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
-class MdBookmarksBrowserTest : public WebUIBrowserTest,
-                               public content::WebUIMessageHandler {
+class BookmarksBrowserTest : public WebUIBrowserTest,
+                             public content::WebUIMessageHandler {
  public:
-  MdBookmarksBrowserTest();
-  ~MdBookmarksBrowserTest() override;
+  BookmarksBrowserTest();
+  ~BookmarksBrowserTest() override;
 
   void SetIncognitoAvailability(int availability);
   void SetCanEditBookmarks(bool canEdit);
@@ -27,7 +27,7 @@ class MdBookmarksBrowserTest : public WebUIBrowserTest,
   // WebUIBrowserTest:
   content::WebUIMessageHandler* GetMockMessageHandler() override;
 
-  DISALLOW_COPY_AND_ASSIGN(MdBookmarksBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(BookmarksBrowserTest);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_BOOKMARKS_BOOKMARKS_BROWSERTEST_H_

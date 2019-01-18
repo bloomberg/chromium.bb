@@ -48,7 +48,7 @@ class BookmarkDragHelper;
 // Generates a bookmark drag and drop chip image.
 class BookmarkDragImageSource : public gfx::CanvasImageSource {
  public:
-  // These DIP measurements come from the MD Bookmarks Drag Drop spec.
+  // These DIP measurements come from the Bookmarks Drag Drop spec.
   static constexpr int kContainerWidth = 172;
   static constexpr int kContainerHeight = 40;
   static constexpr int kContainerRadius = kContainerHeight / 2;

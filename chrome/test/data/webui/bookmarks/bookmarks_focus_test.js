@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Tests for MD Bookmarks which are run as interactive ui tests.
+ * @fileoverview Tests for Bookmarks which are run as interactive ui tests.
  * Should be used for tests which care about focus.
  */
 
@@ -12,9 +12,9 @@ const ROOT_PATH = '../../../../../';
 GEN_INCLUDE(
     [ROOT_PATH + 'chrome/test/data/webui/polymer_interactive_ui_test.js']);
 
-function MaterialBookmarksFocusTest() {}
+function BookmarksFocusTest() {}
 
-MaterialBookmarksFocusTest.prototype = {
+BookmarksFocusTest.prototype = {
   __proto__: PolymerInteractiveUITest.prototype,
 
   browsePreload: 'chrome://bookmarks',
@@ -29,7 +29,7 @@ MaterialBookmarksFocusTest.prototype = {
   ]),
 };
 
-TEST_F('MaterialBookmarksFocusTest', 'All', function() {
+TEST_F('BookmarksFocusTest', 'All', function() {
   suite('<bookmarks-folder-node>', function() {
     let rootNode;
     let store;
