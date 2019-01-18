@@ -155,9 +155,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
     return 0;
   }
 
-  memset(levels_buf, 0,
-         sizeof(*levels_buf) *
-             ((width + TX_PAD_HOR) * (height + TX_PAD_VER) + TX_PAD_END));
   if (plane == AOM_PLANE_Y) {
     // only y plane's tx_type is transmitted
     av1_read_tx_type(cm, xd, blk_row, blk_col, tx_size, r);
@@ -241,6 +238,12 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   }
   *eob = rec_eob_pos(eob_pt, eob_extra);
 
+  if (*eob > 1) {
+    memset(levels_buf, 0,
+           sizeof(*levels_buf) *
+               ((width + TX_PAD_HOR) * (height + TX_PAD_VER) + TX_PAD_END));
+  }
+
   {
     // Read the non-zero coefficient with scan index eob-1
     // TODO(angiebird): Put this into a function
@@ -252,7 +255,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
         ec_ctx->coeff_base_eob_cdf[txs_ctx][plane_type][coeff_ctx];
     int level = aom_read_symbol(r, cdf, nsymbs, ACCT_STR) + 1;
     if (level > NUM_BASE_LEVELS) {
-      const int br_ctx = get_br_ctx(levels, pos, bwl, tx_class);
+      const int br_ctx = get_br_ctx_eob(pos, bwl, tx_class);
       cdf = ec_ctx->coeff_br_cdf[AOMMIN(txs_ctx, TX_32X32)][plane_type][br_ctx];
       for (int idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
         const int k = aom_read_symbol(r, cdf, BR_CDF_SIZE, ACCT_STR);
