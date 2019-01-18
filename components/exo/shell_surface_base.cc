@@ -208,7 +208,7 @@ class CustomFrameView : public ash::NonClientFrameViewAsh,
   }
   gfx::Size GetMaximumSize() const override {
     gfx::Size maximum_size = shell_surface_->GetMaximumSize();
-    if (visible()) {
+    if (visible() && !maximum_size.IsEmpty()) {
       return ash::NonClientFrameViewAsh::GetWindowBoundsForClientBounds(
                  gfx::Rect(maximum_size))
           .size();
