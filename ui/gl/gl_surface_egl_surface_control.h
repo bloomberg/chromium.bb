@@ -75,8 +75,9 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public gl::GLSurfaceEGL {
 
     int z_order = 0;
     AHardwareBuffer* hardware_buffer = nullptr;
-    gfx::Rect bounds_rect;
-    gfx::Rect crop_rect;
+    gfx::Rect dst;
+    gfx::Rect src;
+    gfx::OverlayTransform transform = gfx::OVERLAY_TRANSFORM_NONE;
     bool opaque = true;
 
     gl::SurfaceControl::Surface surface;
@@ -94,7 +95,7 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public gl::GLSurfaceEGL {
   void OnTransactionAckOnGpuThread(SwapCompletionCallback completion_callback,
                                    PresentationCallback presentation_callback,
                                    ResourceRefs released_resources,
-                                   int64_t present_time_ns);
+                                   int32_t present_fence);
 
   // Holds the surface state changes made since the last call to SwapBuffers.
   base::Optional<gl::SurfaceControl::Transaction> pending_transaction_;
