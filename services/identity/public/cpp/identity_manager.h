@@ -230,6 +230,9 @@ class IdentityManager : public SigninManagerBase::Observer,
   // exists for the primary account.
   bool HasPrimaryAccountWithRefreshToken() const;
 
+  // Returns true if all refresh tokens have been loaded from disk.
+  bool AreRefreshTokensLoaded() const;
+
   // Looks up and returns information for account with given |account_id|. If
   // the account cannot be found, return an empty optional. This is equivalent
   // to searching on the vector returned by GetAccountsWithRefreshTokens() but
@@ -342,7 +345,6 @@ class IdentityManager : public SigninManagerBase::Observer,
       const std::string& account_id);
   friend void RemoveRefreshTokenForAccount(IdentityManager* identity_manager,
                                            const std::string& account_id);
-  friend bool AreAllCredentialsLoaded(IdentityManager* identity_manager);
   friend void UpdateAccountInfoForAccount(IdentityManager* identity_manager,
                                           AccountInfo account_info);
   friend void UpdatePersistentErrorOfRefreshTokenForAccount(

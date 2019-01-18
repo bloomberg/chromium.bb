@@ -306,10 +306,6 @@ void RemoveRefreshTokenForAccount(IdentityManager* identity_manager,
   run_loop.Run();
 }
 
-bool AreAllCredentialsLoaded(IdentityManager* identity_manager) {
-  return identity_manager->GetTokenService()->AreAllCredentialsLoaded();
-}
-
 void SetCookieAccounts(FakeGaiaCookieManagerService* cookie_manager,
                        IdentityManager* identity_manager,
                        const std::vector<CookieParams>& cookie_accounts) {

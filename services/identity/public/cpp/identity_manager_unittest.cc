@@ -2083,4 +2083,21 @@ TEST_F(IdentityManagerTest, FindAccountInfoForAccountWithRefreshTokenByGaiaId) {
   EXPECT_EQ(foo_account_info.gaia, maybe_account_info.value().gaia);
 }
 
+// Checks that AreRefreshTokensLoaded() returns true after LoadCredentials.
+TEST_F(IdentityManagerTest, AreRefreshTokensLoaded) {
+  base::RunLoop run_loop;
+  identity_manager_observer()->set_on_refresh_tokens_loaded_callback(
+      run_loop.QuitClosure());
+
+  // Credentials are already loaded in SigninManager::Initialize()
+  // which runs even before the IdentityManager is created. That's why
+  // we fake the credentials loaded state and force another load in
+  // order to test AreRefreshTokensLoaded.
+  token_service()->set_all_credentials_loaded_for_testing(false);
+  EXPECT_FALSE(identity_manager()->AreRefreshTokensLoaded());
+  token_service()->LoadCredentials("");
+  run_loop.Run();
+  EXPECT_TRUE(identity_manager()->AreRefreshTokensLoaded());
+}
+
 }  // namespace identity

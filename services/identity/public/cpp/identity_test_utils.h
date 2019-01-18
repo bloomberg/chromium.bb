@@ -119,9 +119,6 @@ void SetInvalidRefreshTokenForAccount(IdentityManager* identity_manager,
 void RemoveRefreshTokenForAccount(IdentityManager* identity_manager,
                                   const std::string& account_id);
 
-// Returns true if all credentials have been loaded from disk.
-bool AreAllCredentialsLoaded(IdentityManager* identity_manager);
-
 // Puts the given accounts into the Gaia cookie, replacing any previous
 // accounts. Blocks until the accounts have been set.
 // NOTE: See disclaimer at top of file re: direct usage.

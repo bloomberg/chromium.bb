@@ -451,10 +451,10 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
 
     GetIdentityManager()->AddObserver(this);
     // Wait for the token service to be ready.
-    if (!identity::AreAllCredentialsLoaded(GetIdentityManager())) {
+    if (!GetIdentityManager()->AreRefreshTokensLoaded()) {
       WaitForClosure(&tokens_loaded_quit_closure_);
     }
-    ASSERT_TRUE(identity::AreAllCredentialsLoaded(GetIdentityManager()));
+    ASSERT_TRUE(GetIdentityManager()->AreRefreshTokensLoaded());
 
     AccountReconcilor* reconcilor =
         AccountReconcilorFactory::GetForProfile(browser()->profile());
