@@ -266,7 +266,6 @@ void PictureInPictureControllerImpl::PageVisibilityChanged() {
   if (GetSupplementable()->hidden() && !picture_in_picture_element_ &&
       AutoPictureInPictureElement() &&
       IsElementAllowed(*AutoPictureInPictureElement()) == Status::kEnabled) {
-    // TODO(crbug.com/921577): Muted video is paused when tab is hidden.
     EnterPictureInPicture(AutoPictureInPictureElement(), nullptr);
   }
 }

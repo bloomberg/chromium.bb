@@ -652,6 +652,12 @@ void WebMediaPlayerImpl::OnDisplayTypeChanged(
       break;
     case WebMediaPlayer::DisplayType::kPictureInPicture:
       watch_time_reporter_->OnDisplayTypePictureInPicture();
+
+      // Resumes playback if it was paused when hidden.
+      if (paused_when_hidden_) {
+        paused_when_hidden_ = false;
+        OnPlay();
+      }
       break;
   }
 }

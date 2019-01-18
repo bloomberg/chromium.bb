@@ -98,7 +98,7 @@
       video.srcObject.getTracks().forEach(track => track.stop());
       video.srcObject = null;
     }
-    video.src = video.src;
+    video.src = '../bigbuck.webm';
     video.play()
     .then(_ => { window.domAutomationController.send(true); })
     .catch(e => { window.domAutomationController.send(false); });
@@ -113,9 +113,28 @@
     .catch(e => { window.domAutomationController.send(false); });
   }
 
+  function changeVideoSrcToNoAudioTrackVideo() {
+    video.src = '../engagement/engagement_no_audio_track.webm';
+    video.play()
+    .then(_ => { window.domAutomationController.send(true); })
+    .catch(e => { window.domAutomationController.send(false); });
+  }
+
   function addVisibilityChangeEventListener() {
     document.addEventListener('visibilitychange', () => {
       document.title = document.visibilityState;
+    });
+  }
+
+  function addPauseEventListener() {
+    video.addEventListener('pause', () => {
+      document.title = 'pause';
+    });
+  }
+
+  function addPlayEventListener() {
+    video.addEventListener('play', () => {
+      document.title = 'play';
     });
   }
 
