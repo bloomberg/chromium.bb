@@ -30,6 +30,10 @@ const char kEnableExperimentalAccessibilityLanguageDetection[] =
 const char kEnableExperimentalAccessibilitySwitchAccess[] =
     "enable-experimental-accessibility-switch-access";
 
+// Enables language switching feature that hasn't launched yet.
+const char kEnableExperimentalAccessibilityChromeVoxLanguageSwitching[] =
+    "enable-experimental-accessibility-chromevox-language-switching";
+
 bool AreExperimentalAccessibilityFeaturesEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableExperimentalAccessibilityFeatures);

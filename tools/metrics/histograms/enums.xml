@@ -31083,6 +31083,8 @@ from previous Chrome versions.
   <int value="-793921836" label="ShowAllDialogsWithViewsToolkit:disabled"/>
   <int value="-792079435" label="EnableAppsGridGapFeature:disabled"/>
   <int value="-790036192" label="overscroll-start-threshold"/>
+  <int value="-788074946"
+      label="enable-experimental-accessibility-chromevox-language-switching"/>
   <int value="-787876637" label="HomeLauncherGestures:enabled"/>
   <int value="-787426248" label="ChromeHomeSurvey:disabled"/>
   <int value="-782536046" label="NewContactsPicker:enabled"/>
