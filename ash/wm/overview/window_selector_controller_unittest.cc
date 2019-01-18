@@ -4,6 +4,7 @@
 
 #include "ash/wm/overview/window_selector_controller.h"
 
+#include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
 #include "ash/test/ash_test_base.h"
@@ -331,6 +332,18 @@ TEST_F(WindowSelectorControllerTest, OcclusionTest) {
   WaitForOcclusionStateChange(window2.get());
   EXPECT_EQ(OcclusionState::VISIBLE, window1->occlusion_state());
   EXPECT_EQ(OcclusionState::OCCLUDED, window2->occlusion_state());
+}
+
+// Tests that beginning window selection hides the app list.
+TEST_F(WindowSelectorControllerTest, SelectingHidesAppList) {
+  std::unique_ptr<aura::Window> window(CreateTestWindow());
+
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplay().id());
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  Shell::Get()->window_selector_controller()->ToggleOverview();
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(false);
 }
 
 class OverviewVirtualKeyboardTest : public WindowSelectorControllerTest {
