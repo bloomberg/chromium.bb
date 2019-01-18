@@ -877,8 +877,9 @@ typedef struct {
 
 // EncodeFrameParams contains per-frame encoding parameters decided upon by
 // av1_encode_strategy() and passed down to av1_encode()
-typedef struct {
+struct EncodeFrameParams {
   int error_resilient_mode;
+  FRAME_TYPE frame_type;
 
   // This is a bitmask of which reference slots can be used in this frame
   int ref_frame_flags;
@@ -887,7 +888,8 @@ typedef struct {
   int speed;
 
   unsigned int *frame_flags;
-} EncodeFrameParams;
+};
+typedef struct EncodeFrameParams EncodeFrameParams;
 
 // EncodeFrameResults contains information about the result of encoding a
 // single frame
@@ -935,6 +937,8 @@ void av1_update_reference(AV1_COMP *cpi, int ref_frame_flags);
 int av1_copy_reference_enc(AV1_COMP *cpi, int idx, YV12_BUFFER_CONFIG *sd);
 
 int av1_set_reference_enc(AV1_COMP *cpi, int idx, YV12_BUFFER_CONFIG *sd);
+
+void av1_set_frame_size(AV1_COMP *cpi, int width, int height);
 
 int av1_update_entropy(AV1_COMP *cpi, int update);
 

@@ -449,18 +449,6 @@ static int find_fp_qindex(aom_bit_depth_t bit_depth) {
   return i;
 }
 
-static void set_first_pass_params(AV1_COMP *cpi) {
-  AV1_COMMON *const cm = &cpi->common;
-  if (!cpi->refresh_alt_ref_frame && (cm->current_frame.frame_number == 0 ||
-                                      (cpi->frame_flags & FRAMEFLAGS_KEY))) {
-    cm->current_frame.frame_type = KEY_FRAME;
-  } else {
-    cm->current_frame.frame_type = INTER_FRAME;
-  }
-  // Do not use periodic key frames.
-  cpi->rc.frames_to_key = INT_MAX;
-}
-
 static double raw_motion_error_stdev(int *raw_motion_err_list,
                                      int raw_motion_err_counts) {
   int64_t sum_raw_err = 0;
@@ -558,7 +546,9 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   brightness_factor = 0.0;
   neutral_count = 0.0;
 
-  set_first_pass_params(cpi);
+  // Do not use periodic key frames.
+  cpi->rc.frames_to_key = INT_MAX;
+
   av1_set_quantizer(cm, qindex);
 
   av1_setup_block_planes(&x->e_mbd, seq_params->subsampling_x,
@@ -1719,11 +1709,12 @@ int av1_rc_get_fixed_gf_length(int max_pyr_height) {
   return AOMMIN(max_gf_length_allowed, MAX_GF_INTERVAL);
 }
 
-static void define_customized_gf_group_structure(AV1_COMP *cpi) {
+static void define_customized_gf_group_structure(
+    AV1_COMP *cpi, const EncodeFrameParams *const frame_params) {
   RATE_CONTROL *const rc = &cpi->rc;
   TWO_PASS *const twopass = &cpi->twopass;
   GF_GROUP *const gf_group = &twopass->gf_group;
-  const int key_frame = cpi->common.current_frame.frame_type == KEY_FRAME;
+  const int key_frame = frame_params->frame_type == KEY_FRAME;
 
   assert(rc->baseline_gf_interval >= MIN_GF_INTERVAL &&
          rc->baseline_gf_interval <=
@@ -1794,7 +1785,8 @@ static void define_customized_gf_group_structure(AV1_COMP *cpi) {
 // result in exactly the same GF group structure as
 // define_customized_gf_group_structure() when rc->baseline_gf_interval == 4
 
-static void define_gf_group_structure(AV1_COMP *cpi) {
+static void define_gf_group_structure(
+    AV1_COMP *cpi, const EncodeFrameParams *const frame_params) {
   RATE_CONTROL *const rc = &cpi->rc;
 
   const int max_pyr_height = cpi->oxcf.gf_max_pyr_height;
@@ -1805,7 +1797,7 @@ static void define_gf_group_structure(AV1_COMP *cpi) {
   // used the new structure only if extra_arf is allowed
   if (valid_customized_gf_length && rc->source_alt_ref_pending &&
       cpi->extra_arf_allowed > 0) {
-    define_customized_gf_group_structure(cpi);
+    define_customized_gf_group_structure(cpi, frame_params);
     cpi->new_bwdref_update_rule = 1;
     return;
   } else {
@@ -1816,7 +1808,7 @@ static void define_gf_group_structure(AV1_COMP *cpi) {
   GF_GROUP *const gf_group = &twopass->gf_group;
   int i;
   int frame_index = 0;
-  const int key_frame = cpi->common.current_frame.frame_type == KEY_FRAME;
+  const int key_frame = frame_params->frame_type == KEY_FRAME;
 
   // The use of bi-predictive frames are only enabled when following 3
   // conditions are met:
@@ -2031,24 +2023,23 @@ static void define_gf_group_structure(AV1_COMP *cpi) {
 static double lvl_budget_factor[MAX_PYRAMID_LVL - 1][MAX_PYRAMID_LVL - 1] = {
   { 1.0, 0.0, 0.0 }, { 0.6, 0.4, 0 }, { 0.45, 0.35, 0.20 }
 };
-static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
-                                   double group_error, int gf_arf_bits) {
+static void allocate_gf_group_bits(
+    AV1_COMP *cpi, int64_t gf_group_bits, double group_error, int gf_arf_bits,
+    const EncodeFrameParams *const frame_params) {
   RATE_CONTROL *const rc = &cpi->rc;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   TWO_PASS *const twopass = &cpi->twopass;
   GF_GROUP *const gf_group = &twopass->gf_group;
   int i;
   int frame_index = 0;
-  int key_frame;
+  const int key_frame = frame_params->frame_type == KEY_FRAME;
   const int max_bits = frame_max_bits(&cpi->rc, &cpi->oxcf);
   int64_t total_group_bits = gf_group_bits;
   int ext_arf_boost[MAX_EXT_ARFS];
 
-  define_gf_group_structure(cpi);
+  define_gf_group_structure(cpi, frame_params);
 
   av1_zero_array(ext_arf_boost, MAX_EXT_ARFS);
-
-  key_frame = cpi->common.current_frame.frame_type == KEY_FRAME;
 
   // For key frames the frame target rate is already set and it
   // is also the golden frame.
@@ -2210,7 +2201,8 @@ static INLINE int is_almost_static(double gf_zero_motion, int kf_zero_motion) {
 #define ARF_ABS_ZOOM_THRESH 4.4
 
 // Analyse and define a gf/arf group.
-static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
+static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
+                            const EncodeFrameParams *const frame_params) {
   AV1_COMMON *const cm = &cpi->common;
   RATE_CONTROL *const rc = &cpi->rc;
   AV1EncoderConfig *const oxcf = &cpi->oxcf;
@@ -2249,14 +2241,15 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   int64_t gf_group_bits;
   double gf_group_error_left;
   int gf_arf_bits;
-  const int is_key_frame = frame_is_intra_only(cm);
-  const int arf_active_or_kf = is_key_frame || rc->source_alt_ref_active;
+  const int is_intra_only = frame_params->frame_type == KEY_FRAME ||
+                            frame_params->frame_type == INTRA_ONLY_FRAME;
+  const int arf_active_or_kf = is_intra_only || rc->source_alt_ref_active;
 
   cpi->extra_arf_allowed = 1;
 
   // Reset the GF group data structures unless this is a key
   // frame in which case it will already have been done.
-  if (is_key_frame == 0) {
+  if (!is_intra_only) {
     av1_zero(twopass->gf_group);
   }
 
@@ -2560,20 +2553,21 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   // also a key frame in which case it has already been accounted for.
   if (rc->source_alt_ref_pending) {
     gf_group_error_left = gf_group_err - mod_frame_err;
-  } else if (is_key_frame == 0) {
+  } else if (!is_intra_only) {
     gf_group_error_left = gf_group_err - gf_first_frame_err;
   } else {
     gf_group_error_left = gf_group_err;
   }
 
   // Allocate bits to each of the frames in the GF group.
-  allocate_gf_group_bits(cpi, gf_group_bits, gf_group_error_left, gf_arf_bits);
+  allocate_gf_group_bits(cpi, gf_group_bits, gf_group_error_left, gf_arf_bits,
+                         frame_params);
 
   // Reset the file position.
   reset_fpf_position(twopass, start_pos);
 
   // Calculate a section intra ratio used in setting max loop filter.
-  if (cpi->common.current_frame.frame_type != KEY_FRAME) {
+  if (frame_params->frame_type != KEY_FRAME) {
     twopass->section_intra_rating = calculate_section_intra_ratio(
         start_pos, twopass->stats_in_end, rc->baseline_gf_interval);
   }
@@ -2712,7 +2706,6 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
 
   av1_zero(next_frame);
 
-  cpi->common.current_frame.frame_type = KEY_FRAME;
   rc->frames_since_key = 0;
 
   // Reset the GF group data structures.
@@ -3005,7 +2998,8 @@ static int is_skippable_frame(const AV1_COMP *cpi) {
           twopass->stats_in->pcnt_inter - twopass->stats_in->pcnt_motion == 1);
 }
 
-void av1_rc_get_second_pass_params(AV1_COMP *cpi) {
+void av1_rc_get_second_pass_params(AV1_COMP *cpi,
+                                   EncodeFrameParams *const frame_params) {
   AV1_COMMON *const cm = &cpi->common;
   CurrentFrame *const current_frame = &cm->current_frame;
   RATE_CONTROL *const rc = &cpi->rc;
@@ -3031,9 +3025,9 @@ void av1_rc_get_second_pass_params(AV1_COMP *cpi) {
 
     if (cpi->no_show_kf) {
       assert(gf_group->update_type[gf_group->index] == ARF_UPDATE);
-      current_frame->frame_type = KEY_FRAME;
+      frame_params->frame_type = KEY_FRAME;
     } else {
-      current_frame->frame_type = INTER_FRAME;
+      frame_params->frame_type = INTER_FRAME;
     }
 
     // Do the firstpass stats indicate that this frame is skippable for the
@@ -3088,16 +3082,17 @@ void av1_rc_get_second_pass_params(AV1_COMP *cpi) {
   if (rc->frames_to_key == 0 || (cpi->frame_flags & FRAMEFLAGS_KEY)) {
     FIRSTPASS_STATS this_frame_copy;
     this_frame_copy = this_frame;
+    frame_params->frame_type = KEY_FRAME;
     // Define next KF group and assign bits to it.
     find_next_key_frame(cpi, &this_frame);
     this_frame = this_frame_copy;
   } else {
-    current_frame->frame_type = INTER_FRAME;
+    frame_params->frame_type = INTER_FRAME;
   }
 
   // Define a new GF/ARF group. (Should always enter here for key frames).
   if (rc->frames_till_gf_update_due == 0) {
-    define_gf_group(cpi, &this_frame);
+    define_gf_group(cpi, &this_frame, frame_params);
 
     rc->frames_till_gf_update_due = rc->baseline_gf_interval;
 
@@ -3125,7 +3120,7 @@ void av1_rc_get_second_pass_params(AV1_COMP *cpi) {
 
   target_rate = gf_group->bit_allocation[gf_group->index];
 
-  if (cpi->common.current_frame.frame_type == KEY_FRAME)
+  if (frame_params->frame_type == KEY_FRAME)
     target_rate = av1_rc_clamp_iframe_target_size(cpi, target_rate);
   else
     target_rate = av1_rc_clamp_pframe_target_size(cpi, target_rate);

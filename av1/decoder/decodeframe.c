@@ -4854,7 +4854,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     cm->error_resilient_mode = 1;
   } else {
     cm->show_existing_frame = aom_rb_read_bit(rb);
-    cm->reset_decoder_state = 0;
+    pbi->reset_decoder_state = 0;
 
     if (cm->show_existing_frame) {
       if (pbi->sequence_header_changed) {
@@ -4896,7 +4896,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       // assign_frame_buffer_p()!
       assert(!cm->cur_frame->raw_frame_buffer.data);
       assign_frame_buffer_p(&cm->cur_frame, frame_to_show);
-      cm->reset_decoder_state = frame_to_show->frame_type == KEY_FRAME;
+      pbi->reset_decoder_state = frame_to_show->frame_type == KEY_FRAME;
       unlock_buffer_pool(pool);
 
       cm->lf.filter_level[0] = 0;
@@ -4906,11 +4906,11 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       if (!frame_to_show->showable_frame) {
         aom_merge_corrupted_flag(&xd->corrupted, 1);
       }
-      if (cm->reset_decoder_state) frame_to_show->showable_frame = 0;
+      if (pbi->reset_decoder_state) frame_to_show->showable_frame = 0;
 
       cm->film_grain_params = frame_to_show->film_grain_params;
 
-      if (cm->reset_decoder_state) {
+      if (pbi->reset_decoder_state) {
         show_existing_frame_reset(pbi, existing_frame_idx);
       } else {
         current_frame->refresh_frame_flags = 0;
@@ -5508,7 +5508,7 @@ uint32_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
   if (cm->show_existing_frame) {
     // showing a frame directly
     *p_data_end = data + uncomp_hdr_size;
-    if (cm->reset_decoder_state) {
+    if (pbi->reset_decoder_state) {
       // Use the default frame context values.
       *cm->fc = *cm->default_frame_context;
       if (!cm->fc->initialized)

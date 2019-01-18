@@ -361,7 +361,7 @@ static void swap_frame_buffers(AV1Decoder *pbi, int frame_decoded) {
       assert(IMPLIES(!pbi->hold_ref_buf,
                      cm->current_frame.refresh_frame_flags == 0));
       assert(IMPLIES(!pbi->hold_ref_buf,
-                     cm->show_existing_frame && !cm->reset_decoder_state));
+                     cm->show_existing_frame && !pbi->reset_decoder_state));
 
       // The following two for loops need to release the reference stored in
       // cm->ref_frame_map[ref_index] before transferring the reference stored
@@ -374,7 +374,7 @@ static void swap_frame_buffers(AV1Decoder *pbi, int frame_decoded) {
       }
 
       const int check_on_show_existing_frame =
-          !cm->show_existing_frame || cm->reset_decoder_state;
+          !cm->show_existing_frame || pbi->reset_decoder_state;
       for (; ref_index < REF_FRAMES && check_on_show_existing_frame;
            ++ref_index) {
         decrease_ref_count(cm->ref_frame_map[ref_index], pool);

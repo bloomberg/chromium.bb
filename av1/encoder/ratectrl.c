@@ -1586,7 +1586,8 @@ static int calc_iframe_target_size_one_pass_vbr(const AV1_COMP *const cpi) {
   return av1_rc_clamp_iframe_target_size(cpi, target);
 }
 
-void av1_rc_get_one_pass_vbr_params(AV1_COMP *cpi) {
+void av1_rc_get_one_pass_vbr_params(AV1_COMP *cpi,
+                                    EncodeFrameParams *const frame_params) {
   AV1_COMMON *const cm = &cpi->common;
   RATE_CONTROL *const rc = &cpi->rc;
   CurrentFrame *const current_frame = &cm->current_frame;
@@ -1600,44 +1601,41 @@ void av1_rc_get_one_pass_vbr_params(AV1_COMP *cpi) {
       (current_frame->frame_number == 0 ||
        (cpi->frame_flags & FRAMEFLAGS_KEY) || rc->frames_to_key == 0 ||
        (cpi->oxcf.auto_key && 0))) {
-    current_frame->frame_type = KEY_FRAME;
+    frame_params->frame_type = KEY_FRAME;
     rc->this_key_frame_forced =
         current_frame->frame_number != 0 && rc->frames_to_key == 0;
     rc->frames_to_key = cpi->oxcf.key_freq;
     rc->kf_boost = DEFAULT_KF_BOOST;
     rc->source_alt_ref_active = 0;
   } else {
-    current_frame->frame_type = INTER_FRAME;
+    frame_params->frame_type = INTER_FRAME;
     if (sframe_enabled) {
       if (altref_enabled) {
         if (sframe_mode == 1) {
           // sframe_mode == 1: insert sframe if it matches altref frame.
 
           if (current_frame->frame_number % sframe_dist == 0 &&
-              current_frame->frame_type != KEY_FRAME &&
               current_frame->frame_number != 0 && cpi->refresh_alt_ref_frame) {
-            current_frame->frame_type = S_FRAME;
+            frame_params->frame_type = S_FRAME;
           }
         } else {
           // sframe_mode != 1: if sframe will be inserted at the next available
           // altref frame
 
           if (current_frame->frame_number % sframe_dist == 0 &&
-              current_frame->frame_type != KEY_FRAME &&
               current_frame->frame_number != 0) {
             rc->sframe_due = 1;
           }
 
           if (rc->sframe_due && cpi->refresh_alt_ref_frame) {
-            current_frame->frame_type = S_FRAME;
+            frame_params->frame_type = S_FRAME;
             rc->sframe_due = 0;
           }
         }
       } else {
         if (current_frame->frame_number % sframe_dist == 0 &&
-            current_frame->frame_type != KEY_FRAME &&
             current_frame->frame_number != 0) {
-          current_frame->frame_type = S_FRAME;
+          frame_params->frame_type = S_FRAME;
         }
       }
     }
@@ -1660,7 +1658,7 @@ void av1_rc_get_one_pass_vbr_params(AV1_COMP *cpi) {
   if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ)
     av1_cyclic_refresh_update_parameters(cpi);
 
-  if (current_frame->frame_type == KEY_FRAME)
+  if (frame_params->frame_type == KEY_FRAME)
     target = calc_iframe_target_size_one_pass_vbr(cpi);
   else
     target = calc_pframe_target_size_one_pass_vbr(cpi);
@@ -1726,7 +1724,8 @@ static int calc_iframe_target_size_one_pass_cbr(const AV1_COMP *cpi) {
   return av1_rc_clamp_iframe_target_size(cpi, target);
 }
 
-void av1_rc_get_one_pass_cbr_params(AV1_COMP *cpi) {
+void av1_rc_get_one_pass_cbr_params(AV1_COMP *cpi,
+                                    EncodeFrameParams *const frame_params) {
   AV1_COMMON *const cm = &cpi->common;
   RATE_CONTROL *const rc = &cpi->rc;
   CurrentFrame *const current_frame = &cm->current_frame;
@@ -1735,14 +1734,14 @@ void av1_rc_get_one_pass_cbr_params(AV1_COMP *cpi) {
   if ((current_frame->frame_number == 0 ||
        (cpi->frame_flags & FRAMEFLAGS_KEY) || rc->frames_to_key == 0 ||
        (cpi->oxcf.auto_key && 0))) {
-    current_frame->frame_type = KEY_FRAME;
+    frame_params->frame_type = KEY_FRAME;
     rc->this_key_frame_forced =
         current_frame->frame_number != 0 && rc->frames_to_key == 0;
     rc->frames_to_key = cpi->oxcf.key_freq;
     rc->kf_boost = DEFAULT_KF_BOOST;
     rc->source_alt_ref_active = 0;
   } else {
-    current_frame->frame_type = INTER_FRAME;
+    frame_params->frame_type = INTER_FRAME;
   }
   if (rc->frames_till_gf_update_due == 0) {
     if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ)
@@ -1763,7 +1762,7 @@ void av1_rc_get_one_pass_cbr_params(AV1_COMP *cpi) {
   if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ)
     av1_cyclic_refresh_update_parameters(cpi);
 
-  if (current_frame->frame_type == KEY_FRAME)
+  if (frame_params->frame_type == KEY_FRAME)
     target = calc_iframe_target_size_one_pass_cbr(cpi);
   else
     target = calc_pframe_target_size_one_pass_cbr(cpi);

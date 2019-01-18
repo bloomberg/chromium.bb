@@ -378,7 +378,6 @@ typedef struct AV1Common {
   int show_frame;
   int showable_frame;  // frame can be used as show existing frame in future
   int show_existing_frame;
-  int reset_decoder_state;
 
   uint8_t disable_cdf_update;
   int allow_high_precision_mv;

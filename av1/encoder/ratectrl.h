@@ -199,8 +199,11 @@ int av1_rc_get_fixed_gf_length(int max_pyr_height);
 
 // Functions to set parameters for encoding before the actual
 // encode_frame_to_data_rate() function.
-void av1_rc_get_one_pass_vbr_params(struct AV1_COMP *cpi);
-void av1_rc_get_one_pass_cbr_params(struct AV1_COMP *cpi);
+struct EncodeFrameParams;
+void av1_rc_get_one_pass_vbr_params(
+    struct AV1_COMP *cpi, struct EncodeFrameParams *const frame_params);
+void av1_rc_get_one_pass_cbr_params(
+    struct AV1_COMP *cpi, struct EncodeFrameParams *const frame_params);
 
 // Post encode update of the rate control parameters based
 // on bytes used

@@ -23,6 +23,8 @@
 
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/encode_strategy.h"
+#include "av1/encoder/firstpass.h"
+#include "av1/encoder/tpl_model.h"
 
 static void set_additional_frame_flags(const AV1_COMMON *const cm,
                                        unsigned int *const frame_flags) {
@@ -134,7 +136,7 @@ static void set_ext_overrides(AV1_COMP *const cpi,
   AV1_COMMON *const cm = &cpi->common;
 
   if (cpi->ext_use_s_frame) {
-    cm->current_frame.frame_type = S_FRAME;
+    frame_params->frame_type = S_FRAME;
   }
   cm->force_primary_ref_none = cpi->ext_use_primary_ref_none;
 
@@ -156,10 +158,9 @@ static void set_ext_overrides(AV1_COMP *const cpi,
   // A keyframe is already error resilient and keyframes with
   // error_resilient_mode interferes with the use of show_existing_frame
   // when forward reference keyframes are enabled.
-  frame_params->error_resilient_mode &=
-      cm->current_frame.frame_type != KEY_FRAME;
+  frame_params->error_resilient_mode &= frame_params->frame_type != KEY_FRAME;
   // For bitstream conformance, s-frames must be error-resilient
-  frame_params->error_resilient_mode |= frame_is_sframe(cm);
+  frame_params->error_resilient_mode |= frame_params->frame_type == S_FRAME;
 }
 
 static int get_ref_frame_flags(const AV1_COMP *const cpi) {
@@ -241,9 +242,9 @@ static int Pass0Encode(AV1_COMP *const cpi, uint8_t *const dest,
                        EncodeFrameParams *const frame_params,
                        EncodeFrameResults *const frame_results) {
   if (cpi->oxcf.rc_mode == AOM_CBR) {
-    av1_rc_get_one_pass_cbr_params(cpi);
+    av1_rc_get_one_pass_cbr_params(cpi, frame_params);
   } else {
-    av1_rc_get_one_pass_vbr_params(cpi);
+    av1_rc_get_one_pass_vbr_params(cpi, frame_params);
   }
 
   // Apply external override flags
@@ -270,7 +271,17 @@ static int Pass0Encode(AV1_COMP *const cpi, uint8_t *const dest,
 static int Pass1Encode(AV1_COMP *const cpi,
                        const EncodeFrameInput *const frame_input,
                        EncodeFrameParams *const frame_params) {
+  const CurrentFrame *const current_frame = &cpi->common.current_frame;
+
   cpi->td.mb.e_mbd.lossless[0] = is_lossless_requested(&cpi->oxcf);
+
+  if (!cpi->refresh_alt_ref_frame && (current_frame->frame_number == 0 ||
+                                      (cpi->frame_flags & FRAMEFLAGS_KEY))) {
+    frame_params->frame_type = KEY_FRAME;
+  } else {
+    frame_params->frame_type = INTER_FRAME;
+  }
+
   av1_encode(cpi, NULL, frame_input, frame_params, NULL);
   return AOM_CODEC_OK;
 }
@@ -324,11 +335,32 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
                         uint8_t *const dest, unsigned int *frame_flags,
                         const EncodeFrameInput *const frame_input) {
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
+  AV1_COMMON *const cm = &cpi->common;
 
   EncodeFrameParams frame_params;
   EncodeFrameResults frame_results;
   memset(&frame_params, 0, sizeof(frame_params));
   memset(&frame_results, 0, sizeof(frame_results));
+
+  if (oxcf->pass == 2 &&
+      (!cm->show_existing_frame || cpi->rc.is_src_frame_alt_ref)) {
+    // GF_GROUP needs updating for arf overlays as well as non-show-existing
+    av1_rc_get_second_pass_params(cpi, &frame_params);
+  }
+  if (cm->show_existing_frame && frame_params.frame_type != KEY_FRAME) {
+    // Force show-existing frames to be INTER, except forward keyframes
+    frame_params.frame_type = INTER_FRAME;
+  }
+
+  if (!cm->show_existing_frame) {
+    cm->using_qmatrix = cpi->oxcf.using_qm;
+    cm->min_qmlevel = cpi->oxcf.qm_minlevel;
+    cm->max_qmlevel = cpi->oxcf.qm_maxlevel;
+    if (cpi->twopass.gf_group.index == 1 && cpi->oxcf.enable_tpl_model) {
+      av1_set_frame_size(cpi, cm->width, cm->height);
+      av1_tpl_setup_stats(cpi, frame_input);
+    }
+  }
 
   frame_params.frame_flags = frame_flags;
 

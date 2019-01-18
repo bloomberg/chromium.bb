@@ -171,6 +171,7 @@ typedef struct {
 } TWO_PASS;
 
 struct AV1_COMP;
+struct EncodeFrameParams;
 
 void av1_init_first_pass(struct AV1_COMP *cpi);
 void av1_rc_get_first_pass_params(struct AV1_COMP *cpi);
@@ -178,7 +179,8 @@ void av1_first_pass(struct AV1_COMP *cpi, const int64_t ts_duration);
 void av1_end_first_pass(struct AV1_COMP *cpi);
 
 void av1_init_second_pass(struct AV1_COMP *cpi);
-void av1_rc_get_second_pass_params(struct AV1_COMP *cpi);
+void av1_rc_get_second_pass_params(
+    struct AV1_COMP *cpi, struct EncodeFrameParams *const frame_params);
 void av1_configure_buffer_updates_firstpass(struct AV1_COMP *cpi,
                                             FRAME_UPDATE_TYPE update_type);
 

@@ -71,7 +71,6 @@
 #include "av1/encoder/segmentation.h"
 #include "av1/encoder/speed_features.h"
 #include "av1/encoder/temporal_filter.h"
-#include "av1/encoder/tpl_model.h"
 #include "av1/encoder/reconinter_enc.h"
 
 #define DEFAULT_EXPLICIT_ORDER_HINT_BITS 7
@@ -4031,7 +4030,7 @@ static int set_size_literal(AV1_COMP *cpi, int width, int height) {
   return 0;
 }
 
-static void set_frame_size(AV1_COMP *cpi, int width, int height) {
+void av1_set_frame_size(AV1_COMP *cpi, int width, int height) {
   AV1_COMMON *const cm = &cpi->common;
   const SequenceHeader *const seq_params = &cm->seq_params;
   const int num_planes = av1_num_planes(cm);
@@ -4265,7 +4264,7 @@ static int validate_size_scales(RESIZE_MODE resize_mode,
 }
 
 // Calculates resize and superres params for next frame
-size_params_type av1_calculate_next_size_params(AV1_COMP *cpi) {
+static size_params_type calculate_next_size_params(AV1_COMP *cpi) {
   const AV1EncoderConfig *oxcf = &cpi->oxcf;
   size_params_type rsz = { oxcf->width, oxcf->height, SCALE_NUMERATOR };
   int resize_denom;
@@ -4299,13 +4298,13 @@ static void setup_frame_size_from_params(AV1_COMP *cpi,
   cm->superres_scale_denominator = rsz->superres_denom;
   av1_calculate_scaled_superres_size(&encode_width, &encode_height,
                                      rsz->superres_denom);
-  set_frame_size(cpi, encode_width, encode_height);
+  av1_set_frame_size(cpi, encode_width, encode_height);
 }
 
 static void setup_frame_size(AV1_COMP *cpi) {
   // Reset superres params from previous frame.
   cpi->common.superres_scale_denominator = SCALE_NUMERATOR;
-  const size_params_type rsz = av1_calculate_next_size_params(cpi);
+  const size_params_type rsz = calculate_next_size_params(cpi);
   setup_frame_size_from_params(cpi, &rsz);
 }
 
@@ -4549,11 +4548,6 @@ static void finalize_encoded_frame(AV1_COMP *const cpi) {
     }
     assert(frame_to_show->ref_count > 0);
     assign_frame_buffer_p(&cm->cur_frame, frame_to_show);
-    if (cm->reset_decoder_state && frame_to_show->frame_type != KEY_FRAME) {
-      aom_internal_error(
-          &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-          "show_existing_frame to reset state on KEY_FRAME only");
-    }
   }
 
   if (!encode_show_existing_frame(cm) &&
@@ -5166,11 +5160,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   if (encode_show_existing_frame(cm)) {
     // NOTE(zoeliu): In BIDIR_PRED, the existing frame to show is the current
     //               BWDREF_FRAME in the reference frame buffer.
-    if (current_frame->frame_type == KEY_FRAME) {
-      cm->reset_decoder_state = 1;
-    } else {
-      current_frame->frame_type = INTER_FRAME;
-    }
     cm->show_frame = 1;
     cpi->frame_flags = *frame_flags;
 
@@ -5533,6 +5522,7 @@ int av1_encode(AV1_COMP *const cpi, uint8_t *const dest,
   cpi->unscaled_last_source = frame_input->last_source;
 
   cm->error_resilient_mode = frame_params->error_resilient_mode;
+  cm->current_frame.frame_type = frame_params->frame_type;
   cpi->ref_frame_flags = frame_params->ref_frame_flags;
   cpi->speed = frame_params->speed;
 
@@ -6070,7 +6060,6 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 
   // Initialize fields related to forward keyframes
   cpi->no_show_kf = 0;
-  cm->reset_decoder_state = 0;
 
   cm->show_existing_frame &= allow_show_existing(cpi);
 
@@ -6134,24 +6123,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     cpi->common.frame_presentation_time = (uint32_t)pts64;
   }
 
-  if (oxcf->pass == 2) {
-    // GF_GROUP needs updating for arf overlays as well as non-show-existing
-    if (!cm->show_existing_frame || cpi->rc.is_src_frame_alt_ref) {
-      av1_rc_get_second_pass_params(cpi);
-    }
-  } else if (oxcf->pass == 1) {
-    setup_frame_size(cpi);
-  }
-
-  if (!cm->show_existing_frame) {
-    cm->using_qmatrix = cpi->oxcf.using_qm;
-    cm->min_qmlevel = cpi->oxcf.qm_minlevel;
-    cm->max_qmlevel = cpi->oxcf.qm_maxlevel;
-    if (cpi->twopass.gf_group.index == 1 && cpi->oxcf.enable_tpl_model) {
-      set_frame_size(cpi, cm->width, cm->height);
-      av1_tpl_setup_stats(cpi, &frame_input);
-    }
-  }
+  if (oxcf->pass == 1) setup_frame_size(cpi);
 
   if (av1_encode_strategy(cpi, size, dest, frame_flags, &frame_input) !=
       AOM_CODEC_OK) {
