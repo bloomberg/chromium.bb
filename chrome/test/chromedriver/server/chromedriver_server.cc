@@ -48,6 +48,7 @@
 #include "net/server/http_server_response_info.h"
 #include "net/socket/tcp_server_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "url/gurl.h"
 
 namespace {
 
