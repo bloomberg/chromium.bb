@@ -64,6 +64,7 @@
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -1503,6 +1504,9 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void IncrementNumberOfCanvases();
 
+  void ProcessJavaScriptUrl(const KURL&, ContentSecurityPolicyDisposition);
+  void CancelPendingJavaScriptUrl();
+
  protected:
   void DidUpdateSecurityOrigin() final;
 
@@ -1589,6 +1593,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void UpdateBaseURL();
 
   void ExecuteScriptsWaitingForResources();
+  void ExecuteJavaScriptUrl(const KURL&, ContentSecurityPolicyDisposition);
 
   void LoadEventDelayTimerFired(TimerBase*);
   void PluginLoadingTimerFired(TimerBase*);
@@ -1698,6 +1703,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool compatibility_mode_locked_;
 
   TaskHandle execute_scripts_waiting_for_resources_task_handle_;
+  TaskHandle javascript_url_task_handle_;
 
   bool has_autofocused_;
   WebFocusType last_focus_type_;

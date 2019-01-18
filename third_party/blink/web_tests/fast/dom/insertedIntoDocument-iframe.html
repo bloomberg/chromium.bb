@@ -21,13 +21,9 @@ window.onload = function()
     parent.innerHTML = "<iframe></iframe><element id='element'/>";
 
     iframe = parent.firstChild;
-    iframe.src = "javascript:top.document.body.removeChild(top.parent)";
+    iframe.src = "javascript:top.document.body.removeChild(top.parent); top.parent = top.iframe = null; top.gc()";
     
     document.body.appendChild(parent);
-
-    parent = iframe = null;
-    gc();
-    
     setTimeout(finishTest, 0);
 }
 
