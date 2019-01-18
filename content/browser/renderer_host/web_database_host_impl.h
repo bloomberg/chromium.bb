@@ -35,6 +35,7 @@ class CONTENT_EXPORT WebDatabaseHostImpl
  private:
   FRIEND_TEST_ALL_PREFIXES(WebDatabaseHostImplTest, BadMessagesUnauthorized);
   FRIEND_TEST_ALL_PREFIXES(WebDatabaseHostImplTest, BadMessagesInvalid);
+  FRIEND_TEST_ALL_PREFIXES(WebDatabaseHostImplTest, ProcessShutdown);
 
   // blink::mojom::WebDatabaseHost:
   void OpenFile(const base::string16& vfs_file_name,

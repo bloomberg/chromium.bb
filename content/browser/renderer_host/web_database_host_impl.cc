@@ -46,6 +46,10 @@ void ValidateOriginOnUIThread(
     mojo::ReportBadMessageCallback error_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  // Return early if the process was shutdown before this task was able to run.
+  if (!RenderProcessHost::FromID(process_id))
+    return;
+
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanAccessDataForOrigin(
           process_id, origin.GetURL())) {
     callback_task_runner->PostTask(
