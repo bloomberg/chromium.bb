@@ -303,9 +303,11 @@ function getThemeBackgroundInfo() {
  */
 function getIsThemeDark() {
   var info = getThemeBackgroundInfo();
-  if (!info) {
-    return false;
+  if (!info || info.usingDefaultTheme) {
+    // Dark mode is always considered a dark theme.
+    return configData.isDarkModeEnabled;
   }
+
   // Heuristic: light text implies dark theme.
   var rgba = info.textColorRgba;
   var luminance = 0.3 * rgba[0] + 0.59 * rgba[1] + 0.11 * rgba[2];
@@ -337,7 +339,10 @@ function renderTheme() {
   if (!info.customBackgroundConfigured) {
     document.body.style.background = background;
   }
-  document.body.classList.toggle(CLASSES.ALTERNATE_LOGO, info.alternateLogo);
+  // Dark mode uses a white Google logo.
+  const useWhiteLogo = info.alternateLogo ||
+      (info.usingDefaultTheme && configData.isDarkModeEnabled);
+  document.body.classList.toggle(CLASSES.ALTERNATE_LOGO, useWhiteLogo);
   var isNonWhiteBackground = !WHITE_BACKGROUND_COLORS.includes(background);
   document.body.classList.toggle(CLASSES.NON_WHITE_BG, isNonWhiteBackground);
   updateThemeAttribution(info.attributionUrl, info.imageHorizontalAlignment);
@@ -417,6 +422,7 @@ function sendThemeInfoToMostVisitedIframe() {
 
 /**
  * Updates the OneGoogleBar (if it is loaded) based on the current theme.
+ * TODO(crbug.com/918582): Add support for OGB dark mode.
  * @private
  */
 function renderOneGoogleBarTheme() {
