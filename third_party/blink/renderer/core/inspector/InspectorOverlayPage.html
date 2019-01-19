@@ -651,9 +651,13 @@ function _createElementDescription(elementInfo)
         sampleText.style.color = fgColor;
         sampleText.style.backgroundColor = contrast.backgroundColor;
         sampleText.textContent = "Aa";
-        if (ratio < threshold)
-            valueElement.style.color = "red";
-        valueElement.createTextChild(ratio);
+        const valueSpan = valueElement.createChild("span");
+        valueSpan.textContent = Math.round(ratio * 100) / 100;
+        if (ratio < threshold) {
+            valueSpan.style.color = "red";
+            valueSpan.style.paddingRight = "5px";
+            valueElement.createTextChild(` < ${threshold.toFixed(1)}`);
+        }
     }
 
     return elementInfoElement;
