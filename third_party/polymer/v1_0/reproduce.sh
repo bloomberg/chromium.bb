@@ -101,7 +101,7 @@ echo 'Stripping unnecessary prefixed CSS rules...'
 python css_strip_prefixes.py
 
 echo 'Generating -rgb versions of --google-* vars in paper-style/colors.html...'
-python rgbify_hex_vars.py --filter-prefix=google \
+python rgbify_hex_vars.py --filter-prefix=google --replace \
     components-chromium/paper-styles/color.html
 
 echo 'Creating a summary of components...'

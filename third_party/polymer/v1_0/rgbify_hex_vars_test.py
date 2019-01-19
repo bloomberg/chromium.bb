@@ -8,8 +8,8 @@ import unittest
 
 
 class RgbifyHexVarsTest(unittest.TestCase):
-  def checkProduces(self, content, expected, prefix=''):
-    actual = rgbify_hex_vars.Rgbify(content, prefix=prefix)
+  def checkProduces(self, content, expected, **kwargs):
+    actual = rgbify_hex_vars.Rgbify(content, **kwargs)
     self.assertEquals(actual, expected)
 
   def checkSame(self, content):
@@ -18,10 +18,16 @@ class RgbifyHexVarsTest(unittest.TestCase):
   def testPrefixFiltering(self):
     self.checkProduces('--google-blue-500: #010203;\n' +
                        '--paper-green-300: #445566;',
-                       '--google-blue-500: #010203;\n' +
                        '--google-blue-500-rgb: 1, 2, 3;\n' +
+                       '--google-blue-500: #010203;\n' +
                        '--paper-green-300: #445566;',
                        prefix='google')
+
+  def testReplace(self):
+    self.checkProduces('--var-name: #01020f;',
+                       '--var-name-rgb: 1, 2, 15;  /* #01020f */\n' +
+                       '--var-name: rgb(var(--var-name-rgb));',
+                       replace=True)
 
   def testStuffToBeIgnored(self):
     self.checkSame('#bada55 { color: red; }')
@@ -30,11 +36,11 @@ class RgbifyHexVarsTest(unittest.TestCase):
 
   def testValidHexVars(self):
     self.checkProduces('--color-var: #010203;',
-                       '--color-var: #010203;\n' +
-                       '--color-var-rgb: 1, 2, 3;')
+                       '--color-var-rgb: 1, 2, 3;\n' +
+                       '--color-var: #010203;')
     self.checkProduces('--hi: #102030;',
-                       '--hi: #102030;\n' +
-                       '--hi-rgb: 16, 32, 48;')
+                       '--hi-rgb: 16, 32, 48;\n' +
+                       '--hi: #102030;')
 
 
 if __name__ == '__main__':
