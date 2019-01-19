@@ -28,6 +28,8 @@ const LayeredAPIResource kLayeredAPIResources[] = {
 
     {"kv-storage/index.js", IDR_LAYERED_API_KV_STORAGE_INDEX_JS},
     {"kv-storage/idb_utils.js", IDR_LAYERED_API_KV_STORAGE_IDB_UTILS_JS},
+    {"kv-storage/async_iterator.js",
+     IDR_LAYERED_API_KV_STORAGE_ASYNC_ITERATOR_JS},
 
     {"virtual-scroller/index.js", IDR_LAYERED_API_VIRTUAL_SCROLLER_INDEX_JS},
     {"virtual-scroller/item-source.js",

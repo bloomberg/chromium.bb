@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {promiseForRequest, throwForDisallowedKey, promiseForTransaction} from './idb_utils.js';
+import {createStorageAreaAsyncIterator} from './async_iterator.js';
+import {promiseForRequest, promiseForTransaction, throwForDisallowedKey} from './idb_utils.js';
 
 // TODOs/spec-noncompliances:
 // - Susceptible to tampering of built-in prototypes and globals. We want to
@@ -87,37 +88,31 @@ export class StorageArea {
     return promiseForRequest(self.indexedDB.deleteDatabase(_databaseName.get(this)));
   }
 
-  async keys() {
-    return performDatabaseOperation(this, 'readonly', (transaction, store) => {
-      return promiseForRequest(store.getAllKeys(undefined));
-    });
+  keys() {
+    if (!_databasePromise.has(this)) {
+      throw new TypeError('Invalid this value');
+    }
+
+    return createStorageAreaAsyncIterator(
+        'keys', steps => performDatabaseOperation(this, 'readonly', steps));
   }
 
-  async values() {
-    return performDatabaseOperation(this, 'readonly', (transaction, store) => {
-      const request = store.getAll(undefined);
+  values() {
+    if (!_databasePromise.has(this)) {
+      throw new TypeError('Invalid this value');
+    }
 
-      return new Promise((resolve, reject) => {
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-      });
-    });
+    return createStorageAreaAsyncIterator(
+        'values', steps => performDatabaseOperation(this, 'readonly', steps));
   }
 
-  async entries() {
-    return performDatabaseOperation(this, 'readonly', (transaction, store) => {
-      const keysRequest = store.getAllKeys(undefined);
-      const valuesRequest = store.getAll(undefined);
+  entries() {
+    if (!_databasePromise.has(this)) {
+      throw new TypeError('Invalid this value');
+    }
 
-      return new Promise((resolve, reject) => {
-        keysRequest.onerror = () => reject(keysRequest.error);
-        valuesRequest.onerror = () => reject(valuesRequest.error);
-
-        valuesRequest.onsuccess = () => {
-          resolve(zip(keysRequest.result, valuesRequest.result));
-        };
-      });
-    });
+    return createStorageAreaAsyncIterator(
+        'entries', steps => performDatabaseOperation(this, 'readonly', steps));
   }
 
   get backingStore() {
@@ -132,6 +127,8 @@ export class StorageArea {
     };
   }
 }
+
+StorageArea.prototype[Symbol.asyncIterator] = StorageArea.prototype.entries;
 
 export const storage = new StorageArea(DEFAULT_STORAGE_AREA_NAME);
 
@@ -176,13 +173,4 @@ function initializeDatabasePromise(area) {
           }
         };
       }));
-}
-
-function zip(a, b) {
-  const result = [];
-  for (let i = 0; i < a.length; ++i) {
-    result.push([a[i], b[i]]);
-  }
-
-  return result;
 }
