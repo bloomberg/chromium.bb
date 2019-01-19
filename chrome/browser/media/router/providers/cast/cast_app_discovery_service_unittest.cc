@@ -72,7 +72,7 @@ class CastAppDiscoveryServiceTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::SimpleTestTickClock clock_;
-  cast_channel::MockCastSocketService socket_service_;
+  testing::NiceMock<cast_channel::MockCastSocketService> socket_service_;
   cast_channel::MockCastSocket socket_;
   cast_channel::MockCastMessageHandler message_handler_;
   TestMediaSinkService media_sink_service_;

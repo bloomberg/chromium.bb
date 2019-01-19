@@ -19,22 +19,44 @@ using base::Value;
 namespace cast_channel {
 
 namespace {
-// Text payload keys.
-constexpr char kTypeNodeId[] = "type";
-constexpr char kRequestIdNodeId[] = "requestId";
 
-// Cast application protocol message types. Keep in sync with CastMessageType.
-constexpr char kKeepAlivePingType[] = "PING";
-constexpr char kKeepAlivePongType[] = "PONG";
-constexpr char kGetAppAvailabilityRequestType[] = "GET_APP_AVAILABILITY";
-constexpr char kReceiverStatusRequestType[] = "GET_STATUS";
-constexpr char kConnectionRequestType[] = "CONNECT";
-constexpr char kCloseConnectionRequestType[] = "CLOSE";
-constexpr char kBroadcastRequestType[] = "APPLICATION_BROADCAST";
-constexpr char kLaunchRequestType[] = "LAUNCH";
-constexpr char kStopRequestType[] = "STOP";
-constexpr char kReceiverStatusType[] = "RECEIVER_STATUS";
-constexpr char kLaunchErrorType[] = "LAUNCH_ERROR";
+// String values for CastMessageType enum.
+constexpr char kCastMessageTypePingString[] = "PING";
+constexpr char kCastMessageTypePongString[] = "PONG";
+constexpr char kCastMessageTypeGetAppAvailabilityString[] =
+    "GET_APP_AVAILABILITY";
+constexpr char kCastMessageTypeReceiverStatusRequestString[] = "GET_STATUS";
+constexpr char kCastMessageTypeConnectString[] = "CONNECT";
+constexpr char kCastMessageTypeCloseConnectionString[] = "CLOSE";
+constexpr char kCastMessageTypeBroadcastString[] = "APPLICATION_BROADCAST";
+constexpr char kCastMessageTypeLaunchString[] = "LAUNCH";
+constexpr char kCastMessageTypeStopString[] = "STOP";
+constexpr char kCastMessageTypeReceiverStatusString[] = "RECEIVER_STATUS";
+constexpr char kCastMessageTypeMediaStatusString[] = "MEDIA_STATUS";
+constexpr char kCastMessageTypeLaunchErrorString[] = "LAUNCH_ERROR";
+
+// String values for V2MessageType enum.
+constexpr char kV2MessageTypeEditTracksInfoString[] = "EDIT_TRACKS_INFO";
+constexpr char kV2MessageTypeGetStatusString[] = "GET_STATUS";
+constexpr char kV2MessageTypeLoadString[] = "LOAD";
+constexpr char kV2MessageTypeMediaGetStatusString[] = "MEDIA_GET_STATUS";
+constexpr char kV2MessageTypeMediaSetVolumeString[] = "MEDIA_SET_VOLUME";
+constexpr char kV2MessageTypePauseString[] = "PAUSE";
+constexpr char kV2MessageTypePlayString[] = "PLAY";
+constexpr char kV2MessageTypePrecacheString[] = "PRECACHE";
+constexpr char kV2MessageTypeQueueInsertString[] = "QUEUE_INSERT";
+constexpr char kV2MessageTypeQueueLoadString[] = "QUEUE_LOAD";
+constexpr char kV2MessageTypeQueueRemoveString[] = "QUEUE_REMOVE";
+constexpr char kV2MessageTypeQueueReorderString[] = "QUEUE_REORDER";
+constexpr char kV2MessageTypeQueueUpdateString[] = "QUEUE_UPDATE";
+constexpr char kV2MessageTypeSeekString[] = "SEEK";
+constexpr char kV2MessageTypeSetVolumeString[] = "SET_VOLUME";
+constexpr char kV2MessageTypeStopString[] = "STOP";
+constexpr char kV2MessageTypeStopMediaString[] = "STOP_MEDIA";
+
+// String values for GetAppAvailabilityResult enum.
+constexpr char kGetAppAvailabilityResultAvailableString[] = "APP_AVAILABLE";
+constexpr char kGetAppAvailabilityResultUnavailableString[] = "APP_UNAVAILABLE";
 
 // The value used for "sdkType" in a virtual connect request. Historically, this
 // value is used in the Media Router extension, but here it is reused in Chrome.
@@ -54,9 +76,9 @@ void FillCommonCastMessageFields(CastMessage* message,
   message->set_namespace_(message_namespace);
 }
 
-CastMessage CreateKeepAliveMessage(const char* keep_alive_type) {
+CastMessage CreateKeepAliveMessage(base::StringPiece keep_alive_type) {
   base::Value type_dict(base::Value::Type::DICTIONARY);
-  type_dict.SetKey(kTypeNodeId, base::Value(keep_alive_type));
+  type_dict.SetKey("type", base::Value(keep_alive_type));
   return CreateCastMessage(kHeartbeatNamespace, type_dict, kPlatformSenderId,
                            kPlatformReceiverId);
 }
@@ -76,6 +98,31 @@ int GetVirtualConnectPlatformValue() {
 #else
   return 0;
 #endif
+}
+
+// Maps from from API-internal message types to "real" message types from the
+// Cast V2 protocol.  This is necessary because the protocol defines messages
+// with the same type in different namespaces, and the namespace is lost when
+// messages are passed using a CastInternalMessage object.
+std::string GetRemappedMediaRequestType(const std::string& v2_message_type) {
+  V2MessageType type = V2MessageTypeFromString(v2_message_type);
+  DCHECK(IsMediaRequestMessageType(type));
+  const char* result;
+  switch (type) {
+    case V2MessageType::kStopMedia:
+      result = ToString(V2MessageType::kStop);
+      break;
+    case V2MessageType::kMediaSetVolume:
+      result = ToString(V2MessageType::kSetVolume);
+      break;
+    case V2MessageType::kMediaGetStatus:
+      result = ToString(V2MessageType::kGetStatus);
+      break;
+    default:
+      return v2_message_type;
+  }
+  DCHECK(result);
+  return result;
 }
 
 }  // namespace
@@ -102,69 +149,147 @@ bool IsCastInternalNamespace(const std::string& message_namespace) {
 }
 
 CastMessageType ParseMessageTypeFromPayload(const base::Value& payload) {
-  const Value* type_string =
-      payload.FindKeyOfType(kTypeNodeId, Value::Type::STRING);
+  const Value* type_string = payload.FindKeyOfType("type", Value::Type::STRING);
   return type_string ? CastMessageTypeFromString(type_string->GetString())
                      : CastMessageType::kOther;
 }
 
-const char* CastMessageTypeToString(CastMessageType message_type) {
+const char* ToString(CastMessageType message_type) {
   switch (message_type) {
     case CastMessageType::kPing:
-      return kKeepAlivePingType;
+      return kCastMessageTypePingString;
     case CastMessageType::kPong:
-      return kKeepAlivePongType;
+      return kCastMessageTypePongString;
     case CastMessageType::kGetAppAvailability:
-      return kGetAppAvailabilityRequestType;
+      return kCastMessageTypeGetAppAvailabilityString;
     case CastMessageType::kReceiverStatusRequest:
-      return kReceiverStatusRequestType;
+      return kCastMessageTypeReceiverStatusRequestString;
     case CastMessageType::kConnect:
-      return kConnectionRequestType;
+      return kCastMessageTypeConnectString;
     case CastMessageType::kCloseConnection:
-      return kCloseConnectionRequestType;
+      return kCastMessageTypeCloseConnectionString;
     case CastMessageType::kBroadcast:
-      return kBroadcastRequestType;
+      return kCastMessageTypeBroadcastString;
     case CastMessageType::kLaunch:
-      return kLaunchRequestType;
+      return kCastMessageTypeLaunchString;
     case CastMessageType::kStop:
-      return kStopRequestType;
+      return kCastMessageTypeStopString;
     case CastMessageType::kReceiverStatus:
-      return kReceiverStatusType;
+      return kCastMessageTypeReceiverStatusString;
+    case CastMessageType::kMediaStatus:
+      return kCastMessageTypeMediaStatusString;
     case CastMessageType::kLaunchError:
-      return kLaunchErrorType;
-    case CastMessageType::kOther:
+      return kCastMessageTypeLaunchErrorString;
+    default:
       return "";
   }
-  NOTREACHED();
-  return "";
+}
+
+const char* ToString(V2MessageType message_type) {
+  switch (message_type) {
+    case V2MessageType::kEditTracksInfo:
+      return kV2MessageTypeEditTracksInfoString;
+    case V2MessageType::kGetStatus:
+      return kV2MessageTypeGetStatusString;
+    case V2MessageType::kLoad:
+      return kV2MessageTypeLoadString;
+    case V2MessageType::kMediaGetStatus:
+      return kV2MessageTypeMediaGetStatusString;
+    case V2MessageType::kMediaSetVolume:
+      return kV2MessageTypeMediaSetVolumeString;
+    case V2MessageType::kPause:
+      return kV2MessageTypePauseString;
+    case V2MessageType::kPlay:
+      return kV2MessageTypePlayString;
+    case V2MessageType::kPrecache:
+      return kV2MessageTypePrecacheString;
+    case V2MessageType::kQueueInsert:
+      return kV2MessageTypeQueueInsertString;
+    case V2MessageType::kQueueLoad:
+      return kV2MessageTypeQueueLoadString;
+    case V2MessageType::kQueueRemove:
+      return kV2MessageTypeQueueRemoveString;
+    case V2MessageType::kQueueReorder:
+      return kV2MessageTypeQueueReorderString;
+    case V2MessageType::kQueueUpdate:
+      return kV2MessageTypeQueueUpdateString;
+    case V2MessageType::kSeek:
+      return kV2MessageTypeSeekString;
+    case V2MessageType::kSetVolume:
+      return kV2MessageTypeSetVolumeString;
+    case V2MessageType::kStop:
+      return kV2MessageTypeStopString;
+    case V2MessageType::kStopMedia:
+      return kV2MessageTypeStopMediaString;
+    default:
+      return nullptr;
+  }
 }
 
 CastMessageType CastMessageTypeFromString(const std::string& type) {
-  if (type == kKeepAlivePingType)
+  if (type == kCastMessageTypePingString)
     return CastMessageType::kPing;
-  if (type == kKeepAlivePongType)
+  if (type == kCastMessageTypePongString)
     return CastMessageType::kPong;
-  if (type == kGetAppAvailabilityRequestType)
+  if (type == kCastMessageTypeGetAppAvailabilityString)
     return CastMessageType::kGetAppAvailability;
-  if (type == kReceiverStatusRequestType)
+  if (type == kCastMessageTypeReceiverStatusRequestString)
     return CastMessageType::kReceiverStatusRequest;
-  if (type == kConnectionRequestType)
+  if (type == kCastMessageTypeConnectString)
     return CastMessageType::kConnect;
-  if (type == kCloseConnectionRequestType)
+  if (type == kCastMessageTypeCloseConnectionString)
     return CastMessageType::kCloseConnection;
-  if (type == kBroadcastRequestType)
+  if (type == kCastMessageTypeBroadcastString)
     return CastMessageType::kBroadcast;
-  if (type == kLaunchRequestType)
+  if (type == kCastMessageTypeLaunchString)
     return CastMessageType::kLaunch;
-  if (type == kStopRequestType)
+  if (type == kCastMessageTypeStopString)
     return CastMessageType::kStop;
-  if (type == kReceiverStatusType)
+  if (type == kCastMessageTypeReceiverStatusString)
     return CastMessageType::kReceiverStatus;
-  if (type == kLaunchErrorType)
+  if (type == kCastMessageTypeMediaStatusString)
+    return CastMessageType::kMediaStatus;
+  if (type == kCastMessageTypeLaunchErrorString)
     return CastMessageType::kLaunchError;
-
   DVLOG(1) << "Unknown message type: " << type;
   return CastMessageType::kOther;
+}
+
+V2MessageType V2MessageTypeFromString(const std::string& type) {
+  if (type == kV2MessageTypeGetStatusString)
+    return V2MessageType::kGetStatus;
+  if (type == kV2MessageTypeLoadString)
+    return V2MessageType::kLoad;
+  if (type == kV2MessageTypeMediaGetStatusString)
+    return V2MessageType::kMediaGetStatus;
+  if (type == kV2MessageTypeMediaSetVolumeString)
+    return V2MessageType::kMediaSetVolume;
+  if (type == kV2MessageTypePauseString)
+    return V2MessageType::kPause;
+  if (type == kV2MessageTypePlayString)
+    return V2MessageType::kPlay;
+  if (type == kV2MessageTypePrecacheString)
+    return V2MessageType::kPrecache;
+  if (type == kV2MessageTypeQueueInsertString)
+    return V2MessageType::kQueueInsert;
+  if (type == kV2MessageTypeQueueLoadString)
+    return V2MessageType::kQueueLoad;
+  if (type == kV2MessageTypeQueueRemoveString)
+    return V2MessageType::kQueueRemove;
+  if (type == kV2MessageTypeQueueReorderString)
+    return V2MessageType::kQueueReorder;
+  if (type == kV2MessageTypeQueueUpdateString)
+    return V2MessageType::kQueueUpdate;
+  if (type == kV2MessageTypeSeekString)
+    return V2MessageType::kSeek;
+  if (type == kV2MessageTypeSetVolumeString)
+    return V2MessageType::kSetVolume;
+  if (type == kV2MessageTypeStopString)
+    return V2MessageType::kStop;
+  if (type == kV2MessageTypeStopMediaString)
+    return V2MessageType::kStopMedia;
+  else
+    return V2MessageType::kOther;
 }
 
 std::string CastMessageToString(const CastMessage& message_proto) {
@@ -231,11 +356,11 @@ bool IsPlatformSenderMessage(const CastMessage& message) {
 }
 
 CastMessage CreateKeepAlivePingMessage() {
-  return CreateKeepAliveMessage(kKeepAlivePingType);
+  return CreateKeepAliveMessage(kCastMessageTypePingString);
 }
 
 CastMessage CreateKeepAlivePongMessage() {
-  return CreateKeepAliveMessage(kKeepAlivePongType);
+  return CreateKeepAliveMessage(kCastMessageTypePongString);
 }
 
 CastMessage CreateVirtualConnectionRequest(
@@ -260,7 +385,7 @@ CastMessage CreateVirtualConnectionRequest(
   }
 
   Value dict(Value::Type::DICTIONARY);
-  dict.SetKey(kTypeNodeId, Value(kConnectionRequestType));
+  dict.SetKey("type", Value(kCastMessageTypeConnectString));
   dict.SetKey("userAgent", Value(user_agent));
   dict.SetKey("connType", Value(connection_type));
   dict.SetKey("origin", Value(Value::Type::DICTIONARY));
@@ -284,11 +409,11 @@ CastMessage CreateGetAppAvailabilityRequest(const std::string& source_id,
                                             int request_id,
                                             const std::string& app_id) {
   Value dict(Value::Type::DICTIONARY);
-  dict.SetKey(kTypeNodeId, Value(kGetAppAvailabilityRequestType));
+  dict.SetKey("type", Value(kCastMessageTypeGetAppAvailabilityString));
   Value app_id_value(Value::Type::LIST);
   app_id_value.GetList().push_back(Value(app_id));
   dict.SetKey("appId", std::move(app_id_value));
-  dict.SetKey(kRequestIdNodeId, Value(request_id));
+  dict.SetKey("requestId", Value(request_id));
 
   return CreateCastMessage(kReceiverNamespace, dict, source_id,
                            kPlatformReceiverId);
@@ -297,8 +422,8 @@ CastMessage CreateGetAppAvailabilityRequest(const std::string& source_id,
 CastMessage CreateReceiverStatusRequest(const std::string& source_id,
                                         int request_id) {
   Value dict(Value::Type::DICTIONARY);
-  dict.SetKey(kTypeNodeId, Value(kReceiverStatusRequestType));
-  dict.SetKey(kRequestIdNodeId, Value(request_id));
+  dict.SetKey("type", Value(kCastMessageTypeReceiverStatusRequestString));
+  dict.SetKey("requestId", Value(request_id));
   return CreateCastMessage(kReceiverNamespace, dict, source_id,
                            kPlatformReceiverId);
 }
@@ -318,7 +443,7 @@ CastMessage CreateBroadcastRequest(const std::string& source_id,
                                    const std::vector<std::string>& app_ids,
                                    const BroadcastRequest& request) {
   Value dict(Value::Type::DICTIONARY);
-  dict.SetKey(kTypeNodeId, Value(kBroadcastRequestType));
+  dict.SetKey("type", Value(kCastMessageTypeBroadcastString));
   std::vector<Value> app_ids_value;
   for (const std::string& app_id : app_ids)
     app_ids_value.push_back(Value(app_id));
@@ -335,8 +460,8 @@ CastMessage CreateLaunchRequest(const std::string& source_id,
                                 const std::string& app_id,
                                 const std::string& locale) {
   Value dict(Value::Type::DICTIONARY);
-  dict.SetKey(kTypeNodeId, Value(kLaunchRequestType));
-  dict.SetKey(kRequestIdNodeId, Value(request_id));
+  dict.SetKey("type", Value(kCastMessageTypeLaunchString));
+  dict.SetKey("requestId", Value(request_id));
   dict.SetKey("appId", Value(app_id));
   dict.SetKey("language", Value(locale));
 
@@ -348,8 +473,8 @@ CastMessage CreateStopRequest(const std::string& source_id,
                               int request_id,
                               const std::string& session_id) {
   Value dict(Value::Type::DICTIONARY);
-  dict.SetKey(kTypeNodeId, Value(kStopRequestType));
-  dict.SetKey(kRequestIdNodeId, Value(request_id));
+  dict.SetKey("type", Value(kCastMessageTypeStopString));
+  dict.SetKey("requestId", Value(request_id));
   dict.SetKey("sessionId", Value(session_id));
   return CreateCastMessage(kReceiverNamespace, dict, source_id,
                            kPlatformReceiverId);
@@ -368,28 +493,72 @@ CastMessage CreateCastMessage(const std::string& message_namespace,
   return output;
 }
 
-const char* GetAppAvailabilityResultToString(GetAppAvailabilityResult result) {
-  switch (result) {
-    case GetAppAvailabilityResult::kAvailable:
-      return "available";
-    case GetAppAvailabilityResult::kUnavailable:
-      return "unavailable";
-    case GetAppAvailabilityResult::kUnknown:
-      return "unknown";
+CastMessage CreateMediaRequest(const base::Value& body,
+                               int request_id,
+                               const std::string& source_id,
+                               const std::string& destination_id) {
+  Value dict = body.Clone();
+  Value* type = dict.FindKeyOfType("type", Value::Type::STRING);
+  CHECK(type);
+  dict.SetKey("type", Value(GetRemappedMediaRequestType(type->GetString())));
+  dict.SetKey("requestId", Value(request_id));
+  return CreateCastMessage(kMediaNamespace, dict, source_id, destination_id);
+}
+
+CastMessage CreateSetVolumeRequest(const base::Value& body,
+                                   int request_id,
+                                   const std::string& source_id) {
+  DCHECK(body.FindKeyOfType("type", Value::Type::STRING) &&
+         body.FindKeyOfType("type", Value::Type::STRING)->GetString() ==
+             kV2MessageTypeSetVolumeString);
+  Value dict = body.Clone();
+  dict.RemoveKey("sessionId");
+  dict.SetKey("requestId", Value(request_id));
+  return CreateCastMessage(kReceiverNamespace, dict, source_id,
+                           kPlatformReceiverId);
+}
+
+bool IsMediaRequestMessageType(V2MessageType type) {
+  switch (type) {
+    case V2MessageType::kEditTracksInfo:
+    case V2MessageType::kLoad:
+    case V2MessageType::kMediaGetStatus:
+    case V2MessageType::kMediaSetVolume:
+    case V2MessageType::kPause:
+    case V2MessageType::kPlay:
+    case V2MessageType::kPrecache:
+    case V2MessageType::kQueueInsert:
+    case V2MessageType::kQueueLoad:
+    case V2MessageType::kQueueRemove:
+    case V2MessageType::kQueueReorder:
+    case V2MessageType::kQueueUpdate:
+    case V2MessageType::kSeek:
+    case V2MessageType::kStopMedia:
+      return true;
+    default:
+      return false;
   }
 }
 
-bool GetRequestIdFromResponse(const Value& payload, int* request_id) {
-  DCHECK(request_id);
+const char* ToString(GetAppAvailabilityResult result) {
+  switch (result) {
+    case GetAppAvailabilityResult::kAvailable:
+      return kGetAppAvailabilityResultAvailableString;
+    case GetAppAvailabilityResult::kUnavailable:
+      return kGetAppAvailabilityResultUnavailableString;
+    default:
+      return nullptr;
+  }
+}
+
+base::Optional<int> GetRequestIdFromResponse(const Value& payload) {
   DCHECK(payload.is_dict());
 
   const Value* request_id_value =
-      payload.FindKeyOfType(kRequestIdNodeId, Value::Type::INTEGER);
+      payload.FindKeyOfType("requestId", Value::Type::INTEGER);
   if (!request_id_value)
-    return false;
-
-  *request_id = request_id_value->GetInt();
-  return true;
+    return base::nullopt;
+  return request_id_value->GetInt();
 }
 
 GetAppAvailabilityResult GetAppAvailabilityResultFromResponse(
@@ -398,14 +567,13 @@ GetAppAvailabilityResult GetAppAvailabilityResultFromResponse(
   DCHECK(payload.is_dict());
   const Value* availability_value =
       payload.FindPathOfType({"availability", app_id}, Value::Type::STRING);
-  if (!availability_value)
-    return GetAppAvailabilityResult::kUnknown;
-
-  if (availability_value->GetString() == "APP_AVAILABLE")
-    return GetAppAvailabilityResult::kAvailable;
-  if (availability_value->GetString() == "APP_UNAVAILABLE")
-    return GetAppAvailabilityResult::kUnavailable;
-
+  if (availability_value) {
+    const std::string& result_str = availability_value->GetString();
+    if (result_str == kGetAppAvailabilityResultAvailableString)
+      return GetAppAvailabilityResult::kAvailable;
+    if (result_str == kGetAppAvailabilityResultUnavailableString)
+      return GetAppAvailabilityResult::kUnavailable;
+  }
   return GetAppAvailabilityResult::kUnknown;
 }
 
@@ -415,17 +583,17 @@ LaunchSessionResponse::LaunchSessionResponse(LaunchSessionResponse&& other) =
 LaunchSessionResponse::~LaunchSessionResponse() = default;
 
 LaunchSessionResponse GetLaunchSessionResponse(const base::Value& payload) {
-  const Value* type_value =
-      payload.FindKeyOfType(kTypeNodeId, Value::Type::STRING);
+  const Value* type_value = payload.FindKeyOfType("type", Value::Type::STRING);
   if (!type_value)
     return LaunchSessionResponse();
 
-  if (type_value->GetString() != kReceiverStatusType &&
-      type_value->GetString() != kLaunchErrorType)
+  CastMessageType type = CastMessageTypeFromString(type_value->GetString());
+  if (type != CastMessageType::kReceiverStatus &&
+      type != CastMessageType::kLaunchError)
     return LaunchSessionResponse();
 
   LaunchSessionResponse response;
-  if (type_value->GetString() == kLaunchErrorType) {
+  if (type == CastMessageType::kLaunchError) {
     response.result = LaunchSessionResponse::Result::kError;
     return response;
   }

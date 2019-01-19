@@ -68,6 +68,8 @@ class CastSocket {
     // Invoked when |socket| receives a message.
     virtual void OnMessage(const CastSocket& socket,
                            const CastMessage& message) = 0;
+
+    virtual void OnReadyStateChanged(const CastSocket& socket);
   };
 
   virtual ~CastSocket() {}

@@ -175,7 +175,7 @@ void CastAppDiscoveryServiceImpl::UpdateAppAvailability(
     return;
 
   DVLOG(1) << "App " << app_id << " on sink " << sink_id << " is "
-           << cast_channel::GetAppAvailabilityResultToString(availability);
+           << ToString(availability);
 
   UpdateSinkQueries(availability_tracker_.UpdateAppAvailability(
       sink_id, app_id, {availability, clock_->NowTicks()}));
