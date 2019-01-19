@@ -8,7 +8,8 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/shelf/shelf_tooltip_bubble_base.h"
+#include "ash/public/cpp/shelf_types.h"
+#include "ash/shelf/shelf_bubble.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/window_preview.h"
 #include "ash/wm/window_mirror_view.h"
@@ -18,13 +19,13 @@
 namespace ash {
 
 // The implementation of tooltip bubbles for the shelf item.
-class ASH_EXPORT ShelfTooltipPreviewBubble : public ShelfTooltipBubbleBase,
+class ASH_EXPORT ShelfTooltipPreviewBubble : public ShelfBubble,
                                              public WindowPreview::Delegate {
  public:
   ShelfTooltipPreviewBubble(views::View* anchor,
-                            views::BubbleBorder::Arrow arrow,
                             const std::vector<aura::Window*>& windows,
                             ShelfTooltipManager* manager,
+                            ShelfAlignment alignment,
                             SkColor background_color);
   ~ShelfTooltipPreviewBubble() override;
 
@@ -35,7 +36,7 @@ class ASH_EXPORT ShelfTooltipPreviewBubble : public ShelfTooltipBubbleBase,
   // BubbleDialogDelegateView overrides:
   gfx::Size CalculatePreferredSize() const override;
 
-  // ShelfTooltipBubbleBase:
+  // ShelfBubble:
   bool ShouldCloseOnPressDown() override;
   bool ShouldCloseOnMouseExit() override;
 
