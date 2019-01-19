@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/tabs/tab_network_state.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_throbber.h"
 #include "ui/views/view.h"
@@ -23,7 +25,7 @@ struct TabRendererData;
 // the width is TabIcon::GetIdealWidth(), and the height goes down to the
 // bottom of the enclosing view (this is so the crashed tab can animate out of
 // the bottom).
-class TabIcon : public views::View {
+class TabIcon : public views::View, public gfx::AnimationDelegate {
  public:
   // Attention indicator types (use as a bitmask). There is only one visual
   // representation, but the state of each of these is tracked separately and
@@ -69,6 +71,10 @@ class TabIcon : public views::View {
   void OnPaint(gfx::Canvas* canvas) override;
   void OnThemeChanged() override;
 
+  // gfx::AnimationDelegate:
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
+
   // Paints the attention indicator and |favicon_| at the given location.
   void PaintAttentionIndicatorAndIcon(gfx::Canvas* canvas,
                                       const gfx::ImageSkia& icon,
@@ -76,7 +82,7 @@ class TabIcon : public views::View {
 
   // Paint either the indeterimate throbber or progress indicator according to
   // current tab state.
-  void PaintLoadingAnimation(gfx::Canvas* canvas, const gfx::Rect& bounds);
+  void PaintLoadingAnimation(gfx::Canvas* canvas, gfx::Rect bounds);
 
   // Gets either the crashed icon or favicon to be rendered for the tab.
   const gfx::ImageSkia& GetIconToPaint();
@@ -138,6 +144,10 @@ class TabIcon : public views::View {
   // When this is 0 it will be drawn at the normal location, and when this is 1
   // it will be drawn off the bottom.
   double hiding_fraction_ = 0.0;
+
+  // Animation used when the favicon fades in after being shown inside the
+  // loading-state spinner.
+  gfx::LinearAnimation favicon_fade_in_animation_;
 
   // Crash animation (in place of favicon). Lazily created since most of the
   // time it will be unneeded.
