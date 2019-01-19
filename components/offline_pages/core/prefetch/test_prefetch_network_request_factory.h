@@ -14,6 +14,8 @@
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/version_info/channel.h"
 
+class PrefService;
+
 namespace offline_pages {
 
 // Test factory that uses a TestURLRequestContextGetter.
@@ -21,9 +23,10 @@ namespace offline_pages {
 class TestPrefetchNetworkRequestFactory
     : public PrefetchNetworkRequestFactoryImpl {
  public:
-  TestPrefetchNetworkRequestFactory();
+  TestPrefetchNetworkRequestFactory(PrefService* prefs);
   explicit TestPrefetchNetworkRequestFactory(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      PrefService* prefs);
   ~TestPrefetchNetworkRequestFactory() override;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;

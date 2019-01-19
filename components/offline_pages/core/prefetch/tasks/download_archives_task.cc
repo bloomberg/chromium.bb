@@ -19,6 +19,9 @@
 #include "sql/transaction.h"
 
 namespace offline_pages {
+namespace prefetch_prefs {
+bool IsLimitlessPrefetchingEnabled(PrefService*);
+}
 
 namespace {
 
@@ -81,13 +84,14 @@ bool MarkItemAsDownloading(sql::Database* db,
 }
 
 std::unique_ptr<ItemsToDownload> SelectAndMarkItemsForDownloadSync(
+    bool is_limitless_prefetching_enabled,
     sql::Database* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return nullptr;
 
   const int max_concurrent_downloads =
-      IsLimitlessPrefetchingEnabled()
+      is_limitless_prefetching_enabled
           ? DownloadArchivesTask::kMaxConcurrentDownloadsForLimitless
           : DownloadArchivesTask::kMaxConcurrentDownloads;
 
@@ -101,7 +105,7 @@ std::unique_ptr<ItemsToDownload> SelectAndMarkItemsForDownloadSync(
 
   PrefetchDownloaderQuota downloader_quota(db, OfflineClock());
   int64_t available_quota = downloader_quota.GetAvailableQuotaBytes();
-  if (available_quota <= 0 && !IsLimitlessPrefetchingEnabled())
+  if (available_quota <= 0 && !is_limitless_prefetching_enabled)
     return nullptr;
 
   ItemsToDownload ready_items = FindItemsReadyForDownload(db);
@@ -121,7 +125,7 @@ std::unique_ptr<ItemsToDownload> SelectAndMarkItemsForDownloadSync(
     // is disabled. If it is enabled then always proceed but still decrement the
     // quota allowing it to become negative.
     if (ready_item.archive_body_length > available_quota &&
-        !IsLimitlessPrefetchingEnabled()) {
+        !is_limitless_prefetching_enabled) {
       continue;
     }
     available_quota -= ready_item.archive_body_length;
@@ -165,12 +169,15 @@ DownloadArchivesTask::DownloadItem::DownloadItem(const DownloadItem& other) =
 
 DownloadArchivesTask::DownloadArchivesTask(
     PrefetchStore* prefetch_store,
-    PrefetchDownloader* prefetch_downloader)
+    PrefetchDownloader* prefetch_downloader,
+    PrefService* prefs)
     : prefetch_store_(prefetch_store),
       prefetch_downloader_(prefetch_downloader),
+      prefs_(prefs),
       weak_ptr_factory_(this) {
   DCHECK(prefetch_store_);
   DCHECK(prefetch_downloader_);
+  DCHECK(prefs_);
 }
 
 DownloadArchivesTask::~DownloadArchivesTask() = default;
@@ -183,7 +190,8 @@ void DownloadArchivesTask::Run() {
   }
 
   prefetch_store_->Execute(
-      base::BindOnce(&SelectAndMarkItemsForDownloadSync),
+      base::BindOnce(&SelectAndMarkItemsForDownloadSync,
+                     prefetch_prefs::IsLimitlessPrefetchingEnabled(prefs_)),
       base::BindOnce(&DownloadArchivesTask::SendItemsToPrefetchDownloader,
                      weak_ptr_factory_.GetWeakPtr()),
       std::unique_ptr<ItemsToDownload>());

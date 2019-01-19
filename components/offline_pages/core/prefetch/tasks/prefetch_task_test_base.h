@@ -68,14 +68,18 @@ class PrefetchTaskTestBase : public TaskTestBase {
 
   MockPrefetchItemGenerator* item_generator() { return &item_generator_; }
 
-  TestingPrefServiceSimple* prefs() { return &prefs_; }
+  TestingPrefServiceSimple* prefs() { return prefs_.get(); }
 
  private:
-  TestingPrefServiceSimple prefs_;
-  network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory>
       test_shared_url_loader_factory_;
+
+ protected:
+  std::unique_ptr<TestingPrefServiceSimple> prefs_;
+
+ private:
   TestPrefetchNetworkRequestFactory prefetch_request_factory_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
   PrefetchStoreTestUtil store_test_util_;
   MockPrefetchItemGenerator item_generator_;
 };

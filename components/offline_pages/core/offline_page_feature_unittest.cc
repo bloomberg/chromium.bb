@@ -83,36 +83,6 @@ TEST(OfflinePageFeatureTest, OfflinePagesPrefetching) {
   EXPECT_TRUE(offline_pages::IsPrefetchingOfflinePagesEnabled());
 }
 
-TEST(OfflinePageFeatureTest, OfflinePagesLimitlessPrefetching) {
-  // Disabled by default.
-  EXPECT_FALSE(offline_pages::IsLimitlessPrefetchingEnabled());
-
-  // This feature depends on the core prefetching feature.
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(kPrefetchingOfflinePagesFeature);
-    EXPECT_FALSE(offline_pages::IsLimitlessPrefetchingEnabled());
-  }
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(
-        kOfflinePagesLimitlessPrefetchingFeature);
-    EXPECT_FALSE(offline_pages::IsLimitlessPrefetchingEnabled());
-  }
-
-  // Check if helper method works correctly when all required features are
-  // enabled.
-  // TODO(https://crbug.com/803584): fix limitless mode or fully remove it.
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitWithFeatures(
-        {kPrefetchingOfflinePagesFeature,
-         kOfflinePagesLimitlessPrefetchingFeature},
-        {});
-    EXPECT_FALSE(offline_pages::IsLimitlessPrefetchingEnabled());
-  }
-}
-
 TEST(OfflinePageFeatureTest, OfflinePagesInDownloadHomeOpenInCct) {
   // Enabled by default.
   EXPECT_TRUE(offline_pages::ShouldOfflinePagesInDownloadHomeOpenInCct());

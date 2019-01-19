@@ -41,7 +41,7 @@ void PrefetchBackgroundTaskHandlerImpl::CancelBackgroundTask() {
 }
 
 void PrefetchBackgroundTaskHandlerImpl::EnsureTaskScheduled() {
-  if (IsLimitlessPrefetchingEnabled()) {
+  if (prefetch_prefs::IsLimitlessPrefetchingEnabled(prefs_)) {
     PrefetchBackgroundTaskScheduler::ScheduleLimitless(
         GetAdditionalBackoffSeconds());
   } else {
