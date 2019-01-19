@@ -106,9 +106,9 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
           base::FeatureList::IsEnabled(
               assistant::features::kAssistantAppSupport))),
       chromium_api_delegate_(service->io_task_runner()),
+      display_connection_(std::make_unique<CrosDisplayConnection>(this)),
       assistant_settings_manager_(
           std::make_unique<AssistantSettingsManagerImpl>(service, this)),
-      display_connection_(std::make_unique<CrosDisplayConnection>(this)),
       service_(service),
       background_thread_("background thread"),
       weak_factory_(this) {
