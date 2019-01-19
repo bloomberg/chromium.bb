@@ -384,7 +384,7 @@ DataReductionProxyIOData::CreateCustomProxyConfig(
   auto config = network::mojom::CustomProxyConfig::New();
   config->rules =
       configurator_
-          ->CreateProxyConfig(false /* probe_url_config */,
+          ->CreateProxyConfig(true /* probe_url_config */,
                               config_->GetNetworkPropertiesManager(),
                               proxies_for_http)
           .proxy_rules();
