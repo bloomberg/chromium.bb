@@ -122,9 +122,8 @@ class ScopedTextureBinder {
   ScopedTextureBinder(gles2::ContextState* state,
                       GLenum target,
                       GLuint texture,
-                      GrContext* gr_context,
-                      bool state_is_dirty)
-      : state_(state), target_(target), state_is_dirty_(state_is_dirty) {
+                      GrContext* gr_context)
+      : state_(state), target_(target) {
     auto* api = state->api();
     api->glActiveTextureFn(GL_TEXTURE0);
     api->glBindTextureFn(target_, texture);
@@ -132,15 +131,11 @@ class ScopedTextureBinder {
       gr_context->resetContext(kTextureBinding_GrGLBackendState);
   }
 
-  ~ScopedTextureBinder() {
-    if (!state_is_dirty_)
-      state_->api()->glBindTextureFn(target_, 0);
-  }
+  ~ScopedTextureBinder() { state_->api()->glBindTextureFn(target_, 0); }
 
  private:
   gles2::ContextState* state_;
   GLenum target_;
-  const bool state_is_dirty_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedTextureBinder);
 };
@@ -1339,11 +1334,8 @@ bool RasterDecoderImpl::ClearLevel(gles2::Texture* texture,
   }
 
   {
-    const bool state_is_dirty =
-        raster_decoder_context_state_->need_context_state_reset;
     ScopedTextureBinder binder(state(), texture->target(),
-                               texture->service_id(), gr_context(),
-                               state_is_dirty);
+                               texture->service_id(), gr_context());
     base::Optional<ScopedPixelUnpackState> pixel_unpack_state;
     if (raster_decoder_context_state_->need_context_state_reset) {
       pixel_unpack_state.emplace(state(), gr_context(), group_->feature_info());
@@ -1734,9 +1726,8 @@ void RasterDecoderImpl::DoCopySubTextureINTERNAL(
   GLint source_level = 0;
   GLint dest_level = 0;
 
-  ScopedTextureBinder binder(
-      state(), dest_target, dest_texture->service_id(), gr_context(),
-      raster_decoder_context_state_->need_context_state_reset);
+  ScopedTextureBinder binder(state(), dest_target, dest_texture->service_id(),
+                             gr_context());
   base::Optional<ScopedPixelUnpackState> pixel_unpack_state;
 
   int source_width = 0;

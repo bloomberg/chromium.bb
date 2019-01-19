@@ -371,12 +371,9 @@ void RasterDecoderTestBase::SetBucketAsCStrings(uint32_t bucket_id,
 
 void RasterDecoderTestBase::SetScopedTextureBinderExpectations(GLenum target) {
   // ScopedTextureBinder
-  EXPECT_CALL(*gl_, ActiveTexture(_))
-      .Times(Between(1, 2))
-      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ActiveTexture(_)).Times(1).RetiresOnSaturation();
   EXPECT_CALL(*gl_, BindTexture(target, Ne(0U))).Times(1).RetiresOnSaturation();
-  if (!raster_decoder_context_state_->need_context_state_reset)
-    EXPECT_CALL(*gl_, BindTexture(target, 0)).Times(1).RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindTexture(target, 0)).Times(1).RetiresOnSaturation();
 }
 
 void RasterDecoderTestBase::SetupClearTextureExpectations(
@@ -392,9 +389,7 @@ void RasterDecoderTestBase::SetupClearTextureExpectations(
     GLsizei width,
     GLsizei height,
     GLuint bound_pixel_unpack_buffer) {
-  EXPECT_CALL(*gl_, BindTexture(bind_target, service_id))
-      .Times(1)
-      .RetiresOnSaturation();
+  SetScopedTextureBinderExpectations(bind_target);
   EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_ALIGNMENT, _))
       .Times(1)
       .RetiresOnSaturation();
