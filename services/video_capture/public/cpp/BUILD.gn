@@ -35,8 +35,14 @@ source_set("mocks") {
     "mock_device_factory_provider.h",
     "mock_producer.cc",
     "mock_producer.h",
+    "mock_push_subscription.cc",
+    "mock_push_subscription.h",
     "mock_receiver.cc",
     "mock_receiver.h",
+    "mock_video_source.cc",
+    "mock_video_source.h",
+    "mock_video_source_provider.cc",
+    "mock_video_source_provider.h",
   ]
 
   public_deps = [
