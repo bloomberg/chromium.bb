@@ -6046,7 +6046,8 @@ mojom::FrameNavigationControl* RenderFrameHostImpl::GetNavigationControl() {
 }
 
 bool RenderFrameHostImpl::ValidateDidCommitParams(
-    FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params) {
+    FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params,
+    bool is_same_document_navigation) {
   RenderProcessHost* process = GetProcess();
 
   // Error pages may sometimes commit a URL in the wrong process, which requires
@@ -6116,6 +6117,69 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
     DEBUG_ALIAS_FOR_ORIGIN(origin_debug_alias, validated_params->origin);
     LogRendererKillCrashKeys(GetSiteInstance()->GetSiteURL());
 
+    // Temporary instrumentation to debug the root cause of
+    // https://crbug.com/923144.
+    auto bool_to_crash_key = [](bool b) { return b ? "true" : "false"; };
+    base::debug::SetCrashKeyString(
+        base::debug::AllocateCrashKeyString("is_same_document",
+                                            base::debug::CrashKeySize::Size32),
+        bool_to_crash_key(is_same_document_navigation));
+
+    base::debug::SetCrashKeyString(
+        base::debug::AllocateCrashKeyString("is_subframe",
+                                            base::debug::CrashKeySize::Size32),
+        bool_to_crash_key(!frame_tree_node_->IsMainFrame()));
+
+    base::debug::SetCrashKeyString(
+        base::debug::AllocateCrashKeyString("is_active",
+                                            base::debug::CrashKeySize::Size32),
+        bool_to_crash_key(is_active()));
+
+    base::debug::SetCrashKeyString(
+        base::debug::AllocateCrashKeyString("is_current",
+                                            base::debug::CrashKeySize::Size32),
+        bool_to_crash_key(IsCurrent()));
+
+    base::debug::SetCrashKeyString(
+        base::debug::AllocateCrashKeyString("is_cross_process_subframe",
+                                            base::debug::CrashKeySize::Size32),
+        bool_to_crash_key(IsCrossProcessSubframe()));
+
+    if (navigation_request_ && navigation_request_->navigation_handle()) {
+      NavigationHandleImpl* handle = navigation_request_->navigation_handle();
+      base::debug::SetCrashKeyString(
+          base::debug::AllocateCrashKeyString(
+              "is_renderer_initiated", base::debug::CrashKeySize::Size32),
+          bool_to_crash_key(handle->IsRendererInitiated()));
+
+      base::debug::SetCrashKeyString(
+          base::debug::AllocateCrashKeyString(
+              "is_server_redirect", base::debug::CrashKeySize::Size32),
+          bool_to_crash_key(handle->WasServerRedirect()));
+
+      base::debug::SetCrashKeyString(
+          base::debug::AllocateCrashKeyString(
+              "is_form_submission", base::debug::CrashKeySize::Size32),
+          bool_to_crash_key(handle->IsFormSubmission()));
+
+      base::debug::SetCrashKeyString(
+          base::debug::AllocateCrashKeyString(
+              "is_error_page", base::debug::CrashKeySize::Size32),
+          bool_to_crash_key(handle->IsErrorPage()));
+
+      base::debug::SetCrashKeyString(
+          base::debug::AllocateCrashKeyString(
+              "initiator_origin", base::debug::CrashKeySize::Size64),
+          handle->GetInitiatorOrigin()
+              ? handle->GetInitiatorOrigin()->Serialize()
+              : "none");
+
+      base::debug::SetCrashKeyString(
+          base::debug::AllocateCrashKeyString(
+              "starting_site_instance", base::debug::CrashKeySize::Size64),
+          handle->GetStartingSiteInstance()->GetSiteURL().spec());
+    }
+
     // Kills the process.
     bad_message::ReceivedBadMessage(process,
                                     bad_message::RFH_INVALID_ORIGIN_ON_COMMIT);
@@ -6169,7 +6233,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   DCHECK_EQ(ui::PageTransitionIsMainFrame(validated_params->transition),
             !GetParent());
 
-  if (!ValidateDidCommitParams(validated_params))
+  if (!ValidateDidCommitParams(validated_params, is_same_document_navigation))
     return false;
 
   // Set is loading to true now if it has not been set yet. This happens for
