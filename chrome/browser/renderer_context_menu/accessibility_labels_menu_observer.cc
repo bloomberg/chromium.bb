@@ -80,14 +80,14 @@ void AccessibilityLabelsMenuObserver::ExecuteCommand(int command_id) {
     // service immediately.
     if (!profile->GetPrefs()->GetBoolean(
             prefs::kAccessibilityImageLabelsEnabled)) {
-      content::RenderViewHost* rvh = proxy_->GetRenderViewHost();
-      gfx::Rect rect = rvh->GetWidget()->GetView()->GetViewBounds();
-      std::unique_ptr<AccessibilityLabelsBubbleModel> model(
-          new AccessibilityLabelsBubbleModel(profile,
-                                             proxy_->GetWebContents()));
+      content::WebContents* web_contents = proxy_->GetWebContents();
+      content::RenderWidgetHostView* view =
+          proxy_->GetRenderViewHost()->GetWidget()->GetView();
+      gfx::Rect rect = view->GetViewBounds();
+      auto model = std::make_unique<AccessibilityLabelsBubbleModel>(
+          profile, web_contents);
       chrome::ShowConfirmBubble(
-          proxy_->GetWebContents()->GetTopLevelNativeWindow(),
-          rvh->GetWidget()->GetView()->GetNativeView(),
+          web_contents->GetTopLevelNativeWindow(), view->GetNativeView(),
           gfx::Point(rect.CenterPoint().x(), rect.y()), std::move(model));
     } else {
       if (profile) {
