@@ -240,7 +240,6 @@ const char TestingProfile::kTestUserProfileDir[] = "Default";
 TestingProfile::TestingProfile()
     : start_time_(Time::Now()),
       testing_prefs_(NULL),
-      force_incognito_(false),
       original_profile_(NULL),
       guest_session_(false),
       last_session_exited_cleanly_(true),
@@ -259,7 +258,6 @@ TestingProfile::TestingProfile()
 TestingProfile::TestingProfile(const base::FilePath& path)
     : start_time_(Time::Now()),
       testing_prefs_(NULL),
-      force_incognito_(false),
       original_profile_(NULL),
       guest_session_(false),
       last_session_exited_cleanly_(true),
@@ -276,7 +274,6 @@ TestingProfile::TestingProfile(const base::FilePath& path)
 TestingProfile::TestingProfile(const base::FilePath& path, Delegate* delegate)
     : start_time_(Time::Now()),
       testing_prefs_(NULL),
-      force_incognito_(false),
       original_profile_(NULL),
       guest_session_(false),
       last_session_exited_cleanly_(true),
@@ -313,7 +310,6 @@ TestingProfile::TestingProfile(
     : start_time_(Time::Now()),
       prefs_(std::move(prefs)),
       testing_prefs_(NULL),
-      force_incognito_(false),
       original_profile_(parent),
       guest_session_(guest_session),
       is_new_profile_(std::move(is_new_profile)),
@@ -519,9 +515,6 @@ void TestingProfile::FinishInit() {
 }
 
 TestingProfile::~TestingProfile() {
-  // Revert to non-incognito mode before shutdown.
-  force_incognito_ = false;
-
   // If this profile owns an incognito profile, tear it down first.
   incognito_profile_.reset();
 
@@ -671,13 +664,13 @@ std::string TestingProfile::GetProfileUserName() const {
 Profile::ProfileType TestingProfile::GetProfileType() const {
   if (guest_session_)
     return GUEST_PROFILE;
-  if (force_incognito_ || original_profile_)
+  if (original_profile_)
     return INCOGNITO_PROFILE;
   return REGULAR_PROFILE;
 }
 
 bool TestingProfile::IsOffTheRecord() const {
-  return force_incognito_ || original_profile_;
+  return original_profile_;
 }
 
 void TestingProfile::SetOffTheRecordProfile(std::unique_ptr<Profile> profile) {
