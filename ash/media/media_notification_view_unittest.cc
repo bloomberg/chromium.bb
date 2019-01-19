@@ -41,6 +41,8 @@ namespace {
 // the image.
 const int kMediaButtonIconSize = 24;
 
+const char kTestAppName[] = "app name";
+
 // Checks if the view class name is used by a media button.
 bool IsMediaButtonType(const char* class_name) {
   return class_name == views::ImageButton::kViewClassName ||
@@ -177,7 +179,10 @@ class MediaNotificationViewTest : public AshTestBase {
     return media_controller_.get();
   }
 
-  views::View* header_row() const { return view_->header_row_; }
+  message_center::NotificationHeaderView* header_row() const {
+    return view_->header_row_;
+  }
+
   views::View* button_row() const { return view_->button_row_; }
 
   views::View* title_artist_row() const { return view_->title_artist_row_; }
@@ -542,6 +547,26 @@ TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver_NoTitle) {
   EXPECT_TRUE(artist_label()->visible());
 
   EXPECT_EQ(metadata.artist, artist_label()->text());
+}
+
+TEST_F(MediaNotificationViewTest, UpdateMetadata_AppName) {
+  EXPECT_EQ(
+      message_center::MessageCenter::Get()->GetSystemNotificationAppName(),
+      header_row()->app_name_for_testing());
+
+  media_session::MediaMetadata metadata;
+  metadata.source_title = base::ASCIIToUTF16(kTestAppName);
+
+  GetItem()->MediaSessionMetadataChanged(metadata);
+
+  EXPECT_EQ(base::ASCIIToUTF16(kTestAppName),
+            header_row()->app_name_for_testing());
+
+  GetItem()->MediaSessionMetadataChanged(media_session::MediaMetadata());
+
+  EXPECT_EQ(
+      message_center::MessageCenter::Get()->GetSystemNotificationAppName(),
+      header_row()->app_name_for_testing());
 }
 
 TEST_F(MediaNotificationViewTest, Buttons_WhenCollapsed) {

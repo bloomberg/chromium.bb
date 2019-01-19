@@ -218,6 +218,13 @@ void MediaNotificationView::UpdateWithMediaSessionInfo(
 
 void MediaNotificationView::UpdateWithMediaMetadata(
     const media_session::MediaMetadata& metadata) {
+  if (!metadata.source_title.empty()) {
+    header_row_->SetAppName(metadata.source_title);
+  } else {
+    header_row_->SetAppName(
+        message_center::MessageCenter::Get()->GetSystemNotificationAppName());
+  }
+
   if (metadata.title.empty() && metadata.artist.empty()) {
     title_artist_row_->SetVisible(false);
     return;

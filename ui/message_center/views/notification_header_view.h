@@ -55,6 +55,8 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
 
   SkColor accent_color_for_testing() { return accent_color_; }
 
+  const base::string16& app_name_for_testing() const;
+
  private:
   // Update visibility for both |summary_text_view_| and |timestamp_view_|.
   void UpdateSummaryTextVisibility();
