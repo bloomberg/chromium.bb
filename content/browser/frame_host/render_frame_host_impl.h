@@ -1379,7 +1379,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // the renderer during the commit notification.
   // A return value of true means that the commit should proceed.
   bool ValidateDidCommitParams(
-      FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params);
+      FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params,
+      bool is_same_document_navigation);
 
   // Updates the site url if the navigation was successful and the page is not
   // an interstitial.
