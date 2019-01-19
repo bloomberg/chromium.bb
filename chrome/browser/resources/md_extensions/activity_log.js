@@ -35,6 +35,12 @@ cr.define('extensions', function() {
     getFilteredExtensionActivityLog(extensionId, searchTerm) {}
 
     /**
+     * @param {!Array<string>} activityIds
+     * @return {!Promise<void>}
+     */
+    deleteActivitiesById(activityIds) {}
+
+    /**
      * @param {string} extensionId
      * @return {!Promise<void>}
      */
@@ -108,6 +114,7 @@ cr.define('extensions', function() {
     const groupedActivities = new Map();
 
     for (const activity of activityData) {
+      const activityId = activity.activityId;
       const activityType = activity.activityType;
       const count = activity.count;
       const pageUrl = activity.pageUrl;
@@ -127,6 +134,7 @@ cr.define('extensions', function() {
       for (const key of activityGroupKeys) {
         if (!groupedActivities.has(key)) {
           const activityGroup = {
+            activityIds: new Set([activityId]),
             key,
             count,
             activityType,
@@ -135,6 +143,7 @@ cr.define('extensions', function() {
           groupedActivities.set(key, activityGroup);
         } else {
           const activityGroup = groupedActivities.get(key);
+          activityGroup.activityIds.add(activityId);
           activityGroup.count += count;
 
           if (pageUrl) {
@@ -223,6 +232,7 @@ cr.define('extensions', function() {
     navigationListener_: null,
 
     listeners: {
+      'delete-activity-log-item': 'deleteItem_',
       'view-enter-start': 'onViewEnterStart_',
     },
 
@@ -290,6 +300,18 @@ cr.define('extensions', function() {
     onClearButtonTap_: function() {
       this.delegate.deleteActivitiesFromExtension(this.extensionId).then(() => {
         this.processActivities_([]);
+      });
+    },
+
+    /** @private */
+    deleteItem_: function(e) {
+      const activityIds = e.detail.activityIds;
+      this.delegate.deleteActivitiesById(activityIds).then(() => {
+        // It is possible for multiple activities displayed to have the same
+        // underlying activity ID. This happens when we split content script and
+        // web request activities by fields other than their API call. For
+        // consistency, we will re-fetch the activity log.
+        this.refreshActivities();
       });
     },
 

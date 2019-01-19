@@ -21,6 +21,7 @@ suite('ExtensionsActivityLogItemTest', function() {
   setup(function() {
     PolymerTest.clearBody();
     testActivityGroup = {
+      activityIds: ['1'],
       key: 'i18n.getUILanguage',
       count: 1,
       activityType: chrome.activityLogPrivate.ExtensionActivityFilter.API_CALL,
@@ -48,14 +49,15 @@ suite('ExtensionsActivityLogItemTest', function() {
   test('clicking the expand button shows the associated page url', function() {
     const countsByUrl = new Map([['google.com', 1]]);
 
-    testApiGroup = {
-      apiCall: 'Storage.getItem',
+    testActivityGroup = {
+      activityIds: ['2'],
+      key: 'Storage.getItem',
       count: 3,
       activityType:
           chrome.activityLogPrivate.ExtensionActivityFilter.DOM_ACCESS,
       countsByUrl
     };
-    activityLogItem.set('data', testApiGroup);
+    activityLogItem.set('data', testActivityGroup);
 
     Polymer.dom.flush();
 
@@ -70,6 +72,7 @@ suite('ExtensionsActivityLogItemTest', function() {
     const countsByUrl = new Map([['google.com', 1]]);
 
     testActivityGroup = {
+      activityIds: ['3'],
       key: 'Storage.getItem',
       count: 3,
       activityType:
@@ -92,6 +95,7 @@ suite('ExtensionsActivityLogItemTest', function() {
         new Map([['google.com', 5], ['chrome://extensions', 10]]);
 
     testActivityGroup = {
+      activityIds: ['1'],
       key: 'Storage.getItem',
       count: 15,
       activityType:

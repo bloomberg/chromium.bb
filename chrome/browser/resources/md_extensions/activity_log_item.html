@@ -94,7 +94,8 @@
       </cr-expand-button>
       <div class="separator" hidden$="[[!isExpandable_]]"></div>
       <paper-icon-button-light id="activity-delete" class="icon-delete-gray">
-        <button aria-describedby="api-call" aria-label="$i18n{clearEntry}">
+        <button id="activity-delete-button" aria-describedby="api-call"
+            aria-label="$i18n{clearEntry}" on-click="onDeleteTap_">
         </button>
       </paper-icon-button-light>
     </div>

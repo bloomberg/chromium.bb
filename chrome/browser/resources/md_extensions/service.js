@@ -399,6 +399,13 @@ cr.define('extensions', function() {
     }
 
     /** @override */
+    deleteActivitiesById(activityIds) {
+      return new Promise(function(resolve, reject) {
+        chrome.activityLogPrivate.deleteActivities(activityIds, resolve);
+      });
+    }
+
+    /** @override */
     deleteActivitiesFromExtension(extensionId) {
       return new Promise(function(resolve, reject) {
         chrome.activityLogPrivate.deleteActivitiesByExtension(

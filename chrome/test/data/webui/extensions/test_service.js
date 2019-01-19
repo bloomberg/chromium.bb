@@ -8,6 +8,7 @@ cr.define('extensions', function() {
     constructor() {
       super([
         'addRuntimeHostPermission',
+        'deleteActivitiesById',
         'deleteActivitiesFromExtension',
         'getExtensionActivityLog',
         'getExtensionsInfo',
@@ -186,6 +187,17 @@ cr.define('extensions', function() {
       return Promise.resolve({
         activities: [...apiCallMatches, ...pageUrlMatches, ...argUrlMatches]
       });
+    }
+
+    /** @override */
+    deleteActivitiesById(activityIds) {
+      // Pretend to delete all activities specified by activityIds.
+      const newActivities = this.testActivities.activities.filter(
+          activity => !activityIds.includes(activity.activityId));
+      this.testActivities = {activities: newActivities};
+
+      this.methodCalled('deleteActivitiesById', activityIds);
+      return Promise.resolve();
     }
 
     /** @override */

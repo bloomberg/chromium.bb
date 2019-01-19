@@ -7,6 +7,7 @@ cr.define('extensions', function() {
 
   /**
    * @typedef {{
+   *   activityIds: !Set<string>,
    *   key: string,
    *   count: number,
    *   activityType: !chrome.activityLogPrivate.ExtensionActivityFilter,
@@ -73,6 +74,14 @@ cr.define('extensions', function() {
             }
             return a.page < b.page ? -1 : (a.page > b.page ? 1 : 0);
           });
+    },
+
+    /** @private */
+    onDeleteTap_: function(e) {
+      e.stopPropagation();
+      this.fire(
+          'delete-activity-log-item',
+          {activityIds: Array.from(this.data.activityIds.values())});
     },
 
     /** @private */

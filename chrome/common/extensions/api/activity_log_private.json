@@ -105,6 +105,11 @@
             "type": "array",
             "items": { "type": "string" },
             "description": "Erases only the activities which IDs are listed in the array."
+          }, {
+            "type": "function",
+            "name": "callback",
+            "parameters": [],
+            "optional": true
           }
         ]
       },

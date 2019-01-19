@@ -265,6 +265,30 @@ suite('ExtensionsActivityLogTest', function() {
         });
   });
 
+  test(
+      'clicking on the delete button for an activity row deletes that row',
+      function() {
+        Polymer.dom.flush();
+        let activityLogItems =
+            activityLog.shadowRoot.querySelectorAll('activity-log-item');
+
+        expectEquals(activityLogItems.length, 2);
+        proxyDelegate.resetResolver('getExtensionActivityLog');
+        activityLogItems[0].$$('#activity-delete-button').click();
+
+        // We delete the first item so we should only have one item left. This
+        // chaining reflects the API calls made from activity_log.js.
+        return proxyDelegate.whenCalled('deleteActivitiesById')
+            .then(() => proxyDelegate.whenCalled('getExtensionActivityLog'))
+            .then(() => {
+              Polymer.dom.flush();
+              expectEquals(
+                  1,
+                  activityLog.shadowRoot.querySelectorAll('activity-log-item')
+                      .length);
+            });
+      });
+
   test('clicking on clear activities button clears activities', function() {
     activityLog.$$('#clear-activities-button').click();
 
