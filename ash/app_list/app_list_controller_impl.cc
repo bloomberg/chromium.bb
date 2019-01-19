@@ -599,8 +599,6 @@ void AppListControllerImpl::OnDisplayConfigurationChanged() {
 
   if (should_be_shown)
     ShowHomeLauncher();
-  else
-    DismissAppList();
 }
 
 void AppListControllerImpl::Back() {
