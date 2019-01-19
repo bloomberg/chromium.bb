@@ -10,21 +10,19 @@
 #include "base/fuchsia/service_directory.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "fuchsia/net_http/http_service_impl.h"
-#include "fuchsia/net_http/url_loader_impl.h"
+#include "fuchsia/http/http_service_impl.h"
+#include "fuchsia/http/url_loader_impl.h"
 #include "net/base/net_errors.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace net_http {
 
 namespace oldhttp = ::fuchsia::net::oldhttp;
 
 namespace {
 
 const base::FilePath::CharType kTestFilePath[] =
-    FILE_PATH_LITERAL("fuchsia/net_http/testdata");
+    FILE_PATH_LITERAL("fuchsia/http/testdata");
 
 // Capacity, in bytes, for buffers used to read data off the URLResponse.
 const size_t kBufferCapacity = 1024;
@@ -442,5 +440,3 @@ TEST_F(HttpServiceTest, CloseSocket) {
   ExecuteRequest(url_loader, std::move(request));
   EXPECT_EQ(url_response().error->code, net::ERR_EMPTY_RESPONSE);
 }
-
-}  // namespace net_http

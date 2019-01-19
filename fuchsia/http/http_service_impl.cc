@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/net_http/http_service_impl.h"
+#include "fuchsia/http/http_service_impl.h"
 
-#include "fuchsia/net_http/url_loader_impl.h"
+#include "fuchsia/http/url_loader_impl.h"
 #include "net/url_request/url_request_context_builder.h"
-
-namespace net_http {
 
 HttpServiceImpl::HttpServiceImpl() {
   // TODO: Set the right options in the URLRequestContextBuilder.
@@ -22,5 +20,3 @@ void HttpServiceImpl::CreateURLLoader(
   net::URLRequestContextBuilder builder;
   new URLLoaderImpl(builder.Build(), std::move(request));
 }
-
-}  // namespace net_http
