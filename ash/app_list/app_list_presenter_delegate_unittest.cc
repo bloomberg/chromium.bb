@@ -293,6 +293,19 @@ TEST_F(AppListPresenterDelegateTest, NonPrimaryDisplay) {
   GetAppListTestHelper()->CheckVisibility(false);
 }
 
+// Tests updating display should not close the app list.
+TEST_F(AppListPresenterDelegateTest, UpdateDisplayNotCloseAppList) {
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  // Change display bounds.
+  UpdateDisplay("1024x768");
+
+  // Updating the display should not close the app list.
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+}
+
 // Tests the app list window's bounds under multi-displays environment.
 TEST_F(AppListPresenterDelegateTest, AppListWindowBounds) {
   // Set up a screen with two displays (horizontally adjacent).
