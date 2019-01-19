@@ -407,6 +407,10 @@ std::unique_ptr<views::InkDrop> NotificationHeaderView::CreateInkDrop() {
   return std::make_unique<views::InkDropStub>();
 }
 
+const base::string16& NotificationHeaderView::app_name_for_testing() const {
+  return app_name_view_->text();
+}
+
 void NotificationHeaderView::UpdateSummaryTextVisibility() {
   const bool visible = has_progress_ || has_overflow_indicator_;
   summary_text_divider_->SetVisible(visible);
