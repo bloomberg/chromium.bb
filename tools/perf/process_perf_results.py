@@ -95,12 +95,6 @@ def _upload_perf_results(json_to_upload, name, configuration_name,
       buildbucket['build'].get('bucket') == 'luci.chrome.ci'):
     is_luci = True
 
-  if is_luci and _is_gtest(json_to_upload):
-    path_util.AddTracingToPath()
-    from tracing.value import gtest_json_converter
-    gtest_json_converter.ConvertGtestJsonFile(json_to_upload)
-    _data_format_cache[json_to_upload] = DATA_FORMAT_HISTOGRAMS
-
   if 'build' in buildbucket:
     args += [
       '--project', buildbucket['build'].get('project'),
