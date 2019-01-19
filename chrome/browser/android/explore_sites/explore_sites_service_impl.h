@@ -55,6 +55,7 @@ class ExploreSitesServiceImpl : public ExploreSitesService,
   void ClearActivities(base::Time begin,
                        base::Time end,
                        base::OnceClosure callback) override;
+  void IncrementNtpShownCount(int category_id) override;
   void ClearCachedCatalogsForDebugging() override;
   void OverrideCountryCodeForDebugging(
       const std::string& country_code) override;

@@ -2369,6 +2369,7 @@ test("unit_tests") {
     "../browser/android/explore_sites/history_statistics_reporter_unittest.cc",
     "../browser/android/explore_sites/image_helper_unittest.cc",
     "../browser/android/explore_sites/import_catalog_task_unittest.cc",
+    "../browser/android/explore_sites/increment_shown_count_task_unittest.cc",
     "../browser/android/explore_sites/ntp_json_fetcher_unittest.cc",
     "../browser/android/explore_sites/record_site_click_task_unittest.cc",
     "../browser/android/history_report/data_observer_unittest.cc",

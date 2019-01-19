@@ -101,6 +101,14 @@ public class ExploreSitesBridge {
         return variation == ExploreSitesVariation.EXPERIMENT;
     }
 
+    /**
+     * Increments the ntp_shown_count for a particular category.
+     * @param categoryId the row id of the category to increment show count for.
+     */
+    public static void incrementNtpShownCount(Profile profile, int categoryId) {
+        nativeIncrementNtpShownCount(profile, categoryId);
+    }
+
     @CalledByNative
     static void scheduleDailyTask() {
         ExploreSitesBackgroundTask.schedule(false /* updateCurrent */);
@@ -137,4 +145,6 @@ public class ExploreSitesBridge {
     private static native void nativeBlacklistSite(Profile profile, String url);
 
     private static native void nativeRecordClick(Profile profile, String url, int type);
+
+    private static native void nativeIncrementNtpShownCount(Profile profile, int categoryId);
 }

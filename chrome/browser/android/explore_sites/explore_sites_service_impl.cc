@@ -22,6 +22,7 @@
 #include "chrome/browser/android/explore_sites/get_version_task.h"
 #include "chrome/browser/android/explore_sites/image_helper.h"
 #include "chrome/browser/android/explore_sites/import_catalog_task.h"
+#include "chrome/browser/android/explore_sites/increment_shown_count_task.h"
 #include "chrome/browser/android/explore_sites/record_site_click_task.h"
 #include "chrome/browser/browser_process.h"
 #include "components/offline_pages/task/task.h"
@@ -150,6 +151,11 @@ void ExploreSitesServiceImpl::ClearActivities(base::Time begin,
       base::BindOnce(
           [](base::OnceClosure callback, bool) { std::move(callback).Run(); },
           std::move(callback))));
+}
+
+void ExploreSitesServiceImpl::IncrementNtpShownCount(int category_id) {
+  task_queue_.AddTask(std::make_unique<IncrementShownCountTask>(
+      explore_sites_store_.get(), category_id));
 }
 
 void ExploreSitesServiceImpl::ClearCachedCatalogsForDebugging() {

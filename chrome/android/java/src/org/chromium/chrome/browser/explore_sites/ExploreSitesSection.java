@@ -11,6 +11,7 @@ import android.support.graphics.drawable.VectorDrawableCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -25,6 +26,7 @@ import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +38,10 @@ import java.util.Map;
 public class ExploreSitesSection {
     private static final String TAG = "ExploreSitesSection";
     private static final int MAX_CATEGORIES = 3;
+    // This is number of times in a row categories are shown in a row before being rotated out.
+    private static final int TIMES_PER_ROUND = 3;
+    // Max times a category is shown due to rotation.
+    private static final int MAX_TIMES_ROTATED = 6;
 
     @TileStyle
     private int mStyle;
@@ -177,12 +183,27 @@ public class ExploreSitesSection {
             needIcons = false; // Icons are already prepared in the default tiles.
         }
 
+        boolean isPersonalized =
+                ExploreSitesBridge.getVariation() == ExploreSitesVariation.PERSONALIZED;
+
+        if (isPersonalized) {
+            // Sort categories in order or shown priority.
+            Collections.sort(categoryList, ExploreSitesSection::compareCategoryPriority);
+        }
+
         int tileCount = 0;
         for (final ExploreSitesCategory category : categoryList) {
             if (tileCount >= MAX_CATEGORIES) break;
             // Skip empty categories from being shown on NTP.
             if (!category.isPlaceholder() && category.getNumDisplayed() == 0) continue;
             createTileView(tileCount, category);
+            // Increment shown count if this is a category that was rotated in.
+            // A rotated in category is defined by having no interaction count
+            // and having a shown count less than the MAX_TIMES_ROTATED.
+            if (isPersonalized && category.getInteractionCount() == 0
+                    && category.getNtpShownCount() < MAX_TIMES_ROTATED) {
+                ExploreSitesBridge.incrementNtpShownCount(mProfile, category.getId());
+            }
             tileCount++;
         }
         createTileView(tileCount, createMoreTileCategory());
@@ -196,5 +217,28 @@ public class ExploreSitesSection {
                 "ExploreSites.ClickedNTPCategoryIndex", tileIndex, 1, 100, 100);
         mNavigationDelegate.openUrl(WindowOpenDisposition.CURRENT_TAB,
                 new LoadUrlParams(category.getUrl(), PageTransition.AUTO_BOOKMARK));
+    }
+
+    @VisibleForTesting
+    static int compareCategoryPriority(ExploreSitesCategory cat1, ExploreSitesCategory cat2) {
+        // First sort by activity count. Most used categories first.
+        if (cat1.getInteractionCount() > cat2.getInteractionCount()) return -1;
+        if (cat1.getInteractionCount() < cat2.getInteractionCount()) return 1;
+        // Category 1 and 2 have the same interaction count. If that is
+        // nonzero, they are equal. Collections.sort is stable, which will preserve input order
+        // for equal categories. Otherwise we want to rotate the categories.
+        if (cat1.getInteractionCount() > 0) return 0;
+
+        // Otherwise activity count is both 0.
+        // We first sort by descending ntp_shown_count mod 3 (TIMES_PER_ROUND).
+        // This is so categories that haven't completed a round are prioritized.
+        int cat1Mod = cat1.getNtpShownCount() % TIMES_PER_ROUND;
+        int cat2Mod = cat2.getNtpShownCount() % TIMES_PER_ROUND;
+        if (cat1Mod > cat2Mod) return -1;
+        if (cat1Mod < cat2Mod) return 1;
+        // If the mods are equal, then we sort by ntp_shown_count / 3 in ascending
+        // order. This is so categories that haven't been shown yet are prioritized.
+        return (cat1.getNtpShownCount() / TIMES_PER_ROUND)
+                - (cat2.getNtpShownCount() / TIMES_PER_ROUND);
     }
 }
