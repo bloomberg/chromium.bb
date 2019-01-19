@@ -16,6 +16,7 @@ import urlparse
 import httplib2
 
 from chromite.lib import auth
+from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 
 
@@ -105,7 +106,8 @@ def request(url,
   headers = (headers or {}).copy()
 
   if include_auth:
-    tok = auth.GetAccessToken()
+    tok = auth.GetAccessToken(
+        service_account_json=constants.CHROMEOS_SERVICE_ACCOUNT)
     headers['Authorization'] = 'Bearer %s' % tok
 
   if payload is not None:
