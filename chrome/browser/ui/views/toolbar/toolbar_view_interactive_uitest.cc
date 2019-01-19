@@ -138,7 +138,10 @@ void ToolbarViewInteractiveUITest::TearDownOnMainThread() {
   BrowserAppMenuButton::g_open_app_immediately_for_testing = false;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_LINUX) && defined(USE_AURA)
+// TODO(pkasting): https://crbug.com/923188 Flaky
+#define MAYBE_TestAppMenuOpensOnDrag DISABLED_TestAppMenuOpensOnDrag
+#elif defined(OS_MACOSX)
 // TODO(pkasting): https://crbug.com/910435 Test hangs in the run loop on Mac, I
 // don't know why.
 #define MAYBE_TestAppMenuOpensOnDrag DISABLED_TestAppMenuOpensOnDrag
