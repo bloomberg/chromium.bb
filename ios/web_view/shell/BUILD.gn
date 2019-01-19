@@ -12,6 +12,13 @@ declare_args() {
   ios_web_view_shell_auth_service =
       "//ios/web_view/shell:shell_auth_service_fake_impl"
 
+  # Credit card verification requires risk data to be passed to wallet servers.
+  # Override this with a real implementation to allow credit cards to be
+  # unmasked. The real implementation must provide an implementation of
+  # ShellRiskDataLoader class.
+  ios_web_view_shell_risk_data_loader =
+      "//ios/web_view/shell:shell_risk_data_loader_fake_impl"
+
   # Path to an entitlements file used in ios_web_view_shell. Can be overridden
   # to provide an alternative.
   ios_web_view_shell_entitlements_path = "//build/config/ios/entitlements.plist"
@@ -54,6 +61,31 @@ source_set("shell_auth_service_fake_impl") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
+source_set("shell_risk_data_loader_interface") {
+  sources = [
+    "shell_risk_data_loader.h",
+  ]
+
+  deps = [
+    "//ios/web_view:web_view+link",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("shell_risk_data_loader_fake_impl") {
+  sources = [
+    "shell_risk_data_loader_fake.m",
+  ]
+
+  deps = [
+    ":shell_risk_data_loader_interface",
+    "//ios/web_view:web_view+link",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
 source_set("shell") {
   sources = [
     "shell_app_delegate.h",
@@ -70,8 +102,10 @@ source_set("shell") {
   deps = [
     ":resources",
     ":shell_auth_service_interface",
+    ":shell_risk_data_loader_interface",
     "//ios/web_view:web_view+link",
     ios_web_view_shell_auth_service,
+    ios_web_view_shell_risk_data_loader,
   ]
 
   libs = [
