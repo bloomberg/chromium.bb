@@ -84,7 +84,8 @@ KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
 
   auto prefetch_network_request_factory =
       std::make_unique<PrefetchNetworkRequestFactoryImpl>(
-          profile->GetURLLoaderFactory(), chrome::GetChannel(), GetUserAgent());
+          profile->GetURLLoaderFactory(), chrome::GetChannel(), GetUserAgent(),
+          profile->GetPrefs());
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
@@ -112,7 +113,7 @@ KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
 
   auto prefetch_downloader = std::make_unique<PrefetchDownloaderImpl>(
       DownloadServiceFactory::GetForBrowserContext(context),
-      chrome::GetChannel());
+      chrome::GetChannel(), profile->GetPrefs());
 
   auto prefetch_importer = std::make_unique<PrefetchImporterImpl>(
       prefetch_dispatcher.get(), offline_page_model, background_task_runner);

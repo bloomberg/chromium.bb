@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "components/download/public/background_service/test/test_download_service.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
+#include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "components/offline_pages/core/prefetch/prefetch_request_test_base.h"
 #include "components/offline_pages/core/prefetch/prefetch_server_urls.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
@@ -18,6 +19,7 @@
 #include "components/offline_pages/core/prefetch/test_download_client.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
 #include "components/offline_pages/core/test_scoped_offline_clock.h"
+#include "components/prefs/testing_pref_service.h"
 #include "net/base/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -44,7 +46,8 @@ class PrefetchDownloaderImplTest : public PrefetchRequestTestBase {
     prefetch_service_taco_.reset(new PrefetchServiceTestTaco);
 
     auto downloader = std::make_unique<PrefetchDownloaderImpl>(
-        &download_service_, kTestChannel);
+        &download_service_, kTestChannel,
+        prefetch_service_taco_->pref_service());
     download_service_.SetFailedDownload(kFailedDownloadId, false);
     download_service_.SetIsReady(true);
     download_client_ = std::make_unique<TestDownloadClient>(downloader.get());

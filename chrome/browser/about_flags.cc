@@ -2273,12 +2273,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOfflinePagesPrefetchingName,
      flag_descriptions::kOfflinePagesPrefetchingDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(offline_pages::kPrefetchingOfflinePagesFeature)},
-    {"offline-pages-limitless-prefetching",
-     flag_descriptions::kOfflinePagesLimitlessPrefetchingName,
-     flag_descriptions::kOfflinePagesLimitlessPrefetchingDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         offline_pages::kOfflinePagesLimitlessPrefetchingFeature)},
     {"background-loader-for-downloads",
      flag_descriptions::kBackgroundLoaderForDownloadsName,
      flag_descriptions::kBackgroundLoaderForDownloadsDescription, kOsAndroid,

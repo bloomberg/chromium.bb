@@ -13,6 +13,7 @@
 #include "components/image_fetcher/core/cached_image_fetcher_service.h"
 #include "components/ntp_snippets/remote/remote_suggestions_fetcher_impl.h"
 #include "components/offline_pages/core/offline_page_feature.h"
+#include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "jni/PrefetchTestBridge_jni.h"
 
 using base::android::JavaParamRef;
@@ -26,12 +27,14 @@ namespace prefetch {
 JNI_EXPORT void JNI_PrefetchTestBridge_EnableLimitlessPrefetching(
     JNIEnv* env,
     jboolean enable) {
-  SetLimitlessPrefetchingEnabledForTesting(enable != 0);
+  prefetch_prefs::SetLimitlessPrefetchingEnabled(
+      ProfileManager::GetLastUsedProfile()->GetPrefs(), enable != 0);
 }
 
 JNI_EXPORT jboolean
 JNI_PrefetchTestBridge_IsLimitlessPrefetchingEnabled(JNIEnv* env) {
-  return static_cast<jboolean>(IsLimitlessPrefetchingEnabled());
+  return static_cast<jboolean>(prefetch_prefs::IsLimitlessPrefetchingEnabled(
+      ProfileManager::GetLastUsedProfile()->GetPrefs()));
 }
 
 JNI_EXPORT void JNI_PrefetchTestBridge_SkipNTPSuggestionsAPIKeyCheck(

@@ -16,8 +16,6 @@ namespace {
 // integration tests.
 const char kOfflinePagesUseTestingSnapshotDelay[] =
     "short-offline-page-snapshot-delay-for-test";
-
-bool limitless_prefetching_enabled = false;
 }  // namespace
 
 namespace offline_pages {
@@ -57,9 +55,6 @@ const base::Feature kPrefetchingOfflinePagesFeature{
 
 const base::Feature kOfflinePagesCTV2Feature{"OfflinePagesCTV2",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kOfflinePagesLimitlessPrefetchingFeature{
-    "OfflinePagesLimitlessPrefetching", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kOfflinePagesDescriptiveFailStatusFeature{
     "OfflinePagesDescriptiveFailStatus", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -118,15 +113,6 @@ bool IsBackgroundLoaderForDownloadsEnabled() {
 
 bool IsPrefetchingOfflinePagesEnabled() {
   return base::FeatureList::IsEnabled(kPrefetchingOfflinePagesFeature);
-}
-
-bool IsLimitlessPrefetchingEnabled() {
-  // TODO(https://crbug.com/803584): fix limitless mode or fully remove it.
-  return limitless_prefetching_enabled;
-}
-
-void SetLimitlessPrefetchingEnabledForTesting(bool enabled) {
-  limitless_prefetching_enabled = enabled;
 }
 
 bool IsOfflinePagesLoadSignalCollectingEnabled() {

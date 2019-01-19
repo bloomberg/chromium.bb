@@ -24,6 +24,10 @@ void SetPrefetchingEnabledInSettings(PrefService* prefs, bool enabled);
 // flag and the user-controlled setting, which may change at runtime.
 bool IsEnabled(PrefService* prefs);
 
+void SetLimitlessPrefetchingEnabled(PrefService* prefs, bool enabled);
+
+bool IsLimitlessPrefetchingEnabled(PrefService* prefs);
+
 }  // namespace prefetch_prefs
 }  // namespace offline_pages
 

@@ -20,6 +20,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_downloader_impl.h"
 #include "components/offline_pages/core/prefetch/prefetch_gcm_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_importer.h"
+#include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "components/offline_pages/core/prefetch/prefetch_service_impl.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 #include "components/offline_pages/core/prefetch/suggested_articles_observer.h"
@@ -31,6 +32,8 @@
 #include "components/offline_pages/core/prefetch/test_prefetch_importer.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_network_request_factory.h"
 #include "components/offline_pages/core/stub_offline_page_model.h"
+#include "components/prefs/testing_pref_service.h"
+#include "services/network/test/test_shared_url_loader_factory.h"
 
 namespace offline_pages {
 
@@ -59,16 +62,24 @@ class StubPrefetchBackgroundTaskHandler : public PrefetchBackgroundTaskHandler {
 
 PrefetchServiceTestTaco::PrefetchServiceTestTaco(SuggestionSource source) {
   dispatcher_ = std::make_unique<TestPrefetchDispatcher>();
-  metrics_collector_ = std::make_unique<TestOfflineMetricsCollector>(nullptr);
   gcm_handler_ = std::make_unique<TestPrefetchGCMHandler>();
+
+  pref_service_ = std::make_unique<TestingPrefServiceSimple>();
+  prefetch_prefs::RegisterPrefs(
+      static_cast<TestingPrefServiceSimple*>(pref_service_.get())->registry());
+
+  metrics_collector_ =
+      std::make_unique<TestOfflineMetricsCollector>(pref_service_.get());
   network_request_factory_ =
-      std::make_unique<TestPrefetchNetworkRequestFactory>();
+      std::make_unique<TestPrefetchNetworkRequestFactory>(
+          new network::TestSharedURLLoaderFactory, pref_service_.get());
+
   prefetch_store_ =
       std::make_unique<PrefetchStore>(base::ThreadTaskRunnerHandle::Get());
 
   download_service_ = std::make_unique<TestDownloadService>();
-  prefetch_downloader_ = base::WrapUnique(
-      new PrefetchDownloaderImpl(download_service_.get(), kTestChannel));
+  prefetch_downloader_ = base::WrapUnique(new PrefetchDownloaderImpl(
+      download_service_.get(), kTestChannel, pref_service_.get()));
   download_client_ =
       std::make_unique<TestDownloadClient>(prefetch_downloader_.get());
   download_service_->SetClient(download_client_.get());
@@ -171,6 +182,14 @@ void PrefetchServiceTestTaco::SetOfflinePageModel(
     std::unique_ptr<OfflinePageModel> offline_page_model) {
   CHECK(!prefetch_service_);
   offline_page_model_ = std::move(offline_page_model);
+}
+
+void PrefetchServiceTestTaco::SetPrefService(
+    std::unique_ptr<PrefService> prefs) {
+  if (pref_service_.get())
+    pref_service_.reset(nullptr);
+
+  pref_service_ = std::move(prefs);
 }
 
 void PrefetchServiceTestTaco::CreatePrefetchService() {

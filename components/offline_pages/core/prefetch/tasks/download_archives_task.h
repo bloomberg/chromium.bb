@@ -12,6 +12,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/offline_pages/task/task.h"
+#include "components/prefs/pref_service.h"
+#include "sql/database.h"
+
+class PrefService;
 
 namespace offline_pages {
 class PrefetchDownloader;
@@ -42,7 +46,8 @@ class DownloadArchivesTask : public Task {
   using ItemsToDownload = std::vector<DownloadItem>;
 
   DownloadArchivesTask(PrefetchStore* prefetch_store,
-                       PrefetchDownloader* prefetch_downloader);
+                       PrefetchDownloader* prefetch_downloader,
+                       PrefService* prefs);
   ~DownloadArchivesTask() override;
 
   void Run() override;
@@ -55,6 +60,8 @@ class DownloadArchivesTask : public Task {
   PrefetchStore* prefetch_store_;
   // Prefetch downloader to request downloads from. Not owned.
   PrefetchDownloader* prefetch_downloader_;
+
+  PrefService* prefs_;
 
   base::WeakPtrFactory<DownloadArchivesTask> weak_ptr_factory_;
 

@@ -223,7 +223,8 @@ void PrefetchDispatcherImpl::QueueActionTasks() {
 
   std::unique_ptr<Task> download_archives_task =
       std::make_unique<DownloadArchivesTask>(service_->GetPrefetchStore(),
-                                             service_->GetPrefetchDownloader());
+                                             service_->GetPrefetchDownloader(),
+                                             pref_service_);
   task_queue_.AddTask(std::move(download_archives_task));
 
   // The following tasks should not be run unless we are in the background task,
