@@ -52,6 +52,10 @@ class ExploreSitesService : public KeyedService {
                                base::Time end,
                                base::OnceClosure callback) = 0;
 
+  // Increment the ntp_shown_count for the particular category.
+  // |category_id| the row id of the category to increment.
+  virtual void IncrementNtpShownCount(int category_id) = 0;
+
   // Controls for use by chrome://explore-sites-internals.
   virtual void ClearCachedCatalogsForDebugging() = 0;
   virtual void OverrideCountryCodeForDebugging(

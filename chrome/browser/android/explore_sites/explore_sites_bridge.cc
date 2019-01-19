@@ -199,6 +199,22 @@ void JNI_ExploreSitesBridge_RecordClick(JNIEnv* env,
   service->RecordClick(url, category_type);
 }
 
+void JNI_ExploreSitesBridge_IncrementNtpShownCount(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& j_profile,
+    const jint j_category_id) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
+  ExploreSitesService* service =
+      ExploreSitesServiceFactory::GetForBrowserContext(profile);
+  if (!service) {
+    DLOG(ERROR) << "Unable to create the ExploreSitesService!";
+    return;
+  }
+
+  int category_id = static_cast<int>(j_category_id);
+  service->IncrementNtpShownCount(category_id);
+}
+
 // static
 void ExploreSitesBridge::ScheduleDailyTask() {
   JNIEnv* env = base::android::AttachCurrentThread();
