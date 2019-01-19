@@ -86,6 +86,14 @@ Polymer({
         loadTimeData.getBoolean('showExperimentalA11yLabels');
   },
 
+  /** @private */
+  onToggleAccessibilityImageLabels_: function() {
+    const a11yImageLabelsOn = this.$.a11yImageLabels.checked;
+    if (a11yImageLabelsOn) {
+      chrome.send('confirmA11yImageLabels');
+    }
+  },
+
   // <if expr="chromeos">
   /** @private */
   onManageAccessibilityFeaturesTap_: function() {

@@ -18,8 +18,10 @@
   <template>
     <style include="settings-shared"></style>
     <settings-toggle-button
+        id="a11yImageLabels"
         hidden$="[[!showAccessibilityLabelsSetting_]]"
         pref="{{prefs.settings.a11y.enable_accessibility_image_labels}}"
+        on-change="onToggleAccessibilityImageLabels_"
         label="$i18n{accessibleImageLabelsTitle}"
         sub-label="$i18n{accessibleImageLabelsSubtitle}">
     </settings-toggle-button>

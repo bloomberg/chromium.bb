@@ -36,6 +36,7 @@ class AccessibilityMainHandler : public ::settings::SettingsPageUIHandler,
   void OnAXModeAdded(ui::AXMode mode) override;
 
   void HandleGetScreenReaderState(const base::ListValue* args);
+  void HandleCheckAccessibilityImageLabels(const base::ListValue* args);
 
  private:
 #if defined(OS_CHROMEOS)
