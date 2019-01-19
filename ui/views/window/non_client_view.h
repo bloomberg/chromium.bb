@@ -90,6 +90,7 @@ class VIEWS_EXPORT NonClientFrameView : public View,
   // View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   const char* GetClassName() const override;
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
  protected:
   NonClientFrameView();
