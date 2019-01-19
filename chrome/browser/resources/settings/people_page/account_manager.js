@@ -14,6 +14,7 @@ Polymer({
   behaviors: [
     I18nBehavior,
     WebUIListenerBehavior,
+    settings.RouteObserverBehavior,
   ],
 
   properties: {
@@ -47,6 +48,16 @@ Polymer({
   ready: function() {
     this.browserProxy_ = settings.AccountManagerBrowserProxyImpl.getInstance();
     this.refreshAccounts_();
+  },
+
+  /**
+   * @param {!settings.Route} newRoute
+   * @param {settings.Route} oldRoute
+   */
+  currentRouteChanged: function(newRoute, oldRoute) {
+    if (newRoute == settings.routes.ACCOUNT_MANAGER) {
+      this.browserProxy_.showWelcomeDialogIfRequired();
+    }
   },
 
   /**

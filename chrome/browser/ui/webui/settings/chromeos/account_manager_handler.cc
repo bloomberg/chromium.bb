@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chromeos/account_manager_welcome_dialog.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
 #include "chromeos/account_manager/account_manager.h"
@@ -87,10 +88,16 @@ void AccountManagerUIHandler::RegisterMessages() {
       "removeAccount",
       base::BindRepeating(&AccountManagerUIHandler::HandleRemoveAccount,
                           weak_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "showWelcomeDialogIfRequired",
+      base::BindRepeating(
+          &AccountManagerUIHandler::HandleShowWelcomeDialogIfRequired,
+          weak_factory_.GetWeakPtr()));
 }
 
 void AccountManagerUIHandler::HandleGetAccounts(const base::ListValue* args) {
   AllowJavascript();
+
   CHECK(!args->GetList().empty());
   base::Value callback_id = args->GetList()[0].Clone();
 
@@ -198,6 +205,11 @@ void AccountManagerUIHandler::HandleRemoveAccount(const base::ListValue* args) {
   }
 
   account_manager_->RemoveAccount(account_key);
+}
+
+void AccountManagerUIHandler::HandleShowWelcomeDialogIfRequired(
+    const base::ListValue* args) {
+  chromeos::AccountManagerWelcomeDialog::ShowIfRequired();
 }
 
 void AccountManagerUIHandler::OnJavascriptAllowed() {

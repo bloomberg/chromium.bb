@@ -10,7 +10,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
+#include "components/prefs/pref_service.h"
 #include "ui/aura/window.h"
 #include "url/gurl.h"
 
@@ -21,6 +23,7 @@ namespace {
 AccountManagerWelcomeDialog* g_dialog = nullptr;
 constexpr int kSigninDialogWidth = 600;
 constexpr int kSigninDialogHeight = 500;
+constexpr int kMaxNumTimesShown = 1;
 
 }  // namespace
 
@@ -42,12 +45,21 @@ bool AccountManagerWelcomeDialog::ShowIfRequired() {
     return true;
   }
 
+  // Check if the dialog should be shown.
+  PrefService* pref_service =
+      ProfileManager::GetActiveUserProfile()->GetPrefs();
+  const int num_times_shown = pref_service->GetInteger(
+      prefs::kAccountManagerNumTimesWelcomeScreenShown);
+  if (num_times_shown >= kMaxNumTimesShown) {
+    return false;
+  }
+  pref_service->SetInteger(prefs::kAccountManagerNumTimesWelcomeScreenShown,
+                           num_times_shown + 1);
+
   // Will be deleted by |SystemWebDialogDelegate::OnDialogClosed|.
   g_dialog = new AccountManagerWelcomeDialog();
   g_dialog->ShowSystemDialog();
 
-  // TODO(sinhak): Store the number of times the welcome screen has been shown
-  // in Prefs and check against it before showing it again.
   return true;
 }
 

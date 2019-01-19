@@ -49,6 +49,11 @@ cr.define('settings', function() {
      * @param {?settings.Account} account
      */
     removeAccount(account) {}
+
+    /**
+     * Displays the Account Manager welcome dialog if required.
+     */
+    showWelcomeDialogIfRequired() {}
   }
 
   /**
@@ -73,6 +78,11 @@ cr.define('settings', function() {
     /** @override */
     removeAccount(account) {
       chrome.send('removeAccount', [account]);
+    }
+
+    /** @override */
+    showWelcomeDialogIfRequired() {
+      chrome.send('showWelcomeDialogIfRequired');
     }
   }
 

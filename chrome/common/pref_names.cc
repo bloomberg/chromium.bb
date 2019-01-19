@@ -467,6 +467,11 @@ const char kDefaultAppsInstallState[] = "default_apps_install_state";
 const char kHideWebStoreIcon[] = "hide_web_store_icon";
 
 #if defined(OS_CHROMEOS)
+// An integer preference to store the number of times the Chrome OS Account
+// Manager welcome screen has been shown.
+const char kAccountManagerNumTimesWelcomeScreenShown[] =
+    "account_manager.num_times_welcome_screen_shown";
+
 // A boolean pref set to true if touchpad tap-to-click is enabled.
 const char kTapToClickEnabled[] = "settings.touchpad.enable_tap_to_click";
 

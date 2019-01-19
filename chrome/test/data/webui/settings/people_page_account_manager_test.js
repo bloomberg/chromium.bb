@@ -10,6 +10,7 @@ cr.define('settings_people_page_account_manager', function() {
         'getAccounts',
         'addAccount',
         'removeAccount',
+        'showWelcomeDialogIfRequired',
       ]);
     }
 
@@ -47,6 +48,11 @@ cr.define('settings_people_page_account_manager', function() {
     /** @override */
     removeAccount(account) {
       this.methodCalled('removeAccount', account);
+    }
+
+    /** @override */
+    showWelcomeDialogIfRequired() {
+      this.methodCalled('showWelcomeDialogIfRequired');
     }
   }
 
@@ -107,6 +113,12 @@ cr.define('settings_people_page_account_manager', function() {
       assertEquals(1, browserProxy.getCallCount('getAccounts'));
       cr.webUIListenerCallback('accounts-changed');
       assertEquals(2, browserProxy.getCallCount('getAccounts'));
+    });
+
+    test('WelcomeScreenIsShownIfRequired', function() {
+      // We have navigated to |settings.routes.ACCOUNT_MANAGER| in |setup|. A
+      // welcome screen should be shown if required.
+      assertGT(browserProxy.getCallCount('showWelcomeDialogIfRequired'), 0);
     });
   });
 });

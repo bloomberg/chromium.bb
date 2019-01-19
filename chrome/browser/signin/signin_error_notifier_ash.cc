@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/chromeos/account_manager_welcome_dialog.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -185,8 +186,14 @@ void SigninErrorNotifier::HandleSecondaryAccountError(
 
 void SigninErrorNotifier::HandleSecondaryAccountReauthNotificationClick(
     base::Optional<int> button_index) {
-  chrome::SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
-      profile_, GURL("chrome://settings/accountManager"));
+  if (!chromeos::AccountManagerWelcomeDialog::ShowIfRequired()) {
+    // The welcome dialog was not shown (because it has been shown too many
+    // times already). Take users to Account Manager UI directly.
+    // Note: If the welcome dialog was shown, we don't need to do anything.
+    // Closing that dialog takes users to Account Manager UI.
+    chrome::SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
+        profile_, GURL("chrome://settings/accountManager"));
+  }
 }
 
 base::string16 SigninErrorNotifier::GetMessageBody(
