@@ -65,6 +65,7 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
   void AssistantButtonPressed() override {}
   void BackButtonPressed() override;
   void ActiveChanged(search_box::SearchBoxViewBase* sender) override;
+  void SearchBoxFocusChanged(search_box::SearchBoxViewBase* sender) override {}
 
  private:
   friend class KeyboardShortcutViewTest;

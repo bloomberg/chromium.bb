@@ -1081,6 +1081,7 @@ TEST_F(AppListViewFocusTest, FirstResultSelectedAfterSearchResultsUpdated) {
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
   EXPECT_EQ(list_view->GetResultViewAt(0),
             contents_view()->search_results_page_view()->first_result_view());
+  EXPECT_TRUE(list_view->GetResultViewAt(0)->background_highlighted());
 
   // Populate both fake list results and tile results.
   const int kTileResults = 3;
@@ -1092,14 +1093,27 @@ TEST_F(AppListViewFocusTest, FirstResultSelectedAfterSearchResultsUpdated) {
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
   EXPECT_EQ(tile_views[0],
             contents_view()->search_results_page_view()->first_result_view());
+  EXPECT_TRUE(tile_views[0]->background_highlighted());
 
   // Populate only answer card.
   SetUpSearchResults(0, 0, true);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
-  EXPECT_EQ(contents_view()
-                ->search_result_answer_card_view_for_test()
-                ->GetAnswerCardResultViewForTest(),
+  SearchResultBaseView* answer_container = static_cast<SearchResultBaseView*>(
+      contents_view()
+          ->search_result_answer_card_view_for_test()
+          ->GetAnswerCardResultViewForTest());
+  EXPECT_EQ(answer_container,
             contents_view()->search_results_page_view()->first_result_view());
+  EXPECT_TRUE(answer_container->background_highlighted());
+
+  // Moving focus to views other than search box textfield removes the first
+  // result's highlight.
+  SimulateKeyPress(ui::VKEY_TAB, false);
+  EXPECT_EQ(search_box_view()->close_button(), focused_view());
+  EXPECT_EQ(answer_container,
+            contents_view()->search_results_page_view()->first_result_view());
+  EXPECT_FALSE(answer_container->background_highlighted());
+  SimulateKeyPress(ui::VKEY_TAB, true);
 
   // Clear up all search results.
   SetUpSearchResults(0, 0, false);
