@@ -101,6 +101,9 @@ class MediaSinkInternal {
   const CastSinkExtraData& cast_data() const;
   CastSinkExtraData& cast_data();
 
+  // TOOD(jrw): Use this method where appropriate.
+  int cast_channel_id() const { return cast_data().cast_channel_id; }
+
   bool is_dial_sink() const { return sink_type_ == SinkType::DIAL; }
   bool is_cast_sink() const { return sink_type_ == SinkType::CAST; }
 

@@ -33,6 +33,9 @@ class CastSessionTracker : public MediaSinkServiceBase::Observer,
     virtual void OnSessionAddedOrUpdated(const MediaSinkInternal& sink,
                                          const CastSession& session) = 0;
     virtual void OnSessionRemoved(const MediaSinkInternal& sink) = 0;
+    virtual void OnMediaStatusUpdated(const MediaSinkInternal& sink,
+                                      const base::Value& media_status,
+                                      base::Optional<int> request_id) = 0;
   };
 
   // Must be called on UI thread.
@@ -45,7 +48,7 @@ class CastSessionTracker : public MediaSinkServiceBase::Observer,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  const SessionMap& sessions_by_sink_id() const;
+  const SessionMap& GetSessions() const;
 
   // Returns nullptr if there is no session with the specified ID.
   CastSession* GetSessionById(const std::string& session_id) const;
@@ -66,6 +69,10 @@ class CastSessionTracker : public MediaSinkServiceBase::Observer,
   void InitOnIoThread();
   void HandleReceiverStatusMessage(const MediaSinkInternal& sink,
                                    const base::Value& message);
+  void HandleMediaStatusMessage(const MediaSinkInternal& sink,
+                                const base::Value& message);
+  void CopySavedMediaFieldsToMediaList(CastSession* session,
+                                       std::vector<base::Value>* media_list);
   const MediaSinkInternal* GetSinkByChannelId(int channel_id) const;
 
   // MediaSinkServiceBase::Observer implementation
@@ -94,6 +101,12 @@ class CastSessionTracker : public MediaSinkServiceBase::Observer,
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(CastSessionTracker);
   FRIEND_TEST_ALL_PREFIXES(CastSessionTrackerTest, RemoveSession);
+  FRIEND_TEST_ALL_PREFIXES(CastSessionTrackerTest,
+                           HandleMediaStatusMessageBasic);
+  FRIEND_TEST_ALL_PREFIXES(CastSessionTrackerTest,
+                           HandleMediaStatusMessageFancy);
+  FRIEND_TEST_ALL_PREFIXES(CastSessionTrackerTest,
+                           CopySavedMediaFieldsToMediaList);
 };
 
 }  // namespace media_router

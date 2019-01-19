@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/common/media_router/discovery/media_sink_service_base.h"
+#include "chrome/common/media_router/media_route.h"
 
 #include <vector>
 
@@ -46,6 +47,11 @@ const MediaSinkInternal* MediaSinkServiceBase::GetSinkById(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = sinks_.find(sink_id);
   return it != sinks_.end() ? &it->second : nullptr;
+}
+
+const MediaSinkInternal* MediaSinkServiceBase::GetSinkByRoute(
+    const MediaRoute& route) const {
+  return GetSinkById(route.media_sink_id());
 }
 
 void MediaSinkServiceBase::AddOrUpdateSink(const MediaSinkInternal& sink) {

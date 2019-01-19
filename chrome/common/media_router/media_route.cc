@@ -4,6 +4,8 @@
 
 #include "chrome/common/media_router/media_route.h"
 
+#include <ostream>
+
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/common/media_router/media_source.h"
@@ -51,6 +53,12 @@ bool MediaRoute::operator==(const MediaRoute& other) const {
          for_display_ == other.for_display_ &&
          is_incognito_ == other.is_incognito_ &&
          is_local_presentation_ == other.is_local_presentation_;
+}
+
+std::ostream& operator<<(std::ostream& stream, const MediaRoute& route) {
+  return stream << "MediaRoute{id=" << route.media_route_id_
+                << ",source=" << route.media_source_.id()
+                << ",sink=" << route.media_sink_id_ << "}";
 }
 
 }  // namespace media_router
