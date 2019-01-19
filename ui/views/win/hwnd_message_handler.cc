@@ -3122,8 +3122,10 @@ void HWNDMessageHandler::PerformDwmTransition() {
     // open they will re-appear with a non-deterministic Z-order.
     // Note: caused http://crbug.com/895855, where a laptop lid close+reopen
     // puts window in the background but acts like a foreground window. Fixed by
-    // not calling this unless DWM composition actually changes.
-    UINT flags = SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER;
+    // not calling this unless DWM composition actually changes. Finally, since
+    // we don't want windows stealing focus if they're not already active, we
+    // set SWP_NOACTIVATE.
+    UINT flags = SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE;
     SetWindowPos(hwnd(), NULL, 0, 0, 0, 0, flags | SWP_HIDEWINDOW);
     SetWindowPos(hwnd(), NULL, 0, 0, 0, 0, flags | SWP_SHOWWINDOW);
   }

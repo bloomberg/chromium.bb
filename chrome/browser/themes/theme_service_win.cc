@@ -13,6 +13,7 @@
 #include "ui/base/win/shell.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
+#include "ui/native_theme/native_theme.h"
 
 namespace {
 
@@ -146,6 +147,9 @@ void ThemeServiceWin::OnDwmKeyUpdated() {
         dwm_frame_color_.value(),
         GetTint(ThemeProperties::TINT_FRAME_INACTIVE, false));
   }
+
+  // Notify native theme observers that the native theme has changed.
+  ui::NativeTheme::GetInstanceForNativeUi()->NotifyObservers();
 
   // Watch for future changes.
   if (!dwm_key_->StartWatching(base::Bind(

@@ -318,6 +318,10 @@ const char* NonClientFrameView::GetClassName() const {
   return kViewClassName;
 }
 
+void NonClientFrameView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  SchedulePaint();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientFrameView, protected:
 
