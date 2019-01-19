@@ -1431,6 +1431,14 @@ RenderProcessHostImpl::GetInProcessRendererThreadTaskRunnerForTesting() {
   return g_in_process_thread->task_runner();
 }
 
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+// static
+size_t RenderProcessHostImpl::GetPlatformMaxRendererProcessCount() {
+  static constexpr size_t kMaxRendererProcessCount = 82;
+  return kMaxRendererProcessCount;
+}
+#endif
+
 // static
 size_t RenderProcessHost::GetMaxRendererProcessCount() {
   if (g_max_renderer_count_override)
@@ -1441,16 +1449,14 @@ size_t RenderProcessHost::GetMaxRendererProcessCount() {
   // happy with keeping a lot of these, as long as the number of live renderer
   // processes remains reasonable, and on Android the OS takes care of that.
   return std::numeric_limits<size_t>::max();
-#endif
-#if defined(OS_CHROMEOS)
+#elif defined(OS_CHROMEOS)
   // On Chrome OS new renderer processes are very cheap and there's no OS
   // driven constraint on the number of processes, and the effectiveness
   // of the tab discarder is very poor when we have tabs sharing a
   // renderer process.  So, set a high limit, and based on UMA stats
   // for CrOS the 99.9th percentile of Tabs.MaxTabsInADay is around 100.
   return 100;
-#endif
-
+#else
   // On other platforms, calculate the maximum number of renderer process hosts
   // according to the amount of installed memory as reported by the OS, along
   // with some hard-coded limits. The calculation assumes that the renderers
@@ -1470,7 +1476,7 @@ size_t RenderProcessHost::GetMaxRendererProcessCount() {
   // 16384 MB -> 136
   //
   // Then the calculated value will be clamped by |kMinRendererProcessCount| and
-  // |kMaxRendererProcessCount|.
+  // GetPlatformMaxRendererProcessCount().
 
   static size_t max_count = 0;
   if (!max_count) {
@@ -1484,10 +1490,12 @@ size_t RenderProcessHost::GetMaxRendererProcessCount() {
     max_count /= kEstimatedWebContentsMemoryUsage;
 
     static constexpr size_t kMinRendererProcessCount = 3;
-    max_count = base::ClampToRange(max_count, kMinRendererProcessCount,
-                                   kMaxRendererProcessCount);
+    max_count = base::ClampToRange(
+        max_count, kMinRendererProcessCount,
+        RenderProcessHostImpl::GetPlatformMaxRendererProcessCount());
   }
   return max_count;
+#endif
 }
 
 // static

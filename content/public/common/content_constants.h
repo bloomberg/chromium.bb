@@ -32,8 +32,6 @@ CONTENT_EXPORT extern const char kFlashPluginSplMimeType[];
 CONTENT_EXPORT extern const char kFlashPluginSplExtension[];
 CONTENT_EXPORT extern const char kFlashPluginSplDescription[];
 
-CONTENT_EXPORT extern const size_t kMaxRendererProcessCount;
-
 // The maximum number of session history entries per tab.
 constexpr int kMaxSessionHistoryEntries = 50;
 
