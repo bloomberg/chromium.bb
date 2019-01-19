@@ -200,8 +200,7 @@ bool D3D11VideoDecoder::DeviceHasDecoderID(GUID decoder_guid) {
 }
 
 GUID D3D11VideoDecoder::GetD3D11DecoderGUID(const VideoDecoderConfig& config) {
-  if (IsVP9(config) && base::FeatureList::IsEnabled(kD3D11VP9Decoder))
-    // TODO(tmathmeyer) set up a finch experiment.
+  if (IsVP9(config))
     return D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0;
 
   if (IsH264(config))
