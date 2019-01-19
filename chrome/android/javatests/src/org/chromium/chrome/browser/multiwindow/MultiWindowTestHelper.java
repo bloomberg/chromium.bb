@@ -26,7 +26,6 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
-import java.lang.ref.WeakReference;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
@@ -101,9 +100,7 @@ public class MultiWindowTestHelper {
                 "Couldn't find instance of ChromeTabbedActivity2") {
             @Override
             public boolean isSatisfied() {
-                for (WeakReference<Activity> reference : ApplicationStatus.getRunningActivities()) {
-                    Activity runningActivity = reference.get();
-                    if (runningActivity == null) continue;
+                for (Activity runningActivity : ApplicationStatus.getRunningActivities()) {
                     if (runningActivity.getClass().equals(ChromeTabbedActivity2.class)) {
                         returnActivity.set((ChromeTabbedActivity2) runningActivity);
                         return true;

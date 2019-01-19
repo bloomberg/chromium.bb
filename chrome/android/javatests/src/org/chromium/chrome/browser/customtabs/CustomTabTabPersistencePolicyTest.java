@@ -43,7 +43,6 @@ import org.chromium.chrome.test.util.browser.tabmodel.MockTabModel;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -83,10 +82,7 @@ public class CustomTabTabPersistencePolicyTest {
     public void tearDown() throws Exception {
         mMockDirectory.tearDown();
 
-        List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
-        for (int i = 0; i < activities.size(); i++) {
-            Activity activity = activities.get(i).get();
-            if (activity == null) continue;
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
             ThreadUtils.runOnUiThreadBlocking(
                     () -> ApplicationStatus.onStateChangeForTesting(
                             activity, ActivityState.DESTROYED));

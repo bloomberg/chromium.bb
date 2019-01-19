@@ -30,7 +30,6 @@ import org.chromium.content_public.browser.test.util.Coordinates;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -125,11 +124,8 @@ public class ApplicationTestUtils {
             }
 
             private void updateVisibleActivitiesError() {
-                List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
                 List<Pair<Activity, Integer>> visibleActivities = new ArrayList<>();
-                for (WeakReference<Activity> activityRef : activities) {
-                    Activity activity = activityRef.get();
-                    if (activity == null) continue;
+                for (Activity activity : ApplicationStatus.getRunningActivities()) {
                     @ActivityState
                     int activityState = ApplicationStatus.getStateForActivity(activity);
                     if (activityState != ActivityState.DESTROYED

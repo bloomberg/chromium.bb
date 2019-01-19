@@ -21,9 +21,7 @@ import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
 
 import java.io.File;
-import java.lang.ref.WeakReference;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -66,10 +64,7 @@ public class IncognitoUtils {
             return true;
         }
 
-        List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
-        for (int i = 0; i < activities.size(); i++) {
-            Activity activity = activities.get(i).get();
-            if (activity == null) continue;
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
             tabbedModeTaskIds.remove(activity.getTaskId());
         }
 

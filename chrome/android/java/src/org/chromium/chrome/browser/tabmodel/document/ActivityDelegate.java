@@ -27,7 +27,6 @@ import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel.Entry;
 import org.chromium.chrome.browser.util.IntentUtils;
 
-import java.lang.ref.WeakReference;
 import java.util.List;
 
 /**
@@ -127,11 +126,8 @@ public abstract class ActivityDelegate {
      * @return Whether the tab is still alive.
      */
     public boolean isTabAssociatedWithNonDestroyedActivity(boolean isIncognito, int tabId) {
-        List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
-        for (WeakReference<Activity> ref : activities) {
-            Activity activity = ref.get();
-            if (activity != null
-                    && isValidActivity(isIncognito, activity.getIntent())
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
+            if (isValidActivity(isIncognito, activity.getIntent())
                     && getTabIdFromIntent(activity.getIntent()) == tabId
                     && !isActivityDestroyed(activity)) {
                 return true;
@@ -190,12 +186,10 @@ public abstract class ActivityDelegate {
     public static Activity getActivityForTabId(int id) {
         if (id == Tab.INVALID_TAB_ID) return null;
 
-        for (WeakReference<Activity> ref : ApplicationStatus.getRunningActivities()) {
-            if (!(ref.get() instanceof ChromeActivity)) continue;
+        for (Activity runningActivity : ApplicationStatus.getRunningActivities()) {
+            if (!(runningActivity instanceof ChromeActivity)) continue;
 
-            ChromeActivity activity = (ChromeActivity) ref.get();
-            if (activity == null) continue;
-
+            ChromeActivity activity = (ChromeActivity) runningActivity;
             if (activity.getTabModelSelector().getTabById(id) != null) return activity;
         }
         return null;

@@ -17,7 +17,6 @@ import android.view.Window;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
-import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -387,15 +386,11 @@ public class ApplicationStatus {
      * @return A {@link List} of all non-destroyed {@link Activity}s.
      */
     @AnyThread
-    public static List<WeakReference<Activity>> getRunningActivities() {
+    public static List<Activity> getRunningActivities() {
         assert isInitialized();
-        List<WeakReference<Activity>> activities = new ArrayList<>();
         synchronized (sActivityInfo) {
-            for (Activity activity : sActivityInfo.keySet()) {
-                activities.add(new WeakReference<>(activity));
-            }
+            return new ArrayList<>(sActivityInfo.keySet());
         }
-        return activities;
     }
 
     /**

@@ -236,9 +236,7 @@ public class MultiWindowUtils implements ActivityStateListener {
         // Find the activities.
         Activity tabbedActivity = null;
         Activity tabbedActivity2 = null;
-        for (WeakReference<Activity> reference : ApplicationStatus.getRunningActivities()) {
-            Activity activity = reference.get();
-            if (activity == null) continue;
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
             if (activity.getClass().equals(ChromeTabbedActivity.class)) {
                 tabbedActivity = activity;
             } else if (activity.getClass().equals(ChromeTabbedActivity2.class)) {
@@ -372,9 +370,7 @@ public class MultiWindowUtils implements ActivityStateListener {
      *         running.
      */
     private static boolean isPrimaryTabbedActivityRunning() {
-        for (WeakReference<Activity> reference : ApplicationStatus.getRunningActivities()) {
-            Activity activity = reference.get();
-            if (activity == null) continue;
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
             if (activity.getClass().equals(ChromeTabbedActivity.class)) return true;
         }
         return false;

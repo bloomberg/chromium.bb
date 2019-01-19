@@ -39,7 +39,6 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.widget.Toast;
 
-import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -173,13 +172,13 @@ public class BrowserActionsService extends Service {
     }
 
     private Tab launchTabInRunningTabbedActivity(LoadUrlParams loadUrlParams) {
-        for (WeakReference<Activity> ref : ApplicationStatus.getRunningActivities()) {
-            if (!(ref.get() instanceof ChromeTabbedActivity)) continue;
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
+            if (!(activity instanceof ChromeTabbedActivity)) continue;
 
-            ChromeTabbedActivity activity = (ChromeTabbedActivity) ref.get();
-            if (activity == null) continue;
-            if (activity.getTabModelSelector() != null) {
-                mTabbedModeTabModelSelector = (TabModelSelectorImpl) activity.getTabModelSelector();
+            ChromeTabbedActivity chromeActivity = (ChromeTabbedActivity) activity;
+            if (chromeActivity.getTabModelSelector() != null) {
+                mTabbedModeTabModelSelector =
+                        (TabModelSelectorImpl) chromeActivity.getTabModelSelector();
                 mTabbedModeTabModelSelector.addTabPersistentStoreObserver(
                         getTabPersistentStoreObserver());
                 Tab tab = mTabbedModeTabModelSelector.openNewTab(
