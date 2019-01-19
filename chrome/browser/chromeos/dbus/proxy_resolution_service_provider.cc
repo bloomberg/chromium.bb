@@ -13,59 +13,79 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "content/public/browser/storage_partition.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/net_errors.h"
-#include "net/log/net_log_with_source.h"
-#include "net/proxy_resolution/proxy_info.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "url/gurl.h"
 
 namespace chromeos {
 
-struct ProxyResolutionServiceProvider::Request {
- public:
-  Request(const std::string& source_url,
-          scoped_refptr<net::URLRequestContextGetter> context_getter,
-          scoped_refptr<base::SingleThreadTaskRunner> notify_thread,
-          NotifyCallback notify_callback)
-      : source_url(source_url),
-        context_getter(context_getter),
-        notify_thread(std::move(notify_thread)),
-        notify_callback(std::move(notify_callback)) {}
-  ~Request() = default;
+namespace {
 
-  // Invokes |notify_callback| on |notify_thread|.
-  void PostNotify(const std::string& error, const std::string& pac_string) {
-    notify_thread->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(notify_callback), error, pac_string));
+// The proxy result to return when resolution fails.
+// It is up to the D-Bus caller to determine how to interpret this in the
+// case of errors, but DIRECT is usually a good fallback.
+//
+// TODO(eroman): This doesn't properly convey the semantics of
+// ERR_MANDATORY_PROXY_CONFIGURATION_FAILED. For this error, consumers
+// should fail the entire network request rather than falling back to
+// DIRECT connections, to behave the same as the browser.
+const char kProxyInfoOnFailure[] = "DIRECT";
+
+class ProxyLookupRequest : public network::mojom::ProxyLookupClient {
+ public:
+  // Sends a proxy lookup request to the Network Service and invokes
+  // |notify_callback| on completion. Caller should not manage the memory of
+  // |this|, as it will delete itself on completion.
+  ProxyLookupRequest(
+      network::mojom::NetworkContext* network_context,
+      const GURL& source_url,
+      ProxyResolutionServiceProvider::NotifyCallback notify_callback)
+      : binding_(this), notify_callback_(std::move(notify_callback)) {
+    network::mojom::ProxyLookupClientPtr proxy_lookup_client;
+    binding_.Bind(mojo::MakeRequest(&proxy_lookup_client));
+    binding_.set_connection_error_handler(base::BindOnce(
+        &ProxyLookupRequest::OnProxyLookupComplete, base::Unretained(this),
+        net::ERR_ABORTED, base::nullopt));
+
+    network_context->LookUpProxyForURL(source_url,
+                                       std::move(proxy_lookup_client));
   }
 
-  // URL being resolved.
-  const std::string source_url;
+  ~ProxyLookupRequest() override = default;
 
-  // Used to get the network context associated with the profile used to run
-  // this request.
-  const scoped_refptr<net::URLRequestContextGetter> context_getter;
+  void OnProxyLookupComplete(
+      int32_t net_error,
+      const base::Optional<net::ProxyInfo>& proxy_info) override {
+    DCHECK_EQ(net_error == net::OK, proxy_info.has_value());
 
-  // Handle to ProxyResolutionService's Request
-  std::unique_ptr<net::ProxyResolutionService::Request> request;
+    std::string error;
+    std::string result;
 
-  // ProxyInfo resolved for |source_url|.
-  net::ProxyInfo proxy_info;
+    if (!proxy_info) {
+      error = net::ErrorToString(net_error);
+      result = kProxyInfoOnFailure;
+    } else {
+      result = proxy_info->ToPacString();
+    }
 
-  // The callback to invoke on completion, as well as the thread it should be
-  // invoked on.
-  scoped_refptr<base::SingleThreadTaskRunner> notify_thread;
-  NotifyCallback notify_callback;
+    binding_.Close();
+    std::move(notify_callback_).Run(error, result);
+    delete this;
+  }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(Request);
+  mojo::Binding<network::mojom::ProxyLookupClient> binding_;
+  ProxyResolutionServiceProvider::NotifyCallback notify_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProxyLookupRequest);
 };
+
+}  // namespace
 
 ProxyResolutionServiceProvider::ProxyResolutionServiceProvider()
     : origin_thread_(base::ThreadTaskRunnerHandle::Get()),
@@ -131,68 +151,21 @@ void ProxyResolutionServiceProvider::DbusResolveProxy(
 void ProxyResolutionServiceProvider::ResolveProxyInternal(
     const std::string& source_url,
     NotifyCallback callback) {
-  scoped_refptr<net::URLRequestContextGetter> context_getter =
-      request_context_getter_for_test_
-          ? request_context_getter_for_test_
-          : ProfileManager::GetPrimaryUserProfile()->GetRequestContext();
+  auto* network_context = GetNetworkContext();
 
-  std::unique_ptr<Request> request = std::make_unique<Request>(
-      source_url, context_getter, origin_thread_, std::move(callback));
-
-  // This would ideally call PostTaskAndReply() instead of PostTask(), but
-  // ResolveProxyOnNetworkThread()'s call to
-  // net::ProxyResolutionService::DbusResolveProxy() can result in an
-  // asynchronous lookup, in which case the result won't be available
-  // immediately.
-  context_getter->GetNetworkTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &ProxyResolutionServiceProvider::ResolveProxyOnNetworkThread,
-          std::move(request)));
-}
-
-// static
-void ProxyResolutionServiceProvider::ResolveProxyOnNetworkThread(
-    std::unique_ptr<Request> request) {
-  DCHECK(request->context_getter->GetNetworkTaskRunner()
-             ->BelongsToCurrentThread());
-
-  net::ProxyResolutionService* proxy_resolution_service =
-      request->context_getter->GetURLRequestContext()
-          ->proxy_resolution_service();
-  if (!proxy_resolution_service) {
-    request->PostNotify("No proxy service in chrome", "DIRECT");
+  if (!network_context) {
+    std::move(callback).Run("No NetworkContext", kProxyInfoOnFailure);
     return;
   }
 
-  Request* request_ptr = request.get();
-  net::CompletionCallback callback =
-      base::BindRepeating(&ProxyResolutionServiceProvider::OnResolutionComplete,
-                          base::Passed(std::move(request)));
-
-  VLOG(1) << "Starting network proxy resolution for "
-          << request_ptr->source_url;
-  const int result = proxy_resolution_service->ResolveProxy(
-      GURL(request_ptr->source_url), std::string(), &request_ptr->proxy_info,
-      callback, &request_ptr->request, net::NetLogWithSource());
-  if (result != net::ERR_IO_PENDING) {
-    VLOG(1) << "Network proxy resolution completed synchronously.";
-    callback.Run(result);
+  GURL url(source_url);
+  if (!url.is_valid()) {
+    std::move(callback).Run("Invalid URL", kProxyInfoOnFailure);
+    return;
   }
-}
 
-// static
-void ProxyResolutionServiceProvider::OnResolutionComplete(
-    std::unique_ptr<Request> request,
-    int result) {
-  DCHECK(request->context_getter->GetNetworkTaskRunner()
-             ->BelongsToCurrentThread());
-
-  request->request.reset();
-
-  request->PostNotify(
-      result == net::OK ? "" : net::ErrorToString(result),
-      result == net::OK ? request->proxy_info.ToPacString() : "DIRECT");
+  VLOG(1) << "Starting network proxy resolution for " << url;
+  new ProxyLookupRequest(network_context, url, std::move(callback));
 }
 
 void ProxyResolutionServiceProvider::NotifyProxyResolved(
@@ -207,6 +180,27 @@ void ProxyResolutionServiceProvider::NotifyProxyResolved(
   writer.AppendString(pac_string);
   writer.AppendString(error);
   response_sender.Run(std::move(response));
+}
+
+network::mojom::NetworkContext*
+ProxyResolutionServiceProvider::GetNetworkContext() {
+  if (use_network_context_for_test_)
+    return network_context_for_test_;
+
+  // TODO(eroman): Instead of retrieving the profile globally (which could be in
+  // a variety of states during startup/shutdown), pass the BrowserContext in as
+  // a dependency.
+  auto* primary_profile = ProfileManager::GetPrimaryUserProfile();
+  if (!primary_profile)
+    return nullptr;
+
+  auto* storage_partition =
+      primary_profile->GetDefaultStoragePartition(primary_profile);
+
+  if (!storage_partition)
+    return nullptr;
+
+  return storage_partition->GetNetworkContext();
 }
 
 }  // namespace chromeos

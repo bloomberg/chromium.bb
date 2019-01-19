@@ -69,6 +69,7 @@ class CONTENT_EXPORT ResolveProxyMsgHelper : public BrowserMessageFilter,
 
   // network::mojom::ProxyLookupClient implementation.
   void OnProxyLookupComplete(
+      int32_t net_error,
       const base::Optional<net::ProxyInfo>& proxy_info) override;
 
   // A PendingRequest is a resolve request that is in progress, or queued.

@@ -145,7 +145,7 @@ TEST_F(ResolveProxyMsgHelperTest, Sequential) {
   ASSERT_TRUE(proxy_lookup_client_);
   net::ProxyInfo proxy_info;
   proxy_info.UseNamedProxy("result1:80");
-  proxy_lookup_client_->OnProxyLookupComplete(proxy_info);
+  proxy_lookup_client_->OnProxyLookupComplete(net::OK, proxy_info);
   proxy_lookup_client_.reset();
   base::RunLoop().RunUntilIdle();
 
@@ -159,7 +159,7 @@ TEST_F(ResolveProxyMsgHelperTest, Sequential) {
   EXPECT_EQ(url2, helper_->pending_url());
   ASSERT_TRUE(proxy_lookup_client_);
   proxy_info.UseNamedProxy("result2:80");
-  proxy_lookup_client_->OnProxyLookupComplete(proxy_info);
+  proxy_lookup_client_->OnProxyLookupComplete(net::OK, proxy_info);
   proxy_lookup_client_.reset();
   base::RunLoop().RunUntilIdle();
 
@@ -173,7 +173,7 @@ TEST_F(ResolveProxyMsgHelperTest, Sequential) {
   EXPECT_EQ(url3, helper_->pending_url());
   ASSERT_TRUE(proxy_lookup_client_);
   proxy_info.UseNamedProxy("result3:80");
-  proxy_lookup_client_->OnProxyLookupComplete(proxy_info);
+  proxy_lookup_client_->OnProxyLookupComplete(net::OK, proxy_info);
   base::RunLoop().RunUntilIdle();
 
   // Check result.
@@ -203,7 +203,7 @@ TEST_F(ResolveProxyMsgHelperTest, QueueRequests) {
   ASSERT_TRUE(proxy_lookup_client_);
   net::ProxyInfo proxy_info;
   proxy_info.UseNamedProxy("result1:80");
-  proxy_lookup_client_->OnProxyLookupComplete(proxy_info);
+  proxy_lookup_client_->OnProxyLookupComplete(net::OK, proxy_info);
   proxy_lookup_client_.reset();
   base::RunLoop().RunUntilIdle();
 
@@ -216,7 +216,7 @@ TEST_F(ResolveProxyMsgHelperTest, QueueRequests) {
   EXPECT_EQ(url2, helper_->pending_url());
   ASSERT_TRUE(proxy_lookup_client_);
   proxy_info.UseNamedProxy("result2:80");
-  proxy_lookup_client_->OnProxyLookupComplete(proxy_info);
+  proxy_lookup_client_->OnProxyLookupComplete(net::OK, proxy_info);
   proxy_lookup_client_.reset();
   base::RunLoop().RunUntilIdle();
 
@@ -229,7 +229,7 @@ TEST_F(ResolveProxyMsgHelperTest, QueueRequests) {
   EXPECT_EQ(url3, helper_->pending_url());
   ASSERT_TRUE(proxy_lookup_client_);
   proxy_info.UseNamedProxy("result3:80");
-  proxy_lookup_client_->OnProxyLookupComplete(proxy_info);
+  proxy_lookup_client_->OnProxyLookupComplete(net::OK, proxy_info);
   base::RunLoop().RunUntilIdle();
 
   // Check result.
@@ -270,7 +270,7 @@ TEST_F(ResolveProxyMsgHelperTest, CancelPendingRequests) {
   // Send Mojo message on the pipe.
   net::ProxyInfo proxy_info;
   proxy_info.UseNamedProxy("result1:80");
-  proxy_lookup_client_->OnProxyLookupComplete(proxy_info);
+  proxy_lookup_client_->OnProxyLookupComplete(net::OK, proxy_info);
 
   // Spinning the message loop results in the helper being destroyed and closing
   // the pipe.
@@ -296,7 +296,7 @@ TEST_F(ResolveProxyMsgHelperTest, RequestFails) {
   // There should be a pending proxy lookup request. Respond to it.
   EXPECT_EQ(url, helper_->pending_url());
   ASSERT_TRUE(proxy_lookup_client_);
-  proxy_lookup_client_->OnProxyLookupComplete(base::nullopt);
+  proxy_lookup_client_->OnProxyLookupComplete(net::ERR_FAILED, base::nullopt);
   base::RunLoop().RunUntilIdle();
 
   // Check result.
@@ -371,7 +371,7 @@ TEST_F(ResolveProxyMsgHelperTest, Lifetime) {
   // Send Mojo message on the pipe.
   net::ProxyInfo proxy_info;
   proxy_info.UseNamedProxy("result1:80");
-  proxy_lookup_client_->OnProxyLookupComplete(proxy_info);
+  proxy_lookup_client_->OnProxyLookupComplete(net::OK, proxy_info);
 
   // Spinning the message loop results in the helper being destroyed and closing
   // the pipe.

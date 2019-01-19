@@ -24,12 +24,13 @@ ProxyLookupClientImpl::ProxyLookupClientImpl(
   network_context->LookUpProxyForURL(url, std::move(proxy_lookup_client_ptr));
   binding_.set_connection_error_handler(
       base::BindOnce(&ProxyLookupClientImpl::OnProxyLookupComplete,
-                     base::Unretained(this), base::nullopt));
+                     base::Unretained(this), net::ERR_ABORTED, base::nullopt));
 }
 
 ProxyLookupClientImpl::~ProxyLookupClientImpl() = default;
 
 void ProxyLookupClientImpl::OnProxyLookupComplete(
+    int32_t net_error,
     const base::Optional<net::ProxyInfo>& proxy_info) {
   bool success = proxy_info.has_value() && !proxy_info->is_direct();
   std::move(callback_).Run(success);
