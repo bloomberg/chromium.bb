@@ -9,6 +9,7 @@
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ui/aura/window.h"
@@ -35,8 +36,9 @@ void OverflowBubble::Show(OverflowButton* overflow_button,
 
   Hide();
 
-  bubble_ = new OverflowBubbleView(shelf_);
-  bubble_->InitOverflowBubble(overflow_button, shelf_view);
+  bubble_ = new OverflowBubbleView(
+      shelf_view, overflow_button,
+      shelf_view->shelf_widget()->GetShelfBackgroundColor());
   overflow_button_ = overflow_button;
 
   TrayBackgroundView::InitializeBubbleAnimations(bubble_->GetWidget());
