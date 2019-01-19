@@ -413,7 +413,6 @@ repack("service_pak") {
     "$root_gen_dir/components/strings/components_strings_en-US.pak",
     "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
     "$root_gen_dir/content/app/strings/content_strings_en-US.pak",
-    "$root_gen_dir/content/browser/devtools/devtools_resources.pak",
     "$root_gen_dir/content/browser/tracing/tracing_resources.pak",
     "$root_gen_dir/content/content_resources.pak",
     "$root_gen_dir/mojo/public/js/mojo_bindings_resources.pak",
@@ -421,7 +420,6 @@ repack("service_pak") {
     "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_scaled_resources_100_percent.pak",
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
-    "$root_gen_dir/ui/resources/webui_resources.pak",
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
     "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
   ]
@@ -432,7 +430,6 @@ repack("service_pak") {
     "//content:resources",
     "//content/app/resources",
     "//content/app/strings",
-    "//content/browser/devtools:resources",
     "//content/browser/tracing:resources",
     "//mojo/public/js:resources",
     "//net:net_resources",
