@@ -27,7 +27,6 @@
 #include "build/build_config.h"
 #include "content/browser/devtools/devtools_http_handler.h"
 #include "content/browser/devtools/devtools_manager.h"
-#include "content/browser/devtools/grit/devtools_resources.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -53,6 +52,10 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
+#endif
+
+#if !defined(OS_FUCHSIA)
+#include "content/browser/devtools/grit/devtools_resources.h"  // nogncheck
 #endif
 
 namespace content {
@@ -656,6 +659,9 @@ void DevToolsHttpHandler::OnJsonRequest(
 }
 
 void DevToolsHttpHandler::DecompressAndSendJsonProtocol(int connection_id) {
+#if defined(OS_FUCHSIA)
+  NOTREACHED();
+#else
   scoped_refptr<base::RefCountedMemory> raw_bytes =
       GetContentClient()->GetDataResourceBytes(COMPRESSED_PROTOCOL_JSON);
   const uint8_t* next_encoded_byte = raw_bytes->front();
@@ -694,6 +700,7 @@ void DevToolsHttpHandler::DecompressAndSendJsonProtocol(int connection_id) {
       FROM_HERE, base::BindOnce(&ServerWrapper::SendResponse,
                                 base::Unretained(server_wrapper_.get()),
                                 connection_id, response));
+#endif  // defined(OS_FUCHSIA)
 }
 
 void DevToolsHttpHandler::RespondToJsonList(
