@@ -366,6 +366,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static scoped_refptr<base::SingleThreadTaskRunner>
   GetInProcessRendererThreadTaskRunnerForTesting();
 
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  // Gets the platform-specific limit. Used by GetMaxRendererProcessCount().
+  static size_t GetPlatformMaxRendererProcessCount();
+#endif
+
   // This forces a renderer that is running "in process" to shut down.
   static void ShutDownInProcessRenderer();
 

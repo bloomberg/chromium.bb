@@ -61,15 +61,18 @@ TEST_F(RenderProcessHostUnitTest, RendererProcessLimit) {
   if (AreAllSitesIsolatedForTesting())
     return;
 
-  // Verify that the limit is between 1 and kMaxRendererProcessCount.
+  const size_t max_renderer_process_count =
+      RenderProcessHostImpl::GetPlatformMaxRendererProcessCount();
+
+  // Verify that the limit is between 1 and |max_renderer_process_count|.
   EXPECT_GT(RenderProcessHostImpl::GetMaxRendererProcessCount(), 0u);
   EXPECT_LE(RenderProcessHostImpl::GetMaxRendererProcessCount(),
-      kMaxRendererProcessCount);
+            max_renderer_process_count);
 
   // Add dummy process hosts to saturate the limit.
-  ASSERT_NE(0u, kMaxRendererProcessCount);
+  ASSERT_NE(0u, max_renderer_process_count);
   std::vector<std::unique_ptr<MockRenderProcessHost>> hosts;
-  for (size_t i = 0; i < kMaxRendererProcessCount; ++i) {
+  for (size_t i = 0; i < max_renderer_process_count; ++i) {
     hosts.push_back(std::make_unique<MockRenderProcessHost>(browser_context()));
   }
 
@@ -83,9 +86,9 @@ TEST_F(RenderProcessHostUnitTest, RendererProcessLimit) {
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
 TEST_F(RenderProcessHostUnitTest, NoRendererProcessLimitOnAndroidOrChromeOS) {
   // Add a few dummy process hosts.
-  ASSERT_NE(0u, kMaxRendererProcessCount);
+  static constexpr size_t kMaxRendererProcessCountForTesting = 82;
   std::vector<std::unique_ptr<MockRenderProcessHost>> hosts;
-  for (size_t i = 0; i < kMaxRendererProcessCount; ++i) {
+  for (size_t i = 0; i < kMaxRendererProcessCountForTesting; ++i) {
     hosts.push_back(std::make_unique<MockRenderProcessHost>(browser_context()));
   }
 
