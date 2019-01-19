@@ -12,7 +12,6 @@ namespace chromecast {
 
 // static
 std::unique_ptr<CastSysInfo> CreateSysInfo() {
-// Not used for Android N because N doesn't support ro.oem.*
 #if BUILDFLAG(IS_ANDROID_THINGS)
   return std::make_unique<CastSysInfoAndroidThings>();
 #else

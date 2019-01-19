@@ -4,6 +4,8 @@
 
 package org.chromium.chromecast.shell;
 
+import android.os.Build;
+
 import com.google.android.things.AndroidThings;
 import com.google.android.things.factory.FactoryDataManager;
 import com.google.android.things.update.UpdateManager;
@@ -28,17 +30,29 @@ public final class CastSysInfoAndroidThings {
 
     @CalledByNative
     private static String getProductName() {
-        return AndroidThings.Product.NAME;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return AndroidThings.Product.NAME;
+        } else {
+            return Build.PRODUCT;
+        }
     }
 
     @CalledByNative
     private static String getDeviceModel() {
-        return AndroidThings.Product.MODEL;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return AndroidThings.Product.MODEL;
+        } else {
+            return Build.MODEL;
+        }
     }
 
     @CalledByNative
     private static String getManufacturer() {
-        return AndroidThings.Product.MANUFACTURER;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return AndroidThings.Product.MANUFACTURER;
+        } else {
+            return Build.MANUFACTURER;
+        }
     }
 
     @CalledByNative
