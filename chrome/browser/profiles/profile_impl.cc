@@ -699,17 +699,6 @@ void ProfileImpl::DoFinalInit() {
   }
 #endif
 
-  if (delegate_) {
-    TRACE_EVENT0("browser", "ProfileImpl::DoFileInit:DelegateOnProfileCreated")
-    delegate_->OnProfileCreated(this, true, IsNewProfile());
-  }
-
-  {
-    SCOPED_UMA_HISTOGRAM_TIMER("Profile.NotifyProfileCreatedTime");
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_PROFILE_CREATED, content::Source<Profile>(this),
-        content::NotificationService::NoDetails());
-  }
 #if !defined(OS_CHROMEOS)
   // Listen for bookmark model load, to bootstrap the sync service.
   // On CrOS sync service will be initialized after sign in.
@@ -730,6 +719,18 @@ void ProfileImpl::DoFinalInit() {
 
   content::URLDataSource::Add(this,
                               std::make_unique<PrefsInternalsSource>(this));
+
+  if (delegate_) {
+    TRACE_EVENT0("browser", "ProfileImpl::DoFileInit:DelegateOnProfileCreated")
+    delegate_->OnProfileCreated(this, true, IsNewProfile());
+  }
+
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER("Profile.NotifyProfileCreatedTime");
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_PROFILE_CREATED, content::Source<Profile>(this),
+        content::NotificationService::NoDetails());
+  }
 }
 
 base::FilePath ProfileImpl::last_selected_directory() {
