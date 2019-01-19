@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/app/cast/application_config_manager/test/fake_application_config_manager.h"
+#include "fuchsia/app/cast/fake_application_config_manager.h"
 
 #include "base/logging.h"
 
 namespace castrunner {
-namespace test {
 
 const char FakeApplicationConfigManager::kTestCastAppId[] = "00000000";
 
@@ -32,5 +31,4 @@ void FakeApplicationConfigManager::GetConfig(std::string id,
   callback(std::move(app_config));
 }
 
-}  // namespace test
 }  // namespace castrunner
