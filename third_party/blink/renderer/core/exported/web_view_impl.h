@@ -196,7 +196,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void ClearBackgroundColorOverride() override;
   void SetBaseBackgroundColorOverride(SkColor) override;
   void ClearBaseBackgroundColorOverride() override;
-  void SetInsidePortal(bool inside_portal) override;
 
   void DidUpdateFullscreenSize();
 

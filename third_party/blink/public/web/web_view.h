@@ -450,11 +450,6 @@ class WebView {
   // completed.
   virtual WebWidget* MainFrameWidget() = 0;
 
-  // Portals --------------------------------------------------------------
-
-  // Informs the page that it is inside a portal.
-  virtual void SetInsidePortal(bool inside_portal) = 0;
-
  protected:
   ~WebView() = default;
 };

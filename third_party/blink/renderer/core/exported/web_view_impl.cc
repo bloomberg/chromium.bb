@@ -2899,10 +2899,6 @@ void WebViewImpl::UpdateBaseBackgroundColor() {
   }
 }
 
-void WebViewImpl::SetInsidePortal(bool inside_portal) {
-  GetPage()->SetInsidePortal(inside_portal);
-}
-
 void WebViewImpl::SetIsActive(bool active) {
   if (GetPage())
     GetPage()->GetFocusController().SetActive(active);

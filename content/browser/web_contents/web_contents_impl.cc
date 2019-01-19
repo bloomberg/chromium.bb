@@ -4952,10 +4952,6 @@ void WebContentsImpl::DidCommitAndDrawCompositorFrame(
     observer.DidCommitAndDrawCompositorFrame();
 }
 
-bool WebContentsImpl::IsPortal() const {
-  return portal();
-}
-
 void WebContentsImpl::NotifyBeforeFormRepostWarningShow() {
   for (auto& observer : observers_)
     observer.BeforeFormRepostWarningShow();

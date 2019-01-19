@@ -310,9 +310,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   int32_t AutoplayFlags() const;
 
-  void SetInsidePortal(bool inside_portal);
-  bool InsidePortal() const;
-
  private:
   friend class ScopedPagePauser;
 
@@ -402,9 +399,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   std::unique_ptr<PageScheduler> page_scheduler_;
 
   int32_t autoplay_flags_;
-
-  // Accessed by frames to determine whether to expose the PortalHost object.
-  bool inside_portal_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(Page);
 };
