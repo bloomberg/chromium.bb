@@ -42,19 +42,15 @@
 // would postpone DoStuff by another 1 second.  In other words, Reset is
 // shorthand for calling Stop and then Start again with the same arguments.
 //
-// These APIs are not thread safe. All methods must be called from the same
-// sequence (not necessarily the construction sequence), except for the
-// destructor and SetTaskRunner().
-// - The destructor may be called from any sequence when the timer is not
-// running and there is no scheduled task active, i.e. when Start() has never
-// been called or after AbandonAndStop() has been called.
-// - SetTaskRunner() may be called from any sequence when the timer is not
-// running, i.e. when Start() has never been called or Stop() has been called
-// since the last Start().
+// These APIs are not thread safe. When a method is called (except the
+// constructor), all further method calls must be on the same sequence until
+// Stop().
 //
 // By default, the scheduled tasks will be run on the same sequence that the
-// Timer was *started on*, but this can be changed *prior* to Start() via
-// SetTaskRunner().
+// Timer was *started on*. To mock time in unit tests, some old tests used
+// SetTaskRunner() to schedule the delay on a test-controlled TaskRunner. The
+// modern and preferred approach to mock time is to use ScopedTaskEnvironment's
+// MOCK_TIME mode.
 
 #ifndef BASE_TIMER_TIMER_H_
 #define BASE_TIMER_TIMER_H_
@@ -114,11 +110,17 @@ class BASE_EXPORT TimerBase {
   // Returns the current delay for this timer.
   TimeDelta GetCurrentDelay() const;
 
-  // Set the task runner on which the task should be scheduled. This method can
-  // only be called before any tasks have been scheduled. If |task_runner| runs
-  // tasks on a different sequence than the sequence owning this Timer, the user
-  // task will be posted to it when the Timer fires (note that this means the
-  // user task can run after ~Timer() and should support that).
+  // Sets the task runner on which the delayed task should be scheduled when
+  // this Timer is running. This method can only be called while this Timer
+  // isn't running. This is an alternative (old) approach to mock time in tests.
+  // The modern and preferred approach is to use
+  // ScopedTaskEnvironment::MainThreadType::MOCK_TIME
+  // (ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME may also be useful
+  // if the Timer is ever restarted). To avoid racy usage of Timer,
+  // |task_runner| must run tasks on the same sequence which this Timer is bound
+  // to (started from).
+  // TODO(gab): Migrate all callers to
+  // ScopedTaskEnvironment::MainThreadType::MOCK_TIME.
   virtual void SetTaskRunner(scoped_refptr<SequencedTaskRunner> task_runner);
 
   // Call this method to stop and cancel the timer.  It is a no-op if the timer
