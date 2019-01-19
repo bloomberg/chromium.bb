@@ -38686,6 +38686,23 @@ Called by update_net_trust_anchors.py.-->
   <int value="20" label="File not found"/>
 </enum>
 
+<enum name="OfflinePagesAutoFetchNotificationAction">
+  <int value="0" label="shown">
+    The notification was shown to the user (though it may have been blocked)
+  </int>
+  <int value="1" label="complete">
+    The notification was removed programmatically, because the operation was
+    complete.
+  </int>
+  <int value="2" label="cancel_pressed">
+    The user tapped the cancel button on the notification.
+  </int>
+  <int value="3" label="dismissed">
+    The user dismissed the notification by swiping it away.
+  </int>
+  <int value="4" label="tapped">The user tapped the notification.</int>
+</enum>
+
 <enum name="OfflinePagesBackgroundImmediateStartStatus">
   <int value="0" label="Started"/>
   <int value="1" label="Busy"/>
@@ -51112,6 +51129,7 @@ would be helpful to identify which type is being sent.
   <int value="11" label="Webapp Actions"/>
   <int value="12" label="Offline Content Suggestion"/>
   <int value="13" label="Sites shown in Trusted Web Activities"/>
+  <int value="14" label="Offline Pages"/>
 </enum>
 
 <enum name="TabBackgroundLoadStatus">

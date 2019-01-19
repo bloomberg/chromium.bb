@@ -3103,6 +3103,12 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         <ph name="DOMAIN_NAME"><ex>www.example.com</ex>%1$s</ph> and more sites
       </message>
 
+      <message name="IDS_OFFLINE_PAGES_AUTO_FETCH_IN_PROGRESS_NOTIFICATION_TEXT" desc="Text inside a notification explaining that one or more pages will be fetched when the device is online. [ICU Syntax]">
+        {NUM_IN_PROGRESS, plural,
+          =1 {Chrome will load your page when ready}
+          other {Chrome will load your pages when ready}}
+      </message>
+
       <message name="IDS_OFFLINE_PAGES_AUTO_FETCH_READY_NOTIFICATION_TEXT" desc="Text inside a notification explaining that the page has been fetched and is ready to view. This is the subtext of the notification and appars below the web page title. When the notification is tapped, the page is opened in Chrome.">
         Page is ready to view
       </message>
