@@ -921,6 +921,8 @@ void RenderWidgetHostViewChildFrame::SetNeedsBeginFrames(
 
 TouchSelectionControllerClientManager*
 RenderWidgetHostViewChildFrame::GetTouchSelectionControllerClientManager() {
+  if (!frame_connector_)
+    return nullptr;
   auto* root_view = frame_connector_->GetRootRenderWidgetHostView();
   if (!root_view)
     return nullptr;
