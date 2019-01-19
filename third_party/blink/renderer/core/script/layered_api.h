@@ -30,6 +30,11 @@ CORE_EXPORT KURL GetInternalURL(const KURL&);
 // Gets source text for std-internal://x/index.js.
 CORE_EXPORT String GetSourceText(const KURL&);
 
+struct LayeredAPIResource {
+  const char* path;
+  int resource_id;
+};
+
 }  // namespace layered_api
 
 }  // namespace blink

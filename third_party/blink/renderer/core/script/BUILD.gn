@@ -26,6 +26,7 @@ blink_core_sources("script") {
     "ignore_destructive_write_count_incrementer.h",
     "layered_api.cc",
     "layered_api.h",
+    "layered_api_resources.h",
     "modulator.cc",
     "modulator.h",
     "modulator_impl_base.cc",
