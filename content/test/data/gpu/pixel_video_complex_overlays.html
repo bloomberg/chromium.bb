@@ -1,9 +1,7 @@
 <!DOCTYPE HTML>
-
-<!-- READ BEFORE UPDATING:
-If this test is updated make sure to increment the "revision" value of the
-associated test in content/test/gpu/page_sets/pixel_tests.py. This will ensure
-that the baseline images are regenerated on the next run.
+<!-- This HTML plays a video with complex overlay transformation.
+To improve test stability, this test sends out SUCCESS for screen capture after
+the video playback starts (video.currentTime > 0).
 -->
 
 <html>
@@ -21,28 +19,22 @@ that the baseline images are regenerated on the next run.
 }
 </style>
 <script>
-var g_swapsBeforeAck = 15;
 var video;
 
-function main()
-{
+function main() {
   video = document.getElementById("video");
-  if (video.readyState >= 4) {
-    waitForFinish();
-  } else {
-    video.addEventListener('canplaythrough', waitForFinish, true);
+  video.loop = true;
+  video.addEventListener('timeupdate', SendSuccess);
+  video.play();
+}
+
+function SendSuccess() {
+  if (video.currentTime > 0) {
+    video.removeEventListener('timeupdate', SendSuccess);
+    domAutomationController.send("SUCCESS");
   }
 }
 
-function waitForFinish()
-{
-  if (g_swapsBeforeAck == 0) {
-     domAutomationController.send("SUCCESS");
-  } else {
-    g_swapsBeforeAck--;
-    window.requestAnimationFrame(waitForFinish);
-  }
-}
 </script>
 </head>
 <body onload="main()">
