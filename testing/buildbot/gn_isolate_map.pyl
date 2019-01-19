@@ -412,7 +412,7 @@
     "type": "windowed_test_launcher",
   },
   "castrunner_browsertests": {
-    "label": "//webrunner:castrunner_browsertests",
+    "label": "//fuchsia:castrunner_browsertests",
     "type": "console_test_launcher",
   },
   "castrunner_integration_tests": {
