@@ -90,6 +90,7 @@ void GoogleAssistantHandler::DeleteVoiceModelCallback() {
   // Disable hotword if voice model is deleted.
   PrefService* prefs = profile_->GetPrefs();
   prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, false);
+  prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordAlwaysOn, false);
 }
 
 }  // namespace settings

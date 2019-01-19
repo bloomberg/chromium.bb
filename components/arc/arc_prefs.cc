@@ -123,6 +123,10 @@ const char kVoiceInteractionContextEnabled[] =
     "settings.voice_interaction.context.enabled";
 // A preference that indicates the user has enabled voice interaction services.
 const char kVoiceInteractionEnabled[] = "settings.voice_interaction.enabled";
+// A preference that indicates the user has chosen to always keep hotword
+// listening on even withough DSP support.
+const char kVoiceInteractionHotwordAlwaysOn[] =
+    "settings.voice_interaction.hotword.always_on";
 // A preference that indicates the user has allowed voice interaction services
 // to use hotword listening.
 const char kVoiceInteractionHotwordEnabled[] =
@@ -183,6 +187,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterTimeDeltaPref(kEngagementTimeTotal, base::TimeDelta());
   registry->RegisterBooleanPref(kVoiceInteractionContextEnabled, false);
   registry->RegisterBooleanPref(kVoiceInteractionEnabled, false);
+  registry->RegisterBooleanPref(kVoiceInteractionHotwordAlwaysOn, true);
   registry->RegisterBooleanPref(kVoiceInteractionHotwordEnabled, false);
   registry->RegisterBooleanPref(kVoiceInteractionNotificationEnabled, true);
   registry->RegisterBooleanPref(kVoiceInteractionLaunchWithMicOpen, false);

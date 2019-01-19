@@ -37,11 +37,15 @@ class GoogleServiceAuthError;
 
 namespace base {
 class OneShotTimer;
-}
+}  // namespace base
 
 namespace network {
 class NetworkConnectionTracker;
 }  // namespace network
+
+namespace power_manager {
+class PowerSupplyProperties;
+}  // namespace power_manager
 
 namespace chromeos {
 namespace assistant {
@@ -114,6 +118,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void BindAssistantPlatformConnection(mojom::AssistantPlatformRequest request);
 
   // chromeos::PowerManagerClient::Observer overrides:
+  void PowerChanged(const power_manager::PowerSupplyProperties& prop) override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // ash::mojom::SessionActivationObserver overrides:
@@ -123,6 +128,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   // ash::mojom::VoiceInteractionObserver:
   void OnVoiceInteractionSettingsEnabled(bool enabled) override;
   void OnVoiceInteractionHotwordEnabled(bool enabled) override;
+  void OnVoiceInteractionHotwordAlwaysOn(bool always_on) override;
   void OnLocaleChanged(const std::string& locale) override;
 
   void MaybeRestartAssistantManager();
@@ -155,6 +161,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   void UpdateListeningState();
 
+  bool ShouldEnableHotword();
+
   service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry registry_;
 
@@ -182,6 +190,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   bool locked_ = false;
   // Whether there is a pending run for updating AssistantManagerService
   bool pending_restart_assistant_manager_ = false;
+  // Whether the power source is connected.
+  bool power_source_connected_ = false;
 
   base::Optional<std::string> access_token_;
 

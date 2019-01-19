@@ -71,6 +71,18 @@ void VoiceInteractionController::NotifyHotwordEnabled(bool enabled) {
     observer.OnVoiceInteractionHotwordEnabled(enabled);
 }
 
+void VoiceInteractionController::NotifyHotwordAlwaysOn(bool always_on) {
+  if (hotword_always_on_.has_value() && hotword_always_on_.value() == always_on)
+    return;
+
+  hotword_always_on_ = always_on;
+  observers_.ForAllPtrs([always_on](auto* observer) {
+    observer->OnVoiceInteractionHotwordAlwaysOn(always_on);
+  });
+  for (auto& observer : local_observers_)
+    observer.OnVoiceInteractionHotwordAlwaysOn(always_on);
+}
+
 void VoiceInteractionController::NotifySetupCompleted(bool completed) {
   if (setup_completed_.has_value() && setup_completed_.value() == completed)
     return;
@@ -146,6 +158,8 @@ void VoiceInteractionController::InitObserver(
     observer->OnVoiceInteractionHotwordEnabled(hotword_enabled_.value());
   if (setup_completed_.has_value())
     observer->OnVoiceInteractionSetupCompleted(setup_completed_.value());
+  if (hotword_always_on_.has_value())
+    observer->OnVoiceInteractionHotwordAlwaysOn(hotword_always_on_.value());
   if (allowed_state_.has_value())
     observer->OnAssistantFeatureAllowedChanged(allowed_state_.value());
   if (locale_.has_value())

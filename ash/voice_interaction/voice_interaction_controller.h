@@ -31,6 +31,7 @@ class ASH_EXPORT VoiceInteractionController
   void NotifySettingsEnabled(bool enabled) override;
   void NotifyContextEnabled(bool enabled) override;
   void NotifyHotwordEnabled(bool enabled) override;
+  void NotifyHotwordAlwaysOn(bool always_on) override;
   void NotifySetupCompleted(bool completed) override;
   void NotifyFeatureAllowed(mojom::AssistantAllowedState state) override;
   void NotifyNotificationEnabled(bool enabled) override;

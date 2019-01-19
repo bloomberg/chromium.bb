@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/webui/chromeos/user_image_source.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/consent_auditor/consent_auditor.h"
@@ -217,6 +218,17 @@ void RecordActivityControlConsent(Profile* profile,
 
   ConsentAuditorFactory::GetForProfile(profile)
       ->RecordAssistantActivityControlConsent(account_id, consent);
+}
+
+bool IsHotwordDspAvailable() {
+  chromeos::AudioDeviceList devices;
+  chromeos::CrasAudioHandler::Get()->GetAudioDevices(&devices);
+  for (const chromeos::AudioDevice& device : devices) {
+    if (device.type == chromeos::AUDIO_TYPE_HOTWORD) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace chromeos

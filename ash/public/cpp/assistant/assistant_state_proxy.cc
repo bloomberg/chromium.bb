@@ -37,6 +37,8 @@ void AssistantStateProxy::AddObserver(
     observer->OnVoiceInteractionHotwordEnabled(hotword_enabled_.value());
   if (setup_completed_.has_value())
     observer->OnVoiceInteractionSetupCompleted(setup_completed_.value());
+  if (hotword_always_on_.has_value())
+    observer->OnVoiceInteractionHotwordAlwaysOn(hotword_always_on_.value());
   if (allowed_state_.has_value())
     observer->OnAssistantFeatureAllowedChanged(allowed_state_.value());
   if (locale_.has_value())
@@ -79,6 +81,12 @@ void AssistantStateProxy::OnVoiceInteractionSetupCompleted(bool completed) {
   setup_completed_ = completed;
   for (auto& observer : observers_)
     observer.OnVoiceInteractionSetupCompleted(setup_completed_.value());
+}
+
+void AssistantStateProxy::OnVoiceInteractionHotwordAlwaysOn(bool always_on) {
+  hotword_always_on_ = always_on;
+  for (auto& observer : observers_)
+    observer.OnVoiceInteractionHotwordAlwaysOn(hotword_always_on_.value());
 }
 
 void AssistantStateProxy::OnAssistantFeatureAllowedChanged(

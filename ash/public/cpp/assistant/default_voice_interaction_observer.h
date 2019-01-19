@@ -29,6 +29,7 @@ class ASH_PUBLIC_EXPORT DefaultVoiceInteractionObserver
   void OnVoiceInteractionContextEnabled(bool enabled) override {}
   void OnVoiceInteractionHotwordEnabled(bool enabled) override {}
   void OnVoiceInteractionSetupCompleted(bool completed) override {}
+  void OnVoiceInteractionHotwordAlwaysOn(bool always_on) override {}
   void OnAssistantFeatureAllowedChanged(
       ash::mojom::AssistantAllowedState state) override {}
   void OnLocaleChanged(const std::string& locale) override {}
