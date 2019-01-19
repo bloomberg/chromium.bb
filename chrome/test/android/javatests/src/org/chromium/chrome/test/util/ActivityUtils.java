@@ -26,8 +26,6 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
-import java.lang.ref.WeakReference;
-import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 
@@ -164,11 +162,8 @@ public class ActivityUtils {
 
     private static void logRunningChromeActivities() {
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
             StringBuilder builder = new StringBuilder("Running Chrome Activities: ");
-            for (WeakReference<Activity> activityRef : activities) {
-                Activity activity = activityRef.get();
-                if (activity == null) continue;
+            for (Activity activity : ApplicationStatus.getRunningActivities()) {
                 builder.append(String.format(Locale.US, "\n   %s : %d",
                         activity.getClass().getSimpleName(),
                         ApplicationStatus.getStateForActivity(activity)));

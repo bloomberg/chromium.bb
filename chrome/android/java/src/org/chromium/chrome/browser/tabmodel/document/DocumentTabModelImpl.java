@@ -22,7 +22,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.content_public.browser.WebContents;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -207,9 +206,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
 
         // Return a live tab if the corresponding DocumentActivity is currently alive.
         int tabId = mTabIdList.get(index);
-        List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
-        for (WeakReference<Activity> activityRef : activities) {
-            Activity activity = activityRef.get();
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
             if (!(activity instanceof DocumentActivity)
                     || !mActivityDelegate.isValidActivity(isIncognito(), activity.getIntent())) {
                 continue;

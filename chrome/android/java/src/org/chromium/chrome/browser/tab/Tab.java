@@ -116,9 +116,7 @@ import org.chromium.ui.widget.AnchoredPopupWindow;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
-import java.util.List;
 
 /**
  * The basic Java representation of a tab.  Contains and manages a {@link ContentView}.
@@ -2747,9 +2745,7 @@ public class Tab
     public static Intent createBringTabToFrontIntent(int tabId) {
         // Iterate through all {@link CustomTab}s and check whether the given tabId belongs to a
         // {@link CustomTab}. If so, return null as the client app's task cannot be foregrounded.
-        List<WeakReference<Activity>> list = ApplicationStatus.getRunningActivities();
-        for (WeakReference<Activity> ref : list) {
-            Activity activity = ref.get();
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
             if (activity instanceof CustomTabActivity
                     && ((CustomTabActivity) activity).getActivityTab() != null
                     && tabId == ((CustomTabActivity) activity).getActivityTab().getId()) {

@@ -160,7 +160,6 @@ import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
@@ -2335,9 +2334,7 @@ public class ChromeTabbedActivity
         }
 
         if (otherActivityTask != null) {
-            for (WeakReference<Activity> activityRef : ApplicationStatus.getRunningActivities()) {
-                Activity activity = activityRef.get();
-                if (activity == null) continue;
+            for (Activity activity : ApplicationStatus.getRunningActivities()) {
                 // 2. If the other activity is still running (not destroyed), save its tab list.
                 //    Saving the tab list prevents missing tabs or duplicate tabs if tabs have been
                 //    reparented.

@@ -35,8 +35,6 @@ import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 
-import java.lang.ref.WeakReference;
-
 /**
  * Tracks the foreground session state for the Chrome activities.
  */
@@ -163,8 +161,7 @@ public class ChromeActivitySessionTracker {
         IntentHandler.clearPendingIncognitoUrl();
 
         int totalTabCount = 0;
-        for (WeakReference<Activity> reference : ApplicationStatus.getRunningActivities()) {
-            Activity activity = reference.get();
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
             if (activity instanceof ChromeActivity) {
                 TabModelSelector tabModelSelector =
                         ((ChromeActivity) activity).getTabModelSelector();

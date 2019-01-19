@@ -33,8 +33,6 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.webapk.lib.client.WebApkValidator;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
-import java.lang.ref.WeakReference;
-
 /**
  * Launches web apps.  This was separated from the ChromeLauncherActivity because the
  * ChromeLauncherActivity is not allowed to be excluded from Android's Recents: crbug.com/517426.
@@ -100,9 +98,8 @@ public class WebappLauncherActivity extends Activity {
     public static boolean bringWebappToFront(int tabId) {
         if (tabId == Tab.INVALID_TAB_ID) return false;
 
-        for (WeakReference<Activity> activityRef : ApplicationStatus.getRunningActivities()) {
-            Activity activity = activityRef.get();
-            if (activity == null || !(activity instanceof WebappActivity)) continue;
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
+            if (!(activity instanceof WebappActivity)) continue;
 
             WebappActivity webappActivity = (WebappActivity) activity;
             if (webappActivity.getActivityTab() != null
@@ -334,8 +331,7 @@ public class WebappLauncherActivity extends Activity {
         // {@link #selectWebappActivitySubclass()} does not select singleTask activities on L+.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) return;
 
-        for (WeakReference<Activity> activityRef : ApplicationStatus.getRunningActivities()) {
-            Activity activity = activityRef.get();
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
             if (!activity.getClass().getName().equals(webappActivitySubclass)) {
                 continue;
             }

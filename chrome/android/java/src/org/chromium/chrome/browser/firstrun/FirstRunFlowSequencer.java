@@ -39,7 +39,6 @@ import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.ui.base.DeviceFormFactor;
 
-import java.lang.ref.WeakReference;
 import java.util.List;
 
 /**
@@ -418,9 +417,7 @@ public abstract class FirstRunFlowSequencer  {
 
     /** Returns whether the generic FRE is active. */
     private static boolean checkIsGenericFreActive() {
-        List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
-        for (WeakReference<Activity> weakActivity : activities) {
-            Activity activity = weakActivity.get();
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
             // TabbedModeFirstRunActivity extends FirstRunActivity. LightweightFirstRunActivity
             // does not.
             if (activity instanceof FirstRunActivity) {

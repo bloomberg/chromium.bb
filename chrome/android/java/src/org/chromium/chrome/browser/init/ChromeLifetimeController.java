@@ -17,8 +17,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ApplicationLifetime;
 import org.chromium.chrome.browser.BrowserRestartActivity;
 
-import java.lang.ref.WeakReference;
-
 /**
  * Answers requests to kill and (potentially) restart Chrome's main browser process.
  *
@@ -76,13 +74,10 @@ class ChromeLifetimeController implements ApplicationLifetime.Observer,
         mRestartChromeOnDestroy = restart;
 
         // Tell all Chrome Activities to finish themselves.
-        for (WeakReference<Activity> weakActivity : ApplicationStatus.getRunningActivities()) {
-            Activity activity = weakActivity.get();
-            if (activity != null) {
-                ApplicationStatus.registerStateListenerForActivity(this, activity);
-                mRemainingActivitiesCount++;
-                activity.finish();
-            }
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
+            ApplicationStatus.registerStateListenerForActivity(this, activity);
+            mRemainingActivitiesCount++;
+            activity.finish();
         }
 
         // Kick off a timer to kill the process after a delay, which fires only if the Activities

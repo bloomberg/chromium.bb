@@ -31,7 +31,6 @@ import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -293,10 +292,7 @@ public class CustomTabTabPersistencePolicy implements TabPersistencePolicy {
             Set<Integer> liveTabIds, Set<Integer> liveTaskIds) {
         ThreadUtils.assertOnUiThread();
 
-        List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
-        for (int i = 0; i < activities.size(); i++) {
-            Activity activity = activities.get(i).get();
-            if (activity == null) continue;
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
             if (!(activity instanceof CustomTabActivity)) continue;
             getAllTabIdsForActivity((CustomTabActivity) activity, liveTabIds);
             liveTaskIds.add(activity.getTaskId());

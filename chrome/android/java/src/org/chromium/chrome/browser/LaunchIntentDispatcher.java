@@ -55,7 +55,6 @@ import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.ref.WeakReference;
 import java.util.UUID;
 
 /**
@@ -423,9 +422,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
     @SuppressLint("InlinedApi")
     private @Action int dispatchToTabbedActivity() {
         if (mIsVrIntent) {
-            for (WeakReference<Activity> weakActivity : ApplicationStatus.getRunningActivities()) {
-                final Activity activity = weakActivity.get();
-                if (activity == null) continue;
+            for (Activity activity : ApplicationStatus.getRunningActivities()) {
                 if (activity instanceof ChromeTabbedActivity) {
                     if (VrModuleProvider.getDelegate().willChangeDensityInVr(
                                 (ChromeActivity) activity)) {

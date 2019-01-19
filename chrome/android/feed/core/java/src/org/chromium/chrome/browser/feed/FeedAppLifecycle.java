@@ -15,9 +15,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.signin.SigninManager;
 
-import java.lang.ref.WeakReference;
-import java.util.List;
-
 /**
  * Aggregation point for application lifecycle events that the Feed cares about. Events that
  * originate in Java flow directly to FeedAppLifecycle, while native-originating events arrive
@@ -65,10 +62,8 @@ public class FeedAppLifecycle
         mFeedScheduler = feedScheduler;
 
         int resumedActivityCount = 0;
-        List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
-        for (final WeakReference<Activity> ref : activities) {
-            final Activity activity = ref.get();
-            if (activity != null && activity instanceof ChromeTabbedActivity) {
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
+            if (activity instanceof ChromeTabbedActivity) {
                 @ActivityState
                 int activityState = ApplicationStatus.getStateForActivity(activity);
                 if (activityState != ActivityState.STOPPED) {
