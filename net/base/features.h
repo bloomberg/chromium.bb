@@ -27,6 +27,12 @@ NET_EXPORT extern const base::Feature kEnforceTLS13Downgrade;
 // Splits cache entries by the request's top frame's origin if one is available.
 NET_EXPORT extern const base::Feature kSplitCacheByTopFrameOrigin;
 
+// Enables sending TLS 1.3 Key Update messages on TLS 1.3 connections in order
+// to ensure that this corner of the spec is exercised. This is enabled by
+// default and exists as a feature to allow it to be remotely disabled if
+// needed.
+NET_EXPORT extern const base::Feature kTLS13KeyUpdate;
+
 }  // namespace features
 }  // namespace net
 
