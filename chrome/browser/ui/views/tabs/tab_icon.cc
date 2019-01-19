@@ -22,8 +22,10 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/border.h"
 #include "url/gurl.h"
 
 namespace {
@@ -33,6 +35,7 @@ bool UseNewLoadingAnimation() {
 }
 
 constexpr int kAttentionIndicatorRadius = 3;
+constexpr int kNewLoadingAnimationStrokeWidthDp = 2;
 
 // Returns whether the favicon for the given URL should be colored according to
 // the browser theme.
@@ -78,12 +81,22 @@ class TabIcon::CrashAnimation : public gfx::LinearAnimation,
   DISALLOW_COPY_AND_ASSIGN(CrashAnimation);
 };
 
-TabIcon::TabIcon() : clock_(base::DefaultTickClock::GetInstance()) {
+TabIcon::TabIcon()
+    : clock_(base::DefaultTickClock::GetInstance()),
+      favicon_fade_in_animation_(base::TimeDelta::FromMilliseconds(250),
+                                 gfx::LinearAnimation::kDefaultFrameRate,
+                                 this) {
   set_can_process_events_within_subtree(false);
 
+  if (UseNewLoadingAnimation()) {
+    SetBorder(views::CreateEmptyBorder(
+        gfx::Insets(kNewLoadingAnimationStrokeWidthDp)));
+  }
+
   // The minimum size to avoid clipping the attention indicator.
-  SetPreferredSize(gfx::Size(gfx::kFaviconSize + kAttentionIndicatorRadius,
-                             gfx::kFaviconSize + kAttentionIndicatorRadius));
+  const int preferred_width =
+      gfx::kFaviconSize + kAttentionIndicatorRadius + GetInsets().width();
+  SetPreferredSize(gfx::Size(preferred_width, preferred_width));
 
   // Initial state (before any data) should not be animating.
   DCHECK(!ShowingLoadingAnimation());
@@ -166,8 +179,9 @@ void TabIcon::OnPaint(gfx::Canvas* canvas) {
     return;
 
   gfx::Rect icon_bounds(
-      GetMirroredXWithWidthInView(0, gfx::kFaviconSize),
-      static_cast<int>(contents_bounds.height() * hiding_fraction_),
+      GetMirroredXWithWidthInView(contents_bounds.x(), gfx::kFaviconSize),
+      contents_bounds.y() +
+          static_cast<int>(contents_bounds.height() * hiding_fraction_),
       std::min(gfx::kFaviconSize, contents_bounds.width()),
       std::min(gfx::kFaviconSize, contents_bounds.height()));
 
@@ -191,6 +205,15 @@ void TabIcon::OnThemeChanged() {
   crashed_icon_ = gfx::ImageSkia();  // Force recomputation if crashed.
   if (!themed_favicon_.isNull())
     themed_favicon_ = ThemeImage(favicon_);
+}
+
+void TabIcon::AnimationProgressed(const gfx::Animation* animation) {
+  SchedulePaint();
+}
+
+void TabIcon::AnimationEnded(const gfx::Animation* animation) {
+  RefreshLayer();
+  SchedulePaint();
 }
 
 void TabIcon::PaintAttentionIndicatorAndIcon(gfx::Canvas* canvas,
@@ -226,14 +249,20 @@ void TabIcon::PaintAttentionIndicatorAndIcon(gfx::Canvas* canvas,
   canvas->DrawCircle(circle_center, kAttentionIndicatorRadius, indicator_flags);
 }
 
-void TabIcon::PaintLoadingAnimation(gfx::Canvas* canvas,
-                                    const gfx::Rect& bounds) {
+void TabIcon::PaintLoadingAnimation(gfx::Canvas* canvas, gfx::Rect bounds) {
   const ui::ThemeProvider* tp = GetThemeProvider();
+  base::Optional<SkScalar> stroke_width;
+  if (UseNewLoadingAnimation()) {
+    // The new loading animation paints just outside the favicon area.
+    bounds.Inset(-gfx::Insets(kNewLoadingAnimationStrokeWidthDp));
+    stroke_width = kNewLoadingAnimationStrokeWidthDp;
+  }
+
   if (network_state_ == TabNetworkState::kWaiting) {
     gfx::PaintThrobberWaiting(
         canvas, bounds,
         tp->GetColor(ThemeProperties::COLOR_TAB_THROBBER_WAITING),
-        waiting_state_.elapsed_time);
+        waiting_state_.elapsed_time, stroke_width);
   } else {
     const base::TimeTicks current_time = clock_->NowTicks();
     if (loading_animation_start_time_.is_null())
@@ -244,7 +273,8 @@ void TabIcon::PaintLoadingAnimation(gfx::Canvas* canvas,
     gfx::PaintThrobberSpinningAfterWaiting(
         canvas, bounds,
         tp->GetColor(ThemeProperties::COLOR_TAB_THROBBER_SPINNING),
-        current_time - loading_animation_start_time_, &waiting_state_);
+        current_time - loading_animation_start_time_, &waiting_state_,
+        stroke_width);
   }
 }
 
@@ -265,6 +295,38 @@ void TabIcon::MaybePaintFavicon(gfx::Canvas* canvas,
                                 const gfx::Rect& bounds) {
   if (icon.isNull())
     return;
+
+  if (ShowingLoadingAnimation()) {
+    // Never paint the favicon during the waiting animation.
+    if (network_state_ == TabNetworkState::kWaiting)
+      return;
+    // Don't paint the default favicon while we're still loading.
+    if (!HasNonDefaultFavicon())
+      return;
+  }
+
+  std::unique_ptr<gfx::ScopedCanvas> scoped_canvas;
+
+  if (ShowingLoadingAnimation() || favicon_fade_in_animation_.is_animating()) {
+    scoped_canvas = std::make_unique<gfx::ScopedCanvas>(canvas);
+
+    const float kInitialFaviconDiameterDp = gfx::kFaviconSize - 2;
+    // This a full outset circle of the favicon square, the animation ends when
+    // the entire favicon is shown.
+    const float kFinalFaviconDiameterDp = sqrt(2) * gfx::kFaviconSize;
+
+    SkScalar diameter = kInitialFaviconDiameterDp;
+    if (favicon_fade_in_animation_.is_animating()) {
+      diameter += gfx::Tween::CalculateValue(
+                      gfx::Tween::EASE_OUT,
+                      favicon_fade_in_animation_.GetCurrentValue()) *
+                  (kFinalFaviconDiameterDp - kInitialFaviconDiameterDp);
+    }
+    SkPath path;
+    gfx::PointF center = gfx::RectF(bounds).CenterPoint();
+    path.addCircle(center.x(), center.y(), diameter / 2);
+    canvas->ClipPath(path, true);
+  }
 
   canvas->DrawImageInt(icon, 0, 0, bounds.width(), bounds.height(), bounds.x(),
                        bounds.y(), bounds.width(), bounds.height(), false);
@@ -294,7 +356,17 @@ void TabIcon::SetIcon(const GURL& url, const gfx::ImageSkia& icon) {
 }
 
 void TabIcon::SetNetworkState(TabNetworkState network_state) {
+  const bool was_animated = NetworkStateIsAnimated(network_state_);
   network_state_ = network_state;
+  const bool is_animated = NetworkStateIsAnimated(network_state_);
+  if (UseNewLoadingAnimation() && was_animated != is_animated) {
+    if (was_animated && HasNonDefaultFavicon()) {
+      favicon_fade_in_animation_.Start();
+    } else {
+      favicon_fade_in_animation_.Stop();
+      favicon_fade_in_animation_.SetCurrentValue(0.0);
+    }
+  }
 }
 
 void TabIcon::SetIsCrashed(bool is_crashed) {
@@ -321,7 +393,9 @@ void TabIcon::SetIsCrashed(bool is_crashed) {
 void TabIcon::RefreshLayer() {
   // Since the loading animation can run for a long time, paint animation to a
   // separate layer when possible to reduce repaint overhead.
-  bool should_paint_to_layer = can_paint_to_layer_ && ShowingLoadingAnimation();
+  bool should_paint_to_layer =
+      can_paint_to_layer_ &&
+      (ShowingLoadingAnimation() || favicon_fade_in_animation_.is_animating());
   if (should_paint_to_layer == !!layer())
     return;
 

@@ -247,8 +247,10 @@ void Tab::Layout() {
   if (showing_icon_) {
     // Height should go to the bottom of the tab for the crashed tab animation
     // to pop out of the bottom.
-    favicon_bounds.set_y(contents_rect.y() +
-                         Center(contents_rect.height(), gfx::kFaviconSize));
+    favicon_bounds.set_y(
+        contents_rect.y() +
+        Center(contents_rect.height(),
+               gfx::kFaviconSize + icon_->GetInsets().height()));
     favicon_bounds.set_size(
         gfx::Size(icon_->GetPreferredSize().width(),
                   contents_rect.height() - favicon_bounds.y()));
