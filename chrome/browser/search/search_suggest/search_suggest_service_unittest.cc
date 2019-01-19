@@ -46,10 +46,8 @@ class FakeSearchSuggestLoader : public SearchSuggestLoader {
 
 class SearchSuggestServiceTest : public testing::Test {
  public:
-  SearchSuggestServiceTest() : identity_env_(&test_url_loader_factory_) {
-    // GaiaCookieManagerService calls static methods of AccountTrackerService
-    // which access prefs.
-    AccountTrackerService::RegisterPrefs(pref_service_.registry());
+  SearchSuggestServiceTest()
+      : identity_env_(&test_url_loader_factory_, &pref_service_) {
     SearchSuggestService::RegisterProfilePrefs(pref_service_.registry());
 
     auto loader = std::make_unique<FakeSearchSuggestLoader>();
@@ -68,12 +66,10 @@ class SearchSuggestServiceTest : public testing::Test {
     AccountInfo account_info =
         identity_env_.MakeAccountAvailable("test@email.com");
     identity_env_.SetCookieAccounts({{account_info.email, account_info.gaia}});
-    task_environment_.RunUntilIdle();
   }
 
   void SignOut() {
     identity_env_.SetCookieAccounts({});
-    task_environment_.RunUntilIdle();
   }
 
  private:
