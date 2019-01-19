@@ -50,6 +50,7 @@ namespace safe_browsing {
 namespace {
 
 using ::testing::_;
+using ::testing::DoAll;
 using ::testing::Eq;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;

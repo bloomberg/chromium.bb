@@ -29,14 +29,15 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::_;
+using ::testing::Exactly;
+using ::testing::IgnoreResult;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
-using ::testing::StrictMock;
 using ::testing::NiceMock;
-using ::testing::Exactly;
 using ::testing::Return;
 using ::testing::SaveArg;
-using ::testing::_;
+using ::testing::StrictMock;
 
 namespace net {
 
