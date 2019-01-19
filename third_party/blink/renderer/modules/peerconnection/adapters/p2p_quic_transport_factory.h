@@ -28,7 +28,6 @@ struct P2PQuicTransportConfig final {
         certificates(certificates_in),
         stream_delegate_read_buffer_size(stream_delegate_read_buffer_size_in),
         stream_write_buffer_size(stream_write_buffer_size_in) {
-    DCHECK_GT(certificates.size(), 0u);
     DCHECK_GT(stream_delegate_read_buffer_size, 0u);
     DCHECK_GT(stream_write_buffer_size, 0u);
   }
@@ -37,6 +36,8 @@ struct P2PQuicTransportConfig final {
   quic::Perspective perspective;
   // The certificates are owned by the P2PQuicTransport. These come from
   // blink::RTCCertificates: https://www.w3.org/TR/webrtc/#dom-rtccertificate
+  // This can be empty if pre shared keys are being used to establish a
+  // connection.
   const std::vector<rtc::scoped_refptr<rtc::RTCCertificate>> certificates;
   // The amount that the delegate can store in its read buffer. This is a
   // mandatory field that must be set to ensure that the

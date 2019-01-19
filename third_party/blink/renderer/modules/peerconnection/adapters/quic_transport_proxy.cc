@@ -70,14 +70,12 @@ scoped_refptr<base::SingleThreadTaskRunner> QuicTransportProxy::host_thread()
   return ice_transport_proxy_->host_thread();
 }
 
-void QuicTransportProxy::Start(
-    std::vector<std::unique_ptr<rtc::SSLFingerprint>> remote_fingerprints) {
+void QuicTransportProxy::Start(P2PQuicTransport::StartConfig config) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  PostCrossThreadTask(
-      *host_thread(), FROM_HERE,
-      CrossThreadBind(&QuicTransportHost::Start,
-                      CrossThreadUnretained(host_.get()),
-                      WTF::Passed(std::move(remote_fingerprints))));
+  PostCrossThreadTask(*host_thread(), FROM_HERE,
+                      CrossThreadBind(&QuicTransportHost::Start,
+                                      CrossThreadUnretained(host_.get()),
+                                      WTF::Passed(std::move(config))));
 }
 
 void QuicTransportProxy::Stop() {

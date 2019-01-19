@@ -5742,13 +5742,11 @@ interface RTCQuicTransport : EventTarget
     getter onstatechange
     getter state
     getter transport
+    method connect
     method constructor
     method createStream
-    method getCertificates
-    method getLocalParameters
-    method getRemoteCertificates
-    method getRemoteParameters
-    method start
+    method getKey
+    method listen
     method stop
     setter onerror
     setter onquicstream

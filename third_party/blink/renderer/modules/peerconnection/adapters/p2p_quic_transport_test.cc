@@ -443,9 +443,7 @@ class P2PQuicTransportTest : public testing::Test {
   // factories.
   void Initialize(
       std::unique_ptr<P2PQuicCryptoConfigFactory> client_crypto_factory,
-      std::unique_ptr<P2PQuicCryptoConfigFactory> server_crypto_factory,
-      rtc::scoped_refptr<rtc::RTCCertificate> client_certificate,
-      rtc::scoped_refptr<rtc::RTCCertificate> server_certificate) {
+      std::unique_ptr<P2PQuicCryptoConfigFactory> server_crypto_factory) {
     auto client_packet_transport =
         std::make_unique<FakePacketTransport>(alarm_factory_.get(), &clock_);
     auto server_packet_transport =
@@ -456,6 +454,8 @@ class P2PQuicTransportTest : public testing::Test {
     server_packet_transport->ConnectPeerTransport(
         client_packet_transport.get());
 
+    rtc::scoped_refptr<rtc::RTCCertificate> client_certificate =
+        CreateTestCertificate();
     auto client_quic_transport_delegate =
         std::make_unique<MockP2PQuicTransportDelegate>();
     P2PQuicTransportConfig client_config(
@@ -476,6 +476,8 @@ class P2PQuicTransportTest : public testing::Test {
     auto server_quic_transport_delegate =
         std::make_unique<MockP2PQuicTransportDelegate>();
 
+    rtc::scoped_refptr<rtc::RTCCertificate> server_certificate =
+        CreateTestCertificate();
     P2PQuicTransportConfig server_config(
         quic::Perspective::IS_SERVER, {server_certificate},
         kTransportDelegateReadBufferSize, kTransportWriteBufferSize);
@@ -495,23 +497,15 @@ class P2PQuicTransportTest : public testing::Test {
   // Connects both peer's underlying packet transports and creates both
   // P2PQuicTransportImpls.
   void Initialize() {
-    rtc::scoped_refptr<rtc::RTCCertificate> client_cert =
-        CreateTestCertificate();
-    rtc::scoped_refptr<rtc::RTCCertificate> server_cert =
-        CreateTestCertificate();
-    Initialize(std::make_unique<P2PQuicCryptoConfigFactoryImpl>(client_cert,
-                                                                quic_random_),
-               std::make_unique<P2PQuicCryptoConfigFactoryImpl>(server_cert,
-                                                                quic_random_),
-               client_cert, server_cert);
+    Initialize(std::make_unique<P2PQuicCryptoConfigFactoryImpl>(quic_random_),
+               std::make_unique<P2PQuicCryptoConfigFactoryImpl>(quic_random_));
   }
 
   // Uses a crypto config factory that returns a client configuration that
   // will reject the QUIC handshake. This lets us simulate a failng handshake.
   void InitializeWithFailingProofVerification() {
     Initialize(std::make_unique<FailingQuicCryptoConfigFactory>(quic_random_),
-               std::make_unique<FailingQuicCryptoConfigFactory>(quic_random_),
-               CreateTestCertificate(), CreateTestCertificate());
+               std::make_unique<FailingQuicCryptoConfigFactory>(quic_random_));
   }
 
   // Drives the test by running the current tasks that are posted.

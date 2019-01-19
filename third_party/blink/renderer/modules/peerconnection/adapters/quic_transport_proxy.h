@@ -15,10 +15,6 @@
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_factory.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
 
-namespace rtc {
-struct SSLFingerprint;
-}  // namespace rtc
-
 namespace blink {
 
 class IceTransportProxy;
@@ -71,8 +67,7 @@ class QuicTransportProxy final {
   scoped_refptr<base::SingleThreadTaskRunner> proxy_thread() const;
   scoped_refptr<base::SingleThreadTaskRunner> host_thread() const;
 
-  void Start(
-      std::vector<std::unique_ptr<rtc::SSLFingerprint>> remote_fingerprints);
+  void Start(P2PQuicTransport::StartConfig config);
   void Stop();
 
   QuicStreamProxy* CreateStream();

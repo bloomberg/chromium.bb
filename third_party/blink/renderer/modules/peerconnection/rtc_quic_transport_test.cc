@@ -34,6 +34,9 @@ constexpr char kRemoteFingerprintAlgorithm1[] = "sha-256";
 constexpr char kRemoteFingerprintValue1[] =
     "8E:57:5F:8E:65:D2:83:7B:05:97:BB:72:DE:09:DE:03:BD:95:9B:A0:03:10:50:82:"
     "5E:73:38:16:4C:E0:C5:84";
+const size_t kKeyLength = 16;
+const uint8_t kKey[kKeyLength] = {0, 1, 2,  3,  4,  5,  6,  7,
+                                  8, 9, 10, 11, 12, 13, 14, 15};
 
 RTCDtlsFingerprint* CreateRemoteFingerprint1() {
   RTCDtlsFingerprint* dtls_fingerprint = RTCDtlsFingerprint::Create();
@@ -141,6 +144,71 @@ TEST_F(RTCQuicTransportTest, P2PQuicTransportConstructedByStart) {
   quic_transport->start(CreateRemoteRTCQuicParameters1(), ASSERT_NO_EXCEPTION);
 }
 
+// Test that calling connect() creates a P2PQuicTransport with the correct
+// P2PQuicTransportConfig. The config should have:
+// 1. The P2PQuicPacketTransport returned by the MockIceTransportAdapter.
+// 2. Client mode configured.
+TEST_F(RTCQuicTransportTest, P2PQuicTransportConstructedByConnect) {
+  V8TestingScope scope;
+
+  auto quic_packet_transport = std::make_unique<MockP2PQuicPacketTransport>();
+  auto* quic_packet_transport_ptr = quic_packet_transport.get();
+  auto ice_transport_adapter_mock = std::make_unique<MockIceTransportAdapter>(
+      std::move(quic_packet_transport));
+  Persistent<RTCIceTransport> ice_transport =
+      CreateIceTransport(scope, std::move(ice_transport_adapter_mock));
+  ice_transport->start(CreateRemoteRTCIceParameters1(), "controlling",
+                       ASSERT_NO_EXCEPTION);
+
+  auto mock_factory = std::make_unique<MockP2PQuicTransportFactory>();
+  EXPECT_CALL(*mock_factory, CreateQuicTransport(_, _, _))
+      .WillOnce(Invoke(
+          [quic_packet_transport_ptr](P2PQuicTransport::Delegate* delegate,
+                                      P2PQuicPacketTransport* packet_transport,
+                                      const P2PQuicTransportConfig& config) {
+            EXPECT_EQ(quic_packet_transport_ptr, packet_transport);
+            EXPECT_EQ(quic::Perspective::IS_CLIENT, config.perspective);
+            return std::make_unique<MockP2PQuicTransport>();
+          }));
+
+  Persistent<RTCQuicTransport> quic_transport =
+      CreateQuicTransport(scope, ice_transport, {}, std::move(mock_factory));
+  quic_transport->connect(ASSERT_NO_EXCEPTION);
+}
+
+// Test that calling listen() creates a P2PQuicTransport with the correct
+// P2PQuicTransportConfig. The config should have:
+// 1. The P2PQuicPacketTransport returned by the MockIceTransportAdapter.
+// 2. Server mode configured.
+TEST_F(RTCQuicTransportTest, P2PQuicTransportConstructedByListen) {
+  V8TestingScope scope;
+
+  auto quic_packet_transport = std::make_unique<MockP2PQuicPacketTransport>();
+  auto* quic_packet_transport_ptr = quic_packet_transport.get();
+  auto ice_transport_adapter_mock = std::make_unique<MockIceTransportAdapter>(
+      std::move(quic_packet_transport));
+  Persistent<RTCIceTransport> ice_transport =
+      CreateIceTransport(scope, std::move(ice_transport_adapter_mock));
+  ice_transport->start(CreateRemoteRTCIceParameters1(), "controlling",
+                       ASSERT_NO_EXCEPTION);
+
+  auto mock_factory = std::make_unique<MockP2PQuicTransportFactory>();
+  EXPECT_CALL(*mock_factory, CreateQuicTransport(_, _, _))
+      .WillOnce(Invoke(
+          [quic_packet_transport_ptr](P2PQuicTransport::Delegate* delegate,
+                                      P2PQuicPacketTransport* packet_transport,
+                                      const P2PQuicTransportConfig& config) {
+            EXPECT_EQ(quic_packet_transport_ptr, packet_transport);
+            EXPECT_EQ(quic::Perspective::IS_SERVER, config.perspective);
+            return std::make_unique<MockP2PQuicTransport>();
+          }));
+
+  Persistent<RTCQuicTransport> quic_transport =
+      CreateQuicTransport(scope, ice_transport, {}, std::move(mock_factory));
+  quic_transport->listen(DOMArrayBuffer::Create(kKey, kKeyLength),
+                         ASSERT_NO_EXCEPTION);
+}
+
 // Test that calling start() creates a P2PQuicTransport with client perspective
 // if the RTCIceTransport role is 'controlled'.
 TEST_F(RTCQuicTransportTest, P2PQuicTransportConstructedByStartClient) {
@@ -190,6 +258,194 @@ TEST_F(RTCQuicTransportTest, StartPassesRemoteFingerprints) {
       CreateQuicTransport(scope, ice_transport, GenerateLocalRTCCertificates(),
                           std::move(mock_transport));
   quic_transport->start(CreateRemoteRTCQuicParameters1(), ASSERT_NO_EXCEPTION);
+}
+
+// Test that calling start() with a started RTCIceTransport changes its state to
+// connecting.
+TEST_F(RTCQuicTransportTest, StartWithConnectedTransportChangesToConnecting) {
+  V8TestingScope scope;
+
+  Persistent<RTCIceTransport> ice_transport = CreateIceTransport(scope);
+  ice_transport->start(CreateRemoteRTCIceParameters1(), "controlling",
+                       ASSERT_NO_EXCEPTION);
+
+  auto mock_transport = std::make_unique<MockP2PQuicTransport>();
+  Persistent<RTCQuicTransport> quic_transport =
+      CreateQuicTransport(scope, ice_transport, GenerateLocalRTCCertificates(),
+                          std::move(mock_transport));
+  quic_transport->start(CreateRemoteRTCQuicParameters1(), ASSERT_NO_EXCEPTION);
+  EXPECT_EQ("connecting", quic_transport->state());
+}
+
+// Test that calling start() changes its state to connecting once
+// RTCIceTransport starts.
+TEST_F(RTCQuicTransportTest, StartChangesToConnectingWhenIceStarts) {
+  V8TestingScope scope;
+
+  Persistent<RTCIceTransport> ice_transport = CreateIceTransport(scope);
+
+  auto mock_transport = std::make_unique<MockP2PQuicTransport>();
+  Persistent<RTCQuicTransport> quic_transport =
+      CreateQuicTransport(scope, ice_transport, GenerateLocalRTCCertificates(),
+                          std::move(mock_transport));
+  quic_transport->start(CreateRemoteRTCQuicParameters1(), ASSERT_NO_EXCEPTION);
+  EXPECT_EQ("new", quic_transport->state());
+
+  ice_transport->start(CreateRemoteRTCIceParameters1(), "controlling",
+                       ASSERT_NO_EXCEPTION);
+  EXPECT_EQ("connecting", quic_transport->state());
+}
+
+// Test that calling start() twice throws a kInvalidStateError.
+TEST_F(RTCQuicTransportTest, StartTwiceThrowsError) {
+  V8TestingScope scope;
+
+  Persistent<RTCIceTransport> ice_transport = CreateIceTransport(scope);
+  ice_transport->start(CreateRemoteRTCIceParameters1(), "controlling",
+                       ASSERT_NO_EXCEPTION);
+
+  auto mock_transport = std::make_unique<MockP2PQuicTransport>();
+  Persistent<RTCQuicTransport> quic_transport =
+      CreateQuicTransport(scope, ice_transport, GenerateLocalRTCCertificates(),
+                          std::move(mock_transport));
+  quic_transport->start(CreateRemoteRTCQuicParameters1(), ASSERT_NO_EXCEPTION);
+
+  quic_transport->start(CreateRemoteRTCQuicParameters1(),
+                        scope.GetExceptionState());
+  EXPECT_EQ(DOMExceptionCode::kInvalidStateError,
+            scope.GetExceptionState().CodeAs<DOMExceptionCode>());
+}
+
+// Test that calling start() after connect() throws a kInvalidStateError.
+TEST_F(RTCQuicTransportTest, StartAfterConnectThrowsError) {
+  V8TestingScope scope;
+
+  Persistent<RTCIceTransport> ice_transport = CreateIceTransport(scope);
+  ice_transport->start(CreateRemoteRTCIceParameters1(), "controlling",
+                       ASSERT_NO_EXCEPTION);
+
+  auto mock_transport = std::make_unique<MockP2PQuicTransport>();
+  Persistent<RTCQuicTransport> quic_transport =
+      CreateQuicTransport(scope, ice_transport, GenerateLocalRTCCertificates(),
+                          std::move(mock_transport));
+  quic_transport->connect(ASSERT_NO_EXCEPTION);
+
+  quic_transport->start(CreateRemoteRTCQuicParameters1(),
+                        scope.GetExceptionState());
+  EXPECT_EQ(DOMExceptionCode::kInvalidStateError,
+            scope.GetExceptionState().CodeAs<DOMExceptionCode>());
+}
+
+// Test that calling start() after listen() throws a kInvalidStateError.
+TEST_F(RTCQuicTransportTest, StartAfterListenThrowsError) {
+  V8TestingScope scope;
+
+  Persistent<RTCIceTransport> ice_transport = CreateIceTransport(scope);
+  ice_transport->start(CreateRemoteRTCIceParameters1(), "controlling",
+                       ASSERT_NO_EXCEPTION);
+
+  auto mock_transport = std::make_unique<MockP2PQuicTransport>();
+  Persistent<RTCQuicTransport> quic_transport =
+      CreateQuicTransport(scope, ice_transport, GenerateLocalRTCCertificates(),
+                          std::move(mock_transport));
+  quic_transport->listen(DOMArrayBuffer::Create(kKey, kKeyLength),
+                         ASSERT_NO_EXCEPTION);
+
+  quic_transport->start(CreateRemoteRTCQuicParameters1(),
+                        scope.GetExceptionState());
+  EXPECT_EQ(DOMExceptionCode::kInvalidStateError,
+            scope.GetExceptionState().CodeAs<DOMExceptionCode>());
+}
+
+// Test that calling start() after stop() throws a kInvalidStateError.
+TEST_F(RTCQuicTransportTest, StartAfterStopThrowsError) {
+  V8TestingScope scope;
+
+  Persistent<RTCIceTransport> ice_transport = CreateIceTransport(scope);
+  ice_transport->start(CreateRemoteRTCIceParameters1(), "controlling",
+                       ASSERT_NO_EXCEPTION);
+
+  auto mock_transport = std::make_unique<MockP2PQuicTransport>();
+  Persistent<RTCQuicTransport> quic_transport =
+      CreateQuicTransport(scope, ice_transport, GenerateLocalRTCCertificates(),
+                          std::move(mock_transport));
+
+  quic_transport->stop();
+  quic_transport->start(CreateRemoteRTCQuicParameters1(),
+                        scope.GetExceptionState());
+  EXPECT_EQ(DOMExceptionCode::kInvalidStateError,
+            scope.GetExceptionState().CodeAs<DOMExceptionCode>());
+}
+
+// Test that calling start() after RTCIceTransport::stop() throws a
+// kInvalidStateError.
+TEST_F(RTCQuicTransportTest, StartAfterIceStopsThrowsError) {
+  V8TestingScope scope;
+
+  Persistent<RTCIceTransport> ice_transport = CreateIceTransport(scope);
+  ice_transport->start(CreateRemoteRTCIceParameters1(), "controlling",
+                       ASSERT_NO_EXCEPTION);
+
+  auto mock_transport = std::make_unique<MockP2PQuicTransport>();
+  Persistent<RTCQuicTransport> quic_transport =
+      CreateQuicTransport(scope, ice_transport, GenerateLocalRTCCertificates(),
+                          std::move(mock_transport));
+
+  ice_transport->stop();
+  quic_transport->start(CreateRemoteRTCQuicParameters1(),
+                        scope.GetExceptionState());
+  EXPECT_EQ(DOMExceptionCode::kInvalidStateError,
+            scope.GetExceptionState().CodeAs<DOMExceptionCode>());
+}
+
+// Test that calling connect() calls Start() on the P2PQuicTransport with the
+// generated pre shared key from the local side.
+TEST_F(RTCQuicTransportTest, ConnectPassesPreSharedKey) {
+  V8TestingScope scope;
+
+  Persistent<RTCIceTransport> ice_transport = CreateIceTransport(scope);
+  ice_transport->start(CreateRemoteRTCIceParameters1(), "controlling",
+                       ASSERT_NO_EXCEPTION);
+
+  auto mock_transport = std::make_unique<MockP2PQuicTransport>();
+  auto* mock_transport_ptr = mock_transport.get();
+  Persistent<RTCQuicTransport> quic_transport =
+      CreateQuicTransport(scope, ice_transport, {}, std::move(mock_transport));
+  DOMArrayBuffer* key = quic_transport->getKey();
+  std::string pre_shared_key(static_cast<const char*>(key->Data()),
+                             key->ByteLength());
+
+  EXPECT_CALL(*mock_transport_ptr, MockStart(_))
+      .WillOnce(
+          Invoke([pre_shared_key](const P2PQuicTransport::StartConfig& config) {
+            EXPECT_EQ(pre_shared_key, config.pre_shared_key);
+          }));
+  quic_transport->connect(ASSERT_NO_EXCEPTION);
+}
+
+// Test that calling listen() calls Start() on the P2PQuicTransport with the
+// correct given pre shared key from the remote side.
+TEST_F(RTCQuicTransportTest, ListenPassesPreSharedKey) {
+  V8TestingScope scope;
+
+  Persistent<RTCIceTransport> ice_transport = CreateIceTransport(scope);
+  ice_transport->start(CreateRemoteRTCIceParameters1(), "controlling",
+                       ASSERT_NO_EXCEPTION);
+  auto mock_transport = std::make_unique<MockP2PQuicTransport>();
+  auto* mock_transport_ptr = mock_transport.get();
+  Persistent<RTCQuicTransport> quic_transport =
+      CreateQuicTransport(scope, ice_transport, {}, std::move(mock_transport));
+
+  std::string pre_shared_key = "foobar";
+  EXPECT_CALL(*mock_transport_ptr, MockStart(_))
+      .WillOnce(
+          Invoke([pre_shared_key](const P2PQuicTransport::StartConfig& config) {
+            EXPECT_EQ(pre_shared_key, config.pre_shared_key);
+          }));
+
+  quic_transport->listen(
+      DOMArrayBuffer::Create(pre_shared_key.c_str(), pre_shared_key.length()),
+      ASSERT_NO_EXCEPTION);
 }
 
 // Test that calling stop() deletes the underlying P2PQuicTransport.
@@ -304,6 +560,75 @@ TEST_F(RTCQuicTransportTest,
   RunUntilIdle();
 
   EXPECT_TRUE(mock_deleted);
+}
+
+// Test that the certificate passed to RTCQuicTransport is the same
+// returned by getCertificates().
+TEST_F(RTCQuicTransportTest, GetCertificatesReturnsGivenCertificates) {
+  V8TestingScope scope;
+
+  Persistent<RTCIceTransport> ice_transport = CreateIceTransport(scope);
+
+  auto mock_transport = std::make_unique<MockP2PQuicTransport>();
+  auto certificates = GenerateLocalRTCCertificates();
+  Persistent<RTCQuicTransport> quic_transport = CreateQuicTransport(
+      scope, ice_transport, certificates, std::move(mock_transport));
+  auto returned_certificates = quic_transport->getCertificates();
+
+  EXPECT_EQ(certificates[0], returned_certificates[0]);
+}
+
+// Test that the fingerprint returned by getLocalParameters() is
+// the fingerprint of the certificate passed to the RTCQuicTransport.
+TEST_F(RTCQuicTransportTest,
+       GetLocalParametersReturnsGivenCertificatesFingerprints) {
+  V8TestingScope scope;
+
+  Persistent<RTCIceTransport> ice_transport = CreateIceTransport(scope);
+
+  auto mock_transport = std::make_unique<MockP2PQuicTransport>();
+  auto certificates = GenerateLocalRTCCertificates();
+  auto fingerprints = certificates[0]->getFingerprints();
+  Persistent<RTCQuicTransport> quic_transport = CreateQuicTransport(
+      scope, ice_transport, certificates, std::move(mock_transport));
+  auto returned_fingerprints =
+      quic_transport->getLocalParameters()->fingerprints();
+
+  EXPECT_EQ(1u, returned_fingerprints.size());
+  EXPECT_EQ(fingerprints.size(), returned_fingerprints.size());
+  EXPECT_EQ(fingerprints[0]->value(), returned_fingerprints[0]->value());
+  EXPECT_EQ(fingerprints[0]->algorithm(),
+            returned_fingerprints[0]->algorithm());
+}
+
+TEST_F(RTCQuicTransportTest, ExpiredCertificateThrowsError) {
+  V8TestingScope scope;
+
+  Persistent<RTCIceTransport> ice_transport = CreateIceTransport(scope);
+  auto mock_factory = std::make_unique<MockP2PQuicTransportFactory>();
+  HeapVector<Member<RTCCertificate>> certificates;
+  certificates.push_back(MakeGarbageCollected<RTCCertificate>(
+      rtc::RTCCertificateGenerator::GenerateCertificate(rtc::KeyParams::ECDSA(),
+                                                        /*expires_ms=*/0)));
+  RTCQuicTransport::Create(scope.GetExecutionContext(), ice_transport,
+                           certificates, scope.GetExceptionState(),
+                           std::move(mock_factory));
+  EXPECT_EQ(ESErrorType::kTypeError,
+            scope.GetExceptionState().CodeAs<ESErrorType>());
+}
+
+// Test that the key returned has at least 128 bits of entropy as required by
+// QUIC.
+TEST_F(RTCQuicTransportTest, GetKeyReturnsValidKey) {
+  V8TestingScope scope;
+
+  Persistent<RTCIceTransport> ice_transport = CreateIceTransport(scope);
+  auto mock_transport = std::make_unique<MockP2PQuicTransport>();
+  Persistent<RTCQuicTransport> quic_transport =
+      CreateQuicTransport(scope, ice_transport, {}, std::move(mock_transport));
+  auto* key = quic_transport->getKey();
+
+  EXPECT_GE(key->ByteLength(), 16u);
 }
 
 }  // namespace blink
