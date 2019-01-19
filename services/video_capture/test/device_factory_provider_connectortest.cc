@@ -218,6 +218,38 @@ TEST_F(ShortShutdownDelayDeviceFactoryProviderConnectorTest,
   service_destroyed_wait_loop_.Run();
 }
 
+// Tests that the service does not quit when the only client discards the
+// DeviceFactoryProvider but holds on to a DeviceFactory.
+TEST_F(ShortShutdownDelayDeviceFactoryProviderConnectorTest,
+       DeviceFactoryCanStillBeUsedAfterReleaseingDeviceFactoryProvider) {
+  mojom::DeviceFactoryPtr factory;
+  factory_provider_->ConnectToDeviceFactory(mojo::MakeRequest(&factory));
+
+  // Exercise: Disconnect DeviceFactoryProvider
+  {
+    base::RunLoop wait_loop;
+    service_impl_->SetFactoryProviderClientDisconnectedObserver(
+        wait_loop.QuitClosure());
+    factory_provider_.reset();
+    wait_loop.Run();
+  }
+
+  EXPECT_FALSE(service_impl_->HasNoContextRefs());
+
+  // Verify that |factory| is still functional by calling GetDeviceInfos().
+  {
+    base::RunLoop wait_loop;
+    EXPECT_CALL(device_info_receiver_, Run(_))
+        .WillOnce(Invoke(
+            [&wait_loop](
+                const std::vector<media::VideoCaptureDeviceInfo>& infos) {
+              wait_loop.Quit();
+            }));
+    factory->GetDeviceInfos(device_info_receiver_.Get());
+    wait_loop.Run();
+  }
+}
+
 struct NoAutomaticShutdownDeviceFactoryProviderConnectorTestTraits {
   static base::Optional<base::TimeDelta> shutdown_delay() {
     return base::Optional<base::TimeDelta>();

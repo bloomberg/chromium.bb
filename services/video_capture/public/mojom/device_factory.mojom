@@ -72,5 +72,7 @@ interface DeviceFactory {
   // or removed. Note: Changes to non-virtual devices are currently being
   // monitored outside the video capture service, and therefore the service
   // does not offer such monitoring.
-  RegisterVirtualDevicesChangedObserver(DevicesChangedObserver observer);
+  RegisterVirtualDevicesChangedObserver(
+      DevicesChangedObserver observer,
+      bool raise_event_if_virtual_devices_already_present);
 };

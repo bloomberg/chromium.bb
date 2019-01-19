@@ -150,7 +150,8 @@ void DeviceFactoryMediaToMojoAdapter::AddTextureVirtualDevice(
 }
 
 void DeviceFactoryMediaToMojoAdapter::RegisterVirtualDevicesChangedObserver(
-    mojom::DevicesChangedObserverPtr observer) {
+    mojom::DevicesChangedObserverPtr observer,
+    bool raise_event_if_virtual_devices_already_present) {
   NOTIMPLEMENTED();
 }
 

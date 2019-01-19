@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -20,11 +21,25 @@
 
 namespace content {
 
+// The mediadevices.ondevicechange event is currently not supported on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_AddingAndRemovingVirtualDeviceTriggersMediaElementOnDeviceChange \
+  DISABLED_AddingAndRemovingVirtualDeviceTriggersMediaElementOnDeviceChange
+#else
+#define MAYBE_AddingAndRemovingVirtualDeviceTriggersMediaElementOnDeviceChange \
+  AddingAndRemovingVirtualDeviceTriggersMediaElementOnDeviceChange
+#endif
+
 namespace {
 
 static const char kVideoCaptureHtmlFile[] = "/media/video_capture_test.html";
-static const std::string kEnumerateVideoCaptureDevicesAndVerify =
-    "enumerateVideoCaptureDevicesAndVerifyCount";
+static const char kEnumerateVideoCaptureDevicesAndVerify[] =
+    "enumerateVideoCaptureDevicesAndVerifyCount(%d)";
+static const char kRegisterForDeviceChangeEvent[] =
+    "registerForDeviceChangeEvent()";
+static const char kWaitForDeviceChangeEvent[] = "waitForDeviceChangeEvent()";
+static const char kResetHasReceivedChangedEventFlag[] =
+    "resetHasReceivedChangedEventFlag()";
 
 }  // anonymous namespace
 
@@ -69,16 +84,27 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
 
   void EnumerateDevicesInRendererAndVerifyDeviceCount(
       int expected_device_count) {
-    NavigateToURL(shell(),
-                  GURL(embedded_test_server()->GetURL(kVideoCaptureHtmlFile)));
-
     const std::string javascript_to_execute = base::StringPrintf(
-        (kEnumerateVideoCaptureDevicesAndVerify + "(%d)").c_str(),
-        expected_device_count);
+        kEnumerateVideoCaptureDevicesAndVerify, expected_device_count);
     std::string result;
     ASSERT_TRUE(
         ExecuteScriptAndExtractString(shell(), javascript_to_execute, &result));
     ASSERT_EQ("OK", result);
+  }
+
+  void RegisterForDeviceChangeEventInRenderer() {
+    ASSERT_TRUE(ExecuteScript(shell(), kRegisterForDeviceChangeEvent));
+  }
+
+  void WaitForDeviceChangeEventInRenderer() {
+    std::string result;
+    ASSERT_TRUE(ExecuteScriptAndExtractString(
+        shell(), kWaitForDeviceChangeEvent, &result));
+    ASSERT_EQ("OK", result);
+  }
+
+  void ResetHasReceivedChangedEventFlag() {
+    ASSERT_TRUE(ExecuteScript(shell(), kResetHasReceivedChangedEventFlag));
   }
 
  protected:
@@ -95,6 +121,9 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
 
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
     embedded_test_server()->StartAcceptingConnections();
+
+    NavigateToURL(shell(),
+                  GURL(embedded_test_server()->GetURL(kVideoCaptureHtmlFile)));
 
     auto* connection = content::ServiceManagerConnection::GetForProcess();
     ASSERT_TRUE(connection);
@@ -152,6 +181,26 @@ IN_PROC_BROWSER_TEST_F(WebRtcVideoCaptureServiceEnumerationBrowserTest,
   EnumerateDevicesInRendererAndVerifyDeviceCount(1);
   RemoveVirtualDevice("test_2");
   EnumerateDevicesInRendererAndVerifyDeviceCount(0);
+
+  // Tear down
+  DisconnectFromService();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebRtcVideoCaptureServiceEnumerationBrowserTest,
+    MAYBE_AddingAndRemovingVirtualDeviceTriggersMediaElementOnDeviceChange) {
+  Initialize();
+  ConnectToService();
+  RegisterForDeviceChangeEventInRenderer();
+
+  // Exercise
+  AddVirtualDevice("test");
+
+  WaitForDeviceChangeEventInRenderer();
+  ResetHasReceivedChangedEventFlag();
+
+  RemoveVirtualDevice("test");
+  WaitForDeviceChangeEventInRenderer();
 
   // Tear down
   DisconnectFromService();

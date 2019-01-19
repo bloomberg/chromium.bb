@@ -45,7 +45,7 @@ void ConcludeLaunchDeviceWithSuccess(
 void ConcludeLaunchDeviceWithFailure(
     bool abort_requested,
     media::VideoCaptureError error,
-    std::unique_ptr<VideoCaptureFactoryDelegate> device_factory,
+    scoped_refptr<RefCountedVideoCaptureFactory> device_factory,
     VideoCaptureDeviceLauncher::Callbacks* callbacks,
     base::OnceClosure done_cb) {
   device_factory.reset();
@@ -87,7 +87,7 @@ void ServiceVideoCaptureDeviceLauncher::LaunchDeviceAsync(
   }
 
   connect_to_device_factory_cb_.Run(&device_factory_);
-  if (!device_factory_->is_bound()) {
+  if (!device_factory_->device_factory().is_bound()) {
     // This can happen when the ServiceVideoCaptureProvider owning
     // |device_factory_| loses connection to the service process and resets
     // |device_factory_|.
@@ -121,7 +121,7 @@ void ServiceVideoCaptureDeviceLauncher::LaunchDeviceAsync(
       base::BindOnce(&ServiceVideoCaptureDeviceLauncher::
                          OnConnectionLostWhileWaitingForCallback,
                      base::Unretained(this)));
-  device_factory_->CreateDevice(
+  device_factory_->device_factory()->CreateDevice(
       device_id, std::move(device_request),
       base::BindOnce(
           // Use of Unretained |this| is safe, because |done_cb_| guarantees

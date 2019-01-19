@@ -195,10 +195,15 @@ void VirtualDeviceEnabledDeviceFactory::AddTextureVirtualDevice(
 }
 
 void VirtualDeviceEnabledDeviceFactory::RegisterVirtualDevicesChangedObserver(
-    mojom::DevicesChangedObserverPtr observer) {
+    mojom::DevicesChangedObserverPtr observer,
+    bool raise_event_if_virtual_devices_already_present) {
   observer.set_connection_error_handler(base::BindOnce(
       &VirtualDeviceEnabledDeviceFactory::OnDevicesChangedObserverDisconnected,
-      weak_factory_.GetWeakPtr(), &observer));
+      weak_factory_.GetWeakPtr(), observer.get()));
+  if (!virtual_devices_by_id_.empty() &&
+      raise_event_if_virtual_devices_already_present) {
+    observer->OnDevicesChanged();
+  }
   devices_changed_observers_.push_back(std::move(observer));
 }
 
@@ -234,11 +239,11 @@ void VirtualDeviceEnabledDeviceFactory::EmitDevicesChangedEvent() {
 }
 
 void VirtualDeviceEnabledDeviceFactory::OnDevicesChangedObserverDisconnected(
-    mojom::DevicesChangedObserverPtr* observer) {
+    mojom::DevicesChangedObserverPtr::Proxy* observer) {
   auto iter = std::find_if(
       devices_changed_observers_.begin(), devices_changed_observers_.end(),
       [observer](const mojom::DevicesChangedObserverPtr& entry) {
-        return &entry == observer;
+        return entry.get() == observer;
       });
   if (iter == devices_changed_observers_.end()) {
     DCHECK(false);

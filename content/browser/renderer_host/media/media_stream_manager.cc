@@ -534,8 +534,16 @@ MediaStreamManager::MediaStreamManager(
 #endif
 
     if (base::FeatureList::IsEnabled(features::kMojoVideoCapture)) {
+      auto* service_manager_connection =
+          content::ServiceManagerConnection::GetForProcess();
       video_capture_provider = std::make_unique<VideoCaptureProviderSwitcher>(
           std::make_unique<ServiceVideoCaptureProvider>(
+              // There are test cases (e.g.
+              // AudioOutputAuthorizationHandlerTest.DoNothing), where no
+              // service_manager_connection is available.
+              service_manager_connection
+                  ? service_manager_connection->GetConnector()
+                  : nullptr,
               base::BindRepeating(&SendVideoCaptureLogMessage)),
           InProcessVideoCaptureProvider::CreateInstanceForNonDeviceCapture(
               std::move(device_task_runner),
