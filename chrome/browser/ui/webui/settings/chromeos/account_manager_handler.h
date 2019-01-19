@@ -60,6 +60,9 @@ class AccountManagerUIHandler : public ::settings::SettingsPageUIHandler,
   // WebUI "removeAccount" message callback.
   void HandleRemoveAccount(const base::ListValue* args);
 
+  // WebUI "showWelcomeDialogIfRequired" message callback.
+  void HandleShowWelcomeDialogIfRequired(const base::ListValue* args);
+
   // |AccountManager::GetAccounts| callback.
   void GetAccountsCallbackHandler(
       base::Value callback_id,
