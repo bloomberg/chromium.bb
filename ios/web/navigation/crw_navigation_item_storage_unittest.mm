@@ -13,7 +13,6 @@
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_item_storage_test_util.h"
 #include "ios/web/public/referrer.h"
-#import "net/base/mac/url_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -48,50 +47,6 @@ class CRWNavigationItemStorageTest : public PlatformTest {
  protected:
   CRWNavigationItemStorage* item_storage_;
 };
-
-// Tests initializing with the legacy keys.
-TEST_F(CRWNavigationItemStorageTest, InitWithCoderLegacy) {
-  NSURL* virtualURL = net::NSURLWithGURL(item_storage().virtualURL);
-  NSURL* referrerURL = net::NSURLWithGURL(item_storage().referrer.url);
-  NSString* title = base::SysUTF16ToNSString(item_storage().title);
-  // Legacy NavigationItems don't persist timestamp.
-  item_storage().timestamp = base::Time::FromCFAbsoluteTime(0);
-
-  // Set up archiver and unarchiver.
-  NSMutableData* data = [[NSMutableData alloc] init];
-  NSKeyedArchiver* archiver =
-      [[NSKeyedArchiver alloc] initForWritingWithMutableData:data];
-  [archiver encodeObject:virtualURL
-                  forKey:web::kNavigationItemStorageURLDeperecatedKey];
-  [archiver encodeObject:referrerURL
-                  forKey:web::kNavigationItemStorageReferrerURLDeprecatedKey];
-  [archiver encodeObject:title forKey:web::kNavigationItemStorageTitleKey];
-  NSDictionary* display_state_dict =
-      item_storage().displayState.GetSerialization();
-  [archiver encodeObject:display_state_dict
-                  forKey:web::kNavigationItemStoragePageDisplayStateKey];
-  [archiver
-      encodeBool:YES
-          forKey:web::kNavigationItemStorageUseDesktopUserAgentDeprecatedKey];
-  NSDictionary* request_headers = item_storage().HTTPRequestHeaders;
-  [archiver encodeObject:request_headers
-                  forKey:web::kNavigationItemStorageHTTPRequestHeadersKey];
-  [archiver encodeObject:item_storage().POSTData
-                  forKey:web::kNavigationItemStoragePOSTDataKey];
-  BOOL skip_repost_form_confirmation =
-      item_storage().shouldSkipRepostFormConfirmation;
-  [archiver
-      encodeBool:skip_repost_form_confirmation
-          forKey:web::kNavigationItemStorageSkipRepostFormConfirmationKey];
-  [archiver finishEncoding];
-  NSKeyedUnarchiver* unarchiver =
-      [[NSKeyedUnarchiver alloc] initForReadingWithData:data];
-
-  // Create a CRWNavigationItemStorage and verify that it is equivalent.
-  CRWNavigationItemStorage* new_storage =
-      [[CRWNavigationItemStorage alloc] initWithCoder:unarchiver];
-  EXPECT_TRUE(web::ItemStoragesAreEqual(item_storage(), new_storage));
-}
 
 // Tests that unarchiving CRWNavigationItemStorage data results in an equivalent
 // storage.
