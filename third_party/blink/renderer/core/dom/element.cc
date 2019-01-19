@@ -1267,6 +1267,10 @@ InvisibleState Element::Invisible() const {
   return InvisibleState::kInvisible;
 }
 
+bool Element::HasInvisibleAttribute() const {
+  return Invisible() != InvisibleState::kMissing;
+}
+
 void Element::DispatchActivateInvisibleEventIfNeeded() {
   if (!RuntimeEnabledFeatures::InvisibleDOMEnabled())
     return;
@@ -2147,7 +2151,8 @@ void Element::DetachLayoutTree(const AttachContext& context) {
   DCHECK(NeedsAttach());
 }
 
-scoped_refptr<ComputedStyle> Element::StyleForLayoutObject() {
+scoped_refptr<ComputedStyle> Element::StyleForLayoutObject(
+    bool calc_invisible) {
   DCHECK(GetDocument().InStyleRecalc());
 
   // FIXME: Instead of clearing updates that may have been added from calls to
@@ -2157,7 +2162,7 @@ scoped_refptr<ComputedStyle> Element::StyleForLayoutObject() {
     element_animations->CssAnimations().ClearPendingUpdate();
 
   if (RuntimeEnabledFeatures::InvisibleDOMEnabled() &&
-      hasAttribute(html_names::kInvisibleAttr)) {
+      hasAttribute(html_names::kInvisibleAttr) && !calc_invisible) {
     auto style =
         GetDocument().GetStyleResolver()->InitialStyleForElement(GetDocument());
     style->SetDisplay(EDisplay::kNone);
@@ -2219,7 +2224,7 @@ void Element::RecalcStyleForTraversalRootAncestor() {
     DidRecalcStyle(kNoChange);
 }
 
-void Element::RecalcStyle(StyleRecalcChange change) {
+void Element::RecalcStyle(StyleRecalcChange change, bool calc_invisible) {
   DCHECK(GetDocument().InStyleRecalc());
   DCHECK(!GetDocument().Lifecycle().InDetach());
 
@@ -2274,8 +2279,13 @@ void Element::RecalcStyle(StyleRecalcChange change) {
       }
     }
 
+    // If we are on the find-in-page root, we need to calculate style for
+    // invisible nodes in this subtree.
+    if (!calc_invisible && this == GetDocument().FindInPageRoot())
+      calc_invisible = true;
+
     if (ParentComputedStyle()) {
-      change = RecalcOwnStyle(change);
+      change = RecalcOwnStyle(change, calc_invisible);
     } else if (!CanParticipateInFlatTree()) {
       // Recalculate style for Shadow DOM v0 <content> insertion point.
       // It does not take style since it's not part of the flat tree, but we
@@ -2311,7 +2321,7 @@ void Element::RecalcStyle(StyleRecalcChange change) {
         if (root->ShouldCallRecalcStyle(change))
           root->RecalcStyle(change);
       }
-      RecalcDescendantStyles(change);
+      RecalcDescendantStyles(change, calc_invisible);
     }
 
     UpdatePseudoElement(kPseudoIdAfter, change);
@@ -2352,7 +2362,8 @@ scoped_refptr<ComputedStyle> Element::PropagateInheritedProperties(
   return new_style;
 }
 
-StyleRecalcChange Element::RecalcOwnStyle(StyleRecalcChange change) {
+StyleRecalcChange Element::RecalcOwnStyle(StyleRecalcChange change,
+                                          bool calc_invisible) {
   DCHECK(GetDocument().InStyleRecalc());
   DCHECK(change >= kIndependentInherit || NeedsStyleRecalc());
   DCHECK(ParentComputedStyle());
@@ -2365,7 +2376,7 @@ StyleRecalcChange Element::RecalcOwnStyle(StyleRecalcChange change) {
   // set these directly on the ComputedStyle object.
   scoped_refptr<ComputedStyle> new_style = PropagateInheritedProperties(change);
   if (!new_style)
-    new_style = StyleForLayoutObject();
+    new_style = StyleForLayoutObject(calc_invisible);
   if (!new_style) {
     DCHECK(IsPseudoElement());
     SetNeedsReattachLayoutTree();

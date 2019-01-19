@@ -338,6 +338,8 @@ class CORE_EXPORT Element : public ContainerNode {
   AccessibleNode* accessibleNode();
 
   InvisibleState Invisible() const;
+  bool HasInvisibleAttribute() const;
+
   void DispatchActivateInvisibleEventIfNeeded();
   bool IsInsideInvisibleStaticSubtree();
 
@@ -509,7 +511,7 @@ class CORE_EXPORT Element : public ContainerNode {
 
   virtual LayoutObject* CreateLayoutObject(const ComputedStyle&);
   virtual bool LayoutObjectIsNeeded(const ComputedStyle&) const;
-  void RecalcStyle(StyleRecalcChange);
+  void RecalcStyle(StyleRecalcChange, bool calc_invisible = false);
   void RecalcStyleForTraversalRootAncestor();
   void RebuildLayoutTreeForTraversalRootAncestor() {
     RebuildFirstLetterLayoutTree();
@@ -831,7 +833,8 @@ class CORE_EXPORT Element : public ContainerNode {
   bool IsSpellCheckingEnabled() const;
 
   // FIXME: public for LayoutTreeBuilder, we shouldn't expose this though.
-  scoped_refptr<ComputedStyle> StyleForLayoutObject();
+  scoped_refptr<ComputedStyle> StyleForLayoutObject(
+      bool calc_invisible = false);
 
   bool HasID() const;
   bool HasClass() const;
@@ -993,7 +996,8 @@ class CORE_EXPORT Element : public ContainerNode {
   // and returns the new style. Otherwise, returns null.
   scoped_refptr<ComputedStyle> PropagateInheritedProperties(StyleRecalcChange);
 
-  StyleRecalcChange RecalcOwnStyle(StyleRecalcChange);
+  StyleRecalcChange RecalcOwnStyle(StyleRecalcChange,
+                                   bool calc_invisible = false);
 
   // Returns true if we should traverse shadow including children and pseudo
   // elements for RecalcStyle.

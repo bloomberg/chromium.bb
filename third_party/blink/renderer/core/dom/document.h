@@ -519,6 +519,10 @@ class CORE_EXPORT Document : public ContainerNode,
   };
   void UpdateStyleAndLayoutIgnorePendingStylesheets(
       RunPostLayoutTasks = kRunPostLayoutTasksAsyhnchronously);
+  // Same as UpdateStyleAndLayoutIgnorePendingStyleSheets()
+  // but allows style & layout tree calculation for invisible nodes.
+  void UpdateStyleAndLayoutIgnorePendingStylesheetsConsideringInvisibleNodes(
+      RunPostLayoutTasks = kRunPostLayoutTasksAsyhnchronously);
   void UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(Node*);
   scoped_refptr<ComputedStyle> StyleForElementIgnoringPendingStylesheets(
       Element*);
@@ -921,6 +925,10 @@ class CORE_EXPORT Document : public ContainerNode,
     override_last_modified_ = modified;
   }
   String lastModified() const;
+
+  Element* FindInPageRoot() const { return find_in_page_root_.Get(); }
+
+  void SetFindInPageRoot(Element* find_in_page_root);
 
   // The cookieURL is used to query the cookie database for this document's
   // cookies. For example, if the cookie URL is http://example.com, we'll
@@ -1676,6 +1684,11 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<ContextFeatures> context_features_;
 
   bool well_formed_;
+
+  // When doing find-in-page and we need to calculate style & layout tree for
+  // invisible nodes, this variable will be set with the invisible root for
+  // the currently processed block in find-in-page.
+  WeakMember<Element> find_in_page_root_;
 
   // Document URLs.
   KURL url_;  // Document.URL: The URL from which this document was retrieved.

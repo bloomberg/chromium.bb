@@ -2571,6 +2571,14 @@ void Document::UpdateStyleAndLayoutTreeIgnorePendingStylesheets() {
 
 void Document::UpdateStyleAndLayoutIgnorePendingStylesheets(
     Document::RunPostLayoutTasks run_post_layout_tasks) {
+  DCHECK(!find_in_page_root_);
+  UpdateStyleAndLayoutIgnorePendingStylesheetsConsideringInvisibleNodes(
+      run_post_layout_tasks);
+}
+
+void Document::
+    UpdateStyleAndLayoutIgnorePendingStylesheetsConsideringInvisibleNodes(
+        Document::RunPostLayoutTasks run_post_layout_tasks) {
   LocalFrameView* local_view = View();
   if (local_view)
     local_view->WillStartForcedLayout();
@@ -5533,6 +5541,12 @@ String Document::lastModified() const {
                         date.Minute(), date.Second());
 }
 
+void Document::SetFindInPageRoot(Element* find_in_page_root) {
+  DCHECK(RuntimeEnabledFeatures::InvisibleDOMEnabled());
+  DCHECK(!find_in_page_root || !find_in_page_root_);
+  find_in_page_root_ = find_in_page_root;
+}
+
 scoped_refptr<const SecurityOrigin> Document::TopFrameOrigin() const {
   if (!GetFrame())
     return scoped_refptr<const SecurityOrigin>();
@@ -7700,6 +7714,7 @@ void Document::Trace(blink::Visitor* visitor) {
   visitor->Trace(viewport_data_);
   visitor->Trace(lazy_load_image_observer_);
   visitor->Trace(isolated_world_csp_map_);
+  visitor->Trace(find_in_page_root_);
   Supplementable<Document>::Trace(visitor);
   TreeScope::Trace(visitor);
   ContainerNode::Trace(visitor);
