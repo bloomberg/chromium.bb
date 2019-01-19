@@ -11,8 +11,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_timeouts.h"
-#include "fuchsia/app/cast/application_config_manager/test/fake_application_config_manager.h"
 #include "fuchsia/app/cast/cast_runner.h"
+#include "fuchsia/app/cast/fake_application_config_manager.h"
 #include "fuchsia/app/cast/test_common.h"
 #include "fuchsia/app/common/web_component.h"
 #include "fuchsia/app/common/web_content_runner.h"
@@ -47,8 +47,7 @@ class CastRunnerIntegrationTest : public testing::Test {
 
     // Create the AppConfigManager.
     app_config_manager_ =
-        std::make_unique<castrunner::test::FakeApplicationConfigManager>(
-            &test_server_);
+        std::make_unique<FakeApplicationConfigManager>(&test_server_);
     app_config_binding_ = std::make_unique<
         fidl::Binding<chromium::cast::ApplicationConfigManager>>(
         app_config_manager_.get());
@@ -87,8 +86,7 @@ class CastRunnerIntegrationTest : public testing::Test {
 
   net::EmbeddedTestServer test_server_;
 
-  std::unique_ptr<castrunner::test::FakeApplicationConfigManager>
-      app_config_manager_;
+  std::unique_ptr<FakeApplicationConfigManager> app_config_manager_;
   std::unique_ptr<fidl::Binding<chromium::cast::ApplicationConfigManager>>
       app_config_binding_;
 
@@ -109,9 +107,8 @@ TEST_F(CastRunnerIntegrationTest, BasicRequest) {
   // Launch the test-app component.
   fuchsia::sys::ComponentControllerPtr component_controller_ptr;
   base::fuchsia::ComponentContext component_services(StartCastComponent(
-      base::StringPrintf(
-          "cast:%s",
-          castrunner::test::FakeApplicationConfigManager::kTestCastAppId),
+      base::StringPrintf("cast:%s",
+                         FakeApplicationConfigManager::kTestCastAppId),
       &cast_runner_ptr_, component_controller_ptr.NewRequest()));
   component_controller_ptr.set_error_handler(&ComponentErrorHandler);
 
