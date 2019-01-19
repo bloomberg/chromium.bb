@@ -10,7 +10,9 @@ namespace blink {
 
 MediaControlCurrentTimeDisplayElement::MediaControlCurrentTimeDisplayElement(
     MediaControlsImpl& media_controls)
-    : MediaControlTimeDisplayElement(media_controls, kMediaCurrentTimeDisplay) {
+    : MediaControlTimeDisplayElement(
+          media_controls,
+          WebLocalizedString::kAXMediaCurrentTimeDisplay) {
   SetShadowPseudoId(
       AtomicString("-webkit-media-controls-current-time-display"));
 }

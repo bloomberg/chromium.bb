@@ -5,8 +5,10 @@
 ++++++++[tool bar] name='audio' description='audio' horizontal
 ++++++++++[tool bar] name='audio' description='audio' horizontal
 ++++++++++++[push button] name='play' xml-roles:button
-++++++++++++[text] name='0:00'
-++++++++++++[text] name='/ 0:00'
+++++++++++++[section] name='elapsed time: 0:00'
+++++++++++++++[text] name='0:00'
+++++++++++++[section] name='remaining time: / 0:00'
+++++++++++++++[text] name='/ 0:00'
 ++++++++++++[slider] description='audio time scrubber' horizontal xml-roles:slider
 ++++++++++++[section]
 ++++++++++++++[section]
