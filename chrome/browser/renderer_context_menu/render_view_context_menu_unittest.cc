@@ -621,19 +621,23 @@ TEST_F(RenderViewContextMenuPrefsTest, ShowAllPasswords) {
 // Verify that "Show all passwords" is displayed on a password field in
 // Incognito.
 TEST_F(RenderViewContextMenuPrefsTest, ShowAllPasswordsIncognito) {
-  profile()->ForceIncognito(true);
+  std::unique_ptr<content::WebContents> incognito_web_contents(
+      content::WebContentsTester::CreateTestWebContents(
+          profile()->GetOffTheRecordProfile(), nullptr));
+
   // Set up password manager stuff.
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
-      web_contents(), nullptr);
+      incognito_web_contents.get(), nullptr);
   password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
-      web_contents())
-      ->RenderFrameCreated(web_contents()->GetMainFrame());
+      incognito_web_contents.get())
+      ->RenderFrameCreated(incognito_web_contents->GetMainFrame());
 
-  NavigateAndCommit(GURL("http://www.foo.com/"));
+  content::WebContentsTester::For(incognito_web_contents.get())
+      ->NavigateAndCommit(GURL("http://www.foo.com/"));
   content::ContextMenuParams params = CreateParams(MenuItem::EDITABLE);
   params.input_field_type = blink::WebContextMenuData::kInputFieldTypePassword;
   auto menu = std::make_unique<TestRenderViewContextMenu>(
-      web_contents()->GetMainFrame(), params);
+      incognito_web_contents->GetMainFrame(), params);
   menu->Init();
 
   EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS));

@@ -280,23 +280,6 @@ class TestingProfile : public Profile {
   std::string GetProfileUserName() const override;
   ProfileType GetProfileType() const override;
 
-  // DEPRECATED, because it's fragile to change a profile from non-incognito
-  // to incognito after the ProfileKeyedServices have been created (some
-  // ProfileKeyedServices either should not exist in incognito mode, or will
-  // crash when they try to get references to other services they depend on,
-  // but do not exist in incognito mode).
-  // TODO(atwilson): Remove this API (http://crbug.com/277296).
-  //
-  // Changes a profile's to/from incognito mode temporarily - profile will be
-  // returned to non-incognito before destruction to allow services to
-  // properly shutdown. This is only supported for legacy tests - new tests
-  // should create a true incognito profile using Builder::SetIncognito() or
-  // by using the TestingProfile constructor that allows setting the incognito
-  // flag.
-  void ForceIncognito(bool force_incognito) {
-    force_incognito_ = force_incognito;
-  }
-
   Profile* GetOffTheRecordProfile() override;
   void DestroyOffTheRecordProfile() override {}
   bool HasOffTheRecordProfile() override;
@@ -405,7 +388,6 @@ class TestingProfile : public Profile {
   // handler.
   network::mojom::NetworkContextRequest network_context_request_;
 
-  bool force_incognito_;
   std::unique_ptr<Profile> incognito_profile_;
   TestingProfile* original_profile_;
 
