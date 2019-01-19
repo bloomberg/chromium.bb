@@ -168,9 +168,9 @@ class Tab : public gfx::AnimationDelegate,
     return tab_activated_with_last_tap_down_;
   }
 
-  GlowHoverController* hover_controller() { return &hover_controller_; }
+  GlowHoverController* hover_controller() { return hover_controller_.get(); }
   const GlowHoverController* hover_controller() const {
-    return &hover_controller_;
+    return hover_controller_.get();
   }
 
   bool mouse_hovered() const { return mouse_hovered_; }
@@ -252,7 +252,7 @@ class Tab : public gfx::AnimationDelegate,
 
   bool tab_activated_with_last_tap_down_ = false;
 
-  GlowHoverController hover_controller_;
+  std::unique_ptr<GlowHoverController> hover_controller_;
 
   // The offset used to paint the inactive background image.
   int background_offset_;

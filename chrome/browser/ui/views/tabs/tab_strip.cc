@@ -581,9 +581,8 @@ void TabStrip::RemoveTabAt(content::WebContents* contents,
   tab_bounds.set_width(tab_overlap);
 
   // Animate the tab closed.
-  bounds_animator_.AnimateViewTo(tab, tab_bounds);
-  bounds_animator_.SetAnimationDelegate(
-      tab, std::make_unique<RemoveTabDelegate>(this, tab));
+  bounds_animator_.AnimateViewTo(
+      tab, tab_bounds, std::make_unique<RemoveTabDelegate>(this, tab));
 
   // TODO(pkasting): The first part of this conditional doesn't really make
   // sense to me.  Why is each condition justified?
@@ -1367,7 +1366,8 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   const auto paint_or_add_to_tabs = [&paint_info,
                                      &selected_and_hovered_tabs](Tab* tab) {
     if (tab->IsSelected() ||
-        (tab->mouse_hovered() || tab->hover_controller()->ShouldDraw())) {
+        (tab->mouse_hovered() ||
+         (tab->hover_controller() && tab->hover_controller()->ShouldDraw()))) {
       selected_and_hovered_tabs.push_back(tab);
     } else {
       tab->Paint(paint_info);
@@ -1435,7 +1435,9 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   // 6.0 <= sort_value <= 7.0  Selected/mouse hovered tab.
   //
   auto tab_sort_value = [](Tab* tab) {
-    float sort_value = tab->hover_controller()->GetAnimationValue();
+    float sort_value = tab->hover_controller()
+                           ? tab->hover_controller()->GetAnimationValue()
+                           : 0;
     if (tab->IsSelected())
       sort_value += 4.f;
     if (tab->mouse_hovered())
@@ -1637,6 +1639,9 @@ void TabStrip::Init() {
   }
 
   UpdateContrastRatioValues();
+
+  if (!gfx::Animation::ShouldRenderRichAnimation())
+    bounds_animator_.SetAnimationDuration(0);
 }
 
 void TabStrip::StartInsertTabAnimation(int model_index) {
@@ -1685,8 +1690,6 @@ void TabStrip::AnimateToIdealBounds() {
     if (bounds_animator_.GetTargetBounds(tab) == target_bounds)
       continue;
 
-    bounds_animator_.AnimateViewTo(tab, target_bounds);
-
     // Set an animation delegate for the tab so it will clip appropriately.
     // Don't do this if dragging() is true.  In this case the tab was
     // previously being dragged and is now animating back to its ideal
@@ -1694,10 +1697,10 @@ void TabStrip::AnimateToIdealBounds() {
     // will reset this dragging state. Replacing this delegate would mean
     // this code would also need to reset the dragging state immediately,
     // and that could allow the new tab button to be drawn atop this tab.
-    if (!tab->dragging()) {
-      bounds_animator_.SetAnimationDelegate(
-          tab, std::make_unique<TabAnimationDelegate>(this, tab));
-    }
+    bounds_animator_.AnimateViewTo(
+        tab, target_bounds,
+        tab->dragging() ? nullptr
+                        : std::make_unique<TabAnimationDelegate>(this, tab));
   }
 
   if (bounds_animator_.GetTargetBounds(new_tab_button_) !=
@@ -2113,11 +2116,12 @@ void TabStrip::StoppedDraggingTab(Tab* tab, bool* is_first_tab) {
     GenerateIdealBounds();
     AnimateToIdealBounds();
   }
-  bounds_animator_.AnimateViewTo(tab, ideal_bounds(tab_data_index));
+
   // Install a delegate to reset the dragging state when done. We have to leave
   // dragging true for the tab otherwise it'll draw beneath the new tab button.
-  bounds_animator_.SetAnimationDelegate(
-      tab, std::make_unique<ResetDraggingStateDelegate>(this, tab));
+  bounds_animator_.AnimateViewTo(
+      tab, ideal_bounds(tab_data_index),
+      std::make_unique<ResetDraggingStateDelegate>(this, tab));
 }
 
 void TabStrip::OwnDragController(TabDragController* controller) {

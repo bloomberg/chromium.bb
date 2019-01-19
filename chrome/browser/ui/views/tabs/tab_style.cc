@@ -462,10 +462,13 @@ TabStyle::SeparatorOpacities GM2TabStyle::GetSeparatorOpacities(
     // hovered.  If the subsequent tab is active, don't consider its hover
     // animation value, lest the trailing separator on this tab disappear while
     // the subsequent tab is being dragged.
-    const float hover_value = tab_->hover_controller()->GetAnimationValue();
+    const float hover_value =
+        tab_->hover_controller() ? tab_->hover_controller()->GetAnimationValue()
+                                 : 0;
     const Tab* subsequent_tab = tab_->controller()->GetAdjacentTab(tab_, 1);
     const float subsequent_hover =
-        !for_layout && subsequent_tab && !subsequent_tab->IsActive()
+        !for_layout && subsequent_tab && subsequent_tab->hover_controller() &&
+                !subsequent_tab->IsActive()
             ? float{subsequent_tab->hover_controller()->GetAnimationValue()}
             : 0;
     trailing_opacity = 1.f - std::max(hover_value, subsequent_hover);
@@ -561,8 +564,8 @@ void GM2TabStyle::PaintTabBackground(gfx::Canvas* canvas,
           : SK_ColorTRANSPARENT;
   const SkColor stroke_color =
       tab_->controller()->GetToolbarTopSeparatorColor();
-  const bool paint_hover_effect =
-      !active && tab_->hover_controller()->ShouldDraw();
+  const bool paint_hover_effect = !active && tab_->hover_controller() &&
+                                  tab_->hover_controller()->ShouldDraw();
   const float scale = canvas->image_scale();
   const float stroke_thickness = GetStrokeThickness(active);
 

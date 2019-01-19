@@ -29,7 +29,10 @@ BoundsAnimator::~BoundsAnimator() {
     CleanupData(false, &entry.second);
 }
 
-void BoundsAnimator::AnimateViewTo(View* view, const gfx::Rect& target) {
+void BoundsAnimator::AnimateViewTo(
+    View* view,
+    const gfx::Rect& target,
+    std::unique_ptr<gfx::AnimationDelegate> delegate) {
   DCHECK(view);
   DCHECK_EQ(view->parent(), parent_);
 
@@ -50,6 +53,7 @@ void BoundsAnimator::AnimateViewTo(View* view, const gfx::Rect& target) {
   data.start_bounds = view->bounds();
   data.target_bounds = target;
   data.animation = CreateAnimation();
+  data.delegate = std::move(delegate);
 
   animation_to_view_[data.animation.get()] = view;
 
