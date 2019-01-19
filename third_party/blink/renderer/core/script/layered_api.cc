@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/script/layered_api.h"
 
 #include "base/stl_util.h"
-#include "third_party/blink/public/resources/grit/blink_resources.h"
+#include "third_party/blink/renderer/core/script/layered_api_resources.h"
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -17,34 +17,6 @@ namespace {
 
 static const char kStdScheme[] = "std";
 static const char kInternalScheme[] = "std-internal";
-
-struct LayeredAPIResource {
-  const char* path;
-  int resource_id;
-};
-
-const LayeredAPIResource kLayeredAPIResources[] = {
-    {"blank/index.js", IDR_LAYERED_API_BLANK_INDEX_JS},
-
-    {"kv-storage/index.js", IDR_LAYERED_API_KV_STORAGE_INDEX_JS},
-    {"kv-storage/idb_utils.js", IDR_LAYERED_API_KV_STORAGE_IDB_UTILS_JS},
-    {"kv-storage/async_iterator.js",
-     IDR_LAYERED_API_KV_STORAGE_ASYNC_ITERATOR_JS},
-
-    {"virtual-scroller/index.js", IDR_LAYERED_API_VIRTUAL_SCROLLER_INDEX_JS},
-    {"virtual-scroller/item-source.js",
-     IDR_LAYERED_API_VIRTUAL_SCROLLER_ITEM_SOURCE_JS},
-    {"virtual-scroller/layouts/layout-1d-base.js",
-     IDR_LAYERED_API_VIRTUAL_SCROLLER_LAYOUTS_LAYOUT_1D_BASE_JS},
-    {"virtual-scroller/layouts/layout-1d-grid.js",
-     IDR_LAYERED_API_VIRTUAL_SCROLLER_LAYOUTS_LAYOUT_1D_GRID_JS},
-    {"virtual-scroller/layouts/layout-1d.js",
-     IDR_LAYERED_API_VIRTUAL_SCROLLER_LAYOUTS_LAYOUT_1D_JS},
-    {"virtual-scroller/virtual-scroller.js",
-     IDR_LAYERED_API_VIRTUAL_SCROLLER_VIRTUAL_SCROLLER_JS},
-    {"virtual-scroller/virtual-repeater.js",
-     IDR_LAYERED_API_VIRTUAL_SCROLLER_VIRTUAL_REPEATER_JS},
-};
 
 int GetResourceIDFromPath(const String& path) {
   for (size_t i = 0; i < base::size(kLayeredAPIResources); ++i) {
