@@ -262,11 +262,6 @@ const base::Feature kMojoVideoDecoder{"MojoVideoDecoder",
 const base::Feature kD3D11VideoDecoder{"D3D11VideoDecoder",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable VP9 decoding in the D3D11VideoDecoder. Requires D3D11VideoDecoder to
-// be enabled also.
-const base::Feature kD3D11VP9Decoder{"D3D11VP9Decoder",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Falls back to other decoders after audio/video decode error happens. The
 // implementation may choose different strategies on when to fallback. See
 // DecoderStream for details. When disabled, playback will fail immediately

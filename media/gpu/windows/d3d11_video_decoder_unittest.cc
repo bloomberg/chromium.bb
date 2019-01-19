@@ -204,36 +204,13 @@ class D3D11VideoDecoderTest : public ::testing::Test {
   base::Optional<base::test::ScopedFeatureList> scoped_feature_list_;
 };
 
-TEST_F(D3D11VideoDecoderTest, SupportsVP9WithFlagAndDecoderEnabled) {
+TEST_F(D3D11VideoDecoderTest, SupportsVP9Profile0) {
   CreateDecoder();
 
   VideoDecoderConfig configuration =
       TestVideoConfig::NormalCodecProfile(kCodecVP9, VP9PROFILE_PROFILE0);
 
-  EnableFeature(kD3D11VP9Decoder);
-  EnableDecoder(D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0);
-  InitializeDecoder(configuration, kExpectSuccess);
-}
-
-TEST_F(D3D11VideoDecoderTest, DoesNotSupportVP9WithoutDecoderEnabled) {
-  CreateDecoder();
-
-  VideoDecoderConfig configuration =
-      TestVideoConfig::NormalCodecProfile(kCodecVP9, VP9PROFILE_PROFILE0);
-
-  EnableFeature(kD3D11VP9Decoder);
-  EnableDecoder(D3D11_DECODER_PROFILE_H264_VLD_NOFGT);  // Paranoia, not VP9.
-  InitializeDecoder(configuration, kExpectFailure);
-}
-
-TEST_F(D3D11VideoDecoderTest, DoesNotSupportVP9WithoutFlagEnabled) {
-  CreateDecoder();
-
-  VideoDecoderConfig configuration =
-      TestVideoConfig::NormalCodecProfile(kCodecVP9, VP9PROFILE_PROFILE0);
-
-  DisableFeature(kD3D11VP9Decoder);
-  InitializeDecoder(configuration, kExpectFailure);
+  EXPECT_TRUE(d3d11_decoder_raw_->IsPotentiallySupported(configuration));
 }
 
 TEST_F(D3D11VideoDecoderTest, DoesNotSupportsH264HIGH10Profile) {
