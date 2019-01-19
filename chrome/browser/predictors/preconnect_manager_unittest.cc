@@ -114,7 +114,7 @@ class MockNetworkContext : public network::TestNetworkContext {
       ADD_FAILURE() << url.spec() << " wasn't found";
       return;
     }
-    it->second->OnProxyLookupComplete(result);
+    it->second->OnProxyLookupComplete(net::ERR_FAILED, result);
     proxy_lookup_clients_.erase(it);
     // Wait for OnProxyLookupComplete() to be executed on the UI thread.
     base::RunLoop().RunUntilIdle();

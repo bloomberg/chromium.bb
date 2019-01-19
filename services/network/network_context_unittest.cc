@@ -210,12 +210,16 @@ class TestProxyLookupClient : public mojom::ProxyLookupClient {
 
   // mojom::ProxyLookupClient implementation:
   void OnProxyLookupComplete(
+      int32_t net_error,
       const base::Optional<net::ProxyInfo>& proxy_info) override {
     EXPECT_FALSE(is_done_);
     EXPECT_FALSE(proxy_info_);
 
+    EXPECT_EQ(net_error == net::OK, proxy_info.has_value());
+
     is_done_ = true;
     proxy_info_ = proxy_info;
+    net_error_ = net_error;
     binding_.Close();
     run_loop_.Quit();
   }
@@ -223,6 +227,8 @@ class TestProxyLookupClient : public mojom::ProxyLookupClient {
   const base::Optional<net::ProxyInfo>& proxy_info() const {
     return proxy_info_;
   }
+
+  int32_t net_error() const { return net_error_; }
   bool is_done() const { return is_done_; }
 
  private:
@@ -230,6 +236,7 @@ class TestProxyLookupClient : public mojom::ProxyLookupClient {
 
   bool is_done_ = false;
   base::Optional<net::ProxyInfo> proxy_info_;
+  int32_t net_error_ = net::ERR_UNEXPECTED;
 
   base::RunLoop run_loop_;
 
@@ -2234,6 +2241,7 @@ TEST_F(NetworkContextTest, DestroyedWithoutProxyConfig) {
   network_context.reset();
   proxy_lookup_client.WaitForResult();
   EXPECT_FALSE(proxy_lookup_client.proxy_info());
+  EXPECT_EQ(net::ERR_ABORTED, proxy_lookup_client.net_error());
 }
 
 TEST_F(NetworkContextTest, CancelPendingProxyLookup) {

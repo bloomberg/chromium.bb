@@ -22,9 +22,11 @@ namespace dbus {
 class MethodCall;
 }
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+namespace mojom {
+class NetworkContext;
 }
+}  // namespace network
 
 namespace chromeos {
 
@@ -55,21 +57,6 @@ namespace chromeos {
 class ProxyResolutionServiceProvider
     : public CrosDBusService::ServiceProviderInterface {
  public:
-  ProxyResolutionServiceProvider();
-  ~ProxyResolutionServiceProvider() override;
-
-  void set_request_context_getter_for_test(
-      const scoped_refptr<net::URLRequestContextGetter>& getter) {
-    request_context_getter_for_test_ = getter;
-  }
-
-  // CrosDBusService::ServiceProviderInterface:
-  void Start(scoped_refptr<dbus::ExportedObject> exported_object) override;
-
- private:
-  // Data used for a single proxy resolution.
-  struct Request;
-
   // Callback that is invoked with the result of proxy resolution. On success
   // |error| is empty, and |pac_string| contains the result. Otherwise |error|
   // is non-empty.
@@ -77,6 +64,19 @@ class ProxyResolutionServiceProvider
       base::OnceCallback<void(const std::string& error,
                               const std::string& pac_string)>;
 
+  ProxyResolutionServiceProvider();
+  ~ProxyResolutionServiceProvider() override;
+
+  void set_network_context_for_test(
+      network::mojom::NetworkContext* network_context) {
+    network_context_for_test_ = network_context;
+    use_network_context_for_test_ = true;
+  }
+
+  // CrosDBusService::ServiceProviderInterface:
+  void Start(scoped_refptr<dbus::ExportedObject> exported_object) override;
+
+ private:
   friend class ProxyResolutionServiceProviderTestWrapper;
 
   // Returns true if called on |origin_thread_|.
@@ -95,15 +95,6 @@ class ProxyResolutionServiceProvider
   void ResolveProxyInternal(const std::string& source_url,
                             NotifyCallback callback);
 
-  // Helper method for ResolveProxy() that runs on network thread.
-  static void ResolveProxyOnNetworkThread(std::unique_ptr<Request> request);
-
-  // Callback on network thread for when
-  // net::ProxyResolutionService::ResolveProxy() completes, synchronously or
-  // asynchronously.
-  static void OnResolutionComplete(std::unique_ptr<Request> request,
-                                   int result);
-
   // Called on UI thread from OnResolutionComplete() to pass the resolved proxy
   // information to the client over D-Bus.
   void NotifyProxyResolved(std::unique_ptr<dbus::Response> response,
@@ -111,9 +102,15 @@ class ProxyResolutionServiceProvider
                            const std::string& error,
                            const std::string& pac_string);
 
+  // Returns the NetworkContext to use for resolving the proxy. This may be
+  // mocked by testing using set_network_context_for_test(), otherwise it picks
+  // the primary user profile's default.
+  network::mojom::NetworkContext* GetNetworkContext();
+
   scoped_refptr<dbus::ExportedObject> exported_object_;
   scoped_refptr<base::SingleThreadTaskRunner> origin_thread_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_for_test_;
+  network::mojom::NetworkContext* network_context_for_test_ = nullptr;
+  bool use_network_context_for_test_ = false;
   base::WeakPtrFactory<ProxyResolutionServiceProvider> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolutionServiceProvider);

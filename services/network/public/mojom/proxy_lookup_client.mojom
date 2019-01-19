@@ -17,6 +17,9 @@ import "services/proxy_resolver/public/mojom/proxy_resolver.mojom";
 interface ProxyLookupClient {
   // Called with the results of a proxy lookup when it is complete. Invoked only
   // once per proxy lookup. |proxy_info| is null if the lookup failed, or if the
-  // NetworkContext was destroyed.
-  OnProxyLookupComplete(proxy_resolver.mojom.ProxyInfo? proxy_info);
+  // NetworkContext was destroyed. If the lookup failed, |net_error| will
+  // contain a non-zero code describing the cause of the failure (see
+  // //net/base/net_error_list.h).
+  OnProxyLookupComplete(int32 net_error,
+                        proxy_resolver.mojom.ProxyInfo? proxy_info);
 };
