@@ -35,7 +35,6 @@ VideoFrameCompositor::VideoFrameCompositor(
                      base::Unretained(this))),
       submitter_(std::move(submitter)),
       weak_ptr_factory_(this) {
-  background_rendering_timer_.SetTaskRunner(task_runner_);
   if (submitter_) {
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&VideoFrameCompositor::InitializeSubmitter,
