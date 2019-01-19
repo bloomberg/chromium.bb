@@ -4,11 +4,12 @@
 
 #include "content/browser/renderer_host/media/service_video_capture_device_launcher.h"
 
+#include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/threading/thread.h"
+#include "content/browser/renderer_host/media/ref_counted_video_capture_factory.h"
 #include "content/browser/renderer_host/media/service_launched_video_capture_device.h"
-#include "content/browser/renderer_host/media/video_capture_factory_delegate.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/video_capture/public/cpp/mock_device_factory.h"
@@ -46,9 +47,13 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
 
  protected:
   void SetUp() override {
+    video_capture::mojom::DeviceFactoryPtr device_factory;
     factory_binding_ =
         std::make_unique<mojo::Binding<video_capture::mojom::DeviceFactory>>(
-            &mock_device_factory_, mojo::MakeRequest(&device_factory_));
+            &mock_device_factory_, mojo::MakeRequest(&device_factory));
+    factory_delegate_ = base::MakeRefCounted<RefCountedVideoCaptureFactory>(
+        std::move(device_factory), release_connection_cb_.Get());
+
     launcher_ = std::make_unique<ServiceVideoCaptureDeviceLauncher>(
         connect_to_device_factory_cb_.Get());
     launcher_has_connected_to_device_factory_ = false;
@@ -56,10 +61,9 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
 
     ON_CALL(connect_to_device_factory_cb_, Run(_))
         .WillByDefault(Invoke(
-            [this](std::unique_ptr<VideoCaptureFactoryDelegate>* out_factory) {
+            [this](scoped_refptr<RefCountedVideoCaptureFactory>* out_factory) {
               launcher_has_connected_to_device_factory_ = true;
-              *out_factory = std::make_unique<VideoCaptureFactoryDelegate>(
-                  &device_factory_, release_connection_cb_.Get());
+              *out_factory = factory_delegate_;
             }));
 
     ON_CALL(release_connection_cb_, Run())
@@ -77,7 +81,6 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
   TestBrowserThreadBundle thread_bundle_;
   video_capture::MockDeviceFactory mock_device_factory_;
   MockVideoCaptureDeviceLauncherCallbacks mock_callbacks_;
-  video_capture::mojom::DeviceFactoryPtr device_factory_;
   std::unique_ptr<mojo::Binding<video_capture::mojom::DeviceFactory>>
       factory_binding_;
   std::unique_ptr<ServiceVideoCaptureDeviceLauncher> launcher_;
@@ -87,6 +90,9 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
       ServiceVideoCaptureDeviceLauncher::ConnectToDeviceFactoryCB>
       connect_to_device_factory_cb_;
   base::MockCallback<base::OnceClosure> release_connection_cb_;
+  // |factory_delegate_| needs to go below |release_connection_cb_|, because its
+  // destructor will call |release_connection_cb_|.
+  scoped_refptr<RefCountedVideoCaptureFactory> factory_delegate_;
   bool launcher_has_connected_to_device_factory_;
   bool launcher_has_released_device_factory_;
   base::RunLoop wait_for_release_connection_cb_;
@@ -133,6 +139,7 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest, LaunchingDeviceSucceeds) {
   wait_for_done_cb.Run();
 
   launcher_.reset();
+  factory_delegate_.reset();
   wait_for_release_connection_cb_.Run();
   EXPECT_TRUE(launcher_has_connected_to_device_factory_);
   EXPECT_TRUE(launcher_has_released_device_factory_);
@@ -202,6 +209,8 @@ void ServiceVideoCaptureDeviceLauncherTest::RunLaunchingDeviceIsAbortedTest(
   std::move(create_device_success_answer_cb).Run();
   step_2_run_loop.Run();
 
+  factory_delegate_.reset();
+
   EXPECT_TRUE(launcher_has_connected_to_device_factory_);
   EXPECT_TRUE(launcher_has_released_device_factory_);
 }
@@ -253,7 +262,7 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest,
 
 TEST_F(ServiceVideoCaptureDeviceLauncherTest,
        LaunchingDeviceFailsBecauseFactoryIsUnbound) {
-  base::RunLoop run_loop;
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
 
   EXPECT_CALL(mock_callbacks_, DoOnDeviceLaunched(_)).Times(0);
   EXPECT_CALL(mock_callbacks_, OnDeviceLaunchAborted()).Times(0);
@@ -264,7 +273,8 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest,
   }));
 
   // Exercise
-  device_factory_.reset();
+  factory_delegate_->ReleaseFactoryForTesting();
+
   launcher_->LaunchDeviceAsync(kStubDeviceId, blink::MEDIA_DEVICE_VIDEO_CAPTURE,
                                kArbitraryParams, kNullReceiver,
                                connection_lost_cb_.Get(), &mock_callbacks_,
@@ -367,6 +377,7 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest,
   step_2_run_loop.Run();
 
   launcher_.reset();
+  factory_delegate_.reset();
   wait_for_release_connection_cb_.Run();
   EXPECT_TRUE(launcher_has_connected_to_device_factory_);
   EXPECT_TRUE(launcher_has_released_device_factory_);

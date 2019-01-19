@@ -29,7 +29,8 @@ class MockDeviceFactory : public video_capture::mojom::DeviceFactory {
                                video_capture::mojom::TextureVirtualDeviceRequest
                                    virtual_device) override;
   void RegisterVirtualDevicesChangedObserver(
-      video_capture::mojom::DevicesChangedObserverPtr observer) override {
+      video_capture::mojom::DevicesChangedObserverPtr observer,
+      bool raise_event_if_virtual_devices_already_present) override {
     NOTIMPLEMENTED();
   }
 

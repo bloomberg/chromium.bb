@@ -7,6 +7,7 @@ $ = function(id) {
 };
 
 var hasReceivedTrackEndedEvent = false;
+var hasReceivedDeviceChangeEventReceived = false;
 
 function startVideoCaptureAndVerifySize(video_width, video_height) {
   console.log('Calling getUserMediaAndWaitForVideoRendering.');
@@ -125,4 +126,23 @@ function verifyHasReceivedTrackEndedEvent() {
   } else {
     failTest('Did not receive ended event from track.');
   }
+}
+
+function registerForDeviceChangeEvent() {
+  navigator.mediaDevices.ondevicechange = function(event) {
+    hasReceivedDeviceChangeEventReceived = true;
+  };
+}
+
+function waitForDeviceChangeEvent() {
+  if (hasReceivedDeviceChangeEventReceived) {
+    reportTestSuccess();
+  } else {
+    console.log('still waiting for device change event');
+    setTimeout(waitForDeviceChangeEvent, 200);
+  }
+}
+
+function resetHasReceivedChangedEventFlag() {
+  hasReceivedDeviceChangeEventReceived = false;
 }

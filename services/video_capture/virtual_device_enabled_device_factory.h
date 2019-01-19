@@ -38,7 +38,8 @@ class VirtualDeviceEnabledDeviceFactory : public DeviceFactory {
       const media::VideoCaptureDeviceInfo& device_info,
       mojom::TextureVirtualDeviceRequest virtual_device) override;
   void RegisterVirtualDevicesChangedObserver(
-      mojom::DevicesChangedObserverPtr observer) override;
+      mojom::DevicesChangedObserverPtr observer,
+      bool raise_event_if_virtual_devices_already_present) override;
 
  private:
   class VirtualDeviceEntry;
@@ -53,7 +54,7 @@ class VirtualDeviceEnabledDeviceFactory : public DeviceFactory {
       const std::string& device_id);
   void EmitDevicesChangedEvent();
   void OnDevicesChangedObserverDisconnected(
-      mojom::DevicesChangedObserverPtr* observer);
+      mojom::DevicesChangedObserverPtr::Proxy* observer);
 
   std::map<std::string, VirtualDeviceEntry> virtual_devices_by_id_;
   const std::unique_ptr<DeviceFactory> device_factory_;

@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_SERVICE_VIDEO_CAPTURE_DEVICE_LAUNCHER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_SERVICE_VIDEO_CAPTURE_DEVICE_LAUNCHER_H_
 
-#include "content/browser/renderer_host/media/video_capture_factory_delegate.h"
+#include "content/browser/renderer_host/media/ref_counted_video_capture_factory.h"
 #include "content/browser/renderer_host/media/video_capture_provider.h"
 #include "content/public/browser/video_capture_device_launcher.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
@@ -20,7 +20,7 @@ class CONTENT_EXPORT ServiceVideoCaptureDeviceLauncher
  public:
   // Receives an instance via output parameter |factory|.
   using ConnectToDeviceFactoryCB = base::RepeatingCallback<void(
-      std::unique_ptr<VideoCaptureFactoryDelegate>* factory)>;
+      scoped_refptr<RefCountedVideoCaptureFactory>*)>;
 
   explicit ServiceVideoCaptureDeviceLauncher(
       ConnectToDeviceFactoryCB connect_to_device_factory_cb);
@@ -55,7 +55,7 @@ class CONTENT_EXPORT ServiceVideoCaptureDeviceLauncher
   void OnConnectionLostWhileWaitingForCallback();
 
   ConnectToDeviceFactoryCB connect_to_device_factory_cb_;
-  std::unique_ptr<VideoCaptureFactoryDelegate> device_factory_;
+  scoped_refptr<RefCountedVideoCaptureFactory> device_factory_;
   State state_;
   base::SequenceChecker sequence_checker_;
   base::OnceClosure done_cb_;
