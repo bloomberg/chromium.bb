@@ -334,6 +334,7 @@ js_library("runtime_hosts_dialog") {
 
 js_library("service") {
   deps = [
+    ":activity_log",
     ":error_page",
     ":item",
     ":load_error",
