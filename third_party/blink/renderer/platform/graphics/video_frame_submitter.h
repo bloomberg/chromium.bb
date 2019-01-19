@@ -42,14 +42,6 @@ class PLATFORM_EXPORT VideoFrameSubmitter
                       std::unique_ptr<VideoFrameResourceProvider>);
   ~VideoFrameSubmitter() override;
 
-  bool Rendering() { return is_rendering_; }
-  cc::VideoFrameProvider* Provider() { return video_frame_provider_; }
-  mojo::Binding<viz::mojom::blink::CompositorFrameSinkClient>* Binding() {
-    return &binding_;
-  }
-
-  void OnReceivedContextProvider(bool, scoped_refptr<viz::ContextProvider>);
-
   // cc::VideoFrameProvider::Client implementation.
   void StopUsingProvider() override;
   void StartRendering() override;
@@ -86,24 +78,28 @@ class PLATFORM_EXPORT VideoFrameSubmitter
                                const viz::SharedBitmapId&) override;
   void DidDeleteSharedBitmap(const viz::SharedBitmapId&) override;
 
-  void SetCompositorFrameSinkPtrForTesting(
-      viz::mojom::blink::CompositorFrameSinkPtr* sink) {
-    compositor_frame_sink_ = std::move(*sink);
-  }
-  void SetSurfaceEmbedderPtrForTesting(
-      mojom::blink::SurfaceEmbedderPtr embedder) {
-    surface_embedder_ = std::move(embedder);
-  }
-  void SetSurfaceIdForTesting(const viz::SurfaceId&, base::TimeTicks);
-
  private:
   friend class VideoFrameSubmitterTest;
 
+  // Called during Initialize() and OnContextLost() after a new ContextGL is
+  // requested.
+  void OnReceivedContextProvider(
+      bool use_gpu_compositing,
+      scoped_refptr<viz::ContextProvider> context_provider);
+
+  // Starts submission and calls UpdateSubmissionState(); which may submit.
   void StartSubmitting();
+
+  // Sets CompositorFrameSink::SetNeedsBeginFrame() state and submits a frame if
+  // visible or an empty frame if not.
   void UpdateSubmissionState();
 
   // Returns whether a frame was submitted.
   bool SubmitFrame(const viz::BeginFrameAck&, scoped_refptr<media::VideoFrame>);
+
+  // SubmitEmptyFrame() is used to force the remote CompositorFrameSink to
+  // release resources for the last submission; saving a significant amount of
+  // memory (~30%) when content goes off-screen. See https://crbug.com/829813.
   void SubmitEmptyFrame();
 
   // Pulls frame and submits it to compositor. Used in cases like
@@ -112,8 +108,15 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   void SubmitSingleFrame();
 
   // Return whether the submitter should submit frames based on its current
-  // state.
+  // state. It's important to only submit when this is true to save memory. See
+  // comments above and in UpdateSubmissionState().
   bool ShouldSubmit() const;
+
+  // Helper method for creating viz::CompositorFrame. If |video_frame| is null
+  // then the frame will be empty.
+  viz::CompositorFrame CreateCompositorFrame(
+      const viz::BeginFrameAck& begin_frame_ack,
+      scoped_refptr<media::VideoFrame> video_frame);
 
   cc::VideoFrameProvider* video_frame_provider_ = nullptr;
   scoped_refptr<viz::ContextProvider> context_provider_;
@@ -125,16 +128,20 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   WebFrameSinkDestroyedCallback frame_sink_destroyed_callback_;
   bool waiting_for_compositor_ack_ = false;
 
+  // Current rendering state. Set by StartRendering() and StopRendering().
   bool is_rendering_ = false;
 
   // If the surface is not visible within in the current view port, we should
-  // not submit.
+  // not submit. Not submitting when off-screen saves significant memory.
   bool is_surface_visible_ = false;
 
-  // Likewise, if the entire page is not visible, we should not submit.
+  // Likewise, if the entire page is not visible, we should not submit. Not
+  // submitting in the background causes the VideoFrameProvider to enter a
+  // background rendering mode using lower frequency artificial BeginFrames.
   bool is_page_visible_ = true;
 
-  // Whether frames should always be submitted, even if we're not visible.
+  // Whether frames should always be submitted, even if we're not visible. Used
+  // by Picture-in-Picture mode to ensure submission occurs even off-screen.
   bool force_submit_ = false;
 
   // Needs to be initialized in implementation because media isn't a public_dep
