@@ -122,7 +122,9 @@ Tab::Tab(TabController* controller)
     : controller_(controller),
       title_(new views::Label()),
       title_animation_(this),
-      hover_controller_(this) {
+      hover_controller_(gfx::Animation::ShouldRenderRichAnimation()
+                            ? new GlowHoverController(this)
+                            : nullptr) {
   DCHECK(controller);
 
   tab_style_ = TabStyle::CreateForTab(this);
@@ -490,15 +492,18 @@ void Tab::OnMouseCaptureLost() {
 }
 
 void Tab::OnMouseMoved(const ui::MouseEvent& event) {
-  hover_controller_.SetLocation(event.location());
+  if (hover_controller_)
+    hover_controller_->SetLocation(event.location());
   controller_->OnMouseEventInTab(this, event);
 }
 
 void Tab::OnMouseEntered(const ui::MouseEvent& event) {
   mouse_hovered_ = true;
-  hover_controller_.SetSubtleOpacityScale(
-      controller_->GetHoverOpacityForRadialHighlight());
-  hover_controller_.Show(GlowHoverController::SUBTLE);
+  if (hover_controller_) {
+    hover_controller_->SetSubtleOpacityScale(
+        controller_->GetHoverOpacityForRadialHighlight());
+    hover_controller_->Show(GlowHoverController::SUBTLE);
+  }
   UpdateForegroundColors();
   Layout();
   controller_->UpdateHoverCard(this, true);
@@ -506,7 +511,8 @@ void Tab::OnMouseEntered(const ui::MouseEvent& event) {
 
 void Tab::OnMouseExited(const ui::MouseEvent& event) {
   mouse_hovered_ = false;
-  hover_controller_.Hide();
+  if (hover_controller_)
+    hover_controller_->Hide();
   UpdateForegroundColors();
   Layout();
 }
@@ -824,8 +830,8 @@ float Tab::GetThrobValue() const {
     return is_selected ? (kSelectedTabThrobScale * opacity) : opacity;
   };
 
-  if (hover_controller_.ShouldDraw())
-    val += hover_controller_.GetAnimationValue() * offset();
+  if (hover_controller_ && hover_controller_->ShouldDraw())
+    val += hover_controller_->GetAnimationValue() * offset();
 
   return val;
 }

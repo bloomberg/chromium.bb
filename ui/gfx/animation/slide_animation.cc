@@ -6,6 +6,8 @@
 
 #include <math.h>
 
+#include "ui/gfx/animation/animation_delegate.h"
+
 namespace gfx {
 
 // How long animations should take by default.
@@ -46,6 +48,10 @@ void SlideAnimation::Show() {
   // Make sure we actually have something to do.
   if (slide_duration_ == 0) {
     AnimateToState(1.0);  // Skip to the end of the animation.
+    if (delegate()) {
+      delegate()->AnimationProgressed(this);
+      delegate()->AnimationEnded(this);
+    }
     return;
   } else if (value_current_ == value_end_) {
     return;
@@ -70,6 +76,10 @@ void SlideAnimation::Hide() {
     // TODO(bruthig): Investigate if this should really be animating to 0.0, I
     // think it should be animating to 1.0.
     AnimateToState(0.0);  // Skip to the end of the animation.
+    if (delegate()) {
+      delegate()->AnimationProgressed(this);
+      delegate()->AnimationEnded(this);
+    }
     return;
   } else if (value_current_ == value_end_) {
     return;

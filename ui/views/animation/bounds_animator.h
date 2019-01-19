@@ -47,7 +47,10 @@ class VIEWS_EXPORT BoundsAnimator : public gfx::AnimationDelegate,
   // already an animation running for the view it's stopped and a new one
   // started. If an AnimationDelegate has been set for |view| it is removed
   // (after being notified that the animation was canceled).
-  void AnimateViewTo(View* view, const gfx::Rect& target);
+  void AnimateViewTo(
+      View* view,
+      const gfx::Rect& target,
+      std::unique_ptr<gfx::AnimationDelegate> delegate = nullptr);
 
   // Similar to |AnimateViewTo|, but does not reset the animation, only the
   // target bounds. If |view| is not being animated this is the same as
