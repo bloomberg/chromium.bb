@@ -172,16 +172,24 @@ class VideoFrameSubmitterTest : public testing::Test {
     // By setting the submission state before we set the sink, we can make
     // testing easier without having to worry about the first sent frame.
     submitter_->SetIsSurfaceVisible(true);
-    submitter_->SetCompositorFrameSinkPtrForTesting(&submitter_sink);
+    submitter_->compositor_frame_sink_ = std::move(submitter_sink);
     mojom::blink::SurfaceEmbedderPtr embedder;
     mojo::MakeRequest(&embedder);
-    submitter_->SetSurfaceEmbedderPtrForTesting(std::move(embedder));
-    submitter_->SetSurfaceIdForTesting(
-        viz::SurfaceId(
-            viz::FrameSinkId(1, 1),
-            viz::LocalSurfaceId(
-                11, base::UnguessableToken::Deserialize(0x111111, 0))),
-        base::TimeTicks::Now());
+    submitter_->surface_embedder_ = std::move(embedder);
+    auto surface_id = viz::SurfaceId(
+        viz::FrameSinkId(1, 1),
+        viz::LocalSurfaceId(11,
+                            base::UnguessableToken::Deserialize(0x111111, 0)));
+    submitter_->frame_sink_id_ = surface_id.frame_sink_id();
+    submitter_->child_local_surface_id_allocator_.UpdateFromParent(
+        viz::LocalSurfaceIdAllocation(surface_id.local_surface_id(),
+                                      base::TimeTicks::Now()));
+  }
+
+  bool IsRendering() const { return submitter_->is_rendering_; }
+
+  cc::VideoFrameProvider* GetProvider() const {
+    return submitter_->video_frame_provider_;
   }
 
   bool ShouldSubmit() const { return submitter_->ShouldSubmit(); }
@@ -195,6 +203,13 @@ class VideoFrameSubmitterTest : public testing::Test {
 
   gfx::Size frame_size() const { return submitter_->frame_size_; }
 
+  void OnReceivedContextProvider(
+      bool use_gpu_compositing,
+      scoped_refptr<viz::ContextProvider> context_provider) {
+    submitter_->OnReceivedContextProvider(use_gpu_compositing,
+                                          std::move(context_provider));
+  }
+
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<base::SimpleTestTickClock> now_src_;
@@ -207,23 +222,23 @@ class VideoFrameSubmitterTest : public testing::Test {
 };
 
 TEST_F(VideoFrameSubmitterTest, StatRenderingFlipsBits) {
-  EXPECT_FALSE(submitter_->Rendering());
+  EXPECT_FALSE(IsRendering());
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
 
   submitter_->StartRendering();
 
   scoped_task_environment_.RunUntilIdle();
 
-  EXPECT_TRUE(submitter_->Rendering());
+  EXPECT_TRUE(IsRendering());
 }
 
 TEST_F(VideoFrameSubmitterTest, StopUsingProviderNullsProvider) {
-  EXPECT_FALSE(submitter_->Rendering());
-  EXPECT_EQ(video_frame_provider_.get(), submitter_->Provider());
+  EXPECT_FALSE(IsRendering());
+  EXPECT_EQ(video_frame_provider_.get(), GetProvider());
 
   submitter_->StopUsingProvider();
 
-  EXPECT_EQ(nullptr, submitter_->Provider());
+  EXPECT_EQ(nullptr, GetProvider());
 }
 
 TEST_F(VideoFrameSubmitterTest,
@@ -233,7 +248,7 @@ TEST_F(VideoFrameSubmitterTest,
   submitter_->StartRendering();
   scoped_task_environment_.RunUntilIdle();
 
-  EXPECT_TRUE(submitter_->Rendering());
+  EXPECT_TRUE(IsRendering());
 
   EXPECT_CALL(*video_frame_provider_, GetCurrentFrame())
       .WillOnce(Return(media::VideoFrame::CreateFrame(
@@ -250,7 +265,7 @@ TEST_F(VideoFrameSubmitterTest,
 
   scoped_task_environment_.RunUntilIdle();
 
-  EXPECT_FALSE(submitter_->Rendering());
+  EXPECT_FALSE(IsRendering());
 }
 
 TEST_F(VideoFrameSubmitterTest, DidReceiveFrameDoesNothingIfRendering) {
@@ -259,14 +274,14 @@ TEST_F(VideoFrameSubmitterTest, DidReceiveFrameDoesNothingIfRendering) {
   submitter_->StartRendering();
   scoped_task_environment_.RunUntilIdle();
 
-  EXPECT_TRUE(submitter_->Rendering());
+  EXPECT_TRUE(IsRendering());
 
   submitter_->DidReceiveFrame();
   scoped_task_environment_.RunUntilIdle();
 }
 
 TEST_F(VideoFrameSubmitterTest, DidReceiveFrameSubmitsFrame) {
-  EXPECT_FALSE(submitter_->Rendering());
+  EXPECT_FALSE(IsRendering());
 
   EXPECT_CALL(*video_frame_provider_, GetCurrentFrame())
       .WillOnce(Return(media::VideoFrame::CreateFrame(
@@ -392,7 +407,7 @@ TEST_F(VideoFrameSubmitterTest, SetForceSubmitForcesSubmission) {
 
 TEST_F(VideoFrameSubmitterTest, RotationInformationPassedToResourceProvider) {
   // Check to see if rotation is communicated pre-rendering.
-  EXPECT_FALSE(submitter_->Rendering());
+  EXPECT_FALSE(IsRendering());
 
   submitter_->SetRotation(media::VideoRotation::VIDEO_ROTATION_90);
 
@@ -614,7 +629,7 @@ TEST_F(VideoFrameSubmitterTest, RecreateCompositorFrameSinkAfterContextLost) {
   EXPECT_CALL(mock_embedded_frame_sink_provider, CreateCompositorFrameSink_(_))
       .Times(1);
   submitter_->OnContextLost();
-  submitter_->OnReceivedContextProvider(true, context_provider_);
+  OnReceivedContextProvider(true, context_provider_);
   scoped_task_environment_.RunUntilIdle();
 }
 
@@ -746,7 +761,7 @@ TEST_F(VideoFrameSubmitterTest, VideoRotationOutputRect) {
   MakeSubmitter();
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
   submitter_->StartRendering();
-  EXPECT_TRUE(submitter_->Rendering());
+  EXPECT_TRUE(IsRendering());
 
   gfx::Size coded_size(1280, 720);
   gfx::Size natural_size(1280, 1024);
