@@ -92,7 +92,7 @@ module.exports = {
     'no-lone-blocks': 'error',
     'no-loop-func': 'error',
     'no-magic-numbers': ['error', {ignore: [0, 1]}],
-    'no-multi-spaces': 'error',
+    'no-multi-spaces': ['error', {ignoreEOLComments: true}],
     'no-multi-str': 'error',
     'no-new': 'error',
     'no-new-func': 'error',
@@ -180,16 +180,7 @@ module.exports = {
     'id-blacklist': 'off',
     'id-length': 'off',
     'id-match': 'off',
-    indent: [
-      'error',
-      2,
-      {
-        SwitchCase: 1,
-        CallExpression: {arguments: 2},
-        FunctionExpression: {parameters: 'first'},
-        ignoredNodes: ['ConditionalExpression']
-      }
-    ],
+    indent: 'off', // not really compatible with clang-format
     'jsx-quotes': 'off',
     'key-spacing': [
       'error',
@@ -300,7 +291,7 @@ module.exports = {
     'arrow-parens': ['error', 'as-needed'],
     'arrow-spacing': 'error',
     'constructor-super': 'error',
-    'generator-star-spacing': ['error', 'after'],
+    'generator-star-spacing': ['error', 'neither'],
     'no-class-assign': 'error',
     'no-confusing-arrow': 'off',
     'no-const-assign': 'error',
