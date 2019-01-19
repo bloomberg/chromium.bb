@@ -7,11 +7,16 @@ package org.chromium.chrome.browser.preferences;
 import android.content.Context;
 import android.preference.Preference;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
+import android.text.TextUtils;
 import android.view.View;
+import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.ui.widget.Toast;
+
+import java.util.Locale;
 
 /**
  * Utilities and common methods to handle settings managed by policies.
@@ -26,8 +31,9 @@ public class ManagedPreferencesUtils {
      * @param context The context where the Toast will be shown.
      */
     public static void showManagedByAdministratorToast(Context context) {
-        Toast.makeText(context, context.getString(R.string.managed_by_your_administrator),
-                Toast.LENGTH_LONG).show();
+        Toast.makeText(context, context.getString(R.string.managed_by_your_organization),
+                     Toast.LENGTH_LONG)
+                .show();
     }
     /**
      * Shows a toast indicating that the previous action is managed by the parent(s) of the
@@ -37,15 +43,12 @@ public class ManagedPreferencesUtils {
      * @param context The context where the Toast will be shown.
      */
     public static void showManagedByParentToast(Context context) {
-        boolean singleParentIsManager =
-                PrefServiceBridge.getInstance().getSupervisedUserSecondCustodianName().isEmpty();
-        Toast.makeText(context, context.getString(singleParentIsManager
-                ? R.string.managed_by_your_parent : R.string.managed_by_your_parents),
-                Toast.LENGTH_LONG).show();
+        Toast.makeText(context, context.getString(getManagedByParentStringRes()), Toast.LENGTH_LONG)
+                .show();
     }
 
     /**
-     * @return the resource ID for the Managed By Enterprise icon.
+     * @return The resource ID for the Managed By Enterprise icon.
      */
     public static int getManagedByEnterpriseIconId() {
         return R.drawable.controlled_setting_mandatory;
@@ -97,8 +100,20 @@ public class ManagedPreferencesUtils {
      */
     public static void onBindViewToPreference(
             @Nullable ManagedPreferenceDelegate delegate, Preference preference, View view) {
-        if (delegate != null && delegate.isPreferenceClickDisabledByPolicy(preference)) {
+        if (delegate == null) return;
+
+        if (delegate.isPreferenceClickDisabledByPolicy(preference)) {
             ViewUtils.setEnabledRecursive(view, false);
+        }
+
+        // Append managed information to summary if necessary.
+        TextView summaryView = view.findViewById(android.R.id.summary);
+        CharSequence summary =
+                ManagedPreferencesUtils.getSummaryWithManagedInfo(delegate, preference,
+                        summaryView.getVisibility() == View.VISIBLE ? summaryView.getText() : null);
+        if (!TextUtils.isEmpty(summary)) {
+            summaryView.setText(summary);
+            summaryView.setVisibility(View.VISIBLE);
         }
     }
 
@@ -129,5 +144,37 @@ public class ManagedPreferencesUtils {
             assert false;
         }
         return true;
+    }
+
+    /**
+     * @param delegate The {@link ManagedPreferenceDelegate} that controls whether the preference is
+     *        managed.
+     * @param preference The {@link Preference} that the summary should be used for.
+     * @param summary The original summary without the managed information.
+     * @return The summary appended with information about whether the specified preference is
+     *         managed.
+     */
+    private static CharSequence getSummaryWithManagedInfo(
+            @Nullable ManagedPreferenceDelegate delegate, Preference preference,
+            @Nullable CharSequence summary) {
+        if (delegate == null) return summary;
+
+        String extraSummary = null;
+        if (delegate.isPreferenceControlledByPolicy(preference)) {
+            extraSummary = preference.getContext().getString(R.string.managed_by_your_organization);
+        } else if (delegate.isPreferenceControlledByCustodian(preference)) {
+            extraSummary = preference.getContext().getString(getManagedByParentStringRes());
+        }
+
+        if (TextUtils.isEmpty(extraSummary)) return summary;
+        if (TextUtils.isEmpty(summary)) return extraSummary;
+        return String.format(Locale.getDefault(), "%s\n%s", summary, extraSummary);
+    }
+
+    private static @StringRes int getManagedByParentStringRes() {
+        boolean singleParentIsManager =
+                PrefServiceBridge.getInstance().getSupervisedUserSecondCustodianName().isEmpty();
+        return singleParentIsManager ? R.string.managed_by_your_parent
+                                     : R.string.managed_by_your_parents;
     }
 }
