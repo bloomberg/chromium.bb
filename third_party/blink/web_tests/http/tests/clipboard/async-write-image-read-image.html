@@ -3,8 +3,9 @@
 <title>
   Async Clipboard writeImageExperimental -> readImageExperimental tests
 </title>
-<script src="/resources/testharness.js"></script>
-<script src="/resources/testharnessreport.js"></script>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../resources/permissions-helper.js"></script>
 
 <p>
   <p>The bottom image should display the same image as the top image.</p>
@@ -37,6 +38,9 @@ async function loadBlob(fileName) {
 }
 
 promise_test(async t => {
+  await PermissionsHelper.setPermission('clipboard-read', 'granted');
+  await PermissionsHelper.setPermission('clipboard-write', 'granted');
+
   const input = await loadBlob('resources/greenbox.png');
 
   await navigator.clipboard.writeImageExperimental(input);
@@ -51,8 +55,3 @@ promise_test(async t => {
   assert_equals(comparableOutput, comparableInput);
 }, "Verify write and read clipboard (DOMString)");
 </script>
-<p>
-  Note: This is a manual test because it writes/reads to the shared system
-  clipboard and thus cannot be run async with other tests that might interact
-  with the clipboard.
-</p>
