@@ -25,6 +25,9 @@ class SEARCH_BOX_EXPORT SearchBoxViewDelegate {
   // Invoked when search box active status has changed.
   virtual void ActiveChanged(SearchBoxViewBase* sender) = 0;
 
+  // Invoked when search box focus is changed.
+  virtual void SearchBoxFocusChanged(SearchBoxViewBase* sender) = 0;
+
  protected:
   virtual ~SearchBoxViewDelegate() {}
 };
