@@ -110,12 +110,13 @@ void PrefetchURLLoader::FollowRedirect(
       modified_request_headers_for_accept.SetHeader(
           network::kAcceptHeader, network::kDefaultAcceptHeader);
     }
-    loader_->FollowRedirect(base::nullopt, modified_request_headers_for_accept,
-                            base::nullopt);
+    loader_->FollowRedirect(to_be_removed_request_headers,
+                            modified_request_headers_for_accept, base::nullopt);
     return;
   }
 
-  loader_->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
+  loader_->FollowRedirect(to_be_removed_request_headers, base::nullopt,
+                          base::nullopt);
 }
 
 void PrefetchURLLoader::ProceedWithResponse() {
