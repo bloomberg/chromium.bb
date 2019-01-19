@@ -180,16 +180,22 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
   }
 
   void PopulateCache() {
-    EXPECT_TRUE(cache_->Store("extension-policy", kTestExtension,
-                              CreateSerializedResponse()));
-    EXPECT_TRUE(
-        cache_->Store("extension-policy-data", kTestExtension, kTestPolicy));
+    EXPECT_FALSE(cache_
+                     ->Store("extension-policy", kTestExtension,
+                             CreateSerializedResponse())
+                     .empty());
+    EXPECT_FALSE(
+        cache_->Store("extension-policy-data", kTestExtension, kTestPolicy)
+            .empty());
 
     builder_.policy_data().set_settings_entity_id(kTestExtension2);
-    EXPECT_TRUE(cache_->Store("extension-policy", kTestExtension2,
-                              CreateSerializedResponse()));
-    EXPECT_TRUE(
-        cache_->Store("extension-policy-data", kTestExtension2, kTestPolicy));
+    EXPECT_FALSE(cache_
+                     ->Store("extension-policy", kTestExtension2,
+                             CreateSerializedResponse())
+                     .empty());
+    EXPECT_FALSE(
+        cache_->Store("extension-policy-data", kTestExtension2, kTestPolicy)
+            .empty());
     builder_.policy_data().set_settings_entity_id(kTestExtension);
   }
 
@@ -551,10 +557,13 @@ TEST_F(ComponentCloudPolicyServiceTest, LoadInvalidPolicyFromCache) {
   // loaded, the other should be filtered out by the schema.
   builder_.payload().set_secure_hash(
       crypto::SHA256HashString(kInvalidTestPolicy));
-  EXPECT_TRUE(cache_->Store("extension-policy", kTestExtension,
-                            CreateSerializedResponse()));
-  EXPECT_TRUE(cache_->Store("extension-policy-data", kTestExtension,
-                            kInvalidTestPolicy));
+  EXPECT_FALSE(cache_
+                   ->Store("extension-policy", kTestExtension,
+                           CreateSerializedResponse())
+                   .empty());
+  EXPECT_FALSE(
+      cache_->Store("extension-policy-data", kTestExtension, kInvalidTestPolicy)
+          .empty());
 
   LoadStore();
   InitializeRegistry();

@@ -39,7 +39,7 @@ void ExternalDataFetcher::Fetch(FetchCallback callback) const {
   if (manager_)
     manager_->Fetch(policy_, std::move(callback));
   else
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(nullptr, base::FilePath());
 }
 
 }  // namespace policy

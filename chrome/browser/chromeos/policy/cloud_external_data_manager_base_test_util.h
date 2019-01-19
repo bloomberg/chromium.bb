@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/files/file_path.h"
 
 namespace base {
 class DictionaryValue;
@@ -28,9 +29,11 @@ namespace test {
 
 // Passes |data| to |destination| and invokes |done_callback| to indicate that
 // the |data| has been retrieved.
-void ExternalDataFetchCallback(std::unique_ptr<std::string>* destination,
-                               const base::Closure& done_callback,
-                               std::unique_ptr<std::string> data);
+void ExternalDataFetchCallback(std::unique_ptr<std::string>* data_destination,
+                               base::FilePath* file_path_destination,
+                               base::OnceClosure done_callback,
+                               std::unique_ptr<std::string> data,
+                               const base::FilePath& file_path);
 
 // Constructs a value that points a policy referencing external data at |url|
 // and sets the expected hash of the external data to that of |data|.

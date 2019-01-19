@@ -43,7 +43,8 @@ void DeviceNativePrintersHandler::OnDeviceExternalDataCleared(
 
 void DeviceNativePrintersHandler::OnDeviceExternalDataFetched(
     const std::string& policy,
-    std::unique_ptr<std::string> data) {
+    std::unique_ptr<std::string> data,
+    const base::FilePath& file_path) {
   GetExternalPrinters()->SetData(std::move(data));
 }
 

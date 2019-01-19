@@ -61,21 +61,30 @@ TEST_F(ResourceCacheTest, StoreAndLoad) {
 
   // No data initially.
   std::string data;
-  EXPECT_FALSE(cache.Load(kKey1, kSubA, &data));
+  EXPECT_TRUE(cache.Load(kKey1, kSubA, &data).empty());
 
   // Store some data and load it.
-  EXPECT_TRUE(cache.Store(kKey1, kSubA, kData0));
-  EXPECT_TRUE(cache.Load(kKey1, kSubA, &data));
+  base::FilePath file_path = cache.Store(kKey1, kSubA, kData0);
+  EXPECT_FALSE(file_path.empty());
+  std::string file_content;
+  EXPECT_TRUE(base::ReadFileToString(file_path, &file_content));
+  EXPECT_EQ(kData0, file_content);
+
+  file_path = cache.Load(kKey1, kSubA, &data);
+  EXPECT_FALSE(file_path.empty());
+  file_content.clear();
+  EXPECT_TRUE(base::ReadFileToString(file_path, &file_content));
+  EXPECT_EQ(kData0, file_content);
   EXPECT_EQ(kData0, data);
 
   // Store more data in another subkey.
-  EXPECT_TRUE(cache.Store(kKey1, kSubB, kData1));
+  EXPECT_FALSE(cache.Store(kKey1, kSubB, kData1).empty());
 
   // Write subkeys to two other keys.
-  EXPECT_TRUE(cache.Store(kKey2, kSubA, kData0));
-  EXPECT_TRUE(cache.Store(kKey2, kSubB, kData1));
-  EXPECT_TRUE(cache.Store(kKey3, kSubA, kData0));
-  EXPECT_TRUE(cache.Store(kKey3, kSubB, kData1));
+  EXPECT_FALSE(cache.Store(kKey2, kSubA, kData0).empty());
+  EXPECT_FALSE(cache.Store(kKey2, kSubB, kData1).empty());
+  EXPECT_FALSE(cache.Store(kKey3, kSubA, kData0).empty());
+  EXPECT_FALSE(cache.Store(kKey3, kSubB, kData1).empty());
 
   // Enumerate all the subkeys.
   std::map<std::string, std::string> contents;
@@ -85,9 +94,9 @@ TEST_F(ResourceCacheTest, StoreAndLoad) {
   EXPECT_EQ(kData1, contents[kSubB]);
 
   // Store more subkeys.
-  EXPECT_TRUE(cache.Store(kKey1, kSubC, kData1));
-  EXPECT_TRUE(cache.Store(kKey1, kSubD, kData1));
-  EXPECT_TRUE(cache.Store(kKey1, kSubE, kData1));
+  EXPECT_FALSE(cache.Store(kKey1, kSubC, kData1).empty());
+  EXPECT_FALSE(cache.Store(kKey1, kSubD, kData1).empty());
+  EXPECT_FALSE(cache.Store(kKey1, kSubE, kData1).empty());
 
   // Now purge some of them.
   std::set<std::string> keep;
@@ -140,13 +149,13 @@ TEST_F(ResourceCacheTest, FilterSubkeys) {
                       /* max_cache_size */ base::nullopt);
 
   // Store some data.
-  EXPECT_TRUE(cache.Store(kKey1, kSubA, kData0));
-  EXPECT_TRUE(cache.Store(kKey1, kSubB, kData1));
-  EXPECT_TRUE(cache.Store(kKey1, kSubC, kData0));
-  EXPECT_TRUE(cache.Store(kKey2, kSubA, kData0));
-  EXPECT_TRUE(cache.Store(kKey2, kSubB, kData1));
-  EXPECT_TRUE(cache.Store(kKey3, kSubA, kData0));
-  EXPECT_TRUE(cache.Store(kKey3, kSubB, kData1));
+  EXPECT_FALSE(cache.Store(kKey1, kSubA, kData0).empty());
+  EXPECT_FALSE(cache.Store(kKey1, kSubB, kData1).empty());
+  EXPECT_FALSE(cache.Store(kKey1, kSubC, kData0).empty());
+  EXPECT_FALSE(cache.Store(kKey2, kSubA, kData0).empty());
+  EXPECT_FALSE(cache.Store(kKey2, kSubB, kData1).empty());
+  EXPECT_FALSE(cache.Store(kKey3, kSubA, kData0).empty());
+  EXPECT_FALSE(cache.Store(kKey3, kSubB, kData1).empty());
 
   // Check the contents of kKey1.
   std::map<std::string, std::string> contents;
@@ -178,36 +187,36 @@ TEST_F(ResourceCacheTest, StoreWithEnabledCacheLimit) {
   task_environment_.RunUntilIdle();
 
   // Put first subkey with 9Kb data in cache.
-  EXPECT_TRUE(cache.Store(kKey1, kSubA, kData9Kb));
+  EXPECT_FALSE(cache.Store(kKey1, kSubA, kData9Kb).empty());
   // Try to put second subkey with 2Kb data in cache, expected to fail while
   // total size exceeds 10Kb.
-  EXPECT_FALSE(cache.Store(kKey2, kSubB, kData2Kb));
+  EXPECT_TRUE(cache.Store(kKey2, kSubB, kData2Kb).empty());
   // Put second subkey with 1Kb data in cache.
-  EXPECT_TRUE(cache.Store(kKey2, kSubC, kData1Kb));
+  EXPECT_FALSE(cache.Store(kKey2, kSubC, kData1Kb).empty());
   // Try to put third subkey with 2 bytes data in cache, expected to fail while
   // total size exceeds 10Kb.
-  EXPECT_FALSE(cache.Store(kKey1, kSubB, kData1));
+  EXPECT_TRUE(cache.Store(kKey1, kSubB, kData1).empty());
 
   // Remove keys with all subkeys.
   cache.Clear(kKey1);
   cache.Clear(kKey2);
 
   // Put first subkey with 9Kb data in cache.
-  EXPECT_TRUE(cache.Store(kKey3, kSubA, kData9Kb));
+  EXPECT_FALSE(cache.Store(kKey3, kSubA, kData9Kb).empty());
   // Put second subkey with 1Kb data in cache.
-  EXPECT_TRUE(cache.Store(kKey3, kSubB, kData1Kb));
+  EXPECT_FALSE(cache.Store(kKey3, kSubB, kData1Kb).empty());
   // Try to put third subkey with 2 bytes data in cache, expected to fail while
   // total size exceeds 10Kb.
-  EXPECT_FALSE(cache.Store(kKey1, kSubB, kData1));
+  EXPECT_TRUE(cache.Store(kKey1, kSubB, kData1).empty());
 
   // Replace data in first subkey with another 9Kb data.
-  EXPECT_TRUE(cache.Store(kKey3, kSubA, kData9KbUpdated));
+  EXPECT_FALSE(cache.Store(kKey3, kSubA, kData9KbUpdated).empty());
 
   // Remove this key with 9Kb data.
   cache.Delete(kKey3, kSubA);
 
   // Put second subkey with 2 bytes data in cache.
-  EXPECT_TRUE(cache.Store(kKey1, kSubB, kData1));
+  EXPECT_FALSE(cache.Store(kKey1, kSubB, kData1).empty());
 }
 
 #if defined(OS_POSIX)  // Because of symbolic links.
@@ -223,7 +232,7 @@ TEST_F(ResourceCacheTest, StoreInDirectoryWithCycleSymlinks) {
   task_environment_.RunUntilIdle();
 
   // Check if the cache is empty
-  EXPECT_TRUE(cache.Store(kKey1, kSubA, kData10Kb));
+  EXPECT_FALSE(cache.Store(kKey1, kSubA, kData10Kb).empty());
 }
 
 TEST_F(ResourceCacheTest, StoreInDirectoryWithSymlinkToRoot) {
@@ -238,7 +247,7 @@ TEST_F(ResourceCacheTest, StoreInDirectoryWithSymlinkToRoot) {
   task_environment_.RunUntilIdle();
 
   // Check if the cache is empty
-  EXPECT_TRUE(cache.Store(kKey1, kSubA, kData10Kb));
+  EXPECT_FALSE(cache.Store(kKey1, kSubA, kData10Kb).empty());
 }
 
 #endif  // defined(OS_POSIX)

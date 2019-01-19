@@ -93,7 +93,8 @@ TEST_F(DeviceNativePrintersHandlerTest, OnDataFetched) {
       key::kDeviceNativePrinters);
   device_native_printers_handler_->OnDeviceExternalDataFetched(
       key::kDeviceNativePrinters,
-      std::make_unique<std::string>(kDeviceNativePrintersContentsJson));
+      std::make_unique<std::string>(kDeviceNativePrintersContentsJson),
+      base::FilePath());
   scoped_task_environment_.RunUntilIdle();
 
   const auto& printers = external_printers_->GetPrinters();
@@ -111,7 +112,8 @@ TEST_F(DeviceNativePrintersHandlerTest, OnDataCleared) {
       key::kDeviceNativePrinters);
   device_native_printers_handler_->OnDeviceExternalDataFetched(
       key::kDeviceNativePrinters,
-      std::make_unique<std::string>(kDeviceNativePrintersContentsJson));
+      std::make_unique<std::string>(kDeviceNativePrintersContentsJson),
+      base::FilePath());
   device_native_printers_handler_->OnDeviceExternalDataCleared(
       key::kDeviceNativePrinters);
   scoped_task_environment_.RunUntilIdle();

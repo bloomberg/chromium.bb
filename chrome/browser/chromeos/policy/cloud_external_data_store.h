@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
@@ -42,19 +43,21 @@ class CloudExternalDataStore {
   // in |metadata|.
   void Prune(const CloudExternalDataManager::Metadata& metadata);
 
-  // Stores |data| under (policy, hash). Returns true if the store succeeded.
-  bool Store(const std::string& policy,
-             const std::string& hash,
-             const std::string& data);
+  // Stores |data| under (policy, hash). Returns file path if the store
+  // succeeded, and empty FilePath otherwise.
+  base::FilePath Store(const std::string& policy,
+                       const std::string& hash,
+                       const std::string& data);
 
   // Loads the entry at (policy, hash) into |data|, verifies that it does not
   // exceed |max_size| and matches the expected |hash|, then returns true.
-  // Returns false if no entry is found at (policy, hash), there is a problem
-  // during the load, the entry exceeds |max_size| or does not match |hash|.
-  bool Load(const std::string& policy,
-            const std::string& hash,
-            size_t max_size,
-            std::string* data);
+  // Returns empty FilePath if no entry is found at (policy, hash), there is a
+  // problem during the load, the entry exceeds |max_size| or does not match
+  // |hash|, and file path otherwise.
+  base::FilePath Load(const std::string& policy,
+                      const std::string& hash,
+                      size_t max_size,
+                      std::string* data);
 
  private:
   std::string cache_key_;

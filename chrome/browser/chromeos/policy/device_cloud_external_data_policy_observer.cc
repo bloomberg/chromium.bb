@@ -19,7 +19,8 @@ void DeviceCloudExternalDataPolicyObserver::Delegate::
 
 void DeviceCloudExternalDataPolicyObserver::Delegate::
     OnDeviceExternalDataFetched(const std::string& policy,
-                                std::unique_ptr<std::string> data) {}
+                                std::unique_ptr<std::string> data,
+                                const base::FilePath& file_path) {}
 
 DeviceCloudExternalDataPolicyObserver::Delegate::~Delegate() {}
 
@@ -76,8 +77,9 @@ void DeviceCloudExternalDataPolicyObserver::HandleExternalDataPolicyUpdate(
 }
 
 void DeviceCloudExternalDataPolicyObserver::OnDeviceExternalDataFetched(
-    std::unique_ptr<std::string> data) {
-  delegate_->OnDeviceExternalDataFetched(policy_, std::move(data));
+    std::unique_ptr<std::string> data,
+    const base::FilePath& file_path) {
+  delegate_->OnDeviceExternalDataFetched(policy_, std::move(data), file_path);
 }
 
 }  // namespace policy

@@ -30,11 +30,14 @@
 namespace policy {
 namespace test {
 
-void ExternalDataFetchCallback(std::unique_ptr<std::string>* destination,
-                               const base::Closure& done_callback,
-                               std::unique_ptr<std::string> data) {
-  *destination = std::move(data);
-  done_callback.Run();
+void ExternalDataFetchCallback(std::unique_ptr<std::string>* data_destination,
+                               base::FilePath* file_path_destination,
+                               base::OnceClosure done_callback,
+                               std::unique_ptr<std::string> data,
+                               const base::FilePath& file_path) {
+  *data_destination = std::move(data);
+  *file_path_destination = file_path;
+  std::move(done_callback).Run();
 }
 
 std::unique_ptr<base::DictionaryValue> ConstructExternalDataReference(

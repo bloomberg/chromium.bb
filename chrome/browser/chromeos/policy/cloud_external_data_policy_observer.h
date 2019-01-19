@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
@@ -50,7 +51,8 @@ class CloudExternalDataPolicyObserver
     // called at all.
     virtual void OnExternalDataFetched(const std::string& policy,
                                        const std::string& user_id,
-                                       std::unique_ptr<std::string> data);
+                                       std::unique_ptr<std::string> data,
+                                       const base::FilePath& file_path);
 
    protected:
     virtual ~Delegate();
@@ -90,7 +92,8 @@ class CloudExternalDataPolicyObserver
                                       const PolicyMap::Entry* entry);
 
   void OnExternalDataFetched(const std::string& user_id,
-                             std::unique_ptr<std::string> data);
+                             std::unique_ptr<std::string> data,
+                             const base::FilePath& file_path);
 
   // A map from each device-local account user ID to its current policy map
   // entry for |policy_|.

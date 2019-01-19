@@ -101,9 +101,10 @@ class DevicePolicyCloudExternalDataManagerTest
 
     base::RunLoop run_loop;
     std::unique_ptr<std::string> fetched_external_data;
+    base::FilePath file_path;
     policy_entry->external_data_fetcher->Fetch(
         base::BindOnce(&test::ExternalDataFetchCallback, &fetched_external_data,
-                       run_loop.QuitClosure()));
+                       &file_path, run_loop.QuitClosure()));
     run_loop.Run();
 
     EXPECT_TRUE(fetched_external_data);

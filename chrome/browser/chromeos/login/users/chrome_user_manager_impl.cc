@@ -639,7 +639,8 @@ void ChromeUserManagerImpl::OnExternalDataCleared(const std::string& policy,
 void ChromeUserManagerImpl::OnExternalDataFetched(
     const std::string& policy,
     const std::string& user_id,
-    std::unique_ptr<std::string> data) {
+    std::unique_ptr<std::string> data,
+    const base::FilePath& file_path) {
   const AccountId account_id = user_manager::known_user::GetAccountId(
       user_id, std::string() /* id */, AccountType::UNKNOWN);
   if (policy == policy::key::kUserAvatarImage) {

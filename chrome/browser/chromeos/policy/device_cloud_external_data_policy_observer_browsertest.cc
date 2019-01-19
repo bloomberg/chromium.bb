@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -19,6 +20,8 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::_;
 
 namespace policy {
 
@@ -37,14 +40,15 @@ class MockDeviceCloudExternalDataPolicyObserverDelegate
   MockDeviceCloudExternalDataPolicyObserverDelegate() {}
 
   void OnDeviceExternalDataFetched(const std::string& policy,
-                                   std::unique_ptr<std::string> data) override {
-    OnDeviceExternalDataFetchedProxy(policy, data.get());
+                                   std::unique_ptr<std::string> data,
+                                   const base::FilePath& file_path) override {
+    OnDeviceExternalDataFetchedProxy(policy, data.get(), file_path);
   }
 
   MOCK_METHOD1(OnDeviceExternalDataSet, void(const std::string&));
   MOCK_METHOD1(OnDeviceExternalDataCleared, void(const std::string&));
-  MOCK_METHOD2(OnDeviceExternalDataFetchedProxy,
-               void(const std::string&, std::string*));
+  MOCK_METHOD3(OnDeviceExternalDataFetchedProxy,
+               void(const std::string&, std::string*, const base::FilePath&));
 };
 
 }  // namespace
@@ -144,13 +148,15 @@ IN_PROC_BROWSER_TEST_F(DeviceCloudExternalDataPolicyObserverTest, PolicyIsSet) {
   EXPECT_CALL(mock_delegate_, OnDeviceExternalDataSet(kPolicyName));
 
   base::RunLoop run_loop;
-  EXPECT_CALL(mock_delegate_,
-              OnDeviceExternalDataFetchedProxy(
-                  kPolicyName, testing::Pointee(testing::StrEq(
-                                   ReadExternalDataFile(kExternalDataPath)))))
-      .WillOnce(testing::Invoke([&run_loop](const std::string&, std::string*) {
-        run_loop.QuitClosure().Run();
-      }));
+  EXPECT_CALL(mock_delegate_, OnDeviceExternalDataFetchedProxy(
+                                  kPolicyName,
+                                  testing::Pointee(testing::StrEq(
+                                      ReadExternalDataFile(kExternalDataPath))),
+                                  _))
+      .WillOnce(testing::Invoke(
+          [&run_loop](const std::string&, std::string*, const base::FilePath&) {
+            run_loop.QuitClosure().Run();
+          }));
 
   SetDeviceNativePrintersExternalData(test::ConstructExternalDataPolicy(
       *embedded_test_server(), kExternalDataPath));
@@ -162,13 +168,15 @@ IN_PROC_BROWSER_TEST_F(DeviceCloudExternalDataPolicyObserverTest,
   EXPECT_CALL(mock_delegate_, OnDeviceExternalDataSet(kPolicyName));
 
   base::RunLoop run_loop;
-  EXPECT_CALL(mock_delegate_,
-              OnDeviceExternalDataFetchedProxy(
-                  kPolicyName, testing::Pointee(testing::StrEq(
-                                   ReadExternalDataFile(kExternalDataPath)))))
-      .WillOnce(testing::Invoke([&run_loop](const std::string&, std::string*) {
-        run_loop.QuitClosure().Run();
-      }));
+  EXPECT_CALL(mock_delegate_, OnDeviceExternalDataFetchedProxy(
+                                  kPolicyName,
+                                  testing::Pointee(testing::StrEq(
+                                      ReadExternalDataFile(kExternalDataPath))),
+                                  _))
+      .WillOnce(testing::Invoke(
+          [&run_loop](const std::string&, std::string*, const base::FilePath&) {
+            run_loop.QuitClosure().Run();
+          }));
 
   SetDeviceNativePrintersExternalData(test::ConstructExternalDataPolicy(
       *embedded_test_server(), kExternalDataPath));
@@ -177,13 +185,15 @@ IN_PROC_BROWSER_TEST_F(DeviceCloudExternalDataPolicyObserverTest,
   EXPECT_CALL(mock_delegate_, OnDeviceExternalDataSet(kPolicyName));
 
   base::RunLoop run_loop_updated;
-  EXPECT_CALL(
-      mock_delegate_,
-      OnDeviceExternalDataFetchedProxy(
-          kPolicyName, testing::Pointee(testing::StrEq(
-                           ReadExternalDataFile(kExternalDataPathUpdated)))))
-      .WillOnce(testing::Invoke(
-          [&run_loop_updated](const std::string&, std::string*) {
+  EXPECT_CALL(mock_delegate_,
+              OnDeviceExternalDataFetchedProxy(
+                  kPolicyName,
+                  testing::Pointee(testing::StrEq(
+                      ReadExternalDataFile(kExternalDataPathUpdated))),
+                  _))
+      .WillOnce(
+          testing::Invoke([&run_loop_updated](const std::string&, std::string*,
+                                              const base::FilePath&) {
             run_loop_updated.QuitClosure().Run();
           }));
 
