@@ -236,6 +236,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       scroll_view_(nullptr),
       handled_result_(false),
       install_button_enabled_(false) {
+  set_close_on_deactivate(false);
   CreateContents();
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.InstallPrompt.Type", prompt_->type(),
@@ -352,9 +353,7 @@ void ExtensionInstallDialogView::AddedToWidget() {
     layout->AddView(title_label.release());
   }
 
-  views::BubbleFrameView* frame_view = static_cast<views::BubbleFrameView*>(
-      GetWidget()->non_client_view()->frame_view());
-  frame_view->SetTitleView(std::move(title_container));
+  GetBubbleFrameView()->SetTitleView(std::move(title_container));
 }
 
 views::View* ExtensionInstallDialogView::CreateExtraView() {
@@ -417,6 +416,10 @@ bool ExtensionInstallDialogView::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK)
     return install_button_enabled_;
+  return true;
+}
+
+bool ExtensionInstallDialogView::ShouldShowCloseButton() const {
   return true;
 }
 
