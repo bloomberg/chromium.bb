@@ -11,6 +11,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/offline_pages/android/auto_fetch_notifier.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
 #include "components/offline_pages/core/auto_fetch.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
@@ -46,6 +47,22 @@ SavePageRequest* FindRequest(
   return nullptr;
 }
 
+class AutoFetchNotifierImpl : public AutoFetchNotifier {
+ public:
+  ~AutoFetchNotifierImpl() override {}
+  // Ensures that the in-progress notification is showing with the appropriate
+  // request count.
+  void NotifyInProgress(int in_flight_count) override {
+    ShowAutoFetchInProgressNotification(in_flight_count);
+  }
+  // Update the request count if the in-progress notification is already
+  // showing. This won't trigger showing the notification if it's not already
+  // shown. If |in_flight_count| is 0, the notification will be hidden.
+  void InProgressCountChanged(int in_flight_count) override {
+    UpdateAutoFetchInProgressNotificationCountIfShowing(in_flight_count);
+  }
+};
+
 }  // namespace
 
 // This is an attempt to verify that a task callback eventually calls
@@ -74,7 +91,7 @@ OfflinePageAutoFetcherService::OfflinePageAutoFetcherService(
     RequestCoordinator* request_coordinator,
     OfflinePageModel* offline_page_model,
     Delegate* delegate)
-    : notifier_(std::make_unique<AutoFetchNotifier>()),
+    : notifier_(std::make_unique<AutoFetchNotifierImpl>()),
       page_load_watcher_(
           notifier_.get(),
           request_coordinator,
@@ -83,6 +100,9 @@ OfflinePageAutoFetcherService::OfflinePageAutoFetcherService(
       offline_page_model_(offline_page_model),
       delegate_(delegate) {
   request_coordinator_->AddObserver(this);
+  if (AutoFetchInProgressNotificationCanceled()) {
+    CancelAll(base::BindOnce(&AutoFetchCancellationComplete));
+  }
 }
 
 OfflinePageAutoFetcherService::~OfflinePageAutoFetcherService() = default;
@@ -103,6 +123,11 @@ void OfflinePageAutoFetcherService::TrySchedule(bool user_requested,
 void OfflinePageAutoFetcherService::CancelSchedule(const GURL& url) {
   StartOrEnqueue(base::BindOnce(
       &OfflinePageAutoFetcherService::CancelScheduleStep1, GetWeakPtr(), url));
+}
+
+void OfflinePageAutoFetcherService::CancelAll(base::OnceClosure callback) {
+  StartOrEnqueue(base::BindOnce(&OfflinePageAutoFetcherService::CancelAllStep1,
+                                GetWeakPtr(), std::move(callback)));
 }
 
 void OfflinePageAutoFetcherService::TryScheduleStep1(
@@ -215,6 +240,26 @@ void OfflinePageAutoFetcherService::CancelScheduleStep2(
 void OfflinePageAutoFetcherService::CancelScheduleStep3(
     TaskToken token,
     const MultipleItemStatuses&) {
+  TaskComplete(std::move(token));
+}
+
+void OfflinePageAutoFetcherService::CancelAllStep1(base::OnceClosure callback,
+                                                   TaskToken token) {
+  auto condition = base::BindRepeating([](const SavePageRequest& request) {
+    return request.client_id().name_space == kAutoAsyncNamespace;
+  });
+
+  request_coordinator_->RemoveRequestsIf(
+      condition,
+      base::BindOnce(&OfflinePageAutoFetcherService::CancelAllStep2,
+                     GetWeakPtr(), std::move(token), std::move(callback)));
+}
+
+void OfflinePageAutoFetcherService::CancelAllStep2(
+    TaskToken token,
+    base::OnceClosure callback,
+    const MultipleItemStatuses& result) {
+  std::move(callback).Run();
   TaskComplete(std::move(token));
 }
 

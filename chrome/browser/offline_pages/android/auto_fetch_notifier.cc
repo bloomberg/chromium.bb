@@ -16,6 +16,46 @@
 
 namespace offline_pages {
 
+//
+// Java -> C++
+//
+
+void JNI_AutoFetchNotifier_CancelInProgress(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_profile) {
+  OfflinePageAutoFetcherService* service =
+      OfflinePageAutoFetcherServiceFactory::GetForBrowserContext(
+          ProfileAndroid::FromProfileAndroid(j_profile));
+  DCHECK(service);
+  service->CancelAll(base::BindOnce(&AutoFetchCancellationComplete));
+}
+
+//
+// C++ -> Java
+//
+
+void ShowAutoFetchInProgressNotification(int in_progress_count) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_AutoFetchNotifier_showInProgressNotification(env, in_progress_count);
+}
+
+void UpdateAutoFetchInProgressNotificationCountIfShowing(
+    int in_progress_count) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_AutoFetchNotifier_updateInProgressNotificationCountIfShowing(
+      env, in_progress_count);
+}
+
+bool AutoFetchInProgressNotificationCanceled() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_AutoFetchNotifier_autoFetchInProgressNotificationCanceled(env);
+}
+
+void AutoFetchCancellationComplete() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_AutoFetchNotifier_cancellationComplete(env);
+}
+
 void ShowAutoFetchCompleteNotification(const base::string16& pageTitle,
                                        const std::string& url,
                                        int android_tab_id,

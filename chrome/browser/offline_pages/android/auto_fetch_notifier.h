@@ -13,6 +13,18 @@ namespace offline_pages {
 
 // Functions for calling into AutoFetchNotifier.java.
 
+// Functions to show, remove, and update the in-progress notification.
+// See AutoFetchNotifier.java.
+void ShowAutoFetchInProgressNotification(int in_progress_count);
+void UpdateAutoFetchInProgressNotificationCountIfShowing(int in_progress_count);
+
+// Returns true if the user canceled the in-progress notification while
+// Chrome wasn't running. If true, the active requests should be canceled,
+// and then |AutoFetchCancellationComplete()| should be called.
+bool AutoFetchInProgressNotificationCanceled();
+void AutoFetchCancellationComplete();
+
+// Triggers the auto-fetch complete notification. See AutoFetchNotifier.java.
 void ShowAutoFetchCompleteNotification(const base::string16& pageTitle,
                                        const std::string& originalUrl,
                                        int android_tab_id,

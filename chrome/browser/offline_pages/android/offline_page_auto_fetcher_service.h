@@ -79,15 +79,14 @@ class OfflinePageAutoFetcherService : public KeyedService,
   AutoFetchPageLoadWatcher* page_load_watcher() { return &page_load_watcher_; }
 
   // Auto fetching interface. Schedules and cancels fetch requests.
-
   void TrySchedule(bool user_requested,
                    const GURL& url,
                    int android_tab_id,
                    TryScheduleCallback callback);
   void CancelSchedule(const GURL& url);
+  void CancelAll(base::OnceClosure callback);
 
   // KeyedService implementation.
-
   void Shutdown() override;
 
   // Testing methods.
@@ -144,6 +143,11 @@ class OfflinePageAutoFetcherService : public KeyedService,
       RequestCoordinator* coordinator,
       std::vector<std::unique_ptr<SavePageRequest>> requests);
   void CancelScheduleStep3(TaskToken token, const MultipleItemStatuses&);
+
+  void CancelAllStep1(base::OnceClosure callback, TaskToken token);
+  void CancelAllStep2(TaskToken token,
+                      base::OnceClosure callback,
+                      const MultipleItemStatuses& result);
 
   void AutoFetchComplete(const OfflinePageItem* page);
 
