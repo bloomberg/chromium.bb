@@ -107,7 +107,8 @@ class CloudExternalDataPolicyObserverTest
                              const std::string& user_id) override;
   void OnExternalDataFetched(const std::string& policy,
                              const std::string& user_id,
-                             std::unique_ptr<std::string> data) override;
+                             std::unique_ptr<std::string> data,
+                             const base::FilePath& file_path) override;
 
   void CreateObserver();
   void RemoveObserver();
@@ -240,7 +241,8 @@ void CloudExternalDataPolicyObserverTest::OnExternalDataCleared(
 void CloudExternalDataPolicyObserverTest::OnExternalDataFetched(
     const std::string& policy,
     const std::string& user_id,
-    std::unique_ptr<std::string> data) {
+    std::unique_ptr<std::string> data,
+    const base::FilePath& file_path) {
   EXPECT_EQ(key::kUserAvatarImage, policy);
   fetched_calls_.push_back(make_pair(user_id, std::string()));
   fetched_calls_.back().second.swap(*data);
@@ -761,7 +763,8 @@ TEST_F(CloudExternalDataPolicyObserverTest, RegularUserFetchSuccess) {
   EXPECT_CALL(external_data_manager_, Fetch(key::kUserAvatarImage, _)).Times(0);
 
   std::move(fetch_callback_)
-      .Run(std::make_unique<std::string>(avatar_policy_1_data_));
+      .Run(std::make_unique<std::string>(avatar_policy_1_data_),
+           base::FilePath());
 
   EXPECT_TRUE(set_calls_.empty());
   EXPECT_TRUE(cleared_calls_.empty());
@@ -868,7 +871,8 @@ TEST_F(CloudExternalDataPolicyObserverTest, RegularUserSetUnset) {
   EXPECT_CALL(external_data_manager_, Fetch(key::kUserAvatarImage, _)).Times(0);
 
   std::move(fetch_callback_)
-      .Run(std::make_unique<std::string>(avatar_policy_1_data_));
+      .Run(std::make_unique<std::string>(avatar_policy_1_data_),
+           base::FilePath());
 
   EXPECT_TRUE(set_calls_.empty());
   EXPECT_TRUE(cleared_calls_.empty());
@@ -919,7 +923,8 @@ TEST_F(CloudExternalDataPolicyObserverTest, RegularUserSetSet) {
   EXPECT_CALL(external_data_manager_, Fetch(key::kUserAvatarImage, _)).Times(0);
 
   std::move(fetch_callback_)
-      .Run(std::make_unique<std::string>(avatar_policy_2_data_));
+      .Run(std::make_unique<std::string>(avatar_policy_2_data_),
+           base::FilePath());
 
   EXPECT_TRUE(set_calls_.empty());
   EXPECT_TRUE(cleared_calls_.empty());

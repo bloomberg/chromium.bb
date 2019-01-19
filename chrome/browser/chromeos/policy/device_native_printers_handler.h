@@ -24,7 +24,8 @@ class DeviceNativePrintersHandler
   void OnDeviceExternalDataSet(const std::string& policy) override;
   void OnDeviceExternalDataCleared(const std::string& policy) override;
   void OnDeviceExternalDataFetched(const std::string& policy,
-                                   std::unique_ptr<std::string> data) override;
+                                   std::unique_ptr<std::string> data,
+                                   const base::FilePath& file_path) override;
 
   void Shutdown();
 

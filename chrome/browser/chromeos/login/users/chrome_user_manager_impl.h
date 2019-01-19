@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -127,7 +128,8 @@ class ChromeUserManagerImpl
                              const std::string& user_id) override;
   void OnExternalDataFetched(const std::string& policy,
                              const std::string& user_id,
-                             std::unique_ptr<std::string> data) override;
+                             std::unique_ptr<std::string> data,
+                             const base::FilePath& file_path) override;
 
   // policy::DeviceLocalAccountPolicyService::Observer implementation.
   void OnPolicyUpdated(const std::string& user_id) override;

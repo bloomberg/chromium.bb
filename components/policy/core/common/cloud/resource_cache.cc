@@ -68,14 +68,14 @@ ResourceCache::~ResourceCache() {
   // when this destructor is called not on |task_runner|.
 }
 
-bool ResourceCache::Store(const std::string& key,
-                          const std::string& subkey,
-                          const std::string& data) {
+base::FilePath ResourceCache::Store(const std::string& key,
+                                    const std::string& subkey,
+                                    const std::string& data) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   SCOPED_UMA_HISTOGRAM_TIMER("Enterprise.ResourceCacheTiming.Store");
   base::FilePath subkey_path;
   if (!VerifyKeyPathAndGetSubkeyPath(key, true, subkey, &subkey_path))
-    return false;
+    return base::FilePath();
   int64_t size = base::checked_cast<int64_t>(data.size());
   if (max_cache_size_.has_value() &&
       current_cache_size_ - GetCacheDirectoryOrFileSize(subkey_path) + size >
@@ -83,24 +83,28 @@ bool ResourceCache::Store(const std::string& key,
     LOG(ERROR) << "Data (" << key << ", " << subkey << ") with size " << size
                << " bytes doesn't fit in cache, left size: "
                << max_cache_size_.value() - current_cache_size_ << " bytes";
-    return false;
+    return base::FilePath();
   }
-  return WriteCacheFile(subkey_path, data);
+  if (!WriteCacheFile(subkey_path, data))
+    return base::FilePath();
+  return subkey_path;
 }
 
-bool ResourceCache::Load(const std::string& key,
-                         const std::string& subkey,
-                         std::string* data) {
+base::FilePath ResourceCache::Load(const std::string& key,
+                                   const std::string& subkey,
+                                   std::string* data) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   SCOPED_UMA_HISTOGRAM_TIMER("Enterprise.ResourceCacheTiming.Load");
   base::FilePath subkey_path;
   // Only read from |subkey_path| if it is not a symlink.
   if (!VerifyKeyPathAndGetSubkeyPath(key, false, subkey, &subkey_path) ||
       base::IsLink(subkey_path)) {
-    return false;
+    return base::FilePath();
   }
   data->clear();
-  return base::ReadFileToString(subkey_path, data);
+  if (!base::ReadFileToString(subkey_path, data))
+    return base::FilePath();
+  return subkey_path;
 }
 
 void ResourceCache::LoadAllSubkeys(

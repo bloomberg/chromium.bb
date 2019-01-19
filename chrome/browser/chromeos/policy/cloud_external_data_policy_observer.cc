@@ -116,7 +116,8 @@ void CloudExternalDataPolicyObserver::Delegate::OnExternalDataCleared(
 void CloudExternalDataPolicyObserver::Delegate::OnExternalDataFetched(
     const std::string& policy,
     const std::string& user_id,
-    std::unique_ptr<std::string> data) {}
+    std::unique_ptr<std::string> data,
+    const base::FilePath& file_path) {}
 
 CloudExternalDataPolicyObserver::Delegate::~Delegate() {
 }
@@ -294,11 +295,13 @@ void CloudExternalDataPolicyObserver::HandleExternalDataPolicyUpdate(
 
 void CloudExternalDataPolicyObserver::OnExternalDataFetched(
     const std::string& user_id,
-    std::unique_ptr<std::string> data) {
+    std::unique_ptr<std::string> data,
+    const base::FilePath& file_path) {
   FetchWeakPtrMap::iterator it = fetch_weak_ptrs_.find(user_id);
   DCHECK(it != fetch_weak_ptrs_.end());
   fetch_weak_ptrs_.erase(it);
-  delegate_->OnExternalDataFetched(policy_, user_id, std::move(data));
+  delegate_->OnExternalDataFetched(policy_, user_id, std::move(data),
+                                   file_path);
 }
 
 }  // namespace policy

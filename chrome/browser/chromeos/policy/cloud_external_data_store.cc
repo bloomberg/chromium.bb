@@ -57,28 +57,29 @@ void CloudExternalDataStore::Prune(
   cache_->PurgeOtherSubkeys(cache_key_, subkeys_to_keep);
 }
 
-bool CloudExternalDataStore::Store(const std::string& policy,
-                                   const std::string& hash,
-                                   const std::string& data) {
+base::FilePath CloudExternalDataStore::Store(const std::string& policy,
+                                             const std::string& hash,
+                                             const std::string& data) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   return cache_->Store(cache_key_, GetSubkey(policy, hash), data);
 }
 
-bool CloudExternalDataStore::Load(const std::string& policy,
-                                  const std::string& hash,
-                                  size_t max_size,
-                                  std::string* data) {
+base::FilePath CloudExternalDataStore::Load(const std::string& policy,
+                                            const std::string& hash,
+                                            size_t max_size,
+                                            std::string* data) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   const std::string subkey = GetSubkey(policy, hash);
-  if (cache_->Load(cache_key_, subkey, data)) {
+  base::FilePath file_path = cache_->Load(cache_key_, subkey, data);
+  if (!file_path.empty()) {
     if (data->size() <= max_size && crypto::SHA256HashString(*data) == hash)
-      return true;
+      return file_path;
     // If the data is larger than allowed or does not match the expected hash,
     // delete the entry.
     cache_->Delete(cache_key_, subkey);
     data->clear();
   }
-  return false;
+  return base::FilePath();
 }
 
 }  // namespace policy

@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/policy/core/common/policy_map.h"
@@ -41,7 +42,8 @@ class DeviceCloudExternalDataPolicyObserver : public PolicyService::Observer {
     // external data reference specifies an invalid URL), the method is not
     // called at all.
     virtual void OnDeviceExternalDataFetched(const std::string& policy,
-                                             std::unique_ptr<std::string> data);
+                                             std::unique_ptr<std::string> data,
+                                             const base::FilePath& file_path);
 
    protected:
     virtual ~Delegate();
@@ -65,7 +67,8 @@ class DeviceCloudExternalDataPolicyObserver : public PolicyService::Observer {
   // starting a new external data fetch in the latter case.
   void HandleExternalDataPolicyUpdate(const PolicyMap::Entry* entry);
 
-  void OnDeviceExternalDataFetched(std::unique_ptr<std::string> data);
+  void OnDeviceExternalDataFetched(std::unique_ptr<std::string> data,
+                                   const base::FilePath& file_path);
 
   PolicyService* const policy_service_;
 

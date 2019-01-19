@@ -171,7 +171,7 @@ void ComponentCloudPolicyStore::Load() {
 
     // The protobuf looks good; load the policy data.
     std::string data;
-    if (!cache_->Load(domain_constants_->data_cache_key, id, &data)) {
+    if (cache_->Load(domain_constants_->data_cache_key, id, &data).empty()) {
       LOG(ERROR) << "Failed to load the cached policy data.";
       Delete(ns);
       continue;
