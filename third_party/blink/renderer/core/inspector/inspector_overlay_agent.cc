@@ -518,7 +518,8 @@ Response InspectorOverlayAgent::highlightNode(
         highlight_inspector_object,
     Maybe<int> node_id,
     Maybe<int> backend_node_id,
-    Maybe<String> object_id) {
+    Maybe<String> object_id,
+    Maybe<String> selector_list) {
   Node* node = nullptr;
   Response response =
       dom_agent_->AssertNode(node_id, backend_node_id, object_id, node);
@@ -531,7 +532,8 @@ Response InspectorOverlayAgent::highlightNode(
   if (!response.isSuccess())
     return response;
 
-  InnerHighlightNode(node, nullptr, *highlight_config, false);
+  InnerHighlightNode(node, nullptr, selector_list.fromMaybe(String()),
+                     *highlight_config, false);
   return Response::OK();
 }
 
@@ -550,7 +552,7 @@ Response InspectorOverlayAgent::highlightFrame(
         InspectorDOMAgent::ParseColor(color.fromMaybe(nullptr));
     highlight_config->content_outline =
         InspectorDOMAgent::ParseColor(outline_color.fromMaybe(nullptr));
-    InnerHighlightNode(frame->DeprecatedLocalOwner(), nullptr,
+    InnerHighlightNode(frame->DeprecatedLocalOwner(), nullptr, String(),
                        *highlight_config, false);
   }
   return Response::OK();
@@ -755,10 +757,12 @@ void InspectorOverlayAgent::InnerHideHighlight() {
 void InspectorOverlayAgent::InnerHighlightNode(
     Node* node,
     Node* event_target,
+    String selector_list,
     const InspectorHighlightConfig& highlight_config,
     bool omit_tooltip) {
   node_highlight_config_ = highlight_config;
   highlight_node_ = node;
+  highlight_selector_list_ = selector_list;
   event_target_node_ = event_target;
   omit_tooltip_ = omit_tooltip;
   highlight_node_contrast_ = InspectorHighlightContrastInfo();
@@ -831,7 +835,7 @@ void InspectorOverlayAgent::RebuildOverlayPage() {
   OverlayMainFrame()->SetPageZoomFactor(WindowToViewportScale());
 
   Reset(viewport_size);
-
+  DrawMatchingSelector();
   DrawNodeHighlight();
   DrawQuadHighlight();
   DrawPausedInDebuggerMessage();
@@ -848,30 +852,31 @@ static std::unique_ptr<protocol::DictionaryValue> BuildObjectForSize(
   return result;
 }
 
-void InspectorOverlayAgent::DrawNodeHighlight() {
-  if (!highlight_node_)
+void InspectorOverlayAgent::DrawMatchingSelector() {
+  if (highlight_selector_list_.IsEmpty() || !highlight_node_)
     return;
-
-  String selectors = node_highlight_config_.selector_list;
-  StaticElementList* elements = nullptr;
   DummyExceptionStateForTesting exception_state;
   ContainerNode* query_base = highlight_node_->ContainingShadowRoot();
   if (!query_base)
     query_base = highlight_node_->ownerDocument();
-  if (selectors.length()) {
-    elements =
-        query_base->QuerySelectorAll(AtomicString(selectors), exception_state);
+  StaticElementList* elements = query_base->QuerySelectorAll(
+      AtomicString(highlight_selector_list_), exception_state);
+  if (exception_state.HadException())
+    return;
+
+  for (unsigned i = 0; i < elements->length(); ++i) {
+    Element* element = elements->item(i);
+    InspectorHighlight highlight(element, node_highlight_config_,
+                                 highlight_node_contrast_, false);
+    std::unique_ptr<protocol::DictionaryValue> highlight_json =
+        highlight.AsProtocolValue();
+    EvaluateInOverlay("drawHighlight", std::move(highlight_json));
   }
-  if (elements && !exception_state.HadException()) {
-    for (unsigned i = 0; i < elements->length(); ++i) {
-      Element* element = elements->item(i);
-      InspectorHighlight highlight(element, node_highlight_config_,
-                                   highlight_node_contrast_, false);
-      std::unique_ptr<protocol::DictionaryValue> highlight_json =
-          highlight.AsProtocolValue();
-      EvaluateInOverlay("drawHighlight", std::move(highlight_json));
-    }
-  }
+}
+
+void InspectorOverlayAgent::DrawNodeHighlight() {
+  if (!highlight_node_)
+    return;
 
   bool append_element_info =
       (highlight_node_->IsElementNode() || highlight_node_->IsTextNode()) &&
@@ -1184,8 +1189,8 @@ bool InspectorOverlayAgent::HandleMouseMove(const WebMouseEvent& event) {
     NodeHighlightRequested(node);
     bool omit_tooltip = event.GetModifiers() &
                         (WebInputEvent::kControlKey | WebInputEvent::kMetaKey);
-    InnerHighlightNode(node, event_target, *inspect_mode_highlight_config_,
-                       omit_tooltip);
+    InnerHighlightNode(node, event_target, String(),
+                       *inspect_mode_highlight_config_, omit_tooltip);
   }
   return true;
 }
@@ -1260,7 +1265,8 @@ bool InspectorOverlayAgent::HandleGestureEvent(const WebGestureEvent& event) {
     return false;
   Node* node = HoveredNodeForEvent(frame_impl_->GetFrame(), event, false);
   if (node && inspect_mode_highlight_config_) {
-    InnerHighlightNode(node, nullptr, *inspect_mode_highlight_config_, false);
+    InnerHighlightNode(node, nullptr, String(), *inspect_mode_highlight_config_,
+                       false);
     Inspect(node);
     return true;
   }
@@ -1272,7 +1278,8 @@ bool InspectorOverlayAgent::HandlePointerEvent(const WebPointerEvent& event) {
     return false;
   Node* node = HoveredNodeForEvent(frame_impl_->GetFrame(), event, false);
   if (node && inspect_mode_highlight_config_) {
-    InnerHighlightNode(node, nullptr, *inspect_mode_highlight_config_, false);
+    InnerHighlightNode(node, nullptr, String(), *inspect_mode_highlight_config_,
+                       false);
     Inspect(node);
     return true;
   }
@@ -1399,7 +1406,6 @@ Response InspectorOverlayAgent::HighlightConfigFromInspectorObject(
       InspectorDOMAgent::ParseColor(config->getShapeMarginColor(nullptr));
   highlight_config->css_grid =
       InspectorDOMAgent::ParseColor(config->getCssGridColor(nullptr));
-  highlight_config->selector_list = config->getSelectorList("");
 
   *out_config = std::move(highlight_config);
   return Response::OK();

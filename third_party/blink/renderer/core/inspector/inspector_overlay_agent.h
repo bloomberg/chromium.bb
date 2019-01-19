@@ -110,7 +110,8 @@ class CORE_EXPORT InspectorOverlayAgent final
       std::unique_ptr<protocol::Overlay::HighlightConfig>,
       protocol::Maybe<int> node_id,
       protocol::Maybe<int> backend_node_id,
-      protocol::Maybe<String> object_id) override;
+      protocol::Maybe<String> object_id,
+      protocol::Maybe<String> selector_list) override;
   protocol::Response hideHighlight() override;
   protocol::Response highlightFrame(
       const String& frame_id,
@@ -146,6 +147,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   void OverlaySteppedOver() override;
 
   bool IsEmpty();
+  void DrawMatchingSelector();
   void DrawNodeHighlight();
   void DrawQuadHighlight();
   void DrawPausedInDebuggerMessage();
@@ -188,6 +190,7 @@ class CORE_EXPORT InspectorOverlayAgent final
                           protocol::Maybe<protocol::DOM::RGBA> outline_color);
   void InnerHighlightNode(Node*,
                           Node* event_target,
+                          String selector,
                           const InspectorHighlightConfig&,
                           bool omit_tooltip);
   void InnerHideHighlight();
@@ -197,6 +200,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   Member<WebLocalFrameImpl> frame_impl_;
   Member<InspectedFrames> inspected_frames_;
   Member<Node> highlight_node_;
+  String highlight_selector_list_;
   InspectorHighlightContrastInfo highlight_node_contrast_;
   Member<Node> event_target_node_;
   InspectorHighlightConfig node_highlight_config_;
