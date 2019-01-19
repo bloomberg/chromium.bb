@@ -96,7 +96,12 @@ struct PpdIndexJSON {
 };
 
 // A queued request to download printer information for a manufacturer.
+// Note: Disabled copying/assigning since this holds a base::OnceCalback.
 struct PrinterResolutionQueueEntry {
+  PrinterResolutionQueueEntry() = default;
+  PrinterResolutionQueueEntry(PrinterResolutionQueueEntry&& other) = default;
+  ~PrinterResolutionQueueEntry() = default;
+
   // Localized manufacturer name
   std::string manufacturer;
 
@@ -105,10 +110,17 @@ struct PrinterResolutionQueueEntry {
 
   // User callback on completion.
   PpdProvider::ResolvePrintersCallback cb;
+
+  DISALLOW_COPY_AND_ASSIGN(PrinterResolutionQueueEntry);
 };
 
 // A queued request to download reverse index information for a make and model
+// Note: Disabled copying/assigning since this holds a base::OnceCalback.
 struct ReverseIndexQueueEntry {
+  ReverseIndexQueueEntry() = default;
+  ReverseIndexQueueEntry(ReverseIndexQueueEntry&& other) = default;
+  ~ReverseIndexQueueEntry() = default;
+
   // Canonical Printer Name
   std::string effective_make_and_model;
 
@@ -117,6 +129,8 @@ struct ReverseIndexQueueEntry {
 
   // User callback on completion.
   PpdProvider::ReverseLookupCallback cb;
+
+  DISALLOW_COPY_AND_ASSIGN(ReverseIndexQueueEntry);
 };
 
 // Holds manufacturer to printers relation
@@ -131,7 +145,12 @@ struct ManufacturerMetadata {
 };
 
 // Carried information for an inflight PPD resolution.
+// Note: Disabled copying/assigning since this holds a base::OnceCalback.
 struct PpdResolutionQueueEntry {
+  PpdResolutionQueueEntry() = default;
+  PpdResolutionQueueEntry(PpdResolutionQueueEntry&& other) = default;
+  ~PpdResolutionQueueEntry() = default;
+
   // Original reference being resolved.
   Printer::PpdReference reference;
 
@@ -140,10 +159,18 @@ struct PpdResolutionQueueEntry {
 
   // Callback to be invoked on completion.
   PpdProvider::ResolvePpdCallback callback;
+
+  DISALLOW_COPY_AND_ASSIGN(PpdResolutionQueueEntry);
 };
 
 // Carried information for an inflight PPD reference resolution.
+// Note: Disabled copying/assigning since this holds a base::OnceCalback.
 struct PpdReferenceResolutionQueueEntry {
+  PpdReferenceResolutionQueueEntry() = default;
+  PpdReferenceResolutionQueueEntry(PpdReferenceResolutionQueueEntry&& other) =
+      default;
+  ~PpdReferenceResolutionQueueEntry() = default;
+
   // Metadata used to resolve to a unique PpdReference object.
   PpdProvider::PrinterSearchData search_data;
 
@@ -152,6 +179,8 @@ struct PpdReferenceResolutionQueueEntry {
 
   // Callback to be invoked on completion.
   PpdProvider::ResolvePpdReferenceCallback cb;
+
+  DISALLOW_COPY_AND_ASSIGN(PpdReferenceResolutionQueueEntry);
 };
 
 // Extract cupsFilter/cupsFilter2 filter names from a line from a ppd.
