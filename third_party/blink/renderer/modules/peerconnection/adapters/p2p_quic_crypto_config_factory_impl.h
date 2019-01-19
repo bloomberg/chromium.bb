@@ -19,7 +19,6 @@ class MODULES_EXPORT P2PQuicCryptoConfigFactoryImpl final
     : public P2PQuicCryptoConfigFactory {
  public:
   P2PQuicCryptoConfigFactoryImpl(
-      rtc::scoped_refptr<rtc::RTCCertificate> certificate,
       quic::QuicRandom* const random_generator);
 
   ~P2PQuicCryptoConfigFactoryImpl() override{};
@@ -34,10 +33,8 @@ class MODULES_EXPORT P2PQuicCryptoConfigFactoryImpl final
       override;
 
  private:
-  // The certificates to be used in the handshake. These currently are not being
-  // used until there is support for both side certificate verification.
-  rtc::scoped_refptr<rtc::RTCCertificate> certificate_;
-  // Not owned by this object and should outlive it.
+  // TODO(crbug.com/874296): Add certificate(s) to create a proof source
+  // that comes from the self signed certificate given to the RTCQuicTransport.
   quic::QuicRandom* const random_generator_;
 };
 

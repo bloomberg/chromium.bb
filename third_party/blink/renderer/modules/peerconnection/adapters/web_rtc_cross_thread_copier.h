@@ -12,6 +12,7 @@
 #include <set>
 #include <vector>
 
+#include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport.h"
 #include "third_party/blink/renderer/platform/cross_thread_copier.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
 
@@ -102,6 +103,18 @@ template <>
 struct CrossThreadCopier<webrtc::DtlsTransportInformation>
     : public CrossThreadCopierPassThrough<webrtc::DtlsTransportInformation> {
   STATIC_ONLY(CrossThreadCopier);
+};
+
+template <>
+struct CrossThreadCopier<P2PQuicTransport::StartConfig>
+    : public CrossThreadCopierPassThrough<P2PQuicTransport::StartConfig> {
+  STATIC_ONLY(CrossThreadCopier);
+  using Type = P2PQuicTransport::StartConfig;
+  static P2PQuicTransport::StartConfig Copy(
+      P2PQuicTransport::StartConfig config) {
+    // This is in fact a move.
+    return config;
+  }
 };
 
 }  // namespace blink

@@ -34,7 +34,6 @@ P2PQuicTransportFactoryImpl::CreateQuicTransport(
   return P2PQuicTransportImpl::Create(
       clock_, alarm_factory_.get(), quic_random, delegate, packet_transport,
       std::move(config),
-      std::make_unique<P2PQuicCryptoConfigFactoryImpl>(config.certificates[0],
-                                                       quic_random));
+      std::make_unique<P2PQuicCryptoConfigFactoryImpl>(quic_random));
 }
 }  // namespace blink

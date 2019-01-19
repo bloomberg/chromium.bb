@@ -56,8 +56,7 @@ class QuicTransportHost final : public P2PQuicTransport::Delegate {
   scoped_refptr<base::SingleThreadTaskRunner> proxy_thread() const;
   scoped_refptr<base::SingleThreadTaskRunner> host_thread() const;
 
-  void Start(
-      std::vector<std::unique_ptr<rtc::SSLFingerprint>> remote_fingerprints);
+  void Start(P2PQuicTransport::StartConfig config);
   void Stop();
 
   void CreateStream(std::unique_ptr<QuicStreamHost> stream_host);

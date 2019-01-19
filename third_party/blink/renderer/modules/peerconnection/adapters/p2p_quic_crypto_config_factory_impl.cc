@@ -106,11 +106,8 @@ class DummyProofSource : public quic::ProofSource {
 };
 
 P2PQuicCryptoConfigFactoryImpl::P2PQuicCryptoConfigFactoryImpl(
-    rtc::scoped_refptr<rtc::RTCCertificate> certificate,
     quic::QuicRandom* const random_generator)
-    : certificate_(certificate), random_generator_(random_generator) {
-  DCHECK(certificate_);
-}
+    : random_generator_(random_generator) {}
 
 std::unique_ptr<quic::QuicCryptoClientConfig>
 P2PQuicCryptoConfigFactoryImpl::CreateClientCryptoConfig() {
