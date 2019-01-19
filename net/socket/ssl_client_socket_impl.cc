@@ -1404,6 +1404,14 @@ int SSLClientSocketImpl::DoPayloadWrite() {
   if (rv >= 0) {
     net_log_.AddByteTransferEvent(NetLogEventType::SSL_SOCKET_BYTES_SENT, rv,
                                   user_write_buf_->data());
+    if (first_post_handshake_write_ && SSL_is_init_finished(ssl_.get())) {
+      if (base::FeatureList::IsEnabled(features::kTLS13KeyUpdate) &&
+          SSL_version(ssl_.get()) == TLS1_3_VERSION) {
+        const int ok = SSL_key_update(ssl_.get(), SSL_KEY_UPDATE_REQUESTED);
+        DCHECK(ok);
+      }
+      first_post_handshake_write_ = false;
+    }
     return rv;
   }
 

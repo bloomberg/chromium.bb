@@ -228,6 +228,7 @@ class SSLClientSocketImpl : public SSLClientSocket,
   // Used by Write function.
   scoped_refptr<IOBuffer> user_write_buf_;
   int user_write_buf_len_;
+  bool first_post_handshake_write_ = true;
 
   // Used by DoPayloadRead() when attempting to fill the caller's buffer with
   // as much data as possible without blocking.
