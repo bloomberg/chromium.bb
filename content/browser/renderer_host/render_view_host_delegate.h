@@ -189,9 +189,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // has been visually updated.
   virtual void DidCommitAndDrawCompositorFrame(RenderViewHostImpl* source) {}
 
-  // Returns true if the render view is rendering a portal.
-  virtual bool IsPortal() const;
-
  protected:
   virtual ~RenderViewHostDelegate() {}
 };
