@@ -5832,12 +5832,13 @@ RenderFrameHostImpl::TakeNavigationRequestForSameDocumentCommit(
   // TODO(ahemery): Remove when the full mojo interface is in place.
   // (https://bugs.chromium.org/p/chromium/issues/detail?id=784904)
   bool is_renderer_initiated = true;
-  int pending_nav_entry_id = 0;
   NavigationEntryImpl* pending_entry = NavigationEntryImpl::FromNavigationEntry(
       frame_tree_node()->navigator()->GetController()->GetPendingEntry());
   if (pending_entry && pending_entry->GetUniqueID() == params.nav_entry_id) {
-    pending_nav_entry_id = params.nav_entry_id;
     is_renderer_initiated = pending_entry->is_renderer_initiated();
+  } else {
+    // Don't reuse the pending entry if it doesn't match.
+    pending_entry = nullptr;
   }
 
   return NavigationRequest::CreateForCommit(
