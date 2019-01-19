@@ -10,7 +10,7 @@
       }
 
       paper-icon-button-light.more-vert-button div {
-        border: 2px solid var(--cr-secondary-text-color);
+        border: 2px solid currentcolor;
         border-radius: 2px;
         margin: 1px 8px;
         pointer-events: none;
@@ -61,15 +61,17 @@
       }
 
       .folder-icon {
-        background-image: url(images/folder.svg);
-        background-size: contain;
+        -webkit-mask-image: url(images/folder.svg);
+        -webkit-mask-size: contain;
+        background-color: currentcolor;
+        color: var(--folder-icon-color);
         height: 20px;
         min-width: 20px;
         width: 20px;
       }
 
       .folder-icon[open] {
-        background-image: url(images/folder_open.svg);
+        -webkit-mask-image: url(images/folder_open.svg);
       }
 
       .website-icon {

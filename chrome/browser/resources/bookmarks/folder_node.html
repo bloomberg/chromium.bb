@@ -39,14 +39,19 @@
       }
 
       #folder-label {
-        color: var(--cr-secondary-text-color);
         flex-grow: 1;
         padding-inline-end: 8px;
       }
 
       :host([is-selected-folder_]) .menu-label,
-      :host([is-selected-folder_]) #folder-label {
+      :host([is-selected-folder_]) .folder-icon {
         color: var(--interactive-color);
+      }
+
+      :host-context([dark]) .drag-on .menu-label,
+      :host-context([dark]) .drag-on .folder-icon,
+      :host-context([dark]) .drag-on #arrow {
+        color: var(--google-grey-refresh-700);
       }
 
       iron-icon {
