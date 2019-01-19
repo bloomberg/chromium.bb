@@ -15,7 +15,9 @@
 #include "base/timer/timer.h"
 #include "build/buildflag.h"
 #include "chromeos/assistant/buildflags.h"
+#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/assistant_settings_manager.h"
 #include "chromeos/services/assistant/public/features.h"
@@ -72,6 +74,7 @@ Service::Service(service_manager::mojom::ServiceRequest request,
   chromeos::PowerManagerClient* power_manager_client =
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
   power_manager_observer_.Add(power_manager_client);
+  power_manager_client->RequestStatusUpdate();
 }
 
 Service::~Service() = default;
@@ -113,6 +116,13 @@ void Service::BindAssistantConnection(mojom::AssistantRequest request) {
 void Service::BindAssistantPlatformConnection(
     mojom::AssistantPlatformRequest request) {
   platform_binding_.Bind(std::move(request));
+}
+
+void Service::PowerChanged(const power_manager::PowerSupplyProperties& prop) {
+  power_source_connected_ =
+      prop.external_power() == power_manager::PowerSupplyProperties::AC;
+
+  MaybeRestartAssistantManager();
 }
 
 void Service::SuspendDone(const base::TimeDelta& sleep_duration) {
@@ -161,6 +171,14 @@ void Service::OnLocaleChanged(const std::string& locale) {
   UpdateAssistantManagerState();
 }
 
+void Service::OnVoiceInteractionHotwordAlwaysOn(bool always_on) {
+  // No need to update hotword status if power source is connected.
+  if (power_source_connected_)
+    return;
+
+  MaybeRestartAssistantManager();
+}
+
 void Service::MaybeRestartAssistantManager() {
   if (assistant_manager_service_) {
     switch (assistant_manager_service_->GetState()) {
@@ -183,6 +201,7 @@ void Service::MaybeRestartAssistantManager() {
 void Service::UpdateAssistantManagerState() {
   if (!assistant_state_.hotword_enabled().has_value() ||
       !assistant_state_.settings_enabled().has_value() ||
+      !assistant_state_.hotword_always_on().has_value() ||
       !assistant_state_.locale().has_value() || !access_token_.has_value()) {
     // Assistant state has not finished initialization, let's wait.
     return;
@@ -195,7 +214,7 @@ void Service::UpdateAssistantManagerState() {
     case AssistantManagerService::State::STOPPED:
       if (assistant_state_.settings_enabled().value()) {
         assistant_manager_service_->Start(
-            access_token_.value(), assistant_state_.hotword_enabled().value(),
+            access_token_.value(), ShouldEnableHotword(),
             base::BindOnce(
                 [](scoped_refptr<base::SequencedTaskRunner> task_runner,
                    base::OnceCallback<void()> callback) {
@@ -372,6 +391,26 @@ void Service::UpdateListeningState() {
   bool should_listen = !locked_ && session_active_;
   DVLOG(1) << "Update assistant listening state: " << should_listen;
   assistant_manager_service_->EnableListening(should_listen);
+}
+
+bool Service::ShouldEnableHotword() {
+  bool dsp_available = false;
+  chromeos::AudioDeviceList devices;
+  chromeos::CrasAudioHandler::Get()->GetAudioDevices(&devices);
+  for (const chromeos::AudioDevice& device : devices) {
+    if (device.type == chromeos::AUDIO_TYPE_HOTWORD) {
+      dsp_available = true;
+    }
+  }
+
+  // Disable hotword if hotword is not set to always on and power source is not
+  // connected.
+  if (!dsp_available && !assistant_state_.hotword_always_on().value() &&
+      !power_source_connected_) {
+    return false;
+  }
+
+  return assistant_state_.hotword_enabled().value();
 }
 
 }  // namespace assistant

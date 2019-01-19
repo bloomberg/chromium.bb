@@ -43,6 +43,10 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
     return hotword_enabled_;
   }
 
+  const base::Optional<bool>& hotword_always_on() const {
+    return hotword_always_on_;
+  }
+
   const base::Optional<mojom::AssistantAllowedState>& allowed_state() const {
     return allowed_state_;
   }
@@ -63,6 +67,9 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
 
   // Whether hotword listening is enabled.
   base::Optional<bool> hotword_enabled_;
+
+  // Whether hotword listening is always on/only with power source.
+  base::Optional<bool> hotword_always_on_;
 
   // Whether voice interaction feature is allowed or disallowed for what reason.
   base::Optional<mojom::AssistantAllowedState> allowed_state_;

@@ -63,12 +63,14 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_utils.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_dialog_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_shares_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/management_ui_handler.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/multidevice_setup/public/cpp/url_provider.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/user_manager/user_manager.h"
@@ -2237,6 +2239,14 @@ void AddGoogleAssistantStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_GOOGLE_ASSISTANT_VOICE_SETTINGS_RETRAIN},
       {"googleAssistantVoiceSettingsDeleteButton",
        IDS_SETTINGS_GOOGLE_ASSISTANT_VOICE_SETTINGS_DELETE},
+      {"googleAssistantEnableHotwordWithoutDspDescription",
+       IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD_WITHOUT_DSP_DESCRIPTION},
+      {"googleAssistantEnableHotwordWithoutDspRecommended",
+       IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD_WITHOUT_DSP_RECOMMENDED},
+      {"googleAssistantEnableHotwordWithoutDspAlwaysOn",
+       IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD_WITHOUT_DSP_ALWAYS_ON},
+      {"googleAssistantEnableHotwordWithoutDspOff",
+       IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD_WITHOUT_DSP_OFF},
       {"googleAssistantEnableNotification",
        IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_NOTIFICATION},
       {"googleAssistantEnableNotificationDescription",
@@ -2249,6 +2259,9 @@ void AddGoogleAssistantStrings(content::WebUIDataSource* html_source) {
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
+
+  html_source->AddBoolean("hotwordDspAvailable",
+                          chromeos::IsHotwordDspAvailable());
 }
 #endif
 

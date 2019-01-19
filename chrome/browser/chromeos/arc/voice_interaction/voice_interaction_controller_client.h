@@ -56,6 +56,7 @@ class VoiceInteractionControllerClient
   void NotifySettingsEnabled();
   void NotifyContextEnabled();
   void NotifyHotwordEnabled();
+  void NotifyHotwordAlwaysOn();
   void NotifySetupCompleted();
   void NotifyFeatureAllowed();
   void NotifyNotificationEnabled();

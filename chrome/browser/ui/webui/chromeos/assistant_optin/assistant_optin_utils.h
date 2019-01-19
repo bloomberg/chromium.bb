@@ -67,6 +67,8 @@ void RecordActivityControlConsent(Profile* profile,
                                   std::string ui_audit_key,
                                   bool opted_in);
 
+bool IsHotwordDspAvailable();
+
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_ASSISTANT_OPTIN_ASSISTANT_OPTIN_UTILS_H_

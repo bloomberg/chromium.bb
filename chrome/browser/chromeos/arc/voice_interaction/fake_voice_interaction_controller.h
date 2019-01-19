@@ -24,6 +24,7 @@ class FakeVoiceInteractionController
   void NotifyStatusChanged(ash::mojom::VoiceInteractionState state) override;
   void NotifySettingsEnabled(bool enabled) override;
   void NotifyContextEnabled(bool enabled) override;
+  void NotifyHotwordAlwaysOn(bool enabled) override;
   void NotifyHotwordEnabled(bool enabled) override;
   void NotifySetupCompleted(bool completed) override;
   void NotifyFeatureAllowed(ash::mojom::AssistantAllowedState state) override;
@@ -61,6 +62,7 @@ class FakeVoiceInteractionController
       ash::mojom::VoiceInteractionState::STOPPED;
   bool voice_interaction_settings_enabled_ = false;
   bool voice_interaction_context_enabled_ = false;
+  bool voice_interaction_hotword_always_on_ = false;
   bool voice_interaction_hotword_enabled_ = false;
   bool voice_interaction_setup_completed_ = false;
   bool voice_interaction_notification_enabled_ = false;

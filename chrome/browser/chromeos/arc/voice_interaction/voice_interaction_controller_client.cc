@@ -109,6 +109,13 @@ void VoiceInteractionControllerClient::NotifyHotwordEnabled() {
   voice_interaction_controller_->NotifyHotwordEnabled(enabled);
 }
 
+void VoiceInteractionControllerClient::NotifyHotwordAlwaysOn() {
+  DCHECK(profile_);
+  PrefService* prefs = profile_->GetPrefs();
+  bool always_on = prefs->GetBoolean(prefs::kVoiceInteractionHotwordAlwaysOn);
+  voice_interaction_controller_->NotifyHotwordAlwaysOn(always_on);
+}
+
 void VoiceInteractionControllerClient::NotifySetupCompleted() {
   DCHECK(profile_);
   PrefService* prefs = profile_->GetPrefs();
@@ -215,6 +222,11 @@ void VoiceInteractionControllerClient::SetProfile(Profile* profile) {
           &VoiceInteractionControllerClient::NotifyHotwordEnabled,
           base::Unretained(this)));
   pref_change_registrar_->Add(
+      prefs::kVoiceInteractionHotwordAlwaysOn,
+      base::BindRepeating(
+          &VoiceInteractionControllerClient::NotifyHotwordAlwaysOn,
+          base::Unretained(this)));
+  pref_change_registrar_->Add(
       prefs::kVoiceInteractionNotificationEnabled,
       base::BindRepeating(
           &VoiceInteractionControllerClient::NotifyNotificationEnabled,
@@ -232,6 +244,7 @@ void VoiceInteractionControllerClient::SetProfile(Profile* profile) {
   NotifyNotificationEnabled();
   NotifyLaunchWithMicOpen();
   NotifyHotwordEnabled();
+  NotifyHotwordAlwaysOn();
 }
 
 void VoiceInteractionControllerClient::Observe(

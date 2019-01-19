@@ -31,6 +31,10 @@ void FakeVoiceInteractionController::NotifyContextEnabled(bool enabled) {
   voice_interaction_context_enabled_ = enabled;
 }
 
+void FakeVoiceInteractionController::NotifyHotwordAlwaysOn(bool enabled) {
+  voice_interaction_hotword_always_on_ = enabled;
+}
+
 void FakeVoiceInteractionController::NotifyHotwordEnabled(bool enabled) {
   voice_interaction_hotword_enabled_ = enabled;
 }

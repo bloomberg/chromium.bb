@@ -62,6 +62,9 @@ interface VoiceInteractionObserver {
   // Called when hotword listening is enabled/disabled.
   OnVoiceInteractionHotwordEnabled(bool enabled);
 
+  // Called when hotword is set to always on/only with power source.
+  OnVoiceInteractionHotwordAlwaysOn(bool always_on);
+
   // Called when voice interaction setup flow completed.
   OnVoiceInteractionSetupCompleted(bool completed);
 
@@ -90,6 +93,9 @@ interface VoiceInteractionController {
 
   // Called when the hotword listening is enabled/disabled.
   NotifyHotwordEnabled(bool enabled);
+
+  // Called when the hotword is set to always on/only with power source.
+  NotifyHotwordAlwaysOn(bool enabled);
 
   // Called when the voice interaction setup complete status is changed.
   NotifySetupCompleted(bool completed);
