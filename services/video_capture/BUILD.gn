@@ -27,13 +27,16 @@ service_manifest("manifest") {
 
 source_set("lib") {
   sources = [
-    "device_factory.h",
+    "broadcasting_receiver.cc",
+    "broadcasting_receiver.h",
     "device_factory_media_to_mojo_adapter.cc",
     "device_factory_media_to_mojo_adapter.h",
     "device_factory_provider_impl.cc",
     "device_factory_provider_impl.h",
     "device_media_to_mojo_adapter.cc",
     "device_media_to_mojo_adapter.h",
+    "push_video_stream_subscription_impl.cc",
+    "push_video_stream_subscription_impl.h",
     "receiver_mojo_to_media_adapter.cc",
     "receiver_mojo_to_media_adapter.h",
     "scoped_access_permission_media_to_mojo_adapter.cc",
