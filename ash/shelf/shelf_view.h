@@ -14,6 +14,8 @@
 #include "ash/public/cpp/shelf_model_observer.h"
 #include "ash/public/interfaces/shelf.mojom.h"
 #include "ash/shelf/ink_drop_button_listener.h"
+#include "ash/shelf/overflow_bubble.h"
+#include "ash/shelf/overflow_bubble_view.h"
 #include "ash/shelf/shelf_button_pressed_metric_tracker.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/system/model/virtual_keyboard_model.h"
@@ -266,9 +268,17 @@ class ASH_EXPORT ShelfView : public views::View,
     return view_model_.get();
   }
 
-  // Return the main shelf. This will return nullptr if this is not called on
-  // the overflow shelf.
-  ShelfView* main_shelf() { return main_shelf_; }
+  // Returns the main shelf. This can be called on either the main shelf
+  // or the overflow shelf.
+  ShelfView* main_shelf() { return main_shelf_ ? main_shelf_ : this; }
+  // Returns the overflow shelf. This can be called on either the main shelf
+  // or the overflow shelf. Returns nullptr if there is no overflow shelf.
+  ShelfView* overflow_shelf() {
+    if (is_overflow_mode())
+      return this;
+    return overflow_bubble_ ? overflow_bubble_->bubble_view()->shelf_view()
+                            : nullptr;
+  }
 
   const ShelfAppButton* drag_view() const { return drag_view_; }
 

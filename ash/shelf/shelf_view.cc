@@ -17,8 +17,6 @@
 #include "ash/screen_util.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/back_button.h"
-#include "ash/shelf/overflow_bubble.h"
-#include "ash/shelf/overflow_bubble_view.h"
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_app_button.h"
@@ -164,54 +162,48 @@ class ShelfFocusSearch : public views::FocusSearch {
       FocusSearch::AnchoredDialogPolicy can_go_into_anchored_dialog,
       views::FocusTraversable** focus_traversable,
       View** focus_traversable_view) override {
-    views::ViewModel* view_model = shelf_view_->view_model();
-    int index = view_model->GetIndexOfView(starting_view);
-    // The back button (item with index 0 on the model) only exists in tablet
-    // mode, so punt focus to the app list button (item with index 1 on the
-    // model).
-    const bool tablet_mode = IsTabletModeEnabled();
-    if (!tablet_mode && index == 0)
-      ++index;
+    // Build a list of all views that we are able to focus: 1) items from the
+    // main shelf, 2) overflow button, 3) items from overflow if applicable.
+    std::vector<views::View*> focusable_views;
+    ShelfView* main_shelf = shelf_view_->main_shelf();
+    ShelfView* overflow_shelf = shelf_view_->overflow_shelf();
 
-    // Increment or decrement index based on the cycle, unless we are at either
-    // edge, then we loop to the back or front.
-    const bool is_overflow_shelf = shelf_view_->is_overflow_mode();
-    const bool overflow_shown =
-        is_overflow_shelf ? shelf_view_->main_shelf()->IsShowingOverflowBubble()
-                          : shelf_view_->IsShowingOverflowBubble();
-    if (search_direction == FocusSearch::SearchDirection::kBackwards) {
-      --index;
-      if (index < 0 || (index == 0 && !tablet_mode)) {
-        index = overflow_shown ? view_model->view_size() - 1
-                               : shelf_view_->last_visible_index();
+    for (int i = main_shelf->first_visible_index();
+         i <= main_shelf->last_visible_index(); ++i) {
+      views::View* view = main_shelf->view_model()->view_at(i);
+      if (view != main_shelf->GetBackButton() || IsTabletModeEnabled())
+        focusable_views.push_back(view);
+    }
+    if (main_shelf->GetOverflowButton()->visible())
+      focusable_views.push_back(main_shelf->GetOverflowButton());
+    const int overflow_cutoff = static_cast<int>(focusable_views.size());
+    if (main_shelf->IsShowingOverflowBubble() && overflow_shelf) {
+      for (int i = overflow_shelf->first_visible_index();
+           i <= overflow_shelf->last_visible_index(); ++i) {
+        focusable_views.push_back(overflow_shelf->view_model()->view_at(i));
       }
-    } else {
-      ++index;
-      if (overflow_shown && index >= view_model->view_size()) {
-        index = 0;
-      } else if (!overflow_shown && index > shelf_view_->last_visible_index()) {
-        index = is_overflow_shelf ? shelf_view_->first_visible_index() : 0;
-      }
-
-      // Skip the back button (item with index 0) when not in tablet mode.
-      if (!tablet_mode && index == 0)
-        index = 1;
     }
 
-    if (overflow_shown) {
-      // Switch to the other shelf if |index| is not visible on this shelf.
-      if (index < shelf_view_->first_visible_index() ||
-          index > shelf_view_->last_visible_index()) {
-        ShelfView* new_shelf_view =
-            is_overflow_shelf
-                ? shelf_view_->main_shelf()
-                : shelf_view_->overflow_bubble()->bubble_view()->shelf_view();
-        if (is_overflow_shelf)
-          shelf_view_->shelf_widget()->set_activated_from_overflow_bubble(true);
-        return new_shelf_view->view_model()->view_at(index);
+    // Where are we starting from?
+    int start_index = 0;
+    for (size_t i = 0; i < focusable_views.size(); ++i) {
+      if (focusable_views[i] == starting_view) {
+        start_index = i;
+        break;
       }
     }
-    return view_model->view_at(index);
+    int new_index =
+        start_index +
+        (search_direction == FocusSearch::SearchDirection::kBackwards ? -1 : 1);
+    // Loop around.
+    if (new_index < 0)
+      new_index = focusable_views.size() - 1;
+    else if (new_index >= static_cast<int>(focusable_views.size()))
+      new_index = 0;
+
+    if (new_index >= overflow_cutoff)
+      shelf_view_->shelf_widget()->set_activated_from_overflow_bubble(true);
+    return focusable_views[new_index];
   }
 
  private:
