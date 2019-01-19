@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FUCHSIA_NET_HTTP_URL_LOADER_IMPL_H_
-#define FUCHSIA_NET_HTTP_URL_LOADER_IMPL_H_
+#ifndef FUCHSIA_HTTP_URL_LOADER_IMPL_H_
+#define FUCHSIA_HTTP_URL_LOADER_IMPL_H_
 
 #include <fuchsia/net/oldhttp/cpp/fidl.h>
 #include <fuchsia/sys/cpp/fidl.h>
@@ -14,8 +14,6 @@
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
-
-namespace net_http {
 
 // URLLoader implementation. This class manages one network request per
 // instance. Internally, this class uses a |net::URLRequest| object to handle
@@ -120,6 +118,4 @@ class URLLoaderImpl : public ::fuchsia::net::oldhttp::URLLoader,
   DISALLOW_COPY_AND_ASSIGN(URLLoaderImpl);
 };
 
-}  // namespace net_http
-
-#endif  // FUCHSIA_NET_HTTP_URL_LOADER_IMPL_H_
+#endif  // FUCHSIA_HTTP_URL_LOADER_IMPL_H_

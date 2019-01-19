@@ -556,7 +556,7 @@ copy("restaged_packages") {
   sources = [
     "$root_gen_dir/fuchsia/cast_runner/cast_runner.far",
     "$root_gen_dir/fuchsia/chromium/chromium.far",
-    "$root_gen_dir/fuchsia/net_http/http/http.far",
+    "$root_gen_dir/fuchsia/http/http/http.far",
     "$root_gen_dir/fuchsia/web_runner/web_runner.far",
   ]
   outputs = [
@@ -566,7 +566,7 @@ copy("restaged_packages") {
     ":castrunner_pkg",
     ":service_pkg",
     ":webrunner_pkg",
-    "net_http:http_pkg",
+    "http:http_pkg",
   ]
 }
 

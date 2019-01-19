@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FUCHSIA_NET_HTTP_HTTP_SERVICE_IMPL_H_
-#define FUCHSIA_NET_HTTP_HTTP_SERVICE_IMPL_H_
+#ifndef FUCHSIA_HTTP_HTTP_SERVICE_IMPL_H_
+#define FUCHSIA_HTTP_HTTP_SERVICE_IMPL_H_
 
 #include <fuchsia/net/oldhttp/cpp/fidl.h>
 #include <lib/fidl/cpp/interface_request.h>
 
 #include "net/url_request/url_request_context.h"
-
-namespace net_http {
 
 // Implements the Fuchsia HttpService API, using the //net library.
 class HttpServiceImpl : public ::fuchsia::net::oldhttp::HttpService {
@@ -27,6 +25,4 @@ class HttpServiceImpl : public ::fuchsia::net::oldhttp::HttpService {
   DISALLOW_COPY_AND_ASSIGN(HttpServiceImpl);
 };
 
-}  // namespace net_http
-
-#endif  // FUCHSIA_NET_HTTP_HTTP_SERVICE_IMPL_H_
+#endif  // FUCHSIA_HTTP_HTTP_SERVICE_IMPL_H_

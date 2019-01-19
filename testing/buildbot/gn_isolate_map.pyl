@@ -1109,7 +1109,7 @@
     "type": "fuzzer",
   },
   "http_service_tests": {
-    "label": "//fuchsia/net_http:http_service_tests",
+    "label": "//fuchsia/http:http_service_tests",
     "type": "console_test_launcher",
   },
   "hunspell_fuzzer": {

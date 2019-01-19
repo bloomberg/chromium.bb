@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/net_http/url_loader_impl.h"
+#include "fuchsia/http/url_loader_impl.h"
 
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/message_loop/message_loop_current.h"
@@ -11,8 +11,6 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/redirect_info.h"
-
-namespace net_http {
 
 namespace oldhttp = ::fuchsia::net::oldhttp;
 
@@ -429,5 +427,3 @@ oldhttp::URLResponse URLLoaderImpl::BuildResponse(int net_error) {
 
   return response;
 }
-
-}  // namespace net_http
