@@ -1402,7 +1402,8 @@ void ContainerNode::SetRestyleFlag(DynamicRestyleFlags mask) {
   EnsureRareData().SetRestyleFlag(mask);
 }
 
-void ContainerNode::RecalcDescendantStyles(StyleRecalcChange change) {
+void ContainerNode::RecalcDescendantStyles(StyleRecalcChange change,
+                                           bool calc_invisible) {
   DCHECK(GetDocument().InStyleRecalc());
   DCHECK(change >= kUpdatePseudoElements || ChildNeedsStyleRecalc());
   DCHECK(!NeedsStyleRecalc());
@@ -1413,7 +1414,7 @@ void ContainerNode::RecalcDescendantStyles(StyleRecalcChange change) {
     } else if (child->IsElementNode()) {
       Element* element = ToElement(child);
       if (element->ShouldCallRecalcStyle(change))
-        element->RecalcStyle(change);
+        element->RecalcStyle(change, calc_invisible);
     }
   }
 }

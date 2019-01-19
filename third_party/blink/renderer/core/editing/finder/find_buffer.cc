@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/editing/finder/find_buffer.h"
 
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/dom/text.h"
@@ -11,6 +12,7 @@
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_searcher_icu.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
+#include "third_party/blink/renderer/core/invisible_dom/invisible_dom.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
@@ -76,6 +78,37 @@ unsigned FindBuffer::Results::CountForTesting() {
   return result;
 }
 
+void FindBuffer::InvisibleLayoutScope::EnsureRecalc(Node& block_root) {
+  if (did_recalc_)
+    return;
+  did_recalc_ = true;
+  DCHECK(block_root.GetDocument().Lifecycle().GetState() >=
+         DocumentLifecycle::kStyleClean);
+  if (InvisibleDOM::IsInsideInvisibleSubtree(block_root))
+    invisible_root_ = InvisibleDOM::InvisibleRoot(block_root);
+  else
+    invisible_root_ = &ToElement(block_root);
+  invisible_root_->GetDocument().SetFindInPageRoot(invisible_root_);
+  invisible_root_->SetNeedsStyleRecalc(
+      kSubtreeStyleChange,
+      StyleChangeReasonForTracing::Create(style_change_reason::kFindInvisible));
+  // TODO(rakina): This currently does layout too and might be expensive. In the
+  // future, we might to figure out a way to make NGOffsetMapping work with only
+  // style & layout tree so that we don't have to do layout here.
+  invisible_root_->GetDocument()
+      .UpdateStyleAndLayoutIgnorePendingStylesheetsConsideringInvisibleNodes();
+}
+
+FindBuffer::InvisibleLayoutScope::~InvisibleLayoutScope() {
+  if (!did_recalc_)
+    return;
+  invisible_root_->GetDocument().SetFindInPageRoot(nullptr);
+  invisible_root_->SetNeedsStyleRecalc(
+      kSubtreeStyleChange,
+      StyleChangeReasonForTracing::Create(style_change_reason::kFindInvisible));
+  invisible_root_->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+}
+
 bool ShouldIgnoreContents(const Node& node) {
   if (!node.IsHTMLElement())
     return false;
@@ -138,7 +171,7 @@ Node* GetVisibleTextNode(Node& start_node) {
   return nullptr;
 }
 
-const Node& GetLowestDisplayBlockInclusiveAncestor(const Node& start_node) {
+Node& GetLowestDisplayBlockInclusiveAncestor(const Node& start_node) {
   // Gets lowest inclusive ancestor that has block display value.
   // <div id=outer>a<div id=inner>b</div>c</div>
   // If we run this on "a" or "c" text node in we will get the outer div.
@@ -162,16 +195,6 @@ std::unique_ptr<FindBuffer::Results> FindBuffer::FindMatches(
   return std::make_unique<Results>(buffer_, search_text_16_bit, options);
 }
 
-EphemeralRangeInFlatTree FindBuffer::RangeFromBufferIndex(
-    unsigned start_index,
-    unsigned end_index) const {
-  PositionInFlatTree start_position =
-      PositionAtStartOfCharacterAtIndex(start_index);
-  PositionInFlatTree end_position =
-      PositionAtEndOfCharacterAtIndex(end_index - 1);
-  return EphemeralRangeInFlatTree(start_position, end_position);
-}
-
 // Collects text until block boundary located at or after |start_node|
 // to |buffer_|. Saves the next starting node after the block to
 // |node_after_block_|.
@@ -182,24 +205,41 @@ void FindBuffer::CollectTextUntilBlockBoundary(Node& start_node) {
     node_after_block_ = nullptr;
     return;
   }
-
-  const Node& block_ancestor = GetLowestDisplayBlockInclusiveAncestor(*node);
+  Node& block_ancestor = GetLowestDisplayBlockInclusiveAncestor(*node);
   const Node* just_after_block = FlatTreeTraversal::Next(
       FlatTreeTraversal::LastWithinOrSelf(block_ancestor));
   const LayoutBlockFlow* last_block_flow = nullptr;
+
+  // Calculate layout tree and style for invisible nodes inside the whole
+  // subtree of |block_ancestor|.
+  if (node && InvisibleDOM::IsInsideInvisibleSubtree(*node))
+    invisible_layout_scope_.EnsureRecalc(block_ancestor);
 
   // Collect all text under |block_ancestor| to |buffer_|,
   // unless we meet another block on the way. If so, we should split.
   // Example: <div id="outer">a<span>b</span>c<div>d</div></div>
   // Will try to collect all text in outer div but will actually
   // stop when it encounters the inner div. So buffer will be "abc".
-  const Node* first_traversed_node = node;
+  Node* const first_traversed_node = node;
   while (node && node != just_after_block) {
     if (ShouldIgnoreContents(*node)) {
       // Move the node so we wouldn't encounter this node or its descendants
       // later.
       buffer_.push_back(kObjectReplacementCharacter);
       node = FlatTreeTraversal::NextSkippingChildren(*node);
+      continue;
+    }
+    if (node->IsElementNode() && ToElement(node)->HasInvisibleAttribute() &&
+        !invisible_layout_scope_.DidRecalc()) {
+      // We found and invisible node. Calculate the layout & style for the whole
+      // block at once, and we need to recalculate the NGOffsetMapping and start
+      // from the beginning again because the layout tree had changed.
+      mapping_needs_recalc_ = true;
+      node = first_traversed_node;
+      last_block_flow = nullptr;
+      offset_mapping_storage_ = nullptr;
+      buffer_.clear();
+      invisible_layout_scope_.EnsureRecalc(block_ancestor);
       continue;
     }
     const ComputedStyle* style = node->EnsureComputedStyle();
@@ -240,6 +280,17 @@ void FindBuffer::CollectTextUntilBlockBoundary(Node& start_node) {
   FoldQuoteMarksAndSoftHyphens(buffer_.data(), buffer_.size());
 }
 
+EphemeralRangeInFlatTree FindBuffer::RangeFromBufferIndex(
+    unsigned start_index,
+    unsigned end_index) const {
+  DCHECK_LE(start_index, end_index);
+  PositionInFlatTree start_position =
+      PositionAtStartOfCharacterAtIndex(start_index);
+  PositionInFlatTree end_position =
+      PositionAtEndOfCharacterAtIndex(end_index - 1);
+  return EphemeralRangeInFlatTree(start_position, end_position);
+}
+
 FindBuffer::BufferNodeMapping FindBuffer::MappingForIndex(
     unsigned index) const {
   // Get the first entry that starts at a position higher than offset, and
@@ -272,9 +323,10 @@ PositionInFlatTree FindBuffer::PositionAtEndOfCharacterAtIndex(
 
 void FindBuffer::AddTextToBuffer(const Text& text_node,
                                  LayoutBlockFlow& block_flow) {
-  if (!offset_mapping_storage_) {
+  if (!offset_mapping_ || mapping_needs_recalc_) {
     offset_mapping_ =
         NGInlineNode::GetOffsetMapping(&block_flow, &offset_mapping_storage_);
+    mapping_needs_recalc_ = false;
   }
   const String mapped_text = offset_mapping_->GetText();
   const NGMappingUnitRange range =
