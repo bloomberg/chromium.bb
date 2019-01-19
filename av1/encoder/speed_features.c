@@ -322,7 +322,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     // See aomedia:1778.
     // sf->adaptive_motion_search = 1;
     sf->recode_loop = ALLOW_RECODE_KFARFGF;
-    sf->use_transform_domain_distortion = 1;
+    sf->use_transform_domain_distortion = boosted ? 1 : 2;
     sf->use_accurate_subpel_search = USE_2_TAPS;
     sf->adaptive_rd_thresh = 2;
     sf->tx_type_search.prune_mode = PRUNE_2D_FAST;
