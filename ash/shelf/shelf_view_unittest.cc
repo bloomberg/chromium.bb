@@ -3536,6 +3536,10 @@ TEST_F(ShelfViewOverflowFocusTest, ForwardCycling) {
       test_api_->GetViewAt(last_item_on_main_shelf_index_));
   EXPECT_TRUE(test_api_->GetViewAt(last_item_on_main_shelf_index_)->HasFocus());
 
+  // Focus the overflow button.
+  DoTab();
+  EXPECT_TRUE(test_api_->overflow_button()->HasFocus());
+
   DoTab();
   EXPECT_TRUE(test_api_->GetViewAt(1)->HasFocus());
 }
@@ -3543,6 +3547,9 @@ TEST_F(ShelfViewOverflowFocusTest, ForwardCycling) {
 // Tests that when cycling through the items with shift tab, the items in the
 // overflow shelf are ignored because it is not visible.
 TEST_F(ShelfViewOverflowFocusTest, BackwardCycling) {
+  DoShiftTab();
+  EXPECT_TRUE(test_api_->overflow_button()->HasFocus());
+
   DoShiftTab();
   EXPECT_TRUE(test_api_->GetViewAt(last_item_on_main_shelf_index_)->HasFocus());
 }
@@ -3555,6 +3562,10 @@ TEST_F(ShelfViewOverflowFocusTest, ForwardCyclingWithBubbleOpen) {
   // Focus the last item on the main shelf.
   shelf_view_->shelf_widget()->GetFocusManager()->SetFocusedView(
       test_api_->GetViewAt(last_item_on_main_shelf_index_));
+
+  // Focus the overflow button.
+  DoTab();
+  EXPECT_TRUE(test_api_->overflow_button()->HasFocus());
 
   // Tests that after pressing tab once more, the overflow bubble widget now is
   // active, and the first item on the overflow bubble shelf has focus.
@@ -3604,9 +3615,13 @@ TEST_F(ShelfViewOverflowFocusTest, BackwardCyclingWithBubbleOpen) {
           overflow_shelf_test_api_->GetViewAt(first_index_overflow_shelf));
 
   // Tests that after pressing shift tab once, the main shelf is active and
-  // the last item on the main shelf has focus.
+  // the overflow button has focus.
   DoShiftTab();
   EXPECT_TRUE(shelf_view_->shelf_widget()->IsActive());
+  EXPECT_TRUE(test_api_->overflow_button()->HasFocus());
+
+  // One more shift tab and the last item on the main shelf has focus.
+  DoShiftTab();
   EXPECT_TRUE(test_api_->GetViewAt(last_item_on_main_shelf_index_)->HasFocus());
 }
 
