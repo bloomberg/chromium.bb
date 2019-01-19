@@ -745,22 +745,19 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
       last_scrollbar_under_mouse_ = nullptr;
   }
 
-  if (event_result != WebInputEventResult::kNotHandled) {
-    // Scrollbars should get events anyway, even disabled controls might be
-    // scrollable.
-    PassMousePressEventToScrollbar(mev);
-  } else {
+  // Scrollbars should get events anyway, even disabled controls might be
+  // scrollable.
+  if (PassMousePressEventToScrollbar(mev))
+    event_result = WebInputEventResult::kHandledSystem;
+
+  if (event_result == WebInputEventResult::kNotHandled) {
     if (ShouldRefetchEventTarget(mev)) {
       HitTestRequest request(HitTestRequest::kReadOnly |
                              HitTestRequest::kActive);
       mev = frame_->GetDocument()->PerformMouseEventHitTest(
           request, document_point, mouse_event);
     }
-
-    if (PassMousePressEventToScrollbar(mev))
-      event_result = WebInputEventResult::kHandledSystem;
-    else
-      event_result = mouse_event_manager_->HandleMousePressEvent(mev);
+    event_result = mouse_event_manager_->HandleMousePressEvent(mev);
   }
 
   if (mev.GetHitTestResult().InnerNode() &&
