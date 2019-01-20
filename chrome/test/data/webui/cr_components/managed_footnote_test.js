@@ -3,13 +3,6 @@
 // found in the LICENSE file.
 
 suite('managed-footnote', function() {
-  suiteSetup(function() {
-    loadTimeData.data = {
-      isManaged: false,
-      managedByOrg: '',
-    };
-  });
-
   setup(function() {
     PolymerTest.clearBody();
   });
@@ -60,5 +53,13 @@ suite('managed-footnote', function() {
     assertTrue(footnote.shadowRoot.textContent.includes(targetMessage));
     // The <a> element should have the right link.
     assertEquals(supportUrl, footnote.$$('a').href);
+  });
+
+  test('Responds to is-managed-changed events', function() {
+    const footnote = setupTestElement(false, '');
+    assertEquals('none', getComputedStyle(footnote).display);
+
+    cr.webUIListenerCallback('is-managed-changed', [true]);
+    assertNotEquals('none', getComputedStyle(footnote).display);
   });
 });

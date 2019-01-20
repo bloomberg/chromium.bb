@@ -12,9 +12,9 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/managed_ui.h"
-#include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/bookmarks/bookmarks_message_handler.h"
+#include "chrome/browser/ui/webui/dark_mode_handler.h"
+#include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/plural_string_handler.h"
 #include "chrome/common/chrome_features.h"
@@ -43,8 +43,6 @@ void AddLocalizedString(content::WebUIDataSource* source,
 content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIBookmarksHost);
-
-  source->AddBoolean("isManaged", chrome::ShouldDisplayManagedUi(profile));
 
   // Build an Accelerator to describe undo shortcut
   // NOTE: the undo shortcut is also defined in bookmarks/command_manager.js
@@ -77,7 +75,6 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
   AddLocalizedString(source, "itemsSelected",
                      IDS_BOOKMARK_MANAGER_ITEMS_SELECTED);
   AddLocalizedString(source, "listAxLabel", IDS_BOOKMARK_MANAGER_LIST_AX_LABEL);
-  AddLocalizedString(source, "managedByOrg", IDS_MANAGED_BY_ORG_WITH_HYPERLINK);
   AddLocalizedString(source, "menuAddBookmark",
                      IDS_BOOKMARK_MANAGER_MENU_ADD_BOOKMARK);
   AddLocalizedString(source, "menuAddFolder",
@@ -222,6 +219,7 @@ BookmarksUI::BookmarksUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   auto* source = CreateBookmarksUIHTMLSource(profile);
   DarkModeHandler::Initialize(web_ui, source);
+  ManagedUIHandler::Initialize(web_ui, source);
   content::WebUIDataSource::Add(profile, source);
 
   auto plural_string_handler = std::make_unique<PluralStringHandler>();

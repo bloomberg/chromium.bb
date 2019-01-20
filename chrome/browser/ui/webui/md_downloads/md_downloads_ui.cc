@@ -13,8 +13,8 @@
 #include "base/values.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/managed_ui.h"
 #include "chrome/browser/ui/webui/dark_mode_handler.h"
+#include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/md_downloads/md_downloads_dom_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -111,9 +111,6 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddResourcePath("md_downloads.mojom-lite.js",
                           IDR_MD_DOWNLOADS_MOJO_LITE_JS);
 
-  source->AddBoolean("isManaged", chrome::ShouldDisplayManagedUi(profile));
-  source->AddLocalizedString("managedByOrg", IDS_MANAGED_BY_ORG_WITH_HYPERLINK);
-
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->UseGzip(base::BindRepeating([](const std::string& path) {
     return path != "1x/incognito_marker.png" && path != "1x/no_downloads.png" &&
@@ -173,6 +170,7 @@ MdDownloadsUI::MdDownloadsUI(content::WebUI* web_ui)
   // Set up the chrome://downloads/ source.
   content::WebUIDataSource* source = CreateDownloadsUIHTMLSource(profile);
   DarkModeHandler::Initialize(web_ui, source);
+  ManagedUIHandler::Initialize(web_ui, source);
   content::WebUIDataSource::Add(profile, source);
   content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));
 

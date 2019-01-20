@@ -1113,6 +1113,8 @@ jumbo_split_static_library("ui") {
       "webui/identity_internals_ui.h",
       "webui/inspect_ui.cc",
       "webui/inspect_ui.h",
+      "webui/managed_ui_handler.cc",
+      "webui/managed_ui_handler.h",
       "webui/management_ui.cc",
       "webui/management_ui.h",
       "webui/management_ui_handler.cc",

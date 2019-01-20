@@ -16,9 +16,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/chrome_extension_browser_constants.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/managed_ui.h"
 #include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/localized_string.h"
+#include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -121,7 +121,6 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
     {"controlledSettingPolicy", IDS_CONTROLLED_SETTING_POLICY},
     {"done", IDS_DONE},
     {"learnMore", IDS_LEARN_MORE},
-    {"managedByOrg", IDS_MANAGED_BY_ORG_WITH_HYPERLINK},
     {"noSearchResults", IDS_SEARCH_NO_RESULTS},
     {"ok", IDS_OK},
     {"save", IDS_SAVE},
@@ -284,8 +283,6 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
   AddLocalizedStringsBulk(source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
 
-  source->AddBoolean("isManaged", chrome::ShouldDisplayManagedUi(profile));
-
   source->AddString("errorLinesNotShownSingular",
                     l10n_util::GetPluralStringFUTF16(
                         IDS_MD_EXTENSIONS_ERROR_LINES_NOT_SHOWN, 1));
@@ -356,6 +353,7 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   source = CreateMdExtensionsSource(profile, *in_dev_mode_);
   DarkModeHandler::Initialize(web_ui, source);
+  ManagedUIHandler::Initialize(web_ui, source);
 
 #if defined(OS_CHROMEOS)
   auto kiosk_app_handler = std::make_unique<chromeos::KioskAppsHandler>(
