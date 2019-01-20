@@ -57,7 +57,7 @@
     </request>
   </interface>
 
-  <interface name="zcr_keyboard_device_configuration_v1" version="1">
+  <interface name="zcr_keyboard_device_configuration_v1" version="2">
     <description summary="extension of wl_keyboard protocol">
       The zcr_keyboard_device_configuration_v1 interface extends the wl_keyboard
       interface with events to describe device configuration of a keyboard.
@@ -81,6 +81,17 @@
         keyboard is in use.
       </description>
       <arg name="type" type="uint" enum="keyboard_type" summary="new device type"/>
+    </event>
+
+    <!-- Version 2 additions -->
+
+    <event name="layout_change" since="2">
+      <description summary="keyboard layout changed">
+        Notification that the user is switching to a new keyboard layout.
+        This is an alternative to keymap event in wl_keyboard interface. The
+        client responds to one of them, and the other is ignored.
+      </description>
+      <arg name="name" type="string" summary="XKB layout name e.g. us(dvorak)"/>
     </event>
   </interface>
 
