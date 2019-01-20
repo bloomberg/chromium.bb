@@ -28,6 +28,7 @@
 #include "third_party/icu/source/common/unicode/ubidi.h"
 #include "third_party/icu/source/common/unicode/utf16.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkFontMetrics.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/decorated_text.h"

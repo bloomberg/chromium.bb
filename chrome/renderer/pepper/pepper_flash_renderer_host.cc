@@ -259,7 +259,7 @@ int32_t PepperFlashRendererHost::OnDrawGlyphs(
   paint.setColor(params.color);
 
   SkFont font(std::move(typeface), SkIntToScalar(params.font_desc.size));
-  paint.setHinting(SkFontHinting::kFull);
+  font.setHinting(SkFontHinting::kFull);
   if (params.allow_subpixel_aa) {
     font.setSubpixel(true);
     font.setEdging(SkFont::Edging::kSubpixelAntiAlias);

@@ -35,6 +35,7 @@
 #include <memory>
 #include <utility>
 
+#include "SkFontMetrics.h"
 #include "SkPath.h"
 #include "SkTypeface.h"
 #include "SkTypes.h"
