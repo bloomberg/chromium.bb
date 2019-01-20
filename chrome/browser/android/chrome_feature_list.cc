@@ -323,6 +323,9 @@ const base::Feature kEphemeralTab{"EphemeralTab",
 const base::Feature kExploreSites{"ExploreSites",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kForegroundNotificationManager{
+    "ForegroundNotificationManager", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kGestureNavigation{"GestureNavigation",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
