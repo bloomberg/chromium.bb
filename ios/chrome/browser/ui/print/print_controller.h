@@ -8,13 +8,14 @@
 #import <UIKit/UIKit.h>
 
 #include "base/memory/ref_counted.h"
+#import "ios/chrome/browser/web/web_state_printer.h"
 
 namespace net {
 class URLRequestContextGetter;
 }  // namespace net
 
 // Interface for printing.
-@interface PrintController : NSObject
+@interface PrintController : NSObject <WebStatePrinter>
 
 - (instancetype)initWithContextGetter:
     (scoped_refptr<net::URLRequestContextGetter>)getter
