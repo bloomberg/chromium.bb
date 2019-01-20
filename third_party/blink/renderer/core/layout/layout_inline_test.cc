@@ -116,11 +116,37 @@ TEST_F(LayoutInlineTest, RegionHitTest) {
   HitTestResult hit_result(hit_request, location);
   LayoutPoint hit_offset;
 
-  bool hit_outcome =
-      lots_of_boxes->HitTestCulledInline(hit_result, location, hit_offset);
-  // Assert checks that we both hit something and that the area covered
-  // by "something" totally contains the hit region.
-  EXPECT_TRUE(hit_outcome);
+  // The return value of HitTestCulledInline() indicates whether the hit test
+  // rect is completely contained by the part of |lots_of_boxes| being hit-
+  // tested. Legacy hit tests the entire LayoutObject all at once while NG hit
+  // tests line by line. Therefore, legacy returns true while NG is false.
+  //
+  // Note: The legacy behavior seems wrong. In a full list-based hit testing,
+  // after testing the node in the last intersecting line, the |true| return
+  // value of HitTestCulledInline() terminates the hit test process, and nodes
+  // in the previous lines are not tested.
+  //
+  // TODO(xiaochengh): Expose this issue in a real Chrome use case.
+
+  if (!lots_of_boxes->IsInLayoutNGInlineFormattingContext()) {
+    bool hit_outcome =
+        lots_of_boxes->HitTestCulledInline(hit_result, location, hit_offset);
+    // Assert checks that we both hit something and that the area covered
+    // by "something" totally contains the hit region.
+    EXPECT_TRUE(hit_outcome);
+    return;
+  }
+
+  const LayoutBlockFlow* div = ToLayoutBlockFlow(lots_of_boxes->Parent());
+  for (const NGPaintFragment* line : div->PaintFragment()->Children()) {
+    DCHECK(line->PhysicalFragment().IsLineBox());
+    bool hit_outcome = lots_of_boxes->HitTestCulledInline(hit_result, location,
+                                                          hit_offset, line);
+    EXPECT_FALSE(hit_outcome);
+  }
+  // Make sure that the inline is hit
+  const Node* span = lots_of_boxes->GetNode();
+  EXPECT_EQ(span, hit_result.InnerNode());
 }
 
 // crbug.com/844746
