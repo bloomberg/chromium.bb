@@ -2058,6 +2058,9 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "AllocationSamplingFrequency": "2500"
+                    },
                     "enable_features": [
                         "GwpAsanMalloc"
                     ]
