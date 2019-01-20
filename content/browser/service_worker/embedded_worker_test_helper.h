@@ -77,7 +77,7 @@ class EmbeddedWorkerTestHelper {
     void StartWorker(mojom::EmbeddedWorkerStartParamsPtr params) override;
     void StopWorker() override;
     void ResumeAfterDownload() override;
-    void AddMessageToConsole(blink::WebConsoleMessage::Level level,
+    void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                              const std::string& message) override;
     void BindDevToolsAgent(
         blink::mojom::DevToolsAgentHostAssociatedPtrInfo,

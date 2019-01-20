@@ -3077,7 +3077,7 @@ TEST_F(ViewportTest, viewportWarnings2) {
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(1U, web_frame_client.messages.size());
-  EXPECT_EQ(WebConsoleMessage::kLevelWarning,
+  EXPECT_EQ(mojom::ConsoleMessageLevel::kWarning,
             web_frame_client.messages[0].level);
   EXPECT_STREQ("The key \"wwidth\" is not recognized and ignored.",
                web_frame_client.messages[0].text.Utf8().c_str());
@@ -3104,7 +3104,7 @@ TEST_F(ViewportTest, viewportWarnings3) {
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(1U, web_frame_client.messages.size());
-  EXPECT_EQ(WebConsoleMessage::kLevelWarning,
+  EXPECT_EQ(mojom::ConsoleMessageLevel::kWarning,
             web_frame_client.messages[0].level);
   EXPECT_STREQ(
       "The value \"unrecognized-width\" for key \"width\" is invalid, and has "
@@ -3133,7 +3133,7 @@ TEST_F(ViewportTest, viewportWarnings4) {
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(1U, web_frame_client.messages.size());
-  EXPECT_EQ(WebConsoleMessage::kLevelWarning,
+  EXPECT_EQ(mojom::ConsoleMessageLevel::kWarning,
             web_frame_client.messages[0].level);
   EXPECT_STREQ(
       "The value \"123x456\" for key \"width\" was truncated to its numeric "
@@ -3163,7 +3163,7 @@ TEST_F(ViewportTest, viewportWarnings5) {
 
   EXPECT_EQ(1U, web_frame_client.messages.size());
 
-  EXPECT_EQ(WebConsoleMessage::kLevelWarning,
+  EXPECT_EQ(mojom::ConsoleMessageLevel::kWarning,
             web_frame_client.messages[0].level);
   EXPECT_STREQ(
       "Error parsing a meta element's content: ';' is not a valid key-value "
@@ -3192,7 +3192,7 @@ TEST_F(ViewportTest, viewportWarnings6) {
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(1U, web_frame_client.messages.size());
-  EXPECT_EQ(WebConsoleMessage::kLevelWarning,
+  EXPECT_EQ(mojom::ConsoleMessageLevel::kWarning,
             web_frame_client.messages[0].level);
   EXPECT_STREQ(
       "The value \"\" for key \"width\" is invalid, and has been ignored.",

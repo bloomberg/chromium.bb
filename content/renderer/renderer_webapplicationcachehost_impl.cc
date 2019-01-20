@@ -44,9 +44,9 @@ void RendererWebApplicationCacheHostImpl::OnLogMessage(
     return;
   // TODO(michaeln): Make app cache host per-frame and correctly report to the
   // involved frame.
-  frame->ToWebLocalFrame()->AddMessageToConsole(
-      WebConsoleMessage(static_cast<WebConsoleMessage::Level>(log_level),
-                        blink::WebString::FromUTF8(message.c_str())));
+  frame->ToWebLocalFrame()->AddMessageToConsole(WebConsoleMessage(
+      static_cast<blink::mojom::ConsoleMessageLevel>(log_level),
+      blink::WebString::FromUTF8(message.c_str())));
 }
 
 void RendererWebApplicationCacheHostImpl::OnContentBlocked(

@@ -770,8 +770,8 @@ void ServiceWorkerVersion::ReportError(blink::ServiceWorkerStatusCode status,
 }
 
 void ServiceWorkerVersion::ReportForceUpdateToDevTools() {
-  embedded_worker_->AddMessageToConsole(blink::WebConsoleMessage::kLevelWarning,
-                                        kForceUpdateInfoMessage);
+  embedded_worker_->AddMessageToConsole(
+      blink::mojom::ConsoleMessageLevel::kWarning, kForceUpdateInfoMessage);
 }
 
 void ServiceWorkerVersion::SetStartWorkerStatusCode(
@@ -1792,8 +1792,8 @@ void ServiceWorkerVersion::OnPingTimeout() {
          running_status() == EmbeddedWorkerStatus::RUNNING);
   // TODO(falken): Change the error code to
   // blink::ServiceWorkerStatusCode::kErrorTimeout.
-  embedded_worker_->AddMessageToConsole(blink::WebConsoleMessage::kLevelVerbose,
-                                        kNotRespondingErrorMesage);
+  embedded_worker_->AddMessageToConsole(
+      blink::mojom::ConsoleMessageLevel::kVerbose, kNotRespondingErrorMesage);
   embedded_worker_->StopIfNotAttachedToDevTools();
 }
 

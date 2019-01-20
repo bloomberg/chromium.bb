@@ -144,7 +144,7 @@ void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::
 }
 
 void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::
-    AddMessageToConsole(blink::WebConsoleMessage::Level level,
+    AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                         const std::string& message) {
   // TODO(shimazu): Pass these arguments to the test helper when a test is
   // necessary to check them individually.

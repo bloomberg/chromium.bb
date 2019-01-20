@@ -28,6 +28,7 @@ mojom("mojom_platform") {
     "cookie_store/cookie_store.mojom",
     "crash/crash_memory_metrics_reporter.mojom",
     "csp/content_security_policy.mojom",
+    "devtools/console_message.mojom",
     "devtools/devtools_agent.mojom",
     "dom_storage/session_storage_namespace.mojom",
     "dom_storage/storage_area.mojom",

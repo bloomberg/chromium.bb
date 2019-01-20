@@ -2548,7 +2548,7 @@ bool PrintRenderFrameHelper::ScriptingThrottler::IsAllowed(
   blink::WebString message(
       blink::WebString::FromASCII("Ignoring too frequent calls to print()."));
   frame->AddMessageToConsole(blink::WebConsoleMessage(
-      blink::WebConsoleMessage::kLevelWarning, message));
+      blink::mojom::ConsoleMessageLevel::kWarning, message));
   return false;
 }
 

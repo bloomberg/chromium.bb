@@ -486,7 +486,7 @@ net::Error ServiceWorkerWriteToCacheJob::NotifyFinishedCaching(
     // occurred because the worker stops soon after receiving the error
     // response.
     version_->embedded_worker()->AddMessageToConsole(
-        blink::WebConsoleMessage::kLevelError,
+        blink::mojom::ConsoleMessageLevel::kError,
         status_message.empty() ? kServiceWorkerFetchScriptError
                                : status_message);
   } else {

@@ -737,16 +737,16 @@ void WebLocalFrameImpl::AddMessageToConsole(const WebConsoleMessage& message) {
 
   MessageLevel web_core_message_level = kInfoMessageLevel;
   switch (message.level) {
-    case WebConsoleMessage::kLevelVerbose:
+    case mojom::ConsoleMessageLevel::kVerbose:
       web_core_message_level = kVerboseMessageLevel;
       break;
-    case WebConsoleMessage::kLevelInfo:
+    case mojom::ConsoleMessageLevel::kInfo:
       web_core_message_level = kInfoMessageLevel;
       break;
-    case WebConsoleMessage::kLevelWarning:
+    case mojom::ConsoleMessageLevel::kWarning:
       web_core_message_level = kWarningMessageLevel;
       break;
-    case WebConsoleMessage::kLevelError:
+    case mojom::ConsoleMessageLevel::kError:
       web_core_message_level = kErrorMessageLevel;
       break;
   }
@@ -2141,7 +2141,7 @@ void WebLocalFrameImpl::RenderFallbackContent() const {
 void WebLocalFrameImpl::ReportContentSecurityPolicyViolation(
     const blink::WebContentSecurityPolicyViolation& violation) {
   AddMessageToConsole(blink::WebConsoleMessage(
-      WebConsoleMessage::kLevelError, violation.console_message,
+      mojom::ConsoleMessageLevel::kError, violation.console_message,
       violation.source_location.url, violation.source_location.line_number,
       violation.source_location.column_number));
 
