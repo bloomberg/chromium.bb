@@ -844,7 +844,9 @@ void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
     const String source = scripts_to_evaluate_on_load_.Get(key);
     const String world_name = worlds_to_evaluate_on_load_.Get(key);
     if (world_name.IsEmpty()) {
-      frame->GetScriptController().ExecuteScriptInMainWorld(source);
+      frame->GetScriptController().ExecuteScriptInMainWorld(
+          source, ScriptSourceLocationType::kUnknown,
+          ScriptController::kExecuteScriptWhenScriptsDisabled);
       continue;
     }
 
@@ -877,7 +879,8 @@ void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
 
   if (!script_to_evaluate_on_load_once_.IsEmpty()) {
     frame->GetScriptController().ExecuteScriptInMainWorld(
-        script_to_evaluate_on_load_once_);
+        script_to_evaluate_on_load_once_, ScriptSourceLocationType::kUnknown,
+        ScriptController::kExecuteScriptWhenScriptsDisabled);
   }
 }
 
