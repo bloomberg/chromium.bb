@@ -2323,6 +2323,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "foreground-notification-manager",
+    "owners": [ "//components/download/OWNERS" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "gdi-text-printing",
     "owners": [ "//printing/OWNERS" ],
     "expiry_milestone": 76

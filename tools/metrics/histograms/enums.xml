@@ -30876,6 +30876,7 @@ from previous Chrome versions.
   <int value="-1172204005" label="enable-offline-auto-reload-visible-only"/>
   <int value="-1167992523" label="DesktopPWAsCustomTabUI:disabled"/>
   <int value="-1166715563" label="ChromeOSAssistant:disabled"/>
+  <int value="-1165191758" label="ForegroundNotificationManager:disabled"/>
   <int value="-1162944097" label="enable-color-correct-rendering"/>
   <int value="-1161409696" label="MediaRemotingEncrypted:enabled"/>
   <int value="-1161384421" label="ContextualSuggestionsAboveArticles:enabled"/>
@@ -31199,6 +31200,7 @@ from previous Chrome versions.
   <int value="-598050737" label="disable-es3-apis"/>
   <int value="-596337171" label="disable-ash-sidebar"/>
   <int value="-593536514" label="ExperimentalTabController:enabled"/>
+  <int value="-592331266" label="ForegroundNotificationManager:enabled"/>
   <int value="-589096918" label="ash-enable-fullscreen-app-list"/>
   <int value="-579192400" label="disable-input-view"/>
   <int value="-572112724" label="DialogTouchBar:disabled"/>

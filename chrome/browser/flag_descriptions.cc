@@ -2457,6 +2457,12 @@ const char kExploreSitesName[] = "Explore websites";
 const char kExploreSitesDescription[] =
     "Enables portal from new tab page to explore websites.";
 
+const char kForegroundNotificationManagerName[] =
+    "Foreground notification manager";
+const char kForegroundNotificationManagerDescription[] =
+    "Enable foreground notification manager to handle foreground service and "
+    "notification.";
+
 const char kGestureNavigationName[] = "History navigation with gesture";
 const char kGestureNavigationDescription[] =
     "Enable history navigation with horizontal gesture.";
