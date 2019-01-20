@@ -114,6 +114,14 @@ bool FocusHostedAppWindows(const std::set<Browser*>& browsers) {
 // - False otherwise (e.g. the shim doesn't satisfy the browser's designated
 //   requirement, or the browser is an official Chrome build but unsigned).
 bool IsAcceptablyCodeSigned(pid_t pid) {
+  // Only require signatures for official Chrome builds.
+#if !defined(OFFICIAL_BUILD) || !defined(GOOGLE_CHROME_BUILD)
+  return true;
+#endif
+  // TODO(https://crbug.com/624228): Re-enable signature checking when shims
+  // can start.
+  return true;
+
   base::ScopedCFTypeRef<SecCodeRef> own_code;
   base::ScopedCFTypeRef<SecRequirementRef> own_designated_requirement;
 
@@ -128,13 +136,7 @@ bool IsAcceptablyCodeSigned(pid_t pid) {
       SecCodeCopyDesignatedRequirement(
           own_code, kSecCSDefaultFlags,
           own_designated_requirement.InitializeInto()) != errSecSuccess) {
-#if defined(OFFICIAL_BUILD) && defined(GOOGLE_CHROME_BUILD)
-    // This is an official Chrome build, which should always be signed. Fail.
     return false;
-#else
-    // This is some other kind of unsigned build (like a local one). Pass.
-    return true;
-#endif
   }
 
   base::ScopedCFTypeRef<SecCodeRef> guest_code;
@@ -639,6 +641,7 @@ void ExtensionAppShimHandler::OnExtensionEnabled(
   // If the connecting shim process doesn't have an acceptable code signature,
   // reject the connection and recreate the shim.
   if (!IsAcceptablyCodeSigned(bootstrap->GetAppShimPid())) {
+    LOG(WARNING) << "Attaching app shim process is not signed, regenerating.";
     if (bootstrap->GetLaunchType() == APP_SHIM_LAUNCH_NORMAL) {
       constexpr bool recreate_shims = true;
       delegate_->LaunchShim(profile, extension, recreate_shims,
