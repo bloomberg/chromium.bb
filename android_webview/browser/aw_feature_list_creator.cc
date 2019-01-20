@@ -169,6 +169,7 @@ void AwFeatureListCreator::SetUpFieldTrials() {
   // of permanent-consistency support in WebView.
   // TODO(crbug/917537): Remove this after m73.
   base::FieldTrialList::FindFullName("AndroidWebViewConsistencyTest");
+  base::FieldTrialList::FindFullName("AndroidWebViewSessionConsistencyTest");
 }
 
 void AwFeatureListCreator::CreateFeatureListAndFieldTrials() {
