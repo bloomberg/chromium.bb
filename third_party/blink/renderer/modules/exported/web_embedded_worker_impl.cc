@@ -251,16 +251,16 @@ void WebEmbeddedWorkerImpl::AddMessageToConsole(
     const WebConsoleMessage& message) {
   MessageLevel web_core_message_level;
   switch (message.level) {
-    case WebConsoleMessage::kLevelVerbose:
+    case mojom::ConsoleMessageLevel::kVerbose:
       web_core_message_level = kVerboseMessageLevel;
       break;
-    case WebConsoleMessage::kLevelInfo:
+    case mojom::ConsoleMessageLevel::kInfo:
       web_core_message_level = kInfoMessageLevel;
       break;
-    case WebConsoleMessage::kLevelWarning:
+    case mojom::ConsoleMessageLevel::kWarning:
       web_core_message_level = kWarningMessageLevel;
       break;
-    case WebConsoleMessage::kLevelError:
+    case mojom::ConsoleMessageLevel::kError:
       web_core_message_level = kErrorMessageLevel;
       break;
     default:

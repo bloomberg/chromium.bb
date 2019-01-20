@@ -848,7 +848,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
                   "Portable Native Client must not be disabled in about:flags.";
             }
             frame->AddMessageToConsole(WebConsoleMessage(
-                WebConsoleMessage::kLevelError, error_message));
+                blink::mojom::ConsoleMessageLevel::kError, error_message));
             placeholder = create_blocked_plugin(
                 IDR_BLOCKED_PLUGIN_HTML,
 #if defined(OS_CHROMEOS)

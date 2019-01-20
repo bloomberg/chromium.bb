@@ -3120,20 +3120,20 @@ double RenderFrameImpl::GetZoomLevel() {
 
 void RenderFrameImpl::AddMessageToConsole(ConsoleMessageLevel level,
                                           const std::string& message) {
-  blink::WebConsoleMessage::Level target_level =
-      blink::WebConsoleMessage::kLevelInfo;
+  blink::mojom::ConsoleMessageLevel target_level =
+      blink::mojom::ConsoleMessageLevel::kInfo;
   switch (level) {
     case CONSOLE_MESSAGE_LEVEL_VERBOSE:
-      target_level = blink::WebConsoleMessage::kLevelVerbose;
+      target_level = blink::mojom::ConsoleMessageLevel::kVerbose;
       break;
     case CONSOLE_MESSAGE_LEVEL_INFO:
-      target_level = blink::WebConsoleMessage::kLevelInfo;
+      target_level = blink::mojom::ConsoleMessageLevel::kInfo;
       break;
     case CONSOLE_MESSAGE_LEVEL_WARNING:
-      target_level = blink::WebConsoleMessage::kLevelWarning;
+      target_level = blink::mojom::ConsoleMessageLevel::kWarning;
       break;
     case CONSOLE_MESSAGE_LEVEL_ERROR:
-      target_level = blink::WebConsoleMessage::kLevelError;
+      target_level = blink::mojom::ConsoleMessageLevel::kError;
       break;
   }
 
@@ -4185,16 +4185,16 @@ void RenderFrameImpl::DidAddMessageToConsole(
     const blink::WebString& stack_trace) {
   logging::LogSeverity log_severity = logging::LOG_VERBOSE;
   switch (message.level) {
-    case blink::WebConsoleMessage::kLevelVerbose:
+    case blink::mojom::ConsoleMessageLevel::kVerbose:
       log_severity = logging::LOG_VERBOSE;
       break;
-    case blink::WebConsoleMessage::kLevelInfo:
+    case blink::mojom::ConsoleMessageLevel::kInfo:
       log_severity = logging::LOG_INFO;
       break;
-    case blink::WebConsoleMessage::kLevelWarning:
+    case blink::mojom::ConsoleMessageLevel::kWarning:
       log_severity = logging::LOG_WARNING;
       break;
-    case blink::WebConsoleMessage::kLevelError:
+    case blink::mojom::ConsoleMessageLevel::kError:
       log_severity = logging::LOG_ERROR;
       break;
     default:

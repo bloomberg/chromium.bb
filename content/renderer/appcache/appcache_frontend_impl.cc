@@ -121,10 +121,13 @@ void AppCacheFrontendImpl::SetSubresourceFactory(
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatched enum: " #a)
 
-STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelVerbose, APPCACHE_LOG_VERBOSE);
-STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelInfo, APPCACHE_LOG_INFO);
-STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelWarning, APPCACHE_LOG_WARNING);
-STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelError, APPCACHE_LOG_ERROR);
+STATIC_ASSERT_ENUM(blink::mojom::ConsoleMessageLevel::kVerbose,
+                   APPCACHE_LOG_VERBOSE);
+STATIC_ASSERT_ENUM(blink::mojom::ConsoleMessageLevel::kInfo, APPCACHE_LOG_INFO);
+STATIC_ASSERT_ENUM(blink::mojom::ConsoleMessageLevel::kWarning,
+                   APPCACHE_LOG_WARNING);
+STATIC_ASSERT_ENUM(blink::mojom::ConsoleMessageLevel::kError,
+                   APPCACHE_LOG_ERROR);
 
 #undef STATIC_ASSERT_ENUM
 

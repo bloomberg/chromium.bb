@@ -159,8 +159,9 @@ void ManifestManager::OnManifestFetchComplete(
 
   for (const auto& error : manifest_debug_info_->errors) {
     blink::WebConsoleMessage message;
-    message.level = error->critical ? blink::WebConsoleMessage::kLevelError
-                                    : blink::WebConsoleMessage::kLevelWarning;
+    message.level = error->critical
+                        ? blink::mojom::ConsoleMessageLevel::kError
+                        : blink::mojom::ConsoleMessageLevel::kWarning;
     message.text =
         blink::WebString::FromUTF8(GetMessagePrefix() + error->message);
     message.url =

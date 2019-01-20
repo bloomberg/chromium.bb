@@ -40,6 +40,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/platform/web_image.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_element.h"
@@ -284,7 +285,7 @@ void ChromeRenderFrameObserver::GetWebApplicationInfo(
   // if the Chromium build is running on a desktop. It will get more exposition.
   if (web_app_info.mobile_capable == WebApplicationInfo::MOBILE_CAPABLE_APPLE) {
     blink::WebConsoleMessage message(
-        blink::WebConsoleMessage::kLevelWarning,
+        blink::mojom::ConsoleMessageLevel::kWarning,
         "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is "
         "deprecated. Please include <meta name=\"mobile-web-app-capable\" "
         "content=\"yes\"> - "

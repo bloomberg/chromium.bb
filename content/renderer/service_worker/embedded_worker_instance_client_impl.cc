@@ -18,6 +18,7 @@
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_embedded_worker.h"
 #include "third_party/blink/public/web/web_embedded_worker_start_data.h"
 
@@ -100,7 +101,7 @@ void EmbeddedWorkerInstanceClientImpl::ResumeAfterDownload() {
 }
 
 void EmbeddedWorkerInstanceClientImpl::AddMessageToConsole(
-    blink::WebConsoleMessage::Level level,
+    blink::mojom::ConsoleMessageLevel level,
     const std::string& message) {
   DCHECK(worker_);
   worker_->AddMessageToConsole(

@@ -122,9 +122,9 @@ void ConsoleMessage::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
 }
 
-STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelVerbose, kVerboseMessageLevel);
-STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelInfo, kInfoMessageLevel);
-STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelWarning, kWarningMessageLevel);
-STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelError, kErrorMessageLevel);
+STATIC_ASSERT_ENUM(mojom::ConsoleMessageLevel::kVerbose, kVerboseMessageLevel);
+STATIC_ASSERT_ENUM(mojom::ConsoleMessageLevel::kInfo, kInfoMessageLevel);
+STATIC_ASSERT_ENUM(mojom::ConsoleMessageLevel::kWarning, kWarningMessageLevel);
+STATIC_ASSERT_ENUM(mojom::ConsoleMessageLevel::kError, kErrorMessageLevel);
 
 }  // namespace blink

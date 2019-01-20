@@ -53,17 +53,17 @@ void GetAllContainersForModule(PluginModule* module, ContainerSet* containers) {
   }
 }
 
-WebConsoleMessage::Level LogLevelToWebLogLevel(PP_LogLevel level) {
+blink::mojom::ConsoleMessageLevel LogLevelToWebLogLevel(PP_LogLevel level) {
   switch (level) {
     case PP_LOGLEVEL_TIP:
-      return WebConsoleMessage::kLevelVerbose;
+      return blink::mojom::ConsoleMessageLevel::kVerbose;
     case PP_LOGLEVEL_LOG:
-      return WebConsoleMessage::kLevelInfo;
+      return blink::mojom::ConsoleMessageLevel::kInfo;
     case PP_LOGLEVEL_WARNING:
-      return WebConsoleMessage::kLevelWarning;
+      return blink::mojom::ConsoleMessageLevel::kWarning;
     case PP_LOGLEVEL_ERROR:
     default:
-      return WebConsoleMessage::kLevelError;
+      return blink::mojom::ConsoleMessageLevel::kError;
   }
 }
 

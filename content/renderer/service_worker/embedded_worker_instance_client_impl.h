@@ -79,7 +79,7 @@ class EmbeddedWorkerInstanceClientImpl
   // mojom::EmbeddedWorkerInstanceClient implementation
   void StartWorker(mojom::EmbeddedWorkerStartParamsPtr params) override;
   void ResumeAfterDownload() override;
-  void AddMessageToConsole(blink::WebConsoleMessage::Level level,
+  void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message) override;
   void BindDevToolsAgent(
       blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,

@@ -295,7 +295,7 @@ void PPB_Graphics3D_Impl::OnGpuControlErrorMessage(const char* message,
   if (!frame)
     return;
   WebConsoleMessage console_message = WebConsoleMessage(
-      WebConsoleMessage::kLevelError, WebString::FromUTF8(message));
+      blink::mojom::ConsoleMessageLevel::kError, WebString::FromUTF8(message));
   frame->AddMessageToConsole(console_message);
 }
 

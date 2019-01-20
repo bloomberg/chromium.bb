@@ -41,7 +41,6 @@
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
-#include "third_party/blink/public/web/web_console_message.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -715,7 +714,7 @@ void EmbeddedWorkerInstance::StopIfNotAttachedToDevTools() {
       // Check ShouldNotifyWorkerStopIgnored not to show the same message
       // multiple times in DevTools.
       if (devtools_proxy_->ShouldNotifyWorkerStopIgnored()) {
-        AddMessageToConsole(blink::WebConsoleMessage::kLevelVerbose,
+        AddMessageToConsole(blink::mojom::ConsoleMessageLevel::kVerbose,
                             kServiceWorkerTerminationCanceledMesage);
         devtools_proxy_->WorkerStopIgnoredNotified();
       }
@@ -1043,7 +1042,7 @@ void EmbeddedWorkerInstance::OnSetupFailed(
 }
 
 void EmbeddedWorkerInstance::AddMessageToConsole(
-    blink::WebConsoleMessage::Level level,
+    blink::mojom::ConsoleMessageLevel level,
     const std::string& message) {
   if (process_id() == ChildProcessHost::kInvalidUniqueID)
     return;

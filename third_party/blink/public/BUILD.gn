@@ -659,7 +659,6 @@ mojom("mojo_bindings") {
     "platform/site_engagement.mojom",
     "platform/ukm.mojom",
     "web/commit_result.mojom",
-    "web/console_message.mojom",
     "web/devtools_frontend.mojom",
     "web/selection_menu_behavior.mojom",
     "web/window_features.mojom",
@@ -828,21 +827,5 @@ mojom_component("web_feature_mojo_bindings") {
 mojom("web_client_hints_types_mojo_bindings") {
   sources = [
     "platform/web_client_hints_types.mojom",
-  ]
-}
-
-# Some mojom typemaps are shared between Chromium and Blink variants and
-# therefore require some shared traits implementation. These definitions are
-# relegated to a separate target to avoid duplication between the variants.
-source_set("shared_typemap_traits") {
-  visibility = [ ":*" ]
-  sources = [
-    "web/console_message_struct_traits.cc",
-    "web/console_message_struct_traits.h",
-  ]
-  deps = [
-    ":blink_headers",
-    ":mojo_bindings_headers",
-    "//mojo/public/cpp/bindings:struct_traits",
   ]
 }

@@ -326,7 +326,7 @@ void ChromeClientImpl::AddMessageToConsole(LocalFrame* local_frame,
   WebLocalFrameImpl* frame = WebLocalFrameImpl::FromFrame(local_frame);
   if (frame && frame->Client()) {
     frame->Client()->DidAddMessageToConsole(
-        WebConsoleMessage(static_cast<WebConsoleMessage::Level>(level),
+        WebConsoleMessage(static_cast<mojom::ConsoleMessageLevel>(level),
                           message),
         source_id, line_number, stack_trace);
   }
@@ -860,8 +860,8 @@ bool ChromeClientImpl::ShouldOpenUIElementDuringPageDismissal(
   builder.Append(DismissalTypeToString(dismissal_type));
   builder.Append(".");
 
-  WebLocalFrameImpl::FromFrame(frame)->AddMessageToConsole(
-      WebConsoleMessage(WebConsoleMessage::kLevelError, builder.ToString()));
+  WebLocalFrameImpl::FromFrame(frame)->AddMessageToConsole(WebConsoleMessage(
+      mojom::ConsoleMessageLevel::kError, builder.ToString()));
 
   return false;
 }

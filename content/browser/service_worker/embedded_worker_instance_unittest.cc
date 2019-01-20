@@ -742,18 +742,18 @@ class StoreMessageInstanceClient
       base::WeakPtr<EmbeddedWorkerTestHelper> helper)
       : EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient(helper) {}
 
-  const std::vector<std::pair<blink::WebConsoleMessage::Level, std::string>>&
+  const std::vector<std::pair<blink::mojom::ConsoleMessageLevel, std::string>>&
   message() {
     return messages_;
   }
 
  private:
-  void AddMessageToConsole(blink::WebConsoleMessage::Level level,
+  void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message) override {
     messages_.push_back(std::make_pair(level, message));
   }
 
-  std::vector<std::pair<blink::WebConsoleMessage::Level, std::string>>
+  std::vector<std::pair<blink::mojom::ConsoleMessageLevel, std::string>>
       messages_;
 };
 
@@ -773,8 +773,8 @@ TEST_P(EmbeddedWorkerInstanceTest, AddMessageToConsole) {
 
   // Attempt to start the worker and immediate AddMessageToConsole should not
   // cause a crash.
-  std::pair<blink::WebConsoleMessage::Level, std::string> test_message =
-      std::make_pair(blink::WebConsoleMessage::kLevelVerbose, "");
+  std::pair<blink::mojom::ConsoleMessageLevel, std::string> test_message =
+      std::make_pair(blink::mojom::ConsoleMessageLevel::kVerbose, "");
   base::Optional<blink::ServiceWorkerStatusCode> status;
   worker->Start(CreateStartParams(pair.second),
                 ReceiveStatus(&status, base::DoNothing()));
