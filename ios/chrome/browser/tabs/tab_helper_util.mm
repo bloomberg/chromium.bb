@@ -54,6 +54,7 @@
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 #import "ios/chrome/browser/web/network_activity_indicator_tab_helper.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
+#import "ios/chrome/browser/web/print_tab_helper.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -145,6 +146,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   if (!for_prerender) {
     SnapshotTabHelper::CreateForWebState(web_state, tab_id);
     PagePlaceholderTabHelper::CreateForWebState(web_state);
+    PrintTabHelper::CreateForWebState(web_state);
   }
 
   // Allow the embedder to attach tab helpers.

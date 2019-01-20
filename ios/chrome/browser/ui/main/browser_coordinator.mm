@@ -39,6 +39,7 @@
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
 #import "ios/chrome/browser/ui/translate/language_selection_coordinator.h"
 #import "ios/chrome/browser/ui/translate/translate_popup_menu_coordinator.h"
+#import "ios/chrome/browser/web/print_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -176,7 +177,6 @@
   [self.passKitCoordinator stop];
 
   [self.printController dismissAnimated:YES];
-  self.printController = nil;
 
   [self.viewController clearPresentedStateWithCompletion:completion
                                           dismissOmnibox:dismissOmnibox];
@@ -270,7 +270,8 @@
   self.passKitCoordinator = [[PassKitCoordinator alloc]
       initWithBaseViewController:self.viewController];
 
-  /* PrintController is created and started by a BrowserCommand */
+  self.printController = [[PrintController alloc]
+      initWithContextGetter:self.browserState->GetRequestContext()];
 
   self.qrScannerCoordinator = [[QRScannerLegacyCoordinator alloc]
       initWithBaseViewController:self.viewController];
@@ -338,10 +339,7 @@
 #pragma mark - BrowserCoordinatorCommands
 
 - (void)printTab {
-  if (!self.printController) {
-    self.printController = [[PrintController alloc]
-        initWithContextGetter:self.browserState->GetRequestContext()];
-  }
+  DCHECK(self.printController);
   Tab* currentTab = self.tabModel.currentTab;
   [self.printController printView:[currentTab viewForPrinting]
                         withTitle:tab_util::GetTabTitle(currentTab.webState)];
@@ -490,6 +488,10 @@
 
   PassKitTabHelper::CreateForWebState(webState, self.passKitCoordinator);
 
+  if (PrintTabHelper::FromWebState(webState)) {
+    PrintTabHelper::FromWebState(webState)->set_printer(self.printController);
+  }
+
   RepostFormTabHelper::CreateForWebState(webState, self);
 
   if (StoreKitTabHelper::FromWebState(webState)) {
@@ -500,6 +502,10 @@
 
 // Uninstalls delegates for |webState|.
 - (void)uninstallDelegatesForWebState:(web::WebState*)webState {
+  if (PrintTabHelper::FromWebState(webState)) {
+    PrintTabHelper::FromWebState(webState)->set_printer(nil);
+  }
+
   if (StoreKitTabHelper::FromWebState(webState)) {
     StoreKitTabHelper::FromWebState(webState)->SetLauncher(nil);
   }

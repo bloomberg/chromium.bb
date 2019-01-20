@@ -164,11 +164,9 @@
 #import "ios/chrome/browser/web/image_fetch_tab_helper.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
-#include "ios/chrome/browser/web/print_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper.h"
 #import "ios/chrome/browser/web/web_navigation_util.h"
-#include "ios/chrome/browser/web/web_state_printer.h"
 #include "ios/chrome/browser/web_state_list/all_web_state_observation_forwarder.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
@@ -376,8 +374,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                      TabModelObserver,
                                      TabStripPresentation,
                                      ToolbarHeightProviderForFullscreen,
-                                     UIGestureRecognizerDelegate,
-                                     WebStatePrinter> {
+                                     UIGestureRecognizerDelegate> {
   // The dependency factory passed on initialization.  Used to vend objects used
   // by the BVC.
   BrowserViewControllerDependencyFactory* _dependencyFactory;
@@ -2706,7 +2703,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (!SadTabTabHelper::FromWebState(tab.webState)) {
     SadTabTabHelper::CreateForWebState(tab.webState, _sadTabCoordinator);
   }
-  PrintTabHelper::CreateForWebState(tab.webState, self);
   NetExportTabHelper::CreateForWebState(tab.webState, self);
   CaptivePortalDetectorTabHelper::CreateForWebState(tab.webState, self);
 
@@ -4917,13 +4913,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (CGPoint)convertToPresentationCoordinatesForOrigin:(CGPoint)origin {
   return [self.view convertPoint:origin fromView:nil];
-}
-
-#pragma mark - WebStatePrinter
-
-- (void)printWebState:(web::WebState*)webState {
-  if (webState == self.currentWebState)
-    [self.dispatcher printTab];
 }
 
 #pragma mark - TabStripPresentation

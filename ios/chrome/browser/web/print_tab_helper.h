@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "ios/web/public/web_state/web_state_observer.h"
-#include "ios/web/public/web_state/web_state_user_data.h"
+#import "ios/web/public/web_state/web_state_user_data.h"
 
 @protocol WebStatePrinter;
 class GURL;
@@ -20,15 +20,13 @@ class DictionaryValue;
 class PrintTabHelper : public web::WebStateObserver,
                        public web::WebStateUserData<PrintTabHelper> {
  public:
+  explicit PrintTabHelper(web::WebState* web_state);
   ~PrintTabHelper() override;
 
-  // Creates a PrintTabHelper and attaches it to |web_state|. The |printer|
-  // must be non-nil.
-  static void CreateForWebState(web::WebState* web_state,
-                                id<WebStatePrinter> printer);
+  // Sets the |printer|, which is held weakly by this object.
+  void set_printer(id<WebStatePrinter> printer);
 
  private:
-  PrintTabHelper(web::WebState* web_state, id<WebStatePrinter> printer);
 
   // web::WebStateObserver overrides:
   void WebStateDestroyed(web::WebState* web_state) override;
