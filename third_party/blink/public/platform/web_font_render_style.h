@@ -31,6 +31,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FONT_RENDER_STYLE_H_
 
 #include "SkFontStyle.h"
+#include "SkFontTypes.h"
 #include "SkPaint.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
