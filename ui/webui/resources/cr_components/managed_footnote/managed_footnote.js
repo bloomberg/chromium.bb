@@ -56,6 +56,14 @@ Polymer({
         href: (node, v) => v === HELP_ARTICLE_URL,
       },
     });
+
+    cr.addWebUIListener('is-managed-changed', managed => {
+      loadTimeData.overrideValues({isManaged: managed});
+      this.isManaged_ = managed;
+    });
   },
 });
+
+chrome.send('observeManagedUI');
+
 })();
