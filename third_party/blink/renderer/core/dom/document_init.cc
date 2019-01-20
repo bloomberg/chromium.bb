@@ -76,10 +76,9 @@ bool DocumentInit::ShouldSetURL() const {
   return (loader && loader->GetFrame()->Tree().Parent()) || !url_.IsEmpty();
 }
 
-bool DocumentInit::ShouldTreatURLAsSrcdocDocument() const {
-  return parent_document_ &&
-         document_loader_->GetFrame()->Loader().ShouldTreatURLAsSrcdocDocument(
-             url_);
+bool DocumentInit::IsSrcdocDocument() const {
+  // TODO(dgozman): why do we check |parent_document_| here?
+  return parent_document_ && is_srcdoc_document_;
 }
 
 DocumentLoader* DocumentInit::MasterDocumentLoader() const {
@@ -186,6 +185,11 @@ DocumentInit& DocumentInit::WithInitiatorOrigin(
 DocumentInit& DocumentInit::WithOriginToCommit(
     scoped_refptr<SecurityOrigin> origin_to_commit) {
   origin_to_commit_ = std::move(origin_to_commit);
+  return *this;
+}
+
+DocumentInit& DocumentInit::WithSrcdocDocument(bool is_srcdoc_document) {
+  is_srcdoc_document_ = is_srcdoc_document;
   return *this;
 }
 

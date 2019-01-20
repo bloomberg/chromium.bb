@@ -72,7 +72,7 @@ class CORE_EXPORT DocumentInit final {
   }
 
   bool HasSecurityContext() const { return MasterDocumentLoader(); }
-  bool ShouldTreatURLAsSrcdocDocument() const;
+  bool IsSrcdocDocument() const;
   bool ShouldSetURL() const;
   SandboxFlags GetSandboxFlags() const;
   bool IsHostedInReservedIPRange() const;
@@ -111,6 +111,8 @@ class CORE_EXPORT DocumentInit final {
   const scoped_refptr<SecurityOrigin>& OriginToCommit() const {
     return origin_to_commit_;
   }
+
+  DocumentInit& WithSrcdocDocument(bool is_srcdoc_document);
 
   DocumentInit& WithRegistrationContext(V0CustomElementRegistrationContext*);
   V0CustomElementRegistrationContext* RegistrationContext(Document*) const;
@@ -152,6 +154,11 @@ class CORE_EXPORT DocumentInit final {
   // is present on such navigations to URLs that inherit their origins (e.g.
   // about:blank and data: URLs).
   scoped_refptr<SecurityOrigin> origin_to_commit_;
+
+  // Whether we should treat the new document as "srcdoc" document. This
+  // affects security checks, since srcdoc's content comes directly from
+  // the parent document, not from loading a URL.
+  bool is_srcdoc_document_ = false;
 
   Member<V0CustomElementRegistrationContext> registration_context_;
   bool create_new_registration_context_;
