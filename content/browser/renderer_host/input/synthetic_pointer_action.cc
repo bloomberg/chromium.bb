@@ -5,7 +5,6 @@
 #include "content/browser/renderer_host/input/synthetic_pointer_action.h"
 
 #include "base/logging.h"
-#include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/latency/latency_info.h"
 
 namespace content {
@@ -49,6 +48,13 @@ SyntheticGesture::Result SyntheticPointerAction::ForwardInputEvents(
 
 bool SyntheticPointerAction::AllowHighFrequencyDispatch() const {
   return false;
+}
+
+void SyntheticPointerAction::WaitForTargetAck(
+    base::OnceClosure callback,
+    SyntheticGestureTarget* target) const {
+  target->WaitForTargetAck(params_.GetGestureType(), gesture_source_type_,
+                           std::move(callback));
 }
 
 SyntheticPointerAction::GestureState

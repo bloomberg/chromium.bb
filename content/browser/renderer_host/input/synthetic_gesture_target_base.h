@@ -61,6 +61,10 @@ class SyntheticGestureTargetBase : public SyntheticGestureTarget {
 
   int GetMouseWheelMinimumGranularity() const override;
 
+  void WaitForTargetAck(SyntheticGestureParams::GestureType type,
+                        SyntheticGestureParams::GestureSourceType source,
+                        base::OnceClosure callback) const override;
+
  protected:
   RenderWidgetHostImpl* render_widget_host() const { return host_; }
 

@@ -20,6 +20,8 @@ class CONTENT_EXPORT SyntheticSmoothDragGesture : public SyntheticGesture {
   SyntheticGesture::Result ForwardInputEvents(
       const base::TimeTicks& timestamp,
       SyntheticGestureTarget* target) override;
+  void WaitForTargetAck(base::OnceClosure callback,
+                        SyntheticGestureTarget* target) const override;
 
  private:
   static SyntheticSmoothMoveGestureParams::InputType GetInputSourceType(

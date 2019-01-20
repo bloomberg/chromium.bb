@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include "base/callback.h"
 #include "content/browser/renderer_host/input/synthetic_touchpad_pinch_gesture.h"
 
 namespace content {
@@ -48,6 +49,13 @@ SyntheticGesture::Result SyntheticTouchpadPinchGesture::ForwardInputEvents(
 
   return (state_ == DONE) ? SyntheticGesture::GESTURE_FINISHED
                           : SyntheticGesture::GESTURE_RUNNING;
+}
+
+void SyntheticTouchpadPinchGesture::WaitForTargetAck(
+    base::OnceClosure callback,
+    SyntheticGestureTarget* target) const {
+  target->WaitForTargetAck(params_.GetGestureType(), gesture_source_type_,
+                           std::move(callback));
 }
 
 void SyntheticTouchpadPinchGesture::ForwardGestureEvents(

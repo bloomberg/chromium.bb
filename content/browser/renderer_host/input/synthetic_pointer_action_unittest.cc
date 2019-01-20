@@ -109,6 +109,12 @@ class MockSyntheticPointerActionTarget : public SyntheticGestureTarget {
     return 0.0f;
   }
 
+  void WaitForTargetAck(SyntheticGestureParams::GestureType type,
+                        SyntheticGestureParams::GestureSourceType source,
+                        base::OnceClosure callback) const override {
+    std::move(callback).Run();
+  }
+
   WebInputEvent::Type type() const { return type_; }
 
  protected:
