@@ -158,7 +158,6 @@ class CORE_EXPORT FrameLoader final {
   bool IsLoadingMainFrame() const;
 
   bool ShouldTreatURLAsSameAsCurrent(const KURL&) const;
-  bool ShouldTreatURLAsSrcdocDocument(const KURL&) const;
 
   void SetDefersLoading(bool);
 

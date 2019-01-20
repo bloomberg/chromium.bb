@@ -431,6 +431,7 @@ class CORE_EXPORT DocumentLoader
 
   bool listing_ftp_directory_ = false;
   bool loading_mhtml_archive_ = false;
+  bool loading_srcdoc_ = false;
   unsigned long main_resource_identifier_ = 0;
   scoped_refptr<ResourceTimingInfo> navigation_timing_info_;
   bool report_timing_info_to_parent_ = false;

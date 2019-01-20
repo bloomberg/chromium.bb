@@ -145,15 +145,29 @@ DocumentLoader::DocumentLoader(
         navigation_params->data, navigation_params->mime_type,
         navigation_params->text_encoding, navigation_params->unreachable_url);
   }
-  if (!substitute_data_.IsValid() &&
-      frame_->Loader().ShouldTreatURLAsSrcdocDocument(request_.Url())) {
-    String srcdoc = frame_->DeprecatedLocalOwner()->FastGetAttribute(
-        html_names::kSrcdocAttr);
-    DCHECK(!srcdoc.IsNull());
-    CString encoded_srcdoc = srcdoc.Utf8();
-    substitute_data_ = SubstituteData(
-        SharedBuffer::Create(encoded_srcdoc.data(), encoded_srcdoc.length()),
-        "text/html", "UTF-8", NullURL());
+  if (!substitute_data_.IsValid() && request_.Url().IsAboutSrcdocURL()) {
+    loading_srcdoc_ = true;
+    // TODO(dgozman): instead of reaching to the owner here, we could instead:
+    // - grab the "srcdoc" value when starting a navigation right in the owner;
+    // - pass it around through BeginNavigation to CommitNavigation as |data|;
+    // - use it here instead of re-reading from the owner.
+    // This way we will get rid of extra dependency between starting and
+    // committing navigation.
+    HTMLFrameOwnerElement* owner_element = frame_->DeprecatedLocalOwner();
+    if (!IsHTMLIFrameElement(owner_element) ||
+        !owner_element->FastHasAttribute(html_names::kSrcdocAttr)) {
+      // Cannot retrieve srcdoc content anymore (perhaps, the attribute was
+      // cleared) - load empty instead.
+      substitute_data_ = SubstituteData(SharedBuffer::Create(), "text/html",
+                                        "UTF-8", NullURL());
+    } else {
+      String srcdoc = owner_element->FastGetAttribute(html_names::kSrcdocAttr);
+      DCHECK(!srcdoc.IsNull());
+      CString encoded_srcdoc = srcdoc.Utf8();
+      substitute_data_ = SubstituteData(
+          SharedBuffer::Create(encoded_srcdoc.data(), encoded_srcdoc.length()),
+          "text/html", "UTF-8", NullURL());
+    }
   }
 
   WebNavigationTimings& timings = navigation_params->navigation_timings;
@@ -994,6 +1008,12 @@ const KURL& DocumentLoader::UnreachableURL() const {
 bool DocumentLoader::WillLoadUrlAsEmpty(const KURL& url) {
   if (url.IsEmpty())
     return true;
+  // Usually, we load urls with about: scheme as empty.
+  // However, about:srcdoc is only used as a marker for non-existent
+  // url of iframes with srcdoc attribute, which have possibly non-empty
+  // content of the srcdoc attribute used as document's html.
+  if (url.IsAboutSrcdocURL())
+    return false;
   return SchemeRegistry::ShouldLoadURLSchemeAsEmptyDocument(url.Protocol());
 }
 
@@ -1280,6 +1300,7 @@ void DocumentLoader::InstallNewDocument(
           .WithOwnerDocument(owner_document)
           .WithInitiatorOrigin(initiator_origin)
           .WithOriginToCommit(origin_to_commit_)
+          .WithSrcdocDocument(loading_srcdoc_)
           .WithNewRegistrationContext(),
       false);
 
