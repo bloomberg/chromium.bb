@@ -25,6 +25,8 @@ class CONTENT_EXPORT SyntheticPointerAction : public SyntheticGesture {
       const base::TimeTicks& timestamp,
       SyntheticGestureTarget* target) override;
   bool AllowHighFrequencyDispatch() const override;
+  void WaitForTargetAck(base::OnceClosure callback,
+                        SyntheticGestureTarget* target) const override;
 
  private:
   enum class GestureState { UNINITIALIZED, RUNNING, INVALID, DONE };

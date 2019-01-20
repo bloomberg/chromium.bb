@@ -175,6 +175,13 @@ int SyntheticGestureTargetBase::GetMouseWheelMinimumGranularity() const {
   return host_->GetView()->GetMouseWheelMinimumGranularity();
 }
 
+void SyntheticGestureTargetBase::WaitForTargetAck(
+    SyntheticGestureParams::GestureType type,
+    SyntheticGestureParams::GestureSourceType source,
+    base::OnceClosure callback) const {
+  host_->WaitForInputProcessed(type, source, std::move(callback));
+}
+
 bool SyntheticGestureTargetBase::PointIsWithinContents(int x, int y) const {
   gfx::Rect bounds = host_->GetView()->GetViewBounds();
   bounds -= bounds.OffsetFromOrigin();  // Translate the bounds to (0,0).

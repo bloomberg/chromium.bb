@@ -56,4 +56,9 @@ bool SyntheticGesture::AllowHighFrequencyDispatch() const {
   return true;
 }
 
+void SyntheticGesture::WaitForTargetAck(base::OnceClosure callback,
+                                        SyntheticGestureTarget* target) const {
+  std::move(callback).Run();
+}
+
 }  // namespace content

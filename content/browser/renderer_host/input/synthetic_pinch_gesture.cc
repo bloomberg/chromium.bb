@@ -36,4 +36,11 @@ SyntheticGesture::Result SyntheticPinchGesture::ForwardInputEvents(
   return lazy_gesture_->ForwardInputEvents(timestamp, target);
 }
 
+void SyntheticPinchGesture::WaitForTargetAck(
+    base::OnceClosure callback,
+    SyntheticGestureTarget* target) const {
+  target->WaitForTargetAck(params_.GetGestureType(),
+                           params_.gesture_source_type, std::move(callback));
+}
+
 }  // namespace content
