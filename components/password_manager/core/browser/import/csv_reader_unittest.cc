@@ -162,6 +162,21 @@ TEST(CSVReaderTest, Positive) {
           {"alpha", ""},
           {},
       },
+      {
+          "EmptyLinesIgnored",
+          "foo,bar\n"
+          "\n"
+          "a,b\n"
+          "\r"
+          "c,d\r\r\r\r\r\r\r\r\n"
+          "e,f",
+          {"foo", "bar"},
+          {
+              {{"bar", "b"}, {"foo", "a"}},
+              {{"bar", "d"}, {"foo", "c"}},
+              {{"bar", "f"}, {"foo", "e"}},
+          },
+      },
   };
 
   for (const TestCase& test_case : kCases) {
@@ -173,6 +188,7 @@ TEST(CSVReaderTest, Positive) {
                 testing::ElementsAreArray(test_case.expected_column_names));
     ASSERT_EQ(test_case.expected_row_maps.size(), table.records().size());
     for (size_t i = 0; i < test_case.expected_row_maps.size(); ++i) {
+      SCOPED_TRACE(i);
       EXPECT_THAT(table.records()[i],
                   testing::ElementsAreArray(test_case.expected_row_maps[i]));
     }

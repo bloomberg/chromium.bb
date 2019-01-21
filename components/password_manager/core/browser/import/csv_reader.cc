@@ -316,6 +316,12 @@ bool CSVTable::ReadCSV(base::StringPiece csv) {
   while (parser.HasMoreRows()) {
     if (!parser.ParseNextCSVRow(&fields))
       return false;
+    // If there are more line-breaking characters ('\r' or '\n') in sequence,
+    // the row parser will see an empty row in between each successive two of
+    // those. Discard such results, because those are useless for importing
+    // passwords.
+    if (fields.size() == 1 && fields[0].empty())
+      continue;
 
     std::map<base::StringPiece, std::string> row_map;
     const size_t available_columns =
