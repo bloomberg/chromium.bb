@@ -914,7 +914,6 @@ void ArcAppListPrefs::OnDefaultAppsReady() {
   }
 
   SetDefaultAppsFilterLevel();
-
   default_apps_ready_ = true;
   if (!default_apps_ready_callback_.is_null())
     std::move(default_apps_ready_callback_).Run();
@@ -1013,7 +1012,7 @@ void ArcAppListPrefs::OnConnectionClosed() {
   VLOG(1) << "App instance connection is closed.";
   DisableAllApps();
   installing_packages_count_ = 0;
-  default_apps_installations_.clear();
+  apps_installations_.clear();
   detect_default_app_availability_timeout_.Stop();
   ClearIconRequestRecord();
 
@@ -1302,7 +1301,7 @@ void ArcAppListPrefs::OnAppListRefreshed(
 void ArcAppListPrefs::DetectDefaultAppAvailability() {
   for (const auto& package : default_apps_->GetActivePackages()) {
     // Check if already installed or installation in progress.
-    if (!GetPackage(package) && !default_apps_installations_.count(package))
+    if (!GetPackage(package) && !apps_installations_.count(package))
       HandlePackageRemoved(package);
   }
 }
@@ -1639,8 +1638,15 @@ void ArcAppListPrefs::OnNotificationsEnabledChanged(
 }
 
 bool ArcAppListPrefs::IsUnknownPackage(const std::string& package_name) const {
-  return !GetPackage(package_name) && sync_service_ &&
-         !sync_service_->IsPackageSyncing(package_name);
+  if (GetPackage(package_name))
+    return false;
+  if (sync_service_ && sync_service_->IsPackageSyncing(package_name))
+    return false;
+  if (default_apps_->HasPackage(package_name))
+    return false;
+  if (apps_installations_.count(package_name))
+    return false;
+  return true;
 }
 
 void ArcAppListPrefs::OnPackageAdded(
@@ -1769,8 +1775,7 @@ void ArcAppListPrefs::OnInstallationStarted(
   if (!package_name.has_value())
     return;
 
-  if (default_apps_->HasPackage(*package_name))
-    default_apps_installations_.insert(*package_name);
+  apps_installations_.insert(*package_name);
 
   for (auto& observer : observer_list_)
     observer.OnInstallationStarted(*package_name);
@@ -1778,14 +1783,12 @@ void ArcAppListPrefs::OnInstallationStarted(
 
 void ArcAppListPrefs::OnInstallationFinished(
     arc::mojom::InstallationResultPtr result) {
-  if (result && default_apps_->HasPackage(result->package_name)) {
-    default_apps_installations_.erase(result->package_name);
-
-    if (!result->success && !GetPackage(result->package_name))
-      HandlePackageRemoved(result->package_name);
-  }
-
   if (result) {
+    apps_installations_.erase(result->package_name);
+    if (default_apps_->HasPackage(result->package_name) && !result->success &&
+        !GetPackage(result->package_name)) {
+      HandlePackageRemoved(result->package_name);
+    }
     for (auto& observer : observer_list_)
       observer.OnInstallationFinished(result->package_name, result->success);
   }
