@@ -4,22 +4,18 @@
 
 package org.chromium.chrome.browser.metrics;
 
-import android.os.SystemClock;
 import android.support.annotation.IntDef;
 
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.webapps.SplashscreenObserver;
-import org.chromium.chrome.browser.webapps.WebappSplashScreenController;
 import org.chromium.webapk.lib.common.splash.SplashLayout;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Centralizes UMA data collection for web apps.
  */
-public class WebappUma implements SplashscreenObserver {
+public class WebappUma {
     // SplashColorStatus defined in tools/metrics/histograms/enums.xml.
     // NUM_ENTRIES is intentionally included into @IntDef.
     @IntDef({SplashColorStatus.DEFAULT, SplashColorStatus.CUSTOM, SplashColorStatus.NUM_ENTRIES})
@@ -46,9 +42,6 @@ public class WebappUma implements SplashscreenObserver {
     // Histogram names are defined in tools/metrics/histograms/histograms.xml.
     public static final String HISTOGRAM_SPLASHSCREEN_BACKGROUNDCOLOR =
             "Webapp.Splashscreen.BackgroundColor";
-    public static final String HISTOGRAM_SPLASHSCREEN_DURATION =
-            "Webapp.Splashscreen.Duration";
-    public static final String HISTOGRAM_SPLASHSCREEN_HIDES = "Webapp.Splashscreen.Hides";
     public static final String HISTOGRAM_SPLASHSCREEN_ICON_TYPE = "Webapp.Splashscreen.Icon.Type";
     public static final String HISTOGRAM_SPLASHSCREEN_ICON_SIZE = "Webapp.Splashscreen.Icon.Size";
     public static final String HISTOGRAM_SPLASHSCREEN_THEMECOLOR = "Webapp.Splashscreen.ThemeColor";
@@ -57,19 +50,8 @@ public class WebappUma implements SplashscreenObserver {
     private int mSplashScreenIconType = SplashIconType.NUM_ENTRIES;
     private int mSplashScreenIconSize = -1;
     private int mSplashScreenThemeColor = SplashColorStatus.NUM_ENTRIES;
-    private long mSplashScreenVisibleTime;
 
     private boolean mCommitted;
-
-    /**
-     * Signal that the splash screen is now visible. This is being used to
-     * record for how long the splash screen is left visible.
-     */
-    @Override
-    public void onSplashscreenShown() {
-        assert mSplashScreenVisibleTime == 0;
-        mSplashScreenVisibleTime = SystemClock.elapsedRealtime();
-    }
 
     /**
      * Records the type of background color on the splash screen.
@@ -78,22 +60,6 @@ public class WebappUma implements SplashscreenObserver {
     public void recordSplashscreenBackgroundColor(@SplashColorStatus int type) {
         assert !mCommitted;
         mSplashScreenBackgroundColor = type;
-    }
-
-    /**
-     * Signal that the splash screen is now hidden. It is used to record for how
-     * long the splash screen was left visible. It is also used to know what
-     * event triggered the splash screen to be hidden.
-     * @param reason enum representing the reason why the splash screen was hidden.
-     */
-    @Override
-    public void onSplashscreenHidden(@WebappSplashScreenController.SplashHidesReason int reason) {
-        RecordHistogram.recordEnumeratedHistogram(HISTOGRAM_SPLASHSCREEN_HIDES, reason,
-                WebappSplashScreenController.SplashHidesReason.NUM_ENTRIES);
-
-        assert mSplashScreenVisibleTime != 0;
-        RecordHistogram.recordMediumTimesHistogram(HISTOGRAM_SPLASHSCREEN_DURATION,
-                SystemClock.elapsedRealtime() - mSplashScreenVisibleTime, TimeUnit.MILLISECONDS);
     }
 
     /**
