@@ -21,6 +21,7 @@
 namespace blink {
 
 class NGBoxFragmentBuilder;
+class NGContainerFragmentBuilder;
 class NGExclusionSpace;
 class NGLineBoxFragmentBuilder;
 

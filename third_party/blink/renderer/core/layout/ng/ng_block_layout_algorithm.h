@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float_vector.h"
 
 namespace blink {
 
@@ -263,10 +262,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // Positions pending floats starting from {@origin_block_offset}.
   void PositionPendingFloats(LayoutUnit origin_block_offset);
 
-  // Adds a set of positioned floats as children to the current fragment.
-  template <class Vec>
-  void AddPositionedFloats(const Vec& positioned_floats);
-
   // Positions a list marker for the specified block content.
   void PositionOrPropagateListMarker(const NGLayoutResult&, NGLogicalOffset*);
 
@@ -325,7 +320,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   bool has_processed_first_child_ = false;
 
   NGExclusionSpace exclusion_space_;
-  NGUnpositionedFloatVector unpositioned_floats_;
+  Vector<NGUnpositionedFloat, 1> unpositioned_floats_;
 };
 
 }  // namespace blink

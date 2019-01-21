@@ -828,14 +828,23 @@ void NGBlockLayoutAlgorithm::HandleFloat(
     const NGPreviousInflowPosition& previous_inflow_position,
     NGBlockNode child,
     const NGBlockBreakToken* child_break_token) {
-  AddUnpositionedFloat(&unpositioned_floats_, &container_builder_,
-                       NGUnpositionedFloat(child, child_break_token),
-                       ConstraintSpace());
-
   // If there is a break token for a float we must be resuming layout, we must
   // always know our position in the BFC.
   DCHECK(!child_break_token || child_break_token->IsBreakBefore() ||
          container_builder_.BfcBlockOffset());
+
+  NGUnpositionedFloat unpositioned_float(child, child_break_token);
+
+  // We shouldn't have seen this float yet.
+  DCHECK(!unpositioned_floats_.Contains(unpositioned_float));
+
+  if (!container_builder_.BfcBlockOffset()) {
+    container_builder_.AddAdjoiningFloatTypes(
+        unpositioned_float.IsLineLeft(ConstraintSpace().Direction())
+            ? kFloatTypeLeft
+            : kFloatTypeRight);
+  }
+  unpositioned_floats_.push_back(std::move(unpositioned_float));
 
   // No need to postpone the positioning if we know the correct offset.
   if (container_builder_.BfcBlockOffset() ||
@@ -2215,39 +2224,27 @@ void NGBlockLayoutAlgorithm::PositionPendingFloats(
     LayoutUnit origin_block_offset) {
   DCHECK(container_builder_.BfcBlockOffset() ||
          ConstraintSpace().FloatsBfcBlockOffset())
-      << "The parent BFC block offset should be known here";
+      << "The parent BFC block offset should be known here.";
 
   NGBfcOffset origin_bfc_offset = {
       ConstraintSpace().BfcOffset().line_offset +
           border_scrollbar_padding_.LineLeft(ConstraintSpace().Direction()),
       origin_block_offset};
 
-  NGPositionedFloatVector positioned_floats;
-  PositionFloats(child_available_size_, child_percentage_size_,
-                 replaced_child_percentage_size_, origin_bfc_offset,
-                 unpositioned_floats_, ConstraintSpace(), Style(),
-                 &exclusion_space_, &positioned_floats);
-
-  AddPositionedFloats(positioned_floats);
-  unpositioned_floats_.Shrink(0);
-}
-
-template <class Vec>
-void NGBlockLayoutAlgorithm::AddPositionedFloats(const Vec& positioned_floats) {
-  DCHECK(container_builder_.BfcBlockOffset() ||
-         ConstraintSpace().FloatsBfcBlockOffset())
-      << "The parent BFC block offset should be known here";
-
   LayoutUnit bfc_block_offset =
       container_builder_.BfcBlockOffset()
           ? container_builder_.BfcBlockOffset().value()
           : ConstraintSpace().FloatsBfcBlockOffset().value();
 
-  LayoutUnit bfc_line_offset = ConstraintSpace().BfcOffset().line_offset;
-  NGBfcOffset bfc_offset = {bfc_line_offset, bfc_block_offset};
+  NGBfcOffset bfc_offset = {ConstraintSpace().BfcOffset().line_offset,
+                            bfc_block_offset};
 
-  // TODO(ikilpatrick): Add DCHECK that any positioned floats are children.
-  for (const auto& positioned_float : positioned_floats) {
+  for (auto& unpositioned_float : unpositioned_floats_) {
+    NGPositionedFloat positioned_float = PositionFloat(
+        child_available_size_, child_percentage_size_,
+        replaced_child_percentage_size_, origin_bfc_offset, &unpositioned_float,
+        ConstraintSpace(), Style(), &exclusion_space_);
+
     NGFragment child_fragment(
         ConstraintSpace().GetWritingMode(),
         *positioned_float.layout_result->PhysicalFragment());
@@ -2260,6 +2257,8 @@ void NGBlockLayoutAlgorithm::AddPositionedFloats(const Vec& positioned_floats) {
                                 logical_offset);
     container_builder_.PropagateBreak(*positioned_float.layout_result);
   }
+
+  unpositioned_floats_.Shrink(0);
 }
 
 // In quirks mode, BODY and HTML elements must completely fill initial
