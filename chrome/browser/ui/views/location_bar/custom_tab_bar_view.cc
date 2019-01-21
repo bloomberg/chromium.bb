@@ -214,28 +214,6 @@ void CustomTabBarView::TabChangedAt(content::WebContents* contents,
   Layout();
 }
 
-void CustomTabBarView::OnPaintBackground(gfx::Canvas* canvas) {
-  views::View::OnPaintBackground(canvas);
-
-  // Don't render the separator if there is already sufficient contrast between
-  // the custom tab bar and the title bar.
-  constexpr float kMaxContrastForSeparator = 1.1f;
-  if (color_utils::GetContrastRatio(kBackgroundColor, title_bar_color_) >
-      kMaxContrastForSeparator) {
-    return;
-  }
-
-  constexpr SkColor kSeparatorColor = SK_ColorBLACK;
-  constexpr float kSeparatorOpacity = 0.15f;
-
-  gfx::Rect bounds = GetLocalBounds();
-
-  // Frame/Custom tab separator (top border).
-  canvas->DrawLine(bounds.origin(), bounds.top_right(),
-                   color_utils::AlphaBlend(kSeparatorColor, title_bar_color_,
-                                           kSeparatorOpacity));
-}
-
 content::WebContents* CustomTabBarView::GetWebContents() {
   return delegate_->GetWebContents();
 }
