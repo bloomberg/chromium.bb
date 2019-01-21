@@ -283,6 +283,14 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
     return account_from_account_updated_callback_;
   }
 
+  const AccountInfo& account_from_account_removed_with_info_callback() {
+    return account_from_account_removed_with_info_callback_;
+  }
+
+  bool was_called_account_removed_with_info_callback() {
+    return was_called_account_removed_with_info_callback_;
+  }
+
  private:
   // IdentityManager::Observer:
   void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override {
@@ -359,6 +367,11 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
     account_from_account_updated_callback_ = info;
   }
 
+  void OnAccountRemovedWithInfo(const AccountInfo& info) override {
+    was_called_account_removed_with_info_callback_ = true;
+    account_from_account_removed_with_info_callback_ = info;
+  }
+
   IdentityManager* identity_manager_;
   base::OnceClosure on_primary_account_set_callback_;
   base::OnceClosure on_primary_account_cleared_callback_;
@@ -375,6 +388,7 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   std::string account_from_refresh_token_removed_callback_;
   AccountInfo account_from_error_state_of_refresh_token_updated_callback_;
   AccountInfo account_from_account_updated_callback_;
+  AccountInfo account_from_account_removed_with_info_callback_;
   GoogleServiceAuthError
       error_from_error_state_of_refresh_token_updated_callback_;
   AccountsInCookieJarInfo accounts_info_from_cookie_change_callback_;
@@ -382,6 +396,7 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   GoogleServiceAuthError error_from_add_account_to_cookie_completed_callback_;
   GoogleServiceAuthError google_signin_failed_error_;
   bool is_inside_batch_ = false;
+  bool was_called_account_removed_with_info_callback_ = false;
   std::vector<std::vector<std::string>> batch_change_records_;
 };
 
@@ -2156,6 +2171,29 @@ TEST_F(IdentityManagerTest, ObserveOnAccountUpdated) {
   EXPECT_EQ(account_info.email, identity_manager_observer()
                                     ->account_from_account_updated_callback()
                                     .email);
+}
+
+TEST_F(IdentityManagerTest, TestOnAccountRemovedWithInfoCallback) {
+  AccountInfo account_info =
+      MakeAccountAvailable(identity_manager(), kTestEmail2);
+  EXPECT_EQ(kTestEmail2, account_info.email);
+
+  account_tracker()->RemoveAccount(account_info.account_id);
+
+  // Check if OnAccountRemovedWithInfo is called after removing |account_info|
+  // by RemoveAccount().
+  EXPECT_TRUE(identity_manager_observer()
+                  ->was_called_account_removed_with_info_callback());
+
+  // Check if the passed AccountInfo is the same to the removing one.
+  EXPECT_EQ(account_info.account_id,
+            identity_manager_observer()
+                ->account_from_account_removed_with_info_callback()
+                .account_id);
+  EXPECT_EQ(account_info.email,
+            identity_manager_observer()
+                ->account_from_account_removed_with_info_callback()
+                .email);
 }
 
 }  // namespace identity

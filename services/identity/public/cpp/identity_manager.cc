@@ -445,4 +445,9 @@ void IdentityManager::OnAccountUpdated(const AccountInfo& info) {
   }
 }
 
+void IdentityManager::OnAccountRemoved(const AccountInfo& info) {
+  for (auto& observer : observer_list_)
+    observer.OnAccountRemovedWithInfo(info);
+}
+
 }  // namespace identity
