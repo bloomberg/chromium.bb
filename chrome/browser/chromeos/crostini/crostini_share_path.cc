@@ -30,27 +30,28 @@
 namespace {
 
 void OnSeneschalSharePathResponse(
-    base::OnceCallback<void(bool, std::string)> callback,
+    crostini::CrostiniSharePath::SharePathCallback callback,
     base::Optional<vm_tools::seneschal::SharePathResponse> response) {
   if (!response) {
-    std::move(callback).Run(false, "System error");
+    std::move(callback).Run(base::FilePath(), false, "System error");
     return;
   }
-  std::move(callback).Run(response.value().success(),
+  std::move(callback).Run(base::FilePath(response.value().path()),
+                          response.value().success(),
                           response.value().failure_reason());
 }
 
 void OnVmRestartedForSeneschal(
     Profile* profile,
     std::string vm_name,
-    base::OnceCallback<void(bool, std::string)> callback,
+    crostini::CrostiniSharePath::SharePathCallback callback,
     vm_tools::seneschal::SharePathRequest request,
     crostini::CrostiniResult result) {
   auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile);
   base::Optional<crostini::VmInfo> vm_info =
       crostini_manager->GetVmInfo(std::move(vm_name));
   if (!vm_info || vm_info->state != crostini::VmState::STARTED) {
-    std::move(callback).Run(false, "VM could not be started");
+    std::move(callback).Run(base::FilePath(), false, "VM could not be started");
     return;
   }
   request.set_handle(vm_info->info.seneschal_server_handle());
@@ -142,12 +143,10 @@ void CrostiniSharePath::CallSeneschalSharePath(std::string vm_name,
                                                const base::FilePath& path,
                                                bool persist,
                                                SharePathCallback callback) {
-  base::FilePath container_path;
-
   // Verify path is in one of the allowable mount points.
   // This logic is similar to DownloadPrefs::SanitizeDownloadTargetPath().
   if (!path.IsAbsolute() || path.ReferencesParent()) {
-    std::move(callback).Run(container_path, false, "Path must be absolute");
+    std::move(callback).Run(base::FilePath(), false, "Path must be absolute");
     return;
   }
 
@@ -173,11 +172,9 @@ void CrostiniSharePath::CallSeneschalSharePath(std::string vm_name,
     if (base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume)) {
       request.set_storage_location(
           vm_tools::seneschal::SharePathRequest::MY_FILES);
-      container_path = container_path.Append("MyFiles");
     } else {
       request.set_storage_location(
           vm_tools::seneschal::SharePathRequest::DOWNLOADS);
-      container_path = container_path.Append("MyFiles/Downloads");
     }
     request.set_owner_id(crostini::CryptohomeIdForProfile(profile_));
   } else if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs) &&
@@ -200,21 +197,18 @@ void CrostiniSharePath::CallSeneschalSharePath(std::string vm_name,
       allowed_path = true;
       request.set_storage_location(
           vm_tools::seneschal::SharePathRequest::DRIVEFS_MY_DRIVE);
-      container_path = container_path.Append("GoogleDrive/MyDrive");
     } else if (team_drives == drivefs_path ||
                team_drives.AppendRelativePath(drivefs_path, &relative_path)) {
       // Team Drives and subdirs.
       allowed_path = true;
       request.set_storage_location(
           vm_tools::seneschal::SharePathRequest::DRIVEFS_TEAM_DRIVES);
-      container_path = container_path.Append("GoogleDrive/TeamDrives");
     } else if (computers == drivefs_path ||
                computers.AppendRelativePath(drivefs_path, &relative_path)) {
       // Computers and subdirs.
       allowed_path = true;
       request.set_storage_location(
           vm_tools::seneschal::SharePathRequest::DRIVEFS_COMPUTERS);
-      container_path = container_path.Append("GoogleDrive/Computers");
 
       // TODO(crbug.com/917920): Do not allow Computers Grand Root, or single
       // Computer Root to be shared until DriveFS enforces allowed write paths.
@@ -235,17 +229,15 @@ void CrostiniSharePath::CallSeneschalSharePath(std::string vm_name,
     allowed_path = true;
     request.set_storage_location(
         vm_tools::seneschal::SharePathRequest::PLAY_FILES);
-    container_path = container_path.Append("PlayFiles");
   } else if (removable_media.AppendRelativePath(path, &relative_path)) {
     // Allow subdirs of /media/removable.
     allowed_path = true;
     request.set_storage_location(
         vm_tools::seneschal::SharePathRequest::REMOVABLE);
-    container_path = container_path.Append("removable");
   }
 
   if (!allowed_path) {
-    std::move(callback).Run(container_path, false, "Path is not allowed");
+    std::move(callback).Run(base::FilePath(), false, "Path is not allowed");
     return;
   }
 
@@ -259,7 +251,6 @@ void CrostiniSharePath::CallSeneschalSharePath(std::string vm_name,
 
   request.mutable_shared_path()->set_path(relative_path.value());
   request.mutable_shared_path()->set_writable(true);
-  container_path = container_path.Append(relative_path);
 
   // Restart VM if not currently running.
   auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
@@ -269,16 +260,14 @@ void CrostiniSharePath::CallSeneschalSharePath(std::string vm_name,
     crostini_manager->RestartCrostini(
         vm_name, crostini::kCrostiniDefaultContainerName,
         base::BindOnce(&OnVmRestartedForSeneschal, profile_, std::move(vm_name),
-                       base::BindOnce(std::move(callback), container_path),
-                       std::move(request)));
+                       std::move(callback), std::move(request)));
     return;
   }
 
   request.set_handle(vm_info->info.seneschal_server_handle());
   chromeos::DBusThreadManager::Get()->GetSeneschalClient()->SharePath(
       request,
-      base::BindOnce(&OnSeneschalSharePathResponse,
-                     base::BindOnce(std::move(callback), container_path)));
+      base::BindOnce(&OnSeneschalSharePathResponse, std::move(callback)));
 }
 
 void CrostiniSharePath::CallSeneschalUnsharePath(
