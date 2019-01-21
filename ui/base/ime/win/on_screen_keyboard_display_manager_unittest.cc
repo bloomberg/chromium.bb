@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/win/windows_version.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -106,7 +107,9 @@ class MockInputPane
 
 class OnScreenKeyboardTest : public ::testing::Test {
  protected:
-  OnScreenKeyboardTest() = default;
+  OnScreenKeyboardTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   std::unique_ptr<OnScreenKeyboardDisplayManagerTabTip> CreateTabTip() {
     return std::unique_ptr<OnScreenKeyboardDisplayManagerTabTip>(
@@ -118,8 +121,16 @@ class OnScreenKeyboardTest : public ::testing::Test {
         new OnScreenKeyboardDisplayManagerInputPane(nullptr));
   }
 
+  void WaitForEventsWithTimeDelay(int64_t time_delta_ms = 10) {
+    base::RunLoop run_loop;
+    scoped_task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        base::TimeDelta::FromMilliseconds(time_delta_ms));
+    run_loop.Run();
+  }
+
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(OnScreenKeyboardTest);
 };
@@ -163,17 +174,17 @@ TEST_F(OnScreenKeyboardTest, InputPane) {
 
   Microsoft::WRL::ComPtr<MockInputPane> input_pane =
       Microsoft::WRL::Make<MockInputPane>();
-  keyboard_display_manager->SetInputPaneForTesting(input_pane.Get());
+  keyboard_display_manager->SetInputPaneForTesting(input_pane);
 
   EXPECT_CALL(*observer, OnKeyboardVisible(testing::_)).Times(1);
   keyboard_display_manager->AddObserver(observer.get());
   keyboard_display_manager->DisplayVirtualKeyboard();
-  base::RunLoop().RunUntilIdle();
+  WaitForEventsWithTimeDelay(100);
 
   testing::Mock::VerifyAndClearExpectations(observer.get());
   EXPECT_CALL(*observer, OnKeyboardHidden()).Times(1);
   keyboard_display_manager->DismissVirtualKeyboard();
-  base::RunLoop().RunUntilIdle();
+  WaitForEventsWithTimeDelay(100);
   keyboard_display_manager->RemoveObserver(observer.get());
 }
 
