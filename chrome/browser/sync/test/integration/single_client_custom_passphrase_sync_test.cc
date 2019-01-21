@@ -257,15 +257,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseUseScryptSyncTest,
       /*passphrase=*/"hunter2"));
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
-// TODO(crbug.com/902297): Make the test pass in Chrome-branded builds.
-#define MAYBE_CanDecryptPbkdf2KeyEncryptedData \
-  DISABLED_CanDecryptPbkdf2KeyEncryptedData
-#else
-#define MAYBE_CanDecryptPbkdf2KeyEncryptedData CanDecryptPbkdf2KeyEncryptedData
-#endif
 IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
-                       MAYBE_CanDecryptPbkdf2KeyEncryptedData) {
+                       CanDecryptPbkdf2KeyEncryptedData) {
   KeyParams key_params = {KeyDerivationParams::CreateForPbkdf2(), "hunter2"};
   InjectEncryptedServerBookmark("PBKDF2-encrypted bookmark",
                                 GURL("http://example.com/doesnt-matter"),
@@ -273,24 +266,14 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
   SetNigoriInFakeServer(GetFakeServer(),
                         CreateCustomPassphraseNigori(key_params));
   SetDecryptionPassphraseForClient(/*index=*/0, "hunter2");
-
   ASSERT_TRUE(SetupSync());
   EXPECT_TRUE(WaitForPassphraseRequiredState(/*desired_state=*/false));
 
   EXPECT_TRUE(WaitForClientBookmarkWithTitle("PBKDF2-encrypted bookmark"));
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
-// TODO(crbug.com/902297): Make the test pass in Chrome-branded builds.
-#define MAYBE_CanDecryptScryptKeyEncryptedDataWhenScryptNotDisabled \
-  DISABLED_CanDecryptScryptKeyEncryptedDataWhenScryptNotDisabled
-#else
-#define MAYBE_CanDecryptScryptKeyEncryptedDataWhenScryptNotDisabled \
-  CanDecryptScryptKeyEncryptedDataWhenScryptNotDisabled
-#endif
-IN_PROC_BROWSER_TEST_F(
-    SingleClientCustomPassphraseDoNotUseScryptSyncTest,
-    MAYBE_CanDecryptScryptKeyEncryptedDataWhenScryptNotDisabled) {
+IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
+                       CanDecryptScryptKeyEncryptedDataWhenScryptNotDisabled) {
   KeyParams key_params = {
       KeyDerivationParams::CreateForScrypt("someConstantSalt"), "hunter2"};
   InjectEncryptedServerBookmark("scypt-encrypted bookmark",
@@ -308,8 +291,7 @@ IN_PROC_BROWSER_TEST_F(
 
 // See crbug.com/915219 about THREAD_SANITIZER. This data race is hard to avoid
 // as overriding g_feature_list after it has been used is needed for this test.
-#if defined(GOOGLE_CHROME_BUILD) || defined(THREAD_SANITIZER)
-// TODO(crbug.com/902297): Make the test pass in Chrome-branded builds.
+#if defined(THREAD_SANITIZER)
 #define MAYBE_CannotDecryptScryptKeyEncryptedDataWhenScryptDisabled \
   DISABLED_CannotDecryptScryptKeyEncryptedDataWhenScryptDisabled
 #else
@@ -337,7 +319,7 @@ IN_PROC_BROWSER_TEST_F(
   SetNigoriInFakeServer(GetFakeServer(), nigori);
   SetDecryptionPassphraseForClient(/*index=*/0, "hunter2");
 
-  ASSERT_TRUE(SetupSync());
+  SetupSyncNoWaitingForCompletion();
 
   EXPECT_TRUE(WaitForPassphraseRequiredState(/*desired_state=*/true));
 }

@@ -780,13 +780,15 @@ void SyncTest::InitializeInvalidations(int index) {
   }
 }
 
-bool SyncTest::SetupSync() {
-  base::ScopedAllowBlockingForTesting allow_blocking;
+void SyncTest::SetupSyncNoWaitingForCompletion() {
+  SetupSyncInternal(/*wait_for_completion=*/false);
+}
+
+void SyncTest::SetupSyncInternal(bool wait_for_completion) {
   // Create sync profiles and clients if they haven't already been created.
   if (profiles_.empty()) {
     if (!SetupClients()) {
       LOG(FATAL) << "SetupClients() failed.";
-      return false;
     }
   }
 
@@ -797,7 +799,6 @@ bool SyncTest::SetupSync() {
     if (!SetupAndClearClient(clientIndex++)) {
       LOG(FATAL) << "Setting up and clearing data for client "
                  << clientIndex - 1 << " failed";
-      return false;
     }
   }
 
@@ -817,29 +818,36 @@ bool SyncTest::SetupSync() {
     if (decryption_passphrase_provided && encryption_passphrase_provided) {
       LOG(FATAL) << "Both an encryption and decryption passphrase were "
                     "provided for the client. This is disallowed.";
-      return false;
     }
 
-    bool setup_succeeded;
     if (encryption_passphrase_provided) {
-      setup_succeeded = client->SetupSyncWithEncryptionPassphrase(
-          syncer::UserSelectableTypes(), encryption_passphrase_it->second);
+      CHECK(client->SetupSyncWithEncryptionPassphraseNoWaitForCompletion(
+          syncer::UserSelectableTypes(), encryption_passphrase_it->second))
+          << "SetupSync() failed.";
     } else if (decryption_passphrase_provided) {
-      setup_succeeded = client->SetupSyncWithDecryptionPassphrase(
-          syncer::UserSelectableTypes(), decryption_passphrase_it->second);
+      CHECK(client->SetupSyncWithDecryptionPassphraseNoWaitForCompletion(
+          syncer::UserSelectableTypes(), decryption_passphrase_it->second))
+          << "SetupSync() failed.";
     } else {
-      setup_succeeded = client->SetupSync(syncer::UserSelectableTypes());
+      CHECK(client->SetupSyncNoWaitForCompletion(syncer::UserSelectableTypes()))
+          << "SetupSync() failed.";
     }
-
-    if (!setup_succeeded) {
-      LOG(FATAL) << "SetupSync() failed.";
-      return false;
+    if (wait_for_completion) {
+      // It's important to wait for each client before setting up the next one,
+      // otherwise multi-client tests get flaky.
+      // TODO(tschumann): It would be nice to figure out why.
+      client->AwaitSyncSetupCompletion();
     }
   }
+}
 
-  // Because clients may modify sync data as part of startup (for example local
-  // session-releated data is rewritten), we need to ensure all startup-based
-  // changes have propagated between the clients.
+bool SyncTest::SetupSync() {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  SetupSyncInternal(/*wait_for_completion=*/true);
+
+  // Because clients may modify sync data as part of startup (for example
+  // local session-releated data is rewritten), we need to ensure all
+  // startup-based changes have propagated between the clients.
   //
   // Tests that don't use self-notifications can't await quiescense.  They'll
   // have to find their own way of waiting for an initial state if they really
@@ -871,8 +879,9 @@ bool SyncTest::SetupSync() {
     // Calling LoginUIService::SyncConfirmationUIClosed forces the observer to
     // be removed. http://crbug.com/484388
     for (int i = 0; i < num_clients_; ++i) {
-      LoginUIServiceFactory::GetForProfile(GetProfile(i))->
-          SyncConfirmationUIClosed(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
+      LoginUIServiceFactory::GetForProfile(GetProfile(i))
+          ->SyncConfirmationUIClosed(
+              LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
     }
   }
 

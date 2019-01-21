@@ -68,21 +68,24 @@ class ProfileSyncServiceHarness {
   // StopSyncService(), StartSyncService() directly after.
   bool SetupSyncForClearingServerData();
 
-  // Enables and configures sync only for the given |synced_datatypes|. Returns
-  // true only after sync has been fully initialized and authenticated, and we
-  // are ready to process changes.
-  bool SetupSync(syncer::ModelTypeSet synced_datatypes);
+  // Enables and configures sync only for the given |synced_datatypes|.
+  // Does not wait for sync to be ready to process changes -- callers need to
+  // ensure this by calling AwaitSyncSetupCompletion() or
+  // AwaitSyncTransportActive().
+  // Returns true on success.
+  bool SetupSyncNoWaitForCompletion(syncer::ModelTypeSet synced_datatypes);
 
-  // Same as SetupSync(), but also sets the given encryption passphrase during
-  // setup.
-  bool SetupSyncWithEncryptionPassphrase(syncer::ModelTypeSet synced_datatypes,
-                                         const std::string& passphrase);
+  // Same as SetupSyncNoWaitForCompletion(), but also sets the given encryption
+  // passphrase during setup.
+  bool SetupSyncWithEncryptionPassphraseNoWaitForCompletion(
+      syncer::ModelTypeSet synced_datatypes,
+      const std::string& passphrase);
 
-  // Same as SetupSync(), but also sets the given decryption passphrase during
-  // setup. If the passphrase is incorrect, this method will still return true
-  // and Sync will be operational but with undecryptable datatypes disabled.
-  bool SetupSyncWithDecryptionPassphrase(syncer::ModelTypeSet synced_datatypes,
-                                         const std::string& passphrase);
+  // Same as SetupSyncNoWaitForCompletion(), but also sets the given decryption
+  // passphrase during setup.
+  bool SetupSyncWithDecryptionPassphraseNoWaitForCompletion(
+      syncer::ModelTypeSet synced_datatypes,
+      const std::string& passphrase);
 
   // Signals that sync setup is complete, and that PSS may begin syncing.
   // Typically SetupSync does this automatically, but if that returned false,
@@ -127,14 +130,19 @@ class ProfileSyncServiceHarness {
       const std::vector<ProfileSyncServiceHarness*>& clients);
 
   // Blocks the caller until the sync engine is initialized or some end state
-  // (e.g., auth error) is reached. Returns true if and only if the engine
-  // initialized successfully. See ProfileSyncService's IsEngineInitialized()
-  // method for the definition of engine initialization.
-  bool AwaitEngineInitialization(bool skip_passphrase_verification = false);
+  // (e.g., auth error) is reached. Returns true only if the engine initialized
+  // successfully. See ProfileSyncService's IsEngineInitialized() method for the
+  // definition of engine initialization.
+  bool AwaitEngineInitialization();
 
-  // Blocks the caller until sync setup is complete. Returns true if and only
-  // if sync setup completed successfully.
-  bool AwaitSyncSetupCompletion(bool skip_passphrase_verification);
+  // Blocks the caller until sync setup is complete, and sync-the-feature is
+  // active. Returns true if and only if sync setup completed successfully. Make
+  // sure to call SetupSync() or one of its variants before.
+  bool AwaitSyncSetupCompletion();
+
+  // Blocks the caller until the sync transport layer is active. Returns true if
+  // successful.
+  bool AwaitSyncTransportActive();
 
   // Returns the ProfileSyncService member of the sync client.
   browser_sync::ProfileSyncService* service() const { return service_; }
@@ -158,19 +166,27 @@ class ProfileSyncServiceHarness {
   syncer::SyncCycleSnapshot GetLastCycleSnapshot() const;
 
  private:
+  enum class EncryptionSetupMode {
+    kNoEncryption,  // Setup sync without encryption support.
+    kDecryption,    // Setup sync with only decryption support. This only
+                    // supports cases where there's already encrypted data on
+                    // the server. Turning on custom passphrase encryption on
+                    // this client is not supported.
+    kEncryption     // Setup sync with full encryption support. This includes
+                    // turning on custom passphrase encryption on the client.
+  };
+
   ProfileSyncServiceHarness(Profile* profile,
                             const std::string& username,
                             const std::string& password,
                             SigninType signin_type);
 
-  // If |encryption_passphrase| has a value, it will be set during setup. If
-  // not, no custom passphrase will be set. If |skip_passphrase_verification| is
-  // true and Sync requires a passphrase, FinishSyncSetup() will not be called,
-  // in order to give the caller a chance to provide the passphrase using
-  // SetDecryptionPassphrase(). After that, the caller needs to call
-  // FinishSyncSetup() manually.
+  // Sets up sync with custom passphrase support as specified by
+  // |encryption_mode|.
+  // If |encryption_mode| is kDecryption or kEncryption, |encryption_passphrase|
+  // has to have a value which will be used to properly setup sync.
   bool SetupSyncImpl(syncer::ModelTypeSet synced_datatypes,
-                     bool skip_passphrase_verification,
+                     EncryptionSetupMode encryption_mode,
                      const base::Optional<std::string>& encryption_passphrase);
 
   // Gets detailed status from |service_| in pretty-printable form.
