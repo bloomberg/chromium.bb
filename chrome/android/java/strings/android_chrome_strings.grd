@@ -3601,31 +3601,31 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
       <message name="IDS_APP_RUNNING_IN_CHROME_DISCLOSURE" desc="Message on the snackbar that indicates an app may use Chrome data.">
         This app is running in Chrome
       </message>
-      <message name="IDS_TWA_RUNNING_IN_CHROME" desc="Message on a snackbar indicating that the current Activity may use Chrome data (the rest of the app may not be)." translateable="false">
+      <message name="IDS_TWA_RUNNING_IN_CHROME" desc="Message on a snackbar indicating that the current Activity may use Chrome data (the rest of the app may not be).">
         Running in Chrome
       </message>
-      <message name="IDS_YOU_HAVE_UNINSTALLED_APP" desc="Notification title saying the user has uninstalled the given app." translateable="false">
+      <message name="IDS_YOU_HAVE_UNINSTALLED_APP" desc="Notification title saying the user has uninstalled the given app.">
         You have uninstalled <ph name="APP_NAME">%1$s<ex>YouTube</ex></ph>.
       </message>
-      <message name="IDS_YOU_HAVE_CLEARED_APP" desc="Notification title saying the user has cleared data for the given app." translateable="false">
+      <message name="IDS_YOU_HAVE_CLEARED_APP" desc="Notification title saying the user has cleared data for the given app.">
         You have cleared data for <ph name="APP_NAME">%1$s<ex>YouTube</ex></ph>.
       </message>
       <message name="IDS_CLEAR_RELATED_DATA" desc="Notification text asking if the user wants to clear data for the given url as they have just uninstalled/cleared an app linked to that URL.">
         Would you like to clear data for <ph name="URL">%1$s<ex>youtube.com</ex></ph>?
       </message>
-      <message name="IDS_TWA_MANAGE_DATA" desc="Text on button of the notification that would direct the user to site settings for the site being run in a Trusted Web Activity" translateable="false">
+      <message name="IDS_TWA_MANAGE_DATA" desc="Text on button of the notification that would direct the user to site settings for the site being run in a Trusted Web Activity">
         Manage data
       </message>
-      <message name="IDS_TWA_CLEAR_DATA_DIALOG_TITLE" desc="Title of the clear data dialog showing after user uninstalls or clears data of an app hosting a Trusted Web Activity" translateable="false">
+      <message name="IDS_TWA_CLEAR_DATA_DIALOG_TITLE" desc="Title of the clear data dialog showing after user uninstalls or clears data of an app hosting a Trusted Web Activity">
         <ph name="APP_NAME">%1$s<ex>YouTube</ex></ph> also has data in Chrome
       </message>
-      <message name="IDS_TWA_CLEAR_DATA_DIALOG_MESSAGE" desc="Message of the clear data dialog" translateable="false">
+      <message name="IDS_TWA_CLEAR_DATA_DIALOG_MESSAGE" desc="Message of the clear data dialog">
         You can clear the data in Chrome Settings
       </message>
-      <message name="IDS_TWA_CLEAR_DATA_DIALOG_KEEP_DATA" desc="Text on the negative button of the clear data dialog" translateable="false">
+      <message name="IDS_TWA_CLEAR_DATA_DIALOG_KEEP_DATA" desc="Text on the negative button of the clear data dialog">
         Keep data
       </message>
-      <message name="IDS_TWA_CLEAR_DATA_SITE_SELECTION_TITLE" desc="Title of screen showing the sites linked to TWA, allowing the user to clean data in any of them." translateable="false">
+      <message name="IDS_TWA_CLEAR_DATA_SITE_SELECTION_TITLE" desc="Title of screen showing the sites linked to TWA, allowing the user to clean data in any of them.">
         Linked sites
       </message>
 
