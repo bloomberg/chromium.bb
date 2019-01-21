@@ -10,6 +10,8 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/trace_event/memory_allocator_dump.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/memory_coordinator.h"
@@ -35,6 +37,24 @@ class OnPurgeMemoryListener : public GarbageCollected<OnPurgeMemoryListener>,
 };
 
 }  // namespace
+
+// static
+ParkableStringManagerDumpProvider*
+ParkableStringManagerDumpProvider::Instance() {
+  static ParkableStringManagerDumpProvider instance;
+  return &instance;
+}
+
+bool ParkableStringManagerDumpProvider::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  return ParkableStringManager::Instance().OnMemoryDump(pmd);
+}
+
+ParkableStringManagerDumpProvider::~ParkableStringManagerDumpProvider() =
+    default;
+ParkableStringManagerDumpProvider::ParkableStringManagerDumpProvider() =
+    default;
 
 ParkableStringManager& ParkableStringManager::Instance() {
   DCHECK(IsMainThread());
@@ -94,6 +114,43 @@ void ParkableStringManager::SetRendererBackgrounded(bool backgrounded) {
 bool ParkableStringManager::IsRendererBackgrounded() const {
   DCHECK(IsMainThread());
   return backgrounded_;
+}
+
+bool ParkableStringManager::OnMemoryDump(
+    base::trace_event::ProcessMemoryDump* pmd) {
+  DCHECK(IsMainThread());
+  base::trace_event::MemoryAllocatorDump* dump =
+      pmd->CreateAllocatorDump("parkable_strings");
+
+  size_t uncompressed_size = 0;
+  size_t compressed_size = 0;
+  size_t metadata_size = 0;
+  size_t overhead_size = 0;
+
+  for (ParkableStringImpl* str : unparked_strings_.Values()) {
+    uncompressed_size += str->CharactersSizeInBytes();
+    metadata_size += sizeof(ParkableStringImpl);
+
+    if (str->has_compressed_data())
+      overhead_size += str->compressed_size();
+  }
+
+  for (ParkableStringImpl* str : parked_strings_) {
+    compressed_size += str->compressed_size();
+    metadata_size += sizeof(ParkableStringImpl);
+  }
+
+  size_t total_size =
+      uncompressed_size + compressed_size + metadata_size + overhead_size;
+  dump->AddScalar("size", "bytes", total_size);
+  dump->AddScalar("uncompressed_size", "bytes", uncompressed_size);
+  dump->AddScalar("compressed_size", "bytes", compressed_size);
+  dump->AddScalar("metadata_size", "bytes", metadata_size);
+  dump->AddScalar("overhead_size", "bytes", overhead_size);
+
+  pmd->AddSuballocation(dump->guid(),
+                        WTF::Partitions::kAllocatedObjectPoolName);
+  return true;
 }
 
 // static

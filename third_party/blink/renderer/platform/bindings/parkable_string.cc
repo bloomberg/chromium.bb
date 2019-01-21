@@ -15,6 +15,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/web_process_memory_dump.h"
 #include "third_party/blink/renderer/platform/scheduler/public/background_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
@@ -448,6 +449,18 @@ void ParkableString::Lock() const {
 void ParkableString::Unlock() const {
   if (impl_)
     impl_->Unlock();
+}
+
+void ParkableString::OnMemoryDump(WebProcessMemoryDump* pmd,
+                                  const String& name) const {
+  // Parkable strings are reported by ParkableStringManager.
+  if (!impl_ || may_be_parked())
+    return;
+
+  auto* dump = pmd->CreateMemoryAllocatorDump(name);
+  dump->AddScalar("size", "bytes", CharactersSizeInBytes());
+  pmd->AddSuballocation(dump->Guid(),
+                        String(WTF::Partitions::kAllocatedObjectPoolName));
 }
 
 bool ParkableString::Is8Bit() const {
