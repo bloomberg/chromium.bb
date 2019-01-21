@@ -62,11 +62,13 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD0(GetJsController, base::WeakPtr<syncer::JsController>());
 
   // SyncEngineHost overrides.
-  MOCK_METHOD6(
+  MOCK_METHOD8(
       OnEngineInitialized,
       void(syncer::ModelTypeSet initial_types,
            const syncer::WeakHandle<syncer::JsBackend>&,
            const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&,
+           const std::string&,
+           const std::string&,
            const std::string&,
            const std::string&,
            bool));

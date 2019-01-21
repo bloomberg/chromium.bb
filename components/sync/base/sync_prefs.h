@@ -162,6 +162,16 @@ class SyncPrefs : public CryptoSyncPrefs,
   void SetSpareBootstrapToken(const std::string& token);
 #endif
 
+  // Copy of various fields historically owned and persisted by the Directory.
+  // This is a future-proof approach to ultimately replace the Directory once
+  // most users have populated prefs and the Directory is about to be removed.
+  // TODO(crbug.com/923287): Figure out if this is an appropriate place.
+  void SetCacheGuid(const std::string& cache_guid);
+  void SetBirthday(const std::string& birthday);
+  void SetBagOfChips(const std::string& bag_of_chips);
+
+  std::string GetCacheGuidForTesting() const;
+
   // Get/set/clear first sync time of current user. Used to roll back browsing
   // data later when user signs out.
   base::Time GetFirstSyncTime() const;

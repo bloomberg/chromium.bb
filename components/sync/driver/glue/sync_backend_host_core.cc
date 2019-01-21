@@ -30,6 +30,7 @@
 #include "components/sync/engine/sync_manager.h"
 #include "components/sync/engine/sync_manager_factory.h"
 #include "components/sync/syncable/directory.h"
+#include "components/sync/syncable/user_share.h"
 
 // Helper macros to log with the syncer thread name; useful when there
 // are multiple syncers involved.
@@ -404,7 +405,8 @@ void SyncBackendHostCore::DoInitialProcessControlTypes() {
   // which is called at the end of every sync cycle.
   // TODO(zea): eventually add an experiment handler and initialize it here.
 
-  if (!sync_manager_->GetUserShare()) {  // Null in some tests.
+  const UserShare* user_share = sync_manager_->GetUserShare();
+  if (!user_share) {  // Null in some tests.
     DVLOG(1) << "Skipping initialization of DeviceInfo";
     host_.Call(FROM_HERE,
                &SyncBackendHostImpl::HandleInitializationFailureOnFrontendLoop);
@@ -418,12 +420,15 @@ void SyncBackendHostCore::DoInitialProcessControlTypes() {
     return;
   }
 
+  DCHECK_EQ(user_share->directory->cache_guid(), sync_manager_->cache_guid());
   host_.Call(FROM_HERE,
              &SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop,
              registrar_->GetLastConfiguredTypes(), js_backend_,
              debug_info_listener_,
              base::Passed(sync_manager_->GetModelTypeConnectorProxy()),
-             sync_manager_->cache_guid(), GetSessionNameBlocking());
+             sync_manager_->cache_guid(), GetSessionNameBlocking(),
+             user_share->directory->store_birthday(),
+             user_share->directory->bag_of_chips());
 
   js_backend_.Reset();
   debug_info_listener_.Reset();

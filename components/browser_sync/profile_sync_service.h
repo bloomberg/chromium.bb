@@ -270,6 +270,8 @@ class ProfileSyncService : public syncer::SyncService,
           debug_info_listener,
       const std::string& cache_guid,
       const std::string& session_name,
+      const std::string& birthday,
+      const std::string& bag_of_chips,
       bool success) override;
   void OnSyncCycleCompleted(const syncer::SyncCycleSnapshot& snapshot) override;
   void OnProtocolEvent(const syncer::ProtocolEvent& event) override;

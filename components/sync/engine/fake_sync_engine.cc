@@ -12,6 +12,7 @@ namespace {
 
 const char kTestCacheGuid[] = "test-guid";
 const char kTestSessionName[] = "test-session-name";
+const char kTestBirthday[] = "1";
 
 }  // namespace
 
@@ -19,10 +20,10 @@ FakeSyncEngine::FakeSyncEngine() : fail_initial_download_(false) {}
 FakeSyncEngine::~FakeSyncEngine() {}
 
 void FakeSyncEngine::Initialize(InitParams params) {
-  params.host->OnEngineInitialized(ModelTypeSet(), WeakHandle<JsBackend>(),
-                                   WeakHandle<DataTypeDebugInfoListener>(),
-                                   kTestCacheGuid, kTestSessionName,
-                                   !fail_initial_download_);
+  params.host->OnEngineInitialized(
+      ModelTypeSet(), WeakHandle<JsBackend>(),
+      WeakHandle<DataTypeDebugInfoListener>(), kTestCacheGuid, kTestSessionName,
+      kTestBirthday, /*bag_of_chips=*/"", !fail_initial_download_);
 }
 
 void FakeSyncEngine::TriggerRefresh(const ModelTypeSet& types) {}
