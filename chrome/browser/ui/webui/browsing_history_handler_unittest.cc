@@ -64,6 +64,11 @@ class TestSyncService : public browser_sync::TestProfileSyncService {
     return syncer::ModelTypeSet::All();
   }
 
+  // Overridden to be empty, to prevent the Sync machinery from actually
+  // starting up (which would fail, since not everything is properly set up,
+  // e.g. we're missing an authenticated account).
+  void StartUpSlowEngineComponents() override {}
+
   void SetTransportState(TransportState state) {
     state_ = state;
     NotifyObservers();
