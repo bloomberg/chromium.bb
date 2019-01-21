@@ -33,6 +33,7 @@
 
 #include <algorithm>
 #include "base/metrics/histogram_macros.h"
+#include "third_party/blink/renderer/bindings/core/v8/double_or_performance_mark_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_double_or_performance_measure_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -46,7 +47,6 @@
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_long_task_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_mark.h"
-#include "third_party/blink/renderer/core/timing/performance_mark_options.h"
 #include "third_party/blink/renderer/core/timing/performance_measure.h"
 #include "third_party/blink/renderer/core/timing/performance_measure_options.h"
 #include "third_party/blink/renderer/core/timing/performance_observer.h"
@@ -712,17 +712,19 @@ void Performance::AddLongTaskTiming(
 PerformanceMark* Performance::mark(ScriptState* script_state,
                                    const AtomicString& mark_name,
                                    ExceptionState& exception_state) {
-  return mark(script_state, mark_name, nullptr, exception_state);
+  DoubleOrPerformanceMarkOptions startOrOptions;
+  return mark(script_state, mark_name, startOrOptions, exception_state);
 }
 
-PerformanceMark* Performance::mark(ScriptState* script_state,
-                                   const AtomicString& mark_name,
-                                   PerformanceMarkOptions* mark_options,
-                                   ExceptionState& exception_state) {
+PerformanceMark* Performance::mark(
+    ScriptState* script_state,
+    const AtomicString& mark_name,
+    DoubleOrPerformanceMarkOptions& start_time_or_mark_options,
+    ExceptionState& exception_state) {
   if (!user_timing_)
     user_timing_ = UserTiming::Create(*this);
   PerformanceMark* performance_mark = user_timing_->Mark(
-      script_state, mark_name, mark_options, exception_state);
+      script_state, mark_name, start_time_or_mark_options, exception_state);
   if (performance_mark)
     NotifyObserversOfEntry(*performance_mark);
   if (RuntimeEnabledFeatures::CustomUserTimingEnabled())
