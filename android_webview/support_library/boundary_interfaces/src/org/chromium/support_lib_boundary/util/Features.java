@@ -130,7 +130,7 @@ public class Features {
 
     // ProxyController.setProxyOverride
     // ProxyController.clearProxyOverride
-    public static final String PROXY_OVERRIDE = "PROXY_OVERRIDE:3" + DEV_SUFFIX;
+    public static final String PROXY_OVERRIDE = "PROXY_OVERRIDE:3";
 
     // WebViewCompat.getWebViewRenderer
     public static final String GET_WEB_VIEW_RENDERER = "GET_WEB_VIEW_RENDERER";
