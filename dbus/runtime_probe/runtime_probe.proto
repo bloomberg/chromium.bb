@@ -70,13 +70,18 @@ message Battery {
     int32 charge_now = 7;
     // Current Battery voltage (µV)
     int32 voltage_now = 8;
+    // Designed minimum output voltage (µV)
+    int32 voltage_min_design = 9;
     // Smart Battery Cycle Count in http://sbs-forum.org/specs/sbdat110.pdf
-    int32 cycle_count_smart = 9;
+    int32 cycle_count_smart = 10;
     // Smart Battery Status defined in http://sbs-forum.org/specs/sbdat110.pdf
-    int32 status_smart = 10;
+    int32 status_smart = 11;
     // Temperature in 0.1°K as Smart Battery Temperature defined in
     // http://sbs-forum.org/specs/sbdat110.pdf
-    int32 temperature_smart = 11;
+    int32 temperature_smart = 12;
+    // The path of this battery in system. It is useful if caller needs to
+    // correlate with other information
+    string path = 13;
   }
   string name = 1;    // Component alias
   Fields values = 2;  // Component's details
