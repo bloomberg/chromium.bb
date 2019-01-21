@@ -474,7 +474,7 @@ TEST(SimpleColorSpace, SampleShaderSource) {
       "}\n"
       "float TransferFn3(float v) {\n"
       "  if (v < 0.00000000e+00)\n"
-      "    return v;\n"
+      "    return 0.00000000e+00 * v;\n"
       "  return pow(v, 3.57142866e-01);\n"
       "}\n"
       "vec3 DoColorConversion(vec3 color) {\n"
