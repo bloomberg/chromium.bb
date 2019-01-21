@@ -184,6 +184,9 @@ def main(args):
     with build_utils.TempDir() as tmp_dir:
       tmp_mapping_path = os.path.join(tmp_dir, 'mapping.txt')
       tmp_proguard_config_path = os.path.join(tmp_dir, 'proguard_config.txt')
+      # If there is no output (no classes are kept), this prevents this script
+      # from failing.
+      build_utils.Touch(tmp_mapping_path)
 
       if options.output_path.endswith('.dex'):
         with build_utils.TempDir() as tmp_dex_dir:
