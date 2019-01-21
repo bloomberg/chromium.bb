@@ -417,6 +417,7 @@ void OverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
   GetControlsParentLayer()->SetVisible(is_visible);
   GetBackToTabControlsLayer()->SetVisible(is_visible);
   GetSkipAdControlsLayer()->SetVisible(is_visible && show_skip_ad_button_);
+  skip_ad_controls_view_->SetEnabled(is_visible && show_skip_ad_button_);
   GetCloseControlsLayer()->SetVisible(is_visible);
 
 #if defined(OS_CHROMEOS)
