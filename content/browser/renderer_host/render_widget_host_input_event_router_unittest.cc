@@ -105,8 +105,11 @@ class StubHitTestQuery : public viz::HitTestQuery {
       : hittest_result_(hittest_result), query_renderer_(query_renderer) {}
   ~StubHitTestQuery() override = default;
 
-  viz::Target FindTargetForLocation(viz::EventSource,
-                                    const gfx::PointF&) const override {
+  viz::Target FindTargetForLocationStartingFromImpl(
+      viz::EventSource event_source,
+      const gfx::PointF& location,
+      const viz::FrameSinkId& sink_id,
+      bool is_location_relative_to_parent) const override {
     return {hittest_result_->GetFrameSinkId(), gfx::PointF(),
             viz::HitTestRegionFlags::kHitTestMouse |
                 viz::HitTestRegionFlags::kHitTestTouch |

@@ -1228,5 +1228,52 @@ TEST_F(HitTestQueryTest, TransparentOverlayRegions) {
                                HitTestRegionFlags::kHitTestMouse);
 }
 
+TEST_F(HitTestQueryTest, FindTargetForLocationStartingFrom) {
+  FrameSinkId e_id = FrameSinkId(1, 1);
+  FrameSinkId c_id = FrameSinkId(2, 2);
+  gfx::Rect e_bounds_in_e = gfx::Rect(0, 0, 600, 600);
+  gfx::Rect c_bounds_in_e = gfx::Rect(0, 0, 200, 200);
+  gfx::Transform transform_e_to_e, transform_e_to_c;
+  transform_e_to_c.Translate(-100, -100);
+  active_data_.push_back(AggregatedHitTestRegion(
+      e_id,
+      HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
+      e_bounds_in_e, transform_e_to_e, 1));  // e
+  active_data_.push_back(AggregatedHitTestRegion(
+      c_id,
+      HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
+      c_bounds_in_e, transform_e_to_c, 0));  // c
+  SendHitTestData();
+
+  // Test a point in the embedder with the embedder as the initial frame sink.
+  gfx::PointF point1(99, 200);
+  Target target1 = hit_test_query().FindTargetForLocationStartingFrom(
+      EventSource::MOUSE, point1, e_id);
+  EXPECT_EQ(target1.frame_sink_id, e_id);
+  EXPECT_EQ(target1.location_in_target, point1);
+  EXPECT_EQ(target1.flags, HitTestRegionFlags::kHitTestMine |
+                               HitTestRegionFlags::kHitTestMouse);
+
+  // Test a point in the child with the embedder as the initial frame sink. The
+  // point is still specified in the coordinate space of the embedder.
+  gfx::PointF point2(150, 150);
+  Target target2 = hit_test_query().FindTargetForLocationStartingFrom(
+      EventSource::MOUSE, point2, e_id);
+  EXPECT_EQ(target2.frame_sink_id, c_id);
+  EXPECT_EQ(target2.location_in_target, gfx::PointF(50, 50));
+  EXPECT_EQ(target2.flags, HitTestRegionFlags::kHitTestMine |
+                               HitTestRegionFlags::kHitTestMouse);
+
+  // Test a point in the child with the child as the initial frame sink. The
+  // point is specified in the coordinate space of the child.
+  gfx::PointF point3(40, 40);
+  Target target3 = hit_test_query().FindTargetForLocationStartingFrom(
+      EventSource::MOUSE, point3, c_id);
+  EXPECT_EQ(target3.frame_sink_id, c_id);
+  EXPECT_EQ(target3.location_in_target, point3);
+  EXPECT_EQ(target3.flags, HitTestRegionFlags::kHitTestMine |
+                               HitTestRegionFlags::kHitTestMouse);
+}
+
 }  // namespace test
 }  // namespace viz

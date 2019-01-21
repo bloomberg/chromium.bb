@@ -43,15 +43,6 @@ void TransformEventTouchPositions(blink::WebTouchEvent* event,
   }
 }
 
-gfx::PointF ComputePointInRootInPixels(
-    const gfx::PointF& point,
-    content::RenderWidgetHostViewBase* root_view,
-    float device_scale_factor) {
-  gfx::PointF point_in_root = point;
-  root_view->TransformPointToRootSurface(&point_in_root);
-  return gfx::ConvertPointToPixel(device_scale_factor, point_in_root);
-}
-
 bool IsMouseButtonDown(const blink::WebMouseEvent& event) {
   constexpr int mouse_button_modifiers =
       blink::WebInputEvent::kLeftButtonDown |
@@ -452,6 +443,7 @@ RenderWidgetHostInputEventRouter::FindMouseWheelEventTarget(
   return {nullptr, false, base::nullopt, true, false};
 }
 
+// TODO(riajiang): Get rid of |point_in_screen| since it's not used.
 RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
     RenderWidgetHostViewBase* root_view,
     const gfx::PointF& point,
@@ -475,16 +467,12 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
       *transformed_point = point;
       return {root_view, false, *transformed_point, false, false};
     }
-    // |point_in_screen| is in the coordinate space of of the screen, but the
-    // display HitTestQuery does a hit test in the coordinate space of the root
-    // window. The following translation should account for that discrepancy.
-    // TODO(riajiang): Get rid of |point_in_screen| since it's not used.
     float device_scale_factor = root_view->GetDeviceScaleFactor();
     DCHECK_GT(device_scale_factor, 0.0f);
-    gfx::PointF point_in_root_in_pixels =
-        ComputePointInRootInPixels(point, root_view, device_scale_factor);
-    viz::Target target =
-        query->FindTargetForLocation(source, point_in_root_in_pixels);
+    gfx::PointF point_in_pixels =
+        gfx::ConvertPointToPixel(device_scale_factor, point);
+    viz::Target target = query->FindTargetForLocationStartingFrom(
+        source, point_in_pixels, root_view->GetFrameSinkId());
     frame_sink_id = target.frame_sink_id;
     if (frame_sink_id.is_valid()) {
       *transformed_point = gfx::ConvertPointToDIP(device_scale_factor,
