@@ -51,7 +51,6 @@ crbug.com/891427 editing/pasteboard/drop-text-without-selection.html [ Pass Fail
 # Next 4 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel/1541
 crbug.com/891427 virtual/android/rootscroller/gesture-scroll-document-not-root-scroller.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Pass Failure Timeout Crash ]
-crbug.com/891427 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Pass Failure Timeout Crash ]
 # Next 4 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel/1547
 crbug.com/891427 virtual/threaded/external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Pass Failure Timeout Crash ]
 # Next 1 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7-blink-rel/1504
@@ -98,7 +97,6 @@ crbug.com/891427 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/
 crbug.com/891427 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Pass Failure Timeout Crash ]
-crbug.com/891427 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchpad-zoom-out-slow.html [ Pass Failure Timeout Crash ]
 
 # The following fail only on Android.
 crbug.com/891427 [ Android ] virtual/threaded/synthetic_gestures/smooth-scroll-tiny-delta.html [ Pass Failure Timeout Crash ]
@@ -393,7 +391,6 @@ crbug.com/767318 compositing/reflections/nested-reflection-mask-change.html [ Fa
 crbug.com/887000 virtual/prefer_compositing_to_lcd_text/scrollbars/hidden-scrollbars-invisible.html [ Failure ]
 crbug.com/882975 virtual/threaded/fast/events/pinch/gesture-pinch-zoom-prevent-in-handler.html [ Failure Pass ]
 crbug.com/882975 virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.html [ Failure Pass ]
-crbug.com/882975 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Failure Pass Crash ]
 crbug.com/884239 virtual/threaded/animations/animationworklet/worklet-animation-local-time-undefined.html [ Failure ]
 # Subpixel rounding differences that are incorrect.
 crbug.com/836886 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scaled-overflow.html [ Failure ]
@@ -2006,17 +2003,24 @@ crbug.com/787615 [ Fuchsia ] virtual/threaded/synthetic_gestures/synthetic-pinch
 crbug.com/787615 [ Win ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow.html [ Failure Pass ]
 crbug.com/787615 [ Linux ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow.html [ Failure Pass ]
 crbug.com/787615 [ Fuchsia ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow.html [ Failure Pass ]
-### See crbug.com/891427 comment near the top of this file:
-####crbug.com/787615 [ Win Linux Fuchsia ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Failure Pass ]
+crbug.com/787615 [ Win ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Failure Pass ]
+crbug.com/787615 [ Linux ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Failure Pass ]
+crbug.com/787615 [ Fuchsia ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Failure Pass ]
+
+crbug.com/871139 [ Android ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow.html [ Failure ]
+crbug.com/871139 [ Android ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow.html [ Failure ]
+crbug.com/871139 [ Android ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Failure ]
+
 # gpuBenchmarking.pinchBy is not implemented on Mac for touchscreen pinch
 crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow.html [ Skip ]
-### See crbug.com/891427 comment near the top of this file:
-####crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Skip ]
+crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow-desktop.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow-desktop.html [ Skip ]
-### See crbug.com/891427 comment near the top of this file:
-####crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Skip ]
+crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Skip ]
+
+# Fails on Linux Tests (dbg) bot.
+crbug.com/922508 [ Linux Debug ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchpad-zoom-in-slow.html [ Failure Pass ]
 
 crbug.com/522648 fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
 crbug.com/522648 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
@@ -5534,12 +5538,6 @@ crbug.com/869773 [ Mac ] http/tests/misc/window-dot-stop.html [ Pass Failure ]
 crbug.com/869773 [ Linux ] http/tests/misc/window-dot-stop.html [ Pass Failure ]
 crbug.com/862806 [ Linux ] css3/filters/effect-drop-shadow-hw.html [ Pass Timeout ]
 
-# Sheriff 2018-08-06
-crbug.com/871139 [ Android ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow.html [ Failure ]
-crbug.com/871139 [ Android ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow.html [ Failure ]
-### See crbug.com/891427 comment near the top of this file:
-####crbug.com/871139 [ Android ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Failure ]
-
 # Sheriff 2018-08-08
 crbug.com/871105 [ Linux ] svg/dom/remove-use-target-element-indirectly.html [ Pass Crash ]
 crbug.com/872025 [ Mac ] fast/css-grid-layout/crash-large-positions.html [ Pass Timeout ]
@@ -5966,10 +5964,6 @@ crbug.com/922951 virtual/video-surface-layer/media/controls/overflow-menu-hide-o
 crbug.com/922951 virtual/video-surface-layer/media/controls/overflow-menu-hide-on-click-outside.html [ Skip ]
 crbug.com/922951 virtual/video-surface-layer/media/controls/overflow-menu-hide-on-click-panel.html [ Skip ]
 crbug.com/922951 virtual/video-surface-layer/media/controls/overflow-menu-toggle-class-for-animation.html [ Skip ]
-
-# Sheriff 2019-01-15
-# Fails on Linux Tests (dbg) bot.
-crbug.com/922508 [ Linux Debug ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchpad-zoom-in-slow.html [ Failure Pass ]
 
 # Sheriff 2019-01-17
 crbug.com/922955 external/wpt/webrtc/RTCPeerConnection-track-stats.https.html [ Failure Pass ]
