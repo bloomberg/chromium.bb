@@ -79,7 +79,6 @@
 #import "ios/chrome/browser/ui/browser_view_controller_helper.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter_delegate.h"
-#import "ios/chrome/browser/ui/chrome_web_view_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -177,7 +176,6 @@
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/public/provider/chrome/browser/ui/default_ios_web_view_factory.h"
 #import "ios/public/provider/chrome/browser/ui/fullscreen_provider.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_controller.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
@@ -1857,10 +1855,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       std::make_unique<AllWebStateObservationForwarder>(
           self.tabModel.webStateList, _webStateObserverBridge.get());
 
-  if (!_isOffTheRecord) {
-    [DefaultIOSWebViewFactory
-        registerWebViewFactory:[ChromeWebViewFactory class]];
-  }
   NSUInteger count = self.tabModel.count;
   for (NSUInteger index = 0; index < count; ++index)
     [self installDelegatesForTab:[self.tabModel tabAtIndex:index]];

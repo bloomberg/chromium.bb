@@ -67,7 +67,6 @@ source_set("unit_tests") {
   sources = [
     "browser_view_controller_helper_unittest.mm",
     "browser_view_controller_unittest.mm",
-    "chrome_web_view_factory_unittest.mm",
     "file_locations_unittest.mm",
     "key_commands_provider_unittest.mm",
     "native_content_controller_unittest.mm",
@@ -238,8 +237,6 @@ source_set("ui_internal") {
     "browser_view_controller_dependency_factory.mm",
     "browser_view_controller_helper.h",
     "browser_view_controller_helper.mm",
-    "chrome_web_view_factory.h",
-    "chrome_web_view_factory.mm",
     "fade_truncated_label.h",
     "fade_truncated_label.mm",
     "key_commands_provider.h",

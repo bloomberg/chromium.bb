@@ -7,9 +7,9 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/ui/chrome_web_view_factory.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#include "ios/chrome/browser/web/chrome_web_client.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -80,8 +80,6 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
     *headers = web::ResponseProvider::GetDefaultResponseHeaders();
     std::string userAgent;
-    const std::string kDesktopUserAgent =
-        base::SysNSStringToUTF8(ChromeWebView::kDesktopUserAgent);
     if (request.headers.GetHeader("User-Agent", &userAgent) &&
         userAgent == kDesktopUserAgent) {
       response_body->assign("Desktop");
