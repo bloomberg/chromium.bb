@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace {
 
@@ -24,15 +23,11 @@ namespace blink {
 
 MediaControlTimeDisplayElement::MediaControlTimeDisplayElement(
     MediaControlsImpl& media_controls,
-    blink::WebLocalizedString::Name localized_label)
-    : MediaControlDivElement(media_controls, kMediaIgnore),
-      localized_label_(localized_label) {
-  SetAriaLabel();
-}
+    MediaControlElementType display_type)
+    : MediaControlDivElement(media_controls, display_type) {}
 
 void MediaControlTimeDisplayElement::SetCurrentValue(double time) {
   current_value_ = time;
-  SetAriaLabel();
   setInnerText(FormatTime(), ASSERT_NO_EXCEPTION);
 }
 
@@ -77,11 +72,6 @@ String MediaControlTimeDisplayElement::FormatTime() const {
   }
 
   return String::Format("%s%d:%02d", negative_sign, minutes, seconds);
-}
-
-void MediaControlTimeDisplayElement::SetAriaLabel() {
-  String aria_label = GetLocale().QueryString(localized_label_, FormatTime());
-  setAttribute(html_names::kAriaLabelAttr, AtomicString(aria_label));
 }
 
 }  // namespace blink
