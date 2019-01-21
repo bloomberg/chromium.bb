@@ -109,7 +109,8 @@ base::Optional<AutocompleteMatch> ClipboardURLProvider::CreateURLMatch(
       std::min(current_url_suggested_times_, static_cast<size_t>(20)));
 
   // Add the clipboard match. The relevance is 800 to beat ZeroSuggest results.
-  AutocompleteMatch match(this, 800, false, AutocompleteMatchType::CLIPBOARD);
+  AutocompleteMatch match(this, 800, false,
+                          AutocompleteMatchType::CLIPBOARD_URL);
   match.destination_url = url;
   // Because the user did not type a related input to get this clipboard
   // suggestion, preserve the subdomain so the user has extra context.
@@ -146,7 +147,8 @@ base::Optional<AutocompleteMatch> ClipboardURLProvider::CreateTextMatch(
   DCHECK(!text.empty());
 
   // Add the clipboard match. The relevance is 800 to beat ZeroSuggest results.
-  AutocompleteMatch match(this, 800, false, AutocompleteMatchType::CLIPBOARD);
+  AutocompleteMatch match(this, 800, false,
+                          AutocompleteMatchType::CLIPBOARD_TEXT);
   TemplateURLService* url_service = client_->GetTemplateURLService();
   const TemplateURL* default_url = url_service->GetDefaultSearchProvider();
   DCHECK(!default_url->url().empty());
@@ -191,7 +193,8 @@ base::Optional<AutocompleteMatch> ClipboardURLProvider::CreateImageMatch(
   }
 
   // Add the clipboard match. The relevance is 800 to beat ZeroSuggest results.
-  AutocompleteMatch match(this, 800, false, AutocompleteMatchType::CLIPBOARD);
+  AutocompleteMatch match(this, 800, false,
+                          AutocompleteMatchType::CLIPBOARD_IMAGE);
 
   match.description.assign(l10n_util::GetStringUTF16(IDS_IMAGE_FROM_CLIPBOARD));
   AutocompleteMatch::ClassifyLocationInString(

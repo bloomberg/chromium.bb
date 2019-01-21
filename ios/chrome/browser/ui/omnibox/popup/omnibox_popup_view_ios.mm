@@ -108,7 +108,7 @@ void OmniboxPopupViewIOS::OnMatchSelected(
   // make sure it stays alive until the call completes.
   AutocompleteMatch match = selectedMatch;
 
-  if (match.type == AutocompleteMatchType::CLIPBOARD) {
+  if (match.type == AutocompleteMatchType::CLIPBOARD_URL) {
     base::RecordAction(UserMetricsAction("MobileOmniboxClipboardToURL"));
     UMA_HISTOGRAM_LONG_TIMES_100(
         "MobileOmnibox.PressedClipboardSuggestionAge",

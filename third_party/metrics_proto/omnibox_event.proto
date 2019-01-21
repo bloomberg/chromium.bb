@@ -263,12 +263,14 @@ message OmniboxEventProto {
                                      // own type but instead can be attached to
                                      // suggestions of any type.
       CALCULATOR = 23;               // A calculator answer.
-      CLIPBOARD = 24;                // An URL based on the clipboard.
+      CLIPBOARD_URL = 24;            // An URL based on the clipboard.
       PHYSICAL_WEB = 25;             // DEPRECATED. A Physical Web nearby URL.
       PHYSICAL_WEB_OVERFLOW = 26;  // DEPRECATED. An item representing multiple
                                    // Physical Web nearby URLs.
       DOCUMENT = 27;               // An item representing a cloud document
                                    // suggestion.
+      CLIPBOARD_TEXT = 28;         // Text based on the clipboard.
+      CLIPBOARD_IMAGE = 29;        // An image based on the clipboard.
     }
     optional ResultType result_type = 2;
 

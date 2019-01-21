@@ -49,6 +49,8 @@ std::string AutocompleteMatchType::ToString(AutocompleteMatchType::Type type) {
     "tab-search",
     "document",
     "pedal",
+    "text-from-clipboard",
+    "image-from-clipboard",
   };
   // clang-format on
   static_assert(base::size(strings) == AutocompleteMatchType::NUM_TYPES,
@@ -136,7 +138,7 @@ base::string16 AutocompleteMatchType::ToAccessibilityLabel(
       // URL instead of a search query.
       IDS_ACC_AUTOCOMPLETE_HISTORY,    // NAVSUGGEST_PERSONALIZED
       0,                               // CALCULATOR
-      IDS_ACC_AUTOCOMPLETE_CLIPBOARD,  // CLIPBOARD
+      IDS_ACC_AUTOCOMPLETE_CLIPBOARD,  // CLIPBOARD_URL
       0,                               // VOICE_SUGGEST
       0,                               // PHYSICAL_WEB_DEPRECATED
       0,                               // PHYSICAL_WEB_OVERFLOW_DEPRECATED
@@ -145,6 +147,9 @@ base::string16 AutocompleteMatchType::ToAccessibilityLabel(
 
       // TODO(orinj): Determine appropriate accessibility labels for Pedals
       0,  // PEDAL
+      // TODO(rgibson): Determine appropriate accessibility labels for clipboard
+      0,  // CLIPBOARD_TEXT
+      0,  // CLIPBOARD_IMAGE
   };
   static_assert(base::size(message_ids) == AutocompleteMatchType::NUM_TYPES,
                 "message_ids must have NUM_TYPES elements");

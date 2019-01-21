@@ -212,7 +212,7 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
     case Type::NAVSUGGEST:
     case Type::BOOKMARK_TITLE:
     case Type::NAVSUGGEST_PERSONALIZED:
-    case Type::CLIPBOARD:
+    case Type::CLIPBOARD_URL:
     case Type::PHYSICAL_WEB_DEPRECATED:
     case Type::PHYSICAL_WEB_OVERFLOW_DEPRECATED:
     case Type::TAB_SEARCH_DEPRECATED:
@@ -227,6 +227,8 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
     case Type::SEARCH_OTHER_ENGINE:
     case Type::CONTACT_DEPRECATED:
     case Type::VOICE_SUGGEST:
+    case Type::CLIPBOARD_TEXT:
+    case Type::CLIPBOARD_IMAGE:
       return vector_icons::kSearchIcon;
 
     case Type::EXTENSION_APP_DEPRECATED:

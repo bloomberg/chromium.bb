@@ -144,8 +144,16 @@ void AutocompleteMatchToAssistedQuery(
       *type = 6;
       return;
     }
-    case AutocompleteMatchType::CLIPBOARD: {
+    case AutocompleteMatchType::CLIPBOARD_URL: {
       *subtype = 177;
+      return;
+    }
+    case AutocompleteMatchType::CLIPBOARD_TEXT: {
+      *subtype = 176;
+      return;
+    }
+    case AutocompleteMatchType::CLIPBOARD_IMAGE: {
+      *subtype = 327;
       return;
     }
     default: {
