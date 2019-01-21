@@ -1268,7 +1268,7 @@ void LayoutGrid::LayoutGridItems() {
     DCHECK_LT(area.rows.StartLine(),
               track_sizing_algorithm_.Tracks(kForRows).size());
 #endif
-    child->SetLogicalLocation(FindChildLogicalPosition(*child));
+    SetLogicalPositionForChild(*child);
 
     // Keep track of children overflowing their grid area as we might need to
     // paint them even if the grid-area is not visible. Using physical
@@ -1330,10 +1330,8 @@ void LayoutGrid::LayoutPositionedObjects(bool relayout_children,
 
     LayoutPositionedObject(child, relayout_children, info);
 
-    if (child->IsGridItem() ||
-        !HasStaticPositionForChild(*child, kForColumns) ||
-        !HasStaticPositionForChild(*child, kForRows))
-      child->SetLogicalLocation(FindChildLogicalPosition(*child));
+    SetLogicalOffsetForChild(*child, kForColumns);
+    SetLogicalOffsetForChild(*child, kForRows);
   }
 }
 
@@ -2026,9 +2024,11 @@ LayoutUnit LayoutGrid::GridAreaBreadthForOutOfFlowChild(
   return std::max(end - start, LayoutUnit());
 }
 
-LayoutUnit LayoutGrid::LogicalOffsetForChild(const LayoutBox& child,
-                                             GridTrackSizingDirection direction,
-                                             LayoutUnit track_breadth) const {
+LayoutUnit LayoutGrid::LogicalOffsetForOutOfFlowChild(
+    const LayoutBox& child,
+    GridTrackSizingDirection direction,
+    LayoutUnit track_breadth) const {
+  DCHECK(child.IsOutOfFlowPositioned());
   if (HasStaticPositionForChild(child, direction))
     return LayoutUnit();
 
@@ -2070,7 +2070,7 @@ void LayoutGrid::GridAreaPositionForOutOfFlowChild(
     auto& positions = is_row_axis ? column_positions_ : row_positions_;
     start = positions[line.value()];
   }
-  start += LogicalOffsetForChild(child, direction, track_breadth);
+  start += LogicalOffsetForOutOfFlowChild(child, direction, track_breadth);
   end = start + track_breadth;
 }
 
@@ -2294,10 +2294,41 @@ LayoutUnit LayoutGrid::TranslateRTLCoordinate(LayoutUnit coordinate) const {
   return right_grid_edge_position + alignment_offset - coordinate;
 }
 
-LayoutPoint LayoutGrid::FindChildLogicalPosition(const LayoutBox& child) const {
-  LayoutUnit column_axis_offset = ColumnAxisOffsetForChild(child);
+// TODO: SetLogicalPositionForChild has only one caller, consider its
+// refactoring in the future.
+void LayoutGrid::SetLogicalPositionForChild(LayoutBox& child) const {
+  // "In the positioning phase [...] calculations are performed according to the
+  // writing mode of the containing block of the box establishing the orthogonal
+  // flow." However, 'setLogicalPosition' will only take into account the
+  // child's writing-mode, so the position may need to be transposed.
+  LayoutPoint child_location(LogicalOffsetForChild(child, kForColumns),
+                             LogicalOffsetForChild(child, kForRows));
+  child.SetLogicalLocation(GridLayoutUtils::IsOrthogonalChild(*this, child)
+                               ? child_location.TransposedPoint()
+                               : child_location);
+}
+
+void LayoutGrid::SetLogicalOffsetForChild(
+    LayoutBox& child,
+    GridTrackSizingDirection direction) const {
+  if (!child.IsGridItem() && HasStaticPositionForChild(child, direction))
+    return;
+  // 'SetLogicalLeft' and 'SetLogicalTop' only take into account the child's
+  // writing-mode, that's why 'FlowAwareDirectionForChild' is needed.
+  if (GridLayoutUtils::FlowAwareDirectionForChild(*this, child, direction) ==
+      kForColumns)
+    child.SetLogicalLeft(LogicalOffsetForChild(child, direction));
+  else
+    child.SetLogicalTop(LogicalOffsetForChild(child, direction));
+}
+
+LayoutUnit LayoutGrid::LogicalOffsetForChild(
+    const LayoutBox& child,
+    GridTrackSizingDirection direction) const {
+  if (direction == kForRows) {
+    return ColumnAxisOffsetForChild(child);
+  }
   LayoutUnit row_axis_offset = RowAxisOffsetForChild(child);
-  bool is_orthogonal_child = GridLayoutUtils::IsOrthogonalChild(*this, child);
   // We stored column_position_'s data ignoring the direction, hence we might
   // need now to translate positions from RTL to LTR, as it's more convenient
   // for painting.
@@ -2306,17 +2337,11 @@ LayoutPoint LayoutGrid::FindChildLogicalPosition(const LayoutBox& child) const {
         (child.IsOutOfFlowPositioned()
              ? TranslateOutOfFlowRTLCoordinate(child, row_axis_offset)
              : TranslateRTLCoordinate(row_axis_offset)) -
-        (is_orthogonal_child ? child.LogicalHeight() : child.LogicalWidth());
+        (GridLayoutUtils::IsOrthogonalChild(*this, child)
+             ? child.LogicalHeight()
+             : child.LogicalWidth());
   }
-
-  // "In the positioning phase [...] calculations are performed according to the
-  // writing mode of the containing block of the box establishing the orthogonal
-  // flow." However, the resulting LayoutPoint will be used in
-  // 'setLogicalPosition' in order to set the child's logical position, which
-  // will only take into account the child's writing-mode.
-  LayoutPoint child_location(row_axis_offset, column_axis_offset);
-  return is_orthogonal_child ? child_location.TransposedPoint()
-                             : child_location;
+  return row_axis_offset;
 }
 
 LayoutPoint LayoutGrid::GridAreaLogicalPosition(const GridArea& area) const {
