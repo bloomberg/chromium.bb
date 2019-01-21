@@ -87,27 +87,31 @@ message Storage {
   // TODO(itspeter): Add more fileds for storage.
   // Those fields are for eMMC now.
   message Fields {
+    // The path of this storage in system. It is useful if caller needs to
+    // correlate with other information.
+    string path = 1;
     // Number of sectors of this storage, traditionally 1 sector = 512 Bytes.
-    int64 sectors = 1;
+    int64 sectors = 2;
+    // Exact size of this storage, reported in bytes
+    int64 size = 3;
     // Storage type, could be MMC / NVMe / ATA
     // TODO(b/122027599): NVMe/ATA is still underdevelopment.
-    string type = 2;
-
+    string type = 4;
     // Below are based on JEDEC Standard No. 84-B51, and kernel MMC driver
     // exposed in sysfs:
     //   https://chromium.googlesource.com/chromiumos/third_party/kernel/+/v3.18/include/linux/mmc/card.h#17
     //   https://chromium.googlesource.com/chromiumos/third_party/kernel/+/v3.18/Documentation/mmc/mmc-dev-attrs.txt
 
     // MID: Manufacturer ID, 8 bits.
-    uint32 manfid = 3;
+    uint32 manfid = 5;
     // PNM: Product name, ASCII characters for 6 bytes.
-    string name = 4;
+    string name = 6;
     // PRV: Product revision, 8 bits
-    uint32 prv = 5;
+    uint32 prv = 7;
     // PSN: Product serial number, 32 bits
-    uint32 serial = 6;
+    uint32 serial = 8;
     // OID: OEM/Application ID, 8 bits
-    uint32 oemid = 7;
+    uint32 oemid = 9;
   }
   string name = 1;    // Component alias
   Fields values = 2;  // Component's details
