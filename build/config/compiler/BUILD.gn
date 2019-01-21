@@ -631,10 +631,7 @@ config("compiler") {
   # example by disabling the optimize configuration.
   # TODO(pcc): Make this conditional on is_official_build rather than on gn
   # flags for specific features.
-  if (!is_debug && use_thin_lto &&
-      (current_toolchain == default_toolchain ||
-       (is_android && defined(android_secondary_abi_toolchain) &&
-        current_toolchain == android_secondary_abi_toolchain))) {
+  if (!is_debug && use_thin_lto && is_a_target_toolchain) {
     assert(use_lld || target_os == "chromeos",
            "gold plugin only supported with ChromeOS")
 
@@ -2139,7 +2136,7 @@ config("default_optimization") {
 }
 
 _clang_sample_profile = ""
-if (is_clang && current_toolchain == default_toolchain) {
+if (is_clang && is_a_target_toolchain) {
   if (clang_sample_profile_path != "") {
     _clang_sample_profile = clang_sample_profile_path
   } else if (clang_use_default_sample_profile) {
@@ -2175,7 +2172,7 @@ config("afdo") {
         _clang_sample_profile,
       ]
     }
-  } else if (auto_profile_path != "" && current_toolchain == default_toolchain) {
+  } else if (auto_profile_path != "" && is_a_target_toolchain) {
     cflags = [ "-fauto-profile=${auto_profile_path}" ]
     inputs = [
       auto_profile_path,
