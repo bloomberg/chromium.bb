@@ -37,6 +37,8 @@ class BrowserSwitcherSitelistTest : public testing::Test {
   void Initialize(const std::vector<const char*>& url_list,
                   const std::vector<const char*>& url_greylist) {
     BrowserSwitcherPrefs::RegisterProfilePrefs(prefs_backend_.registry());
+    prefs_backend_.SetManagedPref(prefs::kEnabled,
+                                  std::make_unique<base::Value>(true));
     prefs_backend_.SetManagedPref(prefs::kUrlList,
                                   StringArrayToValue(url_list));
     prefs_backend_.SetManagedPref(prefs::kUrlGreylist,

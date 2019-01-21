@@ -47,6 +47,7 @@ BrowserSwitcherPrefs::~BrowserSwitcherPrefs() = default;
 // static
 void BrowserSwitcherPrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kEnabled, false);
   registry->RegisterStringPref(prefs::kAlternativeBrowserPath, "");
   registry->RegisterListPref(prefs::kAlternativeBrowserParameters);
   registry->RegisterListPref(prefs::kUrlList);
@@ -55,6 +56,11 @@ void BrowserSwitcherPrefs::RegisterProfilePrefs(
 #if defined(OS_WIN)
   registry->RegisterBooleanPref(prefs::kUseIeSitelist, false);
 #endif
+}
+
+bool BrowserSwitcherPrefs::IsEnabled() const {
+  return prefs_->GetBoolean(prefs::kEnabled) &&
+         prefs_->IsManagedPreference(prefs::kEnabled);
 }
 
 const std::string& BrowserSwitcherPrefs::GetAlternativeBrowserPath() const {
@@ -168,6 +174,9 @@ const char kExternalSitelistUrl[] = "browser_switcher.external_sitelist_url";
 // If set to true, use the IE Enterprise Mode Sitelist policy.
 const char kUseIeSitelist[] = "browser_switcher.use_ie_sitelist";
 #endif
+
+// Disable browser_switcher unless this is set to true.
+const char kEnabled[] = "browser_switcher.enabled";
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 }

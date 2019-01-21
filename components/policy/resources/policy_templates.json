@@ -710,6 +710,7 @@
       'policies': [
         'AlternativeBrowserPath',
         'AlternativeBrowserParameters',
+        'BrowserSwitcherEnabled',
         'BrowserSwitcherExternalSitelistUrl',
         'BrowserSwitcherUrlList',
         'BrowserSwitcherUrlGreylist',
@@ -14034,6 +14035,28 @@
       For more information on Internet Explorer's <ph name="IEEM_SITELIST_POLICY">SiteList</ph> policy: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode''',
     },
     {
+      'id': 517,
+      'name': 'BrowserSwitcherEnabled',
+      'future': True,
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'example_value': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'supported_on': ['chrome.*:73-'],
+      'caption': '''Enable the Legacy Browser Support feature.''',
+      'tags': [],
+      'desc': '''This policy controls whether to enable Legacy Browser Support.
+
+      When this policy is left unset, or is set to false, Chrome will not attempt to launch designated URLs in an alternate browser.
+
+      When this policy is set to true, Chrome will attempt to launch some URLs in an alternate browser (such as Internet Explorer). This feature is configured using the policies in the <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP">Legacy Browser support</ph> group.
+
+      This feature is a replacement for the <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME">'Legacy Browser Support'</ph> extension. Configuration from the extension will carry over to this feature, but it is strongly advised to use the Chrome policies instead. This ensures better compatibility in the future.''',
+    },
+    {
       'name': 'DeviceDisplayResolution',
       'type': 'dict',
       'schema': {
@@ -14396,5 +14419,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  516
+  'highest_id_currently_used':  517
 }

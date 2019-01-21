@@ -176,6 +176,9 @@ void BrowserSwitcherSitelistImpl::SetExternalSitelist(ParsedXml&& parsed_xml) {
 }
 
 bool BrowserSwitcherSitelistImpl::IsActive() const {
+  if (!prefs_->IsEnabled())
+    return false;
+
   const RuleSet* rulesets[] = {&prefs_->GetRules(), &ieem_sitelist_,
                                &external_sitelist_};
   for (const RuleSet* rules : rulesets) {

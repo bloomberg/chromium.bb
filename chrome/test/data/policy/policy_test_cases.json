@@ -4352,5 +4352,15 @@
     "pref_mappings": [
       { "pref": "browser_switcher.external_sitelist_url" }
     ]
+  },
+
+  "BrowserSwitcherEnabled": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": {
+      "BrowserSwitcherEnabled": true
+    },
+    "pref_mappings": [
+      { "pref": "browser_switcher.enabled" }
+    ]
   }
 }

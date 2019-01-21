@@ -41,6 +41,9 @@ class BrowserSwitcherPrefs {
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  // Returns true if the BrowserSwitcher feature is enabled via policy.
+  bool IsEnabled() const;
+
   // Returns the path to the alternative browser to launch, before
   // substitutions. If the pref is not managed, returns the empty string.
   const std::string& GetAlternativeBrowserPath() const;
@@ -85,6 +88,7 @@ class BrowserSwitcherPrefs {
 
 namespace prefs {
 
+extern const char kEnabled[];
 extern const char kAlternativeBrowserPath[];
 extern const char kAlternativeBrowserParameters[];
 extern const char kUrlList[];
