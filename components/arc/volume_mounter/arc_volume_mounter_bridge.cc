@@ -20,6 +20,8 @@ namespace arc {
 
 namespace {
 
+constexpr char kDummyUuid[] = "00000000000000000000000000000000DEADBEEF";
+
 // Singleton factory for ArcVolumeMounterBridge.
 class ArcVolumeMounterBridgeFactory
     : public internal::ArcBrowserContextKeyedServiceFactoryBase<
@@ -111,6 +113,10 @@ void ArcVolumeMounterBridge::OnMountEvent(
     device_label = disk->device_label();
     device_type = disk->device_type();
   } else {
+    // This is needed by ChromeOS autotest (cheets_RemovableMedia) because it
+    // creates a diskless volume (hence, no uuid) and Android expects the volume
+    // to have a uuid.
+    fs_uuid = kDummyUuid;
     DVLOG(1) << "Disk at " << mount_info.source_path
              << " is null during MountEvent " << event;
   }
