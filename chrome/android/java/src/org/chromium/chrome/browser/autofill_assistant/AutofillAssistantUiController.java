@@ -244,12 +244,9 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
 
         if (price.length() == 0) price = null;
 
-        mCoordinator
-                .showDetailsForApproval(new AssistantDetails(title, url, date, description, mId,
-                        price, userApprovalRequired, highlightTitle, highlightDate,
-                        /* showPlaceholdersForEmptyFields= */ false))
-                .then(this::safeNativeOnShowDetails,
-                        ignoredException -> safeNativeOnShowDetails(/* canContinue= */ false));
+        mCoordinator.getDetailsCoordinator().showDetails(new AssistantDetails(title, url, date,
+                description, mId, price, userApprovalRequired, highlightTitle, highlightDate,
+                /* showPlaceholdersForEmptyFields= */ false));
     }
 
     @CalledByNative
@@ -283,11 +280,6 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         if (mNativeUiController != 0) nativeOnChipSelected(mNativeUiController, index);
     }
     private native void nativeOnChipSelected(long nativeUiControllerAndroid, int index);
-
-    void safeNativeOnShowDetails(boolean canContinue) {
-        if (mNativeUiController != 0) nativeOnShowDetails(mNativeUiController, canContinue);
-    }
-    private native void nativeOnShowDetails(long nativeUiControllerAndroid, boolean canContinue);
 
     void safeNativeOnGetPaymentInformation(boolean succeed,
             @Nullable PersonalDataManager.CreditCard card,

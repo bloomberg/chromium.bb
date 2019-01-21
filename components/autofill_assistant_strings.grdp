@@ -16,10 +16,10 @@
     <message name="IDS_AUTOFILL_ASSISTANT_PAYMENT_INFO_CONFIRM" desc="Text on the payment request primary button to confirm payment information [CHAR-LIMIT=32]" formatter_data="android_java">
       Continue
     </message>
-    <message name="IDS_AUTOFILL_ASSISTANT_DETAILS_DIFFER" desc="Shown as Status Message when details differ." formatter_data="android_java">
+    <message name="IDS_AUTOFILL_ASSISTANT_DETAILS_DIFFER" desc="Shown as Status Message when details differ.">
       The screening is different from what you selected. Continue?
     </message>
-    <message name="IDS_AUTOFILL_ASSISTANT_DETAILS_DIFFER_GO_BACK" desc="Shown on a button allowing going back when details differ." formatter_data="android_java">
+    <message name="IDS_AUTOFILL_ASSISTANT_DETAILS_DIFFER_GO_BACK" desc="Shown on a button allowing going back when details differ.">
       Go back
     </message>
     <message name="IDS_AUTOFILL_ASSISTANT_FIRST_RUN_ACCESSIBILITY" desc="Accessibility description of Autofill Assistant first run screen is shown." formatter_data="android_java">
@@ -27,6 +27,9 @@
     </message>
     <message name="IDS_AUTOFILL_ASSISTANT_AVAILABLE_ACCESSIBILITY" desc="Accessibility description of Autofill Assistant is available." formatter_data="android_java">
       Google Assistant in Chrome is available near bottom of the screen
+    </message>
+    <message name="IDS_AUTOFILL_ASSISTANT_CONTINUE_BUTTON" desc="Generic label for a button to continue to the next screen.">
+      Continue
     </message>
   </if>
 </grit-part>

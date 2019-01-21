@@ -82,9 +82,6 @@ class UiControllerAndroid : public UiController {
       const base::android::JavaParamRef<jstring>& jpayer_phone,
       const base::android::JavaParamRef<jstring>& jpayer_email,
       jboolean jis_terms_and_services_accepted);
-  void OnShowDetails(JNIEnv* env,
-                     const base::android::JavaParamRef<jobject>& jcaller,
-                     jboolean success);
   base::android::ScopedJavaLocalRef<jstring> GetPrimaryAccountName(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller);
@@ -100,6 +97,13 @@ class UiControllerAndroid : public UiController {
   base::android::ScopedJavaLocalRef<jobject> GetHeaderModel();
 
   void SetProgressPulsingEnabled(bool enabled);
+  void ShowDetails(const ShowDetailsProto& show_details,
+                   bool user_approval_required,
+                   bool highlight_title,
+                   bool highlight_date);
+  void OnUserApproval(const ShowDetailsProto& show_details,
+                      const std::string& previous_status_message,
+                      bool success);
 
   // Java-side AutofillAssistantUiController object.
   base::android::ScopedJavaGlobalRef<jobject>
@@ -109,6 +113,8 @@ class UiControllerAndroid : public UiController {
   base::OnceCallback<void(std::unique_ptr<PaymentInformation>)>
       get_payment_information_callback_;
   base::OnceCallback<void(bool)> show_details_callback_;
+
+  base::WeakPtrFactory<UiControllerAndroid> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UiControllerAndroid);
 };
