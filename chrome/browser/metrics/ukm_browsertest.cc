@@ -1116,8 +1116,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithSyncTransport, SyncFeatureCheck) {
   // Turn off Sync-the-feature by user choice. The machinery should start up
   // again in transport-only mode.
   sync_service->GetUserSettings()->SetSyncRequested(false);
-  ASSERT_TRUE(harness->AwaitSyncSetupCompletion(
-      /*skip_passphrase_verification=*/false));
+  ASSERT_TRUE(harness->AwaitSyncTransportActive());
 
   // The Sync machinery is now active in transport mode (Sync-the-feature is
   // disabled).
@@ -1149,8 +1148,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithSyncTransport, SyncFeatureCheck) {
 
   // Finally, turn Sync-the-feature on again.
   sync_service->GetUserSettings()->SetSyncRequested(true);
-  ASSERT_TRUE(harness->AwaitSyncSetupCompletion(
-      /*skip_passphrase_verification=*/false));
+  ASSERT_TRUE(harness->AwaitSyncSetupCompletion());
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             sync_service->GetTransportState());
   ASSERT_TRUE(sync_service->IsSyncFeatureActive());
@@ -1179,8 +1177,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithSyncTransport,
                                                    "secondary_user@email.com");
   ASSERT_NE(syncer::SyncService::TransportState::DISABLED,
             sync_service->GetTransportState());
-  ASSERT_TRUE(harness->AwaitSyncSetupCompletion(
-      /*skip_passphrase_verification=*/false));
+  ASSERT_TRUE(harness->AwaitSyncTransportActive());
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             sync_service->GetTransportState());
   ASSERT_FALSE(sync_service->IsSyncFeatureEnabled());

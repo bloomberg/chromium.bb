@@ -116,7 +116,8 @@ class EnableDisableSingleClientTest : public SyncTest {
     if (all_types_enabled) {
       ASSERT_TRUE(GetClient(0)->SetupSync());
     } else {
-      ASSERT_TRUE(GetClient(0)->SetupSync(ModelTypeSet()));
+      ASSERT_TRUE(GetClient(0)->SetupSyncNoWaitForCompletion(ModelTypeSet()));
+      ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
     }
 
     registered_types_ = GetSyncService(0)->GetRegisteredDataTypes();
@@ -443,8 +444,7 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientWithStandaloneTransportTest,
 
   // Stop Sync and let it start up again in standalone transport mode.
   GetClient(0)->StopSyncServiceWithoutClearingData();
-  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
-      /*skip_passphrase_verification=*/false));
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
   ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureActive());

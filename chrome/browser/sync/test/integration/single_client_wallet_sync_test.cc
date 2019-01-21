@@ -334,8 +334,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletWithAccountStorageSyncTest,
                                   CreateDefaultSyncPaymentsCustomerData()});
 
   ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
-  ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization(
-      /*skip_passphrase_verification=*/false));
+  ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
@@ -1106,8 +1105,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSecondaryAccountSyncTest,
 
   // Set up Sync in transport mode for a non-primary account.
   secondary_account_helper::SignInSecondaryAccount(profile(), "user@email.com");
-  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
-      /*skip_passphrase_verification=*/false));
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
   ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
@@ -1138,8 +1136,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSecondaryAccountSyncTest,
   GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
 
   // Wait for Sync to get reconfigured into feature mode.
-  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
-      /*skip_passphrase_verification=*/false));
+  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
   ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
@@ -1169,8 +1166,7 @@ IN_PROC_BROWSER_TEST_P(
 
   // Set up Sync in transport mode for a non-primary account.
   secondary_account_helper::SignInSecondaryAccount(profile(), "user@email.com");
-  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
-      /*skip_passphrase_verification=*/false));
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
   ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
@@ -1204,8 +1200,7 @@ IN_PROC_BROWSER_TEST_P(
   ASSERT_EQ(syncer::SyncService::TransportState::INITIALIZING,
             GetSyncService(0)->GetTransportState());
 
-  ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization(
-      /*skip_passphrase_verification=*/false));
+  ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
 
   // Since we're still holding on to the setup-in-progress handle, the data
   // types can't be configured yet.
@@ -1223,8 +1218,7 @@ IN_PROC_BROWSER_TEST_P(
   GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
 
   // Wait for Sync to get reconfigured into feature mode.
-  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
-      /*skip_passphrase_verification=*/false));
+  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
   ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
@@ -1291,8 +1285,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletWithAccountStorageSyncTest,
   GetSyncService(0)->GetUserSettings()->SetSyncRequested(false);
 
   // Wait for Sync to get reconfigured into transport mode.
-  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
-      /*skip_passphrase_verification=*/false));
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
   ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
@@ -1316,8 +1309,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletWithAccountStorageSyncTest,
   GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
 
   // Wait for Sync to get reconfigured into full feature mode again.
-  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
-      /*skip_passphrase_verification=*/false));
+  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
   ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
@@ -1338,8 +1330,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletWithAccountStorageSyncTest,
   GetSyncService(0)->StopAndClear();
 
   // Wait for Sync to get reconfigured into transport mode.
-  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
-      /*skip_passphrase_verification=*/false));
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
   ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
@@ -1361,8 +1352,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletWithAccountStorageSyncTest,
   GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
 
   // Wait for Sync to get reconfigured into full feature mode again.
-  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
-      /*skip_passphrase_verification=*/false));
+  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
   ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());

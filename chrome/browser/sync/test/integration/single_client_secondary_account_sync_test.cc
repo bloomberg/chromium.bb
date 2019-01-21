@@ -124,8 +124,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
               GetSyncService(0)->GetTransportState());
   }
 
-  EXPECT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
-      /*skip_passphrase_verification=*/false));
+  EXPECT_TRUE(GetClient(0)->AwaitSyncTransportActive());
 
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
@@ -154,8 +153,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
 
   // Set up Sync in transport mode for a non-primary account.
   secondary_account_helper::SignInSecondaryAccount(profile(), "user@email.com");
-  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
-      /*skip_passphrase_verification=*/false));
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
   ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
@@ -166,8 +164,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
   secondary_account_helper::MakeAccountPrimary(profile(), "user@email.com");
   GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
 
-  EXPECT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
-      /*skip_passphrase_verification=*/false));
+  EXPECT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
   EXPECT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
