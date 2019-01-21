@@ -9,7 +9,6 @@
 #include "components/sessions/core/tab_restore_service_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
@@ -103,11 +102,6 @@ URLLoadResult LoadURL(const ChromeLoadParams& chrome_params,
   if (chrome_params.disposition == WindowOpenDisposition::SWITCH_TO_TAB) {
     return URLLoadResult::SWITCH_TO_TAB;
   }
-
-  [[OmniboxGeolocationController sharedInstance]
-      locationBarDidSubmitURL:params.url
-                   transition:params.transition_type
-                 browserState:browser_state];
 
   web::WebState* current_web_state = web_state_list->GetActiveWebState();
   DCHECK(current_web_state);
