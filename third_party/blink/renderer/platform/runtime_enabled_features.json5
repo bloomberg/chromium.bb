@@ -313,7 +313,7 @@
     },
     {
       name: "CSSPartPseudoElement",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSPseudoIs",
