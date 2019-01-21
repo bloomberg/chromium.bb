@@ -15,6 +15,7 @@
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/http/http_util.h"
+#include "net/url_request/redirect_util.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
@@ -129,8 +130,10 @@ ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
       original_request.site_for_cookies, original_request.top_frame_origin,
       first_party_url_policy, original_request.referrer_policy,
       network::ComputeReferrer(original_request.referrer),
-      response_head.headers.get(), response_head.headers->response_code(),
-      original_request.url.Resolve(new_location), false);
+      response_head.headers->response_code(),
+      original_request.url.Resolve(new_location),
+      net::RedirectUtil::GetReferrerPolicyHeader(response_head.headers.get()),
+      false /* insecure_scheme_was_upgraded */);
 }
 
 int ServiceWorkerLoaderHelpers::ReadBlobResponseBody(
