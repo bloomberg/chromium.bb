@@ -2045,17 +2045,32 @@ void RenderFrameHostImpl::OnDetach() {
     return;
   }
 
-  // If this frame is pending deletion, OnDetach() is the ACK this
-  // RenderFrameHost is waiting for before going into the "Deleted" state.
-  if (!is_active() && !is_waiting_for_swapout_ack_) {
-    unload_state_ = UnloadState::Completed;
-    PendingDeletionCheckCompleted();
+  // A frame is removed while replacing this document with the new one. When it
+  // happens, delete the frame and both the new and old documents. Unload
+  // handlers aren't guaranteed to run here.
+  if (is_waiting_for_swapout_ack_) {
+    parent_->RemoveChild(frame_tree_node_);
     return;
   }
 
-  // TODO(arthursonzogni): Put this frame and its children in pending deletion.
-  // Wait for every unload handler to execute before removing it.
-  parent_->RemoveChild(frame_tree_node_);
+  if (unload_state_ != UnloadState::NotRun) {
+    // The frame is pending deletion. FrameHostMsg_Detach is used to confirm
+    // its unload handlers ran.
+    unload_state_ = UnloadState::Completed;
+    PendingDeletionCheckCompleted();  // Can delete |this|.
+    return;
+  }
+
+  // This frame is being removed by the renderer, and it has already executed
+  // its unload handler.
+  unload_state_ = UnloadState::Completed;
+  // Before completing the removal, we still need to wait for all of its
+  // descendant frames to execute unload handlers. Start executing those
+  // handlers now.
+  StartPendingDeletionOnSubtree();
+  // Some children with no unload handler may be eligible for immediate
+  // deletion. Cut the dead branches now. This is a performance optimization.
+  PendingDeletionCheckCompletedOnSubtree();  // Can delete |this|.
 }
 
 void RenderFrameHostImpl::OnFrameFocused() {
@@ -2425,6 +2440,18 @@ void RenderFrameHostImpl::SwapOut(
   web_bluetooth_services_.clear();
 }
 
+void RenderFrameHostImpl::DetachFromProxy() {
+  if (unload_state_ != UnloadState::NotRun)
+    return;
+
+  // Start pending deletion on this frame and its children.
+  DeleteRenderFrame();
+  StartPendingDeletionOnSubtree();
+  // Some children with no unload handler may be eligible for immediate
+  // deletion. Cut the dead branches now. This is a performance optimization.
+  PendingDeletionCheckCompletedOnSubtree();
+}
+
 void RenderFrameHostImpl::OnBeforeUnloadACK(
     bool proceed,
     const base::TimeTicks& renderer_before_unload_start_time,
@@ -2580,7 +2607,7 @@ void RenderFrameHostImpl::OnSwapOutACK() {
 
   DCHECK_EQ(UnloadState::InProgress, unload_state_);
   unload_state_ = UnloadState::Completed;
-  PendingDeletionCheckCompleted();
+  PendingDeletionCheckCompleted();  // Can delete |this|.
 }
 
 void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
@@ -4449,14 +4476,13 @@ void RenderFrameHostImpl::SetBeforeUnloadTimeoutDelayForTesting(
 }
 
 void RenderFrameHostImpl::StartPendingDeletionOnSubtree() {
-  DCHECK_EQ(UnloadState::InProgress, unload_state_);
-  DCHECK(is_waiting_for_swapout_ack_);
-
+  DCHECK_NE(UnloadState::NotRun, unload_state_);
   for (std::unique_ptr<FrameTreeNode>& child_frame : children_) {
     for (FrameTreeNode* node :
          frame_tree_node_->frame_tree()->SubtreeNodes(child_frame.get())) {
       RenderFrameHostImpl* child = node->current_frame_host();
-      DCHECK_EQ(UnloadState::NotRun, child->unload_state_);
+      if (child->unload_state_ != UnloadState::NotRun)
+        continue;
 
       // Blink handles deletion of all same-process descendants, running their
       // unload handler if necessary. So delegate sending IPC on the topmost

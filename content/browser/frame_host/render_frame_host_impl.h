@@ -475,6 +475,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // active RenderFrames, but not until WasSwappedOut is called.
   void SwapOut(RenderFrameProxyHost* proxy, bool is_loading);
 
+  // Remove this frame and its children. This happens asynchronously, an IPC
+  // round trip with the renderer process is needed to ensure children's unload
+  // handlers are run.
+  // Postcondition: is_active() is false.
+  void DetachFromProxy();
+
   // Whether an ongoing navigation in this frame is waiting for a BeforeUnload
   // ACK either from this RenderFrame or from one of its subframes.
   bool is_waiting_for_beforeunload_ack() const {
@@ -968,6 +974,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest, PartialUnloadHandler);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            PendingDeletionCheckCompletedOnSubtree);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+                           DetachedIframeUnloadHandler);
 
   class DroppedInterfaceRequestLogger;
 

@@ -278,8 +278,7 @@ void RenderFrameProxyHost::OnDetach() {
     return;
   }
 
-  if (frame_tree_node_->current_frame_host()->is_active())
-    frame_tree_node_->frame_tree()->RemoveFrame(frame_tree_node_);
+  frame_tree_node_->current_frame_host()->DetachFromProxy();
 }
 
 void RenderFrameProxyHost::OnOpenURL(
