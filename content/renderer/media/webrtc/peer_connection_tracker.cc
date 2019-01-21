@@ -33,7 +33,6 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_user_media_request.h"
 
-using webrtc::MediaConstraintsInterface;
 using webrtc::StatsReport;
 using webrtc::StatsReports;
 using blink::WebRTCPeerConnectionHandlerClient;
