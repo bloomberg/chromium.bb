@@ -11,6 +11,7 @@ import android.os.Build;
 
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.notifications.channels.ChannelsUpdater;
+import org.chromium.chrome.browser.vr.VrModuleProvider;
 
 /**
  * Triggered when Chrome's package is replaced (e.g. when it is upgraded).
@@ -31,6 +32,7 @@ public final class PackageReplacedBroadcastReceiver extends BroadcastReceiver {
     public void onReceive(final Context context, Intent intent) {
         if (!Intent.ACTION_MY_PACKAGE_REPLACED.equals(intent.getAction())) return;
         updateChannelsIfNecessary();
+        VrModuleProvider.maybeRequestModuleIfDaydreamReady();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) return;
         UpgradeIntentService.startMigrationIfNecessary(context);
     }
