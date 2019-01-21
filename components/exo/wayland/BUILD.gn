@@ -45,6 +45,8 @@ source_set("wayland") {
     "wayland_touch_delegate.h",
     "wayland_watcher.cc",
     "wayland_watcher.h",
+    "wl_compositor.cc",
+    "wl_compositor.h",
     "wl_output.cc",
     "wl_output.h",
     "wl_seat.cc",
