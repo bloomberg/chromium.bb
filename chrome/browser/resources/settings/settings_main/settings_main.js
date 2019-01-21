@@ -64,6 +64,9 @@ Polymer({
       value: false,
     },
 
+    /** @private */
+    showingSubpage_: Boolean,
+
     toolbarSpinnerActive: {
       type: Boolean,
       value: false,
@@ -89,7 +92,7 @@ Polymer({
       this.boundScroll_ = null;
     } else if (this.overscroll_ && !this.boundScroll_) {
       this.boundScroll_ = () => {
-        if (!this.freezeOverscroll_) {
+        if (!this.showingSubpage_) {
           this.setOverscroll_(0);
         }
       };
@@ -138,12 +141,12 @@ Polymer({
 
   /** @private */
   onShowingSubpage_: function() {
-    this.freezeOverscroll_ = true;
+    this.showingSubpage_ = true;
   },
 
   /** @private */
   onShowingMainPage_: function() {
-    this.freezeOverscroll_ = false;
+    this.showingSubpage_ = false;
   },
 
   /**
@@ -222,5 +225,16 @@ Polymer({
         });
       }, 0);
     });
+  },
+
+  /**
+   * @private
+   * @param {boolean} inSearchMode Whether a search operation is in progress or
+   *     previous search results are being displayed.
+   * @param {boolean} showingSubpage Whether a subpage is being shown.
+   * @return {boolean}
+   */
+  showManagedHeader_: function(inSearchMode, showingSubpage) {
+    return !inSearchMode && !showingSubpage;
   },
 });
