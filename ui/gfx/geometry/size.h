@@ -15,7 +15,7 @@
 
 #if defined(OS_WIN)
 typedef struct tagSIZE SIZE;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) || defined(OS_IOS)
 typedef struct CGSize CGSize;
 #endif
 
@@ -27,17 +27,17 @@ class GEOMETRY_EXPORT Size {
   constexpr Size() : width_(0), height_(0) {}
   constexpr Size(int width, int height)
       : width_(width < 0 ? 0 : width), height_(height < 0 ? 0 : height) {}
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_IOS)
   explicit Size(const CGSize& s);
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_IOS)
   Size& operator=(const CGSize& s);
 #endif
 
 #if defined(OS_WIN)
   SIZE ToSIZE() const;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) || defined(OS_IOS)
   CGSize ToCGSize() const;
 #endif
 
