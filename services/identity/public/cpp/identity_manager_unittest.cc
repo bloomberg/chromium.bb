@@ -1774,7 +1774,8 @@ TEST_F(IdentityManagerTest,
 
   gaia::ListedAccount listed_account =
       accounts_in_cookie_jar_info.signed_in_accounts[0];
-  EXPECT_EQ(account_tracker()->PickAccountIdForAccount(kTestGaiaId, kTestEmail),
+  EXPECT_EQ(identity_manager()->LegacyPickAccountIdForAccount(kTestGaiaId,
+                                                              kTestEmail),
             listed_account.id);
   EXPECT_EQ(kTestGaiaId, listed_account.gaia_id);
   EXPECT_EQ(kTestEmail, listed_account.email);
@@ -1801,16 +1802,17 @@ TEST_F(IdentityManagerTest,
   // the expected order as well.
   gaia::ListedAccount listed_account1 =
       accounts_in_cookie_jar_info.signed_in_accounts[0];
-  EXPECT_EQ(account_tracker()->PickAccountIdForAccount(kTestGaiaId, kTestEmail),
+  EXPECT_EQ(identity_manager()->LegacyPickAccountIdForAccount(kTestGaiaId,
+                                                              kTestEmail),
             listed_account1.id);
   EXPECT_EQ(kTestGaiaId, listed_account1.gaia_id);
   EXPECT_EQ(kTestEmail, listed_account1.email);
 
   gaia::ListedAccount account_info2 =
       accounts_in_cookie_jar_info.signed_in_accounts[1];
-  EXPECT_EQ(
-      account_tracker()->PickAccountIdForAccount(kTestGaiaId2, kTestEmail2),
-      account_info2.id);
+  EXPECT_EQ(identity_manager()->LegacyPickAccountIdForAccount(kTestGaiaId2,
+                                                              kTestEmail2),
+            account_info2.id);
   EXPECT_EQ(kTestGaiaId2, account_info2.gaia_id);
   EXPECT_EQ(kTestEmail2, account_info2.email);
 }
@@ -1857,9 +1859,9 @@ TEST_F(IdentityManagerTest, CallbackSentOnUpdateToSignOutAccountsInCookie) {
             ? accounts_in_cookie_jar_info.signed_out_accounts[i++]
             : accounts_in_cookie_jar_info.signed_in_accounts[j++];
     if (!signed_out_status.account_1)
-      EXPECT_EQ(
-          account_tracker()->PickAccountIdForAccount(kTestGaiaId, kTestEmail),
-          listed_account1.id);
+      EXPECT_EQ(identity_manager()->LegacyPickAccountIdForAccount(kTestGaiaId,
+                                                                  kTestEmail),
+                listed_account1.id);
     EXPECT_EQ(kTestGaiaId, listed_account1.gaia_id);
     EXPECT_EQ(kTestEmail, listed_account1.email);
 
@@ -1868,9 +1870,9 @@ TEST_F(IdentityManagerTest, CallbackSentOnUpdateToSignOutAccountsInCookie) {
             ? accounts_in_cookie_jar_info.signed_out_accounts[i++]
             : accounts_in_cookie_jar_info.signed_in_accounts[j++];
     if (!signed_out_status.account_2)
-      EXPECT_EQ(
-          account_tracker()->PickAccountIdForAccount(kTestGaiaId2, kTestEmail2),
-          listed_account2.id);
+      EXPECT_EQ(identity_manager()->LegacyPickAccountIdForAccount(kTestGaiaId2,
+                                                                  kTestEmail2),
+                listed_account2.id);
     EXPECT_EQ(kTestGaiaId2, listed_account2.gaia_id);
     EXPECT_EQ(kTestEmail2, listed_account2.email);
   }
@@ -1952,7 +1954,8 @@ TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithOneAccount) {
 
   gaia::ListedAccount listed_account =
       updated_accounts_in_cookie_jar.signed_in_accounts[0];
-  EXPECT_EQ(account_tracker()->PickAccountIdForAccount(kTestGaiaId, kTestEmail),
+  EXPECT_EQ(identity_manager()->LegacyPickAccountIdForAccount(kTestGaiaId,
+                                                              kTestEmail),
             listed_account.id);
   EXPECT_EQ(kTestGaiaId, listed_account.gaia_id);
   EXPECT_EQ(kTestEmail, listed_account.email);
@@ -1990,16 +1993,17 @@ TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithTwoAccounts) {
   // the expected order as well.
   gaia::ListedAccount listed_account1 =
       updated_accounts_in_cookie_jar.signed_in_accounts[0];
-  EXPECT_EQ(account_tracker()->PickAccountIdForAccount(kTestGaiaId, kTestEmail),
+  EXPECT_EQ(identity_manager()->LegacyPickAccountIdForAccount(kTestGaiaId,
+                                                              kTestEmail),
             listed_account1.id);
   EXPECT_EQ(kTestGaiaId, listed_account1.gaia_id);
   EXPECT_EQ(kTestEmail, listed_account1.email);
 
   gaia::ListedAccount listed_account2 =
       updated_accounts_in_cookie_jar.signed_in_accounts[1];
-  EXPECT_EQ(
-      account_tracker()->PickAccountIdForAccount(kTestGaiaId2, kTestEmail2),
-      listed_account2.id);
+  EXPECT_EQ(identity_manager()->LegacyPickAccountIdForAccount(kTestGaiaId2,
+                                                              kTestEmail2),
+            listed_account2.id);
   EXPECT_EQ(kTestGaiaId2, listed_account2.gaia_id);
   EXPECT_EQ(kTestEmail2, listed_account2.email);
 }
@@ -2194,6 +2198,20 @@ TEST_F(IdentityManagerTest, TestOnAccountRemovedWithInfoCallback) {
             identity_manager_observer()
                 ->account_from_account_removed_with_info_callback()
                 .email);
+}
+
+TEST_F(IdentityManagerTest, TestLegacyPickAccountIdForAccount) {
+  const std::string account_id =
+      identity_manager()->LegacyPickAccountIdForAccount(kTestGaiaId,
+                                                        kTestEmail);
+  const bool account_id_migration_done =
+      identity_manager()->GetAccountIdMigrationState() ==
+      IdentityManager::AccountIdMigrationState::MIGRATION_DONE;
+  if (account_id_migration_done) {
+    EXPECT_EQ(account_id, kTestGaiaId);
+  } else {
+    EXPECT_TRUE(gaia::AreEmailsSame(account_id, kTestEmail));
+  }
 }
 
 }  // namespace identity
