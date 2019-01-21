@@ -32,15 +32,20 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
     /**
      * Need to be called after native libraries are available. Has no effect if VR is not compiled
      * into Chrome.
-     **/
+     */
     public static void maybeInit() {
         if (!VrBuildConfig.IS_VR_ENABLED) return;
         nativeInit();
         // Always install the VR module on Daydream-ready devices.
-        requestModuleIfDaydreamReady();
+        maybeRequestModuleIfDaydreamReady();
     }
 
-    private static void requestModuleIfDaydreamReady() {
+    /**
+     * Requests deferred installation of the VR module on Daydream-ready devices. Has no effect if
+     * VR is not compiled into Chrome.
+     */
+    public static void maybeRequestModuleIfDaydreamReady() {
+        if (!VrBuildConfig.IS_VR_ENABLED) return;
         if (isModuleInstalled()) return;
         if (!getDelegate().isDaydreamReadyDevice()) return;
 
