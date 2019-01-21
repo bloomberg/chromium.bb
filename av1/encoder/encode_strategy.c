@@ -237,100 +237,6 @@ static int get_ref_frame_flags(const AV1_COMP *const cpi) {
   return flags;
 }
 
-static int Pass0Encode(AV1_COMP *const cpi, uint8_t *const dest,
-                       const EncodeFrameInput *const frame_input,
-                       EncodeFrameParams *const frame_params,
-                       EncodeFrameResults *const frame_results) {
-  if (cpi->oxcf.rc_mode == AOM_CBR) {
-    av1_rc_get_one_pass_cbr_params(cpi, frame_params);
-  } else {
-    av1_rc_get_one_pass_vbr_params(cpi, frame_params);
-  }
-
-  // Apply external override flags
-  set_ext_overrides(cpi, frame_params);
-
-  // Work out which reference frame slots may be used.
-  frame_params->ref_frame_flags = get_ref_frame_flags(cpi);
-
-  if (av1_encode(cpi, dest, frame_input, frame_params, frame_results) !=
-      AOM_CODEC_OK) {
-    return AOM_CODEC_ERROR;
-  }
-
-  set_additional_frame_flags(&cpi->common, frame_params->frame_flags);
-
-  update_rc_counts(cpi);
-
-  // Will the next frame be a show_existing frame?
-  check_show_existing_frame(cpi);
-
-  return AOM_CODEC_OK;
-}
-
-static int Pass1Encode(AV1_COMP *const cpi,
-                       const EncodeFrameInput *const frame_input,
-                       EncodeFrameParams *const frame_params) {
-  const CurrentFrame *const current_frame = &cpi->common.current_frame;
-
-  cpi->td.mb.e_mbd.lossless[0] = is_lossless_requested(&cpi->oxcf);
-
-  if (!cpi->refresh_alt_ref_frame && (current_frame->frame_number == 0 ||
-                                      (cpi->frame_flags & FRAMEFLAGS_KEY))) {
-    frame_params->frame_type = KEY_FRAME;
-  } else {
-    frame_params->frame_type = INTER_FRAME;
-  }
-
-  av1_encode(cpi, NULL, frame_input, frame_params, NULL);
-  return AOM_CODEC_OK;
-}
-
-static int Pass2Encode(AV1_COMP *const cpi, uint8_t *const dest,
-                       const EncodeFrameInput *const frame_input,
-                       EncodeFrameParams *const frame_params,
-                       EncodeFrameResults *const frame_results) {
-  AV1_COMMON *const cm = &cpi->common;
-
-#if CONFIG_MISMATCH_DEBUG
-  mismatch_move_frame_idx_w();
-#endif
-#if TXCOEFF_COST_TIMER
-  cm->txcoeff_cost_timer = 0;
-  cm->txcoeff_cost_count = 0;
-#endif
-
-  // Apply external override flags
-  set_ext_overrides(cpi, frame_params);
-
-  // Work out which reference frame slots may be used.
-  frame_params->ref_frame_flags = get_ref_frame_flags(cpi);
-
-  if (av1_encode(cpi, dest, frame_input, frame_params, frame_results) !=
-      AOM_CODEC_OK) {
-    return AOM_CODEC_ERROR;
-  }
-
-  set_additional_frame_flags(cm, frame_params->frame_flags);
-
-#if TXCOEFF_COST_TIMER
-  cm->cum_txcoeff_cost_timer += cm->txcoeff_cost_timer;
-  fprintf(stderr,
-          "\ntxb coeff cost block number: %ld, frame time: %ld, cum time %ld "
-          "in us\n",
-          cm->txcoeff_cost_count, cm->txcoeff_cost_timer,
-          cm->cum_txcoeff_cost_timer);
-#endif
-
-  av1_twopass_postencode_update(cpi);
-  update_rc_counts(cpi);
-
-  // Will the next frame be a show_existing frame?
-  check_show_existing_frame(cpi);
-
-  return AOM_CODEC_OK;
-}
-
 int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
                         uint8_t *const dest, unsigned int *frame_flags,
                         const EncodeFrameInput *const frame_input) {
@@ -375,20 +281,60 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
   // parameter should be used with caution.
   frame_params.speed = oxcf->speed;
 
-  if (oxcf->pass == 0) {  // Single pass encode
-    if (Pass0Encode(cpi, dest, frame_input, &frame_params, &frame_results) !=
-        AOM_CODEC_OK) {
-      return AOM_CODEC_ERROR;
+  // Work out some encoding parameters specific to the pass:
+  if (oxcf->pass == 0) {
+    if (cpi->oxcf.rc_mode == AOM_CBR) {
+      av1_rc_get_one_pass_cbr_params(cpi, &frame_params);
+    } else {
+      av1_rc_get_one_pass_vbr_params(cpi, &frame_params);
     }
-  } else if (oxcf->pass == 1) {  // Two-pass encode, first pass
-    if (Pass1Encode(cpi, frame_input, &frame_params) != AOM_CODEC_OK) {
-      return AOM_CODEC_ERROR;
+  } else if (oxcf->pass == 1) {
+    cpi->td.mb.e_mbd.lossless[0] = is_lossless_requested(&cpi->oxcf);
+    if (!cpi->refresh_alt_ref_frame && (cm->current_frame.frame_number == 0 ||
+                                        (cpi->frame_flags & FRAMEFLAGS_KEY))) {
+      frame_params.frame_type = KEY_FRAME;
+    } else {
+      frame_params.frame_type = INTER_FRAME;
     }
-  } else if (oxcf->pass == 2) {  // Two-pass encode, second pass
-    if (Pass2Encode(cpi, dest, frame_input, &frame_params, &frame_results) !=
-        AOM_CODEC_OK) {
-      return AOM_CODEC_ERROR;
-    }
+  } else if (oxcf->pass == 2) {
+#if CONFIG_MISMATCH_DEBUG
+    mismatch_move_frame_idx_w();
+#endif
+#if TXCOEFF_COST_TIMER
+    cm->txcoeff_cost_timer = 0;
+    cm->txcoeff_cost_count = 0;
+#endif
+  }
+
+  if (oxcf->pass == 0 || oxcf->pass == 2) {
+    // Apply external override flags
+    set_ext_overrides(cpi, &frame_params);
+
+    // Work out which reference frame slots may be used.
+    frame_params.ref_frame_flags = get_ref_frame_flags(cpi);
+  }
+
+  if (av1_encode(cpi, dest, frame_input, &frame_params, &frame_results) !=
+      AOM_CODEC_OK) {
+    return AOM_CODEC_ERROR;
+  }
+
+  if (oxcf->pass == 2) {
+#if TXCOEFF_COST_TIMER
+    cm->cum_txcoeff_cost_timer += cm->txcoeff_cost_timer;
+    fprintf(stderr,
+            "\ntxb coeff cost block number: %ld, frame time: %ld, cum time %ld "
+            "in us\n",
+            cm->txcoeff_cost_count, cm->txcoeff_cost_timer,
+            cm->cum_txcoeff_cost_timer);
+#endif
+    av1_twopass_postencode_update(cpi);
+  }
+
+  if (oxcf->pass == 0 || oxcf->pass == 2) {
+    set_additional_frame_flags(cm, frame_params.frame_flags);
+    update_rc_counts(cpi);
+    check_show_existing_frame(cpi);  // Is next frame a show_existing frame?
   }
 
   // Unpack frame_results:
