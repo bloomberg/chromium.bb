@@ -42,6 +42,18 @@
     function isPaused() {
       window.domAutomationController.send(video.paused);
     }
+
+    function playVideo() {
+      video.play()
+      .then(_ => { window.domAutomationController.send(true); })
+      .catch(e => { window.domAutomationController.send(false); });
+    }
+
+    function playSecondVideo() {
+      secondVideo.play()
+      .then(_ => { window.domAutomationController.send(true); })
+      .catch(e => { window.domAutomationController.send(false); });
+    }
   </script>
 </body>
 </html>
