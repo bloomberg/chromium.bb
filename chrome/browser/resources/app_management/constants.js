@@ -22,6 +22,7 @@ const APP_LIST_PREVIEW_APP_TITLES = 3;
 const PageType = {
   MAIN: 0,
   DETAIL: 1,
+  NOTIFICATIONS: 2,
 };
 
 /**

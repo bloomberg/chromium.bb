@@ -21,13 +21,6 @@
         margin-inline-start: 24px;
         width: 26px;
       }
-
-      #app-title {
-        flex: 1;
-        font-size: 16px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
     </style>
     <paper-icon-button-light class="icon-arrow-back">
       <button id="closeButton" on-click="onClickBackButton_"
@@ -36,7 +29,7 @@
       </button>
     </paper-icon-button-light>
     <img id="permission-view-header-icon" src="[[iconUrlFromId_(app)]]">
-    <div id="app-title">[[app.title]]</div>
+    <div class="page-title">[[app.title]]</div>
     <slot name="extra-right-buttons"></slot>
     <paper-button on-click="onClickUninstallButton_">
       $i18n{uninstall}

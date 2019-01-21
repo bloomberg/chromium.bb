@@ -79,6 +79,11 @@ cr.define('app_management', function() {
         pageType: PageType.DETAIL,
         selectedAppId: action.id,
       };
+    } else if (action.pageType == PageType.NOTIFICATIONS) {
+      return {
+        pageType: PageType.NOTIFICATIONS,
+        selectedAppId: null,
+      };
     } else {
       return {
         pageType: PageType.MAIN,

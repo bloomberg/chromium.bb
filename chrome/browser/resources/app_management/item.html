@@ -32,17 +32,10 @@
         margin-inline-start: 24px;
         width: 32px;
       }
-
-      .subpage-arrow {
-        margin-inline-end: 8px;
-        padding: 12px;
-      }
     </style>
     <img id="app-icon" src="[[iconUrlFromId_(app)]]">
     <div id="app-title">[[app.title]]</div>
-    <paper-icon-button-light class="subpage-arrow" actionable>
-      <button></button>
-    </paper-icon-button-light>
+    <slot name="right-content"></slot>
   </template>
- <script src="chrome://apps/item.js"></script>
+ <script src="item.js"></script>
 </dom-module>
