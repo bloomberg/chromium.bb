@@ -353,18 +353,21 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
 
   // Intercepts all requests.
   std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
-    if (request.GetURL().path() != "/background_fetch/upload") {
-      // The default handlers will take care of this request.
-      return nullptr;
+    if (request.GetURL().path() == "/background_fetch/upload") {
+      DCHECK(!request.content.empty());
+      DCHECK(request_body_.empty());
+      request_body_ = request.content;
+
+      auto response = std::make_unique<BasicHttpResponse>();
+      response->set_code(net::HTTP_OK);
+      return response;
     }
 
-    DCHECK(!request.content.empty());
-    DCHECK(request_body_.empty());
-    request_body_ = request.content;
+    if (request.GetURL().query() == "clickevent")
+      std::move(click_event_closure_).Run();
 
-    auto response = std::make_unique<BasicHttpResponse>();
-    response->set_code(net::HTTP_OK);
-    return response;
+    // The default handlers will take care of this request.
+    return nullptr;
   }
 
   // Gets the ideal display size.
@@ -442,6 +445,7 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
  protected:
   BackgroundFetchDelegateImpl* delegate_ = nullptr;
   download::DownloadService* download_service_ = nullptr;
+  base::OnceClosure click_event_closure_;
 
   std::unique_ptr<WaitableDownloadLoggerObserver> download_observer_;
   std::unique_ptr<OfflineContentProviderObserver>
@@ -745,6 +749,13 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, ClickEventIsDispatched) {
 
   // Job Details should be deleted at this point.
   EXPECT_TRUE(delegate_->job_details_map_.empty());
+
+  // Wait for click event.
+  {
+    base::RunLoop run_loop;
+    click_event_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, FetchCanBePausedAndResumed) {
