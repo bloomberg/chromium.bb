@@ -21,6 +21,8 @@
     [self.contentView addSubview:_tile];
     AddSameConstraints(self.contentView, _tile);
     self.isAccessibilityElement = YES;
+    _tile.countLabel.text = nil;
+    _tile.countContainer.hidden = YES;
   }
   return self;
 }
