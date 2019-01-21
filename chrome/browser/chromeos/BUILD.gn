@@ -794,6 +794,8 @@ source_set("chromeos") {
     "file_manager/crostini_file_tasks.h",
     "file_manager/file_browser_handlers.cc",
     "file_manager/file_browser_handlers.h",
+    "file_manager/file_manager_string_util.cc",
+    "file_manager/file_manager_string_util.h",
     "file_manager/file_tasks.cc",
     "file_manager/file_tasks.h",
     "file_manager/file_watcher.cc",
