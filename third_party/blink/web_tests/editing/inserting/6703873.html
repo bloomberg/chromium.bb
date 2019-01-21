@@ -1,34 +1,61 @@
-<html>
-    <head>
-        <style>
-            blockquote {
-                color: blue;
-                border-left: 2px solid blue;
-                margin: 0px;
-                padding-left: 10px;
-            }
-        </style>
-        <script>
-            function log(msg)
-            {
-                document.getElementById('console').appendChild(document.createTextNode(msg + '\n'));
-            }
-            
-            function test()
-            {
-                var s = window.getSelection();
-                s.collapse(document.getElementById('qt'), 0);
-                s.modify("extend", "forward", "line");
-                document.execCommand("InsertNewlineInQuotedContent");
-                document.execCommand("InsertText", "true", "unquoted");
-            }
-        </script>
-    </head>
-    <body onload="test()">
-        <p>This tests that inserting a newline in place of a full line of quoted content doesn't add an extra quoted line.  The test has passed if there are no empty lines (quoted or unquoted) in the box below.</p>
-        <div contenteditable="true">
-            <blockquote type="cite"><div>quoted</div><div id="qt">quoted</div><div>quoted</div></blockquote>
-        </div>
-        <pre id="console"></pre>
-    </body>
-</html>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<script>
+// This tests that inserting a newline in place of a full line of quoted content doesn't add an extra quoted line.
+// The test has passed if there are no empty lines (quoted or unquoted) in the root editable div.
+selection_test(
+    [
+      '<div contenteditable><blockquote type="cite">',
+        '<div>quoted</div>',
+        '<div>|quoted</div>',
+        '<div>quoted</div>',
+      '</blockquote></div>'
+    ].join(''),
+    selection => selection.modify('extend', 'forward', 'line'),
+    [
+      '<div contenteditable><blockquote type="cite">',
+        '<div>quoted</div>',
+        '<div>^quoted</div>',
+        '<div>|quoted</div>',
+      '</blockquote></div>'
+    ].join(''),
+    'Step 1');
+
+selection_test(
+    [
+      '<div contenteditable><blockquote type="cite">',
+        '<div>quoted</div>',
+        '<div>^quoted</div>',
+        '<div>|quoted</div>',
+      '</blockquote></div>'
+    ].join(''),
+    'InsertNewLineInQuotedContent',
+    [
+      '<div contenteditable>',
+        '<blockquote type="cite"><div>quoted</div><div></div></blockquote>',
+        '|<br>',
+        '<blockquote type="cite"><div>quoted</div></blockquote>',
+      '</div>'
+    ].join(''),
+    'Step 2');
+
+selection_test(
+    [
+      '<div contenteditable>',
+        '<blockquote type="cite"><div>quoted</div><div></div></blockquote>',
+        '|<br>',
+        '<blockquote type="cite"><div>quoted</div></blockquote>',
+      '</div>'
+    ].join(''),
+    'InsertText unquoted',
+    [
+      '<div contenteditable>',
+        '<blockquote type="cite"><div>quoted</div><div></div></blockquote>',
+        'unquoted|<br>',
+        '<blockquote type="cite"><div>quoted</div></blockquote>',
+      '</div>'
+    ].join(''),
+    'Step 3');
+</script>
