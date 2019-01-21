@@ -22,7 +22,6 @@
 #include "ios/chrome/browser/ios_chrome_main_parts.h"
 #include "ios/chrome/browser/passwords/password_manager_features.h"
 #include "ios/chrome/browser/ssl/ios_ssl_error_handler.h"
-#import "ios/chrome/browser/ui/chrome_web_view_factory.h"
 #include "ios/chrome/browser/web/chrome_overlay_manifests.h"
 #import "ios/chrome/browser/web/error_page_util.h"
 #include "ios/public/provider/chrome/browser/browser_url_rewriter_provider.h"
@@ -61,6 +60,12 @@ NSString* GetPageScript(NSString* script_file_name) {
   return content;
 }
 }  // namespace
+
+const char kDesktopUserAgent[] =
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) "
+    "AppleWebKit/605.1.15 (KHTML, like Gecko) "
+    "Version/11.1.1 "
+    "Safari/605.1.15";
 
 ChromeWebClient::ChromeWebClient() {}
 
@@ -116,7 +121,7 @@ std::string ChromeWebClient::GetUserAgent(web::UserAgentType type) const {
   // Using desktop user agent overrides a command-line user agent, so that
   // request desktop site can still work when using an overridden UA.
   if (type == web::UserAgentType::DESKTOP)
-    return base::SysNSStringToUTF8(ChromeWebView::kDesktopUserAgent);
+    return kDesktopUserAgent;
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kUserAgent)) {
