@@ -35,7 +35,8 @@ public class AssistantHeaderModel extends PropertyModel {
 
     @CalledByNative
     private String getStatusMessage() {
-        return get(STATUS_MESSAGE);
+        String statusMessage = get(STATUS_MESSAGE);
+        return statusMessage != null ? statusMessage : "";
     }
 
     @CalledByNative

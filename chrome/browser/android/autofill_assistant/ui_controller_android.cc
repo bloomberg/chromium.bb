@@ -26,6 +26,7 @@
 #include "components/autofill_assistant/browser/controller.h"
 #include "components/autofill_assistant/browser/rectf.h"
 #include "components/signin/core/browser/account_info.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/version_info/channel.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -35,6 +36,7 @@
 #include "jni/AssistantModel_jni.h"
 #include "jni/AutofillAssistantUiController_jni.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
@@ -45,7 +47,7 @@ namespace autofill_assistant {
 UiControllerAndroid::UiControllerAndroid(content::WebContents* web_contents,
                                          Client* client,
                                          UiDelegate* ui_delegate)
-    : client_(client), ui_delegate_(ui_delegate) {
+    : client_(client), ui_delegate_(ui_delegate), weak_ptr_factory_(this) {
   DCHECK(web_contents);
   DCHECK(client);
   DCHECK(ui_delegate);
@@ -232,14 +234,6 @@ void UiControllerAndroid::OnGetPaymentInformation(
   std::move(get_payment_information_callback_).Run(std::move(payment_info));
 }
 
-void UiControllerAndroid::OnShowDetails(JNIEnv* env,
-                                        const JavaParamRef<jobject>& jcaller,
-                                        jboolean jcan_continue) {
-  if (show_details_callback_) {
-    std::move(show_details_callback_).Run(jcan_continue);
-  }
-}
-
 base::android::ScopedJavaLocalRef<jstring>
 UiControllerAndroid::OnRequestDebugContext(
     JNIEnv* env,
@@ -314,8 +308,67 @@ void UiControllerAndroid::ShowInitialDetails(const std::string& title,
 void UiControllerAndroid::ShowDetails(const ShowDetailsProto& show_details,
                                       base::OnceCallback<void(bool)> callback) {
   show_details_callback_ = std::move(callback);
-  const DetailsProto& details = show_details.details();
   const DetailsChanges& change_flags = show_details.change_flags();
+  ShowDetails(show_details, change_flags.user_approval_required(),
+              change_flags.highlight_title(), change_flags.highlight_date());
+
+  if (!change_flags.user_approval_required()) {
+    std::move(show_details_callback_).Run(true);
+    return;
+  }
+
+  // Ask for user approval.
+  std::string previous_status_message = GetStatusMessage();
+  ShowStatusMessage(
+      l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DETAILS_DIFFER));
+  SetProgressPulsingEnabled(true);
+
+  // Continue button.
+  auto chips = std::make_unique<std::vector<Chip>>();
+  chips->emplace_back();
+  chips->back().text =
+      l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_CONTINUE_BUTTON);
+  chips->back().type = Chip::Type::BUTTON_FILLED_BLUE;
+  chips->back().callback = base::BindOnce(
+      &UiControllerAndroid::OnUserApproval, weak_ptr_factory_.GetWeakPtr(),
+      show_details, previous_status_message, /* success= */ true);
+
+  // Go back button.
+  chips->emplace_back();
+  chips->back().text =
+      l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DETAILS_DIFFER_GO_BACK);
+  chips->back().type = Chip::Type::BUTTON_TEXT;
+  chips->back().callback = base::BindOnce(
+      &UiControllerAndroid::OnUserApproval, weak_ptr_factory_.GetWeakPtr(),
+      show_details, previous_status_message, /* success= */ false);
+
+  SetChips(std::move(chips));
+}
+
+void UiControllerAndroid::OnUserApproval(
+    const ShowDetailsProto& show_details,
+    const std::string& previous_status_message,
+    bool success) {
+  if (success) {
+    // Restore previous state.
+    ShowStatusMessage(previous_status_message);
+    SetProgressPulsingEnabled(false);
+
+    // Show details without highlighted fields.
+    ShowDetails(show_details, /* user_approval_required= */ false,
+                /* highlight_title= */ false, /* highlight_date= */ false);
+  }
+
+  if (show_details_callback_) {
+    std::move(show_details_callback_).Run(success);
+  }
+}
+
+void UiControllerAndroid::ShowDetails(const ShowDetailsProto& show_details,
+                                      bool user_approval_required,
+                                      bool highlight_title,
+                                      bool highlight_date) {
+  const DetailsProto& details = show_details.details();
   int year = details.datetime().date().year();
   int month = details.datetime().date().month();
   int day = details.datetime().date().day();
@@ -331,8 +384,8 @@ void UiControllerAndroid::ShowDetails(const ShowDetailsProto& show_details,
       base::android::ConvertUTF8ToJavaString(env, details.description()),
       base::android::ConvertUTF8ToJavaString(env, details.m_id()),
       base::android::ConvertUTF8ToJavaString(env, details.total_price()), year,
-      month, day, hour, minute, second, change_flags.user_approval_required(),
-      change_flags.highlight_title(), change_flags.highlight_date());
+      month, day, hour, minute, second, user_approval_required, highlight_title,
+      highlight_date);
 }
 
 void UiControllerAndroid::Stop(

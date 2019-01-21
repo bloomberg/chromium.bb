@@ -31,12 +31,4 @@ class AssistantHeaderMediator {
     void setCloseButtonVisible(boolean visible) {
         mModel.set(AssistantHeaderModel.CLOSE_VISIBLE, visible);
     }
-
-    void enableProgressBarPulsing() {
-        mModel.set(AssistantHeaderModel.PROGRESS_PULSING, true);
-    }
-
-    void disableProgressBarPulsing() {
-        mModel.set(AssistantHeaderModel.PROGRESS_PULSING, false);
-    }
 }

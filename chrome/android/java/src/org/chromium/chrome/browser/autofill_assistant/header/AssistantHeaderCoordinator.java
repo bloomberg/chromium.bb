@@ -77,19 +77,4 @@ public class AssistantHeaderCoordinator {
     public void setCloseButtonVisible(boolean visible) {
         mMediator.setCloseButtonVisible(visible);
     }
-
-    /**
-     * Make the progress bar pulse, to show that a user interaction is expected (either with the web
-     * page or the Autofill Assistant).
-     */
-    public void enableProgressBarPulsing() {
-        mMediator.enableProgressBarPulsing();
-    }
-
-    /**
-     * Stop the progress bar pulsing animation.
-     */
-    public void disableProgressBarPulsing() {
-        mMediator.disableProgressBarPulsing();
-    }
 }

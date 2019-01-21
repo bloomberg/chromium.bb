@@ -7,14 +7,10 @@ package org.chromium.chrome.browser.autofill_assistant;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.base.Promise;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselCoordinator;
-import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
-import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChipType;
-import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetails;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestCoordinator;
@@ -22,8 +18,6 @@ import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
-
-import java.util.Arrays;
 
 /**
  * The main coordinator for the Autofill Assistant, responsible for instantiating all other
@@ -182,50 +176,6 @@ class AssistantCoordinator
 
                     onAccept.run();
                 });
-    }
-
-    /**
-     * Update the details shown to the user and ask the user if we should continue in case approval
-     * is required. Return {@code true} if no approval was required or if user agreed to proceed,
-     * {@code false} otherwise.
-     */
-    // TODO(crbug.com/806868): Remove that logic to native side.
-    public Promise<Boolean> showDetailsForApproval(AssistantDetails details) {
-        mDetailsCoordinator.showDetails(details);
-
-        if (details.getUserApprovalRequired()) {
-            return askForUserApproval(details);
-        }
-
-        return Promise.fulfilled(true);
-    }
-
-    private Promise<Boolean> askForUserApproval(AssistantDetails details) {
-        Promise<Boolean> promise = new Promise<>();
-
-        String oldStatusMessage = mHeaderCoordinator.getStatusMessage();
-        mHeaderCoordinator.setStatusMessage(
-                mActivity.getString(R.string.autofill_assistant_details_differ));
-        mHeaderCoordinator.enableProgressBarPulsing();
-        mCarouselCoordinator.setChips(Arrays.asList(
-                new AssistantChip(AssistantChipType.BUTTON_FILLED_BLUE,
-                        mActivity.getString(R.string.continue_button),
-                        () -> {
-                            mHeaderCoordinator.setStatusMessage(oldStatusMessage);
-                            mHeaderCoordinator.disableProgressBarPulsing();
-                            mCarouselCoordinator.clearChips();
-
-                            // Reset the styles.
-                            details.clearChangedFlags();
-                            mDetailsCoordinator.showDetails(details);
-
-                            promise.fulfill(true);
-                        }),
-                new AssistantChip(AssistantChipType.BUTTON_TEXT,
-                        mActivity.getString(R.string.autofill_assistant_details_differ_go_back),
-                        () -> promise.fulfill(false))));
-
-        return promise;
     }
 
     /**
