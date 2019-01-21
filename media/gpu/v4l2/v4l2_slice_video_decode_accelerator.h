@@ -19,6 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "media/gpu/decode_surface_handler.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/media_gpu_export.h"
@@ -39,7 +40,8 @@ class V4L2DecodeSurface;
 // the input stream and managing decoder state across frames.
 class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
     : public VideoDecodeAccelerator,
-      public V4L2DecodeSurfaceHandler {
+      public V4L2DecodeSurfaceHandler,
+      public base::trace_event::MemoryDumpProvider {
  public:
   V4L2SliceVideoDecodeAccelerator(
       const scoped_refptr<V4L2Device>& device,
@@ -68,6 +70,10 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
       override;
 
   static VideoDecodeAccelerator::SupportedProfiles GetSupportedProfiles();
+
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
  private:
   // Record for input buffers.
@@ -393,8 +399,11 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   gfx::Size coded_size_;
 
   struct BitstreamBufferRef;
-  // Input queue of stream buffers coming from the client.
-  base::queue<std::unique_ptr<BitstreamBufferRef>> decoder_input_queue_;
+  // Input queue of stream buffers coming from the client. Although the elements
+  // in |decoder_input_queue_| is push()/pop() in queue order, this needs to be
+  // base::circular_deque because we need to do random access in OnMemoryDump().
+  base::circular_deque<std::unique_ptr<BitstreamBufferRef>>
+      decoder_input_queue_;
   // BitstreamBuffer currently being processed.
   std::unique_ptr<BitstreamBufferRef> decoder_current_bitstream_buffer_;
 
