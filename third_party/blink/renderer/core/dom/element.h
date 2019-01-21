@@ -704,14 +704,14 @@ class CORE_EXPORT Element : public ContainerNode {
                           const StringOrTrustedHTML&,
                           ExceptionState&);
 
-  void setPointerCapture(int pointer_id, ExceptionState&);
-  void releasePointerCapture(int pointer_id, ExceptionState&);
+  void setPointerCapture(PointerId poinetr_id, ExceptionState&);
+  void releasePointerCapture(PointerId pointer_id, ExceptionState&);
 
   // Returns true iff the element would capture the next pointer event. This
   // is true between a setPointerCapture call and a releasePointerCapture (or
   // implicit release) call:
   // https://w3c.github.io/pointerevents/#dom-element-haspointercapture
-  bool hasPointerCapture(int pointer_id) const;
+  bool hasPointerCapture(PointerId pointer_id) const;
 
   String TextFromChildren();
 

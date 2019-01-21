@@ -157,7 +157,7 @@ WebInputEventResult PointerEventManager::DispatchPointerEvent(
   if (!target)
     return WebInputEventResult::kNotHandled;
 
-  const int pointer_id = pointer_event->pointerId();
+  const PointerId pointer_id = pointer_event->pointerId();
   const AtomicString& event_type = pointer_event->type();
 
   if (!frame_ || !HasPointerEventListener(frame_->GetEventHandlerRegistry()))
@@ -177,7 +177,8 @@ WebInputEventResult PointerEventManager::DispatchPointerEvent(
       UseCounter::Count(frame_, WebFeature::kPointerEventDispatchPointerDown);
 
     DCHECK(!dispatching_pointer_id_);
-    base::AutoReset<int> dispatch_holder(&dispatching_pointer_id_, pointer_id);
+    base::AutoReset<PointerId> dispatch_holder(&dispatching_pointer_id_,
+                                               pointer_id);
     DispatchEventResult dispatch_result = target->DispatchEvent(*pointer_event);
     return event_handling_util::ToWebInputEventResult(dispatch_result);
   }
@@ -186,7 +187,7 @@ WebInputEventResult PointerEventManager::DispatchPointerEvent(
 
 Element* PointerEventManager::GetEffectiveTargetForPointerEvent(
     Element* target,
-    int pointer_id) {
+    PointerId pointer_id) {
   if (Element* capturing_target = GetCapturingElement(pointer_id))
     return capturing_target;
   return target;
@@ -265,10 +266,10 @@ void PointerEventManager::HandlePointerInterruption(
 
     // Cancel all non-hovering pointers if the pointer is not mouse.
     if (!non_hovering_pointers_canceled_) {
-      Vector<int> non_hovering_pointer_ids =
+      Vector<PointerId> non_hovering_pointer_ids =
           pointer_event_factory_.GetPointerIdsOfNonHoveringPointers();
 
-      for (int pointer_id : non_hovering_pointer_ids) {
+      for (PointerId pointer_id : non_hovering_pointer_ids) {
         canceled_pointer_events.push_back(
             pointer_event_factory_.CreatePointerCancelEvent(
                 pointer_id, web_pointer_event.TimeStamp()));
@@ -358,7 +359,8 @@ PointerEventManager::ComputePointerEventTarget(
     const WebPointerEvent& web_pointer_event) {
   event_handling_util::PointerEventTarget pointer_event_target;
 
-  int pointer_id = pointer_event_factory_.GetPointerEventId(web_pointer_event);
+  PointerId pointer_id =
+      pointer_event_factory_.GetPointerEventId(web_pointer_event);
   // Do the hit test either when the touch first starts or when the touch
   // is not captured. |m_pendingPointerCaptureTarget| indicates the target
   // that will be capturing this event. |m_pointerCaptureTarget| may not
@@ -761,7 +763,7 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
 }
 
 bool PointerEventManager::GetPointerCaptureState(
-    int pointer_id,
+    PointerId pointer_id,
     Element** pointer_capture_target,
     Element** pending_pointer_capture_target) {
   PointerCapturingMap::const_iterator it;
@@ -806,7 +808,7 @@ void PointerEventManager::ProcessPendingPointerCapture(
     PointerEvent* pointer_event) {
   Element* pointer_capture_target;
   Element* pending_pointer_capture_target;
-  const int pointer_id = pointer_event->pointerId();
+  const PointerId pointer_id = pointer_event->pointerId();
   const bool is_capture_changed = GetPointerCaptureState(
       pointer_id, &pointer_capture_target, &pending_pointer_capture_target);
 
@@ -862,14 +864,14 @@ void PointerEventManager::RemoveTargetFromPointerCapturingMapping(
   }
 }
 
-Element* PointerEventManager::GetCapturingElement(int pointer_id) {
+Element* PointerEventManager::GetCapturingElement(PointerId pointer_id) {
   if (pointer_capture_target_.Contains(pointer_id))
     return pointer_capture_target_.at(pointer_id);
   return nullptr;
 }
 
 void PointerEventManager::RemovePointer(PointerEvent* pointer_event) {
-  int pointer_id = pointer_event->pointerId();
+  PointerId pointer_id = pointer_event->pointerId();
   if (pointer_event_factory_.Remove(pointer_id)) {
     pending_pointer_capture_target_.erase(pointer_id);
     pointer_capture_target_.erase(pointer_id);
@@ -882,7 +884,8 @@ void PointerEventManager::ElementRemoved(Element* target) {
                                           target);
 }
 
-void PointerEventManager::SetPointerCapture(int pointer_id, Element* target) {
+void PointerEventManager::SetPointerCapture(PointerId pointer_id,
+                                            Element* target) {
   UseCounter::Count(frame_, WebFeature::kPointerEventSetCapture);
   if (pointer_event_factory_.IsActiveButtonsState(pointer_id)) {
     if (pointer_id != dispatching_pointer_id_) {
@@ -893,7 +896,7 @@ void PointerEventManager::SetPointerCapture(int pointer_id, Element* target) {
   }
 }
 
-void PointerEventManager::ReleasePointerCapture(int pointer_id,
+void PointerEventManager::ReleasePointerCapture(PointerId pointer_id,
                                                 Element* target) {
   // Only the element that is going to get the next pointer event can release
   // the capture. Note that this might be different from
@@ -910,16 +913,16 @@ void PointerEventManager::ReleaseMousePointerCapture() {
   ReleasePointerCapture(PointerEventFactory::kMouseId);
 }
 
-bool PointerEventManager::HasPointerCapture(int pointer_id,
+bool PointerEventManager::HasPointerCapture(PointerId pointer_id,
                                             const Element* target) const {
   return pending_pointer_capture_target_.at(pointer_id) == target;
 }
 
-void PointerEventManager::ReleasePointerCapture(int pointer_id) {
+void PointerEventManager::ReleasePointerCapture(PointerId pointer_id) {
   pending_pointer_capture_target_.erase(pointer_id);
 }
 
-bool PointerEventManager::IsActive(const int pointer_id) const {
+bool PointerEventManager::IsActive(const PointerId pointer_id) const {
   return pointer_event_factory_.IsActive(pointer_id);
 }
 
@@ -928,7 +931,7 @@ bool PointerEventManager::IsActive(const int pointer_id) const {
 // page managers to their target (event if target is in an iframe) and only
 // those managers will keep track of these pointer events.
 bool PointerEventManager::IsTouchPointerIdActiveOnFrame(
-    int pointer_id,
+    PointerId pointer_id,
     LocalFrame* frame) const {
   if (pointer_event_factory_.GetPointerType(pointer_id) !=
       WebPointerProperties::PointerType::kTouch)

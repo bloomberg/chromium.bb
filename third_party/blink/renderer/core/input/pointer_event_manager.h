@@ -82,21 +82,21 @@ class CORE_EXPORT PointerEventManager
 
   void ElementRemoved(Element*);
 
-  void SetPointerCapture(int, Element*);
-  void ReleasePointerCapture(int, Element*);
+  void SetPointerCapture(PointerId, Element*);
+  void ReleasePointerCapture(PointerId, Element*);
   void ReleaseMousePointerCapture();
 
-  // See Element::hasPointerCapture(int).
-  bool HasPointerCapture(int, const Element*) const;
+  // See Element::hasPointerCapture(PointerId).
+  bool HasPointerCapture(PointerId, const Element*) const;
 
-  bool IsActive(const int) const;
+  bool IsActive(const PointerId) const;
 
   // Returns whether there is any touch on the screen.
   bool IsAnyTouchActive() const;
 
   // Returns whether pointerId is for an active touch pointerevent and whether
   // the last event was sent to the given frame.
-  bool IsTouchPointerIdActiveOnFrame(int, LocalFrame*) const;
+  bool IsTouchPointerIdActiveOnFrame(PointerId, LocalFrame*) const;
 
   // Returns true if the primary pointerdown corresponding to the given
   // |uniqueTouchEventId| was canceled. Also drops stale ids from
@@ -115,10 +115,10 @@ class CORE_EXPORT PointerEventManager
   WebInputEventResult FlushEvents();
 
  private:
-  typedef HeapHashMap<int,
+  typedef HeapHashMap<PointerId,
                       Member<Element>,
-                      WTF::IntHash<int>,
-                      WTF::UnsignedWithZeroKeyHashTraits<int>>
+                      WTF::IntHash<PointerId>,
+                      WTF::UnsignedWithZeroKeyHashTraits<PointerId>>
       PointerCapturingMap;
   class EventTargetAttributes {
     DISALLOW_NEW();
@@ -204,15 +204,15 @@ class CORE_EXPORT PointerEventManager
 
   void RemoveTargetFromPointerCapturingMapping(PointerCapturingMap&,
                                                const Element*);
-  Element* GetEffectiveTargetForPointerEvent(Element*, int);
-  Element* GetCapturingElement(int);
+  Element* GetEffectiveTargetForPointerEvent(Element*, PointerId);
+  Element* GetCapturingElement(PointerId);
   void RemovePointer(PointerEvent*);
   WebInputEventResult DispatchPointerEvent(EventTarget*,
                                            PointerEvent*,
                                            bool check_for_listener = false);
-  void ReleasePointerCapture(int);
+  void ReleasePointerCapture(PointerId);
   // Returns true if capture target and pending capture target were different.
-  bool GetPointerCaptureState(int pointer_id,
+  bool GetPointerCaptureState(PointerId pointer_id,
                               Element** pointer_capture_target,
                               Element** pending_pointer_capture_target);
 
@@ -244,10 +244,10 @@ class CORE_EXPORT PointerEventManager
   // keeps track of any compatibility mouse event positions but this map for
   // the pointer with id=1 is only taking care of true mouse related events.
   using ElementUnderPointerMap =
-      HeapHashMap<int,
+      HeapHashMap<PointerId,
                   EventTargetAttributes,
-                  WTF::IntHash<int>,
-                  WTF::UnsignedWithZeroKeyHashTraits<int>>;
+                  WTF::IntHash<PointerId>,
+                  WTF::UnsignedWithZeroKeyHashTraits<PointerId>>;
   ElementUnderPointerMap element_under_pointer_;
 
   PointerCapturingMap pointer_capture_target_;
@@ -267,7 +267,7 @@ class CORE_EXPORT PointerEventManager
 
   // The pointerId of the PointerEvent currently being dispatched within this
   // frame or 0 if none.
-  int dispatching_pointer_id_;
+  PointerId dispatching_pointer_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PointerEventManager);
 };
