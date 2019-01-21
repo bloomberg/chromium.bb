@@ -32,7 +32,8 @@ TestNavigationURLLoader::TestNavigationURLLoader(
 
 void TestNavigationURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
-    const net::HttpRequestHeaders& modified_headers) {
+    const net::HttpRequestHeaders& modified_headers,
+    PreviewsState new_previews_state) {
   redirect_count_++;
 }
 

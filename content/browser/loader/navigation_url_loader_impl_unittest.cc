@@ -223,7 +223,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
                            redirect_url.GetOrigin().spec().c_str()),
         request_method, &delegate);
     delegate.WaitForRequestRedirected();
-    loader->FollowRedirect({}, {});
+    loader->FollowRedirect({}, {}, PREVIEWS_OFF);
 
     EXPECT_EQ(expected_redirect_method, delegate.redirect_info().new_method);
 
@@ -264,7 +264,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
                            url.GetOrigin().spec().c_str()),
         "GET", &delegate, NavigationDownloadPolicy::kAllow, is_main_frame);
     delegate.WaitForRequestRedirected();
-    loader->FollowRedirect({}, {});
+    loader->FollowRedirect({}, {}, PREVIEWS_OFF);
     delegate.WaitForResponseStarted();
 
     return most_recent_resource_request_.value().priority;
@@ -281,7 +281,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
         "GET", &delegate, NavigationDownloadPolicy::kAllow,
         true /*is_main_frame*/, upgrade_if_insecure);
     delegate.WaitForRequestRedirected();
-    loader->FollowRedirect({}, {});
+    loader->FollowRedirect({}, {}, PREVIEWS_OFF);
     if (expect_request_fail) {
       delegate.WaitForRequestFailed();
     } else {
@@ -436,7 +436,7 @@ TEST_F(NavigationURLLoaderImplTest, RedirectModifiedHeaders) {
   net::HttpRequestHeaders redirect_headers;
   redirect_headers.SetHeader("Header2", "");
   redirect_headers.SetHeader("Header3", "Value3");
-  loader->FollowRedirect({}, redirect_headers);
+  loader->FollowRedirect({}, redirect_headers, PREVIEWS_OFF);
   delegate.WaitForResponseStarted();
 
   // Redirected request should also have modified headers.
