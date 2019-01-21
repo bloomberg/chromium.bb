@@ -824,7 +824,8 @@ void LocalFrame::SetPageAndTextZoomFactors(float page_zoom_factor,
   document->SetNeedsStyleRecalc(
       kSubtreeStyleChange,
       StyleChangeReasonForTracing::Create(style_change_reason::kZoom));
-  document->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  if (View() && View()->DidFirstLayout())
+    document->UpdateStyleAndLayoutIgnorePendingStylesheets();
 }
 
 void LocalFrame::DeviceScaleFactorChanged() {

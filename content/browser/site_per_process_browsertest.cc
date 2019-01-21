@@ -1195,16 +1195,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
             rwhv_nested->GetCompositorViewportPixelSize());
 }
 
-// Disable on Android: crbug/851049
-#if defined(OS_ANDROID)
-#define MAYBE_NoResizeAfterIframeLoad DISABLED_NoResizeAfterIframeLoad
-#else
-#define MAYBE_NoResizeAfterIframeLoad NoResizeAfterIframeLoad
-#endif
 // Verify an OOPIF resize handler doesn't fire immediately after load without
 // the frame having been resized. See https://crbug.com/826457.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       MAYBE_NoResizeAfterIframeLoad) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NoResizeAfterIframeLoad) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
