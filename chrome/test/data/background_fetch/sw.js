@@ -34,3 +34,8 @@ self.addEventListener('backgroundfetchfail', e => {
   e.waitUntil(e.updateUI({title: 'New Failed Title!'}).then(
       () => postToWindowClients(e.type)));
 });
+
+self.addEventListener('backgroundfetchclick', e => {
+  e.waitUntil(clients.openWindow(
+      '/background_fetch/background_fetch.html?clickevent'));
+});

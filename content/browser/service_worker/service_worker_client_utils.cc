@@ -39,6 +39,7 @@
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "ui/base/mojo/window_open_disposition.mojom.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 namespace service_worker_client_utils {
@@ -253,6 +254,7 @@ void OpenWindowOnUI(
           : WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, true /* is_renderer_initiated */);
   params.open_app_window_if_possible = type == WindowType::NEW_TAB_WINDOW;
+  params.initiator_origin = url::Origin::Create(script_url.GetOrigin());
 
   GetContentClient()->browser()->OverrideNavigationParams(
       site_instance, &params.transition, &params.is_renderer_initiated,
