@@ -59,8 +59,10 @@ TEST_F(AppCacheTest, CleanupUnusedCache) {
       new AppCacheGroup(service.storage(), GURL("http://blah/manifest"), 111));
   group->AddCache(cache.get());
 
-  AppCacheHost host1(1, &frontend, &service);
-  AppCacheHost host2(2, &frontend, &service);
+  AppCacheHost host1(/* host_id = */ 1, /* process_id = */ 1, &frontend,
+                     &service);
+  AppCacheHost host2(/* host_id = */ 2, /* process_id = */ 2, &frontend,
+                     &service);
 
   host1.AssociateCompleteCache(cache.get());
   host2.AssociateCompleteCache(cache.get());

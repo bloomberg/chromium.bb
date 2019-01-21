@@ -20,10 +20,12 @@ static int g_next_appcache_host_id = -1;
 namespace content {
 
 AppCacheNavigationHandle::AppCacheNavigationHandle(
-    ChromeAppCacheService* appcache_service)
+    ChromeAppCacheService* appcache_service,
+    int process_id)
     : appcache_host_id_(g_next_appcache_host_id--),
       core_(std::make_unique<AppCacheNavigationHandleCore>(appcache_service,
-                                                           appcache_host_id_)) {
+                                                           appcache_host_id_,
+                                                           process_id)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
@@ -35,6 +37,14 @@ AppCacheNavigationHandle::~AppCacheNavigationHandle() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Delete the AppCacheNavigationHandleCore on the IO thread.
   BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, core_.release());
+}
+
+void AppCacheNavigationHandle::SetProcessId(int process_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&AppCacheNavigationHandleCore::SetProcessId,
+                     base::Unretained(core_.get()), process_id));
 }
 
 }  // namespace content

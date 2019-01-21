@@ -58,9 +58,11 @@ blink::mojom::AppCacheInfo CreateCacheInfo(
 }  // namespace
 
 AppCacheHost::AppCacheHost(int host_id,
+                           int process_id,
                            AppCacheFrontend* frontend,
                            AppCacheServiceImpl* service)
     : host_id_(host_id),
+      process_id_(process_id),
       spawning_host_id_(kAppCacheNoHostId),
       spawning_process_id_(0),
       parent_host_id_(kAppCacheNoHostId),
@@ -539,6 +541,12 @@ void AppCacheHost::NotifyMainResourceIsNamespaceEntry(
 void AppCacheHost::NotifyMainResourceBlocked(const GURL& manifest_url) {
   main_resource_blocked_ = true;
   blocked_manifest_url_ = manifest_url;
+}
+
+void AppCacheHost::SetProcessId(int process_id) {
+  DCHECK_EQ(process_id_, ChildProcessHost::kInvalidUniqueID);
+  DCHECK_NE(process_id, ChildProcessHost::kInvalidUniqueID);
+  process_id_ = process_id;
 }
 
 base::WeakPtr<AppCacheHost> AppCacheHost::GetWeakPtr() {

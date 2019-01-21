@@ -35,7 +35,8 @@ bool AppCacheBackendImpl::RegisterHost(int id) {
   if (GetHost(id))
     return false;
 
-  hosts_[id] = std::make_unique<AppCacheHost>(id, frontend_, service_);
+  hosts_[id] =
+      std::make_unique<AppCacheHost>(id, process_id(), frontend_, service_);
   return true;
 }
 

@@ -14,6 +14,7 @@
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/child_process_host.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
@@ -32,8 +33,11 @@ namespace content {
 
 AppCacheNavigationHandleCore::AppCacheNavigationHandleCore(
     ChromeAppCacheService* appcache_service,
-    int appcache_host_id)
-    : appcache_service_(appcache_service), appcache_host_id_(appcache_host_id) {
+    int appcache_host_id,
+    int process_id)
+    : appcache_service_(appcache_service),
+      appcache_host_id_(appcache_host_id),
+      process_id_(process_id) {
   // The AppCacheNavigationHandleCore is created on the UI thread but
   // should only be accessed from the IO thread afterwards.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -48,8 +52,8 @@ AppCacheNavigationHandleCore::~AppCacheNavigationHandleCore() {
 void AppCacheNavigationHandleCore::Initialize() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(precreated_host_.get() == nullptr);
-  precreated_host_.reset(
-      new AppCacheHost(appcache_host_id_, this, GetAppCacheService()));
+  precreated_host_.reset(new AppCacheHost(appcache_host_id_, process_id_, this,
+                                          GetAppCacheService()));
 
   DCHECK(g_appcache_handle_map.Get().find(appcache_host_id_) ==
          g_appcache_handle_map.Get().end());
@@ -71,6 +75,14 @@ std::unique_ptr<AppCacheHost> AppCacheNavigationHandleCore::GetPrecreatedHost(
 
 AppCacheServiceImpl* AppCacheNavigationHandleCore::GetAppCacheService() {
   return static_cast<AppCacheServiceImpl*>(appcache_service_.get());
+}
+
+void AppCacheNavigationHandleCore::SetProcessId(int process_id) {
+  DCHECK_EQ(process_id_, ChildProcessHost::kInvalidUniqueID);
+  DCHECK_NE(process_id, ChildProcessHost::kInvalidUniqueID);
+  DCHECK(precreated_host_);
+  process_id_ = process_id;
+  precreated_host_->SetProcessId(process_id);
 }
 
 void AppCacheNavigationHandleCore::OnCacheSelected(

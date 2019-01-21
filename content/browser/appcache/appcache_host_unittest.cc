@@ -26,6 +26,13 @@
 
 namespace content {
 
+namespace {
+
+constexpr int kHostIdForTest = 123;
+constexpr int kProcessIdForTest = 456;
+
+}  // namespace
+
 class AppCacheHostTest : public testing::Test {
  public:
   AppCacheHostTest() {
@@ -162,8 +169,10 @@ class AppCacheHostTest : public testing::Test {
 
 TEST_F(AppCacheHostTest, Basic) {
   // Construct a host and test what state it appears to be in.
-  AppCacheHost host(1, &mock_frontend_, &service_);
-  EXPECT_EQ(1, host.host_id());
+  AppCacheHost host(kHostIdForTest, kProcessIdForTest, &mock_frontend_,
+                    &service_);
+  EXPECT_EQ(kHostIdForTest, host.host_id());
+  EXPECT_EQ(kProcessIdForTest, host.process_id());
   EXPECT_EQ(&service_, host.service());
   EXPECT_EQ(&mock_frontend_, host.frontend());
   EXPECT_EQ(nullptr, host.associated_cache());
@@ -201,19 +210,20 @@ TEST_F(AppCacheHostTest, SelectNoCache) {
   const GURL kDocAndOriginUrl(GURL("http://whatever/").GetOrigin());
   const url::Origin kOrigin(url::Origin::Create(kDocAndOriginUrl));
   {
-    AppCacheHost host(1, &mock_frontend_, &service_);
+    AppCacheHost host(kHostIdForTest, kProcessIdForTest, &mock_frontend_,
+                      &service_);
     host.SelectCache(kDocAndOriginUrl, blink::mojom::kAppCacheNoCacheId,
                      GURL());
     EXPECT_EQ(1, mock_quota_proxy->GetInUseCount(kOrigin));
 
     // We should have received an OnCacheSelected msg
-    EXPECT_EQ(1, mock_frontend_.last_host_id_);
+    EXPECT_EQ(kHostIdForTest, mock_frontend_.last_host_id_);
     EXPECT_EQ(blink::mojom::kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
     EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED,
               mock_frontend_.last_status_);
 
     // Otherwise, see that it respond as if there is no cache selected.
-    EXPECT_EQ(1, host.host_id());
+    EXPECT_EQ(kHostIdForTest, host.host_id());
     EXPECT_EQ(&service_, host.service());
     EXPECT_EQ(&mock_frontend_, host.frontend());
     EXPECT_EQ(nullptr, host.associated_cache());
@@ -237,17 +247,18 @@ TEST_F(AppCacheHostTest, ForeignEntry) {
   scoped_refptr<AppCache> cache = new AppCache(service_.storage(), kCacheId);
   cache->AddEntry(kDocumentURL, AppCacheEntry(AppCacheEntry::EXPLICIT));
 
-  AppCacheHost host(1, &mock_frontend_, &service_);
+  AppCacheHost host(kHostIdForTest, kProcessIdForTest, &mock_frontend_,
+                    &service_);
   host.MarkAsForeignEntry(kDocumentURL, kCacheId);
 
   // We should have received an OnCacheSelected msg for kAppCacheNoCacheId.
-  EXPECT_EQ(1, mock_frontend_.last_host_id_);
+  EXPECT_EQ(kHostIdForTest, mock_frontend_.last_host_id_);
   EXPECT_EQ(blink::mojom::kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
   EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED,
             mock_frontend_.last_status_);
 
   // See that it respond as if there is no cache selected.
-  EXPECT_EQ(1, host.host_id());
+  EXPECT_EQ(kHostIdForTest, host.host_id());
   EXPECT_EQ(&service_, host.service());
   EXPECT_EQ(&mock_frontend_, host.frontend());
   EXPECT_EQ(nullptr, host.associated_cache());
@@ -271,12 +282,13 @@ TEST_F(AppCacheHostTest, ForeignFallbackEntry) {
       base::MakeRefCounted<AppCache>(service_.storage(), kCacheId);
   cache->AddEntry(kFallbackURL, AppCacheEntry(AppCacheEntry::FALLBACK));
 
-  AppCacheHost host(1, &mock_frontend_, &service_);
+  AppCacheHost host(kHostIdForTest, kProcessIdForTest, &mock_frontend_,
+                    &service_);
   host.NotifyMainResourceIsNamespaceEntry(kFallbackURL);
   host.MarkAsForeignEntry(GURL("http://origin/missing_document"), kCacheId);
 
   // We should have received an OnCacheSelected msg for kAppCacheNoCacheId.
-  EXPECT_EQ(1, mock_frontend_.last_host_id_);
+  EXPECT_EQ(kHostIdForTest, mock_frontend_.last_host_id_);
   EXPECT_EQ(blink::mojom::kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
   EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED,
             mock_frontend_.last_status_);
@@ -292,7 +304,8 @@ TEST_F(AppCacheHostTest, FailedCacheLoad) {
   mock_frontend_.last_status_ =
       blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
 
-  AppCacheHost host(1, &mock_frontend_, &service_);
+  AppCacheHost host(kHostIdForTest, kProcessIdForTest, &mock_frontend_,
+                    &service_);
   EXPECT_FALSE(host.is_selection_pending());
 
   const int kMockCacheId = 333;
@@ -313,7 +326,7 @@ TEST_F(AppCacheHostTest, FailedCacheLoad) {
 
   // Cache selection should have finished
   EXPECT_FALSE(host.is_selection_pending());
-  EXPECT_EQ(1, mock_frontend_.last_host_id_);
+  EXPECT_EQ(kHostIdForTest, mock_frontend_.last_host_id_);
   EXPECT_EQ(blink::mojom::kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
   EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED,
             mock_frontend_.last_status_);
@@ -324,7 +337,8 @@ TEST_F(AppCacheHostTest, FailedCacheLoad) {
 }
 
 TEST_F(AppCacheHostTest, FailedGroupLoad) {
-  AppCacheHost host(1, &mock_frontend_, &service_);
+  AppCacheHost host(kHostIdForTest, kProcessIdForTest, &mock_frontend_,
+                    &service_);
 
   const GURL kMockManifestUrl("http://foo.bar/baz");
 
@@ -344,7 +358,7 @@ TEST_F(AppCacheHostTest, FailedGroupLoad) {
 
   // Cache selection should have finished
   EXPECT_FALSE(host.is_selection_pending());
-  EXPECT_EQ(1, mock_frontend_.last_host_id_);
+  EXPECT_EQ(kHostIdForTest, mock_frontend_.last_host_id_);
   EXPECT_EQ(blink::mojom::kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
   EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED,
             mock_frontend_.last_status_);
@@ -355,7 +369,8 @@ TEST_F(AppCacheHostTest, FailedGroupLoad) {
 }
 
 TEST_F(AppCacheHostTest, SetSwappableCache) {
-  AppCacheHost host(1, &mock_frontend_, &service_);
+  AppCacheHost host(kHostIdForTest, kProcessIdForTest, &mock_frontend_,
+                    &service_);
   host.SetSwappableCache(nullptr);
   EXPECT_FALSE(host.swappable_cache_.get());
 
@@ -458,7 +473,8 @@ TEST_F(AppCacheHostTest, SelectCacheAllowed) {
   const url::Origin kOrigin(url::Origin::Create(kDocAndOriginUrl));
   const GURL kManifestUrl(GURL("http://whatever/cache.manifest"));
   {
-    AppCacheHost host(1, &mock_frontend_, &service_);
+    AppCacheHost host(kHostIdForTest, kProcessIdForTest, &mock_frontend_,
+                      &service_);
     host.SetFirstPartyUrlForTesting(kDocAndOriginUrl);
     host.SelectCache(kDocAndOriginUrl, blink::mojom::kAppCacheNoCacheId,
                      kManifestUrl);
@@ -502,14 +518,15 @@ TEST_F(AppCacheHostTest, SelectCacheBlocked) {
   const url::Origin kOrigin(url::Origin::Create(kDocAndOriginUrl));
   const GURL kManifestUrl(GURL("http://whatever/cache.manifest"));
   {
-    AppCacheHost host(1, &mock_frontend_, &service_);
+    AppCacheHost host(kHostIdForTest, kProcessIdForTest, &mock_frontend_,
+                      &service_);
     host.SetFirstPartyUrlForTesting(kDocAndOriginUrl);
     host.SelectCache(kDocAndOriginUrl, blink::mojom::kAppCacheNoCacheId,
                      kManifestUrl);
     EXPECT_EQ(1, mock_quota_proxy->GetInUseCount(kOrigin));
 
     // We should have received an OnCacheSelected msg
-    EXPECT_EQ(1, mock_frontend_.last_host_id_);
+    EXPECT_EQ(kHostIdForTest, mock_frontend_.last_host_id_);
     EXPECT_EQ(blink::mojom::kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
     EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED,
               mock_frontend_.last_status_);
@@ -520,7 +537,7 @@ TEST_F(AppCacheHostTest, SelectCacheBlocked) {
     EXPECT_TRUE(mock_frontend_.content_blocked_);
 
     // Otherwise, see that it respond as if there is no cache selected.
-    EXPECT_EQ(1, host.host_id());
+    EXPECT_EQ(kHostIdForTest, host.host_id());
     EXPECT_EQ(&service_, host.service());
     EXPECT_EQ(&mock_frontend_, host.frontend());
     EXPECT_EQ(nullptr, host.associated_cache());
@@ -532,7 +549,8 @@ TEST_F(AppCacheHostTest, SelectCacheBlocked) {
 }
 
 TEST_F(AppCacheHostTest, SelectCacheTwice) {
-  AppCacheHost host(1, &mock_frontend_, &service_);
+  AppCacheHost host(kHostIdForTest, kProcessIdForTest, &mock_frontend_,
+                    &service_);
   const GURL kDocAndOriginUrl(GURL("http://whatever/").GetOrigin());
 
   EXPECT_TRUE(host.SelectCache(kDocAndOriginUrl,

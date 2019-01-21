@@ -21,6 +21,7 @@
 #include "content/browser/appcache/appcache_storage.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/content_export.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/resource_type.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
@@ -74,7 +75,9 @@ class CONTENT_EXPORT AppCacheHost
     virtual ~Observer() {}
   };
 
-  AppCacheHost(int host_id, AppCacheFrontend* frontend,
+  AppCacheHost(int host_id,
+               int process_id,
+               AppCacheFrontend* frontend,
                AppCacheServiceImpl* service);
   ~AppCacheHost() override;
 
@@ -167,6 +170,16 @@ class CONTENT_EXPORT AppCacheHost
 
   int host_id() const { return host_id_; }
 
+  int process_id() const {
+    DCHECK_NE(process_id_, ChildProcessHost::kInvalidUniqueID);
+    return process_id_;
+  }
+  // SetProcessId may only be called once, and only if kInvalidUniqueID was
+  // passed to the AppCacheHost's constructor (e.g. in a scenario where
+  // NavigationHandleImpl needs to delay specifying the |process_id| until
+  // ReadyToCommit time).
+  void SetProcessId(int process_id);
+
   AppCacheServiceImpl* service() const { return service_; }
   AppCacheStorage* storage() const { return storage_; }
   AppCacheFrontend* frontend() const { return frontend_; }
@@ -187,8 +200,6 @@ class CONTENT_EXPORT AppCacheHost
     return pending_selected_cache_id_ != blink::mojom::kAppCacheNoCacheId ||
            !pending_selected_manifest_url_.is_empty();
   }
-
-  const url::Origin& origin_in_use() { return origin_in_use_; }
 
   const GURL& first_party_url() const { return first_party_url_; }
   void SetFirstPartyUrlForTesting(const GURL& url) {
@@ -249,6 +260,10 @@ class CONTENT_EXPORT AppCacheHost
 
   // Identifies the corresponding appcache host in the child process.
   int host_id_;
+
+  // Identifies the renderer process associated with the AppCacheHost.  Used for
+  // security checks via ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin.
+  int process_id_;
 
   // Information about the host that created this one; the manifest
   // preferred by our creator influences which cache our main resource
