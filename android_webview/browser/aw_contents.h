@@ -306,6 +306,11 @@ class AwContents : public FindHelper::Listener,
                 const base::android::JavaParamRef<jobject>& obj,
                 jint x,
                 jint y);
+  void RestoreScrollAfterTransition(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint x,
+      jint y);
   void SmoothScroll(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
                     jint target_x,

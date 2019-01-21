@@ -18,6 +18,7 @@
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
@@ -103,6 +104,9 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   // Set the root layer scroll offset to |new_value|. The |new_value| here is in
   // physical pixel.
   void ScrollTo(const gfx::Vector2d& new_value);
+
+  // Set root layer scroll offset on the next scroll state update.
+  void RestoreScrollAfterTransition(const gfx::Vector2d& new_value);
 
   // Android views hierarchy gluing.
   bool IsVisible() const;
@@ -241,6 +245,9 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   // spot over a period of time).
   // TODO(miletus): Make overscroll_rounding_error_ a gfx::ScrollOffset.
   gfx::Vector2dF overscroll_rounding_error_;
+
+  // The scroll to apply after the next scroll state update.
+  base::Optional<gfx::Vector2d> scroll_on_scroll_state_update_;
 
   ParentCompositorDrawConstraints external_draw_constraints_;
 

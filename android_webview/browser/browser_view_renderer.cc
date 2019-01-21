@@ -584,6 +584,24 @@ void BrowserViewRenderer::ScrollTo(const gfx::Vector2d& scroll_offset) {
         gfx::ScrollOffset(scroll_offset_unscaled));
 }
 
+void BrowserViewRenderer::RestoreScrollAfterTransition(
+    const gfx::Vector2d& scroll_offset) {
+  // Determine if the clipped scroll offset.
+  gfx::Vector2d clipped_offset = scroll_offset;
+  clipped_offset.SetToMin(max_scroll_offset());
+
+  // If the scroll will be clipped due to the max scroll then we haven't
+  // received a ScrollStateUpdate with the revised max scroll values. This
+  // situation occurs due to a race in exiting fullscreen mode request, we need
+  // to wait for the max scroll values to be updated before applying the
+  // restored scroll values.
+  if (clipped_offset != scroll_offset) {
+    scroll_on_scroll_state_update_ = scroll_offset;
+  } else {
+    ScrollTo(scroll_offset);
+  }
+}
+
 void BrowserViewRenderer::DidUpdateContent(
     content::SynchronousCompositor* compositor) {
   TRACE_EVENT_INSTANT0("android_webview",
@@ -653,6 +671,7 @@ void BrowserViewRenderer::UpdateRootLayerState(
   // SetDipScale should have been called at least once before this is called.
   DCHECK_GT(dip_scale_, 0.f);
 
+  bool apply_scroll_to = false;
   if (max_scroll_offset_unscaled_ != total_max_scroll_offset ||
       scrollable_size_dip_ != scrollable_size_dip ||
       page_scale_factor_ != page_scale_factor ||
@@ -667,8 +686,15 @@ void BrowserViewRenderer::UpdateRootLayerState(
     client_->UpdateScrollState(max_scroll_offset(), scrollable_size_dip,
                                page_scale_factor, min_page_scale_factor,
                                max_page_scale_factor);
+    apply_scroll_to = scroll_on_scroll_state_update_.has_value();
   }
+
   SetTotalRootLayerScrollOffset(total_scroll_offset);
+
+  if (apply_scroll_to) {
+    ScrollTo(scroll_on_scroll_state_update_.value());
+    scroll_on_scroll_state_update_.reset();
+  }
 }
 
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>

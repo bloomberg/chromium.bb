@@ -248,10 +248,6 @@ public class AwScrollOffsetManager {
         mDelegate.scrollNativeTo(x, y);
     }
 
-    void syncScrollToContainerView() {
-        scrollContainerViewTo(mNativeScrollX, mNativeScrollY);
-    }
-
     int getScrollX() {
         return mNativeScrollX;
     }
