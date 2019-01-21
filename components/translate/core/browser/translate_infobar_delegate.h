@@ -203,7 +203,7 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   TranslateDriver* GetTranslateDriver();
 
   // Set a observer.
-  void SetObserver(Observer* observer);
+  virtual void SetObserver(Observer* observer);
 
   // InfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
