@@ -32,7 +32,7 @@ public class ChromeTabbedActivityVrTestRule
                 VrTestRuleUtils.evaluateVrTestRuleImpl(
                         base, desc, ChromeTabbedActivityVrTestRule.this, () -> {
                             startMainActivityOnBlankPage();
-                            TestVrShellDelegate.createTestVrShellDelegate(getActivity());
+                            TestVrShellDelegate.createTestVrShellDelegate(getActivity(), desc);
                         });
             }
         }, desc);

@@ -7,8 +7,11 @@ package org.chromium.chrome.browser.vr;
 import android.graphics.PointF;
 import android.os.Build;
 
+import org.junit.runner.Description;
+
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.vr.rules.VrModuleNotInstalled;
 
 /**
  * Class for accessing VrShellDelegate internals for testing purposes.
@@ -24,7 +27,9 @@ public class TestVrShellDelegate extends VrShellDelegate {
     private boolean mExpectingIntent;
     private Boolean mAllow2dIntents;
 
-    public static void createTestVrShellDelegate(final ChromeActivity activity) {
+    public static void createTestVrShellDelegate(final ChromeActivity activity, Description desc) {
+        // Cannot make VrShellDelegate if we are faking that the VR module is not installed.
+        if (desc.getAnnotation(VrModuleNotInstalled.class) != null) return;
         if (sInstance != null) return;
         ThreadUtils.runOnUiThreadBlocking(() -> { sInstance = new TestVrShellDelegate(activity); });
     }
