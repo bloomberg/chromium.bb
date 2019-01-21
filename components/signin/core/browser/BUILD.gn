@@ -24,6 +24,8 @@ static_library("shared") {
   sources = [
     "account_info.cc",
     "account_info.h",
+    "account_info_util.cc",
+    "account_info_util.h",
     "avatar_icon_util.cc",
     "avatar_icon_util.h",
     "identity_utils.cc",
@@ -256,6 +258,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "account_info_unittest.cc",
+    "account_info_util_unittest.cc",
     "account_investigator_unittest.cc",
     "account_reconcilor_delegate_unittest.cc",
     "account_reconcilor_unittest.cc",

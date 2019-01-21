@@ -32,7 +32,6 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
@@ -133,7 +132,7 @@ class DialogLauncher : public content::NotificationObserver {
     if (identity_manager) {
       std::string hosted_domain =
           identity_manager->GetPrimaryAccountInfo().hosted_domain;
-      if (hosted_domain == AccountTrackerService::kNoHostedDomainFound ||
+      if (hosted_domain == kNoHostedDomainFound ||
           hosted_domain == "google.com") {
         account_supported = true;
       }

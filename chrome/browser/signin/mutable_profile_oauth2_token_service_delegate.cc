@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
@@ -681,8 +682,7 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
           AccountInfo account_info =
               account_tracker_service_->GetAccountInfo(account_id);
           DCHECK(account_info.IsValid());
-          if (account_info.hosted_domain !=
-              AccountTrackerService::kNoHostedDomainFound) {
+          if (account_info.hosted_domain != kNoHostedDomainFound) {
             load_account = false;
             load_token_status =
                 LoadTokenFromDBStatus::TOKEN_REVOKED_DICE_MIGRATION;

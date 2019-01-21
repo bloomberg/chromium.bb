@@ -41,6 +41,7 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
@@ -379,8 +380,7 @@ bool IsLockAvailable(Profile* profile) {
   }
   // TODO(mlerman): Prohibit only users who authenticate using SAML. Until then,
   // prohibited users who use hosted domains (aside from google.com).
-  if (hosted_domain != AccountTrackerService::kNoHostedDomainFound &&
-      hosted_domain != "google.com") {
+  if (hosted_domain != kNoHostedDomainFound && hosted_domain != "google.com") {
     return false;
   }
 

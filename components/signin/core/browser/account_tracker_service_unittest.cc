@@ -282,7 +282,7 @@ class AccountTrackerServiceTest : public testing::Test {
     EXPECT_EQ(AccountKeyToAccountId(account_key), info.account_id);
     EXPECT_EQ(AccountKeyToGaiaId(account_key), info.gaia);
     EXPECT_EQ(AccountKeyToEmail(account_key), info.email);
-    EXPECT_EQ(AccountTrackerService::kNoHostedDomainFound, info.hosted_domain);
+    EXPECT_EQ(kNoHostedDomainFound, info.hosted_domain);
     EXPECT_EQ(AccountKeyToFullName(account_key), info.full_name);
     EXPECT_EQ(AccountKeyToGivenName(account_key), info.given_name);
     EXPECT_EQ(AccountKeyToLocale(account_key), info.locale);
@@ -770,7 +770,7 @@ TEST_F(AccountTrackerServiceTest, SeedAccountInfoFull) {
   // Validate that seeding new full informations to an existing account works
   // and sends a notification.
   info.given_name = AccountKeyToGivenName(kAccountKeyAlpha);
-  info.hosted_domain = AccountTrackerService::kNoHostedDomainFound;
+  info.hosted_domain = kNoHostedDomainFound;
   info.locale = AccountKeyToLocale(kAccountKeyAlpha);
   info.picture_url = AccountKeyToPictureURL(kAccountKeyAlpha);
   account_tracker()->SeedAccountInfo(info);
@@ -784,7 +784,7 @@ TEST_F(AccountTrackerServiceTest, SeedAccountInfoFull) {
 
   // Validate that seeding invalid information to an existing account doesn't
   // work and doesn't send a notification.
-  info.given_name = AccountKeyToGivenName(kAccountKeyBeta);
+  info.given_name = std::string();
   account_tracker()->SeedAccountInfo(info);
   stored_info = account_tracker()->GetAccountInfo(info.account_id);
   EXPECT_EQ(info.gaia, stored_info.gaia);

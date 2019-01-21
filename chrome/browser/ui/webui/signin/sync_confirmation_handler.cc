@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/consent_auditor/consent_auditor.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/avatar_icon_util.h"
 #include "components/unified_consent/feature.h"
@@ -236,7 +237,7 @@ void SyncConfirmationHandler::HandleInitializedWithSize(
   AccountInfo account_info = account_tracker->GetAccountInfo(account_id);
 
   if (!account_info.IsValid()) {
-    SetUserImageURL(AccountTrackerService::kNoPictureURLFound);
+    SetUserImageURL(kNoPictureURLFound);
     account_tracker->AddObserver(this);
   } else {
     SetUserImageURL(account_info.picture_url);

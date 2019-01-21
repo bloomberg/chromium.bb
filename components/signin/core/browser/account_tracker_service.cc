@@ -22,6 +22,7 @@
 #include "build/build_config.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/signin/core/browser/account_info_util.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 
@@ -105,12 +106,6 @@ void RemoveImage(const base::FilePath& image_path) {
 }
 
 }  // namespace
-
-// This must be a string which can never be a valid domain.
-const char AccountTrackerService::kNoHostedDomainFound[] = "NO_HOSTED_DOMAIN";
-
-// This must be a string which can never be a valid picture URL.
-const char AccountTrackerService::kNoPictureURLFound[] = "NO_PICTURE_URL";
 
 AccountTrackerService::AccountTrackerService() : weak_factory_(this) {
 #if defined(OS_ANDROID)
@@ -274,31 +269,19 @@ void AccountTrackerService::SetAccountInfoFromUserInfo(
   DCHECK(base::ContainsKey(accounts_, account_id));
   AccountInfo& account_info = accounts_[account_id];
 
-  std::string gaia_id;
-  std::string email;
-  if (user_info->GetString("id", &gaia_id) &&
-      user_info->GetString("email", &email)) {
-    account_info.gaia = gaia_id;
-    account_info.email = email;
-
-    std::string hosted_domain;
-    if (user_info->GetString("hd", &hosted_domain) && !hosted_domain.empty()) {
-      account_info.hosted_domain = hosted_domain;
-    } else {
-      account_info.hosted_domain = kNoHostedDomainFound;
-    }
-
-    user_info->GetString("name", &account_info.full_name);
-    user_info->GetString("given_name", &account_info.given_name);
-    user_info->GetString("locale", &account_info.locale);
-
-    std::string picture_url;
-    if (user_info->GetString("picture", &picture_url)) {
-      account_info.picture_url = picture_url;
-    } else {
-      account_info.picture_url = kNoPictureURLFound;
-    }
+  base::Optional<AccountInfo> maybe_account_info =
+      AccountInfoFromUserInfo(*user_info);
+  if (maybe_account_info) {
+    // Should we DCHECK that the account stored in |accounts_| has the same
+    // value for |gaia_id| and |email| as the value loaded from |user_info|?
+    // DCHECK(account_info.gaia.empty()
+    //     || account_info.gaia == maybe_account_info.value().gaia);
+    // DCHECK(account_info.email.empty()
+    //     || account_info.email == maybe_account_info.value().email);
+    maybe_account_info.value().account_id = account_id;
+    account_info.UpdateWith(maybe_account_info.value());
   }
+
   if (!account_info.gaia.empty())
     NotifyAccountUpdated(account_info);
   SaveToPrefs(account_info);

@@ -14,6 +14,7 @@
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/signin/test_signin_client_builder.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/test_signin_client.h"
@@ -24,14 +25,14 @@
 
 namespace {
 
-const std::string kTestEmail = "test@example.com";
-const std::string kTestGaia = "gaia";
-const std::string kTestHostedDomain = "google.com";
-const std::string kTestFullName = "full_name";
-const std::string kTestGivenName = "given_name";
-const std::string kTestLocale = "locale";
-const std::string kTestValidPictureURL = "http://www.google.com/";
-const std::string kTestInvalidPictureURL = "invalid_picture_url";
+const char kTestEmail[] = "test@example.com";
+const char kTestGaia[] = "gaia";
+const char kTestHostedDomain[] = "google.com";
+const char kTestFullName[] = "full_name";
+const char kTestGivenName[] = "given_name";
+const char kTestLocale[] = "locale";
+const char kTestValidPictureURL[] = "http://www.google.com/";
+const char kTestInvalidPictureURL[] = "invalid_picture_url";
 
 } // namespace
 
@@ -162,7 +163,7 @@ TEST_F(ProfileDownloaderTest, AccountInfoNotReady) {
 TEST_F(ProfileDownloaderTest, AccountInfoNoPictureDoesNotCrash) {
   std::string account_id =
       account_tracker_service_->SeedAccountInfo(kTestGaia, kTestEmail);
-  SimulateUserInfoSuccess(AccountTrackerService::kNoPictureURLFound);
+  SimulateUserInfoSuccess(kNoPictureURLFound);
 
   profile_downloader_->StartForAccount(account_id);
   profile_downloader_->StartFetchingImage();

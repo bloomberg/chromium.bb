@@ -709,8 +709,7 @@ ChromePasswordProtectionService::GetSyncAccountType() const {
 
   // For gmail or googlemail account, the hosted_domain will always be
   // kNoHostedDomainFound.
-  return account_info.hosted_domain ==
-                 std::string(AccountTrackerService::kNoHostedDomainFound)
+  return account_info.hosted_domain == kNoHostedDomainFound
              ? PasswordReuseEvent::GMAIL
              : PasswordReuseEvent::GSUITE;
 }
