@@ -806,7 +806,7 @@ if (enable_vr || (enable_arcore && package_arcore)) {
     "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/android:app_hooks_java",
-    "//components/module_installer/android:module_installer_test_java",
+    "//components/module_installer/android:module_installer_stub_java",
     "//chrome/android:chrome_java",
     "//chrome/browser/android/vr:java",
     "//chrome/test/android:chrome_java_test_support",
@@ -896,8 +896,6 @@ if (enable_vr || (enable_arcore && package_arcore)) {
         "javatests/src/org/chromium/chrome/browser/vr/WebXrVrTabTest.java",
         "javatests/src/org/chromium/chrome/browser/vr/WebXrVrTestFramework.java",
         "javatests/src/org/chromium/chrome/browser/vr/WebXrVrTransitionTest.java",
-        "javatests/src/org/chromium/chrome/browser/vr/VrDaydreamReadyModuleInstallTest.java",
-        "javatests/src/org/chromium/chrome/browser/vr/rules/VrModuleNotInstalled.java",
       ]
 
       deps = chrome_test_xr_java_deps + [
