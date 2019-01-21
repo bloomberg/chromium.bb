@@ -596,11 +596,8 @@ FileManager.prototype = /** @struct */ {
         this.ui_.sortButtonToggleRipple,
         assert(this.directoryModel_.getFileList()));
     this.gearMenuController_ = new GearMenuController(
-        this.ui_.gearButton,
-        this.ui_.gearButtonToggleRipple,
-        this.ui_.gearMenu,
-        this.directoryModel_,
-        this.commandHandler_,
+        this.ui_.gearButton, this.ui_.gearButtonToggleRipple, this.ui_.gearMenu,
+        this.ui_.providersMenu, this.directoryModel_, this.commandHandler_,
         assert(this.providersModel_));
     this.selectionMenuController_ = new SelectionMenuController(
         this.ui_.selectionMenuButton,

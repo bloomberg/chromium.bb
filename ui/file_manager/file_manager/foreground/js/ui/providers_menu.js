@@ -90,10 +90,6 @@ ProvidersMenu.prototype.onUpdate_ = function(event) {
     providers.forEach(function(provider) {
       this.addProvider_(provider.providerId, provider.iconSet, provider.name);
     }.bind(this));
-
-    // Reposition the menu, so all items are always visible.
-    cr.ui.positionPopupAroundElement(event.menuButton, this.menu_,
-        event.menuButton.anchorType, event.menuButton.invertLeftRight);
   }.bind(this));
 };
 
@@ -104,4 +100,13 @@ ProvidersMenu.prototype.onUpdate_ = function(event) {
  */
 ProvidersMenu.prototype.onItemActivate_ = function(providerId, event) {
   this.model_.requestMount(providerId);
+};
+
+/**
+ *  Sends an 'update' event to the sub menu to trigger
+ *  a reload of its content.
+ */
+ProvidersMenu.prototype.updateSubMenu = function() {
+  const updateEvent = new Event('update');
+  this.menu_.dispatchEvent(updateEvent);
 };

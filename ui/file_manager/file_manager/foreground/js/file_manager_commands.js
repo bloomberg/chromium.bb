@@ -2262,24 +2262,7 @@ CommandHandler.COMMANDS_['new-service'] = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   execute: function(event, fileManager) {
-    const menuButton = fileManager.ui.newServiceButton;
-    // Make the button visible because showMenu positions the menu relative to
-    // to this button.
-    menuButton.hidden = false;
-
-    // Fire update event to display services that are already installed.
-    const updateEvent =
-        /** @type {MenuItemUpdateEvent} */ (new Event('update'));
-
-    // Display the menu near gearMenu, since menuButton will be hidden.
-    // The event listener (ProvidersMenu) only uses this menuButton for
-    // positioning.
-    updateEvent.menuButton = fileManager.ui.gearButton;
-    menuButton.menu.dispatchEvent(updateEvent);
-    menuButton.showMenu(false);
-
-    // Hide it back.
-    menuButton.hidden = true;
+    fileManager.ui.gearButton.showSubMenu();
   },
   /**
    * @param {!Event} event Command event.

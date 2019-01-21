@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 /**
- * @param {!cr.ui.MenuButton} gearButton
+ * @param {!cr.ui.MultiMenuButton} gearButton
  * @param {!FilesToggleRipple} toggleRipple
  * @param {!GearMenu} gearMenu
+ * @param {!ProvidersMenu} providersMenu
  * @param {!DirectoryModel} directoryModel
  * @param {!CommandHandler} commandHandler
  * @param {!ProvidersModel} providersModel
@@ -13,8 +14,8 @@
  * @struct
  */
 function GearMenuController(
-    gearButton, toggleRipple, gearMenu, directoryModel, commandHandler,
-    providersModel) {
+    gearButton, toggleRipple, gearMenu, providersMenu, directoryModel,
+    commandHandler, providersModel) {
   /**
    * @type {!FilesToggleRipple}
    * @const
@@ -28,6 +29,13 @@ function GearMenuController(
    * @private
    */
   this.gearMenu_ = gearMenu;
+
+  /**
+   * @type {!ProvidersMenu}
+   * @const
+   * @private
+   */
+  this.providersMenu_ = providersMenu;
 
   /**
    * @type {!DirectoryModel}
@@ -92,11 +100,12 @@ GearMenuController.prototype.updateNewServiceItem = function() {
       // provider option.
       desiredMenu = '#new-service';
       label = str('ADD_NEW_SERVICES_BUTTON_LABEL');
+      // Trigger an update of the providers submenu.
+      this.providersMenu_.updateSubMenu();
     }
 
     this.gearMenu_.setNewServiceCommand(desiredMenu, label);
   });
-
 };
 
 /**
