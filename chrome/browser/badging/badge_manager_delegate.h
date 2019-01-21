@@ -11,7 +11,7 @@
 
 namespace badging {
 
-// BadgeManagerDelegate is reponsible for dispatching badge events that should
+// BadgeManagerDelegate is responsible for dispatching badge events that should
 // be handled and reflected in the UI.
 class BadgeManagerDelegate {
  public:

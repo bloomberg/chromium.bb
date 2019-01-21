@@ -12,8 +12,8 @@ generate_token.py http://127.0.0.1:8000 Badging --expire-timestamp=2000000000
 <script>
 
 test(t => {
-  assert_own_property(window, 'Badge', 'Badge is not defined on the window');
-  assert_own_property(window.Badge, 'set', 'Set is not defined on the Badge API');
-  assert_own_property(window.Badge, 'clear', 'Clear is not defined on the Badge API');
+  assert_own_property(window, 'ExperimentalBadge', 'ExperimentalBadge is not defined on the window');
+  assert_own_property(window.ExperimentalBadge, 'set', 'Set is not defined on the ExperimentalBadge API');
+  assert_own_property(window.ExperimentalBadge, 'clear', 'Clear is not defined on the ExperimentalBadge API');
 }, 'Badge API interfaces and properties in Origin-Trial enabled document.');
 </script>
