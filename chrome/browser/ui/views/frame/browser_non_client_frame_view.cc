@@ -170,11 +170,6 @@ SkColor BrowserNonClientFrameView::GetFrameColor(
                                           browser_view_->IsIncognito());
 }
 
-SkColor BrowserNonClientFrameView::GetCaptionColor(
-    ActiveState active_state) const {
-  return color_utils::GetColorWithMaxContrast(GetFrameColor(active_state));
-}
-
 SkColor BrowserNonClientFrameView::GetToolbarTopSeparatorColor() const {
   const int color_id =
       ShouldPaintAsActive()
@@ -301,6 +296,11 @@ bool BrowserNonClientFrameView::ShouldPaintAsSingleTabMode() const {
 
 bool BrowserNonClientFrameView::ShouldPaintAsThemed() const {
   return browser_view_->IsBrowserTypeNormal();
+}
+
+SkColor BrowserNonClientFrameView::GetCaptionColor(
+    ActiveState active_state) const {
+  return color_utils::GetColorWithMaxContrast(GetFrameColor(active_state));
 }
 
 bool BrowserNonClientFrameView::ShouldPaintAsActive(

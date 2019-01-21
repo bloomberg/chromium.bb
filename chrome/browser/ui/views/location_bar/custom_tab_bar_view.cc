@@ -43,6 +43,8 @@
 
 namespace {
 
+constexpr SkColor kBackgroundColor = SK_ColorWHITE;
+
 // The frame color is different on ChromeOS and other platforms because Ash
 // specifies its own default frame color, which is not exposed through
 // BrowserNonClientFrameView::GetFrameColor.
@@ -149,23 +151,22 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
 
   // If we have a theme color, use that, otherwise fall back to the default
   // frame color.
-  theme_color_ = optional_theme_color.value_or(GetDefaultFrameColor());
-  SetBackground(views::CreateSolidBackground(theme_color_));
+  title_bar_color_ = optional_theme_color.value_or(GetDefaultFrameColor());
+  SetBackground(views::CreateSolidBackground(kBackgroundColor));
 
-  caption_color_ = browser_view->frame()->GetFrameView()->GetCaptionColor(
-      BrowserNonClientFrameView::kActive);
+  constexpr SkColor kForegroundColor = gfx::kGoogleGrey900;
 
   const gfx::FontList& font_list = views::style::GetFont(
       CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
 
-  close_button_ = CreateCloseButton(this, caption_color_);
+  close_button_ = CreateCloseButton(this, kForegroundColor);
   AddChildView(close_button_);
 
   location_icon_view_ = new LocationIconView(font_list, this);
   AddChildView(location_icon_view_);
 
   title_origin_view_ =
-      new CustomTabBarTitleOriginView(caption_color_, theme_color_);
+      new CustomTabBarTitleOriginView(kForegroundColor, kBackgroundColor);
   AddChildView(title_origin_view_);
 
   int padding = GetLayoutConstant(LayoutConstant::LOCATION_BAR_ELEMENT_PADDING);
@@ -182,7 +183,7 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
 
   SetLayoutManager(std::move(layout));
-  SetBorder(views::CreateSolidSidedBorder(0, 0, 1, 0, caption_color_));
+  SetBorder(views::CreateSolidSidedBorder(0, 0, 1, 0, kForegroundColor));
 
   tab_strip_model_observer_.Add(browser->tab_strip_model());
 }
@@ -232,10 +233,7 @@ bool CustomTabBarView::ShowPageInfoDialog() {
 
 SkColor CustomTabBarView::GetSecurityChipColor(
     security_state::SecurityLevel security_level) const {
-  OmniboxTint tint = color_utils::IsDark(caption_color_) ? OmniboxTint::LIGHT
-                                                         : OmniboxTint::DARK;
-
-  return GetOmniboxSecurityChipColor(tint, security_level);
+  return GetOmniboxSecurityChipColor(OmniboxTint::LIGHT, security_level);
 }
 
 gfx::ImageSkia CustomTabBarView::GetLocationIcon(
