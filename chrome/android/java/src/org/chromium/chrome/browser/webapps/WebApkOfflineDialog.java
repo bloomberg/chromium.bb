@@ -19,6 +19,11 @@ import org.chromium.net.NetError;
 public class WebApkOfflineDialog {
     private Dialog mDialog;
 
+    /** Returns whether the dialog is showing. */
+    public boolean isShowing() {
+        return mDialog != null && mDialog.isShowing();
+    }
+
     /**
      * Shows dialog to notify user of network error.
      * @param activity Activity that will be used for {@link Dialog#show()}.
