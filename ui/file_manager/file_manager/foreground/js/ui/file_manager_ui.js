@@ -206,19 +206,11 @@ function FileManagerUI(providersModel, element, launchParam) {
 
   /**
    * The button to open gear menu.
-   * @type {!cr.ui.MenuButton}
+   * @type {!cr.ui.MultiMenuButton}
    * @const
    */
-  this.gearButton = util.queryDecoratedElement(
-      '#gear-button', cr.ui.MenuButton);
-
-  /**
-   * The button to add new service (file system providers).
-   * @type {!cr.ui.MenuButton}
-   * @const
-   */
-  this.newServiceButton =
-      util.queryDecoratedElement('#new-service-button', cr.ui.MenuButton);
+  this.gearButton =
+      util.queryDecoratedElement('#gear-button', cr.ui.MultiMenuButton);
 
   /**
    * Ripple effect of gear button.
