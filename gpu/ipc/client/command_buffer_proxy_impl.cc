@@ -739,8 +739,8 @@ void CommandBufferProxyImpl::TryUpdateStateThreadSafe() {
     if (last_state_.error != gpu::error::kNoError) {
       callback_thread_->PostTask(
           FROM_HERE,
-          base::Bind(&CommandBufferProxyImpl::LockAndDisconnectChannel,
-                     weak_ptr_factory_.GetWeakPtr()));
+          base::BindOnce(&CommandBufferProxyImpl::LockAndDisconnectChannel,
+                         weak_ptr_factory_.GetWeakPtr()));
     }
   }
 }
@@ -831,8 +831,9 @@ void CommandBufferProxyImpl::DisconnectChannelInFreshCallStack() {
   // stack in case things will use it, and give the GpuChannelClient a chance to
   // act fully on the lost context.
   callback_thread_->PostTask(
-      FROM_HERE, base::Bind(&CommandBufferProxyImpl::LockAndDisconnectChannel,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE,
+      base::BindOnce(&CommandBufferProxyImpl::LockAndDisconnectChannel,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CommandBufferProxyImpl::LockAndDisconnectChannel() {

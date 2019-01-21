@@ -43,7 +43,5 @@ int main(int argc, char** argv) {
 #endif
   testing::InitGoogleMock(&argc, argv);
   return base::LaunchUnitTestsSerially(
-      argc,
-      argv,
-      base::Bind(&RunHelper, base::Unretained(&test_suite)));
+      argc, argv, base::BindOnce(&RunHelper, base::Unretained(&test_suite)));
 }

@@ -118,7 +118,7 @@ class Simulator {
 
     message_loop_.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&Simulator::ProcessEvents, weak_factory_.GetWeakPtr()));
+        base::BindOnce(&Simulator::ProcessEvents, weak_factory_.GetWeakPtr()));
     run_loop_.Run();
   }
 
@@ -254,7 +254,7 @@ class Simulator {
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&Simulator::UpdateLoop, weak_factory_.GetWeakPtr()));
+        base::BindOnce(&Simulator::UpdateLoop, weak_factory_.GetWeakPtr()));
   }
 
   void DumpOutput() {

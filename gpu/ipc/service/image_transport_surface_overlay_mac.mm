@@ -303,8 +303,8 @@ void ImageTransportSurfaceOverlayMac::OnGpuSwitched() {
   // transport surface that is observing the GPU switch.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(
-          base::DoNothing::Repeatedly<scoped_refptr<ui::IOSurfaceContext>>(),
+      base::BindOnce(
+          base::DoNothing::Once<scoped_refptr<ui::IOSurfaceContext>>(),
           context_on_new_gpu));
 }
 

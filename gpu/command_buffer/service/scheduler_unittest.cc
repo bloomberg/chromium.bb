@@ -431,8 +431,8 @@ TEST_F(SchedulerTest, ReentrantEnableSequenceShouldNotDeadlock) {
         ran1 = true;
         release_state1->Wait(
             sync_token,
-            base::Bind(&Scheduler::EnableSequence,
-                       base::Unretained(scheduler()), sequence_id1));
+            base::BindOnce(&Scheduler::EnableSequence,
+                           base::Unretained(scheduler()), sequence_id1));
         scheduler()->DisableSequence(sequence_id1);
       }),
       std::vector<SyncToken>()));

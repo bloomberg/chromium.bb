@@ -23,12 +23,6 @@ namespace {
 
 class SignalTest : public ContextTestBase {
  public:
-  static void RunOnlyOnce(base::Closure cb, int* tmp) {
-    CHECK_EQ(*tmp, 0);
-    ++*tmp;
-    cb.Run();
-  }
-
   // These tests should time out if the callback doesn't get called.
   void TestSignalSyncToken(const gpu::SyncToken& sync_token) {
     base::RunLoop run_loop;
@@ -39,9 +33,7 @@ class SignalTest : public ContextTestBase {
   // These tests should time out if the callback doesn't get called.
   void TestSignalQuery(GLuint query) {
     base::RunLoop run_loop;
-    context_support_->SignalQuery(
-        query, base::Bind(&RunOnlyOnce, run_loop.QuitClosure(),
-                          base::Owned(new int(0))));
+    context_support_->SignalQuery(query, run_loop.QuitClosure());
     run_loop.Run();
   }
 };

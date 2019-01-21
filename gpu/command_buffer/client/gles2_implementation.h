@@ -802,7 +802,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
   base::Optional<ScopedMappedMemoryPtr> font_mapped_buffer_;
   base::Optional<ScopedTransferBufferPtr> raster_mapped_buffer_;
 
-  base::Callback<void(const char*, int32_t)> error_message_callback_;
+  base::RepeatingCallback<void(const char*, int32_t)> error_message_callback_;
   bool deferring_error_callbacks_ = false;
   std::deque<DeferredErrorCallback> deferred_error_callbacks_;
 

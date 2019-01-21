@@ -176,7 +176,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   const GpuFeatureInfo& GetGpuFeatureInfo() const;
 
   using UpdateVSyncParametersCallback =
-      base::Callback<void(base::TimeTicks timebase, base::TimeDelta interval)>;
+      base::RepeatingCallback<void(base::TimeTicks timebase,
+                                   base::TimeDelta interval)>;
   void SetUpdateVSyncParametersCallback(
       const UpdateVSyncParametersCallback& callback);
 

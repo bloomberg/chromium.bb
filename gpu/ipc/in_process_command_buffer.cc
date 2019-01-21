@@ -890,8 +890,8 @@ void InProcessCommandBuffer::ScheduleDelayedWorkOnGpuThread() {
     return;
   delayed_work_pending_ = true;
   task_executor_->ScheduleDelayedWork(
-      base::Bind(&InProcessCommandBuffer::PerformDelayedWorkOnGpuThread,
-                 gpu_thread_weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&InProcessCommandBuffer::PerformDelayedWorkOnGpuThread,
+                     gpu_thread_weak_ptr_factory_.GetWeakPtr()));
 }
 
 void InProcessCommandBuffer::Flush(int32_t put_offset) {
