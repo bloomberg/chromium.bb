@@ -1,4 +1,6 @@
 include_rules = [
+  "+chrome/browser/conflicts/module_info_util_win.h",
+  "+chrome/browser/conflicts/module_info_win.h",
   "+chrome/installer/util/install_util.h",
   "+content/public/utility/utility_thread.h",
 ]
