@@ -2174,6 +2174,7 @@ enum WebFeature {
   kV8HTMLVideoElement_AutoPictureInPicture_AttributeGetter = 2733,
   kV8HTMLVideoElement_AutoPictureInPicture_AttributeSetter = 2734,
   kAutoPictureInPictureAttribute = 2735,
+  kRTCAudioJitterBufferRtxHandling = 2736,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
