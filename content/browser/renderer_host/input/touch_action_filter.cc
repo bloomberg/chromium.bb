@@ -211,13 +211,6 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
         base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
         gesture_sequence_.clear();
       }
-      if (compositor_touch_action_enabled_ && !touch_action.has_value()) {
-        static auto* crash_key = base::debug::AllocateCrashKeyString(
-            "scrollupdate1-gestures", base::debug::CrashKeySize::Size256);
-        base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
-        base::debug::DumpWithoutCrashing();
-        gesture_sequence_.clear();
-      }
       if (IsYAxisActionDisallowed(touch_action.value())) {
         if (compositor_touch_action_enabled_ &&
             !active_touch_action_.has_value() &&
@@ -310,13 +303,6 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
         base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
         gesture_sequence_.clear();
       }
-      if (compositor_touch_action_enabled_ && !touch_action.has_value()) {
-        static auto* crash_key = base::debug::AllocateCrashKeyString(
-            "tapunconfirmed1-gestures", base::debug::CrashKeySize::Size256);
-        base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
-        base::debug::DumpWithoutCrashing();
-        gesture_sequence_.clear();
-      }
       allow_current_double_tap_event_ =
           (touch_action.value() & cc::kTouchActionDoubleTapZoom) != 0;
       if (!allow_current_double_tap_event_) {
@@ -364,6 +350,7 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
 
     case WebInputEvent::kGestureLongTap:
     case WebInputEvent::kGestureTwoFingerTap:
+      gesture_sequence_.append("G");
       gesture_sequence_in_progress_ = false;
       break;
 
@@ -559,6 +546,7 @@ void TouchActionFilter::OnHasTouchEventHandlers(bool has_handlers) {
   if (!gesture_sequence_in_progress_ && num_of_active_touches_ <= 0) {
     ResetTouchAction();
     if (has_touch_event_handler_) {
+      gesture_sequence_.append("H");
       active_touch_action_.reset();
       white_listed_touch_action_.reset();
     }
