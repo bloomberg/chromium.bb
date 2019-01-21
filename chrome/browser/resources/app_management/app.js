@@ -18,6 +18,11 @@ Polymer({
     /**
      * @private {boolean}
      */
+    notificationsViewSelected_: Boolean,
+
+    /**
+     * @private {boolean}
+     */
     pwaPermissionViewSelected_: Boolean,
 
     /**
@@ -28,7 +33,8 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.watch('mainViewSelected_', function(state) {
+    // TODO(ceciliani) Generalize page selection in a nicer way.
+    this.watch('mainViewSelected_', (state) => {
       return state.currentPage.pageType == PageType.MAIN;
     });
 
@@ -36,11 +42,15 @@ Polymer({
       // TODO(rekanorman): Remove AppType.kExtension case once PWA's are sent
       // thorough with the correct app type.
       return this.appTypeSelected(state, AppType.kWeb) ||
-             this.appTypeSelected(state, AppType.kExtension);
+          this.appTypeSelected(state, AppType.kExtension);
     });
 
     this.watch('chromeAppPermissionViewSelected_', (state) => {
       return this.appTypeSelected(state, AppType.kExtension);
+    });
+
+    this.watch('notificationsViewSelected_', (state) => {
+      return state.currentPage.pageType === PageType.NOTIFICATIONS;
     });
 
     this.updateFromStore();
@@ -60,6 +70,6 @@ Polymer({
 
     const selectedApp = state.apps[state.currentPage.selectedAppId];
     return state.currentPage.pageType == PageType.DETAIL &&
-      selectedApp.type == type;
-  }
+        selectedApp.type == type;
+  },
 });

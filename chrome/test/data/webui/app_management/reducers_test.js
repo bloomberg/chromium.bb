@@ -129,4 +129,11 @@ suite('app state', function() {
     assertEquals(null, state.currentPage.selectedAppId);
     assertEquals(PageType.MAIN, state.currentPage.pageType);
   });
+
+  test('state updates when changing to notifications page', function() {
+    action = app_management.actions.changePage(PageType.NOTIFICATIONS);
+    state = app_management.reduceAction(state, action);
+
+    assertEquals(PageType.NOTIFICATIONS, state.currentPage.pageType);
+  });
 });

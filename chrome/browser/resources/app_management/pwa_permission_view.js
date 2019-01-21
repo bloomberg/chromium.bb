@@ -24,7 +24,7 @@ Polymer({
   },
 
   attached: function() {
-    this.watch('app_', function(state) {
+    this.watch('app_', (state) => {
       const selectedAppId = state.currentPage.selectedAppId;
       if (selectedAppId) {
         return state.apps[selectedAppId];

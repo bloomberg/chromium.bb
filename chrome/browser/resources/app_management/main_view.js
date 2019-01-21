@@ -112,6 +112,11 @@ Polymer({
     return listExpanded ? 'cr:expand-less' : 'cr:expand-more';
   },
 
+  /** @private */
+  onClickNotificationSublabel_: function() {
+    this.dispatch(app_management.actions.changePage(PageType.NOTIFICATIONS));
+  },
+
   /**
    * Show a string with apps' |title|(s) previewed into a label, with each
    * title ellipsised if too long.

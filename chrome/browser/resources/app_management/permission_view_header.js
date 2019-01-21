@@ -15,18 +15,15 @@ Polymer({
     },
   },
 
-  /**
-   * @private
-   */
-  onClickBackButton_: function() {
-    this.dispatch(app_management.actions.changePage(PageType.MAIN));
-  },
+  attached: function() {
+    this.watch('app', (state) => {
+      const selectedAppId = state.currentPage.selectedAppId;
+      if (selectedAppId) {
+        return state.apps[selectedAppId];
+      }
+    });
 
-  /**
-   * @private
-   */
-  onClickUninstallButton_: function() {
-    app_management.BrowserProxy.getInstance().handler.uninstall(this.app.id);
+    this.updateFromStore();
   },
 
   /**
@@ -36,5 +33,23 @@ Polymer({
    */
   iconUrlFromId_: function(app) {
     return app_management.util.getAppIcon(app);
+  },
+
+  /**
+   * @private
+   */
+  onClickBackButton_: function() {
+    if (!window.history.state) {
+      this.dispatch(app_management.actions.changePage(PageType.MAIN));
+    } else {
+      window.history.back();
+    }
+  },
+
+  /**
+   * @private
+   */
+  onClickUninstallButton_: function() {
+    app_management.BrowserProxy.getInstance().handler.uninstall(this.app.id);
   },
 });

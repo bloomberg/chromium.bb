@@ -4,7 +4,6 @@
 <link rel="import" href="shared_style.html">
 <link rel="import" href="shared_vars.html">
 <link rel="import" href="store_client.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
@@ -15,23 +14,6 @@
     <style include="app-management-shared-css">
       #app-list-title {
         padding: 16px 24px;
-      }
-
-      #expand-button {
-        height: 36px;
-        margin-inline-end: 12px;
-        width: 36px;
-      }
-
-      #expander-row {
-        align-items: center;
-        border-top: var(--card-separator);
-        color: var(--secondary-text-color);
-        display: flex;
-        height: 50px;
-        justify-content: space-between;
-        padding-inline-end: 8px;
-        padding-inline-start: 24px;
       }
 
       .permission-row-sublabel {
@@ -54,23 +36,39 @@
       #notifications-sublabel > span {
         white-space: pre;
       }
+
+      .app-management-item-arrow {
+        margin-inline-end: 8px;
+        padding: 12px;
+      }
     </style>
 
     <div class="card-container">
       <div id="app-list-title" class="header-text">$i18n{appListTitle}</div>
       <template is="dom-repeat" items="[[displayedApps_]]">
-        <app-management-item app="[[item]]"></app-management-item>
+        <app-management-item app="[[item]]">
+          <paper-icon-button-light slot="right-content"
+              class="subpage-arrow app-management-item-arrow" actionable>
+            <button></button>
+          </paper-icon-button-light>
+        </app-management-item>
       </template>
 
       <iron-collapse opened="[[listExpanded_]]">
         <template is="dom-repeat" items="[[collapsedApps_]]">
-          <app-management-item app="[[item]]"></app-management-item>
+          <app-management-item app="[[item]]">
+            <paper-icon-button-light slot="right-content"
+                class="subpage-arrow" actionable>
+              <button></button>
+            </paper-icon-button-light>
+          </app-management-item>
         </template>
       </iron-collapse>
 
-      <div id="expander-row" on-click="toggleListExpanded_">
+      <div id="expander-row" class="expander-list-row"
+          on-click="toggleListExpanded_">
         <span>[[moreAppsString_(apps_.length,listExpanded_)]]</span>
-        <paper-icon-button-light id="expand-button">
+        <paper-icon-button-light class="expand-button">
           <button>
             <iron-icon icon="[[getCollapsedIcon_(listExpanded_)]]">
             </iron-icon>
@@ -87,7 +85,8 @@
           </div>
           <div id="notifications-sublabel" class="secondary-text"></div>
         </div>
-        <paper-icon-button-light class="subpage-arrow" actionable>
+        <paper-icon-button-light class="subpage-arrow" actionable
+            on-click="onClickNotificationSublabel_">
           <button></button>
         </paper-icon-button-light>
       </span>

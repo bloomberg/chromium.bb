@@ -96,9 +96,10 @@ Polymer({
   /** @private */
   publishPath_: function() {
     let path = '';
-
-    if (this.currentPageType_ == PageType.DETAIL) {
+    if (this.currentPageType_ === PageType.DETAIL) {
       path = 'detail';
+    } else if (this.currentPageType_ === PageType.NOTIFICATIONS) {
+      path = 'notifications';
     }
 
     this.path_ = '/' + path;
@@ -115,13 +116,15 @@ Polymer({
 
     const pageFromUrl = this.path_.substr(1).split('/')[0];
     let newPage = PageType.MAIN;
-    if (pageFromUrl == 'detail') {
+    if (pageFromUrl === 'detail') {
       newPage = PageType.DETAIL;
+    } else if (pageFromUrl === 'notifications') {
+      newPage = PageType.NOTIFICATIONS;
     } else {
       newPage = PageType.MAIN;
     }
 
-    if (newPage == PageType.DETAIL) {
+    if (newPage === PageType.DETAIL) {
       this.dispatch(app_management.actions.changePage(PageType.DETAIL, newId));
     } else {
       this.dispatch(app_management.actions.changePage(newPage));

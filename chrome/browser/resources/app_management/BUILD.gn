@@ -17,6 +17,7 @@ if (!is_android) {
       ":item",
       ":main_view",
       ":metadata_view",
+      ":notifications_view",
       ":permission_item",
       ":pwa_permission_view",
       ":reducers",
@@ -118,6 +119,11 @@ if (!is_android) {
     ]
   }
 
+  js_library("notifications_view") {
+    deps = [
+      ":fake_page_handler",
+    ]
+  }
   js_library("permission_view_header") {
     deps = [
       ":browser_proxy",
