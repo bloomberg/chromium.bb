@@ -210,7 +210,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetZoomFactorOverride(float);
   void SetCompositorDeviceScaleFactorOverride(float);
   void SetDeviceEmulationTransform(const TransformationMatrix&);
-  TransformationMatrix GetDeviceEmulationTransformForTesting() const;
+  TransformationMatrix GetDeviceEmulationTransform() const;
 
   SkColor BackgroundColor() const;
   Color BaseBackgroundColor() const;

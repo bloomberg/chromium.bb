@@ -82,6 +82,11 @@ VisualViewport::VisualViewport(Page& owner)
   Reset();
 }
 
+TransformPaintPropertyNode* VisualViewport::GetDeviceEmulationTransformNode()
+    const {
+  return device_emulation_transform_node_.get();
+}
+
 TransformPaintPropertyNode*
 VisualViewport::GetOverscrollElasticityTransformNode() const {
   return overscroll_elasticity_transform_node_.get();
@@ -115,6 +120,25 @@ void VisualViewport::UpdatePaintPropertyNodesIfNeeded(
   DCHECK(scroll_parent);
   DCHECK(clip_parent);
   DCHECK(effect_parent);
+
+  {
+    const auto& device_emulation_transform =
+        GetChromeClient()->GetDeviceEmulationTransform();
+    if (!device_emulation_transform.IsIdentity()) {
+      TransformPaintPropertyNode::State state;
+      state.matrix = device_emulation_transform;
+      if (!device_emulation_transform_node_) {
+        device_emulation_transform_node_ = TransformPaintPropertyNode::Create(
+            *transform_parent, std::move(state));
+      } else {
+        device_emulation_transform_node_->Update(*transform_parent,
+                                                 std::move(state));
+      }
+      transform_parent = device_emulation_transform_node_.get();
+    } else {
+      device_emulation_transform_node_ = nullptr;
+    }
+  }
 
   if (inner_viewport_container_layer_) {
     inner_viewport_container_layer_->SetLayerState(

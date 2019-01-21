@@ -2538,5 +2538,27 @@ TEST_F(VisualViewportSimTest, ScrollingContentsSmallerThanContainer) {
   }
 }
 
+TEST_P(VisualViewportTest, DeviceEmulationTransformNode) {
+  InitializeWithAndroidSettings();
+
+  TransformationMatrix emulation_transform = TransformationMatrix();
+  emulation_transform.Translate(314, 159);
+  WebView()->SetDeviceEmulationTransform(emulation_transform);
+
+  WebView()->MainFrameWidget()->Resize(IntSize(400, 400));
+  NavigateTo("about:blank");
+  UpdateAllLifecyclePhases();
+
+  VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
+  EXPECT_EQ(visual_viewport.GetDeviceEmulationTransformNode()->Matrix(),
+            emulation_transform);
+
+  // Set an identity device emulation transform and ensure the transform
+  // paint property node is cleared.
+  WebView()->SetDeviceEmulationTransform(TransformationMatrix());
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(visual_viewport.GetDeviceEmulationTransformNode(), nullptr);
+}
+
 }  // namespace
 }  // namespace blink

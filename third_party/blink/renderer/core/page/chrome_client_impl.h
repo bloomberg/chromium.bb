@@ -223,6 +223,8 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
 
   void RegisterViewportLayers() const override;
 
+  TransformationMatrix GetDeviceEmulationTransform() const override;
+
   void OnMouseDown(Node&) override;
   void DidUpdateBrowserControls() const override;
   void SetOverscrollBehavior(const cc::OverscrollBehavior&) override;

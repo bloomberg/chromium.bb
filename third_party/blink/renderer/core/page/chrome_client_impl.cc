@@ -1130,6 +1130,10 @@ void ChromeClientImpl::RegisterViewportLayers() const {
     web_view_->RegisterViewportLayersWithCompositor();
 }
 
+TransformationMatrix ChromeClientImpl::GetDeviceEmulationTransform() const {
+  return web_view_->GetDeviceEmulationTransform();
+}
+
 void ChromeClientImpl::DidUpdateBrowserControls() const {
   web_view_->DidUpdateBrowserControls();
 }
