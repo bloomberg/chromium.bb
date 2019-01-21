@@ -259,6 +259,9 @@ const base::Feature kAutofillSuggestInvalidProfileData{
 const base::Feature kAutofillSuppressDisusedAddresses{
     "AutofillSuppressDisusedAddresses", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kAutofillProfileClientValidation{
+    "AutofillProfileClientValidation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kAutofillSuppressDisusedCreditCards{
     "AutofillSuppressDisusedCreditCards", base::FEATURE_ENABLED_BY_DEFAULT};
 

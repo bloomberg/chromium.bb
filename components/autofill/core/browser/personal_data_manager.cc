@@ -991,6 +991,10 @@ void PersonalDataManager::UpdateProfilesServerValidityMapsIfNeeded(
 
 void PersonalDataManager::UpdateClientValidityStates(
     const std::vector<AutofillProfile*>& profiles) {
+  if (!base::FeatureList::IsEnabled(
+          autofill::features::kAutofillProfileClientValidation))
+    return;
+
   if (!client_profile_validator_)
     return;
 
