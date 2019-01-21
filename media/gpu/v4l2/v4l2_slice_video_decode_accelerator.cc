@@ -27,6 +27,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
 #include "media/base/unaligned_shared_memory.h"
@@ -100,6 +101,7 @@ struct V4L2SliceVideoDecodeAccelerator::BitstreamBufferRef {
       scoped_refptr<DecoderBuffer> buffer,
       int32_t input_id);
   ~BitstreamBufferRef();
+
   const base::WeakPtr<VideoDecodeAccelerator::Client> client;
   const scoped_refptr<base::SingleThreadTaskRunner> client_task_runner;
   scoped_refptr<DecoderBuffer> buffer;
@@ -291,6 +293,9 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
     return false;
   }
   decoder_thread_task_runner_ = decoder_thread_.task_runner();
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, "media::V4l2SliceVideoDecodeAccelerator",
+      decoder_thread_task_runner_);
 
   state_ = kInitialized;
   output_mode_ = config.output_mode;
@@ -352,13 +357,16 @@ void V4L2SliceVideoDecodeAccelerator::DestroyTask() {
 
   decoder_current_bitstream_buffer_.reset();
   while (!decoder_input_queue_.empty())
-    decoder_input_queue_.pop();
+    decoder_input_queue_.pop_front();
 
   // Stop streaming and the device_poll_thread_.
   StopDevicePoll(false);
 
   DestroyInputBuffers();
   DestroyOutputs(false);
+
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
 
   DCHECK(surfaces_at_device_.empty());
   DCHECK(surfaces_at_display_.empty());
@@ -1070,7 +1078,7 @@ void V4L2SliceVideoDecodeAccelerator::DecodeTask(
   if (!bitstream_record->buffer)
     return;
 
-  decoder_input_queue_.push(std::move(bitstream_record));
+  decoder_input_queue_.push_back(std::move(bitstream_record));
 
   ScheduleDecodeBufferTaskIfNeeded();
 }
@@ -1083,7 +1091,7 @@ bool V4L2SliceVideoDecodeAccelerator::TrySetNewBistreamBuffer() {
     return false;
 
   decoder_current_bitstream_buffer_ = std::move(decoder_input_queue_.front());
-  decoder_input_queue_.pop();
+  decoder_input_queue_.pop_front();
 
   if (decoder_current_bitstream_buffer_->input_id == kFlushBufferId) {
     // This is a buffer we queued for ourselves to trigger flush at this time.
@@ -1655,7 +1663,7 @@ void V4L2SliceVideoDecodeAccelerator::FlushTask() {
     return;
 
   // Queue an empty buffer which - when reached - will trigger flush sequence.
-  decoder_input_queue_.push(std::make_unique<BitstreamBufferRef>(
+  decoder_input_queue_.push_back(std::make_unique<BitstreamBufferRef>(
       decode_client_, decode_task_runner_, nullptr, kFlushBufferId));
 
   ScheduleDecodeBufferTaskIfNeeded();
@@ -1746,7 +1754,7 @@ void V4L2SliceVideoDecodeAccelerator::ResetTask() {
   // Drop all remaining inputs.
   decoder_current_bitstream_buffer_.reset();
   while (!decoder_input_queue_.empty())
-    decoder_input_queue_.pop();
+    decoder_input_queue_.pop_front();
 
   decoder_resetting_ = true;
   NewEventPending();
@@ -2022,6 +2030,77 @@ V4L2SliceVideoDecodeAccelerator::GetSupportedProfiles() {
 
   return device->GetSupportedDecodeProfiles(
       base::size(supported_input_fourccs_), supported_input_fourccs_);
+}
+
+// base::trace_event::MemoryDumpProvider implementation.
+bool V4L2SliceVideoDecodeAccelerator::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  // OnMemoryDump() must be performed on |decoder_thread_|.
+  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+
+  // VIDIOC_OUTPUT queue's memory usage.
+  const size_t input_queue_buffers_count = input_buffer_map_.size();
+  size_t input_queue_memory_usage = 0;
+  std::string input_queue_buffers_memory_type =
+      V4L2Device::V4L2MemoryToString(V4L2_MEMORY_MMAP);
+  for (const auto& input_record : input_buffer_map_) {
+    input_queue_memory_usage += input_record.length;
+  }
+
+  // VIDIOC_CAPTURE queue's memory usage.
+  const size_t output_queue_buffers_count = output_buffer_map_.size();
+  size_t output_queue_memory_usage = 0;
+  std::string output_queue_buffers_memory_type =
+      output_mode_ == Config::OutputMode::ALLOCATE
+          ? V4L2Device::V4L2MemoryToString(V4L2_MEMORY_MMAP)
+          : V4L2Device::V4L2MemoryToString(V4L2_MEMORY_DMABUF);
+  if (output_mode_ == Config::OutputMode::ALLOCATE) {
+    // Call QUERY_BUF here because the length of buffers on VIDIOC_CATURE queue
+    // are not recorded nowhere in V4L2VideoDecodeAccelerator.
+    for (uint32_t index = 0; index < output_buffer_map_.size(); ++index) {
+      struct v4l2_buffer v4l2_buffer = {};
+      struct v4l2_plane v4l2_planes[VIDEO_MAX_PLANES];
+      DCHECK_LT(output_planes_count_, base::size(v4l2_planes));
+      v4l2_buffer.m.planes = v4l2_planes;
+      v4l2_buffer.length =
+          std::min(output_planes_count_, base::size(v4l2_planes));
+      v4l2_buffer.index = index;
+      v4l2_buffer.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
+      v4l2_buffer.memory = V4L2_MEMORY_MMAP;
+      IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYBUF, &v4l2_buffer);
+      for (size_t i = 0; i < output_planes_count_; ++i)
+        output_queue_memory_usage += v4l2_buffer.m.planes[i].length;
+    }
+  }
+
+  const size_t total_usage =
+      input_queue_memory_usage + output_queue_memory_usage;
+
+  using ::base::trace_event::MemoryAllocatorDump;
+
+  auto dump_name = base::StringPrintf("gpu/v4l2/slice_decoder/0x%" PRIxPTR,
+                                      reinterpret_cast<uintptr_t>(this));
+
+  MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
+  dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                  MemoryAllocatorDump::kUnitsBytes,
+                  static_cast<uint64_t>(total_usage));
+  dump->AddScalar("input_queue_memory_usage", MemoryAllocatorDump::kUnitsBytes,
+                  static_cast<uint64_t>(input_queue_memory_usage));
+  dump->AddScalar("input_queue_buffers_count",
+                  MemoryAllocatorDump::kUnitsObjects,
+                  static_cast<uint64_t>(input_queue_buffers_count));
+  dump->AddString("input_queue_buffers_memory_type", "",
+                  input_queue_buffers_memory_type);
+  dump->AddScalar("output_queue_memory_usage", MemoryAllocatorDump::kUnitsBytes,
+                  static_cast<uint64_t>(output_queue_memory_usage));
+  dump->AddScalar("output_queue_buffers_count",
+                  MemoryAllocatorDump::kUnitsObjects,
+                  static_cast<uint64_t>(output_queue_buffers_count));
+  dump->AddString("output_queue_buffers_memory_type", "",
+                  output_queue_buffers_memory_type);
+  return true;
 }
 
 }  // namespace media
