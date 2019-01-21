@@ -93,7 +93,11 @@ class InstrumentedGaiaCookieManagerService : public GaiaCookieManagerService {
  public:
   InstrumentedGaiaCookieManagerService(OAuth2TokenService* token_service,
                                        SigninClient* signin_client)
-      : GaiaCookieManagerService(token_service, signin_client) {
+      : GaiaCookieManagerService(
+            token_service,
+            signin_client,
+            base::BindRepeating(&SigninClient::GetURLLoaderFactory,
+                                base::Unretained(signin_client))) {
     total++;
   }
 

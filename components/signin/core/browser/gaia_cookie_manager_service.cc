@@ -420,9 +420,21 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::
 GaiaCookieManagerService::GaiaCookieManagerService(
     OAuth2TokenService* token_service,
     SigninClient* signin_client)
+    : GaiaCookieManagerService(
+          token_service,
+          signin_client,
+          base::BindRepeating(&SigninClient::GetURLLoaderFactory,
+                              base::Unretained(signin_client))) {}
+
+GaiaCookieManagerService::GaiaCookieManagerService(
+    OAuth2TokenService* token_service,
+    SigninClient* signin_client,
+    base::RepeatingCallback<scoped_refptr<network::SharedURLLoaderFactory>()>
+        shared_url_loader_factory_getter)
     : OAuth2TokenService::Consumer("gaia_cookie_manager"),
       token_service_(token_service),
       signin_client_(signin_client),
+      shared_url_loader_factory_getter_(shared_url_loader_factory_getter),
       external_cc_result_fetcher_(this),
       fetcher_backoff_(&kBackoffPolicy),
       fetcher_retries_(0),
@@ -648,7 +660,7 @@ void GaiaCookieManagerService::CancelAll() {
 
 scoped_refptr<network::SharedURLLoaderFactory>
 GaiaCookieManagerService::GetURLLoaderFactory() {
-  return signin_client_->GetURLLoaderFactory();
+  return shared_url_loader_factory_getter_.Run();
 }
 
 void GaiaCookieManagerService::OnCookieChange(
