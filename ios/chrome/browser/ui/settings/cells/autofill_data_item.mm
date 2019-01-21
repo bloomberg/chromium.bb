@@ -115,8 +115,8 @@ const CGFloat kCompressionResistanceAdditionalPriority = 1;
         constraintEqualToAnchor:contentView.leadingAnchor
                        constant:kTableViewHorizontalSpacing],
     [_textLabel.trailingAnchor
-        constraintEqualToAnchor:_trailingDetailTextLabel.leadingAnchor
-                       constant:-kTableViewHorizontalSpacing],
+        constraintLessThanOrEqualToAnchor:_trailingDetailTextLabel.leadingAnchor
+                                 constant:-kTableViewHorizontalSpacing],
     [_leadingDetailTextLabel.leadingAnchor
         constraintEqualToAnchor:_textLabel.leadingAnchor],
     [_leadingDetailTextLabel.trailingAnchor
