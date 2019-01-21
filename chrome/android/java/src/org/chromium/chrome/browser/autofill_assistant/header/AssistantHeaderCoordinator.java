@@ -31,11 +31,11 @@ public class AssistantHeaderCoordinator {
     private final Delegate mDelegate;
     private final AssistantHeaderMediator mMediator;
 
-    public AssistantHeaderCoordinator(Context context, View root, Delegate client) {
+    public AssistantHeaderCoordinator(
+            Context context, View root, AssistantHeaderModel model, Delegate client) {
         mDelegate = client;
 
         // Bind view and mediator through the model.
-        AssistantHeaderModel model = new AssistantHeaderModel();
         AssistantHeaderViewBinder.ViewHolder viewHolder =
                 new AssistantHeaderViewBinder.ViewHolder(context, root);
         AssistantHeaderViewBinder viewBinder = new AssistantHeaderViewBinder();
@@ -46,6 +46,9 @@ public class AssistantHeaderCoordinator {
         viewHolder.mFeedbackButton.setOnClickListener(unusedView -> mDelegate.onFeedbackClicked());
         viewHolder.mCloseButton.setOnClickListener(unusedView -> mDelegate.onCloseClicked());
     }
+
+    // TODO(crbug.com/806868): Remove all methods here and delete mediator once UI is modified only
+    // in native side.
 
     /**
      * Get the current status message.
@@ -73,14 +76,6 @@ public class AssistantHeaderCoordinator {
      */
     public void setCloseButtonVisible(boolean visible) {
         mMediator.setCloseButtonVisible(visible);
-    }
-
-    /**
-     * Set the progress bar value to {@code progress}. If it is smaller than a previously set
-     * progress, do nothing.
-     */
-    public void setProgress(int progress) {
-        mMediator.setProgress(progress);
     }
 
     /**

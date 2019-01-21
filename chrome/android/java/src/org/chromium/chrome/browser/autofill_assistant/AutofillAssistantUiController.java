@@ -33,6 +33,8 @@ import java.util.List;
  * different Java coordinators.
  */
 @JNINamespace("autofill_assistant")
+// TODO(crbug.com/806868): This class should be removed once all logic is in native side and the
+// model is directly modified by the native AssistantMediator.
 class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     private long mNativeUiController;
 
@@ -114,6 +116,11 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     // is to avoid boilerplate.
 
     @CalledByNative
+    private AssistantModel getModel() {
+        return mCoordinator.getModel();
+    }
+
+    @CalledByNative
     private void clearNativePtr() {
         mNativeUiController = 0;
     }
@@ -124,28 +131,13 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
 
     @CalledByNative
-    private void onShowStatusMessage(String message) {
-        mCoordinator.showStatusMessage(message);
-    }
-
-    @CalledByNative
-    private String onGetStatusMessage() {
-        return mCoordinator.getHeaderCoordinator().getStatusMessage();
-    }
-
-    @CalledByNative
     private void onHideOverlay() {
         mCoordinator.getOverlayCoordinator().hide();
-
-        // Hiding the overlay generally means that the user is expected to interact with the page,
-        // so we enable progress bar pulsing animation.
-        mCoordinator.getHeaderCoordinator().enableProgressBarPulsing();
     }
 
     @CalledByNative
     private void onShowOverlay() {
         mCoordinator.getOverlayCoordinator().showFullOverlay();
-        mCoordinator.getHeaderCoordinator().disableProgressBarPulsing();
     }
 
     @CalledByNative
@@ -156,7 +148,6 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
                     /* right= */ coords[i + 2], /* bottom= */ coords[i + 3]));
         }
         mCoordinator.getOverlayCoordinator().showPartialOverlay(enabled, boxes);
-        mCoordinator.getHeaderCoordinator().enableProgressBarPulsing();
     }
 
     @CalledByNative
@@ -211,7 +202,6 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         paymentOptions.shippingType = shippingType;
 
         mCoordinator.getBottomBarCoordinator().allowSwipingBottomSheet(false);
-        mCoordinator.getHeaderCoordinator().enableProgressBarPulsing();
         mCoordinator.getPaymentRequestCoordinator()
                 .reset(paymentOptions, supportedBasicCardNetworks, defaultEmail)
                 .then(this::onRequestPaymentInformationSuccess,
@@ -221,7 +211,6 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     private void onRequestPaymentInformationSuccess(
             SelectedPaymentInformation selectedInformation) {
         mCoordinator.getBottomBarCoordinator().allowSwipingBottomSheet(true);
-        mCoordinator.getHeaderCoordinator().disableProgressBarPulsing();
         safeNativeOnGetPaymentInformation(/* succeed= */ true, selectedInformation.card,
                 selectedInformation.address, selectedInformation.payerName,
                 selectedInformation.payerPhone, selectedInformation.payerEmail,
@@ -266,17 +255,6 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
                         /* showPlaceholdersForEmptyFields= */ false))
                 .then(this::safeNativeOnShowDetails,
                         ignoredException -> safeNativeOnShowDetails(/* canContinue= */ false));
-    }
-
-    @CalledByNative
-    private void onShowProgressBar(int progress, String message) {
-        mCoordinator.getHeaderCoordinator().setStatusMessage(message);
-        mCoordinator.getHeaderCoordinator().setProgress(progress);
-    }
-
-    @CalledByNative
-    private void onHideProgressBar() {
-        // TODO(crbug.com/806868): Either implement this or remove it from C++ bindings.
     }
 
     @CalledByNative

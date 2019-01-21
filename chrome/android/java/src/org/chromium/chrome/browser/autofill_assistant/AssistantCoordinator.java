@@ -61,6 +61,7 @@ class AssistantCoordinator
     private final ChromeActivity mActivity;
     private final Delegate mDelegate;
 
+    private final AssistantModel mModel;
     private final View mAssistantView;
 
     private final AssistantBottomBarCoordinator mBottomBarCoordinator;
@@ -76,6 +77,7 @@ class AssistantCoordinator
     AssistantCoordinator(ChromeActivity activity, Delegate delegate) {
         mActivity = activity;
         mDelegate = delegate;
+        mModel = new AssistantModel();
 
         // Inflate autofill_assistant_sheet layout and add it to the main coordinator view.
         ViewGroup coordinator = activity.findViewById(R.id.coordinator);
@@ -86,8 +88,8 @@ class AssistantCoordinator
         // Instantiate child components.
         mBottomBarCoordinator = new AssistantBottomBarCoordinator(
                 mAssistantView, mActivity.getResources().getDisplayMetrics());
-        mHeaderCoordinator =
-                new AssistantHeaderCoordinator(mActivity, mBottomBarCoordinator.getView(), this);
+        mHeaderCoordinator = new AssistantHeaderCoordinator(
+                mActivity, mBottomBarCoordinator.getView(), mModel.getHeaderModel(), this);
         mCarouselCoordinator = new AssistantCarouselCoordinator(
                 mActivity, mBottomBarCoordinator::onChildVisibilityChanged);
         mDetailsCoordinator = new AssistantDetailsCoordinator(
@@ -232,6 +234,14 @@ class AssistantCoordinator
         if (!mIsShuttingDownGracefully) {
             mHeaderCoordinator.setStatusMessage(message);
         }
+    }
+
+    /**
+     * Get the model representing the current state of the UI.
+     */
+
+    public AssistantModel getModel() {
+        return mModel;
     }
 
     // Getters to retrieve the sub coordinators.
