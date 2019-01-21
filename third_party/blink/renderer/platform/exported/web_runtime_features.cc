@@ -356,6 +356,10 @@ bool WebRuntimeFeatures::IsSlimmingPaintV2Enabled() {
   return RuntimeEnabledFeatures::SlimmingPaintV2Enabled();
 }
 
+void WebRuntimeFeatures::EnableUserActivationSameOriginVisibility(bool enable) {
+  RuntimeEnabledFeatures::SetUserActivationSameOriginVisibilityEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableUserActivationV2(bool enable) {
   RuntimeEnabledFeatures::SetUserActivationV2Enabled(enable);
 }

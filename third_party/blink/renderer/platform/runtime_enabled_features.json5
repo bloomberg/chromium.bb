@@ -1280,6 +1280,9 @@
       status: "stable",
     },
     {
+      name: "UserActivationSameOriginVisibility",
+    },
+    {
       name: "UserActivationV2",
     },
     {
