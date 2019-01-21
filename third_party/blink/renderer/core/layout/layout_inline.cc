@@ -437,6 +437,8 @@ void LayoutInline::UpdateShouldCreateBoxFragment() {
 
   if (ComputeInitialShouldCreateBoxFragment()) {
     SetShouldCreateBoxFragment();
+    SetNeedsLayoutAndFullPaintInvalidation(
+        layout_invalidation_reason::kStyleChange);
   }
 }
 
