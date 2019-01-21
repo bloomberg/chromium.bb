@@ -16,7 +16,7 @@ Polymer({
   getDeviceManagementStatus_: function() {
     this.browserProxy_.getDeviceManagementStatus()
         .then(managedString => {
-          this.$.managementStatus.textContent = managedString;
+          this.$.managementStatusInfo.firstChild.data = managedString + ' ';
           this.$.managementStatus.hidden = false;
         })
         .catch(

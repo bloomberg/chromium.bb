@@ -445,7 +445,10 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
-
+#if defined(OS_CHROMEOS)
+  html_source->AddString("managementLearnMoreUrl",
+                         chrome::kManagedUiLearnMoreUrl);
+#endif
   html_source->AddString(
       "aboutUpgradeUpToDate",
 #if defined(OS_CHROMEOS)
