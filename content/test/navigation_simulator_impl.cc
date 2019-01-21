@@ -264,7 +264,7 @@ NavigationSimulatorImpl::CreateFromPendingBrowserInitiated(
   // Simulate the BeforeUnload ACK if needed.
   NavigationRequest* request =
       test_frame_host->frame_tree_node()->navigation_request();
-  DCHECK(request);
+  CHECK(request);
   if (request->state() == NavigationRequest::WAITING_FOR_RENDERER_RESPONSE)
     test_frame_host->SendBeforeUnloadACK(true /*proceed */);
 
@@ -325,12 +325,12 @@ NavigationSimulatorImpl::~NavigationSimulatorImpl() {}
 void NavigationSimulatorImpl::InitializeFromStartedRequest(
     NavigationRequest* request) {
   NavigationHandle* handle = request->navigation_handle();
-  DCHECK(handle);
-  DCHECK_EQ(NavigationRequest::STARTED, request->state());
+  CHECK(handle);
+  CHECK_EQ(NavigationRequest::STARTED, request->state());
   state_ = STARTED;
-  DCHECK_EQ(web_contents_, handle->GetWebContents());
-  DCHECK(render_frame_host_);
-  DCHECK_EQ(frame_tree_node_, request->frame_tree_node());
+  CHECK_EQ(web_contents_, handle->GetWebContents());
+  CHECK(render_frame_host_);
+  CHECK_EQ(frame_tree_node_, request->frame_tree_node());
   handle_ = static_cast<NavigationHandleImpl*>(handle);
   navigation_url_ = handle->GetURL();
   // |socket_address_| cannot be inferred from the request.
@@ -599,12 +599,12 @@ void NavigationSimulatorImpl::FailWithResponseHeaders(
   CHECK_EQ(0, num_did_finish_navigation_called_)
       << "NavigationSimulatorImpl::Fail cannot be called after the "
          "navigation has finished";
-  DCHECK(!IsRendererDebugURL(navigation_url_));
+  CHECK(!IsRendererDebugURL(navigation_url_));
 
   if (state_ == INITIALIZATION)
     Start();
 
-  DCHECK(!handle_->GetResponseHeaders());
+  CHECK(!handle_->GetResponseHeaders());
   static_cast<NavigationHandleImpl*>(handle_)->set_response_headers_for_testing(
       response_headers);
 
@@ -926,8 +926,8 @@ bool NavigationSimulatorImpl::SimulateBrowserInitiatedStart() {
       // We don't create NavigationRequests nor NavigationHandles for a
       // navigation to a renderer-debug URL. Instead, the URL is passed to the
       // current RenderFrameHost so that the renderer process can handle it.
-      DCHECK(!handle_);
-      DCHECK(web_contents_->GetMainFrame()->is_loading());
+      CHECK(!handle_);
+      CHECK(web_contents_->GetMainFrame()->is_loading());
 
       // A navigation to a renderer-debug URL cannot commit. Simulate the
       // renderer process aborting it.
@@ -939,21 +939,21 @@ bool NavigationSimulatorImpl::SimulateBrowserInitiatedStart() {
     } else if (handle_ &&
                web_contents_->GetMainFrame()->GetNavigationHandle() ==
                    handle_) {
-      DCHECK(!IsURLHandledByNetworkStack(handle_->GetURL()));
+      CHECK(!IsURLHandledByNetworkStack(handle_->GetURL()));
       return true;
     } else if (web_contents_->GetMainFrame()
                    ->same_document_navigation_request() &&
                web_contents_->GetMainFrame()
                        ->same_document_navigation_request()
                        ->navigation_handle() == handle_) {
-      DCHECK(handle_->IsSameDocument());
+      CHECK(handle_->IsSameDocument());
       same_document_ = true;
       return true;
     }
     return false;
   }
 
-  DCHECK_EQ(handle_, request->navigation_handle());
+  CHECK_EQ(handle_, request->navigation_handle());
   return true;
 }
 
@@ -1002,7 +1002,7 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
   if (!request)
     return false;
 
-  DCHECK_EQ(handle_, request->navigation_handle());
+  CHECK_EQ(handle_, request->navigation_handle());
   return true;
 }
 
@@ -1021,7 +1021,7 @@ void NavigationSimulatorImpl::MaybeWaitForThrottleChecksComplete(
 }
 
 void NavigationSimulatorImpl::Wait() {
-  DCHECK(!wait_closure_);
+  CHECK(!wait_closure_);
   if (!IsDeferred())
     return;
   base::RunLoop run_loop;
@@ -1031,7 +1031,7 @@ void NavigationSimulatorImpl::Wait() {
 
 void NavigationSimulatorImpl::OnThrottleChecksComplete(
     NavigationThrottle::ThrottleCheckResult result) {
-  DCHECK(!last_throttle_check_result_);
+  CHECK(!last_throttle_check_result_);
   last_throttle_check_result_ = result;
   if (wait_closure_)
     std::move(wait_closure_).Run();
@@ -1040,7 +1040,7 @@ void NavigationSimulatorImpl::OnThrottleChecksComplete(
 }
 
 void NavigationSimulatorImpl::PrepareCompleteCallbackOnHandle() {
-  DCHECK(handle_);
+  CHECK(handle_);
   last_throttle_check_result_.reset();
   handle_->set_complete_callback_for_testing(
       base::BindOnce(&NavigationSimulatorImpl::OnThrottleChecksComplete,
