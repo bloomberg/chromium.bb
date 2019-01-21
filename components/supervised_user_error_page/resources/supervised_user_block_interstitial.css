@@ -138,12 +138,13 @@ html {
   content: -webkit-image-set(
       url(default_100_percent/logo_avatar_circle_blue_color.png) 1x,
       url(default_200_percent/logo_avatar_circle_blue_color.png) 2x);
+  height: 45px;
   margin-bottom: 5px;
   margin-right: 15px;
   margin-top: 5px;
-  max-width: 45px;
   position: relative;
   user-select: none;
+  width: 45px;
 }
 
 #feedback {
