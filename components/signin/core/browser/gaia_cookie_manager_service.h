@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -215,6 +216,20 @@ class GaiaCookieManagerService : public KeyedService,
 
   GaiaCookieManagerService(OAuth2TokenService* token_service,
                            SigninClient* signin_client);
+
+  // Creates a GaiaCookieManagerService that uses the provided
+  // |shared_url_loader_factory_getter| to determine the SharedUrlLoaderFactory
+  // used for cookie-related requests.
+  // Note: SharedUrlLoaderFactory is passed via callback, so that if the
+  // callback has side-effects (e.g. network initialization), they do not occur
+  // until the first time GaiaCookieManagerService::GetSharedUrlLoaderFactory is
+  // called.
+  GaiaCookieManagerService(
+      OAuth2TokenService* token_service,
+      SigninClient* signin_client,
+      base::RepeatingCallback<scoped_refptr<network::SharedURLLoaderFactory>()>
+          shared_url_loader_factory_getter);
+
   ~GaiaCookieManagerService() override;
 
   void InitCookieListener();
@@ -289,8 +304,7 @@ class GaiaCookieManagerService : public KeyedService,
   // Returns a non-NULL pointer to its instance of net::BackoffEntry
   const net::BackoffEntry* GetBackoffEntry() { return &fetcher_backoff_; }
 
-  // Can be overridden by tests.
-  virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
 
   // Ubertoken fetch completion callback. Called by unittests directly.
   void OnUbertokenFetchComplete(GoogleServiceAuthError error,
@@ -387,6 +401,9 @@ class GaiaCookieManagerService : public KeyedService,
 
   OAuth2TokenService* token_service_;
   SigninClient* signin_client_;
+
+  base::RepeatingCallback<scoped_refptr<network::SharedURLLoaderFactory>()>
+      shared_url_loader_factory_getter_;
   std::unique_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
   std::unique_ptr<signin::UbertokenFetcherImpl> uber_token_fetcher_;
   ExternalCcResultFetcher external_cc_result_fetcher_;

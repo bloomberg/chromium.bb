@@ -15,13 +15,17 @@
 
 namespace network {
 class WeakWrapperSharedURLLoaderFactory;
-}  // namespace network
+}
 
 class FakeGaiaCookieManagerService : public GaiaCookieManagerService {
  public:
+  // Convenience constructor overload which uses the SharedURLLoaderFactory from
+  // SigninClient.
   FakeGaiaCookieManagerService(OAuth2TokenService* token_service,
                                SigninClient* client);
 
+  // Constructor overload for tests that want to use a TestURLLoaderFactory for
+  // cookie related requests.
   FakeGaiaCookieManagerService(
       OAuth2TokenService* token_service,
       SigninClient* client,
@@ -46,7 +50,13 @@ class FakeGaiaCookieManagerService : public GaiaCookieManagerService {
                                           const std::string& gaia_id2);
 
  private:
-  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
+  // Internal constructor which does the actual construction.
+  FakeGaiaCookieManagerService(
+      OAuth2TokenService* token_service,
+      SigninClient* client,
+      network::TestURLLoaderFactory* test_url_loader_factory,
+      scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+          shared_url_loader_factory);
 
   // Provides a fake response for calls to /ListAccounts.
   // Owned by the client if passed in via the constructor that takes in this
@@ -54,7 +64,7 @@ class FakeGaiaCookieManagerService : public GaiaCookieManagerService {
   network::TestURLLoaderFactory* test_url_loader_factory_ = nullptr;
 
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
-      shared_loader_factory_;
+      shared_url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGaiaCookieManagerService);
 };
