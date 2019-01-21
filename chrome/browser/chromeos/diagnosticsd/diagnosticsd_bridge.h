@@ -6,13 +6,21 @@
 #define CHROME_BROWSER_CHROMEOS_DIAGNOSTICSD_DIAGNOSTICSD_BRIDGE_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/diagnosticsd/diagnosticsd_web_request_service.h"
 #include "chrome/services/diagnosticsd/public/mojom/diagnosticsd.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/system/buffer.h"
+
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace chromeos {
 
@@ -45,9 +53,12 @@ class DiagnosticsdBridge final
   static base::TimeDelta connection_attempt_interval_for_testing();
   static int max_connection_attempt_count_for_testing();
 
-  DiagnosticsdBridge();
+  explicit DiagnosticsdBridge(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   // For use in tests.
-  explicit DiagnosticsdBridge(std::unique_ptr<Delegate> delegate);
+  DiagnosticsdBridge(
+      std::unique_ptr<Delegate> delegate,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   ~DiagnosticsdBridge() override;
 
@@ -80,6 +91,14 @@ class DiagnosticsdBridge final
   // Called when Mojo signals a connection error.
   void OnMojoConnectionError();
 
+  // diagnosticsd::mojom::DiagnosticsdClient overrides.
+  void PerformWebRequest(
+      diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod http_method,
+      mojo::ScopedHandle url,
+      std::vector<mojo::ScopedHandle> headers,
+      mojo::ScopedHandle request_body,
+      PerformWebRequestCallback callback) override;
+
   std::unique_ptr<Delegate> delegate_;
 
   // Mojo binding that binds |this| as an implementation of the
@@ -94,6 +113,9 @@ class DiagnosticsdBridge final
   diagnosticsd::mojom::DiagnosticsdServiceFactoryPtr
       diagnosticsd_service_factory_mojo_ptr_;
   diagnosticsd::mojom::DiagnosticsdServicePtr diagnosticsd_service_mojo_ptr_;
+
+  // The service to perform diagnostics_processor's web requests.
+  DiagnosticsdWebRequestService web_request_service_;
 
   // These weak pointer factories must be the last members:
 

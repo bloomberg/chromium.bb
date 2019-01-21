@@ -658,7 +658,9 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
 
   discover_manager_ = std::make_unique<DiscoverManager>();
 
-  diagnosticsd_bridge_ = std::make_unique<DiagnosticsdBridge>();
+  diagnosticsd_bridge_ = std::make_unique<DiagnosticsdBridge>(
+      g_browser_process->system_network_context_manager()
+          ->GetSharedURLLoaderFactory());
 
   ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
 }

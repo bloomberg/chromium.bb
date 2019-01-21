@@ -9,8 +9,11 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/shared_memory.h"
 #include "base/process/process_handle.h"
+#include "base/strings/string_piece.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/chromeos/diagnosticsd/mojo_utils.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/diagnosticsd_client.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
@@ -19,6 +22,7 @@
 #include "mojo/public/cpp/platform/platform_handle.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/cros_system_api/dbus/diagnosticsd/dbus-constants.h"
 
 namespace chromeos {
@@ -96,11 +100,16 @@ int DiagnosticsdBridge::max_connection_attempt_count_for_testing() {
   return kMaxConnectionAttemptCount;
 }
 
-DiagnosticsdBridge::DiagnosticsdBridge()
-    : DiagnosticsdBridge(std::make_unique<DiagnosticsdBridgeDelegateImpl>()) {}
+DiagnosticsdBridge::DiagnosticsdBridge(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    : DiagnosticsdBridge(std::make_unique<DiagnosticsdBridgeDelegateImpl>(),
+                         std::move(url_loader_factory)) {}
 
-DiagnosticsdBridge::DiagnosticsdBridge(std::unique_ptr<Delegate> delegate)
-    : delegate_(std::move(delegate)) {
+DiagnosticsdBridge::DiagnosticsdBridge(
+    std::unique_ptr<Delegate> delegate,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    : delegate_(std::move(delegate)),
+      web_request_service_(std::move(url_loader_factory)) {
   DCHECK(delegate_);
   DCHECK(!g_diagnosticsd_bridge_instance);
   g_diagnosticsd_bridge_instance = this;
@@ -210,6 +219,66 @@ void DiagnosticsdBridge::OnMojoConnectionError() {
   diagnosticsd_service_factory_mojo_ptr_.reset();
   diagnosticsd_service_mojo_ptr_.reset();
   ScheduleWaitingForDBusService();
+}
+
+void DiagnosticsdBridge::PerformWebRequest(
+    diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod http_method,
+    mojo::ScopedHandle url,
+    std::vector<mojo::ScopedHandle> headers,
+    mojo::ScopedHandle request_body,
+    PerformWebRequestCallback callback) {
+  // Extract a GURL value from a ScopedHandle.
+  GURL gurl;
+  if (url.is_valid()) {
+    std::unique_ptr<base::SharedMemory> shared_memory;
+    gurl = GURL(GetStringPieceFromMojoHandle(std::move(url), &shared_memory));
+    if (!shared_memory) {
+      LOG(ERROR) << "Failed to read data from mojo handle";
+      std::move(callback).Run(
+          diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kNetworkError,
+          0 /* http_status */, mojo::ScopedHandle() /* response_body */);
+      return;
+    }
+  }
+
+  // Extract headers from ScopedHandle's.
+  std::vector<base::StringPiece> header_contents;
+  std::vector<std::unique_ptr<base::SharedMemory>> shared_memories;
+  for (auto& header : headers) {
+    if (!header.is_valid()) {
+      header_contents.push_back("");
+      continue;
+    }
+    shared_memories.push_back(nullptr);
+    header_contents.push_back(GetStringPieceFromMojoHandle(
+        std::move(header), &shared_memories.back()));
+    if (!shared_memories.back()) {
+      LOG(ERROR) << "Failed to read data from mojo handle";
+      std::move(callback).Run(
+          diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kNetworkError,
+          0 /* http_status */, mojo::ScopedHandle() /* response_body */);
+      return;
+    }
+  }
+
+  // Extract a string value from a ScopedHandle.
+  std::string request_body_content;
+  if (request_body.is_valid()) {
+    std::unique_ptr<base::SharedMemory> shared_memory;
+    request_body_content = std::string(
+        GetStringPieceFromMojoHandle(std::move(request_body), &shared_memory));
+    if (!shared_memory) {
+      LOG(ERROR) << "Failed to read data from mojo handle";
+      std::move(callback).Run(
+          diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kNetworkError,
+          0 /* http_status */, mojo::ScopedHandle() /* response_body */);
+      return;
+    }
+  }
+
+  web_request_service_.PerformRequest(
+      http_method, std::move(gurl), std::move(header_contents),
+      std::move(request_body_content), std::move(callback));
 }
 
 }  // namespace chromeos
