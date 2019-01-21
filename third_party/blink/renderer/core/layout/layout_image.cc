@@ -58,10 +58,13 @@ bool CheckForOptimizedImagePolicy(const Document& document,
   // Render the image as a placeholder image if the document does not have the
   // 'legacy-image-formats' feature enabled, and the image is not one of the
   // allowed formats.
-  if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
-      !document.IsFeatureEnabled(
-          mojom::FeaturePolicyFeature::kLegacyImageFormats)) {
-    if (!new_image->IsAcceptableContentType()) {
+  if (!new_image->IsAcceptableContentType()) {
+    document.CountPotentialFeaturePolicyViolation(
+        mojom::FeaturePolicyFeature::kLegacyImageFormats);
+    if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
+        !document.IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kLegacyImageFormats,
+            ReportOptions::kReportOnFailure)) {
       return true;
     }
   }
