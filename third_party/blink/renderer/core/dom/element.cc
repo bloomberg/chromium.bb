@@ -3665,7 +3665,7 @@ void Element::insertAdjacentHTML(const String& where,
   }
 }
 
-void Element::setPointerCapture(int pointer_id,
+void Element::setPointerCapture(PointerId pointer_id,
                                 ExceptionState& exception_state) {
   if (GetDocument().GetFrame()) {
     if (!GetDocument().GetFrame()->GetEventHandler().IsPointerEventActive(
@@ -3687,7 +3687,7 @@ void Element::setPointerCapture(int pointer_id,
   }
 }
 
-void Element::releasePointerCapture(int pointer_id,
+void Element::releasePointerCapture(PointerId pointer_id,
                                     ExceptionState& exception_state) {
   if (GetDocument().GetFrame()) {
     if (!GetDocument().GetFrame()->GetEventHandler().IsPointerEventActive(
@@ -3702,7 +3702,7 @@ void Element::releasePointerCapture(int pointer_id,
   }
 }
 
-bool Element::hasPointerCapture(int pointer_id) const {
+bool Element::hasPointerCapture(PointerId pointer_id) const {
   return GetDocument().GetFrame() &&
          GetDocument().GetFrame()->GetEventHandler().HasPointerCapture(
              pointer_id, this);

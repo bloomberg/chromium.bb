@@ -181,10 +181,10 @@ HeapVector<Member<PointerEvent>> PointerEventFactory::CreateEventSequence(
   return result;
 }
 
-const int PointerEventFactory::kInvalidId = 0;
+const PointerId PointerEventFactory::kInvalidId = 0;
 
 // Mouse id is 1 to behave the same as MS Edge for compatibility reasons.
-const int PointerEventFactory::kMouseId = 1;
+const PointerId PointerEventFactory::kMouseId = 1;
 
 PointerEventInit* PointerEventFactory::ConvertIdTypeButtonsEvent(
     const WebPointerEvent& web_pointer_event) {
@@ -220,8 +220,8 @@ PointerEventInit* PointerEventFactory::ConvertIdTypeButtonsEvent(
   pointer_event_init->setButtons(buttons);
 
   const IncomingId incoming_id(pointer_type, web_pointer_event.id);
-  int pointer_id = AddIdAndActiveButtons(incoming_id, buttons != 0,
-                                         web_pointer_event.hovering);
+  PointerId pointer_id = AddIdAndActiveButtons(incoming_id, buttons != 0,
+                                               web_pointer_event.hovering);
   pointer_event_init->setPointerId(pointer_id);
   pointer_event_init->setPointerType(
       PointerTypeNameForWebPointPointerType(pointer_type));
@@ -460,9 +460,9 @@ void PointerEventFactory::Clear() {
   current_id_ = PointerEventFactory::kMouseId + 1;
 }
 
-int PointerEventFactory::AddIdAndActiveButtons(const IncomingId p,
-                                               bool is_active_buttons,
-                                               bool hovering) {
+PointerId PointerEventFactory::AddIdAndActiveButtons(const IncomingId p,
+                                                     bool is_active_buttons,
+                                                     bool hovering) {
   // Do not add extra mouse pointer as it was added in initialization
   if (p.GetPointerType() == WebPointerProperties::PointerType::kMouse) {
     pointer_id_mapping_.Set(kMouseId,
@@ -471,14 +471,14 @@ int PointerEventFactory::AddIdAndActiveButtons(const IncomingId p,
   }
 
   if (pointer_incoming_id_mapping_.Contains(p)) {
-    int mapped_id = pointer_incoming_id_mapping_.at(p);
+    PointerId mapped_id = pointer_incoming_id_mapping_.at(p);
     pointer_id_mapping_.Set(mapped_id,
                             PointerAttributes(p, is_active_buttons, hovering));
     return mapped_id;
   }
   int type_int = p.PointerTypeInt();
   // We do not handle the overflow of m_currentId as it should be very rare
-  int mapped_id = current_id_++;
+  PointerId mapped_id = current_id_++;
   if (!id_count_[type_int])
     primary_id_[type_int] = mapped_id;
   id_count_[type_int]++;
@@ -488,7 +488,7 @@ int PointerEventFactory::AddIdAndActiveButtons(const IncomingId p,
   return mapped_id;
 }
 
-bool PointerEventFactory::Remove(const int mapped_id) {
+bool PointerEventFactory::Remove(const PointerId mapped_id) {
   // Do not remove mouse pointer id as it should always be there
   if (mapped_id == kMouseId || !pointer_id_mapping_.Contains(mapped_id))
     return false;
@@ -504,12 +504,13 @@ bool PointerEventFactory::Remove(const int mapped_id) {
   return true;
 }
 
-Vector<int> PointerEventFactory::GetPointerIdsOfNonHoveringPointers() const {
-  Vector<int> mapped_ids;
+Vector<PointerId> PointerEventFactory::GetPointerIdsOfNonHoveringPointers()
+    const {
+  Vector<PointerId> mapped_ids;
 
   for (auto iter = pointer_id_mapping_.begin();
        iter != pointer_id_mapping_.end(); ++iter) {
-    int mapped_id = iter->key;
+    PointerId mapped_id = iter->key;
     if (!iter->value.hovering)
       mapped_ids.push_back(mapped_id);
   }
@@ -519,7 +520,7 @@ Vector<int> PointerEventFactory::GetPointerIdsOfNonHoveringPointers() const {
   return mapped_ids;
 }
 
-bool PointerEventFactory::IsPrimary(int mapped_id) const {
+bool PointerEventFactory::IsPrimary(PointerId mapped_id) const {
   if (!pointer_id_mapping_.Contains(mapped_id))
     return false;
 
@@ -527,7 +528,7 @@ bool PointerEventFactory::IsPrimary(int mapped_id) const {
   return primary_id_[p.PointerTypeInt()] == mapped_id;
 }
 
-bool PointerEventFactory::IsActive(const int pointer_id) const {
+bool PointerEventFactory::IsActive(const PointerId pointer_id) const {
   return pointer_id_mapping_.Contains(pointer_id);
 }
 
@@ -542,24 +543,25 @@ bool PointerEventFactory::IsPrimary(
   if (!id_count_[static_cast<int>(properties.pointer_type)])
     return true;
 
-  int pointer_id = GetPointerEventId(properties);
+  PointerId pointer_id = GetPointerEventId(properties);
   return (pointer_id != PointerEventFactory::kInvalidId &&
           IsPrimary(pointer_id));
 }
 
-bool PointerEventFactory::IsActiveButtonsState(const int pointer_id) const {
+bool PointerEventFactory::IsActiveButtonsState(
+    const PointerId pointer_id) const {
   return pointer_id_mapping_.Contains(pointer_id) &&
          pointer_id_mapping_.at(pointer_id).is_active_buttons;
 }
 
 WebPointerProperties::PointerType PointerEventFactory::GetPointerType(
-    int pointer_id) const {
+    PointerId pointer_id) const {
   if (!IsActive(pointer_id))
     return WebPointerProperties::PointerType::kUnknown;
   return pointer_id_mapping_.at(pointer_id).incoming_id.GetPointerType();
 }
 
-int PointerEventFactory::GetPointerEventId(
+PointerId PointerEventFactory::GetPointerEventId(
     const WebPointerProperties& properties) const {
   if (properties.pointer_type == WebPointerProperties::PointerType::kMouse)
     return PointerEventFactory::kMouseId;

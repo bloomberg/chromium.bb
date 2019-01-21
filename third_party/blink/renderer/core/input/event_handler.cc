@@ -1248,7 +1248,7 @@ Element* EventHandler::EffectiveMouseEventTargetElement(
   return new_element_under_mouse;
 }
 
-bool EventHandler::IsTouchPointerIdActiveOnFrame(int pointer_id,
+bool EventHandler::IsTouchPointerIdActiveOnFrame(PointerId pointer_id,
                                                  LocalFrame* frame) const {
   DCHECK_EQ(frame_, &frame_->LocalFrameRoot());
   return pointer_event_manager_->IsTouchPointerIdActiveOnFrame(pointer_id,
@@ -1256,19 +1256,19 @@ bool EventHandler::IsTouchPointerIdActiveOnFrame(int pointer_id,
 }
 
 bool EventHandler::RootFrameTouchPointerActiveInCurrentFrame(
-    int pointer_id) const {
+    PointerId pointer_id) const {
   return frame_ != &frame_->LocalFrameRoot() &&
          frame_->LocalFrameRoot()
              .GetEventHandler()
              .IsTouchPointerIdActiveOnFrame(pointer_id, frame_);
 }
 
-bool EventHandler::IsPointerEventActive(int pointer_id) {
+bool EventHandler::IsPointerEventActive(PointerId pointer_id) {
   return pointer_event_manager_->IsActive(pointer_id) ||
          RootFrameTouchPointerActiveInCurrentFrame(pointer_id);
 }
 
-void EventHandler::SetPointerCapture(int pointer_id, Element* target) {
+void EventHandler::SetPointerCapture(PointerId pointer_id, Element* target) {
   // TODO(crbug.com/591387): This functionality should be per page not per
   // frame.
   if (RootFrameTouchPointerActiveInCurrentFrame(pointer_id)) {
@@ -1279,7 +1279,8 @@ void EventHandler::SetPointerCapture(int pointer_id, Element* target) {
   }
 }
 
-void EventHandler::ReleasePointerCapture(int pointer_id, Element* target) {
+void EventHandler::ReleasePointerCapture(PointerId pointer_id,
+                                         Element* target) {
   if (RootFrameTouchPointerActiveInCurrentFrame(pointer_id)) {
     frame_->LocalFrameRoot().GetEventHandler().ReleasePointerCapture(pointer_id,
                                                                      target);
@@ -1292,7 +1293,7 @@ void EventHandler::ReleaseMousePointerCapture() {
   pointer_event_manager_->ReleaseMousePointerCapture();
 }
 
-bool EventHandler::HasPointerCapture(int pointer_id,
+bool EventHandler::HasPointerCapture(PointerId pointer_id,
                                      const Element* target) const {
   if (RootFrameTouchPointerActiveInCurrentFrame(pointer_id)) {
     return frame_->LocalFrameRoot().GetEventHandler().HasPointerCapture(

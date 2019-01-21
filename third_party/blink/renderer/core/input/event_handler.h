@@ -218,12 +218,12 @@ class CORE_EXPORT EventHandler final
       WebMenuSourceType = kMenuSourceNone);
 
   // Returns whether pointerId is active or not
-  bool IsPointerEventActive(int);
+  bool IsPointerEventActive(PointerId);
 
-  void SetPointerCapture(int, Element*);
-  void ReleasePointerCapture(int, Element*);
+  void SetPointerCapture(PointerId, Element*);
+  void ReleasePointerCapture(PointerId, Element*);
   void ReleaseMousePointerCapture();
-  bool HasPointerCapture(int, const Element*) const;
+  bool HasPointerCapture(PointerId, const Element*) const;
   void ProcessPendingPointerCaptureForPointerLock(const WebMouseEvent&);
 
   void ElementRemoved(Element*);
@@ -272,7 +272,7 @@ class CORE_EXPORT EventHandler final
                      ScrollGranularity,
                      Node* start_node = nullptr);
 
-  bool IsTouchPointerIdActiveOnFrame(int, LocalFrame*) const;
+  bool IsTouchPointerIdActiveOnFrame(PointerId, LocalFrame*) const;
 
   // Clears drag target and related states. It is called when drag is done or
   // canceled.
@@ -395,7 +395,7 @@ class CORE_EXPORT EventHandler final
 
   bool ShouldBrowserControlsConsumeScroll(FloatSize) const;
 
-  bool RootFrameTouchPointerActiveInCurrentFrame(int pointer_id) const;
+  bool RootFrameTouchPointerActiveInCurrentFrame(PointerId pointer_id) const;
 
   void CaptureMouseEventsToWidget(bool);
 
