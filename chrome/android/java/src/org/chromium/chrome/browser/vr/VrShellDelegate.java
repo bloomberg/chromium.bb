@@ -656,6 +656,16 @@ public class VrShellDelegate
         if (isInVr()) outState.putBoolean(IN_VR, true);
     }
 
+    public static void initAfterModuleInstall() {
+        if (!LibraryLoader.getInstance().isInitialized()) return;
+        onNativeLibraryAvailable();
+        Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
+        if (activity instanceof ChromeActivity
+                && ApplicationStatus.getStateForActivity(activity) == ActivityState.RESUMED) {
+            maybeRegisterVrEntryHook((ChromeActivity) activity);
+        }
+    }
+
     /**
      * @return A Daydream Api instance, for interacting with Daydream platform features.
      */

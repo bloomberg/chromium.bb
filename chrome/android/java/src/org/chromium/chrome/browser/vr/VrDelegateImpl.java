@@ -150,4 +150,9 @@ import org.chromium.chrome.browser.ChromeActivity;
     protected boolean expectedDensityChange() {
         return VrShellDelegate.expectedDensityChange();
     }
+
+    @Override
+    public void initAfterModuleInstall() {
+        VrShellDelegate.initAfterModuleInstall();
+    }
 }

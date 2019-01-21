@@ -170,6 +170,11 @@ import org.chromium.ui.widget.Toast;
         return false;
     }
 
+    @Override
+    public void initAfterModuleInstall() {
+        assert false;
+    }
+
     private void onVrModuleInstallFinished(boolean success) {
         Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
         if (!(activity instanceof ChromeActivity)) return;
@@ -180,17 +185,15 @@ import org.chromium.ui.widget.Toast;
         }
         assert VrModuleProvider.isModuleInstalled();
 
-        VrDelegate delegate = VrModuleProvider.getDelegate();
-        if (LibraryLoader.getInstance().isInitialized()) {
-            delegate.onNativeLibraryAvailable();
-        }
+        // We need native to enter VR. Enter VR flow will automatically continue once native is
+        // loaded.
+        if (!LibraryLoader.getInstance().isInitialized()) return;
 
         boolean shouldEnterVr =
                 ApplicationStatus.getStateForActivity(activity) == ActivityState.RESUMED;
         if (shouldEnterVr) {
-            delegate.enterVrIfNecessary();
-        } else {
-            delegate.maybeRegisterVrEntryHook((ChromeActivity) activity);
+            // Invoke the delegate with actual VR implementation.
+            VrModuleProvider.getDelegate().enterVrIfNecessary();
         }
     }
 
