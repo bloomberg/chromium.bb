@@ -50,13 +50,15 @@ bool IsSubDomainOrEqual(const std::string& sub_domain,
   // wildcard.
   if (domain.empty())
     return true;
-  const size_t match = sub_domain.rfind(domain);
-  if (match == std::string::npos ||
-      (match > 0 && sub_domain[match - 1] != '.') ||
-      (match + domain.length() != sub_domain.length())) {
-    return false;
-  }
-  return true;
+
+  // The two domains are identical.
+  if (domain == sub_domain)
+    return true;
+
+  // The |domain| is a proper domain-suffix of the |sub_domain|.
+  return sub_domain.length() > domain.length() &&
+         sub_domain[sub_domain.length() - domain.length() - 1] == '.' &&
+         base::EndsWith(sub_domain, domain, base::CompareCase::SENSITIVE);
 }
 
 // Compares two domain names.
