@@ -10,6 +10,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "net/url_request/redirect_util.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace headless {
@@ -53,8 +54,9 @@ class RedirectLoader : public network::mojom::URLLoader {
         net::URLRequest::FirstPartyURLPolicy::
             UPDATE_FIRST_PARTY_URL_ON_REDIRECT,
         url_request_.referrer_policy, url_request_.referrer.spec(),
-        response_->headers.get(), response_->headers->response_code(),
-        url_.Resolve(location), false /* insecure_scheme_was_upgraded */, true);
+        response_->headers->response_code(), url_.Resolve(location),
+        net::RedirectUtil::GetReferrerPolicyHeader(response_->headers.get()),
+        false /* insecure_scheme_was_upgraded */, true);
     network::ResourceResponseHead head;
     head.request_time = base::Time::Now();
     head.response_time = base::Time::Now();

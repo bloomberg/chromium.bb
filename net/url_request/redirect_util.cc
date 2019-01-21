@@ -5,6 +5,7 @@
 #include "net/url_request/redirect_util.h"
 
 #include "net/http/http_request_headers.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/redirect_info.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -74,6 +75,19 @@ void RedirectUtil::UpdateHttpRequest(
 
   if (modified_headers)
     request_headers->MergeFrom(modified_headers.value());
+}
+
+// static
+base::Optional<std::string> RedirectUtil::GetReferrerPolicyHeader(
+    const HttpResponseHeaders* response_headers) {
+  if (!response_headers)
+    return base::nullopt;
+  std::string referrer_policy_header;
+  if (!response_headers->GetNormalizedHeader("Referrer-Policy",
+                                             &referrer_policy_header)) {
+    return base::nullopt;
+  }
+  return referrer_policy_header;
 }
 
 }  // namespace net
