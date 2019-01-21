@@ -553,7 +553,6 @@ SchedulerSingleThreadTaskRunnerManager::CreateAndRegisterSchedulerWorker(
     const std::string& name,
     SingleThreadTaskRunnerThreadMode thread_mode,
     ThreadPriority priority_hint) {
-  lock_.AssertAcquired();
   int id = next_worker_id_++;
   std::unique_ptr<SchedulerWorkerDelegate> delegate =
       CreateSchedulerWorkerDelegate<DelegateType>(name, id, thread_mode);
