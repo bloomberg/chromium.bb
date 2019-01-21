@@ -519,7 +519,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   WebRuntimeFeatures::EnableJankTracking(
       base::FeatureList::IsEnabled(blink::features::kJankTracking) ||
-      enable_experimental_web_platform_features);
+          enable_experimental_web_platform_features,
+      base::FeatureList::IsEnabled(blink::features::kJankTrackingSweepLine) ||
+          enable_experimental_web_platform_features);
 
   WebRuntimeFeatures::EnableFirstContentfulPaintPlusPlus(
       base::FeatureList::IsEnabled(

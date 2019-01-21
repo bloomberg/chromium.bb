@@ -204,8 +204,10 @@ void WebRuntimeFeatures::EnableInputMultipleFieldsUI(bool enable) {
   RuntimeEnabledFeatures::SetInputMultipleFieldsUIEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableJankTracking(bool enable) {
+void WebRuntimeFeatures::EnableJankTracking(bool enable, bool use_sweep_line) {
   RuntimeEnabledFeatures::SetJankTrackingEnabled(enable);
+  RuntimeEnabledFeatures::SetJankTrackingSweepLineEnabled(enable &&
+                                                          use_sweep_line);
 }
 
 void WebRuntimeFeatures::EnableLayeredAPI(bool enable) {

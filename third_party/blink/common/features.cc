@@ -41,6 +41,9 @@ const base::Feature kFirstContentfulPaintPlusPlus{
 const base::Feature kJankTracking{"JankTracking",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kJankTrackingSweepLine{"JankTrackingSweepLine",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable a new compositing mode called BlinkGenPropertyTrees where Blink
 // generates the compositor property trees. See: https://crbug.com/836884.
 const base::Feature kBlinkGenPropertyTrees{"BlinkGenPropertyTrees",

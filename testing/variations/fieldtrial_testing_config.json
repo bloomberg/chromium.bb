@@ -2329,7 +2329,8 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "JankTracking"
+                        "JankTracking",
+                        "JankTrackingSweepLine"
                     ]
                 }
             ]

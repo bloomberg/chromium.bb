@@ -107,7 +107,8 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableHeapCompaction(bool);
   BLINK_PLATFORM_EXPORT static void EnableImplicitRootScroller(bool);
   BLINK_PLATFORM_EXPORT static void EnableInputMultipleFieldsUI(bool);
-  BLINK_PLATFORM_EXPORT static void EnableJankTracking(bool);
+  BLINK_PLATFORM_EXPORT static void EnableJankTracking(bool,
+                                                       bool use_sweep_line);
   BLINK_PLATFORM_EXPORT static void EnableLayeredAPI(bool);
   BLINK_PLATFORM_EXPORT static void EnableLayoutNG(bool);
   BLINK_PLATFORM_EXPORT static void EnableLazyFrameLoading(bool);
