@@ -16,7 +16,6 @@ namespace net {
 
 struct RedirectInfo;
 class HttpRequestHeaders;
-class HttpResponseHeaders;
 
 class RedirectUtil {
  public:
@@ -33,11 +32,6 @@ class RedirectUtil {
       const base::Optional<net::HttpRequestHeaders>& modified_headers,
       HttpRequestHeaders* request_headers,
       bool* should_clear_upload);
-
-  // Returns the the "normalized" value of Referrer-Policy header if available.
-  // Otherwise returns base::nullopt.
-  NET_EXPORT static base::Optional<std::string> GetReferrerPolicyHeader(
-      const HttpResponseHeaders* response_headers);
 };
 
 }  // namespace net
