@@ -53,7 +53,7 @@
 
 namespace blink {
 
-class DoubleOrPerformanceMarkOptions;
+class PerformanceMarkOptions;
 class ExceptionState;
 class MemoryInfo;
 class PerformanceElementTiming;
@@ -177,11 +177,10 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
                         const AtomicString& mark_name,
                         ExceptionState&);
 
-  PerformanceMark* mark(
-      ScriptState*,
-      const AtomicString& mark_name,
-      DoubleOrPerformanceMarkOptions& start_time_or_mark_options,
-      ExceptionState&);
+  PerformanceMark* mark(ScriptState*,
+                        const AtomicString& mark_name,
+                        PerformanceMarkOptions* mark_options,
+                        ExceptionState&);
 
   void clearMarks(const AtomicString& mark_name);
 
