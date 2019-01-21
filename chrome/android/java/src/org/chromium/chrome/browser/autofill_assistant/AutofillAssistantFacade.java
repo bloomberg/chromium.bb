@@ -107,7 +107,7 @@ public class AutofillAssistantFacade {
     }
 
     /** Returns a map containing the extras starting with {@link #INTENT_EXTRA_PREFIX}. */
-    static Map<String, String> extractParameters(@Nullable Bundle extras) {
+    private static Map<String, String> extractParameters(@Nullable Bundle extras) {
         Map<String, String> result = new HashMap<>();
         if (extras != null) {
             for (String key : extras.keySet()) {

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/json/json_writer.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
@@ -342,6 +343,7 @@ void Controller::FinishStart(const GURL& initial_url) {
   GetOrCheckScripts(initial_url);
   if (allow_autostart_) {
     should_fail_after_checking_scripts_ = true;
+    MaybeShowInitialDetails();
     GetUiController()->ShowOverlay();
     GetUiController()->ShowProgressBar(
         kAutostartInitialProgress,
@@ -354,6 +356,45 @@ void Controller::FinishStart(const GURL& initial_url) {
       // Unretained is safe, since touchable_element_area_ is guaranteed to be
       // deleted before the UI controller.
       base::Unretained(GetUiController())));
+}
+
+void Controller::MaybeShowInitialDetails() {
+  std::string title;
+  std::string description;
+  std::string mid;
+  std::string date;
+  bool empty = true;
+
+  for (const auto& iter : parameters_) {
+    std::string key = iter.first;
+    if (base::EndsWith(key, "E_NAME", base::CompareCase::SENSITIVE)) {
+      title = iter.second;
+      empty = false;
+      continue;
+    }
+
+    if (base::EndsWith(key, "R_NAME", base::CompareCase::SENSITIVE)) {
+      description = iter.second;
+      empty = false;
+      continue;
+    }
+
+    if (base::EndsWith(key, "MID", base::CompareCase::SENSITIVE)) {
+      mid = iter.second;
+      empty = false;
+      continue;
+    }
+
+    if (base::EndsWith(key, "DATETIME", base::CompareCase::SENSITIVE)) {
+      date = iter.second;
+      empty = false;
+      continue;
+    }
+  }
+
+  if (!empty) {
+    GetUiController()->ShowInitialDetails(title, description, mid, date);
+  }
 }
 
 void Controller::Start(const GURL& initialUrl,

@@ -105,6 +105,13 @@ class UiController {
   // Hide contextual information.
   virtual void HideDetails() = 0;
 
+  // Show details with given |title|, |description|, |mid| and |date| (given in
+  // the RFC 3339 format).
+  virtual void ShowInitialDetails(const std::string& title,
+                                  const std::string& description,
+                                  const std::string& mid,
+                                  const std::string& date) = 0;
+
   // Show contextual information. Returns false if the contextual information is
   // not similar to the current one.
   // TODO(806868): Pass details to the native side instead of comparing on the

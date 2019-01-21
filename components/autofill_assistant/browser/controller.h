@@ -111,6 +111,7 @@ class Controller : public ScriptExecutorDelegate,
   void OnGetCookie(const GURL& initial_url, bool has_cookie);
   void OnSetCookie(const GURL& initial_url, bool result);
   void FinishStart(const GURL& initial_url);
+  void MaybeShowInitialDetails();
 
   // Overrides autofill_assistant::UiDelegate:
   void OnClickOverlay() override;

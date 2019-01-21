@@ -108,14 +108,6 @@ class AssistantCoordinator
         mCarouselCoordinator.setVisible(false);
 
         showAssistantView();
-
-        // TODO(crbug.com/806868): Keep details on the native side and get rid of this duplicated,
-        // misplaced, call to extractParameters.
-        AssistantDetails initialDetails = AssistantDetails.makeFromParameters(
-                AutofillAssistantFacade.extractParameters(activity.getInitialIntent().getExtras()));
-        if (initialDetails != null) {
-            mDetailsCoordinator.showDetails(initialDetails);
-        }
     }
 
     /**
@@ -171,11 +163,6 @@ class AssistantCoordinator
         // Show overlay to prevent user from interacting with the page during onboarding.
         mOverlayCoordinator.showFullOverlay();
 
-        // TODO(crbug.com/806868): Remove this hack and call setDetails with initial details from
-        // native once onboarding is accepted or skipped instead.
-        boolean detailsVisible = mDetailsCoordinator.isVisible();
-        mDetailsCoordinator.setVisible(false);
-
         AssistantOnboardingCoordinator.show(mActivity, mBottomBarCoordinator.getView())
                 .then(accepted -> {
                     if (!accepted) {
@@ -188,14 +175,7 @@ class AssistantCoordinator
                     mHeaderCoordinator.setCloseButtonVisible(true);
 
                     // Hide overlay.
-                    // TODO(crbug.com/806868): Maybe it would be better to save the state of the
-                    // overlay before showing the onboarding and restore it here.
                     mOverlayCoordinator.hide();
-
-                    // TODO(crbug.com/806868): Remove this.
-                    if (detailsVisible) {
-                        mDetailsCoordinator.setVisible(true);
-                    }
 
                     onAccept.run();
                 });

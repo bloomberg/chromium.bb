@@ -28,10 +28,12 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.cached_image_fetcher.CachedImageFetcher;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -48,6 +50,7 @@ public class AssistantDetailsCoordinator {
     private static final int PULSING_DURATION_MS = 1_000;
     private static final String DETAILS_TIME_FORMAT = "H:mma";
     private static final String DETAILS_DATE_FORMAT = "EEE, MMM d";
+    private static final String RFC_3339_FORMAT_WITHOUT_TIMEZONE = "yyyy'-'MM'-'dd'T'HH':'mm':'ss";
 
     private final Context mContext;
     private final Runnable mOnVisibilityChanged;
@@ -69,14 +72,14 @@ public class AssistantDetailsCoordinator {
     @Nullable
     private AssistantDetails mCurrentDetails;
 
-    public AssistantDetailsCoordinator(Context context, Runnable onVisibilityChanged) {
-        mContext = context;
+    public AssistantDetailsCoordinator(ChromeActivity activity, Runnable onVisibilityChanged) {
+        mContext = activity;
         mOnVisibilityChanged = onVisibilityChanged;
 
-        mView = LayoutInflater.from(context).inflate(
+        mView = LayoutInflater.from(activity).inflate(
                 R.layout.autofill_assistant_details, /* root= */ null);
 
-        mDefaultImage = (GradientDrawable) context.getResources().getDrawable(
+        mDefaultImage = (GradientDrawable) activity.getResources().getDrawable(
                 R.drawable.autofill_assistant_default_details);
         mImageView = mView.findViewById(R.id.details_image);
         mTitleView = mView.findViewById(R.id.details_title);
@@ -123,6 +126,32 @@ public class AssistantDetailsCoordinator {
     @Nullable
     public AssistantDetails getCurrentDetails() {
         return mCurrentDetails;
+    }
+
+    /**
+     * Show details with given {@code title}, {@code description}, {@code mid} and {@code date}
+     * (given in the RFC 3339 format).
+     */
+    // TODO(crbug.com/806868): Move extraction to native side and call showDetails once we can parse
+    // details (date) natively.
+    public void showInitialDetails(
+            String title, String description, String mId, String dateString) {
+        Date date = null;
+        if (!dateString.isEmpty()) {
+            try {
+                // The parameter contains the timezone shift from the current location, that we
+                // don't care about.
+                date = new SimpleDateFormat(RFC_3339_FORMAT_WITHOUT_TIMEZONE, Locale.ROOT)
+                               .parse(dateString);
+            } catch (ParseException e) {
+                // Ignore.
+            }
+        }
+
+        showDetails(
+                new AssistantDetails(title, /* url= */ "", date, description, mId, /* price= */ "",
+                        /* userApprovalRequired= */ false, /* highlightTitle= */ false,
+                        /* highlightDate= */ false, /* showPlaceholdersForEmptyFields= */ true));
     }
 
     /**
