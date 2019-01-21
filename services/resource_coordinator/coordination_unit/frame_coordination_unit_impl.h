@@ -33,13 +33,11 @@ class FrameCoordinationUnitImpl
   void SetProcess(const CoordinationUnitID& cu_id) override;
   void AddChildFrame(const CoordinationUnitID& cu_id) override;
   void RemoveChildFrame(const CoordinationUnitID& cu_id) override;
-  void SetAudibility(bool audible) override;
   void SetNetworkAlmostIdle(bool idle) override;
   void SetLifecycleState(mojom::LifecycleState state) override;
   void SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload) override;
   void SetInterventionPolicy(mojom::PolicyControlledIntervention intervention,
                              mojom::InterventionPolicy policy) override;
-  void OnAlertFired() override;
   void OnNonPersistentNotificationCreated() override;
 
   FrameCoordinationUnitImpl* GetParentFrameCoordinationUnit() const;
@@ -48,7 +46,6 @@ class FrameCoordinationUnitImpl
   bool IsMainFrame() const;
 
   mojom::LifecycleState lifecycle_state() const { return lifecycle_state_; }
-  base::TimeTicks last_audible_time() const { return last_audible_time_; }
   bool has_nonempty_beforeunload() const { return has_nonempty_beforeunload_; }
 
   // Returns true if all intervention policies have been set for this frame.
@@ -96,7 +93,6 @@ class FrameCoordinationUnitImpl
 
   mojom::LifecycleState lifecycle_state_ = mojom::LifecycleState::kRunning;
   bool has_nonempty_beforeunload_ = false;
-  base::TimeTicks last_audible_time_;
 
   // Intervention policy for this frame. These are communicated from the
   // renderer process and are controlled by origin trials.

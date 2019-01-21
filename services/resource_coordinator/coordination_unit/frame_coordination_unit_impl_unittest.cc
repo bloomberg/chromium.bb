@@ -114,17 +114,6 @@ TEST_F(FrameCoordinationUnitImplTest, RemoveChildFrame) {
   EXPECT_TRUE(!child_frame_cu->GetParentFrameCoordinationUnit());
 }
 
-TEST_F(FrameCoordinationUnitImplTest, LastAudibleTime) {
-  MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph(
-      coordination_unit_graph());
-  EXPECT_EQ(base::TimeTicks(), cu_graph.frame->last_audible_time());
-  cu_graph.frame->SetAudibility(true);
-  AdvanceClock(base::TimeDelta::FromSeconds(1));
-  cu_graph.frame->SetAudibility(false);
-  EXPECT_EQ(ResourceCoordinatorClock::NowTicks(),
-            cu_graph.frame->last_audible_time());
-}
-
 int64_t GetLifecycleState(PageCoordinationUnitImpl* cu) {
   int64_t value;
   if (cu->GetProperty(mojom::PropertyType::kLifecycleState, &value))

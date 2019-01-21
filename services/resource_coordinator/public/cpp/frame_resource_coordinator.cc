@@ -27,18 +27,6 @@ void FrameResourceCoordinator::SetProcess(
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void FrameResourceCoordinator::SetAudibility(bool audible) {
-  if (!service_)
-    return;
-  service_->SetAudibility(audible);
-}
-
-void FrameResourceCoordinator::OnAlertFired() {
-  if (!service_)
-    return;
-  service_->OnAlertFired();
-}
-
 void FrameResourceCoordinator::AddChildFrame(
     const FrameResourceCoordinator& child) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

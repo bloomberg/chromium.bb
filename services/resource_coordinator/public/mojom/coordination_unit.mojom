@@ -90,7 +90,6 @@ interface FrameCoordinationUnit {
   RemoveChildFrame(CoordinationUnitID cu_id);
 
   // Property signals.
-  SetAudibility(bool audible);
   SetNetworkAlmostIdle(bool idle);
   SetLifecycleState(LifecycleState state);
   SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload);
@@ -98,7 +97,6 @@ interface FrameCoordinationUnit {
                         InterventionPolicy policy);
 
   // Event signals.
-  OnAlertFired();
   OnNonPersistentNotificationCreated();
 };
 

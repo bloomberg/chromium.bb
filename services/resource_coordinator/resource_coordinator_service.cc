@@ -7,11 +7,9 @@
 #include <utility>
 
 #include "base/feature_list.h"
-#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/resource_coordinator/memory_instrumentation/coordinator_impl.h"
-#include "services/resource_coordinator/observers/ipc_volume_reporter.h"
 #include "services/resource_coordinator/observers/metrics_collector.h"
 #include "services/resource_coordinator/observers/page_signal_generator_impl.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
@@ -47,9 +45,6 @@ void ResourceCoordinatorService::OnStart() {
 
   coordination_unit_graph_.RegisterObserver(
       std::make_unique<MetricsCollector>());
-
-  coordination_unit_graph_.RegisterObserver(std::make_unique<IPCVolumeReporter>(
-      std::make_unique<base::OneShotTimer>()));
 
 #if defined(OS_WIN)
   if (base::FeatureList::IsEnabled(features::kEmptyWorkingSet)) {

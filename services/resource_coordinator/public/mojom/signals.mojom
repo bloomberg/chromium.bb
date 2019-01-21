@@ -6,7 +6,6 @@ module resource_coordinator.mojom;
 
 enum Event {
   kTestEvent,
-  kAlertFired,
   kFaviconUpdated,
   // This event signal is received when main frame navigation is committed.
   kNavigationCommitted,
@@ -25,7 +24,6 @@ enum Event {
 // CoordinationUnitImpl internal key-value store.
 enum PropertyType {
   kTest,
-  kAudible,
   kCPUUsage,
   kExpectedTaskQueueingDuration,
   kMainThreadTaskLoadIsLow,

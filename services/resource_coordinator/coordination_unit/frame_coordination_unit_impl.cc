@@ -72,12 +72,6 @@ void FrameCoordinationUnitImpl::RemoveChildFrame(
   }
 }
 
-void FrameCoordinationUnitImpl::SetAudibility(bool audible) {
-  if (!audible)
-    last_audible_time_ = ResourceCoordinatorClock::NowTicks();
-  SetProperty(mojom::PropertyType::kAudible, audible);
-}
-
 void FrameCoordinationUnitImpl::SetNetworkAlmostIdle(bool idle) {
   SetProperty(mojom::PropertyType::kNetworkAlmostIdle, idle);
 }
@@ -125,10 +119,6 @@ void FrameCoordinationUnitImpl::SetInterventionPolicy(
     page_cu->OnFrameInterventionPolicyChanged(this, intervention, old_policy,
                                               policy);
   }
-}
-
-void FrameCoordinationUnitImpl::OnAlertFired() {
-  SendEvent(mojom::Event::kAlertFired);
 }
 
 void FrameCoordinationUnitImpl::OnNonPersistentNotificationCreated() {
