@@ -77,11 +77,11 @@ void ThreadControllerImpl::ScheduleWork() {
   // Don't post a DoWork if there's an immediate DoWork in flight or if we're
   // inside a top level DoWork. We can rely on a continuation being posted as
   // needed.
-  if (any_sequence().immediate_do_work_posted ||
-      (any_sequence().do_work_running_count > any_sequence().nesting_depth)) {
+  if (any_sequence_.immediate_do_work_posted ||
+      (any_sequence_.do_work_running_count > any_sequence_.nesting_depth)) {
     return;
   }
-  any_sequence().immediate_do_work_posted = true;
+  any_sequence_.immediate_do_work_posted = true;
 
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                "ThreadControllerImpl::ScheduleWork::PostTask");
@@ -113,7 +113,7 @@ void ThreadControllerImpl::SetNextDelayedDoWork(LazyNow* lazy_now,
   // If DoWork is about to run then we also don't need to do anything.
   {
     AutoLock lock(any_sequence_lock_);
-    if (any_sequence().immediate_do_work_posted)
+    if (any_sequence_.immediate_do_work_posted)
       return;
   }
 
@@ -188,8 +188,8 @@ void ThreadControllerImpl::DoWork(WorkType work_type) {
   {
     AutoLock lock(any_sequence_lock_);
     if (work_type == WorkType::kImmediate)
-      any_sequence().immediate_do_work_posted = false;
-    any_sequence().do_work_running_count++;
+      any_sequence_.immediate_do_work_posted = false;
+    any_sequence_.do_work_running_count++;
   }
 
   main_sequence_only().do_work_running_count++;
@@ -233,16 +233,16 @@ void ThreadControllerImpl::DoWork(WorkType work_type) {
 
   {
     AutoLock lock(any_sequence_lock_);
-    any_sequence().do_work_running_count--;
-    DCHECK_GE(any_sequence().do_work_running_count, 0);
+    any_sequence_.do_work_running_count--;
+    DCHECK_GE(any_sequence_.do_work_running_count, 0);
     LazyNow lazy_now(time_source_);
     TimeDelta delay_till_next_task = sequence_->DelayTillNextTask(&lazy_now);
     // The OnSystemIdle callback allows the TimeDomains to advance virtual time
     // in which case we now have immediate word to do.
     if (delay_till_next_task <= TimeDelta() || sequence_->OnSystemIdle()) {
       // The next task needs to run immediately, post a continuation if needed.
-      if (!any_sequence().immediate_do_work_posted) {
-        any_sequence().immediate_do_work_posted = true;
+      if (!any_sequence_.immediate_do_work_posted) {
+        any_sequence_.immediate_do_work_posted = true;
         task_runner_->PostTask(FROM_HERE, immediate_do_work_closure_);
       }
       return;
@@ -291,9 +291,9 @@ void ThreadControllerImpl::OnBeginNestedRunLoop() {
     // We just entered a nested run loop, make sure there's a DoWork posted or
     // the system will grind to a halt.
     AutoLock lock(any_sequence_lock_);
-    any_sequence().nesting_depth++;
-    if (!any_sequence().immediate_do_work_posted) {
-      any_sequence().immediate_do_work_posted = true;
+    any_sequence_.nesting_depth++;
+    if (!any_sequence_.immediate_do_work_posted) {
+      any_sequence_.immediate_do_work_posted = true;
       TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                    "ThreadControllerImpl::OnBeginNestedRunLoop::PostTask");
       task_runner_->PostTask(FROM_HERE, immediate_do_work_closure_);
@@ -307,8 +307,8 @@ void ThreadControllerImpl::OnExitNestedRunLoop() {
   main_sequence_only().nesting_depth--;
   {
     AutoLock lock(any_sequence_lock_);
-    any_sequence().nesting_depth--;
-    DCHECK_GE(any_sequence().nesting_depth, 0);
+    any_sequence_.nesting_depth--;
+    DCHECK_GE(any_sequence_.nesting_depth, 0);
   }
   if (nesting_observer_)
     nesting_observer_->OnExitNestedRunLoop();

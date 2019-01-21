@@ -93,16 +93,7 @@ class BASE_EXPORT ThreadControllerImpl : public ThreadController,
   };
 
   mutable Lock any_sequence_lock_;
-  AnySequence any_sequence_;
-
-  struct AnySequence& any_sequence() {
-    any_sequence_lock_.AssertAcquired();
-    return any_sequence_;
-  }
-  const struct AnySequence& any_sequence() const {
-    any_sequence_lock_.AssertAcquired();
-    return any_sequence_;
-  }
+  AnySequence any_sequence_ GUARDED_BY(any_sequence_lock_);
 
   struct MainSequenceOnly {
     MainSequenceOnly();
