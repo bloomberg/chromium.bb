@@ -12,6 +12,10 @@ namespace features {
 const base::Feature kAutofillPreviewStyleExperiment{
     "AutofillPreviewStyleExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable defer commits a bit to avoid flash.
+const base::Feature kAvoidFlashBetweenNavigation{
+    "AvoidFlashBetweenNavigation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable eagerly setting up a CacheStorage interface pointer and
 // passing it to service workers on startup as an optimization.
 const base::Feature kEagerCacheStorageSetupForServiceWorkers{
