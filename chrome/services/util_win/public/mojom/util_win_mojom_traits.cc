@@ -4,6 +4,7 @@
 
 #include "chrome/services/util_win/public/mojom/util_win_mojom_traits.h"
 
+#include "mojo/public/cpp/base/file_path_mojom_traits.h"
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
 
 namespace mojo {
@@ -62,6 +63,108 @@ bool EnumTraits<chrome::mojom::SelectFileDialogType,
   }
   NOTREACHED();
   return false;
+}
+
+// static
+chrome::mojom::CertificateType
+EnumTraits<chrome::mojom::CertificateType, CertificateInfo::Type>::ToMojom(
+    CertificateInfo::Type input) {
+  switch (input) {
+    case CertificateInfo::Type::NO_CERTIFICATE:
+      return chrome::mojom::CertificateType::kNoCertificate;
+    case CertificateInfo::Type::CERTIFICATE_IN_FILE:
+      return chrome::mojom::CertificateType::kCertificateInFile;
+    case CertificateInfo::Type::CERTIFICATE_IN_CATALOG:
+      return chrome::mojom::CertificateType::kCertificateInCatalog;
+  }
+  NOTREACHED();
+  return chrome::mojom::CertificateType::kNoCertificate;
+}
+
+// static
+bool EnumTraits<chrome::mojom::CertificateType, CertificateInfo::Type>::
+    FromMojom(chrome::mojom::CertificateType input,
+              CertificateInfo::Type* output) {
+  switch (input) {
+    case chrome::mojom::CertificateType::kNoCertificate:
+      *output = CertificateInfo::Type::NO_CERTIFICATE;
+      return true;
+    case chrome::mojom::CertificateType::kCertificateInFile:
+      *output = CertificateInfo::Type::CERTIFICATE_IN_FILE;
+      return true;
+    case chrome::mojom::CertificateType::kCertificateInCatalog:
+      *output = CertificateInfo::Type::CERTIFICATE_IN_CATALOG;
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+// static
+const base::string16& StructTraits<
+    chrome::mojom::InspectionResultDataView,
+    ModuleInspectionResult>::location(const ModuleInspectionResult& input) {
+  return input.location;
+}
+// static
+const base::string16& StructTraits<
+    chrome::mojom::InspectionResultDataView,
+    ModuleInspectionResult>::basename(const ModuleInspectionResult& input) {
+  return input.basename;
+}
+// static
+const base::string16& StructTraits<
+    chrome::mojom::InspectionResultDataView,
+    ModuleInspectionResult>::product_name(const ModuleInspectionResult& input) {
+  return input.product_name;
+}
+// static
+const base::string16& StructTraits<
+    chrome::mojom::InspectionResultDataView,
+    ModuleInspectionResult>::description(const ModuleInspectionResult& input) {
+  return input.description;
+}
+// static
+const base::string16& StructTraits<
+    chrome::mojom::InspectionResultDataView,
+    ModuleInspectionResult>::version(const ModuleInspectionResult& input) {
+  return input.basename;
+}
+// static
+chrome::mojom::CertificateType
+StructTraits<chrome::mojom::InspectionResultDataView, ModuleInspectionResult>::
+    certificate_type(const ModuleInspectionResult& input) {
+  return EnumTraits<chrome::mojom::CertificateType,
+                    CertificateInfo::Type>::ToMojom(input.certificate_info
+                                                        .type);
+}
+// static
+const base::FilePath&
+StructTraits<chrome::mojom::InspectionResultDataView, ModuleInspectionResult>::
+    certificate_path(const ModuleInspectionResult& input) {
+  return input.certificate_info.path;
+}
+// static
+const base::string16&
+StructTraits<chrome::mojom::InspectionResultDataView, ModuleInspectionResult>::
+    certificate_subject(const ModuleInspectionResult& input) {
+  return input.certificate_info.subject;
+}
+
+// static
+bool StructTraits<
+    chrome::mojom::InspectionResultDataView,
+    ModuleInspectionResult>::Read(chrome::mojom::InspectionResultDataView input,
+                                  ModuleInspectionResult* out) {
+  return input.ReadLocation(&out->location) &&
+         input.ReadBasename(&out->basename) &&
+         input.ReadProductName(&out->product_name) &&
+         input.ReadDescription(&out->description) &&
+         input.ReadVersion(&out->version) &&
+         input.ReadCertificateType(&out->certificate_info.type) &&
+         input.ReadCertificatePath(&out->certificate_info.path) &&
+         input.ReadCertificateSubject(&out->certificate_info.subject);
 }
 
 // static

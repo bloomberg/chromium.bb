@@ -31,6 +31,8 @@ class UtilWinImpl : public chrome::mojom::UtilWin {
                              int32_t file_type_index,
                              const base::string16& default_extension,
                              CallExecuteSelectFileCallback callback) override;
+  void InspectModule(const base::FilePath& module_path,
+                     InspectModuleCallback callback) override;
 
   const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
 

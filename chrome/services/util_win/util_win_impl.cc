@@ -20,6 +20,7 @@
 #include "base/win/scoped_variant.h"
 #include "base/win/shortcut.h"
 #include "base/win/win_util.h"
+#include "chrome/browser/conflicts/module_info_util_win.h"
 #include "chrome/installer/util/install_util.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/shell_dialogs/execute_select_file_win.h"
@@ -242,4 +243,9 @@ void UtilWinImpl::CallExecuteSelectFile(
       type, title, default_path, filter, file_type_index, default_extension,
       reinterpret_cast<HWND>(base::win::Uint32ToHandle(owner)),
       base::BindOnce(std::move(callback)));
+}
+
+void UtilWinImpl::InspectModule(const base::FilePath& module_path,
+                                InspectModuleCallback callback) {
+  std::move(callback).Run(::InspectModule(module_path));
 }

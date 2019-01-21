@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Utility process interface exposed to the browser process on OS_WIN, for
-// calling OS_WIN task pinning and file open/save dialog API.
-
 module chrome.mojom;
 
 import "mojo/public/mojom/base/file_path.mojom";
@@ -38,6 +35,41 @@ struct FileFilterSpec {
   mojo_base.mojom.String16 extension_spec;
 };
 
+enum CertificateType {
+  // The module is not signed.
+  kNoCertificate,
+  // The module is signed and the certificate is in the module.
+  kCertificateInFile,
+  // The module is signed and the certificate is in an external catalog.
+  kCertificateInCatalog,
+};
+
+struct InspectionResult {
+  // The lowercase module path, not including the basename.
+  mojo_base.mojom.String16 location;
+  // The basename of the module.
+  mojo_base.mojom.String16 basename;
+  // The name of the product the module belongs to.
+  mojo_base.mojom.String16 product_name;
+  // The module file description.
+  mojo_base.mojom.String16 description;
+  // The module version. This is usually in the form a.b.c.d (where a, b, c and
+  // d are integers), but may also have fewer than 4 components.
+  mojo_base.mojom.String16 version;
+  // The type of the certificate for this module.
+  CertificateType certificate_type;
+  // Path to the file containing the certificate. Empty if |certificate_type| is
+  // kNoCertificate.
+  mojo_base.mojom.FilePath certificate_path;
+  // The "Subject" name of the certificate. This is the signer (ie,
+  // "Google Inc." or "Microsoft Inc.").
+  mojo_base.mojom.String16 certificate_subject;
+};
+
+// Utility process interface exposed to the browser process on OS_WIN. Used to
+// improve stability by executing some tasks out-of-process. This include either
+// crashy tasks, or tasks that requires certain DLLs to be loaded into the
+// process address space that we don't want to load in the main process.
 interface UtilWin {
   // Returns the pinned state of the current executable.
   IsPinnedToTaskbar() => (bool succeeded, bool is_pinned_to_taskbar);
@@ -72,4 +104,10 @@ interface UtilWin {
                         mojo_base.mojom.String16 default_extension) =>
       (array<mojo_base.mojom.FilePath> paths,
        int32 file_type_index);
+
+  // Given a module located at |module_path|, returns a populated
+  // ModuleInspectionResult that contains detailed information about the module
+  // on disk.
+  InspectModule(mojo_base.mojom.FilePath module_path) =>
+      (InspectionResult inspection_result);
 };
