@@ -295,6 +295,17 @@ class MessageUnittest(unittest.TestCase):
     except:
       self.fail('Should not have gotten exception')
 
+  def testValidHTMLWithAttributesFormatInsidePhNode(self):
+    try:
+      util.ParseGrdForUnittest("""\
+        <messages>
+        <message name="IDS_HTML_ATTRIBUTE">
+          <ph name="VALID">&lt;span attribute="js:$this %"&gt;$2&lt;/span&gt;<ex>2</ex></ph>
+        </message>
+        </messages>""")
+    except:
+      self.fail('Should not have gotten exception')
+
   def testValidHTMLEntityFormatInsidePhNode(self):
     try:
       util.ParseGrdForUnittest("""\
