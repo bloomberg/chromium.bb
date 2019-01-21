@@ -201,8 +201,8 @@ void SharedWorkerServiceImpl::CreateWorker(
     // enabled.
     AppCacheNavigationHandleCore* appcache_handle_core = nullptr;
     if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      auto appcache_handle =
-          std::make_unique<AppCacheNavigationHandle>(appcache_service_.get());
+      auto appcache_handle = std::make_unique<AppCacheNavigationHandle>(
+          appcache_service_.get(), process_id);
       appcache_handle_core = appcache_handle->core();
       weak_host->SetAppCacheHandle(std::move(appcache_handle));
     }

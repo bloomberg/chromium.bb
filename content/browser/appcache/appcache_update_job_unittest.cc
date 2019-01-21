@@ -771,7 +771,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     group_->update_job_ = update;
 
     MockFrontend mock_frontend;
-    AppCacheHost host(1, &mock_frontend, service_.get());
+    AppCacheHost host(/* host_id = */ 1, /* process_id = */ 1, &mock_frontend,
+                      service_.get());
 
     update->StartUpdate(&host, GURL());
 
@@ -812,16 +813,20 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
       MockFrontend mock_frontend2;
       MockFrontend mock_frontend3;
 
-      AppCacheHost host1(1, &mock_frontend1, service_.get());
+      AppCacheHost host1(/* host_id = */ 1, /* process_id = */ 1,
+                         &mock_frontend1, service_.get());
       host1.AssociateCompleteCache(cache1);
 
-      AppCacheHost host2(2, &mock_frontend2, service_.get());
+      AppCacheHost host2(/* host_id = */ 2, /* process_id = */ 2,
+                         &mock_frontend2, service_.get());
       host2.AssociateCompleteCache(cache2);
 
-      AppCacheHost host3(3, &mock_frontend1, service_.get());
+      AppCacheHost host3(/* host_id = */ 3, /* process_id = */ 3,
+                         &mock_frontend1, service_.get());
       host3.AssociateCompleteCache(cache1);
 
-      AppCacheHost host4(4, &mock_frontend3, service_.get());
+      AppCacheHost host4(/* host_id = */ 4, /* process_id = */ 4,
+                         &mock_frontend3, service_.get());
 
       AppCacheUpdateJob* update =
           new AppCacheUpdateJob(service_.get(), group_.get());
@@ -3205,7 +3210,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     // synchronously.
     HttpHeadersRequestTestJob::Initialize(std::string(), std::string());
     MockFrontend mock_frontend;
-    AppCacheHost host(1, &mock_frontend, service_.get());
+    AppCacheHost host(/* host_id = */ 1, /* process_id = */ 1, &mock_frontend,
+                      service_.get());
     update->StartUpdate(&host, GURL());
 
     // If URLLoader based tests are enabled, we need to wait for the URL
@@ -3714,8 +3720,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
   }
 
   AppCacheHost* MakeHost(int host_id, AppCacheFrontend* frontend) {
-    hosts_.push_back(
-        std::make_unique<AppCacheHost>(host_id, frontend, service_.get()));
+    constexpr int kProcessIdForTests = 123;
+    hosts_.push_back(std::make_unique<AppCacheHost>(host_id, kProcessIdForTests,
+                                                    frontend, service_.get()));
     return hosts_.back().get();
   }
 
@@ -4099,7 +4106,8 @@ TEST_P(AppCacheUpdateJobTest, AlreadyChecking) {
   EXPECT_EQ(AppCacheGroup::CHECKING, group->update_status());
 
   MockFrontend mock_frontend;
-  AppCacheHost host(1, &mock_frontend, &service);
+  AppCacheHost host(/* host_id = */ 1, /* process_id = */ 1, &mock_frontend,
+                    &service);
   update.StartUpdate(&host, GURL());
 
   MockFrontend::RaisedEvents events = mock_frontend.raised_events_;
@@ -4128,7 +4136,8 @@ TEST_P(AppCacheUpdateJobTest, AlreadyDownloading) {
   EXPECT_EQ(AppCacheGroup::DOWNLOADING, group->update_status());
 
   MockFrontend mock_frontend;
-  AppCacheHost host(1, &mock_frontend, &service);
+  AppCacheHost host(/* host_id = */ 1, /* process_id = */ 1, &mock_frontend,
+                    &service);
   update.StartUpdate(&host, GURL());
 
   MockFrontend::RaisedEvents events = mock_frontend.raised_events_;

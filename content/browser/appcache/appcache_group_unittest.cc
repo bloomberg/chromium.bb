@@ -86,11 +86,11 @@ class TestUpdateObserver : public AppCacheGroup::UpdateObserver {
 
 class TestAppCacheHost : public AppCacheHost {
  public:
-  TestAppCacheHost(int host_id, AppCacheFrontend* frontend,
+  TestAppCacheHost(int host_id,
+                   AppCacheFrontend* frontend,
                    AppCacheServiceImpl* service)
-      : AppCacheHost(host_id, frontend, service),
-        update_completed_(false) {
-  }
+      : AppCacheHost(host_id, /* process_id = */ 456, frontend, service),
+        update_completed_(false) {}
 
   void OnUpdateComplete(AppCacheGroup* group) override {
     update_completed_ = true;
@@ -180,8 +180,10 @@ TEST_F(AppCacheGroupTest, CleanupUnusedGroup) {
   AppCacheGroup* group =
       new AppCacheGroup(service.storage(), GURL("http://foo.com"), 111);
 
-  AppCacheHost host1(1, &frontend, &service);
-  AppCacheHost host2(2, &frontend, &service);
+  AppCacheHost host1(/* host_id = */ 1, /* process_id = */ 1, &frontend,
+                     &service);
+  AppCacheHost host2(/* host_id = */ 2, /* process_id = */ 2, &frontend,
+                     &service);
 
   base::Time now = base::Time::Now();
 
