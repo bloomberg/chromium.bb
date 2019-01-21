@@ -74,6 +74,8 @@ void InitPolicies(policy::MockConfigurationPolicyProvider* provider,
                   const base::CommandLine& cmd_line) {
   policy::PolicyMap map;
 
+  SetPolicy(&map, policy::key::kBrowserSwitcherEnabled,
+            std::make_unique<base::Value>(true));
   SetPolicy(
       &map, policy::key::kAlternativeBrowserPath,
       std::make_unique<base::Value>(cmd_line.GetProgram().MaybeAsASCII()));

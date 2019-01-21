@@ -52,6 +52,8 @@ class BrowserSwitcherPrefsTest : public testing::Test {
 };
 
 TEST_F(BrowserSwitcherPrefsTest, ListensForPrefChanges) {
+  prefs_backend()->SetManagedPref(prefs::kEnabled,
+                                  std::make_unique<base::Value>(true));
   prefs_backend()->SetManagedPref(prefs::kAlternativeBrowserPath,
                                   std::make_unique<base::Value>("notepad.exe"));
   prefs_backend()->SetManagedPref(prefs::kAlternativeBrowserParameters,
@@ -60,6 +62,8 @@ TEST_F(BrowserSwitcherPrefsTest, ListensForPrefChanges) {
                                   StringArrayToValue({"example.com"}));
   prefs_backend()->SetManagedPref(prefs::kUrlGreylist,
                                   StringArrayToValue({"foo.example.com"}));
+
+  EXPECT_EQ(true, prefs()->IsEnabled());
 
   EXPECT_EQ("notepad.exe", prefs()->GetAlternativeBrowserPath());
 

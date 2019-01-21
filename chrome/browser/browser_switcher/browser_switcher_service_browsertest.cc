@@ -50,6 +50,13 @@ bool ShouldSwitch(BrowserSwitcherService* service, const GURL& url) {
   return service->sitelist()->ShouldSwitch(url);
 }
 
+void EnableBrowserSwitcher(policy::PolicyMap* policies) {
+  policies->Set(policy::key::kBrowserSwitcherEnabled,
+                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                policy::POLICY_SOURCE_PLATFORM,
+                std::make_unique<base::Value>(true), nullptr);
+}
+
 }  // namespace
 
 class BrowserSwitcherServiceTest : public InProcessBrowserTest {
@@ -66,6 +73,7 @@ class BrowserSwitcherServiceTest : public InProcessBrowserTest {
 
   void SetUseIeSitelist(bool use_ie_sitelist) {
     policy::PolicyMap policies;
+    EnableBrowserSwitcher(&policies);
     policies.Set(policy::key::kBrowserSwitcherUseIeSitelist,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                  policy::POLICY_SOURCE_PLATFORM,
@@ -76,6 +84,7 @@ class BrowserSwitcherServiceTest : public InProcessBrowserTest {
 
   void SetExternalUrl(const std::string& url) {
     policy::PolicyMap policies;
+    EnableBrowserSwitcher(&policies);
     policies.Set(policy::key::kBrowserSwitcherExternalSitelistUrl,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                  policy::POLICY_SOURCE_PLATFORM,
