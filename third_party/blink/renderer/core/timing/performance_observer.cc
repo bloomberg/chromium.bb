@@ -51,17 +51,29 @@ PerformanceObserver* PerformanceObserver::Create(
 }
 
 // static
-Vector<AtomicString> PerformanceObserver::supportedEntryTypes() {
+Vector<AtomicString> PerformanceObserver::supportedEntryTypes(
+    ScriptState* script_state) {
+  // The list of supported types, in alphabetical order.
   Vector<AtomicString> supportedEntryTypes;
-  // TODO(npm): add the following entry types once they have shipped:
-  //   "element", "event", "firstInput", "layoutJank"
-  // Some of these are enabled in origin trials, but the origin trial status
-  // depends on the execution context, so it cannot be queried from a static
-  // method. See crbug.com/922195
-  supportedEntryTypes.AppendVector(Vector<AtomicString>(
-      {performance_entry_names::kLongtask, performance_entry_names::kMark,
-       performance_entry_names::kMeasure, performance_entry_names::kNavigation,
-       performance_entry_names::kPaint, performance_entry_names::kResource}));
+  auto* execution_context = ExecutionContext::From(script_state);
+  if (execution_context->IsDocument()) {
+    if (origin_trials::ElementTimingEnabled(execution_context))
+      supportedEntryTypes.push_back(performance_entry_names::kElement);
+    if (origin_trials::EventTimingEnabled(execution_context)) {
+      supportedEntryTypes.push_back(performance_entry_names::kEvent);
+      supportedEntryTypes.push_back(performance_entry_names::kFirstInput);
+    }
+    if (origin_trials::LayoutJankAPIEnabled(execution_context))
+      supportedEntryTypes.push_back(performance_entry_names::kLayoutJank);
+    supportedEntryTypes.push_back(performance_entry_names::kLongtask);
+  }
+  supportedEntryTypes.push_back(performance_entry_names::kMark);
+  supportedEntryTypes.push_back(performance_entry_names::kMeasure);
+  if (execution_context->IsDocument()) {
+    supportedEntryTypes.push_back(performance_entry_names::kNavigation);
+    supportedEntryTypes.push_back(performance_entry_names::kPaint);
+  }
+  supportedEntryTypes.push_back(performance_entry_names::kResource);
   return supportedEntryTypes;
 }
 
