@@ -63,7 +63,12 @@
       <!--  This is where page content gets dynamically added. -->
 
       <div class="settings-box two-line single-column"
-           id="managementStatus" hidden></div>
+           id="managementStatus" hidden>
+        <span id="managementStatusInfo">
+          <a href="$i18nRaw{managementLearnMoreUrl}" target="_blank">
+            $i18n{learnMore}</a>
+        </span>
+      </div>
 
       <div class="settings-box block single-column" id="policies" hidden>
         <h2>$i18n{managementDeviceReporting}</h2>
