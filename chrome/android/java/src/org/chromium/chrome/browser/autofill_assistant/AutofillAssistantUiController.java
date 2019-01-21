@@ -239,6 +239,11 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
 
     @CalledByNative
+    private void onShowInitialDetails(String title, String description, String mid, String date) {
+        mCoordinator.getDetailsCoordinator().showInitialDetails(title, description, mid, date);
+    }
+
+    @CalledByNative
     private void onShowDetails(String title, String url, String description, String mId,
             String price, int year, int month, int day, int hour, int minute, int second,
             boolean userApprovalRequired, boolean highlightTitle, boolean highlightDate) {

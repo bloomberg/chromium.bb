@@ -9,11 +9,7 @@ import android.support.annotation.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
 
 /**
  * Java side equivalent of autofill_assistant::DetailsProto.
@@ -39,8 +35,6 @@ public class AssistantDetails {
      */
     private final String mPrice;
     // NOTE: When adding a new field, update the clearChangedFlags and toJSONObject methods.
-
-    private static final String RFC_3339_FORMAT_WITHOUT_TIMEZONE = "yyyy'-'MM'-'dd'T'HH':'mm':'ss";
 
     public AssistantDetails(String title, String url, @Nullable Date date, String description,
             String mId, @Nullable String price, boolean userApprovalRequired,
@@ -121,56 +115,5 @@ public class AssistantDetails {
         mUserApprovalRequired = false;
         mHighlightTitle = false;
         mHighlightDate = false;
-    }
-
-    /**
-     * Creates a new Details object by inferring field values from parameters.
-     * @param parameters The script parameters from which to infer field values.
-     * @return A new instance or null if no field could be inferred.
-     */
-    @Nullable
-    public static AssistantDetails makeFromParameters(Map<String, String> parameters) {
-        String title = "";
-        String description = "";
-        Date date = null;
-        String mId = "";
-        boolean empty = true;
-        for (String key : parameters.keySet()) {
-            if (key.endsWith("E_NAME")) {
-                title = parameters.get(key);
-                empty = false;
-                continue;
-            }
-
-            if (key.endsWith("R_NAME")) {
-                description = parameters.get(key);
-                empty = false;
-                continue;
-            }
-
-            if (key.endsWith("MID")) {
-                mId = parameters.get(key);
-                empty = false;
-                continue;
-            }
-
-            if (key.contains("DATETIME")) {
-                try {
-                    // The parameter contains the timezone shift from the current location, that we
-                    // don't care about.
-                    date = new SimpleDateFormat(RFC_3339_FORMAT_WITHOUT_TIMEZONE, Locale.ROOT)
-                                   .parse(parameters.get(key));
-                    empty = false;
-                } catch (ParseException e) {
-                    // Ignore.
-                }
-            }
-        }
-
-        if (empty) return null;
-
-        return new AssistantDetails(title, /* url= */ "", date, description, mId, /* price= */ "",
-                /* userApprovalRequired= */ false, /* highlightTitle= */ false,
-                /* highlightDate= */ false, /* showPlaceholdersForEmptyFields= */ true);
     }
 }

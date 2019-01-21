@@ -52,6 +52,10 @@ class UiControllerAndroid : public UiController {
       const std::string& title,
       const std::vector<std::string>& supported_basic_card_networks) override;
   void HideDetails() override;
+  void ShowInitialDetails(const std::string& title,
+                          const std::string& description,
+                          const std::string& mid,
+                          const std::string& date) override;
   void ShowDetails(const ShowDetailsProto& show_details,
                    base::OnceCallback<void(bool)> callback) override;
   void ShowProgressBar(int progress, const std::string& message) override;

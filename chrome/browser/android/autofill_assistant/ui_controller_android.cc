@@ -337,6 +337,19 @@ void UiControllerAndroid::HideDetails() {
       AttachCurrentThread(), java_autofill_assistant_ui_controller_);
 }
 
+void UiControllerAndroid::ShowInitialDetails(const std::string& title,
+                                             const std::string& description,
+                                             const std::string& mid,
+                                             const std::string& date) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_AutofillAssistantUiController_onShowInitialDetails(
+      env, java_autofill_assistant_ui_controller_,
+      base::android::ConvertUTF8ToJavaString(env, title),
+      base::android::ConvertUTF8ToJavaString(env, description),
+      base::android::ConvertUTF8ToJavaString(env, mid),
+      base::android::ConvertUTF8ToJavaString(env, date));
+}
+
 void UiControllerAndroid::ShowDetails(const ShowDetailsProto& show_details,
                                       base::OnceCallback<void(bool)> callback) {
   show_details_callback_ = std::move(callback);

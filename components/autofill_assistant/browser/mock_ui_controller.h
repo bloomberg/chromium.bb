@@ -62,6 +62,11 @@ class MockUiController : public UiController {
            const std::string& title,
            const std::vector<std::string>& supported_basic_card_networks));
   MOCK_METHOD0(HideDetails, void());
+  MOCK_METHOD4(ShowInitialDetails,
+               void(const std::string& title,
+                    const std::string& description,
+                    const std::string& mid,
+                    const std::string& date));
   MOCK_METHOD2(ShowDetails,
                void(const ShowDetailsProto& details,
                     base::OnceCallback<void(bool)> callback));
