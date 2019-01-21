@@ -16,6 +16,9 @@
 
 namespace autofill_assistant {
 // Class implements UiController, Client and starts the Controller.
+// TODO(crbug.com/806868): This class should be renamed to
+// AssistantMediator(Android) and listen for state changes to forward those
+// changes to the UI model.
 class UiControllerAndroid : public UiController {
  public:
   // pointers to |web_contents|, |client| and |ui_delegate| must remain valid
@@ -109,6 +112,11 @@ class UiControllerAndroid : public UiController {
  private:
   Client* const client_;
   UiDelegate* const ui_delegate_;
+
+  base::android::ScopedJavaLocalRef<jobject> GetModel();
+  base::android::ScopedJavaLocalRef<jobject> GetHeaderModel();
+
+  void SetProgressPulsingEnabled(bool enabled);
 
   // Java-side AutofillAssistantUiController object.
   base::android::ScopedJavaGlobalRef<jobject>

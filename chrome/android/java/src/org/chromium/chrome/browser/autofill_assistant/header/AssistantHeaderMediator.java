@@ -32,10 +32,6 @@ class AssistantHeaderMediator {
         mModel.set(AssistantHeaderModel.CLOSE_VISIBLE, visible);
     }
 
-    void setProgress(int progress) {
-        mModel.set(AssistantHeaderModel.PROGRESS, progress);
-    }
-
     void enableProgressBarPulsing() {
         mModel.set(AssistantHeaderModel.PROGRESS_PULSING, true);
     }

@@ -31,6 +31,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/google_api_keys.h"
+#include "jni/AssistantHeaderModel_jni.h"
+#include "jni/AssistantModel_jni.h"
 #include "jni/AutofillAssistantUiController_jni.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
@@ -58,6 +60,58 @@ UiControllerAndroid::~UiControllerAndroid() {
       AttachCurrentThread(), java_autofill_assistant_ui_controller_);
 }
 
+base::android::ScopedJavaLocalRef<jobject> UiControllerAndroid::GetModel() {
+  return Java_AutofillAssistantUiController_getModel(
+      AttachCurrentThread(), java_autofill_assistant_ui_controller_);
+}
+
+// Header related methods.
+
+base::android::ScopedJavaLocalRef<jobject>
+UiControllerAndroid::GetHeaderModel() {
+  return Java_AssistantModel_getHeaderModel(AttachCurrentThread(), GetModel());
+}
+
+void UiControllerAndroid::ShowStatusMessage(const std::string& message) {
+  if (!message.empty()) {
+    JNIEnv* env = AttachCurrentThread();
+    Java_AssistantHeaderModel_setStatusMessage(
+        env, GetHeaderModel(),
+        base::android::ConvertUTF8ToJavaString(env, message));
+  }
+}
+
+std::string UiControllerAndroid::GetStatusMessage() {
+  JNIEnv* env = AttachCurrentThread();
+  std::string status;
+  base::android::ScopedJavaLocalRef<jstring> message =
+      Java_AssistantHeaderModel_getStatusMessage(
+          env, java_autofill_assistant_ui_controller_);
+  base::android::ConvertJavaStringToUTF8(env, message.obj(), &status);
+  return status;
+}
+
+void UiControllerAndroid::ShowProgressBar(int progress,
+                                          const std::string& message) {
+  ShowStatusMessage(message);
+  // TODO(crbug.com/806868): Get progress first and call setProgress only if
+  // progress > current_progress, and remove that logic from
+  // AnimatedProgressBar.
+  Java_AssistantHeaderModel_setProgress(AttachCurrentThread(), GetHeaderModel(),
+                                        progress);
+}
+
+void UiControllerAndroid::HideProgressBar() {
+  // TODO(crbug.com/806868): Remove calls to this function.
+}
+
+void UiControllerAndroid::SetProgressPulsingEnabled(bool enabled) {
+  Java_AssistantHeaderModel_setProgressPulsingEnabled(
+      AttachCurrentThread(), GetHeaderModel(), enabled);
+}
+
+// Other methods.
+
 void UiControllerAndroid::ShowOnboarding(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& on_accept) {
@@ -65,31 +119,19 @@ void UiControllerAndroid::ShowOnboarding(
       env, java_autofill_assistant_ui_controller_, on_accept);
 }
 
-void UiControllerAndroid::ShowStatusMessage(const std::string& message) {
-  JNIEnv* env = AttachCurrentThread();
-  Java_AutofillAssistantUiController_onShowStatusMessage(
-      env, java_autofill_assistant_ui_controller_,
-      base::android::ConvertUTF8ToJavaString(env, message));
-}
-
-std::string UiControllerAndroid::GetStatusMessage() {
-  JNIEnv* env = AttachCurrentThread();
-  std::string status;
-  base::android::ScopedJavaLocalRef<jstring> message =
-      Java_AutofillAssistantUiController_onGetStatusMessage(
-          env, java_autofill_assistant_ui_controller_);
-  base::android::ConvertJavaStringToUTF8(env, message.obj(), &status);
-  return status;
-}
-
 void UiControllerAndroid::ShowOverlay() {
   Java_AutofillAssistantUiController_onShowOverlay(
       AttachCurrentThread(), java_autofill_assistant_ui_controller_);
+  SetProgressPulsingEnabled(false);
 }
 
 void UiControllerAndroid::HideOverlay() {
   Java_AutofillAssistantUiController_onHideOverlay(
       AttachCurrentThread(), java_autofill_assistant_ui_controller_);
+
+  // Hiding the overlay generally means that the user is expected to interact
+  // with the page, so we enable progress bar pulsing animation.
+  SetProgressPulsingEnabled(true);
 }
 
 void UiControllerAndroid::AllowShowingSoftKeyboard(bool enabled) {
@@ -201,6 +243,7 @@ void UiControllerAndroid::OnGetPaymentInformation(
     const JavaParamRef<jstring>& jpayer_email,
     jboolean jis_terms_and_services_accepted) {
   DCHECK(get_payment_information_callback_);
+  SetProgressPulsingEnabled(false);
 
   std::unique_ptr<PaymentInformation> payment_info =
       std::make_unique<PaymentInformation>();
@@ -320,6 +363,7 @@ void UiControllerAndroid::GetPaymentInformation(
   DCHECK(!get_payment_information_callback_);
   get_payment_information_callback_ = std::move(callback);
   JNIEnv* env = AttachCurrentThread();
+  SetProgressPulsingEnabled(true);
   Java_AutofillAssistantUiController_onRequestPaymentInformation(
       env, java_autofill_assistant_ui_controller_,
       base::android::ConvertUTF8ToJavaString(env,
@@ -374,20 +418,6 @@ void UiControllerAndroid::ShowDetails(const ShowDetailsProto& show_details,
       change_flags.highlight_title(), change_flags.highlight_date());
 }
 
-void UiControllerAndroid::ShowProgressBar(int progress,
-                                          const std::string& message) {
-  JNIEnv* env = AttachCurrentThread();
-  Java_AutofillAssistantUiController_onShowProgressBar(
-      env, java_autofill_assistant_ui_controller_, progress,
-      base::android::ConvertUTF8ToJavaString(env, message));
-}
-
-void UiControllerAndroid::HideProgressBar() {
-  JNIEnv* env = AttachCurrentThread();
-  Java_AutofillAssistantUiController_onHideProgressBar(
-      env, java_autofill_assistant_ui_controller_);
-}
-
 void UiControllerAndroid::Stop(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
@@ -407,6 +437,7 @@ void UiControllerAndroid::UpdateTouchableArea(bool enabled,
   Java_AutofillAssistantUiController_updateTouchableArea(
       env, java_autofill_assistant_ui_controller_, enabled,
       base::android::ToJavaFloatArray(env, flattened));
+  SetProgressPulsingEnabled(true);
 }
 
 void UiControllerAndroid::ExpandBottomSheet() {
