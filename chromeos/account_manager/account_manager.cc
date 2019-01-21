@@ -12,6 +12,7 @@
 #include "base/files/important_file_writer.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
@@ -29,7 +30,10 @@ namespace {
 
 constexpr base::FilePath::CharType kTokensFileName[] =
     FILE_PATH_LITERAL("AccountManagerTokens.bin");
-constexpr int kTokensFileMaxSizeInBytes = 100000;  // ~100 KB
+constexpr int kTokensFileMaxSizeInBytes = 100000;  // ~100 KB.
+
+constexpr char kNumAccountsMetricName[] = "AccountManager.NumAccounts";
+constexpr int kMaxNumAccountsMetric = 10;
 
 AccountManager::TokenMap LoadTokensFromDisk(
     const base::FilePath& tokens_file_path) {
@@ -90,6 +94,11 @@ std::vector<AccountManager::AccountKey> GetAccountKeys(
   }
 
   return accounts;
+}
+
+void RecordNumAccountsMetric(const int num_accounts) {
+  base::UmaHistogramExactLinear(kNumAccountsMetricName, num_accounts,
+                                kMaxNumAccountsMetric + 1);
 }
 
 }  // namespace
@@ -236,6 +245,8 @@ void AccountManager::InsertTokensAndRunInitializationCallbacks(
   for (const auto& token : tokens_) {
     NotifyTokenObservers(token.first);
   }
+
+  RecordNumAccountsMetric(tokens_.size());
 }
 
 AccountManager::~AccountManager() {
