@@ -59,6 +59,9 @@
   <message name="IDS_MANAGEMENT_TRUST_ROOTS_NOT_CONFIGURED" desc="Message describing that the administrators have not installed certificates" translateable="false">
     The contents of websites that you visit is not seen by your administrators
   </message>
+  <message name="IDS_MANAGEMENT_DESKTOP_MONITORING_NOTICE" desc="Message explaining that the administrators have ways to monitor users outside of chrome's control" translateable="false">
+    Administrators may have other ways of monitoring users, outside of Chrome.
+  </message>
   <if expr="chromeos">
     <message name="IDS_MANAGEMENT_TRUST_ROOTS_CONFIGURED" desc="Message describing that the administrators have installed their own certificates" translateable="false">
       Your account/device has been configured with local trust roots, which might allow administrators to see the contents of websites that you visit
