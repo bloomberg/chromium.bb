@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 // To avoid conflicts with the CreateWindow macro from the Windows SDK...
@@ -350,6 +351,10 @@ class CORE_EXPORT ChromeClient
   virtual void ShowVirtualKeyboardOnElementFocus(LocalFrame&) {}
 
   virtual void RegisterViewportLayers() const {}
+
+  virtual TransformationMatrix GetDeviceEmulationTransform() const {
+    return TransformationMatrix();
+  }
 
   virtual void OnMouseDown(Node&) {}
 
