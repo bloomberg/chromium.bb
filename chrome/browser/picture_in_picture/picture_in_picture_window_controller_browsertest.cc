@@ -2055,18 +2055,14 @@ class WebAppPictureInPictureWindowControllerBrowserTest
   DISALLOW_COPY_AND_ASSIGN(WebAppPictureInPictureWindowControllerBrowserTest);
 };
 
-#if defined(OS_WIN)
-// TODO(crbug.com/923428): Unflake on Windows.
-#define MAYBE_AutoPictureInPicture DISABLED_AutoPictureInPicture
-#else
-#define MAYBE_AutoPictureInPicture AutoPictureInPicture
-#endif
-
 // Show/hide pwa page and check that Auto Picture-in-Picture is triggered.
 IN_PROC_BROWSER_TEST_F(WebAppPictureInPictureWindowControllerBrowserTest,
-                       MAYBE_AutoPictureInPicture) {
+                       AutoPictureInPicture) {
   InstallAndLaunchPWA();
-  ASSERT_TRUE(content::ExecuteScript(web_contents(), "video.play();"));
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(web_contents(),
+                                                   "playVideo();", &result));
+  ASSERT_TRUE(result);
   ASSERT_TRUE(content::ExecuteScript(web_contents(),
                                      "video.autoPictureInPicture = true;"));
 
@@ -2112,29 +2108,25 @@ IN_PROC_BROWSER_TEST_F(WebAppPictureInPictureWindowControllerBrowserTest,
   EXPECT_FALSE(in_picture_in_picture);
 }
 
-#if defined(OS_WIN)
-// TODO(crbug.com/923428): Unflake on Windows.
-#define MAYBE_AutoPictureInPictureWhenPictureInPictureWindowAlreadyVisible \
-  DISABLED_AutoPictureInPictureWhenPictureInPictureWindowAlreadyVisible
-#else
-#define MAYBE_AutoPictureInPictureWhenPictureInPictureWindowAlreadyVisible \
-  AutoPictureInPictureWhenPictureInPictureWindowAlreadyVisible
-#endif
-
 // Check that Auto Picture-in-Picture is not triggered if there's already a
 // video in Picture-in-Picture.
 IN_PROC_BROWSER_TEST_F(
     WebAppPictureInPictureWindowControllerBrowserTest,
-    MAYBE_AutoPictureInPictureWhenPictureInPictureWindowAlreadyVisible) {
+    AutoPictureInPictureWhenPictureInPictureWindowAlreadyVisible) {
   InstallAndLaunchPWA();
 
   // Enter Picture-in-Picture for the first video and set Auto
   // Picture-in-Picture for the second video.
   bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(web_contents(),
+                                                   "playVideo();", &result));
+  ASSERT_TRUE(result);
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       web_contents(), "enterPictureInPicture();", &result));
   EXPECT_TRUE(result);
-  ASSERT_TRUE(content::ExecuteScript(web_contents(), "secondVideo.play();"));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents(), "playSecondVideo();", &result));
+  ASSERT_TRUE(result);
   ASSERT_TRUE(content::ExecuteScript(
       web_contents(), "secondVideo.autoPictureInPicture = true;"));
 
@@ -2159,7 +2151,10 @@ IN_PROC_BROWSER_TEST_F(
     WebAppPictureInPictureWindowControllerBrowserTest,
     AutoPictureInPictureNotTriggeredOnPageShownIfNoAttribute) {
   InstallAndLaunchPWA();
-  ASSERT_TRUE(content::ExecuteScript(web_contents(), "video.play();"));
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(web_contents(),
+                                                   "playVideo();", &result));
+  ASSERT_TRUE(result);
   ASSERT_TRUE(content::ExecuteScript(web_contents(),
                                      "video.autoPictureInPicture = true;"));
 
@@ -2195,10 +2190,15 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(WebAppPictureInPictureWindowControllerBrowserTest,
                        AutoPictureInPictureAttributeApplies) {
   InstallAndLaunchPWA();
-  ASSERT_TRUE(content::ExecuteScript(web_contents(), "video.play();"));
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(web_contents(),
+                                                   "playVideo();", &result));
+  ASSERT_TRUE(result);
   ASSERT_TRUE(content::ExecuteScript(web_contents(),
                                      "video.autoPictureInPicture = true;"));
-  ASSERT_TRUE(content::ExecuteScript(web_contents(), "secondVideo.play();"));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents(), "playSecondVideo();", &result));
+  ASSERT_TRUE(result);
   ASSERT_TRUE(content::ExecuteScript(
       web_contents(), "secondVideo.autoPictureInPicture = true;"));
 
@@ -2252,7 +2252,10 @@ IN_PROC_BROWSER_TEST_F(
     WebAppPictureInPictureWindowControllerBrowserTest,
     AutoPictureInPictureNotTriggeredOnPageShownIfNotEnteredAutoPictureInPicture) {
   InstallAndLaunchPWA();
-  ASSERT_TRUE(content::ExecuteScript(web_contents(), "video.play();"));
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(web_contents(),
+                                                   "playVideo();", &result));
+  ASSERT_TRUE(result);
   ASSERT_TRUE(content::ExecuteScript(web_contents(),
                                      "video.autoPictureInPicture = true;"));
 
@@ -2264,7 +2267,9 @@ IN_PROC_BROWSER_TEST_F(
       expected_title,
       content::TitleWatcher(web_contents(), expected_title).WaitAndGetTitle());
 
-  ASSERT_TRUE(content::ExecuteScript(web_contents(), "secondVideo.play();"));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents(), "playSecondVideo();", &result));
+  ASSERT_TRUE(result);
   ASSERT_TRUE(content::ExecuteScript(
       web_contents(), "secondVideo.autoPictureInPicture = true;"));
 
