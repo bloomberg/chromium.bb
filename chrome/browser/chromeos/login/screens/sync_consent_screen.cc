@@ -10,15 +10,15 @@
 #include "base/logging.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/user_manager/user_manager.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace chromeos {
 namespace {
@@ -205,8 +205,7 @@ void SyncConsentScreen::RecordConsent(
   consent_auditor::ConsentAuditor* consent_auditor =
       ConsentAuditorFactory::GetForProfile(profile_);
   const std::string& google_account_id =
-      SigninManagerFactory::GetForProfile(profile_)
-          ->GetAuthenticatedAccountId();
+      IdentityManagerFactory::GetForProfile(profile_)->GetPrimaryAccountId();
   // TODO(alemate): Support unified_consent_enabled
   sync_pb::UserConsentTypes::SyncConsent sync_consent;
   sync_consent.set_confirmation_grd_id(consent_confirmation);
