@@ -52,14 +52,7 @@ Polymer({
      */
     notificationApps_: {
       type: Array,
-      value: function() {
-        const apps = [];
-        for (let i = 0; i < NUMBER_OF_APPS_DISPLAYED_DEFAULT; i++) {
-          apps.push(app_management.FakePageHandler.createApp(
-              'Notified' + i, {title: 'App' + i}));
-        }
-        return apps;
-      },
+      value: () => [],
       observer: 'getNotificationSublabel_',
     },
   },
@@ -101,6 +94,7 @@ Polymer({
     this.displayedApps_ = this.apps_.slice(0, NUMBER_OF_APPS_DISPLAYED_DEFAULT);
     this.collapsedApps_ =
         this.apps_.slice(NUMBER_OF_APPS_DISPLAYED_DEFAULT, this.apps_.length);
+    this.notificationApps_ = this.apps_.slice();
   },
 
   /**
@@ -122,7 +116,7 @@ Polymer({
    * title ellipsised if too long.
    * @private
    */
-  getNotificationSublabel_: async function() {
+  getNotificationSublabelPieces_: async function() {
     const /** @type {string} */ label = await cr.sendWithPromise(
         'getPluralString', 'appListPreview', this.notificationApps_.length);
 
@@ -149,6 +143,15 @@ Polymer({
               p.collapsible = !!p.arg && p.arg != '$' + placeholder;
               return p;
             });
+    return pieces;
+  },
+
+  /**
+   * Create <span> for each app title previewed,
+   * making certain text fragments collapsible.
+   */
+  getNotificationSublabel_: async function() {
+    const pieces = await this.getNotificationSublabelPieces_();
     // Create <span> for each app title previewed,
     // making certain text fragments collapsible.
     const textContainer = this.$['notifications-sublabel'];

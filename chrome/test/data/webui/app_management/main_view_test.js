@@ -41,16 +41,20 @@ suite('<app-management-main-view>', function() {
     return apps;
   }
 
-  function addApps(apps) {
+  async function addApps(apps) {
     for (const app of apps) {
       callbackRouterProxy.onAppAdded(app);
     }
+    await callbackRouterProxy.flushForTesting();
   }
 
   test('simple app addition', async function() {
+    // Ensure there is no apps initially
+    expectEquals(
+        0, mainView.root.querySelectorAll('app-management-item').length);
+
     let apps = createTestApps(1);
-    addApps(apps);
-    await callbackRouterProxy.flushForTesting();
+    await addApps(apps);
     let appItems = mainView.root.querySelectorAll('app-management-item');
     expectEquals(1, appItems.length);
 
@@ -58,23 +62,30 @@ suite('<app-management-main-view>', function() {
   });
 
   test('more apps bar visibility', async function() {
-    // The more apps bar shouldn't appear when there are no apps.
-    expectEquals(
-        0, mainView.root.querySelectorAll('app-management-item').length);
-    expectTrue(mainView.$['expander-row'].hidden);
-
     // The more apps bar shouldn't appear when there are 4 apps.
-    addApps(createTestApps(4));
-    await callbackRouterProxy.flushForTesting();
+    await addApps(createTestApps(4));
     expectEquals(
         4, mainView.root.querySelectorAll('app-management-item').length);
     expectTrue(mainView.$['expander-row'].hidden);
 
     // The more apps bar appears when there are 5 apps.
-    addApps(createTestApps(1));
-    await callbackRouterProxy.flushForTesting();
+    await addApps(createTestApps(1));
     expectEquals(
         5, mainView.root.querySelectorAll('app-management-item').length);
     expectFalse(mainView.$['expander-row'].hidden);
+  });
+
+  test('notifications sublabel collapsibility', async function() {
+    // The three spans contains collapsible attribute.
+    await addApps(createTestApps(4));
+    const pieces = await mainView.getNotificationSublabelPieces_();
+    expectTrue(pieces.filter(p => p.arg === '$1')[0].collapsible);
+    expectTrue(pieces.filter(p => p.arg === '$2')[0].collapsible);
+    expectTrue(pieces.filter(p => p.arg === '$3')[0].collapsible);
+
+    // Checking ",and other x apps" is non-collapsible
+    await addApps(createTestApps(6));
+    const pieces2 = await mainView.getNotificationSublabelPieces_();
+    expectFalse(pieces2.filter(p => p.arg === '$4')[0].collapsible);
   });
 });
