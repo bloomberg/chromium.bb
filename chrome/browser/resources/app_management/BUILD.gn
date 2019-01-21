@@ -9,6 +9,7 @@ if (!is_android) {
   js_type_check("closure_compile") {
     deps = [
       ":actions",
+      ":api_listener",
       ":app",
       ":browser_proxy",
       ":chrome_app_permission_view",
@@ -19,6 +20,7 @@ if (!is_android) {
       ":metadata_view",
       ":notifications_view",
       ":permission_item",
+      ":permission_view_header",
       ":pwa_permission_view",
       ":reducers",
       ":router",
@@ -124,17 +126,17 @@ if (!is_android) {
       ":fake_page_handler",
     ]
   }
+
+  js_library("permission_item") {
+    deps = [
+      ":fake_page_handler",
+    ]
+  }
+
   js_library("permission_view_header") {
     deps = [
       ":browser_proxy",
       ":store_client",
-    ]
-  }
-
-  js_library("permission_item") {
-    deps = [
-      ":constants",
-      ":types",
     ]
   }
 

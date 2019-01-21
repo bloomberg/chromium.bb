@@ -3,7 +3,6 @@
 <link rel="import" href="actions.html">
 <link rel="import" href="browser_proxy.html">
 <link rel="import" href="chrome_app_permission_view.html">
-<link rel="import" href="constants.html">
 <link rel="import" href="main_view.html">
 <link rel="import" href="notifications_view.html">
 <link rel="import" href="pwa_permission_view.html">
@@ -18,7 +17,8 @@
   <template>
     <style include="app-management-shared-css">
     :host {
-      font-size: 13px;
+      font-size: var(--app-management-font-size);
+      line-height: var(--app-management-line-height);
     }
 
     cr-toolbar {

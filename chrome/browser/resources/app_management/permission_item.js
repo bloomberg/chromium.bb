@@ -40,6 +40,9 @@ Polymer({
       type: Number,
       computed: 'getPermissionValue_(app, permissionType)',
     },
+
+    /** @type {string} */
+    icon: String,
   },
 
   /**

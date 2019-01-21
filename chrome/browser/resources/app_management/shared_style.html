@@ -1,3 +1,4 @@
+<link rel="import" href="shared_vars.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 
@@ -15,23 +16,24 @@
         width: var(--card-width);
       }
 
-      .permission-row {
+      .separated-row {
         align-items: center;
-        border-top: var(--card-separator);
         display: inline-flex;
-        flex: 1;
-        height: 62px;
         justify-content: space-between;
+      }
+
+      .permission-card-row {
+        border-top: var(--card-separator);
         padding: 0 24px;
       }
 
-      .permission-row:first-child {
+      .permission-card-row:first-child {
         border-style: none;
       }
 
       .header-text {
-        color: var(--primary-text-color);
-        font-weight: var(--secondary-font-weight);
+        color: var(--header-text-color);
+        font-weight: var(--header-font-weight);
       }
 
       .permission-row-controls {
