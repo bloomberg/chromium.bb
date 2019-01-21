@@ -17,6 +17,7 @@
 #include "components/variations/net/variations_http_headers.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -230,8 +231,9 @@ const int kLocationAuthorizationStatusCount = 4;
     LoadJavaScriptURL(url, self.browserState,
                       self.webStateList->GetActiveWebState());
   } else {
-    // When opening a URL, force the omnibox to resign first responder.  This
-    // will also close the popup.
+    // When opening a URL, warn the omnibox geolocation in case it needs to stop
+    // the service.
+    [[OmniboxGeolocationController sharedInstance] locationBarDidSubmitURL];
 
     // TODO(crbug.com/785244): Is it ok to call |cancelOmniboxEdit| after
     // |loadURL|?  It doesn't seem to be causing major problems.  If we call

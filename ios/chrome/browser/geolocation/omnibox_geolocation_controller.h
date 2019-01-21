@@ -41,6 +41,9 @@ class NavigationItem;
     (ios::ChromeBrowserState*)browserState;
 
 // Notifies the receiver that the user submitted a URL via the location bar.
+- (void)locationBarDidSubmitURL;
+
+// TODO(crbug.com/907527): deprecated, use locationBarDidSubmitURL instead.
 - (void)locationBarDidSubmitURL:(const GURL&)url
                      transition:(ui::PageTransition)transition
                    browserState:(ios::ChromeBrowserState*)browserState;

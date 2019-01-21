@@ -13,7 +13,6 @@ source_set("url_loading") {
     "//components/sessions",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/geolocation:geolocation_internal",
     "//ios/chrome/browser/metrics:metrics_internal",
     "//ios/chrome/browser/ntp",
     "//ios/chrome/browser/prerender",
