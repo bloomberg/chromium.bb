@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/language/core/browser/url_language_histogram.h"
+#include "components/search_engines/template_url_service.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -36,11 +37,13 @@ namespace translate {
 
 ContentTranslateDriver::ContentTranslateDriver(
     content::NavigationController* nav_controller,
+    const TemplateURLService* template_url_service,
     language::UrlLanguageHistogram* url_language_histogram)
     : content::WebContentsObserver(nav_controller->GetWebContents()),
       navigation_controller_(nav_controller),
       translate_manager_(nullptr),
       max_reload_check_attempts_(kMaxTranslateLoadCheckAttempts),
+      template_url_service_(template_url_service),
       next_page_seq_no_(0),
       language_histogram_(url_language_histogram),
       weak_pointer_factory_(this) {
@@ -224,9 +227,14 @@ void ContentTranslateDriver::DidFinishNavigation(
 
   translate::TranslateLanguageList* language_list =
       translate::TranslateDownloadManager::GetInstance()->language_list();
+  const base::Optional<url::Origin>& initiator_origin =
+      navigation_handle->GetInitiatorOrigin();
+
   std::string href_translate;
   if (language_list->IsSupportedLanguage(
-          navigation_handle->GetHrefTranslate())) {
+          navigation_handle->GetHrefTranslate()) &&
+      initiator_origin.has_value() &&
+      IsDefaultSearchEngineOriginator(initiator_origin.value())) {
     href_translate = navigation_handle->GetHrefTranslate();
   }
 
@@ -237,6 +245,22 @@ void ContentTranslateDriver::DidFinishNavigation(
 
 void ContentTranslateDriver::OnPageAway(int page_seq_no) {
   pages_.erase(page_seq_no);
+}
+
+bool ContentTranslateDriver::IsDefaultSearchEngineOriginator(
+    const url::Origin& originating_origin) const {
+  const TemplateURL* default_provider =
+      template_url_service_->GetDefaultSearchProvider();
+
+  if (default_provider) {
+    GURL search_url = default_provider->GenerateSearchURL(
+        template_url_service_->search_terms_data());
+
+    return search_url.is_valid() &&
+           url::Origin::Create(search_url) == originating_origin;
+  }
+
+  return false;
 }
 
 void ContentTranslateDriver::AddBinding(
