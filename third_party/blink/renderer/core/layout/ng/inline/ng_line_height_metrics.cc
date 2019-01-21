@@ -12,7 +12,9 @@ NGLineHeightMetrics::NGLineHeightMetrics(const ComputedStyle& style,
                                          FontBaseline baseline_type) {
   const SimpleFontData* font_data = style.GetFont().PrimaryFont();
   DCHECK(font_data);
-  Initialize(font_data->GetFontMetrics(), baseline_type);
+  // TODO(kojii): This should not be null, but it happens. Avoid crash for now.
+  if (font_data)
+    Initialize(font_data->GetFontMetrics(), baseline_type);
 }
 
 NGLineHeightMetrics::NGLineHeightMetrics(const ComputedStyle& style)
