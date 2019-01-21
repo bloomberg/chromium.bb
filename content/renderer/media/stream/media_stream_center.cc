@@ -145,24 +145,24 @@ void MediaStreamCenter::DidCloneMediaStreamTrack(
 
 void MediaStreamCenter::DidSetContentHint(
     const blink::WebMediaStreamTrack& track) {
-  blink::PlatformMediaStreamTrack* native_track =
-      blink::PlatformMediaStreamTrack::GetTrack(track);
+  blink::WebPlatformMediaStreamTrack* native_track =
+      blink::WebPlatformMediaStreamTrack::GetTrack(track);
   if (native_track)
     native_track->SetContentHint(track.ContentHint());
 }
 
 void MediaStreamCenter::DidEnableMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
-  blink::PlatformMediaStreamTrack* native_track =
-      blink::PlatformMediaStreamTrack::GetTrack(track);
+  blink::WebPlatformMediaStreamTrack* native_track =
+      blink::WebPlatformMediaStreamTrack::GetTrack(track);
   if (native_track)
     native_track->SetEnabled(true);
 }
 
 void MediaStreamCenter::DidDisableMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
-  blink::PlatformMediaStreamTrack* native_track =
-      blink::PlatformMediaStreamTrack::GetTrack(track);
+  blink::WebPlatformMediaStreamTrack* native_track =
+      blink::WebPlatformMediaStreamTrack::GetTrack(track);
   if (native_track)
     native_track->SetEnabled(false);
 }
@@ -171,7 +171,7 @@ blink::WebAudioSourceProvider*
 MediaStreamCenter::CreateWebAudioSourceFromMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
   DVLOG(1) << "MediaStreamCenter::createWebAudioSourceFromMediaStreamTrack";
-  blink::PlatformMediaStreamTrack* media_stream_track =
+  blink::WebPlatformMediaStreamTrack* media_stream_track =
       track.GetPlatformTrack();
   if (!media_stream_track) {
     DLOG(ERROR) << "Native track missing for webaudio source.";
@@ -191,7 +191,7 @@ void MediaStreamCenter::DidStopMediaStreamSource(
     const blink::WebMediaStreamSource& web_source) {
   if (web_source.IsNull())
     return;
-  blink::PlatformMediaStreamSource* const source =
+  blink::WebPlatformMediaStreamSource* const source =
       web_source.GetPlatformSource();
   DCHECK(source);
   source->StopSource();

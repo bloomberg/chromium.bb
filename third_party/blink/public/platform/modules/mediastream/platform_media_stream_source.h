@@ -25,13 +25,13 @@ BLINK_PLATFORM_EXPORT extern const char kMediaStreamSourceDesktop[];
 BLINK_PLATFORM_EXPORT extern const char
     kMediaStreamSourceSystem[]; /* audio only */
 
-class BLINK_PLATFORM_EXPORT PlatformMediaStreamSource {
+class BLINK_PLATFORM_EXPORT WebPlatformMediaStreamSource {
  public:
   using SourceStoppedCallback =
       base::Callback<void(const WebMediaStreamSource& source)>;
 
   using ConstraintsCallback =
-      base::Callback<void(PlatformMediaStreamSource* source,
+      base::Callback<void(WebPlatformMediaStreamSource* source,
                           MediaStreamRequestResult result,
                           const WebString& result_name)>;
 
@@ -39,8 +39,8 @@ class BLINK_PLATFORM_EXPORT PlatformMediaStreamSource {
   // https://dev.w3.org/2011/webrtc/editor/getusermedia.html.
   static const char kSourceId[];
 
-  PlatformMediaStreamSource();
-  virtual ~PlatformMediaStreamSource();
+  WebPlatformMediaStreamSource();
+  virtual ~WebPlatformMediaStreamSource();
 
   // Returns device information about a source that has been created by a
   // JavaScript call to GetUserMedia, e.g., a camera or microphone.
@@ -93,7 +93,7 @@ class BLINK_PLATFORM_EXPORT PlatformMediaStreamSource {
                        WebPrivatePtrStrength::kWeak>
       owner_;
 
-  DISALLOW_COPY_AND_ASSIGN(PlatformMediaStreamSource);
+  DISALLOW_COPY_AND_ASSIGN(WebPlatformMediaStreamSource);
 };
 
 }  // namespace blink

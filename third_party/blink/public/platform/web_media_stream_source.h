@@ -45,8 +45,8 @@
 namespace blink {
 
 class MediaStreamSource;
-class PlatformMediaStreamSource;
 class WebAudioDestinationConsumer;
+class WebPlatformMediaStreamSource;
 class WebString;
 
 class WebMediaStreamSource {
@@ -113,9 +113,9 @@ class WebMediaStreamSource {
   BLINK_PLATFORM_EXPORT void SetReadyState(ReadyState);
   BLINK_PLATFORM_EXPORT ReadyState GetReadyState() const;
 
-  BLINK_PLATFORM_EXPORT PlatformMediaStreamSource* GetPlatformSource() const;
+  BLINK_PLATFORM_EXPORT WebPlatformMediaStreamSource* GetPlatformSource() const;
   BLINK_PLATFORM_EXPORT void SetPlatformSource(
-      std::unique_ptr<PlatformMediaStreamSource>);
+      std::unique_ptr<WebPlatformMediaStreamSource>);
 
   BLINK_PLATFORM_EXPORT void SetAudioProcessingProperties(
       EchoCancellationMode echo_cancellation_mode,

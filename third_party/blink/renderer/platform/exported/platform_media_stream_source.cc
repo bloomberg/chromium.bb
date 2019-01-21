@@ -15,28 +15,28 @@ const char kMediaStreamSourceScreen[] = "screen";
 const char kMediaStreamSourceDesktop[] = "desktop";
 const char kMediaStreamSourceSystem[] = "system";
 
-const char PlatformMediaStreamSource::kSourceId[] = "sourceId";
+const char WebPlatformMediaStreamSource::kSourceId[] = "sourceId";
 
-PlatformMediaStreamSource::PlatformMediaStreamSource() {}
+WebPlatformMediaStreamSource::WebPlatformMediaStreamSource() {}
 
-PlatformMediaStreamSource::~PlatformMediaStreamSource() {
+WebPlatformMediaStreamSource::~WebPlatformMediaStreamSource() {
   DCHECK(stop_callback_.is_null());
   owner_ = nullptr;
 }
 
-void PlatformMediaStreamSource::StopSource() {
+void WebPlatformMediaStreamSource::StopSource() {
   DoStopSource();
   FinalizeStopSource();
 }
 
-void PlatformMediaStreamSource::FinalizeStopSource() {
+void WebPlatformMediaStreamSource::FinalizeStopSource() {
   if (!stop_callback_.is_null())
     base::ResetAndReturn(&stop_callback_).Run(Owner());
   if (Owner())
     Owner().SetReadyState(blink::WebMediaStreamSource::kReadyStateEnded);
 }
 
-void PlatformMediaStreamSource::SetSourceMuted(bool is_muted) {
+void WebPlatformMediaStreamSource::SetSourceMuted(bool is_muted) {
   // Although this change is valid only if the ready state isn't already Ended,
   // there's code further along (like in blink::MediaStreamTrack) which filters
   // that out already.
@@ -47,34 +47,34 @@ void PlatformMediaStreamSource::SetSourceMuted(bool is_muted) {
                             : blink::WebMediaStreamSource::kReadyStateLive);
 }
 
-void PlatformMediaStreamSource::SetDevice(
+void WebPlatformMediaStreamSource::SetDevice(
     const blink::MediaStreamDevice& device) {
   device_ = device;
 }
 
-void PlatformMediaStreamSource::SetStopCallback(
+void WebPlatformMediaStreamSource::SetStopCallback(
     const SourceStoppedCallback& stop_callback) {
   DCHECK(stop_callback_.is_null());
   stop_callback_ = stop_callback;
 }
 
-void PlatformMediaStreamSource::ResetSourceStoppedCallback() {
+void WebPlatformMediaStreamSource::ResetSourceStoppedCallback() {
   DCHECK(!stop_callback_.is_null());
   stop_callback_.Reset();
 }
 
-void PlatformMediaStreamSource::ChangeSource(
+void WebPlatformMediaStreamSource::ChangeSource(
     const blink::MediaStreamDevice& new_device) {
   DoChangeSource(new_device);
 }
 
-WebMediaStreamSource PlatformMediaStreamSource::Owner() {
+WebMediaStreamSource WebPlatformMediaStreamSource::Owner() {
   DCHECK(owner_);
   return WebMediaStreamSource(owner_.Get());
 }
 
 #if INSIDE_BLINK
-void PlatformMediaStreamSource::SetOwner(MediaStreamSource* owner) {
+void WebPlatformMediaStreamSource::SetOwner(MediaStreamSource* owner) {
   DCHECK(!owner_);
   owner_ = owner;
 }

@@ -17,7 +17,7 @@
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/media/stream/media_stream_video_source.h"
 #include "content/renderer/media/stream/secure_display_link_tracker.h"
-#include "third_party/blink/public/platform/modules/mediastream/platform_media_stream_track.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 
 namespace content {
@@ -29,7 +29,7 @@ class VideoTrackAdapterSettings;
 // and can be retrieved from a blink object using
 // WebMediaStreamTrack::getExtraData() or MediaStreamVideoTrack::GetVideoTrack.
 class CONTENT_EXPORT MediaStreamVideoTrack
-    : public blink::PlatformMediaStreamTrack {
+    : public blink::WebPlatformMediaStreamTrack {
  public:
   // Help method to create a blink::WebMediaStreamTrack and a
   // MediaStreamVideoTrack instance. The MediaStreamVideoTrack object is owned

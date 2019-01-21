@@ -84,7 +84,7 @@ class MediaStreamAudioTrack;
 //   // MediaStreamAudioTrack instance created.
 //   CHECK(MediaStreamAudioTrack::From(blink_track));
 class CONTENT_EXPORT MediaStreamAudioSource
-    : public blink::PlatformMediaStreamSource {
+    : public blink::WebPlatformMediaStreamSource {
  public:
   explicit MediaStreamAudioSource(bool is_local_source);
   MediaStreamAudioSource(bool is_local_source,

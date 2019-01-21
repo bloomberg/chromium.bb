@@ -133,11 +133,11 @@ class CONTENT_EXPORT UserMediaProcessor
   // These are virtual for test purposes.
   virtual std::unique_ptr<MediaStreamAudioSource> CreateAudioSource(
       const blink::MediaStreamDevice& device,
-      const blink::PlatformMediaStreamSource::ConstraintsCallback&
+      const blink::WebPlatformMediaStreamSource::ConstraintsCallback&
           source_ready);
   virtual std::unique_ptr<MediaStreamVideoSource> CreateVideoSource(
       const blink::MediaStreamDevice& device,
-      const blink::PlatformMediaStreamSource::SourceStoppedCallback&
+      const blink::WebPlatformMediaStreamSource::SourceStoppedCallback&
           stop_callback);
 
   // Intended to be used only for testing.
@@ -212,16 +212,16 @@ class CONTENT_EXPORT UserMediaProcessor
   static void OnAudioSourceStartedOnAudioThread(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       base::WeakPtr<UserMediaProcessor> weak_ptr,
-      blink::PlatformMediaStreamSource* source,
+      blink::WebPlatformMediaStreamSource* source,
       blink::MediaStreamRequestResult result,
       const blink::WebString& result_name);
 
-  void OnAudioSourceStarted(blink::PlatformMediaStreamSource* source,
+  void OnAudioSourceStarted(blink::WebPlatformMediaStreamSource* source,
                             blink::MediaStreamRequestResult result,
                             const blink::WebString& result_name);
 
   void NotifyCurrentRequestInfoOfAudioSourceStarted(
-      blink::PlatformMediaStreamSource* source,
+      blink::WebPlatformMediaStreamSource* source,
       blink::MediaStreamRequestResult result,
       const blink::WebString& result_name);
 

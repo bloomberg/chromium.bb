@@ -37,7 +37,7 @@ bool AddVideoTrackToMediaStream(
       video_source->GetPreferredFormats();
   MediaStreamVideoSource* const media_stream_source =
       new MediaStreamVideoCapturerSource(
-          blink::PlatformMediaStreamSource::SourceStoppedCallback(),
+          blink::WebPlatformMediaStreamSource::SourceStoppedCallback(),
           std::move(video_source));
   const blink::WebString track_id =
       blink::WebString::FromUTF8(base::GenerateGUID());
