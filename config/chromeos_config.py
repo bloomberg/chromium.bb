@@ -1788,7 +1788,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'leon',
       'link',
       'monroe',
-      'moblab-generic-vm',
       'nami',
       'nocturne',
       'nyan_big',
@@ -1864,6 +1863,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'kevin64', # contact:manojgupta@@
       'lakitu-gpu', # contact:gmeinke@ (crbug.com/907222)
       'lasilla-ground', # contact:jemele@
+      'moblab-generic-vm', # crbug.com/920855
       'octavius', # contact:dpjacques@
       'romer', # contact:michaelho@
       'whirlwind', # contact:mxt@ (crbug.com/794242, crbug.com/819287)
