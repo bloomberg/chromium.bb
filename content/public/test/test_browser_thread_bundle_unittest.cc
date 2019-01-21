@@ -105,6 +105,8 @@ TEST(TestBrowserThreadBundleTest, RunIOThreadUntilIdle) {
 }
 
 TEST(TestBrowserThreadBundleTest, MessageLoopTypeMismatch) {
+  testing::FLAGS_gtest_death_test_style = "threadsafe";
+
   base::test::ScopedTaskEnvironment task_environment(
       base::test::ScopedTaskEnvironment::MainThreadType::UI);
 
@@ -117,6 +119,8 @@ TEST(TestBrowserThreadBundleTest, MessageLoopTypeMismatch) {
 }
 
 TEST(TestBrowserThreadBundleTest, MultipleTestBrowserThreadBundle) {
+  testing::FLAGS_gtest_death_test_style = "threadsafe";
+
   EXPECT_DEATH_IF_SUPPORTED(
       {
         TestBrowserThreadBundle test_browser_thread_bundle;
