@@ -21,7 +21,7 @@
 
 namespace gfx {
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_IOS)
 Size::Size(const CGSize& s)
     : width_(s.width < 0 ? 0 : s.width),
       height_(s.height < 0 ? 0 : s.height) {
@@ -41,7 +41,7 @@ SIZE Size::ToSIZE() const {
   s.cy = height();
   return s;
 }
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) || defined(OS_IOS)
 CGSize Size::ToCGSize() const {
   return CGSizeMake(width(), height());
 }
