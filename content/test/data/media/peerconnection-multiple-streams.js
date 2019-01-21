@@ -123,11 +123,13 @@ class PeerConnection {
   }
 
   onGetUserMediaSuccess_(stream) {
-    this.localConnection = new RTCPeerConnection(null, this.pcConstraints);
+    this.localConnection =
+        new RTCPeerConnection({sdpSemantics:'plan-b'}, this.pcConstraints);
     this.localConnection.onicecandidate = (event) => {
       this.onIceCandidate_(this.remoteConnection, event);
     };
-    this.remoteConnection = new RTCPeerConnection(null, this.pcConstraints);
+    this.remoteConnection =
+        new RTCPeerConnection({sdpSemantics:'plan-b'}, this.pcConstraints);
     this.remoteConnection.onicecandidate = (event) => {
       this.onIceCandidate_(this.localConnection, event);
     };
