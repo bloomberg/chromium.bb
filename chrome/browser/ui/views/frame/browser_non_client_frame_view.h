@@ -97,10 +97,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // tabstrip background.
   SkColor GetFrameColor(ActiveState active_state = kUseCurrent) const;
 
-  // Returns the color to use for text, caption buttons, and other title bar
-  // elements.
-  virtual SkColor GetCaptionColor(ActiveState active_state = kUseCurrent) const;
-
   // Returns COLOR_TOOLBAR_TOP_SEPARATOR[,_INACTIVE] depending on the activation
   // state of the window.
   SkColor GetToolbarTopSeparatorColor() const;
@@ -151,6 +147,10 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // By default, tabbed browser windows are themed but popup and app windows are
   // not.
   virtual bool ShouldPaintAsThemed() const;
+
+  // Returns the color to use for text, caption buttons, and other title bar
+  // elements.
+  virtual SkColor GetCaptionColor(ActiveState active_state = kUseCurrent) const;
 
   // Converts an ActiveState to a bool representing whether the frame should be
   // treated as active.

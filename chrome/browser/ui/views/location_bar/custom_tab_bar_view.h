@@ -58,8 +58,7 @@ class CustomTabBarView : public views::View,
   base::string16 location_for_testing() const { return last_location_; }
 
  private:
-  SkColor theme_color_;
-  SkColor caption_color_;
+  SkColor title_bar_color_;
 
   base::string16 last_title_;
   base::string16 last_location_;
