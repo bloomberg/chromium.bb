@@ -216,6 +216,56 @@ const autofill::PasswordForm* PasswordManagerPresenter::GetPasswordException(
   return TryGetPasswordForm(exception_map_, index);
 }
 
+void PasswordManagerPresenter::ChangeSavedPassword(
+    const std::string& sort_key,
+    base::string16 new_username,
+    base::Optional<base::string16> new_password) {
+  // If a password was provided, make sure it is not empty.
+  if (new_password && new_password->empty())
+    return;
+
+  // Find the equivalence class that needs to be updated.
+  auto it = password_map_.find(sort_key);
+  if (it == password_map_.end())
+    return;
+
+  const auto& old_forms = it->second;
+  DCHECK(!old_forms.empty());
+  const std::string& signon_realm = old_forms[0]->signon_realm;
+  const base::string16& old_username = old_forms[0]->username_value;
+
+  const bool username_changed = old_username != new_username;
+  // In case the username changed, make sure that there exists no other
+  // credential with the same signon_realm and username.
+  if (username_changed) {
+    for (const auto& sort_key_passwords_pair : password_map_) {
+      for (const auto& password : sort_key_passwords_pair.second) {
+        if (password->signon_realm == signon_realm &&
+            password->username_value == new_username) {
+          return;
+        }
+      }
+    }
+  }
+
+  PasswordStore* store = GetPasswordStore();
+  if (!store)
+    return;
+
+  // An updated username implies a change in the primary key, thus we need to
+  // make sure to call the right API. Update every entry in the equivalence
+  // class.
+  for (const auto& old_form : old_forms) {
+    autofill::PasswordForm new_form = *old_form;
+    new_form.username_value = new_username;
+    if (new_password)
+      new_form.password_value = *new_password;
+
+    username_changed ? store->UpdateLoginWithPrimaryKey(new_form, *old_form)
+                     : store->UpdateLogin(new_form);
+  }
+}
+
 void PasswordManagerPresenter::RemoveSavedPassword(size_t index) {
   if (TryRemovePasswordEntries(&password_map_, index)) {
     base::RecordAction(
