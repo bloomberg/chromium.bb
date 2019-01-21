@@ -6,8 +6,8 @@ import("//services/service_manager/public/service_manifest.gni")
 
 source_set("lib") {
   sources = [
-    "shell_util_win_impl.cc",
-    "shell_util_win_impl.h",
+    "util_win_impl.cc",
+    "util_win_impl.h",
     "util_win_service.cc",
     "util_win_service.h",
   ]

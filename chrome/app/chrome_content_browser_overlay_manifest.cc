@@ -170,7 +170,7 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
             .RequireCapability("ui", "input_device_controller")
             .RequireCapability("ui", "window_manager")
             .RequireCapability("unzip", "unzip_file")
-            .RequireCapability("util_win", "shell_util_win")
+            .RequireCapability("util_win", "util_win")
             .RequireCapability("wifi_util_win", "wifi_credentials")
             .RequireCapability("xr_device_service", "xr_device_provider")
             .RequireCapability("xr_device_service", "xr_device_test_hook")

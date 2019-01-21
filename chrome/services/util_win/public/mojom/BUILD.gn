@@ -6,7 +6,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
   sources = [
-    "shell_util_win.mojom",
+    "util_win.mojom",
   ]
 
   public_deps = [

@@ -38,7 +38,7 @@ struct FileFilterSpec {
   mojo_base.mojom.String16 extension_spec;
 };
 
-interface ShellUtilWin {
+interface UtilWin {
   // Returns the pinned state of the current executable.
   IsPinnedToTaskbar() => (bool succeeded, bool is_pinned_to_taskbar);
 

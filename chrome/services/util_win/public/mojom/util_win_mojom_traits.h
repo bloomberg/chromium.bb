@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_SERVICES_UTIL_WIN_PUBLIC_MOJOM_SHELL_UTIL_MOJOM_TRAITS_H_
-#define CHROME_SERVICES_UTIL_WIN_PUBLIC_MOJOM_SHELL_UTIL_MOJOM_TRAITS_H_
+#ifndef CHROME_SERVICES_UTIL_WIN_PUBLIC_MOJOM_UTIL_WIN_MOJOM_TRAITS_H_
+#define CHROME_SERVICES_UTIL_WIN_PUBLIC_MOJOM_UTIL_WIN_MOJOM_TRAITS_H_
 
 #include "base/strings/string16.h"
-#include "chrome/services/util_win/public/mojom/shell_util_win.mojom.h"
+#include "chrome/services/util_win/public/mojom/util_win.mojom.h"
 #include "ui/shell_dialogs/execute_select_file_win.h"
 
 namespace mojo {
@@ -35,4 +35,4 @@ struct StructTraits<chrome::mojom::FileFilterSpecDataView, ui::FileFilterSpec> {
 
 }  // namespace mojo
 
-#endif  // CHROME_SERVICES_UTIL_WIN_PUBLIC_MOJOM_SHELL_UTIL_MOJOM_TRAITS_H_
+#endif  // CHROME_SERVICES_UTIL_WIN_PUBLIC_MOJOM_UTIL_WIN_MOJOM_TRAITS_H_
