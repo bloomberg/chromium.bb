@@ -60,7 +60,7 @@ void PrePaintTreeWalk::WalkTree(LocalFrameView& root_frame_view) {
   context_storage_.pop_back();
 
 #if DCHECK_IS_ON()
-  if (!needs_tree_builder_context_update) {
+  if (needs_tree_builder_context_update) {
     if (VLOG_IS_ON(2) && root_frame_view.GetLayoutView()) {
       LOG(ERROR) << "PrePaintTreeWalk::Walk(root_frame_view="
                  << &root_frame_view << ")\nPaintLayer tree:";
