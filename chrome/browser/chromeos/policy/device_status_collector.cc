@@ -545,7 +545,7 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
         for (const std::unique_ptr<SampledData>& sample_data : samples) {
           auto it = sample_data->battery_samples.find(battery.name());
           if (it != sample_data->battery_samples.end())
-            battery_info->add_samples()->CheckTypeAndMergeFrom(it->second);
+            battery_info->add_sample()->CheckTypeAndMergeFrom(it->second);
         }
       }
     }
