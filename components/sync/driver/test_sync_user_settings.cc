@@ -83,12 +83,10 @@ bool TestSyncUserSettings::IsEncryptEverythingAllowed() const {
 void TestSyncUserSettings::SetEncryptEverythingAllowed(bool allowed) {}
 
 bool TestSyncUserSettings::IsEncryptEverythingEnabled() const {
-  return service_->IsEncryptEverythingEnabled();
+  return false;
 }
 
-void TestSyncUserSettings::EnableEncryptEverything() {
-  service_->EnableEncryptEverything();
-}
+void TestSyncUserSettings::EnableEncryptEverything() {}
 
 bool TestSyncUserSettings::IsPassphraseRequired() const {
   return service_->IsPassphraseRequired();
@@ -103,7 +101,7 @@ bool TestSyncUserSettings::IsUsingSecondaryPassphrase() const {
 }
 
 base::Time TestSyncUserSettings::GetExplicitPassphraseTime() const {
-  return service_->GetExplicitPassphraseTime();
+  return base::Time();
 }
 
 PassphraseType TestSyncUserSettings::GetPassphraseType() const {
@@ -112,13 +110,11 @@ PassphraseType TestSyncUserSettings::GetPassphraseType() const {
 }
 
 void TestSyncUserSettings::SetEncryptionPassphrase(
-    const std::string& passphrase) {
-  service_->SetEncryptionPassphrase(passphrase);
-}
+    const std::string& passphrase) {}
 
 bool TestSyncUserSettings::SetDecryptionPassphrase(
     const std::string& passphrase) {
-  return service_->SetDecryptionPassphrase(passphrase);
+  return false;
 }
 
 void TestSyncUserSettings::SetFirstSetupComplete(bool first_setup_complete) {

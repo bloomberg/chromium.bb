@@ -129,7 +129,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientPasswordsSyncTest,
 
   ASSERT_FALSE(prior_encryption_key_name.empty());
 
-  GetSyncService(0)->SetEncryptionPassphrase("hunter2");
+  GetSyncService(0)->GetUserSettings()->SetEncryptionPassphrase("hunter2");
   ASSERT_TRUE(ServerNigoriChecker(GetSyncService(0), fake_server_.get(),
                                   syncer::PassphraseType::CUSTOM_PASSPHRASE)
                   .Wait());

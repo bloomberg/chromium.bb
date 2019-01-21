@@ -42,6 +42,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/buildflags/buildflags.h"
@@ -397,7 +398,7 @@ void SupervisedUserService::SetActive(bool active) {
 
   browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
-  sync_service->SetEncryptEverythingAllowed(!active_);
+  sync_service->GetUserSettings()->SetEncryptEverythingAllowed(!active_);
 
   GetSettingsService()->SetActive(active_);
 

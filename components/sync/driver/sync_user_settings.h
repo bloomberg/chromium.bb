@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/passphrase_enums.h"
@@ -51,18 +52,29 @@ class SyncUserSettings {
   // Encryption.
   virtual bool IsEncryptEverythingAllowed() const = 0;
   virtual void SetEncryptEverythingAllowed(bool allowed) = 0;
+  // Returns true if we are currently set to encrypt all the sync data.
   virtual bool IsEncryptEverythingEnabled() const = 0;
+  // Turns on encryption for all data. Callers must call SetChosenDataTypes()
+  // after calling this to force the encryption to occur.
   virtual void EnableEncryptEverything() = 0;
 
   virtual bool IsPassphraseRequired() const = 0;
   virtual bool IsPassphraseRequiredForDecryption() const = 0;
   // "Secondary" means either a custom or a frozen implicit passphrase.
   virtual bool IsUsingSecondaryPassphrase() const = 0;
+  // Returns the time the current explicit passphrase (if any), was set.
+  // If no secondary passphrase is in use, or no time is available, returns an
+  // unset base::Time.
   virtual base::Time GetExplicitPassphraseTime() const = 0;
   virtual syncer::PassphraseType GetPassphraseType() const = 0;
 
+  // Asynchronously sets the passphrase to |passphrase| for encryption.
   virtual void SetEncryptionPassphrase(const std::string& passphrase) = 0;
-  virtual bool SetDecryptionPassphrase(const std::string& passphrase) = 0;
+  // Asynchronously decrypts pending keys using |passphrase|. Returns false
+  // immediately if the passphrase could not be used to decrypt a locally cached
+  // copy of encrypted keys; returns true otherwise.
+  virtual bool SetDecryptionPassphrase(const std::string& passphrase)
+      WARN_UNUSED_RESULT = 0;
 };
 
 }  // namespace syncer

@@ -217,13 +217,7 @@ class ProfileSyncService : public syncer::SyncService,
   bool IsSetupInProgress() const override;
   const GoogleServiceAuthError& GetAuthError() const override;
   bool IsPassphraseRequiredForDecryption() const override;
-  base::Time GetExplicitPassphraseTime() const override;
   bool IsUsingSecondaryPassphrase() const override;
-  void EnableEncryptEverything() override;
-  bool IsEncryptEverythingEnabled() const override;
-  void SetEncryptionPassphrase(const std::string& passphrase) override;
-  bool SetDecryptionPassphrase(const std::string& passphrase) override
-      WARN_UNUSED_RESULT;
   syncer::UserShare* GetUserShare() const override;
   void ReenableDatatype(syncer::ModelType type) override;
   void ReadyForStartChanged(syncer::ModelType type) override;
@@ -360,12 +354,6 @@ class ProfileSyncService : public syncer::SyncService,
   void OnPreferredDataTypesPrefChange(
       bool sync_everything,
       syncer::ModelTypeSet preferred_types) override;
-
-  // See the SyncServiceCrypto header.
-  // Virtual for testing.
-  virtual syncer::PassphraseType GetPassphraseType() const;
-  virtual bool IsEncryptEverythingAllowed() const;
-  virtual void SetEncryptEverythingAllowed(bool allowed);
 
   // Returns true if the syncer is waiting for new datatypes to be encrypted.
   bool encryption_pending() const;

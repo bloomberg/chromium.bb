@@ -76,12 +76,7 @@ class TestSyncService : public SyncService {
   bool HasObserver(const SyncServiceObserver* observer) const override;
 
   bool IsPassphraseRequiredForDecryption() const override;
-  base::Time GetExplicitPassphraseTime() const override;
   bool IsUsingSecondaryPassphrase() const override;
-  void EnableEncryptEverything() override;
-  bool IsEncryptEverythingEnabled() const override;
-  void SetEncryptionPassphrase(const std::string& passphrase) override;
-  bool SetDecryptionPassphrase(const std::string& passphrase) override;
 
   UserShare* GetUserShare() const override;
 
