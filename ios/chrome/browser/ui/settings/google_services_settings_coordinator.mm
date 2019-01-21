@@ -14,6 +14,7 @@
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/settings/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_view_controller.h"
@@ -152,6 +153,13 @@
                     completion:^(BOOL success) {
                       [weakSelf signInInteractionCoordinatorDidComplete];
                     }];
+}
+
+- (void)openAccountSettings {
+  AccountsTableViewController* controller = [[AccountsTableViewController alloc]
+           initWithBrowserState:self.browserState
+      closeSettingsOnAddAccount:NO];
+  [self.navigationController pushViewController:controller animated:YES];
 }
 
 #pragma mark - GoogleServicesSettingsViewControllerPresentationDelegate

@@ -13,7 +13,10 @@
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
+#include "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
 #include "ios/chrome/browser/sync/sync_observer_bridge.h"
+#import "ios/chrome/browser/ui/authentication/cells/table_view_account_item.h"
+#import "ios/chrome/browser/ui/authentication/resized_avatar_cache.h"
 #import "ios/chrome/browser/ui/settings/cells/account_sign_in_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
@@ -23,6 +26,7 @@
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "services/identity/public/objc/identity_manager_observer_bridge.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -38,14 +42,17 @@ namespace {
 
 // List of sections.
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
-  SyncSectionIdentifier = kSectionIdentifierEnumZero,
+  IdentitySectionIdentifier = kSectionIdentifierEnumZero,
+  SyncSectionIdentifier,
   NonPersonalizedSectionIdentifier,
 };
 
 // List of items.
 typedef NS_ENUM(NSInteger, ItemType) {
+  // IdentitySectionIdentifier section.
+  IdentityItemType = kItemTypeEnumZero,
   // SyncSectionIdentifier section.
-  SignInItemType = kItemTypeEnumZero,
+  SignInItemType,
   RestartAuthenticationFlowErrorItemType,
   ReauthDialogAsSyncIsInAuthErrorItemType,
   ShowPassphraseDialogErrorItemType,
@@ -60,6 +67,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @interface GoogleServicesSettingsMediator () <
     BooleanObserver,
+    ChromeIdentityServiceObserver,
     IdentityManagerObserverBridgeDelegate,
     SyncObserverModelBridge> {
   // Sync observer.
@@ -67,12 +75,19 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Identity manager observer.
   std::unique_ptr<identity::IdentityManagerObserverBridge>
       _identityManagerObserverBridge;
+  // Chrome identity observer.
+  std::unique_ptr<ChromeIdentityServiceObserverBridge> _identityServiceObserver;
 }
 
 // Returns YES if the user is authenticated.
 @property(nonatomic, assign, readonly) BOOL isAuthenticated;
 // Sync setup service.
 @property(nonatomic, assign, readonly) SyncSetupService* syncSetupService;
+// ** Identity section.
+// Avatar cache.
+@property(nonatomic, strong) ResizedAvatarCache* resizedAvatarCache;
+// Account item.
+@property(nonatomic, strong) TableViewAccountItem* accountItem;
 // ** Sync section.
 // YES if the impression of the Signin cell has already been recorded.
 @property(nonatomic, assign) BOOL hasRecordedSigninImpression;
@@ -142,8 +157,72 @@ typedef NS_ENUM(NSInteger, ItemType) {
                    prefName:unified_consent::prefs::
                                 kUrlKeyedAnonymizedDataCollectionEnabled];
     _anonymizedDataCollectionPreference.observer = self;
+    _resizedAvatarCache = [[ResizedAvatarCache alloc] init];
   }
   return self;
+}
+
+#pragma mark - Loads identity section
+
+// Loads the identity section.
+- (void)loadIdentitySection {
+  self.accountItem = nil;
+  if (!self.isAuthenticated)
+    return;
+  [self createIdentitySection];
+  [self configureIdentityAccountItem];
+}
+
+// Creates the identity sections.
+- (void)createIdentitySection {
+  TableViewModel* model = self.consumer.tableViewModel;
+  [model insertSectionWithIdentifier:IdentitySectionIdentifier atIndex:0];
+  DCHECK(!self.accountItem);
+  self.accountItem =
+      [[TableViewAccountItem alloc] initWithType:IdentityItemType];
+  [model addItem:self.accountItem
+      toSectionWithIdentifier:IdentitySectionIdentifier];
+}
+
+// Creates, removes or updates the identity section as needed. And notifies the
+// consumer.
+- (void)updateIdentitySectionAndNotifyConsumer {
+  TableViewModel* model = self.consumer.tableViewModel;
+  BOOL hasIdentitySection =
+      [model hasSectionForSectionIdentifier:IdentitySectionIdentifier];
+  if (!self.isAuthenticated) {
+    if (!hasIdentitySection) {
+      DCHECK(!self.accountItem);
+      return;
+    }
+    self.accountItem = nil;
+    NSInteger sectionIndex =
+        [model sectionForSectionIdentifier:IdentitySectionIdentifier];
+    [model removeSectionWithIdentifier:IdentitySectionIdentifier];
+    NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:sectionIndex];
+    [self.consumer deleteSections:indexSet];
+    return;
+  }
+  if (!hasIdentitySection) {
+    [self createIdentitySection];
+    NSInteger sectionIndex =
+        [model sectionForSectionIdentifier:IdentitySectionIdentifier];
+    NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:sectionIndex];
+    [self.consumer insertSections:indexSet];
+  }
+  [self configureIdentityAccountItem];
+  [self.consumer reloadItem:self.accountItem];
+}
+
+// Configures the identity account item.
+- (void)configureIdentityAccountItem {
+  DCHECK(self.accountItem);
+  ChromeIdentity* identity = self.authService->GetAuthenticatedIdentity();
+  DCHECK(identity);
+  self.accountItem.image =
+      [self.resizedAvatarCache resizedAvatarForIdentity:identity];
+  self.accountItem.text = identity.userFullName;
+  self.accountItem.detailText = identity.userEmail;
 }
 
 #pragma mark - Loads sync section
@@ -289,6 +368,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       case BetterSearchAndBrowsingItemType:
         switchItem.on = self.anonymizedDataCollectionPreference.value;
         break;
+      case IdentityItemType:
       case SignInItemType:
       case RestartAuthenticationFlowErrorItemType:
       case ReauthDialogAsSyncIsInAuthErrorItemType:
@@ -383,12 +463,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)googleServicesSettingsViewControllerLoadModel:
     (GoogleServicesSettingsViewController*)controller {
   DCHECK_EQ(self.consumer, controller);
+  [self loadIdentitySection];
   [self loadSyncSection];
   [self loadNonPersonalizedSection];
   _identityManagerObserverBridge.reset(
       new identity::IdentityManagerObserverBridge(self.identityManager, self));
   DCHECK(self.syncService);
   _syncObserver.reset(new SyncObserverBridge(self, self.syncService));
+  _identityServiceObserver.reset(new ChromeIdentityServiceObserverBridge(self));
 }
 
 #pragma mark - GoogleServicesSettingsServiceDelegate
@@ -416,6 +498,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     case BetterSearchAndBrowsingItemType:
       self.anonymizedDataCollectionPreference.value = value;
       break;
+    case IdentityItemType:
     case SignInItemType:
     case RestartAuthenticationFlowErrorItemType:
     case ReauthDialogAsSyncIsInAuthErrorItemType:
@@ -428,6 +511,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)didSelectItem:(TableViewItem*)item {
   ItemType type = static_cast<ItemType>(item.type);
   switch (type) {
+    case IdentityItemType:
+      [self.commandHandler openAccountSettings];
+      break;
     case SignInItemType:
       [self.commandHandler showSignIn];
       break;
@@ -457,10 +543,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)onPrimaryAccountSet:(const AccountInfo&)primaryAccountInfo {
   [self updateSyncSection:YES];
+  [self updateIdentitySectionAndNotifyConsumer];
 }
 
 - (void)onPrimaryAccountCleared:(const AccountInfo&)previousPrimaryAccountInfo {
   [self updateSyncSection:YES];
+  [self updateIdentitySectionAndNotifyConsumer];
 }
 
 #pragma mark - BooleanObserver
@@ -472,6 +560,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [model sectionForSectionIdentifier:NonPersonalizedSectionIdentifier];
   NSIndexSet* sectionIndexToReload = [NSIndexSet indexSetWithIndex:index];
   [self.consumer reloadSections:sectionIndexToReload];
+}
+
+#pragma mark - ChromeIdentityServiceObserver
+
+- (void)profileUpdate:(ChromeIdentity*)identity {
+  [self updateIdentitySectionAndNotifyConsumer];
+}
+
+- (void)chromeIdentityServiceWillBeDestroyed {
+  _identityServiceObserver.reset();
 }
 
 @end
