@@ -32,12 +32,15 @@ struct NET_EXPORT RedirectInfo {
       URLRequest::FirstPartyURLPolicy original_first_party_url_policy,
       URLRequest::ReferrerPolicy original_referrer_policy,
       const std::string& original_referrer,
+      // |response_headers| can be null. This is for non-HTTP URLRequestJobs
+      // which implement IsRedirectResponse() without having HttpResponseHeaders
+      // (ex: URLRequestFileJob). |http_status_code| and |new_location|
+      // arguments are for such case.
+      const HttpResponseHeaders* response_headers,
       // The HTTP status code of the redirect response.
       int http_status_code,
       // The new location URL of the redirect response.
       const GURL& new_location,
-      // Referrer-Policy header of the redirect response.
-      const base::Optional<std::string>& referrer_policy_header,
       // Whether the URL was upgraded to HTTPS due to upgrade-insecure-requests.
       bool insecure_scheme_was_upgraded,
       // This method copies the URL fragment of the original URL to the new URL
