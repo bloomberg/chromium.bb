@@ -1045,7 +1045,7 @@ class HostedAppBadgingTest : public HostedAppTest {
 // Tests that setting the badge to an integer will be propagated across
 // processes.
 IN_PROC_BROWSER_TEST_P(HostedAppBadgingTest, BadgeCanBeSetToAnInteger) {
-  ExecuteScriptAndWaitForBadgeChange("Badge.set(99)");
+  ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.set(99)");
   ASSERT_FALSE(was_cleared_);
   ASSERT_FALSE(was_flagged_);
   ASSERT_EQ(base::Optional<uint64_t>(99u), last_badge_content_);
@@ -1053,12 +1053,12 @@ IN_PROC_BROWSER_TEST_P(HostedAppBadgingTest, BadgeCanBeSetToAnInteger) {
 
 // Tests that calls to |Badge.clear| are propagated across processes.
 IN_PROC_BROWSER_TEST_P(HostedAppBadgingTest, BadgeCanBeClearedWithClearMethod) {
-  ExecuteScriptAndWaitForBadgeChange("Badge.set(55)");
+  ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.set(55)");
   ASSERT_FALSE(was_cleared_);
   ASSERT_FALSE(was_flagged_);
   ASSERT_EQ(base::Optional<uint64_t>(55u), last_badge_content_);
 
-  ExecuteScriptAndWaitForBadgeChange("Badge.clear()");
+  ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.clear()");
   ASSERT_TRUE(was_cleared_);
   ASSERT_FALSE(was_flagged_);
   ASSERT_EQ(base::nullopt, last_badge_content_);
@@ -1067,7 +1067,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppBadgingTest, BadgeCanBeClearedWithClearMethod) {
 // Tests that calling Badge.set(0) is equivalent to calling |Badge.clear| and
 // that it propagates across processes.
 IN_PROC_BROWSER_TEST_P(HostedAppBadgingTest, BadgeCanBeClearedWithZero) {
-  ExecuteScriptAndWaitForBadgeChange("Badge.set(0)");
+  ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.set(0)");
   ASSERT_TRUE(was_cleared_);
   ASSERT_FALSE(was_flagged_);
   ASSERT_EQ(base::nullopt, last_badge_content_);
@@ -1075,7 +1075,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppBadgingTest, BadgeCanBeClearedWithZero) {
 
 // Tests that setting the badge without content is propagated across processes.
 IN_PROC_BROWSER_TEST_P(HostedAppBadgingTest, BadgeCanBeSetWithoutAValue) {
-  ExecuteScriptAndWaitForBadgeChange("Badge.set()");
+  ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.set()");
   ASSERT_FALSE(was_cleared_);
   ASSERT_TRUE(was_flagged_);
   ASSERT_EQ(base::nullopt, last_badge_content_);

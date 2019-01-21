@@ -11,9 +11,9 @@
 <body>
 <script>
 
-badge_test(() => { Badge.set(-1); }, 'setInteger', 'TypeError');
+badge_test(() => { ExperimentalBadge.set(-1); }, 'setInteger', 'TypeError');
 
-badge_test(() => { Badge.set("Foo"); }, 'setInteger', 'TypeError');
+badge_test(() => { ExperimentalBadge.set("Foo"); }, 'setInteger', 'TypeError');
 
 </script>
 </body>
