@@ -20,8 +20,7 @@ extern NSString* const kWebViewShellAddressFieldAccessibilityLabel;
 extern NSString* const
     kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier;
 
-// Implements the main UI for web_view_shell, including the toolbar and web
-// view.
+// Implements the main UI for ios_web_view_shell.
 @interface ShellViewController : UIViewController
 
 // CWV view which renders the web page.
