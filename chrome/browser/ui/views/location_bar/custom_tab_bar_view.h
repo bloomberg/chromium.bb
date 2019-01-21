@@ -37,9 +37,6 @@ class CustomTabBarView : public views::View,
                     int index,
                     TabChangeType change_type) override;
 
-  // views::View:
-  void OnPaintBackground(gfx::Canvas* canvas) override;
-
   // LocationIconView::Delegate:
   content::WebContents* GetWebContents() override;
   bool IsEditingOrEmpty() override;
