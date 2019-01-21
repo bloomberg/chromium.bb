@@ -91,7 +91,7 @@ const gfx::VectorIcon& TypeToVectorIcon(AutocompleteMatchType::Type type) {
     case AutocompleteMatchType::NAVSUGGEST:
     case AutocompleteMatchType::BOOKMARK_TITLE:
     case AutocompleteMatchType::NAVSUGGEST_PERSONALIZED:
-    case AutocompleteMatchType::CLIPBOARD:
+    case AutocompleteMatchType::CLIPBOARD_URL:
     case AutocompleteMatchType::PHYSICAL_WEB_DEPRECATED:
     case AutocompleteMatchType::PHYSICAL_WEB_OVERFLOW_DEPRECATED:
     case AutocompleteMatchType::TAB_SEARCH_DEPRECATED:
@@ -107,6 +107,8 @@ const gfx::VectorIcon& TypeToVectorIcon(AutocompleteMatchType::Type type) {
     case AutocompleteMatchType::SEARCH_OTHER_ENGINE:
     case AutocompleteMatchType::CONTACT_DEPRECATED:
     case AutocompleteMatchType::VOICE_SUGGEST:
+    case AutocompleteMatchType::CLIPBOARD_TEXT:
+    case AutocompleteMatchType::CLIPBOARD_IMAGE:
       return kSearchIcon;
 
     case AutocompleteMatchType::SEARCH_HISTORY:
