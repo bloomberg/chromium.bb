@@ -119,9 +119,9 @@ OomInterventionConfig::OomInterventionConfig()
     return;
 
   is_renderer_pause_enabled_ = base::GetFieldTrialParamByFeatureAsBool(
-      features::kOomIntervention, kRendererPauseParamName, false);
+      features::kOomIntervention, kRendererPauseParamName, true);
   is_navigate_ads_enabled_ = base::GetFieldTrialParamByFeatureAsBool(
-      features::kOomIntervention, kNavigateAdsParamName, false);
+      features::kOomIntervention, kNavigateAdsParamName, true);
   should_detect_in_renderer_ = base::GetFieldTrialParamByFeatureAsBool(
       features::kOomIntervention, kShouldDetectInRenderer, true);
 
