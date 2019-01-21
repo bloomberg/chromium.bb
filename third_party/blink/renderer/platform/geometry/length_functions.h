@@ -40,8 +40,6 @@ PLATFORM_EXPORT int IntValueForLength(const Length&, int maximum_value);
 PLATFORM_EXPORT float FloatValueForLength(const Length&, float maximum_value);
 PLATFORM_EXPORT LayoutUnit MinimumValueForLength(const Length&,
                                                  LayoutUnit maximum_value);
-PLATFORM_EXPORT LayoutUnit
-RoundedMinimumValueForLength(const Length&, LayoutUnit maximum_value);
 PLATFORM_EXPORT LayoutUnit ValueForLength(const Length&,
                                           LayoutUnit maximum_value);
 PLATFORM_EXPORT FloatSize FloatSizeForLengthSize(const LengthSize&,
