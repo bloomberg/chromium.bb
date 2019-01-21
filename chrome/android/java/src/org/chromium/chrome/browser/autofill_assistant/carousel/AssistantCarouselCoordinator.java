@@ -11,12 +11,10 @@ import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
 import android.view.View;
 
-import org.chromium.base.Callback;
 import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.RecyclerViewAdapter;
 import org.chromium.ui.modelutil.SimpleRecyclerViewMcp;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -92,46 +90,9 @@ public class AssistantCarouselCoordinator {
         setChips(Collections.emptyList());
     }
 
-    /**
-     * Set the chips to show. The chip {@code i} should have text {@code texts[i]} and should be
-     * represented as a highlighted button iff {@code highlights[i]} is true (hence {@code texts}
-     * and {@code highlights} should have the same length.
-     * When {@code chip[i]} is clicked, {@code callback} will be called with the value i.
-     */
-    public void setChips(String[] texts, boolean[] highlights, Callback<Integer> callback) {
-        assert texts.length == highlights.length;
-        if (texts.length == 0) {
-            clearChips();
-            return;
-        }
-
-        // TODO(crbug.com/806868): Move the logic somewhere else?
-        List<AssistantChip> chips = new ArrayList<>();
-        int nonHighlightType = anyIsTrue(highlights) ? AssistantChip.TYPE_BUTTON_TEXT
-                                                     : AssistantChip.TYPE_CHIP_ASSISTIVE;
-        for (int i = 0; i < texts.length; i++) {
-            int type = highlights[i] ? AssistantChip.TYPE_BUTTON_FILLED_BLUE : nonHighlightType;
-            int index = i;
-            chips.add(new AssistantChip(type, texts[i], () -> {
-                clearChips();
-                callback.onResult(index);
-            }));
-        }
-        setChips(chips);
-    }
-
-    private boolean anyIsTrue(boolean[] flags) {
-        for (int i = 0; i < flags.length; i++) {
-            if (flags[i]) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private boolean shouldReverseLayout(List<AssistantChip> chips) {
         for (int i = 0; i < chips.size(); i++) {
-            if (chips.get(i).getType() != AssistantChip.TYPE_CHIP_ASSISTIVE) {
+            if (chips.get(i).getType() != AssistantChipType.CHIP_ASSISTIVE) {
                 return true;
             }
         }

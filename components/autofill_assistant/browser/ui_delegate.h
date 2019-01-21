@@ -25,9 +25,6 @@ class UiDelegate {
   // detected. This should cause rerun of preconditions check.
   virtual void OnUserInteractionInsideTouchableArea() = 0;
 
-  // Called when a script was selected for execution.
-  virtual void OnScriptSelected(const std::string& script_path) = 0;
-
   // Returns a string describing the current execution context. This is useful
   // when analyzing feedback forms and for debugging in general.
   virtual std::string GetDebugContext() = 0;

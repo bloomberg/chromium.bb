@@ -36,10 +36,6 @@ class AutofillAction : public Action {
 
   void EndAction(ProcessedActionStatusProto status);
 
-  // Called when the user selected the data.
-  void OnDataSelected(ActionDelegate* delegate,
-                      const std::string& guid);
-
   // Fill the form using data in client memory. Return whether filling succeeded
   // or not through OnAddressFormFilled or OnCardFormFilled.
   void FillFormWithData(ActionDelegate* delegate);

@@ -396,6 +396,7 @@ android_library("chrome_java") {
     "//chrome:pref_enum_javagen",
     "//chrome:quick_action_category_enum_javagen",
     "//chrome:signin_metrics_enum_javagen",
+    "//components/autofill_assistant/browser:autofill_assistant_enums_java",
     "//components/browsing_data/core:browsing_data_utils_java",
     "//components/browsing_data/core:clear_browsing_data_tab_java",
     "//components/consent_auditor:consent_auditor_java",

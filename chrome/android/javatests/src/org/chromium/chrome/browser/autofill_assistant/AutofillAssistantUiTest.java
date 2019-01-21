@@ -31,6 +31,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
+import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChipType;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetails;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
@@ -138,8 +139,8 @@ public class AutofillAssistantUiTest {
         // Show chips.
         List<AssistantChip> chips = Arrays.asList(
                 new AssistantChip(
-                        AssistantChip.TYPE_CHIP_ASSISTIVE, "chip 0", () -> {/* do nothing */}),
-                new AssistantChip(AssistantChip.TYPE_CHIP_ASSISTIVE, "chip 1", mRunnableMock));
+                        AssistantChipType.CHIP_ASSISTIVE, "chip 0", () -> {/* do nothing */}),
+                new AssistantChip(AssistantChipType.CHIP_ASSISTIVE, "chip 1", mRunnableMock));
         ThreadUtils.runOnUiThreadBlocking(
                 () -> assistantCoordinator.getCarouselCoordinator().setChips(chips));
         RecyclerView chipsViewContainer = assistantCoordinator.getCarouselCoordinator().getView();

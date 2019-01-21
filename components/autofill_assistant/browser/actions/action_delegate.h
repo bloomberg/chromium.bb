@@ -75,23 +75,14 @@ class ActionDelegate {
 
   // Ask user to select one of the given suggestions.
   //
-  // While Choose is in progress, the UI looks the same as it does between
+  // While SetChips is in progress, the UI looks the same as it does between
   // scripts, even though we're in the middle of a script. This includes
   // allowing access to the touchable elements set previously, in the same
   // script.
-  virtual void Choose(
-      const std::vector<UiController::Choice>& choices,
-      base::OnceCallback<void(const std::string&)> callback) = 0;
+  virtual void SetChips(std::unique_ptr<std::vector<Chip>> chips) = 0;
 
-  // Cancels a choose action in progress and pass the given result to the
-  // callback.
-  virtual void ForceChoose(const std::string& result) = 0;
-
-  // Ask user to choose an address in personal data manager. GUID of the chosen
-  // address will be returned through callback, otherwise empty string if the
-  // user chose to continue manually.
-  virtual void ChooseAddress(
-      base::OnceCallback<void(const std::string&)> callback) = 0;
+  // Remove all chips from the UI.
+  virtual void ClearChips() = 0;
 
   // Asks the user to provide the data used by UseAddressAction and
   // UseCreditCardAction.
@@ -106,12 +97,6 @@ class ActionDelegate {
   virtual void FillAddressForm(const autofill::AutofillProfile* profile,
                                const Selector& selector,
                                base::OnceCallback<void(bool)> callback) = 0;
-
-  // Ask user to choose a card in personal data manager. GUID of the chosen card
-  // will be returned through callback, otherwise empty string if the user chose
-  // to continue manually.
-  virtual void ChooseCard(
-      base::OnceCallback<void(const std::string&)> callback) = 0;
 
   // Fill the card form given by |selector| with the given |card| and its
   // |cvc|. Return result asynchronously through |callback|.
@@ -132,7 +117,7 @@ class ActionDelegate {
 
   // Sets selector of elements that can be manipulated:
   // - after the end of the script and before the beginning of the next script.
-  // - during the next call to Choose()
+  // - during the next call to SetChips()
   // whichever comes first.
   virtual void SetTouchableElements(
       const std::vector<Selector>& element_selectors) = 0;
