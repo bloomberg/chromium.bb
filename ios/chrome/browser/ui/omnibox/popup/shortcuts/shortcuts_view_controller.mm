@@ -222,8 +222,6 @@ const NSInteger kCollectionShortcutSection = 1;
       cell.tile.countContainer.hidden = NO;
       cell.accessibilityLabel = AccessibilityLabelForReadingListCellWithCount(
           self.readingListBadgeValue);
-    } else {
-      cell.tile.countLabel.text = nil;
     }
   }
 }
