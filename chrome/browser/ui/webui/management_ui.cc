@@ -44,6 +44,9 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
                              IDS_MANAGEMENT_LOCAL_TRUST_ROOTS);
   source->AddLocalizedString("managementTrustRootsNotConfigured",
                              IDS_MANAGEMENT_TRUST_ROOTS_NOT_CONFIGURED);
+  source->AddLocalizedString("managementDesktopMonitoringNotice",
+                             IDS_MANAGEMENT_DESKTOP_MONITORING_NOTICE);
+
 #if defined(OS_CHROMEOS)
   source->AddLocalizedString("managementTrustRootsConfigured",
                              IDS_MANAGEMENT_TRUST_ROOTS_CONFIGURED);
