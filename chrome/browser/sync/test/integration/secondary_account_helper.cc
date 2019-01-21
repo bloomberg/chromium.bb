@@ -9,11 +9,11 @@
 #include "chrome/browser/signin/fake_gaia_cookie_manager_service_builder.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
-#include "components/signin/core/browser/signin_manager.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
@@ -83,12 +83,14 @@ void SignInSecondaryAccount(Profile* profile, const std::string& email) {
 
 #if !defined(OS_CHROMEOS)
 void MakeAccountPrimary(Profile* profile, const std::string& email) {
-  // This is implemented in the same way as in
-  // DiceTurnSyncOnHelper::SigninAndShowSyncConfirmationUI.
-  // TODO(blundell): IdentityManager should support this use case, so we don't
-  // have to go through the legacy API.
-  SigninManagerFactory::GetForProfile(profile)->OnExternalSigninCompleted(
-      email);
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  base::Optional<AccountInfo> maybe_account =
+      identity_manager->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(
+          email);
+  DCHECK(maybe_account.has_value());
+  auto* primary_account_mutator = identity_manager->GetPrimaryAccountMutator();
+  primary_account_mutator->SetPrimaryAccount(maybe_account->account_id);
 }
 #endif  // !defined(OS_CHROMEOS)
 
