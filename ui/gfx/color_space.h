@@ -248,6 +248,9 @@ class COLOR_SPACE_EXPORT ColorSpace {
   void GetRangeAdjustMatrix(SkMatrix44* matrix) const;
 
  private:
+  static void GetPrimaryMatrix(PrimaryID, skcms_Matrix3x3* to_XYZD50);
+  static bool GetTransferFunction(TransferID, SkColorSpaceTransferFn* fn);
+
   void SetCustomTransferFunction(const SkColorSpaceTransferFn& fn);
   void SetCustomPrimaries(const skcms_Matrix3x3& to_XYZD50);
 

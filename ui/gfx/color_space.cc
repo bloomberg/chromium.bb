@@ -28,6 +28,18 @@ static bool IsAlmostZero(float value) {
   return std::abs(value) < std::numeric_limits<float>::epsilon();
 }
 
+static bool FloatsEqualWithinTolerance(const float* a,
+                                       const float* b,
+                                       int n,
+                                       float tol) {
+  for (int i = 0; i < n; ++i) {
+    if (std::abs(a[i] - b[i]) > tol) {
+      return false;
+    }
+  }
+  return true;
+}
+
 }  // namespace
 
 // static
@@ -53,55 +65,15 @@ ColorSpace::ColorSpace(const SkColorSpace& sk_color_space)
                  TransferID::INVALID,
                  MatrixID::RGB,
                  RangeID::FULL) {
-  switch (sk_color_space.gammaNamed()) {
-    case kLinear_SkGammaNamed:
-      transfer_ = TransferID::LINEAR;
-      break;
-    case kSRGB_SkGammaNamed:
-      transfer_ = TransferID::IEC61966_2_1;
-      break;
-    default: {
-      SkColorSpaceTransferFn transfer_fn;
-      if (sk_color_space.isNumericalTransferFn(&transfer_fn)) {
-        transfer_ = TransferID::CUSTOM;
-        SetCustomTransferFunction(transfer_fn);
-      } else {
-        // Construct an invalid result: Unable to determine transfer function.
-        return;
-      }
-      break;
-    }
-  }
-
-  // As of this writing, Skia doesn't provide a property accessor for its named
-  // gamuts. Therefore, the following attempts to detect by "guess and check"
-  // for the commonly-used primaries.
-  primaries_ = PrimaryID::BT709;
-  if (SkColorSpace::Equals(&sk_color_space, ToSkColorSpace().get())) {
-    return;
-  }
-  primaries_ = PrimaryID::ADOBE_RGB;
-  if (SkColorSpace::Equals(&sk_color_space, ToSkColorSpace().get())) {
-    return;
-  }
-  primaries_ = PrimaryID::SMPTEST432_1;
-  if (SkColorSpace::Equals(&sk_color_space, ToSkColorSpace().get())) {
-    return;
-  }
-  primaries_ = PrimaryID::BT2020;
-  if (SkColorSpace::Equals(&sk_color_space, ToSkColorSpace().get())) {
-    return;
-  }
-
-  // Use custom primaries, if they are representable as a "to XYZD50" matrix.
+  SkColorSpaceTransferFn fn;
   skcms_Matrix3x3 to_XYZD50;
-  if (sk_color_space.toXYZD50(&to_XYZD50)) {
-    SetCustomPrimaries(to_XYZD50);
+  if (!sk_color_space.isNumericalTransferFn(&fn) ||
+      !sk_color_space.toXYZD50(&to_XYZD50)) {
+    // Construct an invalid result: Unable to extract necessary parameters
     return;
   }
-
-  // If this point is reached, there is no way to represent the primaries.
-  primaries_ = PrimaryID::INVALID;
+  SetCustomTransferFunction(fn);
+  SetCustomPrimaries(to_XYZD50);
 }
 
 bool ColorSpace::IsValid() const {
@@ -121,11 +93,56 @@ ColorSpace ColorSpace::CreateCustom(const skcms_Matrix3x3& to_XYZD50,
 }
 
 void ColorSpace::SetCustomPrimaries(const skcms_Matrix3x3& to_XYZD50) {
+  const PrimaryID kIDsToCheck[] = {
+      PrimaryID::BT709,
+      PrimaryID::BT470M,
+      PrimaryID::BT470BG,
+      PrimaryID::SMPTE170M,
+      PrimaryID::SMPTE240M,
+      PrimaryID::FILM,
+      PrimaryID::BT2020,
+      PrimaryID::SMPTEST428_1,
+      PrimaryID::SMPTEST431_2,
+      PrimaryID::SMPTEST432_1,
+      PrimaryID::XYZ_D50,
+      PrimaryID::ADOBE_RGB,
+      PrimaryID::APPLE_GENERIC_RGB,
+      PrimaryID::WIDE_GAMUT_COLOR_SPIN,
+  };
+  for (PrimaryID id : kIDsToCheck) {
+    skcms_Matrix3x3 matrix;
+    GetPrimaryMatrix(id, &matrix);
+    if (FloatsEqualWithinTolerance(&to_XYZD50.vals[0][0], &matrix.vals[0][0], 9,
+                                   0.001f)) {
+      primaries_ = id;
+      return;
+    }
+  }
+
   memcpy(custom_primary_matrix_, &to_XYZD50, 9 * sizeof(float));
   primaries_ = PrimaryID::CUSTOM;
 }
 
 void ColorSpace::SetCustomTransferFunction(const SkColorSpaceTransferFn& fn) {
+  // These are all TransferIDs that will return a transfer function from
+  // GetTransferFunction. When multiple ids map to the same function, this list
+  // prioritizes the most common name (eg IEC61966_2_1).
+  const TransferID kIDsToCheck[] = {
+      TransferID::IEC61966_2_1, TransferID::LINEAR,
+      TransferID::GAMMA18,      TransferID::GAMMA22,
+      TransferID::GAMMA24,      TransferID::GAMMA28,
+      TransferID::SMPTE240M,    TransferID::BT709_APPLE,
+      TransferID::SMPTEST428_1,
+  };
+  for (TransferID id : kIDsToCheck) {
+    SkColorSpaceTransferFn id_fn;
+    GetTransferFunction(id, &id_fn);
+    if (FloatsEqualWithinTolerance(&fn.fG, &id_fn.fG, 7, 0.001f)) {
+      transfer_ = id;
+      return;
+    }
+  }
+
   custom_transfer_params_[0] = fn.fA;
   custom_transfer_params_[1] = fn.fB;
   custom_transfer_params_[2] = fn.fC;
@@ -133,7 +150,6 @@ void ColorSpace::SetCustomTransferFunction(const SkColorSpaceTransferFn& fn) {
   custom_transfer_params_[4] = fn.fE;
   custom_transfer_params_[5] = fn.fF;
   custom_transfer_params_[6] = fn.fG;
-  // TODO(ccameron): Use enums for near matches to know color spaces.
   transfer_ = TransferID::CUSTOM;
 }
 
@@ -490,13 +506,12 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
   return sk_color_space;
 }
 
-void ColorSpace::GetPrimaryMatrix(skcms_Matrix3x3* to_XYZD50) const {
+// static
+void ColorSpace::GetPrimaryMatrix(PrimaryID primary_id,
+                                  skcms_Matrix3x3* to_XYZD50) {
   SkColorSpacePrimaries primaries = {0};
-  switch (primaries_) {
+  switch (primary_id) {
     case ColorSpace::PrimaryID::CUSTOM:
-      memcpy(to_XYZD50, custom_primary_matrix_, 9 * sizeof(float));
-      return;
-
     case ColorSpace::PrimaryID::INVALID:
       *to_XYZD50 = SkNamedGamut::kXYZ;  // Identity
       return;
@@ -652,32 +667,33 @@ void ColorSpace::GetPrimaryMatrix(skcms_Matrix3x3* to_XYZD50) const {
   primaries.toXYZD50(to_XYZD50);
 }
 
+void ColorSpace::GetPrimaryMatrix(skcms_Matrix3x3* to_XYZD50) const {
+  if (primaries_ == PrimaryID::CUSTOM) {
+    memcpy(to_XYZD50, custom_primary_matrix_, 9 * sizeof(float));
+  } else {
+    GetPrimaryMatrix(primaries_, to_XYZD50);
+  }
+}
+
 void ColorSpace::GetPrimaryMatrix(SkMatrix44* to_XYZD50) const {
   skcms_Matrix3x3 toXYZ_3x3;
   GetPrimaryMatrix(&toXYZ_3x3);
   to_XYZD50->set3x3RowMajorf(&toXYZ_3x3.vals[0][0]);
 }
 
-bool ColorSpace::GetTransferFunction(SkColorSpaceTransferFn* fn) const {
+// static
+bool ColorSpace::GetTransferFunction(TransferID transfer,
+                                     SkColorSpaceTransferFn* fn) {
   // Default to F(x) = pow(x, 1)
   fn->fA = 1;
   fn->fB = 0;
-  fn->fC = 1;
+  fn->fC = 0;
   fn->fD = 0;
   fn->fE = 0;
   fn->fF = 0;
   fn->fG = 1;
 
-  switch (transfer_) {
-    case ColorSpace::TransferID::CUSTOM:
-      fn->fA = custom_transfer_params_[0];
-      fn->fB = custom_transfer_params_[1];
-      fn->fC = custom_transfer_params_[2];
-      fn->fD = custom_transfer_params_[3];
-      fn->fE = custom_transfer_params_[4];
-      fn->fF = custom_transfer_params_[5];
-      fn->fG = custom_transfer_params_[6];
-      return true;
+  switch (transfer) {
     case ColorSpace::TransferID::LINEAR:
     case ColorSpace::TransferID::LINEAR_HDR:
       return true;
@@ -739,11 +755,27 @@ bool ColorSpace::GetTransferFunction(SkColorSpaceTransferFn* fn) const {
     case ColorSpace::TransferID::LOG_SQRT:
     case ColorSpace::TransferID::SMPTEST2084:
     case ColorSpace::TransferID::SMPTEST2084_NON_HDR:
+    case ColorSpace::TransferID::CUSTOM:
     case ColorSpace::TransferID::INVALID:
       break;
   }
 
   return false;
+}
+
+bool ColorSpace::GetTransferFunction(SkColorSpaceTransferFn* fn) const {
+  if (transfer_ == TransferID::CUSTOM) {
+    fn->fA = custom_transfer_params_[0];
+    fn->fB = custom_transfer_params_[1];
+    fn->fC = custom_transfer_params_[2];
+    fn->fD = custom_transfer_params_[3];
+    fn->fE = custom_transfer_params_[4];
+    fn->fF = custom_transfer_params_[5];
+    fn->fG = custom_transfer_params_[6];
+    return true;
+  } else {
+    return GetTransferFunction(transfer_, fn);
+  }
 }
 
 bool ColorSpace::GetInverseTransferFunction(SkColorSpaceTransferFn* fn) const {
