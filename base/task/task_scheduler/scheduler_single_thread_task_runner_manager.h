@@ -16,6 +16,7 @@
 #include "base/task/task_scheduler/environment_config.h"
 #include "base/task/task_scheduler/scheduler_lock.h"
 #include "base/task/task_scheduler/tracked_ref.h"
+#include "base/thread_annotations.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 
@@ -109,7 +110,7 @@ class BASE_EXPORT SchedulerSingleThreadTaskRunnerManager final {
   SchedulerWorker* CreateAndRegisterSchedulerWorker(
       const std::string& name,
       SingleThreadTaskRunnerThreadMode thread_mode,
-      ThreadPriority priority_hint);
+      ThreadPriority priority_hint) EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   template <typename DelegateType>
   SchedulerWorker*& GetSharedSchedulerWorkerForTraits(const TaskTraits& traits);
@@ -125,26 +126,24 @@ class BASE_EXPORT SchedulerSingleThreadTaskRunnerManager final {
   // function. Set in Start() and never modified afterwards.
   SchedulerWorkerObserver* scheduler_worker_observer_ = nullptr;
 
-  // Synchronizes access to all members below.
   SchedulerLock lock_;
-  std::vector<scoped_refptr<SchedulerWorker>> workers_;
-  int next_worker_id_ = 0;
+  std::vector<scoped_refptr<SchedulerWorker>> workers_ GUARDED_BY(lock_);
+  int next_worker_id_ GUARDED_BY(lock_) = 0;
 
   // Workers for SingleThreadTaskRunnerThreadMode::SHARED tasks. It is
   // important to have separate threads for CONTINUE_ON_SHUTDOWN and non-
   // CONTINUE_ON_SHUTDOWN to avoid being in a situation where a
   // CONTINUE_ON_SHUTDOWN task effectively blocks shutdown by preventing a
   // BLOCK_SHUTDOWN task to be scheduled. https://crbug.com/829786
-  SchedulerWorker* shared_scheduler_workers_[ENVIRONMENT_COUNT]
-                                            [CONTINUE_ON_SHUTDOWN_COUNT] = {};
+  SchedulerWorker* shared_scheduler_workers_
+      [ENVIRONMENT_COUNT][CONTINUE_ON_SHUTDOWN_COUNT] GUARDED_BY(lock_) = {};
 #if defined(OS_WIN)
-  SchedulerWorker* shared_com_scheduler_workers_[ENVIRONMENT_COUNT]
-                                                [CONTINUE_ON_SHUTDOWN_COUNT] =
-                                                    {};
+  SchedulerWorker* shared_com_scheduler_workers_
+      [ENVIRONMENT_COUNT][CONTINUE_ON_SHUTDOWN_COUNT] GUARDED_BY(lock_) = {};
 #endif  // defined(OS_WIN)
 
   // Set to true when Start() is called.
-  bool started_ = false;
+  bool started_ GUARDED_BY(lock_) = false;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerSingleThreadTaskRunnerManager);
 };
