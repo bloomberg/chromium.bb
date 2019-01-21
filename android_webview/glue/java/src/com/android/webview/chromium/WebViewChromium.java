@@ -113,7 +113,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
 
     protected WebViewChromiumFactoryProvider mFactory;
 
-    private final SharedWebViewChromium mSharedWebViewChromium;
+    protected final SharedWebViewChromium mSharedWebViewChromium;
 
     private final boolean mShouldDisableThreadChecking;
 
