@@ -82,7 +82,7 @@ const base::Feature kSyncSendTabToSelf{"SyncSendTabToSelf",
 // If enabled, allows the Sync machinery ("transport layer") to start
 // independently of Sync-the-feature.
 const base::Feature kSyncStandaloneTransport{"SyncStandaloneTransport",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, allows the Sync machinery to start with a signed-in account that
 // has *not* been chosen as Chrome's primary account (see IdentityManager). Only
