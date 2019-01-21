@@ -16,7 +16,6 @@ import org.chromium.base.Log;
 import org.chromium.components.module_installer.ModuleInstallerBackend.OnFinishedListener;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 /**
  * Backend that uses the Play Core SDK to download a module from Play and install it subsequently.
@@ -44,12 +43,6 @@ import java.util.Collections;
             // |onFinished| here.
             onFinished(false, Arrays.asList(moduleName));
         });
-    }
-
-    @Override
-    public void installDeferred(String moduleName) {
-        assert !mIsClosed;
-        mManager.deferredInstall(Collections.singletonList(moduleName));
     }
 
     @Override

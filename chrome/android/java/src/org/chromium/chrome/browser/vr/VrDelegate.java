@@ -211,8 +211,6 @@ public abstract class VrDelegate {
         return false;
     }
 
-    /* package */ abstract void initAfterModuleInstall();
-
     protected abstract boolean expectedDensityChange();
 
     private int getIntSystemProperty(String key, int defaultValue) {
