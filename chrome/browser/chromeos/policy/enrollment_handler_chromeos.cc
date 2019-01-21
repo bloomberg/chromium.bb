@@ -25,8 +25,6 @@
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
-#include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/constants/chromeos_switches.h"
