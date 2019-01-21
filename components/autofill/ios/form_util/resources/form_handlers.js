@@ -94,9 +94,13 @@ function getFullyQualifiedUrl_(originalURL) {
  */
 function formActivity_(evt) {
   var target = evt.target;
+  if (!['FORM', 'INPUT', 'OPTION', 'SELECT', 'TEXTAREA'].includes(
+          target.tagName)) {
+    return;
+  }
   var value = target.value || '';
   var fieldType = target.type || '';
-  if (evt.type != 'blur') {
+  if (evt.type !== 'blur') {
     lastFocusedElement_ = document.activeElement;
   }
   if (['change', 'input'].includes(evt.type) &&
@@ -122,6 +126,10 @@ function formActivity_(evt) {
  */
 function submitHandler_(evt) {
   if (evt['defaultPrevented']) return;
+  if (evt.target.tagName !== 'FORM') {
+    return;
+  }
+
   formSubmitted_(evt.target);
 }
 
@@ -225,7 +233,7 @@ __gCrWeb.formHandlers['trackFormMutations'] = function(delay) {
             addedElements, [].slice.call(node.getElementsByTagName('*')));
       }
       var form_changed = addedElements.find(function(element) {
-        return element.tagName.match(/(FORM|INPUT|SELECT|OPTION)/);
+        return element.tagName.match(/(FORM|INPUT|SELECT|OPTION|TEXTAREA)/);
       });
       if (form_changed) {
         var msg = {
