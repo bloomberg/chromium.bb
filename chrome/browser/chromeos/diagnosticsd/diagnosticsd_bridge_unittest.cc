@@ -18,6 +18,8 @@
 #include "chromeos/dbus/fake_diagnosticsd_client.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -140,7 +142,9 @@ class DiagnosticsdBridgeTest : public testing::Test {
 
     diagnosticsd_bridge_ = std::make_unique<DiagnosticsdBridge>(
         std::make_unique<FakeDiagnosticsdBridgeDelegate>(
-            &mojo_diagnosticsd_service_factory_));
+            &mojo_diagnosticsd_service_factory_),
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &test_url_loader_factory_));
   }
 
   ~DiagnosticsdBridgeTest() override {
@@ -193,6 +197,7 @@ class DiagnosticsdBridgeTest : public testing::Test {
   std::unique_ptr<DiagnosticsdBridge> diagnosticsd_bridge_;
 
   diagnosticsd::mojom::DiagnosticsdClientPtr mojo_diagnosticsd_client_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
 };
 
 }  // namespace
