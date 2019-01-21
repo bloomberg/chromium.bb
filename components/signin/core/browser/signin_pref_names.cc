@@ -43,8 +43,8 @@ const char kGaiaCookiePeriodicReportTime[] = "gaia_cookie.periodic_report_time";
 // eventually be fixed, allowing the removal of kGoogleServicesUserAccountId.
 const char kGoogleServicesAccountId[] = "google.services.account_id";
 
-// The profile's hosted domain; empty if unset;
-// AccountTrackerService::kNoHostedDomainFound if there is none.
+// The profile's hosted domain; empty if unset; kNoHostedDomainFound if there
+// is none.
 const char kGoogleServicesHostedDomain[] = "google.services.hosted_domain";
 
 // Similar to kGoogleServicesLastUsername, this is the corresponding version of

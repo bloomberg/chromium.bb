@@ -32,6 +32,7 @@
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -375,8 +376,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
   EXPECT_EQ(RequestOutcome::USER_NOT_SIGNED_IN, reason);
 
   AccountInfo account_info = SetPrimaryAccount(kTestEmail);
-  SetUpSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
-                   account_info);
+  SetUpSyncAccount(kNoHostedDomainFound, account_info);
 
   // Sync password entry pinging is enabled by default.
   service_->ConfigService(false /*incognito*/, false /*SBER*/);
@@ -473,8 +473,7 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetSyncAccountTypeGmail) {
       service_->GetOrganizationName(PasswordReuseEvent::SIGN_IN_PASSWORD)
           .empty());
   AccountInfo account_info = SetPrimaryAccount(kTestGmail);
-  SetUpSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
-                   account_info);
+  SetUpSyncAccount(kNoHostedDomainFound, account_info);
   EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
   EXPECT_EQ(
       "", service_->GetOrganizationName(PasswordReuseEvent::SIGN_IN_PASSWORD));
@@ -579,8 +578,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
        VerifyPasswordReuseUserEventNotRecordedDueToIncognito) {
   // Configure sync account type to GMAIL.
   AccountInfo account_info = SetPrimaryAccount(kTestEmail);
-  SetUpSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
-                   account_info);
+  SetUpSyncAccount(kNoHostedDomainFound, account_info);
   EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
   service_->ConfigService(true /*is_incognito*/,
                           false /*is_extended_reporting*/);
@@ -616,8 +614,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
        VerifyPasswordReuseDetectedUserEventRecorded) {
   // Configure sync account type to GMAIL.
   AccountInfo account_info = SetPrimaryAccount(kTestEmail);
-  SetUpSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
-                   account_info);
+  SetUpSyncAccount(kNoHostedDomainFound, account_info);
   EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
 
   NavigateAndCommit(GURL("https://www.example.com/"));
@@ -650,8 +647,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
        VerifyPasswordCaptureEventScheduledOnStartup) {
   // Configure sync account type to GMAIL.
   AccountInfo account_info = SetPrimaryAccount(kTestEmail);
-  SetUpSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
-                   account_info);
+  SetUpSyncAccount(kNoHostedDomainFound, account_info);
   EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
 
   // Case 1: Check that the timer is not set in the ctor if no password hash is
@@ -678,8 +674,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
 
   // Configure sync account type to GMAIL.
   AccountInfo account_info = SetPrimaryAccount(kTestEmail);
-  SetUpSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
-                   account_info);
+  SetUpSyncAccount(kNoHostedDomainFound, account_info);
   EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
 
   service_ = NewMockPasswordProtectionService(
@@ -705,8 +700,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
        VerifyPasswordCaptureEventRecorded) {
   // Configure sync account type to GMAIL.
   AccountInfo account_info = SetPrimaryAccount(kTestEmail);
-  SetUpSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
-                   account_info);
+  SetUpSyncAccount(kNoHostedDomainFound, account_info);
   EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
 
   // Case 1: Default service_ ctor has an empty password hash. Should not log.
@@ -737,8 +731,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
        VerifyPasswordCaptureEventReschedules) {
   // Configure sync account type to GMAIL.
   AccountInfo account_info = SetPrimaryAccount(kTestEmail);
-  SetUpSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
-                   account_info);
+  SetUpSyncAccount(kNoHostedDomainFound, account_info);
   EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
 
   // Case 1: Default service_ ctor has an empty password hash, so we don't log
@@ -764,8 +757,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
        VerifyPasswordReuseLookupUserEventRecorded) {
   // Configure sync account type to GMAIL.
   AccountInfo account_info = SetPrimaryAccount(kTestEmail);
-  SetUpSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
-                   account_info);
+  SetUpSyncAccount(kNoHostedDomainFound, account_info);
   EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
 
   NavigateAndCommit(GURL("https://www.example.com/"));
@@ -1113,8 +1105,7 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetWarningDetailTextGmail) {
 
   // Signs in as a Gmail user.
   AccountInfo account_info = SetPrimaryAccount(kTestGmail);
-  SetUpSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
-                   account_info);
+  SetUpSyncAccount(kNoHostedDomainFound, account_info);
   EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
   EXPECT_EQ(default_warning_text, service_->GetWarningDetailText(
                                       PasswordReuseEvent::SIGN_IN_PASSWORD));

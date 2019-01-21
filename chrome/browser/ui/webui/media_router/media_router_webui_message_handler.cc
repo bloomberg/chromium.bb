@@ -27,7 +27,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/account_info.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/common/constants.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -126,7 +126,7 @@ std::unique_ptr<base::DictionaryValue> SinksAndIdentityToValue(
       // Convert default domains to user domain
       if (domain == "default") {
         domain = user_domain;
-        if (domain == AccountTrackerService::kNoHostedDomainFound) {
+        if (domain == kNoHostedDomainFound) {
           // Default domain will be empty for non-dasher accounts.
           domain.clear();
         }

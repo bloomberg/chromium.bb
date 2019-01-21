@@ -42,7 +42,6 @@
 #include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_downloader.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -62,6 +61,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_image/user_image.h"
@@ -279,7 +279,7 @@ class UserImageManagerTest : public LoginManagerTest,
     auto account_info = identity_manager->GetPrimaryAccountInfo();
     account_info.full_name = account_info.email;
     account_info.given_name = account_info.email;
-    account_info.hosted_domain = AccountTrackerService::kNoHostedDomainFound;
+    account_info.hosted_domain = kNoHostedDomainFound;
     account_info.locale = account_info.email;
     account_info.picture_url =
         embedded_test_server()->GetURL("/avatar.jpg").spec();

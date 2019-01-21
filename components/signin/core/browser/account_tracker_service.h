@@ -37,13 +37,6 @@ class DictionaryValue;
 // information about Google Accounts.
 class AccountTrackerService : public KeyedService {
  public:
-  // Value representing no hosted domain in the kGoogleServicesHostedDomain
-  // preference.
-  static const char kNoHostedDomainFound[];
-
-  // Value representing no picture URL associated with an account.
-  static const char kNoPictureURLFound[];
-
   // Clients of AccountTrackerService can implement this interface and register
   // with AddObserver() to learn about account information changes.
   class Observer {

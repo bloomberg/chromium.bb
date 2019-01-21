@@ -26,7 +26,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -252,9 +252,8 @@ TEST_F(GAIAInfoUpdateServiceTest, DownloadSuccess) {
   EXPECT_EQ(given_name, entry->GetGAIAGivenName());
   EXPECT_TRUE(gfx::test::AreImagesEqual(image, *entry->GetGAIAPicture()));
   EXPECT_EQ(url, service()->GetCachedPictureURL());
-  EXPECT_EQ(
-      AccountTrackerService::kNoHostedDomainFound,
-      profile()->GetPrefs()->GetString(prefs::kGoogleServicesHostedDomain));
+  EXPECT_EQ(kNoHostedDomainFound, profile()->GetPrefs()->GetString(
+                                      prefs::kGoogleServicesHostedDomain));
 }
 
 TEST_F(GAIAInfoUpdateServiceTest, DownloadFailure) {

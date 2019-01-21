@@ -20,7 +20,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -140,7 +140,7 @@ void GAIAInfoUpdateService::OnProfileDownloadSuccess(
   const base::string16 hosted_domain = downloader->GetProfileHostedDomain();
   profile_->GetPrefs()->SetString(
       prefs::kGoogleServicesHostedDomain,
-      (hosted_domain.empty() ? AccountTrackerService::kNoHostedDomainFound
+      (hosted_domain.empty() ? kNoHostedDomainFound
                              : base::UTF16ToUTF8(hosted_domain)));
 }
 

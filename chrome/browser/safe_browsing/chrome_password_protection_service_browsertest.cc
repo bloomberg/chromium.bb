@@ -347,8 +347,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                        VerifyUnhandledPasswordReuse) {
-  PrepareSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
-                     "stub-user@example.com");
+  PrepareSyncAccount(kNoHostedDomainFound, "stub-user@example.com");
   // Prepare sync account will trigger a password change.
   ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
   ASSERT_TRUE(service);
@@ -411,8 +410,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                        VerifyCheckGaiaPasswordChange) {
-  PrepareSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
-                     "stub-user@example.com");
+  PrepareSyncAccount(kNoHostedDomainFound, "stub-user@example.com");
   Profile* profile = browser()->profile();
   ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
   // Configures initial password to "password_1";
@@ -491,8 +489,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
       ChromePasswordProtectionService::IsPasswordReuseProtectionConfigured(
           profile));
 
-  PrepareSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
-                     "stub-user@example.com");
+  PrepareSyncAccount(kNoHostedDomainFound, "stub-user@example.com");
   profile->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
                                   PasswordProtectionTrigger::PASSWORD_REUSE);
   // Otherwise, |IsPasswordReuseProtectionConfigured(..)| returns true.

@@ -22,6 +22,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/core/browser/account_consistency_method.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/device_id_helper.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_buildflags.h"
@@ -64,8 +65,7 @@ AccountInfo CreateTestAccountInfo(const std::string& name,
   account_info.given_name = "name";
   if (is_valid) {
     account_info.hosted_domain =
-        is_hosted_domain ? "example.com"
-                         : AccountTrackerService::kNoHostedDomainFound;
+        is_hosted_domain ? "example.com" : kNoHostedDomainFound;
   }
   account_info.locale = "en";
   account_info.picture_url = "https://example.com";
