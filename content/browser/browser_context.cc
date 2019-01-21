@@ -14,7 +14,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/barrier_closure.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -40,7 +39,6 @@
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/browser/loader/shared_cors_origin_access_list_impl.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/push_messaging/push_messaging_router.h"
 #include "content/browser/service_manager/common_browser_interfaces.h"
@@ -51,6 +49,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
@@ -161,52 +160,6 @@ class ContentServiceDelegateHolder : public base::SupportsUserData::Data {
   DISALLOW_COPY_AND_ASSIGN(ContentServiceDelegateHolder);
 };
 
-// A class used to make an asynchronous Mojo call with cloned patterns for each
-// StoragePartition iteration. |this| instance will be destructed when all
-// existing asynchronous Mojo calls made in SetLists() are done, and |closure|
-// will be invoked on destructing |this|.
-class CorsOriginPatternSetter
-    : public base::RefCounted<CorsOriginPatternSetter> {
- public:
-  CorsOriginPatternSetter(
-      const url::Origin& source_origin,
-      std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
-      std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
-      base::OnceClosure closure)
-      : source_origin_(source_origin),
-        allow_patterns_(std::move(allow_patterns)),
-        block_patterns_(std::move(block_patterns)),
-        closure_(std::move(closure)) {}
-
-  void SetLists(StoragePartition* partition) {
-    partition->GetNetworkContext()->SetCorsOriginAccessListsForOrigin(
-        source_origin_, ClonePatterns(allow_patterns_),
-        ClonePatterns(block_patterns_),
-        base::BindOnce([](scoped_refptr<CorsOriginPatternSetter> setter) {},
-                       base::RetainedRef(this)));
-  }
-
-  static std::vector<network::mojom::CorsOriginPatternPtr> ClonePatterns(
-      const std::vector<network::mojom::CorsOriginPatternPtr>& patterns) {
-    std::vector<network::mojom::CorsOriginPatternPtr> cloned_patterns;
-    cloned_patterns.reserve(patterns.size());
-    for (const auto& item : patterns)
-      cloned_patterns.push_back(item.Clone());
-    return cloned_patterns;
-  }
-
- private:
-  friend class base::RefCounted<CorsOriginPatternSetter>;
-
-  ~CorsOriginPatternSetter() { std::move(closure_).Run(); }
-
-  const url::Origin source_origin_;
-  const std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns_;
-  const std::vector<network::mojom::CorsOriginPatternPtr> block_patterns_;
-
-  base::OnceClosure closure_;
-};
-
 // Key names on BrowserContext.
 const char kBrowsingDataRemoverKey[] = "browsing-data-remover";
 const char kContentServiceDelegateKey[] = "content-service-delegate";
@@ -215,7 +168,6 @@ const char kDownloadManagerKeyName[] = "download_manager";
 const char kPermissionControllerKey[] = "permission-controller";
 const char kServiceManagerConnection[] = "service-manager-connection";
 const char kServiceInstanceGroup[] = "service-instance-group";
-const char kSharedCorsOriginAccessListKey[] = "shared-cors-origin-access-list";
 const char kStoragePartitionMapKeyName[] = "content_storage_partition_map";
 const char kVideoDecodePerfHistoryId[] = "video-decode-perf-history";
 
@@ -776,50 +728,8 @@ ServiceManagerConnection* BrowserContext::GetServiceManagerConnectionFor(
                            : nullptr;
 }
 
-// static
-const SharedCorsOriginAccessList* BrowserContext::GetSharedCorsOriginAccessList(
-    BrowserContext* browser_context) {
-  return UserDataAdapter<SharedCorsOriginAccessList>::Get(
-      browser_context, kSharedCorsOriginAccessListKey);
-}
-
-// static
-void BrowserContext::SetCorsOriginAccessListsForOrigin(
-    BrowserContext* browser_context,
-    const url::Origin& source_origin,
-    std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
-    std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
-    base::OnceClosure closure) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    UserDataAdapter<SharedCorsOriginAccessList>::Get(
-        browser_context, kSharedCorsOriginAccessListKey)
-        ->SetForOrigin(source_origin, std::move(allow_patterns),
-                       std::move(block_patterns), std::move(closure));
-  } else {
-    auto barrier_closure = BarrierClosure(2, std::move(closure));
-    auto setter = base::MakeRefCounted<CorsOriginPatternSetter>(
-        source_origin, CorsOriginPatternSetter::ClonePatterns(allow_patterns),
-        CorsOriginPatternSetter::ClonePatterns(block_patterns),
-        barrier_closure);
-    ForEachStoragePartition(
-        browser_context, base::BindRepeating(&CorsOriginPatternSetter::SetLists,
-                                             base::RetainedRef(setter.get())));
-
-    // Keeps per-profile access lists in the browser process to make all
-    // NetworkContext belonging to the profile to be synchronized.
-    UserDataAdapter<SharedCorsOriginAccessList>::Get(
-        browser_context, kSharedCorsOriginAccessListKey)
-        ->SetForOrigin(source_origin, std::move(allow_patterns),
-                       std::move(block_patterns), barrier_closure);
-  }
-}
-
 BrowserContext::BrowserContext()
-    : unique_id_(base::UnguessableToken::Create().ToString()) {
-  SetUserData(kSharedCorsOriginAccessListKey,
-              std::make_unique<UserDataAdapter<SharedCorsOriginAccessList>>(
-                  new SharedCorsOriginAccessListImpl()));
-}
+    : unique_id_(base::UnguessableToken::Create().ToString()) {}
 
 BrowserContext::~BrowserContext() {
   CHECK(GetUserData(kServiceInstanceGroup))
@@ -886,6 +796,23 @@ media::VideoDecodePerfHistory* BrowserContext::GetVideoDecodePerfHistory() {
 download::InProgressDownloadManager*
 BrowserContext::RetriveInProgressDownloadManager() {
   return nullptr;
+}
+
+void BrowserContext::SetCorsOriginAccessListForOrigin(
+    const url::Origin& source_origin,
+    std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
+    std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
+    base::OnceClosure closure) {
+  NOTREACHED() << "Sub-classes should implement this method to communicate "
+                  "with NetworkService to bypass CORS checks.";
+}
+
+const SharedCorsOriginAccessList*
+BrowserContext::GetSharedCorsOriginAccessList() const {
+  // Need to return a valid instance regardless of CORS bypass supports.
+  static const base::NoDestructor<scoped_refptr<SharedCorsOriginAccessList>>
+      empty_list(SharedCorsOriginAccessList::Create());
+  return empty_list->get();
 }
 
 }  // namespace content

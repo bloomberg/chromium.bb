@@ -1243,7 +1243,7 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
     url_loader_factory_getter =
         base::MakeRefCounted<FileDownloadURLLoaderFactoryGetter>(
             params->url(), browser_context_->GetPath(),
-            BrowserContext::GetSharedCorsOriginAccessList(browser_context_));
+            browser_context_->GetSharedCorsOriginAccessList());
   } else if (params->url().SchemeIs(content::kChromeUIScheme)) {
     url_loader_factory_getter =
         base::MakeRefCounted<WebUIDownloadURLLoaderFactoryGetter>(

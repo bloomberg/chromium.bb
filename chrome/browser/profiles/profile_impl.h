@@ -100,6 +100,13 @@ class ProfileImpl : public Profile {
   net::URLRequestContextGetter* CreateMediaRequestContextForStoragePartition(
       const base::FilePath& partition_path,
       bool in_memory) override;
+  void SetCorsOriginAccessListForOrigin(
+      const url::Origin& source_origin,
+      std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
+      std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
+      base::OnceClosure closure) override;
+  const content::SharedCorsOriginAccessList* GetSharedCorsOriginAccessList()
+      const override;
   std::unique_ptr<service_manager::Service> HandleServiceRequest(
       const std::string& service_name,
       service_manager::mojom::ServiceRequest request) override;
@@ -271,6 +278,9 @@ class ProfileImpl : public Profile {
   Profile::Delegate* delegate_;
 
   ReportingPermissionsCheckerFactory reporting_permissions_checker_factory_;
+
+  scoped_refptr<content::SharedCorsOriginAccessList>
+      shared_cors_origin_access_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImpl);
 };

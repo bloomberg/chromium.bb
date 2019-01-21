@@ -11,11 +11,13 @@
 #include <utility>
 #include <vector>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/environment.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -125,6 +127,7 @@
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/common/content_constants.h"
@@ -320,6 +323,52 @@ bool LocaleNotChanged(const std::string& pref_locale,
 }
 #endif  // defined(OS_CHROMEOS)
 
+// A class used to make an asynchronous Mojo call with cloned patterns for each
+// StoragePartition iteration. |this| instance will be destructed when all
+// existing asynchronous Mojo calls made in SetLists() are done, and |closure|
+// will be invoked on destructing |this|.
+class CorsOriginPatternSetter
+    : public base::RefCounted<CorsOriginPatternSetter> {
+ public:
+  CorsOriginPatternSetter(
+      const url::Origin& source_origin,
+      std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
+      std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
+      base::OnceClosure closure)
+      : source_origin_(source_origin),
+        allow_patterns_(std::move(allow_patterns)),
+        block_patterns_(std::move(block_patterns)),
+        closure_(std::move(closure)) {}
+
+  void SetLists(content::StoragePartition* partition) {
+    partition->GetNetworkContext()->SetCorsOriginAccessListsForOrigin(
+        source_origin_, ClonePatterns(allow_patterns_),
+        ClonePatterns(block_patterns_),
+        base::BindOnce([](scoped_refptr<CorsOriginPatternSetter> setter) {},
+                       base::RetainedRef(this)));
+  }
+
+  static std::vector<network::mojom::CorsOriginPatternPtr> ClonePatterns(
+      const std::vector<network::mojom::CorsOriginPatternPtr>& patterns) {
+    std::vector<network::mojom::CorsOriginPatternPtr> cloned_patterns;
+    cloned_patterns.reserve(patterns.size());
+    for (const auto& item : patterns)
+      cloned_patterns.push_back(item.Clone());
+    return cloned_patterns;
+  }
+
+ private:
+  friend class base::RefCounted<CorsOriginPatternSetter>;
+
+  ~CorsOriginPatternSetter() { std::move(closure_).Run(); }
+
+  const url::Origin source_origin_;
+  const std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns_;
+  const std::vector<network::mojom::CorsOriginPatternPtr> block_patterns_;
+
+  base::OnceClosure closure_;
+};
+
 }  // namespace
 
 // static
@@ -452,7 +501,9 @@ ProfileImpl::ProfileImpl(
       last_session_exit_type_(EXIT_NORMAL),
       start_time_(base::Time::Now()),
       delegate_(delegate),
-      reporting_permissions_checker_factory_(this) {
+      reporting_permissions_checker_factory_(this),
+      shared_cors_origin_access_list_(
+          content::SharedCorsOriginAccessList::Create()) {
   TRACE_EVENT0("browser,startup", "ProfileImpl::ctor")
   DCHECK(!path.empty()) << "Using an empty path will attempt to write "
                         << "profile files to the root directory!";
@@ -1153,6 +1204,58 @@ ProfileImpl::CreateMediaRequestContextForStoragePartition(
   return io_data_
       .GetIsolatedMediaRequestContextGetter(partition_path, in_memory)
       .get();
+}
+
+void ProfileImpl::SetCorsOriginAccessListForOrigin(
+    const url::Origin& source_origin,
+    std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
+    std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
+    base::OnceClosure closure) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    shared_cors_origin_access_list_->SetForOrigin(
+        source_origin, std::move(allow_patterns), std::move(block_patterns),
+        std::move(closure));
+  } else {
+    auto barrier_closure = BarrierClosure(3, std::move(closure));
+
+    // Keep profile storage partitions' NetworkContexts synchronized.
+    auto profile_setter = base::MakeRefCounted<CorsOriginPatternSetter>(
+        source_origin, CorsOriginPatternSetter::ClonePatterns(allow_patterns),
+        CorsOriginPatternSetter::ClonePatterns(block_patterns),
+        barrier_closure);
+    ForEachStoragePartition(
+        this, base::BindRepeating(&CorsOriginPatternSetter::SetLists,
+                                  base::RetainedRef(profile_setter.get())));
+
+    // Keep incognito storage partitions' NetworkContexts synchronized.
+    if (HasOffTheRecordProfile()) {
+      auto off_the_record_setter =
+          base::MakeRefCounted<CorsOriginPatternSetter>(
+              source_origin,
+              CorsOriginPatternSetter::ClonePatterns(allow_patterns),
+              CorsOriginPatternSetter::ClonePatterns(block_patterns),
+              barrier_closure);
+      ForEachStoragePartition(
+          GetOffTheRecordProfile(),
+          base::BindRepeating(&CorsOriginPatternSetter::SetLists,
+                              base::RetainedRef(off_the_record_setter.get())));
+    } else {
+      // Release unused closure reference.
+      barrier_closure.Run();
+    }
+
+    // Keep the per-profile access list up to date so that we can use this to
+    // restore NetworkContext settings at anytime, e.g. on restarting the
+    // network service.
+    shared_cors_origin_access_list_->SetForOrigin(
+        source_origin, std::move(allow_patterns), std::move(block_patterns),
+        barrier_closure);
+  }
+}
+
+const content::SharedCorsOriginAccessList*
+ProfileImpl::GetSharedCorsOriginAccessList() const {
+  return shared_cors_origin_access_list_.get();
 }
 
 std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(

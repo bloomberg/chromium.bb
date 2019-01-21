@@ -13,11 +13,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/content_browser_test.h"
-#include "content/public/test/content_browser_test_utils.h"
-#include "content/shell/browser/shell.h"
 #include "net/base/host_port_pair.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/network/public/cpp/features.h"
@@ -27,8 +28,6 @@
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 #include "url/origin.h"
-
-namespace content {
 
 namespace {
 
@@ -50,7 +49,7 @@ enum class TestMode {
 
 // Tests end to end functionality of CORS access origin allow lists.
 class CorsOriginAccessListBrowserTest
-    : public ContentBrowserTest,
+    : public InProcessBrowserTest,
       public testing::WithParamInterface<TestMode> {
  public:
   CorsOriginAccessListBrowserTest() {
@@ -76,10 +75,10 @@ class CorsOriginAccessListBrowserTest
   }
 
  protected:
-  std::unique_ptr<TitleWatcher> CreateWatcher() {
+  std::unique_ptr<content::TitleWatcher> CreateWatcher() {
     // Register all possible result strings here.
-    std::unique_ptr<TitleWatcher> watcher =
-        std::make_unique<TitleWatcher>(shell()->web_contents(), pass_string());
+    std::unique_ptr<content::TitleWatcher> watcher =
+        std::make_unique<content::TitleWatcher>(web_contents(), pass_string());
     watcher->AlsoWaitForTitle(fail_string());
     return watcher;
   }
@@ -87,7 +86,7 @@ class CorsOriginAccessListBrowserTest
   std::string GetReason() {
     bool executing = true;
     std::string reason;
-    shell()->web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
+    web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
         script_,
         base::BindRepeating(
             [](bool* flag, std::string* reason, const base::Value* value) {
@@ -107,33 +106,33 @@ class CorsOriginAccessListBrowserTest
   void SetAllowList(const std::string& scheme,
                     const std::string& host,
                     network::mojom::CorsOriginAccessMatchMode mode) {
-    std::vector<network::mojom::CorsOriginPatternPtr> list1;
-    list1.push_back(network::mojom::CorsOriginPattern::New(
-        scheme, host, mode,
-        network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
-    bool first_list_done = false;
-    BrowserContext::SetCorsOriginAccessListsForOrigin(
-        shell()->web_contents()->GetBrowserContext(),
-        url::Origin::Create(embedded_test_server()->base_url().GetOrigin()),
-        std::move(list1), std::vector<network::mojom::CorsOriginPatternPtr>(),
-        base::BindOnce([](bool* flag) { *flag = true; },
-                       base::Unretained(&first_list_done)));
+    {
+      std::vector<network::mojom::CorsOriginPatternPtr> list;
+      list.push_back(network::mojom::CorsOriginPattern::New(
+          scheme, host, mode,
+          network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
 
-    std::vector<network::mojom::CorsOriginPatternPtr> list2;
-    list2.push_back(network::mojom::CorsOriginPattern::New(
-        scheme, host, mode,
-        network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
-    bool second_list_done = false;
-    BrowserContext::SetCorsOriginAccessListsForOrigin(
-        shell()->web_contents()->GetBrowserContext(),
-        url::Origin::Create(
-            embedded_test_server()->GetURL(kTestHost, "/").GetOrigin()),
-        std::move(list2), std::vector<network::mojom::CorsOriginPatternPtr>(),
-        base::BindOnce([](bool* flag) { *flag = true; },
-                       base::Unretained(&second_list_done)));
-    while (!first_list_done || !second_list_done) {
       base::RunLoop run_loop;
-      run_loop.RunUntilIdle();
+      browser()->profile()->SetCorsOriginAccessListForOrigin(
+          url::Origin::Create(embedded_test_server()->base_url().GetOrigin()),
+          std::move(list), std::vector<network::mojom::CorsOriginPatternPtr>(),
+          run_loop.QuitClosure());
+      run_loop.Run();
+    }
+
+    {
+      std::vector<network::mojom::CorsOriginPatternPtr> list;
+      list.push_back(network::mojom::CorsOriginPattern::New(
+          scheme, host, mode,
+          network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
+
+      base::RunLoop run_loop;
+      browser()->profile()->SetCorsOriginAccessListForOrigin(
+          url::Origin::Create(
+              embedded_test_server()->GetURL(kTestHost, "/").GetOrigin()),
+          std::move(list), std::vector<network::mojom::CorsOriginPatternPtr>(),
+          run_loop.QuitClosure());
+      run_loop.Run();
     }
   }
 
@@ -141,6 +140,10 @@ class CorsOriginAccessListBrowserTest
 
   const base::string16& pass_string() const { return pass_string_; }
   const base::string16& fail_string() const { return fail_string_; }
+
+  content::WebContents* web_contents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
 
  private:
   void SetUpOnMainThread() override {
@@ -169,10 +172,10 @@ class CorsOriginAccessListBrowserTest
 IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, AllowAll) {
   SetAllowList("http", "", kAllowSubdomains);
 
-  std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
-  EXPECT_TRUE(
-      NavigateToURL(shell(), embedded_test_server()->GetURL(base::StringPrintf(
-                                 "%s?target=%s", kTestPath, kTestHost))));
+  std::unique_ptr<content::TitleWatcher> watcher = CreateWatcher();
+  EXPECT_TRUE(NavigateToURL(web_contents(),
+                            embedded_test_server()->GetURL(base::StringPrintf(
+                                "%s?target=%s", kTestPath, kTestHost))));
   EXPECT_EQ(pass_string(), watcher->WaitAndGetTitle()) << GetReason();
 }
 
@@ -180,11 +183,12 @@ IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, AllowAll) {
 IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, AllowAllForIp) {
   SetAllowList("http", "", kAllowSubdomains);
 
-  std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
+  std::unique_ptr<content::TitleWatcher> watcher = CreateWatcher();
   EXPECT_TRUE(NavigateToURL(
-      shell(), embedded_test_server()->GetURL(
-                   kTestHost, base::StringPrintf("%s?target=%s", kTestPath,
-                                                 host_ip().c_str()))));
+      web_contents(),
+      embedded_test_server()->GetURL(
+          kTestHost,
+          base::StringPrintf("%s?target=%s", kTestPath, host_ip().c_str()))));
   EXPECT_EQ(pass_string(), watcher->WaitAndGetTitle()) << GetReason();
 }
 
@@ -192,10 +196,10 @@ IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, AllowAllForIp) {
 IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, AllowExactHost) {
   SetAllowList("http", kTestHost, kDisallowSubdomains);
 
-  std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
-  EXPECT_TRUE(
-      NavigateToURL(shell(), embedded_test_server()->GetURL(base::StringPrintf(
-                                 "%s?target=%s", kTestPath, kTestHost))));
+  std::unique_ptr<content::TitleWatcher> watcher = CreateWatcher();
+  EXPECT_TRUE(NavigateToURL(web_contents(),
+                            embedded_test_server()->GetURL(base::StringPrintf(
+                                "%s?target=%s", kTestPath, kTestHost))));
   EXPECT_EQ(pass_string(), watcher->WaitAndGetTitle()) << GetReason();
 }
 
@@ -205,10 +209,11 @@ IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest,
                        AllowExactHostInCaseInsensitive) {
   SetAllowList("http", kTestHost, kDisallowSubdomains);
 
-  std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
-  EXPECT_TRUE(NavigateToURL(
-      shell(), embedded_test_server()->GetURL(base::StringPrintf(
-                   "%s?target=%s", kTestPath, kTestHostInDifferentCase))));
+  std::unique_ptr<content::TitleWatcher> watcher = CreateWatcher();
+  EXPECT_TRUE(
+      NavigateToURL(web_contents(),
+                    embedded_test_server()->GetURL(base::StringPrintf(
+                        "%s?target=%s", kTestPath, kTestHostInDifferentCase))));
   EXPECT_EQ(pass_string(), watcher->WaitAndGetTitle()) << GetReason();
 }
 
@@ -217,10 +222,10 @@ IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest,
 IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, BlockDifferentPort) {
   SetAllowList("http", kTestHost, kDisallowSubdomains);
 
-  std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
+  std::unique_ptr<content::TitleWatcher> watcher = CreateWatcher();
   EXPECT_TRUE(NavigateToURL(
-      shell(), embedded_test_server()->GetURL(base::StringPrintf(
-                   "%s?target=%s&port_diff=1", kTestPath, kTestHost))));
+      web_contents(), embedded_test_server()->GetURL(base::StringPrintf(
+                          "%s?target=%s&port_diff=1", kTestPath, kTestHost))));
   EXPECT_EQ(fail_string(), watcher->WaitAndGetTitle()) << GetReason();
 }
 
@@ -228,10 +233,10 @@ IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, BlockDifferentPort) {
 IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, AllowSubdomain) {
   SetAllowList("http", kTestHost, kAllowSubdomains);
 
-  std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
+  std::unique_ptr<content::TitleWatcher> watcher = CreateWatcher();
   EXPECT_TRUE(NavigateToURL(
-      shell(), embedded_test_server()->GetURL(base::StringPrintf(
-                   "%s?target=%s", kTestPath, kTestSubdomainHost))));
+      web_contents(), embedded_test_server()->GetURL(base::StringPrintf(
+                          "%s?target=%s", kTestPath, kTestSubdomainHost))));
   EXPECT_EQ(pass_string(), watcher->WaitAndGetTitle()) << GetReason();
 }
 
@@ -239,10 +244,10 @@ IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, AllowSubdomain) {
 IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, BlockSubdomain) {
   SetAllowList("http", kTestHost, kDisallowSubdomains);
 
-  std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
+  std::unique_ptr<content::TitleWatcher> watcher = CreateWatcher();
   EXPECT_TRUE(NavigateToURL(
-      shell(), embedded_test_server()->GetURL(base::StringPrintf(
-                   "%s?target=%s", kTestPath, kTestSubdomainHost))));
+      web_contents(), embedded_test_server()->GetURL(base::StringPrintf(
+                          "%s?target=%s", kTestPath, kTestSubdomainHost))));
   EXPECT_EQ(fail_string(), watcher->WaitAndGetTitle()) << GetReason();
 }
 
@@ -252,10 +257,10 @@ IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest,
                        BlockDifferentProtocol) {
   SetAllowList("https", kTestHost, kDisallowSubdomains);
 
-  std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
-  EXPECT_TRUE(
-      NavigateToURL(shell(), embedded_test_server()->GetURL(base::StringPrintf(
-                                 "%s?target=%s", kTestPath, kTestHost))));
+  std::unique_ptr<content::TitleWatcher> watcher = CreateWatcher();
+  EXPECT_TRUE(NavigateToURL(web_contents(),
+                            embedded_test_server()->GetURL(base::StringPrintf(
+                                "%s?target=%s", kTestPath, kTestHost))));
   EXPECT_EQ(fail_string(), watcher->WaitAndGetTitle()) << GetReason();
 }
 
@@ -264,11 +269,12 @@ IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest,
                        SubdomainMatchShouldNotBeAppliedForIPAddress) {
   SetAllowList("http", "*.0.0.1", kAllowSubdomains);
 
-  std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
+  std::unique_ptr<content::TitleWatcher> watcher = CreateWatcher();
   EXPECT_TRUE(NavigateToURL(
-      shell(), embedded_test_server()->GetURL(
-                   kTestHost, base::StringPrintf("%s?target=%s", kTestPath,
-                                                 host_ip().c_str()))));
+      web_contents(),
+      embedded_test_server()->GetURL(
+          kTestHost,
+          base::StringPrintf("%s?target=%s", kTestPath, host_ip().c_str()))));
   EXPECT_EQ(fail_string(), watcher->WaitAndGetTitle()) << GetReason();
 }
 
@@ -286,5 +292,3 @@ INSTANTIATE_TEST_CASE_P(
 // and remove relevant web tests if it's possible.
 
 }  // namespace
-
-}  // namespace content

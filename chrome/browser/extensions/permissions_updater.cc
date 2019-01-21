@@ -182,9 +182,9 @@ void PermissionsUpdater::NetworkPermissionsUpdateHelper::
 
   // After an asynchronous call below, the helper will call
   // NotifyPermissionsUpdated if the profile is still valid.
-  content::BrowserContext::SetCorsOriginAccessListsForOrigin(
-      browser_context, url::Origin::Create(extension->url()),
-      std::move(allow_list), CreateCorsOriginAccessBlockList(*extension),
+  browser_context->SetCorsOriginAccessListForOrigin(
+      url::Origin::Create(extension->url()), std::move(allow_list),
+      CreateCorsOriginAccessBlockList(*extension),
       base::BindOnce(&NetworkPermissionsUpdateHelper::OnOriginAccessUpdated,
                      helper->weak_factory_.GetWeakPtr()));
 }

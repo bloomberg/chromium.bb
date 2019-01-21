@@ -249,8 +249,8 @@ void RendererStartupHelper::OnExtensionLoaded(const Extension& extension) {
                                                         &allow_list);
   }
 
-  content::BrowserContext::SetCorsOriginAccessListsForOrigin(
-      browser_context_, extension_origin, std::move(allow_list),
+  browser_context_->SetCorsOriginAccessListForOrigin(
+      extension_origin, std::move(allow_list),
       CreateCorsOriginAccessBlockList(extension), base::DoNothing::Once());
 
   // We don't need to include tab permisisons here, since the extension
@@ -284,9 +284,8 @@ void RendererStartupHelper::OnExtensionUnloaded(const Extension& extension) {
 
   // Resets registered origin access lists in the BrowserContext asynchronously.
   url::Origin extension_origin = url::Origin::Create(extension.url());
-  content::BrowserContext::SetCorsOriginAccessListsForOrigin(
-      browser_context_, extension_origin,
-      std::vector<network::mojom::CorsOriginPatternPtr>(),
+  browser_context_->SetCorsOriginAccessListForOrigin(
+      extension_origin, std::vector<network::mojom::CorsOriginPatternPtr>(),
       std::vector<network::mojom::CorsOriginPatternPtr>(),
       base::DoNothing::Once());
 

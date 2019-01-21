@@ -1700,8 +1700,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   std::unique_ptr<network::mojom::URLLoaderFactory> file_url_loader_factory =
       std::make_unique<FileURLLoaderFactory>(
           partition->browser_context()->GetPath(),
-          BrowserContext::GetSharedCorsOriginAccessList(
-              partition->browser_context()),
+          partition->browser_context()->GetSharedCorsOriginAccessList(),
           base::CreateSequencedTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
