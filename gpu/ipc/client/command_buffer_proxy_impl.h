@@ -72,9 +72,6 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
     virtual ~DeletionObserver() = default;
   };
 
-  typedef base::Callback<void(const std::string& msg, int id)>
-      GpuConsoleMessageCallback;
-
   CommandBufferProxyImpl(
       scoped_refptr<GpuChannelHost> channel,
       GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -261,8 +258,6 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
 
   // Sync token waits that haven't been flushed yet.
   std::vector<SyncToken> pending_sync_token_fences_;
-
-  GpuConsoleMessageCallback console_message_callback_;
 
   // Tasks to be invoked in SignalSyncPoint responses.
   uint32_t next_signal_id_ = 0;

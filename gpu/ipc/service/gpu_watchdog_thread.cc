@@ -118,9 +118,9 @@ void GpuWatchdogThread::CheckArmed() {
     // Called on the monitored thread. Responds with OnAcknowledge. Cannot use
     // the method factory. As we stop the task runner before destroying this
     // class, the unretained reference will always outlive the task.
-    task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&GpuWatchdogThread::OnAcknowledge, base::Unretained(this)));
+    task_runner()->PostTask(FROM_HERE,
+                            base::BindOnce(&GpuWatchdogThread::OnAcknowledge,
+                                           base::Unretained(this)));
   }
 }
 
@@ -291,8 +291,9 @@ void GpuWatchdogThread::OnAcknowledge() {
 
   // The monitored thread has responded. Post a task to check it again.
   task_runner()->PostDelayedTask(
-      FROM_HERE, base::Bind(&GpuWatchdogThread::OnCheck,
-                            weak_factory_.GetWeakPtr(), was_suspended),
+      FROM_HERE,
+      base::BindOnce(&GpuWatchdogThread::OnCheck, weak_factory_.GetWeakPtr(),
+                     was_suspended),
       0.5 * timeout_);
 }
 
@@ -332,10 +333,11 @@ void GpuWatchdogThread::OnCheck(bool after_suspend) {
 
   // Post a task to the watchdog thread to exit if the monitored thread does
   // not respond in time.
-  task_runner()->PostDelayedTask(FROM_HERE,
-                                 base::Bind(&GpuWatchdogThread::OnCheckTimeout,
-                                            weak_factory_.GetWeakPtr()),
-                                 timeout);
+  task_runner()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&GpuWatchdogThread::OnCheckTimeout,
+                     weak_factory_.GetWeakPtr()),
+      timeout);
 }
 
 void GpuWatchdogThread::OnCheckTimeout() {
@@ -361,8 +363,9 @@ void GpuWatchdogThread::OnCheckTimeout() {
     // Continue with the termination after an additional delay.
     task_runner()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang,
-                   weak_factory_.GetWeakPtr()),
+        base::BindOnce(
+            &GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang,
+            weak_factory_.GetWeakPtr()),
         0.5 * timeout_);
 
     // Post a task that does nothing on the watched thread to bump its priority
@@ -392,8 +395,9 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
   if (use_thread_cpu_time_ && (time_since_arm < timeout_)) {
     task_runner()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang,
-                   weak_factory_.GetWeakPtr()),
+        base::BindOnce(
+            &GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang,
+            weak_factory_.GetWeakPtr()),
         timeout_ - time_since_arm);
     return;
   }
@@ -544,8 +548,8 @@ void GpuWatchdogThread::AddPowerObserver() {
   // As we stop the task runner before destroying this class, the unretained
   // reference will always outlive the task.
   task_runner()->PostTask(FROM_HERE,
-                          base::Bind(&GpuWatchdogThread::OnAddPowerObserver,
-                                     base::Unretained(this)));
+                          base::BindOnce(&GpuWatchdogThread::OnAddPowerObserver,
+                                         base::Unretained(this)));
 }
 
 void GpuWatchdogThread::OnAddPowerObserver() {

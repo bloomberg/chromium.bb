@@ -194,16 +194,16 @@ void GpuChannelHost::AddRouteWithTaskRunner(
     int route_id,
     base::WeakPtr<IPC::Listener> listener,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  io_thread_->PostTask(FROM_HERE,
-                       base::Bind(&GpuChannelHost::Listener::AddRoute,
-                                  base::Unretained(listener_.get()), route_id,
-                                  listener, task_runner));
+  io_thread_->PostTask(
+      FROM_HERE, base::BindOnce(&GpuChannelHost::Listener::AddRoute,
+                                base::Unretained(listener_.get()), route_id,
+                                listener, task_runner));
 }
 
 void GpuChannelHost::RemoveRoute(int route_id) {
-  io_thread_->PostTask(FROM_HERE,
-                       base::Bind(&GpuChannelHost::Listener::RemoveRoute,
-                                  base::Unretained(listener_.get()), route_id));
+  io_thread_->PostTask(
+      FROM_HERE, base::BindOnce(&GpuChannelHost::Listener::RemoveRoute,
+                                base::Unretained(listener_.get()), route_id));
 }
 
 base::SharedMemoryHandle GpuChannelHost::ShareToGpuProcess(
@@ -294,7 +294,8 @@ void GpuChannelHost::Listener::AddRoute(
 
   if (lost_) {
     info.task_runner->PostTask(
-        FROM_HERE, base::Bind(&IPC::Listener::OnChannelError, info.listener));
+        FROM_HERE,
+        base::BindOnce(&IPC::Listener::OnChannelError, info.listener));
   }
 }
 
@@ -325,8 +326,8 @@ bool GpuChannelHost::Listener::OnMessageReceived(const IPC::Message& message) {
   const RouteInfo& info = it->second;
   info.task_runner->PostTask(
       FROM_HERE,
-      base::Bind(base::IgnoreResult(&IPC::Listener::OnMessageReceived),
-                 info.listener, message));
+      base::BindOnce(base::IgnoreResult(&IPC::Listener::OnMessageReceived),
+                     info.listener, message));
   return true;
 }
 
@@ -351,7 +352,8 @@ void GpuChannelHost::Listener::OnChannelError() {
   for (const auto& kv : routes_) {
     const RouteInfo& info = kv.second;
     info.task_runner->PostTask(
-        FROM_HERE, base::Bind(&IPC::Listener::OnChannelError, info.listener));
+        FROM_HERE,
+        base::BindOnce(&IPC::Listener::OnChannelError, info.listener));
   }
 
   routes_.clear();

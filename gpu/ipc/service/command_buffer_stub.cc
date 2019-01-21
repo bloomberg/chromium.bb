@@ -242,7 +242,7 @@ void CommandBufferStub::PollWork() {
   DCHECK(!process_delayed_work_time_.is_null());
   if (process_delayed_work_time_ > current_time) {
     channel_->task_runner()->PostDelayedTask(
-        FROM_HERE, base::Bind(&CommandBufferStub::PollWork, AsWeakPtr()),
+        FROM_HERE, base::BindOnce(&CommandBufferStub::PollWork, AsWeakPtr()),
         process_delayed_work_time_ - current_time);
     return;
   }
@@ -336,7 +336,8 @@ void CommandBufferStub::ScheduleDelayedWork(base::TimeDelta delay) {
 
   process_delayed_work_time_ = current_time + delay;
   channel_->task_runner()->PostDelayedTask(
-      FROM_HERE, base::Bind(&CommandBufferStub::PollWork, AsWeakPtr()), delay);
+      FROM_HERE, base::BindOnce(&CommandBufferStub::PollWork, AsWeakPtr()),
+      delay);
 }
 
 bool CommandBufferStub::MakeCurrent() {
@@ -606,9 +607,10 @@ void CommandBufferStub::ReportState() {
 
 void CommandBufferStub::OnSignalSyncToken(const SyncToken& sync_token,
                                           uint32_t id) {
+  auto callback =
+      base::BindOnce(&CommandBufferStub::OnSignalAck, this->AsWeakPtr(), id);
   if (!sync_point_client_state_->WaitNonThreadSafe(
-          sync_token, channel_->task_runner(),
-          base::Bind(&CommandBufferStub::OnSignalAck, this->AsWeakPtr(), id))) {
+          sync_token, channel_->task_runner(), std::move(callback))) {
     OnSignalAck(id);
   }
 }

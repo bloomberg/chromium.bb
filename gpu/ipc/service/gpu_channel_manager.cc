@@ -85,8 +85,8 @@ GpuChannelManager::GpuChannelManager(
       exiting_for_lost_context_(false),
       activity_flags_(std::move(activity_flags)),
       memory_pressure_listener_(
-          base::Bind(&GpuChannelManager::HandleMemoryPressure,
-                     base::Unretained(this))),
+          base::BindRepeating(&GpuChannelManager::HandleMemoryPressure,
+                              base::Unretained(this))),
       vulkan_context_provider_(vulkan_context_provider),
       weak_factory_(this) {
   DCHECK(task_runner->BelongsToCurrentThread());
@@ -203,8 +203,8 @@ void GpuChannelManager::LoseAllContexts() {
     kv.second->MarkAllContextsLost();
   }
   task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&GpuChannelManager::DestroyAllChannels,
-                                    weak_factory_.GetWeakPtr()));
+                         base::BindOnce(&GpuChannelManager::DestroyAllChannels,
+                                        weak_factory_.GetWeakPtr()));
 }
 
 void GpuChannelManager::MaybeExitOnContextLost() {
@@ -272,8 +272,9 @@ void GpuChannelManager::ScheduleWakeUpGpu() {
   DoWakeUpGpu();
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&GpuChannelManager::ScheduleWakeUpGpu,
-                            weak_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&GpuChannelManager::ScheduleWakeUpGpu,
+                     weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kMaxGpuIdleTimeMs));
 }
 

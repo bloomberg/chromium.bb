@@ -38,8 +38,9 @@ class GLReadbackTest : public testing::Test {
       cb.Run();
     } else {
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, base::Bind(&GLReadbackTest::WaitForQueryCallback,
-                                base::Unretained(this), q, cb),
+          FROM_HERE,
+          base::BindOnce(&GLReadbackTest::WaitForQueryCallback,
+                         base::Unretained(this), q, cb),
           base::TimeDelta::FromMilliseconds(3));
     }
   }

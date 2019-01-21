@@ -29,7 +29,6 @@ int main(int argc, char** argv) {
   // Always run the perf tests serially, to avoid distorting
   // perf measurements with randomness resulting from running
   // in parallel.
-  const auto& run_test_suite =
-      base::Bind(&RunHelper, base::Unretained(&test_suite));
-  return base::LaunchUnitTestsSerially(argc, argv, run_test_suite);
+  return base::LaunchUnitTestsSerially(
+      argc, argv, base::BindOnce(&RunHelper, base::Unretained(&test_suite)));
 }

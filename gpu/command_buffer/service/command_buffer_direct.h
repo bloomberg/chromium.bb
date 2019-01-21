@@ -21,8 +21,6 @@ class GPU_EXPORT CommandBufferDirect : public CommandBuffer,
                                        public CommandBufferServiceClient,
                                        public DecoderClient {
  public:
-  using MakeCurrentCallback = base::Callback<bool()>;
-
   explicit CommandBufferDirect(TransferBufferManager* transfer_buffer_manager);
   ~CommandBufferDirect() override;
 
