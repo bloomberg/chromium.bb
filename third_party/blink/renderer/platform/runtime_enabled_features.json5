@@ -1419,6 +1419,11 @@
       status: "experimental",
     },
     {
+      name: "WebShareV2",
+      status: "experimental",
+      depends_on: ["WebShare"],
+    },
+    {
       name: "WebUSB",
       status: "stable",
     },

@@ -4829,6 +4829,7 @@ interface Navigator
     getter webkitPersistentStorage
     getter webkitTemporaryStorage
     getter xr
+    method canShare
     method constructor
     method getBattery
     method getGamepads

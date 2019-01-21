@@ -8,6 +8,9 @@
   ImplementedAs=NavigatorShare,
   RuntimeEnabled=WebShare
 ] partial interface Navigator {
+  [SecureContext, CallWith=ScriptState, MeasureAs=WebShareCanShare, RuntimeEnabled=WebShareV2]
+  boolean canShare(optional ShareData data);
+
   [SecureContext, CallWith=ScriptState, MeasureAs=WebShareShare]
   Promise<void> share(optional ShareData data);
 };

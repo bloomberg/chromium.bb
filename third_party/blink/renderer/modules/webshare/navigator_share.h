@@ -36,6 +36,8 @@ class NavigatorShare final : public GarbageCollectedFinalized<NavigatorShare>,
   static NavigatorShare& From(Navigator&);
 
   // Navigator partial interface
+  bool canShare(ScriptState*, const ShareData*);
+  static bool canShare(ScriptState*, Navigator&, const ShareData*);
   ScriptPromise share(ScriptState*, const ShareData*);
   static ScriptPromise share(ScriptState*, Navigator&, const ShareData*);
 
