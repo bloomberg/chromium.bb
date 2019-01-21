@@ -14807,4 +14807,135 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(bad_message::RFH_INVALID_ORIGIN_ON_COMMIT, kill_waiter.Wait());
 }
 
+// When an iframe is detached, check that unload handlers execute in all of its
+// child frames. Start from A(B(C)) and delete B from A.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       DetachedIframeUnloadHandlerABC) {
+  GURL initial_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
+
+  // 1) Navigate to a(b(c))
+  EXPECT_TRUE(NavigateToURL(shell(), initial_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  RenderFrameHostImpl* rfh_a = root->current_frame_host();
+  RenderFrameHostImpl* rfh_b = rfh_a->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* rfh_c = rfh_b->child_at(0)->current_frame_host();
+
+  // 2) Add unload handlers on B and C.
+  UnloadPrint(rfh_b->frame_tree_node(), "B");
+  UnloadPrint(rfh_c->frame_tree_node(), "C");
+
+  DOMMessageQueue dom_message_queue(web_contents());
+  RenderProcessHostWatcher shutdown_B(
+      rfh_b->GetProcess(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  RenderProcessHostWatcher shutdown_C(
+      rfh_c->GetProcess(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+
+  // 3) Detach B from A.
+  ExecuteScriptAsync(root, "document.querySelector('iframe').remove();");
+
+  // 4) Wait for unload handler.
+  std::vector<std::string> messages(2);
+  EXPECT_TRUE(dom_message_queue.WaitForMessage(&messages[0]));
+  EXPECT_TRUE(dom_message_queue.WaitForMessage(&messages[1]));
+  std::string unused;
+  EXPECT_FALSE(dom_message_queue.PopMessage(&unused));
+
+  std::sort(messages.begin(), messages.end());
+  EXPECT_EQ("\"B\"", messages[0]);
+  EXPECT_EQ("\"C\"", messages[1]);
+
+  // Make sure the processes are deleted at some point.
+  shutdown_B.Wait();
+  shutdown_C.Wait();
+}
+
+// When an iframe is detached, check that unload handlers execute in all of its
+// child frames. Start from A(B1(C(B2))) and delete B1 from A.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       DetachedIframeUnloadHandlerABCB) {
+  GURL initial_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(c(b)))"));
+
+  // 1) Navigate to a(b(c(b)))
+  EXPECT_TRUE(NavigateToURL(shell(), initial_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  RenderFrameHostImpl* rfh_a = root->current_frame_host();
+  RenderFrameHostImpl* rfh_b1 = rfh_a->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* rfh_c = rfh_b1->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* rfh_b2 = rfh_c->child_at(0)->current_frame_host();
+
+  // 2) Add unload handlers on B1, B2 and C.
+  UnloadPrint(rfh_b1->frame_tree_node(), "B1");
+  UnloadPrint(rfh_b2->frame_tree_node(), "B2");
+  UnloadPrint(rfh_c->frame_tree_node(), "C");
+
+  DOMMessageQueue dom_message_queue(web_contents());
+  RenderProcessHostWatcher shutdown_B(
+      rfh_b1->GetProcess(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  RenderProcessHostWatcher shutdown_C(
+      rfh_c->GetProcess(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+
+  // 3) Detach B from A.
+  ExecuteScriptAsync(root, "document.querySelector('iframe').remove();");
+
+  // 4) Wait for unload handler.
+  std::vector<std::string> messages(3);
+  EXPECT_TRUE(dom_message_queue.WaitForMessage(&messages[0]));
+  EXPECT_TRUE(dom_message_queue.WaitForMessage(&messages[1]));
+  EXPECT_TRUE(dom_message_queue.WaitForMessage(&messages[2]));
+  std::string unused;
+  EXPECT_FALSE(dom_message_queue.PopMessage(&unused));
+
+  std::sort(messages.begin(), messages.end());
+  EXPECT_EQ("\"B1\"", messages[0]);
+  EXPECT_EQ("\"B2\"", messages[1]);
+  EXPECT_EQ("\"C\"", messages[2]);
+
+  // Make sure the processes are deleted at some point.
+  shutdown_B.Wait();
+  shutdown_C.Wait();
+}
+
+// When an iframe is detached, check that unload handlers execute in all of its
+// child frames. Start from A1(A2(B)), delete A2 from itself.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       DetachedIframeUnloadHandlerAAB) {
+  GURL initial_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a(b))"));
+
+  // 1) Navigate to a(a(b)).
+  EXPECT_TRUE(NavigateToURL(shell(), initial_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  RenderFrameHostImpl* rfh_a1 = root->current_frame_host();
+  RenderFrameHostImpl* rfh_a2 = rfh_a1->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* rfh_b = rfh_a2->child_at(0)->current_frame_host();
+
+  // 2) Add unload handlers on A2 ad B.
+  UnloadPrint(rfh_a2->frame_tree_node(), "A2");
+  UnloadPrint(rfh_b->frame_tree_node(), "B");
+
+  DOMMessageQueue dom_message_queue(web_contents());
+  RenderProcessHostWatcher shutdown_B(
+      rfh_b->GetProcess(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+
+  // 3) A2 detaches itself.
+  ExecuteScriptAsync(rfh_a2->frame_tree_node(),
+                     "parent.document.querySelector('iframe').remove();");
+
+  // 4) Wait for unload handler.
+  std::vector<std::string> messages(2);
+  EXPECT_TRUE(dom_message_queue.WaitForMessage(&messages[0]));
+  EXPECT_TRUE(dom_message_queue.WaitForMessage(&messages[1]));
+  std::string unused;
+  EXPECT_FALSE(dom_message_queue.PopMessage(&unused));
+
+  std::sort(messages.begin(), messages.end());
+  EXPECT_EQ("\"A2\"", messages[0]);
+  EXPECT_EQ("\"B\"", messages[1]);
+
+  // Make sure the process is deleted at some point.
+  shutdown_B.Wait();
+}
+
 }  // namespace content
