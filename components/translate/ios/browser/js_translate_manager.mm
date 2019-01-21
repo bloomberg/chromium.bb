@@ -49,7 +49,9 @@
 }
 
 - (void)revertTranslation {
-  DCHECK([self hasBeenInjected]);
+  if (![self hasBeenInjected])
+    return;
+
   [self.receiver executeJavaScript:@"cr.googleTranslate.revert()"
                  completionHandler:nil];
 }
