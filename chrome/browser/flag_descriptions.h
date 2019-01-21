@@ -2286,6 +2286,8 @@ extern const char kReopenTabInProductHelpName[];
 extern const char kReopenTabInProductHelpDescription[];
 
 #endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+extern const char kAvoidFlashBetweenNavigationName[];
+extern const char kAvoidFlahsBetweenNavigationDescription[];
 
 #if defined(WEBRTC_USE_PIPEWIRE)
 

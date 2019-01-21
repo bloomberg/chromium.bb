@@ -3773,6 +3773,13 @@ extern const char kWebrtcPipeWireCapturerDescription[] =
 
 #endif  // #if defined(WEBRTC_USE_PIPEWIRE)
 
+const char kAvoidFlashBetweenNavigationName[] =
+    "Enable flash avoidance between same-origin navigations";
+const char kAvoidFlahsBetweenNavigationDescription[] =
+    "Enables experimental flash avoidance when navigating between pages "
+    "in the same origin. This feature is in the implementation stages and "
+    "currently has no effect.";
+
 // ============================================================================
 // Don't just add flags to the end, put them in the right section in
 // alphabetical order just like the header file.

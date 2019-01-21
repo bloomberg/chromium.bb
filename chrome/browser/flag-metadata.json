@@ -944,6 +944,11 @@
     "expiry_milestone": 73
   },
   {
+    "name": "enable-avoid-flash-between-navigation",
+    "owners": [ "schenney", "paint-dev"],
+    "expiry_milestone": 76
+  },
+  {
     "name": "enable-background-blur",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

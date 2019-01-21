@@ -30353,6 +30353,7 @@ from previous Chrome versions.
   <int value="-1999892428" label="force-ui-direction"/>
   <int value="-1999617045" label="PDFAnnotations:disabled"/>
   <int value="-1998927516" label="enable-md-settings"/>
+  <int value="-1992319691" label="AvoidFlashBetweenNavigation:enabled"/>
   <int value="-1989747818" label="TabStripKeyboardFocus:disabled"/>
   <int value="-1985239289" label="AutofillRichMetadataQueries:enabled"/>
   <int value="-1985025593" label="file-manager-enable-new-gallery"/>
@@ -31408,6 +31409,7 @@ from previous Chrome versions.
   <int value="-195029497" label="MediaRemoting:disabled"/>
   <int value="-192919826" label="ViewsSimplifiedFullscreenUI:enabled"/>
   <int value="-192389983" label="NoStatePrefetch:enabled"/>
+  <int value="-191256027" label="AvoidFlashBetweenNavigation:disabled"/>
   <int value="-185162926" label="IncreaseInputAudioBufferSize:enabled"/>
   <int value="-183246373" label="enable-multilingual-spellchecker"/>
   <int value="-181590721"

@@ -12,6 +12,7 @@ namespace blink {
 namespace features {
 
 BLINK_COMMON_EXPORT extern const base::Feature kAutofillPreviewStyleExperiment;
+BLINK_COMMON_EXPORT extern const base::Feature kAvoidFlashBetweenNavigation;
 BLINK_COMMON_EXPORT extern const base::Feature
     kEagerCacheStorageSetupForServiceWorkers;
 BLINK_COMMON_EXPORT extern const base::Feature

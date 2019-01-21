@@ -4116,11 +4116,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(arc::kEnableUnifiedAudioFocusFeature)},
 #endif  // defined(OS_CHROMEOS)
 
-// NOTE: Adding a new flag requires adding a corresponding entry to enum
-// "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
-// Histograms" in tools/metrics/histograms/README.md (run the
-// AboutFlagsHistogramTest unit test to verify this process).
-
 #if defined(OS_WIN)
     {"use-angle", flag_descriptions::kUseAngleName,
      flag_descriptions::kUseAngleDescription, kOsWin,
@@ -4323,6 +4318,16 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kForegroundNotificationManagerDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kForegroundNotificationManager)},
 #endif  // defined(OS_ANDROID)
+
+    {"enable-avoid-flash-between-navigation",
+     flag_descriptions::kAvoidFlashBetweenNavigationName,
+     flag_descriptions::kAvoidFlahsBetweenNavigationDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kAvoidFlashBetweenNavigation)},
+
+    // NOTE: Adding a new flag requires adding a corresponding entry to enum
+    // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
+    // Histograms" in tools/metrics/histograms/README.md (run the
+    // AboutFlagsHistogramTest unit test to verify this process).
 };
 
 class FlagsStateSingleton {
