@@ -79,10 +79,12 @@ extern const char kGcpwSigninSwitch[];
 extern const char kPrefillEmailSwitch[];
 extern const char kEmailDomainsSwitch[];
 extern const char kGaiaIdSwitch[];
+extern const char kGcpwEndpointPathSwitch[];
 
 extern const char kEmailDomainsSigninPromoParameter[];
 extern const char kEmailDomainsSeparator[];
 extern const char kValidateGaiaIdSigninPromoParameter[];
+extern const char kGcpwEndpointPathPromoParameter[];
 
 // Crashpad related constants
 extern const wchar_t kRunAsCrashpadHandlerEntryPoint[];

@@ -61,11 +61,16 @@ const char kEmailDomainsSwitch[] = "email-domains";
 // match after signin, no LST will be minted and an error will be reported.
 const char kGaiaIdSwitch[] = "gaia-id";
 
+// Allows specification of the gaia endpoint to use to display the signin page
+// for GCPW.
+const char kGcpwEndpointPathSwitch[] = "gcpw-endpoint-path";
+
 // Parameter appended to sign in URL to pass valid signin domains to the inline
 // login handler. These domains are separated by ','.
 const char kEmailDomainsSigninPromoParameter[] = "emailDomains";
 const char kEmailDomainsSeparator[] = ",";
 const char kValidateGaiaIdSigninPromoParameter[] = "validate_gaia_id";
+const char kGcpwEndpointPathPromoParameter[] = "gcpw_endpoint_path";
 
 const wchar_t kRunAsCrashpadHandlerEntryPoint[] = L"RunAsCrashpadHandler";
 
