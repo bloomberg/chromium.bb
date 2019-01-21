@@ -5976,5 +5976,5 @@ crbug.com/922955 external/wpt/webrtc/RTCPeerConnection-track-stats.https.html [ 
 crbug.com/922955 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCPeerConnection-track-stats.https.html [ Failure Pass ]
 
 # Sheriff 2019-01-18
-crbug.com/922970 [ Mac ] external/wpt/css/css-transitions/CSSTransition-startTime.tentative.html [ Failure Pass ]
+crbug.com/922970 external/wpt/css/css-transitions/CSSTransition-startTime.tentative.html [ Failure Pass ]
 crbug.com/923318 [ Win7 ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchpad.html [ Failure Pass ]
