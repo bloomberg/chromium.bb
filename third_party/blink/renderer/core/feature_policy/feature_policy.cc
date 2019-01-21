@@ -265,6 +265,8 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
                                    mojom::FeaturePolicyFeature::kDocumentWrite);
       default_feature_name_map.Set(
           "document-domain", mojom::FeaturePolicyFeature::kDocumentDomain);
+      default_feature_name_map.Set("font-display-late-swap",
+                                   mojom::FeaturePolicyFeature::kFontDisplay);
       default_feature_name_map.Set(
           "unoptimized-images",
           mojom::FeaturePolicyFeature::kUnoptimizedImages);

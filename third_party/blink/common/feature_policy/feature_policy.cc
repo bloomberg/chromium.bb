@@ -259,6 +259,8 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
         FeaturePolicy::FeatureDefault::EnableForAll},
        {mojom::FeaturePolicyFeature::kEncryptedMedia,
         FeaturePolicy::FeatureDefault::EnableForSelf},
+       {mojom::FeaturePolicyFeature::kFontDisplay,
+        FeaturePolicy::FeatureDefault::EnableForAll},
        {mojom::FeaturePolicyFeature::kFullscreen,
         FeaturePolicy::FeatureDefault::EnableForSelf},
        {mojom::FeaturePolicyFeature::kGeolocation,

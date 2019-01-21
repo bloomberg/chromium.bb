@@ -83,7 +83,7 @@ RemoteFontFaceSource::RemoteFontFaceSource(CSSFontFace* css_font_face,
                                            FontDisplay display)
     : face_(css_font_face),
       font_selector_(font_selector),
-      display_(display),
+      display_(GetFontDisplayWithFeaturePolicyCheck(display, font_selector)),
       phase_(kNoLimitExceeded),
       is_intervention_triggered_(ShouldTriggerWebFontsIntervention()) {
   DCHECK(face_);
@@ -168,7 +168,7 @@ void RemoteFontFaceSource::SetDisplay(FontDisplay display) {
   // using the loaded font.
   if (IsLoaded())
     return;
-  display_ = display;
+  display_ = GetFontDisplayWithFeaturePolicyCheck(display, font_selector_);
   UpdatePeriod();
 }
 
@@ -186,6 +186,18 @@ void RemoteFontFaceSource::UpdatePeriod() {
     histograms_.RecordFallbackTime();
   }
   period_ = new_period;
+}
+
+FontDisplay RemoteFontFaceSource::GetFontDisplayWithFeaturePolicyCheck(
+    FontDisplay display,
+    const FontSelector* font_selector) const {
+  ExecutionContext* context = font_selector->GetExecutionContext();
+  if (display != kFontDisplayFallback && context && context->IsDocument() &&
+      !To<Document>(context)->IsFeatureEnabled(
+          mojom::FeaturePolicyFeature::kFontDisplay)) {
+    return kFontDisplayOptional;
+  }
+  return display;
 }
 
 bool RemoteFontFaceSource::ShouldTriggerWebFontsIntervention() {
