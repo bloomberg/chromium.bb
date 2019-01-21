@@ -1094,15 +1094,8 @@ void RenderViewImpl::DidCloseWidget() {
   g_routing_id_view_map.Get().erase(GetRoutingID());
 }
 
-void RenderViewImpl::ApplyNewSizeForWidget(const gfx::Size& old_size,
-                                           const gfx::Size& new_size) {
-  if (new_size != old_size) {
-    // Only hide popups when the size changes. There are situations (e.g. hiding
-    // the ChromeOS virtual keyboard) where we send a resize message with no
-    // change in size, but we don't want to close popups.
-    // See https://crbug.com/761908.
-    webview()->CancelPagePopup();
-  }
+void RenderViewImpl::CancelPagePopupForWidget() {
+  webview()->CancelPagePopup();
 }
 
 void RenderViewImpl::ApplyNewDisplayModeForWidget(

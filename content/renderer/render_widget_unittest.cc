@@ -521,8 +521,7 @@ class StubRenderWidgetDelegate : public RenderWidgetDelegate {
   void DidHandleGestureEventForWidget(
       const blink::WebGestureEvent& event) override {}
   void DidCloseWidget() override {}
-  void ApplyNewSizeForWidget(const gfx::Size& old_size,
-                             const gfx::Size& new_size) override {}
+  void CancelPagePopupForWidget() override {}
   void ApplyNewDisplayModeForWidget(
       const blink::WebDisplayMode& new_display_mode) override {}
   void ApplyAutoResizeLimitsForWidget(const gfx::Size& min_size,
