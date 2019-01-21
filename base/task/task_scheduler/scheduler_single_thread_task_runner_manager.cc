@@ -211,8 +211,8 @@ class SchedulerWorkerCOMDelegate : public SchedulerWorkerDelegate {
   void WaitForWork(WaitableEvent* wake_up_event) override {
     DCHECK(wake_up_event);
     const TimeDelta sleep_time = GetSleepTimeout();
-    const DWORD milliseconds_wait =
-        sleep_time.is_max() ? INFINITE : sleep_time.InMilliseconds();
+    const DWORD milliseconds_wait = checked_cast<DWORD>(
+        sleep_time.is_max() ? INFINITE : sleep_time.InMilliseconds());
     const HANDLE wake_up_event_handle = wake_up_event->handle();
     MsgWaitForMultipleObjectsEx(1, &wake_up_event_handle, milliseconds_wait,
                                 QS_ALLINPUT, 0);

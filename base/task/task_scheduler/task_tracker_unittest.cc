@@ -1219,12 +1219,12 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   scoped_refptr<Sequence> sequence_b =
       test::CreateSequenceWithTask(std::move(task_b_1), default_traits);
   testing::StrictMock<MockCanScheduleSequenceObserver> observer_b_1;
-  EXPECT_EQ(0, tracker_.GetPreemptedSequenceCountForTesting(
-                   TaskPriority::BEST_EFFORT));
+  EXPECT_EQ(0u, tracker_.GetPreemptedSequenceCountForTesting(
+                    TaskPriority::BEST_EFFORT));
   EXPECT_FALSE(tracker_.WillScheduleSequence(sequence_b->BeginTransaction(),
                                              &observer_b_1));
-  EXPECT_EQ(1, tracker_.GetPreemptedSequenceCountForTesting(
-                   TaskPriority::USER_VISIBLE));
+  EXPECT_EQ(1u, tracker_.GetPreemptedSequenceCountForTesting(
+                    TaskPriority::USER_VISIBLE));
 
   bool task_b_2_did_run = false;
   Task task_b_2(FROM_HERE, BindOnce(&SetBool, Unretained(&task_b_2_did_run)),
@@ -1237,8 +1237,8 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   EXPECT_FALSE(tracker_.WillScheduleSequence(sequence_b->BeginTransaction(),
                                              &observer_b_2));
   // The TaskPriority of the Sequence is unchanged by posting new tasks to it.
-  EXPECT_EQ(2, tracker_.GetPreemptedSequenceCountForTesting(
-                   TaskPriority::USER_VISIBLE));
+  EXPECT_EQ(2u, tracker_.GetPreemptedSequenceCountForTesting(
+                    TaskPriority::USER_VISIBLE));
 
   // Verify that WillScheduleSequence() returns nullptr for best-effort sequence
   // when the ScopedExecutionFence is enabled.
@@ -1252,8 +1252,8 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   testing::StrictMock<MockCanScheduleSequenceObserver> observer_c;
   EXPECT_FALSE(tracker_.WillScheduleSequence(sequence_c->BeginTransaction(),
                                              &observer_c));
-  EXPECT_EQ(1, tracker_.GetPreemptedSequenceCountForTesting(
-                   TaskPriority::BEST_EFFORT));
+  EXPECT_EQ(1u, tracker_.GetPreemptedSequenceCountForTesting(
+                    TaskPriority::BEST_EFFORT));
 
   // Verifies that the sequences preempted when the fence is on are rescheduled
   // right after the fence is released.
@@ -1264,10 +1264,10 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   testing::Mock::VerifyAndClear(&observer_b_1);
   testing::Mock::VerifyAndClear(&observer_b_2);
   testing::Mock::VerifyAndClear(&observer_c);
-  EXPECT_EQ(0, tracker_.GetPreemptedSequenceCountForTesting(
-                   TaskPriority::USER_VISIBLE));
-  EXPECT_EQ(0, tracker_.GetPreemptedSequenceCountForTesting(
-                   TaskPriority::BEST_EFFORT));
+  EXPECT_EQ(0u, tracker_.GetPreemptedSequenceCountForTesting(
+                    TaskPriority::USER_VISIBLE));
+  EXPECT_EQ(0u, tracker_.GetPreemptedSequenceCountForTesting(
+                    TaskPriority::BEST_EFFORT));
 
   // Runs the sequences and verifies the tasks are done.
   EXPECT_FALSE(

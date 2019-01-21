@@ -121,7 +121,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // in this pool.
   //
   // TODO(fdoray): Remove this method. https://crbug.com/687264
-  int GetMaxConcurrentNonBlockedTasksDeprecated() const;
+  size_t GetMaxConcurrentNonBlockedTasksDeprecated() const;
 
   // Waits until at least |n| workers are idle. Note that while workers are
   // disallowed from cleaning up during this call: tests using a custom

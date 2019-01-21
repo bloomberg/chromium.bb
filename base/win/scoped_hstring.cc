@@ -6,6 +6,7 @@
 
 #include <winstring.h>
 
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 
@@ -86,7 +87,8 @@ namespace win {
 ScopedHString ScopedHString::Create(StringPiece16 str) {
   DCHECK(g_load_succeeded);
   HSTRING hstr;
-  HRESULT hr = base::WindowsCreateString(str.data(), str.length(), &hstr);
+  HRESULT hr = base::WindowsCreateString(
+      str.data(), checked_cast<UINT32>(str.length()), &hstr);
   if (SUCCEEDED(hr))
     return ScopedHString(hstr);
   DLOG(ERROR) << "Failed to create HSTRING" << std::hex << hr;

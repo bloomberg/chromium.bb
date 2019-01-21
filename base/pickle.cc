@@ -235,7 +235,7 @@ Pickle::Pickle(int header_size)
   header_->payload_size = 0;
 }
 
-Pickle::Pickle(const char* data, int data_len)
+Pickle::Pickle(const char* data, size_t data_len)
     : header_(reinterpret_cast<Header*>(const_cast<char*>(data))),
       header_size_(0),
       capacity_after_header_(kCapacityReadOnly),

@@ -410,7 +410,8 @@ void SchedulerWorkerPoolImpl::GetHistograms(
   histograms->push_back(num_active_workers_histogram_);
 }
 
-int SchedulerWorkerPoolImpl::GetMaxConcurrentNonBlockedTasksDeprecated() const {
+size_t SchedulerWorkerPoolImpl::GetMaxConcurrentNonBlockedTasksDeprecated()
+    const {
 #if DCHECK_IS_ON()
   AutoSchedulerLock auto_lock(lock_);
   DCHECK_NE(after_start().initial_max_tasks, 0U)

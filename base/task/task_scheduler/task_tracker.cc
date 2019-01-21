@@ -388,7 +388,7 @@ void TaskTracker::SetExecutionFenceEnabled(bool execution_fence_enabled) {
   }
 }
 
-int TaskTracker::GetPreemptedSequenceCountForTesting(
+size_t TaskTracker::GetPreemptedSequenceCountForTesting(
     TaskPriority task_priority) {
   int priority_index = static_cast<int>(task_priority);
   AutoSchedulerLock auto_lock(preemption_state_[priority_index].lock);
