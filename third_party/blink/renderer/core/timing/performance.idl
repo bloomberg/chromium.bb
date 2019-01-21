@@ -75,7 +75,8 @@ interface Performance : EventTarget {
     // * L2 API returns null but this is a bug: crbug.com/914441.
     // * L3 API returns the created entry.
     [MeasureAs=UserTiming, CallWith=ScriptState, RaisesException] PerformanceMark? mark(DOMString markName);
-    [MeasureAs=UserTiming, CallWith=ScriptState, RuntimeEnabled=CustomUserTiming, RaisesException] PerformanceMark? mark(DOMString markName, (DOMHighResTimeStamp or PerformanceMarkOptions) startTimeOrPerformanceMarkOptions);
+    // TODO(maxlg): PerformanceMarkOptions will be changed to optional after L3 is default to be enabled.
+    [MeasureAs=UserTiming, CallWith=ScriptState, RuntimeEnabled=CustomUserTiming, RaisesException] PerformanceMark? mark(DOMString markName, PerformanceMarkOptions markOptions);
     [MeasureAs=UserTiming] void clearMarks(optional DOMString markName = null);
 
     // Doing either of the following requires enabling CustomUserTiming:
