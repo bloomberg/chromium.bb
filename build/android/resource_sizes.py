@@ -113,19 +113,31 @@ _RE_COMPRESSED_LANGUAGE_PAK = re.compile(
     r'\.lpak$|^assets/(?!stored-locales/).*(?!resources|percent)\.pak$')
 _RE_STORED_LANGUAGE_PAK = re.compile(r'^assets/stored-locales/.*\.pak$')
 _READELF_SIZES_METRICS = {
-  'text': ['.text'],
-  'data': ['.data', '.rodata', '.data.rel.ro', '.data.rel.ro.local'],
-  'relocations': ['.rel.dyn', '.rel.plt', '.rela.dyn', '.rela.plt'],
-  'unwind': ['.ARM.extab', '.ARM.exidx', '.eh_frame', '.eh_frame_hdr',
-             '.ARM.exidxsentinel_section_after_text'],
-  'symbols': ['.dynsym', '.dynstr', '.dynamic', '.shstrtab', '.got', '.plt',
-              '.got.plt', '.hash', '.gnu.hash'],
-  'bss': ['.bss'],
-  'other': ['.init_array', '.fini_array', '.comment', '.note.gnu.gold-version',
-            '.note.crashpad.info', '.note.android.ident',
-            '.ARM.attributes', '.note.gnu.build-id', '.gnu.version',
-            '.gnu.version_d', '.gnu.version_r', '.interp', '.gcc_except_table']
+    'text': ['.text'],
+    'data': ['.data', '.rodata', '.data.rel.ro', '.data.rel.ro.local'],
+    'relocations': ['.rel.dyn', '.rel.plt', '.rela.dyn', '.rela.plt'],
+    'unwind': [
+        '.ARM.extab', '.ARM.exidx', '.eh_frame', '.eh_frame_hdr',
+        '.ARM.exidxsentinel_section_after_text'
+    ],
+    'symbols': [
+        '.dynsym', '.dynstr', '.dynamic', '.shstrtab', '.got', '.plt',
+        '.got.plt', '.hash', '.gnu.hash'
+    ],
+    'bss': ['.bss'],
+    'other': [
+        '.init_array', '.preinit_array', '.ctors', '.fini_array', '.comment',
+        '.note.gnu.gold-version', '.note.crashpad.info', '.note.android.ident',
+        '.ARM.attributes', '.note.gnu.build-id', '.gnu.version',
+        '.gnu.version_d', '.gnu.version_r', '.interp', '.gcc_except_table'
+    ]
 }
+
+
+def _PercentageDifference(a, b):
+  if a == 0:
+    return 0
+  return float(b - a) / a
 
 
 def _RunReadelf(so_path, options, tool_prefix=''):
@@ -133,8 +145,8 @@ def _RunReadelf(so_path, options, tool_prefix=''):
       [tool_prefix + 'readelf'] + options + [so_path])
 
 
-def _ExtractMainLibSectionSizesFromApk(apk_path, main_lib_path, tool_prefix):
-  with Unzip(apk_path, filename=main_lib_path) as extracted_lib_path:
+def _ExtractLibSectionSizesFromApk(apk_path, lib_path, tool_prefix):
+  with Unzip(apk_path, filename=lib_path) as extracted_lib_path:
     grouped_section_sizes = collections.defaultdict(int)
     section_sizes = _CreateSectionNameSizeMap(extracted_lib_path, tool_prefix)
     for group_name, section_names in _READELF_SIZES_METRICS.iteritems():
@@ -358,11 +370,8 @@ def GenerateApkAnalysis(apk_filename, tool_prefix, out_dir,
   notices = make_group('licenses.notice file')
   unwind_cfi = make_group('unwind_cfi (dev and canary only)')
 
-  apk = zipfile.ZipFile(apk_filename, 'r')
-  try:
+  with zipfile.ZipFile(apk_filename, 'r') as apk:
     apk_contents = apk.infolist()
-  finally:
-    apk.close()
 
   sdk_version, skip_extract_lib = _ParseManifestAttributes(apk_filename)
 
@@ -479,26 +488,36 @@ def GenerateApkAnalysis(apk_filename, tool_prefix, out_dir,
     secondary_size = java_code.ComputeUncompressedSize() - main_dex_size
     yield ('Specifics', 'secondary dex size', secondary_size, 'bytes')
 
-  # Size of main .so vs remaining.
   main_lib_info = native_code.FindLargest()
-  if main_lib_info:
-    main_lib_size = main_lib_info.file_size
-    yield ('Specifics', 'main lib size', main_lib_size, 'bytes')
-    secondary_size = native_code.ComputeUncompressedSize() - main_lib_size
-    yield ('Specifics', 'other lib size', secondary_size, 'bytes')
+  native_code_unaligned_size = 0
+  for lib_info in native_code.AllEntries():
+    section_sizes = _ExtractLibSectionSizesFromApk(
+        apk_filename, lib_info.filename, tool_prefix)
+    native_code_unaligned_size += sum(
+        v for k, v in section_sizes.iteritems() if k != 'bss')
+    # Size of main .so vs remaining.
+    if lib_info == main_lib_info:
+      main_lib_size = lib_info.file_size
+      yield ('Specifics', 'main lib size', main_lib_size, 'bytes')
+      secondary_size = native_code.ComputeUncompressedSize() - main_lib_size
+      yield ('Specifics', 'other lib size', secondary_size, 'bytes')
 
-    main_lib_section_sizes = _ExtractMainLibSectionSizesFromApk(
-        apk_filename, main_lib_info.filename, tool_prefix)
-    for metric_name, size in main_lib_section_sizes.iteritems():
-      yield ('MainLibInfo', metric_name, size, 'bytes')
+      for metric_name, size in section_sizes.iteritems():
+        yield ('MainLibInfo', metric_name, size, 'bytes')
 
   # Main metric that we want to monitor for jumps.
   normalized_apk_size = total_apk_size
   # unwind_cfi exists only in dev, canary, and non-channel builds.
   normalized_apk_size -= unwind_cfi.ComputeZippedSize()
-  # Always look at uncompressed .so.
+  # Sections within .so files get 4kb aligned, so use section sizes rather than
+  # file size. Also gets rid of compression.
   normalized_apk_size -= native_code.ComputeZippedSize()
-  normalized_apk_size += native_code.ComputeUncompressedSize()
+  normalized_apk_size += native_code_unaligned_size
+  # Unaligned size should be ~= uncompressed size or something is wrong.
+  # As of now, padding_fraction ~= .007
+  padding_fraction = -_PercentageDifference(
+      native_code.ComputeUncompressedSize(), native_code_unaligned_size)
+  assert 0 <= padding_fraction < .02, 'Padding was: {}'.format(padding_fraction)
   # Normalized dex size: size within the zip + size on disk for Android Go
   # devices (which ~= uncompressed dex size).
   normalized_apk_size += java_code.ComputeUncompressedSize()
