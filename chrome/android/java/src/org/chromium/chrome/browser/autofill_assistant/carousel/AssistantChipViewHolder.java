@@ -28,13 +28,13 @@ class AssistantChipViewHolder extends ViewHolder {
         int resId = -1;
         switch (viewType) {
             // TODO: inflate normal chrome buttons instead.
-            case AssistantChip.TYPE_CHIP_ASSISTIVE:
+            case AssistantChipType.CHIP_ASSISTIVE:
                 resId = R.layout.autofill_assistant_chip_assistive;
                 break;
-            case AssistantChip.TYPE_BUTTON_FILLED_BLUE:
+            case AssistantChipType.BUTTON_FILLED_BLUE:
                 resId = R.layout.autofill_assistant_button_filled;
                 break;
-            case AssistantChip.TYPE_BUTTON_TEXT:
+            case AssistantChipType.BUTTON_TEXT:
                 resId = R.layout.autofill_assistant_button_hairline;
                 break;
             default:

@@ -28,6 +28,7 @@ using ::testing::InSequence;
 using ::testing::NiceMock;
 using ::testing::Not;
 using ::testing::Pair;
+using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::Sequence;
@@ -157,6 +158,10 @@ class ControllerTest : public content::RenderViewHostTestHarness {
         .WillRepeatedly(RunOnceCallback<2>(true, response_str));
   }
 
+  void ExecuteScript(const std::string& script_path) {
+    controller_->ExecuteScript(script_path);
+  }
+
   UiDelegate* GetUiDelegate() { return controller_.get(); }
 
   GURL url_;
@@ -182,24 +187,23 @@ TEST_F(ControllerTest, FetchAndRunScripts) {
   // 2. checking the scripts
   // 3. offering the choices: script1 and script2
   // 4. script1 is chosen
-  EXPECT_CALL(mock_ui_controller_, UpdateScripts(SizeIs(2)))
-      .WillOnce([this](const std::vector<ScriptHandle>& scripts) {
-        std::vector<std::string> paths;
-        for (const auto& script : scripts) {
-          paths.emplace_back(script.path);
+  EXPECT_CALL(mock_ui_controller_, SetChips(Pointee(SizeIs(2))))
+      .WillOnce([this](std::unique_ptr<std::vector<Chip>> chips) {
+        std::vector<std::string> texts;
+        for (const auto& chip : *chips) {
+          texts.emplace_back(chip.text);
         }
-        EXPECT_THAT(paths, UnorderedElementsAre("script1", "script2"));
+        EXPECT_THAT(texts, UnorderedElementsAre("script1", "script2"));
 
         Sequence sequence;
         // Selecting a script should clean the bottom bar.
-        EXPECT_CALL(mock_ui_controller_, UpdateScripts(SizeIs(0)))
-            .InSequence(sequence);
+        EXPECT_CALL(mock_ui_controller_, ClearChips()).InSequence(sequence);
         // After the script is done both scripts are again valid and should be
         // shown.
-        EXPECT_CALL(mock_ui_controller_, UpdateScripts(SizeIs(2)))
+        EXPECT_CALL(mock_ui_controller_, SetChips(Pointee(SizeIs(2))))
             .InSequence(sequence);
 
-        GetUiDelegate()->OnScriptSelected("script1");
+        std::move((*chips)[0].callback).Run();
       });
 
   // 5. script1 run successfully (no actions).
@@ -237,7 +241,7 @@ TEST_F(ControllerTest, ShowFirstInitialPrompt) {
 
   // Script3, with higher priority (lower number), wins.
   EXPECT_CALL(mock_ui_controller_, ShowStatusMessage("script3 prompt"));
-  EXPECT_CALL(mock_ui_controller_, UpdateScripts(SizeIs(4)));
+  EXPECT_CALL(mock_ui_controller_, SetChips(Pointee(SizeIs(4))));
 
   // Start the flow.
   SimulateNavigateToUrl(GURL("http://a.example.com/path"));
@@ -257,7 +261,7 @@ TEST_F(ControllerTest, Stop) {
 
   EXPECT_CALL(mock_ui_controller_, Shutdown());
 
-  GetUiDelegate()->OnScriptSelected("stop");
+  ExecuteScript("stop");
 }
 
 TEST_F(ControllerTest, Reset) {
@@ -273,12 +277,14 @@ TEST_F(ControllerTest, Reset) {
     EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(_, _, _))
         .WillOnce(RunOnceCallback<2>(true, script_response_str));
 
-    EXPECT_CALL(mock_ui_controller_, UpdateScripts(SizeIs(1)));
-
     // 2. Execute the "reset" script, which contains a reset action.
+    EXPECT_CALL(mock_ui_controller_, SetChips(Pointee(SizeIs(1))))
+        .WillOnce([](std::unique_ptr<std::vector<Chip>> chips) {
+          std::move((*chips)[0].callback).Run();
+        });
 
     // Selecting a script should clean the bottom bar.
-    EXPECT_CALL(mock_ui_controller_, UpdateScripts(SizeIs(0)));
+    EXPECT_CALL(mock_ui_controller_, ClearChips());
 
     ActionsResponseProto actions_response;
     actions_response.add_actions()->mutable_reset();
@@ -298,14 +304,13 @@ TEST_F(ControllerTest, Reset) {
 
     // Reset forces the controller to fetch the scripts twice, even though the
     // URL doesn't change..
-    EXPECT_CALL(mock_ui_controller_, UpdateScripts(SizeIs(1)));
+    EXPECT_CALL(mock_ui_controller_, SetChips(Pointee(SizeIs(1))));
   }
 
   // Resetting should clear the client memory
   controller_->GetClientMemory()->set_selected_card(nullptr);
 
   SimulateNavigateToUrl(GURL("http://a.example.com/path"));
-  GetUiDelegate()->OnScriptSelected("reset");
 
   EXPECT_FALSE(controller_->GetClientMemory()->selected_card());
 }
@@ -420,7 +425,7 @@ TEST_F(ControllerTest, AutostartIsNotPassedToTheUi) {
   RunOnce(autostart);
   SetRepeatedScriptResponse(script_response);
 
-  EXPECT_CALL(mock_ui_controller_, UpdateScripts(SizeIs(0))).Times(AtLeast(1));
+  EXPECT_CALL(mock_ui_controller_, ClearChips()).Times(AtLeast(1));
 
   SimulateNavigateToUrl(GURL("http://a.example.com/path"));
 }

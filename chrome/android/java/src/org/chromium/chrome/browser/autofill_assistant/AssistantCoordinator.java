@@ -13,6 +13,7 @@ import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
+import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChipType;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetails;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderCoordinator;
@@ -207,7 +208,7 @@ class AssistantCoordinator
                 mActivity.getString(R.string.autofill_assistant_details_differ));
         mHeaderCoordinator.enableProgressBarPulsing();
         mCarouselCoordinator.setChips(Arrays.asList(
-                new AssistantChip(AssistantChip.TYPE_BUTTON_FILLED_BLUE,
+                new AssistantChip(AssistantChipType.BUTTON_FILLED_BLUE,
                         mActivity.getString(R.string.continue_button),
                         () -> {
                             mHeaderCoordinator.setStatusMessage(oldStatusMessage);
@@ -220,7 +221,7 @@ class AssistantCoordinator
 
                             promise.fulfill(true);
                         }),
-                new AssistantChip(AssistantChip.TYPE_BUTTON_TEXT,
+                new AssistantChip(AssistantChipType.BUTTON_TEXT,
                         mActivity.getString(R.string.autofill_assistant_details_differ_go_back),
                         () -> promise.fulfill(false))));
 

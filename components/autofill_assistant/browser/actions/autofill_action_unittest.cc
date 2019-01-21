@@ -188,18 +188,7 @@ TEST_F(AutofillActionTest, FillManually) {
 
   // No selection was made previously.
   EXPECT_CALL(mock_client_memory_, has_selected_address(kAddressName))
-      .WillOnce(Return(false));
-
-  // Expect prompt.
-  EXPECT_CALL(mock_action_delegate_, ShowStatusMessage(kSelectionPrompt));
-
-  // Return empty address guid (manual filling).
-  EXPECT_CALL(mock_action_delegate_, OnChooseAddress(_))
-      .WillOnce(RunOnceCallback<0>(""));
-
-  // We save the selection in memory.
-  EXPECT_CALL(mock_client_memory_,
-              set_selected_address(kAddressName, IsNull()));
+      .WillOnce(Return(true));
 
   ExpectActionToStopScript(action_proto, kFillForm);
 }

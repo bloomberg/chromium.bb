@@ -127,13 +127,12 @@ void ScriptExecutor::GetPaymentInformation(
       supported_basic_card_networks);
 }
 
-void ScriptExecutor::Choose(
-    const std::vector<UiController::Choice>& choices,
-    base::OnceCallback<void(const std::string&)> callback) {
+void ScriptExecutor::SetChips(std::unique_ptr<std::vector<Chip>> chips) {
   if (!touchable_elements_.empty()) {
-    // Choose reproduces the end-of-script appearance and behavior during script
-    // execution. This includes allowing access to touchable elements, set
-    // through a previous call to the focus action with touchable_elements set.
+    // SetChips reproduces the end-of-script appearance and behavior during
+    // script execution. This includes allowing access to touchable elements,
+    // set through a previous call to the focus action with touchable_elements
+    // set.
     delegate_->SetTouchableElementArea(touchable_elements_);
     delegate_->GetUiController()->HideOverlay();
     AllowShowingSoftKeyboard(true);
@@ -143,21 +142,34 @@ void ScriptExecutor::Choose(
     touchable_elements_.clear();
 
     // The touchable element and overlays are cleared again in
-    // ScriptExecutor::OnChosen
+    // ScriptExecutor::OnChosen or ScriptExecutor::ClearChips
   }
-  delegate_->GetUiController()->Choose(
-      choices,
-      base::BindOnce(&ScriptExecutor::OnChosen, weak_ptr_factory_.GetWeakPtr(),
-                     std::move(callback)));
+
+  // We change the chips callback with a callback that cleans up the state
+  // before calling the initial callback.
+  for (auto& chip : *chips) {
+    chip.callback = base::BindOnce(&ScriptExecutor::OnChosen,
+                                   weak_ptr_factory_.GetWeakPtr(),
+                                   std::move(chip.callback));
+  }
+
+  delegate_->GetUiController()->SetChips(std::move(chips));
 }
 
-void ScriptExecutor::ForceChoose(const std::string& result) {
-  delegate_->GetUiController()->ForceChoose(result);
+void ScriptExecutor::ClearChips() {
+  delegate_->GetUiController()->ClearChips();
+  CleanUpAfterChipIsSelected();
 }
 
-void ScriptExecutor::ChooseAddress(
-    base::OnceCallback<void(const std::string&)> callback) {
-  delegate_->GetUiController()->ChooseAddress(std::move(callback));
+void ScriptExecutor::CleanUpAfterChipIsSelected() {
+  delegate_->GetUiController()->ShowOverlay();
+  AllowShowingSoftKeyboard(false);
+  delegate_->ClearTouchableElementArea();
+}
+
+void ScriptExecutor::OnChosen(base::OnceClosure callback) {
+  CleanUpAfterChipIsSelected();
+  std::move(callback).Run();
 }
 
 void ScriptExecutor::FillAddressForm(const autofill::AutofillProfile* profile,
@@ -165,11 +177,6 @@ void ScriptExecutor::FillAddressForm(const autofill::AutofillProfile* profile,
                                      base::OnceCallback<void(bool)> callback) {
   delegate_->GetWebController()->FillAddressForm(profile, selector,
                                                  std::move(callback));
-}
-
-void ScriptExecutor::ChooseCard(
-    base::OnceCallback<void(const std::string&)> callback) {
-  delegate_->GetUiController()->ChooseCard(std::move(callback));
 }
 
 void ScriptExecutor::FillCardForm(std::unique_ptr<autofill::CreditCard> card,
@@ -678,15 +685,6 @@ void ScriptExecutor::WaitWithInterrupts::RestorePreInterruptScroll(
 void ScriptExecutor::WaitWithInterrupts::Terminate() {
   if (interrupt_executor_)
     interrupt_executor_->Terminate();
-}
-
-void ScriptExecutor::OnChosen(
-    base::OnceCallback<void(const std::string&)> callback,
-    const std::string& payload) {
-  delegate_->GetUiController()->ShowOverlay();
-  AllowShowingSoftKeyboard(false);
-  delegate_->ClearTouchableElementArea();
-  std::move(callback).Run(payload);
 }
 
 }  // namespace autofill_assistant

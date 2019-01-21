@@ -113,11 +113,13 @@ class Controller : public ScriptExecutorDelegate,
   void FinishStart(const GURL& initial_url);
   void MaybeShowInitialDetails();
 
+  // Called when a script is selected.
+  void OnScriptSelected(const std::string& script_path);
+
   // Overrides autofill_assistant::UiDelegate:
   void OnClickOverlay() override;
   void UpdateTouchableArea() override;
   void OnUserInteractionInsideTouchableArea() override;
-  void OnScriptSelected(const std::string& script_path) override;
   std::string GetDebugContext() override;
 
   // Overrides ScriptTracker::Listener:

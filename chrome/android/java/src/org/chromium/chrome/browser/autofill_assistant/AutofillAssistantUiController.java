@@ -11,6 +11,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetails;
 import org.chromium.chrome.browser.autofill_assistant.payment.AutofillAssistantPaymentRequest.SelectedPaymentInformation;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -165,28 +166,22 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         mCoordinator.close();
     }
 
-    // TODO(crbug.com/806868): It would be better to only expose a onSetChips(AssistantChip) to
-    // native side with only nativeOnChipSelected(int) method instead of onUpdateScripts, onChoose
-    // and onForceChoose.
     @CalledByNative
-    private void onUpdateScripts(
-            String[] scriptNames, String[] scriptPaths, boolean[] scriptsHighlightFlags) {
-        assert scriptNames.length == scriptPaths.length;
-        assert scriptNames.length == scriptsHighlightFlags.length;
-        mCoordinator.getCarouselCoordinator().setChips(scriptNames, scriptsHighlightFlags,
-                i -> safeNativeOnScriptSelected(scriptPaths[i]));
+    private void onSetChips(int[] types, String[] texts) {
+        assert types.length == texts.length;
+        List<AssistantChip> chips = new ArrayList<>();
+        for (int i = 0; i < types.length; i++) {
+            int index = i;
+            chips.add(new AssistantChip(types[i], texts[i], () -> {
+                mCoordinator.getCarouselCoordinator().clearChips();
+                safeNativeOnChipSelected(index);
+            }));
+        }
+        mCoordinator.getCarouselCoordinator().setChips(chips);
     }
 
     @CalledByNative
-    private void onChoose(String[] names, byte[][] serverPayloads, boolean[] highlightFlags) {
-        assert names.length == serverPayloads.length;
-        assert names.length == highlightFlags.length;
-        mCoordinator.getCarouselCoordinator().setChips(
-                names, highlightFlags, i -> safeNativeOnChoice(serverPayloads[i]));
-    }
-
-    @CalledByNative
-    private void onForceChoose() {
+    private void onClearChips() {
         mCoordinator.getCarouselCoordinator().clearChips();
     }
 
@@ -267,16 +262,6 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         mCoordinator.getBottomBarCoordinator().expand();
     }
 
-    @CalledByNative
-    private void onChooseAddress() {
-        // TODO(crbug.com/806868): Remove calls to this function.
-    }
-
-    @CalledByNative
-    private void onChooseCard() {
-        // TODO(crbug.com/806868): Remove calls to this function.
-    }
-
     // Native methods.
     void safeNativeStop() {
         if (mNativeUiController != 0) nativeStop(mNativeUiController);
@@ -294,15 +279,10 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
     private native void nativeOnUserInteractionInsideTouchableArea(long nativeUiControllerAndroid);
 
-    void safeNativeOnScriptSelected(String scriptPath) {
-        if (mNativeUiController != 0) nativeOnScriptSelected(mNativeUiController, scriptPath);
+    void safeNativeOnChipSelected(int index) {
+        if (mNativeUiController != 0) nativeOnChipSelected(mNativeUiController, index);
     }
-    private native void nativeOnScriptSelected(long nativeUiControllerAndroid, String scriptPath);
-
-    void safeNativeOnChoice(byte[] serverPayload) {
-        if (mNativeUiController != 0) nativeOnChoice(mNativeUiController, serverPayload);
-    }
-    private native void nativeOnChoice(long nativeUiControllerAndroid, byte[] serverPayload);
+    private native void nativeOnChipSelected(long nativeUiControllerAndroid, int index);
 
     void safeNativeOnShowDetails(boolean canContinue) {
         if (mNativeUiController != 0) nativeOnShowDetails(mNativeUiController, canContinue);

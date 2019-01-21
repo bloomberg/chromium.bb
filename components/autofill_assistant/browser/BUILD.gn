@@ -19,6 +19,12 @@ proto_java_library("proto_java") {
   ]
 }
 
+java_cpp_enum("autofill_assistant_enums_java") {
+  sources = [
+    "chip.h",
+  ]
+}
+
 jumbo_static_library("browser") {
   sources = [
     "access_token_fetcher.h",
@@ -63,6 +69,8 @@ jumbo_static_library("browser") {
     "actions/wait_for_dom_action.h",
     "batch_element_checker.cc",
     "batch_element_checker.h",
+    "chip.cc",
+    "chip.h",
     "client.h",
     "client_memory.cc",
     "client_memory.h",

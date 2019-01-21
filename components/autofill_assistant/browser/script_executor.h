@@ -114,16 +114,11 @@ class ScriptExecutor : public ActionDelegate {
       base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
       const std::string& title,
       const std::vector<std::string>& supported_basic_card_networks) override;
-  void Choose(const std::vector<UiController::Choice>& choice,
-              base::OnceCallback<void(const std::string&)> callback) override;
-  void ForceChoose(const std::string&) override;
-  void ChooseAddress(
-      base::OnceCallback<void(const std::string&)> callback) override;
+  void SetChips(std::unique_ptr<std::vector<Chip>> chips) override;
+  void ClearChips() override;
   void FillAddressForm(const autofill::AutofillProfile* profile,
                        const Selector& selector,
                        base::OnceCallback<void(bool)> callback) override;
-  void ChooseCard(
-      base::OnceCallback<void(const std::string&)> callback) override;
   void FillCardForm(std::unique_ptr<autofill::CreditCard> card,
                     const base::string16& cvc,
                     const Selector& selector,
@@ -279,8 +274,8 @@ class ScriptExecutor : public ActionDelegate {
   void OnWaitForElementVisibleNoInterrupts(
       base::OnceCallback<void(ProcessedActionStatusProto)> callback,
       bool element_found);
-  void OnChosen(base::OnceCallback<void(const std::string&)> callback,
-                const std::string& chosen);
+  void CleanUpAfterChipIsSelected();
+  void OnChosen(base::OnceClosure callback);
 
   std::string script_path_;
   std::string last_global_payload_;

@@ -115,6 +115,7 @@ AutofillAction::AutofillAction(const ActionProto& proto)
     check_form_message_ = proto.use_card().strings().check_form();
     show_overlay_ = proto.use_card().show_overlay();
   }
+  DCHECK(!selector_.empty());
 }
 
 AutofillAction::~AutofillAction() = default;
@@ -123,90 +124,32 @@ void AutofillAction::InternalProcessAction(
     ActionDelegate* delegate,
     ProcessActionCallback action_callback) {
   process_action_callback_ = std::move(action_callback);
-  // Check data already selected in a previous action.
-  bool has_selected_data =
+
+  // Ensure data already selected in a previous action.
+  DCHECK(
       (is_autofill_card_ && delegate->GetClientMemory()->has_selected_card()) ||
       (!is_autofill_card_ &&
-       delegate->GetClientMemory()->has_selected_address(name_));
-  if (has_selected_data) {
-    bool has_valid_data =
-        (is_autofill_card_ && delegate->GetClientMemory()->selected_card()) ||
-        (!is_autofill_card_ &&
-         delegate->GetClientMemory()->selected_address(name_));
-    if (!has_valid_data) {
-      // User selected 'Fill manually'.
-      delegate->StopCurrentScriptAndShutdown(fill_form_message_);
-      EndAction(MANUAL_FALLBACK);
-      return;
-    }
+       delegate->GetClientMemory()->has_selected_address(name_)));
 
-    if (selector_.empty()) {
-      // If there is no selector, finish the action directly.
-      EndAction(ACTION_APPLIED);
-      return;
-    }
-
-    FillFormWithData(delegate);
-    return;
-  }
-
-  // Show prompt.
-  if (!prompt_.empty()) {
-    delegate->ShowStatusMessage(prompt_);
-  }
-
-  // Ask user to select the data.
-  base::OnceCallback<void(const std::string&)> selection_callback =
-      base::BindOnce(&AutofillAction::OnDataSelected,
-                     weak_ptr_factory_.GetWeakPtr(), delegate);
-  if (is_autofill_card_) {
-    delegate->ChooseCard(std::move(selection_callback));
-    return;
-  }
-
-  delegate->ChooseAddress(std::move(selection_callback));
-}
-
-void AutofillAction::EndAction(ProcessedActionStatusProto status) {
-  UpdateProcessedAction(status);
-  std::move(process_action_callback_).Run(std::move(processed_action_proto_));
-}
-
-void AutofillAction::OnDataSelected(ActionDelegate* delegate,
-                                    const std::string& guid) {
-  // Remember the selection.
-  if (is_autofill_card_) {
-    std::unique_ptr<autofill::CreditCard> card;
-    if (!guid.empty()) {
-      card = std::make_unique<autofill::CreditCard>(
-          *delegate->GetPersonalDataManager()->GetCreditCardByGUID(guid));
-    }
-    delegate->GetClientMemory()->set_selected_card(std::move(card));
-  } else {
-    std::unique_ptr<autofill::AutofillProfile> address;
-    if (!guid.empty()) {
-      address = std::make_unique<autofill::AutofillProfile>(
-          *delegate->GetPersonalDataManager()->GetProfileByGUID(guid));
-    }
-    delegate->GetClientMemory()->set_selected_address(name_,
-                                                      std::move(address));
-  }
-
-  if (selector_.empty()) {
-    // If there is no selector, finish the action directly. This can be the case
-    // when we want to trigger the selection of address or card at the beginning
-    // of the script and use it later.
-    EndAction(ACTION_APPLIED);
-    return;
-  }
-
-  if (guid.empty()) {
+  bool has_valid_data =
+      (is_autofill_card_ && delegate->GetClientMemory()->selected_card()) ||
+      (!is_autofill_card_ &&
+       delegate->GetClientMemory()->selected_address(name_));
+  if (!has_valid_data) {
+    // User selected 'Fill manually'.
+    // TODO(crbug.com/806868): Check whether it is still possible to reach this
+    // part of the code.
     delegate->StopCurrentScriptAndShutdown(fill_form_message_);
     EndAction(MANUAL_FALLBACK);
     return;
   }
 
   FillFormWithData(delegate);
+}
+
+void AutofillAction::EndAction(ProcessedActionStatusProto status) {
+  UpdateProcessedAction(status);
+  std::move(process_action_callback_).Run(std::move(processed_action_proto_));
 }
 
 void AutofillAction::FillFormWithData(ActionDelegate* delegate) {

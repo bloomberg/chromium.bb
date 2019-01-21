@@ -83,10 +83,9 @@ void UiControllerAndroid::ShowStatusMessage(const std::string& message) {
 
 std::string UiControllerAndroid::GetStatusMessage() {
   JNIEnv* env = AttachCurrentThread();
-  std::string status;
   base::android::ScopedJavaLocalRef<jstring> message =
-      Java_AssistantHeaderModel_getStatusMessage(
-          env, java_autofill_assistant_ui_controller_);
+      Java_AssistantHeaderModel_getStatusMessage(env, GetHeaderModel());
+  std::string status;
   base::android::ConvertJavaStringToUTF8(env, message.obj(), &status);
   return status;
 }
@@ -154,27 +153,6 @@ void UiControllerAndroid::Close() {
       AttachCurrentThread(), java_autofill_assistant_ui_controller_);
 }
 
-void UiControllerAndroid::UpdateScripts(
-    const std::vector<ScriptHandle>& scripts) {
-  std::vector<std::string> script_paths;
-  std::vector<std::string> script_names;
-  bool* script_highlights = new bool[scripts.size()];
-  for (size_t i = 0; i < scripts.size(); ++i) {
-    const auto& script = scripts[i];
-    script_paths.emplace_back(script.path);
-    script_names.emplace_back(script.name);
-    script_highlights[i] = script.highlight;
-  }
-  JNIEnv* env = AttachCurrentThread();
-  Java_AutofillAssistantUiController_onUpdateScripts(
-      env, java_autofill_assistant_ui_controller_,
-      base::android::ToJavaArrayOfStrings(env, script_names),
-      base::android::ToJavaArrayOfStrings(env, script_paths),
-      base::android::ToJavaBooleanArray(env, script_highlights,
-                                        scripts.size()));
-  delete[] script_highlights;
-}
-
 void UiControllerAndroid::UpdateTouchableArea(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
@@ -187,49 +165,14 @@ void UiControllerAndroid::OnUserInteractionInsideTouchableArea(
   ui_delegate_->OnUserInteractionInsideTouchableArea();
 }
 
-void UiControllerAndroid::OnScriptSelected(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& jcaller,
-    const JavaParamRef<jstring>& jscript_path) {
-  std::string script_path;
-  base::android::ConvertJavaStringToUTF8(env, jscript_path, &script_path);
-  ui_delegate_->OnScriptSelected(script_path);
-}
-
-void UiControllerAndroid::OnChoice(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& jcaller,
-    const JavaParamRef<jbyteArray>& jserver_payload) {
-  if (!choice_callback_)  // possibly duplicate call
-    return;
-
-  std::string server_payload;
-  base::android::JavaByteArrayToString(env, jserver_payload, &server_payload);
-  std::move(choice_callback_).Run(server_payload);
-}
-
-void UiControllerAndroid::OnAddressSelected(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& jcaller,
-    const JavaParamRef<jstring>& jaddress_guid) {
-  if (!choice_callback_)  // possibly duplicate call
-    return;
-
-  std::string guid;
-  base::android::ConvertJavaStringToUTF8(env, jaddress_guid, &guid);
-  std::move(choice_callback_).Run(guid);
-}
-
-void UiControllerAndroid::OnCardSelected(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& jcaller,
-    const JavaParamRef<jstring>& jcard_guid) {
-  if (!choice_callback_)  // possibly duplicate call
-    return;
-
-  std::string guid;
-  base::android::ConvertJavaStringToUTF8(env, jcard_guid, &guid);
-  std::move(choice_callback_).Run(guid);
+void UiControllerAndroid::OnChipSelected(JNIEnv* env,
+                                         const JavaParamRef<jobject>& jcaller,
+                                         jint index) {
+  if (current_chips_ && index >= 0 && index < (int)current_chips_->size()) {
+    auto callback = std::move((*current_chips_)[index].callback);
+    current_chips_.reset();
+    std::move(callback).Run();
+  }
 }
 
 void UiControllerAndroid::OnGetPaymentInformation(
@@ -304,55 +247,29 @@ UiControllerAndroid::OnRequestDebugContext(
   return base::android::ConvertUTF8ToJavaString(env, GetDebugContext());
 }
 
-void UiControllerAndroid::Choose(
-    const std::vector<UiController::Choice>& choices,
-    base::OnceCallback<void(const std::string&)> callback) {
-  DCHECK(!choice_callback_);
-  choice_callback_ = std::move(callback);
+void UiControllerAndroid::SetChips(std::unique_ptr<std::vector<Chip>> chips) {
+  DCHECK(chips);
+  current_chips_ = std::move(chips);
 
-  std::vector<std::string> names;
-  std::vector<std::string> server_payload;
-  bool highlights[choices.size()];
+  int types[current_chips_->size()];
+  std::vector<std::string> texts;
   int i = 0;
-  for (const auto& choice : choices) {
-    names.emplace_back(choice.name);
-    server_payload.emplace_back(choice.server_payload);
-    highlights[i++] = choice.highlight;
+  for (const auto& chip : *current_chips_) {
+    types[i++] = chip.type;
+    texts.emplace_back(chip.text);
   }
+
   JNIEnv* env = AttachCurrentThread();
-  Java_AutofillAssistantUiController_onChoose(
+  Java_AutofillAssistantUiController_onSetChips(
       env, java_autofill_assistant_ui_controller_,
-      base::android::ToJavaArrayOfStrings(env, names),
-      base::android::ToJavaArrayOfByteArray(env, server_payload),
-      base::android::ToJavaBooleanArray(env, highlights, choices.size()));
+      base::android::ToJavaIntArray(env, types, current_chips_->size()),
+      base::android::ToJavaArrayOfStrings(env, texts));
 }
 
-void UiControllerAndroid::ForceChoose(const std::string& result) {
-  if (!choice_callback_)
-    return;
-
-  JNIEnv* env = AttachCurrentThread();
-  Java_AutofillAssistantUiController_onForceChoose(
-      env, java_autofill_assistant_ui_controller_);
-  std::move(choice_callback_).Run(result);
-}
-
-void UiControllerAndroid::ChooseAddress(
-    base::OnceCallback<void(const std::string&)> callback) {
-  DCHECK(!choice_callback_);
-  choice_callback_ = std::move(callback);
-  JNIEnv* env = AttachCurrentThread();
-  Java_AutofillAssistantUiController_onChooseAddress(
-      env, java_autofill_assistant_ui_controller_);
-}
-
-void UiControllerAndroid::ChooseCard(
-    base::OnceCallback<void(const std::string&)> callback) {
-  DCHECK(!choice_callback_);
-  choice_callback_ = std::move(callback);
-  JNIEnv* env = AttachCurrentThread();
-  Java_AutofillAssistantUiController_onChooseCard(
-      env, java_autofill_assistant_ui_controller_);
+void UiControllerAndroid::ClearChips() {
+  current_chips_.reset();
+  Java_AutofillAssistantUiController_onClearChips(
+      AttachCurrentThread(), java_autofill_assistant_ui_controller_);
 }
 
 void UiControllerAndroid::GetPaymentInformation(

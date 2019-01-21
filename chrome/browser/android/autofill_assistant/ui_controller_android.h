@@ -41,14 +41,8 @@ class UiControllerAndroid : public UiController {
   void Shutdown() override;
   void ShutdownGracefully() override;
   void Close() override;
-  void UpdateScripts(const std::vector<ScriptHandle>& scripts) override;
-  void Choose(const std::vector<UiController::Choice>& choices,
-              base::OnceCallback<void(const std::string&)> callback) override;
-  void ForceChoose(const std::string& result) override;
-  void ChooseAddress(
-      base::OnceCallback<void(const std::string&)> callback) override;
-  void ChooseCard(
-      base::OnceCallback<void(const std::string&)> callback) override;
+  void SetChips(std::unique_ptr<std::vector<Chip>> chips) override;
+  void ClearChips() override;
   void GetPaymentInformation(
       payments::mojom::PaymentOptionsPtr payment_options,
       base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
@@ -75,20 +69,9 @@ class UiControllerAndroid : public UiController {
   void OnUserInteractionInsideTouchableArea(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller);
-  void OnScriptSelected(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jcaller,
-      const base::android::JavaParamRef<jstring>& jscript_path);
-  void OnChoice(JNIEnv* env,
-                const base::android::JavaParamRef<jobject>& jcaller,
-                const base::android::JavaParamRef<jbyteArray>& jserver_payload);
-  void OnAddressSelected(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jcaller,
-      const base::android::JavaParamRef<jstring>& jaddress_guid);
-  void OnCardSelected(JNIEnv* env,
+  void OnChipSelected(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& jcaller,
-                      const base::android::JavaParamRef<jstring>& jcard_guid);
+                      jint index);
   void OnGetPaymentInformation(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,
@@ -122,7 +105,7 @@ class UiControllerAndroid : public UiController {
   base::android::ScopedJavaGlobalRef<jobject>
       java_autofill_assistant_ui_controller_;
 
-  base::OnceCallback<void(const std::string&)> choice_callback_;
+  std::unique_ptr<std::vector<Chip>> current_chips_;
   base::OnceCallback<void(std::unique_ptr<PaymentInformation>)>
       get_payment_information_callback_;
   base::OnceCallback<void(bool)> show_details_callback_;

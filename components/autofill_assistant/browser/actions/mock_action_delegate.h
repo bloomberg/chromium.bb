@@ -52,24 +52,8 @@ class MockActionDelegate : public ActionDelegate {
                void(const Selector& selector,
                     base::OnceCallback<void(bool)> callback));
 
-  void Choose(const std::vector<UiController::Choice>& choices,
-              base::OnceCallback<void(const std::string&)> callback) override {
-    OnChoose(choices, callback);
-  }
-
-  MOCK_METHOD2(OnChoose,
-               void(const std::vector<UiController::Choice>& choice,
-                    base::OnceCallback<void(const std::string&)>& callback));
-
-  MOCK_METHOD1(ForceChoose, void(const std::string&));
-
-  void ChooseAddress(
-      base::OnceCallback<void(const std::string&)> callback) override {
-    OnChooseAddress(callback);
-  }
-
-  MOCK_METHOD1(OnChooseAddress,
-               void(base::OnceCallback<void(const std::string&)>& callback));
+  MOCK_METHOD1(SetChips, void(std::unique_ptr<std::vector<Chip>> chips));
+  MOCK_METHOD0(ClearChips, void());
 
   void FillAddressForm(const autofill::AutofillProfile* profile,
                        const Selector& selector,
@@ -81,14 +65,6 @@ class MockActionDelegate : public ActionDelegate {
                void(const autofill::AutofillProfile* profile,
                     const Selector& selector,
                     base::OnceCallback<void(bool)>& callback));
-
-  void ChooseCard(
-      base::OnceCallback<void(const std::string&)> callback) override {
-    OnChooseCard(callback);
-  }
-
-  MOCK_METHOD1(OnChooseCard,
-               void(base::OnceCallback<void(const std::string&)>& callback));
 
   void FillCardForm(std::unique_ptr<autofill::CreditCard> card,
                     const base::string16& cvc,

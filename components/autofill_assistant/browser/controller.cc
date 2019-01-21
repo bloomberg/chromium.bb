@@ -212,7 +212,7 @@ void Controller::ExecuteScript(const std::string& script_path) {
   // Runnable scripts will be checked and reported if necessary after executing
   // the script.
   script_tracker_->ClearRunnableScripts();
-  GetUiController()->UpdateScripts({});  // Clear scripts.
+  GetUiController()->ClearChips();
   // TODO(crbug.com/806868): Consider making ClearRunnableScripts part of
   // ExecuteScripts to simplify the controller.
   script_tracker_->ExecuteScript(
@@ -496,13 +496,30 @@ void Controller::OnRunnableScriptsChanged(
   }
 
   // Update the set of scripts in the UI.
-  std::vector<ScriptHandle> scripts_to_update;
+  // TODO(crbug.com/806868): Surface type in proto instead of guessing it from
+  // highlight flag.
+  Chip::Type non_highlight_type = Chip::Type::CHIP_ASSISTIVE;
   for (const auto& script : runnable_scripts) {
-    if (!script.autostart && !script.name.empty()) {
-      scripts_to_update.emplace_back(script);
+    if (!script.autostart && !script.name.empty() && script.highlight) {
+      non_highlight_type = Chip::Type::BUTTON_TEXT;
+      break;
     }
   }
-  GetUiController()->UpdateScripts(scripts_to_update);
+
+  auto chips = std::make_unique<std::vector<Chip>>();
+  for (const auto& script : runnable_scripts) {
+    if (!script.autostart && !script.name.empty()) {
+      chips->emplace_back();
+      chips->back().type = script.highlight ? Chip::Type::BUTTON_FILLED_BLUE
+                                            : non_highlight_type;
+      chips->back().text = script.name;
+      chips->back().callback =
+          base::BindOnce(&Controller::OnScriptSelected,
+                         weak_ptr_factory_.GetWeakPtr(), script.path);
+    }
+  }
+
+  GetUiController()->SetChips(std::move(chips));
 }
 
 void Controller::DidAttachInterstitialPage() {

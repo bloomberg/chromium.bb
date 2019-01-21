@@ -26,20 +26,37 @@ void PromptAction::InternalProcessAction(ActionDelegate* delegate,
   delegate->ShowStatusMessage(proto_.prompt().message());
 
   callback_ = std::move(callback);
-  std::vector<UiController::Choice> choices;
+  auto chips = std::make_unique<std::vector<Chip>>();
   DCHECK_GT(proto_.prompt().choices_size(), 0);
+
+  // TODO(crbug.com/806868): Surface type in proto instead of guessing it from
+  // highlight flag.
+  Chip::Type non_highlight_type = Chip::Type::CHIP_ASSISTIVE;
+  for (const auto& choice_proto : proto_.prompt().choices()) {
+    if (!choice_proto.name().empty() && choice_proto.highlight()) {
+      non_highlight_type = Chip::Type::BUTTON_TEXT;
+      break;
+    }
+  }
+
   for (const auto& choice_proto : proto_.prompt().choices()) {
     if (choice_proto.name().empty())
       continue;
 
-    choices.emplace_back();
-    auto& choice = choices.back();
-    choice.name = choice_proto.name();
-    choice.highlight = choice_proto.highlight();
-    choice_proto.SerializeToString(&choice.server_payload);
+    chips->emplace_back();
+    chips->back().type = choice_proto.highlight()
+                             ? Chip::Type::BUTTON_FILLED_BLUE
+                             : non_highlight_type;
+    chips->back().text = choice_proto.name();
+
+    std::string server_payload;
+    choice_proto.SerializeToString(&server_payload);
+
+    chips->back().callback =
+        base::BindOnce(&PromptAction::OnSuggestionChosen,
+                       weak_ptr_factory_.GetWeakPtr(), server_payload);
   }
-  delegate->Choose(choices, base::BindOnce(&PromptAction::OnSuggestionChosen,
-                                           weak_ptr_factory_.GetWeakPtr()));
+  delegate->SetChips(std::move(chips));
 
   batch_element_checker_ = delegate->CreateBatchElementChecker();
   for (const auto& choice_proto : proto_.prompt().choices()) {
@@ -68,14 +85,16 @@ void PromptAction::OnElementExist(const std::string& payload, bool exists) {
   if (exists)
     forced_payload_ = payload;
 
-  // Calling ForceChoose is delayed until try_done, as it indirectly deletes
+  // Forcing the chip click is delayed until try_done, as it indirectly deletes
   // batch_element_checker_, which isn't supported from an element check
   // callback.
 }
 
 void PromptAction::OnElementChecksDone(ActionDelegate* delegate) {
-  if (!forced_payload_.empty())
-    delegate->ForceChoose(forced_payload_);
+  if (!forced_payload_.empty()) {
+    delegate->ClearChips();
+    OnSuggestionChosen(forced_payload_);
+  }
 }
 
 void PromptAction::OnSuggestionChosen(const std::string& payload) {
