@@ -29,6 +29,10 @@ struct CORE_EXPORT NGUnpositionedFloat final {
   NGUnpositionedFloat& operator=(NGUnpositionedFloat&&) = default;
   NGUnpositionedFloat& operator=(const NGUnpositionedFloat&) = default;
 
+  bool operator==(const NGUnpositionedFloat& other) const {
+    return node == other.node && token == other.token;
+  }
+
   NGBlockNode node;
   scoped_refptr<const NGBlockBreakToken> token;
 

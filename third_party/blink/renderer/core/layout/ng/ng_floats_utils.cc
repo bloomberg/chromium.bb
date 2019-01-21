@@ -312,54 +312,6 @@ NGPositionedFloat PositionFloat(
   return NGPositionedFloat(std::move(layout_result), float_bfc_offset);
 }
 
-void PositionFloats(const NGLogicalSize& float_available_size,
-                    const NGLogicalSize& float_percentage_size,
-                    const NGLogicalSize& float_replaced_percentage_size,
-                    const NGBfcOffset& origin_bfc_offset,
-                    NGUnpositionedFloatVector& unpositioned_floats,
-                    const NGConstraintSpace& parent_space,
-                    const ComputedStyle& parent_style,
-                    NGExclusionSpace* exclusion_space,
-                    NGPositionedFloatVector* positioned_floats) {
-  positioned_floats->ReserveCapacity(positioned_floats->size() +
-                                     unpositioned_floats.size());
-
-  for (NGUnpositionedFloat& unpositioned_float : unpositioned_floats) {
-    positioned_floats->push_back(PositionFloat(
-        float_available_size, float_percentage_size,
-        float_replaced_percentage_size, origin_bfc_offset, &unpositioned_float,
-        parent_space, parent_style, exclusion_space));
-  }
-}
-
-void AddUnpositionedFloat(NGUnpositionedFloatVector* unpositioned_floats,
-                          NGContainerFragmentBuilder* fragment_builder,
-                          NGUnpositionedFloat unpositioned_float,
-                          const NGConstraintSpace& parent_space) {
-  // The same float node should not be added more than once.
-  DCHECK(
-      !RemoveUnpositionedFloat(unpositioned_floats, unpositioned_float.node));
-
-  if (fragment_builder && !fragment_builder->BfcBlockOffset()) {
-    fragment_builder->AddAdjoiningFloatTypes(
-        unpositioned_float.IsLineLeft(parent_space.Direction())
-            ? kFloatTypeLeft
-            : kFloatTypeRight);
-  }
-  unpositioned_floats->push_back(std::move(unpositioned_float));
-}
-
-bool RemoveUnpositionedFloat(NGUnpositionedFloatVector* unpositioned_floats,
-                             NGBlockNode float_node) {
-  for (NGUnpositionedFloat& unpositioned_float : *unpositioned_floats) {
-    if (unpositioned_float.node == float_node) {
-      unpositioned_floats->erase(&unpositioned_float);
-      return true;
-    }
-  }
-  return false;
-}
-
 NGFloatTypes ToFloatTypes(EClear clear) {
   switch (clear) {
     default:
