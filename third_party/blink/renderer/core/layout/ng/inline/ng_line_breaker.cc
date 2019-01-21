@@ -1212,8 +1212,7 @@ void NGLineBreaker::HandleOverflow() {
       DCHECK(item_result->shape_result ||
              (item_result->break_anywhere_if_overflow &&
               !override_break_anywhere_));
-      if (width_to_rewind < 0 &&
-          (item_result->may_break_inside || override_break_anywhere_)) {
+      if (width_to_rewind < 0 && item_result->may_break_inside) {
         // When the text fits but its right margin does not, the break point
         // must not be at the end.
         LayoutUnit item_available_width =
