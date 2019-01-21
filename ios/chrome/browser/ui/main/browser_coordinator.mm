@@ -14,6 +14,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/download/features.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
@@ -161,6 +162,10 @@
 }
 
 #pragma mark - Public
+
+- (TabModel*)tabModel {
+  return self.browser->GetTabModel();
+}
 
 - (void)setActive:(BOOL)active {
   DCHECK_EQ(_active, self.viewController.active);

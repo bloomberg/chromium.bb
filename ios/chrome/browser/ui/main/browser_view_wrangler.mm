@@ -413,10 +413,9 @@
 }
 
 - (BrowserCoordinator*)coordinatorForBrowser:(Browser*)browser {
-  BrowserCoordinator* coordinator = [[BrowserCoordinator alloc]
-      initWithBaseViewController:nil
-                    browserState:browser->GetBrowserState()];
-  coordinator.tabModel = browser->GetTabModel();
+  BrowserCoordinator* coordinator =
+      [[BrowserCoordinator alloc] initWithBaseViewController:nil
+                                                     browser:browser];
   coordinator.applicationCommandHandler = _applicationCommandEndpoint;
   return coordinator;
 }
