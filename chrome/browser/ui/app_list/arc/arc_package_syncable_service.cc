@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service_factory.h"
 #include "chrome/common/pref_names.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/connection_holder.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync/model/sync_change_processor.h"
@@ -128,6 +129,8 @@ syncer::SyncMergeResult ArcPackageSyncableService::MergeDataAndStartSyncing(
   DCHECK(error_handler.get());
   DCHECK_EQ(type, syncer::ARC_PACKAGE);
   DCHECK(!sync_processor_.get());
+  DCHECK(!IsArcAppSyncFlowDisabled());
+
   sync_processor_ = std::move(sync_processor);
   sync_error_handler_ = std::move(error_handler);
 

@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "components/arc/arc_prefs.h"
+#include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
 #include "ui/events/event_constants.h"
 
@@ -62,7 +63,7 @@ void ArcPaiStarter::AddOnStartCallback(base::OnceClosure callback) {
 }
 
 void ArcPaiStarter::MaybeStartPai() {
-  if (started_ || locked_)
+  if (started_ || locked_ || IsArcPlayAutoInstallDisabled())
     return;
 
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context_);
