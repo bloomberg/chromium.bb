@@ -32219,6 +32219,7 @@ from previous Chrome versions.
   <int value="1235940786" label="ChromeHomePersistentIph:enabled"/>
   <int value="1237297772" label="no-pings"/>
   <int value="1240073971" label="ash-disable-smooth-screen-rotation"/>
+  <int value="1242100010" label="AutofillProfileClientValidation:disabled"/>
   <int value="1242632259" label="ContentSuggestionsCategoryOrder:disabled"/>
   <int value="1243890754" label="ForbidSyncXHRInPageDismissal:disabled"/>
   <int value="1245889469" label="enable-surface-worker"/>
@@ -32529,6 +32530,7 @@ from previous Chrome versions.
   <int value="1786386775" label="TranslateCompactUI:disabled"/>
   <int value="1789517771" label="MacV2Sandbox:enabled"/>
   <int value="1792609232" label="NTPShortcuts:enabled"/>
+  <int value="1794057460" label="AutofillProfileClientValidation:enabled"/>
   <int value="1795186324" label="SyncPseudoUSSExtensionSettings:disabled"/>
   <int value="1798347197"
       label="ContextualSuggestionsIPHReverseScroll:disabled"/>

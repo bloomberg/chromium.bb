@@ -296,6 +296,11 @@
     "owners": [ "parastoog" ],
     "expiry_milestone": 71
   },
+   {
+    "name": "autofill-profile-client-validation",
+    "owners": [ "parastoog" ],
+    "expiry_milestone": 77
+  },
   {
     "name": "autofill-restrict-formless-form-extraction",
     "owners": [ "rogerm" ],

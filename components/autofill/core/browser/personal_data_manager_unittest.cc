@@ -135,8 +135,10 @@ class PersonalDataManagerTestBase {
   PersonalDataManagerTestBase() {
     // Enable account storage by default, some tests will override this to be
     // false.
-    scoped_features_.InitAndEnableFeature(
-        features::kAutofillEnableAccountWalletStorage);
+    scoped_features_.InitWithFeatures(
+        /*enabled_features=*/{features::kAutofillEnableAccountWalletStorage,
+                              features::kAutofillProfileClientValidation},
+        /*disabled_features=*/{});
   }
 
   void SetUpTest() {
@@ -7079,6 +7081,26 @@ TEST_F(PersonalDataManagerTest, UpdateClientValidityStates_Version) {
   personal_data_->UpdateClientValidityStates(profiles);
   EXPECT_EQ(AutofillProfile::VALID,
             profiles[1]->GetValidityState(ADDRESS_HOME_STATE,
+                                          AutofillProfile::CLIENT));
+}
+
+// The validation should not happen when the feature is disabled.
+TEST_F(PersonalDataManagerTest, UpdateClientValidityStates_Disabled) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndDisableFeature(
+      features::kAutofillProfileClientValidation);
+
+  AutofillProfile profile1(test::GetFullValidProfileForCanada());
+  AddProfileToPersonalDataManager(profile1);
+
+  auto profiles = personal_data_->GetProfiles();
+  EXPECT_FALSE(profiles[0]->is_client_validity_states_updated());
+
+  personal_data_->UpdateClientValidityStates(profiles);
+
+  EXPECT_FALSE(profiles[0]->is_client_validity_states_updated());
+  EXPECT_EQ(AutofillProfile::UNVALIDATED,
+            profiles[0]->GetValidityState(ADDRESS_HOME_COUNTRY,
                                           AutofillProfile::CLIENT));
 }
 

@@ -117,6 +117,11 @@ const char kAutofillPrefilledFieldsName[] = "Autofill Prefilled Fields";
 const char kAutofillPrefilledFieldsDescription[] =
     "Allows autofill to fill fields previously filled by the website";
 
+const char kAutofillProfileClientValidationName[] =
+    "Autofill Validates Profiles By Client";
+const char kAutofillProfileClientValidationDescription[] =
+    "Allows autofill to validate profiles on the client side";
+
 const char kAutofillPreviewStyleExperimentName[] =
     "Autofill Preview Style Experiment";
 const char kAutofillPreviewStyleExperimentDescription[] =

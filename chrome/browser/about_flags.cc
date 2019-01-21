@@ -3623,6 +3623,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillPrefilledFieldsDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillPrefilledFields)},
 
+    {"autofill-profile-client-validation",
+     flag_descriptions::kAutofillProfileClientValidationName,
+     flag_descriptions::kAutofillProfileClientValidationDescription, kOsAll,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillProfileClientValidation)},
+
     {"autofill-restrict-formless-form-extraction",
      flag_descriptions::kAutofillRestrictUnownedFieldsToFormlessCheckoutName,
      flag_descriptions::
