@@ -701,7 +701,10 @@ void RenderWidget::OnSynchronizeVisualProperties(
 
   VisualProperties params = original_params;
   if (delegate()) {
-    delegate()->ApplyNewSizeForWidget(size_, params.new_size);
+    if (size_ != params.new_size) {
+      // Only hide popups when the size changes. Eg https://crbug.com/761908.
+      delegate()->CancelPagePopupForWidget();
+    }
 
     if (display_mode_ != params.display_mode) {
       display_mode_ = params.display_mode;

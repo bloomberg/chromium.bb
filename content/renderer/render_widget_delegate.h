@@ -61,11 +61,9 @@ class CONTENT_EXPORT RenderWidgetDelegate {
   // These methods called during handling of a SynchronizeVisualProperties
   // message to handle updating state on the delegate.
   //
-  // Called during handling a SynchronizeVisualProperties message, with the new
-  // size that will be applied to the RenderWidget. The size in the RenderWidget
-  // has not yet changed when this method is called, as it is changed later.
-  virtual void ApplyNewSizeForWidget(const gfx::Size& old_size,
-                                     const gfx::Size& new_size) = 0;
+  // Called during handling a SynchronizeVisualProperties message, to close the
+  // current PagePopup if there is one.
+  virtual void CancelPagePopupForWidget() = 0;
   // Called during handling a SynchronizeVisualProperties message, with the new
   // display mode that will be applied to the RenderWidget. The display mode in
   // the RenderWidget is already changed when this method is called.
