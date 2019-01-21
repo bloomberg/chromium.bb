@@ -26,6 +26,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/layout/box_layout.h"
@@ -182,6 +183,7 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
 
   SetLayoutManager(std::move(layout));
+  SetBorder(views::CreateSolidSidedBorder(0, 0, 1, 0, kForegroundColor));
 
   tab_strip_model_observer_.Add(browser->tab_strip_model());
 }
@@ -215,19 +217,6 @@ void CustomTabBarView::TabChangedAt(content::WebContents* contents,
 void CustomTabBarView::OnPaintBackground(gfx::Canvas* canvas) {
   views::View::OnPaintBackground(canvas);
 
-  constexpr SkColor kSeparatorColor = SK_ColorBLACK;
-  constexpr float kSeparatorOpacity = 0.15f;
-
-  gfx::Rect bounds = GetLocalBounds();
-  // Inset the bounds by 1 on the bottom, so we draw the bottom border inside
-  // the custom tab bar.
-  bounds.Inset(0, 0, 0, 1);
-
-  // Custom tab/content separator (bottom border).
-  canvas->DrawLine(bounds.bottom_left(), bounds.bottom_right(),
-                   color_utils::AlphaBlend(kSeparatorColor, kBackgroundColor,
-                                           kSeparatorOpacity));
-
   // Don't render the separator if there is already sufficient contrast between
   // the custom tab bar and the title bar.
   constexpr float kMaxContrastForSeparator = 1.1f;
@@ -235,6 +224,11 @@ void CustomTabBarView::OnPaintBackground(gfx::Canvas* canvas) {
       kMaxContrastForSeparator) {
     return;
   }
+
+  constexpr SkColor kSeparatorColor = SK_ColorBLACK;
+  constexpr float kSeparatorOpacity = 0.15f;
+
+  gfx::Rect bounds = GetLocalBounds();
 
   // Frame/Custom tab separator (top border).
   canvas->DrawLine(bounds.origin(), bounds.top_right(),
