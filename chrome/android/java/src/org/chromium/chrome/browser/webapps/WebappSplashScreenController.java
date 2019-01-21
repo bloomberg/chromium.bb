@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.webapps;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -19,6 +20,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
@@ -33,6 +35,7 @@ import org.chromium.webapk.lib.common.splash.SplashLayout;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.concurrent.TimeUnit;
 
 /** Shows and hides splash screen. */
 public class WebappSplashScreenController extends EmptyTabObserver {
@@ -47,6 +50,9 @@ public class WebappSplashScreenController extends EmptyTabObserver {
         int CRASH = 3;
         int NUM_ENTRIES = 4;
     }
+
+    public static final String HISTOGRAM_SPLASHSCREEN_DURATION = "Webapp.Splashscreen.Duration";
+    public static final String HISTOGRAM_SPLASHSCREEN_HIDES = "Webapp.Splashscreen.Hides";
 
     // No error.
     public static final int ERROR_OK = 0;
@@ -75,12 +81,14 @@ public class WebappSplashScreenController extends EmptyTabObserver {
 
     private boolean mIsForWebApk;
 
+    /** Time that the splash screen was shown. */
+    private long mSplashShownTimestamp;
+
     private ObserverList<SplashscreenObserver> mObservers;
 
     public WebappSplashScreenController() {
         mWebappUma = new WebappUma();
         mObservers = new ObserverList<>();
-        addObserver(mWebappUma);
     }
 
     /** Shows the splash screen. */
@@ -98,7 +106,8 @@ public class WebappSplashScreenController extends EmptyTabObserver {
         mParentView.addView(mSplashScreen);
         startSplashscreenTraceEvents();
 
-        notifySplashscreenVisible();
+        mSplashShownTimestamp = SystemClock.elapsedRealtime();
+        notifySplashscreenVisible(mSplashShownTimestamp);
 
         if (mIsForWebApk) {
             initializeLayout(webappInfo, backgroundColor, ((WebApkInfo) webappInfo).splashIcon());
@@ -316,9 +325,23 @@ public class WebappSplashScreenController extends EmptyTabObserver {
                 tab.removeObserver(WebappSplashScreenController.this);
                 mSplashScreen = null;
                 mCompositorViewHolder = null;
-                notifySplashscreenHidden(reason);
+
+                long splashHiddenTimestamp = SystemClock.elapsedRealtime();
+                notifySplashscreenHidden(splashHiddenTimestamp);
+
+                recordSplashHiddenUma(reason, splashHiddenTimestamp);
             }
         });
+    }
+
+    /** Called once the splash screen is hidden to record UMA metrics. */
+    private void recordSplashHiddenUma(@SplashHidesReason int reason, long splashHiddenTimestamp) {
+        RecordHistogram.recordEnumeratedHistogram(
+                HISTOGRAM_SPLASHSCREEN_HIDES, reason, SplashHidesReason.NUM_ENTRIES);
+
+        assert mSplashShownTimestamp != 0;
+        RecordHistogram.recordMediumTimesHistogram(HISTOGRAM_SPLASHSCREEN_DURATION,
+                splashHiddenTimestamp - mSplashShownTimestamp, TimeUnit.MILLISECONDS);
     }
 
     private static class SingleShotOnDrawListener implements ViewTreeObserver.OnDrawListener {
@@ -372,15 +395,15 @@ public class WebappSplashScreenController extends EmptyTabObserver {
         mObservers.removeObserver(observer);
     }
 
-    private void notifySplashscreenVisible() {
+    private void notifySplashscreenVisible(long timestamp) {
         for (SplashscreenObserver observer : mObservers) {
-            observer.onSplashscreenShown();
+            observer.onSplashscreenShown(timestamp);
         }
     }
 
-    private void notifySplashscreenHidden(@SplashHidesReason int reason) {
+    private void notifySplashscreenHidden(long timestamp) {
         for (SplashscreenObserver observer : mObservers) {
-            observer.onSplashscreenHidden(reason);
+            observer.onSplashscreenHidden(timestamp);
         }
         mObservers.clear();
     }
