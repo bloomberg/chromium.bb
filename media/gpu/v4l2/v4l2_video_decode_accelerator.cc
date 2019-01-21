@@ -2637,9 +2637,8 @@ void V4L2VideoDecodeAccelerator::SendPictureReady() {
       // cleared once. If the decoder is changing resolution, resetting or
       // flushing, send all pictures to ensure PictureReady arrive before
       // ProvidePictureBuffers, NotifyResetDone, or NotifyFlushDone.
-      decode_task_runner_->PostTaskAndReply(
-          FROM_HERE,
-          base::BindOnce(&Client::PictureReady, decode_client_, picture),
+      child_task_runner_->PostTaskAndReply(
+          FROM_HERE, base::BindOnce(&Client::PictureReady, client_, picture),
           // Unretained is safe. If Client::PictureReady gets to run, |this| is
           // alive. Destroy() will wait the decode thread to finish.
           base::Bind(&V4L2VideoDecodeAccelerator::PictureCleared,
