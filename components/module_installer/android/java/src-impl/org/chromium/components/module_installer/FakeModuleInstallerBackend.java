@@ -60,6 +60,9 @@ class FakeModuleInstallerBackend extends ModuleInstallerBackend {
     }
 
     @Override
+    public void installDeferred(String moduleName) {}
+
+    @Override
     public void close() {
         // No open resources. Nothing to be done here.
     }

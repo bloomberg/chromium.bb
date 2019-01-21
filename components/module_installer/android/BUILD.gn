@@ -14,6 +14,9 @@ android_library("module_installer_java") {
     "java/src-common/org/chromium/components/module_installer/OnModuleInstallFinishedListener.java",
   ]
   jar_excluded_patterns = [ "*/ModuleInstaller.class" ]
+  deps = [
+    "//base:base_java",
+  ]
 }
 
 # Contains stub implementation to be used for builds not supporting modules
@@ -22,6 +25,7 @@ android_library("module_installer_stub_java") {
   java_files = [ "java/src-stub/org/chromium/components/module_installer/ModuleInstaller.java" ]
   deps = [
     ":module_installer_java",
+    "//base:base_java",
   ]
 }
 
@@ -39,5 +43,13 @@ android_library("module_installer_impl_java") {
     "//base:base_java",
     "//components/crash/android:java",
     "//third_party/google_android_play_core:com_google_android_play_core_java",
+  ]
+}
+
+android_library("module_installer_test_java") {
+  java_files = [ "java/src-test/org/chromium/components/module_installer/ModuleInstaller.java" ]
+  deps = [
+    ":module_installer_java",
+    "//base:base_java",
   ]
 }
