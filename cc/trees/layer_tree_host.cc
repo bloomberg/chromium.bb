@@ -1165,6 +1165,8 @@ void LayerTreeHost::SetViewportSizeAndScale(
       device_scale_factor_changed) {
     SetPropertyTreesNeedRebuild();
     SetNeedsCommit();
+#if defined(OS_MACOSX)
+    // TODO(jonross): This check is not valid on Aura or Mus yet, but should be.
     CHECK(!has_pushed_local_surface_id_from_parent_ ||
           new_local_surface_id_request_ ||
           !local_surface_id_allocation_from_parent_.IsValid())
@@ -1178,6 +1180,7 @@ void LayerTreeHost::SetViewportSizeAndScale(
         << device_scale_factor_changed << " cached LSId "
         << previous_local_surface_id.ToString() << " new LSId "
         << local_surface_id_allocation_from_parent.ToString();
+#endif
   }
 }
 
