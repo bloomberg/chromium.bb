@@ -5,6 +5,8 @@
 #ifndef CHROME_SERVICES_UTIL_WIN_UTIL_WIN_SERVICE_H_
 #define CHROME_SERVICES_UTIL_WIN_UTIL_WIN_SERVICE_H_
 
+#include <string>
+
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"

@@ -5,19 +5,19 @@
 #include "chrome/services/util_win/util_win_service.h"
 
 #include <memory>
+#include <utility>
 
 #include "build/build_config.h"
-#include "chrome/services/util_win/public/mojom/shell_util_win.mojom.h"
-#include "chrome/services/util_win/shell_util_win_impl.h"
+#include "chrome/services/util_win/public/mojom/util_win.mojom.h"
+#include "chrome/services/util_win/util_win_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace {
 
-void OnShellUtilWinRequest(service_manager::ServiceKeepalive* keepalive,
-                           chrome::mojom::ShellUtilWinRequest request) {
-  mojo::MakeStrongBinding(
-      std::make_unique<ShellUtilWinImpl>(keepalive->CreateRef()),
-      std::move(request));
+void OnUtilWinRequest(service_manager::ServiceKeepalive* keepalive,
+                      chrome::mojom::UtilWinRequest request) {
+  mojo::MakeStrongBinding(std::make_unique<UtilWinImpl>(keepalive->CreateRef()),
+                          std::move(request));
 }
 
 }  // namespace
@@ -30,7 +30,7 @@ UtilWinService::~UtilWinService() = default;
 
 void UtilWinService::OnStart() {
   registry_.AddInterface(
-      base::BindRepeating(&OnShellUtilWinRequest, &service_keepalive_));
+      base::BindRepeating(&OnUtilWinRequest, &service_keepalive_));
 }
 
 void UtilWinService::OnBindInterface(

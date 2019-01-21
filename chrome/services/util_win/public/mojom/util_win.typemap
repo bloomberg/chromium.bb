@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//chrome/services/util_win/public/mojom/shell_util_win.mojom"
+mojom = "//chrome/services/util_win/public/mojom/util_win.mojom"
 
 public_headers = [
   "//base/strings/string16.h",
@@ -11,10 +11,10 @@ public_headers = [
 ]
 traits_headers = [
   "//ipc/ipc_message_utils.h",
-  "//chrome/services/util_win/public/mojom/shell_util_mojom_traits.h",
+  "//chrome/services/util_win/public/mojom/util_win_mojom_traits.h",
 ]
 sources = [
-  "//chrome/services/util_win/public/mojom/shell_util_mojom_traits.cc",
+  "//chrome/services/util_win/public/mojom/util_win_mojom_traits.cc",
 ]
 
 deps = [

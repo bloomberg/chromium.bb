@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_SERVICES_UTIL_WIN_SHELL_UTIL_WIN_IMPL_H_
-#define CHROME_SERVICES_UTIL_WIN_SHELL_UTIL_WIN_IMPL_H_
+#ifndef CHROME_SERVICES_UTIL_WIN_UTIL_WIN_IMPL_H_
+#define CHROME_SERVICES_UTIL_WIN_UTIL_WIN_IMPL_H_
 
 #include <memory>
 #include <vector>
@@ -11,17 +11,17 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "chrome/services/util_win/public/mojom/shell_util_win.mojom.h"
+#include "chrome/services/util_win/public/mojom/util_win.mojom.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
-class ShellUtilWinImpl : public chrome::mojom::ShellUtilWin {
+class UtilWinImpl : public chrome::mojom::UtilWin {
  public:
-  explicit ShellUtilWinImpl(
+  explicit UtilWinImpl(
       std::unique_ptr<service_manager::ServiceContextRef> service_ref);
-  ~ShellUtilWinImpl() override;
+  ~UtilWinImpl() override;
 
  private:
-  // chrome::mojom::ShellUtilWin:
+  // chrome::mojom::UtilWin:
   void IsPinnedToTaskbar(IsPinnedToTaskbarCallback callback) override;
   void CallExecuteSelectFile(ui::SelectFileDialog::Type type,
                              uint32_t owner,
@@ -34,7 +34,7 @@ class ShellUtilWinImpl : public chrome::mojom::ShellUtilWin {
 
   const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellUtilWinImpl);
+  DISALLOW_COPY_AND_ASSIGN(UtilWinImpl);
 };
 
-#endif  // CHROME_SERVICES_UTIL_WIN_SHELL_UTIL_WIN_IMPL_H_
+#endif  // CHROME_SERVICES_UTIL_WIN_UTIL_WIN_IMPL_H_

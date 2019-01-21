@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/services/util_win/shell_util_win_impl.h"
+#include "chrome/services/util_win/util_win_impl.h"
 
 #include <objbase.h>
 #include <shldisp.h>
@@ -215,19 +215,19 @@ bool IsPinnedToTaskbarHelper::GetResult() {
 
 }  // namespace
 
-ShellUtilWinImpl::ShellUtilWinImpl(
+UtilWinImpl::UtilWinImpl(
     std::unique_ptr<service_manager::ServiceContextRef> service_ref)
     : service_ref_(std::move(service_ref)) {}
 
-ShellUtilWinImpl::~ShellUtilWinImpl() = default;
+UtilWinImpl::~UtilWinImpl() = default;
 
-void ShellUtilWinImpl::IsPinnedToTaskbar(IsPinnedToTaskbarCallback callback) {
+void UtilWinImpl::IsPinnedToTaskbar(IsPinnedToTaskbarCallback callback) {
   IsPinnedToTaskbarHelper helper;
   bool is_pinned_to_taskbar = helper.GetResult();
   std::move(callback).Run(!helper.error_occured(), is_pinned_to_taskbar);
 }
 
-void ShellUtilWinImpl::CallExecuteSelectFile(
+void UtilWinImpl::CallExecuteSelectFile(
     ui::SelectFileDialog::Type type,
     uint32_t owner,
     const base::string16& title,

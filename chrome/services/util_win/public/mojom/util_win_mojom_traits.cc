@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/services/util_win/public/mojom/shell_util_mojom_traits.h"
+#include "chrome/services/util_win/public/mojom/util_win_mojom_traits.h"
 
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
 
