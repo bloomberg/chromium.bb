@@ -2,10 +2,7 @@
 
 <link rel="import" href="item.html">
 <link rel="import" href="shared_style.html">
-<link rel="import" href="shared_vars.html">
 <link rel="import" href="store_client.html">
-<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="chrome://resources/html/icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 
@@ -16,10 +13,28 @@
         padding: 16px 24px;
       }
 
-      .permission-row-sublabel {
+      #expand-button {
+        height: 36px;
+        margin-inline-end: 12px;
+        width: 36px;
+      }
+
+      #expander-row {
+        align-items: center;
+        border-top: var(--card-separator);
+        color: var(--secondary-text-color);
+        display: flex;
+        height: 50px;
+        justify-content: space-between;
+        padding-inline-end: 8px;
+        padding-inline-start: 24px;
+      }
+
+      .notification-row-sublabel {
         display: flex;
         flex-direction: column;
         overflow: hidden;
+        padding: 11px 0;
       }
 
       .collapsible {
@@ -35,6 +50,13 @@
 
       #notifications-sublabel > span {
         white-space: pre;
+      }
+
+      .notification-row {
+        align-items: center;
+        display: inline-flex;
+        justify-content: space-between;
+        padding: 0 24px;
       }
 
       .app-management-item-arrow {
@@ -78,8 +100,8 @@
     </div>
 
     <div class="card-container">
-      <span class="permission-row">
-        <div class="permission-row-sublabel">
+      <span class="notification-row">
+        <div class="notification-row-sublabel">
           <div class="header-text">
               $i18n{notifications}
           </div>
