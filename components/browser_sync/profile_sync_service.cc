@@ -931,6 +931,8 @@ void ProfileSyncService::OnEngineInitialized(
         debug_info_listener,
     const std::string& cache_guid,
     const std::string& session_name,
+    const std::string& birthday,
+    const std::string& bag_of_chips,
     bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -960,6 +962,12 @@ void ProfileSyncService::OnEngineInitialized(
 
   // Initialize local device info.
   local_device_->Initialize(cache_guid, session_name);
+
+  // Copy some data to preferences to be able to one day migrate away from the
+  // directory.
+  sync_prefs_.SetCacheGuid(cache_guid);
+  sync_prefs_.SetBirthday(birthday);
+  sync_prefs_.SetBagOfChips(bag_of_chips);
 
   if (protocol_event_observers_.might_have_observers()) {
     engine_->RequestBufferedProtocolEventsAndEnableForwarding();
@@ -1025,6 +1033,12 @@ void ProfileSyncService::OnSyncCycleCompleted(
 
   DCHECK(!snapshot.long_poll_interval().is_zero());
   sync_prefs_.SetLongPollInterval(snapshot.long_poll_interval());
+
+  syncer::UserShare* user_share = GetUserShare();
+  if (user_share) {
+    sync_prefs_.SetBirthday(user_share->directory->store_birthday());
+    sync_prefs_.SetBagOfChips(user_share->directory->bag_of_chips());
+  }
 
   if (IsDataTypeControllerRunning(syncer::SESSIONS) &&
       snapshot.model_neutral_state().get_updates_request_types.Has(

@@ -814,7 +814,8 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportStartupTest,
   sync_service()->OnEngineInitialized(
       syncer::ModelTypeSet(), syncer::WeakHandle<syncer::JsBackend>(),
       syncer::WeakHandle<syncer::DataTypeDebugInfoListener>(), "test-guid",
-      "test-session-name", /*success=*/true);
+      "test-session-name", "test-birthday", "test-bag-of-chips",
+      /*success=*/true);
   ASSERT_TRUE(sync_service()->IsEngineInitialized());
   EXPECT_EQ(syncer::SyncService::TransportState::PENDING_DESIRED_CONFIGURATION,
             sync_service()->GetTransportState());
@@ -899,7 +900,8 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportStartupTest,
   sync_service()->OnEngineInitialized(
       syncer::ModelTypeSet(), syncer::WeakHandle<syncer::JsBackend>(),
       syncer::WeakHandle<syncer::DataTypeDebugInfoListener>(), "test-guid",
-      "test-session-name", /*success=*/true);
+      "test-session-name", "test-birthday", "test-bag-of-chips",
+      /*success=*/true);
   ASSERT_TRUE(sync_service()->IsEngineInitialized());
   EXPECT_EQ(syncer::SyncService::TransportState::PENDING_DESIRED_CONFIGURATION,
             sync_service()->GetTransportState());
@@ -978,7 +980,8 @@ TEST_F(ProfileSyncServiceStartupTest, FullStartupSequenceNthTime) {
   sync_service()->OnEngineInitialized(
       syncer::ModelTypeSet(), syncer::WeakHandle<syncer::JsBackend>(),
       syncer::WeakHandle<syncer::DataTypeDebugInfoListener>(), "test-guid",
-      "test-session-name", /*success=*/true);
+      "test-session-name", "test-birthday", "test-bag-of-chips",
+      /*success=*/true);
   ON_CALL(*data_type_manager, state())
       .WillByDefault(Return(DataTypeManager::CONFIGURING));
   EXPECT_EQ(syncer::SyncService::TransportState::CONFIGURING,

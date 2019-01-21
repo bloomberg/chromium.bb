@@ -97,6 +97,10 @@ const char kSyncKeystoreEncryptionBootstrapToken[] =
 const char kSyncSpareBootstrapToken[] = "sync.spare_bootstrap_token";
 #endif  // defined(OS_CHROMEOS)
 
+const char kSyncCacheGuid[] = "sync.cache_guid";
+const char kSyncBirthday[] = "sync.birthday";
+const char kSyncBagOfChips[] = "sync.bag_of_chips";
+
 // Stores the timestamp of first sync.
 const char kSyncFirstSyncTime[] = "sync.first_sync_time";
 

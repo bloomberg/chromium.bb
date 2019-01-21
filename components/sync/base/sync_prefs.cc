@@ -95,6 +95,9 @@ SyncPrefs::~SyncPrefs() {
 // static
 void SyncPrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterStringPref(prefs::kSyncCacheGuid, std::string());
+  registry->RegisterStringPref(prefs::kSyncBirthday, std::string());
+  registry->RegisterStringPref(prefs::kSyncBagOfChips, std::string());
   registry->RegisterBooleanPref(prefs::kSyncFirstSetupComplete, false);
   registry->RegisterBooleanPref(prefs::kSyncSuppressStart, false);
   registry->RegisterInt64Pref(prefs::kSyncLastSyncedTime, 0);
@@ -158,6 +161,9 @@ void SyncPrefs::RemoveSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
 
 void SyncPrefs::ClearPreferences() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  pref_service_->ClearPref(prefs::kSyncCacheGuid);
+  pref_service_->ClearPref(prefs::kSyncBirthday);
+  pref_service_->ClearPref(prefs::kSyncBagOfChips);
   pref_service_->ClearPref(prefs::kSyncLastSyncedTime);
   pref_service_->ClearPref(prefs::kSyncLastPollTime);
   pref_service_->ClearPref(prefs::kSyncShortPollIntervalSeconds);
@@ -503,6 +509,22 @@ ModelTypeSet SyncPrefs::ResolvePrefGroups(ModelTypeSet registered_types,
   }
   types_with_groups.RetainAll(registered_types);
   return types_with_groups;
+}
+
+void SyncPrefs::SetCacheGuid(const std::string& cache_guid) {
+  pref_service_->SetString(prefs::kSyncCacheGuid, cache_guid);
+}
+
+void SyncPrefs::SetBirthday(const std::string& birthday) {
+  pref_service_->SetString(prefs::kSyncBirthday, birthday);
+}
+
+void SyncPrefs::SetBagOfChips(const std::string& bag_of_chips) {
+  pref_service_->SetString(prefs::kSyncBagOfChips, bag_of_chips);
+}
+
+std::string SyncPrefs::GetCacheGuidForTesting() const {
+  return pref_service_->GetString(prefs::kSyncCacheGuid);
 }
 
 base::Time SyncPrefs::GetFirstSyncTime() const {
