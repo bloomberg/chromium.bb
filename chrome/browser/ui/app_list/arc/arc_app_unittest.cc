@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
 #include "chrome/browser/ui/app_list/arc/arc_fast_app_reinstall_starter.h"
+#include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
 #include "chrome/browser/ui/app_list/arc/mock_arc_app_list_prefs_observer.h"
@@ -56,6 +57,9 @@
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/model/fake_sync_change_processor.h"
+#include "components/sync/model/sync_data.h"
+#include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -597,10 +601,12 @@ class ArcAppModelIconTest : public ArcAppModelBuilderRecreate {
   DISALLOW_COPY_AND_ASSIGN(ArcAppModelIconTest);
 };
 
-class ArcDefaulAppTest : public ArcAppModelBuilderRecreate {
+class ArcDefaultAppTest : public ArcAppModelBuilderRecreate {
  public:
-  ArcDefaulAppTest() = default;
-  ~ArcDefaulAppTest() override = default;
+  ArcDefaultAppTest() = default;
+  ~ArcDefaultAppTest() override = default;
+
+  void SetUp() override { ArcAppModelBuilderRecreate::SetUp(); }
 
  protected:
   // ArcAppModelBuilderTest:
@@ -614,23 +620,23 @@ class ArcDefaulAppTest : public ArcAppModelBuilderRecreate {
   virtual bool IsWaitDefaultAppsNeeded() const { return true; }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ArcDefaulAppTest);
+  DISALLOW_COPY_AND_ASSIGN(ArcDefaultAppTest);
 };
 
-class ArcAppLauncherForDefaulAppTest : public ArcDefaulAppTest {
+class ArcAppLauncherForDefaulAppTest : public ArcDefaultAppTest {
  public:
   ArcAppLauncherForDefaulAppTest() = default;
   ~ArcAppLauncherForDefaulAppTest() override = default;
 
  protected:
-  // ArcDefaulAppTest:
+  // ArcDefaultAppTest:
   bool IsWaitDefaultAppsNeeded() const override { return false; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ArcAppLauncherForDefaulAppTest);
 };
 
-class ArcPlayStoreAppTest : public ArcDefaulAppTest {
+class ArcPlayStoreAppTest : public ArcDefaultAppTest {
  public:
   ArcPlayStoreAppTest() = default;
   ~ArcPlayStoreAppTest() override = default;
@@ -638,7 +644,7 @@ class ArcPlayStoreAppTest : public ArcDefaulAppTest {
  protected:
   // ArcAppModelBuilderTest:
   void OnBeforeArcTestSetup() override {
-    ArcDefaulAppTest::OnBeforeArcTestSetup();
+    ArcDefaultAppTest::OnBeforeArcTestSetup();
 
     base::DictionaryValue manifest;
     manifest.SetString(extensions::manifest_keys::kName, "Play Store");
@@ -674,10 +680,10 @@ class ArcPlayStoreAppTest : public ArcDefaulAppTest {
   DISALLOW_COPY_AND_ASSIGN(ArcPlayStoreAppTest);
 };
 
-class ArcDefaulAppForManagedUserTest : public ArcPlayStoreAppTest {
+class ArcDefaultAppForManagedUserTest : public ArcPlayStoreAppTest {
  public:
-  ArcDefaulAppForManagedUserTest() = default;
-  ~ArcDefaulAppForManagedUserTest() override = default;
+  ArcDefaultAppForManagedUserTest() = default;
+  ~ArcDefaultAppForManagedUserTest() override = default;
 
  protected:
   bool IsEnabledByPolicy() const {
@@ -705,7 +711,7 @@ class ArcDefaulAppForManagedUserTest : public ArcPlayStoreAppTest {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ArcDefaulAppForManagedUserTest);
+  DISALLOW_COPY_AND_ASSIGN(ArcDefaultAppForManagedUserTest);
 };
 
 TEST_P(ArcAppModelBuilderTest, ArcPackagePref) {
@@ -893,6 +899,68 @@ TEST_P(ArcAppModelBuilderTest, RestartPreserveApps) {
   arc_test()->StopArcInstance();
   CreateBuilder();
   ValidateAppReadyState(fake_apps(), false);
+}
+
+TEST_P(ArcAppModelBuilderTest, IsUnknownBasic) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+  EXPECT_TRUE(prefs->IsUnknownPackage("com.package.notreallyapackage"));
+}
+
+TEST_P(ArcDefaultAppTest, IsUnknownDefaultApps) {
+  // Note we run as a default test here so that we can use the fake default apps
+  // list.
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+  for (const auto& app : fake_default_apps())
+    EXPECT_FALSE(prefs->IsUnknownPackage(app.package_name));
+}
+
+TEST_P(ArcAppModelBuilderTest, IsUnknownSyncTest) {
+  const std::string sync_package_name = "com.google.fakesyncpack";
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+
+  // Check that this is indeed unknown before adding to sync.
+  EXPECT_TRUE(prefs->IsUnknownPackage(sync_package_name));
+
+  // Add to sync, then check unknown.
+  auto data_list = syncer::SyncDataList();
+  sync_pb::EntitySpecifics specifics;
+  specifics.mutable_arc_package()->set_package_name(sync_package_name);
+  data_list.push_back(syncer::SyncData::CreateRemoteData(1, specifics));
+  auto* sync_service = arc::ArcPackageSyncableServiceFactory::GetInstance()
+                           ->GetForBrowserContext(profile_.get());
+  ASSERT_NE(nullptr, sync_service);
+  sync_service->MergeDataAndStartSyncing(
+      syncer::ARC_PACKAGE, data_list,
+      std::make_unique<syncer::FakeSyncChangeProcessor>(),
+      std::make_unique<syncer::SyncErrorFactoryMock>());
+
+  EXPECT_FALSE(prefs->IsUnknownPackage(sync_package_name));
+}
+
+TEST_P(ArcAppModelBuilderTest, IsUnknownInstalling) {
+  const std::string package_name = "com.fakepackage.name";
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+  EXPECT_TRUE(prefs->IsUnknownPackage(package_name));
+  app_instance()->SendInstallationStarted(package_name);
+  EXPECT_FALSE(prefs->IsUnknownPackage(package_name));
+  AddPackage(CreatePackage(package_name));
+  app_instance()->SendInstallationFinished(package_name, true /* success */);
+  EXPECT_FALSE(prefs->IsUnknownPackage(package_name));
+}
+
+TEST_P(ArcAppModelBuilderTest, IsUnknownAfterUninstall) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+  ASSERT_GE(fake_packages().size(), 1U);
+  app_instance()->SendRefreshPackageList(
+      ArcAppTest::ClonePackages(fake_packages()));
+  EXPECT_FALSE(prefs->IsUnknownPackage(fake_packages()[0]->package_name));
+  app_instance()->UninstallPackage(fake_packages()[0]->package_name);
+  EXPECT_TRUE(prefs->IsUnknownPackage(fake_packages()[0]->package_name));
 }
 
 TEST_P(ArcAppModelBuilderTest, RestartPreserveShortcuts) {
@@ -2290,7 +2358,7 @@ TEST_P(ArcAppModelBuilderTest, PackageSyncableServiceDisabled) {
                    .Has(syncer::ARC_PACKAGE));
 }
 
-TEST_P(ArcDefaulAppTest, DefaultApps) {
+TEST_P(ArcDefaultAppTest, DefaultApps) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_NE(nullptr, prefs);
 
@@ -2376,7 +2444,7 @@ TEST_P(ArcDefaulAppTest, DefaultApps) {
 
 // Test that validates disabling default app removes app from the list and this
 // is persistent in next sessions.
-TEST_P(ArcDefaulAppTest, DisableDefaultApps) {
+TEST_P(ArcDefaultAppTest, DisableDefaultApps) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_TRUE(prefs);
 
@@ -2517,7 +2585,7 @@ TEST_P(ArcAppLauncherForDefaulAppTest, AppLauncherForDefaultApps) {
   EXPECT_TRUE(launcher1.app_launched());
 }
 
-TEST_P(ArcDefaulAppTest, DefaultAppsNotAvailable) {
+TEST_P(ArcDefaultAppTest, DefaultAppsNotAvailable) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_NE(nullptr, prefs);
 
@@ -2570,7 +2638,7 @@ TEST_P(ArcDefaulAppTest, DefaultAppsNotAvailable) {
   ValidateHaveApps(only_play_store);
 }
 
-TEST_P(ArcDefaulAppTest, DefaultAppsInstallation) {
+TEST_P(ArcDefaultAppTest, DefaultAppsInstallation) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_NE(nullptr, prefs);
 
@@ -2610,7 +2678,7 @@ TEST_P(ArcDefaulAppTest, DefaultAppsInstallation) {
   ValidateHaveApps(available_apps);
 }
 
-TEST_P(ArcDefaulAppForManagedUserTest, DefaultAppsForManagedUser) {
+TEST_P(ArcDefaultAppForManagedUserTest, DefaultAppsForManagedUser) {
   const ArcAppListPrefs* const prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_TRUE(prefs);
 
@@ -2637,13 +2705,13 @@ INSTANTIATE_TEST_CASE_P(,
                         ArcAppModelBuilderTest,
                         ::testing::ValuesIn(kUnmanagedArcStates));
 INSTANTIATE_TEST_CASE_P(,
-                        ArcDefaulAppTest,
+                        ArcDefaultAppTest,
                         ::testing::ValuesIn(kUnmanagedArcStates));
 INSTANTIATE_TEST_CASE_P(,
                         ArcAppLauncherForDefaulAppTest,
                         ::testing::ValuesIn(kUnmanagedArcStates));
 INSTANTIATE_TEST_CASE_P(,
-                        ArcDefaulAppForManagedUserTest,
+                        ArcDefaultAppForManagedUserTest,
                         ::testing::ValuesIn(kManagedArcStates));
 INSTANTIATE_TEST_CASE_P(,
                         ArcPlayStoreAppTest,
