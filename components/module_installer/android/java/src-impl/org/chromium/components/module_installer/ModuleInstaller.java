@@ -110,6 +110,18 @@ public class ModuleInstaller {
         getBackend().install(moduleName);
     }
 
+    /**
+     * Asynchronously installs module in the background when on unmetered connection and charging.
+     * Install is best effort and may fail silently. Upon success, the module will only be available
+     * after Chrome restarts.
+     *
+     * @param moduleName Name of the module.
+     */
+    public static void installDeferred(String moduleName) {
+        ThreadUtils.assertOnUiThread();
+        getBackend().installDeferred(moduleName);
+    }
+
     private static void onFinished(boolean success, List<String> moduleNames) {
         ThreadUtils.assertOnUiThread();
 

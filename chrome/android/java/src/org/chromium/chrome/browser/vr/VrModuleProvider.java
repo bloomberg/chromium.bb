@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.vr;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
@@ -23,6 +24,7 @@ import java.util.List;
 public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
     private static VrDelegateProvider sDelegateProvider;
     private static final List<VrModeObserver> sVrModeObservers = new ArrayList<>();
+    private static boolean sAlwaysUseFallbackDelegate;
 
     private long mNativeVrModuleProvider;
     private Tab mTab;
@@ -32,9 +34,18 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
      * into Chrome.
      **/
     public static void maybeInit() {
-        if (VrBuildConfig.IS_VR_ENABLED) {
-            nativeInit();
-        }
+        if (!VrBuildConfig.IS_VR_ENABLED) return;
+        nativeInit();
+        // Always install the VR module on Daydream-ready devices.
+        requestModuleIfDaydreamReady();
+    }
+
+    private static void requestModuleIfDaydreamReady() {
+        if (isModuleInstalled()) return;
+        if (!getDelegate().isDaydreamReadyDevice()) return;
+
+        // Installs module when on unmetered network connection and device is charging.
+        ModuleInstaller.installDeferred("vr");
     }
 
     public static VrDelegate getDelegate() {
@@ -71,6 +82,12 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
         for (VrModeObserver observer : sVrModeObservers) observer.onExitVr();
     }
 
+    @VisibleForTesting
+    public static void setAlwaysUseFallbackDelegate(boolean useFallbackDelegate) {
+        sDelegateProvider = null;
+        sAlwaysUseFallbackDelegate = useFallbackDelegate;
+    }
+
     /* package */ static void installModule(OnModuleInstallFinishedListener onFinishedListener) {
         assert !isModuleInstalled();
 
@@ -80,6 +97,7 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
                 sDelegateProvider = null;
                 VrDelegate delegate = getDelegate();
                 assert !(delegate instanceof VrDelegateFallback);
+                delegate.initAfterModuleInstall();
             }
             onFinishedListener.onFinished(success);
         });
@@ -93,6 +111,10 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
 
     private static VrDelegateProvider getDelegateProvider() {
         if (sDelegateProvider == null) {
+            if (sAlwaysUseFallbackDelegate) {
+                sDelegateProvider = new VrDelegateProviderFallback();
+                return sDelegateProvider;
+            }
             // Need to be called before trying to access the VR module.
             ModuleInstaller.init();
             try {
@@ -147,9 +169,6 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
         ModuleInstallUi ui = new ModuleInstallUi(mTab, R.string.vr_module_title, this);
         ui.showInstallStartUi();
         installModule((success) -> {
-            if (success) {
-                getDelegate().onNativeLibraryAvailable();
-            }
             if (mNativeVrModuleProvider != 0) {
                 if (!success) {
                     ui.showInstallFailureUi();
