@@ -1040,7 +1040,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   }
 
   void FollowRedirect(const std::vector<std::string>& removed_headers,
-                      const net::HttpRequestHeaders& modified_headers) {
+                      const net::HttpRequestHeaders& modified_headers,
+                      PreviewsState new_previews_state) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(!redirect_info_.new_url.is_empty());
     if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
@@ -1082,6 +1083,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     resource_request_->top_frame_origin = redirect_info_.new_top_frame_origin;
     resource_request_->referrer = GURL(redirect_info_.new_referrer);
     resource_request_->referrer_policy = redirect_info_.new_referrer_policy;
+    resource_request_->previews_state = new_previews_state;
     url_chain_.push_back(redirect_info_.new_url);
 
     // Need to cache modified headers for |url_loader_| since it doesn't use
@@ -1759,12 +1761,13 @@ NavigationURLLoaderImpl::~NavigationURLLoaderImpl() {
 
 void NavigationURLLoaderImpl::FollowRedirect(
     const std::vector<std::string>& removed_headers,
-    const net::HttpRequestHeaders& modified_headers) {
+    const net::HttpRequestHeaders& modified_headers,
+    PreviewsState new_previews_state) {
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&URLLoaderRequestController::FollowRedirect,
                      base::Unretained(request_controller_.get()),
-                     removed_headers, modified_headers));
+                     removed_headers, modified_headers, new_previews_state));
 }
 
 void NavigationURLLoaderImpl::ProceedWithResponse() {}

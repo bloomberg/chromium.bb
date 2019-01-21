@@ -36,7 +36,8 @@ class TestNavigationURLLoader
 
   // NavigationURLLoader implementation.
   void FollowRedirect(const std::vector<std::string>& removed_headers,
-                      const net::HttpRequestHeaders& modified_headers) override;
+                      const net::HttpRequestHeaders& modified_headers,
+                      PreviewsState new_previews_state) override;
   void ProceedWithResponse() override;
 
   NavigationRequestInfo* request_info() const { return request_info_.get(); }
