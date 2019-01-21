@@ -814,7 +814,7 @@ message BatteryInfo {
   optional int64 full_charge_capacity = 5;
   optional int32 cycle_count = 6;
   // Last sampling data.
-  repeated BatterySample samples = 7;
+  repeated BatterySample sample = 7;
 }
 
 // Status of the power subsystem
@@ -856,7 +856,7 @@ message ThermalSample {
 message ThermalInfo {
   reserved 2;
   optional string label = 1;
-  repeated ThermalSample samples = 3;
+  repeated ThermalSample sample = 3;
 }
 
 // Status for various on-board components
