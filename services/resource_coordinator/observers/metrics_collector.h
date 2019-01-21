@@ -19,13 +19,10 @@ class CoordinationUnitBase;
 class FrameCoordinationUnitImpl;
 class PageCoordinationUnitImpl;
 
-extern const char kTabFromBackgroundedToFirstAlertFiredUMA[];
-extern const char kTabFromBackgroundedToFirstAudioStartsUMA[];
 extern const char kTabFromBackgroundedToFirstFaviconUpdatedUMA[];
 extern const char kTabFromBackgroundedToFirstTitleUpdatedUMA[];
 extern const char
     kTabFromBackgroundedToFirstNonPersistentNotificationCreatedUMA[];
-extern const base::TimeDelta kMaxAudioSlientTimeout;
 extern const base::TimeDelta kMetricsReportDelayTimeout;
 extern const int kDefaultFrequencyUkmEQTReported;
 
@@ -42,9 +39,6 @@ class MetricsCollector : public CoordinationUnitGraphObserver {
       const CoordinationUnitBase* coordination_unit) override;
   void OnBeforeCoordinationUnitDestroyed(
       const CoordinationUnitBase* coordination_unit) override;
-  void OnFramePropertyChanged(const FrameCoordinationUnitImpl* frame_cu,
-                              const mojom::PropertyType property_type,
-                              int64_t value) override;
   void OnPagePropertyChanged(const PageCoordinationUnitImpl* page_cu,
                              const mojom::PropertyType property_type,
                              int64_t value) override;
@@ -62,16 +56,6 @@ class MetricsCollector : public CoordinationUnitGraphObserver {
     MetricsReportRecord(const MetricsReportRecord& other);
     void UpdateUKMSourceID(int64_t ukm_source_id);
     void Reset();
-    BackgroundMetricsReporter<
-        ukm::builders::TabManager_Background_FirstAlertFired,
-        kTabFromBackgroundedToFirstAlertFiredUMA,
-        internal::UKMFrameReportType::kMainFrameAndChildFrame>
-        first_alert_fired;
-    BackgroundMetricsReporter<
-        ukm::builders::TabManager_Background_FirstAudioStarts,
-        kTabFromBackgroundedToFirstAudioStartsUMA,
-        internal::UKMFrameReportType::kMainFrameAndChildFrame>
-        first_audible;
     BackgroundMetricsReporter<
         ukm::builders::TabManager_Background_FirstFaviconUpdated,
         kTabFromBackgroundedToFirstFaviconUpdatedUMA,

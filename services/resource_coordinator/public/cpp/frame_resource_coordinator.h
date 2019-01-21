@@ -23,8 +23,6 @@ class COMPONENT_EXPORT(SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP)
   ~FrameResourceCoordinator() override;
 
   void SetProcess(const ProcessResourceCoordinator& process);
-  void SetAudibility(bool audible);
-  void OnAlertFired();
   void AddChildFrame(const FrameResourceCoordinator& child);
   void RemoveChildFrame(const FrameResourceCoordinator& child);
 

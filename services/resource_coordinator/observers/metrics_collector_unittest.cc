@@ -20,8 +20,6 @@ const char kResponsivenessMeasurement[] = "ResponsivenessMeasurement";
 const char kExpectedQueueingTime[] = "ExpectedTaskQueueingDuration";
 const base::TimeDelta kTestMetricsReportDelayTimeout =
     kMetricsReportDelayTimeout + base::TimeDelta::FromSeconds(1);
-const base::TimeDelta kTestMaxAudioSlientTimeout =
-    kMaxAudioSlientTimeout + base::TimeDelta::FromSeconds(1);
 
 // TODO(crbug.com/759905) Enable on Windows once this bug is fixed.
 #if defined(OS_WIN)
@@ -61,78 +59,6 @@ class MAYBE_MetricsCollectorTest : public CoordinationUnitTestHarness {
 };
 
 constexpr char MAYBE_MetricsCollectorTest::kDummyUrl[];
-
-TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstAudioStartsUMA) {
-  auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
-  auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
-  page_cu->AddFrame(frame_cu->id());
-
-  page_cu->OnMainFrameNavigationCommitted(ResourceCoordinatorClock::NowTicks(),
-                                          kDummyID, kDummyUrl);
-  AdvanceClock(kTestMetricsReportDelayTimeout);
-
-  page_cu->SetVisibility(true);
-  frame_cu->SetAudibility(true);
-  // The page is not backgrounded, thus no metrics recorded.
-  histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstAudioStartsUMA,
-                                     0);
-  frame_cu->SetAudibility(false);
-
-  page_cu->SetVisibility(false);
-  frame_cu->SetAudibility(true);
-  // The page was recently audible, thus no metrics recorded.
-  histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstAudioStartsUMA,
-                                     0);
-  frame_cu->SetAudibility(false);
-
-  AdvanceClock(kTestMaxAudioSlientTimeout);
-  page_cu->SetVisibility(true);
-  frame_cu->SetAudibility(true);
-  // The page was not recently audible but it is not backgrounded, thus no
-  // metrics recorded.
-  histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstAudioStartsUMA,
-                                     0);
-  frame_cu->SetAudibility(false);
-
-  page_cu->SetVisibility(false);
-  AdvanceClock(kTestMaxAudioSlientTimeout);
-  frame_cu->SetAudibility(true);
-  // The page was not recently audible and it is backgrounded, thus metrics
-  // recorded.
-  histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstAudioStartsUMA,
-                                     1);
-  frame_cu->SetAudibility(false);
-
-  page_cu->SetVisibility(true);
-  page_cu->SetVisibility(false);
-  AdvanceClock(kTestMaxAudioSlientTimeout);
-  frame_cu->SetAudibility(true);
-  // The page becomes visible and then invisible again, thus metrics recorded.
-  histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstAudioStartsUMA,
-                                     2);
-}
-
-TEST_F(MAYBE_MetricsCollectorTest,
-       FromBackgroundedToFirstAudioStartsUMA5MinutesTimeout) {
-  auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
-  auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
-
-  page_cu->AddFrame(frame_cu->id());
-
-  page_cu->SetVisibility(false);
-  page_cu->OnMainFrameNavigationCommitted(ResourceCoordinatorClock::NowTicks(),
-                                          kDummyID, kDummyUrl);
-  frame_cu->SetAudibility(true);
-  // The page is within 5 minutes after main frame navigation was committed,
-  // thus no metrics recorded.
-  histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstAudioStartsUMA,
-                                     0);
-  frame_cu->SetAudibility(false);
-  AdvanceClock(kTestMetricsReportDelayTimeout);
-  frame_cu->SetAudibility(true);
-  histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstAudioStartsUMA,
-                                     1);
-}
 
 TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstTitleUpdatedUMA) {
   auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
@@ -181,60 +107,6 @@ TEST_F(MAYBE_MetricsCollectorTest,
   AdvanceClock(kTestMetricsReportDelayTimeout);
   page_cu->OnTitleUpdated();
   histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstTitleUpdatedUMA,
-                                     1);
-}
-
-TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstAlertFiredUMA) {
-  auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
-  auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
-  page_cu->AddFrame(frame_cu->id());
-
-  page_cu->OnMainFrameNavigationCommitted(ResourceCoordinatorClock::NowTicks(),
-                                          kDummyID, kDummyUrl);
-  AdvanceClock(kTestMetricsReportDelayTimeout);
-
-  page_cu->SetVisibility(true);
-  frame_cu->OnAlertFired();
-  // The page is not backgrounded, thus no metrics recorded.
-  histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstAlertFiredUMA,
-                                     0);
-
-  page_cu->SetVisibility(false);
-  frame_cu->OnAlertFired();
-  // The page is backgrounded, thus metrics recorded.
-  histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstAlertFiredUMA,
-                                     1);
-  frame_cu->OnAlertFired();
-  // Metrics should only be recorded once per background period, thus metrics
-  // not recorded.
-  histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstAlertFiredUMA,
-                                     1);
-
-  page_cu->SetVisibility(true);
-  page_cu->SetVisibility(false);
-  frame_cu->OnAlertFired();
-  // The page is backgrounded from foregrounded, thus metrics recorded.
-  histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstAlertFiredUMA,
-                                     2);
-}
-
-TEST_F(MAYBE_MetricsCollectorTest,
-       FromBackgroundedToFirstAlertFiredUMA5MinutesTimeout) {
-  auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
-  auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
-  page_cu->AddFrame(frame_cu->id());
-
-  page_cu->OnMainFrameNavigationCommitted(ResourceCoordinatorClock::NowTicks(),
-                                          kDummyID, kDummyUrl);
-  page_cu->SetVisibility(false);
-  frame_cu->OnAlertFired();
-  // The page is within 5 minutes after main frame navigation was committed,
-  // thus no metrics recorded.
-  histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstAlertFiredUMA,
-                                     0);
-  AdvanceClock(kTestMetricsReportDelayTimeout);
-  frame_cu->OnAlertFired();
-  histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstAlertFiredUMA,
                                      1);
 }
 
