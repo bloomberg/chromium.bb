@@ -5,21 +5,19 @@
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 #include "base/logging.h"
+#include "ios/chrome/browser/main/browser.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@implementation ChromeCoordinator
-
-@synthesize childCoordinators = _childCoordinators;
-@synthesize baseViewController = _baseViewController;
-@synthesize navigationController = _navigationController;
-@synthesize browserState = _browserState;
+@implementation ChromeCoordinator {
+  ios::ChromeBrowserState* _browserState;
+}
 
 - (nullable instancetype)initWithBaseViewController:
     (UIViewController*)viewController {
-  return [self initWithBaseViewController:viewController browserState:nullptr];
+  return [self initWithBaseViewController:viewController browser:nullptr];
 }
 
 - (nullable instancetype)
@@ -29,6 +27,16 @@ initWithBaseViewController:(UIViewController*)viewController
     _baseViewController = viewController;
     _childCoordinators = [MutableCoordinatorArray array];
     _browserState = browserState;
+  }
+  return self;
+}
+
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser {
+  if (self = [super init]) {
+    _baseViewController = viewController;
+    _childCoordinators = [MutableCoordinatorArray array];
+    _browser = browser;
   }
   return self;
 }
@@ -43,6 +51,10 @@ initWithBaseViewController:(UIViewController*)viewController
   // By default the active child is the one most recently added to the child
   // array, but subclasses can override this.
   return self.childCoordinators.lastObject;
+}
+
+- (ios::ChromeBrowserState*)browserState {
+  return self.browser ? self.browser->GetBrowserState() : _browserState;
 }
 
 #pragma mark - Public

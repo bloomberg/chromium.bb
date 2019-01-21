@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 @class ChromeCoordinator;
+class Browser;
 namespace ios {
 class ChromeBrowserState;
 }
@@ -19,36 +20,40 @@ typedef NSMutableArray<ChromeCoordinator*> MutableCoordinatorArray;
 @interface ChromeCoordinator : NSObject
 
 // Creates a coordinator that will use |viewController|.
-- (nullable instancetype)initWithBaseViewController:
-    (nullable UIViewController*)viewController;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController;
 // Creates a coordinator that uses |viewController| and |browserState|.
-- (nullable instancetype)
-initWithBaseViewController:(nullable UIViewController*)viewController
-              browserState:(nullable ios::ChromeBrowserState*)browserState
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
 
-- (nullable instancetype)init NS_UNAVAILABLE;
+// Creates a coordinator that uses |viewController| and |browser|.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 // Child coordinators created by this object.
-@property(strong, nonatomic, nonnull, readonly)
+@property(strong, nonatomic, readonly)
     MutableCoordinatorArray* childCoordinators;
 
 // The currently 'active' child coordinator, if any. By default this is the last
 // coordinator in |childCoordinators|, but subclasses need not adhere to that.
-@property(strong, nonatomic, nullable, readonly)
+@property(strong, nonatomic, readonly)
     ChromeCoordinator* activeChildCoordinator;
 
 // The view controller this coordinator was initialized with.
-@property(weak, nonatomic, nullable, readonly)
-    UIViewController* baseViewController;
+@property(weak, nonatomic, readonly) UIViewController* baseViewController;
 
 // The navigation controller this coordinator was initialized with.
-@property(weak, nonatomic, nullable, readwrite)
-    UINavigationController* navigationController;
+@property(weak, nonatomic) UINavigationController* navigationController;
 
 // The coordinator's BrowserState.
-@property(assign, nonatomic, nullable, readonly)
-    ios::ChromeBrowserState* browserState;
+@property(assign, nonatomic, readonly) ios::ChromeBrowserState* browserState;
+
+// The coordinator's Browser, if one was assigned.
+@property(assign, nonatomic, readonly) Browser* browser;
 
 // The basic lifecycle methods for coordinators are -start and -stop. These
 // are blank template methods; child classes are expected to implement them and

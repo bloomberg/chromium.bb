@@ -32,6 +32,8 @@ class WebStateList;
                               browserState:
                                   (ios::ChromeBrowserState*)browserState
     NS_UNAVAILABLE;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser NS_UNAVAILABLE;
 
 // ViewController associated with this coordinator.
 @property(nonatomic, strong, readonly) UIViewController* viewController;

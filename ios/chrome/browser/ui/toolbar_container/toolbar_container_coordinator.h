@@ -25,6 +25,8 @@ enum class ToolbarContainerType { kPrimary, kSecondary };
                               browserState:
                                   (ios::ChromeBrowserState*)browserState
     NS_UNAVAILABLE;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser NS_UNAVAILABLE;
 
 // The container view controller being managed by this coordinator.
 @property(nonatomic, strong, readonly) UIViewController* viewController;

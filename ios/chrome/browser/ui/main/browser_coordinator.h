@@ -15,14 +15,22 @@
 // Coordinator for BrowserViewController.
 @interface BrowserCoordinator : ChromeCoordinator
 
+// Use only -initWithBaseViewController:browser:
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+    NS_UNAVAILABLE;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
+
 // The main view controller.
 @property(nonatomic, strong, readonly) BrowserViewController* viewController;
 
 // Command handler for ApplicationCommands.
 @property(nonatomic, weak) id<ApplicationCommands> applicationCommandHandler;
 
-// The model.
-@property(nonatomic, weak) TabModel* tabModel;
+// The tab model.
+@property(nonatomic, weak, readonly) TabModel* tabModel;
 
 // Activates/deactivates the object. This will enable/disable the ability for
 // this object to browse, and to have live UIWebViews associated with it. While

@@ -49,6 +49,8 @@ initWithBaseViewController:(UIViewController*)viewController
                               browserState:
                                   (ios::ChromeBrowserState*)browserState
     NS_UNAVAILABLE;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser NS_UNAVAILABLE;
 
 // Presents the view controller as a popover from the passed button.
 - (void)presentFromButton:(UIButton*)button;

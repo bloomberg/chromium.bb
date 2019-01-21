@@ -51,6 +51,8 @@
                               browserState:
                                   (ios::ChromeBrowserState*)browserState
     NS_UNAVAILABLE;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser NS_UNAVAILABLE;
 
 // Adds an item at the end of the menu. It does nothing if |visible| is true or
 // if trying to add an item with a UIAlertActionStyleCancel while
