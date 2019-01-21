@@ -60,7 +60,7 @@ namespace arc {
 
 namespace {
 
-// Weak pointer.  This class is owned by ArcServiceManager.
+// Weak pointer.  This class is owned by ArcServiceLauncher.
 ArcSessionManager* g_arc_session_manager = nullptr;
 
 // Allows the session manager to skip creating UI in unit tests.
