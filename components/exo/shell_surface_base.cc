@@ -115,29 +115,6 @@ class CustomFrameView : public ash::NonClientFrameViewAsh,
       NonClientFrameViewAsh::SetShouldPaintHeader(paint);
       return;
     }
-    // TODO(oshima): The caption area will be unknown
-    // if a client draw a caption. (It may not even be
-    // rectangular). Remove mask.
-    aura::Window* window = GetWidget()->GetNativeWindow();
-    ui::Layer* layer = window->layer();
-    if (paint) {
-      if (layer->alpha_shape()) {
-        layer->SetAlphaShape(nullptr);
-        layer->SetMasksToBounds(false);
-      }
-      return;
-    }
-
-    int inset = window->GetProperty(aura::client::kTopViewInset);
-    if (inset <= 0)
-      return;
-
-    gfx::Rect bound(bounds().size());
-    bound.Inset(0, inset, 0, 0);
-    std::unique_ptr<ShapeRects> shape = std::make_unique<ShapeRects>();
-    shape->push_back(bound);
-    layer->SetAlphaShape(std::move(shape));
-    layer->SetMasksToBounds(true);
   }
 
   // Overridden from aura::WindowObserver:
