@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -22,6 +23,23 @@ class ParkableString;
 
 const base::Feature kCompressParkableStringsInBackground{
     "CompressParkableStringsInBackground", base::FEATURE_DISABLED_BY_DEFAULT};
+
+class PLATFORM_EXPORT ParkableStringManagerDumpProvider
+    : public base::trace_event::MemoryDumpProvider {
+  USING_FAST_MALLOC(ParkableStringManagerDumpProvider);
+
+ public:
+  static ParkableStringManagerDumpProvider* Instance();
+  ~ParkableStringManagerDumpProvider() override;
+
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs&,
+                    base::trace_event::ProcessMemoryDump*) override;
+
+ private:
+  ParkableStringManagerDumpProvider();
+
+  DISALLOW_COPY_AND_ASSIGN(ParkableStringManagerDumpProvider);
+};
 
 // Manages all the ParkableStrings, and parks eligible strings after the
 // renderer has been backgrounded.
@@ -38,6 +56,8 @@ class PLATFORM_EXPORT ParkableStringManager {
   void PurgeMemory();
   // Number of parked and unparked strings. Public for testing.
   size_t Size() const;
+
+  bool OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd);
 
   // Whether a string is parkable or not. Can be called from any thread.
   static bool ShouldPark(const StringImpl& string);

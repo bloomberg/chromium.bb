@@ -10,6 +10,10 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/trace_event/memory_allocator_dump.h"
+#include "base/trace_event/memory_dump_provider.h"
+#include "base/trace_event/process_memory_dump.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
@@ -622,6 +626,49 @@ TEST_F(ParkableStringTest, OnPurgeMemoryInForeground) {
 
   parkable1.ToString();
   EXPECT_TRUE(parkable1.Impl()->has_compressed_data());
+}
+
+TEST_F(ParkableStringTest, ReportMemoryDump) {
+  using base::trace_event::MemoryAllocatorDump;
+  using testing::ByRef;
+  using testing::Contains;
+  using testing::Eq;
+
+  auto& manager = ParkableStringManager::Instance();
+  ParkableString parkable1(MakeLargeString().ReleaseImpl());
+  ParkableString parkable2(MakeLargeString().ReleaseImpl());
+  // Not reported in stats below.
+  ParkableString parkable3(String("short string, not parkable").ReleaseImpl());
+
+  manager.SetRendererBackgrounded(true);
+  WaitForDelayedParking();
+  parkable1.ToString();
+
+  base::trace_event::MemoryDumpArgs args = {
+      base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
+  base::trace_event::ProcessMemoryDump pmd(args);
+  manager.OnMemoryDump(&pmd);
+  base::trace_event::MemoryAllocatorDump* dump =
+      pmd.GetAllocatorDump("parkable_strings");
+  ASSERT_NE(nullptr, dump);
+
+  // |parkable1| is unparked.
+  MemoryAllocatorDump::Entry uncompressed("uncompressed_size", "bytes",
+                                          kSizeKb * 1000);
+  EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(uncompressed))));
+
+  MemoryAllocatorDump::Entry compressed("compressed_size", "bytes",
+                                        kCompressedSize);
+  EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(compressed))));
+
+  // |parkable1| compressed data is overhead.
+  MemoryAllocatorDump::Entry overhead("overhead_size", "bytes",
+                                      kCompressedSize);
+  EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(overhead))));
+
+  MemoryAllocatorDump::Entry metadata("metadata_size", "bytes",
+                                      2 * sizeof(ParkableStringImpl));
+  EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(metadata))));
 }
 
 }  // namespace blink
