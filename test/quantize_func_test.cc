@@ -411,6 +411,9 @@ INSTANTIATE_TEST_CASE_P(
                                  TX_16X16, TYPE_B, AOM_BITS_8),
                       make_tuple(&aom_quantize_b_32x32_c,
                                  &aom_quantize_b_32x32_ssse3, TX_32X32, TYPE_B,
+                                 AOM_BITS_8),
+                      make_tuple(&aom_quantize_b_64x64_c,
+                                 &aom_quantize_b_64x64_ssse3, TX_64X64, TYPE_B,
                                  AOM_BITS_8)));
 
 #endif  // HAVE_SSSE3 && ARCH_X86_64
