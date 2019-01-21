@@ -413,11 +413,13 @@ static bool CanUpcastTo(const PropertyTreeState& guest,
       guest.Transform()->IsBackfaceHidden())
     return false;
 
-  auto* home_clip = home.Clip()->Unalias();
-  for (const ClipPaintPropertyNode* current_clip = guest.Clip()->Unalias();
+  // TODO(crbug.com/923729): Note that SafeUnalias() is a speculative fix for
+  // the referenced bug. The home and guest Clips should always exist, so we can
+  // just call Unalias on them.
+  auto* home_clip = SafeUnalias(home.Clip());
+  for (const ClipPaintPropertyNode* current_clip = SafeUnalias(guest.Clip());
        current_clip != home_clip;
-       current_clip = current_clip->Parent() ? current_clip->Parent()->Unalias()
-                                             : nullptr) {
+       current_clip = SafeUnalias(current_clip->Parent())) {
     if (!current_clip || current_clip->HasDirectCompositingReasons())
       return false;
     if (!IsNonCompositingAncestorOf(
