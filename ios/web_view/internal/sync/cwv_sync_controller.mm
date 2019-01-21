@@ -14,6 +14,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "ios/web/public/web_thread.h"
 #import "ios/web_view/public/cwv_identity.h"
 #import "ios/web_view/public/cwv_sync_controller_data_source.h"
@@ -204,7 +205,7 @@ class WebViewSyncControllerObserverBridge
 }
 
 - (BOOL)unlockWithPassphrase:(NSString*)passphrase {
-  return _profileSyncService->SetDecryptionPassphrase(
+  return _profileSyncService->GetUserSettings()->SetDecryptionPassphrase(
       base::SysNSStringToUTF8(passphrase));
 }
 

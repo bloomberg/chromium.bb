@@ -54,10 +54,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientCustomPassphraseSyncTest,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  GetSyncService(kEncryptingClientId)->SetEncryptionPassphrase("hunter2");
+  GetSyncService(kEncryptingClientId)
+      ->GetUserSettings()
+      ->SetEncryptionPassphrase("hunter2");
   ASSERT_TRUE(WaitForPassphraseRequiredState(kDecryptingClientId,
                                              /*desired_state=*/true));
   EXPECT_FALSE(GetSyncService(kDecryptingClientId)
+                   ->GetUserSettings()
                    ->SetDecryptionPassphrase("incorrect passphrase"));
   EXPECT_TRUE(
       GetSyncService(kDecryptingClientId)->IsPassphraseRequiredForDecryption());
@@ -67,11 +70,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientCustomPassphraseSyncTest, ClientsCanSyncData) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  GetSyncService(kEncryptingClientId)->SetEncryptionPassphrase("hunter2");
+  GetSyncService(kEncryptingClientId)
+      ->GetUserSettings()
+      ->SetEncryptionPassphrase("hunter2");
   ASSERT_TRUE(WaitForPassphraseRequiredState(kDecryptingClientId,
                                              /*desired_state=*/true));
-  EXPECT_TRUE(
-      GetSyncService(kDecryptingClientId)->SetDecryptionPassphrase("hunter2"));
+  EXPECT_TRUE(GetSyncService(kDecryptingClientId)
+                  ->GetUserSettings()
+                  ->SetDecryptionPassphrase("hunter2"));
   EXPECT_TRUE(WaitForPassphraseRequiredState(kDecryptingClientId,
                                              /*desired_state=*/false));
   AddTestBookmarksToClient(kEncryptingClientId);
@@ -102,11 +108,14 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  GetSyncService(kEncryptingClientId)->SetEncryptionPassphrase("hunter2");
+  GetSyncService(kEncryptingClientId)
+      ->GetUserSettings()
+      ->SetEncryptionPassphrase("hunter2");
   ASSERT_TRUE(WaitForPassphraseRequiredState(kDecryptingClientId,
                                              /*desired_state=*/true));
-  EXPECT_TRUE(
-      GetSyncService(kDecryptingClientId)->SetDecryptionPassphrase("hunter2"));
+  EXPECT_TRUE(GetSyncService(kDecryptingClientId)
+                  ->GetUserSettings()
+                  ->SetDecryptionPassphrase("hunter2"));
   EXPECT_TRUE(WaitForPassphraseRequiredState(kDecryptingClientId,
                                              /*desired_state=*/false));
   AddTestBookmarksToClient(kEncryptingClientId);
@@ -139,11 +148,14 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  GetSyncService(kEncryptingClientId)->SetEncryptionPassphrase("hunter2");
+  GetSyncService(kEncryptingClientId)
+      ->GetUserSettings()
+      ->SetEncryptionPassphrase("hunter2");
   ASSERT_TRUE(WaitForPassphraseRequiredState(kDecryptingClientId,
                                              /*desired_state=*/true));
-  EXPECT_TRUE(
-      GetSyncService(kDecryptingClientId)->SetDecryptionPassphrase("hunter2"));
+  EXPECT_TRUE(GetSyncService(kDecryptingClientId)
+                  ->GetUserSettings()
+                  ->SetDecryptionPassphrase("hunter2"));
   EXPECT_TRUE(WaitForPassphraseRequiredState(kDecryptingClientId,
                                              /*desired_state=*/false));
   AddTestBookmarksToClient(kEncryptingClientId);
@@ -175,12 +187,15 @@ IN_PROC_BROWSER_TEST_F(
   {
     ScopedScryptFeatureToggler temporary_toggler(
         /*force_disabled=*/false, /*use_for_new_passphrases=*/true);
-    GetSyncService(kEncryptingClientId)->SetEncryptionPassphrase("hunter2");
+    GetSyncService(kEncryptingClientId)
+        ->GetUserSettings()
+        ->SetEncryptionPassphrase("hunter2");
   }
   ASSERT_TRUE(WaitForPassphraseRequiredState(kDecryptingClientId,
                                              /*desired_state=*/true));
-  EXPECT_TRUE(
-      GetSyncService(kDecryptingClientId)->SetDecryptionPassphrase("hunter2"));
+  EXPECT_TRUE(GetSyncService(kDecryptingClientId)
+                  ->GetUserSettings()
+                  ->SetDecryptionPassphrase("hunter2"));
   EXPECT_TRUE(WaitForPassphraseRequiredState(kDecryptingClientId,
                                              /*desired_state=*/false));
   AddTestBookmarksToClient(kEncryptingClientId);

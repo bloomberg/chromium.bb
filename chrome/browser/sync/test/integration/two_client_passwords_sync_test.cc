@@ -125,11 +125,13 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest,
                        E2E_ENABLED(MAYBE_SetPassphraseAndAddPassword)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  GetSyncService(0)->SetEncryptionPassphrase(kValidPassphrase);
+  GetSyncService(0)->GetUserSettings()->SetEncryptionPassphrase(
+      kValidPassphrase);
   ASSERT_TRUE(PassphraseAcceptedChecker(GetSyncService(0)).Wait());
 
   ASSERT_TRUE(PassphraseRequiredChecker(GetSyncService(1)).Wait());
-  ASSERT_TRUE(GetSyncService(1)->SetDecryptionPassphrase(kValidPassphrase));
+  ASSERT_TRUE(GetSyncService(1)->GetUserSettings()->SetDecryptionPassphrase(
+      kValidPassphrase));
   ASSERT_TRUE(PassphraseAcceptedChecker(GetSyncService(1)).Wait());
 
   PasswordForm form = CreateTestPasswordForm(0);
@@ -201,7 +203,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest,
   ASSERT_TRUE(SetupClients());
 
   ASSERT_TRUE(GetClient(0)->SetupSync());
-  GetSyncService(0)->SetEncryptionPassphrase(kValidPassphrase);
+  GetSyncService(0)->GetUserSettings()->SetEncryptionPassphrase(
+      kValidPassphrase);
   ASSERT_TRUE(PassphraseAcceptedChecker(GetSyncService(0)).Wait());
 
   // When client 1 hits a passphrase required state, we can infer that
@@ -210,7 +213,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest,
   ASSERT_TRUE(PassphraseRequiredChecker(GetSyncService(1)).Wait());
 
   // Get client 1 out of the passphrase required state.
-  ASSERT_TRUE(GetSyncService(1)->SetDecryptionPassphrase(kValidPassphrase));
+  ASSERT_TRUE(GetSyncService(1)->GetUserSettings()->SetDecryptionPassphrase(
+      kValidPassphrase));
   ASSERT_TRUE(PassphraseAcceptedChecker(GetSyncService(1)).Wait());
 
   // We must mark the setup complete now, since we just entered the passphrase

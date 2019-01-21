@@ -375,7 +375,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
       {"Re-encryption is great", GURL("https://google.com/re-encrypted")}};
   ASSERT_TRUE(WaitForUnencryptedServerBookmarks(expected));
 
-  GetSyncService()->SetEncryptionPassphrase("hunter2");
+  GetSyncService()->GetUserSettings()->SetEncryptionPassphrase("hunter2");
   ASSERT_TRUE(WaitForNigori(PassphraseType::CUSTOM_PASSPHRASE));
 
   // If WaitForEncryptedServerBookmarks() succeeds, that means that a

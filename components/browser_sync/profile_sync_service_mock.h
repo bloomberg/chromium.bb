@@ -50,12 +50,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD1(RemoveObserver, void(syncer::SyncServiceObserver*));
 
   bool IsPassphraseRequiredForDecryption() const override;
-  base::Time GetExplicitPassphraseTime() const override;
   bool IsUsingSecondaryPassphrase() const override;
-  void EnableEncryptEverything() override;
-  bool IsEncryptEverythingEnabled() const override;
-  void SetEncryptionPassphrase(const std::string& passphrase) override;
-  bool SetDecryptionPassphrase(const std::string& passphrase) override;
 
   MOCK_CONST_METHOD0(GetUserShare, syncer::UserShare*());
 
@@ -93,9 +88,6 @@ class ProfileSyncServiceMock : public ProfileSyncService {
 
   // ProfileSyncService overrides.
   MOCK_CONST_METHOD1(IsDataTypeControllerRunning, bool(syncer::ModelType));
-
-  syncer::PassphraseType GetPassphraseType() const override;
-  bool IsEncryptEverythingAllowed() const override;
 
   MOCK_METHOD0(StartUpSlowEngineComponents, void());
 

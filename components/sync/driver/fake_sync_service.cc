@@ -94,23 +94,7 @@ bool FakeSyncService::IsPassphraseRequiredForDecryption() const {
   return false;
 }
 
-base::Time FakeSyncService::GetExplicitPassphraseTime() const {
-  return base::Time();
-}
-
 bool FakeSyncService::IsUsingSecondaryPassphrase() const {
-  return false;
-}
-
-void FakeSyncService::EnableEncryptEverything() {}
-
-bool FakeSyncService::IsEncryptEverythingEnabled() const {
-  return false;
-}
-
-void FakeSyncService::SetEncryptionPassphrase(const std::string& passphrase) {}
-
-bool FakeSyncService::SetDecryptionPassphrase(const std::string& passphrase) {
   return false;
 }
 

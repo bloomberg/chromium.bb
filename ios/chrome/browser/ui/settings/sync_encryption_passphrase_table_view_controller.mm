@@ -12,6 +12,7 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/google/core/common/google_util.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -83,7 +84,8 @@ const CGFloat kSpinnerButtonPadding = 18;
         ProfileSyncServiceFactory::GetForBrowserState(browserState_);
     if (service->IsEngineInitialized() &&
         service->IsUsingSecondaryPassphrase()) {
-      base::Time passphrase_time = service->GetExplicitPassphraseTime();
+      base::Time passphrase_time =
+          service->GetUserSettings()->GetExplicitPassphraseTime();
       if (!passphrase_time.is_null()) {
         base::string16 passphrase_time_str =
             base::TimeFormatShortDate(passphrase_time);
@@ -284,15 +286,15 @@ const CGFloat kSpinnerButtonPadding = 18;
   [self showDecryptionProgress];
   std::string passphrase = base::SysNSStringToUTF8([passphrase_ text]);
   if ([self forDecryption]) {
-    if (!service->SetDecryptionPassphrase(passphrase)) {
+    if (!service->GetUserSettings()->SetDecryptionPassphrase(passphrase)) {
       syncObserver_.reset();
       [self clearFieldsOnError:l10n_util::GetNSString(
                                    IDS_IOS_SYNC_INCORRECT_PASSPHRASE)];
       [self hideDecryptionProgress];
     }
   } else {
-    service->EnableEncryptEverything();
-    service->SetEncryptionPassphrase(passphrase);
+    service->GetUserSettings()->EnableEncryptEverything();
+    service->GetUserSettings()->SetEncryptionPassphrase(passphrase);
   }
   [self reloadData];
 }

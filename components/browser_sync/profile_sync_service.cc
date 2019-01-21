@@ -1422,16 +1422,6 @@ bool ProfileSyncService::IsUsingSecondaryPassphrase() const {
   return user_settings_->IsUsingSecondaryPassphrase();
 }
 
-syncer::PassphraseType ProfileSyncService::GetPassphraseType() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return user_settings_->GetPassphraseType();
-}
-
-base::Time ProfileSyncService::GetExplicitPassphraseTime() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return user_settings_->GetExplicitPassphraseTime();
-}
-
 void ProfileSyncService::SyncAllowedByPlatformChanged(bool allowed) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -1646,45 +1636,11 @@ std::unique_ptr<base::Value> ProfileSyncService::GetTypeStatusMap() {
   return std::move(result);
 }
 
-void ProfileSyncService::SetEncryptionPassphrase(
-    const std::string& passphrase) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(data_type_manager_);
-  DCHECK(data_type_manager_->IsNigoriEnabled());
-  user_settings_->SetEncryptionPassphrase(passphrase);
-}
-
-bool ProfileSyncService::SetDecryptionPassphrase(
-    const std::string& passphrase) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return user_settings_->SetDecryptionPassphrase(passphrase);
-}
-
-bool ProfileSyncService::IsEncryptEverythingAllowed() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return user_settings_->IsEncryptEverythingAllowed();
-}
-
-void ProfileSyncService::SetEncryptEverythingAllowed(bool allowed) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  user_settings_->SetEncryptEverythingAllowed(allowed);
-}
-
-void ProfileSyncService::EnableEncryptEverything() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  user_settings_->EnableEncryptEverything();
-}
-
 bool ProfileSyncService::encryption_pending() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // We may be called during the setup process before we're initialized (via
   // IsEncryptedDatatypeEnabled and IsPassphraseRequiredForDecryption).
   return user_settings_->IsEncryptionPending();
-}
-
-bool ProfileSyncService::IsEncryptEverythingEnabled() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return user_settings_->IsEncryptEverythingEnabled();
 }
 
 syncer::ModelTypeSet ProfileSyncService::GetEncryptedDataTypes() const {

@@ -1882,7 +1882,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
 
   // Set a passphrase and enable encryption on Client 0. Client 1 will not
   // understand the bookmark updates.
-  GetSyncService(0)->SetEncryptionPassphrase(kValidPassphrase);
+  GetSyncService(0)->GetUserSettings()->SetEncryptionPassphrase(
+      kValidPassphrase);
   ASSERT_TRUE(PassphraseAcceptedChecker(GetSyncService(0)).Wait());
   ASSERT_TRUE(EnableEncryption(0));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
@@ -1898,7 +1899,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
 
   // Set the passphrase. Everything should resolve.
   ASSERT_TRUE(PassphraseRequiredChecker(GetSyncService(1)).Wait());
-  ASSERT_TRUE(GetSyncService(1)->SetDecryptionPassphrase(kValidPassphrase));
+  ASSERT_TRUE(GetSyncService(1)->GetUserSettings()->SetDecryptionPassphrase(
+      kValidPassphrase));
   ASSERT_TRUE(PassphraseAcceptedChecker(GetSyncService(1)).Wait());
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_EQ(0, GetClient(1)->GetLastCycleSnapshot().num_encryption_conflicts());

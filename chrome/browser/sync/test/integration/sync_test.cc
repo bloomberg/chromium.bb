@@ -75,6 +75,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/sync/base/invalidation_helper.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/engine_impl/sync_scheduler_impl.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
@@ -152,7 +153,7 @@ class SyncProfileDelegate : public Profile::Delegate {
 };
 
 bool IsEncryptionComplete(const ProfileSyncService* service) {
-  return service->IsEncryptEverythingEnabled() &&
+  return service->GetUserSettings()->IsEncryptEverythingEnabled() &&
          !service->encryption_pending();
 }
 

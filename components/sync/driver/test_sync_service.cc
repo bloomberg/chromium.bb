@@ -192,24 +192,8 @@ bool TestSyncService::IsPassphraseRequiredForDecryption() const {
   return passphrase_required_for_decryption_;
 }
 
-base::Time TestSyncService::GetExplicitPassphraseTime() const {
-  return base::Time();
-}
-
 bool TestSyncService::IsUsingSecondaryPassphrase() const {
   return using_secondary_passphrase_;
-}
-
-void TestSyncService::EnableEncryptEverything() {}
-
-bool TestSyncService::IsEncryptEverythingEnabled() const {
-  return false;
-}
-
-void TestSyncService::SetEncryptionPassphrase(const std::string& passphrase) {}
-
-bool TestSyncService::SetDecryptionPassphrase(const std::string& passphrase) {
-  return false;
 }
 
 UserShare* TestSyncService::GetUserShare() const {
