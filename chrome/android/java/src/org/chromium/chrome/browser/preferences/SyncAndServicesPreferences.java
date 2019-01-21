@@ -169,15 +169,8 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private @Nullable Preference mContextualSearch;
     private @Nullable Preference mContextualSuggestions;
 
-    private boolean mIsEngineInitialized;
-    private boolean mIsPassphraseRequired;
     private ProfileSyncService.SyncSetupInProgressHandle mSyncSetupInProgressHandle;
 
-    /**
-     * This is usually equal to AndroidSyncSettings.isSyncEnabled(), but may have a different value
-     * if passphrase dialog is shown (see {@link #onStop} for details).
-     */
-    private boolean mIsSyncEnabled;
     private @SyncError int mCurrentSyncError = SyncError.NO_ERROR;
 
     /**
@@ -338,9 +331,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     @Override
     public void onStart() {
         super.onStart();
-        mIsEngineInitialized = mProfileSyncService.isEngineInitialized();
-        mIsPassphraseRequired =
-                mIsEngineInitialized && mProfileSyncService.isPassphraseRequiredForDecryption();
         mProfileSyncService.addSyncStateChangedListener(this);
         updateSyncStateFromAndroidSyncSettings();
 
@@ -420,18 +410,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
      */
     @Override
     public void syncStateChanged() {
-        boolean wasSyncInitialized = mIsEngineInitialized;
-        boolean wasPassphraseRequired = mIsPassphraseRequired;
-        mIsEngineInitialized = mProfileSyncService.isEngineInitialized();
-        mIsPassphraseRequired =
-                mIsEngineInitialized && mProfileSyncService.isPassphraseRequiredForDecryption();
-        if (mIsEngineInitialized != wasSyncInitialized
-                || mIsPassphraseRequired != wasPassphraseRequired) {
-            // Update all because Password syncability is also affected by the engine.
-            updateSyncPreferences();
-        } else {
-            updateSyncErrorCard();
-        }
+        updateSyncPreferences();
     }
 
     /** Returns whether Sync can be disabled. */
@@ -453,11 +432,10 @@ public class SyncAndServicesPreferences extends PreferenceFragment
      * updateSyncPreferences, which uses that as its source of truth.
      */
     private void updateSyncStateFromAndroidSyncSettings() {
-        mIsSyncEnabled = AndroidSyncSettings.get().isSyncEnabled();
         updateSyncPreferences();
     }
 
-    /** Update sync preferences using mIsSyncEnabled to determine if sync is enabled. */
+    /** Update sync preferences. */
     private void updateSyncPreferences() {
         updateDataTypeState();
         updateEncryptionState();
@@ -468,8 +446,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private void updateSyncStateFromSelectedModelTypes() {
         boolean shouldEnableSync = UnifiedConsentServiceBridge.isUnifiedConsentGiven()
                 || !getSelectedModelTypes().isEmpty() || !canDisableSync();
-        if (mIsSyncEnabled == shouldEnableSync) return;
-        mIsSyncEnabled = shouldEnableSync;
         SyncPreferenceUtils.enableSync(shouldEnableSync);
         updateSyncPreferences();
     }
@@ -483,9 +459,10 @@ public class SyncAndServicesPreferences extends PreferenceFragment
      * modify the encryption state.
      */
     private void updateEncryptionState() {
-        mSyncEncryption.setEnabled(mIsSyncEnabled && mIsEngineInitialized);
+        boolean isEngineInitialized = mProfileSyncService.isEngineInitialized();
+        mSyncEncryption.setEnabled(isEngineInitialized);
         mSyncEncryption.setSummary(null);
-        if (!mIsEngineInitialized) {
+        if (!isEngineInitialized) {
             // If sync is not initialized, encryption state is unavailable and can't be changed.
             // Leave the button disabled and the summary empty. Additionally, close the dialogs in
             // case they were open when a stop and clear comes.
@@ -513,7 +490,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
 
     private void configureSyncDataTypes() {
         updateSyncStateFromSelectedModelTypes();
-        if (!mIsSyncEnabled) return;
+        if (!mProfileSyncService.isSyncRequested()) return;
 
         boolean syncEverything = UnifiedConsentServiceBridge.isUnifiedConsentGiven();
         mProfileSyncService.setChosenDataTypes(syncEverything, getSelectedModelTypes());
@@ -673,8 +650,9 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             return;
         }
 
-        Set<Integer> syncTypes =
-                mIsSyncEnabled ? mProfileSyncService.getChosenDataTypes() : new ArraySet<>();
+        Set<Integer> syncTypes = mProfileSyncService.isSyncRequested()
+                ? mProfileSyncService.getChosenDataTypes()
+                : new ArraySet<>();
         mSyncAutofill.setChecked(syncTypes.contains(ModelType.AUTOFILL));
         mSyncAutofill.setEnabled(true);
         mSyncBookmarks.setChecked(syncTypes.contains(ModelType.BOOKMARKS));
@@ -724,7 +702,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             return SyncError.ANDROID_SYNC_DISABLED;
         }
 
-        if (!mIsSyncEnabled) {
+        if (!AndroidSyncSettings.get().isChromeSyncEnabled()) {
             return SyncError.NO_ERROR;
         }
 
