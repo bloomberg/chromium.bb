@@ -89,14 +89,6 @@ LayoutUnit MinimumValueForLength(const Length& length,
   return LayoutUnit();
 }
 
-LayoutUnit RoundedMinimumValueForLength(const Length& length,
-                                        LayoutUnit maximum_value) {
-  if (length.GetType() == kPercent)
-    return static_cast<LayoutUnit>(
-        round(maximum_value * length.Percent() / 100.0f));
-  return MinimumValueForLength(length, maximum_value);
-}
-
 LayoutUnit ValueForLength(const Length& length, LayoutUnit maximum_value) {
   switch (length.GetType()) {
     case kFixed:
