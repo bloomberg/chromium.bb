@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_TEST_PASSWORD_STORE_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_TEST_PASSWORD_STORE_H_
 
+#include <functional>
 #include <map>
 #include <string>
 #include <vector>
@@ -24,8 +25,9 @@ class TestPasswordStore : public PasswordStore {
  public:
   TestPasswordStore();
 
-  typedef std::map<std::string /* signon_realm */,
-                   std::vector<autofill::PasswordForm>> PasswordMap;
+  using PasswordMap = std::map<std::string /* signon_realm */,
+                               std::vector<autofill::PasswordForm>,
+                               std::less<>>;
 
   const PasswordMap& stored_passwords() const;
   void Clear();
