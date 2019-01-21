@@ -57,6 +57,13 @@ public class TaskTraits {
         mExtensionData = extensionData;
     }
 
+    /**
+     * @return true if this task is using some TaskTraits extension.
+     */
+    public boolean hasExtension() {
+        return mExtensionId != INVALID_EXTENSION_ID;
+    }
+
     @Override
     public boolean equals(@Nullable Object object) {
         if (object == this) {
