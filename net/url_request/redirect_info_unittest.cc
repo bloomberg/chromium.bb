@@ -6,6 +6,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "net/http/http_util.h"
+#include "net/url_request/redirect_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -48,8 +49,8 @@ TEST(RedirectInfoTest, MethodForRedirect) {
     RedirectInfo redirect_info = RedirectInfo::ComputeRedirectInfo(
         test.original_method, kOriginalUrl, kOriginalSiteForCookies,
         kOriginalTopFrameOrigin, kOriginalFirstPartyUrlPolicy,
-        kOriginalReferrerPolicy, kOriginalReferrer,
-        nullptr /* response_headers */, test.http_status_code, kNewLocation,
+        kOriginalReferrerPolicy, kOriginalReferrer, test.http_status_code,
+        kNewLocation, base::nullopt /* referrer_policy_header */,
         kInsecureSchemeWasUpgraded, kCopyFragment);
 
     EXPECT_EQ(test.expected_new_method, redirect_info.new_method);
@@ -100,8 +101,8 @@ TEST(RedirectInfoTest, CopyFragment) {
         KOriginalMethod, GURL(test.original_url), kOriginalSiteForCookies,
         url::Origin::Create(GURL(test.original_url)),
         kOriginalFirstPartyUrlPolicy, kOriginalReferrerPolicy,
-        kOriginalReferrer, nullptr /* response_headers */, kHttpStatusCode,
-        GURL(test.new_location), kInsecureSchemeWasUpgraded,
+        kOriginalReferrer, kHttpStatusCode, GURL(test.new_location),
+        base::nullopt /* referrer_policy_header */, kInsecureSchemeWasUpgraded,
         test.copy_fragment);
 
     EXPECT_EQ(GURL(test.expected_new_url), redirect_info.new_url);
@@ -140,8 +141,8 @@ TEST(RedirectInfoTest, FirstPartyURLPolicy) {
     RedirectInfo redirect_info = RedirectInfo::ComputeRedirectInfo(
         KOriginalMethod, kOriginalUrl, kOriginalSiteForCookies,
         url::Origin::Create(kOriginalUrl), test.original_first_party_url_policy,
-        kOriginalReferrerPolicy, kOriginalReferrer,
-        nullptr /* response_headers */, kHttpStatusCode, kNewLocation,
+        kOriginalReferrerPolicy, kOriginalReferrer, kHttpStatusCode,
+        kNewLocation, base::nullopt /* referrer_policy_header */,
         kInsecureSchemeWasUpgraded, kCopyFragment);
 
     EXPECT_EQ(GURL(test.expected_new_site_for_cookies),
@@ -461,7 +462,8 @@ TEST(RedirectInfoTest, ReferrerPolicy) {
         KOriginalMethod, original_url, kOriginalSiteForCookies,
         url::Origin::Create(original_url), kOriginalFirstPartyUrlPolicy,
         test.original_referrer_policy, test.original_referrer,
-        response_headers.get(), response_headers->response_code(), new_location,
+        response_headers->response_code(), new_location,
+        RedirectUtil::GetReferrerPolicyHeader(response_headers.get()),
         kInsecureSchemeWasUpgraded, kCopyFragment);
 
     EXPECT_EQ(test.expected_new_referrer_policy,

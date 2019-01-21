@@ -1079,8 +1079,9 @@ void InterceptionJob::ProcessRedirectByClient(const GURL& redirect_url) {
       net::RedirectInfo::ComputeRedirectInfo(
           request.method, request.url, request.site_for_cookies,
           request.top_frame_origin, first_party_url_policy,
-          request.referrer_policy, request.referrer.spec(), &headers,
+          request.referrer_policy, request.referrer.spec(),
           headers.response_code(), redirect_url,
+          net::RedirectUtil::GetReferrerPolicyHeader(&headers),
           false /* insecure_scheme_was_upgraded */, true /* copy_fragment */));
 
   client_->OnReceiveRedirect(*response_metadata_->redirect_info,
