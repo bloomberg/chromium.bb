@@ -275,9 +275,9 @@ TEST(DiscardableSharedMemoryTest, LockShouldFailIfPlatformLockPagesFails) {
 #endif  // defined(OS_ANDROID)
 
 TEST(DiscardableSharedMemoryTest, LockAndUnlockRange) {
-  const uint32_t kDataSize = 32;
+  const size_t kDataSize = 32;
 
-  uint32_t data_size_in_bytes = kDataSize * base::GetPageSize();
+  size_t data_size_in_bytes = kDataSize * base::GetPageSize();
 
   TestDiscardableSharedMemory memory1;
   bool rv = memory1.CreateAndMap(data_size_in_bytes);

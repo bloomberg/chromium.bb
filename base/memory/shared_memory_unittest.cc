@@ -558,8 +558,8 @@ TEST_P(SharedMemoryTest, MapAt) {
 
   memory.Unmap();
 
-  off_t offset = SysInfo::VMAllocationGranularity();
-  ASSERT_TRUE(memory.MapAt(offset, kDataSize - offset));
+  size_t offset = SysInfo::VMAllocationGranularity();
+  ASSERT_TRUE(memory.MapAt(static_cast<off_t>(offset), kDataSize - offset));
   offset /= sizeof(uint32_t);
   ptr = static_cast<uint32_t*>(memory.memory());
   ASSERT_NE(ptr, static_cast<void*>(nullptr));

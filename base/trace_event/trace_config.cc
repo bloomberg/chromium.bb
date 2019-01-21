@@ -500,7 +500,7 @@ void TraceConfig::SetMemoryDumpConfigFromConfigDict(
                                          &min_size_bytes)
         && min_size_bytes >= 0) {
       memory_dump_config_.heap_profiler_options.breakdown_threshold_bytes =
-          static_cast<size_t>(min_size_bytes);
+          min_size_bytes;
     } else {
       memory_dump_config_.heap_profiler_options.breakdown_threshold_bytes =
           MemoryDumpConfig::HeapProfiler::kDefaultBreakdownThresholdBytes;

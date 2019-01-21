@@ -641,7 +641,7 @@ void RegistryKeyIterator::operator++() {
 
 bool RegistryKeyIterator::Read() {
   if (Valid()) {
-    DWORD ncount = base::size(name_);
+    DWORD ncount = static_cast<DWORD>(base::size(name_));
     FILETIME written;
     LONG r = ::RegEnumKeyEx(key_, index_, name_, &ncount, NULL, NULL,
                             NULL, &written);

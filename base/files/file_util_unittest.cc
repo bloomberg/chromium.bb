@@ -556,9 +556,9 @@ TEST_F(FileUtilTest, DevicePathToDriveLetter) {
   // real drive is if more than 10^3 disks are mounted:
   // \Device\HardDiskVolume10000 would be truncated to \Device\HardDiskVolume1
   // Check that DevicePathToDriveLetterPath fails.
-  int path_length = actual_device_path.value().length();
-  int new_length = path_length - 4;
-  ASSERT_LT(0, new_length);
+  size_t path_length = actual_device_path.value().length();
+  size_t new_length = path_length - 4;
+  ASSERT_GT(new_length, 0u);
   FilePath prefix_of_real_device_path(
       actual_device_path.value().substr(0, new_length));
   ASSERT_FALSE(DevicePathToDriveLetterPath(prefix_of_real_device_path,

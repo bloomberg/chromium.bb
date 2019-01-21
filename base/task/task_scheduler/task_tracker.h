@@ -210,7 +210,7 @@ class BASE_EXPORT TaskTracker {
   void SetExecutionFenceEnabled(bool execution_fence_enabled);
 
   // Returns the number of preempted sequences of a given priority.
-  int GetPreemptedSequenceCountForTesting(TaskPriority priority);
+  size_t GetPreemptedSequenceCountForTesting(TaskPriority priority);
 
  protected:
   // Runs and deletes |task| if |can_run_task| is true. Otherwise, just deletes

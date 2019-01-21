@@ -30,7 +30,7 @@ class Pickle;
 // while the PickleIterator object is in use.
 class BASE_EXPORT PickleIterator {
  public:
-  PickleIterator() : payload_(NULL), read_index_(0), end_index_(0) {}
+  PickleIterator() : payload_(nullptr), read_index_(0), end_index_(0) {}
   explicit PickleIterator(const Pickle& pickle);
 
   // Methods for reading the payload of the Pickle. To read from the start of
@@ -154,7 +154,7 @@ class BASE_EXPORT Pickle {
   // instead the data is merely referenced by this Pickle.  Only const methods
   // should be used on the Pickle when initialized this way.  The header
   // padding size is deduced from the data length.
-  Pickle(const char* data, int data_len);
+  Pickle(const char* data, size_t data_len);
 
   // Initializes a Pickle as a deep copy of another Pickle.
   Pickle(const Pickle& other);
