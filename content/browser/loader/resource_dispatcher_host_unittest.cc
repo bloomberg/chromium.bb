@@ -128,7 +128,7 @@ class TestFilterSpecifyingChild : public ResourceMessageFilter {
             nullptr,
             nullptr,
             nullptr,
-            BrowserContext::GetSharedCorsOriginAccessList(browser_context),
+            browser_context->GetSharedCorsOriginAccessList(),
             base::Bind(&TestFilterSpecifyingChild::GetContexts,
                        base::Unretained(this)),
             base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})),

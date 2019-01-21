@@ -225,21 +225,6 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   static ServiceManagerConnection* GetServiceManagerConnectionFor(
       BrowserContext* browser_context);
 
-  // Returns a SharedCorsOriginAccessList instance for the |browser_context|.
-  // TODO(toyoshim): Remove this interface once NetworkService is enabled.
-  static const SharedCorsOriginAccessList* GetSharedCorsOriginAccessList(
-      BrowserContext* browser_context);
-
-  // Sets CORS origin access lists. This obtains SharedCorsOriginAccessList
-  // that is bound to |browser_context|, and calls SetForOrigin(...) for legacy
-  // code path, but calls into NetworkService instead if it is enabled.
-  static void SetCorsOriginAccessListsForOrigin(
-      BrowserContext* browser_context,
-      const url::Origin& source_origin,
-      std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
-      std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
-      base::OnceClosure closure);
-
   BrowserContext();
 
   ~BrowserContext() override;
@@ -336,6 +321,17 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       CreateMediaRequestContextForStoragePartition(
           const base::FilePath& partition_path,
           bool in_memory) = 0;
+
+  // Sets CORS origin access lists.
+  virtual void SetCorsOriginAccessListForOrigin(
+      const url::Origin& source_origin,
+      std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
+      std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
+      base::OnceClosure closure);
+
+  // Returns a SharedCorsOriginAccessList instance.
+  virtual const SharedCorsOriginAccessList* GetSharedCorsOriginAccessList()
+      const;
 
   // Handles a service request for a service expected to run an instance per
   // BrowserContext.

@@ -136,8 +136,7 @@ WorkerScriptFetchInitiator::CreateFactoryBundle(
   if (file_support) {
     auto file_factory = std::make_unique<FileURLLoaderFactory>(
         storage_partition->browser_context()->GetPath(),
-        BrowserContext::GetSharedCorsOriginAccessList(
-            storage_partition->browser_context()),
+        storage_partition->browser_context()->GetSharedCorsOriginAccessList(),
         base::CreateSequencedTaskRunnerWithTraits(
             {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));

@@ -237,52 +237,27 @@ const char TestingProfile::kTestUserProfileDir[] = "test-user";
 const char TestingProfile::kTestUserProfileDir[] = "Default";
 #endif
 
-TestingProfile::TestingProfile()
-    : start_time_(Time::Now()),
-      testing_prefs_(NULL),
-      original_profile_(NULL),
-      guest_session_(false),
-      last_session_exited_cleanly_(true),
-      browser_context_dependency_manager_(
-          BrowserContextDependencyManager::GetInstance()),
-      resource_context_(NULL),
-      delegate_(NULL),
-      profile_name_(kTestingProfile) {
-  CreateTempProfileDir();
-  profile_path_ = temp_dir_.GetPath();
-
-  Init();
-  FinishInit();
-}
+TestingProfile::TestingProfile() : TestingProfile(base::FilePath()) {}
 
 TestingProfile::TestingProfile(const base::FilePath& path)
-    : start_time_(Time::Now()),
-      testing_prefs_(NULL),
-      original_profile_(NULL),
-      guest_session_(false),
-      last_session_exited_cleanly_(true),
-      profile_path_(path),
-      browser_context_dependency_manager_(
-          BrowserContextDependencyManager::GetInstance()),
-      resource_context_(NULL),
-      delegate_(NULL),
-      profile_name_(kTestingProfile) {
-  Init();
-  FinishInit();
-}
+    : TestingProfile(path, nullptr) {}
 
 TestingProfile::TestingProfile(const base::FilePath& path, Delegate* delegate)
     : start_time_(Time::Now()),
-      testing_prefs_(NULL),
-      original_profile_(NULL),
+      testing_prefs_(nullptr),
+      original_profile_(nullptr),
       guest_session_(false),
       last_session_exited_cleanly_(true),
       profile_path_(path),
       browser_context_dependency_manager_(
           BrowserContextDependencyManager::GetInstance()),
-      resource_context_(NULL),
+      resource_context_(nullptr),
       delegate_(delegate),
       profile_name_(kTestingProfile) {
+  if (profile_path_.empty()) {
+    CreateTempProfileDir();
+    profile_path_ = temp_dir_.GetPath();
+  }
   Init();
   if (delegate_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -309,7 +284,7 @@ TestingProfile::TestingProfile(
     const std::string& profile_name)
     : start_time_(Time::Now()),
       prefs_(std::move(prefs)),
-      testing_prefs_(NULL),
+      testing_prefs_(nullptr),
       original_profile_(parent),
       guest_session_(guest_session),
       is_new_profile_(std::move(is_new_profile)),
@@ -321,7 +296,7 @@ TestingProfile::TestingProfile(
       profile_path_(path),
       browser_context_dependency_manager_(
           BrowserContextDependencyManager::GetInstance()),
-      resource_context_(NULL),
+      resource_context_(nullptr),
       delegate_(delegate),
       profile_name_(profile_name),
       policy_service_(policy_service.release()) {
@@ -537,7 +512,7 @@ TestingProfile::~TestingProfile() {
   if (resource_context_) {
     CHECK(BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
                                     resource_context_));
-    resource_context_ = NULL;
+    resource_context_ = nullptr;
     content::RunAllPendingInMessageLoop(BrowserThread::IO);
   }
 
@@ -617,7 +592,7 @@ void TestingProfile::BlockUntilHistoryIndexIsRefreshed() {
       content::GetDeferredQuitTaskForRunLoop(&run_loop));
   index->set_restore_cache_observer(&observer);
   run_loop.Run();
-  index->set_restore_cache_observer(NULL);
+  index->set_restore_cache_observer(nullptr);
   DCHECK(index->restored());
 }
 
@@ -689,7 +664,7 @@ Profile* TestingProfile::GetOffTheRecordProfile() {
 }
 
 bool TestingProfile::HasOffTheRecordProfile() {
-  return incognito_profile_.get() != NULL;
+  return incognito_profile_.get() != nullptr;
 }
 
 Profile* TestingProfile::GetOriginalProfile() {
@@ -739,10 +714,11 @@ ExtensionSpecialStoragePolicy*
 TestingProfile::GetExtensionSpecialStoragePolicy() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (!extension_special_storage_policy_.get())
-    extension_special_storage_policy_ = new ExtensionSpecialStoragePolicy(NULL);
+    extension_special_storage_policy_ =
+        new ExtensionSpecialStoragePolicy(nullptr);
   return extension_special_storage_policy_.get();
 #else
-  return NULL;
+  return nullptr;
 #endif
 }
 
@@ -786,7 +762,7 @@ void TestingProfile::CreateIncognitoPrefService() {
 void TestingProfile::CreateProfilePolicyConnector() {
   schema_registry_service_ =
       policy::SchemaRegistryServiceFactory::CreateForContext(
-          this, policy::Schema(), NULL);
+          this, policy::Schema(), nullptr);
   CHECK_EQ(schema_registry_service_.get(),
            policy::SchemaRegistryServiceFactory::GetForContext(this));
 
@@ -822,7 +798,7 @@ ChromeZoomLevelPrefs* TestingProfile::GetZoomLevelPrefs() {
 #endif  // !defined(OS_ANDROID)
 
 DownloadManagerDelegate* TestingProfile::GetDownloadManagerDelegate() {
-  return NULL;
+  return nullptr;
 }
 
 net::URLRequestContextGetter* TestingProfile::GetRequestContext() {
@@ -863,12 +839,12 @@ content::BrowserPluginGuestManager* TestingProfile::GetGuestManager() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   return guest_view::GuestViewManager::FromBrowserContext(this);
 #else
-  return NULL;
+  return nullptr;
 #endif
 }
 
 content::PushMessagingService* TestingProfile::GetPushMessagingService() {
-  return NULL;
+  return nullptr;
 }
 
 bool TestingProfile::IsSameProfile(Profile *profile) {
@@ -915,24 +891,24 @@ GURL TestingProfile::GetHomePage() {
 }
 
 PrefService* TestingProfile::GetOffTheRecordPrefs() {
-  return NULL;
+  return nullptr;
 }
 
 storage::SpecialStoragePolicy* TestingProfile::GetSpecialStoragePolicy() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   return GetExtensionSpecialStoragePolicy();
 #else
-  return NULL;
+  return nullptr;
 #endif
 }
 
 content::SSLHostStateDelegate* TestingProfile::GetSSLHostStateDelegate() {
-  return NULL;
+  return nullptr;
 }
 
 content::PermissionControllerDelegate*
 TestingProfile::GetPermissionControllerDelegate() {
-  return NULL;
+  return nullptr;
 }
 
 content::ClientHintsControllerDelegate*
@@ -981,14 +957,24 @@ TestingProfile::CreateRequestContextForStoragePartition(
 }
 
 net::URLRequestContextGetter* TestingProfile::CreateMediaRequestContext() {
-  return NULL;
+  return nullptr;
+}
+
+void TestingProfile::SetCorsOriginAccessListForOrigin(
+    const url::Origin& source_origin,
+    std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
+    std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
+    base::OnceClosure closure) {
+  // Extensions need to set the list, but just can be ignored unless they need
+  // to make actual network requests beyond the CORS policy.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(closure));
 }
 
 net::URLRequestContextGetter*
 TestingProfile::CreateMediaRequestContextForStoragePartition(
     const base::FilePath& partition_path,
     bool in_memory) {
-  return NULL;
+  return nullptr;
 }
 
 bool TestingProfile::WasCreatedByVersionOrLater(const std::string& version) {
@@ -1022,7 +1008,7 @@ network::mojom::NetworkContextPtr TestingProfile::CreateNetworkContext(
 
 TestingProfile::Builder::Builder()
     : build_called_(false),
-      delegate_(NULL),
+      delegate_(nullptr),
       guest_session_(false),
       profile_name_(kTestingProfile) {}
 
@@ -1086,7 +1072,7 @@ std::unique_ptr<TestingProfile> TestingProfile::Builder::Build() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
                          extension_policy_,
 #endif
-                         std::move(pref_service_), NULL, guest_session_,
+                         std::move(pref_service_), nullptr, guest_session_,
                          std::move(is_new_profile_), supervised_user_id_,
                          std::move(policy_service_),
                          std::move(testing_factories_), profile_name_));

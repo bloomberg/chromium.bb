@@ -509,6 +509,20 @@ OffTheRecordProfileImpl::GetVideoDecodePerfHistory() {
   return decode_history;
 }
 
+void OffTheRecordProfileImpl::SetCorsOriginAccessListForOrigin(
+    const url::Origin& source_origin,
+    std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
+    std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
+    base::OnceClosure closure) {
+  NOTREACHED()
+      << "CorsOriginAccessList should not be modified in incognito profiles";
+}
+
+const content::SharedCorsOriginAccessList*
+OffTheRecordProfileImpl::GetSharedCorsOriginAccessList() const {
+  return profile_->GetSharedCorsOriginAccessList();
+}
+
 bool OffTheRecordProfileImpl::IsSameProfile(Profile* profile) {
   return (profile == this) || (profile == profile_);
 }

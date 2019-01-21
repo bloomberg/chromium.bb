@@ -13,6 +13,10 @@
 
 namespace content {
 
+scoped_refptr<SharedCorsOriginAccessList> SharedCorsOriginAccessList::Create() {
+  return base::MakeRefCounted<SharedCorsOriginAccessListImpl>();
+}
+
 SharedCorsOriginAccessListImpl::SharedCorsOriginAccessListImpl()
     : SharedCorsOriginAccessList() {}
 

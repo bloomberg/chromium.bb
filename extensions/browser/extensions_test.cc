@@ -25,6 +25,20 @@ std::unique_ptr<content::TestBrowserContext> CreateTestIncognitoContext() {
   return incognito_context;
 }
 
+class ExtensionTestBrowserContext : public content::TestBrowserContext {
+ private:
+  void SetCorsOriginAccessListForOrigin(
+      const url::Origin& source_origin,
+      std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
+      std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
+      base::OnceClosure closure) override {
+    // This method is called for setting up Extensions, but can be ignored
+    // unless actual network requests need to be handled.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(closure));
+  }
+};
+
 }  // namespace
 
 namespace extensions {
@@ -56,7 +70,7 @@ void ExtensionsTest::SetExtensionsBrowserClient(
 
 void ExtensionsTest::SetUp() {
   content_utility_client_ = std::make_unique<TestContentUtilityClient>();
-  browser_context_ = std::make_unique<content::TestBrowserContext>();
+  browser_context_ = std::make_unique<ExtensionTestBrowserContext>();
   incognito_context_ = CreateTestIncognitoContext();
 
   if (!extensions_browser_client_) {

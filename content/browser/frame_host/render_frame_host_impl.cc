@@ -4683,7 +4683,7 @@ void RenderFrameHostImpl::CommitNavigation(
       // Only file resources can load file subresources
       auto file_factory = std::make_unique<FileURLLoaderFactory>(
           browser_context->GetPath(),
-          BrowserContext::GetSharedCorsOriginAccessList(browser_context),
+          browser_context->GetSharedCorsOriginAccessList(),
           base::CreateSequencedTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));

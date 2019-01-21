@@ -2020,7 +2020,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
         storage_partition_impl_->GetFileSystemContext(),
         storage_partition_impl_->GetServiceWorkerContext(),
         storage_partition_impl_->GetPrefetchURLLoaderService(),
-        BrowserContext::GetSharedCorsOriginAccessList(browser_context),
+        browser_context->GetSharedCorsOriginAccessList(),
         std::move(get_contexts_callback),
         base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
 
