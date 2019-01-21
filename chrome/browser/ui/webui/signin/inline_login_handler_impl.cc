@@ -541,6 +541,12 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
   signin_metrics::Reason reason =
       signin::GetSigninReasonForEmbeddedPromoURL(current_url);
 
+  const GURL& url = GaiaUrls::GetInstance()->embedded_signin_url();
+  params.SetBoolean("isNewGaiaFlow", true);
+  params.SetString("clientId",
+                   GaiaUrls::GetInstance()->oauth2_chrome_client_id());
+  params.SetString("gaiaPath", url.path().substr(1));
+
 #if defined(OS_WIN)
   if (reason == signin_metrics::Reason::REASON_FETCH_LST_ONLY) {
     std::string email_domains;
@@ -552,14 +558,25 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
       if (all_email_domains.size() == 1)
         params.SetString("emailDomain", all_email_domains[0]);
     }
+
+    // Prevent opening a new window if the embedded page fails to load.
+    // This will keep the user from being able to access a fully functional
+    // Chrome window in incognito mode.
+    params.SetBoolean("dontResizeNonEmbeddedPages", true);
+
+    GURL windows_url = GaiaUrls::GetInstance()->embedded_setup_windows_url();
+    // Redirect to specified gaia endpoint path for GCPW:
+    std::string windows_endpoint_path = windows_url.path().substr(1);
+    // Redirect to specified gaia endpoint path for GCPW:
+    std::string gcpw_endpoint_path;
+    if (net::GetValueForKeyInQuery(
+            current_url, credential_provider::kGcpwEndpointPathPromoParameter,
+            &gcpw_endpoint_path)) {
+      windows_endpoint_path = gcpw_endpoint_path;
+    }
+    params.SetString("gaiaPath", windows_endpoint_path);
   }
 #endif
-
-  const GURL& url = GaiaUrls::GetInstance()->embedded_signin_url();
-  params.SetBoolean("isNewGaiaFlow", true);
-  params.SetString("clientId",
-                   GaiaUrls::GetInstance()->oauth2_chrome_client_id());
-  params.SetString("gaiaPath", url.path().substr(1));
 
   std::string flow;
   switch (reason) {

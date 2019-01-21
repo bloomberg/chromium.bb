@@ -22,6 +22,7 @@ const char kClientLoginUrlSuffix[] = "ClientLogin";
 const char kServiceLoginUrlSuffix[] = "ServiceLogin";
 const char kEmbeddedSetupChromeOsUrlSuffixV1[] = "embedded/setup/chromeos";
 const char kEmbeddedSetupChromeOsUrlSuffixV2[] = "embedded/setup/v2/chromeos";
+const char kEmbeddedSetupWindowsUrlSuffix[] = "embedded/setup/windows";
 // Parameter "ssp=1" is used to skip showing the password bubble when a user
 // signs in to Chrome. Note that Gaia will pass this client specified parameter
 // to all URLs that are loaded as part of thi sign-in flow.
@@ -104,6 +105,8 @@ GaiaUrls::GaiaUrls() {
       gaia_url_.Resolve(kEmbeddedSetupChromeOsUrlSuffixV1);
   embedded_setup_chromeos_url_v2_ =
       gaia_url_.Resolve(kEmbeddedSetupChromeOsUrlSuffixV2);
+  embedded_setup_windows_url_ =
+      gaia_url_.Resolve(kEmbeddedSetupWindowsUrlSuffix);
   signin_chrome_sync_dice_ = gaia_url_.Resolve(kSigninChromeSyncDice);
   service_login_auth_url_ = gaia_url_.Resolve(kServiceLoginAuthUrlSuffix);
   service_logout_url_ = gaia_url_.Resolve(kServiceLogoutUrlSuffix);
@@ -169,6 +172,10 @@ const GURL& GaiaUrls::embedded_setup_chromeos_url(unsigned version) const {
     return embedded_setup_chromeos_url_v2_;
 
   return embedded_setup_chromeos_url_v1_;
+}
+
+const GURL& GaiaUrls::embedded_setup_windows_url() const {
+  return embedded_setup_windows_url_;
 }
 
 const GURL& GaiaUrls::signin_chrome_sync_dice() const {

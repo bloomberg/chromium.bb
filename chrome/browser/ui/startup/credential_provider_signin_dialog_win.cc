@@ -211,10 +211,12 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
       const std::string& reauth_email,
       const std::string& reauth_gaia_id,
       const std::string& email_domains,
+      const std::string& gcpw_endpoint_path,
       HandleGcpwSigninCompleteResult signin_callback)
       : reauth_email_(reauth_email),
         reauth_gaia_id_(reauth_gaia_id),
         email_domains_(email_domains),
+        gcpw_endpoint_path_(gcpw_endpoint_path),
         signin_callback_(std::move(signin_callback)) {}
 
   GURL GetDialogContentURL() const override {
@@ -232,6 +234,12 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
       base_url = net::AppendQueryParameter(
           base_url, credential_provider::kValidateGaiaIdSigninPromoParameter,
           reauth_gaia_id_);
+    }
+
+    if (!gcpw_endpoint_path_.empty()) {
+      base_url = net::AppendQueryParameter(
+          base_url, credential_provider::kGcpwEndpointPathPromoParameter,
+          gcpw_endpoint_path_);
     }
 
     if (email_domains_.empty())
@@ -305,6 +313,9 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
   // Default domain used for all sign in requests.
   const std::string email_domains_;
 
+  // Specific gaia endpoint path to use for signin page.
+  const std::string gcpw_endpoint_path_;
+
   // Callback that will be called when a valid sign in has been completed
   // through the dialog.
   mutable HandleGcpwSigninCompleteResult signin_callback_;
@@ -349,11 +360,13 @@ views::WebDialogView* ShowCredentialProviderSigninDialog(
       command_line.GetSwitchValueASCII(credential_provider::kGaiaIdSwitch);
   std::string email_domains = command_line.GetSwitchValueASCII(
       credential_provider::kEmailDomainsSwitch);
+  std::string gcpw_endpoint_path = command_line.GetSwitchValueASCII(
+      credential_provider::kGcpwEndpointPathSwitch);
 
   // Delegate to handle the result of the sign in request. This will
   // delete itself eventually when it receives the OnDialogClosed call.
   auto delegate = std::make_unique<CredentialProviderWebDialogDelegate>(
-      reauth_email, reauth_gaia_id, email_domains,
+      reauth_email, reauth_gaia_id, email_domains, gcpw_endpoint_path,
       std::move(signin_complete_handler));
 
   // The web dialog view that will contain the web ui for the login screen.
