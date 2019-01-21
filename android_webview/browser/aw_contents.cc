@@ -1176,6 +1176,14 @@ void AwContents::ScrollTo(JNIEnv* env,
   browser_view_renderer_.ScrollTo(gfx::Vector2d(x, y));
 }
 
+void AwContents::RestoreScrollAfterTransition(JNIEnv* env,
+                                              const JavaParamRef<jobject>& obj,
+                                              jint x,
+                                              jint y) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  browser_view_renderer_.RestoreScrollAfterTransition(gfx::Vector2d(x, y));
+}
+
 void AwContents::SmoothScroll(JNIEnv* env,
                               const JavaParamRef<jobject>& obj,
                               jint target_x,

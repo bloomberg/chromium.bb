@@ -521,6 +521,8 @@ public class AwContents implements SmartClipProvider {
         private FullScreenView mFullScreenView;
         /** Whether the initial container view was focused when we entered fullscreen */
         private boolean mWasInitialContainerViewFocused;
+        private int mScrollX;
+        private int mScrollY;
 
         private FullScreenTransitionsState(ViewGroup initialContainerView,
                 InternalAccessDelegate initialInternalAccessAdapter,
@@ -531,13 +533,23 @@ public class AwContents implements SmartClipProvider {
         }
 
         private void enterFullScreen(FullScreenView fullScreenView,
-                boolean wasInitialContainerViewFocused) {
+                boolean wasInitialContainerViewFocused, int scrollX, int scrollY) {
             mFullScreenView = fullScreenView;
             mWasInitialContainerViewFocused = wasInitialContainerViewFocused;
+            mScrollX = scrollX;
+            mScrollY = scrollY;
         }
 
         private boolean wasInitialContainerViewFocused() {
             return mWasInitialContainerViewFocused;
+        }
+
+        private int getScrollX() {
+            return mScrollX;
+        }
+
+        private int getScrollY() {
+            return mScrollY;
         }
 
         private void exitFullScreen() {
@@ -974,7 +986,8 @@ public class AwContents implements SmartClipProvider {
         if (wasInitialContainerViewFocused) {
             fullScreenView.requestFocus();
         }
-        mFullScreenTransitionsState.enterFullScreen(fullScreenView, wasInitialContainerViewFocused);
+        mFullScreenTransitionsState.enterFullScreen(fullScreenView, wasInitialContainerViewFocused,
+                mScrollOffsetManager.getScrollX(), mScrollOffsetManager.getScrollY());
         mAwViewMethods = new NullAwViewMethods(this, mInternalAccessAdapter, mContainerView);
 
         // Associate this AwContents with the FullScreenView.
@@ -1026,6 +1039,13 @@ public class AwContents implements SmartClipProvider {
         if (mFullScreenTransitionsState.wasInitialContainerViewFocused()) {
             mContainerView.requestFocus();
         }
+
+        if (!isDestroyedOrNoOperation(NO_WARN)) {
+            nativeRestoreScrollAfterTransition(mNativeAwContents,
+                    mFullScreenTransitionsState.getScrollX(),
+                    mFullScreenTransitionsState.getScrollY());
+        }
+
         mFullScreenTransitionsState.exitFullScreen();
     }
 
@@ -1052,11 +1072,6 @@ public class AwContents implements SmartClipProvider {
             drawable.onContainerViewChanged(newContainerView);
         }
         onContainerViewChanged();
-
-        // When switching between main view and fullscreen view the container's
-        // view needs to be synchronized to what the native side has otherwise
-        // it may force an unintended scroll to the top of the document.
-        mScrollOffsetManager.syncScrollToContainerView();
     }
 
     /**
@@ -3823,6 +3838,7 @@ public class AwContents implements SmartClipProvider {
 
     private native void nativeOnSizeChanged(long nativeAwContents, int w, int h, int ow, int oh);
     private native void nativeScrollTo(long nativeAwContents, int x, int y);
+    private native void nativeRestoreScrollAfterTransition(long nativeAwContents, int x, int y);
     private native void nativeSmoothScroll(
             long nativeAwContents, int targetX, int targetY, long durationMs);
     private native void nativeSetViewVisibility(long nativeAwContents, boolean visible);
