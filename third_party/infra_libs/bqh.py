@@ -7,6 +7,7 @@ import os
 import threading
 import time
 
+from google.protobuf import duration_pb2
 from google.protobuf import json_format
 from google.protobuf import message as message_pb
 from google.protobuf import struct_pb2
@@ -64,6 +65,8 @@ def _to_bq_value(value, field_desc):
       raise ValueError('Invalid value %r for enum type %s' % (
           value, field_desc.enum_type.full_name))
     return enum_val.name
+  elif isinstance(value, duration_pb2.Duration):
+    return value.ToTimedelta().total_seconds()
   elif isinstance(value, struct_pb2.Struct):
     # Structs are stored as JSONPB strings,
     # see https://bit.ly/chromium-bq-struct
