@@ -248,6 +248,12 @@ PrimaryAccountMutator* IdentityManager::GetPrimaryAccountMutator() {
   return primary_account_mutator_.get();
 }
 
+std::string IdentityManager::LegacyPickAccountIdForAccount(
+    const std::string& gaia,
+    const std::string& email) const {
+  return account_tracker_service_->PickAccountIdForAccount(gaia, email);
+}
+
 AccountsMutator* IdentityManager::GetAccountsMutator() {
   return accounts_mutator_.get();
 }

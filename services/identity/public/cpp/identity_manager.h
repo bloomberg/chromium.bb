@@ -348,6 +348,14 @@ class IdentityManager : public SigninManagerBase::Observer,
   // TODO(https://crbug.com/922450): Eliminate the need to expose this.
   void LegacyLoadCredentials(const std::string& primary_account_id);
 
+  // Picks the correct account_id for the specified account depending on the
+  // migration state.
+  // NOTE: This method is added temporarily until when the delegate is moved
+  // inside the component. So, do not call this method in normal usage.
+  // TODO(https://crbug.com/922471): Remove the need to expose this method.
+  std::string LegacyPickAccountIdForAccount(const std::string& gaia,
+                                            const std::string& email) const;
+
   // Methods to register or remove observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
