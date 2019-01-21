@@ -113,7 +113,7 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
     EXPECT_EQ(0, NumberOfSuccessConstraintsCallbacks());
     mock_source_->StartMockedSource();
     // Once the source has started successfully we expect that the
-    // ConstraintsCallback in blink::PlatformMediaStreamSource::AddTrack
+    // ConstraintsCallback in blink::WebPlatformMediaStreamSource::AddTrack
     // completes.
     EXPECT_EQ(1, NumberOfSuccessConstraintsCallbacks());
     return track;
@@ -235,7 +235,7 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
   }
 
  private:
-  void OnConstraintsApplied(blink::PlatformMediaStreamSource* source,
+  void OnConstraintsApplied(blink::WebPlatformMediaStreamSource* source,
                             blink::MediaStreamRequestResult result,
                             const blink::WebString& result_name) {
     ASSERT_EQ(source, web_source().GetPlatformSource());
@@ -652,8 +652,8 @@ TEST_F(MediaStreamVideoSourceTest, StartStopAndNotifyRestartSupported) {
             blink::WebMediaStreamSource::kReadyStateLive);
 
   EXPECT_CALL(*this, MockNotification());
-  blink::PlatformMediaStreamTrack* track =
-      blink::PlatformMediaStreamTrack::GetTrack(web_track);
+  blink::WebPlatformMediaStreamTrack* track =
+      blink::WebPlatformMediaStreamTrack::GetTrack(web_track);
   track->StopAndNotify(base::BindOnce(
       &MediaStreamVideoSourceTest::MockNotification, base::Unretained(this)));
   EXPECT_EQ(web_track.Source().GetReadyState(),
@@ -670,8 +670,8 @@ TEST_F(MediaStreamVideoSourceTest, StartStopAndNotifyRestartNotSupported) {
             blink::WebMediaStreamSource::kReadyStateLive);
 
   EXPECT_CALL(*this, MockNotification());
-  blink::PlatformMediaStreamTrack* track =
-      blink::PlatformMediaStreamTrack::GetTrack(web_track);
+  blink::WebPlatformMediaStreamTrack* track =
+      blink::WebPlatformMediaStreamTrack::GetTrack(web_track);
   track->StopAndNotify(base::BindOnce(
       &MediaStreamVideoSourceTest::MockNotification, base::Unretained(this)));
   EXPECT_EQ(web_track.Source().GetReadyState(),

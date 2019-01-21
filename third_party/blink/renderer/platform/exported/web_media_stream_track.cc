@@ -109,12 +109,12 @@ WebMediaStreamSource WebMediaStreamTrack::Source() const {
   return WebMediaStreamSource(private_->Source());
 }
 
-PlatformMediaStreamTrack* WebMediaStreamTrack::GetPlatformTrack() const {
+WebPlatformMediaStreamTrack* WebMediaStreamTrack::GetPlatformTrack() const {
   return private_->GetPlatformTrack();
 }
 
 void WebMediaStreamTrack::SetPlatformTrack(
-    std::unique_ptr<PlatformMediaStreamTrack> platform_track) {
+    std::unique_ptr<WebPlatformMediaStreamTrack> platform_track) {
   DCHECK(!private_.IsNull());
   private_->SetPlatformTrack(std::move(platform_track));
 }

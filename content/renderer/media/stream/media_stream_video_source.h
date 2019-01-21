@@ -42,7 +42,7 @@ class VideoTrackAdapterSettings;
 // on a PeerConnection or a source created in NaCl.
 // All methods calls will be done from the main render thread.
 class CONTENT_EXPORT MediaStreamVideoSource
-    : public blink::PlatformMediaStreamSource {
+    : public blink::WebPlatformMediaStreamSource {
  public:
   enum {
     // Default resolution. If no constraints are specified and the delegate

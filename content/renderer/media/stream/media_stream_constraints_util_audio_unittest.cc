@@ -171,7 +171,8 @@ class MediaStreamConstraintsUtilAudioTest
 
     return std::make_unique<ProcessedLocalAudioSource>(
         -1, device, hotword_enabled, disable_local_echo, properties,
-        blink::PlatformMediaStreamSource::ConstraintsCallback(), &pc_factory_);
+        blink::WebPlatformMediaStreamSource::ConstraintsCallback(),
+        &pc_factory_);
   }
 
   std::unique_ptr<ProcessedLocalAudioSource> GetProcessedLocalAudioSource(
@@ -199,7 +200,7 @@ class MediaStreamConstraintsUtilAudioTest
 
     return std::make_unique<LocalMediaStreamAudioSource>(
         -1, device, hotword_enabled, disable_local_echo,
-        blink::PlatformMediaStreamSource::ConstraintsCallback());
+        blink::WebPlatformMediaStreamSource::ConstraintsCallback());
   }
 
   AudioCaptureSettings SelectSettings() {

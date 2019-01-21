@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/platform/modules/mediastream/platform_media_stream_track.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
 
 namespace blink {
 
 // static
-PlatformMediaStreamTrack* PlatformMediaStreamTrack::GetTrack(
+WebPlatformMediaStreamTrack* WebPlatformMediaStreamTrack::GetTrack(
     const blink::WebMediaStreamTrack& track) {
   return track.IsNull() ? nullptr : track.GetPlatformTrack();
 }
 
-PlatformMediaStreamTrack::PlatformMediaStreamTrack(bool is_local_track)
+WebPlatformMediaStreamTrack::WebPlatformMediaStreamTrack(bool is_local_track)
     : is_local_track_(is_local_track) {}
 
-PlatformMediaStreamTrack::~PlatformMediaStreamTrack() {}
+WebPlatformMediaStreamTrack::~WebPlatformMediaStreamTrack() {}
 
 }  // namespace blink

@@ -222,8 +222,8 @@ void UserMediaClientImpl::MaybeProcessNextRequestInfo() {
                        base::Unretained(this)));
   } else {
     DCHECK(current_request.IsStopTrack());
-    blink::PlatformMediaStreamTrack* track =
-        blink::PlatformMediaStreamTrack::GetTrack(
+    blink::WebPlatformMediaStreamTrack* track =
+        blink::WebPlatformMediaStreamTrack::GetTrack(
             current_request.web_track_to_stop());
     if (track) {
       track->StopAndNotify(

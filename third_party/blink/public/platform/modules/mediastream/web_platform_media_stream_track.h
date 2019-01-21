@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_PLATFORM_MEDIA_STREAM_TRACK_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_PLATFORM_MEDIA_STREAM_TRACK_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_WEB_PLATFORM_MEDIA_STREAM_TRACK_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_WEB_PLATFORM_MEDIA_STREAM_TRACK_H_
 
 #include <string>
 
@@ -13,15 +13,14 @@
 
 namespace blink {
 
-// PlatformMediaStreamTrack is a Chrome representation of
-// blink::WebMediaStreamTrack. It is owned by blink::WebMediaStreamTrack as
-// blink::WebMediaStreamTrack::ExtraData.
-class BLINK_PLATFORM_EXPORT PlatformMediaStreamTrack {
+// WebPlatformMediaStreamTrack is a low-level object backing a
+// blink::WebMediaStreamTrack.
+class BLINK_PLATFORM_EXPORT WebPlatformMediaStreamTrack {
  public:
-  explicit PlatformMediaStreamTrack(bool is_local_track);
-  virtual ~PlatformMediaStreamTrack();
+  explicit WebPlatformMediaStreamTrack(bool is_local_track);
+  virtual ~WebPlatformMediaStreamTrack();
 
-  static PlatformMediaStreamTrack* GetTrack(
+  static WebPlatformMediaStreamTrack* GetTrack(
       const blink::WebMediaStreamTrack& track);
 
   virtual void SetEnabled(bool enabled) = 0;
@@ -43,9 +42,9 @@ class BLINK_PLATFORM_EXPORT PlatformMediaStreamTrack {
   const bool is_local_track_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PlatformMediaStreamTrack);
+  DISALLOW_COPY_AND_ASSIGN(WebPlatformMediaStreamTrack);
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_PLATFORM_MEDIA_STREAM_TRACK_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_WEB_PLATFORM_MEDIA_STREAM_TRACK_H_

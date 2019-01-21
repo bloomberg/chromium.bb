@@ -20,7 +20,7 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace blink {
-class PlatformMediaStreamSource;
+class WebPlatformMediaStreamSource;
 }  // namespace blink
 
 namespace content {
@@ -83,7 +83,7 @@ class PepperMediaStreamVideoTrackHost : public PepperMediaStreamTrackHostBase,
       const ppapi::MediaStreamVideoTrackShared::Attributes& attributes);
 
   void InitBlinkTrack();
-  void OnTrackStarted(blink::PlatformMediaStreamSource* source,
+  void OnTrackStarted(blink::WebPlatformMediaStreamSource* source,
                       blink::MediaStreamRequestResult result,
                       const blink::WebString& result_name);
 

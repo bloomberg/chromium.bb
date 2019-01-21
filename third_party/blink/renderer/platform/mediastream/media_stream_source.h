@@ -95,11 +95,11 @@ class PLATFORM_EXPORT MediaStreamSource final
 
   void AddObserver(Observer*);
 
-  PlatformMediaStreamSource* GetPlatformSource() const {
+  WebPlatformMediaStreamSource* GetPlatformSource() const {
     return platform_source_.get();
   }
   void SetPlatformSource(
-      std::unique_ptr<PlatformMediaStreamSource> platform_source) {
+      std::unique_ptr<WebPlatformMediaStreamSource> platform_source) {
     platform_source_ = std::move(platform_source);
   }
 
@@ -143,7 +143,7 @@ class PLATFORM_EXPORT MediaStreamSource final
   HeapHashSet<WeakMember<Observer>> observers_;
   Mutex audio_consumers_lock_;
   HashSet<AudioDestinationConsumer*> audio_consumers_;
-  std::unique_ptr<PlatformMediaStreamSource> platform_source_;
+  std::unique_ptr<WebPlatformMediaStreamSource> platform_source_;
   WebMediaConstraints constraints_;
   WebMediaStreamSource::Capabilities capabilities_;
   base::Optional<EchoCancellationMode> echo_cancellation_mode_;

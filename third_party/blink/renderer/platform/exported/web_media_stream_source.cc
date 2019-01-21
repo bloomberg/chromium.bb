@@ -120,13 +120,13 @@ WebMediaStreamSource::ReadyState WebMediaStreamSource::GetReadyState() const {
   return static_cast<ReadyState>(private_->GetReadyState());
 }
 
-PlatformMediaStreamSource* WebMediaStreamSource::GetPlatformSource() const {
+WebPlatformMediaStreamSource* WebMediaStreamSource::GetPlatformSource() const {
   DCHECK(!private_.IsNull());
   return private_->GetPlatformSource();
 }
 
 void WebMediaStreamSource::SetPlatformSource(
-    std::unique_ptr<PlatformMediaStreamSource> platform_source) {
+    std::unique_ptr<WebPlatformMediaStreamSource> platform_source) {
   DCHECK(!private_.IsNull());
 
   if (platform_source)

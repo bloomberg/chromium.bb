@@ -40,7 +40,7 @@
 #include "content/renderer/media/webrtc/webrtc_uma_histograms.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/media_switches.h"
-#include "third_party/blink/public/platform/modules/mediastream/platform_media_stream_track.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_rtc_answer_options.h"
 #include "third_party/blink/public/platform/web_rtc_data_channel_init.h"

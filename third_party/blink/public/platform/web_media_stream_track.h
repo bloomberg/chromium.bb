@@ -36,10 +36,10 @@ namespace blink {
 
 class MediaStreamComponent;
 class MediaStreamTrack;
-class PlatformMediaStreamTrack;
 class WebAudioSourceProvider;
 class WebMediaConstraints;
 class WebMediaStreamSource;
+class WebPlatformMediaStreamTrack;
 class WebString;
 
 class WebMediaStreamTrack {
@@ -141,9 +141,9 @@ class WebMediaStreamTrack {
   BLINK_PLATFORM_EXPORT WebMediaConstraints Constraints() const;
   BLINK_PLATFORM_EXPORT void SetConstraints(const WebMediaConstraints&);
 
-  BLINK_PLATFORM_EXPORT PlatformMediaStreamTrack* GetPlatformTrack() const;
+  BLINK_PLATFORM_EXPORT WebPlatformMediaStreamTrack* GetPlatformTrack() const;
   BLINK_PLATFORM_EXPORT void SetPlatformTrack(
-      std::unique_ptr<PlatformMediaStreamTrack>);
+      std::unique_ptr<WebPlatformMediaStreamTrack>);
 
   // The lifetime of the WebAudioSourceProvider should outlive the
   // WebMediaStreamTrack, and clients are responsible for calling
