@@ -12,11 +12,9 @@
 
 #include "base/android/build_info.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "net/android/keystore.h"
-#include "net/android/legacy_openssl.h"
 #include "net/base/net_errors.h"
 #include "net/ssl/ssl_platform_key_util.h"
 #include "net/ssl/threaded_ssl_private_key.h"
@@ -29,47 +27,10 @@
 
 using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
-using base::android::ScopedJavaLocalRef;
 
 namespace net {
 
 namespace {
-
-// On Android < 4.2, the libkeystore.so ENGINE uses CRYPTO_EX_DATA and is not
-// added to the global engine list. If all references to it are dropped, OpenSSL
-// will dlclose the module, leaving a dangling function pointer in the RSA
-// CRYPTO_EX_DATA class. To work around this, leak an extra reference to the
-// ENGINE we extract in GetRsaLegacyKey.
-//
-// In 4.2, this change avoids the problem:
-// https://android.googlesource.com/platform/libcore/+/106a8928fb4249f2f3d4dba1dddbe73ca5cb3d61
-//
-// https://crbug.com/381465
-class KeystoreEngineWorkaround {
- public:
-  KeystoreEngineWorkaround() {}
-
-  void LeakEngine(const JavaRef<jobject>& key) {
-    if (!engine_.is_null())
-      return;
-    ScopedJavaLocalRef<jobject> engine =
-        android::GetOpenSSLEngineForPrivateKey(key);
-    if (engine.is_null()) {
-      NOTREACHED();
-      return;
-    }
-    engine_.Reset(engine);
-  }
-
- private:
-  ScopedJavaGlobalRef<jobject> engine_;
-};
-
-void LeakEngine(const JavaRef<jobject>& private_key) {
-  static base::LazyInstance<KeystoreEngineWorkaround>::Leaky s_instance =
-      LAZY_INSTANCE_INITIALIZER;
-  s_instance.Get().LeakEngine(private_key);
-}
 
 const char* GetJavaAlgorithm(uint16_t algorithm) {
   switch (algorithm) {
@@ -102,14 +63,8 @@ const char* GetJavaAlgorithm(uint16_t algorithm) {
 
 class SSLPlatformKeyAndroid : public ThreadedSSLPrivateKey::Delegate {
  public:
-  SSLPlatformKeyAndroid(int type,
-                        const JavaRef<jobject>& key,
-                        size_t max_length,
-                        android::AndroidRSA* legacy_rsa)
-      : type_(type),
-        provider_name_(android::GetPrivateKeyClassName(key)),
-        max_length_(max_length),
-        legacy_rsa_(legacy_rsa) {
+  SSLPlatformKeyAndroid(int type, const JavaRef<jobject>& key)
+      : type_(type), provider_name_(android::GetPrivateKeyClassName(key)) {
     key_.Reset(key);
   }
 
@@ -155,21 +110,6 @@ class SSLPlatformKeyAndroid : public ThreadedSSLPrivateKey::Delegate {
       return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
     }
 
-    // Android prior to 4.2 did not implement NONEwithRSA. Workaround this with
-    // legacy_rsa_.
-    if (legacy_rsa_) {
-      signature->resize(max_length_);
-      int ret = legacy_rsa_->meth->rsa_priv_enc(
-          digest_len, digest, signature->data(), legacy_rsa_,
-          android::ANDROID_RSA_PKCS1_PADDING);
-      if (ret < 0) {
-        LOG(ERROR) << "Could not sign message with legacy RSA key!";
-        return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
-      }
-      signature->resize(ret);
-      return OK;
-    }
-
     if (!android::SignWithPrivateKey(key_, "NONEwithRSA",
                                      base::make_span(digest, digest_len),
                                      signature)) {
@@ -182,8 +122,6 @@ class SSLPlatformKeyAndroid : public ThreadedSSLPrivateKey::Delegate {
   int type_;
   ScopedJavaGlobalRef<jobject> key_;
   std::string provider_name_;
-  size_t max_length_;
-  android::AndroidRSA* legacy_rsa_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLPlatformKeyAndroid);
 };
@@ -198,39 +136,8 @@ scoped_refptr<SSLPrivateKey> WrapJavaPrivateKey(
   if (!GetClientCertInfo(certificate, &type, &max_length))
     return nullptr;
 
-  android::AndroidRSA* sys_rsa = nullptr;
-  if (type == EVP_PKEY_RSA) {
-    if (base::android::BuildInfo::GetInstance()->sdk_int() <
-        base::android::SDK_VERSION_JELLY_BEAN_MR1) {
-      // Route around platform limitations: if Android < 4.2 (Jelly
-      // Bean MR1), then base::android::RawSignDigestWithPrivateKey()
-      // cannot work, so try to get the system OpenSSL's EVP_PKEY
-      // backing this PrivateKey object.
-      android::AndroidEVP_PKEY* sys_pkey =
-          android::GetOpenSSLSystemHandleForPrivateKey(key);
-      if (!sys_pkey)
-        return nullptr;
-
-      if (sys_pkey->type != android::ANDROID_EVP_PKEY_RSA) {
-        LOG(ERROR) << "Private key has wrong type!";
-        return nullptr;
-      }
-
-      sys_rsa = sys_pkey->pkey.rsa;
-      if (sys_rsa->engine) {
-        // |private_key| may not have an engine if the PrivateKey did not come
-        // from the key store, such as in unit tests.
-        if (strcmp(sys_rsa->engine->id, "keystore") == 0) {
-          LeakEngine(key);
-        } else {
-          NOTREACHED();
-        }
-      }
-    }
-  }
-
   return base::MakeRefCounted<ThreadedSSLPrivateKey>(
-      std::make_unique<SSLPlatformKeyAndroid>(type, key, max_length, sys_rsa),
+      std::make_unique<SSLPlatformKeyAndroid>(type, key),
       GetSSLPlatformKeyTaskRunner());
 }
 

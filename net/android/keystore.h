@@ -21,8 +21,6 @@
 namespace net {
 namespace android {
 
-struct AndroidEVP_PKEY;
-
 // Define a list of constants describing private key types. The
 // values are shared with Java through org.chromium.net.PrivateKeyType.
 // Example: PRIVATE_KEY_TYPE_RSA.
@@ -52,30 +50,6 @@ bool SignWithPrivateKey(const base::android::JavaRef<jobject>& private_key,
                         base::StringPiece algorithm,
                         base::span<const uint8_t> input,
                         std::vector<uint8_t>* signature);
-
-// Returns a handle to the system AndroidEVP_PKEY object used to back a given
-// private_key object. This must *only* be used for RSA private keys on Android
-// < 4.2. Technically, this is only guaranteed to work if the system image
-// contains a vanilla implementation of the Java API frameworks based on Harmony
-// + OpenSSL.
-//
-// |private_key| is a JNI reference for the private key.
-// Returns an AndroidEVP_PKEY* handle, or NULL in case of error.
-//
-// Note: Despite its name and return type, this function doesn't know
-//       anything about OpenSSL, it just type-casts a system pointer that
-//       is passed as an int through JNI. As such, it never increments
-//       the returned key's reference count.
-AndroidEVP_PKEY* GetOpenSSLSystemHandleForPrivateKey(
-    const base::android::JavaRef<jobject>& private_key);
-
-// Returns a JNI reference to the OpenSSLEngine object which is used to back a
-// given private_key object. This must *only* be used for RSA private keys on
-// Android < 4.2. Technically, this is only guaranteed to work if the system
-// image contains a vanilla implementation of the Java API frameworks based on
-// Harmony + OpenSSL.
-base::android::ScopedJavaLocalRef<jobject> GetOpenSSLEngineForPrivateKey(
-    const base::android::JavaRef<jobject>& private_key);
 
 }  // namespace android
 }  // namespace net
