@@ -842,7 +842,7 @@ void AXTree::DestroyNodeAndSubtree(AXNode* node,
 
   if (update_state && update_state->IsChangedNode(node)) {
     update_state->reparented_node_id_to_data.insert(
-        std::make_pair(node->id(), node->data()));
+        std::make_pair(node->id(), node->TakeData()));
   }
   node->Destroy();
 }
