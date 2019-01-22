@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 
 #include "base/feature_list.h"
+#include "base/files/file_path.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -28,6 +29,7 @@ bool disable_pin_by_policy_for_testing_ = false;
 const char kQuickUnlockWhitelistOptionAll[] = "all";
 const char kQuickUnlockWhitelistOptionPin[] = "PIN";
 const char kQuickUnlockWhitelistOptionFingerprint[] = "FINGERPRINT";
+const base::FilePath kFingerprintSensorPath = base::FilePath("/dev/cros_fp");
 
 // Default minimum PIN length. Policy can increase or decrease this value.
 constexpr int kDefaultMinimumPinLength = 6;
@@ -110,6 +112,12 @@ bool IsPinEnabled(PrefService* pref_service) {
 bool IsFingerprintEnabled(Profile* profile) {
   if (enable_for_testing_)
     return true;
+
+  // Disable fingerprint if the device does not have a fingerprint reader
+  // TODO(yulunwu): http://crbug.com/922270
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  if (!base::PathExists(kFingerprintSensorPath))
+    return false;
 
   // Disable fingerprint if the profile does not belong to the primary user.
   if (profile != ProfileManager::GetPrimaryUserProfile())
