@@ -2744,7 +2744,7 @@ TEST_F(CompositedLayerMappingTest, ContentsNotOpaqueWithForegroundLayer) {
   EXPECT_FALSE(mapping->MainGraphicsLayer()->ContentsOpaque());
 }
 
-TEST_F(CompositedLayerMappingTest, DrawsContentWithTouchActionRects) {
+TEST_F(CompositedLayerMappingTest, TouchActionRectsWithoutContent) {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
@@ -2754,9 +2754,16 @@ TEST_F(CompositedLayerMappingTest, DrawsContentWithTouchActionRects) {
   auto* box = ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"));
   auto* mapping = box->Layer()->GetCompositedLayerMapping();
 
+  const auto* layer = mapping->MainGraphicsLayer()->CcLayer();
+  auto expected = gfx::Rect(0, 0, 100, 100);
+  EXPECT_EQ(layer->touch_action_region().region().bounds(), expected);
+
+  EXPECT_TRUE(mapping->MainGraphicsLayer()->PaintsHitTest());
+
   // The only painted content for the main graphics layer is the touch-action
-  // rect but this should still be counted as drawn content.
-  EXPECT_TRUE(mapping->MainGraphicsLayer()->DrawsContent());
+  // rect which is not sent to cc, so the cc::layer should not draw content.
+  EXPECT_FALSE(layer->DrawsContent());
+  EXPECT_FALSE(mapping->MainGraphicsLayer()->DrawsContent());
 }
 
 TEST_F(CompositedLayerMappingTest, ContentsOpaque) {

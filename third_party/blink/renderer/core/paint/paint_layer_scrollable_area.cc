@@ -2691,7 +2691,7 @@ static LayoutRect InvalidatePaintOfScrollbarIfNeeded(
     // container to ensure newly expanded/shrunk areas of the box to be
     // invalidated.
     needs_paint_invalidation = false;
-    DCHECK(!graphics_layer->DrawsContent() ||
+    DCHECK(!graphics_layer->PaintsContentOrHitTest() ||
            graphics_layer->GetPaintController().GetPaintArtifact().IsEmpty());
   }
 

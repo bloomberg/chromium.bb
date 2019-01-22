@@ -2442,7 +2442,7 @@ void LocalFrameView::RunPaintLifecyclePhase() {
         auto* root = GetLayoutView()->Compositor()->PaintRootGraphicsLayer();
         if (root) {
           ForAllGraphicsLayers(*root, [](GraphicsLayer& layer) {
-            if (layer.DrawsContent() && layer.HasLayerState()) {
+            if (layer.PaintsContentOrHitTest() && layer.HasLayerState()) {
               layer.GetPaintController().ClearPropertyTreeChangedStateTo(
                   layer.GetPropertyTreeState());
             }
@@ -2512,8 +2512,10 @@ static void CollectDrawableLayersForLayerListRecursively(
   // that don't for the purposes of hit testing. For example, an empty div
   // will not draw content but needs to create a layer to ensure scroll events
   // do not pass through it.
-  if (layer->DrawsContent() || layer->GetHitTestableWithoutDrawsContent())
+  if (layer->PaintsContentOrHitTest() ||
+      layer->GetHitTestableWithoutDrawsContent()) {
     RecordGraphicsLayerAsForeignLayer(context, layer);
+  }
 
   if (auto* contents_layer = layer->ContentsLayer()) {
     RecordForeignLayer(context, DisplayItem::kForeignLayerContentsWrapper,

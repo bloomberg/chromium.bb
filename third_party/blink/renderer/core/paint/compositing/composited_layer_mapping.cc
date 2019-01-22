@@ -1240,9 +1240,10 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
       invalidate_graphics_layer, invalidate_scrolling_contents_layer);
 
   // This depends on background_paints_onto_graphics_layer_.
-  UpdateDrawsContent();
+  UpdateDrawsContentAndPaintsHitTest();
 
-  // These invalidations need to happen after UpdateDrawsContent.
+  // These invalidations need to happen after
+  // |UpdateDrawsContentAndPaintsHitTest|.
   if (invalidate_graphics_layer)
     graphics_layer_->SetNeedsDisplay();
   if (invalidate_scrolling_contents_layer)
@@ -1907,7 +1908,7 @@ void CompositedLayerMapping::UpdateContentsRect() {
   graphics_layer_->SetContentsRect(PixelSnappedIntRect(ContentsBox()));
 }
 
-void CompositedLayerMapping::UpdateDrawsContent() {
+void CompositedLayerMapping::UpdateDrawsContentAndPaintsHitTest() {
   bool in_overlay_fullscreen_video = false;
   if (GetLayoutObject().IsVideo()) {
     HTMLVideoElement* video_element =
@@ -1920,6 +1921,16 @@ void CompositedLayerMapping::UpdateDrawsContent() {
       in_overlay_fullscreen_video ? false : ContainsPaintedContent();
   graphics_layer_->SetDrawsContent(has_painted_content);
 
+  // |has_painted_content| is conservative (e.g., will be true if any descendant
+  // paints content, regardless of whether the descendant content is a hit test)
+  // but an exhaustive check of descendants that paint hit tests would be too
+  // expensive.
+  bool paints_hit_test =
+      has_painted_content ||
+      (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled() &&
+       GetLayoutObject().HasEffectiveWhitelistedTouchAction());
+  graphics_layer_->SetPaintsHitTest(paints_hit_test);
+
   if (scrolling_layer_) {
     // m_scrollingLayer never has backing store.
     // m_scrollingContentsLayer only needs backing store if the scrolled
@@ -1929,6 +1940,7 @@ void CompositedLayerMapping::UpdateDrawsContent() {
         !(GetLayoutObject().StyleRef().HasBackground() ||
           GetLayoutObject().HasBackdropFilter() || PaintsChildren());
     scrolling_contents_layer_->SetDrawsContent(!scrolling_contents_are_empty_);
+    scrolling_contents_layer_->SetPaintsHitTest(paints_hit_test);
   }
 
   draws_background_onto_content_layer_ = false;
@@ -1950,8 +1962,10 @@ void CompositedLayerMapping::UpdateDrawsContent() {
 
   // FIXME: we could refine this to only allocate backings for one of these
   // layers if possible.
-  if (foreground_layer_)
+  if (foreground_layer_) {
     foreground_layer_->SetDrawsContent(has_painted_content);
+    foreground_layer_->SetPaintsHitTest(paints_hit_test);
+  }
 
   if (decoration_outline_layer_)
     decoration_outline_layer_->SetDrawsContent(true);
@@ -2879,7 +2893,7 @@ void CompositedLayerMapping::UpdateImageContents() {
           : kLow_SkFilterQuality);
 
   // Prevent double-drawing: https://bugs.webkit.org/show_bug.cgi?id=58632
-  UpdateDrawsContent();
+  UpdateDrawsContentAndPaintsHitTest();
 
   // Image animation is "lazy", in that it automatically stops unless someone is
   // drawing the image. So we have to kick the animation each time; this has the
@@ -2994,7 +3008,7 @@ GraphicsLayerUpdater::UpdateType CompositedLayerMapping::UpdateTypeForChildren(
 
 struct SetContentsNeedsDisplayFunctor {
   void operator()(GraphicsLayer* layer) const {
-    if (layer->DrawsContent())
+    if (layer->PaintsContentOrHitTest())
       layer->SetNeedsDisplay();
   }
 };

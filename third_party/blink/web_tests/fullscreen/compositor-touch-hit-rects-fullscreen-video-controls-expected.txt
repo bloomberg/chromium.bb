@@ -8,6 +8,7 @@ Should keep rect on document
 handler: layer(0,0 800x600) has hit test rect (0,0 800x600)
 handler: layer(0,0 800x600) has hit test rect (0,0 800x600)
 handler: layer(0,0 800x600) has hit test rect (0,0 800x600)
+handler: layer(0,0 800x600) has hit test rect (0,0 800x600)
 
 END OF TEST
 

@@ -421,7 +421,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   void UpdateScrollParent(const PaintLayer*);
   void UpdateClipParent(const PaintLayer* scroll_parent);
   bool UpdateSquashingLayers(bool needs_squashing_layers);
-  void UpdateDrawsContent();
+  void UpdateDrawsContentAndPaintsHitTest();
   void UpdateChildrenTransform();
   void UpdateCompositedBounds();
   void UpdateOverscrollBehavior();

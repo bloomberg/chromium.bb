@@ -80,6 +80,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
     : client_(client),
       prevent_contents_opaque_changes_(false),
       draws_content_(false),
+      paints_hit_test_(false),
       contents_visible_(true),
       hit_testable_without_draws_content_(false),
       needs_check_raster_invalidation_(false),
@@ -300,7 +301,7 @@ void GraphicsLayer::PaintRecursively() {
 
 void GraphicsLayer::PaintRecursivelyInternal(
     Vector<GraphicsLayer*>& repainted_layers) {
-  if (DrawsContent()) {
+  if (PaintsContentOrHitTest()) {
     if (Paint())
       repainted_layers.push_back(this);
   }
@@ -342,7 +343,7 @@ bool GraphicsLayer::Paint(GraphicsContext::DisabledMode disabled_mode) {
       layer_state_->state, VisualRectSubpixelOffset(), this);
 
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
-      DrawsContent()) {
+      PaintsContentOrHitTest()) {
     auto& tracking = EnsureRasterInvalidator().EnsureTracking();
     tracking.CheckUnderInvalidations(DebugName(), CapturePaintRecord(),
                                      InterestRect());
@@ -368,7 +369,7 @@ bool GraphicsLayer::PaintWithoutCommitForTesting(
 bool GraphicsLayer::PaintWithoutCommit(
     GraphicsContext::DisabledMode disabled_mode,
     const IntRect* interest_rect) {
-  DCHECK(DrawsContent());
+  DCHECK(PaintsContentOrHitTest());
 
   if (client_.ShouldThrottleRendering())
     return false;
@@ -841,7 +842,7 @@ void GraphicsLayer::SetContentsNeedsDisplay() {
 }
 
 void GraphicsLayer::SetNeedsDisplay() {
-  if (!DrawsContent())
+  if (!PaintsContentOrHitTest())
     return;
 
   CcLayer()->SetNeedsDisplay();
@@ -858,7 +859,7 @@ void GraphicsLayer::SetNeedsDisplay() {
 }
 
 void GraphicsLayer::SetNeedsDisplayInRect(const IntRect& rect) {
-  DCHECK(DrawsContent());
+  DCHECK(PaintsContentOrHitTest());
 
   CcLayer()->SetNeedsDisplayRect(rect);
   for (auto* link_highlight : link_highlights_)
@@ -1003,7 +1004,7 @@ void GraphicsLayer::DidChangeScrollbarsHiddenIfOverlay(bool hidden) {
 }
 
 PaintController& GraphicsLayer::GetPaintController() const {
-  CHECK(DrawsContent());
+  CHECK(PaintsContentOrHitTest());
   if (!paint_controller_)
     paint_controller_ = PaintController::Create();
   return *paint_controller_;
@@ -1021,7 +1022,7 @@ CompositorElementId GraphicsLayer::GetElementId() const {
 }
 
 sk_sp<PaintRecord> GraphicsLayer::CapturePaintRecord() const {
-  DCHECK(DrawsContent());
+  DCHECK(PaintsContentOrHitTest());
 
   if (client_.ShouldThrottleRendering())
     return sk_sp<PaintRecord>(new PaintRecord);
