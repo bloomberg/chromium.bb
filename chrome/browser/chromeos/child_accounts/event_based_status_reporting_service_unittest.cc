@@ -18,6 +18,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/base/mock_network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -78,6 +79,13 @@ class EventBasedStatusReportingServiceTest : public testing::Test {
 
   void TearDown() override { arc_test_.TearDown(); }
 
+  void SetConnectionType(net::NetworkChangeNotifier::ConnectionType type) {
+    notifier_.SetConnectionType(type);
+    notifier_.NotifyObserversOfNetworkChangeForTests(
+        notifier_.GetConnectionType());
+    thread_bundle_.RunUntilIdle();
+  }
+
   arc::mojom::AppHost* app_host() { return arc_test_.arc_app_list_prefs(); }
   Profile* profile() { return &profile_; }
   TestingConsumerStatusReportingService*
@@ -102,6 +110,7 @@ class EventBasedStatusReportingServiceTest : public testing::Test {
   TestingConsumerStatusReportingService*
       test_consumer_status_reporting_service_;
   session_manager::SessionManager session_manager_;
+  net::test::MockNetworkChangeNotifier notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(EventBasedStatusReportingServiceTest);
 };
@@ -165,8 +174,23 @@ TEST_F(EventBasedStatusReportingServiceTest, ReportWhenSessionIsActive) {
       2, test_consumer_status_reporting_service()->performed_status_reports());
 }
 
+TEST_F(EventBasedStatusReportingServiceTest, ReportWhenDeviceGoesOnline) {
+  EventBasedStatusReportingService service(profile());
+  SetConnectionType(
+      net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE);
+
+  ASSERT_EQ(
+      0, test_consumer_status_reporting_service()->performed_status_reports());
+  SetConnectionType(
+      net::NetworkChangeNotifier::ConnectionType::CONNECTION_ETHERNET);
+  EXPECT_EQ(
+      1, test_consumer_status_reporting_service()->performed_status_reports());
+}
+
 TEST_F(EventBasedStatusReportingServiceTest, ReportForMultipleEvents) {
   EventBasedStatusReportingService service(profile());
+  SetConnectionType(
+      net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE);
 
   ASSERT_EQ(
       0, test_consumer_status_reporting_service()->performed_status_reports());
@@ -179,12 +203,16 @@ TEST_F(EventBasedStatusReportingServiceTest, ReportForMultipleEvents) {
   session_manager()->SetSessionState(session_manager::SessionState::ACTIVE);
   EXPECT_EQ(
       2, test_consumer_status_reporting_service()->performed_status_reports());
-  app_host()->OnPackageAdded(arc::mojom::ArcPackageInfo::New());
+  SetConnectionType(
+      net::NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI);
   EXPECT_EQ(
       3, test_consumer_status_reporting_service()->performed_status_reports());
-  app_host()->OnPackageModified(arc::mojom::ArcPackageInfo::New());
+  app_host()->OnPackageAdded(arc::mojom::ArcPackageInfo::New());
   EXPECT_EQ(
       4, test_consumer_status_reporting_service()->performed_status_reports());
+  app_host()->OnPackageModified(arc::mojom::ArcPackageInfo::New());
+  EXPECT_EQ(
+      5, test_consumer_status_reporting_service()->performed_status_reports());
 }
 
 }  // namespace chromeos
