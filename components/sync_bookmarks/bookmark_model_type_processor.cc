@@ -331,11 +331,13 @@ void BookmarkModelTypeProcessor::ConnectIfReady() {
 
   if (bookmark_tracker_ &&
       bookmark_tracker_->model_type_state().cache_guid() != cache_guid_) {
-    // TODO(crbug.com/820049): Properly handle a mismatch between the loaded
-    // cache guid stored in |bookmark_tracker_.model_type_state_| at
-    // DecodeSyncMetadata() and the one received from sync at OnSyncStarting()
-    // stored in |cache_guid_|.
-    return;
+    // TODO(crbug.com/820049): Add basic unit testing  consider using
+    // StopTrackingMetadata().
+    // In case of a cache guid mismatch, treat it as a corrupted metadata and
+    // start clean.
+    bookmark_model_->RemoveObserver(bookmark_model_observer_.get());
+    bookmark_model_observer_.reset();
+    bookmark_tracker_.reset();
   }
 
   auto activation_context =
