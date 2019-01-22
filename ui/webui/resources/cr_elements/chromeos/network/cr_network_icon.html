@@ -21,6 +21,16 @@
         width: 20px;
       }
 
+      /* Upper-left corner */
+      #technology {
+        --iron-icon-fill-color: #5a5a5a;
+        height: 20px;
+        left: 0;
+        position: absolute;
+        top: 1px;
+        width: 20px;
+      }
+
       /* Lower-right corner */
       #secure {
         --iron-icon-fill-color: #5a5a5a;
@@ -131,6 +141,9 @@
     <div id="icon"
         class$="[[getIconClass_(networkState, deviceState, isListItem)]]">
     </div>
+    <iron-icon id="technology" hidden="[[!showTechnology_(networkState)]]"
+        icon="[[getTechnology_(networkState)]]">
+    </iron-icon>
     <iron-icon id="secure" hidden="[[!showSecure_(networkState)]]"
         icon="network8:badge-secure">
     </iron-icon>
