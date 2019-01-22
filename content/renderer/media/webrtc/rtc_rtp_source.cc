@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/time/time.h"
-#include "third_party/webrtc/rtc_base/scoped_ref_ptr.h"
+#include "third_party/webrtc/api/scoped_refptr.h"
 
 namespace content {
 
