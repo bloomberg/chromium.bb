@@ -420,10 +420,6 @@ interface AuthenticatorResponse
     attribute @@toStringTag
     getter clientDataJSON
     method constructor
-interface BackgroundFetchFetch
-    attribute @@toStringTag
-    getter request
-    method constructor
 interface BackgroundFetchManager
     attribute @@toStringTag
     method constructor

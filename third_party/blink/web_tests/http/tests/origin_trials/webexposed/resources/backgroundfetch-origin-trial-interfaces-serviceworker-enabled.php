@@ -10,7 +10,6 @@ importScripts('/resources/testharness.js',
 test(t => {
   OriginTrialsHelper.check_properties(this, {
     'ServiceWorkerRegistration': ['backgroundFetch'],
-    'BackgroundFetchFetch': ['request'],
     'BackgroundFetchManager': ['fetch', 'get', 'getIds'],
     'BackgroundFetchEvent': ['registration'],
     'BackgroundFetchUpdateUIEvent': ['updateUI'],
