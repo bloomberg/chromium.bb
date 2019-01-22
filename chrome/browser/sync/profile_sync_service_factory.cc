@@ -29,7 +29,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/sync/bookmark_sync_service_factory.h"
@@ -142,7 +141,6 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(ConsentAuditorFactory::GetInstance());
   DependsOn(dom_distiller::DomDistillerServiceFactory::GetInstance());
   DependsOn(FaviconServiceFactory::GetInstance());
-  DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
   DependsOn(gcm::GCMProfileServiceFactory::GetInstance());
 #if !defined(OS_ANDROID)
   DependsOn(GlobalErrorServiceFactory::GetInstance());
@@ -236,8 +234,6 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
 
     init_params.identity_manager =
         IdentityManagerFactory::GetForProfile(profile);
-    init_params.gaia_cookie_manager_service =
-        GaiaCookieManagerServiceFactory::GetForProfile(profile);
 
     signin_scoped_device_id_callback =
         base::BindRepeating(&GetSigninScopedDeviceIdForProfile, profile);

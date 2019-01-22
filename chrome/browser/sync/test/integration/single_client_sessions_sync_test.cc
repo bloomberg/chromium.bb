@@ -23,6 +23,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/sessions/core/session_types.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/sync/base/time.h"
 #include "components/sync/protocol/proto_value_conversions.h"
@@ -31,6 +32,7 @@
 #include "components/sync_sessions/session_sync_service.h"
 #include "components/sync_sessions/session_sync_test_helper.h"
 #include "components/sync_sessions/synced_session_tracker.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/mojo/window_open_disposition.mojom.h"
@@ -158,7 +160,7 @@ class SingleClientSessionsSyncTest : public SyncTest {
     base::RunLoop run_loop;
     EXPECT_EQ(expected_cookie_jar_mismatch,
               GetClient(0)->service()->HasCookieJarMismatch(accounts));
-    GetClient(0)->service()->OnGaiaAccountsInCookieUpdatedWithCallback(
+    GetClient(0)->service()->OnAccountsInCookieUpdatedWithCallback(
         accounts, run_loop.QuitClosure());
     run_loop.Run();
   }
@@ -705,7 +707,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
 
   // Avoid interferences from actual GaiaCookieManagerService trying to fetch
   // gaia account information, which would exercise
-  // ProfileSyncService::OnGaiaAccountsInCookieUpdated().
+  // ProfileSyncService::OnAccountsInCookieUpdated().
   GaiaCookieManagerServiceFactory::GetForProfile(GetProfile(0))->CancelAll();
 
   // Trigger a cookie jar change (user signing in to content area).

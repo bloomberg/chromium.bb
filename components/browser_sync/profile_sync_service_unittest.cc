@@ -220,7 +220,6 @@ class ProfileSyncServiceTest : public ::testing::Test {
             ProfileSyncService::AUTO_START, builder.Build());
 
     prefs()->SetBoolean(syncer::prefs::kEnableLocalSyncBackend, true);
-    init_params.gaia_cookie_manager_service = nullptr;
     init_params.identity_manager = nullptr;
 
     service_ = std::make_unique<ProfileSyncService>(std::move(init_params));
