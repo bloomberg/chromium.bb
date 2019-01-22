@@ -5,7 +5,6 @@
 #include "chrome/browser/password_manager/password_store_signin_notifier_impl.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
