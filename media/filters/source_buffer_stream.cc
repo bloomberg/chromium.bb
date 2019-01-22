@@ -345,12 +345,13 @@ bool SourceBufferStream<RangeClass>::Append(const BufferQueue& buffers) {
   // large enough population of MseBufferByPts.
   CHECK(IsDtsMonotonicallyIncreasing(buffers));
 
-  if (coded_frame_group_start_time_ < DecodeTimestamp() ||
-      BufferGetTimestamp(buffers.front()) < DecodeTimestamp()) {
-    MEDIA_LOG(ERROR, media_log_)
-        << "Cannot append a coded frame group with negative timestamps.";
-    return false;
-  }
+  // Both of these checks enforce what should be guaranteed by how
+  // FrameProcessor signals OnStartOfCodedFrameGroup and the buffers it tells us
+  // to Append.
+  // TODO(wolenetz): Relax to DCHECKS once this has baked long enough with a
+  // large enough population of MseBufferByPts.
+  CHECK(coded_frame_group_start_time_ >= DecodeTimestamp());
+  CHECK(BufferGetTimestamp(buffers.front()) >= DecodeTimestamp());
 
   if (UpdateMaxInterbufferDtsDistance(buffers)) {
     // Coalesce |ranges_| using the new fudge room. This helps keep |ranges_|
