@@ -293,6 +293,7 @@ class CrostiniManager::CrostiniRestarter
 
   void StartLxdContainerFinished(CrostiniResult result) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    CloseCrostiniUpgradeContainerView();
     // Tell observers.
     for (auto& observer : observer_list_) {
       observer.OnContainerStarted(result);
@@ -1852,8 +1853,15 @@ void CrostiniManager::OnStartLxdContainer(
       std::move(callback).Run(CrostiniResult::SUCCESS);
       break;
 
-    case vm_tools::cicerone::StartLxdContainerResponse::STARTING:
     case vm_tools::cicerone::StartLxdContainerResponse::REMAPPING:
+      // Run the update container dialog to warn users of delays.
+      // The callback will be called when we receive the LxdContainerStarting
+      PrepareShowCrostiniUpgradeContainerView(profile_,
+                                              CrostiniUISurface::kAppList);
+      // signal.
+      // Then perform the same steps as for starting.
+      ABSL_FALLTHROUGH_INTENDED;
+    case vm_tools::cicerone::StartLxdContainerResponse::STARTING:
       VLOG(1) << "Awaiting LxdContainerStartingSignal for " << owner_id_ << ", "
               << vm_name << ", " << container_name;
       // The callback will be called when we receive the LxdContainerStarting

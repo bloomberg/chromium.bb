@@ -11270,6 +11270,15 @@ Called by update_net_error_codes.py.-->
   <int value="83" label="Crostini Installer"/>
   <int value="84" label="Relaunch Required Dialog"/>
   <int value="85" label="Unity Sync Consent Bump"/>
+  <int value="86" label="Crostini Uninstaller"/>
+  <int value="87" label="Download Open Confirmation"/>
+  <int value="88" label="Arc Data Removal Confirmation"/>
+  <int value="89" label="Crostini Upgrade"/>
+  <int value="90" label="Hats Bubble"/>
+  <int value="91" label="Crostini App Restart"/>
+  <int value="92" label="Incognito Window Counter"/>
+  <int value="93" label="Crostini App Uninstaller"/>
+  <int value="94" label="Crostini Container Upgrade"/>
 </enum>
 
 <enum name="DialogOriginRelationship">

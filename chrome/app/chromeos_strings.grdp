@@ -3438,6 +3438,12 @@
   <message name="IDS_CROSTINI_UNINSTALLER_ERROR" desc="Text shown in the Crostini uninstaller dialog when the Linux uninstall process fails.">
     Error uninstalling Linux. Please try again.
   </message>
+  <message name="IDS_CROSTINI_UPGRADING_LABEL" desc="Label for upgrade dialog warning user of delay starting container due to running upgrades.">
+    Linux is upgrading
+  </message>
+  <message name="IDS_CROSTINI_UPGRADING_SUBTEXT" desc="Description for upgrade dialog warning user of delay starting container due to running upgrades.">
+    Your app will open when the upgrade is finished. Upgrades can take a few minutes.
+  </message>
   <message name="IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM" desc="Text shown in the context menu for the Linux terminal app, allowing users to shut down the Linux virtual machine.">
     Shut Down Linux (Beta)
   </message>

@@ -104,8 +104,21 @@ void ShowCrostiniUninstallerView(Profile* profile,
 // Shows the Crostini App Uninstaller dialog.
 void ShowCrostiniAppUninstallerView(Profile* profile,
                                     const std::string& app_id);
-// Shows the Crostini Upgrade dialog.
+// Shows the Crostini Termina Upgrade dialog (for blocking crostini start until
+// Termina version matches).
 void ShowCrostiniUpgradeView(Profile* profile, CrostiniUISurface ui_surface);
+
+// Shows the Crostini Container Upgrade dialog (for running upgrades in the
+// container).
+void ShowCrostiniUpgradeContainerView(Profile* profile,
+                                      CrostiniUISurface ui_surface);
+// Show the Crostini Container Upgrade dialog after a delay
+// (CloseCrostiniUpgradeContainerView will cancel the next dialog show).
+void PrepareShowCrostiniUpgradeContainerView(Profile* profile,
+                                             CrostiniUISurface ui_surface);
+// Closes the current CrostiniUpgradeContainerView or ensures that the view will
+// not open until PrepareShowCrostiniUpgradeContainerView is called again.
+void CloseCrostiniUpgradeContainerView();
 
 // We use an arbitrary well-formed extension id for the Terminal app, this
 // is equal to GenerateId("Terminal").
