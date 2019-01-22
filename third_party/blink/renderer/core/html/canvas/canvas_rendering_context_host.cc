@@ -26,12 +26,10 @@ void CanvasRenderingContextHost::RecordCanvasSizeToUMA(const IntSize& size,
 
   if (hostType == kCanvasHost) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Blink.Canvas.SqrtNumberOfPixels",
-                                std::sqrt(size.Width() * size.Height()), 1,
-                                5000, 100);
+                                std::sqrt(size.Area()), 1, 5000, 100);
   } else if (hostType == kOffscreenCanvasHost) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Blink.OffscreenCanvas.SqrtNumberOfPixels",
-                                std::sqrt(size.Width() * size.Height()), 1,
-                                5000, 100);
+                                std::sqrt(size.Area()), 1, 5000, 100);
   } else {
     NOTREACHED();
   }
