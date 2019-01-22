@@ -114,6 +114,10 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
     folder_header_view()->set_tablet_mode(started);
   }
 
+  // When transform in |contents_view_| is updated, notify accessibility to show
+  // ChromeVox focus in correct locations.
+  void NotifyAccessibilityLocationChanges();
+
  private:
   void CalculateIdealBounds();
 
