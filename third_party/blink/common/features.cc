@@ -64,6 +64,11 @@ const base::Feature kMojoBlobURLs{"MojoBlobURLs",
 const base::Feature kOnionSoupDOMStorage{"OnionSoupDOMStorage",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable browser-initiated dedicated worker script loading
+// (PlzDedicatedWorker). https://crbug.com/906991
+const base::Feature kPlzDedicatedWorker{"PlzDedicatedWorker",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable Portals. https://crbug.com/865123.
 const base::Feature kPortals{"Portals", base::FEATURE_DISABLED_BY_DEFAULT};
 
