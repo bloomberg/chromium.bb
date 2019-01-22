@@ -215,7 +215,7 @@ ActiveMediaPipelineBackendWrapper::CreateVideoDecoderWrapper() {
 
 bool ActiveMediaPipelineBackendWrapper::Initialize() {
   bool success = backend_->Initialize();
-  if (success) {
+  if (success && audio_decoder_ptr_) {
     audio_decoder_ptr_->OnInitialized();
   }
   return success;
