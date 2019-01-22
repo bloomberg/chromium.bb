@@ -214,7 +214,8 @@ public class AutofillAssistantPaymentRequest {
                         || mPaymentOptions.requestPayerEmail,
                 /* canAddCards= */ true, /* showDataSource= */ true,
                 mTitle.isEmpty() ? mWebContents.getTitle() : mTitle,
-                UrlFormatter.formatUrlForSecurityDisplay(mWebContents.getLastCommittedUrl()),
+                UrlFormatter.formatUrlForSecurityDisplayOmitScheme(
+                        mWebContents.getLastCommittedUrl()),
                 SecurityStateModel.getSecurityLevelForWebContents(mWebContents),
                 new ShippingStrings(mPaymentOptions.shippingType));
         // This payment request is embedded in another flow, so update the 'Pay' button text to
