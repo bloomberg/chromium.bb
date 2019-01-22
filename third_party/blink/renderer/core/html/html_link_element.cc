@@ -119,6 +119,7 @@ void HTMLLinkElement::ParseAttribute(
     integrity_ = value;
   } else if (name == kImportanceAttr &&
              RuntimeEnabledFeatures::PriorityHintsEnabled()) {
+    UseCounter::Count(GetDocument(), WebFeature::kPriorityHints);
     importance_ = value;
   } else if (name == kDisabledAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kHTMLLinkElementDisabled);

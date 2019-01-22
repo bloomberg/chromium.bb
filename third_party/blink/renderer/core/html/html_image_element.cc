@@ -320,6 +320,12 @@ void HTMLImageElement::ParseAttribute(
              EqualIgnoringASCIICase(params.new_value, "off") &&
              !GetDocument().IsLazyLoadPolicyEnforced()) {
     GetImageLoader().LoadDeferredImage(referrer_policy_);
+  } else if (name == kImportanceAttr &&
+             RuntimeEnabledFeatures::PriorityHintsEnabled()) {
+    // We only need to keep track of usage here, as the communication of the
+    // |importance| attribute to the loading pipeline takes place in
+    // ImageLoader.
+    UseCounter::Count(GetDocument(), WebFeature::kPriorityHints);
   } else {
     HTMLElement::ParseAttribute(params);
   }
