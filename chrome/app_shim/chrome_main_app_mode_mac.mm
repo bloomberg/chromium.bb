@@ -160,12 +160,12 @@ extern "C" {
 // upgrade them; the old shim will not be able to dyload the new
 // ChromeAppModeStart, so it will fall back to the upgrade path. See
 // https://crbug.com/561205.
-__attribute__((visibility("default")))
-int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info);
+__attribute__((visibility("default"))) int ChromeAppModeStart_v5(
+    const app_mode::ChromeAppModeInfo* info);
 
 }  // extern "C"
 
-int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info) {
+int ChromeAppModeStart_v5(const app_mode::ChromeAppModeInfo* info) {
   base::CommandLine::Init(info->argc, info->argv);
 
   base::mac::ScopedNSAutoreleasePool scoped_pool;
@@ -182,9 +182,11 @@ int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info) {
   }
 
   // Set bundle paths. This loads the bundles.
-  base::mac::SetOverrideOuterBundlePath(info->chrome_outer_bundle_path);
+  base::mac::SetOverrideOuterBundlePath(
+      base::FilePath(info->chrome_outer_bundle_path));
   base::mac::SetOverrideFrameworkBundlePath(
-      info->chrome_versioned_path.Append(chrome::kFrameworkName));
+      base::FilePath(info->chrome_versioned_path)
+          .Append(chrome::kFrameworkName));
 
   ChromeCrashReporterClient::Create();
   crash_reporter::InitializeCrashpad(true, "app_shim");
@@ -272,7 +274,7 @@ int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info) {
       command_line.AppendSwitch(switches::kShowAppList);
     } else {
       command_line.AppendSwitchPath(switches::kProfileDirectory,
-                                    info->profile_dir);
+                                    base::FilePath(info->profile_dir));
     }
 
     base::Process app = base::mac::OpenApplicationWithPath(
