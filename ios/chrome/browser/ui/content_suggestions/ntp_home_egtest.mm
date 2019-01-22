@@ -11,6 +11,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/scoped_command_line.h"
 #include "components/reading_list/core/reading_list_model.h"
+#include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -20,13 +22,17 @@
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory_util.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_whats_new_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_provider_test_singleton.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_test_utils.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
+#import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_egtest_util.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -84,6 +90,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 // Article category, used by the singleton.
 @property(nonatomic, assign, readonly) ntp_snippets::Category category;
 
+@property(nonatomic, assign) base::string16 defaultSearchEngine;
+
 @end
 
 @implementation NTPHomeTestCase
@@ -136,6 +144,13 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       ReadingListModelFactory::GetForBrowserState(self.browserState);
   readingListModel->DeleteAllEntries();
   [super setUp];
+
+  // Get the default Search Engine.
+  ios::ChromeBrowserState* browser_state =
+      chrome_test_util::GetOriginalBrowserState();
+  TemplateURLService* service =
+      ios::TemplateURLServiceFactory::GetForBrowserState(browser_state);
+  self.defaultSearchEngine = service->GetDefaultSearchProvider()->short_name();
 }
 
 - (void)tearDown {
@@ -143,6 +158,21 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       self.category, CategoryStatus::ALL_SUGGESTIONS_EXPLICITLY_DISABLED);
   [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
                            errorOrNil:nil];
+
+  // Set the search engine back to the default in case the test fails before
+  // cleaning it up.
+  ios::ChromeBrowserState* browser_state =
+      chrome_test_util::GetOriginalBrowserState();
+  TemplateURLService* service =
+      ios::TemplateURLServiceFactory::GetForBrowserState(browser_state);
+  std::vector<TemplateURL*> urls = service->GetTemplateURLs();
+
+  for (auto iter = urls.begin(); iter != urls.end(); ++iter) {
+    if (self.defaultSearchEngine == (*iter)->short_name()) {
+      service->SetUserSelectedDefaultSearchProvider(*iter);
+    }
+  }
+
   [super tearDown];
 }
 
@@ -609,6 +639,78 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       performAction:grey_tap()];
   [ChromeEarlGrey
       waitForElementWithMatcherSufficientlyVisible:chrome_test_util::Omnibox()];
+}
+
+- (void)testOpeningNewTab {
+  [ChromeEarlGreyUI openNewTab];
+
+  // Check that the fake omnibox is here.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          FakeOmniboxAccessibilityID())]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  id<GREYMatcher> tabGridMatcher = nil;
+  if (IsIPadIdiom()) {
+    tabGridMatcher = grey_accessibilityID(@"Enter Tab Switcher");
+  } else {
+    tabGridMatcher =
+        grey_allOf(grey_accessibilityID(kToolbarStackButtonIdentifier),
+                   grey_sufficientlyVisible(), nil);
+  }
+  [[EarlGrey selectElementWithMatcher:tabGridMatcher]
+      assertWithMatcher:grey_accessibilityValue(
+                            [NSString stringWithFormat:@"%i", 2])];
+
+  // Test the same thing after opening a tab from the tab grid.
+  [[EarlGrey selectElementWithMatcher:tabGridMatcher] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridNewTabButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          FakeOmniboxAccessibilityID())]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:tabGridMatcher]
+      assertWithMatcher:grey_accessibilityValue(
+                            [NSString stringWithFormat:@"%i", 3])];
+}
+
+- (void)testFavicons {
+  for (NSInteger index = 0; index < 8; index++) {
+    [[EarlGrey
+        selectElementWithMatcher:
+            grey_accessibilityID([NSString
+                stringWithFormat:
+                    @"%@%li",
+                    kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix,
+                    index])] assertWithMatcher:grey_sufficientlyVisible()];
+  }
+
+  // Change the Search Engine to Yahoo!.
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI
+      tapSettingsMenuButton:grey_accessibilityID(kSettingsSearchEngineCellId)];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Yahoo!")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsDoneButton()]
+      performAction:grey_tap()];
+
+  // Check again the favicons.
+  for (NSInteger index = 0; index < 8; index++) {
+    [[EarlGrey
+        selectElementWithMatcher:
+            grey_accessibilityID([NSString
+                stringWithFormat:
+                    @"%@%li",
+                    kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix,
+                    index])] assertWithMatcher:grey_sufficientlyVisible()];
+  }
+
+  // Change the Search Engine to Google.
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI
+      tapSettingsMenuButton:grey_accessibilityID(kSettingsSearchEngineCellId)];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Google")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsDoneButton()]
+      performAction:grey_tap()];
 }
 
 #pragma mark - Helpers

@@ -40,6 +40,9 @@ const CGFloat kCardBorderRadius = 11;
 
 }
 
+NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
+    @"contentSuggestionsMostVisitedAccessibilityIdentifierPrefix";
+
 @interface ContentSuggestionsViewController ()<UIGestureRecognizerDelegate> {
   CGFloat _initialContentOffset;
 }
@@ -385,7 +388,17 @@ const CGFloat kCardBorderRadius = 11;
     item.metricsRecorded = YES;
   }
 
-  return [super collectionView:collectionView cellForItemAtIndexPath:indexPath];
+  UICollectionViewCell* cell = [super collectionView:collectionView
+                              cellForItemAtIndexPath:indexPath];
+  if ([self.collectionUpdater isMostVisitedSection:indexPath.section]) {
+    cell.accessibilityIdentifier = [NSString
+        stringWithFormat:
+            @"%@%li",
+            kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix,
+            indexPath.row];
+  }
+
+  return cell;
 }
 
 #pragma mark - UICollectionViewDelegateFlowLayout
