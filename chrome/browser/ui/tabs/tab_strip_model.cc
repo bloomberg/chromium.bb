@@ -933,36 +933,19 @@ void TabStripModel::MoveTabPrevious() {
 }
 
 void TabStripModel::AddToNewGroup(const std::vector<int>& indices) {
-  // TODO(https://crbug.com/915956): Tabs should be ungrouped before they are
-  // moved (once ungrouping is a thing) so that groups never get split up.
-
   group_data_.push_back(std::make_unique<TabGroupData>());
   TabGroupData* group = group_data_.back().get();
 
-  // If inserting tabs at |destination_index| would split an existing group,
-  // insert after the end of the group instead.
-  int destination_index = indices[0];
-  if (ContainsIndex(destination_index - 1)) {
-    const TabGroupData* split_group = GetTabGroupForTab(destination_index - 1);
-    if (split_group != nullptr) {
-      while (ContainsIndex(destination_index) &&
-             GetTabGroupForTab(destination_index) == split_group) {
-        destination_index++;
-      }
-    }
+  std::vector<int> new_indices = RemoveFromGroup(indices);
+  if (IsTabPinned(new_indices[0])) {
+    new_indices = SetTabsPinned(new_indices, true);
   }
 
-  std::vector<int> new_indices =
-      IsTabPinned(indices[0]) ? SetTabsPinned(indices, true) : indices;
-
-  MoveTabsIntoGroup(new_indices, destination_index, group);
+  MoveTabsIntoGroup(new_indices, new_indices[0], group);
 }
 
 void TabStripModel::AddToExistingGroup(const std::vector<int>& indices,
                                        const TabGroupData* group) {
-  // TODO(https://crbug.com/915956): Tabs should be ungrouped before they are
-  // moved (once ungrouping is a thing) so that groups never get split up.
-
   int destination_index = -1;
   bool pin = false;
   for (int i = contents_data_.size() - 1; i >= 0; i--) {
@@ -972,10 +955,6 @@ void TabStripModel::AddToExistingGroup(const std::vector<int>& indices,
       break;
     }
   }
-  // TODO(https://crbug.com/915956): No tab already exists in that group.
-  // This state will be unreachable once tab groups are deleted when their
-  // last member is ungrouped. DCHECK for now.
-  DCHECK_NE(destination_index, -1);
 
   // Ignore indices that are already in the group.
   std::vector<int> new_indices;
@@ -984,6 +963,7 @@ void TabStripModel::AddToExistingGroup(const std::vector<int>& indices,
       new_indices.push_back(indices[i]);
     }
   }
+  new_indices = RemoveFromGroup(new_indices);
   new_indices = SetTabsPinned(new_indices, pin);
 
   MoveTabsIntoGroup(new_indices, destination_index, group);
@@ -1044,23 +1024,48 @@ std::vector<int> TabStripModel::SetTabsPinned(const std::vector<int>& indices,
   return new_indices;
 }
 
-void TabStripModel::RemoveFromGroup(const std::vector<int>& indices) {
+std::vector<int> TabStripModel::RemoveFromGroup(
+    const std::vector<int>& indices) {
   // Remove each tab from the group it's in, if any. Go from right to left
   // since tabs may move to the right when ungrouped.
+  std::deque<int> new_indices;
   for (int i = indices.size() - 1; i >= 0; i--) {
-    const TabGroupData* group = GetTabGroupForTab(indices[i]);
-    if (group == nullptr)
-      continue;
-    // Move the tab until it's the rightmost tab in its group
-    int stepsToMove = 0;
-    while (ContainsIndex(indices[i] + stepsToMove + 1) &&
-           GetTabGroupForTab(indices[i] + stepsToMove + 1) == group) {
-      stepsToMove++;
-    }
-    MoveWebContentsAt(indices[i], indices[i] + stepsToMove, false);
-
-    contents_data_[indices[i] + stepsToMove]->set_group(nullptr);
+    new_indices.push_front(UngroupTab(indices[i]));
   }
+
+  return std::vector<int>(new_indices.begin(), new_indices.end());
+}
+
+int TabStripModel::UngroupTab(int index) {
+  const TabGroupData* group = GetTabGroupForTab(index);
+  if (group == nullptr)
+    return index;
+
+  // Move the tab until it's the rightmost tab in its group
+  int new_index = index;
+  while (ContainsIndex(new_index + 1) &&
+         GetTabGroupForTab(new_index + 1) == group) {
+    new_index++;
+  }
+  MoveWebContentsAt(index, new_index, false);
+
+  contents_data_[new_index]->set_group(nullptr);
+
+  // Delete the group if we just ungrouped the last tab in that group.
+  if (GetTabGroupForTab(index) != group &&
+      (index == 0 || GetTabGroupForTab(index - 1) != group)) {
+    for (size_t i = 0; i < contents_data_.size(); i++) {
+      DCHECK_NE(GetTabGroupForTab(i), group);
+    }
+    for (auto it = group_data_.begin(); it != group_data_.end(); it++) {
+      if (it->get() == group) {
+        group_data_.erase(it);
+        break;
+      }
+    }
+  }
+
+  return new_index;
 }
 
 // Context menu functions.

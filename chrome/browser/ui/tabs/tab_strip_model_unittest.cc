@@ -3031,3 +3031,54 @@ TEST_F(TabStripModelTest, RemoveTabFromGroupMixtureOfGroups) {
   strip.ActivateTabAt(0, true);
   strip.CloseAllTabs();
 }
+
+TEST_F(TabStripModelTest, RemoveTabFromGroupDeletesGroup) {
+  TabStripDummyDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AddToNewGroup({0});
+  EXPECT_EQ(strip.ListTabGroups().size(), 1U);
+
+  strip.RemoveFromGroup({0});
+
+  EXPECT_EQ(strip.ListTabGroups().size(), 0U);
+
+  strip.ActivateTabAt(0, true);
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, AddToNewGroupDeletesGroup) {
+  TabStripDummyDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AddToNewGroup({0});
+  EXPECT_EQ(strip.ListTabGroups().size(), 1U);
+  const TabGroupData* group = strip.GetTabGroupForTab(0);
+
+  strip.AddToNewGroup({0});
+
+  EXPECT_EQ(strip.ListTabGroups().size(), 1U);
+  EXPECT_NE(strip.GetTabGroupForTab(0), group);
+
+  strip.ActivateTabAt(0, true);
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, AddToExistingGroupDeletesGroup) {
+  TabStripDummyDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AddToNewGroup({0});
+  strip.AddToNewGroup({1});
+  EXPECT_EQ(strip.ListTabGroups().size(), 2U);
+  const TabGroupData* group = strip.GetTabGroupForTab(1);
+
+  strip.AddToExistingGroup({1}, strip.GetTabGroupForTab(0));
+
+  EXPECT_EQ(strip.ListTabGroups().size(), 1U);
+  EXPECT_NE(strip.ListTabGroups()[0], group);
+
+  strip.ActivateTabAt(0, true);
+  strip.CloseAllTabs();
+}
