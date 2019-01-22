@@ -27,6 +27,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/accessibility_browser_test_utils.h"
+#include "services/network/public/cpp/features.h"
 #include "ui/base/ui_base_features.h"
 
 #if defined(OS_MACOSX)
@@ -1030,7 +1031,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAside) {
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAudio) {
-  RunHtmlTest(FILE_PATH_LITERAL("audio.html"));
+  // https://crbug.com/923993
+  // Super flaky with NetworkService.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    RunHtmlTest(FILE_PATH_LITERAL("audio.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAWithImg) {
