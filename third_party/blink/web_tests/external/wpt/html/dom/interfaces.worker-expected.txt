@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 614 tests; 596 PASS, 18 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 651 tests; 610 PASS, 41 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
 PASS Partial interface NavigatorID: original interface defined
@@ -145,7 +145,24 @@ PASS CanvasPattern interface: existence and properties of interface prototype ob
 PASS CanvasPattern interface: existence and properties of interface prototype object's "constructor" property
 PASS CanvasPattern interface: existence and properties of interface prototype object's @@unscopables property
 PASS CanvasPattern interface: operation setTransform(DOMMatrix2DInit)
-PASS TextMetrics interface: existence and properties of interface object
+FAIL TextMetrics interface: existence and properties of interface object assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
+FAIL TextMetrics interface object length assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
+FAIL TextMetrics interface object name assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
+FAIL TextMetrics interface: existence and properties of interface prototype object assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
+FAIL TextMetrics interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
+FAIL TextMetrics interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
+FAIL TextMetrics interface: attribute width assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
+FAIL TextMetrics interface: attribute actualBoundingBoxLeft assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
+FAIL TextMetrics interface: attribute actualBoundingBoxRight assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
+FAIL TextMetrics interface: attribute fontBoundingBoxAscent assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
+FAIL TextMetrics interface: attribute fontBoundingBoxDescent assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
+FAIL TextMetrics interface: attribute actualBoundingBoxAscent assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
+FAIL TextMetrics interface: attribute actualBoundingBoxDescent assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
+FAIL TextMetrics interface: attribute emHeightAscent assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
+FAIL TextMetrics interface: attribute emHeightDescent assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
+FAIL TextMetrics interface: attribute hangingBaseline assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
+FAIL TextMetrics interface: attribute alphabeticBaseline assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
+FAIL TextMetrics interface: attribute ideographicBaseline assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
 PASS ImageData interface: existence and properties of interface object
 PASS ImageData interface object length
 PASS ImageData interface object name
@@ -225,11 +242,13 @@ PASS OffscreenCanvasRenderingContext2D interface: operation stroke()
 PASS OffscreenCanvasRenderingContext2D interface: operation stroke(Path2D)
 PASS OffscreenCanvasRenderingContext2D interface: operation clip(CanvasFillRule)
 PASS OffscreenCanvasRenderingContext2D interface: operation clip(Path2D, CanvasFillRule)
-FAIL OffscreenCanvasRenderingContext2D interface: operation resetClip() assert_own_property: interface prototype object missing non-static operation expected property "resetClip" missing
 PASS OffscreenCanvasRenderingContext2D interface: operation isPointInPath(unrestricted double, unrestricted double, CanvasFillRule)
 PASS OffscreenCanvasRenderingContext2D interface: operation isPointInPath(Path2D, unrestricted double, unrestricted double, CanvasFillRule)
 PASS OffscreenCanvasRenderingContext2D interface: operation isPointInStroke(unrestricted double, unrestricted double)
 PASS OffscreenCanvasRenderingContext2D interface: operation isPointInStroke(Path2D, unrestricted double, unrestricted double)
+PASS OffscreenCanvasRenderingContext2D interface: operation fillText(DOMString, unrestricted double, unrestricted double, unrestricted double)
+PASS OffscreenCanvasRenderingContext2D interface: operation strokeText(DOMString, unrestricted double, unrestricted double, unrestricted double)
+PASS OffscreenCanvasRenderingContext2D interface: operation measureText(DOMString)
 PASS OffscreenCanvasRenderingContext2D interface: operation drawImage(CanvasImageSource, unrestricted double, unrestricted double)
 PASS OffscreenCanvasRenderingContext2D interface: operation drawImage(CanvasImageSource, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
 PASS OffscreenCanvasRenderingContext2D interface: operation drawImage(CanvasImageSource, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
@@ -245,6 +264,10 @@ PASS OffscreenCanvasRenderingContext2D interface: attribute miterLimit
 PASS OffscreenCanvasRenderingContext2D interface: operation setLineDash([object Object])
 PASS OffscreenCanvasRenderingContext2D interface: operation getLineDash()
 PASS OffscreenCanvasRenderingContext2D interface: attribute lineDashOffset
+PASS OffscreenCanvasRenderingContext2D interface: attribute font
+PASS OffscreenCanvasRenderingContext2D interface: attribute textAlign
+PASS OffscreenCanvasRenderingContext2D interface: attribute textBaseline
+PASS OffscreenCanvasRenderingContext2D interface: attribute direction
 PASS OffscreenCanvasRenderingContext2D interface: operation closePath()
 PASS OffscreenCanvasRenderingContext2D interface: operation moveTo(unrestricted double, unrestricted double)
 PASS OffscreenCanvasRenderingContext2D interface: operation lineTo(unrestricted double, unrestricted double)
@@ -425,6 +448,7 @@ PASS MessagePort interface: existence and properties of interface prototype obje
 PASS MessagePort interface: existence and properties of interface prototype object's "constructor" property
 PASS MessagePort interface: existence and properties of interface prototype object's @@unscopables property
 PASS MessagePort interface: operation postMessage(any, [object Object])
+PASS MessagePort interface: operation postMessage(any, PostMessageOptions)
 PASS MessagePort interface: operation start()
 PASS MessagePort interface: operation close()
 PASS MessagePort interface: attribute onmessage
@@ -463,6 +487,7 @@ PASS WorkerGlobalScope interface: operation setTimeout(TimerHandler, long, any)
 PASS WorkerGlobalScope interface: operation clearTimeout(long)
 PASS WorkerGlobalScope interface: operation setInterval(TimerHandler, long, any)
 PASS WorkerGlobalScope interface: operation clearInterval(long)
+PASS WorkerGlobalScope interface: operation queueMicrotask(VoidFunction)
 PASS WorkerGlobalScope interface: operation createImageBitmap(ImageBitmapSource, ImageBitmapOptions)
 PASS WorkerGlobalScope interface: operation createImageBitmap(ImageBitmapSource, long, long, long, long, ImageBitmapOptions)
 PASS DedicatedWorkerGlobalScope interface: existence and properties of interface object
@@ -479,9 +504,12 @@ PASS DedicatedWorkerGlobalScope interface: existence and properties of interface
 PASS DedicatedWorkerGlobalScope interface: existence and properties of interface prototype object's @@unscopables property
 PASS DedicatedWorkerGlobalScope interface: attribute name
 PASS DedicatedWorkerGlobalScope interface: operation postMessage(any, [object Object])
+PASS DedicatedWorkerGlobalScope interface: operation postMessage(any, PostMessageOptions)
 PASS DedicatedWorkerGlobalScope interface: operation close()
 PASS DedicatedWorkerGlobalScope interface: attribute onmessage
 PASS DedicatedWorkerGlobalScope interface: attribute onmessageerror
+FAIL DedicatedWorkerGlobalScope interface: operation requestAnimationFrame(FrameRequestCallback) assert_own_property: global object missing non-static operation expected property "requestAnimationFrame" missing
+FAIL DedicatedWorkerGlobalScope interface: operation cancelAnimationFrame(unsigned long) assert_own_property: global object missing non-static operation expected property "cancelAnimationFrame" missing
 PASS DedicatedWorkerGlobalScope interface: internal [[SetPrototypeOf]] method of global platform object - setting to a new value via Object.setPrototypeOf should throw a TypeError
 PASS DedicatedWorkerGlobalScope interface: internal [[SetPrototypeOf]] method of global platform object - setting to a new value via __proto__ should throw a TypeError
 PASS DedicatedWorkerGlobalScope interface: internal [[SetPrototypeOf]] method of global platform object - setting to a new value via Reflect.setPrototypeOf should return false
@@ -493,9 +521,15 @@ PASS Stringification of self
 PASS DedicatedWorkerGlobalScope interface: self must inherit property "name" with the proper type
 PASS DedicatedWorkerGlobalScope interface: self must inherit property "postMessage(any, [object Object])" with the proper type
 PASS DedicatedWorkerGlobalScope interface: calling postMessage(any, [object Object]) on self with too few arguments must throw TypeError
+PASS DedicatedWorkerGlobalScope interface: self must inherit property "postMessage(any, PostMessageOptions)" with the proper type
+PASS DedicatedWorkerGlobalScope interface: calling postMessage(any, PostMessageOptions) on self with too few arguments must throw TypeError
 PASS DedicatedWorkerGlobalScope interface: self must inherit property "close()" with the proper type
 PASS DedicatedWorkerGlobalScope interface: self must inherit property "onmessage" with the proper type
 PASS DedicatedWorkerGlobalScope interface: self must inherit property "onmessageerror" with the proper type
+FAIL DedicatedWorkerGlobalScope interface: self must inherit property "requestAnimationFrame(FrameRequestCallback)" with the proper type assert_own_property: expected property "requestAnimationFrame" missing
+FAIL DedicatedWorkerGlobalScope interface: calling requestAnimationFrame(FrameRequestCallback) on self with too few arguments must throw TypeError assert_own_property: expected property "requestAnimationFrame" missing
+FAIL DedicatedWorkerGlobalScope interface: self must inherit property "cancelAnimationFrame(unsigned long)" with the proper type assert_own_property: expected property "cancelAnimationFrame" missing
+FAIL DedicatedWorkerGlobalScope interface: calling cancelAnimationFrame(unsigned long) on self with too few arguments must throw TypeError assert_own_property: expected property "cancelAnimationFrame" missing
 PASS WorkerGlobalScope interface: self must inherit property "self" with the proper type
 PASS WorkerGlobalScope interface: self must inherit property "location" with the proper type
 PASS WorkerGlobalScope interface: self must inherit property "navigator" with the proper type
@@ -520,6 +554,8 @@ PASS WorkerGlobalScope interface: self must inherit property "setInterval(TimerH
 PASS WorkerGlobalScope interface: calling setInterval(TimerHandler, long, any) on self with too few arguments must throw TypeError
 PASS WorkerGlobalScope interface: self must inherit property "clearInterval(long)" with the proper type
 PASS WorkerGlobalScope interface: calling clearInterval(long) on self with too few arguments must throw TypeError
+PASS WorkerGlobalScope interface: self must inherit property "queueMicrotask(VoidFunction)" with the proper type
+PASS WorkerGlobalScope interface: calling queueMicrotask(VoidFunction) on self with too few arguments must throw TypeError
 PASS WorkerGlobalScope interface: self must inherit property "createImageBitmap(ImageBitmapSource, ImageBitmapOptions)" with the proper type
 PASS WorkerGlobalScope interface: calling createImageBitmap(ImageBitmapSource, ImageBitmapOptions) on self with too few arguments must throw TypeError
 PASS WorkerGlobalScope interface: self must inherit property "createImageBitmap(ImageBitmapSource, long, long, long, long, ImageBitmapOptions)" with the proper type
@@ -533,6 +569,7 @@ PASS Worker interface: existence and properties of interface prototype object's 
 PASS Worker interface: existence and properties of interface prototype object's @@unscopables property
 PASS Worker interface: operation terminate()
 PASS Worker interface: operation postMessage(any, [object Object])
+PASS Worker interface: operation postMessage(any, PostMessageOptions)
 PASS Worker interface: attribute onmessage
 FAIL Worker interface: attribute onmessageerror assert_true: The prototype object must have a property "onmessageerror" expected true got false
 PASS Worker interface: attribute onerror

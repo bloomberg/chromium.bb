@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 683 tests; 656 PASS, 27 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 654 tests; 627 PASS, 27 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
 PASS Partial interface NavigatorID: original interface defined
@@ -78,10 +78,8 @@ PASS Window interface: operation alert(DOMString)
 PASS Window interface: operation confirm(DOMString)
 PASS Window interface: operation prompt(DOMString, DOMString)
 PASS Window interface: operation print()
-PASS Window interface: operation requestAnimationFrame(FrameRequestCallback)
-PASS Window interface: operation cancelAnimationFrame(unsigned long)
 PASS Window interface: operation postMessage(any, USVString, [object Object])
-PASS Window interface: operation postMessage(any, [object Object], WindowPostMessageOptions)
+PASS Window interface: operation postMessage(any, WindowPostMessageOptions)
 PASS Window interface: operation captureEvents()
 PASS Window interface: operation releaseEvents()
 PASS Window interface: attribute external
@@ -148,22 +146,6 @@ PASS Window interface: attribute ontimeupdate
 PASS Window interface: attribute ontoggle
 PASS Window interface: attribute onvolumechange
 PASS Window interface: attribute onwaiting
-PASS Window interface: attribute onafterprint
-PASS Window interface: attribute onbeforeprint
-PASS Window interface: attribute onbeforeunload
-PASS Window interface: attribute onhashchange
-PASS Window interface: attribute onlanguagechange
-PASS Window interface: attribute onmessage
-PASS Window interface: attribute onmessageerror
-PASS Window interface: attribute onoffline
-PASS Window interface: attribute ononline
-PASS Window interface: attribute onpagehide
-PASS Window interface: attribute onpageshow
-PASS Window interface: attribute onpopstate
-PASS Window interface: attribute onrejectionhandled
-PASS Window interface: attribute onstorage
-PASS Window interface: attribute onunhandledrejection
-PASS Window interface: attribute onunload
 PASS Window interface: attribute origin
 PASS Window interface: operation btoa(DOMString)
 PASS Window interface: operation atob(DOMString)
@@ -171,8 +153,11 @@ PASS Window interface: operation setTimeout(TimerHandler, long, any)
 PASS Window interface: operation clearTimeout(long)
 PASS Window interface: operation setInterval(TimerHandler, long, any)
 PASS Window interface: operation clearInterval(long)
+PASS Window interface: operation queueMicrotask(VoidFunction)
 PASS Window interface: operation createImageBitmap(ImageBitmapSource, ImageBitmapOptions)
 PASS Window interface: operation createImageBitmap(ImageBitmapSource, long, long, long, long, ImageBitmapOptions)
+PASS Window interface: operation requestAnimationFrame(FrameRequestCallback)
+PASS Window interface: operation cancelAnimationFrame(unsigned long)
 PASS Window interface: attribute sessionStorage
 PASS Window interface: attribute localStorage
 PASS Window interface: internal [[SetPrototypeOf]] method of global platform object - setting to a new value via Object.setPrototypeOf should throw a TypeError
@@ -220,14 +205,10 @@ PASS Window interface: calling confirm(DOMString) on window with too few argumen
 PASS Window interface: window must inherit property "prompt(DOMString, DOMString)" with the proper type
 PASS Window interface: calling prompt(DOMString, DOMString) on window with too few arguments must throw TypeError
 PASS Window interface: window must inherit property "print()" with the proper type
-PASS Window interface: window must inherit property "requestAnimationFrame(FrameRequestCallback)" with the proper type
-PASS Window interface: calling requestAnimationFrame(FrameRequestCallback) on window with too few arguments must throw TypeError
-PASS Window interface: window must inherit property "cancelAnimationFrame(unsigned long)" with the proper type
-PASS Window interface: calling cancelAnimationFrame(unsigned long) on window with too few arguments must throw TypeError
 PASS Window interface: window must inherit property "postMessage(any, USVString, [object Object])" with the proper type
 PASS Window interface: calling postMessage(any, USVString, [object Object]) on window with too few arguments must throw TypeError
-PASS Window interface: window must inherit property "postMessage(any, [object Object], WindowPostMessageOptions)" with the proper type
-PASS Window interface: calling postMessage(any, [object Object], WindowPostMessageOptions) on window with too few arguments must throw TypeError
+PASS Window interface: window must inherit property "postMessage(any, WindowPostMessageOptions)" with the proper type
+PASS Window interface: calling postMessage(any, WindowPostMessageOptions) on window with too few arguments must throw TypeError
 PASS Window interface: window must inherit property "captureEvents()" with the proper type
 PASS Window interface: window must inherit property "releaseEvents()" with the proper type
 PASS Window interface: window must inherit property "external" with the proper type
@@ -294,22 +275,6 @@ PASS Window interface: window must inherit property "ontimeupdate" with the prop
 PASS Window interface: window must inherit property "ontoggle" with the proper type
 PASS Window interface: window must inherit property "onvolumechange" with the proper type
 PASS Window interface: window must inherit property "onwaiting" with the proper type
-PASS Window interface: window must inherit property "onafterprint" with the proper type
-PASS Window interface: window must inherit property "onbeforeprint" with the proper type
-PASS Window interface: window must inherit property "onbeforeunload" with the proper type
-PASS Window interface: window must inherit property "onhashchange" with the proper type
-PASS Window interface: window must inherit property "onlanguagechange" with the proper type
-PASS Window interface: window must inherit property "onmessage" with the proper type
-PASS Window interface: window must inherit property "onmessageerror" with the proper type
-PASS Window interface: window must inherit property "onoffline" with the proper type
-PASS Window interface: window must inherit property "ononline" with the proper type
-PASS Window interface: window must inherit property "onpagehide" with the proper type
-PASS Window interface: window must inherit property "onpageshow" with the proper type
-PASS Window interface: window must inherit property "onpopstate" with the proper type
-PASS Window interface: window must inherit property "onrejectionhandled" with the proper type
-PASS Window interface: window must inherit property "onstorage" with the proper type
-PASS Window interface: window must inherit property "onunhandledrejection" with the proper type
-PASS Window interface: window must inherit property "onunload" with the proper type
 PASS Window interface: window must inherit property "origin" with the proper type
 PASS Window interface: window must inherit property "btoa(DOMString)" with the proper type
 PASS Window interface: calling btoa(DOMString) on window with too few arguments must throw TypeError
@@ -323,10 +288,16 @@ PASS Window interface: window must inherit property "setInterval(TimerHandler, l
 PASS Window interface: calling setInterval(TimerHandler, long, any) on window with too few arguments must throw TypeError
 PASS Window interface: window must inherit property "clearInterval(long)" with the proper type
 PASS Window interface: calling clearInterval(long) on window with too few arguments must throw TypeError
+PASS Window interface: window must inherit property "queueMicrotask(VoidFunction)" with the proper type
+PASS Window interface: calling queueMicrotask(VoidFunction) on window with too few arguments must throw TypeError
 PASS Window interface: window must inherit property "createImageBitmap(ImageBitmapSource, ImageBitmapOptions)" with the proper type
 PASS Window interface: calling createImageBitmap(ImageBitmapSource, ImageBitmapOptions) on window with too few arguments must throw TypeError
 PASS Window interface: window must inherit property "createImageBitmap(ImageBitmapSource, long, long, long, long, ImageBitmapOptions)" with the proper type
 PASS Window interface: calling createImageBitmap(ImageBitmapSource, long, long, long, long, ImageBitmapOptions) on window with too few arguments must throw TypeError
+PASS Window interface: window must inherit property "requestAnimationFrame(FrameRequestCallback)" with the proper type
+PASS Window interface: calling requestAnimationFrame(FrameRequestCallback) on window with too few arguments must throw TypeError
+PASS Window interface: window must inherit property "cancelAnimationFrame(unsigned long)" with the proper type
+PASS Window interface: calling cancelAnimationFrame(unsigned long) on window with too few arguments must throw TypeError
 PASS Window interface: window must inherit property "sessionStorage" with the proper type
 PASS Window interface: window must inherit property "localStorage" with the proper type
 PASS Document interface: attribute domain

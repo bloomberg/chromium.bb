@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 3581 tests; 3539 PASS, 42 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 3589 tests; 3546 PASS, 43 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
 PASS Partial interface NavigatorID: original interface defined
@@ -98,6 +98,7 @@ PASS HTMLElement interface: attribute accessKey
 FAIL HTMLElement interface: attribute accessKeyLabel assert_true: The prototype object must have a property "accessKeyLabel" expected true got false
 PASS HTMLElement interface: attribute draggable
 PASS HTMLElement interface: attribute spellcheck
+PASS HTMLElement interface: attribute autocapitalize
 PASS HTMLElement interface: attribute innerText
 PASS HTMLElement interface: attribute onabort
 PASS HTMLElement interface: attribute onauxclick
@@ -166,6 +167,7 @@ PASS HTMLElement interface: attribute oncopy
 PASS HTMLElement interface: attribute oncut
 PASS HTMLElement interface: attribute onpaste
 PASS HTMLElement interface: attribute contentEditable
+FAIL HTMLElement interface: attribute enterKeyHint assert_true: The prototype object must have a property "enterKeyHint" expected true got false
 PASS HTMLElement interface: attribute isContentEditable
 PASS HTMLElement interface: attribute inputMode
 PASS HTMLElement interface: attribute dataset
@@ -185,6 +187,7 @@ PASS HTMLElement interface: document.createElement("noscript") must inherit prop
 FAIL HTMLElement interface: document.createElement("noscript") must inherit property "accessKeyLabel" with the proper type assert_inherits: property "accessKeyLabel" not found in prototype chain
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "draggable" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "spellcheck" with the proper type
+PASS HTMLElement interface: document.createElement("noscript") must inherit property "autocapitalize" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "innerText" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onabort" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onauxclick" with the proper type
@@ -253,6 +256,7 @@ PASS HTMLElement interface: document.createElement("noscript") must inherit prop
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "oncut" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onpaste" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "contentEditable" with the proper type
+FAIL HTMLElement interface: document.createElement("noscript") must inherit property "enterKeyHint" with the proper type assert_inherits: property "enterKeyHint" not found in prototype chain
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "isContentEditable" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "inputMode" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "dataset" with the proper type
@@ -708,6 +712,7 @@ PASS HTMLImageElement interface: attribute naturalHeight
 PASS HTMLImageElement interface: attribute complete
 PASS HTMLImageElement interface: attribute currentSrc
 PASS HTMLImageElement interface: attribute referrerPolicy
+PASS HTMLImageElement interface: attribute decoding
 PASS HTMLImageElement interface: operation decode()
 PASS HTMLImageElement interface: attribute name
 PASS HTMLImageElement interface: attribute lowsrc
@@ -732,6 +737,7 @@ PASS HTMLImageElement interface: document.createElement("img") must inherit prop
 PASS HTMLImageElement interface: document.createElement("img") must inherit property "complete" with the proper type
 PASS HTMLImageElement interface: document.createElement("img") must inherit property "currentSrc" with the proper type
 PASS HTMLImageElement interface: document.createElement("img") must inherit property "referrerPolicy" with the proper type
+PASS HTMLImageElement interface: document.createElement("img") must inherit property "decoding" with the proper type
 PASS HTMLImageElement interface: document.createElement("img") must inherit property "decode()" with the proper type
 PASS HTMLImageElement interface: document.createElement("img") must inherit property "name" with the proper type
 PASS HTMLImageElement interface: document.createElement("img") must inherit property "lowsrc" with the proper type
@@ -756,6 +762,7 @@ PASS HTMLImageElement interface: new Image() must inherit property "naturalHeigh
 PASS HTMLImageElement interface: new Image() must inherit property "complete" with the proper type
 PASS HTMLImageElement interface: new Image() must inherit property "currentSrc" with the proper type
 PASS HTMLImageElement interface: new Image() must inherit property "referrerPolicy" with the proper type
+PASS HTMLImageElement interface: new Image() must inherit property "decoding" with the proper type
 PASS HTMLImageElement interface: new Image() must inherit property "decode()" with the proper type
 PASS HTMLImageElement interface: new Image() must inherit property "name" with the proper type
 PASS HTMLImageElement interface: new Image() must inherit property "lowsrc" with the proper type
@@ -774,16 +781,15 @@ PASS HTMLIFrameElement interface: attribute src
 PASS HTMLIFrameElement interface: attribute srcdoc
 PASS HTMLIFrameElement interface: attribute name
 PASS HTMLIFrameElement interface: attribute sandbox
+PASS HTMLIFrameElement interface: attribute allow
 PASS HTMLIFrameElement interface: attribute allowFullscreen
 PASS HTMLIFrameElement interface: attribute allowPaymentRequest
-FAIL HTMLIFrameElement interface: attribute allowUserMedia assert_true: The prototype object must have a property "allowUserMedia" expected true got false
 PASS HTMLIFrameElement interface: attribute width
 PASS HTMLIFrameElement interface: attribute height
 PASS HTMLIFrameElement interface: attribute referrerPolicy
 PASS HTMLIFrameElement interface: attribute contentDocument
 PASS HTMLIFrameElement interface: attribute contentWindow
 PASS HTMLIFrameElement interface: operation getSVGDocument()
-FAIL HTMLIFrameElement interface: attribute delegateStickyUserActivation assert_true: The prototype object must have a property "delegateStickyUserActivation" expected true got false
 PASS HTMLIFrameElement interface: attribute align
 PASS HTMLIFrameElement interface: attribute scrolling
 PASS HTMLIFrameElement interface: attribute frameBorder
@@ -3380,6 +3386,7 @@ PASS HTMLScriptElement interface: attribute defer
 PASS HTMLScriptElement interface: attribute crossOrigin
 PASS HTMLScriptElement interface: attribute text
 PASS HTMLScriptElement interface: attribute integrity
+PASS HTMLScriptElement interface: attribute referrerPolicy
 PASS HTMLScriptElement interface: attribute charset
 PASS HTMLScriptElement interface: attribute event
 PASS HTMLScriptElement interface: attribute htmlFor
@@ -3393,6 +3400,7 @@ PASS HTMLScriptElement interface: document.createElement("script") must inherit 
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "crossOrigin" with the proper type
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "text" with the proper type
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "integrity" with the proper type
+FAIL HTMLScriptElement interface: document.createElement("script") must inherit property "referrerPolicy" with the proper type assert_equals: expected "string" but got "object"
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "charset" with the proper type
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "event" with the proper type
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "htmlFor" with the proper type

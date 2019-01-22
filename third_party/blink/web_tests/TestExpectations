@@ -3092,6 +3092,12 @@ crbug.com/918664 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/924142 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-dynamic-add-010.html [ Crash Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/html/semantics/document-metadata/the-link-element/stylesheet-not-removed-until-next-stylesheet-loads.html [ Timeout ]
+crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-007.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-multicol/multicol-span-all-007.html [ Failure ]
+crbug.com/626703 external/wpt/infrastructure/reftest/size.html [ Failure ]
+crbug.com/626703 external/wpt/svg/interact/manual/event-attribute-001-manual.svg [ Skip ]
+crbug.com/626703 [ Retina ] virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/async_005.htm [ Timeout ]
 crbug.com/626703 external/wpt/css/css-text/tab-size/tab-size-spacing-001.html [ Failure ]
 crbug.com/626703 external/wpt/referrer-policy/generic/iframe-inheritance.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/referrer-policy/generic/iframe-inheritance.html [ Timeout ]
