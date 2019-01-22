@@ -390,6 +390,8 @@ void CastDialogView::SinkPressed(size_t index) {
     metrics_.OnStopCasting(sink.route->is_local());
     // StopCasting() may trigger a model update and invalidate |sink|.
     controller_->StopCasting(sink.route->media_route_id());
+  } else if (sink.issue) {
+    controller_->ClearIssue(sink.issue->id());
   } else {
     base::Optional<MediaCastMode> cast_mode = GetCastModeToUse(sink);
     if (cast_mode) {

@@ -79,6 +79,10 @@ void MediaRouterViewsUI::ChooseLocalFile(
   OpenFileDialog();
 }
 
+void MediaRouterViewsUI::ClearIssue(const Issue::Id& issue_id) {
+  RemoveIssue(issue_id);
+}
+
 std::vector<MediaSinkWithCastModes> MediaRouterViewsUI::GetEnabledSinks()
     const {
   std::vector<MediaSinkWithCastModes> sinks =
