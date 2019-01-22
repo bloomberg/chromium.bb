@@ -104,7 +104,6 @@ class EditorDropdownField implements EditorFieldView {
 
         mDropdown = (Spinner) mLayout.findViewById(R.id.spinner);
         mDropdown.setTag(this);
-        mDropdown.setContentDescription(mFieldModel.getLabel());
         mDropdown.setAdapter(mAdapter);
         mDropdown.setSelection(mSelectedIndex);
         mDropdown.setOnItemSelectedListener(new OnItemSelectedListener() {
