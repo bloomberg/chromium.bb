@@ -42,23 +42,45 @@ bool IsStatefulRequestHeader(base::StringPiece name) {
   return false;
 }
 
-bool IsStatefulResponseHeader(base::StringPiece name) {
+bool IsUncachedHeader(base::StringPiece name) {
   DCHECK_EQ(name, base::ToLowerASCII(name));
 
-  const char* const kStatefulResponseHeaders[] = {
+  const char* const kUncachedHeaders[] = {
+      // "Hop-by-hop header fields listed in the Connection header field
+      // (Section 6.1 of {{!RFC7230}})." [spec text]
+      // Note: The Connection header field itself is banned as uncached headers,
+      // so no-op.
+
+      // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#stateful-headers
+      // TODO(kouhei): Dedupe the list with net/http/http_response_headers.cc
+      //               kChallengeResponseHeaders and kCookieResponseHeaders.
       "authentication-control",
       "authentication-info",
+      "clear-site-data",
       "optional-www-authenticate",
       "proxy-authenticate",
       "proxy-authentication-info",
+      "public-key-pins",
       "sec-websocket-accept",
       "set-cookie",
       "set-cookie2",
       "setprofile",
+      "strict-transport-security",
       "www-authenticate",
+
+      // Other uncached header fields:
+      // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#uncached-headers
+      // TODO(kouhei): Dedupe the list with net/http/http_response_headers.cc
+      //               kHopByHopResponseHeaders.
+      "connection",
+      "keep-alive",
+      "proxy-connection",
+      "trailer",
+      "transfer-encoding",
+      "upgrade",
   };
 
-  for (const char* field : kStatefulResponseHeaders) {
+  for (const char* field : kUncachedHeaders) {
     if (name == field)
       return true;
   }
@@ -279,9 +301,9 @@ bool ParseResponseMap(const cbor::Value& value,
       return false;
     }
 
-    // 4. If exchange’s headers contains a stateful header field, as defined in
-    // Section 4.1, return “invalid”. [spec text]
-    if (IsStatefulResponseHeader(name_str)) {
+    // 4. If exchange's headers contains an uncached header field, as defined in
+    // Section 4.1, return "invalid". [spec text]
+    if (IsUncachedHeader(name_str)) {
       signed_exchange_utils::ReportErrorAndTraceEvent(
           devtools_proxy,
           base::StringPrintf(
