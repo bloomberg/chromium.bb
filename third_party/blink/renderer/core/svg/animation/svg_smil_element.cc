@@ -87,7 +87,7 @@ class ConditionEventListener final : public NativeEventListener {
                          SVGSMILElement::Condition* condition)
       : animation_(animation), condition_(condition) {}
 
-  bool operator==(const EventListener& other) const override;
+  bool Matches(const EventListener& other) const override;
 
   void DisconnectAnimation() { animation_ = nullptr; }
 
@@ -116,7 +116,7 @@ struct DowncastTraits<ConditionEventListener> {
   }
 };
 
-bool ConditionEventListener::operator==(const EventListener& listener) const {
+bool ConditionEventListener::Matches(const EventListener& listener) const {
   if (const ConditionEventListener* condition_event_listener =
           DynamicTo<ConditionEventListener>(listener)) {
     return animation_ == condition_event_listener->animation_ &&

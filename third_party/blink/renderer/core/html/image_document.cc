@@ -69,7 +69,7 @@ class ImageEventListener : public NativeEventListener {
 
   ImageEventListener(ImageDocument* document) : doc_(document) {}
 
-  bool operator==(const EventListener& other) const override;
+  bool Matches(const EventListener& other) const override;
 
   void Invoke(ExecutionContext*, Event*) override;
 
@@ -585,7 +585,7 @@ void ImageEventListener::Invoke(ExecutionContext*, Event* event) {
   }
 }
 
-bool ImageEventListener::operator==(const EventListener& listener) const {
+bool ImageEventListener::Matches(const EventListener& listener) const {
   if (const ImageEventListener* image_event_listener =
           DynamicTo<ImageEventListener>(listener)) {
     return doc_ == image_event_listener->doc_;

@@ -82,8 +82,6 @@ class RegisteredEventListener final {
 
   bool ShouldFire(const Event&) const;
 
-  bool operator==(const RegisteredEventListener& other) const;
-
  private:
   TraceWrapperMember<EventListener> callback_;
   unsigned use_capture_ : 1;
@@ -93,6 +91,8 @@ class RegisteredEventListener final {
   unsigned passive_forced_for_document_target_ : 1;
   unsigned passive_specified_ : 1;
 };
+
+bool operator==(const RegisteredEventListener&, const RegisteredEventListener&);
 
 }  // namespace blink
 

@@ -31,8 +31,8 @@ class CORE_EXPORT JSEventListener final : public JSBasedEventListener {
   // multiple CallbackInterfaceBase objects that have the same
   // |CallbackInterfaceBase::callback_object_| but have different
   // |CallbackInterfaceBase::incumbent_script_state_|s.
-  bool operator==(const EventListener& other) const override {
-    auto* other_listener = DynamicTo<JSEventListener>(other);
+  bool Matches(const EventListener& other) const override {
+    const auto* other_listener = DynamicTo<JSEventListener>(other);
     return other_listener && event_listener_->HasTheSameCallbackObject(
                                  *other_listener->event_listener_);
   }

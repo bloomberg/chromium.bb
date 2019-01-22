@@ -17,7 +17,7 @@ class CORE_EXPORT NativeEventListener : public EventListener {
   ~NativeEventListener() override = default;
 
   // blink::EventListener overrides:
-  bool operator==(const EventListener& other) const override {
+  bool Matches(const EventListener& other) const override {
     return this == &other;
   }
 
