@@ -22,9 +22,10 @@ bool OverlayStrategySingleOnTop::Attempt(
     const SkMatrix44& output_color_matrix,
     const OverlayProcessor::FilterOperationsMap& render_pass_backdrop_filters,
     DisplayResourceProvider* resource_provider,
-    RenderPass* render_pass,
+    RenderPassList* render_pass_list,
     OverlayCandidateList* candidate_list,
     std::vector<gfx::Rect>* content_bounds) {
+  RenderPass* render_pass = render_pass_list->back().get();
   QuadList* quad_list = &render_pass->quad_list;
   // Build a list of candidates with the associated quad.
   OverlayCandidate best_candidate;

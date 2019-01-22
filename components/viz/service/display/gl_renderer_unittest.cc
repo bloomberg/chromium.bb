@@ -2151,7 +2151,7 @@ class TestOverlayProcessor : public OverlayProcessor {
                       const OverlayProcessor::FilterOperationsMap&
                           render_pass_backdrop_filters,
                       DisplayResourceProvider* resource_provider,
-                      RenderPass* render_pass,
+                      RenderPassList* render_pass_list,
                       OverlayCandidateList* candidates,
                       std::vector<gfx::Rect>* content_bounds));
   };
@@ -2960,7 +2960,7 @@ class ContentBoundsOverlayProcessor : public OverlayProcessor {
                  const OverlayProcessor::FilterOperationsMap&
                      render_pass_backdrop_filters,
                  DisplayResourceProvider* resource_provider,
-                 RenderPass* render_pass,
+                 RenderPassList* render_pass_list,
                  OverlayCandidateList* candidates,
                  std::vector<gfx::Rect>* content_bounds) override {
       content_bounds->insert(content_bounds->end(), content_bounds_.begin(),

@@ -45,12 +45,13 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
     // Returns false if the strategy cannot be made to work with the
     // current set of render passes. Returns true if the strategy was successful
     // and adds any additional passes necessary to represent overlays to
-    // |render_passes|.
+    // |render_pass_list|. Most strategies should look at the primary
+    // RenderPass, the last element.
     virtual bool Attempt(
         const SkMatrix44& output_color_matrix,
         const FilterOperationsMap& render_pass_backdrop_filters,
         DisplayResourceProvider* resource_provider,
-        RenderPass* render_pass,
+        RenderPassList* render_pass_list,
         OverlayCandidateList* candidates,
         std::vector<gfx::Rect>* content_bounds) = 0;
 
