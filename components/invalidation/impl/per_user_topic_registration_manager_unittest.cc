@@ -141,7 +141,8 @@ class PerUserTopicRegistrationManagerTest : public testing::Test {
 
   void AddCorrectSubscriptionResponce(
       const std::string& private_topic = std::string(),
-      const std::string& token = kFakeInstanceIdToken) {
+      const std::string& token = kFakeInstanceIdToken,
+      int http_responce_code = net::HTTP_OK) {
     std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
     value->SetString("privateTopicName",
                      private_topic.empty() ? "test-pr" : private_topic.c_str());
@@ -149,7 +150,7 @@ class PerUserTopicRegistrationManagerTest : public testing::Test {
     JSONStringValueSerializer serializer(&serialized_response);
     serializer.Serialize(*value);
     url_loader_factory()->AddResponse(
-        FullSubscriptionUrl(token), CreateHeadersForTest(net::HTTP_OK),
+        FullSubscriptionUrl(token), CreateHeadersForTest(http_responce_code),
         serialized_response, CreateStatusForTest(net::OK, serialized_response));
   }
 
@@ -202,8 +203,7 @@ TEST_F(PerUserTopicRegistrationManagerTest, ShouldUpdateRegisteredTopics) {
   TopicSet ids = GetSequenceOfTopics(kInvalidationObjectIdsCount);
 
   auto per_user_topic_registration_manager = BuildRegistrationManager();
-
-  EXPECT_TRUE(per_user_topic_registration_manager->GetRegisteredIds().empty());
+  ASSERT_TRUE(per_user_topic_registration_manager->GetRegisteredIds().empty());
 
   AddCorrectSubscriptionResponce();
 
@@ -212,6 +212,8 @@ TEST_F(PerUserTopicRegistrationManagerTest, ShouldUpdateRegisteredTopics) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(ids, per_user_topic_registration_manager->GetRegisteredIds());
+  EXPECT_TRUE(
+      per_user_topic_registration_manager->HaveAllRequestsFinishedForTest());
 
   for (const auto& id : ids) {
     const base::DictionaryValue* topics =
@@ -220,6 +222,25 @@ TEST_F(PerUserTopicRegistrationManagerTest, ShouldUpdateRegisteredTopics) {
         topics->FindKeyOfType(id, base::Value::Type::STRING);
     ASSERT_NE(private_topic_value, nullptr);
   }
+}
+
+TEST_F(PerUserTopicRegistrationManagerTest, ShouldRepeatRequestsOnFailure) {
+  TopicSet ids = GetSequenceOfTopics(kInvalidationObjectIdsCount);
+
+  auto per_user_topic_registration_manager = BuildRegistrationManager();
+  ASSERT_TRUE(per_user_topic_registration_manager->GetRegisteredIds().empty());
+
+  AddCorrectSubscriptionResponce(
+      /* private_topic */ std::string(), kFakeInstanceIdToken,
+      net::HTTP_FORBIDDEN);
+
+  per_user_topic_registration_manager->UpdateRegisteredTopics(
+      ids, kFakeInstanceIdToken);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(per_user_topic_registration_manager->GetRegisteredIds().empty());
+  EXPECT_FALSE(
+      per_user_topic_registration_manager->HaveAllRequestsFinishedForTest());
 }
 
 TEST_F(PerUserTopicRegistrationManagerTest,

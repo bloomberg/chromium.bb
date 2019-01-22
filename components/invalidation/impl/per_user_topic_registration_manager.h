@@ -73,6 +73,10 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
 
   std::unique_ptr<base::DictionaryValue> CollectDebugData() const;
 
+  bool HaveAllRequestsFinishedForTest() const {
+    return registration_statuses_.empty();
+  }
+
  private:
   struct RegistrationEntry;
 
