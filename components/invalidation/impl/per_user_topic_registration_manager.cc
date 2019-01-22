@@ -391,6 +391,15 @@ void PerUserTopicRegistrationManager::DropAllSavedRegistrationsOnTokenChange(
 
 void PerUserTopicRegistrationManager::NotifySubscriptionChannelStateChange(
     InvalidatorState invalidator_state) {
+  // TRANSIENT_INVALIDATION_ERROR is the default state of the subscription
+  // channel and shouldn't explicitly issued.
+  DCHECK(invalidator_state != TRANSIENT_INVALIDATION_ERROR);
+  if (last_issued_state_ == invalidator_state) {
+    // Notify only on state change.
+    return;
+  }
+
+  last_issued_state_ = invalidator_state;
   for (auto& observer : observers_)
     observer.OnSubscriptionChannelStateChanged(invalidator_state);
 }

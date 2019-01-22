@@ -126,6 +126,7 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   const std::string project_id_;
 
   base::ObserverList<Observer>::Unchecked observers_;
+  InvalidatorState last_issued_state_ = TRANSIENT_INVALIDATION_ERROR;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
