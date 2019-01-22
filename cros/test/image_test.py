@@ -376,10 +376,20 @@ class SymbolsTest(image_test_lib.ImageTestCase):
     # All exported symbols.
     exported = set()
 
+    # Whitelist firmware binaries which are mostly provided by various
+    # vendors, some in proprietary format. This is OK because the files are
+    # not executable on the main CPU, so we treat them as blobs that we load
+    # into external hardware/devices. This is ensured by PermissionTest.
+    # TestNoExecutableInFirmwareFolder.
+    permitted_pattern = os.path.join('dir-ROOT-A', 'lib', 'firmware', '*')
+
     for root, _, filenames in os.walk(image_test_lib.ROOT_A):
       for filename in filenames:
         full_name = os.path.join(root, filename)
         if os.path.islink(full_name) or not os.path.isfile(full_name):
+          continue
+
+        if fnmatch.fnmatch(full_name, permitted_pattern):
           continue
 
         try:
