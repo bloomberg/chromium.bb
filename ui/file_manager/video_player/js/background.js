@@ -100,7 +100,7 @@ function openVideoPlayerWindow(urls) {
         return windowId;
       }.wrap())
       .catch(function(error) {
-        console.error('Launch failed' + error.stack || error);
+        console.error('Launch failed: ' + (error.stack || error));
         return Promise.reject(error);
       }.wrap());
 }

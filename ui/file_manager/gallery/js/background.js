@@ -79,7 +79,7 @@ function openGalleryWindow(urls) {
         return galleryWrapper.rawAppWindow.contentWindow.appID;
       })
       .catch(function(error) {
-        console.error('Launch failed' + error.stack || error);
+        console.error('Launch failed: ' + (error.stack || error));
         return Promise.reject(error);
       });
 }
