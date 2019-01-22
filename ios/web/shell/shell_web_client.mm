@@ -67,13 +67,8 @@ ShellBrowserState* ShellWebClient::browser_state() const {
   return web_main_parts_->browser_state();
 }
 
-std::string ShellWebClient::GetProduct() const {
-  return "CriOS/36.77.34.45";
-}
-
 std::string ShellWebClient::GetUserAgent(UserAgentType type) const {
-  std::string product = GetProduct();
-  return web::BuildUserAgentFromProduct(product);
+  return web::BuildUserAgentFromProduct("CriOS/36.77.34.45");
 }
 
 base::StringPiece ShellWebClient::GetDataResource(

@@ -108,12 +108,6 @@ base::string16 ChromeWebClient::GetPluginNotSupportedText() const {
   return l10n_util::GetStringUTF16(IDS_PLUGIN_NOT_SUPPORTED);
 }
 
-std::string ChromeWebClient::GetProduct() const {
-  std::string product("CriOS/");
-  product += version_info::GetVersionNumber();
-  return product;
-}
-
 std::string ChromeWebClient::GetUserAgent(web::UserAgentType type) const {
   // The user agent should not be requested for app-specific URLs.
   DCHECK_NE(type, web::UserAgentType::NONE);
@@ -226,4 +220,10 @@ std::unique_ptr<service_manager::Service> ChromeWebClient::HandleServiceRequest(
   }
 
   return nullptr;
+}
+
+std::string ChromeWebClient::GetProduct() const {
+  std::string product("CriOS/");
+  product += version_info::GetVersionNumber();
+  return product;
 }

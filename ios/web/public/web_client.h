@@ -94,10 +94,6 @@ class WebClient {
   // Returns text to be displayed for an unsupported plugin.
   virtual base::string16 GetPluginNotSupportedText() const;
 
-  // Returns a string describing the embedder product name and version, of the
-  // form "productname/version".  Used as part of the user agent string.
-  virtual std::string GetProduct() const;
-
   // Returns the user agent string for the specified type.
   virtual std::string GetUserAgent(UserAgentType type) const;
 
