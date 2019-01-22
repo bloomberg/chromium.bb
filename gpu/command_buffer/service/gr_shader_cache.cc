@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/gr_shader_cache.h"
 
+#include "base/base64.h"
 #include "base/trace_event/trace_event.h"
 
 namespace gpu {
@@ -64,6 +65,7 @@ void GrShaderCache::store(const SkData& key, const SkData& data) {
 
 void GrShaderCache::PopulateCache(const std::string& key,
                                   const std::string& data) {
+  TRACE_EVENT0("gpu", "GrShaderCache::PopulateCache");
   if (data.length() > cache_size_limit_)
     return;
 
@@ -72,7 +74,9 @@ void GrShaderCache::PopulateCache(const std::string& key,
   // If we already have this in the cache, skia may have populated it before it
   // was loaded off the disk cache. Its better to keep the latest version
   // generated version than overwriting it here.
-  CacheKey cache_key(MakeData(key));
+  std::string decoded_key;
+  base::Base64Decode(key, &decoded_key);
+  CacheKey cache_key(MakeData(decoded_key));
   if (store_.Get(cache_key) != store_.end())
     return;
 
@@ -135,8 +139,10 @@ void GrShaderCache::WriteToDisk(const CacheKey& key, CacheData* data) {
     return;
 
   data->pending_disk_write = false;
-  client_->StoreShader(MakeString(key.data.get()),
-                       MakeString(data->data.get()));
+
+  std::string encoded_key;
+  base::Base64Encode(MakeString(key.data.get()), &encoded_key);
+  client_->StoreShader(encoded_key, MakeString(data->data.get()));
 }
 
 void GrShaderCache::EnforceLimits(size_t size_needed) {
