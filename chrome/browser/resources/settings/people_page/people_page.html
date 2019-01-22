@@ -94,7 +94,6 @@
 
 <if expr="not chromeos">
       #toast {
-        color: white;
         left: 0;
         z-index: 1;
       }
@@ -424,7 +423,7 @@
     </template>
 <if expr="not chromeos">
     <cr-toast duration="3000" id="toast">
-      $i18n{syncSettingsSavedToast}
+      <span>$i18n{syncSettingsSavedToast}</span>
     </cr-toast>
 </if>
   </template>
