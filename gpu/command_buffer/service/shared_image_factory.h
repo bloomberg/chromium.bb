@@ -102,6 +102,10 @@ class GPU_GLES2_EXPORT SharedImageRepresentationFactory {
                                    MemoryTracker* tracker);
   ~SharedImageRepresentationFactory();
 
+  bool IsSharedImage(const Mailbox& mailbox) const {
+    return manager_->IsSharedImage(mailbox);
+  }
+
   // Helpers which call similar classes on SharedImageManager, providing a
   // MemoryTypeTracker.
   std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(

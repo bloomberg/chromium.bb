@@ -438,18 +438,17 @@ sk_sp<SkPromiseImageTexture> SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
     const ResourceFormat resource_format,
     std::unique_ptr<gpu::SharedImageRepresentationSkia>* shared_image_out) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!*shared_image_out && mailbox_holder.mailbox.IsSharedImage()) {
+  if (!*shared_image_out && shared_image_representation_factory_->IsSharedImage(
+                                mailbox_holder.mailbox)) {
     std::unique_ptr<gpu::SharedImageRepresentationSkia> shared_image =
         shared_image_representation_factory_->ProduceSkia(
             mailbox_holder.mailbox);
-    if (!shared_image) {
-      DLOG(ERROR) << "Failed to fulfill the promise texture - SharedImage "
-                     "mailbox not found in SharedImageManager.";
-      return nullptr;
-    }
+    DCHECK(shared_image);
     *shared_image_out = std::move(shared_image);
   }
   if (*shared_image_out) {
+    DCHECK(shared_image_representation_factory_->IsSharedImage(
+        mailbox_holder.mailbox));
     auto promise_texture =
         (*shared_image_out)->BeginReadAccess(sk_surface_.get());
     DLOG_IF(ERROR, !promise_texture)
