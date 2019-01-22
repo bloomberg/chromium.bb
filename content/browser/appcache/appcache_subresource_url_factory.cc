@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/appcache_request_handler.h"
@@ -376,6 +377,11 @@ void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
             ->GetInitiatorSchemeBypassingDocumentBlocking();
     if (!scheme_exception ||
         request.request_initiator.value().scheme() != scheme_exception) {
+      static auto* initiator_origin_key = base::debug::AllocateCrashKeyString(
+          "initiator_origin", base::debug::CrashKeySize::Size64);
+      base::debug::SetCrashKeyString(
+          initiator_origin_key, request.request_initiator.value().Serialize());
+
       mojo::ReportBadMessage(
           "APPCACHE_SUBRESOURCE_URL_FACTORY_INVALID_INITIATOR");
       return;
