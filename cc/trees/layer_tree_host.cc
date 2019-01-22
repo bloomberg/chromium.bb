@@ -1293,14 +1293,8 @@ void LayerTreeHost::SetLocalSurfaceIdAllocationFromParent(
         local_surface_id_allocation_from_parent) {
   const viz::LocalSurfaceId& local_surface_id_from_parent =
       local_surface_id_allocation_from_parent.local_surface_id();
-  const viz::LocalSurfaceId& current_local_surface_id_from_parent =
+  const viz::LocalSurfaceId current_local_surface_id_from_parent =
       local_surface_id_allocation_from_parent_.local_surface_id();
-  if (current_local_surface_id_from_parent.parent_sequence_number() ==
-          local_surface_id_from_parent.parent_sequence_number() &&
-      current_local_surface_id_from_parent.embed_token() ==
-          local_surface_id_from_parent.embed_token()) {
-    return;
-  }
 
   // If the viz::LocalSurfaceId is valid but the allocation time is invalid then
   // this API is not being used correctly.
@@ -1314,9 +1308,24 @@ void LayerTreeHost::SetLocalSurfaceIdAllocationFromParent(
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
       "SetLocalSurfaceAllocationIdFromParent", "local_surface_id_allocation",
       local_surface_id_allocation_from_parent.ToString());
+  // Always update the cached state of the viz::LocalSurfaceId to reflect the
+  // latest value received from our parent.
   local_surface_id_allocation_from_parent_ =
       local_surface_id_allocation_from_parent;
   has_pushed_local_surface_id_from_parent_ = false;
+
+  // If the parent sequence number has not advanced, then there is no need to
+  // commit anything. This can occur when the child sequence number has
+  // advanced. Which means that child has changed visual properites, and the
+  // parent agreed upon these without needing to further advance its sequence
+  // number. When this occurs the child is already up-to-date and a commit here
+  // is simply redundant.
+  if (current_local_surface_id_from_parent.parent_sequence_number() ==
+          local_surface_id_from_parent.parent_sequence_number() &&
+      current_local_surface_id_from_parent.embed_token() ==
+          local_surface_id_from_parent.embed_token()) {
+    return;
+  }
   UpdateDeferMainFrameUpdateInternal();
   SetNeedsCommit();
 }

@@ -7925,15 +7925,8 @@ class LayerTreeHostTestLocalSurfaceIdSkipChildNum : public LayerTreeHostTest {
         allocator_.GetCurrentLocalSurfaceIdAllocation();
     EXPECT_TRUE(child_allocator_.UpdateFromParent(
         allocator_.GetCurrentLocalSurfaceIdAllocation()));
-    child_allocator_.GenerateId();
-    child_local_surface_id_allocation_ =
-        child_allocator_.GetCurrentLocalSurfaceIdAllocation();
-    EXPECT_NE(expected_local_surface_id_allocation_,
-              child_local_surface_id_allocation_);
     PostSetLocalSurfaceIdAllocationToMainThread(
         expected_local_surface_id_allocation_);
-    PostSetLocalSurfaceIdAllocationToMainThread(
-        child_local_surface_id_allocation_);
   }
 
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
@@ -7944,6 +7937,26 @@ class LayerTreeHostTestLocalSurfaceIdSkipChildNum : public LayerTreeHostTest {
     EXPECT_EQ(
         expected_local_surface_id_allocation_,
         host_impl->active_tree()->local_surface_id_allocation_from_parent());
+
+    // This initial test setup triggers a commit and subsequent draw. Upon the
+    // first draw, enqueue the second portion of the test. The newly pushed id,
+    // with an advanced child sequence number, but no change in parent sequence,
+    // should not trigger a commit. If it does, then PrepareToDrawOnThread will
+    // be called a second time, and the expectation upon viz::LocalSurfaceId
+    // will fail. We do not assert on frame number, as that interferes with
+    // returning from this method. We do not just have an expectation either,
+    // as then we would continuously increment that child sequence until the
+    // test times out.
+    if (!host_impl->active_tree()->source_frame_number()) {
+      child_allocator_.GenerateId();
+      child_local_surface_id_allocation_ =
+          child_allocator_.GetCurrentLocalSurfaceIdAllocation();
+      EXPECT_NE(expected_local_surface_id_allocation_,
+                child_local_surface_id_allocation_);
+      PostSetLocalSurfaceIdAllocationToMainThread(
+          child_local_surface_id_allocation_);
+    }
+
     return draw_result;
   }
 
