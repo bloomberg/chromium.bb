@@ -50,28 +50,41 @@ std::string GetOnboardingGroup() {
 bool IsNuxOnboardingEnabled(Profile* profile) {
   if (base::FeatureList::IsEnabled(nux::kNuxOnboardingForceEnabled)) {
     return true;
-  } else {
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-    // To avoid diluting data collection, existing users should not be assigned
-    // an onboarding group. So, |prefs::kNaviOnboardGroup| is used to
-    // short-circuit the feature checks below.
-    PrefService* prefs = profile->GetPrefs();
-    if (!prefs)
-      return false;
-
-    std::string onboard_group = prefs->GetString(prefs::kNaviOnboardGroup);
-
-    if (onboard_group.empty())
-      return false;
-
-    // TODO(hcarmona): Re-enable synthetic trial reporting when we know more
-    // about https://crbug.com/919705
-
-    return base::FeatureList::IsEnabled(nux::kNuxOnboardingFeature);
-#else
-    return false;
-#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   }
+
+#if defined(GOOGLE_CHROME_BUILD)
+
+#if defined(OS_MACOSX)
+  // TODO(hcarmona): don't enable if enterprise
+  return true;
+#endif  // defined(OS_WIN)
+
+#if defined(OS_WIN)
+  // To avoid diluting data collection, existing users should not be assigned
+  // an onboarding group. So, |prefs::kNaviOnboardGroup| is used to
+  // short-circuit the feature checks below.
+  PrefService* prefs = profile->GetPrefs();
+  if (!prefs) {
+    return false;
+  }
+
+  std::string onboard_group = prefs->GetString(prefs::kNaviOnboardGroup);
+
+  if (onboard_group.empty()) {
+    return false;
+  }
+
+  // TODO(hcarmona): Re-enable synthetic trial reporting when we know more
+  // about https://crbug.com/919705
+
+  if (base::FeatureList::IsEnabled(nux::kNuxOnboardingFeature)) {
+    return true;
+  }
+#endif  // defined(OS_WIN)
+
+#endif  // defined(GOOGLE_CHROME_BUILD)
+
+  return false;
 }
 
 base::DictionaryValue GetNuxOnboardingModules(Profile* profile) {
