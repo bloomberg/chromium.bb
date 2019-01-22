@@ -158,8 +158,9 @@
   },
   {
     "name": "ash-debug-shortcuts",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "//ash/OWNERS" ],
+    // Used by developers for debugging.
+    "expiry_milestone": -1
   },
   {
     "name": "ash-disable-login-dim-and-blur",
