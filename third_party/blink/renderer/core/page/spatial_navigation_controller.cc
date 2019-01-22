@@ -152,6 +152,34 @@ bool SpatialNavigationController::HandleArrowKeyboardEvent(
   return Advance(direction);
 }
 
+bool SpatialNavigationController::HandleEnterKeyboardEvent(
+    KeyboardEvent* event) {
+  DCHECK(page_->GetSettings().GetSpatialNavigationEnabled());
+
+  if (interest_element_) {
+    interest_element_->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
+                                         kWebFocusTypeSpatialNavigation,
+                                         nullptr));
+  }
+
+  return true;
+}
+
+bool SpatialNavigationController::HandleEscapeKeyboardEvent(
+    KeyboardEvent* event) {
+  DCHECK(page_->GetSettings().GetSpatialNavigationEnabled());
+
+  if (!interest_element_)
+    return false;
+
+  if (interest_element_->IsFocusedElementInDocument())
+    interest_element_->blur();
+  else
+    MoveInterestTo(nullptr);
+
+  return true;
+}
+
 Element* SpatialNavigationController::GetInterestedElement() const {
   if (RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled())
     return interest_element_;
@@ -293,7 +321,7 @@ bool SpatialNavigationController::AdvanceWithinContainer(
 
 Node* SpatialNavigationController::StartingNode() {
   if (RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled()) {
-    if (interest_element_) {
+    if (interest_element_ && interest_element_->GetDocument().GetFrame()) {
       // If an iframe is interested, start the search from its document node.
       // This matches the behavior in the focus case below where focusing a
       // frame means the focused document doesn't have a focused element and so
@@ -331,11 +359,12 @@ Node* SpatialNavigationController::StartingNode() {
 }
 
 void SpatialNavigationController::MoveInterestTo(Node* next_node) {
-  DCHECK(next_node->IsElementNode());
+  DCHECK(!next_node || next_node->IsElementNode());
   Element* element = ToElement(next_node);
 
   if (RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled()) {
     if (interest_element_) {
+      interest_element_->blur();
       interest_element_->SetNeedsStyleRecalc(
           kLocalStyleChange, StyleChangeReasonForTracing::Create(
                                  style_change_reason::kPseudoClass));
@@ -347,15 +376,18 @@ void SpatialNavigationController::MoveInterestTo(Node* next_node) {
       interest_element_->SetNeedsStyleRecalc(
           kLocalStyleChange, StyleChangeReasonForTracing::Create(
                                  style_change_reason::kPseudoClass));
+
+      LayoutObject* layout_object = interest_element_->GetLayoutObject();
+      DCHECK(layout_object);
+
+      layout_object->ScrollRectToVisible(
+          element->BoundingBoxForScrollIntoView(), WebScrollIntoViewParams());
     }
-
-    LayoutObject* layout_object = element->GetLayoutObject();
-    DCHECK(layout_object);
-
-    layout_object->ScrollRectToVisible(element->BoundingBoxForScrollIntoView(),
-                                       WebScrollIntoViewParams());
     return;
   }
+
+  if (!element)
+    return;
 
   // Before focusing the new element, check if we're leaving an iframe (= moving
   // focus out of an iframe). In this case, we want the exited [nested] iframes

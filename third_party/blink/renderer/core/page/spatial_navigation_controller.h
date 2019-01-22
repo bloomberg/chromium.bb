@@ -28,6 +28,8 @@ class CORE_EXPORT SpatialNavigationController
   SpatialNavigationController(Page& page);
 
   bool HandleArrowKeyboardEvent(KeyboardEvent* event);
+  bool HandleEnterKeyboardEvent(KeyboardEvent* event);
+  bool HandleEscapeKeyboardEvent(KeyboardEvent* event);
 
   // Returns the element that's currently interested. i.e. the Element that's
   // currently indicated to the user.
