@@ -1735,7 +1735,7 @@ void LocalFrame::PaintFrameColorOverlay() {
     return;
   frame_color_overlay_->Update();
   if (frame_color_overlay_->GetGraphicsLayer())
-    frame_color_overlay_->GetGraphicsLayer()->Paint(nullptr);
+    frame_color_overlay_->GetGraphicsLayer()->Paint();
 }
 
 void LocalFrame::PaintFrameColorOverlay(GraphicsContext& context) {

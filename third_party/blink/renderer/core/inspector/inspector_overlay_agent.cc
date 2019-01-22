@@ -605,7 +605,7 @@ void InspectorOverlayAgent::UpdateAllOverlayLifecyclePhases() {
 
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() && frame_overlay_ &&
       frame_overlay_->GetGraphicsLayer())
-    frame_overlay_->GetGraphicsLayer()->Paint(nullptr);
+    frame_overlay_->GetGraphicsLayer()->Paint();
 }
 
 void InspectorOverlayAgent::PaintOverlay(GraphicsContext& context) {

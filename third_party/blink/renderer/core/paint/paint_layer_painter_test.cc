@@ -206,8 +206,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnCullRectChange) {
   DisplayItemClient& content3 = *GetDisplayItemClientFromElementId("content3");
 
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  IntRect cull_rect(0, 0, 400, 300);
-  Paint(&cull_rect);
+  Paint(IntRect(0, 0, 400, 300));
 
   const auto& background_display_item_client = ViewScrollingBackgroundClient();
 
@@ -226,8 +225,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnCullRectChange) {
                           IsSameId(&content3, kBackgroundType)));
 
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  IntRect new_cull_rect(0, 100, 300, 1000);
-  EXPECT_TRUE(PaintWithoutCommit(&new_cull_rect));
+  EXPECT_TRUE(PaintWithoutCommit(IntRect(0, 100, 300, 1000)));
 
   // Container1 becomes partly in the interest rect, but uses cached subsequence
   // because it was fully painted before;
@@ -263,14 +261,12 @@ TEST_P(PaintLayerPainterTest,
 
   // |target| will be fully painted.
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  IntRect cull_rect(0, 0, 400, 300);
-  Paint(&cull_rect);
+  Paint(IntRect(0, 0, 400, 300));
 
   // |target| will be partially painted. Should not trigger under-invalidation
   // checking DCHECKs.
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  IntRect new_cull_rect(0, 100, 300, 1000);
-  Paint(&new_cull_rect);
+  Paint(IntRect(0, 100, 300, 1000));
 }
 
 TEST_P(PaintLayerPainterTest,
@@ -289,8 +285,7 @@ TEST_P(PaintLayerPainterTest,
   )HTML");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   // PaintResult of all subsequences will be MayBeClippedByCullRect.
-  IntRect cull_rect(0, 0, 50, 300);
-  Paint(&cull_rect);
+  Paint(IntRect(0, 0, 50, 300));
 
   DisplayItemClient& container1 =
       *GetDisplayItemClientFromElementId("container1");
@@ -313,7 +308,7 @@ TEST_P(PaintLayerPainterTest,
                      "position: absolute; width: 100px; height: 100px; "
                      "background-color: green");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  EXPECT_TRUE(PaintWithoutCommit(&cull_rect));
+  EXPECT_TRUE(PaintWithoutCommit(IntRect(0, 0, 50, 300)));
   EXPECT_EQ(4, NumCachedNewItems());
 
   CommitAndFinishCycle();

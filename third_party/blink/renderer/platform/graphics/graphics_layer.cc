@@ -301,7 +301,7 @@ void GraphicsLayer::PaintRecursively() {
 void GraphicsLayer::PaintRecursivelyInternal(
     Vector<GraphicsLayer*>& repainted_layers) {
   if (DrawsContent()) {
-    if (Paint(nullptr))
+    if (Paint())
       repainted_layers.push_back(this);
   }
 
@@ -314,8 +314,7 @@ void GraphicsLayer::PaintRecursivelyInternal(
     child->PaintRecursivelyInternal(repainted_layers);
 }
 
-bool GraphicsLayer::Paint(const IntRect* interest_rect,
-                          GraphicsContext::DisabledMode disabled_mode) {
+bool GraphicsLayer::Paint(GraphicsContext::DisabledMode disabled_mode) {
 #if !DCHECK_IS_ON()
   // TODO(crbug.com/853096): Investigate why we can ever reach here without
   // a valid layer state. Seems to only happen on Android builds.
@@ -323,7 +322,7 @@ bool GraphicsLayer::Paint(const IntRect* interest_rect,
     return false;
 #endif
 
-  if (PaintWithoutCommit(interest_rect, disabled_mode))
+  if (PaintWithoutCommit(disabled_mode))
     GetPaintController().CommitNewDisplayItems();
   else if (!needs_check_raster_invalidation_)
     return false;
@@ -360,9 +359,15 @@ bool GraphicsLayer::Paint(const IntRect* interest_rect,
   return true;
 }
 
+bool GraphicsLayer::PaintWithoutCommitForTesting(
+    const base::Optional<IntRect>& interest_rect) {
+  return PaintWithoutCommit(GraphicsContext::kNothingDisabled,
+                            base::OptionalOrNullptr(interest_rect));
+}
+
 bool GraphicsLayer::PaintWithoutCommit(
-    const IntRect* interest_rect,
-    GraphicsContext::DisabledMode disabled_mode) {
+    GraphicsContext::DisabledMode disabled_mode,
+    const IntRect* interest_rect) {
   DCHECK(DrawsContent());
 
   if (client_.ShouldThrottleRendering())
@@ -1099,7 +1104,7 @@ scoped_refptr<cc::DisplayItemList> GraphicsLayer::PaintContentsToDisplayList(
   // occurs in LocalFrameView::PaintTree() which calls GraphicsLayer::Paint();
   // this method merely copies the painted output to the cc::DisplayItemList.
   if (painting_control != PAINTING_BEHAVIOR_NORMAL)
-    Paint(nullptr, disabled_mode);
+    Paint(disabled_mode);
 
   auto display_list = base::MakeRefCounted<cc::DisplayItemList>();
 

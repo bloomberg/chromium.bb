@@ -252,8 +252,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   IntRect InterestRect();
   void PaintRecursively();
   // Returns true if this layer is repainted.
-  bool Paint(const IntRect* interest_rect,
-             GraphicsContext::DisabledMode = GraphicsContext::kNothingDisabled);
+  bool Paint(GraphicsContext::DisabledMode = GraphicsContext::kNothingDisabled);
 
   // cc::LayerClient implementation.
   std::unique_ptr<base::trace_event::TracedValue> TakeDebugInfo(
@@ -308,16 +307,18 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   bool HasScrollParent() const { return has_scroll_parent_; }
   bool HasClipParent() const { return has_clip_parent_; }
 
+  bool PaintWithoutCommitForTesting(
+      const base::Optional<IntRect>& interest_rect = base::nullopt);
+
  protected:
   String DebugName(cc::Layer*) const;
 
   explicit GraphicsLayer(GraphicsLayerClient&);
 
+ private:
   friend class CompositedLayerMappingTest;
-  friend class PaintControllerPaintTestBase;
   friend class GraphicsLayerTest;
 
- private:
   // cc::ContentLayerClient implementation.
   gfx::Rect PaintableRegion() final { return InterestRect(); }
   scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList(
@@ -327,10 +328,10 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   void PaintRecursivelyInternal(Vector<GraphicsLayer*>& repainted_layers);
 
-  // Returns true if PaintController::paintArtifact() changed and needs commit.
+  // Returns true if PaintController::PaintArtifact() changed and needs commit.
   bool PaintWithoutCommit(
-      const IntRect* interest_rect,
-      GraphicsContext::DisabledMode = GraphicsContext::kNothingDisabled);
+      GraphicsContext::DisabledMode = GraphicsContext::kNothingDisabled,
+      const IntRect* interest_rect = nullptr);
 
   // Adds a child without calling updateChildList(), so that adding children
   // can be batched before updating.
