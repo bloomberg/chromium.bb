@@ -23,7 +23,9 @@
 
   async_test(function (t) {
     self.performance.clearMeasures();
-    const measure = self.performance.measure("measure3", 1, 2);
+    self.performance.mark("1");
+    self.performance.mark("2");
+    const measure = self.performance.measure("measure3", "1", "2");
     assert_true(measure instanceof PerformanceMeasure);
     t.done();
   }, "L3: performance.measure(name, param1, param2) should return an entry.");
