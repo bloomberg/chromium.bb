@@ -253,7 +253,7 @@ SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
     : SchedulerWorkerPool(std::move(task_tracker), std::move(delegate)),
       pool_label_(pool_label.as_string()),
       priority_hint_(priority_hint),
-      lock_(shared_priority_queue_.container_lock()),
+      lock_(priority_queue_.container_lock()),
       idle_workers_stack_cv_for_testing_(lock_.CreateConditionVariable()),
       // Mimics the UMA_HISTOGRAM_LONG_TIMES macro.
       detach_duration_histogram_(Histogram::FactoryTimeGet(
@@ -397,7 +397,7 @@ void SchedulerWorkerPoolImpl::OnCanScheduleSequence(
 void SchedulerWorkerPoolImpl::PushSequenceToPriorityQueue(
     SequenceAndTransaction sequence_and_transaction) {
   DCHECK(sequence_and_transaction.sequence);
-  shared_priority_queue_.BeginTransaction().Push(
+  priority_queue_.BeginTransaction().Push(
       std::move(sequence_and_transaction.sequence),
       sequence_and_transaction.transaction.GetSortKey());
 }
@@ -456,7 +456,7 @@ void SchedulerWorkerPoolImpl::JoinForTesting() {
   join_for_testing_started_.Set();
 #endif
 
-  shared_priority_queue_.EnableFlushSequencesOnDestroyForTesting();
+  priority_queue_.EnableFlushSequencesOnDestroyForTesting();
 
   decltype(workers_) workers_copy;
   {
@@ -518,13 +518,12 @@ void SchedulerWorkerPoolImpl::UpdateSortKey(
   // TODO(fdoray): A worker should be woken up when the priority of a
   // BEST_EFFORT task is increased and |num_running_best_effort_tasks_| is
   // equal to |max_best_effort_tasks_|.
-  shared_priority_queue_.BeginTransaction().UpdateSortKey(
+  priority_queue_.BeginTransaction().UpdateSortKey(
       std::move(sequence_and_transaction));
 }
 
 bool SchedulerWorkerPoolImpl::RemoveSequence(scoped_refptr<Sequence> sequence) {
-  return shared_priority_queue_.BeginTransaction().RemoveSequence(
-      std::move(sequence));
+  return priority_queue_.BeginTransaction().RemoveSequence(std::move(sequence));
 }
 
 SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
@@ -629,17 +628,17 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
   }
   scoped_refptr<Sequence> sequence;
   {
-    auto transaction = outer_->shared_priority_queue_.BeginTransaction();
+    auto transaction = outer_->priority_queue_.BeginTransaction();
 
     if (transaction.IsEmpty()) {
       // |transaction| is kept alive while |worker| is added to
       // |idle_workers_stack_| to avoid this race:
-      // 1. This thread creates a Transaction, finds |shared_priority_queue_|
-      //    empty and ends the Transaction.
+      // 1. This thread creates a Transaction, finds |priority_queue_| empty and
+      //    ends the Transaction.
       // 2. Other thread creates a Transaction, inserts a Sequence into
-      //    |shared_priority_queue_| and ends the Transaction. This can't happen
-      //    if the Transaction of step 1 is still active because because there
-      //    can only be one active Transaction per PriorityQueue at a time.
+      //    |priority_queue_| and ends the Transaction. This can't happen if the
+      //    Transaction of step 1 is still active because there can only be one
+      //    active Transaction per PriorityQueue at a time.
       // 3. Other thread calls WakeUpOneWorker(). No thread is woken up because
       //    |idle_workers_stack_| is empty.
       // 4. This thread adds itself to |idle_workers_stack_| and goes to sleep.
@@ -914,7 +913,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::WillBlockEntered() {
   bool must_schedule_adjust_max_tasks = false;
   SchedulerWorkerStarter starter(outer_);
   {
-    auto transaction = outer_->shared_priority_queue_.BeginTransaction();
+    auto transaction = outer_->priority_queue_.BeginTransaction();
     AutoSchedulerLock auto_lock(outer_->lock_);
 
     DCHECK(!incremented_max_tasks_since_blocked_);
@@ -1060,7 +1059,7 @@ void SchedulerWorkerPoolImpl::AdjustMaxTasks() {
       after_start().service_thread_task_runner->RunsTasksInCurrentSequence());
 
   SchedulerWorkerStarter starter(tracked_ref_factory_.GetTrackedRef());
-  auto transaction = shared_priority_queue_.BeginTransaction();
+  auto transaction = priority_queue_.BeginTransaction();
   AutoSchedulerLock auto_lock(lock_);
 
   const size_t previous_max_tasks = max_tasks_;
