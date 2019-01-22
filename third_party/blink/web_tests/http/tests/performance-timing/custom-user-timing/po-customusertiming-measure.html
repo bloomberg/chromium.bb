@@ -57,7 +57,7 @@ Custom User Timing: measure
     self.performance.clearMeasures();
     observer.observe({ entryTypes: ["measure"] });
     self.performance.mark("mark1", { detail: { randomInfo: 3 }, startTime: timeStamp1 });
-    self.performance.mark("mark2", timeStamp2);
+    self.performance.mark("mark2", { startTime: timeStamp2 });
 
     const returnedEntries = [];
     returnedEntries.push(self.performance.measure("measure1"));

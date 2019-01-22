@@ -26,9 +26,9 @@
 #include "third_party/blink/renderer/core/timing/performance_user_timing.h"
 
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/bindings/core/v8/double_or_performance_mark_options.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/core/timing/performance_mark.h"
+#include "third_party/blink/renderer/core/timing/performance_mark_options.h"
 #include "third_party/blink/renderer/core/timing/performance_measure.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -100,30 +100,24 @@ static void ClearPeformanceEntries(PerformanceEntryMap& performance_entry_map,
     performance_entry_map.erase(name);
 }
 
-PerformanceMark* UserTiming::Mark(
-    ScriptState* script_state,
-    const AtomicString& mark_name,
-    DoubleOrPerformanceMarkOptions& start_time_or_mark_options,
-    ExceptionState& exception_state) {
+PerformanceMark* UserTiming::Mark(ScriptState* script_state,
+                                  const AtomicString& mark_name,
+                                  PerformanceMarkOptions* mark_options,
+                                  ExceptionState& exception_state) {
   if (!RuntimeEnabledFeatures::CustomUserTimingEnabled())
-    DCHECK(start_time_or_mark_options.IsNull());
+    DCHECK(!mark_options);
 
   DOMHighResTimeStamp start = 0.0;
-  if (start_time_or_mark_options.IsDouble()) {
-    start = start_time_or_mark_options.GetAsDouble();
-  } else if (start_time_or_mark_options.IsPerformanceMarkOptions() &&
-             start_time_or_mark_options.GetAsPerformanceMarkOptions()
-                 ->hasStartTime()) {
-    start =
-        start_time_or_mark_options.GetAsPerformanceMarkOptions()->startTime();
+  if (mark_options && mark_options->hasStartTime()) {
+    start = mark_options->startTime();
   } else {
     start = performance_->now();
   }
 
   // Pass in a null ScriptValue if the mark's detail doesn't exist.
   ScriptValue detail = ScriptValue::CreateNull(script_state);
-  if (start_time_or_mark_options.IsPerformanceMarkOptions())
-    detail = start_time_or_mark_options.GetAsPerformanceMarkOptions()->detail();
+  if (mark_options)
+    detail = mark_options->detail();
 
   return MarkInternal(script_state, mark_name, start, detail, exception_state);
 }
