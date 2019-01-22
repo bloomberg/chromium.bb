@@ -92,10 +92,7 @@ void IceTransportAdapterImpl::Start(
 
 void IceTransportAdapterImpl::HandleRemoteRestart(
     const cricket::IceParameters& new_remote_parameters) {
-  auto remote_candidates = p2p_transport_channel_->remote_candidates();
-  for (const auto& remote_candidate : remote_candidates) {
-    p2p_transport_channel_->RemoveRemoteCandidate(remote_candidate);
-  }
+  p2p_transport_channel_->RemoveAllRemoteCandidates();
   p2p_transport_channel_->SetRemoteIceParameters(new_remote_parameters);
 }
 
