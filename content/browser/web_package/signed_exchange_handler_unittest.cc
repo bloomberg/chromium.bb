@@ -92,7 +92,6 @@ class MockSignedExchangeCertFetcherFactory
   std::unique_ptr<SignedExchangeCertFetcher> CreateFetcherAndStart(
       const GURL& cert_url,
       bool force_fetch,
-      SignedExchangeVersion version,
       SignedExchangeCertFetcher::CertificateCallback callback,
       SignedExchangeDevToolsProxy* devtools_proxy) override {
     EXPECT_EQ(cert_url, expected_cert_url_);

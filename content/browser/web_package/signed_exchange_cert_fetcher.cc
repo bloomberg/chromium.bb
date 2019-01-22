@@ -74,7 +74,6 @@ SignedExchangeCertFetcher::CreateAndStart(
     const GURL& cert_url,
     url::Origin request_initiator,
     bool force_fetch,
-    SignedExchangeVersion version,
     CertificateCallback callback,
     SignedExchangeDevToolsProxy* devtools_proxy,
     const base::Optional<base::UnguessableToken>& throttling_profile_id) {
@@ -83,8 +82,8 @@ SignedExchangeCertFetcher::CreateAndStart(
   std::unique_ptr<SignedExchangeCertFetcher> cert_fetcher(
       new SignedExchangeCertFetcher(
           std::move(shared_url_loader_factory), std::move(throttles), cert_url,
-          std::move(request_initiator), force_fetch, version,
-          std::move(callback), devtools_proxy, throttling_profile_id));
+          std::move(request_initiator), force_fetch, std::move(callback),
+          devtools_proxy, throttling_profile_id));
   cert_fetcher->Start();
   return cert_fetcher;
 }
@@ -96,14 +95,12 @@ SignedExchangeCertFetcher::SignedExchangeCertFetcher(
     const GURL& cert_url,
     url::Origin request_initiator,
     bool force_fetch,
-    SignedExchangeVersion version,
     CertificateCallback callback,
     SignedExchangeDevToolsProxy* devtools_proxy,
     const base::Optional<base::UnguessableToken>& throttling_profile_id)
     : shared_url_loader_factory_(std::move(shared_url_loader_factory)),
       throttles_(std::move(throttles)),
       resource_request_(std::make_unique<network::ResourceRequest>()),
-      version_(version),
       callback_(std::move(callback)),
       devtools_proxy_(devtools_proxy) {
   // TODO(https://crbug.com/803774): Revisit more ResourceRequest flags.

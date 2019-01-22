@@ -34,7 +34,6 @@ class CONTENT_EXPORT SignedExchangeCertFetcherFactory {
   virtual std::unique_ptr<SignedExchangeCertFetcher> CreateFetcherAndStart(
       const GURL& cert_url,
       bool force_fetch,
-      SignedExchangeVersion version,
       SignedExchangeCertFetcher::CertificateCallback callback,
       SignedExchangeDevToolsProxy* devtools_proxy) = 0;
 

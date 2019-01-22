@@ -28,7 +28,6 @@ class SignedExchangeCertFetcherFactoryImpl
   std::unique_ptr<SignedExchangeCertFetcher> CreateFetcherAndStart(
       const GURL& cert_url,
       bool force_fetch,
-      SignedExchangeVersion version,
       SignedExchangeCertFetcher::CertificateCallback callback,
       SignedExchangeDevToolsProxy* devtools_proxy) override;
 
@@ -43,7 +42,6 @@ std::unique_ptr<SignedExchangeCertFetcher>
 SignedExchangeCertFetcherFactoryImpl::CreateFetcherAndStart(
     const GURL& cert_url,
     bool force_fetch,
-    SignedExchangeVersion version,
     SignedExchangeCertFetcher::CertificateCallback callback,
     SignedExchangeDevToolsProxy* devtools_proxy) {
   DCHECK(url_loader_factory_);
@@ -52,7 +50,7 @@ SignedExchangeCertFetcherFactoryImpl::CreateFetcherAndStart(
       std::move(url_loader_throttles_getter_).Run();
   return SignedExchangeCertFetcher::CreateAndStart(
       std::move(url_loader_factory_), std::move(throttles), cert_url,
-      std::move(request_initiator_), force_fetch, version, std::move(callback),
+      std::move(request_initiator_), force_fetch, std::move(callback),
       devtools_proxy, throttling_profile_id_);
 }
 
