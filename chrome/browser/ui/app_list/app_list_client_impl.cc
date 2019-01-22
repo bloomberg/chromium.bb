@@ -106,7 +106,7 @@ void AppListClientImpl::OpenSearchResult(const std::string& result_id,
           static_cast<app_list::AppResult*>(result)->app_id());
     }
 
-    app_launch_event_logger_.OnSuggestionChipClicked(result);
+    app_launch_event_logger_.OnSuggestionChipClicked(result_id);
   }
 }
 

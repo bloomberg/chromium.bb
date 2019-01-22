@@ -30,4 +30,8 @@ message AppLaunchEvent {
   optional string app_id = 3;
   // The location of the app. e.g. the 0th, 1st, 2nd, etc app in grid.
   optional int32 index = 4;
+  // The package name for PLAY apps.
+  optional string arc_package_name = 5;
+  // The URL for PWA apps.
+  optional string pwa_url = 6;
 }
