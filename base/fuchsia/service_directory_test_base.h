@@ -9,21 +9,13 @@
 
 #include "base/fuchsia/component_context.h"
 #include "base/fuchsia/scoped_service_binding.h"
+#include "base/fuchsia/test_interface_impl.h"
 #include "base/fuchsia/testfidl/cpp/fidl.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
 namespace fuchsia {
-
-class TestInterfaceImpl : public testfidl::TestInterface {
- public:
-  TestInterfaceImpl();
-  ~TestInterfaceImpl() override;
-
-  // TestInterface implementation.
-  void Add(int32_t a, int32_t b, AddCallback callback) override;
-};
 
 class ServiceDirectoryTestBase : public testing::Test {
  public:
