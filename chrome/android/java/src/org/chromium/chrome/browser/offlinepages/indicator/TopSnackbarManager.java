@@ -50,7 +50,7 @@ public class TopSnackbarManager
     }
 
     @Override
-    public void onControlsOffsetChanged(float topOffset, float bottomOffset, boolean needsAnimate) {
+    public void onControlsOffsetChanged(int topOffset, int bottomOffset, boolean needsAnimate) {
         // When the top toolbar offset changes, dismiss the top snackbar. Ideally we want to move
         // the top snackbar together with the top toolbar, but they can't be made sync because they
         // are drawn in different layers (C++ vs Android native).
@@ -61,7 +61,7 @@ public class TopSnackbarManager
     public void onBottomControlsHeightChanged(int bottomControlsHeight) {}
 
     @Override
-    public void onContentOffsetChanged(float offset) {}
+    public void onContentOffsetChanged(int offset) {}
 
     @Override
     public void onToggleOverlayVideoMode(boolean enabled) {}

@@ -78,7 +78,7 @@ public class BottomContainer
 
     // FullscreenListener methods
     @Override
-    public void onControlsOffsetChanged(float topOffset, float bottomOffset, boolean needsAnimate) {
+    public void onControlsOffsetChanged(int topOffset, int bottomOffset, boolean needsAnimate) {
         setTranslationY(mBaseYOffset);
     }
 
@@ -101,7 +101,7 @@ public class BottomContainer
     }
 
     @Override
-    public void onContentOffsetChanged(float offset) { }
+    public void onContentOffsetChanged(int offset) {}
 
     @Override
     public void onToggleOverlayVideoMode(boolean enabled) { }

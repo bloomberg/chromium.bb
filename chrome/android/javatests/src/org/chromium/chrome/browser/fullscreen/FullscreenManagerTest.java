@@ -288,10 +288,10 @@ public class FullscreenManagerTest {
         ChromeFullscreenManager.FullscreenListener fullscreenListener =
                 new ChromeFullscreenManager.FullscreenListener() {
                     @Override
-                    public void onContentOffsetChanged(float offset) {}
+                    public void onContentOffsetChanged(int offset) {}
                     @Override
                     public void onControlsOffsetChanged(
-                            float topOffset, float bottomOffset, boolean needsAnimate) {}
+                            int topOffset, int bottomOffset, boolean needsAnimate) {}
                     @Override
                     public void onToggleOverlayVideoMode(boolean enabled) {}
                     @Override
