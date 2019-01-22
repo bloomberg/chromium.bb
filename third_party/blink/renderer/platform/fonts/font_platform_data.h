@@ -31,8 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_PLATFORM_DATA_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_PLATFORM_DATA_H_
 
-#include "SkPaint.h"
-#include "SkTypeface.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/web_font_render_style.h"
@@ -46,6 +44,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "third_party/skia/include/core/SkFont.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 
@@ -159,7 +158,12 @@ class PLATFORM_EXPORT FontPlatformData {
                    const Font* = nullptr) const;
 
 #if defined(OS_WIN)
-  int PaintTextFlags() const { return paint_text_flags_; }
+  enum Flags {
+    kAntiAlias = 1 << 0,
+    kSubpixelsAntiAlias = 1 << 1,
+    kSubpixelMetrics = 1 << 2,
+  };
+  int FontFlags() const { return font_flags_; }
 #endif
 
  private:
@@ -194,8 +198,8 @@ class PLATFORM_EXPORT FontPlatformData {
   mutable scoped_refptr<HarfBuzzFace> harfbuzz_face_;
   bool is_hash_table_deleted_value_;
 #if defined(OS_WIN)
-  // TODO(https://crbug.com/808221): Replace |paint_text_flags_| with |style_|.
-  int paint_text_flags_;
+  // TODO(https://crbug.com/808221): Replace |font_flags_| with |style_|.
+  int font_flags_;
 #endif
 };
 
