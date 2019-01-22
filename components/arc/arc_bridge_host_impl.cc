@@ -46,6 +46,12 @@ void ArcBridgeHostImpl::OnAppInstanceReady(mojom::AppInstancePtr app_ptr) {
   OnInstanceReady(arc_bridge_service_->app(), std::move(app_ptr));
 }
 
+void ArcBridgeHostImpl::OnAppPermissionsInstanceReady(
+    mojom::AppPermissionsInstancePtr app_permissions_ptr) {
+  OnInstanceReady(arc_bridge_service_->app_permissions(),
+                  std::move(app_permissions_ptr));
+}
+
 void ArcBridgeHostImpl::OnAppfuseInstanceReady(
     mojom::AppfuseInstancePtr appfuse_ptr) {
   OnInstanceReady(arc_bridge_service_->appfuse(), std::move(appfuse_ptr));

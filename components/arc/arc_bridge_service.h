@@ -18,6 +18,7 @@ class AccessibilityHelperHost;
 class AccessibilityHelperInstance;
 class AppHost;
 class AppInstance;
+class AppPermissionsInstance;
 class AppfuseHost;
 class AppfuseInstance;
 class AudioHost;
@@ -107,6 +108,9 @@ class ArcBridgeService {
     return &accessibility_helper_;
   }
   ConnectionHolder<mojom::AppInstance, mojom::AppHost>* app() { return &app_; }
+  ConnectionHolder<mojom::AppPermissionsInstance>* app_permissions() {
+    return &app_permissions_;
+  }
   ConnectionHolder<mojom::AppfuseInstance, mojom::AppfuseHost>* appfuse() {
     return &appfuse_;
   }
@@ -240,6 +244,7 @@ class ArcBridgeService {
                    mojom::AccessibilityHelperHost>
       accessibility_helper_;
   ConnectionHolder<mojom::AppInstance, mojom::AppHost> app_;
+  ConnectionHolder<mojom::AppPermissionsInstance> app_permissions_;
   ConnectionHolder<mojom::AppfuseInstance, mojom::AppfuseHost> appfuse_;
   ConnectionHolder<mojom::AudioInstance, mojom::AudioHost> audio_;
   ConnectionHolder<mojom::AuthInstance, mojom::AuthHost> auth_;
