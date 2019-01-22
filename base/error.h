@@ -28,7 +28,7 @@ class Error {
     kCborInvalidMessage,
 
     // Presentation start errors.
-    kNoAvailableScreens,
+    kNoAvailableReceivers,
     kRequestCancelled,
     kNoPresentationFound,
     kPreviousStartInProgress,

@@ -41,19 +41,19 @@ UrlAvailabilityRequester::UrlAvailabilityRequester(std::unique_ptr<Clock> clock)
 UrlAvailabilityRequester::~UrlAvailabilityRequester() = default;
 
 void UrlAvailabilityRequester::AddObserver(const std::vector<std::string>& urls,
-                                           ScreenObserver* observer) {
+                                           ReceiverObserver* observer) {
   for (const auto& url : urls) {
     observers_by_url_[url].push_back(observer);
   }
-  for (auto& entry : screen_by_screen_id_) {
-    auto& screen = entry.second;
-    screen->GetOrRequesetAvailabilities(urls, observer);
+  for (auto& entry : receiver_by_service_id_) {
+    auto& receiver = entry.second;
+    receiver->GetOrRequesetAvailabilities(urls, observer);
   }
 }
 
 void UrlAvailabilityRequester::RemoveObserverUrls(
     const std::vector<std::string>& urls,
-    ScreenObserver* observer) {
+    ReceiverObserver* observer) {
   std::set<std::string> unobserved_urls;
   for (const auto& url : urls) {
     auto observer_entry = observers_by_url_.find(url);
@@ -63,21 +63,21 @@ void UrlAvailabilityRequester::RemoveObserverUrls(
     if (observers.empty()) {
       unobserved_urls.emplace(std::move(observer_entry->first));
       observers_by_url_.erase(observer_entry);
-      for (auto& entry : screen_by_screen_id_) {
-        auto& screen = entry.second;
-        screen->known_availability_by_url.erase(url);
+      for (auto& entry : receiver_by_service_id_) {
+        auto& receiver = entry.second;
+        receiver->known_availability_by_url.erase(url);
       }
     }
   }
 
-  for (auto& entry : screen_by_screen_id_) {
-    auto& screen = entry.second;
-    screen->RemoveUnobservedRequests(unobserved_urls);
-    screen->RemoveUnobservedWatches(unobserved_urls);
+  for (auto& entry : receiver_by_service_id_) {
+    auto& receiver = entry.second;
+    receiver->RemoveUnobservedRequests(unobserved_urls);
+    receiver->RemoveUnobservedWatches(unobserved_urls);
   }
 }
 
-void UrlAvailabilityRequester::RemoveObserver(ScreenObserver* observer) {
+void UrlAvailabilityRequester::RemoveObserver(ReceiverObserver* observer) {
   std::set<std::string> unobserved_urls;
   for (auto& entry : observers_by_url_) {
     auto& observer_list = entry.second;
@@ -89,75 +89,75 @@ void UrlAvailabilityRequester::RemoveObserver(ScreenObserver* observer) {
     }
   }
 
-  for (auto& entry : screen_by_screen_id_) {
-    auto& screen = entry.second;
-    screen->RemoveUnobservedRequests(unobserved_urls);
-    screen->RemoveUnobservedWatches(unobserved_urls);
+  for (auto& entry : receiver_by_service_id_) {
+    auto& receiver = entry.second;
+    receiver->RemoveUnobservedRequests(unobserved_urls);
+    receiver->RemoveUnobservedWatches(unobserved_urls);
   }
 }
 
-void UrlAvailabilityRequester::AddScreen(const ScreenInfo& info) {
-  auto result = screen_by_screen_id_.emplace(
-      info.screen_id,
-      MakeUnique<ScreenRequester>(
-          this, info.screen_id,
+void UrlAvailabilityRequester::AddReceiver(const ServiceInfo& info) {
+  auto result = receiver_by_service_id_.emplace(
+      info.service_id,
+      MakeUnique<ReceiverRequester>(
+          this, info.service_id,
           info.v4_endpoint.address ? info.v4_endpoint : info.v6_endpoint));
-  std::unique_ptr<ScreenRequester>& screen = result.first->second;
+  std::unique_ptr<ReceiverRequester>& receiver = result.first->second;
   std::vector<std::string> urls;
   urls.reserve(observers_by_url_.size());
   for (const auto& url : observers_by_url_)
     urls.push_back(url.first);
-  screen->RequestUrlAvailabilities(std::move(urls));
+  receiver->RequestUrlAvailabilities(std::move(urls));
 }
 
-void UrlAvailabilityRequester::ChangeScreen(const ScreenInfo& info) {}
+void UrlAvailabilityRequester::ChangeReceiver(const ServiceInfo& info) {}
 
-void UrlAvailabilityRequester::RemoveScreen(const ScreenInfo& info) {
-  auto screen_entry = screen_by_screen_id_.find(info.screen_id);
-  if (screen_entry != screen_by_screen_id_.end()) {
-    auto& screen = screen_entry->second;
-    screen->RemoveScreen();
-    screen_by_screen_id_.erase(screen_entry);
+void UrlAvailabilityRequester::RemoveReceiver(const ServiceInfo& info) {
+  auto receiver_entry = receiver_by_service_id_.find(info.service_id);
+  if (receiver_entry != receiver_by_service_id_.end()) {
+    auto& receiver = receiver_entry->second;
+    receiver->RemoveReceiver();
+    receiver_by_service_id_.erase(receiver_entry);
   }
 }
 
-void UrlAvailabilityRequester::RemoveAllScreens() {
-  for (auto& entry : screen_by_screen_id_) {
-    auto& screen = entry.second;
-    screen->RemoveScreen();
+void UrlAvailabilityRequester::RemoveAllReceivers() {
+  for (auto& entry : receiver_by_service_id_) {
+    auto& receiver = entry.second;
+    receiver->RemoveReceiver();
   }
-  screen_by_screen_id_.clear();
+  receiver_by_service_id_.clear();
 }
 
 platform::TimeDelta UrlAvailabilityRequester::RefreshWatches() {
   platform::TimeDelta now = clock_->Now();
   platform::TimeDelta minimum_schedule_time =
       platform::TimeDelta::FromSeconds(kWatchDurationSeconds);
-  for (auto& entry : screen_by_screen_id_) {
-    auto& screen = entry.second;
-    platform::TimeDelta requested_schedule_time = screen->RefreshWatches(now);
+  for (auto& entry : receiver_by_service_id_) {
+    auto& receiver = entry.second;
+    platform::TimeDelta requested_schedule_time = receiver->RefreshWatches(now);
     if (requested_schedule_time < minimum_schedule_time)
       minimum_schedule_time = requested_schedule_time;
   }
   return minimum_schedule_time;
 }
 
-UrlAvailabilityRequester::ScreenRequester::ScreenRequester(
+UrlAvailabilityRequester::ReceiverRequester::ReceiverRequester(
     UrlAvailabilityRequester* listener,
-    const std::string& screen_id,
+    const std::string& service_id,
     const IPEndpoint& endpoint)
     : listener(listener),
-      screen_id(screen_id),
+      service_id(service_id),
       connect_request(
           NetworkServiceManager::Get()->GetProtocolConnectionClient()->Connect(
               endpoint,
               this)) {}
 
-UrlAvailabilityRequester::ScreenRequester::~ScreenRequester() = default;
+UrlAvailabilityRequester::ReceiverRequester::~ReceiverRequester() = default;
 
-void UrlAvailabilityRequester::ScreenRequester::GetOrRequesetAvailabilities(
+void UrlAvailabilityRequester::ReceiverRequester::GetOrRequesetAvailabilities(
     const std::vector<std::string>& requested_urls,
-    ScreenObserver* observer) {
+    ReceiverObserver* observer) {
   std::vector<std::string> unknown_urls;
   for (const auto& url : requested_urls) {
     auto availability_entry = known_availability_by_url.find(url);
@@ -170,11 +170,11 @@ void UrlAvailabilityRequester::ScreenRequester::GetOrRequesetAvailabilities(
     if (observer) {
       switch (availability) {
         case msgs::kCompatible:
-          observer->OnScreenAvailable(url, screen_id);
+          observer->OnReceiverAvailable(url, service_id);
           break;
         case msgs::kNotCompatible:
         case msgs::kNotValid:
-          observer->OnScreenUnavailable(url, screen_id);
+          observer->OnReceiverUnavailable(url, service_id);
           break;
       }
     }
@@ -184,7 +184,7 @@ void UrlAvailabilityRequester::ScreenRequester::GetOrRequesetAvailabilities(
   }
 }
 
-void UrlAvailabilityRequester::ScreenRequester::RequestUrlAvailabilities(
+void UrlAvailabilityRequester::ReceiverRequester::RequestUrlAvailabilities(
     std::vector<std::string> urls) {
   if (urls.empty())
     return;
@@ -197,11 +197,11 @@ void UrlAvailabilityRequester::ScreenRequester::RequestUrlAvailabilities(
   } else {
     for (const auto& url : urls)
       for (auto& observer : listener->observers_by_url_[url])
-        observer->OnRequestFailed(url, screen_id);
+        observer->OnRequestFailed(url, service_id);
   }
 }
 
-ErrorOr<uint64_t> UrlAvailabilityRequester::ScreenRequester::SendRequest(
+ErrorOr<uint64_t> UrlAvailabilityRequester::ReceiverRequester::SendRequest(
     uint64_t request_id,
     const std::vector<std::string>& urls) {
   uint64_t watch_id = next_watch_id++;
@@ -242,7 +242,7 @@ ErrorOr<uint64_t> UrlAvailabilityRequester::ScreenRequester::SendRequest(
   return Error::Code::kCborEncoding;
 }
 
-platform::TimeDelta UrlAvailabilityRequester::ScreenRequester::RefreshWatches(
+platform::TimeDelta UrlAvailabilityRequester::ReceiverRequester::RefreshWatches(
     platform::TimeDelta now) {
   platform::TimeDelta minimum_schedule_time =
       platform::TimeDelta::FromSeconds(kWatchDurationSeconds);
@@ -270,7 +270,7 @@ platform::TimeDelta UrlAvailabilityRequester::ScreenRequester::RefreshWatches(
   return minimum_schedule_time;
 }
 
-void UrlAvailabilityRequester::ScreenRequester::UpdateAvailabilities(
+void UrlAvailabilityRequester::ReceiverRequester::UpdateAvailabilities(
     const std::vector<std::string>& urls,
     const std::vector<msgs::PresentationUrlAvailability>& availabilities) {
   auto availability_it = availabilities.begin();
@@ -278,7 +278,7 @@ void UrlAvailabilityRequester::ScreenRequester::UpdateAvailabilities(
     auto observer_entry = listener->observers_by_url_.find(url);
     if (observer_entry == listener->observers_by_url_.end())
       continue;
-    std::vector<ScreenObserver*>& observers = observer_entry->second;
+    std::vector<ReceiverObserver*>& observers = observer_entry->second;
     auto result = known_availability_by_url.emplace(url, *availability_it);
     auto entry = result.first;
     bool inserted = result.second;
@@ -287,12 +287,12 @@ void UrlAvailabilityRequester::ScreenRequester::UpdateAvailabilities(
       switch (*availability_it) {
         case msgs::kCompatible:
           for (auto* observer : observers)
-            observer->OnScreenAvailable(url, screen_id);
+            observer->OnReceiverAvailable(url, service_id);
           break;
         case msgs::kNotCompatible:
         case msgs::kNotValid:
           for (auto* observer : observers)
-            observer->OnScreenUnavailable(url, screen_id);
+            observer->OnReceiverUnavailable(url, service_id);
           break;
         default:
           break;
@@ -302,7 +302,7 @@ void UrlAvailabilityRequester::ScreenRequester::UpdateAvailabilities(
   }
 }
 
-void UrlAvailabilityRequester::ScreenRequester::RemoveUnobservedRequests(
+void UrlAvailabilityRequester::ReceiverRequester::RemoveUnobservedRequests(
     const std::set<std::string>& unobserved_urls) {
   std::map<uint64_t, Request> new_requests;
   std::set<std::string> still_observed_urls;
@@ -330,7 +330,7 @@ void UrlAvailabilityRequester::ScreenRequester::RemoveUnobservedRequests(
     } else {
       for (const auto& url : urls)
         for (auto& observer : listener->observers_by_url_[url])
-          observer->OnRequestFailed(url, screen_id);
+          observer->OnRequestFailed(url, service_id);
     }
   }
 
@@ -341,7 +341,7 @@ void UrlAvailabilityRequester::ScreenRequester::RemoveUnobservedRequests(
     StopWatching(&response_watch);
 }
 
-void UrlAvailabilityRequester::ScreenRequester::RemoveUnobservedWatches(
+void UrlAvailabilityRequester::ReceiverRequester::RemoveUnobservedWatches(
     const std::set<std::string>& unobserved_urls) {
   std::set<std::string> still_observed_urls;
   for (auto entry = watch_by_id.begin(); entry != watch_by_id.end();) {
@@ -366,17 +366,17 @@ void UrlAvailabilityRequester::ScreenRequester::RemoveUnobservedWatches(
     StopWatching(&event_watch);
 }
 
-void UrlAvailabilityRequester::ScreenRequester::RemoveScreen() {
+void UrlAvailabilityRequester::ReceiverRequester::RemoveReceiver() {
   for (const auto& availability : known_availability_by_url) {
     if (availability.second == msgs::kCompatible) {
       const std::string& url = availability.first;
       for (auto& observer : listener->observers_by_url_[url])
-        observer->OnScreenUnavailable(url, screen_id);
+        observer->OnReceiverUnavailable(url, service_id);
     }
   }
 }
 
-void UrlAvailabilityRequester::ScreenRequester::OnConnectionOpened(
+void UrlAvailabilityRequester::ReceiverRequester::OnConnectionOpened(
     uint64_t request_id,
     std::unique_ptr<ProtocolConnection>&& connection) {
   connect_request.MarkComplete();
@@ -396,7 +396,7 @@ void UrlAvailabilityRequester::ScreenRequester::OnConnectionOpened(
   }
 }
 
-void UrlAvailabilityRequester::ScreenRequester::OnConnectionFailed(
+void UrlAvailabilityRequester::ReceiverRequester::OnConnectionFailed(
     uint64_t request_id) {
   connect_request.MarkComplete();
 
@@ -409,13 +409,13 @@ void UrlAvailabilityRequester::ScreenRequester::OnConnectionFailed(
   }
   for (const auto& url : waiting_urls)
     for (auto& observer : listener->observers_by_url_[url])
-      observer->OnRequestFailed(url, screen_id);
+      observer->OnRequestFailed(url, service_id);
 
-  std::string id = std::move(screen_id);
-  listener->screen_by_screen_id_.erase(id);
+  std::string id = std::move(service_id);
+  listener->receiver_by_service_id_.erase(id);
 }
 
-ErrorOr<size_t> UrlAvailabilityRequester::ScreenRequester::OnStreamMessage(
+ErrorOr<size_t> UrlAvailabilityRequester::ReceiverRequester::OnStreamMessage(
     uint64_t endpoint_id,
     uint64_t connection_id,
     msgs::Type message_type,

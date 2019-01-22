@@ -13,8 +13,8 @@
 #include <vector>
 
 #include "api/impl/mdns_platform_service.h"
-#include "api/impl/screen_listener_impl.h"
-#include "api/impl/screen_publisher_impl.h"
+#include "api/impl/service_listener_impl.h"
+#include "api/impl/service_publisher_impl.h"
 #include "base/ip_address.h"
 #include "discovery/mdns/mdns_responder_adapter.h"
 #include "platform/api/network_interface.h"
@@ -29,8 +29,8 @@ class MdnsResponderAdapterFactory {
   virtual std::unique_ptr<mdns::MdnsResponderAdapter> Create() = 0;
 };
 
-class MdnsResponderService final : public ScreenListenerImpl::Delegate,
-                                   public ScreenPublisherImpl::Delegate {
+class MdnsResponderService final : public ServiceListenerImpl::Delegate,
+                                   public ServicePublisherImpl::Delegate {
  public:
   explicit MdnsResponderService(
       const std::string& service_name,
@@ -48,15 +48,15 @@ class MdnsResponderService final : public ScreenListenerImpl::Delegate,
 
   void HandleNewEvents(const std::vector<platform::ReceivedData>& data);
 
-  // ScreenListenerImpl::Delegate overrides.
+  // ServiceListenerImpl::Delegate overrides.
   void StartListener() override;
   void StartAndSuspendListener() override;
   void StopListener() override;
   void SuspendListener() override;
   void ResumeListener() override;
-  void SearchNow(ScreenListener::State from) override;
+  void SearchNow(ServiceListener::State from) override;
 
-  // ScreenPublisherImpl::Delegate overrides.
+  // ServicePublisherImpl::Delegate overrides.
   void StartPublisher() override;
   void StartAndSuspendPublisher() override;
   void StopPublisher() override;
@@ -102,9 +102,9 @@ class MdnsResponderService final : public ScreenListenerImpl::Delegate,
   void StartService();
   void StopService();
   void StopMdnsResponder();
-  void UpdatePendingScreenInfoSet(InstanceNameSet* modified_instance_names,
-                                  const mdns::DomainName& domain_name);
-  void RemoveAllScreens();
+  void UpdatePendingServiceInfoSet(InstanceNameSet* modified_instance_names,
+                                   const mdns::DomainName& domain_name);
+  void RemoveAllReceivers();
 
   // NOTE: |modified_instance_names| is used to track which service instances
   // are modified by the record events.  See HandleMdnsEvents for more details.
@@ -167,7 +167,7 @@ class MdnsResponderService final : public ScreenListenerImpl::Delegate,
   std::map<NetworkScopedDomainName, HostInfo, NetworkScopedDomainNameComparator>
       network_scoped_domain_to_host_;
 
-  std::map<std::string, ScreenInfo> screen_info_;
+  std::map<std::string, ServiceInfo> receiver_info_;
 };
 
 }  // namespace openscreen

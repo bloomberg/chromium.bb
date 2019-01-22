@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef API_PUBLIC_SCREEN_PUBLISHER_H_
-#define API_PUBLIC_SCREEN_PUBLISHER_H_
+#ifndef API_PUBLIC_SERVICE_PUBLISHER_H_
+#define API_PUBLIC_SERVICE_PUBLISHER_H_
 
 #include <cstdint>
 #include <string>
@@ -15,25 +15,25 @@
 
 namespace openscreen {
 
-// Used to report an error from a ScreenListener implementation.
-struct ScreenPublisherError {
+// Used to report an error from a ServiceListener implementation.
+struct ServicePublisherError {
   // TODO(mfoltz): Add additional error types, as implementations progress.
   enum class Code {
     kNone = 0,
   };
 
-  ScreenPublisherError();
-  ScreenPublisherError(Code error, const std::string& message);
-  ScreenPublisherError(const ScreenPublisherError& other);
-  ~ScreenPublisherError();
+  ServicePublisherError();
+  ServicePublisherError(Code error, const std::string& message);
+  ServicePublisherError(const ServicePublisherError& other);
+  ~ServicePublisherError();
 
-  ScreenPublisherError& operator=(const ScreenPublisherError& other);
+  ServicePublisherError& operator=(const ServicePublisherError& other);
 
   Code error;
   std::string message;
 };
 
-class ScreenPublisher {
+class ServicePublisher {
  public:
   enum class State {
     kStopped = 0,
@@ -73,7 +73,7 @@ class ScreenPublisher {
     virtual void OnSuspended() = 0;
 
     // Reports an error.
-    virtual void OnError(ScreenPublisherError) = 0;
+    virtual void OnError(ServicePublisherError) = 0;
 
     // Reports metrics.
     virtual void OnMetrics(Metrics) = 0;
@@ -83,7 +83,8 @@ class ScreenPublisher {
     Config();
     ~Config();
 
-    // The human readable friendly name of the screen being published in UTF-8.
+    // The human readable friendly name of the service being published in
+    // UTF-8.
     std::string friendly_name;
 
     // The DNS hostname (as a single label) that should be used to advertise the
@@ -98,7 +99,7 @@ class ScreenPublisher {
 
     // The port where openscreen connections are accepted.
     // Normally this should not be set, and must be identical to the port
-    // configured in the ScreenConnectionServer.
+    // configured in the ProtocolConnectionServer.
     uint16_t connection_server_port = 0;
 
     // A list of network interface names that the publisher should use.
@@ -108,26 +109,26 @@ class ScreenPublisher {
     std::vector<platform::NetworkInterfaceIndex> network_interface_indices;
   };
 
-  virtual ~ScreenPublisher();
+  virtual ~ServicePublisher();
 
-  // Starts publishing this screen using the config object.
+  // Starts publishing this service using the config object.
   // Returns true if state() == kStopped and the service will be started, false
   // otherwise.
   virtual bool Start() = 0;
 
-  // Starts publishing this screen, but then immediately suspends the publisher.
-  // No announcements will be sent until Resume() is called.
-  // Returns true if state() == kStopped and the service will be started, false
+  // Starts publishing this service, but then immediately suspends the
+  // publisher. No announcements will be sent until Resume() is called. Returns
+  // true if state() == kStopped and the service will be started, false
   // otherwise.
   virtual bool StartAndSuspend() = 0;
 
-  // Stops publishing this screen.
+  // Stops publishing this service.
   // Returns true if state() != (kStopped|kStopping).
   virtual bool Stop() = 0;
 
-  // Suspends publishing, for example, if the screen is in a power saving mode.
-  // Returns true if state() == (kRunning|kStarting), meaning the suspension
-  // will take effect.
+  // Suspends publishing, for example, if the service is in a power saving
+  // mode. Returns true if state() == (kRunning|kStarting), meaning the
+  // suspension will take effect.
   virtual bool Suspend() = 0;
 
   // Resumes publishing.  Returns true if state() == kSuspended.
@@ -137,18 +138,18 @@ class ScreenPublisher {
   State state() const { return state_; }
 
   // Returns the last error reported by this publisher.
-  ScreenPublisherError last_error() const { return last_error_; }
+  ServicePublisherError last_error() const { return last_error_; }
 
  protected:
-  explicit ScreenPublisher(Observer* observer);
+  explicit ServicePublisher(Observer* observer);
 
   State state_ = State::kStopped;
-  ScreenPublisherError last_error_;
+  ServicePublisherError last_error_;
   Observer* observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScreenPublisher);
+  DISALLOW_COPY_AND_ASSIGN(ServicePublisher);
 };
 
 }  // namespace openscreen
 
-#endif  // API_PUBLIC_SCREEN_PUBLISHER_H_
+#endif  // API_PUBLIC_SERVICE_PUBLISHER_H_

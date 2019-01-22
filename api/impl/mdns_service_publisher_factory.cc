@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "api/public/mdns_screen_publisher_factory.h"
+#include "api/public/mdns_service_publisher_factory.h"
 
 #include "api/impl/internal_services.h"
 
 namespace openscreen {
 
 // static
-std::unique_ptr<ScreenPublisher> MdnsScreenPublisherFactory::Create(
-    const ScreenPublisher::Config& config,
-    ScreenPublisher::Observer* observer) {
+std::unique_ptr<ServicePublisher> MdnsServicePublisherFactory::Create(
+    const ServicePublisher::Config& config,
+    ServicePublisher::Observer* observer) {
   return InternalServices::CreatePublisher(config, observer);
 }
 

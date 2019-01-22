@@ -35,8 +35,8 @@ std::string Error::CodeToString(Error::Code code) {
       return "None";
     case Error::Code::kCborParsing:
       return "CborParsingError";
-    case Error::Code::kNoAvailableScreens:
-      return "NoAvailableScreens";
+    case Error::Code::kNoAvailableReceivers:
+      return "NoAvailableReceivers";
     case Error::Code::kRequestCancelled:
       return "RequestCancelled";
     case Error::Code::kNoPresentationFound:

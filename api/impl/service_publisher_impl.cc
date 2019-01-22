@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "api/impl/screen_publisher_impl.h"
+#include "api/impl/service_publisher_impl.h"
 
 #include "platform/api/logging.h"
 
@@ -10,8 +10,9 @@ namespace openscreen {
 namespace {
 
 #if OSP_DCHECK_IS_ON()
-bool IsTransitionValid(ScreenPublisher::State from, ScreenPublisher::State to) {
-  using State = ScreenPublisher::State;
+bool IsTransitionValid(ServicePublisher::State from,
+                       ServicePublisher::State to) {
+  using State = ServicePublisher::State;
   switch (from) {
     case State::kStopped:
       return to == State::kStarting || to == State::kStopping;
@@ -34,37 +35,38 @@ bool IsTransitionValid(ScreenPublisher::State from, ScreenPublisher::State to) {
 
 }  // namespace
 
-ScreenPublisherImpl::Delegate::Delegate() = default;
-ScreenPublisherImpl::Delegate::~Delegate() = default;
+ServicePublisherImpl::Delegate::Delegate() = default;
+ServicePublisherImpl::Delegate::~Delegate() = default;
 
-void ScreenPublisherImpl::Delegate::SetPublisherImpl(
-    ScreenPublisherImpl* publisher) {
+void ServicePublisherImpl::Delegate::SetPublisherImpl(
+    ServicePublisherImpl* publisher) {
   OSP_DCHECK(!publisher_);
   publisher_ = publisher;
 }
 
-ScreenPublisherImpl::ScreenPublisherImpl(Observer* observer, Delegate* delegate)
-    : ScreenPublisher(observer), delegate_(delegate) {
+ServicePublisherImpl::ServicePublisherImpl(Observer* observer,
+                                           Delegate* delegate)
+    : ServicePublisher(observer), delegate_(delegate) {
   delegate_->SetPublisherImpl(this);
 }
 
-ScreenPublisherImpl::~ScreenPublisherImpl() = default;
+ServicePublisherImpl::~ServicePublisherImpl() = default;
 
-bool ScreenPublisherImpl::Start() {
+bool ServicePublisherImpl::Start() {
   if (state_ != State::kStopped)
     return false;
   state_ = State::kStarting;
   delegate_->StartPublisher();
   return true;
 }
-bool ScreenPublisherImpl::StartAndSuspend() {
+bool ServicePublisherImpl::StartAndSuspend() {
   if (state_ != State::kStopped)
     return false;
   state_ = State::kStarting;
   delegate_->StartAndSuspendPublisher();
   return true;
 }
-bool ScreenPublisherImpl::Stop() {
+bool ServicePublisherImpl::Stop() {
   if (state_ == State::kStopped || state_ == State::kStopping)
     return false;
 
@@ -72,14 +74,14 @@ bool ScreenPublisherImpl::Stop() {
   delegate_->StopPublisher();
   return true;
 }
-bool ScreenPublisherImpl::Suspend() {
+bool ServicePublisherImpl::Suspend() {
   if (state_ != State::kRunning && state_ != State::kStarting)
     return false;
 
   delegate_->SuspendPublisher();
   return true;
 }
-bool ScreenPublisherImpl::Resume() {
+bool ServicePublisherImpl::Resume() {
   if (state_ != State::kSuspended)
     return false;
 
@@ -87,14 +89,14 @@ bool ScreenPublisherImpl::Resume() {
   return true;
 }
 
-void ScreenPublisherImpl::SetState(State state) {
+void ServicePublisherImpl::SetState(State state) {
   OSP_DCHECK(IsTransitionValid(state_, state));
   state_ = state;
   if (observer_)
     MaybeNotifyObserver();
 }
 
-void ScreenPublisherImpl::MaybeNotifyObserver() {
+void ServicePublisherImpl::MaybeNotifyObserver() {
   OSP_DCHECK(observer_);
   switch (state_) {
     case State::kRunning:

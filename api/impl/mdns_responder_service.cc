@@ -15,13 +15,13 @@ namespace {
 
 // TODO(btolsch): This should probably at least also contain network identity
 // information.
-std::string ScreenIdFromServiceInstanceName(
+std::string ServiceIdFromServiceInstanceName(
     const mdns::DomainName& service_instance) {
-  std::string screen_id;
-  screen_id.assign(
+  std::string service_id;
+  service_id.assign(
       reinterpret_cast<const char*>(service_instance.domain_name().data()),
       service_instance.domain_name().size());
-  return screen_id;
+  return service_id;
 }
 
 }  // namespace
@@ -72,37 +72,37 @@ void MdnsResponderService::StartListener() {
     mdns_responder_ = mdns_responder_factory_->Create();
 
   StartListening();
-  ScreenListenerImpl::Delegate::SetState(ScreenListener::State::kRunning);
+  ServiceListenerImpl::Delegate::SetState(ServiceListener::State::kRunning);
 }
 
 void MdnsResponderService::StartAndSuspendListener() {
   mdns_responder_ = mdns_responder_factory_->Create();
-  ScreenListenerImpl::Delegate::SetState(ScreenListener::State::kSuspended);
+  ServiceListenerImpl::Delegate::SetState(ServiceListener::State::kSuspended);
 }
 
 void MdnsResponderService::StopListener() {
   StopListening();
-  if (!publisher_ || publisher_->state() == ScreenPublisher::State::kStopped ||
-      publisher_->state() == ScreenPublisher::State::kSuspended) {
+  if (!publisher_ || publisher_->state() == ServicePublisher::State::kStopped ||
+      publisher_->state() == ServicePublisher::State::kSuspended) {
     StopMdnsResponder();
-    if (!publisher_ || publisher_->state() == ScreenPublisher::State::kStopped)
+    if (!publisher_ || publisher_->state() == ServicePublisher::State::kStopped)
       mdns_responder_.reset();
   }
-  ScreenListenerImpl::Delegate::SetState(ScreenListener::State::kStopped);
+  ServiceListenerImpl::Delegate::SetState(ServiceListener::State::kStopped);
 }
 
 void MdnsResponderService::SuspendListener() {
   StopMdnsResponder();
-  ScreenListenerImpl::Delegate::SetState(ScreenListener::State::kSuspended);
+  ServiceListenerImpl::Delegate::SetState(ServiceListener::State::kSuspended);
 }
 
 void MdnsResponderService::ResumeListener() {
   StartListening();
-  ScreenListenerImpl::Delegate::SetState(ScreenListener::State::kRunning);
+  ServiceListenerImpl::Delegate::SetState(ServiceListener::State::kRunning);
 }
 
-void MdnsResponderService::SearchNow(ScreenListener::State from) {
-  ScreenListenerImpl::Delegate::SetState(from);
+void MdnsResponderService::SearchNow(ServiceListener::State from) {
+  ServiceListenerImpl::Delegate::SetState(from);
 }
 
 void MdnsResponderService::StartPublisher() {
@@ -110,33 +110,33 @@ void MdnsResponderService::StartPublisher() {
     mdns_responder_ = mdns_responder_factory_->Create();
 
   StartService();
-  ScreenPublisherImpl::Delegate::SetState(ScreenPublisher::State::kRunning);
+  ServicePublisherImpl::Delegate::SetState(ServicePublisher::State::kRunning);
 }
 
 void MdnsResponderService::StartAndSuspendPublisher() {
   mdns_responder_ = mdns_responder_factory_->Create();
-  ScreenPublisherImpl::Delegate::SetState(ScreenPublisher::State::kSuspended);
+  ServicePublisherImpl::Delegate::SetState(ServicePublisher::State::kSuspended);
 }
 
 void MdnsResponderService::StopPublisher() {
   StopService();
-  if (!listener_ || listener_->state() == ScreenListener::State::kStopped ||
-      listener_->state() == ScreenListener::State::kSuspended) {
+  if (!listener_ || listener_->state() == ServiceListener::State::kStopped ||
+      listener_->state() == ServiceListener::State::kSuspended) {
     StopMdnsResponder();
-    if (!listener_ || listener_->state() == ScreenListener::State::kStopped)
+    if (!listener_ || listener_->state() == ServiceListener::State::kStopped)
       mdns_responder_.reset();
   }
-  ScreenPublisherImpl::Delegate::SetState(ScreenPublisher::State::kStopped);
+  ServicePublisherImpl::Delegate::SetState(ServicePublisher::State::kStopped);
 }
 
 void MdnsResponderService::SuspendPublisher() {
   StopService();
-  ScreenPublisherImpl::Delegate::SetState(ScreenPublisher::State::kSuspended);
+  ServicePublisherImpl::Delegate::SetState(ServicePublisher::State::kSuspended);
 }
 
 void MdnsResponderService::ResumePublisher() {
   StartService();
-  ScreenPublisherImpl::Delegate::SetState(ScreenPublisher::State::kRunning);
+  ServicePublisherImpl::Delegate::SetState(ServicePublisher::State::kRunning);
 }
 
 bool MdnsResponderService::NetworkScopedDomainNameComparator::operator()(
@@ -158,8 +158,9 @@ void MdnsResponderService::HandleMdnsEvents() {
   bool events_possible = false;
   // NOTE: This set will track which service instances were changed by all the
   // events throughout all the loop iterations.  At the end, we can dispatch our
-  // ScreenInfo updates to |listener_| just once (e.g. instead of
-  // OnScreenChanged, OnScreenChanged, ..., just a single OnScreenChanged).
+  // ServiceInfo updates to |listener_| just once (e.g. instead of
+  // OnReceiverChanged, OnReceiverChanged, ..., just a single
+  // OnReceiverChanged).
   InstanceNameSet modified_instance_names;
   do {
     events_possible = false;
@@ -191,14 +192,14 @@ void MdnsResponderService::HandleMdnsEvents() {
     auto service_entry = service_by_name_.find(instance_name);
     std::unique_ptr<ServiceInstance>& service = service_entry->second;
 
-    std::string screen_id = ScreenIdFromServiceInstanceName(instance_name);
-    auto screen_info_entry = screen_info_.find(screen_id);
+    std::string service_id = ServiceIdFromServiceInstanceName(instance_name);
+    auto receiver_info_entry = receiver_info_.find(service_id);
     HostInfo* host = GetHostInfo(service->ptr_socket, service->domain_name);
     if (!IsServiceReady(*service, host)) {
-      if (screen_info_entry != screen_info_.end()) {
-        const ScreenInfo& screen_info = screen_info_entry->second;
-        listener_->OnScreenRemoved(screen_info);
-        screen_info_.erase(screen_info_entry);
+      if (receiver_info_entry != receiver_info_.end()) {
+        const ServiceInfo& receiver_info = receiver_info_entry->second;
+        listener_->OnReceiverRemoved(receiver_info);
+        receiver_info_.erase(receiver_info_entry);
       }
       if (!service->has_ptr_record && !service->has_srv())
         service_by_name_.erase(service_entry);
@@ -208,23 +209,24 @@ void MdnsResponderService::HandleMdnsEvents() {
     // TODO(btolsch): Verify UTF-8 here.
     std::string friendly_name = instance_name.GetLabels()[0];
 
-    if (screen_info_entry == screen_info_.end()) {
-      ScreenInfo screen_info{
-          std::move(screen_id),
+    if (receiver_info_entry == receiver_info_.end()) {
+      ServiceInfo receiver_info{
+          std::move(service_id),
           std::move(friendly_name),
           GetNetworkInterfaceIndexFromSocket(service->ptr_socket),
           {host->v4_address, service->port},
           {host->v6_address, service->port}};
-      listener_->OnScreenAdded(screen_info);
-      screen_info_.emplace(screen_info.screen_id, std::move(screen_info));
+      listener_->OnReceiverAdded(receiver_info);
+      receiver_info_.emplace(receiver_info.service_id,
+                             std::move(receiver_info));
     } else {
-      ScreenInfo& screen_info = screen_info_entry->second;
-      if (screen_info.Update(
+      ServiceInfo& receiver_info = receiver_info_entry->second;
+      if (receiver_info.Update(
               std::move(friendly_name),
               GetNetworkInterfaceIndexFromSocket(service->ptr_socket),
               {host->v4_address, service->port},
               {host->v6_address, service->port})) {
-        listener_->OnScreenChanged(screen_info);
+        listener_->OnReceiverChanged(receiver_info);
       }
     }
   }
@@ -267,7 +269,7 @@ void MdnsResponderService::StopListening() {
   service_by_name_.clear();
   for (const auto& interface : bound_interfaces_)
     mdns_responder_->StopPtrQuery(interface.socket, service_type);
-  RemoveAllScreens();
+  RemoveAllReceivers();
 }
 
 void MdnsResponderService::StartService() {
@@ -317,10 +319,10 @@ void MdnsResponderService::StopMdnsResponder() {
   bound_interfaces_.clear();
   network_scoped_domain_to_host_.clear();
   service_by_name_.clear();
-  RemoveAllScreens();
+  RemoveAllReceivers();
 }
 
-void MdnsResponderService::UpdatePendingScreenInfoSet(
+void MdnsResponderService::UpdatePendingServiceInfoSet(
     InstanceNameSet* modified_instance_names,
     const mdns::DomainName& domain_name) {
   for (auto& entry : service_by_name_) {
@@ -332,11 +334,11 @@ void MdnsResponderService::UpdatePendingScreenInfoSet(
   }
 }
 
-void MdnsResponderService::RemoveAllScreens() {
-  bool had_screens = !screen_info_.empty();
-  screen_info_.clear();
-  if (had_screens)
-    listener_->OnAllScreensRemoved();
+void MdnsResponderService::RemoveAllReceivers() {
+  bool had_receivers = !receiver_info_.empty();
+  receiver_info_.clear();
+  if (had_receivers)
+    listener_->OnAllReceiversRemoved();
 }
 
 bool MdnsResponderService::HandlePtrEvent(
@@ -496,7 +498,7 @@ bool MdnsResponderService::HandleAddressEvent(
         host->v4_address = address;
       else
         host->v6_address = address;
-      UpdatePendingScreenInfoSet(modified_instance_names, domain_name);
+      UpdatePendingServiceInfoSet(modified_instance_names, domain_name);
     } break;
     case mdns::QueryEventHeader::Type::kRemoved: {
       HostInfo* host = GetHostInfo(socket, domain_name);
@@ -507,7 +509,7 @@ bool MdnsResponderService::HandleAddressEvent(
         host->v6_address = IPAddress();
 
       if (host->v4_address || host->v6_address)
-        UpdatePendingScreenInfoSet(modified_instance_names, domain_name);
+        UpdatePendingServiceInfoSet(modified_instance_names, domain_name);
     } break;
   }
   return events_possible;

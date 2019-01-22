@@ -8,16 +8,16 @@
 #include <algorithm>
 #include <vector>
 
-#include "api/public/mdns_screen_listener_factory.h"
-#include "api/public/mdns_screen_publisher_factory.h"
+#include "api/public/mdns_service_listener_factory.h"
+#include "api/public/mdns_service_publisher_factory.h"
 #include "api/public/message_demuxer.h"
 #include "api/public/network_service_manager.h"
 #include "api/public/protocol_connection_client.h"
 #include "api/public/protocol_connection_client_factory.h"
 #include "api/public/protocol_connection_server.h"
 #include "api/public/protocol_connection_server_factory.h"
-#include "api/public/screen_listener.h"
-#include "api/public/screen_publisher.h"
+#include "api/public/service_listener.h"
+#include "api/public/service_publisher.h"
 #include "base/make_unique.h"
 #include "msgs/osp_messages.h"
 #include "platform/api/logging.h"
@@ -91,7 +91,7 @@ class AutoMessage final
   ProtocolConnectionClient::ConnectRequest request_;
 };
 
-class ListenerObserver final : public ScreenListener::Observer {
+class ListenerObserver final : public ServiceListener::Observer {
  public:
   ~ListenerObserver() override = default;
   void OnStarted() override { OSP_LOG_INFO << "listener started!"; }
@@ -99,7 +99,7 @@ class ListenerObserver final : public ScreenListener::Observer {
   void OnSuspended() override { OSP_LOG_INFO << "listener suspended!"; }
   void OnSearching() override { OSP_LOG_INFO << "listener searching!"; }
 
-  void OnScreenAdded(const ScreenInfo& info) override {
+  void OnReceiverAdded(const ServiceInfo& info) override {
     OSP_LOG_INFO << "found! " << info.friendly_name;
     if (!auto_message_) {
       auto_message_ = MakeUnique<AutoMessage>();
@@ -108,21 +108,21 @@ class ListenerObserver final : public ScreenListener::Observer {
               info.v4_endpoint, auto_message_.get()));
     }
   }
-  void OnScreenChanged(const ScreenInfo& info) override {
+  void OnReceiverChanged(const ServiceInfo& info) override {
     OSP_LOG_INFO << "changed! " << info.friendly_name;
   }
-  void OnScreenRemoved(const ScreenInfo& info) override {
+  void OnReceiverRemoved(const ServiceInfo& info) override {
     OSP_LOG_INFO << "removed! " << info.friendly_name;
   }
-  void OnAllScreensRemoved() override { OSP_LOG_INFO << "all removed!"; }
-  void OnError(ScreenListenerError) override {}
-  void OnMetrics(ScreenListener::Metrics) override {}
+  void OnAllReceiversRemoved() override { OSP_LOG_INFO << "all removed!"; }
+  void OnError(ServiceListenerError) override {}
+  void OnMetrics(ServiceListener::Metrics) override {}
 
  private:
   std::unique_ptr<AutoMessage> auto_message_;
 };
 
-class PublisherObserver final : public ScreenPublisher::Observer {
+class PublisherObserver final : public ServicePublisher::Observer {
  public:
   ~PublisherObserver() override = default;
 
@@ -130,8 +130,8 @@ class PublisherObserver final : public ScreenPublisher::Observer {
   void OnStopped() override { OSP_LOG_INFO << "publisher stopped!"; }
   void OnSuspended() override { OSP_LOG_INFO << "publisher suspended!"; }
 
-  void OnError(ScreenPublisherError) override {}
-  void OnMetrics(ScreenPublisher::Metrics) override {}
+  void OnError(ServicePublisherError) override {}
+  void OnMetrics(ServicePublisher::Metrics) override {}
 };
 
 class ConnectionClientObserver final
@@ -225,9 +225,9 @@ void ListenerDemo() {
   SignalThings();
 
   ListenerObserver listener_observer;
-  MdnsScreenListenerConfig listener_config;
+  MdnsServiceListenerConfig listener_config;
   auto mdns_listener =
-      MdnsScreenListenerFactory::Create(listener_config, &listener_observer);
+      MdnsServiceListenerFactory::Create(listener_config, &listener_observer);
 
   MessageDemuxer demuxer;
   ConnectionClientObserver client_observer;
@@ -237,14 +237,14 @@ void ListenerDemo() {
   auto* network_service = NetworkServiceManager::Create(
       std::move(mdns_listener), nullptr, std::move(connection_client), nullptr);
 
-  network_service->GetMdnsScreenListener()->Start();
+  network_service->GetMdnsServiceListener()->Start();
   network_service->GetProtocolConnectionClient()->Start();
 
   while (!g_done) {
     network_service->RunEventLoopOnce();
   }
 
-  network_service->GetMdnsScreenListener()->Stop();
+  network_service->GetMdnsServiceListener()->Stop();
   network_service->GetProtocolConnectionClient()->Stop();
 
   NetworkServiceManager::Dispose();
@@ -255,13 +255,13 @@ void PublisherDemo(const std::string& friendly_name) {
 
   PublisherObserver publisher_observer;
   // TODO(btolsch): aggregate initialization probably better?
-  ScreenPublisher::Config publisher_config;
+  ServicePublisher::Config publisher_config;
   publisher_config.friendly_name = friendly_name;
   publisher_config.hostname = "turtle-deadbeef";
   publisher_config.service_instance_name = "deadbeef";
   publisher_config.connection_server_port = 6667;
-  auto mdns_publisher =
-      MdnsScreenPublisherFactory::Create(publisher_config, &publisher_observer);
+  auto mdns_publisher = MdnsServicePublisherFactory::Create(
+      publisher_config, &publisher_observer);
 
   ServerConfig server_config;
   std::vector<platform::InterfaceAddresses> interfaces =
@@ -281,14 +281,14 @@ void PublisherDemo(const std::string& friendly_name) {
       NetworkServiceManager::Create(nullptr, std::move(mdns_publisher), nullptr,
                                     std::move(connection_server));
 
-  network_service->GetMdnsScreenPublisher()->Start();
+  network_service->GetMdnsServicePublisher()->Start();
   network_service->GetProtocolConnectionServer()->Start();
 
   while (!g_done) {
     network_service->RunEventLoopOnce();
   }
 
-  network_service->GetMdnsScreenPublisher()->Stop();
+  network_service->GetMdnsServicePublisher()->Stop();
   network_service->GetProtocolConnectionServer()->Stop();
 
   NetworkServiceManager::Dispose();

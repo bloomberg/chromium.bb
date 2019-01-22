@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "api/impl/screen_listener_impl.h"
+#include "api/impl/service_listener_impl.h"
 #include "api/impl/testing/fake_mdns_platform_service.h"
 #include "api/impl/testing/fake_mdns_responder_adapter.h"
 #include "base/make_unique.h"
@@ -62,33 +62,33 @@ class FakeMdnsResponderAdapterFactory final
   size_t last_registered_services_size_ = 0;
 };
 
-class MockScreenListenerObserver final : public ScreenListener::Observer {
+class MockServiceListenerObserver final : public ServiceListener::Observer {
  public:
-  ~MockScreenListenerObserver() override = default;
+  ~MockServiceListenerObserver() override = default;
 
   MOCK_METHOD0(OnStarted, void());
   MOCK_METHOD0(OnStopped, void());
   MOCK_METHOD0(OnSuspended, void());
   MOCK_METHOD0(OnSearching, void());
 
-  MOCK_METHOD1(OnScreenAdded, void(const ScreenInfo&));
-  MOCK_METHOD1(OnScreenChanged, void(const ScreenInfo&));
-  MOCK_METHOD1(OnScreenRemoved, void(const ScreenInfo&));
-  MOCK_METHOD0(OnAllScreensRemoved, void());
+  MOCK_METHOD1(OnReceiverAdded, void(const ServiceInfo&));
+  MOCK_METHOD1(OnReceiverChanged, void(const ServiceInfo&));
+  MOCK_METHOD1(OnReceiverRemoved, void(const ServiceInfo&));
+  MOCK_METHOD0(OnAllReceiversRemoved, void());
 
-  MOCK_METHOD1(OnError, void(ScreenListenerError));
-  MOCK_METHOD1(OnMetrics, void(ScreenListener::Metrics));
+  MOCK_METHOD1(OnError, void(ServiceListenerError));
+  MOCK_METHOD1(OnMetrics, void(ServiceListener::Metrics));
 };
 
-class MockScreenPublisherObserver final : public ScreenPublisher::Observer {
+class MockServicePublisherObserver final : public ServicePublisher::Observer {
  public:
-  ~MockScreenPublisherObserver() override = default;
+  ~MockServicePublisherObserver() override = default;
 
   MOCK_METHOD0(OnStarted, void());
   MOCK_METHOD0(OnStopped, void());
   MOCK_METHOD0(OnSuspended, void());
-  MOCK_METHOD1(OnError, void(ScreenPublisherError));
-  MOCK_METHOD1(OnMetrics, void(ScreenPublisher::Metrics));
+  MOCK_METHOD1(OnError, void(ServicePublisherError));
+  MOCK_METHOD1(OnMetrics, void(ServicePublisher::Metrics));
 };
 
 class MdnsResponderServiceTest : public ::testing::Test {
@@ -102,22 +102,22 @@ class MdnsResponderServiceTest : public ::testing::Test {
     mdns_service_ = MakeUnique<MdnsResponderService>(
         kTestServiceName, kTestServiceProtocol,
         std::move(mdns_responder_factory), std::move(platform_service));
-    screen_listener_ =
-        MakeUnique<ScreenListenerImpl>(&observer_, mdns_service_.get());
+    service_listener_ =
+        MakeUnique<ServiceListenerImpl>(&observer_, mdns_service_.get());
 
     mdns_service_->SetServiceConfig(kTestHostname, kTestServiceInstance,
                                     kTestPort, {}, {{"model", "shifty"}});
-    screen_publisher_ = MakeUnique<ScreenPublisherImpl>(&publisher_observer_,
-                                                        mdns_service_.get());
+    service_publisher_ = MakeUnique<ServicePublisherImpl>(&publisher_observer_,
+                                                          mdns_service_.get());
   }
 
-  MockScreenListenerObserver observer_;
+  MockServiceListenerObserver observer_;
   FakeMdnsPlatformService* fake_platform_service_;
   FakeMdnsResponderAdapterFactory* mdns_responder_factory_;
   std::unique_ptr<MdnsResponderService> mdns_service_;
-  std::unique_ptr<ScreenListenerImpl> screen_listener_;
-  MockScreenPublisherObserver publisher_observer_;
-  std::unique_ptr<ScreenPublisherImpl> screen_publisher_;
+  std::unique_ptr<ServiceListenerImpl> service_listener_;
+  MockServicePublisherObserver publisher_observer_;
+  std::unique_ptr<ServicePublisherImpl> service_publisher_;
   platform::UdpSocketPtr default_socket_ =
       reinterpret_cast<platform::UdpSocketPtr>(16);
   platform::UdpSocketPtr second_socket_ =
@@ -140,7 +140,7 @@ class MdnsResponderServiceTest : public ::testing::Test {
 
 TEST_F(MdnsResponderServiceTest, BasicServiceStates) {
   EXPECT_CALL(observer_, OnStarted());
-  screen_listener_->Start();
+  service_listener_->Start();
 
   auto* mdns_responder = mdns_responder_factory_->last_mdns_responder();
   ASSERT_TRUE(mdns_responder);
@@ -151,10 +151,10 @@ TEST_F(MdnsResponderServiceTest, BasicServiceStates) {
                          {"model=shifty", "id=asdf"}, IPAddress{192, 168, 3, 7},
                          default_socket_);
 
-  std::string screen_id;
-  EXPECT_CALL(observer_, OnScreenAdded(_))
-      .WillOnce(::testing::Invoke([&screen_id](const ScreenInfo& info) {
-        screen_id = info.screen_id;
+  std::string service_id;
+  EXPECT_CALL(observer_, OnReceiverAdded(_))
+      .WillOnce(::testing::Invoke([&service_id](const ServiceInfo& info) {
+        service_id = info.service_id;
         EXPECT_EQ(kTestServiceInstance, info.friendly_name);
         EXPECT_EQ((IPEndpoint{{192, 168, 3, 7}, kTestPort}), info.v4_endpoint);
         EXPECT_FALSE(info.v6_endpoint.address);
@@ -164,9 +164,9 @@ TEST_F(MdnsResponderServiceTest, BasicServiceStates) {
   mdns_responder->AddAEvent(MakeAEvent(
       "gigliorononomicon", IPAddress{192, 168, 3, 8}, default_socket_));
 
-  EXPECT_CALL(observer_, OnScreenChanged(_))
-      .WillOnce(::testing::Invoke([&screen_id](const ScreenInfo& info) {
-        EXPECT_EQ(screen_id, info.screen_id);
+  EXPECT_CALL(observer_, OnReceiverChanged(_))
+      .WillOnce(::testing::Invoke([&service_id](const ServiceInfo& info) {
+        EXPECT_EQ(service_id, info.service_id);
         EXPECT_EQ(kTestServiceInstance, info.friendly_name);
         EXPECT_EQ((IPEndpoint{{192, 168, 3, 8}, kTestPort}), info.v4_endpoint);
         EXPECT_FALSE(info.v6_endpoint.address);
@@ -178,9 +178,9 @@ TEST_F(MdnsResponderServiceTest, BasicServiceStates) {
   ptr_remove.header.response_type = mdns::QueryEventHeader::Type::kRemoved;
   mdns_responder->AddPtrEvent(std::move(ptr_remove));
 
-  EXPECT_CALL(observer_, OnScreenRemoved(_))
-      .WillOnce(::testing::Invoke([&screen_id](const ScreenInfo& info) {
-        EXPECT_EQ(screen_id, info.screen_id);
+  EXPECT_CALL(observer_, OnReceiverRemoved(_))
+      .WillOnce(::testing::Invoke([&service_id](const ServiceInfo& info) {
+        EXPECT_EQ(service_id, info.service_id);
       }));
   mdns_service_->HandleNewEvents({});
 }
@@ -194,7 +194,7 @@ TEST_F(MdnsResponderServiceTest, NetworkNetworkInterfaceIndex) {
       platform::IPSubnet{IPAddress{10, 0, 0, 2}, 24}, second_socket);
   fake_platform_service_->set_interfaces(bound_interfaces_);
   EXPECT_CALL(observer_, OnStarted());
-  screen_listener_->Start();
+  service_listener_->Start();
 
   auto* mdns_responder = mdns_responder_factory_->last_mdns_responder();
   ASSERT_TRUE(mdns_responder);
@@ -205,8 +205,8 @@ TEST_F(MdnsResponderServiceTest, NetworkNetworkInterfaceIndex) {
                          {"model=shifty", "id=asdf"}, IPAddress{192, 168, 3, 7},
                          second_socket);
 
-  EXPECT_CALL(observer_, OnScreenAdded(_))
-      .WillOnce(::testing::Invoke([](const ScreenInfo& info) {
+  EXPECT_CALL(observer_, OnReceiverAdded(_))
+      .WillOnce(::testing::Invoke([](const ServiceInfo& info) {
         EXPECT_EQ(2, info.network_interface_index);
       }));
   mdns_service_->HandleNewEvents({});
@@ -214,7 +214,7 @@ TEST_F(MdnsResponderServiceTest, NetworkNetworkInterfaceIndex) {
 
 TEST_F(MdnsResponderServiceTest, SimultaneousFieldChanges) {
   EXPECT_CALL(observer_, OnStarted());
-  screen_listener_->Start();
+  service_listener_->Start();
 
   auto* mdns_responder = mdns_responder_factory_->last_mdns_responder();
   ASSERT_TRUE(mdns_responder);
@@ -225,7 +225,7 @@ TEST_F(MdnsResponderServiceTest, SimultaneousFieldChanges) {
                          {"model=shifty", "id=asdf"}, IPAddress{192, 168, 3, 7},
                          default_socket_);
 
-  EXPECT_CALL(observer_, OnScreenAdded(_));
+  EXPECT_CALL(observer_, OnReceiverAdded(_));
   mdns_service_->HandleNewEvents({});
 
   mdns_responder->AddSrvEvent(
@@ -238,8 +238,8 @@ TEST_F(MdnsResponderServiceTest, SimultaneousFieldChanges) {
   mdns_responder->AddAEvent(MakeAEvent(
       "gigliorononomicon", IPAddress{192, 168, 3, 8}, default_socket_));
 
-  EXPECT_CALL(observer_, OnScreenChanged(_))
-      .WillOnce(::testing::Invoke([](const ScreenInfo& info) {
+  EXPECT_CALL(observer_, OnReceiverChanged(_))
+      .WillOnce(::testing::Invoke([](const ServiceInfo& info) {
         EXPECT_EQ((IPAddress{192, 168, 3, 8}), info.v4_endpoint.address);
         EXPECT_EQ(54321, info.v4_endpoint.port);
         EXPECT_FALSE(info.v6_endpoint.address);
@@ -249,7 +249,7 @@ TEST_F(MdnsResponderServiceTest, SimultaneousFieldChanges) {
 
 TEST_F(MdnsResponderServiceTest, SimultaneousHostAndAddressChange) {
   EXPECT_CALL(observer_, OnStarted());
-  screen_listener_->Start();
+  service_listener_->Start();
 
   auto* mdns_responder = mdns_responder_factory_->last_mdns_responder();
   ASSERT_TRUE(mdns_responder);
@@ -260,7 +260,7 @@ TEST_F(MdnsResponderServiceTest, SimultaneousHostAndAddressChange) {
                          {"model=shifty", "id=asdf"}, IPAddress{192, 168, 3, 7},
                          default_socket_);
 
-  EXPECT_CALL(observer_, OnScreenAdded(_));
+  EXPECT_CALL(observer_, OnReceiverAdded(_));
   mdns_service_->HandleNewEvents({});
 
   auto srv_remove =
@@ -276,8 +276,8 @@ TEST_F(MdnsResponderServiceTest, SimultaneousHostAndAddressChange) {
   mdns_responder->AddAEvent(
       MakeAEvent("alpha", IPAddress{192, 168, 3, 10}, default_socket_));
 
-  EXPECT_CALL(observer_, OnScreenChanged(_))
-      .WillOnce(::testing::Invoke([](const ScreenInfo& info) {
+  EXPECT_CALL(observer_, OnReceiverChanged(_))
+      .WillOnce(::testing::Invoke([](const ServiceInfo& info) {
         EXPECT_EQ((IPAddress{192, 168, 3, 10}), info.v4_endpoint.address);
         EXPECT_FALSE(info.v6_endpoint.address);
       }));
@@ -286,41 +286,41 @@ TEST_F(MdnsResponderServiceTest, SimultaneousHostAndAddressChange) {
 
 TEST_F(MdnsResponderServiceTest, ListenerStateTransitions) {
   EXPECT_CALL(observer_, OnStarted());
-  screen_listener_->Start();
+  service_listener_->Start();
 
   auto* mdns_responder = mdns_responder_factory_->last_mdns_responder();
   ASSERT_TRUE(mdns_responder);
   ASSERT_TRUE(mdns_responder->running());
 
   EXPECT_CALL(observer_, OnSuspended());
-  screen_listener_->Suspend();
+  service_listener_->Suspend();
   ASSERT_EQ(mdns_responder, mdns_responder_factory_->last_mdns_responder());
   EXPECT_FALSE(mdns_responder->running());
 
   EXPECT_CALL(observer_, OnStarted());
-  screen_listener_->Resume();
+  service_listener_->Resume();
   ASSERT_EQ(mdns_responder, mdns_responder_factory_->last_mdns_responder());
   EXPECT_TRUE(mdns_responder->running());
 
   EXPECT_CALL(observer_, OnStopped());
-  screen_listener_->Stop();
+  service_listener_->Stop();
   ASSERT_FALSE(mdns_responder_factory_->last_mdns_responder());
 
   EXPECT_CALL(observer_, OnSuspended());
   auto instances = mdns_responder_factory_->instances();
-  screen_listener_->StartAndSuspend();
+  service_listener_->StartAndSuspend();
   EXPECT_EQ(instances + 1, mdns_responder_factory_->instances());
   mdns_responder = mdns_responder_factory_->last_mdns_responder();
   EXPECT_FALSE(mdns_responder->running());
 
   EXPECT_CALL(observer_, OnStopped());
-  screen_listener_->Stop();
+  service_listener_->Stop();
   ASSERT_FALSE(mdns_responder_factory_->last_mdns_responder());
 }
 
 TEST_F(MdnsResponderServiceTest, BasicServicePublish) {
   EXPECT_CALL(publisher_observer_, OnStarted());
-  screen_publisher_->Start();
+  service_publisher_->Start();
 
   auto* mdns_responder = mdns_responder_factory_->last_mdns_responder();
   ASSERT_TRUE(mdns_responder);
@@ -338,7 +338,7 @@ TEST_F(MdnsResponderServiceTest, BasicServicePublish) {
   EXPECT_EQ(kTestPort, services[0].target_port);
 
   EXPECT_CALL(publisher_observer_, OnStopped());
-  screen_publisher_->Stop();
+  service_publisher_->Stop();
 
   EXPECT_FALSE(mdns_responder_factory_->last_mdns_responder());
   EXPECT_EQ(0u, mdns_responder_factory_->last_registered_services_size());
@@ -346,7 +346,7 @@ TEST_F(MdnsResponderServiceTest, BasicServicePublish) {
 
 TEST_F(MdnsResponderServiceTest, PublisherStateTransitions) {
   EXPECT_CALL(publisher_observer_, OnStarted());
-  screen_publisher_->Start();
+  service_publisher_->Start();
 
   auto* mdns_responder = mdns_responder_factory_->last_mdns_responder();
   ASSERT_TRUE(mdns_responder);
@@ -354,28 +354,28 @@ TEST_F(MdnsResponderServiceTest, PublisherStateTransitions) {
   EXPECT_EQ(1u, mdns_responder->registered_services().size());
 
   EXPECT_CALL(publisher_observer_, OnSuspended());
-  screen_publisher_->Suspend();
+  service_publisher_->Suspend();
   EXPECT_EQ(0u, mdns_responder->registered_services().size());
 
   EXPECT_CALL(publisher_observer_, OnStarted());
-  screen_publisher_->Resume();
+  service_publisher_->Resume();
   EXPECT_EQ(1u, mdns_responder->registered_services().size());
 
   EXPECT_CALL(publisher_observer_, OnStopped());
-  screen_publisher_->Stop();
+  service_publisher_->Stop();
   EXPECT_EQ(0u, mdns_responder_factory_->last_registered_services_size());
 
   EXPECT_CALL(publisher_observer_, OnStarted());
-  screen_publisher_->Start();
+  service_publisher_->Start();
   mdns_responder = mdns_responder_factory_->last_mdns_responder();
   ASSERT_TRUE(mdns_responder);
   ASSERT_TRUE(mdns_responder->running());
   EXPECT_EQ(1u, mdns_responder->registered_services().size());
   EXPECT_CALL(publisher_observer_, OnSuspended());
-  screen_publisher_->Suspend();
+  service_publisher_->Suspend();
   EXPECT_EQ(0u, mdns_responder->registered_services().size());
   EXPECT_CALL(publisher_observer_, OnStopped());
-  screen_publisher_->Stop();
+  service_publisher_->Stop();
   EXPECT_FALSE(mdns_responder_factory_->last_mdns_responder());
   EXPECT_EQ(0u, mdns_responder_factory_->last_registered_services_size());
 }
@@ -386,7 +386,7 @@ TEST_F(MdnsResponderServiceTest, PublisherObeysInterfaceWhitelist) {
                                     kTestPort, {}, {{"model", "shifty"}});
 
     EXPECT_CALL(publisher_observer_, OnStarted());
-    screen_publisher_->Start();
+    service_publisher_->Start();
 
     auto* mdns_responder = mdns_responder_factory_->last_mdns_responder();
     ASSERT_TRUE(mdns_responder);
@@ -397,14 +397,14 @@ TEST_F(MdnsResponderServiceTest, PublisherObeysInterfaceWhitelist) {
     EXPECT_EQ(second_socket_, interfaces[1].socket);
 
     EXPECT_CALL(publisher_observer_, OnStopped());
-    screen_publisher_->Stop();
+    service_publisher_->Stop();
   }
   {
     mdns_service_->SetServiceConfig(kTestHostname, kTestServiceInstance,
                                     kTestPort, {1, 2}, {{"model", "shifty"}});
 
     EXPECT_CALL(publisher_observer_, OnStarted());
-    screen_publisher_->Start();
+    service_publisher_->Start();
 
     auto* mdns_responder = mdns_responder_factory_->last_mdns_responder();
     ASSERT_TRUE(mdns_responder);
@@ -415,14 +415,14 @@ TEST_F(MdnsResponderServiceTest, PublisherObeysInterfaceWhitelist) {
     EXPECT_EQ(second_socket_, interfaces[1].socket);
 
     EXPECT_CALL(publisher_observer_, OnStopped());
-    screen_publisher_->Stop();
+    service_publisher_->Stop();
   }
   {
     mdns_service_->SetServiceConfig(kTestHostname, kTestServiceInstance,
                                     kTestPort, {2}, {{"model", "shifty"}});
 
     EXPECT_CALL(publisher_observer_, OnStarted());
-    screen_publisher_->Start();
+    service_publisher_->Start();
 
     auto* mdns_responder = mdns_responder_factory_->last_mdns_responder();
     ASSERT_TRUE(mdns_responder);
@@ -432,13 +432,13 @@ TEST_F(MdnsResponderServiceTest, PublisherObeysInterfaceWhitelist) {
     EXPECT_EQ(second_socket_, interfaces[0].socket);
 
     EXPECT_CALL(publisher_observer_, OnStopped());
-    screen_publisher_->Stop();
+    service_publisher_->Stop();
   }
 }
 
 TEST_F(MdnsResponderServiceTest, ListenAndPublish) {
   EXPECT_CALL(observer_, OnStarted());
-  screen_listener_->Start();
+  service_listener_->Start();
 
   auto* mdns_responder = mdns_responder_factory_->last_mdns_responder();
   ASSERT_TRUE(mdns_responder);
@@ -456,7 +456,7 @@ TEST_F(MdnsResponderServiceTest, ListenAndPublish) {
 
   auto instances = mdns_responder_factory_->instances();
   EXPECT_CALL(publisher_observer_, OnStarted());
-  screen_publisher_->Start();
+  service_publisher_->Start();
 
   EXPECT_EQ(instances, mdns_responder_factory_->instances());
   ASSERT_TRUE(mdns_responder->running());
@@ -467,12 +467,12 @@ TEST_F(MdnsResponderServiceTest, ListenAndPublish) {
   }
 
   EXPECT_CALL(observer_, OnStopped());
-  screen_listener_->Stop();
+  service_listener_->Stop();
   ASSERT_TRUE(mdns_responder->running());
   EXPECT_EQ(1u, mdns_responder->registered_interfaces().size());
 
   EXPECT_CALL(publisher_observer_, OnStopped());
-  screen_publisher_->Stop();
+  service_publisher_->Stop();
   EXPECT_FALSE(mdns_responder_factory_->last_mdns_responder());
   EXPECT_EQ(0u, mdns_responder_factory_->last_registered_services_size());
 }
@@ -482,7 +482,7 @@ TEST_F(MdnsResponderServiceTest, PublishAndListen) {
                                   kTestPort, {2}, {{"model", "shifty"}});
 
   EXPECT_CALL(publisher_observer_, OnStarted());
-  screen_publisher_->Start();
+  service_publisher_->Start();
 
   auto* mdns_responder = mdns_responder_factory_->last_mdns_responder();
   ASSERT_TRUE(mdns_responder);
@@ -495,7 +495,7 @@ TEST_F(MdnsResponderServiceTest, PublishAndListen) {
 
   auto instances = mdns_responder_factory_->instances();
   EXPECT_CALL(observer_, OnStarted());
-  screen_listener_->Start();
+  service_listener_->Start();
 
   EXPECT_EQ(instances, mdns_responder_factory_->instances());
   ASSERT_TRUE(mdns_responder->running());
@@ -506,19 +506,19 @@ TEST_F(MdnsResponderServiceTest, PublishAndListen) {
   }
 
   EXPECT_CALL(publisher_observer_, OnStopped());
-  screen_publisher_->Stop();
+  service_publisher_->Stop();
   ASSERT_TRUE(mdns_responder->running());
   EXPECT_EQ(1u, mdns_responder->registered_interfaces().size());
 
   EXPECT_CALL(observer_, OnStopped());
-  screen_listener_->Stop();
+  service_listener_->Stop();
   EXPECT_FALSE(mdns_responder_factory_->last_mdns_responder());
   EXPECT_EQ(0u, mdns_responder_factory_->last_registered_services_size());
 }
 
 TEST_F(MdnsResponderServiceTest, AddressQueryStopped) {
   EXPECT_CALL(observer_, OnStarted());
-  screen_listener_->Start();
+  service_listener_->Start();
 
   auto* mdns_responder = mdns_responder_factory_->last_mdns_responder();
 
@@ -527,7 +527,7 @@ TEST_F(MdnsResponderServiceTest, AddressQueryStopped) {
                          {"model=shifty", "id=asdf"}, IPAddress{192, 168, 3, 7},
                          default_socket_);
 
-  EXPECT_CALL(observer_, OnScreenAdded(_));
+  EXPECT_CALL(observer_, OnReceiverAdded(_));
   mdns_service_->HandleNewEvents({});
 
   auto srv_remove =
@@ -536,7 +536,7 @@ TEST_F(MdnsResponderServiceTest, AddressQueryStopped) {
   srv_remove.header.response_type = mdns::QueryEventHeader::Type::kRemoved;
   mdns_responder->AddSrvEvent(std::move(srv_remove));
 
-  EXPECT_CALL(observer_, OnScreenRemoved(_));
+  EXPECT_CALL(observer_, OnReceiverRemoved(_));
   mdns_service_->HandleNewEvents({});
 
   EXPECT_FALSE(mdns_responder->ptr_queries_empty());
@@ -548,7 +548,7 @@ TEST_F(MdnsResponderServiceTest, AddressQueryStopped) {
 
 TEST_F(MdnsResponderServiceTest, AddressQueryRefCount) {
   EXPECT_CALL(observer_, OnStarted());
-  screen_listener_->Start();
+  service_listener_->Start();
 
   auto* mdns_responder = mdns_responder_factory_->last_mdns_responder();
 
@@ -561,7 +561,7 @@ TEST_F(MdnsResponderServiceTest, AddressQueryRefCount) {
                          {"model=shwofty", "id=asdf"},
                          IPAddress{192, 168, 3, 7}, default_socket_);
 
-  EXPECT_CALL(observer_, OnScreenAdded(_)).Times(2);
+  EXPECT_CALL(observer_, OnReceiverAdded(_)).Times(2);
   mdns_service_->HandleNewEvents({});
 
   auto srv_remove =
@@ -570,7 +570,7 @@ TEST_F(MdnsResponderServiceTest, AddressQueryRefCount) {
   srv_remove.header.response_type = mdns::QueryEventHeader::Type::kRemoved;
   mdns_responder->AddSrvEvent(std::move(srv_remove));
 
-  EXPECT_CALL(observer_, OnScreenRemoved(_));
+  EXPECT_CALL(observer_, OnReceiverRemoved(_));
   mdns_service_->HandleNewEvents({});
 
   EXPECT_FALSE(mdns_responder->ptr_queries_empty());
@@ -585,7 +585,7 @@ TEST_F(MdnsResponderServiceTest, AddressQueryRefCount) {
   srv_remove.header.response_type = mdns::QueryEventHeader::Type::kRemoved;
   mdns_responder->AddSrvEvent(std::move(srv_remove));
 
-  EXPECT_CALL(observer_, OnScreenRemoved(_));
+  EXPECT_CALL(observer_, OnReceiverRemoved(_));
   mdns_service_->HandleNewEvents({});
 
   EXPECT_FALSE(mdns_responder->ptr_queries_empty());
@@ -597,7 +597,7 @@ TEST_F(MdnsResponderServiceTest, AddressQueryRefCount) {
 
 TEST_F(MdnsResponderServiceTest, ServiceQueriesStoppedSrvFirst) {
   EXPECT_CALL(observer_, OnStarted());
-  screen_listener_->Start();
+  service_listener_->Start();
 
   auto* mdns_responder = mdns_responder_factory_->last_mdns_responder();
 
@@ -606,7 +606,7 @@ TEST_F(MdnsResponderServiceTest, ServiceQueriesStoppedSrvFirst) {
                          {"model=shifty", "id=asdf"}, IPAddress{192, 168, 3, 7},
                          default_socket_);
 
-  EXPECT_CALL(observer_, OnScreenAdded(_));
+  EXPECT_CALL(observer_, OnReceiverAdded(_));
   mdns_service_->HandleNewEvents({});
 
   auto srv_remove =
@@ -615,7 +615,7 @@ TEST_F(MdnsResponderServiceTest, ServiceQueriesStoppedSrvFirst) {
   srv_remove.header.response_type = mdns::QueryEventHeader::Type::kRemoved;
   mdns_responder->AddSrvEvent(std::move(srv_remove));
 
-  EXPECT_CALL(observer_, OnScreenRemoved(_));
+  EXPECT_CALL(observer_, OnReceiverRemoved(_));
   mdns_service_->HandleNewEvents({});
 
   EXPECT_FALSE(mdns_responder->ptr_queries_empty());
@@ -639,7 +639,7 @@ TEST_F(MdnsResponderServiceTest, ServiceQueriesStoppedSrvFirst) {
 
 TEST_F(MdnsResponderServiceTest, ServiceQueriesStoppedPtrFirst) {
   EXPECT_CALL(observer_, OnStarted());
-  screen_listener_->Start();
+  service_listener_->Start();
 
   auto* mdns_responder = mdns_responder_factory_->last_mdns_responder();
 
@@ -648,7 +648,7 @@ TEST_F(MdnsResponderServiceTest, ServiceQueriesStoppedPtrFirst) {
                          {"model=shifty", "id=asdf"}, IPAddress{192, 168, 3, 7},
                          default_socket_);
 
-  EXPECT_CALL(observer_, OnScreenAdded(_));
+  EXPECT_CALL(observer_, OnReceiverAdded(_));
   mdns_service_->HandleNewEvents({});
 
   auto ptr_remove = MakePtrEvent(kTestServiceInstance, kTestServiceName,
@@ -656,7 +656,7 @@ TEST_F(MdnsResponderServiceTest, ServiceQueriesStoppedPtrFirst) {
   ptr_remove.header.response_type = mdns::QueryEventHeader::Type::kRemoved;
   mdns_responder->AddPtrEvent(std::move(ptr_remove));
 
-  EXPECT_CALL(observer_, OnScreenRemoved(_));
+  EXPECT_CALL(observer_, OnReceiverRemoved(_));
   mdns_service_->HandleNewEvents({});
 
   EXPECT_FALSE(mdns_responder->ptr_queries_empty());
@@ -680,7 +680,7 @@ TEST_F(MdnsResponderServiceTest, ServiceQueriesStoppedPtrFirst) {
 }
 
 TEST_F(MdnsResponderServiceTest, MultipleInterfaceRemove) {
-  screen_listener_->Start();
+  service_listener_->Start();
 
   auto* mdns_responder = mdns_responder_factory_->last_mdns_responder();
 
@@ -693,7 +693,7 @@ TEST_F(MdnsResponderServiceTest, MultipleInterfaceRemove) {
                          {"model=shifty", "id=asdf"}, IPAddress{192, 168, 3, 7},
                          second_socket_);
 
-  EXPECT_CALL(observer_, OnScreenAdded(_));
+  EXPECT_CALL(observer_, OnReceiverAdded(_));
   mdns_service_->HandleNewEvents({});
 
   auto srv_remove1 =
@@ -701,8 +701,8 @@ TEST_F(MdnsResponderServiceTest, MultipleInterfaceRemove) {
                    "gigliorononomicon", kTestPort, second_socket_);
   srv_remove1.header.response_type = mdns::QueryEventHeader::Type::kRemoved;
   mdns_responder->AddSrvEvent(std::move(srv_remove1));
-  EXPECT_CALL(observer_, OnScreenChanged(_)).Times(0);
-  EXPECT_CALL(observer_, OnScreenRemoved(_)).Times(0);
+  EXPECT_CALL(observer_, OnReceiverChanged(_)).Times(0);
+  EXPECT_CALL(observer_, OnReceiverRemoved(_)).Times(0);
   mdns_service_->HandleNewEvents({});
 
   auto srv_remove2 =
@@ -710,7 +710,7 @@ TEST_F(MdnsResponderServiceTest, MultipleInterfaceRemove) {
                    "gigliorononomicon", kTestPort, default_socket_);
   srv_remove2.header.response_type = mdns::QueryEventHeader::Type::kRemoved;
   mdns_responder->AddSrvEvent(std::move(srv_remove2));
-  EXPECT_CALL(observer_, OnScreenRemoved(_));
+  EXPECT_CALL(observer_, OnReceiverRemoved(_));
   mdns_service_->HandleNewEvents({});
   EXPECT_TRUE(mdns_responder->a_queries_empty());
 

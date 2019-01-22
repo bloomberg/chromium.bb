@@ -22,24 +22,24 @@ class RequestDelegate {
   virtual void OnError(const Error& error) = 0;
 };
 
-class ScreenObserver {
+class ReceiverObserver {
  public:
-  virtual ~ScreenObserver() = default;
+  virtual ~ReceiverObserver() = default;
 
   // Called when there is an unrecoverable error in requesting availability.
   // This means the availability is unknown and there is no further response to
   // wait for.
   virtual void OnRequestFailed(const std::string& presentation_url,
-                               const std::string& screen_id) = 0;
+                               const std::string& service_id) = 0;
 
-  // Called when screens compatible with |presentation_url| are known to be
+  // Called when receivers compatible with |presentation_url| are known to be
   // available.
-  virtual void OnScreenAvailable(const std::string& presentation_url,
-                                 const std::string& screen_id) = 0;
-  // Called when screens compatible with |presentation_url| are known to be
+  virtual void OnReceiverAvailable(const std::string& presentation_url,
+                                   const std::string& service_id) = 0;
+  // Called when receivers compatible with |presentation_url| are known to be
   // unavailable.
-  virtual void OnScreenUnavailable(const std::string& presentation_url,
-                                   const std::string& screen_id) = 0;
+  virtual void OnReceiverUnavailable(const std::string& presentation_url,
+                                     const std::string& service_id) = 0;
 };
 
 class Controller {
@@ -47,13 +47,13 @@ class Controller {
   // Returns the single instance.
   static Controller* Get();
 
-  class ScreenWatch {
+  class ReceiverWatch {
    public:
-    explicit ScreenWatch(uint64_t watch_id);
-    ScreenWatch(ScreenWatch&&);
-    ~ScreenWatch();
+    explicit ReceiverWatch(uint64_t watch_id);
+    ReceiverWatch(ReceiverWatch&&);
+    ~ReceiverWatch();
 
-    ScreenWatch& operator=(ScreenWatch&&);
+    ReceiverWatch& operator=(ReceiverWatch&&);
 
    private:
     uint64_t watch_id_;
@@ -71,32 +71,32 @@ class Controller {
     uint64_t request_id_;
   };
 
-  // Requests screens compatible with |url| and registers |observer| for
-  // availability changes.  The screens will be a subset of the screen list
-  // maintained by the ScreenListener.  Returns a positive integer id that
-  // tracks the registration. If |url| is already being watched for screens,
+  // Requests receivers compatible with |url| and registers |observer| for
+  // availability changes.  The receivers will be a subset of the receiver list
+  // maintained by the ServiceListener.  Returns a positive integer id that
+  // tracks the registration. If |url| is already being watched for receivers,
   // then the id of the previous registration is returned and |observer|
   // replaces the previous registration.
-  ScreenWatch RegisterScreenWatch(const std::string& url,
-                                  ScreenObserver* observer);
+  ReceiverWatch RegisterReceiverWatch(const std::string& url,
+                                      ReceiverObserver* observer);
 
-  // Requests that a new presentation be created on |screen_id| using
+  // Requests that a new presentation be created on |service_id| using
   // |presentation_url|, with the result passed to |delegate|.
   // |conn_delegate| is passed to the resulting connection.  The returned
   // ConnectRequest object may be destroyed before any |delegate| methods are
   // called to cancel the request.
   ConnectRequest StartPresentation(const std::string& url,
-                                   const std::string& screen_id,
+                                   const std::string& service_id,
                                    RequestDelegate* delegate,
                                    Connection::Delegate* conn_delegate);
 
   // Requests reconnection to the presentation with the given id and URL running
-  // on the screen with |screen_id|, with the result passed to |delegate|.
+  // on the receiver with |service_id|, with the result passed to |delegate|.
   // |conn_delegate| is passed to the resulting connection.
   // The returned ConnectRequest object may be destroyed before any |delegate|
   // methods are called to cancel the request.
   ConnectRequest ReconnectPresentation(const std::string& presentation_id,
-                                       const std::string& screen_id,
+                                       const std::string& service_id,
                                        RequestDelegate* delegate,
                                        Connection::Delegate* conn_delegate);
 
@@ -105,8 +105,8 @@ class Controller {
                                 TerminationReason reason);
 
  private:
-  // Cancels compatible screen monitoring for the given |watch_id|.
-  void CancelScreenWatch(uint64_t watch_id);
+  // Cancels compatible receiver monitoring for the given |watch_id|.
+  void CancelReceiverWatch(uint64_t watch_id);
 
   // Cancels a presentation connect request for the given |request_id| if one is
   // pending.

@@ -64,7 +64,7 @@ bool SetUpMulticastSocket(platform::UdpSocketPtr socket,
 }
 
 // Ref-counted singleton instance of InternalServices. This lives only as long
-// as there is at least one ScreenListener and/or ScreenPublisher alive.
+// as there is at least one ServiceListener and/or ServicePublisher alive.
 InternalServices* g_instance = nullptr;
 int g_instance_ref_count = 0;
 
@@ -78,28 +78,28 @@ void InternalServices::RunEventLoopOnce() {
 }
 
 // static
-std::unique_ptr<ScreenListener> InternalServices::CreateListener(
-    const MdnsScreenListenerConfig& config,
-    ScreenListener::Observer* observer) {
+std::unique_ptr<ServiceListener> InternalServices::CreateListener(
+    const MdnsServiceListenerConfig& config,
+    ServiceListener::Observer* observer) {
   auto* services = ReferenceSingleton();
   auto listener =
-      std::make_unique<ScreenListenerImpl>(observer, &services->mdns_service_);
+      std::make_unique<ServiceListenerImpl>(observer, &services->mdns_service_);
   listener->SetDestructionCallback(&InternalServices::DereferenceSingleton,
                                    services);
   return listener;
 }
 
 // static
-std::unique_ptr<ScreenPublisher> InternalServices::CreatePublisher(
-    const ScreenPublisher::Config& config,
-    ScreenPublisher::Observer* observer) {
+std::unique_ptr<ServicePublisher> InternalServices::CreatePublisher(
+    const ServicePublisher::Config& config,
+    ServicePublisher::Observer* observer) {
   auto* services = ReferenceSingleton();
   services->mdns_service_.SetServiceConfig(
       config.hostname, config.service_instance_name,
       config.connection_server_port, config.network_interface_indices,
       {{"fn", config.friendly_name}});
-  auto publisher =
-      std::make_unique<ScreenPublisherImpl>(observer, &services->mdns_service_);
+  auto publisher = std::make_unique<ServicePublisherImpl>(
+      observer, &services->mdns_service_);
   publisher->SetDestructionCallback(&InternalServices::DereferenceSingleton,
                                     services);
   return publisher;

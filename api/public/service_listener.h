@@ -2,39 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef API_PUBLIC_SCREEN_LISTENER_H_
-#define API_PUBLIC_SCREEN_LISTENER_H_
+#ifndef API_PUBLIC_SERVICE_LISTENER_H_
+#define API_PUBLIC_SERVICE_LISTENER_H_
 
 #include <cstdint>
 #include <string>
 #include <vector>
 
-#include "api/public/screen_info.h"
+#include "api/public/service_info.h"
 #include "base/macros.h"
 #include "base/time.h"
 
 namespace openscreen {
 
-// Used to report an error from a ScreenListener implementation.
-struct ScreenListenerError {
+// Used to report an error from a ServiceListener implementation.
+struct ServiceListenerError {
  public:
   // TODO(mfoltz): Add additional error types, as implementations progress.
   enum class Code {
     kNone = 0,
   };
 
-  ScreenListenerError();
-  ScreenListenerError(Code error, const std::string& message);
-  ScreenListenerError(const ScreenListenerError& other);
-  ~ScreenListenerError();
+  ServiceListenerError();
+  ServiceListenerError(Code error, const std::string& message);
+  ServiceListenerError(const ServiceListenerError& other);
+  ~ServiceListenerError();
 
-  ScreenListenerError& operator=(const ScreenListenerError& other);
+  ServiceListenerError& operator=(const ServiceListenerError& other);
 
   Code error;
   std::string message;
 };
 
-class ScreenListener {
+class ServiceListener {
  public:
   enum class State {
     kStopped = 0,
@@ -46,7 +46,7 @@ class ScreenListener {
   };
 
   // Holds a set of metrics, captured over a specific range of time, about the
-  // behavior of a ScreenListener instance.
+  // behavior of a ServiceListener instance.
   struct Metrics {
     Metrics();
     ~Metrics();
@@ -64,12 +64,12 @@ class ScreenListener {
     uint64_t num_packets_received = 0;
     uint64_t num_bytes_received = 0;
 
-    // The maximum number of screens discovered over the timestamp range.  The
-    // latter two fields break this down by screens advertising ipv4 and ipv6
+    // The maximum number of receivers discovered over the timestamp range.  The
+    // latter two fields break this down by receivers advertising ipv4 and ipv6
     // endpoints.
-    size_t num_screens = 0;
-    size_t num_ipv4_screens = 0;
-    size_t num_ipv6_screens = 0;
+    size_t num_receivers = 0;
+    size_t num_ipv4_receivers = 0;
+    size_t num_ipv6_receivers = 0;
   };
 
   class Observer {
@@ -85,24 +85,24 @@ class ScreenListener {
     // Called when the state becomes kSearching.
     virtual void OnSearching() = 0;
 
-    // Notifications to changes to the listener's screen list.
-    virtual void OnScreenAdded(const ScreenInfo&) = 0;
-    virtual void OnScreenChanged(const ScreenInfo&) = 0;
-    virtual void OnScreenRemoved(const ScreenInfo&) = 0;
-    // Called if all screens are no longer available, e.g. all network
+    // Notifications to changes to the listener's receiver list.
+    virtual void OnReceiverAdded(const ServiceInfo&) = 0;
+    virtual void OnReceiverChanged(const ServiceInfo&) = 0;
+    virtual void OnReceiverRemoved(const ServiceInfo&) = 0;
+    // Called if all receivers are no longer available, e.g. all network
     // interfaces have been disabled.
-    virtual void OnAllScreensRemoved() = 0;
+    virtual void OnAllReceiversRemoved() = 0;
 
     // Reports an error.
-    virtual void OnError(ScreenListenerError) = 0;
+    virtual void OnError(ServiceListenerError) = 0;
 
     // Reports metrics.
     virtual void OnMetrics(Metrics) = 0;
   };
 
-  virtual ~ScreenListener();
+  virtual ~ServiceListener();
 
-  // Starts listening for screens using the config object.
+  // Starts listening for receivers using the config object.
   // Returns true if state() == kStopped and the service will be started, false
   // otherwise.
   virtual bool Start() = 0;
@@ -117,7 +117,7 @@ class ScreenListener {
   // Returns true if state() != (kStopped|kStopping).
   virtual bool Stop() = 0;
 
-  // Suspends background listening. For example, the tab wanting screen
+  // Suspends background listening. For example, the tab wanting receiver
   // availability might go in the background, meaning we can suspend listening
   // to save power.
   // Returns true if state() == (kRunning|kSearching|kStarting), meaning the
@@ -127,7 +127,7 @@ class ScreenListener {
   // Resumes listening.  Returns true if state() == (kSuspended|kSearching).
   virtual bool Resume() = 0;
 
-  // Asks the listener to search for screens now, even if the listener is
+  // Asks the listener to search for receivers now, even if the listener is
   // is currently suspended.  If a background search is already in
   // progress, this has no effect.  Returns true if state() ==
   // (kRunning|kSuspended).
@@ -137,21 +137,21 @@ class ScreenListener {
   State state() const { return state_; }
 
   // Returns the last error reported by this listener.
-  const ScreenListenerError& last_error() const { return last_error_; }
+  const ServiceListenerError& last_error() const { return last_error_; }
 
-  // Returns the current list of screens known to the ScreenListener.
-  virtual const std::vector<ScreenInfo>& GetScreens() const = 0;
+  // Returns the current list of receivers known to the ServiceListener.
+  virtual const std::vector<ServiceInfo>& GetReceivers() const = 0;
 
  protected:
-  explicit ScreenListener(Observer* observer);
+  explicit ServiceListener(Observer* observer);
 
   State state_ = State::kStopped;
-  ScreenListenerError last_error_;
+  ServiceListenerError last_error_;
   Observer* const observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScreenListener);
+  DISALLOW_COPY_AND_ASSIGN(ServiceListener);
 };
 
 }  // namespace openscreen
 
-#endif  // API_PUBLIC_SCREEN_LISTENER_H_
+#endif  // API_PUBLIC_SERVICE_LISTENER_H_

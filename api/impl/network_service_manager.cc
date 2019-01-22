@@ -16,8 +16,8 @@ namespace openscreen {
 
 // static
 NetworkServiceManager* NetworkServiceManager::Create(
-    std::unique_ptr<ScreenListener> mdns_listener,
-    std::unique_ptr<ScreenPublisher> mdns_publisher,
+    std::unique_ptr<ServiceListener> mdns_listener,
+    std::unique_ptr<ServicePublisher> mdns_publisher,
     std::unique_ptr<ProtocolConnectionClient> connection_client,
     std::unique_ptr<ProtocolConnectionServer> connection_server) {
   // TODO(mfoltz): Convert to assertion failure
@@ -54,11 +54,11 @@ void NetworkServiceManager::RunEventLoopOnce() {
     connection_server_->RunTasks();
 }
 
-ScreenListener* NetworkServiceManager::GetMdnsScreenListener() {
+ServiceListener* NetworkServiceManager::GetMdnsServiceListener() {
   return mdns_listener_.get();
 }
 
-ScreenPublisher* NetworkServiceManager::GetMdnsScreenPublisher() {
+ServicePublisher* NetworkServiceManager::GetMdnsServicePublisher() {
   return mdns_publisher_.get();
 }
 
@@ -71,8 +71,8 @@ ProtocolConnectionServer* NetworkServiceManager::GetProtocolConnectionServer() {
 }
 
 NetworkServiceManager::NetworkServiceManager(
-    std::unique_ptr<ScreenListener> mdns_listener,
-    std::unique_ptr<ScreenPublisher> mdns_publisher,
+    std::unique_ptr<ServiceListener> mdns_listener,
+    std::unique_ptr<ServicePublisher> mdns_publisher,
     std::unique_ptr<ProtocolConnectionClient> connection_client,
     std::unique_ptr<ProtocolConnectionServer> connection_server)
     : mdns_listener_(std::move(mdns_listener)),

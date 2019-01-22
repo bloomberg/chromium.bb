@@ -11,10 +11,10 @@
 #include "api/impl/mdns_platform_service.h"
 #include "api/impl/mdns_responder_service.h"
 #include "api/impl/quic/quic_connection_factory.h"
-#include "api/impl/screen_listener_impl.h"
-#include "api/impl/screen_publisher_impl.h"
-#include "api/public/mdns_screen_listener_factory.h"
-#include "api/public/mdns_screen_publisher_factory.h"
+#include "api/impl/service_listener_impl.h"
+#include "api/impl/service_publisher_impl.h"
+#include "api/public/mdns_service_listener_factory.h"
+#include "api/public/mdns_service_publisher_factory.h"
 #include "api/public/protocol_connection_client.h"
 #include "api/public/protocol_connection_server.h"
 #include "base/ip_address.h"
@@ -26,7 +26,7 @@
 
 namespace openscreen {
 
-// Factory for ScreenListener and ScreenPublisher instances; owns internal
+// Factory for ServiceListener and ServicePublisher instances; owns internal
 // objects needed to instantiate them such as MdnsResponderService and runs an
 // event loop.
 // TODO(btolsch): This may be renamed and/or split up once QUIC code lands and
@@ -35,12 +35,12 @@ class InternalServices {
  public:
   static void RunEventLoopOnce();
 
-  static std::unique_ptr<ScreenListener> CreateListener(
-      const MdnsScreenListenerConfig& config,
-      ScreenListener::Observer* observer);
-  static std::unique_ptr<ScreenPublisher> CreatePublisher(
-      const ScreenPublisher::Config& config,
-      ScreenPublisher::Observer* observer);
+  static std::unique_ptr<ServiceListener> CreateListener(
+      const MdnsServiceListenerConfig& config,
+      ServiceListener::Observer* observer);
+  static std::unique_ptr<ServicePublisher> CreatePublisher(
+      const ServicePublisher::Config& config,
+      ServicePublisher::Observer* observer);
 
  private:
   class InternalPlatformLinkage final : public MdnsPlatformService {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "api/public/screen_info.h"
+#include "api/public/service_info.h"
 
 #include <algorithm>
 #include <utility>
@@ -11,18 +11,18 @@
 
 namespace openscreen {
 
-bool ScreenInfo::operator==(const ScreenInfo& other) const {
-  return (screen_id == other.screen_id &&
+bool ServiceInfo::operator==(const ServiceInfo& other) const {
+  return (service_id == other.service_id &&
           friendly_name == other.friendly_name &&
           network_interface_index == other.network_interface_index &&
           v4_endpoint == other.v4_endpoint && v6_endpoint == other.v6_endpoint);
 }
 
-bool ScreenInfo::operator!=(const ScreenInfo& other) const {
+bool ServiceInfo::operator!=(const ServiceInfo& other) const {
   return !(*this == other);
 }
 
-bool ScreenInfo::Update(
+bool ServiceInfo::Update(
     std::string&& new_friendly_name,
     platform::NetworkInterfaceIndex new_network_interface_index,
     const IPEndpoint& new_v4_endpoint,

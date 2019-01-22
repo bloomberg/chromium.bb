@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef API_IMPL_SCREEN_PUBLISHER_IMPL_H_
-#define API_IMPL_SCREEN_PUBLISHER_IMPL_H_
+#ifndef API_IMPL_SERVICE_PUBLISHER_IMPL_H_
+#define API_IMPL_SERVICE_PUBLISHER_IMPL_H_
 
-#include "api/public/screen_publisher.h"
+#include "api/public/service_publisher.h"
 #include "base/macros.h"
 #include "base/with_destruction_callback.h"
 
 namespace openscreen {
 
-class ScreenPublisherImpl final : public ScreenPublisher,
-                                  public WithDestructionCallback {
+class ServicePublisherImpl final : public ServicePublisher,
+                                   public WithDestructionCallback {
  public:
   class Delegate {
    public:
     Delegate();
     virtual ~Delegate();
 
-    void SetPublisherImpl(ScreenPublisherImpl* publisher);
+    void SetPublisherImpl(ServicePublisherImpl* publisher);
 
     virtual void StartPublisher() = 0;
     virtual void StartAndSuspendPublisher() = 0;
@@ -30,16 +30,16 @@ class ScreenPublisherImpl final : public ScreenPublisher,
    protected:
     void SetState(State state) { publisher_->SetState(state); }
 
-    ScreenPublisherImpl* publisher_ = nullptr;
+    ServicePublisherImpl* publisher_ = nullptr;
   };
 
   // |observer| is optional.  If it is provided, it will receive appropriate
-  // notifications about this ScreenPublisher.  |delegate| is required and is
-  // used to implement state transitions.
-  ScreenPublisherImpl(Observer* observer, Delegate* delegate);
-  ~ScreenPublisherImpl() override;
+  // notifications about this ServicePublisher.  |delegate| is required and
+  // is used to implement state transitions.
+  ServicePublisherImpl(Observer* observer, Delegate* delegate);
+  ~ServicePublisherImpl() override;
 
-  // ScreenPublisher overrides.
+  // ServicePublisher overrides.
   bool Start() override;
   bool StartAndSuspend() override;
   bool Stop() override;
@@ -57,9 +57,9 @@ class ScreenPublisherImpl final : public ScreenPublisher,
 
   Delegate* const delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScreenPublisherImpl);
+  DISALLOW_COPY_AND_ASSIGN(ServicePublisherImpl);
 };
 
 }  // namespace openscreen
 
-#endif  // API_IMPL_SCREEN_PUBLISHER_IMPL_H_
+#endif  // API_IMPL_SERVICE_PUBLISHER_IMPL_H_

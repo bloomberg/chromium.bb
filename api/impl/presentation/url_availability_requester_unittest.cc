@@ -19,13 +19,14 @@ namespace presentation {
 
 using ::testing::_;
 
-class MockScreenObserver final : public ScreenObserver {
+class MockReceiverObserver final : public ReceiverObserver {
  public:
-  ~MockScreenObserver() override = default;
+  ~MockReceiverObserver() override = default;
 
   MOCK_METHOD2(OnRequestFailed, void(const std::string&, const std::string&));
-  MOCK_METHOD2(OnScreenAvailable, void(const std::string&, const std::string&));
-  MOCK_METHOD2(OnScreenUnavailable,
+  MOCK_METHOD2(OnReceiverAvailable,
+               void(const std::string&, const std::string&));
+  MOCK_METHOD2(OnReceiverUnavailable,
                void(const std::string&, const std::string&));
 };
 
@@ -123,16 +124,16 @@ class UrlAvailabilityRequesterTest : public ::testing::Test {
 
   std::string url1_{"https://example.com/foo.html"};
   std::string url2_{"https://example.com/bar.html"};
-  std::string screen_id_{"asdf"};
+  std::string service_id_{"asdf"};
   std::string friendly_name_{"turtle"};
-  ScreenInfo info1_{screen_id_, friendly_name_, 1, receiver_endpoint_};
+  ServiceInfo info1_{service_id_, friendly_name_, 1, receiver_endpoint_};
 };
 
 TEST_F(UrlAvailabilityRequesterTest, AvailableObserverFirst) {
-  MockScreenObserver mock_observer;
+  MockReceiverObserver mock_observer;
   listener_.AddObserver({url1_}, &mock_observer);
 
-  listener_.AddScreen(info1_);
+  listener_.AddReceiver(info1_);
 
   msgs::PresentationUrlAvailabilityRequest request;
   uint64_t connection_id;
@@ -155,15 +156,16 @@ TEST_F(UrlAvailabilityRequesterTest, AvailableObserverFirst) {
       std::vector<msgs::PresentationUrlAvailability>{msgs::kCompatible},
       fake_factory_->GetIncomingStream(receiver_endpoint_, connection_id));
 
-  EXPECT_CALL(mock_observer, OnScreenAvailable(url1_, screen_id_));
-  EXPECT_CALL(mock_observer, OnScreenUnavailable(url1_, screen_id_)).Times(0);
+  EXPECT_CALL(mock_observer, OnReceiverAvailable(url1_, service_id_));
+  EXPECT_CALL(mock_observer, OnReceiverUnavailable(url1_, service_id_))
+      .Times(0);
   RunTasksUntilIdle();
 }
 
-TEST_F(UrlAvailabilityRequesterTest, AvailableScreenFirst) {
-  listener_.AddScreen(info1_);
+TEST_F(UrlAvailabilityRequesterTest, AvailableReceiverFirst) {
+  listener_.AddReceiver(info1_);
 
-  MockScreenObserver mock_observer;
+  MockReceiverObserver mock_observer;
   listener_.AddObserver({url1_}, &mock_observer);
 
   msgs::PresentationUrlAvailabilityRequest request;
@@ -187,15 +189,16 @@ TEST_F(UrlAvailabilityRequesterTest, AvailableScreenFirst) {
       std::vector<msgs::PresentationUrlAvailability>{msgs::kCompatible},
       fake_factory_->GetIncomingStream(receiver_endpoint_, connection_id));
 
-  EXPECT_CALL(mock_observer, OnScreenAvailable(url1_, screen_id_));
-  EXPECT_CALL(mock_observer, OnScreenUnavailable(url1_, screen_id_)).Times(0);
+  EXPECT_CALL(mock_observer, OnReceiverAvailable(url1_, service_id_));
+  EXPECT_CALL(mock_observer, OnReceiverUnavailable(url1_, service_id_))
+      .Times(0);
   RunTasksUntilIdle();
 }
 
 TEST_F(UrlAvailabilityRequesterTest, Unavailable) {
-  listener_.AddScreen(info1_);
+  listener_.AddReceiver(info1_);
 
-  MockScreenObserver mock_observer;
+  MockReceiverObserver mock_observer;
   listener_.AddObserver({url1_}, &mock_observer);
 
   msgs::PresentationUrlAvailabilityRequest request;
@@ -219,15 +222,15 @@ TEST_F(UrlAvailabilityRequesterTest, Unavailable) {
       std::vector<msgs::PresentationUrlAvailability>{msgs::kNotCompatible},
       fake_factory_->GetIncomingStream(receiver_endpoint_, connection_id));
 
-  EXPECT_CALL(mock_observer, OnScreenAvailable(url1_, screen_id_)).Times(0);
-  EXPECT_CALL(mock_observer, OnScreenUnavailable(url1_, screen_id_));
+  EXPECT_CALL(mock_observer, OnReceiverAvailable(url1_, service_id_)).Times(0);
+  EXPECT_CALL(mock_observer, OnReceiverUnavailable(url1_, service_id_));
   RunTasksUntilIdle();
 }
 
 TEST_F(UrlAvailabilityRequesterTest, AvailabilityIsCached) {
-  listener_.AddScreen(info1_);
+  listener_.AddReceiver(info1_);
 
-  MockScreenObserver mock_observer1;
+  MockReceiverObserver mock_observer1;
   listener_.AddObserver({url1_}, &mock_observer1);
 
   msgs::PresentationUrlAvailabilityRequest request;
@@ -251,20 +254,20 @@ TEST_F(UrlAvailabilityRequesterTest, AvailabilityIsCached) {
       std::vector<msgs::PresentationUrlAvailability>{msgs::kNotCompatible},
       fake_factory_->GetIncomingStream(receiver_endpoint_, connection_id));
 
-  EXPECT_CALL(mock_observer1, OnScreenAvailable(url1_, screen_id_)).Times(0);
-  EXPECT_CALL(mock_observer1, OnScreenUnavailable(url1_, screen_id_));
+  EXPECT_CALL(mock_observer1, OnReceiverAvailable(url1_, service_id_)).Times(0);
+  EXPECT_CALL(mock_observer1, OnReceiverUnavailable(url1_, service_id_));
   RunTasksUntilIdle();
 
-  MockScreenObserver mock_observer2;
-  EXPECT_CALL(mock_observer2, OnScreenAvailable(url1_, screen_id_)).Times(0);
-  EXPECT_CALL(mock_observer2, OnScreenUnavailable(url1_, screen_id_));
+  MockReceiverObserver mock_observer2;
+  EXPECT_CALL(mock_observer2, OnReceiverAvailable(url1_, service_id_)).Times(0);
+  EXPECT_CALL(mock_observer2, OnReceiverUnavailable(url1_, service_id_));
   listener_.AddObserver({url1_}, &mock_observer2);
 }
 
 TEST_F(UrlAvailabilityRequesterTest, AvailabilityCacheIsTransient) {
-  listener_.AddScreen(info1_);
+  listener_.AddReceiver(info1_);
 
-  MockScreenObserver mock_observer1;
+  MockReceiverObserver mock_observer1;
   listener_.AddObserver({url1_}, &mock_observer1);
 
   msgs::PresentationUrlAvailabilityRequest request;
@@ -288,21 +291,22 @@ TEST_F(UrlAvailabilityRequesterTest, AvailabilityCacheIsTransient) {
       std::vector<msgs::PresentationUrlAvailability>{msgs::kNotCompatible},
       fake_factory_->GetIncomingStream(receiver_endpoint_, connection_id));
 
-  EXPECT_CALL(mock_observer1, OnScreenAvailable(url1_, screen_id_)).Times(0);
-  EXPECT_CALL(mock_observer1, OnScreenUnavailable(url1_, screen_id_));
+  EXPECT_CALL(mock_observer1, OnReceiverAvailable(url1_, service_id_)).Times(0);
+  EXPECT_CALL(mock_observer1, OnReceiverUnavailable(url1_, service_id_));
   RunTasksUntilIdle();
 
   listener_.RemoveObserverUrls({url1_}, &mock_observer1);
-  MockScreenObserver mock_observer2;
-  EXPECT_CALL(mock_observer2, OnScreenAvailable(url1_, screen_id_)).Times(0);
-  EXPECT_CALL(mock_observer2, OnScreenUnavailable(url1_, screen_id_)).Times(0);
+  MockReceiverObserver mock_observer2;
+  EXPECT_CALL(mock_observer2, OnReceiverAvailable(url1_, service_id_)).Times(0);
+  EXPECT_CALL(mock_observer2, OnReceiverUnavailable(url1_, service_id_))
+      .Times(0);
   listener_.AddObserver({url1_}, &mock_observer2);
 }
 
 TEST_F(UrlAvailabilityRequesterTest, PartiallyCachedAnswer) {
-  listener_.AddScreen(info1_);
+  listener_.AddReceiver(info1_);
 
-  MockScreenObserver mock_observer1;
+  MockReceiverObserver mock_observer1;
   listener_.AddObserver({url1_}, &mock_observer1);
 
   msgs::PresentationUrlAvailabilityRequest request;
@@ -326,13 +330,13 @@ TEST_F(UrlAvailabilityRequesterTest, PartiallyCachedAnswer) {
       std::vector<msgs::PresentationUrlAvailability>{msgs::kNotCompatible},
       fake_factory_->GetIncomingStream(receiver_endpoint_, connection_id));
 
-  EXPECT_CALL(mock_observer1, OnScreenAvailable(url1_, screen_id_)).Times(0);
-  EXPECT_CALL(mock_observer1, OnScreenUnavailable(url1_, screen_id_));
+  EXPECT_CALL(mock_observer1, OnReceiverAvailable(url1_, service_id_)).Times(0);
+  EXPECT_CALL(mock_observer1, OnReceiverUnavailable(url1_, service_id_));
   RunTasksUntilIdle();
 
-  MockScreenObserver mock_observer2;
-  EXPECT_CALL(mock_observer2, OnScreenAvailable(url1_, screen_id_)).Times(0);
-  EXPECT_CALL(mock_observer2, OnScreenUnavailable(url1_, screen_id_));
+  MockReceiverObserver mock_observer2;
+  EXPECT_CALL(mock_observer2, OnReceiverAvailable(url1_, service_id_)).Times(0);
+  EXPECT_CALL(mock_observer2, OnReceiverUnavailable(url1_, service_id_));
   listener_.AddObserver({url1_, url2_}, &mock_observer2);
 
   EXPECT_CALL(mock_callback_, OnStreamMessage(_, _, _, _, _))
@@ -354,15 +358,15 @@ TEST_F(UrlAvailabilityRequesterTest, PartiallyCachedAnswer) {
       std::vector<msgs::PresentationUrlAvailability>{msgs::kNotCompatible},
       fake_factory_->GetIncomingStream(receiver_endpoint_, connection_id));
 
-  EXPECT_CALL(mock_observer2, OnScreenAvailable(url2_, screen_id_)).Times(0);
-  EXPECT_CALL(mock_observer2, OnScreenUnavailable(url2_, screen_id_));
+  EXPECT_CALL(mock_observer2, OnReceiverAvailable(url2_, service_id_)).Times(0);
+  EXPECT_CALL(mock_observer2, OnReceiverUnavailable(url2_, service_id_));
   RunTasksUntilIdle();
 }
 
 TEST_F(UrlAvailabilityRequesterTest, MultipleOverlappingObservers) {
-  listener_.AddScreen(info1_);
+  listener_.AddReceiver(info1_);
 
-  MockScreenObserver mock_observer1;
+  MockReceiverObserver mock_observer1;
   listener_.AddObserver({url1_}, &mock_observer1);
 
   msgs::PresentationUrlAvailabilityRequest request;
@@ -386,12 +390,13 @@ TEST_F(UrlAvailabilityRequesterTest, MultipleOverlappingObservers) {
       std::vector<msgs::PresentationUrlAvailability>{msgs::kCompatible},
       fake_factory_->GetIncomingStream(receiver_endpoint_, connection_id));
 
-  EXPECT_CALL(mock_observer1, OnScreenAvailable(url1_, screen_id_));
-  EXPECT_CALL(mock_observer1, OnScreenUnavailable(url1_, screen_id_)).Times(0);
+  EXPECT_CALL(mock_observer1, OnReceiverAvailable(url1_, service_id_));
+  EXPECT_CALL(mock_observer1, OnReceiverUnavailable(url1_, service_id_))
+      .Times(0);
   RunTasksUntilIdle();
 
-  MockScreenObserver mock_observer2;
-  EXPECT_CALL(mock_observer2, OnScreenAvailable(url1_, screen_id_));
+  MockReceiverObserver mock_observer2;
+  EXPECT_CALL(mock_observer2, OnReceiverAvailable(url1_, service_id_));
   listener_.AddObserver({url1_, url2_}, &mock_observer2);
 
   EXPECT_CALL(mock_callback_, OnStreamMessage(_, _, _, _, _))
@@ -413,16 +418,16 @@ TEST_F(UrlAvailabilityRequesterTest, MultipleOverlappingObservers) {
       std::vector<msgs::PresentationUrlAvailability>{msgs::kNotCompatible},
       fake_factory_->GetIncomingStream(receiver_endpoint_, connection_id));
 
-  EXPECT_CALL(mock_observer1, OnScreenUnavailable(_, screen_id_)).Times(0);
-  EXPECT_CALL(mock_observer2, OnScreenAvailable(_, screen_id_)).Times(0);
-  EXPECT_CALL(mock_observer2, OnScreenUnavailable(url2_, screen_id_));
+  EXPECT_CALL(mock_observer1, OnReceiverUnavailable(_, service_id_)).Times(0);
+  EXPECT_CALL(mock_observer2, OnReceiverAvailable(_, service_id_)).Times(0);
+  EXPECT_CALL(mock_observer2, OnReceiverUnavailable(url2_, service_id_));
   RunTasksUntilIdle();
 }
 
 TEST_F(UrlAvailabilityRequesterTest, RemoveObserverUrls) {
-  listener_.AddScreen(info1_);
+  listener_.AddReceiver(info1_);
 
-  MockScreenObserver mock_observer1;
+  MockReceiverObserver mock_observer1;
   listener_.AddObserver({url1_}, &mock_observer1);
 
   msgs::PresentationUrlAvailabilityRequest request;
@@ -447,11 +452,12 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserverUrls) {
       std::vector<msgs::PresentationUrlAvailability>{msgs::kCompatible},
       fake_factory_->GetIncomingStream(receiver_endpoint_, connection_id));
 
-  EXPECT_CALL(mock_observer1, OnScreenAvailable(url1_, screen_id_));
-  EXPECT_CALL(mock_observer1, OnScreenUnavailable(url1_, screen_id_)).Times(0);
+  EXPECT_CALL(mock_observer1, OnReceiverAvailable(url1_, service_id_));
+  EXPECT_CALL(mock_observer1, OnReceiverUnavailable(url1_, service_id_))
+      .Times(0);
   RunTasksUntilIdle();
 
-  MockScreenObserver mock_observer2;
+  MockReceiverObserver mock_observer2;
   listener_.AddObserver({url1_, url2_}, &mock_observer2);
 
   EXPECT_CALL(mock_callback_, OnStreamMessage(_, _, _, _, _))
@@ -475,8 +481,8 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserverUrls) {
       std::vector<msgs::PresentationUrlAvailability>{msgs::kNotCompatible},
       fake_factory_->GetIncomingStream(receiver_endpoint_, connection_id));
 
-  EXPECT_CALL(mock_observer2, OnScreenAvailable(_, screen_id_)).Times(0);
-  EXPECT_CALL(mock_observer2, OnScreenUnavailable(url2_, screen_id_));
+  EXPECT_CALL(mock_observer2, OnReceiverAvailable(_, service_id_)).Times(0);
+  EXPECT_CALL(mock_observer2, OnReceiverUnavailable(url2_, service_id_));
   RunTasksUntilIdle();
 
   SendAvailabilityEvent(
@@ -484,15 +490,16 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserverUrls) {
       std::vector<msgs::PresentationUrlAvailability>{msgs::kNotCompatible},
       fake_factory_->GetIncomingStream(receiver_endpoint_, connection_id));
 
-  EXPECT_CALL(mock_observer1, OnScreenUnavailable(url1_, screen_id_)).Times(0);
-  EXPECT_CALL(mock_observer2, OnScreenUnavailable(url1_, screen_id_));
+  EXPECT_CALL(mock_observer1, OnReceiverUnavailable(url1_, service_id_))
+      .Times(0);
+  EXPECT_CALL(mock_observer2, OnReceiverUnavailable(url1_, service_id_));
   RunTasksUntilIdle();
 }
 
 TEST_F(UrlAvailabilityRequesterTest, RemoveObserver) {
-  listener_.AddScreen(info1_);
+  listener_.AddReceiver(info1_);
 
-  MockScreenObserver mock_observer1;
+  MockReceiverObserver mock_observer1;
   listener_.AddObserver({url1_}, &mock_observer1);
 
   msgs::PresentationUrlAvailabilityRequest request;
@@ -517,11 +524,12 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserver) {
       std::vector<msgs::PresentationUrlAvailability>{msgs::kCompatible},
       fake_factory_->GetIncomingStream(receiver_endpoint_, connection_id));
 
-  EXPECT_CALL(mock_observer1, OnScreenAvailable(url1_, screen_id_));
-  EXPECT_CALL(mock_observer1, OnScreenUnavailable(url1_, screen_id_)).Times(0);
+  EXPECT_CALL(mock_observer1, OnReceiverAvailable(url1_, service_id_));
+  EXPECT_CALL(mock_observer1, OnReceiverUnavailable(url1_, service_id_))
+      .Times(0);
   RunTasksUntilIdle();
 
-  MockScreenObserver mock_observer2;
+  MockReceiverObserver mock_observer2;
   listener_.AddObserver({url1_, url2_}, &mock_observer2);
 
   EXPECT_CALL(mock_callback_, OnStreamMessage(_, _, _, _, _))
@@ -546,8 +554,8 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserver) {
       std::vector<msgs::PresentationUrlAvailability>{msgs::kNotCompatible},
       fake_factory_->GetIncomingStream(receiver_endpoint_, connection_id));
 
-  EXPECT_CALL(mock_observer2, OnScreenAvailable(_, screen_id_)).Times(0);
-  EXPECT_CALL(mock_observer2, OnScreenUnavailable(url2_, screen_id_));
+  EXPECT_CALL(mock_observer2, OnReceiverAvailable(_, service_id_)).Times(0);
+  EXPECT_CALL(mock_observer2, OnReceiverUnavailable(url2_, service_id_));
   RunTasksUntilIdle();
 
   SendAvailabilityEvent(
@@ -555,8 +563,9 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserver) {
       std::vector<msgs::PresentationUrlAvailability>{msgs::kNotCompatible},
       fake_factory_->GetIncomingStream(receiver_endpoint_, connection_id));
 
-  EXPECT_CALL(mock_observer1, OnScreenUnavailable(url1_, screen_id_)).Times(0);
-  EXPECT_CALL(mock_observer2, OnScreenUnavailable(url1_, screen_id_));
+  EXPECT_CALL(mock_observer1, OnReceiverUnavailable(url1_, service_id_))
+      .Times(0);
+  EXPECT_CALL(mock_observer2, OnReceiverUnavailable(url1_, service_id_));
   RunTasksUntilIdle();
 
   listener_.RemoveObserver(&mock_observer2);
@@ -571,15 +580,15 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserver) {
       std::vector<msgs::PresentationUrlAvailability>{msgs::kCompatible},
       fake_factory_->GetIncomingStream(receiver_endpoint_, connection_id));
 
-  EXPECT_CALL(mock_observer1, OnScreenUnavailable(_, screen_id_)).Times(0);
-  EXPECT_CALL(mock_observer2, OnScreenUnavailable(_, screen_id_)).Times(0);
+  EXPECT_CALL(mock_observer1, OnReceiverUnavailable(_, service_id_)).Times(0);
+  EXPECT_CALL(mock_observer2, OnReceiverUnavailable(_, service_id_)).Times(0);
   RunTasksUntilIdle();
 }
 
 TEST_F(UrlAvailabilityRequesterTest, EventUpdate) {
-  listener_.AddScreen(info1_);
+  listener_.AddReceiver(info1_);
 
-  MockScreenObserver mock_observer1;
+  MockReceiverObserver mock_observer1;
   listener_.AddObserver({url1_, url2_}, &mock_observer1);
 
   msgs::PresentationUrlAvailabilityRequest request;
@@ -604,9 +613,9 @@ TEST_F(UrlAvailabilityRequesterTest, EventUpdate) {
                                                      msgs::kCompatible},
       fake_factory_->GetIncomingStream(receiver_endpoint_, connection_id));
 
-  EXPECT_CALL(mock_observer1, OnScreenAvailable(url1_, screen_id_));
-  EXPECT_CALL(mock_observer1, OnScreenAvailable(url2_, screen_id_));
-  EXPECT_CALL(mock_observer1, OnScreenUnavailable(_, screen_id_)).Times(0);
+  EXPECT_CALL(mock_observer1, OnReceiverAvailable(url1_, service_id_));
+  EXPECT_CALL(mock_observer1, OnReceiverAvailable(url2_, service_id_));
+  EXPECT_CALL(mock_observer1, OnReceiverUnavailable(_, service_id_)).Times(0);
   RunTasksUntilIdle();
 
   EXPECT_CALL(mock_callback_, OnStreamMessage(_, _, _, _, _)).Times(0);
@@ -615,14 +624,14 @@ TEST_F(UrlAvailabilityRequesterTest, EventUpdate) {
       std::vector<msgs::PresentationUrlAvailability>{msgs::kNotCompatible},
       fake_factory_->GetIncomingStream(receiver_endpoint_, connection_id));
 
-  EXPECT_CALL(mock_observer1, OnScreenUnavailable(url2_, screen_id_));
+  EXPECT_CALL(mock_observer1, OnReceiverUnavailable(url2_, service_id_));
   RunTasksUntilIdle();
 }
 
 TEST_F(UrlAvailabilityRequesterTest, RefreshWatches) {
-  listener_.AddScreen(info1_);
+  listener_.AddReceiver(info1_);
 
-  MockScreenObserver mock_observer1;
+  MockReceiverObserver mock_observer1;
   listener_.AddObserver({url1_}, &mock_observer1);
 
   msgs::PresentationUrlAvailabilityRequest request;
@@ -646,8 +655,8 @@ TEST_F(UrlAvailabilityRequesterTest, RefreshWatches) {
       std::vector<msgs::PresentationUrlAvailability>{msgs::kCompatible},
       fake_factory_->GetIncomingStream(receiver_endpoint_, connection_id));
 
-  EXPECT_CALL(mock_observer1, OnScreenAvailable(url1_, screen_id_));
-  EXPECT_CALL(mock_observer1, OnScreenUnavailable(_, screen_id_)).Times(0);
+  EXPECT_CALL(mock_observer1, OnReceiverAvailable(url1_, service_id_));
+  EXPECT_CALL(mock_observer1, OnReceiverUnavailable(_, service_id_)).Times(0);
   RunTasksUntilIdle();
 
   fake_clock_->Advance(platform::TimeDelta::FromSeconds(60));
@@ -672,14 +681,14 @@ TEST_F(UrlAvailabilityRequesterTest, RefreshWatches) {
       std::vector<msgs::PresentationUrlAvailability>{msgs::kNotCompatible},
       fake_factory_->GetIncomingStream(receiver_endpoint_, connection_id));
 
-  EXPECT_CALL(mock_observer1, OnScreenUnavailable(url1_, screen_id_));
+  EXPECT_CALL(mock_observer1, OnReceiverUnavailable(url1_, service_id_));
   RunTasksUntilIdle();
 }
 
 TEST_F(UrlAvailabilityRequesterTest, ResponseAfterRemoveObserver) {
-  listener_.AddScreen(info1_);
+  listener_.AddReceiver(info1_);
 
-  MockScreenObserver mock_observer1;
+  MockReceiverObserver mock_observer1;
   listener_.AddObserver({url1_}, &mock_observer1);
 
   msgs::PresentationUrlAvailabilityRequest request;
@@ -704,20 +713,23 @@ TEST_F(UrlAvailabilityRequesterTest, ResponseAfterRemoveObserver) {
       std::vector<msgs::PresentationUrlAvailability>{msgs::kCompatible},
       fake_factory_->GetIncomingStream(receiver_endpoint_, connection_id));
 
-  EXPECT_CALL(mock_observer1, OnScreenAvailable(url1_, screen_id_)).Times(0);
-  EXPECT_CALL(mock_observer1, OnScreenUnavailable(url1_, screen_id_)).Times(0);
+  EXPECT_CALL(mock_observer1, OnReceiverAvailable(url1_, service_id_)).Times(0);
+  EXPECT_CALL(mock_observer1, OnReceiverUnavailable(url1_, service_id_))
+      .Times(0);
   RunTasksUntilIdle();
 
-  MockScreenObserver mock_observer2;
-  EXPECT_CALL(mock_observer2, OnScreenAvailable(url1_, screen_id_)).Times(0);
-  EXPECT_CALL(mock_observer2, OnScreenUnavailable(url1_, screen_id_)).Times(0);
+  MockReceiverObserver mock_observer2;
+  EXPECT_CALL(mock_observer2, OnReceiverAvailable(url1_, service_id_)).Times(0);
+  EXPECT_CALL(mock_observer2, OnReceiverUnavailable(url1_, service_id_))
+      .Times(0);
   listener_.AddObserver({url1_}, &mock_observer2);
 }
 
-TEST_F(UrlAvailabilityRequesterTest, EmptyCacheAfterRemoveObserverThenScreen) {
-  listener_.AddScreen(info1_);
+TEST_F(UrlAvailabilityRequesterTest,
+       EmptyCacheAfterRemoveObserverThenReceiver) {
+  listener_.AddReceiver(info1_);
 
-  MockScreenObserver mock_observer1;
+  MockReceiverObserver mock_observer1;
   listener_.AddObserver({url1_}, &mock_observer1);
 
   msgs::PresentationUrlAvailabilityRequest request;
@@ -741,22 +753,24 @@ TEST_F(UrlAvailabilityRequesterTest, EmptyCacheAfterRemoveObserverThenScreen) {
       std::vector<msgs::PresentationUrlAvailability>{msgs::kCompatible},
       fake_factory_->GetIncomingStream(receiver_endpoint_, connection_id));
 
-  EXPECT_CALL(mock_observer1, OnScreenAvailable(url1_, screen_id_));
-  EXPECT_CALL(mock_observer1, OnScreenUnavailable(url1_, screen_id_)).Times(0);
+  EXPECT_CALL(mock_observer1, OnReceiverAvailable(url1_, service_id_));
+  EXPECT_CALL(mock_observer1, OnReceiverUnavailable(url1_, service_id_))
+      .Times(0);
   RunTasksUntilIdle();
 
   listener_.RemoveObserverUrls({url1_}, &mock_observer1);
-  listener_.RemoveScreen(info1_);
-  MockScreenObserver mock_observer2;
-  EXPECT_CALL(mock_observer2, OnScreenAvailable(url1_, screen_id_)).Times(0);
-  EXPECT_CALL(mock_observer2, OnScreenUnavailable(url1_, screen_id_)).Times(0);
+  listener_.RemoveReceiver(info1_);
+  MockReceiverObserver mock_observer2;
+  EXPECT_CALL(mock_observer2, OnReceiverAvailable(url1_, service_id_)).Times(0);
+  EXPECT_CALL(mock_observer2, OnReceiverUnavailable(url1_, service_id_))
+      .Times(0);
   listener_.AddObserver({url1_}, &mock_observer2);
 }
 
 TEST_F(UrlAvailabilityRequesterTest, RemoveObserverInSteps) {
-  listener_.AddScreen(info1_);
+  listener_.AddReceiver(info1_);
 
-  MockScreenObserver mock_observer1;
+  MockReceiverObserver mock_observer1;
   listener_.AddObserver({url1_, url2_}, &mock_observer1);
 
   msgs::PresentationUrlAvailabilityRequest request;
@@ -788,10 +802,12 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserverInSteps) {
                                                      msgs::kNotCompatible},
       fake_factory_->GetIncomingStream(receiver_endpoint_, connection_id));
 
-  EXPECT_CALL(mock_observer1, OnScreenAvailable(url1_, screen_id_)).Times(0);
-  EXPECT_CALL(mock_observer1, OnScreenUnavailable(url1_, screen_id_)).Times(0);
-  EXPECT_CALL(mock_observer1, OnScreenAvailable(url2_, screen_id_)).Times(0);
-  EXPECT_CALL(mock_observer1, OnScreenUnavailable(url2_, screen_id_)).Times(0);
+  EXPECT_CALL(mock_observer1, OnReceiverAvailable(url1_, service_id_)).Times(0);
+  EXPECT_CALL(mock_observer1, OnReceiverUnavailable(url1_, service_id_))
+      .Times(0);
+  EXPECT_CALL(mock_observer1, OnReceiverAvailable(url2_, service_id_)).Times(0);
+  EXPECT_CALL(mock_observer1, OnReceiverUnavailable(url2_, service_id_))
+      .Times(0);
   // NOTE: This message was generated between the two RemoveObserverUrls calls
   // above.  So even though the request is internally cancelled almost
   // immediately, this still went out on the wire.

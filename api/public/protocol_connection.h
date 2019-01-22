@@ -43,7 +43,7 @@ class ProtocolConnection {
   // alongside the Open Screen Protocol.
 
   // NOTE: ProtocolConnection instances that are owned by clients will have a
-  // ScreenInfo attached with data from discovery and QUIC connection
+  // ServiceInfo attached with data from discovery and QUIC connection
   // establishment.  What about server connections?  We probably want to have
   // two different structures representing what the client and server know about
   // a connection.

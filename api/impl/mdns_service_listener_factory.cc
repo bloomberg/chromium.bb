@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "api/public/mdns_screen_listener_factory.h"
+#include "api/public/mdns_service_listener_factory.h"
 
 #include "api/impl/internal_services.h"
 
 namespace openscreen {
 
 // static
-std::unique_ptr<ScreenListener> MdnsScreenListenerFactory::Create(
-    const MdnsScreenListenerConfig& config,
-    ScreenListener::Observer* observer) {
+std::unique_ptr<ServiceListener> MdnsServiceListenerFactory::Create(
+    const MdnsServiceListenerConfig& config,
+    ServiceListener::Observer* observer) {
   return InternalServices::CreateListener(config, observer);
 }
 

@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef API_IMPL_SCREEN_LISTENER_IMPL_H_
-#define API_IMPL_SCREEN_LISTENER_IMPL_H_
+#ifndef API_IMPL_SERVICE_LISTENER_IMPL_H_
+#define API_IMPL_SERVICE_LISTENER_IMPL_H_
 
-#include "api/impl/screen_list.h"
-#include "api/public/screen_info.h"
-#include "api/public/screen_listener.h"
+#include "api/impl/receiver_list.h"
+#include "api/public/service_info.h"
+#include "api/public/service_listener.h"
 #include "base/macros.h"
 #include "base/with_destruction_callback.h"
 
 namespace openscreen {
 
-class ScreenListenerImpl final : public ScreenListener,
-                                 public WithDestructionCallback {
+class ServiceListenerImpl final : public ServiceListener,
+                                  public WithDestructionCallback {
  public:
   class Delegate {
    public:
     Delegate();
     virtual ~Delegate();
 
-    void SetListenerImpl(ScreenListenerImpl* listener);
+    void SetListenerImpl(ServiceListenerImpl* listener);
 
     virtual void StartListener() = 0;
     virtual void StartAndSuspendListener() = 0;
@@ -33,25 +33,25 @@ class ScreenListenerImpl final : public ScreenListener,
    protected:
     void SetState(State state) { listener_->SetState(state); }
 
-    ScreenListenerImpl* listener_ = nullptr;
+    ServiceListenerImpl* listener_ = nullptr;
   };
 
   // |observer| is optional.  If it is provided, it will receive appropriate
-  // notifications about this ScreenListener.  |delegate| is required and is
+  // notifications about this ServiceListener.  |delegate| is required and is
   // used to implement state transitions.
-  ScreenListenerImpl(Observer* observer, Delegate* delegate);
-  ~ScreenListenerImpl() override;
+  ServiceListenerImpl(Observer* observer, Delegate* delegate);
+  ~ServiceListenerImpl() override;
 
-  // Called by |delegate_| when there are updates to the available screens.
-  void OnScreenAdded(const ScreenInfo& info);
-  void OnScreenChanged(const ScreenInfo& info);
-  void OnScreenRemoved(const ScreenInfo& info);
-  void OnAllScreensRemoved();
+  // Called by |delegate_| when there are updates to the available receivers.
+  void OnReceiverAdded(const ServiceInfo& info);
+  void OnReceiverChanged(const ServiceInfo& info);
+  void OnReceiverRemoved(const ServiceInfo& info);
+  void OnAllReceiversRemoved();
 
   // Called by |delegate_| when an internal error occurs.
-  void OnError(ScreenListenerError error);
+  void OnError(ServiceListenerError error);
 
-  // ScreenListener overrides.
+  // ServiceListener overrides.
   bool Start() override;
   bool StartAndSuspend() override;
   bool Stop() override;
@@ -59,7 +59,7 @@ class ScreenListenerImpl final : public ScreenListener,
   bool Resume() override;
   bool SearchNow() override;
 
-  const std::vector<ScreenInfo>& GetScreens() const override;
+  const std::vector<ServiceInfo>& GetReceivers() const override;
 
  private:
   // Called by |delegate_| to transition the state machine (except kStarting and
@@ -71,11 +71,11 @@ class ScreenListenerImpl final : public ScreenListener,
   void MaybeNotifyObserver();
 
   Delegate* const delegate_;
-  ScreenList screen_list_;
+  ReceiverList receiver_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScreenListenerImpl);
+  DISALLOW_COPY_AND_ASSIGN(ServiceListenerImpl);
 };
 
 }  // namespace openscreen
 
-#endif  // API_IMPL_SCREEN_LISTENER_IMPL_H_
+#endif  // API_IMPL_SERVICE_LISTENER_IMPL_H_
