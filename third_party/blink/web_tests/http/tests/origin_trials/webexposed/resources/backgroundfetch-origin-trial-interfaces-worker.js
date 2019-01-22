@@ -5,7 +5,6 @@ test(t => {
 
   OriginTrialsHelper.check_properties(this, {
        'ServiceWorkerRegistration': ['backgroundFetch'],
-       'BackgroundFetchFetch': ['request'],
        'BackgroundFetchManager': ['fetch', 'get', 'getIds'],
        'BackgroundFetchRegistration': ['id', 'uploadTotal', 'uploaded',
                                        'downloadTotal', 'downloaded', 'result',

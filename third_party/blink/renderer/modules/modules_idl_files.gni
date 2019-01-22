@@ -66,7 +66,6 @@ modules_idl_files =
           "animationworklet/worklet_group_effect_proxy.idl",
           "app_banner/before_install_prompt_event.idl",
           "background_fetch/background_fetch_event.idl",
-          "background_fetch/background_fetch_fetch.idl",
           "background_fetch/background_fetch_manager.idl",
           "background_fetch/background_fetch_record.idl",
           "background_fetch/background_fetch_registration.idl",
