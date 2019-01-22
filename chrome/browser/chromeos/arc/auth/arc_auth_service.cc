@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/arc/auth/arc_auth_service.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -224,6 +225,26 @@ ArcAuthService::~ArcAuthService() {
   arc_bridge_service_->auth()->SetHost(nullptr);
 }
 
+void ArcAuthService::GetGoogleAccountsInArc(
+    GetGoogleAccountsInArcCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(pending_get_arc_accounts_callback_.is_null())
+      << "Cannot have more than one pending GetGoogleAccountsInArc request";
+
+  if (!arc::IsArcProvisioned(profile_)) {
+    std::move(callback).Run(std::vector<mojom::ArcAccountInfoPtr>());
+    return;
+  }
+
+  if (!arc_bridge_service_->auth()->IsConnected()) {
+    pending_get_arc_accounts_callback_ = std::move(callback);
+    // Will be retried in |OnConnectionReady|.
+    return;
+  }
+
+  DispatchAccountsInArc(std::move(callback));
+}
+
 void ArcAuthService::OnConnectionReady() {
   // |TriggerAccountsPushToArc()| will not be triggered for the first session,
   // when ARC has not been provisioned yet. For the first session, an account
@@ -233,6 +254,9 @@ void ArcAuthService::OnConnectionReady() {
   // |ArcSessionManager::Get()->IsArcProvisioned()| will be |true|.
   if (arc::IsArcProvisioned(profile_))
     TriggerAccountsPushToArc();
+
+  if (pending_get_arc_accounts_callback_)
+    DispatchAccountsInArc(std::move(pending_get_arc_accounts_callback_));
 }
 
 void ArcAuthService::OnConnectionClosed() {
@@ -712,6 +736,19 @@ void ArcAuthService::TriggerAccountsPushToArc() {
   DCHECK(account_manager_);
   account_manager_->GetAccounts(base::BindOnce(&ArcAuthService::OnGetAccounts,
                                                weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ArcAuthService::DispatchAccountsInArc(
+    GetGoogleAccountsInArcCallback callback) {
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->auth(),
+                                               GetGoogleAccounts);
+  if (!instance) {
+    // Complete the callback so that it is not kept waiting forever.
+    std::move(callback).Run(std::vector<mojom::ArcAccountInfoPtr>());
+    return;
+  }
+
+  instance->GetGoogleAccounts(std::move(callback));
 }
 
 }  // namespace arc
