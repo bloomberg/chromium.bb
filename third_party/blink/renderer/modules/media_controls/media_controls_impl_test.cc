@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_current_time_display_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_download_button_element.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_mute_button_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_overflow_menu_list_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_remaining_time_display_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_timeline_element.h"
@@ -254,6 +255,9 @@ class MediaControlsImplTest : public PageTestBase,
   MediaControlRemainingTimeDisplayElement* GetRemainingTimeDisplayElement()
       const {
     return media_controls_->duration_display_;
+  }
+  MediaControlMuteButtonElement* MuteButtonElement() const {
+    return media_controls_->mute_button_;
   }
   MockWebMediaPlayerForImpl* WebMediaPlayer() {
     return static_cast<MockWebMediaPlayerForImpl*>(
@@ -1049,17 +1053,17 @@ TEST_F(MediaControlsImplTestWithMockScheduler,
 
   // Tabbing between controls prevents controls from hiding.
   platform()->RunForPeriodSeconds(2);
-  MediaControls().DispatchEvent(*Event::Create("focusin"));
+  MuteButtonElement()->DispatchEvent(*Event::CreateBubble("focusin"));
   platform()->RunForPeriodSeconds(2);
   EXPECT_TRUE(IsElementVisible(*panel));
 
   // Seeking on the timeline or volume bar prevents controls from hiding.
-  MediaControls().DispatchEvent(*Event::Create("input"));
+  TimelineElement()->DispatchEvent(*Event::CreateBubble("input"));
   platform()->RunForPeriodSeconds(2);
   EXPECT_TRUE(IsElementVisible(*panel));
 
   // Pressing a key prevents controls from hiding.
-  MediaControls().PanelElement()->DispatchEvent(*Event::Create("keypress"));
+  MuteButtonElement()->DispatchEvent(*Event::CreateBubble("keypress"));
   platform()->RunForPeriodSeconds(2);
   EXPECT_TRUE(IsElementVisible(*panel));
 
@@ -1336,10 +1340,8 @@ TEST_F(MediaControlsImplTestWithMockScheduler,
 
   WebTestSupport::SetIsRunningWebTest(false);
 
-  Element* volume_slider = GetElementByShadowPseudoId(
-      MediaControls(), "-webkit-media-controls-volume-slider");
-  Element* mute_btn = GetElementByShadowPseudoId(
-      MediaControls(), "-webkit-media-controls-mute-button");
+  Element* volume_slider = VolumeSliderElement();
+  Element* mute_btn = MuteButtonElement();
 
   ASSERT_NE(nullptr, volume_slider);
   ASSERT_NE(nullptr, mute_btn);
@@ -1381,8 +1383,7 @@ TEST_F(MediaControlsImplTestWithMockScheduler,
 
   WebTestSupport::SetIsRunningWebTest(false);
 
-  Element* volume_slider = GetElementByShadowPseudoId(
-      MediaControls(), "-webkit-media-controls-volume-slider");
+  Element* volume_slider = VolumeSliderElement();
 
   ASSERT_NE(nullptr, volume_slider);
 
