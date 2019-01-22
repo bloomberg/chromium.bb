@@ -69,6 +69,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
         return gfx::kGoogleGrey700;
       case NativeTheme::kColorId_TextfieldSelectionColor:
       case NativeTheme::kColorId_LabelTextSelectionColor:
+      case NativeTheme::kColorId_TreeSelectionBackgroundFocused:
+      case NativeTheme::kColorId_TreeSelectionBackgroundUnfocused:
         return color_utils::AlphaBlend(
             SK_ColorWHITE,
             GetAuraColor(
@@ -85,6 +87,10 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
         return gfx::kGoogleBlue300;
       case NativeTheme::kColorId_HighlightedMenuItemBackgroundColor:
         return gfx::kGoogleGrey700;
+      case NativeTheme::kColorId_TreeBackground:
+        return gfx::kGoogleGrey800;
+      case NativeTheme::kColorId_TreeText:
+        return SkColorSetA(SK_ColorWHITE, 0xDD);
       default:
         break;
     }
