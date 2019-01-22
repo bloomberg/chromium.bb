@@ -56,6 +56,25 @@ HRESULT CGaiaCredentialProvider::FinalConstruct() {
 void CGaiaCredentialProvider::FinalRelease() {
   LOGFN(INFO);
   ClearTransient();
+
+  // Delete the startup sentinel file if any still exists. It can still exist
+  // in 2 cases:
+
+  // 1. The FinalRelease should only occur after the user has logged in, so if
+  // they never selected any gaia credential and just used normal credentials
+  // this function will be called in that situation and it is guaranteed that
+  // the user has at least been able provide some input to winlogon.
+  // 2. When no usage scenario is supported, none of the credentials will be
+  // selected and thus the gcpw startup sentinel file will not be deleted.
+  // So in the case where the user is asked for CPUS_CRED_UI enough times,
+  // the sentinel file size will keep growing without being deleted and
+  // eventually GCPW will be disabled completed. In the unsupported usage
+  // scenario, FinalRelease will be called shortly after SetUsageScenario
+  // if the function returns E_NOTIMPL so try to catch potential crashes
+  // of the destruction of the provider when it is not used because
+  // crashes in this case will prevent the cred ui from coming up and not
+  // allow the user to access their desired resource.
+  DeleteStartupSentinel();
 }
 
 HRESULT CGaiaCredentialProvider::CreateGaiaCredential() {
@@ -125,6 +144,12 @@ void CGaiaCredentialProvider::CleanupOlderVersions() {
   base::FilePath versions_directory = GetInstallDirectory();
   if (!versions_directory.empty())
     DeleteVersionsExcept(versions_directory, TEXT(CHROME_VERSION_STRING));
+}
+
+// Static.
+bool CGaiaCredentialProvider::IsUsageScenarioSupported(
+    CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus) {
+  return cpus == CPUS_LOGON || cpus == CPUS_UNLOCK_WORKSTATION;
 }
 
 // IGaiaCredentialProvider ////////////////////////////////////////////////////
@@ -315,19 +340,8 @@ HRESULT CGaiaCredentialProvider::SetUsageScenario(
   cpus_flags_ = flags;
 
   // This credential provider only supports signing in and unlocking the screen.
-  HRESULT hr = E_INVALIDARG;
-  switch (cpus) {
-    case CPUS_LOGON:
-    case CPUS_UNLOCK_WORKSTATION:
-      hr = CreateGaiaCredential();
-      break;
-    case CPUS_CHANGE_PASSWORD:
-    case CPUS_CREDUI:
-    case CPUS_PLAP:
-    default:
-      hr = E_NOTIMPL;
-      break;
-  }
+  HRESULT hr =
+      IsUsageScenarioSupported(cpus) ? CreateGaiaCredential() : E_NOTIMPL;
 
   LOGFN(INFO) << "hr=" << putHR(hr) << " cpu=" << cpus
               << " flags=" << std::setbase(16) << flags;
