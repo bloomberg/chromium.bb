@@ -119,7 +119,8 @@ GFX_EXPORT bool IsDark(SkColor color);
 // |color|.
 GFX_EXPORT SkColor GetColorWithMaxContrast(SkColor color);
 
-// Blends towards the color with max contrast by |alpha|.
+// Blends towards the color with max contrast by |alpha|. The alpha of
+// the original color is preserved.
 GFX_EXPORT SkColor BlendTowardMaxContrast(SkColor color, SkAlpha alpha);
 
 // Returns whichever of |foreground1| or |foreground2| has higher contrast with
