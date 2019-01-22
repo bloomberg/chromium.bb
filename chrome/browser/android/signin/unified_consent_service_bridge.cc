@@ -27,6 +27,15 @@ static void JNI_UnifiedConsentServiceBridge_SetUnifiedConsentGiven(
   // TODO(crbug.com/907856): Remove.
 }
 
+static void JNI_UnifiedConsentServiceBridge_EnableGoogleServices(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& profileAndroid) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(profileAndroid);
+  auto* unifiedConsentService =
+      UnifiedConsentServiceFactory::GetForProfile(profile);
+  return unifiedConsentService->EnableGoogleServices();
+}
+
 static jboolean
 JNI_UnifiedConsentServiceBridge_IsUrlKeyedAnonymizedDataCollectionEnabled(
     JNIEnv* env,
