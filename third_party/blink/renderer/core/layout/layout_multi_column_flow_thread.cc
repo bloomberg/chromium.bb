@@ -492,7 +492,15 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::ColumnSetAtBlockOffset(
   // Avoid returning zero-height column sets, if possible. We found a column set
   // based on a flow thread coordinate. If multiple column sets share that
   // coordinate (because we have zero-height column sets between column
-  // spanners, for instance), look for one that has a height.
+  // spanners, for instance), look for one that has a height. Also look ahead to
+  // find a set that actually contains the coordinate. Note that when we do this
+  // during layout, it means that we might return a column set that hasn't got
+  // its flow thread boundaries updated yet (and thus using those from the
+  // previous layout), but that's the best we can do when our engine doesn't
+  // actually understand fragmentation. This may happen when there's a float
+  // that's split into multiple fragments because of column spanners, and we
+  // still perform all its layout at the position before the first spanner in
+  // question (i.e. where only the first fragment is supposed to be laid out).
   for (LayoutMultiColumnSet* walker = column_set; walker;
        walker = walker->NextSiblingMultiColumnSet()) {
     if (!walker->IsPageLogicalHeightKnown())
@@ -501,11 +509,10 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::ColumnSetAtBlockOffset(
       if (walker->LogicalTopInFlowThread() < offset &&
           walker->LogicalBottomInFlowThread() >= offset)
         return walker;
-    }
-    if (walker->LogicalTopInFlowThread() <= offset &&
-        walker->LogicalBottomInFlowThread() > offset)
+    } else if (walker->LogicalTopInFlowThread() <= offset &&
+               walker->LogicalBottomInFlowThread() > offset) {
       return walker;
-    break;
+    }
   }
   return column_set;
 }
