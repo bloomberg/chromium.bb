@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_metrics.h"
 
 namespace identity {
@@ -50,6 +51,15 @@ class AccountsMutator {
   // is invoked.
   virtual void InvalidateRefreshTokenForPrimaryAccount(
       signin_metrics::SourceForRefreshTokenOperation source) = 0;
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  // Removes the credentials associated to account_id from the internal storage,
+  // and moves them to |target|. The credentials are not revoked on the server,
+  // but the IdentityManager::Observer::OnRefreshTokenRemovedForAccount()
+  // notification is sent to the observers.
+  virtual void MoveAccount(AccountsMutator* target,
+                           const std::string& account_id) = 0;
+#endif
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AccountsMutator);

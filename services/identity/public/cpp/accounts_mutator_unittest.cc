@@ -571,4 +571,39 @@ TEST_F(AccountsMutatorTest, RemoveAllAccounts) {
   EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 0U);
 }
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+TEST_F(AccountsMutatorTest, MoveAccount) {
+  // All platforms that support DICE also support account mutation.
+  DCHECK(accounts_mutator());
+
+  AccountInfo account_info =
+      identity::MakeAccountAvailable(identity_manager(), kTestEmail);
+  EXPECT_TRUE(
+      identity_manager()->HasAccountWithRefreshToken(account_info.account_id));
+  EXPECT_FALSE(
+      identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
+          account_info.account_id));
+  EXPECT_EQ(1U, identity_manager()->GetAccountsWithRefreshTokens().size());
+
+  IdentityTestEnvironment other_identity_test_env;
+  auto* other_accounts_mutator =
+      other_identity_test_env.identity_manager()->GetAccountsMutator();
+
+  accounts_mutator()->MoveAccount(other_accounts_mutator,
+                                  account_info.account_id);
+  EXPECT_EQ(0U, identity_manager()->GetAccountsWithRefreshTokens().size());
+
+  auto other_accounts_with_refresh_token =
+      other_identity_test_env.identity_manager()
+          ->GetAccountsWithRefreshTokens();
+  EXPECT_EQ(1U, other_accounts_with_refresh_token.size());
+  EXPECT_TRUE(
+      other_identity_test_env.identity_manager()->HasAccountWithRefreshToken(
+          other_accounts_with_refresh_token[0].account_id));
+  EXPECT_FALSE(other_identity_test_env.identity_manager()
+                   ->HasAccountWithRefreshTokenInPersistentErrorState(
+                       other_accounts_with_refresh_token[0].account_id));
+}
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
 }  // namespace identity

@@ -37,6 +37,7 @@ source_set("cpp") {
   public_deps = [
     "//components/signin/core/browser:internals",
     "//components/signin/core/browser:shared",
+    "//components/signin/core/browser:signin_buildflags",
     "//services/identity/public/cpp:cpp_types",
     "//services/network/public/cpp",
   ]
