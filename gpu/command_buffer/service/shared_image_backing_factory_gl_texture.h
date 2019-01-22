@@ -65,13 +65,23 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
       const gfx::ColorSpace& color_space,
       uint32_t usage) override;
 
+  static std::unique_ptr<SharedImageBacking> CreateSharedImageForTest(
+      const Mailbox& mailbox,
+      GLenum target,
+      GLuint service_id,
+      bool is_cleared,
+      viz::ResourceFormat format,
+      const gfx::Size& size,
+      uint32_t usage);
+
  private:
   scoped_refptr<gl::GLImage> MakeGLImage(int client_id,
                                          gfx::GpuMemoryBufferHandle handle,
                                          gfx::BufferFormat format,
                                          SurfaceHandle surface_handle,
                                          const gfx::Size& size);
-  std::unique_ptr<SharedImageBacking> MakeBacking(
+  static std::unique_ptr<SharedImageBacking> MakeBacking(
+      bool passthrough,
       const Mailbox& mailbox,
       GLenum target,
       GLuint service_id,
@@ -86,6 +96,7 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       uint32_t usage);
+
   struct FormatInfo {
     FormatInfo();
     ~FormatInfo();

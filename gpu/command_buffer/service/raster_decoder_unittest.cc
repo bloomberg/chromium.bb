@@ -17,6 +17,7 @@
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "gpu/command_buffer/service/raster_decoder_unittest_base.h"
+#include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -185,9 +186,10 @@ TEST_P(RasterDecoderTest, CopyTexSubImage2DTwiceClearsUnclearedTexture) {
     EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailboxes)));
   }
 
-  auto* texture = gles2::Texture::CheckedCast(
-      group().mailbox_manager()->ConsumeTexture(client_texture_mailbox_));
-  EXPECT_TRUE(texture->SafeToRenderFrom());
+  auto representation =
+      group().shared_image_representation_factory()->ProduceGLTexture(
+          client_texture_mailbox_);
+  EXPECT_TRUE(representation->GetTexture()->SafeToRenderFrom());
 }
 
 TEST_P(RasterDecoderManualInitTest, CopyTexSubImage2DValidateColorFormat) {
@@ -201,7 +203,6 @@ TEST_P(RasterDecoderManualInitTest, CopyTexSubImage2DValidateColorFormat) {
       CreateFakeTexture(kNewServiceId, viz::ResourceFormat::RED_8,
                         /*width=*/2, /*height=*/2, /*cleared=*/true);
 
-  SetScopedTextureBinderExpectations(GL_TEXTURE_2D);
   auto& copy_cmd = *GetImmediateAs<CopySubTextureINTERNALImmediate>();
   GLbyte mailboxes[sizeof(gpu::Mailbox) * 2];
   CopyMailboxes(mailboxes, client_texture_mailbox_, dest_texture_mailbox);
