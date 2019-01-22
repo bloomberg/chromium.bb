@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.tab;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.util.Pair;
 
@@ -121,7 +120,7 @@ public class TabState {
         public WebContentsState deleteNavigationEntries(long predicate) {
             ByteBuffer newBuffer = nativeDeleteNavigationEntries(mBuffer, mVersion, predicate);
             if (newBuffer == null) return null;
-            WebContentsState newState = new TabState.WebContentsStateNative(newBuffer);
+            WebContentsState newState = new TabState.WebContentsState(newBuffer);
             newState.setVersion(TabState.CONTENTS_STATE_CURRENT_VERSION);
             return newState;
         }
@@ -132,22 +131,6 @@ public class TabState {
          */
         public void createHistoricalTab() {
             nativeCreateHistoricalTab(mBuffer, mVersion);
-        }
-    }
-
-    /** Deletes the native-side portion of the buffer. */
-    public static class WebContentsStateNative extends WebContentsState {
-        private final Handler mHandler;
-
-        public WebContentsStateNative(ByteBuffer buffer) {
-            super(buffer);
-            this.mHandler = new Handler();
-        }
-
-        @Override
-        protected void finalize() {
-            assert mHandler != null;
-            mHandler.post(() -> nativeFreeWebContentsStateBuffer(buffer()));
         }
     }
 
@@ -574,8 +557,6 @@ public class TabState {
 
     private static native String nativeGetVirtualUrlFromByteBuffer(
             ByteBuffer state, int savedStateVersion);
-
-    private static native void nativeFreeWebContentsStateBuffer(ByteBuffer buffer);
 
     private static native void nativeCreateHistoricalTab(ByteBuffer state, int savedStateVersion);
 }
