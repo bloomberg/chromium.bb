@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -34,7 +34,8 @@ AccountTrackerService* WebViewAccountTrackerServiceFactory::GetForBrowserState(
 // static
 WebViewAccountTrackerServiceFactory*
 WebViewAccountTrackerServiceFactory::GetInstance() {
-  return base::Singleton<WebViewAccountTrackerServiceFactory>::get();
+  static base::NoDestructor<WebViewAccountTrackerServiceFactory> instance;
+  return instance.get();
 }
 
 void WebViewAccountTrackerServiceFactory::RegisterBrowserStatePrefs(

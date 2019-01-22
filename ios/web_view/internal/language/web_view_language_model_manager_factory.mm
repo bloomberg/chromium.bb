@@ -5,7 +5,7 @@
 #include "ios/web_view/internal/language/web_view_language_model_manager_factory.h"
 
 #include "base/feature_list.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/language/core/browser/baseline_language_model.h"
@@ -74,7 +74,8 @@ void PrepareLanguageModels(WebViewBrowserState* const web_view_browser_state,
 // static
 WebViewLanguageModelManagerFactory*
 WebViewLanguageModelManagerFactory::GetInstance() {
-  return base::Singleton<WebViewLanguageModelManagerFactory>::get();
+  static base::NoDestructor<WebViewLanguageModelManagerFactory> instance;
+  return instance.get();
 }
 
 // static

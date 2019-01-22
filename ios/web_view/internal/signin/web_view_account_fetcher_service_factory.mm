@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/image_fetcher/ios/ios_image_decoder_impl.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -43,7 +43,8 @@ AccountFetcherService* WebViewAccountFetcherServiceFactory::GetForBrowserState(
 // static
 WebViewAccountFetcherServiceFactory*
 WebViewAccountFetcherServiceFactory::GetInstance() {
-  return base::Singleton<WebViewAccountFetcherServiceFactory>::get();
+  static base::NoDestructor<WebViewAccountFetcherServiceFactory> instance;
+  return instance.get();
 }
 
 void WebViewAccountFetcherServiceFactory::RegisterBrowserStatePrefs(

@@ -4,7 +4,7 @@
 
 #include "ios/web_view/internal/signin/web_view_gaia_cookie_manager_service_factory.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
@@ -39,7 +39,8 @@ WebViewGaiaCookieManagerServiceFactory::GetForBrowserState(
 // static
 WebViewGaiaCookieManagerServiceFactory*
 WebViewGaiaCookieManagerServiceFactory::GetInstance() {
-  return base::Singleton<WebViewGaiaCookieManagerServiceFactory>::get();
+  static base::NoDestructor<WebViewGaiaCookieManagerServiceFactory> instance;
+  return instance.get();
 }
 
 std::unique_ptr<KeyedService>

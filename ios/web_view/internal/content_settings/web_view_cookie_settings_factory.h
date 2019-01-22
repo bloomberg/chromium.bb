@@ -7,12 +7,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/refcounted_browser_state_keyed_service_factory.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}
 
 namespace content_settings {
 class CookieSettings;
@@ -32,7 +28,7 @@ class WebViewCookieSettingsFactory
   static WebViewCookieSettingsFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<WebViewCookieSettingsFactory>;
+  friend class base::NoDestructor<WebViewCookieSettingsFactory>;
 
   WebViewCookieSettingsFactory();
   ~WebViewCookieSettingsFactory() override;

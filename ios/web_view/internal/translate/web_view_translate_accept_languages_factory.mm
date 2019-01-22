@@ -4,7 +4,7 @@
 
 #include "ios/web_view/internal/translate/web_view_translate_accept_languages_factory.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/prefs/pref_service.h"
@@ -49,7 +49,8 @@ namespace ios_web_view {
 // static
 WebViewTranslateAcceptLanguagesFactory*
 WebViewTranslateAcceptLanguagesFactory::GetInstance() {
-  return base::Singleton<WebViewTranslateAcceptLanguagesFactory>::get();
+  static base::NoDestructor<WebViewTranslateAcceptLanguagesFactory> instance;
+  return instance.get();
 }
 
 // static

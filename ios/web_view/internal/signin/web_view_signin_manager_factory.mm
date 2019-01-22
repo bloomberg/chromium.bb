@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/time/time.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -55,7 +55,8 @@ SigninManager* WebViewSigninManagerFactory::GetForBrowserStateIfExists(
 
 // static
 WebViewSigninManagerFactory* WebViewSigninManagerFactory::GetInstance() {
-  return base::Singleton<WebViewSigninManagerFactory>::get();
+  static base::NoDestructor<WebViewSigninManagerFactory> instance;
+  return instance.get();
 }
 
 void WebViewSigninManagerFactory::RegisterBrowserStatePrefs(

@@ -4,7 +4,7 @@
 
 #include "ios/web_view/internal/content_settings/web_view_cookie_settings_factory.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/web_view/internal/content_settings/web_view_host_content_settings_map_factory.h"
@@ -26,7 +26,8 @@ WebViewCookieSettingsFactory::GetForBrowserState(
 
 // static
 WebViewCookieSettingsFactory* WebViewCookieSettingsFactory::GetInstance() {
-  return base::Singleton<WebViewCookieSettingsFactory>::get();
+  static base::NoDestructor<WebViewCookieSettingsFactory> instance;
+  return instance.get();
 }
 
 WebViewCookieSettingsFactory::WebViewCookieSettingsFactory()

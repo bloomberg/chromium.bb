@@ -5,7 +5,7 @@
 #include "ios/web_view/internal/app/application_context.h"
 
 #include "base/command_line.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/net_log/chrome_net_log.h"
@@ -43,7 +43,8 @@ void BindNetworkChangeManagerRequest(
 }  // namespace
 
 ApplicationContext* ApplicationContext::GetInstance() {
-  return base::Singleton<ApplicationContext>::get();
+  static base::NoDestructor<ApplicationContext> instance;
+  return instance.get();
 }
 
 ApplicationContext::ApplicationContext() {
