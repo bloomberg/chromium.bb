@@ -66,6 +66,11 @@ void ArCoreJavaUtils::OnRequestInstallSupportedArCoreResult(
   arcore_device_->OnRequestInstallSupportedArCoreResult(success);
 }
 
+bool ArCoreJavaUtils::CanRequestInstallArModule() {
+  return Java_ArCoreJavaUtils_canRequestInstallArModule(AttachCurrentThread(),
+                                                        j_arcore_java_utils_);
+}
+
 bool ArCoreJavaUtils::ShouldRequestInstallArModule() {
   return Java_ArCoreJavaUtils_shouldRequestInstallArModule(
       AttachCurrentThread(), j_arcore_java_utils_);

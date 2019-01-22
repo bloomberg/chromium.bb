@@ -90,6 +90,7 @@ class StubArCoreInstallUtils : public vr::ArCoreInstallUtils {
  public:
   StubArCoreInstallUtils() = default;
 
+  bool CanRequestInstallArModule() override { return false; };
   bool ShouldRequestInstallArModule() override { return false; };
 
   void RequestInstallArModule(int render_process_id,

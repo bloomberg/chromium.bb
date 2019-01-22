@@ -21,6 +21,7 @@ class ArCoreJavaUtils : public ArCoreInstallUtils {
   explicit ArCoreJavaUtils(device::ArCoreDevice* arcore_device);
   ~ArCoreJavaUtils() override;
   bool ShouldRequestInstallArModule() override;
+  bool CanRequestInstallArModule() override;
   void RequestInstallArModule(int render_process_id,
                               int render_frame_id) override;
   bool ShouldRequestInstallSupportedArCore() override;

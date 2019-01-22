@@ -13,6 +13,7 @@ import android.support.annotation.IntDef;
 
 import dalvik.system.BaseDexClassLoader;
 
+import org.chromium.base.BundleUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
@@ -133,6 +134,28 @@ public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
     }
 
     private void initializeAppInfo() {
+        try {
+            mAppMinArCoreApkVersionCode = getMinArCoreApkVersionCode();
+        } catch (IllegalStateException ise) {
+            mAppMinArCoreApkVersionCode = ARCORE_NOT_INSTALLED_VERSION_CODE;
+        }
+
+        mAppInfoInitialized = true;
+
+        // Need to be called before trying to access the AR module.
+        ModuleInstaller.init();
+    }
+
+    /**
+     * Gets minimum required version of ARCore APK that is needed by ARCore SDK.
+     *
+     * If the ARCore SDK is not yet available, the method will throw IllegalStateException.
+     * It might be possible to reattempt to call this method at a later time, for example
+     * when the ARCore SDK gets installed.
+     *
+     * @return minimum required version of ARCore APK that is needed by ARCore SDK.
+     */
+    private int getMinArCoreApkVersionCode() {
         Context context = getApplicationContext();
         PackageManager packageManager = context.getPackageManager();
         String packageName = context.getPackageName();
@@ -146,15 +169,11 @@ public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
         }
 
         if (metadata.containsKey(METADATA_KEY_MIN_APK_VERSION)) {
-            mAppMinArCoreApkVersionCode = metadata.getInt(METADATA_KEY_MIN_APK_VERSION);
+            return metadata.getInt(METADATA_KEY_MIN_APK_VERSION);
         } else {
             throw new IllegalStateException(
                     "Application manifest must contain meta-data " + METADATA_KEY_MIN_APK_VERSION);
         }
-        mAppInfoInitialized = true;
-
-        // Need to be called before trying to access the AR module.
-        ModuleInstaller.init();
     }
 
     private int getArCoreApkVersionNumber() {
@@ -196,6 +215,11 @@ public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
         ui.showInstallStartUi();
         ModuleInstaller.install("ar", success -> {
             assert shouldRequestInstallArModule() != success;
+
+            if (success) {
+                mAppMinArCoreApkVersionCode = getMinArCoreApkVersionCode();
+            }
+
             if (mNativeArCoreJavaUtils != 0) {
                 if (!success) {
                     ui.showInstallFailureUi();
@@ -269,6 +293,12 @@ public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
         // TODO(ijamardo, https://crbug.com/838833): Add icon for AR info bar.
         SimpleConfirmInfoBarBuilder.create(tab, listener, InfoBarIdentifier.AR_CORE_UPGRADE_ANDROID,
                 R.drawable.vr_services, infobarText, buttonText, null, true);
+    }
+
+    @CalledByNative
+    private boolean canRequestInstallArModule() {
+        // We can only try to install the AR module if we are in a bundle mode.
+        return BundleUtils.isBundle();
     }
 
     @CalledByNative

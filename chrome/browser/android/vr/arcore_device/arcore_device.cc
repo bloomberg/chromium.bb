@@ -199,6 +199,12 @@ void ArCoreDevice::RequestArModule(int render_process_id,
                                    int render_frame_id,
                                    bool has_user_activation) {
   if (arcore_install_utils_->ShouldRequestInstallArModule()) {
+    if (!arcore_install_utils_->CanRequestInstallArModule()) {
+      OnRequestArModuleResult(render_process_id, render_frame_id,
+                              has_user_activation, false);
+      return;
+    }
+
     on_request_ar_module_result_callback_ =
         base::BindOnce(&ArCoreDevice::OnRequestArModuleResult, GetWeakPtr(),
                        render_process_id, render_frame_id, has_user_activation);
