@@ -9,6 +9,7 @@ import static org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModule
 import android.content.ComponentName;
 import android.content.Context;
 import android.net.Uri;
+import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsService;
@@ -26,12 +27,12 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.browserservices.PostMessageHandler;
 import org.chromium.chrome.browser.customtabs.CloseButtonNavigator;
-import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabBottomBarDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabTopBarDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.TabObserverRegistrar;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
@@ -41,6 +42,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandleProxy;
 import org.chromium.content_public.browser.WebContents;
 
@@ -60,9 +62,9 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
     private final CustomTabIntentDataProvider mIntentDataProvider;
     private final TabObserverRegistrar mTabObserverRegistrar;
     private final CustomTabsConnection mConnection;
+    private final CustomTabActivityTabController mTabController;
 
-    // TODO(amalova): CustomTabActivity is only needed for loadUri(). Remove it once it is possible.
-    private final CustomTabActivity mActivity;
+    private final ChromeActivity mActivity;
 
     private final Lazy<CustomTabTopBarDelegate> mTopBarDelegate;
     private final Lazy<CustomTabBottomBarDelegate> mBottomBarDelegate;
@@ -164,10 +166,12 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
                                     Lazy<CustomTabTopBarDelegate> topBarDelegate,
                                     Lazy<CustomTabBottomBarDelegate> bottomBarDelegate,
                                     Lazy<ChromeFullscreenManager> fullscreenManager,
-                                    CustomTabsConnection connection, ChromeActivity activity) {
+                                    CustomTabsConnection connection, ChromeActivity activity,
+                                    CustomTabActivityTabController tabController) {
         mIntentDataProvider = intentDataProvider;
         mTabObserverRegistrar = tabObserverRegistrar;
-        mActivity = (CustomTabActivity) activity;
+        mActivity = activity;
+        mTabController = tabController;
         mConnection = connection;
 
         mTabObserverRegistrar.registerTabObserver(mModuleNavigationEventObserver);
@@ -241,7 +245,8 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
     }
 
     /* package */ void loadUri(Uri uri) {
-        mActivity.loadUri(uri);
+        mTabController.loadUrlInTab(new LoadUrlParams(uri.toString()),
+                SystemClock.elapsedRealtime());
     }
 
     @VisibleForTesting
