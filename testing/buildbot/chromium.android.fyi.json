@@ -676,14 +676,14 @@
     ]
   },
   "Android WebView O NetworkService (dbg)": {
-    "isolated_scripts": [
+    "gtest_tests": [
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_webview_CTS_test.filter",
           "--enable-features=NetworkService",
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
-        "isolate_name": "webview_cts_tests",
         "merge": {
           "args": [
             "--bucket",
@@ -693,7 +693,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "name": "webview_cts_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -726,7 +725,8 @@
             }
           ],
           "shards": 3
-        }
+        },
+        "test": "webview_cts_tests"
       }
     ]
   },
