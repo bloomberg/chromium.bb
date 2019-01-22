@@ -32,8 +32,18 @@ class AccountManagerMigrator : public KeyedService {
   AccountMigrationRunner::Status GetStatus() const;
 
  private:
+  // Returns whether migrations should be run or skipped.
+  bool ShouldRunMigrations() const;
+
+  // Adds the necessary migration steps to |migration_runner_|.
+  void AddMigrationSteps();
+
   void OnMigrationRunComplete(
       const AccountMigrationRunner::MigrationResult& result);
+
+  // Runs tasks that must be completed regardless of the success / failure /
+  // no-op of migrations.
+  void RunCleanupTasks();
 
   // A non-owning pointer to |Profile|.
   Profile* const profile_;
