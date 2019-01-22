@@ -414,6 +414,7 @@ bool VaapiJpegDecodeAccelerator::OutputPicture(
     default:
       VLOGF(1) << "Can't convert image to I420: unsupported format 0x"
                << std::hex << va_image_format.fourcc;
+      return false;
   }
 
   task_runner_->PostTask(
