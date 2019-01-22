@@ -34,19 +34,9 @@ WebServiceWorkerProviderImpl::WebServiceWorkerProviderImpl(
     ServiceWorkerProviderContext* context)
     : context_(context), provider_client_(nullptr), weak_factory_(this) {
   DCHECK(context_);
-  switch (context_->provider_type()) {
-    case blink::mojom::ServiceWorkerProviderType::kForWindow:
-      DCHECK(context_->container_host());
-      context_->SetWebServiceWorkerProvider(weak_factory_.GetWeakPtr());
-      break;
-    case blink::mojom::ServiceWorkerProviderType::kForServiceWorker:
-      // Do nothing.
-      break;
-    case blink::mojom::ServiceWorkerProviderType::kForSharedWorker:
-    case blink::mojom::ServiceWorkerProviderType::kUnknown:
-      NOTREACHED() << "Unimplemented type: " << context_->provider_type();
-      break;
-  }
+  DCHECK_EQ(context_->provider_type(),
+            blink::mojom::ServiceWorkerProviderType::kForWindow);
+  context_->SetWebServiceWorkerProvider(weak_factory_.GetWeakPtr());
 }
 
 WebServiceWorkerProviderImpl::~WebServiceWorkerProviderImpl() = default;
