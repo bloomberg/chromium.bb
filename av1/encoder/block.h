@@ -54,10 +54,10 @@ typedef struct macroblock_plane {
 typedef struct {
   int txb_skip_cost[TXB_SKIP_CONTEXTS][2];
   int base_eob_cost[SIG_COEF_CONTEXTS_EOB][3];
-  int base_cost[SIG_COEF_CONTEXTS][4];
+  int base_cost[SIG_COEF_CONTEXTS][8];
   int eob_extra_cost[EOB_COEF_CONTEXTS][2];
   int dc_sign_cost[DC_SIGN_CONTEXTS][2];
-  int lps_cost[LEVEL_CONTEXTS][COEFF_BASE_RANGE + 1];
+  int lps_cost[LEVEL_CONTEXTS][COEFF_BASE_RANGE + 1 + COEFF_BASE_RANGE + 1];
 } LV_MAP_COEFF_COST;
 
 typedef struct {
