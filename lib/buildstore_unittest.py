@@ -101,6 +101,19 @@ class TestBuildStore(cros_test_lib.MockTestCase):
         constants.MOCK_BUILD_ID, status=status, summary=summary,
         metadata_url=metadata_url, strict=strict)
 
+  def testFinishChildConfig(self):
+    """Tests the redirect for FinishChildConfig function."""
+    self.PatchObject(BuildStore, 'InitializeClients',
+                     return_value=True)
+    bs = BuildStore()
+    bs.cidb_conn = mock.MagicMock()
+    child_config = mock.Mock()
+    status = mock.Mock()
+    self.PatchObject(bs.cidb_conn, 'FinishChildConfig')
+    bs.FinishChildConfig(constants.MOCK_BUILD_ID, child_config, status=status)
+    bs.cidb_conn.FinishChildConfig.assert_called_once_with(
+        constants.MOCK_BUILD_ID, child_config, status=status)
+
   def testUpdateMetadata(self):
     """Tests the redirect for UpdateMetadata function."""
     self.PatchObject(BuildStore, 'InitializeClients',

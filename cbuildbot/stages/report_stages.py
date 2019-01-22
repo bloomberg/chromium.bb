@@ -1013,8 +1013,8 @@ class ReportStage(generic_stages.BuilderStage,
       child_metadatas = self._run.attrs.metadata.GetDict().get(
           'child-configs', [])
       for child_metadata in child_metadatas:
-        db.FinishChildConfig(build_id, child_metadata['name'],
-                             child_metadata['status'])
+        self.buildstore.FinishChildConfig(build_id, child_metadata['name'],
+                                          child_metadata['status'])
 
       # TODO(pprabhu): After BuildData and CBuildbotMetdata are merged, remove
       # this extra temporary object creation.

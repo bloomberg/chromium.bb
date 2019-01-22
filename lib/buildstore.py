@@ -201,6 +201,24 @@ class BuildStore(object):
           build_id, status=status, summary=summary, metadata_url=metadata_url,
           strict=strict)
 
+  def FinishChildConfig(self, build_id, child_config, status=None):
+    """Marks the given child config as finished with |status|.
+
+    This should be called before FinishBuild, on all child configs that
+    were used in a build.
+
+    Args:
+      build_id: primary key of the build in the buildTable
+      child_config: String child_config name.
+      status: Final child_config status, one of
+              constants.BUILDER_COMPLETED_STATUSES or None
+              for default "inflight".
+    """
+    if not self.InitializeClients():
+      return
+    if self._write_to_cidb:
+      self.cidb_conn.FinishChildConfig(build_id, child_config, status=status)
+
   def UpdateMetadata(self, build_id, metadata):
     """Update the given metadata row in database.
 
