@@ -101,7 +101,7 @@ IN_PROC_BROWSER_TEST_P(ChromeCleanerPromptUserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(ChromeCleanerPromptUserTest,
-                       DISABLED_OnInfectedBrowserNotAvailable) {
+                       OnInfectedBrowserNotAvailable) {
   browser()->window()->Minimize();
   base::RunLoop().RunUntilIdle();
   dialog_controller_->OnInfected(false, ChromeCleanerScannerResults());
