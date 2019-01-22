@@ -90,7 +90,7 @@ class QuickUnlockStorage : public KeyedService {
   void Shutdown() override;
 
   Profile* const profile_;
-  base::TimeTicks last_strong_auth_;
+  base::Time last_strong_auth_;
   std::unique_ptr<FingerprintStorage> fingerprint_storage_;
   std::unique_ptr<PinStoragePrefs> pin_storage_prefs_;
   std::unique_ptr<AuthToken> auth_token_;
