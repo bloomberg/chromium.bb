@@ -564,10 +564,10 @@ void Compositor::RequestNewLayerTreeFrameSink() {
 }
 
 void Compositor::DidFailToInitializeLayerTreeFrameSink() {
-  // The LayerTreeFrameSink should already be bound/initialized before being
-  // given to
-  // the Compositor.
-  NOTREACHED();
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Compositor::RequestNewLayerTreeFrameSink,
+                     context_creation_weak_ptr_factory_.GetWeakPtr()));
 }
 
 void Compositor::DidCommit() {
