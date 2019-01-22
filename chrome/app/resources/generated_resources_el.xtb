@@ -1511,7 +1511,7 @@
 <translation id="3294437725009624529">Επισκέπτης</translation>
 <translation id="329703603001918157">Δεν είναι δυνατή η επεξεργασία της συντόμευσης</translation>
 <translation id="3297951628821704004">Κατάργηση λογαριασμού από αυτήν τη συσκευή</translation>
-<translation id="329838636886466101">Επισκευή</translation>
+<translation id="329838636886466101">Επιδιόρθωση</translation>
 <translation id="3298789223962368867">Καταχωρήθηκε μη έγκυρη διεύθυνση URL.</translation>
 <translation id="32991397311664836">Συσκευές:</translation>
 <translation id="33022249435934718">Χειρισμοί GDI</translation>
@@ -2014,7 +2014,7 @@
 <translation id="4008291085758151621">Οι πληροφορίες ιστοτόπου δεν είναι διαθέσιμες σε VR</translation>
 <translation id="4010917659463429001">Για να μεταφέρετε τους σελιδοδείκτες σας στην κινητή συσκευή σας, <ph name="GET_IOS_APP_LINK" />.</translation>
 <translation id="4013132157686828973">Το "<ph name="CLIENT_NAME" />" εντοπίζει τα σφάλματα σε αυτό το πρόγραμμα περιήγησης</translation>
-<translation id="4014432863917027322">Να γίνει επισκευή του "<ph name="EXTENSION_NAME" />";</translation>
+<translation id="4014432863917027322">Να γίνει επιδιόρθωση του "<ph name="EXTENSION_NAME" />";</translation>
 <translation id="4020106588733303597">Δυστυχώς, το σύστημα δεν κατάφερε να φορτώσει τις διαθέσιμες άδειες.</translation>
 <translation id="4020327272915390518">Μενού επιλογών</translation>
 <translation id="4021279097213088397">–</translation>
@@ -5409,7 +5409,7 @@
 <translation id="934503638756687833">Θα διαγραφούν και όσα στοιχεία δεν αναφέρονται εδώ, αν χρειαστεί. Μάθετε περισσότερα σχετικά με &lt;a href="<ph name="URL" />"&gt;την προστασία από ανεπιθύμητο λογισμικό&lt;/a&gt; στη λευκή βίβλο απορρήτου του Chrome.</translation>
 <translation id="935490618240037774">Οι σελιδοδείκτες, το ιστορικό, οι κωδικοί πρόσβασης και άλλες ρυθμίσεις σας θα συγχρονιστούν στον Λογαριασμό σας Google, ώστε η χρήση τους να είναι δυνατή σε όλες τις συσκευές σας.</translation>
 <translation id="936801553271523408">Διαγνωστικά δεδομένα συστήματος</translation>
-<translation id="93766956588638423">Επισκευή επέκτασης</translation>
+<translation id="93766956588638423">Επιδιόρθωση επέκτασης</translation>
 <translation id="938339467127511841">Αποθηκευτικός χώρος Linux (Beta)</translation>
 <translation id="938470336146445890">Εγκαταστήστε ένα πιστοποιητικό χρήστη.</translation>
 <translation id="939252827960237676">Αποτυχία αποθήκευσης στιγμιότυπου οθόνης</translation>

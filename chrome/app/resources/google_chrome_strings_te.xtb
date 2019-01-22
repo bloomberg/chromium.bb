@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
-<translation id="1001534784610492198">ఇన్‌స్టాలర్ ఆర్కైవ్ పాడైంది లేదా చెల్లదు. దయచేసి Google Chromeను మళ్లీ డౌన్‌లోడ్ చేయండి.</translation>
+<translation id="1001534784610492198">ఇన్‌స్టాలర్ ఆర్కైవ్ పాడైంది లేదా చెల్లదు. దయచేసి Google Chromeను మళ్లీ డౌన్‌లోడ్ చేయ‌ండి.</translation>
 <translation id="102763973188675173">Google Chromeని అనుకూలీకరించండి మరియు నియంత్రించండి. అప్‌డేట్ అందుబాటులో ఉంది.</translation>
 <translation id="1035334672863811645">Chromeకు సైన్ ఇన్ చేయండి</translation>
 <translation id="1065672644894730302">మీ ప్రాధాన్యతలు చదవబడలేవు. కొన్ని లక్షణాలు అందుబాటులో ఉండకపోవచ్చు మరియు ప్రాధాన్యతలకు మార్పులు సేవ్ చేయబడకపోవచ్చు.</translation>
@@ -158,7 +158,7 @@
 <translation id="5193136243808726294">Google Chrome OS ఈ పేజీని తెరవలేదు.</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />సేవా నిబంధనలు<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">అతిథులు ఎటువంటి చరిత్రను వదలకుండానే Chromeను ఉపయోగించవచ్చు.</translation>
-<translation id="532046782124376502">హెచ్చరిక: Google Chrome మీ బ్రౌజింగ్ చరిత్రను రికార్డ్ చేయకుండా పొడిగింపులను నివారించలేదు. ఈ పొడిగింపును అజ్ఞాత మోడ్‌లో ఆపివేయడానికి, ఈ ఎంపికను రద్దు చేయండి.</translation>
+<translation id="532046782124376502">హెచ్చరిక: Google Chrome మీ బ్రౌజింగ్ చరిత్రను రికార్డ్ చేయకుండా ఎక్సటెన్షన్‌లను నివారించలేదు. ఈ ఎక్సటెన్షన్‌ను అజ్ఞాత మోడ్‌లో ఆపివేయడానికి, ఈ ఎంపికను రద్దు చేయండి.</translation>
 <translation id="5386244825306882791">ఇది మీరు Chromeని ప్రారంభించేటప్పుడు లేదా ఓమ్నిపెట్టె నుండి శోధించేటప్పుడు చూపబడే పేజీని కూడా నియంత్రిస్తుంది.</translation>
 <translation id="5430073640787465221">మీ ప్రాధాన్యతల ఫైల్ పాడైంది లేదా చెల్లదు. Google Chrome మీ సెట్టింగ్‌లను తిరిగి పొందలేకపోయింది.</translation>
 <translation id="5483595757826856374">{0,plural, =0{ఇప్పుడు Chrome తిరిగి ప్రారంభించబడుతుంది}=1{1 సెకనులో Chrome తిరిగి ప్రారంభించబడుతుంది}other{# సెకన్లలో Chrome తిరిగి ప్రారంభించబడుతుంది}}</translation>
@@ -177,7 +177,7 @@
 <translation id="5941830788786076944">Google Chromeను డిఫాల్ట్ బ్రౌజర్‌గా చేసుకోండి</translation>
 <translation id="6014844626092547096">ఇప్పుడు మీరు Chromeకు సైన్ ఇన్ చేసారు! మీ నిర్వాహకులు సమకాలీకరణని నిలిపివేసారు.</translation>
 <translation id="6040143037577758943">మూసివేయి</translation>
-<translation id="6070348360322141662">అదనపు భద్రత దృష్ట్యా, Google Chrome మీ డేటాను గుప్తీకరిస్తుంది</translation>
+<translation id="6070348360322141662">అదనపు భద్రత దృష్ట్యా, Google Chrome మీ డేటాను ఎన్‌క్రిప్ట్ చేస్తుంది</translation>
 <translation id="6113794647360055231">Chrome ఇప్పుడు మెరుగైంది</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome బీటా</translation>

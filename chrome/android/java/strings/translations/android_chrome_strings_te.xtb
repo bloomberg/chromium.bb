@@ -294,7 +294,7 @@
 <translation id="3254409185687681395">ఈ పేజీని బుక్‌మార్క్ చెయ్యి</translation>
 <translation id="3259831549858767975">పేజీలోని అన్నింటినీ చిన్నవిగా చేయండి</translation>
 <translation id="3269093882174072735">చిత్రాన్ని లోడ్ చేయి</translation>
-<translation id="3269956123044984603">మీ ఇతర పరికరాల నుండి మీ ట్యాబ్‌లను పొందడానికి, Android ఖాతా సెట్టింగ్‌ల‌లో "ఆటో-సింక్‌ డేటా" ఆన్ చేయండి.</translation>
+<translation id="3269956123044984603">మీ ఇతర పరికరాల నుండి మీ ట్యాబ్‌లను పొందడానికి, Android ఖాతా సెట్టింగ్‌ల్లో "డేటా ఆటో-సింక్‌" ఆన్ చేయండి.</translation>
 <translation id="3282568296779691940">Chromeకు సైన్ ఇన్ చేయండి</translation>
 <translation id="32895400574683172">నోటిఫికేషన్‌లు అనుమతించబడతాయి</translation>
 <translation id="3295602654194328831">సమాచారాన్ని దాచు</translation>
@@ -308,7 +308,7 @@
 <translation id="3365671512111106261">డేటా సేవర్ ఆన్‌లో ఉన్నప్పుడు అందుబాటులో ఉండదు</translation>
 <translation id="3367813778245106622">సమకాలీకరణను ప్రారంభించడానికి మళ్లీ సైన్ ఇన్ చేయండి</translation>
 <translation id="3377025655491224618">ప్రైవేట్ ట్యాబ్</translation>
-<translation id="3384347053049321195">చిత్రాన్ని భాగస్వామ్యం చేయి</translation>
+<translation id="3384347053049321195">చిత్రాన్ని షేర్‌ చేయి</translation>
 <translation id="3386292677130313581">సైట్‌లను మీ స్థానం తెలుసుకోవడానికి అనుమతించే ముందు మిమ్మల్ని అడుగుతుంది (సిఫార్సు చేయబడింది)</translation>
 <translation id="3387650086002190359">ఫైల్ సిస్టమ్ లోపాల కారణంగా <ph name="FILE_NAME" /> డౌన్‌లోడ్ విఫలమైంది.</translation>
 <translation id="3398320232533725830">బుక్‌మార్క్‌ల నిర్వాహికి తెరవండి</translation>
@@ -360,7 +360,7 @@
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> డౌన్‌లోడ్‌లు తొలగించబడ్డాయి</translation>
 <translation id="3819562311292413223">మీ కోసం కథనాలను డౌన్‌లోడ్ చేయండి</translation>
 <translation id="3822502789641063741">సైట్ నిల్వను తీసివేయాలా?</translation>
-<translation id="3859306556332390985">ముందుకు జరుపు</translation>
+<translation id="3859306556332390985">ముందుకు దాటవేయి</translation>
 <translation id="3868004864571585162">కుక్కీలు, మీడియా లైసెన్స్‌లు మరియు సైట్ డేటా</translation>
 <translation id="3894427358181296146">ఫోల్డర్‌ను జోడించండి</translation>
 <translation id="3895926599014793903">జూమ్ చేయడాన్ని నిర్బంధంగా ప్రారంభించు</translation>
@@ -699,7 +699,7 @@
 <translation id="6324034347079777476">Android సిస్టమ్ సమకాలీకరణ నిలిపివేయబడింది</translation>
 <translation id="6333140779060797560"><ph name="APPLICATION" /> ద్వారా భాగస్వామ్యం చేయి</translation>
 <translation id="6336451774241870485">కొత్త ప్రైవేట్ ట్యాబ్</translation>
-<translation id="6337234675334993532">గుప్తీకరణ</translation>
+<translation id="6337234675334993532">ఎన్‌క్రిప్షన్</translation>
 <translation id="6341580099087024258">ఫైల్‌లను ఎక్కడ సేవ్ చేయాలో అడుగు</translation>
 <translation id="6343192674172527289">డౌన్‌లోడ్‌లు ఏవీ కనుగొనబడలేదు</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
@@ -856,7 +856,7 @@
 <translation id="7473891865547856676">వద్దు, ధన్యవాదాలు</translation>
 <translation id="7475192538862203634">మీకు ఇది తరచుగా కనిపిస్తుంటే, ఈ <ph name="BEGIN_LINK" />సూచనల<ph name="END_LINK" />ను ప్రయత్నించండి.</translation>
 <translation id="7475688122056506577">SD కార్డ్ కనుగొనబడలేదు. మీ ఫైల్‌లలో కొన్ని ఉండకపోవచ్చు.</translation>
-<translation id="7481312909269577407">ఫార్వార్డ్</translation>
+<translation id="7481312909269577407">ఫార్వర్డ్</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (నవీకరించినది <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">పాస్‌వర్డ్‌లను చూపుతుంది</translation>
 <translation id="7494974237137038751">ఆదా అయిన డేటా</translation>
