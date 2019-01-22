@@ -87,6 +87,9 @@ static gfx::Rect ComputeGlobalNodeBounds(AutomationAXTreeWrapper* tree_wrapper,
     bounds = tree_wrapper->tree()->RelativeToTreeBounds(node, bounds, offscreen,
                                                         clip_bounds);
 
+    if (!tree_wrapper->owner())
+      break;
+
     AutomationAXTreeWrapper* previous_tree_wrapper = tree_wrapper;
     ui::AXNode* parent = tree_wrapper->owner()->GetParent(
         tree_wrapper->tree()->root(), &tree_wrapper);
