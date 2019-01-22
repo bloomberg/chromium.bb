@@ -513,7 +513,8 @@ bool PasswordStore::InitOnBackgroundSequence(
   if (base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
     sync_bridge_.reset(new PasswordSyncBridge(
         std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
-            syncer::PASSWORDS, base::DoNothing())));
+            syncer::PASSWORDS, base::DoNothing()),
+        /*password_store_sync=*/this));
   } else {
     DCHECK(!syncable_service_);
     syncable_service_.reset(new PasswordSyncableService(this));
