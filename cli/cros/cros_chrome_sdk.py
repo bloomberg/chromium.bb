@@ -1008,6 +1008,13 @@ class ChromeSDKCommand(command.CliCommand):
       gn_args.pop('is_official_build', None)
       gn_args.pop('internal_gles2_conform_tests', None)
       gn_args.pop('use_lld', None)
+      # TODO(https://crbug.com/924155): Hack to keep Chromite rolling. Remove
+      # it when either we're back on lld (see the TODO above), or when we get a
+      # new-enough `environment` file.
+      ld_flags = gn_args.get('cros_target_extra_ldflags')
+      if ld_flags:
+        ld_flags = ld_flags.replace('-Wl,-z,keep-text-section-prefix', '')
+        gn_args['cros_target_extra_ldflags'] = ld_flags
 
     # For SimpleChrome, we use the binutils that comes bundled within Chrome.
     # We should not use the binutils from the host system.
