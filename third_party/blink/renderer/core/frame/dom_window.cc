@@ -115,7 +115,7 @@ DOMWindow* DOMWindow::top() const {
   return GetFrame()->Tree().Top().DomWindow();
 }
 
-void DOMWindow::postMessage(LocalDOMWindow* incumbent_window,
+void DOMWindow::postMessage(v8::Isolate* isolate,
                             const ScriptValue& message,
                             const String& target_origin,
                             Vector<ScriptValue>& transfer,
@@ -124,20 +124,16 @@ void DOMWindow::postMessage(LocalDOMWindow* incumbent_window,
   options->setTargetOrigin(target_origin);
   if (!transfer.IsEmpty())
     options->setTransfer(transfer);
-  postMessage(incumbent_window, message, options, exception_state);
+  postMessage(isolate, message, options, exception_state);
 }
 
-void DOMWindow::postMessage(LocalDOMWindow* incumbent_window,
+void DOMWindow::postMessage(v8::Isolate* isolate,
                             const ScriptValue& message,
                             const WindowPostMessageOptions* options,
                             ExceptionState& exception_state) {
+  LocalDOMWindow* incumbent_window = IncumbentDOMWindow(isolate);
   UseCounter::Count(incumbent_window->GetFrame(),
                     WebFeature::kWindowPostMessage);
-
-  // Since remote windows do not have a v8::Context, we cannot use
-  // [CallWith=ScriptState], and there is no good way to get the v8::Isolate.
-  // As a compromise, ask the isolate to the WindowProxyManager.
-  v8::Isolate* isolate = window_proxy_manager_->GetIsolate();
 
   Transferables transferables;
   scoped_refptr<SerializedScriptValue> serialized_message =
@@ -307,7 +303,14 @@ String DOMWindow::CrossDomainAccessErrorMessage(
   return message + "Protocols, domains, and ports must match.";
 }
 
-void DOMWindow::close(LocalDOMWindow* incumbent_window) {
+void DOMWindow::close(v8::Isolate* isolate) {
+  LocalDOMWindow* incumbent_window = IncumbentDOMWindow(isolate);
+  Close(incumbent_window);
+}
+
+void DOMWindow::Close(LocalDOMWindow* incumbent_window) {
+  DCHECK(incumbent_window);
+
   if (!GetFrame() || !GetFrame()->IsMainFrame())
     return;
 
@@ -315,16 +318,10 @@ void DOMWindow::close(LocalDOMWindow* incumbent_window) {
   if (!page)
     return;
 
-  Document* active_document = nullptr;
-  if (incumbent_window) {
-    DCHECK(IsMainThread());
-    active_document = incumbent_window->document();
-    if (!active_document)
-      return;
-
-    if (!active_document->GetFrame() ||
-        !active_document->GetFrame()->CanNavigate(*GetFrame()))
-      return;
+  Document* active_document = incumbent_window->document();
+  if (!(active_document && active_document->GetFrame() &&
+        active_document->GetFrame()->CanNavigate(*GetFrame()))) {
+    return;
   }
 
   Settings* settings = GetFrame()->GetSettings();
@@ -333,12 +330,10 @@ void DOMWindow::close(LocalDOMWindow* incumbent_window) {
 
   if (!page->OpenedByDOM() && GetFrame()->Client()->BackForwardLength() > 1 &&
       !allow_scripts_to_close_windows) {
-    if (active_document) {
-      active_document->domWindow()->GetFrameConsole()->AddMessage(
-          ConsoleMessage::Create(
-              kJSMessageSource, kWarningMessageLevel,
-              "Scripts may close only the windows that were opened by it."));
-    }
+    active_document->domWindow()->GetFrameConsole()->AddMessage(
+        ConsoleMessage::Create(
+            kJSMessageSource, kWarningMessageLevel,
+            "Scripts may close only the windows that were opened by it."));
     return;
   }
 
@@ -360,7 +355,7 @@ void DOMWindow::close(LocalDOMWindow* incumbent_window) {
   window_is_closing_ = true;
 }
 
-void DOMWindow::focus(LocalDOMWindow* incumbent_window) {
+void DOMWindow::focus(v8::Isolate* isolate) {
   if (!GetFrame())
     return;
 
@@ -368,7 +363,14 @@ void DOMWindow::focus(LocalDOMWindow* incumbent_window) {
   if (!page)
     return;
 
-  DCHECK(incumbent_window);
+  // HTML standard doesn't require to check the incumbent realm, but Blink
+  // historically checks it for some reasons, maybe the same reason as |close|.
+  // (|close| checks whether the incumbent realm is eligible to close the window
+  // in order to prevent a (cross origin) window from abusing |close| to close
+  // pages randomly or with a malicious intent.)
+  // https://html.spec.whatwg.org/C/#dom-window-focus
+  // https://html.spec.whatwg.org/C/#focusing-steps
+  LocalDOMWindow* incumbent_window = IncumbentDOMWindow(isolate);
   ExecutionContext* incumbent_execution_context =
       incumbent_window->GetExecutionContext();
 

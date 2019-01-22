@@ -1401,83 +1401,51 @@ void LocalDOMWindow::PrintErrorMessage(const String& message) const {
       ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message));
 }
 
-DOMWindow* LocalDOMWindow::open(ExecutionContext* executionContext,
-                                LocalDOMWindow* current_window,
-                                LocalDOMWindow* entered_window,
-                                const USVStringOrTrustedURL& stringOrUrl,
+DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
+                                const USVStringOrTrustedURL& string_or_url,
                                 const AtomicString& target,
                                 const String& features,
                                 ExceptionState& exception_state) {
-  String url = GetStringFromTrustedURL(stringOrUrl, document_, exception_state);
-  if (!exception_state.HadException()) {
-    return openFromString(executionContext, current_window, entered_window, url,
-                          target, features, exception_state);
-  }
-  return nullptr;
-}
+  LocalDOMWindow* incumbent_window = IncumbentDOMWindow(isolate);
+  LocalDOMWindow* entered_window = EnteredDOMWindow(isolate);
 
-DOMWindow* LocalDOMWindow::openFromString(ExecutionContext* executionContext,
-                                          LocalDOMWindow* current_window,
-                                          LocalDOMWindow* entered_window,
-                                          const String& url,
-                                          const AtomicString& target,
-                                          const String& features,
-                                          ExceptionState& exception_state) {
   // If the bindings implementation is 100% correct, the current realm and the
   // entered realm should be same origin-domain. However, to be on the safe
-  // side and add some defense in depth, we'll check against the entered realm
+  // side and add some defense in depth, we'll check against the entry realm
   // as well here.
   if (!BindingSecurity::ShouldAllowAccessTo(entered_window, this,
                                             exception_state)) {
-    UseCounter::Count(executionContext, WebFeature::kWindowOpenRealmMismatch);
+    UseCounter::Count(GetExecutionContext(),
+                      WebFeature::kWindowOpenRealmMismatch);
     return nullptr;
   }
-  DCHECK(!target.IsNull());
-  return openFromString(url, target, features, current_window, entered_window,
-                        exception_state);
-}
 
-DOMWindow* LocalDOMWindow::open(const USVStringOrTrustedURL& stringOrUrl,
-                                const AtomicString& frame_name,
-                                const String& window_features_string,
-                                LocalDOMWindow* calling_window,
-                                LocalDOMWindow* entered_window,
-                                ExceptionState& exception_state) {
-  String url = GetStringFromTrustedURL(stringOrUrl, document_, exception_state);
-  if (!exception_state.HadException()) {
-    return openFromString(url, frame_name, window_features_string,
-                          calling_window, entered_window, exception_state);
-  }
-  return nullptr;
-}
+  const String& url_string =
+      GetStringFromTrustedURL(string_or_url, document_, exception_state);
+  if (exception_state.HadException())
+    return nullptr;
 
-DOMWindow* LocalDOMWindow::openFromString(const String& url_string,
-                                          const AtomicString& frame_name,
-                                          const String& window_features_string,
-                                          LocalDOMWindow* calling_window,
-                                          LocalDOMWindow* entered_window,
-                                          ExceptionState& exception_state) {
   if (!IsCurrentlyDisplayedInFrame())
     return nullptr;
-  if (!calling_window->GetFrame())
+  if (!incumbent_window->GetFrame())
     return nullptr;
-  Document* active_document = calling_window->document();
+  Document* active_document = incumbent_window->document();
   if (!active_document)
     return nullptr;
-  LocalFrame* first_frame = entered_window->GetFrame();
-  if (!first_frame)
+  LocalFrame* entered_window_frame = entered_window->GetFrame();
+  if (!entered_window_frame)
     return nullptr;
 
   UseCounter::Count(*active_document, WebFeature::kDOMWindowOpen);
-  if (!window_features_string.IsEmpty())
+  if (!features.IsEmpty())
     UseCounter::Count(*active_document, WebFeature::kDOMWindowOpenFeatures);
 
   // Get the target frame for the special cases of _top and _parent.
   // In those cases, we schedule a location change right now and return early.
   Frame* target_frame = nullptr;
-  if (EqualIgnoringASCIICase(frame_name, "_top")) {
+  if (EqualIgnoringASCIICase(target, "_top")) {
     target_frame = &GetFrame()->Tree().Top();
-  } else if (EqualIgnoringASCIICase(frame_name, "_parent")) {
+  } else if (EqualIgnoringASCIICase(target, "_parent")) {
     if (Frame* parent = GetFrame()->Tree().Parent())
       target_frame = parent;
     else
@@ -1490,9 +1458,10 @@ DOMWindow* LocalDOMWindow::openFromString(const String& url_string,
       return nullptr;
     }
 
-    KURL completed_url = first_frame->GetDocument()->CompleteURL(url_string);
+    KURL completed_url =
+        entered_window_frame->GetDocument()->CompleteURL(url_string);
 
-    if (target_frame->DomWindow()->IsInsecureScriptAccess(*calling_window,
+    if (target_frame->DomWindow()->IsInsecureScriptAccess(*incumbent_window,
                                                           completed_url))
       return target_frame->DomWindow();
 
@@ -1505,10 +1474,8 @@ DOMWindow* LocalDOMWindow::openFromString(const String& url_string,
     return target_frame->DomWindow();
   }
 
-  DOMWindow* new_window =
-      CreateWindow(url_string, frame_name, window_features_string,
-                   *calling_window, *first_frame, *GetFrame(), exception_state);
-  return new_window;
+  return CreateWindow(url_string, target, features, *incumbent_window,
+                      *entered_window_frame, *GetFrame(), exception_state);
 }
 
 void LocalDOMWindow::Trace(blink::Visitor* visitor) {

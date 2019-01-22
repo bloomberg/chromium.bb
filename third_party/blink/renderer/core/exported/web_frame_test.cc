@@ -9597,17 +9597,24 @@ TEST_F(WebFrameSwapTest, WindowOpenOnRemoteFrame) {
 
   String destination = "data:text/html:destination";
   NonThrowableExceptionState exception_state;
+  ScriptState* script_state =
+      ToScriptStateForMainWorld(main_window->GetFrame());
+  ScriptState::Scope entered_context_scope(script_state);
+  v8::Context::BackupIncumbentScope incumbent_context_scope(
+      script_state->GetContext());
   main_window->open(
+      script_state->GetIsolate(),
       USVStringOrTrustedURL::FromTrustedURL(TrustedURL::Create(destination)),
-      "frame1", "", main_window, main_window, exception_state);
+      "frame1", "", exception_state);
   ASSERT_FALSE(remote_client.LastRequest().IsNull());
   EXPECT_EQ(remote_client.LastRequest().Url(), WebURL(KURL(destination)));
 
   // Pointing a named frame to an empty URL should just return a reference to
   // the frame's window without navigating it.
   DOMWindow* result = main_window->open(
+      script_state->GetIsolate(),
       USVStringOrTrustedURL::FromTrustedURL(TrustedURL::Create("")), "frame1",
-      "", main_window, main_window, exception_state);
+      "", exception_state);
   EXPECT_EQ(remote_client.LastRequest().Url(), WebURL(KURL(destination)));
   EXPECT_EQ(result, WebFrame::ToCoreFrame(*remote_frame)->DomWindow());
 
@@ -9640,12 +9647,16 @@ TEST_F(WebFrameTest, WindowOpenRemoteClose) {
 
   // Attempt to close the window, which should fail as it isn't opened
   // by a script.
-  remote_frame->DomWindow()->close(local_frame->DomWindow());
+  ScriptState* local_script_state = ToScriptStateForMainWorld(local_frame);
+  ScriptState::Scope entered_context_scope(local_script_state);
+  v8::Context::BackupIncumbentScope incumbent_context_scope(
+      local_script_state->GetContext());
+  remote_frame->DomWindow()->close(local_script_state->GetIsolate());
   EXPECT_FALSE(client.Closed());
 
   // Marking it as opened by a script should now allow it to be closed.
   remote_frame->GetPage()->SetOpenedByDOM();
-  remote_frame->DomWindow()->close(local_frame->DomWindow());
+  remote_frame->DomWindow()->close(local_script_state->GetIsolate());
   EXPECT_TRUE(client.Closed());
 }
 

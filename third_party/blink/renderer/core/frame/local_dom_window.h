@@ -270,19 +270,10 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   Element* frameElement() const;
 
-  DOMWindow* open(ExecutionContext*,
-                  LocalDOMWindow* current_window,
-                  LocalDOMWindow* entered_window,
-                  const USVStringOrTrustedURL& stringOrUrl,
+  DOMWindow* open(v8::Isolate*,
+                  const USVStringOrTrustedURL& string_or_url,
                   const AtomicString& target,
                   const String& features,
-                  ExceptionState&);
-
-  DOMWindow* open(const USVStringOrTrustedURL& stringOrUrl,
-                  const AtomicString& frame_name,
-                  const String& window_features_string,
-                  LocalDOMWindow* calling_window,
-                  LocalDOMWindow* entered_window,
                   ExceptionState&);
 
   FrameConsole* GetFrameConsole() const;
@@ -349,21 +340,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   void DispatchLoadEvent();
   void ClearDocument();
-
-  DOMWindow* openFromString(ExecutionContext*,
-                            LocalDOMWindow* current_window,
-                            LocalDOMWindow* entered_window,
-                            const String& url,
-                            const AtomicString& target,
-                            const String& features,
-                            ExceptionState&);
-
-  DOMWindow* openFromString(const String& url_string,
-                            const AtomicString& frame_name,
-                            const String& window_features_string,
-                            LocalDOMWindow* calling_window,
-                            LocalDOMWindow* entered_window,
-                            ExceptionState&);
 
   // Return the viewport size including scrollbars.
   IntSize GetViewportSize() const;

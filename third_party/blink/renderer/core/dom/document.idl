@@ -20,7 +20,7 @@
 
 [Custom] callback CustomElementConstructor = Element ();
 
-// https://html.spec.whatwg.org/#the-document-object
+// https://html.spec.whatwg.org/C/#the-document-object
 enum DocumentReadyState { "loading", "interactive", "complete" };
 
 
@@ -33,7 +33,7 @@ enum AddressSpace { "local", "private", "public" };
 typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
 
 // https://dom.spec.whatwg.org/#interface-document
-// https://html.spec.whatwg.org/multipage/dom.html#documents
+// https://html.spec.whatwg.org/C/#documents
 
 [
     Constructor(),
@@ -117,7 +117,7 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
 
     // dynamic markup insertion
     [CallWith=EnteredWindow, CEReactions, CustomElementCallbacks, RaisesException, MeasureAs=DocumentOpenTwoArgs] Document open(optional DOMString type = "text/html", optional DOMString replace = "");
-    [CallWith=(CurrentWindow,EnteredWindow), RaisesException, MeasureAs=DocumentOpenThreeArgs] Window open(URLString url, DOMString name, DOMString features);
+    [CallWith=Isolate, RaisesException, MeasureAs=DocumentOpenThreeArgs] Window open(URLString url, DOMString name, DOMString features);
     [CEReactions, RaisesException] void close();
     [CallWith=EnteredWindow, CEReactions, CustomElementCallbacks, RaisesException] void write(DOMString... text);
     [CallWith=EnteredWindow, CEReactions, CustomElementCallbacks, RaisesException] void writeln(DOMString... text);

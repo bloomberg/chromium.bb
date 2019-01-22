@@ -89,17 +89,18 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
   DOMWindow* parent() const;
   DOMWindow* top() const;
 
-  void focus(LocalDOMWindow* incumbent_window);
+  void focus(v8::Isolate*);
   virtual void blur() = 0;
-  void close(LocalDOMWindow* incumbent_window);
+  void close(v8::Isolate*);
+  void Close(LocalDOMWindow* incumbent_window);
 
-  void postMessage(LocalDOMWindow* incumbent_window,
+  void postMessage(v8::Isolate*,
                    const ScriptValue& message,
                    const String& target_origin,
                    Vector<ScriptValue>& transfer,
                    ExceptionState&);
 
-  void postMessage(LocalDOMWindow* incumbent_window,
+  void postMessage(v8::Isolate*,
                    const ScriptValue& message,
                    const WindowPostMessageOptions* options,
                    ExceptionState&);
