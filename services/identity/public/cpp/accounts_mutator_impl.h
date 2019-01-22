@@ -54,6 +54,15 @@ class AccountsMutatorImpl : public AccountsMutator {
   void InvalidateRefreshTokenForPrimaryAccount(
       signin_metrics::SourceForRefreshTokenOperation source) override;
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  // Removes the credentials associated to account_id from the internal storage,
+  // and moves them to |target|. The credentials are not revoked on the server,
+  // but the IdentityManager::Observer::OnRefreshTokenRemovedForAccount()
+  // notification is sent to the observers.
+  void MoveAccount(AccountsMutator* target,
+                   const std::string& account_id) override;
+#endif
+
  private:
   ProfileOAuth2TokenService* token_service_;
   AccountTrackerService* account_tracker_service_;

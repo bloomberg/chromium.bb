@@ -77,4 +77,17 @@ void AccountsMutatorImpl::InvalidateRefreshTokenForPrimaryAccount(
                      primary_account_info.is_under_advanced_protection, source);
 }
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+void AccountsMutatorImpl::MoveAccount(AccountsMutator* target,
+                                      const std::string& account_id) {
+  AccountInfo account_info =
+      account_tracker_service_->GetAccountInfo(account_id);
+  DCHECK(!account_info.account_id.empty());
+
+  auto* target_impl = static_cast<AccountsMutatorImpl*>(target);
+  target_impl->account_tracker_service_->SeedAccountInfo(account_info);
+  token_service_->ExtractCredentials(target_impl->token_service_, account_id);
+}
+#endif
+
 }  // namespace identity
