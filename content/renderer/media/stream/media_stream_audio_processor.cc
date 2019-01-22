@@ -592,6 +592,10 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
         base::FeatureList::IsEnabled(features::kWebRtcHybridAgc);
 
     config.Set<webrtc::ExperimentalAgc>(experimental_agc);
+#if defined(IS_CHROMECAST)
+  } else {
+    config.Set<webrtc::ExperimentalAgc>(new webrtc::ExperimentalAgc(false));
+#endif  // defined(IS_CHROMECAST)
   }
 
   // Create and configure the webrtc::AudioProcessing.
