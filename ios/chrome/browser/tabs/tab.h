@@ -80,9 +80,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // The Webstate associated with this Tab.
 @property(nonatomic, readonly) web::WebState* webState;
 
-@property(nonatomic, readonly) BOOL canGoBack;
-@property(nonatomic, readonly) BOOL canGoForward;
-
 @property(nonatomic, readonly)
     OverscrollActionsController* overscrollActionsController;
 @property(nonatomic, weak) id<OverscrollActionsControllerDelegate>
@@ -111,12 +108,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // Returns the NavigationManager for this tab's WebState. Requires WebState to
 // be populated. Can return null.
 - (web::NavigationManager*)navigationManager;
-
-// Navigates forwards or backwards.
-// TODO(crbug.com/661664): These are passthroughs to the Tab's WebState's
-// NavigationManager. Convert all callers and remove these methods.
-- (void)goBack;
-- (void)goForward;
 
 // Called before capturing a snapshot for Tab.
 - (void)willUpdateSnapshot;

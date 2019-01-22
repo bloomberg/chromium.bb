@@ -202,14 +202,6 @@ NSString* const kTabUrlKey = @"url";
   return _webStateImpl;
 }
 
-- (BOOL)canGoBack {
-  return self.navigationManager && self.navigationManager->CanGoBack();
-}
-
-- (BOOL)canGoForward {
-  return self.navigationManager && self.navigationManager->CanGoForward();
-}
-
 - (void)setOverscrollActionsControllerDelegate:
     (id<OverscrollActionsControllerDelegate>)
         overscrollActionsControllerDelegate {
@@ -253,22 +245,6 @@ NSString* const kTabUrlKey = @"url";
 
 - (web::NavigationManager*)navigationManager {
   return self.webState ? self.webState->GetNavigationManager() : nullptr;
-}
-
-- (void)goBack {
-  if (self.navigationManager) {
-    DCHECK(self.navigationManager->CanGoBack());
-    base::RecordAction(base::UserMetricsAction("Back"));
-    self.navigationManager->GoBack();
-  }
-}
-
-- (void)goForward {
-  if (self.navigationManager) {
-    DCHECK(self.navigationManager->CanGoForward());
-    base::RecordAction(base::UserMetricsAction("Forward"));
-    self.navigationManager->GoForward();
-  }
 }
 
 - (void)willUpdateSnapshot {
