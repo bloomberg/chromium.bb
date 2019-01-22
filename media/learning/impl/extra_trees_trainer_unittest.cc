@@ -158,7 +158,7 @@ TEST_P(ExtraTreesTest, RegressionVsBinaryClassification) {
     FeatureValue f1(i & 3);
     FeatureValue f2((i >> 2) & 3);
     FeatureValue f3((i >> 4) & 3);
-    int pct = (100 * (f1.value() + f2.value() + f3.value())) / 9;
+    int frac = (1.0 * (f1.value() + f2.value() + f3.value())) / 9;
     LabelledExample e({f1, f2, f3}, TargetValue(0));
 
     // TODO(liberato): Consider adding noise, and verifying that the model
@@ -166,19 +166,20 @@ TEST_P(ExtraTreesTest, RegressionVsBinaryClassification) {
     // the currently noise-free target.
 
     // Push some number of false and some number of true instances that is in
-    // the right ratio for |pct|.  We add 100's instead of 1's so that it's
-    // scaled to the same range as the regression targets.
-    e.weight = 100 - pct;
+    // the right ratio for |frac|.
+    const int total_examples = 100;
+    const int positive_examples = total_examples * frac;
+    e.weight = total_examples - positive_examples;
     if (e.weight > 0)
       c_data.push_back(e);
-    e.target_value = TargetValue(100);
-    e.weight = pct;
+    e.target_value = TargetValue(1.0);
+    e.weight = positive_examples;
     if (e.weight > 0)
       c_data.push_back(e);
 
-    // For the regression data, add an example with |pct| directly.  Also save
+    // For the regression data, add an example with |frac| directly.  Also save
     // it so that we can look up the right answer below.
-    LabelledExample r_example(LabelledExample({f1, f2, f3}, TargetValue(pct)));
+    LabelledExample r_example(LabelledExample({f1, f2, f3}, TargetValue(frac)));
     r_examples.insert(r_example);
     r_data.push_back(r_example);
   }

@@ -43,6 +43,10 @@ uint64_t RandomNumberGenerator::Generate(uint64_t range) {
   return value % range;
 }
 
+double RandomNumberGenerator::GenerateDouble(double range) {
+  return base::BitsToOpenEndedUnitInterval(Generate()) * range;
+}
+
 HasRandomNumberGenerator::HasRandomNumberGenerator(RandomNumberGenerator* rng)
     : rng_(rng ? rng : RandomNumberGenerator::Default()) {}
 
