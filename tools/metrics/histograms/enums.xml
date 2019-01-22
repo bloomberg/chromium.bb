@@ -38015,7 +38015,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Parsing failed"/>
   <int value="4" label="Decoding failed"/>
   <int value="5" label="Logo revalidated"/>
-  <int value="6" label="Missing image"/>
 </enum>
 
 <enum name="NewTabPageLogoShown">
