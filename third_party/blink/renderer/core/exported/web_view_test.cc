@@ -4666,7 +4666,12 @@ TEST_F(WebViewTest, ClosingPageIsPaused) {
   LocalFrame* main_frame = ToLocalFrame(page->MainFrame());
   EXPECT_FALSE(main_frame->DomWindow()->closed());
 
-  main_frame->DomWindow()->close(nullptr);
+  ScriptState* script_state = ToScriptStateForMainWorld(main_frame);
+  ScriptState::Scope entered_context_scope(script_state);
+  v8::Context::BackupIncumbentScope incumbent_context_scope(
+      script_state->GetContext());
+
+  main_frame->DomWindow()->close(script_state->GetIsolate());
   // The window should be marked closed...
   EXPECT_TRUE(main_frame->DomWindow()->closed());
   // EXPECT_TRUE(page->isClosing());

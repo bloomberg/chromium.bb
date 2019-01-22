@@ -598,9 +598,8 @@ class CORE_EXPORT Document : public ContainerNode,
                  const AtomicString& type,
                  const AtomicString& replace,
                  ExceptionState&);
-  DOMWindow* open(LocalDOMWindow* current_window,
-                  LocalDOMWindow* entered_window,
-                  const USVStringOrTrustedURL& stringOrUrl,
+  DOMWindow* open(v8::Isolate*,
+                  const USVStringOrTrustedURL& string_or_url,
                   const AtomicString& name,
                   const AtomicString& features,
                   ExceptionState&);

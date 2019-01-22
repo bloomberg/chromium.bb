@@ -74,7 +74,7 @@ void PresentationReceiver::Terminate() {
   if (!window || window->closed())
     return;
 
-  window->close(window);
+  window->Close(window);
 }
 
 void PresentationReceiver::RemoveConnection(

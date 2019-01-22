@@ -641,6 +641,12 @@ LocalDOMWindow* EnteredDOMWindow(v8::Isolate* isolate) {
   return window;
 }
 
+LocalDOMWindow* IncumbentDOMWindow(v8::Isolate* isolate) {
+  LocalDOMWindow* window = ToLocalDOMWindow(isolate->GetIncumbentContext());
+  DCHECK(window);
+  return window;
+}
+
 LocalDOMWindow* CurrentDOMWindow(v8::Isolate* isolate) {
   return ToLocalDOMWindow(isolate->GetCurrentContext());
 }

@@ -3387,9 +3387,8 @@ Document* Document::open(LocalDOMWindow* entered_window,
   return this;
 }
 
-DOMWindow* Document::open(LocalDOMWindow* current_window,
-                          LocalDOMWindow* entered_window,
-                          const USVStringOrTrustedURL& stringOrUrl,
+DOMWindow* Document::open(v8::Isolate* isolate,
+                          const USVStringOrTrustedURL& string_or_url,
                           const AtomicString& name,
                           const AtomicString& features,
                           ExceptionState& exception_state) {
@@ -3398,10 +3397,9 @@ DOMWindow* Document::open(LocalDOMWindow* current_window,
                                       "The document has no window associated.");
     return nullptr;
   }
-  AtomicString frame_name = name.IsEmpty() ? "_blank" : name;
 
-  return domWindow()->open(stringOrUrl, frame_name, features, current_window,
-                           entered_window, exception_state);
+  return domWindow()->open(isolate, string_or_url, name, features,
+                           exception_state);
 }
 
 // https://html.spec.whatwg.org/C/dynamic-markup-insertion.html#dom-document-close
