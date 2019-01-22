@@ -1151,6 +1151,11 @@ HTMLDivElement* MediaControlsImpl::PanelElement() {
   return panel_;
 }
 
+HTMLDivElement* MediaControlsImpl::ButtonPanelElement() {
+  DCHECK(IsModern());
+  return media_button_panel_;
+}
+
 void MediaControlsImpl::BeginScrubbing(bool is_touch_event) {
   if (!MediaElement().paused()) {
     is_paused_for_scrubbing_ = true;

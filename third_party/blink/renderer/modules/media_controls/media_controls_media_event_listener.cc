@@ -74,9 +74,16 @@ void MediaControlsMediaEventListener::Attach() {
   text_tracks->addEventListener(event_type_names::kRemovetrack, this, false);
 
   // Keypress events.
-  if (media_controls_->PanelElement()) {
-    media_controls_->PanelElement()->addEventListener(
-        event_type_names::kKeypress, this, false);
+  if (MediaControlsImpl::IsModern()) {
+    if (media_controls_->ButtonPanelElement()) {
+      media_controls_->ButtonPanelElement()->addEventListener(
+          event_type_names::kKeypress, this, false);
+    }
+  } else {
+    if (media_controls_->PanelElement()) {
+      media_controls_->PanelElement()->addEventListener(
+          event_type_names::kKeypress, this, false);
+    }
   }
 
   RemotePlayback& remote = RemotePlayback::From(GetMediaElement());
@@ -107,9 +114,16 @@ void MediaControlsMediaEventListener::Detach() {
   text_tracks->removeEventListener(event_type_names::kChange, this, false);
   text_tracks->removeEventListener(event_type_names::kRemovetrack, this, false);
 
-  if (media_controls_->PanelElement()) {
-    media_controls_->PanelElement()->removeEventListener(
-        event_type_names::kKeypress, this, false);
+  if (MediaControlsImpl::IsModern()) {
+    if (media_controls_->ButtonPanelElement()) {
+      media_controls_->ButtonPanelElement()->removeEventListener(
+          event_type_names::kKeypress, this, false);
+    }
+  } else {
+    if (media_controls_->PanelElement()) {
+      media_controls_->PanelElement()->removeEventListener(
+          event_type_names::kKeypress, this, false);
+    }
   }
 
   RemotePlayback& remote = RemotePlayback::From(GetMediaElement());
@@ -214,9 +228,16 @@ void MediaControlsMediaEventListener::Invoke(
 
   // Keypress events.
   if (event->type() == event_type_names::kKeypress) {
-    if (event->currentTarget() == media_controls_->PanelElement()) {
-      media_controls_->OnPanelKeypress();
-      return;
+    if (MediaControlsImpl::IsModern()) {
+      if (event->currentTarget() == media_controls_->ButtonPanelElement()) {
+        media_controls_->OnPanelKeypress();
+        return;
+      }
+    } else {
+      if (event->currentTarget() == media_controls_->PanelElement()) {
+        media_controls_->OnPanelKeypress();
+        return;
+      }
     }
   }
 
