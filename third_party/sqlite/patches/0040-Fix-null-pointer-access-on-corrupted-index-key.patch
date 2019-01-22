@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Victor Costan <pwnall@chromium.org>
+Date: Mon, 21 Jan 2019 22:29:21 -0800
+Subject: [PATCH 40/40] Fix null pointer access on corrupted index key.
+
+This backports https://www.sqlite.org/src/info/058a8006dceda78a
+
+Bug: 923902
+---
+ third_party/sqlite/src/src/vdbeaux.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/third_party/sqlite/src/src/vdbeaux.c b/third_party/sqlite/src/src/vdbeaux.c
+index 1e9812288cfa..13b2e1ef7280 100644
+--- a/third_party/sqlite/src/src/vdbeaux.c
++++ b/third_party/sqlite/src/src/vdbeaux.c
+@@ -3818,7 +3818,8 @@ static int vdbeRecordCompareDebug(
+
+     /* Do the comparison
+     */
+-    rc = sqlite3MemCompare(&mem1, &pPKey2->aMem[i], pKeyInfo->aColl[i]);
++    rc = sqlite3MemCompare(&mem1, &pPKey2->aMem[i],
++                           pKeyInfo->nAllField>i ? pKeyInfo->aColl[i] : 0);
+     if( rc!=0 ){
+       assert( mem1.szMalloc==0 );  /* See comment below */
+       if( pKeyInfo->aSortOrder[i] ){
+@@ -4249,10 +4250,12 @@ int sqlite3VdbeRecordCompareWithSkip(
+         mem1.n = (serial_type - 12) / 2;
+         testcase( (d1+mem1.n)==(unsigned)nKey1 );
+         testcase( (d1+mem1.n+1)==(unsigned)nKey1 );
+-        if( (d1+mem1.n) > (unsigned)nKey1 ){
++        if( (d1+mem1.n) > (unsigned)nKey1
++         || (pKeyInfo = pPKey2->pKeyInfo)->nAllField<=i
++        ){
+           pPKey2->errCode = (u8)SQLITE_CORRUPT_BKPT;
+           return 0;                /* Corruption */
+-        }else if( (pKeyInfo = pPKey2->pKeyInfo)->aColl[i] ){
++        }else if( pKeyInfo->aColl[i] ){
+           mem1.enc = pKeyInfo->enc;
+           mem1.db = pKeyInfo->db;
+           mem1.flags = MEM_Str;
+--
+2.18.0
+

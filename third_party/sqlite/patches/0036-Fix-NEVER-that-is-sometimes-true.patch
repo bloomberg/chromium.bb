@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Victor Costan <pwnall@chromium.org>
+Date: Mon, 21 Jan 2019 14:26:47 -0800
+Subject: [PATCH 36/40] Fix NEVER that is sometimes true.
+
+This backports https://sqlite.org/src/info/1201615cbbd30701
+
+Bug: 923715
+---
+ third_party/sqlite/src/src/btree.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/third_party/sqlite/src/src/btree.c b/third_party/sqlite/src/src/btree.c
+index dbff913299a9..cc4de24d79db 100644
+--- a/third_party/sqlite/src/src/btree.c
++++ b/third_party/sqlite/src/src/btree.c
+@@ -7067,8 +7067,7 @@ static int balance_quick(MemPage *pParent, MemPage *pPage, u8 *pSpace){
+   assert( sqlite3PagerIswriteable(pParent->pDbPage) );
+   assert( pPage->nOverflow==1 );
+
+-  /* This error condition is now caught prior to reaching this function */
+-  if( NEVER(pPage->nCell==0) ) return SQLITE_CORRUPT_BKPT;
++  if( pPage->nCell==0 ) return SQLITE_CORRUPT_BKPT;  /* dbfuzz001.test */
+
+   /* Allocate a new page. This page will become the right-sibling of
+   ** pPage. Make the parent page writable, so that the new divider cell
+--
+2.18.0
+

@@ -354,26 +354,32 @@ Table *sqlite3LocateTable(
 
   p = sqlite3FindTable(db, zName, zDbase);
   if( p==0 ){
-    const char *zMsg = flags & LOCATE_VIEW ? "no such view" : "no such table";
 #ifndef SQLITE_OMIT_VIRTUALTABLE
     /* If zName is the not the name of a table in the schema created using
     ** CREATE, then check to see if it is the name of an virtual table that
     ** can be an eponymous virtual table. */
-    Module *pMod = (Module*)sqlite3HashFind(&db->aModule, zName);
-    if( pMod==0 && sqlite3_strnicmp(zName, "pragma_", 7)==0 ){
-      pMod = sqlite3PragmaVtabRegister(db, zName);
-    }
-    if( pMod && sqlite3VtabEponymousTableInit(pParse, pMod) ){
-      return pMod->pEpoTab;
+    if( pParse->disableVtab==0 ){
+      Module *pMod = (Module*)sqlite3HashFind(&db->aModule, zName);
+      if( pMod==0 && sqlite3_strnicmp(zName, "pragma_", 7)==0 ){
+        pMod = sqlite3PragmaVtabRegister(db, zName);
+      }
+      if( pMod && sqlite3VtabEponymousTableInit(pParse, pMod) ){
+        return pMod->pEpoTab;
+      }
     }
 #endif
-    if( (flags & LOCATE_NOERR)==0 ){
-      if( zDbase ){
-        sqlite3ErrorMsg(pParse, "%s: %s.%s", zMsg, zDbase, zName);
-      }else{
-        sqlite3ErrorMsg(pParse, "%s: %s", zMsg, zName);
-      }
-      pParse->checkSchema = 1;
+    if( flags & LOCATE_NOERR ) return 0;
+    pParse->checkSchema = 1;
+  }else if( IsVirtual(p) && pParse->disableVtab ){
+    p = 0;
+  }
+
+  if( p==0 ){
+    const char *zMsg = flags & LOCATE_VIEW ? "no such view" : "no such table";
+    if( zDbase ){
+      sqlite3ErrorMsg(pParse, "%s: %s.%s", zMsg, zDbase, zName);
+    }else{
+      sqlite3ErrorMsg(pParse, "%s: %s", zMsg, zName);
     }
   }
 
@@ -4417,13 +4423,15 @@ static int collationMatch(const char *zColl, Index *pIndex){
 */
 #ifndef SQLITE_OMIT_REINDEX
 static void reindexTable(Parse *pParse, Table *pTab, char const *zColl){
-  Index *pIndex;              /* An index associated with pTab */
+  if (! IsVirtual(pTab) ){
+    Index *pIndex;              /* An index associated with pTab */
 
-  for(pIndex=pTab->pIndex; pIndex; pIndex=pIndex->pNext){
-    if( zColl==0 || collationMatch(zColl, pIndex) ){
-      int iDb = sqlite3SchemaToIndex(pParse->db, pTab->pSchema);
-      sqlite3BeginWriteOperation(pParse, 0, iDb);
-      sqlite3RefillIndex(pParse, pIndex, -1);
+    for(pIndex=pTab->pIndex; pIndex; pIndex=pIndex->pNext){
+      if( zColl==0 || collationMatch(zColl, pIndex) ){
+        int iDb = sqlite3SchemaToIndex(pParse->db, pTab->pSchema);
+        sqlite3BeginWriteOperation(pParse, 0, iDb);
+        sqlite3RefillIndex(pParse, pIndex, -1);
+      }
     }
   }
 }

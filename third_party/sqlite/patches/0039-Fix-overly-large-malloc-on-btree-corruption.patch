@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Victor Costan <pwnall@chromium.org>
+Date: Mon, 21 Jan 2019 16:37:48 -0800
+Subject: [PATCH 39/40] Fix overly large malloc on btree corruption.
+
+This backports https://www.sqlite.org/src/info/3ecaaee69f49e43d
+
+Bug: 914614
+---
+ third_party/sqlite/src/src/btree.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/third_party/sqlite/src/src/btree.c b/third_party/sqlite/src/src/btree.c
+index 3b018b5cc3c8..eaff20b24e2a 100644
+--- a/third_party/sqlite/src/src/btree.c
++++ b/third_party/sqlite/src/src/btree.c
+@@ -5474,7 +5474,7 @@ int sqlite3BtreeMovetoUnpacked(
+           testcase( nCell==0 );  /* Invalid key size:  0x80 0x80 0x00 */
+           testcase( nCell==1 );  /* Invalid key size:  0x80 0x80 0x01 */
+           testcase( nCell==2 );  /* Minimum legal index key size */
+-          if( nCell<2 ){
++          if( nCell<2 || nCell/pCur->pBt->usableSize>pCur->pBt->nPage ){
+             rc = SQLITE_CORRUPT_PAGE(pPage);
+             goto moveto_finish;
+           }
+--
+2.18.0
+
