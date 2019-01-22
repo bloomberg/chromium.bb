@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <windows.h>
 
+#include "base/clang_coverage_buildflags.h"
 #include "base/test/clang_coverage.h"
 
 namespace base {
@@ -17,7 +18,7 @@ bool BeingDebugged() {
 }
 
 void BreakDebugger() {
-#if defined(CLANG_COVERAGE)
+#if BUILDFLAG(CLANG_COVERAGE)
   WriteClangCoverageProfile();
 #endif
 

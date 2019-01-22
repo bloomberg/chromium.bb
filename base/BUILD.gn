@@ -1156,6 +1156,7 @@ jumbo_component("base") {
   ]
 
   deps = [
+    ":clang_coverage_buildflags",
     "//base/allocator",
     "//base/allocator:buildflags",
     "//base/third_party/dynamic_annotations",
@@ -1959,6 +1960,13 @@ buildflag_header("partition_alloc_buildflags") {
   header_dir = "base"
 
   flags = [ "USE_PARTITION_ALLOC=$use_partition_alloc" ]
+}
+
+buildflag_header("clang_coverage_buildflags") {
+  header = "clang_coverage_buildflags.h"
+  header_dir = "base"
+
+  flags = [ "CLANG_COVERAGE=$use_clang_coverage" ]
 }
 
 # This is the subset of files from base that should not be used with a dynamic
