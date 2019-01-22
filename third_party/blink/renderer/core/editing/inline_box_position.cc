@@ -61,8 +61,10 @@ InlineTextBox* SearchAheadForBetterMatch(const LayoutText* layout_object) {
        next = next->NextInPreOrder(container)) {
     if (next->IsLayoutBlock())
       return nullptr;
-    if (next->IsBR())
-      return nullptr;
+    if (next->IsBR()) {
+      if (!RuntimeEnabledFeatures::BidiCaretAffinityEnabled())
+        return nullptr;
+    }
     if (IsNonTextLeafChild(next))
       return nullptr;
     if (next->IsText()) {
@@ -125,6 +127,8 @@ bool IsCaretAtEdgeOfInlineTextBox(int caret_offset,
   DCHECK_EQ(caret_offset, box.CaretMaxOffset());
   if (affinity == TextAffinity::kUpstream)
     return true;
+  if (RuntimeEnabledFeatures::BidiCaretAffinityEnabled())
+    return false;
   return box.NextLeafChild() && box.NextLeafChild()->IsLineBreak();
 }
 
