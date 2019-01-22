@@ -35,6 +35,7 @@ const double kDefaultSwapFreeThresholdRatio = 0.45;
 // Field trial parameter names.
 const char kRendererPauseParamName[] = "pause_renderer";
 const char kNavigateAdsParamName[] = "navigate_ads";
+const char kPurgeV8MemoryParamName[] = "purge_v8";
 const char kShouldDetectInRenderer[] = "detect_in_renderer";
 
 bool GetThresholdParam(const char* param,
@@ -122,6 +123,8 @@ OomInterventionConfig::OomInterventionConfig()
       features::kOomIntervention, kRendererPauseParamName, true);
   is_navigate_ads_enabled_ = base::GetFieldTrialParamByFeatureAsBool(
       features::kOomIntervention, kNavigateAdsParamName, true);
+  is_purge_v8_memory_enabled_ = base::GetFieldTrialParamByFeatureAsBool(
+      features::kOomIntervention, kPurgeV8MemoryParamName, false);
   should_detect_in_renderer_ = base::GetFieldTrialParamByFeatureAsBool(
       features::kOomIntervention, kShouldDetectInRenderer, true);
 
