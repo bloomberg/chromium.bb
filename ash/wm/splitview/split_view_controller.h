@@ -9,12 +9,15 @@
 #include "ash/ash_export.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/public/interfaces/split_view.mojom.h"
+#include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/window_state_observer.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -45,7 +48,8 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
                                        public ShellObserver,
                                        public display::DisplayObserver,
                                        public TabletModeObserver,
-                                       public AccessibilityObserver {
+                                       public AccessibilityObserver,
+                                       public SessionObserver {
  public:
   enum State { NO_SNAP, LEFT_SNAPPED, RIGHT_SNAPPED, BOTH_SNAPPED };
 
@@ -58,12 +62,13 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   enum SnapPosition { NONE, LEFT, RIGHT };
 
   // Why splitview was ended. For now, all reasons will be kNormal except when
-  // the home launcher button is pressed or an unsnappable window just got
-  // activated.
+  // the home launcher button is pressed, an unsnappable window just got
+  // activated, or the active user session changed.
   enum class EndReason {
     kNormal = 0,
     kHomeLauncherPressed,
     kUnsnappableWindowActivated,
+    kActiveUserChanged,
   };
 
   class Observer {
@@ -170,10 +175,15 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
                                uint32_t metrics) override;
 
   // TabletModeObserver:
+  void OnTabletModeStarted() override;
   void OnTabletModeEnding() override;
+  void OnTabletControllerDestroyed() override;
 
   // AccessibilityObserver:
   void OnAccessibilityStatusChanged() override;
+
+  // SessionObserver:
+  void OnActiveUserSessionChanged(const AccountId& account_id) override;
 
   aura::Window* left_window() { return left_window_; }
   aura::Window* right_window() { return right_window_; }
@@ -416,6 +426,8 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
 
   base::ObserverList<Observer>::Unchecked observers_;
   mojo::InterfacePtrSet<mojom::SplitViewObserver> mojo_observers_;
+  ScopedObserver<TabletModeController, TabletModeObserver>
+      tablet_mode_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SplitViewController);
 };

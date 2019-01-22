@@ -215,6 +215,7 @@ class SplitViewController::TabDraggedWindowObserver
 SplitViewController::SplitViewController() {
   Shell::Get()->accessibility_controller()->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
+  tablet_mode_observer_.Add(Shell::Get()->tablet_mode_controller());
 }
 
 SplitViewController::~SplitViewController() {
@@ -244,7 +245,6 @@ void SplitViewController::SnapWindow(aura::Window* window,
     // Add observers when the split view mode starts.
     Shell::Get()->AddShellObserver(this);
     Shell::Get()->activation_client()->AddObserver(this);
-    Shell::Get()->tablet_mode_controller()->AddObserver(this);
     Shell::Get()->NotifySplitViewModeStarting();
 
     divider_position_ = GetDefaultDividerPosition(window);
@@ -520,7 +520,6 @@ void SplitViewController::EndSplitView(EndReason end_reason) {
   // Remove observers when the split view mode ends.
   Shell::Get()->RemoveShellObserver(this);
   Shell::Get()->activation_client()->RemoveObserver(this);
-  Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
 
   StopObserving(LEFT);
   StopObserving(RIGHT);
@@ -798,8 +797,17 @@ void SplitViewController::OnDisplayMetricsChanged(
   UpdateSnappedWindowsAndDividerBounds();
 }
 
+void SplitViewController::OnTabletModeStarted() {
+  Shell::Get()->session_controller()->AddObserver(this);
+}
+
 void SplitViewController::OnTabletModeEnding() {
+  Shell::Get()->session_controller()->RemoveObserver(this);
   EndSplitView();
+}
+
+void SplitViewController::OnTabletControllerDestroyed() {
+  tablet_mode_observer_.RemoveAll();
 }
 
 void SplitViewController::OnAccessibilityStatusChanged() {
@@ -807,6 +815,49 @@ void SplitViewController::OnAccessibilityStatusChanged() {
   // they are compatible.
   if (Shell::Get()->accessibility_controller()->spoken_feedback_enabled())
     EndSplitView();
+}
+
+void SplitViewController::OnActiveUserSessionChanged(const AccountId&) {
+  // There is only one SplitViewController object for all user sessions, but
+  // functionally, each user session independently can be in split view or not.
+  // Here, a new user session has just been switched to, and if split view mode
+  // is active then it was for the previous user session. EndSplitView will
+  // perform some cleanup, including setting |left_window_| and |right_window_|
+  // to null, but the aura::Window objects will be left unchanged to facilitate
+  // switching back.
+  EndSplitView(EndReason::kActiveUserChanged);
+
+  // Search for snapped windows to detect if the now active user session was in
+  // split view. In case multiple windows were snapped to one side, one window
+  // after another, there may be multiple windows in a LEFT_SNAPPED state or
+  // multiple windows in a RIGHT_SNAPPED state. For each of those two state
+  // types that belongs to multiple windows, the relevant window will be listed
+  // first among those windows, and a null check in the loop body below will
+  // filter out the rest of them.
+  MruWindowTracker::WindowList windows =
+      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
+  for (aura::Window* window : windows) {
+    switch (wm::GetWindowState(window)->GetStateType()) {
+      case mojom::WindowStateType::LEFT_SNAPPED:
+        if (left_window_ == nullptr)
+          SnapWindow(window, LEFT);
+        break;
+      case mojom::WindowStateType::RIGHT_SNAPPED:
+        if (right_window_ == nullptr)
+          SnapWindow(window, RIGHT);
+        break;
+      default:
+        break;
+    }
+    if (state_ == BOTH_SNAPPED)
+      break;
+  }
+
+  // If there is a window snapped to one side but no window snapped to the other
+  // side, then overview should be started (to be seen on the side with no
+  // snapped window).
+  if (state_ == LEFT_SNAPPED || state_ == RIGHT_SNAPPED)
+    StartOverview();
 }
 
 void SplitViewController::StartObserving(aura::Window* window) {
