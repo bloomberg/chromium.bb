@@ -38780,6 +38780,15 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
+<enum name="OSXStagingDirectoryStep">
+  <int value="0" label="failure"/>
+  <int value="1" label="NSItemReplacementDirectory"/>
+  <int value="2" label="Sibling directory"/>
+  <int value="3" label="NSTemporaryDirectory"/>
+  <int value="4" label="TMPDIR"/>
+  <int value="5" label="/tmp"/>
+</enum>
+
 <enum name="OtherPossibleUsernamesUsage">
   <int value="0" label="Nothing to Autofill"/>
   <int value="1" label="No other possible usernames"/>
