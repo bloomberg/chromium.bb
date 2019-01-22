@@ -53,6 +53,8 @@ class MockAssistant : public mojom::Assistant {
     DoCacheScreenContext(&callback);
   }
 
+  MOCK_METHOD0(ClearScreenContextCache, void());
+
   MOCK_METHOD1(OnAccessibilityStatusChanged, void(bool));
 
   MOCK_METHOD1(SendAssistantFeedback,
