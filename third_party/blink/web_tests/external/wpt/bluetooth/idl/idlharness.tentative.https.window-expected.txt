@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 180 tests; 122 PASS, 58 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 180 tests; 124 PASS, 56 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Navigator: original interface defined
 PASS Bluetooth interface: existence and properties of interface object
@@ -43,10 +43,10 @@ FAIL ValueEvent interface: existence and properties of interface prototype objec
 FAIL ValueEvent interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "ValueEvent" expected property "ValueEvent" missing
 FAIL ValueEvent interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "ValueEvent" expected property "ValueEvent" missing
 FAIL ValueEvent interface: attribute value assert_own_property: self does not have own property "ValueEvent" expected property "ValueEvent" missing
-FAIL BluetoothDevice interface: existence and properties of interface object assert_equals: prototype of self's property "BluetoothDevice" is not Function.prototype expected function "function () { [native code] }" but got function "function EventTarget() { [native code] }"
+PASS BluetoothDevice interface: existence and properties of interface object
 PASS BluetoothDevice interface object length
 PASS BluetoothDevice interface object name
-FAIL BluetoothDevice interface: existence and properties of interface prototype object assert_equals: prototype of BluetoothDevice.prototype is not Object.prototype expected object "[object Object]" but got object "[object EventTarget]"
+PASS BluetoothDevice interface: existence and properties of interface prototype object
 PASS BluetoothDevice interface: existence and properties of interface prototype object's "constructor" property
 PASS BluetoothDevice interface: existence and properties of interface prototype object's @@unscopables property
 PASS BluetoothDevice interface: attribute id
@@ -108,10 +108,10 @@ PASS BluetoothRemoteGATTServer interface: operation connect()
 PASS BluetoothRemoteGATTServer interface: operation disconnect()
 PASS BluetoothRemoteGATTServer interface: operation getPrimaryService(BluetoothServiceUUID)
 PASS BluetoothRemoteGATTServer interface: operation getPrimaryServices(BluetoothServiceUUID)
-PASS BluetoothRemoteGATTService interface: existence and properties of interface object
+FAIL BluetoothRemoteGATTService interface: existence and properties of interface object assert_equals: prototype of BluetoothRemoteGATTService is not EventTarget expected function "function EventTarget() { [native code] }" but got function "function () { [native code] }"
 PASS BluetoothRemoteGATTService interface object length
 PASS BluetoothRemoteGATTService interface object name
-PASS BluetoothRemoteGATTService interface: existence and properties of interface prototype object
+FAIL BluetoothRemoteGATTService interface: existence and properties of interface prototype object assert_equals: prototype of BluetoothRemoteGATTService.prototype is not EventTarget.prototype expected object "[object EventTarget]" but got object "[object Object]"
 PASS BluetoothRemoteGATTService interface: existence and properties of interface prototype object's "constructor" property
 PASS BluetoothRemoteGATTService interface: existence and properties of interface prototype object's @@unscopables property
 PASS BluetoothRemoteGATTService interface: attribute device
@@ -125,10 +125,10 @@ FAIL BluetoothRemoteGATTService interface: attribute oncharacteristicvaluechange
 FAIL BluetoothRemoteGATTService interface: attribute onserviceadded assert_true: The prototype object must have a property "onserviceadded" expected true got false
 FAIL BluetoothRemoteGATTService interface: attribute onservicechanged assert_true: The prototype object must have a property "onservicechanged" expected true got false
 FAIL BluetoothRemoteGATTService interface: attribute onserviceremoved assert_true: The prototype object must have a property "onserviceremoved" expected true got false
-FAIL BluetoothRemoteGATTCharacteristic interface: existence and properties of interface object assert_equals: prototype of self's property "BluetoothRemoteGATTCharacteristic" is not Function.prototype expected function "function () { [native code] }" but got function "function EventTarget() { [native code] }"
+PASS BluetoothRemoteGATTCharacteristic interface: existence and properties of interface object
 PASS BluetoothRemoteGATTCharacteristic interface object length
 PASS BluetoothRemoteGATTCharacteristic interface object name
-FAIL BluetoothRemoteGATTCharacteristic interface: existence and properties of interface prototype object assert_equals: prototype of BluetoothRemoteGATTCharacteristic.prototype is not Object.prototype expected object "[object Object]" but got object "[object EventTarget]"
+PASS BluetoothRemoteGATTCharacteristic interface: existence and properties of interface prototype object
 PASS BluetoothRemoteGATTCharacteristic interface: existence and properties of interface prototype object's "constructor" property
 PASS BluetoothRemoteGATTCharacteristic interface: existence and properties of interface prototype object's @@unscopables property
 PASS BluetoothRemoteGATTCharacteristic interface: attribute service
