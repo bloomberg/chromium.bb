@@ -1028,6 +1028,8 @@ static LayoutUnit ComputeContentSize(
                                /* is_new_fc */ false)
           .SetTextDirection(style.Direction())
           .SetAvailableSize({available_inline_size, NGSizeIndefinite})
+          .SetPercentageResolutionSize({LayoutUnit(), LayoutUnit()})
+          .SetReplacedPercentageResolutionSize({LayoutUnit(), LayoutUnit()})
           .SetIsIntermediateLayout(true)
           .ToConstraintSpace();
 
