@@ -94,13 +94,12 @@ class AllocatorState {
   // This method is meant to be called from the crash handler with a validated
   // AllocatorState object read from the crashed process. This method checks if
   // exception_address is an address in the GWP-ASan region, and writes the
-  // error type and slot metadata to the provided arguments if so.
+  // address of the SlotMetadata to the provided arguments if so.
   //
   // Returns an enum indicating an error, unrelated exception, or a GWP-ASan
-  // exception (with slot and error_type filled out.)
+  // exception (with slot_address filled out.)
   GetMetadataReturnType GetMetadataForAddress(uintptr_t exception_address,
-                                              SlotMetadata* slot,
-                                              ErrorType* error_type) const;
+                                              uintptr_t* slot_address) const;
 
   // Returns the likely error type given an exception address and whether its
   // previously been allocated and deallocated.
@@ -120,15 +119,16 @@ class AllocatorState {
   uintptr_t SlotToAddr(size_t slot) const;
   size_t AddrToSlot(uintptr_t addr) const;
 
-  // Information about every allocation, including its size, offset, and
-  // pointers to the allocation/deallocation stack traces (if present.)
-  SlotMetadata data[kGpaMaxPages] = {};
-
   uintptr_t pages_base_addr = 0;  // Points to start of mapped region.
   uintptr_t pages_end_addr = 0;   // Points to the end of mapped region.
   uintptr_t first_page_addr = 0;  // Points to first allocatable page.
   size_t total_pages = 0;         // Size of the page pool to allocate from.
   size_t page_size = 0;           // Page size.
+
+  // Pointer to an array of metadata about every allocation, including its size,
+  // offset, and pointers to the allocation/deallocation stack traces (if
+  // present.)
+  uintptr_t slot_metadata = 0;
 
   // Set to true if a double free has occurred.
   bool double_free_detected = false;

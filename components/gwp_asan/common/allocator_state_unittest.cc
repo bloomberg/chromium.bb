@@ -31,6 +31,9 @@ class AllocatorStateTest : public testing::Test {
     state_.first_page_addr = first_page_offset + base + page_size;
     state_.pages_end_addr =
         end_addr_offset + base + page_size * (total_pages * 2 + 1);
+
+    // An invalid address, but it's never dereferenced in AllocatorState.
+    state_.slot_metadata = 0x1234;
   }
 
   AllocatorState state_;

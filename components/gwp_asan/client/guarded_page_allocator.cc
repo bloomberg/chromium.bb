@@ -5,6 +5,7 @@
 #include "components/gwp_asan/client/guarded_page_allocator.h"
 
 #include <iterator>
+#include <memory>
 
 #include "base/atomicops.h"
 #include "base/bits.h"
@@ -56,6 +57,9 @@ void GuardedPageAllocator::Init(size_t max_alloced_pages, size_t total_pages) {
   }
 
   AllocateStackTraces();
+
+  slots_ = std::make_unique<AllocatorState::SlotMetadata[]>(total_pages);
+  state_.slot_metadata = reinterpret_cast<uintptr_t>(slots_.get());
 }
 
 GuardedPageAllocator::~GuardedPageAllocator() {
@@ -105,9 +109,9 @@ void GuardedPageAllocator::Deallocate(void* ptr) {
 
   const uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
   size_t slot = state_.AddrToSlot(state_.GetPageAddr(addr));
-  DCHECK_EQ(addr, state_.data[slot].alloc_ptr);
+  DCHECK_EQ(addr, slots_[slot].alloc_ptr);
   // Check for double free.
-  if (state_.data[slot].dealloc.trace_addr) {
+  if (slots_[slot].dealloc.trace_addr) {
     state_.double_free_detected = true;
     base::subtle::MemoryBarrier();
     // Trigger an exception by writing to the inaccessible free()d allocation.
@@ -129,8 +133,8 @@ size_t GuardedPageAllocator::GetRequestedSize(const void* ptr) const {
   CHECK(PointerIsMine(ptr));
   const uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
   size_t slot = state_.AddrToSlot(state_.GetPageAddr(addr));
-  DCHECK_EQ(addr, state_.data[slot].alloc_ptr);
-  return state_.data[slot].alloc_size;
+  DCHECK_EQ(addr, slots_[slot].alloc_ptr);
+  return slots_[slot].alloc_size;
 }
 
 size_t GuardedPageAllocator::RegionSize() const {
@@ -191,33 +195,33 @@ void GuardedPageAllocator::DeallocateStackTraces() {
 void GuardedPageAllocator::DestructStackTrace(size_t slot) {
   // Destruct previous allocation/deallocation traces. The constructor was only
   // called if trace_addr is non-null.
-  if (state_.data[slot].alloc.trace_addr)
+  if (slots_[slot].alloc.trace_addr)
     alloc_traces[slot]->~StackTrace();
-  if (state_.data[slot].dealloc.trace_addr)
+  if (slots_[slot].dealloc.trace_addr)
     dealloc_traces[slot]->~StackTrace();
 }
 
 void GuardedPageAllocator::RecordAllocationInSlot(size_t slot,
                                                   size_t size,
                                                   void* ptr) {
-  state_.data[slot].alloc_size = size;
-  state_.data[slot].alloc_ptr = reinterpret_cast<uintptr_t>(ptr);
+  slots_[slot].alloc_size = size;
+  slots_[slot].alloc_ptr = reinterpret_cast<uintptr_t>(ptr);
 
-  state_.data[slot].alloc.tid = base::PlatformThread::CurrentId();
+  slots_[slot].alloc.tid = base::PlatformThread::CurrentId();
   new (alloc_traces[slot]) StackTrace();
-  state_.data[slot].alloc.trace_addr = reinterpret_cast<uintptr_t>(
-      alloc_traces[slot]->Addresses(&state_.data[slot].alloc.trace_len));
+  slots_[slot].alloc.trace_addr = reinterpret_cast<uintptr_t>(
+      alloc_traces[slot]->Addresses(&slots_[slot].alloc.trace_len));
 
-  state_.data[slot].dealloc.tid = base::kInvalidThreadId;
-  state_.data[slot].dealloc.trace_addr = 0;
-  state_.data[slot].dealloc.trace_len = 0;
+  slots_[slot].dealloc.tid = base::kInvalidThreadId;
+  slots_[slot].dealloc.trace_addr = 0;
+  slots_[slot].dealloc.trace_len = 0;
 }
 
 void GuardedPageAllocator::RecordDeallocationInSlot(size_t slot) {
-  state_.data[slot].dealloc.tid = base::PlatformThread::CurrentId();
+  slots_[slot].dealloc.tid = base::PlatformThread::CurrentId();
   new (dealloc_traces[slot]) StackTrace();
-  state_.data[slot].dealloc.trace_addr = reinterpret_cast<uintptr_t>(
-      dealloc_traces[slot]->Addresses(&state_.data[slot].dealloc.trace_len));
+  slots_[slot].dealloc.trace_addr = reinterpret_cast<uintptr_t>(
+      dealloc_traces[slot]->Addresses(&slots_[slot].dealloc.trace_len));
 }
 
 uintptr_t GuardedPageAllocator::GetCrashKeyAddress() const {
