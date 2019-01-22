@@ -1603,6 +1603,8 @@
         "args": [
           "--additional-driver-flag",
           "--disable-site-isolation-trials",
+          "--additional-expectations",
+          "src/third_party/blink/web_tests/FlagExpectations/disable-site-isolation-trials",
           "--num-retries=3"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
@@ -4212,6 +4214,8 @@
         "args": [
           "--additional-driver-flag",
           "--disable-site-isolation-trials",
+          "--additional-expectations",
+          "src/third_party/blink/web_tests/FlagExpectations/disable-site-isolation-trials",
           "--num-retries=3"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
