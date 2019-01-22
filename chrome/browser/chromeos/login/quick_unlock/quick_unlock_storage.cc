@@ -34,7 +34,7 @@ QuickUnlockStorage::QuickUnlockStorage(Profile* profile) : profile_(profile) {
 QuickUnlockStorage::~QuickUnlockStorage() {}
 
 void QuickUnlockStorage::MarkStrongAuth() {
-  last_strong_auth_ = base::TimeTicks::Now();
+  last_strong_auth_ = base::Time::Now();
   fingerprint_storage()->ResetUnlockAttemptCount();
   pin_storage_prefs()->ResetUnlockAttemptCount();
 }
@@ -47,7 +47,7 @@ bool QuickUnlockStorage::HasStrongAuth() const {
 
 base::TimeDelta QuickUnlockStorage::TimeSinceLastStrongAuth() const {
   DCHECK(!last_strong_auth_.is_null());
-  return base::TimeTicks::Now() - last_strong_auth_;
+  return base::Time::Now() - last_strong_auth_;
 }
 
 base::TimeDelta QuickUnlockStorage::TimeUntilNextStrongAuth() const {
