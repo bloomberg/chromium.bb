@@ -356,6 +356,14 @@ class IdentityManager : public SigninManagerBase::Observer,
   std::string LegacyPickAccountIdForAccount(const std::string& gaia,
                                             const std::string& email) const;
 
+  // Seeds the account whose account_id is given by
+  // AccountTrackerService::PickAccountIdForAccount() with its corresponding
+  // account information. Returns the same value PickAccountIdForAccount()
+  // when given the same arguments.
+  // NOTE: In normal usage, this method SHOULD NOT be called for getting the
+  // account id. It's only for replacement of production code.
+  std::string LegacySeedAccountInfo(const AccountInfo& info);
+
   // Methods to register or remove observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

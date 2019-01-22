@@ -1413,6 +1413,29 @@ TEST_F(IdentityManagerTest, LegacyLoadCredentials) {
   run_loop.Run();
 }
 
+TEST_F(IdentityManagerTest, LegacySeedAccountInfo) {
+  ASSERT_FALSE(
+      identity_manager()
+          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(kTestEmail2)
+          .has_value());
+  ASSERT_FALSE(
+      identity_manager()
+          ->FindAccountInfoForAccountWithRefreshTokenByGaiaId(kTestGaiaId2)
+          .has_value());
+
+  AccountInfo input_info;
+  input_info.email = kTestEmail2;
+  input_info.gaia = kTestGaiaId2;
+  const std::string account_id =
+      identity_manager()->LegacySeedAccountInfo(input_info);
+
+  AccountInfo account_info = account_tracker()->GetAccountInfo(account_id);
+
+  EXPECT_EQ(account_info.account_id, account_id);
+  EXPECT_EQ(account_info.email, kTestEmail2);
+  EXPECT_EQ(account_info.gaia, kTestGaiaId2);
+}
+
 #if !defined(OS_CHROMEOS)
 TEST_F(
     IdentityManagerTest,
