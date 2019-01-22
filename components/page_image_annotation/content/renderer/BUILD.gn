@@ -13,5 +13,27 @@ static_library("renderer") {
     "//components/page_image_annotation/core",
     "//content/public/common",
     "//content/public/renderer",
+    "//crypto",
+    "//skia",
+    "//third_party/blink/public:blink",
+    "//third_party/blink/public/common",
+    "//url",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "content_page_annotator_driver_unittest.cc",
+  ]
+
+  deps = [
+    ":renderer",
+    "//base",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//url",
   ]
 }

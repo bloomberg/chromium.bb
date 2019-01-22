@@ -138,6 +138,7 @@ jumbo_static_library("renderer") {
     "//components/dom_distiller/content/renderer",
     "//components/network_hints/renderer",
     "//components/omnibox/common",
+    "//components/page_image_annotation/content/renderer",
     "//components/plugins/renderer",
     "//components/rappor/public/interfaces",
     "//components/resources:components_resources",
