@@ -786,7 +786,7 @@ public class Tab
         ByteBuffer buffer = getWebContentsStateAsByteBuffer();
         if (buffer == null) return null;
 
-        TabState.WebContentsState state = new TabState.WebContentsStateNative(buffer);
+        TabState.WebContentsState state = new TabState.WebContentsState(buffer);
         state.setVersion(TabState.CONTENTS_STATE_CURRENT_VERSION);
         return state;
     }

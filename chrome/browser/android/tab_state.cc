@@ -30,11 +30,24 @@
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
+using base::android::MethodID;
 using base::android::ScopedJavaLocalRef;
 using content::NavigationController;
 using content::WebContents;
 
 namespace {
+
+ScopedJavaLocalRef<jobject> CreateByteBufferDirect(JNIEnv* env, jint size) {
+  ScopedJavaLocalRef<jclass> clazz =
+      base::android::GetClass(env, "java/nio/ByteBuffer");
+  jmethodID method = MethodID::Get<MethodID::TYPE_STATIC>(
+      env, clazz.obj(), "allocateDirect", "(I)Ljava/nio/ByteBuffer;");
+  jobject ret = env->CallStaticObjectMethod(clazz.obj(), method, size);
+  if (base::android::ClearException(env)) {
+    return {};
+  }
+  return base::android::ScopedJavaLocalRef<jobject>(env, ret);
+}
 
 void WriteStateHeaderToPickle(bool off_the_record,
                               int entry_count,
@@ -305,21 +318,13 @@ ScopedJavaLocalRef<jobject> WriteSerializedNavigationsAsByteBuffer(
                       tab_navigation_pickle.size());
   }
 
-  void* buffer = malloc(pickle.size());
-  if (buffer == NULL) {
-    // We can run out of memory allocating a large enough buffer.
-    // In that case we'll only save the current entry.
-    // TODO(jcivelli): http://b/issue?id=5869635 we should save more entries.
-    // more TODO(jcivelli): Make this work
-    return ScopedJavaLocalRef<jobject>();
+  ScopedJavaLocalRef<jobject> buffer =
+      CreateByteBufferDirect(env, static_cast<jint>(pickle.size()));
+  if (buffer) {
+    memcpy(env->GetDirectBufferAddress(buffer.obj()), pickle.data(),
+           pickle.size());
   }
-  // TODO(yfriedman): Add a |release| to Pickle and save the copy.
-  memcpy(buffer, pickle.data(), pickle.size());
-  ScopedJavaLocalRef<jobject> jb(env, env->NewDirectByteBuffer(buffer,
-                                                               pickle.size()));
-  if (base::android::ClearException(env) || jb.is_null())
-    free(buffer);
-  return jb;
+  return buffer;
 }
 
 // Common implementation for GetContentsStateAsByteBuffer() and
@@ -521,13 +526,6 @@ ScopedJavaLocalRef<jobject>
 }
 
 // Static JNI methods.
-
-static void JNI_TabState_FreeWebContentsStateBuffer(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  void* data = env->GetDirectBufferAddress(obj);
-  free(data);
-}
 
 static ScopedJavaLocalRef<jobject> JNI_TabState_RestoreContentsFromByteBuffer(
     JNIEnv* env,
