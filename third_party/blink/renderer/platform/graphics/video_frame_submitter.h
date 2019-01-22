@@ -52,9 +52,9 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   // WebVideoFrameSubmitter implementation.
   void Initialize(cc::VideoFrameProvider*) override;
   void SetRotation(media::VideoRotation) override;
-  void EnableSubmission(viz::SurfaceId,
-                        base::TimeTicks local_surface_id_allocation_time,
-                        WebFrameSinkDestroyedCallback) override;
+  void EnableSubmission(
+      viz::SurfaceId,
+      base::TimeTicks local_surface_id_allocation_time) override;
   void SetIsSurfaceVisible(bool is_visible) override;
   void SetIsPageVisible(bool is_visible) override;
   void SetForceSubmit(bool) override;
@@ -112,6 +112,10 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   // comments above and in UpdateSubmissionState().
   bool ShouldSubmit() const;
 
+  // Generates a new surface ID using using |child_local_surface_id_allocator_|.
+  // Called during context loss or during a frame size change.
+  void GenerateNewSurfaceId();
+
   // Helper method for creating viz::CompositorFrame. If |video_frame| is null
   // then the frame will be empty.
   viz::CompositorFrame CreateCompositorFrame(
@@ -125,7 +129,6 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   mojo::Binding<viz::mojom::blink::CompositorFrameSinkClient> binding_;
   WebContextProviderCallback context_provider_callback_;
   std::unique_ptr<VideoFrameResourceProvider> resource_provider_;
-  WebFrameSinkDestroyedCallback frame_sink_destroyed_callback_;
   bool waiting_for_compositor_ack_ = false;
 
   // Current rendering state. Set by StartRendering() and StopRendering().

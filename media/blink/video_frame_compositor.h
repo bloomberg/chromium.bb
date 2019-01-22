@@ -82,8 +82,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
       const viz::SurfaceId& id,
       base::TimeTicks local_surface_id_allocation_time,
       VideoRotation rotation,
-      bool force_submit,
-      blink::WebFrameSinkDestroyedCallback frame_sink_destroyed_callback);
+      bool force_submit);
 
   // cc::VideoFrameProvider implementation. These methods must be called on the
   // |task_runner_|.

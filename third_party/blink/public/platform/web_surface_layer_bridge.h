@@ -43,7 +43,6 @@ class BLINK_PLATFORM_EXPORT WebSurfaceLayerBridge {
   virtual const viz::FrameSinkId& GetFrameSinkId() const = 0;
   virtual const viz::SurfaceId& GetSurfaceId() const = 0;
   virtual base::TimeTicks GetLocalSurfaceIdAllocationTime() const = 0;
-  virtual void ClearSurfaceId() = 0;
   virtual void SetContentsOpaque(bool) = 0;
   virtual void CreateSurfaceLayer() = 0;
   virtual void ClearObserver() = 0;

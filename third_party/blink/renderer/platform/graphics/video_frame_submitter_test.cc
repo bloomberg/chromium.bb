@@ -309,22 +309,12 @@ TEST_F(VideoFrameSubmitterTest, ShouldSubmitPreventsSubmission) {
   scoped_task_environment_.RunUntilIdle();
 
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
-  EXPECT_CALL(*video_frame_provider_, GetCurrentFrame())
-      .WillOnce(Return(media::VideoFrame::CreateFrame(
-          media::PIXEL_FORMAT_YV12, gfx::Size(8, 8), gfx::Rect(gfx::Size(8, 8)),
-          gfx::Size(8, 8), base::TimeDelta())));
-  EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _)).Times(1);
-  EXPECT_CALL(*video_frame_provider_, PutCurrentFrame());
-  EXPECT_CALL(*resource_provider_, AppendQuads(_, _, _, _));
-  EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
-  EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
   submitter_->SetIsSurfaceVisible(true);
   scoped_task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(ShouldSubmit());
 
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
-  EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _)).Times(1);
   EXPECT_CALL(*video_frame_provider_, GetCurrentFrame()).Times(0);
   submitter_->SetIsSurfaceVisible(false);
   scoped_task_environment_.RunUntilIdle();
@@ -367,33 +357,13 @@ TEST_F(VideoFrameSubmitterTest, SetForceSubmitForcesSubmission) {
   scoped_task_environment_.RunUntilIdle();
 
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
-  EXPECT_CALL(*video_frame_provider_, GetCurrentFrame())
-      .WillOnce(Return(media::VideoFrame::CreateFrame(
-          media::PIXEL_FORMAT_YV12, gfx::Size(8, 8), gfx::Rect(gfx::Size(8, 8)),
-          gfx::Size(8, 8), base::TimeDelta())));
-  EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _)).Times(1);
-  EXPECT_CALL(*video_frame_provider_, PutCurrentFrame());
-  EXPECT_CALL(*resource_provider_, AppendQuads(_, _, _, _));
-  EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
-  EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
   submitter_->SetIsSurfaceVisible(true);
   scoped_task_environment_.RunUntilIdle();
-
   EXPECT_TRUE(ShouldSubmit());
 
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
-  EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _)).Times(1);
-  EXPECT_CALL(*video_frame_provider_, PutCurrentFrame());
-  EXPECT_CALL(*video_frame_provider_, GetCurrentFrame())
-      .WillOnce(Return(media::VideoFrame::CreateFrame(
-          media::PIXEL_FORMAT_YV12, gfx::Size(8, 8), gfx::Rect(gfx::Size(8, 8)),
-          gfx::Size(8, 8), base::TimeDelta())));
-  EXPECT_CALL(*resource_provider_, AppendQuads(_, _, _, _));
-  EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
-  EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
   submitter_->SetIsSurfaceVisible(false);
   scoped_task_environment_.RunUntilIdle();
-
   EXPECT_TRUE(ShouldSubmit());
 
   EXPECT_CALL(*video_frame_provider_, GetCurrentFrame())
@@ -874,24 +844,15 @@ TEST_F(VideoFrameSubmitterTest, PageVisibilityControlsSubmission) {
   submitter_->StartRendering();
   scoped_task_environment_.RunUntilIdle();
 
-  // Mark the page as visible and confirm frame submission.
+  // Mark the page as visible and confirm frame submission. This should not
+  // submit since we're already rendering.
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
-  EXPECT_CALL(*video_frame_provider_, GetCurrentFrame())
-      .WillOnce(Return(media::VideoFrame::CreateFrame(
-          media::PIXEL_FORMAT_YV12, gfx::Size(8, 8), gfx::Rect(gfx::Size(8, 8)),
-          gfx::Size(8, 8), base::TimeDelta())));
-  EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _)).Times(1);
-  EXPECT_CALL(*video_frame_provider_, PutCurrentFrame());
-  EXPECT_CALL(*resource_provider_, AppendQuads(_, _, _, _));
-  EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
-  EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
   submitter_->SetIsPageVisible(true);
   scoped_task_environment_.RunUntilIdle();
 
   // Transition back to the page being hidden and ensure begin frames stop.
   EXPECT_TRUE(ShouldSubmit());
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
-  EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _)).Times(1);
   EXPECT_CALL(*video_frame_provider_, GetCurrentFrame()).Times(0);
   submitter_->SetIsPageVisible(false);
   scoped_task_environment_.RunUntilIdle();

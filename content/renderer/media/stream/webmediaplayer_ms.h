@@ -249,11 +249,6 @@ class CONTENT_EXPORT WebMediaPlayerMS
   static const gfx::Size kUseGpuMemoryBufferVideoFramesMinResolution;
 #endif  // defined(OS_WIN)
 
-  // When we lose the context_provider, we destroy the CompositorFrameSink to
-  // prevent frames from being submitted. The current surface_ids become
-  // invalid.
-  void OnFrameSinkDestroyed();
-
   bool IsInPictureInPicture() const;
 
   // Switch to SurfaceLayer, either initially or from VideoLayer.

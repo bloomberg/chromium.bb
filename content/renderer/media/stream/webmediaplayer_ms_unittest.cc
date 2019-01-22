@@ -419,10 +419,7 @@ class MockWebVideoFrameSubmitter : public blink::WebVideoFrameSubmitter {
   // blink::WebVideoFrameSubmitter implementation.
   MOCK_METHOD0(StopUsingProvider, void());
   MOCK_METHOD0(DidReceiveFrame, void());
-  MOCK_METHOD3(EnableSubmission,
-               void(viz::SurfaceId,
-                    base::TimeTicks,
-                    blink::WebFrameSinkDestroyedCallback));
+  MOCK_METHOD2(EnableSubmission, void(viz::SurfaceId, base::TimeTicks));
   MOCK_METHOD0(StartRendering, void());
   MOCK_METHOD0(StopRendering, void());
   MOCK_METHOD1(MockInitialize, void(cc::VideoFrameProvider*));
