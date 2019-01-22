@@ -79,6 +79,10 @@ class AccountMigrationRunner {
     // Called by |AccountMigrationRunner| to execute |this| |Step|.
     void RunInternal(base::OnceCallback<void(bool)> callback);
 
+    // Gets the name of the UMA metric that tracks the success / failure of
+    // running |this| |Step|.
+    std::string GetStepResultMetricName() const;
+
     // An identifier for |this| |Step|.
     const std::string id_;
 

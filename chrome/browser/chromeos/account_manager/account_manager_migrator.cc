@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
 #include "base/stl_util.h"
@@ -44,6 +45,13 @@ namespace chromeos {
 
 namespace {
 
+// These names are used in histograms.
+constexpr char kDeviceAccountMigration[] = "DeviceAccountMigration";
+constexpr char kContentAreaAccountsMigration[] = "ContentAreaAccountsMigration";
+constexpr char kArcAccountsMigration[] = "ArcAccountsMigration";
+constexpr char kMigrationResultMetricName[] =
+    "AccountManager.Migrations.Result";
+
 AccountManager::AccountKey GetDeviceAccount(const Profile* profile) {
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile);
@@ -73,7 +81,7 @@ std::string RemoveAccountIdPrefix(const std::string& prefixed_account_id) {
 // to Account Manager.
 class AccountMigrationBaseStep : public AccountMigrationRunner::Step {
  public:
-  AccountMigrationBaseStep(const std::string id,
+  AccountMigrationBaseStep(const std::string& id,
                            AccountManager* account_manager,
                            AccountTrackerService* account_tracker_service)
       : AccountMigrationRunner::Step(id),
@@ -160,7 +168,7 @@ class DeviceAccountMigration : public AccountMigrationBaseStep,
                          AccountManager* account_manager,
                          AccountTrackerService* account_tracker_service,
                          scoped_refptr<TokenWebData> token_web_data)
-      : AccountMigrationBaseStep("DeviceAccountMigration",
+      : AccountMigrationBaseStep(kDeviceAccountMigration,
                                  account_manager,
                                  account_tracker_service),
         account_mapper_util_(account_tracker_service),
@@ -261,7 +269,7 @@ class ContentAreaAccountsMigration : public AccountMigrationBaseStep,
       AccountManager* account_manager,
       AccountTrackerService* const account_tracker_service,
       GaiaCookieManagerService* gaia_cookie_manager_service)
-      : AccountMigrationBaseStep("ContentAreaAccountsMigration",
+      : AccountMigrationBaseStep(kContentAreaAccountsMigration,
                                  account_manager,
                                  account_tracker_service),
         gaia_cookie_manager_service_(gaia_cookie_manager_service) {}
@@ -336,7 +344,7 @@ class ArcAccountsMigration : public AccountMigrationBaseStep,
   ArcAccountsMigration(AccountManager* account_manager,
                        AccountTrackerService* account_tracker_service,
                        arc::ArcAuthService* arc_auth_service)
-      : AccountMigrationBaseStep("ArcAccountsMigration",
+      : AccountMigrationBaseStep(kArcAccountsMigration,
                                  account_manager,
                                  account_tracker_service),
         arc_auth_service_(arc_auth_service),
@@ -422,8 +430,11 @@ void AccountManagerMigrator::Start() {
   if (!chromeos::switches::IsAccountManagerEnabled())
     return;
 
-  if (ShouldRunMigrations())
+  ran_migration_steps_ = false;
+  if (ShouldRunMigrations()) {
+    ran_migration_steps_ = true;
     AddMigrationSteps();
+  }
 
   // Cleanup tasks (like re-enabling Chrome account reconciliation) rely on the
   // migration being run, even if they were no-op. Check
@@ -489,7 +500,18 @@ void AccountManagerMigrator::OnMigrationRunComplete(
             migration_runner_.GetStatus());
   DCHECK_NE(AccountMigrationRunner::Status::kRunning,
             migration_runner_.GetStatus());
-  // TODO(sinhak): Gather UMA stats.
+
+  VLOG(1) << "Account migrations completed with result: "
+          << static_cast<int>(result.final_status);
+  if (result.final_status == AccountMigrationRunner::Status::kFailure)
+    VLOG(1) << "Failed step: " << result.failed_step_id;
+
+  if (ran_migration_steps_) {
+    // Update the UMA stats only for migrations that actually ran some steps.
+    base::UmaHistogramBoolean(
+        kMigrationResultMetricName,
+        result.final_status == AccountMigrationRunner::Status::kSuccess);
+  }
 
   RunCleanupTasks();
 }

@@ -8,8 +8,13 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 
 namespace chromeos {
+
+// Used in histograms.
+constexpr char kMigrationStepResultMetricName[] =
+    "AccountManager.Migrations.StepResult.";
 
 AccountMigrationRunner::Step::Step(const std::string& id) : id_(id) {}
 
@@ -21,12 +26,18 @@ const std::string& AccountMigrationRunner::Step::GetId() const {
 
 void AccountMigrationRunner::Step::FinishWithSuccess() {
   DCHECK(callback_);
+  base::UmaHistogramBoolean(GetStepResultMetricName(), true);
   std::move(callback_).Run(true);
 }
 
 void AccountMigrationRunner::Step::FinishWithFailure() {
   DCHECK(callback_);
+  base::UmaHistogramBoolean(GetStepResultMetricName(), false);
   std::move(callback_).Run(false);
+}
+
+std::string AccountMigrationRunner::Step::GetStepResultMetricName() const {
+  return std::string(kMigrationStepResultMetricName) + id_;
 }
 
 void AccountMigrationRunner::Step::RunInternal(
