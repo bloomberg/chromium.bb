@@ -3642,6 +3642,8 @@
         'args': [
           '--additional-driver-flag',
           '--disable-site-isolation-trials',
+          '--additional-expectations',
+          'src/third_party/blink/web_tests/FlagExpectations/disable-site-isolation-trials',
 
           # layout test failures are retried 3 times when '--test-list' is not
           # passed, but 0 times when '--test-list' is passed. We want to always
