@@ -908,11 +908,12 @@ void NGLineBreaker::HandleAtomicInline(const NGInlineItem& item) {
 
   // For the inline layout purpose, only inline-margins are needed, computed for
   // the line's writing-mode.
-  DCHECK(item.Style());
-  const ComputedStyle& style = *item.Style();
-  item_result->margins =
-      ComputeLineMarginsForVisualContainer(constraint_space_, style);
-  item_result->inline_size += item_result->margins.InlineSum();
+  if (item.Style()) {
+    const ComputedStyle& style = *item.Style();
+    item_result->margins =
+        ComputeLineMarginsForVisualContainer(constraint_space_, style);
+    item_result->inline_size += item_result->margins.InlineSum();
+  }
 
   trailing_whitespace_ = WhitespaceState::kNone;
   position_ += item_result->inline_size;
