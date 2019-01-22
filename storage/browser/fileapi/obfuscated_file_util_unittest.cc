@@ -747,51 +747,6 @@ class ObfuscatedFileUtilTest : public testing::Test {
     ASSERT_EQ(db, db2);
   }
 
-  void MigrationBackFromIsolatedTestBody() {
-    std::string kFakeDirectoryData("0123456789");
-    base::FilePath old_directory_db_path;
-
-    // Initialize the directory with one origin using
-    // SandboxIsolatedOriginDatabase.
-    {
-      std::string origin_string = storage::GetIdentifierFromOrigin(origin_);
-      SandboxIsolatedOriginDatabase database_old(
-          origin_string, data_dir_path(),
-          base::FilePath(
-              SandboxIsolatedOriginDatabase::kObsoleteOriginDirectory));
-      base::FilePath path;
-      EXPECT_TRUE(database_old.GetPathForOrigin(origin_string, &path));
-      EXPECT_FALSE(path.empty());
-
-      // Populate the origin directory with some fake data.
-      old_directory_db_path = data_dir_path().Append(path);
-      ASSERT_TRUE(base::CreateDirectory(old_directory_db_path));
-      EXPECT_EQ(static_cast<int>(kFakeDirectoryData.size()),
-                base::WriteFile(old_directory_db_path.AppendASCII("dummy"),
-                                kFakeDirectoryData.data(),
-                                kFakeDirectoryData.size()));
-    }
-
-    storage_policy_->AddIsolated(origin_);
-    std::unique_ptr<ObfuscatedFileUtil> file_util =
-        CreateObfuscatedFileUtil(storage_policy_.get());
-    base::File::Error error = base::File::FILE_ERROR_FAILED;
-    base::FilePath origin_directory = file_util->GetDirectoryForOrigin(
-        origin_, true /* create */, &error);
-    EXPECT_EQ(base::File::FILE_OK, error);
-
-    // The database is migrated from the old one.
-    EXPECT_TRUE(base::DirectoryExists(origin_directory));
-    EXPECT_FALSE(base::DirectoryExists(old_directory_db_path));
-
-    // Check we see the same contents in the new origin directory.
-    std::string origin_db_data;
-    EXPECT_TRUE(base::PathExists(origin_directory.AppendASCII("dummy")));
-    EXPECT_TRUE(base::ReadFileToString(
-            origin_directory.AppendASCII("dummy"), &origin_db_data));
-    EXPECT_EQ(kFakeDirectoryData, origin_db_data);
-  }
-
   int64_t ComputeCurrentUsage() {
     return sandbox_file_system_.ComputeCurrentOriginUsage() -
         sandbox_file_system_.ComputeCurrentDirectoryDatabaseUsage();
@@ -2402,10 +2357,6 @@ TEST_F(ObfuscatedFileUtilTest, DestroyDirectoryDatabase_Isolated) {
 
 TEST_F(ObfuscatedFileUtilTest, GetDirectoryDatabase_Isolated) {
   GetDirectoryDatabase_IsolatedTestBody();
-}
-
-TEST_F(ObfuscatedFileUtilTest, MigrationBackFromIsolated) {
-  MigrationBackFromIsolatedTestBody();
 }
 
 TEST_F(ObfuscatedFileUtilTest, OpenPathInNonDirectory) {
