@@ -22,6 +22,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -246,6 +247,69 @@ class MockHostResolverBase::LegacyRequestImpl : public HostResolver::Request {
   DISALLOW_COPY_AND_ASSIGN(LegacyRequestImpl);
 };
 
+class MockHostResolverBase::MdnsListenerImpl
+    : public HostResolver::MdnsListener {
+ public:
+  MdnsListenerImpl(const HostPortPair& host,
+                   DnsQueryType query_type,
+                   base::WeakPtr<MockHostResolverBase> resolver)
+      : host_(host),
+        query_type_(query_type),
+        delegate_(nullptr),
+        resolver_(resolver) {
+    DCHECK_NE(DnsQueryType::UNSPECIFIED, query_type_);
+    DCHECK(resolver_);
+  }
+
+  ~MdnsListenerImpl() override {
+    if (resolver_)
+      resolver_->RemoveCancelledListener(this);
+  }
+
+  int Start(Delegate* delegate) override {
+    DCHECK(delegate);
+    DCHECK(!delegate_);
+    DCHECK(resolver_);
+
+    delegate_ = delegate;
+    resolver_->AddListener(this);
+
+    return OK;
+  }
+
+  void TriggerAddressResult(Delegate::UpdateType update_type,
+                            IPEndPoint address) {
+    delegate_->OnAddressResult(update_type, query_type_, std::move(address));
+  }
+
+  void TriggerTextResult(Delegate::UpdateType update_type,
+                         std::vector<std::string> text_records) {
+    delegate_->OnTextResult(update_type, query_type_, std::move(text_records));
+  }
+
+  void TriggerHostnameResult(Delegate::UpdateType update_type,
+                             HostPortPair host) {
+    delegate_->OnHostnameResult(update_type, query_type_, std::move(host));
+  }
+
+  void TriggerUnhandledResult(Delegate::UpdateType update_type) {
+    delegate_->OnUnhandledResult(update_type, query_type_);
+  }
+
+  const HostPortPair& host() const { return host_; }
+  DnsQueryType query_type() const { return query_type_; }
+
+ private:
+  const HostPortPair host_;
+  const DnsQueryType query_type_;
+
+  Delegate* delegate_;
+
+  // Use a WeakPtr as the resolver may be destroyed while there are still
+  // outstanding listener objects.
+  base::WeakPtr<MockHostResolverBase> resolver_;
+};
+
 MockHostResolverBase::~MockHostResolverBase() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(requests_.empty());
@@ -298,6 +362,12 @@ int MockHostResolverBase::ResolveFromCache(const RequestInfo& info,
       info.host_resolver_flags(), HostResolverSource::ANY,
       info.allow_cached_response(), addresses);
   return rv;
+}
+
+std::unique_ptr<HostResolver::MdnsListener>
+MockHostResolverBase::CreateMdnsListener(const HostPortPair& host,
+                                         DnsQueryType query_type) {
+  return std::make_unique<MdnsListenerImpl>(host, query_type, AsWeakPtr());
 }
 
 int MockHostResolverBase::ResolveStaleFromCache(
@@ -372,6 +442,49 @@ MockHostResolverBase::RequestImpl* MockHostResolverBase::request(size_t id) {
 RequestPriority MockHostResolverBase::request_priority(size_t id) {
   DCHECK(request(id));
   return request(id)->priority();
+}
+
+void MockHostResolverBase::TriggerMdnsListeners(
+    const HostPortPair& host,
+    DnsQueryType query_type,
+    MdnsListener::Delegate::UpdateType update_type,
+    const IPEndPoint& address_result) {
+  for (auto* listener : listeners_) {
+    if (listener->host() == host && listener->query_type() == query_type)
+      listener->TriggerAddressResult(update_type, address_result);
+  }
+}
+
+void MockHostResolverBase::TriggerMdnsListeners(
+    const HostPortPair& host,
+    DnsQueryType query_type,
+    MdnsListener::Delegate::UpdateType update_type,
+    const std::vector<std::string>& text_result) {
+  for (auto* listener : listeners_) {
+    if (listener->host() == host && listener->query_type() == query_type)
+      listener->TriggerTextResult(update_type, text_result);
+  }
+}
+
+void MockHostResolverBase::TriggerMdnsListeners(
+    const HostPortPair& host,
+    DnsQueryType query_type,
+    MdnsListener::Delegate::UpdateType update_type,
+    const HostPortPair& host_result) {
+  for (auto* listener : listeners_) {
+    if (listener->host() == host && listener->query_type() == query_type)
+      listener->TriggerHostnameResult(update_type, host_result);
+  }
+}
+
+void MockHostResolverBase::TriggerMdnsListeners(
+    const HostPortPair& host,
+    DnsQueryType query_type,
+    MdnsListener::Delegate::UpdateType update_type) {
+  for (auto* listener : listeners_) {
+    if (listener->host() == host && listener->query_type() == query_type)
+      listener->TriggerUnhandledResult(update_type);
+  }
 }
 
 // start id from 1 to distinguish from NULL RequestHandle
@@ -504,6 +617,14 @@ int MockHostResolverBase::ResolveProc(const HostPortPair& host,
   if (rv == OK)
     *addresses = AddressList::CopyWithPort(addr, host.port());
   return rv;
+}
+
+void MockHostResolverBase::AddListener(MdnsListenerImpl* listener) {
+  listeners_.insert(listener);
+}
+
+void MockHostResolverBase::RemoveCancelledListener(MdnsListenerImpl* listener) {
+  listeners_.erase(listener);
 }
 
 //-----------------------------------------------------------------------------
