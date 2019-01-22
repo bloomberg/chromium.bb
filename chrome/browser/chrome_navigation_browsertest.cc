@@ -1188,3 +1188,78 @@ IN_PROC_BROWSER_TEST_F(NavigationConsumingTest, TargetNavigationFocus) {
   }
   EXPECT_EQ(new_contents, browser()->tab_strip_model()->GetActiveWebContents());
 }
+
+class HistoryManipulationInterventionBrowserTest
+    : public ChromeNavigationBrowserTest {
+ protected:
+  void SetUp() override {
+    feature_list_.InitAndEnableFeature(
+        features::kHistoryManipulationIntervention);
+    ChromeNavigationBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Tests that chrome::GoBack does nothing if all the previous entries are marked
+// as skippable and the back button is disabled.
+IN_PROC_BROWSER_TEST_F(HistoryManipulationInterventionBrowserTest,
+                       AllEntriesSkippableBackButtonDisabled) {
+  // Create a new tab to avoid confusion from having a NTP navigation entry.
+  GURL skippable_url(embedded_test_server()->GetURL("/title1.html"));
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), skippable_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  content::WebContents* main_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Navigate to a new document from the renderer without a user gesture.
+  GURL redirected_url(embedded_test_server()->GetURL("/title2.html"));
+  content::TestNavigationManager manager(main_contents, redirected_url);
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
+      main_contents, "location = '" + redirected_url.spec() + "';"));
+  manager.WaitForNavigationFinished();
+  ASSERT_EQ(redirected_url, main_contents->GetLastCommittedURL());
+  ASSERT_EQ(2, main_contents->GetController().GetEntryCount());
+
+  // Attempting to go back should do nothing.
+  ASSERT_FALSE(chrome::CanGoBack(browser()));
+  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
+  ASSERT_EQ(redirected_url, main_contents->GetLastCommittedURL());
+
+  // Back command should be disabled.
+  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_BACK));
+}
+
+// Tests that chrome::GoBack is successful if there is at least one entry not
+// marked as skippable and the back button should be enabled.
+IN_PROC_BROWSER_TEST_F(HistoryManipulationInterventionBrowserTest,
+                       AllEntriesNotSkippableBackButtonEnabled) {
+  // Navigate to a URL in the same tab. Note that at the start of the test this
+  // tab already has about:blank.
+  GURL skippable_url(embedded_test_server()->GetURL("/title1.html"));
+  ui_test_utils::NavigateToURL(browser(), skippable_url);
+
+  content::WebContents* main_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Navigate to a new document from the renderer without a user gesture.
+  GURL redirected_url(embedded_test_server()->GetURL("/title2.html"));
+  content::TestNavigationManager manager(main_contents, redirected_url);
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
+      main_contents, "location = '" + redirected_url.spec() + "';"));
+  manager.WaitForNavigationFinished();
+  ASSERT_EQ(redirected_url, main_contents->GetLastCommittedURL());
+  ASSERT_EQ(3, main_contents->GetController().GetEntryCount());
+
+  // Back command should be enabled.
+  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_BACK));
+
+  // Attempting to go back should skip |skippable_url| and go to about:blank.
+  ASSERT_TRUE(chrome::CanGoBack(browser()));
+  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
+  content::WaitForLoadStop(main_contents);
+  ASSERT_EQ(GURL("about:blank"), main_contents->GetLastCommittedURL());
+}

@@ -8321,6 +8321,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
   histograms.ExpectBucketCount(
       "Navigation.BackForward.SetShouldSkipOnBackForwardUI", true, 1);
 
+  EXPECT_TRUE(controller.CanGoBack());
   // Attempt to go back or forward to the skippable entry should log the
   // corresponding histogram and skip the corresponding entry.
   TestNavigationObserver back_load_observer(shell()->web_contents());
@@ -8328,6 +8329,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
   back_load_observer.Wait();
   histograms.ExpectBucketCount("Navigation.BackForward.BackTargetSkipped", 1,
                                1);
+  histograms.ExpectBucketCount("Navigation.BackForward.AllBackTargetsSkippable",
+                               false, 1);
   EXPECT_EQ(non_skippable_url, controller.GetLastCommittedEntry()->GetURL());
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
 }
@@ -8374,6 +8377,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
   histograms.ExpectBucketCount(
       "Navigation.BackForward.SetShouldSkipOnBackForwardUI", true, 1);
 
+  EXPECT_TRUE(controller.CanGoBack());
   // Attempt to go back or forward to the skippable entry should log the
   // corresponding histogram and skip the corresponding entry.
   TestNavigationObserver back_load_observer(shell()->web_contents());
@@ -8381,6 +8385,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
   back_load_observer.Wait();
   histograms.ExpectBucketCount("Navigation.BackForward.BackTargetSkipped", 1,
                                1);
+  histograms.ExpectBucketCount("Navigation.BackForward.AllBackTargetsSkippable",
+                               false, 1);
   EXPECT_EQ(non_skippable_url, controller.GetLastCommittedEntry()->GetURL());
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
 }
@@ -8424,6 +8430,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   histograms.ExpectBucketCount(
       "Navigation.BackForward.SetShouldSkipOnBackForwardUI", true, 1);
 
+  EXPECT_TRUE(controller.CanGoBack());
   // Attempt to go back or forward to the skippable entry should log the
   // corresponding histogram.
   TestNavigationObserver back_load_observer(shell()->web_contents());
@@ -8481,16 +8488,18 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
       controller.GetLastCommittedEntry()->should_skip_on_back_forward_ui());
   histograms.ExpectBucketCount(histogram_name, true, 2);
 
+  // CanGoBack should return false since all previous entries are skippable.
+  EXPECT_FALSE(controller.CanGoBack());
+
   // Attempt to go back to the entries marked to be skipped should log a
   // histogram.
-  TestNavigationObserver back_load_observer(shell()->web_contents());
-  controller.GoBack();
-  back_load_observer.Wait();
+  controller.GoBack();  // Will not go back
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 2);
+
   histograms.ExpectBucketCount("Navigation.BackForward.BackTargetSkipped", 2,
                                1);
-
-  // TODO(crbug.com/907167): Test the target URL when the case of all skippable
-  // entries is implemented.
+  histograms.ExpectBucketCount("Navigation.BackForward.AllBackTargetsSkippable",
+                               true, 1);
 }
 
 // Same as above but tests the metrics on going forward.
@@ -8537,22 +8546,18 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
   histograms.ExpectBucketCount(histogram_name, true, 2);
 
   // Go to the 1st entry.
-  {
-    TestNavigationObserver load_observer(shell()->web_contents());
-    controller.GoToIndex(0);
-    load_observer.Wait();
-  }
+  TestNavigationObserver load_observer(shell()->web_contents());
+  controller.GoToIndex(0);
+  load_observer.Wait();
+
   // Attempt to go forward to the entries marked to be skipped should log a
   // histogram.
-  {
-    TestNavigationObserver back_load_observer(shell()->web_contents());
-    controller.GoForward();
-    back_load_observer.Wait();
-    histograms.ExpectBucketCount("Navigation.BackForward.ForwardTargetSkipped",
-                                 1, 1);
-  }
-  // TODO(crbug.com/907167): Test the target URL when the case of all skippable
-  // entries is implemented.
+  EXPECT_TRUE(controller.CanGoForward());
+  TestNavigationObserver back_load_observer(shell()->web_contents());
+  controller.GoForward();
+  back_load_observer.Wait();
+  histograms.ExpectBucketCount("Navigation.BackForward.ForwardTargetSkipped", 1,
+                               1);
 }
 
 // Tests that if an entry is marked as skippable, it will be reset if there is a
