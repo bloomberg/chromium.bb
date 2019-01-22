@@ -43,6 +43,7 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
   void UpdateWindowIcon() override;
   void UpdateWindowTitle() override;
   void SizeConstraintsChanged() override;
+  void UpdateMinimumSize() override;
 
   // views::View:
   gfx::Size GetMinimumSize() const override;
