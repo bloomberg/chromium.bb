@@ -21,25 +21,11 @@ namespace crostini {
 
 class CrostiniMimeTypesServiceTest : public testing::Test {
  public:
-  CrostiniMimeTypesServiceTest() = default;
-
-  // testing::Test:
-  void SetUp() override {
-    SetCrostiniUIAllowedForTesting(true);
-
-    CrostiniTestHelper::EnableCrostini(&profile_);
-
-    RecreateService();
-  }
-
-  void TearDown() override { SetCrostiniUIAllowedForTesting(false); }
+  CrostiniMimeTypesServiceTest()
+      : crostini_test_helper_(&profile_),
+        service_(std::make_unique<CrostiniMimeTypesService>(&profile_)) {}
 
  protected:
-  void RecreateService() {
-    service_.reset(nullptr);
-    service_ = std::make_unique<CrostiniMimeTypesService>(&profile_);
-  }
-
   CrostiniMimeTypesService* service() { return service_.get(); }
 
   MimeTypes CreateMimeTypesProto(
@@ -61,6 +47,7 @@ class CrostiniMimeTypesServiceTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
+  CrostiniTestHelper crostini_test_helper_;
 
   std::unique_ptr<CrostiniMimeTypesService> service_;
 

@@ -86,11 +86,13 @@ class CrostiniAppModelBuilderTest : public AppListTestBase {
 
   void SetUp() override {
     AppListTestBase::SetUp();
+    test_helper_ = std::make_unique<CrostiniTestHelper>(profile());
     CreateBuilder();
   }
 
   void TearDown() override {
     ResetBuilder();
+    test_helper_.reset();
     AppListTestBase::TearDown();
   }
 
@@ -119,14 +121,21 @@ class CrostiniAppModelBuilderTest : public AppListTestBase {
   std::unique_ptr<FakeAppListModelUpdater> model_updater_;
   std::unique_ptr<test::TestAppListControllerDelegate> controller_;
   std::unique_ptr<CrostiniAppModelBuilder> builder_;
+  std::unique_ptr<CrostiniTestHelper> test_helper_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CrostiniAppModelBuilderTest);
 };
 
 // Test that the Terminal app is only shown when Crostini is enabled
-TEST_F(CrostiniAppModelBuilderTest, EnableCrostini) {
-  crostini::SetCrostiniUIAllowedForTesting(true);
+TEST_F(CrostiniAppModelBuilderTest, EnableAndDisableCrostini) {
+  // Reset things so we start with Crostini not enabled.
+  ResetBuilder();
+  test_helper_.reset();
+  test_helper_ = std::make_unique<CrostiniTestHelper>(
+      profile(), /*enable_crostini=*/false);
+  CreateBuilder();
+
   EXPECT_EQ(0u, model_updater_->ItemCount());
 
   CrostiniTestHelper::EnableCrostini(profile());
@@ -137,15 +146,17 @@ TEST_F(CrostiniAppModelBuilderTest, EnableCrostini) {
   EXPECT_THAT(GetAppNames(model_updater_.get()),
               testing::UnorderedElementsAre(kRootFolderName,
                                             GetFullName(TerminalAppName())));
-  crostini::SetCrostiniUIAllowedForTesting(false);
+
+  CrostiniTestHelper::DisableCrostini(profile());
+  EXPECT_THAT(GetAppIds(model_updater_.get()),
+              testing::ElementsAre(crostini::kCrostiniFolderId));
 }
 
 TEST_F(CrostiniAppModelBuilderTest, AppInstallation) {
-  CrostiniTestHelper test_helper(profile());
   // Root folder + terminal app.
   EXPECT_EQ(2u, model_updater_->ItemCount());
 
-  test_helper.SetupDummyApps();
+  test_helper_->SetupDummyApps();
   EXPECT_THAT(GetAppIds(model_updater_.get()),
               testing::UnorderedElementsAreArray(AppendRootFolderId(
                   RegistryService()->GetRegisteredAppIds())));
@@ -154,7 +165,7 @@ TEST_F(CrostiniAppModelBuilderTest, AppInstallation) {
                   kRootFolderName, GetFullName(TerminalAppName()),
                   GetFullName(kDummpyApp1Name), GetFullName(kDummpyApp2Name)));
 
-  test_helper.AddApp(
+  test_helper_->AddApp(
       CrostiniTestHelper::BasicApp(kBananaAppId, kBananaAppName));
   EXPECT_THAT(GetAppIds(model_updater_.get()),
               testing::UnorderedElementsAreArray(AppendRootFolderId(
@@ -168,15 +179,14 @@ TEST_F(CrostiniAppModelBuilderTest, AppInstallation) {
 
 // Test that the app model builder correctly picks up changes to existing apps.
 TEST_F(CrostiniAppModelBuilderTest, UpdateApps) {
-  CrostiniTestHelper test_helper(profile());
-  test_helper.SetupDummyApps();
+  test_helper_->SetupDummyApps();
   // 3 apps + root folder.
   EXPECT_EQ(4u, model_updater_->ItemCount());
 
   // Setting NoDisplay to true should hide an app.
-  vm_tools::apps::App dummy1 = test_helper.GetApp(0);
+  vm_tools::apps::App dummy1 = test_helper_->GetApp(0);
   dummy1.set_no_display(true);
-  test_helper.AddApp(dummy1);
+  test_helper_->AddApp(dummy1);
   EXPECT_EQ(3u, model_updater_->ItemCount());
   EXPECT_THAT(GetAppIds(model_updater_.get()),
               testing::UnorderedElementsAre(
@@ -185,7 +195,7 @@ TEST_F(CrostiniAppModelBuilderTest, UpdateApps) {
 
   // Setting NoDisplay to false should unhide an app.
   dummy1.set_no_display(false);
-  test_helper.AddApp(dummy1);
+  test_helper_->AddApp(dummy1);
   EXPECT_EQ(4u, model_updater_->ItemCount());
   EXPECT_THAT(GetAppIds(model_updater_.get()),
               testing::UnorderedElementsAreArray(AppendRootFolderId(
@@ -194,7 +204,7 @@ TEST_F(CrostiniAppModelBuilderTest, UpdateApps) {
   // Changes to app names should be detected.
   vm_tools::apps::App dummy2 =
       CrostiniTestHelper::BasicApp(kDummpyApp2Id, kAppNewName);
-  test_helper.AddApp(dummy2);
+  test_helper_->AddApp(dummy2);
   EXPECT_EQ(4u, model_updater_->ItemCount());
   EXPECT_THAT(GetAppIds(model_updater_.get()),
               testing::UnorderedElementsAreArray(AppendRootFolderId(
@@ -207,24 +217,22 @@ TEST_F(CrostiniAppModelBuilderTest, UpdateApps) {
 
 // Test that the app model builder handles removed apps
 TEST_F(CrostiniAppModelBuilderTest, RemoveApps) {
-  CrostiniTestHelper test_helper(profile());
-  test_helper.SetupDummyApps();
+  test_helper_->SetupDummyApps();
   // 3 apps + root folder.
   EXPECT_EQ(4u, model_updater_->ItemCount());
 
   // Remove dummy1
-  test_helper.RemoveApp(0);
+  test_helper_->RemoveApp(0);
   EXPECT_EQ(3u, model_updater_->ItemCount());
 
   // Remove dummy2
-  test_helper.RemoveApp(0);
+  test_helper_->RemoveApp(0);
   EXPECT_EQ(2u, model_updater_->ItemCount());
 }
 
 // Test that the Terminal app is removed when Crostini is disabled.
 TEST_F(CrostiniAppModelBuilderTest, DisableCrostini) {
-  CrostiniTestHelper test_helper(profile());
-  test_helper.SetupDummyApps();
+  test_helper_->SetupDummyApps();
   // 3 apps + root folder.
   EXPECT_EQ(4u, model_updater_->ItemCount());
 

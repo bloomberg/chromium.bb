@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/test/base/browser_process_platform_part_test_api_chromeos.h"
 #include "net/base/network_change_notifier.h"
@@ -33,6 +34,8 @@ class CrostiniDialogBrowserTest : public DialogBrowserTest {
 
  protected:
   const bool register_termina_;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   // Owned by content::Browser
   CrostiniBrowserTestChromeBrowserMainExtraParts* extra_parts_ = nullptr;
