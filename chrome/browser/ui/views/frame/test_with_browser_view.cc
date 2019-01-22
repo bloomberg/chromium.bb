@@ -29,6 +29,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "content/public/test/test_utils.h"
+#include "services/network/test/test_url_loader_factory.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
