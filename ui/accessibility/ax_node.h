@@ -55,6 +55,9 @@ class AX_EXPORT AXNode final {
   const std::vector<AXNode*>& children() const { return children_; }
   int index_in_parent() const { return index_in_parent_; }
 
+  // Returns ownership of |data_| to the caller; effectively clearing |data_|.
+  AXNodeData&& TakeData();
+
   // Get the child at the given index.
   AXNode* ChildAtIndex(int index) const { return children_[index]; }
 

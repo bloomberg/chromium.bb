@@ -42,6 +42,10 @@ int AXNode::GetUnignoredChildCount() const {
   return count;
 }
 
+AXNodeData&& AXNode::TakeData() {
+  return std::move(data_);
+}
+
 AXNode* AXNode::GetUnignoredChildAtIndex(int index) const {
   int count = 0;
   for (int i = 0; i < child_count(); i++) {
