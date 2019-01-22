@@ -568,7 +568,7 @@
       },
       'Android WebView O NetworkService (dbg)': {
         'test_suites': {
-          'isolated_scripts': 'webview_cts_tests_isolated_scripts',
+          'gtest_tests': 'webview_cts_tests_gtest',
         },
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_webview_CTS_test.filter',
