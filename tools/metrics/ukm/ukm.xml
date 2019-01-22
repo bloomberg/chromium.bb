@@ -3336,6 +3336,17 @@ be describing additional metrics about the same event.
     <summary>
       Measures the time in milliseconds from when the OS level input event
       occurred which triggered a navigation, until the navigation was started.
+      Only set if the code can trace back to the original input event. Some
+      known cases where it is missing: crbug.com/889223 crbug.com/893162
+      crbug.com/897837 crbug.com/897840
+    </summary>
+  </metric>
+  <metric name="Experimental.Navigation.UserInitiated">
+    <summary>
+      True if this navigation was initiated by user input. For renderer
+      navigations, only true if the code can trace back to the original input
+      event. Some known cases where it is missing: crbug.com/889223
+      crbug.com/897837 crbug.com/897840
     </summary>
   </metric>
   <metric name="Experimental.NavigationToInteractive">

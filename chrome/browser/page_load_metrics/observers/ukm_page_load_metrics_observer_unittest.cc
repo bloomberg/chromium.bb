@@ -124,6 +124,9 @@ TEST_F(UkmPageLoadMetricsObserverTest, Basic) {
         kv.second.get(), PageLoad::kExperimental_InputToNavigationStartName,
         50);
     test_ukm_recorder().ExpectEntryMetric(
+        kv.second.get(), PageLoad::kExperimental_Navigation_UserInitiatedName,
+        true);
+    test_ukm_recorder().ExpectEntryMetric(
         kv.second.get(), PageLoad::kNavigation_PageTransitionName,
         ui::PAGE_TRANSITION_LINK);
     test_ukm_recorder().ExpectEntryMetric(
