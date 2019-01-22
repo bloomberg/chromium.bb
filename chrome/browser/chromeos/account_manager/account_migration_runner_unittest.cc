@@ -25,9 +25,9 @@ class AlwaysSucceeds : public AccountMigrationRunner::Step {
       : AccountMigrationRunner::Step(id), closure_(closure) {}
   ~AlwaysSucceeds() override = default;
 
-  void Run(base::OnceCallback<void(bool)> callback) override {
+  void Run() override {
     closure_.Run();
-    std::move(callback).Run(true);
+    FinishWithSuccess();
   }
 
  private:
@@ -41,9 +41,9 @@ class AlwaysFails : public AccountMigrationRunner::Step {
       : AccountMigrationRunner::Step(id), closure_(closure) {}
   ~AlwaysFails() override = default;
 
-  void Run(base::OnceCallback<void(bool)> callback) override {
+  void Run() override {
     closure_.Run();
-    std::move(callback).Run(false);
+    FinishWithFailure();
   }
 
  private:
@@ -57,9 +57,7 @@ class MustNeverRun : public AccountMigrationRunner::Step {
       : AccountMigrationRunner::Step(id) {}
   ~MustNeverRun() override = default;
 
-  void Run(base::OnceCallback<void(bool)> callback) override {
-    EXPECT_FALSE(true);
-  }
+  void Run() override { EXPECT_FALSE(true); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MustNeverRun);

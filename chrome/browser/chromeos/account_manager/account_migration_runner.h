@@ -55,18 +55,37 @@ class AccountMigrationRunner {
 
     virtual ~Step();
 
-    // Runs the migration step and calls |callback| with the result (|true| for
-    // success and |false| for failure) of the migration step.
+    // Runs the migration step.
+    // Implementations must call |FinishWithSuccess| or |FinishWithFailure| at
+    // the end of their execution.
     // Note that |AccountMigrationRunner| does not guarantee anything about the
     // lifetime of a |Step| once it has been added via
     // |AccountMigrationRunner::AddStep|.
-    virtual void Run(base::OnceCallback<void(bool)> callback) = 0;
+    virtual void Run() = 0;
 
     // Gets this |Step|'s identifier.
     const std::string& GetId() const;
 
+   protected:
+    // Called by implementations of |Step| to signal a successful execution.
+    void FinishWithSuccess();
+
+    // Called by implementations of |Step| to signal an unsuccessful execution.
+    void FinishWithFailure();
+
    private:
+    friend class AccountMigrationRunner;
+
+    // Called by |AccountMigrationRunner| to execute |this| |Step|.
+    void RunInternal(base::OnceCallback<void(bool)> callback);
+
+    // An identifier for |this| |Step|.
     const std::string id_;
+
+    // Used to signal |AccountMigrationRunner| about the success (|true|) or
+    // failure (|false|) of |this| |Step|.
+    base::OnceCallback<void(bool)> callback_;
+
     DISALLOW_COPY_AND_ASSIGN(Step);
   };
 

@@ -16,8 +16,13 @@
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
 #include "base/stl_util.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/account_mapper_util.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/arc/auth/arc_auth_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
@@ -64,37 +69,108 @@ std::string RemoveAccountIdPrefix(const std::string& prefixed_account_id) {
   return prefixed_account_id.substr(10 /* length of "AccountId-" */);
 }
 
+// A helper base class for account migration steps that need to read and write
+// to Account Manager.
+class AccountMigrationBaseStep : public AccountMigrationRunner::Step {
+ public:
+  AccountMigrationBaseStep(const std::string id,
+                           AccountManager* account_manager,
+                           AccountTrackerService* account_tracker_service)
+      : AccountMigrationRunner::Step(id),
+        account_manager_(account_manager),
+        account_tracker_service_(account_tracker_service),
+        weak_factory_(this) {}
+  ~AccountMigrationBaseStep() override = default;
+
+ protected:
+  bool IsAccountPresentInAccountManager(
+      const AccountManager::AccountKey& account) const {
+    return base::ContainsValue(account_manager_accounts_, account);
+  }
+
+  bool IsAccountManagerEmpty() const {
+    return account_manager_accounts_.empty();
+  }
+
+  void MigrateSecondaryAccount(const std::string& gaia_id,
+                               const std::string& email) {
+    if (base::ContainsValue(
+            account_manager_accounts_,
+            AccountManager::AccountKey{
+                gaia_id, account_manager::AccountType::ACCOUNT_TYPE_GAIA})) {
+      // Do not overwrite any existing account in |AccountManager|.
+      VLOG(1) << "Ignoring migration of existing account: " << email;
+      return;
+    }
+
+    // |AccountTrackerService::SeedAccountInfo| must be called before
+    // |AccountManager::UpsertToken|. |AccountManager| observers will need to
+    // translate |AccountManager::AccountKey| to other formats using
+    // |AccountTrackerService| and hence |AccountTrackerService| should be
+    // updated first.
+    account_tracker_service_->SeedAccountInfo(gaia_id, email);
+    account_manager_->UpsertToken(
+        AccountManager::AccountKey{
+            gaia_id, account_manager::AccountType::ACCOUNT_TYPE_GAIA},
+        AccountManager::kInvalidToken);
+    VLOG(1) << "Successfully migrated: " << email;
+  }
+
+  AccountManager* account_manager() { return account_manager_; }
+
+ private:
+  // Implementations should use this to start their migration flow, instead of
+  // overriding |Run|.
+  virtual void StartMigration() = 0;
+
+  // Overrides |AccountMigrationRunner::Step| and stops further overrides.
+  // Subclasses should use |StartMigration| to begin their migration flow and
+  // must call either of |Step::FinishWithSuccess| or |Step::FinishWithFailure|
+  // when done.
+  void Run() final {
+    account_manager_->GetAccounts(base::BindOnce(
+        &AccountMigrationBaseStep::OnGetAccounts, weak_factory_.GetWeakPtr()));
+  }
+
+  void OnGetAccounts(std::vector<AccountManager::AccountKey> accounts) {
+    account_manager_accounts_ = std::move(accounts);
+    StartMigration();
+  }
+
+  // A non-owning pointer to Account Manager.
+  AccountManager* const account_manager_;
+
+  // Non-owning pointer.
+  AccountTrackerService* const account_tracker_service_;
+
+  // A temporary cache of accounts in |AccountManager|, guaranteed to be
+  // up-to-date when |StartMigration| is called.
+  std::vector<AccountManager::AccountKey> account_manager_accounts_;
+
+  base::WeakPtrFactory<AccountMigrationBaseStep> weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(AccountMigrationBaseStep);
+};
+
 // An |AccountMigrationRunner::Step| to migrate the Chrome OS Device Account's
 // LST to |AccountManager|.
-class DeviceAccountMigration : public AccountMigrationRunner::Step,
+class DeviceAccountMigration : public AccountMigrationBaseStep,
                                public WebDataServiceConsumer {
  public:
   DeviceAccountMigration(AccountManager::AccountKey device_account,
                          AccountManager* account_manager,
                          AccountTrackerService* account_tracker_service,
                          scoped_refptr<TokenWebData> token_web_data)
-      : AccountMigrationRunner::Step("DeviceAccountMigration"),
-        account_manager_(account_manager),
+      : AccountMigrationBaseStep("DeviceAccountMigration",
+                                 account_manager,
+                                 account_tracker_service),
         account_mapper_util_(account_tracker_service),
         token_web_data_(token_web_data),
-        device_account_(device_account),
-        weak_factory_(this) {}
+        device_account_(device_account) {}
   ~DeviceAccountMigration() override = default;
 
-  void Run(base::OnceCallback<void(bool)> callback) override {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    callback_ = std::move(callback);
-
-    account_manager_->GetAccounts(base::BindOnce(
-        &DeviceAccountMigration::OnGetAccounts, weak_factory_.GetWeakPtr()));
-  }
-
  private:
-  // Callback for |AccountManager::GetAccounts|. Checks the list of accounts in
-  // Account Manager and early exists if the Device Account has already been
-  // migrated.
-  void OnGetAccounts(std::vector<AccountManager::AccountKey> accounts) {
-    if (base::ContainsValue(accounts, device_account_)) {
+  void StartMigration() override {
+    if (IsAccountPresentInAccountManager(device_account_)) {
       FinishWithSuccess();
       return;
     }
@@ -146,7 +222,7 @@ class DeviceAccountMigration : public AccountMigrationRunner::Step,
         continue;
       }
 
-      account_manager_->UpsertToken(device_account_, it->second /* token */);
+      account_manager()->UpsertToken(device_account_, it->second /* token */);
       is_success = true;
       break;
     }
@@ -160,19 +236,6 @@ class DeviceAccountMigration : public AccountMigrationRunner::Step,
     }
   }
 
-  void FinishWithSuccess() {
-    DCHECK(callback_);
-    std::move(callback_).Run(true);
-  }
-
-  void FinishWithFailure() {
-    DCHECK(callback_);
-    std::move(callback_).Run(false);
-  }
-
-  // A non-owning pointer to |AccountManager|.
-  AccountManager* const account_manager_;
-
   // For translating between OAuth account ids and
   // |AccountManager::AccountKey|.
   AccountMapperUtil account_mapper_util_;
@@ -183,13 +246,7 @@ class DeviceAccountMigration : public AccountMigrationRunner::Step,
   // Device Account on Chrome OS.
   const AccountManager::AccountKey device_account_;
 
-  // Callback to invoke at the end of this |Step|, with the final result of the
-  // operation.
-  base::OnceCallback<void(bool)> callback_;
-
   SEQUENCE_CHECKER(sequence_checker_);
-
-  base::WeakPtrFactory<DeviceAccountMigration> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceAccountMigration);
 };
@@ -197,34 +254,24 @@ class DeviceAccountMigration : public AccountMigrationRunner::Step,
 // An |AccountMigrationRunner::Step| to migrate the Chrome content area accounts
 // to |AccountManager|. The objective is to migrate the account names only. We
 // cannot migrate any credentials (cookies).
-class ContentAreaAccountsMigration : public AccountMigrationRunner::Step,
+class ContentAreaAccountsMigration : public AccountMigrationBaseStep,
                                      GaiaCookieManagerService::Observer {
  public:
   ContentAreaAccountsMigration(
       AccountManager* account_manager,
       AccountTrackerService* const account_tracker_service,
       GaiaCookieManagerService* gaia_cookie_manager_service)
-      : AccountMigrationRunner::Step("ContentAreaAccountsMigration"),
-        account_manager_(account_manager),
-        account_tracker_service_(account_tracker_service),
-        gaia_cookie_manager_service_(gaia_cookie_manager_service),
-        weak_factory_(this) {}
-  ~ContentAreaAccountsMigration() override = default;
-
-  void Run(base::OnceCallback<void(bool)> callback) override {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    callback_ = std::move(callback);
-
-    account_manager_->GetAccounts(
-        base::BindOnce(&ContentAreaAccountsMigration::OnGetAccounts,
-                       weak_factory_.GetWeakPtr()));
+      : AccountMigrationBaseStep("ContentAreaAccountsMigration",
+                                 account_manager,
+                                 account_tracker_service),
+        gaia_cookie_manager_service_(gaia_cookie_manager_service) {}
+  ~ContentAreaAccountsMigration() override {
+    gaia_cookie_manager_service_->RemoveObserver(this);
   }
 
  private:
-  void OnGetAccounts(
-      std::vector<AccountManager::AccountKey> account_manager_accounts) {
+  void StartMigration() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    account_manager_accounts_ = std::move(account_manager_accounts);
 
     std::vector<gaia::ListedAccount> signed_in_content_area_accounts;
     std::vector<gaia::ListedAccount> signed_out_content_area_accounts;
@@ -247,13 +294,13 @@ class ContentAreaAccountsMigration : public AccountMigrationRunner::Step,
     // called and |account_manager_accounts_| empty.
     // Furthermore, Account Manager must have been populated with the Device
     // Account before this |Step| is run.
-    DCHECK(!account_manager_accounts_.empty());
+    DCHECK(!IsAccountManagerEmpty());
     gaia_cookie_manager_service_->RemoveObserver(this);
 
     MigrateAccounts(signed_in_content_area_accounts,
                     signed_out_content_area_accounts);
 
-    std::move(callback_).Run(true);
+    FinishWithSuccess();
   }
 
   void MigrateAccounts(
@@ -261,53 +308,105 @@ class ContentAreaAccountsMigration : public AccountMigrationRunner::Step,
       const std::vector<gaia::ListedAccount>&
           signed_out_content_area_accounts) {
     for (const gaia::ListedAccount& account : signed_in_content_area_accounts) {
-      MigrateAccount(account);
+      MigrateSecondaryAccount(account.gaia_id, account.raw_email);
     }
     for (const gaia::ListedAccount& account :
          signed_out_content_area_accounts) {
-      MigrateAccount(account);
+      MigrateSecondaryAccount(account.gaia_id, account.raw_email);
     }
   }
-
-  void MigrateAccount(const gaia::ListedAccount& account) {
-    AccountManager::AccountKey account_key{
-        account.gaia_id, account_manager::AccountType::ACCOUNT_TYPE_GAIA};
-    if (base::ContainsValue(account_manager_accounts_, account_key)) {
-      // Do not overwrite any existing account in |AccountManager|.
-      return;
-    }
-
-    // |AccountTrackerService::SeedAccountInfo| must be called before
-    // |AccountManager::UpsertToken|. |AccountManager| observers will need to
-    // translate |AccountManager::AccountKey| to other formats using
-    // |AccountTrackerService| and hence |AccountTrackerService| should be
-    // updated first.
-    account_tracker_service_->SeedAccountInfo(account.gaia_id,
-                                              account.raw_email);
-    account_manager_->UpsertToken(account_key, AccountManager::kInvalidToken);
-  }
-
-  // A non-owning pointer to |AccountManager|.
-  AccountManager* const account_manager_;
-
-  // A non-owning pointer to |AccountTrackerService|.
-  AccountTrackerService* const account_tracker_service_;
 
   // A non-owning pointer to |GaiaCookieManagerService|.
   GaiaCookieManagerService* const gaia_cookie_manager_service_;
 
-  // A temporary cache of accounts in |AccountManager|.
-  std::vector<AccountManager::AccountKey> account_manager_accounts_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
-  // Callback to invoke at the end of this |Step|, with the final result of the
-  // operation.
-  base::OnceCallback<void(bool)> callback_;
+  DISALLOW_COPY_AND_ASSIGN(ContentAreaAccountsMigration);
+};
+
+// An |AccountMigrationRunner::Step| to migrate ARC accounts to
+// |AccountManager|. The objective is to migrate the account names and Gaia ids
+// only. We cannot migrate any credentials.
+// This is a timed |Step|. Since ARC can fail independently of Chrome, we can be
+// potentially waiting forever to get a callback from ARC. If we do not have a
+// timeout, this |Step| can make the rest of migration |Step|s wait forever.
+class ArcAccountsMigration : public AccountMigrationBaseStep,
+                             public arc::ArcSessionManager::Observer {
+ public:
+  ArcAccountsMigration(AccountManager* account_manager,
+                       AccountTrackerService* account_tracker_service,
+                       arc::ArcAuthService* arc_auth_service)
+      : AccountMigrationBaseStep("ArcAccountsMigration",
+                                 account_manager,
+                                 account_tracker_service),
+        arc_auth_service_(arc_auth_service),
+        weak_factory_(this) {}
+  ~ArcAccountsMigration() override { Reset(); }
+
+ private:
+  void StartMigration() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+    timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kStepTimeoutInSeconds),
+                 base::BindOnce(&ArcAccountsMigration::FinishWithFailure,
+                                weak_factory_.GetWeakPtr()));
+    arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
+    arc_session_manager->AddObserver(this);
+    if (arc_session_manager->state() == arc::ArcSessionManager::State::ACTIVE) {
+      OnArcStarted();
+    }
+  }
+
+  void OnArcStarted() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    arc::ArcSessionManager::Get()->RemoveObserver(this);
+
+    arc_auth_service_->GetGoogleAccountsInArc(
+        base::BindOnce(&ArcAccountsMigration::OnGetGoogleAccountsInArc,
+                       weak_factory_.GetWeakPtr()));
+  }
+
+  void OnGetGoogleAccountsInArc(
+      std::vector<arc::mojom::ArcAccountInfoPtr> arc_accounts) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    timer_.Stop();
+
+    for (const arc::mojom::ArcAccountInfoPtr& arc_account : arc_accounts) {
+      MigrateSecondaryAccount(arc_account->gaia_id, arc_account->email);
+    }
+
+    FinishWithSuccess();
+  }
+
+  void FinishWithSuccess() {
+    Reset();
+    Step::FinishWithSuccess();
+  }
+
+  void FinishWithFailure() {
+    Reset();
+    Step::FinishWithFailure();
+  }
+
+  void Reset() {
+    timer_.Stop();
+    arc::ArcSessionManager::Get()->RemoveObserver(this);
+    weak_factory_.InvalidateWeakPtrs();
+  }
+
+  // A non-owning pointer to |ArcAuthService|.
+  arc::ArcAuthService* const arc_auth_service_;
+
+  base::OneShotTimer timer_;
+
+  // Timeout duration for this |Step|.
+  const int64_t kStepTimeoutInSeconds = 60;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<ContentAreaAccountsMigration> weak_factory_;
+  base::WeakPtrFactory<ArcAccountsMigration> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ContentAreaAccountsMigration);
+  DISALLOW_COPY_AND_ASSIGN(ArcAccountsMigration);
 };
 
 }  // namespace
@@ -345,8 +444,20 @@ void AccountManagerMigrator::Start() {
       GaiaCookieManagerServiceFactory::GetForProfile(
           profile_) /* gaia_cookie_manager_service */));
 
-  // TODO(sinhak): Migrate Secondary Accounts in ARC.
-  // TODO(sinhak): Store success state in Preferences.
+  if (arc::IsArcProvisioned(profile_)) {
+    // Add a migration step for ARC only if ARC has been provisioned. If ARC has
+    // not been provisioned yet, there cannot be any accounts that need to be
+    // migrated.
+    migration_runner_.AddStep(std::make_unique<ArcAccountsMigration>(
+        account_manager, account_tracker_service,
+        arc::ArcAuthService::GetForBrowserContext(
+            profile_) /* arc_auth_service */));
+  } else {
+    VLOG(1) << "Skipping migration of ARC accounts. ARC has not been "
+               "provisioned yet";
+  }
+
+  // TODO(https://crbug.com/923947): Store success state in Preferences.
   // TODO(sinhak): Verify Device Account LST state.
 
   migration_runner_.Run(
