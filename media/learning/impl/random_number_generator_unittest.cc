@@ -84,4 +84,19 @@ TEST_F(RandomNumberGeneratorTest, ExclusiveUpTo) {
                     0, range - 1);
 }
 
+TEST_F(RandomNumberGeneratorTest, DoublesStayInRange) {
+  const double limit = 1000.5;
+  int num_non_integer = 0;
+  for (int i = 0; i < 1000; i++) {
+    double v = rng_.GenerateDouble(limit);
+    EXPECT_GE(v, 0.);
+    EXPECT_LT(v, limit);
+    // Also count how many non-integers we get.
+    num_non_integer += (v != static_cast<int>(v));
+  }
+
+  // Expect a lot of non-integers.
+  EXPECT_GE(num_non_integer, 900);
+}
+
 }  // namespace media

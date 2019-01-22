@@ -32,6 +32,11 @@ class COMPONENT_EXPORT(LEARNING_IMPL) RandomNumberGenerator {
   // Returns a random number in range [0, range).  Thread-safe.
   uint64_t Generate(uint64_t range);
 
+  // Returns a floating point number in the range [0, range).  Thread-safe.
+  // This isn't an overload of Generate() to be sure that one isn't surprised by
+  // the result.
+  double GenerateDouble(double range);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(RandomNumberGenerator);
 };

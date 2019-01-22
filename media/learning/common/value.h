@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <ostream>
 #include <string>
+#include <type_traits>
 
 #include "base/component_export.h"
 
@@ -25,7 +26,12 @@ namespace learning {
 class COMPONENT_EXPORT(LEARNING_COMMON) Value {
  public:
   Value();
-  explicit Value(int x);
+  template <typename T>
+  explicit Value(T x) : value_(x) {
+    static_assert(std::is_arithmetic<T>::value,
+                  "media::learning::Value works only with arithmetic types");
+  }
+
   explicit Value(const char* x);
   explicit Value(const std::string& x);
 
@@ -36,10 +42,10 @@ class COMPONENT_EXPORT(LEARNING_COMMON) Value {
   bool operator<(const Value& rhs) const;
   bool operator>(const Value& rhs) const;
 
-  int64_t value() const { return value_; }
+  double value() const { return value_; }
 
  private:
-  int64_t value_ = 0;
+  double value_ = 0;
 
   friend COMPONENT_EXPORT(LEARNING_COMMON) std::ostream& operator<<(
       std::ostream& out,

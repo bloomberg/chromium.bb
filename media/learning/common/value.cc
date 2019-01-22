@@ -11,8 +11,6 @@ namespace learning {
 
 Value::Value() = default;
 
-Value::Value(int x) : value_(x) {}
-
 Value::Value(const char* x) {
   // std::hash would be nice, but it can (and does) change values between
   // different instances of the class.  In other words, Value("foo") !=

@@ -437,8 +437,8 @@ FeatureValue RandomTreeTrainer::FindNumericSplitPoint(
     // Choose a random split point.  Note that we want to end up with two
     // buckets, so we don't have a trivial split.  By picking [v_min, v_max),
     // |v_min| will always be in one bucket and |v_max| will always not be.
-    v_split = FeatureValue((rand() % (v_max.value() - v_min.value())) +
-                           v_min.value());
+    v_split = FeatureValue(
+        rng()->GenerateDouble(v_max.value() - v_min.value()) + v_min.value());
   }
 
   return v_split;
