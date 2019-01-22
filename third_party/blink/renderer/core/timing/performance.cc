@@ -33,7 +33,7 @@
 
 #include <algorithm>
 #include "base/metrics/histogram_macros.h"
-#include "third_party/blink/renderer/bindings/core/v8/string_or_double_or_performance_measure_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_performance_measure_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_timing.h"
@@ -131,32 +131,17 @@ Performance::MeasureParameterType StringToNavigationTimingParameterType(
 }
 
 Performance::MeasureParameterType StartOrOptionsToParameterType(
-    const StringOrDoubleOrPerformanceMeasureOptions& start_or_options) {
+    const StringOrPerformanceMeasureOptions& start_or_options) {
   if (start_or_options.IsString()) {
     return StringToNavigationTimingParameterType(
         start_or_options.GetAsString());
   }
-  if (start_or_options.IsDouble())
-    return Performance::MeasureParameterType::kNumber;
+  // Since start_or_options cannot be number any more, we don't record number
+  // type  as MeasureParameterType in UMA any more.
   if (start_or_options.IsPerformanceMeasureOptions())
     return Performance::MeasureParameterType::kObjectObject;
   // null and undefined are undistinguishable in
-  // StringOrDoubleOrPerformanceMeasureOptions.
-  return Performance::MeasureParameterType::kUndefinedOrNull;
-}
-
-Performance::MeasureParameterType EndToParameterType(
-    const StringOrDouble& end) {
-  if (end.IsString()) {
-    // When passing an object to |end|, the object will be implicitly converted
-    // as the following string.
-    if (end.GetAsString() == "[object Object]")
-      return Performance::MeasureParameterType::kObjectObject;
-    return StringToNavigationTimingParameterType(end.GetAsString());
-  }
-  if (end.IsDouble())
-    return Performance::MeasureParameterType::kNumber;
-  // null and undefined are undistinguishable in StringOrDouble.
+  // StringOrPerformanceMeasureOptions.
   return Performance::MeasureParameterType::kUndefinedOrNull;
 }
 
@@ -743,32 +728,31 @@ PerformanceMeasure* Performance::measure(ScriptState* script_state,
   LogMeasureEndToUma(MeasureParameterType::kUnprovided);
   return MeasureInternal(
       script_state, measure_name,
-      NativeValueTraits<StringOrDoubleOrPerformanceMeasureOptions>::NullValue(),
-      NativeValueTraits<StringOrDouble>::NullValue(), exception_state);
+      NativeValueTraits<StringOrPerformanceMeasureOptions>::NullValue(),
+      base::nullopt, exception_state);
 }
 
 PerformanceMeasure* Performance::measure(
     ScriptState* script_state,
     const AtomicString& measure_name,
-    const StringOrDoubleOrPerformanceMeasureOptions& start_or_options,
+    const StringOrPerformanceMeasureOptions& start_or_options,
     ExceptionState& exception_state) {
   LogMeasureStartToUma(StartOrOptionsToParameterType(start_or_options));
   LogMeasureEndToUma(MeasureParameterType::kUnprovided);
   return MeasureInternal(script_state, measure_name, start_or_options,
-                         NativeValueTraits<StringOrDouble>::NullValue(),
-                         exception_state);
+                         base::nullopt, exception_state);
 }
 
 PerformanceMeasure* Performance::measure(
     ScriptState* script_state,
     const AtomicString& measure_name,
-    const StringOrDoubleOrPerformanceMeasureOptions& start_or_options,
-    const StringOrDouble& end,
+    const StringOrPerformanceMeasureOptions& start_or_options,
+    const String& end,
     ExceptionState& exception_state) {
   LogMeasureStartToUma(StartOrOptionsToParameterType(start_or_options));
-  LogMeasureEndToUma(EndToParameterType(end));
-  return MeasureInternal(script_state, measure_name, start_or_options, end,
-                         exception_state);
+  LogMeasureEndToUma(StringToNavigationTimingParameterType(end));
+  return MeasureInternal(script_state, measure_name, start_or_options,
+                         base::Optional<String>(end), exception_state);
 }
 
 // |start_or_options|: while in options type, the value is an object {start,
@@ -791,12 +775,13 @@ PerformanceMeasure* Performance::measure(
 PerformanceMeasure* Performance::MeasureInternal(
     ScriptState* script_state,
     const AtomicString& measure_name,
-    const StringOrDoubleOrPerformanceMeasureOptions& start_or_options,
-    const StringOrDouble& end,
+    const StringOrPerformanceMeasureOptions& start_or_options,
+    base::Optional<String> end,
     ExceptionState& exception_state) {
   if (RuntimeEnabledFeatures::CustomUserTimingEnabled()) {
     if (start_or_options.IsPerformanceMeasureOptions()) {
-      if (!end.IsNull()) {
+      // measure("name", {}, *)
+      if (end) {
         exception_state.ThrowDOMException(
             DOMExceptionCode::kSyntaxError,
             "If a PerformanceMeasureOptions object was passed, |end| must be "
@@ -809,11 +794,9 @@ PerformanceMeasure* Performance::MeasureInternal(
                                options->endTime(), options->detail(),
                                exception_state);
     } else {
+      // measure("name", "mark1", *)
       StringOrDouble converted_start;
-      if (start_or_options.IsDouble()) {
-        converted_start =
-            StringOrDouble::FromDouble(start_or_options.GetAsDouble());
-      } else if (start_or_options.IsString()) {
+      if (start_or_options.IsString()) {
         converted_start =
             StringOrDouble::FromString(start_or_options.GetAsString());
       } else {
@@ -822,9 +805,11 @@ PerformanceMeasure* Performance::MeasureInternal(
       }
       // We let |end| behave the same whether it's empty, undefined or null in
       // JS, as long as |end| is null in C++.
-      return MeasureWithDetail(script_state, measure_name, converted_start, end,
-                               ScriptValue::CreateNull(script_state),
-                               exception_state);
+      return MeasureWithDetail(
+          script_state, measure_name, converted_start,
+          end ? StringOrDouble::FromString(*end)
+              : NativeValueTraits<StringOrDouble>::NullValue(),
+          ScriptValue::CreateNull(script_state), exception_state);
     }
   } else {
     // For consistency with UserTimingL2: the L2 API took |start| as a string,
@@ -833,9 +818,6 @@ PerformanceMeasure* Performance::MeasureInternal(
     StringOrDouble converted_start;
     if (start_or_options.IsPerformanceMeasureOptions()) {
       converted_start = StringOrDouble::FromString("[object Object]");
-    } else if (start_or_options.IsDouble()) {
-      converted_start = StringOrDouble::FromString(
-          String::NumberToStringECMAScript(start_or_options.GetAsDouble()));
     } else if (start_or_options.IsString()) {
       converted_start =
           StringOrDouble::FromString(start_or_options.GetAsString());
@@ -844,19 +826,10 @@ PerformanceMeasure* Performance::MeasureInternal(
       DCHECK(converted_start.IsNull());
     }
 
-    StringOrDouble converted_end;
-    if (end.IsString()) {
-      converted_end = StringOrDouble::FromString(end.GetAsString());
-    } else if (end.IsDouble()) {
-      converted_end = StringOrDouble::FromString(
-          String::NumberToStringECMAScript(end.GetAsDouble()));
-    } else {
-      DCHECK(end.IsNull());
-      DCHECK(converted_end.IsNull());
-    }
     MeasureWithDetail(script_state, measure_name, converted_start,
-                      converted_end, ScriptValue::CreateNull(script_state),
-                      exception_state);
+                      end ? StringOrDouble::FromString(*end)
+                          : NativeValueTraits<StringOrDouble>::NullValue(),
+                      ScriptValue::CreateNull(script_state), exception_state);
     // Return nullptr to distinguish from L3.
     return nullptr;
   }

@@ -87,7 +87,7 @@ interface Performance : EventTarget {
     // * L3 API returns the created entry.
     // Custom User Timing (or User Timing L3) explainer:
     // https://docs.google.com/document/d/1hltt8z9C4PaI5Qu1YMIp1wOGdbJPJPoJwBarEeCY6xQ/edit#heading=h.ejti6qhmjv0b
-    [MeasureAs=UserTiming, CallWith=ScriptState, RaisesException] PerformanceMeasure? measure(DOMString measureName, optional (DOMString or DOMHighResTimeStamp or PerformanceMeasureOptions)? startOrOptions, optional (DOMString or DOMHighResTimeStamp)? end);
+    [MeasureAs=UserTiming, CallWith=ScriptState, RaisesException] PerformanceMeasure? measure(DOMString measureName, optional (DOMString or PerformanceMeasureOptions)? startOrOptions, optional DOMString end);
     [MeasureAs=UserTiming] void clearMeasures(optional DOMString measureName = null);
 
     // TODO(foolip): There is no spec for the Memory Info API, see blink-dev:

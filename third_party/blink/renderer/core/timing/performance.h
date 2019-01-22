@@ -68,7 +68,7 @@ class ResourceTimingInfo;
 class ScriptState;
 class ScriptValue;
 class SecurityOrigin;
-class StringOrDoubleOrPerformanceMeasureOptions;
+class StringOrPerformanceMeasureOptions;
 class SubTaskAttribution;
 class UserTiming;
 class V8ObjectBuilder;
@@ -202,7 +202,8 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
     kLoadEventEnd = 8,
     kOther = 9,
     kUndefinedOrNull = 10,
-    kNumber = 11,
+    // Intentionally leaves out kNumber = 11 since number has been casted to
+    // string when users pass number into the API.
     kUnprovided = 12,
     kNavigationStart = 13,
     kRedirectStart = 14,
@@ -227,14 +228,14 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   PerformanceMeasure* measure(
       ScriptState*,
       const AtomicString& measure_name,
-      const StringOrDoubleOrPerformanceMeasureOptions& start_or_options,
+      const StringOrPerformanceMeasureOptions& start_or_options,
       ExceptionState&);
 
   PerformanceMeasure* measure(
       ScriptState*,
       const AtomicString& measure_name,
-      const StringOrDoubleOrPerformanceMeasureOptions& start_or_options,
-      const StringOrDouble& end,
+      const StringOrPerformanceMeasureOptions& start_or_options,
+      const String& end,
       ExceptionState&);
 
   void clearMeasures(const AtomicString& measure_name);
@@ -267,8 +268,8 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   PerformanceMeasure* MeasureInternal(
       ScriptState*,
       const AtomicString& measure_name,
-      const StringOrDoubleOrPerformanceMeasureOptions& start,
-      const StringOrDouble& end,
+      const StringOrPerformanceMeasureOptions& start,
+      base::Optional<String> end,
       ExceptionState&);
 
   PerformanceMeasure* MeasureWithDetail(ScriptState*,
