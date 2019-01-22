@@ -6431,24 +6431,20 @@ TEST_F(InputMethodStateAuraTest, GetSelectedText) {
 
 // This test is for text range.
 TEST_F(InputMethodStateAuraTest, GetTextRange) {
-  base::string16 text = base::ASCIIToUTF16("some text of length 22");
-  size_t offset = 0U;
-  gfx::Range selection_range;
+  const base::string16 text = base::ASCIIToUTF16("some text of length 22");
 
   for (auto index : active_view_sequence_) {
-    render_widget_host_delegate()->set_focused_widget(
-        RenderWidgetHostImpl::From(views_[index]->GetRenderWidgetHost()));
-    gfx::Range expected_range(offset, offset + text.length());
-    views_[index]->SelectionChanged(text, offset, selection_range);
+    ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
+    TextInputState state;
+    state.type = ui::TEXT_INPUT_TYPE_TEXT;
+    state.value = text;
+    gfx::Range expected_range(0, 22);
+    views_[index]->TextInputStateChanged(state);
     gfx::Range range_from_client;
 
     // For aura this always returns true.
     EXPECT_TRUE(text_input_client()->GetTextRange(&range_from_client));
     EXPECT_EQ(expected_range, range_from_client);
-
-    // Changing offset to make sure that the next view has a different text
-    // selection.
-    offset++;
   }
 }
 
@@ -6461,7 +6457,12 @@ TEST_F(InputMethodStateAuraTest, GetCompositionTextRange) {
   for (auto index : active_view_sequence_) {
     ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
     gfx::Range expected_range(1, 2 + index);
-    views_[index]->ImeCompositionRangeChanged(expected_range, {});
+    TextInputState state;
+    state.type = ui::TEXT_INPUT_TYPE_TEXT;
+    state.composition_start = expected_range.start();
+    state.composition_end = expected_range.end();
+    views_[index]->TextInputStateChanged(state);
+    gfx::Range range_from_client;
 
     EXPECT_TRUE(
         text_input_client()->GetCompositionTextRange(&range_from_client));
@@ -6490,6 +6491,25 @@ TEST_F(InputMethodStateAuraTest, GetEditableSelectionRange) {
     // Changing range to make sure that the next view has a different text
     // selection.
     expected_range.set_end(expected_range.end() + 1U);
+  }
+}
+
+TEST_F(InputMethodStateAuraTest, GetTextFromRange) {
+  const base::string16 text = base::ASCIIToUTF16("some text of length 22");
+
+  for (auto index : active_view_sequence_) {
+    ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
+    TextInputState state;
+    state.type = ui::TEXT_INPUT_TYPE_TEXT;
+    state.value = text;
+    views_[index]->TextInputStateChanged(state);
+
+    gfx::Range request_range(std::min(index, text.length() - 1),
+                             std::min(index + 3, text.length() - 1));
+    base::string16 result;
+    EXPECT_TRUE(text_input_client()->GetTextFromRange(request_range, &result));
+    EXPECT_EQ(text.substr(request_range.start(), request_range.length()),
+              result);
   }
 }
 
