@@ -127,10 +127,14 @@ Supports Android and Linux (although Linux
 All files in an apk that are not broken down into sub-entries are tracked by a
 symbol within the `.other` section.
 
-##### Overhead Symbols
+##### Overhead and Star Symbols
 
 Overhead symbols track bytes that are generally unactionable. They are recorded
 as `size=0, padding=$size` (padding-only symbols) to de-emphasize them in diffs.
+
+Star symbols are those that track sections of the binary that are not padding,
+but which the tool is not able to break down further
+(e.g. "\*\* Merge Globals")
 
 * **\*\* symbol gap**: A gap between symbols that is larger than what could be
   due to alignment.
