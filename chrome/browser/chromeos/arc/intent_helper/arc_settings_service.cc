@@ -15,7 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -28,7 +28,6 @@
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/proxy/proxy_config_service_impl.h"
-#include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
@@ -46,7 +45,6 @@
 #include "content/public/common/page_zoom.h"
 #include "net/proxy_resolution/proxy_config.h"
 
-using ::chromeos::CrosSettings;
 using ::chromeos::system::TimezoneSettings;
 
 namespace {
@@ -196,7 +194,7 @@ class ArcSettingsServiceImpl
   // Manages pref observation registration.
   PrefChangeRegistrar registrar_;
 
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
+  std::unique_ptr<chromeos::StatsReportingController::ObserverSubscription>
       reporting_consent_subscription_;
 
   // Subscription for preference change of default zoom level. Subscription
@@ -309,10 +307,10 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
   // kArcLocationServiceEnabled, are not dynamically updated after initial
   // ARC setup and therefore are not observed here.
 
-  reporting_consent_subscription_ = CrosSettings::Get()->AddSettingsObserver(
-      chromeos::kStatsReportingPref,
-      base::Bind(&ArcSettingsServiceImpl::SyncReportingConsent,
-                 base::Unretained(this), /*initial_sync=*/false));
+  reporting_consent_subscription_ =
+      chromeos::StatsReportingController::Get()->AddObserver(
+          base::Bind(&ArcSettingsServiceImpl::SyncReportingConsent,
+                     base::Unretained(this), /*initial_sync=*/false));
 
   // It's safe to use base::Unretained. This is unregistered when
   // default_zoom_level_subscription_ is destructed which is stored as

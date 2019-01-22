@@ -7,9 +7,10 @@
 #include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler_observer.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
 #include "chrome/browser/extensions/api/settings_private/prefs_util.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
 
@@ -25,8 +26,7 @@ ArcOptInPreferenceHandler::ArcOptInPreferenceHandler(
 
 void ArcOptInPreferenceHandler::Start() {
   reporting_consent_subscription_ =
-      chromeos::CrosSettings::Get()->AddSettingsObserver(
-          chromeos::kStatsReportingPref,
+      chromeos::StatsReportingController::Get()->AddObserver(
           base::Bind(&ArcOptInPreferenceHandler::OnMetricsPreferenceChanged,
                      base::Unretained(this)));
 
@@ -63,10 +63,7 @@ void ArcOptInPreferenceHandler::OnLocationServicePreferenceChanged() {
 
 void ArcOptInPreferenceHandler::SendMetricsMode() {
   if (g_browser_process->local_state()) {
-    bool enabled = false;
-    const bool exists = chromeos::CrosSettings::Get()->GetBoolean(
-        chromeos::kStatsReportingPref, &enabled);
-    DCHECK(exists);
+    bool enabled = chromeos::StatsReportingController::Get()->IsEnabled();
     observer_->OnMetricsModeChanged(enabled, IsMetricsReportingPolicyManaged());
   }
 }
@@ -96,8 +93,8 @@ void ArcOptInPreferenceHandler::SendLocationServicesMode() {
 }
 
 void ArcOptInPreferenceHandler::EnableMetrics(bool is_enabled) {
-  chromeos::CrosSettings::Get()->SetBoolean(chromeos::kStatsReportingPref,
-                                            is_enabled);
+  chromeos::StatsReportingController::Get()->SetEnabled(
+      ProfileManager::GetActiveUserProfile(), is_enabled);
 }
 
 void ArcOptInPreferenceHandler::EnableBackupRestore(bool is_enabled) {

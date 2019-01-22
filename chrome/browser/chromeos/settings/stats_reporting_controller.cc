@@ -81,17 +81,13 @@ void StatsReportingController::SetEnabled(Profile* profile, bool enabled) {
 bool StatsReportingController::IsEnabled() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool value = false;
-  auto ownership = GetOwnershipStatus();
-  if (ownership == DeviceSettingsService::OWNERSHIP_TAKEN) {
-    // If ownership has been taken, return the signed, stored value.
-    GetSignedStoredValue(&value);
-  } else if (ownership == DeviceSettingsService::OWNERSHIP_NONE) {
-    // If ownership has not been taken, return the pending value.
-    GetPendingValue(&value);
-  } else {
-    // If we are not sure if there whether is an owner, we just return false.
-    value = false;
+  if (GetOwnershipStatus() == DeviceSettingsService::OWNERSHIP_NONE &&
+      GetPendingValue(&value)) {
+    // Return the pending value if it exists and we are sure there is no owner:
+    return value;
   }
+  // Otherwise, always return the value from the signed store.
+  GetSignedStoredValue(&value);
   return value;
 }
 
@@ -102,7 +98,8 @@ StatsReportingController::AddObserver(const base::RepeatingClosure& callback) {
   return callback_list_.Add(callback);
 }
 
-void StatsReportingController::OnOwnershipTaken(Profile* owner) {
+void StatsReportingController::OnOwnershipTaken(
+    ownership::OwnerSettingsService* service) {
   DCHECK_EQ(GetOwnershipStatus(), DeviceSettingsService::OWNERSHIP_TAKEN);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -110,7 +107,7 @@ void StatsReportingController::OnOwnershipTaken(Profile* owner) {
   if (GetPendingValue(&pending_value)) {
     // At the time ownership is taken, there is a value waiting to be written.
     // Use the OwnerSettingsService of the new owner to write the setting.
-    SetWithServiceAsync(GetOwnerSettingsService(owner), pending_value);
+    SetWithServiceAsync(service, pending_value);
   }
 }
 

@@ -212,6 +212,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
 #endif  // defined(OS_CHROMEOS)
@@ -990,6 +991,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
 #if defined(OS_CHROMEOS)
   chromeos::CrosSettings::Initialize(local_state);
+  chromeos::StatsReportingController::Initialize(local_state);
 #endif  // defined(OS_CHROMEOS)
 
   {
@@ -1944,6 +1946,7 @@ void ChromeBrowserMainParts::PostDestroyThreads() {
   CHECK(metrics::MetricsService::UmaMetricsProperlyShutdown());
 
 #if defined(OS_CHROMEOS)
+  chromeos::StatsReportingController::Shutdown();
   chromeos::CrosSettings::Shutdown();
 #endif  // defined(OS_CHROMEOS)
 #endif  // defined(OS_ANDROID)

@@ -45,7 +45,7 @@
 #endif  // OS_WIN
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/settings/cros_settings_names.h"
+#include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace metrics {
@@ -97,9 +97,7 @@ bool IsClientEligibleForSampling() {
 // Callback to update the metrics reporting state when the Chrome OS metrics
 // reporting setting changes.
 void OnCrosMetricsReportingSettingChange() {
-  bool enable_metrics = false;
-  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
-                                            &enable_metrics);
+  bool enable_metrics = chromeos::StatsReportingController::Get()->IsEnabled();
   ChangeMetricsReportingState(enable_metrics);
 }
 #endif
@@ -226,9 +224,9 @@ bool ChromeMetricsServicesManagerClient::GetSamplingRatePerMille(int* rate) {
 
 #if defined(OS_CHROMEOS)
 void ChromeMetricsServicesManagerClient::OnCrosSettingsCreated() {
-  cros_settings_observer_ = chromeos::CrosSettings::Get()->AddSettingsObserver(
-      chromeos::kStatsReportingPref,
-      base::Bind(&OnCrosMetricsReportingSettingChange));
+  reporting_setting_observer_ =
+      chromeos::StatsReportingController::Get()->AddObserver(
+          base::Bind(&OnCrosMetricsReportingSettingChange));
   // Invoke the callback once initially to set the metrics reporting state.
   OnCrosMetricsReportingSettingChange();
 }

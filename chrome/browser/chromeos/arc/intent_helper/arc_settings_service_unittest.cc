@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -25,6 +26,7 @@
 #include "components/arc/test/fake_backup_settings_instance.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_store.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 
@@ -49,6 +51,9 @@ class ArcSettingsServiceTest : public BrowserWithTestWindowTest {
     ArcSessionManager::SetUiEnabledForTesting(false);
     chromeos::DBusThreadManager::Initialize();
     chromeos::NetworkHandler::Initialize();
+    chromeos::StatsReportingController::RegisterLocalStatePrefs(
+        local_state_.registry());
+    chromeos::StatsReportingController::Initialize(&local_state_);
 
     arc_service_manager_ = std::make_unique<ArcServiceManager>();
     arc_session_manager_ =
@@ -91,6 +96,7 @@ class ArcSettingsServiceTest : public BrowserWithTestWindowTest {
     arc_session_manager_.reset();
     arc_service_manager_.reset();
 
+    chromeos::StatsReportingController::Shutdown();
     chromeos::NetworkHandler::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
@@ -123,6 +129,7 @@ class ArcSettingsServiceTest : public BrowserWithTestWindowTest {
   }
 
  private:
+  TestingPrefServiceSimple local_state_;
   user_manager::ScopedUserManager user_manager_enabler_;
   std::unique_ptr<ArcIntentHelperBridge> arc_intent_helper_bridge_;
   std::unique_ptr<ArcSessionManager> arc_session_manager_;
