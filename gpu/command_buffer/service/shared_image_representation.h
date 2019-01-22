@@ -71,6 +71,24 @@ class SharedImageRepresentationFactoryRef : public SharedImageRepresentation {
 class GPU_GLES2_EXPORT SharedImageRepresentationGLTexture
     : public SharedImageRepresentation {
  public:
+  class ScopedAccess {
+   public:
+    ScopedAccess(SharedImageRepresentationGLTexture* representation,
+                 GLenum mode)
+        : representation_(representation),
+          success_(representation_->BeginAccess(mode)) {}
+    ~ScopedAccess() {
+      if (success_)
+        representation_->EndAccess();
+    }
+
+    bool success() const { return success_; }
+
+   private:
+    SharedImageRepresentationGLTexture* representation_;
+    bool success_;
+  };
+
   SharedImageRepresentationGLTexture(SharedImageManager* manager,
                                      SharedImageBacking* backing,
                                      MemoryTypeTracker* tracker)
@@ -87,6 +105,24 @@ class GPU_GLES2_EXPORT SharedImageRepresentationGLTexture
 class GPU_GLES2_EXPORT SharedImageRepresentationGLTexturePassthrough
     : public SharedImageRepresentation {
  public:
+  class ScopedAccess {
+   public:
+    ScopedAccess(SharedImageRepresentationGLTexturePassthrough* representation,
+                 GLenum mode)
+        : representation_(representation),
+          success_(representation_->BeginAccess(mode)) {}
+    ~ScopedAccess() {
+      if (success_)
+        representation_->EndAccess();
+    }
+
+    bool success() const { return success_; }
+
+   private:
+    SharedImageRepresentationGLTexturePassthrough* representation_;
+    bool success_;
+  };
+
   SharedImageRepresentationGLTexturePassthrough(SharedImageManager* manager,
                                                 SharedImageBacking* backing,
                                                 MemoryTypeTracker* tracker)
