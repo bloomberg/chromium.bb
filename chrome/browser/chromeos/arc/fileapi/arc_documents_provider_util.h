@@ -83,6 +83,10 @@ std::string StripMimeSubType(const std::string& mime_type);
 // is returned. On failure, nullptr is returned.
 std::string FindArcMimeTypeFromExtension(const std::string& ext);
 
+// Returns an ID of a Documents Provider volume.
+std::string GetDocumentsProviderVolumeId(const std::string& authority,
+                                         const std::string& root_id);
+
 }  // namespace arc
 
 #endif  // CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_DOCUMENTS_PROVIDER_UTIL_H_

@@ -88,6 +88,7 @@ constexpr MimeTypeToExtensions kAndroidMimeTypeMappings[] = {
 };
 
 constexpr char kApplicationOctetStreamMimeType[] = "application/octet-stream";
+constexpr char kDocumentsProviderVolumeIdPrefix[] = "documents_provider:";
 
 }  // namespace
 
@@ -286,6 +287,13 @@ base::FilePath::StringType GetFileNameForDocument(
   }
 
   return filename;
+}
+
+std::string GetDocumentsProviderVolumeId(const std::string& authority,
+                                         const std::string& root_id) {
+  // Since |authority| can not have '/', a pair of |authority| and |root_id| is
+  // guaranteed to result in a unique volume id.
+  return kDocumentsProviderVolumeIdPrefix + authority + "/" + root_id;
 }
 
 }  // namespace arc

@@ -93,6 +93,9 @@ VolumeManagerCommon.RootType = {
   // Root for media views.
   MEDIA_VIEW: 'media_view',
 
+  // Root for documents providers.
+  DOCUMENTS_PROVIDER: 'documents_provider',
+
   // Fake root for the mixed "Recent" view.
   RECENT: 'recent',
 
@@ -155,6 +158,7 @@ VolumeManagerCommon.RootTypesForUMA = [
   VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT,              // 19
   VolumeManagerCommon.RootType.COMPUTER,                          // 20
   VolumeManagerCommon.RootType.EXTERNAL_MEDIA,                    // 21
+  VolumeManagerCommon.RootType.DOCUMENTS_PROVIDER,                // 22
 ];
 console.assert(
     Object.keys(VolumeManagerCommon.RootType).length ===
@@ -235,6 +239,7 @@ VolumeManagerCommon.VolumeType = {
   MTP: 'mtp',
   PROVIDED: 'provided',
   MEDIA_VIEW: 'media_view',
+  DOCUMENTS_PROVIDER: 'documents_provider',
   CROSTINI: 'crostini',
   ANDROID_FILES: 'android_files',
   MY_FILES: 'my_files',
@@ -299,6 +304,8 @@ VolumeManagerCommon.getVolumeTypeFromRootType = function(rootType) {
       return VolumeManagerCommon.VolumeType.PROVIDED;
     case VolumeManagerCommon.RootType.MEDIA_VIEW:
       return VolumeManagerCommon.VolumeType.MEDIA_VIEW;
+    case VolumeManagerCommon.RootType.DOCUMENTS_PROVIDER:
+      return VolumeManagerCommon.VolumeType.DOCUMENTS_PROVIDER;
     case VolumeManagerCommon.RootType.CROSTINI:
       return VolumeManagerCommon.VolumeType.CROSTINI;
     case VolumeManagerCommon.RootType.ANDROID_FILES:
@@ -327,6 +334,8 @@ VolumeManagerCommon.getRootTypeFromVolumeType = function(volumeType) {
       return VolumeManagerCommon.RootType.DRIVE;
     case VolumeManagerCommon.VolumeType.MEDIA_VIEW:
       return VolumeManagerCommon.RootType.MEDIA_VIEW;
+    case VolumeManagerCommon.VolumeType.DOCUMENTS_PROVIDER:
+      return VolumeManagerCommon.RootType.DOCUMENTS_PROVIDER;
     case VolumeManagerCommon.VolumeType.MTP:
       return VolumeManagerCommon.RootType.MTP;
     case VolumeManagerCommon.VolumeType.MY_FILES:

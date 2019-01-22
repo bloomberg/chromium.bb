@@ -21,7 +21,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root_map.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_media_view_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -146,6 +148,8 @@ std::string VolumeTypeToString(VolumeType type) {
       return "media_view";
     case VOLUME_TYPE_ANDROID_FILES:
       return "android_files";
+    case VOLUME_TYPE_DOCUMENTS_PROVIDER:
+      return "documents_provider";
     case VOLUME_TYPE_TESTING:
       return "testing";
     case VOLUME_TYPE_CROSTINI:
@@ -358,6 +362,37 @@ std::unique_ptr<Volume> Volume::CreateForAndroidFiles(
 }
 
 // static
+std::unique_ptr<Volume> Volume::CreateForDocumentsProvider(
+    const std::string& authority,
+    const std::string& root_id,
+    const std::string& document_id,
+    const std::string& title,
+    const std::string& summary,
+    const GURL& icon_url) {
+  std::unique_ptr<Volume> volume(new Volume());
+  volume->type_ = VOLUME_TYPE_DOCUMENTS_PROVIDER;
+  volume->device_type_ = chromeos::DEVICE_TYPE_UNKNOWN;
+  // Keep source_path empty.
+  volume->source_ = SOURCE_SYSTEM;
+  volume->mount_path_ =
+      arc::GetDocumentsProviderMountPath(authority, document_id);
+  volume->mount_condition_ = chromeos::disks::MOUNT_CONDITION_NONE;
+  volume->volume_label_ = title;
+  // TODO(fukino): Set a proper flag when write operations are supported.
+  volume->is_read_only_ = true;
+  volume->watchable_ = false;
+  volume->volume_id_ = arc::GetDocumentsProviderVolumeId(authority, root_id);
+  if (!icon_url.is_empty()) {
+    chromeos::file_system_provider::IconSet icon_set;
+    icon_set.SetIcon(
+        chromeos::file_system_provider::IconSet::IconSize::SIZE_32x32,
+        icon_url);
+    volume->icon_set_ = icon_set;
+  }
+  return volume;
+}
+
+// static
 std::unique_ptr<Volume> Volume::CreateForTesting(
     const base::FilePath& path,
     VolumeType volume_type,
@@ -400,6 +435,11 @@ VolumeManager::VolumeManager(
       file_system_provider_service_(file_system_provider_service),
       get_mtp_storage_info_callback_(get_mtp_storage_info_callback),
       snapshot_manager_(new SnapshotManager(profile_)),
+      documents_provider_root_manager_(
+          std::make_unique<DocumentsProviderRootManager>(
+              profile_,
+              arc::ArcFileSystemOperationRunner::GetForBrowserContext(
+                  profile_))),
       weak_ptr_factory_(this) {
   DCHECK(disk_mount_manager);
 }
@@ -439,6 +479,9 @@ void VolumeManager::Initialize() {
       base::BindOnce(&VolumeManager::OnDiskMountManagerRefreshed,
                      weak_ptr_factory_.GetWeakPtr()),
       false /* force */);
+
+  // Subscribe to ARC DocumentsProvider events about roots.
+  documents_provider_root_manager_->AddObserver(this);
 
   // Subscribe to FileSystemProviderService and register currently mounted
   // volumes for the profile.
@@ -492,6 +535,8 @@ void VolumeManager::Shutdown() {
   snapshot_manager_.reset();
   pref_change_registrar_.RemoveAll();
   disk_mount_manager_->RemoveObserver(this);
+  documents_provider_root_manager_->RemoveObserver(this);
+  documents_provider_root_manager_.reset();
   if (storage_monitor::StorageMonitor::GetInstance())
     storage_monitor::StorageMonitor::GetInstance()->RemoveObserver(this);
 
@@ -985,6 +1030,7 @@ void VolumeManager::OnArcPlayStoreEnabledChanged(bool enabled) {
     }
   }
 
+  documents_provider_root_manager_->SetEnabled(enabled);
   arc_volumes_mounted_ = enabled;
 }
 
@@ -1104,6 +1150,31 @@ void VolumeManager::OnRemovableStorageDetached(
       return;
     }
   }
+}
+
+void VolumeManager::OnDocumentsProviderRootAdded(const std::string& authority,
+                                                 const std::string& root_id,
+                                                 const std::string& document_id,
+                                                 const std::string& title,
+                                                 const std::string& summary,
+                                                 const GURL& icon_url) {
+  arc::ArcDocumentsProviderRootMap::GetForArcBrowserContext()->RegisterRoot(
+      authority, document_id);
+  DoMountEvent(chromeos::MOUNT_ERROR_NONE,
+               Volume::CreateForDocumentsProvider(
+                   authority, root_id, document_id, title, summary, icon_url));
+}
+
+void VolumeManager::OnDocumentsProviderRootRemoved(
+    const std::string& authority,
+    const std::string& root_id,
+    const std::string& document_id) {
+  DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
+                 *Volume::CreateForDocumentsProvider(
+                     authority, root_id, std::string(), std::string(),
+                     std::string(), GURL()));
+  arc::ArcDocumentsProviderRootMap::GetForArcBrowserContext()->UnregisterRoot(
+      authority, document_id);
 }
 
 void VolumeManager::OnDiskMountManagerRefreshed(bool success) {

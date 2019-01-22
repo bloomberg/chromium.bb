@@ -1840,6 +1840,9 @@ extern const char kArcBootCompletedDescription[];
 extern const char kArcCupsApiName[];
 extern const char kArcCupsApiDescription[];
 
+extern const char kArcDocumentsProviderName[];
+extern const char kArcDocumentsProviderDescription[];
+
 extern const char kArcFilePickerExperimentName[];
 extern const char kArcFilePickerExperimentDescription[];
 

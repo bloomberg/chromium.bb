@@ -472,6 +472,7 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
       case VolumeManagerCommon.VolumeType.MTP:
       case VolumeManagerCommon.VolumeType.DRIVE:
       case VolumeManagerCommon.VolumeType.MEDIA_VIEW:
+      case VolumeManagerCommon.VolumeType.DOCUMENTS_PROVIDER:
         if (!volumeIndexes[volumeType]) {
           volumeIndexes[volumeType] = [i];
         } else {
@@ -627,6 +628,13 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
   for (const provided of getVolumes(VolumeManagerCommon.VolumeType.PROVIDED)) {
     this.navigationItems_.push(provided);
     provided.section = NavigationSection.CLOUD;
+  }
+
+  // Add DocumentsProviders to the same section of FSP.
+  for (const provider of getVolumes(
+           VolumeManagerCommon.VolumeType.DOCUMENTS_PROVIDER)) {
+    this.navigationItems_.push(provider);
+    provider.section = NavigationSection.CLOUD;
   }
 
   // Join MTP, ARCHIVE and REMOVABLE. These types belong to same section.
