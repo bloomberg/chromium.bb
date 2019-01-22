@@ -511,7 +511,11 @@ void DataReductionProxyNetworkDelegate::OnHeadersReceivedInternal(
 
   if (request->was_cached() && request->url().SchemeIsHTTPOrHTTPS() &&
       !request->url().SchemeIsCryptographic() &&
-      original_response_headers->HasHeader(chrome_proxy_header())) {
+      (original_response_headers->HasHeader(chrome_proxy_header()) ||
+       // Check for via header since Chrome-Proxy header maybe missing in
+       // streamed responses.
+       data_reduction_proxy::HasDataReductionProxyViaHeader(
+           *original_response_headers, nullptr))) {
     DataReductionProxyData* data =
         DataReductionProxyData::GetDataAndCreateIfNecessary(request);
     data->set_was_cached_data_reduction_proxy_response(true);

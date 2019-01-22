@@ -297,7 +297,11 @@ DataReductionProxyChromeSettings::CreateDataFromNavigationHandle(
     return data;
 
   if (handle->WasResponseCached() &&
-      headers->HasHeader(data_reduction_proxy::chrome_proxy_header()) &&
+      (headers->HasHeader(data_reduction_proxy::chrome_proxy_header()) ||
+       // Check for via header since Chrome-Proxy header maybe missing in
+       // streamed responses.
+       data_reduction_proxy::HasDataReductionProxyViaHeader(*headers,
+                                                            nullptr)) &&
       !handle->GetURL().SchemeIsCryptographic()) {
     data->set_was_cached_data_reduction_proxy_response(true);
   }

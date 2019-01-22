@@ -443,6 +443,23 @@ TEST_F(DataReductionProxyChromeSettingsTest, CreateHTTPSDataCachedResponse) {
   EXPECT_FALSE(data->was_cached_data_reduction_proxy_response());
 }
 
+TEST_F(DataReductionProxyChromeSettingsTest,
+       CreateCachedResponseWithViaHeader) {
+  std::string raw_headers =
+      "HTTP/1.0 200 OK\n"
+      "via: 1.1 Chrome-Compression-Proxy\n";
+  content::MockNavigationHandle handle(GURL(kUrl), main_rfh());
+  scoped_refptr<net::HttpResponseHeaders> headers =
+      new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
+          raw_headers.c_str(), raw_headers.size()));
+  handle.set_response_headers(headers.get());
+  handle.set_was_response_cached(true);
+  auto data = drp_chrome_settings_->CreateDataFromNavigationHandle(
+      &handle, headers.get());
+
+  EXPECT_TRUE(data->was_cached_data_reduction_proxy_response());
+}
+
 TEST_F(DataReductionProxyChromeSettingsTest, CreateDataWithLitePage) {
   std::string raw_headers =
       "HTTP/1.0 200 OK\n"
