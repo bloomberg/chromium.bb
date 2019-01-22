@@ -78,7 +78,7 @@
 #include "chrome/browser/metrics/renderer_uptime_tracker.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
-#include "chrome/browser/performance_monitor/performance_monitor.h"
+#include "chrome/browser/performance_monitor/process_monitor.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/prefs/chrome_command_line_pref_store.h"
@@ -1856,7 +1856,7 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
 
   DCHECK(base::MessageLoopCurrentForUI::IsSet());
 
-  performance_monitor::PerformanceMonitor::GetInstance()->StartGatherCycle();
+  performance_monitor::ProcessMonitor::GetInstance()->StartGatherCycle();
 
   g_run_loop->Run();
 
