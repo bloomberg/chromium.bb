@@ -5,7 +5,8 @@
 #ifndef IOS_WEB_VIEW_INTERNAL_SIGNIN_WEB_VIEW_IDENTITY_MANAGER_FACTORY_H_
 #define IOS_WEB_VIEW_INTERNAL_SIGNIN_WEB_VIEW_IDENTITY_MANAGER_FACTORY_H_
 
-#include "base/memory/singleton.h"
+#include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
 namespace identity {
@@ -27,7 +28,7 @@ class WebViewIdentityManagerFactory : public BrowserStateKeyedServiceFactory {
   static WebViewIdentityManagerFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<WebViewIdentityManagerFactory>;
+  friend class base::NoDestructor<WebViewIdentityManagerFactory>;
 
   WebViewIdentityManagerFactory();
   ~WebViewIdentityManagerFactory() override;

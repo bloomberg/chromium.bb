@@ -4,7 +4,7 @@
 
 #include "ios/web_view/internal/language/web_view_url_language_histogram_factory.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/language/core/browser/url_language_histogram.h"
@@ -20,7 +20,8 @@ namespace ios_web_view {
 // static
 WebViewUrlLanguageHistogramFactory*
 WebViewUrlLanguageHistogramFactory::GetInstance() {
-  return base::Singleton<WebViewUrlLanguageHistogramFactory>::get();
+  static base::NoDestructor<WebViewUrlLanguageHistogramFactory> instance;
+  return instance.get();
 }
 
 // static

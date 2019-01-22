@@ -4,7 +4,7 @@
 
 #include "ios/web_view/internal/content_settings/web_view_host_content_settings_map_factory.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/prefs/pref_service.h"
@@ -27,7 +27,8 @@ WebViewHostContentSettingsMapFactory::GetForBrowserState(
 // static
 WebViewHostContentSettingsMapFactory*
 WebViewHostContentSettingsMapFactory::GetInstance() {
-  return base::Singleton<WebViewHostContentSettingsMapFactory>::get();
+  static base::NoDestructor<WebViewHostContentSettingsMapFactory> instance;
+  return instance.get();
 }
 
 WebViewHostContentSettingsMapFactory::WebViewHostContentSettingsMapFactory()

@@ -5,7 +5,7 @@
 #include "ios/web_view/internal/translate/web_view_translate_service.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "ios/web_view/internal/app/application_context.h"
 
@@ -39,7 +39,8 @@ void WebViewTranslateService::TranslateRequestsAllowedListener::
 }
 
 WebViewTranslateService* WebViewTranslateService::GetInstance() {
-  return base::Singleton<WebViewTranslateService>::get();
+  static base::NoDestructor<WebViewTranslateService> instance;
+  return instance.get();
 }
 
 WebViewTranslateService::WebViewTranslateService() {}

@@ -4,7 +4,7 @@
 
 #include "ios/web_view/internal/signin/web_view_oauth2_token_service_factory.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -38,7 +38,8 @@ ProfileOAuth2TokenService* WebViewOAuth2TokenServiceFactory::GetForBrowserState(
 // static
 WebViewOAuth2TokenServiceFactory*
 WebViewOAuth2TokenServiceFactory::GetInstance() {
-  return base::Singleton<WebViewOAuth2TokenServiceFactory>::get();
+  static base::NoDestructor<WebViewOAuth2TokenServiceFactory> instance;
+  return instance.get();
 }
 
 void WebViewOAuth2TokenServiceFactory::RegisterBrowserStatePrefs(

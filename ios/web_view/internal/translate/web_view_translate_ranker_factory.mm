@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/translate/core/browser/translate_ranker_impl.h"
@@ -21,7 +21,8 @@ namespace ios_web_view {
 
 // static
 WebViewTranslateRankerFactory* WebViewTranslateRankerFactory::GetInstance() {
-  return base::Singleton<WebViewTranslateRankerFactory>::get();
+  static base::NoDestructor<WebViewTranslateRankerFactory> instance;
+  return instance.get();
 }
 
 // static

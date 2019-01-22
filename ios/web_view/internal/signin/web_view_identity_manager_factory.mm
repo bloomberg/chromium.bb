@@ -69,7 +69,8 @@ identity::IdentityManager* WebViewIdentityManagerFactory::GetForBrowserState(
 
 // static
 WebViewIdentityManagerFactory* WebViewIdentityManagerFactory::GetInstance() {
-  return base::Singleton<WebViewIdentityManagerFactory>::get();
+  static base::NoDestructor<WebViewIdentityManagerFactory> instance;
+  return instance.get();
 }
 
 std::unique_ptr<KeyedService>

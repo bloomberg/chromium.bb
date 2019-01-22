@@ -8,13 +8,9 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
 
 class SigninManager;
 
@@ -40,7 +36,7 @@ class WebViewSigninManagerFactory : public BrowserStateKeyedServiceFactory {
       user_prefs::PrefRegistrySyncable* registry) override;
 
  private:
-  friend struct base::DefaultSingletonTraits<WebViewSigninManagerFactory>;
+  friend class base::NoDestructor<WebViewSigninManagerFactory>;
 
   WebViewSigninManagerFactory();
   ~WebViewSigninManagerFactory() override = default;

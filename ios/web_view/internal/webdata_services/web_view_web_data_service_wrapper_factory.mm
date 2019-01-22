@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -70,7 +70,8 @@ WebViewWebDataServiceWrapperFactory::GetTokenWebDataForBrowserState(
 // static
 WebViewWebDataServiceWrapperFactory*
 WebViewWebDataServiceWrapperFactory::GetInstance() {
-  return base::Singleton<WebViewWebDataServiceWrapperFactory>::get();
+  static base::NoDestructor<WebViewWebDataServiceWrapperFactory> instance;
+  return instance.get();
 }
 
 WebViewWebDataServiceWrapperFactory::WebViewWebDataServiceWrapperFactory()
