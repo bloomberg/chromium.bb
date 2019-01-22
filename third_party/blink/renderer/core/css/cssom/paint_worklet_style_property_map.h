@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_PAINT_WORKLET_STYLE_PROPERTY_MAP_H_
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/core/css/cssom/cross_thread_style_value.h"
 #include "third_party/blink/renderer/core/css/cssom/style_property_map_read_only.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -46,7 +47,10 @@ class CORE_EXPORT PaintWorkletStylePropertyMap
 
   void Trace(blink::Visitor*) override;
 
-  const HashMap<String, String>& ValuesForTest() { return values_; }
+  const HashMap<String, std::unique_ptr<CrossThreadStyleValue>>&
+  ValuesForTest() {
+    return values_;
+  }
 
  private:
   IterationSource* StartIteration(ScriptState*, ExceptionState&) override;
@@ -59,7 +63,7 @@ class CORE_EXPORT PaintWorkletStylePropertyMap
                          Node* styled_node,
                          const Vector<AtomicString>& custom_properties);
 
-  HashMap<String, String> values_;
+  HashMap<String, std::unique_ptr<CrossThreadStyleValue>> values_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintWorkletStylePropertyMap);
 };
