@@ -227,14 +227,6 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
 };
 
 IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest, StartAndImmediatelyStop) {
-#if defined(OS_ANDROID)
-  // Mojo video capture is currently not supported on Android.
-  // TODO(chfremer): Remove this as soon as https://crbug.com/720500 is
-  // resolved.
-  if (params_.use_mojo_service)
-    return;
-#endif
-
   SetUpRequiringBrowserMainLoopOnMainThread();
   base::RunLoop run_loop;
   auto quit_run_loop_on_current_thread_cb =
@@ -266,11 +258,6 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
   // TODO(chfremer): This test case is flaky on Android. Find out cause of
   // flakiness and then re-enable. See https://crbug.com/709039.
   if (params_.exercise_accelerated_jpeg_decoding)
-    return;
-  // Mojo video capture is currently not supported on Android
-  // TODO(chfremer): Remove this as soon as https://crbug.com/720500 is
-  // resolved.
-  if (params_.use_mojo_service)
     return;
 #endif
   // Only fake device with index 2 delivers MJPEG.
