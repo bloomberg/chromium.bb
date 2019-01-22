@@ -79,6 +79,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
 #include "chrome/browser/chromeos/system/device_disabling_manager.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
@@ -809,7 +810,8 @@ void WizardController::OnEulaBack() {
 }
 
 void WizardController::OnChangedMetricsReportingState(bool enabled) {
-  CrosSettings::Get()->SetBoolean(kStatsReportingPref, enabled);
+  StatsReportingController::Get()->SetEnabled(
+      ProfileManager::GetActiveUserProfile(), enabled);
   if (!enabled)
     return;
 #if defined(GOOGLE_CHROME_BUILD)

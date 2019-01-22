@@ -21,11 +21,6 @@ class OwnerSettingsService;
 
 namespace chromeos {
 
-// TODO(olsen): This code is not used yet, so Initialize, Shutdown, and
-// OnOwnershipTaken are never called. It is planned to replace 2 calls to
-// CrosSettings::Get()->Set, in ArcOptinPreferenceHandler and WizardController.
-// See crbug.com/433840
-
 // An extra layer on top of CrosSettings / OwnerSettingsService that allows for
 // writing a setting before ownership is taken, for one setting only:
 // kStatsReportingPref, which has the key: "cros.metrics.reportingEnabled".
@@ -70,8 +65,9 @@ class StatsReportingController {
   std::unique_ptr<ObserverSubscription> AddObserver(
       const base::RepeatingClosure& callback) WARN_UNUSED_RESULT;
 
-  // Called once ownership is taken, |owner| is the profile taking ownership.
-  void OnOwnershipTaken(Profile* owner);
+  // Called once ownership is taken, |service| is the service of the user taking
+  // ownership.
+  void OnOwnershipTaken(ownership::OwnerSettingsService* service);
 
  private:
   friend class StatsReportingControllerTest;

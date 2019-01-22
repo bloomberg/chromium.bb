@@ -63,6 +63,11 @@ class CrosSettings {
   // Helper function to test if the given |path| is a valid cros setting.
   static bool IsCrosSettings(const std::string& path);
 
+  // TODO(https://crbug.com/433840): There are no longer any callers of
+  // CrosSettings::Set. Still TODO: delete CrosSettings::Set, convenience forms
+  // of Set, all implementations of CrosSettingsProvider::Set, and remove any
+  // dependencies that are no longer needed.
+
   // Sets |in_value| to given |path| in cros settings.
   void Set(const std::string& path, const base::Value& in_value);
 

@@ -234,7 +234,8 @@ TEST_F(StatsReportingControllerTest, SetBeforeOwnershipTaken) {
             DeviceSettingsService::Get()->GetOwnershipStatus());
 
   // After device is owned, the value is written to Cros settings.
-  StatsReportingController::Get()->OnOwnershipTaken(owner.get());
+  StatsReportingController::Get()->OnOwnershipTaken(
+      OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(owner.get()));
   EXPECT_TRUE(StatsReportingController::Get()->IsEnabled());
   EXPECT_TRUE(value_at_last_notification_);
   ExpectThatPendingValueIsNotSet();

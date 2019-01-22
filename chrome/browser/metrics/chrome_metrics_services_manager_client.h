@@ -13,7 +13,7 @@
 #include "components/metrics_services_manager/metrics_services_manager_client.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
 #endif
 
 class PrefService;
@@ -100,8 +100,8 @@ class ChromeMetricsServicesManagerClient
   PrefService* const local_state_;
 
 #if defined(OS_CHROMEOS)
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      cros_settings_observer_;
+  std::unique_ptr<chromeos::StatsReportingController::ObserverSubscription>
+      reporting_setting_observer_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMetricsServicesManagerClient);

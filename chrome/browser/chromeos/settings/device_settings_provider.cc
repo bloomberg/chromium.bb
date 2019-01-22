@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/policy/off_hours/off_hours_proto_parser.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_cache.h"
+#include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -915,6 +916,19 @@ void DeviceSettingsProvider::OwnershipStatusChanged() {
              ->CommitTentativeDeviceSettings(std::move(policy))) {
       LOG(ERROR) << "Can't store policy";
     }
+
+    // TODO(https://crbug.com/433840): Some of the above code can be simplified
+    // or removed, once the DoSet function is removed - then there will be no
+    // pending writes. This is because the only value that needs to be written
+    // as a pending write is kStatsReportingPref, and this is now handled by the
+    // StatsReportingController - see below.
+    // Once DoSet is removed and there are no pending writes that are being
+    // maintained by DeviceSettingsProvider, this code for updating the signed
+    // settings for the new owner should probably be moved outside of
+    // DeviceSettingsProvider.
+
+    StatsReportingController::Get()->OnOwnershipTaken(
+        device_settings_service_->GetOwnerSettingsService());
   }
 
   ownership_status_ = new_ownership_status;
