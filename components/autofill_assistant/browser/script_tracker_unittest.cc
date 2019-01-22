@@ -75,7 +75,7 @@ class ScriptTrackerTest : public testing::Test,
   content::WebContents* GetWebContents() override { return nullptr; }
 
   virtual void SetTouchableElementArea(
-      const std::vector<Selector>& elements) override {}
+      const ElementAreaProto& element_area) override {}
 
   // Overrides ScriptTracker::Listener
   void OnRunnableScriptsChanged(

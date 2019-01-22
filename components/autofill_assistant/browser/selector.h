@@ -42,7 +42,6 @@ struct Selector {
   // Checks whether this selector is empty.
   bool empty() const;
 };
-
 }  // namespace autofill_assistant
 
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_SELECTOR_H_

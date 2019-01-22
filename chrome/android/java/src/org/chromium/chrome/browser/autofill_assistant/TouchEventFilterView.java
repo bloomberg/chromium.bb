@@ -117,6 +117,9 @@ public class TouchEventFilterView
     /** Padding added between the element area and the grayed-out area. */
     private final float mPaddingPx;
 
+    /** Size of the corner of the cleared-out areas. */
+    private final float mCornerPx;
+
     /** A single RectF instance used for drawing, to avoid creating many instances when drawing. */
     private final RectF mDrawRect = new RectF();
 
@@ -205,6 +208,8 @@ public class TouchEventFilterView
 
         mPaddingPx = TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, 2, context.getResources().getDisplayMetrics());
+        mCornerPx = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, 8, context.getResources().getDisplayMetrics());
         // TODO(crbug.com/806868): Add support for XML attributes configuration.
 
         mClear = new Paint();
@@ -525,7 +530,13 @@ public class TouchEventFilterView
             mDrawRect.right = rect.right * width + mPaddingPx;
             mDrawRect.bottom =
                     yTop + rect.bottom * height + mPaddingPx - mBrowserScrollOffsetY - mOffsetY;
-            canvas.drawRect(mDrawRect, mClear);
+            if (mDrawRect.left <= 0 && mDrawRect.right >= width) {
+                // Rounded corners look strange in the case where the rectangle takes exactly the
+                // width of the screen.
+                canvas.drawRect(mDrawRect, mClear);
+            } else {
+                canvas.drawRoundRect(mDrawRect, mCornerPx, mCornerPx, mClear);
+            }
         }
     }
 

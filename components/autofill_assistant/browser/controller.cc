@@ -113,9 +113,8 @@ content::WebContents* Controller::GetWebContents() {
   return web_contents();
 }
 
-void Controller::SetTouchableElementArea(
-    const std::vector<Selector>& elements) {
-  touchable_element_area_.SetElements(elements);
+void Controller::SetTouchableElementArea(const ElementAreaProto& area) {
+  touchable_element_area_.SetFromProto(area);
 }
 
 void Controller::GetOrCheckScripts(const GURL& url) {
@@ -205,7 +204,7 @@ void Controller::ExecuteScript(const std::string& script_path) {
   DCHECK(!script_tracker_->running());
 
   GetUiController()->ShowOverlay();
-  touchable_element_area_.ClearElements();
+  touchable_element_area_.Clear();
   GetUiController()->AllowShowingSoftKeyboard(false);
 
   StopPeriodicScriptChecks();
@@ -237,7 +236,9 @@ void Controller::OnScriptExecuted(const std::string& script_path,
     GetUiController()->ShutdownGracefully();
     return;
   }
-  touchable_element_area_.SetElements(result.touchable_elements);
+  if (result.touchable_element_area)
+    touchable_element_area_.SetFromProto(*result.touchable_element_area);
+
   GetUiController()->AllowShowingSoftKeyboard(true);
   switch (result.at_end) {
     case ScriptExecutor::SHUTDOWN:

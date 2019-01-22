@@ -41,11 +41,12 @@ class ScriptExecutorDelegate {
 
   // Make the area of the screen that correspond to the given elements
   // touchable.
-  virtual void SetTouchableElementArea(
-      const std::vector<Selector>& elements) = 0;
+  virtual void SetTouchableElementArea(const ElementAreaProto& element) = 0;
 
   // Makes no area of the screen touchable.
-  void ClearTouchableElementArea() { SetTouchableElementArea({}); }
+  void ClearTouchableElementArea() {
+    SetTouchableElementArea(ElementAreaProto::default_instance());
+  }
 
  protected:
   virtual ~ScriptExecutorDelegate() {}

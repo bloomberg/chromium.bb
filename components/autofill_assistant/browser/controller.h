@@ -75,7 +75,7 @@ class Controller : public ScriptExecutorDelegate,
   const std::map<std::string, std::string>& GetParameters() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   content::WebContents* GetWebContents() override;
-  void SetTouchableElementArea(const std::vector<Selector>& elements) override;
+  void SetTouchableElementArea(const ElementAreaProto& area) override;
 
   bool IsCookieExperimentEnabled() const;
 

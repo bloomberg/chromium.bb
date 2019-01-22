@@ -398,7 +398,29 @@ message FocusElementProto {
   optional string title = 2;
 
   // Restrict interaction to the area spanned by the given elements.
-  repeated ElementReferenceProto touchable_element_area = 5;
+  //
+  // Deprecated: use touchable_element_area instead. Ignored if
+  // touchable_element_area is non-empty.
+  repeated ElementReferenceProto deprecated_touchable_elements = 5;
+
+  // Restrict interaction to a series of rectangular areas.
+  optional ElementAreaProto touchable_element_area = 6;
+}
+
+// An area made up of rectangles whole border are made defined by the position
+// of a given set of elements.
+message ElementAreaProto {
+  // A rectangle, drawn by one or more elements.
+  //
+  // The rectangle is the smallest rectangle that includes all listed elements.
+  message Rectangle {
+    repeated ElementReferenceProto elements = 1;
+
+    // If true, the width of the rectangle always corresponds to the width of
+    // the screen.
+    optional bool full_width = 2;
+  }
+  repeated Rectangle rectangles = 1;
 }
 
 message AutofillStrings {
