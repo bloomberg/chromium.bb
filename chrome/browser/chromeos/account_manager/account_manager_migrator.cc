@@ -422,11 +422,29 @@ void AccountManagerMigrator::Start() {
   if (!chromeos::switches::IsAccountManagerEnabled())
     return;
 
+  if (ShouldRunMigrations())
+    AddMigrationSteps();
+
+  // Cleanup tasks (like re-enabling Chrome account reconciliation) rely on the
+  // migration being run, even if they were no-op. Check
+  // |OnMigrationRunComplete| and |RunCleanupTasks|.
+  migration_runner_.Run(
+      base::BindOnce(&AccountManagerMigrator::OnMigrationRunComplete,
+                     weak_factory_.GetWeakPtr()));
+}
+
+bool AccountManagerMigrator::ShouldRunMigrations() const {
   // Account migration does not make sense for ephemeral (Guest, Managed
   // Session, Kiosk, Demo etc.) sessions.
   if (user_manager::UserManager::Get()->IsCurrentUserCryptohomeDataEphemeral())
-    return;
+    return false;
 
+  // TODO(https://crbug.com/923947): Check success state from Preferences.
+
+  return true;
+}
+
+void AccountManagerMigrator::AddMigrationSteps() {
   chromeos::AccountManagerFactory* factory =
       g_browser_process->platform_part()->GetAccountManagerFactory();
   chromeos::AccountManager* account_manager =
@@ -459,10 +477,6 @@ void AccountManagerMigrator::Start() {
 
   // TODO(https://crbug.com/923947): Store success state in Preferences.
   // TODO(sinhak): Verify Device Account LST state.
-
-  migration_runner_.Run(
-      base::BindOnce(&AccountManagerMigrator::OnMigrationRunComplete,
-                     weak_factory_.GetWeakPtr()));
 }
 
 AccountMigrationRunner::Status AccountManagerMigrator::GetStatus() const {
@@ -477,6 +491,10 @@ void AccountManagerMigrator::OnMigrationRunComplete(
             migration_runner_.GetStatus());
   // TODO(sinhak): Gather UMA stats.
 
+  RunCleanupTasks();
+}
+
+void AccountManagerMigrator::RunCleanupTasks() {
   // Migration could have finished with a failure but we need to start account
   // reconciliation anyways. This may cause us to lose Chrome content area
   // Secondary Accounts but if we do not enable reconciliation, users will not
