@@ -454,8 +454,7 @@ bool AutofillProfile::EqualsSansOrigin(const AutofillProfile& profile) const {
 bool AutofillProfile::EqualsForSyncPurposes(const AutofillProfile& profile)
     const {
   return use_count() == profile.use_count() &&
-         use_date() == profile.use_date() &&
-         EqualsSansGuid(profile);
+         UseDateEqualsInSeconds(&profile) && EqualsSansGuid(profile);
 }
 
 bool AutofillProfile::EqualsForClientValidationPurpose(
@@ -471,7 +470,7 @@ bool AutofillProfile::EqualsForClientValidationPurpose(
 bool AutofillProfile::EqualsIncludingUsageStatsForTesting(
     const AutofillProfile& profile) const {
   return use_count() == profile.use_count() &&
-         use_date() == profile.use_date() && *this == profile;
+         UseDateEqualsInSeconds(&profile) && *this == profile;
 }
 
 bool AutofillProfile::operator==(const AutofillProfile& profile) const {
@@ -816,7 +815,7 @@ void AutofillProfile::GenerateServerProfileIdentifier() {
 }
 
 void AutofillProfile::RecordAndLogUse() {
-  previous_use_date_ = use_date();
+  set_previous_use_date(use_date());
   UMA_HISTOGRAM_COUNTS_1000("Autofill.DaysSinceLastUse.Profile",
                             (AutofillClock::Now() - use_date()).InDays());
   RecordUse();
