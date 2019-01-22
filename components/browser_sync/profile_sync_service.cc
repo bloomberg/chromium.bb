@@ -1364,7 +1364,6 @@ void ProfileSyncService::OnPreferredDataTypesPrefChange(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!engine_ && !HasDisableReason(DISABLE_REASON_UNRECOVERABLE_ERROR)) {
-    NOTREACHED();
     return;
   }
 
