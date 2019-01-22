@@ -16,8 +16,8 @@ namespace usage_stats {
 const char kNamespace[] = "usage_stats";
 const char kTypePrefix[] = "usage_stats";
 
-const char kKeySeparator = '.';
-const char kSuspensionPrefix[] = "suspension";
+const char kSuspensionPrefix[] = "suspension_";
+const char kTokenMappingPrefix[] = "token_mapping_";
 
 UsageStatsDatabase::UsageStatsDatabase(Profile* profile)
     : weak_ptr_factory_(this) {
@@ -71,7 +71,7 @@ void UsageStatsDatabase::SetSuspensions(base::flat_set<std::string> domains,
 
   for (std::string domain : domains) {
     // Prepend prefix to form key.
-    std::string key = std::string(kSuspensionPrefix) + kKeySeparator + domain;
+    std::string key = kSuspensionPrefix + domain;
 
     keys.emplace_back(key);
 
@@ -88,8 +88,53 @@ void UsageStatsDatabase::SetSuspensions(base::flat_set<std::string> domains,
   proto_db_->UpdateEntriesWithRemoveFilter(
       std::move(entries),
       base::BindRepeating(&DoesNotContainFilter, std::move(key_set)),
-      base::BindOnce(&UsageStatsDatabase::OnUpdateEntriesForSetSuspensions,
+      base::BindOnce(&UsageStatsDatabase::OnUpdateEntries,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void UsageStatsDatabase::GetAllTokenMappings(TokenMappingsCallback callback) {
+  // Load all UsageStats with the token mapping prefix.
+  proto_db_->LoadEntriesWithFilter(
+      leveldb_proto::KeyFilter(), leveldb::ReadOptions(), kTokenMappingPrefix,
+      base::BindOnce(&UsageStatsDatabase::OnLoadEntriesForGetAllTokenMappings,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void UsageStatsDatabase::SetTokenMappings(TokenMap mappings,
+                                          StatusCallback callback) {
+  std::vector<std::string> keys;
+  keys.reserve(mappings.size());
+
+  auto entries = std::make_unique<
+      leveldb_proto::ProtoDatabase<UsageStat>::KeyEntryVector>();
+
+  for (const auto& mapping : mappings) {
+    // Prepend prefix to token to form key.
+    std::string key = kTokenMappingPrefix + mapping.first;
+
+    keys.emplace_back(key);
+
+    UsageStat value;
+    TokenMapping* token_mapping = value.mutable_token_mapping();
+    token_mapping->set_token(mapping.first);
+    token_mapping->set_fqdn(mapping.second);
+
+    entries->emplace_back(key, value);
+  }
+
+  auto key_set = base::flat_set<std::string>(keys);
+
+  // Add all entries created from map, remove all entries not in the map.
+  proto_db_->UpdateEntriesWithRemoveFilter(
+      std::move(entries),
+      base::BindRepeating(&DoesNotContainFilter, std::move(key_set)),
+      base::BindOnce(&UsageStatsDatabase::OnUpdateEntries,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void UsageStatsDatabase::OnUpdateEntries(StatusCallback callback,
+                                         bool success) {
+  std::move(callback).Run(ToError(success));
 }
 
 void UsageStatsDatabase::OnLoadEntriesForGetAllSuspensions(
@@ -108,10 +153,20 @@ void UsageStatsDatabase::OnLoadEntriesForGetAllSuspensions(
   std::move(callback).Run(ToError(success), std::move(results));
 }
 
-void UsageStatsDatabase::OnUpdateEntriesForSetSuspensions(
-    StatusCallback callback,
-    bool success) {
-  std::move(callback).Run(ToError(success));
+void UsageStatsDatabase::OnLoadEntriesForGetAllTokenMappings(
+    TokenMappingsCallback callback,
+    bool success,
+    std::unique_ptr<std::vector<UsageStat>> stats) {
+  TokenMap results;
+
+  if (stats) {
+    for (UsageStat stat : *stats) {
+      TokenMapping mapping = stat.token_mapping();
+      results.emplace(mapping.token(), mapping.fqdn());
+    }
+  }
+
+  std::move(callback).Run(ToError(success), std::move(results));
 }
 
 }  // namespace usage_stats
