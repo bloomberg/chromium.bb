@@ -25,9 +25,9 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/identity/public/cpp/access_token_fetcher.h"
 #include "services/identity/public/cpp/access_token_info.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -63,7 +63,8 @@ struct PermissionRequestCreatorApiary::Request {
   std::string request_type;
   std::string object_ref;
   SuccessCallback callback;
-  std::unique_ptr<identity::AccessTokenFetcher> access_token_fetcher;
+  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+      access_token_fetcher;
   std::string access_token;
   bool access_token_expired;
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader;
@@ -82,10 +83,8 @@ PermissionRequestCreatorApiary::Request::~Request() {}
 
 PermissionRequestCreatorApiary::PermissionRequestCreatorApiary(
     identity::IdentityManager* identity_manager,
-    const std::string& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : identity_manager_(identity_manager),
-      account_id_(account_id),
       url_loader_factory_(std::move(url_loader_factory)),
       retry_on_network_change_(true) {}
 
@@ -95,10 +94,10 @@ PermissionRequestCreatorApiary::~PermissionRequestCreatorApiary() {}
 std::unique_ptr<PermissionRequestCreator>
 PermissionRequestCreatorApiary::CreateWithProfile(Profile* profile) {
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
-  return base::WrapUnique(new PermissionRequestCreatorApiary(
-      identity_manager, identity_manager->GetPrimaryAccountId(),
+  return std::make_unique<PermissionRequestCreatorApiary>(
+      identity_manager,
       content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetURLLoaderFactoryForBrowserProcess()));
+          ->GetURLLoaderFactoryForBrowserProcess());
 }
 
 bool PermissionRequestCreatorApiary::IsEnabled() const {
@@ -163,12 +162,12 @@ void PermissionRequestCreatorApiary::StartFetching(Request* request) {
   // will not be invoked if this object is deleted. Likewise, |request|
   // only comes from |requests_|, which are owned by this object too.
   request->access_token_fetcher =
-      identity_manager_->CreateAccessTokenFetcherForAccount(
-          account_id_, "permissions_creator", scopes,
+      std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+          "permissions_creator", identity_manager_, scopes,
           base::BindOnce(
               &PermissionRequestCreatorApiary::OnAccessTokenFetchComplete,
               base::Unretained(this), request),
-          identity::AccessTokenFetcher::Mode::kImmediate);
+          identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
 }
 
 void PermissionRequestCreatorApiary::OnAccessTokenFetchComplete(
@@ -271,8 +270,9 @@ void PermissionRequestCreatorApiary::OnSimpleLoaderComplete(
     request->access_token_expired = true;
     identity::ScopeSet scopes;
     scopes.insert(GetApiScope());
-    identity_manager_->RemoveAccessTokenFromCache(account_id_, scopes,
-                                                  request->access_token);
+    identity_manager_->RemoveAccessTokenFromCache(
+        identity_manager_->GetPrimaryAccountId(), scopes,
+        request->access_token);
     StartFetching(request);
     return;
   }
