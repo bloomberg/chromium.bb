@@ -38,11 +38,11 @@ class SearchSuggestService : public KeyedService {
     return search_suggest_data_;
   }
 
-  // Clears any currently cached search suggest data.
-  void ClearSearchSuggestData() { search_suggest_data_ = base::nullopt; }
-
-  // Requests an asynchronous refresh from the network. After the update
-  // completes, OnSearchSuggestDataUpdated will be called on the observers.
+  // Determines if a request for search suggestions should be made. If a request
+  // should not be made immediately call SearchSuggestDataLoaded with the
+  // reason. Otherwise requests an asynchronous refresh from the network. After
+  // the update completes, regardless of success, OnSearchSuggestDataUpdated
+  // will be called on the observers.
   void Refresh();
 
   // Add/remove observers. All observers must unregister themselves before the
@@ -82,15 +82,36 @@ class SearchSuggestService : public KeyedService {
   // "task_id1:hash1,hash2,hash3;task_id2;task_id3:hash1,hash2".
   std::string GetBlacklistAsString();
 
+  // Called when suggestions are displayed on the NTP, clears the cached data
+  // and updates timestamps and impression counts.
+  void SuggestionsDisplayed();
+
  private:
   class SigninObserver;
 
   void SigninStatusChanged();
 
+  // Called when a Refresh() is requested. If |status|==OK, |data| will contain
+  // the fetched data. Otherwise |data| will be nullopt and |status| will
+  // indicate if the request failed or the reason it was not sent.
+  //
+  // If the |status|==FATAL_ERROR freeze future requests until the request
+  // freeze interval has elapsed.
   void SearchSuggestDataLoaded(SearchSuggestLoader::Status status,
                                const base::Optional<SearchSuggestData>& data);
 
   void NotifyObservers();
+
+  // Returns true if the number of impressions has reached the maxmium allowed
+  // for the impression interval (e.g. 4 impressions / 12 hours), and false
+  // otherwise.
+  bool ImpressionCapReached();
+
+  // Returns true if requests are frozen and request freeze time interval has
+  // not elapsed, false otherwise.
+  //
+  // Requests are frozen on any request that results in a FATAL_ERROR.
+  bool RequestsFrozen();
 
   std::unique_ptr<SearchSuggestLoader> loader_;
 

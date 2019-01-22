@@ -13,6 +13,34 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
+namespace {
+
+const char kFirstShownTimeMs[] = "first_shown_time_ms";
+const char kImpressionCapExpireTimeMs[] = "impression_cap_expire_time_ms";
+const char kImpressionsCount[] = "impressions_count";
+const char kIsRequestFrozen[] = "is_request_frozen";
+const char kMaxImpressions[] = "max_impressions";
+const char kRequestFreezeTimeMs[] = "request_freeze_time_ms";
+const char kRequestFrozenTimeMs[] = "request_frozen_time_ms";
+
+// Default value for max_impressions specified by the VASCO team.
+const int kDefaultMaxImpressions = 4;
+
+std::unique_ptr<base::DictionaryValue> ImpressionDictDefaults() {
+  std::unique_ptr<base::DictionaryValue> defaults =
+      std::make_unique<base::DictionaryValue>();
+  defaults->SetInteger(kFirstShownTimeMs, 0);
+  defaults->SetInteger(kImpressionCapExpireTimeMs, 0);
+  defaults->SetInteger(kImpressionsCount, 0);
+  defaults->SetBoolean(kIsRequestFrozen, false);
+  defaults->SetInteger(kMaxImpressions, kDefaultMaxImpressions);
+  defaults->SetInteger(kRequestFreezeTimeMs, 0);
+  defaults->SetInteger(kRequestFrozenTimeMs, 0);
+  return defaults;
+}
+
+}  // namespace
+
 class SearchSuggestService::SigninObserver
     : public identity::IdentityManager::Observer {
  public:
@@ -72,6 +100,12 @@ void SearchSuggestService::Refresh() {
   } else if (pref_service_->GetBoolean(prefs::kNtpSearchSuggestionsOptOut)) {
     SearchSuggestDataLoaded(SearchSuggestLoader::Status::OPTED_OUT,
                             base::nullopt);
+  } else if (RequestsFrozen()) {
+    SearchSuggestDataLoaded(SearchSuggestLoader::Status::REQUESTS_FROZEN,
+                            base::nullopt);
+  } else if (ImpressionCapReached()) {
+    SearchSuggestDataLoaded(SearchSuggestLoader::Status::IMPRESSION_CAP,
+                            base::nullopt);
   } else {
     const std::string blacklist = GetBlacklistAsString();
     loader_->Load(blacklist,
@@ -102,10 +136,22 @@ void SearchSuggestService::SearchSuggestDataLoaded(
   // In case of transient errors, keep our cached data (if any), but still
   // notify observers of the finished load (attempt).
   if (status != SearchSuggestLoader::Status::TRANSIENT_ERROR) {
-    // TODO(crbug/904565): Verify that cached data is also cleared when the
-    // impression cap is reached. Including the response from the request made
-    // on the same load that the cap was hit.
     search_suggest_data_ = data;
+
+    DictionaryPrefUpdate update(pref_service_,
+                                prefs::kNtpSearchSuggestionsImpressions);
+
+    if (data.has_value()) {
+      base::DictionaryValue* dict = update.Get();
+      dict->SetInteger(kMaxImpressions, data->max_impressions);
+      dict->SetInteger(kImpressionCapExpireTimeMs,
+                       data->impression_cap_expire_time_ms);
+      dict->SetInteger(kRequestFreezeTimeMs, data->request_freeze_time_ms);
+    } else if (status == SearchSuggestLoader::Status::FATAL_ERROR) {
+      base::DictionaryValue* dict = update.Get();
+      dict->SetBoolean(kIsRequestFrozen, true);
+      dict->SetInteger(kRequestFrozenTimeMs, base::Time::Now().ToTimeT());
+    }
   }
   NotifyObservers();
 }
@@ -114,6 +160,61 @@ void SearchSuggestService::NotifyObservers() {
   for (auto& observer : observers_) {
     observer.OnSearchSuggestDataUpdated();
   }
+}
+
+bool SearchSuggestService::ImpressionCapReached() {
+  const base::DictionaryValue* dict =
+      pref_service_->GetDictionary(prefs::kNtpSearchSuggestionsImpressions);
+
+  int first_shown_time_ms = 0;
+  int impression_cap_expire_time_ms = 0;
+  int impression_count = 0;
+  int max_impressions = 0;
+  dict->GetInteger(kFirstShownTimeMs, &first_shown_time_ms);
+  dict->GetInteger(kImpressionCapExpireTimeMs, &impression_cap_expire_time_ms);
+  dict->GetInteger(kImpressionsCount, &impression_count);
+  dict->GetInteger(kMaxImpressions, &max_impressions);
+
+  int64_t time_delta =
+      base::TimeDelta(base::Time::Now() -
+                      base::Time::FromTimeT(first_shown_time_ms))
+          .InMilliseconds();
+  if (time_delta > impression_cap_expire_time_ms) {
+    impression_count = 0;
+    DictionaryPrefUpdate update(pref_service_,
+                                prefs::kNtpSearchSuggestionsImpressions);
+    update.Get()->SetInteger(kImpressionsCount, impression_count);
+  }
+
+  return impression_count >= max_impressions;
+}
+
+bool SearchSuggestService::RequestsFrozen() {
+  const base::DictionaryValue* dict =
+      pref_service_->GetDictionary(prefs::kNtpSearchSuggestionsImpressions);
+
+  bool is_request_frozen = false;
+  int request_freeze_time_ms = 0;
+  int request_frozen_time_ms = 0;
+  dict->GetBoolean(kIsRequestFrozen, &is_request_frozen);
+  dict->GetInteger(kRequestFrozenTimeMs, &request_frozen_time_ms);
+  dict->GetInteger(kRequestFreezeTimeMs, &request_freeze_time_ms);
+
+  int64_t time_delta =
+      base::TimeDelta(base::Time::Now() -
+                      base::Time::FromTimeT(request_frozen_time_ms))
+          .InMilliseconds();
+  if (is_request_frozen) {
+    if (time_delta < request_freeze_time_ms) {
+      return true;
+    } else {
+      DictionaryPrefUpdate update(pref_service_,
+                                  prefs::kNtpSearchSuggestionsImpressions);
+      update.Get()->SetBoolean(kIsRequestFrozen, false);
+    }
+  }
+
+  return false;
 }
 
 void SearchSuggestService::BlacklistSearchSuggestion(int task_version,
@@ -178,6 +279,23 @@ std::string SearchSuggestService::GetBlacklistAsString() {
   return blacklist_as_string;
 }
 
+void SearchSuggestService::SuggestionsDisplayed() {
+  search_suggest_data_ = base::nullopt;
+
+  DictionaryPrefUpdate update(pref_service_,
+                              prefs::kNtpSearchSuggestionsImpressions);
+  base::DictionaryValue* dict = update.Get();
+
+  int impression_count = 0;
+  dict->GetInteger(kImpressionsCount, &impression_count);
+  dict->SetInteger(kImpressionsCount, impression_count + 1);
+
+  // When suggestions are displayed for the first time record the timestamp.
+  if (impression_count == 0) {
+    dict->SetInteger(kFirstShownTimeMs, base::Time::Now().ToTimeT());
+  }
+}
+
 void SearchSuggestService::OptOutOfSearchSuggestions() {
   pref_service_->SetBoolean(prefs::kNtpSearchSuggestionsOptOut, true);
 
@@ -187,5 +305,7 @@ void SearchSuggestService::OptOutOfSearchSuggestions() {
 // static
 void SearchSuggestService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kNtpSearchSuggestionsBlacklist);
+  registry->RegisterDictionaryPref(prefs::kNtpSearchSuggestionsImpressions,
+                                   ImpressionDictDefaults());
   registry->RegisterBooleanPref(prefs::kNtpSearchSuggestionsOptOut, false);
 }
