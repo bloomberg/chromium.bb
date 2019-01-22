@@ -114,6 +114,9 @@ bool IsArcDataCleanupOnStartRequested();
 // Returns true in case ARC app sync flow is disabled.
 bool IsArcAppSyncFlowDisabled();
 
+// Returns true in case ARC locale sync is disabled.
+bool IsArcLocaleSyncDisabled();
+
 // Returns true in case ARC Play Auto Install flow is disabled.
 bool IsArcPlayAutoInstallDisabled();
 
