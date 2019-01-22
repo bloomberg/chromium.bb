@@ -130,7 +130,7 @@ function open(urls) {
     audioPlayer.rawAppWindow.focus();
     return AUDIO_PLAYER_APP_URL;
   }).catch(function(error) {
-    console.error('Launch failed' + error.stack || error);
+    console.error('Launch failed: ' + (error.stack || error));
     return Promise.reject(error);
   });
 }
