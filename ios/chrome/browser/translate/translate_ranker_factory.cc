@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/translate/translate_ranker_factory.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/translate/core/browser/translate_ranker_impl.h"
@@ -16,7 +16,8 @@ namespace translate {
 
 // static
 TranslateRankerFactory* TranslateRankerFactory::GetInstance() {
-  return base::Singleton<TranslateRankerFactory>::get();
+  static base::NoDestructor<TranslateRankerFactory> instance;
+  return instance.get();
 }
 
 // static
