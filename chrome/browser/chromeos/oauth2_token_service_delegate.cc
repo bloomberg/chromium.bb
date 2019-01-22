@@ -261,14 +261,16 @@ void ChromeOSOAuth2TokenServiceDelegate::OnTokenUpserted(
     return;
   }
 
-  ScopedBatchChange batch(this);
-  FireRefreshTokenAvailable(account_id);
-
+  // Clear any previously cached errors for |account_id|.
   // We cannot directly use |UpdateAuthError| because it does not invoke
   // |FireAuthErrorChanged| if |account_id|'s error state was already
   // |GoogleServiceAuthError::State::NONE|, but |FireAuthErrorChanged| must be
-  // invoked here, regardless. See the comment below.
+  // invoked here, regardless. See the comment above |FireAuthErrorChanged| few
+  // lines down.
   errors_.erase(account_id);
+
+  ScopedBatchChange batch(this);
+  FireRefreshTokenAvailable(account_id);
   // See |OAuth2TokenService::Observer::OnAuthErrorChanged|.
   // |OnAuthErrorChanged| must be always called after
   // |OnRefreshTokenAvailable|, when refresh token is updated.
