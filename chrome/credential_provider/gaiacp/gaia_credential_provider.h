@@ -44,6 +44,8 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
   HRESULT FinalConstruct();
   void FinalRelease();
 
+  static bool IsUsageScenarioSupported(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus);
+
  private:
   HRESULT CreateGaiaCredential();
   HRESULT DestroyCredentials();
