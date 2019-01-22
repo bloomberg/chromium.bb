@@ -111,19 +111,20 @@ void AXInlineTextBox::TextCharacterOffsets(Vector<int>& offsets) const {
   }
 }
 
-void AXInlineTextBox::GetWordBoundaries(Vector<int>& word_starts,
-                                        Vector<int>& word_ends) const {
+void AXInlineTextBox::GetWordBoundaries(Vector<AXRange>& words) const {
   if (!inline_text_box_ ||
       inline_text_box_->GetText().ContainsOnlyWhitespaceOrEmpty())
     return;
 
   Vector<AbstractInlineTextBox::WordBoundaries> boundaries;
   inline_text_box_->GetWordBoundaries(boundaries);
-  word_starts.ReserveCapacity(boundaries.size());
-  word_ends.ReserveCapacity(boundaries.size());
+  words.ReserveCapacity(boundaries.size());
   for (const auto& boundary : boundaries) {
-    word_starts.push_back(boundary.start_index);
-    word_ends.push_back(boundary.end_index);
+    const AXRange range(
+        AXPosition::CreatePositionInTextObject(*this, boundary.start_index),
+        AXPosition::CreatePositionInTextObject(*this, boundary.end_index));
+    if (range.IsValid())
+      words.push_back(range);
   }
 }
 

@@ -1727,8 +1727,7 @@ void AXObject::Markers(Vector<DocumentMarker::MarkerType>&,
 
 void AXObject::TextCharacterOffsets(Vector<int>&) const {}
 
-void AXObject::GetWordBoundaries(Vector<int>& word_starts,
-                                 Vector<int>& word_ends) const {}
+void AXObject::GetWordBoundaries(Vector<AXRange>&) const {}
 
 ax::mojom::DefaultActionVerb AXObject::Action() const {
   Element* action_element = ActionElement();
