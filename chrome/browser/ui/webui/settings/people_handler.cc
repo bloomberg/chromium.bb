@@ -65,8 +65,6 @@
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
 #endif
@@ -209,14 +207,8 @@ PeopleHandler::PeopleHandler(Profile* profile)
     : profile_(profile),
       configuring_sync_(false),
       identity_manager_observer_(this),
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-      sync_service_observer_(this),
-      account_tracker_observer_(this) {
-}
-#else
       sync_service_observer_(this) {
 }
-#endif
 
 PeopleHandler::~PeopleHandler() {
   // Early exit if running unit tests (no actual WebUI is attached).
@@ -301,22 +293,12 @@ void PeopleHandler::OnJavascriptAllowed() {
       ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
   if (sync_service)
     sync_service_observer_.Add(sync_service);
-
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  AccountTrackerService* account_tracker(
-      AccountTrackerServiceFactory::GetForProfile(profile_));
-  if (account_tracker)
-    account_tracker_observer_.Add(account_tracker);
-#endif
 }
 
 void PeopleHandler::OnJavascriptDisallowed() {
   profile_pref_registrar_.RemoveAll();
   identity_manager_observer_.RemoveAll();
   sync_service_observer_.RemoveAll();
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  account_tracker_observer_.RemoveAll();
-#endif
 }
 
 #if !defined(OS_CHROMEOS)
@@ -484,7 +466,7 @@ void PeopleHandler::OnAccountUpdated(const AccountInfo& info) {
   FireWebUIListener("stored-accounts-updated", GetStoredAccountsList());
 }
 
-void PeopleHandler::OnAccountRemoved(const AccountInfo& info) {
+void PeopleHandler::OnAccountRemovedWithInfo(const AccountInfo& info) {
   FireWebUIListener("stored-accounts-updated", GetStoredAccountsList());
 }
 

@@ -24,10 +24,6 @@
 #include "components/sync/driver/sync_service_observer.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-#include "components/signin/core/browser/account_tracker_service.h"
-#endif
-
 class LoginUIService;
 
 namespace content {
@@ -48,9 +44,6 @@ namespace settings {
 class PeopleHandler : public SettingsPageUIHandler,
                       public identity::IdentityManager::Observer,
                       public SyncStartupTracker::Observer,
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-                      public AccountTrackerService::Observer,
-#endif
                       public LoginUIService::LoginUI,
                       public syncer::SyncServiceObserver {
  public:
@@ -136,15 +129,14 @@ class PeopleHandler : public SettingsPageUIHandler,
   void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
       const AccountInfo& previous_primary_account_info) override;
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  void OnAccountUpdated(const AccountInfo& info) override;
+  void OnAccountRemovedWithInfo(const AccountInfo& info) override;
+#endif
 
   // syncer::SyncServiceObserver implementation.
   void OnStateChanged(syncer::SyncService* sync) override;
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  // AccountTrackerService::Observer implementation.
-  void OnAccountUpdated(const AccountInfo& info) override;
-  void OnAccountRemoved(const AccountInfo& info) override;
-#endif
 
   // Returns a newly created dictionary with a number of properties that
   // correspond to the status of sync.
@@ -252,11 +244,6 @@ class PeopleHandler : public SettingsPageUIHandler,
   ScopedObserver<identity::IdentityManager, PeopleHandler>
       identity_manager_observer_;
   ScopedObserver<syncer::SyncService, PeopleHandler> sync_service_observer_;
-
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  ScopedObserver<AccountTrackerService, PeopleHandler>
-      account_tracker_observer_;
-#endif
 
 #if defined(OS_CHROMEOS)
   base::WeakPtrFactory<PeopleHandler> weak_factory_{this};
