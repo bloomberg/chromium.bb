@@ -157,6 +157,7 @@ public class ExploreSitesSection {
         }
 
         ExploreSitesBridge.getEspCatalog(mProfile, (List<ExploreSitesCategory> categoryList) -> {
+            if (categoryList == null) return;
             for (ExploreSitesCategory category : categoryList) {
                 ExploreSitesCategoryTileView v = viewTypes.get(category.getType());
                 if (v == null) {
