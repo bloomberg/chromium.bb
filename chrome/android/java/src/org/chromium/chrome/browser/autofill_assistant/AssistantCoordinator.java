@@ -163,7 +163,7 @@ class AssistantCoordinator
         AssistantOnboardingCoordinator.show(mActivity, mBottomBarCoordinator.getView())
                 .then(accepted -> {
                     if (!accepted) {
-                        mDelegate.stop();
+                        shutdownImmediately();
                         return;
                     }
 
