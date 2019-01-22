@@ -2,37 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_OVERVIEW_WINDOW_SELECTOR_CONTROLLER_H_
-#define ASH_WM_OVERVIEW_WINDOW_SELECTOR_CONTROLLER_H_
+#ifndef ASH_WM_OVERVIEW_OVERVIEW_CONTROLLER_H_
+#define ASH_WM_OVERVIEW_OVERVIEW_CONTROLLER_H_
 
 #include <memory>
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/wm/overview/window_selector.h"
-#include "ash/wm/overview/window_selector_delegate.h"
+#include "ash/wm/overview/overview_delegate.h"
+#include "ash/wm/overview/overview_session.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "ui/aura/window_occlusion_tracker.h"
 
 namespace ash {
-class WindowSelector;
-class WindowSelectorTest;
 
-// Manages a window selector which displays an overview of all windows and
+// Manages a overview session which displays an overview of all windows and
 // allows selecting a window to activate it.
-class ASH_EXPORT WindowSelectorController
-    : public WindowSelectorDelegate,
-      public ::wm::ActivationChangeObserver {
+class ASH_EXPORT OverviewController : public OverviewDelegate,
+                                      public ::wm::ActivationChangeObserver {
  public:
   enum class AnimationCompleteReason {
     kCompleted,
     kCanceled,
   };
 
-  WindowSelectorController();
-  ~WindowSelectorController() override;
+  OverviewController();
+  ~OverviewController() override;
 
   // Returns true if selecting windows in an overview is enabled. This is false
   // at certain times, such as when the lock screen is visible.
@@ -41,8 +38,8 @@ class ASH_EXPORT WindowSelectorController
   // Attempts to toggle overview mode and returns true if successful (showing
   // overview would be unsuccessful if there are no windows to show). Depending
   // on |type| the enter/exit animation will look different.
-  bool ToggleOverview(WindowSelector::EnterExitOverviewType type =
-                          WindowSelector::EnterExitOverviewType::kNormal);
+  bool ToggleOverview(OverviewSession::EnterExitOverviewType type =
+                          OverviewSession::EnterExitOverviewType::kNormal);
 
   // Returns true if window selection mode is active.
   bool IsSelecting() const;
@@ -68,7 +65,7 @@ class ASH_EXPORT WindowSelectorController
   // overview mode is active for testing.
   std::vector<aura::Window*> GetWindowsListInOverviewGridsForTesting();
 
-  // WindowSelectorDelegate:
+  // OverviewDelegate:
   void OnSelectionEnded() override;
   void AddDelayedAnimationObserver(
       std::unique_ptr<DelayedAnimationObserver> animation) override;
@@ -89,7 +86,7 @@ class ASH_EXPORT WindowSelectorController
   void OnAttemptToReactivateWindow(aura::Window* request_active,
                                    aura::Window* actual_active) override;
 
-  WindowSelector* window_selector() { return window_selector_.get(); }
+  OverviewSession* overview_session() { return overview_session_.get(); }
 
   void set_occlusion_pause_duration_for_end_ms_for_test(int duration) {
     occlusion_pause_duration_for_end_ms_ = duration;
@@ -97,10 +94,9 @@ class ASH_EXPORT WindowSelectorController
 
  private:
   class OverviewBlurController;
-  friend class WindowSelectorTest;
+  friend class OverviewSessionTest;
   FRIEND_TEST_ALL_PREFIXES(TabletModeControllerTest,
                            DisplayDisconnectionDuringOverview);
-  FRIEND_TEST_ALL_PREFIXES(WindowSelectorTest, OverviewExitAnimationObserver);
 
   // There is no need to blur or unblur the wallpaper for tests.
   static void SetDoNotChangeWallpaperBlurForTests();
@@ -124,7 +120,7 @@ class ASH_EXPORT WindowSelectorController
   std::unique_ptr<aura::WindowOcclusionTracker::ScopedPause>
       occlusion_tracker_pauser_;
 
-  std::unique_ptr<WindowSelector> window_selector_;
+  std::unique_ptr<OverviewSession> overview_session_;
   base::Time last_selection_time_;
 
   int occlusion_pause_duration_for_end_ms_;
@@ -135,11 +131,11 @@ class ASH_EXPORT WindowSelectorController
 
   base::CancelableOnceClosure reset_pauser_task_;
 
-  base::WeakPtrFactory<WindowSelectorController> weak_ptr_factory_;
+  base::WeakPtrFactory<OverviewController> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowSelectorController);
+  DISALLOW_COPY_AND_ASSIGN(OverviewController);
 };
 
 }  // namespace ash
 
-#endif  // ASH_WM_OVERVIEW_WINDOW_SELECTOR_CONTROLLER_H_
+#endif  // ASH_WM_OVERVIEW_OVERVIEW_CONTROLLER_H_

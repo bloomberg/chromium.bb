@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/overview/window_selector.h"
+#include "ash/wm/overview/overview_session.h"
 
 #include <algorithm>
 #include <functional>
@@ -16,12 +16,12 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_delegate.h"
+#include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
-#include "ash/wm/overview/window_grid.h"
-#include "ash/wm/overview/window_selector_controller.h"
-#include "ash/wm/overview/window_selector_delegate.h"
-#include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/switchable_windows.h"
@@ -132,7 +132,7 @@ gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
 
 }  // namespace
 
-WindowSelector::WindowSelector(WindowSelectorDelegate* delegate)
+OverviewSession::OverviewSession(OverviewDelegate* delegate)
     : delegate_(delegate),
       restore_focus_window_(wm::GetFocusedWindow()),
       overview_start_time_(base::Time::Now()) {
@@ -140,12 +140,12 @@ WindowSelector::WindowSelector(WindowSelectorDelegate* delegate)
   Shell::Get()->AddPreTargetHandler(this);
 }
 
-WindowSelector::~WindowSelector() {
+OverviewSession::~OverviewSession() {
   DCHECK(observed_windows_.empty());
   // Don't delete |window_drag_controller_| yet since the stack might be still
   // using it.
   if (window_drag_controller_) {
-    window_drag_controller_->ResetWindowSelector();
+    window_drag_controller_->ResetOverviewSession();
     base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
         FROM_HERE, window_drag_controller_.release());
   }
@@ -154,10 +154,10 @@ WindowSelector::~WindowSelector() {
 // NOTE: The work done in Init() is not done in the constructor because it may
 // cause other, unrelated classes, to make indirect method calls on a partially
 // constructed object.
-void WindowSelector::Init(const WindowList& windows,
-                          const WindowList& hide_windows) {
+void OverviewSession::Init(const WindowList& windows,
+                           const WindowList& hide_windows) {
   hide_overview_windows_ =
-      std::make_unique<ScopedHideOverviewWindows>(std::move(hide_windows));
+      std::make_unique<ScopedOverviewHideWindows>(std::move(hide_windows));
   if (restore_focus_window_)
     restore_focus_window_->AddObserver(this);
 
@@ -185,41 +185,42 @@ void WindowSelector::Init(const WindowList& windows,
       observed_windows_.insert(container);
     }
 
-    auto grid = std::make_unique<WindowGrid>(
+    auto grid = std::make_unique<OverviewGrid>(
         root, windows, this,
         GetGridBoundsInScreen(root, /*divider_changed=*/false));
     num_items_ += grid->size();
     grid_list_.push_back(std::move(grid));
   }
 
-  // The calls to WindowGrid::PrepareForOverview() requires some LayoutManagers
-  // to perform layouts so that windows are correctly visible and properly
-  // animated in overview mode. Otherwise these layouts should be suppressed
-  // during overview mode so they don't conflict with overview mode animations.
+  // The calls to OverviewGrid::PrepareForOverview() requires some
+  // LayoutManagers to perform layouts so that windows are correctly visible and
+  // properly animated in overview mode. Otherwise these layouts should be
+  // suppressed during overview mode so they don't conflict with overview mode
+  // animations.
 
   // Do not call PrepareForOverview until all items are added to window_list_
   // as we don't want to cause any window updates until all windows in
   // overview are observed. See http://crbug.com/384495.
-  for (std::unique_ptr<WindowGrid>& window_grid : grid_list_) {
-    window_grid->PrepareForOverview();
+  for (std::unique_ptr<OverviewGrid>& overview_grid : grid_list_) {
+    overview_grid->PrepareForOverview();
 
     // Do not animate if there is any window that is being dragged in the
     // grid.
     if (enter_exit_overview_type_ == EnterExitOverviewType::kWindowDragged) {
-      window_grid->PositionWindows(/*animate=*/false);
+      overview_grid->PositionWindows(/*animate=*/false);
     } else if (enter_exit_overview_type_ ==
                EnterExitOverviewType::kWindowsMinimized) {
-      window_grid->PositionWindows(/*animate=*/false);
-      window_grid->SlideWindowsIn();
+      overview_grid->PositionWindows(/*animate=*/false);
+      overview_grid->SlideWindowsIn();
     } else {
       // EnterExitOverviewType::kSwipeFromShelf is an exit only type, so it
       // should not appear here.
       DCHECK_NE(enter_exit_overview_type_,
                 EnterExitOverviewType::kSwipeFromShelf);
-      window_grid->CalculateWindowListAnimationStates(
+      overview_grid->CalculateWindowListAnimationStates(
           /*selected_item=*/nullptr, OverviewTransition::kEnter);
-      window_grid->PositionWindows(/*animate=*/true, /*ignore_item=*/nullptr,
-                                   OverviewTransition::kEnter);
+      overview_grid->PositionWindows(/*animate=*/true, /*ignore_item=*/nullptr,
+                                     OverviewTransition::kEnter);
     }
   }
 
@@ -256,7 +257,7 @@ void WindowSelector::Init(const WindowList& windows,
 // NOTE: The work done in Shutdown() is not done in the destructor because it
 // may cause other, unrelated classes, to make indirect calls to
 // restoring_minimized_windows() on a partially destructed object.
-void WindowSelector::Shutdown() {
+void OverviewSession::Shutdown() {
   Shell::Get()->RemovePreTargetHandler(this);
 
   // Stop observing screen metrics changes first to avoid auto-positioning
@@ -269,19 +270,20 @@ void WindowSelector::Shutdown() {
   Shell::Get()->split_view_controller()->RemoveObserver(this);
 
   size_t remaining_items = 0;
-  for (std::unique_ptr<WindowGrid>& window_grid : grid_list_) {
+  for (std::unique_ptr<OverviewGrid>& overview_grid : grid_list_) {
     // During shutdown, do not animate all windows in overview if we need to
     // animate the snapped window.
-    if (window_grid->should_animate_when_exiting()) {
-      window_grid->CalculateWindowListAnimationStates(
-          selected_item_ && selected_item_->window_grid() == window_grid.get()
+    if (overview_grid->should_animate_when_exiting()) {
+      overview_grid->CalculateWindowListAnimationStates(
+          selected_item_ &&
+                  selected_item_->overview_grid() == overview_grid.get()
               ? selected_item_
               : nullptr,
           OverviewTransition::kExit);
     }
-    for (const auto& window_selector_item : window_grid->window_list())
-      window_selector_item->RestoreWindow(/*reset_transform=*/true);
-    remaining_items += window_grid->size();
+    for (const auto& overview_item : overview_grid->window_list())
+      overview_item->RestoreWindow(/*reset_transform=*/true);
+    remaining_items += overview_grid->size();
   }
 
   // Setting focus after restoring windows' state avoids unnecessary animations.
@@ -291,8 +293,8 @@ void WindowSelector::Shutdown() {
                           EnterExitOverviewType::kNormal);
   RemoveAllObservers();
 
-  for (std::unique_ptr<WindowGrid>& window_grid : grid_list_)
-    window_grid->Shutdown();
+  for (std::unique_ptr<OverviewGrid>& overview_grid : grid_list_)
+    overview_grid->Shutdown();
 
   DCHECK(num_items_ >= remaining_items);
   UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.OverviewClosedItems",
@@ -300,17 +302,16 @@ void WindowSelector::Shutdown() {
   UMA_HISTOGRAM_MEDIUM_TIMES("Ash.WindowSelector.TimeInOverview",
                              base::Time::Now() - overview_start_time_);
 
-
   // Clearing the window list resets the ignored_by_shelf flag on the windows.
   grid_list_.clear();
   UpdateShelfVisibility();
 }
 
-void WindowSelector::CancelSelection() {
+void OverviewSession::CancelSelection() {
   delegate_->OnSelectionEnded();
 }
 
-void WindowSelector::OnGridEmpty(WindowGrid* grid) {
+void OverviewSession::OnGridEmpty(OverviewGrid* grid) {
   size_t index = 0;
   // If there are no longer any items on any of the grids, shutdown,
   // otherwise the empty grids will remain blurred but will have no items.
@@ -348,21 +349,20 @@ void WindowSelector::OnGridEmpty(WindowGrid* grid) {
     PositionWindows(/*animate=*/false);
 }
 
-void WindowSelector::IncrementSelection(int increment) {
-  const Direction direction =
-      increment > 0 ? WindowSelector::RIGHT : WindowSelector::LEFT;
+void OverviewSession::IncrementSelection(int increment) {
+  const Direction direction = increment > 0 ? RIGHT : LEFT;
   for (int step = 0; step < abs(increment); ++step)
     Move(direction, true);
 }
 
-bool WindowSelector::AcceptSelection() {
+bool OverviewSession::AcceptSelection() {
   if (!grid_list_[selected_grid_index_]->is_selecting())
     return false;
   SelectWindow(grid_list_[selected_grid_index_]->SelectedWindow());
   return true;
 }
 
-void WindowSelector::SelectWindow(WindowSelectorItem* item) {
+void OverviewSession::SelectWindow(OverviewItem* item) {
   aura::Window* window = item->GetWindow();
   aura::Window::Windows window_list =
       Shell::Get()->mru_window_tracker()->BuildMruWindowList();
@@ -387,14 +387,14 @@ void WindowSelector::SelectWindow(WindowSelectorItem* item) {
   ::wm::ActivateWindow(window);
 }
 
-void WindowSelector::SetBoundsForWindowGridsInScreenIgnoringWindow(
+void OverviewSession::SetBoundsForOverviewGridsInScreenIgnoringWindow(
     const gfx::Rect& bounds,
-    WindowSelectorItem* ignored_item) {
-  for (std::unique_ptr<WindowGrid>& grid : grid_list_)
+    OverviewItem* ignored_item) {
+  for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
     grid->SetBoundsAndUpdatePositionsIgnoringWindow(bounds, ignored_item);
 }
 
-void WindowSelector::SetSplitViewDragIndicatorsIndicatorState(
+void OverviewSession::SetSplitViewDragIndicatorsIndicatorState(
     IndicatorState indicator_state,
     const gfx::Point& event_location) {
   DCHECK(split_view_drag_indicators_);
@@ -402,8 +402,9 @@ void WindowSelector::SetSplitViewDragIndicatorsIndicatorState(
                                                  event_location);
 }
 
-WindowGrid* WindowSelector::GetGridWithRootWindow(aura::Window* root_window) {
-  for (std::unique_ptr<WindowGrid>& grid : grid_list_) {
+OverviewGrid* OverviewSession::GetGridWithRootWindow(
+    aura::Window* root_window) {
+  for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
     if (grid->root_window() == root_window)
       return grid.get();
   }
@@ -411,12 +412,12 @@ WindowGrid* WindowSelector::GetGridWithRootWindow(aura::Window* root_window) {
   return nullptr;
 }
 
-void WindowSelector::AddItem(aura::Window* window,
-                             bool reposition,
-                             bool animate) {
+void OverviewSession::AddItem(aura::Window* window,
+                              bool reposition,
+                              bool animate) {
   // Early exit if a grid already contains |window|.
-  WindowGrid* grid = GetGridWithRootWindow(window->GetRootWindow());
-  if (!grid || grid->GetWindowSelectorItemContaining(window))
+  OverviewGrid* grid = GetGridWithRootWindow(window->GetRootWindow());
+  if (!grid || grid->GetOverviewItemContaining(window))
     return;
 
   grid->AddItem(window, reposition, animate);
@@ -428,8 +429,7 @@ void WindowSelector::AddItem(aura::Window* window,
   ::wm::ActivateWindow(GetOverviewFocusWindow());
 }
 
-void WindowSelector::RemoveWindowSelectorItem(WindowSelectorItem* item,
-                                              bool reposition) {
+void OverviewSession::RemoveOverviewItem(OverviewItem* item, bool reposition) {
   if (item->GetWindow()->HasObserver(this)) {
     item->GetWindow()->RemoveObserver(this);
     observed_windows_.erase(item->GetWindow());
@@ -438,8 +438,8 @@ void WindowSelector::RemoveWindowSelectorItem(WindowSelectorItem* item,
   }
 
   // Remove |item| from the corresponding grid.
-  for (std::unique_ptr<WindowGrid>& grid : grid_list_) {
-    if (grid->GetWindowSelectorItemContaining(item->GetWindow())) {
+  for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
+    if (grid->GetOverviewItemContaining(item->GetWindow())) {
       grid->RemoveItem(item, reposition);
       --num_items_;
       break;
@@ -447,83 +447,84 @@ void WindowSelector::RemoveWindowSelectorItem(WindowSelectorItem* item,
   }
 }
 
-void WindowSelector::InitiateDrag(WindowSelectorItem* item,
-                                  const gfx::Point& location_in_screen) {
+void OverviewSession::InitiateDrag(OverviewItem* item,
+                                   const gfx::Point& location_in_screen) {
   window_drag_controller_ =
       std::make_unique<OverviewWindowDragController>(this);
   window_drag_controller_->InitiateDrag(item, location_in_screen);
 
-  for (std::unique_ptr<WindowGrid>& grid : grid_list_)
+  for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
     grid->OnSelectorItemDragStarted(item);
 }
 
-void WindowSelector::Drag(WindowSelectorItem* item,
-                          const gfx::Point& location_in_screen) {
+void OverviewSession::Drag(OverviewItem* item,
+                           const gfx::Point& location_in_screen) {
   DCHECK(window_drag_controller_);
   DCHECK_EQ(item, window_drag_controller_->item());
   window_drag_controller_->Drag(location_in_screen);
 }
 
-void WindowSelector::CompleteDrag(WindowSelectorItem* item,
-                                  const gfx::Point& location_in_screen) {
+void OverviewSession::CompleteDrag(OverviewItem* item,
+                                   const gfx::Point& location_in_screen) {
   DCHECK(window_drag_controller_);
   DCHECK_EQ(item, window_drag_controller_->item());
   window_drag_controller_->CompleteDrag(location_in_screen);
 
-  for (std::unique_ptr<WindowGrid>& grid : grid_list_)
+  for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
     grid->OnSelectorItemDragEnded();
 }
 
-void WindowSelector::StartSplitViewDragMode(
+void OverviewSession::StartSplitViewDragMode(
     const gfx::Point& location_in_screen) {
   window_drag_controller_->StartSplitViewDragMode(location_in_screen);
 }
 
-void WindowSelector::Fling(WindowSelectorItem* item,
-                           const gfx::Point& location_in_screen,
-                           float velocity_x,
-                           float velocity_y) {
+void OverviewSession::Fling(OverviewItem* item,
+                            const gfx::Point& location_in_screen,
+                            float velocity_x,
+                            float velocity_y) {
   // Its possible a fling event is not paired with a tap down event. Ignore
   // these flings.
   if (!window_drag_controller_ || item != window_drag_controller_->item())
     return;
 
   window_drag_controller_->Fling(location_in_screen, velocity_x, velocity_y);
-  for (std::unique_ptr<WindowGrid>& grid : grid_list_)
+  for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
     grid->OnSelectorItemDragEnded();
 }
 
-void WindowSelector::ActivateDraggedWindow() {
+void OverviewSession::ActivateDraggedWindow() {
   window_drag_controller_->ActivateDraggedWindow();
 }
 
-void WindowSelector::ResetDraggedWindowGesture() {
+void OverviewSession::ResetDraggedWindowGesture() {
   window_drag_controller_->ResetGesture();
 }
 
-void WindowSelector::OnWindowDragStarted(aura::Window* dragged_window,
-                                         bool animate) {
-  WindowGrid* target_grid =
+void OverviewSession::OnWindowDragStarted(aura::Window* dragged_window,
+                                          bool animate) {
+  OverviewGrid* target_grid =
       GetGridWithRootWindow(dragged_window->GetRootWindow());
   if (!target_grid)
     return;
   target_grid->OnWindowDragStarted(dragged_window, animate);
 }
 
-void WindowSelector::OnWindowDragContinued(aura::Window* dragged_window,
-                                           const gfx::Point& location_in_screen,
-                                           IndicatorState indicator_state) {
-  WindowGrid* target_grid =
+void OverviewSession::OnWindowDragContinued(
+    aura::Window* dragged_window,
+    const gfx::Point& location_in_screen,
+    IndicatorState indicator_state) {
+  OverviewGrid* target_grid =
       GetGridWithRootWindow(dragged_window->GetRootWindow());
   if (!target_grid)
     return;
   target_grid->OnWindowDragContinued(dragged_window, location_in_screen,
                                      indicator_state);
 }
-void WindowSelector::OnWindowDragEnded(aura::Window* dragged_window,
-                                       const gfx::Point& location_in_screen,
-                                       bool should_drop_window_into_overview) {
-  WindowGrid* target_grid =
+void OverviewSession::OnWindowDragEnded(aura::Window* dragged_window,
+                                        const gfx::Point& location_in_screen,
+                                        bool should_drop_window_into_overview) {
+  OverviewGrid* target_grid =
       GetGridWithRootWindow(dragged_window->GetRootWindow());
   if (!target_grid)
     return;
@@ -531,15 +532,15 @@ void WindowSelector::OnWindowDragEnded(aura::Window* dragged_window,
                                  should_drop_window_into_overview);
 }
 
-void WindowSelector::PositionWindows(bool animate,
-                                     WindowSelectorItem* ignored_item) {
-  for (std::unique_ptr<WindowGrid>& grid : grid_list_)
+void OverviewSession::PositionWindows(bool animate,
+                                      OverviewItem* ignored_item) {
+  for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
     grid->PositionWindows(animate, ignored_item);
 }
 
-bool WindowSelector::ShouldAnimateWallpaper(aura::Window* root_window) {
+bool OverviewSession::ShouldAnimateWallpaper(aura::Window* root_window) {
   // Find the grid associated with |root_window|.
-  WindowGrid* grid = GetGridWithRootWindow(root_window);
+  OverviewGrid* grid = GetGridWithRootWindow(root_window);
   if (!grid)
     return false;
 
@@ -552,42 +553,42 @@ bool WindowSelector::ShouldAnimateWallpaper(aura::Window* root_window) {
   return true;
 }
 
-bool WindowSelector::IsWindowInOverview(const aura::Window* window) {
-  for (const std::unique_ptr<WindowGrid>& grid : grid_list_) {
-    if (grid->GetWindowSelectorItemContaining(window))
+bool OverviewSession::IsWindowInOverview(const aura::Window* window) {
+  for (const std::unique_ptr<OverviewGrid>& grid : grid_list_) {
+    if (grid->GetOverviewItemContaining(window))
       return true;
   }
   return false;
 }
 
-void WindowSelector::SetWindowListNotAnimatedWhenExiting(
+void OverviewSession::SetWindowListNotAnimatedWhenExiting(
     aura::Window* root_window) {
   // Find the grid accociated with |root_window|.
-  WindowGrid* grid = GetGridWithRootWindow(root_window);
+  OverviewGrid* grid = GetGridWithRootWindow(root_window);
   if (grid)
     grid->SetWindowListNotAnimatedWhenExiting();
 }
 
-void WindowSelector::UpdateGridAtLocationYPositionAndOpacity(
+void OverviewSession::UpdateGridAtLocationYPositionAndOpacity(
     int64_t display_id,
     int new_y,
     float opacity,
     const gfx::Rect& work_area,
     UpdateAnimationSettingsCallback callback) {
-  WindowGrid* grid = GetGridWithRootWindow(
+  OverviewGrid* grid = GetGridWithRootWindow(
       ash::Shell::Get()->GetRootWindowForDisplayId(display_id));
   if (grid)
     grid->UpdateYPositionAndOpacity(new_y, opacity, work_area, callback);
 }
 
-void WindowSelector::UpdateMaskAndShadow(bool show) {
+void OverviewSession::UpdateMaskAndShadow(bool show) {
   for (auto& grid : grid_list_) {
     for (auto& window : grid->window_list())
       window->UpdateMaskAndShadow(show);
   }
 }
 
-void WindowSelector::OnStartingAnimationComplete(bool canceled) {
+void OverviewSession::OnStartingAnimationComplete(bool canceled) {
   if (!canceled) {
     UpdateMaskAndShadow(!canceled);
     if (overview_focus_widget_)
@@ -599,7 +600,7 @@ void WindowSelector::OnStartingAnimationComplete(bool canceled) {
   }
 }
 
-bool WindowSelector::IsWindowGridAnimating() {
+bool OverviewSession::IsOverviewGridAnimating() {
   for (auto& grid : grid_list_) {
     if (grid->shield_widget()
             ->GetNativeWindow()
@@ -612,7 +613,7 @@ bool WindowSelector::IsWindowGridAnimating() {
   return false;
 }
 
-void WindowSelector::OnWindowActivating(
+void OverviewSession::OnWindowActivating(
     ::wm::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
     aura::Window* lost_active) {
@@ -640,7 +641,7 @@ void WindowSelector::OnWindowActivating(
   const auto& windows = grid->window_list();
   auto iter = std::find_if(
       windows.begin(), windows.end(),
-      [gained_active](const std::unique_ptr<WindowSelectorItem>& window) {
+      [gained_active](const std::unique_ptr<OverviewItem>& window) {
         return window->Contains(gained_active);
       });
 
@@ -649,20 +650,20 @@ void WindowSelector::OnWindowActivating(
   CancelSelection();
 }
 
-aura::Window* WindowSelector::GetOverviewFocusWindow() {
+aura::Window* OverviewSession::GetOverviewFocusWindow() {
   if (overview_focus_widget_)
     return overview_focus_widget_->GetNativeWindow();
 
   return nullptr;
 }
 
-void WindowSelector::OnDisplayRemoved(const display::Display& display) {
+void OverviewSession::OnDisplayRemoved(const display::Display& display) {
   // TODO(flackr): Keep window selection active on remaining displays.
   CancelSelection();
 }
 
-void WindowSelector::OnDisplayMetricsChanged(const display::Display& display,
-                                             uint32_t metrics) {
+void OverviewSession::OnDisplayMetricsChanged(const display::Display& display,
+                                              uint32_t metrics) {
   // For metrics changes that happen when the split view mode is active, the
   // display bounds will be adjusted in OnSplitViewDividerPositionChanged().
   if (Shell::Get()->IsSplitViewModeActive())
@@ -670,7 +671,7 @@ void WindowSelector::OnDisplayMetricsChanged(const display::Display& display,
   OnDisplayBoundsChanged();
 }
 
-void WindowSelector::OnWindowHierarchyChanged(
+void OverviewSession::OnWindowHierarchyChanged(
     const HierarchyChangeParams& params) {
   // Only care about newly added children of |observed_windows_|.
   if (!observed_windows_.count(params.receiver) ||
@@ -704,14 +705,14 @@ void WindowSelector::OnWindowHierarchyChanged(
   }
 }
 
-void WindowSelector::OnWindowDestroying(aura::Window* window) {
+void OverviewSession::OnWindowDestroying(aura::Window* window) {
   window->RemoveObserver(this);
   observed_windows_.erase(window);
   if (window == restore_focus_window_)
     restore_focus_window_ = nullptr;
 }
 
-void WindowSelector::OnKeyEvent(ui::KeyEvent* event) {
+void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
   if (event->type() != ui::ET_KEY_PRESSED)
     return;
 
@@ -723,24 +724,24 @@ void WindowSelector::OnKeyEvent(ui::KeyEvent* event) {
       break;
     case ui::VKEY_UP:
       num_key_presses_++;
-      Move(WindowSelector::UP, true);
+      Move(UP, true);
       break;
     case ui::VKEY_DOWN:
       num_key_presses_++;
-      Move(WindowSelector::DOWN, true);
+      Move(DOWN, true);
       break;
     case ui::VKEY_RIGHT:
     case ui::VKEY_TAB:
       if (event->key_code() == ui::VKEY_RIGHT ||
           !(event->flags() & ui::EF_SHIFT_DOWN)) {
         num_key_presses_++;
-        Move(WindowSelector::RIGHT, true);
+        Move(RIGHT, true);
         break;
       }
       FALLTHROUGH;
     case ui::VKEY_LEFT:
       num_key_presses_++;
-      Move(WindowSelector::LEFT, true);
+      Move(LEFT, true);
       break;
     case ui::VKEY_W:
       if (!(event->flags() & ui::EF_CONTROL_DOWN) ||
@@ -772,7 +773,7 @@ void WindowSelector::OnKeyEvent(ui::KeyEvent* event) {
   event->StopPropagation();
 }
 
-void WindowSelector::OnSplitViewStateChanged(
+void OverviewSession::OnSplitViewStateChanged(
     SplitViewController::State previous_state,
     SplitViewController::State state) {
   const bool unsnappable_window_activated =
@@ -800,10 +801,10 @@ void WindowSelector::OnSplitViewStateChanged(
   }
 }
 
-void WindowSelector::OnSplitViewDividerPositionChanged() {
+void OverviewSession::OnSplitViewDividerPositionChanged() {
   DCHECK(Shell::Get()->IsSplitViewModeActive());
   // Re-calculate the bounds for the window grids and position all the windows.
-  for (std::unique_ptr<WindowGrid>& grid : grid_list_) {
+  for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
     grid->SetBoundsAndUpdatePositions(
         GetGridBoundsInScreen(const_cast<aura::Window*>(grid->root_window()),
                               /*divider_changed=*/true));
@@ -811,7 +812,7 @@ void WindowSelector::OnSplitViewDividerPositionChanged() {
   PositionWindows(/*animate=*/false);
 }
 
-void WindowSelector::ResetFocusRestoreWindow(bool focus) {
+void OverviewSession::ResetFocusRestoreWindow(bool focus) {
   if (!restore_focus_window_)
     return;
 
@@ -830,7 +831,7 @@ void WindowSelector::ResetFocusRestoreWindow(bool focus) {
   restore_focus_window_ = nullptr;
 }
 
-void WindowSelector::Move(Direction direction, bool animate) {
+void OverviewSession::Move(Direction direction, bool animate) {
   // Direction to move if moving past the end of a display.
   int display_direction = (direction == RIGHT || direction == DOWN) ? 1 : -1;
 
@@ -852,7 +853,7 @@ void WindowSelector::Move(Direction direction, bool animate) {
   }
 }
 
-void WindowSelector::RemoveAllObservers() {
+void OverviewSession::RemoveAllObservers() {
   for (auto* window : observed_windows_)
     window->RemoveObserver(this);
   observed_windows_.clear();
@@ -862,9 +863,9 @@ void WindowSelector::RemoveAllObservers() {
     restore_focus_window_->RemoveObserver(this);
 }
 
-void WindowSelector::OnDisplayBoundsChanged() {
+void OverviewSession::OnDisplayBoundsChanged() {
   // Re-calculate the bounds for the window grids and position all the windows.
-  for (std::unique_ptr<WindowGrid>& grid : grid_list_) {
+  for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
     grid->SetBoundsAndUpdatePositions(
         GetGridBoundsInScreen(const_cast<aura::Window*>(grid->root_window()),
                               /*divider_changed=*/false));
@@ -874,7 +875,7 @@ void WindowSelector::OnDisplayBoundsChanged() {
     split_view_drag_indicators_->OnDisplayBoundsChanged();
 }
 
-bool WindowSelector::IsEmpty() {
+bool OverviewSession::IsEmpty() {
   for (const auto& grid : grid_list_) {
     if (!grid->empty())
       return false;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_OVERVIEW_SCOPED_TRANSFORM_OVERVIEW_WINDOW_H_
-#define ASH_WM_OVERVIEW_SCOPED_TRANSFORM_OVERVIEW_WINDOW_H_
+#ifndef ASH_WM_OVERVIEW_SCOPED_OVERVIEW_TRANSFORM_WINDOW_H_
+#define ASH_WM_OVERVIEW_SCOPED_OVERVIEW_TRANSFORM_WINDOW_H_
 
 #include <memory>
 #include <vector>
@@ -21,7 +21,7 @@
 namespace aura {
 class Window;
 class WindowTargeter;
-}
+}  // namespace aura
 
 namespace gfx {
 class Rect;
@@ -38,13 +38,13 @@ class Widget;
 namespace ash {
 
 class ScopedOverviewAnimationSettings;
-class WindowSelectorItem;
+class OverviewItem;
 
 // Manages a window, and its transient children, in the overview mode. This
 // class allows transforming the windows with a helper to determine the best
 // fit in certain bounds. The window's state is restored when this object is
 // destroyed.
-class ASH_EXPORT ScopedTransformOverviewWindow
+class ASH_EXPORT ScopedOverviewTransformWindow
     : public ui::ImplicitAnimationObserver {
  public:
   // Overview windows have certain properties if their aspect ratio exceedes a
@@ -75,9 +75,9 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   static gfx::Transform GetTransformForRect(const gfx::Rect& src_rect,
                                             const gfx::Rect& dst_rect);
 
-  ScopedTransformOverviewWindow(WindowSelectorItem* selector_item,
+  ScopedOverviewTransformWindow(OverviewItem* selector_item,
                                 aura::Window* window);
-  ~ScopedTransformOverviewWindow() override;
+  ~ScopedOverviewTransformWindow() override;
 
   // Starts an animation sequence which will use animation settings specified by
   // |animation_type|. The |animation_settings| container is populated with
@@ -85,8 +85,8 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   // animation sequence.
   //
   // Example:
-  //  ScopedTransformOverviewWindow overview_window(window);
-  //  ScopedTransformOverviewWindow::ScopedAnimationSettings animation_settings;
+  //  ScopedOverviewTransformWindow overview_window(window);
+  //  ScopedOverviewTransformWindow::ScopedAnimationSettings animation_settings;
   //  overview_window.BeginScopedAnimation(
   //      OVERVIEW_ANIMATION_SELECTOR_ITEM_SCROLL_CANCEL,
   //      &animation_settings);
@@ -111,10 +111,10 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   // Restores and animates the managed window to its non overview mode state.
   // If |reset_transform| equals false, the window's transform will not be reset
   // to identity transform when exiting the overview mode. See
-  // WindowSelectorItem::RestoreWindow() for details why we need this.
+  // OverviewItem::RestoreWindow() for details why we need this.
   void RestoreWindow(bool reset_transform, bool use_slide_animation);
 
-  // Informs the ScopedTransformOverviewWindow that the window being watched was
+  // Informs the ScopedOverviewTransformWindow that the window being watched was
   // destroyed. This resets the internal window pointer.
   void OnWindowDestroyed();
 
@@ -131,7 +131,7 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   // aspect ratio). Takes into account a window header that is |top_view_inset|
   // tall in the original window getting replaced by a window caption that is
   // |title_height| tall in the transformed window. If |type_| is not normal,
-  // write |window_selector_bounds_|, which would differ than the return bounds.
+  // write |overview_bounds_|, which would differ than the return bounds.
   gfx::Rect ShrinkRectToFitPreservingAspectRatio(const gfx::Rect& rect,
                                                  const gfx::Rect& bounds,
                                                  int top_view_inset,
@@ -141,9 +141,7 @@ class ASH_EXPORT ScopedTransformOverviewWindow
 
   GridWindowFillMode type() const { return type_; }
 
-  base::Optional<gfx::Rect> window_selector_bounds() const {
-    return window_selector_bounds_;
-  }
+  base::Optional<gfx::Rect> overview_bounds() const { return overview_bounds_; }
 
   // Closes the transient root of the window managed by |this|.
   void Close();
@@ -159,8 +157,8 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   // does not exist.
   aura::Window* GetOverviewWindowForMinimizedState() const;
 
-  // Called via WindowSelectorItem from WindowGrid when |window_|'s bounds
-  // change. Must be called before PositionWindows in WindowGrid.
+  // Called via OverviewItem from OverviewGrid when |window_|'s bounds
+  // change. Must be called before PositionWindows in OverviewGrid.
   void UpdateWindowDimensionsType();
 
   // Updates the mask which gives rounded corners on the windows. Shows the mask
@@ -185,10 +183,10 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   gfx::Rect GetMaskBoundsForTesting() const;
 
  private:
-  friend class WindowSelectorTest;
+  friend class OverviewSessionTest;
   class LayerCachingAndFilteringObserver;
   class WindowMask;
-  FRIEND_TEST_ALL_PREFIXES(ScopedTransformOverviewWindowTest,
+  FRIEND_TEST_ALL_PREFIXES(ScopedOverviewTransformWindowTest,
                            WindowBoundsChangeTest);
 
   // Closes the window managed by |this|.
@@ -200,7 +198,7 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   static void SetImmediateCloseForTests();
 
   // A weak pointer to the window selector item that owns the transform window.
-  WindowSelectorItem* selector_item_;
+  OverviewItem* selector_item_;
 
   // A weak pointer to the real window in the overview.
   aura::Window* window_;
@@ -219,7 +217,7 @@ class ASH_EXPORT ScopedTransformOverviewWindow
 
   // Empty if window is of type normal. Contains the bounds the window selector
   // item should be if the window is too wide or too tall.
-  base::Optional<gfx::Rect> window_selector_bounds_;
+  base::Optional<gfx::Rect> overview_bounds_;
 
   // A widget that holds the content for the minimized window.
   std::unique_ptr<views::Widget> minimized_widget_;
@@ -242,15 +240,15 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   // prevent events from reaching |window_|.
   // TODO(sammiequon): Investigate if we can use a custom event targeter on
   // windows for overview mode and remove the need for the extra widget which
-  // blocks events in WindowSelectorItem.
+  // blocks events in OverviewItem.
   std::unique_ptr<aura::WindowTargeter> original_targeter_;
   aura::WindowTargeter* null_targeter_ = nullptr;
 
-  base::WeakPtrFactory<ScopedTransformOverviewWindow> weak_ptr_factory_;
+  base::WeakPtrFactory<ScopedOverviewTransformWindow> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedTransformOverviewWindow);
+  DISALLOW_COPY_AND_ASSIGN(ScopedOverviewTransformWindow);
 };
 
 }  // namespace ash
 
-#endif  // ASH_WM_OVERVIEW_SCOPED_TRANSFORM_OVERVIEW_WINDOW_H_
+#endif  // ASH_WM_OVERVIEW_SCOPED_OVERVIEW_TRANSFORM_WINDOW_H_

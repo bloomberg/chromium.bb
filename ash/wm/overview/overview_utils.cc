@@ -12,9 +12,9 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/start_animation_observer.h"
-#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_state.h"
@@ -142,7 +142,7 @@ void FadeInWidgetAndMaybeSlideOnEnter(views::Widget* widget,
 
     auto start_observer = std::make_unique<StartAnimationObserver>();
     scoped_overview_animation_settings.AddObserver(start_observer.get());
-    Shell::Get()->window_selector_controller()->AddStartAnimationObserver(
+    Shell::Get()->overview_controller()->AddStartAnimationObserver(
         std::move(start_observer));
   }
 }
@@ -151,8 +151,7 @@ void FadeOutWidgetAndMaybeSlideOnExit(std::unique_ptr<views::Widget> widget,
                                       OverviewAnimationType animation_type,
                                       bool slide) {
   // The window selector controller may be nullptr on shutdown.
-  WindowSelectorController* controller =
-      Shell::Get()->window_selector_controller();
+  OverviewController* controller = Shell::Get()->overview_controller();
   if (!controller) {
     widget->SetOpacity(0.f);
     return;
@@ -291,7 +290,7 @@ void SetTransform(aura::Window* window, const gfx::Transform& transform) {
 }
 
 bool IsSlidingOutOverviewFromShelf() {
-  if (!Shell::Get()->window_selector_controller()->IsSelecting())
+  if (!Shell::Get()->overview_controller()->IsSelecting())
     return false;
 
   HomeLauncherGestureHandler* home_launcher_gesture_handler =

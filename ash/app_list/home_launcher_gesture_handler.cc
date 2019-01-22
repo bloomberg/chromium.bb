@@ -11,8 +11,8 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/overview/window_selector.h"
-#include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_session.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/window_state.h"
@@ -432,13 +432,13 @@ void HomeLauncherGestureHandler::OnTabletModeEnded() {
 void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
   float app_list_opacity = 1.f;
   const bool is_final_state_show = IsFinalStateShow();
-  if (Shell::Get()->window_selector_controller()->IsSelecting()) {
+  if (Shell::Get()->overview_controller()->IsSelecting()) {
     if (overview_active_on_gesture_start_ && is_final_state_show) {
       // Exit overview if event is released on the top half. This will also
       // end splitview if it is active as SplitViewController observes
       // overview mode ends.
-      Shell::Get()->window_selector_controller()->ToggleOverview(
-          WindowSelector::EnterExitOverviewType::kSwipeFromShelf);
+      Shell::Get()->overview_controller()->ToggleOverview(
+          OverviewSession::EnterExitOverviewType::kSwipeFromShelf);
     } else {
       app_list_opacity = 0.f;
     }
@@ -545,11 +545,10 @@ void HomeLauncherGestureHandler::UpdateWindows(double progress, bool animate) {
               : base::NullCallback());
 
   // Update the overview grid if needed.
-  WindowSelectorController* controller =
-      Shell::Get()->window_selector_controller();
+  OverviewController* controller = Shell::Get()->overview_controller();
   if (overview_active_on_gesture_start_ && controller->IsSelecting()) {
     DCHECK_EQ(mode_, Mode::kSlideUpToShow);
-    controller->window_selector()->UpdateGridAtLocationYPositionAndOpacity(
+    controller->overview_session()->UpdateGridAtLocationYPositionAndOpacity(
         display_.id(), y_position - work_area.height(), 1.f - opacity,
         work_area,
         animate
@@ -580,11 +579,10 @@ void HomeLauncherGestureHandler::UpdateWindows(double progress, bool animate) {
       // animation end, so only observe one of the animations. If overview
       // is active, observe the shield widget of the grid, else observe
       // |window1_|.
-      UpdateSettings(
-          settings.get(),
-          this->GetWindow1() == window &&
-              !(overview_active_on_gesture_start_ &&
-                Shell::Get()->window_selector_controller()->IsSelecting()));
+      UpdateSettings(settings.get(),
+                     this->GetWindow1() == window &&
+                         !(overview_active_on_gesture_start_ &&
+                           Shell::Get()->overview_controller()->IsSelecting()));
     }
     window->layer()->SetOpacity(opacity);
     window->SetTransform(transform);
@@ -651,11 +649,11 @@ bool HomeLauncherGestureHandler::IsAnimating() {
     return true;
 
   if (overview_active_on_gesture_start_ &&
-      Shell::Get()->window_selector_controller()->IsSelecting() &&
+      Shell::Get()->overview_controller()->IsSelecting() &&
       Shell::Get()
-          ->window_selector_controller()
-          ->window_selector()
-          ->IsWindowGridAnimating()) {
+          ->overview_controller()
+          ->overview_session()
+          ->IsOverviewGridAnimating()) {
     return true;
   }
 
@@ -688,7 +686,7 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
   overview_active_on_gesture_start_ =
-      Shell::Get()->window_selector_controller()->IsSelecting();
+      Shell::Get()->overview_controller()->IsSelecting();
   const bool split_view_active = split_view_controller->IsSplitViewModeActive();
   auto windows = Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
   if (window && (mode != Mode::kSlideDownToHide ||

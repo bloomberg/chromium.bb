@@ -37,7 +37,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wallpaper/wallpaper_controller_test_api.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -1483,16 +1483,15 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, OpacityInOverviewMode) {
   GetAppListTestHelper()->CheckVisibility(true);
 
   // Enable overview mode.
-  WindowSelectorController* window_selector_controller =
-      Shell::Get()->window_selector_controller();
-  window_selector_controller->ToggleOverview();
-  EXPECT_TRUE(window_selector_controller->IsSelecting());
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->ToggleOverview();
+  EXPECT_TRUE(overview_controller->IsSelecting());
   ui::Layer* layer = GetAppListView()->GetWidget()->GetNativeWindow()->layer();
   EXPECT_EQ(0.0f, layer->opacity());
 
   // Disable overview mode.
-  window_selector_controller->ToggleOverview();
-  EXPECT_FALSE(window_selector_controller->IsSelecting());
+  overview_controller->ToggleOverview();
+  EXPECT_FALSE(overview_controller->IsSelecting());
   EXPECT_EQ(1.0f, layer->opacity());
 }
 
@@ -1530,15 +1529,14 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
   // Verify the app list is hidden.
   wallpaper_test_api.StartWallpaperPreview();
   EXPECT_FALSE(GetAppListView()->GetWidget()->IsVisible());
-  WindowSelectorController* window_selector_controller =
-      Shell::Get()->window_selector_controller();
-  window_selector_controller->ToggleOverview();
-  EXPECT_TRUE(window_selector_controller->IsSelecting());
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->ToggleOverview();
+  EXPECT_TRUE(overview_controller->IsSelecting());
   EXPECT_FALSE(GetAppListView()->GetWidget()->IsVisible());
   // Disable overview mode. Verify the app list is still hidden because
   // wallpaper preview is still active.
-  window_selector_controller->ToggleOverview();
-  EXPECT_FALSE(window_selector_controller->IsSelecting());
+  overview_controller->ToggleOverview();
+  EXPECT_FALSE(overview_controller->IsSelecting());
   EXPECT_FALSE(GetAppListView()->GetWidget()->IsVisible());
   // End preview by confirming the wallpaper. Verify the app list is shown.
   wallpaper_test_api.EndWallpaperPreview(true /*confirm_preview_wallpaper=*/);
@@ -1602,19 +1600,18 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
 }
 
 // Tests that the app list button will end overview mode.
-TEST_F(AppListPresenterDelegateHomeLauncherTest, AppListButtonEndOverViewMode) {
+TEST_F(AppListPresenterDelegateHomeLauncherTest, AppListButtonEndOverviewMode) {
   // Show app list in tablet mode. Enter overview mode.
   EnableTabletMode(true);
   GetAppListTestHelper()->CheckVisibility(true);
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
-  WindowSelectorController* window_selector_controller =
-      Shell::Get()->window_selector_controller();
-  window_selector_controller->ToggleOverview();
-  EXPECT_TRUE(window_selector_controller->IsSelecting());
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->ToggleOverview();
+  EXPECT_TRUE(overview_controller->IsSelecting());
 
   // Press app list button.
   PressAppListButton();
-  EXPECT_FALSE(window_selector_controller->IsSelecting());
+  EXPECT_FALSE(overview_controller->IsSelecting());
   GetAppListTestHelper()->CheckVisibility(true);
 }
 

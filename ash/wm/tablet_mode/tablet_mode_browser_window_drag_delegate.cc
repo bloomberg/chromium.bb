@@ -13,9 +13,9 @@
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_constants.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_utils.h"
-#include "ash/wm/overview/window_grid.h"
-#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
@@ -126,7 +126,7 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
     source_window->SetProperty(kBackdropWindowMode,
                                BackdropWindowMode::kDisabled);
 
-    DCHECK(!Shell::Get()->window_selector_controller()->IsSelecting());
+    DCHECK(!Shell::Get()->overview_controller()->IsSelecting());
 
     aura::Window* root_window = dragged_window->GetRootWindow();
     std::vector<aura::Window*> windows =
@@ -165,7 +165,7 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
     widget_window->SetBounds(bounds);
     views::View* shield_view = new views::View();
     shield_view->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-    shield_view->layer()->SetColor(WindowGrid::GetShieldColor());
+    shield_view->layer()->SetColor(OverviewGrid::GetShieldColor());
     shield_view->layer()->SetOpacity(kShieldOpacity);
     shield_widget_->SetContentsView(shield_view);
   }
@@ -186,7 +186,7 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
       }
     }
 
-    DCHECK(!Shell::Get()->window_selector_controller()->IsSelecting());
+    DCHECK(!Shell::Get()->overview_controller()->IsSelecting());
 
     // May reshow the home launcher after dragging.
     Shell::Get()->app_list_controller()->OnWindowDragEnded();
@@ -278,8 +278,8 @@ void TabletModeBrowserWindowDragDelegate::EndedWindowDrag(
 void TabletModeBrowserWindowDragDelegate::StartFling(
     const ui::GestureEvent* event) {
   if (ShouldFlingIntoOverview(event)) {
-    DCHECK(Shell::Get()->window_selector_controller()->IsSelecting());
-    Shell::Get()->window_selector_controller()->window_selector()->AddItem(
+    DCHECK(Shell::Get()->overview_controller()->IsSelecting());
+    Shell::Get()->overview_controller()->overview_session()->AddItem(
         dragged_window_, /*reposition=*/true, /*animate=*/false);
   } else {
     aura::Window* source_window =

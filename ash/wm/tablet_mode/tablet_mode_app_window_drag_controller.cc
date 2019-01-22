@@ -5,7 +5,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_app_window_drag_controller.h"
 
 #include "ash/shell.h"
-#include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_drag_delegate.h"
 #include "ash/wm/window_state.h"
@@ -39,8 +39,8 @@ class TabletModeAppWindowDragDelegate : public TabletModeWindowDragDelegate {
   void EndedWindowDrag(const gfx::Point& location_in_screen) override {}
   void StartFling(const ui::GestureEvent* event) override {
     if (ShouldFlingIntoOverview(event)) {
-      DCHECK(Shell::Get()->window_selector_controller()->IsSelecting());
-      Shell::Get()->window_selector_controller()->window_selector()->AddItem(
+      DCHECK(Shell::Get()->overview_controller()->IsSelecting());
+      Shell::Get()->overview_controller()->overview_session()->AddItem(
           dragged_window_, /*reposition=*/true, /*animate=*/false);
     }
   }

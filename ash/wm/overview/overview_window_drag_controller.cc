@@ -8,10 +8,10 @@
 
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_item.h"
+#include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
-#include "ash/wm/overview/window_grid.h"
-#include "ash/wm/overview/window_selector.h"
-#include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/splitview/split_view_utils.h"
@@ -47,14 +47,14 @@ constexpr float kItemMinOpacity = 0.4f;
 }  // namespace
 
 OverviewWindowDragController::OverviewWindowDragController(
-    WindowSelector* window_selector)
-    : window_selector_(window_selector),
+    OverviewSession* overview_session)
+    : overview_session_(overview_session),
       split_view_controller_(Shell::Get()->split_view_controller()) {}
 
 OverviewWindowDragController::~OverviewWindowDragController() = default;
 
 void OverviewWindowDragController::InitiateDrag(
-    WindowSelectorItem* item,
+    OverviewItem* item,
     const gfx::Point& location_in_screen) {
   item_ = item;
   previous_event_location_ = location_in_screen;
@@ -79,7 +79,7 @@ void OverviewWindowDragController::Drag(const gfx::Point& location_in_screen) {
     if (std::abs(distance.x()) < std::abs(distance.y())) {
       current_drag_behavior_ = DragBehavior::kDragToClose;
       original_opacity_ = item_->GetOpacity();
-      window_selector_->GetGridWithRootWindow(item_->root_window())
+      overview_session_->GetGridWithRootWindow(item_->root_window())
           ->StartNudge(item_);
       did_move_ = true;
     } else if (ShouldAllowSplitView()) {
@@ -95,7 +95,7 @@ void OverviewWindowDragController::Drag(const gfx::Point& location_in_screen) {
     float val = std::abs(static_cast<float>(location_in_screen.y()) -
                          initial_event_location_.y()) /
                 kDragToCloseDistanceThresholdDp;
-    window_selector_->GetGridWithRootWindow(item_->root_window())
+    overview_session_->GetGridWithRootWindow(item_->root_window())
         ->UpdateNudge(item_, val);
     val = base::ClampToRange(val, 0.f, 1.f);
     float opacity = original_opacity_;
@@ -103,7 +103,7 @@ void OverviewWindowDragController::Drag(const gfx::Point& location_in_screen) {
       opacity = original_opacity_ - val * (original_opacity_ - kItemMinOpacity);
     item_->SetOpacity(opacity);
   } else if (current_drag_behavior_ == DragBehavior::kDragToSnap) {
-    UpdateDragIndicatorsAndWindowGrid(location_in_screen);
+    UpdateDragIndicatorsAndOverviewGrid(location_in_screen);
     x_offset = location_in_screen.x() - previous_event_location_.x();
   }
 
@@ -135,8 +135,8 @@ void OverviewWindowDragController::CompleteDrag(
   // Update window grid bounds and |snap_position_| in case the screen
   // orientation was changed.
   if (current_drag_behavior_ == DragBehavior::kDragToSnap) {
-    UpdateDragIndicatorsAndWindowGrid(location_in_screen);
-    window_selector_->SetSplitViewDragIndicatorsIndicatorState(
+    UpdateDragIndicatorsAndOverviewGrid(location_in_screen);
+    overview_session_->SetSplitViewDragIndicatorsIndicatorState(
         IndicatorState::kNone, gfx::Point());
   }
 
@@ -146,14 +146,14 @@ void OverviewWindowDragController::CompleteDrag(
     // If we are in drag to close mode close the window if it has been dragged
     // enough, otherwise reposition it and set its opacity back to its original
     // value.
-    window_selector_->GetGridWithRootWindow(item_->root_window())->EndNudge();
+    overview_session_->GetGridWithRootWindow(item_->root_window())->EndNudge();
     if (std::abs((location_in_screen - initial_event_location_).y()) >
         kDragToCloseDistanceThresholdDp) {
       item_->AnimateAndCloseWindow(
           (location_in_screen - initial_event_location_).y() < 0);
     } else {
       item_->SetOpacity(original_opacity_);
-      window_selector_->PositionWindows(/*animate=*/true);
+      overview_session_->PositionWindows(/*animate=*/true);
     }
   } else if (current_drag_behavior_ == DragBehavior::kDragToSnap) {
     // If the window was dragged around but should not be snapped, move it back
@@ -161,7 +161,7 @@ void OverviewWindowDragController::CompleteDrag(
     if (!ShouldUpdateDragIndicatorsOrSnap(location_in_screen) ||
         snap_position_ == SplitViewController::NONE) {
       item_->set_should_restack_on_animation_end(true);
-      window_selector_->PositionWindows(/*animate=*/true);
+      overview_session_->PositionWindows(/*animate=*/true);
     } else {
       SnapWindow(snap_position_);
     }
@@ -180,7 +180,7 @@ void OverviewWindowDragController::StartSplitViewDragMode(
 
   did_move_ = true;
   current_drag_behavior_ = DragBehavior::kDragToSnap;
-  window_selector_->SetSplitViewDragIndicatorsIndicatorState(
+  overview_session_->SetSplitViewDragIndicatorsIndicatorState(
       CanSnapInSplitview(item_->GetWindow()) ? IndicatorState::kDragArea
                                              : IndicatorState::kCannotSnap,
       location_in_screen);
@@ -220,23 +220,23 @@ void OverviewWindowDragController::ActivateDraggedWindow() {
   // the selected window, and also exit the overview.
   SplitViewController::State split_state = split_view_controller_->state();
   if (!ShouldAllowSplitView() || split_state == SplitViewController::NO_SNAP) {
-    window_selector_->SelectWindow(item_);
+    overview_session_->SelectWindow(item_);
   } else if (CanSnapInSplitview(item_->GetWindow())) {
     SnapWindow(split_state == SplitViewController::LEFT_SNAPPED
                    ? SplitViewController::RIGHT
                    : SplitViewController::LEFT);
   } else {
     split_view_controller_->EndSplitView();
-    window_selector_->SelectWindow(item_);
+    overview_session_->SelectWindow(item_);
     split_view_controller_->ShowAppCannotSnapToast();
   }
   current_drag_behavior_ = DragBehavior::kNoDrag;
 }
 
 void OverviewWindowDragController::ResetGesture() {
-  window_selector_->PositionWindows(/*animate=*/true);
+  overview_session_->PositionWindows(/*animate=*/true);
   if (ShouldAllowSplitView()) {
-    window_selector_->SetSplitViewDragIndicatorsIndicatorState(
+    overview_session_->SetSplitViewDragIndicatorsIndicatorState(
         IndicatorState::kNone, gfx::Point());
   }
   // This function gets called after a long press release, which bypasses
@@ -245,11 +245,11 @@ void OverviewWindowDragController::ResetGesture() {
   current_drag_behavior_ = DragBehavior::kNoDrag;
 }
 
-void OverviewWindowDragController::ResetWindowSelector() {
-  window_selector_ = nullptr;
+void OverviewWindowDragController::ResetOverviewSession() {
+  overview_session_ = nullptr;
 }
 
-void OverviewWindowDragController::UpdateDragIndicatorsAndWindowGrid(
+void OverviewWindowDragController::UpdateDragIndicatorsAndOverviewGrid(
     const gfx::Point& location_in_screen) {
   DCHECK(ShouldAllowSplitView());
   if (!ShouldUpdateDragIndicatorsOrSnap(location_in_screen))
@@ -270,14 +270,14 @@ void OverviewWindowDragController::UpdateDragIndicatorsAndWindowGrid(
   if (split_view_controller_->state() == SplitViewController::NO_SNAP &&
       snap_position_ != last_snap_position) {
     // Do not reposition the item that is currently being dragged.
-    window_selector_->SetBoundsForWindowGridsInScreenIgnoringWindow(
+    overview_session_->SetBoundsForOverviewGridsInScreenIgnoringWindow(
         GetGridBounds(snap_position_), item_);
   }
 
   // Show the cannot snap ui on the split view drag indicators if the window
   // cannot be snapped, otherwise show the drag ui.
   if (snap_position_ == SplitViewController::NONE) {
-    window_selector_->SetSplitViewDragIndicatorsIndicatorState(
+    overview_session_->SetSplitViewDragIndicatorsIndicatorState(
         CanSnapInSplitview(item_->GetWindow()) ? IndicatorState::kDragArea
                                                : IndicatorState::kCannotSnap,
         gfx::Point());
@@ -286,7 +286,7 @@ void OverviewWindowDragController::UpdateDragIndicatorsAndWindowGrid(
 
   // Display the preview area on the split view drag indicators. The split
   // view drag indicators will calculate the preview area bounds.
-  window_selector_->SetSplitViewDragIndicatorsIndicatorState(
+  overview_session_->SetSplitViewDragIndicatorsIndicatorState(
       snap_position_ == SplitViewController::LEFT
           ? IndicatorState::kPreviewAreaLeft
           : IndicatorState::kPreviewAreaRight,

@@ -14,8 +14,8 @@
 
 namespace ash {
 
-class WindowSelector;
-class WindowSelectorItem;
+class OverviewItem;
+class OverviewSession;
 
 // The drag controller for an overview window item in overview mode. It updates
 // the position of the corresponding window item using transform while dragging.
@@ -34,11 +34,10 @@ class ASH_EXPORT OverviewWindowDragController {
                    // requirements.
   };
 
-  explicit OverviewWindowDragController(WindowSelector* window_selector);
+  explicit OverviewWindowDragController(OverviewSession* overview_session);
   ~OverviewWindowDragController();
 
-  void InitiateDrag(WindowSelectorItem* item,
-                    const gfx::Point& location_in_screen);
+  void InitiateDrag(OverviewItem* item, const gfx::Point& location_in_screen);
   void Drag(const gfx::Point& location_in_screen);
   void CompleteDrag(const gfx::Point& location_in_screen);
   void StartSplitViewDragMode(const gfx::Point& location_in_screen);
@@ -48,19 +47,20 @@ class ASH_EXPORT OverviewWindowDragController {
   void ActivateDraggedWindow();
   void ResetGesture();
 
-  // Resets |window_selector_| to nullptr. It's needed since we defer the
-  // deletion of OverviewWindowDragController in WindowSelector destructor and
-  // we need to reset |window_selector_| to nullptr to avoid null pointer
+  // Resets |overview_session_| to nullptr. It's needed since we defer the
+  // deletion of OverviewWindowDragController in Overview destructor and
+  // we need to reset |overview_session_| to nullptr to avoid null pointer
   // dereference.
-  void ResetWindowSelector();
+  void ResetOverviewSession();
 
-  WindowSelectorItem* item() { return item_; }
+  OverviewItem* item() { return item_; }
 
   DragBehavior current_drag_behavior() { return current_drag_behavior_; }
 
  private:
   // Updates visuals for the user while dragging items around.
-  void UpdateDragIndicatorsAndWindowGrid(const gfx::Point& location_in_screen);
+  void UpdateDragIndicatorsAndOverviewGrid(
+      const gfx::Point& location_in_screen);
 
   // Dragged items should not attempt to update the indicators or snap if
   // the drag started in a snap region and has not been dragged pass the
@@ -75,12 +75,12 @@ class ASH_EXPORT OverviewWindowDragController {
 
   void SnapWindow(SplitViewController::SnapPosition snap_position);
 
-  WindowSelector* window_selector_;
+  OverviewSession* overview_session_;
 
   SplitViewController* split_view_controller_;
 
   // The drag target window in the overview mode.
-  WindowSelectorItem* item_ = nullptr;
+  OverviewItem* item_ = nullptr;
 
   DragBehavior current_drag_behavior_ = DragBehavior::kNoDrag;
 
