@@ -16,12 +16,16 @@ extern const char kGoogleUrl[];
 extern const char kGaiaUrl[];
 
 // Specifies the backend server used for Google API calls.
-// The default value is "https://www.googleapis.com".
+// "https://www.googleapis.com".
 extern const char kGoogleApisUrl[];
 
 // Specifies the backend server used for lso authentication calls.
 // "https://accounts.google.com".
 extern const char kLsoUrl[];
+
+// Specifies the backend server used for OAuth issue token calls.
+// "https://oauthaccountmanager.googleapis.com".
+extern const char kOAuthAccountManagerUrl[];
 
 // Specifies custom OAuth2 client id for testing purposes.
 extern const char kOAuth2ClientID[];

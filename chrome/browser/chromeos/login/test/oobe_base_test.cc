@@ -146,6 +146,8 @@ void OobeBaseTest::SetUpCommandLine(base::CommandLine* command_line) {
   command_line->AppendSwitchASCII(::switches::kGaiaUrl, gaia_url.spec());
   command_line->AppendSwitchASCII(::switches::kLsoUrl, gaia_url.spec());
   command_line->AppendSwitchASCII(::switches::kGoogleApisUrl, gaia_url.spec());
+  command_line->AppendSwitchASCII(::switches::kOAuthAccountManagerUrl,
+                                  gaia_url.spec());
 
   fake_gaia_->Initialize();
   fake_gaia_->set_issue_oauth_code_cookie(true);

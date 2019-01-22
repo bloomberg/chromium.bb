@@ -67,9 +67,6 @@ class GaiaUrls {
   GURL gaia_url_;
   GURL captcha_base_url_;
 
-  GURL lso_origin_url_;
-  GURL google_apis_origin_url_;
-
   GURL client_login_url_;
   GURL service_login_url_;
   GURL embedded_setup_chromeos_url_v1_;
