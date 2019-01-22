@@ -25,7 +25,7 @@
 namespace ash {
 namespace {
 
-const int kTooltipAppearanceDelay = 1000;  // msec
+const int kTooltipAppearanceDelay = 250;  // msec
 
 }  // namespace
 
