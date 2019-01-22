@@ -300,22 +300,33 @@ class CORE_EXPORT RuleFeatureSet {
 
   void UpdateRuleSetInvalidation(const InvalidationSetFeatures&);
 
-  static InvalidationSet& StoredInvalidationSet(scoped_refptr<InvalidationSet>&,
-                                                InvalidationType,
-                                                PositionType);
-  static InvalidationSet& EnsureInvalidationSet(
-      HashMap<AtomicString, scoped_refptr<InvalidationSet>>&,
-      const AtomicString& key,
+  static InvalidationSet& EnsureMutableInvalidationSet(
+      scoped_refptr<InvalidationSet>&,
       InvalidationType,
       PositionType);
-  static InvalidationSet& EnsureInvalidationSet(
-      HashMap<CSSSelector::PseudoType,
-              scoped_refptr<InvalidationSet>,
-              WTF::IntHash<unsigned>,
-              WTF::UnsignedWithZeroKeyHashTraits<unsigned>>&,
-      CSSSelector::PseudoType key,
-      InvalidationType,
-      PositionType);
+
+  InvalidationSet& EnsureInvalidationSet(InvalidationSetMap&,
+                                         const AtomicString& key,
+                                         InvalidationType,
+                                         PositionType);
+  InvalidationSet& EnsureInvalidationSet(PseudoTypeInvalidationSetMap&,
+                                         CSSSelector::PseudoType key,
+                                         InvalidationType,
+                                         PositionType);
+
+  // Adds an InvalidationSet to this RuleFeatureSet.
+  //
+  // A copy-on-write mechanism is used: if we don't already have an invalidation
+  // set for |key|, we simply retain the incoming invalidation set without
+  // copying any data. If another AddInvalidationSet call takes place with the
+  // same key, we copy the existing InvalidationSet (if necessary) before
+  // combining it with the incoming InvalidationSet.
+  void AddInvalidationSet(InvalidationSetMap&,
+                          const AtomicString& key,
+                          scoped_refptr<InvalidationSet>);
+  void AddInvalidationSet(PseudoTypeInvalidationSetMap&,
+                          CSSSelector::PseudoType key,
+                          scoped_refptr<InvalidationSet>);
 
   FeatureMetadata metadata_;
   InvalidationSetMap class_invalidation_sets_;
