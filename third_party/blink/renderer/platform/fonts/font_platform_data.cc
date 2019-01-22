@@ -51,7 +51,7 @@ FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
       is_hash_table_deleted_value_(true)
 #if defined(OS_WIN)
       ,
-      paint_text_flags_(0)
+      font_flags_(0)
 #endif
 {
 }
@@ -65,7 +65,7 @@ FontPlatformData::FontPlatformData()
       is_hash_table_deleted_value_(false)
 #if defined(OS_WIN)
       ,
-      paint_text_flags_(0)
+      font_flags_(0)
 #endif
 {
 }
@@ -82,7 +82,7 @@ FontPlatformData::FontPlatformData(float size,
       is_hash_table_deleted_value_(false)
 #if defined(OS_WIN)
       ,
-      paint_text_flags_(0)
+      font_flags_(0)
 #endif
 {
 }
@@ -104,7 +104,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& source)
       is_hash_table_deleted_value_(false)
 #if defined(OS_WIN)
       ,
-      paint_text_flags_(source.paint_text_flags_)
+      font_flags_(source.font_flags_)
 #endif
 {
 }
@@ -140,7 +140,7 @@ FontPlatformData::FontPlatformData(sk_sp<SkTypeface> typeface,
       is_hash_table_deleted_value_(false)
 #if defined(OS_WIN)
       ,
-      paint_text_flags_(0)
+      font_flags_(0)
 #endif
 {
 #if !defined(OS_WIN) && !defined(OS_MACOSX)
@@ -200,7 +200,7 @@ const FontPlatformData& FontPlatformData::operator=(
 #endif
 
 #if defined(OS_WIN)
-  paint_text_flags_ = 0;
+  font_flags_ = 0;
 #endif
 
   return *this;
