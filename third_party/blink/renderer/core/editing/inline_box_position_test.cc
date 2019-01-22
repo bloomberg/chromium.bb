@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/editing/position.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -72,6 +73,50 @@ TEST_F(InlineBoxPositionTest, InFlatTreeAfterInputWithPlaceholderDoesntCrash) {
   const InlineBoxPosition box_position = ComputeInlineBoxPosition(after_input);
   EXPECT_EQ(input_wrapper, box_position.inline_box);
   EXPECT_EQ(1, box_position.offset_in_box);
+}
+
+TEST_F(InlineBoxPositionTest, DownstreamBeforeLineBreakLTR) {
+  // InlineBoxPosition is a legacy-only data structure.
+  ScopedLayoutNGForTest scoped_layout_ng(false);
+
+  // This test is for a bidi caret afinity specific behavior.
+  ScopedBidiCaretAffinityForTest scoped_bidi_affinity(true);
+
+  SetBodyContent("<div id=div>&#x05D0;&#x05D1;&#x05D2<br>ABC</div>");
+  const Element* const div = GetElementById("div");
+  const Node* const rtl_text = div->firstChild();
+  const PositionWithAffinity before_br(Position(rtl_text, 3),
+                                       TextAffinity::kDownstream);
+
+  const Element* const br = GetDocument().QuerySelector("br");
+  const InlineBox* const box =
+      ToLayoutText(br->GetLayoutObject())->FirstTextBox();
+
+  const InlineBoxPosition box_position = ComputeInlineBoxPosition(before_br);
+  EXPECT_EQ(box, box_position.inline_box);
+  EXPECT_EQ(0, box_position.offset_in_box);
+}
+
+TEST_F(InlineBoxPositionTest, DownstreamBeforeLineBreakRTL) {
+  // InlineBoxPosition is a legacy-only data structure.
+  ScopedLayoutNGForTest scoped_layout_ng(false);
+
+  // This test is for a bidi caret afinity specific behavior.
+  ScopedBidiCaretAffinityForTest scoped_bidi_affinity(true);
+
+  SetBodyContent("<div id=div dir=rtl>ABC<br>&#x05D0;&#x05D1;&#x05D2;</div>");
+  const Element* const div = GetElementById("div");
+  const Node* const rtl_text = div->firstChild();
+  const PositionWithAffinity before_br(Position(rtl_text, 3),
+                                       TextAffinity::kDownstream);
+
+  const Element* const br = GetDocument().QuerySelector("br");
+  const InlineBox* const box =
+      ToLayoutText(br->GetLayoutObject())->FirstTextBox();
+
+  const InlineBoxPosition box_position = ComputeInlineBoxPosition(before_br);
+  EXPECT_EQ(box, box_position.inline_box);
+  EXPECT_EQ(0, box_position.offset_in_box);
 }
 
 }  // namespace blink
