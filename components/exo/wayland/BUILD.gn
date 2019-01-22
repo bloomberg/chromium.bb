@@ -53,6 +53,8 @@ source_set("wayland") {
     "wl_seat.h",
     "wl_shm.cc",
     "wl_shm.h",
+    "wl_subcompositor.cc",
+    "wl_subcompositor.h",
   ]
 
   defines = [ "EXO_IMPLEMENTATION" ]
