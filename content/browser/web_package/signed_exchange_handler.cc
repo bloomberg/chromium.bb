@@ -437,7 +437,7 @@ SignedExchangeHandler::ParseHeadersAndFetchCertificate() {
   cert_fetch_start_time_ = base::TimeTicks::Now();
   cert_fetcher_ = std::move(cert_fetcher_factory_)
                       ->CreateFetcherAndStart(
-                          cert_url, force_fetch, *version_,
+                          cert_url, force_fetch,
                           base::BindOnce(&SignedExchangeHandler::OnCertReceived,
                                          base::Unretained(this)),
                           devtools_proxy_.get());
