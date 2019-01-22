@@ -818,13 +818,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MultiDisableExtensionsSyncCheck) {
   CloseBrowserSynchronously(browser1);
 }
 
-#if defined(OS_CHROMEOS)
-// Failing on multiple bots for ChromeOS. https://crbug.com/923894
-#define MAYBE_LogsTabId DISABLED_LogsTabId
-#else
-#define MAYBE_LogsTabId LogsTabId
-#endif
-IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MAYBE_LogsTabId) {
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, LogsTabId) {
   ASSERT_TRUE(embedded_test_server()->Start());
   MetricsConsentOverride metrics_consent(true);
   Profile* profile = ProfileManager::GetActiveUserProfile();
