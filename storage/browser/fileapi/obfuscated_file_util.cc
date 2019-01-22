@@ -1325,17 +1325,6 @@ bool ObfuscatedFileUtil::InitOriginDatabase(const GURL& origin_hint,
   const std::string isolated_origin_string =
       storage::GetIdentifierFromOrigin(origin_hint);
 
-  // TODO(kinuko): Deprecate this after a few release cycles, e.g. around M33.
-  base::FilePath isolated_origin_dir = file_system_directory_.Append(
-      SandboxIsolatedOriginDatabase::kObsoleteOriginDirectory);
-  if (base::DirectoryExists(isolated_origin_dir) &&
-      prioritized_origin_database->GetSandboxOriginDatabase()) {
-    SandboxIsolatedOriginDatabase::MigrateBackFromObsoleteOriginDatabase(
-        isolated_origin_string,
-        file_system_directory_,
-        prioritized_origin_database->GetSandboxOriginDatabase());
-  }
-
   prioritized_origin_database->InitializePrimaryOrigin(
       isolated_origin_string);
 
