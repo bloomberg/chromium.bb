@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_EVENT_BASED_STATUS_REPORTING_SERVICE_H_
 #define CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_EVENT_BASED_STATUS_REPORTING_SERVICE_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/session_manager/core/session_manager_observer.h"
+#include "net/base/network_change_notifier.h"
 
 namespace content {
 class BrowserContext;
@@ -17,10 +20,17 @@ class BrowserContext;
 namespace chromeos {
 
 // Requests status report when events relevant to supervision features happen.
+// The events that are triggers to status report are:
+//     * App install
+//     * App update
+//     * Device lock
+//     * Device unlock
+//     * Device connected
 class EventBasedStatusReportingService
     : public KeyedService,
       public ArcAppListPrefs::Observer,
-      public session_manager::SessionManagerObserver {
+      public session_manager::SessionManagerObserver,
+      public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   explicit EventBasedStatusReportingService(content::BrowserContext* context);
   ~EventBasedStatusReportingService() override;
@@ -34,7 +44,13 @@ class EventBasedStatusReportingService
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;
 
+  // net::NetworkChangeNotifier::NetworkChangeObserver:
+  void OnNetworkChanged(
+      net::NetworkChangeNotifier::ConnectionType type) override;
+
  private:
+  void RequestStatusReport(const std::string& reason);
+
   // KeyedService:
   void Shutdown() override;
 

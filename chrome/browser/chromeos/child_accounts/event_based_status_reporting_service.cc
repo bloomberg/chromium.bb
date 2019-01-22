@@ -20,22 +20,19 @@ EventBasedStatusReportingService::EventBasedStatusReportingService(
   if (arc_app_prefs)
     arc_app_prefs->AddObserver(this);
   session_manager::SessionManager::Get()->AddObserver(this);
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
 EventBasedStatusReportingService::~EventBasedStatusReportingService() = default;
 
 void EventBasedStatusReportingService::OnPackageInstalled(
     const arc::mojom::ArcPackageInfo& package_info) {
-  VLOG(1) << "Request status report due to an app install.";
-  ConsumerStatusReportingServiceFactory::GetForBrowserContext(context_)
-      ->RequestImmediateStatusReport();
+  RequestStatusReport("Request status report due to an app install.");
 }
 
 void EventBasedStatusReportingService::OnPackageModified(
     const arc::mojom::ArcPackageInfo& package_info) {
-  VLOG(1) << "Request status report due to an app update.";
-  ConsumerStatusReportingServiceFactory::GetForBrowserContext(context_)
-      ->RequestImmediateStatusReport();
+  RequestStatusReport("Request status report due to an app update.");
 }
 
 void EventBasedStatusReportingService::OnSessionStateChanged() {
@@ -52,14 +49,23 @@ void EventBasedStatusReportingService::OnSessionStateChanged() {
   }
 
   if (session_state == session_manager::SessionState::ACTIVE) {
-    VLOG(1) << "Request status report due to a unlock screen.";
-    ConsumerStatusReportingServiceFactory::GetForBrowserContext(context_)
-        ->RequestImmediateStatusReport();
+    RequestStatusReport("Request status report due to a unlock screen.");
   } else if (session_state == session_manager::SessionState::LOCKED) {
-    VLOG(1) << "Request status report due to a lock screen.";
-    ConsumerStatusReportingServiceFactory::GetForBrowserContext(context_)
-        ->RequestImmediateStatusReport();
+    RequestStatusReport("Request status report due to a lock screen.");
   }
+}
+
+void EventBasedStatusReportingService::OnNetworkChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  if (type != net::NetworkChangeNotifier::CONNECTION_NONE)
+    RequestStatusReport("Request status report due to device going online.");
+}
+
+void EventBasedStatusReportingService::RequestStatusReport(
+    const std::string& reason) {
+  VLOG(1) << reason;
+  ConsumerStatusReportingServiceFactory::GetForBrowserContext(context_)
+      ->RequestImmediateStatusReport();
 }
 
 void EventBasedStatusReportingService::Shutdown() {
@@ -68,6 +74,7 @@ void EventBasedStatusReportingService::Shutdown() {
   if (arc_app_prefs)
     arc_app_prefs->RemoveObserver(this);
   session_manager::SessionManager::Get()->RemoveObserver(this);
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
 }  // namespace chromeos
