@@ -74,10 +74,9 @@ std::string CurrentLocaleOrDefault();
 void GetAllLocales(std::set<std::string>* all_locales);
 
 // Provides a vector of all fallback locales for message localization.
-// The vector is ordered by priority of locale - |application_locale|,
+// The vector is ordered by priority of locale - application locale,
 // first_parent, ..., |default_locale|.
-void GetAllFallbackLocales(const std::string& application_locale,
-                           const std::string& default_locale,
+void GetAllFallbackLocales(const std::string& default_locale,
                            std::vector<std::string>* all_fallback_locales);
 
 // Fill |valid_locales| with all valid locales under |locale_path|.
@@ -97,7 +96,6 @@ bool GetValidLocales(const base::FilePath& locale_path,
 extensions::MessageBundle* LoadMessageCatalogs(
     const base::FilePath& locale_path,
     const std::string& default_locale,
-    const std::string& app_locale,
     std::string* error);
 
 // Loads message catalogs for all locales to check for validity.

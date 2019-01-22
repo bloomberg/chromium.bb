@@ -132,8 +132,7 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsValidFallback) {
 
   std::string error;
   std::unique_ptr<MessageBundle> bundle(
-      extension_l10n_util::LoadMessageCatalogs(install_dir, "sr", "en_US",
-                                               &error));
+      extension_l10n_util::LoadMessageCatalogs(install_dir, "sr", &error));
   ASSERT_FALSE(NULL == bundle.get());
   EXPECT_TRUE(error.empty());
   EXPECT_EQ("Color", bundle->GetL10nMessage("color"));
@@ -151,8 +150,8 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsMissingFiles) {
   ASSERT_TRUE(base::CreateDirectory(src_path.AppendASCII("sr")));
 
   std::string error;
-  EXPECT_TRUE(NULL == extension_l10n_util::LoadMessageCatalogs(src_path, "en",
-                                                               "sr", &error));
+  EXPECT_TRUE(NULL ==
+              extension_l10n_util::LoadMessageCatalogs(src_path, "en", &error));
   EXPECT_FALSE(error.empty());
 }
 
@@ -174,7 +173,7 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsBadJSONFormat) {
 
   std::string error;
   EXPECT_TRUE(NULL == extension_l10n_util::LoadMessageCatalogs(
-                          src_path, "en_US", "sr", &error));
+                          src_path, "en_US", &error));
   EXPECT_EQ(ErrorUtils::FormatErrorMessage(
                 errors::kLocalesInvalidLocale,
                 base::UTF16ToUTF8(messages_file.LossyDisplayName()),
@@ -211,7 +210,7 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsDuplicateKeys) {
   // JSON parser hides duplicates. We are going to get only one key/value
   // pair at the end.
   std::unique_ptr<MessageBundle> message_bundle(
-      extension_l10n_util::LoadMessageCatalogs(src_path, "en", "sr", &error));
+      extension_l10n_util::LoadMessageCatalogs(src_path, "en", &error));
   EXPECT_TRUE(NULL != message_bundle.get());
   EXPECT_TRUE(error.empty());
 }
@@ -676,7 +675,7 @@ TEST(ExtensionL10nUtil,
 TEST(ExtensionL10nUtil, GetAllFallbackLocales) {
   extension_l10n_util::ScopedLocaleForTest scoped_locale("en-US");
   std::vector<std::string> fallback_locales;
-  extension_l10n_util::GetAllFallbackLocales("en_US", "all", &fallback_locales);
+  extension_l10n_util::GetAllFallbackLocales("all", &fallback_locales);
   ASSERT_EQ(3U, fallback_locales.size());
 
   EXPECT_EQ("en_US", fallback_locales[0]);
@@ -687,7 +686,7 @@ TEST(ExtensionL10nUtil, GetAllFallbackLocales) {
 TEST(ExtensionL10nUtil, GetAllFallbackLocalesWithPreferredLocale) {
   extension_l10n_util::ScopedLocaleForTest scoped_locale("en-GB", "en-CA");
   std::vector<std::string> fallback_locales;
-  extension_l10n_util::GetAllFallbackLocales("en_GB", "all", &fallback_locales);
+  extension_l10n_util::GetAllFallbackLocales("all", &fallback_locales);
   ASSERT_EQ(4U, fallback_locales.size());
 
   EXPECT_EQ("en_CA", fallback_locales[0]);
