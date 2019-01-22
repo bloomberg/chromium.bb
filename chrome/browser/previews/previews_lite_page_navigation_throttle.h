@@ -60,7 +60,8 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
     kNetworkNotSlow = 5,
     kLoadOriginalReload = 6,
     kCookiesBlocked = 7,
-    kMaxValue = kCookiesBlocked,
+    kECTUnknown = 8,
+    kMaxValue = kECTUnknown,
   };
 
   // The response type from the previews server. This enum must
