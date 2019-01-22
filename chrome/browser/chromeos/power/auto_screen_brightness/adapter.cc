@@ -342,10 +342,11 @@ void Adapter::UpdateStatus() {
   adapter_status_ = Status::kSuccess;
 }
 
-bool Adapter::CanAdjustBrightness(double current_average_ambient) const {
+base::Optional<Adapter::BrightnessChangeCause> Adapter::CanAdjustBrightness(
+    double current_average_ambient) const {
   if (adapter_status_ != Status::kSuccess ||
       adapter_disabled_by_user_adjustment_)
-    return false;
+    return base::nullopt;
 
   // Do not change brightness if it's set by the policy, but do not completely
   // disable the model as the policy could change.
@@ -353,30 +354,46 @@ bool Adapter::CanAdjustBrightness(double current_average_ambient) const {
           ash::prefs::kPowerAcScreenBrightnessPercent) >= 0 ||
       profile_->GetPrefs()->GetInteger(
           ash::prefs::kPowerBatteryScreenBrightnessPercent) >= 0) {
-    return false;
+    return base::nullopt;
   }
 
   if (latest_brightness_change_time_.is_null()) {
     // Brightness hasn't been changed before.
-    return latest_als_time_ - first_als_time_ >=
-               params_.auto_brightness_als_horizon ||
-           params_.update_brightness_on_startup;
+    const bool can_adjust_brightness =
+        latest_als_time_ - first_als_time_ >=
+            params_.auto_brightness_als_horizon ||
+        params_.update_brightness_on_startup;
+
+    if (can_adjust_brightness)
+      return BrightnessChangeCause::kInitialAlsReceived;
+
+    return base::nullopt;
   }
 
   // The following thresholds should have been set last time when brightness was
   // changed.
-  if (current_average_ambient > *immediate_brightening_lux_threshold_ ||
-      current_average_ambient < *immediate_darkening_lux_threshold_) {
-    return true;
+  if (current_average_ambient > *immediate_brightening_lux_threshold_) {
+    return BrightnessChangeCause::kImmediateBrightneningThresholdExceeded;
+  }
+
+  if (current_average_ambient < *immediate_darkening_lux_threshold_) {
+    return BrightnessChangeCause::kImmediateDarkeningThresholdExceeded;
   }
 
   if (tick_clock_->NowTicks() - latest_brightness_change_time_ <
       params_.min_time_between_brightness_changes) {
-    return false;
+    return base::nullopt;
   }
 
-  return current_average_ambient > *brightening_lux_threshold_ ||
-         current_average_ambient < *darkening_lux_threshold_;
+  if (current_average_ambient > *brightening_lux_threshold_) {
+    return BrightnessChangeCause::kBrightneningThresholdExceeded;
+  }
+
+  if (current_average_ambient < *darkening_lux_threshold_) {
+    return BrightnessChangeCause::kDarkeningThresholdExceeded;
+  }
+
+  return base::nullopt;
 }
 
 void Adapter::MaybeAdjustBrightness(base::TimeTicks now) {
@@ -387,7 +404,10 @@ void Adapter::MaybeAdjustBrightness(base::TimeTicks now) {
 
   const double average_ambient_lux = average_ambient_lux_opt.value();
 
-  if (!CanAdjustBrightness(average_ambient_lux))
+  const base::Optional<BrightnessChangeCause> can_adjust_brightness =
+      CanAdjustBrightness(average_ambient_lux);
+
+  if (!can_adjust_brightness.has_value())
     return;
 
   // If |params_.average_log_als| is true, then |average_ambient_lux| is
@@ -409,7 +429,18 @@ void Adapter::MaybeAdjustBrightness(base::TimeTicks now) {
   request.set_cause(power_manager::SetBacklightBrightnessRequest_Cause_MODEL);
   power_manager_client_->SetScreenBrightness(request);
 
-  latest_brightness_change_time_ = tick_clock_->NowTicks();
+  const base::TimeTicks brightness_change_time = tick_clock_->NowTicks();
+  if (!latest_brightness_change_time_.is_null()) {
+    UMA_HISTOGRAM_LONG_TIMES(
+        "AutoScreenBrightness.BrightnessChange.ElapsedTime",
+        brightness_change_time - latest_brightness_change_time_);
+  }
+  latest_brightness_change_time_ = brightness_change_time;
+
+  const BrightnessChangeCause cause = *can_adjust_brightness;
+  UMA_HISTOGRAM_ENUMERATION("AutoScreenBrightness.BrightnessChange.Cause",
+                            cause);
+
   average_ambient_lux_ = average_ambient_lux;
 
   UpdateLuxThresholds();

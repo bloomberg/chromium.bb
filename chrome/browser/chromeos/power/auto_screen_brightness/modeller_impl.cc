@@ -403,20 +403,32 @@ void ModellerImpl::OnCurveLoadedFromDisk(
     const base::Optional<MonotoneCubicSpline>& curve) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  if (curve) {
+    current_curve_.emplace(curve.value());
+  } else {
+    current_curve_.emplace(global_curve_);
+  }
+
   // Run SetInitialCurves calculations on background thread to avoid blocking UI
   // thread.
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
       base::BindOnce(&SetInitialCurves, trainer_.get(), global_curve_,
-                     curve ? *curve : global_curve_, is_testing_),
+                     *current_curve_, is_testing_),
       base::BindOnce(&ModellerImpl::OnSetInitialCurves,
                      weak_ptr_factory_.GetWeakPtr(), curve));
 }
 
 void ModellerImpl::OnCurveSavedToDisk(bool is_successful) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(jiameng): log to UMA.
-  DCHECK(is_successful);
+  const base::TimeTicks now = tick_clock_->NowTicks();
+
+  UMA_HISTOGRAM_BOOLEAN("AutoScreenBrightness.NewCurveSaved.Success",
+                        is_successful);
+  if (is_successful) {
+    UMA_HISTOGRAM_TIMES("AutoScreenBrightness.NewCurveSaved.Duration",
+                        now - training_start_.value());
+  }
 }
 
 void ModellerImpl::OnSetInitialCurves(
@@ -463,6 +475,7 @@ void ModellerImpl::StartTraining() {
     return;
   }
 
+  training_start_ = tick_clock_->NowTicks();
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
       base::BindOnce(&TrainModel, trainer_.get(), std::move(data_cache_),
@@ -473,7 +486,22 @@ void ModellerImpl::StartTraining() {
 }
 
 void ModellerImpl::OnTrainingFinished(const MonotoneCubicSpline& curve) {
+  const base::TimeTicks now = tick_clock_->NowTicks();
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  DCHECK(current_curve_);
+  if (current_curve_ == curve) {
+    // Only update current curve if it's different from before.
+    UMA_HISTOGRAM_TIMES(
+        "AutoScreenBrightness.TrainingCompleteDuration.NoNewCurve",
+        now - training_start_.value());
+    return;
+  }
+
+  UMA_HISTOGRAM_TIMES("AutoScreenBrightness.TrainingCompleteDuration.NewCurve",
+                      now - training_start_.value());
+
+  current_curve_.emplace(curve);
   for (auto& observer : observers_)
     observer.OnModelTrained(curve);
 
