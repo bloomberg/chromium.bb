@@ -541,12 +541,12 @@ public class TouchEventFilterView
     }
 
     @Override
-    public void onContentOffsetChanged(float offset) {
+    public void onContentOffsetChanged(int offset) {
         invalidate();
     }
 
     @Override
-    public void onControlsOffsetChanged(float topOffset, float bottomOffset, boolean needsAnimate) {
+    public void onControlsOffsetChanged(int topOffset, int bottomOffset, boolean needsAnimate) {
         maybeUpdateVerticalMargins();
         invalidate();
     }

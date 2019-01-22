@@ -89,40 +89,39 @@ public class ChromeFullscreenManager
     public interface FullscreenListener {
         /**
          * Called whenever the content's offset changes.
-         * @param offset The new offset of the content from the top of the screen.
+         * @param offset The new offset of the content from the top of the screen in px.
          */
-        public void onContentOffsetChanged(float offset);
+        void onContentOffsetChanged(int offset);
 
         /**
          * Called whenever the controls' offset changes.
-         * @param topOffset    The new value of the offset from the top of the top control.
-         * @param bottomOffset The new value of the offset from the top of the bottom control.
+         * @param topOffset    The new value of the offset from the top of the top control in px.
+         * @param bottomOffset The new value of the offset from the top of the bottom control in px.
          * @param needsAnimate Whether the caller is driving an animation with further updates.
          */
-        public void onControlsOffsetChanged(float topOffset, float bottomOffset,
-                boolean needsAnimate);
+        void onControlsOffsetChanged(int topOffset, int bottomOffset, boolean needsAnimate);
 
         /**
          * Called when a ContentVideoView is created/destroyed.
          * @param enabled Whether to enter or leave overlay video mode.
          */
-        public void onToggleOverlayVideoMode(boolean enabled);
+        void onToggleOverlayVideoMode(boolean enabled);
 
         /**
          * Called when the height of the bottom controls are changed.
          */
-        public void onBottomControlsHeightChanged(int bottomControlsHeight);
+        void onBottomControlsHeightChanged(int bottomControlsHeight);
 
         /**
          * Called when the height of the top controls are changed.
          */
-        public default void onTopControlsHeightChanged(
-                int topControlsHeight, boolean controlsResizeView) {}
+        default void onTopControlsHeightChanged(int topControlsHeight, boolean controlsResizeView) {
+        }
 
         /**
          * Called when the viewport size of the active content is updated.
          */
-        public default void onUpdateViewportSize() {}
+        default void onUpdateViewportSize() {}
     }
 
     private final Runnable mUpdateVisibilityRunnable = new Runnable() {

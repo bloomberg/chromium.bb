@@ -626,7 +626,7 @@ public class BottomSheet extends FrameLayout
 
             @Override
             public void onControlsOffsetChanged(
-                    float topOffset, float bottomOffset, boolean needsAnimate) {
+                    int topOffset, int bottomOffset, boolean needsAnimate) {
                 if (getSheetState() == SheetState.HIDDEN) return;
                 if (getCurrentOffsetPx() > getSheetHeightForState(SheetState.PEEK)) return;
 
@@ -635,7 +635,7 @@ public class BottomSheet extends FrameLayout
             }
 
             @Override
-            public void onContentOffsetChanged(float offset) {}
+            public void onContentOffsetChanged(int offset) {}
 
             @Override
             public void onBottomControlsHeightChanged(int bottomControlsHeight) {}

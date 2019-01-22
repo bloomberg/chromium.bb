@@ -180,11 +180,11 @@ class BrowsingModeBottomToolbarMediator
     }
 
     @Override
-    public void onContentOffsetChanged(float offset) {}
+    public void onContentOffsetChanged(int offset) {}
 
     @Override
-    public void onControlsOffsetChanged(float topOffset, float bottomOffset, boolean needsAnimate) {
-        mModel.set(BrowsingModeBottomToolbarModel.Y_OFFSET, (int) bottomOffset);
+    public void onControlsOffsetChanged(int topOffset, int bottomOffset, boolean needsAnimate) {
+        mModel.set(BrowsingModeBottomToolbarModel.Y_OFFSET, bottomOffset);
         if (bottomOffset > 0 || mFullscreenManager.getBottomControlsHeight() == 0) {
             mModel.set(BrowsingModeBottomToolbarModel.ANDROID_VIEW_VISIBLE, false);
         } else {

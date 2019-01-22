@@ -154,11 +154,11 @@ class ContextualSuggestionsMediator
 
         mFullscreenManager.addListener(new FullscreenListener() {
             @Override
-            public void onContentOffsetChanged(float offset) {}
+            public void onContentOffsetChanged(int offset) {}
 
             @Override
             public void onControlsOffsetChanged(
-                    float topOffset, float bottomOffset, boolean needsAnimate) {
+                    int topOffset, int bottomOffset, boolean needsAnimate) {
                 if (!mHaveBrowserControlsFullyHidden) {
                     mHaveBrowserControlsFullyHidden =
                             mFullscreenManager.areBrowserControlsOffScreen();
