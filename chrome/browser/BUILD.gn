@@ -1567,6 +1567,8 @@ jumbo_split_static_library("browser") {
     "sync/model_type_store_service_factory.h",
     "sync/profile_sync_service_factory.cc",
     "sync/profile_sync_service_factory.h",
+    "sync/send_tab_to_self_sync_service_factory.cc",
+    "sync/send_tab_to_self_sync_service_factory.h",
     "sync/session_sync_service_factory.cc",
     "sync/session_sync_service_factory.h",
     "sync/sessions/sync_sessions_router_tab_helper.cc",
