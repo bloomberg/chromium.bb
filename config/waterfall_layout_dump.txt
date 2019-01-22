@@ -124,6 +124,7 @@
     samus-paladin
     scarlet-paladin
     sentry-paladin
+    sludge-paladin
     stout-paladin
     tael-paladin
     tatl-paladin
@@ -226,6 +227,7 @@
     kevin64-full
     lakitu-full
     oak-full
+    sludge-full
     tael-full
     tatl-full
 
@@ -2393,6 +2395,7 @@
     kevin64-full
     lakitu-full
     oak-full
+    sludge-full
     tael-full
     tatl-full
   master-incremental-tryjob
@@ -2501,6 +2504,7 @@
     samus-paladin
     scarlet-paladin
     sentry-paladin
+    sludge-paladin
     stout-paladin
     tael-paladin
     tatl-paladin
@@ -3486,6 +3490,15 @@
   setzer-tot-chromium-pfq-informational-tryjob
   setzer-unittest-stress
   signer-pre-cq
+  sludge-compile-only-pre-cq
+  sludge-full-tryjob
+  sludge-llvm-next-toolchain-tryjob
+  sludge-llvm-toolchain-tryjob
+  sludge-no-vmtest-pre-cq
+  sludge-paladin-tryjob
+  sludge-pre-cq
+  sludge-release-tryjob
+  sludge-unittest-stress
   snappy-chrome-pfq-tryjob
   snappy-chromium-pfq-tryjob
   snappy-compile-only-pre-cq

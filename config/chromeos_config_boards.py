@@ -155,6 +155,7 @@ x86_internal_release_boards = frozenset([
     'sand',
     'sentry',
     'setzer',
+    'sludge',
     'snappy',
     'soraka',
     'squawks',
@@ -230,6 +231,7 @@ scribe_boards = frozenset([
 ])
 
 termina_boards = frozenset([
+    'sludge',
     'tatl',
     'tael',
 ])
