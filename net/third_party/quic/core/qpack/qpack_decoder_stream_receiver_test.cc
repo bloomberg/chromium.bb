@@ -29,6 +29,7 @@ class MockDelegate : public QpackDecoderStreamReceiver::Delegate {
 class QpackDecoderStreamReceiverTest : public QuicTest {
  protected:
   QpackDecoderStreamReceiverTest() : stream_(&delegate_) {}
+  ~QpackDecoderStreamReceiverTest() override = default;
 
   QpackDecoderStreamReceiver stream_;
   StrictMock<MockDelegate> delegate_;
