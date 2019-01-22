@@ -27,12 +27,6 @@ _MAX_DEX_METHOD_COUNT_INCREASE = 50
 _MAX_NORMALIZED_INCREASE = 16 * 1024
 _MAX_PAK_INCREASE = 1024
 
-_DEX_DETAILS = 'Refer to Dex Method Diff for list of added/removed methods.'
-_NORMALIZED_APK_SIZE_DETAILS = (
-    'See https://chromium.googlesource.com/chromium/src/+/master/docs/speed/'
-    'binary_size/metrics.md#Normalized-APK-Size '
-    'for an explanation of Normalized APK Size')
-
 _FAILURE_GUIDANCE = """
 Please look at size breakdowns, try to understand the growth, and see if it can
 be mitigated.
@@ -77,34 +71,70 @@ class _SizeDelta(collections.namedtuple(
     return cmp(self.name, other.name)
 
 
-def _CreateAndWriteMethodCountDelta(symbols):
-  dex_symbols = symbols.WhereInSection(models.SECTION_DEX_METHOD)
-  dex_added = dex_symbols.WhereDiffStatusIs(models.DIFF_STATUS_ADDED)
-  dex_removed = dex_symbols.WhereDiffStatusIs(models.DIFF_STATUS_REMOVED)
-  dex_added_count, dex_removed_count = len(dex_added), len(dex_removed)
-  dex_net_added = dex_added_count - dex_removed_count
+def _SymbolDiffHelper(symbols):
+  added = symbols.WhereDiffStatusIs(models.DIFF_STATUS_ADDED)
+  removed = symbols.WhereDiffStatusIs(models.DIFF_STATUS_REMOVED)
+  both = (added + removed).SortedByName()
+  lines = None
+  if len(both) > 0:
+    lines = [
+        'Added: {}'.format(len(added)),
+        'Removed: {}'.format(len(removed)),
+    ]
+    lines.extend(describe.GenerateLines(both, summarize=False))
 
-  lines = ['Added: {}'.format(dex_added_count)]
-  lines.extend(sorted(s.full_name for s in dex_added))
-  lines.append('')
-  lines.append('Removed: {}'.format(dex_removed_count))
-  lines.extend(sorted(s.full_name for s in dex_removed))
+  return lines, len(added) - len(removed)
+
+
+def _CreateMutableConstantsDelta(symbols):
+  symbols = symbols.WhereInSection('d').WhereNameMatches(r'\bk[A-Z]|\b[A-Z_]+$')
+  lines, net_added = _SymbolDiffHelper(symbols)
+
+  if net_added <= 0:
+    details = """\
+Symbols within .data that are named like constants (crbug.com/747064).
+"""
+  else:
+    details = """\
+Detected new symbols within .data that are named like constants.
+Either:
+  * Mark the symbols as const, or
+  * Rename them.
+
+For more context: https://crbug.com/747064
+"""
+
+  if net_added:
+    details += """
+Refer to Mutable Constants Diff for list of symbols.
+"""
+  return lines, _SizeDelta('Mutable Constants', 'symbols', 0, net_added,
+                           details)
+
+
+def _CreateMethodCountDelta(symbols):
+  symbols = symbols.WhereInSection(models.SECTION_DEX_METHOD)
+  lines, net_added = _SymbolDiffHelper(symbols)
+  details = 'Refer to Dex Method Diff for list of added/removed methods.'
 
   return lines, _SizeDelta('Dex Methods', 'methods',
-                           _MAX_DEX_METHOD_COUNT_INCREASE, dex_net_added,
-                           _DEX_DETAILS)
+                           _MAX_DEX_METHOD_COUNT_INCREASE, net_added, details)
 
 
-def _CreateAndWriteResourceSizesDelta(apk_name, before_dir, after_dir):
+def _CreateResourceSizesDelta(apk_name, before_dir, after_dir):
   sizes_diff = diagnose_bloat.ResourceSizesDiff(apk_name)
   sizes_diff.ProduceDiff(before_dir, after_dir)
+  details = (
+      'See https://chromium.googlesource.com/chromium/src/+/master/docs/speed/'
+      'binary_size/metrics.md#Normalized-APK-Size '
+      'for an explanation of Normalized APK Size')
 
   return sizes_diff.Summary(), _SizeDelta(
       'Normalized APK Size', 'bytes', _MAX_NORMALIZED_INCREASE,
-      sizes_diff.summary_stat.value, _NORMALIZED_APK_SIZE_DETAILS)
+      sizes_diff.summary_stat.value, details)
 
 
-def _CreateAndWriteSupersizeDiff(apk_name, before_dir, after_dir):
+def _CreateSupersizeDiff(apk_name, before_dir, after_dir):
   before_size_path = os.path.join(before_dir, apk_name + '.size')
   after_size_path = os.path.join(after_dir, apk_name + '.size')
   before = archive.LoadAndPostProcessSizeInfo(before_size_path)
@@ -155,17 +185,24 @@ def main():
     logging.basicConfig(level=logging.INFO)
 
   logging.info('Creating Supersize diff')
-  supersize_diff_lines, delta_size_info = _CreateAndWriteSupersizeDiff(
+  supersize_diff_lines, delta_size_info = _CreateSupersizeDiff(
       args.apk_name, args.before_dir, args.after_dir)
 
   changed_symbols = delta_size_info.raw_symbols.WhereDiffStatusIs(
       models.DIFF_STATUS_UNCHANGED).Inverted()
 
-  # Monitor dex method growth since this correlates closely with APK size and
-  # may affect our dex file structure.
+  # Monitor dex method count since the "multidex limit" is a thing.
   logging.info('Checking dex symbols')
-  dex_delta_lines, dex_delta = _CreateAndWriteMethodCountDelta(changed_symbols)
+  dex_delta_lines, dex_delta = _CreateMethodCountDelta(changed_symbols)
   size_deltas = {dex_delta}
+
+  # Look for native symbols called "kConstant" that are not actually constants.
+  # C++ syntax makes this an easy mistake, and having symbols in .data uses more
+  # RAM than symbols in .rodata (at least for multi-process apps).
+  logging.info('Checking for mutable constants in native symbols')
+  mutable_constants_lines, mutable_constants_delta = (
+      _CreateMutableConstantsDelta(changed_symbols))
+  size_deltas.add(mutable_constants_delta)
 
   # Check for uncompressed .pak file entries being added to avoid unnecessary
   # bloat.
@@ -175,8 +212,7 @@ def main():
   # Normalized APK Size is the main metric we use to monitor binary size.
   logging.info('Creating sizes diff')
   resource_sizes_lines, resource_sizes_delta = (
-      _CreateAndWriteResourceSizesDelta(args.apk_name, args.before_dir,
-                                        args.after_dir))
+      _CreateResourceSizesDelta(args.apk_name, args.before_dir, args.after_dir))
   size_deltas.add(resource_sizes_delta)
 
   # .ndjson can be consumed by the html viewer.
@@ -210,29 +246,38 @@ PASSING:
     summary += failing_checks_text.replace('\n', '<br>')
     summary += '<br>Look at "Size Assertion Results" for guidance.'
 
+  links_json = [
+      {
+          'name': '>>> Size Assertion Results <<<',
+          'lines': checks_text.splitlines(),
+      },
+      {
+          'name': '>>> Mutable Constants Diff <<<',
+          'lines': mutable_constants_lines,
+      },
+      {
+          'name': '>>> Dex Method Diff <<<',
+          'lines': dex_delta_lines,
+      },
+      {
+          'name': '>>> SuperSize Text Diff <<<',
+          'lines': supersize_diff_lines,
+      },
+      {
+          'name': '>>> Supersize HTML Diff <<<',
+          'url': _HTML_REPORT_BASE_URL + '{{' + _NDJSON_FILENAME + '}}',
+      },
+  ]
+  # Remove empty diffs (Mutable Constants or Dex Method).
+  links_json = [o for o in links_json if o.get('lines') or o.get('url')]
+
   results_json = {
       'status_code': status_code,
       'summary': summary,
       'archive_filenames': [_NDJSON_FILENAME],
-      'links': [
-          {
-              'name': '>>> Size Assertion Results <<<',
-              'lines': checks_text.splitlines(),
-          },
-          {
-              'name': '>>> Dex Method Diff <<<',
-              'lines': dex_delta_lines,
-          },
-          {
-              'name': '>>> SuperSize Text Diff <<<',
-              'lines': supersize_diff_lines,
-          },
-          {
-              'name': '>>> Supersize HTML Diff <<<',
-              'url': _HTML_REPORT_BASE_URL + '{{' + _NDJSON_FILENAME + '}}',
-          },
-      ],
+      'links': links_json,
   }
+
   with open(args.results_path, 'w') as f:
     json.dump(results_json, f)
 
