@@ -19,10 +19,6 @@ namespace ui {
 class CallbackLayerAnimationObserver;
 }  // namespace ui
 
-namespace views {
-class NativeViewHost;
-}  // namespace views
-
 namespace ash {
 
 class AssistantController;
@@ -80,11 +76,6 @@ class UiElementContainerView : public AssistantScrollView,
   // PreferredSizeChanged events by waiting until the entirety of a response has
   // been added/removed before propagating. This reduces layout passes.
   bool propagate_preferred_size_changed_ = true;
-
-  // Cached references to the native view hosts associated with card elements.
-  // We maintain a reference so long as the native view host is attached so that
-  // we can detach before removal from the view hierarchy and destruction.
-  std::vector<views::NativeViewHost*> native_view_hosts_;
 
   // UI elements will be animated on their own layers. We track the desired
   // opacity to which each layer should be animated when processing the next
