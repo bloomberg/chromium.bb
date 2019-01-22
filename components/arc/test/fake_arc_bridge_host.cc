@@ -15,6 +15,9 @@ void FakeArcBridgeHost::OnAccessibilityHelperInstanceReady(
 
 void FakeArcBridgeHost::OnAppInstanceReady(mojom::AppInstancePtr app_ptr) {}
 
+void FakeArcBridgeHost::OnAppPermissionsInstanceReady(
+    mojom::AppPermissionsInstancePtr app_permissions_ptr) {}
+
 void FakeArcBridgeHost::OnAppfuseInstanceReady(
     mojom::AppfuseInstancePtr app_ptr) {}
 
