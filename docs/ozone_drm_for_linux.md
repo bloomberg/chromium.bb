@@ -87,7 +87,7 @@ $ pactl exit
 Run chrome: (Set `CHROMIUM_SRC` to the directory containing your Chrome checkout.)
 
 ```
-$ sudo chvt 8; EGL_PLATFORM=surfaceless $CHROMIUM_SRC/out/Nouveau/chrome --ozone-platform=gbm --force-system-compositor-mode --login-profile=user --user-data-dir=$HOME/.config/google-chrome-gbm --ui-prioritize-in-gpu-process --use-gl=egl  --enable-wayland-server --login-manager --ash-constrain-pointer-to-root --default-tile-width=512 --default-tile-height=512 --system-developer-mode --crosh-command=/bin/bash
+$ sudo chvt 8; EGL_PLATFORM=surfaceless $CHROMIUM_SRC/out/Nouveau/chrome --ozone-platform=gbm --force-system-compositor-mode --login-profile=user --user-data-dir=$HOME/.config/google-chrome-gbm --use-gl=egl --enable-wayland-server --login-manager --ash-constrain-pointer-to-root --default-tile-width=512 --default-tile-height=512 --system-developer-mode --crosh-command=/bin/bash
 ```
 
 Login to Chrome settings should synchronize.
