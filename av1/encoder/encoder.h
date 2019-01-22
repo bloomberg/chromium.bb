@@ -883,6 +883,8 @@ typedef struct {
 struct EncodeFrameParams {
   int error_resilient_mode;
   FRAME_TYPE frame_type;
+  int primary_ref_frame;
+  int order_offset;
 
   // This is a bitmask of which reference slots can be used in this frame
   int ref_frame_flags;

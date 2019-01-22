@@ -501,7 +501,6 @@ typedef struct AV1Common {
   int primary_ref_frame;
 
   int error_resilient_mode;
-  int force_primary_ref_none;
 
   int tile_cols, tile_rows;
 

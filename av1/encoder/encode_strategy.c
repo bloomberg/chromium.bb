@@ -138,7 +138,6 @@ static void set_ext_overrides(AV1_COMP *const cpi,
   if (cpi->ext_use_s_frame) {
     frame_params->frame_type = S_FRAME;
   }
-  cm->force_primary_ref_none = cpi->ext_use_primary_ref_none;
 
   if (cpi->ext_refresh_frame_context_pending) {
     cm->refresh_frame_context = cpi->ext_refresh_frame_context;
@@ -237,6 +236,109 @@ static int get_ref_frame_flags(const AV1_COMP *const cpi) {
   return flags;
 }
 
+static int get_current_frame_ref_type(
+    const AV1_COMP *const cpi, const EncodeFrameParams *const frame_params) {
+  const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
+  // We choose the reference "type" of this frame from the flags which indicate
+  // which reference frames will be refreshed by it.  More than one of these
+  // flags may be set, so the order here implies an order of precedence.
+
+  const int intra_only = frame_params->frame_type == KEY_FRAME ||
+                         frame_params->frame_type == INTRA_ONLY_FRAME;
+  if (intra_only || frame_params->error_resilient_mode ||
+      cpi->ext_use_primary_ref_none)
+    return REGULAR_FRAME;
+  else if (gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE)
+    return EXT_ARF_FRAME;
+  else if (cpi->refresh_alt_ref_frame)
+    return ARF_FRAME;
+  else if (cpi->rc.is_src_frame_alt_ref)
+    return OVERLAY_FRAME;
+  else if (cpi->refresh_golden_frame)
+    return GLD_FRAME;
+  else if (cpi->refresh_bwd_ref_frame)
+    return BRF_FRAME;
+  else
+    return REGULAR_FRAME;
+}
+
+static int choose_primary_ref_frame(
+    const AV1_COMP *const cpi, const EncodeFrameParams *const frame_params) {
+  const AV1_COMMON *const cm = &cpi->common;
+
+  const int intra_only = frame_params->frame_type == KEY_FRAME ||
+                         frame_params->frame_type == INTRA_ONLY_FRAME;
+  if (intra_only || frame_params->error_resilient_mode ||
+      cpi->ext_use_primary_ref_none) {
+    return PRIMARY_REF_NONE;
+  }
+
+  // Find the most recent reference frame with the same reference type as the
+  // current frame
+  const FRAME_CONTEXT_INDEX current_ref_type =
+      get_current_frame_ref_type(cpi, frame_params);
+  int wanted_fb = cpi->fb_of_context_type[current_ref_type];
+
+  int primary_ref_frame = PRIMARY_REF_NONE;
+  for (int ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ref_frame++) {
+    if (get_ref_frame_map_idx(cm, ref_frame) == wanted_fb) {
+      primary_ref_frame = ref_frame - LAST_FRAME;
+    }
+  }
+  return primary_ref_frame;
+}
+
+static void update_fb_of_context_type(
+    const AV1_COMP *const cpi, const EncodeFrameParams *const frame_params,
+    int *const fb_of_context_type) {
+  const AV1_COMMON *const cm = &cpi->common;
+
+  if (frame_is_intra_only(cm) || cm->error_resilient_mode ||
+      cpi->ext_use_primary_ref_none) {
+    for (int i = 0; i < REF_FRAMES; i++) {
+      fb_of_context_type[i] = -1;
+    }
+    fb_of_context_type[REGULAR_FRAME] =
+        cm->show_frame ? get_ref_frame_map_idx(cm, GOLDEN_FRAME)
+                       : get_ref_frame_map_idx(cm, ALTREF_FRAME);
+  }
+
+  if (!encode_show_existing_frame(cm)) {
+    // Refresh fb_of_context_type[]: see encoder.h for explanation
+    // Note that we want the value of refresh_frame_flags for the frame that
+    // just happened.  If we call get_refresh_frame_flags now we will get a
+    // different answer, because update_reference_frames() has happened.
+    if (cm->current_frame.frame_type == KEY_FRAME) {
+      // All ref frames are refreshed, pick one that will live long enough
+      fb_of_context_type[REGULAR_FRAME] = 0;
+    } else {
+      // If more than one frame is refreshed, it doesn't matter which one we
+      // pick so pick the first.  LST sometimes doesn't refresh any: this is ok
+      const int current_frame_ref_type =
+          get_current_frame_ref_type(cpi, frame_params);
+      for (int i = 0; i < REF_FRAMES; i++) {
+        if (cm->current_frame.refresh_frame_flags & (1 << i)) {
+          fb_of_context_type[current_frame_ref_type] = i;
+          break;
+        }
+      }
+    }
+  }
+}
+
+static int get_order_offset(const AV1_COMP *const cpi) {
+  // shown frame by definition has order offset 0
+  // show_existing_frame ignores order_offset and simply takes the order_hint
+  // from the reference frame being shown.
+  if (cpi->common.show_frame || cpi->common.show_existing_frame) return 0;
+
+  const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
+  const int arf_offset =
+      AOMMIN((MAX_GF_INTERVAL - 1), gf_group->arf_src_offset[gf_group->index]);
+  const int brf_offset = gf_group->brf_src_offset[gf_group->index];
+  return AOMMIN((MAX_GF_INTERVAL - 1), arf_offset + brf_offset);
+}
+
 int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
                         uint8_t *const dest, unsigned int *frame_flags,
                         const EncodeFrameInput *const frame_input) {
@@ -314,6 +416,12 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     frame_params.ref_frame_flags = get_ref_frame_flags(cpi);
   }
 
+  if (oxcf->pass == 0 || oxcf->pass == 2) {
+    frame_params.primary_ref_frame =
+        choose_primary_ref_frame(cpi, &frame_params);
+    frame_params.order_offset = get_order_offset(cpi);
+  }
+
   if (av1_encode(cpi, dest, frame_input, &frame_params, &frame_results) !=
       AOM_CODEC_OK) {
     return AOM_CODEC_ERROR;
@@ -332,6 +440,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
   }
 
   if (oxcf->pass == 0 || oxcf->pass == 2) {
+    update_fb_of_context_type(cpi, &frame_params, cpi->fb_of_context_type);
     set_additional_frame_flags(cm, frame_params.frame_flags);
     update_rc_counts(cpi);
     check_show_existing_frame(cpi);  // Is next frame a show_existing frame?

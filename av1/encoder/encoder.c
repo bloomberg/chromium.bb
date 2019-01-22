@@ -370,30 +370,6 @@ static BLOCK_SIZE select_sb_size(const AV1_COMP *const cpi) {
   return BLOCK_128X128;
 }
 
-static int get_current_frame_ref_type(const AV1_COMP *const cpi) {
-  const AV1_COMMON *const cm = &cpi->common;
-  const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
-  // We choose the reference "type" of this frame from the flags which indicate
-  // which reference frames will be refreshed by it.  More than one of these
-  // flags may be set, so the order here implies an order of precedence.
-
-  if (frame_is_intra_only(cm) || cm->error_resilient_mode ||
-      cm->force_primary_ref_none)
-    return REGULAR_FRAME;
-  else if (gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE)
-    return EXT_ARF_FRAME;
-  else if (cpi->refresh_alt_ref_frame)
-    return ARF_FRAME;
-  else if (cpi->rc.is_src_frame_alt_ref)
-    return OVERLAY_FRAME;
-  else if (cpi->refresh_golden_frame)
-    return GLD_FRAME;
-  else if (cpi->refresh_bwd_ref_frame)
-    return BRF_FRAME;
-  else
-    return REGULAR_FRAME;
-}
-
 static void setup_frame(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   // Set up entropy context depending on frame type. The decoder mandates
@@ -402,24 +378,9 @@ static void setup_frame(AV1_COMP *cpi) {
   // other inter-frames the encoder currently uses only two contexts;
   // context 1 for ALTREF frames and context 0 for the others.
 
-  cm->primary_ref_frame = PRIMARY_REF_NONE;
   if (frame_is_intra_only(cm) || cm->error_resilient_mode ||
-      cm->force_primary_ref_none) {
+      cpi->ext_use_primary_ref_none) {
     av1_setup_past_independence(cm);
-    for (int i = 0; i < REF_FRAMES; i++) {
-      cpi->fb_of_context_type[i] = -1;
-    }
-    cpi->fb_of_context_type[REGULAR_FRAME] =
-        cm->show_frame ? get_ref_frame_map_idx(cm, GOLDEN_FRAME)
-                       : get_ref_frame_map_idx(cm, ALTREF_FRAME);
-  } else {
-    int wanted_fb = cpi->fb_of_context_type[get_current_frame_ref_type(cpi)];
-    for (int ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ref_frame++) {
-      int fb = get_ref_frame_map_idx(cm, ref_frame);
-      if (fb == wanted_fb) {
-        cm->primary_ref_frame = ref_frame - LAST_FRAME;
-      }
-    }
   }
 
   if (cm->current_frame.frame_type == KEY_FRAME && cm->show_frame) {
@@ -4519,24 +4480,6 @@ static void finalize_encoded_frame(AV1_COMP *const cpi) {
   // the current frame
   current_frame->refresh_frame_flags = get_refresh_frame_flags(cpi);
 
-  if (!encode_show_existing_frame(cm)) {
-    // Refresh fb_of_context_type[]: see encoder.h for explanation
-    if (current_frame->frame_type == KEY_FRAME) {
-      // All ref frames are refreshed, pick one that will live long enough
-      cpi->fb_of_context_type[REGULAR_FRAME] = 0;
-    } else {
-      // If more than one frame is refreshed, it doesn't matter which one we
-      // pick so pick the first.  LST sometimes doesn't refresh any: this is ok
-      const int current_frame_ref_type = get_current_frame_ref_type(cpi);
-      for (int i = 0; i < REF_FRAMES; i++) {
-        if (current_frame->refresh_frame_flags & (1 << i)) {
-          cpi->fb_of_context_type[current_frame_ref_type] = i;
-          break;
-        }
-      }
-    }
-  }
-
   if (!cm->seq_params.reduced_still_picture_hdr &&
       encode_show_existing_frame(cm)) {
     RefCntBuffer *const frame_to_show =
@@ -5149,10 +5092,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   cm->allow_warped_motion =
       cpi->oxcf.allow_warped_motion && frame_might_allow_warped_motion(cm);
 
-  // Reset the frame packet stamp index.
-  if (current_frame->frame_type == KEY_FRAME && cm->show_frame)
-    current_frame->frame_number = 0;
-
   cm->last_frame_type = current_frame->frame_type;
   if (cpi->oxcf.pass == 2 && cpi->sf.adaptive_interp_filter_search)
     cpi->sf.interp_filter_search_mask = setup_interp_filter_search_mask(cpi);
@@ -5180,9 +5119,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     }
 
     cpi->seq_params_locked = 1;
-
-    // Update current frame offset.
-    current_frame->order_hint = cm->cur_frame->order_hint;
 
 #if DUMP_RECON_FRAMES == 1
     // NOTE(zoeliu): For debug - Output the filtered reconstructed video.
@@ -5516,15 +5452,29 @@ int av1_encode(AV1_COMP *const cpi, uint8_t *const dest,
                const EncodeFrameParams *const frame_params,
                EncodeFrameResults *const frame_results) {
   AV1_COMMON *const cm = &cpi->common;
+  CurrentFrame *const current_frame = &cm->current_frame;
 
   cpi->unscaled_source = frame_input->source;
   cpi->source = frame_input->source;
   cpi->unscaled_last_source = frame_input->last_source;
 
   cm->error_resilient_mode = frame_params->error_resilient_mode;
+  cm->primary_ref_frame = frame_params->primary_ref_frame;
   cm->current_frame.frame_type = frame_params->frame_type;
   cpi->ref_frame_flags = frame_params->ref_frame_flags;
   cpi->speed = frame_params->speed;
+
+  if (current_frame->frame_type == KEY_FRAME && cm->show_frame)
+    current_frame->frame_number = 0;
+
+  if (cm->show_existing_frame) {
+    current_frame->order_hint = cm->cur_frame->order_hint;
+  } else {
+    current_frame->order_hint =
+        current_frame->frame_number + frame_params->order_offset;
+    current_frame->order_hint %=
+        (1 << (cm->seq_params.order_hint_info.order_hint_bits_minus_1 + 1));
+  }
 
   if (cpi->oxcf.pass == 1) {
     av1_first_pass(cpi, frame_input->ts_duration);
