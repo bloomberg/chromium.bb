@@ -64,6 +64,9 @@
 
 #define ACCT_STR __func__
 
+#define AOM_MIN_THREADS_PER_TILE 1
+#define AOM_MAX_THREADS_PER_TILE 2
+
 // This is needed by ext_tile related unit tests.
 #define EXT_TILE_DEBUG 1
 #define MC_TEMP_BUF_PELS                       \
@@ -3361,6 +3364,20 @@ static int tile_worker_hook(void *arg1, void *arg2) {
   return !td->xd.corrupted;
 }
 
+static INLINE int get_max_row_mt_workers_per_tile(AV1_COMMON *cm,
+                                                  TileInfo tile) {
+  // NOTE: Currently value of max workers is calculated based
+  // on the parse and decode time. As per the theoretical estimate
+  // when percentage of parse time is equal to percentage of decode
+  // time, number of workers needed to parse + decode a tile can not
+  // exceed more than 2.
+  // TODO(any): Modify this value if parsing is optimized in future.
+  int sb_rows = av1_get_sb_rows_in_tile(cm, tile);
+  int max_workers =
+      sb_rows == 1 ? AOM_MIN_THREADS_PER_TILE : AOM_MAX_THREADS_PER_TILE;
+  return max_workers;
+}
+
 // The caller must hold pbi->row_mt_mutex_ when calling this function.
 // Returns 1 if either the next job is stored in *next_job_info or 1 is stored
 // in *end_of_frame.
@@ -3391,8 +3408,8 @@ static int get_next_job_info(AV1Decoder *const pbi,
   int min_threads_working = INT_MAX;
   int max_mis_to_decode = 0;
   int tile_row_idx, tile_col_idx;
-  int tile_row = 0;
-  int tile_col = 0;
+  int tile_row = -1;
+  int tile_col = -1;
 
   memset(next_job_info, 0, sizeof(*next_job_info));
 
@@ -3440,7 +3457,9 @@ static int get_next_job_info(AV1Decoder *const pbi,
           max_mis_to_decode = 0;
         }
         if (num_threads_working == min_threads_working &&
-            num_mis_to_decode > max_mis_to_decode) {
+            num_mis_to_decode > max_mis_to_decode &&
+            num_threads_working <
+                get_max_row_mt_workers_per_tile(cm, tile_data->tile_info)) {
           max_mis_to_decode = num_mis_to_decode;
           tile_row = tile_row_idx;
           tile_col = tile_col_idx;
@@ -3448,6 +3467,8 @@ static int get_next_job_info(AV1Decoder *const pbi,
       }
     }
   }
+  // No job found to process
+  if (tile_row == -1 || tile_col == -1) return 0;
 
   tile_data = pbi->tile_data + tile_row * cm->tile_cols + tile_col;
   tile_info = tile_data->tile_info;
@@ -3576,9 +3597,22 @@ static int row_mt_worker_hook(void *arg1, void *arg2) {
       TileDataDec *const tile_data = cur_job_info->tile_data;
       tile_worker_hook_init(pbi, thread_data, tile_buffer, tile_data,
                             allow_update_cdf);
-
+#if CONFIG_MULTITHREAD
+      pthread_mutex_lock(pbi->row_mt_mutex_);
+#endif
+      tile_data->dec_row_mt_sync.num_threads_working++;
+#if CONFIG_MULTITHREAD
+      pthread_mutex_unlock(pbi->row_mt_mutex_);
+#endif
       // decode tile
       parse_tile_row_mt(pbi, td, tile_data);
+#if CONFIG_MULTITHREAD
+      pthread_mutex_lock(pbi->row_mt_mutex_);
+#endif
+      tile_data->dec_row_mt_sync.num_threads_working--;
+#if CONFIG_MULTITHREAD
+      pthread_mutex_unlock(pbi->row_mt_mutex_);
+#endif
     } else {
       break;
     }
@@ -4055,7 +4089,8 @@ static const uint8_t *decode_tiles_row_mt(AV1Decoder *pbi, const uint8_t *data,
   int tile_cols_start;
   int tile_cols_end;
   int tile_count_tg;
-  int num_workers;
+  int num_workers = 0;
+  int max_threads;
   const uint8_t *raw_data_end = NULL;
   int max_sb_rows = 0;
 
@@ -4071,7 +4106,7 @@ static const uint8_t *decode_tiles_row_mt(AV1Decoder *pbi, const uint8_t *data,
     tile_cols_end = tile_cols;
   }
   tile_count_tg = end_tile - start_tile + 1;
-  num_workers = pbi->max_threads;
+  max_threads = pbi->max_threads;
 
   // No tiles to decode.
   if (tile_rows_end <= tile_rows_start || tile_cols_end <= tile_cols_start ||
@@ -4084,7 +4119,7 @@ static const uint8_t *decode_tiles_row_mt(AV1Decoder *pbi, const uint8_t *data,
   assert(tile_rows <= MAX_TILE_ROWS);
   assert(tile_cols <= MAX_TILE_COLS);
   assert(tile_count_tg > 0);
-  assert(num_workers > 0);
+  assert(max_threads > 0);
   assert(start_tile <= end_tile);
   assert(start_tile >= 0 && end_tile < n_tiles);
 
@@ -4116,8 +4151,10 @@ static const uint8_t *decode_tiles_row_mt(AV1Decoder *pbi, const uint8_t *data,
 
       max_sb_rows = AOMMAX(max_sb_rows,
                            av1_get_sb_rows_in_tile(cm, tile_data->tile_info));
+      num_workers += get_max_row_mt_workers_per_tile(cm, tile_data->tile_info);
     }
   }
+  num_workers = AOMMIN(num_workers, max_threads);
 
   if (pbi->allocated_row_mt_sync_rows != max_sb_rows) {
     for (int i = 0; i < n_tiles; ++i) {
