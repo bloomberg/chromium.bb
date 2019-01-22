@@ -8,12 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}
 
 namespace ios {
 class ChromeBrowserState;
@@ -32,7 +28,7 @@ class TranslateRankerFactory : public BrowserStateKeyedServiceFactory {
   static TranslateRankerFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<TranslateRankerFactory>;
+  friend class base::NoDestructor<TranslateRankerFactory>;
 
   TranslateRankerFactory();
   ~TranslateRankerFactory() override;

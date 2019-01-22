@@ -45,7 +45,8 @@ TranslateAcceptLanguagesService::~TranslateAcceptLanguagesService() {
 // static
 TranslateAcceptLanguagesFactory*
 TranslateAcceptLanguagesFactory::GetInstance() {
-  return base::Singleton<TranslateAcceptLanguagesFactory>::get();
+  static base::NoDestructor<TranslateAcceptLanguagesFactory> instance;
+  return instance.get();
 }
 
 // static
