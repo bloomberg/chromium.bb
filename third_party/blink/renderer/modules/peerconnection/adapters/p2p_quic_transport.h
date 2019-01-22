@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_P2P_QUIC_TRANSPORT_H_
 
 #include "base/logging.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_stats.h"
 #include "third_party/webrtc/rtc_base/ssl_fingerprint.h"
 
 namespace blink {
@@ -89,6 +90,9 @@ class P2PQuicTransport {
   // - Stop() is called.
   // - The P2PQuicTransport is deleted.
   virtual P2PQuicStream* CreateStream() = 0;
+
+  // Gets the associated stats. These are QUIC connection level stats.
+  virtual P2PQuicTransportStats GetStats() const = 0;
 
   // TODO(https://crbug.com/874296): Consider adding a getter for the
   // local fingerprints of the certificate(s) set in the constructor.

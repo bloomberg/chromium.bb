@@ -373,8 +373,15 @@ P2PQuicStreamImpl* P2PQuicTransportImpl::CreateStream() {
   return CreateOutgoingBidirectionalStream();
 }
 
+P2PQuicTransportStats P2PQuicTransportImpl::GetStats() const {
+  return P2PQuicTransportStats(connection_->GetStats(),
+                               num_outgoing_streams_created_,
+                               num_incoming_streams_created_);
+}
+
 P2PQuicStreamImpl* P2PQuicTransportImpl::CreateOutgoingBidirectionalStream() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  num_outgoing_streams_created_++;
   P2PQuicStreamImpl* stream =
       CreateStreamInternal(GetNextOutgoingBidirectionalStreamId());
   ActivateStream(std::unique_ptr<P2PQuicStreamImpl>(stream));
@@ -384,6 +391,7 @@ P2PQuicStreamImpl* P2PQuicTransportImpl::CreateOutgoingBidirectionalStream() {
 P2PQuicStreamImpl* P2PQuicTransportImpl::CreateIncomingStream(
     quic::QuicStreamId id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  num_incoming_streams_created_++;
   P2PQuicStreamImpl* stream = CreateStreamInternal(id);
   ActivateStream(std::unique_ptr<P2PQuicStreamImpl>(stream));
   delegate_->OnStream(stream);
@@ -393,6 +401,7 @@ P2PQuicStreamImpl* P2PQuicTransportImpl::CreateIncomingStream(
 P2PQuicStreamImpl* P2PQuicTransportImpl::CreateIncomingStream(
     quic::PendingStream pending) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  num_incoming_streams_created_++;
   P2PQuicStreamImpl* stream = CreateStreamInternal(std::move(pending));
   ActivateStream(std::unique_ptr<P2PQuicStreamImpl>(stream));
   delegate_->OnStream(stream);

@@ -1161,4 +1161,48 @@ TEST_F(P2PQuicTransportTest, StreamDataSentWithFinClosesStreams) {
   ExpectStreamsClosed();
 }
 
+// Tests that the stats returned by the P2PQuicTransportImpl have the correct
+// number of incoming and outgoing streams.
+TEST_F(P2PQuicTransportTest, GetStatsForNumberOfStreams) {
+  Initialize();
+  Connect();
+
+  P2PQuicTransportStats client_stats_1 =
+      client_peer()->quic_transport()->GetStats();
+  EXPECT_EQ(0u, client_stats_1.num_incoming_streams_created);
+  EXPECT_EQ(0u, client_stats_1.num_outgoing_streams_created);
+  P2PQuicTransportStats server_stats_1 =
+      server_peer()->quic_transport()->GetStats();
+  EXPECT_EQ(0u, server_stats_1.num_incoming_streams_created);
+  EXPECT_EQ(0u, server_stats_1.num_outgoing_streams_created);
+
+  // Create a stream on the client side and send some data to trigger a stream
+  // creation on the remote side.
+  client_peer()->CreateStreamWithDelegate();
+  CallbackRunLoop run_loop(runner());
+  base::RepeatingCallback<void()> callback = run_loop.CreateCallback();
+  MockP2PQuicStreamDelegate server_stream_delegate;
+  EXPECT_CALL(*server_peer()->quic_transport_delegate(), OnStream(_))
+      .WillOnce(
+          Invoke([&callback, &server_stream_delegate](P2PQuicStream* stream) {
+            stream->SetDelegate(&server_stream_delegate);
+            callback.Run();
+          }));
+  client_peer()->stream()->WriteData(
+      VectorFromArray(kTriggerRemoteStreamPhrase),
+      /*fin=*/false);
+  run_loop.RunUntilCallbacksFired();
+
+  P2PQuicTransportStats client_stats_2 =
+      client_peer()->quic_transport()->GetStats();
+  EXPECT_EQ(0u, client_stats_2.num_incoming_streams_created);
+  EXPECT_EQ(1u, client_stats_2.num_outgoing_streams_created);
+  EXPECT_GT(client_stats_2.timestamp, client_stats_1.timestamp);
+  P2PQuicTransportStats server_stats_2 =
+      server_peer()->quic_transport()->GetStats();
+  EXPECT_EQ(1u, server_stats_2.num_incoming_streams_created);
+  EXPECT_EQ(0u, server_stats_2.num_outgoing_streams_created);
+  EXPECT_GT(server_stats_2.timestamp, server_stats_1.timestamp);
+}
+
 }  // namespace blink

@@ -7,6 +7,7 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_stats.h"
 
 namespace blink {
 
@@ -20,6 +21,7 @@ class MockP2PQuicTransport : public testing::NiceMock<P2PQuicTransport> {
   void Start(StartConfig config) override { MockStart(config); }
   MOCK_METHOD1(MockStart, void(const StartConfig&));
   MOCK_METHOD0(CreateStream, P2PQuicStream*());
+  MOCK_CONST_METHOD0(GetStats, P2PQuicTransportStats());
 };
 
 }  // namespace blink
