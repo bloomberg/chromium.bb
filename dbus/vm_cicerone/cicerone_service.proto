@@ -53,25 +53,6 @@ message ContainerTokenResponse {
   string container_token = 1;
 }
 
-// Message sent to cicerone to check whether or not a specific container is
-// currently running.
-message IsContainerRunningRequest {
-  // Name of the VM.
-  string vm_name = 1;
-
-  // Name of the container within the VM.
-  string container_name = 2;
-
-  // The owner of the VM.
-  string owner_id = 3;
-}
-
-// Reply to the IsContainerRunning method.
-message IsContainerRunningResponse {
-  // True if the container is running, false otherwise.
-  bool container_running = 1;
-}
-
 // Message used in the signal for when tremplin has started.
 message TremplinStartedSignal {
   // Name of the VM the container is in.

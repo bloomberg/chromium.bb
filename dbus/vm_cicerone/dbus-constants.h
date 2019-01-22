@@ -16,7 +16,6 @@ const char kVmCiceroneServiceName[] = "org.chromium.VmCicerone";
 const char kNotifyVmStartedMethod[] = "NotifyVmStarted";
 const char kNotifyVmStoppedMethod[] = "NotifyVmStopped";
 const char kGetContainerTokenMethod[] = "GetContainerToken";
-const char kIsContainerRunningMethod[] = "IsContainerRunning";
 
 // Methods to be called from Chrome.
 const char kLaunchContainerApplicationMethod[] = "LaunchContainerApplication";
