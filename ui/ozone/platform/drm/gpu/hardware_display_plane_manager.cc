@@ -250,6 +250,16 @@ bool HardwareDisplayPlaneManager::SetColorMatrix(
   return CommitColorMatrix(crtc_state->properties);
 }
 
+void HardwareDisplayPlaneManager::SetBackgroundColor(
+    uint32_t crtc_id,
+    const uint64_t background_color) {
+  const int crtc_index = LookupCrtcIndex(crtc_id);
+  DCHECK_GE(crtc_index, 0);
+  CrtcState* crtc_state = &crtc_state_[crtc_index];
+
+  crtc_state->properties.background_color.value = background_color;
+}
+
 bool HardwareDisplayPlaneManager::SetGammaCorrection(
     uint32_t crtc_id,
     const std::vector<display::GammaRampRGBEntry>& degamma_lut,
@@ -336,6 +346,8 @@ bool HardwareDisplayPlaneManager::InitializeCrtcState() {
                           &state.properties.degamma_lut_size);
     GetDrmPropertyForName(drm_, props.get(), "OUT_FENCE_PTR",
                           &state.properties.out_fence_ptr);
+    GetDrmPropertyForName(drm_, props.get(), "BACKGROUND_COLOR",
+                          &state.properties.background_color);
 
     num_crtcs_with_out_fence_ptr += (state.properties.out_fence_ptr.id != 0);
 

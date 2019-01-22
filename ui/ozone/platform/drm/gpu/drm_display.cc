@@ -178,6 +178,10 @@ void DrmDisplay::SetColorMatrix(const std::vector<float>& color_matrix) {
   }
 }
 
+void DrmDisplay::SetBackgroundColor(const uint64_t background_color) {
+  drm_->plane_manager()->SetBackgroundColor(crtc_, background_color);
+}
+
 void DrmDisplay::SetGammaCorrection(
     const std::vector<display::GammaRampRGBEntry>& degamma_lut,
     const std::vector<display::GammaRampRGBEntry>& gamma_lut) {

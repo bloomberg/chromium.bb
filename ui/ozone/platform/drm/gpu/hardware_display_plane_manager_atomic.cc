@@ -83,22 +83,25 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(
       crtcs.push_back(atomic_plane->crtc());
   }
 
-#if defined(COMMIT_PROPERTIES_ON_PAGE_FLIP)
   drmModeAtomicReqPtr request = plane_list->atomic_property_set.get();
-
-  // Apply all CRTC properties in the page-flip so we don't block the swap chain
-  // for a vsync.
-  // TODO(dnicoara): See if we can apply these properties async using
-  // DRM_MODE_ATOMIC_ASYNC_UPDATE flag when committing.
   for (auto* const crtc : crtcs) {
     int idx = LookupCrtcIndex(crtc->crtc());
+
+#if defined(COMMIT_PROPERTIES_ON_PAGE_FLIP)
+    // Apply all CRTC properties in the page-flip so we don't block the
+    // swap chain for a vsync.
+    // TODO(dnicoara): See if we can apply these properties async using
+    // DRM_MODE_ATOMIC_ASYNC_UPDATE flag when committing.
     AddPropertyIfValid(request, crtc->crtc(),
                        crtc_state_[idx].properties.degamma_lut);
     AddPropertyIfValid(request, crtc->crtc(),
                        crtc_state_[idx].properties.gamma_lut);
     AddPropertyIfValid(request, crtc->crtc(), crtc_state_[idx].properties.ctm);
-  }
 #endif
+
+    AddPropertyIfValid(request, crtc->crtc(),
+                       crtc_state_[idx].properties.background_color);
+  }
 
   if (test_only) {
     for (HardwareDisplayPlane* plane : plane_list->plane_list) {
