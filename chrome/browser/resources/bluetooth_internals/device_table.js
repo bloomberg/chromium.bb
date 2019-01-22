@@ -24,7 +24,7 @@ cr.define('device_table', function() {
    * @extends {HTMLTableElement}
    */
   var DeviceTable = cr.ui.define(function() {
-    /** @private {?Array<device_collection.Device>} */
+    /** @private {?Array<bluetooth.mojom.DeviceInfo>} */
     this.devices_ = null;
 
     return document.importNode(
@@ -177,7 +177,7 @@ cr.define('device_table', function() {
       this.body_.classList.add('table-body');
 
       for (var i = 0; i < this.devices_.length; i++) {
-        this.insertRow_(this.devices_.item(i));
+        this.insertRow_(this.devices_.item(i), null);
       }
     },
 

@@ -71,7 +71,7 @@ cr.define('object_fieldset', function() {
     redraw: function() {
       this.innerHTML = '';
 
-      Object.keys(this.value).forEach(function(propName) {
+      Object.keys(assert(this.value)).forEach(function(propName) {
         var value = this.value[propName];
         if (value === false && !this.showAll_) {
           return;

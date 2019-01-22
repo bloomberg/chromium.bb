@@ -15,6 +15,7 @@ if (closure_compile) {
     ]
     if (is_linux || is_win || is_mac) {
       deps += [
+        "bluetooth_internals:closure_compile",
         "bookmarks:closure_compile",
         "discards:closure_compile",
         "local_state:closure_compile",

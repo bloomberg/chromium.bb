@@ -21,11 +21,11 @@ cr.define('device_collection', function() {
     CONNECTED: 2,
   };
 
-  /*
+  /**
    * Collection of devices. Extends ArrayDataModel which provides a set of
    * functions and events that notifies observers when the collection changes.
    * @constructor
-   * @param {!Array<!device_collection.DeviceInfo>} array The starting
+   * @param {!Array<!bluetooth.mojom.DeviceInfo>} array The starting
    *     collection of devices.
    * @extends {cr.ui.ArrayDataModel}
    */

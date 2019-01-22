@@ -101,6 +101,53 @@ mojo.internal.interfaceSupport.PendingResponse = class {
 };
 
 /**
+ * Exposed by endpoints to allow observation of remote peer closure. Any number
+ * of listeners may be registered on a ConnectionErrorEventRouter, and the
+ * router will dispatch at most one event in its lifetime, whenever its
+ * associated bindings endpoint detects peer closure.
+ * @export
+ */
+mojo.internal.interfaceSupport.ConnectionErrorEventRouter = class {
+  /** @public */
+  constructor() {
+    /** @type {!Map<number, !Function>} */
+    this.listeners = new Map;
+
+    /** @private {number} */
+    this.nextListenerId_ = 0;
+  }
+
+  /**
+   * @param {!Function} listener
+   * @return {number} An ID which can be given to removeListener() to remove
+   *     this listener.
+   * @export
+   */
+  addListener(listener) {
+    const id = ++this.nextListenerId_;
+    this.listeners.set(id, listener);
+    return id;
+  }
+
+  /**
+   * @param {number} id An ID returned by a prior call to addListener.
+   * @return {boolean} True iff the identified listener was found and removed.
+   * @export
+   */
+  removeListener(id) {
+    return this.listeners.delete(id);
+  }
+
+  /**
+   * Notifies all listeners of a connection error.
+   */
+  dispatchErrorEvent() {
+    for (const listener of this.listeners.values())
+      listener();
+  }
+};
+
+/**
  * Generic helper used to implement all generated proxy classes. Knows how to
  * serialize requests and deserialize their replies, both according to
  * declarative message structure specs.
@@ -131,6 +178,10 @@ mojo.internal.interfaceSupport.InterfaceProxyBase = class {
     /** @private {mojo.internal.interfaceSupport.ControlMessageHandler} */
     this.controlMessageHandler_ = null;
 
+    /** @private {!mojo.internal.interfaceSupport.ConnectionErrorEventRouter} */
+    this.connectionErrorEventRouter_ =
+        new mojo.internal.interfaceSupport.ConnectionErrorEventRouter;
+
     if (opt_handle instanceof MojoHandle)
       this.bindHandle(opt_handle);
   }
@@ -160,6 +211,14 @@ mojo.internal.interfaceSupport.InterfaceProxyBase = class {
   unbind() {
     if (this.reader_)
       this.reader_.stop();
+  }
+
+  /**
+   * @return {!mojo.internal.interfaceSupport.ConnectionErrorEventRouter}
+   * @export
+   */
+  getConnectionErrorEventRouter() {
+    return this.connectionErrorEventRouter_;
   }
 
   /**
@@ -251,6 +310,7 @@ mojo.internal.interfaceSupport.InterfaceProxyBase = class {
     for (const id of this.pendingResponses_.keys())
       this.pendingResponses_.get(id).reject(new Error(opt_reason));
     this.pendingResponses_ = new Map;
+    this.connectionErrorEventRouter_.dispatchErrorEvent();
   }
 };
 
@@ -431,6 +491,13 @@ mojo.internal.interfaceSupport.InterfaceTarget = class {
     reader.start();
     this.controlMessageHandler_ =
         new mojo.internal.interfaceSupport.ControlMessageHandler(handle);
+  }
+
+  /** @export */
+  closeBindings() {
+    for (const reader of this.readers_.values())
+      reader.stopAndCloseHandle();
+    this.readers_.clear();
   }
 
   /**

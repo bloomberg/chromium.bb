@@ -152,6 +152,13 @@ mojo.internal.InterfaceTarget = class {
    * @param {!Function} handler
    */
   registerHandler(ordinal, paramStruct, responseStruct, handler) {}
+
+  /**
+   * @param {!MojoHandle} handle
+   */
+  bindHandle(handle) {}
+
+  closeBindings() {}
 };
 
 mojo.internal.InterfaceCallbackTarget = class {
@@ -177,4 +184,19 @@ mojo.internal.InterfaceCallbackTarget = class {
    * @return {!Function}
    */
   createTargetHandler(expectsResponse) {}
+};
+
+mojo.internal.ConnectionErrorEventRouter = class {
+  /**
+   * @param {!Function} listener
+   * @return {number} An ID which can be given to removeListener() to remove
+   *     this listener.
+   */
+  addListener(listener) {}
+
+  /**
+   * @param {number} id An ID returned by a prior call to addListener.
+   * @return {boolean} True iff the identified listener was found and removed.
+   */
+  removeListener(id) {}
 };
