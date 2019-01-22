@@ -9,6 +9,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -279,6 +280,28 @@ TEST(ColorUtils, GetBlendValueWithMinimumContrast_ComputesExpectedOpacities) {
   EXPECT_NEAR(alpha / 255.0f, 0.65f, 0.03f);
   alpha = GetBlendValueWithMinimumContrast(source, target, base, 1.13728f);
   EXPECT_NEAR(alpha / 255.0f, 0.45f, 0.03f);
+}
+
+TEST(ColorUtils, BlendTowardMaxContrast_PreservesAlpha) {
+  SkColor test_colors[] = {SK_ColorBLACK,      SK_ColorWHITE,
+                           SK_ColorRED,        SK_ColorYELLOW,
+                           SK_ColorMAGENTA,    gfx::kGoogleGreen500,
+                           gfx::kGoogleRed050, gfx::kGoogleBlue800};
+  SkAlpha test_alphas[] = {SK_AlphaTRANSPARENT, 0x0F,
+                           gfx::kDisabledControlAlpha, 0xDD};
+  SkAlpha blend_alpha = 0x7F;
+  for (const SkColor color : test_colors) {
+    SkColor opaque_result =
+        color_utils::BlendTowardMaxContrast(color, blend_alpha);
+    for (const SkAlpha alpha : test_alphas) {
+      SkColor input = SkColorSetA(color, alpha);
+      SkColor result = color_utils::BlendTowardMaxContrast(input, blend_alpha);
+      // Alpha was preserved.
+      EXPECT_EQ(SkColorGetA(result), alpha);
+      // RGB channels unaffected by alpha of input.
+      EXPECT_EQ(SkColorSetA(result, SK_AlphaOPAQUE), opaque_result);
+    }
+  }
 }
 
 TEST(ColorUtils, FindBlendValueForContrastRatio_MatchesNaiveImplementation) {

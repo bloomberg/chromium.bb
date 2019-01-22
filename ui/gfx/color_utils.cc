@@ -307,7 +307,10 @@ SkColor GetColorWithMaxContrast(SkColor color) {
 }
 
 SkColor BlendTowardMaxContrast(SkColor color, SkAlpha alpha) {
-  return AlphaBlend(GetColorWithMaxContrast(color), color, alpha);
+  SkAlpha original_alpha = SkColorGetA(color);
+  SkColor blended_color = AlphaBlend(GetColorWithMaxContrast(color),
+                                     SkColorSetA(color, SK_AlphaOPAQUE), alpha);
+  return SkColorSetA(blended_color, original_alpha);
 }
 
 SkColor PickContrastingColor(SkColor foreground1,
