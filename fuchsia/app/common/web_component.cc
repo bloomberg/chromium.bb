@@ -36,9 +36,15 @@ std::unique_ptr<WebComponent> WebComponent::ForUrlRequest(
   chromium::web::NavigationControllerPtr navigation_controller;
   component->frame()->GetNavigationController(
       navigation_controller.NewRequest());
+
+  // Set the page activation flag on the initial load, so that features like
+  // autoplay work as expected when a WebComponent first loads the specified
+  // content.
   auto params = std::make_unique<chromium::web::LoadUrlParams>();
-  params->was_activated = true;
+  params->user_activated = true;
+
   navigation_controller->LoadUrl(url.spec(), std::move(params));
+
   return component;
 }
 
