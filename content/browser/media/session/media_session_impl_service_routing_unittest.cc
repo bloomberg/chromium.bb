@@ -116,11 +116,15 @@ class MediaSessionImplServiceRoutingTest
   }
 
   void StartPlayerForFrame(TestRenderFrameHost* frame) {
+    StartPlayerForFrame(frame, media::MediaContentType::Persistent);
+  }
+
+  void StartPlayerForFrame(TestRenderFrameHost* frame,
+                           media::MediaContentType type) {
     players_[frame] =
         std::make_unique<NiceMock<MockMediaSessionPlayerObserver>>(frame);
     MediaSessionImpl::Get(contents())
-        ->AddPlayer(players_[frame].get(), kPlayerId,
-                    media::MediaContentType::Persistent);
+        ->AddPlayer(players_[frame].get(), kPlayerId, type);
   }
 
   void ClearPlayersForFrame(TestRenderFrameHost* frame) {
@@ -340,7 +344,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 }
 
 TEST_F(MediaSessionImplServiceRoutingTest,
-       NotifyMetadataAndNotActionsChangeWhenTurningUncontrollable) {
+       NotifyActionsAndMetadataChangeWhenTurningUncontrollable) {
   media_session::MediaMetadata expected_metadata;
   expected_metadata.title = base::ASCIIToUTF16("title");
   expected_metadata.artist = base::ASCIIToUTF16("artist");
@@ -351,23 +355,20 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   empty_metadata.source_title = GetExpectedSourceTitle();
 
   std::set<MediaSessionAction> empty_actions;
-  std::set<MediaSessionAction> expected_actions;
-  expected_actions.insert(MediaSessionAction::kPlay);
 
   EXPECT_CALL(*mock_media_session_observer(), MediaSessionMetadataChanged(_))
       .Times(AnyNumber());
-  EXPECT_CALL(*mock_media_session_observer(), MediaSessionActionsChanged(_))
+  EXPECT_CALL(*mock_media_session_observer(),
+              MediaSessionActionsChanged(default_actions()))
       .Times(AnyNumber());
   EXPECT_CALL(*mock_media_session_observer(),
               MediaSessionMetadataChanged(Eq(empty_metadata)));
   EXPECT_CALL(*mock_media_session_observer(),
-              MediaSessionActionsChanged(Eq(empty_actions)))
-      .Times(0);
+              MediaSessionActionsChanged(Eq(empty_actions)));
 
   CreateServiceForFrame(main_frame_);
 
   services_[main_frame_]->SetMetadata(expected_metadata);
-  services_[main_frame_]->EnableAction(MediaSessionAction::kPlay);
 
   StartPlayerForFrame(main_frame_);
   ClearPlayersForFrame(main_frame_);
@@ -640,24 +641,28 @@ TEST_F(MediaSessionImplServiceRoutingTest, DefaultActionsAlwaysSupported) {
 TEST_F(MediaSessionImplServiceRoutingTest,
        DefaultActionsRemovedIfUncontrollable) {
   CreateServiceForFrame(main_frame_);
-  StartPlayerForFrame(main_frame_);
+  StartPlayerForFrame(main_frame_, media::MediaContentType::OneShot);
 
-  services_[main_frame_]->EnableAction(MediaSessionAction::kPlay);
+  {
+    media_session::test::MockMediaSessionMojoObserver observer(
+        *GetMediaSession());
+    observer.WaitForActions();
 
-  media_session::test::MockMediaSessionMojoObserver observer(
-      *GetMediaSession());
-  observer.WaitForActions();
+    std::set<MediaSessionAction> expected_actions;
+    EXPECT_EQ(expected_actions, observer.actions_set());
+  }
 
-  EXPECT_EQ(default_actions(), observer.actions_set());
+  {
+    media_session::test::MockMediaSessionMojoObserver observer(
+        *GetMediaSession());
 
-  // This will make the media session uncontrollable so we only should have the
-  // actions from the service.
-  ClearPlayersForFrame(main_frame_);
-  observer.WaitForActions();
+    services_[main_frame_]->EnableAction(MediaSessionAction::kPlay);
+    observer.WaitForActions();
 
-  std::set<MediaSessionAction> expected_actions;
-  expected_actions.insert(MediaSessionAction::kPlay);
-  EXPECT_EQ(expected_actions, observer.actions_set());
+    std::set<MediaSessionAction> expected_actions;
+    expected_actions.insert(MediaSessionAction::kPlay);
+    EXPECT_EQ(expected_actions, observer.actions_set());
+  }
 }
 
 TEST_F(MediaSessionImplServiceRoutingTest, NotifyMojoObserverOnNavigation) {
@@ -668,6 +673,58 @@ TEST_F(MediaSessionImplServiceRoutingTest, NotifyMojoObserverOnNavigation) {
   media_session::MediaMetadata expected_metadata;
   expected_metadata.source_title = base::ASCIIToUTF16("www.google.com");
   EXPECT_EQ(expected_metadata, observer.WaitForNonEmptyMetadata());
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest,
+       NotifyMojoObserverWithActionsOnAddWhenServiceNotPresent) {
+  StartPlayerForFrame(main_frame_);
+
+  EXPECT_EQ(nullptr, ComputeServiceForRouting());
+
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+  observer.WaitForActions();
+
+  EXPECT_EQ(default_actions(), observer.actions_set());
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest,
+       NotifyMojoObserverWithActionsOnAddWhenServicePresent) {
+  CreateServiceForFrame(main_frame_);
+  StartPlayerForFrame(main_frame_);
+
+  EXPECT_EQ(services_[main_frame_].get(), ComputeServiceForRouting());
+
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+  observer.WaitForActions();
+
+  EXPECT_EQ(default_actions(), observer.actions_set());
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest,
+       NotifyMojoObserverWithActionsOnAddWhenServiceDestroyed) {
+  CreateServiceForFrame(main_frame_);
+  StartPlayerForFrame(main_frame_);
+
+  EXPECT_EQ(services_[main_frame_].get(), ComputeServiceForRouting());
+
+  services_[main_frame_]->EnableAction(MediaSessionAction::kSeekForward);
+
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+  observer.WaitForActions();
+
+  EXPECT_EQ(GetDefaultActionsWithExtra(MediaSessionAction::kSeekForward),
+            observer.actions_set());
+
+  DestroyServiceForFrame(main_frame_);
+
+  EXPECT_EQ(nullptr, ComputeServiceForRouting());
+
+  observer.WaitForActions();
+
+  EXPECT_EQ(default_actions(), observer.actions_set());
 }
 
 }  // namespace content

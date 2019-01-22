@@ -364,6 +364,9 @@ class MediaSessionImpl : public MediaSession,
   std::map<PlayerIdentifier, media_session::mojom::AudioFocusType>
       normal_players_;
   PlayersMap pepper_players_;
+
+  // Players that are playing in the web contents but we cannot control (e.g.
+  // WebAudio or MediaStream).
   PlayersMap one_shot_players_;
 
   State audio_focus_state_ = State::INACTIVE;

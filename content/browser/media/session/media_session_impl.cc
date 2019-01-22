@@ -776,14 +776,9 @@ void MediaSessionImpl::AddObserver(
   observer->MediaSessionInfoChanged(GetMediaSessionInfoSync());
   observer->MediaSessionMetadataChanged(GetMediaMetadata());
 
-  if (routed_service_) {
-    std::vector<media_session::mojom::MediaSessionAction> actions(
-        actions_.begin(), actions_.end());
-    observer->MediaSessionActionsChanged(actions);
-  } else {
-    observer->MediaSessionActionsChanged(
-        std::vector<media_session::mojom::MediaSessionAction>());
-  }
+  std::vector<media_session::mojom::MediaSessionAction> actions(
+      actions_.begin(), actions_.end());
+  observer->MediaSessionActionsChanged(actions);
 
   mojo_observers_.AddPtr(std::move(observer));
 }
@@ -912,7 +907,9 @@ bool MediaSessionImpl::AddPepperPlayer(MediaSessionPlayerObserver* observer,
 
   observer->OnSetVolumeMultiplier(player_id, GetVolumeMultiplier());
 
+  UpdateRoutedService();
   NotifyLegacyObserversStateChange();
+
   return result != AudioFocusDelegate::AudioFocusResult::kFailed;
 }
 
@@ -925,6 +922,8 @@ bool MediaSessionImpl::AddOneShotPlayer(MediaSessionPlayerObserver* observer,
     return false;
 
   one_shot_players_.insert(PlayerIdentifier(observer, player_id));
+
+  UpdateRoutedService();
   NotifyLegacyObserversStateChange();
 
   return true;
@@ -955,10 +954,9 @@ void MediaSessionImpl::OnServiceCreated(MediaSessionServiceImpl* service) {
 
 void MediaSessionImpl::OnServiceDestroyed(MediaSessionServiceImpl* service) {
   services_.erase(service->GetRenderFrameHost());
-  if (routed_service_ == service) {
-    routed_service_ = nullptr;
+
+  if (routed_service_ == service)
     UpdateRoutedService();
-  }
 }
 
 void MediaSessionImpl::OnMediaSessionPlaybackStateChanged(
@@ -1035,15 +1033,14 @@ bool MediaSessionImpl::IsServiceActiveForRenderFrameHost(RenderFrameHost* rfh) {
 
 void MediaSessionImpl::UpdateRoutedService() {
   MediaSessionServiceImpl* new_service = ComputeServiceForRouting();
+
   if (new_service == routed_service_)
     return;
 
   routed_service_ = new_service;
 
-  if (routed_service_)
-    RebuildAndNotifyActionsChanged();
-
   NotifyMediaSessionMetadataChange();
+  RebuildAndNotifyActionsChanged();
 }
 
 MediaSessionServiceImpl* MediaSessionImpl::ComputeServiceForRouting() {
