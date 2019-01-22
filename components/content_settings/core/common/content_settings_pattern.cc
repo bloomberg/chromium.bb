@@ -7,8 +7,10 @@
 #include <stddef.h>
 
 #include <memory>
+#include <tuple>
 #include <vector>
 
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -61,33 +63,47 @@ bool IsSubDomainOrEqual(const std::string& sub_domain,
          base::EndsWith(sub_domain, domain, base::CompareCase::SENSITIVE);
 }
 
-// Compares two domain names.
-int CompareDomainNames(const std::string& str1, const std::string& str2) {
-  std::vector<base::StringPiece> domain_name1 = base::SplitStringPiece(
-      str1, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  std::vector<base::StringPiece> domain_name2 = base::SplitStringPiece(
-      str2, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+// Splits a |domain| name on the last dot. The returned tuple will consist of:
+//  (1) A prefix of the |domain| name such that the right-most domain label and
+//      its separating dot is removed; or base::nullopt if |domain| consisted
+//      only of a single domain label.
+//  (2) The right-most domain label, which is defined as the empty string if
+//      |domain| is empty or ends in a dot.
+std::tuple<base::Optional<base::StringPiece>, base::StringPiece>
+SplitDomainOnLastDot(const base::StringPiece domain) {
+  size_t index_of_last_dot = domain.rfind('.');
+  if (index_of_last_dot == base::StringPiece::npos)
+    return std::make_tuple(base::nullopt, domain);
+  return std::make_tuple(domain.substr(0, index_of_last_dot),
+                         domain.substr(index_of_last_dot + 1));
+}
 
-  int i1 = static_cast<int>(domain_name1.size()) - 1;
-  int i2 = static_cast<int>(domain_name2.size()) - 1;
-  int rv;
-  while (i1 >= 0 && i2 >= 0) {
+// Compares two domain names.
+int CompareDomainNames(base::StringPiece domain_a, base::StringPiece domain_b) {
+  base::Optional<base::StringPiece> rest_of_a(domain_a);
+  base::Optional<base::StringPiece> rest_of_b(domain_b);
+
+  while (rest_of_a && rest_of_b) {
+    base::StringPiece rightmost_label_a;
+    base::StringPiece rightmost_label_b;
+    std::tie(rest_of_a, rightmost_label_a) = SplitDomainOnLastDot(*rest_of_a);
+    std::tie(rest_of_b, rightmost_label_b) = SplitDomainOnLastDot(*rest_of_b);
+
     // Domain names are stored in puny code. So it's fine to use the compare
     // method.
-    rv = domain_name1[i1].compare(domain_name2[i2]);
+    int rv = rightmost_label_a.compare(rightmost_label_b);
     if (rv != 0)
       return rv;
-    --i1;
-    --i2;
   }
 
-  if (i1 > i2)
+  if (rest_of_a && !rest_of_b)
     return 1;
 
-  if (i1 < i2)
+  if (!rest_of_a && rest_of_b)
     return -1;
 
   // The domain names are identical.
+  DCHECK(!rest_of_a && !rest_of_b);
   return 0;
 }
 
