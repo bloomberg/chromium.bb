@@ -1402,13 +1402,12 @@ bool RenderWidgetHostViewAura::GetTextRange(gfx::Range* range) const {
   if (!text_input_manager_ || !GetFocusedWidget())
     return false;
 
-  const TextInputManager::TextSelection* selection =
-      text_input_manager_->GetTextSelection(GetFocusedWidget()->GetView());
-  if (!selection)
+  const TextInputState* state = text_input_manager_->GetTextInputState();
+  if (!state)
     return false;
 
-  range->set_start(selection->offset());
-  range->set_end(selection->offset() + selection->text().length());
+  range->set_start(0);
+  range->set_end(state->value.length());
   return true;
 }
 
@@ -1417,13 +1416,13 @@ bool RenderWidgetHostViewAura::GetCompositionTextRange(
   if (!text_input_manager_ || !GetFocusedWidget())
     return false;
 
-  const TextInputManager::CompositionRangeInfo* composition_range_info =
-      text_input_manager_->GetCompositionRangeInfo();
-  if (!composition_range_info || !composition_range_info->range.IsValid())
+  const TextInputState* state = text_input_manager_->GetTextInputState();
+  // Return false when there is no composition.
+  if (!state || state->composition_start == -1)
     return false;
 
-  range->set_start(composition_range_info->range.start());
-  range->set_end(composition_range_info->range.end());
+  range->set_start(state->composition_start);
+  range->set_end(state->composition_end);
   return true;
 }
 
@@ -1464,24 +1463,22 @@ bool RenderWidgetHostViewAura::GetTextFromRange(
   if (!text_input_manager_ || !GetFocusedWidget())
     return false;
 
-  const TextInputManager::TextSelection* selection =
-      text_input_manager_->GetTextSelection(GetFocusedWidget()->GetView());
-  if (!selection)
+  const TextInputState* state = text_input_manager_->GetTextInputState();
+  if (!state)
     return false;
 
-  gfx::Range selection_text_range(
-      selection->offset(), selection->offset() + selection->text().length());
+  gfx::Range text_range;
+  GetTextRange(&text_range);
 
-  if (!selection_text_range.Contains(range)) {
+  if (!text_range.Contains(range)) {
     text->clear();
     return false;
   }
-  if (selection_text_range.EqualsIgnoringDirection(range)) {
+  if (text_range.EqualsIgnoringDirection(range)) {
     // Avoid calling substr whose performance is low.
-    *text = selection->text();
+    *text = state->value;
   } else {
-    *text = selection->text().substr(range.GetMin() - selection->offset(),
-                                     range.length());
+    *text = state->value.substr(range.GetMin(), range.length());
   }
   return true;
 }
