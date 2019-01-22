@@ -35,8 +35,6 @@ const char kAnimatedUrlKey[] = "animated_url";
 const char kLogUrlKey[] = "log_url";
 const char kCtaLogUrlKey[] = "cta_log_url";
 const char kShortLinkKey[] = "short_link";
-const char kIframeWidthPx[] = "iframe_width_px";
-const char kIframeHeightPx[] = "iframe_height_px";
 
 const char kShareButtonX[] = "share_button_x";
 const char kShareButtonY[] = "share_button_y";
@@ -126,16 +124,13 @@ const LogoMetadata* LogoCache::GetCachedLogoMetadata() {
 
 void LogoCache::SetCachedLogo(const EncodedLogo* logo) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!logo) {
-    UpdateMetadata(nullptr);
-    DeleteLogoAndMetadata();
-    return;
+  std::unique_ptr<LogoMetadata> metadata;
+  if (logo) {
+    metadata = std::make_unique<LogoMetadata>(logo->metadata);
+    logo_num_bytes_ = static_cast<int>(logo->encoded_image->size());
   }
-
-  logo_num_bytes_ =
-      logo->encoded_image ? static_cast<int>(logo->encoded_image->size()) : 0;
-  UpdateMetadata(std::make_unique<LogoMetadata>(logo->metadata));
-  WriteLogo(logo->encoded_image);
+  UpdateMetadata(std::move(metadata));
+  WriteLogo(logo ? logo->encoded_image : nullptr);
 }
 
 std::unique_ptr<EncodedLogo> LogoCache::GetCachedLogo() {
@@ -145,21 +140,18 @@ std::unique_ptr<EncodedLogo> LogoCache::GetCachedLogo() {
   if (!metadata_)
     return nullptr;
 
-  scoped_refptr<base::RefCountedString> encoded_image;
-  if (logo_num_bytes_ != 0) {
-    encoded_image = new base::RefCountedString();
+  scoped_refptr<base::RefCountedString> encoded_image =
+      new base::RefCountedString();
+  if (!base::ReadFileToString(GetLogoPath(), &encoded_image->data())) {
+    UpdateMetadata(nullptr);
+    return nullptr;
+  }
 
-    if (!base::ReadFileToString(GetLogoPath(), &encoded_image->data())) {
-      UpdateMetadata(nullptr);
-      return nullptr;
-    }
-
-    if (encoded_image->size() != static_cast<size_t>(logo_num_bytes_)) {
-      // Delete corrupt metadata and logo.
-      DeleteLogoAndMetadata();
-      UpdateMetadata(nullptr);
-      return nullptr;
-    }
+  if (encoded_image->size() != static_cast<size_t>(logo_num_bytes_)) {
+    // Delete corrupt metadata and logo.
+    DeleteLogoAndMetadata();
+    UpdateMetadata(nullptr);
+    return nullptr;
   }
 
   std::unique_ptr<EncodedLogo> logo(new EncodedLogo());
@@ -205,8 +197,6 @@ std::unique_ptr<LogoMetadata> LogoCache::LogoMetadataFromString(
       !dict->GetDouble(kShareButtonOpacity, &metadata->share_button_opacity) ||
       !dict->GetString(kShareButtonIcon, &metadata->share_button_icon) ||
       !dict->GetString(kShareButtonBg, &metadata->share_button_bg) ||
-      !dict->GetInteger(kIframeWidthPx, &metadata->iframe_width_px) ||
-      !dict->GetInteger(kIframeHeightPx, &metadata->iframe_height_px) ||
       !GetTimeValue(*dict, kExpirationTimeKey, &metadata->expiration_time)) {
     return nullptr;
   }
@@ -246,8 +236,6 @@ void LogoCache::LogoMetadataToString(const LogoMetadata& metadata,
   dict.SetDouble(kShareButtonOpacity, metadata.share_button_opacity);
   dict.SetString(kShareButtonIcon, metadata.share_button_icon);
   dict.SetString(kShareButtonBg, metadata.share_button_bg);
-  dict.SetInteger(kIframeWidthPx, metadata.iframe_width_px);
-  dict.SetInteger(kIframeHeightPx, metadata.iframe_height_px);
   SetTimeValue(dict, kExpirationTimeKey, metadata.expiration_time);
   base::JSONWriter::Write(dict, str);
 }
@@ -296,7 +284,7 @@ void LogoCache::WriteLogo(scoped_refptr<base::RefCountedMemory> encoded_image) {
   if (!EnsureCacheDirectoryExists())
     return;
 
-  if (!metadata_) {
+  if (!metadata_ || !encoded_image) {
     DeleteLogoAndMetadata();
     return;
   }
@@ -310,9 +298,10 @@ void LogoCache::WriteLogo(scoped_refptr<base::RefCountedMemory> encoded_image) {
   if (!base::DeleteFile(metadata_path, false))
     return;
 
-  if (encoded_image &&
-      base::WriteFile(logo_path, encoded_image->front_as<char>(),
-                      static_cast<int>(encoded_image->size())) == -1) {
+  if (base::WriteFile(
+          logo_path,
+          encoded_image->front_as<char>(),
+          static_cast<int>(encoded_image->size())) == -1) {
     base::DeleteFile(logo_path, false);
     return;
   }

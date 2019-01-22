@@ -391,7 +391,7 @@ void LogoServiceImpl::OnCachedLogoRead(
     std::unique_ptr<EncodedLogo> cached_logo) {
   DCHECK(!is_idle_);
 
-  if (cached_logo && cached_logo->encoded_image) {
+  if (cached_logo) {
     // Store the value of logo->encoded_image for use below. This ensures that
     // logo->encoded_image is evaulated before base::Passed(&logo), which sets
     // logo to NULL.
@@ -402,8 +402,6 @@ void LogoServiceImpl::OnCachedLogoRead(
         ImageDecodedHandlerWithTimeout::Wrap(base::BindRepeating(
             &LogoServiceImpl::OnCachedLogoAvailable,
             weak_ptr_factory_.GetWeakPtr(), base::Passed(&cached_logo))));
-  } else if (cached_logo) {
-    OnCachedLogoAvailable(std::move(cached_logo), SkBitmap());
   } else {
     OnCachedLogoAvailable({}, SkBitmap());
   }
@@ -427,7 +425,7 @@ void LogoServiceImpl::OnCachedLogoAvailable(
     const SkBitmap& image) {
   DCHECK(!is_idle_);
 
-  if (encoded_logo && encoded_logo->encoded_image && !image.isNull()) {
+  if (!image.isNull()) {
     cached_logo_.reset(new Logo());
     cached_logo_->metadata = encoded_logo->metadata;
     cached_logo_->image = image;
@@ -535,24 +533,15 @@ void LogoServiceImpl::OnFreshLogoAvailable(
     encoded_logo->metadata.mime_type = cached_logo_->metadata.mime_type;
     SetCachedMetadata(encoded_logo->metadata);
     download_outcome = DOWNLOAD_OUTCOME_LOGO_REVALIDATED;
-  } else if (encoded_logo && encoded_logo->encoded_image && image.isNull()) {
+  } else if (encoded_logo && image.isNull()) {
     // Image decoding failed. Do nothing.
     download_outcome = DOWNLOAD_OUTCOME_DECODING_FAILED;
-  } else if (encoded_logo && !encoded_logo->encoded_image &&
-             encoded_logo->metadata.type != LogoType::INTERACTIVE) {
-    download_outcome = DOWNLOAD_OUTCOME_MISSING_REQUIRED_IMAGE;
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  } else if (encoded_logo && !encoded_logo->encoded_image) {
-    // On Mobile interactive doodles require a static CTA image, on Desktop the
-    // static image is not required as it's handled by the iframed page.
-    download_outcome = DOWNLOAD_OUTCOME_MISSING_REQUIRED_IMAGE;
-#endif
   } else {
     // Check if the server returned a valid, non-empty response.
     if (encoded_logo) {
       UMA_HISTOGRAM_BOOLEAN("NewTabPage.LogoImageDownloaded", from_http_cache);
 
-      DCHECK(!encoded_logo->encoded_image || !image.isNull());
+      DCHECK(!image.isNull());
       logo.reset(new Logo());
       logo->metadata = encoded_logo->metadata;
       logo->image = image;
@@ -589,7 +578,6 @@ void LogoServiceImpl::OnFreshLogoAvailable(
       }
       break;
 
-    case DOWNLOAD_OUTCOME_MISSING_REQUIRED_IMAGE:
     case DOWNLOAD_OUTCOME_DOWNLOAD_FAILED:
       // In the download failed, don't notify the callback at all, since the
       // callback should continue to use the cached logo.

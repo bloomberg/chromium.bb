@@ -82,13 +82,6 @@ std::unique_ptr<EncodedLogo> GetExampleLogo2() {
   return logo;
 }
 
-std::unique_ptr<EncodedLogo> GetExampleLogoWithoutImage() {
-  auto logo = std::make_unique<EncodedLogo>();
-  logo->encoded_image = nullptr;
-  logo->metadata = GetExampleMetadata2();
-  return logo;
-}
-
 void ExpectMetadataEqual(const LogoMetadata& expected_metadata,
                          const LogoMetadata& actual_metadata) {
   EXPECT_EQ(expected_metadata.source_url, actual_metadata.source_url);
@@ -160,14 +153,6 @@ class LogoCacheTest : public ::testing::Test {
     } else {
       ASSERT_FALSE(retrieved_logo);
     }
-  }
-
-  void ExpectLogoWithoutImage(const EncodedLogo* expected_logo) {
-    std::unique_ptr<EncodedLogo> retrieved_logo(cache_->GetCachedLogo());
-    ASSERT_TRUE(retrieved_logo.get());
-    ASSERT_FALSE(retrieved_logo->encoded_image.get());
-    ASSERT_FALSE(expected_logo->encoded_image.get());
-    ExpectMetadataEqual(expected_logo->metadata, retrieved_logo->metadata);
   }
 
   // Deletes the existing LogoCache and creates a new one. This clears any
@@ -257,33 +242,6 @@ TEST_F(LogoCacheTest, StoreAndRetrieveLogo) {
   // Read logo back from disk.
   SimulateRestart();
   ExpectLogo(logo.get());
-}
-
-TEST_F(LogoCacheTest, StoreAndRetrieveLogoWithoutImage) {
-  // Expect no metadata at first.
-  ExpectLogo(nullptr);
-
-  // Set initial logo.
-  std::unique_ptr<EncodedLogo> logo = GetExampleLogoWithoutImage();
-  cache_->SetCachedLogo(logo.get());
-  ExpectLogoWithoutImage(logo.get());
-
-  // Update logo to null.
-  cache_->SetCachedLogo(nullptr);
-  ExpectLogo(nullptr);
-
-  // Read logo back from disk.
-  SimulateRestart();
-  ExpectLogo(nullptr);
-
-  // Update logo.
-  logo = GetExampleLogoWithoutImage();
-  cache_->SetCachedLogo(logo.get());
-  ExpectLogoWithoutImage(logo.get());
-
-  // Read logo back from disk.
-  SimulateRestart();
-  ExpectLogoWithoutImage(logo.get());
 }
 
 TEST_F(LogoCacheTest, RetrieveCorruptMetadata) {
