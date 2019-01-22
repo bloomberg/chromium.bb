@@ -199,18 +199,16 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
 
     // ProminentButton
     case ui::NativeTheme::kColorId_ProminentButtonColor:
-      return GetBgColor(
-          "GtkButton#button.text-button.default.suggested-action");
     case ui::NativeTheme::kColorId_ProminentButtonFocusedColor:
       return GetBgColor(
-          "GtkButton#button.text-button.default.suggested-action:selected:"
-          "focus");
+          "GtkTreeView#treeview.view "
+          "GtkTreeView#treeview.view.cell:selected:focus");
     case ui::NativeTheme::kColorId_TextOnProminentButtonColor:
       return GetFgColor(
-          "GtkButton#button.text-button.default.suggested-action GtkLabel");
+          "GtkTreeView#treeview.view "
+          "GtkTreeView#treeview.view.cell:selected:focus GtkLabel");
     case ui::NativeTheme::kColorId_ProminentButtonDisabledColor:
-      return GetBgColor(
-          "GtkButton#button.text-button.default.suggested-action:disabled");
+      return GetBgColor("GtkButton#button.text-button:disabled");
     case ui::NativeTheme::kColorId_ButtonBorderColor:
       return GetBorderColor("GtkButton#button.text-button");
 
