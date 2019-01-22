@@ -287,6 +287,8 @@ void KeyboardEventManager::DefaultKeyboardEventHandler(
       DefaultTabEventHandler(event);
     } else if (event->key() == "Escape") {
       DefaultEscapeEventHandler(event);
+    } else if (event->key() == "Enter") {
+      DefaultEnterEventHandler(event);
     } else {
       // TODO(bokan): Seems odd to call the default _arrow_ event handler on
       // events that aren't necessarily arrow keys.
@@ -397,8 +399,28 @@ void KeyboardEventManager::DefaultTabEventHandler(KeyboardEvent* event) {
 }
 
 void KeyboardEventManager::DefaultEscapeEventHandler(KeyboardEvent* event) {
+  Page* page = frame_->GetPage();
+  if (!page)
+    return;
+
+  if (IsSpatialNavigationEnabled(frame_) &&
+      !frame_->GetDocument()->InDesignMode()) {
+    page->GetSpatialNavigationController().HandleEscapeKeyboardEvent(event);
+  }
+
   if (HTMLDialogElement* dialog = frame_->GetDocument()->ActiveModalDialog())
     dialog->DispatchEvent(*Event::CreateCancelable(event_type_names::kCancel));
+}
+
+void KeyboardEventManager::DefaultEnterEventHandler(KeyboardEvent* event) {
+  Page* page = frame_->GetPage();
+  if (!page)
+    return;
+
+  if (IsSpatialNavigationEnabled(frame_) &&
+      !frame_->GetDocument()->InDesignMode()) {
+    page->GetSpatialNavigationController().HandleEnterKeyboardEvent(event);
+  }
 }
 
 static OverrideCapsLockState g_override_caps_lock_state;
