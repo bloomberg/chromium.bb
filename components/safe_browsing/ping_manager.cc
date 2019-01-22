@@ -28,7 +28,7 @@ using content::BrowserThread;
 
 namespace {
 
-net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("safe_browsing_extended_reporting",
                                         R"(
       semantics {

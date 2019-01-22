@@ -23,7 +23,7 @@ namespace android {
 // These VR native functions are not handled by the automatic registration, so
 // they are manually registered here.
 #if BUILDFLAG(ENABLE_VR)
-static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
+static const base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"DisplaySynchronizer",
      DisplaySynchronizer::RegisterDisplaySynchronizerNatives},
     {"GvrApi", GvrApi::RegisterGvrApiNatives},
