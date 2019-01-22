@@ -6,11 +6,8 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 assert(is_chromeos)
 
-mojom_component("interfaces") {
+mojom("interfaces") {
   sources = [
     "ime_keyset.mojom",
   ]
-
-  macro_prefix = "UI_BASE_IME_MOJOM"
-  output_prefix = "ui_base_ime_mojom"
 }
