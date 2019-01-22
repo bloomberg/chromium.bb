@@ -520,7 +520,9 @@ void SyncPrefs::SetBirthday(const std::string& birthday) {
 }
 
 void SyncPrefs::SetBagOfChips(const std::string& bag_of_chips) {
-  pref_service_->SetString(prefs::kSyncBagOfChips, bag_of_chips);
+  std::string encoded;
+  base::Base64Encode(bag_of_chips, &encoded);
+  pref_service_->SetString(prefs::kSyncBagOfChips, encoded);
 }
 
 std::string SyncPrefs::GetCacheGuidForTesting() const {
