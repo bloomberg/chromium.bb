@@ -690,7 +690,7 @@ bool HTMLImageElement::IsServerMap() const {
 }
 
 Image* HTMLImageElement::ImageContents() {
-  if (!GetImageLoader().ImageComplete())
+  if (!GetImageLoader().ImageComplete() || !GetImageLoader().GetContent())
     return nullptr;
 
   return GetImageLoader().GetContent()->GetImage();
