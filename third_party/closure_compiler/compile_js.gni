@@ -222,6 +222,12 @@ template("js_binary") {
       rebase_path("$chrome_externs", root_build_dir),
       rebase_path("$polymer_externs", root_build_dir),
     ]
+    inputs = [
+      chrome_externs,
+      compiler_path,
+      polymer_externs,
+    ]
+
     if (defined(externs_list)) {
       args += rebase_path(externs_list, root_build_dir)
       sources += externs_list
