@@ -214,6 +214,11 @@ class ModellerImpl : public Modeller,
   // Global curve constructed from predefined params.
   const MonotoneCubicSpline global_curve_;
 
+  // Current personal curve. Initially it could be either the global curve or
+  // loaded curve. After training, it will be updated each time trainer
+  // generates a new curve.
+  base::Optional<MonotoneCubicSpline> current_curve_;
+
   // Recent ambient values.
   std::unique_ptr<AmbientLightSampleBuffer> ambient_light_values_;
 
@@ -224,6 +229,9 @@ class ModellerImpl : public Modeller,
   std::vector<TrainingDataPoint> data_cache_;
 
   base::ObserverList<Modeller::Observer> observers_;
+
+  // Training start time.
+  base::Optional<base::TimeTicks> training_start_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

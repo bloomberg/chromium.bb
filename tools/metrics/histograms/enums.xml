@@ -3418,6 +3418,14 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="MissingPath"/>
 </enum>
 
+<enum name="AutoScreenBrightnessBrightnessChangeCause">
+  <int value="0" label="InitialAlsReceived"/>
+  <int value="1" label="ImmediateBrightneningThresholdExceeded"/>
+  <int value="2" label="ImmediateDarkeningThresholdExceeded"/>
+  <int value="3" label="BrightneningThresholdExceeded"/>
+  <int value="4" label="DarkeningThresholdExceeded"/>
+</enum>
+
 <enum name="AutoScreenBrightnessBrightnessMonitorStatus">
   <int value="0" label="Initializing"/>
   <int value="1" label="Success"/>

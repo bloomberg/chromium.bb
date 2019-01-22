@@ -121,6 +121,17 @@ class Adapter : public AlsReader::Observer,
     kMaxValue = kDisabled
   };
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class BrightnessChangeCause {
+    kInitialAlsReceived = 0,
+    kImmediateBrightneningThresholdExceeded = 1,
+    kImmediateDarkeningThresholdExceeded = 2,
+    kBrightneningThresholdExceeded = 3,
+    kDarkeningThresholdExceeded = 4,
+    kMaxValue = kDarkeningThresholdExceeded
+  };
+
   Adapter(Profile* profile,
           AlsReader* als_reader,
           BrightnessMonitor* brightness_monitor,
@@ -176,12 +187,14 @@ class Adapter : public AlsReader::Observer,
   // AlsReader, BrightnessMonitor, Modeller or power manager.
   void UpdateStatus();
 
-  // Returns true if the adapter can change the brightness.
+  // Returns a BrightnessChangeCause if the adapter can change the brightness.
   // This is generally the case when the brightness hasn't been manually
   // set, we've received enough initial ambient light readings, and
   // the ambient light has changed beyond thresholds for a long enough
   // period of time.
-  bool CanAdjustBrightness(double current_average_ambient) const;
+  // Returns nullopt if it shouldn't change the brightness.
+  base::Optional<BrightnessChangeCause> CanAdjustBrightness(
+      double current_average_ambient) const;
 
   // Called when ambient light changes. It only changes screen brightness if
   // |CanAdjustBrightness| returns true and a required curve is set up:
