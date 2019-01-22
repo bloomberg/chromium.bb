@@ -9,9 +9,9 @@
 </if>
   <style>
     html {
+      /* All colors are inlined as the equivalent variables live in stylesheets,
+       * which can slow down the shell by being pasted or loaded externally. */
       --dev-mode-toolbar-height: 52px;
-      /* --google-grey-refresh-700 */
-      --toolbar-dark-border: 1px solid rgb(95, 99, 104);
       --toolbar-light-color: rgb(51, 103, 214); /* --google-blue-700 */
       --toolbar-height: 56px;
 
@@ -32,13 +32,13 @@
     }
 
     html[dark].loading {
-      border-top: var(--toolbar-dark-border);
+      border-top: 1px solid rgb(95, 99, 104);  /* --google-grey-refresh-700 */
       margin-top: var(--toolbar-height);
     }
 
     /* Mimics the developer mode toolbar until the real one loads. */
     html[dark].loading.in-dev-mode::before {
-      border-bottom: var(--toolbar-dark-border);
+      background-color: rgb(60, 64, 67);  /* --google-grey-800 */
       content: '';
       display: block;
       height: var(--dev-mode-toolbar-height);
