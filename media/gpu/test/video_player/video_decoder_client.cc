@@ -195,6 +195,7 @@ void VideoDecoderClient::PictureReady(const Picture& picture) {
 void VideoDecoderClient::NotifyEndOfBitstreamBuffer(
     int32_t bitstream_buffer_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
+  DCHECK_NE(VideoDecoderClientState::kIdle, decoder_client_state_);
   DVLOGF(4);
 
   // Queue the next fragment to be decoded. Flush when we reached the end of the
@@ -301,6 +302,7 @@ void VideoDecoderClient::CreateDecoderTask(
 
 void VideoDecoderClient::DestroyDecoderTask(base::WaitableEvent* done) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
+  DCHECK_EQ(VideoDecoderClientState::kIdle, decoder_client_state_);
   DVLOGF(4);
 
   // Invalidate all scheduled tasks.
