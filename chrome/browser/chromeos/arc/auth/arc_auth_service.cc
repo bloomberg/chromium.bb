@@ -185,6 +185,7 @@ ArcAuthService::ArcAuthService(content::BrowserContext* browser_context,
     : profile_(Profile::FromBrowserContext(browser_context)),
       account_tracker_service_(
           AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile_)),
+      identity_manager_(IdentityManagerFactory::GetForProfile(profile_)),
       arc_bridge_service_(arc_bridge_service),
       account_mapper_util_(account_tracker_service_),
       url_loader_factory_(
@@ -436,10 +437,8 @@ void ArcAuthService::FetchPrimaryAccountInfo(
     }
   } else {
     // Optionally retrieve auth code in silent mode.
-    const auto* const identity_manager =
-        IdentityManagerFactory::GetForProfile(profile_);
     auth_code_fetcher = CreateArcBackgroundAuthCodeFetcher(
-        identity_manager->GetPrimaryAccountId(), initial_signin);
+        identity_manager_->GetPrimaryAccountId(), initial_signin);
   }
 
   // Add the request to |pending_token_requests_| first, before starting a token
@@ -461,15 +460,25 @@ void ArcAuthService::OnTokenUpserted(
   if (!arc::IsArcProvisioned(profile_))
     return;
 
+  if (account_key.account_type !=
+      chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA) {
+    // We are only interested in Gaia accounts.
+    return;
+  }
+
+  const AccountInfo account_info =
+      account_mapper_util_.AccountKeyToGaiaAccountInfo(account_key);
+
   // We may have received |OnTokenUpserted| for a variety of cases where a valid
   // Gaia LST is not available for the account: The account could have just been
   // migrated to Account Manager with a dummy initial token, the LST update
-  // could be an update to mark the LST as invalid etc. In all of these cases,
-  // we should ignore the notification. If and when Account Manager gets updated
-  // with a valid token, we would receive another notification and we can
-  // process the account update then. See |AccountManager::IsTokenAvailable| for
-  // details.
-  if (!account_manager_->IsTokenAvailable(account_key)) {
+  // could be an update to mark the LST as invalid, the token could have expired
+  // etc. In all of these cases, we should ignore the notification. If and when
+  // Account Manager gets updated with a valid token, we would receive another
+  // notification and we can process the account update then.
+  if (!identity_manager_->HasAccountWithRefreshToken(account_info.account_id) ||
+      identity_manager_->HasAccountWithRefreshTokenInPersistentErrorState(
+          account_info.account_id)) {
     VLOG(1) << "Ignoring account update due to lack of a valid token: "
             << account_key;
     return;
@@ -480,8 +489,7 @@ void ArcAuthService::OnTokenUpserted(
   if (!instance)
     return;
 
-  const std::string account_name =
-      account_mapper_util_.AccountKeyToGaiaAccountInfo(account_key).email;
+  const std::string account_name = account_info.email;
   DCHECK(!account_name.empty());
   instance->OnAccountUpdated(account_name, mojom::AccountUpdateType::UPSERT);
 }
@@ -571,10 +579,8 @@ void ArcAuthService::OnPrimaryAccountAuthCodeFetched(
   DeletePendingTokenRequest(fetcher);
 
   if (success) {
-    const auto* const identity_manager =
-        IdentityManagerFactory::GetForProfile(profile_);
     const std::string& full_account_id = base::UTF16ToUTF8(
-        signin_ui_util::GetAuthenticatedUsername(identity_manager));
+        signin_ui_util::GetAuthenticatedUsername(identity_manager_));
     std::move(callback).Run(
         mojom::ArcSignInStatus::SUCCESS,
         CreateAccountInfo(!IsArcOptInVerificationDisabled(), auth_code,
