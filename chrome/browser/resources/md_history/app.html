@@ -13,6 +13,7 @@
 <link rel="import" href="router.html">
 <link rel="import" href="shared_style.html">
 <link rel="import" href="side_bar.html">
+<link rel="import" href="strings.html">
 
 <!-- Lazy loaded: history-synced-device-manager, cr-drawer. -->
 
@@ -86,7 +87,7 @@
     <div id="drop-shadow"></div>
     <div id="main-container">
       <history-side-bar id="content-side-bar" selected-page="{{selectedPage_}}"
-          show-footer="[[showSidebarFooter]]"
+          footer-info="[[footerInfo]]"
           hidden$="[[hasDrawer_]]">
       </history-side-bar>
       <iron-pages id="content" attr-for-selected="path"
@@ -115,7 +116,7 @@
         <cr-drawer heading="$i18n{title}" align="$i18n{textdirection}">
           <history-side-bar id="drawer-side-bar" class="drawer-content"
               selected-page="{{selectedPage_}}"
-              show-footer="[[showSidebarFooter]]">
+              footer-info="[[footerInfo]]">
           </history-side-bar>
         </cr-drawer>
       </template>

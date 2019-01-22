@@ -63,7 +63,8 @@ function historyResult(info, results) {
 function showNotification(includeOtherFormsOfBrowsingHistory) {
   waitForAppUpgrade().then(function() {
     const app = /** @type {HistoryAppElement} */ ($('history-app'));
-    app.showSidebarFooter = includeOtherFormsOfBrowsingHistory;
+    app.set(
+        'footerInfo.otherFormsOfHistory', includeOtherFormsOfBrowsingHistory);
   });
 }
 

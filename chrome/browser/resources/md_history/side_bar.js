@@ -19,7 +19,18 @@ Polymer({
       value: loadTimeData.getBoolean('isGuestSession'),
     },
 
-    showFooter: Boolean,
+    /** @type {FooterInfo} */
+    footerInfo: Object,
+
+    /**
+     * Used to display notices for profile sign-in status and managed status.
+     * @private
+     */
+    showFooter_: {
+      type: Boolean,
+      computed: 'computeShowFooter_(' +
+          'footerInfo.otherFormsOfHistory, footerInfo.managed)',
+    },
   },
 
   keyBindings: {
@@ -69,5 +80,13 @@ Polymer({
    */
   onItemClick_: function(e) {
     e.preventDefault();
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeShowFooter_: function(includeOtherFormsOfBrowsingHistory, managed) {
+    return includeOtherFormsOfBrowsingHistory || managed;
   },
 });
