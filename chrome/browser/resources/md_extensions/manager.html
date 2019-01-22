@@ -55,6 +55,10 @@
       extensions-toolbar {
         background-color: var(--md-toolbar-color);
       }
+
+      :host-context([dark]) #drawer {
+        --cr-drawer-heading-color: var(--cr-primary-text-color);
+      }
     </style>
     <extensions-drop-overlay drag-enabled="[[inDevMode]]">
     </extensions-drop-overlay>
