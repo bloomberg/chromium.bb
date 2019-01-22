@@ -12,18 +12,27 @@ import "url/mojom/url.mojom";
 // another process.
 interface WebContentsNSViewBridge {
   // Set this to be a child NSView of the NSView mapped to by
-  // |parent_ns_view_id|. In practice, this NSView will always be from a
-  // views::View.
-  SetParentViewsNSView(uint64 parent_ns_view_id);
+  // |parent_ns_view_id|. Set the parent accessibility element to the remote
+  // element specified by |parent_token|. In practice, this NSView will always
+  // be from a views::View.
+  SetParentNSView(uint64 parent_ns_view_id, array<uint8> parent_token);
 
-  // Un-hide the NSView and set its frame in its window to |bounds_in_window|.
-  Show(gfx.mojom.Rect bounds_in_window);
+  // Clear the parent NSView and related state.
+  ResetParentNSView();
 
-  // Hide the NSView.
-  Hide();
+  // Set the NSView's frame in its NSWindow to |bounds_in_window|.
+  SetBounds(gfx.mojom.Rect bounds_in_window);
+
+  // Short or hide the NSView.
+  SetVisible(bool visible);
 
   // Make the NSView be the first responder for its window.
   MakeFirstResponder();
+
+  // Called when a subview asks this to take focus back (e.g, because it has
+  // iterated past the last or first focusable element on the page). The
+  // iteration direction is in |reverse|.
+  TakeFocus(bool reverse);
 };
 
 // The method through which a window was focused (directly focused, or by

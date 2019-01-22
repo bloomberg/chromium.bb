@@ -30,6 +30,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/cocoa/ns_view_ids.h"
+#include "ui/base/cocoa/remote_accessibility_api.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
@@ -86,12 +87,6 @@ WebContentsViewMac::~WebContentsViewMac() {
   if (views_host_)
     views_host_->OnHostableViewDestroying();
   DCHECK(!views_host_);
-  // This handles the case where a renderer close call was deferred
-  // while the user was operating a UI control which resulted in a
-  // close.  In that case, the Cocoa view outlives the
-  // WebContentsViewMac instance due to Cocoa retain count.
-  [cocoa_view() cancelDeferredClose];
-  [cocoa_view() clearWebContentsView];
   ns_view_bridge_local_.reset();
 }
 
@@ -254,6 +249,8 @@ void WebContentsViewMac::TakeFocus(bool reverse) {
   } else {
     [[cocoa_view() window] selectNextKeyView:cocoa_view()];
   }
+  if (ns_view_bridge_remote_)
+    ns_view_bridge_remote_->TakeFocus(reverse);
 }
 
 void WebContentsViewMac::ShowContextMenu(
@@ -557,7 +554,10 @@ void WebContentsViewMac::OnViewsHostableAttached(
     factory_host->GetFactory()->CreateWebContentsNSViewBridge(
         ns_view_id_, client.PassInterface(), std::move(bridge_request));
 
-    ns_view_bridge_remote_->SetParentViewsNSView(views_host_->GetNSViewId());
+    std::vector<uint8_t> token =
+        ui::RemoteAccessibility::GetTokenForLocalElement(
+            views_host_->GetAccessibilityElement());
+    ns_view_bridge_remote_->SetParentNSView(views_host_->GetNSViewId(), token);
 
     // TODO(ccameron): Communicate window visibility and occlusion from the
     // remote process (for now, always treat remote windows as visible).
@@ -583,21 +583,27 @@ void WebContentsViewMac::OnViewsHostableDetached() {
 
   [cocoa_view() setAccessibilityParentElement:nil];
 
-  // Disconnect from the bridge. This will have the effect of destroying the
-  // associated bridge instance with its NSView.
-  ns_view_client_binding_.Close();
-  ns_view_bridge_remote_.reset();
+  // Disconnect from the remote bridge, if it exists. This will have the effect
+  // of destroying the associated bridge instance with its NSView.
+  if (ns_view_bridge_remote_) {
+    ns_view_bridge_remote_->SetVisible(false);
+    ns_view_bridge_remote_->ResetParentNSView();
+    ns_view_client_binding_.Close();
+    ns_view_bridge_remote_.reset();
+  }
 }
 
 void WebContentsViewMac::OnViewsHostableShow(
     const gfx::Rect& bounds_in_window) {
-  if (ns_view_bridge_remote_)
-    ns_view_bridge_remote_->Show(bounds_in_window);
+  if (ns_view_bridge_remote_) {
+    ns_view_bridge_remote_->SetBounds(bounds_in_window);
+    ns_view_bridge_remote_->SetVisible(true);
+  }
 }
 
 void WebContentsViewMac::OnViewsHostableHide() {
   if (ns_view_bridge_remote_)
-    ns_view_bridge_remote_->Hide();
+    ns_view_bridge_remote_->SetVisible(false);
 }
 
 void WebContentsViewMac::OnViewsHostableMakeFirstResponder() {

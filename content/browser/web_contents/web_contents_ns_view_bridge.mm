@@ -28,39 +28,61 @@ WebContentsNSViewBridge::WebContentsNSViewBridge(
 }
 
 WebContentsNSViewBridge::~WebContentsNSViewBridge() {
+  // This handles the case where a renderer close call was deferred
+  // while the user was operating a UI control which resulted in a
+  // close.  In that case, the Cocoa view outlives the
+  // WebContentsViewMac instance due to Cocoa retain count.
+  [cocoa_view_ cancelDeferredClose];
+  [cocoa_view_ clearWebContentsView];
   [cocoa_view_ removeFromSuperview];
 }
 
-void WebContentsNSViewBridge::SetParentViewsNSView(uint64_t parent_ns_view_id) {
+void WebContentsNSViewBridge::SetParentNSView(
+    uint64_t parent_ns_view_id,
+    const std::vector<uint8_t>& parent_token) {
   NSView* parent_ns_view = ui::NSViewIds::GetNSView(parent_ns_view_id);
   // If the browser passed an invalid handle, then there is no recovery.
   CHECK(parent_ns_view);
   [parent_ns_view addSubview:cocoa_view_];
+
+  parent_accessibility_element_ =
+      ui::RemoteAccessibility::GetRemoteElementFromToken(parent_token);
+  [cocoa_view_ setAccessibilityParentElement:parent_accessibility_element_];
 }
 
-void WebContentsNSViewBridge::Show(const gfx::Rect& bounds_in_window) {
+void WebContentsNSViewBridge::ResetParentNSView() {
+  [cocoa_view_ removeFromSuperview];
+  [cocoa_view_ setAccessibilityParentElement:nil];
+  parent_accessibility_element_.reset();
+}
+
+void WebContentsNSViewBridge::SetBounds(const gfx::Rect& bounds_in_window) {
+  NSWindow* window = [cocoa_view_ window];
+  NSRect window_content_rect = [window contentRectForFrameRect:[window frame]];
   NSRect ns_bounds_in_window =
       NSMakeRect(bounds_in_window.x(),
-                 [[[cocoa_view_ window] contentView] frame].size.height -
-                     bounds_in_window.y() - bounds_in_window.height(),
+                 window_content_rect.size.height - bounds_in_window.y() -
+                     bounds_in_window.height(),
                  bounds_in_window.width(), bounds_in_window.height());
   NSRect ns_bounds_in_superview =
       [[cocoa_view_ superview] convertRect:ns_bounds_in_window fromView:nil];
   [cocoa_view_ setFrame:ns_bounds_in_superview];
-  // Ensure that the child RenderWidgetHostViews have the same frame as the
-  // WebContentsView.
-  for (NSView* child in [cocoa_view_ subviews])
-    [child setFrame:[cocoa_view_ bounds]];
-  [cocoa_view_ setHidden:NO];
 }
 
-void WebContentsNSViewBridge::Hide() {
-  [cocoa_view_ setHidden:YES];
+void WebContentsNSViewBridge::SetVisible(bool visible) {
+  [cocoa_view_ setHidden:!visible];
 }
 
 void WebContentsNSViewBridge::MakeFirstResponder() {
   if ([cocoa_view_ acceptsFirstResponder])
     [[cocoa_view_ window] makeFirstResponder:cocoa_view_];
+}
+
+void WebContentsNSViewBridge::TakeFocus(bool reverse) {
+  if (reverse)
+    [[cocoa_view_ window] selectPreviousKeyView:cocoa_view_];
+  else
+    [[cocoa_view_ window] selectNextKeyView:cocoa_view_];
 }
 
 }  // namespace content
