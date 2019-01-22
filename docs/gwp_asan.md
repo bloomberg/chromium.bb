@@ -2,7 +2,8 @@
 
 GWP-ASan is a debug tool intended to detect heap memory errors in the wild. It
 samples allocations to a debug allocator, similar to ElectricFence or Page Heap,
-in order to detect heap memory errors and report additional debugging context.
+causing memory errors to crash and report additional debugging context about
+the error.
 
 ## Allocator
 
@@ -51,6 +52,9 @@ chrome --enable-features="GwpAsanMalloc<Study" \
        --force-fieldtrials=Study/Group1 \
        --force-fieldtrial-params=Study.Group1:MaxAllocations/32/TotalPages/128/AllocationSamplingFrequency/1000/ProcessSamplingProbability/1.0
 ```
+
+A [hotlist of bugs discovered by by GWP-ASan](https://bugs.chromium.org/p/chromium/issues/list?can=1&q=Hotlist%3DGWP-ASan)
+exists, though the bugs are filed without external visibility by default.
 
 ## Testing
 
