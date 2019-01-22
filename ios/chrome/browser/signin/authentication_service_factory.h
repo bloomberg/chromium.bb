@@ -8,12 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -43,7 +39,7 @@ class AuthenticationServiceFactory : public BrowserStateKeyedServiceFactory {
       std::unique_ptr<AuthenticationServiceDelegate> delegate);
 
  private:
-  friend struct base::DefaultSingletonTraits<AuthenticationServiceFactory>;
+  friend class base::NoDestructor<AuthenticationServiceFactory>;
 
   AuthenticationServiceFactory();
   ~AuthenticationServiceFactory() override;

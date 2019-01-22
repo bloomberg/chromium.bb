@@ -8,16 +8,12 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
 namespace ios {
 class ChromeBrowserState;
 }
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
 
 class ProfileOAuth2TokenService;
 
@@ -37,7 +33,7 @@ class ProfileOAuth2TokenServiceFactory
   static ProfileOAuth2TokenServiceFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<ProfileOAuth2TokenServiceFactory>;
+  friend class base::NoDestructor<ProfileOAuth2TokenServiceFactory>;
 
   ProfileOAuth2TokenServiceFactory();
   ~ProfileOAuth2TokenServiceFactory() override;
