@@ -181,10 +181,7 @@ NetworkQualityEstimator::NetworkQualityEstimator(
   throughput_analyzer_.reset(new nqe::internal::ThroughputAnalyzer(
       this, params_.get(), base::ThreadTaskRunnerHandle::Get(),
       base::Bind(&NetworkQualityEstimator::OnNewThroughputObservationAvailable,
-                 // It is safe to use base::Unretained here since
-                 // |throughput_analyzer_| is owned by |this|. This ensures that
-                 // |throughput_analyzer_| will be destroyed before |this|.
-                 base::Unretained(this)),
+                 weak_ptr_factory_.GetWeakPtr()),
       tick_clock_, net_log_));
 
   watcher_factory_.reset(new nqe::internal::SocketWatcherFactory(
