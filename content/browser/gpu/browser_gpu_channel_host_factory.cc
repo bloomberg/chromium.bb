@@ -274,8 +274,11 @@ BrowserGpuChannelHostFactory::BrowserGpuChannelHostFactory()
               gpu_client_id_, cache_dir));
     }
 
-    if (base::FeatureList::IsEnabled(
-            features::kDefaultEnableOopRasterization)) {
+    bool use_gr_shader_cache =
+        base::FeatureList::IsEnabled(
+            features::kDefaultEnableOopRasterization) ||
+        base::FeatureList::IsEnabled(features::kUseSkiaRenderer);
+    if (use_gr_shader_cache) {
       base::FilePath gr_cache_dir =
           GetContentClient()->browser()->GetGrShaderDiskCacheDirectory();
       if (!gr_cache_dir.empty()) {

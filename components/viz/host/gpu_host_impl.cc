@@ -304,19 +304,8 @@ void GpuHostImpl::EstablishGpuChannel(int client_id,
       base::BindOnce(&GpuHostImpl::OnChannelEstablished,
                      weak_ptr_factory_.GetWeakPtr(), client_id));
 
-  if (!params_.disable_gpu_shader_disk_cache) {
+  if (!params_.disable_gpu_shader_disk_cache)
     CreateChannelCache(client_id);
-
-    bool oopd_enabled =
-        base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
-    if (oopd_enabled)
-      CreateChannelCache(gpu::kInProcessCommandBufferClientId);
-
-    bool oopr_enabled =
-        base::FeatureList::IsEnabled(features::kDefaultEnableOopRasterization);
-    if (oopr_enabled)
-      CreateChannelCache(gpu::kGrShaderCacheClientId);
-  }
 }
 
 void GpuHostImpl::SendOutstandingReplies() {
@@ -513,6 +502,20 @@ void GpuHostImpl::DidInitialize(
   delegate_->DidInitialize(gpu_info, gpu_feature_info,
                            gpu_info_for_hardware_gpu,
                            gpu_feature_info_for_hardware_gpu);
+
+  if (!params_.disable_gpu_shader_disk_cache) {
+    bool oopd_enabled =
+        base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
+    if (oopd_enabled)
+      CreateChannelCache(gpu::kInProcessCommandBufferClientId);
+
+    bool use_gr_shader_cache =
+        base::FeatureList::IsEnabled(
+            features::kDefaultEnableOopRasterization) ||
+        base::FeatureList::IsEnabled(features::kUseSkiaRenderer);
+    if (use_gr_shader_cache)
+      CreateChannelCache(gpu::kGrShaderCacheClientId);
+  }
 }
 
 void GpuHostImpl::DidFailInitialize() {
