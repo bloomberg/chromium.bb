@@ -46,27 +46,6 @@ namespace blink {
 FrameConsole::FrameConsole(LocalFrame& frame) : frame_(&frame) {}
 
 void FrameConsole::AddMessage(ConsoleMessage* console_message) {
-  // When trying to commit a navigation, the SourceLocation
-  // information for how the request was triggered has been stored in the
-  // provisional DocumentLoader. Use it if local SourceLocation
-  // is not available.
-  bool is_unknown_location =
-      !console_message->Location() || console_message->Location()->IsUnknown();
-  DocumentLoader* provisional_loader =
-      frame_->Loader().GetProvisionalDocumentLoader();
-  if (provisional_loader && is_unknown_location) {
-    std::unique_ptr<SourceLocation> source_location =
-        provisional_loader->CopySourceLocation();
-    if (source_location) {
-      Vector<DOMNodeId> nodes(console_message->Nodes());
-      LocalFrame* frame = console_message->Frame();
-      console_message = ConsoleMessage::Create(
-          console_message->Source(), console_message->Level(),
-          console_message->Message(), std::move(source_location));
-      console_message->SetNodes(frame, std::move(nodes));
-    }
-  }
-
   if (AddMessageToStorage(console_message))
     ReportMessageToClient(console_message->Source(), console_message->Level(),
                           console_message->Message(),

@@ -178,9 +178,6 @@ struct BLINK_EXPORT WebNavigationParams {
   // Known timings related to navigation. If the navigation has
   // started in another process, timings are propagated from there.
   WebNavigationTimings navigation_timings;
-  // Source location which triggered the navigation. Used for
-  // providing debug information to developers.
-  base::Optional<WebSourceLocation> source_location;
   // Whether this navigation had a transient user activation.
   bool is_user_activated = false;
 

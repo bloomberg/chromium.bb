@@ -223,9 +223,6 @@ class CORE_EXPORT DocumentLoader
     return service_worker_network_provider_.get();
   }
 
-  // Returns a SourceLocation that triggered the navigation if any.
-  std::unique_ptr<SourceLocation> CopySourceLocation() const;
-
   void LoadFailed(const ResourceError&);
 
   void SetUserActivated();
@@ -405,11 +402,6 @@ class CORE_EXPORT DocumentLoader
   InitialScrollState initial_scroll_state_;
 
   bool was_blocked_after_csp_;
-
-  // PlzNavigate: set when committing a navigation. The data has originally been
-  // captured when the navigation was sent to the browser process, and it is
-  // sent back at commit time.
-  std::unique_ptr<SourceLocation> source_location_;
 
   enum State { kNotStarted, kProvisional, kCommitted, kSentDidFinishLoad };
   State state_;
