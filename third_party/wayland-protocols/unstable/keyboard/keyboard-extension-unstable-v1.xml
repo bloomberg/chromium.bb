@@ -60,7 +60,8 @@
     <description summary="extension of wl_keyboard protocol">
       The zcr_extended_keyboard_v1 interface extends the wl_keyboard interface
       with requests to notify whether sent key events are handled or not by
-      the client.
+      the client. If no such an acknowledgment request is sent in a specified
+      amount of time, then the event is assumed to be handled.
     </description>
 
     <request name="destroy" type="destructor">
