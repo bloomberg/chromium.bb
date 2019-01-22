@@ -2634,7 +2634,8 @@ static bool ShouldRecalculateMinMaxWidthsAffectedByAncestor(
     return false;
   }
   if (const LayoutBox* containing_block = box->ContainingBlock()) {
-    if (containing_block->NeedsPreferredWidthsRecalculation()) {
+    if (containing_block->NeedsPreferredWidthsRecalculation() &&
+        !containing_block->PreferredLogicalWidthsDirty()) {
       // If our containing block also has min/max widths that are affected by
       // the ancestry, we have already dealt with this object as well. Avoid
       // unnecessary work and O(n^2) time complexity.
