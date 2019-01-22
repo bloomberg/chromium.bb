@@ -71,6 +71,10 @@ re-generate them:
 
 Rolling in WPT
 
+If there are new files that need to be rolled in, add the intended files to
+the WPTWhiteList. Ensure these files are in the correct order by running
+"LC_ALL=C sort WPTWhiteList".
+
 When rolling in new versions of WPT support, modify WPT_HEAD in checkout.sh to
 the desired HEAD position. You can then call "./checkout.sh clone" which will
 pull in all the code.
