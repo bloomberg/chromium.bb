@@ -111,7 +111,7 @@ namespace internal {
 {%-   if enum|is_native_only_kind %}
 using {{enum|get_name_for_kind(flatten_nested_kind=True)}} = mojo::NativeEnum;
 {%-   else %}
-{{enum_decl(enum, export_attribute)}}
+{{enum_decl(enum)}}
 {%-   endif %}
 {%- endfor %}
 
@@ -221,3 +221,4 @@ namespace mojo {
 {{namespace_end()}}
 
 #endif  // {{header_guard}}
+
