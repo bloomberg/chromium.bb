@@ -20,6 +20,9 @@
 @protocol SnackbarCommands;
 @protocol SuggestedContent;
 
+extern NSString* const
+    kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix;
+
 // CollectionViewController to display the suggestions items.
 @interface ContentSuggestionsViewController
     : CollectionViewController<ContentSuggestionsCollectionControlling>
