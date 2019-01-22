@@ -50,7 +50,7 @@ class IceTransportAdapterImpl final : public IceTransportAdapter,
 
   Delegate* const delegate_;
   std::unique_ptr<cricket::PortAllocator> port_allocator_;
-  std::unique_ptr<cricket::P2PTransportChannel> p2p_transport_channel_;
+  std::unique_ptr<cricket::IceTransportInternal> p2p_transport_channel_;
   std::unique_ptr<P2PQuicPacketTransport> quic_packet_transport_adapter_;
 };
 
