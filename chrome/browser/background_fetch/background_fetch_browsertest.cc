@@ -499,7 +499,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, DownloadService_Acceptance) {
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
                        RecordBackgroundFetchUkmEvent) {
   // Start a Background Fetch for a single to-be-downloaded file and  test that
-  // the expected UKM data has been recorded.
+  // the expected UKM data for the BackgroundFetch UKM event has been recorded.
 
   ASSERT_NO_FATAL_FAILURE(
       RunScriptFunction("StartSingleFileDownloadWithCorrectDownloadTotal()"));
