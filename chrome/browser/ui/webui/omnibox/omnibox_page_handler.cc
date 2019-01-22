@@ -390,6 +390,8 @@ void OmniboxPageHandler::StartOmniboxQuery(const std::string& input_string,
   input_.set_current_title(base::UTF8ToUTF16(current_url));
   input_.set_prevent_inline_autocomplete(prevent_inline_autocomplete);
   input_.set_prefer_keyword(prefer_keyword);
+  if (prefer_keyword)
+    input_.set_keyword_mode_entry_method(metrics::OmniboxEventProto::TAB);
   input_.set_from_omnibox_focus(zero_suggest);
 
   OnOmniboxQuery(controller_.get());

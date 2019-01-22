@@ -45,10 +45,13 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/url_constants.h"
 #include "url/url_util.h"
+
+using metrics::OmniboxEventProto;
 
 // Helpers --------------------------------------------------------------------
 
@@ -988,7 +991,10 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
       TemplateURLRef::NO_SUGGESTIONS_AVAILABLE :
       TemplateURLRef::NO_SUGGESTION_CHOSEN;
   const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
-  if (verbatim_relevance > 0) {
+  const bool should_curb_default_suggestions = ShouldCurbDefaultSuggestions();
+  // Don't add what-you-typed suggestion from the default provider when the
+  // user requested keyword search.
+  if (!should_curb_default_suggestions && verbatim_relevance > 0) {
     const base::string16& trimmed_verbatim =
         base::CollapseWhitespace(input_.text(), false);
 
@@ -1046,19 +1052,23 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
     }
   }
   AddRawHistoryResultsToMap(true, did_not_accept_keyword_suggestion, &map);
-  AddRawHistoryResultsToMap(false, did_not_accept_default_suggestion, &map);
-
+  if (!should_curb_default_suggestions)
+    AddRawHistoryResultsToMap(false, did_not_accept_default_suggestion, &map);
   AddSuggestResultsToMap(keyword_results_.suggest_results,
                          keyword_results_.metadata, &map);
-  AddSuggestResultsToMap(default_results_.suggest_results,
-                         default_results_.metadata, &map);
-
+  if (!should_curb_default_suggestions) {
+    AddSuggestResultsToMap(default_results_.suggest_results,
+                           default_results_.metadata, &map);
+  }
   ACMatches matches;
   for (MatchMap::const_iterator i(map.begin()); i != map.end(); ++i)
     matches.push_back(i->second);
 
   AddNavigationResultsToMatches(keyword_results_.navigation_results, &matches);
-  AddNavigationResultsToMatches(default_results_.navigation_results, &matches);
+  if (!should_curb_default_suggestions) {
+    AddNavigationResultsToMatches(default_results_.navigation_results,
+                                  &matches);
+  }
 
   // Now add the most relevant matches to |matches_|.  We take up to kMaxMatches
   // suggest/navsuggest matches, regardless of origin.  We always include in
@@ -1354,6 +1364,21 @@ int SearchProvider::GetVerbatimRelevance(bool* relevance_from_server) const {
     *relevance_from_server = use_server_relevance;
   return use_server_relevance ?
       default_results_.verbatim_relevance : CalculateRelevanceForVerbatim();
+}
+
+bool SearchProvider::ShouldCurbDefaultSuggestions() const {
+  // Only curb if the global experimental keyword feature is enabled, we're
+  // in keyword mode and the user selected the mode explicitly. For now, we
+  // consider entering keyword mode with spaces to be unintentional and all
+  // other methods as intentional. In this experimental mode, we don't want
+  // non-keyword suggestions if we're not confident that the user entered
+  // keyword mode explicitly.
+  return OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() &&
+         !keyword_input_.text().empty() && keyword_input_.prefer_keyword() &&
+         keyword_input_.keyword_mode_entry_method() !=
+             OmniboxEventProto::SPACE_AT_END &&
+         keyword_input_.keyword_mode_entry_method() !=
+             OmniboxEventProto::SPACE_IN_MIDDLE;
 }
 
 int SearchProvider::CalculateRelevanceForVerbatim() const {
