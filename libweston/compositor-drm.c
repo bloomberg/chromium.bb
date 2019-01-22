@@ -3234,8 +3234,11 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 			if (j != p->formats[i].count_modifiers)
 				break;
 		}
-		if (i == p->count_formats)
+		if (i == p->count_formats) {
+			drm_plane_state_put_back(state);
+			state = NULL;
 			continue;
+		}
 
 		if (availability == NO_PLANES_WITH_FORMAT)
 			availability = NO_PLANES_ACCEPTED;
