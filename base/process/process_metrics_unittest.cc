@@ -519,7 +519,7 @@ TEST(ProcessMetricsTest, DISABLED_GetNumberOfThreads) {
 }
 #endif  // defined(OS_LINUX)
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || (defined(OS_MACOSX) && !defined(OS_IOS))
 namespace {
 
 // Keep these in sync so the GetChildOpenFdCount test can refer to correct test
@@ -580,12 +580,16 @@ TEST(ProcessMetricsTest, GetChildOpenFdCount) {
   ASSERT_TRUE(child.IsValid());
   WaitForEvent(temp_path, kSignalClosed);
 
-  std::unique_ptr<ProcessMetrics> metrics(
-      ProcessMetrics::CreateProcessMetrics(child.Handle()));
+  std::unique_ptr<ProcessMetrics> metrics =
+#if defined(OS_MACOSX)
+      ProcessMetrics::CreateProcessMetrics(child.Handle(), nullptr);
+#else
+      ProcessMetrics::CreateProcessMetrics(child.Handle());
+#endif  // defined(OS_MACOSX)
   EXPECT_EQ(0, metrics->GetOpenFdCount());
   ASSERT_TRUE(child.Terminate(0, true));
 }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || (defined(OS_MACOSX) && !defined(OS_IOS))
 
 #if defined(OS_ANDROID) || defined(OS_LINUX)
 
