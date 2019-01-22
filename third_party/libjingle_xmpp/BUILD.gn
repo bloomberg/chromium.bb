@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# TODO(kjellander): Remove remaining dependencies on the WebRTC codebase.
-import("../webrtc/webrtc.gni")
+import("//testing/test.gni")
 
 group("libjingle_xmpp") {
   public_deps = [
@@ -16,7 +15,7 @@ config("libjingle_xmpp_common_config") {
   defines = [ "EXPAT_RELATIVE_PATH" ]
 }
 
-rtc_static_library("rtc_task_runner") {
+static_library("rtc_task_runner") {
   visibility = [ "*" ]
   sources = [
     "task_runner/task.cc",
@@ -28,10 +27,11 @@ rtc_static_library("rtc_task_runner") {
   ]
   deps = [
     "//base",
+    "//third_party/webrtc/rtc_base/third_party/sigslot",
   ]
 }
 
-rtc_static_library("rtc_xmllite") {
+static_library("rtc_xmllite") {
   visibility = [ "*" ]
   sources = [
     "xmllite/qname.cc",
@@ -52,7 +52,9 @@ rtc_static_library("rtc_xmllite") {
 
   deps = [
     "//base",
-    "//third_party/webrtc/rtc_base:rtc_base",
+    # TODO(mbonadei): The dependency on the TQ is not directly
+    # needed but removing it causes a linker error that it is
+    # difficult to track down.
     "//third_party/webrtc_overrides:task_queue_impl",
   ]
   public_deps = [
@@ -61,7 +63,7 @@ rtc_static_library("rtc_xmllite") {
   all_dependent_configs = [ ":libjingle_xmpp_common_config" ]
 }
 
-rtc_static_library("rtc_xmpp") {
+static_library("rtc_xmpp") {
   visibility = [ "*" ]
   cflags = []
   sources = [
@@ -98,7 +100,12 @@ rtc_static_library("rtc_xmpp") {
     ":rtc_xmllite",
     "//base",
     "//net",
-    "//third_party/webrtc/rtc_base:rtc_base_approved",
+    "//third_party/webrtc/rtc_base/third_party/base64",
+    "//third_party/webrtc/rtc_base/third_party/sigslot",
+
+    # TODO(mbonadei): The dependency on the TQ is not directly
+    # needed but removing it causes a linker error that it is
+    # difficult to track down.
     "//third_party/webrtc_overrides:task_queue_impl",
   ]
   public_deps = [
@@ -112,29 +119,15 @@ rtc_static_library("rtc_xmpp") {
   }
 }
 
-config("libjingle_xmpp_unittests_config") {
-  defines = []
-  if (is_clang) {
-    # GN orders flags on a target before flags from configs. The default config
-    # adds -Wall, and this flag have to be after -Wall -- so they need to
-    # come from a config and can"t be on the target directly.
-    cflags = [
-      "-Wno-missing-braces",
-      "-Wno-sign-compare",
-      "-Wno-unused-const-variable",
-    ]
-  }
-}
-
-rtc_test("libjingle_xmpp_unittests") {
-  configs += [ ":libjingle_xmpp_unittests_config" ]
-
+test("libjingle_xmpp_unittests") {
   deps = [
     ":libjingle_xmpp",
     ":rtc_task_runner",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//testing/gtest",
+    "//third_party/webrtc/rtc_base:rtc_base",
+    "//third_party/webrtc_overrides:task_queue_impl",
   ]
 
   sources = [
