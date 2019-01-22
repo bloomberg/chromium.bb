@@ -86,6 +86,7 @@ TEST(ContextualSuggestionsFetch, GetFetchEndpoint_Feature_WithParameter) {
 }
 
 TEST(ContextualSuggestionsFetch, MakeResourceRequest_VariationsHeader) {
+  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
   scoped_refptr<base::TestSimpleTaskRunner> test_task_runner(
       new base::TestSimpleTaskRunner());
   base::ThreadTaskRunnerHandle handle(test_task_runner);
@@ -102,6 +103,7 @@ TEST(ContextualSuggestionsFetch, MakeResourceRequest_VariationsHeader) {
 
 TEST(ContextualSuggestionsFetch,
      MakeResourceRequest_VariationsHeader_NonGoogleEndpoint) {
+  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
   auto* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII("contextual-suggestions-fetch-endpoint",
                                   "https://nongoogleendpoint.com");
