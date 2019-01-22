@@ -124,19 +124,6 @@ std::string SerializeReportingInfo(
   return result;
 }
 
-void RecordUploadSizeForServiceTypeHistograms(
-    int64_t content_length,
-    metrics::MetricsLogUploader::MetricServiceType service_type) {
-  switch (service_type) {
-    case metrics::MetricsLogUploader::UMA:
-      UMA_HISTOGRAM_COUNTS_1M("UMA.LogUploader.UploadSize", content_length);
-      break;
-    case metrics::MetricsLogUploader::UKM:
-      UMA_HISTOGRAM_COUNTS_1M("UKM.LogUploader.UploadSize", content_length);
-      break;
-  }
-}
-
 // Encrypts a |plaintext| string, using the encrypted_messages component,
 // returns |encrypted| which is a serialized EncryptedMessage object. Returns
 // false if there was a problem encrypting.
@@ -292,12 +279,8 @@ void NetMetricsLogUploader::UploadLogToURL(
       return;
     }
     url_loader_->AttachStringForUpload(encrypted_message, mime_type_);
-    RecordUploadSizeForServiceTypeHistograms(encrypted_message.size(),
-                                             service_type_);
   } else {
     url_loader_->AttachStringForUpload(compressed_log_data, mime_type_);
-    RecordUploadSizeForServiceTypeHistograms(compressed_log_data.size(),
-                                             service_type_);
   }
 
   // It's safe to use |base::Unretained(this)| here, because |this| owns
