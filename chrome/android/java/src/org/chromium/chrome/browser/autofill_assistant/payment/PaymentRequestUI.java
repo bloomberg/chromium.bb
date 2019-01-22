@@ -17,6 +17,7 @@ import android.content.DialogInterface;
 import android.support.annotation.IntDef;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.text.TextUtils;
+import android.text.style.StyleSpan;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +27,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
 import android.widget.TextView;
 
 import org.chromium.base.Callback;
@@ -44,6 +46,7 @@ import org.chromium.chrome.browser.widget.FadingEdgeScrollView;
 import org.chromium.chrome.browser.widget.animation.FocusAnimator;
 import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
 import org.chromium.chrome.browser.widget.prefeditor.EditorDialog;
+import org.chromium.ui.text.SpanApplier;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -108,6 +111,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private View mSpinnyLayout;
     // View used to store a view to be replaced with the current payment request UI.
     private View mBackupView;
+    private RadioButton mAcceptThirdPartyConditions;
+    private RadioButton mReviewThirdPartyConditions;
 
     private LineItemBreakdownSection mOrderSummarySection;
     private OptionSection mShippingAddressSection;
@@ -300,6 +305,19 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mBottomBar = (ViewGroup) mRequestView.findViewById(R.id.bottom_bar);
         mPayButton = (Button) mBottomBar.findViewById(R.id.button_primary);
         mPayButton.setOnClickListener(this);
+
+        // Set terms & conditions text.
+        mAcceptThirdPartyConditions = mRequestView.findViewById(R.id.terms_checkbox_agree);
+        mReviewThirdPartyConditions = mRequestView.findViewById(R.id.terms_checkbox_review);
+        StyleSpan boldSpan = new StyleSpan(android.graphics.Typeface.BOLD);
+        mAcceptThirdPartyConditions.setText(SpanApplier.applySpans(
+                context.getString(R.string.autofill_assistant_3rd_party_terms_accept, origin),
+                new SpanApplier.SpanInfo("<b>", "</b>", boldSpan)));
+        mReviewThirdPartyConditions.setText(SpanApplier.applySpans(
+                context.getString(R.string.autofill_assistant_3rd_party_terms_review, origin),
+                new SpanApplier.SpanInfo("<b>", "</b>", boldSpan)));
+        mAcceptThirdPartyConditions.setOnClickListener(this);
+        mReviewThirdPartyConditions.setOnClickListener(this);
 
         // Create all the possible sections.
         mSectionSeparators = new ArrayList<>();
@@ -601,7 +619,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 mShippingOptionsSectionInformation == null
                         ? null
                         : mShippingOptionsSectionInformation.getSelectedItem(),
-                mPaymentMethodSectionInformation.getSelectedItem(), false);
+                mPaymentMethodSectionInformation.getSelectedItem(),
+                mAcceptThirdPartyConditions.isChecked());
 
         if (shouldShowSpinner) {
             changeSpinnerVisibility(true);
@@ -675,10 +694,13 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         boolean shippingOptionInfoOk = !mRequestShippingOption
                 || (mShippingOptionsSectionInformation != null
                         && mShippingOptionsSectionInformation.getSelectedItem() != null);
+        boolean termsOptionOk =
+                mAcceptThirdPartyConditions.isChecked() || mReviewThirdPartyConditions.isChecked();
         mPayButton.setEnabled(contactInfoOk && shippingInfoOk && shippingOptionInfoOk
                 && mPaymentMethodSectionInformation != null
                 && mPaymentMethodSectionInformation.getSelectedItem() != null
-                && !mIsClientCheckingSelection && !mIsEditingPaymentItem && !mIsClosing);
+                && !mIsClientCheckingSelection && !mIsEditingPaymentItem && !mIsClosing
+                && termsOptionOk);
     }
 
     /** @return Whether or not the dialog can be closed via the X close button. */
