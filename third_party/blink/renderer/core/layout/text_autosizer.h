@@ -360,6 +360,8 @@ class CORE_EXPORT TextAutosizer final
   // Mark the nearest non-inheritance supercluser
   void MarkSuperclusterForConsistencyCheck(LayoutObject*);
 
+  void ReportIfCrossSiteFrame();
+
   Member<const Document> document_;
   const LayoutBlock* first_block_to_begin_layout_;
 #if DCHECK_IS_ON()
@@ -375,6 +377,11 @@ class CORE_EXPORT TextAutosizer final
   // FIXME: All frames should share the same m_pageInfo instance.
   PageInfo page_info_;
   bool update_page_info_deferred_;
+
+  // Inflate reports a use counter if we're autosizing a cross site iframe.
+  // This flag makes sure we only check it once per layout pass.
+  bool did_check_cross_site_use_count_;
+
   DISALLOW_COPY_AND_ASSIGN(TextAutosizer);
 };
 

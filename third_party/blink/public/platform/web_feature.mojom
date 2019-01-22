@@ -2177,6 +2177,7 @@ enum WebFeature {
   kRTCAudioJitterBufferRtxHandling = 2736,
   kWebShareCanShare = 2737,
   kPriorityHints = 2738,
+  kTextAutosizedCrossSiteIframe = 2739,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
