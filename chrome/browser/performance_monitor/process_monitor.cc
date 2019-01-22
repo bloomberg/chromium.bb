@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/performance_monitor/performance_monitor.h"
+#include "chrome/browser/performance_monitor/process_monitor.h"
 
 #include <stddef.h>
 #include <utility>
@@ -32,11 +32,11 @@ namespace performance_monitor {
 
 namespace {
 
-// The default interval at which PerformanceMonitor performs its timed
+// The default interval at which ProcessMonitor performs its timed
 // collections.
-const int kGatherIntervalInSeconds = 120;
+constexpr base::TimeDelta kGatherInterval = base::TimeDelta::FromSeconds(120);
 
-base::LazyInstance<PerformanceMonitor>::DestructorAtExit g_monitor =
+base::LazyInstance<ProcessMonitor>::DestructorAtExit g_monitor =
     LAZY_INSTANCE_INITIALIZER;
 
 void GatherMetricsForRenderProcess(content::RenderProcessHost* host,
@@ -73,23 +73,22 @@ void GatherMetricsForRenderProcess(content::RenderProcessHost* host,
 
 }  // namespace
 
-PerformanceMonitor::PerformanceMonitor() = default;
+ProcessMonitor::ProcessMonitor() = default;
 
-PerformanceMonitor::~PerformanceMonitor() = default;
+ProcessMonitor::~ProcessMonitor() = default;
 
 // static
-PerformanceMonitor* PerformanceMonitor::GetInstance() {
+ProcessMonitor* ProcessMonitor::GetInstance() {
   return g_monitor.Pointer();
 }
 
-void PerformanceMonitor::StartGatherCycle() {
+void ProcessMonitor::StartGatherCycle() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  repeating_timer_.Start(FROM_HERE,
-                         base::TimeDelta::FromSeconds(kGatherIntervalInSeconds),
-                         this, &PerformanceMonitor::GatherMetricsMapOnUIThread);
+  repeating_timer_.Start(FROM_HERE, kGatherInterval, this,
+                         &ProcessMonitor::GatherMetricsMapOnUIThread);
 }
 
-void PerformanceMonitor::GatherMetricsMapOnUIThread() {
+void ProcessMonitor::GatherMetricsMapOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   static int current_update_sequence = 0;
@@ -112,11 +111,11 @@ void PerformanceMonitor::GatherMetricsMapOnUIThread() {
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&PerformanceMonitor::GatherMetricsMapOnIOThread,
+      base::BindOnce(&ProcessMonitor::GatherMetricsMapOnIOThread,
                      base::Unretained(this), current_update_sequence));
 }
 
-void PerformanceMonitor::MarkProcessAsAlive(
+void ProcessMonitor::MarkProcessAsAlive(
     const ProcessMetricsMetadata& process_data,
     int current_update_sequence) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -139,8 +138,7 @@ void PerformanceMonitor::MarkProcessAsAlive(
   }
 }
 
-void PerformanceMonitor::GatherMetricsMapOnIOThread(
-    int current_update_sequence) {
+void ProcessMonitor::GatherMetricsMapOnIOThread(int current_update_sequence) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   auto process_data_list =
@@ -170,12 +168,12 @@ void PerformanceMonitor::GatherMetricsMapOnIOThread(
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&PerformanceMonitor::MarkProcessesAsAliveOnUIThread,
+      base::BindOnce(&ProcessMonitor::MarkProcessesAsAliveOnUIThread,
                      base::Unretained(this), std::move(process_data_list),
                      current_update_sequence));
 }
 
-void PerformanceMonitor::MarkProcessesAsAliveOnUIThread(
+void ProcessMonitor::MarkProcessesAsAliveOnUIThread(
     std::unique_ptr<std::vector<ProcessMetricsMetadata>> process_data_list,
     int current_update_sequence) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -184,11 +182,11 @@ void PerformanceMonitor::MarkProcessesAsAliveOnUIThread(
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&PerformanceMonitor::UpdateMetricsOnIOThread,
+      base::BindOnce(&ProcessMonitor::UpdateMetricsOnIOThread,
                      base::Unretained(this), current_update_sequence));
 }
 
-void PerformanceMonitor::UpdateMetricsOnIOThread(int current_update_sequence) {
+void ProcessMonitor::UpdateMetricsOnIOThread(int current_update_sequence) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Update metrics for all watched processes; remove dead entries from the map.
   auto iter = metrics_map_.begin();
@@ -203,13 +201,12 @@ void PerformanceMonitor::UpdateMetricsOnIOThread(int current_update_sequence) {
     }
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&PerformanceMonitor::RunTriggersUIThread,
-                     base::Unretained(this)));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(&ProcessMonitor::RunTriggersUIThread,
+                                          base::Unretained(this)));
 }
 
-void PerformanceMonitor::RunTriggersUIThread() {
+void ProcessMonitor::RunTriggersUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (auto& metrics : metrics_map_)
     metrics.second->RunPerformanceTriggers();

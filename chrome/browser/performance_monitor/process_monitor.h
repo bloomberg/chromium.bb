@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PERFORMANCE_MONITOR_PERFORMANCE_MONITOR_H_
-#define CHROME_BROWSER_PERFORMANCE_MONITOR_PERFORMANCE_MONITOR_H_
+#ifndef CHROME_BROWSER_PERFORMANCE_MONITOR_PROCESS_MONITOR_H_
+#define CHROME_BROWSER_PERFORMANCE_MONITOR_PROCESS_MONITOR_H_
 
 #include <map>
 #include <memory>
@@ -19,26 +19,28 @@ namespace performance_monitor {
 
 class ProcessMetricsHistory;
 
-// PerformanceMonitor is a tool which periodically monitors performance metrics
-// for histogram logging and possibly taking action upon noticing serious
-// performance degradation.
-class PerformanceMonitor {
+// ProcessMonitor is a tool which periodically monitors performance metrics
+// of all the Chrome processes for histogram logging and possibly taking action
+// upon noticing serious performance degradation.
+//
+// TODO(sebmarchand): Make this class not a singleton.
+class ProcessMonitor {
  public:
-  // Returns the current PerformanceMonitor instance if one exists; otherwise
-  // constructs a new PerformanceMonitor.
-  static PerformanceMonitor* GetInstance();
+  // Returns the current ProcessMonitor instance if one exists; otherwise
+  // constructs a new ProcessMonitor.
+  static ProcessMonitor* GetInstance();
 
   // Start the cycle of metrics gathering.
   void StartGatherCycle();
 
  private:
-  friend struct base::LazyInstanceTraitsBase<PerformanceMonitor>;
+  friend struct base::LazyInstanceTraitsBase<ProcessMonitor>;
 
   using MetricsMap =
       std::map<base::ProcessHandle, std::unique_ptr<ProcessMetricsHistory>>;
 
-  PerformanceMonitor();
-  ~PerformanceMonitor();
+  ProcessMonitor();
+  ~ProcessMonitor();
 
   // Perform any collections that are done on a timed basis.
   void DoTimedCollections();
@@ -63,12 +65,12 @@ class PerformanceMonitor {
   // A map of currently running ProcessHandles to ProcessMetrics.
   MetricsMap metrics_map_;
 
-  // The timer to signal PerformanceMonitor to perform its timed collections.
+  // The timer to signal ProcessMonitor to perform its timed collections.
   base::OneShotTimer repeating_timer_;
 
-  DISALLOW_COPY_AND_ASSIGN(PerformanceMonitor);
+  DISALLOW_COPY_AND_ASSIGN(ProcessMonitor);
 };
 
 }  // namespace performance_monitor
 
-#endif  // CHROME_BROWSER_PERFORMANCE_MONITOR_PERFORMANCE_MONITOR_H_
+#endif  // CHROME_BROWSER_PERFORMANCE_MONITOR_PROCESS_MONITOR_H_
