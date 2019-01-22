@@ -3409,6 +3409,18 @@ def ApplyCustomOverrides(site_config):
                                                   '-cfi']),
       },
 
+      # Run TestSimpleChromeWorkflow only on kevin64-release instead of
+      # kevin64-chrome-pfq/kevin64-full.
+      'kevin64-chrome-pfq': {
+          'chrome_sdk_build_chrome': False,
+      },
+      'kevin64-full': {
+          'chrome_sdk_build_chrome': False,
+      },
+      'kevin64-release': {
+          'chrome_sdk_build_chrome': True,
+      },
+
       # Currently factory and firmware branches will be created after DVT stage
       # therefore we need signed factory shim or accessory_rwsig firmware from
       # ToT temporarily.
