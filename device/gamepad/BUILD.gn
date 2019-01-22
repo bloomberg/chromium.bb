@@ -38,7 +38,6 @@ component("gamepad") {
     "gamepad_export.h",
     "gamepad_haptics_manager.cc",
     "gamepad_haptics_manager.h",
-    "gamepad_id.h",
     "gamepad_id_list.cc",
     "gamepad_id_list.h",
     "gamepad_monitor.cc",

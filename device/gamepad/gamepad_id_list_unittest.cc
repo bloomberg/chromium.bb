@@ -9,21 +9,23 @@
 namespace device {
 
 TEST(GamepadIdTest, NoDuplicateIds) {
-  // Each vendor/product ID pair and each GamepadId should appear only once in
-  // the table of known gamepads.
+  // Each vendor/product ID pair and each gamepad ID should appear only once in
+  // the table of known gamepads. This ensures that there are no duplicates, and
+  // also that no two known devices map to the same ID.
   const auto gamepads = GamepadIdList::Get().GetGamepadListForTesting();
   std::unordered_set<uint32_t> seen_vendor_product_ids;
   std::unordered_set<GamepadId> seen_gamepad_ids;
   for (const auto& item : gamepads) {
-    uint32_t vendor_product_id = (std::get<0>(item) << 16) | std::get<1>(item);
-    GamepadId gamepad_id = std::get<3>(item);
+    uint16_t vendor = std::get<0>(item);
+    uint16_t product = std::get<1>(item);
+    uint32_t vendor_product_id = (vendor << 16) | product;
+    GamepadId gamepad_id = GamepadIdList::Get().GetGamepadId(vendor, product);
     seen_vendor_product_ids.insert(vendor_product_id);
     seen_gamepad_ids.insert(gamepad_id);
-    EXPECT_LE(gamepad_id, GamepadId::kMaxValue);
+    EXPECT_NE(gamepad_id, GamepadId::kUnknownGamepad);
   }
   EXPECT_EQ(seen_vendor_product_ids.size(), gamepads.size());
   EXPECT_EQ(seen_gamepad_ids.size(), gamepads.size());
-  EXPECT_EQ(static_cast<size_t>(GamepadId::kMaxValue), gamepads.size());
 }
 
 }  // namespace device
