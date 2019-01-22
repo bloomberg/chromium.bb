@@ -108,14 +108,12 @@ void VideoFrameSubmitter::SetRotation(media::VideoRotation rotation) {
 
 void VideoFrameSubmitter::EnableSubmission(
     viz::SurfaceId surface_id,
-    base::TimeTicks local_surface_id_allocation_time,
-    WebFrameSinkDestroyedCallback frame_sink_destroyed_callback) {
+    base::TimeTicks local_surface_id_allocation_time) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // TODO(lethalantidote): Set these fields earlier in the constructor. Will
   // need to construct VideoFrameSubmitter later in order to do this.
   frame_sink_id_ = surface_id.frame_sink_id();
-  frame_sink_destroyed_callback_ = frame_sink_destroyed_callback;
   child_local_surface_id_allocator_.UpdateFromParent(
       viz::LocalSurfaceIdAllocation(surface_id.local_surface_id(),
                                     local_surface_id_allocation_time));
@@ -143,12 +141,6 @@ void VideoFrameSubmitter::SetForceSubmit(bool force_submit) {
 
 void VideoFrameSubmitter::OnContextLost() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  // TODO(lethalantidote): This check will be obsolete once other TODO to move
-  // field initialization earlier is fulfilled.
-  if (frame_sink_destroyed_callback_)
-    frame_sink_destroyed_callback_.Run();
-
   if (binding_.is_bound())
     binding_.Unbind();
 
@@ -166,15 +158,6 @@ void VideoFrameSubmitter::OnContextLost() {
       context_provider_,
       base::BindOnce(&VideoFrameSubmitter::OnReceivedContextProvider,
                      weak_ptr_factory_.GetWeakPtr()));
-
-  // We need to trigger another submit so that surface_id's get propagated
-  // correctly. If we don't, we don't get any more signals to update the
-  // submission state.
-  //
-  // TODO(dalecurtis): Instead of doing this, |force_submit_| should temporarily
-  // be set to true upon receipt of the new context when StartSubmitting() is
-  // called.
-  is_surface_visible_ = true;
 }
 
 void VideoFrameSubmitter::DidReceiveCompositorFrameAck(
@@ -316,6 +299,8 @@ void VideoFrameSubmitter::StartSubmitting() {
   if (!surface_embedder_.is_bound()) {
     provider->ConnectToEmbedder(frame_sink_id_,
                                 mojo::MakeRequest(&surface_embedder_));
+  } else {
+    GenerateNewSurfaceId();
   }
 
   compositor_frame_sink_.set_connection_error_handler(base::BindOnce(
@@ -341,12 +326,15 @@ void VideoFrameSubmitter::UpdateSubmissionState() {
   // optimizations save 30-50% in cc:: resource memory usage.
   //
   // See https://crbug.com/829813 and https://crbug.com/829565.
-  //
-  // TODO(dalecurtis): We probably shouldn't SubmitSingleFrame() when rendering.
-  if (ShouldSubmit())
-    SubmitSingleFrame();
-  else if (!frame_size_.IsEmpty())
+  if (ShouldSubmit()) {
+    // We don't want to submit when |is_rendering_| because OnBeginFrame() calls
+    // are already driving submissions. We should still submit the empty frame
+    // in the other branch for memory savings.
+    if (!is_rendering_)
+      SubmitSingleFrame();
+  } else if (!frame_size_.IsEmpty()) {
     SubmitEmptyFrame();
+  }
 }
 
 bool VideoFrameSubmitter::SubmitFrame(
@@ -365,15 +353,8 @@ bool VideoFrameSubmitter::SubmitFrame(
     frame_size = gfx::Size(frame_size.height(), frame_size.width());
   }
   if (frame_size_ != frame_size) {
-    if (!frame_size_.IsEmpty()) {
-      child_local_surface_id_allocator_.GenerateId();
-      if (enable_surface_synchronization_) {
-        surface_embedder_->SetLocalSurfaceId(
-            child_local_surface_id_allocator_
-                .GetCurrentLocalSurfaceIdAllocation()
-                .local_surface_id());
-      }
-    }
+    if (!frame_size_.IsEmpty())
+      GenerateNewSurfaceId();
     frame_size_ = frame_size;
   }
 
@@ -479,6 +460,17 @@ viz::CompositorFrame VideoFrameSubmitter::CreateCompositorFrame(
 
   compositor_frame.render_pass_list.emplace_back(std::move(render_pass));
   return compositor_frame;
+}
+
+void VideoFrameSubmitter::GenerateNewSurfaceId() {
+  // We need a new id in the event of context loss.
+  child_local_surface_id_allocator_.GenerateId();
+  if (!enable_surface_synchronization_)
+    return;
+
+  surface_embedder_->SetLocalSurfaceId(
+      child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+          .local_surface_id());
 }
 
 }  // namespace blink

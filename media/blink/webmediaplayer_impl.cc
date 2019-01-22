@@ -1876,14 +1876,12 @@ void WebMediaPlayerImpl::ActivateSurfaceLayerForVideo() {
 
   vfc_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &VideoFrameCompositor::EnableSubmission,
-          base::Unretained(compositor_.get()), bridge_->GetSurfaceId(),
-          bridge_->GetLocalSurfaceIdAllocationTime(),
-          pipeline_metadata_.video_decoder_config.video_rotation(),
-          IsInPictureInPicture(),
-          BindToCurrentLoop(base::BindRepeating(
-              &WebMediaPlayerImpl::OnFrameSinkDestroyed, AsWeakPtr()))));
+      base::BindOnce(&VideoFrameCompositor::EnableSubmission,
+                     base::Unretained(compositor_.get()),
+                     bridge_->GetSurfaceId(),
+                     bridge_->GetLocalSurfaceIdAllocationTime(),
+                     pipeline_metadata_.video_decoder_config.video_rotation(),
+                     IsInPictureInPicture()));
   bridge_->SetContentsOpaque(opaque_);
 
   // If the element is already in Picture-in-Picture mode, it means that it
@@ -1896,10 +1894,6 @@ void WebMediaPlayerImpl::ActivateSurfaceLayerForVideo() {
   // is fixed.
   if (IsInPictureInPicture())
     OnSurfaceIdUpdated(bridge_->GetSurfaceId());
-}
-
-void WebMediaPlayerImpl::OnFrameSinkDestroyed() {
-  bridge_->ClearSurfaceId();
 }
 
 void WebMediaPlayerImpl::OnBufferingStateChange(BufferingState state) {

@@ -89,8 +89,7 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
       const viz::SurfaceId& id,
       base::TimeTicks local_surface_id_allocation_time,
       media::VideoRotation rotation,
-      bool force_submit,
-      blink::WebFrameSinkDestroyedCallback frame_sink_destroyed_callback);
+      bool force_submit);
 
   // Notifies the |submitter_| that the frames must be submitted.
   void SetForceSubmit(bool force_submit);

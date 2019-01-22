@@ -26,12 +26,12 @@ namespace blink {
 // Sets the proper context_provider and compositing mode onto the Submitter.
 using WebSubmitterConfigurationCallback =
     base::OnceCallback<void(bool, scoped_refptr<viz::ContextProvider>)>;
+
 // Callback to obtain the media ContextProvider and a bool indicating whether
 // we are in software compositing mode.
 using WebContextProviderCallback =
     base::RepeatingCallback<void(scoped_refptr<viz::ContextProvider>,
                                  WebSubmitterConfigurationCallback)>;
-using WebFrameSinkDestroyedCallback = base::RepeatingCallback<void()>;
 
 // Exposes the VideoFrameSubmitter, which submits CompositorFrames containing
 // decoded VideoFrames from the VideoFrameProvider to the compositor for
@@ -56,12 +56,8 @@ class BLINK_PLATFORM_EXPORT WebVideoFrameSubmitter
   virtual void SetRotation(media::VideoRotation) = 0;
 
   // Prepares the compositor frame sink to accept frames by providing
-  // a SurfaceId, with its associated allocation time. The callback is to be
-  // used when on context loss to prevent the submitter from continuing to
-  // submit frames with invalid resources.
-  virtual void EnableSubmission(viz::SurfaceId,
-                                base::TimeTicks,
-                                WebFrameSinkDestroyedCallback) = 0;
+  // a SurfaceId, with its associated allocation time.
+  virtual void EnableSubmission(viz::SurfaceId, base::TimeTicks) = 0;
 
   // Set whether the surface is visible within the current view port. Stops
   // submission if not unless SetForceSubmit(true) has been called.

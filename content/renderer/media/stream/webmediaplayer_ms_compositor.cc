@@ -214,8 +214,7 @@ void WebMediaPlayerMSCompositor::EnableSubmission(
     const viz::SurfaceId& id,
     base::TimeTicks local_surface_id_allocation_time,
     media::VideoRotation rotation,
-    bool force_submit,
-    blink::WebFrameSinkDestroyedCallback frame_sink_destroyed_callback) {
+    bool force_submit) {
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
 
   // If we're switching to |submitter_| from some other client, then tell it.
@@ -226,8 +225,7 @@ void WebMediaPlayerMSCompositor::EnableSubmission(
 
   submitter_->SetRotation(rotation);
   submitter_->SetForceSubmit(force_submit);
-  submitter_->EnableSubmission(id, local_surface_id_allocation_time,
-                               std::move(frame_sink_destroyed_callback));
+  submitter_->EnableSubmission(id, local_surface_id_allocation_time);
   video_frame_provider_client_ = submitter_.get();
 
   if (!stopped_)

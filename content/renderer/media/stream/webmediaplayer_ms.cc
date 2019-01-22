@@ -1073,10 +1073,6 @@ bool WebMediaPlayerMS::TexImageImpl(TexImageFunctionID functionID,
   return false;
 }
 
-void WebMediaPlayerMS::OnFrameSinkDestroyed() {
-  bridge_->ClearSurfaceId();
-}
-
 void WebMediaPlayerMS::ActivateSurfaceLayerForVideo() {
   // Note that we might or might not already be in VideoLayer mode.
   DCHECK(!bridge_);
@@ -1093,13 +1089,10 @@ void WebMediaPlayerMS::ActivateSurfaceLayerForVideo() {
   bridge_->SetContentsOpaque(opaque_);
 
   compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &WebMediaPlayerMSCompositor::EnableSubmission, compositor_,
-          bridge_->GetSurfaceId(), bridge_->GetLocalSurfaceIdAllocationTime(),
-          video_rotation_, IsInPictureInPicture(),
-          media::BindToCurrentLoop(base::BindRepeating(
-              &WebMediaPlayerMS::OnFrameSinkDestroyed, AsWeakPtr()))));
+      FROM_HERE, base::BindOnce(&WebMediaPlayerMSCompositor::EnableSubmission,
+                                compositor_, bridge_->GetSurfaceId(),
+                                bridge_->GetLocalSurfaceIdAllocationTime(),
+                                video_rotation_, IsInPictureInPicture()));
 
   // If the element is already in Picture-in-Picture mode, it means that it
   // was set in this mode prior to this load, with a different

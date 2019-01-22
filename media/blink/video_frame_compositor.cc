@@ -73,8 +73,7 @@ void VideoFrameCompositor::EnableSubmission(
     const viz::SurfaceId& id,
     base::TimeTicks local_surface_id_allocation_time,
     VideoRotation rotation,
-    bool force_submit,
-    blink::WebFrameSinkDestroyedCallback frame_sink_destroyed_callback) {
+    bool force_submit) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // If we're switching to |submitter_| from some other client, then tell it.
@@ -83,8 +82,7 @@ void VideoFrameCompositor::EnableSubmission(
 
   submitter_->SetRotation(rotation);
   submitter_->SetForceSubmit(force_submit);
-  submitter_->EnableSubmission(id, local_surface_id_allocation_time,
-                               std::move(frame_sink_destroyed_callback));
+  submitter_->EnableSubmission(id, local_surface_id_allocation_time);
   client_ = submitter_.get();
   if (rendering_)
     client_->StartRendering();
