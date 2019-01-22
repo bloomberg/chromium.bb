@@ -17,7 +17,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.os.SystemClock;
 import android.provider.Browser;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
@@ -253,11 +252,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     private NavigationController getNavigationController() {
         WebContents webContents = getActivityTab().getWebContents();
         return webContents == null ? null : webContents.getNavigationController();
-    }
-
-    public void loadUri(Uri uri) {
-        mTabController.loadUrlInTab(new LoadUrlParams(uri.toString()),
-                SystemClock.elapsedRealtime());
     }
 
     @Override
