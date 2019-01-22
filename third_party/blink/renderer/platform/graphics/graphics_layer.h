@@ -157,6 +157,16 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   bool DrawsContent() const { return draws_content_; }
   void SetDrawsContent(bool);
 
+  // False if no hit test display items will be painted onto this GraphicsLayer.
+  // This is different from |DrawsContent| because hit test display items are
+  // internal to blink and are not copied to the cc::Layer's display list.
+  bool PaintsHitTest() const { return paints_hit_test_; }
+  void SetPaintsHitTest(bool paints) { paints_hit_test_ = paints; };
+
+  bool PaintsContentOrHitTest() const {
+    return draws_content_ || paints_hit_test_;
+  }
+
   bool ContentsAreVisible() const { return contents_visible_; }
   void SetContentsVisible(bool);
 
@@ -366,6 +376,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   bool prevent_contents_opaque_changes_ : 1;
   bool draws_content_ : 1;
+  bool paints_hit_test_ : 1;
   bool contents_visible_ : 1;
   bool hit_testable_without_draws_content_ : 1;
   bool needs_check_raster_invalidation_ : 1;

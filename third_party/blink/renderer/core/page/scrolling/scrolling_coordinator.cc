@@ -274,7 +274,7 @@ static void ForAllGraphicsLayers(GraphicsLayer& layer,
 // on the GraphicsLayer's paint chunks.
 static void UpdateLayerTouchActionRects(GraphicsLayer& layer) {
   DCHECK(RuntimeEnabledFeatures::PaintTouchActionRectsEnabled());
-  if (!layer.DrawsContent())
+  if (!layer.PaintsContentOrHitTest())
     return;
 
   if (layer.Client().ShouldThrottleRendering()) {
