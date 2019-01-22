@@ -191,11 +191,10 @@ class BaseWebUIHandler : public content::WebUIMessageHandler,
   }
 
   template <typename... Args>
-  void CallJSWithPrefixOrDefer(const std::string& function_name,
-                               const Args&... args) {
+  void CallJSOrDefer(const std::string& function_name, const Args&... args) {
     DCHECK(js_calls_container_);
     if (js_calls_container_->is_initialized()) {
-      CallJSWithPrefix(function_name, args...);
+      CallJS(function_name, args...);
     } else {
       // Note that std::conditional is used here in order to obtain a sequence
       // of base::Value types with the length equal to sizeof...(Args); the C++
@@ -264,7 +263,7 @@ class BaseWebUIHandler : public content::WebUIMessageHandler,
   template <typename... Args>
   void ExecuteDeferredJSCall(const std::string& function_name,
                              std::unique_ptr<Args>... args) {
-    CallJSWithPrefix(function_name, *args...);
+    CallJS(function_name, *args...);
   }
 
   // Handles user action.
