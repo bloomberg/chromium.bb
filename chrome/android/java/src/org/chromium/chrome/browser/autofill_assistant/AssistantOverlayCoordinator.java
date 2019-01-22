@@ -36,6 +36,9 @@ class AssistantOverlayCoordinator {
      * Destroy this coordinator.
      */
     public void destroy() {
+        if (mActivity.isViewObscuringAllTabs())
+            mActivity.removeViewObscuringAllTabs(mTouchEventFilter);
+
         // Removes the TouchEventFilter from the ChromeFullscreenManager and GestureListenerManager
         // listeners.
         mTouchEventFilter.deInit();
@@ -45,6 +48,8 @@ class AssistantOverlayCoordinator {
      * Enable an overlay that will fully cover the web page.
      */
     public void showFullOverlay() {
+        if (!mActivity.isViewObscuringAllTabs())
+            mActivity.addViewObscuringAllTabs(mTouchEventFilter);
         mTouchEventFilter.setFullOverlay(true);
     }
 
@@ -53,6 +58,8 @@ class AssistantOverlayCoordinator {
      * are given by {@code coords}.
      */
     public void showPartialOverlay(boolean enabled, List<RectF> coords) {
+        if (mActivity.isViewObscuringAllTabs())
+            mActivity.removeViewObscuringAllTabs(mTouchEventFilter);
         mTouchEventFilter.setPartialOverlay(enabled, coords);
     }
 
@@ -60,6 +67,8 @@ class AssistantOverlayCoordinator {
      * Hide any (partial or full) overlay previously shown.
      */
     public void hide() {
+        if (mActivity.isViewObscuringAllTabs())
+            mActivity.removeViewObscuringAllTabs(mTouchEventFilter);
         mTouchEventFilter.setFullOverlay(false);
     }
 }
