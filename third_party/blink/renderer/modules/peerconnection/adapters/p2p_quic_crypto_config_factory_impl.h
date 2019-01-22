@@ -9,7 +9,7 @@
 #include "net/third_party/quic/core/crypto/quic_random.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_crypto_config_factory.h"
-#include "third_party/webrtc/rtc_base/rtccertificate.h"
+#include "third_party/webrtc/rtc_base/rtc_certificate.h"
 
 namespace blink {
 
