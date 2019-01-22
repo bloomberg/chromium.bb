@@ -12,7 +12,6 @@ Performance.mark method takes in custom detail and custom start time.
 <script>
   async_test(function (t) {
     let mark_entries = [];
-    const now = self.performance.now();
     const expected_entries =
         [{ entryType: "mark", name: "mark1", detail: null},
         { entryType: "mark", name: "mark2", detail: null},
@@ -21,14 +20,13 @@ Performance.mark method takes in custom detail and custom start time.
         { entryType: "mark", name: "mark5", detail: null},
         { entryType: "mark", name: "mark6", detail: {}},
         { entryType: "mark", name: "mark7", detail: {info: 'abc'}},
-        { entryType: "mark", name: "mark8", detail: null, startTime: now},
-        { entryType: "mark", name: "mark9", detail: null, startTime: 234.56},
-        { entryType: "mark", name: "mark10", detail: {count: 3}, startTime: 345.67}];
+        { entryType: "mark", name: "mark8", detail: null, startTime: 234.56},
+        { entryType: "mark", name: "mark9", detail: {count: 3}, startTime: 345.67}];
     const observer = new PerformanceObserver(
         t.step_func(function (entryList, obs) {
           mark_entries =
             mark_entries.concat(entryList.getEntries());
-          if (mark_entries.length >= 10) {
+          if (mark_entries.length >= expected_entries.length) {
             checkEntries(mark_entries, expected_entries);
             observer.disconnect();
             t.done();
@@ -45,9 +43,8 @@ Performance.mark method takes in custom detail and custom start time.
     returned_entries.push(self.performance.mark("mark5", {detail: null}));
     returned_entries.push(self.performance.mark("mark6", {detail: {}}));
     returned_entries.push(self.performance.mark("mark7", {detail: {info: 'abc'}}));
-    returned_entries.push(self.performance.mark("mark8", now));
-    returned_entries.push(self.performance.mark("mark9", {startTime: 234.56}));
-    returned_entries.push(self.performance.mark("mark10", {detail: {count: 3}, startTime: 345.67}));
+    returned_entries.push(self.performance.mark("mark8", {startTime: 234.56}));
+    returned_entries.push(self.performance.mark("mark9", {detail: {count: 3}, startTime: 345.67}));
     checkEntries(returned_entries, expected_entries);
-  }, "mark entries' detail and startTime are customizable");
+  }, "mark entries' detail and startTime are customizable.");
 </script>
