@@ -26,9 +26,6 @@ const uint16_t kJoystickUsageNumber = 0x04;
 const uint16_t kGameUsageNumber = 0x05;
 const uint16_t kMultiAxisUsageNumber = 0x08;
 
-const uint16_t kVendorSteelSeries = 0x1038;
-const uint16_t kProductNimbus = 0x1420;
-
 void CopyNSStringAsUTF16LittleEndian(NSString* src,
                                      UChar* dest,
                                      size_t dest_len) {
@@ -197,8 +194,9 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
   // Record the device before excluding Made for iOS gamepads. This allows us to
   // recognize these devices even though the GameController API masks the vendor
   // and product IDs. XInput devices are recorded elsewhere.
+  const auto& gamepad_id_list = GamepadIdList::Get();
   DCHECK_EQ(kXInputTypeNone,
-            GamepadIdList::Get().GetXInputType(vendor_int, product_int));
+            gamepad_id_list.GetXInputType(vendor_int, product_int));
   RecordConnectedGamepad(vendor_int, product_int);
 
   // We can't handle this many connected devices.
@@ -208,8 +206,10 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
   // The SteelSeries Nimbus and other Made for iOS gamepads should be handled
   // through the GameController interface. Blacklist it here so it doesn't
   // take up an additional gamepad slot.
-  if (vendor_int == kVendorSteelSeries && product_int == kProductNimbus)
+  if (gamepad_id_list.GetGamepadId(vendor_int, product_int) ==
+      GamepadId::kSteelSeriesProduct1420) {
     return;
+  }
 
   PadState* state = GetPadState(location_int);
   if (!state)

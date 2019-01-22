@@ -23259,6 +23259,61 @@ Called by update_net_error_codes.py.-->
   <int value="12" label="GAMEPAD_SOURCE_WIN_RAW"/>
 </enum>
 
+<enum name="GamepadVendorProduct">
+  <summary>
+    Integer values encoding the vendor and product IDs for known gamepads.
+  </summary>
+  <int value="7929862" label="DragonRiseProduct0006"/>
+  <int value="7929873" label="DragonRiseProduct0011"/>
+  <int value="17896473" label="SteelSeriesBtProduct1419"/>
+  <int value="73269902" label="MicrosoftProduct028e"/>
+  <int value="73269903" label="MicrosoftProduct028f"/>
+  <int value="73269905" label="MicrosoftProduct0291"/>
+  <int value="73269921" label="MicrosoftProduct02a1"/>
+  <int value="73269969" label="MicrosoftProduct02d1"/>
+  <int value="73269981" label="MicrosoftProduct02dd"/>
+  <int value="73269984" label="MicrosoftProduct02e0"/>
+  <int value="73269987" label="MicrosoftProduct02e3"/>
+  <int value="73269994" label="MicrosoftProduct02ea"/>
+  <int value="73270013" label="MicrosoftProduct02fd"/>
+  <int value="73271065" label="MicrosoftProduct0719"/>
+  <int value="74301974" label="LogitechProductc216"/>
+  <int value="74301976" label="LogitechProductc218"/>
+  <int value="74301977" label="LogitechProductc219"/>
+  <int value="74301981" label="LogitechProductc21d"/>
+  <int value="74301982" label="LogitechProductc21e"/>
+  <int value="74301983" label="LogitechProductc21f"/>
+  <int value="82354176" label="SamsungElectronicsProducta000"/>
+  <int value="88867432" label="SonyProduct0268"/>
+  <int value="88868292" label="SonyProduct05c4"/>
+  <int value="88869324" label="SonyProduct09cc"/>
+  <int value="88869792" label="SonyProduct0ba0"/>
+  <int value="92151817" label="NintendoProduct2009"/>
+  <int value="92479584" label="PadixProduct2060"/>
+  <int value="153419781" label="LakeviewResearchProduct0005"/>
+  <int value="153454694" label="LakeviewResearchProduct8866"/>
+  <int value="156594704" label="NvidiaProduct7210"/>
+  <int value="156594708" label="NvidiaProduct7214"/>
+  <int value="184894720" label="AsusTekProduct4500"/>
+  <int value="188940293" label="PlayComProduct0005"/>
+  <int value="242155523" label="PdpProduct0003"/>
+  <int value="244252675" label="GreenAsiaProduct0003"/>
+  <int value="272110610" label="SteelSeriesProduct1412"/>
+  <int value="272110616" label="SteelSeriesProduct1418"/>
+  <int value="272110624" label="SteelSeriesProduct1420"/>
+  <int value="355600640" label="Razer1532Product0900"/>
+  <int value="416361536" label="GoogleProduct2c40"/>
+  <int value="550920817" label="Vendor20d6Product6271"/>
+  <int value="550930917" label="Vendor20d6Product89e5"/>
+  <int value="572653664" label="MacAllyProduct0060"/>
+  <int value="572669968" label="MacAllyProduct4010"/>
+  <int value="595070984" label="Vendor2378Product1008"/>
+  <int value="595070986" label="Vendor2378Product100a"/>
+  <int value="674627585" label="Vendor2836Product0001"/>
+  <int value="1717962343" label="PrototypeVendorProduct0667"/>
+  <int value="1717998593" label="PrototypeVendorProduct9401"/>
+</enum>
+
 <enum name="Gamma">
   <int value="0" label="GammaLinear"/>
   <int value="1" label="GammaSRGB"/>
