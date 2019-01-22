@@ -49,10 +49,6 @@ base::string16 WebClient::GetPluginNotSupportedText() const {
   return base::string16();
 }
 
-std::string WebClient::GetProduct() const {
-  return std::string();
-}
-
 std::string WebClient::GetUserAgent(UserAgentType type) const {
   return std::string();
 }

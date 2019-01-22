@@ -23,7 +23,6 @@ class ShellWebClient : public WebClient {
 
   // WebClient implementation.
   std::unique_ptr<WebMainParts> CreateWebMainParts() override;
-  std::string GetProduct() const override;
   std::string GetUserAgent(UserAgentType type) const override;
   base::StringPiece GetDataResource(
       int resource_id,
