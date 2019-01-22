@@ -329,6 +329,7 @@ typedef struct AV1EncoderConfig {
   int enable_order_hint;
   int enable_dist_wtd_comp;
   int enable_ref_frame_mvs;
+  unsigned int max_reference_frames;
   unsigned int allow_ref_frame_mvs;
   int enable_masked_comp;
   int enable_interintra_comp;

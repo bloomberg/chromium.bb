@@ -604,6 +604,9 @@ static const arg_def_t max_gf_interval = ARG_DEF(
 static const arg_def_t gf_max_pyr_height =
     ARG_DEF(NULL, "gf-max-pyr-height", 1,
             "maximum height for GF group pyramid structure (1 to 4 (default))");
+static const arg_def_t max_reference_frames = ARG_DEF(
+    NULL, "max-reference-frames", 1,
+    "maximum number of reference frames allowed per frame (3 to 7 (default))");
 
 static const struct arg_enum_list color_primaries_enum[] = {
   { "bt709", AOM_CICP_CP_BT_709 },
@@ -782,7 +785,8 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
 #if CONFIG_DENOISE
                                        &denoise_noise_level,
                                        &denoise_block_size,
-#endif
+#endif  // CONFIG_DENOISE
+                                       &max_reference_frames,
                                        &enable_ref_frame_mvs,
                                        &bitdeptharg,
                                        &inbitdeptharg,
@@ -865,7 +869,8 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
 #if CONFIG_DENOISE
                                         AV1E_SET_DENOISE_NOISE_LEVEL,
                                         AV1E_SET_DENOISE_BLOCK_SIZE,
-#endif
+#endif  // CONFIG_DENOISE
+                                        AV1E_SET_MAX_REFERENCE_FRAMES,
                                         AV1E_SET_ENABLE_REF_FRAME_MVS,
                                         0 };
 #endif  // CONFIG_AV1_ENCODER

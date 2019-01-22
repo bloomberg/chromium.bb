@@ -25,6 +25,7 @@
 #include "av1/encoder/bitstream.h"
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/firstpass.h"
+#include "common/tools_common.h"
 
 #define MAG_SIZE (4)
 #define MAX_NUM_ENHANCEMENT_LAYERS 3
@@ -96,6 +97,7 @@ struct av1_extracfg {
   int enable_order_hint;         // enable order hint for sequence
   int enable_tx64;               // enable 64-pt transform usage for sequence
   int enable_dist_wtd_comp;      // enable dist wtd compound for sequence
+  int max_reference_frames;      // maximum number of references per frame
   int enable_ref_frame_mvs;      // sequence level
   int allow_ref_frame_mvs;       // frame level
   int enable_masked_comp;        // enable masked compound for sequence
@@ -191,6 +193,7 @@ static struct av1_extracfg default_extra_cfg = {
   1,                            // frame order hint
   1,                            // enable 64-pt transform usage
   1,                            // dist-wtd compound
+  7,                            // max_reference_frames
   1,                            // enable_ref_frame_mvs sequence level
   1,                            // allow ref_frame_mvs frame level
   1,                            // enable masked compound at sequence level
@@ -421,6 +424,7 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
 #endif
   }
 
+  RANGE_CHECK(extra_cfg, max_reference_frames, 3, 7);
   RANGE_CHECK_HI(extra_cfg, chroma_subsampling_x, 1);
   RANGE_CHECK_HI(extra_cfg, chroma_subsampling_y, 1);
 
@@ -714,6 +718,14 @@ static aom_codec_err_t set_encoder_config(
   oxcf->enable_order_hint = extra_cfg->enable_order_hint;
   oxcf->enable_dist_wtd_comp =
       extra_cfg->enable_dist_wtd_comp & extra_cfg->enable_order_hint;
+  oxcf->max_reference_frames = extra_cfg->max_reference_frames;
+  if (oxcf->max_reference_frames > 3 && oxcf->max_reference_frames < 7) {
+    // TODO(urvang): Enable all possible values, after they work properly.
+    warn(
+        "max_reference_frames values between 3 and 7 are not supported yet. "
+        "Using value 3 instead.");
+    oxcf->max_reference_frames = 3;
+  }
   oxcf->enable_masked_comp = extra_cfg->enable_masked_comp;
   oxcf->enable_diff_wtd_comp =
       extra_cfg->enable_masked_comp & extra_cfg->enable_diff_wtd_comp;
@@ -1109,6 +1121,13 @@ static aom_codec_err_t ctrl_set_enable_dist_wtd_comp(aom_codec_alg_priv_t *ctx,
                                                      va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.enable_dist_wtd_comp = CAST(AV1E_SET_ENABLE_DIST_WTD_COMP, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_max_reference_frames(aom_codec_alg_priv_t *ctx,
+                                                     va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.max_reference_frames = CAST(AV1E_SET_MAX_REFERENCE_FRAMES, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -1997,6 +2016,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_ENABLE_ORDER_HINT, ctrl_set_enable_order_hint },
   { AV1E_SET_ENABLE_TX64, ctrl_set_enable_tx64 },
   { AV1E_SET_ENABLE_DIST_WTD_COMP, ctrl_set_enable_dist_wtd_comp },
+  { AV1E_SET_MAX_REFERENCE_FRAMES, ctrl_set_max_reference_frames },
   { AV1E_SET_ENABLE_REF_FRAME_MVS, ctrl_set_enable_ref_frame_mvs },
   { AV1E_SET_ALLOW_REF_FRAME_MVS, ctrl_set_allow_ref_frame_mvs },
   { AV1E_SET_ENABLE_MASKED_COMP, ctrl_set_enable_masked_comp },

@@ -10867,6 +10867,28 @@ static void init_mode_skip_mask(mode_skip_mask_t *mask, const AV1_COMP *cpi,
   }
 
   mask->mode[INTRA_FRAME] |= ~(sf->intra_y_mode_mask[max_txsize_lookup[bsize]]);
+
+  // Disable some frames to enforce max number of reference frames requested.
+  // TODO(urvang): Should this logic be moved to enforce_max_ref_frames()?
+  const MV_REFERENCE_FRAME disable_order[] = {
+    LAST3_FRAME, LAST2_FRAME, ALTREF2_FRAME, BWDREF_FRAME,
+    // GOLDEN_FRAME,
+  };
+  assert(cpi->oxcf.max_reference_frames <= INTER_REFS_PER_FRAME);
+  const int num_frames_to_disable =
+      INTER_REFS_PER_FRAME - cpi->oxcf.max_reference_frames;
+  for (int i = 0; i < num_frames_to_disable; ++i) {
+    const MV_REFERENCE_FRAME ref_frame_to_disable = disable_order[i];
+
+    mask->ref_frame1 |= (1 << ref_frame_to_disable);
+    mask->ref_frame2 |= (1 << ref_frame_to_disable);
+
+    if (ref_frame_to_disable == BWDREF_FRAME &&
+        (cpi->ref_frame_flags & AOM_BWD_FLAG)) {
+      mask->ref_frame1 |= (1 << ALTREF_FRAME);
+      mask->ref_frame2 |= (1 << ALTREF_FRAME);
+    }
+  }
 }
 
 // Please add/modify parameter setting in this function, making it consistent
