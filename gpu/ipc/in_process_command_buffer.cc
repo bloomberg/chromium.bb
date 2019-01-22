@@ -132,7 +132,7 @@ class InProcessCommandBuffer::SharedImageInterface
                             const gfx::Size& size,
                             const gfx::ColorSpace& color_space,
                             uint32_t usage) override {
-    auto mailbox = Mailbox::Generate();
+    auto mailbox = Mailbox::GenerateForSharedImage();
     {
       base::AutoLock lock(lock_);
       // Note: we enqueue the task under the lock to guarantee monotonicity of
@@ -152,7 +152,7 @@ class InProcessCommandBuffer::SharedImageInterface
                             const gfx::ColorSpace& color_space,
                             uint32_t usage,
                             base::span<const uint8_t> pixel_data) override {
-    auto mailbox = Mailbox::Generate();
+    auto mailbox = Mailbox::GenerateForSharedImage();
     std::vector<uint8_t> pixel_data_copy(pixel_data.begin(), pixel_data.end());
     {
       base::AutoLock lock(lock_);
@@ -179,7 +179,7 @@ class InProcessCommandBuffer::SharedImageInterface
     DCHECK(gpu::IsImageSizeValidForGpuMemoryBufferFormat(
         gpu_memory_buffer->GetSize(), gpu_memory_buffer->GetFormat()));
 
-    auto mailbox = Mailbox::Generate();
+    auto mailbox = Mailbox::GenerateForSharedImage();
     gfx::GpuMemoryBufferHandle handle = gpu_memory_buffer->CloneHandle();
     bool requires_sync_token = handle.type == gfx::IO_SURFACE_BUFFER;
     SyncToken sync_token;

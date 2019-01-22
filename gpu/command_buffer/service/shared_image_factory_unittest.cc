@@ -58,7 +58,7 @@ class SharedImageFactoryTest : public testing::Test {
 };
 
 TEST_F(SharedImageFactoryTest, Basic) {
-  auto mailbox = Mailbox::Generate();
+  auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
@@ -74,7 +74,7 @@ TEST_F(SharedImageFactoryTest, Basic) {
 }
 
 TEST_F(SharedImageFactoryTest, DuplicateMailbox) {
-  auto mailbox = Mailbox::Generate();
+  auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
@@ -95,7 +95,7 @@ TEST_F(SharedImageFactoryTest, DuplicateMailbox) {
 }
 
 TEST_F(SharedImageFactoryTest, DestroyInexistentMailbox) {
-  auto mailbox = Mailbox::Generate();
+  auto mailbox = Mailbox::GenerateForSharedImage();
   EXPECT_FALSE(factory_->DestroySharedImage(mailbox));
 }
 
