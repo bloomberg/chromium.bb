@@ -179,17 +179,14 @@ bool SharedImageFactory::RegisterBacking(
     return false;
   }
 
-  Mailbox mailbox = backing->mailbox();
-  if (shared_image_manager_->IsSharedImage(mailbox)) {
-    LOG(ERROR) << "CreateSharedImage: mailbox is already associated with a "
-                  "SharedImage";
-    backing->Destroy();
-    return false;
-  }
-
   std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
       shared_image_manager_->Register(std::move(backing),
                                       memory_tracker_.get());
+
+  if (!shared_image) {
+    LOG(ERROR) << "CreateSharedImage: could not register backing.";
+    return false;
+  }
 
   // TODO(ericrk): Remove this once no legacy cases remain.
   if (legacy_mailbox && !shared_image->ProduceLegacyMailbox(mailbox_manager_)) {

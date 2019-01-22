@@ -110,7 +110,7 @@ class SharedImageBackingFactoryGLTextureTest
 };
 
 TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
-  auto mailbox = Mailbox::Generate();
+  auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
@@ -202,7 +202,7 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
 }
 
 TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
-  auto mailbox = Mailbox::Generate();
+  auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
@@ -318,7 +318,7 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, InitialData) {
     if (format == viz::ResourceFormat::ETC1 && !supports_etc1())
       continue;
 
-    auto mailbox = Mailbox::Generate();
+    auto mailbox = Mailbox::GenerateForSharedImage();
     gfx::Size size(256, 256);
     auto color_space = gfx::ColorSpace::CreateSRGB();
     uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
@@ -367,7 +367,7 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, InitialData) {
 }
 
 TEST_P(SharedImageBackingFactoryGLTextureTest, InitialDataImage) {
-  auto mailbox = Mailbox::Generate();
+  auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
@@ -406,7 +406,7 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, InitialDataImage) {
 }
 
 TEST_P(SharedImageBackingFactoryGLTextureTest, InitialDataWrongSize) {
-  auto mailbox = Mailbox::Generate();
+  auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
@@ -422,7 +422,7 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, InitialDataWrongSize) {
 }
 
 TEST_P(SharedImageBackingFactoryGLTextureTest, InvalidFormat) {
-  auto mailbox = Mailbox::Generate();
+  auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = viz::ResourceFormat::UYVY_422;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
@@ -433,7 +433,7 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, InvalidFormat) {
 }
 
 TEST_P(SharedImageBackingFactoryGLTextureTest, InvalidSize) {
-  auto mailbox = Mailbox::Generate();
+  auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(0, 0);
   auto color_space = gfx::ColorSpace::CreateSRGB();
@@ -449,7 +449,7 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, InvalidSize) {
 }
 
 TEST_P(SharedImageBackingFactoryGLTextureTest, EstimatedSize) {
-  auto mailbox = Mailbox::Generate();
+  auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
@@ -591,7 +591,7 @@ class SharedImageBackingFactoryGLTextureWithGMBTest
 
 TEST_P(SharedImageBackingFactoryGLTextureWithGMBTest,
        GpuMemoryBufferImportEmpty) {
-  auto mailbox = Mailbox::Generate();
+  auto mailbox = Mailbox::GenerateForSharedImage();
   gfx::Size size(256, 256);
   gfx::BufferFormat format = gfx::BufferFormat::RGBA_8888;
   auto color_space = gfx::ColorSpace::CreateSRGB();
@@ -606,7 +606,7 @@ TEST_P(SharedImageBackingFactoryGLTextureWithGMBTest,
 
 TEST_P(SharedImageBackingFactoryGLTextureWithGMBTest,
        GpuMemoryBufferImportNative) {
-  auto mailbox = Mailbox::Generate();
+  auto mailbox = Mailbox::GenerateForSharedImage();
   gfx::Size size(256, 256);
   gfx::BufferFormat format = gfx::BufferFormat::RGBA_8888;
   auto color_space = gfx::ColorSpace::CreateSRGB();
@@ -634,7 +634,7 @@ TEST_P(SharedImageBackingFactoryGLTextureWithGMBTest,
 
 TEST_P(SharedImageBackingFactoryGLTextureWithGMBTest,
        GpuMemoryBufferImportSharedMemory) {
-  auto mailbox = Mailbox::Generate();
+  auto mailbox = Mailbox::GenerateForSharedImage();
   gfx::Size size(256, 256);
   gfx::BufferFormat format = gfx::BufferFormat::RGBA_8888;
   auto color_space = gfx::ColorSpace::CreateSRGB();

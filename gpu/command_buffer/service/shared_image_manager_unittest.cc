@@ -76,7 +76,7 @@ TEST(SharedImageManagerTest, BasicRefCounting) {
   SharedImageManager manager;
   auto tracker = std::make_unique<MemoryTypeTracker>(nullptr);
 
-  auto mailbox = Mailbox::Generate();
+  auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
@@ -116,7 +116,7 @@ TEST(SharedImageManagerTest, TransferRefSameTracker) {
   SharedImageManager manager;
   auto tracker = std::make_unique<MemoryTypeTracker>(nullptr);
 
-  auto mailbox = Mailbox::Generate();
+  auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
@@ -148,7 +148,7 @@ TEST(SharedImageManagerTest, TransferRefNewTracker) {
   auto tracker = std::make_unique<MemoryTypeTracker>(nullptr);
   auto tracker2 = std::make_unique<MemoryTypeTracker>(nullptr);
 
-  auto mailbox = Mailbox::Generate();
+  auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
