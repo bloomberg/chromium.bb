@@ -21308,6 +21308,7 @@ Called by update_net_error_codes.py.-->
   <int value="2735" label="AutoPictureInPictureAttribute"/>
   <int value="2736" label="RTCAudioJitterBufferRtxHandling"/>
   <int value="2737" label="WebShareCanShare"/>
+  <int value="2738" label="PriorityHints"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
