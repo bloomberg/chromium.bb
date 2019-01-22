@@ -303,7 +303,7 @@ function getThemeBackgroundInfo() {
  */
 function getIsThemeDark() {
   var info = getThemeBackgroundInfo();
-  if (!info || info.usingDefaultTheme) {
+  if (!info) {
     // Dark mode is always considered a dark theme.
     return configData.isDarkModeEnabled;
   }
