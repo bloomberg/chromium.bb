@@ -22,9 +22,14 @@
       :host {
         /* The constant is the height of the tallest control. */
         --button-row-height: calc(2 * var(--padding-top-bottom) + 36px);
+        --dev-drawer-background-color: #fff;
         --drawer-transition: 0.3s cubic-bezier(.25, .1, .25, 1);
         --padding-top-bottom: 8px;
         --toolbar-color: var(--md-toolbar-color);
+      }
+
+      :host-context([dark]) {
+        --dev-drawer-background-color: var(--google-grey-800);
       }
 
       cr-toolbar {
@@ -32,7 +37,7 @@
       }
 
       /* This toggle needs special styling because it's on blue background. */
-      cr-toolbar cr-toggle {
+      :host-context(html:not([dark])) cr-toolbar cr-toggle {
         --cr-toggle-checked-bar-color: var(--google-grey-refresh-100);
         --cr-toggle-checked-button-color: white;
         --cr-toggle-checked-ink-color: white;
@@ -49,14 +54,17 @@
       }
 
       #devDrawer {
-        background: white;
-        border-bottom: 1px solid var(--google-grey-300);
+        background: var(--dev-drawer-background-color);
         box-sizing: border-box;
         height: 0;
         overflow-x: hidden;
         overflow-y: auto;
         position: relative;
         transition: height var(--drawer-transition);
+      }
+
+      :host-context(html:not([dark])) #devDrawer {
+        border-bottom: 1px solid var(--google-grey-300);
       }
 
       #devDrawer[expanded] {
