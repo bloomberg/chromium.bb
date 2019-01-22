@@ -52,6 +52,11 @@ struct TestCase {
     return *this;
   }
 
+  TestCase& DisableMyFilesVolume() {
+    enable_myfiles_volume.emplace(false);
+    return *this;
+  }
+
   TestCase& DisableDriveFs() {
     enable_drivefs.emplace(false);
     return *this;
@@ -245,6 +250,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
             .DontMountVolumes()
             .EnableMyFilesVolume(),
         TestCase("fileDisplayWithoutVolumesThenMountDownloads")
+            .DisableMyFilesVolume()
             .DontMountVolumes(),
         TestCase("fileDisplayWithoutVolumesThenMountDrive")
             .DontMountVolumes()
@@ -869,7 +875,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FilesAppBrowserTest,
     ::testing::Values(
         // search should only be disabled if MyFiles isn't a volume.
-        TestCase("hideSearchButton"),
+        TestCase("hideSearchButton").DisableMyFilesVolume(),
         TestCase("directoryTreeRefresh"),
         TestCase("directoryTreeRefresh").EnableMyFilesVolume(),
         TestCase("showMyFiles"),
