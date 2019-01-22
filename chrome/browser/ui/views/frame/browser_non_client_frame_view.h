@@ -116,7 +116,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Provided for mus. Updates the client-area of the WindowTreeHostMus.
   virtual void UpdateClientArea();
 
-  // Provided for mus to update the minimum window size property.
+  // Provided for mus and macOS to update the minimum window size property.
   virtual void UpdateMinimumSize();
 
   // Whether the special painting mode for one tab is allowed, regardless of how

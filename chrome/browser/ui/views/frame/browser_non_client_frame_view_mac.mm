@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -249,17 +250,25 @@ void BrowserNonClientFrameViewMac::UpdateWindowTitle() {
 void BrowserNonClientFrameViewMac::SizeConstraintsChanged() {
 }
 
+void BrowserNonClientFrameViewMac::UpdateMinimumSize() {
+  GetWidget()->OnSizeConstraintsChanged();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewMac, views::View implementation:
 
 gfx::Size BrowserNonClientFrameViewMac::GetMinimumSize() const {
-  gfx::Size size = browser_view()->GetMinimumSize();
-  constexpr gfx::Size kMinTabbedWindowSize(400, 272);
-  constexpr gfx::Size kMinPopupWindowSize(100, 122);
-  size.SetToMax(browser_view()->browser()->is_type_tabbed()
-                    ? kMinTabbedWindowSize
-                    : kMinPopupWindowSize);
-  return size;
+  gfx::Size client_size = frame()->client_view()->GetMinimumSize();
+  if (browser_view()->browser()->is_type_tabbed())
+    client_size.SetToMax(browser_view()->tabstrip()->GetMinimumSize());
+
+  // macOS apps generally don't allow their windows to get shorter than a
+  // certain height, which empirically seems to be related to their *minimum*
+  // width rather than their current width. This 4:3 ratio was chosen
+  // empirically because it looks decent for both tabbed and untabbed browsers.
+  client_size.SetToMax(gfx::Size(0, (client_size.width() * 3) / 4));
+
+  return client_size;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
