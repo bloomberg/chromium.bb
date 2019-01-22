@@ -5769,3 +5769,6 @@ crbug.com/910263 [ Mac ] fast/block/float/016.html [ Pass Crash Failure ]
 crbug.com/910263 [ Mac ] fast/text/international/complex-character-based-fallback.html [ Pass Crash Failure ]
 crbug.com/910263 [ Mac ] fonts/cursive.html [ Pass Crash Failure ]
 crbug.com/910263 [ Mac ] svg/text/ligature-queries.html [ Pass Crash Failure ]
+
+# Writable Files tests depend on mojo interfaces that are only exposed behind a flag.
+crbug.com/922735 fast/filesystem/writable-files/ [ Skip ]
