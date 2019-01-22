@@ -36,6 +36,8 @@ cr.define('snackbar', function() {
    * This element should not be instantiated directly. Instead, users should
    * use the Snackbar.show and Snackbar.dismiss functions to ensure proper
    * queuing of messages.
+   * @constructor
+   * @extends {HTMLDivElement}
    */
   var Snackbar = cr.ui.define('div');
 
@@ -145,10 +147,10 @@ cr.define('snackbar', function() {
     },
   };
 
-  /** @private {?Snackbar} */
+  /** @private {?snackbar.Snackbar} */
   Snackbar.current_ = null;
 
-  /** @private {!Array<!SnackbarOptions>} */
+  /** @private {!Array<!snackbar.Snackbar>} */
   Snackbar.queue_ = [];
 
   /** @private {boolean} */
@@ -174,7 +176,7 @@ cr.define('snackbar', function() {
    * @param {string=} opt_actionText The text to display for the action link.
    * @param {function()=} opt_action A function to be called when the user
    *     presses the action link.
-   * @return {!Snackbar}
+   * @return {!snackbar.Snackbar}
    */
   Snackbar.show = function(message, opt_type, opt_actionText, opt_action) {
     var options = {
@@ -199,7 +201,7 @@ cr.define('snackbar', function() {
   /**
    * TODO(crbug.com/675299): Add ability to specify parent element to Snackbar.
    * Creates a Snackbar and sets events for queuing the next Snackbar to show.
-   * @param {!Snackbar} newSnackbar
+   * @param {!snackbar.Snackbar} newSnackbar
    * @private
    */
   Snackbar.show_ = function(newSnackbar) {

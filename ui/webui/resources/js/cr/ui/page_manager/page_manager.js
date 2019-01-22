@@ -771,7 +771,7 @@ cr.define('cr.ui.pageManager', function() {
 
   /**
    * An observer of PageManager.
-   * @interface
+   * @constructor
    */
   PageManager.Observer = function() {};
 

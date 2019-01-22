@@ -133,7 +133,6 @@ js2gtest("browser_tests_js_mojo_webui") {
   test_type = "mojo_webui"
 
   sources = [
-    "bluetooth_internals_browsertest.js",
     "engagement/site_engagement_browsertest.js",
     "interventions_internals_browsertest.js",
     "media/media_engagement_browsertest.js",
@@ -160,6 +159,7 @@ js2gtest("browser_tests_js_mojo_lite_webui") {
 
   sources = [
     "app_management/app_management_browsertest.js",
+    "bluetooth_internals_browsertest.js",
     "md_downloads/downloads_browsertest.js",
   ]
 

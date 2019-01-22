@@ -10,12 +10,13 @@ cr.define('value_control', function() {
   /** @const */ var Snackbar = snackbar.Snackbar;
   /** @const */ var SnackbarType = snackbar.SnackbarType;
 
-  /** @typedef {{
+  /**
+   * @typedef {{
    *    deviceAddress: string,
    *    serviceId: string,
    *    characteristicId: string,
-   *    descriptorId: (string|undefined)
-   *    properties: (number|undefined)
+   *    descriptorId: (string|undefined),
+   *    properties: (number|undefined),
    *  }}
    */
   var ValueLoadOptions;
@@ -59,7 +60,7 @@ cr.define('value_control', function() {
     /**
      * Sets the value by converting the |newValue| string using the formatting
      * specified by |valueDataType|.
-     * @param {!ValueDataType} valueDataType
+     * @param {!value_control.ValueDataType} valueDataType
      * @param {string} newValue
      */
     setAs: function(valueDataType, newValue) {
@@ -80,7 +81,7 @@ cr.define('value_control', function() {
 
     /**
      * Gets the value as a string representing the given |valueDataType|.
-     * @param {!ValueDataType} valueDataType
+     * @param {!value_control.ValueDataType} valueDataType
      * @return {string}
      */
     getAs: function(valueDataType) {
@@ -94,6 +95,8 @@ cr.define('value_control', function() {
         case ValueDataType.DECIMAL:
           return this.toDecimal_();
       }
+      assertNotReached();
+      return '';
     },
 
     /**
@@ -113,7 +116,7 @@ cr.define('value_control', function() {
 
     /**
      * Sets the value from a hex string.
-     * @return {string}
+     * @param {string} newValue
      * @private
      */
     setValueFromHex_: function(newValue) {
@@ -147,7 +150,7 @@ cr.define('value_control', function() {
 
     /**
      * Sets the value from a UTF-8 encoded text string.
-     * @return {string}
+     * @param {string} newValue
      * @private
      */
     setValueFromUTF8_: function(newValue) {
@@ -172,7 +175,7 @@ cr.define('value_control', function() {
 
     /**
      * Sets the value from a decimal string delimited by '-'.
-     * @return {string}
+     * @param {string} newValue
      * @private
      */
     setValueFromDecimal_: function(newValue) {
@@ -198,6 +201,7 @@ cr.define('value_control', function() {
    * in these formats. Read and write capability is controlled by a
    * 'properties' bitfield provided by the characteristic.
    * @constructor
+   * @extends {HTMLDivElement}
    */
   var ValueControl = cr.ui.define('div');
 
@@ -209,7 +213,6 @@ cr.define('value_control', function() {
      * control by creating a text input, select element, and two buttons for
      * read/write requests. Event handlers are attached and references to these
      * elements are stored for later use.
-     * @override
      */
     decorate: function() {
       this.classList.add('value-control');
@@ -222,7 +225,7 @@ cr.define('value_control', function() {
       this.serviceId_ = null;
       /** @private {?string} */
       this.characteristicId_ = null;
-      /** @private {?string} */
+      /** @private {?string|undefined} */
       this.descriptorId_ = null;
       /** @private {number} */
       this.properties_ = Number.MAX_SAFE_INTEGER;
@@ -348,7 +351,7 @@ cr.define('value_control', function() {
     readValue_: function() {
       this.readBtn_.disabled = true;
 
-      device_broker.connectToDevice(this.deviceAddress_)
+      device_broker.connectToDevice(assert(this.deviceAddress_))
           .then(function(device) {
             if (this.descriptorId_) {
               return device.readValueForDescriptor(
@@ -386,7 +389,7 @@ cr.define('value_control', function() {
     writeValue_: function() {
       this.writeBtn_.disabled = true;
 
-      device_broker.connectToDevice(this.deviceAddress_)
+      device_broker.connectToDevice(assert(this.deviceAddress_))
           .then(function(device) {
             if (this.descriptorId_) {
               return device.writeValueForDescriptor(

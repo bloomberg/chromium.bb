@@ -39,11 +39,14 @@ cr.define('device_details_page', function() {
   function DeviceDetailsPage(id, deviceInfo) {
     Page.call(this, id, deviceInfo.nameForDisplay, id);
 
-    /** @type !bluetooth.mojom.DeviceInfo} */
+    /** @type {!bluetooth.mojom.DeviceInfo} */
     this.deviceInfo = deviceInfo;
 
-    /** @private {!bluetooth.mojom.Device.ptrClass} */
-    this.devicePtr_ = null;
+    /** @type {?Array<bluetooth.mojom.ServiceInfo>} */
+    this.services = null;
+
+    /** @private {?bluetooth.mojom.DeviceProxy} */
+    this.deviceProxy_ = null;
 
     /** @private {!object_fieldset.ObjectFieldSet} */
     this.deviceFieldSet_ = new object_fieldset.ObjectFieldSet();
@@ -55,7 +58,7 @@ cr.define('device_details_page', function() {
     /** @private {!device_collection.ConnectionStatus} */
     this.status_ = device_collection.ConnectionStatus.DISCONNECTED;
 
-    /** @private {?HTMLElement} */
+    /** @private {?Element} */
     this.connectBtn_ = null;
 
     this.pageDiv.appendChild(document.importNode(
@@ -76,7 +79,7 @@ cr.define('device_details_page', function() {
 
     this.connectBtn_ = this.pageDiv.querySelector('.disconnect');
     this.connectBtn_.addEventListener('click', function() {
-      this.devicePtr_ !== null ? this.disconnect() : this.connect();
+      this.deviceProxy_ !== null ? this.disconnect() : this.connect();
     }.bind(this));
 
     this.redraw();
@@ -95,27 +98,27 @@ cr.define('device_details_page', function() {
           device_collection.ConnectionStatus.CONNECTING);
 
       device_broker.connectToDevice(this.deviceInfo.address)
-          .then(function(devicePtr) {
-            this.devicePtr_ = devicePtr;
+          .then(function(deviceProxy) {
+            this.deviceProxy_ = deviceProxy;
 
             this.updateConnectionStatus_(
                 device_collection.ConnectionStatus.CONNECTED);
 
             // Fetch services asynchronously.
-            return this.devicePtr_.getServices();
+            return this.deviceProxy_.getServices();
           }.bind(this))
           .then(function(response) {
-            this.deviceInfo.services = response.services;
+            this.services = response.services;
             this.serviceList_.load(this.deviceInfo.address);
             this.redraw();
             this.fireDeviceInfoChanged_();
           }.bind(this))
           .catch(function(error) {
             // If a connection error occurs while fetching the services, the
-            // devicePtr reference must be removed.
-            if (this.devicePtr_) {
-              this.devicePtr_.disconnect();
-              this.devicePtr_ = null;
+            // DeviceProxy reference must be removed.
+            if (this.deviceProxy_) {
+              this.deviceProxy_.disconnect();
+              this.deviceProxy_ = null;
             }
 
             Snackbar.show(
@@ -129,12 +132,12 @@ cr.define('device_details_page', function() {
 
     /** Disconnects the page from the Bluetooth device. */
     disconnect: function() {
-      if (!this.devicePtr_) {
+      if (!this.deviceProxy_) {
         return;
       }
 
-      this.devicePtr_.disconnect();
-      this.devicePtr_ = null;
+      this.deviceProxy_.disconnect();
+      this.deviceProxy_ = null;
       this.updateConnectionStatus_(
           device_collection.ConnectionStatus.DISCONNECTED);
     },
@@ -153,7 +156,7 @@ cr.define('device_details_page', function() {
       var connectedText = isConnected ? 'Connected' : 'Not Connected';
 
       var rssi = this.deviceInfo.rssi || {};
-      var services = this.deviceInfo.services;
+      var services = this.services;
 
       var rssiValue = 'Unknown';
       if (rssi.value != null && rssi.value <= 0) {
@@ -179,7 +182,7 @@ cr.define('device_details_page', function() {
 
     /**
      * Sets the page's device info and forces a redraw.
-     * @param {!bluetooth.mojom.DeviceInfo}
+     * @param {!bluetooth.mojom.DeviceInfo} info
      */
     setDeviceInfo: function(info) {
       this.deviceInfo = info;
@@ -207,7 +210,7 @@ cr.define('device_details_page', function() {
      * @private
      */
     updateConnectionStatus_: function(status) {
-      if (this.status === status) {
+      if (this.status_ === status) {
         return;
       }
 

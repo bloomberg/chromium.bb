@@ -35,6 +35,9 @@
     /** @private {!mojo.internal.interfaceSupport.InterfaceProxyBase} */
     this.proxy =
         new mojo.internal.interfaceSupport.InterfaceProxyBase(opt_handle);
+
+    /** @public {!mojo.internal.interfaceSupport.ConnectionErrorEventRouter} */
+    this.onConnectionError = this.proxy.getConnectionErrorEventRouter();
   }
 
   /**
@@ -217,6 +220,14 @@
    */
   bindHandle(handle) {
     this.target_.bindHandle(handle);
+  }
+
+  /**
+   * Closes all bindings bound to this target. The target will not receive any
+   * further message message events unless rebound to one or more handles.
+   */
+  closeBindings() {
+    this.target_.closeBindings();
   }
 
   /**
