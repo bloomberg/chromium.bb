@@ -81,9 +81,8 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // session service before they are deallocated. |window| can be nil to create
 // an empty TabModel. In that case no notification will be sent during object
 // creation.
-- (instancetype)initWithSessionWindow:(SessionWindowIOS*)window
-                       sessionService:(SessionServiceIOS*)service
-                         browserState:(ios::ChromeBrowserState*)browserState
+- (instancetype)initWithSessionService:(SessionServiceIOS*)service
+                          browserState:(ios::ChromeBrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;

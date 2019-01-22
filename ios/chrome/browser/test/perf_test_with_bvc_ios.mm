@@ -100,14 +100,16 @@ void PerfTestWithBVC::SetUp() {
   // Tab models. The off-the-record (OTR) tab model is required for the stack
   // view controller, which is created in OpenStackView().
   tab_model_ =
-      [[TabModel alloc] initWithSessionWindow:session.sessionWindows[0]
-                               sessionService:[SessionServiceIOS sharedService]
-                                 browserState:chrome_browser_state_.get()];
+      [[TabModel alloc] initWithSessionService:[SessionServiceIOS sharedService]
+                                  browserState:chrome_browser_state_.get()];
+  [tab_model_ restoreSessionWindow:session.sessionWindows[0]
+                 forInitialRestore:YES];
   otr_tab_model_ = [[TabModel alloc]
-      initWithSessionWindow:session.sessionWindows[0]
-             sessionService:[SessionServiceIOS sharedService]
-               browserState:chrome_browser_state_
-                                ->GetOffTheRecordChromeBrowserState()];
+      initWithSessionService:[SessionServiceIOS sharedService]
+                browserState:chrome_browser_state_
+                                 ->GetOffTheRecordChromeBrowserState()];
+  [otr_tab_model_ restoreSessionWindow:session.sessionWindows[0]
+                     forInitialRestore:YES];
 
   command_dispatcher_ = [[CommandDispatcher alloc] init];
   // Create the browser view controller with its testing factory.

@@ -44,16 +44,14 @@ class TabModelListTest : public PlatformTest {
 
   TabModel* CreateTabModel() {
     return [[TabModel alloc]
-        initWithSessionWindow:nil
-               sessionService:[[TestSessionService alloc] init]
-                 browserState:browser_state()];
+        initWithSessionService:[[TestSessionService alloc] init]
+                  browserState:browser_state()];
   }
 
   TabModel* CreateOffTheRecordTabModel() {
     return [[TabModel alloc]
-        initWithSessionWindow:nil
-               sessionService:[[TestSessionService alloc] init]
-                 browserState:otr_browser_state()];
+        initWithSessionService:[[TestSessionService alloc] init]
+                  browserState:otr_browser_state()];
   }
 
   NSArray<TabModel*>* RegisteredTabModels() {
