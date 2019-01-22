@@ -20,6 +20,7 @@
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -127,7 +128,7 @@
       willUpdateSnapshotForWebState:self.webState];
   __weak SnapshotGenerator* weakSelf = self;
   self.webState->TakeSnapshot(
-      snapshotFrame, base::BindOnce(^(const gfx::Image& image) {
+      gfx::RectF(snapshotFrame), base::BindOnce(^(const gfx::Image& image) {
         UIImage* snapshot = [weakSelf snapshotWithOverlays:overlays
                                                  baseImage:image
                                                      frame:snapshotFrame];

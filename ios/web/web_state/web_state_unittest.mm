@@ -25,6 +25,7 @@
 #import "ios/web/public/test/web_test_with_web_state.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
 #import "ios/web/public/web_client.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
@@ -215,7 +216,7 @@ TEST_P(WebStateTest, Snapshot) {
   CGRect rect = [web_state()->GetView() bounds];
   base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.2));
   web_state()->TakeSnapshot(
-      rect, base::BindOnce(^(const gfx::Image& snapshot) {
+      gfx::RectF(rect), base::BindOnce(^(const gfx::Image& snapshot) {
         if (@available(iOS 11, *)) {
           ASSERT_FALSE(snapshot.IsEmpty());
           EXPECT_GT(snapshot.Width(), 0);

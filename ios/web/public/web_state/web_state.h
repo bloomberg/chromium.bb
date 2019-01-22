@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#import <CoreGraphics/CoreGraphics.h>
 #include <memory>
 #include <string>
 #include <utility>
@@ -22,7 +21,6 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
 class GURL;
@@ -42,6 +40,7 @@ class Value;
 
 namespace gfx {
 class Image;
+class RectF;
 }
 
 namespace web {
@@ -315,7 +314,8 @@ class WebState : public base::SupportsUserData {
   // in the coordinate system of the view returned by GetView(). |callback| is
   // asynchronously invoked after performing the snapshot. Prior to iOS 11, the
   // callback is invoked with a nil snapshot.
-  virtual void TakeSnapshot(CGRect rect, SnapshotCallback callback) = 0;
+  virtual void TakeSnapshot(const gfx::RectF& rect,
+                            SnapshotCallback callback) = 0;
 
   // Adds and removes observers for page navigation notifications. The order in
   // which notifications are sent to observers is undefined. Clients must be

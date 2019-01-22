@@ -84,7 +84,7 @@ class TestWebState : public WebState {
   void DidChangeVisibleSecurityState() override {}
   bool HasOpener() const override;
   void SetHasOpener(bool has_opener) override;
-  void TakeSnapshot(CGRect rect, SnapshotCallback callback) override;
+  void TakeSnapshot(const gfx::RectF& rect, SnapshotCallback callback) override;
 
   // Setters for test data.
   void SetBrowserState(BrowserState* browser_state);
