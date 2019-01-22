@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @typedef {{
+ *   managed: boolean,
+ *   otherFormsOfHistory: boolean,
+ * }}
+ */
+let FooterInfo;
+
 cr.define('md_history', function() {
   let lazyLoadPromise = null;
   function ensureLazyLoaded() {
@@ -74,8 +82,16 @@ Polymer({
       observer: 'hasDrawerChanged_',
     },
 
-    // Used to display notices for profile sign-in status.
-    showSidebarFooter: Boolean,
+    /** @type {FooterInfo} */
+    footerInfo: {
+      type: Object,
+      value: function() {
+        return {
+          managed: loadTimeData.getBoolean('isManaged'),
+          otherFormsOfHistory: false,
+        };
+      },
+    },
   },
 
   listeners: {
