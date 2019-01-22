@@ -23,6 +23,11 @@ public class UnifiedConsentServiceBridge {
         return nativeIsUnifiedConsentGiven(Profile.getLastUsedProfile());
     }
 
+    /** Enables Google services when the user is signing in. */
+    public static void enableGoogleServices() {
+        nativeEnableGoogleServices(Profile.getLastUsedProfile());
+    }
+
     /** Returns whether collection of URL-keyed anonymized data is enabled. */
     public static boolean isUrlKeyedAnonymizedDataCollectionEnabled() {
         return nativeIsUrlKeyedAnonymizedDataCollectionEnabled(Profile.getLastUsedProfile());
@@ -40,6 +45,7 @@ public class UnifiedConsentServiceBridge {
 
     private static native void nativeSetUnifiedConsentGiven(Profile profile, boolean consentGiven);
     private static native boolean nativeIsUnifiedConsentGiven(Profile profile);
+    private static native void nativeEnableGoogleServices(Profile profile);
 
     private static native boolean nativeIsUrlKeyedAnonymizedDataCollectionEnabled(Profile profile);
     private static native void nativeSetUrlKeyedAnonymizedDataCollectionEnabled(
