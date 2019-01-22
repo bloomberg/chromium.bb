@@ -15,6 +15,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "chrome/browser/background_fetch/background_fetch_download_client.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_download_client.h"
 #include "chrome/browser/download/download_task_scheduler_impl.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -76,6 +77,14 @@ KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
   clients->insert(
       std::make_pair(download::DownloadClient::BACKGROUND_FETCH,
                      std::make_unique<BackgroundFetchDownloadClient>(context)));
+
+#if defined(CHROMEOS)
+  if (!context->IsOffTheRecord()) {
+    clients->insert(std::make_pair(
+        download::DownloadClient::PLUGIN_VM_IMAGE,
+        std::make_unique<plugin_vm::PluginVmImageDownloadClient>()));
+  }
+#endif
 
   // Build in memory download service for incognito profile.
   if (context->IsOffTheRecord() &&
