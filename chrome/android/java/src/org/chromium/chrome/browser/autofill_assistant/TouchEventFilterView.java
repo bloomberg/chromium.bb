@@ -11,7 +11,6 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
-import android.support.annotation.ColorInt;
 import android.support.annotation.IntDef;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -263,11 +262,6 @@ public class TouchEventFilterView
             mGestureListenerManager = null;
         }
         cleanupCurrentGestureBuffer();
-    }
-
-    /** Sets the color to be used for unusable areas. */
-    public void setGrayOutColor(@ColorInt int color) {
-        mGrayOut.setColor(color);
     }
 
     /**
