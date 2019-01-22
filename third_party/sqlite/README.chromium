@@ -91,7 +91,7 @@ git commit -m "Squash: Reset SQLite src/ to sqlite-src-${BASE}."
 #### Create a reference branch with patches applied.
 git new-branch --upstream-current sqlite-dev
 git am --keep-non-patch --ignore-space-change patches/*.patch
-git diff --ignore-space-change origin/master src/
+git diff origin/master src/
 # This branch should be identical to master.
 
 
@@ -114,8 +114,8 @@ cd third_party/sqlite
 #### Create the review.
 # Rebuild the patch set.
 git rm patches/*
-git format-patch --output-directory=patches --ignore-space-change \
-    --zero-commit sqlite-base..sqlite-dev
+git format-patch --output-directory=patches --zero-commit \
+    sqlite-base..sqlite-dev
 git add amalgamation/
 git add patches/*.patch
 git commit -m "Squash: regenerate amalgamation and patches."
@@ -186,7 +186,7 @@ git commit -m "Squash: Reset SQLite src/ to sqlite-src-${OLD}."
 #### Create a branch for our old SQLite code, with patches mapped to commits.
 git new-branch --upstream-current sqlite-old
 git am --keep-non-patch --ignore-space-change patches/*.patch
-git diff --ignore-space-change origin/master src/
+git diff origin/master src/
 # This branch should be identical to master.
 
 #### Create a branch for the new SQLite release's upstream version.
@@ -243,8 +243,8 @@ cd third_party/sqlite
 #### Create the review.
 # Rebuild the patch set.
 git rm patches/*
-git format-patch --output-directory=patches --ignore-space-change \
-    --zero-commit sqlite-new-base..sqlite-new
+git format-patch --output-directory=patches --zero-commit \
+    sqlite-new-base..sqlite-new
 git add amalgamation/
 git add patches/*.patch
 git commit -m "Squash: regenerate amalgamation and patches."
