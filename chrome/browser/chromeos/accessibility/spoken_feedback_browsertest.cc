@@ -245,8 +245,15 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest,
   EXPECT_EQ("Not pressed", speech_monitor_.GetNextUtterance());
 }
 
+#if !defined(NDEBUG)
+// Flaky in debug: http://crbug.com/923090
+#define MAYBE_KeyboardShortcutViewer DISABLED_KeyboardShortcutViewer
+#else
+#define MAYBE_KeyboardShortcutViewer KeyboardShortcutViewer
+#endif
 // Tests the keyboard shortcut viewer, which is an out-of-process mojo app.
-IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, KeyboardShortcutViewer) {
+IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest,
+                       MAYBE_KeyboardShortcutViewer) {
   EnableChromeVox();
   keyboard_shortcut_viewer_util::ToggleKeyboardShortcutViewer();
 
