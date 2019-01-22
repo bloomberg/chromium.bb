@@ -6,6 +6,7 @@
 #define MEDIA_GPU_D3D11_VIDEO_DECODER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -23,6 +24,7 @@
 #include "media/gpu/windows/d3d11_h264_accelerator.h"
 #include "media/gpu/windows/d3d11_video_decoder_client.h"
 #include "media/gpu/windows/d3d11_vp9_accelerator.h"
+#include "media/video/supported_video_decoder_config.h"
 
 namespace gpu {
 class CommandBufferStub;
@@ -45,13 +47,20 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   using GetD3D11DeviceCB =
       base::RepeatingCallback<Microsoft::WRL::ComPtr<ID3D11Device>()>;
 
+  // List of configs that we'll check against when initializing.  This is only
+  // needed since GpuMojoMediaClient merges our supported configs with the VDA
+  // supported configs.
+  using SupportedConfigs = std::vector<SupportedVideoDecoderConfig>;
+
   // |helper| must be called from |gpu_task_runner|.
   static std::unique_ptr<VideoDecoder> Create(
       scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
       std::unique_ptr<MediaLog> media_log,
       const gpu::GpuPreferences& gpu_preferences,
       const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
-      base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb);
+      base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb,
+      GetD3D11DeviceCB get_d3d11_device_cb,
+      SupportedConfigs supported_configs);
 
   // VideoDecoder implementation:
   std::string GetDisplayName() const override;
@@ -73,12 +82,12 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   void OutputResult(const CodecPicture* picture,
                     D3D11PictureBuffer* picture_buffer) override;
 
-  // Return false |config| definitely isn't going to work, so that we can fail
-  // init without bothering with a thread hop.
-  bool IsPotentiallySupported(const VideoDecoderConfig& config);
-
-  // Override how we create D3D11 devices, to inject mocks.
-  void SetCreateDeviceCallbackForTesting(GetD3D11DeviceCB cb);
+  // Return the set of video decoder configs that we support.
+  static std::vector<SupportedVideoDecoderConfig>
+  GetSupportedVideoDecoderConfigs(
+      const gpu::GpuPreferences& gpu_preferences,
+      const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
+      GetD3D11DeviceCB get_d3d11_device_cb);
 
  protected:
   // Owners should call Destroy(). This is automatic via
@@ -96,7 +105,9 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
       const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
       std::unique_ptr<D3D11VideoDecoderImpl> impl,
       base::RepeatingCallback<scoped_refptr<CommandBufferHelper>()>
-          get_helper_cb);
+          get_helper_cb,
+      GetD3D11DeviceCB get_d3d11_device_cb,
+      SupportedConfigs supported_configs);
 
   // Receive |buffer|, that is now unused by the client.
   void ReceivePictureBufferFromClient(scoped_refptr<D3D11PictureBuffer> buffer);
@@ -120,8 +131,8 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   GUID GetD3D11DecoderGUID(const VideoDecoderConfig& config);
 
   // Create new PictureBuffers.  Currently, this completes synchronously, but
-  // really should have an async interface since it must do some work on the gpu
-  // main thread.
+  // really should have an async interface since it must do some work on the
+  // gpu main thread.
   void CreatePictureBuffers();
 
   enum class NotSupportedReason {
@@ -181,10 +192,6 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
     kError,
   };
 
-  // Reports why IsPotentiallySupported() returned false, or that it returned
-  // true. It is reported to UMA and MediaLog, etc.
-  void ReportNotSupportedReason(NotSupportedReason enum_value);
-
   // Callback to notify that new CdmContext event is available.
   void OnCdmContextEvent(CdmContext::Event event);
 
@@ -220,6 +227,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   Microsoft::WRL::ComPtr<ID3D11DeviceContext> device_context_;
   Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device_;
 
+  // D3D11 version on this device.
   D3D_FEATURE_LEVEL usable_feature_level_;
 
   std::unique_ptr<AcceleratedVideoDecoder> accelerated_video_decoder_;
@@ -235,8 +243,8 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   // Callback registration to keep the new key callback registered.
   std::unique_ptr<CallbackRegistration> new_key_callback_registration_;
 
-  // Must be called on the gpu main thread.  So, don't call it from here, since
-  // we don't know what thread we're on.
+  // Must be called on the gpu main thread.  So, don't call it from here,
+  // since we don't know what thread we're on.
   base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb_;
 
   // It would be nice to unique_ptr these, but we give a ref to the VideoFrame
@@ -245,12 +253,14 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
 
   State state_ = State::kInitializing;
 
-  // Callback to get a command buffer helper.  Must be called from the gpu main
-  // thread only.
+  // Callback to get a command buffer helper.  Must be called from the gpu
+  // main thread only.
   base::RepeatingCallback<scoped_refptr<CommandBufferHelper>()> get_helper_cb_;
 
   // Entire class should be single-sequence.
   SEQUENCE_CHECKER(sequence_checker_);
+
+  SupportedConfigs supported_configs_;
 
   base::WeakPtrFactory<D3D11VideoDecoder> weak_factory_;
 
