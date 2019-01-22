@@ -31,8 +31,8 @@ class UsageStatsDatabase {
   using SuspensionCallback =
       base::OnceCallback<void(Error, std::vector<std::string>)>;
 
-  using TokenMappingsCallback =
-      base::OnceCallback<void(Error, std::map<std::string, std::string>)>;
+  using TokenMap = std::map<std::string, std::string>;
+  using TokenMappingsCallback = base::OnceCallback<void(Error, TokenMap)>;
 
   using StatusCallback = base::OnceCallback<void(Error)>;
 
@@ -73,16 +73,20 @@ class UsageStatsDatabase {
 
   // Persists all the mappings in |mappings| and deletes any mappings *not* in
   // |mappings|. The map's key is the token, and its value is the FQDN.
-  void SetTokenMappings(std::map<std::string, std::string> mappings,
-                        StatusCallback callback);
+  void SetTokenMappings(TokenMap mappings, StatusCallback callback);
 
  private:
+  void OnUpdateEntries(StatusCallback callback, bool success);
+
   void OnLoadEntriesForGetAllSuspensions(
       SuspensionCallback callback,
       bool success,
-      std::unique_ptr<std::vector<UsageStat>> suspensions);
+      std::unique_ptr<std::vector<UsageStat>> stats);
 
-  void OnUpdateEntriesForSetSuspensions(StatusCallback callback, bool success);
+  void OnLoadEntriesForGetAllTokenMappings(
+      TokenMappingsCallback callback,
+      bool success,
+      std::unique_ptr<std::vector<UsageStat>> stats);
 
   std::unique_ptr<leveldb_proto::ProtoDatabase<UsageStat>> proto_db_;
 
