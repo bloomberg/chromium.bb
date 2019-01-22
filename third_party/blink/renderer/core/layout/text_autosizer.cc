@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/network/network_utils.h"
 
 namespace blink {
 
@@ -243,7 +244,8 @@ TextAutosizer::TextAutosizer(const Document* document)
       cluster_stack_(),
       fingerprint_mapper_(),
       page_info_(),
-      update_page_info_deferred_(false) {
+      update_page_info_deferred_(false),
+      did_check_cross_site_use_count_(false) {
 }
 
 TextAutosizer::~TextAutosizer() = default;
@@ -345,6 +347,8 @@ void TextAutosizer::BeginLayout(LayoutBlock* block,
     return;
 
   DCHECK(!cluster_stack_.IsEmpty() || block->IsLayoutView());
+  if (cluster_stack_.IsEmpty())
+    did_check_cross_site_use_count_ = false;
 
   if (Cluster* cluster = MaybeCreateCluster(block))
     cluster_stack_.push_back(base::WrapUnique(cluster));
@@ -434,9 +438,10 @@ float TextAutosizer::Inflate(LayoutObject* parent,
       has_text_child = true;
       // We only calculate this multiplier on-demand to ensure the parent block
       // of this text has entered layout.
-      if (!multiplier)
+      if (!multiplier) {
         multiplier =
             cluster->flags_ & SUPPRESSING ? 1.0f : ClusterMultiplier(cluster);
+      }
       ApplyMultiplier(child, multiplier, layouter);
 
       if (behavior == kDescendToInnerBlocks) {
@@ -892,11 +897,12 @@ float TextAutosizer::ClusterMultiplier(Cluster* cluster) {
       cluster->multiplier_ = SuperclusterMultiplier(cluster);
       cluster->supercluster_->inherit_parent_multiplier_ =
           kDontInheritMultiplier;
-    } else if (ClusterHasEnoughTextToAutosize(cluster))
+    } else if (ClusterHasEnoughTextToAutosize(cluster)) {
       cluster->multiplier_ =
           MultiplierFromBlock(ClusterWidthProvider(cluster->root_));
-    else
+    } else {
       cluster->multiplier_ = 1.0f;
+    }
   } else {
     cluster->multiplier_ =
         cluster->parent_ ? ClusterMultiplier(cluster->parent_) : 1.0f;
@@ -1124,6 +1130,37 @@ const LayoutObject* TextAutosizer::FindTextLeaf(
   return nullptr;
 }
 
+static bool IsCrossSite(const Frame& frame1, const Frame& frame2) {
+  // Cross-site differs from cross-origin (LocalFrame::IsCrossOriginSubframe).
+  // For example, http://foo.com and http://sub.foo.com are cross-origin but
+  // same-site.  Only cross-site text autosizing is impacted by site isolation
+  // (crbug.com/393285).
+
+  const auto* origin1 = frame1.GetSecurityContext()->GetSecurityOrigin();
+  const auto* origin2 = frame2.GetSecurityContext()->GetSecurityOrigin();
+  if (!origin1 || !origin2 || origin1->CanAccess(origin2))
+    return false;
+
+  if (origin1->Protocol() != origin2->Protocol())
+    return true;
+
+  // Compare eTLD+1.
+  return network_utils::GetDomainAndRegistry(
+             origin1->Host(), network_utils::kIncludePrivateRegistries) !=
+         network_utils::GetDomainAndRegistry(
+             origin2->Host(), network_utils::kIncludePrivateRegistries);
+}
+
+void TextAutosizer::ReportIfCrossSiteFrame() {
+  LocalFrame* frame = document_->GetFrame();
+  LocalFrameView* view = document_->View();
+  if (!frame || !view || !view->IsAttached() || !view->IsVisible() ||
+      view->Size().IsEmpty() || !IsCrossSite(*frame, frame->Tree().Top()))
+    return;
+
+  UseCounter::Count(*document_, WebFeature::kTextAutosizedCrossSiteIframe);
+}
+
 void TextAutosizer::ApplyMultiplier(LayoutObject* layout_object,
                                     float multiplier,
                                     SubtreeLayoutScope* layouter,
@@ -1150,6 +1187,11 @@ void TextAutosizer::ApplyMultiplier(LayoutObject* layout_object,
 
   scoped_refptr<ComputedStyle> style = ComputedStyle::Clone(current_style);
   style->SetTextAutosizingMultiplier(multiplier);
+
+  if (multiplier > 1 && !did_check_cross_site_use_count_) {
+    ReportIfCrossSiteFrame();
+    did_check_cross_site_use_count_ = true;
+  }
 
   switch (relayout_behavior) {
     case kAlreadyInLayout:

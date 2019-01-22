@@ -21326,6 +21326,7 @@ Called by update_net_error_codes.py.-->
   <int value="2736" label="RTCAudioJitterBufferRtxHandling"/>
   <int value="2737" label="WebShareCanShare"/>
   <int value="2738" label="PriorityHints"/>
+  <int value="2739" label="TextAutosizedCrossSiteIframe"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
