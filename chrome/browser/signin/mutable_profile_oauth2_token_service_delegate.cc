@@ -22,7 +22,6 @@
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
 #include "components/webdata/common/web_data_service_base.h"
-#include "content/public/browser/network_service_instance.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -329,6 +328,7 @@ MutableProfileOAuth2TokenServiceDelegate::
     MutableProfileOAuth2TokenServiceDelegate(
         SigninClient* client,
         AccountTrackerService* account_tracker_service,
+        network::NetworkConnectionTracker* network_connection_tracker,
         scoped_refptr<TokenWebData> token_web_data,
         signin::AccountConsistencyMethod account_consistency,
         bool revoke_all_tokens_on_load,
@@ -339,6 +339,7 @@ MutableProfileOAuth2TokenServiceDelegate::
       backoff_error_(GoogleServiceAuthError::NONE),
       client_(client),
       account_tracker_service_(account_tracker_service),
+      network_connection_tracker_(network_connection_tracker),
       token_web_data_(token_web_data),
       account_consistency_(account_consistency),
       revoke_all_tokens_on_load_(revoke_all_tokens_on_load),
@@ -347,6 +348,7 @@ MutableProfileOAuth2TokenServiceDelegate::
   VLOG(1) << "MutablePO2TS::MutablePO2TS";
   DCHECK(client);
   DCHECK(account_tracker_service_);
+  DCHECK(network_connection_tracker_);
   // It's okay to fill the backoff policy after being used in construction.
   backoff_policy_.num_errors_to_ignore = 0;
   backoff_policy_.initial_delay_ms = 1000;
@@ -355,14 +357,14 @@ MutableProfileOAuth2TokenServiceDelegate::
   backoff_policy_.maximum_backoff_ms = 15 * 60 * 1000;
   backoff_policy_.entry_lifetime_ms = -1;
   backoff_policy_.always_use_initial_delay = false;
-  content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
+  network_connection_tracker_->AddNetworkConnectionObserver(this);
 }
 
 MutableProfileOAuth2TokenServiceDelegate::
     ~MutableProfileOAuth2TokenServiceDelegate() {
   VLOG(1) << "MutablePO2TS::~MutablePO2TS";
   DCHECK(server_revokes_.empty());
-  content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
+  network_connection_tracker_->RemoveNetworkConnectionObserver(this);
 }
 
 // static

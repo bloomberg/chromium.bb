@@ -37,6 +37,7 @@ class MutableProfileOAuth2TokenServiceDelegate
   MutableProfileOAuth2TokenServiceDelegate(
       SigninClient* client,
       AccountTrackerService* account_tracker_service,
+      network::NetworkConnectionTracker* network_connection_tracker,
       scoped_refptr<TokenWebData> token_web_data,
       signin::AccountConsistencyMethod account_consistency,
       bool revoke_all_tokens_on_load,
@@ -213,6 +214,7 @@ class MutableProfileOAuth2TokenServiceDelegate
 
   SigninClient* client_;
   AccountTrackerService* account_tracker_service_;
+  network::NetworkConnectionTracker* network_connection_tracker_;
   scoped_refptr<TokenWebData> token_web_data_;
   signin::AccountConsistencyMethod account_consistency_;
 

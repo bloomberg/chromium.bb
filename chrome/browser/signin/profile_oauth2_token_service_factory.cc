@@ -20,6 +20,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/device_id_helper.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "content/public/browser/network_service_instance.h"
 
 #if defined(OS_ANDROID)
 #include "components/signin/core/browser/oauth2_token_service_delegate_android.h"
@@ -106,6 +107,7 @@ CreateMutableProfileOAuthDelegate(Profile* profile) {
   return std::make_unique<MutableProfileOAuth2TokenServiceDelegate>(
       ChromeSigninClientFactory::GetInstance()->GetForProfile(profile),
       AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile),
+      content::GetNetworkConnectionTracker(),
       WebDataServiceFactory::GetTokenWebDataForProfile(
           profile, ServiceAccessType::EXPLICIT_ACCESS),
       account_consistency, revoke_all_tokens_on_load,
