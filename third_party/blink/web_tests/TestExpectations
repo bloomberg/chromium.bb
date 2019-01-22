@@ -1790,6 +1790,9 @@ crbug.com/725470 virtual/bidi-caret-affinity/editing/shadow/doubleclick-on-meter
 ### Needs to implement: left and right movement crossing inline-block boundaries
 crbug.com/894651 virtual/bidi-caret-affinity/editing/deleting/delete-inserts-br-after-button.html [ Failure ]
 
+### virtual/bidi-caret-affinity/editing/caret/
+crbug.com/923087 virtual/bidi-caret-affinity/editing/caret/bidi_hit_test_caret_consistency.html [ Failure ]
+
 ### virtual/bidi-caret-affinity/editing/selection/
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/css-pseudo-element-hang.html [ Crash ]
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/css-pseudo-element.html [ Failure Crash ]
