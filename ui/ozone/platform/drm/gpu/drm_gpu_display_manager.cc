@@ -202,6 +202,18 @@ void DrmGpuDisplayManager::SetColorMatrix(
   display->SetColorMatrix(color_matrix);
 }
 
+void DrmGpuDisplayManager::SetBackgroundColor(
+    int64_t display_id,
+    const uint64_t background_color) {
+  DrmDisplay* display = FindDisplay(display_id);
+  if (!display) {
+    LOG(ERROR) << "There is no display with ID" << display_id;
+    return;
+  }
+
+  display->SetBackgroundColor(background_color);
+}
+
 void DrmGpuDisplayManager::SetGammaCorrection(
     int64_t display_id,
     const std::vector<display::GammaRampRGBEntry>& degamma_lut,

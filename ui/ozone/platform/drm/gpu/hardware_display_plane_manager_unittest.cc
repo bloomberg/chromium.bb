@@ -40,6 +40,7 @@ constexpr uint32_t kDegammaLutPropId = 306;
 constexpr uint32_t kDegammaLutSizePropId = 307;
 constexpr uint32_t kOutFencePtrPropId = 308;
 constexpr uint32_t kInFormatsBlobPropId = 400;
+constexpr uint32_t kBackgroundColorPropId = 401;
 
 const gfx::Size kDefaultBufferSize(2, 2);
 
@@ -164,6 +165,7 @@ void HardwareDisplayPlaneManagerTest::InitializeDrmState(
   property_names_.insert({kDegammaLutPropId, "DEGAMMA_LUT"});
   property_names_.insert({kDegammaLutSizePropId, "DEGAMMA_LUT_SIZE"});
   property_names_.insert({kOutFencePtrPropId, "OUT_FENCE_PTR"});
+  property_names_.insert({kBackgroundColorPropId, "BACKGROUND_COLOR"});
 }
 
 void HardwareDisplayPlaneManagerTest::PerformPageFlip(
@@ -683,6 +685,39 @@ TEST_P(HardwareDisplayPlaneManagerTest, SetGammaCorrection_Success) {
     EXPECT_NE(0u, GetCrtcPropertyValue(crtc_properties_[0].id, "DEGAMMA_LUT"));
   } else {
     EXPECT_EQ(4, fake_drm_->get_set_object_property_count());
+  }
+}
+
+TEST_P(HardwareDisplayPlaneManagerTest, SetBackgroundColor_Success) {
+  InitializeDrmState(/*crtc_count=*/1, /*planes_per_crtc=*/1);
+  crtc_properties_[0].properties.push_back(
+      {/* .id = */ kBackgroundColorPropId, /* .value = */ 0});
+  fake_drm_->InitializeState(crtc_properties_, plane_properties_,
+                             property_names_, use_atomic_);
+  fake_drm_->plane_manager()->SetBackgroundColor(crtc_properties_[0].id, 0);
+  if (use_atomic_) {
+    ui::HardwareDisplayPlaneList state;
+    PerformPageFlip(/*crtc_idx=*/0, &state);
+    EXPECT_EQ(1, fake_drm_->get_commit_count());
+    EXPECT_EQ(0u, GetCrtcPropertyValue(crtc_properties_[0].id,
+                                       "BACKGROUND_COLOR"));
+  } else {
+    EXPECT_EQ(0, fake_drm_->get_set_object_property_count());
+  }
+
+  crtc_properties_[0].properties.push_back(
+      {/* .id = */ kBackgroundColorPropId, /* .value = */ 1});
+  fake_drm_->InitializeState(crtc_properties_, plane_properties_,
+                             property_names_, use_atomic_);
+  fake_drm_->plane_manager()->SetBackgroundColor(crtc_properties_[0].id, 1);
+  if (use_atomic_) {
+    ui::HardwareDisplayPlaneList state;
+    PerformPageFlip(/*crtc_idx=*/0, &state);
+    EXPECT_EQ(2, fake_drm_->get_commit_count());
+    EXPECT_EQ(1u, GetCrtcPropertyValue(crtc_properties_[0].id,
+                                       "BACKGROUND_COLOR"));
+  } else {
+    EXPECT_EQ(0, fake_drm_->get_set_object_property_count());
   }
 }
 

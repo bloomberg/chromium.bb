@@ -49,6 +49,7 @@ class DrmDisplay {
   bool GetHDCPState(display::HDCPState* state);
   bool SetHDCPState(display::HDCPState state);
   void SetColorMatrix(const std::vector<float>& color_matrix);
+  void SetBackgroundColor(const uint64_t background_color);
   void SetGammaCorrection(
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,
       const std::vector<display::GammaRampRGBEntry>& gamma_lut);
