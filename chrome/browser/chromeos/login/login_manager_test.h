@@ -61,8 +61,6 @@ class LoginManagerTest : public MixinBasedBrowserTest {
   // Add user with |user_id| to session.
   void AddUser(const AccountId& user_id);
 
-  static std::string GetGaiaIDForUserID(const std::string& user_id);
-
   // For obviously consumer users (that have e.g. @gmail.com e-mail) policy
   // fetching code is skipped. This code is executed only for users that may be
   // enterprise users. Thus if you derive from this class and don't need
