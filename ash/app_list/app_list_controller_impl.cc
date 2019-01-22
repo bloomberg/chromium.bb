@@ -25,7 +25,7 @@
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -502,25 +502,25 @@ void AppListControllerImpl::OnOverviewModeStarting() {
   presenter_.ScheduleOverviewModeAnimation(
       /*start=*/true,
       Shell::Get()
-              ->window_selector_controller()
-              ->window_selector()
+              ->overview_controller()
+              ->overview_session()
               ->enter_exit_overview_type() ==
-          WindowSelector::EnterExitOverviewType::kWindowsMinimized);
+          OverviewSession::EnterExitOverviewType::kWindowsMinimized);
 }
 
 void AppListControllerImpl::OnOverviewModeEnding(
-    WindowSelector* window_selector) {
+    OverviewSession* overview_session) {
   if (!IsTabletMode())
     return;
 
   // Animate the launcher if overview mode is sliding out. Let
   // OnOverviewModeEndingAnimationComplete handle showing the launcher after
-  // overview mode finishes animating. WindowSelector however is nullptr by the
+  // overview mode finishes animating. Overview however is nullptr by the
   // time the animations are finished, so we need to check the animation type
   // here.
-  use_slide_to_exit_overview_mode_ =
-      window_selector->enter_exit_overview_type() ==
-      WindowSelector::EnterExitOverviewType::kWindowsMinimized;
+  use_slide_to_exit_overview_ =
+      overview_session->enter_exit_overview_type() ==
+      OverviewSession::EnterExitOverviewType::kWindowsMinimized;
 }
 
 void AppListControllerImpl::OnOverviewModeEndingAnimationComplete(
@@ -529,7 +529,7 @@ void AppListControllerImpl::OnOverviewModeEndingAnimationComplete(
     return;
 
   presenter_.ScheduleOverviewModeAnimation(/*start=*/false,
-                                           use_slide_to_exit_overview_mode_);
+                                           use_slide_to_exit_overview_);
 }
 
 void AppListControllerImpl::OnTabletModeStarted() {
@@ -621,10 +621,10 @@ ash::ShelfAction AppListControllerImpl::OnAppListButtonPressed(
   }
 
   if (!handled) {
-    if (Shell::Get()->window_selector_controller()->IsSelecting()) {
+    if (Shell::Get()->overview_controller()->IsSelecting()) {
       // End overview mode.
-      Shell::Get()->window_selector_controller()->ToggleOverview(
-          WindowSelector::EnterExitOverviewType::kWindowsMinimized);
+      Shell::Get()->overview_controller()->ToggleOverview(
+          OverviewSession::EnterExitOverviewType::kWindowsMinimized);
       handled = true;
     }
     if (Shell::Get()->split_view_controller()->IsSplitViewModeActive()) {
@@ -814,10 +814,9 @@ bool AppListControllerImpl::ProcessHomeLauncherGesture(
 bool AppListControllerImpl::CanProcessEventsOnApplistViews() {
   // Do not allow processing events during overview or while overview is
   // finished but still animating out.
-  WindowSelectorController* window_selector_controller =
-      Shell::Get()->window_selector_controller();
-  if (window_selector_controller->IsSelecting() ||
-      window_selector_controller->IsCompletingShutdownAnimations()) {
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  if (overview_controller->IsSelecting() ||
+      overview_controller->IsCompletingShutdownAnimations()) {
     return false;
   }
 
@@ -910,8 +909,7 @@ void AppListControllerImpl::UpdateHomeLauncherVisibility() {
   if (!IsTabletMode() || !presenter_.GetWindow())
     return;
 
-  const bool in_overview =
-      Shell::Get()->window_selector_controller()->IsSelecting();
+  const bool in_overview = Shell::Get()->overview_controller()->IsSelecting();
   if (in_wallpaper_preview_ || in_overview || in_window_dragging_)
     presenter_.GetWindow()->Hide();
   else

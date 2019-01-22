@@ -10,9 +10,9 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/overview/window_grid.h"
-#include "ash/wm/overview/window_selector_controller.h"
-#include "ash/wm/overview/window_selector_item.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_item.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_state.h"
 #include "base/time/time.h"
@@ -79,21 +79,21 @@ TEST_F(ImmersiveGestureDragHandlerTest,
                    ui::ET_GESTURE_SCROLL_UPDATE);
   EXPECT_TRUE(wm::GetWindowState(dragged_window_.get())->is_dragged());
 
-  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
-  WindowSelector* window_selector =
-      Shell::Get()->window_selector_controller()->window_selector();
-  EXPECT_TRUE(window_selector->IsWindowInOverview(none_dragged_window_.get()));
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+  OverviewSession* overview_session =
+      Shell::Get()->overview_controller()->overview_session();
+  EXPECT_TRUE(overview_session->IsWindowInOverview(none_dragged_window_.get()));
 
-  WindowGrid* current_grid = window_selector->GetGridWithRootWindow(
+  OverviewGrid* current_grid = overview_session->GetGridWithRootWindow(
       none_dragged_window_->GetRootWindow());
-  WindowSelectorItem* item =
-      current_grid->GetWindowSelectorItemContaining(none_dragged_window_.get());
+  OverviewItem* item =
+      current_grid->GetOverviewItemContaining(none_dragged_window_.get());
   GetEventGenerator()->GestureTapAt(item->GetTransformedBounds().CenterPoint());
 
   // Overview mode is still active and |none_dragged_window_| is still in
   // overview grid after tried to tap it in overview grid.
-  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
-  EXPECT_TRUE(window_selector->IsWindowInOverview(none_dragged_window_.get()));
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+  EXPECT_TRUE(overview_session->IsWindowInOverview(none_dragged_window_.get()));
 }
 
 // Tests that tap the overview button during window drag should not end overview
@@ -107,11 +107,11 @@ TEST_F(ImmersiveGestureDragHandlerTest, TapOverviewButtonDuringWindowDrag) {
   SendGestureEvent(gfx::Point(700, 500), 700, 500,
                    ui::ET_GESTURE_SCROLL_UPDATE);
   EXPECT_TRUE(wm::GetWindowState(dragged_window_.get())->is_dragged());
-  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
-  WindowSelector* window_selector =
-      Shell::Get()->window_selector_controller()->window_selector();
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+  OverviewSession* overview_session =
+      Shell::Get()->overview_controller()->overview_session();
 
-  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
   OverviewButtonTray* overview_button_tray =
       StatusAreaWidgetTestHelper::GetStatusAreaWidget()->overview_button_tray();
   ASSERT_TRUE(overview_button_tray->visible());
@@ -120,8 +120,8 @@ TEST_F(ImmersiveGestureDragHandlerTest, TapOverviewButtonDuringWindowDrag) {
 
   // Overview mode is still active and |none_dragged_window_| is still in
   // overview grid after tap the overview button.
-  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
-  EXPECT_TRUE(window_selector->IsWindowInOverview(none_dragged_window_.get()));
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+  EXPECT_TRUE(overview_session->IsWindowInOverview(none_dragged_window_.get()));
 }
 
 }  // namespace ash

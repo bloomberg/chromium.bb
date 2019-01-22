@@ -22,7 +22,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
-#include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -334,16 +334,16 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreasOverviewMode) {
   wm::GetWindowState(window.get())->Maximize();
 
   // Enable overview mode followed by the magnifier.
-  auto* window_selector_controller = Shell::Get()->window_selector_controller();
-  window_selector_controller->ToggleOverview();
-  EXPECT_TRUE(window_selector_controller->IsSelecting());
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->ToggleOverview();
+  EXPECT_TRUE(overview_controller->IsSelecting());
   controller()->SetEnabled(true);
   EXPECT_TRUE(controller()->GetEnabled());
 
   // Expect that overview mode is exited, the display's work area is updated,
   // and the window's bounds are updated to be equal to the new display's work
   // area bounds.
-  EXPECT_FALSE(window_selector_controller->IsSelecting());
+  EXPECT_FALSE(overview_controller->IsSelecting());
   const display::Display& display = display_manager()->GetDisplayAt(0);
   gfx::Rect workarea = display.bounds();
   const int magnifier_height = GetMagnifierHeight(display.bounds().height());
@@ -372,20 +372,20 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
 
   // Simulate going into split view, by enabling overview mode, and snapping
   // a window to the left.
-  auto* window_selector_controller = Shell::Get()->window_selector_controller();
-  window_selector_controller->ToggleOverview();
-  EXPECT_TRUE(window_selector_controller->IsSelecting());
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->ToggleOverview();
+  EXPECT_TRUE(overview_controller->IsSelecting());
   split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
   EXPECT_EQ(split_view_controller->state(), SplitViewController::LEFT_SNAPPED);
   EXPECT_EQ(split_view_controller->left_window(), window.get());
-  EXPECT_TRUE(window_selector_controller->IsSelecting());
+  EXPECT_TRUE(overview_controller->IsSelecting());
 
   // Enable the docked magnifier and expect that both overview and split view
   // modes are exited, and the window remains maximized, and its bounds are
   // updated to match the new display's work area.
   controller()->SetEnabled(true);
   EXPECT_TRUE(controller()->GetEnabled());
-  EXPECT_FALSE(window_selector_controller->IsSelecting());
+  EXPECT_FALSE(overview_controller->IsSelecting());
   EXPECT_EQ(split_view_controller->state(), SplitViewController::NO_SNAP);
   EXPECT_EQ(split_view_controller->IsSplitViewModeActive(), false);
   const display::Display& display = display_manager()->GetDisplayAt(0);
@@ -411,9 +411,9 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreasDoubleSplitView) {
   std::unique_ptr<aura::Window> window2(
       CreateTestWindowInShell(SK_ColorWHITE, 200, gfx::Rect(0, 0, 200, 200)));
 
-  auto* window_selector_controller = Shell::Get()->window_selector_controller();
-  window_selector_controller->ToggleOverview();
-  EXPECT_TRUE(window_selector_controller->IsSelecting());
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->ToggleOverview();
+  EXPECT_TRUE(overview_controller->IsSelecting());
 
   auto* split_view_controller = Shell::Get()->split_view_controller();
   EXPECT_EQ(split_view_controller->IsSplitViewModeActive(), false);
@@ -423,7 +423,7 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreasDoubleSplitView) {
   EXPECT_EQ(split_view_controller->state(), SplitViewController::BOTH_SNAPPED);
 
   // Snapping both windows should exit overview mode.
-  EXPECT_FALSE(window_selector_controller->IsSelecting());
+  EXPECT_FALSE(overview_controller->IsSelecting());
 
   // Enable the docked magnifier, and expect that split view does not exit, and
   // the two windows heights are updated to be equal to the height of the

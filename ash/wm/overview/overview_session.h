@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_OVERVIEW_WINDOW_SELECTOR_H_
-#define ASH_WM_OVERVIEW_WINDOW_SELECTOR_H_
+#ifndef ASH_WM_OVERVIEW_OVERVIEW_SESSION_H_
+#define ASH_WM_OVERVIEW_OVERVIEW_SESSION_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/wm/overview/scoped_hide_overview_windows.h"
+#include "ash/wm/overview/scoped_overview_hide_windows.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
@@ -39,19 +39,18 @@ namespace ash {
 
 class OverviewWindowDragController;
 class SplitViewDragIndicators;
-class WindowGrid;
-class WindowSelectorDelegate;
-class WindowSelectorItem;
-class WindowSelectorTest;
+class OverviewGrid;
+class OverviewDelegate;
+class OverviewItem;
 
 enum class IndicatorState;
 
-// The WindowSelector shows a grid of all of your windows, allowing to select
+// The Overview shows a grid of all of your windows, allowing to select
 // one by clicking or tapping on it.
-class ASH_EXPORT WindowSelector : public display::DisplayObserver,
-                                  public aura::WindowObserver,
-                                  public ui::EventHandler,
-                                  public SplitViewController::Observer {
+class ASH_EXPORT OverviewSession : public display::DisplayObserver,
+                                   public aura::WindowObserver,
+                                   public ui::EventHandler,
+                                   public SplitViewController::Observer {
  public:
   enum Direction { LEFT, UP, RIGHT, DOWN };
 
@@ -94,8 +93,8 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
 
   using WindowList = std::vector<aura::Window*>;
 
-  explicit WindowSelector(WindowSelectorDelegate* delegate);
-  ~WindowSelector() override;
+  explicit OverviewSession(OverviewDelegate* delegate);
+  ~OverviewSession() override;
 
   // Initialize with the windows that can be selected.
   void Init(const WindowList& windows, const WindowList& hide_windows);
@@ -107,7 +106,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   void CancelSelection();
 
   // Called when the last window selector item from a grid is deleted.
-  void OnGridEmpty(WindowGrid* grid);
+  void OnGridEmpty(OverviewGrid* grid);
 
   // Moves the current selection by |increment| items. Positive values of
   // |increment| move the selection forward, negative values move it backward.
@@ -118,12 +117,12 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   bool AcceptSelection();
 
   // Activates |item's| window.
-  void SelectWindow(WindowSelectorItem* item);
+  void SelectWindow(OverviewItem* item);
 
   // Called to set bounds for window grids. Used for split view.
-  void SetBoundsForWindowGridsInScreenIgnoringWindow(
+  void SetBoundsForOverviewGridsInScreenIgnoringWindow(
       const gfx::Rect& bounds,
-      WindowSelectorItem* ignored_item);
+      OverviewItem* ignored_item);
 
   // Called to show or hide the split view drag indicators. This will do
   // nothing if split view is not enabled. |event_location| is used to reparent
@@ -134,7 +133,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
 
   // Retrieves the window grid whose root window matches |root_window|. Returns
   // nullptr if the window grid is not found.
-  WindowGrid* GetGridWithRootWindow(aura::Window* root_window);
+  OverviewGrid* GetGridWithRootWindow(aura::Window* root_window);
 
   // Add |window| to the grid in |grid_list_| with the same root window. Does
   // nothing if the grid already contains |window|. And if |reposition| is true,
@@ -155,15 +154,13 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // overview grid; 2) when a window (not from overview) ends its dragging while
   // overview is open, the drop target should be removed. Note in both cases,
   // the windows in the window grid do not need to be repositioned.
-  void RemoveWindowSelectorItem(WindowSelectorItem* item, bool reposition);
+  void RemoveOverviewItem(OverviewItem* item, bool reposition);
 
-  void InitiateDrag(WindowSelectorItem* item,
-                    const gfx::Point& location_in_screen);
-  void Drag(WindowSelectorItem* item, const gfx::Point& location_in_screen);
-  void CompleteDrag(WindowSelectorItem* item,
-                    const gfx::Point& location_in_screen);
+  void InitiateDrag(OverviewItem* item, const gfx::Point& location_in_screen);
+  void Drag(OverviewItem* item, const gfx::Point& location_in_screen);
+  void CompleteDrag(OverviewItem* item, const gfx::Point& location_in_screen);
   void StartSplitViewDragMode(const gfx::Point& location_in_screen);
-  void Fling(WindowSelectorItem* item,
+  void Fling(OverviewItem* item,
              const gfx::Point& location_in_screen,
              float velocity_x,
              float velocity_y);
@@ -182,8 +179,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
                          bool should_drop_window_into_overview);
 
   // Positions all of the windows in the overview, except |ignored_item|.
-  void PositionWindows(bool animate,
-                       WindowSelectorItem* ignored_item = nullptr);
+  void PositionWindows(bool animate, OverviewItem* ignored_item = nullptr);
 
   // Checks if the grid associated with a given |root_window| needs to have the
   // wallpaper animated. Returns false if one of the grids windows covers the
@@ -218,7 +214,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
 
   // Returns true if any of the grids in |grid_list_| shield widgets are still
   // animating.
-  bool IsWindowGridAnimating();
+  bool IsOverviewGridAnimating();
 
   // Called when windows are being activated/deactivated during
   // overview mode.
@@ -230,7 +226,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // Gets the window which keeps focus for the duration of overview mode.
   aura::Window* GetOverviewFocusWindow();
 
-  WindowSelectorDelegate* delegate() { return delegate_; }
+  OverviewDelegate* delegate() { return delegate_; }
 
   SplitViewDragIndicators* split_view_drag_indicators() {
     return split_view_drag_indicators_.get();
@@ -247,7 +243,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
     return window_drag_controller_.get();
   }
 
-  const std::vector<std::unique_ptr<WindowGrid>>& grid_list_for_testing()
+  const std::vector<std::unique_ptr<OverviewGrid>>& grid_list_for_testing()
       const {
     return grid_list_;
   }
@@ -270,7 +266,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   void OnSplitViewDividerPositionChanged() override;
 
  private:
-  friend class WindowSelectorTest;
+  friend class OverviewSessionTest;
 
   // |focus|, restores focus to the stored window.
   void ResetFocusRestoreWindow(bool focus);
@@ -294,7 +290,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
 
   // Weak pointer to the selector delegate which will be called when a
   // selection is made.
-  WindowSelectorDelegate* delegate_;
+  OverviewDelegate* delegate_;
 
   // A weak pointer to the window which was focused on beginning window
   // selection. If window selection is canceled the focus should be restored to
@@ -306,9 +302,9 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // use one of the overview windows otherwise ::wm::ActivateWindow will not
   // work.
   // TODO(sammiequon): Investigate if we can focus the |selection_widget_| in
-  // WindowGrid when it is created, or if we can focus a widget from the virtual
-  // desks UI when that is complete, or we may be able to add some mechanism to
-  // trigger accessibility events without a focused window.
+  // OverviewGrid when it is created, or if we can focus a widget from the
+  // virtual desks UI when that is complete, or we may be able to add some
+  // mechanism to trigger accessibility events without a focused window.
   std::unique_ptr<views::Widget> overview_focus_widget_;
 
   // True when performing operations that may cause window activations. This is
@@ -317,7 +313,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   bool ignore_activations_ = true;
 
   // List of all the window overview grids, one for each root window.
-  std::vector<std::unique_ptr<WindowGrid>> grid_list_;
+  std::vector<std::unique_ptr<OverviewGrid>> grid_list_;
 
   // The owner of the widget which displays splitview related information in
   // overview mode. This will be nullptr if split view is not enabled.
@@ -344,16 +340,16 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
 
   // The selected item when exiting overview mode. nullptr if no window
   // selected.
-  WindowSelectorItem* selected_item_ = nullptr;
+  OverviewItem* selected_item_ = nullptr;
 
   // The drag controller for a window in the overview mode.
   std::unique_ptr<OverviewWindowDragController> window_drag_controller_;
 
-  std::unique_ptr<ScopedHideOverviewWindows> hide_overview_windows_;
+  std::unique_ptr<ScopedOverviewHideWindows> hide_overview_windows_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowSelector);
+  DISALLOW_COPY_AND_ASSIGN(OverviewSession);
 };
 
 }  // namespace ash
 
-#endif  // ASH_WM_OVERVIEW_WINDOW_SELECTOR_H_
+#endif  // ASH_WM_OVERVIEW_OVERVIEW_SESSION_H_

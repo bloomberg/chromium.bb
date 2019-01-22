@@ -11,7 +11,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/scoped_skip_user_session_blocked_check.h"
 #include "ash/wm/tablet_mode/tablet_mode_backdrop_delegate_impl.h"
 #include "ash/wm/tablet_mode/tablet_mode_event_handler.h"
@@ -30,8 +30,7 @@ namespace {
 
 // Exits overview mode if it is currently active.
 void CancelOverview() {
-  WindowSelectorController* controller =
-      Shell::Get()->window_selector_controller();
+  OverviewController* controller = Shell::Get()->overview_controller();
   if (controller->IsSelecting())
     controller->OnSelectionEnded();
 }
@@ -89,10 +88,10 @@ void TabletModeWindowManager::OnOverviewModeStarting() {
 }
 
 void TabletModeWindowManager::OnOverviewModeEnding(
-    WindowSelector* window_selector) {
+    OverviewSession* overview_session) {
   exit_overview_by_window_drag_ =
-      window_selector->enter_exit_overview_type() ==
-      WindowSelector::EnterExitOverviewType::kWindowDragged;
+      overview_session->enter_exit_overview_type() ==
+      OverviewSession::EnterExitOverviewType::kWindowDragged;
 }
 
 void TabletModeWindowManager::OnOverviewModeEnded() {
@@ -251,7 +250,7 @@ void TabletModeWindowManager::OnSplitViewStateChanged(
   } else {
     // If split view mode is ended when overview mode is still active, defer
     // all bounds change until overview mode is ended.
-    if (Shell::Get()->window_selector_controller()->IsSelecting()) {
+    if (Shell::Get()->overview_controller()->IsSelecting()) {
       for (auto& pair : window_state_map_)
         SetDeferBoundsUpdates(pair.first, true);
     }
@@ -339,7 +338,7 @@ void TabletModeWindowManager::ArrangeWindowsForTabletMode() {
       Shell::Get()->split_view_controller();
   split_view_controller->SnapWindow(windows[0], curr_win_snap_pos);
   if (prev_win_snap_pos == SplitViewController::NONE)
-    Shell::Get()->window_selector_controller()->ToggleOverview();
+    Shell::Get()->overview_controller()->ToggleOverview();
   else
     split_view_controller->SnapWindow(windows[1], prev_win_snap_pos);
 

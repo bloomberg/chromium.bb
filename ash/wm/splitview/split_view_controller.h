@@ -32,7 +32,7 @@ namespace ash {
 
 class SplitViewControllerTest;
 class SplitViewDivider;
-class SplitViewWindowSelectorTest;
+class SplitViewOverviewSessionTest;
 
 // The controller for the split view. It snaps a window to left/right side of
 // the screen. It also observes the two snapped windows and decides when to exit
@@ -163,7 +163,7 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
 
   // ShellObserver:
   void OnOverviewModeStarting() override;
-  void OnOverviewModeEnding(WindowSelector* window_selector) override;
+  void OnOverviewModeEnding(OverviewSession* overview_session) override;
 
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
@@ -186,7 +186,7 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
 
  private:
   friend class SplitViewControllerTest;
-  friend class SplitViewWindowSelectorTest;
+  friend class SplitViewOverviewSessionTest;
   class TabDraggedWindowObserver;
 
   // Start observing |window|.
