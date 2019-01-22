@@ -51,7 +51,8 @@ void MarketingOptInScreenHandler::Hide() {}
 void MarketingOptInScreenHandler::Initialize() {}
 
 void MarketingOptInScreenHandler::RegisterMessages() {
-  AddPrefixedCallback("allSet", &MarketingOptInScreenHandler::HandleAllSet);
+  AddCallback("login.MarketingOptInScreen.allSet",
+              &MarketingOptInScreenHandler::HandleAllSet);
 }
 
 void MarketingOptInScreenHandler::HandleAllSet(

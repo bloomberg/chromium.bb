@@ -49,10 +49,16 @@ void BaseWebUIHandler::GetLocalizedStrings(base::DictionaryValue* dict) {
   GetAdditionalParameters(dict);
 }
 
+std::string BaseWebUIHandler::FullMethodPath(const std::string& method) const {
+  DCHECK(!method.empty());
+  return js_screen_path_prefix_ + method;
+}
+
 void BaseWebUIHandler::RegisterMessages() {
-  AddPrefixedCallback("userActed", &BaseScreenHandler::HandleUserAction);
-  AddPrefixedCallback("contextChanged",
-                      &BaseScreenHandler::HandleContextChanged);
+  AddCallback(FullMethodPath("userActed"),
+              &BaseScreenHandler::HandleUserAction);
+  AddCallback(FullMethodPath("contextChanged"),
+              &BaseScreenHandler::HandleContextChanged);
   DeclareJSCallbacks();
 }
 
@@ -113,11 +119,6 @@ void BaseWebUIHandler::SetBaseScreen(BaseScreen* base_screen) {
   base_screen_ = base_screen;
   if (base_screen_)
     base_screen_->set_model_view_channel(this);
-}
-
-std::string BaseWebUIHandler::FullMethodPath(const std::string& method) const {
-  DCHECK(!method.empty());
-  return js_screen_path_prefix_ + method;
 }
 
 void BaseWebUIHandler::HandleUserAction(const std::string& action_id) {

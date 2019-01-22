@@ -156,10 +156,10 @@ void SyncConsentScreenHandler::SetThrobberVisible(bool visible) {
 void SyncConsentScreenHandler::Initialize() {}
 
 void SyncConsentScreenHandler::RegisterMessages() {
-  AddPrefixedCallback("continueAndReview",
-                      &SyncConsentScreenHandler::HandleContinueAndReview);
-  AddPrefixedCallback("continueWithDefaults",
-                      &SyncConsentScreenHandler::HandleContinueWithDefaults);
+  AddCallback("login.SyncConsentScreen.continueAndReview",
+              &SyncConsentScreenHandler::HandleContinueAndReview);
+  AddCallback("login.SyncConsentScreen.continueWithDefaults",
+              &SyncConsentScreenHandler::HandleContinueWithDefaults);
 }
 
 void SyncConsentScreenHandler::GetAdditionalParameters(

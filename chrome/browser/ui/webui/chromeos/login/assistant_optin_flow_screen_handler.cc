@@ -100,35 +100,31 @@ void AssistantOptInFlowScreenHandler::DeclareLocalizedValues(
 }
 
 void AssistantOptInFlowScreenHandler::RegisterMessages() {
-  AddPrefixedCallback(
-      "ValuePropScreen.userActed",
+  AddCallback(
+      "login.AssistantOptInFlowScreen.ValuePropScreen.userActed",
       &AssistantOptInFlowScreenHandler::HandleValuePropScreenUserAction);
-  AddPrefixedCallback(
-      "ThirdPartyScreen.userActed",
+  AddCallback(
+      "login.AssistantOptInFlowScreen.ThirdPartyScreen.userActed",
       &AssistantOptInFlowScreenHandler::HandleThirdPartyScreenUserAction);
-  AddPrefixedCallback(
-      "VoiceMatchScreen.userActed",
+  AddCallback(
+      "login.AssistantOptInFlowScreen.VoiceMatchScreen.userActed",
       &AssistantOptInFlowScreenHandler::HandleVoiceMatchScreenUserAction);
-  AddPrefixedCallback(
-      "GetMoreScreen.userActed",
-      &AssistantOptInFlowScreenHandler::HandleGetMoreScreenUserAction);
-  AddPrefixedCallback(
-      "ValuePropScreen.screenShown",
-      &AssistantOptInFlowScreenHandler::HandleValuePropScreenShown);
-  AddPrefixedCallback(
-      "ThirdPartyScreen.screenShown",
-      &AssistantOptInFlowScreenHandler::HandleThirdPartyScreenShown);
-  AddPrefixedCallback(
-      "GetMoreScreen.screenShown",
-      &AssistantOptInFlowScreenHandler::HandleGetMoreScreenShown);
-  AddPrefixedCallback("LoadingScreen.timeout",
-                      &AssistantOptInFlowScreenHandler::HandleLoadingTimeout);
-  AddPrefixedCallback("hotwordResult",
-                      &AssistantOptInFlowScreenHandler::HandleHotwordResult);
-  AddPrefixedCallback("flowFinished",
-                      &AssistantOptInFlowScreenHandler::HandleFlowFinished);
-  AddPrefixedCallback("initialized",
-                      &AssistantOptInFlowScreenHandler::HandleFlowInitialized);
+  AddCallback("login.AssistantOptInFlowScreen.GetMoreScreen.userActed",
+              &AssistantOptInFlowScreenHandler::HandleGetMoreScreenUserAction);
+  AddCallback("login.AssistantOptInFlowScreen.ValuePropScreen.screenShown",
+              &AssistantOptInFlowScreenHandler::HandleValuePropScreenShown);
+  AddCallback("login.AssistantOptInFlowScreen.ThirdPartyScreen.screenShown",
+              &AssistantOptInFlowScreenHandler::HandleThirdPartyScreenShown);
+  AddCallback("login.AssistantOptInFlowScreen.GetMoreScreen.screenShown",
+              &AssistantOptInFlowScreenHandler::HandleGetMoreScreenShown);
+  AddCallback("login.AssistantOptInFlowScreen.LoadingScreen.timeout",
+              &AssistantOptInFlowScreenHandler::HandleLoadingTimeout);
+  AddCallback("login.AssistantOptInFlowScreen.hotwordResult",
+              &AssistantOptInFlowScreenHandler::HandleHotwordResult);
+  AddCallback("login.AssistantOptInFlowScreen.flowFinished",
+              &AssistantOptInFlowScreenHandler::HandleFlowFinished);
+  AddCallback("login.AssistantOptInFlowScreen.initialized",
+              &AssistantOptInFlowScreenHandler::HandleFlowInitialized);
 }
 
 void AssistantOptInFlowScreenHandler::Bind(AssistantOptInFlowScreen* screen) {

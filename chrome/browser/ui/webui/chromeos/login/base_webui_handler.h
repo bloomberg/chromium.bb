@@ -119,6 +119,10 @@ class BaseWebUIHandler : public content::WebUIMessageHandler,
   // with Context at some point.
   virtual void GetAdditionalParameters(base::DictionaryValue* parameters);
 
+  // Returns full name of JS method based on screen and method
+  // names.
+  std::string FullMethodPath(const std::string& method) const;
+
   // Call a JavaScript method.
   void CallJS(const std::string& method);
 
@@ -228,12 +232,6 @@ class BaseWebUIHandler : public content::WebUIMessageHandler,
         base::BindRepeating(&::login::CallbackWrapper<Args...>, callback));
   }
 
-  template <typename Method>
-  void AddPrefixedCallback(const std::string& unprefixed_name,
-                           const Method& method) {
-    AddCallback(FullMethodPath(unprefixed_name), method);
-  }
-
   // Called when the page is ready and handler can do initialization.
   virtual void Initialize() = 0;
 
@@ -268,10 +266,6 @@ class BaseWebUIHandler : public content::WebUIMessageHandler,
                              std::unique_ptr<Args>... args) {
     CallJSWithPrefix(function_name, *args...);
   }
-
-  // Returns full name of JS method based on screen and method
-  // names.
-  std::string FullMethodPath(const std::string& method) const;
 
   // Handles user action.
   void HandleUserAction(const std::string& action_id);

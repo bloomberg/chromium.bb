@@ -45,8 +45,8 @@ void DiscoverModuleLaunchHelpAppHandler::DeclareLocalizedValues(
 void DiscoverModuleLaunchHelpAppHandler::Initialize() {}
 
 void DiscoverModuleLaunchHelpAppHandler::RegisterMessages() {
-  AddPrefixedCallback("handleLaunchHelpApp",
-                      &DiscoverModuleLaunchHelpAppHandler::HandleLaunchHelpApp);
+  AddCallback(FullMethodPath("handleLaunchHelpApp"),
+              &DiscoverModuleLaunchHelpAppHandler::HandleLaunchHelpApp);
 }
 
 void DiscoverModuleLaunchHelpAppHandler::HandleLaunchHelpApp() {
