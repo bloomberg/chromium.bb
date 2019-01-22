@@ -48,6 +48,10 @@ _OS_NEGATIVE_FILTER['mac'] = [
     'WindowTest.canFullscreenTheWindowFromIframe',
     'WindowTest.testSetsTheSizeOfTheCurrentWindow',
     'BasicMouseInterfaceTest.testMovingMouseByRelativeOffset',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2748
+    'WindowTest.testCanMaximizeTheWindowFromFrame',
+    'WindowTest.testCanMaximizeTheWindowFromIframe',
+    'WindowTest.testCanMaximizeTheWindow',
 ]
 
 _SPECIFIC_OS_REVISION_NEGATIVE_FILTER = {}
