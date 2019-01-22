@@ -316,12 +316,6 @@ TimeDelta ThreadControllerWithMessagePumpImpl::DoWorkImpl(
   TimeDelta do_work_delay =
       main_thread_only().task_source->DelayTillNextTask(continuation_lazy_now);
   DCHECK_GE(do_work_delay, TimeDelta());
-
-  // Check if the previous delayed task is in the past and clear if so.
-  if (!main_thread_only().next_delayed_do_work.is_null() &&
-      main_thread_only().next_delayed_do_work < continuation_lazy_now->Now()) {
-    main_thread_only().next_delayed_do_work = TimeTicks::Max();
-  }
   return do_work_delay;
 }
 
