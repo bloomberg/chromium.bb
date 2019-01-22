@@ -49,7 +49,7 @@ class InternalServices {
     ~InternalPlatformLinkage() override;
 
     std::vector<BoundInterface> RegisterInterfaces(
-        const std::vector<platform::InterfaceIndex>& whitelist) override;
+        const std::vector<platform::NetworkInterfaceIndex>& whitelist) override;
     void DeregisterInterfaces(
         const std::vector<BoundInterface>& registered_interfaces) override;
 

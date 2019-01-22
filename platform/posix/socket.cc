@@ -30,8 +30,8 @@ constexpr bool IsPowerOf2(uint32_t x) {
 static_assert(IsPowerOf2(alignof(struct cmsghdr)),
               "std::align requires power-of-2 alignment");
 
-using IPv4InterfaceIndex = decltype(ip_mreqn().imr_ifindex);
-using IPv6InterfaceIndex = decltype(ipv6_mreq().ipv6mr_interface);
+using IPv4NetworkInterfaceIndex = decltype(ip_mreqn().imr_ifindex);
+using IPv6NetworkInterfaceIndex = decltype(ipv6_mreq().ipv6mr_interface);
 
 absl::optional<int> CreateNonBlockingUdpSocket(int domain) {
   const int fd = socket(domain, SOCK_DGRAM, 0);
@@ -76,7 +76,7 @@ void DestroyUdpSocket(UdpSocketPtr socket) {
 
 bool BindUdpSocket(UdpSocketPtr socket,
                    const IPEndpoint& endpoint,
-                   InterfaceIndex ifindex) {
+                   NetworkInterfaceIndex ifindex) {
   OSP_DCHECK_GE(socket->fd, 0);
   if (socket->version == UdpSocketPrivate::Version::kV4) {
     if (ifindex > 0) {
@@ -85,7 +85,7 @@ bool BindUdpSocket(UdpSocketPtr socket,
       multicast_properties.imr_address.s_addr = INADDR_ANY;
       multicast_properties.imr_multiaddr.s_addr = INADDR_ANY;
       multicast_properties.imr_ifindex =
-          static_cast<IPv4InterfaceIndex>(ifindex);
+          static_cast<IPv4NetworkInterfaceIndex>(ifindex);
       if (setsockopt(socket->fd, IPPROTO_IP, IP_MULTICAST_IF,
                      &multicast_properties,
                      sizeof(multicast_properties)) == -1) {
@@ -109,7 +109,7 @@ bool BindUdpSocket(UdpSocketPtr socket,
                 sizeof(address)) != -1;
   } else {
     if (ifindex > 0) {
-      const auto index = static_cast<IPv6InterfaceIndex>(ifindex);
+      const auto index = static_cast<IPv6NetworkInterfaceIndex>(ifindex);
       if (setsockopt(socket->fd, IPPROTO_IPV6, IPV6_MULTICAST_IF, &index,
                      sizeof(index)) == -1) {
         return false;
@@ -136,7 +136,7 @@ bool BindUdpSocket(UdpSocketPtr socket,
 
 bool JoinUdpMulticastGroup(UdpSocketPtr socket,
                            const IPAddress& address,
-                           InterfaceIndex ifindex) {
+                           NetworkInterfaceIndex ifindex) {
   OSP_DCHECK_GE(socket->fd, 0);
   if (socket->version == UdpSocketPrivate::Version::kV4) {
     // Passed as data to setsockopt().  1 means return IP_PKTINFO control data
@@ -149,7 +149,8 @@ bool JoinUdpMulticastGroup(UdpSocketPtr socket,
     struct ip_mreqn multicast_properties;
     // Appropriate address is set based on |imr_ifindex| when set.
     multicast_properties.imr_address.s_addr = INADDR_ANY;
-    multicast_properties.imr_ifindex = static_cast<IPv4InterfaceIndex>(ifindex);
+    multicast_properties.imr_ifindex =
+        static_cast<IPv4NetworkInterfaceIndex>(ifindex);
     static_assert(sizeof(multicast_properties.imr_multiaddr) == 4u,
                   "IPv4 address requires exactly 4 bytes");
     address.CopyToV4(
@@ -169,7 +170,7 @@ bool JoinUdpMulticastGroup(UdpSocketPtr socket,
     }
     struct ipv6_mreq multicast_properties = {
         {/* filled-in below */},
-        static_cast<IPv6InterfaceIndex>(ifindex),
+        static_cast<IPv6NetworkInterfaceIndex>(ifindex),
     };
     static_assert(sizeof(multicast_properties.ipv6mr_multiaddr) == 16u,
                   "IPv6 address requires exactly 16 bytes");

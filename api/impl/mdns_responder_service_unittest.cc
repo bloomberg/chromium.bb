@@ -185,7 +185,7 @@ TEST_F(MdnsResponderServiceTest, BasicServiceStates) {
   mdns_service_->HandleNewEvents({});
 }
 
-TEST_F(MdnsResponderServiceTest, NetworkInterfaceIndex) {
+TEST_F(MdnsResponderServiceTest, NetworkNetworkInterfaceIndex) {
   auto second_socket = reinterpret_cast<platform::UdpSocketPtr>(24);
   constexpr uint8_t mac[6] = {12, 34, 56, 78, 90};
   bound_interfaces_.emplace_back(

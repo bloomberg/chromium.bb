@@ -20,7 +20,7 @@ struct ScreenInfo {
   bool operator!=(const ScreenInfo& other) const;
 
   bool Update(std::string&& friendly_name,
-              platform::InterfaceIndex network_interface_index,
+              platform::NetworkInterfaceIndex network_interface_index,
               const IPEndpoint& v4_endpoint,
               const IPEndpoint& v6_endpoint);
 
@@ -31,8 +31,8 @@ struct ScreenInfo {
   std::string friendly_name;
 
   // The index of the network interface that the screen was discovered on.
-  platform::InterfaceIndex network_interface_index =
-      platform::kInvalidInterfaceIndex;
+  platform::NetworkInterfaceIndex network_interface_index =
+      platform::kInvalidNetworkInterfaceIndex;
 
   // The network endpoints to create a new connection to the screen.
   IPEndpoint v4_endpoint;

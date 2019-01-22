@@ -35,7 +35,7 @@ class MdnsPlatformService {
   virtual ~MdnsPlatformService() = default;
 
   virtual std::vector<BoundInterface> RegisterInterfaces(
-      const std::vector<platform::InterfaceIndex>& whitelist) = 0;
+      const std::vector<platform::NetworkInterfaceIndex>& whitelist) = 0;
   virtual void DeregisterInterfaces(
       const std::vector<BoundInterface>& registered_interfaces) = 0;
 };

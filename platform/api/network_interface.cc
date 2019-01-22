@@ -14,7 +14,7 @@ void InterfaceInfo::CopyHardwareAddressTo(uint8_t x[6]) const {
 }
 
 InterfaceInfo::InterfaceInfo() = default;
-InterfaceInfo::InterfaceInfo(InterfaceIndex index,
+InterfaceInfo::InterfaceInfo(NetworkInterfaceIndex index,
                              const uint8_t hardware_address[6],
                              const std::string& name,
                              Type type)

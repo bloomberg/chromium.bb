@@ -31,10 +31,10 @@ void DestroyUdpSocket(UdpSocketPtr socket);
 
 bool BindUdpSocket(UdpSocketPtr socket,
                    const IPEndpoint& endpoint,
-                   InterfaceIndex ifindex);
+                   NetworkInterfaceIndex ifindex);
 bool JoinUdpMulticastGroup(UdpSocketPtr socket,
                            const IPAddress& address,
-                           InterfaceIndex ifindex);
+                           NetworkInterfaceIndex ifindex);
 
 absl::optional<int64_t> ReceiveUdp(UdpSocketPtr socket,
                                    void* data,

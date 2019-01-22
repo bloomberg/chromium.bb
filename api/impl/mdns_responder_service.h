@@ -39,11 +39,12 @@ class MdnsResponderService final : public ScreenListenerImpl::Delegate,
       std::unique_ptr<MdnsPlatformService> platform);
   ~MdnsResponderService() override;
 
-  void SetServiceConfig(const std::string& hostname,
-                        const std::string& instance,
-                        uint16_t port,
-                        const std::vector<platform::InterfaceIndex> whitelist,
-                        const std::map<std::string, std::string>& txt_data);
+  void SetServiceConfig(
+      const std::string& hostname,
+      const std::string& instance,
+      uint16_t port,
+      const std::vector<platform::NetworkInterfaceIndex> whitelist,
+      const std::map<std::string, std::string>& txt_data);
 
   void HandleNewEvents(const std::vector<platform::ReceivedData>& data);
 
@@ -129,7 +130,7 @@ class MdnsResponderService final : public ScreenListenerImpl::Delegate,
   HostInfo* GetHostInfo(platform::UdpSocketPtr socket,
                         const mdns::DomainName& domain_name);
   bool IsServiceReady(const ServiceInstance& instance, HostInfo* host) const;
-  platform::InterfaceIndex GetInterfaceIndexFromSocket(
+  platform::NetworkInterfaceIndex GetNetworkInterfaceIndexFromSocket(
       platform::UdpSocketPtr socket) const;
 
   // Service type separated as service name and service protocol for both
@@ -141,7 +142,7 @@ class MdnsResponderService final : public ScreenListenerImpl::Delegate,
   std::string service_hostname_;
   std::string service_instance_name_;
   uint16_t service_port_;
-  std::vector<platform::InterfaceIndex> interface_index_whitelist_;
+  std::vector<platform::NetworkInterfaceIndex> interface_index_whitelist_;
   std::map<std::string, std::string> service_txt_data_;
 
   std::unique_ptr<MdnsResponderAdapterFactory> mdns_responder_factory_;

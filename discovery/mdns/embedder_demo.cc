@@ -97,7 +97,7 @@ void SignalThings() {
 }
 
 std::vector<platform::UdpSocketPtr> SetupMulticastSockets(
-    const std::vector<platform::InterfaceIndex>& index_list) {
+    const std::vector<platform::NetworkInterfaceIndex>& index_list) {
   std::vector<platform::UdpSocketPtr> fds;
   for (const auto ifindex : index_list) {
     auto* socket = platform::CreateUdpSocketIPv4();
@@ -240,7 +240,7 @@ void BrowseDemo(const std::string& service_name,
     OSP_LOG_INFO << "Found interface: " << ifa;
   }
 
-  std::vector<platform::InterfaceIndex> index_list;
+  std::vector<platform::NetworkInterfaceIndex> index_list;
   for (const auto& interface : interface_addresses) {
     if (!interface.addresses.empty())
       index_list.push_back(interface.info.index);
@@ -249,7 +249,7 @@ void BrowseDemo(const std::string& service_name,
   auto sockets = SetupMulticastSockets(index_list);
   // Listen on all interfaces
   auto fd_it = sockets.begin();
-  for (platform::InterfaceIndex index : index_list) {
+  for (platform::NetworkInterfaceIndex index : index_list) {
     const auto& addr = *std::find_if(
         interface_addresses.begin(), interface_addresses.end(),
         [index](const openscreen::platform::InterfaceAddresses& addr) {

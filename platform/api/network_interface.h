@@ -17,8 +17,8 @@ namespace platform {
 // unsigned 32-bit integer. Thus, for cross-platform compatibility, and to
 // provide a special "invalid/not set" value, define the type as a 64-bit signed
 // integer.
-using InterfaceIndex = int64_t;
-enum : InterfaceIndex { kInvalidInterfaceIndex = -1 };
+using NetworkInterfaceIndex = int64_t;
+enum : NetworkInterfaceIndex { kInvalidNetworkInterfaceIndex = -1 };
 
 struct InterfaceInfo {
   enum class Type {
@@ -29,7 +29,7 @@ struct InterfaceInfo {
 
   // TODO(btolsch): Only needed until c++14.
   InterfaceInfo();
-  InterfaceInfo(InterfaceIndex index,
+  InterfaceInfo(NetworkInterfaceIndex index,
                 const uint8_t hardware_address[6],
                 const std::string& name,
                 Type type);
@@ -42,7 +42,7 @@ struct InterfaceInfo {
 
   // Interface index, typically as specified by the operating system,
   // identifying this interface on the host machine.
-  InterfaceIndex index = kInvalidInterfaceIndex;
+  NetworkInterfaceIndex index = kInvalidNetworkInterfaceIndex;
 
   // MAC address of the interface.  All 0s if unavailable.
   uint8_t hardware_address[6] = {};

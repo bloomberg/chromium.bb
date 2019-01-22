@@ -105,7 +105,7 @@ class ScreenPublisher {
     // By default, all enabled Ethernet and WiFi interfaces are used.
     // This configuration must be identical to the interfaces configured
     // in the ScreenConnectionServer.
-    std::vector<platform::InterfaceIndex> network_interface_indices;
+    std::vector<platform::NetworkInterfaceIndex> network_interface_indices;
   };
 
   virtual ~ScreenPublisher();

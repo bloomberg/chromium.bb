@@ -37,7 +37,7 @@ class MdnsResponderAdapterImplFactory final
 };
 
 bool SetUpMulticastSocket(platform::UdpSocketPtr socket,
-                          platform::InterfaceIndex ifindex) {
+                          platform::NetworkInterfaceIndex ifindex) {
   do {
     const IPAddress broadcast_address =
         IsIPv6Socket(socket) ? kMulticastIPv6Address : kMulticastAddress;
@@ -112,10 +112,10 @@ InternalServices::InternalPlatformLinkage::~InternalPlatformLinkage() = default;
 
 std::vector<MdnsPlatformService::BoundInterface>
 InternalServices::InternalPlatformLinkage::RegisterInterfaces(
-    const std::vector<platform::InterfaceIndex>& whitelist) {
+    const std::vector<platform::NetworkInterfaceIndex>& whitelist) {
   auto addrinfo = platform::GetInterfaceAddresses();
   const bool do_filter_using_whitelist = !whitelist.empty();
-  std::vector<platform::InterfaceIndex> index_list;
+  std::vector<platform::NetworkInterfaceIndex> index_list;
   for (const auto& interface : addrinfo) {
     OSP_VLOG(1) << "Found interface: " << interface;
     if (do_filter_using_whitelist &&
@@ -130,7 +130,7 @@ InternalServices::InternalPlatformLinkage::RegisterInterfaces(
 
   // Listen on all interfaces
   std::vector<BoundInterface> result;
-  for (platform::InterfaceIndex index : index_list) {
+  for (platform::NetworkInterfaceIndex index : index_list) {
     const auto& addr =
         *std::find_if(addrinfo.begin(), addrinfo.end(),
                       [index](const platform::InterfaceAddresses& addr) {

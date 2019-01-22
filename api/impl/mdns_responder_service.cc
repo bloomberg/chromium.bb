@@ -41,7 +41,7 @@ void MdnsResponderService::SetServiceConfig(
     const std::string& hostname,
     const std::string& instance,
     uint16_t port,
-    const std::vector<platform::InterfaceIndex> whitelist,
+    const std::vector<platform::NetworkInterfaceIndex> whitelist,
     const std::map<std::string, std::string>& txt_data) {
   OSP_DCHECK(!hostname.empty());
   OSP_DCHECK(!instance.empty());
@@ -209,19 +209,21 @@ void MdnsResponderService::HandleMdnsEvents() {
     std::string friendly_name = instance_name.GetLabels()[0];
 
     if (screen_info_entry == screen_info_.end()) {
-      ScreenInfo screen_info{std::move(screen_id),
-                             std::move(friendly_name),
-                             GetInterfaceIndexFromSocket(service->ptr_socket),
-                             {host->v4_address, service->port},
-                             {host->v6_address, service->port}};
+      ScreenInfo screen_info{
+          std::move(screen_id),
+          std::move(friendly_name),
+          GetNetworkInterfaceIndexFromSocket(service->ptr_socket),
+          {host->v4_address, service->port},
+          {host->v6_address, service->port}};
       listener_->OnScreenAdded(screen_info);
       screen_info_.emplace(screen_info.screen_id, std::move(screen_info));
     } else {
       ScreenInfo& screen_info = screen_info_entry->second;
-      if (screen_info.Update(std::move(friendly_name),
-                             GetInterfaceIndexFromSocket(service->ptr_socket),
-                             {host->v4_address, service->port},
-                             {host->v6_address, service->port})) {
+      if (screen_info.Update(
+              std::move(friendly_name),
+              GetNetworkInterfaceIndexFromSocket(service->ptr_socket),
+              {host->v4_address, service->port},
+              {host->v6_address, service->port})) {
         listener_->OnScreenChanged(screen_info);
       }
     }
@@ -552,7 +554,8 @@ bool MdnsResponderService::IsServiceReady(const ServiceInstance& instance,
           !instance.txt_info.empty() && (host->v4_address || host->v6_address));
 }
 
-platform::InterfaceIndex MdnsResponderService::GetInterfaceIndexFromSocket(
+platform::NetworkInterfaceIndex
+MdnsResponderService::GetNetworkInterfaceIndexFromSocket(
     platform::UdpSocketPtr socket) const {
   auto it = std::find_if(
       bound_interfaces_.begin(), bound_interfaces_.end(),
@@ -560,7 +563,7 @@ platform::InterfaceIndex MdnsResponderService::GetInterfaceIndexFromSocket(
         return interface.socket == socket;
       });
   if (it == bound_interfaces_.end())
-    return platform::kInvalidInterfaceIndex;
+    return platform::kInvalidNetworkInterfaceIndex;
   return it->interface_info.index;
 }
 
