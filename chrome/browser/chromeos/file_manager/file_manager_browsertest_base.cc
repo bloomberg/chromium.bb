@@ -1273,8 +1273,11 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     disabled_features.emplace_back(chromeos::features::kDriveFs);
   }
 
-  if (IsMyFilesVolume())
+  if (IsMyFilesVolume()) {
     enabled_features.emplace_back(chromeos::features::kMyFilesVolume);
+  } else {
+    disabled_features.emplace_back(chromeos::features::kMyFilesVolume);
+  }
 
   feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
