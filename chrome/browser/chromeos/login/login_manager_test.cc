@@ -116,7 +116,6 @@ void LoginManagerTest::SetUpCommandLine(base::CommandLine* command_line) {
   command_line->AppendSwitchASCII(::switches::kGoogleApisUrl, gaia_url.spec());
 
   fake_gaia_.Initialize();
-  fake_gaia_.set_issue_oauth_code_cookie(true);
 
   MixinBasedBrowserTest::SetUpCommandLine(command_line);
 }
@@ -212,15 +211,6 @@ void LoginManagerTest::AddUser(const AccountId& account_id) {
   const UserContext user_context = CreateUserContext(account_id);
   SetExpectedCredentials(user_context);
   EXPECT_TRUE(AddUserToSession(user_context));
-}
-
-// static
-std::string LoginManagerTest::GetGaiaIDForUserID(const std::string& user_id) {
-  if (user_id == LoginManagerTest::kEnterpriseUser1)
-    return LoginManagerTest::kEnterpriseUser1GaiaId;
-  if (user_id == LoginManagerTest::kEnterpriseUser2)
-    return LoginManagerTest::kEnterpriseUser2GaiaId;
-  return "gaia-id-" + user_id;
 }
 
 }  // namespace chromeos
