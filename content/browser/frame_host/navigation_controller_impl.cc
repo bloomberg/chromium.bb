@@ -759,7 +759,14 @@ int NavigationControllerImpl::GetIndexForOffset(int offset) {
 }
 
 bool NavigationControllerImpl::CanGoBack() {
-  return CanGoToOffset(-1);
+  if (!base::FeatureList::IsEnabled(features::kHistoryManipulationIntervention))
+    return CanGoToOffset(-1);
+
+  for (int index = GetIndexForOffset(-1); index >= 0; index--) {
+    if (!GetEntryAtIndex(index)->should_skip_on_back_forward_ui())
+      return true;
+  }
+  return false;
 }
 
 bool NavigationControllerImpl::CanGoForward() {
@@ -777,9 +784,8 @@ void NavigationControllerImpl::GoBack() {
   // Log metrics for the number of entries that are eligible for skipping on
   // back button and move the target index past the skippable entries, if
   // history intervention is enabled.
-  // TODO(crbug.com/907167): Implement the case when all entries are
-  // skippable.
   int count_entries_skipped = 0;
+  bool all_skippable_entries = true;
   bool history_intervention_enabled = base::FeatureList::IsEnabled(
               features::kHistoryManipulationIntervention);
   for (int index = target_index; index >= 0; index--) {
@@ -788,11 +794,20 @@ void NavigationControllerImpl::GoBack() {
     } else {
       if (history_intervention_enabled)
         target_index = index;
+      all_skippable_entries = false;
       break;
     }
   }
   UMA_HISTOGRAM_ENUMERATION("Navigation.BackForward.BackTargetSkipped",
                             count_entries_skipped, kMaxSessionHistoryEntries);
+  UMA_HISTOGRAM_BOOLEAN("Navigation.BackForward.AllBackTargetsSkippable",
+                        all_skippable_entries);
+
+  // Do nothing if all entries are skippable. Normally this path would not
+  // happen as consumers would have already checked it in CanGoBack but a lot of
+  // tests do not do that.
+  if (history_intervention_enabled && all_skippable_entries)
+    return;
 
   GoToIndex(target_index);
 }
