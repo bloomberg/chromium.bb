@@ -157,13 +157,9 @@ void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   // Fail immediately if we know that the remote side cannot support |config|.
   if (gpu_factories_ && !gpu_factories_->IsDecoderConfigSupported(config)) {
-    // TODO(liberato): Remove bypass once D3D11VideoDecoder provides
-    // SupportedVideoDecoderConfigs.
-    if (!base::FeatureList::IsEnabled(kD3D11VideoDecoder)) {
-      task_runner_->PostTask(FROM_HERE,
-                             base::BindRepeating(bound_init_cb, false));
-      return;
-    }
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindRepeating(bound_init_cb, false));
+    return;
   }
 
   int cdm_id =

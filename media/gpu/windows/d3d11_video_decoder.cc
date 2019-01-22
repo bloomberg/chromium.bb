@@ -42,11 +42,6 @@ bool IsH264(const VideoDecoderConfig& config) {
   return INRANGE(config.profile(), H264);
 }
 
-bool IsUnsupportedVP9Profile(const VideoDecoderConfig& config) {
-  return config.profile() == VP9PROFILE_PROFILE1 ||
-         config.profile() == VP9PROFILE_PROFILE3;
-}
-
 #undef INRANGE
 
 // Holder class, so that we don't keep creating CommandBufferHelpers every time
@@ -89,7 +84,9 @@ std::unique_ptr<VideoDecoder> D3D11VideoDecoder::Create(
     std::unique_ptr<MediaLog> media_log,
     const gpu::GpuPreferences& gpu_preferences,
     const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
-    base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb) {
+    base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb,
+    D3D11VideoDecoder::GetD3D11DeviceCB get_d3d11_device_cb,
+    SupportedConfigs supported_configs) {
   // We create |impl_| on the wrong thread, but we never use it here.
   // Note that the output callback will hop to our thread, post the video
   // frame, and along with a callback that will hop back to the impl thread
@@ -106,7 +103,8 @@ std::unique_ptr<VideoDecoder> D3D11VideoDecoder::Create(
                             gpu_preferences, gpu_workarounds,
                             std::make_unique<D3D11VideoDecoderImpl>(
                                 std::move(cloned_media_log), get_helper_cb),
-                            get_helper_cb));
+                            get_helper_cb, std::move(get_d3d11_device_cb),
+                            std::move(supported_configs)));
 }
 
 D3D11VideoDecoder::D3D11VideoDecoder(
@@ -115,15 +113,17 @@ D3D11VideoDecoder::D3D11VideoDecoder(
     const gpu::GpuPreferences& gpu_preferences,
     const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
     std::unique_ptr<D3D11VideoDecoderImpl> impl,
-    base::RepeatingCallback<scoped_refptr<CommandBufferHelper>()> get_helper_cb)
+    base::RepeatingCallback<scoped_refptr<CommandBufferHelper>()> get_helper_cb,
+    GetD3D11DeviceCB get_d3d11_device_cb,
+    SupportedConfigs supported_configs)
     : media_log_(std::move(media_log)),
       impl_(std::move(impl)),
       impl_task_runner_(std::move(gpu_task_runner)),
       gpu_preferences_(gpu_preferences),
       gpu_workarounds_(gpu_workarounds),
-      get_d3d11_device_cb_(base::BindRepeating(
-          []() { return gl::QueryD3D11DeviceObjectFromANGLE(); })),
+      get_d3d11_device_cb_(std::move(get_d3d11_device_cb)),
       get_helper_cb_(std::move(get_helper_cb)),
+      supported_configs_(std::move(supported_configs)),
       weak_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(media_log_);
@@ -221,16 +221,27 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   state_ = State::kInitializing;
 
-  if (!IsPotentiallySupported(config)) {
-    DVLOG(3) << "D3D11 video decoder not supported for the config.";
-    init_cb.Run(false);
-    return;
-  }
-
   config_ = config;
   init_cb_ = init_cb;
   output_cb_ = output_cb;
   waiting_cb_ = waiting_cb;
+
+  // Verify that |config| matches one of the supported configurations.  This
+  // helps us skip configs that are supported by the VDA but not us, since
+  // GpuMojoMediaClient merges them.  This is not hacky, even in the tiniest
+  // little bit, nope.  Definitely not.  Convinced?
+  bool is_supported = false;
+  for (const auto& supported_config : supported_configs_) {
+    if (supported_config.Matches(config)) {
+      is_supported = true;
+      break;
+    }
+  }
+
+  if (!is_supported) {
+    NotifyError("D3D11VideoDecoder does not support this config");
+    return;
+  }
 
   // Initialize the video decoder.
 
@@ -246,6 +257,7 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
   //
   // TODO(liberato): On re-init, we can probably re-use the device.
   device_ = get_d3d11_device_cb_.Run();
+  usable_feature_level_ = device_->GetFeatureLevel();
 
   if (!device_) {
     // This happens if, for example, if chrome is configured to use
@@ -268,7 +280,7 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   GUID decoder_guid = GetD3D11DecoderGUID(config);
   if (!DeviceHasDecoderID(decoder_guid)) {
-    NotifyError("Did not find a supported profile");
+    NotifyError("D3D11: Did not find a supported profile");
     return;
   }
 
@@ -356,6 +368,12 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
     NotifyError("Failed to get device context");
     return;
   }
+
+  // At this point, playback is supported so add a line in the media log to help
+  // us figure that out.
+  media_log_->AddEvent(
+      media_log_->CreateStringEvent(MediaLogEvent::MEDIA_INFO_LOG_ENTRY, "info",
+                                    "Video is supported by D3D11VideoDecoder"));
 
   // |cdm_context| could be null for clear playback.
   // TODO(liberato): On re-init, should this still happen?
@@ -733,125 +751,88 @@ void D3D11VideoDecoder::NotifyError(const char* reason) {
   input_buffer_queue_.clear();
 }
 
-void D3D11VideoDecoder::SetCreateDeviceCallbackForTesting(
-    GetD3D11DeviceCB callback) {
-  get_d3d11_device_cb_ = std::move(callback);
-}
-
-void D3D11VideoDecoder::ReportNotSupportedReason(
-    NotSupportedReason enum_value) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  UMA_HISTOGRAM_ENUMERATION("Media.D3D11.WasVideoSupported", enum_value);
-
-  const char* reason = nullptr;
-  switch (enum_value) {
-    case NotSupportedReason::kVideoIsSupported:
-      reason = "Playback is supported by D3D11VideoDecoder";
-      break;
-    case NotSupportedReason::kInsufficientD3D11FeatureLevel:
-      reason = "Insufficient D3D11 feature level";
-      break;
-    case NotSupportedReason::kProfileNotSupported:
-      reason = "Video profile is not supported by D3D11VideoDecoder";
-      break;
-    case NotSupportedReason::kCodecNotSupported:
-      reason = "H264 is required for D3D11VideoDecoder";
-      break;
-    case NotSupportedReason::kZeroCopyNv12Required:
-      reason = "Must allow zero-copy NV12 for D3D11VideoDecoder";
-      break;
-    case NotSupportedReason::kZeroCopyVideoRequired:
-      reason = "Must allow zero-copy video for D3D11VideoDecoder";
-      break;
-    case NotSupportedReason::kEncryptedMedia:
-      reason = "Encrypted media is not enabled for D3D11VideoDecoder";
-      break;
-    case NotSupportedReason::kCouldNotGetD3D11Device:
-      reason = "Could not get D3D11 device";
-      break;
-  }
-
-  DVLOG(2) << reason;
-  media_log_->AddEvent(media_log_->CreateStringEvent(
-      MediaLogEvent::MEDIA_INFO_LOG_ENTRY, "info", reason));
-}
-
-bool D3D11VideoDecoder::IsPotentiallySupported(
-    const VideoDecoderConfig& config) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(liberato): All of this could be moved into MojoVideoDecoder, so that
-  // it could run on the client side and save the IPC hop.
+// static
+std::vector<SupportedVideoDecoderConfig>
+D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
+    const gpu::GpuPreferences& gpu_preferences,
+    const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
+    GetD3D11DeviceCB get_d3d11_device_cb) {
+  const std::string uma_name("Media.D3D11.WasVideoSupported");
 
   // Must allow zero-copy of nv12 textures.
-  if (!gpu_preferences_.enable_zero_copy_dxgi_video) {
-    ReportNotSupportedReason(NotSupportedReason::kZeroCopyNv12Required);
-    return false;
+  if (!gpu_preferences.enable_zero_copy_dxgi_video) {
+    UMA_HISTOGRAM_ENUMERATION(uma_name,
+                              NotSupportedReason::kZeroCopyNv12Required);
+    return {};
   }
 
-  if (gpu_workarounds_.disable_dxgi_zero_copy_video) {
-    ReportNotSupportedReason(NotSupportedReason::kZeroCopyVideoRequired);
-    return false;
-  }
-
-  if (config.profile() == H264PROFILE_HIGH10PROFILE) {
-    // H264 HIGH10 is never supported.
-    ReportNotSupportedReason(NotSupportedReason::kProfileNotSupported);
-    return false;
-  }
-
-  if (IsUnsupportedVP9Profile(config)) {
-    ReportNotSupportedReason(NotSupportedReason::kProfileNotSupported);
-    return false;
-  }
-
-  bool encrypted_stream = config.is_encrypted();
-
-  // Support of encrypted stream requires kHardwareSecureDecryption feature to
-  // be enabled.
-  if (encrypted_stream &&
-      !base::FeatureList::IsEnabled(kHardwareSecureDecryption)) {
-    ReportNotSupportedReason(NotSupportedReason::kEncryptedMedia);
-    return false;
-  }
-
-  // Converts one of chromium's VideoCodecProfile options to a dxguid value.
-  // If this GUID comes back empty then the profile is not supported.
-  GUID decoder_GUID = GetD3D11DecoderGUID(config);
-
-  // If we got the empty guid, fail.
-  GUID empty_guid = {};
-  if (decoder_GUID == empty_guid) {
-    ReportNotSupportedReason(NotSupportedReason::kCodecNotSupported);
-    return false;
+  if (gpu_workarounds.disable_dxgi_zero_copy_video) {
+    UMA_HISTOGRAM_ENUMERATION(uma_name,
+                              NotSupportedReason::kZeroCopyVideoRequired);
+    return {};
   }
 
   // Remember that this might query the angle device, so this won't work if
   // we're not on the GPU main thread.  Also remember that devices are thread
   // safe (contexts are not), so we could use the angle device from any thread
   // as long as we're not calling into possible not-thread-safe things to get
-  // it.  I.e., if this cached it, then it'd be fine.
+  // it.  I.e., if this cached it, then it'd be fine.  It's up to our caller
+  // to guarantee that, though.
   //
   // Note also that, currently, we are called from the GPU main thread only.
-  auto d3d11_device = get_d3d11_device_cb_.Run();
+  auto d3d11_device = get_d3d11_device_cb.Run();
   if (!d3d11_device) {
-    ReportNotSupportedReason(NotSupportedReason::kCouldNotGetD3D11Device);
-    return false;
+    UMA_HISTOGRAM_ENUMERATION(uma_name,
+                              NotSupportedReason::kCouldNotGetD3D11Device);
+    return {};
   }
 
-  usable_feature_level_ = d3d11_device->GetFeatureLevel();
+  D3D_FEATURE_LEVEL usable_feature_level = d3d11_device->GetFeatureLevel();
 
-  if (encrypted_stream && usable_feature_level_ == D3D_FEATURE_LEVEL_11_0) {
-    ReportNotSupportedReason(
-        NotSupportedReason::kInsufficientD3D11FeatureLevel);
-    return false;
-  }
+  const bool allow_encrypted =
+      (usable_feature_level > D3D_FEATURE_LEVEL_11_0) &&
+      base::FeatureList::IsEnabled(kHardwareSecureDecryption);
 
-  // TODO(liberato): dxva checks IsHDR() in the target colorspace, but we don't
-  // have the target colorspace.  It's commented as being for vpx, though, so
-  // we skip it here for now.
-  ReportNotSupportedReason(NotSupportedReason::kVideoIsSupported);
-  return true;
+  std::vector<SupportedVideoDecoderConfig> configs;
+
+  // Now check specific configs.
+  // For now, just return something that matches everything, since that's
+  // effectively what the workaround in mojo_video_decoder does.  Eventually, we
+  // should check resolutions and guids from the device we just created for both
+  // portrait and landscape orientations.
+  const gfx::Size min_resolution(64, 64);
+  const gfx::Size max_resolution(8192, 8192);  // Profile or landscape 8k
+
+  // Push H264 configs, except HIGH10.
+  configs.push_back(SupportedVideoDecoderConfig(
+      H264PROFILE_MIN,  // profile_min
+      static_cast<VideoCodecProfile>(H264PROFILE_HIGH10PROFILE -
+                                     1),  // profile_max
+      min_resolution,                     // coded_size_min
+      max_resolution,                     // coded_size_max
+      allow_encrypted,                    // allow_encrypted
+      false));                            // require_encrypted
+  configs.push_back(SupportedVideoDecoderConfig(
+      static_cast<VideoCodecProfile>(H264PROFILE_HIGH10PROFILE +
+                                     1),  // profile_min
+      H264PROFILE_MAX,                    // profile_max
+      min_resolution,                     // coded_size_min
+      max_resolution,                     // coded_size_max
+      allow_encrypted,                    // allow_encrypted
+      false));                            // require_encrypted
+
+  configs.push_back(
+      SupportedVideoDecoderConfig(VP9PROFILE_PROFILE0,  // profile_min
+                                  VP9PROFILE_PROFILE0,  // profile_max
+                                  min_resolution,       // coded_size_min
+                                  max_resolution,       // coded_size_max
+                                  allow_encrypted,      // allow_encrypted
+                                  false));              // require_encrypted
+
+  // TODO(liberato): Should we separate out h264, vp9, and encrypted?
+  UMA_HISTOGRAM_ENUMERATION(uma_name, NotSupportedReason::kVideoIsSupported);
+
+  return configs;
 }
 
 }  // namespace media

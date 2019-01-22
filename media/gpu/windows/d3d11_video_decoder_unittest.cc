@@ -141,7 +141,22 @@ class D3D11VideoDecoderTest : public ::testing::Test {
     scoped_feature_list_->InitAndDisableFeature(feature);
   }
 
-  void CreateDecoder() {
+  // If provided, |supported_configs| is the list of configs that will be
+  // checked before init can succeed.  If one is provided, then we'll
+  // use it.  Otherwise, we'll use the list that's autodetected by the
+  // decoder based on the current device mock.
+  void CreateDecoder(
+      base::Optional<D3D11VideoDecoder::SupportedConfigs> supported_configs =
+          base::Optional<D3D11VideoDecoder::SupportedConfigs>()) {
+    auto get_device_cb = base::BindRepeating(
+        [](Microsoft::WRL::ComPtr<ID3D11Device> device) { return device; },
+        mock_d3d11_device_);
+
+    // Autodetect the supported configs, unless it's being overridden.
+    if (!supported_configs) {
+      supported_configs = D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
+          gpu_preferences_, gpu_workarounds_, get_device_cb);
+    }
     std::unique_ptr<MockD3D11VideoDecoderImpl> impl =
         std::make_unique<NiceMock<MockD3D11VideoDecoderImpl>>();
     impl_ = impl.get();
@@ -154,10 +169,8 @@ class D3D11VideoDecoderTest : public ::testing::Test {
         d3d11_decoder_raw_ = new D3D11VideoDecoder(
             gpu_task_runner_, std::make_unique<NullMediaLog>(),
             gpu_preferences_, gpu_workarounds_, std::move(impl),
-            base::RepeatingCallback<scoped_refptr<CommandBufferHelper>()>()));
-    d3d11_decoder_raw_->SetCreateDeviceCallbackForTesting(base::BindRepeating(
-        [](Microsoft::WRL::ComPtr<ID3D11Device> device) { return device; },
-        mock_d3d11_device_));
+            base::RepeatingCallback<scoped_refptr<CommandBufferHelper>()>(),
+            get_device_cb, *supported_configs));
   }
 
   enum InitExpectation {
@@ -204,13 +217,23 @@ class D3D11VideoDecoderTest : public ::testing::Test {
   base::Optional<base::test::ScopedFeatureList> scoped_feature_list_;
 };
 
-TEST_F(D3D11VideoDecoderTest, SupportsVP9Profile0) {
-  CreateDecoder();
-
+TEST_F(D3D11VideoDecoderTest, SupportsVP9Profile0WithDecoderEnabled) {
   VideoDecoderConfig configuration =
       TestVideoConfig::NormalCodecProfile(kCodecVP9, VP9PROFILE_PROFILE0);
 
-  EXPECT_TRUE(d3d11_decoder_raw_->IsPotentiallySupported(configuration));
+  EnableDecoder(D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0);
+  CreateDecoder();
+  InitializeDecoder(configuration, kExpectSuccess);
+}
+
+TEST_F(D3D11VideoDecoderTest, DoesNotSupportVP9WithoutDecoderEnabled) {
+  VideoDecoderConfig configuration =
+      TestVideoConfig::NormalCodecProfile(kCodecVP9, VP9PROFILE_PROFILE0);
+
+  // Enable a non-VP9 decoder.
+  EnableDecoder(D3D11_DECODER_PROFILE_H264_VLD_NOFGT);  // Paranoia, not VP9.
+  CreateDecoder();
+  InitializeDecoder(configuration, kExpectFailure);
 }
 
 TEST_F(D3D11VideoDecoderTest, DoesNotSupportsH264HIGH10Profile) {
@@ -222,7 +245,7 @@ TEST_F(D3D11VideoDecoderTest, DoesNotSupportsH264HIGH10Profile) {
   InitializeDecoder(high10, kExpectFailure);
 }
 
-TEST_F(D3D11VideoDecoderTest, SupportsH264) {
+TEST_F(D3D11VideoDecoderTest, SupportsH264WithAutodetectedConfig) {
   CreateDecoder();
 
   VideoDecoderConfig normal =
@@ -230,6 +253,23 @@ TEST_F(D3D11VideoDecoderTest, SupportsH264) {
 
   InitializeDecoder(normal, kExpectSuccess);
   // TODO(liberato): Check |last_video_decoder_desc_| for sanity.
+}
+
+TEST_F(D3D11VideoDecoderTest, DoesNotSupportH264IfNoSupportedConfig) {
+  // This is identical to SupportsH264, except that we initialize with an empty
+  // list of supported configs.  This should match nothing.  Assuming that
+  // SupportsH264WithSupportedConfig passes, then this checks that the supported
+  // config check kinda works.
+  // For whatever reason, Optional<SupportedConfigs>({}) results in one that
+  // doesn't have a value, rather than one that has an empty vector.
+  base::Optional<D3D11VideoDecoder::SupportedConfigs> empty_configs;
+  empty_configs.emplace(std::vector<SupportedVideoDecoderConfig>());
+  CreateDecoder(empty_configs);
+
+  VideoDecoderConfig normal =
+      TestVideoConfig::NormalCodecProfile(kCodecH264, H264PROFILE_MAIN);
+
+  InitializeDecoder(normal, kExpectFailure);
 }
 
 TEST_F(D3D11VideoDecoderTest, RequiresZeroCopyPreference) {
