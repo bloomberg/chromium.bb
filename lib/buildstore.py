@@ -182,6 +182,18 @@ class BuildStore(object):
     if self._write_to_cidb:
       return self.cidb_conn.UpdateMetadata(build_id, metadata)
 
+  def ExtendDeadline(self, build_id, timeout):
+    """Extend the deadline for the given metadata row in the database.
+
+    Args:
+      build_id: CIDB id of the build to update.
+      timeout: new timeout value.
+    """
+    if not self.InitializeClients():
+      return
+    if self._write_to_cidb:
+      return self.cidb_conn.ExtendDeadline(build_id, timeout)
+
   def GetBuildStatuses(self, buildbucket_ids=None, build_ids=None):
     """Retrieve the build statuses of list of builds.
 
@@ -257,6 +269,9 @@ class FakeBuildStore(object):
     return build_stage_id
 
   def UpdateMetadata(self, build_id, metadata): #pylint: disable=unused-argument
+    return
+
+  def ExtendDeadline(self, build_id, timeout): #pylint: disable=unused-argument
     return
 
   def GetBuildStatuses(self, buildbucket_ids=None, build_ids=None):

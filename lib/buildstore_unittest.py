@@ -95,3 +95,15 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     bs.UpdateMetadata(constants.MOCK_BUILD_ID, fake_metadata)
     bs.cidb_conn.UpdateMetadata.assert_called_once_with(
         constants.MOCK_BUILD_ID, fake_metadata)
+
+  def testExtendDeadline(self):
+    """Tests the redirect for ExtendDeadline function."""
+    self.PatchObject(BuildStore, 'InitializeClients',
+                     return_value=True)
+    bs = BuildStore()
+    bs.cidb_conn = mock.MagicMock()
+    mock_timeout = mock.Mock()
+    self.PatchObject(bs.cidb_conn, 'ExtendDeadline')
+    bs.ExtendDeadline(constants.MOCK_BUILD_ID, mock_timeout)
+    bs.cidb_conn.ExtendDeadline.assert_called_once_with(
+        constants.MOCK_BUILD_ID, mock_timeout)
