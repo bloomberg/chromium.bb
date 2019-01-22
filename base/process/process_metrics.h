@@ -189,7 +189,7 @@ class BASE_EXPORT ProcessMetrics {
   // process since process start.
   uint64_t GetCumulativeDiskUsageInBytes();
 
-#if defined(OS_LINUX) || defined(OS_AIX) || defined(OS_ANDROID)
+#if defined(OS_POSIX)
   // Returns the number of file descriptors currently open by the process, or
   // -1 on error.
   int GetOpenFdCount() const;
@@ -197,7 +197,7 @@ class BASE_EXPORT ProcessMetrics {
   // Returns the soft limit of file descriptors that can be opened by the
   // process, or -1 on error.
   int GetOpenFdSoftLimit() const;
-#endif  // defined(OS_LINUX) || defined(OS_AIX) || defined(OS_ANDROID)
+#endif  // defined(OS_POSIX)
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   // Bytes of swap as reported by /proc/[pid]/status.

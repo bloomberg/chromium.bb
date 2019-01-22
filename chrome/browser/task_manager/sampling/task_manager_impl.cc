@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
 #include "base/task/post_task.h"
+#include "build/build_config.h"
 #include "chrome/browser/task_manager/providers/browser_process_task_provider.h"
 #include "chrome/browser/task_manager/providers/child_process_task_provider.h"
 #include "chrome/browser/task_manager/providers/fallback_task_provider.h"
@@ -206,11 +207,11 @@ void TaskManagerImpl::GetUSERHandles(TaskId task_id,
 }
 
 int TaskManagerImpl::GetOpenFdCount(TaskId task_id) const {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
   return GetTaskGroupByTaskId(task_id)->open_fd_count();
 #else
   return -1;
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
 }
 
 bool TaskManagerImpl::IsTaskOnBackgroundedProcess(TaskId task_id) const {

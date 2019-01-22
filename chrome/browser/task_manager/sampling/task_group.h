@@ -106,9 +106,9 @@ class TaskGroup {
   int nacl_debug_stub_port() const { return nacl_debug_stub_port_; }
 #endif  // BUILDFLAG(ENABLE_NACL)
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
   int open_fd_count() const { return open_fd_count_; }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
 
   int idle_wakeups_per_second() const { return idle_wakeups_per_second_; }
  private:
@@ -121,9 +121,9 @@ class TaskGroup {
   void RefreshNaClDebugStubPort(int child_process_unique_id);
   void OnRefreshNaClDebugStubPortDone(int port);
 #endif
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
   void OnOpenFdCountRefreshDone(int open_fd_count);
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
 
   void OnCpuRefreshDone(double cpu_usage);
   void OnSwappedMemRefreshDone(int64_t swapped_mem_bytes);
@@ -191,10 +191,10 @@ class TaskGroup {
 #if BUILDFLAG(ENABLE_NACL)
   int nacl_debug_stub_port_;
 #endif  // BUILDFLAG(ENABLE_NACL)
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
   // The number of file descriptors currently open by the process.
   int open_fd_count_;
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
   int idle_wakeups_per_second_;
   bool gpu_memory_has_duplicates_;
   bool is_backgrounded_;
