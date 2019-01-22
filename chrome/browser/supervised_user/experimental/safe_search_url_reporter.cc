@@ -19,9 +19,9 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/identity/public/cpp/access_token_fetcher.h"
 #include "services/identity/public/cpp/access_token_info.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -40,7 +40,8 @@ struct SafeSearchURLReporter::Report {
 
   GURL url;
   SuccessCallback callback;
-  std::unique_ptr<identity::AccessTokenFetcher> access_token_fetcher;
+  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+      access_token_fetcher;
 
   std::string access_token;
   bool access_token_expired;
@@ -54,10 +55,8 @@ SafeSearchURLReporter::Report::~Report() {}
 
 SafeSearchURLReporter::SafeSearchURLReporter(
     identity::IdentityManager* identity_manager,
-    const std::string& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : identity_manager_(identity_manager),
-      account_id_(account_id),
       url_loader_factory_(std::move(url_loader_factory)) {}
 
 SafeSearchURLReporter::~SafeSearchURLReporter() {}
@@ -66,10 +65,10 @@ SafeSearchURLReporter::~SafeSearchURLReporter() {}
 std::unique_ptr<SafeSearchURLReporter> SafeSearchURLReporter::CreateWithProfile(
     Profile* profile) {
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
-  return base::WrapUnique(new SafeSearchURLReporter(
-      identity_manager, identity_manager->GetPrimaryAccountId(),
+  return std::make_unique<SafeSearchURLReporter>(
+      identity_manager,
       content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetURLLoaderFactoryForBrowserProcess()));
+          ->GetURLLoaderFactoryForBrowserProcess());
 }
 
 void SafeSearchURLReporter::ReportUrl(const GURL& url,
@@ -85,11 +84,11 @@ void SafeSearchURLReporter::StartFetching(Report* report) {
   // will not be invoke if this object is deleted. Likewise, |report|
   // only comes from |reports_|, which are owned by this object too.
   report->access_token_fetcher =
-      identity_manager_->CreateAccessTokenFetcherForAccount(
-          account_id_, "safe_search_url_reporter", scopes,
+      std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+          "safe_search_url_reporter", identity_manager_, scopes,
           base::BindOnce(&SafeSearchURLReporter::OnAccessTokenFetchComplete,
                          base::Unretained(this), report),
-          identity::AccessTokenFetcher::Mode::kImmediate);
+          identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
 }
 
 void SafeSearchURLReporter::OnAccessTokenFetchComplete(
@@ -184,8 +183,8 @@ void SafeSearchURLReporter::OnSimpleLoaderComplete(
     (*it)->access_token_expired = true;
     identity::ScopeSet scopes;
     scopes.insert(kSafeSearchReportApiScope);
-    identity_manager_->RemoveAccessTokenFromCache(account_id_, scopes,
-                                                  report->access_token);
+    identity_manager_->RemoveAccessTokenFromCache(
+        identity_manager_->GetPrimaryAccountId(), scopes, report->access_token);
     StartFetching(report);
     return;
   }
