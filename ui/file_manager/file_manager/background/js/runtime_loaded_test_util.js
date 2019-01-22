@@ -591,6 +591,11 @@ test.util.async.getFilesUnderVolume = function(volumeType, names, callback) {
 
   var retrievePromise = displayRootPromise.then(function(displayRoot) {
     var filesPromise = names.map(function(name) {
+      // TODO(crbug.com/880130): Remove this conditional.
+      if (volumeType === VolumeManagerCommon.VolumeType.DOWNLOADS &&
+          util.isMyFilesVolumeEnabled()) {
+        name = 'Downloads/' + name;
+      }
       return new Promise(displayRoot.getFile.bind(displayRoot, name, {}));
     });
     return Promise.all(filesPromise)
