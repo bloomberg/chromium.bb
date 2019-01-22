@@ -106,6 +106,11 @@ const char kArcDataCleanupOnStart[] = "arc-data-cleanup-on-start";
 // in autotests to resolve racy conditions.
 const char kArcDisableAppSync[] = "arc-disable-app-sync";
 
+// Flag that disables ARC locale sync with Android container. Used in autotest
+// to prevent conditions when certain apps, including Play Store may get
+// restarted. Restarting Play Store may case random test failures.
+const char kArcDisableLocaleSync[] = "arc-disable-locale-sync";
+
 // Flag that disables ARC Play Auto Install flow that installs set of predefined
 // apps silently. Used in autotests to resolve racy conditions.
 const char kArcDisablePlayAutoInstall[] = "arc-disable-play-auto-install";

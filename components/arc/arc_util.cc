@@ -206,6 +206,11 @@ bool IsArcAppSyncFlowDisabled() {
       chromeos::switches::kArcDisableAppSync);
 }
 
+bool IsArcLocaleSyncDisabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kArcDisableLocaleSync);
+}
+
 bool IsArcPlayAutoInstallDisabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kArcDisablePlayAutoInstall);

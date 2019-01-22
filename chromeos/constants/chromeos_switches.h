@@ -34,6 +34,7 @@ CHROMEOS_EXPORT extern const char kArcAvailability[];
 CHROMEOS_EXPORT extern const char kArcAvailable[];
 CHROMEOS_EXPORT extern const char kArcDataCleanupOnStart[];
 CHROMEOS_EXPORT extern const char kArcDisableAppSync[];
+CHROMEOS_EXPORT extern const char kArcDisableLocaleSync[];
 CHROMEOS_EXPORT extern const char kArcDisablePlayAutoInstall[];
 CHROMEOS_EXPORT extern const char kArcForceCacheAppIcons[];
 CHROMEOS_EXPORT extern const char kArcForceShowOptInUi[];
