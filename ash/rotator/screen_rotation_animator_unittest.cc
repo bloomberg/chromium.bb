@@ -231,10 +231,6 @@ void ScreenRotationAnimatorSmoothAnimationTest::QuitWaitForCopyCallback() {
 
 void ScreenRotationAnimatorSmoothAnimationTest::SetUp() {
   AshTestBase::SetUp();
-  // Resets the commandline will clear all the switches, including
-  // "ash-disable-smooth-screen-rotation", so that we can test the smooth screen
-  // rotation animation. The |animator| is recreated and checking this swtich.
-  ash_test_helper()->reset_commandline();
 
   display_ = display::Screen::GetScreen()->GetPrimaryDisplay();
   run_loop_ = std::make_unique<base::RunLoop>();
