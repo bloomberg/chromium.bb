@@ -753,12 +753,12 @@ void BackgroundImageGeometry::CalculateFillTileSize(
           // an intrinsic ratio or size.
           tile_size_.SetWidth(positioning_area_size.Width());
         } else if (image_intrinsic_size.Height()) {
-          LayoutUnit adjusted_width = image_intrinsic_size.Width() *
-                                      tile_size_.Height() /
-                                      image_intrinsic_size.Height();
+          float adjusted_width = image_intrinsic_size.Width().ToFloat() /
+                                 image_intrinsic_size.Height().ToFloat() *
+                                 tile_size_.Height().ToFloat();
           if (image_intrinsic_size.Width() >= 1 && adjusted_width < 1)
-            adjusted_width = LayoutUnit(1);
-          tile_size_.SetWidth(adjusted_width);
+            adjusted_width = 1;
+          tile_size_.SetWidth(LayoutUnit(adjusted_width));
         }
       } else if (!layer_width.IsAuto() && layer_height.IsAuto()) {
         if (image->ImageHasRelativeSize()) {
@@ -766,12 +766,12 @@ void BackgroundImageGeometry::CalculateFillTileSize(
           // an intrinsic ratio or size.
           tile_size_.SetHeight(positioning_area_size.Height());
         } else if (image_intrinsic_size.Width()) {
-          LayoutUnit adjusted_height = image_intrinsic_size.Height() *
-                                       tile_size_.Width() /
-                                       image_intrinsic_size.Width();
+          float adjusted_height = image_intrinsic_size.Height().ToFloat() /
+                                  image_intrinsic_size.Width().ToFloat() *
+                                  tile_size_.Width().ToFloat();
           if (image_intrinsic_size.Height() >= 1 && adjusted_height < 1)
-            adjusted_height = LayoutUnit(1);
-          tile_size_.SetHeight(adjusted_height);
+            adjusted_height = 1;
+          tile_size_.SetHeight(LayoutUnit(adjusted_height));
         }
       } else if (layer_width.IsAuto() && layer_height.IsAuto()) {
         // If both width and height are auto, use the image's intrinsic size.
