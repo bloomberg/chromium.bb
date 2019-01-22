@@ -82,10 +82,9 @@ class ScriptExecutor : public ActionDelegate {
   struct Result {
     bool success = false;
     AtEnd at_end = AtEnd::CONTINUE;
-    std::vector<Selector> touchable_elements;
+    std::unique_ptr<ElementAreaProto> touchable_element_area;
 
     Result();
-    Result(const Result& other);
     ~Result();
   };
 
@@ -130,8 +129,8 @@ class ScriptExecutor : public ActionDelegate {
                         base::OnceCallback<void(bool)> callback) override;
   void FocusElement(const Selector& selector,
                     base::OnceCallback<void(bool)> callback) override;
-  void SetTouchableElements(
-      const std::vector<Selector>& element_selectors) override;
+  void SetTouchableElementArea(
+      const ElementAreaProto& touchable_element_area) override;
   void SetFieldValue(const Selector& selector,
                      const std::string& value,
                      bool simulate_key_presses,
@@ -292,7 +291,7 @@ class ScriptExecutor : public ActionDelegate {
   bool should_clean_contextual_ui_on_finish_;
   ActionProto::ActionInfoCase previous_action_type_;
   Selector last_focused_element_selector_;
-  std::vector<Selector> touchable_elements_;
+  std::unique_ptr<ElementAreaProto> touchable_element_area_;
   std::map<std::string, ScriptStatusProto>* scripts_state_;
   std::unique_ptr<BatchElementChecker> batch_element_checker_;
 

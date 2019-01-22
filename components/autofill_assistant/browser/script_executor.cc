@@ -58,7 +58,6 @@ ScriptExecutor::ScriptExecutor(
 ScriptExecutor::~ScriptExecutor() {}
 
 ScriptExecutor::Result::Result() = default;
-ScriptExecutor::Result::Result(const Result& other) = default;
 ScriptExecutor::Result::~Result() = default;
 
 void ScriptExecutor::Run(RunScriptCallback callback) {
@@ -128,18 +127,18 @@ void ScriptExecutor::GetPaymentInformation(
 }
 
 void ScriptExecutor::SetChips(std::unique_ptr<std::vector<Chip>> chips) {
-  if (!touchable_elements_.empty()) {
+  if (touchable_element_area_) {
     // SetChips reproduces the end-of-script appearance and behavior during
     // script execution. This includes allowing access to touchable elements,
     // set through a previous call to the focus action with touchable_elements
     // set.
-    delegate_->SetTouchableElementArea(touchable_elements_);
+    delegate_->SetTouchableElementArea(*touchable_element_area_);
     delegate_->GetUiController()->HideOverlay();
     AllowShowingSoftKeyboard(true);
 
     // The touchable_elements_ currently set in the script is reset, so that it
     // won't affect the real end of the script.
-    touchable_elements_.clear();
+    touchable_element_area_.reset();
 
     // The touchable element and overlays are cleared again in
     // ScriptExecutor::OnChosen or ScriptExecutor::ClearChips
@@ -206,9 +205,10 @@ void ScriptExecutor::FocusElement(const Selector& selector,
   delegate_->GetWebController()->FocusElement(selector, std::move(callback));
 }
 
-void ScriptExecutor::SetTouchableElements(
-    const std::vector<Selector>& element_selector) {
-  touchable_elements_ = element_selector;
+void ScriptExecutor::SetTouchableElementArea(
+    const ElementAreaProto& touchable_element_area) {
+  touchable_element_area_ =
+      std::make_unique<ElementAreaProto>(touchable_element_area);
 }
 
 void ScriptExecutor::ShowProgressBar(int progress, const std::string& message) {
@@ -392,7 +392,7 @@ void ScriptExecutor::RunCallback(bool success) {
   Result result;
   result.success = success;
   result.at_end = at_end_;
-  result.touchable_elements = touchable_elements_;
+  result.touchable_element_area = std::move(touchable_element_area_);
 
   RunCallbackWithResult(result);
 }

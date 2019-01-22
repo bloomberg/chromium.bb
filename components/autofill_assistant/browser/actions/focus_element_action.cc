@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
+#include "components/autofill_assistant/browser/service.pb.h"
 
 namespace autofill_assistant {
 
@@ -54,13 +55,8 @@ void FocusElementAction::OnWaitForElement(ActionDelegate* delegate,
 void FocusElementAction::OnFocusElement(ActionDelegate* delegate,
                                         ProcessActionCallback callback,
                                         bool status) {
-  std::vector<Selector> touchable_elements;
-  for (const auto& ref : proto().focus_element().touchable_element_area()) {
-    touchable_elements.emplace_back(Selector(ref));
-  }
-  if (!touchable_elements.empty())
-    delegate->SetTouchableElements(touchable_elements);
-
+  delegate->SetTouchableElementArea(
+      proto().focus_element().touchable_element_area());
   UpdateProcessedAction(status ? ACTION_APPLIED : OTHER_ACTION_STATUS);
   std::move(callback).Run(std::move(processed_action_proto_));
 }

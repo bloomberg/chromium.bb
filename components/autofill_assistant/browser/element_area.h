@@ -25,14 +25,14 @@ class ElementArea {
   explicit ElementArea(WebController* web_controller);
   ~ElementArea();
 
-  // Updates the set of elements to check and keep updating them as long as
-  // there are elements to check.
+  // Clears the area. Stops scheduled updates.
+  void Clear();
+
+  // Updates the area and keep checking for the element position and reporting
+  // it until the area is cleared.
   //
   // The area is updated asynchronously, so Contains will not work right away.
-  void SetElements(const std::vector<Selector>& elements);
-
-  // Clears the set of elements to check.
-  void ClearElements() { SetElements({}); }
+  void SetFromProto(const ElementAreaProto& proto);
 
   // Forces an out-of-schedule update of the positions right away.
   //
@@ -43,18 +43,12 @@ class ElementArea {
   // Does nothing if the area is empty.
   void UpdatePositions();
 
-  // Checks whether the given position is in the element area.
-  //
-  // Coordinates are values between 0 and 1 relative to the size of the visible
-  // viewport.
-  bool Contains(float x, float y) const;
-
   // Returns true if there are no elements to check or if the elements don't
   // exist.
   bool IsEmpty() const;
 
   // Returns true if there are elements to check.
-  bool HasElements() const { return !element_positions_.empty(); }
+  bool HasElements() const { return !rectangles_.empty(); }
 
   // Defines a callback that'll be run every time the set of element coordinates
   // changes.
@@ -72,22 +66,45 @@ class ElementArea {
   // an element. Coordinates are values between 0 and 1, relative to the size of
   // the visible viewport.
   struct ElementPosition {
+    // Selector. Might be empty.
     Selector selector;
+
+    // Rectangle that corresponds to the selector. Might be empty.
     RectF rect;
+
+    // If true, we're waiting for an updated rectangle for this
+    // position.
+    bool pending_update = false;
 
     ElementPosition();
     ElementPosition(const ElementPosition& orig);
     ~ElementPosition();
   };
 
-  void KeepUpdatingPositions();
+  // A rectangular area, defined by its elements.
+  struct Rectangle {
+    std::vector<ElementPosition> positions;
+    bool full_width = false;
+
+    Rectangle();
+    Rectangle(const Rectangle& orig);
+    ~Rectangle();
+
+    // A rectangle is pending if at least one ElementPosition is pending.
+    bool IsPending() const;
+
+    // Fills the given rectangle from the current state, if possible.
+    bool FillRect(RectF* rect) const;
+  };
+
+  void KeepUpdatingElementPositions();
   void OnGetElementPosition(const Selector& selector,
                             bool found,
                             const RectF& rect);
   void ReportUpdate();
 
   WebController* const web_controller_;
-  std::vector<ElementPosition> element_positions_;
+  std::vector<Rectangle> rectangles_;
 
   // If true, regular updates are currently scheduled.
   bool scheduled_update_;

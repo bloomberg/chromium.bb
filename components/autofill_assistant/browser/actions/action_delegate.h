@@ -115,12 +115,12 @@ class ActionDelegate {
   virtual void FocusElement(const Selector& selector,
                             base::OnceCallback<void(bool)> callback) = 0;
 
-  // Sets selector of elements that can be manipulated:
+  // Sets selector of areas that can be manipulated:
   // - after the end of the script and before the beginning of the next script.
   // - during the next call to SetChips()
   // whichever comes first.
-  virtual void SetTouchableElements(
-      const std::vector<Selector>& element_selectors) = 0;
+  virtual void SetTouchableElementArea(
+      const ElementAreaProto& touchable_element_area) = 0;
 
   // Highlight the element given by |selector|.
   virtual void HighlightElement(const Selector& selector,

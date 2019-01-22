@@ -84,8 +84,8 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD2(FocusElement,
                void(const Selector& selector,
                     base::OnceCallback<void(bool)> callback));
-  MOCK_METHOD1(SetTouchableElements,
-               void(const std::vector<Selector>& element_selectors));
+  MOCK_METHOD1(SetTouchableElementArea,
+               void(const ElementAreaProto& touchable_element_area));
 
   MOCK_METHOD2(HighlightElement,
                void(const Selector& selector,
