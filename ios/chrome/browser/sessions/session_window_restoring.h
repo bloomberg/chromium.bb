@@ -15,8 +15,11 @@
 // Restores the |window| (for example, after a crash). If there is only one tab,
 // showing the NTP, then this tab should be clobbered, otherwise, the tabs from
 // the restored sessions should be added at the end of the current list of tabs.
-// Returns YES if the single NTP tab is closed.
-- (BOOL)restoreSessionWindow:(SessionWindowIOS*)window;
+// If |initialRestore| is YES, this method does not log metrics for operations
+// conducted during the restore and must be called before any observers are
+// registered on the TabModel.  Returns YES if the single NTP tab is closed.
+- (BOOL)restoreSessionWindow:(SessionWindowIOS*)window
+           forInitialRestore:(BOOL)initialRestore;
 
 // Persists the current list of tabs to disk, either immediately or deferred
 // based on the value of |immediately|.

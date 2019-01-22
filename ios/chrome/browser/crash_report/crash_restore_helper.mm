@@ -274,7 +274,8 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
 
   DCHECK_EQ(session.sessionWindows.count, 1u);
   breakpad_helper::WillStartCrashRestoration();
-  return [_restorer restoreSessionWindow:session.sessionWindows[0]];
+  return [_restorer restoreSessionWindow:session.sessionWindows[0]
+                       forInitialRestore:NO];
 }
 
 - (void)infoBarRemoved:(infobars::InfoBar*)infobar {

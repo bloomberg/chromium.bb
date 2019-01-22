@@ -399,9 +399,9 @@
 
   // Create tab model from saved session (nil is ok).
   TabModel* tabModel =
-      [[TabModel alloc] initWithSessionWindow:sessionWindow
-                               sessionService:[SessionServiceIOS sharedService]
-                                 browserState:browserState];
+      [[TabModel alloc] initWithSessionService:[SessionServiceIOS sharedService]
+                                  browserState:browserState];
+  [tabModel restoreSessionWindow:sessionWindow forInitialRestore:YES];
   // Add observers.
   if (_tabModelObserver) {
     [tabModel addObserver:_tabModelObserver];
