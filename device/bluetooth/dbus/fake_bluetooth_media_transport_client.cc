@@ -12,6 +12,7 @@
 #include <sstream>
 
 #include "base/bind.h"
+#include "base/file_descriptor_posix.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "device/bluetooth/dbus/bluetooth_media_client.h"
@@ -30,8 +31,6 @@ const char kNotImplemented[] = "org.bluez.NotImplemented";
 const char kNotAuthorized[] = "org.bluez.NotAuthorized";
 const char kFailed[] = "org.bluez.Failed";
 const char kNotAvailable[] = "org.bluez.NotAvailable";
-
-const int kInvalidFd = -1;
 
 ObjectPath GenerateTransportPath() {
   static unsigned int sequence_number = 0;
@@ -318,7 +317,8 @@ void FakeBluetoothMediaTransportClient::AcquireInternal(
     error_callback.Run(kFailed, "");
     return;
   }
-  DCHECK((fds[0] > kInvalidFd) && (fds[1] > kInvalidFd));
+  DCHECK(fds[0] > base::kInvalidFd);
+  DCHECK(fds[1] > base::kInvalidFd);
   transport->input_fd.reset(new base::File(fds[0]));
 
   base::ScopedFD out_fd(fds[1]);

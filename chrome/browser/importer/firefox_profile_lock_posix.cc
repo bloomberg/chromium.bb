@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include "base/file_descriptor_posix.h"
 #include "base/files/file_util.h"
 
 // This class is based on Firefox code in:
@@ -57,7 +58,7 @@
 * ***** END LICENSE BLOCK ***** */
 
 void FirefoxProfileLock::Init() {
-  lock_fd_ = -1;
+  lock_fd_ = base::kInvalidFd;
 }
 
 void FirefoxProfileLock::Lock() {
@@ -77,12 +78,12 @@ void FirefoxProfileLock::Unlock() {
   if (!HasAcquired())
     return;
   close(lock_fd_);
-  lock_fd_ = -1;
+  lock_fd_ = base::kInvalidFd;
   base::DeleteFile(old_lock_file_, false);
 }
 
 bool FirefoxProfileLock::HasAcquired() {
-  return (lock_fd_ >= 0);
+  return lock_fd_ > base::kInvalidFd;
 }
 
 // This function tries to lock Firefox profile using fcntl(). The return
@@ -95,7 +96,7 @@ bool FirefoxProfileLock::HasAcquired() {
 bool FirefoxProfileLock::LockWithFcntl() {
   lock_fd_ = open(lock_file_.value().c_str(), O_WRONLY | O_CREAT | O_TRUNC,
                   0666);
-  if (lock_fd_ == -1)
+  if (lock_fd_ == base::kInvalidFd)
     return true;
 
   struct flock lock;
@@ -108,11 +109,11 @@ bool FirefoxProfileLock::LockWithFcntl() {
   struct flock testlock = lock;
   if (fcntl(lock_fd_, F_GETLK, &testlock) == -1) {
     close(lock_fd_);
-    lock_fd_ = -1;
+    lock_fd_ = base::kInvalidFd;
     return true;
   } else if (fcntl(lock_fd_, F_SETLK, &lock) == -1) {
     close(lock_fd_);
-    lock_fd_ = -1;
+    lock_fd_ = base::kInvalidFd;
     if (errno == EAGAIN || errno == EACCES)
       return false;
     else
