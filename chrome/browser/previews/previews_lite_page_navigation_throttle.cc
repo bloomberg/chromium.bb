@@ -274,6 +274,12 @@ bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
     ineligible_reasons.push_back(IneligibleReason::kServerUnavailable);
 
   if (g_browser_process->network_quality_tracker()
+          ->GetEffectiveConnectionType() ==
+      net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
+    ineligible_reasons.push_back(IneligibleReason::kECTUnknown);
+  }
+
+  if (g_browser_process->network_quality_tracker()
           ->GetEffectiveConnectionType() >
       previews::params::GetECTThresholdForPreview(
           previews::PreviewsType::LITE_PAGE_REDIRECT)) {

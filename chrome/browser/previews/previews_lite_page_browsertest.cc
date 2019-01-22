@@ -795,6 +795,29 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   }
 
   {
+    // Verify a preview is not shown for an unknown ECT.
+    base::HistogramTester histogram_tester;
+    g_browser_process->network_quality_tracker()
+        ->ReportEffectiveConnectionTypeForTesting(
+            net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
+
+    ui_test_utils::NavigateToURL(browser(), HttpLitePageURL(kSuccess));
+
+    VerifyPreviewNotLoaded();
+    ClearDeciderState();
+    histogram_tester.ExpectBucketCount(
+        "Previews.ServerLitePage.IneligibleReasons",
+        PreviewsLitePageNavigationThrottle::IneligibleReason::kECTUnknown, 1);
+    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
+                                       false, 1);
+
+    // Reset ECT for future tests.
+    g_browser_process->network_quality_tracker()
+        ->ReportEffectiveConnectionTypeForTesting(
+            net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  }
+
+  {
     // Verify a preview is not shown if cookies are blocked.
     base::HistogramTester histogram_tester;
     int before_subresources_requested = subresources_requested();
