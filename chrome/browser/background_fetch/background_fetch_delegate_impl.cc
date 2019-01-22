@@ -11,22 +11,28 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/download/public/background_service/download_params.h"
 #include "components/download/public/background_service/download_service.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_item.h"
 #include "content/public/browser/background_fetch_description.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
@@ -389,6 +395,53 @@ void BackgroundFetchDelegateImpl::Abort(const std::string& job_unique_id) {
   UpdateOfflineItemAndUpdateObservers(&job_details);
 }
 
+void BackgroundFetchDelegateImpl::
+    RecordBackgroundFetchDeletingRegistrationUkmEvent(
+        const url::Origin& origin,
+        bool user_initiated_abort) {
+  // Log the UKM event anyway, if the origin can be found in the user's
+  // history database.
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(profile_,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
+  DCHECK(history_service);
+  const GURL origin_url = origin.GetURL();
+  history_service->GetVisibleVisitCountToHost(
+      origin_url,
+      base::BindRepeating(&BackgroundFetchDelegateImpl::DidQueryUrl,
+                          weak_ptr_factory_.GetWeakPtr(), origin_url,
+                          user_initiated_abort),
+      &task_tracker_);
+}
+
+void BackgroundFetchDelegateImpl::DidQueryUrl(const GURL& origin_url,
+                                              bool user_initiated_abort,
+                                              bool success,
+                                              int num_visits,
+                                              base::Time first_visit) {
+  // This notifies the tests that the history query has completed.
+  if (history_query_complete_closure_for_testing_) {
+    base::PostTask(FROM_HERE,
+                   std::move(history_query_complete_closure_for_testing_));
+  }
+
+  if (!success || !num_visits)
+    return;
+
+  ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
+  ukm::UkmRecorder* recorder = ukm::UkmRecorder::Get();
+  DCHECK(recorder);
+
+  // This is OK from a privacy perspective since we have verified that the
+  // origin the background fetch is associated with, is in the history service
+  // database.
+  recorder->UpdateSourceURL(source_id, origin_url);
+
+  ukm::builders::BackgroundFetchDeletingRegistration(source_id)
+      .SetUserInitiatedAbort(user_initiated_abort)
+      .Record(ukm::UkmRecorder::Get());
+}
+
 void BackgroundFetchDelegateImpl::MarkJobComplete(
     const std::string& job_unique_id) {
   auto job_details_iter = job_details_map_.find(job_unique_id);
@@ -396,6 +449,9 @@ void BackgroundFetchDelegateImpl::MarkJobComplete(
 
   JobDetails& job_details = job_details_iter->second;
   job_details.job_state = JobDetails::State::kJobComplete;
+
+  RecordBackgroundFetchDeletingRegistrationUkmEvent(
+      job_details.fetch_description->origin, job_details.cancelled_from_ui);
 
   // Clear the |job_details| internals that are no longer needed.
   job_details.current_fetch_guids.clear();
@@ -652,6 +708,11 @@ void BackgroundFetchDelegateImpl::CancelDownload(
     const offline_items_collection::ContentId& id) {
   // Save a copy before Abort() deletes the reference.
   const std::string unique_id = id.id;
+
+  auto job_details_iter = job_details_map_.find(unique_id);
+  DCHECK(job_details_iter != job_details_map_.end());
+  job_details_iter->second.cancelled_from_ui = true;
+
   Abort(unique_id);
 
   if (auto client = GetClient(unique_id)) {
