@@ -53,7 +53,7 @@ std::string KeyDirectiveToPrefString(
 }  // namespace
 
 // static
-const base::flat_set<CryptAuthKeyBundle::Name>& CryptAuthKeyBundle::NameList() {
+const base::flat_set<CryptAuthKeyBundle::Name>& CryptAuthKeyBundle::AllNames() {
   static const base::NoDestructor<base::flat_set<CryptAuthKeyBundle::Name>>
       name_list({CryptAuthKeyBundle::Name::kUserKeyPair});
   return *name_list;
@@ -166,6 +166,7 @@ void CryptAuthKeyBundle::SetActiveKey(const std::string& handle) {
 }
 
 void CryptAuthKeyBundle::DeleteKey(const std::string& handle) {
+  DCHECK(base::ContainsKey(handle_to_key_map_, handle));
   handle_to_key_map_.erase(handle);
 }
 

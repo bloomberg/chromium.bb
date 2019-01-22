@@ -32,7 +32,7 @@ class CryptAuthKeyBundle {
   // Names which uniquely define a CryptAuthKeyBundle.
   // TODO(nohle): Add name for DeviceSync keys.
   enum class Name { kUserKeyPair };
-  static const base::flat_set<CryptAuthKeyBundle::Name>& NameList();
+  static const base::flat_set<CryptAuthKeyBundle::Name>& AllNames();
   static std::string KeyBundleNameEnumToString(CryptAuthKeyBundle::Name name);
   static base::Optional<CryptAuthKeyBundle::Name> KeyBundleNameStringToEnum(
       const std::string& name);
@@ -75,6 +75,7 @@ class CryptAuthKeyBundle {
   // Sets all key statuses to kInactive.
   void DeactivateKeys();
 
+  // Remove the key corresponding to |handle| from the bundle.
   void DeleteKey(const std::string& handle);
 
   base::Value AsDictionary() const;

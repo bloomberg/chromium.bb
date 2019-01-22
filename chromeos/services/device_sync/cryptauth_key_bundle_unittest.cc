@@ -210,8 +210,6 @@ TEST(CryptAuthKeyBundleTest, DeleteKey) {
   bundle.AddKey(symmetric_key);
 
   EXPECT_TRUE(bundle.handle_to_key_map().size() == 1);
-  bundle.DeleteKey("handle-does-not-exist");
-  EXPECT_TRUE(bundle.handle_to_key_map().size() == 1);
   bundle.DeleteKey(kFakeSymmetricKeyHandle);
   EXPECT_TRUE(bundle.handle_to_key_map().empty());
 }
