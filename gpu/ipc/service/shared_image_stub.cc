@@ -64,13 +64,6 @@ void SharedImageStub::OnCreateSharedImage(
     const GpuChannelMsg_CreateSharedImage_Params& params) {
   TRACE_EVENT2("gpu", "SharedImageStub::OnCreateSharedImage", "width",
                params.size.width(), "height", params.size.height());
-  if (!params.mailbox.IsSharedImage()) {
-    LOG(ERROR) << "SharedImageStub: Trying to create a SharedImage with a "
-                  "non-SharedImage mailbox.";
-    OnError();
-    return;
-  }
-
   if (!MakeContextCurrentAndCreateFactory()) {
     OnError();
     return;
@@ -95,13 +88,6 @@ void SharedImageStub::OnCreateSharedImageWithData(
     const GpuChannelMsg_CreateSharedImageWithData_Params& params) {
   TRACE_EVENT2("gpu", "SharedImageStub::OnCreateSharedImageWithData", "width",
                params.size.width(), "height", params.size.height());
-  if (!params.mailbox.IsSharedImage()) {
-    LOG(ERROR) << "SharedImageStub: Trying to create a SharedImage with a "
-                  "non-SharedImage mailbox.";
-    OnError();
-    return;
-  }
-
   if (!MakeContextCurrentAndCreateFactory()) {
     OnError();
     return;
@@ -153,13 +139,6 @@ void SharedImageStub::OnCreateGMBSharedImage(
     GpuChannelMsg_CreateGMBSharedImage_Params params) {
   TRACE_EVENT2("gpu", "SharedImageStub::OnCreateSharedImage", "width",
                params.size.width(), "height", params.size.height());
-  if (!params.mailbox.IsSharedImage()) {
-    LOG(ERROR) << "SharedImageStub: Trying to create a SharedImage with a "
-                  "non-SharedImage mailbox.";
-    OnError();
-    return;
-  }
-
   if (!MakeContextCurrentAndCreateFactory()) {
     OnError();
     return;
@@ -187,13 +166,6 @@ void SharedImageStub::OnCreateGMBSharedImage(
 void SharedImageStub::OnUpdateSharedImage(const Mailbox& mailbox,
                                           uint32_t release_id) {
   TRACE_EVENT0("gpu", "SharedImageStub::OnDestroySharedImage");
-  if (!mailbox.IsSharedImage()) {
-    LOG(ERROR) << "SharedImageStub: Trying to access a SharedImage with a "
-                  "non-SharedImage mailbox.";
-    OnError();
-    return;
-  }
-
   if (!MakeContextCurrentAndCreateFactory()) {
     OnError();
     return;
@@ -215,13 +187,6 @@ void SharedImageStub::OnUpdateSharedImage(const Mailbox& mailbox,
 
 void SharedImageStub::OnDestroySharedImage(const Mailbox& mailbox) {
   TRACE_EVENT0("gpu", "SharedImageStub::OnDestroySharedImage");
-  if (!mailbox.IsSharedImage()) {
-    LOG(ERROR) << "SharedImageStub: Trying to destroy a SharedImage with a "
-                  "non-SharedImage mailbox.";
-    OnError();
-    return;
-  }
-
   if (!MakeContextCurrentAndCreateFactory()) {
     OnError();
     return;
