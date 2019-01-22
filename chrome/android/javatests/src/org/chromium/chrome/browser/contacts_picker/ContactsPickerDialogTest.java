@@ -38,7 +38,6 @@ import org.chromium.ui.ContactsPickerListener;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -101,9 +100,10 @@ public class ContactsPickerDialogTest
     // ContactsPickerDialog.ContactsPickerListener:
 
     @Override
-    public void onContactsPickerUserAction(@ContactsPickerAction int action, String contacts) {
+    public void onContactsPickerUserAction(@ContactsPickerAction int action, String contactsJson,
+            List<ContactsPickerListener.Contact> contacts) {
         mLastActionRecorded = action;
-        mLastSelectedContacts = contacts;
+        mLastSelectedContacts = contactsJson;
         onActionCallback.notifyCalled();
     }
 
@@ -119,15 +119,14 @@ public class ContactsPickerDialogTest
         return (RecyclerView) mDialog.findViewById(R.id.recycler_view);
     }
 
-    private ContactsPickerDialog createDialog(
-            final boolean multiselect, final List<String> mimeTypes) throws Exception {
+    private ContactsPickerDialog createDialog(final boolean multiselect) throws Exception {
         final ContactsPickerDialog dialog =
                 ThreadUtils.runOnUiThreadBlocking(new Callable<ContactsPickerDialog>() {
                     @Override
                     public ContactsPickerDialog call() {
                         final ContactsPickerDialog dialog =
                                 new ContactsPickerDialog(mActivityTestRule.getActivity(),
-                                        ContactsPickerDialogTest.this, multiselect, mimeTypes);
+                                        ContactsPickerDialogTest.this, multiselect);
                         dialog.show();
                         return dialog;
                     }
@@ -239,7 +238,7 @@ public class ContactsPickerDialogTest
     @Test
     @LargeTest
     public void testNoSelection() throws Throwable {
-        createDialog(/* multiselect = */ false, Arrays.asList("image/*"));
+        createDialog(/* multiselect = */ false);
         Assert.assertTrue(mDialog.isShowing());
 
         int expectedSelectionCount = 1;
@@ -255,7 +254,7 @@ public class ContactsPickerDialogTest
     @Test
     @LargeTest
     public void testSingleSelectionContacts() throws Throwable {
-        createDialog(/* multiselect = */ false, Arrays.asList("image/*"));
+        createDialog(/* multiselect = */ false);
         Assert.assertTrue(mDialog.isShowing());
 
         // Expected selection count is 1 because clicking on a new view deselects other.
@@ -279,7 +278,7 @@ public class ContactsPickerDialogTest
     @Test
     @LargeTest
     public void testMultiSelectionContacts() throws Throwable {
-        createDialog(/* multiselect = */ true, Arrays.asList("image/*"));
+        createDialog(/* multiselect = */ true);
         Assert.assertTrue(mDialog.isShowing());
 
         // Multi-selection is enabled, so each click is counted.
@@ -306,7 +305,7 @@ public class ContactsPickerDialogTest
     @Test
     @LargeTest
     public void testSelectAll() throws Throwable {
-        createDialog(/* multiselect = */ true, Arrays.asList("image/*"));
+        createDialog(/* multiselect = */ true);
         Assert.assertTrue(mDialog.isShowing());
 
         toggleSelectAll(6, ContactsPickerAction.SELECT_ALL);
@@ -333,7 +332,7 @@ public class ContactsPickerDialogTest
     @Test
     @LargeTest
     public void testNoSearchStringNoCrash() throws Throwable {
-        createDialog(/* multiselect = */ true, Arrays.asList("image/*"));
+        createDialog(/* multiselect = */ true);
         Assert.assertTrue(mDialog.isShowing());
 
         clickSearchButton();

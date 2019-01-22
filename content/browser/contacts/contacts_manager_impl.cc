@@ -9,25 +9,51 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+
+#if defined(OS_ANDROID)
+#include "content/browser/contacts/contacts_provider_android.h"
+#endif
 
 namespace content {
 
-// static
-void ContactsManagerImpl::Create(blink::mojom::ContactsManagerRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<ContactsManagerImpl>(),
-                          std::move(request));
+namespace {
+
+std::unique_ptr<ContactsProvider> CreateProvider(
+    RenderFrameHostImpl* render_frame_host) {
+#if defined(OS_ANDROID)
+  return std::make_unique<ContactsProviderAndroid>(render_frame_host);
+#else
+  return nullptr;
+#endif
 }
 
-ContactsManagerImpl::ContactsManagerImpl() = default;
+}  // namespace
+
+// static
+void ContactsManagerImpl::Create(RenderFrameHostImpl* render_frame_host,
+                                 blink::mojom::ContactsManagerRequest request) {
+  mojo::MakeStrongBinding(
+      std::make_unique<ContactsManagerImpl>(render_frame_host),
+      std::move(request));
+}
+
+ContactsManagerImpl::ContactsManagerImpl(RenderFrameHostImpl* render_frame_host)
+    : contacts_provider_(CreateProvider(render_frame_host)) {}
+
 ContactsManagerImpl::~ContactsManagerImpl() = default;
 
 void ContactsManagerImpl::Select(bool multiple,
                                  bool include_names,
                                  bool include_emails,
                                  SelectCallback callback) {
-  // TODO(finnur): Implement showing the dialog instead of returning null.
-  std::move(callback).Run(base::nullopt);
+  if (contacts_provider_) {
+    contacts_provider_->Select(multiple, include_names, include_emails,
+                               std::move(callback));
+  } else {
+    std::move(callback).Run(base::nullopt);
+  }
 }
 
 }  // namespace content
