@@ -216,7 +216,7 @@ void WaylandConnection::OfferClipboardData(
     data_source_ = CreateWaylandDataSource(data_device_manager_.get(), this);
     data_source_->WriteToClipboard(data_map);
   }
-  data_source_->UpdataDataMap(data_map);
+  data_source_->UpdateDataMap(data_map);
   std::move(callback).Run();
 }
 
