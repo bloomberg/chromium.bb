@@ -2232,6 +2232,18 @@ if (is_fuchsia) {
       "fuchsia/test.fidl",
     ]
   }
+
+  source_set("test_interface_impl") {
+    testonly = true
+    sources = [
+      "fuchsia/test_interface_impl.cc",
+      "fuchsia/test_interface_impl.h",
+    ]
+    deps = [
+      ":base",
+      ":testfidl",
+    ]
+  }
 }
 
 source_set("base_unittests_tasktraits") {
@@ -2764,6 +2776,7 @@ test("base_unittests") {
     sources -= [ "files/file_path_watcher_unittest.cc" ]
 
     deps += [
+      ":test_interface_impl",
       ":testfidl",
       "//third_party/fuchsia-sdk/sdk:async",
       "//third_party/fuchsia-sdk/sdk:async_default",

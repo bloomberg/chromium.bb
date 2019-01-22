@@ -9,14 +9,6 @@
 namespace base {
 namespace fuchsia {
 
-TestInterfaceImpl::TestInterfaceImpl() = default;
-TestInterfaceImpl::~TestInterfaceImpl() = default;
-
-// TestInterface implementation.
-void TestInterfaceImpl::Add(int32_t a, int32_t b, AddCallback callback) {
-  callback(a + b);
-}
-
 ServiceDirectoryTestBase::ServiceDirectoryTestBase() {
   zx::channel service_directory_channel;
   EXPECT_EQ(zx::channel::create(0, &service_directory_channel,
