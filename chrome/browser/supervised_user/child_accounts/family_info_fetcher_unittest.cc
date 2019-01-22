@@ -13,6 +13,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/message_loop/message_loop.h"
+#include "base/test/mock_callback.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
@@ -110,17 +111,8 @@ std::string BuildGetFamilyMembersResponse(
 
 class FamilyInfoFetcherTest
     : public testing::Test,
-      public identity::IdentityManager::DiagnosticsObserver,
       public FamilyInfoFetcher::Consumer {
  public:
-  FamilyInfoFetcherTest() : access_token_requested_(false) {
-    identity_test_env_.identity_manager()->AddDiagnosticsObserver(this);
-  }
-
-  ~FamilyInfoFetcherTest() {
-    identity_test_env_.identity_manager()->RemoveDiagnosticsObserver(this);
-  }
-
   MOCK_METHOD1(OnGetFamilyProfileSuccess,
                void(const FamilyInfoFetcher::FamilyProfile& family));
   MOCK_METHOD1(OnGetFamilyMembersSuccess,
@@ -137,17 +129,7 @@ class FamilyInfoFetcherTest
             &test_url_loader_factory_)));
   }
 
-  void OnAccessTokenRequested(const std::string& account_id,
-                              const std::string& consumer_id,
-                              const identity::ScopeSet& scopes) override {
-    access_token_requested_ = true;
-  }
-
-  bool access_token_requested_;
-
  protected:
-  bool AccessTokenRequested() { return access_token_requested_; }
-
   void StartGetFamilyProfile() {
     EnsureFamilyInfoFetcher();
     fetcher_->StartGetFamilyProfile();
@@ -271,13 +253,18 @@ TEST_F(FamilyInfoFetcherTest, SuccessAfterWaitingForRefreshToken) {
 
   // Since there is no refresh token yet, we should not get a request for an
   // access token at this point.
-  EXPECT_FALSE(AccessTokenRequested());
+  base::MockCallback<base::OnceClosure> access_token_requested;
+  EXPECT_CALL(access_token_requested, Run()).Times(0);
+  identity_test_env_.SetCallbackForNextAccessTokenRequest(
+      access_token_requested.Get());
 
   // In this case we don't directly call IssueRefreshToken() as it calls
   // MakePrimaryAccountAvailable(). Since we already have a primary account set
   // we cannot set another one without clearing it before.
   identity_test_env_.SetRefreshTokenForPrimaryAccount();
 
+  // Do reset the callback for access token request before using the Wait* APIs.
+  identity_test_env_.SetCallbackForNextAccessTokenRequest(base::OnceClosure());
   WaitForAccessTokenRequestAndIssueToken();
 
   FamilyInfoFetcher::FamilyProfile family("test", "My Test Family");
@@ -297,7 +284,10 @@ TEST_F(FamilyInfoFetcherTest, NoRefreshToken) {
 
   // Credentials for a different user should be ignored, i.e. not result in a
   // request for an access token.
-  EXPECT_FALSE(AccessTokenRequested());
+  base::MockCallback<base::OnceClosure> access_token_requested;
+  EXPECT_CALL(access_token_requested, Run()).Times(0);
+  identity_test_env_.SetCallbackForNextAccessTokenRequest(
+      access_token_requested.Get());
 
   // After all refresh tokens have been loaded, there is still no token for our
   // user, so we expect a token error.
