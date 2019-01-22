@@ -8,8 +8,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_store_sync.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_type_change_processor.h"
+#include "components/sync/model_impl/sync_metadata_store_change_list.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"
 
@@ -61,8 +63,12 @@ std::unique_ptr<syncer::EntityData> CreateEntityData(
 }  // namespace
 
 PasswordSyncBridge::PasswordSyncBridge(
-    std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor)
-    : ModelTypeSyncBridge(std::move(change_processor)) {}
+    std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
+    PasswordStoreSync* password_store_sync)
+    : ModelTypeSyncBridge(std::move(change_processor)),
+      password_store_sync_(password_store_sync) {
+  DCHECK(password_store_sync_);
+}
 
 PasswordSyncBridge::~PasswordSyncBridge() = default;
 
@@ -82,8 +88,9 @@ void PasswordSyncBridge::ActOnPasswordStoreChanges(
 
   // TODO(mamir):ActOnPasswordStoreChanges() can be called from
   // ApplySyncChanges(). Do nothing in this case.
-  std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
-      CreateMetadataChangeList();
+
+  syncer::SyncMetadataStoreChangeList metadata_change_list(
+      password_store_sync_->GetMetadataStore(), syncer::PASSWORDS);
 
   for (const PasswordStoreChange& change : local_changes) {
     const std::string storage_key = base::NumberToString(change.primary_key());
@@ -91,16 +98,15 @@ void PasswordSyncBridge::ActOnPasswordStoreChanges(
       case PasswordStoreChange::ADD:
       case PasswordStoreChange::UPDATE: {
         change_processor()->Put(storage_key, CreateEntityData(change.form()),
-                                metadata_change_list.get());
+                                &metadata_change_list);
         break;
       }
       case PasswordStoreChange::REMOVE: {
-        change_processor()->Delete(storage_key, metadata_change_list.get());
+        change_processor()->Delete(storage_key, &metadata_change_list);
         break;
       }
     }
   }
-  // TODO(mamir): Persist the metadata.
 }
 
 void PasswordSyncBridge::OnSyncStarting(

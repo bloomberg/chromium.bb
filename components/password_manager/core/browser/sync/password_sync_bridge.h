@@ -17,6 +17,8 @@ class ModelTypeChangeProcessor;
 
 namespace password_manager {
 
+class PasswordStoreSync;
+
 // Sync bridge implementation for PASSWORDS model type. Takes care of
 // propagating local passwords to other clients and vice versa.
 //
@@ -27,8 +29,10 @@ namespace password_manager {
 // for details.
 class PasswordSyncBridge : public syncer::ModelTypeSyncBridge {
  public:
-  explicit PasswordSyncBridge(
-      std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor);
+  // |password_store_sync| must not be null and must outlive this object.
+  PasswordSyncBridge(
+      std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
+      PasswordStoreSync* password_store_sync);
   ~PasswordSyncBridge() override;
 
   // Notifies the bridge of changes to the password database. Callers are
@@ -57,6 +61,9 @@ class PasswordSyncBridge : public syncer::ModelTypeSyncBridge {
       override;
 
  private:
+  // Password store responsible for persistence.
+  PasswordStoreSync* const password_store_sync_;
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(PasswordSyncBridge);
