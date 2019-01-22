@@ -197,7 +197,8 @@ class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
         test_password_store->stored_passwords().begin()->second[0];
     EXPECT_EQ(base::ASCIIToUTF16("user"), signin_form.username_value);
     EXPECT_EQ(base::ASCIIToUTF16("hunter2"), signin_form.password_value);
-    EXPECT_EQ(a_url1.GetOrigin(), signin_form.origin);
+    EXPECT_EQ(a_url1.GetOrigin().spec(), signin_form.signon_realm);
+    EXPECT_EQ(a_url1, signin_form.origin);
   }
 
   // Tests the when navigator.credentials.store() is called in an `unload`
@@ -321,12 +322,14 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
 
   autofill::PasswordForm form_1;
   form_1.signon_realm = origin.spec();
+  form_1.origin = origin;
   form_1.username_value = base::ASCIIToUTF16("user1");
   form_1.password_value = base::ASCIIToUTF16("abcdef");
   form_1.preferred = true;
 
   autofill::PasswordForm form_2;
   form_2.signon_realm = origin.spec();
+  form_2.origin = origin;
   form_2.username_value = base::ASCIIToUTF16("user2");
   form_2.password_value = base::ASCIIToUTF16("123456");
 
@@ -405,12 +408,14 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
 
   autofill::PasswordForm form_1;
   form_1.signon_realm = origin.spec();
+  form_1.origin = origin;
   form_1.username_value = base::ASCIIToUTF16("user1");
   form_1.password_value = base::ASCIIToUTF16("abcdef");
   form_1.preferred = true;
 
   autofill::PasswordForm form_2;
   form_2.signon_realm = origin.spec();
+  form_2.origin = origin;
   form_2.username_value = base::ASCIIToUTF16("user2");
   form_2.password_value = base::ASCIIToUTF16("123456");
 
@@ -874,6 +879,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, SaveViaAPIAndAutofill) {
   NavigateToFile("/password/password_form.html");
+  const GURL current_url = WebContents()->GetLastCommittedURL();
 
   ASSERT_TRUE(content::ExecuteScript(
       WebContents(),
@@ -909,7 +915,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, SaveViaAPIAndAutofill) {
   EXPECT_EQ(base::ASCIIToUTF16("API"), signin_form.password_value);
   EXPECT_EQ(embedded_test_server()->base_url().spec(),
             signin_form.signon_realm);
-  EXPECT_EQ(embedded_test_server()->base_url(), signin_form.origin);
+  EXPECT_EQ(current_url, signin_form.origin);
 }
 
 IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, UpdateViaAPIAndAutofill) {

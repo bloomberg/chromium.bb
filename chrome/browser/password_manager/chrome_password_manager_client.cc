@@ -198,26 +198,9 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
 
 ChromePasswordManagerClient::~ChromePasswordManagerClient() {}
 
-bool ChromePasswordManagerClient::IsPasswordManagementEnabledForCurrentPage()
-    const {
-  DCHECK(web_contents());
-  content::NavigationEntry* entry = nullptr;
-  switch (password_manager_.entry_to_check()) {
-    case password_manager::PasswordManager::NavigationEntryToCheck::
-        LAST_COMMITTED:
-      entry = web_contents()->GetController().GetLastCommittedEntry();
-      break;
-    case password_manager::PasswordManager::NavigationEntryToCheck::VISIBLE:
-      entry = web_contents()->GetController().GetVisibleEntry();
-      break;
-  }
-  bool is_enabled = false;
-  if (!entry) {
-    // TODO(gcasto): Determine if fix for crbug.com/388246 is relevant here.
-    is_enabled = true;
-  } else {
-    is_enabled = CanShowBubbleOnURL(entry->GetURL());
-  }
+bool ChromePasswordManagerClient::IsPasswordManagementEnabledForCurrentPage(
+    const GURL& url) const {
+  bool is_enabled = CanShowBubbleOnURL(url);
 
   // The password manager is disabled while VR (virtual reality) is being used,
   // as the use of conventional UI elements might harm the user experience in
@@ -230,6 +213,7 @@ bool ChromePasswordManagerClient::IsPasswordManagementEnabledForCurrentPage()
   if (log_manager_->IsLoggingActive()) {
     password_manager::BrowserSavePasswordProgressLogger logger(
         log_manager_.get());
+    logger.LogURL(Logger::STRING_SECURITY_ORIGIN, url);
     logger.LogBoolean(
         Logger::STRING_PASSWORD_MANAGEMENT_ENABLED_FOR_CURRENT_PAGE,
         is_enabled);
@@ -237,8 +221,8 @@ bool ChromePasswordManagerClient::IsPasswordManagementEnabledForCurrentPage()
   return is_enabled;
 }
 
-bool ChromePasswordManagerClient::IsSavingAndFillingEnabledForCurrentPage()
-    const {
+bool ChromePasswordManagerClient::IsSavingAndFillingEnabled(
+    const GURL& url) const {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableAutomation)) {
     // Disable the password saving UI for automated tests. It obscures the
@@ -248,10 +232,10 @@ bool ChromePasswordManagerClient::IsSavingAndFillingEnabledForCurrentPage()
   // TODO(melandory): remove saving_and_filling_passwords_enabled_ check from
   // here once we decide to switch to new settings behavior for everyone.
   return *saving_and_filling_passwords_enabled_ && !IsIncognito() &&
-         IsFillingEnabledForCurrentPage();
+         IsFillingEnabled(url);
 }
 
-bool ChromePasswordManagerClient::IsFillingEnabledForCurrentPage() const {
+bool ChromePasswordManagerClient::IsFillingEnabled(const GURL& url) const {
   const bool ssl_errors = net::IsCertStatusError(GetMainFrameCertStatus());
 
   if (log_manager_->IsLoggingActive()) {
@@ -260,12 +244,12 @@ bool ChromePasswordManagerClient::IsFillingEnabledForCurrentPage() const {
     logger.LogBoolean(Logger::STRING_SSL_ERRORS_PRESENT, ssl_errors);
   }
 
-  return !ssl_errors && IsPasswordManagementEnabledForCurrentPage();
+  return !ssl_errors && IsPasswordManagementEnabledForCurrentPage(url);
 }
 
-bool ChromePasswordManagerClient::IsFillingFallbackEnabledForCurrentPage()
-    const {
-  return IsFillingEnabledForCurrentPage() &&
+bool ChromePasswordManagerClient::IsFillingFallbackEnabled(
+    const GURL& url) const {
+  return IsFillingEnabled(url) &&
          !Profile::FromBrowserContext(web_contents()->GetBrowserContext())
               ->IsGuestSession();
 }

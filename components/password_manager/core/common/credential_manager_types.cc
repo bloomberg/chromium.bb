@@ -82,7 +82,7 @@ std::unique_ptr<autofill::PasswordForm> CreatePasswordFormFromCredentialInfo(
 
   form->signon_realm =
       info.type == CredentialType::CREDENTIAL_TYPE_PASSWORD
-          ? origin.spec()
+          ? origin.GetOrigin().spec()
           : "federation://" + origin.host() + "/" + info.federation.host();
   return form;
 }
@@ -93,7 +93,7 @@ std::unique_ptr<autofill::PasswordForm> CreateObservedPasswordFormFromOrigin(
   form->origin = origin;
   form->scheme = autofill::PasswordForm::SCHEME_HTML;
   form->type = autofill::PasswordForm::TYPE_API;
-  form->signon_realm = origin.spec();
+  form->signon_realm = origin.GetOrigin().spec();
   return form;
 }
 

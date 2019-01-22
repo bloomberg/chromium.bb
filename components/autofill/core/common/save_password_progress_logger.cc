@@ -263,7 +263,7 @@ std::string SavePasswordProgressLogger::GetStringFromID(
     case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVE_PASSWORD_FORM:
       return "ProvisionallySavePassword form";
     case SavePasswordProgressLogger::STRING_IS_SAVING_ENABLED:
-      return "IsSavingAndFillingEnabledForCurrentPage";
+      return "IsSavingAndFillingEnabled";
     case SavePasswordProgressLogger::STRING_EMPTY_PASSWORD:
       return "Empty password";
     case SavePasswordProgressLogger::STRING_EXACT_MATCH:

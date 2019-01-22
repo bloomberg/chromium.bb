@@ -63,15 +63,20 @@ class PasswordManagerClient {
 
   // Is saving new data for password autofill and filling of saved data enabled
   // for the current profile and page? For example, saving is disabled in
-  // Incognito mode.
-  virtual bool IsSavingAndFillingEnabledForCurrentPage() const;
+  // Incognito mode. |url| describes the URL to save the password for. It is not
+  // necessary the URL of the current page but can be a URL of a proxy or the
+  // page that hosted the form.
+  virtual bool IsSavingAndFillingEnabled(const GURL& url) const;
 
-  // Checks if filling is enabled for the current page. Filling is disabled when
-  // password manager is disabled, or in the presence of SSL errors on a page.
-  virtual bool IsFillingEnabledForCurrentPage() const;
+  // Checks if filling is enabled on the current page. Filling is disabled in
+  // the presence of SSL errors on a page. |url| describes the URL to fill the
+  // password for. It is not necessary the URL of the current page but can be a
+  // URL of a proxy or subframe.
+  virtual bool IsFillingEnabled(const GURL& url) const;
 
-  // Checks if manual filling fallback is enabled for the current page.
-  virtual bool IsFillingFallbackEnabledForCurrentPage() const;
+  // Checks if manual filling fallback is enabled for the page that has |url|
+  // address.
+  virtual bool IsFillingFallbackEnabled(const GURL& url) const;
 
   // Checks asynchronously whether HTTP Strict Transport Security (HSTS) is
   // active for the host of the given origin. Notifies |callback| with the
@@ -83,8 +88,8 @@ class PasswordManagerClient {
   // not allowed while prerendering and the pre-rendered WebContents will be
   // destroyed in this case.
   // Even if the method returns true the API may still be disabled or limited
-  // depending on the method called because IsFillingEnabledForCurrentPage() and
-  // IsSavingAndFillingEnabledForCurrentPage are respected.
+  // depending on the method called because IsFillingEnabled() and
+  // IsSavingAndFillingEnabled are respected.
   virtual bool OnCredentialManagerUsed();
 
   // Informs the embedder of a password form that can be saved or updated in

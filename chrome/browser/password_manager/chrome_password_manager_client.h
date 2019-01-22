@@ -57,9 +57,9 @@ class ChromePasswordManagerClient
   ~ChromePasswordManagerClient() override;
 
   // PasswordManagerClient implementation.
-  bool IsSavingAndFillingEnabledForCurrentPage() const override;
-  bool IsFillingEnabledForCurrentPage() const override;
-  bool IsFillingFallbackEnabledForCurrentPage() const override;
+  bool IsSavingAndFillingEnabled(const GURL& url) const override;
+  bool IsFillingEnabled(const GURL& url) const override;
+  bool IsFillingFallbackEnabled(const GURL& url) const override;
   void PostHSTSQueryForHost(
       const GURL& origin,
       password_manager::HSTSCallback callback) const override;
@@ -225,10 +225,9 @@ class ChromePasswordManagerClient
   // in the screens coordinate system.
   gfx::RectF GetBoundsInScreenSpace(const gfx::RectF& bounds);
 
-  // Checks if the current page fulfils the conditions for the password manager
-  // to be active on it, for example Sync credentials are not saved or auto
-  // filled.
-  bool IsPasswordManagementEnabledForCurrentPage() const;
+  // Checks if the current page specified in |url| fulfils the conditions for
+  // the password manager to be active on it.
+  bool IsPasswordManagementEnabledForCurrentPage(const GURL& url) const;
 
   // Returns true if this profile has metrics reporting and active sync
   // without custom sync passphrase.

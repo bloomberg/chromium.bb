@@ -45,8 +45,8 @@ const char kTestAndroidRealm2[] = "android://hash@com.example.two.android/";
 
 class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
-  MOCK_CONST_METHOD0(IsSavingAndFillingEnabledForCurrentPage, bool());
-  MOCK_CONST_METHOD0(IsFillingEnabledForCurrentPage, bool());
+  MOCK_CONST_METHOD1(IsSavingAndFillingEnabled, bool(const GURL&));
+  MOCK_CONST_METHOD1(IsFillingEnabled, bool(const GURL&));
   MOCK_METHOD0(OnCredentialManagerUsed, bool());
   MOCK_CONST_METHOD0(IsIncognito, bool());
   MOCK_METHOD0(NotifyUserAutoSigninPtr, bool());
@@ -178,10 +178,9 @@ class CredentialManagerImplTest : public testing::Test {
     client_.reset(
         new testing::NiceMock<MockPasswordManagerClient>(store_.get()));
     cm_service_impl_.reset(new CredentialManagerImpl(client_.get()));
-    ON_CALL(*client_, IsSavingAndFillingEnabledForCurrentPage())
+    ON_CALL(*client_, IsSavingAndFillingEnabled(_))
         .WillByDefault(testing::Return(true));
-    ON_CALL(*client_, IsFillingEnabledForCurrentPage())
-        .WillByDefault(testing::Return(true));
+    ON_CALL(*client_, IsFillingEnabled(_)).WillByDefault(testing::Return(true));
     ON_CALL(*client_, OnCredentialManagerUsed())
         .WillByDefault(testing::Return(true));
     ON_CALL(*client_, IsIncognito()).WillByDefault(testing::Return(false));
@@ -674,7 +673,7 @@ TEST_F(CredentialManagerImplTest, CredentialManagerGetOverwriteZeroClick) {
 TEST_F(CredentialManagerImplTest,
        CredentialManagerSignInWithSavingDisabledForCurrentPage) {
   CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_PASSWORD);
-  EXPECT_CALL(*client_, IsSavingAndFillingEnabledForCurrentPage())
+  EXPECT_CALL(*client_, IsSavingAndFillingEnabled(form_.origin))
       .WillRepeatedly(testing::Return(false));
   EXPECT_CALL(*client_, PromptUserToSavePasswordPtr(_))
       .Times(testing::Exactly(0));
@@ -723,7 +722,7 @@ TEST_F(CredentialManagerImplTest, CredentialManagerOnPreventSilentAccess) {
 
 TEST_F(CredentialManagerImplTest,
        CredentialManagerOnPreventSilentAccessIncognito) {
-  EXPECT_CALL(*client_, IsSavingAndFillingEnabledForCurrentPage())
+  EXPECT_CALL(*client_, IsSavingAndFillingEnabled(_))
       .WillRepeatedly(testing::Return(false));
   store_->AddLogin(form_);
   RunAllPendingTasks();
@@ -1128,7 +1127,7 @@ TEST_F(CredentialManagerImplTest, RequestCredentialWithFirstRunAndSkip) {
 
 TEST_F(CredentialManagerImplTest, RequestCredentialWithTLSErrors) {
   // If we encounter TLS errors, we won't return credentials.
-  EXPECT_CALL(*client_, IsFillingEnabledForCurrentPage())
+  EXPECT_CALL(*client_, IsFillingEnabled(_))
       .WillRepeatedly(testing::Return(false));
 
   store_->AddLogin(form_);

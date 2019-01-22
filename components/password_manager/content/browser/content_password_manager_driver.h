@@ -75,6 +75,7 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver {
   void SendLoggingAvailability() override;
   autofill::AutofillDriver* GetAutofillDriver() override;
   bool IsMainFrame() const override;
+  GURL GetLastCommittedURL() const override;
 
   void DidNavigateFrame(content::NavigationHandle* navigation_handle);
 

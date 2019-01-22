@@ -23,6 +23,9 @@ class PasswordManager;
 // Defines the interface the driver needs to the controller.
 @protocol CWVPasswordManagerDriverDelegate
 
+// Returns the current URL of the main frame.
+@property(readonly, nonatomic) const GURL& lastCommittedURL;
+
 - (password_manager::PasswordManager*)passwordManager;
 
 // Finds and fills the password form using the supplied |formData| to
@@ -65,6 +68,7 @@ class WebViewPasswordManagerDriver
       override;
   autofill::AutofillDriver* GetAutofillDriver() override;
   bool IsMainFrame() const override;
+  GURL GetLastCommittedURL() const override;
 
  private:
   __weak id<CWVPasswordManagerDriverDelegate> delegate_;
