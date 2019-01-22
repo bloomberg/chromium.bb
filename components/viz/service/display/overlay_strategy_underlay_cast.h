@@ -27,7 +27,7 @@ class VIZ_SERVICE_EXPORT OverlayStrategyUnderlayCast
       const SkMatrix44& output_color_matrix,
       const OverlayProcessor::FilterOperationsMap& render_pass_backdrop_filters,
       DisplayResourceProvider* resource_provider,
-      RenderPass* render_pass,
+      RenderPassList* render_pass,
       OverlayCandidateList* candidate_list,
       std::vector<gfx::Rect>* content_bounds) override;
 

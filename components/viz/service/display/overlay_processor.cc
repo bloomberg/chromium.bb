@@ -171,8 +171,8 @@ void OverlayProcessor::ProcessForOverlays(
   Strategy* successful_strategy = nullptr;
   for (const auto& strategy : strategies_) {
     if (!strategy->Attempt(output_color_matrix, render_pass_backdrop_filters,
-                           resource_provider, render_passes->back().get(),
-                           candidates, content_bounds)) {
+                           resource_provider, render_passes, candidates,
+                           content_bounds)) {
       continue;
     }
     successful_strategy = strategy.get();
