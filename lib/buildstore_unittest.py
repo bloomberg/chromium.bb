@@ -84,6 +84,23 @@ class TestBuildStore(cros_test_lib.MockTestCase):
         constants.BUILDER_STATUS_PLANNED)
     self.assertEqual(build_stage_id, constants.MOCK_STAGE_ID)
 
+  def testFinishBuild(self):
+    """Tests the redirect for FinishBuild function."""
+    self.PatchObject(BuildStore, 'InitializeClients',
+                     return_value=True)
+    bs = BuildStore()
+    bs.cidb_conn = mock.MagicMock()
+    status = mock.Mock()
+    summary = mock.Mock()
+    metadata_url = mock.Mock()
+    strict = mock.Mock()
+    self.PatchObject(bs.cidb_conn, 'FinishBuild')
+    bs.FinishBuild(constants.MOCK_BUILD_ID, status=status, summary=summary,
+                   metadata_url=metadata_url, strict=strict)
+    bs.cidb_conn.FinishBuild.assert_called_once_with(
+        constants.MOCK_BUILD_ID, status=status, summary=summary,
+        metadata_url=metadata_url, strict=strict)
+
   def testUpdateMetadata(self):
     """Tests the redirect for UpdateMetadata function."""
     self.PatchObject(BuildStore, 'InitializeClients',

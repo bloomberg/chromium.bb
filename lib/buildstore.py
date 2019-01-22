@@ -170,6 +170,37 @@ class BuildStore(object):
     if self._write_to_cidb:
       return self.cidb_conn.InsertBuildStage(build_id, name, board, status)
 
+  def FinishBuild(self, build_id, status=None, summary=None, metadata_url=None,
+                  strict=True):
+    """Update the given build row, marking it as finished.
+
+    This should be called once per build, as the last update to the build.
+    This will also mark the row's final=True.
+
+    Args:
+      build_id: id of row to update.
+      status: Final build status, one of
+              constants.BUILDER_COMPLETED_STATUSES.
+      summary: A summary of the build (failures) collected from all slaves.
+      metadata_url: google storage url to metadata.json file for this build,
+                    e.g. ('gs://chromeos-image-archive/master-paladin/'
+                          'R39-6225.0.0-rc1/metadata.json')
+      strict: If |strict| is True, can only update the build status when 'final'
+        is False. |strict| can only be False when the caller wants to change the
+        entry ignoring the 'final' value (For example, a build was marked as
+        status='aborted' and final='true', a cron job to adjust the finish_time
+        will call this method with strict=False).
+
+    Returns:
+      The number of rows that were updated.
+    """
+    if not self.InitializeClients():
+      return
+    if self._write_to_cidb:
+      return self.cidb_conn.FinishBuild(
+          build_id, status=status, summary=summary, metadata_url=metadata_url,
+          strict=strict)
+
   def UpdateMetadata(self, build_id, metadata):
     """Update the given metadata row in database.
 
@@ -267,6 +298,12 @@ class FakeBuildStore(object):
     build_stage_id = self.fake_cidb.InsertBuildStage(build_id, name, board,
                                                      status)
     return build_stage_id
+
+  #pylint: disable=unused-argument
+  def FinishBuild(self, build_id, status=None, summary=None, metadata_url=None,
+                  strict=True):
+    return
+  #pylint: enable=unused-argument
 
   def UpdateMetadata(self, build_id, metadata): #pylint: disable=unused-argument
     return

@@ -1007,7 +1007,7 @@ class ReportStage(generic_stages.BuilderStage,
         self._run.attrs.metadata.GetValueWithDefault(
             'goma_tmp_dir_for_simple_chrome'))
 
-    if db:
+    if self.buildstore.AreClientsReady():
       status_for_db = final_status
 
       child_metadatas = self._run.attrs.metadata.GetDict().get(
@@ -1026,9 +1026,9 @@ class ReportStage(generic_stages.BuilderStage,
       # the metadata.json file. One alternative is _GetUploadUrls(...)[0].
       # Today it seems that element 0 of its return list is the primary upload
       # url, but there is no guarantee or unit test coverage of that.
-      db.FinishBuild(build_id, status=status_for_db,
-                     summary=build_data.failure_message,
-                     metadata_url=metadata_url)
+      self.buildstore.FinishBuild(build_id, status=status_for_db,
+                                  summary=build_data.failure_message,
+                                  metadata_url=metadata_url)
 
       duration = self._GetBuildDuration()
 
