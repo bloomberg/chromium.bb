@@ -189,7 +189,6 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       sync_disabled_by_admin_(false),
       unrecoverable_error_reason_(ERROR_REASON_UNSET),
       expect_sync_configuration_aborted_(false),
-      gaia_cookie_manager_service_(init_params.gaia_cookie_manager_service),
       invalidations_identity_providers_(
           init_params.invalidations_identity_providers),
       network_resources_(
@@ -229,8 +228,8 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       sync_service_url_, local_device_->GetSyncUserAgent(), url_loader_factory_,
       syncer::SyncStoppedReporter::ResultCallback());
 
-  if (gaia_cookie_manager_service_)
-    gaia_cookie_manager_service_->AddObserver(this);
+  if (identity_manager_)
+    identity_manager_->AddObserver(this);
 
 #if defined(OS_CHROMEOS)
   std::string bootstrap_token = sync_prefs_.GetEncryptionBootstrapToken();
@@ -247,8 +246,8 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
 
 ProfileSyncService::~ProfileSyncService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (gaia_cookie_manager_service_)
-    gaia_cookie_manager_service_->RemoveObserver(this);
+  if (identity_manager_)
+    identity_manager_->RemoveObserver(this);
   sync_prefs_.RemoveSyncPrefObserver(this);
   // Shutdown() should have been called before destruction.
   DCHECK(!engine_initialized_);
@@ -1002,13 +1001,13 @@ void ProfileSyncService::OnEngineInitialized(
   }
 
   // Check for a cookie jar mismatch.
-  std::vector<gaia::ListedAccount> accounts;
-  std::vector<gaia::ListedAccount> signed_out_accounts;
-  GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
-  if (gaia_cookie_manager_service_ &&
-      gaia_cookie_manager_service_->ListAccounts(&accounts,
-                                                 &signed_out_accounts)) {
-    OnGaiaAccountsInCookieUpdated(accounts, signed_out_accounts, error);
+  if (identity_manager_) {
+    identity::AccountsInCookieJarInfo accounts_in_cookie_jar_info =
+        identity_manager_->GetAccountsInCookieJar();
+    if (accounts_in_cookie_jar_info.accounts_are_fresh) {
+      OnAccountsInCookieUpdated(accounts_in_cookie_jar_info,
+                                GoogleServiceAuthError::AuthErrorNone());
+    }
   }
 
   NotifyObservers();
@@ -1707,22 +1706,22 @@ void ProfileSyncService::OnSyncRequestedPrefChange(bool is_sync_requested) {
   }
 }
 
-void ProfileSyncService::OnGaiaAccountsInCookieUpdated(
-    const std::vector<gaia::ListedAccount>& accounts,
-    const std::vector<gaia::ListedAccount>& signed_out_accounts,
+void ProfileSyncService::OnAccountsInCookieUpdated(
+    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
-  OnGaiaAccountsInCookieUpdatedWithCallback(accounts, base::Closure());
+  OnAccountsInCookieUpdatedWithCallback(
+      accounts_in_cookie_jar_info.signed_in_accounts, base::Closure());
 }
 
-void ProfileSyncService::OnGaiaAccountsInCookieUpdatedWithCallback(
-    const std::vector<gaia::ListedAccount>& accounts,
+void ProfileSyncService::OnAccountsInCookieUpdatedWithCallback(
+    const std::vector<gaia::ListedAccount>& signed_in_accounts,
     const base::Closure& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!engine_initialized_)
     return;
 
-  bool cookie_jar_mismatch = HasCookieJarMismatch(accounts);
-  bool cookie_jar_empty = accounts.size() == 0;
+  bool cookie_jar_mismatch = HasCookieJarMismatch(signed_in_accounts);
+  bool cookie_jar_empty = signed_in_accounts.empty();
 
   DVLOG(1) << "Cookie jar mismatch: " << cookie_jar_mismatch;
   DVLOG(1) << "Cookie jar empty: " << cookie_jar_empty;

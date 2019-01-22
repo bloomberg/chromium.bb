@@ -22,7 +22,6 @@
 #include "base/time/time.h"
 #include "components/browser_sync/sync_user_settings_impl.h"
 #include "components/invalidation/public/identity_provider.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/sync/base/experiments.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/sync_prefs.h"
@@ -44,12 +43,10 @@
 #include "components/sync/engine/sync_engine_host.h"
 #include "components/sync/js/sync_js_controller.h"
 #include "components/version_info/version_info.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "url/gurl.h"
-
-namespace identity {
-class IdentityManager;
-}
 
 namespace network {
 class NetworkConnectionTracker;
@@ -153,7 +150,7 @@ class ProfileSyncService : public syncer::SyncService,
                            public syncer::SyncPrefObserver,
                            public syncer::DataTypeManagerObserver,
                            public syncer::UnrecoverableErrorHandler,
-                           public GaiaCookieManagerService::Observer {
+                           public identity::IdentityManager::Observer {
  public:
   // If AUTO_START, sync will set IsFirstSetupComplete() automatically and sync
   // will begin syncing without the user needing to confirm sync settings.
@@ -173,7 +170,6 @@ class ProfileSyncService : public syncer::SyncService,
 
     std::unique_ptr<syncer::SyncClient> sync_client;
     identity::IdentityManager* identity_manager = nullptr;
-    GaiaCookieManagerService* gaia_cookie_manager_service = nullptr;
     std::vector<invalidation::IdentityProvider*>
         invalidations_identity_providers;
     StartBehavior start_behavior = MANUAL_START;
@@ -298,15 +294,14 @@ class ProfileSyncService : public syncer::SyncService,
   bool IsPassphraseRequired() const override;
   syncer::ModelTypeSet GetEncryptedDataTypes() const override;
 
-  // GaiaCookieManagerService::Observer implementation.
-  void OnGaiaAccountsInCookieUpdated(
-      const std::vector<gaia::ListedAccount>& accounts,
-      const std::vector<gaia::ListedAccount>& signed_out_accounts,
+  // IdentityManager::Observer implementation.
+  void OnAccountsInCookieUpdated(
+      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
 
   // Similar to above but with a callback that will be invoked on completion.
-  void OnGaiaAccountsInCookieUpdatedWithCallback(
-      const std::vector<gaia::ListedAccount>& accounts,
+  void OnAccountsInCookieUpdatedWithCallback(
+      const std::vector<gaia::ListedAccount>& signed_in_accounts,
       const base::Closure& callback);
 
   // Returns true if currently signed in account is not present in the list of
@@ -636,10 +631,6 @@ class ProfileSyncService : public syncer::SyncService,
 
   // The set of currently enabled sync experiments.
   syncer::Experiments current_experiments_;
-
-  // The gaia cookie manager. Used for monitoring cookie jar changes to detect
-  // when the user signs out of the content area.
-  GaiaCookieManagerService* const gaia_cookie_manager_service_;
 
   // This providers tells the invalidations code which identity to register for.
   // The account that it registers for should be the same as the currently
