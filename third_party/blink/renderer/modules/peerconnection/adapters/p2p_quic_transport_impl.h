@@ -81,6 +81,7 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   void Start(StartConfig config) override;
   // Creates an outgoing stream that is owned by the quic::QuicSession.
   P2PQuicStreamImpl* CreateStream() override;
+  P2PQuicTransportStats GetStats() const override;
 
   // P2PQuicPacketTransport::Delegate override.
   void OnPacketDataReceived(const char* data, size_t data_len) override;
@@ -188,6 +189,10 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   uint32_t stream_delegate_read_buffer_size_;
   // Determines the size of the write buffer when P2PQuicStreams.
   uint32_t stream_write_buffer_size_;
+
+  // For stats:
+  uint32_t num_outgoing_streams_created_ = 0;
+  uint32_t num_incoming_streams_created_ = 0;
 
   THREAD_CHECKER(thread_checker_);
 };

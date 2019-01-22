@@ -29,6 +29,8 @@ blink_modules_sources("peerconnection") {
     "adapters/p2p_quic_transport_factory_impl.h",
     "adapters/p2p_quic_transport_impl.cc",
     "adapters/p2p_quic_transport_impl.h",
+    "adapters/p2p_quic_transport_stats.cc",
+    "adapters/p2p_quic_transport_stats.h",
     "adapters/quic_packet_transport_adapter.cc",
     "adapters/quic_packet_transport_adapter.h",
     "adapters/quic_stream_host.cc",
