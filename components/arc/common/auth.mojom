@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 19
+// Next MinVersion: 20
 
 module arc.mojom;
 
@@ -204,6 +204,16 @@ struct AccountInfo {
   bool is_managed@2;
 };
 
+// Information about an account in ARC. Used during the one-time migration of
+// accounts from ARC to Chrome OS Account Manager.
+struct ArcAccountInfo {
+  // Account's email id.
+  string email;
+
+  // Account's obfuscated Gaia id.
+  string gaia_id;
+};
+
 // Next Method ID: 14.
 interface AuthHost {
   // Notifies Chrome that the authorization flow is completed and provides
@@ -263,7 +273,7 @@ interface AuthHost {
       => (ArcSignInStatus status, AccountInfo? account_info);
 };
 
-// Next Method ID: 4
+// Next Method ID: 5
 interface AuthInstance {
   // DEPRECATED: Please use Init@2 instead.
   InitDeprecated@0(AuthHost host_ptr);
@@ -288,4 +298,8 @@ interface AuthInstance {
   // Accounts, both.
   [MinVersion=17] OnAccountUpdated@3(
       string account_name, AccountUpdateType update_type);
+
+  // Gets the list of Google accounts in ARC. Called during the one-time
+  // migration of accounts from ARC to Chrome OS Account Manager.
+  [MinVersion=19] GetGoogleAccounts@4() => (array<ArcAccountInfo> accounts);
 };

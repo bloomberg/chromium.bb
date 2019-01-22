@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -137,6 +138,13 @@ class FakeAuthInstance : public mojom::AuthInstance {
         account_name, base::BindOnce(&FakeAuthInstance::OnAccountInfoResponse,
                                      weak_ptr_factory_.GetWeakPtr(),
                                      std::move(done_closure)));
+  }
+
+  void GetGoogleAccounts(GetGoogleAccountsCallback callback) override {
+    std::vector<mojom::ArcAccountInfoPtr> accounts;
+    accounts.emplace_back(
+        mojom::ArcAccountInfo::New(kFakeUserName, kFakeGaiaId));
+    std::move(callback).Run(std::move(accounts));
   }
 
   mojom::AccountInfo* account_info() { return account_info_.get(); }
@@ -310,6 +318,28 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
         ->SetInvalidRefreshTokenForAccount(account_id);
   }
 
+  void RequestGoogleAccountsInArc() {
+    arc_google_accounts_.clear();
+    arc_google_accounts_callback_called_ = false;
+    run_loop_.reset(new base::RunLoop());
+
+    ArcAuthService::GetGoogleAccountsInArcCallback callback = base::BindOnce(
+        [](std::vector<mojom::ArcAccountInfoPtr>* accounts,
+           bool* arc_google_accounts_callback_called,
+           base::OnceClosure quit_closure,
+           std::vector<mojom::ArcAccountInfoPtr> returned_accounts) {
+          *accounts = std::move(returned_accounts);
+          *arc_google_accounts_callback_called = true;
+          std::move(quit_closure).Run();
+        },
+        &arc_google_accounts_, &arc_google_accounts_callback_called_,
+        run_loop_->QuitClosure());
+
+    auth_service().GetGoogleAccountsInArc(std::move(callback));
+  }
+
+  void WaitForGoogleAccountsInArcCallback() { run_loop_->RunUntilIdle(); }
+
   Profile* profile() { return profile_.get(); }
 
   void set_profile_name(const std::string& username) {
@@ -321,6 +351,13 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
   }
   ArcAuthService& auth_service() { return *auth_service_; }
   FakeAuthInstance& auth_instance() { return auth_instance_; }
+  ArcBridgeService& arc_bridge_service() { return *arc_bridge_service_; }
+  const std::vector<mojom::ArcAccountInfoPtr>& arc_google_accounts() const {
+    return arc_google_accounts_;
+  }
+  bool arc_google_accounts_callback_called() const {
+    return arc_google_accounts_callback_called_;
+  }
 
  private:
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
@@ -331,6 +368,10 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
   FakeAuthInstance auth_instance_;
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_environment_adaptor_;
+
+  std::vector<mojom::ArcAccountInfoPtr> arc_google_accounts_;
+  bool arc_google_accounts_callback_called_ = false;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   // Not owned.
   ArcAuthService* auth_service_ = nullptr;
@@ -458,6 +499,41 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
   EXPECT_FALSE(auth_instance().account_info());
   EXPECT_EQ(mojom::ArcSignInStatus::CHROME_SERVER_COMMUNICATION_ERROR,
             auth_instance().sign_in_status());
+}
+
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, FetchGoogleAccountsFromArc) {
+  SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
+
+  EXPECT_FALSE(arc_google_accounts_callback_called());
+  RequestGoogleAccountsInArc();
+  WaitForGoogleAccountsInArcCallback();
+
+  EXPECT_TRUE(arc_google_accounts_callback_called());
+  ASSERT_EQ(1UL, arc_google_accounts().size());
+  EXPECT_EQ(kFakeUserName, arc_google_accounts()[0]->email);
+  EXPECT_EQ(kFakeGaiaId, arc_google_accounts()[0]->gaia_id);
+}
+
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
+                       FetchGoogleAccountsFromArcWorksAcrossConnectionResets) {
+  SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
+
+  // Close the connection.
+  arc_bridge_service().auth()->CloseInstance(&auth_instance());
+  // Make a request.
+  EXPECT_FALSE(arc_google_accounts_callback_called());
+  RequestGoogleAccountsInArc();
+  WaitForGoogleAccountsInArcCallback();
+  // Callback should not be called before connection is restarted.
+  EXPECT_FALSE(arc_google_accounts_callback_called());
+  // Restart the connection.
+  arc_bridge_service().auth()->SetInstance(&auth_instance());
+  WaitForInstanceReady(arc_bridge_service().auth());
+
+  EXPECT_TRUE(arc_google_accounts_callback_called());
+  ASSERT_EQ(1UL, arc_google_accounts().size());
+  EXPECT_EQ(kFakeUserName, arc_google_accounts()[0]->email);
+  EXPECT_EQ(kFakeGaiaId, arc_google_accounts()[0]->gaia_id);
 }
 
 // Tests that need Chrome OS Account Manager feature to be enabled.
