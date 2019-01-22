@@ -19,3 +19,11 @@ mcasas@chromium.org
 
 # TEAM: paint-dev@chromium.org
 # COMPONENT: Blink>Paint
+
+# Video SurfaceLayer functionality.
+per-file video_frame*=file://media/OWNERS
+per-file video_frame*=mlamouri@chromium.org
+per-file video_frame*=lethalantidote@chromium.org
+per-file surface_layer_bridge*=file://media/OWNERS
+per-file surface_layer_bridge*=mlamouri@chromium.org
+per-file surface_layer_bridge*=lethalantidote@chromium.org
