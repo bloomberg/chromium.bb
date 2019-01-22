@@ -10,7 +10,9 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -30,6 +32,8 @@ class TickClock;
 namespace net {
 
 class HostCache;
+class HostPortPair;
+class IPEndPoint;
 class RuleBasedHostResolverProc;
 
 // Fills |*addrlist| with a socket address for |host_list| which should be a
@@ -78,6 +82,7 @@ class MockHostResolverBase
  private:
   class RequestImpl;
   class LegacyRequestImpl;
+  class MdnsListenerImpl;
 
  public:
   ~MockHostResolverBase() override;
@@ -125,6 +130,9 @@ class MockHostResolverBase
                             AddressList* addresses,
                             HostCache::EntryStaleness* stale_info,
                             const NetLogWithSource& source_net_log) override;
+  std::unique_ptr<MdnsListener> CreateMdnsListener(
+      const HostPortPair& host,
+      DnsQueryType query_type) override;
   HostCache* GetHostCache() override;
   bool HasCached(base::StringPiece hostname,
                  HostCache::Entry::Source* source_out,
@@ -172,6 +180,22 @@ class MockHostResolverBase
     return last_request_priority_;
   }
 
+  void TriggerMdnsListeners(const HostPortPair& host,
+                            DnsQueryType query_type,
+                            MdnsListener::Delegate::UpdateType update_type,
+                            const IPEndPoint& address_result);
+  void TriggerMdnsListeners(const HostPortPair& host,
+                            DnsQueryType query_type,
+                            MdnsListener::Delegate::UpdateType update_type,
+                            const std::vector<std::string>& text_result);
+  void TriggerMdnsListeners(const HostPortPair& host,
+                            DnsQueryType query_type,
+                            MdnsListener::Delegate::UpdateType update_type,
+                            const HostPortPair& host_result);
+  void TriggerMdnsListeners(const HostPortPair& host,
+                            DnsQueryType query_type,
+                            MdnsListener::Delegate::UpdateType update_type);
+
   void set_tick_clock(const base::TickClock* tick_clock) {
     tick_clock_ = tick_clock;
   }
@@ -203,14 +227,23 @@ class MockHostResolverBase
                   HostResolverSource source,
                   AddressList* addresses);
 
+  void AddListener(MdnsListenerImpl* listener);
+  void RemoveCancelledListener(MdnsListenerImpl* listener);
+
   RequestPriority last_request_priority_;
   bool synchronous_mode_;
   bool ondemand_mode_;
   std::map<HostResolverSource, scoped_refptr<RuleBasedHostResolverProc>>
       rules_map_;
   std::unique_ptr<HostCache> cache_;
+
+  // Maintain non-owning pointers to outstanding requests and listeners to allow
+  // completing/notifying them. The objects are owned by callers, and should be
+  // removed from |this| on destruction by calling DetachRequest() or
+  // RemoveCancelledListener().
   RequestMap requests_;
   size_t next_request_id_;
+  std::set<MdnsListenerImpl*> listeners_;
 
   size_t num_resolve_;
   size_t num_resolve_from_cache_;
