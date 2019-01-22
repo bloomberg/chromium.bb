@@ -3397,6 +3397,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 #pragma mark - CRWWebStateObserver methods.
 
+- (void)webState:(web::WebState*)webState
+    didStartNavigation:(web::NavigationContext*)navigation {
+  [_bookmarkInteractionController dismissBookmarkModalControllerAnimated:YES];
+}
+
 // TODO(crbug.com/918934): This call to closeFindInPage incorrectly triggers for
 // all navigations, not just navigations in the active WebState.
 - (void)webState:(web::WebState*)webState
@@ -3923,8 +3928,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 #pragma mark - UrlLoader (Public)
 
 - (void)loadURLWithParams:(const ChromeLoadParams&)chromeParams {
-  [_bookmarkInteractionController dismissBookmarkModalControllerAnimated:YES];
-
   URLLoadResult result =
       LoadURL(chromeParams, self.browserState, self.tabModel.webStateList,
               /* SessionWindowRestoring */ self.tabModel);
