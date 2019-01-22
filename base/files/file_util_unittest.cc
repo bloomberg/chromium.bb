@@ -3291,8 +3291,8 @@ TEST_F(FileUtilTest, IsDirectoryEmpty) {
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 TEST_F(FileUtilTest, SetNonBlocking) {
-  const int kInvalidFd = 99999;
-  EXPECT_FALSE(SetNonBlocking(kInvalidFd));
+  const int kBogusFd = 99999;
+  EXPECT_FALSE(SetNonBlocking(kBogusFd));
 
   base::FilePath path;
   ASSERT_TRUE(PathService::Get(base::DIR_TEST_DATA, &path));
@@ -3303,8 +3303,8 @@ TEST_F(FileUtilTest, SetNonBlocking) {
 }
 
 TEST_F(FileUtilTest, SetCloseOnExec) {
-  const int kInvalidFd = 99999;
-  EXPECT_FALSE(SetCloseOnExec(kInvalidFd));
+  const int kBogusFd = 99999;
+  EXPECT_FALSE(SetCloseOnExec(kBogusFd));
 
   base::FilePath path;
   ASSERT_TRUE(PathService::Get(base::DIR_TEST_DATA, &path));

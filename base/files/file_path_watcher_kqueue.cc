@@ -9,6 +9,7 @@
 #include <sys/param.h>
 
 #include "base/bind.h"
+#include "base/file_descriptor_posix.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -82,7 +83,7 @@ int FilePathWatcherKQueue::EventsForPath(FilePath path, EventVector* events) {
 uintptr_t FilePathWatcherKQueue::FileDescriptorForPath(const FilePath& path) {
   ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
   int fd = HANDLE_EINTR(open(path.value().c_str(), O_EVTONLY));
-  if (fd == -1)
+  if (fd == kInvalidFd)
     return kNoFileDescriptor;
   return fd;
 }

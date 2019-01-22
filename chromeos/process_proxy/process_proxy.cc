@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/file_descriptor_posix.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -30,8 +31,6 @@ enum PseudoTerminalFd {
   PT_MASTER_FD,
   PT_SLAVE_FD
 };
-
-const int kInvalidFd = -1;
 
 void StopOutputWatcher(
     std::unique_ptr<chromeos::ProcessOutputWatcher> watcher) {
@@ -259,16 +258,16 @@ void ProcessProxy::CloseFdPair(int* pipe) {
 }
 
 void ProcessProxy::CloseFd(int* fd) {
-  if (*fd != kInvalidFd) {
+  if (*fd != base::kInvalidFd) {
     if (IGNORE_EINTR(close(*fd)) != 0)
       DPLOG(WARNING) << "close fd failed.";
   }
-  *fd = kInvalidFd;
+  *fd = base::kInvalidFd;
 }
 
 void ProcessProxy::ClearFdPair(int* pipe) {
-  pipe[PT_MASTER_FD] = kInvalidFd;
-  pipe[PT_SLAVE_FD] = kInvalidFd;
+  pipe[PT_MASTER_FD] = base::kInvalidFd;
+  pipe[PT_SLAVE_FD] = base::kInvalidFd;
 }
 
 }  // namespace chromeos
