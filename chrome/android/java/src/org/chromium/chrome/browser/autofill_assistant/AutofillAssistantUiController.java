@@ -76,8 +76,11 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         currentTabModel.addObserver(new EmptyTabModelObserver() {
             @Override
             public void didSelectTab(Tab tab, int type, int lastId) {
-                currentTabModel.removeObserver(this);
-                mCoordinator.gracefulShutdown(/* showGiveUpMessage= */ true);
+                // Shutdown the Autofill Assistant if the user switches to another tab.
+                if (!activityTab.equals(tab)) {
+                    currentTabModel.removeObserver(this);
+                    mCoordinator.gracefulShutdown(/* showGiveUpMessage= */ true);
+                }
             }
         });
     }
