@@ -263,6 +263,10 @@ void IdentityManager::LegacyLoadCredentials(
   token_service_->LoadCredentials(primary_account_id);
 }
 
+std::string IdentityManager::LegacySeedAccountInfo(const AccountInfo& info) {
+  return account_tracker_service_->SeedAccountInfo(info);
+}
+
 void IdentityManager::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
