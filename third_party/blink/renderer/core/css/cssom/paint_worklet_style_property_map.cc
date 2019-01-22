@@ -75,19 +75,15 @@ void PaintWorkletStylePropertyMap::BuildNativeValues(
     DCHECK_NE(property_id, CSSPropertyVariable);
     if (CSSProperty::Get(property_id).IsShorthand())
       continue;
-    const CSSValue* css_value =
+    std::unique_ptr<CrossThreadStyleValue> value =
         CSSProperty::Get(property_id)
-            .CSSValueFromComputedStyle(style, /* layout_object */ nullptr,
-                                       styled_node,
-                                       /* allow_visited_style */ false);
-    // Ensure that the String can be safely passed cross threads.
-    String value = css_value->CssText();
-    if (!value.IsSafeToSendToAnotherThread())
-      value = value.IsolatedCopy();
+            .CrossThreadStyleValueFromComputedStyle(
+                style, /* layout_object */ nullptr, styled_node,
+                /* allow_visited_style */ false);
     String key = CSSProperty::Get(property_id).GetPropertyNameString();
     if (!key.IsSafeToSendToAnotherThread())
       key = key.IsolatedCopy();
-    values_.Set(key, value);
+    values_.Set(key, std::move(value));
   }
 }
 
@@ -99,19 +95,15 @@ void PaintWorkletStylePropertyMap::BuildCustomValues(
   DCHECK(IsMainThread());
   for (const auto& property_name : custom_properties) {
     CSSPropertyRef ref(property_name, document);
-    const CSSValue* css_value = ref.GetProperty().CSSValueFromComputedStyle(
-        style, /* layout_object */ nullptr, styled_node,
-        /* allow_visited_style */ false);
-    if (!css_value)
-      css_value = CSSUnparsedValue::Create()->ToCSSValue();
+    std::unique_ptr<CrossThreadStyleValue> value =
+        ref.GetProperty().CrossThreadStyleValueFromComputedStyle(
+            style, /* layout_object */ nullptr, styled_node,
+            /* allow_visited_style */ false);
     // Ensure that the String can be safely passed cross threads.
     String key = property_name.GetString();
     if (!key.IsSafeToSendToAnotherThread())
       key = key.IsolatedCopy();
-    String value = css_value->CssText();
-    if (!value.IsSafeToSendToAnotherThread())
-      value = value.IsolatedCopy();
-    values_.Set(key, value);
+    values_.Set(key, std::move(value));
   }
 }
 
@@ -140,7 +132,7 @@ CSSStyleValueVector PaintWorkletStylePropertyMap::getAll(
   auto value = values_.find(property_name);
   if (value == values_.end())
     return CSSStyleValueVector();
-  values.push_back(CSSUnsupportedStyleValue::Create(value->value));
+  values.push_back(value->value->ToCSSStyleValue());
   return values;
 }
 
