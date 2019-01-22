@@ -7,6 +7,7 @@
 
 #include <array>
 #include <atomic>
+#include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/debug/stack_trace.h"
@@ -131,6 +132,10 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   size_t num_alloced_pages_ GUARDED_BY(lock_) = 0;
   // Max number of pages to allocate at once.
   size_t max_alloced_pages_ = 0;
+
+  // We dynamically allocate the SlotMetadata array to avoid allocating
+  // extraneous memory for when total_pages < kGpaMaxPages.
+  std::unique_ptr<AllocatorState::SlotMetadata[]> slots_;
 
   // StackTrace objects for every slot in AllocatorState::data_. We avoid
   // statically allocating the StackTrace objects because they are large and

@@ -19,8 +19,7 @@ constexpr size_t AllocatorState::kGpaMaxPages;
 
 AllocatorState::GetMetadataReturnType AllocatorState::GetMetadataForAddress(
     uintptr_t exception_address,
-    SlotMetadata* slot,
-    ErrorType* error_type) const {
+    uintptr_t* slot_address) const {
   CHECK(IsValid());
 
   if (!PointerIsMine(exception_address))
@@ -30,10 +29,7 @@ AllocatorState::GetMetadataReturnType AllocatorState::GetMetadataForAddress(
   if (slot_idx >= kGpaMaxPages)
     return GetMetadataReturnType::kErrorBadSlot;
 
-  *slot = data[slot_idx];
-  *error_type = GetErrorType(exception_address, slot->alloc.trace_addr != 0,
-                             slot->dealloc.trace_addr != 0);
-
+  *slot_address = slot_metadata + (slot_idx * sizeof(SlotMetadata));
   return GetMetadataReturnType::kGwpAsanCrash;
 }
 
@@ -53,6 +49,9 @@ bool AllocatorState::IsValid() const {
 
   if (first_page_addr != pages_base_addr + page_size ||
       pages_end_addr - pages_base_addr != page_size * (total_pages * 2 + 1))
+    return false;
+
+  if (!slot_metadata)
     return false;
 
   return true;

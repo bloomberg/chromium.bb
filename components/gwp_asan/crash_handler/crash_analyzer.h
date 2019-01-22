@@ -47,8 +47,10 @@ class CrashAnalyzer {
     kErrorMismatchedBitness = 7,
     // The allocator computed an invalid slot index.
     kErrorBadSlot = 8,
+    // Failed to read the crashing process' memory of the SlotMetadata.
+    kErrorFailedToReadSlotMetadata = 9,
     // Number of values in this enumeration, required by UMA.
-    kMaxValue = kErrorBadSlot
+    kMaxValue = kErrorFailedToReadSlotMetadata
   };
 
   // Given a ProcessSnapshot, determine if the exception is related to GWP-ASan.

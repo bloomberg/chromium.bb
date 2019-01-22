@@ -109,10 +109,8 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
   }
   const AllocatorState& valid_state = unsafe_state;
 
-  SlotMetadata slot;
-  AllocatorState::ErrorType error_type;
-  auto ret =
-      valid_state.GetMetadataForAddress(exception_addr, &slot, &error_type);
+  uintptr_t slot_address;
+  auto ret = valid_state.GetMetadataForAddress(exception_addr, &slot_address);
   if (ret == AllocatorState::GetMetadataReturnType::kErrorBadSlot) {
     DLOG(ERROR) << "Allocator computed a bad slot index!";
     return GwpAsanCrashAnalysisResult::kErrorBadSlot;
@@ -120,7 +118,15 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
   if (ret == AllocatorState::GetMetadataReturnType::kUnrelatedCrash)
     return GwpAsanCrashAnalysisResult::kUnrelatedCrash;
 
-  proto->set_error_type(static_cast<Crash_ErrorType>(error_type));
+  SlotMetadata slot;
+  if (!memory.Read(slot_address, sizeof(slot), &slot)) {
+    DLOG(ERROR) << "Failed to read SlotMetadata from process.";
+    return GwpAsanCrashAnalysisResult::kErrorFailedToReadSlotMetadata;
+  }
+
+  AllocatorState::ErrorType error = valid_state.GetErrorType(
+      exception_addr, slot.alloc.trace_addr != 0, slot.dealloc.trace_addr != 0);
+  proto->set_error_type(static_cast<Crash_ErrorType>(error));
   proto->set_allocation_address(slot.alloc_ptr);
   proto->set_allocation_size(slot.alloc_size);
   if (slot.alloc.tid != base::kInvalidThreadId || slot.alloc.trace_len)
