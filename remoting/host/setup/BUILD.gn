@@ -29,8 +29,6 @@ source_set("common") {
     "service_client.h",
     "test_util.cc",
     "test_util.h",
-    "win/auth_code_getter.cc",
-    "win/auth_code_getter.h",
   ]
 
   configs += [
