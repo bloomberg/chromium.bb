@@ -37,7 +37,7 @@ namespace {
 // need to be recreated. This might happen when we change various aspects of app
 // shortcuts like command-line flags or associated icons, binaries, etc.
 #if defined(OS_MACOSX)
-const int kCurrentAppShortcutsVersion = 4;
+const int kCurrentAppShortcutsVersion = 5;
 #else
 const int kCurrentAppShortcutsVersion = 0;
 #endif

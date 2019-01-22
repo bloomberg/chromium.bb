@@ -126,55 +126,57 @@ extern NSString* const kShortcutURLPlaceholder;
 // Bundle ID of the Chrome browser bundle.
 extern NSString* const kShortcutBrowserBundleIDPlaceholder;
 
-// Current major/minor version numbers of |ChromeAppModeInfo| (defined below).
-const unsigned kCurrentChromeAppModeInfoMajorVersion = 1;
-const unsigned kCurrentChromeAppModeInfoMinorVersion = 3;
+// Current major version |ChromeAppModeInfo|. This corresponds to the entrypoint
+// ChromeAppModeStart_v5 and also the shortcut version
+// kCurrentAppShortcutsVersion. All three must be updated in lock-step.
+const uint32_t kCurrentChromeAppModeInfoMajorVersion = 5;
+
+// The minor version of |ChromeAppModeInfo|. This can be used to add additional
+// optional members to ChromeAppModeInfo as needed.
+const uint32_t kCurrentChromeAppModeInfoMinorVersion = 0;
 
 // The structure used to pass information from the app mode loader to the
-// (browser) framework. This is versioned using major and minor version numbers,
-// written below as v<major>.<minor>. Version-number checking is done by the
-// framework, and the framework must accept all structures with the same major
-// version number. It may refuse to load if the major version of the structure
-// is different from the one it accepts.
+// (browser) framework. Across Chrome versions, the layout of this structure
+// **MUST NOT CHANGE** and **MUST NOT CHANGE** and **MUST NOT CHANGE**. This
+// implies that no base/ or std:: types may be used in this structure.
 struct ChromeAppModeInfo {
- public:
-  ChromeAppModeInfo();
-  ~ChromeAppModeInfo();
-
-  // Major and minor version number of this structure.
-  unsigned major_version;  // Required: all versions
-  unsigned minor_version;  // Required: all versions
+  // Major and minor version number of this structure (see
+  // kCurrentChromeAppModeInfoMajorVersion and
+  // kCurrentChromeAppModeInfoMinorVersion).
+  uint32_t major_version;
+  uint32_t minor_version;
 
   // Original |argc| and |argv|.
-  int argc;  // Required: v1.0
-  char** argv;  // Required: v1.0
+  int argc;
+  char** argv;
 
-  // Versioned path to the browser which is being loaded.
-  base::FilePath chrome_versioned_path;  // Required: v1.0
+  // Versioned path to the browser which is being loaded as UTF8.
+  const char* chrome_versioned_path;
 
-  // Path to Chrome app bundle.
-  base::FilePath chrome_outer_bundle_path;  // Required: v1.0
+  // Path to Chrome app bundle as UTF8.
+  const char* chrome_outer_bundle_path;
 
   // Information about the App Mode shortcut:
 
-  // Path to the App Mode Loader application bundle that launched the process.
-  base::FilePath app_mode_bundle_path;  // Optional: v1.0
+  // Path to the App Mode Loader application bundle that launched the process
+  // as UTF8.
+  const char* app_mode_bundle_path;
 
-  // Short ID string, preferably derived from |app_mode_short_name|. Should be
-  // safe for the file system.
-  std::string app_mode_id;  // Required: v1.0
+  // Short UTF8 ID string, preferably derived from |app_mode_short_name|. Should
+  // be safe for the file system.
+  const char* app_mode_id;
 
   // Unrestricted (e.g., several-word) UTF8-encoded name for the shortcut.
-  base::string16 app_mode_name;  // Optional: v1.0
+  const char* app_mode_name;
 
-  // URL for the shortcut. Must be a valid URL.
-  std::string app_mode_url;  // Required: v1.0
+  // URL for the shortcut. Must be a valid UTF8-encoded URL.
+  const char* app_mode_url;
 
-  // Path to the app's user data directory.
-  base::FilePath user_data_dir;
+  // Path to the app's user data directory as UTF8.
+  const char* user_data_dir;
 
-  // Directory of the profile associated with the app.
-  base::FilePath profile_dir;
+  // Directory of the profile associated with the app as UTF8.
+  const char* profile_dir;
 };
 
 // Check that the socket and its parent directory have the correct permissions
