@@ -127,8 +127,9 @@ public class NewTabPageView extends HistoryNavigationLayout {
         mTab.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
 
         mNewTabPageLayout.initialize(manager, tab, tileGroupDelegate, searchProviderHasLogo,
-                searchProviderIsGoogle, mRecyclerView, mContextMenuManager, mUiConfig,
-                constructedTimeNs);
+                searchProviderIsGoogle, mRecyclerView, mContextMenuManager, mUiConfig);
+
+        NewTabPageUma.trackTimeToFirstDraw(this, constructedTimeNs);
 
         mSnapScrollHelper = new SnapScrollHelper(mManager, mNewTabPageLayout);
         mSnapScrollHelper.setView(mRecyclerView);

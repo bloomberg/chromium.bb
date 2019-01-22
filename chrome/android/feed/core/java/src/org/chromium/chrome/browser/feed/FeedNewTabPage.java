@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
+import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.SnapScrollHelper;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
@@ -184,8 +185,13 @@ public class FeedNewTabPage extends NewTabPage {
      * Provides the additional capabilities needed for the {@link FeedNewTabPage} container view.
      */
     private class RootView extends HistoryNavigationLayout {
-        public RootView(Context context) {
+        /**
+         * @param context The context of the application.
+         * @param constructedTimeNs The timestamp at which the new tab page's construction started.
+         */
+        public RootView(Context context, long constructedTimeNs) {
             super(context);
+            NewTabPageUma.trackTimeToFirstDraw(this, constructedTimeNs);
         }
 
         @Override
@@ -244,14 +250,14 @@ public class FeedNewTabPage extends NewTabPage {
         mNewTabPageLayout.initialize(mNewTabPageManager, mTab, mTileGroupDelegate,
                 mSearchProviderHasLogo,
                 TemplateUrlService.getInstance().isDefaultSearchEngineGoogle(), mMediator,
-                mContextMenuManager, mUiConfig, mConstructedTimeNs);
+                mContextMenuManager, mUiConfig);
     }
 
     @Override
     protected void initializeMainView(Context context) {
         int topPadding = context.getResources().getDimensionPixelOffset(R.dimen.tab_strip_height);
 
-        mRootView = new RootView(context);
+        mRootView = new RootView(context, mConstructedTimeNs);
         mRootView.setPadding(0, topPadding, 0, 0);
         mUiConfig = new UiConfig(mRootView);
     }

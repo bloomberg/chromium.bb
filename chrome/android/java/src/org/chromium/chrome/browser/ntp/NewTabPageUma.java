@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.ntp;
 
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
+import android.view.View;
+import android.view.ViewTreeObserver;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -330,5 +332,29 @@ public final class NewTabPageUma {
             if (!NewTabPage.isNTPUrl(tab.getUrl())) return;
             RecordUserAction.record("MobileNTPOpenedInNewTab");
         }
+    }
+
+    /**
+     * Setups up an onPreDraw listener for the given view to emit a metric exactly once. The view
+     * should be guaranteed to be shown on the page/screen on every load, otherwise the metric
+     * may not be emitted, or worse not emitted promptly.
+     * @param view The UI element to track.
+     * @param constructedTimeNs The timestamp at which the new tab page's construction started.
+     */
+    public static void trackTimeToFirstDraw(View view, long constructedTimeNs) {
+        // Use preDraw instead of draw because api level 25 and earlier doesn't seem to call the
+        // onDraw listener. Also, the onDraw version cannot be removed inside of the
+        // notification, which complicates this.
+        view.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                long timeToFirstDrawMs =
+                        TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - constructedTimeNs);
+                RecordHistogram.recordTimesHistogram(
+                        "NewTabPage.TimeToFirstDraw2", timeToFirstDrawMs, TimeUnit.MILLISECONDS);
+                view.getViewTreeObserver().removeOnPreDrawListener(this);
+                return true;
+            }
+        });
     }
 }
