@@ -5,7 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_SIGNIN_IDENTITY_MANAGER_FACTORY_H_
 #define IOS_CHROME_BROWSER_SIGNIN_IDENTITY_MANAGER_FACTORY_H_
 
-#include "base/memory/singleton.h"
+#include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
 namespace identity {
@@ -29,7 +30,7 @@ class IdentityManagerFactory : public BrowserStateKeyedServiceFactory {
   static IdentityManagerFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<IdentityManagerFactory>;
+  friend class base::NoDestructor<IdentityManagerFactory>;
 
   IdentityManagerFactory();
   ~IdentityManagerFactory() override;

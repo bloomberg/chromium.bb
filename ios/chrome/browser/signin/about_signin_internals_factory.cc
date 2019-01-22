@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/about_signin_internals.h"
@@ -44,7 +44,8 @@ AboutSigninInternals* AboutSigninInternalsFactory::GetForBrowserState(
 
 // static
 AboutSigninInternalsFactory* AboutSigninInternalsFactory::GetInstance() {
-  return base::Singleton<AboutSigninInternalsFactory>::get();
+  static base::NoDestructor<AboutSigninInternalsFactory> instance;
+  return instance.get();
 }
 
 std::unique_ptr<KeyedService>

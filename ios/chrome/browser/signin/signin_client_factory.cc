@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -21,7 +21,8 @@ SigninClient* SigninClientFactory::GetForBrowserState(
 
 // static
 SigninClientFactory* SigninClientFactory::GetInstance() {
-  return base::Singleton<SigninClientFactory>::get();
+  static base::NoDestructor<SigninClientFactory> instance;
+  return instance.get();
 }
 
 SigninClientFactory::SigninClientFactory()

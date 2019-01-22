@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/core/browser/signin_error_controller.h"
@@ -25,7 +25,8 @@ SigninErrorController* SigninErrorControllerFactory::GetForBrowserState(
 
 // static
 SigninErrorControllerFactory* SigninErrorControllerFactory::GetInstance() {
-  return base::Singleton<SigninErrorControllerFactory>::get();
+  static base::NoDestructor<SigninErrorControllerFactory> instance;
+  return instance.get();
 }
 
 SigninErrorControllerFactory::SigninErrorControllerFactory()

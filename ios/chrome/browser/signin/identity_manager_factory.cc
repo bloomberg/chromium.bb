@@ -71,7 +71,8 @@ identity::IdentityManager* IdentityManagerFactory::GetForBrowserStateIfExists(
 
 // static
 IdentityManagerFactory* IdentityManagerFactory::GetInstance() {
-  return base::Singleton<IdentityManagerFactory>::get();
+  static base::NoDestructor<IdentityManagerFactory> instance;
+  return instance.get();
 }
 
 std::unique_ptr<KeyedService> IdentityManagerFactory::BuildServiceInstanceFor(

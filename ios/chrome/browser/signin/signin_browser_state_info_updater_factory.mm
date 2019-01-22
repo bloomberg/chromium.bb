@@ -25,7 +25,8 @@ SigninBrowserStateInfoUpdaterFactory::GetForBrowserState(
 // static
 SigninBrowserStateInfoUpdaterFactory*
 SigninBrowserStateInfoUpdaterFactory::GetInstance() {
-  return base::Singleton<SigninBrowserStateInfoUpdaterFactory>::get();
+  static base::NoDestructor<SigninBrowserStateInfoUpdaterFactory> instance;
+  return instance.get();
 }
 
 SigninBrowserStateInfoUpdaterFactory::SigninBrowserStateInfoUpdaterFactory()

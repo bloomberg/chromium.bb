@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/core/browser/account_reconcilor.h"
@@ -40,7 +40,8 @@ AccountReconcilor* AccountReconcilorFactory::GetForBrowserState(
 
 // static
 AccountReconcilorFactory* AccountReconcilorFactory::GetInstance() {
-  return base::Singleton<AccountReconcilorFactory>::get();
+  static base::NoDestructor<AccountReconcilorFactory> instance;
+  return instance.get();
 }
 
 std::unique_ptr<KeyedService> AccountReconcilorFactory::BuildServiceInstanceFor(
