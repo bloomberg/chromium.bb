@@ -113,10 +113,6 @@ VideoCaptureDeviceClient::VideoCaptureDeviceClient(
 }
 
 VideoCaptureDeviceClient::~VideoCaptureDeviceClient() {
-  // This should be on the platform auxiliary thread since
-  // |external_jpeg_decoder_| need to be destructed on the same thread as
-  // OnIncomingCapturedData.
-
   for (int buffer_id : buffer_ids_known_by_receiver_)
     receiver_->OnBufferRetired(buffer_id);
 }

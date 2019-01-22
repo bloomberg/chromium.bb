@@ -22,6 +22,7 @@
 #include "media/base/media_switches.h"
 #include "media/capture/video/fake_video_capture_device.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
+#include "media/capture/video/scoped_video_capture_jpeg_decoder.h"
 #include "media/capture/video/video_capture_buffer_pool_impl.h"
 #include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
 #include "media/capture/video/video_capture_device_client.h"
@@ -48,12 +49,15 @@ namespace {
 std::unique_ptr<media::VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
     media::VideoCaptureJpegDecoder::DecodeDoneCB decode_done_cb,
     base::Callback<void(const std::string&)> send_log_message_cb) {
-  return std::make_unique<media::VideoCaptureJpegDecoderImpl>(
-      base::BindRepeating(
-          &content::VideoCaptureDependencies::CreateJpegDecodeAccelerator),
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::IO}),
-      std::move(decode_done_cb), std::move(send_log_message_cb));
+  auto io_task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
+      {content::BrowserThread::IO});
+  return std::make_unique<media::ScopedVideoCaptureJpegDecoder>(
+      std::make_unique<media::VideoCaptureJpegDecoderImpl>(
+          base::BindRepeating(
+              &content::VideoCaptureDependencies::CreateJpegDecodeAccelerator),
+          io_task_runner, std::move(decode_done_cb),
+          std::move(send_log_message_cb)),
+      io_task_runner);
 }
 
 // The maximum number of video frame buffers in-flight at any one time. This

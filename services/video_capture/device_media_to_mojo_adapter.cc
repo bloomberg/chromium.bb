@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/capture/video/scoped_video_capture_jpeg_decoder.h"
 #include "media/capture/video/video_capture_buffer_pool_impl.h"
 #include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
 #include "media/capture/video/video_capture_jpeg_decoder_impl.h"
@@ -20,9 +21,11 @@ std::unique_ptr<media::VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
     media::MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_callback,
     media::VideoCaptureJpegDecoder::DecodeDoneCB decode_done_cb,
     base::RepeatingCallback<void(const std::string&)> send_log_message_cb) {
-  return std::make_unique<media::VideoCaptureJpegDecoderImpl>(
-      jpeg_decoder_factory_callback, std::move(decoder_task_runner),
-      std::move(decode_done_cb), std::move(send_log_message_cb));
+  return std::make_unique<media::ScopedVideoCaptureJpegDecoder>(
+      std::make_unique<media::VideoCaptureJpegDecoderImpl>(
+          jpeg_decoder_factory_callback, decoder_task_runner,
+          std::move(decode_done_cb), std::move(send_log_message_cb)),
+      decoder_task_runner);
 }
 
 }  // anonymous namespace
