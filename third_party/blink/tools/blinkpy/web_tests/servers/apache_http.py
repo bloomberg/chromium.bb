@@ -59,6 +59,7 @@ class ApacheHTTP(server_base.ServerBase):
         document_root = self._filesystem.join(test_dir, 'http', 'tests')
         forms_test_resources_dir = self._filesystem.join(test_dir, 'fast', 'forms', 'resources')
         media_resources_dir = self._filesystem.join(test_dir, 'media')
+        reporting_observer_resources_dir = self._filesystem.join(test_dir, 'reporting-observer', 'resources')
         webaudio_resources_dir = self._filesystem.join(test_dir, 'webaudio', 'resources')
         mime_types_path = self._filesystem.join(self._port_obj.apache_config_directory(), 'mime.types')
         cert_file = self._filesystem.join(self._port_obj.apache_config_directory(), 'webkit-httpd.pem')
@@ -87,6 +88,7 @@ class ApacheHTTP(server_base.ServerBase):
             '-c', 'Alias /bluetooth-resources "%s/external/wpt/bluetooth/resources"' % test_dir,
             '-c', 'Alias /forms-test-resources "%s"' % forms_test_resources_dir,
             '-c', 'Alias /media-resources "%s"' % media_resources_dir,
+            '-c', 'Alias /reporting-observer-resources "%s"' % reporting_observer_resources_dir,
             '-c', 'Alias /webaudio-resources "%s"' % webaudio_resources_dir,
             '-c', 'Alias /inspector-sources "%s"' % inspector_sources_dir,
             '-c', 'Alias /gen "%s"' % generated_sources_dir,

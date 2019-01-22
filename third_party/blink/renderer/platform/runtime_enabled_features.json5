@@ -483,6 +483,7 @@
     {
       name: "FeaturePolicyReporting",
       implied_by: ["ExperimentalProductivityFeatures"],
+      origin_trial_feature_name: "FeaturePolicyReporting",
       status: "experimental"
     },
     {

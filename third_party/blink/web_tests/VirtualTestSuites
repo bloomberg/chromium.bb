@@ -170,6 +170,11 @@
     "args": ["--disable-origin-trial-controlled-blink-features"]
   },
   {
+    "prefix": "stable",
+    "base": "http/tests/origin_trials/feature-policy-reporting",
+    "args": ["--stable-release-mode"]
+  },
+  {
     "prefix": "android",
     "base": "fullscreen",
     "args": ["--enable-features=OverlayScrollbar", "--enable-threaded-compositing",

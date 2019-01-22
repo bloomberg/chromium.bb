@@ -132,9 +132,6 @@ void SecurityContext::AddReportOnlyFeaturePolicy(
     const ParsedFeaturePolicy& parsed_report_only_header,
     const ParsedFeaturePolicy& container_policy,
     const FeaturePolicy* parent_feature_policy) {
-  if (!RuntimeEnabledFeatures::FeaturePolicyReportingEnabled())
-    return;
-
   report_only_feature_policy_ = FeaturePolicy::CreateFromParentPolicy(
       parent_feature_policy, container_policy, security_origin_->ToUrlOrigin());
   report_only_feature_policy_->SetHeaderPolicy(parsed_report_only_header);
@@ -153,8 +150,7 @@ bool SecurityContext::IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
   FeatureEnabledState state = GetFeatureEnabledState(feature);
   if (state == FeatureEnabledState::kEnabled)
     return true;
-  if (report_on_failure == ReportOptions::kReportOnFailure &&
-      RuntimeEnabledFeatures::FeaturePolicyReportingEnabled()) {
+  if (report_on_failure == ReportOptions::kReportOnFailure) {
     ReportFeaturePolicyViolation(
         feature,
         (state == FeatureEnabledState::kReportOnly
