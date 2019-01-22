@@ -47,6 +47,9 @@ void PreviewsLitePageURLLoaderInterceptor::MaybeCreateLoader(
     content::URLLoaderRequestInterceptor::LoaderCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // TODO(ryansturm): Handle reloads by handling non-intercepted attempts at
+  // fetching the lite page server. https://crbug.com/921756
+
   if (ShouldCreateLoader(tentative_resource_request)) {
     CreateRedirectLoader(tentative_resource_request, resource_context,
                          std::move(callback));
@@ -61,9 +64,27 @@ void PreviewsLitePageURLLoaderInterceptor::CreateRedirectLoader(
     content::ResourceContext* resource_context,
     content::URLLoaderRequestInterceptor::LoaderCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(ryansturm): handle fetching the lite page.
-  // https://crbug.com/921740
+
   RecordInterceptAttempt(true);
+
+  redirect_url_loader_ =
+      PreviewsLitePageRedirectURLLoader::AttemptRedirectToPreview(
+          tentative_resource_request,
+          base::BindOnce(
+              &PreviewsLitePageURLLoaderInterceptor::HandleRedirectLoader,
+              base::Unretained(this), std::move(callback)));
+}
+
+void PreviewsLitePageURLLoaderInterceptor::HandleRedirectLoader(
+    content::URLLoaderRequestInterceptor::LoaderCallback callback,
+    std::unique_ptr<PreviewsLitePageServingURLLoader> serving_url_loader,
+    RequestHandler handler) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Handle any failure by using default loader.
+  // For now, only fallback is allowed.
+  DCHECK(!serving_url_loader);
+  DCHECK(handler.is_null());
+  redirect_url_loader_.reset();
   std::move(callback).Run({});
 }
 

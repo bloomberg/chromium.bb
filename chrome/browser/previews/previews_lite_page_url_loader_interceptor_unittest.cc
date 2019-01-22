@@ -5,6 +5,7 @@
 #include "chrome/browser/previews/previews_lite_page_url_loader_interceptor.h"
 
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "content/public/common/previews_state.h"
@@ -19,6 +20,7 @@ void EmptyCallback(
     content::URLLoaderRequestInterceptor::RequestHandler callback) {}
 
 TEST(PreviewsLitePageURLLoaderInterceptorTest, InterceptRequest) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   PreviewsLitePageURLLoaderInterceptor interceptor(1);
 
   base::HistogramTester histogram_tester;
