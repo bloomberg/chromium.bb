@@ -1210,6 +1210,12 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
           parser, returncode = self.run_wpr_test(
             udid, recipe_path, replay_path)
 
+          # If this test fails, immediately rerun it to see if it deflakes.
+          # We simply overwrite the first result with the second.
+          if parser.FailedTests(include_flaky=True):
+            parser, returncode = self.run_wpr_test(
+              udid, recipe_path, replay_path)
+
           for test in parser.FailedTests(include_flaky=True):
             # All test names will be the same since we re-run the same suite;
             # therefore, to differentiate the results, we append the recipe
