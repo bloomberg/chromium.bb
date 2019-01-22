@@ -37,7 +37,6 @@
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
-#import "ios/chrome/browser/snapshots/snapshot_cache_web_state_list_observer.h"
 #include "ios/chrome/browser/tab_parenting_global_observer.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
@@ -360,13 +359,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
     _webStateListObservers.push_back(
         std::make_unique<WebStateListObserverBridge>(
             tabModelClosingWebStateObserver));
-
-    SnapshotCache* snapshotCache =
-        SnapshotCacheFactory::GetForBrowserState(_browserState);
-    if (snapshotCache) {
-      _webStateListObservers.push_back(
-          std::make_unique<SnapshotCacheWebStateListObserver>(snapshotCache));
-    }
 
     _webStateListObservers.push_back(std::make_unique<TabParentingObserver>());
 
