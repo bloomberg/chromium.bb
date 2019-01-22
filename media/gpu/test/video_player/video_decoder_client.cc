@@ -25,12 +25,14 @@ namespace test {
 VideoDecoderClient::VideoDecoderClient(
     const VideoPlayer::EventCallback& event_cb,
     FrameRenderer* renderer,
-    const std::vector<VideoFrameProcessor*>& frame_processors)
+    const std::vector<VideoFrameProcessor*>& frame_processors,
+    const VideoDecoderClientConfig& config)
     : event_cb_(event_cb),
       frame_renderer_(renderer),
       frame_processors_(frame_processors),
       decoder_client_thread_("VDAClientDecoderThread"),
       decoder_client_state_(VideoDecoderClientState::kUninitialized),
+      decoder_client_config_(config),
       weak_this_factory_(this) {
   DETACH_FROM_SEQUENCE(decoder_client_sequence_checker_);
   weak_this_ = weak_this_factory_.GetWeakPtr();
@@ -45,9 +47,10 @@ VideoDecoderClient::~VideoDecoderClient() {
 std::unique_ptr<VideoDecoderClient> VideoDecoderClient::Create(
     const VideoPlayer::EventCallback& event_cb,
     FrameRenderer* frame_renderer,
-    const std::vector<VideoFrameProcessor*>& frame_processors) {
-  auto decoder_client = base::WrapUnique(
-      new VideoDecoderClient(event_cb, frame_renderer, frame_processors));
+    const std::vector<VideoFrameProcessor*>& frame_processors,
+    const VideoDecoderClientConfig& config) {
+  auto decoder_client = base::WrapUnique(new VideoDecoderClient(
+      event_cb, frame_renderer, frame_processors, config));
   if (!decoder_client->Initialize()) {
     return nullptr;
   }
@@ -198,20 +201,17 @@ void VideoDecoderClient::NotifyEndOfBitstreamBuffer(
   DCHECK_NE(VideoDecoderClientState::kIdle, decoder_client_state_);
   DVLOGF(4);
 
-  // Queue the next fragment to be decoded. Flush when we reached the end of the
-  // stream.
-  if (encoded_data_helper_->ReachEndOfStream()) {
-    decoder_client_thread_.task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&VideoDecoderClient::FlushTask, weak_this_));
-  } else {
-    decoder_client_thread_.task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&VideoDecoderClient::DecodeNextFragmentTask,
-                                  weak_this_));
-  }
+  num_outstanding_decode_requests_--;
+
+  // Queue the next fragment to be decoded.
+  decoder_client_thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&VideoDecoderClient::DecodeNextFragmentTask, weak_this_));
 }
 
 void VideoDecoderClient::NotifyFlushDone() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
+  DCHECK_EQ(0u, num_outstanding_decode_requests_);
 
   decoder_client_state_ = VideoDecoderClientState::kIdle;
   event_cb_.Run(VideoPlayerEvent::kFlushDone);
@@ -219,6 +219,7 @@ void VideoDecoderClient::NotifyFlushDone() {
 
 void VideoDecoderClient::NotifyResetDone() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
+  DCHECK_EQ(0u, num_outstanding_decode_requests_);
 
   // We finished resetting to a different point in the stream, so we should
   // update the frame index. Currently only resetting to the start of the stream
@@ -303,6 +304,7 @@ void VideoDecoderClient::CreateDecoderTask(
 void VideoDecoderClient::DestroyDecoderTask(base::WaitableEvent* done) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
   DCHECK_EQ(VideoDecoderClientState::kIdle, decoder_client_state_);
+  DCHECK_EQ(0u, num_outstanding_decode_requests_);
   DVLOGF(4);
 
   // Invalidate all scheduled tasks.
@@ -328,8 +330,10 @@ void VideoDecoderClient::DecodeNextFragmentTask() {
   if (decoder_client_state_ != VideoDecoderClientState::kDecoding)
     return;
 
+  // Flush immediately when we reached the end of the stream. This changes the
+  // state to kFlushing so further decode tasks will be aborted.
   if (encoded_data_helper_->ReachEndOfStream()) {
-    LOG(ERROR) << "End of stream reached";
+    FlushTask();
     return;
   }
 
@@ -354,6 +358,7 @@ void VideoDecoderClient::DecodeNextFragmentTask() {
 
   DVLOGF(4) << "Bitstream buffer id: " << bitstream_buffer_id;
   decoder_->Decode(bitstream_buffer);
+  num_outstanding_decode_requests_++;
 }
 
 void VideoDecoderClient::PlayTask() {
@@ -364,11 +369,13 @@ void VideoDecoderClient::PlayTask() {
   // called e.g. while flushing, the behavior is undefined.
   ASSERT_EQ(decoder_client_state_, VideoDecoderClientState::kIdle);
 
-  // Start decoding the first fragment. While in the decoding state new
+  // Start decoding the first fragments. While in the decoding state new
   // fragments will automatically be fed to the decoder, when the decoder
-  // notifies us it reached the end of the current bitstream.
+  // notifies us it reached the end of a bitstream buffer.
   decoder_client_state_ = VideoDecoderClientState::kDecoding;
-  DecodeNextFragmentTask();
+  for (size_t i = 0; i < decoder_client_config_.max_outstanding_decode_requests;
+       ++i)
+    DecodeNextFragmentTask();
 }
 
 void VideoDecoderClient::FlushTask() {

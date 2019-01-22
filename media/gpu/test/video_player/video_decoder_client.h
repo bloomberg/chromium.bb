@@ -27,6 +27,13 @@ class EncodedDataHelper;
 class FrameRenderer;
 class VideoFrameProcessor;
 
+// Video decoder client configuration.
+struct VideoDecoderClientConfig {
+  // The maximum number of bitstream buffer decodes that can be requested
+  // without waiting for the result of the previous decode requests.
+  size_t max_outstanding_decode_requests = 1;
+};
+
 // The video decoder client is responsible for the communication between the
 // video player and the video decoder. It also communicates with the frame
 // renderer and other components. The video decoder client can only have one
@@ -49,7 +56,8 @@ class VideoDecoderClient : public VideoDecodeAccelerator::Client {
   static std::unique_ptr<VideoDecoderClient> Create(
       const VideoPlayer::EventCallback& event_cb,
       FrameRenderer* frame_renderer,
-      const std::vector<VideoFrameProcessor*>& frame_processors);
+      const std::vector<VideoFrameProcessor*>& frame_processors,
+      const VideoDecoderClientConfig& config);
 
   // Create a decoder with specified |config| and video |stream|. The video
   // will not be owned by the decoder client, the caller should guarantee it
@@ -81,7 +89,8 @@ class VideoDecoderClient : public VideoDecodeAccelerator::Client {
 
   VideoDecoderClient(const VideoPlayer::EventCallback& event_cb,
                      FrameRenderer* renderer,
-                     const std::vector<VideoFrameProcessor*>& frame_processors);
+                     const std::vector<VideoFrameProcessor*>& frame_processors,
+                     const VideoDecoderClientConfig& config);
 
   bool Initialize();
   void Destroy();
@@ -141,6 +150,10 @@ class VideoDecoderClient : public VideoDecodeAccelerator::Client {
 
   // Index of the frame that's currently being decoded.
   size_t current_frame_index_ = 0;
+  // The current number of outgoing bitstream buffers decode requests.
+  size_t num_outstanding_decode_requests_ = 0;
+  // Video decoder client configuration.
+  const VideoDecoderClientConfig decoder_client_config_;
 
   // TODO(dstaessens@) Replace with StreamParser.
   std::unique_ptr<media::test::EncodedDataHelper> encoded_data_helper_;
