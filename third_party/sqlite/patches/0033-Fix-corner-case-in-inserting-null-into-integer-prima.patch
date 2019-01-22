@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Victor Costan <pwnall@chromium.org>
+Date: Sat, 19 Jan 2019 14:27:29 -0800
+Subject: [PATCH 33/40] Fix corner case in inserting null into integer primary
+ key.
+
+This backports https://www.sqlite.org/src/info/9a425051e7ba59e7
+
+Bug: 922844
+---
+ third_party/sqlite/src/src/insert.c | 14 +++++---------
+ 1 file changed, 5 insertions(+), 9 deletions(-)
+
+diff --git a/third_party/sqlite/src/src/insert.c b/third_party/sqlite/src/src/insert.c
+index a834f3918439..2dd4d8227a6c 100644
+--- a/third_party/sqlite/src/src/insert.c
++++ b/third_party/sqlite/src/src/insert.c
+@@ -947,16 +947,12 @@ void sqlite3Insert(
+       }else if( pSelect ){
+         sqlite3VdbeAddOp2(v, OP_Copy, regFromSelect+ipkColumn, regRowid);
+       }else{
+-        VdbeOp *pOp;
+-        sqlite3ExprCode(pParse, pList->a[ipkColumn].pExpr, regRowid);
+-        pOp = sqlite3VdbeGetOp(v, -1);
+-        assert( pOp!=0 );
+-        if( pOp->opcode==OP_Null && !IsVirtual(pTab) ){
++        Expr *pIpk = pList->a[ipkColumn].pExpr;
++        if( pIpk->op==TK_NULL && !IsVirtual(pTab) ){
++          sqlite3VdbeAddOp3(v, OP_NewRowid, iDataCur, regRowid, regAutoinc);
+           appendFlag = 1;
+-          pOp->opcode = OP_NewRowid;
+-          pOp->p1 = iDataCur;
+-          pOp->p2 = regRowid;
+-          pOp->p3 = regAutoinc;
++        }else{
++          sqlite3ExprCode(pParse, pList->a[ipkColumn].pExpr, regRowid);
+         }
+       }
+       /* If the PRIMARY KEY expression is NULL, then use OP_NewRowid
+--
+2.18.0
+

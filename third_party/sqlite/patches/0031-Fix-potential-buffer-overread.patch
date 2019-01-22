@@ -1,0 +1,41 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Victor Costan <pwnall@chromium.org>
+Date: Fri, 18 Jan 2019 23:20:17 -0800
+Subject: [PATCH 31/40] Fix potential buffer overread.
+
+This backports https://sqlite.org/src/info/8ba3d9f38090c4bb
+
+Bug: 923196
+---
+ third_party/sqlite/src/src/btree.c   | 1 +
+ third_party/sqlite/src/src/pcache1.c | 2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/third_party/sqlite/src/src/btree.c b/third_party/sqlite/src/src/btree.c
+index 9b5745558514..5eb83736533a 100644
+--- a/third_party/sqlite/src/src/btree.c
++++ b/third_party/sqlite/src/src/btree.c
+@@ -6772,6 +6772,7 @@ static int rebuildPage(
+   for(i=0; i<nCell; i++){
+     u8 *pCell = apCell[i];
+     if( SQLITE_WITHIN(pCell,aData,pEnd) ){
++      if( ((uptr)(pCell+szCell[i]))>(uptr)pEnd ) return SQLITE_CORRUPT_BKPT;
+       pCell = &pTmp[pCell - aData];
+     }
+     pData -= szCell[i];
+diff --git a/third_party/sqlite/src/src/pcache1.c b/third_party/sqlite/src/src/pcache1.c
+index 4fd6cb7bed39..05ef4bde330b 100644
+--- a/third_party/sqlite/src/src/pcache1.c
++++ b/third_party/sqlite/src/src/pcache1.c
+@@ -480,7 +480,7 @@ void *sqlite3PageMalloc(int sz){
+   /* During rebalance operations on a corrupt database file, it is sometimes
+   ** (rarely) possible to overread the temporary page buffer by a few bytes.
+   ** Enlarge the allocation slightly so that this does not cause problems. */
+-  return pcache1Alloc(sz + 32);
++  return pcache1Alloc(sz);
+ }
+
+ /*
+--
+2.18.0
+

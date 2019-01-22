@@ -1,0 +1,246 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Victor Costan <pwnall@chromium.org>
+Date: Mon, 21 Jan 2019 14:57:17 -0800
+Subject: [PATCH 38/40] Fix leaks caused by circular references in vtable
+ shadow tables.
+
+This backports https://sqlite.org/src/info/da587d18575ac06a
+
+Bug: 914028, 917075, 917786, 922399
+---
+ third_party/sqlite/src/ext/fts3/fts3_write.c  |  5 +--
+ third_party/sqlite/src/ext/fts5/fts5_index.c  | 16 ++-------
+ .../sqlite/src/ext/fts5/fts5_storage.c        |  5 +--
+ third_party/sqlite/src/ext/rtree/rtree.c      |  7 ++--
+ third_party/sqlite/src/src/build.c            | 34 +++++++++++--------
+ third_party/sqlite/src/src/prepare.c          |  1 +
+ third_party/sqlite/src/src/sqlite.h.in        |  6 ++++
+ third_party/sqlite/src/src/sqliteInt.h        |  1 +
+ third_party/sqlite/src/src/trigger.c          |  1 +
+ 9 files changed, 41 insertions(+), 35 deletions(-)
+
+diff --git a/third_party/sqlite/src/ext/fts3/fts3_write.c b/third_party/sqlite/src/ext/fts3/fts3_write.c
+index fc599a0c3e04..9bc6d70f45cb 100644
+--- a/third_party/sqlite/src/ext/fts3/fts3_write.c
++++ b/third_party/sqlite/src/ext/fts3/fts3_write.c
+@@ -396,10 +396,12 @@ static int fts3SqlStmt(
+
+   pStmt = p->aStmt[eStmt];
+   if( !pStmt ){
++    int f = SQLITE_PREPARE_PERSISTENT|SQLITE_PREPARE_NO_VTAB;
+     char *zSql;
+     if( eStmt==SQL_CONTENT_INSERT ){
+       zSql = sqlite3_mprintf(azSql[eStmt], p->zDb, p->zName, p->zWriteExprlist);
+     }else if( eStmt==SQL_SELECT_CONTENT_BY_ROWID ){
++      f &= ~SQLITE_PREPARE_NO_VTAB;
+       zSql = sqlite3_mprintf(azSql[eStmt], p->zReadExprlist);
+     }else{
+       zSql = sqlite3_mprintf(azSql[eStmt], p->zDb, p->zName);
+@@ -407,8 +409,7 @@ static int fts3SqlStmt(
+     if( !zSql ){
+       rc = SQLITE_NOMEM;
+     }else{
+-      rc = sqlite3_prepare_v3(p->db, zSql, -1, SQLITE_PREPARE_PERSISTENT,
+-                              &pStmt, NULL);
++      rc = sqlite3_prepare_v3(p->db, zSql, -1, f, &pStmt, NULL);
+       sqlite3_free(zSql);
+       assert( rc==SQLITE_OK || pStmt==0 );
+       p->aStmt[eStmt] = pStmt;
+diff --git a/third_party/sqlite/src/ext/fts5/fts5_index.c b/third_party/sqlite/src/ext/fts5/fts5_index.c
+index 833b5e283644..7cacf930cc85 100644
+--- a/third_party/sqlite/src/ext/fts5/fts5_index.c
++++ b/third_party/sqlite/src/ext/fts5/fts5_index.c
+@@ -729,7 +729,8 @@ static int fts5IndexPrepareStmt(
+   if( p->rc==SQLITE_OK ){
+     if( zSql ){
+       p->rc = sqlite3_prepare_v3(p->pConfig->db, zSql, -1,
+-                                 SQLITE_PREPARE_PERSISTENT, ppStmt, 0);
++          SQLITE_PREPARE_PERSISTENT|SQLITE_PREPARE_NO_VTAB,
++          ppStmt, 0);
+     }else{
+       p->rc = SQLITE_NOMEM;
+     }
+@@ -770,23 +771,12 @@ static void fts5DataDelete(Fts5Index *p, i64 iFirst, i64 iLast){
+   if( p->rc!=SQLITE_OK ) return;
+
+   if( p->pDeleter==0 ){
+-    int rc;
+     Fts5Config *pConfig = p->pConfig;
+     char *zSql = sqlite3_mprintf(
+         "DELETE FROM '%q'.'%q_data' WHERE id>=? AND id<=?",
+           pConfig->zDb, pConfig->zName
+     );
+-    if( zSql==0 ){
+-      rc = SQLITE_NOMEM;
+-    }else{
+-      rc = sqlite3_prepare_v3(pConfig->db, zSql, -1,
+-                              SQLITE_PREPARE_PERSISTENT, &p->pDeleter, 0);
+-      sqlite3_free(zSql);
+-    }
+-    if( rc!=SQLITE_OK ){
+-      p->rc = rc;
+-      return;
+-    }
++    if( fts5IndexPrepareStmt(p, &p->pDeleter, zSql) ) return;
+   }
+
+   sqlite3_bind_int64(p->pDeleter, 1, iFirst);
+diff --git a/third_party/sqlite/src/ext/fts5/fts5_storage.c b/third_party/sqlite/src/ext/fts5/fts5_storage.c
+index 8424f9d536b2..1f08a9a7a848 100644
+--- a/third_party/sqlite/src/ext/fts5/fts5_storage.c
++++ b/third_party/sqlite/src/ext/fts5/fts5_storage.c
+@@ -136,8 +136,9 @@ static int fts5StorageGetStmt(
+     if( zSql==0 ){
+       rc = SQLITE_NOMEM;
+     }else{
+-      rc = sqlite3_prepare_v3(pC->db, zSql, -1,
+-                              SQLITE_PREPARE_PERSISTENT, &p->aStmt[eStmt], 0);
++      int f = SQLITE_PREPARE_PERSISTENT;
++      if( eStmt>FTS5_STMT_LOOKUP ) f |= SQLITE_PREPARE_NO_VTAB;
++      rc = sqlite3_prepare_v3(pC->db, zSql, -1, f, &p->aStmt[eStmt], 0);
+       sqlite3_free(zSql);
+       if( rc!=SQLITE_OK && pzErrMsg ){
+         *pzErrMsg = sqlite3_mprintf("%s", sqlite3_errmsg(pC->db));
+diff --git a/third_party/sqlite/src/ext/rtree/rtree.c b/third_party/sqlite/src/ext/rtree/rtree.c
+index 9c436d5989e5..e09db482279e 100644
+--- a/third_party/sqlite/src/ext/rtree/rtree.c
++++ b/third_party/sqlite/src/ext/rtree/rtree.c
+@@ -3395,6 +3395,7 @@ static int rtreeSqlInit(
+   };
+   sqlite3_stmt **appStmt[N_STATEMENT];
+   int i;
++  const int f = SQLITE_PREPARE_PERSISTENT|SQLITE_PREPARE_NO_VTAB;
+
+   pRtree->db = db;
+
+@@ -3451,8 +3452,7 @@ static int rtreeSqlInit(
+     }
+     zSql = sqlite3_mprintf(zFormat, zDb, zPrefix);
+     if( zSql ){
+-      rc = sqlite3_prepare_v3(db, zSql, -1, SQLITE_PREPARE_PERSISTENT,
+-                              appStmt[i], 0);
++      rc = sqlite3_prepare_v3(db, zSql, -1, f, appStmt[i], 0);
+     }else{
+       rc = SQLITE_NOMEM;
+     }
+@@ -3482,8 +3482,7 @@ static int rtreeSqlInit(
+       if( zSql==0 ){
+         rc = SQLITE_NOMEM;
+       }else{
+-        rc = sqlite3_prepare_v3(db, zSql, -1, SQLITE_PREPARE_PERSISTENT,
+-                                &pRtree->pWriteAux, 0);
++        rc = sqlite3_prepare_v3(db, zSql, -1, f, &pRtree->pWriteAux, 0);
+         sqlite3_free(zSql);
+       }
+     }
+diff --git a/third_party/sqlite/src/src/build.c b/third_party/sqlite/src/src/build.c
+index 5939fa9974a8..e6e48875d129 100644
+--- a/third_party/sqlite/src/src/build.c
++++ b/third_party/sqlite/src/src/build.c
+@@ -354,26 +354,32 @@ Table *sqlite3LocateTable(
+
+   p = sqlite3FindTable(db, zName, zDbase);
+   if( p==0 ){
+-    const char *zMsg = flags & LOCATE_VIEW ? "no such view" : "no such table";
+ #ifndef SQLITE_OMIT_VIRTUALTABLE
+     /* If zName is the not the name of a table in the schema created using
+     ** CREATE, then check to see if it is the name of an virtual table that
+     ** can be an eponymous virtual table. */
+-    Module *pMod = (Module*)sqlite3HashFind(&db->aModule, zName);
+-    if( pMod==0 && sqlite3_strnicmp(zName, "pragma_", 7)==0 ){
+-      pMod = sqlite3PragmaVtabRegister(db, zName);
+-    }
+-    if( pMod && sqlite3VtabEponymousTableInit(pParse, pMod) ){
+-      return pMod->pEpoTab;
++    if( pParse->disableVtab==0 ){
++      Module *pMod = (Module*)sqlite3HashFind(&db->aModule, zName);
++      if( pMod==0 && sqlite3_strnicmp(zName, "pragma_", 7)==0 ){
++        pMod = sqlite3PragmaVtabRegister(db, zName);
++      }
++      if( pMod && sqlite3VtabEponymousTableInit(pParse, pMod) ){
++        return pMod->pEpoTab;
++      }
+     }
+ #endif
+-    if( (flags & LOCATE_NOERR)==0 ){
+-      if( zDbase ){
+-        sqlite3ErrorMsg(pParse, "%s: %s.%s", zMsg, zDbase, zName);
+-      }else{
+-        sqlite3ErrorMsg(pParse, "%s: %s", zMsg, zName);
+-      }
+-      pParse->checkSchema = 1;
++    if( flags & LOCATE_NOERR ) return 0;
++    pParse->checkSchema = 1;
++  }else if( IsVirtual(p) && pParse->disableVtab ){
++    p = 0;
++  }
++
++  if( p==0 ){
++    const char *zMsg = flags & LOCATE_VIEW ? "no such view" : "no such table";
++    if( zDbase ){
++      sqlite3ErrorMsg(pParse, "%s: %s.%s", zMsg, zDbase, zName);
++    }else{
++      sqlite3ErrorMsg(pParse, "%s: %s", zMsg, zName);
+     }
+   }
+
+diff --git a/third_party/sqlite/src/src/prepare.c b/third_party/sqlite/src/src/prepare.c
+index cdf6f65bb115..87711315a0c0 100644
+--- a/third_party/sqlite/src/src/prepare.c
++++ b/third_party/sqlite/src/src/prepare.c
+@@ -541,6 +541,7 @@ static int sqlite3Prepare(
+     sParse.disableLookaside++;
+     db->lookaside.bDisable++;
+   }
++  sParse.disableVtab = (prepFlags & SQLITE_PREPARE_NO_VTAB)!=0;
+
+   /* Check to verify that it is possible to get a read lock on all
+   ** database schemas.  The inability to get a read lock indicates that
+diff --git a/third_party/sqlite/src/src/sqlite.h.in b/third_party/sqlite/src/src/sqlite.h.in
+index 11622a49697f..cf623163eaa1 100644
+--- a/third_party/sqlite/src/src/sqlite.h.in
++++ b/third_party/sqlite/src/src/sqlite.h.in
+@@ -3637,10 +3637,16 @@ int sqlite3_limit(sqlite3*, int id, int newVal);
+ ** normalize a SQL statement are unspecified and subject to change.
+ ** At a minimum, literal values will be replaced with suitable
+ ** placeholders.
++**
++** [[SQLITE_PREPARE_NO_VTAB]] <dt>SQLITE_PREPARE_NO_VTAB</dt>
++** <dd>The SQLITE_PREPARE_NO_VTAB flag causes the SQL compiler
++** to return an error (error code SQLITE_ERROR) if the statement uses
++** any virtual tables.
+ ** </dl>
+ */
+ #define SQLITE_PREPARE_PERSISTENT              0x01
+ #define SQLITE_PREPARE_NORMALIZE               0x02
++#define SQLITE_PREPARE_NO_VTAB                 0x04
+
+ /*
+ ** CAPI3REF: Compiling An SQL Statement
+diff --git a/third_party/sqlite/src/src/sqliteInt.h b/third_party/sqlite/src/src/sqliteInt.h
+index 44d1406110ee..1aae87ea13b4 100644
+--- a/third_party/sqlite/src/src/sqliteInt.h
++++ b/third_party/sqlite/src/src/sqliteInt.h
+@@ -3057,6 +3057,7 @@ struct Parse {
+   u8 hasCompound;      /* Need to invoke convertCompoundSelectToSubquery() */
+   u8 okConstFactor;    /* OK to factor out constants */
+   u8 disableLookaside; /* Number of times lookaside has been disabled */
++  u8 disableVtab;      /* Disable all virtual tables for this parse */
+   int nRangeReg;       /* Size of the temporary register block */
+   int iRangeReg;       /* First register in temporary register block */
+   int nErr;            /* Number of errors seen */
+diff --git a/third_party/sqlite/src/src/trigger.c b/third_party/sqlite/src/src/trigger.c
+index cf31851f038f..69fddedd914a 100644
+--- a/third_party/sqlite/src/src/trigger.c
++++ b/third_party/sqlite/src/src/trigger.c
+@@ -916,6 +916,7 @@ static TriggerPrg *codeRowTrigger(
+   pSubParse->zAuthContext = pTrigger->zName;
+   pSubParse->eTriggerOp = pTrigger->op;
+   pSubParse->nQueryLoop = pParse->nQueryLoop;
++  pSubParse->disableVtab = pParse->disableVtab;
+
+   v = sqlite3GetVdbe(pSubParse);
+   if( v ){
+--
+2.18.0
+

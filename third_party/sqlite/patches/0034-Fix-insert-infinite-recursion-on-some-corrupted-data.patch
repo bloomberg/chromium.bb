@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Victor Costan <pwnall@chromium.org>
+Date: Sat, 19 Jan 2019 15:39:26 -0800
+Subject: [PATCH 34/40] Fix insert infinite recursion on some corrupted
+ databases.
+
+This backports https://www.sqlite.org/src/info/f31b3bd2a6a8aa35
+
+Bug: 921684
+---
+ third_party/sqlite/src/src/insert.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/third_party/sqlite/src/src/insert.c b/third_party/sqlite/src/src/insert.c
+index 2dd4d8227a6c..b21bf714923a 100644
+--- a/third_party/sqlite/src/src/insert.c
++++ b/third_party/sqlite/src/src/insert.c
+@@ -2190,7 +2190,8 @@ static int xferOptimization(
+   if( pSrc==0 ){
+     return 0;   /* FROM clause does not contain a real table */
+   }
+-  if( pSrc==pDest ){
++  if( pSrc->tnum==pDest->tnum && pSrc->pSchema==pDest->pSchema ){
++    testcase( pSrc!=pDest ); /* Possible due to bad sqlite_master.rootpage */
+     return 0;   /* tab1 and tab2 may not be the same table */
+   }
+   if( HasRowid(pDest)!=HasRowid(pSrc) ){
+--
+2.18.0
+
