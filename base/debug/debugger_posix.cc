@@ -17,6 +17,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/clang_coverage_buildflags.h"
 #include "base/stl_util.h"
 #include "base/test/clang_coverage.h"
 #include "base/threading/platform_thread.h"
@@ -247,7 +248,7 @@ void DebugBreak() {
 #endif
 
 void BreakDebugger() {
-#if defined(CLANG_COVERAGE)
+#if BUILDFLAG(CLANG_COVERAGE)
   WriteClangCoverageProfile();
 #endif
 
