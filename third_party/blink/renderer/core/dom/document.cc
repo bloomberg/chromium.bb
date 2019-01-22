@@ -6374,8 +6374,22 @@ void Document::ApplyFeaturePolicy(const ParsedFeaturePolicy& declared_policy) {
 
 void Document::ApplyReportOnlyFeaturePolicyFromHeader(
     const String& feature_policy_report_only_header) {
-  if (!feature_policy_report_only_header.IsEmpty())
-    UseCounter::Count(*this, WebFeature::kFeaturePolicyReportOnlyHeader);
+  if (feature_policy_report_only_header.IsEmpty())
+    return;
+  // TODO(iclelland): Remove this message when reporting is no longer part of an
+  // origin trial.
+  // Note that we do not return here. Instead, the header is parsed and the
+  // report-only policy is stored, in case a valid Origin Trial token is added
+  // later. In that case, any subsequent violations will be correctly reported.
+  if (!origin_trials::FeaturePolicyReportingEnabled(this)) {
+    AddConsoleMessage(ConsoleMessage::Create(
+        kSecurityMessageSource, kWarningMessageLevel,
+        "Feature-Policy-Report-Only header will have no effect unless Feature "
+        "Policy reporting is enabled with an Origin Trial. Sign up at "
+        "https://developers.chrome.com/origintrials/"));
+  }
+
+  UseCounter::Count(*this, WebFeature::kFeaturePolicyReportOnlyHeader);
   Vector<String> messages;
   const ParsedFeaturePolicy& report_only_policy = ParseFeaturePolicyHeader(
       feature_policy_report_only_header, GetSecurityOrigin(), &messages);
@@ -7802,7 +7816,7 @@ void Document::ReportFeaturePolicyViolation(
     mojom::FeaturePolicyFeature feature,
     mojom::FeaturePolicyDisposition disposition,
     const String& message) const {
-  if (!RuntimeEnabledFeatures::FeaturePolicyReportingEnabled())
+  if (!origin_trials::FeaturePolicyReportingEnabled(this))
     return;
   LocalFrame* frame = GetFrame();
   if (!frame)
