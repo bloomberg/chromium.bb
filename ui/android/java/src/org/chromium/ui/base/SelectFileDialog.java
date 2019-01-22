@@ -241,15 +241,15 @@ public class SelectFileDialog
         }
 
         Activity activity = mWindowAndroid.getActivity().get();
-        List<String> imageMimeTypes = convertToImageMimeTypes(mFileTypes);
 
         // Use the new contacts picker, if available.
         if (shouldUseContactsPicker()
-                && UiUtils.showContactsPicker(activity, this, mAllowMultiple, mFileTypes)) {
+                && UiUtils.showContactsPicker(activity, this, mAllowMultiple)) {
             return;
         }
 
         // Use the new photo picker, if available.
+        List<String> imageMimeTypes = convertToImageMimeTypes(mFileTypes);
         if (shouldUsePhotoPicker()
                 && UiUtils.showPhotoPicker(activity, this, mAllowMultiple, imageMimeTypes)) {
             return;
@@ -431,14 +431,15 @@ public class SelectFileDialog
     }
 
     @Override
-    public void onContactsPickerUserAction(@ContactsPickerAction int action, String contacts) {
+    public void onContactsPickerUserAction(
+            @ContactsPickerAction int action, String contactsJson, List<Contact> contacts) {
         switch (action) {
             case ContactsPickerAction.CANCEL:
                 onFileNotSelected();
                 break;
 
             case ContactsPickerAction.CONTACTS_SELECTED:
-                nativeOnContactsSelected(mNativeSelectFileDialog, contacts);
+                nativeOnContactsSelected(mNativeSelectFileDialog, contactsJson);
                 break;
 
             case ContactsPickerAction.SELECT_ALL:

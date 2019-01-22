@@ -11,8 +11,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.ui.ContactsPickerListener;
 
-import java.util.List;
-
 /**
  * UI for the contacts picker that shows on the Android platform as a result of
  * &lt;input type=file accept=contacts &gt; form element.
@@ -26,15 +24,14 @@ public class ContactsPickerDialog extends AlertDialog {
      * @param context The context to use.
      * @param listener The listener object that gets notified when an action is taken.
      * @param allowMultiple Whether the contacts picker should allow multiple items to be selected.
-     * @param mimeTypes A list of mime types to show in the dialog.
      */
-    public ContactsPickerDialog(Context context, ContactsPickerListener listener,
-            boolean allowMultiple, List<String> mimeTypes) {
+    public ContactsPickerDialog(
+            Context context, ContactsPickerListener listener, boolean allowMultiple) {
         super(context, R.style.FullscreenWhite);
 
         // Initialize the main content view.
         mCategoryView = new PickerCategoryView(context, allowMultiple);
-        mCategoryView.initialize(this, listener, mimeTypes);
+        mCategoryView.initialize(this, listener);
         setView(mCategoryView);
     }
 
