@@ -28,6 +28,10 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
+namespace identity {
+class IdentityManager;
+}  // namespace identity
+
 namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
@@ -178,6 +182,7 @@ class ArcAuthService : public KeyedService,
   Profile* const profile_;
   chromeos::AccountManager* account_manager_ = nullptr;
   AccountTrackerService* const account_tracker_service_;
+  identity::IdentityManager* const identity_manager_;
   ArcBridgeService* const arc_bridge_service_;
 
   chromeos::AccountMapperUtil account_mapper_util_;

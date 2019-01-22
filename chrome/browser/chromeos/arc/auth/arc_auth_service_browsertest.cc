@@ -305,6 +305,11 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
         ->MakeAccountAvailable(email);
   }
 
+  void SetInvalidRefreshTokenForAccount(const std::string& account_id) {
+    identity_test_environment_adaptor_->identity_test_env()
+        ->SetInvalidRefreshTokenForAccount(account_id);
+  }
+
   Profile* profile() { return profile_.get(); }
 
   void set_profile_name(const std::string& username) {
@@ -509,6 +514,27 @@ class ArcAuthServiceAccountManagerTest : public ArcAuthServiceTest {
 
   DISALLOW_COPY_AND_ASSIGN(ArcAuthServiceAccountManagerTest);
 };
+
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceAccountManagerTest,
+                       UnAuthenticatedAccountsAreNotPropagated) {
+  const AccountInfo account_info =
+      SetupGaiaAccount(kSecondaryAccountEmail, kFakeToken);
+  SetInvalidRefreshTokenForAccount(account_info.account_id);
+
+  // Don't bother checking |initial_num_calls|. AccountManager has a quirk that
+  // if you insert an account into it "too soon" (before it has been fully
+  // initialized), it notifies its observers twice for the inserted account.
+  // This case can only be triggered by tests.
+  const int initial_num_calls = auth_instance().num_account_upserted_calls();
+
+  chromeos::AccountManager::AccountKey account_key{
+      account_info.gaia,
+      chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA};
+  account_manager()->UpsertToken(account_key,
+                                 chromeos::AccountManager::kInvalidToken);
+
+  EXPECT_EQ(initial_num_calls, auth_instance().num_account_upserted_calls());
+}
 
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceAccountManagerTest,
                        AccountUpsertsArePropagated) {
