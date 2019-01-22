@@ -114,6 +114,7 @@ class AssistantManagerServiceImpl
   void DismissNotification(
       mojom::AssistantNotificationPtr notification) override;
   void CacheScreenContext(CacheScreenContextCallback callback) override;
+  void ClearScreenContextCache() override;
   void OnAccessibilityStatusChanged(bool spoken_feedback_enabled) override;
   void SendAssistantFeedback(
       mojom::AssistantFeedbackPtr assistant_feedback) override;
@@ -272,6 +273,8 @@ class AssistantManagerServiceImpl
   bool receive_modify_settings_proto_response_ = false;
   bool receive_inline_response_ = false;
   std::string receive_url_response_;
+
+  bool is_first_client_discourse_context_query_ = true;
 
   base::WeakPtrFactory<AssistantManagerServiceImpl> weak_factory_;
 

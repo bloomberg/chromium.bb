@@ -288,15 +288,13 @@ void AssistantManagerServiceImpl::StartTextInteraction(const std::string& query,
   if (base::FeatureList::IsEnabled(
           assistant::features::kEnableTextQueriesWithClientDiscourseContext) &&
       assistant_extra_ && assistant_tree_) {
-    // TODO(eyor): Replace hardcoded true with logic that is set to true
-    // if this is the first query after the UI is launched, or false if
-    // it is a query sent after the first query.
     assistant_manager_internal_->SendTextQueryWithClientDiscourseContext(
         query,
         CreateContextProto(
             AssistantBundle{assistant_extra_.get(), assistant_tree_.get()},
-            /*is_first_query=*/true),
+            is_first_client_discourse_context_query_),
         options);
+    is_first_client_discourse_context_query_ = false;
   } else {
     std::string interaction = CreateTextQueryInteraction(query);
     assistant_manager_internal_->SendVoicelessInteraction(
@@ -1085,6 +1083,13 @@ void AssistantManagerServiceImpl::CacheScreenContext(
                      weak_factory_.GetWeakPtr(), on_done));
 }
 
+void AssistantManagerServiceImpl::ClearScreenContextCache() {
+  assistant_extra_.reset();
+  assistant_tree_.reset();
+  assistant_screenshot_.clear();
+  is_first_client_discourse_context_query_ = true;
+}
+
 void AssistantManagerServiceImpl::OnAccessibilityStatusChanged(
     bool spoken_feedback_enabled) {
   if (spoken_feedback_enabled_ == spoken_feedback_enabled)
@@ -1125,19 +1130,16 @@ void AssistantManagerServiceImpl::SendScreenContextRequest(
   // the metalayer. For this scenario, we don't create a context proto for the
   // AssistantBundle that consists of the assistant_extra and assistant_tree.
   if (assistant_extra && assistant_tree) {
-    // TODO(eyor): Replace hardcoded true with logic that is set to true
-    // if this is the first query after the UI is launched, or false if
-    // it is a query sent after the first query.
+    // Note: the value of is_first_query for screen context query is a no-op
+    // because it is not used for metalayer and "What's on my screen" queries.
     context_protos.emplace_back(
         CreateContextProto(AssistantBundle{assistant_extra, assistant_tree},
                            /*is_first_query=*/true));
   }
 
-  // TODO(eyor): Replace hardcoded true with logic that is set to true
-  // if this is the first query after the UI is launched, or false if
-  // it is a query sent after the first query.
-  context_protos.emplace_back(
-      CreateContextProto(assistant_screenshot, /*is_first_query=*/true));
+  // Note: the value of is_first_query for screen context query is a no-op.
+  context_protos.emplace_back(CreateContextProto(assistant_screenshot,
+                                                 /*is_first_query=*/true));
   assistant_manager_internal_->SendScreenContextRequest(context_protos);
 }
 

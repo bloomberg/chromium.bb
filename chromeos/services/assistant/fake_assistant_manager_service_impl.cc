@@ -74,6 +74,8 @@ void FakeAssistantManagerServiceImpl::CacheScreenContext(
   std::move(callback).Run();
 }
 
+void FakeAssistantManagerServiceImpl::ClearScreenContextCache() {}
+
 void FakeAssistantManagerServiceImpl::OnAccessibilityStatusChanged(
     bool spoken_feedback_enabled) {}
 

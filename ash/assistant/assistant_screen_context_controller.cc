@@ -207,6 +207,7 @@ void AssistantScreenContextController::OnUiVisibilityChanged(
   if (new_visibility != AssistantVisibility::kVisible) {
     screen_context_request_factory_.InvalidateWeakPtrs();
     model_.SetRequestState(ScreenContextRequestState::kIdle);
+    assistant_->ClearScreenContextCache();
     return;
   }
 
