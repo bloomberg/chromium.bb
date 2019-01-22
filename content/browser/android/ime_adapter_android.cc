@@ -189,12 +189,12 @@ void ImeAdapterAndroid::UpdateState(const TextInputState& state) {
       state.reply_to_request);
 }
 
-bool ImeAdapterAndroid::UpdateSizeChangeForScroll() {
+void ImeAdapterAndroid::UpdateAfterViewSizeChanged() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ime_adapter_.get(env);
   if (obj.is_null())
-    return false;
-  return Java_ImeAdapterImpl_updateSizeChangeForScroll(env, obj);
+    return;
+  Java_ImeAdapterImpl_updateAfterViewSizeChanged(env, obj);
 }
 
 void ImeAdapterAndroid::UpdateOnTouchDown() {

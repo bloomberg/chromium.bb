@@ -266,8 +266,7 @@ void RenderWidgetHostViewAndroid::InitAsFullscreen(
 bool RenderWidgetHostViewAndroid::SynchronizeVisualProperties(
     const cc::DeadlinePolicy& deadline_policy,
     const base::Optional<viz::LocalSurfaceIdAllocation>&
-        child_local_surface_id_allocation,
-    bool scroll_focused_node_into_view) {
+        child_local_surface_id_allocation) {
   if (child_local_surface_id_allocation) {
     local_surface_id_allocator_.UpdateFromChild(
         *child_local_surface_id_allocation);
@@ -286,7 +285,7 @@ bool RenderWidgetHostViewAndroid::SynchronizeVisualProperties(
         GetCompositorViewportPixelSize());
   }
 
-  return host()->SynchronizeVisualProperties(scroll_focused_node_into_view);
+  return host()->SynchronizeVisualProperties();
 }
 
 void RenderWidgetHostViewAndroid::SetSize(const gfx::Size& size) {
@@ -912,8 +911,7 @@ void RenderWidgetHostViewAndroid::CopyFromSurface(
 void RenderWidgetHostViewAndroid::EnsureSurfaceSynchronizedForWebTest() {
   ++latest_capture_sequence_number_;
   SynchronizeVisualProperties(cc::DeadlinePolicy::UseInfiniteDeadline(),
-                              base::nullopt,
-                              /* scroll_focused_node_into_view */ false);
+                              base::nullopt);
 }
 
 uint32_t RenderWidgetHostViewAndroid::GetCaptureSequenceNumber() const {
@@ -1040,8 +1038,7 @@ void RenderWidgetHostViewAndroid::ResetFallbackToFirstNavigationSurface() {
 
 bool RenderWidgetHostViewAndroid::RequestRepaintForTesting() {
   return SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                                     base::nullopt,
-                                     /* scroll_focused_node_into_view */ false);
+                                     base::nullopt);
 }
 
 void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
@@ -1354,8 +1351,7 @@ bool RenderWidgetHostViewAndroid::UpdateControls(
 void RenderWidgetHostViewAndroid::OnDidUpdateVisualPropertiesComplete(
     const cc::RenderFrameMetadata& metadata) {
   SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                              metadata.local_surface_id_allocation,
-                              /* scroll_focused_node_into_view */ false);
+                              metadata.local_surface_id_allocation);
   // We've just processed new RenderFrameMetadata and potentially embedded a
   // new surface for that data. Check if we need to evict it.
   EvictFrameIfNecessary();
@@ -1384,7 +1380,7 @@ void RenderWidgetHostViewAndroid::ShowInternal() {
             ? cc::DeadlinePolicy::UseSpecifiedDeadline(
                   ui::DelegatedFrameHostAndroid::FirstFrameTimeoutFrames())
             : cc::DeadlinePolicy::UseDefaultDeadline(),
-        base::nullopt, /* scroll_focused_node_into_view */ false);
+        base::nullopt);
   }
 
   host()->WasShown(false /* record_presentation_time */);
@@ -1976,7 +1972,7 @@ void RenderWidgetHostViewAndroid::UpdateNativeViewTree(
     SynchronizeVisualProperties(
         cc::DeadlinePolicy::UseSpecifiedDeadline(
             ui::DelegatedFrameHostAndroid::ResizeTimeoutFrames()),
-        base::nullopt, /* scroll_focused_node_into_view */ false);
+        base::nullopt);
   }
 
   if (!touch_selection_controller_) {
@@ -2062,13 +2058,8 @@ bool RenderWidgetHostViewAndroid::RequiresDoubleTapGestureEvents() const {
 }
 
 void RenderWidgetHostViewAndroid::OnSizeChanged() {
-  bool scroll_focused_node_into_view = false;
-  if (ime_adapter_android_) {
-    scroll_focused_node_into_view =
-        ime_adapter_android_->UpdateSizeChangeForScroll();
-  }
-  SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                              base::nullopt, scroll_focused_node_into_view);
+  if (ime_adapter_android_)
+    ime_adapter_android_->UpdateAfterViewSizeChanged();
 }
 
 void RenderWidgetHostViewAndroid::OnPhysicalBackingSizeChanged() {
@@ -2076,7 +2067,7 @@ void RenderWidgetHostViewAndroid::OnPhysicalBackingSizeChanged() {
   SynchronizeVisualProperties(
       cc::DeadlinePolicy::UseSpecifiedDeadline(
           ui::DelegatedFrameHostAndroid::ResizeTimeoutFrames()),
-      base::nullopt, /* scroll_focused_node_into_view */ false);
+      base::nullopt);
 }
 
 void RenderWidgetHostViewAndroid::OnRootWindowVisibilityChanged(bool visible) {
@@ -2360,8 +2351,7 @@ void RenderWidgetHostViewAndroid::TakeFallbackContentFrom(
 
 void RenderWidgetHostViewAndroid::OnSynchronizedDisplayPropertiesChanged() {
   SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                              base::nullopt,
-                              /* scroll_focused_node_into_view */ false);
+                              base::nullopt);
 }
 
 base::Optional<SkColor> RenderWidgetHostViewAndroid::GetBackgroundColor()
@@ -2383,12 +2373,10 @@ void RenderWidgetHostViewAndroid::DidNavigate() {
     if (is_first_navigation_) {
       SynchronizeVisualProperties(
           cc::DeadlinePolicy::UseExistingDeadline(),
-          local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation(),
-          /* scroll_focused_node_into_view */ false);
+          local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation());
     } else {
       SynchronizeVisualProperties(cc::DeadlinePolicy::UseExistingDeadline(),
-                                  base::nullopt,
-                                  /* scroll_focused_node_into_view */ false);
+                                  base::nullopt);
     }
   }
   delegated_frame_host_->DidNavigate();
@@ -2420,8 +2408,7 @@ void RenderWidgetHostViewAndroid::WasEvicted() {
     // is no guarantee that they will occur after the eviction.
     SynchronizeVisualProperties(
         cc::DeadlinePolicy::UseExistingDeadline(),
-        local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation(),
-        /* scroll_focused_node_into_view */ false);
+        local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation());
   } else {
     local_surface_id_allocator_.Invalidate();
   }
