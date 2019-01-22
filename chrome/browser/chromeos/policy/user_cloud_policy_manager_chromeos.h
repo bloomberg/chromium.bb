@@ -120,8 +120,14 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   // using the ProfileOAuth2TokenService directly to get the access token, a 3rd
   // service (UserCloudPolicyTokenForwarder) will fetch it later and pass it to
   // this method once available.
-  // The |access_token| can then be used to authenticate the registration
-  // request to the DMServer.
+  // UserCloudPolicyTokenForwarder will continue delivering fresh OAuth tokens
+  // upon expected previous token expiration if this class requires OAuth token
+  // to be always available (needed for child user). The |access_token| is used
+  // to authenticate the registration request to DMServer for all users. It is
+  // also used to authorize policy fetch request and status upload for child
+  // user.
+  // Note: This method will be called once for regular user and multiple times
+  // (periodically) for child user.
   virtual void OnAccessTokenAvailable(const std::string& access_token);
 
   // Whether OAuth2 token is required for DMServer requests (policy fetch,
@@ -213,6 +219,9 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   // user is not managed).
   void CancelWaitForPolicyFetch(bool success);
 
+  // Starts refresh scheduler if all the required conditions are fullfilled.
+  // Exits immediately if refresh scheduler is already started, so it is safe to
+  // call it multiple times.
   void StartRefreshSchedulerIfReady();
 
   // content::NotificationObserver:
@@ -243,7 +252,7 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
 
   // Whether we're waiting for a policy fetch to complete before reporting
   // IsInitializationComplete().
-  bool waiting_for_policy_fetch_;
+  bool waiting_for_policy_fetch_ = false;
 
   // What kind of enforcement we need to implement.
   PolicyEnforcement enforcement_type_;

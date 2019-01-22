@@ -287,6 +287,10 @@ void UserCloudPolicyManagerChromeOS::Connect(
 
 void UserCloudPolicyManagerChromeOS::OnAccessTokenAvailable(
     const std::string& access_token) {
+  // This method should be called only once (at the beginning of the session)
+  // for regular user.
+  // For child user this method will be called multiple times (periodically).
+
   access_token_ = access_token;
 
   if (!wildcard_username_.empty()) {
@@ -301,10 +305,14 @@ void UserCloudPolicyManagerChromeOS::OnAccessTokenAvailable(
             base::Unretained(this), wildcard_username_));
   }
 
-  if (service() && service()->IsInitializationComplete() &&
-      client() && !client()->is_registered()) {
-    OnOAuth2PolicyTokenFetched(
-        access_token, GoogleServiceAuthError(GoogleServiceAuthError::NONE));
+  if (service() && service()->IsInitializationComplete() && client()) {
+    if (!client()->is_registered()) {
+      OnOAuth2PolicyTokenFetched(
+          access_token, GoogleServiceAuthError(GoogleServiceAuthError::NONE));
+    } else if (RequiresOAuthTokenForChildUser()) {
+      client()->SetOAuthTokenAsAdditionalAuth(access_token);
+      StartRefreshSchedulerIfReady();
+    }
   }
 }
 
@@ -399,14 +407,13 @@ void UserCloudPolicyManagerChromeOS::
     }
   }
 
-  if (!waiting_for_policy_fetch_) {
-    // If this isn't blocking on a policy fetch then
-    // CloudPolicyManager::OnStoreLoaded() already published the cached policy.
-    // Start the refresh scheduler now, which will eventually refresh the
-    // cached policy or make the first fetch once the OAuth2 token is
-    // available.
-    StartRefreshSchedulerIfReady();
-  }
+  // If this isn't blocking on a policy fetch then
+  // CloudPolicyManager::OnStoreLoaded() already published the cached policy.
+  // Start the refresh scheduler now, which will eventually refresh the
+  // cached policy or make the first fetch once the OAuth2 token is
+  // available. If refresh scheduler is already started this call will do
+  // nothing.
+  StartRefreshSchedulerIfReady();
 }
 
 void UserCloudPolicyManagerChromeOS::OnPolicyFetched(
@@ -628,6 +635,9 @@ void UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched(
   }
 
   if (error.state() == GoogleServiceAuthError::NONE) {
+    if (RequiresOAuthTokenForChildUser())
+      client()->SetOAuthTokenAsAdditionalAuth(policy_token);
+
     // Start client registration. Either OnRegistrationStateChanged() or
     // OnClientError() will be called back.
     const auto lifetime =
@@ -719,6 +729,11 @@ void UserCloudPolicyManagerChromeOS::StartRefreshSchedulerIfReady() {
     // OnComponentCloudPolicyUpdated() once it's ready.
     return;
   }
+
+  // Do not start refresh scheduler until OAuth token is available for child
+  // user, because policy refresh will fail.
+  if (RequiresOAuthTokenForChildUser() && access_token_.empty())
+    return;
 
   core()->StartRefreshScheduler();
   core()->TrackRefreshDelayPref(local_state_,

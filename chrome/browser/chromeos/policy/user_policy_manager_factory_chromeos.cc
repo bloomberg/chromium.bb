@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -31,6 +32,7 @@
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
@@ -338,9 +340,17 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
       (enforcement_type != PolicyEnforcement::kPolicyOptional) &&
       !force_immediate_load && !is_stub_user;
 
+  // If OAuth token is required for policy refresh for child user we should not
+  // block signin. Policy refresh will fail without the token that is available
+  // only after profile initialization.
+  const bool policy_refresh_requires_oauth_token =
+      user->GetType() == user_manager::USER_TYPE_CHILD &&
+      base::FeatureList::IsEnabled(features::kDMServerOAuthForChildUser);
+
   base::TimeDelta policy_refresh_timeout;
   if (block_profile_init_on_policy_refresh &&
-      enforcement_type == PolicyEnforcement::kPolicyRequired) {
+      enforcement_type == PolicyEnforcement::kPolicyRequired &&
+      !policy_refresh_requires_oauth_token) {
     // We already have policy, so block signin for a short period to check
     // for a policy update, so we can pick up any important policy changes
     // that can't easily change on the fly (like changes to the startup tabs).
