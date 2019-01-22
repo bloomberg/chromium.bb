@@ -51,6 +51,10 @@ class AccountManagerMigrator : public KeyedService {
   // Used for running migration steps.
   chromeos::AccountMigrationRunner migration_runner_;
 
+  // Stores if any migration steps were actually run. It is possible for the
+  // migration flow to be a no-op, in which case this will be |false|.
+  bool ran_migration_steps_ = false;
+
   base::WeakPtrFactory<AccountManagerMigrator> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(AccountManagerMigrator);
 };
