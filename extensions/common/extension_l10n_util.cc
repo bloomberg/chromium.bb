@@ -347,10 +347,11 @@ void GetAllLocales(std::set<std::string>* all_locales) {
   }
 }
 
-void GetAllFallbackLocales(const std::string& application_locale,
-                           const std::string& default_locale,
+void GetAllFallbackLocales(const std::string& default_locale,
                            std::vector<std::string>* all_fallback_locales) {
   DCHECK(all_fallback_locales);
+  std::string application_locale = CurrentLocaleOrDefault();
+
   // Use the preferred locale if available. Otherwise, fall back to the
   // application locale or the application locale's parent locales. Thus, a
   // preferred locale of "en_CA" with an application locale of "en_GB" will
@@ -401,11 +402,9 @@ bool GetValidLocales(const base::FilePath& locale_path,
 extensions::MessageBundle* LoadMessageCatalogs(
     const base::FilePath& locale_path,
     const std::string& default_locale,
-    const std::string& application_locale,
     std::string* error) {
   std::vector<std::string> all_fallback_locales;
-  GetAllFallbackLocales(
-      application_locale, default_locale, &all_fallback_locales);
+  GetAllFallbackLocales(default_locale, &all_fallback_locales);
 
   std::vector<std::unique_ptr<base::DictionaryValue>> catalogs;
   for (size_t i = 0; i < all_fallback_locales.size(); ++i) {
