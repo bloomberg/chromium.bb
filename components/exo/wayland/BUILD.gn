@@ -131,6 +131,11 @@ source_set("wayland") {
   ]
 
   if (use_ozone) {
+    sources += [
+      "zwp_linux_dmabuf.cc",
+      "zwp_linux_dmabuf.h",
+    ]
+
     deps += [
       "//build/config/linux/libdrm",
       "//third_party/wayland-protocols:linux_dmabuf_protocol",
