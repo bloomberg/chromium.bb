@@ -21,7 +21,6 @@ config("wtf_config") {
       "_CRT_SECURE_NO_DEPRECATE",
       "_SCL_SECURE_NO_DEPRECATE",
     ]
-    include_dirs = [ "os-win32" ]
 
     cflags = [
       # Don't complain about calling specific versions of templatized
