@@ -42,6 +42,12 @@ Polymer({
     /** Whether the dropdown should be centered or right aligned. */
     dropdownCentered: {type: Boolean, reflectToAttribute: true, value: false},
 
+    /** Whether the dropdown is marked as selected. */
+    selected: {type: Boolean, reflectToAttribute: true, value: false},
+
+    /** Whether the dropdown must be selected before opening. */
+    openAfterSelect: {type: Boolean, reflectToAttribute: true, value: false},
+
     /** Toolbar icon currently being displayed. */
     dropdownIcon: {
       type: String,
@@ -75,6 +81,10 @@ Polymer({
   },
 
   toggleDropdown: function() {
+    if (!this.dropdownOpen && this.openAfterSelect && !this.selected) {
+      // The dropdown has `openAfterSelect` set, but is not yet selected.
+      return;
+    }
     this.dropdownOpen = !this.dropdownOpen;
     if (this.dropdownOpen) {
       this.$.dropdown.style.display = 'block';
