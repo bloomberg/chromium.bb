@@ -40,7 +40,8 @@ class PaintControllerPaintTestBase : public RenderingTest {
     EnableCompositing();
   }
 
-  bool PaintWithoutCommit(const IntRect* interest_rect = nullptr) {
+  bool PaintWithoutCommit(
+      const base::Optional<IntRect>& interest_rect = base::nullopt) {
     GetDocument().View()->Lifecycle().AdvanceTo(DocumentLifecycle::kInPaint);
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       if (GetLayoutView().Layer()->NeedsRepaint()) {
@@ -55,8 +56,10 @@ class PaintControllerPaintTestBase : public RenderingTest {
       return false;
     }
     // Only root graphics layer is supported.
-    if (!GetLayoutView().Layer()->GraphicsLayerBacking()->PaintWithoutCommit(
-            interest_rect)) {
+    if (!GetLayoutView()
+             .Layer()
+             ->GraphicsLayerBacking()
+             ->PaintWithoutCommitForTesting(interest_rect)) {
       GetDocument().View()->Lifecycle().AdvanceTo(
           DocumentLifecycle::kPaintClean);
       return false;
@@ -77,7 +80,7 @@ class PaintControllerPaintTestBase : public RenderingTest {
     GetDocument().View()->Lifecycle().AdvanceTo(DocumentLifecycle::kPaintClean);
   }
 
-  void Paint(const IntRect* interest_rect = nullptr) {
+  void Paint(const base::Optional<IntRect>& interest_rect = base::nullopt) {
     // Only root graphics layer is supported.
     if (PaintWithoutCommit(interest_rect))
       CommitAndFinishCycle();
