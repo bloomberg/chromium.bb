@@ -46,6 +46,7 @@
 #include "ios/web/webui/web_ui_ios_controller_factory_registry.h"
 #include "ios/web/webui/web_ui_ios_impl.h"
 #include "net/http/http_response_headers.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -745,10 +746,11 @@ void WebStateImpl::SetHasOpener(bool has_opener) {
   created_with_opener_ = has_opener;
 }
 
-void WebStateImpl::TakeSnapshot(CGRect rect, SnapshotCallback callback) {
+void WebStateImpl::TakeSnapshot(const gfx::RectF& rect,
+                                SnapshotCallback callback) {
   __block SnapshotCallback shared_callback = std::move(callback);
   [web_controller_
-      takeSnapshotWithRect:rect
+      takeSnapshotWithRect:rect.ToCGRect()
                 completion:^(UIImage* snapshot) {
                   std::move(shared_callback).Run(gfx::Image(snapshot));
                 }];
