@@ -85,6 +85,9 @@ class NetworkIconImpl {
   // Cached strength index of the network when the icon was last generated.
   int strength_index_;
 
+  // Cached technology badge for the network when the icon was last generated.
+  Badge technology_badge_ = {};
+
   // Cached vpn badge for the network when the icon was last generated.
   Badge vpn_badge_ = {};
 
@@ -301,6 +304,35 @@ int StrengthIndex(int strength) {
   return zero_based_index + 1;
 }
 
+Badge BadgeForNetworkTechnology(const NetworkState* network,
+                                IconType icon_type) {
+  Badge badge = {nullptr, GetDefaultColorForIconType(icon_type)};
+  const std::string& technology = network->network_technology();
+  if (technology == shill::kNetworkTechnologyEvdo) {
+    badge.icon = &kNetworkBadgeTechnologyEvdoIcon;
+  } else if (technology == shill::kNetworkTechnology1Xrtt) {
+    badge.icon = &kNetworkBadgeTechnology1xIcon;
+  } else if (technology == shill::kNetworkTechnologyGprs ||
+             technology == shill::kNetworkTechnologyGsm) {
+    badge.icon = &kNetworkBadgeTechnologyGprsIcon;
+  } else if (technology == shill::kNetworkTechnologyEdge) {
+    badge.icon = &kNetworkBadgeTechnologyEdgeIcon;
+  } else if (technology == shill::kNetworkTechnologyUmts) {
+    badge.icon = &kNetworkBadgeTechnology3gIcon;
+  } else if (technology == shill::kNetworkTechnologyHspa) {
+    badge.icon = &kNetworkBadgeTechnologyHspaIcon;
+  } else if (technology == shill::kNetworkTechnologyHspaPlus) {
+    badge.icon = &kNetworkBadgeTechnologyHspaPlusIcon;
+  } else if (technology == shill::kNetworkTechnologyLte) {
+    badge.icon = &kNetworkBadgeTechnologyLteIcon;
+  } else if (technology == shill::kNetworkTechnologyLteAdvanced) {
+    badge.icon = &kNetworkBadgeTechnologyLteAdvancedIcon;
+  } else {
+    return {};
+  }
+  return badge;
+}
+
 gfx::ImageSkia GetIcon(const NetworkState* network,
                        IconType icon_type,
                        int strength_index) {
@@ -402,6 +434,11 @@ bool NetworkIconImpl::UpdateWirelessStrengthIndex(const NetworkState* network) {
 
 bool NetworkIconImpl::UpdateCellularState(const NetworkState* network) {
   bool dirty = false;
+  const Badge technology_badge = BadgeForNetworkTechnology(network, icon_type_);
+  if (technology_badge != technology_badge_) {
+    technology_badge_ = technology_badge;
+    dirty = true;
+  }
   std::string roaming_state = network->roaming();
   if (roaming_state != roaming_state_) {
     roaming_state_ = roaming_state;
@@ -451,7 +488,10 @@ void NetworkIconImpl::GetBadges(const NetworkState* network, Badges* badges) {
         !IsTrayIcon(icon_type_)) {
       badges->bottom_right = {&kUnifiedNetworkBadgeSecureIcon, icon_color};
     }
+  } else if (type == shill::kTypeWimax) {
+    technology_badge_ = {&kNetworkBadgeTechnology4gIcon, icon_color};
   } else if (type == shill::kTypeCellular) {
+    // technology_badge_ is set in UpdateCellularState.
     if (network->IsConnectedState() &&
         network->roaming() == shill::kRoamingStateRoaming) {
       // For networks that are always in roaming don't show roaming badge.
@@ -465,8 +505,9 @@ void NetworkIconImpl::GetBadges(const NetworkState* network, Badges* badges) {
       }
     }
   }
-  // Only show VPN, and captive portal badges when connected.
+  // Only show technology, VPN, and captive portal badges when connected.
   if (network->IsConnectedState()) {
+    badges->top_left = technology_badge_;
     badges->bottom_left = vpn_badge_;
     if (behind_captive_portal_)
       badges->bottom_right = {&kUnifiedNetworkBadgeCaptivePortalIcon,
