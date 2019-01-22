@@ -43,8 +43,6 @@ class ContextLostExpectations(GpuTestExpectations):
               ['lion', 'debug'], bug=498149)
 
     # Flaking on Mac.
-    self.Flaky('GpuCrash_GPUProcessCrashesExactlyOncePerVisitToAboutGpuCrash',
-              ['mac'], bug=878258)
     self.Flaky('ContextLost_WebGLBlockedAfterJSNavigation',
               ['mac'], bug=900948)
     self.Flaky('ContextLost_WebGLUnblockedAfterUserInitiatedReload',

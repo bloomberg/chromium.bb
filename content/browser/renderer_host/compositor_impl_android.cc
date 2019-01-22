@@ -888,9 +888,10 @@ void CompositorImpl::DidInitializeLayerTreeFrameSink() {
 }
 
 void CompositorImpl::DidFailToInitializeLayerTreeFrameSink() {
-  // The context is bound/initialized before handing it to the
-  // LayerTreeFrameSink.
-  NOTREACHED();
+  layer_tree_frame_sink_request_pending_ = false;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&CompositorImpl::RequestNewLayerTreeFrameSink,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void CompositorImpl::HandlePendingLayerTreeFrameSinkRequest() {

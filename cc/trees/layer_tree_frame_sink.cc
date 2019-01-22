@@ -66,6 +66,11 @@ bool LayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
   DCHECK(!client_);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  // Note: If |context_provider_| was always bound to a thread before here then
+  // the return value could be replaced with a PostTask to OnContextLost(). This
+  // would simplify the calling code so it didn't have to handle failures in
+  // BindToClient().
+
   if (context_provider_) {
     context_provider_->AddObserver(this);
     auto result = context_provider_->BindToCurrentThread();
