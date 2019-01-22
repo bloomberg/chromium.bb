@@ -74,6 +74,7 @@ AutocompleteInput::AutocompleteInput()
       prevent_inline_autocomplete_(false),
       prefer_keyword_(false),
       allow_exact_keyword_match_(true),
+      keyword_mode_entry_method_(metrics::OmniboxEventProto::INVALID),
       want_asynchronous_matches_(true),
       from_omnibox_focus_(false) {}
 
@@ -81,30 +82,21 @@ AutocompleteInput::AutocompleteInput(
     const base::string16& text,
     metrics::OmniboxEventProto::PageClassification current_page_classification,
     const AutocompleteSchemeClassifier& scheme_classifier)
-    : cursor_position_(std::string::npos),
-      current_page_classification_(current_page_classification),
-      prevent_inline_autocomplete_(false),
-      prefer_keyword_(false),
-      allow_exact_keyword_match_(true),
-      want_asynchronous_matches_(true),
-      from_omnibox_focus_(false) {
-  Init(text, scheme_classifier);
-}
+    : AutocompleteInput(text,
+                        std::string::npos,
+                        current_page_classification,
+                        scheme_classifier) {}
 
 AutocompleteInput::AutocompleteInput(
     const base::string16& text,
     size_t cursor_position,
     metrics::OmniboxEventProto::PageClassification current_page_classification,
     const AutocompleteSchemeClassifier& scheme_classifier)
-    : cursor_position_(cursor_position),
-      current_page_classification_(current_page_classification),
-      prevent_inline_autocomplete_(false),
-      prefer_keyword_(false),
-      allow_exact_keyword_match_(true),
-      want_asynchronous_matches_(true),
-      from_omnibox_focus_(false) {
-  Init(text, scheme_classifier);
-}
+    : AutocompleteInput(text,
+                        cursor_position,
+                        "",
+                        current_page_classification,
+                        scheme_classifier) {}
 
 AutocompleteInput::AutocompleteInput(
     const base::string16& text,
@@ -112,14 +104,10 @@ AutocompleteInput::AutocompleteInput(
     const std::string& desired_tld,
     metrics::OmniboxEventProto::PageClassification current_page_classification,
     const AutocompleteSchemeClassifier& scheme_classifier)
-    : cursor_position_(cursor_position),
-      current_page_classification_(current_page_classification),
-      desired_tld_(desired_tld),
-      prevent_inline_autocomplete_(false),
-      prefer_keyword_(false),
-      allow_exact_keyword_match_(true),
-      want_asynchronous_matches_(true),
-      from_omnibox_focus_(false) {
+    : AutocompleteInput() {
+  cursor_position_ = cursor_position;
+  current_page_classification_ = current_page_classification;
+  desired_tld_ = desired_tld;
   Init(text, scheme_classifier);
 }
 

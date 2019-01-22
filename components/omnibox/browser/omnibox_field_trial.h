@@ -454,7 +454,8 @@ class OmniboxFieldTrial {
   // subdomains or the #upcoming-ui-features flag is enabled.
   static bool IsHideSteadyStateUrlTrivialSubdomainsEnabled();
 
-  // Returns true if the experimental keyword mode is enabled.
+  // Simply a convenient wrapper for testing a flag. Used downstream for an
+  // assortment of keyword mode experiments.
   static bool IsExperimentalKeywordModeEnabled();
 
   // ---------------------------------------------------------

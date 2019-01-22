@@ -530,6 +530,7 @@ void OmniboxEditModel::StartAutocomplete(bool has_selected_text,
   input_.set_prefer_keyword(is_keyword_selected());
   input_.set_allow_exact_keyword_match(is_keyword_selected() ||
                                        allow_exact_keyword_match_);
+  input_.set_keyword_mode_entry_method(keyword_mode_entry_method_);
 
   omnibox_controller_->StartAutocomplete(input_);
 }
@@ -597,6 +598,7 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
         client_->GetSchemeClassifier());
     input.set_prevent_inline_autocomplete(input_.prevent_inline_autocomplete());
     input.set_prefer_keyword(input_.prefer_keyword());
+    input.set_keyword_mode_entry_method(input_.keyword_mode_entry_method());
     input.set_allow_exact_keyword_match(input_.allow_exact_keyword_match());
     input.set_want_asynchronous_matches(input_.want_asynchronous_matches());
     input.set_from_omnibox_focus(input_.from_omnibox_focus());
