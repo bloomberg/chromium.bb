@@ -1539,6 +1539,8 @@ const char kNtpCustomBackgroundLocalToDevice[] =
 // Data associated with search suggestions that appear on the NTP.
 const char kNtpSearchSuggestionsBlacklist[] =
     "ntp.search_suggestions_blacklist";
+const char kNtpSearchSuggestionsImpressions[] =
+    "ntp.search_suggestions_impressions";
 const char kNtpSearchSuggestionsOptOut[] = "ntp.search_suggestions_opt_out";
 #endif  // defined(OS_ANDROID)
 

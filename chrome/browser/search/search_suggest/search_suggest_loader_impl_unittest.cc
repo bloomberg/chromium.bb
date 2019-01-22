@@ -39,7 +39,9 @@ namespace {
 const char kApplicationLocale[] = "us";
 
 const char kMinimalValidResponse[] = R"json({"update": { "query_suggestions": {
-  "query_suggestions_with_html": "", "script": ""
+  "query_suggestions_with_html": "", "script": "",
+  "impression_cap_expire_time_ms": 0, "request_freeze_time_ms": 0,
+  "max_impressions": 0
 }}})json";
 
 // Required to instantiate a GoogleUrlTracker in UNIT_TEST_MODE.
@@ -170,9 +172,11 @@ TEST_F(SearchSuggestLoaderImplTest, HandlesResponsePreamble) {
 }
 
 TEST_F(SearchSuggestLoaderImplTest, ParsesFullResponse) {
-  SetUpResponseWithData(
-      R"json({"update": { "query_suggestions": {"query_suggestions_with_html" :
-      "<div></div>", "script" : "<script></script>"}}})json");
+  SetUpResponseWithData(R"json({"update": { "query_suggestions": {
+            "query_suggestions_with_html": "<div></div>",
+            "script": "<script></script>", "impression_cap_expire_time_ms": 1,
+            "request_freeze_time_ms": 2, "max_impressions": 3
+            }}})json");
 
   base::MockCallback<SearchSuggestLoader::SearchSuggestionsCallback> callback;
   std::string blacklist;
@@ -185,8 +189,11 @@ TEST_F(SearchSuggestLoaderImplTest, ParsesFullResponse) {
   loop.Run();
 
   ASSERT_TRUE(data.has_value());
-  EXPECT_THAT(data->suggestions_html, Eq("<div></div>"));
-  EXPECT_THAT(data->end_of_body_script, Eq("<script></script>"));
+  EXPECT_EQ("<div></div>", data->suggestions_html);
+  EXPECT_EQ("<script></script>", data->end_of_body_script);
+  EXPECT_EQ(1, data->impression_cap_expire_time_ms);
+  EXPECT_EQ(2, data->request_freeze_time_ms);
+  EXPECT_EQ(3, data->max_impressions);
 }
 
 TEST_F(SearchSuggestLoaderImplTest, CoalescesMultipleRequests) {

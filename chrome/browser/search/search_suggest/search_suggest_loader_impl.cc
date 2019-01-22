@@ -75,6 +75,32 @@ base::Optional<SearchSuggestData> JsonToSearchSuggestionData(
 
   result.end_of_body_script = end_of_body_script;
 
+  int impression_cap_expire_time_ms;
+  if (!query_suggestions->GetInteger("impression_cap_expire_time_ms",
+                                     &impression_cap_expire_time_ms)) {
+    DLOG(WARNING) << "Parse error: no impression_cap_expire_time_ms";
+    return base::nullopt;
+  }
+
+  result.impression_cap_expire_time_ms = impression_cap_expire_time_ms;
+
+  int request_freeze_time_ms;
+  if (!query_suggestions->GetInteger("request_freeze_time_ms",
+                                     &request_freeze_time_ms)) {
+    DLOG(WARNING) << "Parse error: no request_freeze_time_ms";
+    return base::nullopt;
+  }
+
+  result.request_freeze_time_ms = request_freeze_time_ms;
+
+  int max_impressions;
+  if (!query_suggestions->GetInteger("max_impressions", &max_impressions)) {
+    DLOG(WARNING) << "Parse error: no max_impressions";
+    return base::nullopt;
+  }
+
+  result.max_impressions = max_impressions;
+
   return result;
 }
 
