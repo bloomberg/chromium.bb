@@ -12,6 +12,7 @@
 #include "media/gpu/test/video_player/frame_renderer_dummy.h"
 #include "media/gpu/test/video_player/video.h"
 #include "media/gpu/test/video_player/video_collection.h"
+#include "media/gpu/test/video_player/video_decoder_client.h"
 #include "media/gpu/test/video_player/video_player.h"
 #include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -75,11 +76,13 @@ media::test::VideoDecoderTestEnvironment* g_env;
 // Video decode test class. Performs setup and teardown for each single test.
 class VideoDecoderTest : public ::testing::Test {
  public:
-  std::unique_ptr<VideoPlayer> CreateVideoPlayer(const Video* video) {
+  std::unique_ptr<VideoPlayer> CreateVideoPlayer(
+      const Video* video,
+      const VideoDecoderClientConfig& config = VideoDecoderClientConfig()) {
     frame_validator_ =
         media::test::VideoFrameValidator::Create(video->FrameChecksums());
     return VideoPlayer::Create(video, g_env->dummy_frame_renderer_.get(),
-                               {frame_validator_.get()});
+                               {frame_validator_.get()}, config);
   }
 
  protected:
@@ -208,6 +211,21 @@ TEST_F(VideoDecoderTest, ResetBeforeFlushDone) {
   EXPECT_LE(tvp->GetFlushDoneCount(), 1u);
   EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
   EXPECT_LE(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
+  EXPECT_EQ(0u, frame_validator_->GetMismatchedFramesCount());
+}
+
+// Play video from start to end. Multiple buffer decodes will be queued in the
+// decoder, without waiting for the result of the previous decode requests.
+TEST_F(VideoDecoderTest, FlushAtEndOfStream_MultipleOutstandingDecodes) {
+  VideoDecoderClientConfig config;
+  config.max_outstanding_decode_requests = 5;
+  auto tvp = CreateVideoPlayer(g_env->video_, config);
+
+  tvp->Play();
+  EXPECT_TRUE(tvp->WaitForFlushDone());
+
+  EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
+  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
   EXPECT_EQ(0u, frame_validator_->GetMismatchedFramesCount());
 }
 

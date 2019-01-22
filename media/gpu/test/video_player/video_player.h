@@ -21,6 +21,7 @@ namespace test {
 class FrameRenderer;
 class Video;
 class VideoDecoderClient;
+struct VideoDecoderClientConfig;
 class VideoFrameProcessor;
 
 // Default timeout used when waiting for events.
@@ -57,7 +58,8 @@ class VideoPlayer {
   static std::unique_ptr<VideoPlayer> Create(
       const Video* video,
       FrameRenderer* frame_renderer,
-      const std::vector<VideoFrameProcessor*>& frame_processors);
+      const std::vector<VideoFrameProcessor*>& frame_processors,
+      const VideoDecoderClientConfig& config);
 
   void Play();
   void Stop();
@@ -99,7 +101,8 @@ class VideoPlayer {
 
   void Initialize(const Video* video,
                   FrameRenderer* frame_renderer,
-                  const std::vector<VideoFrameProcessor*>& frame_processors);
+                  const std::vector<VideoFrameProcessor*>& frame_processors,
+                  const VideoDecoderClientConfig& config);
   void Destroy();
 
   // Notify the client an event has occurred (e.g. frame decoded).
