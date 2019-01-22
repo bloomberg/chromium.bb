@@ -189,12 +189,6 @@ DocumentLoader::DocumentLoader(
     }
   }
 
-  if (navigation_params->source_location.has_value()) {
-    WebSourceLocation& location = navigation_params->source_location.value();
-    source_location_ = SourceLocation::Create(
-        location.url, location.line_number, location.column_number, nullptr);
-  }
-
   // TODO(japhet): This is needed because the browser process DCHECKs if the
   // first entry we commit in a new frame has replacement set. It's unclear
   // whether the DCHECK is right, investigate removing this special case.
@@ -282,10 +276,6 @@ const KURL& DocumentLoader::Url() const {
 void DocumentLoader::SetServiceWorkerNetworkProvider(
     std::unique_ptr<WebServiceWorkerNetworkProvider> provider) {
   service_worker_network_provider_ = std::move(provider);
-}
-
-std::unique_ptr<SourceLocation> DocumentLoader::CopySourceLocation() const {
-  return source_location_ ? source_location_->Clone() : nullptr;
 }
 
 void DocumentLoader::DispatchLinkHeaderPreloads(
@@ -1071,7 +1061,6 @@ void DocumentLoader::StartLoading() {
     if (continue_navigation)
       std::move(continue_navigation).Run();
   }
-  source_location_ = nullptr;
 }
 
 void DocumentLoader::DidInstallNewDocument(Document* document) {
