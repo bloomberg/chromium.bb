@@ -32,6 +32,17 @@ namespace blink {
 class Event;
 class ExecutionContext;
 
+// EventListener represents 'callback' in 'event listener' in DOM standard.
+// https://dom.spec.whatwg.org/#concept-event-listener
+//
+// While RegisteredEventListener represents 'event listener', which consists of
+//   - type
+//   - callback
+//   - capture
+//   - passive
+//   - once
+//   - removed
+// EventListener represents 'callback' part.
 class CORE_EXPORT EventListener
     : public GarbageCollectedFinalized<EventListener>,
       public NameClient {
@@ -57,7 +68,13 @@ class CORE_EXPORT EventListener
     return false;
   }
 
-  virtual bool operator==(const EventListener&) const = 0;
+  // Returns true if this event listener is considered as the same with the
+  // other event listener (in context of EventTarget.removeEventListener).
+  // See also |RegisteredEventListener::Matches|.
+  //
+  // This function must satisfy the symmetric property; a.Matches(b) must
+  // produce the same result as b.Matches(a).
+  virtual bool Matches(const EventListener&) const = 0;
 
   virtual void Trace(Visitor*) {}
 

@@ -46,10 +46,10 @@ class CORE_EXPORT JSEventHandler : public JSBasedEventListener {
   void Trace(blink::Visitor* visitor) override;
 
   // blink::EventListener overrides:
-  bool operator==(const EventListener& other) const override {
+  bool IsEventHandler() const final { return true; }
+  bool Matches(const EventListener& other) const override {
     return this == &other;
   }
-  bool IsEventHandler() const final { return true; }
 
   // blink::JSBasedEventListener overrides:
   // TODO(crbug.com/881688): remove empty check for this method. This method

@@ -80,7 +80,7 @@ bool RegisteredEventListener::Matches(
   // Equality is soley based on the listener and useCapture flags.
   DCHECK(callback_);
   DCHECK(listener);
-  return *callback_ == *listener &&
+  return callback_->Matches(*listener) &&
          static_cast<bool>(use_capture_) == options->capture();
 }
 
@@ -110,12 +110,12 @@ bool RegisteredEventListener::ShouldFire(const Event& event) const {
   return true;
 }
 
-bool RegisteredEventListener::operator==(
-    const RegisteredEventListener& other) const {
-  // Equality is soley based on the listener and useCapture flags.
-  DCHECK(callback_);
-  DCHECK(other.callback_);
-  return *callback_ == *other.callback_ && use_capture_ == other.use_capture_;
+bool operator==(const RegisteredEventListener& lhs,
+                const RegisteredEventListener& rhs) {
+  DCHECK(lhs.Callback());
+  DCHECK(rhs.Callback());
+  return lhs.Callback()->Matches(*rhs.Callback()) &&
+         lhs.Capture() == rhs.Capture();
 }
 
 }  // namespace blink
