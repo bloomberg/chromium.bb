@@ -9,7 +9,8 @@
 namespace fileManagerPrivate {
 // Type of the mounted volume.
 enum VolumeType { drive, downloads, removable, archive, provided, mtp,
-                  media_view, crostini, android_files, testing };
+                  media_view, crostini, android_files, documents_provider,
+                  testing };
 
 // Device type. Available if this is removable volume.
 enum DeviceType { usb, sd, optical, mobile, unknown };

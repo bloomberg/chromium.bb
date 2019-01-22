@@ -326,6 +326,10 @@ void VolumeToVolumeMetadata(
       volume_metadata->volume_type =
           file_manager_private::VOLUME_TYPE_ANDROID_FILES;
       break;
+    case VOLUME_TYPE_DOCUMENTS_PROVIDER:
+      volume_metadata->volume_type =
+          file_manager_private::VOLUME_TYPE_DOCUMENTS_PROVIDER;
+      break;
     case VOLUME_TYPE_TESTING:
       volume_metadata->volume_type =
           file_manager_private::VOLUME_TYPE_TESTING;

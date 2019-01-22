@@ -1273,6 +1273,7 @@ util.getRootTypeLabel = function(locationInfo) {
     case VolumeManagerCommon.RootType.MTP:
     case VolumeManagerCommon.RootType.PROVIDED:
     case VolumeManagerCommon.RootType.ANDROID_FILES:
+    case VolumeManagerCommon.RootType.DOCUMENTS_PROVIDER:
       return locationInfo.volumeInfo.label;
     default:
       console.error('Unsupported root type: ' + locationInfo.rootType);

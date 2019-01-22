@@ -27,6 +27,7 @@ class FileSystemURL;
 namespace arc {
 
 class ArcDocumentsProviderRoot;
+class ArcFileSystemOperationRunner;
 
 // Container of ArcDocumentsProviderRoot instances.
 //
@@ -57,6 +58,15 @@ class ArcDocumentsProviderRootMap : public KeyedService {
   ArcDocumentsProviderRoot* Lookup(const std::string& authority,
                                    const std::string& root_document_id) const;
 
+  // Register a DocumentsProvider's Root to make the corresponding
+  // ArcDocumentsProviderRoot instance available.
+  void RegisterRoot(const std::string& authority,
+                    const std::string& root_document_id);
+
+  // Unregister a DocumentsProvider's Root.
+  void UnregisterRoot(const std::string& authority,
+                      const std::string& root_document_id);
+
   // KeyedService overrides:
   void Shutdown() override;
 
@@ -64,6 +74,11 @@ class ArcDocumentsProviderRootMap : public KeyedService {
   friend class ArcDocumentsProviderRootMapFactory;
 
   explicit ArcDocumentsProviderRootMap(Profile* profile);
+
+  // |runner_| outlives |this| and ArcDocumentsProviderRoot instances in |map_|
+  // as this service has explicit dependency on ArcFileSystemOperationRunner in
+  // the BrowserContextKeyedServiceFactory dependency graph.
+  ArcFileSystemOperationRunner* const runner_;
 
   // Key is (authority, root_document_id).
   using Key = std::pair<std::string, std::string>;

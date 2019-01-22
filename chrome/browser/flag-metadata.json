@@ -127,6 +127,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "arc-documents-provider",
+    "owners": [ "fukino" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "arc-file-picker-experiment",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

@@ -22309,6 +22309,7 @@ Called by update_net_error_codes.py.-->
   <int value="19" label="COMPUTERS_GRAND_ROOT"/>
   <int value="20" label="COMPUTER"/>
   <int value="21" label="EXTERNAL_MEDIA"/>
+  <int value="22" label="DOCUMENTS_PROVIDER"/>
 </enum>
 
 <enum name="FileManagerTaskType">
@@ -22330,6 +22331,7 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="Media View"/>
   <int value="7" label="Crostini Linux Files"/>
   <int value="8" label="Android Files"/>
+  <int value="9" label="Android Documents Provider"/>
 </enum>
 
 <enum name="FileManagerZipHandlerType">
@@ -31393,6 +31395,7 @@ from previous Chrome versions.
       label="AutofillSaveCreditCardUsesStrikeSystemV2:enabled"/>
   <int value="-268357961" label="enable-feature-policy"/>
   <int value="-263150202" label="BundledConnectionHelp:disabled"/>
+  <int value="-262122630" label="ArcEnableDocumentsProviderInFilesApp:enabled"/>
   <int value="-260355779" label="UnfilteredBluetoothDevices:enabled"/>
   <int value="-254887599" label="google-profile-info"/>
   <int value="-250822813" label="PwaImprovedSplashScreen:enabled"/>
@@ -31940,6 +31943,7 @@ from previous Chrome versions.
   <int value="728656094" label="PasswordForceSaving:disabled"/>
   <int value="730024226" label="enable-out-of-process-pdf"/>
   <int value="730750097" label="PermissionsBlacklist:disabled"/>
+  <int value="731757746" label="ArcEnableDocumentsProviderInFilesApp:disabled"/>
   <int value="731779469" label="BlinkHeapUnifiedGarbageCollection:enabled"/>
   <int value="732703958" label="enable-gesture-tap-highlight"/>
   <int value="734900932" label="RecurrentInterstitialFeature:enabled"/>

@@ -20,6 +20,7 @@ chrome.fileManagerPrivate.VolumeType = {
   MEDIA_VIEW: 'media_view',
   CROSTINI: 'crostini',
   ANDROID_FILES: 'android_files',
+  DOCUMENTS_PROVIDER: 'documents_provider',
   TESTING: 'testing',
 };
 
