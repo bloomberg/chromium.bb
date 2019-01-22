@@ -25,10 +25,6 @@ class Profile;
 
 namespace crostini {
 
-// Enables/disables overriding IsCrostiniUIAllowedForProfile's normal
-// behaviour and returning true instead.
-void SetCrostiniUIAllowedForTesting(bool enabled);
-
 // Returns true if crostini is allowed to run for |profile|.
 // Otherwise, returns false, e.g. if crostini is not available on the device,
 // or it is in the flow to set up managed account creation.

@@ -498,8 +498,8 @@ void ProfileHelper::SetProfileToUserForTestingEnabled(bool enabled) {
 
 // static
 void ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(bool value) {
-  always_return_primary_user_for_testing = true;
-  ProfileHelper::SetProfileToUserForTestingEnabled(true);
+  always_return_primary_user_for_testing = value;
+  ProfileHelper::SetProfileToUserForTestingEnabled(value);
 }
 
 void ProfileHelper::SetUserToProfileMappingForTesting(

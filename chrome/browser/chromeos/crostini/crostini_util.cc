@@ -38,10 +38,6 @@ constexpr char kCrostiniAppLaunchHistogram[] = "Crostini.AppLaunch";
 constexpr char kCrostiniAppNamePrefix[] = "_crostini_";
 constexpr int64_t kDelayBeforeSpinnerMs = 400;
 
-// If true then override IsCrostiniUIAllowedForProfile and related methods
-// to turn on Crostini.
-bool g_crostini_ui_allowed_for_testing = false;
-
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class CrostiniAppLaunchAppType {
@@ -208,9 +204,6 @@ class IconLoadWaiter : public CrostiniAppIcon::Observer {
 };
 
 bool IsCrostiniAllowedForProfileImpl(Profile* profile) {
-  if (g_crostini_ui_allowed_for_testing) {
-    return true;
-  }
   if (!profile || profile->IsChild() || profile->IsLegacySupervised() ||
       profile->IsOffTheRecord() ||
       chromeos::ProfileHelper::IsEphemeralUserProfile(profile) ||
@@ -221,6 +214,7 @@ bool IsCrostiniAllowedForProfileImpl(Profile* profile) {
     // Hardware is physically incapable, no matter what the user wants.
     return false;
   }
+
   return virtual_machines::AreVirtualMachinesAllowedByVersionAndChannel() &&
          base::FeatureList::IsEnabled(features::kCrostini);
 }
@@ -229,14 +223,10 @@ bool IsCrostiniAllowedForProfileImpl(Profile* profile) {
 
 namespace crostini {
 
-void SetCrostiniUIAllowedForTesting(bool enabled) {
-  g_crostini_ui_allowed_for_testing = enabled;
-}
-
 bool IsCrostiniAllowedForProfile(Profile* profile) {
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
-  if (!user->IsAffiliated() && !IsUnaffiliatedCrostiniAllowedByPolicy()) {
+  if (!IsUnaffiliatedCrostiniAllowedByPolicy() && !user->IsAffiliated()) {
     return false;
   }
   if (!profile->GetPrefs()->GetBoolean(
@@ -250,9 +240,6 @@ bool IsCrostiniAllowedForProfile(Profile* profile) {
 }
 
 bool IsCrostiniUIAllowedForProfile(Profile* profile, bool check_policy) {
-  if (g_crostini_ui_allowed_for_testing) {
-    return true;
-  }
   if (!chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
     return false;
   }

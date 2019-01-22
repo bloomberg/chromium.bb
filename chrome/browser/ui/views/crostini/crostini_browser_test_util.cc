@@ -97,7 +97,9 @@ class CrostiniBrowserTestChromeBrowserMainExtraParts
 };
 
 CrostiniDialogBrowserTest::CrostiniDialogBrowserTest(bool register_termina)
-    : register_termina_(register_termina) {}
+    : register_termina_(register_termina) {
+  scoped_feature_list_.InitAndEnableFeature(features::kCrostini);
+}
 
 CrostiniDialogBrowserTest::~CrostiniDialogBrowserTest() = default;
 
@@ -111,7 +113,6 @@ void CrostiniDialogBrowserTest::CreatedBrowserMainParts(
 }
 
 void CrostiniDialogBrowserTest::SetUp() {
-  crostini::SetCrostiniUIAllowedForTesting(true);
   DialogBrowserTest::SetUp();
 }
 

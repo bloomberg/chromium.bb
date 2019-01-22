@@ -8,22 +8,25 @@
 #include <map>
 #include <string>
 
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
 
 class Profile;
 
-namespace crostini {
+namespace user_manager {
+class ScopedUserManager;
+}  // namespace user_manager
 
-class CrostiniRegistryService;
+namespace crostini {
 
 // This class is used to help test Crostini app integration by providing a
 // simple interface to add, update, and remove apps from the registry.
 class CrostiniTestHelper {
  public:
-  // For convenience, instantiating this enables Crostini and also calls
-  // SetCrostiniUIAllowedForTesting(true). The destructor resets these.
-  explicit CrostiniTestHelper(Profile*);
+  // For convenience, instantiating this allows Crostini, and enables it
+  // unless enable_crostini is false. The destructor resets these.
+  explicit CrostiniTestHelper(Profile*, bool enable_crostini = true);
   ~CrostiniTestHelper();
 
   // Creates the apps named "dummy1" and "dummy2" in the default container.
@@ -67,7 +70,10 @@ class CrostiniTestHelper {
 
   Profile* profile_;
   vm_tools::apps::ApplicationList current_apps_;
-  CrostiniRegistryService* registry_service_;
+
+  // This are used to allow Crostini.
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 }  // namespace crostini

@@ -29,18 +29,9 @@ namespace crostini {
 
 class CrostiniRegistryServiceTest : public testing::Test {
  public:
-  CrostiniRegistryServiceTest() = default;
-
-  // testing::Test:
-  void SetUp() override {
-    SetCrostiniUIAllowedForTesting(true);
-
-    CrostiniTestHelper::EnableCrostini(&profile_);
-
+  CrostiniRegistryServiceTest() : crostini_test_helper_(&profile_) {
     RecreateService();
   }
-
-  void TearDown() override { SetCrostiniUIAllowedForTesting(false); }
 
  protected:
   void RecreateService() {
@@ -70,6 +61,7 @@ class CrostiniRegistryServiceTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
+  CrostiniTestHelper crostini_test_helper_;
 
   std::unique_ptr<CrostiniRegistryService> service_;
 
