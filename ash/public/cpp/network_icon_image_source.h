@@ -38,6 +38,7 @@ struct Badge {
 
 // Struct to pass a collection of badges to NetworkIconImageSource.
 struct Badges {
+  Badge top_left = {};
   Badge center = {};
   Badge bottom_left = {};
   Badge bottom_right = {};
