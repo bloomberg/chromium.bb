@@ -41,9 +41,11 @@ namespace {
 constexpr int kNoSelection = -1;
 
 SkColor GetTextColorForEnableState(const Combobox& combobox, bool enabled) {
-  return style::GetColor(
-      combobox, style::CONTEXT_TEXTFIELD,
-      enabled ? style::STYLE_PRIMARY : style::STYLE_DISABLED);
+  SkColor color =
+      style::GetColor(combobox, style::CONTEXT_TEXTFIELD, style::STYLE_PRIMARY);
+  if (!enabled)
+    color = SkColorSetA(color, gfx::kDisabledControlAlpha);
+  return color;
 }
 
 // The transparent button which holds a button state but is not rendered.
@@ -598,10 +600,7 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
     path.rLineTo(height, -height);
     path.close();
     cc::PaintFlags flags;
-    SkColor arrow_color = GetTextColorForEnableState(*this, true);
-    if (!enabled())
-      arrow_color = SkColorSetA(arrow_color, gfx::kDisabledControlAlpha);
-    flags.setColor(arrow_color);
+    flags.setColor(text_color);
     flags.setAntiAlias(true);
     canvas->DrawPath(path, flags);
   }
