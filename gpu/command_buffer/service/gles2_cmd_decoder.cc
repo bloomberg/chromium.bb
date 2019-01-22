@@ -3165,7 +3165,9 @@ bool BackTexture::AllocateNativeGpuMemoryBuffer(const gfx::Size& size,
   image_ = image;
   decoder_->texture_manager()->SetLevelInfo(
       texture_ref_.get(), Target(), 0, image_->GetInternalFormat(),
-      size.width(), size.height(), 1, 0, image_->GetInternalFormat(),
+      size.width(), size.height(), 1, 0,
+      TextureManager::ExtractFormatFromStorageFormat(
+          image_->GetInternalFormat()),
       GL_UNSIGNED_BYTE, gfx::Rect(size));
   decoder_->texture_manager()->SetLevelImage(texture_ref_.get(), Target(), 0,
                                              image_.get(), Texture::BOUND);
@@ -18031,7 +18033,9 @@ void GLES2DecoderImpl::DoTexStorage2DImageCHROMIUM(GLenum target,
 
   texture_manager()->SetLevelInfo(
       texture_ref, target, 0, image->GetInternalFormat(), width, height, 1, 0,
-      image->GetInternalFormat(), GL_UNSIGNED_BYTE, cleared_rect);
+      TextureManager::ExtractFormatFromStorageFormat(
+          image->GetInternalFormat()),
+      GL_UNSIGNED_BYTE, cleared_rect);
   texture_manager()->SetLevelImage(texture_ref, target, 0, image.get(),
                                    Texture::BOUND);
 
@@ -18346,10 +18350,11 @@ void GLES2DecoderImpl::BindTexImage2DCHROMIUMImpl(const char* function_name,
   gfx::Size size = image->GetSize();
   GLenum texture_internalformat =
       internalformat ? internalformat : image->GetInternalFormat();
-  texture_manager()->SetLevelInfo(texture_ref, target, 0,
-                                  texture_internalformat, size.width(),
-                                  size.height(), 1, 0, texture_internalformat,
-                                  GL_UNSIGNED_BYTE, gfx::Rect(size));
+  texture_manager()->SetLevelInfo(
+      texture_ref, target, 0, texture_internalformat, size.width(),
+      size.height(), 1, 0,
+      TextureManager::ExtractFormatFromStorageFormat(texture_internalformat),
+      GL_UNSIGNED_BYTE, gfx::Rect(size));
   texture_manager()->SetLevelImage(texture_ref, target, 0, image, image_state);
 }
 

@@ -818,15 +818,11 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
     image_state = gles2::Texture::COPIED;
   }
 
-  // TODO(piman): this is consistent with
-  // GLES2DecoderImpl::BindTexImage2DCHROMIUMImpl or
-  // RasterDecoderImpl::DoBindTexImage2DCHROMIUM but seems wrong:
-  //
-  // - internalformat might be sized, which is wrong for format
-  // - gl_type shouldn't be GL_UNSIGNED_BYTE for RGBA4444 for example.
   GLuint internal_format = image->GetInternalFormat();
-  GLenum gl_format = internal_format;
-  GLenum gl_type = GL_UNSIGNED_BYTE;
+  GLenum gl_format =
+      gles2::TextureManager::ExtractFormatFromStorageFormat(internal_format);
+  GLenum gl_type =
+      gles2::TextureManager::ExtractTypeFromStorageFormat(internal_format);
 
   return MakeBacking(mailbox, target, service_id, image, image_state,
                      internal_format, gl_format, gl_type, nullptr, true, format,

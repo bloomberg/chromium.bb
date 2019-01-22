@@ -3672,6 +3672,9 @@ GLenum TextureManager::ExtractFormatFromStorageFormat(GLenum internalformat) {
     case GL_RGB9_E5:
     case GL_RGB16F:
     case GL_RGB32F:
+    case GL_RGB_YCBCR_420V_CHROMIUM:
+    case GL_RGB_YCBCR_422_CHROMIUM:
+    case GL_RGB_YCRCB_420_CHROMIUM:
       return GL_RGB;
     case GL_RGB8UI:
     case GL_RGB8I:
@@ -3992,9 +3995,7 @@ bool Texture::CompatibleWithSamplerUniformType(GLenum type) const {
       level_info->format == GL_DEPTH_STENCIL ||
       level_info->format == GL_LUMINANCE_ALPHA ||
       level_info->format == GL_LUMINANCE || level_info->format == GL_ALPHA ||
-      level_info->format == GL_BGRA_EXT || level_info->format == GL_SRGB_EXT ||
-      level_info->format == GL_RGB10_A2_EXT ||
-      level_info->format == GL_RGB_YCBCR_420V_CHROMIUM;
+      level_info->format == GL_BGRA_EXT || level_info->format == GL_SRGB_EXT;
   if (normalized) {
     // All normalized texture formats are sampled as float.
     return category == SAMPLER_FLOAT;
