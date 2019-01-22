@@ -555,6 +555,41 @@ Status ExecuteClose(Session* session,
   if (status.IsError())
     return status;
 
+  status = web_view->ConnectIfNecessary();
+  if (status.IsError())
+    return status;
+
+  status = web_view->HandleReceivedEvents();
+  if (status.IsError())
+    return status;
+
+
+  JavaScriptDialogManager* dialog_manager =
+      web_view->GetJavaScriptDialogManager();
+  if (dialog_manager->IsDialogOpen()) {
+    std::string alert_text;
+    status = dialog_manager->GetDialogMessage(&alert_text);
+    if (status.IsError())
+      return status;
+
+    // Close the dialog depending on the unexpectedalert behaviour set by user
+    // before returning an error, so that subsequent commands do not fail.
+    const std::string& prompt_behavior = session->unhandled_prompt_behavior;
+
+    if (prompt_behavior == kAccept || prompt_behavior == kAcceptAndNotify)
+      status = dialog_manager->HandleDialog(true, session->prompt_text.get());
+    else if (prompt_behavior == kDismiss ||
+             prompt_behavior == kDismissAndNotify)
+      status = dialog_manager->HandleDialog(false, session->prompt_text.get());
+    if (status.IsError())
+      return status;
+
+    // For backward compatibility, in legacy mode we always notify.
+    if (!session->w3c_compliant || prompt_behavior == kAcceptAndNotify ||
+        prompt_behavior == kDismissAndNotify || prompt_behavior == kIgnore)
+      return Status(kUnexpectedAlertOpen, "{Alert text : " + alert_text + "}");
+  }
+
   status = session->chrome->CloseWebView(web_view->GetId());
   if (status.IsError())
     return status;
