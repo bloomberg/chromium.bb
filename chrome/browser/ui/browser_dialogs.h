@@ -33,7 +33,7 @@ class FilePath;
 namespace content {
 class BrowserContext;
 class WebContents;
-}
+}  // namespace content
 
 namespace extensions {
 class Extension;
@@ -46,14 +46,14 @@ class AuthChallengeInfo;
 namespace payments {
 class PaymentRequest;
 class PaymentRequestDialog;
-}
+}  // namespace payments
 
 namespace safe_browsing {
 class ChromeCleanerController;
 class ChromeCleanerDialogController;
 class ChromeCleanerRebootDialogController;
 class SettingsResetPromptController;
-}
+}  // namespace safe_browsing
 
 namespace task_manager {
 class TaskManagerTableModel;
@@ -62,7 +62,7 @@ class TaskManagerTableModel;
 namespace ui {
 class WebDialogDelegate;
 struct SelectedFileInfo;
-}
+}  // namespace ui
 
 namespace chrome {
 
@@ -265,6 +265,9 @@ enum class DialogIdentifier {
   CROSTINI_APP_RESTART = 91,
   INCOGNITO_WINDOW_COUNTER = 92,
   CROSTINI_APP_UNINSTALLER = 93,
+  CROSTINI_CONTAINER_UPGRADE = 94,
+  // Add values above this line with a corresponding label in
+  // tools/metrics/histograms/enums.xml
   MAX_VALUE
 };
 

@@ -1857,6 +1857,7 @@ test("browser_tests") {
         "../browser/ui/views/crostini/crostini_browser_test_util.h",
         "../browser/ui/views/crostini/crostini_installer_view_browsertest.cc",
         "../browser/ui/views/crostini/crostini_uninstaller_view_browsertest.cc",
+        "../browser/ui/views/crostini/crostini_upgrade_container_view_browsertest.cc",
         "../browser/ui/views/crostini/crostini_upgrade_view_browsertest.cc",
         "../browser/ui/views/extensions/extension_dialog_bounds_browsertest.cc",
         "../browser/ui/views/frame/browser_frame_ash_browsertest.cc",
