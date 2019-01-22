@@ -154,9 +154,9 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // |shared_priority_queue| based on the Sequence's current traits.
   void UpdateSortKey(SequenceAndTransaction sequence_and_transaction);
 
-  // Removes |sequence| from |shared_priority_queue_|. Returns true if
-  // successful, or false if |sequence| is not currently in
-  // |shared_priority_queue_|, such as when a worker is running a task from it.
+  // Removes |sequence| from |priority_queue_|. Returns true if successful, or
+  // false if |sequence| is not currently in |priority_queue_|, such as when a
+  // worker is running a task from it.
   bool RemoveSequence(scoped_refptr<Sequence> sequence);
 
  private:
@@ -173,8 +173,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   void OnCanScheduleSequence(
       SequenceAndTransaction sequence_and_transaction) override;
 
-  // Pushes the Sequence in |sequence_and_transaction| to
-  // |shared_priority_queue_|.
+  // Pushes the Sequence in |sequence_and_transaction| to |priority_queue_|.
   void PushSequenceToPriorityQueue(
       SequenceAndTransaction sequence_and_transaction);
 
@@ -297,10 +296,10 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   const ThreadPriority priority_hint_;
 
   // PriorityQueue from which all threads of this worker pool get work.
-  PriorityQueue shared_priority_queue_;
+  PriorityQueue priority_queue_;
 
   // Synchronizes accesses to all members of this class which are neither const,
-  // atomic, nor InitializedInStart. Has |shared_priority_queue_|'s lock as its
+  // atomic, nor InitializedInStart. Has |priority_queue_|'s lock as its
   // predecessor so that a worker can be pushed to |idle_workers_stack_| within
   // the scope of a Transaction (more details in GetWork()).
   mutable SchedulerLock lock_;
