@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "chrome/browser/ui/media_router/media_cast_mode.h"
+#include "chrome/common/media_router/issue.h"
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/media_sink.h"
 
@@ -52,6 +53,9 @@ class CastDialogController {
   // with the info for the selected file, or nullptr if the user declined.
   virtual void ChooseLocalFile(
       base::OnceCallback<void(const ui::SelectedFileInfo*)> callback) = 0;
+
+  // Removes the specified issue. No-op if the ID is invalid.
+  virtual void ClearIssue(const Issue::Id& issue_id) = 0;
 };
 
 }  // namespace media_router

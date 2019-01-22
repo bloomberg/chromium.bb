@@ -28,6 +28,7 @@ class MediaRouterViewsUI : public MediaRouterUIBase,
   void StopCasting(const std::string& route_id) override;
   void ChooseLocalFile(
       base::OnceCallback<void(const ui::SelectedFileInfo*)> callback) override;
+  void ClearIssue(const Issue::Id& issue_id) override;
 
   // MediaRouterUIBase:
   // Also filters cloud sinks in incognito windows.
