@@ -503,6 +503,10 @@ void GpuHostImpl::DidInitialize(
                            gpu_info_for_hardware_gpu,
                            gpu_feature_info_for_hardware_gpu);
 
+  // Remove entries so that GPU process shader caches get populated on any
+  // GPU process start.
+  client_id_to_shader_cache_.clear();
+
   if (!params_.disable_gpu_shader_disk_cache) {
     bool oopd_enabled =
         base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
