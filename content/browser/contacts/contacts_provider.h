@@ -20,6 +20,7 @@ class ContactsProvider {
       bool multiple,
       bool include_names,
       bool include_emails,
+      bool include_tel,
       blink::mojom::ContactsManager::SelectCallback callback) = 0;
 };
 

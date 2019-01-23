@@ -24,13 +24,18 @@ public class ContactsPickerDialog extends AlertDialog {
      * @param context The context to use.
      * @param listener The listener object that gets notified when an action is taken.
      * @param allowMultiple Whether the contacts picker should allow multiple items to be selected.
+     * @param includeNames Whether the contacts data returned includes names.
+     * @param includeEmails Whether the contacts data returned includes emails.
+     * @param includeTel Whether the contacts data returned includes telephone numbers.
      */
-    public ContactsPickerDialog(
-            Context context, ContactsPickerListener listener, boolean allowMultiple) {
+    public ContactsPickerDialog(Context context, ContactsPickerListener listener,
+            boolean allowMultiple, boolean includeNames, boolean includeEmails,
+            boolean includeTel) {
         super(context, R.style.FullscreenWhite);
 
         // Initialize the main content view.
-        mCategoryView = new PickerCategoryView(context, allowMultiple);
+        mCategoryView = new PickerCategoryView(
+                context, allowMultiple, includeNames, includeEmails, includeTel);
         mCategoryView.initialize(this, listener);
         setView(mCategoryView);
     }

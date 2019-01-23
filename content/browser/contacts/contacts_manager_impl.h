@@ -25,6 +25,7 @@ class CONTENT_EXPORT ContactsManagerImpl
   void Select(bool multiple,
               bool include_names,
               bool include_emails,
+              bool include_tel,
               SelectCallback callback) override;
 
  private:

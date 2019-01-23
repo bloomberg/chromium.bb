@@ -24,12 +24,16 @@ class ContactsProviderAndroid : public ContactsProvider {
   void Select(bool multiple,
               bool include_names,
               bool include_emails,
+              bool include_tel,
               blink::mojom::ContactsManager::SelectCallback callback) override;
 
   // Adds one contact to the list of contacts selected. Note, EndContactsList
   // must be called to signal the end of the construction of the contacts list.
   void AddContact(JNIEnv* env,
                   const base::android::JavaParamRef<jobject>& obj,
+                  jboolean includeNames,
+                  jboolean includeEmails,
+                  jboolean includeTel,
                   const base::android::JavaParamRef<jobjectArray>& names_java,
                   const base::android::JavaParamRef<jobjectArray>& emails_java,
                   const base::android::JavaParamRef<jobjectArray>& tel_java);

@@ -231,9 +231,11 @@ public class ProcessInitializationHandler {
                 private ContactsPickerDialog mDialog;
 
                 @Override
-                public void showContactsPicker(
-                        Context context, ContactsPickerListener listener, boolean allowMultiple) {
-                    mDialog = new ContactsPickerDialog(context, listener, allowMultiple);
+                public void showContactsPicker(Context context, ContactsPickerListener listener,
+                        boolean allowMultiple, boolean includeNames, boolean includeEmails,
+                        boolean includeTel) {
+                    mDialog = new ContactsPickerDialog(context, listener, allowMultiple,
+                            includeNames, includeEmails, includeTel);
                     mDialog.getWindow().getAttributes().windowAnimations =
                             R.style.PickerDialogAnimation;
                     mDialog.show();

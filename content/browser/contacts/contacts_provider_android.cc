@@ -5,6 +5,7 @@
 #include "content/browser/contacts/contacts_provider_android.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -43,6 +44,7 @@ void ContactsProviderAndroid::Select(
     bool multiple,
     bool include_names,
     bool include_emails,
+    bool include_tel,
     blink::mojom::ContactsManager::SelectCallback callback) {
   if (!dialog_) {
     std::move(callback).Run(base::nullopt);
@@ -52,25 +54,41 @@ void ContactsProviderAndroid::Select(
   callback_ = std::move(callback);
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ContactsDialogHost_showDialog(env, dialog_, multiple);
+  Java_ContactsDialogHost_showDialog(env, dialog_, multiple, include_names,
+                                     include_emails, include_tel);
 }
 
 void ContactsProviderAndroid::AddContact(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
+    jboolean include_names,
+    jboolean include_emails,
+    jboolean include_tel,
     const base::android::JavaParamRef<jobjectArray>& names_java,
     const base::android::JavaParamRef<jobjectArray>& emails_java,
     const base::android::JavaParamRef<jobjectArray>& tel_java) {
   DCHECK(callback_);
-  // TODO(finnur): Allow for nullability in names, emails and tel.
-  std::vector<std::string> names;
-  AppendJavaStringArrayToStringVector(env, names_java, &names);
 
-  std::vector<std::string> emails;
-  AppendJavaStringArrayToStringVector(env, emails_java, &emails);
+  base::Optional<std::vector<std::string>> names;
+  if (include_names) {
+    std::vector<std::string> names_vector;
+    AppendJavaStringArrayToStringVector(env, names_java, &names_vector);
+    names = names_vector;
+  }
 
-  std::vector<std::string> tel;
-  AppendJavaStringArrayToStringVector(env, tel_java, &tel);
+  base::Optional<std::vector<std::string>> emails;
+  if (include_emails) {
+    std::vector<std::string> emails_vector;
+    AppendJavaStringArrayToStringVector(env, emails_java, &emails_vector);
+    emails = emails_vector;
+  }
+
+  base::Optional<std::vector<std::string>> tel;
+  if (include_tel) {
+    std::vector<std::string> tel_vector;
+    AppendJavaStringArrayToStringVector(env, tel_java, &tel_vector);
+    tel = tel_vector;
+  }
 
   blink::mojom::ContactInfoPtr contact =
       blink::mojom::ContactInfo::New(names, emails, tel);

@@ -69,12 +69,36 @@ ScriptPromise ContactsManager::select(ScriptState* script_state,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  // TODO(finnur): Use |options|.
+  if (!options->hasProperties()) {
+    resolver->Reject(DOMException::Create(
+        DOMExceptionCode::kAbortError, "Dictionary must contain 'properties'"));
+    return promise;
+  }
+
+  bool names = false;
+  bool emails = false;
+  bool tel = false;
+  for (const String& property : options->properties()) {
+    if (property == "name")
+      names = true;
+    else if (property == "email")
+      emails = true;
+    else if (property == "tel")
+      tel = true;
+  }
+
+  if (!names && !emails && !tel) {
+    resolver->Reject(
+        DOMException::Create(DOMExceptionCode::kAbortError,
+                             "'properties' must contain at least one entry"));
+    return promise;
+  }
+
+  // TODO(finnur): Figure out empty-array vs null.
   GetContactsManager(script_state)
-      ->Select(
-          /* names=*/true, /* emails=*/true, /* telephones=*/true,
-          WTF::Bind(&ContactsManager::OnContactsSelected, WrapPersistent(this),
-                    WrapPersistent(resolver)));
+      ->Select(options->multiple(), names, emails, tel,
+               WTF::Bind(&ContactsManager::OnContactsSelected,
+                         WrapPersistent(this), WrapPersistent(resolver)));
   return promise;
 }
 

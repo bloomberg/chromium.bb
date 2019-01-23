@@ -38,13 +38,15 @@ public class ContactsDialogHost implements ContactsPickerListener {
     }
 
     @CalledByNative
-    private void showDialog(boolean multiple) {
+    private void showDialog(
+            boolean multiple, boolean includeNames, boolean includeEmails, boolean includeTel) {
         if (mWindowAndroid.getActivity().get() == null) {
             nativeEndContactsList(mNativeContactsProviderAndroid);
             return;
         }
 
-        UiUtils.showContactsPicker(mWindowAndroid.getActivity().get(), this, multiple);
+        UiUtils.showContactsPicker(mWindowAndroid.getActivity().get(), this, multiple, includeNames,
+                includeEmails, includeTel);
     }
 
     @Override
@@ -57,7 +59,8 @@ public class ContactsDialogHost implements ContactsPickerListener {
 
             case ContactsPickerAction.CONTACTS_SELECTED:
                 for (Contact contact : contacts) {
-                    nativeAddContact(mNativeContactsProviderAndroid,
+                    nativeAddContact(mNativeContactsProviderAndroid, contact.names != null,
+                            contact.emails != null, contact.tel != null,
                             contact.names != null
                                     ? contact.names.toArray(new String[contact.names.size()])
                                     : null,
@@ -77,7 +80,8 @@ public class ContactsDialogHost implements ContactsPickerListener {
         }
     }
 
-    private static native void nativeAddContact(
-            long nativeContactsProviderAndroid, String[] names, String[] emails, String[] tel);
+    private static native void nativeAddContact(long nativeContactsProviderAndroid,
+            boolean includeNames, boolean includeEmails, boolean includeTel, String[] names,
+            String[] emails, String[] tel);
     private static native void nativeEndContactsList(long nativeContactsProviderAndroid);
 }

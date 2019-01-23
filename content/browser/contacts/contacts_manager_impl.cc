@@ -47,10 +47,11 @@ ContactsManagerImpl::~ContactsManagerImpl() = default;
 void ContactsManagerImpl::Select(bool multiple,
                                  bool include_names,
                                  bool include_emails,
+                                 bool include_tel,
                                  SelectCallback callback) {
   if (contacts_provider_) {
     contacts_provider_->Select(multiple, include_names, include_emails,
-                               std::move(callback));
+                               include_tel, std::move(callback));
   } else {
     std::move(callback).Run(base::nullopt);
   }
