@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_web_rtc.h"
 
 #include <memory>
+#include <vector>
+
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
@@ -224,13 +226,19 @@ bool MockWebRTCPeerConnectionHandler::Initialize(
   return true;
 }
 
-void MockWebRTCPeerConnectionHandler::CreateOffer(
+std::vector<std::unique_ptr<WebRTCRtpTransceiver>>
+MockWebRTCPeerConnectionHandler::CreateOffer(
     const WebRTCSessionDescriptionRequest&,
-    const WebMediaConstraints&) {}
+    const WebMediaConstraints&) {
+  return {};
+}
 
-void MockWebRTCPeerConnectionHandler::CreateOffer(
+std::vector<std::unique_ptr<WebRTCRtpTransceiver>>
+MockWebRTCPeerConnectionHandler::CreateOffer(
     const WebRTCSessionDescriptionRequest&,
-    const WebRTCOfferOptions&) {}
+    const WebRTCOfferOptions&) {
+  return {};
+}
 
 void MockWebRTCPeerConnectionHandler::CreateAnswer(
     const WebRTCSessionDescriptionRequest&,

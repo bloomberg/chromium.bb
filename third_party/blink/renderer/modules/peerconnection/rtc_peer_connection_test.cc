@@ -688,16 +688,20 @@ void PostToCompleteRequest(AsyncOperationAction action,
 
 class FakeWebRTCPeerConnectionHandler : public MockWebRTCPeerConnectionHandler {
  public:
-  void CreateOffer(const WebRTCSessionDescriptionRequest& request,
-                   const WebMediaConstraints&) override {
+  std::vector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
+      const WebRTCSessionDescriptionRequest& request,
+      const WebMediaConstraints&) override {
     PostToCompleteRequest<WebRTCSessionDescriptionRequest>(
         async_operation_action_, request);
+    return {};
   }
 
-  void CreateOffer(const WebRTCSessionDescriptionRequest& request,
-                   const WebRTCOfferOptions&) override {
+  std::vector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
+      const WebRTCSessionDescriptionRequest& request,
+      const WebRTCOfferOptions&) override {
     PostToCompleteRequest<WebRTCSessionDescriptionRequest>(
         async_operation_action_, request);
+    return {};
   }
 
   void CreateAnswer(const WebRTCSessionDescriptionRequest& request,
