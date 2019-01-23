@@ -392,14 +392,18 @@ Polymer({
         assert(this.cloudPrintInterface_).getEventTarget(),
         cloudprint.CloudPrintInterfaceEventType.SUBMIT_DONE,
         this.close_.bind(this));
+
     [cloudprint.CloudPrintInterfaceEventType.SEARCH_FAILED,
-     cloudprint.CloudPrintInterfaceEventType.SUBMIT_FAILED,
      cloudprint.CloudPrintInterfaceEventType.PRINTER_FAILED,
     ].forEach(eventType => {
       this.tracker_.add(
           assert(this.cloudPrintInterface_).getEventTarget(), eventType,
-          this.onCloudPrintError_.bind(this));
+          this.checkCloudPrintStatus_.bind(this));
     });
+    this.tracker_.add(
+        assert(this.cloudPrintInterface_).getEventTarget(),
+        cloudprint.CloudPrintInterfaceEventType.SUBMIT_FAILED,
+        this.onCloudPrintError_.bind(this));
 
     this.destinationStore_.setCloudPrintInterface(this.cloudPrintInterface_);
     this.invitationStore_.setCloudPrintInterface(this.cloudPrintInterface_);
@@ -607,24 +611,37 @@ Polymer({
   },
 
   /**
+   * Updates the cloud print status to NOT_SIGNED_IN if there is an
+   * authentication error.
+   * @param {!CustomEvent<{status: number}>} event Contains the error status
+   * @private
+   */
+  checkCloudPrintStatus_: function(event) {
+    if (event.detail.status != 403 || this.isInAppKioskMode_) {
+      return;
+    }
+
+    // Should not have sent a message to Cloud Print if cloud print is
+    // disabled.
+    assert(this.cloudPrintState_ !== print_preview.CloudPrintState.DISABLED);
+    this.cloudPrintState_ = print_preview.CloudPrintState.NOT_SIGNED_IN;
+    console.warn('Google Cloud Print Error: HTTP status 403');
+  },
+
+  /**
    * Called when there was an error communicating with Google Cloud print.
    * Displays an error message in the print header.
    * @param {!CustomEvent} event Contains the error message.
    * @private
    */
   onCloudPrintError_: function(event) {
-    if (event.detail.status == 0) {
-      return;  // Ignore, the system does not have internet connectivity.
+    this.checkCloudPrintStatus_(event);
+    if (event.detail.status == 0 ||
+        (event.detail.status == 403 && !this.isInAppKioskMode_)) {
+      return;  // No internet connectivity or handled by checkCloudPrintStatus_.
     }
-    if (event.detail.status == 403 && !this.isInAppKioskMode_) {
-      // Should not have sent a message to Cloud Print if cloud print is
-      // disabled.
-      assert(this.cloudPrintState_ !== print_preview.CloudPrintState.DISABLED);
-      this.cloudPrintState_ = print_preview.CloudPrintState.NOT_SIGNED_IN;
-    } else {
-      this.errorMessage_ = event.detail.message;
-      this.$.state.transitTo(print_preview_new.State.FATAL_ERROR);
-    }
+    this.errorMessage_ = event.detail.message;
+    this.$.state.transitTo(print_preview_new.State.FATAL_ERROR);
     if (event.detail.status == 200) {
       console.error(
           'Google Cloud Print Error: ' +
