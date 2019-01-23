@@ -564,6 +564,10 @@ void WebSettingsImpl::SetEnableScrollAnimator(bool enabled) {
   settings_->SetScrollAnimatorEnabled(enabled);
 }
 
+void WebSettingsImpl::SetPrefersReducedMotion(bool enabled) {
+  settings_->SetPrefersReducedMotion(enabled);
+}
+
 void WebSettingsImpl::SetEnableTouchAdjustment(bool enabled) {
   settings_->SetTouchAdjustmentEnabled(enabled);
 }

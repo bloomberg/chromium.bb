@@ -532,6 +532,8 @@ const WebPreferences RenderViewHostImpl::ComputeWebPreferences() {
       (!command_line.HasSwitch(switches::kDisableSmoothScrolling) &&
       gfx::Animation::ScrollAnimationsEnabledBySystem());
 
+  prefs.prefers_reduced_motion = gfx::Animation::PrefersReducedMotion();
+
   if (ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
           GetProcess()->GetID())) {
     prefs.loads_images_automatically = true;

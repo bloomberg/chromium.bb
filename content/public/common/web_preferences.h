@@ -161,6 +161,7 @@ struct CONTENT_EXPORT WebPreferences {
   bool should_print_backgrounds;
   bool should_clear_document_background;
   bool enable_scroll_animator;
+  bool prefers_reduced_motion;
   bool touch_event_feature_detection_enabled;
   bool touch_adjustment_enabled;
   int pointer_events_max_touch_points;

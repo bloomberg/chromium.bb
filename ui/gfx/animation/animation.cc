@@ -113,6 +113,12 @@ bool Animation::ScrollAnimationsEnabledBySystem() {
   // Defined in platform specific files for Windows and OSX.
   return true;
 }
+
+bool Animation::PrefersReducedMotion() {
+  // By default, we assume that animations are enabled, to avoid impacting the
+  // experience for users on systems that don't have APIs for reduced motion.
+  return false;
+}
 #endif
 
 bool Animation::ShouldSendCanceledFromStop() {
