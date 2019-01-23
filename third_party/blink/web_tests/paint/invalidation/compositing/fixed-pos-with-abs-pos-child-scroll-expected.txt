@@ -16,29 +16,14 @@ Hi!
       "name": "Scrolling Contents Layer",
       "bounds": [785, 4021],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
-          "rect": [425, 980, 360, 90],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
-          "rect": [425, 980, 360, 90],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
-          "rect": [425, 480, 360, 90],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
-          "rect": [425, 480, 360, 90],
-          "reason": "paint property change"
-        }
-      ]
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='fixed'",
+      "position": [425, 480],
+      "bounds": [360, 90],
+      "opacity": 0.990000009536743,
+      "contentsOpaque": true
     }
   ]
 }

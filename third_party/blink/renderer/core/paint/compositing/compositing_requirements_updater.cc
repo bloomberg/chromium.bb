@@ -185,19 +185,6 @@ static CompositingReasons SubtreeReasonsForCompositing(
     subtree_reasons |= CompositingReason::kIsolateCompositedDescendants;
   }
 
-  // We ignore LCD text here because we are required to composite
-  // scroll-dependant fixed position elements with composited descendants for
-  // correctness - even if we lose LCD.
-  //
-  // TODO(smcgruer): Only composite fixed if needed (http://crbug.com/742213)
-  const bool ignore_lcd_text = true;
-  if (layer->GetLayoutObject().StyleRef().GetPosition() == EPosition::kFixed ||
-      CompositingReasonFinder::RequiresCompositingForScrollDependentPosition(
-          *layer, ignore_lcd_text)) {
-    subtree_reasons |=
-        CompositingReason::kPositionFixedOrStickyWithCompositedDescendants;
-  }
-
   // A layer with preserve-3d or perspective only needs to be composited if
   // there are descendant layers that will be affected by the preserve-3d or
   // perspective.
@@ -284,38 +271,19 @@ void CompositingRequirementsUpdater::UpdateRecursive(
 
   bool use_clipped_bounding_rect = !has_non_root_composited_scrolling_ancestor;
 
-  // We have to promote the sticky element to work around the bug
-  // (https://crbug.com/698358) of not being able to invalidate the ancestor
-  // after updating the sticky layer position.
-  // TODO(yigu): We should check if we have already lost lcd text. This
-  // would require tracking if we think the current compositing ancestor
-  // layer meets the requirements (i.e. opaque, integer transform, etc).
-  const bool moves_with_respect_to_compositing_ancestor =
-      layer->SticksToScroller() &&
-      !current_recursion_data.compositing_ancestor_->IsRootLayer();
-  const bool ignore_lcd_text = has_non_root_composited_scrolling_ancestor;
-
   const bool layer_can_be_composited = compositor->CanBeComposited(layer);
 
   CompositingReasons direct_from_paint_layer = 0;
   if (layer_can_be_composited)
     direct_from_paint_layer = layer->DirectCompositingReasons();
 
-  if (CompositingReasonFinder::RequiresCompositingForScrollDependentPosition(
-          *layer,
-          ignore_lcd_text || moves_with_respect_to_compositing_ancestor)) {
-    direct_from_paint_layer |= CompositingReason::kScrollDependentPosition;
-  }
-
 #if DCHECK_IS_ON()
   if (layer_can_be_composited) {
     DCHECK(direct_from_paint_layer ==
-           CompositingReasonFinder::DirectReasons(
-               *layer,
-               ignore_lcd_text || moves_with_respect_to_compositing_ancestor))
+           CompositingReasonFinder::DirectReasons(*layer))
         << " Expected: "
         << CompositingReason::ToString(
-               CompositingReasonFinder::DirectReasons(*layer, ignore_lcd_text))
+               CompositingReasonFinder::DirectReasons(*layer))
         << " Actual: " << CompositingReason::ToString(direct_from_paint_layer);
   }
 #endif

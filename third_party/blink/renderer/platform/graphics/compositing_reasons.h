@@ -135,8 +135,7 @@ class PLATFORM_EXPORT CompositingReason {
         kTransformWithCompositedDescendants | kIsolateCompositedDescendants |
         kOpacityWithCompositedDescendants | kMaskWithCompositedDescendants |
         kFilterWithCompositedDescendants | kBlendingWithCompositedDescendants |
-        kReflectionWithCompositedDescendants | kClipsCompositingDescendants |
-        kPositionFixedOrStickyWithCompositedDescendants,
+        kReflectionWithCompositedDescendants | kClipsCompositingDescendants,
 
     kCombo3DDescendants =
         kPreserve3DWith3DDescendants | kPerspectiveWith3DDescendants,

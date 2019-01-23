@@ -2238,20 +2238,8 @@ TEST_F(CompositedLayerMappingTest, StickyPositionNotSquashed) {
       ToLayoutBlock(GetLayoutObjectByElementId("sticky2"))->Layer();
   PaintLayer* sticky3 =
       ToLayoutBlock(GetLayoutObjectByElementId("sticky3"))->Layer();
-  EXPECT_EQ(kPaintsIntoOwnBacking, sticky1->GetCompositingState());
-  EXPECT_EQ(kNotComposited, sticky2->GetCompositingState());
-  EXPECT_EQ(kNotComposited, sticky3->GetCompositingState());
-
-  PaintLayer* scroller =
-      ToLayoutBlock(GetLayoutObjectByElementId("scroller"))->Layer();
-  PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
-  scrollable_area->ScrollToAbsolutePosition(
-      FloatPoint(scrollable_area->ScrollPosition().Y(), 100));
-  UpdateAllLifecyclePhasesForTest();
-
-  // Now that sticky2 and sticky3 overlap sticky1 they will be promoted, but
-  // they should not be squashed into the same layer because they scroll with
-  // respect to each other.
+  // All three sticky-pos elements are composited, because we composite
+  // all sticky elements which stick to scrollers.
   EXPECT_EQ(kPaintsIntoOwnBacking, sticky1->GetCompositingState());
   EXPECT_EQ(kPaintsIntoOwnBacking, sticky2->GetCompositingState());
   EXPECT_EQ(kPaintsIntoOwnBacking, sticky3->GetCompositingState());

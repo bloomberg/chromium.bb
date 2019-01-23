@@ -107,21 +107,6 @@ class MainThreadScrollingReasonsTest
 
 INSTANTIATE_TEST_CASE_P(All, MainThreadScrollingReasonsTest, testing::Bool());
 
-TEST_P(MainThreadScrollingReasonsTest,
-       FixedPositionLosingBackingShouldTriggerMainThreadScroll) {
-  GetWebView()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
-  RegisterMockedHttpURLLoad("fixed-position-losing-backing.html");
-  NavigateTo(base_url_ + "fixed-position-losing-backing.html");
-  ForceFullCompositingUpdate();
-
-  EXPECT_FALSE(GetViewMainThreadScrollingReasons());
-
-  Element* fixed_pos = GetFrame()->GetDocument()->getElementById("fixed");
-  fixed_pos->SetInlineStyleProperty(CSSPropertyTransform, CSSValueNone);
-  ForceFullCompositingUpdate();
-
-  EXPECT_TRUE(GetViewMainThreadScrollingReasons());
-}
 
 TEST_P(MainThreadScrollingReasonsTest,
        CustomScrollbarShouldTriggerMainThreadScroll) {
@@ -257,6 +242,7 @@ TEST_P(MainThreadScrollingReasonsTest,
        RecalculateMainThreadScrollingReasonsUponResize) {
   GetWebView()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
   RegisterMockedHttpURLLoad("has-non-layer-viewport-constrained-objects.html");
+  RegisterMockedHttpURLLoad("white-1x1.png");
   NavigateTo(base_url_ + "has-non-layer-viewport-constrained-objects.html");
   ForceFullCompositingUpdate();
 
@@ -266,32 +252,20 @@ TEST_P(MainThreadScrollingReasonsTest,
   // When the div forces the document to be scrollable, it should scroll on main
   // thread.
   Element* element = GetFrame()->GetDocument()->getElementById("scrollable");
-  element->setAttribute("style",
-                        "overflow:scroll;height:2000px;will-change:transform;",
-                        ASSERT_NO_EXCEPTION);
+  element->setAttribute(
+      "style",
+      "background-image: url('white-1x1.png'); background-attachment: fixed;",
+      ASSERT_NO_EXCEPTION);
   ForceFullCompositingUpdate();
 
-  EXPECT_TRUE(
-      GetViewMainThreadScrollingReasons() &
-      MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects);
+  EXPECT_TRUE(GetViewMainThreadScrollingReasons() &
+              MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
 
   // The main thread scrolling reason should be reset upon the following change.
-  element->setAttribute("style",
-                        "overflow:scroll;height:200px;will-change:transform;",
-                        ASSERT_NO_EXCEPTION);
+  element->setAttribute("style", "", ASSERT_NO_EXCEPTION);
   ForceFullCompositingUpdate();
 
   EXPECT_FALSE(GetViewMainThreadScrollingReasons());
-}
-
-TEST_P(MainThreadScrollingReasonsTest, StickyTriggersMainThreadScroll) {
-  GetWebView()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
-  LoadHTML(
-      "<body style='height: 1200px'>"
-      "<div style='position: sticky; top: 0'>sticky</div>");
-  ForceFullCompositingUpdate();
-  EXPECT_EQ(MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects,
-            GetViewMainThreadScrollingReasons());
 }
 
 TEST_P(MainThreadScrollingReasonsTest, FastScrollingCanBeDisabledWithSetting) {

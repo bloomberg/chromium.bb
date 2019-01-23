@@ -11,7 +11,7 @@ absoluteChildContainer: layer(0,0 785x1658) has hit test rect (320,173 142x12)
 relativeChildContainer: layer(0,0 785x1738) has hit test rect (13,189 290x22)
 relativeChildContainer: layer(0,0 785x1738) has hit test rect (314,199 142x12)
 
-fixed: layer(0,0 785x1818) has hit test rect (405,98 52x12)
+fixed: layer(405,98 52x12) has hit test rect (0,0 52x12)
 
 translate: layer(0,0 785x1866) has hit test rect (13,216 290x14)
 translate: layer(0,0 785x1866) has hit test rect (314,219 288x12)

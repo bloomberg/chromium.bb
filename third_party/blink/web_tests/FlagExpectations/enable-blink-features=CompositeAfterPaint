@@ -429,3 +429,5 @@ crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-basic-backgroun
 crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-basic-opacity-2.html [ Failure ]
 crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-basic.html [ Failure ]
 crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-fixed-clip.html [ Failure ]
+
+Bug(none) css3/filters/blur-filter-page-scroll-self.html [ Failure ]
