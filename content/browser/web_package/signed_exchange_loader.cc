@@ -203,8 +203,6 @@ void SignedExchangeLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
 void SignedExchangeLoader::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
   auto cert_fetcher_factory = SignedExchangeCertFetcherFactory::Create(
-      outer_request_.request_initiator ? *outer_request_.request_initiator
-                                       : url::Origin(),
       std::move(url_loader_factory_), std::move(url_loader_throttles_getter_),
       outer_request_.throttling_profile_id);
 

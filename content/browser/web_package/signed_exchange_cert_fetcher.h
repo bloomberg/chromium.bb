@@ -17,7 +17,6 @@
 #include "content/browser/web_package/signed_exchange_error.h"
 #include "content/common/content_export.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
-#include "url/origin.h"
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -52,7 +51,6 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
       scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
       const GURL& cert_url,
-      url::Origin request_initiator,
       bool force_fetch,
       CertificateCallback callback,
       SignedExchangeDevToolsProxy* devtools_proxy,
@@ -74,7 +72,6 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
       scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
       const GURL& cert_url,
-      url::Origin request_initiator,
       bool force_fetch,
       CertificateCallback callback,
       SignedExchangeDevToolsProxy* devtools_proxy,
