@@ -337,7 +337,6 @@ class CONTENT_EXPORT RenderWidget
   bool WillHandleMouseEvent(const blink::WebMouseEvent& event) override;
 
   // RenderWidgetScreenMetricsEmulatorDelegate
-  void Redraw() override;
   void SynchronizeVisualProperties(
       const VisualProperties& resize_params) override;
   void SetScreenMetricsEmulationParameters(

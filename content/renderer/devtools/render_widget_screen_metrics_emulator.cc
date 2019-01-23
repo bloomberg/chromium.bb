@@ -139,8 +139,6 @@ void RenderWidgetScreenMetricsEmulator::OnSynchronizeVisualProperties(
     const VisualProperties& params) {
   original_visual_properties_ = params;
   Apply();
-
-  delegate_->Redraw();
 }
 
 void RenderWidgetScreenMetricsEmulator::OnUpdateWindowScreenRect(
