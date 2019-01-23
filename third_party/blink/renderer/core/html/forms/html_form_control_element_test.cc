@@ -44,7 +44,7 @@ class MockFormValidationMessageClient
 
   void DocumentDetached(const Document&) override {}
   void WillBeDestroyed() override {}
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(anchor_);
     ValidationMessageClient::Trace(visitor);
   }

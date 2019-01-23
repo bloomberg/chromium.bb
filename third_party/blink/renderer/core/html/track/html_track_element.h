@@ -58,7 +58,7 @@ class HTMLTrackElement final : public HTMLElement,
 
   TextTrack* track();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   ~HTMLTrackElement() override;

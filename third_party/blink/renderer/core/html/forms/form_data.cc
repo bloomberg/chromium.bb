@@ -68,7 +68,7 @@ class FormDataIterationSource final
     return true;
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(form_data_);
     PairIterable<String, FormDataEntryValue>::IterationSource::Trace(visitor);
   }
@@ -113,7 +113,7 @@ FormData* FormData::Create(HTMLFormElement* form,
   return MakeGarbageCollected<FormData>(*form_data);
 }
 
-void FormData::Trace(blink::Visitor* visitor) {
+void FormData::Trace(Visitor* visitor) {
   visitor->Trace(entries_);
   ScriptWrappable::Trace(visitor);
 }
@@ -344,7 +344,7 @@ FormData::Entry::Entry(const String& name, Blob* blob, const String& filename)
       << "'name' should be a USVString.";
 }
 
-void FormData::Entry::Trace(blink::Visitor* visitor) {
+void FormData::Entry::Trace(Visitor* visitor) {
   visitor->Trace(blob_);
 }
 

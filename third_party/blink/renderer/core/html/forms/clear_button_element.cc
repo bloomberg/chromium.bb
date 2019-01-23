@@ -83,7 +83,7 @@ bool ClearButtonElement::IsClearButtonElement() const {
   return true;
 }
 
-void ClearButtonElement::Trace(blink::Visitor* visitor) {
+void ClearButtonElement::Trace(Visitor* visitor) {
   visitor->Trace(clear_button_owner_);
   HTMLDivElement::Trace(visitor);
 }

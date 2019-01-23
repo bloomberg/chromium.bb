@@ -47,7 +47,7 @@ class CORE_EXPORT HTMLViewSourceDocument final : public HTMLDocument {
 
   void AddSource(const String&, HTMLToken&, SourceAnnotation);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   DocumentParser* CreateParser() override;

@@ -54,7 +54,7 @@ class CORE_EXPORT ColorChooserPopupUIController final
                                 ChromeClient*,
                                 blink::ColorChooserClient*);
   ~ColorChooserPopupUIController() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // ColorChooserUIController functions:
   void OpenUI() override;

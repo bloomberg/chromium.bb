@@ -35,7 +35,7 @@ class HTMLImportTreeRoot final : public HTMLImport, public NameClient {
   HTMLImportChild* Add(HTMLImportChild*);
   HTMLImportChild* Find(const KURL&) const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   const char* NameInHeapSnapshot() const override {
     return "HTMLImportTreeRoot";
   }

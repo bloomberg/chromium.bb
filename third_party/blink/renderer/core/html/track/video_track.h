@@ -32,7 +32,7 @@ class CORE_EXPORT VideoTrack final : public ScriptWrappable, public TrackBase {
              const AtomicString& language,
              bool selected);
   ~VideoTrack() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   bool selected() const { return selected_; }
   void setSelected(bool);

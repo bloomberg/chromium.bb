@@ -149,7 +149,7 @@ void CanvasFontCache::PruneAll() {
   fonts_resolved_using_default_style_.clear();
 }
 
-void CanvasFontCache::Trace(blink::Visitor* visitor) {
+void CanvasFontCache::Trace(Visitor* visitor) {
   visitor->Trace(fetched_fonts_);
   visitor->Trace(document_);
 }

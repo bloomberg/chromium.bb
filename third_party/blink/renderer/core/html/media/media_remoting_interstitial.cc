@@ -144,7 +144,7 @@ void MediaRemotingInterstitial::OnPosterImageChanged() {
       GetVideoElement().getAttribute(html_names::kPosterAttr));
 }
 
-void MediaRemotingInterstitial::Trace(blink::Visitor* visitor) {
+void MediaRemotingInterstitial::Trace(Visitor* visitor) {
   visitor->Trace(video_element_);
   visitor->Trace(background_image_);
   visitor->Trace(cast_icon_);

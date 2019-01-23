@@ -56,7 +56,7 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   static HTMLVideoElement* Create(Document&);
 
   HTMLVideoElement(Document&);
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   bool HasPendingActivity() const final;
 

@@ -65,7 +65,7 @@ class CORE_EXPORT HTMLMeterElement final : public HTMLElement {
 
   bool CanContainRangeEndPoint() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   ~HTMLMeterElement() override;

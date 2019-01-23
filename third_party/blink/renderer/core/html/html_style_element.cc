@@ -151,7 +151,7 @@ void HTMLStyleElement::setDisabled(bool set_disabled) {
     style_sheet->setDisabled(set_disabled);
 }
 
-void HTMLStyleElement::Trace(blink::Visitor* visitor) {
+void HTMLStyleElement::Trace(Visitor* visitor) {
   StyleElement::Trace(visitor);
   HTMLElement::Trace(visitor);
 }

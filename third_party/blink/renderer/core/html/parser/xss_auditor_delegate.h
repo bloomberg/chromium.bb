@@ -75,7 +75,7 @@ class XSSAuditorDelegate final {
 
  public:
   explicit XSSAuditorDelegate(Document*);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   void DidBlockScript(const XSSInfo&);
   void SetReportURL(const KURL& url) { report_url_ = url; }

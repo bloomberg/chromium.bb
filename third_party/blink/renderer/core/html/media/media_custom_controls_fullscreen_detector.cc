@@ -195,7 +195,7 @@ bool MediaCustomControlsFullscreenDetector::IsVideoOrParentFullscreen() {
   return fullscreen_element->contains(&VideoElement());
 }
 
-void MediaCustomControlsFullscreenDetector::Trace(blink::Visitor* visitor) {
+void MediaCustomControlsFullscreenDetector::Trace(Visitor* visitor) {
   NativeEventListener::Trace(visitor);
   visitor->Trace(video_element_);
   visitor->Trace(viewport_intersection_observer_);

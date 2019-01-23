@@ -40,7 +40,7 @@ namespace blink {
 
 InputTypeView::~InputTypeView() = default;
 
-void InputTypeView::Trace(blink::Visitor* visitor) {
+void InputTypeView::Trace(Visitor* visitor) {
   visitor->Trace(element_);
 }
 
@@ -187,7 +187,7 @@ bool InputTypeView::HasBadInput() const {
   return false;
 }
 
-void ClickHandlingState::Trace(blink::Visitor* visitor) {
+void ClickHandlingState::Trace(Visitor* visitor) {
   visitor->Trace(checked_radio_button);
   EventDispatchHandlingState::Trace(visitor);
 }

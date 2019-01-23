@@ -55,7 +55,7 @@ HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tag_name,
 
 HTMLFormControlElement::~HTMLFormControlElement() = default;
 
-void HTMLFormControlElement::Trace(blink::Visitor* visitor) {
+void HTMLFormControlElement::Trace(Visitor* visitor) {
   ListedElement::Trace(visitor);
   HTMLElement::Trace(visitor);
 }

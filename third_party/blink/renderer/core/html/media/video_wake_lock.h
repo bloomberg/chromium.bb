@@ -33,7 +33,7 @@ class CORE_EXPORT VideoWakeLock final : public NativeEventListener,
  public:
   explicit VideoWakeLock(HTMLVideoElement&);
 
-  void Trace(blink::Visitor*) final;
+  void Trace(Visitor*) final;
 
   // EventListener implementation.
   void Invoke(ExecutionContext*, Event*) final;

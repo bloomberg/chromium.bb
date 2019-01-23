@@ -155,7 +155,7 @@ class VTTCue final : public TextTrackCue {
   String ToString() const override;
 #endif
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Document& GetDocument() const;

@@ -117,7 +117,7 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
     return assigned_nodes_candidates_;
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   InsertionNotificationRequest InsertedInto(ContainerNode&) final;

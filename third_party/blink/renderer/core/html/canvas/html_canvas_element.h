@@ -234,7 +234,7 @@ class CORE_EXPORT HTMLCanvasElement final
                            base::WeakPtr<CanvasResourceDispatcher>,
                            scoped_refptr<base::SingleThreadTaskRunner>,
                            unsigned resource_id) override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void SetResourceProviderForTesting(std::unique_ptr<CanvasResourceProvider>,
                                      std::unique_ptr<Canvas2DLayerBridge>,

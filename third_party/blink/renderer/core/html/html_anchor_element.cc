@@ -501,7 +501,7 @@ Node::InsertionNotificationRequest HTMLAnchorElement::InsertedInto(
   return request;
 }
 
-void HTMLAnchorElement::Trace(blink::Visitor* visitor) {
+void HTMLAnchorElement::Trace(Visitor* visitor) {
   visitor->Trace(rel_list_);
   HTMLElement::Trace(visitor);
 }

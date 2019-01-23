@@ -123,7 +123,7 @@ int HTMLOutputElement::tabIndex() const {
   return HTMLElement::tabIndex();
 }
 
-void HTMLOutputElement::Trace(blink::Visitor* visitor) {
+void HTMLOutputElement::Trace(Visitor* visitor) {
   visitor->Trace(tokens_);
   HTMLFormControlElement::Trace(visitor);
 }

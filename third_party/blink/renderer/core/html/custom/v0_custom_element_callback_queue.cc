@@ -73,7 +73,7 @@ bool V0CustomElementCallbackQueue::ProcessInElementQueue(
   return did_work;
 }
 
-void V0CustomElementCallbackQueue::Trace(blink::Visitor* visitor) {
+void V0CustomElementCallbackQueue::Trace(Visitor* visitor) {
   visitor->Trace(element_);
   visitor->Trace(queue_);
 }

@@ -95,7 +95,7 @@ class HTMLParserScheduler final
 
   void Detach();  // Clear active tasks if any.
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   bool ShouldYield(const SpeculationsPumpSession&, bool starting_script) const;

@@ -64,7 +64,7 @@ class CORE_EXPORT ExternalPopupMenu final : public PopupMenu,
   static int ToPopupMenuItemIndex(int index, HTMLSelectElement&);
   static int ToExternalPopupMenuItemIndex(int index, HTMLSelectElement&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // PopupMenu methods:

@@ -838,7 +838,7 @@ bool ImageData::ImageDataInCanvasColorSettings(
   return data_transform_successful;
 }
 
-void ImageData::Trace(blink::Visitor* visitor) {
+void ImageData::Trace(Visitor* visitor) {
   visitor->Trace(color_settings_);
   visitor->Trace(data_);
   visitor->Trace(data_u16_);

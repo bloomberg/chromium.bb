@@ -55,7 +55,7 @@ class CORE_EXPORT FileInputType final : public InputType,
 
   FileInputType(HTMLInputElement&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   using InputType::GetElement;
   static Vector<String> FilesFromFormControlState(const FormControlState&);
   static FileList* CreateFileList(const FileChooserFileInfoList& files,

@@ -113,7 +113,7 @@ class CORE_EXPORT AutoplayPolicy final
   // avoid false positives.
   void EnsureAutoplayInitiatedSet();
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
 
  private:
   friend class AutoplayUmaHelper;

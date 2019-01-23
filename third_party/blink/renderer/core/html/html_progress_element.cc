@@ -151,7 +151,7 @@ bool HTMLProgressElement::ShouldAppearIndeterminate() const {
   return !IsDeterminate();
 }
 
-void HTMLProgressElement::Trace(blink::Visitor* visitor) {
+void HTMLProgressElement::Trace(Visitor* visitor) {
   visitor->Trace(value_);
   HTMLElement::Trace(visitor);
 }

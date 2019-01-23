@@ -62,7 +62,7 @@ class PluginDocument::BeforeUnloadEventListener : public NativeEventListener {
     show_dialog_ = show_dialog;
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(doc_);
     NativeEventListener::Trace(visitor);
   }
@@ -92,7 +92,7 @@ class PluginDocumentParser : public RawDataDocumentParser {
         embed_element_(nullptr),
         background_color_(background_color) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(embed_element_);
     RawDataDocumentParser::Trace(visitor);
   }
@@ -245,7 +245,7 @@ void PluginDocument::Shutdown() {
   HTMLDocument::Shutdown();
 }
 
-void PluginDocument::Trace(blink::Visitor* visitor) {
+void PluginDocument::Trace(Visitor* visitor) {
   visitor->Trace(plugin_node_);
   visitor->Trace(before_unload_event_listener_);
   HTMLDocument::Trace(visitor);

@@ -45,7 +45,7 @@ class HiddenInputType final : public InputType, private InputTypeView {
   HiddenInputType(HTMLInputElement& element)
       : InputType(element), InputTypeView(element) {}
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   using InputType::GetElement;
 
  private:

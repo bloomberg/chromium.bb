@@ -59,7 +59,7 @@ class CORE_EXPORT HTMLInputElement
 
   HTMLInputElement(Document&, const CreateElementFlags);
   ~HTMLInputElement() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // Returns attributes that should be checked against Trusted Types
   const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;

@@ -26,7 +26,7 @@ class CORE_EXPORT RemotePlaybackController
   virtual void AddObserver(RemotePlaybackObserver*) = 0;
   virtual void RemoveObserver(RemotePlaybackObserver*) = 0;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   explicit RemotePlaybackController(HTMLMediaElement&);

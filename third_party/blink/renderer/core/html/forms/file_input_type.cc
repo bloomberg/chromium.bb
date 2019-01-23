@@ -75,7 +75,7 @@ InputType* FileInputType::Create(HTMLInputElement& element) {
   return MakeGarbageCollected<FileInputType>(element);
 }
 
-void FileInputType::Trace(blink::Visitor* visitor) {
+void FileInputType::Trace(Visitor* visitor) {
   visitor->Trace(file_list_);
   KeyboardClickableInputTypeView::Trace(visitor);
   InputType::Trace(visitor);

@@ -24,7 +24,7 @@ class CORE_EXPORT AudioTrackList final : public TrackListBase<AudioTrack> {
   // EventTarget
   const AtomicString& InterfaceName() const override;
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     TrackListBase<AudioTrack>::Trace(visitor);
   }
 };

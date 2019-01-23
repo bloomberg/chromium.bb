@@ -43,7 +43,7 @@ class RadioButtonGroup : public GarbageCollected<RadioButtonGroup> {
   bool Contains(HTMLInputElement*) const;
   unsigned size() const;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   void SetNeedsValidityCheckForAllButtons();
@@ -195,7 +195,7 @@ unsigned RadioButtonGroup::size() const {
   return members_.size();
 }
 
-void RadioButtonGroup::Trace(blink::Visitor* visitor) {
+void RadioButtonGroup::Trace(Visitor* visitor) {
   visitor->Trace(members_);
   visitor->Trace(checked_button_);
 }
@@ -297,7 +297,7 @@ void RadioButtonGroupScope::RemoveButton(HTMLInputElement* element) {
   }
 }
 
-void RadioButtonGroupScope::Trace(blink::Visitor* visitor) {
+void RadioButtonGroupScope::Trace(Visitor* visitor) {
   visitor->Trace(name_to_group_map_);
 }
 

@@ -50,7 +50,7 @@ class CORE_EXPORT HTMLTemplateElement final : public HTMLElement {
 
   bool HasNonInBodyInsertionMode() const override { return true; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   DocumentFragment* content() const;
 

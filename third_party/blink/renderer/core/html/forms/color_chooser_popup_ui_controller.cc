@@ -59,7 +59,7 @@ void ColorChooserPopupUIController::Dispose() {
   // ~ColorChooserUIController calls EndChooser().
 }
 
-void ColorChooserPopupUIController::Trace(blink::Visitor* visitor) {
+void ColorChooserPopupUIController::Trace(Visitor* visitor) {
   visitor->Trace(chrome_client_);
   ColorChooserUIController::Trace(visitor);
 }

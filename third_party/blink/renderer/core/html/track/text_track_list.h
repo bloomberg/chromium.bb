@@ -74,7 +74,7 @@ class CORE_EXPORT TextTrackList final : public EventTargetWithInlineData {
 
   bool HasShowingTracks();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void ScheduleTrackEvent(const AtomicString& event_name, TextTrack*);

@@ -579,7 +579,7 @@ int HTMLSlotElement::tabIndex() const {
   return Element::tabIndex();
 }
 
-void HTMLSlotElement::Trace(blink::Visitor* visitor) {
+void HTMLSlotElement::Trace(Visitor* visitor) {
   visitor->Trace(assigned_nodes_);
   visitor->Trace(assigned_nodes_index_);
   visitor->Trace(flat_tree_children_);

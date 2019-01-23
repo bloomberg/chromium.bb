@@ -392,7 +392,7 @@ void LazyLoadFrameObserver::RecordInitialDeferralAction(
     was_recorded_as_deferred_ = true;
 }
 
-void LazyLoadFrameObserver::Trace(blink::Visitor* visitor) {
+void LazyLoadFrameObserver::Trace(Visitor* visitor) {
   visitor->Trace(element_);
   visitor->Trace(lazy_load_intersection_observer_);
   visitor->Trace(visibility_metrics_observer_);

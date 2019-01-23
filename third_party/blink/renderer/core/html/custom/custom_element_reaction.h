@@ -22,7 +22,7 @@ class CORE_EXPORT CustomElementReaction
 
   virtual void Invoke(Element&) = 0;
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
 
  protected:
   Member<CustomElementDefinition> definition_;

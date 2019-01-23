@@ -113,7 +113,7 @@ TextFieldInputType::TextFieldInputType(HTMLInputElement& element)
 
 TextFieldInputType::~TextFieldInputType() = default;
 
-void TextFieldInputType::Trace(blink::Visitor* visitor) {
+void TextFieldInputType::Trace(Visitor* visitor) {
   InputTypeView::Trace(visitor);
   InputType::Trace(visitor);
 }

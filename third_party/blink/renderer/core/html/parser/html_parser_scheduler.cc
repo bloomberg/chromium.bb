@@ -64,7 +64,7 @@ HTMLParserScheduler::HTMLParserScheduler(
 
 HTMLParserScheduler::~HTMLParserScheduler() = default;
 
-void HTMLParserScheduler::Trace(blink::Visitor* visitor) {
+void HTMLParserScheduler::Trace(Visitor* visitor) {
   visitor->Trace(parser_);
 }
 

@@ -40,7 +40,7 @@ class PictureInPictureInterstitial final : public HTMLDivElement {
   void RemovedFrom(ContainerNode&) override;
 
   // Element:
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   class VideoElementResizeObserverDelegate;

@@ -77,7 +77,7 @@ class CORE_EXPORT SpinButtonElement final : public HTMLDivElement,
 
   void ForwardEvent(Event&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DetachLayoutTree(const AttachContext&) override;

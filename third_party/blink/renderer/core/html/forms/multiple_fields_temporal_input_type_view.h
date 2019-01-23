@@ -59,7 +59,7 @@ class MultipleFieldsTemporalInputTypeView final
   MultipleFieldsTemporalInputTypeView(HTMLInputElement&,
                                       BaseTemporalInputType&);
   ~MultipleFieldsTemporalInputTypeView() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // DateTimeEditElement::EditControlOwner functions
