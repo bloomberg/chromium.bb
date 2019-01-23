@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill/core/browser/autofill_subject.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -26,7 +27,8 @@ namespace autofill {
 // from the renderers and the storing and retrieving of form data
 // through WebDataServiceBase.
 class AutocompleteHistoryManager : public KeyedService,
-                                   public WebDataServiceConsumer {
+                                   public WebDataServiceConsumer,
+                                   public AutofillSubject {
  public:
   // Interface to be implemented by classes that want to fetch autocomplete
   // suggestions.

@@ -50,6 +50,10 @@ constexpr base::TimeDelta kDisusedDataModelTimeDelta =
 constexpr base::TimeDelta kDisusedDataModelDeletionTimeDelta =
     base::TimeDelta::FromDays(395);
 
+// The period after which autocomplete entries should be cleaned-up in days.
+// Equivalent to roughly 14 months.
+const int64_t kAutocompleteRetentionPolicyPeriodInDays = 14 * 31;
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_CONSTANTS_H_

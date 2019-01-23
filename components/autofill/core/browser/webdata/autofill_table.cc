@@ -34,6 +34,7 @@
 #include "components/autofill/core/browser/webdata/autofill_table_encryptor.h"
 #include "components/autofill/core/browser/webdata/autofill_table_encryptor_factory.h"
 #include "components/autofill/core/common/autofill_clock.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -53,10 +54,6 @@ namespace {
 
 // The period after which autocomplete entries should expire in days.
 const int64_t kExpirationPeriodInDays = 60;
-
-// The period after which autocomplete entries should be cleaned-up in days.
-// Equivalent to roughly 14 months.
-const int64_t kAutocompleteRetentionPolicyPeriodInDays = 14 * 31;
 
 // Helper struct for AutofillTable::RemoveFormElementsAddedBetween().
 // Contains all the necessary fields to update a row in the 'autofill' table.

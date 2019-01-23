@@ -846,7 +846,8 @@ TEST_F(AutofillTableTest, RemoveExpiredFormElements_FlagOn_Expires) {
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutocompleteRetentionPolicyEnabled);
   auto kNow = AutofillClock::Now();
-  auto k2YearsOld = kNow - base::TimeDelta::FromDays(2 * 365);
+  auto k2YearsOld = kNow - base::TimeDelta::FromDays(
+                               2 * kAutocompleteRetentionPolicyPeriodInDays);
 
   AutofillChangeList changes;
   FormFieldData field;
