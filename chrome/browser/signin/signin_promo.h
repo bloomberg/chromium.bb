@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "build/build_config.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #include "components/signin/core/browser/signin_metrics.h"
 
@@ -52,13 +53,6 @@ GURL GetLandingURL(signin_metrics::AccessPoint access_point);
 GURL GetEmbeddedPromoURLForTab(signin_metrics::AccessPoint access_point,
                                signin_metrics::Reason reason,
                                bool auto_close);
-
-// Gets the signin URL to be used to display the sign in flow for |mode| in
-// |profile|.
-GURL GetEmbeddedSigninURLFromBubbleViewMode(
-    Profile* profile,
-    profiles::BubbleViewMode mode,
-    signin_metrics::AccessPoint access_point);
 #endif
 
 // Returns the sign in promo URL that can be used in a modal dialog with
