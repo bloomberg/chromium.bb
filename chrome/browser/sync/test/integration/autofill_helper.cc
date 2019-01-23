@@ -279,7 +279,7 @@ void SetProfiles(int profile, std::vector<AutofillProfile>* autofill_profiles) {
 
   pdm->AddObserver(&personal_data_observer);
   EXPECT_CALL(personal_data_observer, OnPersonalDataFinishedProfileTasks())
-      .WillOnce(QuitMessageLoop(&run_loop));
+      .WillRepeatedly(QuitMessageLoop(&run_loop));
   EXPECT_CALL(personal_data_observer, OnPersonalDataChanged())
       .Times(testing::AnyNumber());
 

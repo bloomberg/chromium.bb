@@ -170,8 +170,19 @@ class FormDataImporterTestBase {
   // Helper methods that simply forward the call to the private member (to avoid
   // having to friend every test that needs to access the private
   // PersonalDataManager::ImportAddressProfile or ImportCreditCard).
-  bool ImportAddressProfiles(const FormStructure& form) {
-    return form_data_importer_->ImportAddressProfiles(form);
+  void ImportAddressProfiles(bool extraction_successful,
+                             const FormStructure& form) {
+    if (!extraction_successful) {
+      EXPECT_FALSE(form_data_importer_->ImportAddressProfiles(form));
+      return;
+    }
+
+    base::RunLoop run_loop;
+    EXPECT_CALL(personal_data_observer_, OnPersonalDataFinishedProfileTasks())
+        .WillOnce(QuitMessageLoop(&run_loop));
+    EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(1);
+    EXPECT_TRUE(form_data_importer_->ImportAddressProfiles(form));
+    run_loop.Run();
   }
 
   bool ImportCreditCard(const FormStructure& form,
@@ -300,9 +311,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfiles(form_structure));
-
-  WaitForOnPersonalDataChanged();
+  ImportAddressProfiles(/*extraction_success=*/true, form_structure);
 
   AutofillProfile expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected, "George", nullptr, "Washington",
@@ -339,7 +348,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_BadEmail) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_FALSE(ImportAddressProfiles(form_structure));
+  ImportAddressProfiles(/*extraction_success=*/false, form_structure);
 
   ASSERT_EQ(0U, personal_data_manager_->GetProfiles().size());
 }
@@ -370,9 +379,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_TwoEmails) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfiles(form_structure));
-
-  WaitForOnPersonalDataChanged();
+  ImportAddressProfiles(/*extraction_success=*/true, form_structure);
 
   ASSERT_EQ(1U, personal_data_manager_->GetProfiles().size());
 }
@@ -403,7 +410,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_TwoDifferentEmails) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_FALSE(ImportAddressProfiles(form_structure));
+  ImportAddressProfiles(/*extraction_success=*/false, form_structure);
 
   ASSERT_EQ(0U, personal_data_manager_->GetProfiles().size());
 }
@@ -425,7 +432,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_NotEnoughFilledFields) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_FALSE(ImportAddressProfiles(form_structure));
+  ImportAddressProfiles(/*extraction_success=*/false, form_structure);
 
   ASSERT_EQ(0U, personal_data_manager_->GetProfiles().size());
   ASSERT_EQ(0U, personal_data_manager_->GetCreditCards().size());
@@ -453,9 +460,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_MinimumAddressUSA) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfiles(form_structure));
-
-  WaitForOnPersonalDataChanged();
+  ImportAddressProfiles(/*extraction_success=*/true, form_structure);
 
   ASSERT_EQ(1U, personal_data_manager_->GetProfiles().size());
 }
@@ -482,9 +487,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_MinimumAddressGB) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfiles(form_structure));
-
-  WaitForOnPersonalDataChanged();
+  ImportAddressProfiles(/*extraction_success=*/true, form_structure);
 
   ASSERT_EQ(1U, personal_data_manager_->GetProfiles().size());
 }
@@ -506,9 +509,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_MinimumAddressGI) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfiles(form_structure));
-
-  WaitForOnPersonalDataChanged();
+  ImportAddressProfiles(/*extraction_success=*/true, form_structure);
 
   ASSERT_EQ(1U, personal_data_manager_->GetProfiles().size());
 }
@@ -548,9 +549,7 @@ TEST_F(FormDataImporterTest,
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfiles(form_structure));
-
-  WaitForOnPersonalDataChanged();
+  ImportAddressProfiles(/*extraction_success=*/true, form_structure);
 
   AutofillProfile expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected, "George", nullptr, "Washington", nullptr,
@@ -589,9 +588,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_MultilineAddress) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfiles(form_structure));
-
-  WaitForOnPersonalDataChanged();
+  ImportAddressProfiles(/*extraction_success=*/true, form_structure);
 
   AutofillProfile expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected, "George", nullptr, "Washington",
@@ -631,9 +628,7 @@ TEST_F(FormDataImporterTest,
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfiles(form_structure1));
-
-  WaitForOnPersonalDataChanged();
+  ImportAddressProfiles(/*extraction_success=*/true, form_structure1);
 
   AutofillProfile expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected, "George", nullptr, "Washington",
@@ -669,9 +664,7 @@ TEST_F(FormDataImporterTest,
 
   FormStructure form_structure2(form2);
   form_structure2.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfiles(form_structure2));
-
-  WaitForOnPersonalDataChanged();
+  ImportAddressProfiles(/*extraction_success=*/true, form_structure2);
 
   AutofillProfile expected2(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected2, "John", nullptr, "Adams", "second@gmail.com",
@@ -728,9 +721,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_TwoValidProfilesSameForm) {
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfiles(form_structure));
-
-  WaitForOnPersonalDataChanged();
+  ImportAddressProfiles(/*extraction_success=*/true, form_structure);
 
   AutofillProfile expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected, "George", nullptr, "Washington",
@@ -804,9 +795,7 @@ TEST_F(FormDataImporterTest,
   // Still able to do the import.
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfiles(form_structure));
-
-  WaitForOnPersonalDataChanged();
+  ImportAddressProfiles(/*extraction_success=*/true, form_structure);
 
   AutofillProfile expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected, "George", nullptr, "Washington",
@@ -888,9 +877,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_ThreeValidProfilesSameForm) {
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfiles(form_structure));
-
-  WaitForOnPersonalDataChanged();
+  ImportAddressProfiles(/*extraction_success=*/true, form_structure);
 
   // Only two are saved.
   AutofillProfile expected(base::GenerateGUID(), test::kEmptyOrigin);
@@ -944,9 +931,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_SameProfileWithConflict) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfiles(form_structure1));
-
-  WaitForOnPersonalDataChanged();
+  ImportAddressProfiles(/*extraction_success=*/true, form_structure1);
 
   AutofillProfile expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected, "George", nullptr, "Washington",
@@ -992,9 +977,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_SameProfileWithConflict) {
 
   FormStructure form_structure2(form2);
   form_structure2.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfiles(form_structure2));
-
-  WaitForOnPersonalDataChanged();
+  ImportAddressProfiles(/*extraction_success=*/true, form_structure2);
 
   const std::vector<AutofillProfile*>& results2 =
       personal_data_manager_->GetProfiles();
@@ -1031,9 +1014,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_MissingInfoInOld) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfiles(form_structure1));
-
-  WaitForOnPersonalDataChanged();
+  ImportAddressProfiles(/*extraction_success=*/true, form_structure1);
 
   AutofillProfile expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected, "George", nullptr, "Washington", nullptr,
@@ -1069,9 +1050,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_MissingInfoInOld) {
 
   FormStructure form_structure2(form2);
   form_structure2.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfiles(form_structure2));
-
-  WaitForOnPersonalDataChanged();
+  ImportAddressProfiles(/*extraction_success=*/true, form_structure2);
 
   const std::vector<AutofillProfile*>& results2 =
       personal_data_manager_->GetProfiles();
@@ -1115,9 +1094,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_MissingInfoInNew) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfiles(form_structure1));
-
-  WaitForOnPersonalDataChanged();
+  ImportAddressProfiles(/*extraction_success=*/true, form_structure1);
 
   AutofillProfile expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected, "George", nullptr, "Washington",
@@ -1155,9 +1132,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_MissingInfoInNew) {
 
   FormStructure form_structure2(form2);
   form_structure2.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfiles(form_structure2));
-
-  WaitForOnPersonalDataChanged();
+  ImportAddressProfiles(/*extraction_success=*/true, form_structure2);
 
   const std::vector<AutofillProfile*>& results2 =
       personal_data_manager_->GetProfiles();
@@ -1193,7 +1168,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_InsufficientAddress) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes();
-  EXPECT_FALSE(ImportAddressProfiles(form_structure1));
+  ImportAddressProfiles(/*extraction_success=*/false, form_structure1);
 
   // Since no refresh is expected, reload the data from the database to make
   // sure no changes were written out.
@@ -1216,10 +1191,12 @@ TEST_F(FormDataImporterTest,
                        "Hollywood", "CA", "91601", "US", "12345678910");
   EXPECT_TRUE(profile.IsVerified());
 
-  // Add the profile to the database.
+  base::RunLoop run_loop;
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataFinishedProfileTasks())
+      .WillOnce(QuitMessageLoop(&run_loop));
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(1);
   personal_data_manager_->AddProfile(profile);
-
-  WaitForOnPersonalDataChanged();
+  run_loop.Run();
 
   // Simulate a form submission with conflicting info.
   FormData form;
@@ -1247,10 +1224,7 @@ TEST_F(FormDataImporterTest,
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfiles(form_structure));
-
-  // Wait for the refresh, which in this case is a no-op.
-  WaitForOnPersonalDataChanged();
+  ImportAddressProfiles(/*extraction_success=*/true, form_structure);
 
   // Expect that no new profile is saved.
   const std::vector<AutofillProfile*>& results =
@@ -1268,10 +1242,7 @@ TEST_F(FormDataImporterTest,
   FormStructure form_structure2(form);
   form_structure2.DetermineHeuristicTypes();
 
-  EXPECT_TRUE(ImportAddressProfiles(form_structure2));
-
-  // Wait for the refresh, which in this case is a no-op.
-  WaitForOnPersonalDataChanged();
+  ImportAddressProfiles(/*extraction_success=*/true, form_structure2);
 
   // Expect that no new profile is saved.
   const std::vector<AutofillProfile*>& results2 =
@@ -1310,7 +1281,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_UnrecognizedCountry) {
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_FALSE(ImportAddressProfiles(form_structure));
+  ImportAddressProfiles(/*extraction_success=*/false, form_structure);
 
   // Since no refresh is expected, reload the data from the database to make
   // sure no changes were written out.
@@ -1351,9 +1322,7 @@ TEST_F(FormDataImporterTest,
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfiles(form_structure));
-
-  WaitForOnPersonalDataChanged();
+  ImportAddressProfiles(/*extraction_success=*/true, form_structure);
 
   AutofillProfile expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected, "George", nullptr, "Washington",
@@ -1400,7 +1369,7 @@ TEST_F(FormDataImporterTest,
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_FALSE(ImportAddressProfiles(form_structure));
+  ImportAddressProfiles(/*extraction_success=*/false, form_structure);
 
   // Since no refresh is expected, reload the data from the database to make
   // sure no changes were written out.
@@ -2580,11 +2549,19 @@ TEST_F(FormDataImporterTest, ImportFormData_TwoAddressesOneCreditCard) {
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataFinishedProfileTasks())
+      .WillRepeatedly(QuitMessageLoop(&run_loop));
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .Times(testing::AnyNumber());
   // Still returns true because the credit card import was successful.
   EXPECT_TRUE(form_data_importer_->ImportFormData(
       form_structure, /*profile_autofill_enabled=*/true,
       /*credit_card_autofill_enabled=*/true,
       /*should_return_local_card=*/false, &imported_credit_card));
+  run_loop.Run();
+
   ASSERT_TRUE(imported_credit_card);
   personal_data_manager_->OnAcceptedLocalCreditCardSave(*imported_credit_card);
 

@@ -126,6 +126,8 @@ class AutofillProfile : public AutofillDataModel {
   // differences in usage stats.
   bool EqualsForSyncPurposes(const AutofillProfile& profile) const;
 
+  bool EqualsForUpdatePurposes(const AutofillProfile& profile) const;
+
   // Compares the values of kSupportedTypesByClientForValidation fields.
   bool EqualsForClientValidationPurpose(const AutofillProfile& profile) const;
 

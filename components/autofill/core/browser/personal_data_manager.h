@@ -652,7 +652,7 @@ class PersonalDataManager : public KeyedService,
   // testing purposes.
   void DedupeProfiles(
       std::vector<std::unique_ptr<AutofillProfile>>* existing_profiles,
-      std::unordered_set<AutofillProfile*>* profile_guids_to_delete,
+      std::unordered_set<std::string>* profile_guids_to_delete,
       std::unordered_map<std::string, std::string>* guids_merge_map) const;
 
   // Updates the credit cards' billing address reference based on the merges
@@ -735,6 +735,9 @@ class PersonalDataManager : public KeyedService,
   // returns true if there is any ongoing change for profile with guid = |guid|
   // that's still on going.
   bool ProfileChangesAreOnGoing(const std::string& guid);
+  // Remove the change from the |ongoing_profile_changes_|, handle next task or
+  // Refresh.
+  void OnProfileChangeDone(const std::string& guid);
   // Clear |ongoing_profile_changes_|.
   void ClearOnGoingProfileChanges();
 
