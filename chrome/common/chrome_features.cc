@@ -277,6 +277,12 @@ const base::Feature kOculusVR{"OculusVR", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kOpenVR{"OpenVR", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // ENABLE_OPENVR
 
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+// Controls Windows Mixed Reality support.
+const base::Feature kWindowsMixedReality{"WindowsMixedReality",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // ENABLE_WINDOWS_MR
+
 #endif  // BUILDFLAG(ENABLE_VR)
 
 #if defined(OS_WIN)

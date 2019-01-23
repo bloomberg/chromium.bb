@@ -2239,6 +2239,11 @@ extern const char kOpenVRName[];
 extern const char kOpenVRDescription[];
 #endif  // ENABLE_OPENVR
 
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+extern const char kWindowsMixedRealityName[];
+extern const char kWindowsMixedRealityDescription[];
+#endif  // ENABLE_WINDOWS_MR
+
 #if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
 extern const char kXRSandboxName[];
 extern const char kXRSandboxDescription[];
