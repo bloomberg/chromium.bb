@@ -474,18 +474,16 @@ bool OmniboxViewIOS::OnWillChange(NSRange range, NSString* new_text) {
     [field_ setClearingPreEditText:YES];
 
     // Exit the pre-editing state in OnWillChange() instead of OnDidChange(), as
-    // that allows IME to continue working.  The following code clears the text
-    // field but continues the normal text editing flow, so UIKit behaves as
-    // though the user had typed into an empty field.
+    // that allows IME to continue working.  The following code selects the text
+    // as if the pre-edit fake selection was real.
     [field_ exitPreEditState];
 
-    // Clearing the text field will trigger a call to OnDidChange().  This is
-    // ok, because the autocomplete system will process it as if the user had
-    // deleted all the omnibox text.
-    [field_ setText:@""];
+    field_.selectedTextRange =
+        [field_ textRangeFromPosition:field_.beginningOfDocument
+                           toPosition:field_.endOfDocument];
 
-    // Reset |range| to be of zero-length at location zero, as the field is now
-    // cleared.
+    // Reset |range| to be of zero-length at location zero, as the field will be
+    // now cleared.
     range = NSMakeRange(0, 0);
   }
 
