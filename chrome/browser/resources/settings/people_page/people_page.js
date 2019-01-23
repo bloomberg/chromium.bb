@@ -462,6 +462,7 @@ Polymer({
   openGoogleAccount_: function() {
     settings.OpenWindowProxyImpl.getInstance().openURL(
         loadTimeData.getString('googleAccountUrl'));
+    chrome.metricsPrivate.recordUserAction('ManageGoogleAccount_Clicked');
   },
 
   /**

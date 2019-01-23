@@ -10156,6 +10156,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ManageGoogleAccount_Clicked">
+  <owner>jdoerrie@chromium.org</owner>
+  <owner>vasilii@chromium.org</owner>
+  <description>
+    Recorded when the user clicked the &quot;Manage your Google Account&quot;
+    link in the settings WebUI.
+  </description>
+</action>
+
 <action name="ManagementPageViewed">
   <owner>hunyadym@chromium.org</owner>
   <description>The chrome://management page was viewed.</description>
