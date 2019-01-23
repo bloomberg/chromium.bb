@@ -219,7 +219,7 @@ NetworkChangeNotifier* NetworkChangeNotifier::Create() {
 #elif defined(OS_MACOSX)
   return new NetworkChangeNotifierMac();
 #elif defined(OS_FUCHSIA)
-  return new NetworkChangeNotifierFuchsia();
+  return new NetworkChangeNotifierFuchsia(0 /* required_features */);
 #else
   NOTIMPLEMENTED();
   return NULL;

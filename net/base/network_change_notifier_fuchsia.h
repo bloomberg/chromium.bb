@@ -22,19 +22,26 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierFuchsia
     : public NetworkChangeNotifier {
  public:
   // Blocks execution until an initial interface list is received from
-  // |netstack_|.
-  NetworkChangeNotifierFuchsia();
+  // |netstack_|. Interfaces can be filtered out by passing in
+  // |required_features|, which is defined in fuchsia::hardware::ethernet.
+  explicit NetworkChangeNotifierFuchsia(uint32_t required_features);
   ~NetworkChangeNotifierFuchsia() override;
 
  private:
   friend class NetworkChangeNotifierFuchsiaTest;
+  FRIEND_TEST_ALL_PREFIXES(NetworkChangeNotifierFuchsiaTest,
+                           FindsInterfaceWithRequiredFeature);
   FRIEND_TEST_ALL_PREFIXES(NetworkChangeNotifierFuchsiaTest, FoundWiFi);
   FRIEND_TEST_ALL_PREFIXES(NetworkChangeNotifierFuchsiaTest,
                            FoundWiFiNonDefault);
+  FRIEND_TEST_ALL_PREFIXES(NetworkChangeNotifierFuchsiaTest,
+                           IgnoresInterfaceWithMissingFeature);
 
-  // For testing purposes.
-  explicit NetworkChangeNotifierFuchsia(
-      fuchsia::netstack::NetstackPtr netstack);
+  // For testing purposes. Receives a |netstack| pointer for easy mocking.
+  // Interfaces can be filtered out by passing in |required_features|, which is
+  // defined in fuchsia::hardware::ethernet.
+  NetworkChangeNotifierFuchsia(fuchsia::netstack::NetstackPtr netstack,
+                               uint32_t required_features);
 
   // Forwards the network interface list along with the result of
   // GetRouteTable() to OnRouteTableReceived().
@@ -62,6 +69,10 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierFuchsia
   base::subtle::Atomic32 cached_connection_type_ = CONNECTION_NONE;
 
   fuchsia::netstack::NetstackPtr netstack_;
+
+  // Bitmap of required features for an interface to be taken into account. The
+  // features are defined in fuchsia::hardware::ethernet.
+  const uint32_t required_features_;
 
   // Set of addresses from the previous query/update for the default interface.
   base::flat_set<IPAddress> cached_addresses_;

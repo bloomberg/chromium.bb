@@ -16,7 +16,6 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/ip_endpoint.h"
-#include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
 
 namespace net {
@@ -24,13 +23,6 @@ namespace internal {
 namespace {
 
 using ConnectionType = NetworkChangeNotifier::ConnectionType;
-
-ConnectionType ConvertConnectionType(
-    const fuchsia::netstack::NetInterface& iface) {
-  return iface.features & fuchsia::hardware::ethernet::INFO_FEATURE_WLAN
-             ? NetworkChangeNotifier::CONNECTION_WIFI
-             : NetworkChangeNotifier::CONNECTION_UNKNOWN;
-}
 
 // Converts a Netstack NetInterface |interface| to a Chrome NetworkInterface.
 // NetInterfaces may be bound to multiple IPv6 addresses. |address_index| is
@@ -65,6 +57,16 @@ NetworkInterface NetworkInterfaceFromAddress(
 
 }  // namespace
 
+NetworkChangeNotifier::ConnectionType ConvertConnectionType(
+    const fuchsia::netstack::NetInterface& iface) {
+  if (!(iface.flags & fuchsia::netstack::NetInterfaceFlagUp)) {
+    return NetworkChangeNotifier::CONNECTION_NONE;
+  } else if (iface.features & fuchsia::hardware::ethernet::INFO_FEATURE_WLAN) {
+    return NetworkChangeNotifier::CONNECTION_WIFI;
+  }
+  return NetworkChangeNotifier::CONNECTION_UNKNOWN;
+}
+
 IPAddress FuchsiaIpAddressToIPAddress(const fuchsia::net::IpAddress& addr) {
   if (addr.is_ipv4()) {
     return IPAddress(addr.ipv4().addr.data(), addr.ipv4().addr.count());
@@ -79,13 +81,11 @@ std::vector<NetworkInterface> NetInterfaceToNetworkInterfaces(
     const fuchsia::netstack::NetInterface& iface_in) {
   std::vector<NetworkInterface> output;
 
-  // Check if the interface is up.
-  if (!(iface_in.flags & fuchsia::netstack::NetInterfaceFlagUp))
+  // If the interface is not currently up then there are no addresses to return.
+  if (internal::ConvertConnectionType(iface_in) ==
+      NetworkChangeNotifier::CONNECTION_NONE) {
     return output;
-
-  // Skip loopback.
-  if (iface_in.features & fuchsia::hardware::ethernet::INFO_FEATURE_LOOPBACK)
-    return output;
+  }
 
   output.push_back(NetworkInterfaceFromAddress(iface_in, 0));
 
@@ -115,6 +115,13 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
   }
 
   for (auto& interface : interfaces) {
+    if ((internal::ConvertConnectionType(interface) ==
+         NetworkChangeNotifier::CONNECTION_NONE) ||
+        (interface.features &
+         fuchsia::hardware::ethernet::INFO_FEATURE_LOOPBACK)) {
+      continue;
+    }
+
     auto converted = internal::NetInterfaceToNetworkInterfaces(interface);
     std::move(converted.begin(), converted.end(),
               std::back_inserter(*networks));
