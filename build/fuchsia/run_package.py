@@ -170,9 +170,8 @@ def GetPackageInfo(package_path):
 def PublishPackage(tuf_root, package_path):
   """Publishes a combined FAR package to a TUF repository root."""
 
-  cmd = [PM, 'publish', '-a', '-f', package_path, '-r', tuf_root, '-v']
   subprocess.check_call(
-      [PM, 'publish', '-a', '-f', package_path, '-r', tuf_root, '-v'],
+      [PM, 'publish', '-a', '-f', package_path, '-r', tuf_root, '-vt', '-v'],
       stderr=subprocess.STDOUT)
 
 
