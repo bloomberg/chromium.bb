@@ -688,10 +688,6 @@ SharedImageBackingFactoryAHB::SharedImageBackingFactoryAHB(
     max_gl_texture_size_ =
         std::min(max_gl_texture_size_, workarounds.max_texture_size);
   }
-  // Ensure max_texture_size_ is less than INT_MAX so that gfx::Rect and friends
-  // can be used to accurately represent all valid sub-rects, with overflow
-  // cases, clamped to INT_MAX, always invalid.
-  max_gl_texture_size_ = std::min(max_gl_texture_size_, INT_MAX - 1);
 }
 
 SharedImageBackingFactoryAHB::~SharedImageBackingFactoryAHB() = default;
