@@ -339,43 +339,34 @@ TEST(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
       crostini::kCrostiniDefaultVmName,
       crostini::ContainerInfo(crostini::kCrostiniDefaultContainerName,
                               "testuser", "/home/testuser"));
+  //
+  // Register crostini, downloads, drive, android.
+  mount_points->RegisterFileSystem(
+      GetCrostiniMountPointName(&profile), storage::kFileSystemTypeNativeLocal,
+      storage::FileSystemMountOption(), GetCrostiniMountDirectory(&profile));
+  mount_points->RegisterFileSystem(
+      GetDownloadsMountPointName(&profile), storage::kFileSystemTypeNativeLocal,
+      storage::FileSystemMountOption(), GetDownloadsFolderForProfile(&profile));
+  mount_points->RegisterFileSystem(
+      GetAndroidFilesMountPointName(), storage::kFileSystemTypeNativeLocal,
+      storage::FileSystemMountOption(), base::FilePath(kAndroidFilesPath));
+  drive::DriveIntegrationService* integration_service =
+      drive::DriveIntegrationServiceFactory::GetForProfile(&profile);
+  base::FilePath mount_point_drive = integration_service->GetMountPointPath();
+  mount_points->RegisterFileSystem(
+      mount_point_drive.BaseName().value(), storage::kFileSystemTypeNativeLocal,
+      storage::FileSystemMountOption(), mount_point_drive);
+  mount_points->RegisterFileSystem(
+      chromeos::kSystemMountNameRemovable, storage::kFileSystemTypeNativeLocal,
+      storage::FileSystemMountOption(), base::FilePath(kRemovableMediaPath));
+
+  // Downloads tests only valid with MyFilesVolume disabled.
   {
     base::test::ScopedFeatureList features;
-    features.InitAndEnableFeature(chromeos::features::kDriveFs);
-
-    // Register crostini, downloads, drive, android.
-    mount_points->RegisterFileSystem(GetCrostiniMountPointName(&profile),
-                                     storage::kFileSystemTypeNativeLocal,
-                                     storage::FileSystemMountOption(),
-                                     GetCrostiniMountDirectory(&profile));
-    mount_points->RegisterFileSystem(GetDownloadsMountPointName(&profile),
-                                     storage::kFileSystemTypeNativeLocal,
-                                     storage::FileSystemMountOption(),
-                                     GetDownloadsFolderForProfile(&profile));
-    mount_points->RegisterFileSystem(
-        GetAndroidFilesMountPointName(), storage::kFileSystemTypeNativeLocal,
-        storage::FileSystemMountOption(), base::FilePath(kAndroidFilesPath));
-    drive::DriveIntegrationService* integration_service =
-        drive::DriveIntegrationServiceFactory::GetForProfile(&profile);
-    base::FilePath mount_point_drive = integration_service->GetMountPointPath();
-    mount_points->RegisterFileSystem(mount_point_drive.BaseName().value(),
-                                     storage::kFileSystemTypeNativeLocal,
-                                     storage::FileSystemMountOption(),
-                                     mount_point_drive);
-    mount_points->RegisterFileSystem(chromeos::kSystemMountNameRemovable,
-                                     storage::kFileSystemTypeNativeLocal,
-                                     storage::FileSystemMountOption(),
-                                     base::FilePath(kRemovableMediaPath));
+    features.InitWithFeatures({chromeos::features::kDriveFs},
+                              {chromeos::features::kMyFilesVolume});
 
     base::FilePath inside;
-    EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
-        &profile,
-        mount_points->CreateExternalFileSystemURL(
-            GURL(), "crostini_0123456789abcdef_termina_penguin",
-            base::FilePath("path/in/crostini")),
-        &inside));
-    EXPECT_EQ("/home/testuser/path/in/crostini", inside.value());
-
     EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
         &profile,
         mount_points->CreateExternalFileSystemURL(
@@ -401,6 +392,19 @@ TEST(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
             GURL(), "Downloads-testing_profile-hash", base::FilePath()),
         &inside));
     EXPECT_EQ("/mnt/chromeos/MyFiles/Downloads", inside.value());
+  }
+  {
+    base::test::ScopedFeatureList features;
+    features.InitAndEnableFeature(chromeos::features::kDriveFs);
+
+    base::FilePath inside;
+    EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
+        &profile,
+        mount_points->CreateExternalFileSystemURL(
+            GURL(), "crostini_0123456789abcdef_termina_penguin",
+            base::FilePath("path/in/crostini")),
+        &inside));
+    EXPECT_EQ("/home/testuser/path/in/crostini", inside.value());
 
     EXPECT_FALSE(ConvertFileSystemURLToPathInsideCrostini(
         &profile,
