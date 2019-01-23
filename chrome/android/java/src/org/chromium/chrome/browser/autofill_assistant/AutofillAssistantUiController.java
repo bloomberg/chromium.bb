@@ -173,7 +173,8 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         paymentOptions.shippingType = shippingType;
 
         mCoordinator.getBottomBarCoordinator().allowSwipingBottomSheet(false);
-        mCoordinator.getPaymentRequestCoordinator()
+        mCoordinator.getBottomBarCoordinator()
+                .getPaymentRequestCoordinator()
                 .reset(paymentOptions, supportedBasicCardNetworks, defaultEmail)
                 .then(this::onRequestPaymentInformationSuccess,
                         this::onRequestPaymentInformationFailed);
@@ -204,8 +205,9 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
 
     @CalledByNative
-    private void showFeedback(String debugContext, @Nullable AssistantDetails details) {
-        mCoordinator.showFeedback(debugContext, details);
+    private void showFeedback(
+            String debugContext, @Nullable AssistantDetails details, String statusMessage) {
+        mCoordinator.showFeedback(debugContext, details, statusMessage);
     }
 
     @CalledByNative

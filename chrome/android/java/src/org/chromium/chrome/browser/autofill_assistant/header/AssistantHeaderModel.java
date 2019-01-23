@@ -14,12 +14,18 @@ import org.chromium.ui.modelutil.PropertyModel;
  */
 @JNINamespace("autofill_assistant")
 public class AssistantHeaderModel extends PropertyModel {
-    static final WritableObjectPropertyKey<String> STATUS_MESSAGE =
+    @VisibleForTesting
+    public static final WritableObjectPropertyKey<String> STATUS_MESSAGE =
             new WritableObjectPropertyKey<>();
 
-    static final WritableBooleanPropertyKey FEEDBACK_VISIBLE = new WritableBooleanPropertyKey();
+    // TODO(crbug.com/806868): Change visibility to package-private once this is only set through
+    // native calls.
+    public static final WritableBooleanPropertyKey FEEDBACK_VISIBLE =
+            new WritableBooleanPropertyKey();
 
-    static final WritableBooleanPropertyKey CLOSE_VISIBLE = new WritableBooleanPropertyKey();
+    // TODO(crbug.com/806868): Change visibility to package-private once this is only set through
+    // native calls.
+    public static final WritableBooleanPropertyKey CLOSE_VISIBLE = new WritableBooleanPropertyKey();
 
     static final WritableIntPropertyKey PROGRESS = new WritableIntPropertyKey();
 

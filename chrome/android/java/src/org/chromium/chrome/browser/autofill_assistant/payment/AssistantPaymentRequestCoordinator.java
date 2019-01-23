@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.autofill_assistant.payment;
 
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -21,19 +22,21 @@ import org.chromium.payments.mojom.PaymentOptions;
  */
 public class AssistantPaymentRequestCoordinator {
     private final WebContents mWebContents;
-    private final Runnable mOnVisibilityChanged;
+    @Nullable
+    private Runnable mOnVisibilityChanged;
     private final ViewGroup mView;
 
     private Promise<SelectedPaymentInformation> mCurrentPromise;
 
-    public AssistantPaymentRequestCoordinator(
-            ChromeActivity activity, Runnable onVisibilityChanged) {
+    public AssistantPaymentRequestCoordinator(ChromeActivity activity) {
         mWebContents = activity.getCurrentWebContents();
-        mOnVisibilityChanged = onVisibilityChanged;
 
         // TODO(crbug.com/806868): Remove this.
         mView = new LinearLayout(activity);
         mView.addView(new View(activity));
+
+        // Payment request is initially hidden.
+        setVisible(false);
     }
 
     public View getView() {
@@ -45,8 +48,18 @@ public class AssistantPaymentRequestCoordinator {
         boolean changed = mView.getVisibility() != visibility;
         if (changed) {
             mView.setVisibility(visibility);
-            mOnVisibilityChanged.run();
+            if (mOnVisibilityChanged != null) {
+                mOnVisibilityChanged.run();
+            }
         }
+    }
+
+    /**
+     * Set the listener that should be triggered when changing the listener of this coordinator
+     * view.
+     */
+    public void setVisibilityChangedListener(Runnable listener) {
+        mOnVisibilityChanged = listener;
     }
 
     public Promise<SelectedPaymentInformation> reset(

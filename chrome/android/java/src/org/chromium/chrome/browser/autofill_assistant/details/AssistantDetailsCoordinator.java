@@ -16,6 +16,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.media.ThumbnailUtils;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.text.TextUtils;
@@ -50,7 +51,8 @@ public class AssistantDetailsCoordinator {
     private static final String DETAILS_DATE_FORMAT = "EEE, MMM d";
 
     private final Context mContext;
-    private final Runnable mOnVisibilityChanged;
+    @Nullable
+    private Runnable mOnVisibilityChanged;
 
     private final View mView;
     private final GradientDrawable mDefaultImage;
@@ -66,10 +68,8 @@ public class AssistantDetailsCoordinator {
     private final Set<View> mViewsToAnimate = new HashSet<>();
     private ValueAnimator mPulseAnimation;
 
-    public AssistantDetailsCoordinator(
-            ChromeActivity activity, AssistantDetailsModel model, Runnable onVisibilityChanged) {
+    public AssistantDetailsCoordinator(ChromeActivity activity, AssistantDetailsModel model) {
         mContext = activity;
-        mOnVisibilityChanged = onVisibilityChanged;
 
         mView = LayoutInflater.from(activity).inflate(
                 R.layout.autofill_assistant_details, /* root= */ null);
@@ -118,8 +118,18 @@ public class AssistantDetailsCoordinator {
         boolean changed = mView.getVisibility() != visibility;
         if (changed) {
             mView.setVisibility(visibility);
-            mOnVisibilityChanged.run();
+            if (mOnVisibilityChanged != null) {
+                mOnVisibilityChanged.run();
+            }
         }
+    }
+
+    /**
+     * Set the listener that should be triggered when changing the listener of this coordinator
+     * view.
+     */
+    public void setVisibilityChangedListener(Runnable listener) {
+        mOnVisibilityChanged = listener;
     }
 
     /**

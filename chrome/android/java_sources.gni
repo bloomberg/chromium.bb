@@ -158,7 +158,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/autofill_assistant/header/AnimatedProgressBar.java",
   "java/src/org/chromium/chrome/browser/autofill_assistant/header/AssistantHeaderCoordinator.java",
   "java/src/org/chromium/chrome/browser/autofill_assistant/header/AssistantHeaderDelegate.java",
-  "java/src/org/chromium/chrome/browser/autofill_assistant/header/AssistantHeaderMediator.java",
   "java/src/org/chromium/chrome/browser/autofill_assistant/header/AssistantHeaderModel.java",
   "java/src/org/chromium/chrome/browser/autofill_assistant/header/AssistantHeaderViewBinder.java",
   "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestCoordinator.java",
