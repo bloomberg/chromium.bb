@@ -1,13 +1,74 @@
-<!DOCTYPE html>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="resources.js"></script>
-
+<!doctype html>
+<meta charset="utf-8">
+<title>Contact API: Behaviour of the select() function</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <script>
-promise_test(function() {
-  return assert_promise_rejects_with_message(
-      navigator.contacts.select({multiple: true, properties: ['name', 'email', 'tel']}),
-      new DOMException('Unable to open a contact selector', 'AbortError'),
-      'navigator.contacts.select');
-}, 'Select function throws exception.');
+'use strict';
+
+// Creates a "user gesture" using Blink's test-only eventSender.
+function triggerUserGesture() {
+  if (!window.eventSender)
+    throw new Error('The `eventSender` must be available for this test');
+
+  eventSender.mouseDown();
+  eventSender.mouseUp();
+}
+
+// Verifies that |func|, when invoked, throws a TypeError exception.
+async function expectTypeError(func) {
+  try {
+    await func();
+  } catch (e) {
+    assert_equals(e.name, 'TypeError');
+    return;
+  }
+
+  assert_unreached('expected a TypeError, but none was thrown');
+}
+
+test(() => {
+  // Exposure of the interface and method.
+  assert_own_property(window, 'ContactsManager');
+  assert_own_property(ContactsManager.prototype, 'select');
+
+  // Exposure of the instance.
+  assert_idl_attribute(navigator, 'contacts');
+  assert_idl_attribute(navigator.contacts, 'select');
+
+}, 'The Contact API is exposed on the Window context');
+
+promise_test(async () => {
+  await expectTypeError(() =>
+      navigator.contacts.select({ properties: ['name'] }));
+
+}, 'The Contact API requires a user gesture')
+
+promise_test(async () => {
+  triggerUserGesture();
+
+  // At least one property must be provided.
+  await expectTypeError(() => navigator.contacts.select());
+  await expectTypeError(() => navigator.contacts.select({ properties: [] }));
+
+  // Per WebIDL parsing, no invalid values may be provided.
+  await expectTypeError(() =>
+      navigator.contacts.select({ properties: [''] }));
+  await expectTypeError(() =>
+      navigator.contacts.select({ properties: ['foo'] }));
+  await expectTypeError(() =>
+      navigator.contacts.select({ properties: ['name', 'photo'] }));
+
+}, 'The Contact API requires at least one valid property to be provided');
+
+promise_test(async () => {
+  triggerUserGesture();
+
+  // TODO(peter): Fake the Mojo interface so that we can extend this test with
+  // valid behaviour, and actually verify the API's functionality.
+  await expectTypeError(() =>
+      navigator.contacts.select({ properties: ['name'] }));
+
+}, 'The Contact API can fail when the selector cannot be opened');
+
 </script>
