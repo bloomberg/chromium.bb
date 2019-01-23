@@ -5,6 +5,8 @@ package org.chromium.chrome.browser.preferences;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.preference.Preference;
+import android.preference.PreferenceFragment;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.metrics.RecordHistogram;
@@ -117,5 +119,25 @@ public class SyncPreferenceUtils {
                     StopSource.CHROME_SYNC_SETTINGS, StopSource.STOP_SOURCE_LIMIT);
             profileSyncService.requestStop();
         }
+    }
+
+    /**
+     * Creates a wrapper around {@link Runnable} that calls the runnable only if
+     * {@link PreferenceFragment} is still in resumed state. Click events that arrive after the
+     * fragment has been paused will be ignored. See http://b/5983282.
+     * @param fragment The fragment that hosts the preference.
+     * @param runnable The runnable to call from {@link Preference.OnPreferenceClickListener}.
+     */
+    static Preference.OnPreferenceClickListener toOnClickListener(
+            PreferenceFragment fragment, Runnable runnable) {
+        return preference -> {
+            if (!fragment.isResumed()) {
+                // This event could come in after onPause if the user clicks back and the preference
+                // at roughly the same time. See http://b/5983282.
+                return false;
+            }
+            runnable.run();
+            return false;
+        };
     }
 }
