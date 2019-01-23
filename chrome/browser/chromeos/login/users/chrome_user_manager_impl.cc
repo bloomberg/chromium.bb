@@ -50,6 +50,7 @@
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager_impl.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
 #include "chrome/browser/chromeos/printing/external_printers.h"
 #include "chrome/browser/chromeos/printing/external_printers_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -261,6 +262,14 @@ bool AreRiskyExtensionsForceInstalled(
       return true;
   }
   return false;
+}
+
+bool AreForcedNetworkCertificatesInstalled() {
+  return !g_browser_process->platform_part()
+              ->browser_policy_connector_chromeos()
+              ->GetDeviceNetworkConfigurationUpdater()
+              ->GetAllAuthorityCertificates()
+              .empty();
 }
 
 }  // namespace
@@ -1470,11 +1479,9 @@ bool ChromeUserManagerImpl::IsManagedSessionEnabledForUser(
 
 bool ChromeUserManagerImpl::IsFullManagementDisclosureNeeded(
     policy::DeviceLocalAccountPolicyBroker* broker) const {
-  if (!IsManagedSessionEnabled(broker))
-    return false;
-  if (!AreRiskyExtensionsForceInstalled(broker))
-    return false;
-  return true;
+  return IsManagedSessionEnabled(broker) &&
+         (AreRiskyExtensionsForceInstalled(broker) ||
+          AreForcedNetworkCertificatesInstalled());
 }
 
 void ChromeUserManagerImpl::AddReportingUser(const AccountId& account_id) {
