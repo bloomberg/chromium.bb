@@ -79,7 +79,7 @@ const LayeredAPIResource kLayeredAPIResources[] = {'''
             print >> output_header_file, (
                 '    {"%s",\n     %s},' % (relpath, resource_id))
             print >> output_grdp_file, (
-                '  <include name="%s" file="%s/%s" type="BINDATA" skip_minify="true"/>'
+                '  <include name="%s" file="%s/%s" type="BINDATA" skip_minify="true" compress="gzip"/>'
                 % (resource_id, input_relative_path, relpath))
         print >> output_header_file, ''
     print >> output_grdp_file, '</grit-part>'
