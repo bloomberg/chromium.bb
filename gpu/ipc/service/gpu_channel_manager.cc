@@ -93,13 +93,14 @@ GpuChannelManager::GpuChannelManager(
   DCHECK(io_task_runner);
   DCHECK(scheduler);
 
-  const bool enable_raster_transport =
-      gpu_feature_info_.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
-      gpu::kGpuFeatureStatusEnabled;
+  const bool enable_gr_shader_cache =
+      (gpu_feature_info_.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
+       gpu::kGpuFeatureStatusEnabled) ||
+      features::IsUsingSkiaRenderer();
   const bool disable_disk_cache =
       gpu_preferences_.disable_gpu_shader_disk_cache ||
       gpu_driver_bug_workarounds_.disable_program_disk_cache;
-  if (enable_raster_transport && !disable_disk_cache)
+  if (enable_gr_shader_cache && !disable_disk_cache)
     gr_shader_cache_.emplace(gpu_preferences.gpu_program_cache_size, this);
 }
 
