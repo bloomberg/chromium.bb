@@ -205,7 +205,7 @@ class CQConfig(object):
     for bucket in (
         self._value['verifiers'][0]['try_job'][0]['buckets']):
       for b in bucket['builders']:
-        if pred and not pred(bucket, b):
+        if pred and not pred(bucket['name'][0], b):
           continue
         items.append(b)
     return BuilderList(items)
@@ -331,6 +331,8 @@ def main():
   # Only force sorting on luci.chromium.try builders. Others should go away soon
   # anyways...
   bl = cfg.builder_list(lambda bucket, builder: bucket == 'luci.chromium.try')
+  assert len(bl.builders) > 0, (
+      'Builders in \'luci.chromium.try\' bucket are missing somehow...')
   names = [b['name'][0] for b in bl.builders]
   bl.sort() # Changes the bl, so the next line is sorted.
   sorted_names = [b['name'][0] for b in bl.builders]

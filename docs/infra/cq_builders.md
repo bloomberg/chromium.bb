@@ -44,9 +44,9 @@ These builders must pass before a CL may land.
 
 * [ios-simulator](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/ios-simulator) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+ios-simulator)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+ios-simulator))
 
-* [linux-chromeos-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-chromeos-rel) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux-chromeos-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-chromeos-rel))
-
 * [linux-chromeos-compile-dbg](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-chromeos-compile-dbg) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux-chromeos-compile-dbg)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-chromeos-compile-dbg))
+
+* [linux-chromeos-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-chromeos-rel) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux-chromeos-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-chromeos-rel))
 
 * [linux-jumbo-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-jumbo-rel) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux-jumbo-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-jumbo-rel))
 
@@ -68,13 +68,13 @@ These builders must pass before a CL may land.
 
 * [mac_chromium_rel_ng](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/mac_chromium_rel_ng) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+mac_chromium_rel_ng)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+mac_chromium_rel_ng))
 
+* [win-libfuzzer-asan-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win-libfuzzer-asan-rel) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+win-libfuzzer-asan-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+win-libfuzzer-asan-rel))
+
 * [win10_chromium_x64_rel_ng](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win10_chromium_x64_rel_ng) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+win10_chromium_x64_rel_ng)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+win10_chromium_x64_rel_ng))
 
 * [win7_chromium_rel_ng](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7_chromium_rel_ng) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+win7_chromium_rel_ng)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+win7_chromium_rel_ng))
 
 * [win_chromium_compile_dbg_ng](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win_chromium_compile_dbg_ng) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+win_chromium_compile_dbg_ng)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+win_chromium_compile_dbg_ng))
-
-* [win-libfuzzer-asan-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win-libfuzzer-asan-rel) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+win-libfuzzer-asan-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+win-libfuzzer-asan-rel))
 
 
 ## Optional builders
