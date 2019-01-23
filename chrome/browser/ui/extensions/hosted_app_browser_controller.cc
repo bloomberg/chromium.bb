@@ -182,7 +182,6 @@ bool HostedAppBrowserController::IsForExperimentalHostedAppBrowser() const {
 }
 
 bool HostedAppBrowserController::ShouldShowToolbar() const {
-  // The extension can be null if this is invoked after uninstall.
   const Extension* extension = GetExtension();
   if (!extension)
     return false;
@@ -347,6 +346,10 @@ void HostedAppBrowserController::Uninstall(UninstallReason reason,
   uninstall_dialog_ = ExtensionUninstallDialog::Create(
       browser_->profile(), browser_->window()->GetNativeWindow(), this);
   uninstall_dialog_->ConfirmUninstall(GetExtension(), reason, source);
+}
+
+bool HostedAppBrowserController::IsInstalled() const {
+  return GetExtension();
 }
 
 void HostedAppBrowserController::OnEngagementEvent(
