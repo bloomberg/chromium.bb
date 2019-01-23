@@ -168,6 +168,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       mojom::blink::BlobURLTokenPtr,
       base::TimeTicks input_start_time,
       const String& href_translate,
+      WebContentSecurityPolicyList,
       mojom::blink::NavigationInitiatorPtr) = 0;
 
   virtual void DispatchWillSendSubmitEvent(HTMLFormElement*) = 0;

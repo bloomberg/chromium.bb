@@ -286,6 +286,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
                        mojom::blink::BlobURLTokenPtr,
                        base::TimeTicks,
                        const String&,
+                       WebContentSecurityPolicyList,
                        mojom::blink::NavigationInitiatorPtr) override;
 
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;

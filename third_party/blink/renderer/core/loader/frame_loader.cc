@@ -908,12 +908,11 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
                             : network::mojom::RequestContextFrameType::kNested);
 
   mojom::blink::NavigationInitiatorPtr navigation_initiator;
+  WebContentSecurityPolicyList initiator_csp;
   if (origin_document && origin_document->GetContentSecurityPolicy()
                              ->ExperimentalFeaturesEnabled()) {
-    WebContentSecurityPolicyList initiator_csp =
-        origin_document->GetContentSecurityPolicy()
-            ->ExposeForNavigationalChecks();
-    resource_request.SetInitiatorCSP(initiator_csp);
+    initiator_csp = origin_document->GetContentSecurityPolicy()
+                        ->ExposeForNavigationalChecks();
     auto request = mojo::MakeRequest(&navigation_initiator);
     origin_document->BindNavigationInitiatorRequest(std::move(request));
   }
@@ -978,7 +977,8 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
       request.TriggeringEventInfo(), request.Form(),
       request.ShouldCheckMainWorldContentSecurityPolicy(),
       request.GetBlobURLToken(), request.GetInputStartTime(),
-      request.HrefTranslate().GetString(), std::move(navigation_initiator));
+      request.HrefTranslate().GetString(), std::move(initiator_csp),
+      std::move(navigation_initiator));
 }
 
 void FrameLoader::CommitNavigation(

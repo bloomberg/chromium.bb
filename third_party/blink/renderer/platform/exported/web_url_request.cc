@@ -404,10 +404,6 @@ bool WebURLRequest::IsAdResource() const {
   return resource_request_->IsAdResource();
 }
 
-const WebContentSecurityPolicyList& WebURLRequest::GetInitiatorCSP() const {
-  return resource_request_->GetInitiatorCSP();
-}
-
 void WebURLRequest::SetUpgradeIfInsecure(bool upgrade_if_insecure) {
   resource_request_->SetUpgradeIfInsecure(upgrade_if_insecure);
 }

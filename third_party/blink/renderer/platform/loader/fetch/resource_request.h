@@ -40,7 +40,6 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
-#include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
@@ -374,13 +373,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   void SetIsAdResource() { is_ad_resource_ = true; }
   bool IsAdResource() const { return is_ad_resource_; }
 
-  void SetInitiatorCSP(const WebContentSecurityPolicyList& initiator_csp) {
-    initiator_csp_ = initiator_csp;
-  }
-  const WebContentSecurityPolicyList& GetInitiatorCSP() const {
-    return initiator_csp_;
-  }
-
   void SetUpgradeIfInsecure(bool upgrade_if_insecure) {
     upgrade_if_insecure_ = upgrade_if_insecure;
   }
@@ -504,7 +496,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   static base::TimeDelta default_timeout_interval_;
 
   bool is_ad_resource_ = false;
-  WebContentSecurityPolicyList initiator_csp_;
 
   bool upgrade_if_insecure_ = false;
   bool is_revalidating_ = false;

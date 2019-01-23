@@ -127,6 +127,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       mojom::blink::BlobURLTokenPtr,
       base::TimeTicks input_start_time,
       const String& href_translate,
+      WebContentSecurityPolicyList,
       mojom::blink::NavigationInitiatorPtr) override;
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;
   void DidStartLoading() override;

@@ -128,7 +128,6 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
   request->SetCorsPreflightPolicy(CorsPreflightPolicy());
   if (IsAdResource())
     request->SetIsAdResource();
-  request->SetInitiatorCSP(GetInitiatorCSP());
   request->SetUpgradeIfInsecure(UpgradeIfInsecure());
   request->SetIsAutomaticUpgrade(IsAutomaticUpgrade());
   request->SetRequestedWithHeader(GetRequestedWithHeader());

@@ -109,6 +109,7 @@ void EmptyLocalFrameClient::BeginNavigation(
     mojom::blink::BlobURLTokenPtr,
     base::TimeTicks,
     const String&,
+    WebContentSecurityPolicyList,
     mojom::blink::NavigationInitiatorPtr) {}
 
 void EmptyLocalFrameClient::DispatchWillSendSubmitEvent(HTMLFormElement*) {}

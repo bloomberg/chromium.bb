@@ -548,13 +548,12 @@ CommonNavigationParams MakeCommonNavigationParams(
       base::TimeTicks::Now(), info->url_request.HttpMethod().Latin1(),
       GetRequestBodyForWebURLRequest(info->url_request), source_location,
       false /* started_from_context_menu */, info->url_request.HasUserGesture(),
-      InitiatorCSPInfo(
-          should_check_main_world_csp,
-          BuildContentSecurityPolicyList(info->url_request.GetInitiatorCSP()),
-          info->url_request.GetInitiatorCSP().self_source.has_value()
-              ? base::Optional<CSPSource>(BuildCSPSource(
-                    info->url_request.GetInitiatorCSP().self_source.value()))
-              : base::nullopt),
+      InitiatorCSPInfo(should_check_main_world_csp,
+                       BuildContentSecurityPolicyList(info->initiator_csp),
+                       info->initiator_csp.self_source.has_value()
+                           ? base::Optional<CSPSource>(BuildCSPSource(
+                                 info->initiator_csp.self_source.value()))
+                           : base::nullopt),
       info->href_translate.Latin1(), info->input_start);
 }
 
