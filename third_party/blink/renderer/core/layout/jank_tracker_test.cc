@@ -202,4 +202,35 @@ TEST_F(JankTrackerTest, CompositedJankBeforeFirstPaint) {
   UpdateAllLifecyclePhases();
 }
 
+TEST_F(JankTrackerTest, IgnoreFixedAndSticky) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    body { height: 1000px; }
+    #f1, #f2 {
+      position: fixed;
+      width: 300px;
+      height: 100px;
+      left: 100px;
+    }
+    #f1 { top: 0; }
+    #f2 { top: 150px; will-change: transform; }
+    #s1 {
+      position: sticky;
+      width: 200px;
+      height: 100px;
+      left: 450px;
+      top: 0;
+    }
+    </style>
+    <div id='f1'>fixed</div>
+    <div id='f2'>fixed composited</div>
+    <div id='s1'>sticky</div>
+    normal
+  )HTML");
+
+  GetDocument().scrollingElement()->setScrollTop(50);
+  UpdateAllLifecyclePhases();
+  EXPECT_FLOAT_EQ(0, GetJankTracker().Score());
+}
+
 }  // namespace blink
