@@ -48,12 +48,14 @@ void HostedAppMenuModel::Build() {
 // option in the app menu.
 #if !defined(OS_CHROMEOS)
   DCHECK(browser()->hosted_app_controller());
-  AddSeparator(ui::NORMAL_SEPARATOR);
-  AddItem(kUninstallAppCommandId,
-          l10n_util::GetStringFUTF16(
-              IDS_UNINSTALL_FROM_OS_LAUNCH_SURFACE,
-              base::UTF8ToUTF16(
-                  browser()->hosted_app_controller()->GetAppShortName())));
+  if (browser()->hosted_app_controller()->IsInstalled()) {
+    AddSeparator(ui::NORMAL_SEPARATOR);
+    AddItem(kUninstallAppCommandId,
+            l10n_util::GetStringFUTF16(
+                IDS_UNINSTALL_FROM_OS_LAUNCH_SURFACE,
+                base::UTF8ToUTF16(
+                    browser()->hosted_app_controller()->GetAppShortName())));
+  }
 #endif  // !defined(OS_CHROMEOS)
   AddSeparator(ui::LOWER_SEPARATOR);
 

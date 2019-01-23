@@ -106,6 +106,10 @@ class HostedAppBrowserController : public SiteEngagementObserver,
 
   void Uninstall(UninstallReason reason, UninstallSource source);
 
+  // Returns whether the app is installed (uninstallation may complete within
+  // the lifetime of HostedAppBrowserController).
+  bool IsInstalled() const;
+
   // SiteEngagementObserver overrides.
   void OnEngagementEvent(content::WebContents* web_contents,
                          const GURL& url,
@@ -123,6 +127,7 @@ class HostedAppBrowserController : public SiteEngagementObserver,
   void OnTabInserted(content::WebContents* contents);
   void OnTabRemoved(content::WebContents* contents);
 
+  // Will return nullptr if the extension has been uninstalled.
   const Extension* GetExtension() const;
 
   Browser* const browser_;
