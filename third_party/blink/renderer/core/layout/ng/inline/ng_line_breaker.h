@@ -105,6 +105,8 @@ class CORE_EXPORT NGLineBreaker {
   void BreakText(NGInlineItemResult*,
                  const NGInlineItem&,
                  LayoutUnit available_width);
+  bool HandleTextForFastMinContent(NGInlineItemResult* item_result,
+                                   const NGInlineItem& item);
 
   scoped_refptr<ShapeResultView> TruncateLineEndResult(
       const NGInlineItemResult& item_result,
@@ -235,6 +237,10 @@ class CORE_EXPORT NGLineBreaker {
   unsigned handled_leading_floats_index_;
 
   Vector<LayoutObject*>* out_floats_for_min_max_;
+
+  // Keep the last item |HandleTextForFastMinContent()| has handled. This is
+  // used to fallback the last word to |HandleText()|.
+  const NGInlineItem* fast_min_content_item_ = nullptr;
 
   // The current base direction for the bidi algorithm.
   // This is copied from NGInlineNode, then updated after each forced line break

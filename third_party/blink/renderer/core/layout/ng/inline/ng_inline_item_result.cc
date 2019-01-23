@@ -37,11 +37,11 @@ void NGLineInfo::SetLineStyle(const NGInlineNode& node,
 }
 
 #if DCHECK_IS_ON()
-void NGInlineItemResult::CheckConsistency(bool during_line_break) const {
+void NGInlineItemResult::CheckConsistency(bool allow_null_shape_result) const {
   DCHECK(item);
   if (item->Type() == NGInlineItem::kText) {
     DCHECK_LT(start_offset, end_offset);
-    if (during_line_break && !shape_result)
+    if (allow_null_shape_result && !shape_result)
       return;
     DCHECK(shape_result);
     DCHECK_EQ(end_offset - start_offset, shape_result->NumCharacters());
