@@ -10,4 +10,5 @@ Description:
 
 
 Local Modifications:
-Unproguarded verification API.
+- Unproguarded verification API.
+- Unproguarded inline update API.

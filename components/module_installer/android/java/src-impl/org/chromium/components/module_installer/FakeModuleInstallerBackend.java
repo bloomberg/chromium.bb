@@ -5,6 +5,7 @@
 package org.chromium.components.module_installer;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 
 import com.google.android.play.core.splitcompat.SplitCompat;
 import com.google.android.play.core.splitcompat.ingestion.Verifier;
@@ -93,8 +94,12 @@ class FakeModuleInstallerBackend extends ModuleInstallerBackend {
         }
 
         // Check that the module's signature matches Chrome's.
-        Verifier verifier = new Verifier(context);
-        if (!verifier.verifySplits()) {
+        try {
+            Verifier verifier = new Verifier(context);
+            if (!verifier.verifySplits()) {
+                return false;
+            }
+        } catch (IOException | PackageManager.NameNotFoundException e) {
             return false;
         }
 
