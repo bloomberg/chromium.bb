@@ -3074,6 +3074,8 @@ TEST_F(PasswordManagerTest, SavingAfterUserTypingAndNavigation) {
 TEST_F(PasswordManagerTest, ProvisionallySaveFailure) {
   EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
       .WillRepeatedly(Return(true));
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
   for (bool new_parsing_for_saving : {false, true}) {
     SCOPED_TRACE(testing::Message()
                  << "new_parsing_for_saving = " << new_parsing_for_saving);
@@ -3131,6 +3133,9 @@ struct MissingFormManagerTestCase {
   // The expected value of the PageWithPassword::kFormManagerAvailableName
   // metric, or base::nullopt if no value should be logged.
   base::Optional<int64_t> expected_metric_value;
+
+  bool run_for_old_parser = true;
+  bool run_for_new_parser = true;
 };
 
 }  // namespace
@@ -3167,6 +3172,19 @@ TEST_F(PasswordManagerTest, ReportMissingFormManager) {
           .expected_metric_value =
               MetricValue(PasswordManagerMetricsRecorder::FormManagerAvailable::
                               kMissingManual),
+          .run_for_new_parser = false,
+      },
+      {
+          .description = "Manual saving is requested and a "
+                         "NewPasswordFormManager is created.",
+          .parsed_forms = {},
+          .save_signal = MissingFormManagerTestCase::Signal::Manual,
+          // .parsed_forms is empty, so the processed form below was not
+          // observed and has no form manager associated.
+          .processed_forms = {form},
+          .expected_metric_value = MetricValue(
+              PasswordManagerMetricsRecorder::FormManagerAvailable::kSuccess),
+          .run_for_old_parser = false,
       },
       {
           .description = "Manual saving is successfully requested.",
@@ -3220,6 +3238,10 @@ TEST_F(PasswordManagerTest, ReportMissingFormManager) {
         .WillRepeatedly(Return(test_case.saving ==
                                MissingFormManagerTestCase::Saving::Enabled));
     for (bool new_parsing_for_saving : {false, true}) {
+      if ((new_parsing_for_saving && !test_case.run_for_new_parser) ||
+          (!new_parsing_for_saving && !test_case.run_for_old_parser)) {
+        continue;
+      }
       SCOPED_TRACE(testing::Message()
                    << "test case = " << test_case.description
                    << ", new_parsing_for_saving = " << new_parsing_for_saving);
@@ -3271,6 +3293,44 @@ TEST_F(PasswordManagerTest, ReportMissingFormManager) {
       }
     }
   }
+}
+
+// Tests that despite there a form was not seen on a page load, new
+// |NewPasswordFormManager| is created in process of saving.
+TEST_F(PasswordManagerTest, CreateNewPasswordFormManagerOnSaving) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  TurnOnNewParsingForSaving(&scoped_feature_list);
+
+  EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
+      .WillRepeatedly(Return(true));
+
+  PasswordForm form(MakeSimpleForm());
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+
+  manager()->OnPasswordFormsParsed(&driver_, {form});
+
+  // Simulate that JavaScript creates a new form, fills username/password and
+  // submits it.
+  auto submitted_form = form;
+  submitted_form.form_data.unique_renderer_id += 1000;
+  submitted_form.username_value = ASCIIToUTF16("username1");
+  submitted_form.form_data.fields[0].value = submitted_form.username_value;
+  submitted_form.password_value = ASCIIToUTF16("password1");
+  submitted_form.form_data.fields[1].value = submitted_form.password_value;
+
+  OnPasswordFormSubmitted(submitted_form);
+  EXPECT_TRUE(manager()->GetSubmittedManagerForTest());
+
+  std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+
+  // The form disappeared, so the submission is condered to be successful.
+  manager()->OnPasswordFormsRendered(&driver_, {}, true);
+  ASSERT_TRUE(form_manager_to_save);
+  EXPECT_THAT(form_manager_to_save->GetPendingCredentials(),
+              FormMatches(submitted_form));
 }
 
 }  // namespace password_manager
