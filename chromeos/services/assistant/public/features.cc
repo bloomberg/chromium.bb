@@ -14,7 +14,7 @@ const base::Feature kAssistantVoiceMatch{"AssistantVoiceMatch",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAssistantWarmerWelcomeFeature{
-    "AssistantWarmerWelcome", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AssistantWarmerWelcome", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAssistantAppSupport{"AssistantAppSupport",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
