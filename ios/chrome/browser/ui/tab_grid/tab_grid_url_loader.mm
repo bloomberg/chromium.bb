@@ -33,10 +33,6 @@ void AppendAndActivateWebState(WebStateList* web_state_list,
 @end
 
 @implementation TabGridURLLoader
-@synthesize regularWebStateList = _regularWebStateList;
-@synthesize incognitoWebStateList = _incognitoWebStateList;
-@synthesize regularBrowserState = _regularBrowserState;
-@synthesize incognitoBrowserState = _incognitoBrowserState;
 
 - (instancetype)
 initWithRegularWebStateList:(WebStateList*)regularWebStateList

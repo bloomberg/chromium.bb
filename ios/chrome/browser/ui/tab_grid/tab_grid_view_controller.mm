@@ -134,30 +134,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 @end
 
 @implementation TabGridViewController
-// Public properties.
-@synthesize dispatcher = _dispatcher;
-@synthesize tabPresentationDelegate = _tabPresentationDelegate;
-@synthesize regularTabsDelegate = _regularTabsDelegate;
-@synthesize incognitoTabsDelegate = _incognitoTabsDelegate;
-@synthesize regularTabsImageDataSource = _regularTabsImageDataSource;
-@synthesize incognitoTabsImageDataSource = _incognitoTabsImageDataSource;
 // TabGridPaging property.
 @synthesize activePage = _activePage;
-// Private properties.
-@synthesize broadcasting = _broadcasting;
-@synthesize regularTabsViewController = _regularTabsViewController;
-@synthesize incognitoTabsViewController = _incognitoTabsViewController;
-@synthesize remoteTabsViewController = _remoteTabsViewController;
-@synthesize pageViewControllers = _pageViewControllers;
-@synthesize scrollView = _scrollView;
-@synthesize scrollContentView = _scrollContentView;
-@synthesize undoCloseAllAvailable = _undoCloseAllAvailable;
-@synthesize configuration = _configuration;
-@synthesize currentPage = _currentPage;
-@synthesize initialFrame = _initialFrame;
-@synthesize scrollViewAnimatingContentOffset =
-    _scrollViewAnimatingContentOffset;
-@synthesize pageChangeInteraction = _pageChangeInteraction;
 
 - (instancetype)init {
   if (self = [super init]) {

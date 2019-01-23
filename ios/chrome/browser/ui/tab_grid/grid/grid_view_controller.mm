@@ -73,24 +73,6 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 @end
 
 @implementation GridViewController
-// Public properties.
-@synthesize theme = _theme;
-@synthesize delegate = _delegate;
-@synthesize imageDataSource = _imageDataSource;
-@synthesize emptyStateView = _emptyStateView;
-@synthesize showsSelectionUpdates = _showsSelectionUpdates;
-// Private properties.
-@synthesize updatesCollectionView = _updatesCollectionView;
-@synthesize collectionView = _collectionView;
-@synthesize items = _items;
-@synthesize selectedItemID = _selectedItemID;
-@synthesize lastInsertedItemID = _lastInsertedItemID;
-@synthesize itemReorderRecognizer = _itemReorderRecognizer;
-@synthesize itemReorderTouchPoint = _itemReorderTouchPoint;
-@synthesize emptyStateAnimator = _emptyStateAnimator;
-@synthesize defaultLayout = _defaultLayout;
-@synthesize reorderingLayout = _reorderingLayout;
-@synthesize hasChangedOrder = _hasChangedOrder;
 
 - (instancetype)init {
   if (self = [super init]) {

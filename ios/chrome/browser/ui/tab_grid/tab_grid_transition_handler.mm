@@ -15,8 +15,6 @@
 
 @implementation TabGridTransitionHandler
 
-@synthesize provider = _provider;
-
 #pragma mark - UIViewControllerTransitioningDelegate
 
 - (id<UIViewControllerAnimatedTransitioning>)
