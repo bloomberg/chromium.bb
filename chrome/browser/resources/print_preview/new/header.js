@@ -31,6 +31,15 @@ Polymer({
     },
 
     /** @private */
+    managed_: {
+      type: Boolean,
+      computed: 'computeManaged_(settings.headerFooter.setByPolicy, ' +
+          'settings.headerFooter.available, settings.color.setByPolicy, ' +
+          'settings.color.available, settings.duplex.setByPolicy, ' +
+          'settings.duplex.available)',
+    },
+
+    /** @private */
     printButtonLabel_: {
       type: String,
       value: function() {
@@ -186,5 +195,17 @@ Polymer({
     return loadTimeData.getStringF(
         'printPreviewSummaryFormatShort', labelInfo.numSheets.toLocaleString(),
         labelInfo.summaryLabel);
-  }
+  },
+
+  /**
+   * @return {boolean} Whether any setting on the page is managed by enterprise
+   *     policy.
+   * @private
+   */
+  computeManaged_: function() {
+    return ['color', 'duplex', 'headerFooter'].some(settingName => {
+      const setting = this.getSetting(settingName);
+      return setting.available && setting.setByPolicy;
+    });
+  },
 });

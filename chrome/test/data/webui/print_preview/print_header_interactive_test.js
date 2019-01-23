@@ -16,13 +16,24 @@ cr.define('print_header_interactive_test', function() {
 
     /** @override */
     setup(function() {
-      // Only care about copies, duplex, pages, and pages per sheet.
+      // The header cares about color, duplex, and header/footer to determine
+      // whether to show the enterprise managed icon, and pages, copies, and
+      // duplex to compute the number of sheets of paper.
       const settings = {
+        color: {
+          value: true, /* color */
+          unavailableValue: false,
+          valid: true,
+          available: true,
+          setByPolicy: false,
+          key: 'isColorEnabled',
+        },
         copies: {
           value: '1',
           unavailableValue: '1',
           valid: true,
           available: true,
+          setByPolicy: false,
           key: '',
         },
         duplex: {
@@ -30,20 +41,23 @@ cr.define('print_header_interactive_test', function() {
           unavailableValue: false,
           valid: true,
           available: true,
+          setByPolicy: false,
           key: 'isDuplexEnabled',
+        },
+        headerFooter: {
+          value: true,
+          unavailableValue: false,
+          valid: true,
+          available: true,
+          setByPolicy: false,
+          key: 'isHeaderFooterEnabled',
         },
         pages: {
           value: [1],
           unavailableValue: [],
           valid: true,
           available: true,
-          key: '',
-        },
-        pagesPerSheet: {
-          value: 1,
-          unavailableValue: 1,
-          valid: true,
-          available: true,
+          setByPolicy: false,
           key: '',
         },
       };

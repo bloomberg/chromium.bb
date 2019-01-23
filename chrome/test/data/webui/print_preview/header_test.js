@@ -11,6 +11,7 @@ cr.define('header_test', function() {
     HeaderWithNup: 'header with nup',
     HeaderChangesForState: 'header changes for state',
     ButtonOrder: 'button order',
+    EnterprisePolicy: 'enterprise policy',
   };
 
   const suiteName = 'HeaderTest';
@@ -20,13 +21,24 @@ cr.define('header_test', function() {
 
     /** @override */
     setup(function() {
-      // Only care about copies, duplex, pages, and pages per sheet.
+      // The header cares about color, duplex, and header/footer to determine
+      // whether to show the enterprise managed icon, and pages, copies, and
+      // duplex to compute the number of sheets of paper.
       const settings = {
+        color: {
+          value: true, /* color */
+          unavailableValue: false,
+          valid: true,
+          available: true,
+          setByPolicy: false,
+          key: 'isColorEnabled',
+        },
         copies: {
           value: '1',
           unavailableValue: '1',
           valid: true,
           available: true,
+          setByPolicy: false,
           key: '',
         },
         duplex: {
@@ -34,13 +46,23 @@ cr.define('header_test', function() {
           unavailableValue: false,
           valid: true,
           available: true,
+          setByPolicy: false,
           key: 'isDuplexEnabled',
+        },
+        headerFooter: {
+          value: true,
+          unavailableValue: false,
+          valid: true,
+          available: true,
+          setByPolicy: false,
+          key: 'isHeaderFooterEnabled',
         },
         pages: {
           value: [1],
           unavailableValue: [],
           valid: true,
           available: true,
+          setByPolicy: false,
           key: '',
         },
       };
@@ -161,6 +183,17 @@ cr.define('header_test', function() {
         assertEquals(firstButton, cancelButton);
         assertEquals(lastButton, printButton);
       }
+    });
+
+    // Tests that enterprise badge shows up if any setting is managed.
+    test(assert(TestNames.EnterprisePolicy), function() {
+      ['color', 'duplex', 'headerFooter'].forEach(settingName => {
+        assertTrue(header.$$('iron-icon').hidden);
+        header.set(`settings.${settingName}.available`, true);
+        header.set(`settings.${settingName}.setByPolicy`, true);
+        assertFalse(header.$$('iron-icon').hidden);
+        header.set(`settings.${settingName}.setByPolicy`, false);
+      });
     });
   });
 

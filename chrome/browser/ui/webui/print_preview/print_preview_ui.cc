@@ -190,7 +190,7 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
     {"left", IDS_PRINT_PREVIEW_LEFT_MARGIN_LABEL},
     {"loading", IDS_PRINT_PREVIEW_LOADING},
     {"manage", IDS_PRINT_PREVIEW_MANAGE},
-    {"managedOption", IDS_PRINT_PREVIEW_MANAGED_OPTION_TEXT},
+    {"managedSettings", IDS_PRINT_PREVIEW_MANAGED_SETTINGS_TEXT},
     {"marginsLabel", IDS_PRINT_PREVIEW_MARGINS_LABEL},
     {"mediaSizeLabel", IDS_PRINT_PREVIEW_MEDIA_SIZE_LABEL},
     {"minimumMargins", IDS_PRINT_PREVIEW_MINIMUM_MARGINS},

@@ -15,8 +15,7 @@
       }
     </style>
     <template is="dom-repeat" items="[[options_]]">
-      <print-preview-settings-section managed="[[item.managed]]"
-          show-policy-on-end hidden$="[[!item.available]]"
+      <print-preview-settings-section hidden$="[[!item.available]]"
           class$="[[getClass_(index, firstIndex_)]]">
         <div slot="title">
           <span class="title">$i18n{optionsLabel}</span>
