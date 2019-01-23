@@ -21,8 +21,7 @@ class BrowserContext;
 namespace extensions {
 
 // An event router that observes changes to autofill addresses and credit cards
-// and notifies listeners to the onAddressListChanged and
-// onCreditCardListChanged events of changes.
+// and notifies listeners to the autofill API events.
 class AutofillPrivateEventRouter :
     public KeyedService,
     public EventRouter::Observer,

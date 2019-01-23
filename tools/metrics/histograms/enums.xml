@@ -16343,6 +16343,8 @@ Called by update_net_error_codes.py.-->
   <int value="430" label="STORAGE_LOCAL_ON_CHANGE"/>
   <int value="431" label="STORAGE_SYNC_ON_CHANGE"/>
   <int value="432" label="STORAGE_MANAGED_ON_CHANGE"/>
+  <int value="433" label="AUTOFILL_PRIVATE_ON_LOCAL_CREDIT_CARD_LIST_CHANGED"/>
+  <int value="434" label="AUTOFILL_PRIVATE_ON_SERVER_CREDIT_CARD_LIST_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -17718,6 +17720,8 @@ Called by update_net_error_codes.py.-->
   <int value="1310" label="ACCESSIBILITY_PRIVATE_GETBATTERYDESCRIPTION"/>
   <int value="1311" label="IDLE_GETAUTOLOCKDELAY"/>
   <int value="1312" label="AUTOTESTPRIVATE_GETPRIMARYDISPLAYSCALEFACTOR"/>
+  <int value="1313" label="AUTOFILLPRIVATE_GETLOCALCREDITCARDLIST"/>
+  <int value="1314" label="AUTOFILLPRIVATE_GETSERVERCREDITCARDLIST"/>
 </enum>
 
 <enum name="ExtensionIconState">
