@@ -423,6 +423,9 @@ std::unique_ptr<base::DictionaryValue> ConvertSearchSuggestDataToDict(
 }
 
 std::string ConvertLogoImageToBase64(const EncodedLogo& logo) {
+  if (!logo.encoded_image)
+    return std::string();
+
   std::string base64;
   base::Base64Encode(logo.encoded_image->data(), &base64);
   return base::StringPrintf("data:%s;base64,%s",

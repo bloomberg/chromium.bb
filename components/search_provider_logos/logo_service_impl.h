@@ -88,7 +88,7 @@ class LogoServiceImpl : public LogoService,
 
  private:
   // These values must stay in sync with the NewTabPageLogoDownloadOutcome enum
-  // in histograms.xml. And any addtion should be treated as append-only!
+  // in enums.xml. And any addition should be treated as append-only!
   // Animated doodle is not covered by this enum.
   enum LogoDownloadOutcome {
     DOWNLOAD_OUTCOME_NEW_LOGO_SUCCESS,
@@ -97,6 +97,7 @@ class LogoServiceImpl : public LogoService,
     DOWNLOAD_OUTCOME_PARSING_FAILED,
     DOWNLOAD_OUTCOME_DECODING_FAILED,
     DOWNLOAD_OUTCOME_LOGO_REVALIDATED,
+    DOWNLOAD_OUTCOME_MISSING_REQUIRED_IMAGE,
     DOWNLOAD_OUTCOME_COUNT,
   };
 
