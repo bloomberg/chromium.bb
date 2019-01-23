@@ -63,6 +63,7 @@ public class VrTestRuleUtils extends XrTestRuleUtils {
         if (desc.getAnnotation(VrModuleNotInstalled.class) != null) {
             VrModuleProvider.setAlwaysUseFallbackDelegate(true);
         }
+        TestVrShellDelegate.setDescription(desc);
 
         VrTestRuleUtils.ensureNoVrActivitiesDisplayed();
         HeadTrackingUtils.checkForAndApplyHeadTrackingModeAnnotation(rule, desc);

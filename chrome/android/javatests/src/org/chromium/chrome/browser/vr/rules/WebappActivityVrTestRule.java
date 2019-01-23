@@ -30,7 +30,7 @@ public class WebappActivityVrTestRule extends WebappActivityTestRule implements 
                 VrTestRuleUtils.evaluateVrTestRuleImpl(
                         base, desc, WebappActivityVrTestRule.this, () -> {
                             startWebappActivity();
-                            TestVrShellDelegate.createTestVrShellDelegate(getActivity(), desc);
+                            TestVrShellDelegate.createTestVrShellDelegate(getActivity());
                         });
             }
         }, desc);

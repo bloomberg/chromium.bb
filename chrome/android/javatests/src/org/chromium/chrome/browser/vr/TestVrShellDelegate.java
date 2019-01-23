@@ -22,16 +22,22 @@ import org.chromium.chrome.browser.vr.rules.VrModuleNotInstalled;
 public class TestVrShellDelegate extends VrShellDelegate {
     private Runnable mOnVSyncPausedCallback;
     private static TestVrShellDelegate sInstance;
+    private static Description sTestDescription;
     private boolean mDisableVrBrowsing;
     private boolean mExpectingBroadcast;
     private boolean mExpectingIntent;
     private Boolean mAllow2dIntents;
 
-    public static void createTestVrShellDelegate(final ChromeActivity activity, Description desc) {
+    public static void createTestVrShellDelegate(final ChromeActivity activity) {
         // Cannot make VrShellDelegate if we are faking that the VR module is not installed.
-        if (desc.getAnnotation(VrModuleNotInstalled.class) != null) return;
+        if (sTestDescription.getAnnotation(VrModuleNotInstalled.class) != null) return;
         if (sInstance != null) return;
         ThreadUtils.runOnUiThreadBlocking(() -> { sInstance = new TestVrShellDelegate(activity); });
+    }
+
+    // TODO(bsheedy): Maybe remove this and switch to setting a VrShellDelegateFactory instead.
+    public static void setDescription(Description desc) {
+        sTestDescription = desc;
     }
 
     public static TestVrShellDelegate getInstance() {
