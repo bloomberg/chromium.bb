@@ -94,14 +94,16 @@ public final class DownloadNotificationUmaHelper {
     // Values for the histograms MobileDownload.Background.*. Keep in sync with
     // MobileDownloadBackgroundDownloadEvent in enums.xml.
     @IntDef({UmaBackgroundDownload.STARTED, UmaBackgroundDownload.COMPLETED,
-            UmaBackgroundDownload.CANCELLED, UmaBackgroundDownload.FAILED})
+            UmaBackgroundDownload.CANCELLED, UmaBackgroundDownload.FAILED,
+            UmaBackgroundDownload.INTERRUPTED})
     @Retention(RetentionPolicy.SOURCE)
     public @interface UmaBackgroundDownload {
         int STARTED = 0;
         int COMPLETED = 1;
         int CANCELLED = 2;
         int FAILED = 3;
-        int NUM_ENTRIES = 4;
+        int INTERRUPTED = 4;
+        int NUM_ENTRIES = 5;
     }
 
     /**

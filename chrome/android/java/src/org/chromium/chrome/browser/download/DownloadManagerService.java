@@ -359,6 +359,11 @@ public class DownloadManagerService
         } else if (isAutoResumable) {
             addAutoResumableDownload(item.getId());
         }
+
+        if (status == DownloadStatus.INTERRUPTED) {
+            maybeRecordBackgroundDownload(
+                    UmaBackgroundDownload.INTERRUPTED, downloadInfo.getDownloadGuid());
+        }
         updateDownloadProgress(item, status);
 
         if (FeatureUtilities.isDownloadAutoResumptionEnabledInNative()) return;
