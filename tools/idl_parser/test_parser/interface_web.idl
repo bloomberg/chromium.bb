@@ -447,64 +447,6 @@ interface MyIfaceSetlike {
 };
 
 /** TREE
- *Interface(MyIfaceSerializer)
- *  Serializer()
- *  Serializer()
- *    Operation(toJSON)
- *      Arguments()
- *      Type()
- *        Any()
- *  Serializer()
- *    ATTRIBUTE: name
- *  Serializer()
- *    Map()
- *  Serializer()
- *    Map()
- *      GETTER: True
- *  Serializer()
- *    Map()
- *      ATTRIBUTE: True
- *  Serializer()
- *    Map()
- *      ATTRIBUTE: True
- *      INHERIT: True
- *  Serializer()
- *    Map()
- *      INHERIT: True
- *      ATTRIBUTES: None
- *  Serializer()
- *    Map()
- *      INHERIT: True
- *      ATTRIBUTES: ['name1', 'name2']
- *  Serializer()
- *    Map()
- *      ATTRIBUTES: ['name1', 'name2']
- *  Serializer()
- *    List()
- *  Serializer()
- *    List()
- *      GETTER: True
- *  Serializer()
- *    List()
- *      ATTRIBUTES: ['name1', 'name2']
- */
-interface MyIfaceSerializer {
-  serializer;
-  serializer any toJSON();
-  serializer = name;
-  serializer = {};
-  serializer = { getter };
-  serializer = { attribute };
-  serializer = { inherit, attribute };
-  serializer = { inherit };
-  serializer = { inherit, name1, name2 };
-  serializer = { name1, name2 };
-  serializer = [];
-  serializer = [getter];
-  serializer = [name1, name2];
-};
-
-/** TREE
  *Interface(MyIfaceFrozenArray)
  *  Attribute(foo)
  *    READONLY: True

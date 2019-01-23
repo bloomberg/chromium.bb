@@ -95,7 +95,6 @@ class IDLLexer(object):
     'record' : 'RECORD',
     'required' : 'REQUIRED',
     'sequence' : 'SEQUENCE',
-    'serializer' : 'SERIALIZER',
     'setlike' : 'SETLIKE',
     'setter': 'SETTER',
     'short' : 'SHORT',

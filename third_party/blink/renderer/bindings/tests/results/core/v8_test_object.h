@@ -620,7 +620,6 @@ class V8TestObject {
   CORE_EXPORT static void GetMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void DeleteMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void SetMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void ToJSONMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void ToStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void IteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 

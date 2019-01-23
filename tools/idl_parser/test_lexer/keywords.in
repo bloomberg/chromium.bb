@@ -37,7 +37,6 @@ RECORD record
 REGEXP RegExp
 REQUIRED required
 SEQUENCE sequence
-SERIALIZER serializer
 SETLIKE setlike
 SETTER setter
 SHORT short
