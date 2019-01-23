@@ -14,7 +14,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web_view/cwv_web_view_buildflags.h"
@@ -25,6 +24,10 @@
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
+#include "ios/web_view/internal/signin/web_view_signin_manager_factory.h"
+#endif
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -97,7 +100,7 @@ PrefService* ApplicationContext::GetLocalState() {
     flags_ui::PrefServiceFlagsStorage::RegisterPrefs(pref_registry.get());
     PrefProxyConfigTrackerImpl::RegisterPrefs(pref_registry.get());
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
-    SigninManagerBase::RegisterPrefs(pref_registry.get());
+    WebViewSigninManagerFactory::RegisterPrefs(pref_registry.get());
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 
     base::FilePath local_state_path;
