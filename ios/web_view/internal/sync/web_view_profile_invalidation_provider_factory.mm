@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/invalidation/impl/invalidator_storage.h"
@@ -73,7 +73,8 @@ WebViewProfileInvalidationProviderFactory::GetForBrowserState(
 // static
 WebViewProfileInvalidationProviderFactory*
 WebViewProfileInvalidationProviderFactory::GetInstance() {
-  return base::Singleton<WebViewProfileInvalidationProviderFactory>::get();
+  static base::NoDestructor<WebViewProfileInvalidationProviderFactory> instance;
+  return instance.get();
 }
 
 WebViewProfileInvalidationProviderFactory::
