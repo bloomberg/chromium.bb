@@ -187,6 +187,9 @@ void MarkRequestCompleteTask::DidOpenCache(
       BackgroundFetchSettledFetch::CloneRequest(
           request_info_->fetch_request_ptr());
 
+  request->url = MakeCacheUrlUnique(request->url, registration_id_.unique_id(),
+                                    request_info_->request_index());
+
   // TODO(crbug.com/774054): The request blob stored in the cache is being
   // overwritten here, it should be written back.
   handle.value()->Put(

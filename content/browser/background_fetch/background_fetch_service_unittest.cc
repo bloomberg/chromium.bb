@@ -200,8 +200,8 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase,
     base::RunLoop run_loop;
     service_->MatchRequests(
         service_worker_registration_id, developer_id, unique_id,
-        blink::mojom::FetchAPIRequest::New() /* request_to_match*/,
-        nullptr /* cache_query_params*/, /* match_all= */ true,
+        /* request_to_match= */ nullptr,
+        /* cache_query_params= */ nullptr, /* match_all= */ true,
         base::BindOnce(&BackgroundFetchServiceTest::DidMatchAllRequests,
                        base::Unretained(this), run_loop.QuitClosure(),
                        out_fetches));

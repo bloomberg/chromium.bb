@@ -72,6 +72,16 @@ bool MojoFailureReasonFromRegistrationProto(
         proto_failure_reason,
     blink::mojom::BackgroundFetchFailureReason* failure_reason);
 
+// Utility functions to make sure the request URLs are unique, since
+// Cache Storage does not support duplicate URLs yet.
+// Use `MakeCacheUrlUnique` before writing to the cache, and
+// `RemoveUniqueParamFromCacheURL` when querying from the cache.
+CONTENT_EXPORT GURL MakeCacheUrlUnique(const GURL& url,
+                                       const std::string& unique_id,
+                                       int request_index);
+CONTENT_EXPORT GURL RemoveUniqueParamFromCacheURL(const GURL& url,
+                                                  const std::string& unique_id);
+
 }  // namespace background_fetch
 
 }  // namespace content

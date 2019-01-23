@@ -454,9 +454,11 @@ class BackgroundFetchDataManagerTest
     CacheStorageHandle cache_storage =
         background_fetch_data_manager_->cache_manager()->OpenCacheStorage(
             origin(), CacheStorageOwner::kBackgroundFetch);
+    auto match_params = blink::mojom::QueryParams::New();
+    match_params->ignore_search = true;
     cache_storage.value()->MatchCache(
         kExampleUniqueId, BackgroundFetchSettledFetch::CloneRequest(request),
-        /* match_params= */ nullptr,
+        std::move(match_params),
         base::BindOnce(&BackgroundFetchDataManagerTest::DidMatchCache,
                        base::Unretained(this), run_loop.QuitClosure(),
                        &result));
@@ -490,7 +492,8 @@ class BackgroundFetchDataManagerTest
           blink::mojom::OperationType::kDelete;
       operation_ptr_vec[0]->request =
           BackgroundFetchSettledFetch::CloneRequest(request);
-
+      operation_ptr_vec[0]->match_params = blink::mojom::QueryParams::New();
+      operation_ptr_vec[0]->match_params->ignore_search = true;
       handle.value()->BatchOperation(
           std::move(operation_ptr_vec), /* fail_on_duplicates= */ true,
           base::BindOnce(&BackgroundFetchDataManagerTest::DidDeleteFromCache,
@@ -1941,11 +1944,91 @@ TEST_F(BackgroundFetchDataManagerTest, IgnoreMethodAndMatchAll) {
                 &settled_fetches);
 
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
-  // If the ASSERT below fails, the Cache Storage API implementation has likely
-  // changed to distinguish keys by request data other than just the URL.
-  // Thank you! Please can you update the 1u below to 2u, or file a bug against
-  // component Background Fetch to do so.
-  ASSERT_EQ(settled_fetches.size(), 1u);
+  ASSERT_EQ(settled_fetches.size(), 2u);
+}
+
+TEST_F(BackgroundFetchDataManagerTest, MatchRequestsWithDuplicates) {
+  int64_t sw_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
+
+  std::vector<blink::mojom::FetchAPIRequestPtr> requests;
+  const std::string base_path = "https://example.com/foo";
+
+  // Add base request.
+  {
+    auto request = blink::mojom::FetchAPIRequest::New();
+    request->url = GURL(base_path);
+    request->method = "GET";
+    request->referrer = blink::mojom::Referrer::New();
+    requests.push_back(BackgroundFetchSettledFetch::CloneRequest(request));
+    requests.push_back(BackgroundFetchSettledFetch::CloneRequest(request));
+  }
+
+  // Add base request with a query.
+  {
+    auto request = blink::mojom::FetchAPIRequest::New();
+    request->method = "GET";
+    request->url = GURL(base_path + "?a=b");
+    request->referrer = blink::mojom::Referrer::New();
+    requests.push_back(BackgroundFetchSettledFetch::CloneRequest(request));
+    requests.push_back(BackgroundFetchSettledFetch::CloneRequest(request));
+    request->url = GURL(base_path + "?c=d");
+    requests.push_back(BackgroundFetchSettledFetch::CloneRequest(request));
+  }
+
+  // Add base request with different method.
+  {
+    auto request = blink::mojom::FetchAPIRequest::New();
+    request->url = GURL(base_path);
+    request->method = "POST";
+    request->referrer = blink::mojom::Referrer::New();
+    requests.push_back(BackgroundFetchSettledFetch::CloneRequest(request));
+    requests.push_back(BackgroundFetchSettledFetch::CloneRequest(request));
+  }
+
+  blink::mojom::BackgroundFetchError error;
+  BackgroundFetchRegistrationId registration_id(
+      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+
+  {
+    auto options = blink::mojom::BackgroundFetchOptions::New();
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
+
+    CreateRegistration(registration_id, CloneRequestVector(requests),
+                       std::move(options), SkBitmap(), &error);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  }
+
+  std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> settled_fetches;
+  auto request_to_match =
+      BackgroundFetchSettledFetch::CloneRequest(requests[0]);
+  auto query_params = blink::mojom::QueryParams::New();
+
+  MatchRequests(registration_id,
+                BackgroundFetchSettledFetch::CloneRequest(request_to_match),
+                query_params->Clone(), /* match_all= */ true, &error,
+                &settled_fetches);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  // Match only the GETs with the same url.
+  EXPECT_EQ(settled_fetches.size(), 2u);
+
+  query_params->ignore_search = true;
+  MatchRequests(registration_id,
+                BackgroundFetchSettledFetch::CloneRequest(request_to_match),
+                query_params->Clone(), /* match_all= */ true, &error,
+                &settled_fetches);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  // Match only the GETs with the same url path.
+  EXPECT_EQ(settled_fetches.size(), 5u);
+
+  query_params->ignore_method = true;
+  MatchRequests(registration_id,
+                BackgroundFetchSettledFetch::CloneRequest(request_to_match),
+                query_params->Clone(), /* match_all= */ true, &error,
+                &settled_fetches);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  // Match everything.
+  EXPECT_EQ(settled_fetches.size(), requests.size());
 }
 
 TEST_F(BackgroundFetchDataManagerTest, Cleanup) {

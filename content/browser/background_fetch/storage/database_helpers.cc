@@ -165,6 +165,34 @@ bool MojoFailureReasonFromRegistrationProto(
   return false;
 }
 
+GURL MakeCacheUrlUnique(const GURL& url,
+                        const std::string& unique_id,
+                        int request_index) {
+  std::string query = url.query();
+  query += unique_id + base::NumberToString(request_index);
+
+  GURL::Replacements replacements;
+  replacements.SetQueryStr(query);
+
+  return url.ReplaceComponents(replacements);
+}
+
+GURL RemoveUniqueParamFromCacheURL(const GURL& url,
+                                   const std::string& unique_id) {
+  std::vector<std::string> split = base::SplitStringUsingSubstr(
+      url.query(), unique_id, base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  GURL::Replacements replacements;
+  if (split.size() == 1u)
+    replacements.ClearQuery();
+  else if (split.size() == 2u)
+    replacements.SetQueryStr(split[0]);
+  else
+    NOTREACHED();
+
+  return url.ReplaceComponents(replacements);
+}
+
 }  // namespace background_fetch
 
 }  // namespace content
