@@ -9,6 +9,8 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
+#include "services/ws/public/mojom/window_tree_constants.mojom.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/cursor/cursor.h"
@@ -74,6 +76,25 @@ bool ContainsScreenY(aura::Window* window, int y_in_screen) {
   gfx::Point window_loc =
       ConvertPointFromScreen(window, gfx::Point(0, y_in_screen));
   return ContainsY(window, window_loc.y());
+}
+
+// Returns true if |p| is on the edge |edge_want| of |window|.
+bool PointOnWindowEdge(aura::Window* window,
+                       int edge_want,
+                       const gfx::Point& p) {
+  switch (edge_want) {
+    case HTLEFT:
+      return ContainsY(window, p.y()) && p.x() == 0;
+    case HTRIGHT:
+      return ContainsY(window, p.y()) && p.x() == window->bounds().width();
+    case HTTOP:
+      return ContainsX(window, p.x()) && p.y() == 0;
+    case HTBOTTOM:
+      return ContainsX(window, p.x()) && p.y() == window->bounds().height();
+    default:
+      NOTREACHED();
+      return false;
+  }
 }
 
 bool Intersects(int x1, int max_1, int x2, int max_2) {
@@ -238,6 +259,15 @@ void MultiWindowResizeController::MouseMovedOutOfHost() {
   Hide();
 }
 
+void MultiWindowResizeController::OnWindowPropertyChanged(aura::Window* window,
+                                                          const void* key,
+                                                          intptr_t old) {
+  // If the window is now non-resizeable, make sure the resizer is not showing.
+  if ((window->GetProperty(aura::client::kResizeBehaviorKey) &
+       ws::mojom::kResizeBehaviorCanResize) == 0)
+    ResetResizer();
+}
+
 void MultiWindowResizeController::OnWindowVisibilityChanged(
     aura::Window* window,
     bool visible) {
@@ -282,6 +312,12 @@ MultiWindowResizeController::DetermineWindows(aura::Window* window,
                                               int window_component,
                                               const gfx::Point& point) const {
   ResizeWindows result;
+
+  // Check if the window is non-resizeable.
+  if ((window->GetProperty(aura::client::kResizeBehaviorKey) &
+       ws::mojom::kResizeBehaviorCanResize) == 0)
+    return result;
+
   gfx::Point point_in_parent =
       ConvertPointToTarget(window, window->parent(), point);
   switch (window_component) {
@@ -331,30 +367,19 @@ aura::Window* MultiWindowResizeController::FindWindowByEdge(
     if (!window->delegate())
       continue;
 
-    gfx::Point p = ConvertPointToTarget(parent, window,
-                                        gfx::Point(x_in_parent, y_in_parent));
-    switch (edge_want) {
-      case HTLEFT:
-        if (ContainsY(window, p.y()) && p.x() == 0)
-          return window;
-        break;
-      case HTRIGHT:
-        if (ContainsY(window, p.y()) && p.x() == window->bounds().width())
-          return window;
-        break;
-      case HTTOP:
-        if (ContainsX(window, p.x()) && p.y() == 0)
-          return window;
-        break;
-      case HTBOTTOM:
-        if (ContainsX(window, p.x()) && p.y() == window->bounds().height())
-          return window;
-        break;
-      default:
-        NOTREACHED();
+    // Return the window if it is resizeable and the wanted edge has the point.
+    if ((window->GetProperty(aura::client::kResizeBehaviorKey) &
+         ws::mojom::kResizeBehaviorCanResize) != 0 &&
+        PointOnWindowEdge(
+            window, edge_want,
+            ConvertPointToTarget(parent, window,
+                                 gfx::Point(x_in_parent, y_in_parent)))) {
+      return window;
     }
-    // Window doesn't contain the edge, but if window contains |point|
-    // it's obscuring any other window that could be at the location.
+
+    // Having determined that the window is not a suitable return value, if it
+    // contains the point, then it is obscuring that point on any remaining
+    // window that also contains the point.
     if (window->bounds().Contains(x_in_parent, y_in_parent))
       return NULL;
   }

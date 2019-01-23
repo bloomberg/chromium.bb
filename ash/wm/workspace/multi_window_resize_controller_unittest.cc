@@ -429,6 +429,94 @@ TEST_F(MultiWindowResizeControllerTest, HideWindowTest) {
   EXPECT_FALSE(IsShowing());
 }
 
+// Tests that the resizer does not appear while the mouse resides in a
+// non-resizeable window.
+TEST_F(MultiWindowResizeControllerTest, NonResizeableWindowTestA) {
+  aura::test::TestWindowDelegate delegate1;
+  std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
+      &delegate1, -1, gfx::Rect(0, 0, 100, 100)));
+  delegate1.set_window_component(HTRIGHT);
+  aura::test::TestWindowDelegate delegate2;
+  std::unique_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(
+      &delegate2, -2, gfx::Rect(0, 0, 100, 100)));
+  w2->SetProperty(aura::client::kResizeBehaviorKey, 0);
+  delegate2.set_window_component(HTRIGHT);
+  aura::test::TestWindowDelegate delegate3;
+  std::unique_ptr<aura::Window> w3(CreateTestWindowInShellWithDelegate(
+      &delegate3, -3, gfx::Rect(100, 0, 100, 100)));
+  delegate3.set_window_component(HTRIGHT);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(w1->bounds().CenterPoint());
+  EXPECT_FALSE(HasPendingShow());
+}
+
+// Tests that the resizer does not appear while the mouse resides in a window
+// bordering two other windows, one of which is non-resizeable and obscures the
+// other.
+TEST_F(MultiWindowResizeControllerTest, NonResizeableWindowTestB) {
+  aura::test::TestWindowDelegate delegate1;
+  std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
+      &delegate1, -1, gfx::Rect(0, 0, 100, 100)));
+  delegate1.set_window_component(HTRIGHT);
+  aura::test::TestWindowDelegate delegate2;
+  std::unique_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(
+      &delegate2, -2, gfx::Rect(100, 0, 100, 100)));
+  delegate2.set_window_component(HTRIGHT);
+  aura::test::TestWindowDelegate delegate3;
+  std::unique_ptr<aura::Window> w3(CreateTestWindowInShellWithDelegate(
+      &delegate3, -3, gfx::Rect(100, 0, 100, 100)));
+  w3->SetProperty(aura::client::kResizeBehaviorKey, 0);
+  delegate3.set_window_component(HTRIGHT);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(w1->bounds().CenterPoint());
+  EXPECT_FALSE(HasPendingShow());
+}
+
+// Tests that the resizer appears while the mouse resides in a window bordering
+// two other windows, one of which is non-resizeable but obscured by the other.
+TEST_F(MultiWindowResizeControllerTest, NonResizeableWindowTestC) {
+  aura::test::TestWindowDelegate delegate1;
+  std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
+      &delegate1, -1, gfx::Rect(0, 0, 100, 100)));
+  delegate1.set_window_component(HTRIGHT);
+  aura::test::TestWindowDelegate delegate2;
+  std::unique_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(
+      &delegate2, -2, gfx::Rect(100, 0, 100, 100)));
+  w2->SetProperty(aura::client::kResizeBehaviorKey, 0);
+  delegate2.set_window_component(HTRIGHT);
+  aura::test::TestWindowDelegate delegate3;
+  std::unique_ptr<aura::Window> w3(CreateTestWindowInShellWithDelegate(
+      &delegate3, -3, gfx::Rect(100, 0, 100, 100)));
+  delegate3.set_window_component(HTRIGHT);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(w1->bounds().CenterPoint());
+  EXPECT_TRUE(HasPendingShow());
+  EXPECT_FALSE(HasTarget(w2.get()));
+}
+
+// Tests that the resizer is dismissed when one of the resized windows becomes
+// non-resizeable.
+TEST_F(MultiWindowResizeControllerTest, MakeWindowNonResizeable) {
+  aura::test::TestWindowDelegate delegate1;
+  std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
+      &delegate1, -1, gfx::Rect(0, 0, 100, 100)));
+  delegate1.set_window_component(HTRIGHT);
+  aura::test::TestWindowDelegate delegate2;
+  std::unique_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(
+      &delegate2, -2, gfx::Rect(100, 0, 100, 100)));
+  delegate2.set_window_component(HTLEFT);
+
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  gfx::Point w1_center_in_screen = w1->GetBoundsInScreen().CenterPoint();
+  generator->MoveMouseTo(w1_center_in_screen);
+  ShowNow();
+  EXPECT_TRUE(IsShowing());
+
+  // Making one window non-resizeable should dismiss the resizer.
+  w1->SetProperty(aura::client::kResizeBehaviorKey, 0);
+  EXPECT_FALSE(IsShowing());
+}
+
 namespace {
 
 class TestWindowStateDelegate : public wm::WindowStateDelegate {
