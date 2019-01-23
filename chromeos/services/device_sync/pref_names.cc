@@ -55,6 +55,10 @@ const char kCryptAuthEnrollmentUserPrivateKey[] =
 // The GCM registration id used for receiving push messages from CryptAuth.
 const char kCryptAuthGCMRegistrationId[] = "cryptauth.gcm_registration_id";
 
+// The dictionary of key bundles enrolled with CryptAuth, used to populate and
+// persist the CryptAuthKeyRegistry.
+const char kCryptAuthKeyRegistry[] = "cryptauth.key_registry";
+
 }  // namespace prefs
 
 }  // namespace device_sync
