@@ -28,11 +28,12 @@ using content::WebContentsViewMac;
 
 @implementation WebContentsViewCocoa
 
+@synthesize client = client_;
+
 - (id)initWithWebContentsViewMac:(WebContentsViewMac*)w {
   self = [super initWithFrame:NSZeroRect];
   if (self != nil) {
     webContentsView_ = w;
-    client_ = w;
     [self registerDragTypes];
 
     [[NSNotificationCenter defaultCenter]

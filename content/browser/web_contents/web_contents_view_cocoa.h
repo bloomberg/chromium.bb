@@ -35,6 +35,9 @@ CONTENT_EXPORT
   BOOL mouseDownCanMoveWindow_;
 }
 
+// The mojo interface through which to communicate with the browser process.
+@property(nonatomic, assign) content::mojom::WebContentsNSViewClient* client;
+
 - (void)setMouseDownCanMoveWindow:(BOOL)canMove;
 
 // Sets |accessibilityParent| as the object returned when the

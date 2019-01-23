@@ -305,6 +305,7 @@ void WebContentsViewMac::CreateView(
     const gfx::Size& initial_size, gfx::NativeView context) {
   ns_view_bridge_local_ =
       std::make_unique<WebContentsNSViewBridge>(ns_view_id_, this);
+  [cocoa_view() setClient:this];
 
   drag_dest_.reset([[WebDragDest alloc] initWithWebContentsImpl:web_contents_]);
   if (delegate_)
@@ -475,11 +476,6 @@ void WebContentsViewMac::OnWindowVisibilityChanged(
       break;
   }
 
-  // TODO(ccameron): Communicate window visibility and occlusion from the remote
-  // process (for now, always treat remote windows as visible).
-  if (ns_view_bridge_remote_)
-    visibility = Visibility::VISIBLE;
-
   web_contents_->UpdateWebContentsVisibility(visibility);
 }
 
@@ -539,7 +535,6 @@ void WebContentsViewMac::ViewsHostableAttach(ViewsHostableView::Host* host) {
   views_host_ = host;
   std::vector<uint8_t> token = ui::RemoteAccessibility::GetTokenForLocalElement(
       views_host_->GetAccessibilityElement());
-  ns_view_bridge_local_->SetParentNSView(views_host_->GetNSViewId(), token);
 
   // Create an NSView in the target process, if one exists.
   uint64_t factory_host_id = views_host_->GetViewsFactoryHostId();
@@ -556,12 +551,14 @@ void WebContentsViewMac::ViewsHostableAttach(ViewsHostableView::Host* host) {
 
     ns_view_bridge_remote_->SetParentNSView(views_host_->GetNSViewId(), token);
 
-    // TODO(ccameron): Communicate window visibility and occlusion from the
-    // remote process (for now, always treat remote windows as visible).
-    OnWindowVisibilityChanged(mojom::Visibility::kVisible);
+    // Because this view is being displayed from a remote process, reset the
+    // in-process NSView's client pointer, so that the in-process NSView will
+    // not call back into |this|.
+    [cocoa_view() setClient:nullptr];
   } else if (factory_host_id != NSViewBridgeFactoryHost::kLocalDirectHostId) {
     LOG(ERROR) << "Failed to look up NSViewBridgeFactoryHost!";
   }
+  ns_view_bridge_local_->SetParentNSView(views_host_->GetNSViewId(), token);
 
   for (auto* rwhv_mac : GetChildViews()) {
     rwhv_mac->MigrateNSViewBridge(factory_host, ns_view_id_);
@@ -571,15 +568,6 @@ void WebContentsViewMac::ViewsHostableAttach(ViewsHostableView::Host* host) {
 
 void WebContentsViewMac::ViewsHostableDetach() {
   DCHECK(views_host_);
-  ns_view_bridge_local_->SetVisible(false);
-  ns_view_bridge_local_->ResetParentNSView();
-  views_host_ = nullptr;
-
-  for (auto* rwhv_mac : GetChildViews()) {
-    rwhv_mac->MigrateNSViewBridge(nullptr, 0);
-    rwhv_mac->SetParentUiLayer(nullptr);
-  }
-
   // Disconnect from the remote bridge, if it exists. This will have the effect
   // of destroying the associated bridge instance with its NSView.
   if (ns_view_bridge_remote_) {
@@ -587,6 +575,16 @@ void WebContentsViewMac::ViewsHostableDetach() {
     ns_view_bridge_remote_->ResetParentNSView();
     ns_view_client_binding_.Close();
     ns_view_bridge_remote_.reset();
+    // Permit the in-process NSView to call back into |this| again.
+    [cocoa_view() setClient:this];
+  }
+  ns_view_bridge_local_->SetVisible(false);
+  ns_view_bridge_local_->ResetParentNSView();
+  views_host_ = nullptr;
+
+  for (auto* rwhv_mac : GetChildViews()) {
+    rwhv_mac->MigrateNSViewBridge(nullptr, 0);
+    rwhv_mac->SetParentUiLayer(nullptr);
   }
 }
 
