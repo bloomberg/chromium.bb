@@ -21,8 +21,11 @@
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/media/capture/mouse_cursor_overlay_controller.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/common/service_manager_connection.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
+#include "services/device/public/mojom/constants.mojom.h"
+#include "services/device/public/mojom/wake_lock_provider.mojom.h"
 
 namespace content {
 
@@ -50,6 +53,18 @@ class ScopedFrameDoneHelper
       : base::ScopedClosureRunner(std::move(done_callback)) {}
   ~ScopedFrameDoneHelper() final = default;
 };
+
+std::unique_ptr<service_manager::Connector> MaybeGetServiceConnector() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // In some testing contexts, the service manager connection isn't initialized.
+  if (auto* connection = ServiceManagerConnection::GetForProcess()) {
+    service_manager::Connector* connector = connection->GetConnector();
+    DCHECK(connector);
+    return connector->Clone();  // Clone for use on a different thread.
+  }
+  return nullptr;
+}
 
 }  // namespace
 
@@ -119,6 +134,13 @@ void FrameSinkVideoCaptureDevice::AllocateAndStartWithReceiver(
   if (!suspend_requested_) {
     MaybeStartConsuming();
   }
+
+  DCHECK(!wake_lock_);
+  // Gets a service_manager::Connector first, then request a wake lock.
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {BrowserThread::UI}, base::BindOnce(&MaybeGetServiceConnector),
+      base::BindOnce(&FrameSinkVideoCaptureDevice::RequestWakeLock,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void FrameSinkVideoCaptureDevice::AllocateAndStart(
@@ -154,6 +176,11 @@ void FrameSinkVideoCaptureDevice::Resume() {
 
 void FrameSinkVideoCaptureDevice::StopAndDeAllocate() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (wake_lock_) {
+    wake_lock_->CancelWakeLock();
+    wake_lock_.reset();
+  }
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                            base::BindOnce(&MouseCursorOverlayController::Stop,
@@ -337,6 +364,25 @@ void FrameSinkVideoCaptureDevice::OnFatalError(std::string message) {
   }
 
   StopAndDeAllocate();
+}
+
+void FrameSinkVideoCaptureDevice::RequestWakeLock(
+    std::unique_ptr<service_manager::Connector> connector) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!connector) {
+    return;
+  }
+
+  device::mojom::WakeLockProviderPtr wake_lock_provider;
+  connector->BindInterface(device::mojom::kServiceName,
+                           mojo::MakeRequest(&wake_lock_provider));
+  wake_lock_provider->GetWakeLockWithoutContext(
+      device::mojom::WakeLockType::kPreventDisplaySleep,
+      device::mojom::WakeLockReason::kOther, "screen capture",
+      mojo::MakeRequest(&wake_lock_));
+
+  wake_lock_->RequestWakeLock();
 }
 
 }  // namespace content
