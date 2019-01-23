@@ -79,18 +79,22 @@ void __cpuid(int cpu_info[4], int info_type) {
 }
 
 #endif
+#endif  // !defined(COMPILER_MSVC)
 
-// _xgetbv returns the value of an Intel Extended Control Register (XCR).
+// xgetbv returns the value of an Intel Extended Control Register (XCR).
 // Currently only XCR0 is defined by Intel so |xcr| should always be zero.
-uint64_t _xgetbv(uint32_t xcr) {
+uint64_t xgetbv(uint32_t xcr) {
+#if defined(COMPILER_MSVC)
+  return _xgetbv(xcr);
+#else
   uint32_t eax, edx;
 
   __asm__ volatile (
     "xgetbv" : "=a"(eax), "=d"(edx) : "c"(xcr));
   return (static_cast<uint64_t>(edx) << 32) | eax;
+#endif  // defined(COMPILER_MSVC)
 }
 
-#endif  // !defined(COMPILER_MSVC)
 #endif  // ARCH_CPU_X86_FAMILY
 
 #if defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) || defined(OS_LINUX))
@@ -198,7 +202,7 @@ void CPU::Initialize() {
         (cpu_info[2] & 0x10000000) != 0 &&
         (cpu_info[2] & 0x04000000) != 0 /* XSAVE */ &&
         (cpu_info[2] & 0x08000000) != 0 /* OSXSAVE */ &&
-        (_xgetbv(0) & 6) == 6 /* XSAVE enabled by kernel */;
+        (xgetbv(0) & 6) == 6 /* XSAVE enabled by kernel */;
     has_aesni_ = (cpu_info[2] & 0x02000000) != 0;
     has_avx2_ = has_avx_ && (cpu_info7[1] & 0x00000020) != 0;
   }
