@@ -25,8 +25,15 @@ void AppUpdate::Merge(apps::mojom::App* state, const apps::mojom::App* delta) {
   if (!delta) {
     return;
   }
-  DCHECK(delta->app_type == state->app_type);
-  DCHECK(delta->app_id == state->app_id);
+
+  if ((delta->app_type != state->app_type) ||
+      (delta->app_id != state->app_id)) {
+    LOG(ERROR) << "inconsistent (app_type, app_id): (" << delta->app_type
+               << ", " << delta->app_id << ") vs (" << state->app_type << ", "
+               << state->app_id << ") ";
+    DCHECK(false);
+    return;
+  }
 
   if (delta->readiness != apps::mojom::Readiness::kUnknown) {
     state->readiness = delta->readiness;
