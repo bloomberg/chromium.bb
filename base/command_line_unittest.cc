@@ -437,4 +437,25 @@ TEST(CommandLineTest, PrependComplexWrapper) {
   EXPECT_EQ(FILE_PATH_LITERAL("--b"), cl.argv()[5]);
 }
 
+TEST(CommandLineTest, RemoveSwitch) {
+  std::string switch1 = "switch1";
+  std::string switch2 = "switch2";
+  std::string value2 = "value";
+
+  CommandLine cl(FilePath(FILE_PATH_LITERAL("Program")));
+
+  cl.AppendSwitch(switch1);
+  cl.AppendSwitchASCII(switch2, value2);
+
+  EXPECT_TRUE(cl.HasSwitch(switch1));
+  EXPECT_TRUE(cl.HasSwitch(switch2));
+  EXPECT_EQ(value2, cl.GetSwitchValueASCII(switch2));
+
+  cl.RemoveSwitch(switch1);
+
+  EXPECT_FALSE(cl.HasSwitch(switch1));
+  EXPECT_TRUE(cl.HasSwitch(switch2));
+  EXPECT_EQ(value2, cl.GetSwitchValueASCII(switch2));
+}
+
 } // namespace base
