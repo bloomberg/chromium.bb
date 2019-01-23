@@ -299,13 +299,20 @@ function getThemeBackgroundInfo() {
 /**
  * Heuristic to determine whether a theme should be considered to be dark, so
  * the colors of various UI elements can be adjusted.
+ *
+ * The user theme/custom background will always take precedence over dark mode
+ * when considering darkness. Therefore, dark mode should only be checked if
+ * this is the default NTP. Dark mode is considered a dark theme if enabled.
+ *
  * @param {ThemeBackgroundInfo|undefined} info Theme background information.
  * @return {boolean} Whether the theme is dark.
  * @private
  */
 function getIsThemeDark() {
   var info = getThemeBackgroundInfo();
-  if (!info) {
+  // Only check for dark mode if this is the default NTP (i.e. no theme or
+  // custom background set).
+  if (!info || info.usingDefaultTheme && !info.customBackgroundConfigured) {
     // Dark mode is always considered a dark theme.
     return configData.isDarkModeEnabled;
   }
