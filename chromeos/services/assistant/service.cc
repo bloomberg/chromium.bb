@@ -119,9 +119,12 @@ void Service::BindAssistantPlatformConnection(
 }
 
 void Service::PowerChanged(const power_manager::PowerSupplyProperties& prop) {
-  power_source_connected_ =
+  const bool power_source_connected =
       prop.external_power() == power_manager::PowerSupplyProperties::AC;
+  if (power_source_connected == power_source_connected_)
+    return;
 
+  power_source_connected_ = power_source_connected;
   MaybeRestartAssistantManager();
 }
 
