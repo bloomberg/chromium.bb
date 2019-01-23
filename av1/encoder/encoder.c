@@ -3226,15 +3226,6 @@ int av1_use_as_reference(AV1_COMP *cpi, int ref_frame_flags) {
   return 0;
 }
 
-void av1_update_reference(AV1_COMP *cpi, int ref_frame_upd_flags) {
-  cpi->ext_refresh_last_frame = (ref_frame_upd_flags & AOM_LAST_FLAG) != 0;
-  cpi->ext_refresh_golden_frame = (ref_frame_upd_flags & AOM_GOLD_FLAG) != 0;
-  cpi->ext_refresh_alt_ref_frame = (ref_frame_upd_flags & AOM_ALT_FLAG) != 0;
-  cpi->ext_refresh_bwd_ref_frame = (ref_frame_upd_flags & AOM_BWD_FLAG) != 0;
-  cpi->ext_refresh_alt2_ref_frame = (ref_frame_upd_flags & AOM_ALT2_FLAG) != 0;
-  cpi->ext_refresh_frame_flags_pending = 1;
-}
-
 int av1_copy_reference_enc(AV1_COMP *cpi, int idx, YV12_BUFFER_CONFIG *sd) {
   AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
@@ -5742,7 +5733,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
 
   // default reference buffers update config
-  av1_configure_buffer_updates_firstpass(cpi, LF_UPDATE);
+  av1_configure_buffer_updates(cpi, LF_UPDATE);
 
   // Initialize fields related to forward keyframes
   cpi->no_show_kf = 0;
@@ -5962,7 +5953,12 @@ void av1_apply_encoding_flags(AV1_COMP *cpi, aom_enc_frame_flags_t flags) {
       upd ^= AOM_ALT2_FLAG;
     }
 
-    av1_update_reference(cpi, upd);
+    cpi->ext_refresh_last_frame = (upd & AOM_LAST_FLAG) != 0;
+    cpi->ext_refresh_golden_frame = (upd & AOM_GOLD_FLAG) != 0;
+    cpi->ext_refresh_alt_ref_frame = (upd & AOM_ALT_FLAG) != 0;
+    cpi->ext_refresh_bwd_ref_frame = (upd & AOM_BWD_FLAG) != 0;
+    cpi->ext_refresh_alt2_ref_frame = (upd & AOM_ALT2_FLAG) != 0;
+    cpi->ext_refresh_frame_flags_pending = 1;
   }
 
   cpi->ext_use_ref_frame_mvs = cpi->oxcf.allow_ref_frame_mvs &

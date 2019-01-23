@@ -31,6 +31,125 @@
 #include "av1/encoder/temporal_filter.h"
 #include "av1/encoder/tpl_model.h"
 
+// Define the reference buffers that will be updated post encode.
+void av1_configure_buffer_updates(AV1_COMP *cpi, const FRAME_UPDATE_TYPE type) {
+  // NOTE(weitinglin): Should we define another function to take care of
+  // cpi->rc.is_$Source_Type to make this function as it is in the comment?
+
+  // show_existing_frame is a flag left set from the end of encoding the
+  // previous frame.  Alongside it, is_src_frame_alt_ref may also be left
+  // set so shouldn't be cleared in this case.
+  if (!cpi->common.show_existing_frame) cpi->rc.is_src_frame_alt_ref = 0;
+
+  cpi->rc.is_bwd_ref_frame = 0;
+  cpi->rc.is_last_bipred_frame = 0;
+  cpi->rc.is_bipred_frame = 0;
+  cpi->rc.is_src_frame_ext_arf = 0;
+
+  switch (type) {
+    case KF_UPDATE:
+      cpi->refresh_last_frame = 1;
+      cpi->refresh_golden_frame = 1;
+      cpi->refresh_bwd_ref_frame = 1;
+      cpi->refresh_alt2_ref_frame = 1;
+      cpi->refresh_alt_ref_frame = 1;
+      break;
+
+    case LF_UPDATE:
+      cpi->refresh_last_frame = 1;
+      cpi->refresh_golden_frame = 0;
+      cpi->refresh_bwd_ref_frame = 0;
+      cpi->refresh_alt2_ref_frame = 0;
+      cpi->refresh_alt_ref_frame = 0;
+      break;
+
+    case GF_UPDATE:
+      // TODO(zoeliu): To further investigate whether 'refresh_last_frame' is
+      //               needed.
+      cpi->refresh_last_frame = 1;
+      cpi->refresh_golden_frame = 1;
+      cpi->refresh_bwd_ref_frame = 0;
+      cpi->refresh_alt2_ref_frame = 0;
+      cpi->refresh_alt_ref_frame = 0;
+      break;
+
+    case OVERLAY_UPDATE:
+      cpi->refresh_last_frame = 0;
+      cpi->refresh_golden_frame = 1;
+      cpi->refresh_bwd_ref_frame = 0;
+      cpi->refresh_alt2_ref_frame = 0;
+      cpi->refresh_alt_ref_frame = 0;
+
+      cpi->rc.is_src_frame_alt_ref = 1;
+      break;
+
+    case ARF_UPDATE:
+      cpi->refresh_last_frame = 0;
+      cpi->refresh_golden_frame = 0;
+      // NOTE: BWDREF does not get updated along with ALTREF_FRAME.
+      cpi->refresh_bwd_ref_frame = 0;
+      cpi->refresh_alt2_ref_frame = 0;
+      cpi->refresh_alt_ref_frame = 1;
+      break;
+
+    case BRF_UPDATE:
+      cpi->refresh_last_frame = 0;
+      cpi->refresh_golden_frame = 0;
+      cpi->refresh_bwd_ref_frame = 1;
+      cpi->refresh_alt2_ref_frame = 0;
+      cpi->refresh_alt_ref_frame = 0;
+
+      cpi->rc.is_bwd_ref_frame = 1;
+      break;
+
+    case LAST_BIPRED_UPDATE:
+      cpi->refresh_last_frame = 1;
+      cpi->refresh_golden_frame = 0;
+      cpi->refresh_bwd_ref_frame = 0;
+      cpi->refresh_alt2_ref_frame = 0;
+      cpi->refresh_alt_ref_frame = 0;
+
+      cpi->rc.is_last_bipred_frame = 1;
+      break;
+
+    case BIPRED_UPDATE:
+      cpi->refresh_last_frame = 1;
+      cpi->refresh_golden_frame = 0;
+      cpi->refresh_bwd_ref_frame = 0;
+      cpi->refresh_alt2_ref_frame = 0;
+      cpi->refresh_alt_ref_frame = 0;
+
+      cpi->rc.is_bipred_frame = 1;
+      break;
+
+    case INTNL_OVERLAY_UPDATE:
+      cpi->refresh_last_frame = 1;
+      cpi->refresh_golden_frame = 0;
+      cpi->refresh_bwd_ref_frame = 0;
+      cpi->refresh_alt2_ref_frame = 0;
+      cpi->refresh_alt_ref_frame = 0;
+
+      cpi->rc.is_src_frame_alt_ref = 1;
+      cpi->rc.is_src_frame_ext_arf = 1;
+      break;
+
+    case INTNL_ARF_UPDATE:
+      cpi->refresh_last_frame = 0;
+      cpi->refresh_golden_frame = 0;
+      if (cpi->new_bwdref_update_rule == 1 && cpi->oxcf.pass == 2) {
+        cpi->refresh_bwd_ref_frame = 1;
+        cpi->refresh_alt2_ref_frame = 0;
+      } else {
+        cpi->refresh_bwd_ref_frame = 0;
+        cpi->refresh_alt2_ref_frame = 1;
+      }
+      cpi->refresh_alt_ref_frame = 0;
+      break;
+
+    default: assert(0); break;
+  }
+}
+
 static void set_additional_frame_flags(const AV1_COMMON *const cm,
                                        unsigned int *const frame_flags) {
   if (frame_is_intra_only(cm)) *frame_flags |= FRAMEFLAGS_INTRAONLY;
@@ -247,6 +366,8 @@ static int get_current_frame_ref_type(
   // We choose the reference "type" of this frame from the flags which indicate
   // which reference frames will be refreshed by it.  More than one of these
   // flags may be set, so the order here implies an order of precedence.
+  // This is just used to choose the primary_ref_frame (as the most recent
+  // reference buffer of the same reference-type as the current frame)
 
   const int intra_only = frame_params->frame_type == KEY_FRAME ||
                          frame_params->frame_type == INTRA_ONLY_FRAME;
@@ -516,11 +637,7 @@ static struct lookahead_entry *setup_arf_or_arf2(
     if (oxcf->pass < 2) {
       // In second pass, the buffer updates configure will be set
       // in the function av1_rc_get_second_pass_params
-      if (!arf2) {
-        av1_configure_buffer_updates_firstpass(cpi, ARF_UPDATE);
-      } else {
-        av1_configure_buffer_updates_firstpass(cpi, INTNL_ARF_UPDATE);
-      }
+      av1_configure_buffer_updates(cpi, arf2 ? INTNL_ARF_UPDATE : ARF_UPDATE);
     }
   }
   rc->source_alt_ref_pending = 0;
@@ -593,7 +710,7 @@ struct lookahead_entry *choose_frame_source(
       if (cpi->oxcf.pass < 2) {
         // In second pass, the buffer updates configure will be set
         // in the function av1_rc_get_second_pass_params
-        av1_configure_buffer_updates_firstpass(cpi, BIPRED_UPDATE);
+        av1_configure_buffer_updates(cpi, BRF_UPDATE);
       }
     }
   }

@@ -950,8 +950,6 @@ aom_codec_err_t av1_copy_new_frame_enc(AV1_COMMON *cm,
 
 int av1_use_as_reference(AV1_COMP *cpi, int ref_frame_flags);
 
-void av1_update_reference(AV1_COMP *cpi, int ref_frame_flags);
-
 int av1_copy_reference_enc(AV1_COMP *cpi, int idx, YV12_BUFFER_CONFIG *sd);
 
 int av1_set_reference_enc(AV1_COMP *cpi, int idx, YV12_BUFFER_CONFIG *sd);

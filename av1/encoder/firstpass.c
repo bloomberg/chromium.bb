@@ -36,6 +36,7 @@
 #include "av1/encoder/encodemb.h"
 #include "av1/encoder/encodemv.h"
 #include "av1/encoder/encoder.h"
+#include "av1/encoder/encode_strategy.h"
 #include "av1/encoder/extend.h"
 #include "av1/encoder/firstpass.h"
 #include "av1/encoder/mcomp.h"
@@ -2934,51 +2935,6 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   twopass->modified_error_left -= kf_group_err;
 }
 
-void av1_configure_buffer_updates_firstpass(AV1_COMP *cpi,
-                                            FRAME_UPDATE_TYPE update_type) {
-  RATE_CONTROL *rc = &cpi->rc;
-
-  cpi->refresh_last_frame = 1;
-  cpi->refresh_golden_frame = 0;
-  cpi->refresh_bwd_ref_frame = 0;
-  cpi->refresh_alt2_ref_frame = 0;
-  cpi->refresh_alt_ref_frame = 0;
-
-  rc->is_bwd_ref_frame = 0;
-
-  switch (update_type) {
-    case ARF_UPDATE:
-      cpi->refresh_alt_ref_frame = 1;
-      cpi->refresh_last_frame = 0;
-      cpi->refresh_golden_frame = 0;
-      cpi->refresh_bwd_ref_frame = 0;
-      cpi->refresh_alt2_ref_frame = 0;
-
-      rc->is_src_frame_alt_ref = 0;
-      break;
-    case INTNL_ARF_UPDATE:
-      cpi->refresh_alt2_ref_frame = 1;
-      cpi->refresh_last_frame = 0;
-      cpi->refresh_golden_frame = 0;
-      cpi->refresh_bwd_ref_frame = 0;
-      cpi->refresh_alt_ref_frame = 0;
-      rc->is_src_frame_alt_ref = 0;
-      rc->is_src_frame_ext_arf = 0;
-
-      break;
-    case BIPRED_UPDATE:
-      cpi->refresh_bwd_ref_frame = 1;
-      cpi->refresh_last_frame = 0;
-      cpi->refresh_golden_frame = 0;
-      cpi->refresh_alt2_ref_frame = 0;
-      cpi->refresh_alt_ref_frame = 0;
-
-      rc->is_bwd_ref_frame = 1;
-      break;
-    default: break;
-  }
-}
-
 static int is_skippable_frame(const AV1_COMP *cpi) {
   // If the current frame does not have non-zero motion vector detected in the
   // first  pass, and so do its previous and forward frames, then this frame
@@ -3018,7 +2974,7 @@ void av1_rc_get_second_pass_params(AV1_COMP *cpi,
   // advance the input pointer as we already have what we need.
   if (gf_group->update_type[gf_group->index] == ARF_UPDATE ||
       gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE) {
-    av1_configure_buffer_updates(cpi);
+    av1_configure_buffer_updates(cpi, gf_group->update_type[gf_group->index]);
     target_rate = gf_group->bit_allocation[gf_group->index];
     target_rate = av1_rc_clamp_pframe_target_size(cpi, target_rate);
     rc->base_frame_target = target_rate;
@@ -3110,7 +3066,7 @@ void av1_rc_get_second_pass_params(AV1_COMP *cpi,
 #endif
   }
 
-  av1_configure_buffer_updates(cpi);
+  av1_configure_buffer_updates(cpi, gf_group->update_type[gf_group->index]);
 
   // Do the firstpass stats indicate that this frame is skippable for the
   // partition search?

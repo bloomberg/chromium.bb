@@ -267,8 +267,6 @@ void av1_set_target_rate(struct AV1_COMP *cpi, int width, int height);
 
 int av1_resize_one_pass_cbr(struct AV1_COMP *cpi);
 
-void av1_configure_buffer_updates(struct AV1_COMP *cpi);
-
 void av1_estimate_qp_gop(struct AV1_COMP *cpi);
 
 #ifdef __cplusplus
