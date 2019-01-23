@@ -13,7 +13,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/ui/settings/personal_data_manager_data_changed_observer.h"
+#include "ios/chrome/browser/ui/settings/personal_data_manager_finished_profile_tasks_waiter.h"
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -48,14 +48,14 @@ class AutofillProfileTableViewControllerTest
     autofill::PersonalDataManager* personal_data_manager =
         autofill::PersonalDataManagerFactory::GetForBrowserState(
             chrome_browser_state_.get());
-    PersonalDataManagerDataChangedObserver observer(personal_data_manager);
+    PersonalDataManagerFinishedProfileTasksWaiter waiter(personal_data_manager);
 
     autofill::AutofillProfile autofill_profile(base::GenerateGUID(), origin);
     autofill_profile.SetRawInfo(autofill::NAME_FULL, base::ASCIIToUTF16(name));
     autofill_profile.SetRawInfo(autofill::ADDRESS_HOME_LINE1,
                                 base::ASCIIToUTF16(address));
     personal_data_manager->SaveImportedProfile(autofill_profile);
-    observer.Wait();  // Wait for completion of the asynchronous operation.
+    waiter.Wait();  // Wait for completion of the asynchronous operation.
   }
 
   web::TestWebThreadBundle thread_bundle_;
@@ -81,8 +81,7 @@ TEST_F(AutofillProfileTableViewControllerTest, TestInitialization) {
 }
 
 // Adding a single address results in an address section.
-// TODO(crbug.com/919967): Reenable this test.
-TEST_F(AutofillProfileTableViewControllerTest, DISABLED_TestOneProfile) {
+TEST_F(AutofillProfileTableViewControllerTest, TestOneProfile) {
   AddProfile("https://www.example.com/", "John Doe", "1 Main Street");
   CreateController();
   CheckController();
@@ -94,9 +93,7 @@ TEST_F(AutofillProfileTableViewControllerTest, DISABLED_TestOneProfile) {
 }
 
 // Deleting the only profile results in item deletion and section deletion.
-// TODO(crbug.com/919968): Reenable this test.
-TEST_F(AutofillProfileTableViewControllerTest,
-       DISABLED_TestOneProfileItemDeleted) {
+TEST_F(AutofillProfileTableViewControllerTest, TestOneProfileItemDeleted) {
   AddProfile("https://www.example.com/", "John Doe", "1 Main Street");
   CreateController();
   CheckController();
@@ -111,11 +108,6 @@ TEST_F(AutofillProfileTableViewControllerTest,
           controller());
   // Put the tableView in 'edit' mode.
   [view_controller editButtonPressed];
-
-  autofill::PersonalDataManager* personal_data_manager =
-      autofill::PersonalDataManagerFactory::GetForBrowserState(
-          chrome_browser_state_.get());
-  PersonalDataManagerDataChangedObserver observer(personal_data_manager);
 
   AutofillProfileTableViewController* autofill_controller =
       static_cast<AutofillProfileTableViewController*>(controller());

@@ -36,7 +36,7 @@
 #include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #import "ios/chrome/browser/ui/autofill/chrome_autofill_client_ios.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_mediator.h"
-#include "ios/chrome/browser/ui/settings/personal_data_manager_data_changed_observer.h"
+#include "ios/chrome/browser/ui/settings/personal_data_manager_finished_profile_tasks_waiter.h"
 #include "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
@@ -460,6 +460,8 @@ TEST_F(AutofillControllerTest, MultipleProfileSuggestions) {
   PersonalDataManager* personal_data_manager =
       PersonalDataManagerFactory::GetForBrowserState(
           ios::ChromeBrowserState::FromBrowserState(GetBrowserState()));
+  PersonalDataManagerFinishedProfileTasksWaiter waiter(personal_data_manager);
+
   AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
   profile.SetRawInfo(NAME_FULL, base::UTF8ToUTF16("Homer Simpson"));
   profile.SetRawInfo(ADDRESS_HOME_LINE1, base::UTF8ToUTF16("123 Main Street"));
@@ -467,7 +469,10 @@ TEST_F(AutofillControllerTest, MultipleProfileSuggestions) {
   profile.SetRawInfo(ADDRESS_HOME_STATE, base::UTF8ToUTF16("IL"));
   profile.SetRawInfo(ADDRESS_HOME_ZIP, base::UTF8ToUTF16("55123"));
   EXPECT_EQ(0U, personal_data_manager->GetProfiles().size());
+
   personal_data_manager->SaveImportedProfile(profile);
+  waiter.Wait();
+
   EXPECT_EQ(1U, personal_data_manager->GetProfiles().size());
   AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com/");
   profile2.SetRawInfo(NAME_FULL, base::UTF8ToUTF16("Larry Page"));
@@ -646,9 +651,9 @@ TEST_F(AutofillControllerTest, CreditCardImport) {
 
   // This call cause a modification of the PersonalDataManager, so wait until
   // the asynchronous task complete in addition to waiting for the UI update.
-  PersonalDataManagerDataChangedObserver observer(personal_data_manager);
+  PersonalDataManagerFinishedProfileTasksWaiter waiter(personal_data_manager);
   confirm_infobar->Accept();
-  observer.Wait();
+  waiter.Wait();
 
   const std::vector<CreditCard*>& credit_cards =
       personal_data_manager->GetCreditCards();
