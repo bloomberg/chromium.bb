@@ -1545,7 +1545,7 @@ template("monochrome_public_apk_or_module_tmpl") {
                              "apk_name",
                              "is_base_module",
                              "module_name",
-                             "proguard_expectations_file",
+                             "verify_android_configuration",
                              "proguard_jar_path",
                              "target_type",
                              "use_trichrome_library",
@@ -1587,11 +1587,10 @@ monochrome_public_apk_or_module_tmpl("monochrome_public_apk") {
   apk_name = "MonochromePublic"
   target_type = "android_apk"
 
-  # Having //clank present causes different flags because of how play services
-  # is wired up.
-  if (!is_java_debug && !enable_chrome_android_internal) {
-    proguard_expectations_file =
-        "//chrome/android/java/monochrome_public_apk.proguard_flags.expected"
+  # Having //clank present causes different flags because of how play
+  # services is wired up.
+  if (!enable_chrome_android_internal) {
+    verify_android_configuration = true
   }
 }
 

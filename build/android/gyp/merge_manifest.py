@@ -14,6 +14,7 @@ import tempfile
 import xml.dom.minidom as minidom
 
 from util import build_utils
+from util import diff_utils
 
 # Tools library directory - relative to Android SDK root
 SDK_TOOLS_LIB_DIR = os.path.join('tools', 'lib')
@@ -72,6 +73,12 @@ def main(argv):
   parser.add_argument('--root-manifest',
                       help='Root manifest which to merge into',
                       required=True)
+  parser.add_argument(
+      '--expected-manifest', help='Expected contents for the merged manifest.')
+  parser.add_argument(
+      '--verify-expected-manifest',
+      action='store_true',
+      help='Fail if expected contents do not match merged manifest contents.')
   parser.add_argument('--output', help='Output manifest path', required=True)
   parser.add_argument('--extras',
                       help='GN list of additional manifest to merge')
@@ -101,6 +108,24 @@ def main(argv):
         # The merger doesn't set a nonzero exit code for failures.
         fail_func=lambda returncode, stderr: returncode != 0 or
           build_utils.IsTimeStale(f.name, [root_manifest] + extras))
+
+  if args.expected_manifest:
+    diff = diff_utils.DiffFileContents(args.expected_manifest, args.output)
+    if diff:
+      print """
+{}
+
+Detected AndroidManifest change. Please update by running:
+
+cp {} {}
+
+See https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README.md
+for more info.
+""".format(diff, os.path.abspath(args.output),
+           os.path.abspath(args.expected_manifest))
+      if args.verify_expected_manifest:
+        sys.exit(1)
+
   if args.depfile:
     inputs = extras + classpath.split(':')
     build_utils.WriteDepfile(args.depfile, args.output, inputs=inputs,

@@ -112,7 +112,7 @@ Detected Proguard flags change. Please update by running:
 
 cp {} {}
 
-See https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README.md#fixing-build-failures
+See https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README.md
 for more info.
 """.format(diff, os.path.abspath(actual_path), os.path.abspath(expected_path))
   if fail_on_exit:
