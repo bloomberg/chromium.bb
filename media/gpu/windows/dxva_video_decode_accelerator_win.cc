@@ -839,6 +839,8 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
 
   RETURN_ON_FAILURE(InitDecoder(config.profile), "Failed to initialize decoder",
                     false);
+  // Record this after we see if it works.
+  UMA_HISTOGRAM_BOOLEAN("Media.DXVAVDA.UseD3D11", use_dx11_);
 
   RETURN_ON_FAILURE(GetStreamsInfoAndBufferReqs(),
                     "Failed to get input/output stream info.", false);

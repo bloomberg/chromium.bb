@@ -13025,6 +13025,11 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Composition Failure"/>
 </enum>
 
+<enum name="DXVADXVersion">
+  <int value="0" label="D3D9"/>
+  <int value="1" label="D3D11"/>
+</enum>
+
 <enum name="EAPInnerProtocol">
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="NONE"/>
