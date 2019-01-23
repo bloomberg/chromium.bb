@@ -223,9 +223,8 @@ void NotificationChannelsProviderAndroid::MigrateToChannelsIfNecessary(
 
     while (it && it->HasNext()) {
       content_settings::Rule rule = it->Next();
-      rules.push_back(std::move(rule));
-
       CreateChannelForRule(rule);
+      rules.push_back(std::move(rule));
     }
   }
 

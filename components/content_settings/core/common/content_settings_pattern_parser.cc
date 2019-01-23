@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "url/url_constants.h"
 
@@ -20,24 +21,11 @@ const char kSchemeWildcard[] = "*";
 const char kUrlPathSeparator[] = "/";
 const char kUrlPortSeparator[] = ":";
 
-class Component {
- public:
-  Component() : start(0), len(0) {}
-  Component(size_t s, size_t l) : start(s), len(l) {}
-
-  bool IsNonEmpty() {
-    return len > 0;
-  }
-
-  size_t start;
-  size_t len;
-};
-
 }  // namespace
 
 namespace content_settings {
 
-void PatternParser::Parse(const std::string& pattern_spec,
+void PatternParser::Parse(base::StringPiece pattern_spec,
                           ContentSettingsPattern::BuilderInterface* builder) {
   if (pattern_spec == "*") {
     builder->WithSchemeWildcard();
@@ -48,10 +36,10 @@ void PatternParser::Parse(const std::string& pattern_spec,
 
   // Initialize components for the individual patterns parts to empty
   // sub-strings.
-  Component scheme_component;
-  Component host_component;
-  Component port_component;
-  Component path_component;
+  base::StringPiece scheme_piece;
+  base::StringPiece host_piece;
+  base::StringPiece port_piece;
+  base::StringPiece path_piece;
 
   size_t start = 0;
   size_t current_pos = 0;
@@ -63,7 +51,7 @@ void PatternParser::Parse(const std::string& pattern_spec,
   const std::string standard_scheme_separator(url::kStandardSchemeSeparator);
   current_pos = pattern_spec.find(standard_scheme_separator, start);
   if (current_pos != std::string::npos) {
-    scheme_component = Component(start, current_pos);
+    scheme_piece = pattern_spec.substr(start, current_pos - start);
     start = current_pos + standard_scheme_separator.size();
     current_pos = start;
   } else {
@@ -82,28 +70,28 @@ void PatternParser::Parse(const std::string& pattern_spec,
   if (current_pos == std::string::npos)
     return;  // Bad pattern spec.
 
-  current_pos = pattern_spec.find(std::string(kUrlPortSeparator), current_pos);
+  current_pos = pattern_spec.find(kUrlPortSeparator, current_pos);
   if (current_pos == std::string::npos) {
     // No port spec found
-    current_pos = pattern_spec.find(std::string(kUrlPathSeparator), start);
+    current_pos = pattern_spec.find(kUrlPathSeparator, start);
     if (current_pos == std::string::npos) {
       current_pos = pattern_spec.size();
-      host_component = Component(start, current_pos - start);
+      host_piece = pattern_spec.substr(start, current_pos - start);
     } else {
       // Pattern has a path spec.
-      host_component = Component(start, current_pos - start);
+      host_piece = pattern_spec.substr(start, current_pos - start);
     }
     start = current_pos;
   } else {
     // Port spec found.
-    host_component = Component(start, current_pos - start);
+    host_piece = pattern_spec.substr(start, current_pos - start);
     start = current_pos + 1;
     if (start < pattern_spec.size()) {
-      current_pos = pattern_spec.find(std::string(kUrlPathSeparator), start);
+      current_pos = pattern_spec.find(kUrlPathSeparator, start);
       if (current_pos == std::string::npos) {
         current_pos = pattern_spec.size();
       }
-      port_component = Component(start, current_pos - start);
+      port_piece = pattern_spec.substr(start, current_pos - start);
       start = current_pos;
     }
   }
@@ -111,86 +99,82 @@ void PatternParser::Parse(const std::string& pattern_spec,
   current_pos = pattern_spec.size();
   if (start < current_pos) {
     // Pattern has a path spec.
-    path_component = Component(start, current_pos - start);
+    path_piece = pattern_spec.substr(start, current_pos - start);
   }
 
   // Set pattern parts.
-  std::string scheme;
-  if (scheme_component.IsNonEmpty()) {
-    scheme = pattern_spec.substr(scheme_component.start, scheme_component.len);
-    if (scheme == kSchemeWildcard) {
+  if (!scheme_piece.empty()) {
+    if (scheme_piece == kSchemeWildcard) {
       builder->WithSchemeWildcard();
     } else {
-      builder->WithScheme(scheme);
+      builder->WithScheme(scheme_piece.as_string());
     }
   } else {
     builder->WithSchemeWildcard();
   }
 
-  if (host_component.IsNonEmpty()) {
-    std::string host = pattern_spec.substr(host_component.start,
-                                           host_component.len);
-    if (host == kHostWildcard) {
-      if (ContentSettingsPattern::IsNonWildcardDomainNonPortScheme(scheme)) {
+  if (!host_piece.empty()) {
+    if (host_piece == kHostWildcard) {
+      if (ContentSettingsPattern::IsNonWildcardDomainNonPortScheme(
+              scheme_piece)) {
         builder->Invalid();
         return;
       }
 
       builder->WithDomainWildcard();
-    } else if (base::StartsWith(host, kDomainWildcard,
+    } else if (base::StartsWith(host_piece, kDomainWildcard,
                                 base::CompareCase::SENSITIVE)) {
-      if (ContentSettingsPattern::IsNonWildcardDomainNonPortScheme(scheme)) {
+      if (ContentSettingsPattern::IsNonWildcardDomainNonPortScheme(
+              scheme_piece)) {
         builder->Invalid();
         return;
       }
 
-      host = host.substr(kDomainWildcardLength);
+      host_piece.remove_prefix(kDomainWildcardLength);
       builder->WithDomainWildcard();
-      builder->WithHost(host);
+      builder->WithHost(host_piece.as_string());
     } else {
       // If the host contains a wildcard symbol then it is invalid.
-      if (host.find(kHostWildcard) != std::string::npos) {
+      if (host_piece.find(kHostWildcard) != std::string::npos) {
         builder->Invalid();
         return;
       }
-      builder->WithHost(host);
+      builder->WithHost(host_piece.as_string());
     }
   }
 
-  if (port_component.IsNonEmpty()) {
-    if (ContentSettingsPattern::IsNonWildcardDomainNonPortScheme(scheme)) {
+  if (!port_piece.empty()) {
+    if (ContentSettingsPattern::IsNonWildcardDomainNonPortScheme(
+            scheme_piece)) {
       builder->Invalid();
       return;
     }
 
-    const std::string port = pattern_spec.substr(port_component.start,
-                                                 port_component.len);
-    if (port == kPortWildcard) {
+    if (port_piece == kPortWildcard) {
       builder->WithPortWildcard();
     } else {
       // Check if the port string represents a valid port.
-      for (size_t i = 0; i < port.size(); ++i) {
-        if (!base::IsAsciiDigit(port[i])) {
+      for (size_t i = 0; i < port_piece.size(); ++i) {
+        if (!base::IsAsciiDigit(port_piece[i])) {
           builder->Invalid();
           return;
         }
       }
       // TODO(markusheintz): Check port range.
-      builder->WithPort(port);
+      builder->WithPort(port_piece.as_string());
     }
   } else {
-    if (!ContentSettingsPattern::IsNonWildcardDomainNonPortScheme(scheme) &&
-        scheme != url::kFileScheme)
+    if (!ContentSettingsPattern::IsNonWildcardDomainNonPortScheme(
+            scheme_piece) &&
+        scheme_piece != url::kFileScheme)
       builder->WithPortWildcard();
   }
 
-  if (path_component.IsNonEmpty()) {
-    const std::string path = pattern_spec.substr(path_component.start,
-                                                 path_component.len);
-    if (path.substr(1) == kPathWildcard)
+  if (!path_piece.empty()) {
+    if (path_piece.substr(1) == kPathWildcard)
       builder->WithPathWildcard();
     else
-      builder->WithPath(path);
+      builder->WithPath(path_piece.as_string());
   }
 }
 
@@ -199,20 +183,26 @@ std::string PatternParser::ToString(
     const ContentSettingsPattern::PatternParts& parts) {
   // Return the most compact form to support legacy code and legacy pattern
   // strings.
-  if (parts.is_scheme_wildcard &&
-      parts.has_domain_wildcard &&
-      parts.host.empty() &&
-      parts.is_port_wildcard)
+  if (parts.is_scheme_wildcard && parts.has_domain_wildcard &&
+      parts.host.empty() && parts.is_port_wildcard) {
     return "*";
+  }
 
   std::string str;
-  if (!parts.is_scheme_wildcard)
-    str += parts.scheme + url::kStandardSchemeSeparator;
+
+  if (!parts.is_scheme_wildcard) {
+    str += parts.scheme;
+    str += url::kStandardSchemeSeparator;
+  }
 
   if (parts.scheme == url::kFileScheme) {
-    if (parts.is_path_wildcard)
-      return str + kUrlPathSeparator + kPathWildcard;
-    return str + parts.path;
+    if (parts.is_path_wildcard) {
+      str += kUrlPathSeparator;
+      str += kPathWildcard;
+      return str;
+    }
+    str += parts.path;
+    return str;
   }
 
   if (parts.has_domain_wildcard) {
@@ -224,12 +214,16 @@ std::string PatternParser::ToString(
   str += parts.host;
 
   if (ContentSettingsPattern::IsNonWildcardDomainNonPortScheme(parts.scheme)) {
-    str += parts.path.empty() ? std::string(kUrlPathSeparator) : parts.path;
+    if (parts.path.empty())
+      str += std::string(kUrlPathSeparator);
+    else
+      str += parts.path;
     return str;
   }
 
   if (!parts.is_port_wildcard) {
-    str += std::string(kUrlPortSeparator) + parts.port;
+    str += kUrlPortSeparator;
+    str += parts.port;
   }
 
   return str;

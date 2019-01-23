@@ -559,14 +559,14 @@ content_settings::PatternPair HostContentSettingsMap::GetNarrowestPatterns (
   ContentSettingsPattern::Relation r1 =
       info.primary_pattern.Compare(patterns.first);
   if (r1 == ContentSettingsPattern::PREDECESSOR) {
-    patterns.first = info.primary_pattern;
+    patterns.first = std::move(info.primary_pattern);
   } else if (r1 == ContentSettingsPattern::IDENTITY) {
     ContentSettingsPattern::Relation r2 =
         info.secondary_pattern.Compare(patterns.second);
     DCHECK(r2 != ContentSettingsPattern::DISJOINT_ORDER_POST &&
            r2 != ContentSettingsPattern::DISJOINT_ORDER_PRE);
     if (r2 == ContentSettingsPattern::PREDECESSOR)
-      patterns.second = info.secondary_pattern;
+      patterns.second = std::move(info.secondary_pattern);
   }
 
   return patterns;
