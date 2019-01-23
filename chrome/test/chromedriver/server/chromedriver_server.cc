@@ -142,7 +142,7 @@ class HttpServer : public net::HttpServer::Delegate {
         base::Bind(&HttpServer::OnResponse,
                    weak_factory_.GetWeakPtr(),
                    connection_id,
-                   info.HasHeaderValue("connection", "keep-alive")));
+                   !info.HasHeaderValue("connection", "close")));
   }
   void OnWebSocketRequest(int connection_id,
                           const net::HttpServerRequestInfo& info) override {}
