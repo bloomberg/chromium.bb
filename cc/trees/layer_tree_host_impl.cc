@@ -2615,7 +2615,7 @@ base::Optional<viz::HitTestRegionList> LayerTreeHostImpl::BuildHitTestData() {
 
   Region overlapping_region;
   for (const auto* layer : base::Reversed(*active_tree())) {
-    if (!layer->should_hit_test())
+    if (!layer->ShouldHitTest())
       continue;
 
     if (layer->is_surface_layer()) {

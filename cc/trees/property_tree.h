@@ -374,6 +374,7 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
 
  private:
   void UpdateOpacities(EffectNode* node, EffectNode* parent_node);
+  void UpdateSubtreeHidden(EffectNode* node, EffectNode* parent_node);
   void UpdateIsDrawn(EffectNode* node, EffectNode* parent_node);
   void UpdateBackfaceVisibility(EffectNode* node, EffectNode* parent_node);
   void UpdateHasMaskingChild(EffectNode* node, EffectNode* parent_node);
