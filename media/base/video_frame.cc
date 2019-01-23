@@ -123,6 +123,7 @@ static bool RequiresEvenSizeAllocation(VideoPixelFormat format) {
     case PIXEL_FORMAT_YUV444P12:
     case PIXEL_FORMAT_I420A:
     case PIXEL_FORMAT_UYVY:
+    case PIXEL_FORMAT_P016LE:
       return true;
     case PIXEL_FORMAT_UNKNOWN:
       break;
@@ -211,7 +212,7 @@ bool VideoFrame::IsValidConfig(VideoPixelFormat format,
     return true;
 
   // Make sure new formats are properly accounted for in the method.
-  static_assert(PIXEL_FORMAT_MAX == 28,
+  static_assert(PIXEL_FORMAT_MAX == 29,
                 "Added pixel format, please review IsValidConfig()");
 
   if (format == PIXEL_FORMAT_UNKNOWN) {
@@ -751,6 +752,7 @@ int VideoFrame::BytesPerElement(VideoPixelFormat format, size_t plane) {
     case PIXEL_FORMAT_YUV420P12:
     case PIXEL_FORMAT_YUV422P12:
     case PIXEL_FORMAT_YUV444P12:
+    case PIXEL_FORMAT_P016LE:
       return 2;
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21:
@@ -1202,6 +1204,7 @@ gfx::Size VideoFrame::SampleSize(VideoPixelFormat format, size_t plane) {
         case PIXEL_FORMAT_YUV420P9:
         case PIXEL_FORMAT_YUV420P10:
         case PIXEL_FORMAT_YUV420P12:
+        case PIXEL_FORMAT_P016LE:
           return gfx::Size(2, 2);
 
         case PIXEL_FORMAT_UNKNOWN:

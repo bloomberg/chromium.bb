@@ -730,6 +730,9 @@ VideoPixelFormat AVPixelFormatToVideoPixelFormat(AVPixelFormat pixel_format) {
     case AV_PIX_FMT_YUV444P12LE:
       return PIXEL_FORMAT_YUV444P12;
 
+    case AV_PIX_FMT_P016LE:
+      return PIXEL_FORMAT_P016LE;
+
     default:
       DVLOG(1) << "Unsupported AVPixelFormat: " << pixel_format;
   }
@@ -764,6 +767,8 @@ AVPixelFormat VideoPixelFormatToAVPixelFormat(VideoPixelFormat video_format) {
       return AV_PIX_FMT_YUV444P10LE;
     case PIXEL_FORMAT_YUV444P12:
       return AV_PIX_FMT_YUV444P12LE;
+    case PIXEL_FORMAT_P016LE:
+      return AV_PIX_FMT_P016LE;
 
     default:
       DVLOG(1) << "Unsupported Format: " << video_format;
