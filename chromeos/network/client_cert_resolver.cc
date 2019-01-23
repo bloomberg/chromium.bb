@@ -25,6 +25,7 @@
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
+#include "chromeos/network/onc/onc_certificate_pattern.h"
 #include "chromeos/network/onc/variable_expander.h"
 #include "components/onc/onc_constants.h"
 #include "crypto/scoped_nss_types.h"
@@ -221,8 +222,19 @@ struct MatchCertWithCertConfig {
       : cert_config(client_cert_config) {}
 
   bool operator()(const CertAndIssuer& cert_and_issuer) {
-    if (cert_config.client_cert_type == ::onc::client_cert::kPattern)
-      return MatchByPattern(cert_config.pattern, cert_and_issuer);
+    if (cert_config.client_cert_type == ::onc::client_cert::kPattern) {
+      // Allow UTF-8 inside PrintableStrings in client certificates. See
+      // crbug.com/770323 and crbug.com/788655.
+      net::X509Certificate::UnsafeCreateOptions options;
+      options.printable_string_is_utf8 = true;
+      scoped_refptr<net::X509Certificate> x509_cert =
+          net::x509_util::CreateX509CertificateFromCERTCertificate(
+              cert_and_issuer.cert.get(), {}, options);
+      if (!x509_cert)
+        return false;
+      return cert_config.pattern.Matches(*x509_cert,
+                                         cert_and_issuer.pem_encoded_issuer);
+    }
 
     if (cert_config.client_cert_type == ::onc::client_cert::kRef) {
       // This relies on the fact that |CertificateImporterImpl| sets the
@@ -234,38 +246,6 @@ struct MatchCertWithCertConfig {
     return false;
   }
 
-  static bool MatchByPattern(const CertificatePattern& pattern,
-                             const CertAndIssuer& cert_and_issuer) {
-    if (!pattern.issuer().Empty() || !pattern.subject().Empty()) {
-      // Allow UTF-8 inside PrintableStrings in client certificates. See
-      // crbug.com/770323 and crbug.com/788655.
-      net::X509Certificate::UnsafeCreateOptions options;
-      options.printable_string_is_utf8 = true;
-      scoped_refptr<net::X509Certificate> x509_cert =
-          net::x509_util::CreateX509CertificateFromCERTCertificate(
-              cert_and_issuer.cert.get(), {}, options);
-      if (!x509_cert)
-        return false;
-      if (!pattern.issuer().Empty() &&
-          !client_cert::CertPrincipalMatches(pattern.issuer(),
-                                             x509_cert->issuer())) {
-        return false;
-      }
-      if (!pattern.subject().Empty() &&
-          !client_cert::CertPrincipalMatches(pattern.subject(),
-                                             x509_cert->subject())) {
-        return false;
-      }
-    }
-
-    const std::vector<std::string>& issuer_ca_pems = pattern.issuer_ca_pems();
-    if (!issuer_ca_pems.empty() &&
-        !base::ContainsValue(issuer_ca_pems,
-                             cert_and_issuer.pem_encoded_issuer)) {
-      return false;
-    }
-    return true;
-  }
   const client_cert::ClientCertConfig cert_config;
 };
 

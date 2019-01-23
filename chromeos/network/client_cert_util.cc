@@ -10,6 +10,7 @@
 
 #include <list>
 
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -34,26 +35,33 @@ namespace {
 // Extracts the type and descriptor (referenced GUID or client cert pattern) of
 // a ONC-specified client certificate specification for a network
 // (|dict_with_client_cert|) and stores it in |cert_config|.
-void GetClientCertTypeAndDescriptor(
-    onc::ONCSource onc_source,
-    const base::DictionaryValue& dict_with_client_cert,
-    ClientCertConfig* cert_config) {
+void GetClientCertTypeAndDescriptor(onc::ONCSource onc_source,
+                                    const base::Value& dict_with_client_cert,
+                                    ClientCertConfig* cert_config) {
   cert_config->onc_source = onc_source;
 
-  dict_with_client_cert.GetStringWithoutPathExpansion(
-      ::onc::eap::kIdentity, &cert_config->policy_identity);
+  const std::string* identity =
+      dict_with_client_cert.FindStringKey(::onc::eap::kIdentity);
+  if (identity)
+    cert_config->policy_identity = *identity;
 
   using namespace ::onc::client_cert;
-  dict_with_client_cert.GetStringWithoutPathExpansion(
-      kClientCertType, &cert_config->client_cert_type);
+  const std::string* client_cert_type =
+      dict_with_client_cert.FindStringKey(kClientCertType);
+  if (client_cert_type)
+    cert_config->client_cert_type = *client_cert_type;
 
   if (cert_config->client_cert_type == kPattern) {
-    const base::DictionaryValue* pattern = NULL;
-    dict_with_client_cert.GetDictionaryWithoutPathExpansion(kClientCertPattern,
-                                                            &pattern);
-    if (pattern) {
-      bool success = cert_config->pattern.ReadFromONCDictionary(*pattern);
-      DCHECK(success);
+    const base::Value* pattern_value = dict_with_client_cert.FindKeyOfType(
+        kClientCertPattern, base::Value::Type::DICTIONARY);
+    if (pattern_value) {
+      base::Optional<OncCertificatePattern> pattern =
+          OncCertificatePattern::ReadFromONCDictionary(*pattern_value);
+      if (!pattern.has_value()) {
+        LOG(ERROR) << "ClientCertPattern invalid";
+        return;
+      }
+      cert_config->pattern = pattern.value();
     }
   } else if (cert_config->client_cert_type == kRef) {
     const base::Value* client_cert_ref_key =
@@ -65,43 +73,6 @@ void GetClientCertTypeAndDescriptor(
 }
 
 }  // namespace
-
-// Returns true only if any fields set in this pattern match exactly with
-// similar fields in the principal.  If organization_ or organizational_unit_
-// are set, then at least one of the organizations or units in the principal
-// must match.
-bool CertPrincipalMatches(const IssuerSubjectPattern& pattern,
-                          const net::CertPrincipal& principal) {
-  if (!pattern.common_name().empty() &&
-      pattern.common_name() != principal.common_name) {
-    return false;
-  }
-
-  if (!pattern.locality().empty() &&
-      pattern.locality() != principal.locality_name) {
-    return false;
-  }
-
-  if (!pattern.organization().empty()) {
-    if (std::find(principal.organization_names.begin(),
-                  principal.organization_names.end(),
-                  pattern.organization()) ==
-        principal.organization_names.end()) {
-      return false;
-    }
-  }
-
-  if (!pattern.organizational_unit().empty()) {
-    if (std::find(principal.organization_unit_names.begin(),
-                  principal.organization_unit_names.end(),
-                  pattern.organizational_unit()) ==
-        principal.organization_unit_names.end()) {
-      return false;
-    }
-  }
-
-  return true;
-}
 
 std::string GetPkcs11AndSlotIdFromEapCertId(const std::string& cert_id,
                                             int* slot_id) {
