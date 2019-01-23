@@ -15,7 +15,30 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/views/crostini/crostini_app_restart_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/strings/grit/ui_strings.h"
+
+namespace {
+
+bool IsDisplayScaleFactorOne(int64_t display_id) {
+  display::Display d;
+  if (!display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id, &d))
+    return false;
+  return d.device_scale_factor() == 1.0;
+}
+
+bool ShouldShowDisplayDensityMenuItem(
+    const base::Optional<crostini::CrostiniRegistryService::Registration>& reg,
+    int64_t display_id) {
+  // The default terminal app is crosh in a Chrome window and it doesn't run in
+  // the Crostini container so it doesn't support display density the same way.
+  if (!reg || reg->is_terminal_app())
+    return false;
+  return !IsDisplayScaleFactorOne(display_id);
+}
+
+}  // namespace
 
 CrostiniShelfContextMenu::CrostiniShelfContextMenu(
     ChromeLauncherController* controller,
@@ -60,9 +83,7 @@ void CrostiniShelfContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   // Some apps have high-density display support and do not require scaling
   // to match the system display density, but others are density-unaware and
   // look better when scaled to match the display density.
-  // The default terminal app is crosh in a Chrome window and it doesn't run in
-  // the Crostini container so it doesn't support display density the same way.
-  if (registration.has_value() && !registration->is_terminal_app()) {
+  if (ShouldShowDisplayDensityMenuItem(registration, display_id())) {
     if (registration->IsScaled()) {
       menu_model->AddCheckItemWithStringId(ash::CROSTINI_USE_HIGH_DENSITY,
                                            IDS_CROSTINI_USE_HIGH_DENSITY);
