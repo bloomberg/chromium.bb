@@ -7537,9 +7537,9 @@
       'id': 158,
       'caption': '''Timezone''',
       'tags': [],
-      'desc': '''Specifies the timezone to be used for the device. Users can override the specified timezone for the current session. However, on logout it is set back to the specified timezone. If an invalid value is provided, the policy is still activated using "GMT" instead. If an empty string is provided, the policy is ignored.
+      'desc': '''Specifies the enforced timezone to be used for the device. When this policy is set, users on the device cannot override the specified timezone. If an invalid value is provided, the policy is still activated using "GMT" instead. If an empty string is provided, the policy is ignored.
 
-      If this policy is not used, the currently active timezone will remain in use however users can change the timezone and the change is persistent. Thus a change by one user affects the login-screen and all other users.
+      If this policy is not used, the currently active timezone will remain in use however users can change the timezone.
 
       New devices start out with the timezone set to "US/Pacific".
 
