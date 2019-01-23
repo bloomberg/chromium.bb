@@ -11,6 +11,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "chrome/browser/android/autofill_assistant/assistant_carousel_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_header_delegate.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
@@ -66,6 +67,9 @@ class UiControllerAndroid : public UiController {
   void OnFeedbackButtonClicked();
   void OnCloseButtonClicked();
 
+  // Called by AssistantCarouselDelegate:
+  void OnChipSelected(int index);
+
   // Called by Java.
   void Stop(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void UpdateTouchableArea(JNIEnv* env,
@@ -73,9 +77,6 @@ class UiControllerAndroid : public UiController {
   void OnUserInteractionInsideTouchableArea(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller);
-  void OnChipSelected(JNIEnv* env,
-                      const base::android::JavaParamRef<jobject>& jcaller,
-                      jint index);
   void OnGetPaymentInformation(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,
@@ -95,9 +96,11 @@ class UiControllerAndroid : public UiController {
   Client* const client_;
   UiDelegate* const ui_delegate_;
   AssistantHeaderDelegate header_delegate_;
+  AssistantCarouselDelegate carousel_delegate_;
 
   base::android::ScopedJavaLocalRef<jobject> GetModel();
   base::android::ScopedJavaLocalRef<jobject> GetHeaderModel();
+  base::android::ScopedJavaLocalRef<jobject> GetCarouselModel();
 
   void SetProgressPulsingEnabled(bool enabled);
   void ShowDetails(const ShowDetailsProto& show_details,

@@ -6,17 +6,16 @@ package org.chromium.chrome.browser.autofill_assistant.carousel;
 
 import android.content.Context;
 import android.graphics.Rect;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
 import android.view.View;
 
-import org.chromium.ui.modelutil.ListModel;
+import org.chromium.ui.modelutil.ListObservable;
+import org.chromium.ui.modelutil.ListObservable.ListObserver;
 import org.chromium.ui.modelutil.RecyclerViewAdapter;
 import org.chromium.ui.modelutil.SimpleRecyclerViewMcp;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Coordinator responsible for suggesting chips to the user.
@@ -30,9 +29,9 @@ public class AssistantCarouselCoordinator {
 
     private final LinearLayoutManager mLayoutManager;
     private final RecyclerView mView;
-    private final ListModel<AssistantChip> mModel = new ListModel<>();
 
-    public AssistantCarouselCoordinator(Context context, Runnable onVisibilityChanged) {
+    public AssistantCarouselCoordinator(
+            Context context, AssistantCarouselModel model, Runnable onVisibilityChanged) {
         mOnVisibilityChanged = onVisibilityChanged;
 
         mLayoutManager = new LinearLayoutManager(
@@ -45,9 +44,41 @@ public class AssistantCarouselCoordinator {
         mView.getItemAnimator().setMoveDuration(0);
         mView.getItemAnimator().setRemoveDuration(0);
         mView.setAdapter(new RecyclerViewAdapter<>(
-                new SimpleRecyclerViewMcp<>(
-                        mModel, AssistantChip::getType, AssistantChipViewHolder::bind),
+                new SimpleRecyclerViewMcp<>(model.getChipsModel(), AssistantChip::getType,
+                        AssistantChipViewHolder::bind),
                 AssistantChipViewHolder::create));
+
+        // Listen for changes on REVERSE_LAYOUT.
+        model.addObserver((source, propertyKey) -> {
+            if (AssistantCarouselModel.REVERSE_LAYOUT == propertyKey) {
+                mLayoutManager.setReverseLayout(model.get(AssistantCarouselModel.REVERSE_LAYOUT));
+            } else {
+                assert false : "Unhandled property detected in AssistantCarouselCoordinator!";
+            }
+        });
+
+        // Listen for changes on chips, and set visibility accordingly.
+        model.getChipsModel().addObserver(new ListObserver<Void>() {
+            @Override
+            public void onItemRangeInserted(ListObservable source, int index, int count) {
+                onChipsChanged();
+            }
+
+            @Override
+            public void onItemRangeRemoved(ListObservable source, int index, int count) {
+                onChipsChanged();
+            }
+
+            @Override
+            public void onItemRangeChanged(
+                    ListObservable<Void> source, int index, int count, @Nullable Void payload) {
+                onChipsChanged();
+            }
+
+            private void onChipsChanged() {
+                setVisible(model.getChipsModel().size() > 0);
+            }
+        });
     }
 
     /**
@@ -68,35 +99,6 @@ public class AssistantCarouselCoordinator {
             mView.setVisibility(visibility);
             mOnVisibilityChanged.run();
         }
-    }
-
-    /**
-     * Set the chips to show.
-     */
-    public void setChips(List<AssistantChip> chips) {
-        if (chips.isEmpty()) {
-            setVisible(false);
-        } else {
-            setVisible(true);
-        }
-        mLayoutManager.setReverseLayout(shouldReverseLayout(chips));
-        mModel.set(chips);
-    }
-
-    /**
-     * Remove all chips shown to the user.
-     */
-    public void clearChips() {
-        setChips(Collections.emptyList());
-    }
-
-    private boolean shouldReverseLayout(List<AssistantChip> chips) {
-        for (int i = 0; i < chips.size(); i++) {
-            if (chips.get(i).getType() != AssistantChipType.CHIP_ASSISTIVE) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private class SpaceItemDecoration extends RecyclerView.ItemDecoration {
