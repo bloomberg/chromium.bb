@@ -1664,6 +1664,7 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
       'arm-generic',
       'daisy',
       'kevin',
+      'kevin64',
       'oak',
       'tael',
       'tatl',
@@ -1672,7 +1673,6 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
   # Move the following builders to active_builders once they are consistently
   # green.
   unstable_builders = frozenset([
-      'kevin64', # TODO(manojgupta): Re-enable after crbug.com/878565 resolved.
       'lakitu',  # TODO: Re-enable after crbug.com/919630 resolved.
       'sludge',  # TODO(tbegin): Enable when build is stable crbug.com/908425
   ])
@@ -2779,6 +2779,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'grunt',
       'hana',
       'kevin-arcnext',
+      'kevin64',
       'nocturne',
       'nyan_big',
       'peach_pit',
@@ -2792,7 +2793,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _chrome_pfq_experimental_boards = frozenset([
-      'kevin64',
   ])
 
   _chrome_pfq_skylab_boards = frozenset([
