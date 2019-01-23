@@ -268,10 +268,8 @@ class Coordinator::TraceStreamer : public base::SupportsWeakPtr<TraceStreamer> {
   DISALLOW_COPY_AND_ASSIGN(TraceStreamer);
 };
 
-Coordinator::Coordinator(AgentRegistry* agent_registry,
-                         const base::RepeatingClosure& on_disconnect_callback)
-    : on_disconnect_callback_(std::move(on_disconnect_callback)),
-      binding_(this),
+Coordinator::Coordinator(AgentRegistry* agent_registry)
+    : binding_(this),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       // USER_VISIBLE because the task posted from StopAndFlushInternal() is
       // required to stop tracing from the UI.
@@ -287,14 +285,6 @@ Coordinator::Coordinator(AgentRegistry* agent_registry,
 }
 
 Coordinator::~Coordinator() {
-  Reset();
-}
-
-bool Coordinator::IsConnected() {
-  return !!binding_;
-}
-
-void Coordinator::Reset() {
   if (!stop_and_flush_callback_.is_null()) {
     base::ResetAndReturn(&stop_and_flush_callback_)
         .Run(base::Value(base::Value::Type::DICTIONARY));
@@ -316,17 +306,10 @@ void Coordinator::Reset() {
   }
 }
 
-void Coordinator::OnClientConnectionError() {
-  Reset();
-  binding_.Close();
-  on_disconnect_callback_.Run();
-}
 void Coordinator::BindCoordinatorRequest(
     mojom::CoordinatorRequest request,
     const service_manager::BindSourceInfo& source_info) {
   binding_.Bind(std::move(request));
-  binding_.set_connection_error_handler(base::BindRepeating(
-      &Coordinator::OnClientConnectionError, base::Unretained(this)));
 }
 
 void Coordinator::StartTracing(const std::string& config,
@@ -344,12 +327,10 @@ void Coordinator::StartTracing(const std::string& config,
       base::BindRepeating(&Coordinator::SendStartTracingToAgent,
                           weak_ptr_factory_.GetWeakPtr()),
       false /* call_on_new_agents_only */);
-
-  // We specifically don't check for the case where there's
-  // no existing connected agents; meaning in that case we
-  // assume at least one *will* connect and we'll wait for
-  // it to do so and start tracing before calling the callback
-  // so that the trace will contain data from at least one agent.
+  if (!agent_registry_->HasDisconnectClosure(&kStartTracingClosureName)) {
+    std::move(callback).Run(true);
+    return;
+  }
   start_tracing_callback_ = std::move(callback);
 }
 
@@ -486,7 +467,7 @@ void Coordinator::RequestBufferUsage(RequestBufferUsageCallback callback) {
 
   maximum_trace_buffer_usage_ = 0;
   approximate_event_count_ = 0;
-
+  request_buffer_usage_callback_ = std::move(callback);
   agent_registry_->ForAllAgents([this](AgentRegistry::AgentEntry* agent_entry) {
     agent_entry->AddDisconnectClosure(
         &kRequestBufferUsageClosureName,
@@ -498,12 +479,6 @@ void Coordinator::RequestBufferUsage(RequestBufferUsageCallback callback) {
         &Coordinator::OnRequestBufferStatusResponse,
         weak_ptr_factory_.GetWeakPtr(), base::Unretained(agent_entry)));
   });
-
-  if (!agent_registry_->HasDisconnectClosure(&kRequestBufferUsageClosureName)) {
-    std::move(callback).Run(true, 0.0f, 0);
-    return;
-  }
-  request_buffer_usage_callback_ = std::move(callback);
 }
 
 void Coordinator::OnRequestBufferStatusResponse(

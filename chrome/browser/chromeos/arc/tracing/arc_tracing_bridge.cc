@@ -450,6 +450,7 @@ ArcTracingBridge::ArcTracingAgent::ArcTracingAgent(ArcTracingBridge* bridge)
           tracing::mojom::TraceDataType::ARRAY,
           base::kNullProcessId),
       bridge_(bridge) {
+  Connect(content::ServiceManagerConnection::GetForProcess()->GetConnector());
 }
 
 ArcTracingBridge::ArcTracingAgent::~ArcTracingAgent() = default;

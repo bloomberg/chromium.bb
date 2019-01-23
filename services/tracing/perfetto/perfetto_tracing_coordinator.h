@@ -26,8 +26,7 @@ namespace tracing {
 // collecting trace events behind the scenes.
 class PerfettoTracingCoordinator : public Coordinator {
  public:
-  PerfettoTracingCoordinator(AgentRegistry* agent_registry,
-                             base::RepeatingClosure on_disconnect_callback);
+  explicit PerfettoTracingCoordinator(AgentRegistry* agent_registry);
 
   ~PerfettoTracingCoordinator() override;
 
@@ -49,7 +48,7 @@ class PerfettoTracingCoordinator : public Coordinator {
  private:
   void BindOnSequence(mojom::CoordinatorRequest request);
   void OnTracingOverCallback();
-  void OnClientConnectionError() override;
+  void OnClientConnectionError();
 
   mojo::Binding<mojom::Coordinator> binding_;
 

@@ -5,12 +5,15 @@
 #ifndef SERVICES_TRACING_PUBLIC_CPP_BASE_AGENT_H_
 #define SERVICES_TRACING_PUBLIC_CPP_BASE_AGENT_H_
 
-#include <set>
 #include <string>
 
 #include "base/component_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/tracing/public/mojom/tracing.mojom.h"
+
+namespace service_manager {
+class Connector;
+}  // namespace service_manager
 
 // This class is a minimal implementation of mojom::Agent to reduce boilerplate
 // code in tracing agents. A tracing agent can inherit from this class and only
@@ -21,8 +24,7 @@ class COMPONENT_EXPORT(TRACING_CPP) BaseAgent : public mojom::Agent {
  public:
   ~BaseAgent() override;
 
-  void Connect(tracing::mojom::AgentRegistry* agent_registry);
-
+  virtual void Connect(service_manager::Connector* connector);
   virtual void GetCategories(std::set<std::string>* category_set);
 
  protected:
@@ -31,8 +33,6 @@ class COMPONENT_EXPORT(TRACING_CPP) BaseAgent : public mojom::Agent {
             base::ProcessId pid);
 
  private:
-  void Disconnect();
-
   // tracing::mojom::Agent:
   void StartTracing(const std::string& config,
                     base::TimeTicks coordinator_time,

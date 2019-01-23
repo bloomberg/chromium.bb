@@ -74,23 +74,21 @@ AgentRegistry::~AgentRegistry() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void AgentRegistry::DisconnectAllAgents() {
-  bindings_.CloseAllBindings();
-}
-
 void AgentRegistry::BindAgentRegistryRequest(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    mojom::AgentRegistryRequest request) {
+    mojom::AgentRegistryRequest request,
+    const service_manager::BindSourceInfo& source_info) {
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&AgentRegistry::BindAgentRegistryRequestOnSequence,
-                     base::Unretained(this), std::move(request)));
+                     base::Unretained(this), std::move(request), source_info));
 }
 
 void AgentRegistry::BindAgentRegistryRequestOnSequence(
-    mojom::AgentRegistryRequest request) {
+    mojom::AgentRegistryRequest request,
+    const service_manager::BindSourceInfo& source_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  bindings_.AddBinding(this, std::move(request));
+  bindings_.AddBinding(this, std::move(request), source_info.identity);
 }
 
 size_t AgentRegistry::SetAgentInitializationCallback(

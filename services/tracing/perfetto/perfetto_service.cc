@@ -82,15 +82,20 @@ perfetto::TracingService* PerfettoService::GetService() const {
   return service_.get();
 }
 
-void PerfettoService::BindRequest(mojom::PerfettoServiceRequest request) {
+void PerfettoService::BindRequest(
+    mojom::PerfettoServiceRequest request,
+    const service_manager::BindSourceInfo& source_info) {
   perfetto_task_runner_.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&PerfettoService::BindOnSequence,
-                                base::Unretained(this), std::move(request)));
+      FROM_HERE,
+      base::BindOnce(&PerfettoService::BindOnSequence, base::Unretained(this),
+                     std::move(request), source_info.identity));
 }
 
-void PerfettoService::BindOnSequence(mojom::PerfettoServiceRequest request) {
+void PerfettoService::BindOnSequence(
+    mojom::PerfettoServiceRequest request,
+    const service_manager::Identity& identity) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  bindings_.AddBinding(this, std::move(request));
+  bindings_.AddBinding(this, std::move(request), identity);
 }
 
 void PerfettoService::ConnectToProducerHost(

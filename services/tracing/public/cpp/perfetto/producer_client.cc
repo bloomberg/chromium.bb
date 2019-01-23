@@ -8,6 +8,7 @@
 
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/commit_data_request.h"
@@ -80,7 +81,10 @@ void ProducerClient::ResetTaskRunnerForTesting() {
   GetPerfettoTaskRunner()->ResetTaskRunnerForTesting(CreateTaskRunner());
 }
 
-void ProducerClient::Connect(mojom::PerfettoServicePtr perfetto_service) {
+void ProducerClient::Connect(service_manager::Connector* connector) {
+  mojom::PerfettoServicePtr perfetto_service;
+  connector->BindInterface(mojom::kServiceName, &perfetto_service);
+
   CreateMojoMessagepipes(base::BindOnce(
       [](mojom::PerfettoServicePtr perfetto_service,
          mojom::ProducerClientPtr producer_client_pipe,

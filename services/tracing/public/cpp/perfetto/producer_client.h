@@ -25,6 +25,10 @@ namespace perfetto {
 class SharedMemoryArbiter;
 }  // namespace perfetto
 
+namespace service_manager {
+class Connector;
+}  // namespace service_manager
+
 namespace tracing {
 
 class MojoSharedMemory;
@@ -80,7 +84,7 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   // Returns the taskrunner used by Perfetto.
   static base::SequencedTaskRunner* GetTaskRunner();
 
-  void Connect(mojom::PerfettoServicePtr perfetto_service);
+  void Connect(service_manager::Connector* connector);
 
   // Create the messagepipes that'll be used to connect
   // to the service-side ProducerHost, on the correct
