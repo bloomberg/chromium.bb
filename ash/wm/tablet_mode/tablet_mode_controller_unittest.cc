@@ -930,6 +930,48 @@ TEST_F(TabletModeControllerTest, ExternalTouchPadTest) {
   EXPECT_TRUE(AreEventsBlocked());
 }
 
+// Test that internal keyboard and mouse are not disabled in docked mode.
+TEST_F(TabletModeControllerTest, InternalKeyboardMouseInDockedModeTest) {
+  UpdateDisplay("800x600, 800x600");
+  const int64_t internal_display_id =
+      display::test::DisplayManagerTestApi(display_manager())
+          .SetFirstDisplayAsInternalDisplay();
+  EXPECT_FALSE(IsTabletModeStarted());
+  // Input devices events are unblocked.
+  EXPECT_FALSE(AreEventsBlocked());
+  EXPECT_TRUE(display::Display::HasInternalDisplay());
+  EXPECT_TRUE(
+      Shell::Get()->display_manager()->IsActiveDisplayId(internal_display_id));
+
+  // Enter tablet mode first.
+  SetTabletMode(true);
+  EXPECT_TRUE(IsTabletModeStarted());
+  EXPECT_TRUE(AreEventsBlocked());
+
+  // Deactivate internal display to simulate Docked Mode.
+  std::vector<display::ManagedDisplayInfo> all_displays;
+  all_displays.push_back(display_manager()->GetDisplayInfo(
+      display_manager()->GetDisplayAt(0).id()));
+  std::vector<display::ManagedDisplayInfo> secondary_only;
+  display::ManagedDisplayInfo secondary_display =
+      display_manager()->GetDisplayInfo(
+          display_manager()->GetDisplayAt(1).id());
+  all_displays.push_back(secondary_display);
+  secondary_only.push_back(secondary_display);
+  display_manager()->OnNativeDisplaysChanged(secondary_only);
+  ASSERT_FALSE(display_manager()->IsActiveDisplayId(internal_display_id));
+  // We should now enter in clamshell mode when the device is docked.
+  EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
+
+  // Exiting docked state should enter tablet mode again.
+  display_manager()->OnNativeDisplaysChanged(all_displays);
+  display::test::DisplayManagerTestApi(display_manager())
+      .SetFirstDisplayAsInternalDisplay();
+  EXPECT_TRUE(IsTabletModeStarted());
+  EXPECT_TRUE(AreEventsBlocked());
+}
+
 class TabletModeControllerForceTabletModeTest
     : public TabletModeControllerTest {
  public:

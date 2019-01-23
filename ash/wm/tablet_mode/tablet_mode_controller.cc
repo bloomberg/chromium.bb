@@ -112,6 +112,13 @@ TabletModeController::UiMode GetTabletMode() {
   return TabletModeController::UiMode::kNone;
 }
 
+// Returns true if the device has an active internal display.
+bool HasActiveInternalDisplay() {
+  return display::Display::HasInternalDisplay() &&
+         Shell::Get()->display_manager()->IsActiveDisplayId(
+             display::Display::InternalDisplayId());
+}
+
 }  // namespace
 
 constexpr char TabletModeController::kLidAngleHistogramName[];
@@ -264,9 +271,7 @@ void TabletModeController::OnShellInitialized() {
 }
 
 void TabletModeController::OnDisplayConfigurationChanged() {
-  if (!display::Display::HasInternalDisplay() ||
-      !Shell::Get()->display_manager()->IsActiveDisplayId(
-          display::Display::InternalDisplayId())) {
+  if (!HasActiveInternalDisplay()) {
     AttemptLeaveTabletMode();
   } else if (tablet_mode_switch_is_on_ && !IsTabletModeWindowManagerEnabled()) {
     // The internal display has returned, as we are exiting docked mode.
@@ -314,13 +319,8 @@ void TabletModeController::OnAccelerometerUpdated(
     return;
   }
 
-  if (!display::Display::HasInternalDisplay())
+  if (!HasActiveInternalDisplay())
     return;
-
-  if (!Shell::Get()->display_manager()->IsActiveDisplayId(
-          display::Display::InternalDisplayId())) {
-    return;
-  }
 
   // Whether or not we enter tablet mode affects whether we handle screen
   // rotation, so determine whether to enter tablet mode first.
@@ -358,12 +358,11 @@ void TabletModeController::TabletModeEventReceived(
   VLOG(1) << "Tablet mode event received: " << static_cast<int>(mode);
   const bool on = mode == chromeos::PowerManagerClient::TabletMode::ON;
   tablet_mode_switch_is_on_ = on;
+
   // Do not change if docked.
-  if (!display::Display::HasInternalDisplay() ||
-      !Shell::Get()->display_manager()->IsActiveDisplayId(
-          display::Display::InternalDisplayId())) {
+  if (!HasActiveInternalDisplay())
     return;
-  }
+
   // The tablet mode switch activates at 300 degrees, so it is always reliable
   // when |on|. However we wish to exit tablet mode at a smaller angle, so
   // when |on| is false we ignore if it is possible to calculate the lid angle.
@@ -640,10 +639,14 @@ void TabletModeController::UpdateInternalInputDevicesEventBlocker() {
     // If we are currently in tablet mode, the internal input events should
     // always be blocked.
     should_block_internal_events = true;
-  } else if (LidAngleIsInTabletModeRange() || tablet_mode_switch_is_on_) {
+  } else if (HasActiveInternalDisplay() &&
+             (LidAngleIsInTabletModeRange() || tablet_mode_switch_is_on_)) {
     // If we are currently in clamshell mode, the intenral input events should
     // only be blocked if the current lid angle belongs to tablet mode angle
     // or |tablet_mode_switch_is_on_| is true.
+    // Note if we don't have an active internal display, the device is currently
+    // in docked mode, and the user may still want to use the internal keyboard
+    // and mouse in docked mode, we don't block internal events in this case.
     should_block_internal_events = true;
   }
 
