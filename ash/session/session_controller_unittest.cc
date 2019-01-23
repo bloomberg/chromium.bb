@@ -16,7 +16,7 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -648,10 +648,10 @@ class CanSwitchUserTest : public AshTestBase {
 
   // Methods needed to test with overview mode.
   bool ToggleOverview() {
-    return Shell::Get()->overview_controller()->ToggleOverview();
+    return Shell::Get()->window_selector_controller()->ToggleOverview();
   }
   bool IsSelecting() const {
-    return Shell::Get()->overview_controller()->IsSelecting();
+    return Shell::Get()->window_selector_controller()->IsSelecting();
   }
 
   // Various counter accessors.

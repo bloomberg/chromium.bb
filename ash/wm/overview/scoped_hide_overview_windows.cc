@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/overview/scoped_overview_hide_windows.h"
+#include "ash/wm/overview/scoped_hide_overview_windows.h"
 
 #include "base/logging.h"
 #include "ui/aura/window.h"
 
 namespace ash {
 
-ScopedOverviewHideWindows::ScopedOverviewHideWindows(
+ScopedHideOverviewWindows::ScopedHideOverviewWindows(
     const std::vector<aura::Window*>& windows) {
   for (auto* window : windows) {
     window->AddObserver(this);
@@ -18,7 +18,7 @@ ScopedOverviewHideWindows::ScopedOverviewHideWindows(
   }
 }
 
-ScopedOverviewHideWindows::~ScopedOverviewHideWindows() {
+ScopedHideOverviewWindows::~ScopedHideOverviewWindows() {
   for (auto iter = window_visibility_.begin(); iter != window_visibility_.end();
        iter++) {
     iter->first->RemoveObserver(this);
@@ -27,11 +27,11 @@ ScopedOverviewHideWindows::~ScopedOverviewHideWindows() {
   }
 }
 
-void ScopedOverviewHideWindows::OnWindowDestroying(aura::Window* window) {
+void ScopedHideOverviewWindows::OnWindowDestroying(aura::Window* window) {
   window_visibility_.erase(window);
 }
 
-void ScopedOverviewHideWindows::OnWindowVisibilityChanged(aura::Window* window,
+void ScopedHideOverviewWindows::OnWindowVisibilityChanged(aura::Window* window,
                                                           bool visible) {
   // It's expected that windows hidden in overview should not make them visible
   // without exiting overview.

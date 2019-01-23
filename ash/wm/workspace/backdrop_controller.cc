@@ -18,7 +18,7 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
-#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/backdrop_delegate.h"
@@ -121,9 +121,10 @@ void BackdropController::SetBackdropDelegate(
 
 void BackdropController::UpdateBackdrop() {
   // No need to continue update for recursive calls or in overview mode.
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
-  if (pause_update_ ||
-      (overview_controller && overview_controller->IsSelecting())) {
+  WindowSelectorController* window_selector_controller =
+      Shell::Get()->window_selector_controller();
+  if (pause_update_ || (window_selector_controller &&
+                        window_selector_controller->IsSelecting())) {
     return;
   }
 
@@ -160,8 +161,7 @@ void BackdropController::OnOverviewModeStarting() {
   Hide();
 }
 
-void BackdropController::OnOverviewModeEnding(
-    OverviewSession* overview_session) {
+void BackdropController::OnOverviewModeEnding(WindowSelector* window_selector) {
   pause_update_ = true;
 }
 

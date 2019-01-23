@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/overview/scoped_overview_transform_window.h"
+#include "ash/wm/overview/scoped_transform_overview_window.h"
 
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
@@ -19,13 +19,13 @@ float GetItemScale(const gfx::Rect& source,
                    const gfx::Rect& target,
                    int top_view_inset,
                    int title_height) {
-  return ScopedOverviewTransformWindow::GetItemScale(
+  return ScopedTransformOverviewWindow::GetItemScale(
       source.size(), target.size(), top_view_inset, title_height);
 }
 
 }  // namespace
 
-using ScopedOverviewTransformWindowTest = AshTestBase;
+using ScopedTransformOverviewWindowTest = AshTestBase;
 
 // Tests that transformed Rect scaling preserves its aspect ratio. The window
 // scale is determined by the target height and so the test is actually testing
@@ -33,10 +33,10 @@ using ScopedOverviewTransformWindowTest = AshTestBase;
 // floating point values and then safely converted to integers (using ceiled and
 // floored values where appropriate), the  expectations are forgiving (use
 // *_NEAR) within a single pixel.
-TEST_F(ScopedOverviewTransformWindowTest, TransformedRectMaintainsAspect) {
+TEST_F(ScopedTransformOverviewWindowTest, TransformedRectMaintainsAspect) {
   std::unique_ptr<aura::Window> window =
       CreateTestWindow(gfx::Rect(10, 10, 100, 100));
-  ScopedOverviewTransformWindow transform_window(nullptr, window.get());
+  ScopedTransformOverviewWindow transform_window(nullptr, window.get());
 
   gfx::Rect rect(50, 50, 200, 400);
   gfx::Rect bounds(100, 100, 50, 50);
@@ -76,10 +76,10 @@ TEST_F(ScopedOverviewTransformWindowTest, TransformedRectMaintainsAspect) {
 }
 
 // Tests that transformed Rect fits in target bounds and is vertically centered.
-TEST_F(ScopedOverviewTransformWindowTest, TransformedRectIsCentered) {
+TEST_F(ScopedTransformOverviewWindowTest, TransformedRectIsCentered) {
   std::unique_ptr<aura::Window> window =
       CreateTestWindow(gfx::Rect(10, 10, 100, 100));
-  ScopedOverviewTransformWindow transform_window(nullptr, window.get());
+  ScopedTransformOverviewWindow transform_window(nullptr, window.get());
   gfx::Rect rect(50, 50, 200, 400);
   gfx::Rect bounds(100, 100, 50, 50);
   gfx::Rect transformed_rect =
@@ -96,10 +96,10 @@ TEST_F(ScopedOverviewTransformWindowTest, TransformedRectIsCentered) {
 
 // Tests that transformed Rect fits in target bounds and is vertically centered
 // when inset and header height are specified.
-TEST_F(ScopedOverviewTransformWindowTest, TransformedRectIsCenteredWithInset) {
+TEST_F(ScopedTransformOverviewWindowTest, TransformedRectIsCenteredWithInset) {
   std::unique_ptr<aura::Window> window =
       CreateTestWindow(gfx::Rect(10, 10, 100, 100));
-  ScopedOverviewTransformWindow transform_window(nullptr, window.get());
+  ScopedTransformOverviewWindow transform_window(nullptr, window.get());
   gfx::Rect rect(50, 50, 400, 200);
   gfx::Rect bounds(100, 100, 50, 50);
   const int inset = 20;
@@ -125,13 +125,13 @@ TEST_F(ScopedOverviewTransformWindowTest, TransformedRectIsCenteredWithInset) {
 
 // Verify that a window which will be displayed like a letter box on the window
 // grid has the correct bounds.
-TEST_F(ScopedOverviewTransformWindowTest, TransformingLetteredRect) {
+TEST_F(ScopedTransformOverviewWindowTest, TransformingLetteredRect) {
   // Create a window whose width is more than twice the height.
   const gfx::Rect original_bounds(10, 10, 300, 100);
   const int scale = 3;
   std::unique_ptr<aura::Window> window = CreateTestWindow(original_bounds);
-  ScopedOverviewTransformWindow transform_window(nullptr, window.get());
-  EXPECT_EQ(ScopedOverviewTransformWindow::GridWindowFillMode::kLetterBoxed,
+  ScopedTransformOverviewWindow transform_window(nullptr, window.get());
+  EXPECT_EQ(ScopedTransformOverviewWindow::GridWindowFillMode::kLetterBoxed,
             transform_window.type());
 
   // Without any headers, the width should match the target, and the height
@@ -159,19 +159,19 @@ TEST_F(ScopedOverviewTransformWindowTest, TransformingLetteredRect) {
   // original window selector bounds, minus the header.
   gfx::Rect selector_bounds = overview_bounds;
   selector_bounds.Inset(0, overview_header, 0, 0);
-  ASSERT_TRUE(transform_window.overview_bounds().has_value());
-  EXPECT_EQ(transform_window.overview_bounds().value(), selector_bounds);
+  ASSERT_TRUE(transform_window.window_selector_bounds().has_value());
+  EXPECT_EQ(transform_window.window_selector_bounds().value(), selector_bounds);
 }
 
 // Verify that a window which will be displayed like a pillar box on the window
 // grid has the correct bounds.
-TEST_F(ScopedOverviewTransformWindowTest, TransformingPillaredRect) {
+TEST_F(ScopedTransformOverviewWindowTest, TransformingPillaredRect) {
   // Create a window whose height is more than twice the width.
   const gfx::Rect original_bounds(10, 10, 100, 300);
   const int scale = 3;
   std::unique_ptr<aura::Window> window = CreateTestWindow(original_bounds);
-  ScopedOverviewTransformWindow transform_window(nullptr, window.get());
-  EXPECT_EQ(ScopedOverviewTransformWindow::GridWindowFillMode::kPillarBoxed,
+  ScopedTransformOverviewWindow transform_window(nullptr, window.get());
+  EXPECT_EQ(ScopedTransformOverviewWindow::GridWindowFillMode::kPillarBoxed,
             transform_window.type());
 
   // Without any headers, the height should match the target, and the width
@@ -198,12 +198,12 @@ TEST_F(ScopedOverviewTransformWindowTest, TransformingPillaredRect) {
   // original window selector bounds, minus the header.
   gfx::Rect selector_bounds = overview_bounds;
   selector_bounds.Inset(0, overview_header, 0, 0);
-  ASSERT_TRUE(transform_window.overview_bounds().has_value());
-  EXPECT_EQ(transform_window.overview_bounds().value(), selector_bounds);
+  ASSERT_TRUE(transform_window.window_selector_bounds().has_value());
+  EXPECT_EQ(transform_window.window_selector_bounds().value(), selector_bounds);
 }
 
 // Tests the cases when very wide or tall windows enter overview mode.
-TEST_F(ScopedOverviewTransformWindowTest, ExtremeWindowBounds) {
+TEST_F(ScopedTransformOverviewWindowTest, ExtremeWindowBounds) {
   // Add three windows which in overview mode will be considered wide, tall and
   // normal. Window |wide|, with size (400, 160) will be resized to (200, 160)
   // when the 400x200 is rotated to 200x400, and should be considered a normal
@@ -216,13 +216,13 @@ TEST_F(ScopedOverviewTransformWindowTest, ExtremeWindowBounds) {
   std::unique_ptr<aura::Window> normal =
       CreateTestWindow(gfx::Rect(10, 10, 200, 200));
 
-  ScopedOverviewTransformWindow scoped_wide(nullptr, wide.get());
-  ScopedOverviewTransformWindow scoped_tall(nullptr, tall.get());
-  ScopedOverviewTransformWindow scoped_normal(nullptr, normal.get());
+  ScopedTransformOverviewWindow scoped_wide(nullptr, wide.get());
+  ScopedTransformOverviewWindow scoped_tall(nullptr, tall.get());
+  ScopedTransformOverviewWindow scoped_normal(nullptr, normal.get());
 
   // Verify the window dimension type is as expected after entering overview
   // mode.
-  using GridWindowFillMode = ScopedOverviewTransformWindow::GridWindowFillMode;
+  using GridWindowFillMode = ScopedTransformOverviewWindow::GridWindowFillMode;
   EXPECT_EQ(GridWindowFillMode::kLetterBoxed, scoped_wide.type());
   EXPECT_EQ(GridWindowFillMode::kPillarBoxed, scoped_tall.type());
   EXPECT_EQ(GridWindowFillMode::kNormal, scoped_normal.type());
@@ -245,11 +245,11 @@ TEST_F(ScopedOverviewTransformWindowTest, ExtremeWindowBounds) {
 
 // Verify that if the window's bounds are changed while it's in overview mode,
 // the rounded edge mask's bounds are also changed accordingly.
-TEST_F(ScopedOverviewTransformWindowTest, WindowBoundsChangeTest) {
+TEST_F(ScopedTransformOverviewWindowTest, WindowBoundsChangeTest) {
   UpdateDisplay("400x400");
   const gfx::Rect bounds(10, 10, 200, 200);
   std::unique_ptr<aura::Window> window = CreateTestWindow(bounds);
-  ScopedOverviewTransformWindow scoped_window(nullptr, window.get());
+  ScopedTransformOverviewWindow scoped_window(nullptr, window.get());
   scoped_window.UpdateMask(true);
 
   EXPECT_TRUE(scoped_window.mask_);

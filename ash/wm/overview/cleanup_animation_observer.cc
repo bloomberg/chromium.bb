@@ -34,7 +34,7 @@ void CleanupAnimationObserver::OnImplicitAnimationsCompleted() {
   delete this;
 }
 
-void CleanupAnimationObserver::SetOwner(OverviewDelegate* owner) {
+void CleanupAnimationObserver::SetOwner(WindowSelectorDelegate* owner) {
   owner_ = owner;
 }
 

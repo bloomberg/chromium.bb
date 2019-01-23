@@ -16,7 +16,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
-#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "base/numerics/ranges.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -567,8 +567,8 @@ void DockedMagnifierController::OnEnabledPrefChanged() {
   // overview mode, before we actually update the state of docked magnifier
   // below. https://crbug.com/894256.
   Shell* shell = Shell::Get();
-  auto* overview_controller = shell->overview_controller();
-  if (overview_controller->IsSelecting()) {
+  auto* window_selector_controller = shell->window_selector_controller();
+  if (window_selector_controller->IsSelecting()) {
     auto* split_view_controller = shell->split_view_controller();
     if (split_view_controller->IsSplitViewModeActive()) {
       // In this case, we're in a single-split-view mode, i.e. a window is
@@ -580,7 +580,7 @@ void DockedMagnifierController::OnEnabledPrefChanged() {
           SplitViewController::EndReason::kNormal);
     }
 
-    overview_controller->ToggleOverview();
+    window_selector_controller->ToggleOverview();
   }
 
   if (new_enabled) {

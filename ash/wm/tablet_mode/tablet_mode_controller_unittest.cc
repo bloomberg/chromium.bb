@@ -15,7 +15,7 @@
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
@@ -500,7 +500,7 @@ TEST_F(TabletModeControllerTest, VerticalHingeTest) {
 // Test if this case does not crash. See http://crbug.com/462806
 TEST_F(TabletModeControllerTest, DisplayDisconnectionDuringOverview) {
   // Do not animate wallpaper on entering overview.
-  OverviewController::SetDoNotChangeWallpaperBlurForTests();
+  WindowSelectorController::SetDoNotChangeWallpaperBlurForTests();
 
   UpdateDisplay("800x600,800x600");
   std::unique_ptr<aura::Window> w1(
@@ -511,11 +511,11 @@ TEST_F(TabletModeControllerTest, DisplayDisconnectionDuringOverview) {
   ASSERT_FALSE(IsTabletModeStarted());
 
   tablet_mode_controller()->EnableTabletModeWindowManager(true);
-  EXPECT_TRUE(Shell::Get()->overview_controller()->ToggleOverview());
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->ToggleOverview());
 
   UpdateDisplay("800x600");
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
+  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
   EXPECT_EQ(w1->GetRootWindow(), w2->GetRootWindow());
 }
 

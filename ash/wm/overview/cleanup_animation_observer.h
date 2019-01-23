@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/wm/overview/overview_delegate.h"
+#include "ash/wm/overview/window_selector_delegate.h"
 #include "base/macros.h"
 #include "ui/compositor/layer_animation_observer.h"
 
@@ -33,12 +33,14 @@ class ASH_EXPORT CleanupAnimationObserver
   void OnImplicitAnimationsCompleted() override;
 
   // DelayedAnimationObserver:
-  void SetOwner(OverviewDelegate* owner) override;
+  void SetOwner(WindowSelectorDelegate* owner) override;
   void Shutdown() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WindowSelectorTest, OverviewExitAnimationObserver);
+
   std::unique_ptr<views::Widget> widget_;
-  OverviewDelegate* owner_;
+  WindowSelectorDelegate* owner_;
 
   DISALLOW_COPY_AND_ASSIGN(CleanupAnimationObserver);
 };

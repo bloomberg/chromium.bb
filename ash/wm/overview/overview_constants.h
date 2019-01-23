@@ -17,7 +17,7 @@ constexpr int kWindowMargin = 5;
 // Cover the transformed window including the gaps between the windows with a
 // transparent shield to block the input events from reaching the transformed
 // window while in overview.
-constexpr int kOverviewMargin = kWindowMargin * 2;
+constexpr int kWindowSelectorMargin = kWindowMargin * 2;
 
 // Height of an item header.
 constexpr int kHeaderHeightDp = 40;

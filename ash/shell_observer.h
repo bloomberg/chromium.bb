@@ -16,7 +16,7 @@ class PrefService;
 
 namespace ash {
 
-class OverviewSession;
+class WindowSelector;
 
 class ASH_EXPORT ShellObserver {
  public:
@@ -53,8 +53,8 @@ class ASH_EXPORT ShellObserver {
   virtual void OnOverviewModeStartingAnimationComplete(bool canceled) {}
 
   // Called when the overview mode is about to end (bofore the windows restore
-  // themselves). |overview_session| will not be null.
-  virtual void OnOverviewModeEnding(OverviewSession* overview_session) {}
+  // themselves). |window_selector| will not be null.
+  virtual void OnOverviewModeEnding(WindowSelector* window_selector) {}
 
   // Called after overview mode has ended.
   virtual void OnOverviewModeEnded() {}

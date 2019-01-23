@@ -6,9 +6,9 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
-#include "ash/wm/overview/overview_controller.h"
-#include "ash/wm/overview/overview_grid.h"
-#include "ash/wm/overview/overview_session.h"
+#include "ash/wm/overview/window_grid.h"
+#include "ash/wm/overview/window_selector.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/root_window_finder.h"
 #include "services/ws/window_service.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -94,13 +94,13 @@ aura::Window* GetTopmostWindowAtPointWithinWindow(
 aura::Window* GetToplevelWindowInOverviewAtPoint(
     const gfx::Point& screen_point,
     const std::set<aura::Window*>& ignore) {
-  ash::OverviewController* overview_controller =
-      ash::Shell::Get()->overview_controller();
-  if (!overview_controller->IsSelecting())
+  ash::WindowSelectorController* window_selector_controller =
+      ash::Shell::Get()->window_selector_controller();
+  if (!window_selector_controller->IsSelecting())
     return nullptr;
 
-  ash::OverviewGrid* grid =
-      overview_controller->overview_session()->GetGridWithRootWindow(
+  ash::WindowGrid* grid =
+      window_selector_controller->window_selector()->GetGridWithRootWindow(
           ash::wm::GetRootWindowAt(screen_point));
   if (!grid)
     return nullptr;

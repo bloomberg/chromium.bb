@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_OVERVIEW_OVERVIEW_ITEM_H_
-#define ASH_WM_OVERVIEW_OVERVIEW_ITEM_H_
+#ifndef ASH_WM_OVERVIEW_WINDOW_SELECTOR_ITEM_H_
+#define ASH_WM_OVERVIEW_WINDOW_SELECTOR_ITEM_H_
 
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/wm/overview/overview_session.h"
-#include "ash/wm/overview/scoped_overview_transform_window.h"
+#include "ash/wm/overview/scoped_transform_overview_window.h"
+#include "ash/wm/overview/window_selector.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -27,17 +27,17 @@ class Widget;
 namespace ash {
 
 class CaptionContainerView;
-class OverviewGrid;
+class WindowGrid;
 
 // This class represents an item in overview mode.
-class ASH_EXPORT OverviewItem : public views::ButtonListener,
-                                public aura::WindowObserver,
-                                public ui::ImplicitAnimationObserver {
+class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
+                                      public aura::WindowObserver,
+                                      public ui::ImplicitAnimationObserver {
  public:
-  OverviewItem(aura::Window* window,
-               OverviewSession* overview,
-               OverviewGrid* overview_grid);
-  ~OverviewItem() override;
+  WindowSelectorItem(aura::Window* window,
+                     WindowSelector* window_selector,
+                     WindowGrid* window_grid);
+  ~WindowSelectorItem() override;
 
   aura::Window* GetWindow();
 
@@ -49,7 +49,7 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // Returns the root window on which this item is shown.
   aura::Window* root_window() { return root_window_; }
 
-  // Returns true if |target| is contained in this OverviewItem.
+  // Returns true if |target| is contained in this WindowSelectorItem.
   bool Contains(const aura::Window* target) const;
 
   // Restores and animates the managed window to its non overview mode state.
@@ -115,13 +115,13 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // window cannot be snapped.
   void UpdateCannotSnapWarningVisibility();
 
-  // Called when a OverviewItem on any grid is dragged. Hides the close button
-  // when a drag is started, and reshows it when a drag is finished.
+  // Called when a WindowSelectorItem on any grid is dragged. Hides the close
+  // button when a drag is started, and reshows it when a drag is finished.
   // Additionally hides the title and window icon if |item| is this.
-  void OnSelectorItemDragStarted(OverviewItem* item);
+  void OnSelectorItemDragStarted(WindowSelectorItem* item);
   void OnSelectorItemDragEnded();
 
-  ScopedOverviewTransformWindow::GridWindowFillMode GetWindowDimensionsType()
+  ScopedTransformOverviewWindow::GridWindowFillMode GetWindowDimensionsType()
       const;
 
   // Recalculates the window dimensions type of |transform_window_|. Called when
@@ -162,7 +162,7 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   void UpdateYPositionAndOpacity(
       int new_grid_y,
       float opacity,
-      OverviewSession::UpdateAnimationSettingsCallback callback);
+      WindowSelector::UpdateAnimationSettingsCallback callback);
 
   // If the window item represents a minimized window, update its content view.
   void UpdateItemContentViewForMinimizedWindow();
@@ -219,7 +219,7 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
 
-  OverviewGrid* overview_grid() { return overview_grid_; }
+  WindowGrid* window_grid() { return window_grid_; }
 
   void set_should_animate_when_entering(bool should_animate) {
     should_animate_when_entering_ = should_animate;
@@ -247,8 +247,8 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   gfx::Rect GetShadowBoundsForTesting();
 
  private:
-  friend class OverviewSessionTest;
-  FRIEND_TEST_ALL_PREFIXES(SplitViewOverviewSessionTest,
+  friend class WindowSelectorTest;
+  FRIEND_TEST_ALL_PREFIXES(SplitViewWindowSelectorTest,
                            OverviewUnsnappableIndicatorVisibility);
 
   // Sets the bounds of this selector's items to |target_bounds| in
@@ -282,7 +282,7 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   aura::Window* root_window_;
 
   // The contained Window's wrapper.
-  ScopedOverviewTransformWindow transform_window_;
+  ScopedTransformOverviewWindow transform_window_;
 
   // The target bounds this selector item is fit within.
   gfx::Rect target_bounds_;
@@ -313,13 +313,13 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // title.
   CaptionContainerView* caption_container_view_ = nullptr;
 
-  // Pointer to the Overview that owns the OverviewGrid containing |this|.
+  // Pointer to the WindowSelector that owns the WindowGrid containing |this|.
   // Guaranteed to be non-null for the lifetime of |this|.
-  OverviewSession* overview_session_;
+  WindowSelector* window_selector_;
 
-  // Pointer to the OverviewGrid that contains |this|. Guaranteed to be non-null
+  // Pointer to the WindowGrid that contains |this|. Guaranteed to be non-null
   // for the lifetime of |this|.
-  OverviewGrid* overview_grid_;
+  WindowGrid* window_grid_;
 
   // True if the contained window should animate during the entering animation.
   bool should_animate_when_entering_ = true;
@@ -333,7 +333,7 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
 
   // True if the windows are still alive so they can have a closing animation.
   // These windows should not be used in calculations for
-  // OverviewGrid::PositionWindows.
+  // WindowGrid::PositionWindows.
   bool animating_to_close_ = false;
 
   // The shadow around the overview window. Shadows the original window, not
@@ -341,9 +341,9 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // rounded edges mask applied on entering overview window.
   std::unique_ptr<ui::Shadow> shadow_;
 
-  DISALLOW_COPY_AND_ASSIGN(OverviewItem);
+  DISALLOW_COPY_AND_ASSIGN(WindowSelectorItem);
 };
 
 }  // namespace ash
 
-#endif  // ASH_WM_OVERVIEW_OVERVIEW_ITEM_H_
+#endif  // ASH_WM_OVERVIEW_WINDOW_SELECTOR_ITEM_H_

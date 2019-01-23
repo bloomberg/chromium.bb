@@ -12,8 +12,8 @@
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
-#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_utils.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_features.h"
@@ -123,7 +123,8 @@ class PreEventDispatchHandler : public ui::EventHandler {
 
   void HandleClickOrTap(ui::Event* event) {
     CHECK_EQ(ui::EP_PRETARGET, event->phase());
-    OverviewController* controller = Shell::Get()->overview_controller();
+    WindowSelectorController* controller =
+        Shell::Get()->window_selector_controller();
     if (!controller->IsSelecting())
       return;
     // Events that happen while app list is sliding out during overview should
