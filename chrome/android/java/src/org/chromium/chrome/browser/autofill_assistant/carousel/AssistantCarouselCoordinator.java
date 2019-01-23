@@ -25,15 +25,13 @@ public class AssistantCarouselCoordinator {
     private static final int CHIPS_INNER_SPACING_DP = 16;
     private static final int CHIPS_OUTER_SPACING_DP = 24;
 
-    private final Runnable mOnVisibilityChanged;
+    @Nullable
+    private Runnable mOnVisibilityChanged;
 
     private final LinearLayoutManager mLayoutManager;
     private final RecyclerView mView;
 
-    public AssistantCarouselCoordinator(
-            Context context, AssistantCarouselModel model, Runnable onVisibilityChanged) {
-        mOnVisibilityChanged = onVisibilityChanged;
-
+    public AssistantCarouselCoordinator(Context context, AssistantCarouselModel model) {
         mLayoutManager = new LinearLayoutManager(
                 context, LinearLayoutManager.HORIZONTAL, /* reverseLayout= */ false);
         mView = new RecyclerView(context);
@@ -100,8 +98,18 @@ public class AssistantCarouselCoordinator {
         boolean changed = mView.getVisibility() != visibility;
         if (changed) {
             mView.setVisibility(visibility);
-            mOnVisibilityChanged.run();
+            if (mOnVisibilityChanged != null) {
+                mOnVisibilityChanged.run();
+            }
         }
+    }
+
+    /**
+     * Set the listener that should be triggered when changing the listener of this coordinator
+     * view.
+     */
+    public void setVisibilityChangedListener(Runnable listener) {
+        mOnVisibilityChanged = listener;
     }
 
     private class SpaceItemDecoration extends RecyclerView.ItemDecoration {

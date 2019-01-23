@@ -12,6 +12,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselCoordinator;
+import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsCoordinator;
+import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderCoordinator;
+import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestCoordinator;
+
 /**
  * Coordinator responsible for the Autofill Assistant bottom bar. This coordinator allows to enable
  * or disable the swipeable behavior of the bottom bar and ensures that the bottom bar height is
@@ -38,18 +44,21 @@ class AssistantBottomBarCoordinator {
     private final int mChildrenVerticalSpacing;
     private final int mBottomBarWithoutIndicatorPaddingTop;
 
-    // The child views.
-    private View mDetailsView;
-    private View mPaymentRequestView;
-    private View mCarouselView;
+    // Child coordinators.
+    private final AssistantHeaderCoordinator mHeaderCoordinator;
+    private final AssistantDetailsCoordinator mDetailsCoordinator;
+    private final AssistantPaymentRequestCoordinator mPaymentRequestCoordinator;
+    private final AssistantCarouselCoordinator mCarouselCoordinator;
 
-    AssistantBottomBarCoordinator(View assistantView, DisplayMetrics displayMetrics) {
+    AssistantBottomBarCoordinator(
+            ChromeActivity activity, View assistantView, AssistantModel model) {
         mBottomBarView = assistantView.findViewById(
                 org.chromium.chrome.autofill_assistant.R.id.autofill_assistant_bottombar);
         mSwipeIndicatorView = mBottomBarView.findViewById(
                 org.chromium.chrome.autofill_assistant.R.id.swipe_indicator);
         mBottomBarBehavior = BottomSheetBehavior.from(mBottomBarView);
 
+        DisplayMetrics displayMetrics = activity.getResources().getDisplayMetrics();
         mChildrenHorizontalMargin = (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, CHILDREN_HORIZONTAL_MARGIN_DP, displayMetrics);
         mDetailsOnlyVerticalMargin = (int) TypedValue.applyDimension(
@@ -59,6 +68,26 @@ class AssistantBottomBarCoordinator {
         mBottomBarWithoutIndicatorPaddingTop =
                 (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                         BOTTOM_BAR_WITHOUT_INDICATOR_PADDING_TOP_DP, displayMetrics);
+
+        // Instantiate child components.
+        mHeaderCoordinator =
+                new AssistantHeaderCoordinator(activity, mBottomBarView, model.getHeaderModel());
+        mDetailsCoordinator = new AssistantDetailsCoordinator(activity, model.getDetailsModel());
+        mPaymentRequestCoordinator = new AssistantPaymentRequestCoordinator(activity);
+        mCarouselCoordinator = new AssistantCarouselCoordinator(activity, model.getCarouselModel());
+
+        // Add child views to bottom bar.
+        mBottomBarView.addView(mDetailsCoordinator.getView());
+        mBottomBarView.addView(mPaymentRequestCoordinator.getView());
+        mBottomBarView.addView(mCarouselCoordinator.getView());
+
+        // Ensure the margin are computed correctly from the beginning.
+        onChildViewVisibilityChanged();
+
+        // Add child views visibility listener.
+        mDetailsCoordinator.setVisibilityChangedListener(this::onChildViewVisibilityChanged);
+        mPaymentRequestCoordinator.setVisibilityChangedListener(this::onChildViewVisibilityChanged);
+        mCarouselCoordinator.setVisibilityChangedListener(this::onChildViewVisibilityChanged);
     }
 
     /**
@@ -67,35 +96,6 @@ class AssistantBottomBarCoordinator {
      */
     public ViewGroup getView() {
         return mBottomBarView;
-    }
-
-    /**
-     * Set the details view to {@code detailsView}. This method should be called only once, before
-     * {@link #setPaymentRequestView} and {@link #setCarouselView}.
-     */
-    public void setDetailsView(View detailsView) {
-        assert mDetailsView == null;
-        mDetailsView = detailsView;
-        mBottomBarView.addView(mDetailsView);
-    }
-
-    /**
-     * Set the payment request view to {@code paymentRequestView}. This method should be called only
-     * once, before {@link #setCarouselView}.
-     */
-    public void setPaymentRequestView(View paymentRequestView) {
-        assert mPaymentRequestView == null;
-        mPaymentRequestView = paymentRequestView;
-        mBottomBarView.addView(mPaymentRequestView);
-    }
-
-    /**
-     * Set the carousel view to {@code carouselView}. This method should be called only once.
-     */
-    public void setCarouselView(View carouselView) {
-        assert mCarouselView == null;
-        mCarouselView = carouselView;
-        mBottomBarView.addView(mCarouselView);
     }
 
     /**
@@ -122,6 +122,14 @@ class AssistantBottomBarCoordinator {
         }
     }
 
+    public AssistantPaymentRequestCoordinator getPaymentRequestCoordinator() {
+        return mPaymentRequestCoordinator;
+    }
+
+    public AssistantCarouselCoordinator getCarouselCoordinator() {
+        return mCarouselCoordinator;
+    }
+
     private void setBottomBarPaddingTop(int paddingPx) {
         mBottomBarView.setPadding(0, paddingPx, 0, 0);
     }
@@ -130,25 +138,28 @@ class AssistantBottomBarCoordinator {
      * Called when one of its child views visibility has changed. This method set the margin of
      * those views such that the height of the bottom bar is constant most of the time.
      */
-    public void onChildVisibilityChanged() {
-        boolean detailsVisible =
-                mDetailsView != null && mDetailsView.getVisibility() == View.VISIBLE;
+    private void onChildViewVisibilityChanged() {
+        View detailsView = mDetailsCoordinator.getView();
+        View carouselView = mCarouselCoordinator.getView();
+        View paymentRequestView = mPaymentRequestCoordinator.getView();
+
+        boolean detailsVisible = detailsView != null && detailsView.getVisibility() == View.VISIBLE;
         boolean carouselVisible =
-                mCarouselView != null && mCarouselView.getVisibility() == View.VISIBLE;
+                carouselView != null && carouselView.getVisibility() == View.VISIBLE;
         boolean paymentRequestVisible =
-                mPaymentRequestView != null && mPaymentRequestView.getVisibility() == View.VISIBLE;
+                paymentRequestView != null && paymentRequestView.getVisibility() == View.VISIBLE;
 
         int topMargin = mChildrenVerticalSpacing;
         if (detailsVisible) {
             // Set details margins.
             LinearLayout.LayoutParams detailsLayoutParams =
-                    (LinearLayout.LayoutParams) mDetailsView.getLayoutParams();
+                    (LinearLayout.LayoutParams) detailsView.getLayoutParams();
             int detailsVerticalMargin = carouselVisible || paymentRequestVisible
                     ? topMargin
                     : mDetailsOnlyVerticalMargin;
             detailsLayoutParams.setMargins(mChildrenHorizontalMargin, detailsVerticalMargin,
                     mChildrenHorizontalMargin, detailsVerticalMargin);
-            mDetailsView.setLayoutParams(detailsLayoutParams);
+            detailsView.setLayoutParams(detailsLayoutParams);
 
             topMargin = 0;
         }
@@ -156,10 +167,10 @@ class AssistantBottomBarCoordinator {
         if (paymentRequestVisible) {
             // Set payment request margins.
             LinearLayout.LayoutParams paymentRequestLayoutParams =
-                    (LinearLayout.LayoutParams) mPaymentRequestView.getLayoutParams();
+                    (LinearLayout.LayoutParams) paymentRequestView.getLayoutParams();
             paymentRequestLayoutParams.setMargins(mChildrenHorizontalMargin, topMargin,
                     mChildrenVerticalSpacing, mChildrenHorizontalMargin);
-            mPaymentRequestView.setLayoutParams(paymentRequestLayoutParams);
+            paymentRequestView.setLayoutParams(paymentRequestLayoutParams);
 
             topMargin = 0;
         }
@@ -167,10 +178,10 @@ class AssistantBottomBarCoordinator {
         if (carouselVisible) {
             // Set carousel margins.
             LinearLayout.LayoutParams carouselLayoutParams =
-                    (LinearLayout.LayoutParams) mCarouselView.getLayoutParams();
+                    (LinearLayout.LayoutParams) carouselView.getLayoutParams();
             carouselLayoutParams.setMargins(
                     /* left= */ 0, topMargin, /* right= */ 0, mChildrenVerticalSpacing);
-            mCarouselView.setLayoutParams(carouselLayoutParams);
+            carouselView.setLayoutParams(carouselLayoutParams);
         }
     }
 }

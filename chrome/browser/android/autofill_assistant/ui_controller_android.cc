@@ -126,9 +126,12 @@ void UiControllerAndroid::SetProgressPulsingEnabled(bool enabled) {
 void UiControllerAndroid::OnFeedbackButtonClicked() {
   JNIEnv* env = AttachCurrentThread();
   auto jdetails = Java_AssistantDetailsModel_getDetails(env, GetDetailsModel());
+  auto jstatus_message =
+      Java_AssistantHeaderModel_getStatusMessage(env, GetHeaderModel());
   Java_AutofillAssistantUiController_showFeedback(
       env, java_autofill_assistant_ui_controller_,
-      base::android::ConvertUTF8ToJavaString(env, GetDebugContext()), jdetails);
+      base::android::ConvertUTF8ToJavaString(env, GetDebugContext()), jdetails,
+      jstatus_message);
 }
 
 void UiControllerAndroid::OnCloseButtonClicked() {

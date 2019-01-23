@@ -127,8 +127,8 @@ public class AutofillAssistantUiTest {
         String testStatusMessage = "test message";
         ThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> assistantCoordinator.getHeaderCoordinator().setStatusMessage(
-                                testStatusMessage));
+                        -> assistantCoordinator.getModel().getHeaderModel().set(
+                                AssistantHeaderModel.STATUS_MESSAGE, testStatusMessage));
         TextView statusMessageView = bottomSheet.findViewById(R.id.status_message);
         Assert.assertEquals(statusMessageView.getText(), testStatusMessage);
 
@@ -147,7 +147,8 @@ public class AutofillAssistantUiTest {
                 ()
                         -> assistantCoordinator.getModel().getCarouselModel().getChipsModel().set(
                                 chips));
-        RecyclerView chipsViewContainer = assistantCoordinator.getCarouselCoordinator().getView();
+        RecyclerView chipsViewContainer =
+                assistantCoordinator.getBottomBarCoordinator().getCarouselCoordinator().getView();
         Assert.assertEquals(2, chipsViewContainer.getAdapter().getItemCount());
 
         // Choose the second chip.

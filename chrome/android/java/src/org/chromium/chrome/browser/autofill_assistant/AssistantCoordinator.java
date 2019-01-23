@@ -11,11 +11,8 @@ import android.view.ViewGroup;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetails;
-import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsCoordinator;
-import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderCoordinator;
-import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestCoordinator;
+import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
@@ -56,10 +53,6 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
     private final View mAssistantView;
 
     private final AssistantBottomBarCoordinator mBottomBarCoordinator;
-    private final AssistantHeaderCoordinator mHeaderCoordinator;
-    private final AssistantDetailsCoordinator mDetailsCoordinator;
-    private final AssistantPaymentRequestCoordinator mPaymentRequestCoordinator;
-    private final AssistantCarouselCoordinator mCarouselCoordinator;
     private final AssistantKeyboardCoordinator mKeyboardCoordinator;
     private final AssistantOverlayCoordinator mOverlayCoordinator;
 
@@ -77,26 +70,10 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
                                  .findViewById(R.id.autofill_assistant);
 
         // Instantiate child components.
-        mBottomBarCoordinator = new AssistantBottomBarCoordinator(
-                mAssistantView, mActivity.getResources().getDisplayMetrics());
-        mHeaderCoordinator = new AssistantHeaderCoordinator(
-                mActivity, mBottomBarCoordinator.getView(), mModel.getHeaderModel());
-        mCarouselCoordinator = new AssistantCarouselCoordinator(mActivity,
-                mModel.getCarouselModel(), mBottomBarCoordinator::onChildVisibilityChanged);
-        mDetailsCoordinator = new AssistantDetailsCoordinator(mActivity, mModel.getDetailsModel(),
-                mBottomBarCoordinator::onChildVisibilityChanged);
-        mPaymentRequestCoordinator = new AssistantPaymentRequestCoordinator(
-                mActivity, mBottomBarCoordinator::onChildVisibilityChanged);
+        mBottomBarCoordinator =
+                new AssistantBottomBarCoordinator(mActivity, mAssistantView, mModel);
         mKeyboardCoordinator = new AssistantKeyboardCoordinator(activity);
         mOverlayCoordinator = new AssistantOverlayCoordinator(activity, mAssistantView, this);
-
-        // Attach child views to the bottom bar.
-        mBottomBarCoordinator.setDetailsView(mDetailsCoordinator.getView());
-        mBottomBarCoordinator.setPaymentRequestView(mPaymentRequestCoordinator.getView());
-        mBottomBarCoordinator.setCarouselView(mCarouselCoordinator.getView());
-
-        // PR is initially hidden.
-        mPaymentRequestCoordinator.setVisible(false);
 
         showAssistantView();
     }
@@ -125,11 +102,11 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
         // Hide everything except header.
         mOverlayCoordinator.hide();
         mModel.getDetailsModel().clearDetails();
-        mPaymentRequestCoordinator.setVisible(false);
+        mBottomBarCoordinator.getPaymentRequestCoordinator().setVisible(false);
         mModel.getCarouselModel().clearChips();
 
         if (showGiveUpMessage) {
-            mHeaderCoordinator.setStatusMessage(
+            mModel.getHeaderModel().set(AssistantHeaderModel.STATUS_MESSAGE,
                     mActivity.getString(R.string.autofill_assistant_give_up));
         }
         ThreadUtils.postOnUiThreadDelayed(this::shutdownImmediately, GRACEFUL_SHUTDOWN_DELAY_MS);
@@ -149,8 +126,8 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
      */
     public void showOnboarding(Runnable onAccept) {
         // Hide header buttons.
-        mHeaderCoordinator.setFeedbackButtonVisible(false);
-        mHeaderCoordinator.setCloseButtonVisible(false);
+        mModel.getHeaderModel().set(AssistantHeaderModel.FEEDBACK_VISIBLE, false);
+        mModel.getHeaderModel().set(AssistantHeaderModel.CLOSE_VISIBLE, false);
 
         // Show overlay to prevent user from interacting with the page during onboarding.
         mOverlayCoordinator.showFullOverlay();
@@ -163,23 +140,14 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
                     }
 
                     // Show header buttons.
-                    mHeaderCoordinator.setFeedbackButtonVisible(true);
-                    mHeaderCoordinator.setCloseButtonVisible(true);
+                    mModel.getHeaderModel().set(AssistantHeaderModel.FEEDBACK_VISIBLE, true);
+                    mModel.getHeaderModel().set(AssistantHeaderModel.CLOSE_VISIBLE, true);
 
                     // Hide overlay.
                     mOverlayCoordinator.hide();
 
                     onAccept.run();
                 });
-    }
-
-    /**
-     * Show {@code message} to the user, unless we are shutting down.
-     */
-    public void showStatusMessage(String message) {
-        if (!mIsShuttingDownGracefully) {
-            mHeaderCoordinator.setStatusMessage(message);
-        }
     }
 
     /**
@@ -194,22 +162,6 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
 
     public AssistantBottomBarCoordinator getBottomBarCoordinator() {
         return mBottomBarCoordinator;
-    }
-
-    public AssistantHeaderCoordinator getHeaderCoordinator() {
-        return mHeaderCoordinator;
-    }
-
-    public AssistantDetailsCoordinator getDetailsCoordinator() {
-        return mDetailsCoordinator;
-    }
-
-    public AssistantPaymentRequestCoordinator getPaymentRequestCoordinator() {
-        return mPaymentRequestCoordinator;
-    }
-
-    public AssistantCarouselCoordinator getCarouselCoordinator() {
-        return mCarouselCoordinator;
     }
 
     public AssistantKeyboardCoordinator getKeyboardCoordinator() {
@@ -260,11 +212,12 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
     /**
      * Show the Chrome feedback form.
      */
-    public void showFeedback(String debugContext, @Nullable AssistantDetails details) {
+    public void showFeedback(
+            String debugContext, @Nullable AssistantDetails details, String statusMessage) {
         HelpAndFeedback.getInstance(mActivity).showFeedback(mActivity, Profile.getLastUsedProfile(),
                 mActivity.getActivityTab().getUrl(), FEEDBACK_CATEGORY_TAG,
-                FeedbackContext.buildContextString(mActivity, debugContext, details,
-                        mHeaderCoordinator.getStatusMessage(), 4));
+                FeedbackContext.buildContextString(
+                        mActivity, debugContext, details, statusMessage, 4));
     }
 
     // Implementation of methods from {@link TouchEventFilterView.Delegate}.
