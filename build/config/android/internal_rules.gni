@@ -1103,7 +1103,7 @@ if (enable_java_templates) {
     _proguard_enabled =
         defined(invoker.proguard_enabled) && invoker.proguard_enabled
     _proguarding_with_r8 =
-        _proguard_enabled && !defined(invoker.proguard_jar_path)
+        _proguard_enabled && (!defined(invoker.proguard_jar_path) || use_r8)
     _enable_multidex =
         defined(invoker.enable_multidex) && invoker.enable_multidex
 
@@ -1179,19 +1179,25 @@ if (enable_java_templates) {
         }
 
         if (_enable_multidex && _proguarding_with_r8) {
-          if (defined(invoker.extra_main_dex_proguard_config)) {
+          if (!defined(invoker.min_sdk_version) ||
+              invoker.min_sdk_version < 21) {
+            if (defined(invoker.extra_main_dex_proguard_config)) {
+              args += [
+                "--main-dex-rules-path",
+                rebase_path(invoker.extra_main_dex_proguard_config,
+                            root_build_dir),
+              ]
+              inputs += [ invoker.extra_main_dex_proguard_config ]
+            }
             args += [
               "--main-dex-rules-path",
-              rebase_path(invoker.extra_main_dex_proguard_config,
-                          root_build_dir),
+              rebase_path(_main_dex_rules, root_build_dir),
             ]
-            inputs += [ invoker.extra_main_dex_proguard_config ]
+            inputs += [ _main_dex_rules ]
+          } else {
+            not_needed(invoker, [ "extra_main_dex_proguard_config" ])
+            not_needed([ "_main_dex_rules" ])
           }
-          args += [
-            "--main-dex-rules-path",
-            rebase_path(_main_dex_rules, root_build_dir),
-          ]
-          inputs += [ _main_dex_rules ]
         }
 
         output_path = _proguard_output_path
