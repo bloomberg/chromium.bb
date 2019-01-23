@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/files/file.h"
 #include "base/macros.h"
@@ -165,9 +166,17 @@ class SmbService : public KeyedService,
   // Whether NTLM should be used. Controlled via policy.
   bool IsNTLMAuthenticationEnabled() const;
 
+  // Gets the list of all shares preconfigured via policy with mode
+  // |policy_mode|.
+  std::vector<SmbUrl> GetPreconfiguredSharePaths(
+      const std::string& policy_mode) const;
+
   // Gets the shares preconfigured via policy that should be displayed in the
-  // discovery drop down.
-  std::vector<SmbUrl> GetPreconfiguredSharePathsForDropDown() const;
+  // discovery dropdown.
+  std::vector<SmbUrl> GetPreconfiguredSharePathsForDropdown() const;
+
+  // Gets the shares preconfigured via policy that should be premounted.
+  std::vector<SmbUrl> GetPreconfiguredSharePathsForPremount() const;
 
   // Requests new credentials for the |share_path|. |reply| is stored. Once the
   // credentials have been successfully updated, |reply| is run.

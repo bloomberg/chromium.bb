@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/smb_provider_client.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"

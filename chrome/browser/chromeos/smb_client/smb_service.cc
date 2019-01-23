@@ -42,6 +42,7 @@ namespace {
 const char kShareUrlKey[] = "share_url";
 const char kModeKey[] = "mode";
 const char kModeDropDownValue[] = "drop_down";
+const char kModePreMountValue[] = "pre_mount";
 
 bool ContainsAt(const std::string& username) {
   return username.find('@') != std::string::npos;
@@ -146,7 +147,7 @@ void SmbService::Mount(const file_system_provider::MountOptions& options,
 
 void SmbService::GatherSharesInNetwork(HostDiscoveryResponse discovery_callback,
                                        GatherSharesResponse shares_callback) {
-  shares_callback.Run(GetPreconfiguredSharePathsForDropDown());
+  shares_callback.Run(GetPreconfiguredSharePathsForDropdown());
   share_finder_->GatherSharesInNetwork(std::move(discovery_callback),
                                        std::move(shares_callback));
 }
@@ -493,7 +494,8 @@ bool SmbService::IsNTLMAuthenticationEnabled() const {
       prefs::kNTLMShareAuthenticationEnabled);
 }
 
-std::vector<SmbUrl> SmbService::GetPreconfiguredSharePathsForDropDown() const {
+std::vector<SmbUrl> SmbService::GetPreconfiguredSharePaths(
+    const std::string& policy_mode) const {
   std::vector<SmbUrl> preconfigured_urls;
 
   const base::Value* preconfigured_shares = profile_->GetPrefs()->GetList(
@@ -504,9 +506,7 @@ std::vector<SmbUrl> SmbService::GetPreconfiguredSharePathsForDropDown() const {
     const base::Value* share_url = info.FindKey(kShareUrlKey);
     const base::Value* mode = info.FindKey(kModeKey);
 
-    DCHECK(mode->GetString() == kModeDropDownValue);
-
-    if (mode->GetString() == kModeDropDownValue) {
+    if (mode->GetString() == policy_mode) {
       preconfigured_urls.emplace_back(share_url->GetString());
     }
   }
@@ -523,6 +523,14 @@ void SmbService::RequestCredentials(const std::string& share_path,
 void SmbService::OpenRequestCredentialsDialog(const std::string& share_path,
                                               int32_t mount_id) {
   smb_dialog::SmbCredentialsDialog::Show(mount_id, share_path);
+}
+
+std::vector<SmbUrl> SmbService::GetPreconfiguredSharePathsForDropdown() const {
+  return GetPreconfiguredSharePaths(kModeDropDownValue);
+}
+
+std::vector<SmbUrl> SmbService::GetPreconfiguredSharePathsForPremount() const {
+  return GetPreconfiguredSharePaths(kModePreMountValue);
 }
 
 void SmbService::RecordMountCount() const {
