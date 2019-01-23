@@ -8,7 +8,9 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "net/base/network_change_notifier.h"
@@ -26,11 +28,13 @@ namespace chromeos {
 //     * Device lock
 //     * Device unlock
 //     * Device connected
+//     * Device returns from suspend mode
 class EventBasedStatusReportingService
     : public KeyedService,
       public ArcAppListPrefs::Observer,
       public session_manager::SessionManagerObserver,
-      public net::NetworkChangeNotifier::NetworkChangeObserver {
+      public net::NetworkChangeNotifier::NetworkChangeObserver,
+      public PowerManagerClient::Observer {
  public:
   explicit EventBasedStatusReportingService(content::BrowserContext* context);
   ~EventBasedStatusReportingService() override;
@@ -47,6 +51,9 @@ class EventBasedStatusReportingService
   // net::NetworkChangeNotifier::NetworkChangeObserver:
   void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
+
+  // PowerManagerClient::Observer:
+  void SuspendDone(const base::TimeDelta& duration) override;
 
  private:
   void RequestStatusReport(const std::string& reason);

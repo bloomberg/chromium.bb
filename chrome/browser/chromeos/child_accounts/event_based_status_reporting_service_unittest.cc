@@ -13,6 +13,8 @@
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_power_manager_client.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/common/app.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -56,6 +58,9 @@ class EventBasedStatusReportingServiceTest : public testing::Test {
   ~EventBasedStatusReportingServiceTest() override = default;
 
   void SetUp() override {
+    DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
+        std::make_unique<FakePowerManagerClient>());
+
     profile_.SetSupervisedUserId(supervised_users::kChildAccountSUID);
     arc_test_.SetUp(profile());
 
@@ -77,7 +82,10 @@ class EventBasedStatusReportingServiceTest : public testing::Test {
             consumer_status_reporting_service);
   }
 
-  void TearDown() override { arc_test_.TearDown(); }
+  void TearDown() override {
+    arc_test_.TearDown();
+    DBusThreadManager::Shutdown();
+  }
 
   void SetConnectionType(net::NetworkChangeNotifier::ConnectionType type) {
     notifier_.SetConnectionType(type);
@@ -88,6 +96,11 @@ class EventBasedStatusReportingServiceTest : public testing::Test {
 
   arc::mojom::AppHost* app_host() { return arc_test_.arc_app_list_prefs(); }
   Profile* profile() { return &profile_; }
+  FakePowerManagerClient* power_manager_client() {
+    return static_cast<FakePowerManagerClient*>(
+        DBusThreadManager::Get()->GetPowerManagerClient());
+  }
+
   TestingConsumerStatusReportingService*
   test_consumer_status_reporting_service() {
     return test_consumer_status_reporting_service_;
@@ -187,6 +200,16 @@ TEST_F(EventBasedStatusReportingServiceTest, ReportWhenDeviceGoesOnline) {
       1, test_consumer_status_reporting_service()->performed_status_reports());
 }
 
+TEST_F(EventBasedStatusReportingServiceTest, ReportWhenSuspendIsDone) {
+  EventBasedStatusReportingService service(profile());
+
+  ASSERT_EQ(
+      0, test_consumer_status_reporting_service()->performed_status_reports());
+  power_manager_client()->SendSuspendDone();
+  EXPECT_EQ(
+      1, test_consumer_status_reporting_service()->performed_status_reports());
+}
+
 TEST_F(EventBasedStatusReportingServiceTest, ReportForMultipleEvents) {
   EventBasedStatusReportingService service(profile());
   SetConnectionType(
@@ -213,6 +236,9 @@ TEST_F(EventBasedStatusReportingServiceTest, ReportForMultipleEvents) {
   app_host()->OnPackageModified(arc::mojom::ArcPackageInfo::New());
   EXPECT_EQ(
       5, test_consumer_status_reporting_service()->performed_status_reports());
+  power_manager_client()->SendSuspendDone();
+  EXPECT_EQ(
+      6, test_consumer_status_reporting_service()->performed_status_reports());
 }
 
 }  // namespace chromeos

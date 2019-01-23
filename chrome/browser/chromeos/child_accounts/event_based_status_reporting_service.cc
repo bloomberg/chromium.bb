@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service.h"
 #include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/session_manager/core/session_manager.h"
 
 namespace chromeos {
@@ -21,6 +22,7 @@ EventBasedStatusReportingService::EventBasedStatusReportingService(
     arc_app_prefs->AddObserver(this);
   session_manager::SessionManager::Get()->AddObserver(this);
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
 }
 
 EventBasedStatusReportingService::~EventBasedStatusReportingService() = default;
@@ -61,6 +63,12 @@ void EventBasedStatusReportingService::OnNetworkChanged(
     RequestStatusReport("Request status report due to device going online.");
 }
 
+void EventBasedStatusReportingService::SuspendDone(
+    const base::TimeDelta& duration) {
+  RequestStatusReport(
+      "Request status report after a suspend has been completed.");
+}
+
 void EventBasedStatusReportingService::RequestStatusReport(
     const std::string& reason) {
   VLOG(1) << reason;
@@ -75,6 +83,7 @@ void EventBasedStatusReportingService::Shutdown() {
     arc_app_prefs->RemoveObserver(this);
   session_manager::SessionManager::Get()->RemoveObserver(this);
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
 }
 
 }  // namespace chromeos
