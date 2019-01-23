@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "remoting/proto/control.pb.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace remoting {
 
@@ -25,6 +26,21 @@ class DesktopDisplayInfo {
   DesktopDisplayInfo();
   ~DesktopDisplayInfo();
 
+  static webrtc::DesktopSize CalcSizeDips(webrtc::DesktopSize size,
+                                          int dpi_x,
+                                          int dpi_y);
+
+  // Clear out the display info.
+  void Reset();
+  int NumDisplays();
+  const DisplayGeometry* GetDisplayInfo(unsigned int id);
+
+  // Add a new display with the given info to the display list.
+  void AddDisplay(DisplayGeometry* display);
+
+  void AddDisplayFrom(protocol::VideoTrackLayout track);
+
+  // Query the OS for the set of currently active desktop displays.
   void LoadCurrentDisplayInfo();
 
   bool operator==(const DesktopDisplayInfo& other);
