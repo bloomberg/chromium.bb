@@ -9,6 +9,7 @@
 
 #include "base/test/scoped_task_environment.h"
 #include "content/browser/appcache/appcache.h"
+#include "content/browser/appcache/appcache_frontend.h"
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/mock_appcache_service.h"
 #include "content/common/appcache_interfaces.h"
