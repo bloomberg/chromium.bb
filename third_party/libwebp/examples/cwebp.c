@@ -24,7 +24,6 @@
 #include "../imageio/image_dec.h"
 #include "../imageio/imageio_util.h"
 #include "./stopwatch.h"
-#include "./unicode.h"
 #include "webp/encode.h"
 
 #ifndef WEBP_DLL
@@ -89,8 +88,7 @@ static int ReadPicture(const char* const filename, WebPPicture* const pic,
     }
   }
   if (!ok) {
-    WFPRINTF(stderr, "Error! Could not process file %s\n",
-             (const W_CHAR*)filename);
+    fprintf(stderr, "Error! Could not process file %s\n", filename);
   }
   free((void*)data);
   return ok;
@@ -116,8 +114,7 @@ static int ReadPicture(const char* const filename, WebPPicture* const pic,
   }
  End:
   if (!ok) {
-    WFPRINTF(stderr, "Error! Could not process file %s\n",
-             (const W_CHAR*)filename);
+    fprintf(stderr, "Error! Could not process file %s\n", filename);
   }
   free((void*)data);
   return ok;
@@ -188,7 +185,7 @@ static void PrintExtraInfoLossless(const WebPPicture* const pic,
   if (short_output) {
     fprintf(stderr, "%7d %2.2f\n", stats->coded_size, stats->PSNR[3]);
   } else {
-    WFPRINTF(stderr, "File:      %s\n", (const W_CHAR*)file_name);
+    fprintf(stderr, "File:      %s\n", file_name);
     fprintf(stderr, "Dimension: %d x %d\n", pic->width, pic->height);
     fprintf(stderr, "Output:    %d bytes (%.2f bpp)\n", stats->coded_size,
             8.f * stats->coded_size / pic->width / pic->height);
@@ -207,7 +204,7 @@ static void PrintExtraInfoLossy(const WebPPicture* const pic, int short_output,
     const int num_i16 = stats->block_count[1];
     const int num_skip = stats->block_count[2];
     const int total = num_i4 + num_i16;
-    WFPRINTF(stderr, "File:      %s\n", (const W_CHAR*)file_name);
+    fprintf(stderr, "File:      %s\n", file_name);
     fprintf(stderr, "Dimension: %d x %d%s\n",
             pic->width, pic->height,
             stats->alpha_data_size ? " (with alpha)" : "");
@@ -312,7 +309,7 @@ static int DumpPicture(const WebPPicture* const picture, const char* PGM_name) {
   const int alpha_height =
       WebPPictureHasTransparency(picture) ? picture->height : 0;
   const int height = picture->height + uv_height + alpha_height;
-  FILE* const f = WFOPEN(PGM_name, "wb");
+  FILE* const f = fopen(PGM_name, "wb");
   if (f == NULL) return 0;
   fprintf(f, "P5\n%d %d\n255\n", stride, height);
   for (y = 0; y < picture->height; ++y) {
@@ -666,34 +663,32 @@ int main(int argc, const char *argv[]) {
   Metadata metadata;
   Stopwatch stop_watch;
 
-  INIT_WARGV(argc, argv);
-
   MetadataInit(&metadata);
   WebPMemoryWriterInit(&memory_writer);
   if (!WebPPictureInit(&picture) ||
       !WebPPictureInit(&original_picture) ||
       !WebPConfigInit(&config)) {
     fprintf(stderr, "Error! Version mismatch!\n");
-    FREE_WARGV_AND_RETURN(-1);
+    return -1;
   }
 
   if (argc == 1) {
     HelpShort();
-    FREE_WARGV_AND_RETURN(0);
+    return 0;
   }
 
   for (c = 1; c < argc; ++c) {
     int parse_error = 0;
     if (!strcmp(argv[c], "-h") || !strcmp(argv[c], "-help")) {
       HelpShort();
-      FREE_WARGV_AND_RETURN(0);
+      return 0;
     } else if (!strcmp(argv[c], "-H") || !strcmp(argv[c], "-longhelp")) {
       HelpLong();
-      FREE_WARGV_AND_RETURN(0);
+      return 0;
     } else if (!strcmp(argv[c], "-o") && c < argc - 1) {
-      out_file = (const char*)GET_WARGV(argv, ++c);
+      out_file = argv[++c];
     } else if (!strcmp(argv[c], "-d") && c < argc - 1) {
-      dump_file = (const char*)GET_WARGV(argv, ++c);
+      dump_file = argv[++c];
       config.show_compressed = 1;
     } else if (!strcmp(argv[c], "-print_psnr")) {
       config.show_compressed = 1;
@@ -821,7 +816,7 @@ int main(int argc, const char *argv[]) {
       const int version = WebPGetEncoderVersion();
       printf("%d.%d.%d\n",
              (version >> 16) & 0xff, (version >> 8) & 0xff, version & 0xff);
-      FREE_WARGV_AND_RETURN(0);
+      return 0;
     } else if (!strcmp(argv[c], "-progress")) {
       show_progress = 1;
     } else if (!strcmp(argv[c], "-quiet")) {
@@ -883,7 +878,8 @@ int main(int argc, const char *argv[]) {
         if (i == kNumTokens) {
           fprintf(stderr, "Error! Unknown metadata type '%.*s'\n",
                   (int)(token - start), start);
-          FREE_WARGV_AND_RETURN(-1);
+          HelpLong();
+          return -1;
         }
         start = token + 1;
       }
@@ -897,19 +893,19 @@ int main(int argc, const char *argv[]) {
     } else if (!strcmp(argv[c], "-v")) {
       verbose = 1;
     } else if (!strcmp(argv[c], "--")) {
-      if (c < argc - 1) in_file = (const char*)GET_WARGV(argv, ++c);
+      if (c < argc - 1) in_file = argv[++c];
       break;
     } else if (argv[c][0] == '-') {
       fprintf(stderr, "Error! Unknown option '%s'\n", argv[c]);
       HelpLong();
-      FREE_WARGV_AND_RETURN(-1);
+      return -1;
     } else {
-      in_file = (const char*)GET_WARGV(argv, c);
+      in_file = argv[c];
     }
 
     if (parse_error) {
       HelpLong();
-      FREE_WARGV_AND_RETURN(-1);
+      return -1;
     }
   }
   if (in_file == NULL) {
@@ -959,8 +955,7 @@ int main(int argc, const char *argv[]) {
   }
   if (!ReadPicture(in_file, &picture, keep_alpha,
                    (keep_metadata == 0) ? NULL : &metadata)) {
-    WFPRINTF(stderr, "Error! Cannot read input picture file '%s'\n",
-             (const W_CHAR*)in_file);
+    fprintf(stderr, "Error! Cannot read input picture file '%s'\n", in_file);
     goto Error;
   }
   picture.progress_hook = (show_progress && !quiet) ? ProgressReport : NULL;
@@ -976,15 +971,14 @@ int main(int argc, const char *argv[]) {
 
   // Open the output
   if (out_file != NULL) {
-    const int use_stdout = !WSTRCMP(out_file, "-");
-    out = use_stdout ? ImgIoUtilSetBinaryMode(stdout) : WFOPEN(out_file, "wb");
+    const int use_stdout = !strcmp(out_file, "-");
+    out = use_stdout ? ImgIoUtilSetBinaryMode(stdout) : fopen(out_file, "wb");
     if (out == NULL) {
-      WFPRINTF(stderr, "Error! Cannot open output file '%s'\n",
-               (const W_CHAR*)out_file);
+      fprintf(stderr, "Error! Cannot open output file '%s'\n", out_file);
       goto Error;
     } else {
       if (!short_output && !quiet) {
-        WFPRINTF(stderr, "Saving file '%s'\n", (const W_CHAR*)out_file);
+        fprintf(stderr, "Saving file '%s'\n", out_file);
       }
     }
     if (keep_metadata == 0) {
@@ -1099,8 +1093,7 @@ int main(int argc, const char *argv[]) {
       fprintf(stderr, "Warning: can't dump file (-d option) "
                       "in lossless mode.\n");
     } else if (!DumpPicture(&picture, dump_file)) {
-      WFPRINTF(stderr, "Warning, couldn't dump picture %s\n",
-               (const W_CHAR*)dump_file);
+      fprintf(stderr, "Warning, couldn't dump picture %s\n", dump_file);
     }
   }
 
@@ -1176,7 +1169,7 @@ int main(int argc, const char *argv[]) {
     fclose(out);
   }
 
-  FREE_WARGV_AND_RETURN(return_value);
+  return return_value;
 }
 
 //------------------------------------------------------------------------------

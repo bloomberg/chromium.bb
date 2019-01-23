@@ -29,14 +29,12 @@
                          // code with COBJMACROS.
 #include <ole2.h>  // CreateStreamOnHGlobal()
 #include <shlwapi.h>
-#include <tchar.h>
 #include <windows.h>
 #include <wincodec.h>
 
-#include "../examples/unicode.h"
+#include "webp/encode.h"
 #include "./imageio_util.h"
 #include "./metadata.h"
-#include "webp/encode.h"
 
 #define IFS(fn)                                                     \
   do {                                                              \
@@ -87,7 +85,7 @@ WEBP_DEFINE_GUID(GUID_WICPixelFormat64bppRGBA_,
 
 static HRESULT OpenInputStream(const char* filename, IStream** stream) {
   HRESULT hr = S_OK;
-  if (!WSTRCMP(filename, "-")) {
+  if (!strcmp(filename, "-")) {
     const uint8_t* data = NULL;
     size_t data_size = 0;
     const int ok = ImgIoUtilReadFile(filename, &data, &data_size);
@@ -110,12 +108,11 @@ static HRESULT OpenInputStream(const char* filename, IStream** stream) {
       hr = E_FAIL;
     }
   } else {
-    IFS(SHCreateStreamOnFile((const LPTSTR)filename, STGM_READ, stream));
+    IFS(SHCreateStreamOnFileA(filename, STGM_READ, stream));
   }
 
   if (FAILED(hr)) {
-    _ftprintf(stderr, _T("Error opening input file %s (%08lx)\n"),
-              (const LPTSTR)filename, hr);
+    fprintf(stderr, "Error opening input file %s (%08lx)\n", filename, hr);
   }
   return hr;
 }
