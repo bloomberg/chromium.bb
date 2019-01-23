@@ -29,4 +29,8 @@ long long CreditCardSaveStrikeDatabase::GetExpiryTimeMicros() {
   return (long long)1000000 * 60 * 60 * 24 * 180;
 }
 
+bool CreditCardSaveStrikeDatabase::UniqueIdsRequired() {
+  return true;
+}
+
 }  // namespace autofill

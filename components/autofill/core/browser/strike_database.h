@@ -47,12 +47,13 @@ class StrikeDatabase : public KeyedService {
   explicit StrikeDatabase(const base::FilePath& database_dir);
   ~StrikeDatabase() override;
 
-  // Increments in-memory cache and updates underlying ProtoDatabase.
-  int AddStrike(const std::string key);
+  // Increases in-memory cache by |strikes_increase| and updates underlying
+  // ProtoDatabase.
+  int AddStrikes(int strikes_increase, const std::string key);
 
-  // Removes an in-memory cache strike, updates last_update_timestamp, and
-  // updates underlying ProtoDatabase.
-  int RemoveStrike(const std::string key);
+  // Removes |strikes_decrease| in-memory cache strikes, updates
+  // last_update_timestamp, and updates underlying ProtoDatabase.
+  int RemoveStrikes(int strikes_decrease, const std::string key);
 
   // Returns strike count from in-memory cache.
   int GetStrikes(const std::string key);
