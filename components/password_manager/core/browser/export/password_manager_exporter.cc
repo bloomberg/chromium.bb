@@ -12,6 +12,7 @@
 #include "base/task/lazy_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
+#include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/export/password_csv_writer.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -33,11 +34,17 @@ base::LazySingleThreadTaskRunner g_task_runner =
 // data on the closure.
 bool Write(
     password_manager::PasswordManagerExporter::WriteCallback write_function,
+    password_manager::PasswordManagerExporter::SetPosixFilePermissionsCallback
+        set_permissions_function,
     const base::FilePath& destination,
     const std::string& serialised) {
-  int written =
-      write_function.Run(destination, serialised.c_str(), serialised.size());
-  return written == static_cast<int>(serialised.size());
+  if (write_function.Run(destination, serialised.c_str(), serialised.size()) !=
+      static_cast<int>(serialised.size())) {
+    return false;
+  }
+  // Set file permissions. This is a no-op outside of Posix.
+  set_permissions_function.Run(destination, 0600 /* -rw------- */);
+  return true;
 }
 
 }  // namespace
@@ -55,8 +62,16 @@ PasswordManagerExporter::PasswordManagerExporter(
       last_progress_status_(ExportProgressStatus::NOT_STARTED),
       write_function_(base::BindRepeating(&base::WriteFile)),
       delete_function_(base::BindRepeating(&base::DeleteFile)),
+#if defined(OS_POSIX)
+      set_permissions_function_(
+          base::BindRepeating(base::SetPosixFilePermissions)),
+#else
+      set_permissions_function_(
+          base::BindRepeating([](const base::FilePath&, int) { return true; })),
+#endif
       task_runner_(g_task_runner.Get()),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+}
 
 PasswordManagerExporter::~PasswordManagerExporter() {}
 
@@ -135,6 +150,11 @@ void PasswordManagerExporter::SetDeleteForTesting(
   delete_function_ = std::move(delete_callback);
 }
 
+void PasswordManagerExporter::SetSetPosixFilePermissionsForTesting(
+    SetPosixFilePermissionsCallback set_permissions_callback) {
+  set_permissions_function_ = std::move(set_permissions_callback);
+}
+
 bool PasswordManagerExporter::IsReadyForExport() {
   return !destination_.empty() && !serialised_password_list_.empty();
 }
@@ -149,8 +169,8 @@ void PasswordManagerExporter::Export() {
 
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
-      base::BindOnce(::Write, write_function_, destination_,
-                     std::move(serialised_password_list_)),
+      base::BindOnce(::Write, write_function_, set_permissions_function_,
+                     destination_, std::move(serialised_password_list_)),
       base::BindOnce(&PasswordManagerExporter::OnPasswordsExported,
                      weak_factory_.GetWeakPtr()));
 }

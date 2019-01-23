@@ -25,7 +25,9 @@
 namespace {
 
 using ::testing::_;
+using ::testing::AnyNumber;
 using ::testing::IsEmpty;
+using ::testing::NiceMock;
 using ::testing::Not;
 using ::testing::Return;
 using ::testing::ReturnArg;
@@ -40,6 +42,8 @@ using WriteCallback =
     base::RepeatingCallback<int(const base::FilePath&, const char*, int)>;
 using DeleteCallback =
     password_manager::PasswordManagerExporter::DeleteCallback;
+using SetPosixFilePermissionsCallback =
+    password_manager::PasswordManagerExporter::SetPosixFilePermissionsCallback;
 
 #if defined(OS_WIN)
 const base::FilePath::CharType kNullFileName[] = FILE_PATH_LITERAL("/nul");
@@ -99,6 +103,8 @@ class PasswordManagerExporterTest : public testing::Test {
         destination_path_(kNullFileName) {
     exporter_.SetWriteForTesting(mock_write_file_.Get());
     exporter_.SetDeleteForTesting(mock_delete_file_.Get());
+    exporter_.SetSetPosixFilePermissionsForTesting(
+        mock_set_posix_file_permissions_.Get());
     password_list_ = CreatePasswordList();
     fake_credential_provider_.SetPasswordList(password_list_);
   }
@@ -115,6 +121,8 @@ class PasswordManagerExporterTest : public testing::Test {
   password_manager::PasswordManagerExporter exporter_;
   StrictMock<base::MockCallback<WriteCallback>> mock_write_file_;
   StrictMock<base::MockCallback<DeleteCallback>> mock_delete_file_;
+  NiceMock<base::MockCallback<SetPosixFilePermissionsCallback>>
+      mock_set_posix_file_permissions_;
   base::FilePath destination_path_;
   base::HistogramTester histogram_tester_;
 
@@ -302,5 +310,21 @@ TEST_F(PasswordManagerExporterTest, CancelAfterExporting) {
 
   scoped_task_environment_.RunUntilIdle();
 }
+
+#if defined(OS_POSIX)
+// Chrome creates files using the broadest permissions allowed. Passwords are
+// sensitive and should be explicitly limited to the owner.
+TEST_F(PasswordManagerExporterTest, OutputHasRestrictedPermissions) {
+  EXPECT_CALL(mock_write_file_, Run(_, _, _)).WillOnce(ReturnArg<2>());
+  EXPECT_CALL(mock_set_posix_file_permissions_, Run(destination_path_, 0600))
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_on_progress_, Run(_, _)).Times(AnyNumber());
+
+  exporter_.PreparePasswordsForExport();
+  exporter_.SetDestination(destination_path_);
+
+  scoped_task_environment_.RunUntilIdle();
+}
+#endif
 
 }  // namespace
