@@ -19,6 +19,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../metrics.html">
+<link rel="import" href="../native_layer.html">
 <link rel="import" href="../print_preview_utils.html">
 <link rel="import" href="../data/destination.html">
 <link rel="import" href="../data/destination_store.html">
@@ -43,7 +44,6 @@
         };
         --cr-dialog-wrapper: {
           height: calc(100vh - 2 * var(--print-preview-dialog-margin));
-          width: 100%;
         };
         --cr-dialog-body-container: {
           flex: 1;
@@ -71,33 +71,19 @@
       }
 
       cr-dialog [slot=body] {
-        display: flex;
-        flex: 1;
-        flex-direction: column;
-        min-height: 0;
+        height: 100%;
       }
 
-      /* Height = 3 * destination item + 10px padding + 1 line text */
-      #recentList,
-      #printList {
-        min-height:
-            calc(2 * var(--destination-item-height) + 10px + 20 / 13 * 1rem);
-      }
-
-      #recentList {
-        flex: 1;
-        max-height:
-            calc(3 * var(--destination-item-height) + 10px + 20 / 13 * 1rem);
-        padding-bottom: 18px;
-      }
-
-      #printList {
-        flex: 1;
-        padding-bottom: 0;
+      div[slot='button-container'] {
+        justify-content: space-between;
       }
 
       paper-button {
         font-size: calc(12 / 13 * 1em);
+      }
+
+      .cancel-button {
+        margin-inline-end: 0;
       }
 
       #dialog #promos {
@@ -154,7 +140,7 @@
     <cr-dialog id="dialog" on-close="onCloseOrCancel_">
       <div slot="title" id="header">
         <div>$i18n{destinationSearchTitle}</div>
-        <div class="user-info" hidden$="[[!activeUser]]">
+        <div class="user-info" hidden$="[[!activeUser]]" hidden>
           <label class="account-select-label" id="accountSelectLabel">
             $i18n{accountSelectTitle}
           </label>
@@ -175,15 +161,9 @@
         </print-preview-search-box>
       </div>
       <div slot="body">
-        <print-preview-destination-list id="recentList"
-            destinations="[[recentDestinationList]]"
-            search-query="[[searchQuery_]]"
-            list-name="$i18n{recentDestinationsTitle}"
-            on-destination-selected="onDestinationSelected_">
-        </print-preview-destination-list>
         <print-preview-destination-list id="printList"
             destinations="[[destinations_]]"
-            has-manage-link loading-destinations="[[loadingDestinations_]]"
+            loading-destinations="[[loadingDestinations_]]"
             search-query="[[searchQuery_]]"
             list-name="$i18n{printDestinationsTitle}"
             on-destination-selected="onDestinationSelected_">
@@ -193,6 +173,9 @@
         </print-preview-provisional-destination-resolver>
       </div>
       <div slot="button-container">
+        <paper-button on-click="onOpenSettingsPrintPage_">
+          $i18n{manage}
+        </paper-button>
         <paper-button class="cancel-button" on-click="onCancelButtonClick_">
           $i18n{cancel}
         </paper-button>

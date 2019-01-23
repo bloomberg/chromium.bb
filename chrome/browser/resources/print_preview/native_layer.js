@@ -213,6 +213,11 @@ cr.define('print_preview', function() {
       return cr.sendWithPromise('getPreview', printTicket);
     }
 
+    /** Opens the chrome://settings printing page. */
+    openSettingsPrintPage() {
+      window.open('chrome://settings/printing');
+    }
+
     /**
      * Requests that the document be printed.
      * @param {string} printTicket The serialized print ticket for the print

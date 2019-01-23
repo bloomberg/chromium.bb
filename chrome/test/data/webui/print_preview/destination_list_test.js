@@ -57,6 +57,7 @@ cr.define('destination_list_test', function() {
       list = document.body.querySelector('#testList');
       list.searchQuery = null;
       list.destinations = destinations;
+      list.loadingDestinations = false;
       Polymer.dom.flush();
     });
 
@@ -66,14 +67,11 @@ cr.define('destination_list_test', function() {
       const items = list.shadowRoot.querySelectorAll(
           'print-preview-destination-list-item');
       const noMatchHint = list.$$('.no-destinations-message');
-      const total = list.$$('.total');
 
       // Query is initialized to null. All items are shown and the hint is
-      // hidden. The total displays since there are 5 destinations.
+      // hidden.
       items.forEach(item => assertFalse(item.hidden));
       assertTrue(noMatchHint.hidden);
-      assertFalse(total.hidden);
-      assertTrue(total.textContent.includes('5'));
 
       // Searching for "e" should show "One", "Three", and "Five".
       list.searchQuery = /(e)/i;
@@ -84,7 +82,6 @@ cr.define('destination_list_test', function() {
              item.destination.displayName == 'Four');
       }));
       assertTrue(noMatchHint.hidden);
-      assertTrue(total.hidden);
 
       // Searching for "ABC" should show "One" and "Three".
       list.searchQuery = /(ABC)/i;
@@ -94,7 +91,6 @@ cr.define('destination_list_test', function() {
             item.destination.displayName != 'Three';
       }));
       assertTrue(noMatchHint.hidden);
-      assertTrue(total.hidden);
 
       // Searching for "F" should show "Four" and "Five"
       list.searchQuery = /(F)/i;
@@ -104,7 +100,6 @@ cr.define('destination_list_test', function() {
             item.destination.displayName != 'Five';
       }));
       assertTrue(noMatchHint.hidden);
-      assertTrue(total.hidden);
 
       // Searching for UVW should show no destinations and display the "no
       // match" hint.
@@ -112,7 +107,6 @@ cr.define('destination_list_test', function() {
       Polymer.dom.flush();
       items.forEach(item => assertTrue(item.hidden));
       assertFalse(noMatchHint.hidden);
-      assertTrue(total.hidden);
 
       // Searching for 123 should show destinations "Three", "Four", and "Five".
       list.searchQuery = /(123)/i;
@@ -123,15 +117,12 @@ cr.define('destination_list_test', function() {
              item.destination.displayName == 'Two');
       }));
       assertTrue(noMatchHint.hidden);
-      assertTrue(total.hidden);
 
       // Clearing the query restores the original state.
       list.searchQuery = /()/i;
       Polymer.dom.flush();
       items.forEach(item => assertFalse(item.hidden));
       assertTrue(noMatchHint.hidden);
-      assertFalse(total.hidden);
-      assertTrue(total.textContent.includes('5'));
     });
 
     // Tests that the list correctly fires the destination selected event when

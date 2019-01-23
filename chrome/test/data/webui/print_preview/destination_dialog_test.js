@@ -57,7 +57,6 @@ cr.define('destination_dialog_test', function() {
       dialog.users = [];
       dialog.destinationStore = destinationStore;
       dialog.invitationStore = new print_preview.InvitationStore();
-      dialog.recentDestinationList = [destinations[4]];
       document.body.appendChild(dialog);
       return nativeLayer.whenCalled('getPrinterCapabilities')
           .then(function() {
@@ -72,40 +71,21 @@ cr.define('destination_dialog_test', function() {
 
     // Test that destinations are correctly displayed in the lists.
     test(assert(TestNames.PrinterList), function() {
-      const lists =
-          dialog.shadowRoot.querySelectorAll('print-preview-destination-list');
-      assertEquals(2, lists.length);
+      const list = dialog.$$('print-preview-destination-list');
 
-      const recentItems = lists[0].shadowRoot.querySelectorAll(
+      const printerItems = list.shadowRoot.querySelectorAll(
           'print-preview-destination-list-item');
-      const printerItems = lists[1].shadowRoot.querySelectorAll(
-          'print-preview-destination-list-item');
-      // Check that list titles have the correct text color.
-      lists.forEach(list => {
-        // google-grey-refresh-700
-        assertEquals(
-            'rgb(95, 99, 104)',
-            window.getComputedStyle(list.$$('.title')).color);
-      });
-
-      assertEquals(1, recentItems.length);
 
       const getDisplayedName = item => item.$$('.name').textContent;
-
-      // Check FooName is most recent and has the correct text color.
-      const mostRecent = recentItems[0];
-      assertEquals('FooName', getDisplayedName(mostRecent));
-      // google-grey-900
-      assertEquals(
-          'rgb(32, 33, 36)',
-          window.getComputedStyle(mostRecent.$$('.name')).color);
-
       // 5 printers + Save as PDF
       assertEquals(6, printerItems.length);
       // Save as PDF shows up first.
       assertEquals(
           print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
           getDisplayedName(printerItems[0]));
+      assertEquals(
+          'rgb(32, 33, 36)',
+          window.getComputedStyle(printerItems[0].$$('.name')).color);
       // FooName will be second since it was updated by the capabilities fetch.
       assertEquals('FooName', getDisplayedName(printerItems[1]));
       Array.from(printerItems).slice(2).forEach((item, index) => {
@@ -136,10 +116,8 @@ cr.define('destination_dialog_test', function() {
           .then(function() {
             Polymer.dom.flush();
             assertFalse(provisionalDialog.$.dialog.open);
-            const lists = dialog.shadowRoot.querySelectorAll(
-                'print-preview-destination-list');
-            assertEquals(2, lists.length);
-            const printerItems = lists[1].shadowRoot.querySelectorAll(
+            const list = dialog.$$('print-preview-destination-list');
+            const printerItems = list.shadowRoot.querySelectorAll(
                 'print-preview-destination-list-item');
 
             // Should have 5 local destinations, Save as PDF + extension
@@ -174,16 +152,11 @@ cr.define('destination_dialog_test', function() {
     // Test that destinations are correctly cleared when the destination store
     // reloads the printer list.
     test(assert(TestNames.ReloadPrinterList), function() {
-      const lists =
-          dialog.shadowRoot.querySelectorAll('print-preview-destination-list');
-      assertEquals(2, lists.length);
+      const list = dialog.$$('print-preview-destination-list');
 
-      const recentItems = lists[0].shadowRoot.querySelectorAll(
-          'print-preview-destination-list-item');
-      const printerItems = lists[1].shadowRoot.querySelectorAll(
+      const printerItems = list.shadowRoot.querySelectorAll(
           'print-preview-destination-list-item');
 
-      assertEquals(1, recentItems.length);
       assertEquals(6, printerItems.length);
       const oldPdfDestination = printerItems[0].destination;
       assertEquals(

@@ -174,7 +174,6 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
     {"couldNotPrint", IDS_PRINT_PREVIEW_COULD_NOT_PRINT},
     {"customMargins", IDS_PRINT_PREVIEW_CUSTOM_MARGINS},
     {"defaultMargins", IDS_PRINT_PREVIEW_DEFAULT_MARGINS},
-    {"destinationCount", IDS_PRINT_PREVIEW_DESTINATION_COUNT},
     {"destinationLabel", IDS_PRINT_PREVIEW_DESTINATION_LABEL},
     {"destinationSearchTitle", IDS_PRINT_PREVIEW_DESTINATION_SEARCH_TITLE},
     {"dpiItemLabel", IDS_PRINT_PREVIEW_DPI_ITEM_LABEL},
