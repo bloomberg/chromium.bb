@@ -57,6 +57,11 @@ struct SkiaRenderer::DrawRenderPassDrawQuadParams {
   // A Skia image that should be sampled from instead of the original
   // contents.
   sk_sp<SkImage> filter_image;
+  // Non-null |color_filter| should be applied when |filter_image| is
+  // drawn. It is a portion of the image filter DAG that was separated out
+  // because direct color filter drawing is much faster than a
+  // colorFilterImageFilter drawing.
+  sk_sp<SkColorFilter> color_filter;
   gfx::Point src_offset;
   gfx::RectF dst_rect;
   gfx::RectF tex_coord_rect;
@@ -922,9 +927,22 @@ bool SkiaRenderer::CalculateRPDQParams(sk_sp<SkImage> content,
       *params->filters, gfx::SizeF(content->width(), content->height()));
   auto filter = paint_filter ? paint_filter->cached_sk_filter_ : nullptr;
 
-  // Apply filters to the content texture.
-  // TODO(xing.xu):  Support SkColorFilter here. (https://crbug.com/823182)
+  // If the first imageFilter is a colorFilterImageFilter, pull it off and store
+  // it to be used later. Fall through to allow the remainder of the DAG (if
+  // any) to be applied. Applying the colorFilter as part of the final draw is
+  // much more efficient than applying it as a colorFilterImageFilter.
+  if (filter) {
+    SkColorFilter* colorfilter_rawptr = nullptr;
+    filter->asColorFilter(&colorfilter_rawptr);
+    sk_sp<SkColorFilter> color_filter(colorfilter_rawptr);
 
+    if (color_filter) {
+      params->color_filter = color_filter;
+      filter = sk_ref_sp(filter->getInput(0));
+    }
+  }
+
+  // Apply filters to the content texture.
   if (filter) {
     gfx::Rect clip_rect = quad->shared_quad_state->clip_rect;
     if (clip_rect.IsEmpty()) {
@@ -1030,6 +1048,10 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
 
   if (!can_draw)
     return;
+
+  // Add color filter.
+  if (params.color_filter)
+    paint->setColorFilter(params.color_filter);
 
   SkRect content_rect;
   SkRect dest_visible_rect;
