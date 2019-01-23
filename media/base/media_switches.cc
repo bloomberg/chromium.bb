@@ -340,7 +340,13 @@ const base::Feature kHardwareSecureDecryption{
 
 // Enables handling of hardware media keys for controlling media.
 const base::Feature kHardwareMediaKeyHandling{
-    "HardwareMediaKeyHandling", base::FEATURE_DISABLED_BY_DEFAULT};
+  "HardwareMediaKeyHandling",
+#if defined(OS_CHROMEOS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Enables low-delay video rendering in media pipeline on "live" stream.
 const base::Feature kLowDelayVideoRenderingOnLiveStream{
@@ -479,7 +485,7 @@ const base::Feature kInternalMediaSession {
 #if defined(OS_ANDROID)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
-      base::FEATURE_ENABLED_BY_DEFAULT
+      base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
 
