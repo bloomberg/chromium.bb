@@ -41,6 +41,8 @@ class StubLayerTreeHostClient : public LayerTreeHostClient {
   void DidPresentCompositorFrame(
       uint32_t frame_token,
       const gfx::PresentationFeedback& feedback) override {}
+  void DidGenerateLocalSurfaceIdAllocation(
+      const viz::LocalSurfaceIdAllocation& allocation) override {}
 };
 
 }  // namespace cc

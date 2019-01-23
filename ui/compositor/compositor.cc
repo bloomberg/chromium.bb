@@ -590,6 +590,12 @@ void Compositor::DidPresentCompositorFrame(
                                    trace_environment_name_);
 }
 
+void Compositor::DidGenerateLocalSurfaceIdAllocation(
+    const viz::LocalSurfaceIdAllocation& allocation) {
+  for (auto& observer : observer_list_)
+    observer.DidGenerateLocalSurfaceIdAllocation(this, allocation);
+}
+
 void Compositor::DidSubmitCompositorFrame() {
   base::TimeTicks start_time = base::TimeTicks::Now();
   for (auto& observer : observer_list_)

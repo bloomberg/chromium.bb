@@ -128,6 +128,8 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
       uint32_t frame_token,
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
       const gfx::PresentationFeedback& feedback) override;
+  void DidGenerateLocalSurfaceIdAllocationOnImplThread(
+      const viz::LocalSurfaceIdAllocation& allocation) override;
 
   void RequestNewLayerTreeFrameSink();
 

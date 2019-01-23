@@ -507,6 +507,13 @@ void ProxyImpl::DidPresentCompositorFrameOnImplThread(
                                 std::move(callbacks), feedback));
 }
 
+void ProxyImpl::DidGenerateLocalSurfaceIdAllocationOnImplThread(
+    const viz::LocalSurfaceIdAllocation& allocation) {
+  MainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&ProxyMain::DidGenerateLocalSurfaceIdAllocation,
+                                proxy_main_weak_ptr_, allocation));
+}
+
 bool ProxyImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   DCHECK(IsImplThread());
   return host_impl_->WillBeginImplFrame(args);

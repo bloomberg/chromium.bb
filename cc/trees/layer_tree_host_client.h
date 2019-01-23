@@ -18,6 +18,7 @@ struct PresentationFeedback;
 }
 
 namespace viz {
+class LocalSurfaceIdAllocation;
 struct BeginFrameArgs;
 }
 
@@ -131,6 +132,8 @@ class LayerTreeHostClient {
   // Record UMA and UKM metrics that require the time from the start of
   // BeginMainFrame to the Commit, or early out.
   virtual void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) = 0;
+  virtual void DidGenerateLocalSurfaceIdAllocation(
+      const viz::LocalSurfaceIdAllocation& allocation) = 0;
 
  protected:
   virtual ~LayerTreeHostClient() {}

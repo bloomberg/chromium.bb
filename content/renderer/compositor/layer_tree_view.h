@@ -211,6 +211,8 @@ class LayerTreeView : public blink::WebLayerTreeView,
       uint32_t frame_token,
       const gfx::PresentationFeedback& feedback) override;
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
+  void DidGenerateLocalSurfaceIdAllocation(
+      const viz::LocalSurfaceIdAllocation& allocation) override {}
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;
