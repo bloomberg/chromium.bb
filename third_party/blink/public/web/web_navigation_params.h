@@ -15,6 +15,7 @@
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
+#include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_source_location.h"
@@ -100,6 +101,10 @@ struct BLINK_EXPORT WebNavigationInfo {
   // When navigation initiated from the user input, this tracks
   // the input start time.
   base::TimeTicks input_start;
+
+  // This is the navigation relevant CSP to be used during request and response
+  // checks.
+  WebContentSecurityPolicyList initiator_csp;
 
   // The navigation initiator, if any.
   mojo::ScopedMessagePipeHandle navigation_initiator_handle;

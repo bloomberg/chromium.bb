@@ -516,6 +516,7 @@ void LocalFrameClientImpl::BeginNavigation(
     mojom::blink::BlobURLTokenPtr blob_url_token,
     base::TimeTicks input_start_time,
     const String& href_translate,
+    WebContentSecurityPolicyList initiator_csp,
     mojom::blink::NavigationInitiatorPtr navigation_initiator) {
   if (!web_frame_->Client())
     return;
@@ -535,6 +536,7 @@ void LocalFrameClientImpl::BeginNavigation(
           : kWebContentSecurityPolicyDispositionDoNotCheck;
   navigation_info->blob_url_token = blob_url_token.PassInterface().PassHandle();
   navigation_info->input_start = input_start_time;
+  navigation_info->initiator_csp = std::move(initiator_csp);
   navigation_info->navigation_initiator_handle =
       navigation_initiator.PassInterface().PassHandle();
 
