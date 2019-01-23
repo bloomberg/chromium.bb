@@ -690,7 +690,10 @@ class CONTENT_EXPORT RenderWidget
   // state.
   void SetHidden(bool hidden);
 
-  void DidToggleFullscreen();
+  // Sets the fullscreen state for the WebView.
+  // TODO(danakj): This is currently located on RenderWidget but is a page/view
+  // state, and should move to RenderView.
+  void SetIsFullscreen(bool fullscreen);
 
   // Returns a rect that the compositor needs to raster. For a main frame this
   // is always the entire viewport, but for out-of-process iframes this can be
