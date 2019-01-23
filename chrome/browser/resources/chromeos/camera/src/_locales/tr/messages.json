@@ -1,0 +1,206 @@
+{
+  "name": {
+    "message": "Kamera",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "Kameranızla fotoğraf çekin ve video kaydedin.",
+    "description": "Short description of the Camera App."
+  },
+  "errorMsgFileSystemFailed": {
+    "message": "Dosya sistemi hataları.",
+    "description": "Error message shown when failing to read or write the file system."
+  },
+  "errorMsgNoCamera": {
+    "message": "Kameranız şu anda kullanılamıyor.\nLütfen kameranın bağlı olup olmadığını kontrol edin.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "$file$ dışa aktarılamıyor.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg"
+      }
+    }
+  },
+  "errorMsgSaveFileFailed": {
+    "message": "Dosya kaydedilemiyor",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Fotoğraf çekilemiyor",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Kayıt başlatılamıyor",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "errorMsgEmptyRecording": {
+    "message": "Hiçbir şey kaydedilmedi",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "Kayıt durduruldu",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ etkin",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
+  },
+  "galleryButton": {
+    "message": "Galeriye git",
+    "description": "Label for the gallery button."
+  },
+  "deleteButton": {
+    "message": "Sil",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "Diske aktar",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "Yazdır",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "Geri dön",
+    "description": "Label for the back button."
+  },
+  "galleryImages": {
+    "message": "Galeri resimleri",
+    "description": "Text to speech label for the gallery list."
+  },
+  "settingsButton": {
+    "message": "Ayarlar",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "Kılavuz türü",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "Zamanlayıcı süresi",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "Geri bildirim gönder",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "Yardım",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "3 x 3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "3'e 3",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "4 x 4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "4'e 4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "Altın oran",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3 saniye",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10 saniye",
+    "description": "Label for timer-duration: 10 seconds."
+  },
+  "takePhotoButton": {
+    "message": "Fotoğraf çek",
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "Fotoğraf çekmeyi durdur",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
+  },
+  "recordVideoStartButton": {
+    "message": "Kaydı başlat",
+    "description": "Label for the shutter button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "Kaydı durdur",
+    "description": "Label for the shutter button to stop recording."
+  },
+  "switchCameraButton": {
+    "message": "Sonraki kameraya geç",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "switchRecordVideoButton": {
+    "message": "Video kaydetmeye geç",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "switchTakePhotoButton": {
+    "message": "Fotoğraf çekmeye geç",
+    "description": "Label for the button to switch to take photo mode."
+  },
+  "toggleTimerButton": {
+    "message": "Zamanlayıcı",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
+  "toggleMirrorButton": {
+    "message": "Yansıtma",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
+  },
+  "toggleGridButton": {
+    "message": "Kılavuz",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
+  },
+  "toggleMicButton": {
+    "message": "Mikrofon",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
+  },
+  "dialogOKButton": {
+    "message": "Tamam",
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "İptal",
+    "description": "Label for the dismissing button in the dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "$file$ adlı dosyayı gerçekten kaldırmak istiyor musunuz?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "$count$ öğeyi gerçekten kaldırmak istiyor musunuz?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
+  },
+  "migratePicturesMsg": {
+    "message": "Kamerayla çekilen fotoğraflar ve videolar, İndirilenler klasörüne taşınacaktır. Bunlara Dosyalar uygulamasından erişebilirsiniz.\n\nDepolama iznine sahip uygulamalar fotoğraflarınıza ve videolarınıza erişebilecektir.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  }
+}
