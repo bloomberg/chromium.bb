@@ -261,7 +261,7 @@ def GitRevInfo(directory):
 def GetAuthenticatedGitURL(url):
   """Returns the authenticated version of a git URL.
 
-  In chromium, there is a special URL that is the "authenticated" version. The
+  In Chromium, there is a special URL that is the "authenticated" version. The
   URLs are identical but the authenticated one has special privileges.
   """
   urlsplit = urlparse.urlsplit(url)
