@@ -150,8 +150,6 @@ base::Optional<SignedExchangeVersion> GetSignedExchangeVersion(
   if (iter != params.end()) {
     if (iter->second == "b3")
       return base::make_optional(SignedExchangeVersion::kB3);
-    if (iter->second == "b2")
-      return base::make_optional(SignedExchangeVersion::kB2);
     return base::make_optional(SignedExchangeVersion::kUnknown);
   }
   return base::nullopt;

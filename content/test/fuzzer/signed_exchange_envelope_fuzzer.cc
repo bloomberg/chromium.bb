@@ -64,9 +64,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       CopyIntoSeparateBufferToSurfaceOutOfBoundAccess(base::make_span(
           data, std::min(size, fallback_url_and_after.cbor_header_length())));
 
-  // TODO(crbug.com/919424) Fuzz kB3 instead.
   SignedExchangeEnvelope::Parse(
-      SignedExchangeVersion::kB2, fallback_url_and_after.fallback_url(),
+      SignedExchangeVersion::kB3, fallback_url_and_after.fallback_url(),
       signature_header_field, base::make_span(cbor_header),
       nullptr /* devtools_proxy */);
   return 0;
