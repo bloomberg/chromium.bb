@@ -813,7 +813,7 @@ TEST_P(ServiceWorkerProviderHostTest, GetRegistration_Success) {
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kNone,
             GetRegistration(remote_endpoint.host_ptr()->get(), kScope, &info));
   ASSERT_TRUE(info);
-  EXPECT_EQ(kScope, info->options->scope);
+  EXPECT_EQ(kScope, info->scope);
 }
 
 TEST_P(ServiceWorkerProviderHostTest,
