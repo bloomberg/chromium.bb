@@ -465,6 +465,27 @@ public class CustomTabsDynamicModuleUITest {
 
     @Test
     @SmallTest
+    @Features.EnableFeatures({
+            ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER,
+            ChromeFeatureList.CCT_MODULE_USE_INTENT_EXTRAS})
+    public void testSetTopBarHeight_zeroHeightHidesTopBar() throws Exception {
+        Intent intent = new IntentBuilder(mModuleManagedPage)
+                .setModuleManagedUrlRegex(getModuleManagedRegex())
+                .build();
+        mActivityRule.startCustomTabActivityWithIntent(intent);
+        waitForModuleLoading();
+
+        runOnUiThreadBlocking(() -> {
+            CustomTabActivity cctActivity = getActivity();
+            View anyView = new View(cctActivity);
+            getModuleCoordinator().setTopBarContentView(anyView);
+            getModuleCoordinator().setTopBarHeight(0);
+            assertEquals(View.GONE, anyView.getVisibility());
+        });
+    }
+
+    @Test
+    @SmallTest
     @Features.EnableFeatures(ChromeFeatureList.CCT_MODULE_USE_INTENT_EXTRAS)
     @Features.DisableFeatures(ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER)
     public void testSetTopBarContentView_featureDisabled_progressBarNoChange() throws Exception {

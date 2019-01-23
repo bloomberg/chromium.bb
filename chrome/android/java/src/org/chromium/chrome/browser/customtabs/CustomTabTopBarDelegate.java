@@ -40,7 +40,12 @@ public class CustomTabTopBarDelegate {
             getTopBarView().addView(mTopBarContentView);
         }
         if (mTopBarContentView != null) {
-            mTopBarContentView.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+            if (mTopBarHeight != null && mTopBarHeight == 0) {
+                // Hide the top bar when its height is specifically set to 0.
+                mTopBarContentView.setVisibility(View.GONE);
+            } else {
+                mTopBarContentView.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+            }
         }
     }
 
