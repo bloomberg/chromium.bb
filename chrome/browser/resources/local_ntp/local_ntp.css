@@ -516,6 +516,14 @@ html[dir=rtl] #attribution,
   width: 100%;
 }
 
+.customize-dialog::backdrop {
+  background-color: rgba(255, 255, 255, .75);
+}
+
+html[darkmode=true] .customize-dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
 #custom-links-edit-dialog {
   background: transparent;
   border: none;
@@ -524,10 +532,6 @@ html[dir=rtl] #attribution,
   position: fixed;
   top: 0;
   width: 100%;
-}
-
-#custom-links-edit-dialog::backdrop {
-  background-color: rgba(255, 255, 255, .75);
 }
 
 #custom-links-edit {
