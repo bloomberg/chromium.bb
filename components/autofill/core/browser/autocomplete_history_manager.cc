@@ -24,6 +24,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
 
+using NotificationType = autofill::AutofillObserver::NotificationType;
+
 namespace autofill {
 namespace {
 
@@ -173,8 +175,10 @@ void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
 void AutocompleteHistoryManager::OnWillSubmitForm(
     const FormData& form,
     bool is_autocomplete_enabled) {
-  if (!is_autocomplete_enabled || is_off_the_record_)
+  if (!is_autocomplete_enabled || is_off_the_record_) {
+    Notify(NotificationType::AutocompleteFormSkipped);
     return;
+  }
 
   // We put the following restriction on stored FormFields:
   //  - non-empty name
@@ -197,8 +201,11 @@ void AutocompleteHistoryManager::OnWillSubmitForm(
     }
   }
 
-  if (!values.empty() && profile_database_.get())
+  if (!values.empty() && profile_database_.get()) {
     profile_database_->AddFormFields(values);
+
+    Notify(NotificationType::AutocompleteFormSubmitted);
+  }
 }
 
 void AutocompleteHistoryManager::OnRemoveAutocompleteEntry(
@@ -334,6 +341,8 @@ void AutocompleteHistoryManager::OnAutofillCleanupReturned(
   // Cleanup was successful, update the latest run milestone.
   pref_service_->SetInteger(prefs::kAutocompleteLastVersionRetentionPolicy,
                             CHROME_VERSION_MAJOR);
+
+  Notify(NotificationType::AutocompleteCleanupDone);
 }
 
 void AutocompleteHistoryManager::CancelAllPendingQueries() {

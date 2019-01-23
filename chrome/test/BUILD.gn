@@ -7,6 +7,7 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//build/util/version.gni")
 import("//chrome/chrome_repack_locales.gni")
 import("//chrome/common/features.gni")
 import("//chromeos/assistant/assistant.gni")
@@ -462,7 +463,10 @@ test("browser_tests") {
 
   data = []
 
-  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+  defines = [
+    "HAS_OUT_OF_PROC_TEST_RUNNER",
+    "CHROME_VERSION_MAJOR=" + chrome_version_major,
+  ]
 
   if (is_win) {
     data += [ "$root_out_dir/chrome_200_percent.pak" ]
@@ -542,6 +546,7 @@ test("browser_tests") {
       "../browser/apps/platform_apps/platform_app_navigation_redirector_browsertest.cc",
       "../browser/apps/platform_apps/service_worker_browsertest.cc",
       "../browser/autocomplete/autocomplete_browsertest.cc",
+      "../browser/autofill/autofill_autocomplete_browsertest.cc",
       "../browser/autofill/autofill_browsertest.cc",
       "../browser/autofill/autofill_metrics_browsertest.cc",
       "../browser/autofill/autofill_provider_browsertest.cc",
