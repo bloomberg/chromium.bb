@@ -1049,9 +1049,9 @@ void BlobMemoryController::RecordTracingCounters() const {
   TRACE_COUNTER2("Blob", "MemoryUsage", "TotalStorage", blob_memory_used_,
                  "InFlightToDisk", in_flight_memory_used_);
   TRACE_COUNTER1("Blob", "DiskUsage", disk_used_);
-  TRACE_COUNTER1("Blob", "TranfersPendingOnDisk",
+  TRACE_COUNTER1("Blob", "TransfersPendingOnDisk",
                  pending_memory_quota_tasks_.size());
-  TRACE_COUNTER1("Blob", "TranfersBytesPendingOnDisk",
+  TRACE_COUNTER1("Blob", "TransfersBytesPendingOnDisk",
                  pending_memory_quota_total_size_);
 }
 
