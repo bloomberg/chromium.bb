@@ -731,15 +731,11 @@ void WallpaperController::UpdateWallpaperBlur(bool blur) {
 
 bool WallpaperController::ShouldApplyDimming() const {
   return Shell::Get()->session_controller()->IsUserSessionBlocked() &&
-         !IsOneShotWallpaper() &&
-         !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kAshDisableLoginDimAndBlur);
+         !IsOneShotWallpaper();
 }
 
 bool WallpaperController::IsBlurAllowed() const {
-  return !IsDevicePolicyWallpaper() && !IsOneShotWallpaper() &&
-         !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kAshDisableLoginDimAndBlur);
+  return !IsDevicePolicyWallpaper() && !IsOneShotWallpaper();
 }
 
 bool WallpaperController::IsWallpaperBlurred() const {
