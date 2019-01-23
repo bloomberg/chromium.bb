@@ -42,7 +42,7 @@
 
 namespace {
 
-constexpr SkColor kBackgroundColor = SK_ColorWHITE;
+constexpr SkColor kCustomTabBarViewBackgroundColor = SK_ColorWHITE;
 
 // The frame color is different on ChromeOS and other platforms because Ash
 // specifies its own default frame color, which is not exposed through
@@ -151,7 +151,7 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
   // If we have a theme color, use that, otherwise fall back to the default
   // frame color.
   title_bar_color_ = optional_theme_color.value_or(GetDefaultFrameColor());
-  SetBackground(views::CreateSolidBackground(kBackgroundColor));
+  SetBackground(views::CreateSolidBackground(kCustomTabBarViewBackgroundColor));
 
   constexpr SkColor kForegroundColor = gfx::kGoogleGrey900;
 
@@ -164,8 +164,8 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
   location_icon_view_ = new LocationIconView(font_list, this);
   AddChildView(location_icon_view_);
 
-  title_origin_view_ =
-      new CustomTabBarTitleOriginView(kForegroundColor, kBackgroundColor);
+  title_origin_view_ = new CustomTabBarTitleOriginView(
+      kForegroundColor, kCustomTabBarViewBackgroundColor);
   AddChildView(title_origin_view_);
 
   int padding = GetLayoutConstant(LayoutConstant::LOCATION_BAR_ELEMENT_PADDING);
@@ -224,14 +224,16 @@ void CustomTabBarView::OnPaintBackground(gfx::Canvas* canvas) {
   bounds.Inset(0, 0, 0, 1);
 
   // Custom tab/content separator (bottom border).
-  canvas->DrawLine(bounds.bottom_left(), bounds.bottom_right(),
-                   color_utils::AlphaBlend(kSeparatorColor, kBackgroundColor,
-                                           kSeparatorOpacity));
+  canvas->DrawLine(
+      bounds.bottom_left(), bounds.bottom_right(),
+      color_utils::AlphaBlend(kSeparatorColor, kCustomTabBarViewBackgroundColor,
+                              kSeparatorOpacity));
 
   // Don't render the separator if there is already sufficient contrast between
   // the custom tab bar and the title bar.
   constexpr float kMaxContrastForSeparator = 1.1f;
-  if (color_utils::GetContrastRatio(kBackgroundColor, title_bar_color_) >
+  if (color_utils::GetContrastRatio(kCustomTabBarViewBackgroundColor,
+                                    title_bar_color_) >
       kMaxContrastForSeparator) {
     return;
   }
