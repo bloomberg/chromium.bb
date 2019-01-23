@@ -116,9 +116,7 @@ testcase.openQuickViewDrive = async function() {
   const mimeTypeSelector = [
     '#quick-view',
     '#metadata-box',
-    // TODO(crbug.com/677338): Replace the attribute selector with key="Type"
-    // once the key is populated with polymer2 enabled.
-    'files-metadata-entry[i18n-values="key:METADATA_BOX_MEDIA_MIME_TYPE"]',
+    'files-metadata-entry[key="Type"]',
     '#value div',
   ];
   chrome.test.assertEq(
