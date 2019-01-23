@@ -17,6 +17,9 @@ from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 
 
+DLC_META_DIR = 'opt/google/dlc/'
+DLC_IMAGE_DIR = 'build/rootfs/dlc/'
+
 _SQUASHFS_TYPE = 'squashfs'
 _EXT4_TYPE = 'ext4'
 
@@ -51,14 +54,13 @@ class DlcGenerator(object):
   # The DLC root path inside the DLC module.
   _DLC_ROOT_DIR = 'root'
 
-  def __init__(self, img_dir, meta_dir, src_dir, fs_type, pre_allocated_blocks,
+  def __init__(self, src_dir, install_root_dir, fs_type, pre_allocated_blocks,
                version, dlc_id, name):
     """Object initializer.
 
     Args:
-      img_dir: (str) path to the DLC image dest root directory.
-      meta_dir: (str) path to the DLC metadata dest root directory.
       src_dir: (str) path to the DLC source root directory.
+      install_root_dir: (str) The path to the root installation directory.
       fs_type: (str) file system type.
       pre_allocated_blocks: (int) number of blocks pre-allocated on device.
       version: (str) DLC version.
@@ -66,15 +68,24 @@ class DlcGenerator(object):
       name: (str) DLC name.
     """
     self.src_dir = src_dir
+    self.install_root_dir = install_root_dir
     self.fs_type = fs_type
     self.pre_allocated_blocks = pre_allocated_blocks
     self.version = version
     self.dlc_id = dlc_id
     self.name = name
+
+    self.meta_dir = os.path.join(self.install_root_dir, DLC_META_DIR,
+                                 self.dlc_id)
+    self.image_dir = os.path.join(self.install_root_dir, DLC_IMAGE_DIR,
+                                  self.dlc_id)
+    osutils.SafeMakedirs(self.meta_dir)
+    osutils.SafeMakedirs(self.image_dir)
+
     # Create path for all final artifacts.
-    self.dest_image = os.path.join(img_dir, 'dlc.img')
-    self.dest_table = os.path.join(meta_dir, 'table')
-    self.dest_imageloader_json = os.path.join(meta_dir, 'imageloader.json')
+    self.dest_image = os.path.join(self.image_dir, 'dlc.img')
+    self.dest_table = os.path.join(self.meta_dir, 'table')
+    self.dest_imageloader_json = os.path.join(self.meta_dir, 'imageloader.json')
 
   def SquashOwnerships(self, path):
     """Squash the owernships & permissions for files.
@@ -217,14 +228,10 @@ def GetParser():
                         required=True,
                         help='Root directory path that contains all DLC files '
                         'to be packed.')
-  required.add_argument('--img-dir', type='path', metavar='IMG_DIR_PATH',
+  required.add_argument('--install-root-dir', type='path', metavar='DIR',
                         required=True,
-                        help='Root directory path that contains DLC image file '
-                        'output.')
-  required.add_argument('--meta-dir', type='path', metavar='META_DIR_PATH',
-                        required=True,
-                        help='Root directory path that contains DLC metadata '
-                        'output.')
+                        help='The root path to install DLC images (in %s) and '
+                        'metadata (in %s).' % (DLC_IMAGE_DIR, DLC_META_DIR))
   required.add_argument('--pre-allocated-blocks', type=int,
                         metavar='PREALLOCATEDBLOCKS', required=True,
                         help='Number of blocks (block size is 4k) that need to'
@@ -248,8 +255,11 @@ def main(argv):
   opts = GetParser().parse_args(argv)
   opts.Freeze()
 
+  if opts.fs_type == _EXT4_TYPE:
+    raise Exception('ext4 unsupported, see https://crbug.com/890060')
+
   # Generate final DLC files.
-  dlc_generator = DlcGenerator(opts.img_dir, opts.meta_dir, opts.src_dir,
+  dlc_generator = DlcGenerator(opts.src_dir, opts.install_root_dir,
                                opts.fs_type, opts.pre_allocated_blocks,
                                opts.version, opts.id, opts.name)
   dlc_generator.GenerateDLC()

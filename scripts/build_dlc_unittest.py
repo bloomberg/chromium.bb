@@ -24,6 +24,8 @@ _PRE_ALLOCATED_BLOCKS = 100
 _VERSION = '1.0'
 _ID = 'id'
 _NAME = 'name'
+_META_DIR = 'opt/google/dlc/'
+_IMAGE_DIR = 'build/rootfs/dlc/'
 
 
 class HashFileTest(cros_test_lib.TempDirTestCase):
@@ -45,8 +47,16 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
     """Factory method for a DcGenerator object"""
     src_dir = os.path.join(self.tempdir, 'src')
     osutils.SafeMakedirs(src_dir)
-    return build_dlc.DlcGenerator(self.tempdir, self.tempdir, src_dir, fs_type,
+    return build_dlc.DlcGenerator(src_dir, self.tempdir, fs_type,
                                   _PRE_ALLOCATED_BLOCKS, _VERSION, _ID, _NAME)
+
+  def testSetInstallDir(self):
+    """Tests install_root_dir is used correclty."""
+    generator = self.GetDlcGenerator()
+    self.assertEqual(generator.meta_dir,
+                     os.path.join(self.tempdir, _META_DIR, _ID))
+    self.assertEqual(generator.image_dir,
+                     os.path.join(self.tempdir, _IMAGE_DIR, _ID))
 
   def testSquashOwnerships(self):
     """Test build_dlc.SquashOwnershipsTest"""
