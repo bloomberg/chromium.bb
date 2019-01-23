@@ -33,6 +33,7 @@ import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChipType;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetails;
+import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsModel;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
@@ -157,15 +158,17 @@ public class AutofillAssistantUiTest {
         // Show movie details.
         String movieTitle = "testTitle";
         String movieDescription = "This is a fancy test movie";
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            assistantCoordinator.getDetailsCoordinator().showDetails(new AssistantDetails(
-                    movieTitle, /* url = */ "", Calendar.getInstance().getTime(), movieDescription,
-                    /* mId = */ "",
-                    /* price = */ null,
-                    /* userApprovalRequired= */ false,
-                    /* highlightTitle= */ false, /* highlightDate= */
-                    false, /* showPlaceholdersForEmptyFields= */ false));
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> assistantCoordinator.getModel().getDetailsModel().set(
+                                AssistantDetailsModel.DETAILS,
+                                new AssistantDetails(movieTitle, /* url = */ "",
+                                        Calendar.getInstance().getTime(), movieDescription,
+                                        /* mId = */ "",
+                                        /* price = */ null,
+                                        /* userApprovalRequired= */ false,
+                                        /* highlightTitle= */ false, /* highlightDate= */
+                                        false, /* showPlaceholdersForEmptyFields= */ false)));
         TextView detailsTitle = (TextView) bottomSheet.findViewById(R.id.details_title);
         TextView detailsText = (TextView) bottomSheet.findViewById(R.id.details_text);
         Assert.assertEquals(detailsTitle.getText(), movieTitle);

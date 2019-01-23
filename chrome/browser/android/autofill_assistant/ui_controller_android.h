@@ -100,6 +100,7 @@ class UiControllerAndroid : public UiController {
 
   base::android::ScopedJavaLocalRef<jobject> GetModel();
   base::android::ScopedJavaLocalRef<jobject> GetHeaderModel();
+  base::android::ScopedJavaLocalRef<jobject> GetDetailsModel();
   base::android::ScopedJavaLocalRef<jobject> GetCarouselModel();
 
   void SetProgressPulsingEnabled(bool enabled);

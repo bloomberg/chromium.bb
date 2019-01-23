@@ -4766,6 +4766,8 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantUiController.java",
       "../android/java/src/org/chromium/chrome/browser/autofill_assistant/carousel/AssistantCarouselDelegate.java",
       "../android/java/src/org/chromium/chrome/browser/autofill_assistant/carousel/AssistantCarouselModel.java",
+      "../android/java/src/org/chromium/chrome/browser/autofill_assistant/details/AssistantDetails.java",
+      "../android/java/src/org/chromium/chrome/browser/autofill_assistant/details/AssistantDetailsModel.java",
       "../android/java/src/org/chromium/chrome/browser/autofill_assistant/header/AssistantHeaderDelegate.java",
       "../android/java/src/org/chromium/chrome/browser/autofill_assistant/header/AssistantHeaderModel.java",
       "../android/java/src/org/chromium/chrome/browser/banners/AppBannerManager.java",

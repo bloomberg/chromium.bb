@@ -22,8 +22,6 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentOptions;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -196,38 +194,6 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
 
     @CalledByNative
-    private void onHideDetails() {
-        mCoordinator.getDetailsCoordinator().hideDetails();
-    }
-
-    @CalledByNative
-    private void onShowInitialDetails(String title, String description, String mid, String date) {
-        mCoordinator.getDetailsCoordinator().showInitialDetails(title, description, mid, date);
-    }
-
-    @CalledByNative
-    private void onShowDetails(String title, String url, String description, String mId,
-            String price, int year, int month, int day, int hour, int minute, int second,
-            boolean userApprovalRequired, boolean highlightTitle, boolean highlightDate) {
-        Date date;
-        if (year > 0 && month > 0 && day > 0 && hour >= 0 && minute >= 0 && second >= 0) {
-            Calendar calendar = Calendar.getInstance();
-            calendar.clear();
-            // Month in Java Date is 0-based, but the one we receive from the server is 1-based.
-            calendar.set(year, month - 1, day, hour, minute, second);
-            date = calendar.getTime();
-        } else {
-            date = null;
-        }
-
-        if (price.length() == 0) price = null;
-
-        mCoordinator.getDetailsCoordinator().showDetails(new AssistantDetails(title, url, date,
-                description, mId, price, userApprovalRequired, highlightTitle, highlightDate,
-                /* showPlaceholdersForEmptyFields= */ false));
-    }
-
-    @CalledByNative
     private void onShowOnboarding(Runnable onAccept) {
         mCoordinator.showOnboarding(onAccept);
     }
@@ -238,8 +204,8 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
 
     @CalledByNative
-    private void showFeedback(String debugContext) {
-        mCoordinator.showFeedback(debugContext);
+    private void showFeedback(String debugContext, @Nullable AssistantDetails details) {
+        mCoordinator.showFeedback(debugContext, details);
     }
 
     @CalledByNative

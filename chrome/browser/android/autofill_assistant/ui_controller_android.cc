@@ -33,6 +33,8 @@
 #include "content/public/browser/web_contents.h"
 #include "google_apis/google_api_keys.h"
 #include "jni/AssistantCarouselModel_jni.h"
+#include "jni/AssistantDetailsModel_jni.h"
+#include "jni/AssistantDetails_jni.h"
 #include "jni/AssistantHeaderModel_jni.h"
 #include "jni/AssistantModel_jni.h"
 #include "jni/AutofillAssistantUiController_jni.h"
@@ -123,9 +125,10 @@ void UiControllerAndroid::SetProgressPulsingEnabled(bool enabled) {
 
 void UiControllerAndroid::OnFeedbackButtonClicked() {
   JNIEnv* env = AttachCurrentThread();
+  auto jdetails = Java_AssistantDetailsModel_getDetails(env, GetDetailsModel());
   Java_AutofillAssistantUiController_showFeedback(
       env, java_autofill_assistant_ui_controller_,
-      base::android::ConvertUTF8ToJavaString(env, GetDebugContext()));
+      base::android::ConvertUTF8ToJavaString(env, GetDebugContext()), jdetails);
 }
 
 void UiControllerAndroid::OnCloseButtonClicked() {
@@ -318,9 +321,16 @@ void UiControllerAndroid::GetPaymentInformation(
       base::android::ToJavaArrayOfStrings(env, supported_basic_card_networks));
 }
 
+// Details related method.
+
+base::android::ScopedJavaLocalRef<jobject>
+UiControllerAndroid::GetDetailsModel() {
+  return Java_AssistantModel_getDetailsModel(AttachCurrentThread(), GetModel());
+}
+
 void UiControllerAndroid::HideDetails() {
-  Java_AutofillAssistantUiController_onHideDetails(
-      AttachCurrentThread(), java_autofill_assistant_ui_controller_);
+  Java_AssistantDetailsModel_clearDetails(AttachCurrentThread(),
+                                          GetDetailsModel());
 }
 
 void UiControllerAndroid::ShowInitialDetails(const std::string& title,
@@ -328,12 +338,12 @@ void UiControllerAndroid::ShowInitialDetails(const std::string& title,
                                              const std::string& mid,
                                              const std::string& date) {
   JNIEnv* env = AttachCurrentThread();
-  Java_AutofillAssistantUiController_onShowInitialDetails(
-      env, java_autofill_assistant_ui_controller_,
-      base::android::ConvertUTF8ToJavaString(env, title),
+  auto jdetails = Java_AssistantDetails_createInitial(
+      env, base::android::ConvertUTF8ToJavaString(env, title),
       base::android::ConvertUTF8ToJavaString(env, description),
       base::android::ConvertUTF8ToJavaString(env, mid),
       base::android::ConvertUTF8ToJavaString(env, date));
+  Java_AssistantDetailsModel_setDetails(env, GetDetailsModel(), jdetails);
 }
 
 void UiControllerAndroid::ShowDetails(const ShowDetailsProto& show_details,
@@ -408,15 +418,15 @@ void UiControllerAndroid::ShowDetails(const ShowDetailsProto& show_details,
   int second = details.datetime().time().second();
 
   JNIEnv* env = AttachCurrentThread();
-  return Java_AutofillAssistantUiController_onShowDetails(
-      env, java_autofill_assistant_ui_controller_,
-      base::android::ConvertUTF8ToJavaString(env, details.title()),
+  auto jdetails = Java_AssistantDetails_create(
+      env, base::android::ConvertUTF8ToJavaString(env, details.title()),
       base::android::ConvertUTF8ToJavaString(env, details.url()),
       base::android::ConvertUTF8ToJavaString(env, details.description()),
       base::android::ConvertUTF8ToJavaString(env, details.m_id()),
       base::android::ConvertUTF8ToJavaString(env, details.total_price()), year,
       month, day, hour, minute, second, user_approval_required, highlight_title,
       highlight_date);
+  Java_AssistantDetailsModel_setDetails(env, GetDetailsModel(), jdetails);
 }
 
 void UiControllerAndroid::Stop(

@@ -16,7 +16,6 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.media.ThumbnailUtils;
 import android.os.Build;
-import android.support.annotation.Nullable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.text.TextUtils;
@@ -33,7 +32,6 @@ import org.chromium.chrome.browser.cached_image_fetcher.CachedImageFetcher;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -50,7 +48,6 @@ public class AssistantDetailsCoordinator {
     private static final int PULSING_DURATION_MS = 1_000;
     private static final String DETAILS_TIME_FORMAT = "H:mma";
     private static final String DETAILS_DATE_FORMAT = "EEE, MMM d";
-    private static final String RFC_3339_FORMAT_WITHOUT_TIMEZONE = "yyyy'-'MM'-'dd'T'HH':'mm':'ss";
 
     private final Context mContext;
     private final Runnable mOnVisibilityChanged;
@@ -69,10 +66,8 @@ public class AssistantDetailsCoordinator {
     private final Set<View> mViewsToAnimate = new HashSet<>();
     private ValueAnimator mPulseAnimation;
 
-    @Nullable
-    private AssistantDetails mCurrentDetails;
-
-    public AssistantDetailsCoordinator(ChromeActivity activity, Runnable onVisibilityChanged) {
+    public AssistantDetailsCoordinator(
+            ChromeActivity activity, AssistantDetailsModel model, Runnable onVisibilityChanged) {
         mContext = activity;
         mOnVisibilityChanged = onVisibilityChanged;
 
@@ -91,6 +86,20 @@ public class AssistantDetailsCoordinator {
                 R.dimen.autofill_assistant_details_image_size);
         mPulseAnimationStartColor = mContext.getResources().getColor(R.color.modern_grey_100);
         mPulseAnimationEndColor = mContext.getResources().getColor(R.color.modern_grey_50);
+
+        // Details view is initially hidden.
+        setVisible(false);
+
+        model.addObserver((source, propertyKey) -> {
+            if (AssistantDetailsModel.DETAILS == propertyKey) {
+                AssistantDetails details = model.get(AssistantDetailsModel.DETAILS);
+                if (details != null) {
+                    showDetails(details);
+                } else {
+                    setVisible(false);
+                }
+            }
+        });
     }
 
     /**
@@ -104,7 +113,7 @@ public class AssistantDetailsCoordinator {
      * Show or hide the details within its parent and call the {@code mOnVisibilityChanged}
      * listener.
      */
-    public void setVisible(boolean visible) {
+    private void setVisible(boolean visible) {
         int visibility = visible ? View.VISIBLE : View.GONE;
         boolean changed = mView.getVisibility() != visibility;
         if (changed) {
@@ -114,55 +123,14 @@ public class AssistantDetailsCoordinator {
     }
 
     /**
-     * Hide the details.
-     */
-    public void hideDetails() {
-        setVisible(false);
-    }
-
-    /**
-     * Return the current details.
-     */
-    @Nullable
-    public AssistantDetails getCurrentDetails() {
-        return mCurrentDetails;
-    }
-
-    /**
-     * Show details with given {@code title}, {@code description}, {@code mid} and {@code date}
-     * (given in the RFC 3339 format).
-     */
-    // TODO(crbug.com/806868): Move extraction to native side and call showDetails once we can parse
-    // details (date) natively.
-    public void showInitialDetails(
-            String title, String description, String mId, String dateString) {
-        Date date = null;
-        if (!dateString.isEmpty()) {
-            try {
-                // The parameter contains the timezone shift from the current location, that we
-                // don't care about.
-                date = new SimpleDateFormat(RFC_3339_FORMAT_WITHOUT_TIMEZONE, Locale.ROOT)
-                               .parse(dateString);
-            } catch (ParseException e) {
-                // Ignore.
-            }
-        }
-
-        showDetails(
-                new AssistantDetails(title, /* url= */ "", date, description, mId, /* price= */ "",
-                        /* userApprovalRequired= */ false, /* highlightTitle= */ false,
-                        /* highlightDate= */ false, /* showPlaceholdersForEmptyFields= */ true));
-    }
-
-    /**
      * Update the details.
      */
-    public void showDetails(AssistantDetails details) {
+    private void showDetails(AssistantDetails details) {
         String detailsText = makeDetailsText(details);
         mTitleView.setText(details.getTitle());
         mSubtextView.setText(detailsText);
 
-        if (mCurrentDetails == null) {
+        if (mImageView.getDrawable() == null) {
             // Set default image if no image was set before.
             mImageView.setImageDrawable(mDefaultImage);
         }
@@ -179,14 +147,6 @@ public class AssistantDetailsCoordinator {
         }
 
         setVisible(true);
-        mCurrentDetails = details;
-    }
-
-    /**
-     * Whether details are currently displayed.
-     */
-    public boolean isVisible() {
-        return mView.getVisibility() == View.VISIBLE;
     }
 
     private void setTextStyles(AssistantDetails details) {

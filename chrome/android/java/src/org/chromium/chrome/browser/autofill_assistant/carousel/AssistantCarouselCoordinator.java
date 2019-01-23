@@ -48,6 +48,9 @@ public class AssistantCarouselCoordinator {
                         AssistantChipViewHolder::bind),
                 AssistantChipViewHolder::create));
 
+        // Carousel is initially hidden.
+        setVisible(false);
+
         // Listen for changes on REVERSE_LAYOUT.
         model.addObserver((source, propertyKey) -> {
             if (AssistantCarouselModel.REVERSE_LAYOUT == propertyKey) {
@@ -92,7 +95,7 @@ public class AssistantCarouselCoordinator {
      * Show or hide this carousel within its parent and call the {@code mOnVisibilityChanged}
      * listener.
      */
-    public void setVisible(boolean visible) {
+    private void setVisible(boolean visible) {
         int visibility = visible ? View.VISIBLE : View.GONE;
         boolean changed = mView.getVisibility() != visibility;
         if (changed) {
