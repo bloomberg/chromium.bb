@@ -35,7 +35,7 @@ ToAuthenticatorMakeCredentialResponse(
   base::Optional<cbor::Value> cbor_attestation_statement = cbor::Reader::Read(
       base::span<const uint8_t>(credential_attestation.pbAttestation,
                                 credential_attestation.cbAttestation));
-  if (!cbor_attestation_statement) {
+  if (!cbor_attestation_statement || !cbor_attestation_statement->is_map()) {
     DLOG(ERROR) << "CBOR decoding attestation statement failed: "
                 << base::HexEncode(credential_attestation.pbAttestation,
                                    credential_attestation.cbAttestation);
@@ -67,7 +67,7 @@ ToAuthenticatorMakeCredentialResponse(
   }
 
   return AuthenticatorMakeCredentialResponse(
-      base::nullopt /* transport_used */,
+      transport_used,
       AttestationObject(
           std::move(*authenticator_data),
           std::make_unique<OpaqueAttestationStatement>(
