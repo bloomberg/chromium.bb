@@ -20,8 +20,7 @@
 namespace blink {
 
 CompositingReasons CompositingReasonFinder::DirectReasons(
-    const PaintLayer& layer,
-    bool ignore_lcd_text) {
+    const PaintLayer& layer) {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return CompositingReason::kNone;
 
@@ -32,7 +31,7 @@ CompositingReasons CompositingReasonFinder::DirectReasons(
       CompositingReason::kComboAllDirectStyleDeterminedReasons;
 
   return style_determined_direct_compositing_reasons |
-         NonStyleDeterminedDirectReasons(layer, ignore_lcd_text);
+         NonStyleDeterminedDirectReasons(layer);
 }
 
 bool CompositingReasonFinder::RequiresCompositingForScrollableFrame(
@@ -131,8 +130,7 @@ bool CompositingReasonFinder::RequiresCompositingForTransform(
 }
 
 CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
-    const PaintLayer& layer,
-    bool ignore_lcd_text) {
+    const PaintLayer& layer) {
   CompositingReasons direct_reasons = CompositingReason::kNone;
   LayoutObject& layout_object = layer.GetLayoutObject();
 
@@ -152,7 +150,7 @@ CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
       direct_reasons |= CompositingReason::kOverflowScrollingParent;
   }
 
-  if (RequiresCompositingForScrollDependentPosition(layer, ignore_lcd_text))
+  if (RequiresCompositingForScrollDependentPosition(layer))
     direct_reasons |= CompositingReason::kScrollDependentPosition;
 
   // TODO(crbug.com/839341): Remove once we support main-thread AnimationWorklet
@@ -240,18 +238,10 @@ bool CompositingReasonFinder::RequiresCompositingForRootScroller(
 }
 
 bool CompositingReasonFinder::RequiresCompositingForScrollDependentPosition(
-    const PaintLayer& layer,
-    bool ignore_lcd_text) {
+    const PaintLayer& layer) {
   const auto& layout_object = layer.GetLayoutObject();
   if (!layout_object.StyleRef().HasViewportConstrainedPosition() &&
       !layout_object.StyleRef().HasStickyConstrainedPosition())
-    return false;
-
-  const auto& settings = *layout_object.GetDocument().GetSettings();
-  if (settings.GetPreferCompositingToLCDTextEnabled())
-    ignore_lcd_text = true;
-
-  if (!ignore_lcd_text)
     return false;
 
   // Don't promote fixed position elements that are descendants of a non-view

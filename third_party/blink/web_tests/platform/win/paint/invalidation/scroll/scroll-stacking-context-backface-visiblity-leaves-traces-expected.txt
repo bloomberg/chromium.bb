@@ -13,21 +13,23 @@
     },
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [785, 1895],
+      "bounds": [785, 5056],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='ul'",
-          "rect": [677, 252, 100, 100],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='ul'",
-          "rect": [677, 52, 100, 100],
-          "reason": "paint property change"
-        }
-      ],
+      "transform": 1
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) HEADER",
+      "position": [8, 28],
+      "bounds": [769, 20],
+      "drawsContent": false,
+      "backfaceVisibility": "hidden",
+      "transform": 1
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='searchbar'",
+      "position": [18, 1850],
+      "bounds": [150, 150],
       "transform": 1
     }
   ],
@@ -38,7 +40,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [0, -200, 0, 1]
+        [0, -1400, 0, 1]
       ],
       "flattenInheritedTransform": false
     }

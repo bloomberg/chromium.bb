@@ -222,14 +222,8 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
   //    child.
   // 6. If |layer| is the root, composite if
   //    DescendantHasDirectCompositingReason is true for |layer|.
-  bool ignore_lcd_text =
-      (layer->AncestorScrollingLayer() &&
-       !layer->AncestorScrollingLayer()->IsRootLayer() &&
-       layer->AncestorScrollingLayer()->NeedsCompositedScrolling());
-
   layer->SetPotentialCompositingReasonsFromNonStyle(
-      CompositingReasonFinder::NonStyleDeterminedDirectReasons(
-          *layer, ignore_lcd_text));
+      CompositingReasonFinder::NonStyleDeterminedDirectReasons(*layer));
 
   if (layer->GetScrollableArea()) {
     layer->GetScrollableArea()->UpdateNeedsCompositedScrolling(

@@ -21,20 +21,15 @@
     {
       "name": "LayoutBlockFlow (relative positioned) HEADER",
       "position": [8, 26],
-      "bounds": [769, 1974],
+      "bounds": [769, 20],
+      "drawsContent": false,
       "backfaceVisibility": "hidden",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='searchbar'",
-          "rect": [10, 1824, 150, 150],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='searchbar'",
-          "rect": [10, 1424, 150, 150],
-          "reason": "paint property change"
-        }
-      ],
+      "transform": 1
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='searchbar'",
+      "position": [18, 1850],
+      "bounds": [150, 150],
       "transform": 1
     }
   ],

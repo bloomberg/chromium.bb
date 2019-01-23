@@ -13,26 +13,27 @@
     },
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [785, 5056],
+      "bounds": [785, 1895],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='ul'",
+          "rect": [677, 52, 100, 100],
+          "reason": "chunk disappeared"
+        }
+      ],
       "transform": 1
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) HEADER",
-      "position": [8, 28],
-      "bounds": [769, 1972],
-      "backfaceVisibility": "hidden",
+      "name": "LayoutBlockFlow (positioned) DIV id='scrollpanel'",
+      "position": [677, 252],
+      "bounds": [100, 100],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='searchbar'",
-          "rect": [10, 1822, 150, 150],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='searchbar'",
-          "rect": [10, 1422, 150, 150],
-          "reason": "paint property change"
+          "object": "LayoutBlockFlow (positioned) DIV id='scrollpanel'",
+          "rect": [0, 0, 100, 100],
+          "reason": "full layer"
         }
       ],
       "transform": 1
@@ -45,7 +46,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [0, -1400, 0, 1]
+        [0, -200, 0, 1]
       ],
       "flattenInheritedTransform": false
     }
