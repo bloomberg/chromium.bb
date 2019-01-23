@@ -65,6 +65,11 @@ class GpuHost : public viz::GpuHostImpl::Delegate {
   void AddArc(mojom::ArcRequest request);
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(USE_OZONE)
+  void BindOzoneGpuInterface(const std::string& interface_name,
+                             mojo::ScopedMessagePipeHandle interface_pipe);
+#endif
+
  private:
   friend class GpuHostTestApi;
 

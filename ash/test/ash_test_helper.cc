@@ -89,8 +89,8 @@ class TestGpuInterfaceProvider : public ws::GpuInterfaceProvider {
     registry->AddInterface(base::BindRepeating(
         &TestGpuInterfaceProvider::BindGpuRequest, base::Unretained(this)));
   }
-  void RegisterOzoneGpuInterfaces(
-      service_manager::BinderRegistry* registry) override {}
+  void BindOzoneGpuInterface(const std::string& interface_name,
+                             mojo::ScopedMessagePipeHandle handle) override {}
 
  private:
   void BindDiscardableSharedMemoryManager(

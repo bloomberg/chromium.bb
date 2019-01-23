@@ -80,11 +80,12 @@ void GpuInterfaceProvider::RegisterGpuInterfaces(
 }
 
 #if defined(USE_OZONE)
-void GpuInterfaceProvider::RegisterOzoneGpuInterfaces(
-    service_manager::BinderRegistry* registry) {
-  // Registers the gpu-related interfaces needed by Ozone.
-  // TODO(rjkroege): Adjust when Ozone/DRM/Mojo is complete.
-  NOTIMPLEMENTED();
+void GpuInterfaceProvider::BindOzoneGpuInterface(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle handle) {
+  // This function is only used in multi-process mash with in-process viz to
+  // bind gpu-related ozone interfaces. It should not be invoked here.
+  NOTREACHED();
 }
 #endif
 

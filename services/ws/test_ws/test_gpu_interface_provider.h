@@ -33,8 +33,8 @@ class TestGpuInterfaceProvider : public GpuInterfaceProvider {
   void RegisterGpuInterfaces(
       service_manager::BinderRegistry* registry) override;
 #if defined(USE_OZONE)
-  void RegisterOzoneGpuInterfaces(
-      service_manager::BinderRegistry* registry) override;
+  void BindOzoneGpuInterface(const std::string& interface_name,
+                             mojo::ScopedMessagePipeHandle handle) override;
 #endif
 
  private:

@@ -88,17 +88,36 @@ class QueueingConnectionFilter : public ConnectionFilter {
                                  weak_factory_.GetWeakPtr()));
   }
 
-  void AddInterfaces() {
 #if defined(USE_OZONE)
-    ui::OzonePlatform::GetInstance()->AddInterfaces(registry_.get());
+  void set_viz_main(viz::VizMainImpl* viz_main) { viz_main_ = viz_main; }
 #endif
-  }
 
  private:
   struct PendingRequest {
     std::string interface_name;
     mojo::ScopedMessagePipeHandle interface_pipe;
   };
+
+  bool CanBindInterface(const std::string& interface_name) const {
+#if defined(USE_OZONE)
+    DCHECK(viz_main_);
+    if (viz_main_->CanBindInterface(interface_name))
+      return true;
+#endif
+    return registry_->CanBindInterface(interface_name);
+  }
+
+  void BindInterface(const std::string& interface_name,
+                     mojo::ScopedMessagePipeHandle interface_pipe) {
+    if (registry_->TryBindInterface(interface_name, &interface_pipe))
+      return;
+#if defined(USE_OZONE)
+    DCHECK(viz_main_);
+    viz_main_->BindInterface(interface_name, std::move(interface_pipe));
+#else
+    NOTREACHED();
+#endif
+  }
 
   // ConnectionFilter:
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
@@ -107,9 +126,9 @@ class QueueingConnectionFilter : public ConnectionFilter {
                        service_manager::Connector* connector) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
 
-    if (registry_->CanBindInterface(interface_name)) {
+    if (CanBindInterface(interface_name)) {
       if (released_) {
-        registry_->BindInterface(interface_name, std::move(*interface_pipe));
+        BindInterface(interface_name, std::move(*interface_pipe));
       } else {
         std::unique_ptr<PendingRequest> request =
             std::make_unique<PendingRequest>();
@@ -124,8 +143,8 @@ class QueueingConnectionFilter : public ConnectionFilter {
     DCHECK(io_thread_checker_.CalledOnValidThread());
     released_ = true;
     for (auto& request : pending_requests_) {
-      registry_->BindInterface(request->interface_name,
-                               std::move(request->interface_pipe));
+      BindInterface(request->interface_name,
+                    std::move(request->interface_pipe));
     }
   }
 
@@ -134,6 +153,10 @@ class QueueingConnectionFilter : public ConnectionFilter {
   bool released_ = false;
   std::vector<std::unique_ptr<PendingRequest>> pending_requests_;
   std::unique_ptr<service_manager::BinderRegistry> registry_;
+
+#if defined(USE_OZONE)
+  viz::VizMainImpl* viz_main_ = nullptr;
+#endif
 
   base::WeakPtrFactory<QueueingConnectionFilter> weak_factory_;
 
@@ -222,9 +245,12 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
   std::unique_ptr<QueueingConnectionFilter> filter =
       std::make_unique<QueueingConnectionFilter>(GetIOTaskRunner(),
                                                  std::move(registry));
+#if defined(USE_OZONE)
+  filter->set_viz_main(&viz_main_);
+#endif
+
   release_pending_requests_closure_ = filter->GetReleaseCallback();
 
-  filter->AddInterfaces();
   GetServiceManagerConnection()->AddConnectionFilter(std::move(filter));
 
   StartServiceManagerConnection();

@@ -100,6 +100,10 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
       base::BindOnce(&VizMainImpl::ExitProcess, base::Unretained(this)));
   if (dependencies_.create_display_compositor)
     gpu_service_->set_oopd_enabled();
+
+#if defined(USE_OZONE)
+  ui::OzonePlatform::GetInstance()->AddInterfaces(&registry_);
+#endif
 }
 
 VizMainImpl::~VizMainImpl() {
@@ -133,6 +137,17 @@ void VizMainImpl::Bind(mojom::VizMainRequest request) {
 void VizMainImpl::BindAssociated(mojom::VizMainAssociatedRequest request) {
   associated_binding_.Bind(std::move(request));
 }
+
+#if defined(USE_OZONE)
+bool VizMainImpl::CanBindInterface(const std::string& interface_name) const {
+  return registry_.CanBindInterface(interface_name);
+}
+
+void VizMainImpl::BindInterface(const std::string& interface_name,
+                                mojo::ScopedMessagePipeHandle interface_pipe) {
+  registry_.BindInterface(interface_name, std::move(interface_pipe));
+}
+#endif
 
 void VizMainImpl::CreateGpuService(
     mojom::GpuServiceRequest request,
