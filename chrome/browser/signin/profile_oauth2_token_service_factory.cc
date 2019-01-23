@@ -26,10 +26,10 @@
 #include "components/signin/core/browser/oauth2_token_service_delegate_android.h"
 #else
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
-#include "chrome/browser/signin/mutable_profile_oauth2_token_service_delegate.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/signin/core/browser/cookie_settings_util.h"
+#include "components/signin/core/browser/mutable_profile_oauth2_token_service_delegate.h"
 #endif
 
 #if defined(OS_CHROMEOS)

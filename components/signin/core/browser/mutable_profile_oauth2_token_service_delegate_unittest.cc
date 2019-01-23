@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/mutable_profile_oauth2_token_service_delegate.h"
+#include "components/signin/core/browser/mutable_profile_oauth2_token_service_delegate.h"
 
 #include <map>
 #include <string>
@@ -1334,7 +1334,6 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
 // Checks that OnAuthErrorChanged() is called during UpdateCredentials(), and
 // that RefreshTokenIsAvailable() can be used at this time.
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, OnAuthErrorChanged) {
-
   class TokenServiceErrorObserver : public OAuth2TokenService::Observer {
    public:
     explicit TokenServiceErrorObserver(
