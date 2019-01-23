@@ -40,6 +40,13 @@ class CORE_EXPORT HTMLParserOptions {
   bool script_enabled = false;
   bool plugins_enabled = false;
 
+  // TODO(domfarolino): Remove this when Priority Hints is no longer in an
+  // Origin Trial. See https://crbug.com/821464.
+  // This flag is here because HTMLPreloadScanner needs to know whether or not
+  // the Priority Hints origin trial is enabled or not, and it does not have
+  // access to an ExecutionContext*, but HTMLParserOptions does.
+  bool priority_hints_origin_trial_enabled = false;
+
   explicit HTMLParserOptions(Document* = nullptr);
 };
 

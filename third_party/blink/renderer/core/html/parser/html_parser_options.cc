@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 
 namespace blink {
 
@@ -41,6 +42,8 @@ HTMLParserOptions::HTMLParserOptions(Document* document) {
     script_enabled = document->CanExecuteScripts(kNotAboutToExecuteScript);
     plugins_enabled =
         frame->Loader().AllowPlugins(kNotAboutToInstantiatePlugin);
+    priority_hints_origin_trial_enabled =
+        origin_trials::PriorityHintsEnabled(document);
   }
 }
 
