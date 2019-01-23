@@ -229,6 +229,32 @@ TEST_F(OmniboxEditModelTest, InlineAutocompleteText) {
   EXPECT_EQ(base::string16(), view()->inline_autocomplete_text());
 }
 
+// iOS doesn't use elisions in the Omnibox textfield.
+#if !defined(OS_IOS)
+TEST_F(OmniboxEditModelTest, RespectUnelisionInZeroSuggest) {
+  location_bar_model()->set_url(GURL("https://www.example.com/"));
+  location_bar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
+
+  EXPECT_TRUE(model()->ResetDisplayTexts());
+  model()->Revert();
+
+  // Set up view with unelided text.
+  EXPECT_EQ(base::ASCIIToUTF16("example.com"), view()->GetText());
+  EXPECT_TRUE(model()->Unelide(false /* exit_query_in_omnibox */));
+  EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"), view()->GetText());
+  EXPECT_FALSE(model()->user_input_in_progress());
+  EXPECT_TRUE(view()->IsSelectAll());
+
+  // Test that we don't clobber the unelided text with inline autocomplete text.
+  EXPECT_EQ(base::string16(), view()->inline_autocomplete_text());
+  model()->OnPopupDataChanged(base::string16(), nullptr, base::string16(),
+                              false);
+  EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"), view()->GetText());
+  EXPECT_FALSE(model()->user_input_in_progress());
+  EXPECT_TRUE(view()->IsSelectAll());
+}
+#endif  // !defined(OS_IOS)
+
 // This verifies the fix for a bug where calling OpenMatch() with a valid
 // alternate nav URL would fail a DCHECK if the input began with "http://".
 // The failure was due to erroneously trying to strip the scheme from the
@@ -295,6 +321,7 @@ TEST_F(OmniboxEditModelTest, DisplayText) {
   // permanent display text. Unelision should return false.
   EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"),
             model()->GetPermanentDisplayText());
+  EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"), view()->GetText());
   EXPECT_FALSE(model()->Unelide(false /* exit_query_in_omnibox */));
   EXPECT_FALSE(model()->user_input_in_progress());
   EXPECT_FALSE(view()->IsSelectAll());
@@ -302,8 +329,9 @@ TEST_F(OmniboxEditModelTest, DisplayText) {
   // Verify we can unelide and show the full URL properly.
   EXPECT_EQ(base::ASCIIToUTF16("example.com"),
             model()->GetPermanentDisplayText());
+  EXPECT_EQ(base::ASCIIToUTF16("example.com"), view()->GetText());
   EXPECT_TRUE(model()->Unelide(false /* exit_query_in_omnibox */));
-  EXPECT_TRUE(model()->user_input_in_progress());
+  EXPECT_FALSE(model()->user_input_in_progress());
   EXPECT_TRUE(view()->IsSelectAll());
 #endif
 
@@ -332,7 +360,7 @@ TEST_F(OmniboxEditModelTest, DisplayAndExitQueryInOmnibox) {
   // Verify we can exit Query in Omnibox mode properly.
   EXPECT_TRUE(model()->Unelide(true /* exit_query_in_omnibox */));
   EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"), view()->GetText());
-  EXPECT_TRUE(model()->user_input_in_progress());
+  EXPECT_FALSE(model()->user_input_in_progress());
   EXPECT_TRUE(view()->IsSelectAll());
   EXPECT_TRUE(model()->CurrentTextIsURL());
 

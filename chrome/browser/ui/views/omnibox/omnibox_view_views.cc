@@ -1230,15 +1230,16 @@ void OmniboxViewViews::OnBlur() {
   // Save the user's existing selection to restore it later.
   saved_selection_for_focus_change_ = GetSelectedRange();
 
-  // Revert the URL if the user has not made any changes. If steady-state
-  // elisions is on, this will also re-elide the URL.
+  // If the view is showing text that's not user-text, revert the text to the
+  // permanent display text. This usually occurs if Steady State Elisions is on
+  // and the user has unelided, but not edited the URL.
   //
   // Because merely Alt-Tabbing to another window and back should not change the
   // Omnibox state, we only revert the text only if the Omnibox is blurred in
   // favor of some other View in the same Widget.
   if (GetWidget() && GetWidget()->IsActive() &&
-      model()->user_input_in_progress() &&
-      text() == model()->GetPermanentDisplayText()) {
+      !model()->user_input_in_progress() &&
+      text() != model()->GetPermanentDisplayText()) {
     RevertAll();
   }
 

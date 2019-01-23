@@ -386,8 +386,7 @@ TEST_F(OmniboxViewViewsTest, SelectWithShift_863543) {
   location_bar_model()->set_url(GURL("http://www.example.com/?query=1"));
   const base::string16 text =
       base::ASCIIToUTF16("http://www.example.com/?query=1");
-  static_cast<OmniboxView*>(omnibox_view())
-      ->SetWindowTextAndCaretPos(text, 23U, false, false);
+  omnibox_view()->SetWindowTextAndCaretPos(text, 23U, false, false);
 
   ui::KeyEvent shift_up_pressed(ui::ET_KEY_PRESSED, ui::VKEY_UP,
                                 ui::EF_SHIFT_DOWN);
@@ -399,8 +398,7 @@ TEST_F(OmniboxViewViewsTest, SelectWithShift_863543) {
   EXPECT_EQ(0U, end);
   omnibox_view()->CheckUpdatePopupNotCalled();
 
-  static_cast<OmniboxView*>(omnibox_view())
-      ->SetWindowTextAndCaretPos(text, 18U, false, false);
+  omnibox_view()->SetWindowTextAndCaretPos(text, 18U, false, false);
 
   ui::KeyEvent shift_down_pressed(ui::ET_KEY_PRESSED, ui::VKEY_DOWN,
                                   ui::EF_SHIFT_DOWN);
@@ -431,8 +429,7 @@ TEST_F(OmniboxViewViewsTest, OnBlur) {
   omnibox_textfield()->OnFocus();
   const base::string16 kContentsRtl =
       base::WideToUTF16(L"\x05e8\x05e2.\x05e7\x05d5\x05dd/0123/abcd");
-  static_cast<OmniboxView*>(omnibox_view())
-      ->SetWindowTextAndCaretPos(kContentsRtl, 0, false, false);
+  omnibox_view()->SetWindowTextAndCaretPos(kContentsRtl, 0, false, false);
   EXPECT_EQ(gfx::NO_ELIDE, render_text->elide_behavior());
   // NOTE: Technically (depending on the font), this expectation could fail if
   // the entire domain fits in 60 pixels. However, 60px is so small it should
@@ -497,14 +494,28 @@ TEST_F(OmniboxViewViewsTest, Emphasis) {
 }
 
 TEST_F(OmniboxViewViewsTest, RevertOnBlur) {
-  location_bar_model()->set_url(GURL("https://permanent-text.com/"));
+  location_bar_model()->set_url(GURL("https://example.com/"));
   omnibox_view()->model()->ResetDisplayTexts();
   omnibox_view()->RevertAll();
 
-  EXPECT_EQ(base::ASCIIToUTF16("https://permanent-text.com/"),
-            omnibox_view()->text());
+  EXPECT_EQ(base::ASCIIToUTF16("https://example.com/"), omnibox_view()->text());
   EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
 
+  // Set the view text without updating the model's user text. This usually
+  // occurs when the omnibox unapplies Steady State Elisions to temporarily show
+  // the full URL to the user.
+  omnibox_view()->SetWindowTextAndCaretPos(base::ASCIIToUTF16("view text"), 0,
+                                           false, false);
+  EXPECT_EQ(base::ASCIIToUTF16("view text"), omnibox_view()->text());
+  EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
+
+  // Expect that on blur, we revert to the original text and are not in user
+  // input mode.
+  omnibox_textfield()->OnBlur();
+  EXPECT_EQ(base::ASCIIToUTF16("https://example.com/"), omnibox_view()->text());
+  EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
+
+  // Now set user text, which is reflected into the model as well.
   omnibox_view()->SetUserText(base::ASCIIToUTF16("user text"));
   EXPECT_EQ(base::ASCIIToUTF16("user text"), omnibox_view()->text());
   EXPECT_TRUE(omnibox_view()->model()->user_input_in_progress());
@@ -513,16 +524,6 @@ TEST_F(OmniboxViewViewsTest, RevertOnBlur) {
   omnibox_textfield()->OnBlur();
   EXPECT_EQ(base::ASCIIToUTF16("user text"), omnibox_view()->text());
   EXPECT_TRUE(omnibox_view()->model()->user_input_in_progress());
-
-  // Expect that on blur, if the text is the same as the
-  // https://permanent-text.com, exit user input mode.
-  omnibox_view()->SetUserText(
-      base::ASCIIToUTF16("https://permanent-text.com/"));
-  EXPECT_TRUE(omnibox_view()->model()->user_input_in_progress());
-  omnibox_textfield()->OnBlur();
-  EXPECT_EQ(base::ASCIIToUTF16("https://permanent-text.com/"),
-            omnibox_view()->text());
-  EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
 }
 
 TEST_F(OmniboxViewViewsTest, RevertOnEscape) {
@@ -696,13 +697,7 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
 
   void ExpectFullUrlDisplayed() {
     EXPECT_EQ(base::UTF8ToUTF16(kFullUrl.spec()), omnibox_view()->text());
-    EXPECT_TRUE(omnibox_view()->model()->user_input_in_progress());
-
-    // We test the user text stored in the model has been updated as well. The
-    // model user text is used to populate the text in the Omnibox after some
-    // state transitions, such as the ZeroSuggest popup opening.
-    EXPECT_EQ(base::UTF8ToUTF16(kFullUrl.spec()),
-              omnibox_view()->model()->GetUserTextForTesting());
+    EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
   }
 
   bool IsElidedUrlDisplayed() {

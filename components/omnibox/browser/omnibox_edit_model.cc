@@ -232,12 +232,6 @@ AutocompleteMatch OmniboxEditModel::CurrentMatch(
 bool OmniboxEditModel::ResetDisplayTexts() {
   const base::string16 old_display_text = GetPermanentDisplayText();
 
-  // Track if the user has modified the text. This is different from
-  // |user_input_in_progress_| because we care if the user has actually
-  // modified the text, while |user_input_in_progress_| may be true even if
-  // the user has merely made a partial selection.
-  bool user_has_modified_text = view_->GetText() != old_display_text;
-
   LocationBarModel* location_bar_model = controller()->GetLocationBarModel();
   url_for_editing_ = location_bar_model->GetFormattedFullURL();
 
@@ -266,7 +260,7 @@ bool OmniboxEditModel::ResetDisplayTexts() {
   // URL" (which sounds as if it might be persistent) from seeing just that URL
   // forever afterwards.
   return (GetPermanentDisplayText() != old_display_text) &&
-         (!has_focus() || (!user_has_modified_text && !PopupIsOpen()));
+         (!has_focus() || (!user_input_in_progress_ && !PopupIsOpen()));
 }
 
 GURL OmniboxEditModel::PermanentURL() const {
@@ -275,9 +269,6 @@ GURL OmniboxEditModel::PermanentURL() const {
 }
 
 base::string16 OmniboxEditModel::GetPermanentDisplayText() const {
-  if (user_input_in_progress_)
-    return url_for_editing_;
-
   return display_text_;
 }
 
@@ -308,7 +299,6 @@ bool OmniboxEditModel::Unelide(bool exit_query_in_omnibox) {
       location_bar_model->GetDisplaySearchTerms(nullptr))
     return false;
 
-  SetUserText(url_for_editing_);
   view_->SetWindowTextAndCaretPos(url_for_editing_, 0, false, false);
 
   // Select all in reverse to ensure the beginning of the URL is shown.
@@ -366,7 +356,7 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
 
   // If the user has not modified the display text and is copying the whole
   // display text, copy the omnibox contents as a hyperlink to the current page.
-  if (!user_input_in_progress_ && *text == GetPermanentDisplayText()) {
+  if (!user_input_in_progress_ && *text == display_text_) {
     *url_from_text = PermanentURL();
     *write_url = true;
 
@@ -1230,7 +1220,7 @@ void OmniboxEditModel::OnPopupDataChanged(
     view_->OnInlineAutocompleteTextCleared();
 
   const base::string16& user_text =
-      user_input_in_progress_ ? user_text_ : GetPermanentDisplayText();
+      user_input_in_progress_ ? user_text_ : view_->GetText();
   if (keyword_state_changed && is_keyword_selected()) {
     // If we reach here, the user most likely entered keyword mode by inserting
     // a space between a keyword name and a search string (as pressing space or
