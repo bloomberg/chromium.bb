@@ -1762,12 +1762,10 @@ void PrintRenderFrameHelper::PrintPages() {
   const PrintMsg_PrintPages_Params& params = *print_pages_params_;
   const PrintMsg_Print_Params& print_params = params.params;
 
-#if !defined(OS_ANDROID)
   // TODO(vitalybuka): should be page_count or valid pages from params.pages.
   // See http://crbug.com/161576
   Send(new PrintHostMsg_DidGetPrintedPagesCount(
       routing_id(), print_params.document_cookie, page_count));
-#endif  // !defined(OS_ANDROID)
 
   if (print_params.preview_ui_id < 0) {
     // Printing for system dialog.

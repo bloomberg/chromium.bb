@@ -443,19 +443,6 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PrintHostMsg_ScriptedPrint,
                            PrintMsg_PrintPages_Params
                                /* settings chosen by the user*/)
 
-#if defined(OS_ANDROID)
-// Asks the browser to create a temporary file for the renderer to fill
-// in resulting MetafileSkia in printing.
-IPC_SYNC_MESSAGE_CONTROL1_2(PrintHostMsg_AllocateTempFileForPrinting,
-                            int /* render_frame_id */,
-                            base::FileDescriptor /* temp file fd */,
-                            int /* fd in browser*/)
-IPC_MESSAGE_CONTROL3(PrintHostMsg_TempFileForPrintingWritten,
-                     int /* render_frame_id */,
-                     int /* fd in browser */,
-                     int /* page count */)
-#endif  // defined(OS_ANDROID)
-
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 // Asks the browser to do print preview.
 IPC_MESSAGE_ROUTED1(PrintHostMsg_RequestPrintPreview,

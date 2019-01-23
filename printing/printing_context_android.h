@@ -13,6 +13,8 @@
 
 namespace printing {
 
+class MetafilePlayer;
+
 // Android subclass of PrintingContext. This class communicates with the
 // Java side through JNI.
 class PRINTING_EXPORT PrintingContextAndroid : public PrintingContext {
@@ -36,6 +38,9 @@ class PRINTING_EXPORT PrintingContextAndroid : public PrintingContext {
   void ShowSystemDialogDone(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj);
 
+  // Prints the document contained in |metafile|.
+  void PrintDocument(const MetafilePlayer& metafile);
+
   // PrintingContext implementation.
   void AskUserForSettings(int max_pages,
                           bool has_selection,
@@ -55,11 +60,16 @@ class PRINTING_EXPORT PrintingContextAndroid : public PrintingContext {
   printing::NativeDrawingContext context() const override;
 
  private:
+  // TODO(thestig): Use |base::kInvalidFd| once available.
+  bool is_file_descriptor_valid() const { return fd_ > -1; }
+
   base::android::ScopedJavaGlobalRef<jobject> j_printing_context_;
 
   // The callback from AskUserForSettings to be called when the settings are
   // ready on the Java side
   PrintSettingsCallback callback_;
+
+  int fd_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(PrintingContextAndroid);
 };

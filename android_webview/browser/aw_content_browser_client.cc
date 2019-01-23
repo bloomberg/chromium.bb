@@ -20,7 +20,6 @@
 #include "android_webview/browser/aw_devtools_manager_delegate.h"
 #include "android_webview/browser/aw_feature_list_creator.h"
 #include "android_webview/browser/aw_login_delegate.h"
-#include "android_webview/browser/aw_printing_message_filter.h"
 #include "android_webview/browser/aw_proxying_url_loader_factory.h"
 #include "android_webview/browser/aw_quota_permission_context.h"
 #include "android_webview/browser/aw_settings.h"
@@ -359,7 +358,6 @@ void AwContentBrowserClient::RenderProcessWillLaunch(
   host->AddFilter(new AwContentsMessageFilter(host->GetID()));
   // WebView always allows persisting data.
   host->AddFilter(new cdm::CdmMessageFilterAndroid(true, false));
-  host->AddFilter(new AwPrintingMessageFilter(host->GetID()));
 }
 
 bool AwContentBrowserClient::ShouldUseMobileFlingCurve() const {

@@ -23,12 +23,6 @@ struct PrintHostMsg_PreviewIds;
 struct PrintHostMsg_ScriptedPrint_Params;
 class Profile;
 
-#if defined(OS_ANDROID)
-namespace base {
-struct FileDescriptor;
-}
-#endif
-
 namespace printing {
 
 class PrintQueriesQueue;
@@ -40,10 +34,7 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
  public:
   PrintingMessageFilter(int render_process_id, Profile* profile);
 
-  // content::BrowserMessageFilter methods.
-  void OverrideThreadForMessage(const IPC::Message& message,
-                                content::BrowserThread::ID* thread) override;
-
+  // content::BrowserMessageFilter:
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
@@ -55,21 +46,6 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
   void OnDestruct() const override;
 
   void ShutdownOnUIThread();
-
-#if defined(OS_ANDROID)
-  // Used to ask the browser allocate a temporary file for the renderer
-  // to fill in resulting PDF in renderer.
-  void OnAllocateTempFileForPrinting(int render_frame_id,
-                                     base::FileDescriptor* temp_file_fd,
-                                     int* sequence_number);
-  void OnTempFileForPrintingWritten(int render_frame_id,
-                                    int sequence_number,
-                                    int page_count);
-
-  // Updates the file descriptor for the PrintViewManagerBasic of a given
-  // |render_frame_id|.
-  void UpdateFileDescriptor(int render_frame_id, int fd);
-#endif
 
   // Get the default print setting.
   void OnGetDefaultPrintSettings(IPC::Message* reply_msg);

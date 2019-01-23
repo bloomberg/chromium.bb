@@ -222,6 +222,7 @@ component("printing") {
     ]
   } else if (is_android) {
     sources += [
+      "printed_document_android.cc",
       "printing_context_android.cc",
       "printing_context_android.h",
     ]
