@@ -63,6 +63,15 @@ class CORE_EXPORT PictureInPictureController
   // Should be called when an element has exited Picture-in-Picture.
   virtual void OnExitedPictureInPicture(ScriptPromiseResolver*) = 0;
 
+  // Add video element to the list of video elements for the associated document
+  // that are eligible to Auto Picture-in-Picture.
+  virtual void AddToAutoPictureInPictureElementsList(HTMLVideoElement*) = 0;
+
+  // Remove video element from the list of video elements for the associated
+  // document that are eligible to Auto Picture-in-Picture.
+  virtual void RemoveFromAutoPictureInPictureElementsList(
+      HTMLVideoElement*) = 0;
+
   // Should be called when a custom control on a video element in
   // Picture-in-Picture is clicked. |control_id| is the identifier for its
   // custom control. This is defined by the site that calls the web API.

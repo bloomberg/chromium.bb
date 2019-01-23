@@ -236,6 +236,15 @@ void HTMLVideoElement::ParseAttribute(
     if (intrinsic_size_changed && GetLayoutObject() &&
         GetLayoutObject()->IsVideo())
       ToLayoutVideo(GetLayoutObject())->IntrinsicSizeChanged();
+  } else if (params.name == kAutopictureinpictureAttr &&
+             RuntimeEnabledFeatures::AutoPictureInPictureEnabled()) {
+    if (!params.new_value.IsNull()) {
+      PictureInPictureController::From(GetDocument())
+          .AddToAutoPictureInPictureElementsList(this);
+    } else {
+      PictureInPictureController::From(GetDocument())
+          .RemoveFromAutoPictureInPictureElementsList(this);
+    }
   } else {
     HTMLMediaElement::ParseAttribute(params);
   }

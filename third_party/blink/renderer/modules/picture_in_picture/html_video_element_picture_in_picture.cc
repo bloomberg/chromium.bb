@@ -138,13 +138,6 @@ void HTMLVideoElementPictureInPicture::SetBooleanAttribute(
   PictureInPictureControllerImpl& controller =
       PictureInPictureControllerImpl::From(document);
 
-  if (name == html_names::kAutopictureinpictureAttr) {
-    if (value)
-      controller.AddToAutoPictureInPictureElementsList(&element);
-    else
-      controller.RemoveFromAutoPictureInPictureElementsList(&element);
-  }
-
   if (name == html_names::kDisablepictureinpictureAttr && value &&
       controller.PictureInPictureElement(scope) == &element) {
     controller.ExitPictureInPicture(&element, nullptr);
