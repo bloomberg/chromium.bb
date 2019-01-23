@@ -24,6 +24,7 @@
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/origin_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -36,7 +37,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/origin_util.h"
 #include "extensions/common/constants.h"
 #include "url/gurl.h"
 
@@ -207,7 +207,7 @@ PermissionResult PermissionContextBase::GetPermissionStatus(
   }
 
   if (IsRestrictedToSecureOrigins()) {
-    if (!content::IsOriginSecure(requesting_origin)) {
+    if (!IsOriginSecure(requesting_origin, profile()->GetPrefs())) {
       return PermissionResult(CONTENT_SETTING_BLOCK,
                               PermissionStatusSource::INSECURE_ORIGIN);
     }
@@ -218,7 +218,7 @@ PermissionResult PermissionContextBase::GetPermissionStatus(
     // the top level and requesting origins. Note: chrome-extension:// origins
     // are currently exempt from checking the embedder chain. crbug.com/530507.
     if (!requesting_origin.SchemeIs(extensions::kExtensionScheme) &&
-        !content::IsOriginSecure(embedding_origin)) {
+        !IsOriginSecure(embedding_origin, profile()->GetPrefs())) {
       return PermissionResult(CONTENT_SETTING_BLOCK,
                               PermissionStatusSource::INSECURE_ORIGIN);
     }
