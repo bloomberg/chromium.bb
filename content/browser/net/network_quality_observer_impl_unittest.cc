@@ -17,7 +17,7 @@ namespace {
 
 TEST(NetworkQualityObserverImplTest, TestObserverNotified) {
   content::TestBrowserThreadBundle thread_bundle(
-      content::TestBrowserThreadBundle::Options::IO_MAINLOOP);
+      content::TestBrowserThreadBundle::IO_MAINLOOP);
 
   network::TestNetworkQualityTracker test_network_quality_tracker;
 

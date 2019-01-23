@@ -442,7 +442,7 @@ class TestChromeLauncherController : public ChromeLauncherController {
 class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
  protected:
   ChromeLauncherControllerTest()
-      : BrowserWithTestWindowTest(Browser::TYPE_TABBED, false) {}
+      : BrowserWithTestWindowTest(Browser::TYPE_TABBED) {}
 
   ~ChromeLauncherControllerTest() override {}
 

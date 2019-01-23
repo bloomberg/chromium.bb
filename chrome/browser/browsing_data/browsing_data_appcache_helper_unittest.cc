@@ -43,9 +43,7 @@ class TestCompletionCallback {
 class CannedBrowsingDataAppCacheHelperTest : public testing::Test {
  public:
   CannedBrowsingDataAppCacheHelperTest()
-      : thread_bundle_(base::test::ScopedTaskEnvironment::MainThreadType::UI,
-                       base::test::ScopedTaskEnvironment::ExecutionMode::ASYNC,
-                       content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
+      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
 
   void TearDown() override {
     // Make sure we run all pending tasks on IO thread before testing

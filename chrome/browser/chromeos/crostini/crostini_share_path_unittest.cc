@@ -171,8 +171,6 @@ class CrostiniSharePathTest : public testing::Test {
 
   CrostiniSharePathTest()
       : test_browser_thread_bundle_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI,
-            base::test::ScopedTaskEnvironment::ExecutionMode::ASYNC,
             content::TestBrowserThreadBundle::REAL_IO_THREAD) {
     chromeos::DBusThreadManager::Initialize();
     fake_concierge_client_ = static_cast<chromeos::FakeConciergeClient*>(

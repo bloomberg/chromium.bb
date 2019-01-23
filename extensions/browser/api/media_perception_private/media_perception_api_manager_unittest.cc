@@ -156,8 +156,7 @@ media_perception::ServiceError GetDiagnosticsAndWaitForResponse(
 
 class MediaPerceptionAPIManagerTest : public testing::Test {
  public:
-  MediaPerceptionAPIManagerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::DEFAULT) {}
+  MediaPerceptionAPIManagerTest() {}
 
   void SetUp() override {
     std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =

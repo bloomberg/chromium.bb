@@ -189,13 +189,13 @@ class RenderViewHostTestEnabler {
 // RenderViewHostTestHarness ---------------------------------------------------
 class RenderViewHostTestHarness : public testing::Test {
  public:
-  // Constructs a RenderViewHostTestHarness which uses |thread_bundle_options|
-  // to initialize its TestBrowserThreadBundle.
-  explicit RenderViewHostTestHarness(int thread_bundle_options = 0);
-  RenderViewHostTestHarness(
-      base::test::ScopedTaskEnvironment::MainThreadType main_thread_type,
-      base::test::ScopedTaskEnvironment::ExecutionMode execution_control_mode,
-      int thread_bundle_options = 0);
+  // Constructs a RenderViewHostTestHarness which uses |args| to initialize its
+  // TestBrowserThreadBundle.
+  template <typename... Args>
+  RenderViewHostTestHarness(Args... args)
+      : RenderViewHostTestHarness(
+            std::make_unique<TestBrowserThreadBundle>(args...)) {}
+
   ~RenderViewHostTestHarness() override;
 
   NavigationController& controller();
@@ -273,6 +273,11 @@ class RenderViewHostTestHarness : public testing::Test {
   void SetRenderProcessHostFactory(RenderProcessHostFactory* factory);
 
  private:
+  // The template constructor has to be in the header but it delegates to this
+  // constructor to initialize all other members out-of-line.
+  explicit RenderViewHostTestHarness(
+      std::unique_ptr<TestBrowserThreadBundle> thread_bundle);
+
   std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
 
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;

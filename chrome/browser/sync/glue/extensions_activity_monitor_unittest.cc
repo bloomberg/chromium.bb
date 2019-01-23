@@ -65,8 +65,7 @@ void FireBookmarksApiEvent(
 class SyncChromeExtensionsActivityMonitorTest : public testing::Test {
  public:
   SyncChromeExtensionsActivityMonitorTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::DEFAULT),
-        extension1_(MakeExtension("extension1")),
+      : extension1_(MakeExtension("extension1")),
         extension2_(MakeExtension("extension2")),
         id1_(extension1_->id()),
         id2_(extension2_->id()) {}

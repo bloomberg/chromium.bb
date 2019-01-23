@@ -57,12 +57,6 @@ bool OperationTestBase::LoggingDelegate::WaitForSyncComplete(
       false : wait_for_sync_complete_handler_.Run(local_id, callback);
 }
 
-OperationTestBase::OperationTestBase() = default;
-
-OperationTestBase::OperationTestBase(int test_thread_bundle_options)
-    : thread_bundle_(test_thread_bundle_options) {
-}
-
 OperationTestBase::~OperationTestBase() = default;
 
 void OperationTestBase::SetUp() {
@@ -191,6 +185,10 @@ FileError OperationTestBase::CheckForUpdates() {
   content::RunAllTasksUntilIdle();
   return error;
 }
+
+OperationTestBase::OperationTestBase(
+    std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle)
+    : thread_bundle_(std::move(thread_bundle)) {}
 
 }  // namespace file_system
 }  // namespace drive

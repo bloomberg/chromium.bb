@@ -295,7 +295,9 @@ TEST_F(BrowserViewTest, TitleAudioIndicators) {
 
 class BrowserViewHostedAppTest : public TestWithBrowserView {
  public:
-  BrowserViewHostedAppTest() : TestWithBrowserView(Browser::TYPE_POPUP, true) {}
+  BrowserViewHostedAppTest()
+      : TestWithBrowserView(Browser::TYPE_POPUP,
+                            BrowserWithTestWindowTest::HostedApp()) {}
   ~BrowserViewHostedAppTest() override {}
 
  private:

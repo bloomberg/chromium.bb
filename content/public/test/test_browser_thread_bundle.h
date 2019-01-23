@@ -84,6 +84,7 @@
 
 #include <memory>
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
@@ -100,35 +101,41 @@ namespace content {
 
 class TestBrowserThread;
 
-// Note: to drive these threads (e.g. run all tasks until idle), see
-// content/public/test/test_utils.h.
+// Note: to drive these threads (e.g. run all tasks until idle or FastForwardBy)
+// see base::test::ScopedTaskEnvironment which this is a subclass of.
 class TestBrowserThreadBundle : public base::test::ScopedTaskEnvironment {
  public:
-  // Used to specify the type of MessageLoop that backs the UI thread, and
-  // which of the named BrowserThreads should be backed by a real
-  // threads. The UI thread is always the main thread in a unit test.
-  // TODO(https://crbug.com/881041): The mainloop types are mutually exclusive,
-  // and can be removed from here and given as a separate constructor argument.
-  enum Options {
-    DEFAULT = 0,
-    // The main thread will use a MessageLoopForIO (and support the
-    // base::FileDescriptorWatcher API on POSIX).
-    IO_MAINLOOP = 1 << 0,
-    REAL_IO_THREAD = 1 << 1,
-    // The main thread will use a plain main loop instead of a MessageLoopForUI.
-    // (i.e. will support ThreadTaskRunnerHandle::Get() and RunLoop only).
-    PLAIN_MAINLOOP = 1 << 2,
+  enum Options { REAL_IO_THREAD };
+
+  // The main thread will use a MessageLoopForIO (and support the
+  // base::FileDescriptorWatcher API on POSIX).
+  // TODO(alexclarke): Replace IO_MAINLOOP usage by MainThreadType::IO and
+  // remove this.
+  static constexpr MainThreadType IO_MAINLOOP = MainThreadType::IO;
+
+  struct ValidTraits {
+    ValidTraits(ScopedTaskEnvironment::ValidTrait);
+    ValidTraits(Options);
   };
 
-  // Deprecated.
-  explicit TestBrowserThreadBundle(int options);
-
-  TestBrowserThreadBundle(
-      base::test::ScopedTaskEnvironment::MainThreadType main_thread_type =
-          base::test::ScopedTaskEnvironment::MainThreadType::UI,
-      base::test::ScopedTaskEnvironment::ExecutionMode execution_control_mode =
-          base::test::ScopedTaskEnvironment::ExecutionMode::ASYNC,
-      int options = DEFAULT);
+  // Constructor which accepts zero or more traits to configure the
+  // ScopedTaskEnvironment and optionally request a real IO thread. Unlike
+  // ScopedTaskEnvironment the default MainThreadType for
+  // TestBrowserThreadBundle is MainThreadType::UI.
+  template <
+      class... ArgTypes,
+      class CheckArgumentsAreValid = std::enable_if_t<
+          base::trait_helpers::AreValidTraits<ValidTraits, ArgTypes...>::value>>
+  NOINLINE TestBrowserThreadBundle(const ArgTypes... args)
+      : TestBrowserThreadBundle(
+            base::test::ScopedTaskEnvironment(
+                // Override the default MainThreadType.
+                base::trait_helpers::GetEnum<MainThreadType,
+                                             MainThreadType::UI>(args...),
+                base::trait_helpers::Exclude<MainThreadType, Options>::Filter(
+                    args)...),
+            UseRealIOThread(
+                base::trait_helpers::GetOptionalEnum<Options>(args...))) {}
 
   // Runs all tasks posted to TaskScheduler and main thread until idle.
   // Note: At the moment, this will not process BrowserThread::IO if this
@@ -154,12 +161,28 @@ class TestBrowserThreadBundle : public base::test::ScopedTaskEnvironment {
   ~TestBrowserThreadBundle() override;
 
  private:
+  // The template constructor has to be in the header but it delegates to this
+  // constructor to initialize all other members out-of-line.
+  TestBrowserThreadBundle(
+      base::test::ScopedTaskEnvironment&& scoped_task_environment,
+      bool real_io_thread);
+
   void Init();
 
+  static constexpr bool UseRealIOThread(base::Optional<Options> options) {
+    if (!options)
+      return false;
+    return *options == Options::REAL_IO_THREAD;
+  }
+
+  constexpr bool HasIOMainLoop() const {
+    return main_thread_type() == MainThreadType::IO ||
+           main_thread_type() == MainThreadType::IO_MOCK_TIME;
+  }
+
+  const bool real_io_thread_;
   std::unique_ptr<TestBrowserThread> ui_thread_;
   std::unique_ptr<TestBrowserThread> io_thread_;
-
-  int options_;
 
 #if defined(OS_WIN)
   std::unique_ptr<base::win::ScopedCOMInitializer> com_initializer_;

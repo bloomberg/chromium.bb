@@ -164,8 +164,6 @@ class CrostiniManagerTest : public testing::Test {
 
   CrostiniManagerTest()
       : test_browser_thread_bundle_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI,
-            base::test::ScopedTaskEnvironment::ExecutionMode::ASYNC,
             content::TestBrowserThreadBundle::REAL_IO_THREAD) {
     chromeos::DBusThreadManager::Initialize();
     fake_cicerone_client_ = static_cast<chromeos::FakeCiceroneClient*>(
