@@ -197,6 +197,9 @@ bool DecodingImageGenerator::QueryYUVA8(
 
   TRACE_EVENT0("blink", "DecodingImageGenerator::queryYUVA8");
 
+  // TODO(crbug.com/915707): Set the colorspace based on image type.
+  // Can pass |color_space| to GetYUVComponentSizes and query a method
+  // in ImageDecoder (to be added) to get the proper value.
   if (color_space)
     *color_space = kJPEG_SkYUVColorSpace;
 
