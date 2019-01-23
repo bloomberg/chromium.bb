@@ -652,7 +652,7 @@ void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
                  base::TimeTicks::Now()));
   menu_runner_->RunMenuAt(wallpaper_widget_controller()->GetWidget(), nullptr,
                           gfx::Rect(location_in_screen, gfx::Size()),
-                          views::MENU_ANCHOR_BUBBLE_TOUCHABLE_ABOVE,
+                          views::MENU_ANCHOR_BUBBLE_TOUCHABLE_RIGHT,
                           source_type);
 }
 
