@@ -303,17 +303,18 @@ class ResourceLoadingHintsBrowserTest
 };
 
 // Previews InfoBar (which these tests triggers) does not work on Mac.
-// See https://crbug.com/782322 for details. Also occasional flakes on win7
-// (https://crbug.com/789542).
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define DISABLE_ON_WIN_MAC(x) DISABLED_##x
+// See https://crbug.com/782322 for details.
+// Also occasional flakes on win7 (https://crbug.com/789542).
+// Also occasional flakes on chromeos (https://crbug.com/923161).
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
 #else
-#define DISABLE_ON_WIN_MAC(x) x
+#define DISABLE_ON_WIN_MAC_CHROMEOS(x) x
 #endif
 
 IN_PROC_BROWSER_TEST_F(
     ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC(ResourceLoadingHintsHttpsWhitelisted)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(ResourceLoadingHintsHttpsWhitelisted)) {
   SetExpectedFooJpgRequest(false);
   SetExpectedBarJpgRequest(true);
 
@@ -372,7 +373,7 @@ IN_PROC_BROWSER_TEST_F(
 // not blocked.
 IN_PROC_BROWSER_TEST_F(
     ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC(ExperimentalHints_ExperimentIsNotEnabled)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(ExperimentalHints_ExperimentIsNotEnabled)) {
   SetExpectedFooJpgRequest(true);
   SetExpectedBarJpgRequest(true);
 
@@ -397,7 +398,7 @@ IN_PROC_BROWSER_TEST_F(
 // Verifies that the hints are used, and the resource loading is blocked.
 IN_PROC_BROWSER_TEST_F(
     ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC(ExperimentalHints_ExperimentIsEnabled)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(ExperimentalHints_ExperimentIsEnabled)) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeatureWithParameters(
       previews::features::kOptimizationHintsExperiments,
@@ -436,7 +437,7 @@ IN_PROC_BROWSER_TEST_F(
 // blocked.
 IN_PROC_BROWSER_TEST_F(
     ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC(MixExperimentalHints_ExperimentIsEnabled)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(MixExperimentalHints_ExperimentIsEnabled)) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeatureWithParameters(
       previews::features::kOptimizationHintsExperiments,
@@ -476,7 +477,7 @@ IN_PROC_BROWSER_TEST_F(
 // used.
 IN_PROC_BROWSER_TEST_F(
     ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC(MixExperimentalHints_ExperimentIsNotEnabled)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(MixExperimentalHints_ExperimentIsNotEnabled)) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeatureWithParameters(
       previews::features::kOptimizationHintsExperiments,
@@ -507,7 +508,8 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC(ResourceLoadingHintsHttpsWhitelistedRedirectToHttps)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(
+        ResourceLoadingHintsHttpsWhitelistedRedirectToHttps)) {
   SetExpectedFooJpgRequest(false);
   SetExpectedBarJpgRequest(true);
 
@@ -538,7 +540,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC(ResourceLoadingHintsHttpsNoWhitelisted)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(ResourceLoadingHintsHttpsNoWhitelisted)) {
   SetExpectedFooJpgRequest(true);
   SetExpectedBarJpgRequest(true);
 
@@ -563,7 +565,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
-                       DISABLE_ON_WIN_MAC(ResourceLoadingHintsHttp)) {
+                       DISABLE_ON_WIN_MAC_CHROMEOS(ResourceLoadingHintsHttp)) {
   SetExpectedFooJpgRequest(true);
   SetExpectedBarJpgRequest(true);
 
@@ -585,9 +587,9 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
   EXPECT_FALSE(resource_loading_hint_intervention_header_seen());
 }
 
-IN_PROC_BROWSER_TEST_F(
-    ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC(ResourceLoadingHintsHttpsWhitelistedNoTransform)) {
+IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(
+                           ResourceLoadingHintsHttpsWhitelistedNoTransform)) {
   SetExpectedFooJpgRequest(true);
   SetExpectedBarJpgRequest(true);
 
