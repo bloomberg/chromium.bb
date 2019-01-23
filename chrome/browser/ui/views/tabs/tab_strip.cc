@@ -2578,6 +2578,17 @@ Tab* TabStrip::FindTabHitByPoint(const gfx::Point& point) {
     return tab;
   }
 
+  // Also check closing tabs.  Mouse events need to reach closing tabs for users
+  // to be able to rapidly middle-click close several tabs. Since closing tabs
+  // are never selected or active, the check here can be simpler than the one
+  // above.
+  for (const auto& index_and_tabs : tabs_closing_map_) {
+    for (Tab* tab : index_and_tabs.second) {
+      if (IsPointInTab(tab, point))
+        return tab;
+    }
+  }
+
   return nullptr;
 }
 
