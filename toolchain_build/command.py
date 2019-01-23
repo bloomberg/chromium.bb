@@ -53,6 +53,7 @@ def HashBuildSystemSources():
       h.update(f.read())
   FILE_CONTENTS_HASH = h.hexdigest()
 
+
 HashBuildSystemSources()
 
 
