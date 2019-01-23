@@ -2782,3 +2782,10 @@ TEST_F(AccountReconcilorTest, ScopedSyncedDataDeletionDestructionOrder) {
   DeleteReconcilor();
   // data_deletion is destroyed after the reconcilor, this should not crash.
 }
+
+TEST_F(AccountReconcilorTest, LockDestructionOrder) {
+  AccountReconcilor* reconcilor = GetMockReconcilor();
+  AccountReconcilor::Lock lock(reconcilor);
+  DeleteReconcilor();
+  // |lock| is destroyed after the reconcilor, this should not crash.
+}

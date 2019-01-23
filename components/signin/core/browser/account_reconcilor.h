@@ -53,7 +53,7 @@ class AccountReconcilor : public KeyedService,
     ~Lock();
 
    private:
-    AccountReconcilor* reconcilor_;
+    base::WeakPtr<AccountReconcilor> reconcilor_;
     THREAD_CHECKER(thread_checker_);
     DISALLOW_COPY_AND_ASSIGN(Lock);
   };
