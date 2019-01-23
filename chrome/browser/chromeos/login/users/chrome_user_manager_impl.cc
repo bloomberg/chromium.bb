@@ -82,6 +82,7 @@
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_util.h"
 #include "components/crash/core/common/crash_key.h"
+#include "components/policy/core/common/policy_details.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -229,6 +230,33 @@ const base::Value::ListStorage* GetListPolicyValue(
     return nullptr;
 
   return &entry->value->GetList();
+}
+
+bool IsPacHttpsUrlStrippingDisabled(
+    policy::DeviceLocalAccountPolicyBroker* broker) {
+  const policy::PolicyMap::Entry* entry =
+      broker->core()->store()->policy_map().Get(
+          policy::key::kPacHttpsUrlStrippingEnabled);
+  // Policy is enabled and it's value is set to 'false'.
+  return entry && entry->value && !entry->value->GetBool();
+}
+
+bool AreRiskyPoliciesUsed(policy::DeviceLocalAccountPolicyBroker* broker) {
+  const policy::PolicyMap& policy_map = broker->core()->store()->policy_map();
+  for (const auto& it : policy_map) {
+    const policy::PolicyDetails* policy_details =
+        policy::GetChromePolicyDetails(it.first);
+    if (!policy_details)
+      continue;
+    for (policy::RiskTag risk_tag : policy_details->risk_tags) {
+      if (risk_tag == policy::RISK_TAG_WEBSITE_SHARING) {
+        VLOG(1) << "Considering managed session risky because " << it.first
+                << " policy was enabled by admin.";
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 bool AreRiskyExtensionsForceInstalled(
@@ -1480,7 +1508,9 @@ bool ChromeUserManagerImpl::IsManagedSessionEnabledForUser(
 bool ChromeUserManagerImpl::IsFullManagementDisclosureNeeded(
     policy::DeviceLocalAccountPolicyBroker* broker) const {
   return IsManagedSessionEnabled(broker) &&
-         (AreRiskyExtensionsForceInstalled(broker) ||
+         (IsPacHttpsUrlStrippingDisabled(broker) ||
+          AreRiskyPoliciesUsed(broker) ||
+          AreRiskyExtensionsForceInstalled(broker) ||
           AreForcedNetworkCertificatesInstalled());
 }
 
