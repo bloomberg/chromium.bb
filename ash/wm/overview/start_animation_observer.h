@@ -6,7 +6,7 @@
 #define ASH_WM_OVERVIEW_START_ANIMATION_OBSERVER_H_
 
 #include "ash/ash_export.h"
-#include "ash/wm/overview/window_selector_delegate.h"
+#include "ash/wm/overview/overview_delegate.h"
 #include "base/macros.h"
 #include "ui/compositor/layer_animation_observer.h"
 
@@ -24,11 +24,11 @@ class ASH_EXPORT StartAnimationObserver : public ui::ImplicitAnimationObserver,
   void OnImplicitAnimationsCompleted() override;
 
   // DelayedAnimationObserver:
-  void SetOwner(WindowSelectorDelegate* owner) override;
+  void SetOwner(OverviewDelegate* owner) override;
   void Shutdown() override;
 
  private:
-  WindowSelectorDelegate* owner_ = nullptr;
+  OverviewDelegate* owner_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(StartAnimationObserver);
 };

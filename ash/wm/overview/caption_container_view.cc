@@ -7,9 +7,9 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/overview/overview_constants.h"
+#include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/rounded_rect_view.h"
-#include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ui/aura/client/aura_constants.h"
@@ -142,11 +142,11 @@ class CaptionContainerView::ShieldButton : public views::Button {
   }
   ~ShieldButton() override = default;
 
-  // When WindowSelectorItem (which is a ButtonListener) is destroyed, its
+  // When OverviewItem (which is a ButtonListener) is destroyed, its
   // |item_widget_| is allowed to stay around to complete any animations.
   // Resetting the listener in all views that are targeted by events is
   // necessary to prevent a crash when a user clicks on the fading out widget
-  // after the WindowSelectorItem has been destroyed.
+  // after the OverviewItem has been destroyed.
   void ResetListener() { listener_ = nullptr; }
 
   // views::View:
@@ -222,9 +222,7 @@ class CaptionContainerView::ShieldButton : public views::Button {
     views::Button::OnGestureEvent(event);
   }
 
-  WindowSelectorItem* listener() {
-    return static_cast<WindowSelectorItem*>(listener_);
-  }
+  OverviewItem* listener() { return static_cast<OverviewItem*>(listener_); }
 
  protected:
   // views::View:
@@ -342,7 +340,7 @@ views::ImageButton* CaptionContainerView::GetCloseButton() {
 
 void CaptionContainerView::Layout() {
   gfx::Rect bounds(GetLocalBounds());
-  bounds.Inset(kWindowSelectorMargin, kWindowSelectorMargin);
+  bounds.Inset(kOverviewMargin, kOverviewMargin);
   listener_button_->SetBoundsRect(bounds);
 
   const int visible_height = close_button_->GetPreferredSize().height();

@@ -12,7 +12,7 @@
 #include "ash/shell.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_window_animations.h"
 #include "ash/wm/workspace/backdrop_controller.h"
@@ -59,9 +59,9 @@ wm::WorkspaceWindowState WorkspaceController::GetWindowState() const {
 
   // Always use DEFAULT state in overview mode so that work area stays
   // the same regardles of the window we have.
-  // The |window_selector_controller| can be null during shutdown.
-  if (Shell::Get()->window_selector_controller() &&
-      Shell::Get()->window_selector_controller()->IsSelecting()) {
+  // The |overview_controller| can be null during shutdown.
+  if (Shell::Get()->overview_controller() &&
+      Shell::Get()->overview_controller()->IsSelecting()) {
     return wm::WORKSPACE_WINDOW_STATE_DEFAULT;
   }
 

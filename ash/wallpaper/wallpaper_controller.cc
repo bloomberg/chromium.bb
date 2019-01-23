@@ -26,7 +26,7 @@
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wallpaper/wallpaper_window_state_manager.h"
 #include "ash/wm/overview/overview_constants.h"
-#include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
@@ -1452,7 +1452,7 @@ void WallpaperController::InstallDesktopController(aura::Window* root_window) {
 
   bool session_blocked =
       Shell::Get()->session_controller()->IsUserSessionBlocked();
-  bool in_overview = Shell::Get()->window_selector_controller()->IsSelecting();
+  bool in_overview = Shell::Get()->overview_controller()->IsSelecting();
   bool is_wallpaper_blurred =
       (session_blocked || in_overview) && IsBlurAllowed();
 

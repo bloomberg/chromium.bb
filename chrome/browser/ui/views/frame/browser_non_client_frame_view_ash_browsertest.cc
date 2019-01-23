@@ -19,7 +19,7 @@
 #include "ash/public/interfaces/shell_test_api.test-mojom.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/shell.h"                                   // mash-ok
-#include "ash/wm/overview/window_selector_controller.h"  // mash-ok
+#include "ash/wm/overview/overview_controller.h"         // mash-ok
 #include "ash/wm/splitview/split_view_controller.h"      // mash-ok
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"   // mash-ok
 #include "base/run_loop.h"
@@ -148,7 +148,7 @@ void ToggleOverview() {
     run_loop.Run();
     aura::test::WaitForAllChangesToComplete();
   } else {
-    ash::Shell::Get()->window_selector_controller()->ToggleOverview();
+    ash::Shell::Get()->overview_controller()->ToggleOverview();
   }
 }
 

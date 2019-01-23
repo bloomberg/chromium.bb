@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/overview/overview_controller.h"
 
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/overview/window_selector.h"
+#include "ash/wm/overview/overview_session.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_util.h"
@@ -50,10 +50,10 @@ class TestShellObserver : public ShellObserver {
   // ShellObserver:
   void OnOverviewModeStarting() override {
     UpdateLastAnimationWasSlide(
-        Shell::Get()->window_selector_controller()->window_selector());
+        Shell::Get()->overview_controller()->overview_session());
   }
-  void OnOverviewModeEnding(WindowSelector* window_selector) override {
-    UpdateLastAnimationWasSlide(window_selector);
+  void OnOverviewModeEnding(OverviewSession* overview_session) override {
+    UpdateLastAnimationWasSlide(overview_session);
   }
   void OnOverviewModeStartingAnimationComplete(bool canceled) override {
     if (!should_monitor_animation_state_)
@@ -104,11 +104,11 @@ class TestShellObserver : public ShellObserver {
   bool last_animation_was_slide() const { return last_animation_was_slide_; }
 
  private:
-  void UpdateLastAnimationWasSlide(WindowSelector* selector) {
+  void UpdateLastAnimationWasSlide(OverviewSession* selector) {
     DCHECK(selector);
     last_animation_was_slide_ =
         selector->enter_exit_overview_type() ==
-        WindowSelector::EnterExitOverviewType::kWindowsMinimized;
+        OverviewSession::EnterExitOverviewType::kWindowsMinimized;
   }
 
   AnimationState starting_animation_state_ = UNKNOWN;
@@ -136,11 +136,11 @@ void WaitForShowAnimation(aura::Window* window) {
 
 }  // namespace
 
-using WindowSelectorControllerTest = AshTestBase;
+using OverviewControllerTest = AshTestBase;
 
 // Tests that press the overview key in keyboard when a window is being dragged
 // in clamshell mode should not toggle overview.
-TEST_F(WindowSelectorControllerTest,
+TEST_F(OverviewControllerTest,
        PressOverviewKeyDuringWindowDragInClamshellMode) {
   ASSERT_FALSE(TabletModeControllerTestApi().IsTabletModeStarted());
   std::unique_ptr<aura::Window> dragged_window = CreateTestWindow();
@@ -150,22 +150,22 @@ TEST_F(WindowSelectorControllerTest,
   resizer->Drag(CalculateDragPoint(*resizer, 10, 0), 0);
   EXPECT_TRUE(wm::GetWindowState(dragged_window.get())->is_dragged());
   GetEventGenerator()->PressKey(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE);
-  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
   resizer->CompleteDrag();
 }
 
-TEST_F(WindowSelectorControllerTest, AnimationCallbacks) {
+TEST_F(OverviewControllerTest, AnimationCallbacks) {
   ui::ScopedAnimationDurationScaleMode non_zero(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   TestShellObserver observer(/*should_monitor_animation_state = */ true);
   // Enter without windows.
-  Shell::Get()->window_selector_controller()->ToggleOverview();
-  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+  Shell::Get()->overview_controller()->ToggleOverview();
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
   EXPECT_EQ(TestShellObserver::COMPLETED, observer.starting_animation_state());
 
   // Exit winhtout windows still creates an animation.
-  Shell::Get()->window_selector_controller()->ToggleOverview();
-  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  Shell::Get()->overview_controller()->ToggleOverview();
+  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
   EXPECT_EQ(TestShellObserver::UNKNOWN, observer.ending_animation_state());
 
   observer.WaitForEndingAnimationComplete();
@@ -182,55 +182,55 @@ TEST_F(WindowSelectorControllerTest, AnimationCallbacks) {
   ASSERT_EQ(TestShellObserver::UNKNOWN, observer.ending_animation_state());
 
   // Enter with windows.
-  Shell::Get()->window_selector_controller()->ToggleOverview();
-  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+  Shell::Get()->overview_controller()->ToggleOverview();
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
   EXPECT_EQ(TestShellObserver::UNKNOWN, observer.starting_animation_state());
 
   // Exit with windows before starting animation ends.
-  Shell::Get()->window_selector_controller()->ToggleOverview();
-  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  Shell::Get()->overview_controller()->ToggleOverview();
+  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
   EXPECT_EQ(TestShellObserver::CANCELED, observer.starting_animation_state());
   EXPECT_EQ(TestShellObserver::UNKNOWN, observer.ending_animation_state());
 
   observer.Reset();
 
   // Enter again before exit animation ends.
-  Shell::Get()->window_selector_controller()->ToggleOverview();
-  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+  Shell::Get()->overview_controller()->ToggleOverview();
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
   EXPECT_EQ(TestShellObserver::CANCELED, observer.ending_animation_state());
   EXPECT_EQ(TestShellObserver::UNKNOWN, observer.starting_animation_state());
 
   // Activating window while entering animation should cancel the overview.
   wm::ActivateWindow(window1.get());
-  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
   EXPECT_EQ(TestShellObserver::CANCELED, observer.starting_animation_state());
 }
 
 // Tests the slide animation for overview is never used in clamshell.
-TEST_F(WindowSelectorControllerTest, OverviewEnterExitAnimationClamshell) {
+TEST_F(OverviewControllerTest, OverviewEnterExitAnimationClamshell) {
   TestShellObserver observer(/*should_monitor_animation_state = */ false);
 
   const gfx::Rect bounds(200, 200);
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(bounds));
 
-  Shell::Get()->window_selector_controller()->ToggleOverview();
+  Shell::Get()->overview_controller()->ToggleOverview();
   EXPECT_FALSE(observer.last_animation_was_slide());
 
-  Shell::Get()->window_selector_controller()->ToggleOverview();
+  Shell::Get()->overview_controller()->ToggleOverview();
   EXPECT_FALSE(observer.last_animation_was_slide());
 
   // Even with all window minimized, there should not be a slide animation.
-  ASSERT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  ASSERT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
   wm::GetWindowState(window.get())->Minimize();
-  Shell::Get()->window_selector_controller()->ToggleOverview();
+  Shell::Get()->overview_controller()->ToggleOverview();
   EXPECT_FALSE(observer.last_animation_was_slide());
 }
 
 // Tests the slide animation for overview is used in tablet if all windows
 // are minimized, and that if overview is exited from the home launcher all
 // windows are minimized.
-TEST_F(WindowSelectorControllerTest, OverviewEnterExitAnimationTablet) {
+TEST_F(OverviewControllerTest, OverviewEnterExitAnimationTablet) {
   TestShellObserver observer(/*should_monitor_animation_state = */ false);
 
   // Ensure calls to EnableTabletModeWindowManager complete.
@@ -242,27 +242,27 @@ TEST_F(WindowSelectorControllerTest, OverviewEnterExitAnimationTablet) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(bounds));
 
-  Shell::Get()->window_selector_controller()->ToggleOverview();
+  Shell::Get()->overview_controller()->ToggleOverview();
   EXPECT_FALSE(observer.last_animation_was_slide());
 
   // Exit to home launcher. Slide animation should be used, and all windows
   // should be minimized.
-  Shell::Get()->window_selector_controller()->ToggleOverview(
-      WindowSelector::EnterExitOverviewType::kWindowsMinimized);
+  Shell::Get()->overview_controller()->ToggleOverview(
+      OverviewSession::EnterExitOverviewType::kWindowsMinimized);
   EXPECT_TRUE(observer.last_animation_was_slide());
-  ASSERT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  ASSERT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
   EXPECT_TRUE(wm::GetWindowState(window.get())->IsMinimized());
 
   // All windows are minimized, so we should use the slide animation.
-  Shell::Get()->window_selector_controller()->ToggleOverview();
+  Shell::Get()->overview_controller()->ToggleOverview();
   EXPECT_TRUE(observer.last_animation_was_slide());
 }
 
-TEST_F(WindowSelectorControllerTest, OcclusionTest) {
+TEST_F(OverviewControllerTest, OcclusionTest) {
   using OcclusionState = aura::Window::OcclusionState;
 
   Shell::Get()
-      ->window_selector_controller()
+      ->overview_controller()
       ->set_occlusion_pause_duration_for_end_ms_for_test(100);
   TestShellObserver observer(/*should_monitor_animation_state = */ true);
   ui::ScopedAnimationDurationScaleMode non_zero(
@@ -283,7 +283,7 @@ TEST_F(WindowSelectorControllerTest, OcclusionTest) {
   EXPECT_EQ(OcclusionState::VISIBLE, window2->occlusion_state());
 
   // Enter with windows.
-  Shell::Get()->window_selector_controller()->ToggleOverview();
+  Shell::Get()->overview_controller()->ToggleOverview();
   EXPECT_EQ(OcclusionState::OCCLUDED, window1->occlusion_state());
   EXPECT_EQ(OcclusionState::VISIBLE, window2->occlusion_state());
 
@@ -295,7 +295,7 @@ TEST_F(WindowSelectorControllerTest, OcclusionTest) {
   EXPECT_EQ(OcclusionState::VISIBLE, window1->occlusion_state());
 
   // Exit with windows.
-  Shell::Get()->window_selector_controller()->ToggleOverview();
+  Shell::Get()->overview_controller()->ToggleOverview();
   EXPECT_EQ(OcclusionState::VISIBLE, window1->occlusion_state());
   EXPECT_EQ(OcclusionState::VISIBLE, window2->occlusion_state());
   observer.WaitForEndingAnimationComplete();
@@ -307,7 +307,7 @@ TEST_F(WindowSelectorControllerTest, OcclusionTest) {
   observer.Reset();
 
   // Enter again.
-  Shell::Get()->window_selector_controller()->ToggleOverview();
+  Shell::Get()->overview_controller()->ToggleOverview();
   EXPECT_EQ(OcclusionState::OCCLUDED, window1->occlusion_state());
   EXPECT_EQ(OcclusionState::VISIBLE, window2->occlusion_state());
   auto* active = wm::GetActiveWindow();
@@ -326,7 +326,7 @@ TEST_F(WindowSelectorControllerTest, OcclusionTest) {
   observer.WaitForEndingAnimationComplete();
 
   // Windows are visible because tracker is paused.
-  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
   EXPECT_EQ(OcclusionState::VISIBLE, window2->occlusion_state());
   EXPECT_EQ(OcclusionState::VISIBLE, window1->occlusion_state());
   WaitForOcclusionStateChange(window2.get());
@@ -335,23 +335,23 @@ TEST_F(WindowSelectorControllerTest, OcclusionTest) {
 }
 
 // Tests that beginning window selection hides the app list.
-TEST_F(WindowSelectorControllerTest, SelectingHidesAppList) {
+TEST_F(OverviewControllerTest, SelectingHidesAppList) {
   std::unique_ptr<aura::Window> window(CreateTestWindow());
 
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplay().id());
   GetAppListTestHelper()->CheckVisibility(true);
 
-  Shell::Get()->window_selector_controller()->ToggleOverview();
+  Shell::Get()->overview_controller()->ToggleOverview();
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);
 }
 
-class OverviewVirtualKeyboardTest : public WindowSelectorControllerTest {
+class OverviewVirtualKeyboardTest : public OverviewControllerTest {
  protected:
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
-    WindowSelectorControllerTest::SetUp();
+    OverviewControllerTest::SetUp();
 
     TabletModeControllerTestApi().EnterTabletMode();
     base::RunLoop().RunUntilIdle();
@@ -374,7 +374,7 @@ TEST_F(OverviewVirtualKeyboardTest, ToggleOverviewModeHidesVirtualKeyboard) {
   keyboard_controller()->ShowKeyboard(false /* locked */);
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
-  Shell::Get()->window_selector_controller()->ToggleOverview();
+  Shell::Get()->overview_controller()->ToggleOverview();
 
   // Timeout failure here if the keyboard does not hide.
   keyboard::WaitUntilHidden();
@@ -385,7 +385,7 @@ TEST_F(OverviewVirtualKeyboardTest,
   keyboard_controller()->ShowKeyboard(true /* locked */);
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
-  Shell::Get()->window_selector_controller()->ToggleOverview();
+  Shell::Get()->overview_controller()->ToggleOverview();
   EXPECT_FALSE(keyboard::IsKeyboardHiding());
 }
 

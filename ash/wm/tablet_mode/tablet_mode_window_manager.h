@@ -59,7 +59,7 @@ class ASH_EXPORT TabletModeWindowManager
 
   // ShellObserver:
   void OnOverviewModeStarting() override;
-  void OnOverviewModeEnding(WindowSelector* window_selector) override;
+  void OnOverviewModeEnding(OverviewSession* overview_session) override;
   void OnOverviewModeEnded() override;
   void OnSplitViewModeEnded() override;
 

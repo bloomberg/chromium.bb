@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_OVERVIEW_WINDOW_SELECTOR_DELEGATE_H_
-#define ASH_WM_OVERVIEW_WINDOW_SELECTOR_DELEGATE_H_
+#ifndef ASH_WM_OVERVIEW_OVERVIEW_DELEGATE_H_
+#define ASH_WM_OVERVIEW_OVERVIEW_DELEGATE_H_
 
 #include <memory>
 
@@ -12,7 +12,7 @@
 
 namespace ash {
 
-class WindowSelectorDelegate;
+class OverviewDelegate;
 
 class ASH_EXPORT DelayedAnimationObserver {
  public:
@@ -20,7 +20,7 @@ class ASH_EXPORT DelayedAnimationObserver {
 
   // Sets an |owner| that can be notified when the animation that |this|
   // observes completes.
-  virtual void SetOwner(WindowSelectorDelegate* owner) = 0;
+  virtual void SetOwner(OverviewDelegate* owner) = 0;
 
   // Can be called by the |owner| to delete the owned widget. The |owner| is
   // then responsible for deleting |this| instance of the
@@ -28,8 +28,8 @@ class ASH_EXPORT DelayedAnimationObserver {
   virtual void Shutdown() = 0;
 };
 
-// Implement this class to handle the selection event from WindowSelector.
-class ASH_EXPORT WindowSelectorDelegate {
+// Implement this class to handle the selection event from OverviewSession.
+class ASH_EXPORT OverviewDelegate {
  public:
   // Invoked if selection is ended.
   virtual void OnSelectionEnded() = 0;
@@ -58,9 +58,9 @@ class ASH_EXPORT WindowSelectorDelegate {
       DelayedAnimationObserver* animation_observer) = 0;
 
  protected:
-  virtual ~WindowSelectorDelegate() {}
+  virtual ~OverviewDelegate() {}
 };
 
 }  // namespace ash
 
-#endif  // ASH_WM_OVERVIEW_WINDOW_SELECTOR_DELEGATE_H_
+#endif  // ASH_WM_OVERVIEW_OVERVIEW_DELEGATE_H_

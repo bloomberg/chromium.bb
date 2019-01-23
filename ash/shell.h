@@ -200,8 +200,8 @@ class WaylandServerController;
 class WindowServiceOwner;
 class WindowCycleController;
 class WindowPositioner;
-class WindowSelector;
-class WindowSelectorController;
+class OverviewSession;
+class OverviewController;
 class WindowTreeHostManager;
 
 enum class LoginStatus;
@@ -554,8 +554,8 @@ class ASH_EXPORT Shell : public SessionObserver,
     return window_cycle_controller_.get();
   }
   WindowPositioner* window_positioner() { return window_positioner_.get(); }
-  WindowSelectorController* window_selector_controller() {
-    return window_selector_controller_.get();
+  OverviewController* overview_controller() {
+    return overview_controller_.get();
   }
   WindowServiceOwner* window_service_owner() {
     return window_service_owner_.get();
@@ -609,8 +609,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   void NotifyOverviewModeStartingAnimationComplete(bool canceled);
 
   // Notifies observers that overview mode is about to end (before the windows
-  // restore themselves). |window_selector| must not be null.
-  void NotifyOverviewModeEnding(WindowSelector* window_selector);
+  // restore themselves). |overview_session| must not be null.
+  void NotifyOverviewModeEnding(OverviewSession* overview_session);
 
   // Notifies observers that overview mode has ended.
   void NotifyOverviewModeEnded();
@@ -778,7 +778,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<VpnList> vpn_list_;
   std::unique_ptr<WallpaperController> wallpaper_controller_;
   std::unique_ptr<WindowCycleController> window_cycle_controller_;
-  std::unique_ptr<WindowSelectorController> window_selector_controller_;
+  std::unique_ptr<OverviewController> overview_controller_;
   // Owned by |focus_controller_|.
   ::wm::FocusRules* focus_rules_ = nullptr;
   std::unique_ptr<::wm::ShadowController> shadow_controller_;

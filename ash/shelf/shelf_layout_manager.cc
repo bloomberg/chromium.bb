@@ -30,7 +30,7 @@
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -793,8 +793,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     // movement on async preference initialization in tests: crbug.com/834369
     display_ = display::Screen::GetScreen()->GetDisplayNearestWindow(
         shelf_widget_->GetNativeWindow());
-    bool in_overview =
-        Shell::Get()->window_selector_controller()->IsSelecting();
+    bool in_overview = Shell::Get()->overview_controller()->IsSelecting();
     if (!in_overview && !state_.IsScreenLocked() &&
         (shelf_->alignment() != SHELF_ALIGNMENT_BOTTOM_LOCKED ||
          display_.work_area() == display_.bounds())) {
@@ -1091,8 +1090,8 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     return SHELF_AUTO_HIDE_SHOWN;
 
   // Do not hide the shelf if overview mode is active.
-  if (Shell::Get()->window_selector_controller() &&
-      Shell::Get()->window_selector_controller()->IsSelecting()) {
+  if (Shell::Get()->overview_controller() &&
+      Shell::Get()->overview_controller()->IsSelecting()) {
     return SHELF_AUTO_HIDE_SHOWN;
   }
 

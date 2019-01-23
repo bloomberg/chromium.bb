@@ -19,7 +19,7 @@
 #include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/switchable_windows.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
@@ -1330,20 +1330,19 @@ TEST_F(TabletModeWindowManagerTest, ExitsOverview) {
   std::unique_ptr<aura::Window> w2(
       CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect2));
 
-  WindowSelectorController* window_selector_controller =
-      Shell::Get()->window_selector_controller();
-  ASSERT_TRUE(window_selector_controller->ToggleOverview());
-  ASSERT_TRUE(window_selector_controller->IsSelecting());
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  ASSERT_TRUE(overview_controller->ToggleOverview());
+  ASSERT_TRUE(overview_controller->IsSelecting());
   TabletModeWindowManager* manager = CreateTabletModeWindowManager();
   ASSERT_TRUE(manager);
-  EXPECT_FALSE(window_selector_controller->IsSelecting());
+  EXPECT_FALSE(overview_controller->IsSelecting());
 
-  ASSERT_TRUE(window_selector_controller->ToggleOverview());
-  ASSERT_TRUE(window_selector_controller->IsSelecting());
+  ASSERT_TRUE(overview_controller->ToggleOverview());
+  ASSERT_TRUE(overview_controller->IsSelecting());
   // Destroy the manager again and check that the windows return to their
   // previous state.
   DestroyTabletModeWindowManager();
-  EXPECT_FALSE(window_selector_controller->IsSelecting());
+  EXPECT_FALSE(overview_controller->IsSelecting());
 }
 
 // Test that an edge swipe from the top will end full screen mode.
@@ -1789,14 +1788,13 @@ TEST_F(TabletModeWindowManagerTest, DontChangeBoundsForMinimizedWindow) {
   EXPECT_TRUE(window_state->IsMinimized());
   EXPECT_EQ(window->bounds(), rect);
 
-  WindowSelectorController* window_selector_controller =
-      Shell::Get()->window_selector_controller();
-  window_selector_controller->ToggleOverview();
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->ToggleOverview();
   EXPECT_EQ(window->bounds(), rect);
 
   // Exit overview mode will update all windows' bounds. However, if the window
   // is minimized, the bounds will not be updated.
-  window_selector_controller->ToggleOverview();
+  overview_controller->ToggleOverview();
   EXPECT_EQ(window->bounds(), rect);
 }
 
@@ -1841,7 +1839,7 @@ TEST_F(TabletModeWindowManagerTest, ActiveNoSnap) {
   ::wm::ActivateWindow(window.get());
   ASSERT_TRUE(CreateTabletModeWindowManager());
   EXPECT_EQ(SplitViewController::NO_SNAP, split_view_controller->state());
-  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
 }
 
 // Test that if the active window is snapped on the left before tablet mode,
@@ -1854,7 +1852,7 @@ TEST_F(TabletModeWindowManagerTest, ActiveLeftSnap) {
   ASSERT_TRUE(CreateTabletModeWindowManager());
   EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
   EXPECT_EQ(window.get(), split_view_controller->left_window());
-  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
 }
 
 // Test that if the active window is snapped on the right before tablet mode,
@@ -1867,7 +1865,7 @@ TEST_F(TabletModeWindowManagerTest, ActiveRightSnap) {
   ASSERT_TRUE(CreateTabletModeWindowManager());
   EXPECT_EQ(SplitViewController::RIGHT_SNAPPED, split_view_controller->state());
   EXPECT_EQ(window.get(), split_view_controller->right_window());
-  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
 }
 
 // Test that if before tablet mode, the active window is snapped on the left and
@@ -1884,7 +1882,7 @@ TEST_F(TabletModeWindowManagerTest, ActiveLeftSnapPreviousRightSnap) {
   EXPECT_EQ(SplitViewController::BOTH_SNAPPED, split_view_controller->state());
   EXPECT_EQ(left_window.get(), split_view_controller->left_window());
   EXPECT_EQ(right_window.get(), split_view_controller->right_window());
-  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
 }
 
 // Test that if before tablet mode, the active window is snapped on the right
@@ -1901,7 +1899,7 @@ TEST_F(TabletModeWindowManagerTest, ActiveRightSnapPreviousLeftSnap) {
   EXPECT_EQ(SplitViewController::BOTH_SNAPPED, split_view_controller->state());
   EXPECT_EQ(left_window.get(), split_view_controller->left_window());
   EXPECT_EQ(right_window.get(), split_view_controller->right_window());
-  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
 }
 
 }  // namespace ash

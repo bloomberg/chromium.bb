@@ -7,11 +7,11 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_item.h"
+#include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
-#include "ash/wm/overview/window_grid.h"
-#include "ash/wm/overview/window_selector.h"
-#include "ash/wm/overview/window_selector_controller.h"
-#include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -31,36 +31,36 @@ namespace {
 // tablet mode.
 constexpr float kIndicatorsThresholdRatio = 0.1;
 
-// Returns the window selector if overview mode is active, otherwise returns
+// Returns the overview session if overview mode is active, otherwise returns
 // nullptr.
-WindowSelector* GetWindowSelector() {
-  return Shell::Get()->window_selector_controller()->IsSelecting()
-             ? Shell::Get()->window_selector_controller()->window_selector()
+OverviewSession* GetOverviewSession() {
+  return Shell::Get()->overview_controller()->IsSelecting()
+             ? Shell::Get()->overview_controller()->overview_session()
              : nullptr;
 }
 
-WindowGrid* GetWindowGrid(aura::Window* dragged_window) {
-  if (!GetWindowSelector())
+OverviewGrid* GetOverviewGrid(aura::Window* dragged_window) {
+  if (!GetOverviewSession())
     return nullptr;
 
-  return GetWindowSelector()->GetGridWithRootWindow(
+  return GetOverviewSession()->GetGridWithRootWindow(
       dragged_window->GetRootWindow());
 }
 
 // Returns the drop target in overview during drag.
-WindowSelectorItem* GetDropTarget(aura::Window* dragged_window) {
-  WindowGrid* window_grid = GetWindowGrid(dragged_window);
-  if (!window_grid || window_grid->empty())
+OverviewItem* GetDropTarget(aura::Window* dragged_window) {
+  OverviewGrid* overview_grid = GetOverviewGrid(dragged_window);
+  if (!overview_grid || overview_grid->empty())
     return nullptr;
 
-  return window_grid->GetDropTarget();
+  return overview_grid->GetDropTarget();
 }
 
 // Gets the bounds of selected drop target in overview grid that is displaying
 // in the same root window as |dragged_window|. Note that the returned bounds is
 // scaled-up.
 gfx::Rect GetBoundsOfSelectedDropTarget(aura::Window* dragged_window) {
-  WindowSelectorItem* drop_target = GetDropTarget(dragged_window);
+  OverviewItem* drop_target = GetDropTarget(dragged_window);
   if (!drop_target)
     return gfx::Rect();
 
@@ -101,8 +101,7 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
   dragged_window_->SetProperty(kBackdropWindowMode,
                                BackdropWindowMode::kDisabled);
 
-  WindowSelectorController* controller =
-      Shell::Get()->window_selector_controller();
+  OverviewController* controller = Shell::Get()->overview_controller();
   bool was_overview_open = controller->IsSelecting();
 
   // If the dragged window is one of the snapped windows, SplitViewController
@@ -111,14 +110,14 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
 
   if (ShouldOpenOverviewWhenDragStarts() && !controller->IsSelecting()) {
     controller->ToggleOverview(
-        WindowSelector::EnterExitOverviewType::kWindowDragged);
+        OverviewSession::EnterExitOverviewType::kWindowDragged);
   }
 
   if (controller->IsSelecting()) {
     // Only do animation if overview was open before the drag started. If the
     // overview is opened because of the window drag, do not do animation.
-    GetWindowSelector()->OnWindowDragStarted(dragged_window_,
-                                             /*animate=*/was_overview_open);
+    GetOverviewSession()->OnWindowDragStarted(dragged_window_,
+                                              /*animate=*/was_overview_open);
   }
 
   bounds_of_selected_drop_target_ =
@@ -171,8 +170,8 @@ void TabletModeWindowDragDelegate::ContinueWindowDrag(
   split_view_drag_indicators_->SetIndicatorState(indicator_state,
                                                  location_in_screen);
 
-  if (GetWindowSelector()) {
-    GetWindowSelector()->OnWindowDragContinued(
+  if (GetOverviewSession()) {
+    GetOverviewSession()->OnWindowDragContinued(
         dragged_window_, location_in_screen, indicator_state);
   }
 }
@@ -191,8 +190,8 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
 
   // The window might merge into an overview window or become a new window item
   // in overview mode.
-  if (GetWindowSelector()) {
-    GetWindowSelector()->OnWindowDragEnded(
+  if (GetOverviewSession()) {
+    GetOverviewSession()->OnWindowDragEnded(
         dragged_window_, location_in_screen,
         ShouldDropWindowIntoOverview(snap_position, location_in_screen));
   }
@@ -336,7 +335,7 @@ SplitViewController::SnapPosition TabletModeWindowDragDelegate::GetSnapPosition(
 
 void TabletModeWindowDragDelegate::UpdateDraggedWindowTransform(
     const gfx::Point& location_in_screen) {
-  DCHECK(Shell::Get()->window_selector_controller()->IsSelecting());
+  DCHECK(Shell::Get()->overview_controller()->IsSelecting());
 
   // Calculate the desired scale along the y-axis. The scale of the window
   // during drag is based on the distance from |y_location_in_screen| to the y
@@ -369,15 +368,15 @@ bool TabletModeWindowDragDelegate::ShouldDropWindowIntoOverview(
   if (snap_position != SplitViewController::NONE && !is_split_view_active)
     return false;
 
-  WindowSelectorItem* drop_target = GetDropTarget(dragged_window_);
+  OverviewItem* drop_target = GetDropTarget(dragged_window_);
   if (!drop_target)
     return false;
 
-  WindowGrid* window_grid = GetWindowGrid(dragged_window_);
+  OverviewGrid* overview_grid = GetOverviewGrid(dragged_window_);
   aura::Window* target_window =
-      window_grid->GetTargetWindowOnLocation(location_in_screen);
+      overview_grid->GetTargetWindowOnLocation(location_in_screen);
   const bool is_drop_target_selected =
-      target_window && window_grid->IsDropTargetWindow(target_window);
+      target_window && overview_grid->IsDropTargetWindow(target_window);
 
   // TODO(crbug.com/878294): Should also consider drag distance when splitview
   // is active.
@@ -404,7 +403,7 @@ bool TabletModeWindowDragDelegate::ShouldFlingIntoOverview(
   // overview is not opened when drag starts (if it's tab-dragging and the
   // dragged window is not the same with the source window), we should not fling
   // the dragged window into overview in this case.
-  if (!Shell::Get()->window_selector_controller()->IsSelecting())
+  if (!Shell::Get()->overview_controller()->IsSelecting())
     return false;
 
   const gfx::Point location_in_screen = GetEventLocationInScreen(event);

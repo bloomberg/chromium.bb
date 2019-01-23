@@ -15,7 +15,7 @@ void StartAnimationObserver::OnImplicitAnimationsCompleted() {
     owner_->RemoveAndDestroyStartAnimationObserver(this);
 }
 
-void StartAnimationObserver::SetOwner(WindowSelectorDelegate* owner) {
+void StartAnimationObserver::SetOwner(OverviewDelegate* owner) {
   DCHECK(!owner_);
   owner_ = owner;
 }
