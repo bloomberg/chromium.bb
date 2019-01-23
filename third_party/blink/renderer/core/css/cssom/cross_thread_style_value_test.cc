@@ -18,31 +18,55 @@ namespace blink {
 
 class CrossThreadStyleValueTest : public testing::Test {
  public:
-  static void CheckUnsupportedValue(
-      WaitableEvent* waitable_event,
-      std::unique_ptr<CrossThreadUnsupportedValue> value) {
-    EXPECT_EQ(value->value_, "test");
+  void ShutDown(WaitableEvent* waitable_event) {
+    DCHECK(!IsMainThread());
+    thread_->ShutdownOnThread();
     waitable_event->Signal();
   }
+
+  void ShutDownThread() {
+    WaitableEvent waitable_event;
+    thread_->PostTask(FROM_HERE,
+                      CrossThreadBind(&CrossThreadStyleValueTest::ShutDown,
+                                      CrossThreadUnretained(this),
+                                      CrossThreadUnretained(&waitable_event)));
+    waitable_event.Wait();
+  }
+
+  void CheckUnsupportedValue(
+      WaitableEvent* waitable_event,
+      std::unique_ptr<CrossThreadUnsupportedValue> value) {
+    DCHECK(!IsMainThread());
+    thread_->InitializeOnThread();
+
+    EXPECT_EQ(value->value_, "Unsupported");
+    waitable_event->Signal();
+  }
+
+ protected:
+  std::unique_ptr<WebThreadSupportingGC> thread_;
 };
 
 // Ensure that a CrossThreadUnsupportedValue can be safely passed cross
 // threads.
 TEST_F(CrossThreadStyleValueTest, PassUnsupportedValueCrossThread) {
   std::unique_ptr<CrossThreadUnsupportedValue> value =
-      std::make_unique<CrossThreadUnsupportedValue>("test");
+      std::make_unique<CrossThreadUnsupportedValue>("Unsupported");
   DCHECK(value);
 
   // Use a WebThreadSupportingGC to emulate worklet thread.
-  std::unique_ptr<WebThreadSupportingGC> thread = WebThreadSupportingGC::Create(
+  thread_ = WebThreadSupportingGC::Create(
       ThreadCreationParams(WebThreadType::kTestThread));
   WaitableEvent waitable_event;
-  thread->PostTask(
+  thread_->PostTask(
       FROM_HERE,
       CrossThreadBind(&CrossThreadStyleValueTest::CheckUnsupportedValue,
+                      CrossThreadUnretained(this),
                       CrossThreadUnretained(&waitable_event),
                       WTF::Passed(std::move(value))));
   waitable_event.Wait();
+
+  ShutDownThread();
 }
 
 TEST_F(CrossThreadStyleValueTest, CrossThreadUnsupportedValueToCSSStyleValue) {
