@@ -1527,7 +1527,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             return true;
         }
         return !(mTabSwitcherState == TAB_SWITCHER || mTabSwitcherModeAnimation != null
-                || urlHasFocus() || mUrlFocusChangeInProgress);
+                || urlHasFocus() || mUrlFocusChangeInProgress || mNtpSearchBoxScrollPercent > 0);
     }
 
     @Override
@@ -1676,6 +1676,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
         // Request a texture update to ensure a texture is captured before the user
         // re-enters the tab switcher.
+        postInvalidate();
         mLayoutUpdateHost.requestUpdate();
     }
 
