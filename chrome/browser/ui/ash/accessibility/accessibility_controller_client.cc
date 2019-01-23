@@ -40,12 +40,6 @@ void AccessibilityControllerClient::Init() {
   BindAndSetClient();
 }
 
-void AccessibilityControllerClient::InitForTesting(
-    ash::mojom::AccessibilityControllerPtr controller) {
-  accessibility_controller_ = std::move(controller);
-  BindAndSetClient();
-}
-
 void AccessibilityControllerClient::TriggerAccessibilityAlert(
     ash::mojom::AccessibilityAlert alert) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
