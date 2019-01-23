@@ -434,7 +434,7 @@ bool Cronet_UrlRequestImpl::IsDone() {
   return IsDoneLocked();
 }
 
-bool Cronet_UrlRequestImpl::IsDoneLocked() {
+bool Cronet_UrlRequestImpl::IsDoneLocked() const {
   lock_.AssertAcquired();
   return started_ && request_ == nullptr;
 }
