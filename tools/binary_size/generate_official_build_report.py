@@ -9,6 +9,7 @@ import argparse
 import json
 import logging
 import os
+import re
 import subprocess
 import sys
 import urllib2
@@ -51,22 +52,48 @@ def _CreateReports(report_path, diff_report_path, ref_size_path, size_path):
   ])
 
 
-def _UploadReports(reports_json_path, base_url, *reports):
-  new_report_dsts = []
-  for report_path in reports:
-    dst = os.path.join(base_url, os.path.basename(report_path))
-    subprocess.check_call(['gsutil.py', 'cp', report_path, dst])
-    new_report_dsts.append(dst)
+def _WriteReportsJson(out):
+  output = subprocess.check_output(['gsutil.py', 'ls', '-R', _REPORTS_GS_URL])
 
-  existing_reports = subprocess.check_output(
-      ['gsutil.py', 'ls', _REPORTS_GS_URL])
-  all_reports = existing_reports.splitlines() + new_report_dsts
+  reports = []
+  report_re = re.compile(
+      _REPORTS_GS_URL +
+      r'/(?P<cpu>\S+)/(?P<apk>\S+)/(?P<path>report_(?P<version>[^_]+)\.ndjson)')
+  for line in output.splitlines():
+    m = report_re.search(line)
+    if m:
+      meta = {
+          'cpu': m.group('cpu'),
+          'version': m.group('version'),
+          'apk': m.group('apk'),
+          'path': m.group('path')
+      }
+      diff_re = re.compile(
+          r'{}/{}/(?P<path>report_(?P<version>\S+)_{}.ndjson)'.format(
+              meta['cpu'], meta['apk'], meta['version']))
+      m = diff_re.search(output)
+      if not m:
+        raise Exception('Missing diff report for {}'.format(str(meta)))
+
+      meta['diff_path'] = m.group('path')
+      meta['reference_version'] = m.group('version')
+      reports.append(meta)
+
+  return json.dump({'pushed': reports}, out)
+
+
+def _UploadReports(reports_json_path, base_url, *ndjson_paths):
+  for path in ndjson_paths:
+    dst = os.path.join(base_url, os.path.basename(path))
+    subprocess.check_call(['gsutil.py', 'cp', '-a', 'public-read', path, dst])
 
   with open(reports_json_path, 'w') as f:
-    json.dump({'reports': all_reports}, f)
+    _WriteReportsJson(f)
 
-  subprocess.check_call(
-      ['gsutil.py', 'cp', reports_json_path, _REPORTS_JSON_GS_URL])
+  subprocess.check_call([
+      'gsutil.py', 'cp', '-a', 'public-read', reports_json_path,
+      _REPORTS_JSON_GS_URL
+  ])
 
 
 def main():
