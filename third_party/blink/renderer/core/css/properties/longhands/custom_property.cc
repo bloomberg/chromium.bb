@@ -30,6 +30,10 @@ const AtomicString& CustomProperty::GetPropertyNameAtomicString() const {
   return name_;
 }
 
+CSSPropertyName CustomProperty::GetCSSPropertyName() const {
+  return CSSPropertyName(name_);
+}
+
 void CustomProperty::ApplyInitial(StyleResolverState& state) const {
   state.Style()->RemoveVariable(name_, IsInherited());
 }

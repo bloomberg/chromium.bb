@@ -30,6 +30,7 @@ class CORE_EXPORT CustomProperty : public Variable {
 
   bool IsInherited() const override;
   const AtomicString& GetPropertyNameAtomicString() const override;
+  CSSPropertyName GetCSSPropertyName() const override;
 
   void ApplyInitial(StyleResolverState&) const override;
   void ApplyInherit(StyleResolverState&) const override;

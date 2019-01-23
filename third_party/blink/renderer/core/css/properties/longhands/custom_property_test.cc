@@ -194,4 +194,9 @@ TEST_F(CustomPropertyTest, ParseSingleValueValidatedUntyped) {
   EXPECT_FALSE(value2);
 }
 
+TEST_F(CustomPropertyTest, GetCSSPropertyName) {
+  CustomProperty property("--x", GetDocument());
+  EXPECT_EQ(CSSPropertyName("--x"), property.GetCSSPropertyName());
+}
+
 }  // namespace blink

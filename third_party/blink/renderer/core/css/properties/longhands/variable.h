@@ -22,6 +22,10 @@ class CORE_EXPORT Variable : public Longhand {
   bool IsInherited() const override { return true; }
   bool IsAffectedByAll() const override { return false; }
   CSSPropertyID PropertyID() const override { return CSSPropertyVariable; }
+  CSSPropertyName GetCSSPropertyName() const override {
+    NOTREACHED();
+    return CSSPropertyName("");
+  }
   const char* GetPropertyName() const override { return "variable"; }
   const WTF::AtomicString& GetPropertyNameAtomicString() const override {
     DEFINE_STATIC_LOCAL(const AtomicString, name, ("variable"));
