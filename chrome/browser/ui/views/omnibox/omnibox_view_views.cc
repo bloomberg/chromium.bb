@@ -327,7 +327,7 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   bool text_is_url = model()->CurrentTextIsURL();
   GetRenderText()->SetDirectionalityMode(
       text_is_url ? gfx::DIRECTIONALITY_AS_URL : gfx::DIRECTIONALITY_FROM_TEXT);
-  SetStyle(gfx::STRIKE, false);
+  SetStyle(gfx::TEXT_STYLE_STRIKE, false);
 
   base::string16 text = GetText();
   bool path_eligible_for_fading = UpdateTextStyle(
@@ -954,7 +954,7 @@ void OmniboxViewViews::UpdateSchemeStyle(const gfx::Range& range) {
     return;
   ApplyColor(location_bar_view_->GetSecurityChipColor(security_level_), range);
   if (security_level_ == security_state::DANGEROUS)
-    ApplyStyle(gfx::STRIKE, true, range);
+    ApplyStyle(gfx::TEXT_STYLE_STRIKE, true, range);
 }
 
 void OmniboxViewViews::OnMouseMoved(const ui::MouseEvent& event) {

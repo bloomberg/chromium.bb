@@ -292,7 +292,7 @@ Range StyleIterator::GetRange() const {
   range = range.Intersect(baselines_.GetRange(baseline_));
   range = range.Intersect(font_size_overrides_.GetRange(font_size_override_));
   range = range.Intersect(weights_.GetRange(weight_));
-  for (size_t i = 0; i < NUM_TEXT_STYLES; ++i)
+  for (size_t i = 0; i < TEXT_STYLE_COUNT; ++i)
     range = range.Intersect(styles_[i].GetRange(style_[i]));
   return range;
 }
@@ -302,7 +302,7 @@ void StyleIterator::UpdatePosition(size_t position) {
   baseline_ = baselines_.GetBreak(position);
   font_size_override_ = font_size_overrides_.GetBreak(position);
   weight_ = weights_.GetBreak(position);
-  for (size_t i = 0; i < NUM_TEXT_STYLES; ++i)
+  for (size_t i = 0; i < TEXT_STYLE_COUNT; ++i)
     style_[i] = styles_[i].GetBreak(position);
 }
 
@@ -393,7 +393,7 @@ void RenderText::SetText(const base::string16& text) {
   baselines_.SetValue(baselines_.breaks().begin()->second);
   font_size_overrides_.SetValue(font_size_overrides_.breaks().begin()->second);
   weights_.SetValue(weights_.breaks().begin()->second);
-  for (size_t style = 0; style < NUM_TEXT_STYLES; ++style)
+  for (size_t style = 0; style < TEXT_STYLE_COUNT; ++style)
     styles_[style].SetValue(styles_[style].breaks().begin()->second);
   cached_bounds_and_offset_valid_ = false;
 
@@ -429,9 +429,9 @@ void RenderText::SetFontList(const FontList& font_list) {
   font_list_ = font_list;
   const int font_style = font_list.GetFontStyle();
   weights_.SetValue(font_list.GetFontWeight());
-  styles_[ITALIC].SetValue((font_style & Font::ITALIC) != 0);
-  styles_[UNDERLINE].SetValue((font_style & Font::UNDERLINE) != 0);
-  styles_[HEAVY_UNDERLINE].SetValue(false);
+  styles_[TEXT_STYLE_ITALIC].SetValue((font_style & Font::ITALIC) != 0);
+  styles_[TEXT_STYLE_UNDERLINE].SetValue((font_style & Font::UNDERLINE) != 0);
+  styles_[TEXT_STYLE_HEAVY_UNDERLINE].SetValue(false);
   baseline_ = kInvalidBaseline;
   cached_bounds_and_offset_valid_ = false;
   OnLayoutTextAttributeChanged(false);
@@ -751,7 +751,7 @@ void RenderText::ApplyWeight(Font::Weight weight, const Range& range) {
 
 bool RenderText::GetStyle(TextStyle style) const {
   return (styles_[style].breaks().size() == 1) &&
-      styles_[style].breaks().front().second;
+         styles_[style].breaks().front().second;
 }
 
 void RenderText::SetDirectionalityMode(DirectionalityMode mode) {
@@ -1043,7 +1043,7 @@ RenderText::RenderText()
       baselines_(NORMAL_BASELINE),
       font_size_overrides_(0),
       weights_(Font::Weight::NORMAL),
-      styles_(NUM_TEXT_STYLES),
+      styles_(TEXT_STYLE_COUNT),
       composition_and_selection_styles_applied_(false),
       obscured_(false),
       obscured_reveal_index_(-1),
@@ -1066,7 +1066,7 @@ bool RenderText::IsHomogeneous() const {
       font_size_overrides().breaks().size() > 1 ||
       weights().breaks().size() > 1)
     return false;
-  for (size_t style = 0; style < NUM_TEXT_STYLES; ++style) {
+  for (size_t style = 0; style < TEXT_STYLE_COUNT; ++style) {
     if (styles()[style].breaks().size() > 1)
       return false;
   }
@@ -1205,11 +1205,11 @@ void RenderText::ApplyCompositionAndSelectionStyles() {
   // Save the underline and color breaks to undo the temporary styles later.
   DCHECK(!composition_and_selection_styles_applied_);
   saved_colors_ = colors_;
-  saved_underlines_ = styles_[HEAVY_UNDERLINE];
+  saved_underlines_ = styles_[TEXT_STYLE_HEAVY_UNDERLINE];
 
   // Apply an underline to the composition range in |underlines|.
   if (composition_range_.IsValid() && !composition_range_.is_empty())
-    styles_[HEAVY_UNDERLINE].ApplyValue(true, composition_range_);
+    styles_[TEXT_STYLE_HEAVY_UNDERLINE].ApplyValue(true, composition_range_);
 
   // Apply the selected text color to the [un-reversed] selection range.
   if (!selection().is_empty() && focused()) {
@@ -1223,7 +1223,7 @@ void RenderText::UndoCompositionAndSelectionStyles() {
   // Restore the underline and color breaks to undo the temporary styles.
   DCHECK(composition_and_selection_styles_applied_);
   colors_ = saved_colors_;
-  styles_[HEAVY_UNDERLINE] = saved_underlines_;
+  styles_[TEXT_STYLE_HEAVY_UNDERLINE] = saved_underlines_;
   composition_and_selection_styles_applied_ = false;
 }
 
@@ -1387,7 +1387,7 @@ void RenderText::UpdateStyleLengths() {
   baselines_.SetMax(text_length);
   font_size_overrides_.SetMax(text_length);
   weights_.SetMax(text_length);
-  for (size_t style = 0; style < NUM_TEXT_STYLES; ++style)
+  for (size_t style = 0; style < TEXT_STYLE_COUNT; ++style)
     styles_[style].SetMax(text_length);
 }
 
@@ -1605,7 +1605,7 @@ base::string16 RenderText::Elide(const base::string16& text,
 
     // Restore styles and baselines without breaking multi-character graphemes.
     render_text->styles_ = styles_;
-    for (size_t style = 0; style < NUM_TEXT_STYLES; ++style)
+    for (size_t style = 0; style < TEXT_STYLE_COUNT; ++style)
       RestoreBreakList(render_text.get(), &render_text->styles_[style]);
     RestoreBreakList(render_text.get(), &render_text->baselines_);
     RestoreBreakList(render_text.get(), &render_text->font_size_overrides_);

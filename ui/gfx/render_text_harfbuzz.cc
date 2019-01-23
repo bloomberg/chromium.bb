@@ -1736,12 +1736,12 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
     Range run_range;
     internal::TextRunHarfBuzz::FontParams font_params(primary_font);
     run_range.set_start(run_break);
-    font_params.italic = style.style(ITALIC);
+    font_params.italic = style.style(TEXT_STYLE_ITALIC);
     font_params.baseline_type = style.baseline();
     font_params.font_size = style.font_size_override();
-    font_params.strike = style.style(STRIKE);
-    font_params.underline = style.style(UNDERLINE);
-    font_params.heavy_underline = style.style(HEAVY_UNDERLINE);
+    font_params.strike = style.style(TEXT_STYLE_STRIKE);
+    font_params.underline = style.style(TEXT_STYLE_UNDERLINE);
+    font_params.heavy_underline = style.style(TEXT_STYLE_HEAVY_UNDERLINE);
     font_params.weight = style.weight();
     int32_t script_item_break = 0;
     bidi_iterator.GetLogicalRun(run_break, &script_item_break,
