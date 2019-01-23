@@ -1480,6 +1480,11 @@ FcParseMatrix (FcConfigParse *parse)
     m.xy = FcPopExpr (parse);
     m.xx = FcPopExpr (parse);
 
+    if (!m.yy || !m.yx || !m.xy || !m.xx)
+    {
+	FcConfigMessage (parse, FcSevereWarning, "Missing values in matrix element");
+	return;
+    }
     if (FcPopExpr (parse))
       FcConfigMessage (parse, FcSevereError, "wrong number of matrix elements");
     else
