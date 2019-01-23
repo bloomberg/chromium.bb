@@ -492,6 +492,8 @@ void VideoCaptureController::OnFrameReadyInBuffer(
     media::mojom::VideoFrameInfoPtr frame_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_NE(buffer_id, media::VideoCaptureBufferPool::kInvalidId);
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+               "VideoCaptureController::OnFrameReadyInBuffer");
 
   frame_drop_log_state_ = FrameDropLogState();
 
@@ -578,6 +580,8 @@ void VideoCaptureController::OnError(media::VideoCaptureError error) {
 
 void VideoCaptureController::OnFrameDropped(
     media::VideoCaptureFrameDropReason reason) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+               "VideoCaptureController::OnFrameDropped");
   if (reason == frame_drop_log_state_.drop_reason) {
     if (frame_drop_log_state_.max_log_count_exceeded)
       return;
@@ -664,6 +668,8 @@ void VideoCaptureController::CreateAndStartDeviceAsync(
     VideoCaptureDeviceLaunchObserver* observer,
     base::OnceClosure done_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+               "VideoCaptureController::CreateAndStartDeviceAsync");
   std::ostringstream string_stream;
   string_stream
       << "VideoCaptureController::CreateAndStartDeviceAsync: serial_id = "
@@ -680,6 +686,8 @@ void VideoCaptureController::CreateAndStartDeviceAsync(
 
 void VideoCaptureController::ReleaseDeviceAsync(base::OnceClosure done_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+               "VideoCaptureController::ReleaseDeviceAsync");
   std::ostringstream string_stream;
   string_stream << "VideoCaptureController::ReleaseDeviceAsync: serial_id = "
                 << serial_id() << ", device_id = " << device_id();
@@ -715,6 +723,9 @@ void VideoCaptureController::TakePhoto(
     media::VideoCaptureDevice::TakePhotoCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(launched_device_);
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+                       "VideoCaptureController::TakePhoto",
+                       TRACE_EVENT_SCOPE_PROCESS);
   launched_device_->TakePhoto(std::move(callback));
 }
 

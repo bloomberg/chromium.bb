@@ -177,6 +177,8 @@ ScriptPromise ImageCapture::getPhotoSettings(ScriptState* script_state) {
 ScriptPromise ImageCapture::setOptions(ScriptState* script_state,
                                        const PhotoSettings* photo_settings,
                                        bool trigger_take_photo /* = false */) {
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+                       "ImageCapture::setOptions", TRACE_EVENT_SCOPE_PROCESS);
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
@@ -256,6 +258,8 @@ ScriptPromise ImageCapture::setOptions(ScriptState* script_state,
 }
 
 ScriptPromise ImageCapture::takePhoto(ScriptState* script_state) {
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+                       "ImageCapture::takePhoto", TRACE_EVENT_SCOPE_PROCESS);
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
@@ -277,6 +281,8 @@ ScriptPromise ImageCapture::takePhoto(ScriptState* script_state) {
   // camera;
   // TODO(mcasas) consider sending the security origin as well:
   // scriptState->getExecutionContext()->getSecurityOrigin()->toString()
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+                       "ImageCapture::takePhoto", TRACE_EVENT_SCOPE_PROCESS);
   service_->TakePhoto(
       stream_track_->Component()->Source()->Id(),
       WTF::Bind(&ImageCapture::OnMojoTakePhoto, WrapPersistent(this),
@@ -286,6 +292,10 @@ ScriptPromise ImageCapture::takePhoto(ScriptState* script_state) {
 
 ScriptPromise ImageCapture::takePhoto(ScriptState* script_state,
                                       const PhotoSettings* photo_settings) {
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+                       "ImageCapture::takePhoto (with settings)",
+                       TRACE_EVENT_SCOPE_PROCESS);
+
   return setOptions(script_state, photo_settings,
                     true /* trigger_take_photo */);
 }
@@ -724,6 +734,9 @@ void ImageCapture::OnMojoSetOptions(ScriptPromiseResolver* resolver,
                                     bool trigger_take_photo,
                                     bool result) {
   DCHECK(service_requests_.Contains(resolver));
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+                       "ImageCapture::OnMojoSetOptions",
+                       TRACE_EVENT_SCOPE_PROCESS);
 
   if (!result) {
     resolver->Reject(DOMException::Create(DOMExceptionCode::kUnknownError,
@@ -746,6 +759,9 @@ void ImageCapture::OnMojoSetOptions(ScriptPromiseResolver* resolver,
 void ImageCapture::OnMojoTakePhoto(ScriptPromiseResolver* resolver,
                                    media::mojom::blink::BlobPtr blob) {
   DCHECK(service_requests_.Contains(resolver));
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+                       "ImageCapture::OnMojoTakePhoto",
+                       TRACE_EVENT_SCOPE_PROCESS);
 
   // TODO(mcasas): Should be using a mojo::StructTraits.
   if (blob->data.IsEmpty()) {

@@ -205,11 +205,18 @@ void VideoCaptureDeviceAndroid::StopAndDeAllocate() {
 
 void VideoCaptureDeviceAndroid::TakePhoto(TakePhotoCallback callback) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+                       "VideoCaptureDeviceAndroid::TakePhoto",
+                       TRACE_EVENT_SCOPE_PROCESS);
   {
     base::AutoLock lock(lock_);
     if (state_ != kConfigured)
       return;
     if (!got_first_frame_) {  // We have to wait until we get the first frame.
+      TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+                           "VideoCaptureDeviceAndroid::TakePhoto enqueuing to "
+                           "wait for first frame",
+                           TRACE_EVENT_SCOPE_PROCESS);
       photo_requests_queue_.push_back(
           base::Bind(&VideoCaptureDeviceAndroid::DoTakePhoto,
                      weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
@@ -500,6 +507,9 @@ void VideoCaptureDeviceAndroid::OnPhotoTaken(
     jlong callback_id,
     const base::android::JavaParamRef<jbyteArray>& data) {
   DCHECK(callback_id);
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+                       "VideoCaptureDeviceAndroid::OnPhotoTaken",
+                       TRACE_EVENT_SCOPE_PROCESS);
 
   base::AutoLock lock(photo_callbacks_lock_);
 
@@ -612,6 +622,9 @@ void VideoCaptureDeviceAndroid::SetErrorState(media::VideoCaptureError error,
 
 void VideoCaptureDeviceAndroid::DoTakePhoto(TakePhotoCallback callback) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+                       "VideoCaptureDeviceAndroid::DoTakePhoto",
+                       TRACE_EVENT_SCOPE_PROCESS);
 #if DCHECK_IS_ON()
   {
     base::AutoLock lock(lock_);

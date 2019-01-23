@@ -43,6 +43,9 @@ void ServiceLaunchedVideoCaptureDevice::SetPhotoOptions(
 void ServiceLaunchedVideoCaptureDevice::TakePhoto(
     media::VideoCaptureDevice::TakePhotoCallback callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+                       "ServiceLaunchedVideoCaptureDevice::TakePhoto",
+                       TRACE_EVENT_SCOPE_PROCESS);
   device_->TakePhoto(
       base::BindOnce(&ServiceLaunchedVideoCaptureDevice::OnTakePhotoResponse,
                      base::Unretained(this), std::move(callback)));
