@@ -23,18 +23,12 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager;
  * The main coordinator for the Autofill Assistant, responsible for instantiating all other
  * sub-components and shutting down the Autofill Assistant.
  */
-class AssistantCoordinator
-        implements AssistantHeaderCoordinator.Delegate, TouchEventFilterView.Delegate {
+class AssistantCoordinator implements TouchEventFilterView.Delegate {
     interface Delegate {
         /**
          * Completely stop the Autofill Assistant.
          */
         void stop();
-
-        /**
-         * Get the debug context used when submitting feedback.
-         */
-        String getDebugContext();
 
         /**
          * Asks for an update of the touchable area.
@@ -84,7 +78,7 @@ class AssistantCoordinator
         mBottomBarCoordinator = new AssistantBottomBarCoordinator(
                 mAssistantView, mActivity.getResources().getDisplayMetrics());
         mHeaderCoordinator = new AssistantHeaderCoordinator(
-                mActivity, mBottomBarCoordinator.getView(), mModel.getHeaderModel(), this);
+                mActivity, mBottomBarCoordinator.getView(), mModel.getHeaderModel());
         mCarouselCoordinator = new AssistantCarouselCoordinator(
                 mActivity, mBottomBarCoordinator::onChildVisibilityChanged);
         mDetailsCoordinator = new AssistantDetailsCoordinator(
@@ -225,23 +219,20 @@ class AssistantCoordinator
         return mOverlayCoordinator;
     }
 
-    // Implementation of methods from {@link AssistantHeaderCoordinator.Delegate}.
-
-    @Override
-    public void onCloseClicked() {
+    /**
+     * Dismiss the assistant view and show a cancellable snackbar alerting the user that the
+     * Autofill assistant is shutting down.
+     */
+    public void dismissAndShowSnackbar(String message) {
         if (mIsShuttingDownGracefully) {
             shutdownImmediately();
             return;
         }
 
-        dismissAndShowSnackbar(R.string.autofill_assistant_stopped);
-    }
-
-    private void dismissAndShowSnackbar(int message) {
         hideAssistantView();
 
         Snackbar snackBar =
-                Snackbar.make(mActivity.getString(message),
+                Snackbar.make(message,
                                 new SnackbarManager.SnackbarController() {
                                     @Override
                                     public void onAction(Object actionData) {
@@ -261,11 +252,17 @@ class AssistantCoordinator
         mActivity.getSnackbarManager().showSnackbar(snackBar);
     }
 
-    @Override
-    public void onFeedbackClicked() {
+    private void dismissAndShowSnackbar(int message) {
+        dismissAndShowSnackbar(mActivity.getString(message));
+    }
+
+    /**
+     * Show the Chrome feedback form.
+     */
+    public void showFeedback(String debugContext) {
         HelpAndFeedback.getInstance(mActivity).showFeedback(mActivity, Profile.getLastUsedProfile(),
                 mActivity.getActivityTab().getUrl(), FEEDBACK_CATEGORY_TAG,
-                FeedbackContext.buildContextString(mActivity, mDelegate.getDebugContext(),
+                FeedbackContext.buildContextString(mActivity, debugContext,
                         mDetailsCoordinator.getCurrentDetails(),
                         mHeaderCoordinator.getStatusMessage(), 4));
     }

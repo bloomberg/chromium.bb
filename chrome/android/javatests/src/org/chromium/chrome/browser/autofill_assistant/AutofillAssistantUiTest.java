@@ -33,6 +33,7 @@ import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChipType;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetails;
+import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
@@ -171,9 +172,11 @@ public class AutofillAssistantUiTest {
         // Progress bar must be shown.
         Assert.assertTrue(bottomSheet.findViewById(R.id.progress_bar).isShown());
 
-        // Click 'X' button to graceful shutdown.
+        // Click 'X' button runs the AssistantHeaderModel.CLOSE_BUTTON_CALLBACK.
+        AssistantHeaderModel headerModel = assistantCoordinator.getModel().getHeaderModel();
+        headerModel.set(AssistantHeaderModel.CLOSE_BUTTON_CALLBACK, mRunnableMock);
         ThreadUtils.runOnUiThreadBlocking(
                 () -> { bottomSheet.findViewById(R.id.close_button).performClick(); });
-        Assert.assertFalse(bottomSheet.isShown());
+        inOrder.verify(mRunnableMock).run();
     }
 }

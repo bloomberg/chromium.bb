@@ -100,10 +100,6 @@ class UiController {
   virtual void UpdateTouchableArea(bool enabled,
                                    const std::vector<RectF>& areas) = 0;
 
-  // Returns a string describing the current execution context. This is useful
-  // when analyzing feedback forms and for debugging in general.
-  virtual std::string GetDebugContext() const = 0;
-
   // Force the bottom sheet to be in the expanded state.
   virtual void ExpandBottomSheet() = 0;
 

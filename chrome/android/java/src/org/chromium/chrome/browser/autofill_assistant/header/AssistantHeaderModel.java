@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.autofill_assistant.header;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -24,8 +25,16 @@ public class AssistantHeaderModel extends PropertyModel {
 
     static final WritableBooleanPropertyKey PROGRESS_PULSING = new WritableBooleanPropertyKey();
 
+    static final WritableObjectPropertyKey<Runnable> FEEDBACK_BUTTON_CALLBACK =
+            new WritableObjectPropertyKey<>();
+
+    @VisibleForTesting
+    public static final WritableObjectPropertyKey<Runnable> CLOSE_BUTTON_CALLBACK =
+            new WritableObjectPropertyKey<>();
+
     public AssistantHeaderModel() {
-        super(STATUS_MESSAGE, FEEDBACK_VISIBLE, CLOSE_VISIBLE, PROGRESS, PROGRESS_PULSING);
+        super(STATUS_MESSAGE, FEEDBACK_VISIBLE, CLOSE_VISIBLE, PROGRESS, PROGRESS_PULSING,
+                FEEDBACK_BUTTON_CALLBACK, CLOSE_BUTTON_CALLBACK);
     }
 
     @CalledByNative
@@ -47,5 +56,11 @@ public class AssistantHeaderModel extends PropertyModel {
     @CalledByNative
     private void setProgressPulsingEnabled(boolean enabled) {
         set(PROGRESS_PULSING, enabled);
+    }
+
+    @CalledByNative
+    private void setDelegate(AssistantHeaderDelegate delegate) {
+        set(FEEDBACK_BUTTON_CALLBACK, delegate::onFeedbackButtonClicked);
+        set(CLOSE_BUTTON_CALLBACK, delegate::onCloseButtonClicked);
     }
 }
