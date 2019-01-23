@@ -119,10 +119,6 @@ class BaseWebUIHandler : public content::WebUIMessageHandler,
   // with Context at some point.
   virtual void GetAdditionalParameters(base::DictionaryValue* parameters);
 
-  // Returns full name of JS method based on screen and method
-  // names.
-  std::string FullMethodPath(const std::string& method) const;
-
   // Shortcut for calling JS methods on WebUI side.
   void CallJS(const std::string& method);
 
@@ -233,6 +229,9 @@ class BaseWebUIHandler : public content::WebUIMessageHandler,
                              std::unique_ptr<Args>... args) {
     CallJS(function_name, *args...);
   }
+
+  // Returns full name of JS method based on screen and method names.
+  std::string FullMethodPath(const std::string& method) const;
 
   // Handles user action.
   void HandleUserAction(const std::string& action_id);
