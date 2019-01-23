@@ -59,7 +59,7 @@ const uint64_t kSignatureHeaderDate = 1520834000;  // 2018-03-12T05:53:20Z
 const uint64_t kSignatureHeaderExpires = 1520837600;  // 2018-03-12T06:53:20Z
 
 constexpr char kExpectedSXGEnabledAcceptHeaderForPrefetch[] =
-    "application/signed-exchange;v=b2;q=0.9,*/*;q=0.8";
+    "application/signed-exchange;v=b3;q=0.9,*/*;q=0.8";
 
 class RedirectObserver : public WebContentsObserver {
  public:

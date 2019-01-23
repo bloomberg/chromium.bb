@@ -341,9 +341,9 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WebPackageWithPreload) {
   RegisterResponse(
       target_sxg,
       // We mock the SignedExchangeHandler, so just return a HTML content
-      // as "application/signed-exchange;v=b2".
+      // as "application/signed-exchange;v=b3".
       ResponseEntry("<head><title>Prefetch Target (SXG)</title></head>",
-                    "application/signed-exchange;v=b2",
+                    "application/signed-exchange;v=b3",
                     {{"x-content-type-options", "nosniff"}}));
   RegisterResponse(preload_url_in_sxg,
                    ResponseEntry("function foo() {}", "text/javascript"));
