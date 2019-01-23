@@ -116,12 +116,8 @@ class EncoderAdapter : public webrtc::VideoEncoderFactory {
       const webrtc::SdpVideoFormat& format) override {
     std::unique_ptr<webrtc::VideoEncoder> software_encoder;
     if (IsFormatSupported(&software_encoder_factory_, format)) {
-      software_encoder =
-          base::EqualsCaseInsensitiveASCII(format.name.c_str(),
-                                           cricket::kVp8CodecName)
-              ? std::make_unique<webrtc::EncoderSimulcastProxy>(
-                    &software_encoder_factory_)
-              : software_encoder_factory_.CreateVideoEncoder(format);
+      software_encoder = std::make_unique<webrtc::EncoderSimulcastProxy>(
+          &software_encoder_factory_, format);
     }
 
     std::unique_ptr<webrtc::VideoEncoder> hardware_encoder;
