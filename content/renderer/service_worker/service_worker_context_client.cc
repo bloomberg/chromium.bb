@@ -107,15 +107,29 @@ class WebServiceWorkerNetworkProviderImpl
       : provider_id_(provider_id),
         script_loader_factory_(std::move(script_loader_factory_info)) {}
 
-  // Blink calls this method for each request starting with the main script,
-  // we tag them with the provider id.
+  // This is only called for the main script request from the shadow page.
+  // TODO(https://crbug.com/538751): Remove this once the shadow page is
+  // removed.
   void WillSendRequest(WebURLRequest& request) override {
+    ResourceType resource_type = WebURLRequestToResourceType(request);
+    DCHECK_EQ(resource_type, ResourceType::RESOURCE_TYPE_SERVICE_WORKER);
+
     auto extra_data = std::make_unique<RequestExtraData>();
     extra_data->set_service_worker_provider_id(provider_id_);
     extra_data->set_originated_from_service_worker(true);
     // Service workers are only available in secure contexts, so all requests
     // are initiated in a secure context.
     extra_data->set_initiated_in_secure_context(true);
+
+    // The RenderThreadImpl or its URLLoaderThrottleProvider member may not be
+    // valid in some tests.
+    RenderThreadImpl* render_thread = RenderThreadImpl::current();
+    if (render_thread && render_thread->url_loader_throttle_provider()) {
+      extra_data->set_url_loader_throttles(
+          render_thread->url_loader_throttle_provider()->CreateThrottles(
+              MSG_ROUTING_NONE, request, resource_type));
+    }
+
     request.SetExtraData(std::move(extra_data));
   }
 

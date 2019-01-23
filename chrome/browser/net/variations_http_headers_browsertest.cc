@@ -471,14 +471,7 @@ IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest, ServiceWorkerScript) {
   RegisterServiceWorker(worker_path);
 
   // Test that the header is present on the main script request.
-  GURL worker_url = GetGoogleUrl(worker_path);
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // TODO(https://crbug.com/923247): Fix Network Service so the header is
-    // present.
-    EXPECT_FALSE(HasReceivedHeader(worker_url, "X-Client-Data"));
-  } else {
-    EXPECT_TRUE(HasReceivedHeader(worker_url, "X-Client-Data"));
-  }
+  EXPECT_TRUE(HasReceivedHeader(GetGoogleUrl(worker_path), "X-Client-Data"));
 
   // And on import script requests to Google.
   EXPECT_TRUE(HasReceivedHeader(GetGoogleUrl("/service_worker/empty.js"),
