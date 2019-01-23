@@ -832,7 +832,7 @@
         <item name="android:background">?attr/selectableItemBackground</item>
         <item name="android:layout_width">@dimen/min_touch_target_size</item>
         <item name="android:layout_height">@dimen/omnibox_suggestion_edit_url_min_height</item>
-        <item name="tint">@color/default_icon_color_blue</item>
+        <item name="tint">@color/default_icon_color</item>
     </style>
 
     <!-- Trusted Web Activities -->
