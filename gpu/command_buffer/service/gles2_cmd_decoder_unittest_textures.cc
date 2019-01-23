@@ -3260,7 +3260,7 @@ class TestSharedImageBacking : public SharedImageBacking {
 
 TEST_P(GLES2DecoderTest, CreateAndTexStorage2DSharedImageCHROMIUM) {
   MemoryTypeTracker memory_tracker(memory_tracker_.get());
-  Mailbox mailbox = Mailbox::Generate();
+  Mailbox mailbox = Mailbox::GenerateForSharedImage();
   std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
       GetSharedImageManager()->Register(
           std::make_unique<TestSharedImageBacking>(
@@ -3321,7 +3321,7 @@ TEST_P(GLES2DecoderTest,
        CreateAndTexStorage2DSharedImageCHROMIUMPreexistingTexture) {
   // Try to create a mailbox with kNewClientId.
   MemoryTypeTracker memory_tracker(memory_tracker_.get());
-  Mailbox mailbox = Mailbox::Generate();
+  Mailbox mailbox = Mailbox::GenerateForSharedImage();
   std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
       GetSharedImageManager()->Register(
           std::make_unique<TestSharedImageBacking>(
@@ -3344,7 +3344,7 @@ TEST_P(GLES2DecoderTest,
 
 TEST_P(GLES2DecoderTest, BeginEndSharedImageAccessCRHOMIUM) {
   MemoryTypeTracker memory_tracker(memory_tracker_.get());
-  Mailbox mailbox = Mailbox::Generate();
+  Mailbox mailbox = Mailbox::GenerateForSharedImage();
   std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
       GetSharedImageManager()->Register(
           std::make_unique<TestSharedImageBacking>(
@@ -3404,7 +3404,7 @@ TEST_P(GLES2DecoderTest, BeginSharedImageAccessDirectCHROMIUMNotSharedImage) {
 TEST_P(GLES2DecoderTest, BeginSharedImageAccessDirectCHROMIUMCantBeginAccess) {
   // Create a shared image.
   MemoryTypeTracker memory_tracker(memory_tracker_.get());
-  Mailbox mailbox = Mailbox::Generate();
+  Mailbox mailbox = Mailbox::GenerateForSharedImage();
   std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
       GetSharedImageManager()->Register(
           std::make_unique<TestSharedImageBacking>(
