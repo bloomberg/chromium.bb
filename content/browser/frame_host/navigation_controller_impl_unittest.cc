@@ -269,12 +269,14 @@ class LoadCommittedDetailsObserver : public WebContentsObserver {
   explicit LoadCommittedDetailsObserver(WebContents* web_contents)
       : WebContentsObserver(web_contents),
         navigation_type_(NAVIGATION_TYPE_UNKNOWN),
+        reload_type_(ReloadType::NONE),
         is_same_document_(false),
         is_main_frame_(false),
         did_replace_entry_(false) {}
 
   NavigationType navigation_type() { return navigation_type_; }
   const GURL& previous_url() { return previous_url_; }
+  ReloadType reload_type() { return reload_type_; }
   bool is_same_document() { return is_same_document_; }
   bool is_main_frame() { return is_main_frame_; }
   bool did_replace_entry() { return did_replace_entry_; }
@@ -288,6 +290,7 @@ class LoadCommittedDetailsObserver : public WebContentsObserver {
     navigation_type_ = static_cast<NavigationHandleImpl*>(navigation_handle)
                            ->navigation_type();
     previous_url_ = navigation_handle->GetPreviousURL();
+    reload_type_ = navigation_handle->GetReloadType();
     is_same_document_ = navigation_handle->IsSameDocument();
     is_main_frame_ = navigation_handle->IsInMainFrame();
     did_replace_entry_ = navigation_handle->DidReplaceEntry();
@@ -296,6 +299,7 @@ class LoadCommittedDetailsObserver : public WebContentsObserver {
 
   NavigationType navigation_type_;
   GURL previous_url_;
+  ReloadType reload_type_;
   bool is_same_document_;
   bool is_main_frame_;
   bool did_replace_entry_;
@@ -610,6 +614,7 @@ void CheckNavigationEntryMatchLoadParams(
     EXPECT_EQ(should_override, entry->GetIsOverridingUserAgent());
   }
   EXPECT_EQ(load_params.post_data, entry->GetPostData());
+  EXPECT_EQ(load_params.reload_type, entry->reload_type());
 }
 
 TEST_F(NavigationControllerTest, LoadURLWithParams) {
@@ -645,6 +650,29 @@ TEST_F(NavigationControllerTest, LoadURLWithParams) {
   ASSERT_TRUE(entry);
   EXPECT_TRUE(entry->GetTimestamp().is_null());
 
+  CheckNavigationEntryMatchLoadParams(load_url_params, entry);
+}
+
+TEST_F(NavigationControllerTest, LoadURLWithParams_Reload) {
+  NavigationControllerImpl& controller = controller_impl();
+  GURL url("https://reload");
+
+  auto navigation =
+      NavigationSimulatorImpl::CreateBrowserInitiated(url, contents());
+  NavigationController::LoadURLParams load_url_params(url);
+  load_url_params.initiator_origin = url::Origin::Create(url);
+  load_url_params.referrer = Referrer(GURL("http://referrer"),
+                                      network::mojom::ReferrerPolicy::kDefault);
+  load_url_params.transition_type = ui::PAGE_TRANSITION_GENERATED;
+  load_url_params.extra_headers = "content-type: text/plain;\nX-Foo: Bar";
+  load_url_params.load_type = NavigationController::LOAD_TYPE_DEFAULT;
+  load_url_params.is_renderer_initiated = true;
+  load_url_params.override_user_agent = NavigationController::UA_OVERRIDE_TRUE;
+  load_url_params.reload_type = ReloadType::BYPASSING_CACHE;
+  navigation->SetLoadURLParams(&load_url_params);
+  navigation->Start();
+
+  NavigationEntryImpl* entry = controller.GetPendingEntry();
   CheckNavigationEntryMatchLoadParams(load_url_params, entry);
 }
 
@@ -5207,6 +5235,22 @@ TEST_F(NavigationControllerTest, MainFrameNavigationUIData) {
 
   EXPECT_TRUE(observer.is_main_frame());
   EXPECT_TRUE(observer.has_navigation_ui_data());
+}
+
+// Tests that ReloadType has been passed to the NavigationHandle.
+TEST_F(NavigationControllerTest, MainFrameNavigationReloadType) {
+  LoadCommittedDetailsObserver observer(contents());
+  const GURL url1("http://foo1");
+
+  auto navigation =
+      NavigationSimulatorImpl::CreateBrowserInitiated(url1, contents());
+  NavigationController::LoadURLParams load_url_params(url1);
+  load_url_params.reload_type = ReloadType::BYPASSING_CACHE;
+  navigation->SetLoadURLParams(&load_url_params);
+  navigation->Commit();
+
+  EXPECT_TRUE(observer.is_main_frame());
+  EXPECT_EQ(observer.reload_type(), ReloadType::BYPASSING_CACHE);
 }
 
 // Tests calling LoadURLParams with NavigationUIData and for a sub frame.

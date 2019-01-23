@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/reload_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/referrer.h"
@@ -274,6 +275,9 @@ struct NavigateParams {
   // hrefTranslate attribute, this contains the attribute's value (a BCP47
   // language code). Empty otherwise.
   std::string href_translate;
+
+  // Indicates the reload type of this navigation.
+  content::ReloadType reload_type = content::ReloadType::NONE;
 
  private:
   NavigateParams();

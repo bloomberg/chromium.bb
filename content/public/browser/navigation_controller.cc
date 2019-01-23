@@ -25,7 +25,8 @@ NavigationController::LoadURLParams::LoadURLParams(const GURL& url)
       should_clear_history_list(false),
       started_from_context_menu(false),
       navigation_ui_data(nullptr),
-      was_activated(WasActivatedOption::kUnknown) {}
+      was_activated(WasActivatedOption::kUnknown),
+      reload_type(ReloadType::NONE) {}
 
 NavigationController::LoadURLParams::~LoadURLParams() {
 }
