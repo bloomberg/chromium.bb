@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/test/multiprocess_test.h"
 #include "base/threading/thread.h"
@@ -519,7 +520,7 @@ TEST(ProcessMetricsTest, DISABLED_GetNumberOfThreads) {
 }
 #endif  // defined(OS_LINUX)
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || (defined(OS_MACOSX) && !defined(OS_IOS))
 namespace {
 
 // Keep these in sync so the GetChildOpenFdCount test can refer to correct test
@@ -529,7 +530,14 @@ namespace {
 
 // Command line flag name and file name used for synchronization.
 const char kTempDirFlag[] = "temp-dir";
+
+const char kSignalReady[] = "ready";
+const char kSignalReadyAck[] = "ready-ack";
+const char kSignalOpened[] = "opened";
+const char kSignalOpenedAck[] = "opened-ack";
 const char kSignalClosed[] = "closed";
+
+const int kChildNumFilesToOpen = 100;
 
 bool SignalEvent(const FilePath& signal_dir, const char* signal_file) {
   File file(signal_dir.AppendASCII(signal_file),
@@ -556,9 +564,20 @@ MULTIPROCESS_TEST_MAIN(ChildMain) {
   const FilePath temp_path = command_line->GetSwitchValuePath(kTempDirFlag);
   CHECK(DirectoryExists(temp_path));
 
-  // Try to close all the file descriptors, so the open count goes to 0.
-  for (size_t i = 0; i < 1000; ++i)
-    close(i);
+  CHECK(SignalEvent(temp_path, kSignalReady));
+  WaitForEvent(temp_path, kSignalReadyAck);
+
+  std::vector<File> files;
+  for (int i = 0; i < kChildNumFilesToOpen; ++i) {
+    files.emplace_back(temp_path.AppendASCII(StringPrintf("file.%d", i)),
+                       File::FLAG_CREATE | File::FLAG_WRITE);
+  }
+
+  CHECK(SignalEvent(temp_path, kSignalOpened));
+  WaitForEvent(temp_path, kSignalOpenedAck);
+
+  files.clear();
+
   CHECK(SignalEvent(temp_path, kSignalClosed));
 
   // Wait to be terminated.
@@ -578,30 +597,56 @@ TEST(ProcessMetricsTest, GetChildOpenFdCount) {
   Process child = SpawnMultiProcessTestChild(
       ChildMainString, child_command_line, LaunchOptions());
   ASSERT_TRUE(child.IsValid());
+
+  WaitForEvent(temp_path, kSignalReady);
+
+  std::unique_ptr<ProcessMetrics> metrics =
+#if defined(OS_MACOSX)
+      ProcessMetrics::CreateProcessMetrics(child.Handle(), nullptr);
+#else
+      ProcessMetrics::CreateProcessMetrics(child.Handle());
+#endif  // defined(OS_MACOSX)
+
+  const int fd_count = metrics->GetOpenFdCount();
+  EXPECT_GE(fd_count, 0);
+
+  ASSERT_TRUE(SignalEvent(temp_path, kSignalReadyAck));
+  WaitForEvent(temp_path, kSignalOpened);
+
+  EXPECT_EQ(fd_count + kChildNumFilesToOpen, metrics->GetOpenFdCount());
+  ASSERT_TRUE(SignalEvent(temp_path, kSignalOpenedAck));
+
   WaitForEvent(temp_path, kSignalClosed);
 
-  std::unique_ptr<ProcessMetrics> metrics(
-      ProcessMetrics::CreateProcessMetrics(child.Handle()));
-  EXPECT_EQ(0, metrics->GetOpenFdCount());
+  EXPECT_EQ(fd_count, metrics->GetOpenFdCount());
+
   ASSERT_TRUE(child.Terminate(0, true));
 }
-#endif  // defined(OS_LINUX)
-
-#if defined(OS_ANDROID) || defined(OS_LINUX)
 
 TEST(ProcessMetricsTest, GetOpenFdCount) {
-  std::unique_ptr<base::ProcessMetrics> metrics(
-      base::ProcessMetrics::CreateProcessMetrics(
-          base::GetCurrentProcessHandle()));
+  base::ProcessHandle process = base::GetCurrentProcessHandle();
+  std::unique_ptr<base::ProcessMetrics> metrics =
+#if defined(OS_MACOSX)
+      ProcessMetrics::CreateProcessMetrics(process, nullptr);
+#else
+      ProcessMetrics::CreateProcessMetrics(process);
+#endif  // defined(OS_MACOSX)
+
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
   int fd_count = metrics->GetOpenFdCount();
   EXPECT_GT(fd_count, 0);
-  ScopedFILE file(fopen("/proc/self/statm", "r"));
-  EXPECT_TRUE(file);
+  File file(temp_dir.GetPath().AppendASCII("file"),
+            File::FLAG_CREATE | File::FLAG_WRITE);
   int new_fd_count = metrics->GetOpenFdCount();
   EXPECT_GT(new_fd_count, 0);
   EXPECT_EQ(new_fd_count, fd_count + 1);
 }
 
+#endif  // defined(OS_LINUX) || (defined(OS_MACOSX) && !defined(OS_IOS))
+
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 TEST(ProcessMetricsTestLinux, GetPageFaultCounts) {
   std::unique_ptr<base::ProcessMetrics> process_metrics(
       base::ProcessMetrics::CreateProcessMetrics(
