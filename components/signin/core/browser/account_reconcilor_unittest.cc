@@ -243,7 +243,6 @@ class AccountReconcilorTest : public ::testing::Test {
   identity::IdentityTestEnvironment* identity_test_env() {
     return &identity_test_env_;
   }
-  FakeProfileOAuth2TokenService* token_service() { return &token_service_; }
   DiceTestSigninClient* test_signin_client() { return &test_signin_client_; }
   AccountTrackerService* account_tracker() { return &account_tracker_; }
   FakeGaiaCookieManagerService* cookie_manager_service() {
@@ -1830,7 +1829,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, TokensNotLoaded) {
   // can start as long as the token service is not empty.
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
   // When tokens are loaded, reconcile starts automatically.
-  token_service()->LoadCredentials(account_id);
+  identity_test_env()->identity_manager()->LegacyLoadCredentials(account_id);
 #endif
 
   if (!IsMultiloginEnabled()) {
