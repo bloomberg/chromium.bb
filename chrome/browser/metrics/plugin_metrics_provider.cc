@@ -30,7 +30,7 @@
 namespace {
 
 // Delay for RecordCurrentState execution.
-const int kRecordStateDelayMs = 15 * base::Time::kMillisecondsPerSecond;
+constexpr base::TimeDelta kRecordStateDelay = base::TimeDelta::FromSeconds(15);
 
 // Returns the plugin preferences corresponding for this user, if available.
 // If multiple user profiles are loaded, returns the preferences corresponding
@@ -303,7 +303,7 @@ void PluginMetricsProvider::LogPluginLoadingError(
     DCHECK(IsPluginProcess(stats.process_type));
   }
   stats.loading_errors++;
-  RecordCurrentStateWithDelay(kRecordStateDelayMs);
+  RecordCurrentStateWithDelay();
 }
 
 void PluginMetricsProvider::SetPluginsForTesting(
@@ -343,14 +343,14 @@ PluginMetricsProvider::GetChildProcessStats(
 void PluginMetricsProvider::BrowserChildProcessHostConnected(
     const content::ChildProcessData& data) {
   GetChildProcessStats(data).process_launches++;
-  RecordCurrentStateWithDelay(kRecordStateDelayMs);
+  RecordCurrentStateWithDelay();
 }
 
 void PluginMetricsProvider::BrowserChildProcessCrashed(
     const content::ChildProcessData& data,
     const content::ChildProcessTerminationInfo& info) {
   GetChildProcessStats(data).process_crashes++;
-  RecordCurrentStateWithDelay(kRecordStateDelayMs);
+  RecordCurrentStateWithDelay();
 }
 
 void PluginMetricsProvider::BrowserChildProcessKilled(
@@ -360,10 +360,10 @@ void PluginMetricsProvider::BrowserChildProcessKilled(
   // actual crashes, which is treated as a kill rather than a crash by
   // base::GetTerminationStatus
   GetChildProcessStats(data).process_crashes++;
-  RecordCurrentStateWithDelay(kRecordStateDelayMs);
+  RecordCurrentStateWithDelay();
 }
 
-bool PluginMetricsProvider::RecordCurrentStateWithDelay(int delay_sec) {
+bool PluginMetricsProvider::RecordCurrentStateWithDelay() {
   if (weak_ptr_factory_.HasWeakPtrs())
     return false;
 
@@ -371,7 +371,7 @@ bool PluginMetricsProvider::RecordCurrentStateWithDelay(int delay_sec) {
       FROM_HERE,
       base::BindOnce(&PluginMetricsProvider::RecordCurrentState,
                      weak_ptr_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(delay_sec));
+      kRecordStateDelay);
   return true;
 }
 
@@ -382,4 +382,9 @@ bool PluginMetricsProvider::RecordCurrentStateIfPending() {
   weak_ptr_factory_.InvalidateWeakPtrs();
   RecordCurrentState();
   return true;
+}
+
+// static
+base::TimeDelta PluginMetricsProvider::GetRecordStateDelay() {
+  return kRecordStateDelay;
 }
