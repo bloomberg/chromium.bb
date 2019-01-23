@@ -2732,11 +2732,7 @@
       'fidlgen_js_unittests': {},
       'gpu_unittests': {},
       'http_service_tests': {},
-      'ipc_tests': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ipc_tests.filter',
-        ],
-      },
+      'ipc_tests': {},
       'media_unittests': {},
       'mojo_unittests': {
         'args': [
