@@ -1518,10 +1518,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE_AND_VALUE(switches::kAllowNaClSocketAPI, "*")},
 #endif  // ENABLE_PLUGINS
 #if defined(OS_CHROMEOS)
-    {"ash-enable-cursor-motion-blur",
-     flag_descriptions::kEnableCursorMotionBlurName,
-     flag_descriptions::kEnableCursorMotionBlurDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(ash::switches::kAshEnableCursorMotionBlur)},
     {"ash-enable-docked-magnifier",
      flag_descriptions::kEnableDockedMagnifierName,
      flag_descriptions::kEnableDockedMagnifierDescription, kOsCrOS,
