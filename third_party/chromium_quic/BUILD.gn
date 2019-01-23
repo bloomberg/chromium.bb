@@ -3,7 +3,17 @@
 # found in the LICENSE file.
 
 config("chromium_quic_config") {
-  cflags_cc = [ "-Wno-error=attributes" ]
+  cflags_cc = [
+    "-Wno-error=attributes",
+    "-Wno-unused-const-variable",
+  ]
+
+  if (is_linux) {
+    cflags_cc += [
+      "-Wno-defaulted-function-deleted",
+    ]
+  }
+
   if (is_gcc) {
     cflags_cc += [
       "-Wno-dangling-else",

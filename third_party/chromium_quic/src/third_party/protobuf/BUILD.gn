@@ -15,12 +15,15 @@ config("protobuf_warnings") {
   # protobuf-3 does some things that Chromium style wouldn't normally allow.
   # Turn off the default-enabled warnings for those.
   cflags_cc = [
+    "-Wno-enum-compare",
     "-Wno-unused-function",
     "-Wno-sign-compare",
-    "-Wno-unused-const-variable",
   ]
   if (is_clang) {
-    cflags_cc += [ "-Wno-exit-time-destructors" ]
+    cflags_cc += [
+      "-Wno-exit-time-destructors",
+      "-Wno-unused-const-variable",
+    ]
   }
 }
 

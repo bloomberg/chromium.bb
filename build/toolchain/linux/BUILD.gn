@@ -2,10 +2,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-toolchain("gcc") {
+toolchain("linux") {
+  prefix = rebase_path("$clang_base_path/bin", root_build_dir)
+
+  c_command = "$prefix/clang"
+  cpp_command = "$prefix/clang++"
+
+  if (is_gcc) {
+    c_command = "gcc"
+    cpp_command = "g++"
+  }
+
   tool("cc") {
     depfile = "{{output}}.d"
-    command = "gcc -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
+    command = "$c_command -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
     depsformat = "gcc"
     description = "CC {{output}}"
     outputs = [
@@ -15,7 +25,7 @@ toolchain("gcc") {
 
   tool("cxx") {
     depfile = "{{output}}.d"
-    command = "g++ -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}} -o {{output}}"
+    command = "$cpp_command -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}} -o {{output}}"
     depsformat = "gcc"
     description = "CXX {{output}}"
     outputs = [
@@ -25,7 +35,7 @@ toolchain("gcc") {
 
   tool("asm") {
     depfile = "{{output}}.d"
-    command = "gcc -MMD -MF $depfile {{defines}} {{include_dirs}} {{asmflags}} -c {{source}} -o {{output}}"
+    command = "$c_command -MMD -MF $depfile {{defines}} {{include_dirs}} {{asmflags}} -c {{source}} -o {{output}}"
     depsformat = "gcc"
     description = "ASM {{output}}"
     outputs = [
@@ -51,7 +61,7 @@ toolchain("gcc") {
     sofile = "{{output_dir}}/$soname"
     rspfile = soname + ".rsp"
 
-    command = "g++ -shared {{ldflags}} -o $sofile -Wl,-soname=$soname @$rspfile"
+    command = "$cpp_command -shared {{ldflags}} -o $sofile -Wl,-soname=$soname @$rspfile"
     rspfile_content = "-Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive {{libs}}"
 
     description = "SOLINK {{output}}"
@@ -80,7 +90,7 @@ toolchain("gcc") {
     # These extra ldflags allow an executable to search for shared libraries in
     # the current working directory.
     additional_executable_ldflags = "-Wl,-rpath=\$ORIGIN/ -Wl,-rpath-link="
-    command = "g++ {{ldflags}} $additional_executable_ldflags -o $outfile -Wl,--start-group @$rspfile {{solibs}} -Wl,--end-group {{libs}}"
+    command = "$cpp_command {{ldflags}} $additional_executable_ldflags -o $outfile -Wl,--start-group @$rspfile {{solibs}} -Wl,--end-group {{libs}}"
     description = "LINK $outfile"
     default_output_dir = "{{root_out_dir}}"
     rspfile_content = "{{inputs}}"

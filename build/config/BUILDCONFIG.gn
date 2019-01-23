@@ -57,10 +57,27 @@ if (current_os == "") {
 # the build to declare build flags. If you need a flag for a single component,
 # you can just declare it in the corresponding BUILD.gn file.
 
+default_clang_base_path = "//third_party/llvm-build/Release+Asserts"
+
 declare_args() {
   # Debug build.  Most global debug build flags are declared in
   # //build/config/BUILD.gn.
   is_debug = false
+
+  # By default, we use the clang compiler on both Mac and Linux. To use the
+  # gcc compiler on Linux instead, set is_gcc to true.
+  is_gcc = false
+  clang_base_path = default_clang_base_path
+}
+
+declare_args() {
+  is_clang = !is_gcc
+}
+
+# We need to ensure that clang is pulled down using the update script. In
+# Chromium, this is done with a gclient hook, but we can just call
+if (is_clang) {
+  exec_script("//tools/clang/scripts/update.py")
 }
 
 # ==============================================================================
@@ -68,14 +85,9 @@ declare_args() {
 # ==============================================================================
 #
 # Here we set the default toolchain. Currently only Mac and POSIX are defined.
-
 if (current_os == "chromeos" || current_os == "linux") {
-  is_clang = false
-  is_gcc = true
-  set_default_toolchain("//build/toolchain/linux:gcc")
+  set_default_toolchain("//build/toolchain/linux:linux")
 } else if (current_os == "mac") {
-  is_clang = true
-  is_gcc = false
   set_default_toolchain("//build/toolchain/mac:clang")
 } else {
   # TODO(miu): Windows, and others.

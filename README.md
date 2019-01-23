@@ -26,13 +26,24 @@ copy of the following build tools:
  - Build file generator: `gn`
  - Code formatter: `clang-format`
 
-You will have to obtain and install these yourself:
-
- - Compiler toolchain: Currently, this is `gcc` on Linux, and `clang` on Mac
-   (from Xcode).
  - Builder: `ninja`
 
    [GitHub releases](https://github.com/ninja-build/ninja/releases)
+
+
+You also need to ensure that you have the compiler toolchain dependencies.
+Currently, both Linux and Mac OS X build configurations use clang. On Linux,
+we download the Clang compiler from the Google storage cache, the same way
+that Chromium does it. On Mac OS X, we just use the clang instance provided
+by XCode.
+
+On Mac, ensure XCode is installed. On Linux, ensure that libstdc++ 8 is installed,
+as clang depends on the system instance of it. On Debian flavors, you can run:
+
+   sudo apt-get install libstdc++-8-dev
+
+Finally, Passing the "is_gcc=true" flag on Linux enables building using gcc instead.
+Note that g++ must be installed.
 
 ## Building an example with GN and Ninja
 
@@ -44,7 +55,6 @@ necessary submodules:
   git submodule init
   git submodule update
 ```
-
 The following commands will build the current example executable and run it.
 
 ``` bash
