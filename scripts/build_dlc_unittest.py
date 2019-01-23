@@ -48,18 +48,23 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
     src_dir = os.path.join(self.tempdir, 'src')
     osutils.SafeMakedirs(src_dir)
 
-    build_root_dir = os.path.join(self.tempdir, 'build_root')
-    ue_conf = os.path.join(build_root_dir, 'etc', 'update_engine.conf')
+    sysroot = os.path.join(self.tempdir, 'build_root')
+    ue_conf = os.path.join(sysroot, 'etc', 'update_engine.conf')
     osutils.WriteFile(ue_conf, 'foo-content', makedirs=True)
 
     return build_dlc.DlcGenerator(src_dir=src_dir,
-                                  build_root_dir=build_root_dir,
+                                  sysroot=sysroot,
                                   install_root_dir=self.tempdir,
                                   fs_type=fs_type,
                                   pre_allocated_blocks=_PRE_ALLOCATED_BLOCKS,
                                   version=_VERSION,
                                   dlc_id=_ID,
                                   name=_NAME)
+
+  def testGetImageFileName(self):
+    """Tests getting the correct image file name."""
+    generator = self.GetDlcGenerator()
+    self.assertEqual(generator.GetImageFileName(), 'dlc_%s.img' % _ID)
 
   def testSetInstallDir(self):
     """Tests install_root_dir is used correclty."""
@@ -142,3 +147,23 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
         'is-removable': True,
         'manifest-version': 1,
     })
+
+class FinalizeDlcsTest(cros_test_lib.MockTempDirTestCase):
+  "Tests functions that generate the final DLC images."
+
+  def testCopyAllDlcs(self):
+    """Tests CopyAllDlcs to make sure all DLCs are copied correctly"""
+    # copy_contents_mock = self.PatchObject(osutils, 'CopyDirContents')
+    sysroot = os.path.join(self.tempdir, 'sysroot')
+    osutils.WriteFile(os.path.join(sysroot, _IMAGE_DIR, _ID, 'dlc.img'),
+                      'content', makedirs=True)
+    output = os.path.join(self.tempdir, 'output')
+    build_dlc.CopyAllDlcs(sysroot, output)
+    self.assertExists(os.path.join(output, 'dlc', _ID, 'dlc.img'))
+
+  def testCopyAllDlcsNoDlc(self):
+    copy_contents_mock = self.PatchObject(osutils, 'CopyDirContents')
+    sysroot = os.path.join(self.tempdir, 'sysroot')
+    output = os.path.join(self.tempdir, 'output')
+    build_dlc.CopyAllDlcs(sysroot, output)
+    copy_contents_mock.assert_not_called()

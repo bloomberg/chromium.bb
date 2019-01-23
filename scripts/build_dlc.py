@@ -15,6 +15,7 @@ import shutil
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 
 
@@ -68,13 +69,13 @@ class DlcGenerator(object):
   # The DLC root path inside the DLC module.
   _DLC_ROOT_DIR = 'root'
 
-  def __init__(self, src_dir, build_root_dir, install_root_dir, fs_type,
+  def __init__(self, src_dir, sysroot, install_root_dir, fs_type,
                pre_allocated_blocks, version, dlc_id, name):
     """Object initializer.
 
     Args:
       src_dir: (str) path to the DLC source root directory.
-      build_root_dir: (str) The path to the build root directory.
+      sysroot: (str) The path to the build root directory.
       install_root_dir: (str) The path to the root installation directory.
       fs_type: (str) file system type.
       pre_allocated_blocks: (int) number of blocks pre-allocated on device.
@@ -83,7 +84,7 @@ class DlcGenerator(object):
       name: (str) DLC name.
     """
     self.src_dir = src_dir
-    self.build_root_dir = build_root_dir
+    self.sysroot = sysroot
     self.install_root_dir = install_root_dir
     self.fs_type = fs_type
     self.pre_allocated_blocks = pre_allocated_blocks
@@ -99,9 +100,20 @@ class DlcGenerator(object):
     osutils.SafeMakedirs(self.image_dir)
 
     # Create path for all final artifacts.
-    self.dest_image = os.path.join(self.image_dir, 'dlc.img')
+    self.dest_image = os.path.join(self.image_dir, self.GetImageFileName())
     self.dest_table = os.path.join(self.meta_dir, 'table')
     self.dest_imageloader_json = os.path.join(self.meta_dir, 'imageloader.json')
+
+  def GetImageFileName(self):
+    """Returns the image file name created based on the dlc_id.
+
+    This probably will be replaced by the partition name once we move to a
+    multip-partition DLC.
+
+    Returns:
+      [str]: The image file name for the DLC.
+    """
+    return 'dlc_%s.img' % self.dlc_id
 
   def SquashOwnerships(self, path):
     """Squash the owernships & permissions for files.
@@ -197,7 +209,7 @@ class DlcGenerator(object):
           when we are creating the image.
     """
     for r in _EXTRA_RESOURCES:
-      source_path = os.path.join(self.build_root_dir, r)
+      source_path = os.path.join(self.sysroot, r)
       target_path = os.path.join(dlc_dir, r)
       osutils.SafeMakedirs(os.path.dirname(target_path))
       shutil.copyfile(source_path, target_path)
@@ -274,55 +286,102 @@ class DlcGenerator(object):
     self.GenerateVerity()
 
 
+def CopyAllDlcs(sysroot, install_root_dir):
+  """Copies all DLC image files into the images directory.
+
+  Copies the DLC image files in the given build directory into the given DLC
+  image directory. If the DLC build directory does not exist, or there is no DLC
+  for that board, this function does nothing.
+
+  Args:
+    sysroot: Path to directory containing DLC images, e.g /build/<board>.
+    install_root_dir: Path to DLC output directory,
+        e.g. src/build/images/<board>/<version>.
+  """
+  output_dir = os.path.join(install_root_dir, 'dlc')
+  build_dir = os.path.join(sysroot, DLC_IMAGE_DIR)
+
+  if not os.path.exists(build_dir) or not os.listdir(build_dir):
+    logging.warn('There is no DLC to copy to output. ignoring!!!')
+    return
+
+  osutils.SafeMakedirs(output_dir)
+  osutils.CopyDirContents(build_dir, output_dir)
+
+
 def GetParser():
+  """Creates an argument parser and returns it."""
   parser = commandline.ArgumentParser(description=__doc__)
-  # Required arguments:
-  required = parser.add_argument_group('Required Arguments')
-  required.add_argument('--src-dir', type='path', metavar='SRC_DIR_PATH',
-                        required=True,
-                        help='Root directory path that contains all DLC files '
-                        'to be packed.')
-  required.add_argument('--build-root-dir', type='path', metavar='DIR',
-                        required=True,
-                        help="The root path to the board's build root, e.g. "
-                        "/build/eve")
-  required.add_argument('--install-root-dir', type='path', metavar='DIR',
-                        required=True,
-                        help='The root path to install DLC images (in %s) and '
-                        'metadata (in %s).' % (DLC_IMAGE_DIR, DLC_META_DIR))
-  required.add_argument('--pre-allocated-blocks', type=int,
-                        metavar='PREALLOCATEDBLOCKS', required=True,
-                        help='Number of blocks (block size is 4k) that need to'
-                        'be pre-allocated on device.')
-  required.add_argument('--version', metavar='VERSION', required=True,
-                        help='DLC Version.')
-  required.add_argument('--id', metavar='ID', required=True,
-                        help='DLC ID (unique per DLC).')
-  required.add_argument('--name', metavar='NAME', required=True,
-                        help='A human-readable name for the DLC.')
+  # This script is used both for building an individual DLC or copying all final
+  # DLCs images to their final destination nearby chromiumsos_test_image.bin,
+  # etc. These two arguments are required in both cases.
+  parser.add_argument('--sysroot', type='path', metavar='DIR', required=True,
+                      help="The root path to the board's build root, e.g. "
+                      "/build/eve")
+  parser.add_argument('--install-root-dir', type='path', metavar='DIR',
+                      required=True,
+                      help='If building a specific DLC, it is the root path to'
+                      ' install DLC images (%s) and metadata (%s). Otherwise it'
+                      ' is the target directory where the Chrome OS images gets'
+                      ' dropped in build_image, e.g. '
+                      'src/build/images/<board>/latest.' % (DLC_IMAGE_DIR,
+                                                            DLC_META_DIR))
 
-  args = parser.add_argument_group('Arguments')
-  args.add_argument('--fs-type', metavar='FS_TYPE', default=_SQUASHFS_TYPE,
-                    choices=(_SQUASHFS_TYPE, _EXT4_TYPE),
-                    help='File system type of the image.')
-
+  one_dlc = parser.add_argument_group('Arguments required for building only '
+                                      'one DLC')
+  one_dlc.add_argument('--src-dir', type='path', metavar='SRC_DIR_PATH',
+                       help='Root directory path that contains all DLC files '
+                       'to be packed.')
+  one_dlc.add_argument('--pre-allocated-blocks', type=int,
+                       metavar='PREALLOCATEDBLOCKS',
+                       help='Number of blocks (block size is 4k) that need to'
+                       'be pre-allocated on device.')
+  one_dlc.add_argument('--version', metavar='VERSION', help='DLC Version.')
+  one_dlc.add_argument('--id', metavar='ID', help='DLC ID (unique per DLC).')
+  one_dlc.add_argument('--name', metavar='NAME',
+                       help='A human-readable name for the DLC.')
+  one_dlc.add_argument('--fs-type', metavar='FS_TYPE', default=_SQUASHFS_TYPE,
+                       choices=(_SQUASHFS_TYPE, _EXT4_TYPE),
+                       help='File system type of the image.')
   return parser
+
+
+def ValidateArguments(opts):
+  """Validates the correctness of the passed arguments.
+
+  Args:
+    opts: Parsed arguments.
+  """
+  # Make sure if the intention is to build one DLC, all the required arguments
+  # are passed.
+  per_dlc_req_args = ('src_dir', 'pre_allocated_blocks', 'version', 'id',
+                      'name')
+  if (opts.id and
+      not all(vars(opts)[arg] is not None for arg in per_dlc_req_args)):
+    raise Exception('If the intention is to build only one DLC, all the flags'
+                    '%s required for it should be passed .' % per_dlc_req_args)
+
+  if opts.fs_type == _EXT4_TYPE:
+    raise Exception('ext4 unsupported, see https://crbug.com/890060')
 
 
 def main(argv):
   opts = GetParser().parse_args(argv)
   opts.Freeze()
 
-  if opts.fs_type == _EXT4_TYPE:
-    raise Exception('ext4 unsupported, see https://crbug.com/890060')
+  ValidateArguments(opts)
 
-  # Generate final DLC files.
-  dlc_generator = DlcGenerator(src_dir=opts.src_dir,
-                               build_root_dir=opts.build_root_dir,
-                               install_root_dir=opts.install_root_dir,
-                               fs_type=opts.fs_type,
-                               pre_allocated_blocks=opts.pre_allocated_blocks,
-                               version=opts.version,
-                               dlc_id=opts.id,
-                               name=opts.name)
-  dlc_generator.GenerateDLC()
+  if opts.id:
+    logging.info('Building DLC %s', opts.id)
+    dlc_generator = DlcGenerator(src_dir=opts.src_dir,
+                                 sysroot=opts.sysroot,
+                                 install_root_dir=opts.install_root_dir,
+                                 fs_type=opts.fs_type,
+                                 pre_allocated_blocks=opts.pre_allocated_blocks,
+                                 version=opts.version,
+                                 dlc_id=opts.id,
+                                 name=opts.name)
+    dlc_generator.GenerateDLC()
+  else:
+    logging.info('Copying all DLC images to their destination path.')
+    CopyAllDlcs(opts.sysroot, opts.install_root_dir)
