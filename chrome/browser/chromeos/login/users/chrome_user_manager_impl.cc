@@ -77,6 +77,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/upstart_client.h"
 #include "chromeos/login/login_state/login_state.h"
+#include "chromeos/network/proxy/proxy_config_service_impl.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/timezone/timezone_resolver.h"
 #include "components/account_id/account_id.h"
@@ -87,6 +88,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/proxy_config/proxy_prefs.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/remove_user_delegate.h"
@@ -257,6 +259,17 @@ bool AreRiskyPoliciesUsed(policy::DeviceLocalAccountPolicyBroker* broker) {
     }
   }
   return false;
+}
+
+bool IsProxyUsed(const PrefService* local_state_prefs) {
+  std::unique_ptr<ProxyConfigDictionary> proxy_config =
+      ProxyConfigServiceImpl::GetActiveProxyConfigDictionary(
+          ProfileHelper::Get()->GetSigninProfile()->GetPrefs(),
+          local_state_prefs);
+  ProxyPrefs::ProxyMode mode;
+  if (!proxy_config || !proxy_config->GetMode(&mode))
+    return false;
+  return mode != ProxyPrefs::MODE_DIRECT;
 }
 
 bool AreRiskyExtensionsForceInstalled(
@@ -1511,7 +1524,8 @@ bool ChromeUserManagerImpl::IsFullManagementDisclosureNeeded(
          (IsPacHttpsUrlStrippingDisabled(broker) ||
           AreRiskyPoliciesUsed(broker) ||
           AreRiskyExtensionsForceInstalled(broker) ||
-          AreForcedNetworkCertificatesInstalled());
+          AreForcedNetworkCertificatesInstalled() ||
+          IsProxyUsed(GetLocalState()));
 }
 
 void ChromeUserManagerImpl::AddReportingUser(const AccountId& account_id) {
