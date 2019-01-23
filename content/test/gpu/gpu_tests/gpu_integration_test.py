@@ -73,7 +73,7 @@ class GpuIntegrationTest(
     cls.SetBrowserOptions(cls._finder_options)
 
   @classmethod
-  def RestartBrowserIfNecessaryWithArgs(cls, browser_args):
+  def RestartBrowserIfNecessaryWithArgs(cls, browser_args, force_restart=False):
     if not browser_args:
       browser_args = []
     elif '--disable-gpu' in browser_args:
@@ -83,11 +83,15 @@ class GpuIntegrationTest(
       os_name = cls.browser.platform.GetOSName()
       if os_name == 'android' or os_name == 'chromeos':
         browser_args.remove('--disable-gpu')
-    if set(browser_args) != cls._last_launched_browser_args:
+    if force_restart or set(browser_args) != cls._last_launched_browser_args:
       logging.info('Restarting browser with arguments: ' + str(browser_args))
       cls.StopBrowser()
       cls.CustomizeBrowserArgs(browser_args)
       cls.StartBrowser()
+
+  @classmethod
+  def RestartBrowserWithArgs(cls, browser_args):
+    cls.RestartBrowserIfNecessaryWithArgs(browser_args, force_restart=True)
 
   # The following is the rest of the framework for the GPU integration tests.
 
