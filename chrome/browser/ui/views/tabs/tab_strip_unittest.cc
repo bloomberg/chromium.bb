@@ -879,4 +879,19 @@ TEST_P(TabStripTest, NewTabButtonInkDrop) {
   }
 }
 
+// Closing tab should be targeted during event dispatching.
+TEST_P(TabStripTest, EventsOnClosingTab) {
+  tab_strip_->SetBounds(0, 0, 200, 20);
+
+  controller_->AddTab(0, false);
+  controller_->AddTab(1, true);
+
+  Tab* first_tab = tab_strip_->tab_at(0);
+  gfx::Point tab_center = first_tab->bounds().CenterPoint();
+
+  EXPECT_EQ(first_tab, tab_strip_->GetEventHandlerForPoint(tab_center));
+  tab_strip_->CloseTab(first_tab, CLOSE_TAB_FROM_MOUSE);
+  EXPECT_EQ(first_tab, tab_strip_->GetEventHandlerForPoint(tab_center));
+}
+
 INSTANTIATE_TEST_CASE_P(, TabStripTest, ::testing::Values(false, true));
