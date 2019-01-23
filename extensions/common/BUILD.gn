@@ -321,6 +321,7 @@ if (enable_extensions) {
       "//crypto",
       "//device/bluetooth",
       "//device/usb",
+      "//device/usb/mojo",
       "//device/usb/public/cpp",
       "//device/usb/public/mojom",
       "//extensions:extensions_resources",
@@ -447,7 +448,8 @@ if (enable_extensions) {
       "//components/crx_file",
       "//components/version_info:version_info",
       "//device/usb",
-      "//device/usb:test_support",
+      "//device/usb/mojo",
+      "//device/usb/public/cpp:test_support",
       "//extensions:extensions_resources",
 
       # TODO(brettw) these tests should not be including headers from browser.
