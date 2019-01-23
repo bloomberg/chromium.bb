@@ -4,22 +4,22 @@
 
 library chromium.web;
 
-// Indicates the properties of the NavigationController's visible content
-// which have changed since the last OnNavigationStateChanged() event.
-// Any unchanged properties are left unset.
+/// Indicates the properties of the NavigationController's visible content
+/// which have changed since the last OnNavigationStateChanged() event.
+/// Any unchanged properties are left unset.
 struct NavigationEvent {
   string? url;
   string? title;
   bool is_error;
 };
 
-// Interface supplied by the embedder for receiving notifications about
-// navigation events in a Frame.
+/// Interface supplied by the embedder for receiving notifications about
+/// navigation events in a Frame.
 interface NavigationEventObserver {
-  // Called when user-visible navigation state has changed since Frame
-  // creation or the last acknowledgement callback, whichever occurred later.
-  // |change| will contain all the differences in navigation state since the
-  // last acknowledgement.
+  /// Called when user-visible navigation state has changed since Frame
+  /// creation or the last acknowledgement callback, whichever occurred later.
+  /// |change| will contain all the differences in navigation state since the
+  /// last acknowledgement.
   OnNavigationStateChanged(NavigationEvent change) -> ();
 };
 

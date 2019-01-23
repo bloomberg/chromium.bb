@@ -4,26 +4,26 @@
 
 library chromium.web;
 
-// The top-level service interface which allows for the creation of
-// Context resources.
+/// The top-level service interface which allows for the creation of
+/// Context resources.
 [Discoverable]
 interface ContextProvider {
-  // Creates a new browser Context whose state is wholly independent and
-  // isolated from other Contexts.
-  //
-  // context: An interface request which will receive a bound Context
-  //          service.
+  /// Creates a new browser Context whose state is wholly independent and
+  /// isolated from other Contexts.
+  ///
+  /// context: An interface request which will receive a bound Context
+  ///          service.
   Create(CreateContextParams params, request<Context> context);
 };
 
 struct CreateContextParams {
-  // Service directory to be used by the context.
+  /// Service directory to be used by the context.
   // TODO(https://crbug.com/870057): Document required and optional services
   // that Context needs.
   handle<channel> service_directory;
 
-  // Handle to the directory that will contain the Context's
-  // persistent data. If it is left unset, then the created Context will be
-  // stateless, with all of its data discarded upon Context destruction.
+  /// Handle to the directory that will contain the Context's
+  /// persistent data. If it is left unset, then the created Context will be
+  /// stateless, with all of its data discarded upon Context destruction.
   handle<channel>? data_directory;
 };
