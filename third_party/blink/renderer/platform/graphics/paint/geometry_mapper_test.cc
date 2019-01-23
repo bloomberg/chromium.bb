@@ -409,6 +409,22 @@ TEST_P(GeometryMapperTest, SimpleClipPlusOpacity) {
   EXPECT_FALSE(intersects);
 }
 
+TEST_P(GeometryMapperTest, SimpleClipPlusOpacityInclusiveIntersect) {
+  auto clip = CreateClip(c0(), &t0(), FloatRoundedRect(10, 10, 50, 50));
+  local_state.SetClip(clip.get());
+
+  auto opacity = CreateOpacityEffect(e0(), 0.99);
+  local_state.SetEffect(opacity.get());
+
+  FloatClipRect actual_clip_rect(FloatRect(10, 10, 10, 0));
+  auto intersects = GeometryMapper::LocalToAncestorVisualRect(
+      local_state, ancestor_state, actual_clip_rect,
+      kIgnorePlatformOverlayScrollbarSize, kInclusiveIntersect);
+
+  EXPECT_TRUE(actual_clip_rect.Rect().IsEmpty());
+  EXPECT_TRUE(intersects);
+}
+
 TEST_P(GeometryMapperTest, RoundedClip) {
   FloatRoundedRect rect(FloatRect(10, 10, 50, 50),
                         FloatRoundedRect::Radii(FloatSize(1, 1), FloatSize(),
