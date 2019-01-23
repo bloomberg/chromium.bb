@@ -549,7 +549,7 @@ void NGInlineItemsBuilderTemplate<
       mapping_builder_.AppendIdentityMapping(i - start_of_non_space);
 
       if (i == string.length()) {
-        DCHECK_EQ(end_collapse, NGInlineItem::kNotCollapsible);
+        end_collapse = NGInlineItem::kNotCollapsible;
         break;
       }
 
@@ -564,16 +564,19 @@ void NGInlineItemsBuilderTemplate<
       DCHECK(start_of_spaces);
 
       // If this space run contains a newline, apply segment break rules.
-      if (space_run_has_newline &&
-          ShouldRemoveNewline(text_, text_.length(), style,
-                              StringView(string, i), style)) {
+      bool remove_newline = space_run_has_newline &&
+                            ShouldRemoveNewline(text_, text_.length(), style,
+                                                StringView(string, i), style);
+      if (UNLIKELY(remove_newline)) {
+        // |kNotCollapsible| because the newline is removed, not collapsed.
+        end_collapse = NGInlineItem::kNotCollapsible;
         space_run_has_newline = false;
       } else {
-        // Otherwise, or if the segment break rules did not remove the run,
-        // append a space.
+        // If the segment break rules did not remove the run, append a space.
         text_.Append(kSpaceCharacter);
         mapping_builder_.AppendIdentityMapping(1);
         start_of_spaces++;
+        end_collapse = NGInlineItem::kCollapsible;
       }
 
       if (i != start_of_spaces)
@@ -582,7 +585,6 @@ void NGInlineItemsBuilderTemplate<
       // If this space run is at the end of this item, keep whether the
       // collapsible space run has a newline or not in the item.
       if (i == string.length()) {
-        end_collapse = NGInlineItem::kCollapsible;
         break;
       }
     }

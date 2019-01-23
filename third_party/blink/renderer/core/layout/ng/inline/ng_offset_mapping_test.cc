@@ -297,7 +297,7 @@ TEST_F(NGOffsetMappingTest, CollapseZeroWidthSpaces) {
 
   EXPECT_EQ("{4, 5}{}", TestCollapsing(u"text \n", u"\u200Btext"))
       << "Collapsible space before newline does not affect the result.";
-  EXPECT_EQ("{5}{0}", TestCollapsing(u"text\u200B\n", u" text"))
+  EXPECT_EQ("{5}{}", TestCollapsing(u"text\u200B\n", u" text"))
       << "Collapsible space after newline is removed even when the "
          "newline was removed.";
   EXPECT_EQ("{5}{0}", TestCollapsing(u"text\u200B ", u"\ntext"))
