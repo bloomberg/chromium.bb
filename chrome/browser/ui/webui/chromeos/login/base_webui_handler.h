@@ -123,7 +123,7 @@ class BaseWebUIHandler : public content::WebUIMessageHandler,
   // names.
   std::string FullMethodPath(const std::string& method) const;
 
-  // Call a JavaScript method.
+  // Shortcut for calling JS methods on WebUI side.
   void CallJS(const std::string& method);
 
   template <typename A1>
@@ -156,38 +156,6 @@ class BaseWebUIHandler : public content::WebUIMessageHandler,
     web_ui()->CallJavascriptFunctionUnsafe(
         method, ::login::MakeValue(arg1), ::login::MakeValue(arg2),
         ::login::MakeValue(arg3), ::login::MakeValue(arg4));
-  }
-
-  // Shortcut for calling JS methods on WebUI side.
-  void CallJSWithPrefix(const std::string& method);
-
-  template <typename A1>
-  void CallJSWithPrefix(const std::string& method, const A1& arg1) {
-    CallJS(FullMethodPath(method), arg1);
-  }
-
-  template <typename A1, typename A2>
-  void CallJSWithPrefix(const std::string& method,
-                        const A1& arg1,
-                        const A2& arg2) {
-    CallJS(FullMethodPath(method), arg1, arg2);
-  }
-
-  template <typename A1, typename A2, typename A3>
-  void CallJSWithPrefix(const std::string& method,
-                        const A1& arg1,
-                        const A2& arg2,
-                        const A3& arg3) {
-    CallJS(FullMethodPath(method), arg1, arg2, arg3);
-  }
-
-  template <typename A1, typename A2, typename A3, typename A4>
-  void CallJSWithPrefix(const std::string& method,
-                        const A1& arg1,
-                        const A2& arg2,
-                        const A3& arg3,
-                        const A4& arg4) {
-    CallJS(FullMethodPath(method), arg1, arg2, arg3, arg4);
   }
 
   template <typename... Args>
