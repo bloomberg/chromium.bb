@@ -48,7 +48,8 @@ class AnswerTextBuilder {
      * @param density Screen density which will be used to properly size and layout images and top-
      *                aligned text.
      */
-    static Spannable buildSpannable(SuggestionAnswer.ImageLine line, float density) {
+    static Spannable buildSpannable(
+            SuggestionAnswer.ImageLine line, float density, boolean useNewAnswerLayout) {
         SpannableStringBuilder builder = new SpannableStringBuilder();
 
         // Determine the height of the largest text element in the line.  This
@@ -57,17 +58,19 @@ class AnswerTextBuilder {
 
         List<SuggestionAnswer.TextField> textFields = line.getTextFields();
         for (int i = 0; i < textFields.size(); i++) {
-            appendAndStyleText(builder, textFields.get(i), maxTextHeightSp, density);
+            appendAndStyleText(
+                    builder, textFields.get(i), maxTextHeightSp, density, useNewAnswerLayout);
         }
         if (line.hasAdditionalText()) {
             builder.append("  ");
             SuggestionAnswer.TextField additionalText = line.getAdditionalText();
-            appendAndStyleText(builder, additionalText, maxTextHeightSp, density);
+            appendAndStyleText(
+                    builder, additionalText, maxTextHeightSp, density, useNewAnswerLayout);
         }
         if (line.hasStatusText()) {
             builder.append("  ");
             SuggestionAnswer.TextField statusText = line.getStatusText();
-            appendAndStyleText(builder, statusText, maxTextHeightSp, density);
+            appendAndStyleText(builder, statusText, maxTextHeightSp, density, useNewAnswerLayout);
         }
 
         return builder;
@@ -117,7 +120,8 @@ class AnswerTextBuilder {
      */
     @SuppressWarnings("deprecation") // Update usage of Html.fromHtml when API min is 24
     private static void appendAndStyleText(SpannableStringBuilder builder,
-            SuggestionAnswer.TextField textField, int maxTextHeightSp, float density) {
+            SuggestionAnswer.TextField textField, int maxTextHeightSp, float density,
+            boolean useNewAnswerLayout) {
         String text = textField.getText();
         int type = textField.getType();
 
@@ -133,7 +137,8 @@ class AnswerTextBuilder {
         AbsoluteSizeSpan sizeSpan = new AbsoluteSizeSpan(getAnswerTextSizeSp(type), true);
         builder.setSpan(sizeSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        ForegroundColorSpan colorSpan = new ForegroundColorSpan(getAnswerTextColor(type));
+        ForegroundColorSpan colorSpan =
+                new ForegroundColorSpan(getAnswerTextColor(type, useNewAnswerLayout));
         builder.setSpan(colorSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         if (type == AnswerTextType.TOP_ALIGNED) {
@@ -179,7 +184,7 @@ class AnswerTextBuilder {
      *
      * @param type The answer type as specified at http://goto.google.com/ais_api.
      */
-    private static int getAnswerTextColor(@AnswerTextType int type) {
+    private static int getAnswerTextColor(@AnswerTextType int type, boolean useNewAnswerLayout) {
         Resources resources = ContextUtils.getApplicationContext().getResources();
         switch (type) {
             case AnswerTextType.DESCRIPTION_NEGATIVE:
@@ -191,17 +196,25 @@ class AnswerTextBuilder {
                         resources, R.color.answers_description_text_positive);
 
             case AnswerTextType.SUGGESTION:
-                return ApiCompatibilityUtils.getColor(resources, R.color.url_emphasis_default_text);
-
             case AnswerTextType.PERSONALIZED_SUGGESTION:
-                return ApiCompatibilityUtils.getColor(resources, R.color.url_emphasis_default_text);
+                if (useNewAnswerLayout) {
+                    return ApiCompatibilityUtils.getColor(resources, R.color.answers_answer_text);
+                } else {
+                    return ApiCompatibilityUtils.getColor(
+                            resources, R.color.url_emphasis_default_text);
+                }
 
             case AnswerTextType.TOP_ALIGNED:
             case AnswerTextType.ANSWER_TEXT_MEDIUM:
             case AnswerTextType.ANSWER_TEXT_LARGE:
             case AnswerTextType.SUGGESTION_SECONDARY_TEXT_SMALL:
             case AnswerTextType.SUGGESTION_SECONDARY_TEXT_MEDIUM:
-                return ApiCompatibilityUtils.getColor(resources, R.color.answers_answer_text);
+                if (useNewAnswerLayout) {
+                    return ApiCompatibilityUtils.getColor(
+                            resources, R.color.url_emphasis_default_text);
+                } else {
+                    return ApiCompatibilityUtils.getColor(resources, R.color.answers_answer_text);
+                }
 
             default:
                 Log.w(TAG, "Unknown answer type: " + type);
