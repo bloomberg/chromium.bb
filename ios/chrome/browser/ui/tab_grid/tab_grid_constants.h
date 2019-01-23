@@ -5,7 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_UI_TAB_GRID_TAB_GRID_CONSTANTS_H_
 #define IOS_CHROME_BROWSER_UI_TAB_GRID_TAB_GRID_CONSTANTS_H_
 
-#import <UIKit/UIKit.h>
+#include <CoreGraphics/CoreGraphics.h>
+#import <Foundation/Foundation.h>
 
 // Accessibility identifiers for automated testing.
 extern NSString* const kTabGridIncognitoTabsPageButtonIdentifier;

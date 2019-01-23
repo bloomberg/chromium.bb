@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_GRID_CONSUMER_H_
 #define IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_GRID_CONSUMER_H_
 
+#import <Foundation/Foundation.h>
+
 @class GridItem;
 
 // Supports idempotent insert/delete/updates to a grid.
