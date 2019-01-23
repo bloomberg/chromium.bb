@@ -271,7 +271,8 @@ void PixelTest::SetUpGpuServiceOnGpuThread(base::WaitableEvent* event) {
           ->GetFormat(),
       gpu_service_->gpu_feature_info(),
       gpu_service_->gpu_channel_manager()->gpu_preferences(),
-      gpu_service_->shared_image_manager());
+      gpu_service_->shared_image_manager(),
+      gpu_service_->gpu_channel_manager()->program_cache());
   event->Signal();
 }
 

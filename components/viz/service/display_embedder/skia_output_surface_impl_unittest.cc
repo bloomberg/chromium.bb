@@ -4,13 +4,16 @@
 
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "base/base64.h"
 #include "base/test/scoped_feature_list.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/pixel_test_utils.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
-#include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
@@ -100,7 +103,8 @@ void SkiaOutputSurfaceImplTest::SetUpGpuServiceOnGpuThread() {
           ->GetFormat(),
       gpu_service_->gpu_feature_info(),
       gpu_service_->gpu_channel_manager()->gpu_preferences(),
-      gpu_service_->shared_image_manager());
+      gpu_service_->shared_image_manager(),
+      gpu_service_->gpu_channel_manager()->program_cache());
   UnblockMainThread();
 }
 
