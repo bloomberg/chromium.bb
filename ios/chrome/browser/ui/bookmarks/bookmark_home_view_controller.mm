@@ -337,7 +337,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   self.scrimView.accessibilityIdentifier = kBookmarkHomeSearchScrimIdentifier;
   [self.scrimView addTarget:self
                      action:@selector(dismissSearchController:)
-           forControlEvents:UIControlEventAllTouchEvents];
+           forControlEvents:UIControlEventTouchUpInside];
 
   // Place the search bar in the navigation bar.
   self.navigationItem.searchController = self.searchController;
