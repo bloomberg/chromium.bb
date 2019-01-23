@@ -2366,6 +2366,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       UIViewController* viewController =
           _ntpCoordinatorsForWebStates[tab.webState].viewController;
       viewController.view.frame = [self ntpFrameForWebState:tab.webState];
+      // TODO(crbug.com/873729): For a newly created WebState, the session will
+      // not be restored until LoadIfNecessary call. Remove when fixed.
+      if (tab.webState->GetNavigationManager()->IsRestoreSessionInProgress())
+        tab.webState->GetNavigationManager()->LoadIfNecessary();
       self.browserContainerViewController.contentViewController =
           viewController;
     } else {
