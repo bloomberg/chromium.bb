@@ -48,6 +48,8 @@ namespace {
 
 using ::testing::DoubleNear;
 using ::testing::ElementsAre;
+using ::testing::Ge;
+using ::testing::Lt;
 using ::testing::Optional;
 using ::testing::Pair;
 using ::testing::UnorderedElementsAre;
@@ -60,6 +62,33 @@ TEST(Util, NormalizeCapacity) {
   EXPECT_EQ(kMinCapacity, NormalizeCapacity(kMinCapacity));
   EXPECT_EQ(kMinCapacity * 2 + 1, NormalizeCapacity(kMinCapacity + 1));
   EXPECT_EQ(kMinCapacity * 2 + 1, NormalizeCapacity(kMinCapacity + 2));
+}
+
+TEST(Util, GrowthAndCapacity) {
+  // Verify that GrowthToCapacity gives the minimum capacity that has enough
+  // growth.
+  for (size_t growth = 0; growth < 10000; ++growth) {
+    SCOPED_TRACE(growth);
+    size_t capacity = NormalizeCapacity(GrowthToLowerboundCapacity(growth));
+    // The capacity is large enough for `growth`
+    EXPECT_THAT(CapacityToGrowth(capacity), Ge(growth));
+    if (growth < Group::kWidth - 1) {
+      // Fits in one group, that is the minimum capacity.
+      EXPECT_EQ(capacity, Group::kWidth - 1);
+    } else {
+      // There is no smaller capacity that works.
+      EXPECT_THAT(CapacityToGrowth(capacity / 2), Lt(growth));
+    }
+  }
+
+  for (size_t capacity = Group::kWidth - 1; capacity < 10000;
+       capacity = 2 * capacity + 1) {
+    SCOPED_TRACE(capacity);
+    size_t growth = CapacityToGrowth(capacity);
+    EXPECT_THAT(growth, Lt(capacity));
+    EXPECT_LE(GrowthToLowerboundCapacity(growth), capacity);
+    EXPECT_EQ(NormalizeCapacity(GrowthToLowerboundCapacity(growth)), capacity);
+  }
 }
 
 TEST(Util, probe_seq) {
@@ -342,6 +371,7 @@ TEST(Table, EmptyFunctorOptimization) {
     size_t size;
     size_t capacity;
     size_t growth_left;
+    void* infoz;
   };
   struct StatelessHash {
     size_t operator()(absl::string_view) const { return 0; }
@@ -1796,6 +1826,27 @@ TEST(TableDeathTest, EraseOfEndAsserts) {
   // Extra simple "regexp" as regexp support is highly varied across platforms.
   constexpr char kDeathMsg[] = "it != end";
   EXPECT_DEATH_IF_SUPPORTED(t.erase(t.end()), kDeathMsg);
+}
+
+TEST(RawHashSamplerTest, Sample) {
+  // Enable the feature even if the prod default is off.
+  SetHashtablezEnabled(true);
+  SetHashtablezSampleParameter(100);
+
+  auto& sampler = HashtablezSampler::Global();
+  size_t start_size = 0;
+  start_size += sampler.Iterate([&](const HashtablezInfo&) { ++start_size; });
+
+  std::vector<IntTable> tables;
+  for (int i = 0; i < 1000000; ++i) {
+    tables.emplace_back();
+    tables.back().insert(1);
+  }
+  size_t end_size = 0;
+  end_size += sampler.Iterate([&](const HashtablezInfo&) { ++end_size; });
+
+  EXPECT_NEAR((end_size - start_size) / static_cast<double>(tables.size()),
+              0.01, 0.005);
 }
 
 #ifdef ADDRESS_SANITIZER

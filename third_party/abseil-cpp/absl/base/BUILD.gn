@@ -88,6 +88,7 @@ source_set("core_headers") {
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
   public = [
     "attributes.h",
+    "const_init.h",
     "macros.h",
     "optimization.h",
     "port.h",

@@ -20,10 +20,6 @@
 absl_cc_library(
   NAME
     container
-  SRCS
-    "internal/raw_hash_set.cc"
-  COPTS
-    ${ABSL_DEFAULT_COPTS}
   PUBLIC
 )
 
@@ -44,6 +40,8 @@ absl_cc_test(
     "internal/compressed_tuple_test.cc"
   DEPS
     absl::compressed_tuple
+    absl::memory
+    absl::utility
     gmock_main
 )
 
@@ -124,6 +122,15 @@ absl_cc_library(
   PUBLIC
 )
 
+absl_cc_library(
+  NAME
+    counting_allocator
+  HDRS
+    "internal/counting_allocator.h"
+  COPTS
+    ${ABSL_DEFAULT_COPTS}
+)
+
 absl_cc_test(
   NAME
     inlined_vector_test
@@ -134,6 +141,7 @@ absl_cc_test(
   LINKOPTS
     ${ABSL_EXCEPTIONS_FLAG_LINKOPTS}
   DEPS
+    absl::counting_allocator
     absl::inlined_vector
     absl::test_instance_tracker
     absl::base
@@ -431,6 +439,32 @@ absl_cc_test(
 
 absl_cc_library(
   NAME
+    hashtablez_sampler
+  HDRS
+    "internal/hashtablez_sampler.h"
+  SRCS
+    "internal/hashtablez_sampler.cc"
+  COPTS
+    ${ABSL_DEFAULT_COPTS}
+  DEPS
+    absl::base
+    absl::have_sse
+    absl::synchronization
+)
+
+absl_cc_test(
+  NAME
+    hashtablez_sampler_test
+  SRCS
+    "internal/hashtablez_sampler_test.cc"
+  DEPS
+    absl::hashtablez_sampler
+    absl::have_sse
+    gmock_main
+)
+
+absl_cc_library(
+  NAME
     hashtable_debug
   HDRS
     "internal/hashtable_debug.h"
@@ -448,6 +482,15 @@ absl_cc_library(
   COPTS
     ${ABSL_DEFAULT_COPTS}
   PUBLIC
+)
+
+absl_cc_library(
+  NAME
+    have_sse
+  HDRS
+    "internal/have_sse.h"
+  COPTS
+    ${ABSL_DEFAULT_COPTS}
 )
 
 absl_cc_library(
@@ -486,6 +529,17 @@ absl_cc_library(
 
 absl_cc_library(
   NAME
+    container_common
+  HDRS
+    "internal/commom.h"
+  COPTS
+    ${ABSL_DEFAULT_COPTS}
+  DEPS
+    absl::type_traits
+)
+
+absl_cc_library(
+  NAME
     raw_hash_set
   HDRS
     "internal/raw_hash_set.h"
@@ -494,19 +548,22 @@ absl_cc_library(
   COPTS
     ${ABSL_DEFAULT_COPTS}
   DEPS
-    absl::compressed_tuple
-    absl::container_memory
-    absl::hash_policy_traits
-    absl::hashtable_debug_hooks
-    absl::layout
     absl::bits
+    absl::compressed_tuple
     absl::config
+    absl::container_common
+    absl::container_memory
     absl::core_headers
     absl::endian
+    absl::hash_policy_traits
+    absl::hashtable_debug_hooks
+    absl::have_sse
+    absl::layout
     absl::memory
     absl::meta
     absl::optional
     absl::utility
+    absl::hashtablez_sampler
   PUBLIC
 )
 
