@@ -13,6 +13,8 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_web_view_proxy_observer.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
+#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/ui/fullscreen_provider.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/ssl_status.h"
@@ -114,6 +116,11 @@ void FullscreenWebStateObserver::DidFinishNavigation(
   bool use_content_inset = force_content_inset || is_pdf;
   id<CRWWebViewProxy> web_view_proxy = web_state->GetWebViewProxy();
   web_view_proxy.shouldUseViewContentInset = use_content_inset;
+
+  model_->SetResizesScrollView(!use_content_inset &&
+                               !ios::GetChromeBrowserProvider()
+                                    ->GetFullscreenProvider()
+                                    ->IsInitialized());
 
   // On iOS 12, resetting WKScrollView.contentInset at this point in the load
   // will push the content down by the top inset.  On iOS 11, however, this does

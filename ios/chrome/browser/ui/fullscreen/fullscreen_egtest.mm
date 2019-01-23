@@ -126,8 +126,8 @@ void AssertURLIs(const GURL& expectedURL) {
       assertWithMatcher:grey_scrollViewContentOffset(CGPointMake(0, yOffset))];
 }
 
-// Verifies that the toolbar properly appears/disappears when scrolling up/down
-// on a PDF that is short in length and wide in width.
+// Verifies that the toolbar is not hidden when scrolling a short pdf, as the
+// entire document is visible without hiding the toolbar.
 - (void)testSmallWidePDFScroll {
   web::test::SetUpFileBasedHttpServer();
   GURL URL = web::test::HttpServer::MakeUrl(
@@ -149,16 +149,10 @@ void AssertURLIs(const GURL& expectedURL) {
       performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
   [ChromeEarlGreyUI waitForToolbarVisible:YES];
 
-  if (base::ios::IsRunningOnIOS12OrLater()) {
-    // Test that the toolbar is still visible even after attempting to hide it
-    // on swipe up.
-    HideToolbarUsingUI();
-    [ChromeEarlGreyUI waitForToolbarVisible:YES];
-  } else {
-    // Test that the toolbar is no longer visible after a user swipes up.
-    HideToolbarUsingUI();
-    [ChromeEarlGreyUI waitForToolbarVisible:NO];
-  }
+  // Test that the toolbar is still visible even after attempting to hide it
+  // on swipe up.
+  HideToolbarUsingUI();
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
 
   // Reenable synchronization.
   if (@available(iOS 12, *)) {
