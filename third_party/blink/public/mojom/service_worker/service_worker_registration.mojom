@@ -40,9 +40,10 @@ struct ServiceWorkerRegistrationObjectInfo {
   // The globally unique identifier of a service worker registration entity.
   int64 registration_id = kInvalidServiceWorkerRegistrationId;
 
-  // The registration options attached with this registration object, including
-  // some information such as scope of this registration.
-  ServiceWorkerRegistrationOptions options;
+  // Corresponds to ServiceWorkerRegistration#scope.
+  url.mojom.Url scope;
+  // Corresponds to ServiceWorkerRegistration#updateViaCache.
+  ServiceWorkerUpdateViaCache update_via_cache;
 
   // Holds one mojo connection to browser process, acts as a reference count to
   // control lifetime of ServiceWorkerRegistration in the browser process.

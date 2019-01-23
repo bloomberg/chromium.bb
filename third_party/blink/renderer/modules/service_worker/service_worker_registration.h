@@ -111,7 +111,6 @@ class ServiceWorkerRegistration final
 
   const int64_t registration_id_;
   const KURL scope_;
-  const mojom::ScriptType type_;
   mojom::ServiceWorkerUpdateViaCache update_via_cache_;
   // Both |host_| and |binding_| are associated with
   // content.mojom.ServiceWorkerContainer interface for a Document, and

@@ -295,10 +295,9 @@ class ServiceWorkerContextClientTest : public testing::Test {
     auto registration_info =
         blink::mojom::ServiceWorkerRegistrationObjectInfo::New();
     registration_info->registration_id = 100;  // dummy
-    registration_info->options =
-        blink::mojom::ServiceWorkerRegistrationOptions::New(
-            kScope, blink::mojom::ScriptType::kClassic,
-            blink::mojom::ServiceWorkerUpdateViaCache::kAll);
+    registration_info->scope = kScope;
+    registration_info->update_via_cache =
+        blink::mojom::ServiceWorkerUpdateViaCache::kAll;
     out_pipes->registration_host_request =
         mojo::MakeRequest(&registration_info->host_ptr_info);
     registration_info->request = mojo::MakeRequest(&out_pipes->registration);

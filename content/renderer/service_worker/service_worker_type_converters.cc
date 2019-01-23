@@ -151,7 +151,6 @@ TypeConverter<blink::WebServiceWorkerRegistrationObjectInfo,
   if (!input) {
     return blink::WebServiceWorkerRegistrationObjectInfo(
         blink::mojom::kInvalidServiceWorkerRegistrationId, blink::WebURL(),
-        blink::mojom::ScriptType::kClassic,
         blink::mojom::ServiceWorkerUpdateViaCache::kImports,
         mojo::ScopedInterfaceEndpointHandle() /* host_ptr_info */,
         mojo::ScopedInterfaceEndpointHandle() /* request */,
@@ -163,9 +162,8 @@ TypeConverter<blink::WebServiceWorkerRegistrationObjectInfo,
             .To<blink::WebServiceWorkerObjectInfo>() /* active */);
   }
   return blink::WebServiceWorkerRegistrationObjectInfo(
-      input->registration_id, input->options->scope, input->options->type,
-      input->options->update_via_cache, input->host_ptr_info.PassHandle(),
-      input->request.PassHandle(),
+      input->registration_id, input->scope, input->update_via_cache,
+      input->host_ptr_info.PassHandle(), input->request.PassHandle(),
       input->installing.To<blink::WebServiceWorkerObjectInfo>(),
       input->waiting.To<blink::WebServiceWorkerObjectInfo>(),
       input->active.To<blink::WebServiceWorkerObjectInfo>());
