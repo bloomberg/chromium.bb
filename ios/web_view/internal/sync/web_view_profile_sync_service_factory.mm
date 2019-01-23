@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/time/time.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
@@ -44,7 +44,8 @@ using browser_sync::ProfileSyncService;
 // static
 WebViewProfileSyncServiceFactory*
 WebViewProfileSyncServiceFactory::GetInstance() {
-  return base::Singleton<WebViewProfileSyncServiceFactory>::get();
+  static base::NoDestructor<WebViewProfileSyncServiceFactory> instance;
+  return instance.get();
 }
 
 // static

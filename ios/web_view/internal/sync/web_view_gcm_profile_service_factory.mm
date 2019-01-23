@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "components/gcm_driver/gcm_client_factory.h"
@@ -63,7 +63,8 @@ gcm::GCMProfileService* WebViewGCMProfileServiceFactory::GetForBrowserState(
 // static
 WebViewGCMProfileServiceFactory*
 WebViewGCMProfileServiceFactory::GetInstance() {
-  return base::Singleton<WebViewGCMProfileServiceFactory>::get();
+  static base::NoDestructor<WebViewGCMProfileServiceFactory> instance;
+  return instance.get();
 }
 
 // static
