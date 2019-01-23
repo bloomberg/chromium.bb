@@ -21,6 +21,9 @@
   <message name="IDS_MANAGEMENT_DEVICE_REPORTING" desc="Title of the types of device reporting section of the page" translateable="false">
     Device reporting
   </message>
+  <message name="IDS_MANAGEMENT_BROWSER_REPORTING" desc="Title of the types of browser reporting section of the page" translateable="false">
+    Browser reporting
+  </message>
   <message name="IDS_MANAGEMENT_DEVICE_CONFIGURATION" desc="Message telling users that their administrator has set some specific policies on their device" translateable="false">
     Your device has been configured to:
   </message>
@@ -61,6 +64,33 @@
   </message>
   <message name="IDS_MANAGEMENT_DESKTOP_MONITORING_NOTICE" desc="Message explaining that the administrators have ways to monitor users outside of chrome's control" translateable="false">
     Administrators may have other ways of monitoring users, outside of Chrome.
+  </message>
+  <message name="IDS_MANAGEMENT_EXTENSION_REPORT_MACHINE_NAME" desc="Message explaining that an extension currently reports the user's machine name" translateable="false">
+    Report your machine's name
+  </message>
+  <message name="IDS_MANAGEMENT_EXTENSION_REPORT_MACHINE_NAME_ADDRESS" desc="Message explaining that an extension currently reports the user's machine name and address" translateable="false">
+    Report your machine's name and network address
+  </message>
+  <message name="IDS_MANAGEMENT_EXTENSION_REPORT_USERNAME" desc="Message explaining that an extension currently reports the user's username" translateable="false">
+    Report you OS and browser usernames
+  </message>
+  <message name="IDS_MANAGEMENT_EXTENSION_REPORT_VERSION" desc="Message explaining that an extension currently reports the user's browser and machine version" translateable="false">
+    Report software version information about your browser and machine
+  </message>
+  <message name="IDS_MANAGEMENT_EXTENSION_REPORT_POLICIES" desc="Message explaining that an extension currently reports the user's enterprise policies" translateable="false">
+    Report information about applied enterprise policies
+  </message>
+  <message name="IDS_MANAGEMENT_EXTENSION_REPORT_EXTENSIONS_PLUGINS" desc="Message explaining that an extension currently reports the user's exensions and plugins" translateable="false">
+    Report installed extensions and plugins
+  </message>
+  <message name="IDS_MANAGEMENT_EXTENSION_REPORT_SAFE_BROWSING_WARNINGS" desc="Message explaining that an extension currently reports the user's safe browsing warnings and ignored warnings" translateable="false">
+    Report Safe Browsing warnings
+  </message>
+  <message name="IDS_MANAGEMENT_EXTENSION_REPORT_PERF_CRASH" desc="Message explaining that an extension currently reports the user's  performance data and crash report" translateable="false">
+    Report performance data and crash reports
+  </message>
+  <message name="IDS_MANAGEMENT_EXTENSION_REPORT_WEBSITE_USAGE_STATISTICS" desc="Message explaining that an extension currently reports the user's website usage statistics" translateable="false">
+    Report how much time you spend on each website
   </message>
   <if expr="chromeos">
     <message name="IDS_MANAGEMENT_TRUST_ROOTS_CONFIGURED" desc="Message describing that the administrators have installed their own certificates" translateable="false">
