@@ -1636,13 +1636,6 @@ const FeatureEntry kFeatureEntries[] = {
         kOsAll,
         SINGLE_VALUE_TYPE(ash::switches::kAshDebugShortcuts),
     },
-    {
-        "ash-enable-mirrored-screen",
-        flag_descriptions::kAshEnableMirroredScreenName,
-        flag_descriptions::kAshEnableMirroredScreenDescription,
-        kOsCrOS,
-        SINGLE_VALUE_TYPE(ash::switches::kAshEnableMirroredScreen),
-    },
     {"ash-shelf-color", flag_descriptions::kAshShelfColorName,
      flag_descriptions::kAshShelfColorDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kAshShelfColorChoices)},

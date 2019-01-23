@@ -53,9 +53,6 @@ const char kAshEnableTabletMode[] = "enable-touchview";
 // Enable the wayland server.
 const char kAshEnableWaylandServer[] = "enable-wayland-server";
 
-// Enables mirrored screen.
-const char kAshEnableMirroredScreen[] = "ash-enable-mirrored-screen";
-
 // Enables the stylus tools next to the status area.
 const char kAshForceEnableStylusTools[] = "force-enable-stylus-tools";
 

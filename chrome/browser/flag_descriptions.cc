@@ -3107,11 +3107,6 @@ const char kAshEnableDisplayMoveWindowAccelsName[] =
 const char kAshEnableDisplayMoveWindowAccelsDescription[] =
     "Enable shortcuts for moving window between displays.";
 
-const char kAshEnableMirroredScreenName[] = "Enable mirrored screen mode.";
-const char kAshEnableMirroredScreenDescription[] =
-    "Enable the mirrored screen mode. This mode flips the screen image "
-    "horizontally.";
-
 const char kAshEnablePersistentWindowBoundsName[] =
     "Enable persistent window bounds in multi-displays scenario.";
 const char kAshEnablePersistentWindowBoundsDescription[] =
