@@ -774,3 +774,77 @@ message LinuxPackageInfoFromAptRequest {
   // Name (not package_id) of package to look up.
   string package_name = 4;
 }
+
+message ExportLxdContainerRequest {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // Name of the container exporting.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  // Path to write the exported container.  This is a directory which
+  // must have already been shared using seneschal.  It is the path relative
+  // to the VM root mount point (/mnt/shared) as returned in seneschal
+  // SharePathResponse.path.  E.g.: "MyFiles/export".
+  string export_path = 4;
+}
+
+message ExportLxdContainerResponse {
+  enum Status {
+    // The result is unknown.
+    UNKNOWN = 0;
+
+    // Export is completed.
+    DONE = 1;
+
+    // The container is exporting. Further updates will be delievered via
+    // ExportLxdContainerProgressSignal.
+    EXPORTING = 2;
+
+    // One or more steps failed and the container could not be exported.
+    FAILED = 3;
+  }
+
+  // Current container status.
+  Status status = 1;
+
+  // The failure_reason if container info could not be returned.
+  string failure_reason = 2;
+}
+
+message ExportLxdContainerProgressSignal {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // Name of the container exporting.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  enum Status {
+    // The result is unknown.
+    UNKNOWN = 0;
+
+    // Export is completed.
+    DONE = 1;
+
+    // The container is (still) exporting.
+    EXPORTING = 2;
+
+    // One or more steps failed and the container could not be exported.
+    FAILED = 3;
+  }
+
+  // Container status.
+ Status status = 4;
+
+ // Overall percentage progress.
+ uint32 progress_percent = 5;
+
+ // Details relating to the failure state.
+ string failure_reason = 6;
+}

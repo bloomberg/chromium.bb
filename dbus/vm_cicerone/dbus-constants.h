@@ -33,6 +33,7 @@ const char kInstallLinuxPackageFromAptMethod[] = "InstallLinuxPackageFromApt";
 const char kAppSearchMethod[] = "AppSearch";
 const char kGetLinuxPackageInfoFromAptMethod[] =
     "GetLinuxPackageInfoFromAptMethod";
+const char kExportLxdContainerMethod[] = "ExportLxdContainer";
 
 // Methods to be called from debugd.
 const char kGetDebugInformationMethod[] = "GetDebugInformation";
@@ -47,6 +48,7 @@ const char kLxdContainerCreatedSignal[] = "LxdContainerCreated";
 const char kLxdContainerDownloadingSignal[] = "LxdContainerDownloading";
 const char kLxdContainerStartingSignal[] = "LxdContainerStarting";
 const char kTremplinStartedSignal[] = "TremplinStarted";
+const char kExportLxdContainerProgressSignal[] = "ExportLxdContainerProgress";
 
 }  // namespace cicerone
 }  // namespace vm_tools
