@@ -118,12 +118,12 @@
   },
   {
     "name": "arc-available-for-child",
-    // "owners": [ "your-team" ],
+    "owners": [ "//chrome/browser/chromeos/arc/enterprise/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "arc-boot-completed-broadcast",
-    // "owners": [ "your-team" ],
+    "owners": [ "//components/arc/common/ARC_SECURITY_OWNERS" ],
     "expiry_milestone": 76
   },
   {
@@ -133,22 +133,22 @@
   },
   {
     "name": "arc-file-picker-experiment",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "niwa" ],
+    "expiry_milestone": 80
   },
   {
     "name": "arc-native-bridge-experiment",
-    // "owners": [ "your-team" ],
+    "owners": [ "levarum@google.com" ],
     "expiry_milestone": 76
   },
   {
     "name": "arc-usb-host",
-    // "owners": [ "your-team" ],
+    "owners": [ "lgcheng" ],
     "expiry_milestone": 76
   },
   {
     "name": "arc-vpn",
-    // "owners": [ "your-team" ],
+    "owners": [ "cros-networking@google.com" ],
     "expiry_milestone": 76
   },
   {
