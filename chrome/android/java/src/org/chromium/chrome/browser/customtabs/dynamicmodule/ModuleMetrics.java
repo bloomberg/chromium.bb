@@ -79,12 +79,13 @@ public final class ModuleMetrics {
 
     /**
      * Possible reasons for destroying a dynamic module. Keep in sync with the
-     * CustomTabs.DynamicModule.DestructionReason enum in histograms.xml. Do not remove
-     * or change existing values other than NUM_ENTRIES.
+     * CustomTabs.DynamicModule.DestructionReason enum in tools/metrics/histograms/enums.xml.
+     * Do not remove or change existing values other than NUM_ENTRIES.
      */
     @IntDef({DestructionReason.NO_CACHING_UNUSED, DestructionReason.CACHED_SEVERE_MEMORY_PRESSURE,
             DestructionReason.CACHED_MILD_MEMORY_PRESSURE_TIME_EXCEEDED,
-            DestructionReason.CACHED_UI_HIDDEN_TIME_EXCEEDED})
+            DestructionReason.CACHED_UI_HIDDEN_TIME_EXCEEDED,
+            DestructionReason.MODULE_LOADER_CHANGED})
     @Retention(RetentionPolicy.SOURCE)
     public @interface DestructionReason {
         /** No caching enabled and the module is unused. */
@@ -95,8 +96,10 @@ public final class ModuleMetrics {
         int CACHED_MILD_MEMORY_PRESSURE_TIME_EXCEEDED = 2;
         /** Cached and app hidden and time exceeded. */
         int CACHED_UI_HIDDEN_TIME_EXCEEDED = 3;
+        /** Module loader setup is changed. */
+        int MODULE_LOADER_CHANGED = 4;
         /** Upper bound for legal sample values - all sample values have to be strictly lower. */
-        int NUM_ENTRIES = 4;
+        int NUM_ENTRIES = 5;
     }
 
     /**

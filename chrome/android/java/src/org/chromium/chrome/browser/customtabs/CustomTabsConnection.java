@@ -56,6 +56,7 @@ import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.PostMessageHandler;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleLoader;
+import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleMetrics;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.init.ChainedTasks;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -1455,17 +1456,15 @@ public class CustomTabsConnection {
             resourceId = 0;
         }
 
+        if (mModuleLoader != null &&
+                (!componentName.equals(mModuleLoader.getComponentName()) ||
+                resourceId != mModuleLoader.getDexResourceId())) {
+            mModuleLoader.destroyModule(ModuleMetrics.DestructionReason.MODULE_LOADER_CHANGED);
+            mModuleLoader = null;
+        }
+
         if (mModuleLoader == null) mModuleLoader = new ModuleLoader(componentName, resourceId);
-        if (!componentName.equals(mModuleLoader.getComponentName())) {
-            throw new IllegalStateException("The given component name " + componentName
-                    + " does not match the initialized component name "
-                    + mModuleLoader.getComponentName());
-        }
-        if (resourceId != mModuleLoader.getDexResourceId()) {
-            throw new IllegalStateException("The given resource ID " + resourceId
-                    + " does not match the initialized resource ID "
-                    + mModuleLoader.getDexResourceId());
-        }
+
         return mModuleLoader;
     }
 

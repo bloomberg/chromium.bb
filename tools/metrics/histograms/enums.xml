@@ -9984,6 +9984,7 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Cached and severe memory pressure"/>
   <int value="2" label="Cached and mild memory pressure and time exceeded"/>
   <int value="3" label="Cached and app hidden and time exceeded"/>
+  <int value="4" label="Module loader setup changed"/>
 </enum>
 
 <enum name="CustomTabsDynamicModuleLoadResult">

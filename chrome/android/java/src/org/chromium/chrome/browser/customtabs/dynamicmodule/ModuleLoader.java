@@ -232,7 +232,7 @@ public class ModuleLoader {
         return ModuleMetrics.now() - mModuleUnusedTimeMs > limit;
     }
 
-    private void destroyModule(@DestructionReason int reason) {
+    public void destroyModule(@DestructionReason int reason) {
         assert mModuleEntryPoint != null;
 
         ModuleMetrics.recordDestruction(reason);
