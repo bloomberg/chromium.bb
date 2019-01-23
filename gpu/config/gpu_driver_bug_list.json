@@ -217,22 +217,6 @@
       ]
     },
     {
-      "id": 36,
-      "cr_bugs": [163464, 233612],
-      "description": "Share-group related crashes on Qualcomm drivers",
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "4.3"
-        }
-      },
-      "gl_vendor": "Qualcomm.*",
-      "features": [
-        "use_virtualized_gl_contexts"
-      ]
-    },
-    {
       "id": 37,
       "cr_bugs": [286468],
       "description": "Program link fails in NVIDIA Linux if gl_Position is not set",
@@ -247,7 +231,7 @@
     },
     {
       "id": 38,
-      "cr_bugs": [289461],
+      "cr_bugs": [163464, 233612, 289461],
       "description": "Non-virtual contexts on Qualcomm sometimes cause out-of-order frames",
       "os": {
         "type": "android"
