@@ -14,6 +14,7 @@ WebContentsNSViewBridge::WebContentsNSViewBridge(
     : client_(std::move(client)) {
   cocoa_view_.reset(
       [[WebContentsViewCocoa alloc] initWithWebContentsViewMac:nullptr]);
+  [cocoa_view_ setClient:client_.get()];
   view_id_ =
       std::make_unique<ui::ScopedNSViewIdMapping>(view_id, cocoa_view_.get());
 }
