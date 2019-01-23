@@ -115,6 +115,10 @@ th {
   color: blue;
 }
 
+.header-contents-and-description .header-container :nth-child(3) {
+  color: orange;
+}
+
 .header-fill-and-inline .header-container :nth-child(2) {
   border: 1px solid;
 }
@@ -155,6 +159,10 @@ th {
 
 .cell-contents-and-description .pair-item.answer {
   color: orange;
+}
+
+.cell-contents-and-description .pair-item.image-url {
+  font-size: .5rem;
 }
 
 .cell-fill-and-inline .pair-container {
