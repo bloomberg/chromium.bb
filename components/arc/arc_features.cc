@@ -31,11 +31,6 @@ const base::Feature kEnableChildToRegularTransitionFeature{
 const base::Feature kEnableDocumentsProviderInFilesAppFeature{
     "ArcEnableDocumentsProviderInFilesApp", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether ARC input methods (usually installed via Play Store) are
-// available.
-const base::Feature kEnableInputMethodFeature{"ArcInputMethod",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether ARC handles regular->child account transition.
 const base::Feature kEnableRegularToChildTransitionFeature{
     "ArcEnableRegularToChildTransition", base::FEATURE_ENABLED_BY_DEFAULT};
