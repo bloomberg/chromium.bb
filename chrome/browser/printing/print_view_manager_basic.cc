@@ -27,8 +27,6 @@ PrintViewManagerBasic::~PrintViewManagerBasic() = default;
 void PrintViewManagerBasic::PdfWritingDone(int page_count) {
   if (pdf_writing_done_callback_)
     pdf_writing_done_callback_.Run(page_count);
-  // Invalidate the file descriptor so it doesn't get reused.
-  file_descriptor_ = base::FileDescriptor();
 }
 #endif
 

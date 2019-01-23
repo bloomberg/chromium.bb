@@ -32,8 +32,6 @@ class AwPrintManager : public printing::PrintManager,
 
   bool PrintNow();
 
-  int fd() const { return fd_; }
-
  private:
   friend class content::WebContentsUserData<AwPrintManager>;
   struct FrameDispatchHelper;
@@ -53,6 +51,8 @@ class AwPrintManager : public printing::PrintManager,
   void OnScriptedPrint(content::RenderFrameHost* render_frame_host,
                        const PrintHostMsg_ScriptedPrint_Params& params,
                        IPC::Message* reply_msg);
+  void OnDidPrintDocument(content::RenderFrameHost* render_frame_host,
+                          const PrintHostMsg_DidPrintDocument_Params& params);
 
   printing::PrintSettings settings_;
 

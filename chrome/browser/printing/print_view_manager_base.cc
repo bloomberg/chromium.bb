@@ -443,12 +443,18 @@ void PrintViewManagerBase::OnNotifyPrintJobEvent(
       ShouldQuitFromInnerMessageLoop();
       break;
     }
-    case JobEventDetails::NEW_DOC:
 #if defined(OS_WIN)
     case JobEventDetails::PAGE_DONE:
 #endif
-    case JobEventDetails::DOC_DONE: {
+    case JobEventDetails::NEW_DOC: {
       // Don't care about the actual printing process.
+      break;
+    }
+    case JobEventDetails::DOC_DONE: {
+      // Don't care about the actual printing process, except on Android.
+#if defined(OS_ANDROID)
+      PdfWritingDone(number_pages_);
+#endif
       break;
     }
     case JobEventDetails::JOB_DONE: {
@@ -566,6 +572,9 @@ void PrintViewManagerBase::TerminatePrintJob(bool cancel) {
     // We don't need the metafile data anymore because the printing is canceled.
     print_job_->Cancel();
     quit_inner_loop_.Reset();
+#if defined(OS_ANDROID)
+    PdfWritingDone(0);
+#endif
   } else {
     DCHECK(!quit_inner_loop_);
     DCHECK(!print_job_->document() || print_job_->document()->IsComplete());

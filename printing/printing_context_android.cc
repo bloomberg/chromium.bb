@@ -11,6 +11,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/files/file.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -113,8 +114,10 @@ void PrintingContextAndroid::AskUserForSettingsReply(
   // We use device name variable to store the file descriptor.  This is hacky
   // but necessary. Since device name is not necessary for the upstream
   // printing code for Android, this is harmless.
-  int fd = Java_PrintingContext_getFileDescriptor(env, j_printing_context_);
-  settings_.set_device_name(base::IntToString16(fd));
+  // TODO(thestig): See if the call to set_device_name() can be removed.
+  fd_ = Java_PrintingContext_getFileDescriptor(env, j_printing_context_);
+  DCHECK(is_file_descriptor_valid());
+  settings_.set_device_name(base::IntToString16(fd_));
 
   ScopedJavaLocalRef<jintArray> intArr =
       Java_PrintingContext_getPages(env, j_printing_context_);
@@ -140,6 +143,14 @@ void PrintingContextAndroid::ShowSystemDialogDone(
   DCHECK(callback_);
   // Settings are not updated, callback is called only to unblock javascript.
   std::move(callback_).Run(CANCEL);
+}
+
+void PrintingContextAndroid::PrintDocument(const MetafilePlayer& metafile) {
+  DCHECK(is_file_descriptor_valid());
+
+  base::File file(fd_);
+  metafile.SaveTo(&file);
+  file.TakePlatformFile();
 }
 
 PrintingContext::Result PrintingContextAndroid::UseDefaultSettings() {
