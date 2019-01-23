@@ -140,3 +140,21 @@ if (is_chromeos) {
     }
   }
 }
+
+static_library("image_processor") {
+  testonly = true
+  sources = [
+    "image_processor/image_processor_client.cc",
+    "image_processor/image_processor_client.h",
+    "video_image_info.h",
+  ]
+  deps = [
+    "//media:test_support",
+    "//media/gpu",
+    "//testing/gtest",
+    "//third_party/libyuv",
+  ]
+  data = [
+    "//media/test/data/",
+  ]
+}
