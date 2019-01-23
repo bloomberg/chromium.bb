@@ -102,7 +102,7 @@ id<GREYMatcher> PasswordSettingsMatcher() {
 
 // Returns a matcher for the search bar in password settings.
 id<GREYMatcher> PasswordSettingsSearchMatcher() {
-  return grey_accessibilityID(@"SettingsSearchCellTextField");
+  return grey_accessibilityID(kPasswordsSearchBarId);
 }
 
 // Returns a matcher for the PasswordTableView window.

@@ -31,7 +31,6 @@
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/passwords/save_passwords_consumer.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_search_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/password_details_table_view_controller.h"
@@ -59,20 +58,20 @@
 
 NSString* const kPasswordsTableViewId = @"PasswordsTableViewId";
 NSString* const kPasswordsExportConfirmViewId = @"PasswordsExportConfirmViewId";
+NSString* const kPasswordsSearchBarId = @"PasswordsSearchBar";
+NSString* const kPasswordsScrimViewId = @"PasswordsScrimViewId";
 
 namespace {
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
-  SectionIdentifierSearchPasswordsBox = kSectionIdentifierEnumZero,
-  SectionIdentifierSavePasswordsSwitch,
+  SectionIdentifierSavePasswordsSwitch = kSectionIdentifierEnumZero,
   SectionIdentifierSavedPasswords,
   SectionIdentifierBlacklist,
   SectionIdentifierExportPasswordsButton,
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
-  ItemTypeSearchBox = kItemTypeEnumZero,
-  ItemTypeLinkHeader,
+  ItemTypeLinkHeader = kItemTypeEnumZero,
   ItemTypeHeader,
   ItemTypeSavePasswordsSwitch,
   ItemTypeSavedPassword,  // This is a repeated item type.
@@ -153,6 +152,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     PasswordExporterDelegate,
     PasswordExportActivityViewControllerDelegate,
     SavePasswordsConsumerDelegate,
+    UISearchControllerDelegate,
     UISearchBarDelegate,
     SuccessfulReauthTimeAccessor> {
   // The observable boolean that binds to the password manager setting state.
@@ -201,9 +201,11 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
 // Object handling passwords export operations.
 @property(nonatomic, strong) PasswordExporter* passwordExporter;
-
 // Current passwords search term.
 @property(nonatomic, copy) NSString* searchTerm;
+// The scrim view that covers the table view when search bar is focused with
+// empty search term. Tapping on the scrim view will dismiss the search bar.
+@property(nonatomic, strong) UIControl* scrimView;
 
 @end
 
@@ -246,7 +248,67 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   self.tableView.allowsMultipleSelectionDuringEditing = YES;
   self.tableView.accessibilityIdentifier = kPasswordsTableViewId;
 
+  // SearchController Configuration.
+  // Init the searchController with nil so the results are displayed on the same
+  // TableView.
+  UISearchController* searchController =
+      [[UISearchController alloc] initWithSearchResultsController:nil];
+  searchController.obscuresBackgroundDuringPresentation = NO;
+  searchController.delegate = self;
+  searchController.searchBar.delegate = self;
+  searchController.searchBar.backgroundColor = [UIColor clearColor];
+  searchController.searchBar.accessibilityIdentifier = kPasswordsSearchBarId;
+  // Center search bar and cancel button vertically so it looks centered
+  // in the header when searching.
+  UIOffset offset =
+      UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
+  searchController.searchBar.searchFieldBackgroundPositionAdjustment = offset;
+
+  // UIKit needs to know which controller will be presenting the
+  // searchController. If we don't add this trying to dismiss while
+  // SearchController is active will fail.
+  self.definesPresentationContext = YES;
+
+  // Place the search bar in the navigation bar.
+  self.navigationItem.searchController = searchController;
+  self.navigationItem.hidesSearchBarWhenScrolling = NO;
+
+  self.scrimView = [[UIControl alloc] init];
+  self.scrimView.alpha = 0.0f;
+  self.scrimView.backgroundColor =
+      [UIColor colorWithWhite:0
+                        alpha:kTableViewNavigationWhiteAlphaForSearchScrim];
+  self.scrimView.translatesAutoresizingMaskIntoConstraints = NO;
+  self.scrimView.accessibilityIdentifier = kPasswordsScrimViewId;
+  [self.scrimView addTarget:self
+                     action:@selector(dismissSearchController:)
+           forControlEvents:UIControlEventTouchUpInside];
+
   [self loadModel];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+
+  // Center search bar's cancel button vertically so it looks centered.
+  // We change the cancel button proxy styles, so we will return it to
+  // default in viewDidDisappear.
+  UIOffset offset =
+      UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
+  UIBarButtonItem* cancelButton = [UIBarButtonItem
+      appearanceWhenContainedInInstancesOfClasses:@ [[UISearchBar class]]];
+  [cancelButton setTitlePositionAdjustment:offset
+                             forBarMetrics:UIBarMetricsDefault];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+  [super viewWillDisappear:animated];
+
+  // Restore to default origin offset for cancel button proxy style.
+  UIBarButtonItem* cancelButton = [UIBarButtonItem
+      appearanceWhenContainedInInstancesOfClasses:@ [[UISearchBar class]]];
+  [cancelButton setTitlePositionAdjustment:UIOffsetZero
+                             forBarMetrics:UIBarMetricsDefault];
 }
 
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated {
@@ -254,13 +316,13 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   if (editing) {
     [self setSavePasswordsSwitchItemEnabled:NO];
     [self setExportPasswordsButtonEnabled:NO];
-    [self setSearchPasswordsItemEnabled:NO];
+    [self setSearchBarEnabled:NO];
   } else {
     [self setSavePasswordsSwitchItemEnabled:YES];
     if (exportReady_) {
       [self setExportPasswordsButtonEnabled:YES];
     }
-    [self setSearchPasswordsItemEnabled:YES];
+    [self setSearchBarEnabled:YES];
   }
 }
 
@@ -269,14 +331,6 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 - (void)loadModel {
   [super loadModel];
   TableViewModel* model = self.tableViewModel;
-
-  // Search bar.
-  if (!savedForms_.empty() || !blacklistedForms_.empty()) {
-    SettingsSearchItem* searchItem = [self searchItem];
-    [model addSectionWithIdentifier:SectionIdentifierSearchPasswordsBox];
-    [model setHeader:searchItem
-        forSectionWithIdentifier:SectionIdentifierSearchPasswordsBox];
-  }
 
   // Save passwords switch and manage account message.
   [model addSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
@@ -339,14 +393,6 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 }
 
 #pragma mark - Items
-
-- (SettingsSearchItem*)searchItem {
-  SettingsSearchItem* item =
-      [[SettingsSearchItem alloc] initWithType:ItemTypeSearchBox];
-  item.placeholder =
-      l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_PLACEHOLDER_SEARCH);
-  return item;
-}
 
 - (TableViewLinkHeaderFooterItem*)manageAccountLinkItem {
   TableViewLinkHeaderFooterItem* footerItem =
@@ -450,27 +496,69 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   [self reloadData];
 }
 
-#pragma mark - UISearchBarDelegate
+#pragma mark - UISearchControllerDelegate
 
-// Shows cancel button when editing starts.
-- (void)searchBarTextDidBeginEditing:(UISearchBar*)searchBar {
-  [searchBar setShowsCancelButton:(BOOL)YES animated:(BOOL)YES];
+- (void)willPresentSearchController:(UISearchController*)searchController {
+  [self showScrim];
 }
 
-// Hides cancel button and release focus on search bar.
-- (void)searchBarCancelButtonClicked:(UISearchBar*)searchBar {
-  [searchBar setShowsCancelButton:(BOOL)NO animated:(BOOL)YES];
-  [searchBar resignFirstResponder];
-  searchBar.text = @"";
+- (void)willDismissSearchController:(UISearchController*)searchController {
+  [self hideScrim];
   [self searchForTerm:@""];
 }
 
-// Searches for |searchText|.
+#pragma mark - UISearchBarDelegate
+
 - (void)searchBar:(UISearchBar*)searchBar textDidChange:(NSString*)searchText {
+  if (searchText.length == 0 && self.navigationItem.searchController.active) {
+    [self showScrim];
+  } else {
+    [self hideScrim];
+  }
+
   [self searchForTerm:searchText];
 }
 
 #pragma mark - Private methods
+
+// Dismisses the search controller when there's a touch event on the scrim.
+- (void)dismissSearchController:(UIControl*)sender {
+  if (self.navigationItem.searchController.active) {
+    self.navigationItem.searchController.active = NO;
+  }
+}
+
+// Shows scrim overlay and hide toolbar.
+- (void)showScrim {
+  if (self.scrimView.alpha < 1.0f) {
+    self.scrimView.alpha = 0.0f;
+    [self.tableView addSubview:self.scrimView];
+    // We attach our constraints to the superview because the tableView is
+    // a scrollView and it seems that we get an empty frame when attaching to
+    // it.
+    AddSameConstraints(self.scrimView, self.view.superview);
+    self.tableView.scrollEnabled = NO;
+    [UIView animateWithDuration:kTableViewNavigationScrimFadeDuration
+                     animations:^{
+                       self.scrimView.alpha = 1.0f;
+                       [self.view layoutIfNeeded];
+                     }];
+  }
+}
+
+// Hides scrim and restore toolbar.
+- (void)hideScrim {
+  if (self.scrimView.alpha > 0.0f) {
+    [UIView animateWithDuration:kTableViewNavigationScrimFadeDuration
+        animations:^{
+          self.scrimView.alpha = 0.0f;
+        }
+        completion:^(BOOL finished) {
+          [self.scrimView removeFromSuperview];
+          self.tableView.scrollEnabled = YES;
+        }];
+  }
+}
 
 - (void)searchForTerm:(NSString*)searchTerm {
   self.searchTerm = searchTerm;
@@ -708,10 +796,6 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
                                ifEmpty:strongSelf->blacklistedForms_.empty()];
         [strongSelf clearSectionWithIdentifier:SectionIdentifierSavedPasswords
                                        ifEmpty:strongSelf->savedForms_.empty()];
-        [strongSelf
-            clearSectionWithIdentifier:SectionIdentifierSearchPasswordsBox
-                               ifEmpty:strongSelf->savedForms_.empty() &&
-                                       strongSelf->blacklistedForms_.empty()];
       }
       completion:^(BOOL finished) {
         PasswordsTableViewController* strongSelf = weakSelf;
@@ -743,7 +827,6 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     case ItemTypeLinkHeader:
     case ItemTypeHeader:
     case ItemTypeSavePasswordsSwitch:
-    case ItemTypeSearchBox:
       break;
     case ItemTypeSavedPassword: {
       DCHECK_EQ(SectionIdentifierSavedPasswords,
@@ -780,12 +863,6 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     viewForHeaderInSection:(NSInteger)section {
   UIView* view = [super tableView:tableView viewForHeaderInSection:section];
   switch ([self.tableViewModel sectionIdentifierForSection:section]) {
-    case SectionIdentifierSearchPasswordsBox: {
-      SettingsSearchView* searchView =
-          base::mac::ObjCCastStrict<SettingsSearchView>(view);
-      searchView.searchBar.delegate = self;
-      break;
-    }
     case SectionIdentifierSavePasswordsSwitch: {
       TableViewLinkHeaderFooterView* linkView =
           base::mac::ObjCCastStrict<TableViewLinkHeaderFooterView>(view);
@@ -796,19 +873,6 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
       break;
   }
   return view;
-}
-
-// TODO(crbug.com/894791): Remove this after migrating to UISearchController.
-- (CGFloat)tableView:(UITableView*)tableView
-    heightForFooterInSection:(NSInteger)section {
-  // Currently password search box is a header of an empty section. This code
-  // removes the footer with estimate height within the section to avoid a big
-  // gap between search box and next section.
-  if ([self.tableViewModel sectionIdentifierForSection:section] ==
-      SectionIdentifierSearchPasswordsBox) {
-    return 0;
-  }
-  return UITableViewAutomaticDimension;
 }
 
 #pragma mark - UITableViewDataSource
@@ -1023,32 +1087,15 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   [self reconfigureCellsForItems:@[ savePasswordsItem_ ]];
 }
 
-// Sets the search passwords item's enabled status to |enabled| and
-// reconfigures the corresponding cell.
-- (void)setSearchPasswordsItemEnabled:(BOOL)enabled {
-  TableViewModel* model = self.tableViewModel;
-
-  if (![model
-          hasSectionForSectionIdentifier:SectionIdentifierSearchPasswordsBox]) {
-    return;
-  }
-  SettingsSearchItem* searchItem =
-      base::mac::ObjCCastStrict<SettingsSearchItem>([model
-          headerForSectionWithIdentifier:SectionIdentifierSearchPasswordsBox]);
-  [searchItem setEnabled:enabled];
-
-  NSUInteger section =
-      [model sectionForSectionIdentifier:SectionIdentifierSearchPasswordsBox];
-  SettingsSearchView* view = base::mac::ObjCCastStrict<SettingsSearchView>(
-      [self.tableView headerViewForSection:section]);
-
-  // |view| may be nil if the row is not currently on screen. If that's the case
-  // and we are disabling we force the keyboard down (since the view can't  do
-  // it for us).
-  if (view) {
-    [searchItem configureHeaderFooterView:view withStyler:self.styler];
-  } else if (!enabled) {
-    [self.view endEditing:YES];
+// Enables/disables search bar.
+- (void)setSearchBarEnabled:(BOOL)enabled {
+  if (enabled) {
+    self.navigationItem.searchController.searchBar.userInteractionEnabled = YES;
+    self.navigationItem.searchController.searchBar.alpha = 1.0;
+  } else {
+    self.navigationItem.searchController.searchBar.userInteractionEnabled = NO;
+    self.navigationItem.searchController.searchBar.alpha =
+        kTableViewNavigationAlphaForDisabledSearchBar;
   }
 }
 
