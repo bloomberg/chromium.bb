@@ -2468,6 +2468,33 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, ManagedSessionsDisabled) {
           broker));
 }
 
+IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, ManagedSessionsEnabledNonRisky) {
+  SetManagedSessionsEnabled(/* managed_sessions_enabled */ true);
+
+  // Install and refresh the device policy now. This will also fetch the initial
+  // user policy for the device-local account now.
+  UploadAndInstallDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(kAccountId1);
+  WaitForPolicy();
+
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(account_id_1_);
+  ASSERT_TRUE(user);
+  auto* broker = GetDeviceLocalAccountPolicyBroker();
+  ASSERT_TRUE(broker);
+
+  // Check that managed sessions mode is enabled.
+  ASSERT_TRUE(
+      chromeos::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(
+          *user));
+
+  // Check that management disclosure warning is not shown when managed sessions
+  // are enabled, but policy settings are not risky.
+  ASSERT_FALSE(
+      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
+          broker));
+}
+
 IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, ForceInstalledExtension) {
   SetManagedSessionsEnabled(/* managed_sessions_enabled */ true);
   StartTestExtensionsServer();
@@ -2553,6 +2580,71 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, NetworkCertificate) {
   // Check that network certificate pushed via policy activates managed sessions
   // mode.
   EXPECT_TRUE(
+      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
+          broker));
+}
+
+IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, AllowCrossOriginAuthPrompt) {
+  SetManagedSessionsEnabled(/* managed_sessions_enabled */ true);
+
+  device_local_account_policy_.payload()
+      .mutable_allowcrossoriginauthprompt()
+      ->set_value(true);
+
+  // Install and refresh the device policy now. This will also fetch the initial
+  // user policy for the device-local account now.
+  UploadAndInstallDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(kAccountId1);
+  WaitForPolicy();
+
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(account_id_1_);
+  ASSERT_TRUE(user);
+  auto* broker = GetDeviceLocalAccountPolicyBroker();
+  ASSERT_TRUE(broker);
+
+  // Check that 'DeviceLocalAccountManagedSessionEnabled' policy was applied
+  // correctly.
+  ASSERT_TRUE(
+      chromeos::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(
+          *user));
+
+  // Check that setting a value to 'AllowCrossOriginAuthPrompt' activates
+  // managed sessions mode.
+  ASSERT_TRUE(
+      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
+          broker));
+}
+
+IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, PacHttpsUrlStrippingEnabled) {
+  SetManagedSessionsEnabled(/* managed_sessions_enabled */ true);
+
+  device_local_account_policy_.payload()
+      .mutable_pachttpsurlstrippingenabled()
+      ->set_value(false);
+
+  // Install and refresh the device policy now. This will also fetch the initial
+  // user policy for the device-local account now.
+  UploadAndInstallDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(kAccountId1);
+  AddNetworkCertificateToDevicePolicy();
+  WaitForPolicy();
+
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(account_id_1_);
+  ASSERT_TRUE(user);
+  auto* broker = GetDeviceLocalAccountPolicyBroker();
+  ASSERT_TRUE(broker);
+
+  // Check that 'DeviceLocalAccountManagedSessionEnabled' policy was applied
+  // correctly.
+  ASSERT_TRUE(
+      chromeos::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(
+          *user));
+
+  // Check that disabling 'PacHttpsUrlStrippingEnabled' activates managed
+  // sessions mode.
+  ASSERT_TRUE(
       chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
           broker));
 }
