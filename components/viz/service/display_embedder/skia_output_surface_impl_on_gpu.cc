@@ -687,7 +687,7 @@ bool SkiaOutputSurfaceImplOnGpu::MakeCurrent() {
       context_lost_callback_.Run();
       return false;
     }
-    context_state_->need_context_state_reset = true;
+    context_state_->set_need_context_state_reset(true);
   }
   return true;
 }

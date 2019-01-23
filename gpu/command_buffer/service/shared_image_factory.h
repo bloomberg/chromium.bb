@@ -20,6 +20,7 @@
 #include "ui/gl/gl_bindings.h"
 
 namespace gpu {
+class SharedContextState;
 class GpuDriverBugWorkarounds;
 class ImageFactory;
 class MailboxManager;
@@ -30,7 +31,6 @@ class MemoryTracker;
 
 namespace raster {
 class WrappedSkImageFactory;
-struct RasterDecoderContextState;
 }  // namespace raster
 
 // TODO(ericrk): Make this a very thin wrapper around SharedImageManager like
@@ -40,7 +40,7 @@ class GPU_GLES2_EXPORT SharedImageFactory {
   SharedImageFactory(const GpuPreferences& gpu_preferences,
                      const GpuDriverBugWorkarounds& workarounds,
                      const GpuFeatureInfo& gpu_feature_info,
-                     raster::RasterDecoderContextState* context_state,
+                     SharedContextState* context_state,
                      MailboxManager* mailbox_manager,
                      SharedImageManager* manager,
                      ImageFactory* image_factory,

@@ -148,7 +148,7 @@ TEST_P(RasterDecoderTest, BeginEndQueryEXTCommandsIssuedCHROMIUM) {
 }
 
 TEST_P(RasterDecoderTest, CopyTexSubImage2DTwiceClearsUnclearedTexture) {
-  raster_decoder_context_state_->need_context_state_reset = true;
+  shared_context_state_->set_need_context_state_reset(true);
   // Create uninitialized source texture.
   gpu::Mailbox source_texture_mailbox =
       CreateFakeTexture(kNewServiceId, viz::ResourceFormat::RGBA_8888,
@@ -239,7 +239,7 @@ class RasterDecoderOOPTest : public testing::Test, DecoderClient {
     auto feature_info =
         base::MakeRefCounted<gles2::FeatureInfo>(workarounds, gpu_feature_info);
 
-    context_state_ = new raster::RasterDecoderContextState(
+    context_state_ = base::MakeRefCounted<SharedContextState>(
         std::move(share_group), std::move(surface), std::move(context),
         false /* use_virtualized_gl_contexts */, base::DoNothing());
     context_state_->InitializeGrContext(workarounds, nullptr);
@@ -296,7 +296,7 @@ class RasterDecoderOOPTest : public testing::Test, DecoderClient {
  protected:
   gles2::TraceOutputter outputter_;
   FakeCommandBufferServiceBase command_buffer_service_;
-  scoped_refptr<RasterDecoderContextState> context_state_;
+  scoped_refptr<SharedContextState> context_state_;
 
   GpuPreferences gpu_preferences_;
   gles2::MailboxManagerImpl mailbox_manager_;
@@ -311,26 +311,26 @@ class RasterDecoderOOPTest : public testing::Test, DecoderClient {
 TEST_F(RasterDecoderOOPTest, StateRestoreAcrossDecoders) {
   // First decoder receives a skia command requiring context state reset.
   auto decoder1 = CreateDecoder();
-  EXPECT_FALSE(context_state_->need_context_state_reset);
+  EXPECT_FALSE(context_state_->need_context_state_reset());
   decoder1->SetUpForRasterCHROMIUMForTest();
   cmds::EndRasterCHROMIUM end_raster_cmd;
   end_raster_cmd.Init();
   EXPECT_FALSE(error::IsError(ExecuteCmd(decoder1.get(), end_raster_cmd)));
-  EXPECT_TRUE(context_state_->need_context_state_reset);
+  EXPECT_TRUE(context_state_->need_context_state_reset());
 
   // Another decoder receives a command which does not require consistent state,
   // it should be processed without state restoration.
   auto decoder2 = CreateDecoder();
   decoder2->SetUpForRasterCHROMIUMForTest();
   EXPECT_FALSE(error::IsError(ExecuteCmd(decoder2.get(), end_raster_cmd)));
-  EXPECT_TRUE(context_state_->need_context_state_reset);
+  EXPECT_TRUE(context_state_->need_context_state_reset());
 
   decoder1->Destroy(true);
   context_state_->MakeCurrent(nullptr);
   decoder2->Destroy(true);
 
   // Make sure the context is preserved across decoders.
-  EXPECT_FALSE(context_state_->gr_context->abandoned());
+  EXPECT_FALSE(context_state_->gr_context()->abandoned());
 }
 
 }  // namespace raster

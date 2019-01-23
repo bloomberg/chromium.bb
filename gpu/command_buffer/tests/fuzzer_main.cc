@@ -368,8 +368,8 @@ class CommandBufferSetup {
 
 #if defined(GPU_FUZZER_USE_RASTER_DECODER)
     CHECK(feature_info->feature_flags().chromium_raster_transport);
-    scoped_refptr<raster::RasterDecoderContextState> context_state =
-        new raster::RasterDecoderContextState(
+    scoped_refptr<SharedContextState> context_state =
+        base::MakeRefCounted<SharedContextState>(
             share_group_, surface_, context_,
             config_.workarounds.use_virtualized_gl_contexts, base::DoNothing());
     context_state->InitializeGrContext(config_.workarounds, nullptr);

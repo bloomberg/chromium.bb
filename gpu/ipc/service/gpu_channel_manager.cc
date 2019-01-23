@@ -312,10 +312,10 @@ void GpuChannelManager::OnBackgroundCleanup() {
   if (program_cache_)
     program_cache_->Trim(0u);
 
-  if (raster_decoder_context_state_) {
+  if (shared_context_state_) {
     gr_cache_controller_.reset();
-    raster_decoder_context_state_->MarkContextLost();
-    raster_decoder_context_state_.reset();
+    shared_context_state_->MarkContextLost();
+    shared_context_state_.reset();
   }
 
   SkGraphics::PurgeAllCaches();
@@ -323,8 +323,8 @@ void GpuChannelManager::OnBackgroundCleanup() {
 #endif
 
 void GpuChannelManager::OnApplicationBackgrounded() {
-  if (raster_decoder_context_state_) {
-    raster_decoder_context_state_->PurgeMemory(
+  if (shared_context_state_) {
+    shared_context_state_->PurgeMemory(
         base::MemoryPressureListener::MemoryPressureLevel::
             MEMORY_PRESSURE_LEVEL_CRITICAL);
   }
@@ -339,18 +339,17 @@ void GpuChannelManager::HandleMemoryPressure(
     program_cache_->HandleMemoryPressure(memory_pressure_level);
   discardable_manager_.HandleMemoryPressure(memory_pressure_level);
   passthrough_discardable_manager_.HandleMemoryPressure(memory_pressure_level);
-  if (raster_decoder_context_state_)
-    raster_decoder_context_state_->PurgeMemory(memory_pressure_level);
+  if (shared_context_state_)
+    shared_context_state_->PurgeMemory(memory_pressure_level);
   if (gr_shader_cache_)
     gr_shader_cache_->PurgeMemory(memory_pressure_level);
 }
 
-scoped_refptr<raster::RasterDecoderContextState>
-GpuChannelManager::GetRasterDecoderContextState(ContextResult* result) {
-  if (raster_decoder_context_state_ &&
-      !raster_decoder_context_state_->context_lost()) {
+scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
+    ContextResult* result) {
+  if (shared_context_state_ && !shared_context_state_->context_lost()) {
     *result = ContextResult::kSuccess;
-    return raster_decoder_context_state_;
+    return shared_context_state_;
   }
 
   scoped_refptr<gl::GLSurface> surface = default_offscreen_surface();
@@ -418,7 +417,7 @@ GpuChannelManager::GetRasterDecoderContextState(ContextResult* result) {
   }
 
   // TODO(penghuang): https://crbug.com/899735 Handle device lost for Vulkan.
-  raster_decoder_context_state_ = new raster::RasterDecoderContextState(
+  shared_context_state_ = base::MakeRefCounted<SharedContextState>(
       std::move(share_group), std::move(surface), std::move(context),
       use_virtualized_gl_contexts,
       base::BindOnce(&GpuChannelManager::OnContextLost, base::Unretained(this),
@@ -437,22 +436,21 @@ GpuChannelManager::GetRasterDecoderContextState(ContextResult* result) {
     if (!vulkan_context_provider_) {
       auto feature_info = base::MakeRefCounted<gles2::FeatureInfo>(
           gpu_driver_bug_workarounds(), gpu_feature_info());
-      if (!raster_decoder_context_state_->InitializeGL(gpu_preferences_,
-                                                       feature_info.get())) {
-        raster_decoder_context_state_ = nullptr;
+      if (!shared_context_state_->InitializeGL(gpu_preferences_,
+                                               feature_info.get())) {
+        shared_context_state_ = nullptr;
         return nullptr;
       }
     }
-    raster_decoder_context_state_->InitializeGrContext(
-        gpu_driver_bug_workarounds_, gr_shader_cache(), &activity_flags_,
-        watchdog_);
+    shared_context_state_->InitializeGrContext(gpu_driver_bug_workarounds_,
+                                               gr_shader_cache(),
+                                               &activity_flags_, watchdog_);
   }
 
-  gr_cache_controller_.emplace(raster_decoder_context_state_.get(),
-                               task_runner_);
+  gr_cache_controller_.emplace(shared_context_state_.get(), task_runner_);
 
   *result = ContextResult::kSuccess;
-  return raster_decoder_context_state_;
+  return shared_context_state_;
 }
 
 void GpuChannelManager::OnContextLost(bool synthetic_loss) {
@@ -463,8 +461,8 @@ void GpuChannelManager::OnContextLost(bool synthetic_loss) {
   // Lose all other contexts.
   if (!synthetic_loss &&
       (gl::GLContext::LosesAllContextsOnContextLost() ||
-       (raster_decoder_context_state_ &&
-        raster_decoder_context_state_->use_virtualized_gl_contexts)))
+       (shared_context_state_ &&
+        shared_context_state_->use_virtualized_gl_contexts())))
     LoseAllContexts();
 }
 

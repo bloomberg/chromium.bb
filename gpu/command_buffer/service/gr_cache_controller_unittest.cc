@@ -36,8 +36,8 @@ class GrCacheControllerTest : public testing::Test {
         share_group.get(), surface.get(), gl::GLContextAttribs());
     ASSERT_TRUE(context->MakeCurrent(surface.get()));
 
-    task_runner_ = new base::TestMockTimeTaskRunner();
-    context_state_ = new raster::RasterDecoderContextState(
+    task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+    context_state_ = base::MakeRefCounted<SharedContextState>(
         std::move(share_group), std::move(surface), std::move(context),
         false /* use_virtualized_gl_contexts */, base::DoNothing());
     context_state_->InitializeGrContext(workarounds, nullptr);
@@ -56,10 +56,10 @@ class GrCacheControllerTest : public testing::Test {
     gl::init::ShutdownGL(false);
   }
 
-  GrContext* gr_context() { return context_state_->gr_context; }
+  GrContext* gr_context() { return context_state_->gr_context(); }
 
  protected:
-  scoped_refptr<RasterDecoderContextState> context_state_;
+  scoped_refptr<SharedContextState> context_state_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   std::unique_ptr<GrCacheController> controller_;
 };

@@ -48,7 +48,7 @@ SharedImageFactory::SharedImageFactory(
     const GpuPreferences& gpu_preferences,
     const GpuDriverBugWorkarounds& workarounds,
     const GpuFeatureInfo& gpu_feature_info,
-    raster::RasterDecoderContextState* context_state,
+    SharedContextState* context_state,
     MailboxManager* mailbox_manager,
     SharedImageManager* shared_image_manager,
     ImageFactory* image_factory,
@@ -56,7 +56,7 @@ SharedImageFactory::SharedImageFactory(
     : mailbox_manager_(mailbox_manager),
       shared_image_manager_(shared_image_manager),
       memory_tracker_(std::make_unique<MemoryTypeTracker>(memory_tracker)),
-      using_vulkan_(context_state && context_state->use_vulkan_gr_context),
+      using_vulkan_(context_state && context_state->use_vulkan_gr_context()),
       backing_factory_(
           std::make_unique<SharedImageBackingFactoryGLTexture>(gpu_preferences,
                                                                workarounds,

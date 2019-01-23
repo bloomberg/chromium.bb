@@ -158,7 +158,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   void GetVideoMemoryUsageStats(
       VideoMemoryUsageStats* video_memory_usage_stats) const;
 
-  scoped_refptr<raster::RasterDecoderContextState> GetRasterDecoderContextState(
+  scoped_refptr<SharedContextState> GetSharedContextState(
       ContextResult* result);
   void ScheduleGrContextCleanup();
   raster::GrShaderCache* gr_shader_cache() {
@@ -234,20 +234,19 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
 
   base::MemoryPressureListener memory_pressure_listener_;
 
-  // The RasterDecoderContextState is shared across all RasterDecoders. Note
+  // The SharedContextState is shared across all RasterDecoders. Note
   // that this class needs to be ref-counted to conveniently manage the lifetime
   // of the shared context in the case of a context loss. While the
   // GpuChannelManager strictly outlives the RasterDecoders, in the event of a
   // context loss the clients need to re-create the GpuChannel and command
   // buffers once notified. In this interim state we can have multiple instances
-  // of the RasterDecoderContextState, for the lost and recovered clients. In
+  // of the SharedContextState, for the lost and recovered clients. In
   // order to avoid having the GpuChannelManager keep the lost context state
   // alive until all clients have recovered, we use a ref-counted object and
   // allow the decoders to manage its lifetime.
   base::Optional<raster::GrShaderCache> gr_shader_cache_;
   base::Optional<raster::GrCacheController> gr_cache_controller_;
-  scoped_refptr<raster::RasterDecoderContextState>
-      raster_decoder_context_state_;
+  scoped_refptr<SharedContextState> shared_context_state_;
 
   // With --enable-vulkan, the vulkan_context_provider_ will be set from
   // viz::GpuServiceImpl. The raster decoders will use it for rasterization.

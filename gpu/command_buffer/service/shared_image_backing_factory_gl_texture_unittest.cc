@@ -59,7 +59,7 @@ class SharedImageBackingFactoryGLTextureTestBase
     scoped_refptr<gl::GLShareGroup> share_group = new gl::GLShareGroup();
     auto feature_info =
         base::MakeRefCounted<gles2::FeatureInfo>(workarounds, GpuFeatureInfo());
-    context_state_ = base::MakeRefCounted<raster::RasterDecoderContextState>(
+    context_state_ = base::MakeRefCounted<SharedContextState>(
         std::move(share_group), surface_, context_,
         false /* use_virtualized_gl_contexts */, base::DoNothing());
     context_state_->InitializeGrContext(workarounds, nullptr);
@@ -81,12 +81,12 @@ class SharedImageBackingFactoryGLTextureTestBase
 
   bool supports_etc1() { return supports_etc1_; }
 
-  GrContext* gr_context() { return context_state_->gr_context; }
+  GrContext* gr_context() { return context_state_->gr_context(); }
 
  protected:
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
-  scoped_refptr<raster::RasterDecoderContextState> context_state_;
+  scoped_refptr<SharedContextState> context_state_;
   std::unique_ptr<SharedImageBackingFactoryGLTexture> backing_factory_;
   gles2::MailboxManagerImpl mailbox_manager_;
   SharedImageManager shared_image_manager_;
