@@ -343,7 +343,7 @@ offline_pages::AutoFetchPageLoadWatcher::CreateForWebContents(web_contents);
   SupervisedUserNavigationObserver::CreateForWebContents(web_contents);
 #endif
 
-#if BUILDFLAG(ENABLE_PRINTING) && !defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_PRINTING)
   printing::InitializePrinting(web_contents);
 #endif
 

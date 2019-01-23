@@ -642,7 +642,6 @@ bool TabAndroid::Print(JNIEnv* env,
   content::WebContents* contents =
       content::WebContents::FromRenderFrameHost(rfh);
 
-  printing::PrintViewManagerBasic::CreateForWebContents(contents);
   printing::PrintViewManagerBasic* print_view_manager =
       printing::PrintViewManagerBasic::FromWebContents(contents);
   return print_view_manager && print_view_manager->PrintNow(rfh);

@@ -10,6 +10,7 @@
 #include "content/public/browser/bluetooth_chooser.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "printing/buildflags/buildflags.h"
 
 class FindNotificationDetails;
 
@@ -95,6 +96,14 @@ class TabWebContentsDelegateAndroid
       std::unique_ptr<content::WebContents> new_contents,
       bool did_start_load,
       bool did_finish_load) override;
+
+#if BUILDFLAG(ENABLE_PRINTING)
+  void PrintCrossProcessSubframe(
+      content::WebContents* web_contents,
+      const gfx::Rect& rect,
+      int document_cookie,
+      content::RenderFrameHost* subframe_host) const override;
+#endif
 
  private:
   // NotificationObserver implementation.
