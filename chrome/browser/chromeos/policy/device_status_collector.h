@@ -45,6 +45,10 @@ namespace cryptohome {
 struct TpmStatusInfo;
 }
 
+namespace power_manager {
+class PowerSupplyProperties;
+}
+
 namespace user_manager {
 class User;
 }
@@ -154,7 +158,6 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
   using StatusCallback = base::Callback<void(
       std::unique_ptr<enterprise_management::DeviceStatusReportRequest>,
       std::unique_ptr<enterprise_management::SessionStatusReportRequest>)>;
-
   // Constructor. Callers can inject their own *Fetcher callbacks, e.g. for unit
   // testing. A null callback can be passed for any *Fetcher parameter, to use
   // the default implementation. These callbacks are always executed on Blocking
@@ -208,6 +211,9 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
   base::TimeDelta GetActiveChildScreenTime();
 
  protected:
+  using PowerStatusCallback = base::OnceCallback<void(
+      const power_manager::PowerSupplyProperties& prop)>;
+
   // Check whether the user has been idle for a certain period of time.
   virtual void CheckIdleState();
 
@@ -241,6 +247,9 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
   // power_manager::PowerManagerClient::Observer:
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
+  // power_manager::PowerManagerClient::Observer:
+  void PowerChanged(const power_manager::PowerSupplyProperties& prop) override;
+
   // The timeout in the past to store device activity.
   // This is kept in case device status uploads fail for a number of days.
   base::TimeDelta max_stored_past_activity_interval_;
@@ -255,6 +264,12 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
 
  private:
   class ActivityStorage;
+
+  // Callbacks used during sampling data collection, that allows to pass
+  // additional data using partial function application.
+  using SamplingProbeResultCallback =
+      base::OnceCallback<void(base::Optional<runtime_probe::ProbeResult>)>;
+  using SamplingCallback = base::OnceCallback<void()>;
 
   // Clears the cached hardware resource usage.
   void ClearCachedResourceUsage();
@@ -311,9 +326,19 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
   void ReceiveCPUStatistics(const base::Time& timestamp,
                             const std::string& statistics);
 
-  // Callback for RuntimeProbe that samples probe live data.
-  void SampleProbeData(const base::Time& timestamp,
+  // Callback for RuntimeProbe that samples probe live data. |callback| will be
+  // called once all sampling is finished.
+  void SampleProbeData(std::unique_ptr<SampledData> sample,
+                       SamplingProbeResultCallback callback,
                        base::Optional<runtime_probe::ProbeResult> result);
+  // Callback triggered from PowerManagedClient that samples battery discharge
+  // rate. |callback| will be called once all sampling is finished.
+  void SampleDischargeRate(std::unique_ptr<SampledData> sample,
+                           SamplingCallback callback,
+                           const power_manager::PowerSupplyProperties& prop);
+  // Final sampling step that records data sample, invokes |callback|.
+  void AddDataSample(std::unique_ptr<SampledData> sample,
+                     SamplingCallback callback);
 
   // ProbeDataReceiver interface implementation, fetches data from
   // RuntimeProbe passes it to |callback| via OnProbeDataFetched().
@@ -397,6 +422,8 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
   TpmStatusFetcher tpm_status_fetcher_;
 
   ProbeDataFetcher probe_data_fetcher_;
+
+  PowerStatusCallback power_status_callback_;
 
   chromeos::system::StatisticsProvider* const statistics_provider_;
 
