@@ -8,10 +8,14 @@
   <template>
     <style>
       :host {
+        --cr-radio-button-checked-color: var(--google-blue-600);
+        --cr-radio-button-checked-ripple-color:
+            rgba(var(--google-blue-600-rgb), .2);
         --cr-radio-button-ink-size: 40px;
         --cr-radio-button-size: 16px;
         --cr-radio-button-unchecked-color: var(--google-grey-refresh-700);
-        --cr-radio-button-checked-color: var(--google-blue-600);
+        --cr-radio-button-unchecked-ripple-color:
+            rgba(var(--google-grey-600-rgb), .15);
 
         --ink-to-circle: calc((var(--cr-radio-button-ink-size) -
                                var(--cr-radio-button-size)) / 2);
@@ -19,6 +23,15 @@
         display: flex;
         flex-shrink: 0;
         outline: none;
+      }
+
+      :host-context([dark]) {
+        --cr-radio-button-checked-color: var(--google-blue-refresh-300);
+        --cr-radio-button-checked-ripple-color:
+            rgba(var(--google-blue-refresh-300-rgb), .4);
+        --cr-radio-button-unchecked-color: var(--google-grey-refresh-500);
+        --cr-radio-button-unchecked-ripple-color:
+            rgba(var(--google-grey-refresh-300-rgb), .4);
       }
 
       :host([disabled]) {
@@ -87,8 +100,8 @@
       }
 
       paper-ripple {
-        --paper-ripple-opacity: 0.15;
-        color: var(--google-grey-600);
+        --paper-ripple-opacity: 1;  /* Opacity in each color's alpha. */
+        color: var(--cr-radio-button-unchecked-ripple-color);
         height: var(--cr-radio-button-ink-size);
         left: calc(-1 * var(--ink-to-circle));
         pointer-events: none;
@@ -104,8 +117,7 @@
       }
 
       :host([checked]) paper-ripple {
-        --paper-ripple-opacity: 0.2;
-        color: var(--google-blue-600);
+        color: var(--cr-radio-button-checked-ripple-color);
       }
     </style>
   </template>
