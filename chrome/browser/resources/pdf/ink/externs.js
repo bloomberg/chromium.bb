@@ -24,6 +24,9 @@ ink.proto.MutationPacket = function() {};
 ink.proto.SetCallbackFlags = function() {};
 
 /** @constructor */
+ink.proto.ToolEvent = function() {};
+
+/** @constructor */
 ink.Box = function() {};
 
 /** @constructor */
