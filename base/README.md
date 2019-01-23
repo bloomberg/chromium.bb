@@ -32,6 +32,16 @@ under components/ instead.
 Owners are added when a contributor has shown the above qualifications and
 when they express interest. There isn't an upper bound on the number of OWNERS.
 
+## Design and naming
+  * Be sure to use the base namespace.
+  * STL-like constructs should adhere as closely to STL as possible. Functions
+    and behaviors not present in STL should only be added when they are related
+    to the specific data structure implemented by the container.
+  * For STL-like constructs our policy is that they should use STL-like naming
+    even when it may conflict with the style guide. So functions and class names
+    should be lower case with underscores. Non-STL-like classes and functions
+    should use Google naming.
+
 ## Performance testing
 
 Since the primitives provided by //base are used very widely, it is important to
