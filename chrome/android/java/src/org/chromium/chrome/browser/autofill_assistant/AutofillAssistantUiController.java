@@ -11,7 +11,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
-import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetails;
 import org.chromium.chrome.browser.autofill_assistant.payment.AutofillAssistantPaymentRequest.SelectedPaymentInformation;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -165,25 +164,6 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
 
     @CalledByNative
-    private void onSetChips(int[] types, String[] texts) {
-        assert types.length == texts.length;
-        List<AssistantChip> chips = new ArrayList<>();
-        for (int i = 0; i < types.length; i++) {
-            int index = i;
-            chips.add(new AssistantChip(types[i], texts[i], () -> {
-                mCoordinator.getCarouselCoordinator().clearChips();
-                safeNativeOnChipSelected(index);
-            }));
-        }
-        mCoordinator.getCarouselCoordinator().setChips(chips);
-    }
-
-    @CalledByNative
-    private void onClearChips() {
-        mCoordinator.getCarouselCoordinator().clearChips();
-    }
-
-    @CalledByNative
     private void onRequestPaymentInformation(String defaultEmail, boolean requestShipping,
             boolean requestPayerName, boolean requestPayerPhone, boolean requestPayerEmail,
             int shippingType, String title, String[] supportedBasicCardNetworks) {
@@ -283,11 +263,6 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
             nativeOnUserInteractionInsideTouchableArea(mNativeUiController);
     }
     private native void nativeOnUserInteractionInsideTouchableArea(long nativeUiControllerAndroid);
-
-    void safeNativeOnChipSelected(int index) {
-        if (mNativeUiController != 0) nativeOnChipSelected(mNativeUiController, index);
-    }
-    private native void nativeOnChipSelected(long nativeUiControllerAndroid, int index);
 
     void safeNativeOnGetPaymentInformation(boolean succeed,
             @Nullable PersonalDataManager.CreditCard card,

@@ -79,8 +79,8 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
                 mAssistantView, mActivity.getResources().getDisplayMetrics());
         mHeaderCoordinator = new AssistantHeaderCoordinator(
                 mActivity, mBottomBarCoordinator.getView(), mModel.getHeaderModel());
-        mCarouselCoordinator = new AssistantCarouselCoordinator(
-                mActivity, mBottomBarCoordinator::onChildVisibilityChanged);
+        mCarouselCoordinator = new AssistantCarouselCoordinator(mActivity,
+                mModel.getCarouselModel(), mBottomBarCoordinator::onChildVisibilityChanged);
         mDetailsCoordinator = new AssistantDetailsCoordinator(
                 mActivity, mBottomBarCoordinator::onChildVisibilityChanged);
         mPaymentRequestCoordinator = new AssistantPaymentRequestCoordinator(
@@ -115,6 +115,7 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
      * visible will still be shown for a few seconds before shutting down. Optionally replace
      * the status message with a generic error message iff {@code showGiveUpMessage} is true.
      */
+    // TODO(crbug.com/806868): Move this method to native.
     public void gracefulShutdown(boolean showGiveUpMessage) {
         mIsShuttingDownGracefully = true;
 
@@ -125,7 +126,7 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
         mOverlayCoordinator.hide();
         mDetailsCoordinator.setVisible(false);
         mPaymentRequestCoordinator.setVisible(false);
-        mCarouselCoordinator.setVisible(false);
+        mModel.getCarouselModel().clearChips();
 
         if (showGiveUpMessage) {
             mHeaderCoordinator.setStatusMessage(

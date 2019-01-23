@@ -32,6 +32,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/google_api_keys.h"
+#include "jni/AssistantCarouselModel_jni.h"
 #include "jni/AssistantHeaderModel_jni.h"
 #include "jni/AssistantModel_jni.h"
 #include "jni/AutofillAssistantUiController_jni.h"
@@ -50,6 +51,7 @@ UiControllerAndroid::UiControllerAndroid(content::WebContents* web_contents,
     : client_(client),
       ui_delegate_(ui_delegate),
       header_delegate_(this),
+      carousel_delegate_(this),
       weak_ptr_factory_(this) {
   DCHECK(web_contents);
   DCHECK(client);
@@ -140,6 +142,48 @@ std::string UiControllerAndroid::GetDebugContext() {
   return ui_delegate_->GetDebugContext();
 }
 
+// Carousel related methods.
+
+base::android::ScopedJavaLocalRef<jobject>
+UiControllerAndroid::GetCarouselModel() {
+  return Java_AssistantModel_getCarouselModel(AttachCurrentThread(),
+                                              GetModel());
+}
+
+void UiControllerAndroid::SetChips(std::unique_ptr<std::vector<Chip>> chips) {
+  DCHECK(chips);
+  current_chips_ = std::move(chips);
+
+  int types[current_chips_->size()];
+  std::vector<std::string> texts;
+  int i = 0;
+  for (const auto& chip : *current_chips_) {
+    types[i++] = chip.type;
+    texts.emplace_back(chip.text);
+  }
+
+  JNIEnv* env = AttachCurrentThread();
+  Java_AssistantCarouselModel_setChips(
+      env, GetCarouselModel(),
+      base::android::ToJavaIntArray(env, types, current_chips_->size()),
+      base::android::ToJavaArrayOfStrings(env, texts),
+      carousel_delegate_.GetJavaObject());
+}
+
+void UiControllerAndroid::ClearChips() {
+  current_chips_.reset();
+  Java_AssistantCarouselModel_clearChips(AttachCurrentThread(),
+                                         GetCarouselModel());
+}
+
+void UiControllerAndroid::OnChipSelected(int index) {
+  if (current_chips_ && index >= 0 && index < (int)current_chips_->size()) {
+    auto callback = std::move((*current_chips_)[index].callback);
+    current_chips_.reset();
+    std::move(callback).Run();
+  }
+}
+
 // Other methods.
 
 void UiControllerAndroid::ShowOnboarding(
@@ -194,16 +238,6 @@ void UiControllerAndroid::OnUserInteractionInsideTouchableArea(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcallerj) {
   ui_delegate_->OnUserInteractionInsideTouchableArea();
-}
-
-void UiControllerAndroid::OnChipSelected(JNIEnv* env,
-                                         const JavaParamRef<jobject>& jcaller,
-                                         jint index) {
-  if (current_chips_ && index >= 0 && index < (int)current_chips_->size()) {
-    auto callback = std::move((*current_chips_)[index].callback);
-    current_chips_.reset();
-    std::move(callback).Run();
-  }
 }
 
 void UiControllerAndroid::OnGetPaymentInformation(
@@ -261,31 +295,6 @@ void UiControllerAndroid::OnGetPaymentInformation(
     }
   }
   std::move(get_payment_information_callback_).Run(std::move(payment_info));
-}
-
-void UiControllerAndroid::SetChips(std::unique_ptr<std::vector<Chip>> chips) {
-  DCHECK(chips);
-  current_chips_ = std::move(chips);
-
-  int types[current_chips_->size()];
-  std::vector<std::string> texts;
-  int i = 0;
-  for (const auto& chip : *current_chips_) {
-    types[i++] = chip.type;
-    texts.emplace_back(chip.text);
-  }
-
-  JNIEnv* env = AttachCurrentThread();
-  Java_AutofillAssistantUiController_onSetChips(
-      env, java_autofill_assistant_ui_controller_,
-      base::android::ToJavaIntArray(env, types, current_chips_->size()),
-      base::android::ToJavaArrayOfStrings(env, texts));
-}
-
-void UiControllerAndroid::ClearChips() {
-  current_chips_.reset();
-  Java_AutofillAssistantUiController_onClearChips(
-      AttachCurrentThread(), java_autofill_assistant_ui_controller_);
 }
 
 void UiControllerAndroid::GetPaymentInformation(
