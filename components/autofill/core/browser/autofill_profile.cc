@@ -457,6 +457,13 @@ bool AutofillProfile::EqualsForSyncPurposes(const AutofillProfile& profile)
          UseDateEqualsInSeconds(&profile) && EqualsSansGuid(profile);
 }
 
+bool AutofillProfile::EqualsForUpdatePurposes(
+    const AutofillProfile& profile) const {
+  return use_count() == profile.use_count() &&
+         UseDateEqualsInSeconds(&profile) &&
+         language_code() == profile.language_code() && Compare(profile) == 0;
+}
+
 bool AutofillProfile::EqualsForClientValidationPurpose(
     const AutofillProfile& profile) const {
   for (ServerFieldType type : kSupportedTypesByClientForValidation) {

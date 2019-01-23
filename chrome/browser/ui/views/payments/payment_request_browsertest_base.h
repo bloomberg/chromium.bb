@@ -55,6 +55,7 @@ class PersonalDataLoadedObserverMock
   ~PersonalDataLoadedObserverMock() override;
 
   MOCK_METHOD0(OnPersonalDataChanged, void());
+  MOCK_METHOD0(OnPersonalDataFinishedProfileTasks, void());
 };
 
 // Base class for any interactive PaymentRequest test that will need to open
@@ -178,6 +179,7 @@ class PaymentRequestBrowserTestBase
   // are added close to each other.
   void AddAutofillProfile(const autofill::AutofillProfile& profile);
   void AddCreditCard(const autofill::CreditCard& card);
+  void WaitForOnPersonalDataChanged();
 
   void CreatePaymentRequestForTest(
       payments::mojom::PaymentRequestRequest request,
