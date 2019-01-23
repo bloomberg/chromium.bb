@@ -22,6 +22,7 @@ class CreditCardSaveStrikeDatabase : public StrikeDatabaseIntegratorBase {
   std::string GetProjectPrefix() override;
   int GetMaxStrikesLimit() override;
   long long GetExpiryTimeMicros() override;
+  bool UniqueIdsRequired() override;
 };
 
 }  // namespace autofill

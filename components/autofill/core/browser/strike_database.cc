@@ -39,17 +39,20 @@ StrikeDatabase::StrikeDatabase(const base::FilePath& database_dir)
 
 StrikeDatabase::~StrikeDatabase() {}
 
-int StrikeDatabase::AddStrike(const std::string key) {
-  int num_strikes = strike_map_cache_.count(key)  // Cache has entry for |key|.
-                        ? strike_map_cache_[key].num_strikes() + 1
-                        : 1;
+int StrikeDatabase::AddStrikes(int strikes_increase, const std::string key) {
+  DCHECK(strikes_increase > 0);
+  int num_strikes =
+      strike_map_cache_.count(key)  // Cache has entry for |key|.
+          ? strike_map_cache_[key].num_strikes() + strikes_increase
+          : strikes_increase;
   SetStrikeData(key, num_strikes);
   return num_strikes;
 }
 
-int StrikeDatabase::RemoveStrike(const std::string key) {
+int StrikeDatabase::RemoveStrikes(int strikes_decrease, const std::string key) {
+  DCHECK(strikes_decrease > 0);
   DCHECK(strike_map_cache_.count(key));
-  int num_strikes = strike_map_cache_[key].num_strikes() - 1;
+  int num_strikes = strike_map_cache_[key].num_strikes() - strikes_decrease;
   if (num_strikes < 1) {
     ClearStrikes(key);
     return 0;

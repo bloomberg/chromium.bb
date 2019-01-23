@@ -9,6 +9,10 @@
 
 namespace autofill {
 
+namespace {
+static const char kSharedId[] = "shared_id";
+}  // namespace
+
 // Contains virtual functions for per-project implementations of StrikeDatabase
 // to interface from, as well as a pointer to StrikeDatabase. This class is
 // seperated from StrikeDatabase since we only want StrikeDatabase's cache to
@@ -20,21 +24,29 @@ class StrikeDatabaseIntegratorBase {
 
   // Returns whether or not strike count for |id| has reached the strike limit
   // set by GetMaxStrikesLimit().
-  bool IsMaxStrikesLimitReached(const std::string id);
+  bool IsMaxStrikesLimitReached(const std::string id = kSharedId);
 
   // Increments in-memory cache and updates underlying ProtoDatabase.
-  int AddStrike(const std::string id);
+  int AddStrike(const std::string id = kSharedId);
+
+  // Increases in-memory cache by |strikes_increase| and updates underlying
+  // ProtoDatabase.
+  int AddStrikes(int strikes_increase, const std::string id = kSharedId);
 
   // Removes an in-memory cache strike, updates last_update_timestamp, and
   // updates underlying ProtoDatabase.
-  int RemoveStrike(const std::string id);
+  int RemoveStrike(const std::string id = kSharedId);
+
+  // Removes |strikes_decrease| in-memory cache strikes, updates
+  // |last_update_timestamp|, and updates underlying ProtoDatabase.
+  int RemoveStrikes(int strikes_decrease, const std::string id = kSharedId);
 
   // Returns strike count from in-memory cache.
-  int GetStrikes(const std::string id);
+  int GetStrikes(const std::string id = kSharedId);
 
   // Removes all database entries from in-memory cache and underlying
   // ProtoDatabase.
-  void ClearStrikes(const std::string id);
+  void ClearStrikes(const std::string id = kSharedId);
 
  protected:
   // Removes all strikes in which it has been longer than GetExpiryTimeMicros()
@@ -50,10 +62,21 @@ class StrikeDatabaseIntegratorBase {
                            GetIdForCreditCardSaveTest);
   FRIEND_TEST_ALL_PREFIXES(CreditCardSaveStrikeDatabaseTest,
                            RemoveExpiredStrikesTest);
+  FRIEND_TEST_ALL_PREFIXES(LocalCardMigrationStrikeDatabaseTest,
+                           RemoveExpiredStrikesTest);
   friend class StrikeDatabaseTest;
   friend class StrikeDatabaseTester;
 
   StrikeDatabase* strike_database_;
+
+  // For projects in which strikes don't have unique identifiers, the
+  // id suffix is set to |kSharedId|. This makes sure that projects requiring
+  // unique IDs always specify |id| instead of relying on the default shared
+  // value, while projects where unique IDs are unnecessary always fall back to
+  // the default shared value.
+  void CheckIdUniqueness(std::string id) {
+    DCHECK(UniqueIdsRequired() == (id != kSharedId));
+  }
 
   // Generates key based on project-specific string identifier.
   std::string GetKey(const std::string id);
@@ -68,6 +91,10 @@ class StrikeDatabaseIntegratorBase {
 
   // Returns the time after which the most recent strike should expire.
   virtual long long GetExpiryTimeMicros() = 0;
+
+  // Returns whether or not a unique string identifier is required for every
+  // strike in this project.
+  virtual bool UniqueIdsRequired() = 0;
 };
 
 }  // namespace autofill

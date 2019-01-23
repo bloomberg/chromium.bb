@@ -31,11 +31,19 @@ StrikeDatabaseIntegratorBase::~StrikeDatabaseIntegratorBase() {}
 
 bool StrikeDatabaseIntegratorBase::IsMaxStrikesLimitReached(
     const std::string id) {
+  CheckIdUniqueness(id);
   return GetStrikes(id) >= GetMaxStrikesLimit();
 }
 
 int StrikeDatabaseIntegratorBase::AddStrike(const std::string id) {
-  int num_strikes = strike_database_->AddStrike(GetKey(id));
+  CheckIdUniqueness(id);
+  return AddStrikes(1, id);
+}
+
+int StrikeDatabaseIntegratorBase::AddStrikes(int strikes_increase,
+                                             const std::string id) {
+  CheckIdUniqueness(id);
+  int num_strikes = strike_database_->AddStrikes(strikes_increase, GetKey(id));
   base::UmaHistogramCounts1000(
       "Autofill.StrikeDatabase.NthStrikeAdded." + GetProjectPrefix(),
       num_strikes);
@@ -43,14 +51,23 @@ int StrikeDatabaseIntegratorBase::AddStrike(const std::string id) {
 }
 
 int StrikeDatabaseIntegratorBase::RemoveStrike(const std::string id) {
-  return strike_database_->RemoveStrike(GetKey(id));
+  CheckIdUniqueness(id);
+  return strike_database_->RemoveStrikes(1, GetKey(id));
+}
+
+int StrikeDatabaseIntegratorBase::RemoveStrikes(int strikes_decrease,
+                                                const std::string id) {
+  CheckIdUniqueness(id);
+  return strike_database_->RemoveStrikes(strikes_decrease, GetKey(id));
 }
 
 int StrikeDatabaseIntegratorBase::GetStrikes(const std::string id) {
+  CheckIdUniqueness(id);
   return strike_database_->GetStrikes(GetKey(id));
 }
 
 void StrikeDatabaseIntegratorBase::ClearStrikes(const std::string id) {
+  CheckIdUniqueness(id);
   strike_database_->ClearStrikes(GetKey(id));
 }
 
@@ -65,7 +82,7 @@ void StrikeDatabaseIntegratorBase::RemoveExpiredStrikes() {
     }
   }
   for (std::string key : expired_keys)
-    strike_database_->RemoveStrike(key);
+    strike_database_->RemoveStrikes(1, key);
 }
 
 std::string StrikeDatabaseIntegratorBase::GetKey(const std::string id) {
