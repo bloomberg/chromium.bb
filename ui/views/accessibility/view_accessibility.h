@@ -101,6 +101,11 @@ class VIEWS_EXPORT ViewAccessibility {
     return static_cast<int>(virtual_children_.size());
   }
 
+  AXVirtualView* virtual_child_at(int index) {
+    return const_cast<AXVirtualView*>(
+        const_cast<const ViewAccessibility*>(this)->virtual_child_at(index));
+  }
+
   const AXVirtualView* virtual_child_at(int index) const {
     DCHECK_GE(index, 0);
     DCHECK_LT(index, virtual_child_count());

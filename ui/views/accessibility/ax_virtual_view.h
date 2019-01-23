@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -101,8 +102,16 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   const char* GetViewClassName() const;
   gfx::NativeViewAccessible GetNativeObject() const;
   void NotifyAccessibilityEvent(ax::mojom::Event event_type);
-  // Allows clients to modify the AXNodeData for this virtual view.
+  // Allows clients to modify the AXNodeData for this virtual view. This should
+  // be used for attributes that are relatively stable and do not change
+  // dynamically.
   ui::AXNodeData& GetCustomData();
+  // Allows clients to modify the AXNodeData for this virtual view dynamically
+  // via a callback. This should be used for attributes that change often and
+  // would be queried every time a client accesses this view's AXNodeData.
+  void SetPopulateDataCallback(
+      base::RepeatingCallback<void(const View&, ui::AXNodeData*)> callback);
+  void UnsetPopulateDataCallback();
 
   // ui::AXPlatformNodeDelegate
   const ui::AXNodeData& GetData() const override;
@@ -160,6 +169,8 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
 
   ui::AXUniqueId unique_id_;
   ui::AXNodeData custom_data_;
+  base::RepeatingCallback<void(const View&, ui::AXNodeData*)>
+      populate_data_callback_;
 
   friend class ViewAccessibility;
   DISALLOW_COPY_AND_ASSIGN(AXVirtualView);

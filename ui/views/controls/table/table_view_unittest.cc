@@ -11,9 +11,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/text_utils.h"
+#include "ui/views/accessibility/ax_virtual_view.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/table/table_grouper.h"
 #include "ui/views/controls/table/table_header.h"
 #include "ui/views/controls/table/table_view_observer.h"
@@ -47,6 +51,7 @@ class TableViewTestHelper {
   int GetActiveVisibleColumnIndex() {
     return table_->GetActiveVisibleColumnIndex();
   }
+
   TableHeader* header() { return table_->header_; }
 
   void SetSelectionModel(const ui::ListSelectionModel& new_selection) {
@@ -54,6 +59,15 @@ class TableViewTestHelper {
   }
 
   const gfx::FontList& font_list() { return table_->font_list_; }
+
+  AXVirtualView* GetVirtualAccessibilityRow(int row) {
+    return table_->GetVirtualAccessibilityRow(row);
+  }
+
+  AXVirtualView* GetVirtualAccessibilityCell(int row,
+                                             int visible_column_index) {
+    return table_->GetVirtualAccessibilityCell(row, visible_column_index);
+  }
 
  private:
   TableView* table_;
@@ -342,6 +356,87 @@ TEST_F(TableViewTest, GetPaintRegion) {
   EXPECT_EQ("rows=0 4 cols=0 2", helper_->GetPaintRegion(table_->bounds()));
   EXPECT_EQ("rows=0 4 cols=0 1",
             helper_->GetPaintRegion(gfx::Rect(0, 0, 1, table_->height())));
+}
+
+TEST_F(TableViewTest, UpdateVirtualAccessibilityChildren) {
+  const ViewAccessibility& view_accessibility = table_->GetViewAccessibility();
+  ui::AXNodeData data;
+  view_accessibility.GetAccessibleNodeData(&data);
+  EXPECT_EQ(ax::mojom::Role::kListGrid, data.role);
+  EXPECT_TRUE(data.HasState(ax::mojom::State::kFocusable));
+  EXPECT_EQ(ax::mojom::Restriction::kReadOnly, data.GetRestriction());
+  EXPECT_EQ(table_->RowCount(), static_cast<int>(data.GetIntAttribute(
+                                    ax::mojom::IntAttribute::kTableRowCount)));
+  EXPECT_EQ(helper_->visible_col_count(),
+            static_cast<size_t>(data.GetIntAttribute(
+                ax::mojom::IntAttribute::kTableColumnCount)));
+
+  // The header takes up another row.
+  ASSERT_EQ(table_->RowCount() + 1, view_accessibility.virtual_child_count());
+  const AXVirtualView* header = view_accessibility.virtual_child_at(0);
+  ASSERT_TRUE(header);
+  EXPECT_EQ(ax::mojom::Role::kRow, header->GetData().role);
+
+  ASSERT_EQ(
+      helper_->visible_col_count(),
+      static_cast<size_t>(const_cast<AXVirtualView*>(header)->GetChildCount()));
+  for (int j = 0; j < static_cast<int>(helper_->visible_col_count()); ++j) {
+    const AXVirtualView* header_cell = header->child_at(j);
+    ASSERT_TRUE(header_cell);
+    const ui::AXNodeData& header_cell_data = header_cell->GetData();
+    EXPECT_EQ(ax::mojom::Role::kColumnHeader, header_cell_data.role);
+    EXPECT_EQ(j, static_cast<int>(header_cell_data.GetIntAttribute(
+                     ax::mojom::IntAttribute::kTableCellColumnIndex)));
+  }
+
+  for (int i = 1; i < table_->RowCount() + 1; ++i) {
+    const AXVirtualView* row = view_accessibility.virtual_child_at(i);
+    ASSERT_TRUE(row);
+    const ui::AXNodeData& row_data = row->GetData();
+    EXPECT_EQ(ax::mojom::Role::kRow, row_data.role);
+    EXPECT_EQ(i - 1, static_cast<int>(row_data.GetIntAttribute(
+                         ax::mojom::IntAttribute::kTableRowIndex)));
+
+    ASSERT_EQ(
+        helper_->visible_col_count(),
+        static_cast<size_t>(const_cast<AXVirtualView*>(row)->GetChildCount()));
+    for (int j = 0; j < static_cast<int>(helper_->visible_col_count()); ++j) {
+      const AXVirtualView* cell = row->child_at(j);
+      ASSERT_TRUE(cell);
+      const ui::AXNodeData& cell_data = cell->GetData();
+      EXPECT_EQ(ax::mojom::Role::kCell, cell_data.role);
+      EXPECT_EQ(i - 1, static_cast<int>(cell_data.GetIntAttribute(
+                           ax::mojom::IntAttribute::kTableCellRowIndex)));
+      EXPECT_EQ(j, static_cast<int>(cell_data.GetIntAttribute(
+                       ax::mojom::IntAttribute::kTableCellColumnIndex)));
+    }
+  }
+}
+
+TEST_F(TableViewTest, GetVirtualAccessibilityRow) {
+  for (int i = 0; i < table_->RowCount(); ++i) {
+    const AXVirtualView* row = helper_->GetVirtualAccessibilityRow(i);
+    ASSERT_TRUE(row);
+    const ui::AXNodeData& row_data = row->GetData();
+    EXPECT_EQ(ax::mojom::Role::kRow, row_data.role);
+    EXPECT_EQ(i, static_cast<int>(row_data.GetIntAttribute(
+                     ax::mojom::IntAttribute::kTableRowIndex)));
+  }
+}
+
+TEST_F(TableViewTest, GetVirtualAccessibilityCell) {
+  for (int i = 0; i < table_->RowCount(); ++i) {
+    for (int j = 0; j < static_cast<int>(helper_->visible_col_count()); ++j) {
+      const AXVirtualView* cell = helper_->GetVirtualAccessibilityCell(i, j);
+      ASSERT_TRUE(cell);
+      const ui::AXNodeData& cell_data = cell->GetData();
+      EXPECT_EQ(ax::mojom::Role::kCell, cell_data.role);
+      EXPECT_EQ(i, static_cast<int>(cell_data.GetIntAttribute(
+                       ax::mojom::IntAttribute::kTableCellRowIndex)));
+      EXPECT_EQ(j, static_cast<int>(cell_data.GetIntAttribute(
+                       ax::mojom::IntAttribute::kTableCellColumnIndex)));
+    }
+  }
 }
 
 // Verifies SetColumnVisibility().

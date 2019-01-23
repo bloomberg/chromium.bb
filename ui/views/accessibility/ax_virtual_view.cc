@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/callback.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
@@ -104,6 +105,7 @@ std::unique_ptr<AXVirtualView> AXVirtualView::RemoveChildView(
   std::unique_ptr<AXVirtualView> child = std::move(children_[cur_index]);
   children_.erase(children_.begin() + cur_index);
   child->virtual_parent_view_ = nullptr;
+  child->populate_data_callback_.Reset();
   return child;
 }
 
@@ -159,6 +161,15 @@ ui::AXNodeData& AXVirtualView::GetCustomData() {
   return custom_data_;
 }
 
+void AXVirtualView::SetPopulateDataCallback(
+    base::RepeatingCallback<void(const View&, ui::AXNodeData*)> callback) {
+  populate_data_callback_ = std::move(callback);
+}
+
+void AXVirtualView::UnsetPopulateDataCallback() {
+  populate_data_callback_.Reset();
+}
+
 // ui::AXPlatformNodeDelegate
 
 const ui::AXNodeData& AXVirtualView::GetData() const {
@@ -175,6 +186,8 @@ const ui::AXNodeData& AXVirtualView::GetData() const {
   if (GetOwnerView() && GetOwnerView()->context_menu_controller())
     node_data.AddAction(ax::mojom::Action::kShowContextMenu);
 
+  if (populate_data_callback_ && GetOwnerView())
+    populate_data_callback_.Run(*GetOwnerView(), &node_data);
   return node_data;
 }
 
