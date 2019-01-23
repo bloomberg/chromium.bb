@@ -2743,6 +2743,24 @@ drm_public int drmDropMaster(int fd)
         return drmIoctl(fd, DRM_IOCTL_DROP_MASTER, NULL);
 }
 
+drm_public bool drmIsMaster(int fd)
+{
+        /* Detect master by attempting something that requires master.
+         *
+         * Authenticating magic tokens requires master and 0 is an
+         * internal kernel detail which we could use. Attempting this on
+         * a master fd would fail therefore fail with EINVAL because 0
+         * is invalid.
+         *
+         * A non-master fd will fail with EACCES, as the kernel checks
+         * for master before attempting to do anything else.
+         *
+         * Since we don't want to leak implementation details, use
+         * EACCES.
+         */
+        return drmAuthMagic(fd, 0) != -EACCES;
+}
+
 drm_public char *drmGetDeviceNameFromFd(int fd)
 {
     char name[128];
