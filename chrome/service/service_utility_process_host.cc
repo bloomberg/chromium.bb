@@ -29,8 +29,9 @@
 #include "base/win/win_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_printing_messages.h"
-#include "chrome/service/service_process_catalog_source.h"
 #include "chrome/services/printing/public/mojom/pdf_to_emf_converter.mojom.h"
+#include "content/public/app/content_browser_manifest.h"
+#include "content/public/app/content_utility_manifest.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/connection_filter.h"
 #include "content/public/common/content_switches.h"
@@ -359,9 +360,11 @@ bool ServiceUtilityProcessHost::StartProcess(bool sandbox) {
   // instances: this process, which masquerades as "content_browser"; and the
   // child process, which exists ostensibly as the only instance of
   // "content_utility". This is all set up here.
+  std::vector<service_manager::Manifest> manifests{
+      content::GetContentBrowserManifest(),
+      content::GetContentUtilityManifest()};
   service_manager_ = std::make_unique<service_manager::ServiceManager>(
-      std::make_unique<NullServiceProcessLauncherFactory>(),
-      CreateServiceProcessCatalog());
+      std::make_unique<NullServiceProcessLauncherFactory>(), manifests);
 
   service_manager::mojom::ServicePtr browser_proxy;
   service_manager_connection_ = content::ServiceManagerConnection::Create(

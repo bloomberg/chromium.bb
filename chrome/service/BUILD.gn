@@ -57,7 +57,6 @@ static_library("service") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   deps = [
-    ":service_process_catalog_source",
     "//base",
     "//chrome:strings",
     "//chrome/common",
@@ -66,6 +65,7 @@ static_library("service") {
     "//components/data_use_measurement/core",
     "//components/network_session_configurator/browser",
     "//components/printing/common",
+    "//content/public/app:service_manifests",
     "//google_apis",
     "//jingle:notifier",
     "//mojo/public/cpp/platform",
@@ -90,16 +90,4 @@ static_library("service") {
       "service_utility_process_host.h",
     ]
   }
-}
-
-catalog("service_process_catalog") {
-  embedded_services = [
-    "//content/public/app:browser_manifest",
-    "//content/public/app:utility_manifest",
-  ]
-}
-
-catalog_cpp_source("service_process_catalog_source") {
-  catalog = ":service_process_catalog"
-  generated_function_name = "CreateServiceProcessCatalog"
 }

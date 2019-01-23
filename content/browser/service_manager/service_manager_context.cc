@@ -35,7 +35,12 @@
 #include "content/browser/utility_process_host_client.h"
 #include "content/browser/wake_lock/wake_lock_context_host.h"
 #include "content/common/service_manager/service_manager_connection_impl.h"
-#include "content/grit/content_resources.h"
+#include "content/public/app/content_browser_manifest.h"
+#include "content/public/app/content_gpu_manifest.h"
+#include "content/public/app/content_packaged_services_manifest.h"
+#include "content/public/app/content_plugin_manifest.h"
+#include "content/public/app/content_renderer_manifest.h"
+#include "content/public/app/content_utility_manifest.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
@@ -81,7 +86,6 @@
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/service_manager.h"
 #include "services/shape_detection/public/mojom/constants.mojom.h"
-#include "services/tracing/manifest.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/tracing_service.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
@@ -227,21 +231,6 @@ service_manager::Manifest LoadServiceManifest(base::StringPiece service_name,
   service_manager::Manifest manifest =
       service_manager::Manifest::FromValueDeprecated(
           base::JSONReader::Read(contents));
-  base::Optional<service_manager::Manifest> overlay =
-      GetContentClient()->browser()->GetServiceManifestOverlay(service_name);
-  if (overlay)
-    manifest.Amend(*overlay);
-
-  if (service_name == mojom::kPackagedServicesServiceName)
-    manifest.packaged_services.push_back(tracing::GetManifest());
-
-  if (!manifest.preloaded_files.empty()) {
-    std::map<std::string, base::FilePath> preloaded_files_map;
-    for (const auto& info : manifest.preloaded_files)
-      preloaded_files_map.emplace(info.key, info.path);
-    ChildProcessLauncher::SetRegisteredFilesForService(
-        service_name.as_string(), std::move(preloaded_files_map));
-  }
 
   return manifest;
 }
@@ -554,22 +543,24 @@ ServiceManagerContext::ServiceManagerContext(
     packaged_services_request =
         service_manager::GetServiceRequestFromCommandLine(&invitation);
   } else {
-    static const struct ManifestInfo {
-      const char* name;
-      int resource_id;
-    } kManifestInfo[] = {
-        {mojom::kBrowserServiceName, IDR_MOJO_CONTENT_BROWSER_MANIFEST},
-        {mojom::kGpuServiceName, IDR_MOJO_CONTENT_GPU_MANIFEST},
-        {mojom::kPackagedServicesServiceName,
-         IDR_MOJO_CONTENT_PACKAGED_SERVICES_MANIFEST},
-        {mojom::kPluginServiceName, IDR_MOJO_CONTENT_PLUGIN_MANIFEST},
-        {mojom::kRendererServiceName, IDR_MOJO_CONTENT_RENDERER_MANIFEST},
-        {mojom::kUtilityServiceName, IDR_MOJO_CONTENT_UTILITY_MANIFEST},
+    std::vector<service_manager::Manifest> manifests{
+        GetContentBrowserManifest(),          GetContentGpuManifest(),
+        GetContentPackagedServicesManifest(), GetContentPluginManifest(),
+        GetContentRendererManifest(),         GetContentUtilityManifest(),
     };
-    std::vector<service_manager::Manifest> manifests;
-    for (const auto& manifest_info : kManifestInfo) {
-      manifests.push_back(
-          LoadServiceManifest(manifest_info.name, manifest_info.resource_id));
+    for (auto& manifest : manifests) {
+      base::Optional<service_manager::Manifest> overlay =
+          GetContentClient()->browser()->GetServiceManifestOverlay(
+              manifest.service_name);
+      if (overlay)
+        manifest.Amend(*overlay);
+      if (!manifest.preloaded_files.empty()) {
+        std::map<std::string, base::FilePath> preloaded_files_map;
+        for (const auto& info : manifest.preloaded_files)
+          preloaded_files_map.emplace(info.key, info.path);
+        ChildProcessLauncher::SetRegisteredFilesForService(
+            manifest.service_name, std::move(preloaded_files_map));
+      }
     }
     for (const auto& info :
          GetContentClient()->browser()->GetExtraServiceManifests()) {

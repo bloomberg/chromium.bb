@@ -29,6 +29,7 @@ include_rules = [
   "+components/cbor",
 
   "+content/app/strings/grit",  # For generated headers
+  "+content/public/app",
   "+content/public/browser",
   "+device/base/synchronization",
   "+device/gamepad", # For gamepad API

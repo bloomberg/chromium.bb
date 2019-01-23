@@ -7,6 +7,7 @@ include_rules = [
   "+components/network_session_configurator/common",
   "+components/prefs",
   "+components/version_info",
+  "+content/public/app",
   "+mojo/core/embedder",
   "+services/network/public/cpp",
   "+sandbox/win/src",
