@@ -19,7 +19,7 @@ import processor
 _CURRENT_DIR = os.path.join(os.path.dirname(__file__))
 
 
-class Checker(object):
+class Compiler(object):
   """Runs the Closure compiler on given source files to typecheck them
   and produce minified output."""
 
@@ -160,12 +160,12 @@ class Checker(object):
       tmp_file.write(contents)
     return tmp_file.name
 
-  def check(self, sources, out_file, closure_args=None,
-            custom_sources=False, custom_includes=False):
+  def run(self, sources, out_file, closure_args=None,
+          custom_sources=False, custom_includes=False):
     """Closure compile |sources| while checking for errors.
 
     Args:
-      sources: Files to check. sources[0] is the typically the target file.
+      sources: Files to compile. sources[0] is the typically the target file.
           sources[1:] are externs and dependencies in topological order. Order
           is not guaranteed if custom_sources is True.
       out_file: A file where the compiled output is written to.
@@ -298,12 +298,12 @@ if __name__ == "__main__":
                       help="Show more information as this script runs")
   opts = parser.parse_args()
 
-  checker = Checker(verbose=opts.verbose)
+  compiler = Compiler(verbose=opts.verbose)
 
-  found_errors, stderr = checker.check(opts.sources, out_file=opts.out_file,
-                                       closure_args=opts.closure_args,
-                                       custom_sources=opts.custom_sources,
-                                       custom_includes=opts.custom_includes)
+  found_errors, stderr = compiler.run(opts.sources, out_file=opts.out_file,
+                                      closure_args=opts.closure_args,
+                                      custom_sources=opts.custom_sources,
+                                      custom_includes=opts.custom_includes)
 
   if found_errors:
     if opts.custom_sources:
