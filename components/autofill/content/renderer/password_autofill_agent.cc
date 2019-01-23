@@ -1415,6 +1415,13 @@ void PasswordAutofillAgent::FillUsingRendererIDs(
       FindUsernamePasswordElements(form_data);
   if (password_element.IsNull()) {
     MaybeStoreFallbackData(form_data);
+    if (form_data.password_field.unique_renderer_id ==
+        FormFieldData::kNotSetFormControlRendererId) {
+      // If the password_field.unique_renderer_id was not set, this was never
+      // meant as an honest attempt to fill the form. Therefore, don't log it as
+      // such.
+      return;
+    }
     LogFirstFillingResult(form_data, FillingResult::kNoPasswordElement);
     return;
   }
