@@ -19,7 +19,7 @@
 
         <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
         <EditText
-            tools:ignore="Autofill"
+            tools:ignore="Autofill,LabelFor"
             android:id="@+id/credit_card_name_edit"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -40,7 +40,7 @@
 
         <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
         <EditText
-            tools:ignore="Autofill"
+            tools:ignore="Autofill,LabelFor"
             android:id="@+id/credit_card_number_edit"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
