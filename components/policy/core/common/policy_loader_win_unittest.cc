@@ -448,6 +448,9 @@ TEST_F(PolicyLoaderWinTest, HKLMOverHKCU) {
       .Set(test_keys::kKeyString, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
            POLICY_SOURCE_PLATFORM, std::make_unique<base::Value>("hklm"),
            nullptr);
+  expected.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
+      .GetMutable(test_keys::kKeyString)
+      ->AddError(kPolicyConfictDiffValue);
   EXPECT_TRUE(Matches(expected));
 }
 
@@ -500,13 +503,19 @@ TEST_F(PolicyLoaderWinTest, Merge3rdPartyPolicies) {
   expected_policy.Set(
       "a", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE, POLICY_SOURCE_PLATFORM,
       std::make_unique<base::Value>(kMachineMandatory), nullptr);
+  expected_policy.GetMutable("a")->AddError(kPolicyConfictDiffValue);
+  expected_policy.GetMutable("a")->AddError(kPolicyConfictDiffValue);
+  expected_policy.GetMutable("a")->AddError(kPolicyConfictDiffValue);
   expected_policy.Set("b", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                       POLICY_SOURCE_PLATFORM,
                       std::make_unique<base::Value>(kUserMandatory), nullptr);
+  expected_policy.GetMutable("b")->AddError(kPolicyConfictSameValue);
+  expected_policy.GetMutable("b")->AddError(kPolicyConfictDiffValue);
   expected_policy.Set("c", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
                       POLICY_SOURCE_PLATFORM,
                       std::make_unique<base::Value>(kMachineRecommended),
                       nullptr);
+  expected_policy.GetMutable("c")->AddError(kPolicyConfictDiffValue);
   expected_policy.Set("d", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
                       POLICY_SOURCE_PLATFORM,
                       std::make_unique<base::Value>(kUserRecommended), nullptr);

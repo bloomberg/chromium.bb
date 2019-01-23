@@ -181,6 +181,10 @@ TEST_F(SchemaMapTest, FilterBundle) {
            nullptr);
 
   schema_map->FilterBundle(&bundle);
+  // Merged twice so this causes a conflict.
+  expected_bundle.Get(chrome_ns)
+      .GetMutable("ChromePolicy")
+      ->AddError(kPolicyConfictSameValue);
   EXPECT_TRUE(bundle.Equals(expected_bundle));
 
   // Mismatched types are also removed.

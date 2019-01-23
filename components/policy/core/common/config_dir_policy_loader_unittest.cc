@@ -220,11 +220,12 @@ TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsMergePrefs) {
   // filesystem may return files in arbitrary order, there is no way to be sure,
   // but this is better than nothing.
   base::DictionaryValue test_dict_bar;
-  test_dict_bar.SetString("HomepageLocation", "http://bar.com");
+  const char kHomepageLocation[] = "HomepageLocation";
+  test_dict_bar.SetString(kHomepageLocation, "http://bar.com");
   for (unsigned int i = 1; i <= 4; ++i)
     harness_.WriteConfigFile(test_dict_bar, base::UintToString(i));
   base::DictionaryValue test_dict_foo;
-  test_dict_foo.SetString("HomepageLocation", "http://foo.com");
+  test_dict_foo.SetString(kHomepageLocation, "http://foo.com");
   harness_.WriteConfigFile(test_dict_foo, "9");
   for (unsigned int i = 5; i <= 8; ++i)
     harness_.WriteConfigFile(test_dict_bar, base::UintToString(i));
@@ -238,6 +239,11 @@ TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsMergePrefs) {
   expected_bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .LoadFrom(&test_dict_foo, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                 POLICY_SOURCE_PLATFORM);
+  for (unsigned int i = 1; i <= 8; ++i) {
+    expected_bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
+        .GetMutable(kHomepageLocation)
+        ->AddError(kPolicyConfictDiffValue);
+  }
   EXPECT_TRUE(bundle->Equals(expected_bundle));
 }
 
