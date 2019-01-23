@@ -15,18 +15,10 @@
 namespace base {
 
 // Specification:
-// http://en.cppreference.com/w/cpp/utility/optional/in_place_t
-struct in_place_t {};
-
-// Specification:
 // http://en.cppreference.com/w/cpp/utility/optional/nullopt_t
 struct nullopt_t {
   constexpr explicit nullopt_t(int) {}
 };
-
-// Specification:
-// http://en.cppreference.com/w/cpp/utility/optional/in_place
-constexpr in_place_t in_place = {};
 
 // Specification:
 // http://en.cppreference.com/w/cpp/utility/optional/nullopt
