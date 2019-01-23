@@ -782,6 +782,12 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     return;
 
+  // No kills are expected unless the fetch requesting process is locked to a
+  // specific site URL.  Therefore, the test should be skipped unless the full
+  // Site Isolation is enabled.
+  if (!AreAllSitesIsolatedForTesting())
+    return;
+
   // Prepare to intercept the network request at the IPC layer.
   // in a way, that injects |spoofed_initiator| (simulating a compromised
   // renderer that pretends to be making the request on behalf of another
