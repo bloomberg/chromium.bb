@@ -67,6 +67,21 @@ source_set("inlined_vector") {
   ]
 }
 
+source_set("counting_allocator") {
+  testonly = true
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/abseil-cpp:absl_default_cflags_cc",
+  ]
+  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+  public = [
+    "internal/counting_allocator.h",
+  ]
+  visibility = []
+  visibility += [ ":*" ]
+}
+
 source_set("test_instance_tracker") {
   testonly = true
   configs -= [ "//build/config/compiler:chromium_code" ]
@@ -277,6 +292,30 @@ source_set("hashtable_debug_hooks") {
   ]
 }
 
+source_set("hashtablez_sampler") {
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/abseil-cpp:absl_default_cflags_cc",
+  ]
+  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+  public = [
+    "internal/hashtablez_sampler.h",
+  ]
+  sources = [
+    "internal/hashtablez_sampler.cc",
+  ]
+  deps = [
+    ":have_sse",
+    "../base",
+    "../base:core_headers",
+    "../debugging:stacktrace",
+    "../memory",
+    "../synchronization",
+    "../utility",
+  ]
+}
+
 source_set("node_hash_policy") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
@@ -305,6 +344,35 @@ source_set("raw_hash_map") {
   ]
 }
 
+source_set("have_sse") {
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/abseil-cpp:absl_default_cflags_cc",
+  ]
+  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+  public = [
+    "internal/have_sse.h",
+  ]
+  visibility = []
+  visibility += [ ":*" ]
+}
+
+source_set("common") {
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/abseil-cpp:absl_default_cflags_cc",
+  ]
+  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+  public = [
+    "internal/common.h",
+  ]
+  deps = [
+    "../meta:type_traits",
+  ]
+}
+
 source_set("raw_hash_set") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
@@ -319,10 +387,13 @@ source_set("raw_hash_set") {
     "internal/raw_hash_set.h",
   ]
   deps = [
+    ":common",
     ":compressed_tuple",
     ":container_memory",
     ":hash_policy_traits",
     ":hashtable_debug_hooks",
+    ":hashtablez_sampler",
+    ":have_sse",
     ":layout",
     "../base:bits",
     "../base:config",

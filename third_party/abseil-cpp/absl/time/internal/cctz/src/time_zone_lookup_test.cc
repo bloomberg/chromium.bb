@@ -337,6 +337,7 @@ const char* const kTimeZoneNames[] = {
   "Asia/Pontianak",
   "Asia/Pyongyang",
   "Asia/Qatar",
+  "Asia/Qostanay",
   "Asia/Qyzylorda",
   "Asia/Rangoon",
   "Asia/Riyadh",
@@ -666,6 +667,7 @@ int VersionCmp(time_zone tz, const std::string& target) {
 
 }  // namespace
 
+#if !defined(__EMSCRIPTEN__)
 TEST(TimeZones, LoadZonesConcurrently) {
   std::promise<void> ready_promise;
   std::shared_future<void> ready_future(ready_promise.get_future());
@@ -713,6 +715,7 @@ TEST(TimeZones, LoadZonesConcurrently) {
   }
   EXPECT_LE(failures.size(), max_failures) << testing::PrintToString(failures);
 }
+#endif
 
 TEST(TimeZone, NamedTimeZones) {
   const time_zone utc = utc_time_zone();

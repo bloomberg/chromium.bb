@@ -37,10 +37,19 @@
 #include "absl/base/macros.h"
 #include "absl/base/port.h"
 
-#if defined(_MSC_VER) && defined(_WIN64)
+#if defined(_MSC_VER)
+// In very old versions of MSVC and when the /Zc:wchar_t flag is off, wchar_t is
+// a typedef for unsigned short.  Otherwise wchar_t is mapped to the __wchar_t
+// builtin type.  We need to make sure not to define operator wchar_t()
+// alongside operator unsigned short() in these instances.
+#define ABSL_INTERNAL_WCHAR_T __wchar_t
+#if defined(_M_X64)
 #include <intrin.h>
 #pragma intrinsic(_umul128)
-#endif  // defined(_MSC_VER) && defined(_WIN64)
+#endif  // defined(_M_X64)
+#else   // defined(_MSC_VER)
+#define ABSL_INTERNAL_WCHAR_T wchar_t
+#endif  // defined(_MSC_VER)
 
 namespace absl {
 
@@ -131,7 +140,7 @@ class
   constexpr explicit operator unsigned char() const;
   constexpr explicit operator char16_t() const;
   constexpr explicit operator char32_t() const;
-  constexpr explicit operator wchar_t() const;
+  constexpr explicit operator ABSL_INTERNAL_WCHAR_T() const;
   constexpr explicit operator short() const;  // NOLINT(runtime/int)
   // NOLINTNEXTLINE(runtime/int)
   constexpr explicit operator unsigned short() const;
@@ -468,8 +477,8 @@ constexpr uint128::operator char32_t() const {
   return static_cast<char32_t>(lo_);
 }
 
-constexpr uint128::operator wchar_t() const {
-  return static_cast<wchar_t>(lo_);
+constexpr uint128::operator ABSL_INTERNAL_WCHAR_T() const {
+  return static_cast<ABSL_INTERNAL_WCHAR_T>(lo_);
 }
 
 // NOLINTNEXTLINE(runtime/int)
@@ -666,7 +675,7 @@ inline uint128 operator*(uint128 lhs, uint128 rhs) {
   // can be used for uint128 storage.
   return static_cast<unsigned __int128>(lhs) *
          static_cast<unsigned __int128>(rhs);
-#elif defined(_MSC_VER) && defined(_WIN64)
+#elif defined(_MSC_VER) && defined(_M_X64)
   uint64_t carry;
   uint64_t low = _umul128(Uint128Low64(lhs), Uint128Low64(rhs), &carry);
   return MakeUint128(Uint128Low64(lhs) * Uint128High64(rhs) +
@@ -718,5 +727,7 @@ inline uint128& uint128::operator--() {
 #endif  // ABSL_HAVE_INTRINSIC_INT128
 
 }  // namespace absl
+
+#undef ABSL_INTERNAL_WCHAR_T
 
 #endif  // ABSL_NUMERIC_INT128_H_
