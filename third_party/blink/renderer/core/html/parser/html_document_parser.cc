@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/navigation_scheduler.h"
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/html_parser_script_runner.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
@@ -807,9 +808,18 @@ void HTMLDocumentParser::StartBackgroundParser() {
       BackgroundHTMLParser::Create(std::move(config), loading_task_runner_);
   // TODO(csharrison): This is a hack to initialize MediaValuesCached on the
   // correct thread. We should get rid of it.
+
+  // TODO(domfarolino): Remove this once Priority Hints is no longer in Origin
+  // Trial. This currently exists because the TokenPreloadScanner needs to know
+  // the status of the Priority Hints Origin Trial, and has no way of figuring
+  // this out on its own. See https://crbug.com/821464.
+  bool priority_hints_origin_trial_enabled =
+      origin_trials::PriorityHintsEnabled(GetDocument());
+
   background_parser_->Init(
       GetDocument()->Url(), CachedDocumentParameters::Create(GetDocument()),
-      MediaValuesCached::MediaValuesCachedData(*GetDocument()));
+      MediaValuesCached::MediaValuesCachedData(*GetDocument()),
+      priority_hints_origin_trial_enabled);
 }
 
 void HTMLDocumentParser::StopBackgroundParser() {

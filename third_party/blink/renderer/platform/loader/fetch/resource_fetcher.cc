@@ -186,9 +186,6 @@ ResourceLoadPriority AdjustPriorityWithPriorityHint(
   mojom::FetchImportanceMode importance_mode =
       resource_request.GetFetchImportanceMode();
 
-  DCHECK(importance_mode == mojom::FetchImportanceMode::kImportanceAuto ||
-         RuntimeEnabledFeatures::PriorityHintsEnabled());
-
   ResourceLoadPriority new_priority = priority_so_far;
 
   switch (importance_mode) {

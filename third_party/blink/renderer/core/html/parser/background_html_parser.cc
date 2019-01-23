@@ -76,11 +76,12 @@ base::WeakPtr<BackgroundHTMLParser> BackgroundHTMLParser::Create(
 void BackgroundHTMLParser::Init(
     const KURL& document_url,
     std::unique_ptr<CachedDocumentParameters> cached_document_parameters,
-    const MediaValuesCached::MediaValuesCachedData& media_values_cached_data) {
+    const MediaValuesCached::MediaValuesCachedData& media_values_cached_data,
+    bool priority_hints_origin_trial_enabled) {
   preload_scanner_.reset(new TokenPreloadScanner(
       document_url, std::move(cached_document_parameters),
-      media_values_cached_data,
-      TokenPreloadScanner::ScannerType::kMainDocument));
+      media_values_cached_data, TokenPreloadScanner::ScannerType::kMainDocument,
+      priority_hints_origin_trial_enabled));
 }
 
 BackgroundHTMLParser::Configuration::Configuration() {}

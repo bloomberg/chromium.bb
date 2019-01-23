@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
 #include "third_party/blink/renderer/core/loader/importance_attribute.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -367,7 +368,7 @@ static void ConfigureRequest(
         element.GetDocument().GetSecurityOrigin(), cross_origin);
   }
 
-  if (RuntimeEnabledFeatures::PriorityHintsEnabled()) {
+  if (origin_trials::PriorityHintsEnabled(&element.GetDocument())) {
     mojom::FetchImportanceMode importance_mode =
         GetFetchImportanceAttributeValue(
             element.FastGetAttribute(html_names::kImportanceAttr));

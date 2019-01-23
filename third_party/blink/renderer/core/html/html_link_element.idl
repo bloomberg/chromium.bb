@@ -35,7 +35,7 @@ interface HTMLLinkElement : HTMLElement {
     [Reflect, ReflectOnly=("script","style","image","video", "audio", "track", "font", "fetch")] attribute DOMString as;
     [CEReactions, Reflect, ReflectOnly=("","no-referrer","origin","no-referrer-when-downgrade","origin-when-cross-origin","unsafe-url"), ReflectMissing="", ReflectInvalid=""] attribute DOMString referrerPolicy;
     [PutForwards=value] readonly attribute DOMTokenList sizes;
-    [CEReactions, MeasureAs=PriorityHints, RuntimeEnabled=PriorityHints, Reflect, ReflectOnly=("low", "auto", "high"), ReflectMissing="auto", ReflectInvalid="auto"] attribute DOMString importance;
+    [CEReactions, MeasureAs=PriorityHints, OriginTrialEnabled=PriorityHints, Reflect, ReflectOnly=("low", "auto", "high"), ReflectMissing="auto", ReflectInvalid="auto"] attribute DOMString importance;
     [RuntimeEnabled=PreloadImageSrcSet, CEReactions, Reflect] attribute DOMString imageSrcset;
     [RuntimeEnabled=PreloadImageSrcSet, CEReactions, Reflect] attribute DOMString imageSizes;
 
