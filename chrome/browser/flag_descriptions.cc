@@ -3093,9 +3093,6 @@ const char kArcFilePickerExperimentName[] =
 const char kArcFilePickerExperimentDescription[] =
     "Enables using Chrome OS file picker in ARC.";
 
-const char kArcInputMethodName[] = "Enable ARC input methods.";
-const char kArcInputMethodDescription[] = "Enable ARC input methods.";
-
 const char kArcNativeBridgeExperimentName[] =
     "Enable native bridge experiment for ARC";
 const char kArcNativeBridgeExperimentDescription[] =

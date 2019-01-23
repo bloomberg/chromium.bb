@@ -23,7 +23,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/arc/arc_features.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/test/test_browser_context.h"
 #include "components/crx_file/id_util.h"
@@ -237,8 +236,6 @@ TEST_F(ArcInputMethodManagerServiceTest, EnableIme) {
   namespace ceiu = chromeos::extension_ime_util;
   using crx_file::id_util::GenerateId;
 
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(kEnableInputMethodFeature);
   ToggleTabletMode(true);
 
   ASSERT_EQ(0u, bridge()->enable_ime_calls_.size());
@@ -286,8 +283,6 @@ TEST_F(ArcInputMethodManagerServiceTest, EnableIme_WithPrefs) {
   namespace ceiu = chromeos::extension_ime_util;
   using crx_file::id_util::GenerateId;
 
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(kEnableInputMethodFeature);
   ToggleTabletMode(true);
 
   ASSERT_EQ(0u, bridge()->enable_ime_calls_.size());
@@ -326,8 +321,6 @@ TEST_F(ArcInputMethodManagerServiceTest, SwitchImeTo) {
   const std::string arc_ime_service_id =
       "org.chromium.arc.ime/.ArcInputMethodService";
 
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(kEnableInputMethodFeature);
   ToggleTabletMode(true);
 
   ASSERT_EQ(0u, bridge()->switch_ime_to_calls_.size());
@@ -363,9 +356,6 @@ TEST_F(ArcInputMethodManagerServiceTest, SwitchImeTo) {
 
 TEST_F(ArcInputMethodManagerServiceTest, OnImeDisabled) {
   namespace ceiu = chromeos::extension_ime_util;
-
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(kEnableInputMethodFeature);
 
   constexpr char kNonArcIme[] = "ime_a";
   constexpr char kArcImeX[] = "arc_ime_x";
@@ -412,8 +402,6 @@ TEST_F(ArcInputMethodManagerServiceTest, OnImeDisabled) {
 TEST_F(ArcInputMethodManagerServiceTest, OnImeInfoChanged) {
   namespace ceiu = chromeos::extension_ime_util;
 
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(kEnableInputMethodFeature);
   ToggleTabletMode(true);
 
   // Preparing 2 ImeInfo.
@@ -504,9 +492,6 @@ TEST_F(ArcInputMethodManagerServiceTest, OnImeInfoChanged) {
 TEST_F(ArcInputMethodManagerServiceTest, AllowArcIMEsOnlyInTabletMode) {
   namespace ceiu = chromeos::extension_ime_util;
   using crx_file::id_util::GenerateId;
-
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(kEnableInputMethodFeature);
 
   const std::string extension_ime_id =
       ceiu::GetInputMethodID(GenerateId("test.extension.ime"), "us");
@@ -599,9 +584,6 @@ TEST_F(ArcInputMethodManagerServiceTest,
   namespace ceiu = chromeos::extension_ime_util;
   using crx_file::id_util::GenerateId;
 
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(kEnableInputMethodFeature);
-
   const std::string extension_ime_id =
       ceiu::GetInputMethodID(GenerateId("test.extension.ime"), "us");
   const std::string component_extension_ime_id =
@@ -656,8 +638,6 @@ TEST_F(ArcInputMethodManagerServiceTest,
 }
 
 TEST_F(ArcInputMethodManagerServiceTest, FocusAndBlur) {
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(kEnableInputMethodFeature);
   ToggleTabletMode(true);
 
   // Adding one ARC IME.
@@ -716,8 +696,6 @@ TEST_F(ArcInputMethodManagerServiceTest, DisableFallbackVirtualKeyboard) {
   namespace ceiu = chromeos::extension_ime_util;
   using crx_file::id_util::GenerateId;
 
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(kEnableInputMethodFeature);
   ToggleTabletMode(true);
 
   const std::string extension_ime_id =
@@ -758,8 +736,6 @@ TEST_F(ArcInputMethodManagerServiceTest, DisableFallbackVirtualKeyboard) {
 }
 
 TEST_F(ArcInputMethodManagerServiceTest, ShowVirtualKeyboard) {
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(kEnableInputMethodFeature);
   ToggleTabletMode(true);
 
   // Adding one ARC IME.

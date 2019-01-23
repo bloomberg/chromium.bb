@@ -137,11 +137,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "arc-input-method",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "arc-native-bridge-experiment",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
