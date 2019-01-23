@@ -14,7 +14,7 @@
 
 namespace {
 
-SkColor kBackgroundColor = SK_ColorWHITE;
+SkColor kPlaybackIconBackgroundColor = SK_ColorWHITE;
 SkColor kPlaybackIconColor = SK_ColorBLACK;
 
 }  // namespace
@@ -45,9 +45,11 @@ void PlaybackImageButton::SetButtonSize(const gfx::Size& size) {
   replay_image_ = gfx::CreateVectorIcon(vector_icons::kReplayIcon,
                                         size.width() / 2, kPlaybackIconColor);
 
-  const gfx::ImageSkia background_image_ = gfx::CreateVectorIcon(
-      kPictureInPictureControlBackgroundIcon, size.width(), kBackgroundColor);
-  SetBackgroundImage(kBackgroundColor, &background_image_, &background_image_);
+  const gfx::ImageSkia background_image_ =
+      gfx::CreateVectorIcon(kPictureInPictureControlBackgroundIcon,
+                            size.width(), kPlaybackIconBackgroundColor);
+  SetBackgroundImage(kPlaybackIconBackgroundColor, &background_image_,
+                     &background_image_);
 
   UpdateImageAndTooltipText();
 }
