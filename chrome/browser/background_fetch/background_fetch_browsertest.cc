@@ -758,6 +758,26 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, ClickEventIsDispatched) {
   }
 }
 
+IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, AbortFromUI) {
+  std::vector<OfflineItem> items;
+  // Creates a registration with more than one request.
+  ASSERT_NO_FATAL_FAILURE(
+      RunScriptAndWaitForOfflineItems("StartFetchWithMultipleFiles()", &items));
+  ASSERT_EQ(items.size(), 1u);
+
+  // Simulate an abort from the UI.
+  delegate_->CancelDownload(items[0].id);
+
+  // Wait for an abort event to be dispatched. This is safe because there are
+  // more requests to process than the scheduler will handle, and every request
+  // needs to contact the delegate. Since the abort originates from the
+  // delegate, this fetch will be aborted before the fetch completes.
+  // Pass in a no-op function since we only want to wait for a message at this
+  // point.
+  ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingMessage(
+      "(() => {})()", "backgroundfetchabort"));
+}
+
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, FetchCanBePausedAndResumed) {
   offline_content_provider_observer_->PauseOnNextUpdate();
   ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingMessage(

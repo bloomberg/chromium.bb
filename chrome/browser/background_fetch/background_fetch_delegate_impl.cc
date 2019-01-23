@@ -711,8 +711,15 @@ void BackgroundFetchDelegateImpl::CancelDownload(
 
   auto job_details_iter = job_details_map_.find(unique_id);
   DCHECK(job_details_iter != job_details_map_.end());
-  job_details_iter->second.cancelled_from_ui = true;
 
+  auto& job_details = job_details_iter->second;
+  if (job_details.job_state == JobDetails::State::kDownloadsComplete ||
+      job_details.job_state == JobDetails::State::kJobComplete) {
+    // The cancel event arrived after the fetch was complete; ignore it.
+    return;
+  }
+
+  job_details.cancelled_from_ui = true;
   Abort(unique_id);
 
   if (auto client = GetClient(unique_id)) {
@@ -729,6 +736,12 @@ void BackgroundFetchDelegateImpl::PauseDownload(
     return;
 
   JobDetails& job_details = job_details_iter->second;
+  if (job_details.job_state == JobDetails::State::kDownloadsComplete ||
+      job_details.job_state == JobDetails::State::kJobComplete) {
+    // The pause event arrived after the fetch was complete; ignore it.
+    return;
+  }
+
   job_details.job_state = JobDetails::State::kStartedButPaused;
   job_details.UpdateOfflineItem();
   for (auto& download_guid_pair : job_details.current_fetch_guids)
