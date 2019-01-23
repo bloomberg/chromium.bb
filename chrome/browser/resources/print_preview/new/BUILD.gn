@@ -303,6 +303,7 @@ js_library("destination_dialog") {
     ":print_preview_search_box",
     ":provisional_destination_resolver",
     "..:metrics",
+    "..:native_layer",
     "../data:destination",
     "../data:destination_store",
     "../data:invitation",

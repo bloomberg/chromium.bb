@@ -56,12 +56,6 @@ Polymer({
       value: false,
     },
 
-    /** @type {!Array<!print_preview.Destination>} */
-    recentDestinationList: {
-      type: Array,
-      observer: 'onRecentDestinationListChange_',
-    },
-
     /** @private {?RegExp} */
     searchQuery_: {
       type: Object,
@@ -173,13 +167,6 @@ Polymer({
   },
 
   /** @private */
-  onRecentDestinationListChange_: function() {
-    const numRecent = Math.max(2, this.recentDestinationList.length);
-    this.$.recentList.style.maxHeight = `calc(${numRecent} *
-            var(--destination-item-height) + 10px + 20 / 13 * 1rem)`;
-  },
-
-  /** @private */
   onCloseOrCancel_: function() {
     if (this.searchQuery_) {
       this.$.searchBox.setValue('');
@@ -277,7 +264,6 @@ Polymer({
         this.destinationStore.isPrintDestinationSearchInProgress;
     this.metrics_.record(
         print_preview.Metrics.DestinationSearchBucket.DESTINATION_SHOWN);
-    this.$.recentList.forceIronResize();
     this.$.printList.forceIronResize();
   },
 
@@ -416,5 +402,10 @@ Polymer({
     return this.cloudPrintState ===
         print_preview.CloudPrintState.NOT_SIGNED_IN &&
         !this.cloudPrintPromoDismissed_;
+  },
+
+  /** @private */
+  onOpenSettingsPrintPage_: function() {
+    print_preview.NativeLayer.getInstance().openSettingsPrintPage();
   },
 });

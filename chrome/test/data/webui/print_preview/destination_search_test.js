@@ -49,7 +49,6 @@ cr.define('destination_search_test', function() {
       dialog.activeUser = '';
       dialog.destinationStore = destinationStore;
       dialog.invitationStore = new print_preview.InvitationStore();
-      dialog.recentDestinations = [];
       PolymerTest.clearBody();
       document.body.appendChild(dialog);
       return nativeLayer.whenCalled('getPrinterCapabilities').then(function() {
@@ -70,8 +69,7 @@ cr.define('destination_search_test', function() {
       item.destination = destination;
 
       // Get print list and fire event.
-      const list = dialog.shadowRoot.querySelectorAll(
-          'print-preview-destination-list')[1];
+      const list = dialog.$$('print-preview-destination-list');
       list.fire('destination-selected', item);
     }
 

@@ -117,11 +117,13 @@ Polymer({
 
   /** @private */
   updateSearchHint_: function() {
-    this.searchHint_ = !this.searchQuery ?
-        '' :
-        this.destination.extraPropertiesToMatch
-            .filter(p => p.match(this.searchQuery))
-            .join(' ');
+    const matches = !this.searchQuery ?
+        [] :
+        this.destination.extraPropertiesToMatch.filter(
+            p => p.match(this.searchQuery));
+    this.searchHint_ = matches.length === 0 ?
+        (this.destination.extraPropertiesToMatch.find(p => !!p) || '') :
+        matches.join(' ');
   },
 
   /**

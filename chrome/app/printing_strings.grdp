@@ -198,9 +198,6 @@
     <message name="IDS_PRINT_PREVIEW_NO_DESTINATIONS_MESSAGE" desc="Message to show when no destinations were found.">
       No destinations found
     </message>
-    <message name="IDS_PRINT_PREVIEW_DESTINATION_COUNT" desc="Message to show how many print destinations the user has.">
-      (<ph name="COUNT">$1<ex>154</ex></ph>)
-    </message>
     <message name="IDS_PRINT_PREVIEW_RECENT_DESTINATIONS_TITLE" desc="Title of the section in the Print Preview dialog that lists recently used printers that the user can print to. 'Destinations' is used because the list may include 'Saving as PDF' or other options that are not physical printers.">
       Recent Destinations
     </message>
@@ -208,7 +205,7 @@
       Print Destinations
     </message>
     <message name="IDS_PRINT_PREVIEW_MANAGE" desc="Text of link to manage printers.">
-      Manage...
+      Manage
     </message>
     <message name="IDS_PRINT_PREVIEW_MORE_DESTINATIONS" desc="Dropdown option to view more print destinations in a dialog." meaning="Label text">
       More destinations
