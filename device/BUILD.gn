@@ -100,6 +100,7 @@ test("device_unittests") {
     "fido/u2f_command_constructor_unittest.cc",
     "fido/u2f_register_operation_unittest.cc",
     "fido/u2f_sign_operation_unittest.cc",
+    "fido/win/type_conversions_unittest.cc",
     "gamepad/abstract_haptic_gamepad_unittest.cc",
     "gamepad/gamepad_id_list_unittest.cc",
     "gamepad/gamepad_provider_unittest.cc",
