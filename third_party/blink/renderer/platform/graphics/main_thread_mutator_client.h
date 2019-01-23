@@ -22,6 +22,8 @@ class PLATFORM_EXPORT MainThreadMutatorClient : public MutatorClient {
 
   void SynchronizeAnimatorName(const String& animator_name) override;
   void SetMutationUpdate(std::unique_ptr<AnimationWorkletOutput>) override;
+  void NotifyAnimationsPending() override {}
+  void NotifyAnimationsReady() override {}
   void SetDelegate(MutatorClient* client);
   AnimationWorkletMutatorDispatcherImpl* Mutator() { return mutator_.get(); }
 

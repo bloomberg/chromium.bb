@@ -26,7 +26,9 @@ CompositorMutatorClient::~CompositorMutatorClient() {
 void CompositorMutatorClient::Mutate(
     std::unique_ptr<cc::MutatorInputState> input_state) {
   TRACE_EVENT0("cc", "CompositorMutatorClient::Mutate");
-  mutator_->Mutate(std::move(input_state));
+  // TODO(http://crbug.com/791280): Switch to asynchronous once plumbing is
+  // complete.
+  mutator_->MutateSynchronously(std::move(input_state));
 }
 
 void CompositorMutatorClient::SetMutationUpdate(

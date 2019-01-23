@@ -139,7 +139,8 @@ void WorkletAnimationController::MutateAnimations() {
   if (!main_thread_mutator_client_)
     return;
 
-  main_thread_mutator_client_->Mutator()->Mutate(CollectAnimationStates());
+  main_thread_mutator_client_->Mutator()->MutateSynchronously(
+      CollectAnimationStates());
 }
 
 std::unique_ptr<AnimationWorkletDispatcherInput>
