@@ -84,7 +84,10 @@ class CastSessionClient : public blink::mojom::PresentationConnection {
  private:
   void HandleParsedClientMessage(std::unique_ptr<base::Value> message);
   void HandleV2ProtocolMessage(const CastInternalMessage& cast_message);
-  void SendSetVolumeResponse(int sequence_number, bool success);
+
+  // Sends a response to the client indicating that a particular request
+  // succeeded or failed.
+  void SendResultResponse(int sequence_number, cast_channel::Result result);
 
   std::string client_id_;
   base::Optional<std::string> session_id_;
@@ -148,13 +151,11 @@ class CastActivityRecord {
   }
   const base::Optional<std::string>& session_id() const { return session_id_; }
 
-  bool pending() const { return pending_; }
-  void set_pending(bool pending) { pending_ = pending; }
-
   // Sends app message |cast_message|, which came from the SDK client, to the
   // receiver hosting this session. Returns true if the message is sent
   // successfully.
-  bool SendAppMessageToReceiver(const CastInternalMessage& cast_message);
+  cast_channel::Result SendAppMessageToReceiver(
+      const CastInternalMessage& cast_message);
 
   // Sends media command |cast_message|, which came from the SDK client, to the
   // receiver hosting this session. Returns the locally-assigned request ID of
@@ -165,7 +166,7 @@ class CastActivityRecord {
   // Sends a SET_VOLUME request to the receiver and calls |callback| when a
   // response indicating whether the request succeeded is received.
   void SendSetVolumeRequestToReceiver(const CastInternalMessage& cast_message,
-                                      cast_channel::SetVolumeCallback callback);
+                                      cast_channel::ResultCallback callback);
 
   // Adds a new client |client_id| to this session and returns the handles of
   // the two pipes to be held by Blink It is invalid to call this method if the
@@ -216,7 +217,6 @@ class CastActivityRecord {
   cast_channel::CastMessageHandler* const message_handler_;
   CastSessionTracker* const session_tracker_;
   DataDecoder* const data_decoder_;
-  bool pending_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(CastActivityRecord);
 };
@@ -341,7 +341,7 @@ class CastActivityManager : public cast_channel::CastMessageHandler::Observer,
   void HandleStopSessionResponse(
       const MediaRoute::Id& route_id,
       mojom::MediaRouteProvider::TerminateRouteCallback callback,
-      bool success);
+      cast_channel::Result result);
 
   // Creates and stores a CastActivityRecord representing a non-local activity.
   void AddNonLocalActivityRecord(const MediaSinkInternal& sink,

@@ -121,7 +121,8 @@ void CastSessionClient::HandleParsedClientMessage(
       return;
 
     // Send an ACK message back to SDK client to indicate it is handled.
-    if (activity_->SendAppMessageToReceiver(*cast_message)) {
+    if (activity_->SendAppMessageToReceiver(*cast_message) ==
+        cast_channel::Result::kOk) {
       DCHECK(cast_message->sequence_number);
       SendMessageToClient(CreateAppMessageAck(cast_message->client_id,
                                               *cast_message->sequence_number));
@@ -161,7 +162,7 @@ void CastSessionClient::HandleV2ProtocolMessage(
     DVLOG(2) << "Got volume command from client";
     DCHECK(cast_message.sequence_number);
     activity_->SendSetVolumeRequestToReceiver(
-        cast_message, base::BindOnce(&CastSessionClient::SendSetVolumeResponse,
+        cast_message, base::BindOnce(&CastSessionClient::SendResultResponse,
                                      weak_ptr_factory_.GetWeakPtr(),
                                      *cast_message.sequence_number));
   } else if (type == cast_channel::V2MessageType::kStop) {
@@ -172,10 +173,10 @@ void CastSessionClient::HandleV2ProtocolMessage(
   }
 }
 
-void CastSessionClient::SendSetVolumeResponse(int sequence_number,
-                                              bool success) {
+void CastSessionClient::SendResultResponse(int sequence_number,
+                                           cast_channel::Result result) {
   // TODO(jrw): Send error message on failure.
-  if (success) {
+  if (result == cast_channel::Result::kOk) {
     // Send an empty message to let the client know the request succeeded.
     SendMessageToClient(
         CreateV2Message(client_id_, base::Value(), sequence_number));
@@ -245,16 +246,17 @@ void CastActivityRecord::SetOrUpdateSession(const CastSession& session,
   route_.set_description(session.GetRouteDescription());
 }
 
-bool CastActivityRecord::SendAppMessageToReceiver(
+cast_channel::Result CastActivityRecord::SendAppMessageToReceiver(
     const CastInternalMessage& cast_message) {
   const CastSession* session = GetSession();
   if (!session)
-    return false;  // TODO(jrw): Send error code back to SDK client.
+    return cast_channel::Result::kFailed;  // TODO(jrw): Send error code back to
+                                           // SDK client.
   const std::string& message_namespace = cast_message.app_message_namespace();
   if (!base::ContainsKey(session->message_namespaces(), message_namespace)) {
     DVLOG(2) << "Disallowed message namespace: " << message_namespace;
     // TODO(jrw): Send error code back to SDK client.
-    return false;
+    return cast_channel::Result::kFailed;
   }
   return message_handler_->SendAppMessage(
       GetCastChannelId(),
@@ -275,7 +277,7 @@ base::Optional<int> CastActivityRecord::SendMediaRequestToReceiver(
 
 void CastActivityRecord::SendSetVolumeRequestToReceiver(
     const CastInternalMessage& cast_message,
-    cast_channel::SetVolumeCallback callback) {
+    cast_channel::ResultCallback callback) {
   message_handler_->SendSetVolumeRequest(
       GetCastChannelId(), cast_message.v2_message_body(),
       cast_message.client_id, std::move(callback));
@@ -605,8 +607,9 @@ void CastActivityManager::OnSessionAddedOrUpdated(const MediaSinkInternal& sink,
   const auto& existing_session_id = activity->session_id();
 
   // This condition seems to always be true in practice, but if it's not, we
-  // still try to handle them gracefully below.  TODO(jrw): Replace DCHECK with
-  // an UMA metric.
+  // still try to handle them gracefully below.
+  //
+  // TODO(jrw): Replace DCHECK with an UMA metric.
   DCHECK(existing_session_id);
 
   // If |existing_session_id| is empty, then most likely it's due to a pending
@@ -756,7 +759,7 @@ void CastActivityManager::HandleLaunchSessionResponse(
 void CastActivityManager::HandleStopSessionResponse(
     const MediaRoute::Id& route_id,
     mojom::MediaRouteProvider::TerminateRouteCallback callback,
-    bool success) {
+    cast_channel::Result result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto activity_it = activities_.find(route_id);
   if (activity_it == activities_.end()) {
@@ -765,7 +768,7 @@ void CastActivityManager::HandleStopSessionResponse(
     return;
   }
 
-  if (success) {
+  if (result == cast_channel::Result::kOk) {
     RemoveActivity(activity_it);
     std::move(callback).Run(base::nullopt, RouteRequestResult::OK);
   } else {

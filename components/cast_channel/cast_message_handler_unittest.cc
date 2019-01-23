@@ -134,10 +134,13 @@ class CastMessageHandlerTest : public testing::Test {
     for (int i = 0; i < 2; i++) {
       handler_.RequestAppAvailability(&cast_socket_, "theAppId",
                                       get_app_availability_callback_.Get());
-      EXPECT_TRUE(handler_.SendSetVolumeRequest(
-          channel_id_,
-          *ParseJson(R"({"sessionId": "theSessionId", "type": "SET_VOLUME"})"),
-          "theSourceId", set_volume_callback_.Get()));
+      EXPECT_EQ(
+          Result::kOk,
+          handler_.SendSetVolumeRequest(
+              channel_id_,
+              *ParseJson(
+                  R"({"sessionId": "theSessionId", "type": "SET_VOLUME"})"),
+              "theSourceId", set_volume_callback_.Get()));
     }
     handler_.StopSession(channel_id_, "theSessionId",
                          stop_session_callback_.Get());
@@ -156,8 +159,8 @@ class CastMessageHandlerTest : public testing::Test {
   CastMessage last_request_;
   base::MockCallback<LaunchSessionCallback> launch_session_callback_;
   base::MockCallback<GetAppAvailabilityCallback> get_app_availability_callback_;
-  base::MockCallback<SetVolumeCallback> set_volume_callback_;
-  base::MockCallback<StopSessionCallback> stop_session_callback_;
+  base::MockCallback<ResultCallback> set_volume_callback_;
+  base::MockCallback<ResultCallback> stop_session_callback_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastMessageHandlerTest);
@@ -356,7 +359,7 @@ TEST_F(CastMessageHandlerTest, SendAppMessage) {
                 SendMessage(HasPayloadUtf8(message.payload_utf8()), _));
   }
 
-  handler_.SendAppMessage(channel_id_, message);
+  EXPECT_EQ(Result::kOk, handler_.SendAppMessage(channel_id_, message));
 }
 
 // Check that SendMediaRequest sends a message created by CreateMediaRequest and
@@ -421,9 +424,9 @@ TEST_F(CastMessageHandlerTest, SendVolumeCommand) {
     "sessionId": "theSessionId",
     "type": "SET_VOLUME",
   })";
-  EXPECT_TRUE(handler_.SendSetVolumeRequest(
-      channel_id_, *ParseJson(message_str), "theSourceId",
-      base::DoNothing::Once<bool>()));
+  EXPECT_EQ(Result::kOk, handler_.SendSetVolumeRequest(
+                             channel_id_, *ParseJson(message_str),
+                             "theSourceId", base::DoNothing::Once<Result>()));
 }
 
 // Check that closing a socket removes pending requests, and that the pending
@@ -440,8 +443,8 @@ TEST_F(CastMessageHandlerTest, PendingRequestsDestructor) {
   EXPECT_CALL(get_app_availability_callback_,
               Run("theAppId", GetAppAvailabilityResult::kUnknown))
       .Times(2);
-  EXPECT_CALL(set_volume_callback_, Run(false)).Times(2);
-  EXPECT_CALL(stop_session_callback_, Run(false));
+  EXPECT_CALL(set_volume_callback_, Run(Result::kFailed)).Times(2);
+  EXPECT_CALL(stop_session_callback_, Run(Result::kFailed));
 
   // Force callbacks to be called through PendingRequests destructor by
   // simulating a socket closing.
@@ -462,8 +465,8 @@ TEST_F(CastMessageHandlerTest, HandlePendingRequest) {
   EXPECT_CALL(get_app_availability_callback_,
               Run("theAppId", GetAppAvailabilityResult::kAvailable))
       .Times(2);
-  EXPECT_CALL(set_volume_callback_, Run(true)).Times(2);
-  EXPECT_CALL(stop_session_callback_, Run(true));
+  EXPECT_CALL(set_volume_callback_, Run(Result::kOk)).Times(2);
+  EXPECT_CALL(stop_session_callback_, Run(Result::kOk));
 
   // Handle pending launch session request.
   handler_.HandleCastInternalMessage(channel_id_, "theSourceId",
@@ -509,10 +512,11 @@ TEST_F(CastMessageHandlerTest, SetVolumeTimedOut) {
     "sessionId": "theSessionId",
     "type": "SET_VOLUME",
   })";
-  base::MockCallback<SetVolumeCallback> callback;
-  EXPECT_TRUE(handler_.SendSetVolumeRequest(
-      channel_id_, *ParseJson(message_str), "theSourceId", callback.Get()));
-  EXPECT_CALL(callback, Run(false));
+  base::MockCallback<ResultCallback> callback;
+  EXPECT_EQ(Result::kOk,
+            handler_.SendSetVolumeRequest(channel_id_, *ParseJson(message_str),
+                                          "theSourceId", callback.Get()));
+  EXPECT_CALL(callback, Run(Result::kFailed));
   thread_bundle_.FastForwardBy(kRequestTimeout);
 }
 
