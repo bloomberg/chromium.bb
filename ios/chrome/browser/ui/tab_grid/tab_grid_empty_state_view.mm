@@ -27,7 +27,7 @@ const CGFloat kVerticalMargin = 16;
 @end
 
 @implementation TabGridEmptyStateView
-
+// GridEmptyView properties.
 @synthesize scrollViewContentInsets = _scrollViewContentInsets;
 
 - (instancetype)initWithPage:(TabGridPage)page {

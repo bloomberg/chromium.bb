@@ -166,28 +166,6 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
 @end
 
 @implementation TabGridPageControl
-// Public properties
-@synthesize selectedPage = _selectedPage;
-@synthesize sliderPosition = _sliderPosition;
-@synthesize regularTabCount = _regularTabCount;
-// Private properties
-@synthesize incognitoGuide = _incognitoGuide;
-@synthesize regularGuide = _regularGuide;
-@synthesize remoteGuide = _remoteGuide;
-@synthesize sliderView = _sliderView;
-@synthesize selectedImageView = _selectedImageView;
-@synthesize incognitoIcon = _incognitoIcon;
-@synthesize incognitoSelectedIcon = _incognitoSelectedIconl;
-@synthesize regularIcon = _regularIcon;
-@synthesize regularSelectedIcon = _regularSelectedIcon;
-@synthesize regularLabel = _regularLabel;
-@synthesize regularSelectedLabel = _regularSelectedLabel;
-@synthesize remoteIcon = _remoteIcon;
-@synthesize remoteSelectedIcon = _remoteSelectedIcon;
-@synthesize sliderOrigin = _sliderOrigin;
-@synthesize sliderRange = _sliderRange;
-@synthesize dragStart = _dragStart;
-@synthesize dragStartPosition = _dragStartPosition;
 
 + (instancetype)pageControl {
   return [[TabGridPageControl alloc] init];

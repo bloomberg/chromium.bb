@@ -65,21 +65,9 @@
 @implementation TabGridCoordinator
 // Superclass property.
 @synthesize baseViewController = _baseViewController;
-// Public properties.
-@synthesize animationsDisabledForTesting = _animationsDisabledForTesting;
+// Ivars are not auto-synthesized when both accessor and mutator are overridden.
 @synthesize regularTabModel = _regularTabModel;
 @synthesize incognitoTabModel = _incognitoTabModel;
-// Private properties.
-@synthesize launchMaskView = _launchMaskView;
-@synthesize dispatcher = _dispatcher;
-@synthesize adaptor = _adaptor;
-@synthesize bvcContainer = _bvcContainer;
-@synthesize transitionHandler = _transitionHandler;
-@synthesize regularTabsMediator = _regularTabsMediator;
-@synthesize incognitoTabsMediator = _incognitoTabsMediator;
-@synthesize remoteTabsMediator = _remoteTabsMediator;
-@synthesize historyCoordinator = _historyCoordinator;
-@synthesize URLLoader = _URLLoader;
 
 - (instancetype)initWithWindow:(nullable UIWindow*)window
     applicationCommandEndpoint:

@@ -20,12 +20,6 @@
 @implementation TabGridAdaptor
 // TabSwitcher properties.
 @synthesize delegate = _delegate;
-// Public properties
-@synthesize tabGridViewController = _tabGridViewController;
-@synthesize adaptedDispatcher = _adaptedDispatcher;
-@synthesize tabGridPager = _tabGridPager;
-@synthesize incognitoMediator = _incognitoMediator;
-@synthesize loader = _loader;
 
 #pragma mark - TabSwitcher
 

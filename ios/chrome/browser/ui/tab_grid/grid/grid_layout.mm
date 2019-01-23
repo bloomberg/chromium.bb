@@ -16,9 +16,6 @@
 @end
 
 @implementation GridLayout
-@synthesize animatesItemUpdates = _animatesItemUpdates;
-@synthesize indexPathsOfDeletingItems = _indexPathsOfDeletingItems;
-@synthesize indexPathsOfInsertingItems = _indexPathsOfInsertingItems;
 
 - (instancetype)init {
   if (self = [super init]) {
