@@ -253,12 +253,17 @@ TEST_F(NGInlineItemsBuilderTest, CollapseZeroWidthSpaces) {
 
   EXPECT_EQ(String(u"text\u200Btext"), TestAppend(u"text \n", u"\u200Btext"))
       << "Collapsible space before newline does not affect the result.";
-  EXPECT_EQ(String(u"text\u200Btext"), TestAppend(u"text\u200B\n", u" text"))
+  EXPECT_EQ(String(u"text\u200B text"), TestAppend(u"text\u200B\n", u" text"))
       << "Collapsible space after newline is removed even when the "
          "newline was removed.";
   EXPECT_EQ(String(u"text\u200Btext"), TestAppend(u"text\u200B ", u"\ntext"))
       << "A white space sequence containing a segment break before or after "
          "a zero width space is collapsed to a zero width space.";
+}
+
+TEST_F(NGInlineItemsBuilderTest, CollapseZeroWidthSpaceAndNewLineAtEnd) {
+  EXPECT_EQ(String(u"\u200B"), TestAppend(u"\u200B\n"));
+  EXPECT_EQ(NGInlineItem::kNotCollapsible, items_[0].EndCollapseType());
 }
 
 #if SEGMENT_BREAK_TRANSFORMATION_FOR_EAST_ASIAN_WIDTH
