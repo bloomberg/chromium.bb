@@ -12,7 +12,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/ui/settings/personal_data_manager_data_changed_observer.h"
+#include "ios/chrome/browser/ui/settings/personal_data_manager_finished_profile_tasks_waiter.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,7 +46,7 @@ class AutofillCreditCardTableViewControllerTest
     autofill::PersonalDataManager* personal_data_manager =
         autofill::PersonalDataManagerFactory::GetForBrowserState(
             chrome_browser_state_.get());
-    PersonalDataManagerDataChangedObserver observer(personal_data_manager);
+    PersonalDataManagerFinishedProfileTasksWaiter waiter(personal_data_manager);
 
     autofill::CreditCard credit_card(base::GenerateGUID(), origin);
     credit_card.SetRawInfo(autofill::CREDIT_CARD_NAME_FULL,
@@ -54,7 +54,7 @@ class AutofillCreditCardTableViewControllerTest
     credit_card.SetRawInfo(autofill::CREDIT_CARD_NUMBER,
                            base::ASCIIToUTF16(card_number));
     personal_data_manager->OnAcceptedLocalCreditCardSave(credit_card);
-    observer.Wait();  // Wait for completion of the asynchronous operation.
+    waiter.Wait();  // Wait for completion of the asynchronous operation.
   }
 
   // Deletes the item at (section, row) and waits util condition returns true or
