@@ -18,25 +18,6 @@ const uint64_t kSignatureHeaderExpires = 1517895941;
 
 // See content/test/data/sxg/README on how to generate these data.
 // clang-format off
-constexpr char kSignatureHeaderECDSAP256B2[] = R"(label; sig=*MEUCIQC7tM/B6YxVgrJmgfFawtwBKPev2vFCh7amR+JTDBMgTQIga9LkS51vteYr8NWPTCSZRy10lcLaFNN9m1G3OBS9lBs=*; validity-url="https://example.com/resource.validity.msg"; integrity="digest/mi-sha256-03"; cert-url="https://example.com/cert.msg"; cert-sha256=*KX+BYLSMgDOON8Ju65RoId39Qvajxa12HO+WnD4HpS0=*; date=1517892341; expires=1517895941)";
-constexpr uint8_t kCborHeadersECDSAP256B2[] = {
-  0x82, 0xa1, 0x47, 0x3a, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x43, 0x47,
-  0x45, 0x54, 0xa4, 0x46, 0x64, 0x69, 0x67, 0x65, 0x73, 0x74, 0x58, 0x39,
-  0x6d, 0x69, 0x2d, 0x73, 0x68, 0x61, 0x32, 0x35, 0x36, 0x2d, 0x30, 0x33,
-  0x3d, 0x77, 0x6d, 0x70, 0x34, 0x64, 0x52, 0x4d, 0x59, 0x67, 0x78, 0x50,
-  0x33, 0x74, 0x53, 0x4d, 0x43, 0x77, 0x56, 0x2f, 0x49, 0x30, 0x43, 0x57,
-  0x4f, 0x43, 0x69, 0x48, 0x5a, 0x70, 0x41, 0x69, 0x68, 0x4b, 0x5a, 0x6b,
-  0x31, 0x39, 0x62, 0x73, 0x4e, 0x39, 0x52, 0x49, 0x3d, 0x47, 0x3a, 0x73,
-  0x74, 0x61, 0x74, 0x75, 0x73, 0x43, 0x32, 0x30, 0x30, 0x4c, 0x63, 0x6f,
-  0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2d, 0x74, 0x79, 0x70, 0x65, 0x58, 0x18,
-  0x74, 0x65, 0x78, 0x74, 0x2f, 0x68, 0x74, 0x6d, 0x6c, 0x3b, 0x20, 0x63,
-  0x68, 0x61, 0x72, 0x73, 0x65, 0x74, 0x3d, 0x75, 0x74, 0x66, 0x2d, 0x38,
-  0x50, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2d, 0x65, 0x6e, 0x63,
-  0x6f, 0x64, 0x69, 0x6e, 0x67, 0x4c, 0x6d, 0x69, 0x2d, 0x73, 0x68, 0x61,
-  0x32, 0x35, 0x36, 0x2d, 0x30, 0x33
-};
-constexpr char kSignatureHeaderECDSAP384B2[] = R"(label; sig=*MGUCMQDm3+Mf3ymTQOF2EUFk+NDIpOIqbFCboYsPD9YOV9rpayKTmAXzUD7Hxtp+XP/8mQECMEfTRcJmvL9QMAMKuDIzQqy/ib8MPeJHap9kQVQT1OdROaYj4EISngkJeT5om9/YlA==*; validity-url="https://example.com/resource.validity.msg"; integrity="digest/mi-sha256-03"; cert-url="https://example.com/cert.msg"; cert-sha256=*8X8y8nj8vDJHSSa0cxn+TCu+8zGpIJfbdzAnd5cW+jA=*; date=1517892341; expires=1517895941)";
-
 constexpr char kSignatureHeaderECDSAP256[] = R"(label; sig=*MEUCICLHwHwNFwbVUeu6a9AV8hVxvXfcYkWEMHnPFHYQfN/UAiEA3VQwLi1TJFvihZqasnpzuYlJte2E7Q4YEvtEnVZPOXE=*; validity-url="https://example.com/resource.validity.msg"; integrity="digest/mi-sha256-03"; cert-url="https://example.com/cert.msg"; cert-sha256=*KX+BYLSMgDOON8Ju65RoId39Qvajxa12HO+WnD4HpS0=*; date=1517892341; expires=1517895941)";
 constexpr uint8_t kCborHeadersECDSAP256[] = {
   0xa4, 0x46, 0x64, 0x69, 0x67, 0x65, 0x73, 0x74, 0x58, 0x39, 0x6d, 0x69,
@@ -244,12 +225,8 @@ class SignedExchangeSignatureVerifierTest
 };
 
 TEST_P(SignedExchangeSignatureVerifierTest, VerifyECDSAP256) {
-  // TODO(crbug.com/919424) Remove support for kB2.
-  bool is_b2 = GetParam() == SignedExchangeVersion::kB2;
-
   auto signature = SignedExchangeSignatureHeaderField::ParseSignature(
-      is_b2 ? kSignatureHeaderECDSAP256B2 : kSignatureHeaderECDSAP256,
-      nullptr /* devtools_proxy */);
+      kSignatureHeaderECDSAP256, nullptr /* devtools_proxy */);
   ASSERT_TRUE(signature.has_value());
   ASSERT_EQ(1u, signature->size());
 
@@ -268,11 +245,7 @@ TEST_P(SignedExchangeSignatureVerifierTest, VerifyECDSAP256) {
   envelope.AddResponseHeader("content-encoding", "mi-sha256-03");
   envelope.AddResponseHeader(
       "digest", "mi-sha256-03=wmp4dRMYgxP3tSMCwV/I0CWOCiHZpAihKZk19bsN9RI=");
-  if (is_b2) {
-    envelope.set_cbor_header(base::make_span(kCborHeadersECDSAP256B2));
-  } else {
-    envelope.set_cbor_header(base::make_span(kCborHeadersECDSAP256));
-  }
+  envelope.set_cbor_header(base::make_span(kCborHeadersECDSAP256));
 
   envelope.SetSignatureForTesting((*signature)[0]);
 
@@ -280,12 +253,8 @@ TEST_P(SignedExchangeSignatureVerifierTest, VerifyECDSAP256) {
 }
 
 TEST_P(SignedExchangeSignatureVerifierTest, VerifyECDSAP384) {
-  // TODO(crbug.com/919424) Remove support for kB2.
-  bool is_b2 = GetParam() == SignedExchangeVersion::kB2;
-
   auto signature = SignedExchangeSignatureHeaderField::ParseSignature(
-      is_b2 ? kSignatureHeaderECDSAP384B2 : kSignatureHeaderECDSAP384,
-      nullptr /* devtools_proxy */);
+      kSignatureHeaderECDSAP384, nullptr /* devtools_proxy */);
   ASSERT_TRUE(signature.has_value());
   ASSERT_EQ(1u, signature->size());
 
@@ -343,7 +312,6 @@ TEST_P(SignedExchangeSignatureVerifierTest, IgnoreErrorsSPKIList) {
 
 INSTANTIATE_TEST_CASE_P(SignedExchangeSignatureVerifierTests,
                         SignedExchangeSignatureVerifierTest,
-                        ::testing::Values(SignedExchangeVersion::kB2,
-                                          SignedExchangeVersion::kB3));
+                        ::testing::Values(SignedExchangeVersion::kB3));
 
 }  // namespace content

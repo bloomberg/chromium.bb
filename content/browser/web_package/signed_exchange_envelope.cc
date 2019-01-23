@@ -23,25 +23,6 @@ namespace content {
 
 namespace {
 
-// IsStateful{Request,Response}Header returns true if |name| is a stateful
-// header field. Stateful header fields will cause validation failure of
-// signed exchanges.
-// Note that |name| must be lower-cased.
-// https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#stateful-headers
-bool IsStatefulRequestHeader(base::StringPiece name) {
-  DCHECK_EQ(name, base::ToLowerASCII(name));
-
-  const char* const kStatefulRequestHeaders[] = {
-      "authorization", "cookie", "cookie2", "proxy-authorization",
-      "sec-websocket-key"};
-
-  for (const char* field : kStatefulRequestHeaders) {
-    if (name == field)
-      return true;
-  }
-  return false;
-}
-
 bool IsUncachedHeader(base::StringPiece name) {
   DCHECK_EQ(name, base::ToLowerASCII(name));
 
@@ -85,89 +66,6 @@ bool IsUncachedHeader(base::StringPiece name) {
       return true;
   }
   return false;
-}
-
-bool ParseRequestMap(const cbor::Value& value,
-                     SignedExchangeEnvelope* out,
-                     SignedExchangeDevToolsProxy* devtools_proxy) {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"), "ParseRequestMap");
-  if (!value.is_map()) {
-    signed_exchange_utils::ReportErrorAndTraceEvent(
-        devtools_proxy,
-        base::StringPrintf(
-            "Expected request map, got non-map type. Actual type: %d",
-            static_cast<int>(value.type())));
-    return false;
-  }
-
-  const cbor::Value::MapValue& request_map = value.GetMap();
-
-  auto method_iter =
-      request_map.find(cbor::Value(kMethodKey, cbor::Value::Type::BYTE_STRING));
-  if (method_iter == request_map.end() ||
-      !method_iter->second.is_bytestring()) {
-    signed_exchange_utils::ReportErrorAndTraceEvent(
-        devtools_proxy, ":method is not found or not a bytestring.");
-    return false;
-  }
-  base::StringPiece method_str = method_iter->second.GetBytestringAsString();
-  // https://wicg.github.io/webpackage/loading.html#parse-cbor-headers
-  // If any of the following is true, return a failure:
-  // - ...
-  // - headers[0][`:method`] is not `GET`. [spec text]
-  if (method_str != "GET") {
-    signed_exchange_utils::ReportErrorAndTraceEvent(
-        devtools_proxy,
-        base::StringPrintf("Request method must be GET, but is %s",
-                           method_str.as_string().c_str()));
-    return false;
-  }
-  out->set_request_method(method_str);
-
-  for (const auto& it : request_map) {
-    if (!it.first.is_bytestring() || !it.second.is_bytestring()) {
-      signed_exchange_utils::ReportErrorAndTraceEvent(
-          devtools_proxy, "Non-bytestring value in the request map.");
-      return false;
-    }
-    base::StringPiece name_str = it.first.GetBytestringAsString();
-
-    if (name_str == kUrlKey) {
-      signed_exchange_utils::ReportErrorAndTraceEvent(
-          devtools_proxy,
-          ":url key in request map is obsolete in this version of the format.");
-      return false;
-    }
-
-    if (name_str == kMethodKey)
-      continue;
-
-    // https://tools.ietf.org/html/draft-yasskin-httpbis-origin-signed-exchanges-impl-02
-    // Section 3.2:
-    // "For each request header field in `exchange`, the header field's
-    // lowercase name as a byte string to the header field's value as a byte
-    // string."
-    if (name_str != base::ToLowerASCII(name_str)) {
-      signed_exchange_utils::ReportErrorAndTraceEvent(
-          devtools_proxy,
-          base::StringPrintf(
-              "Request header name should be lower-cased. header name: %s",
-              name_str.as_string().c_str()));
-      return false;
-    }
-
-    // 4. If exchange’s headers contain a stateful header field, as defined in
-    // Section 4.1, return “invalid”. [spec text]
-    if (IsStatefulRequestHeader(name_str)) {
-      signed_exchange_utils::ReportErrorAndTraceEvent(
-          devtools_proxy,
-          base::StringPrintf(
-              "Exchange contains stateful request header. header name: %s",
-              name_str.as_string().c_str()));
-      return false;
-    }
-  }
-  return true;
 }
 
 // Returns if the response is cacheble by a shared cache, as per Section 3 of
@@ -395,46 +293,12 @@ base::Optional<SignedExchangeEnvelope> SignedExchangeEnvelope::Parse(
   ret.set_cbor_header(cbor_header);
   ret.set_request_url(request_url);
 
-  // TODO(crbug.com/919424) Remove support for kB2.
-  if (version == SignedExchangeVersion::kB2) {
-    if (!value->is_array()) {
-      signed_exchange_utils::ReportErrorAndTraceEvent(
-          devtools_proxy,
-          base::StringPrintf(
-              "Expected top-level Value to be an array. Actual type : %d",
-              static_cast<int>(value->type())));
-      return base::nullopt;
-    }
+  ret.set_request_method("GET");
 
-    const cbor::Value::ArrayValue& top_level_array = value->GetArray();
-    constexpr size_t kTopLevelArraySize = 2;
-    if (top_level_array.size() != kTopLevelArraySize) {
-      signed_exchange_utils::ReportErrorAndTraceEvent(
-          devtools_proxy,
-          base::StringPrintf("Expected top-level array to have 2 elements. "
-                             "Actual element count: %" PRIuS,
-                             top_level_array.size()));
-      return base::nullopt;
-    }
-
-    if (!ParseRequestMap(top_level_array[0], &ret, devtools_proxy)) {
-      signed_exchange_utils::ReportErrorAndTraceEvent(
-          devtools_proxy, "Failed to parse request map.");
-      return base::nullopt;
-    }
-    if (!ParseResponseMap(top_level_array[1], &ret, devtools_proxy)) {
-      signed_exchange_utils::ReportErrorAndTraceEvent(
-          devtools_proxy, "Failed to parse response map.");
-      return base::nullopt;
-    }
-  } else {
-    ret.set_request_method("GET");
-
-    if (!ParseResponseMap(*value, &ret, devtools_proxy)) {
-      signed_exchange_utils::ReportErrorAndTraceEvent(
-          devtools_proxy, "Failed to parse response map.");
-      return base::nullopt;
-    }
+  if (!ParseResponseMap(*value, &ret, devtools_proxy)) {
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy, "Failed to parse response map.");
+    return base::nullopt;
   }
 
   base::Optional<std::vector<SignedExchangeSignatureHeaderField::Signature>>

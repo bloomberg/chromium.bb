@@ -30,7 +30,7 @@ class CONTENT_EXPORT SignedExchangeEnvelope {
  public:
   using HeaderMap = std::map<std::string, std::string>;
 
-  // Parse headers from the application/signed-exchange;v=b2 format.
+  // Parse headers from the application/signed-exchange;v=b3 format.
   // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#application-signed-exchange
   //
   // This also performs the steps 1, 3 and 4 of "Cross-origin trust" validation.
