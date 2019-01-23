@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="../../cr_elements/icons.html">
+<link rel="import" href="../../cr_elements/shared_vars_css.html">
 <link rel="import" href="../../html/i18n_behavior.html">
 <link rel="import" href="../../html/load_time_data.html">
 
@@ -10,11 +11,9 @@
   <template>
     <style>
       :host {
-        --iron-icon-fill-color: var(--google-grey-refresh-700);
-
         align-items: center;
-        border-top: 1px solid var(--google-grey-300);
-        color: var(--google-grey-refresh-700);
+        border-top: 1px solid var(--cr-separator-color);
+        color: var(--cr-secondary-text-color);
         display: none;
         /* Should be 13px when <html> font-size is 16px */
         font-size: 0.8125rem;
