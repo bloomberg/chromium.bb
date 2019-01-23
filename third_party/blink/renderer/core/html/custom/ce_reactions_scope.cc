@@ -12,8 +12,8 @@ namespace blink {
 
 CEReactionsScope* CEReactionsScope::top_of_stack_ = nullptr;
 
-void CEReactionsScope::EnqueueToCurrentQueue(Element* element,
-                                             CustomElementReaction* reaction) {
+void CEReactionsScope::EnqueueToCurrentQueue(Element& element,
+                                             CustomElementReaction& reaction) {
   if (!work_to_do_) {
     work_to_do_ = true;
     CustomElementReactionStack::Current().Push();

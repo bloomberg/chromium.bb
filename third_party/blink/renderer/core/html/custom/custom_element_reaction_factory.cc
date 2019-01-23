@@ -29,7 +29,7 @@ class CustomElementUpgradeReaction final : public CustomElementReaction {
       if (!RuntimeEnabledFeatures::InvisibleDOMEnabled() ||
           !element.IsInsideInvisibleStaticSubtree() ||
           upgrade_invisible_elements_)
-        definition_->Upgrade(&element);
+        definition_->Upgrade(element);
     }
   }
 

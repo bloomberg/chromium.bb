@@ -221,7 +221,7 @@ CustomElementDefinition* CustomElementRegistry::DefineInternal(
   HeapVector<Member<Element>> candidates;
   CollectCandidates(descriptor, &candidates);
   for (Element* candidate : candidates)
-    definition->EnqueueUpgradeReaction(candidate);
+    definition->EnqueueUpgradeReaction(*candidate);
 
   // 16: when-defined promise processing
   const auto& entry = when_defined_promise_map_.find(name);
@@ -289,10 +289,10 @@ CustomElementDefinition* CustomElementRegistry::DefinitionForId(
   return id ? definitions_[id - 1].Get() : nullptr;
 }
 
-void CustomElementRegistry::AddCandidate(Element* candidate) {
-  AtomicString name = candidate->localName();
+void CustomElementRegistry::AddCandidate(Element& candidate) {
+  AtomicString name = candidate.localName();
   if (!CustomElement::IsValidName(name)) {
-    const AtomicString& is = candidate->IsValue();
+    const AtomicString& is = candidate.IsValue();
     if (!is.IsNull())
       name = is;
   }
@@ -307,7 +307,7 @@ void CustomElementRegistry::AddCandidate(Element* candidate) {
               ->insert(name, MakeGarbageCollected<UpgradeCandidateSet>())
               .stored_value->value;
   }
-  set->insert(candidate);
+  set->insert(&candidate);
 }
 
 // https://html.spec.whatwg.org/multipage/scripting.html#dom-customelementsregistry-whendefined
@@ -362,7 +362,7 @@ void CustomElementRegistry::upgrade(Node* root) {
 
   // 2. For each candidate of candidates, try to upgrade candidate.
   for (auto& candidate : candidates) {
-    CustomElement::TryToUpgrade(candidate,
+    CustomElement::TryToUpgrade(*candidate,
                                 true /* upgrade_invisible_elements */);
   }
 }

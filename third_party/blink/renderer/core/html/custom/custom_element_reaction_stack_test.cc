@@ -25,8 +25,8 @@ TEST(CustomElementReactionStackTest, one) {
   HeapVector<Member<Command>>* commands =
       MakeGarbageCollected<HeapVector<Member<Command>>>();
   commands->push_back(MakeGarbageCollected<Log>('a', log));
-  stack->EnqueueToCurrentQueue(CreateElement("a"),
-                               MakeGarbageCollected<TestReaction>(commands));
+  stack->EnqueueToCurrentQueue(*CreateElement("a"),
+                               *MakeGarbageCollected<TestReaction>(commands));
   stack->PopInvokingReactions();
 
   EXPECT_EQ(log, std::vector<char>({'a'}))
@@ -43,15 +43,15 @@ TEST(CustomElementReactionStackTest, multipleElements) {
     HeapVector<Member<Command>>* commands =
         MakeGarbageCollected<HeapVector<Member<Command>>>();
     commands->push_back(MakeGarbageCollected<Log>('a', log));
-    stack->EnqueueToCurrentQueue(CreateElement("a"),
-                                 MakeGarbageCollected<TestReaction>(commands));
+    stack->EnqueueToCurrentQueue(*CreateElement("a"),
+                                 *MakeGarbageCollected<TestReaction>(commands));
   }
   {
     HeapVector<Member<Command>>* commands =
         MakeGarbageCollected<HeapVector<Member<Command>>>();
     commands->push_back(MakeGarbageCollected<Log>('b', log));
-    stack->EnqueueToCurrentQueue(CreateElement("a"),
-                                 MakeGarbageCollected<TestReaction>(commands));
+    stack->EnqueueToCurrentQueue(*CreateElement("a"),
+                                 *MakeGarbageCollected<TestReaction>(commands));
   }
   stack->PopInvokingReactions();
 
@@ -68,8 +68,8 @@ TEST(CustomElementReactionStackTest, popTopEmpty) {
   HeapVector<Member<Command>>* commands =
       MakeGarbageCollected<HeapVector<Member<Command>>>();
   commands->push_back(MakeGarbageCollected<Log>('a', log));
-  stack->EnqueueToCurrentQueue(CreateElement("a"),
-                               MakeGarbageCollected<TestReaction>(commands));
+  stack->EnqueueToCurrentQueue(*CreateElement("a"),
+                               *MakeGarbageCollected<TestReaction>(commands));
   stack->Push();
   stack->PopInvokingReactions();
 
@@ -87,16 +87,16 @@ TEST(CustomElementReactionStackTest, popTop) {
     HeapVector<Member<Command>>* commands =
         MakeGarbageCollected<HeapVector<Member<Command>>>();
     commands->push_back(MakeGarbageCollected<Log>('a', log));
-    stack->EnqueueToCurrentQueue(CreateElement("a"),
-                                 MakeGarbageCollected<TestReaction>(commands));
+    stack->EnqueueToCurrentQueue(*CreateElement("a"),
+                                 *MakeGarbageCollected<TestReaction>(commands));
   }
   stack->Push();
   {
     HeapVector<Member<Command>>* commands =
         MakeGarbageCollected<HeapVector<Member<Command>>>();
     commands->push_back(MakeGarbageCollected<Log>('b', log));
-    stack->EnqueueToCurrentQueue(CreateElement("a"),
-                                 MakeGarbageCollected<TestReaction>(commands));
+    stack->EnqueueToCurrentQueue(*CreateElement("a"),
+                                 *MakeGarbageCollected<TestReaction>(commands));
   }
   stack->PopInvokingReactions();
 
@@ -107,7 +107,7 @@ TEST(CustomElementReactionStackTest, popTop) {
 TEST(CustomElementReactionStackTest, requeueingDoesNotReorderElements) {
   std::vector<char> log;
 
-  Element* element = CreateElement("a");
+  Element& element = *CreateElement("a");
 
   CustomElementReactionStack* stack =
       MakeGarbageCollected<CustomElementReactionStack>();
@@ -117,21 +117,21 @@ TEST(CustomElementReactionStackTest, requeueingDoesNotReorderElements) {
         MakeGarbageCollected<HeapVector<Member<Command>>>();
     commands->push_back(MakeGarbageCollected<Log>('a', log));
     stack->EnqueueToCurrentQueue(element,
-                                 MakeGarbageCollected<TestReaction>(commands));
+                                 *MakeGarbageCollected<TestReaction>(commands));
   }
   {
     HeapVector<Member<Command>>* commands =
         MakeGarbageCollected<HeapVector<Member<Command>>>();
     commands->push_back(MakeGarbageCollected<Log>('z', log));
-    stack->EnqueueToCurrentQueue(CreateElement("a"),
-                                 MakeGarbageCollected<TestReaction>(commands));
+    stack->EnqueueToCurrentQueue(*CreateElement("a"),
+                                 *MakeGarbageCollected<TestReaction>(commands));
   }
   {
     HeapVector<Member<Command>>* commands =
         MakeGarbageCollected<HeapVector<Member<Command>>>();
     commands->push_back(MakeGarbageCollected<Log>('b', log));
     stack->EnqueueToCurrentQueue(element,
-                                 MakeGarbageCollected<TestReaction>(commands));
+                                 *MakeGarbageCollected<TestReaction>(commands));
   }
   stack->PopInvokingReactions();
 
@@ -142,7 +142,7 @@ TEST(CustomElementReactionStackTest, requeueingDoesNotReorderElements) {
 TEST(CustomElementReactionStackTest, oneReactionQueuePerElement) {
   std::vector<char> log;
 
-  Element* element = CreateElement("a");
+  Element& element = *CreateElement("a");
 
   CustomElementReactionStack* stack =
       MakeGarbageCollected<CustomElementReactionStack>();
@@ -152,29 +152,29 @@ TEST(CustomElementReactionStackTest, oneReactionQueuePerElement) {
         MakeGarbageCollected<HeapVector<Member<Command>>>();
     commands->push_back(MakeGarbageCollected<Log>('a', log));
     stack->EnqueueToCurrentQueue(element,
-                                 MakeGarbageCollected<TestReaction>(commands));
+                                 *MakeGarbageCollected<TestReaction>(commands));
   }
   {
     HeapVector<Member<Command>>* commands =
         MakeGarbageCollected<HeapVector<Member<Command>>>();
     commands->push_back(MakeGarbageCollected<Log>('z', log));
-    stack->EnqueueToCurrentQueue(CreateElement("a"),
-                                 MakeGarbageCollected<TestReaction>(commands));
+    stack->EnqueueToCurrentQueue(*CreateElement("a"),
+                                 *MakeGarbageCollected<TestReaction>(commands));
   }
   stack->Push();
   {
     HeapVector<Member<Command>>* commands =
         MakeGarbageCollected<HeapVector<Member<Command>>>();
     commands->push_back(MakeGarbageCollected<Log>('y', log));
-    stack->EnqueueToCurrentQueue(CreateElement("a"),
-                                 MakeGarbageCollected<TestReaction>(commands));
+    stack->EnqueueToCurrentQueue(*CreateElement("a"),
+                                 *MakeGarbageCollected<TestReaction>(commands));
   }
   {
     HeapVector<Member<Command>>* commands =
         MakeGarbageCollected<HeapVector<Member<Command>>>();
     commands->push_back(MakeGarbageCollected<Log>('b', log));
     stack->EnqueueToCurrentQueue(element,
-                                 MakeGarbageCollected<TestReaction>(commands));
+                                 *MakeGarbageCollected<TestReaction>(commands));
   }
   stack->PopInvokingReactions();
 
@@ -189,7 +189,7 @@ TEST(CustomElementReactionStackTest, oneReactionQueuePerElement) {
 class EnqueueToStack : public Command {
  public:
   EnqueueToStack(CustomElementReactionStack* stack,
-                 Element* element,
+                 Element& element,
                  CustomElementReaction* reaction)
       : stack_(stack), element_(element), reaction_(reaction) {}
   ~EnqueueToStack() override = default;
@@ -200,7 +200,7 @@ class EnqueueToStack : public Command {
     visitor->Trace(reaction_);
   }
   void Run(Element&) override {
-    stack_->EnqueueToCurrentQueue(element_, reaction_);
+    stack_->EnqueueToCurrentQueue(*element_, *reaction_);
   }
 
  private:
@@ -214,7 +214,7 @@ class EnqueueToStack : public Command {
 TEST(CustomElementReactionStackTest, enqueueFromReaction) {
   std::vector<char> log;
 
-  Element* element = CreateElement("a");
+  Element& element = *CreateElement("a");
 
   CustomElementReactionStack* stack =
       MakeGarbageCollected<CustomElementReactionStack>();
@@ -228,7 +228,7 @@ TEST(CustomElementReactionStackTest, enqueueFromReaction) {
     commands->push_back(MakeGarbageCollected<EnqueueToStack>(
         stack, element, MakeGarbageCollected<TestReaction>(subcommands)));
     stack->EnqueueToCurrentQueue(element,
-                                 MakeGarbageCollected<TestReaction>(commands));
+                                 *MakeGarbageCollected<TestReaction>(commands));
   }
   stack->PopInvokingReactions();
 

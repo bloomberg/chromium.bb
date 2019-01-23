@@ -210,7 +210,7 @@ HTMLElement* CustomElement::CreateFailedElement(Document& document,
   return element;
 }
 
-void CustomElement::Enqueue(Element* element, CustomElementReaction* reaction) {
+void CustomElement::Enqueue(Element& element, CustomElementReaction& reaction) {
   // To enqueue an element on the appropriate element queue
   // https://html.spec.whatwg.org/multipage/scripting.html#enqueue-an-element-on-the-appropriate-element-queue
 
@@ -226,37 +226,32 @@ void CustomElement::Enqueue(Element* element, CustomElementReaction* reaction) {
   CustomElementReactionStack::Current().EnqueueToBackupQueue(element, reaction);
 }
 
-void CustomElement::EnqueueConnectedCallback(Element* element) {
-  CustomElementDefinition* definition =
-      DefinitionForElementWithoutCheck(*element);
+void CustomElement::EnqueueConnectedCallback(Element& element) {
+  auto* definition = DefinitionForElementWithoutCheck(element);
   if (definition->HasConnectedCallback())
     definition->EnqueueConnectedCallback(element);
 }
 
-void CustomElement::EnqueueDisconnectedCallback(Element* element) {
-  CustomElementDefinition* definition =
-      DefinitionForElementWithoutCheck(*element);
+void CustomElement::EnqueueDisconnectedCallback(Element& element) {
+  auto* definition = DefinitionForElementWithoutCheck(element);
   if (definition->HasDisconnectedCallback())
     definition->EnqueueDisconnectedCallback(element);
 }
 
-void CustomElement::EnqueueAdoptedCallback(Element* element,
-                                           Document* old_owner,
-                                           Document* new_owner) {
-  DCHECK_EQ(element->GetCustomElementState(), CustomElementState::kCustom);
-  CustomElementDefinition* definition =
-      DefinitionForElementWithoutCheck(*element);
+void CustomElement::EnqueueAdoptedCallback(Element& element,
+                                           Document& old_owner,
+                                           Document& new_owner) {
+  auto* definition = DefinitionForElementWithoutCheck(element);
   if (definition->HasAdoptedCallback())
     definition->EnqueueAdoptedCallback(element, old_owner, new_owner);
 }
 
 void CustomElement::EnqueueAttributeChangedCallback(
-    Element* element,
+    Element& element,
     const QualifiedName& name,
     const AtomicString& old_value,
     const AtomicString& new_value) {
-  CustomElementDefinition* definition =
-      DefinitionForElementWithoutCheck(*element);
+  auto* definition = DefinitionForElementWithoutCheck(element);
   if (definition->HasAttributeChangedCallback(name))
     definition->EnqueueAttributeChangedCallback(element, name, old_value,
                                                 new_value);
@@ -267,16 +262,15 @@ void CustomElement::EnqueueFormAssociatedCallback(
     HTMLFormElement* nullable_form) {
   auto& definition = *DefinitionForElementWithoutCheck(element);
   if (definition.HasFormAssociatedCallback()) {
-    Enqueue(&element, &CustomElementReactionFactory::CreateFormAssociated(
-                          definition, nullable_form));
+    Enqueue(element, CustomElementReactionFactory::CreateFormAssociated(
+                         definition, nullable_form));
   }
 }
 
 void CustomElement::EnqueueFormResetCallback(Element& element) {
   auto& definition = *DefinitionForElementWithoutCheck(element);
   if (definition.HasFormResetCallback()) {
-    Enqueue(&element,
-            &CustomElementReactionFactory::CreateFormReset(definition));
+    Enqueue(element, CustomElementReactionFactory::CreateFormReset(definition));
   }
 }
 
@@ -284,26 +278,26 @@ void CustomElement::EnqueueDisabledStateChangedCallback(Element& element,
                                                         bool is_disabled) {
   auto& definition = *DefinitionForElementWithoutCheck(element);
   if (definition.HasDisabledStateChangedCallback()) {
-    Enqueue(&element, &CustomElementReactionFactory::CreateDisabledStateChanged(
-                          definition, is_disabled));
+    Enqueue(element, CustomElementReactionFactory::CreateDisabledStateChanged(
+                         definition, is_disabled));
   }
 }
 
-void CustomElement::TryToUpgrade(Element* element,
+void CustomElement::TryToUpgrade(Element& element,
                                  bool upgrade_invisible_elements) {
   // Try to upgrade an element
   // https://html.spec.whatwg.org/multipage/scripting.html#concept-try-upgrade
 
-  DCHECK_EQ(element->GetCustomElementState(), CustomElementState::kUndefined);
+  DCHECK_EQ(element.GetCustomElementState(), CustomElementState::kUndefined);
 
-  CustomElementRegistry* registry = CustomElement::Registry(*element);
+  CustomElementRegistry* registry = CustomElement::Registry(element);
   if (!registry)
     return;
-  const AtomicString& is_value = element->IsValue();
+  const AtomicString& is_value = element.IsValue();
   if (CustomElementDefinition* definition =
           registry->DefinitionFor(CustomElementDescriptor(
-              is_value.IsNull() ? element->localName() : is_value,
-              element->localName())))
+              is_value.IsNull() ? element.localName() : is_value,
+              element.localName())))
     definition->EnqueueUpgradeReaction(element, upgrade_invisible_elements);
   else
     registry->AddCandidate(element);

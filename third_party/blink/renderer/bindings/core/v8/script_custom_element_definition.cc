@@ -170,7 +170,7 @@ HTMLElement* ScriptCustomElementDefinition::CreateAutonomousCustomElementSync(
       element = CreateElementForConstructor(document);
       DCHECK(!try_catch.HasCaught());
 
-      ConstructionStackScope construction_stack_scope(this, element);
+      ConstructionStackScope construction_stack_scope(*this, *element);
       element = CallConstructor();
     } else {
       element = CallConstructor();
@@ -198,7 +198,7 @@ HTMLElement* ScriptCustomElementDefinition::CreateAutonomousCustomElementSync(
 }
 
 // https://html.spec.whatwg.org/multipage/scripting.html#upgrades
-bool ScriptCustomElementDefinition::RunConstructor(Element* element) {
+bool ScriptCustomElementDefinition::RunConstructor(Element& element) {
   if (!script_state_->ContextIsValid())
     return false;
   ScriptState::Scope scope(script_state_);
@@ -217,7 +217,7 @@ bool ScriptCustomElementDefinition::RunConstructor(Element* element) {
 
   // To report InvalidStateError Exception, when the constructor returns some
   // different object
-  if (result != element) {
+  if (result != &element) {
     const String& message =
         "custom element constructors must call super() first and must "
         "not return a different object";

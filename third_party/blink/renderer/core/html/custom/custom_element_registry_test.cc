@@ -61,7 +61,7 @@ class CustomElementRegistryTest : public PageTestBase {
 
 TEST_F(CustomElementRegistryTest,
        collectCandidates_shouldNotIncludeElementsRemovedFromDocument) {
-  Element* element = CreateElement("a-a").InDocument(&GetDocument());
+  Element& element = *CreateElement("a-a").InDocument(&GetDocument());
   Registry().AddCandidate(element);
 
   HeapVector<Member<Element>> elements;
@@ -77,7 +77,7 @@ TEST_F(CustomElementRegistryTest,
 TEST_F(CustomElementRegistryTest,
        collectCandidates_shouldNotIncludeElementsInDifferentDocument) {
   Element* element = CreateElement("a-a").InDocument(&GetDocument());
-  Registry().AddCandidate(element);
+  Registry().AddCandidate(*element);
 
   Document* other_document = HTMLDocument::CreateForTest();
   other_document->AppendChild(element);
@@ -99,18 +99,18 @@ TEST_F(CustomElementRegistryTest,
   CustomElementDescriptor descriptor("hello-world", "hello-world");
 
   // Does not match: namespace is not HTML
-  Element* element_a = CreateElement("hello-world")
-                           .InDocument(&GetDocument())
-                           .InNamespace("data:text/date,1981-03-10");
+  Element& element_a = *CreateElement("hello-world")
+                            .InDocument(&GetDocument())
+                            .InNamespace("data:text/date,1981-03-10");
   // Matches
-  Element* element_b = CreateElement("hello-world").InDocument(&GetDocument());
+  Element& element_b = *CreateElement("hello-world").InDocument(&GetDocument());
   // Does not match: local name is not hello-world
-  Element* element_c = CreateElement("button")
-                           .InDocument(&GetDocument())
-                           .WithIsValue("hello-world");
-  GetDocument().documentElement()->AppendChild(element_a);
-  element_a->AppendChild(element_b);
-  element_a->AppendChild(element_c);
+  Element& element_c = *CreateElement("button")
+                            .InDocument(&GetDocument())
+                            .WithIsValue("hello-world");
+  GetDocument().documentElement()->AppendChild(&element_a);
+  element_a.AppendChild(&element_b);
+  element_a.AppendChild(&element_c);
 
   Registry().AddCandidate(element_a);
   Registry().AddCandidate(element_b);
@@ -126,9 +126,9 @@ TEST_F(CustomElementRegistryTest,
 }
 
 TEST_F(CustomElementRegistryTest, collectCandidates_oneCandidate) {
-  Element* element = CreateElement("a-a").InDocument(&GetDocument());
+  Element& element = *CreateElement("a-a").InDocument(&GetDocument());
   Registry().AddCandidate(element);
-  GetDocument().documentElement()->AppendChild(element);
+  GetDocument().documentElement()->AppendChild(&element);
 
   HeapVector<Member<Element>> elements;
   CollectCandidates(CustomElementDescriptor("a-a", "a-a"), &elements);
@@ -146,9 +146,9 @@ TEST_F(CustomElementRegistryTest, collectCandidates_shouldBeInDocumentOrder) {
   Element* element_b = factory.WithId("b");
   Element* element_c = factory.WithId("c");
 
-  Registry().AddCandidate(element_b);
-  Registry().AddCandidate(element_a);
-  Registry().AddCandidate(element_c);
+  Registry().AddCandidate(*element_b);
+  Registry().AddCandidate(*element_a);
+  Registry().AddCandidate(*element_c);
 
   GetDocument().documentElement()->AppendChild(element_a);
   element_a->AppendChild(element_b);
@@ -218,7 +218,7 @@ class LogUpgradeDefinition : public TestCustomElementDefinition {
     attribute_changed_.clear();
   }
 
-  bool RunConstructor(Element* element) override {
+  bool RunConstructor(Element& element) override {
     logs_.push_back(kConstructor);
     element_ = element;
     return TestCustomElementDefinition::RunConstructor(element);

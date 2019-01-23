@@ -1919,11 +1919,11 @@ Node::InsertionNotificationRequest Element::InsertedInto(
 
   if (isConnected()) {
     if (GetCustomElementState() == CustomElementState::kCustom)
-      CustomElement::EnqueueConnectedCallback(this);
+      CustomElement::EnqueueConnectedCallback(*this);
     else if (IsUpgradedV0CustomElement())
       V0CustomElement::DidAttach(this, GetDocument());
     else if (GetCustomElementState() == CustomElementState::kUndefined)
-      CustomElement::TryToUpgrade(this);
+      CustomElement::TryToUpgrade(*this);
   }
 
   TreeScope& scope = insertion_point.GetTreeScope();
@@ -1987,7 +1987,7 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
       GetDocument().SetCSSTarget(nullptr);
 
     if (GetCustomElementState() == CustomElementState::kCustom)
-      CustomElement::EnqueueDisconnectedCallback(this);
+      CustomElement::EnqueueDisconnectedCallback(*this);
     else if (IsUpgradedV0CustomElement())
       V0CustomElement::DidDetach(this, insertion_point.GetDocument());
   }
@@ -3107,7 +3107,7 @@ void Element::RemoveAttributeInternal(
     } else if (GetCustomElementState() == CustomElementState::kCustom) {
       // This would otherwise be enqueued by willModifyAttribute.
       CustomElement::EnqueueAttributeChangedCallback(
-          this, name, value_being_removed, g_null_atom);
+          *this, name, value_being_removed, g_null_atom);
     }
   }
 
@@ -4477,7 +4477,7 @@ void Element::WillModifyAttribute(const QualifiedName& name,
   }
 
   if (GetCustomElementState() == CustomElementState::kCustom) {
-    CustomElement::EnqueueAttributeChangedCallback(this, name, old_value,
+    CustomElement::EnqueueAttributeChangedCallback(*this, name, old_value,
                                                    new_value);
   }
 

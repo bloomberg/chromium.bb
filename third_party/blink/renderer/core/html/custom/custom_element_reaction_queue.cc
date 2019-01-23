@@ -18,8 +18,8 @@ void CustomElementReactionQueue::Trace(blink::Visitor* visitor) {
   visitor->Trace(reactions_);
 }
 
-void CustomElementReactionQueue::Add(CustomElementReaction* reaction) {
-  reactions_.push_back(reaction);
+void CustomElementReactionQueue::Add(CustomElementReaction& reaction) {
+  reactions_.push_back(&reaction);
 }
 
 // There is one queue per element, so this could be invoked

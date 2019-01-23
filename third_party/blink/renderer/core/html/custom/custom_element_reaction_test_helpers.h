@@ -97,7 +97,7 @@ class Enqueue : public Command {
     visitor->Trace(queue_);
     visitor->Trace(reaction_);
   }
-  void Run(Element&) override { queue_->Add(reaction_); }
+  void Run(Element&) override { queue_->Add(*reaction_); }
 
  private:
   Member<CustomElementReactionQueue> queue_;

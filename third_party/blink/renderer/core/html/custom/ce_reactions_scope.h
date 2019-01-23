@@ -33,7 +33,7 @@ class CORE_EXPORT CEReactionsScope final {
     top_of_stack_ = top_of_stack_->prev_;
   }
 
-  void EnqueueToCurrentQueue(Element*, CustomElementReaction*);
+  void EnqueueToCurrentQueue(Element&, CustomElementReaction&);
 
  private:
   static CEReactionsScope* top_of_stack_;
