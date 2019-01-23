@@ -57,30 +57,30 @@ void CustomElementReactionStack::InvokeReactions(ElementQueue& queue) {
 }
 
 void CustomElementReactionStack::EnqueueToCurrentQueue(
-    Element* element,
-    CustomElementReaction* reaction) {
+    Element& element,
+    CustomElementReaction& reaction) {
   Enqueue(stack_.back(), element, reaction);
 }
 
 void CustomElementReactionStack::Enqueue(Member<ElementQueue>& queue,
-                                         Element* element,
-                                         CustomElementReaction* reaction) {
+                                         Element& element,
+                                         CustomElementReaction& reaction) {
   if (!queue)
     queue = MakeGarbageCollected<ElementQueue>();
-  queue->push_back(element);
+  queue->push_back(&element);
 
-  CustomElementReactionQueue* reactions = map_.at(element);
+  CustomElementReactionQueue* reactions = map_.at(&element);
   if (!reactions) {
     reactions = MakeGarbageCollected<CustomElementReactionQueue>();
-    map_.insert(element, reactions);
+    map_.insert(&element, reactions);
   }
 
   reactions->Add(reaction);
 }
 
 void CustomElementReactionStack::EnqueueToBackupQueue(
-    Element* element,
-    CustomElementReaction* reaction) {
+    Element& element,
+    CustomElementReaction& reaction) {
   // https://html.spec.whatwg.org/multipage/scripting.html#backup-element-queue
 
   DCHECK(!CEReactionsScope::Current());
@@ -97,8 +97,8 @@ void CustomElementReactionStack::EnqueueToBackupQueue(
   Enqueue(backup_queue_, element, reaction);
 }
 
-void CustomElementReactionStack::ClearQueue(Element* element) {
-  if (CustomElementReactionQueue* reactions = map_.at(element))
+void CustomElementReactionStack::ClearQueue(Element& element) {
+  if (CustomElementReactionQueue* reactions = map_.at(&element))
     reactions->Clear();
 }
 

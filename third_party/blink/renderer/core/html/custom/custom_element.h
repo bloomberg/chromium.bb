@@ -94,13 +94,13 @@ class CORE_EXPORT CustomElement {
       const AtomicString& is_value);
   static HTMLElement* CreateFailedElement(Document&, const QualifiedName&);
 
-  static void Enqueue(Element*, CustomElementReaction*);
-  static void EnqueueConnectedCallback(Element*);
-  static void EnqueueDisconnectedCallback(Element*);
-  static void EnqueueAdoptedCallback(Element*,
-                                     Document* old_owner,
-                                     Document* new_owner);
-  static void EnqueueAttributeChangedCallback(Element*,
+  static void Enqueue(Element&, CustomElementReaction&);
+  static void EnqueueConnectedCallback(Element&);
+  static void EnqueueDisconnectedCallback(Element&);
+  static void EnqueueAdoptedCallback(Element&,
+                                     Document& old_owner,
+                                     Document& new_owner);
+  static void EnqueueAttributeChangedCallback(Element&,
                                               const QualifiedName&,
                                               const AtomicString& old_value,
                                               const AtomicString& new_value);
@@ -110,7 +110,7 @@ class CORE_EXPORT CustomElement {
   static void EnqueueDisabledStateChangedCallback(Element& element,
                                                   bool is_disabled);
 
-  static void TryToUpgrade(Element*, bool upgrade_invisible_elements = false);
+  static void TryToUpgrade(Element&, bool upgrade_invisible_elements = false);
 
   static void AddEmbedderCustomElementNameForTesting(const AtomicString& name,
                                                      ExceptionState&);

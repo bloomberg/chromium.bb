@@ -22,7 +22,7 @@ class CORE_EXPORT CustomElementReactionQueue final
 
   void Trace(blink::Visitor*);
 
-  void Add(CustomElementReaction*);
+  void Add(CustomElementReaction&);
   void InvokeReactions(Element&);
   bool IsEmpty() { return reactions_.IsEmpty(); }
   void Clear();

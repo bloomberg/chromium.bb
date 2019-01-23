@@ -101,7 +101,7 @@ StyleAttributeMutationScope::~StyleAttributeMutationScope() {
     if (CustomElementDefinition* definition =
             DefinitionIfStyleChangedCallback(element)) {
       definition->EnqueueAttributeChangedCallback(
-          element, html_names::kStyleAttr, old_value_,
+          *element, html_names::kStyleAttr, old_value_,
           element->getAttribute(html_names::kStyleAttr));
     }
 

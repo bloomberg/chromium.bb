@@ -30,9 +30,9 @@ class CORE_EXPORT CustomElementReactionStack final
 
   void Push();
   void PopInvokingReactions();
-  void EnqueueToCurrentQueue(Element*, CustomElementReaction*);
-  void EnqueueToBackupQueue(Element*, CustomElementReaction*);
-  void ClearQueue(Element*);
+  void EnqueueToCurrentQueue(Element&, CustomElementReaction&);
+  void EnqueueToBackupQueue(Element&, CustomElementReaction&);
+  void ClearQueue(Element&);
 
   static CustomElementReactionStack& Current();
 
@@ -50,7 +50,7 @@ class CORE_EXPORT CustomElementReactionStack final
 
   void InvokeBackupQueue();
   void InvokeReactions(ElementQueue&);
-  void Enqueue(Member<ElementQueue>&, Element*, CustomElementReaction*);
+  void Enqueue(Member<ElementQueue>&, Element&, CustomElementReaction&);
 
   DISALLOW_COPY_AND_ASSIGN(CustomElementReactionStack);
 };

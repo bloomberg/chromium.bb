@@ -164,9 +164,8 @@ inline void TreeScopeAdopter::MoveNodeToNewDocument(
   old_document.MoveNodeIteratorsToNewDocument(node, new_document);
 
   if (node.GetCustomElementState() == CustomElementState::kCustom) {
-    Element& element = ToElement(node);
-    CustomElement::EnqueueAdoptedCallback(&element, &old_document,
-                                          &new_document);
+    CustomElement::EnqueueAdoptedCallback(ToElement(node), old_document,
+                                          new_document);
   }
 
   if (node.IsShadowRoot())

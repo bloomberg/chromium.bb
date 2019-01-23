@@ -57,7 +57,7 @@ class CORE_EXPORT CustomElementRegistry final : public ScriptWrappable {
 
   // TODO(dominicc): Consider broadening this API when type extensions are
   // implemented.
-  void AddCandidate(Element*);
+  void AddCandidate(Element&);
   ScriptPromise whenDefined(ScriptState*,
                             const AtomicString& name,
                             ExceptionState&);

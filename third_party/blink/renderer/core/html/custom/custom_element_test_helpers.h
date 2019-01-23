@@ -60,9 +60,9 @@ class TestCustomElementDefinition : public CustomElementDefinition {
 
   ScriptValue GetConstructorForScript() override { return ScriptValue(); }
 
-  bool RunConstructor(Element* element) override {
+  bool RunConstructor(Element& element) override {
     if (GetConstructionStack().IsEmpty() ||
-        GetConstructionStack().back() != element)
+        GetConstructionStack().back() != &element)
       return false;
     GetConstructionStack().back().Clear();
     return true;
