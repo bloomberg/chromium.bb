@@ -3510,7 +3510,7 @@ free_device:
     return ret;
 }
 
-static int drmParsePlatformBusInfo(int maj, int min, drmPlatformBusInfoPtr info)
+static int drmParseOFBusInfo(int maj, int min, char *fullname)
 {
 #ifdef __linux__
     char path[PATH_MAX + 1], *name, *tmp_name;
@@ -3534,19 +3534,18 @@ static int drmParsePlatformBusInfo(int maj, int min, drmPlatformBusInfoPtr info)
         tmp_name++;
     }
 
-    strncpy(info->fullname, tmp_name, DRM_PLATFORM_DEVICE_NAME_LEN);
-    info->fullname[DRM_PLATFORM_DEVICE_NAME_LEN - 1] = '\0';
+    strncpy(fullname, tmp_name, DRM_PLATFORM_DEVICE_NAME_LEN);
+    fullname[DRM_PLATFORM_DEVICE_NAME_LEN - 1] = '\0';
     free(name);
 
     return 0;
 #else
-#warning "Missing implementation of drmParsePlatformBusInfo"
+#warning "Missing implementation of drmParseOFBusInfo"
     return -EINVAL;
 #endif
 }
 
-static int drmParsePlatformDeviceInfo(int maj, int min,
-                                      drmPlatformDeviceInfoPtr info)
+static int drmParseOFDeviceInfo(int maj, int min, char ***compatible)
 {
 #ifdef __linux__
     char path[PATH_MAX + 1], *value, *tmp_name;
@@ -3564,8 +3563,8 @@ static int drmParsePlatformDeviceInfo(int maj, int min,
         count = 1;
     }
 
-    info->compatible = calloc(count + 1, sizeof(*info->compatible));
-    if (!info->compatible)
+    *compatible = calloc(count + 1, sizeof(char *));
+    if (!*compatible)
         return -ENOMEM;
 
     for (i = 0; i < count; i++) {
@@ -3589,19 +3588,19 @@ static int drmParsePlatformDeviceInfo(int maj, int min,
             free(value);
         }
 
-        info->compatible[i] = tmp_name;
+        *compatible[i] = tmp_name;
     }
 
     return 0;
 
 free:
     while (i--)
-        free(info->compatible[i]);
+        free(*compatible[i]);
 
-    free(info->compatible);
+    free(*compatible);
     return err;
 #else
-#warning "Missing implementation of drmParsePlatformDeviceInfo"
+#warning "Missing implementation of drmParseOFDeviceInfo"
     return -EINVAL;
 #endif
 }
@@ -3624,7 +3623,7 @@ static int drmProcessPlatformDevice(drmDevicePtr *device,
 
     dev->businfo.platform = (drmPlatformBusInfoPtr)ptr;
 
-    ret = drmParsePlatformBusInfo(maj, min, dev->businfo.platform);
+    ret = drmParseOFBusInfo(maj, min, dev->businfo.platform->fullname);
     if (ret < 0)
         goto free_device;
 
@@ -3632,7 +3631,7 @@ static int drmProcessPlatformDevice(drmDevicePtr *device,
         ptr += sizeof(drmPlatformBusInfo);
         dev->deviceinfo.platform = (drmPlatformDeviceInfoPtr)ptr;
 
-        ret = drmParsePlatformDeviceInfo(maj, min, dev->deviceinfo.platform);
+        ret = drmParseOFDeviceInfo(maj, min, &dev->deviceinfo.platform->compatible);
         if (ret < 0)
             goto free_device;
     }
@@ -3644,73 +3643,6 @@ static int drmProcessPlatformDevice(drmDevicePtr *device,
 free_device:
     free(dev);
     return ret;
-}
-
-static int drmParseHost1xBusInfo(int maj, int min, drmHost1xBusInfoPtr info)
-{
-#ifdef __linux__
-    char path[PATH_MAX + 1], *name;
-
-    snprintf(path, sizeof(path), "/sys/dev/char/%d:%d/device", maj, min);
-
-    name = sysfs_uevent_get(path, "OF_FULLNAME");
-    if (!name)
-        return -ENOENT;
-
-    strncpy(info->fullname, name, DRM_HOST1X_DEVICE_NAME_LEN);
-    info->fullname[DRM_HOST1X_DEVICE_NAME_LEN - 1] = '\0';
-    free(name);
-
-    return 0;
-#else
-#warning "Missing implementation of drmParseHost1xBusInfo"
-    return -EINVAL;
-#endif
-}
-
-static int drmParseHost1xDeviceInfo(int maj, int min,
-                                    drmHost1xDeviceInfoPtr info)
-{
-#ifdef __linux__
-    char path[PATH_MAX + 1], *value;
-    unsigned int count, i;
-    int err;
-
-    snprintf(path, sizeof(path), "/sys/dev/char/%d:%d/device", maj, min);
-
-    value = sysfs_uevent_get(path, "OF_COMPATIBLE_N");
-    if (!value)
-        return -ENOENT;
-
-    sscanf(value, "%u", &count);
-    free(value);
-
-    info->compatible = calloc(count + 1, sizeof(*info->compatible));
-    if (!info->compatible)
-        return -ENOMEM;
-
-    for (i = 0; i < count; i++) {
-        value = sysfs_uevent_get(path, "OF_COMPATIBLE_%u", i);
-        if (!value) {
-            err = -ENOENT;
-            goto free;
-        }
-
-        info->compatible[i] = value;
-    }
-
-    return 0;
-
-free:
-    while (i--)
-        free(info->compatible[i]);
-
-    free(info->compatible);
-    return err;
-#else
-#warning "Missing implementation of drmParseHost1xDeviceInfo"
-    return -EINVAL;
-#endif
 }
 
 static int drmProcessHost1xDevice(drmDevicePtr *device,
@@ -3731,7 +3663,7 @@ static int drmProcessHost1xDevice(drmDevicePtr *device,
 
     dev->businfo.host1x = (drmHost1xBusInfoPtr)ptr;
 
-    ret = drmParseHost1xBusInfo(maj, min, dev->businfo.host1x);
+    ret = drmParseOFBusInfo(maj, min, dev->businfo.host1x->fullname);
     if (ret < 0)
         goto free_device;
 
@@ -3739,7 +3671,7 @@ static int drmProcessHost1xDevice(drmDevicePtr *device,
         ptr += sizeof(drmHost1xBusInfo);
         dev->deviceinfo.host1x = (drmHost1xDeviceInfoPtr)ptr;
 
-        ret = drmParseHost1xDeviceInfo(maj, min, dev->deviceinfo.host1x);
+        ret = drmParseOFDeviceInfo(maj, min, &dev->deviceinfo.host1x->compatible);
         if (ret < 0)
             goto free_device;
     }
