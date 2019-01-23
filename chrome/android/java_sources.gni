@@ -490,6 +490,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/customtabs/dynamicmodule/DynamicModuleConstants.java",
   "java/src/org/chromium/chrome/browser/customtabs/dynamicmodule/DynamicModuleCoordinator.java",
   "java/src/org/chromium/chrome/browser/customtabs/dynamicmodule/DynamicModuleNavigationEventObserver.java",
+  "java/src/org/chromium/chrome/browser/customtabs/dynamicmodule/DynamicModulePageLoadObserver.java",
   "java/src/org/chromium/chrome/browser/customtabs/dynamicmodule/ModuleEntryPoint.java",
   "java/src/org/chromium/chrome/browser/customtabs/dynamicmodule/ModuleHostImpl.java",
   "java/src/org/chromium/chrome/browser/customtabs/dynamicmodule/ModuleLoader.java",

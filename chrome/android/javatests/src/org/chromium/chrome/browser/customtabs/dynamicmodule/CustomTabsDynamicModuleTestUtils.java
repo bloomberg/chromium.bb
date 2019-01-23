@@ -9,6 +9,8 @@ import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_URLS_HEADER_VALUE;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_URLS_REGEX;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_MODULE_PACKAGE_NAME;
+import static org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleConstants.ON_NAVIGATION_EVENT_MODULE_API_VERSION;
+import static org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleConstants.ON_PAGE_LOAD_METRIC_API_VERSION;
 import static org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleNavigationEventObserver.PENDING_URL_KEY;
 import static org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleNavigationEventObserver.URL_KEY;
 
@@ -16,6 +18,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsCallback;
 import android.support.test.InstrumentationRegistry;
@@ -27,6 +30,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.AppHooksModule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
+import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -117,6 +121,7 @@ public class CustomTabsDynamicModuleTestUtils {
     public static class FakeCCTActivityDelegate extends BaseActivityDelegate {
         private final CallbackHelper mOnNavigationStarted = new CallbackHelper();
         private final CallbackHelper mOnNavigationFinished = new CallbackHelper();
+        private final CallbackHelper mOnFirstContentfulPaint = new CallbackHelper();
 
         public FakeCCTActivityDelegate() {
         }
@@ -180,9 +185,10 @@ public class CustomTabsDynamicModuleTestUtils {
 
         @Override
         public void onNavigationEvent(int navigationEvent, Bundle extras) {
-            // Introduced in API version 4.
-            if (sModuleVersion < 4) {
-                Assert.fail("onNavigationEvent must not be used if module version less than 4");
+            if (sModuleVersion < ON_NAVIGATION_EVENT_MODULE_API_VERSION) {
+                Assert.fail(String.format(
+                        "onNavigationEvent must not be used if module version less than %d",
+                        ON_NAVIGATION_EVENT_MODULE_API_VERSION));
             }
 
             if (navigationEvent == CustomTabsCallback.NAVIGATION_STARTED) {
@@ -194,17 +200,43 @@ public class CustomTabsDynamicModuleTestUtils {
             }
         }
 
+        @Override
+        public void onPageMetricEvent(String metricName, long navigationStart,
+                long offset, long navigationId) {
+            if (sModuleVersion < ON_PAGE_LOAD_METRIC_API_VERSION) {
+                Assert.fail(String.format(
+                        "onPageMetricEvent must not be used if module version less than %d",
+                        ON_PAGE_LOAD_METRIC_API_VERSION));
+            }
+
+            long current = SystemClock.uptimeMillis();
+            Assert.assertTrue(navigationStart <= current);
+            Assert.assertTrue(offset <= (current - navigationStart));
+
+            if (PageLoadMetrics.FIRST_CONTENTFUL_PAINT.equals(metricName)) {
+                mOnFirstContentfulPaint.notifyCalled();
+            }
+        }
+
         /**
          * Waits for expected number of navigation events happen.
          */
         /* package */ void waitForNavigationEvent(int navigationEvent, int currentCallCount,
                 int numberOfCallsToWaitFor) throws TimeoutException, InterruptedException {
-            if (sModuleVersion < 4) return;
+            if (sModuleVersion < ON_NAVIGATION_EVENT_MODULE_API_VERSION) return;
+
             if (navigationEvent == CustomTabsCallback.NAVIGATION_STARTED) {
                 mOnNavigationStarted.waitForCallback(currentCallCount, numberOfCallsToWaitFor);
             } else if (navigationEvent == CustomTabsCallback.NAVIGATION_FINISHED) {
                 mOnNavigationFinished.waitForCallback(currentCallCount, numberOfCallsToWaitFor);
             }
+        }
+
+        /* package */ void waitForFirstContentfulPaint(int currentCallCount,
+                int numberOfCallsToWaitFor) throws TimeoutException, InterruptedException {
+            if (sModuleVersion < ON_PAGE_LOAD_METRIC_API_VERSION) return;
+
+            mOnFirstContentfulPaint.waitForCallback(currentCallCount, numberOfCallsToWaitFor);
         }
     }
 
