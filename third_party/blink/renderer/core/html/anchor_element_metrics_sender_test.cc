@@ -21,7 +21,7 @@ class AnchorElementMetricsSenderTest : public SimTest {
 
   void SetUp() override {
     SimTest::SetUp();
-    feature_list_.InitAndEnableFeature(features::kRecordAnchorMetricsClicked);
+    feature_list_.InitAndEnableFeature(features::kNavigationPredictor);
   }
 
   base::test::ScopedFeatureList feature_list_;

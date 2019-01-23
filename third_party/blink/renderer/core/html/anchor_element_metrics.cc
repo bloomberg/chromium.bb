@@ -212,7 +212,7 @@ base::Optional<AnchorElementMetrics> AnchorElementMetrics::Create(
 base::Optional<AnchorElementMetrics>
 AnchorElementMetrics::MaybeReportClickedMetricsOnClick(
     const HTMLAnchorElement* anchor_element) {
-  if (!base::FeatureList::IsEnabled(features::kRecordAnchorMetricsClicked) ||
+  if (!base::FeatureList::IsEnabled(features::kNavigationPredictor) ||
       !anchor_element->Href().ProtocolIsInHTTPFamily() ||
       !GetRootDocument(*anchor_element)->Url().ProtocolIsInHTTPFamily() ||
       !anchor_element->GetDocument().BaseURL().ProtocolIsInHTTPFamily()) {
@@ -236,7 +236,7 @@ AnchorElementMetrics::MaybeReportClickedMetricsOnClick(
 void AnchorElementMetrics::MaybeReportViewportMetricsOnLoad(
     Document& document) {
   DCHECK(document.GetFrame());
-  if (!base::FeatureList::IsEnabled(features::kRecordAnchorMetricsVisible) ||
+  if (!base::FeatureList::IsEnabled(features::kNavigationPredictor) ||
       document.ParentDocument() || !document.View() ||
       !document.Url().ProtocolIsInHTTPFamily() ||
       !document.BaseURL().ProtocolIsInHTTPFamily()) {

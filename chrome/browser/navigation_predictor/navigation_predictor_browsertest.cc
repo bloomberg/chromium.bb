@@ -54,8 +54,7 @@ class NavigationPredictorBrowserTest
   NavigationPredictorBrowserTest()
       : subresource_filter::SubresourceFilterBrowserTest() {
     const std::vector<base::Feature> features = {
-        blink::features::kRecordAnchorMetricsVisible,
-        blink::features::kRecordAnchorMetricsClicked};
+        blink::features::kNavigationPredictor};
     feature_list_.InitWithFeatures(features, {});
   }
 
@@ -348,7 +347,7 @@ IN_PROC_BROWSER_TEST_F(
   base::test::ScopedFeatureList feature_list;
   parameters["same_origin_preconnecting_allowed"] = "true";
   feature_list.InitAndEnableFeatureWithParameters(
-      blink::features::kRecordAnchorMetricsVisible, parameters);
+      blink::features::kNavigationPredictor, parameters);
 
   base::HistogramTester histogram_tester;
 

@@ -86,35 +86,35 @@ NavigationPredictor::NavigationPredictor(
     : browser_context_(
           render_frame_host->GetSiteInstance()->GetBrowserContext()),
       ratio_area_scale_(base::GetFieldTrialParamByFeatureAsInt(
-          blink::features::kRecordAnchorMetricsVisible,
+          blink::features::kNavigationPredictor,
           "ratio_area_scale",
           100)),
       is_in_iframe_scale_(base::GetFieldTrialParamByFeatureAsInt(
-          blink::features::kRecordAnchorMetricsVisible,
+          blink::features::kNavigationPredictor,
           "is_in_iframe_scale",
           0)),
       is_same_host_scale_(base::GetFieldTrialParamByFeatureAsInt(
-          blink::features::kRecordAnchorMetricsVisible,
+          blink::features::kNavigationPredictor,
           "is_same_host_scale",
           100)),
       contains_image_scale_(base::GetFieldTrialParamByFeatureAsInt(
-          blink::features::kRecordAnchorMetricsVisible,
+          blink::features::kNavigationPredictor,
           "contains_image_scale",
           50)),
       is_url_incremented_scale_(base::GetFieldTrialParamByFeatureAsInt(
-          blink::features::kRecordAnchorMetricsVisible,
+          blink::features::kNavigationPredictor,
           "is_url_incremented_scale",
           100)),
       source_engagement_score_scale_(base::GetFieldTrialParamByFeatureAsInt(
-          blink::features::kRecordAnchorMetricsVisible,
+          blink::features::kNavigationPredictor,
           "source_engagement_score_scale",
           100)),
       target_engagement_score_scale_(base::GetFieldTrialParamByFeatureAsInt(
-          blink::features::kRecordAnchorMetricsVisible,
+          blink::features::kNavigationPredictor,
           "target_engagement_score_scale",
           100)),
       area_rank_scale_(base::GetFieldTrialParamByFeatureAsInt(
-          blink::features::kRecordAnchorMetricsVisible,
+          blink::features::kNavigationPredictor,
           "area_rank_scale",
           100)),
       sum_scales_(ratio_area_scale_ + is_in_iframe_scale_ +
@@ -123,16 +123,16 @@ NavigationPredictor::NavigationPredictor(
                   target_engagement_score_scale_ + area_rank_scale_),
       is_low_end_device_(base::SysInfo::IsLowEndDevice()),
       prefetch_url_score_threshold_(base::GetFieldTrialParamByFeatureAsInt(
-          blink::features::kRecordAnchorMetricsVisible,
+          blink::features::kNavigationPredictor,
           "prefetch_url_score_threshold",
           0)),
       preconnect_origin_score_threshold_(base::GetFieldTrialParamByFeatureAsInt(
-          blink::features::kRecordAnchorMetricsVisible,
+          blink::features::kNavigationPredictor,
           "preconnect_origin_score_threshold",
           0)),
       same_origin_preconnecting_allowed_(
           base::GetFieldTrialParamByFeatureAsBool(
-              blink::features::kRecordAnchorMetricsVisible,
+              blink::features::kNavigationPredictor,
               "same_origin_preconnecting_allowed",
               false))
 #ifdef OS_ANDROID
@@ -169,10 +169,7 @@ NavigationPredictor::~NavigationPredictor() {
 void NavigationPredictor::Create(
     blink::mojom::AnchorElementMetricsHostRequest request,
     content::RenderFrameHost* render_frame_host) {
-  DCHECK(base::FeatureList::IsEnabled(
-      blink::features::kRecordAnchorMetricsClicked));
-  DCHECK(base::FeatureList::IsEnabled(
-      blink::features::kRecordAnchorMetricsVisible));
+  DCHECK(base::FeatureList::IsEnabled(blink::features::kNavigationPredictor));
 
   // Only valid for the main frame.
   if (render_frame_host->GetParent())
@@ -346,8 +343,7 @@ TemplateURLService* NavigationPredictor::GetTemplateURLService() const {
 void NavigationPredictor::ReportAnchorElementMetricsOnClick(
     blink::mojom::AnchorElementMetricsPtr metrics) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(base::FeatureList::IsEnabled(
-      blink::features::kRecordAnchorMetricsClicked));
+  DCHECK(base::FeatureList::IsEnabled(blink::features::kNavigationPredictor));
 
   if (browser_context_->IsOffTheRecord())
     return;
@@ -556,8 +552,7 @@ void NavigationPredictor::MergeMetricsSameTargetUrl(
 void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
     std::vector<blink::mojom::AnchorElementMetricsPtr> metrics) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(base::FeatureList::IsEnabled(
-      blink::features::kRecordAnchorMetricsVisible));
+  DCHECK(base::FeatureList::IsEnabled(blink::features::kNavigationPredictor));
 
   // Each document should only report metrics once when page is loaded.
   DCHECK(navigation_scores_map_.empty());

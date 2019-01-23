@@ -47,7 +47,7 @@ class AnchorElementMetricsTest : public SimTest {
     SimTest::SetUp();
     WebView().MainFrameWidget()->Resize(
         WebSize(kViewportWidth, kViewportHeight));
-    feature_list_.InitAndEnableFeature(features::kRecordAnchorMetricsClicked);
+    feature_list_.InitAndEnableFeature(features::kNavigationPredictor);
   }
 
   base::test::ScopedFeatureList feature_list_;
@@ -85,20 +85,18 @@ TEST_F(AnchorElementMetricsTest, FinchControl) {
   HTMLAnchorElement* anchor_element =
       ToHTMLAnchorElement(GetDocument().getElementById("anchor"));
 
-  // With feature kRecordAnchorMetricsClicked disabled, we should not see any
+  // With feature kNavigationPredictor disabled, we should not see any
   // count in histograms.
   base::test::ScopedFeatureList disabled_feature_list;
-  disabled_feature_list.InitAndDisableFeature(
-      features::kRecordAnchorMetricsClicked);
+  disabled_feature_list.InitAndDisableFeature(features::kNavigationPredictor);
   AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element);
   histogram_tester.ExpectTotalCount("AnchorElementMetrics.Clicked.RatioArea",
                                     0);
 
-  // If we enable feature kRecordAnchorMetricsClicked, we should see count is 1
+  // If we enable feature kNavigationPredictor, we should see count is 1
   // in histograms.
   base::test::ScopedFeatureList enabled_feature_list;
-  enabled_feature_list.InitAndEnableFeature(
-      features::kRecordAnchorMetricsClicked);
+  enabled_feature_list.InitAndEnableFeature(features::kNavigationPredictor);
   AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element);
   histogram_tester.ExpectTotalCount("AnchorElementMetrics.Clicked.RatioArea",
                                     1);
