@@ -192,8 +192,12 @@ TEST(PolicyBundleTest, MergeFrom) {
   PolicyMap expected;
   expected.Set(kPolicyClashing0, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(0), nullptr);
+  expected.GetMutable(kPolicyClashing0)->AddError(kPolicyConfictDiffValue);
+  expected.GetMutable(kPolicyClashing0)->AddError(kPolicyConfictDiffValue);
   expected.Set(kPolicyClashing1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(1), nullptr);
+  expected.GetMutable(kPolicyClashing1)->AddError(kPolicyConfictSameValue);
+  expected.GetMutable(kPolicyClashing1)->AddError(kPolicyConfictDiffValue);
   expected.Set(kPolicy0, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(0), nullptr);
   expected.Set(kPolicy1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,

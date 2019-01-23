@@ -13,6 +13,13 @@
 
 namespace policy {
 
+const char kPolicyConfictSameValue[] =
+    "Warning: More than one source is present for the policy, but the values "
+    "are the same.";
+const char kPolicyConfictDiffValue[] =
+    "Warning: More than one source with conflicting values is present for this "
+    "policy!";
+
 PolicyMap::Entry::Entry() = default;
 
 PolicyMap::Entry::~Entry() = default;
@@ -173,9 +180,16 @@ std::unique_ptr<PolicyMap> PolicyMap::DeepCopy() const {
 
 void PolicyMap::MergeFrom(const PolicyMap& other) {
   for (const auto& it : other) {
-    const Entry* entry = Get(it.first);
+    Entry* entry = GetMutable(it.first);
     if (!entry || it.second.has_higher_priority_than(*entry))
       Set(it.first, it.second.DeepCopy());
+    if (entry) {
+      // TODO(pastarmovj): Figure out a way to localize those errors.
+      if (entry->value && it.second.value->Equals(entry->value.get()))
+        GetMutable(it.first)->AddError(kPolicyConfictSameValue);
+      else
+        GetMutable(it.first)->AddError(kPolicyConfictDiffValue);
+    }
   }
 }
 

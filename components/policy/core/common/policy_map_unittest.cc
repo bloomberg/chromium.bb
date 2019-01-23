@@ -238,20 +238,25 @@ TEST_F(PolicyMapTest, MergeFrom) {
   c.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("chromium.org"),
         nullptr);
+  c.GetMutable(kTestPolicyName1)->AddError(kPolicyConfictSameValue);
   // |a| has precedence over |b|.
   c.Set(kTestPolicyName2, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true), nullptr);
+  c.GetMutable(kTestPolicyName2)->AddError(kPolicyConfictDiffValue);
   c.Set(kTestPolicyName3, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_ENTERPRISE_DEFAULT, nullptr,
         CreateExternalDataFetcher("a"));
+  c.GetMutable(kTestPolicyName3)->AddError(kPolicyConfictDiffValue);
   // POLICY_SCOPE_MACHINE over POLICY_SCOPE_USER for POLICY_LEVEL_RECOMMENDED.
   c.Set(kTestPolicyName4, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
         std::make_unique<base::Value>(true), nullptr);
+  c.GetMutable(kTestPolicyName4)->AddError(kPolicyConfictSameValue);
   // POLICY_LEVEL_MANDATORY over POLICY_LEVEL_RECOMMENDED.
   c.Set(kTestPolicyName5, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_PLATFORM, std::make_unique<base::Value>(std::string()),
         nullptr);
+  c.GetMutable(kTestPolicyName5)->AddError(kPolicyConfictSameValue);
   // Merge new ones.
   c.Set(kTestPolicyName6, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
         POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true), nullptr);
@@ -259,6 +264,7 @@ TEST_F(PolicyMapTest, MergeFrom) {
   c.Set(kTestPolicyName7, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
         POLICY_SOURCE_ACTIVE_DIRECTORY, std::make_unique<base::Value>(true),
         nullptr);
+  c.GetMutable(kTestPolicyName7)->AddError(kPolicyConfictSameValue);
 
   EXPECT_TRUE(a.Equals(c));
 }

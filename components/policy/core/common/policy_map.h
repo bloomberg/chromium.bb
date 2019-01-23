@@ -21,6 +21,9 @@
 
 namespace policy {
 
+POLICY_EXPORT extern const char kPolicyConfictSameValue[];
+POLICY_EXPORT extern const char kPolicyConfictDiffValue[];
+
 // A mapping of policy names to policy values for a given policy namespace.
 class POLICY_EXPORT PolicyMap {
  public:
