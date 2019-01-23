@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
 
+#include <utility>
+
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/test/values_test_util.h"
@@ -239,8 +241,8 @@ class CastActivityManagerTest : public testing::Test {
   }
 
   // Precondition: |LaunchSession()| must be called first.
-  void TerminateSession(bool success) {
-    cast_channel::StopSessionCallback stop_session_callback;
+  void TerminateSession(cast_channel::Result result) {
+    cast_channel::ResultCallback stop_session_callback;
 
     EXPECT_CALL(message_handler_, StopSession(kChannelId, "theSessionId", _))
         .WillOnce([&](auto channel_id, auto session_id, auto callback) {
@@ -249,14 +251,15 @@ class CastActivityManagerTest : public testing::Test {
     manager_->TerminateSession(
         route_->media_route_id(),
         base::BindOnce(
-            success ? &CastActivityManagerTest::ExpectTerminateResultSuccess
-                    : &CastActivityManagerTest::ExpectTerminateResultFailure,
+            result == cast_channel::Result::kOk
+                ? &CastActivityManagerTest::ExpectTerminateResultSuccess
+                : &CastActivityManagerTest::ExpectTerminateResultFailure,
             base::Unretained(this)));
     // Receiver action stop message is sent to SDK client.
     EXPECT_CALL(*client_connection_, OnMessage(_));
     RunUntilIdle();
 
-    std::move(stop_session_callback).Run(success);
+    std::move(stop_session_callback).Run(result);
   }
 
   // Precondition: |LaunchSession()| called, |LaunchSessionResponseSuccess()|
@@ -364,7 +367,7 @@ TEST_F(CastActivityManagerTest, LaunchSessionTerminatesExistingSessionOnSink) {
   EXPECT_CALL(*client_connection_, OnMessage(_));
 
   // Existing session will be terminated.
-  cast_channel::StopSessionCallback stop_session_callback;
+  cast_channel::ResultCallback stop_session_callback;
   EXPECT_CALL(message_handler_, StopSession(kChannelId, "theSessionId", _))
       .WillOnce([&](auto channel_id, auto session_id, auto callback) {
         stop_session_callback = std::move(callback);
@@ -396,7 +399,7 @@ TEST_F(CastActivityManagerTest, LaunchSessionTerminatesExistingSessionOnSink) {
   EXPECT_CALL(message_handler_,
               LaunchSession(kChannelId, "BBBBBBBB", kDefaultLaunchTimeout, _));
 
-  std::move(stop_session_callback).Run(true);
+  std::move(stop_session_callback).Run(cast_channel::Result::kOk);
 }
 
 TEST_F(CastActivityManagerTest, AddRemoveNonLocalActivity) {
@@ -482,13 +485,13 @@ TEST_F(CastActivityManagerTest, ReplaceExistingSession) {
 TEST_F(CastActivityManagerTest, TerminateSession) {
   LaunchSession();
   LaunchSessionResponseSuccess();
-  TerminateSession(true);
+  TerminateSession(cast_channel::Result::kOk);
 }
 
 TEST_F(CastActivityManagerTest, TerminateSessionFails) {
   LaunchSession();
   LaunchSessionResponseSuccess();
-  TerminateSession(false);
+  TerminateSession(cast_channel::Result::kFailed);
 }
 
 TEST_F(CastActivityManagerTest, TerminateSessionBeforeLaunchResponse) {
@@ -541,7 +544,7 @@ TEST_F(CastActivityManagerTest, AppMessageFromClient) {
   LaunchSessionResponseSuccess();
 
   EXPECT_CALL(message_handler_, SendAppMessage(kChannelId, _))
-      .WillOnce(Return(true));
+      .WillOnce(Return(cast_channel::Result::kOk));
   client_connection_->SendMessageToMediaRouter(
       blink::mojom::PresentationConnectionMessage::NewMessage(R"({
         "type": "app_message",
@@ -632,7 +635,7 @@ TEST_F(CastActivityManagerTest, SendVolumeCommandToReceiver) {
                                    "theClientId", _))
       .WillOnce([&](int channel_id, const base::Value& message,
                     const std::string& client_id, auto callback) {
-        // Check message created by CastSessionClient::SendSetVolumeResponse().
+        // Check message created by CastSessionClient::SendResultResponse().
         EXPECT_CALL(*client_connection_, OnMessage(IsCastMessage(R"({
                     "clientId": "theClientId",
                     "message": null,
@@ -640,8 +643,8 @@ TEST_F(CastActivityManagerTest, SendVolumeCommandToReceiver) {
                     "timeoutMillis": 0,
                     "type": "v2_message"
                   })")));
-        std::move(callback).Run(true);
-        return true;
+        std::move(callback).Run(cast_channel::Result::kOk);
+        return cast_channel::Result::kOk;
       });
   client_connection_->SendMessageToMediaRouter(
       blink::mojom::PresentationConnectionMessage::NewMessage(R"({

@@ -5,6 +5,7 @@
 #include "components/cast_channel/cast_message_handler.h"
 
 #include <tuple>
+#include <utility>
 
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
@@ -191,7 +192,7 @@ void CastMessageHandler::LaunchSession(int channel_id,
 
 void CastMessageHandler::StopSession(int channel_id,
                                      const std::string& session_id,
-                                     StopSessionCallback callback) {
+                                     ResultCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CastSocket* socket = socket_service_->GetSocket(channel_id);
   if (!socket) {
@@ -210,8 +211,8 @@ void CastMessageHandler::StopSession(int channel_id,
   }
 }
 
-bool CastMessageHandler::SendAppMessage(int channel_id,
-                                        const CastMessage& message) {
+Result CastMessageHandler::SendAppMessage(int channel_id,
+                                          const CastMessage& message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!IsCastInternalNamespace(message.namespace_()))
       << ": unexpected app message namespace: " << message.namespace_();
@@ -219,11 +220,11 @@ bool CastMessageHandler::SendAppMessage(int channel_id,
   CastSocket* socket = socket_service_->GetSocket(channel_id);
   if (!socket) {
     DVLOG(2) << __func__ << ": socket not found: " << channel_id;
-    return false;
+    return Result::kFailed;
   }
 
   SendCastMessage(socket, message);
-  return true;
+  return Result::kOk;
 }
 
 base::Optional<int> CastMessageHandler::SendMediaRequest(
@@ -245,16 +246,16 @@ base::Optional<int> CastMessageHandler::SendMediaRequest(
   return request_id;
 }
 
-bool CastMessageHandler::SendSetVolumeRequest(int channel_id,
-                                              const base::Value& body,
-                                              const std::string& source_id,
-                                              SetVolumeCallback callback) {
+Result CastMessageHandler::SendSetVolumeRequest(int channel_id,
+                                                const base::Value& body,
+                                                const std::string& source_id,
+                                                ResultCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   CastSocket* socket = socket_service_->GetSocket(channel_id);
   if (!socket) {
     DVLOG(2) << __func__ << ": socket not found: " << channel_id;
-    return false;
+    return Result::kFailed;
   }
 
   auto* requests = GetOrCreatePendingRequests(channel_id);
@@ -263,7 +264,7 @@ bool CastMessageHandler::SendSetVolumeRequest(int channel_id,
   requests->AddVolumeRequest(std::make_unique<SetVolumeRequest>(
       request_id, std::move(callback), clock_));
   SendCastMessage(socket, CreateSetVolumeRequest(body, request_id, source_id));
-  return true;
+  return Result::kOk;
 }
 
 void CastMessageHandler::AddObserver(Observer* observer) {
@@ -416,10 +417,10 @@ CastMessageHandler::PendingRequests::~PendingRequests() {
   }
 
   if (pending_stop_session_request_)
-    std::move(pending_stop_session_request_->callback).Run(false);
+    std::move(pending_stop_session_request_->callback).Run(Result::kFailed);
 
   for (auto& request : pending_volume_requests_by_id_)
-    std::move(request.second->callback).Run(false);
+    std::move(request.second->callback).Run(Result::kFailed);
 }
 
 bool CastMessageHandler::PendingRequests::AddAppAvailabilityRequest(
@@ -519,14 +520,14 @@ void CastMessageHandler::PendingRequests::HandlePendingRequest(
 
   if (pending_stop_session_request_ &&
       pending_stop_session_request_->request_id == request_id) {
-    std::move(pending_stop_session_request_->callback).Run(true);
+    std::move(pending_stop_session_request_->callback).Run(Result::kOk);
     pending_stop_session_request_.reset();
     return;
   }
 
   auto volume_it = pending_volume_requests_by_id_.find(request_id);
   if (volume_it != pending_volume_requests_by_id_.end()) {
-    std::move(volume_it->second->callback).Run(true);
+    std::move(volume_it->second->callback).Run(Result::kOk);
     pending_volume_requests_by_id_.erase(volume_it);
     return;
   }
@@ -565,7 +566,7 @@ void CastMessageHandler::PendingRequests::StopSessionTimedOut(int request_id) {
   CHECK(pending_stop_session_request_);
   CHECK(pending_stop_session_request_->request_id == request_id);
 
-  std::move(pending_stop_session_request_->callback).Run(false);
+  std::move(pending_stop_session_request_->callback).Run(Result::kFailed);
   pending_stop_session_request_.reset();
 }
 
@@ -573,7 +574,7 @@ void CastMessageHandler::PendingRequests::SetVolumeTimedOut(int request_id) {
   DVLOG(1) << __func__ << ", request_id: " << request_id;
   auto it = pending_volume_requests_by_id_.find(request_id);
   DCHECK(it != pending_volume_requests_by_id_.end());
-  std::move(it->second->callback).Run(false);
+  std::move(it->second->callback).Run(Result::kFailed);
   pending_volume_requests_by_id_.erase(it);
 }
 

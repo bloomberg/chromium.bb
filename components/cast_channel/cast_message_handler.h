@@ -68,18 +68,14 @@ using LaunchSessionCallback =
     base::OnceCallback<void(LaunchSessionResponse response)>;
 using LaunchSessionRequest = PendingRequest<LaunchSessionCallback>;
 
-// Represents an app stop request to a Cast sink.
-// |success|: Whether the app was successfully stopped.
-//
-// TODO(jrw): Replace the boolean parameter with an enum that explicitly denotes
-// success or failure, merge StopSessionCallback and SetVolumeCallback into a
-// single type, and rename to CastSessionClient::SendSetVolumeResponse to
-// something more generic like SendAckOrError.
-using StopSessionCallback = base::OnceCallback<void(bool success)>;
-using StopSessionRequest = PendingRequest<StopSessionCallback>;
+enum class Result { kOk, kFailed };
+using ResultCallback = base::OnceCallback<void(Result result)>;
 
-using SetVolumeCallback = base::OnceCallback<void(bool)>;
-using SetVolumeRequest = PendingRequest<SetVolumeCallback>;
+// Represents an app stop request to a Cast sink.
+using StopSessionRequest = PendingRequest<ResultCallback>;
+
+// Reresents request for a sink to set its volume level.
+using SetVolumeRequest = PendingRequest<ResultCallback>;
 
 // Represents a virtual connection on a cast channel. A virtual connection is
 // given by a source and destination ID pair, and must be created before
@@ -179,13 +175,13 @@ class CastMessageHandler : public CastSocket::Observer {
   // request.
   virtual void StopSession(int channel_id,
                            const std::string& session_id,
-                           StopSessionCallback callback);
+                           ResultCallback callback);
 
   // Sends |message| to the device given by |channel_id|. The caller may use
   // this method to forward app messages from the SDK client to the device. It
   // is invalid to call this method with a message in one of the Cast internal
   // message namespaces.
-  virtual bool SendAppMessage(int channel_id, const CastMessage& message);
+  virtual Result SendAppMessage(int channel_id, const CastMessage& message);
 
   // Sends a media command |body|. Returns the ID of the request that is sent to
   // the receiver. It is invalid to call this with a message body that is not a
@@ -207,10 +203,10 @@ class CastMessageHandler : public CastSocket::Observer {
   // Sends a set system volume command |body|. |callback| will be invoked
   // with the result of the operation. It is invalid to call this with
   // a message body that is not a volume request.
-  virtual bool SendSetVolumeRequest(int channel_id,
-                                    const base::Value& body,
-                                    const std::string& source_id,
-                                    SetVolumeCallback callback);
+  virtual Result SendSetVolumeRequest(int channel_id,
+                                      const base::Value& body,
+                                      const std::string& source_id,
+                                      ResultCallback callback);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
