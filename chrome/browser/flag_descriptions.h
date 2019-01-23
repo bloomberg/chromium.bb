@@ -1861,9 +1861,6 @@ extern const char kArcVpnDescription[];
 extern const char kAshEnableDisplayMoveWindowAccelsName[];
 extern const char kAshEnableDisplayMoveWindowAccelsDescription[];
 
-extern const char kAshEnableMirroredScreenName[];
-extern const char kAshEnableMirroredScreenDescription[];
-
 extern const char kAshEnablePersistentWindowBoundsName[];
 extern const char kAshEnablePersistentWindowBoundsDescription[];
 

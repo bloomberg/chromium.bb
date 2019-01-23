@@ -168,11 +168,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "ash-enable-mirrored-screen",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "ash-enable-night-light",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
