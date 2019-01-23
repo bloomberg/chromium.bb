@@ -80,6 +80,7 @@ class MockPasswordStoreSync : public PasswordStoreSync {
   ~MockPasswordStoreSync() = default;
 
   MOCK_METHOD1(ReadAllLogins, bool(PrimaryKeyToFormMap*));
+  MOCK_METHOD1(RemoveLoginByPrimaryKeySync, PasswordStoreChangeList(int));
   MOCK_METHOD0(DeleteUndecryptableLogins, DatabaseCleanupResult());
   MOCK_METHOD1(AddLoginSync,
                PasswordStoreChangeList(const autofill::PasswordForm&));

@@ -225,6 +225,12 @@ bool TestPasswordStore::ReadAllLogins(PrimaryKeyToFormMap* key_to_form_map) {
   return true;
 }
 
+PasswordStoreChangeList TestPasswordStore::RemoveLoginByPrimaryKeySync(
+    int primary_key) {
+  NOTIMPLEMENTED();
+  return PasswordStoreChangeList();
+}
+
 syncer::SyncMetadataStore* TestPasswordStore::GetMetadataStore() {
   return nullptr;
 }

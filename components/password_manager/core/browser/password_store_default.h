@@ -88,6 +88,7 @@ class PasswordStoreDefault : public PasswordStore {
   bool BeginTransaction() override;
   bool CommitTransaction() override;
   bool ReadAllLogins(PrimaryKeyToFormMap* key_to_form_map) override;
+  PasswordStoreChangeList RemoveLoginByPrimaryKeySync(int primary_key) override;
   syncer::SyncMetadataStore* GetMetadataStore() override;
 
   inline bool DeleteAndRecreateDatabaseFile() {

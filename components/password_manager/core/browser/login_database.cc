@@ -1071,15 +1071,34 @@ bool LoginDatabase::RemoveLogin(const PasswordForm& form,
   return true;
 }
 
-bool LoginDatabase::RemoveLoginById(int id) {
+bool LoginDatabase::RemoveLoginByPrimaryKey(int primary_key,
+                                            PasswordStoreChangeList* changes) {
+  PrimaryKeyToFormMap key_to_form_map;
+  if (changes) {
+    changes->clear();
+    sql::Statement s1(db_.GetCachedStatement(
+        SQL_FROM_HERE, "SELECT * FROM logins WHERE id = ?"));
+    s1.BindInt(0, primary_key);
+    if (!StatementToForms(&s1, nullptr, &key_to_form_map)) {
+      return false;
+    }
+  }
+
 #if defined(OS_IOS)
-  DeleteEncryptedPasswordById(id);
+  DeleteEncryptedPasswordById(primary_key);
 #endif
   DCHECK(!delete_by_id_statement_.empty());
-  sql::Statement s(
+  sql::Statement s2(
       db_.GetCachedStatement(SQL_FROM_HERE, delete_by_id_statement_.c_str()));
-  s.BindInt(0, id);
-  return s.Run() && db_.GetLastChangeCount() > 0;
+  s2.BindInt(0, primary_key);
+  if (!s2.Run() || db_.GetLastChangeCount() == 0) {
+    return false;
+  }
+  if (changes) {
+    changes->emplace_back(PasswordStoreChange::REMOVE,
+                          *key_to_form_map[primary_key], primary_key);
+  }
+  return true;
 }
 
 bool LoginDatabase::RemoveLoginsCreatedBetween(

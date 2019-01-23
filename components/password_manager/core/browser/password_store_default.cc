@@ -243,6 +243,16 @@ bool PasswordStoreDefault::ReadAllLogins(PrimaryKeyToFormMap* key_to_form_map) {
   return login_db_ && login_db_->GetAllLogins(key_to_form_map);
 }
 
+PasswordStoreChangeList PasswordStoreDefault::RemoveLoginByPrimaryKeySync(
+    int primary_key) {
+  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
+  PasswordStoreChangeList changes;
+  if (login_db_ && login_db_->RemoveLoginByPrimaryKey(primary_key, &changes)) {
+    return changes;
+  }
+  return PasswordStoreChangeList();
+}
+
 syncer::SyncMetadataStore* PasswordStoreDefault::GetMetadataStore() {
   return login_db_.get();
 }

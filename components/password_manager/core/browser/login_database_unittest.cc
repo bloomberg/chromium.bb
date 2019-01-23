@@ -58,6 +58,11 @@ PasswordStoreChangeList UpdateChangeForForm(const PasswordForm& form) {
       1, PasswordStoreChange(PasswordStoreChange::UPDATE, form));
 }
 
+PasswordStoreChangeList RemoveChangeForForm(const PasswordForm& form) {
+  return PasswordStoreChangeList(
+      1, PasswordStoreChange(PasswordStoreChange::REMOVE, form));
+}
+
 void GenerateExamplePasswordForm(PasswordForm* form) {
   form->origin = GURL("http://accounts.google.com/LoginAuth");
   form->action = GURL("http://accounts.google.com/Login");
@@ -399,7 +404,7 @@ TEST_F(LoginDatabaseTest, AddLoginReturnsPrimaryKey) {
   EXPECT_EQ(1, change_list[0].primary_key());
 }
 
-TEST_F(LoginDatabaseTest, RemoveLoginsById) {
+TEST_F(LoginDatabaseTest, RemoveLoginsByPrimaryKey) {
   std::vector<std::unique_ptr<PasswordForm>> result;
 
   // Verify the database is empty.
@@ -414,14 +419,15 @@ TEST_F(LoginDatabaseTest, RemoveLoginsById) {
   // correctly.
   PasswordStoreChangeList change_list = db().AddLogin(form);
   ASSERT_EQ(1U, change_list.size());
-  int id = change_list[0].primary_key();
+  int primary_key = change_list[0].primary_key();
   EXPECT_EQ(AddChangeForForm(form), change_list);
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   ASSERT_EQ(1U, result.size());
   EXPECT_EQ(form, *result[0]);
   result.clear();
 
-  EXPECT_TRUE(db().RemoveLoginById(id));
+  EXPECT_TRUE(db().RemoveLoginByPrimaryKey(primary_key, &change_list));
+  EXPECT_EQ(RemoveChangeForForm(form), change_list);
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(0U, result.size());
 }

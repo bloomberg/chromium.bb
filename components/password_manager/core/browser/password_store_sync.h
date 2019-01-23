@@ -63,6 +63,10 @@ class PasswordStoreSync {
   virtual PasswordStoreChangeList RemoveLoginSync(
       const autofill::PasswordForm& form) = 0;
 
+  // Synchronous implementation to remove the login with the given primary key.
+  virtual PasswordStoreChangeList RemoveLoginByPrimaryKeySync(
+      int primary_key) = 0;
+
   // Notifies observers that password store data may have been changed.
   virtual void NotifyLoginsChanged(const PasswordStoreChangeList& changes) = 0;
 
