@@ -7,7 +7,7 @@
 #include "base/bind_helpers.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "gpu/command_buffer/service/feature_info.h"
-#include "gpu/command_buffer/service/raster_decoder_context_state.h"
+#include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"

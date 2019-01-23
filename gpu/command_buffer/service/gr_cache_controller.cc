@@ -6,7 +6,7 @@
 
 #include <chrono>
 
-#include "gpu/command_buffer/service/raster_decoder_context_state.h"
+#include "gpu/command_buffer/service/shared_context_state.h"
 #include "ui/gl/gl_context.h"
 
 namespace gpu {

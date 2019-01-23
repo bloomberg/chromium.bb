@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_COMMAND_BUFFER_SERVICE_RASTER_DECODER_CONTEXT_STATE_H_
-#define GPU_COMMAND_BUFFER_SERVICE_RASTER_DECODER_CONTEXT_STATE_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_SHARED_CONTEXT_STATE_H_
+#define GPU_COMMAND_BUFFER_SERVICE_SHARED_CONTEXT_STATE_H_
+
+#include <memory>
+#include <vector>
 
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
@@ -158,4 +161,4 @@ class GPU_GLES2_EXPORT SharedContextState
 
 }  // namespace gpu
 
-#endif  // GPU_COMMAND_BUFFER_SERVICE_RASTER_DECODER_CONTEXT_STATE_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_SHARED_CONTEXT_STATE_H_
