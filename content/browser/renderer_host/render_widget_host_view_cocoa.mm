@@ -1381,6 +1381,11 @@ void ExtractUnderlines(NSAttributedString* string,
   return client_;
 }
 
+// TODO(crbug.com/921109): Migrate from the NSObject accessibility API to the
+// NSAccessibility API, then remove this suppression.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 - (NSArray*)accessibilityArrayAttributeValues:(NSString*)attribute
                                         index:(NSUInteger)index
                                      maxCount:(NSUInteger)maxCount {
@@ -1450,6 +1455,8 @@ void ExtractUnderlines(NSAttributedString* string,
 - (id)accessibilityFocusedUIElement {
   return clientHelper_->GetFocusedBrowserAccessibilityElement();
 }
+
+#pragma clang diagnostic pop
 
 // Below is our NSTextInputClient implementation.
 //

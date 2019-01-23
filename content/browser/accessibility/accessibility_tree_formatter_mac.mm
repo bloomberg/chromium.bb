@@ -17,6 +17,11 @@
 #include "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 
+// This file uses the deprecated NSObject accessibility interface.
+// TODO(crbug.com/921109): Migrate to the new NSAccessibility interface.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 using base::StringPrintf;
 using base::SysNSStringToUTF8;
 using base::SysNSStringToUTF16;
@@ -361,3 +366,5 @@ const string AccessibilityTreeFormatterMac::GetDenyString() {
 }
 
 }  // namespace content
+
+#pragma clang diagnostic pop

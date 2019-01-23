@@ -1338,11 +1338,16 @@ void BridgedNativeWidgetImpl::ShowAsModalSheet() {
   // Since |this| may destroy [window_ delegate], use |window_| itself as the
   // delegate, which will forward to ViewsNSWindowDelegate if |this| is still
   // alive (i.e. it has not set the window delegate to nil).
+  // TODO(crbug.com/841631): Migrate to `[NSWindow
+  // beginSheet:completionHandler:]` instead of this method.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   [NSApp beginSheet:window_
       modalForWindow:parent_window
        modalDelegate:window_
       didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
          contextInfo:nullptr];
+#pragma clang diagnostic pop
 }
 
 }  // namespace views

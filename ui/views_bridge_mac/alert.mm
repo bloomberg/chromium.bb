@@ -209,7 +209,7 @@ const int kMessageTextMaxSlots = 2000;
     case NSAlertSecondButtonReturn:  // Cancel
       alertBridge_->SendResultAndDestroy(AlertDisposition::SECONDARY_BUTTON);
       break;
-    case NSRunStoppedResponse:  // Window was closed underneath us
+    case NSModalResponseStop:  // Window was closed underneath us
       alertBridge_->SendResultAndDestroy(AlertDisposition::CLOSE);
       break;
     default:
@@ -223,10 +223,15 @@ const int kMessageTextMaxSlots = 2000;
   NSAlert* alert = [self alert];
   [alert layout];
   [[alert window] recalculateKeyViewLoop];
+  // TODO(crbug.com/841631): Migrate to `[NSWindow
+  // beginSheetModalForWindow:completionHandler:]` instead.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   [alert beginSheetModalForWindow:nil  // nil here makes it app-modal
                     modalDelegate:self
                    didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:)
                       contextInfo:NULL];
+#pragma clang diagnostic pop
 }
 
 - (void)closeWindow {

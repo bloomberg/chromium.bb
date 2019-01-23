@@ -2787,6 +2787,11 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   return actions;
 }
 
+// TODO(crbug.com/921109): Migrate from the NSObject accessibility interface to
+// the NSAccessibility one, then remove this suppression.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 // Returns a sub-array of values for the given attribute value, starting at
 // index, with up to maxCount items.  If the given index is out of bounds,
 // or there are no values for the given attribute, it will return nil.
@@ -2822,6 +2827,8 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   NSArray* fullArray = [self accessibilityAttributeValue:attribute];
   return [fullArray count];
 }
+
+#pragma clang diagnostic pop
 
 // Returns the list of accessibility attributes that this object supports.
 - (NSArray*)accessibilityAttributeNames {

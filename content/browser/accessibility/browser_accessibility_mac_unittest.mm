@@ -123,6 +123,11 @@ class BrowserAccessibilityMacTest : public ui::CocoaTest {
   std::unique_ptr<BrowserAccessibilityManager> manager_;
 };
 
+// The next few tests all use the deprecated NSObject accessibility APIs:
+// https://crbug.com/921109.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 // Standard hit test.
 TEST_F(BrowserAccessibilityMacTest, HitTestTest) {
   BrowserAccessibilityCocoa* firstChild =
@@ -185,6 +190,8 @@ TEST_F(BrowserAccessibilityMacTest, RetainedDetachedObjectsReturnNil) {
   // Don't leak memory in the test.
   [retainedFirstChild release];
 }
+
+#pragma clang diagnostic pop
 
 TEST_F(BrowserAccessibilityMacTest, TestComputeTextEdit) {
   BrowserAccessibility* owner = [accessibility_ owner];

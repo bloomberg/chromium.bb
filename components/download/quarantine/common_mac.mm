@@ -17,46 +17,6 @@
 
 namespace download {
 
-// Once Chrome no longer supports macOS 10.9, this code will no longer be
-// necessary. Note that LSCopyItemAttribute was deprecated in macOS 10.8, but
-// the replacement to kLSItemQuarantineProperties did not exist until macOS
-// 10.10.
-#if !defined(MAC_OS_X_VERSION_10_10) || \
-    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_10
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-bool GetQuarantinePropertiesDeprecated(
-    const base::FilePath& file,
-    base::scoped_nsobject<NSMutableDictionary>* properties) {
-  const UInt8* path = reinterpret_cast<const UInt8*>(file.value().c_str());
-  FSRef file_ref;
-  if (FSPathMakeRef(path, &file_ref, nullptr) != noErr)
-    return false;
-
-  base::ScopedCFTypeRef<CFTypeRef> quarantine_properties;
-  OSStatus status =
-      LSCopyItemAttribute(&file_ref, kLSRolesAll, kLSItemQuarantineProperties,
-                          quarantine_properties.InitializeInto());
-  if (status != noErr)
-    return true;
-
-  CFDictionaryRef quarantine_properties_dict =
-      base::mac::CFCast<CFDictionaryRef>(quarantine_properties.get());
-  if (!quarantine_properties_dict) {
-    LOG(WARNING) << "kLSItemQuarantineProperties is not a dictionary on file "
-                 << file.value();
-    return false;
-  }
-
-  properties->reset(
-      [base::mac::CFToNSCast(quarantine_properties_dict) mutableCopy]);
-  return true;
-}
-
-#pragma clang diagnostic pop
-#endif
-
-API_AVAILABLE(macos(10.10))
 bool GetQuarantineProperties(
     const base::FilePath& file,
     base::scoped_nsobject<NSMutableDictionary>* properties) {

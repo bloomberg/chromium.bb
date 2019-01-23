@@ -455,6 +455,10 @@ if (is_mac) {
     defines = [ "USE_PROTECTED_ALLOCATIONS=1" ]
     include_dirs = [ "breakpad/src/client/apple/Framework" ]
 
+    # TODO(crbug.com/841631): Breakpad uses bootstrap_subset() and
+    # bootstrap_create_server(), both of which are deprecated starting in 10.10.
+    cflags = [ "-Wno-deprecated-declarations" ]
+
     deps = [
       ":crash_inspector",
       ":crash_report_sender",

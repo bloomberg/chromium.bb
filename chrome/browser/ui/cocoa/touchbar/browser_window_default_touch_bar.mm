@@ -407,6 +407,11 @@ class API_AVAILABLE(macos(10.12.2)) TouchBarNotificationBridge
   return touchBar.autorelease();
 }
 
+// TODO(crbug.com/921109): Migrate to the new NSAccessibility API for this
+// method.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 - (void)setupBackForwardControl {
   NSMutableArray* images = [NSMutableArray arrayWithArray:@[
     CreateNSImageFromIcon(vector_icons::kBackArrowIcon),
@@ -450,6 +455,8 @@ class API_AVAILABLE(macos(10.12.2)) TouchBarNotificationBridge
 
   backForwardControl_.reset([control retain]);
 }
+
+#pragma clang diagnostic pop
 
 - (void)updateWebContents:(content::WebContents*)contents {
   notificationBridge_->UpdateWebContents(contents);

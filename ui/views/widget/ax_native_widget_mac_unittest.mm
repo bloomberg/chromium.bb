@@ -97,6 +97,11 @@ class TestWidgetDelegate : public test::TestDesktopWidgetDelegate {
 
 constexpr char TestWidgetDelegate::kAccessibleWindowTitle[];
 
+// This test framework uses the deprecated NSObject accessibility APIs - see
+// https://crbug.com/921109.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 class AXNativeWidgetMacTest : public test::WidgetTest {
  public:
   AXNativeWidgetMacTest() {}
@@ -927,3 +932,5 @@ TEST_F(AXNativeWidgetMacTest, Combobox) {
 }
 
 }  // namespace views
+
+#pragma clang diagnostic pop

@@ -13,6 +13,11 @@
 #include "ui/views/widget/widget.h"
 #import "testing/gtest_mac.h"
 
+// This file uses the deprecated NSObject accessibility API - see
+// https://crbug.com/921109.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 namespace views {
 namespace test {
 
@@ -163,3 +168,5 @@ TEST_F(TabbedPaneAccessibilityMacTest, WritableValue) {
 
 }  // namespace test
 }  // namespace views
+
+#pragma clang diagnostic pop

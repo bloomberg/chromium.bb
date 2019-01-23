@@ -26,9 +26,8 @@
    andCallback:(content::JavaScriptDialogManager::DialogClosedCallback)callback;
 - (NSAlert*)alert;
 - (NSTextField*)textField;
-- (void)alertDidEnd:(NSAlert*)alert
-         returnCode:(int)returnCode
-        contextInfo:(void*)contextInfo;
+- (void)alertDidEndWithResult:(NSModalResponse)returnCode
+                       dialog:(content::ShellJavaScriptDialog*)dialog;
 - (void)cancel;
 
 @end
@@ -60,10 +59,9 @@
   return textField_;
 }
 
-- (void)alertDidEnd:(NSAlert*)alert
-         returnCode:(int)returnCode
-        contextInfo:(void*)contextInfo {
-  if (returnCode == NSRunStoppedResponse)
+- (void)alertDidEndWithResult:(NSModalResponse)returnCode
+                       dialog:(content::ShellJavaScriptDialog*)dialog {
+  if (returnCode == NSModalResponseStop)
     return;
 
   bool success = returnCode == NSAlertFirstButtonReturn;
@@ -71,10 +69,8 @@
   if (textField_)
     input = base::SysNSStringToUTF16([textField_ stringValue]);
 
-  content::ShellJavaScriptDialog* native_dialog =
-      reinterpret_cast<content::ShellJavaScriptDialog*>(contextInfo);
   std::move(callback_).Run(success, input);
-  manager_->DialogClosed(native_dialog);
+  manager_->DialogClosed(dialog);
 }
 
 - (void)cancel {
@@ -117,11 +113,10 @@ ShellJavaScriptDialog::ShellJavaScriptDialog(
     [other setKeyEquivalent:@"\e"];
   }
 
-  [alert
-      beginSheetModalForWindow:nil  // nil here makes it app-modal
-                 modalDelegate:helper_
-                didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:)
-                   contextInfo:this];
+  [alert beginSheetModalForWindow:nil  // nil here makes it app-modal
+                completionHandler:^void(NSModalResponse returnCode) {
+                  [helper_ alertDidEndWithResult:returnCode dialog:this];
+                }];
 }
 
 ShellJavaScriptDialog::~ShellJavaScriptDialog() {
