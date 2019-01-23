@@ -81,6 +81,9 @@ class ArcApps : public KeyedService,
                       apps::mojom::IconCompression icon_compression,
                       int32_t size_hint_in_dip,
                       LoadIconCallback callback);
+  void LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,
+                         int32_t size_hint_in_dip,
+                         LoadIconCallback callback);
 
   apps::mojom::AppPtr Convert(const std::string& app_id,
                               const ArcAppListPrefs::AppInfo& app_info);

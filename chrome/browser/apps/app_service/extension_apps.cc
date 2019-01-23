@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -274,6 +275,10 @@ void ExtensionApps::OnExtensionInstalled(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     bool is_update) {
+  if (IsBlacklisted(extension->id())) {
+    return;
+  }
+
   // TODO(crbug.com/826982): Does the is_update case need to be handled
   // differently? E.g. by only passing through fields that have changed.
   apps::mojom::AppPtr app = Convert(extension, apps::mojom::Readiness::kReady);
@@ -289,6 +294,10 @@ void ExtensionApps::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     extensions::UninstallReason reason) {
+  if (IsBlacklisted(extension->id())) {
+    return;
+  }
+
   // Construct an App with only the information required to identify an
   // uninstallation.
   apps::mojom::AppPtr app = apps::mojom::App::New();
@@ -301,6 +310,28 @@ void ExtensionApps::OnExtensionUninstalled(
     apps.push_back(app.Clone());
     subscriber->OnApps(std::move(apps));
   });
+}
+
+// static
+bool ExtensionApps::IsBlacklisted(const std::string& app_id) {
+  // We blacklist (meaning we don't publish the app, in the App Service sense)
+  // some apps that are already published by other app publishers.
+  //
+  // This sense of "blacklist" is separate from the extension registry's
+  // kDisabledByBlacklist concept, which is when SafeBrowsing will send out a
+  // blacklist of malicious extensions to disable.
+
+  // The Play Store is conceptually provided by the ARC++ publisher, but
+  // because it (the Play Store icon) is also the UI for enabling Android apps,
+  // we also want to show the app icon even before ARC++ is enabled. Prior to
+  // the App Service, as a historical implementation quirk, the Play Store both
+  // has an "ARC++ app" component and an "Extension app" component, and both
+  // share the same App ID.
+  //
+  // In the App Service world, there should be a unique app publisher for any
+  // given app. In this case, the ArcApps publisher publishes the Play Store
+  // app, and the ExtensionApps publisher does not.
+  return app_id == arc::kPlayStoreAppId;
 }
 
 apps::mojom::AppPtr ExtensionApps::Convert(
@@ -380,7 +411,7 @@ void ExtensionApps::ConvertVector(const extensions::ExtensionSet& extensions,
                                   apps::mojom::Readiness readiness,
                                   std::vector<apps::mojom::AppPtr>* apps_out) {
   for (const auto& extension : extensions) {
-    if (extension->is_app()) {
+    if (extension->is_app() && !IsBlacklisted(extension->id())) {
       apps_out->push_back(Convert(extension.get(), readiness));
     }
   }

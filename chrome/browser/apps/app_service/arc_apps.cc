@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_descriptor.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/grit/component_extension_resources.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "content/public/common/service_manager_connection.h"
@@ -159,8 +160,17 @@ void ArcApps::LoadIcon(const std::string& app_id,
   if (prefs_ && !icon_key.is_null() &&
       (icon_key->icon_type == apps::mojom::IconType::kArc) &&
       !icon_key->s_key.empty()) {
-    // TODO(crbug.com/826982): treat (app_id == arc::kPlayStoreAppId) as a
-    // special case, like what ArcAppIcon::Source::GetImageForScale does.
+    // Treat the Play Store as a special case, loading an icon defined by a
+    // resource instead of asking the Android VM (or the cache of previous
+    // responses from the Android VM). Presumably this is for bootstrapping:
+    // the Play Store icon (the UI for enabling and installing Android apps)
+    // should be showable even before the user has installed their first
+    // Android app and before bringing up an Android VM for the first time.
+    if (icon_key->s_key == arc::kPlayStoreAppId) {
+      LoadPlayStoreIcon(icon_compression, size_hint_in_dip,
+                        std::move(callback));
+      return;
+    }
 
     // Try loading the icon from an on-disk cache. If that fails, fall back to
     // LoadIconFromVM.
@@ -326,6 +336,17 @@ void ArcApps::LoadIconFromVM(const std::string icon_key_s_key,
 
   // On failure, we still run the callback, with the zero IconValue.
   std::move(callback).Run(apps::mojom::IconValue::New());
+}
+
+void ArcApps::LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,
+                                int32_t size_hint_in_dip,
+                                LoadIconCallback callback) {
+  // Use overloaded Chrome icon for Play Store that is adapted to Chrome style.
+  int size_hint_in_px = ConvertDipToPx(size_hint_in_dip);
+  int resource_id = (size_hint_in_px <= 32) ? IDR_ARC_SUPPORT_ICON_32
+                                            : IDR_ARC_SUPPORT_ICON_192;
+  LoadIconFromResource(icon_compression, size_hint_in_dip, resource_id,
+                       std::move(callback));
 }
 
 apps::mojom::AppPtr ArcApps::Convert(const std::string& app_id,

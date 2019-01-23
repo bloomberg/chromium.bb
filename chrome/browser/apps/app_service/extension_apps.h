@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_APPS_APP_SERVICE_EXTENSION_APPS_H_
 #define CHROME_BROWSER_APPS_APP_SERVICE_EXTENSION_APPS_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
@@ -67,6 +69,7 @@ class ExtensionApps : public apps::mojom::Publisher,
   // running.
   bool RunExtensionEnableFlow(const std::string& app_id);
 
+  static bool IsBlacklisted(const std::string& app_id);
   apps::mojom::AppPtr Convert(const extensions::Extension* extension,
                               apps::mojom::Readiness readiness);
   void ConvertVector(const extensions::ExtensionSet& extensions,
