@@ -89,7 +89,7 @@ String GetSourceText(const KURL& url) {
   if (resource_id < 0)
     return String();
 
-  return GetResourceAsString(resource_id);
+  return UncompressResourceAsString(resource_id);
 }
 
 }  // namespace layered_api
