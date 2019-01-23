@@ -47,6 +47,9 @@ class MatchRequestsTask : public DatabaseTask {
       blink::mojom::CacheStorageError error,
       std::vector<CacheStorageCache::CacheEntry> entries);
 
+  // Checks whether |request| shuld be matched given the provided query params.
+  bool ShouldMatchRequest(const blink::mojom::FetchAPIRequestPtr& request);
+
   void FinishWithError(blink::mojom::BackgroundFetchError error) override;
 
   std::string HistogramName() const override;

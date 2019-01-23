@@ -28,6 +28,10 @@ class CONTENT_EXPORT BackgroundFetchRequestMatchParams {
     return request_to_match_;
   }
 
+  const blink::mojom::QueryParamsPtr& cache_query_params() const {
+    return cache_query_params_;
+  }
+
   blink::mojom::QueryParamsPtr cloned_cache_query_params() const {
     if (!cache_query_params_)
       return nullptr;

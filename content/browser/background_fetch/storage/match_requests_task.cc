@@ -56,8 +56,20 @@ void MatchRequestsTask::DidOpenCache(CacheStorageCacheHandle handle,
     request = blink::mojom::FetchAPIRequest::New();
   }
 
+  auto query_params = match_params_->cloned_cache_query_params();
+  if (!query_params)
+    query_params = blink::mojom::QueryParams::New();
+
+  // Ignore the search params since we added query params to make the URL
+  // unique.
+  query_params->ignore_search = true;
+
+  // Ignore the method since Cache Storage assumes the request being matched
+  // against is a GET.
+  query_params->ignore_method = true;
+
   handle_.value()->GetAllMatchedEntries(
-      std::move(request), match_params_->cloned_cache_query_params(),
+      std::move(request), std::move(query_params),
       base::BindOnce(&MatchRequestsTask::DidGetAllMatchedEntries,
                      weak_factory_.GetWeakPtr()));
 }
@@ -79,13 +91,14 @@ void MatchRequestsTask::DidGetAllMatchedEntries(
     return;
   }
 
-  size_t size = match_params_->match_all() ? entries.size() : 1u;
-  settled_fetches_.reserve(size);
-
-  for (size_t i = 0; i < size; i++) {
-    auto& entry = entries[i];
+  for (auto& entry : entries) {
     auto settled_fetch = blink::mojom::BackgroundFetchSettledFetch::New();
     settled_fetch->request = std::move(entry.first);
+    settled_fetch->request->url = RemoveUniqueParamFromCacheURL(
+        settled_fetch->request->url, registration_id_.unique_id());
+
+    if (!ShouldMatchRequest(settled_fetch->request))
+      continue;
 
     if (entry.second && entry.second->url_list.empty()) {
       // We didn't process this empty response, so we should expose it
@@ -96,9 +109,34 @@ void MatchRequestsTask::DidGetAllMatchedEntries(
     }
 
     settled_fetches_.push_back(std::move(settled_fetch));
+    if (!match_params_->match_all())
+      break;
   }
 
   FinishWithError(blink::mojom::BackgroundFetchError::NONE);
+}
+
+bool MatchRequestsTask::ShouldMatchRequest(
+    const blink::mojom::FetchAPIRequestPtr& request) {
+  // We were supposed to match everything anyway.
+  if (!match_params_->FilterByRequest())
+    return true;
+
+  // Ignore the request if the methods don't match.
+  if ((!match_params_->cache_query_params() ||
+       !match_params_->cache_query_params()->ignore_method) &&
+      request->method != match_params_->request_to_match()->method) {
+    return false;
+  }
+
+  // Ignore the request if the queries don't match.
+  if ((!match_params_->cache_query_params() ||
+       !match_params_->cache_query_params()->ignore_search) &&
+      request->url.query() != match_params_->request_to_match()->url.query()) {
+    return false;
+  }
+
+  return true;
 }
 
 void MatchRequestsTask::FinishWithError(

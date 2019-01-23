@@ -382,10 +382,12 @@ void CreateMetadataTask::DidOpenCache(CacheStorageCacheHandle handle,
   // Create batch PUT operations instead of putting them one-by-one.
   std::vector<blink::mojom::BatchOperationPtr> operations;
   operations.reserve(requests_.size());
-  for (auto& request : requests_) {
+  for (size_t i = 0; i < requests_.size(); i++) {
     auto operation = blink::mojom::BatchOperation::New();
     operation->operation_type = blink::mojom::OperationType::kPut;
-    operation->request = std::move(request);
+    requests_[i]->url =
+        MakeCacheUrlUnique(requests_[i]->url, registration_id_.unique_id(), i);
+    operation->request = std::move(requests_[i]);
     // Empty response.
     operation->response = blink::mojom::FetchAPIResponse::New();
     operations.push_back(std::move(operation));
