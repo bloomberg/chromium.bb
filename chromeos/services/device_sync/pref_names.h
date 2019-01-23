@@ -21,6 +21,7 @@ extern const char kCryptAuthEnrollmentReason[];
 extern const char kCryptAuthEnrollmentUserPublicKey[];
 extern const char kCryptAuthEnrollmentUserPrivateKey[];
 extern const char kCryptAuthGCMRegistrationId[];
+extern const char kCryptAuthKeyRegistry[];
 
 }  // namespace prefs
 
