@@ -559,6 +559,7 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
             base::NumberToString(storage.values().manfid()));
         disk_info->set_model(storage.values().name());
         disk_info->set_type(storage.values().type());
+        disk_info->set_size(storage.values().size());
       }
     }
   }

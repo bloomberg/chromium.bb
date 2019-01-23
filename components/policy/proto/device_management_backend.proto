@@ -796,7 +796,7 @@ message BatterySample {
   optional int64 timestamp = 1;
   // Battery voltage
   optional int64 voltage = 2;
-  // Battery remaining capacity (mWatt-hours)
+  // Battery remaining capacity (mA-hours)
   optional int64 remaining_capacity = 3;
   // Temperature in Celsius.
   optional int32 temperature = 4;
@@ -808,9 +808,9 @@ message BatteryInfo {
   optional string serial = 1;
   optional string manufacturer = 2;
   optional string battery_health = 3;
-  // Design capacity (mWatt-hours)
+  // Design capacity (mA-hours)
   optional int64 design_capacity = 4;
-  // Full charge capacity (mWatt-hours)
+  // Full charge capacity (mA-hours)
   optional int64 full_charge_capacity = 5;
   optional int32 cycle_count = 6;
   // Last sampling data.
@@ -833,6 +833,7 @@ message DiskInfo {
   optional string serial = 1;
   optional string manufacturer = 2;
   optional string model = 3;
+  // Size in bytes
   optional int64 size = 4;
   // SSD / eMMC / HDD
   optional string type = 5;
