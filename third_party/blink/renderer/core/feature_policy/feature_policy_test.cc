@@ -67,15 +67,6 @@ class FeaturePolicyParserTest : public testing::Test {
 
   ~FeaturePolicyParserTest() override = default;
 
-  /*void SetUp() override {
-    chrome_client_ = MakeGarbageCollected<ConsoleCapturingChromeClient>();
-    Page::PageClients clients;
-    FillWithEmptyClients(clients);
-    clients.chrome_client = chrome_client_.Get();
-    SetupPageWithClients(&clients);
-    Page::InsertOrdinaryPageForTesting(&GetPage());
-  }*/
-
   scoped_refptr<const SecurityOrigin> origin_a_ =
       SecurityOrigin::CreateFromString(ORIGIN_A);
   scoped_refptr<const SecurityOrigin> origin_b_ =
