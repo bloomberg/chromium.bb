@@ -413,15 +413,22 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
 
     public void setTopBarHeight(int height) {
         mTopBarDelegate.get().setTopBarHeight(height);
-        maybeCustomizeCctHeader(mIntentDataProvider.getUrlToLoad());
+        maybeCustomizeCctHeader(getContentUrl());
+    }
+
+    private String getContentUrl() {
+        Tab tab = mTabController.getTab();
+        if (tab != null && tab.getWebContents() != null && !tab.getWebContents().isDestroyed()
+                && tab.getWebContents().getLastCommittedUrl() != null) {
+            return tab.getWebContents().getLastCommittedUrl();
+        }
+        return mIntentDataProvider.getUrlToLoad();
     }
 
     private int getTopBarHeight() {
         Integer topBarHeight = mTopBarDelegate.get().getTopBarHeight();
-        // Custom top bar height must not be too small compared to the default top control container
-        // height, nor shall it be larger than the height of the web content.
+        // Custom top bar height must not be larger than the height of the web content.
         if (topBarHeight != null && topBarHeight >= 0
-                && topBarHeight > mDefaultTopControlContainerHeight / 2
                 && mActivity.getWindow() != null
                 && topBarHeight < mActivity.getWindow().getDecorView().getHeight() / 2) {
             return topBarHeight;
@@ -441,6 +448,19 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
                 mIntentDataProvider.getSession());
     }
 
+    private View getProgressBarAnchorView(boolean isModuleManagedUrl) {
+        View anchorView = null;
+        if (isModuleManagedUrl) {
+            View topBarContentView = mTopBarDelegate.get().getTopBarContentView();
+            if (topBarContentView != null && topBarContentView.getVisibility() == View.VISIBLE) {
+                anchorView = topBarContentView;
+            }
+        } else {
+            anchorView = mActivity.getToolbarManager().getToolbarView();
+        }
+        return anchorView;
+    }
+
     private void maybeCustomizeCctHeader(String url) {
         if (!isModuleLoaded() && !isModuleLoading()) return;
 
@@ -453,9 +473,8 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
                     isModuleManagedUrl ? View.GONE : mDefaultToolbarShadowVisibility);
             mFullscreenManager.get().setTopControlsHeight(
                     isModuleManagedUrl ? getTopBarHeight() : mDefaultTopControlContainerHeight);
-            mActivity.getToolbarManager().setProgressBarAnchorView(isModuleManagedUrl
-                            ? mTopBarDelegate.get().getTopBarContentView()
-                            : mActivity.getToolbarManager().getToolbarView());
+            mActivity.getToolbarManager().setProgressBarAnchorView(
+                    getProgressBarAnchorView(isModuleManagedUrl));
         }
     }
 

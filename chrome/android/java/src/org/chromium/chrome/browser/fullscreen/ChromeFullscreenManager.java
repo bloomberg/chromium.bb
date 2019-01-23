@@ -422,7 +422,8 @@ public class ChromeFullscreenManager
         if (mControlsPosition == ControlsPosition.NONE) return;
 
         if (getTopControlsHeight() == 0) {
-            mControlOffsetRatio = 0;
+            // Treat the case of 0 height as controls being totally offscreen.
+            mControlOffsetRatio = 1.0f;
         } else {
             mControlOffsetRatio =
                     Math.abs((float) mRendererTopControlOffset / getTopControlsHeight());
