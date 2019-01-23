@@ -72,7 +72,7 @@ class CORE_EXPORT HTMLImageElement final
 
   explicit HTMLImageElement(Document&, bool created_by_parser = false);
   ~HTMLImageElement() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   unsigned width();
   unsigned height();

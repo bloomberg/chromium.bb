@@ -127,7 +127,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
 
   void ParseAttribute(const AttributeModificationParams&) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   HTMLFrameOwnerElement(const QualifiedName& tag_name, Document&);

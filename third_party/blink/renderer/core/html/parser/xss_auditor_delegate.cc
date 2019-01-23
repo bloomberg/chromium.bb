@@ -72,7 +72,7 @@ XSSAuditorDelegate::XSSAuditorDelegate(Document* document)
   DCHECK(document_);
 }
 
-void XSSAuditorDelegate::Trace(blink::Visitor* visitor) {
+void XSSAuditorDelegate::Trace(Visitor* visitor) {
   visitor->Trace(document_);
 }
 

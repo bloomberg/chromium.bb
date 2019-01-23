@@ -475,7 +475,7 @@ bool AutoplayUmaHelper::ShouldRecordUserPausedAutoplayingCrossOriginVideo()
              CrossOriginAutoplayResult::kUserPaused);
 }
 
-void AutoplayUmaHelper::Trace(blink::Visitor* visitor) {
+void AutoplayUmaHelper::Trace(Visitor* visitor) {
   NativeEventListener::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
   visitor->Trace(element_);

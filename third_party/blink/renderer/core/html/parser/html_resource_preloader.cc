@@ -42,7 +42,7 @@ HTMLResourcePreloader* HTMLResourcePreloader::Create(Document& document) {
   return MakeGarbageCollected<HTMLResourcePreloader>(document);
 }
 
-void HTMLResourcePreloader::Trace(blink::Visitor* visitor) {
+void HTMLResourcePreloader::Trace(Visitor* visitor) {
   visitor->Trace(document_);
 }
 

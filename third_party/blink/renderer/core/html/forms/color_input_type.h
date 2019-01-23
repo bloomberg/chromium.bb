@@ -48,7 +48,7 @@ class ColorInputType final : public InputType,
   static InputType* Create(HTMLInputElement&);
   explicit ColorInputType(HTMLInputElement&);
   ~ColorInputType() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   using InputType::GetElement;
 
   // ColorChooserClient implementation.

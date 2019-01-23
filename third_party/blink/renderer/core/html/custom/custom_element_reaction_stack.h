@@ -23,7 +23,7 @@ class CORE_EXPORT CustomElementReactionStack final
  public:
   CustomElementReactionStack();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
   const char* NameInHeapSnapshot() const override {
     return "CustomElementReactionStack";
   }

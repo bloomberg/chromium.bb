@@ -1108,7 +1108,7 @@ void HTMLCanvasElement::NotifyGpuContextLost() {
     context_->LoseContext(CanvasRenderingContext::kRealLostContext);
 }
 
-void HTMLCanvasElement::Trace(blink::Visitor* visitor) {
+void HTMLCanvasElement::Trace(Visitor* visitor) {
   visitor->Trace(listeners_);
   visitor->Trace(context_);
   ContextLifecycleObserver::Trace(visitor);

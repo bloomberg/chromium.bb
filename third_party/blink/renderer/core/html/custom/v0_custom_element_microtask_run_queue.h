@@ -29,7 +29,7 @@ class V0CustomElementMicrotaskRunQueue
   void RequestDispatchIfNeeded();
   bool IsEmpty() const;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   void Dispatch();

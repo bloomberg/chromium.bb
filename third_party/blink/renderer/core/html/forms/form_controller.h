@@ -79,7 +79,7 @@ using SavedFormStateMap =
 class DocumentState final : public GarbageCollectedFinalized<DocumentState> {
  public:
   DocumentState(Document& document);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   void InvalidateControlList();
   Vector<String> ToStateVector();
@@ -96,7 +96,7 @@ class FormController final : public GarbageCollectedFinalized<FormController> {
  public:
   FormController(Document& document);
   ~FormController();
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   void InvalidateStatefulFormControlList();
   // This should be callled only by Document::formElementsState().

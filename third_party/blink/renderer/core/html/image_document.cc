@@ -73,7 +73,7 @@ class ImageEventListener : public NativeEventListener {
 
   void Invoke(ExecutionContext*, Event*) override;
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(doc_);
     NativeEventListener::Trace(visitor);
   }
@@ -563,7 +563,7 @@ bool ImageDocument::ShouldShrinkToFit() const {
   return GetFrame()->IsMainFrame() && !is_wrap_content_web_view;
 }
 
-void ImageDocument::Trace(blink::Visitor* visitor) {
+void ImageDocument::Trace(Visitor* visitor) {
   visitor->Trace(div_element_);
   visitor->Trace(image_element_);
   HTMLDocument::Trace(visitor);

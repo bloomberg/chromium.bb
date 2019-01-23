@@ -54,7 +54,7 @@ class CORE_EXPORT PluginDocument final : public HTMLDocument {
 
   void Shutdown() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   class BeforeUnloadEventListener;

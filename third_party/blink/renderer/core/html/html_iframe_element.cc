@@ -50,7 +50,7 @@ inline HTMLIFrameElement::HTMLIFrameElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLIFrameElement)
 
-void HTMLIFrameElement::Trace(blink::Visitor* visitor) {
+void HTMLIFrameElement::Trace(Visitor* visitor) {
   visitor->Trace(sandbox_);
   visitor->Trace(policy_);
   HTMLFrameElementBase::Trace(visitor);

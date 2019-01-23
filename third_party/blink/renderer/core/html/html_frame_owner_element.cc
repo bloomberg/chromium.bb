@@ -488,7 +488,7 @@ void HTMLFrameOwnerElement::ParseAttribute(
   }
 }
 
-void HTMLFrameOwnerElement::Trace(blink::Visitor* visitor) {
+void HTMLFrameOwnerElement::Trace(Visitor* visitor) {
   visitor->Trace(content_frame_);
   visitor->Trace(embedded_content_view_);
   visitor->Trace(lazy_load_frame_observer_);

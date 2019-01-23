@@ -174,7 +174,7 @@ class LogUpgradeDefinition : public TestCustomElementDefinition {
             },
             {}) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     TestCustomElementDefinition::Trace(visitor);
     visitor->Trace(element_);
     visitor->Trace(adopted_);
@@ -206,7 +206,7 @@ class LogUpgradeDefinition : public TestCustomElementDefinition {
     Member<Document> old_owner_;
     Member<Document> new_owner_;
 
-    void Trace(blink::Visitor* visitor) {
+    void Trace(Visitor* visitor) {
       visitor->Trace(old_owner_);
       visitor->Trace(new_owner_);
     }

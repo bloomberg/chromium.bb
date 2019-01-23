@@ -543,7 +543,7 @@ void HTMLCollection::NamedItems(const AtomicString& name,
 
 HTMLCollection::NamedItemCache::NamedItemCache() = default;
 
-void HTMLCollection::Trace(blink::Visitor* visitor) {
+void HTMLCollection::Trace(Visitor* visitor) {
   visitor->Trace(named_item_cache_);
   visitor->Trace(collection_items_cache_);
   ScriptWrappable::Trace(visitor);

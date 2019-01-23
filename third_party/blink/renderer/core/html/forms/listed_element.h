@@ -157,7 +157,7 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
   // This should be called in Element::FinishParsingChildren() override.
   void TakeStateAndRestore();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   ListedElement();

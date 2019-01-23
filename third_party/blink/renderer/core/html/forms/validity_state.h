@@ -40,7 +40,7 @@ class ValidityState final : public ScriptWrappable {
 
   explicit ValidityState(ListedElement* control) : control_(control) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(control_);
     ScriptWrappable::Trace(visitor);
   }

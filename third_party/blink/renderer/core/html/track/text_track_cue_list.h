@@ -60,7 +60,7 @@ class TextTrackCueList final : public ScriptWrappable {
   }
   void ValidateCueIndexes();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   wtf_size_t FindInsertionIndex(const TextTrackCue*) const;

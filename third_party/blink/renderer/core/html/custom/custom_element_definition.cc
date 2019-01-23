@@ -38,7 +38,7 @@ CustomElementDefinition::CustomElementDefinition(
 
 CustomElementDefinition::~CustomElementDefinition() = default;
 
-void CustomElementDefinition::Trace(blink::Visitor* visitor) {
+void CustomElementDefinition::Trace(Visitor* visitor) {
   visitor->Trace(construction_stack_);
   visitor->Trace(default_style_sheets_);
 }

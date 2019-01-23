@@ -190,7 +190,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
     return creation_attributes_;
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   virtual void Stop() = 0;
 
  protected:

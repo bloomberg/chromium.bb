@@ -85,7 +85,7 @@ class CORE_EXPORT AutoplayUmaHelper : public NativeEventListener,
 
   void Invoke(ExecutionContext*, Event*) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   friend class MockAutoplayUmaHelper;

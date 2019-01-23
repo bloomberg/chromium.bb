@@ -59,7 +59,7 @@ class FormAttributeTargetObserver : public IdTargetObserver {
 
   FormAttributeTargetObserver(const AtomicString& id, ListedElement*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   void IdTargetChanged() override;
 
  private:
@@ -78,7 +78,7 @@ ListedElement::~ListedElement() {
   // We can't call setForm here because it contains virtual calls.
 }
 
-void ListedElement::Trace(blink::Visitor* visitor) {
+void ListedElement::Trace(Visitor* visitor) {
   visitor->Trace(form_attribute_target_observer_);
   visitor->Trace(form_);
   visitor->Trace(validity_state_);
@@ -701,7 +701,7 @@ FormAttributeTargetObserver::FormAttributeTargetObserver(const AtomicString& id,
           id),
       element_(element) {}
 
-void FormAttributeTargetObserver::Trace(blink::Visitor* visitor) {
+void FormAttributeTargetObserver::Trace(Visitor* visitor) {
   visitor->Trace(element_);
   IdTargetObserver::Trace(visitor);
 }

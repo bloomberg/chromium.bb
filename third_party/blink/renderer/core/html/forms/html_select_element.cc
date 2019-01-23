@@ -1843,7 +1843,7 @@ bool HTMLSelectElement::SupportsAutofocus() const {
   return true;
 }
 
-void HTMLSelectElement::Trace(blink::Visitor* visitor) {
+void HTMLSelectElement::Trace(Visitor* visitor) {
   visitor->Trace(list_items_);
   visitor->Trace(last_on_change_option_);
   visitor->Trace(active_selection_anchor_);
@@ -2059,7 +2059,7 @@ class HTMLSelectElement::PopupUpdater : public MutationObserver::Delegate {
 
   void Dispose() { observer_->disconnect(); }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(select_);
     visitor->Trace(observer_);
     MutationObserver::Delegate::Trace(visitor);

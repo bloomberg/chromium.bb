@@ -86,7 +86,7 @@ class HTMLImageElement::ViewportChangeListener final
       element_->NotifyViewportChanged();
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(element_);
     MediaQueryListListener::Trace(visitor);
   }
@@ -128,7 +128,7 @@ HTMLImageElement* HTMLImageElement::Create(Document& document,
 
 HTMLImageElement::~HTMLImageElement() = default;
 
-void HTMLImageElement::Trace(blink::Visitor* visitor) {
+void HTMLImageElement::Trace(Visitor* visitor) {
   visitor->Trace(image_loader_);
   visitor->Trace(listener_);
   visitor->Trace(form_);

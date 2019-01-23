@@ -66,7 +66,7 @@ class HTMLImport : public GarbageCollectedFinalized<HTMLImport>,
   virtual void StateWillChange() {}
   virtual void StateDidChange();
 
-  virtual void Trace(blink::Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) {}
 
  protected:
   // Stating from most conservative state.

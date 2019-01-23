@@ -122,7 +122,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   }
   bool IsCreatedByParser() const { return created_by_parser_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   LinkStyle* GetLinkStyle() const;

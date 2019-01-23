@@ -175,7 +175,7 @@ void PickerIndicatorElement::DidNotifySubtreeInsertionsToDocument() {
                    WebLocalizedString::kAXCalendarShowDatePicker)));
 }
 
-void PickerIndicatorElement::Trace(blink::Visitor* visitor) {
+void PickerIndicatorElement::Trace(Visitor* visitor) {
   visitor->Trace(picker_indicator_owner_);
   visitor->Trace(chooser_);
   HTMLDivElement::Trace(visitor);

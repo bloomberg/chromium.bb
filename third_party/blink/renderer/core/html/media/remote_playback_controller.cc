@@ -16,7 +16,7 @@ RemotePlaybackController* RemotePlaybackController::From(
   return Supplement<HTMLMediaElement>::From<RemotePlaybackController>(element);
 }
 
-void RemotePlaybackController::Trace(blink::Visitor* visitor) {
+void RemotePlaybackController::Trace(Visitor* visitor) {
   Supplement<HTMLMediaElement>::Trace(visitor);
 }
 

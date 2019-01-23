@@ -93,7 +93,7 @@ CustomElementRegistry::CustomElementRegistry(const LocalDOMWindow* owner)
       upgrade_candidates_(MakeGarbageCollected<UpgradeCandidateMap>()),
       reaction_stack_(&CustomElementReactionStack::Current()) {}
 
-void CustomElementRegistry::Trace(blink::Visitor* visitor) {
+void CustomElementRegistry::Trace(Visitor* visitor) {
   visitor->Trace(definitions_);
   visitor->Trace(owner_);
   visitor->Trace(v0_);

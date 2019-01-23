@@ -96,7 +96,7 @@ AnchorElementMetricsSender::GetAnchorElements() const {
   return anchor_elements_;
 }
 
-void AnchorElementMetricsSender::Trace(blink::Visitor* visitor) {
+void AnchorElementMetricsSender::Trace(Visitor* visitor) {
   visitor->Trace(anchor_elements_);
   Supplement<Document>::Trace(visitor);
 }

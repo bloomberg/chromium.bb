@@ -61,7 +61,7 @@ class HTMLElementStack {
 
     ElementRecord* Next() const { return next_.Get(); }
 
-    void Trace(blink::Visitor*);
+    void Trace(Visitor*);
 
    private:
     friend class HTMLElementStack;
@@ -165,7 +165,7 @@ class HTMLElementStack {
 
   ContainerNode* RootNode() const;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
 #ifndef NDEBUG
   void Show();

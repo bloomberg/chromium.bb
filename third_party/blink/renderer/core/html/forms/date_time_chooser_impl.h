@@ -58,7 +58,7 @@ class CORE_EXPORT DateTimeChooserImpl final : public DateTimeChooser,
   void EndChooser() override;
   AXObject* RootAXObject() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // PagePopupClient functions:

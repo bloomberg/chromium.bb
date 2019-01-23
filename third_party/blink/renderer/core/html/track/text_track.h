@@ -133,7 +133,7 @@ class CORE_EXPORT TextTrack : public EventTargetWithInlineData,
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   void AddListOfCues(HeapVector<Member<TextTrackCue>>&);

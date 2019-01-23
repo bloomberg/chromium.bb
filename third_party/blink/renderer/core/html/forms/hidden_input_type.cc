@@ -45,7 +45,7 @@ InputType* HiddenInputType::Create(HTMLInputElement& element) {
   return MakeGarbageCollected<HiddenInputType>(element);
 }
 
-void HiddenInputType::Trace(blink::Visitor* visitor) {
+void HiddenInputType::Trace(Visitor* visitor) {
   InputTypeView::Trace(visitor);
   InputType::Trace(visitor);
 }

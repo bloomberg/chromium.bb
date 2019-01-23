@@ -48,7 +48,7 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
 
   explicit HTMLFormElement(Document&);
   ~HTMLFormElement() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
 

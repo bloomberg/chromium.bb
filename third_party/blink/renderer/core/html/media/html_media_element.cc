@@ -3981,7 +3981,7 @@ bool HTMLMediaElement::IsInteractiveContent() const {
   return FastHasAttribute(kControlsAttr);
 }
 
-void HTMLMediaElement::Trace(blink::Visitor* visitor) {
+void HTMLMediaElement::Trace(Visitor* visitor) {
   visitor->Trace(viewport_intersection_observer_);
   visitor->Trace(played_time_ranges_);
   visitor->Trace(async_event_queue_);
@@ -4222,11 +4222,11 @@ void HTMLMediaElement::AudioClientImpl::SetFormat(uint32_t number_of_channels,
     client_->SetFormat(number_of_channels, sample_rate);
 }
 
-void HTMLMediaElement::AudioClientImpl::Trace(blink::Visitor* visitor) {
+void HTMLMediaElement::AudioClientImpl::Trace(Visitor* visitor) {
   visitor->Trace(client_);
 }
 
-void HTMLMediaElement::AudioSourceProviderImpl::Trace(blink::Visitor* visitor) {
+void HTMLMediaElement::AudioSourceProviderImpl::Trace(Visitor* visitor) {
   visitor->Trace(client_);
 }
 

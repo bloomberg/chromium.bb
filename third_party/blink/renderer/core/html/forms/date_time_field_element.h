@@ -76,7 +76,7 @@ class DateTimeFieldElement : public HTMLSpanElement {
   virtual void StepUp() = 0;
   virtual String Value() const = 0;
   virtual String VisibleValue() const = 0;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   static float ComputeTextWidth(const ComputedStyle&, const String&);
 

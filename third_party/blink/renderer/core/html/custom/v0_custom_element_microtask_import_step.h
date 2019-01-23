@@ -59,7 +59,7 @@ class V0CustomElementMicrotaskImportStep final
   void Invalidate();
   void ImportDidFinishLoading();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DidUpgradeAllCustomElements();

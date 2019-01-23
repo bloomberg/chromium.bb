@@ -159,7 +159,7 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
                                   base::Optional<IntRect> crop_rect,
                                   const ImageBitmapOptions*) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   WARN_UNUSED_RESULT v8::Local<v8::Object> AssociateWithWrapper(
       v8::Isolate*,

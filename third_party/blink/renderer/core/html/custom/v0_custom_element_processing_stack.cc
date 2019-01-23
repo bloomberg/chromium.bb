@@ -92,7 +92,7 @@ void V0CustomElementProcessingStack::Enqueue(
   ++element_queue_end_;
 }
 
-void V0CustomElementProcessingStack::Trace(blink::Visitor* visitor) {
+void V0CustomElementProcessingStack::Trace(Visitor* visitor) {
   visitor->Trace(flattened_processing_stack_);
 }
 

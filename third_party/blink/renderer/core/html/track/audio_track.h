@@ -32,7 +32,7 @@ class CORE_EXPORT AudioTrack final : public ScriptWrappable, public TrackBase {
              const AtomicString& language,
              bool enabled);
   ~AudioTrack() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   bool enabled() const { return enabled_; }
   void setEnabled(bool);

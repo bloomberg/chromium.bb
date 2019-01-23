@@ -36,7 +36,7 @@ void VideoWakeLock::PageVisibilityChanged() {
   Update();
 }
 
-void VideoWakeLock::Trace(blink::Visitor* visitor) {
+void VideoWakeLock::Trace(Visitor* visitor) {
   NativeEventListener::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
   visitor->Trace(video_element_);

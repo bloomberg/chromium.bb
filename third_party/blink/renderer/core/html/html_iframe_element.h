@@ -42,7 +42,7 @@ class CORE_EXPORT HTMLIFrameElement final
 
  public:
   DECLARE_NODE_FACTORY(HTMLIFrameElement);
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   explicit HTMLIFrameElement(Document&);
   ~HTMLIFrameElement() override;

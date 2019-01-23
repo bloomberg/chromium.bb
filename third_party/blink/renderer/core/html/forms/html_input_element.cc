@@ -87,7 +87,7 @@ class ListAttributeTargetObserver : public IdTargetObserver {
 
   ListAttributeTargetObserver(const AtomicString& id, HTMLInputElement*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   void IdTargetChanged() override;
 
  private:
@@ -135,7 +135,7 @@ HTMLInputElement* HTMLInputElement::Create(Document& document,
   return input_element;
 }
 
-void HTMLInputElement::Trace(blink::Visitor* visitor) {
+void HTMLInputElement::Trace(Visitor* visitor) {
   visitor->Trace(input_type_);
   visitor->Trace(input_type_view_);
   visitor->Trace(list_attribute_target_observer_);
@@ -1809,7 +1809,7 @@ ListAttributeTargetObserver::ListAttributeTargetObserver(
                        id),
       element_(element) {}
 
-void ListAttributeTargetObserver::Trace(blink::Visitor* visitor) {
+void ListAttributeTargetObserver::Trace(Visitor* visitor) {
   visitor->Trace(element_);
   IdTargetObserver::Trace(visitor);
 }

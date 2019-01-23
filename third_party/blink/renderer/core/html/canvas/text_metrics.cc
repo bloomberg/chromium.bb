@@ -38,7 +38,7 @@ float TextMetrics::GetFontBaseline(const TextBaseline& text_baseline,
   return 0;
 }
 
-void TextMetrics::Trace(blink::Visitor* visitor) {
+void TextMetrics::Trace(Visitor* visitor) {
   visitor->Trace(baselines_);
   ScriptWrappable::Trace(visitor);
 }

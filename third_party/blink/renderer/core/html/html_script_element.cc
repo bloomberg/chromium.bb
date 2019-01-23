@@ -266,7 +266,7 @@ Element* HTMLScriptElement::CloneWithoutAttributesAndChildren(
   return factory.CreateElement(TagQName(), flags, IsValue());
 }
 
-void HTMLScriptElement::Trace(blink::Visitor* visitor) {
+void HTMLScriptElement::Trace(Visitor* visitor) {
   visitor->Trace(loader_);
   HTMLElement::Trace(visitor);
   ScriptElementBase::Trace(visitor);

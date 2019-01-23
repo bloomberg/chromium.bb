@@ -49,7 +49,7 @@ inline HTMLContentElement::HTMLContentElement(Document& document)
 
 HTMLContentElement::~HTMLContentElement() = default;
 
-void HTMLContentElement::Trace(blink::Visitor* visitor) {
+void HTMLContentElement::Trace(Visitor* visitor) {
   V0InsertionPoint::Trace(visitor);
 }
 

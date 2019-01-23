@@ -47,7 +47,7 @@ class ClearButtonElement final : public HTMLDivElement {
 
   void RemoveClearButtonOwner() { clear_button_owner_ = nullptr; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DetachLayoutTree(const AttachContext& = AttachContext()) override;

@@ -91,7 +91,7 @@ class HTMLMarqueeElement::RequestAnimationFrameCallback final
     marquee_->ContinueAnimation();
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(marquee_);
     FrameRequestCallbackCollection::FrameCallback::Trace(visitor);
   }
@@ -111,7 +111,7 @@ class HTMLMarqueeElement::AnimationFinished final : public NativeEventListener {
     marquee_->start();
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(marquee_);
     NativeEventListener::Trace(visitor);
   }
@@ -488,7 +488,7 @@ AtomicString HTMLMarqueeElement::CreateTransform(double value) const {
          String::NumberToStringECMAScript(value) + "px)";
 }
 
-void HTMLMarqueeElement::Trace(blink::Visitor* visitor) {
+void HTMLMarqueeElement::Trace(Visitor* visitor) {
   visitor->Trace(mover_);
   visitor->Trace(player_);
   HTMLElement::Trace(visitor);

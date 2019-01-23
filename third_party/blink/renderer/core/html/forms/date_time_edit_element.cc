@@ -522,7 +522,7 @@ DateTimeEditElement::DateTimeEditElement(Document& document,
 
 DateTimeEditElement::~DateTimeEditElement() = default;
 
-void DateTimeEditElement::Trace(blink::Visitor* visitor) {
+void DateTimeEditElement::Trace(Visitor* visitor) {
   visitor->Trace(fields_);
   visitor->Trace(edit_control_owner_);
   HTMLDivElement::Trace(visitor);

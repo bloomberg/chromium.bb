@@ -59,7 +59,7 @@ class CORE_EXPORT TrackEvent final : public Event {
 
   void track(VideoTrackOrAudioTrackOrTextTrack&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<TrackBase> track_;

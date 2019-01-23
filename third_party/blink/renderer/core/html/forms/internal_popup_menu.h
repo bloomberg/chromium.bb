@@ -28,7 +28,7 @@ class CORE_EXPORT InternalPopupMenu final : public PopupMenu,
 
   InternalPopupMenu(ChromeClient*, HTMLSelectElement&);
   ~InternalPopupMenu() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void Update();
 

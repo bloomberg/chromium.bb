@@ -65,7 +65,7 @@ class CORE_EXPORT CustomElementRegistry final : public ScriptWrappable {
 
   void Entangle(V0CustomElementRegistrationContext*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   CustomElementDefinition* DefineInternal(ScriptState*,

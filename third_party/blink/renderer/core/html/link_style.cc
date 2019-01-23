@@ -363,7 +363,7 @@ void LinkStyle::OwnerRemoved() {
     ClearSheet();
 }
 
-void LinkStyle::Trace(blink::Visitor* visitor) {
+void LinkStyle::Trace(Visitor* visitor) {
   visitor->Trace(sheet_);
   LinkResource::Trace(visitor);
   ResourceClient::Trace(visitor);

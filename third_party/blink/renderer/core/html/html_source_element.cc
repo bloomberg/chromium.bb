@@ -53,7 +53,7 @@ class HTMLSourceElement::Listener final : public MediaQueryListListener {
   }
 
   void ClearElement() { element_ = nullptr; }
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(element_);
     MediaQueryListListener::Trace(visitor);
   }
@@ -197,7 +197,7 @@ void HTMLSourceElement::NotifyMediaQueryChanged() {
     picture->SourceOrMediaChanged();
 }
 
-void HTMLSourceElement::Trace(blink::Visitor* visitor) {
+void HTMLSourceElement::Trace(Visitor* visitor) {
   visitor->Trace(media_query_list_);
   visitor->Trace(listener_);
   HTMLElement::Trace(visitor);

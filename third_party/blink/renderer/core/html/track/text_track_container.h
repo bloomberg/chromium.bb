@@ -52,7 +52,7 @@ class TextTrackContainer final : public HTMLDivElement {
   void UpdateDisplay(HTMLMediaElement&, ExposingControls);
   void UpdateDefaultFontSize(LayoutObject*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   bool IsTextTrackContainer() const override { return true; }

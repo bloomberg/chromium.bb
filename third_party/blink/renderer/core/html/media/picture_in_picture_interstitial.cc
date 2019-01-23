@@ -45,7 +45,7 @@ class PictureInPictureInterstitial::VideoElementResizeObserverDelegate final
     interstitial_->NotifyElementSizeChanged(*entries[0]->contentRect());
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(interstitial_);
     ResizeObserver::Delegate::Trace(visitor);
   }
@@ -160,7 +160,7 @@ void PictureInPictureInterstitial::OnPosterImageChanged() {
       GetVideoElement().getAttribute(html_names::kPosterAttr));
 }
 
-void PictureInPictureInterstitial::Trace(blink::Visitor* visitor) {
+void PictureInPictureInterstitial::Trace(Visitor* visitor) {
   visitor->Trace(resize_observer_);
   visitor->Trace(video_element_);
   visitor->Trace(background_image_);

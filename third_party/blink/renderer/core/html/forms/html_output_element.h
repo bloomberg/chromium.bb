@@ -57,7 +57,7 @@ class CORE_EXPORT HTMLOutputElement final : public HTMLFormControlElement {
     return is_default_value_mode_;
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void ParseAttribute(const AttributeModificationParams&) override;
