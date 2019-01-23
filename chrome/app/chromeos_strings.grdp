@@ -1159,16 +1159,16 @@
   </message>
   <!-- Supervised users deprecation notifications -->
   <message name="IDS_SUPERVISED_USER_EXPIRING_NOTIFICATION_TITLE" desc="Title of notification displayed on supervised user login indicating that the feature is expiring soon.">
-    Your supervised user account is expiring soon.
+    This supervised account will be removed soon
   </message>
   <message name="IDS_SUPERVISED_USER_EXPIRING_NOTIFICATION_BODY" desc="Body of notification displayed on supervised user login indicating that the feature is expiring soon.">
-    Please save your local files and set up a new account.
+    Please save your files and create a new account now.
   </message>
   <message name="IDS_MANAGER_SUPERVISED_USER_EXPIRING_NOTIFICATION_TITLE" desc="Title of notification displayed on manager login indicating that the supervised user feature is expiring soon.">
-    Your supervised user account(s) are expiring soon.
+    The account you manage will be removed soon
   </message>
   <message name="IDS_MANAGER_SUPERVISED_USER_EXPIRING_NOTIFICATION_BODY" desc="Body of notification displayed on manager user login indicating that the supervised user feature is expiring soon.">
-    Supervised Users will not be available in an upcoming update.  Please back up any data from your Supervised User accounts on this device.
+   Please create a new account for your supervised user now.
   </message>
   <message name="IDS_SUPERVISED_USER_EXPIRING_NOTIFICATION_LEARN_MORE" desc="Learn more text for button on Supervised User expiration notification.">
     Learn more
