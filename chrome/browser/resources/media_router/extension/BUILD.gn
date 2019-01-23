@@ -15,7 +15,7 @@ declare_args() {
 if (enable_media_router_jscompile) {
   # Run JSCompiler for typechecking.
   action("media_router_type_check") {
-    script = "//third_party/closure_compiler/compile2.py"
+    script = "//third_party/closure_compiler/compile.py"
     inputs = rebase_path(mr_module_files, ".", "src") + [
                "src/externs.js",
                "src/mojo_externs.js",
