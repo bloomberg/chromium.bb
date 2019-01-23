@@ -37,7 +37,6 @@ using TimedSigninStatusValue = std::pair<std::string, std::string>;
 // to propagate to about:signin-internals via SigninInternalsUI.
 class AboutSigninInternals
     : public KeyedService,
-      public OAuth2TokenService::Observer,
       public OAuth2TokenService::DiagnosticsObserver,
       public GaiaCookieManagerService::Observer,
       SigninErrorController::Observer,
@@ -212,11 +211,9 @@ class AboutSigninInternals
   void OnRefreshTokenRevokedFromSource(const std::string& account_id,
                                        const std::string& source) override;
 
-  // OAuth2TokenServiceDelegate::Observer implementations.
-  void OnRefreshTokensLoaded() override;
-  void OnEndBatchChanges() override;
-
   // IdentityManager::Observer implementations.
+  void OnRefreshTokensLoaded() override;
+  void OnEndBatchOfRefreshTokenStateChanges() override;
   void OnPrimaryAccountSigninFailed(
       const GoogleServiceAuthError& error) override;
   void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
