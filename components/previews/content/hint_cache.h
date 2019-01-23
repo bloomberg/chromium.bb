@@ -63,7 +63,8 @@ class HintCache {
   bool HasHint(const std::string& host) const;
 
   // Requests that hint data for |host| be loaded asynchronously and passed to
-  // |callback| if/when loaded.
+  // |callback| if/when loaded. |callback| will not be called if no hint data
+  // is found for |host|.
   void LoadHint(const std::string& host, HintLoadedCallback callback);
 
   // Returns the hint data for |host| if found in memory, otherwise nullptr.
