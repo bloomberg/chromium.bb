@@ -26,25 +26,39 @@ struct TypeConverter<blink::ContactInfo*, blink::mojom::blink::ContactInfoPtr> {
 blink::ContactInfo*
 TypeConverter<blink::ContactInfo*, blink::mojom::blink::ContactInfoPtr>::
     Convert(const blink::mojom::blink::ContactInfoPtr& contact) {
-  Vector<String> names;
-  Vector<String> emails;
-  Vector<String> numbers;
+  blink::ContactInfo* contact_info = blink::ContactInfo::Create();
+
   if (contact->name.has_value()) {
-    for (const auto& name : *contact->name)
+    Vector<String> names;
+    names.ReserveInitialCapacity(contact->name->size());
+
+    for (const String& name : *contact->name)
       names.push_back(name);
+
+    contact_info->setName(names);
   }
+
   if (contact->email.has_value()) {
-    for (const auto& email : *contact->email)
+    Vector<String> emails;
+    emails.ReserveInitialCapacity(contact->email->size());
+
+    for (const String& email : *contact->email)
       emails.push_back(email);
+
+    contact_info->setEmail(emails);
   }
+
   if (contact->tel.has_value()) {
-    for (const auto& number : *contact->tel)
+    Vector<String> numbers;
+    numbers.ReserveInitialCapacity(contact->tel->size());
+
+    for (const String& number : *contact->tel)
       numbers.push_back(number);
+
+    contact_info->setTel(numbers);
   }
-  return blink::MakeGarbageCollected<blink::ContactInfo>(
-      names.IsEmpty() ? base::Optional<Vector<String>>() : names,
-      emails.IsEmpty() ? base::Optional<Vector<String>>() : emails,
-      numbers.IsEmpty() ? base::Optional<Vector<String>>() : numbers);
+
+  return contact_info;
 }
 
 }  // namespace mojo
@@ -66,39 +80,34 @@ mojom::blink::ContactsManagerPtr& ContactsManager::GetContactsManager(
 
 ScriptPromise ContactsManager::select(ScriptState* script_state,
                                       ContactsSelectOptions* options) {
+  if (!options->hasProperties() || !options->properties().size()) {
+    return ScriptPromise::Reject(script_state,
+                                 V8ThrowException::CreateTypeError(
+                                     script_state->GetIsolate(),
+                                     "At least one property must be provided"));
+  }
+
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  if (!options->hasProperties()) {
-    resolver->Reject(DOMException::Create(
-        DOMExceptionCode::kAbortError, "Dictionary must contain 'properties'"));
-    return promise;
-  }
+  bool include_names = false;
+  bool include_emails = false;
+  bool include_tel = false;
 
-  bool names = false;
-  bool emails = false;
-  bool tel = false;
   for (const String& property : options->properties()) {
     if (property == "name")
-      names = true;
+      include_names = true;
     else if (property == "email")
-      emails = true;
+      include_emails = true;
     else if (property == "tel")
-      tel = true;
+      include_tel = true;
   }
 
-  if (!names && !emails && !tel) {
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kAbortError,
-                             "'properties' must contain at least one entry"));
-    return promise;
-  }
-
-  // TODO(finnur): Figure out empty-array vs null.
   GetContactsManager(script_state)
-      ->Select(options->multiple(), names, emails, tel,
+      ->Select(options->multiple(), include_names, include_emails, include_tel,
                WTF::Bind(&ContactsManager::OnContactsSelected,
                          WrapPersistent(this), WrapPersistent(resolver)));
+
   return promise;
 }
 
