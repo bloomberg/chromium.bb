@@ -409,7 +409,6 @@ void ResourceLoadScheduler::Request(ResourceLoadSchedulerClient* client,
                                     ThrottleOption option,
                                     ResourceLoadPriority priority,
                                     int intra_priority,
-                                    ConsoleLogger* console_logger,
                                     ResourceLoadScheduler::ClientId* id) {
   *id = GenerateClientId();
   if (is_shutdown_)
@@ -424,6 +423,8 @@ void ResourceLoadScheduler::Request(ResourceLoadSchedulerClient* client,
 
   DCHECK(ThrottleOption::kStoppable == option ||
          ThrottleOption::kThrottleable == option);
+  if (pending_requests_[option].empty())
+    pending_queue_update_times_[option] = base::TimeTicks::Now();
   pending_requests_[option].insert(request_info);
   pending_request_map_.insert(
       *id, MakeGarbageCollected<ClientInfo>(client, option, priority,
@@ -431,22 +432,7 @@ void ResourceLoadScheduler::Request(ResourceLoadSchedulerClient* client,
 
   // Remember the ClientId since MaybeRun() below may destruct the caller
   // instance and |id| may be inaccessible after the call.
-  ResourceLoadScheduler::ClientId client_id = *id;
   MaybeRun();
-
-  if (!omit_console_log_ && IsThrottledState() &&
-      pending_request_map_.find(client_id) != pending_request_map_.end()) {
-    // Note that this doesn't show the message when a frame is stopped (vs.
-    // this DOES when throttled).
-    console_logger->AddInfoMessage(
-        ConsoleLogger::Source::kOther,
-        "Active resource loading counts reached a per-frame limit while the "
-        "tab was in background. Network requests will be delayed until a "
-        "previous loading finishes, or the tab is brought to the foreground. "
-        "See https://www.chromestatus.com/feature/5527160148197376 for more "
-        "details");
-    omit_console_log_ = true;
-  }
 }
 
 void ResourceLoadScheduler::SetPriority(ClientId client_id,
@@ -593,8 +579,6 @@ void ResourceLoadScheduler::OnLifecycleStateChanged(
 
   frame_scheduler_lifecycle_state_ = state;
 
-  omit_console_log_ = false;
-
   switch (state) {
     case scheduler::SchedulingLifecycleState::kHidden:
     case scheduler::SchedulingLifecycleState::kThrottled:
@@ -608,6 +592,7 @@ void ResourceLoadScheduler::OnLifecycleStateChanged(
         throttling_history_ = ThrottlingHistory::kNotThrottled;
       else if (throttling_history_ == ThrottlingHistory::kThrottled)
         throttling_history_ = ThrottlingHistory::kPartiallyThrottled;
+      ShowConsoleMessageIfNeeded();
       break;
     case scheduler::SchedulingLifecycleState::kStopped:
       throttling_history_ = ThrottlingHistory::kStopped;
@@ -652,14 +637,19 @@ bool ResourceLoadScheduler::GetNextPendingRequest(ClientId* id) {
                        (!has_runnable_throttleable_request ||
                         compare(*stoppable_it, *throttleable_it));
 
-  // Remove the iterator from the correct set of pending_requests_.
+  // Remove the iterator from the correct set of |pending_requests_|, and update
+  // corresponding |pending_queue_update_times_|.
   if (use_stoppable) {
     *id = stoppable_it->client_id;
     stoppable_queue.erase(stoppable_it);
+    pending_queue_update_times_[ThrottleOption::kStoppable] =
+        base::TimeTicks::Now();
     return true;
   }
   *id = throttleable_it->client_id;
   throttleable_queue.erase(throttleable_it);
+  pending_queue_update_times_[ThrottleOption::kThrottleable] =
+      base::TimeTicks::Now();
   return true;
 }
 
@@ -719,16 +709,38 @@ size_t ResourceLoadScheduler::GetOutstandingLimit() const {
   return limit;
 }
 
-bool ResourceLoadScheduler::IsThrottledState() const {
-  switch (frame_scheduler_lifecycle_state_) {
-    case scheduler::SchedulingLifecycleState::kHidden:
-    case scheduler::SchedulingLifecycleState::kThrottled:
-      return true;
-    case scheduler::SchedulingLifecycleState::kStopped:
-    case scheduler::SchedulingLifecycleState::kNotThrottled:
-      break;
+void ResourceLoadScheduler::ShowConsoleMessageIfNeeded() {
+  if (is_console_info_shown_ || pending_request_map_.IsEmpty())
+    return;
+
+  const base::TimeTicks limit =
+      base::TimeTicks::Now() - base::TimeDelta::FromMinutes(1);
+  ThrottleOption target_option;
+  if (pending_queue_update_times_[ThrottleOption::kThrottleable] < limit &&
+      !pending_requests_[ThrottleOption::kThrottleable].empty()) {
+    target_option = ThrottleOption::kThrottleable;
+  } else if (pending_queue_update_times_[ThrottleOption::kStoppable] < limit &&
+             !pending_requests_[ThrottleOption::kStoppable].empty()) {
+    target_option = ThrottleOption::kStoppable;
+  } else {
+    // At least, one of the top requests in pending queues was handled in the
+    // last 1 minutes, or there is no pending requests in the inactive queue.
+    return;
   }
-  return false;
+  auto client_it = pending_request_map_.find(
+      pending_requests_[target_option].begin()->client_id);
+  DCHECK_NE(pending_request_map_.end(), client_it);
+  ConsoleLogger* logger = client_it->value->client->GetConsoleLogger();
+  DCHECK(logger);
+
+  logger->AddInfoMessage(
+      ConsoleLogger::Source::kOther,
+      "Some resource load requests were throttled while the tab was in "
+      "background, and no request was sent from the queue in the last 1 "
+      "minute. This means previously requested in-flight requests haven't "
+      "received any response from servers. See"
+      "https://www.chromestatus.com/feature/5527160148197376 for more details");
+  is_console_info_shown_ = true;
 }
 
 }  // namespace blink

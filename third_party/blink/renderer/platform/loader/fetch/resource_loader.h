@@ -150,15 +150,16 @@ class PLATFORM_EXPORT ResourceLoader final
 
   void DidFinishLoadingFirstPartInMultipart();
 
-  // ResourceLoadSchedulerClient.
-  void Run() override;
-
   scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner();
 
  private:
   friend class SubresourceIntegrityTest;
   friend class ResourceLoaderIsolatedCodeCacheTest;
   class CodeCacheRequest;
+
+  // ResourceLoadSchedulerClient.
+  void Run() override;
+  ConsoleLogger* GetConsoleLogger() override;
 
   bool ShouldFetchCodeCache();
   void StartWith(const ResourceRequest&);
@@ -184,7 +185,6 @@ class PLATFORM_EXPORT ResourceLoader final
   void FinishedCreatingBlob(const scoped_refptr<BlobDataHandle>&);
 
   bool GetCorsFlag() const { return resource_->Options().cors_flag; }
-  ConsoleLogger* GetConsoleLogger();
 
   base::Optional<ResourceRequestBlockedReason> CheckResponseNosniff(
       mojom::RequestContextType,
