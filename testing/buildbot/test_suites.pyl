@@ -4239,11 +4239,6 @@
       'browser_tests_apprtc': {
         'args': ['--gtest_filter=WebRtcApprtcBrowserTest.*',
                  '--run-manual', '--test-launcher-jobs=1'],
-        'test': 'browser_tests',
-        # TODO(crbug.com/888429): Port this test to swarming.
-        'swarming': {
-          'can_use_on_swarming_builders': False,
-        },
       },
       'content_unittests': {
         'args': [

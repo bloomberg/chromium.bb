@@ -2233,6 +2233,24 @@ test("browser_tests") {
   }
 }
 
+if (is_linux || is_mac || is_win) {
+  group("browser_tests_apprtc") {
+    testonly = true
+
+    data_deps = [
+      ":browser_tests",
+    ]
+
+    data = [
+      "//out/apprtc/out/app_engine/",
+      "//out/apprtc/temp/google-cloud-sdk/",
+      "//out/collider/",
+    ]
+
+    write_runtime_deps = "$root_out_dir/${target_name}.runtime_deps"
+  }
+}
+
 group("telemetry_perf_unittests") {
   testonly = true
   deps = [

@@ -403,6 +403,11 @@
     "label": "//chrome/test:browser_tests",
     "type": "windowed_test_launcher",
   },
+  "browser_tests_apprtc": {
+    "label": "//chrome/test:browser_tests_apprtc",
+    "type": "windowed_test_launcher",
+    "executable": "browser_tests",
+  },
   "cacheinvalidation_unittests": {
     "label": "//third_party/cacheinvalidation:cacheinvalidation_unittests",
     "type": "console_test_launcher",
