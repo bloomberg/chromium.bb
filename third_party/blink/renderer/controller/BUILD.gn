@@ -43,6 +43,10 @@ component("controller") {
     "controller_export.h",
     "dev_tools_frontend_impl.cc",
     "dev_tools_frontend_impl.h",
+    "memory_usage_monitor.cc",
+    "memory_usage_monitor.h",
+    "memory_usage_monitor_android.cc",
+    "memory_usage_monitor_android.h",
   ]
 
   if (is_android) {
@@ -134,7 +138,11 @@ jumbo_source_set("webkit_unit_tests_sources") {
   ]
   sources += bindings_unittest_files
   if (is_android) {
-    sources += [ "oom_intervention_impl_test.cc" ]
+    sources += [
+      "memory_usage_monitor_android_test.cc",
+      "memory_usage_monitor_test.cc",
+      "oom_intervention_impl_test.cc",
+    ]
   }
 
   deps = [

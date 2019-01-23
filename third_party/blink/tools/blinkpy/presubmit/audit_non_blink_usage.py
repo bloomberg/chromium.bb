@@ -69,6 +69,10 @@ _CONFIG = [
             'base::span',
             'logging::GetVlogLevel',
 
+            # //base/observer_list.h.
+            'base::ObserverList',
+            'base::CheckedObserver',
+
             # //base/bind_helpers.h.
             'base::DoNothing',
 
