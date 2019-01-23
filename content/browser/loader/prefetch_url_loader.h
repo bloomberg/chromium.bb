@@ -95,10 +95,9 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
   void OnNetworkConnectionError();
 
   const base::RepeatingCallback<int(void)> frame_tree_node_id_getter_;
-  const GURL url_;
-  const bool report_raw_headers_;
-  const int load_flags_;
-  const base::Optional<base::UnguessableToken> throttling_profile_id_;
+
+  // Set in the constructor and updated when redirected.
+  network::ResourceRequest resource_request_;
 
   scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
 
@@ -108,8 +107,6 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
 
   // To be a URLLoader for the client.
   network::mojom::URLLoaderClientPtr forwarding_client_;
-
-  url::Origin request_initiator_;
 
   // |url_loader_throttles_getter_| and |resource_context_| should be
   // valid as far as |request_context_getter_| returns non-null value.
@@ -122,7 +119,6 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
   std::unique_ptr<SignedExchangePrefetchHandler>
       signed_exchange_prefetch_handler_;
 
-  GURL new_url_for_redirect_;
 
   scoped_refptr<SignedExchangePrefetchMetricRecorder>
       signed_exchange_prefetch_metric_recorder_;

@@ -38,10 +38,7 @@ PrefetchURLLoader::PrefetchURLLoader(
     scoped_refptr<SignedExchangePrefetchMetricRecorder>
         signed_exchange_prefetch_metric_recorder)
     : frame_tree_node_id_getter_(frame_tree_node_id_getter),
-      url_(resource_request.url),
-      report_raw_headers_(resource_request.report_raw_headers),
-      load_flags_(resource_request.load_flags),
-      throttling_profile_id_(resource_request.throttling_profile_id),
+      resource_request_(resource_request),
       network_loader_factory_(std::move(network_loader_factory)),
       client_binding_(this),
       forwarding_client_(std::move(client)),
@@ -52,16 +49,11 @@ PrefetchURLLoader::PrefetchURLLoader(
           std::move(signed_exchange_prefetch_metric_recorder)) {
   DCHECK(network_loader_factory_);
 
-  if (resource_request.request_initiator)
-    request_initiator_ = *resource_request.request_initiator;
-
-  base::Optional<network::ResourceRequest> modified_resource_request;
   if (signed_exchange_utils::ShouldAdvertiseAcceptHeader(
-          url::Origin::Create(resource_request.url))) {
+          url::Origin::Create(resource_request_.url))) {
     // Set the SignedExchange accept header only for the limited origins.
     // (https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#internet-media-type-applicationsigned-exchange).
-    modified_resource_request = resource_request;
-    modified_resource_request->headers.SetHeader(
+    resource_request_.headers.SetHeader(
         network::kAcceptHeader, kSignedExchangeEnabledAcceptHeaderForPrefetch);
   }
 
@@ -71,8 +63,7 @@ PrefetchURLLoader::PrefetchURLLoader(
       &PrefetchURLLoader::OnNetworkConnectionError, base::Unretained(this)));
   network_loader_factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&loader_), routing_id, request_id, options,
-      modified_resource_request ? *modified_resource_request : resource_request,
-      std::move(network_client), traffic_annotation);
+      resource_request_, std::move(network_client), traffic_annotation);
 }
 
 PrefetchURLLoader::~PrefetchURLLoader() = default;
@@ -86,7 +77,6 @@ void PrefetchURLLoader::FollowRedirect(
          "crbug.com/845683";
   DCHECK(!new_url) << "Redirect with modified URL was not "
                       "supported yet. crbug.com/845683";
-  DCHECK(new_url_for_redirect_.is_valid());
   if (signed_exchange_prefetch_handler_) {
     // Rebind |client_binding_| and |loader_|.
     client_binding_.Bind(signed_exchange_prefetch_handler_->FollowRedirect(
@@ -101,7 +91,7 @@ void PrefetchURLLoader::FollowRedirect(
     // SignedHTTPExchange feature. So need to update the accept header by
     // checking the new URL when redirected.
     if (signed_exchange_utils::ShouldAdvertiseAcceptHeader(
-            url::Origin::Create(new_url_for_redirect_))) {
+            url::Origin::Create(resource_request_.url))) {
       modified_request_headers_for_accept.SetHeader(
           network::kAcceptHeader,
           kSignedExchangeEnabledAcceptHeaderForPrefetch);
@@ -134,17 +124,17 @@ void PrefetchURLLoader::ResumeReadingBodyFromNet() {
 
 void PrefetchURLLoader::OnReceiveResponse(
     const network::ResourceResponseHead& response) {
-  if (signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(url_, response)) {
+  if (signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(
+          resource_request_.url, response)) {
     DCHECK(!signed_exchange_prefetch_handler_);
 
     // Note that after this point this doesn't directly get upcalls from the
     // network. (Until |this| calls the handler's FollowRedirect.)
     signed_exchange_prefetch_handler_ =
         std::make_unique<SignedExchangePrefetchHandler>(
-            frame_tree_node_id_getter_, report_raw_headers_, load_flags_,
-            throttling_profile_id_, response, std::move(loader_),
-            client_binding_.Unbind(), network_loader_factory_,
-            request_initiator_, url_, url_loader_throttles_getter_,
+            frame_tree_node_id_getter_, resource_request_, response,
+            std::move(loader_), client_binding_.Unbind(),
+            network_loader_factory_, url_loader_throttles_getter_,
             resource_context_, request_context_getter_, this,
             signed_exchange_prefetch_metric_recorder_);
     return;
@@ -155,7 +145,11 @@ void PrefetchURLLoader::OnReceiveResponse(
 void PrefetchURLLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     const network::ResourceResponseHead& head) {
-  new_url_for_redirect_ = redirect_info.new_url;
+  resource_request_.url = redirect_info.new_url;
+  resource_request_.site_for_cookies = redirect_info.new_site_for_cookies;
+  resource_request_.top_frame_origin = redirect_info.new_top_frame_origin;
+  resource_request_.referrer = GURL(redirect_info.new_referrer);
+  resource_request_.referrer_policy = redirect_info.new_referrer_policy;
   forwarding_client_->OnReceiveRedirect(redirect_info, head);
 }
 

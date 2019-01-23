@@ -1391,8 +1391,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       network::mojom::URLLoaderClientRequest response_client_request;
       bool skip_other_interceptors = false;
       if (interceptor->MaybeCreateLoaderForResponse(
-              url_, response, &response_url_loader_, &response_client_request,
-              url_loader_.get(), &skip_other_interceptors)) {
+              *resource_request_, response, &response_url_loader_,
+              &response_client_request, url_loader_.get(),
+              &skip_other_interceptors)) {
         if (response_loader_binding_.is_bound())
           response_loader_binding_.Close();
         response_loader_binding_.Bind(std::move(response_client_request));
@@ -1460,11 +1461,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // SignedExchangeHandler which is indirectly owned by |this| until its
     // header is verified and parsed, that's where the getter is used.
     return std::make_unique<SignedExchangeRequestHandler>(
-        url::Origin::Create(request_info.common_params.url),
         GetURLLoaderOptions(request_info.is_main_frame),
         request_info.frame_tree_node_id, request_info.devtools_navigation_token,
-        request_info.devtools_frame_token, request_info.report_raw_headers,
-        request_info.begin_params->load_flags, std::move(url_loader_factory),
+        std::move(url_loader_factory),
         base::BindRepeating(
             &URLLoaderRequestController::CreateURLLoaderThrottles,
             base::Unretained(this)),

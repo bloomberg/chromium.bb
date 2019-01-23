@@ -30,13 +30,9 @@ class SignedExchangeRequestHandler final : public NavigationLoaderInterceptor {
   static bool IsSupportedMimeType(const std::string& mime_type);
 
   SignedExchangeRequestHandler(
-      url::Origin request_initiator,
       uint32_t url_loader_options,
       int frame_tree_node_id,
       const base::UnguessableToken& devtools_navigation_token,
-      const base::Optional<base::UnguessableToken>& throttling_profile_id,
-      bool report_raw_headers,
-      int load_flags,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
       scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder);
@@ -49,7 +45,7 @@ class SignedExchangeRequestHandler final : public NavigationLoaderInterceptor {
       LoaderCallback callback,
       FallbackCallback fallback_callback) override;
   bool MaybeCreateLoaderForResponse(
-      const GURL& request_url,
+      const network::ResourceRequest& request,
       const network::ResourceResponseHead& response,
       network::mojom::URLLoaderPtr* loader,
       network::mojom::URLLoaderClientRequest* client_request,
@@ -66,13 +62,10 @@ class SignedExchangeRequestHandler final : public NavigationLoaderInterceptor {
   // StartResponse.
   std::unique_ptr<SignedExchangeLoader> signed_exchange_loader_;
 
-  url::Origin request_initiator_;
   const uint32_t url_loader_options_;
   const int frame_tree_node_id_;
-  base::Optional<const base::UnguessableToken> devtools_navigation_token_;
-  const base::Optional<base::UnguessableToken> throttling_profile_id_;
-  const bool report_raw_headers_;
-  const int load_flags_;
+  const base::UnguessableToken devtools_navigation_token_;
+
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
   scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder_;
