@@ -318,10 +318,6 @@ IN_PROC_BROWSER_TEST_F(DataSaverWithServerBrowserTest, HttpRttEstimate) {
 
 class DataSaverForWorkerBrowserTest : public InProcessBrowserTest {
  protected:
-  void Init() {
-    embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
-  }
-
   void EnableDataSaver(bool enabled) {
     PrefService* prefs = browser()->profile()->GetPrefs();
     prefs->SetBoolean(prefs::kDataSaverEnabled, enabled);
@@ -362,12 +358,11 @@ class DataSaverForWorkerBrowserTest : public InProcessBrowserTest {
 // Checks that the Save-Data header isn't sent in a request for dedicated worker
 // script when the data saver is disabled.
 IN_PROC_BROWSER_TEST_F(DataSaverForWorkerBrowserTest, DedicatedWorker_Off) {
-  Init();
   EnableDataSaver(false);
 
   net::test_server::HttpRequest::HeaderMap header_map;
-  RequestAndGetHeaders("/workers/create_worker.html?worker_url=/capture",
-                       &header_map);
+  RequestAndGetHeaders(
+      "/workers/create_dedicated_worker.html?worker_url=/capture", &header_map);
 
   EXPECT_TRUE(header_map.find("Save-Data") == header_map.end());
 }
@@ -375,12 +370,11 @@ IN_PROC_BROWSER_TEST_F(DataSaverForWorkerBrowserTest, DedicatedWorker_Off) {
 // Checks that the Save-Data header is sent in a request for dedicated worker
 // script when the data saver is enabled.
 IN_PROC_BROWSER_TEST_F(DataSaverForWorkerBrowserTest, DedicatedWorker_On) {
-  Init();
   EnableDataSaver(true);
 
   net::test_server::HttpRequest::HeaderMap header_map;
-  RequestAndGetHeaders("/workers/create_worker.html?worker_url=/capture",
-                       &header_map);
+  RequestAndGetHeaders(
+      "/workers/create_dedicated_worker.html?worker_url=/capture", &header_map);
 
   EXPECT_TRUE(header_map.find("Save-Data") != header_map.end());
   EXPECT_EQ("on", header_map["Save-Data"]);
@@ -395,7 +389,6 @@ IN_PROC_BROWSER_TEST_F(DataSaverForWorkerBrowserTest, DedicatedWorker_On) {
 #define MAYBE_SharedWorker_Off SharedWorker_Off
 #endif
 IN_PROC_BROWSER_TEST_F(DataSaverForWorkerBrowserTest, MAYBE_SharedWorker_Off) {
-  Init();
   EnableDataSaver(false);
 
   net::test_server::HttpRequest::HeaderMap header_map;
@@ -414,7 +407,6 @@ IN_PROC_BROWSER_TEST_F(DataSaverForWorkerBrowserTest, MAYBE_SharedWorker_Off) {
 #define MAYBE_SharedWorker_On SharedWorker_On
 #endif
 IN_PROC_BROWSER_TEST_F(DataSaverForWorkerBrowserTest, MAYBE_SharedWorker_On) {
-  Init();
   EnableDataSaver(true);
 
   net::test_server::HttpRequest::HeaderMap header_map;

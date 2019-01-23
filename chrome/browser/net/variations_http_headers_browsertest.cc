@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
+#include "base/strings/strcat.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main.h"
@@ -187,6 +187,43 @@ class VariationsHttpHeadersBrowserTest : public InProcessBrowserTest {
               EvalJs(GetWebContents(),
                      "fetch_from_page('" + GetExampleUrl().spec() + "');"));
     EXPECT_FALSE(HasReceivedHeader(GetExampleUrl(), "X-Client-Data"));
+  }
+
+  // Creates a worker and tests that the main script and import scripts have
+  // X-Client-Data when appropriate. |page| is the page that creates the
+  // specified |worker|, which should be an "import_*_worker.js" script that is
+  // expected to import "empty.js" (as a relative path) and also accept an
+  // "import=" parameter specifying another script to import. This allows
+  // testing that the empty.js import request for google.com has the header, and
+  // an import request to example.com does not have the header.
+  void WorkerScriptTest(const std::string& page, const std::string& worker) {
+    // Build a worker URL for a google.com worker that imports
+    // an example.com script.
+    GURL absolute_import = GetExampleUrl("/workers/empty.js");
+    const std::string worker_path = base::StrCat(
+        {worker, "?import=",
+         net::EscapeQueryParamValue(absolute_import.spec(), false)});
+    GURL worker_url = GetGoogleUrl(worker_path);
+
+    // Build the page URL that tells the page to create the worker.
+    const std::string page_path = base::StrCat(
+        {page,
+         "?worker_url=", net::EscapeQueryParamValue(worker_url.spec(), false)});
+    GURL page_url = GetGoogleUrl(page_path);
+
+    // Navigate and test.
+    EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), page_url));
+    EXPECT_EQ("DONE", EvalJs(GetWebContents(), "waitForMessage();"));
+
+    // The header should be on the main script request.
+    EXPECT_TRUE(HasReceivedHeader(worker_url, "X-Client-Data"));
+
+    // And on import script requests to Google.
+    EXPECT_TRUE(
+        HasReceivedHeader(GetGoogleUrl("/workers/empty.js"), "X-Client-Data"));
+
+    // But not on requests not to Google.
+    EXPECT_FALSE(HasReceivedHeader(absolute_import, "X-Client-Data"));
   }
 
  private:
@@ -448,4 +485,19 @@ IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest, ServiceWorkerScript) {
                                 "X-Client-Data"));
   // But not on requests not to Google.
   EXPECT_FALSE(HasReceivedHeader(absolute_import, "X-Client-Data"));
+}
+
+// Verify in an integration test that the variations header (X-Client-Data) is
+// attached to requests for shared worker scripts.
+IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest, SharedWorkerScript) {
+  WorkerScriptTest("/workers/create_shared_worker.html",
+                   "/workers/import_scripts_shared_worker.js");
+}
+
+// Verify in an integration test that the variations header (X-Client-Data) is
+// attached to requests for dedicated worker scripts.
+IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
+                       DedicatedWorkerScript) {
+  WorkerScriptTest("/workers/create_dedicated_worker.html",
+                   "/workers/import_scripts_dedicated_worker.js");
 }
