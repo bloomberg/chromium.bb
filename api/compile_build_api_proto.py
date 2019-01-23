@@ -11,6 +11,7 @@ import os
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 
 
 def GetParser():
@@ -34,6 +35,26 @@ def main(argv):
   output = os.path.join(base_dir, 'gen')
   source = os.path.join(base_dir, 'proto')
   targets = os.path.join(source, '*.proto')
+
+  # TODO(crbug.com/924660) Update compile to run in the chroot and remove
+  # the warning.
+  protoc_version = ['protoc', '--version']
+  result = cros_build_lib.RunCommand(protoc_version, print_cmd=False,
+                                     redirect_stdout=True,
+                                     combine_stdout_stderr=True,
+                                     error_code_ok=True)
+  if not result.returncode == 0 or not '3.6.1' in result.output:
+    logging.warning('You must have libprotoc 3.6.1 installed locally to '
+                    'compile the protobuf correctly.')
+    logging.warning('This will be run in the chroot in the future '
+                    '(see crbug.com/924660).')
+    if not result.returncode == 0:
+      logging.warning('protoc could not be found on your system.')
+    else:
+      logging.warning('"%s" was found on your system.', result.output.strip())
+
+    logging.warning("We won't stop you from running it for now, but be very "
+                    "weary of your changes.")
 
   cmd = ('protoc --python_out %(output)s --proto_path %(source)s %(targets)s'
          % {'output': output, 'source': source, 'targets': targets})
