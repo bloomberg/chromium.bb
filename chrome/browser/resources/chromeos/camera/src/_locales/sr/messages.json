@@ -1,0 +1,206 @@
+{
+  "name": {
+    "message": "Камера",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "Снимајте слике и видео снимке помоћу камере.",
+    "description": "Short description of the Camera App."
+  },
+  "errorMsgFileSystemFailed": {
+    "message": "Грешке система датотека.",
+    "description": "Error message shown when failing to read or write the file system."
+  },
+  "errorMsgNoCamera": {
+    "message": "Камера тренутно није доступна.\nПроверите да ли је камера исправно повезана.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "Извоз датотеке $file$ није успео",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg"
+      }
+    }
+  },
+  "errorMsgSaveFileFailed": {
+    "message": "Чување датотеке није успело",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Снимање слике није успело",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Нисмо успели да започнемо снимање",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "errorMsgEmptyRecording": {
+    "message": "Ништа није снимљено",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "Снимање је заустављено",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "Активна је камера $camera$",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
+  },
+  "galleryButton": {
+    "message": "Иди у галерију",
+    "description": "Label for the gallery button."
+  },
+  "deleteButton": {
+    "message": "Избриши",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "Извези на диск",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "Штампај",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "Назад",
+    "description": "Label for the back button."
+  },
+  "galleryImages": {
+    "message": "Слике у галерији",
+    "description": "Text to speech label for the gallery list."
+  },
+  "settingsButton": {
+    "message": "Подешавања",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "Тип мреже",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "Трајање тајмера",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "Пошаљи повратне информације",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "Помоћ",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "3×3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "3 са 3",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "4×4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "4 са 4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "Златни пресек",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3 секунде",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10 секунди",
+    "description": "Label for timer-duration: 10 seconds."
+  },
+  "takePhotoButton": {
+    "message": "Сликај",
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "Заустави снимање слике",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
+  },
+  "recordVideoStartButton": {
+    "message": "Започни снимање",
+    "description": "Label for the shutter button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "Заустави снимање",
+    "description": "Label for the shutter button to stop recording."
+  },
+  "switchCameraButton": {
+    "message": "Пређи на следећу камеру",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "switchRecordVideoButton": {
+    "message": "Пређи на режим за снимање видеа",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "switchTakePhotoButton": {
+    "message": "Пређи на режим за снимање слика",
+    "description": "Label for the button to switch to take photo mode."
+  },
+  "toggleTimerButton": {
+    "message": "Тајмер",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
+  "toggleMirrorButton": {
+    "message": "Пресликавање",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
+  },
+  "toggleGridButton": {
+    "message": "Мрежа",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
+  },
+  "toggleMicButton": {
+    "message": "Микрофон",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
+  },
+  "dialogOKButton": {
+    "message": "Потврди",
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "Откажи",
+    "description": "Label for the dismissing button in the dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "Желите ли стварно да уклоните датотеку $file$?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "Желите ли стварно да уклоните ове ставке ($count$)?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
+  },
+  "migratePicturesMsg": {
+    "message": "Слике и видео снимци који су снимљени помоћу камере ће се преместити у директоријум Преузимања. Можете да им приступите у Датотекама.\n\nАпликације са дозволама за приступ меморијском простору ће имати приступ сликама и видео снимцима.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  }
+}

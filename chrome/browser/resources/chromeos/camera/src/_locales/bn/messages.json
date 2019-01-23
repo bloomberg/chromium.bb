@@ -1,0 +1,206 @@
+{
+  "name": {
+    "message": "ক্যামেরা",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "আপনার ক্যামেরা ব্যবহার করে ছবি তুলুন এবং ভিডিও রেকর্ড করুন।",
+    "description": "Short description of the Camera App."
+  },
+  "errorMsgFileSystemFailed": {
+    "message": "ফাইল সিস্টেমে সমস্যা।",
+    "description": "Error message shown when failing to read or write the file system."
+  },
+  "errorMsgNoCamera": {
+    "message": "আপনার ক্যামেরাটি বর্তমানে উপলভ্য নয়।\nক্যামেরাটি সঠিকভাবে কানেক্ট করা আছে কিনা দেখে নিন।",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "$file$টি এক্সপোর্ট করা যায়নি",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg"
+      }
+    }
+  },
+  "errorMsgSaveFileFailed": {
+    "message": "ফাইলটি সেভ করা যায়নি",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "ফটো তোলা যায়নি",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "রেকর্ডিং শুরু করা যায়নি",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "errorMsgEmptyRecording": {
+    "message": "কিছুই রেকর্ড করা হয়নি",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "রেকর্ডিং বন্ধ করা হয়েছে",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ চালু আছে",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
+  },
+  "galleryButton": {
+    "message": "গ্যালারিতে যান",
+    "description": "Label for the gallery button."
+  },
+  "deleteButton": {
+    "message": "মুছুন",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "ডিস্কে এক্সপোর্ট করুন",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "প্রিন্ট করুন",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "ফিরে যান",
+    "description": "Label for the back button."
+  },
+  "galleryImages": {
+    "message": "গ্যালারির ছবিগুলি",
+    "description": "Text to speech label for the gallery list."
+  },
+  "settingsButton": {
+    "message": "সেটিংস",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "গ্রিডের ধরন",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "টাইমার সময়কাল",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "মতামত দিন",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "সহায়তা",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "৩ x ৩",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "৩ বাই ৩",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "৪ x ৪",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "৪ বাই ৪",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "গোল্ডেন রেশিও",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "৩ সেকেন্ড",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "১০ সেকেন্ড",
+    "description": "Label for timer-duration: 10 seconds."
+  },
+  "takePhotoButton": {
+    "message": "ফটো তুলুন",
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "ফটো তোলা বন্ধ করুন",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
+  },
+  "recordVideoStartButton": {
+    "message": "রেকর্ডিং শুরু করুন",
+    "description": "Label for the shutter button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "রেকর্ডিং বন্ধ করুন",
+    "description": "Label for the shutter button to stop recording."
+  },
+  "switchCameraButton": {
+    "message": "পরবর্তী ক্যামেরাতে যান",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "switchRecordVideoButton": {
+    "message": "ভিডিও রেকর্ড করতে পরিবর্তন করুন",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "switchTakePhotoButton": {
+    "message": "ফটো তুলতে পরিবর্তন করুন",
+    "description": "Label for the button to switch to take photo mode."
+  },
+  "toggleTimerButton": {
+    "message": "টাইমার",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
+  "toggleMirrorButton": {
+    "message": "মিররিং",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
+  },
+  "toggleGridButton": {
+    "message": "গ্রিড",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
+  },
+  "toggleMicButton": {
+    "message": "মাইক্রোফোন",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
+  },
+  "dialogOKButton": {
+    "message": "ঠিক আছে",
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "বাতিল করুন",
+    "description": "Label for the dismissing button in the dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "আপনি কি সত্যিই $file$ সরিয়ে ফেলতে চান?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "আপনি কি সত্যিই $count$টি আইটেম সরিয়ে ফেলতে চান?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
+  },
+  "migratePicturesMsg": {
+    "message": "ক্যামেরায় তোলা ফটো এবং ভিডিও ডাউনলোড ফোল্ডারে সরিয়ে দেওয়া হবে। আপনি সেগুলি ফাইল বিকল্প থেকে অ্যাক্সেস করতে পারবেন।\n\nযে অ্যাপগুলিকে স্টোরেজ ব্যবহারের অনুমতি দেওয়া আছে সেগুলি আপনার ফটো এবং ভিডিও অ্যাক্সেস করতে পারবে।",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  }
+}

@@ -1,0 +1,206 @@
+{
+  "name": {
+    "message": "Kamera",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "Ota kuvia ja videoita kamerallasi.",
+    "description": "Short description of the Camera App."
+  },
+  "errorMsgFileSystemFailed": {
+    "message": "Tiedostojärjestelmän virheitä",
+    "description": "Error message shown when failing to read or write the file system."
+  },
+  "errorMsgNoCamera": {
+    "message": "Kamerasi ei ole tällä hetkellä käytettävissä.\nTarkista, onko kamera liitetty oikein.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "Vieminen epäonnistui: $file$.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg"
+      }
+    }
+  },
+  "errorMsgSaveFileFailed": {
+    "message": "Tiedoston tallennus epäonnistui.",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Kuvan ottaminen epäonnistui.",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Tallennuksen aloittaminen epäonnistui.",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "errorMsgEmptyRecording": {
+    "message": "Mitään ei kuvattu.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "Tallennus keskeytettiin.",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ on aktiivinen.",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
+  },
+  "galleryButton": {
+    "message": "Siirry galleriaan",
+    "description": "Label for the gallery button."
+  },
+  "deleteButton": {
+    "message": "Poista",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "Vie paikalliselle levylle",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "Tulosta",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "Takaisin",
+    "description": "Label for the back button."
+  },
+  "galleryImages": {
+    "message": "Gallerian kuvat",
+    "description": "Text to speech label for the gallery list."
+  },
+  "settingsButton": {
+    "message": "Asetukset",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "Ruudukkotyyppi",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "Ajastimen kesto",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "Lähetä palautetta",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "Ohje",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "3x3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "3x3",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "4x4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "4x4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "Kultainen leikkaus",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3 sekuntia",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10 sekuntia",
+    "description": "Label for timer-duration: 10 seconds."
+  },
+  "takePhotoButton": {
+    "message": "Ota valokuva",
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "Lopeta kuvan ottaminen",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
+  },
+  "recordVideoStartButton": {
+    "message": "Aloita kuvaaminen",
+    "description": "Label for the shutter button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "Lopeta kuvaaminen",
+    "description": "Label for the shutter button to stop recording."
+  },
+  "switchCameraButton": {
+    "message": "Vaihda seuraavaan kameraan",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "switchRecordVideoButton": {
+    "message": "Vaihda videon kuvaamiseen",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "switchTakePhotoButton": {
+    "message": "Vaihda kuvan ottamiseen",
+    "description": "Label for the button to switch to take photo mode."
+  },
+  "toggleTimerButton": {
+    "message": "Ajastin",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
+  "toggleMirrorButton": {
+    "message": "Peilaus",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
+  },
+  "toggleGridButton": {
+    "message": "Ruudukko",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
+  },
+  "toggleMicButton": {
+    "message": "Mikrofoni",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
+  },
+  "dialogOKButton": {
+    "message": "OK",
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "Peruuta",
+    "description": "Label for the dismissing button in the dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "Haluatko varmasti poistaa tiedoston $file$?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "Haluatko varmasti poistaa $count$ kohdetta?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
+  },
+  "migratePicturesMsg": {
+    "message": "Kameralla otetut kuvat ja videot siirretään Lataukset-kansioon. Voit käyttää niitä avaamalla Tiedostot.\n\nJos sovelluksella on tallennustilan käyttöoikeus, se voi käyttää kuvia ja videoita.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  }
+}

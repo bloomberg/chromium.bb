@@ -1,0 +1,206 @@
+{
+  "name": {
+    "message": "Kamera",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "Nehmen Sie Fotos und Videos mit Ihrer Kamera auf.",
+    "description": "Short description of the Camera App."
+  },
+  "errorMsgFileSystemFailed": {
+    "message": "Fehler im Dateisystem.",
+    "description": "Error message shown when failing to read or write the file system."
+  },
+  "errorMsgNoCamera": {
+    "message": "Ihre Kamera ist derzeit nicht verfügbar.\nÜberprüfen Sie bitte, ob die Kamera richtig verbunden ist.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "$file$ konnte nicht exportiert werden",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg"
+      }
+    }
+  },
+  "errorMsgSaveFileFailed": {
+    "message": "Datei konnte nicht gespeichert werden",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Foto konnte nicht aufgenommen werden",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Videoaufnahme konnte nicht gestartet werden",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "errorMsgEmptyRecording": {
+    "message": "Keine Aufzeichnung",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "Aufzeichnung wurde beendet",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ aktiv",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
+  },
+  "galleryButton": {
+    "message": "Zur Galerie",
+    "description": "Label for the gallery button."
+  },
+  "deleteButton": {
+    "message": "Löschen",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "Auf Festplatte exportieren",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "Drucken",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "Zurück",
+    "description": "Label for the back button."
+  },
+  "galleryImages": {
+    "message": "Galeriebilder",
+    "description": "Text to speech label for the gallery list."
+  },
+  "settingsButton": {
+    "message": "Einstellungen",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "Rastertyp",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "Timerdauer",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "Feedback geben",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "Hilfe",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "3 x 3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "3 mal 3",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "4 x 4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "4 mal 4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "Goldener Schnitt",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3 Sekunden",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10 Sekunden",
+    "description": "Label for timer-duration: 10 seconds."
+  },
+  "takePhotoButton": {
+    "message": "Foto aufnehmen",
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "Fotoaufnahme beenden",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
+  },
+  "recordVideoStartButton": {
+    "message": "Video aufnehmen",
+    "description": "Label for the shutter button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "Videoaufnahme beenden",
+    "description": "Label for the shutter button to stop recording."
+  },
+  "switchCameraButton": {
+    "message": "Zur nächsten Kamera wechseln",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "switchRecordVideoButton": {
+    "message": "Zu Videomodus wechseln",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "switchTakePhotoButton": {
+    "message": "Zu Fotomodus wechseln",
+    "description": "Label for the button to switch to take photo mode."
+  },
+  "toggleTimerButton": {
+    "message": "Timer",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
+  "toggleMirrorButton": {
+    "message": "Spiegeln",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
+  },
+  "toggleGridButton": {
+    "message": "Raster",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
+  },
+  "toggleMicButton": {
+    "message": "Mikrofon",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
+  },
+  "dialogOKButton": {
+    "message": "OK",
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "Abbrechen",
+    "description": "Label for the dismissing button in the dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "Möchten Sie \"$file$\" wirklich entfernen?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "Möchten Sie $count$ Elemente wirklich entfernen?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
+  },
+  "migratePicturesMsg": {
+    "message": "Mit der Kamera aufgenommene Fotos und Videos werden in den Ordner \"Downloads\" verschoben. Sie können sie in der App \"Dateien\" ansehen.\n\nApps mit Speicherberechtigungen haben Zugriff auf Ihre Fotos und Videos.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  }
+}
