@@ -885,6 +885,7 @@ struct EncodeFrameParams {
   FRAME_TYPE frame_type;
   int primary_ref_frame;
   int order_offset;
+  int show_frame;
 
   // This is a bitmask of which reference slots can be used in this frame
   int ref_frame_flags;
@@ -958,8 +959,19 @@ int av1_get_quantizer(struct AV1_COMP *cpi);
 
 int av1_convert_sect5obus_to_annexb(uint8_t *buffer, size_t *input_size);
 
-int64_t timebase_units_to_ticks(const aom_rational_t *timebase, int64_t n);
-int64_t ticks_to_timebase_units(const aom_rational_t *timebase, int64_t n);
+// av1 uses 10,000,000 ticks/second as time stamp
+#define TICKS_PER_SEC 10000000LL
+
+static INLINE int64_t timebase_units_to_ticks(const aom_rational_t *timebase,
+                                              int64_t n) {
+  return n * TICKS_PER_SEC * timebase->num / timebase->den;
+}
+
+static INLINE int64_t ticks_to_timebase_units(const aom_rational_t *timebase,
+                                              int64_t n) {
+  const int64_t round = TICKS_PER_SEC * timebase->num / 2 - 1;
+  return (n * timebase->den + round) / timebase->num / TICKS_PER_SEC;
+}
 
 static INLINE int frame_is_kf_gf_arf(const AV1_COMP *cpi) {
   return frame_is_intra_only(&cpi->common) || cpi->refresh_alt_ref_frame ||
@@ -1073,6 +1085,8 @@ static INLINE int *cond_cost_list(const struct AV1_COMP *cpi, int *cost_list) {
 }
 
 void av1_new_framerate(AV1_COMP *cpi, double framerate);
+
+void av1_setup_frame_size(AV1_COMP *cpi);
 
 #define LAYER_IDS_TO_IDX(sl, tl, num_tl) ((sl) * (num_tl) + (tl))
 

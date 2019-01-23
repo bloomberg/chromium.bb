@@ -12,8 +12,12 @@
 #include <stdint.h>
 
 #include "config/aom_config.h"
+#include "config/aom_scale_rtcd.h"
 
 #include "aom/aom_codec.h"
+#include "aom/aom_encoder.h"
+
+#include "aom_ports/system_state.h"
 
 #if CONFIG_MISMATCH_DEBUG
 #include "aom_util/debug_util.h"
@@ -24,6 +28,7 @@
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/encode_strategy.h"
 #include "av1/encoder/firstpass.h"
+#include "av1/encoder/temporal_filter.h"
 #include "av1/encoder/tpl_model.h"
 
 static void set_additional_frame_flags(const AV1_COMMON *const cm,
@@ -326,11 +331,12 @@ static void update_fb_of_context_type(
   }
 }
 
-static int get_order_offset(const AV1_COMP *const cpi) {
+static int get_order_offset(const AV1_COMP *const cpi,
+                            const EncodeFrameParams *const frame_params) {
   // shown frame by definition has order offset 0
   // show_existing_frame ignores order_offset and simply takes the order_hint
   // from the reference frame being shown.
-  if (cpi->common.show_frame || cpi->common.show_existing_frame) return 0;
+  if (frame_params->show_frame || cpi->common.show_existing_frame) return 0;
 
   const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
   const int arf_offset =
@@ -339,16 +345,352 @@ static int get_order_offset(const AV1_COMP *const cpi) {
   return AOMMIN((MAX_GF_INTERVAL - 1), arf_offset + brf_offset);
 }
 
+static void adjust_frame_rate(AV1_COMP *cpi,
+                              const struct lookahead_entry *source) {
+  int64_t this_duration;
+  int step = 0;
+
+  // Clear down mmx registers
+  aom_clear_system_state();
+
+  if (source->ts_start == cpi->first_time_stamp_ever) {
+    this_duration = source->ts_end - source->ts_start;
+    step = 1;
+  } else {
+    int64_t last_duration =
+        cpi->last_end_time_stamp_seen - cpi->last_time_stamp_seen;
+
+    this_duration = source->ts_end - cpi->last_end_time_stamp_seen;
+
+    // do a step update if the duration changes by 10%
+    if (last_duration)
+      step = (int)((this_duration - last_duration) * 10 / last_duration);
+  }
+
+  if (this_duration) {
+    if (step) {
+      av1_new_framerate(cpi, 10000000.0 / this_duration);
+    } else {
+      // Average this frame's rate into the last second's average
+      // frame rate. If we haven't seen 1 second yet, then average
+      // over the whole interval seen.
+      const double interval = AOMMIN(
+          (double)(source->ts_end - cpi->first_time_stamp_ever), 10000000.0);
+      double avg_duration = 10000000.0 / cpi->framerate;
+      avg_duration *= (interval - avg_duration + this_duration);
+      avg_duration /= interval;
+
+      av1_new_framerate(cpi, 10000000.0 / avg_duration);
+    }
+  }
+  cpi->last_time_stamp_seen = source->ts_start;
+  cpi->last_end_time_stamp_seen = source->ts_end;
+}
+
+static void check_src_altref(AV1_COMP *cpi,
+                             const struct lookahead_entry *source) {
+  RATE_CONTROL *const rc = &cpi->rc;
+
+  // If pass == 2, the parameters set here will be reset in
+  // av1_rc_get_second_pass_params()
+
+  if (cpi->oxcf.pass == 2) {
+    const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
+    rc->is_src_frame_alt_ref =
+        (gf_group->update_type[gf_group->index] == INTNL_OVERLAY_UPDATE) ||
+        (gf_group->update_type[gf_group->index] == OVERLAY_UPDATE);
+    rc->is_src_frame_ext_arf =
+        gf_group->update_type[gf_group->index] == INTNL_OVERLAY_UPDATE;
+  } else {
+    rc->is_src_frame_alt_ref =
+        cpi->alt_ref_source && (source == cpi->alt_ref_source);
+  }
+
+  if (rc->is_src_frame_alt_ref) {
+    // Current frame is an ARF overlay frame.
+    cpi->alt_ref_source = NULL;
+
+    if (rc->is_src_frame_ext_arf && !cpi->common.show_existing_frame) {
+      // For INTNL_OVERLAY, when show_existing_frame == 0, they do need to
+      // refresh the LAST_FRAME, i.e. LAST3 gets retired, LAST2 becomes LAST3,
+      // LAST becomes LAST2, and INTNL_OVERLAY becomes LAST.
+      cpi->refresh_last_frame = 1;
+    } else {
+      // Don't refresh the last buffer for an ARF overlay frame. It will
+      // become the GF so preserve last as an alternative prediction option.
+      cpi->refresh_last_frame = 0;
+    }
+  }
+}
+
+// Returns 0 if this is not an alt ref else the offset of the source frame
+// used as the arf midpoint.
+static int get_arf_src_index(AV1_COMP *cpi) {
+  RATE_CONTROL *const rc = &cpi->rc;
+  int arf_src_index = 0;
+  if (is_altref_enabled(cpi)) {
+    if (cpi->oxcf.pass == 2) {
+      const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
+      if (gf_group->update_type[gf_group->index] == ARF_UPDATE) {
+        arf_src_index = gf_group->arf_src_offset[gf_group->index];
+      }
+    } else if (rc->source_alt_ref_pending) {
+      arf_src_index = rc->frames_till_gf_update_due;
+    }
+  }
+  return arf_src_index;
+}
+
+static int get_brf_src_index(AV1_COMP *cpi) {
+  int brf_src_index = 0;
+  const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
+
+  // TODO(zoeliu): We need to add the check on the -bwd_ref command line setup
+  //               flag.
+  if (gf_group->bidir_pred_enabled[gf_group->index]) {
+    if (cpi->oxcf.pass == 2) {
+      if (gf_group->update_type[gf_group->index] == BRF_UPDATE)
+        brf_src_index = gf_group->brf_src_offset[gf_group->index];
+    } else {
+      // TODO(zoeliu): To re-visit the setup for this scenario
+      brf_src_index = cpi->rc.bipred_group_interval - 1;
+    }
+  }
+
+  return brf_src_index;
+}
+
+// Returns 0 if this is not an alt ref else the offset of the source frame
+// used as the arf midpoint.
+static int get_arf2_src_index(AV1_COMP *cpi) {
+  int arf2_src_index = 0;
+  if (is_altref_enabled(cpi) && cpi->num_extra_arfs) {
+    if (cpi->oxcf.pass == 2) {
+      const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
+      if (gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE) {
+        arf2_src_index = gf_group->arf_src_offset[gf_group->index];
+      }
+    }
+  }
+  return arf2_src_index;
+}
+
+// Called if this frame is an ARF or ARF2. Also handles forward-keyframes
+// For an ARF set arf2=0, for ARF2 set arf2=1
+// temporal_filtered is set to 1 if we temporally filter the ARF frame, so that
+// the correct post-filter buffer can be used.
+static struct lookahead_entry *setup_arf_or_arf2(
+    AV1_COMP *const cpi, const int arf_src_index, const int arf2,
+    int *temporal_filtered, EncodeFrameParams *const frame_params) {
+  AV1_COMMON *const cm = &cpi->common;
+  RATE_CONTROL *const rc = &cpi->rc;
+  const AV1EncoderConfig *const oxcf = &cpi->oxcf;
+
+  assert(arf_src_index <= rc->frames_to_key);
+  *temporal_filtered = 0;
+
+  struct lookahead_entry *source =
+      av1_lookahead_peek(cpi->lookahead, arf_src_index);
+
+  if (source != NULL) {
+    cm->showable_frame = 1;
+    cpi->alt_ref_source = source;
+
+    // When arf_src_index == rc->frames_to_key, it indicates a fwd_kf
+    if (!arf2 && arf_src_index == rc->frames_to_key) {
+      // Skip temporal filtering and mark as intra_only if we have a fwd_kf
+      const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
+      int which_arf = gf_group->arf_update_idx[gf_group->index];
+      cpi->is_arf_filter_off[which_arf] = 1;
+      cpi->no_show_kf = 1;
+    } else {
+      if (oxcf->arnr_max_frames > 0) {
+        // Produce the filtered ARF frame.
+        av1_temporal_filter(cpi, arf_src_index);
+        aom_extend_frame_borders(&cpi->alt_ref_buffer, av1_num_planes(cm));
+        *temporal_filtered = 1;
+      }
+    }
+    frame_params->show_frame = 0;
+
+    if (oxcf->pass < 2) {
+      // In second pass, the buffer updates configure will be set
+      // in the function av1_rc_get_second_pass_params
+      if (!arf2) {
+        av1_configure_buffer_updates_firstpass(cpi, ARF_UPDATE);
+      } else {
+        av1_configure_buffer_updates_firstpass(cpi, INTNL_ARF_UPDATE);
+      }
+    }
+  }
+  rc->source_alt_ref_pending = 0;
+  return source;
+}
+
+// Determine whether there is a forced keyframe pending in the lookahead buffer
+static int is_forced_keyframe_pending(struct lookahead_ctx *lookahead,
+                                      const int up_to_index) {
+  for (int i = 0; i <= up_to_index; i++) {
+    const struct lookahead_entry *e = av1_lookahead_peek(lookahead, i);
+    if (e == NULL) {
+      // We have reached the end of the lookahead buffer and not early-returned
+      // so there isn't a forced key-frame pending.
+      return 0;
+    } else if (e->flags == AOM_EFLAG_FORCE_KF) {
+      return 1;
+    } else {
+      continue;
+    }
+  }
+  return 0;  // Never reached
+}
+
+// Check if we should encode an ARF, ARF2 or BRF.  If not, try a LAST
+// Do some setup associated with the chosen source
+// Return the frame source, or NULL if we couldn't find one
+struct lookahead_entry *choose_frame_source(
+    AV1_COMP *const cpi, int *const temporal_filtered, int *const flush,
+    struct lookahead_entry **last_source,
+    EncodeFrameParams *const frame_params) {
+  AV1_COMMON *const cm = &cpi->common;
+  struct lookahead_entry *source = NULL;
+  *temporal_filtered = 0;
+
+  // Should we encode an alt-ref frame.
+  int arf_src_index = get_arf_src_index(cpi);
+  if (arf_src_index &&
+      is_forced_keyframe_pending(cpi->lookahead, arf_src_index)) {
+    arf_src_index = 0;
+    *flush = 1;
+  }
+
+  if (arf_src_index) {
+    source = setup_arf_or_arf2(cpi, arf_src_index, 0, temporal_filtered,
+                               frame_params);
+  }
+
+  // Should we encode an arf2 frame (mutually exclusive to ARF)
+  arf_src_index = get_arf2_src_index(cpi);
+  if (arf_src_index &&
+      is_forced_keyframe_pending(cpi->lookahead, arf_src_index)) {
+    arf_src_index = 0;
+    *flush = 1;
+  }
+
+  if (arf_src_index) {
+    source = setup_arf_or_arf2(cpi, arf_src_index, 1, temporal_filtered,
+                               frame_params);
+  }
+
+  cpi->rc.is_bwd_ref_frame = 0;
+  int brf_src_index = get_brf_src_index(cpi);
+  if (brf_src_index) {
+    assert(brf_src_index <= cpi->rc.frames_to_key);
+    if ((source = av1_lookahead_peek(cpi->lookahead, brf_src_index)) != NULL) {
+      cm->showable_frame = 1;
+      frame_params->show_frame = 0;
+
+      if (cpi->oxcf.pass < 2) {
+        // In second pass, the buffer updates configure will be set
+        // in the function av1_rc_get_second_pass_params
+        av1_configure_buffer_updates_firstpass(cpi, BIPRED_UPDATE);
+      }
+    }
+  }
+
+  if (!source) {
+    // Get last frame source.
+    if (cm->current_frame.frame_number > 0) {
+      *last_source = av1_lookahead_peek(cpi->lookahead, -1);
+    }
+    // Read in the source frame.
+    source = av1_lookahead_pop(cpi->lookahead, *flush);
+
+    if (source != NULL) {
+      frame_params->show_frame = 1;
+
+      // Check to see if the frame should be encoded as an arf overlay.
+      check_src_altref(cpi, source);
+    }
+  }
+  return source;
+}
+
 int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
                         uint8_t *const dest, unsigned int *frame_flags,
-                        const EncodeFrameInput *const frame_input) {
+                        int64_t *const time_stamp, int64_t *const time_end,
+                        const aom_rational_t *const timebase, int flush) {
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   AV1_COMMON *const cm = &cpi->common;
 
+  EncodeFrameInput frame_input;
   EncodeFrameParams frame_params;
   EncodeFrameResults frame_results;
+  memset(&frame_input, 0, sizeof(frame_input));
   memset(&frame_params, 0, sizeof(frame_params));
   memset(&frame_results, 0, sizeof(frame_results));
+
+  int temporal_filtered = 0;
+  struct lookahead_entry *source = NULL;
+  struct lookahead_entry *last_source = NULL;
+  if (cm->show_existing_frame) {
+    source = av1_lookahead_pop(cpi->lookahead, flush);
+  } else {
+    source = choose_frame_source(cpi, &temporal_filtered, &flush, &last_source,
+                                 &frame_params);
+  }
+
+  if (source == NULL) {  // If no source was found, we can't encode a frame.
+    if (flush && oxcf->pass == 1 && !cpi->twopass.first_pass_done) {
+      av1_end_first_pass(cpi); /* get last stats packet */
+      cpi->twopass.first_pass_done = 1;
+    }
+    return -1;
+  }
+
+  frame_input.source = temporal_filtered ? &cpi->alt_ref_buffer : &source->img;
+  frame_input.last_source = last_source != NULL ? &last_source->img : NULL;
+  frame_input.ts_duration = source->ts_end - source->ts_start;
+
+  *time_stamp = source->ts_start;
+  *time_end = source->ts_end;
+  if (source->ts_start < cpi->first_time_stamp_ever) {
+    cpi->first_time_stamp_ever = source->ts_start;
+    cpi->last_end_time_stamp_seen = source->ts_start;
+  }
+
+  av1_apply_encoding_flags(cpi, source->flags);
+  if (!cm->show_existing_frame)
+    *frame_flags = (source->flags & AOM_EFLAG_FORCE_KF) ? FRAMEFLAGS_KEY : 0;
+  cpi->frame_flags = *frame_flags;
+
+  if (frame_params.show_frame ||
+      (cm->show_existing_frame && cpi->rc.is_src_frame_alt_ref)) {
+    // Shown frames and arf-overlay frames need frame-rate considering
+    adjust_frame_rate(cpi, source);
+  }
+
+  if (cm->show_existing_frame) {
+    // show_existing_frame implies this frame is shown!
+    frame_params.show_frame = 1;
+  } else {
+    // Retain the RF_LEVEL for the current newly coded frame.
+    cm->cur_frame->frame_rf_level =
+        cpi->twopass.gf_group.rf_level[cpi->twopass.gf_group.index];
+
+    if (cpi->film_grain_table) {
+      cm->seq_params.film_grain_params_present = aom_film_grain_table_lookup(
+          cpi->film_grain_table, *time_stamp, *time_end, 0 /* =erase */,
+          &cm->film_grain_params);
+    }
+    cm->cur_frame->film_grain_params_present =
+        cm->seq_params.film_grain_params_present;
+
+    // only one operating point supported now
+    const int64_t pts64 = ticks_to_timebase_units(timebase, *time_stamp);
+    if (pts64 < 0 || pts64 > UINT32_MAX) return AOM_CODEC_ERROR;
+    cpi->common.frame_presentation_time = (uint32_t)pts64;
+  }
 
   if (oxcf->pass == 2 &&
       (!cm->show_existing_frame || cpi->rc.is_src_frame_alt_ref)) {
@@ -366,7 +708,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     cm->max_qmlevel = cpi->oxcf.qm_maxlevel;
     if (cpi->twopass.gf_group.index == 1 && cpi->oxcf.enable_tpl_model) {
       av1_set_frame_size(cpi, cm->width, cm->height);
-      av1_tpl_setup_stats(cpi, frame_input);
+      av1_tpl_setup_stats(cpi, &frame_input);
     }
   }
 
@@ -391,6 +733,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
       av1_rc_get_one_pass_vbr_params(cpi, &frame_params);
     }
   } else if (oxcf->pass == 1) {
+    av1_setup_frame_size(cpi);
     cpi->td.mb.e_mbd.lossless[0] = is_lossless_requested(&cpi->oxcf);
     if (!cpi->refresh_alt_ref_frame && (cm->current_frame.frame_number == 0 ||
                                         (cpi->frame_flags & FRAMEFLAGS_KEY))) {
@@ -419,10 +762,10 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
   if (oxcf->pass == 0 || oxcf->pass == 2) {
     frame_params.primary_ref_frame =
         choose_primary_ref_frame(cpi, &frame_params);
-    frame_params.order_offset = get_order_offset(cpi);
+    frame_params.order_offset = get_order_offset(cpi, &frame_params);
   }
 
-  if (av1_encode(cpi, dest, frame_input, &frame_params, &frame_results) !=
+  if (av1_encode(cpi, dest, &frame_input, &frame_params, &frame_results) !=
       AOM_CODEC_OK) {
     return AOM_CODEC_ERROR;
   }

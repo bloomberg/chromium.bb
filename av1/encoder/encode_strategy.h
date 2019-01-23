@@ -16,12 +16,19 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+
+#include "aom/aom_encoder.h"
+
+#include "av1/encoder/encoder.h"
+
 // This function will implement high-level encode strategy, choosing frame type,
 // frame placement, etc.  It populates an EncodeFrameParams struct with the
 // results of these decisions and then calls av1_encode()
 int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
                         uint8_t *const dest, unsigned int *frame_flags,
-                        const EncodeFrameInput *const frame_input);
+                        int64_t *const time_stamp, int64_t *const time_end,
+                        const aom_rational_t *const timebase, int flush);
 
 #ifdef __cplusplus
 }  // extern "C"
