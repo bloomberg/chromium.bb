@@ -10,7 +10,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
@@ -109,7 +108,6 @@ class WebViewSyncControllerObserverBridge
 
 @implementation CWVSyncController {
   browser_sync::ProfileSyncService* _profileSyncService;
-  AccountTrackerService* _accountTrackerService;
   identity::IdentityManager* _identityManager;
   ProfileOAuth2TokenService* _tokenService;
   SigninErrorController* _signinErrorController;
@@ -124,14 +122,12 @@ class WebViewSyncControllerObserverBridge
 - (instancetype)
     initWithProfileSyncService:
         (browser_sync::ProfileSyncService*)profileSyncService
-         accountTrackerService:(AccountTrackerService*)accountTrackerService
                identityManager:(identity::IdentityManager*)identityManager
                   tokenService:(ProfileOAuth2TokenService*)tokenService
          signinErrorController:(SigninErrorController*)signinErrorController {
   self = [super init];
   if (self) {
     _profileSyncService = profileSyncService;
-    _accountTrackerService = accountTrackerService;
     _identityManager = identityManager;
     _tokenService = tokenService;
     _signinErrorController = signinErrorController;
@@ -159,12 +155,10 @@ class WebViewSyncControllerObserverBridge
 #pragma mark - Public Methods
 
 - (CWVIdentity*)currentIdentity {
-  std::string authenticatedID = _identityManager->GetPrimaryAccountId();
-  if (authenticatedID.empty()) {
+  if (!_identityManager->HasPrimaryAccount()) {
     return nil;
   }
-  AccountInfo accountInfo =
-      _accountTrackerService->GetAccountInfo(authenticatedID);
+  AccountInfo accountInfo = _identityManager->GetPrimaryAccountInfo();
   NSString* email = base::SysUTF8ToNSString(accountInfo.email);
   NSString* fullName = base::SysUTF8ToNSString(accountInfo.full_name);
   NSString* gaiaID = base::SysUTF8ToNSString(accountInfo.gaia);
@@ -188,7 +182,7 @@ class WebViewSyncControllerObserverBridge
   info.email = base::SysNSStringToUTF8(identity.email);
   info.full_name = base::SysNSStringToUTF8(identity.fullName);
   std::string newAuthenticatedAccountID =
-      _accountTrackerService->SeedAccountInfo(info);
+      _identityManager->LegacySeedAccountInfo(info);
   auto* primaryAccountMutator = _identityManager->GetPrimaryAccountMutator();
   primaryAccountMutator->SetPrimaryAccount(newAuthenticatedAccountID);
 
