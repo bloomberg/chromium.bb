@@ -14,6 +14,8 @@
 <link rel="import" href="icons.html">
 <link rel="import" href="item_behavior.html">
 <link rel="import" href="item_util.html">
+<link rel="import" href="shared_style.html">
+<link rel="import" href="shared_vars.html">
 <link rel="import" href="strings.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
@@ -23,8 +25,7 @@
 
 <dom-module id="extensions-item">
   <template>
-    <style include=
-        "iron-flex cr-hidden-style cr-icons action-link paper-button-style">
+    <style include="iron-flex cr-hidden-style cr-icons action-link paper-button-style shared-style">
       .bounded-text,
       .multiline-clippable-text,
       .clippable-flex-text {
@@ -102,13 +103,13 @@
       }
 
       #warnings {
-        color: var(--google-red-700);
+        color: var(--error-color);
         flex: 1;
         margin-bottom: 8px;
       }
 
       #error-icon {
-        --iron-icon-fill-color: var(--google-red-700);
+        --iron-icon-fill-color: var(--error-color);
         height: 18px;
         margin-inline-end: 4px;
         width: 18px;
@@ -148,11 +149,6 @@
         margin-inline-start: 8px;
       }
 
-      #learn-more-link {
-        color: var(--google-blue-700);
-        text-decoration: none;
-      }
-
       #source-indicator {
         margin-inline-start: 24px;
         margin-top: 24px;
@@ -184,12 +180,8 @@
         };
       }
 
-      .action-button {
-        color: var(--google-blue-500);
-      }
-
       #errors-button {
-        color: var(--google-red-700);
+        color: var(--error-color);
       }
 
       #dev-reload-button-container {
@@ -270,8 +262,7 @@
               <span id="suspicious-warning" aria-describedby="a11yAssociation"
                   hidden$="[[!data.disableReasons.suspiciousInstall]]">
                 $i18n{itemSuspiciousInstall}
-                <a target="_blank" id="learn-more-link"
-                    href="$i18n{suspiciousInstallHelpUrl}">
+                <a target="_blank" href="$i18n{suspiciousInstallHelpUrl}">
                   $i18n{learnMore}
                 </a>
               </span>

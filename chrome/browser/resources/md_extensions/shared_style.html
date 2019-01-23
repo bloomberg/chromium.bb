@@ -4,6 +4,11 @@
 <dom-module id="shared-style">
   <template>
     <style include="cr-shared-style">
+      a[href] {
+        color: var(--cr-link-color);
+        text-decoration: none;
+      }
+
       .page-container {
         height: 100%;
         overflow: overlay;
