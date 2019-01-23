@@ -276,7 +276,9 @@ TEST(FrecencyStoreTest, ToProto) {
   store.Remove("A");
   store.Rename("D", "A");
 
-  EXPECT_TRUE(EquivToProtoLite(store.ToProto(), MakeTestingProto()));
+  FrecencyStoreProto proto;
+  store.ToProto(&proto);
+  EXPECT_TRUE(EquivToProtoLite(proto, MakeTestingProto()));
 }
 
 TEST(FrecencyStoreTest, FromProtoAndToProto) {
@@ -285,9 +287,11 @@ TEST(FrecencyStoreTest, FromProtoAndToProto) {
   // |FrecencyStore| doesn't expose its internals any other way.
 
   FrecencyStore store(100, 0.5f);
-  FrecencyStoreProto proto = MakeTestingProto();
-  store.FromProto(proto);
-  EXPECT_TRUE(EquivToProtoLite(store.ToProto(), proto));
+  FrecencyStoreProto input = MakeTestingProto();
+  store.FromProto(input);
+  FrecencyStoreProto output;
+  store.ToProto(&output);
+  EXPECT_TRUE(EquivToProtoLite(output, input));
 }
 
 }  // namespace app_list

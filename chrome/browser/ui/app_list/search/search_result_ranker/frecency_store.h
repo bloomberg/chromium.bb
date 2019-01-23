@@ -50,7 +50,7 @@ class FrecencyStore {
   // updated, and none of the scores are below the |min_score_| threshold.
   const base::flat_map<std::string, FrecencyStore::ValueData>& GetAll();
 
-  FrecencyStoreProto ToProto() const;
+  void ToProto(FrecencyStoreProto* proto) const;
   void FromProto(const FrecencyStoreProto& proto);
 
  private:
