@@ -1796,7 +1796,8 @@ TEST_P(NavigationManagerTest, ReloadWithUserAgentTypeOnIntenalUrl) {
       ->GetPendingItemInCurrentOrRestoredSession()
       ->SetVirtualURL(virtual_url);
   [mock_wk_list_ setCurrentURL:base::SysUTF8ToNSString(url.spec())];
-  navigation_manager()->CommitPendingItem();
+  navigation_manager()->OnRendererInitiatedNavigationStarted(
+      GURL("http://www.1.com/virtual"));
 
   navigation_manager()->ReloadWithUserAgentType(UserAgentType::DESKTOP);
 
@@ -2009,7 +2010,8 @@ TEST_P(NavigationManagerTest, Restore) {
     [mock_wk_list_ setCurrentURL:@"http://www.url.com/1"
                     backListURLs:@[ @"http://www.url.com/0" ]
                  forwardListURLs:@[ @"http://www.url.com/2" ]];
-    navigation_manager()->CommitPendingItem();
+    navigation_manager()->OnRendererInitiatedNavigationStarted(
+        GURL("http://www.url.com/2"));
   }
 
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{

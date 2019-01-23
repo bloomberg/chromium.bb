@@ -345,18 +345,6 @@ TEST_P(WebStateTest, RestoreLargeSession) {
   // LoadIfNecessary call. Fix the bug and remove extra call.
   navigation_manager->LoadIfNecessary();
 
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    // After restoration is started GetPendingItemIndex() will return -1 and
-    // GetPendingItem() will return null. Pending item will be returned after
-    // the first post-restore navigation is started, but before session
-    // restoration is complete. Session restoration will be completed when the
-    // fist post-restore navigation is finished. This is why it is not possible
-    // to assert that pending item does not exist during the session
-    // restoration.
-    EXPECT_EQ(-1, navigation_manager->GetPendingItemIndex());
-    EXPECT_FALSE(navigation_manager->GetPendingItem());
-  }
-
   // Verify that session was fully restored.
   int kExpectedItemCount = web::GetWebClient()->IsSlimNavigationManagerEnabled()
                                ? wk_navigation_util::kMaxSessionSize
@@ -364,6 +352,7 @@ TEST_P(WebStateTest, RestoreLargeSession) {
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     bool restored = navigation_manager->GetItemCount() == kExpectedItemCount &&
                     navigation_manager->CanGoForward();
+    EXPECT_EQ(restored, !navigation_manager->IsRestoreSessionInProgress());
     if (!restored) {
       EXPECT_FALSE(navigation_manager->GetLastCommittedItem());
       EXPECT_EQ(-1, navigation_manager->GetLastCommittedItemIndex());
@@ -373,30 +362,27 @@ TEST_P(WebStateTest, RestoreLargeSession) {
       EXPECT_TRUE(navigation_manager->GetForwardItems().empty());
       EXPECT_EQ("Test0", base::UTF16ToASCII(web_state_ptr->GetTitle()));
       EXPECT_EQ(0.0, web_state_ptr->GetLoadingProgress());
-      NavigationItem* pendig_item = navigation_manager->GetPendingItem();
-      if (pendig_item) {
-        // Pending item is non-null after the first post-restore navigation is
-        // started (when happens before session restoration is complete). But
-        // pending item should never be an internal placeholder or session
-        // restoration URL.
-        EXPECT_FALSE(IsWKInternalUrl(pendig_item->GetURL()));
-      }
+      EXPECT_EQ(-1, navigation_manager->GetPendingItemIndex());
+      EXPECT_FALSE(navigation_manager->GetPendingItem());
     } else {
-      if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-        EXPECT_EQ("www.0.com", base::UTF16ToASCII(web_state_ptr->GetTitle()));
-      } else {
-        // This page never loads and does not actually have a title, so
-        // returning cached title is a bug. However there is not much value in
-        // fixing this bug for legacy navigation manager.
-        EXPECT_EQ("Test0", base::UTF16ToASCII(web_state_ptr->GetTitle()));
-      }
-      EXPECT_EQ("http://www.0.com/", web_state_ptr->GetLastCommittedURL());
+      EXPECT_EQ("Test0", base::UTF16ToASCII(web_state_ptr->GetTitle()));
       NavigationItem* last_committed_item =
           navigation_manager->GetLastCommittedItem();
-      EXPECT_TRUE(last_committed_item);
-      EXPECT_TRUE(last_committed_item &&
-                  last_committed_item->GetURL() == "http://www.0.com/");
-      EXPECT_EQ(0, navigation_manager->GetLastCommittedItemIndex());
+      // After restoration is complete GetLastCommittedItem() will return null
+      // until fist post-restore navigation is finished.
+      if (last_committed_item) {
+        EXPECT_EQ("http://www.0.com/", last_committed_item->GetURL());
+        EXPECT_EQ("http://www.0.com/", web_state_ptr->GetLastCommittedURL());
+        EXPECT_EQ(0, navigation_manager->GetLastCommittedItemIndex());
+      } else {
+        EXPECT_EQ("", web_state_ptr->GetLastCommittedURL());
+        EXPECT_EQ(-1, navigation_manager->GetLastCommittedItemIndex());
+        NavigationItem* pending_item = navigation_manager->GetPendingItem();
+        EXPECT_TRUE(pending_item);
+        if (pending_item) {
+          EXPECT_EQ("http://www.0.com/", pending_item->GetURL());
+        }
+      }
       EXPECT_TRUE(navigation_manager->GetBackwardItems().empty());
       EXPECT_EQ(std::max(navigation_manager->GetItemCount() - 1, 0),
                 static_cast<int>(navigation_manager->GetForwardItems().size()));

@@ -59,6 +59,9 @@ void LegacyNavigationManagerImpl::OnNavigationItemCommitted() {
   delegate_->OnNavigationItemCommitted(item);
 }
 
+void LegacyNavigationManagerImpl::OnRendererInitiatedNavigationStarted(
+    const GURL& url) {}
+
 CRWSessionController* LegacyNavigationManagerImpl::GetSessionController()
     const {
   return session_controller_;
