@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -61,6 +60,13 @@ const char kTransportNamespace[] = "google:remoting:webrtc";
 const int kMinBitrateBps = 1e6;  // 1 Mbps.
 const int kMaxBitrateBps = 1e8;  // 100 Mbps.
 
+// Frequency of polling for RTCStats. Polling is needed because WebRTC native
+// API does not provide a route-change notification for the connection type
+// (direct/STUN/relay).
+// TODO(lambroslambrou): Remove polling when a native API is provided.
+constexpr base::TimeDelta kRtcStatsPollingInterval =
+    base::TimeDelta::FromSeconds(2);
+
 #if !defined(NDEBUG)
 // Command line switch used to disable signature verification.
 // TODO(sergeyu): Remove this flag.
@@ -87,15 +93,15 @@ void UpdateCodecParameters(SdpMessage* sdp_message, bool incoming) {
 
 // Returns true if the RTC stats report indicates a relay connection. If the
 // connection type cannot be determined (which should never happen with a valid
-// RTCStatsReport), this returns false.
-bool IsConnectionRelayed(
+// RTCStatsReport), nullopt is returned.
+base::Optional<bool> IsConnectionRelayed(
     const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) {
   auto transport_stats_list =
       report->GetStatsOfType<webrtc::RTCTransportStats>();
   if (transport_stats_list.size() != 1) {
     LOG(ERROR) << "Unexpected number of transport stats: "
                << transport_stats_list.size();
-    return false;
+    return base::nullopt;
   }
   std::string selected_candidate_pair_id =
       *(transport_stats_list[0]->selected_candidate_pair_id);
@@ -104,7 +110,7 @@ bool IsConnectionRelayed(
   if (!selected_candidate_pair) {
     LOG(ERROR) << "Expected to find RTC stats for id: "
                << selected_candidate_pair;
-    return false;
+    return base::nullopt;
   }
   std::string local_candidate_id =
       *(selected_candidate_pair->cast_to<webrtc::RTCIceCandidatePairStats>()
@@ -112,7 +118,7 @@ bool IsConnectionRelayed(
   const webrtc::RTCStats* local_candidate = report->Get(local_candidate_id);
   if (!local_candidate) {
     LOG(ERROR) << "Expected to find RTC stats for id: " << local_candidate_id;
-    return false;
+    return base::nullopt;
   }
   std::string local_candidate_type =
       *(local_candidate->cast_to<webrtc::RTCLocalIceCandidateStats>()
@@ -123,7 +129,7 @@ bool IsConnectionRelayed(
   const webrtc::RTCStats* remote_candidate = report->Get(remote_candidate_id);
   if (!remote_candidate) {
     LOG(ERROR) << "Expected to find RTC stats for id: " << remote_candidate_id;
-    return false;
+    return base::nullopt;
   }
   std::string remote_candidate_type =
       *(remote_candidate->cast_to<webrtc::RTCRemoteIceCandidateStats>()
@@ -701,14 +707,12 @@ void WebrtcTransport::OnIceConnectionChange(
   if (!connected_ &&
       new_state == webrtc::PeerConnectionInterface::kIceConnectionConnected) {
     connected_ = true;
+    connection_relayed_.reset();
     event_handler_->OnWebrtcTransportConnected();
 
     // Request RTC statistics, to determine if the connection is direct or
     // relayed.
-    peer_connection()->GetStats(
-        RTCStatsCollectorCallback::Create(base::BindRepeating(
-            &WebrtcTransport::OnStatsDelivered, weak_factory_.GetWeakPtr())));
-
+    RequestRtcStats();
   } else if (connected_ &&
              new_state ==
                  webrtc::PeerConnectionInterface::kIceConnectionDisconnected &&
@@ -747,11 +751,32 @@ void WebrtcTransport::OnIceCandidate(
 
 void WebrtcTransport::OnStatsDelivered(
     const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) {
-  bool is_relay = IsConnectionRelayed(report);
-  VLOG(0) << "Relay connection: " << (is_relay ? "true" : "false");
+  if (!connected_)
+    return;
+
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&WebrtcTransport::RequestRtcStats,
+                     weak_factory_.GetWeakPtr()),
+      kRtcStatsPollingInterval);
+
+  base::Optional<bool> connection_relayed = IsConnectionRelayed(report);
+  if (connection_relayed == connection_relayed_) {
+    // No change in connection type. Unknown -> direct/relayed is treated as a
+    // change, so the correct initial bitrate caps are set.
+    return;
+  }
+
+  connection_relayed_ = connection_relayed;
+  if (connection_relayed_.has_value()) {
+    VLOG(0) << "Relay connection: "
+            << (connection_relayed_.value() ? "true" : "false");
+  } else {
+    LOG(ERROR) << "Connection type unknown, treating as direct.";
+  }
 
   int max_bitrate_bps = kMaxBitrateBps;
-  if (is_relay) {
+  if (connection_relayed.value_or(false)) {
     int turn_max_rate_kbps = transport_context_->GetTurnMaxRateKbps();
     if (turn_max_rate_kbps <= 0) {
       VLOG(0) << "No TURN bitrate cap set.";
@@ -802,6 +827,15 @@ void WebrtcTransport::OnStatsDelivered(
   parameters.encodings[0].min_bitrate_bps = kMinBitrateBps;
   parameters.encodings[0].max_bitrate_bps = max_bitrate_bps;
   sender->SetParameters(parameters);
+}
+
+void WebrtcTransport::RequestRtcStats() {
+  if (!connected_)
+    return;
+
+  peer_connection()->GetStats(
+      RTCStatsCollectorCallback::Create(base::BindRepeating(
+          &WebrtcTransport::OnStatsDelivered, weak_factory_.GetWeakPtr())));
 }
 
 void WebrtcTransport::RequestNegotiation() {
