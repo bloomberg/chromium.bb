@@ -75,6 +75,10 @@ void InProcessLaunchedVideoCaptureDevice::SetPhotoOptions(
 void InProcessLaunchedVideoCaptureDevice::TakePhoto(
     media::VideoCaptureDevice::TakePhotoCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+                       "InProcessLaunchedVideoCaptureDevice::TakePhoto",
+                       TRACE_EVENT_SCOPE_PROCESS);
+
   // Unretained() is safe to use here because |device| would be null if it
   // was scheduled for shutdown and destruction, and because this task is
   // guaranteed to run before the task that destroys the |device|.

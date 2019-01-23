@@ -58,6 +58,9 @@ void TakePhotoOnIOThread(const std::string& source_id,
                          MediaStreamManager* media_stream_manager,
                          ImageCaptureImpl::TakePhotoCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+                       "image_capture_impl.cc::TakePhotoOnIOThread",
+                       TRACE_EVENT_SCOPE_PROCESS);
 
   const int session_id =
       media_stream_manager->VideoDeviceIdToSessionId(source_id);
@@ -87,6 +90,9 @@ void ImageCaptureImpl::Create(
 void ImageCaptureImpl::GetPhotoState(const std::string& source_id,
                                      GetPhotoStateCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+                       "ImageCaptureImpl::GetPhotoState",
+                       TRACE_EVENT_SCOPE_PROCESS);
 
   GetPhotoStateCallback scoped_callback =
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
@@ -103,6 +109,9 @@ void ImageCaptureImpl::SetOptions(const std::string& source_id,
                                   media::mojom::PhotoSettingsPtr settings,
                                   SetOptionsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+                       "ImageCaptureImpl::SetOptions",
+                       TRACE_EVENT_SCOPE_PROCESS);
 
   SetOptionsCallback scoped_callback =
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
@@ -117,6 +126,9 @@ void ImageCaptureImpl::SetOptions(const std::string& source_id,
 void ImageCaptureImpl::TakePhoto(const std::string& source_id,
                                  TakePhotoCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+                       "ImageCaptureImpl::TakePhoto",
+                       TRACE_EVENT_SCOPE_PROCESS);
 
   TakePhotoCallback scoped_callback =
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
