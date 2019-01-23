@@ -73,7 +73,7 @@ input {
 }
 
 html[dir=rtl] input {
-  text-align: end;
+  text-align: right;  /* csschecker-disable-line left-right */
 }
 
 input::placeholder {
