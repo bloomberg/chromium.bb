@@ -183,6 +183,11 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kOculusVR;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kOpenVR;
 #endif  // ENABLE_OPENVR
 
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kWindowsMixedReality;
+#endif  // ENABLE_WINDOWS_MR
+
 #endif  // ENABLE_VR
 
 #if defined(OS_WIN)

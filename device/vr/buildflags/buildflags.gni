@@ -8,11 +8,12 @@ import("//build/config/gclient_args.gni")
 import("//chrome/android/channel.gni")
 
 declare_args() {
-  # TODO(733935): Enable for other Android architectures too. Currently we only
-  # support arm and arm64.
   enable_gvr_services = is_android && !is_chromecast &&
                         (current_cpu == "arm" || current_cpu == "arm64")
+
   enable_openvr = is_win
+
+  enable_windows_mr = false
 
   # To build with Oculus support, the Oculus SDK for Windows will need to be
   # installed in third_party/libovr/src.  See
