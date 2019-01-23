@@ -349,6 +349,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->alt_ref_search_fp = 1;
     sf->skip_sharp_interp_filter_search = 1;
     sf->perform_coeff_opt = boosted ? 0 : 4;
+    sf->adaptive_txb_search_level = boosted ? 2 : 3;
   }
 
   if (speed >= 5) {
