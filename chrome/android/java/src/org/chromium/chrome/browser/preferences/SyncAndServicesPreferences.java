@@ -8,12 +8,10 @@ import android.accounts.Account;
 import android.app.DialogFragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
@@ -21,24 +19,16 @@ import android.preference.PreferenceGroup;
 import android.provider.Settings;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
-import android.support.v4.util.ArraySet;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.style.ForegroundColorSpan;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.AppHooks;
-import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsEnabledStateUtils;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
@@ -51,58 +41,34 @@ import org.chromium.chrome.browser.signin.SignoutReason;
 import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.chrome.browser.sync.ui.PassphraseCreationDialogFragment;
 import org.chromium.chrome.browser.sync.ui.PassphraseDialogFragment;
-import org.chromium.chrome.browser.sync.ui.PassphraseTypeDialogFragment;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
-import org.chromium.components.sync.ModelType;
-import org.chromium.components.sync.PassphraseType;
 import org.chromium.components.sync.ProtocolErrorClientAction;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
- * Settings fragment to customize Sync options (data types, encryption) and other services that
- * communicate with Google.
+ * Settings fragment to enable Sync and other services that communicate with Google.
  */
 public class SyncAndServicesPreferences extends PreferenceFragment
-        implements PassphraseDialogFragment.Listener, PassphraseCreationDialogFragment.Listener,
-                   PassphraseTypeDialogFragment.Listener, Preference.OnPreferenceChangeListener,
+        implements PassphraseDialogFragment.Listener, Preference.OnPreferenceChangeListener,
                    ProfileSyncService.SyncStateChangedListener {
     private static final String IS_FROM_SIGNIN_SCREEN =
             "SyncAndServicesPreferences.isFromSigninScreen";
 
     @VisibleForTesting
     public static final String FRAGMENT_ENTER_PASSPHRASE = "enter_password";
-    @VisibleForTesting
-    public static final String FRAGMENT_CUSTOM_PASSPHRASE = "custom_password";
-    @VisibleForTesting
-    public static final String FRAGMENT_PASSPHRASE_TYPE = "password_type";
 
     private static final String PREF_SIGNIN = "sign_in";
 
     private static final String PREF_SYNC_CATEGORY = "sync_category";
     private static final String PREF_SYNC_ERROR_CARD = "sync_error_card";
-    private static final String PREF_USE_SYNC_AND_ALL_SERVICES = "use_sync_and_all_services";
-    private static final String PREF_SYNC_AUTOFILL = "sync_autofill";
-    private static final String PREF_SYNC_BOOKMARKS = "sync_bookmarks";
-    private static final String PREF_SYNC_PAYMENTS_INTEGRATION = "sync_payments_integration";
-    private static final String PREF_SYNC_HISTORY = "sync_history";
-    private static final String PREF_SYNC_PASSWORDS = "sync_passwords";
-    private static final String PREF_SYNC_RECENT_TABS = "sync_recent_tabs";
-    private static final String PREF_SYNC_SETTINGS = "sync_settings";
-    private static final String PREF_SYNC_ACTIVITY_AND_INTERACTIONS =
-            "sync_activity_and_interactions";
-    private static final String PREF_GOOGLE_ACTIVITY_CONTROLS = "google_activity_controls";
-    private static final String PREF_ENCRYPTION = "encryption";
-    private static final String PREF_SYNC_MANAGE_DATA = "sync_manage_data";
+    private static final String PREF_SYNC_REQUESTED = "sync_requested";
 
     private static final String PREF_SERVICES_CATEGORY = "services_category";
     private static final String PREF_SEARCH_SUGGESTIONS = "search_suggestions";
@@ -128,8 +94,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         int OTHER_ERRORS = 128;
     }
 
-    private static final String DASHBOARD_URL = "https://www.google.com/settings/chrome/sync";
-
     private final ProfileSyncService mProfileSyncService = ProfileSyncService.get();
     private final PrefServiceBridge mPrefServiceBridge = PrefServiceBridge.getInstance();
     private final PrivacyPreferencesManager mPrivacyPrefManager =
@@ -143,21 +107,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
 
     private PreferenceCategory mSyncCategory;
     private Preference mSyncErrorCard;
-    private ChromeSwitchPreference mUseSyncAndAllServices;
-    private CheckBoxPreference mSyncAutofill;
-    private CheckBoxPreference mSyncBookmarks;
-    private CheckBoxPreference mSyncPaymentsIntegration;
-    private CheckBoxPreference mSyncHistory;
-    private CheckBoxPreference mSyncPasswords;
-    private CheckBoxPreference mSyncRecentTabs;
-    private CheckBoxPreference mSyncSettings;
-    private CheckBoxPreference mSyncActivityAndInteractions;
-    // Contains preferences for all sync data types.
-    private CheckBoxPreference[] mSyncAllTypes;
-
-    private Preference mGoogleActivityControls;
-    private Preference mSyncEncryption;
-    private Preference mManageSyncData;
+    private ChromeSwitchPreference mSyncRequested;
 
     private ChromeSwitchPreference mSearchSuggestions;
     private ChromeSwitchPreference mNetworkPredictions;
@@ -203,36 +153,9 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         mSyncCategory = (PreferenceCategory) findPreference(PREF_SYNC_CATEGORY);
         mSyncErrorCard = findPreference(PREF_SYNC_ERROR_CARD);
         mSyncErrorCard.setOnPreferenceClickListener(
-                toOnClickListener(this::onSyncErrorCardClicked));
-        mUseSyncAndAllServices =
-                (ChromeSwitchPreference) findPreference(PREF_USE_SYNC_AND_ALL_SERVICES);
-        mUseSyncAndAllServices.setOnPreferenceChangeListener(this);
-
-        mSyncAutofill = (CheckBoxPreference) findPreference(PREF_SYNC_AUTOFILL);
-        mSyncBookmarks = (CheckBoxPreference) findPreference(PREF_SYNC_BOOKMARKS);
-        mSyncPaymentsIntegration =
-                (CheckBoxPreference) findPreference(PREF_SYNC_PAYMENTS_INTEGRATION);
-        mSyncHistory = (CheckBoxPreference) findPreference(PREF_SYNC_HISTORY);
-        mSyncPasswords = (CheckBoxPreference) findPreference(PREF_SYNC_PASSWORDS);
-        mSyncRecentTabs = (CheckBoxPreference) findPreference(PREF_SYNC_RECENT_TABS);
-        mSyncSettings = (CheckBoxPreference) findPreference(PREF_SYNC_SETTINGS);
-        mSyncActivityAndInteractions =
-                (CheckBoxPreference) findPreference(PREF_SYNC_ACTIVITY_AND_INTERACTIONS);
-
-        mGoogleActivityControls = findPreference(PREF_GOOGLE_ACTIVITY_CONTROLS);
-        mSyncEncryption = findPreference(PREF_ENCRYPTION);
-        mSyncEncryption.setOnPreferenceClickListener(
-                toOnClickListener(this::onSyncEncryptionClicked));
-        mManageSyncData = findPreference(PREF_SYNC_MANAGE_DATA);
-        mManageSyncData.setOnPreferenceClickListener(
-                toOnClickListener(this::openDashboardTabInNewActivityStack));
-
-        mSyncAllTypes = new CheckBoxPreference[] {mSyncAutofill, mSyncBookmarks,
-                mSyncPaymentsIntegration, mSyncHistory, mSyncPasswords, mSyncRecentTabs,
-                mSyncSettings, mSyncActivityAndInteractions};
-        for (CheckBoxPreference type : mSyncAllTypes) {
-            type.setOnPreferenceChangeListener(this);
-        }
+                SyncPreferenceUtils.toOnClickListener(this, this::onSyncErrorCardClicked));
+        mSyncRequested = (ChromeSwitchPreference) findPreference(PREF_SYNC_REQUESTED);
+        mSyncRequested.setOnPreferenceChangeListener(this);
 
         mSearchSuggestions = (ChromeSwitchPreference) findPreference(PREF_SEARCH_SUGGESTIONS);
         mSearchSuggestions.setOnPreferenceChangeListener(this);
@@ -280,11 +203,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             mContextualSuggestions = null;
         }
 
-        if (Profile.getLastUsedProfile().isChild()) {
-            mGoogleActivityControls.setSummary(
-                    R.string.sign_in_google_activity_controls_summary_child_account);
-        }
-
         // Prevent sync settings changes from taking effect until the user leaves this screen.
         mSyncSetupInProgressHandle = mProfileSyncService.getSetupInProgressHandle();
 
@@ -295,18 +213,10 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     public void onDestroy() {
         super.onDestroy();
         mSyncSetupInProgressHandle.close();
-    }
 
-    private Preference.OnPreferenceClickListener toOnClickListener(Runnable runnable) {
-        return preference -> {
-            if (!isResumed()) {
-                // This event could come in after onPause if the user clicks back and the preference
-                // at roughly the same time. See http://b/5983282.
-                return false;
-            }
-            runnable.run();
-            return false;
-        };
+        if (mProfileSyncService.isSyncRequested()) {
+            InvalidationController.get().ensureStartedAndUpdateRegisteredTypes();
+        }
     }
 
     @Override
@@ -332,8 +242,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     public void onStart() {
         super.onStart();
         mProfileSyncService.addSyncStateChangedListener(this);
-        updateSyncStateFromAndroidSyncSettings();
-
         mSigninPreference.registerForUpdates();
     }
 
@@ -343,10 +251,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
 
         mSigninPreference.unregisterForUpdates();
         mProfileSyncService.removeSyncStateChangedListener(this);
-
-        // Save the new data type state.
-        configureSyncDataTypes();
-        PersonalDataManager.setPaymentsIntegrationEnabled(mSyncPaymentsIntegration.isChecked());
     }
 
     @Override
@@ -358,11 +262,9 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         String key = preference.getKey();
-        if (PREF_USE_SYNC_AND_ALL_SERVICES.equals(key)) {
-            boolean enabled = (boolean) newValue;
-            UnifiedConsentServiceBridge.setUnifiedConsentGiven(enabled);
-            ThreadUtils.postOnUiThread(this::updateSyncStateFromSelectedModelTypes);
-            ThreadUtils.postOnUiThread(this::updateDataTypeState);
+        if (PREF_SYNC_REQUESTED.equals(key)) {
+            assert canDisableSync();
+            SyncPreferenceUtils.enableSync((boolean) newValue);
             ThreadUtils.postOnUiThread(this::updatePreferences);
         } else if (PREF_SEARCH_SUGGESTIONS.equals(key)) {
             mPrefServiceBridge.setSearchSuggestEnabled((boolean) newValue);
@@ -380,24 +282,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         } else if (PREF_URL_KEYED_ANONYMIZED_DATA.equals(key)) {
             UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
                     (boolean) newValue);
-        } else if (isSyncTypePreference(preference)) {
-            ThreadUtils.postOnUiThread(() -> {
-                boolean preferenceChecked = (boolean) newValue;
-                if (preference == mSyncAutofill) {
-                    // If the user checks the autofill sync checkbox, then enable and check the
-                    // payments integration checkbox.
-                    //
-                    // If the user unchecks the autofill sync checkbox, then disable and uncheck
-                    // the payments integration checkbox.
-                    mSyncPaymentsIntegration.setEnabled(preferenceChecked);
-                    mSyncPaymentsIntegration.setChecked(preferenceChecked);
-                } else if (preference == mSyncHistory) {
-                    // Disable 'Activity and interactions' if history is disabled, enable otherwise.
-                    mSyncActivityAndInteractions.setEnabled(preferenceChecked);
-                    mSyncActivityAndInteractions.setChecked(preferenceChecked);
-                }
-                updateSyncStateFromSelectedModelTypes();
-            });
         }
         return true;
     }
@@ -410,7 +294,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
      */
     @Override
     public void syncStateChanged() {
-        updateSyncPreferences();
+        updatePreferences();
     }
 
     /** Returns whether Sync can be disabled. */
@@ -418,119 +302,9 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         return !Profile.getLastUsedProfile().isChild();
     }
 
-    private boolean isSyncTypePreference(Preference preference) {
-        for (Preference pref : mSyncAllTypes) {
-            if (pref == preference) return true;
-        }
-        return false;
-    }
-
-    /**
-     * Update the state of all settings from sync.
-     *
-     * This sets the state of the sync switch from external sync state and then calls
-     * updateSyncPreferences, which uses that as its source of truth.
-     */
-    private void updateSyncStateFromAndroidSyncSettings() {
-        updateSyncPreferences();
-    }
-
-    /** Update sync preferences. */
-    private void updateSyncPreferences() {
-        updateDataTypeState();
-        updateEncryptionState();
-        updateSyncErrorCard();
-    }
-
-    /** Enables sync if any of the data types is selected, otherwise disables sync. */
-    private void updateSyncStateFromSelectedModelTypes() {
-        boolean shouldEnableSync = UnifiedConsentServiceBridge.isUnifiedConsentGiven()
-                || !getSelectedModelTypes().isEmpty() || !canDisableSync();
-        SyncPreferenceUtils.enableSync(shouldEnableSync);
-        updateSyncPreferences();
-    }
-
-    /**
-     * Update the encryption state.
-     *
-     * If sync's engine is initialized, the button is enabled and the dialog will present the
-     * valid encryption options for the user. Otherwise, any encryption dialogs will be closed
-     * and the button will be disabled because the engine is needed in order to know and
-     * modify the encryption state.
-     */
-    private void updateEncryptionState() {
-        boolean isEngineInitialized = mProfileSyncService.isEngineInitialized();
-        mSyncEncryption.setEnabled(isEngineInitialized);
-        mSyncEncryption.setSummary(null);
-        if (!isEngineInitialized) {
-            // If sync is not initialized, encryption state is unavailable and can't be changed.
-            // Leave the button disabled and the summary empty. Additionally, close the dialogs in
-            // case they were open when a stop and clear comes.
-            closeDialogIfOpen(FRAGMENT_CUSTOM_PASSPHRASE);
-            closeDialogIfOpen(FRAGMENT_ENTER_PASSPHRASE);
-            return;
-        }
-        if (!mProfileSyncService.isPassphraseRequiredForDecryption()) {
-            closeDialogIfOpen(FRAGMENT_ENTER_PASSPHRASE);
-        }
-        if (mProfileSyncService.isPassphraseRequiredForDecryption() && isAdded()) {
-            mSyncEncryption.setSummary(
-                    errorSummary(getString(R.string.sync_need_passphrase), getActivity()));
-        }
-    }
-
-    /** Applies a span to the given string to give it an error color. */
-    private static Spannable errorSummary(String string, Context context) {
-        SpannableString summary = new SpannableString(string);
-        summary.setSpan(new ForegroundColorSpan(ApiCompatibilityUtils.getColor(
-                                context.getResources(), R.color.input_underline_error_color)),
-                0, summary.length(), 0);
-        return summary;
-    }
-
-    private void configureSyncDataTypes() {
-        updateSyncStateFromSelectedModelTypes();
-        if (!mProfileSyncService.isSyncRequested()) return;
-
-        boolean syncEverything = UnifiedConsentServiceBridge.isUnifiedConsentGiven();
-        mProfileSyncService.setChosenDataTypes(syncEverything, getSelectedModelTypes());
-        // Update the invalidation listener with the set of types we are enabling.
-        InvalidationController invController = InvalidationController.get();
-        invController.ensureStartedAndUpdateRegisteredTypes();
-    }
-
-    private Set<Integer> getSelectedModelTypes() {
-        Set<Integer> types = new HashSet<>();
-        if (mSyncAutofill.isChecked()) types.add(ModelType.AUTOFILL);
-        if (mSyncBookmarks.isChecked()) types.add(ModelType.BOOKMARKS);
-        if (mSyncHistory.isChecked()) types.add(ModelType.TYPED_URLS);
-        if (mSyncPasswords.isChecked()) types.add(ModelType.PASSWORDS);
-        if (mSyncRecentTabs.isChecked()) types.add(ModelType.PROXY_TABS);
-        if (mSyncSettings.isChecked()) types.add(ModelType.PREFERENCES);
-        if (mSyncActivityAndInteractions.isChecked()) types.add(ModelType.USER_EVENTS);
-        return types;
-    }
-
-    private void displayPassphraseTypeDialog() {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        PassphraseTypeDialogFragment dialog =
-                PassphraseTypeDialogFragment.create(mProfileSyncService.getPassphraseType(),
-                        mProfileSyncService.getExplicitPassphraseTime(),
-                        mProfileSyncService.isEncryptEverythingAllowed());
-        dialog.show(ft, FRAGMENT_PASSPHRASE_TYPE);
-        dialog.setTargetFragment(this, -1);
-    }
-
     private void displayPassphraseDialog() {
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         PassphraseDialogFragment.newInstance(this).show(ft, FRAGMENT_ENTER_PASSPHRASE);
-    }
-
-    private void displayCustomPassphraseDialog() {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        PassphraseCreationDialogFragment dialog = new PassphraseCreationDialogFragment();
-        dialog.setTargetFragment(this, -1);
-        dialog.show(ft, FRAGMENT_CUSTOM_PASSPHRASE);
     }
 
     private void closeDialogIfOpen(String tag) {
@@ -550,12 +324,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         if (passphrase.isEmpty() || !mProfileSyncService.setDecryptionPassphrase(passphrase)) {
             return false;
         }
-        // PassphraseDialogFragment doesn't handle closing itself, so do it here. This is not done
-        // in updateSyncStateFromAndroidSyncSettings() because that happens onResume and possibly in
-        // other cases where the dialog should stay open.
-        closeDialogIfOpen(FRAGMENT_ENTER_PASSPHRASE);
-        // Update our configuration UI.
-        updateSyncStateFromAndroidSyncSettings();
+        updatePreferences();
         return true;
     }
 
@@ -574,127 +343,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     /** Callback for PassphraseDialogFragment.Listener */
     @Override
     public void onPassphraseCanceled() {}
-
-    /** Callback for PassphraseCreationDialogFragment.Listener */
-    @Override
-    public void onPassphraseCreated(String passphrase) {
-        if (!mProfileSyncService.isEngineInitialized()) {
-            // If the engine was shut down since the dialog was opened, do nothing.
-            return;
-        }
-        mProfileSyncService.enableEncryptEverything();
-        mProfileSyncService.setEncryptionPassphrase(passphrase);
-        // Configure the current set of data types - this tells the sync engine to
-        // apply our encryption configuration changes.
-        configureSyncDataTypes();
-        // Re-display our config UI to properly reflect the new state.
-        updateSyncStateFromAndroidSyncSettings();
-    }
-
-    /** Callback for PassphraseTypeDialogFragment.Listener */
-    @Override
-    public void onPassphraseTypeSelected(PassphraseType type) {
-        if (!mProfileSyncService.isEngineInitialized()) {
-            // If the engine was shut down since the dialog was opened, do nothing.
-            return;
-        }
-
-        boolean isAllDataEncrypted = mProfileSyncService.isEncryptEverythingEnabled();
-        boolean isUsingSecondaryPassphrase = mProfileSyncService.isUsingSecondaryPassphrase();
-
-        // The passphrase type should only ever be selected if the account doesn't have
-        // full encryption enabled. Otherwise both options should be disabled.
-        assert !isAllDataEncrypted;
-        assert !isUsingSecondaryPassphrase;
-        displayCustomPassphraseDialog();
-    }
-
-    private void onGoogleActivityControlsClicked(String signedInAccountName) {
-        AppHooks.get().createGoogleActivityController().openWebAndAppActivitySettings(
-                getActivity(), signedInAccountName);
-        RecordUserAction.record("Signin_AccountSettings_GoogleActivityControlsClicked");
-    }
-
-    private void onSyncEncryptionClicked() {
-        if (!mProfileSyncService.isEngineInitialized()) return;
-
-        if (mProfileSyncService.isPassphraseRequiredForDecryption()) {
-            displayPassphraseDialog();
-        } else {
-            displayPassphraseTypeDialog();
-        }
-    }
-
-    /** Opens the Google Dashboard where the user can control the data stored for the account. */
-    private void openDashboardTabInNewActivityStack() {
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(DASHBOARD_URL));
-        intent.setPackage(getActivity().getPackageName());
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
-    }
-
-    /**
-     * Update the data type switch state.
-     *
-     * If sync is on, load the prefs from native. Otherwise, all data types are disabled and
-     * checked. Note that the Password data type will be shown as disabled and unchecked between
-     * sync being turned on and the engine initialization completing.
-     */
-    private void updateDataTypeState() {
-        boolean syncEverything = UnifiedConsentServiceBridge.isUnifiedConsentGiven();
-        if (syncEverything) {
-            for (CheckBoxPreference pref : mSyncAllTypes) {
-                pref.setChecked(true);
-                pref.setEnabled(false);
-            }
-            return;
-        }
-
-        Set<Integer> syncTypes = mProfileSyncService.isSyncRequested()
-                ? mProfileSyncService.getChosenDataTypes()
-                : new ArraySet<>();
-        mSyncAutofill.setChecked(syncTypes.contains(ModelType.AUTOFILL));
-        mSyncAutofill.setEnabled(true);
-        mSyncBookmarks.setChecked(syncTypes.contains(ModelType.BOOKMARKS));
-        mSyncBookmarks.setEnabled(true);
-        mSyncHistory.setChecked(syncTypes.contains(ModelType.TYPED_URLS));
-        mSyncHistory.setEnabled(true);
-        mSyncPasswords.setChecked(syncTypes.contains(ModelType.PASSWORDS));
-        mSyncPasswords.setEnabled(true);
-        mSyncRecentTabs.setChecked(syncTypes.contains(ModelType.PROXY_TABS));
-        mSyncRecentTabs.setEnabled(true);
-        mSyncSettings.setChecked(syncTypes.contains(ModelType.PREFERENCES));
-        mSyncSettings.setEnabled(true);
-
-        // Payments integration requires AUTOFILL model type
-        boolean syncAutofill = syncTypes.contains(ModelType.AUTOFILL);
-        mSyncPaymentsIntegration.setChecked(
-                syncAutofill && PersonalDataManager.isPaymentsIntegrationEnabled());
-        mSyncPaymentsIntegration.setEnabled(syncAutofill);
-
-        // USER_EVENTS sync type doesn't work with custom passphrase and needs history sync
-        boolean userEventsConfigurable =
-                !hasCustomPassphrase() && syncTypes.contains(ModelType.TYPED_URLS);
-        mSyncActivityAndInteractions.setChecked(
-                userEventsConfigurable && syncTypes.contains(ModelType.USER_EVENTS));
-        mSyncActivityAndInteractions.setEnabled(userEventsConfigurable);
-    }
-
-    private boolean hasCustomPassphrase() {
-        return mProfileSyncService.isEngineInitialized()
-                && mProfileSyncService.getPassphraseType() == PassphraseType.CUSTOM_PASSPHRASE;
-    }
-
-    private void updateSyncErrorCard() {
-        mCurrentSyncError = getSyncError();
-        if (mCurrentSyncError == SyncError.NO_ERROR) {
-            mSyncCategory.removePreference(mSyncErrorCard);
-        } else {
-            String summary = getSyncErrorHint(mCurrentSyncError);
-            mSyncErrorCard.setSummary(summary);
-            mSyncCategory.addPreference(mSyncErrorCard);
-        }
-    }
 
     @SyncError
     private int getSyncError() {
@@ -803,37 +451,18 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     }
 
     private void updatePreferences() {
-        boolean useSyncAndAllServices = UnifiedConsentServiceBridge.isUnifiedConsentGiven();
-        String signedInAccountName = ChromeSigninController.get().getSignedInAccountName();
-        if (signedInAccountName != null) {
-            getPreferenceScreen().addPreference(mSyncCategory);
-
-            mUseSyncAndAllServices.setChecked(useSyncAndAllServices);
-            mUseSyncAndAllServices.setEnabled(!hasCustomPassphrase());
-
-            mGoogleActivityControls.setOnPreferenceClickListener(
-                    toOnClickListener(() -> onGoogleActivityControlsClicked(signedInAccountName)));
-        } else {
-            getPreferenceScreen().removePreference(mSyncCategory);
-        }
+        updateSyncPreferences();
 
         mSearchSuggestions.setChecked(mPrefServiceBridge.isSearchSuggestEnabled());
-        mSearchSuggestions.setEnabled(!useSyncAndAllServices);
         mNetworkPredictions.setChecked(mPrefServiceBridge.getNetworkPredictionEnabled());
-        mNetworkPredictions.setEnabled(!useSyncAndAllServices);
         mNavigationError.setChecked(mPrefServiceBridge.isResolveNavigationErrorEnabled());
-        mNavigationError.setEnabled(!useSyncAndAllServices);
         mSafeBrowsing.setChecked(mPrefServiceBridge.isSafeBrowsingEnabled());
-        mSafeBrowsing.setEnabled(!useSyncAndAllServices);
         mSafeBrowsingReporting.setChecked(
                 mPrefServiceBridge.isSafeBrowsingExtendedReportingEnabled());
-        mSafeBrowsingReporting.setEnabled(!useSyncAndAllServices);
         mUsageAndCrashReporting.setChecked(
                 mPrivacyPrefManager.isUsageAndCrashReportingPermittedByUser());
-        mUsageAndCrashReporting.setEnabled(!useSyncAndAllServices);
         mUrlKeyedAnonymizedData.setChecked(
                 UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionEnabled());
-        mUrlKeyedAnonymizedData.setEnabled(!useSyncAndAllServices);
 
         if (mContextualSearch != null) {
             boolean isContextualSearchEnabled = !mPrefServiceBridge.isContextualSearchDisabled();
@@ -846,6 +475,31 @@ public class SyncAndServicesPreferences extends PreferenceFragment
                     ContextualSuggestionsEnabledStateUtils.getEnabledState() ? R.string.text_on
                                                                              : R.string.text_off);
         }
+    }
+
+    private void updateSyncPreferences() {
+        if (!mProfileSyncService.isEngineInitialized()
+                || !mProfileSyncService.isPassphraseRequiredForDecryption()) {
+            closeDialogIfOpen(FRAGMENT_ENTER_PASSPHRASE);
+        }
+
+        if (!ChromeSigninController.get().isSignedIn()) {
+            getPreferenceScreen().removePreference(mSyncCategory);
+            return;
+        }
+        getPreferenceScreen().addPreference(mSyncCategory);
+
+        mCurrentSyncError = getSyncError();
+        if (mCurrentSyncError == SyncError.NO_ERROR) {
+            mSyncCategory.removePreference(mSyncErrorCard);
+        } else {
+            String summary = getSyncErrorHint(mCurrentSyncError);
+            mSyncErrorCard.setSummary(summary);
+            mSyncCategory.addPreference(mSyncErrorCard);
+        }
+
+        mSyncRequested.setChecked(AndroidSyncSettings.get().isChromeSyncEnabled());
+        mSyncRequested.setEnabled(canDisableSync());
     }
 
     private ManagedPreferenceDelegate createManagedPreferenceDelegate() {
