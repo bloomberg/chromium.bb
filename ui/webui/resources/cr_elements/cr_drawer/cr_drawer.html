@@ -66,12 +66,15 @@
       .drawer-header {
         align-items: center;
         border-bottom: var(--cr-separator-line);
-        color: var(--cr-drawer-heading-color);
         display: flex;
         font-size: 123.08%;  /* go to 16px from 13px */
         min-height: 56px;
         outline: none;
         padding-inline-start: 24px;
+      }
+
+      :host-context([dark]) .drawer-header {
+        color: var(--cr-primary-text-color);
       }
 
       :host ::slotted(.drawer-content) {
