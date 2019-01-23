@@ -2244,6 +2244,24 @@ IN_PROC_BROWSER_TEST_F(WebAppPictureInPictureWindowControllerBrowserTest,
   EXPECT_EQ(
       expected_title,
       content::TitleWatcher(web_contents(), expected_title).WaitAndGetTitle());
+
+  // Show page and append a video with Auto Picture-in-Picture attribute.
+  web_contents()->WasShown();
+  expected_title = base::ASCIIToUTF16("visible");
+  EXPECT_EQ(
+      expected_title,
+      content::TitleWatcher(web_contents(), expected_title).WaitAndGetTitle());
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents(), "addHtmlVideoWithAutoPictureInPicture();", &result));
+  ASSERT_TRUE(result);
+
+  // Hide page and check that the html video is the video that enters
+  // Picture-in-Picture automatically.
+  web_contents()->WasHidden();
+  expected_title = base::ASCIIToUTF16("htmlVideo.enterpictureinpicture");
+  EXPECT_EQ(
+      expected_title,
+      content::TitleWatcher(web_contents(), expected_title).WaitAndGetTitle());
 }
 
 // Check that video does not leave Picture-in-Picture automatically when it

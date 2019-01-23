@@ -54,6 +54,20 @@
       .then(_ => { window.domAutomationController.send(true); })
       .catch(e => { window.domAutomationController.send(false); });
     }
+
+    function addHtmlVideoWithAutoPictureInPicture() {
+      document.body.insertAdjacentHTML('beforeend',
+        '<video id="htmlVideo" autopictureinpicture></video>');
+      htmlVideo.src = '/media/bigbuck.webm';
+
+      htmlVideo.play()
+      .then(_ => { window.domAutomationController.send(true); })
+      .catch(e => { window.domAutomationController.send(false); });
+
+      htmlVideo.addEventListener('enterpictureinpicture', () => {
+        document.title = 'htmlVideo.enterpictureinpicture';
+      });
+    }
   </script>
 </body>
 </html>

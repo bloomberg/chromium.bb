@@ -52,14 +52,6 @@ class PictureInPictureControllerImpl : public PictureInPictureController,
   Element* PictureInPictureElement() const;
   Element* PictureInPictureElement(TreeScope&) const;
 
-  // Add video element to the list of video elements for the associated document
-  // that are eligible to Auto Picture-in-Picture.
-  void AddToAutoPictureInPictureElementsList(HTMLVideoElement*);
-
-  // Remove video element from the list of video elements for the associated
-  // document that are eligible to Auto Picture-in-Picture.
-  void RemoveFromAutoPictureInPictureElementsList(HTMLVideoElement*);
-
   // Returns video element whose autoPictureInPicture attribute was set most
   // recently.
   HTMLVideoElement* AutoPictureInPictureElement() const;
@@ -68,6 +60,8 @@ class PictureInPictureControllerImpl : public PictureInPictureController,
   void EnterPictureInPicture(HTMLVideoElement*,
                              ScriptPromiseResolver*) override;
   void ExitPictureInPicture(HTMLVideoElement*, ScriptPromiseResolver*) override;
+  void AddToAutoPictureInPictureElementsList(HTMLVideoElement*) override;
+  void RemoveFromAutoPictureInPictureElementsList(HTMLVideoElement*) override;
   void SetPictureInPictureCustomControls(
       HTMLVideoElement*,
       const std::vector<PictureInPictureControlInfo>&) override;
