@@ -45,7 +45,7 @@ public class PendingIntentProvider {
                 PendingIntent.getActivity(context, requestCode, intent, flags), flags);
     }
 
-    private PendingIntentProvider(PendingIntent pendingIntent, int flags) {
+    public PendingIntentProvider(PendingIntent pendingIntent, int flags) {
         mPendingIntent = pendingIntent;
         mFlags = flags;
     }

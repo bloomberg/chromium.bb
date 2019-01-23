@@ -68,6 +68,23 @@ public class NotificationUmaTracker {
         int NUM_ENTRIES = 15;
     }
 
+    /*
+     * A list of notification action types, each maps to a notification button.
+     * To add a type to this list please update SystemNotificationActionType in enums.xml and make
+     * sure to keep this list in sync.  Additions should be treated as APPEND ONLY to keep the UMA
+     * metric semantics the same over time.
+     */
+    @IntDef({ActionType.UNKNOWN})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ActionType {
+        int UNKNOWN = -1;
+        // Pause button when an user download is in progress.
+        int DOWNLOAD_FILES_IN_PROGRESS_PAUSE = 0;
+        // Resume button when an user download is in progress.
+        int DOWNLOAD_FILES_IN_PROGRESS_RESUME = 1;
+        int NUM_ENTRIES = 2;
+    }
+
     private static final String LAST_SHOWN_NOTIFICATION_TYPE_KEY =
             "NotificationUmaTracker.LastShownNotificationType";
 
@@ -131,6 +148,21 @@ public class NotificationUmaTracker {
         new CachedMetrics
                 .EnumeratedHistogramSample(
                         "Mobile.SystemNotification.Dismiss", SystemNotificationType.NUM_ENTRIES)
+                .record(type);
+    }
+
+    /**
+     * Logs notification button click event.
+     * @param type Type of the notification action button.
+     */
+    public void onNotificationActionClick(@ActionType int type) {
+        if (type == ActionType.UNKNOWN) return;
+
+        // TODO(xingliu): This may not work if Android kill Chrome before native library is loaded.
+        // Cache data in Android shared preference and flush them to native when available.
+        new CachedMetrics
+                .EnumeratedHistogramSample(
+                        "Mobile.SystemNotification.Action.Click", ActionType.NUM_ENTRIES)
                 .record(type);
     }
 

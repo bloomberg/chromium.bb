@@ -47,9 +47,17 @@ public interface ChromeNotificationBuilder {
 
     ChromeNotificationBuilder setShowWhen(boolean showWhen);
 
+    @Deprecated
     ChromeNotificationBuilder addAction(int icon, CharSequence title, PendingIntent intent);
 
+    ChromeNotificationBuilder addAction(int icon, CharSequence title, PendingIntentProvider intent,
+            @NotificationUmaTracker.ActionType int actionType);
+
+    @Deprecated
     ChromeNotificationBuilder addAction(Notification.Action action);
+
+    ChromeNotificationBuilder addAction(Notification.Action action, int flags,
+            @NotificationUmaTracker.ActionType int actionType);
 
     @Deprecated
     ChromeNotificationBuilder setDeleteIntent(PendingIntent intent);
