@@ -8,15 +8,11 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
 class KeyedService;
 class LargeIconCache;
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}
 
 namespace ios {
 class ChromeBrowserState;
@@ -32,7 +28,7 @@ class IOSChromeLargeIconCacheFactory : public BrowserStateKeyedServiceFactory {
   static IOSChromeLargeIconCacheFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<IOSChromeLargeIconCacheFactory>;
+  friend class base::NoDestructor<IOSChromeLargeIconCacheFactory>;
 
   IOSChromeLargeIconCacheFactory();
   ~IOSChromeLargeIconCacheFactory() override;

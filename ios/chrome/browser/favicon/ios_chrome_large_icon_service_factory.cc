@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/favicon/core/large_icon_service_impl.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/image_fetcher/ios/ios_image_decoder_impl.h"
@@ -39,7 +39,8 @@ favicon::LargeIconService* IOSChromeLargeIconServiceFactory::GetForBrowserState(
 // static
 IOSChromeLargeIconServiceFactory*
 IOSChromeLargeIconServiceFactory::GetInstance() {
-  return base::Singleton<IOSChromeLargeIconServiceFactory>::get();
+  static base::NoDestructor<IOSChromeLargeIconServiceFactory> instance;
+  return instance.get();
 }
 
 // static
