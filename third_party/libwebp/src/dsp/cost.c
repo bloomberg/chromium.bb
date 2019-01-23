@@ -377,7 +377,6 @@ VP8SetResidualCoeffsFunc VP8SetResidualCoeffs;
 extern void VP8EncDspCostInitMIPS32(void);
 extern void VP8EncDspCostInitMIPSdspR2(void);
 extern void VP8EncDspCostInitSSE2(void);
-extern void VP8EncDspCostInitNEON(void);
 
 WEBP_DSP_INIT_FUNC(VP8EncDspCostInit) {
   VP8GetResidualCost = GetResidualCost_C;
@@ -398,11 +397,6 @@ WEBP_DSP_INIT_FUNC(VP8EncDspCostInit) {
 #if defined(WEBP_USE_SSE2)
     if (VP8GetCPUInfo(kSSE2)) {
       VP8EncDspCostInitSSE2();
-    }
-#endif
-#if defined(WEBP_USE_NEON)
-    if (VP8GetCPUInfo(kNEON)) {
-      VP8EncDspCostInitNEON();
     }
 #endif
   }
