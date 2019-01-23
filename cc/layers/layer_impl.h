@@ -167,9 +167,7 @@ class CC_EXPORT LayerImpl {
 
   // True if either the layer draws content or has been marked as hit testable
   // without draws_content.
-  bool should_hit_test() const {
-    return draws_content_ || hit_testable_without_draws_content_;
-  }
+  bool ShouldHitTest() const;
 
   LayerImplTestProperties* test_properties() {
     if (!test_properties_)

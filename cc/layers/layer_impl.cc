@@ -605,6 +605,15 @@ void LayerImpl::SetHitTestableWithoutDrawsContent(bool should_hit_test) {
   NoteLayerPropertyChanged();
 }
 
+bool LayerImpl::ShouldHitTest() const {
+  bool should_hit_test = draws_content_;
+  if (GetEffectTree().Node(effect_tree_index()))
+    should_hit_test &=
+        !GetEffectTree().Node(effect_tree_index())->subtree_hidden;
+  should_hit_test |= hit_testable_without_draws_content_;
+  return should_hit_test;
+}
+
 void LayerImpl::SetBackgroundColor(SkColor background_color) {
   if (background_color_ == background_color)
     return;

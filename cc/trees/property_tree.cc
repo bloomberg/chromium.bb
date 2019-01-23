@@ -776,6 +776,12 @@ void EffectTree::UpdateOpacities(EffectNode* node, EffectNode* parent_node) {
     node->screen_space_opacity *= parent_node->screen_space_opacity;
 }
 
+void EffectTree::UpdateSubtreeHidden(EffectNode* node,
+                                     EffectNode* parent_node) {
+  if (parent_node)
+    node->subtree_hidden |= parent_node->subtree_hidden;
+}
+
 void EffectTree::UpdateIsDrawn(EffectNode* node, EffectNode* parent_node) {
   // Nodes that have screen space opacity 0 are hidden. So they are not drawn.
   // Exceptions:
@@ -900,6 +906,7 @@ void EffectTree::UpdateEffects(int id) {
   EffectNode* parent_node = parent(node);
 
   UpdateOpacities(node, parent_node);
+  UpdateSubtreeHidden(node, parent_node);
   UpdateIsDrawn(node, parent_node);
   UpdateEffectChanged(node, parent_node);
   UpdateBackfaceVisibility(node, parent_node);
