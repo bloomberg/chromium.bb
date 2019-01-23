@@ -13,13 +13,18 @@
 
 #include "net/base/completion_once_callback.h"
 #include "net/base/completion_repeating_callback.h"
+#include "net/base/datagram_buffer.h"
+#include "net/base/network_change_notifier.h"
 #include "net/dns/mdns_client_impl.h"
 #include "net/log/net_log_with_source.h"
+#include "net/socket/datagram_client_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace net {
 
 class IPAddress;
+class SocketTag;
+struct NetworkTrafficAnnotationTag;
 
 class MockMDnsDatagramServerSocket : public DatagramServerSocket {
  public:
@@ -29,8 +34,9 @@ class MockMDnsDatagramServerSocket : public DatagramServerSocket {
   // DatagramServerSocket implementation:
   MOCK_METHOD1(Listen, int(const IPEndPoint& address));
 
-  // GMock cannot handle move-only types like CompletionOnceCallback, so it
-  // needs to be converted into the copyable type CompletionRepeatingCallback.
+  // GMock cannot handle move-only types like CompletionOnceCallback, so we use
+  // delegate methods RecvFromInternal and SendToInternal below as the
+  // respectively mocked methods for RecvFrom and SendTo.
   int RecvFrom(IOBuffer* buffer,
                int size,
                IPEndPoint* address,
@@ -40,7 +46,7 @@ class MockMDnsDatagramServerSocket : public DatagramServerSocket {
                int(IOBuffer* buffer,
                    int size,
                    IPEndPoint* address,
-                   CompletionRepeatingCallback callback));
+                   CompletionOnceCallback* callback));
 
   int SendTo(IOBuffer* buf,
              int buf_len,
@@ -50,7 +56,7 @@ class MockMDnsDatagramServerSocket : public DatagramServerSocket {
   MOCK_METHOD3(SendToInternal,
                int(const std::string& packet,
                    const std::string address,
-                   CompletionRepeatingCallback callback));
+                   CompletionOnceCallback* callback));
 
   MOCK_METHOD1(SetReceiveBufferSize, int(int32_t size));
   MOCK_METHOD1(SetSendBufferSize, int(int32_t size));
@@ -87,16 +93,74 @@ class MockMDnsDatagramServerSocket : public DatagramServerSocket {
   int HandleRecvNow(IOBuffer* buffer,
                     int size,
                     IPEndPoint* address,
-                    CompletionRepeatingCallback callback);
+                    CompletionOnceCallback* callback);
 
   int HandleRecvLater(IOBuffer* buffer,
                       int size,
                       IPEndPoint* address,
-                      CompletionRepeatingCallback callback);
+                      CompletionOnceCallback* callback);
 
  private:
   std::string response_packet_;
   IPEndPoint local_address_;
+};
+
+class MockMDnsDatagramClientSocket : public DatagramClientSocket {
+ public:
+  MockMDnsDatagramClientSocket();
+  ~MockMDnsDatagramClientSocket() override;
+
+  // DatagramSocket implementation:
+  MOCK_METHOD0(Close, void());
+  MOCK_CONST_METHOD1(GetPeerAddress, int(IPEndPoint* address));
+  MOCK_CONST_METHOD1(GetLocalAddress, int(IPEndPoint* address));
+  MOCK_METHOD0(UseNonBlockingIO, void());
+  MOCK_METHOD0(SetDoNotFragment, int());
+  MOCK_METHOD1(SetMsgConfirm, void(bool confirm));
+  MOCK_CONST_METHOD0(NetLog, const NetLogWithSource&());
+
+  // Socket implementation:
+  MOCK_METHOD3(Read, int(IOBuffer*, int, CompletionOnceCallback));
+  MOCK_METHOD3(ReadIfReady, int(IOBuffer*, int, CompletionOnceCallback));
+  MOCK_METHOD0(CancelReadIfReady, int());
+  // GMock cannot handle move-only types like CompletionOnceCallback, so we use
+  // a delegate method WriteInternal below as the mocked method for Write.
+  int Write(IOBuffer* buf,
+            int buf_len,
+            CompletionOnceCallback callback,
+            const NetworkTrafficAnnotationTag& traffic_annotation) override;
+  MOCK_METHOD3(WriteInternal,
+               int(const std::string,
+                   CompletionOnceCallback*,
+                   const NetworkTrafficAnnotationTag&));
+  MOCK_METHOD1(SetReceiveBufferSize, int(int32_t));
+  MOCK_METHOD1(SetSendBufferSize, int(int32_t));
+
+  // DatagramClientSocket implementation:
+  MOCK_METHOD1(Connect, int(const IPEndPoint& address));
+  MOCK_METHOD2(ConnectUsingNetwork,
+               int(NetworkChangeNotifier::NetworkHandle, const IPEndPoint&));
+  MOCK_METHOD1(ConnectUsingDefaultNetwork, int(const IPEndPoint&));
+
+  MOCK_CONST_METHOD0(GetBoundNetwork, NetworkChangeNotifier::NetworkHandle());
+  MOCK_METHOD1(ApplySocketTag, void(const SocketTag&));
+  MOCK_METHOD3(WriteAsync,
+               int(DatagramBuffers,
+                   CompletionOnceCallback,
+                   const NetworkTrafficAnnotationTag&));
+  MOCK_METHOD4(WriteAsync,
+               int(const char*,
+                   size_t,
+                   CompletionOnceCallback,
+                   const NetworkTrafficAnnotationTag&));
+  MOCK_METHOD0(GetUnwrittenBuffers, DatagramBuffers());
+  MOCK_METHOD1(SetWriteAsyncEnabled, void(bool));
+  MOCK_METHOD1(SetMaxPacketSize, void(size_t));
+  MOCK_METHOD0(WriteAsyncEnabled, bool());
+  MOCK_METHOD1(SetWriteMultiCoreEnabled, void(bool));
+  MOCK_METHOD1(SetSendmmsgEnabled, void(bool));
+  MOCK_METHOD1(SetWriteBatchingActive, void(bool));
+  MOCK_METHOD1(SetMulticastInterface, int(uint32_t));
 };
 
 class MockMDnsSocketFactory : public MDnsSocketFactory {
@@ -104,32 +168,33 @@ class MockMDnsSocketFactory : public MDnsSocketFactory {
   MockMDnsSocketFactory();
   ~MockMDnsSocketFactory() override;
 
-  void CreateSockets(
-      std::vector<std::unique_ptr<DatagramServerSocket>>* sockets) override;
+  void CreateSocketPairs(
+      std::vector<MDnsSendRecvSocketPair>* socket_pairs) override;
 
   void SimulateReceive(const uint8_t* packet, int size);
 
   MOCK_METHOD1(OnSendTo, void(const std::string&));
 
  private:
-  int SendToInternal(const std::string& packet,
-                     const std::string& address,
-                     CompletionOnceCallback callback);
-
+  // The following two methods are the default implementations of
+  // MockMDnsDatagramClientSocket::WriteInternal and
+  // MockMDnsDatagramServerSocket::RecvFromInternal respectively.
+  int WriteInternal(const std::string& packet,
+                    CompletionOnceCallback* callback,
+                    const NetworkTrafficAnnotationTag& traffic_annotation);
   // The latest receive callback is always saved, since the MDnsConnection
   // does not care which socket a packet is received on.
   int RecvFromInternal(IOBuffer* buffer,
                        int size,
                        IPEndPoint* address,
-                       CompletionRepeatingCallback callback);
+                       CompletionOnceCallback* callback);
 
-  void CreateSocket(
-      AddressFamily address_family,
-      std::vector<std::unique_ptr<DatagramServerSocket>>* sockets);
+  void CreateSocketPair(AddressFamily address_family,
+                        std::vector<MDnsSendRecvSocketPair>* socket_pairs);
 
   scoped_refptr<IOBuffer> recv_buffer_;
   int recv_buffer_size_;
-  CompletionRepeatingCallback recv_callback_;
+  CompletionOnceCallback recv_callback_;
 };
 
 }  // namespace net

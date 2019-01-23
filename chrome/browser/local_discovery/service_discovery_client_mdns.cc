@@ -21,6 +21,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
+#include "net/socket/datagram_client_socket.h"
 #include "net/socket/datagram_server_socket.h"
 
 namespace net {
@@ -131,15 +132,17 @@ class SocketFactory : public net::MDnsSocketFactory {
       : interfaces_(interfaces), net_log_(net_log) {}
 
   // net::MDnsSocketFactory implementation:
-  void CreateSockets(std::vector<std::unique_ptr<net::DatagramServerSocket>>*
-                         sockets) override {
+  void CreateSocketPairs(
+      std::vector<net::MDnsSendRecvSocketPair>* socket_pairs) override {
     for (size_t i = 0; i < interfaces_.size(); ++i) {
       DCHECK(interfaces_[i].second == net::ADDRESS_FAMILY_IPV4 ||
              interfaces_[i].second == net::ADDRESS_FAMILY_IPV6);
-      std::unique_ptr<net::DatagramServerSocket> socket(CreateAndBindMDnsSocket(
+      net::MDnsSendRecvSocketPair socket_pair(CreateAndBindMDnsSocketPair(
           interfaces_[i].second, interfaces_[i].first, net_log_));
-      if (socket)
-        sockets->push_back(std::move(socket));
+      const auto& send_socket = socket_pair.first;
+      const auto& recv_socket = socket_pair.second;
+      if (send_socket && recv_socket)
+        socket_pairs->push_back(std::move(socket_pair));
     }
   }
 

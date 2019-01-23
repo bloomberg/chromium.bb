@@ -32,6 +32,7 @@
 #include "net/dns/mdns_client.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/datagram_server_socket.h"
+#include "net/socket/fuzzed_datagram_client_socket.h"
 
 namespace net {
 
@@ -282,12 +283,18 @@ class FuzzedMdnsSocketFactory : public MDnsSocketFactory {
   explicit FuzzedMdnsSocketFactory(base::FuzzedDataProvider* data_provider)
       : data_provider_(data_provider) {}
 
-  void CreateSockets(
-      std::vector<std::unique_ptr<DatagramServerSocket>>* sockets) override {
-    int num_sockets = data_provider_->ConsumeIntegralInRange(0, 4);
-    for (int i = 0; i < num_sockets; ++i)
-      sockets->push_back(std::make_unique<FuzzedMdnsSocket>(data_provider_));
-    MDnsSocketFactory::CreateDefault()->CreateSockets(sockets);
+  void CreateSocketPairs(
+      std::vector<MDnsSendRecvSocketPair>* socket_pairs) override {
+    // TODO(qingsi): Fuzz with 0 to 4 socket pairs after HostResolverImp can
+    // handle the false return from MDnsConnection::Init with zero socket pair.
+    int num_socket_pairs = data_provider_->ConsumeIntegralInRange(1, 4);
+    for (int i = 0; i < num_socket_pairs; ++i) {
+      auto send_socket =
+          std::make_unique<FuzzedDatagramClientSocket>(data_provider_);
+      auto recv_socket = std::make_unique<FuzzedMdnsSocket>(data_provider_);
+      socket_pairs->push_back(
+          std::make_pair(std::move(send_socket), std::move(recv_socket)));
+    }
   }
 
  private:

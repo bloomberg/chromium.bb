@@ -39,39 +39,75 @@ namespace {
 const double kListenerRefreshRatio1 = 0.85;
 const double kListenerRefreshRatio2 = 0.95;
 
+constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("mdns_client", R"(
+        semantics {
+          sender: "mDNS Client"
+          description:
+            "mDNS client implements a multicast DNS querier as defined in RFC "
+            "6762."
+          trigger:
+            "Any network request that may require mDNS resolution, including "
+            "navigations and service discovery."
+          data:
+            "Domain name with the TLD .local that needs resolution."
+          destination: OTHER
+          destination_other:
+            "The connection is made to the mDNS multicast group within the "
+            "subnet where the user resides."
+          }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "No setting for this feature."
+          policy_exception_justification:
+            "This feature is enabled on most platforms and is core networking "
+            "functionality on local networks."
+        })");
+
 }  // namespace
 
-void MDnsSocketFactoryImpl::CreateSockets(
-    std::vector<std::unique_ptr<DatagramServerSocket>>* sockets) {
+void MDnsSocketFactoryImpl::CreateSocketPairs(
+    std::vector<MDnsSendRecvSocketPair>* socket_pairs) {
   InterfaceIndexFamilyList interfaces(GetMDnsInterfacesToBind());
   for (size_t i = 0; i < interfaces.size(); ++i) {
     DCHECK(interfaces[i].second == ADDRESS_FAMILY_IPV4 ||
            interfaces[i].second == ADDRESS_FAMILY_IPV6);
-    std::unique_ptr<DatagramServerSocket> socket(CreateAndBindMDnsSocket(
+    MDnsSendRecvSocketPair socket_pair(CreateAndBindMDnsSocketPair(
         interfaces[i].second, interfaces[i].first, net_log_));
-    if (socket)
-      sockets->push_back(std::move(socket));
+    const auto& send_socket = socket_pair.first;
+    const auto& recv_socket = socket_pair.second;
+    if (send_socket && recv_socket)
+      socket_pairs->push_back(std::move(socket_pair));
   }
 }
 
-MDnsConnection::SocketHandler::SocketHandler(
-    std::unique_ptr<DatagramServerSocket> socket,
-    MDnsConnection* connection)
-    : socket_(std::move(socket)),
+MDnsConnection::SocketHandler::SocketHandler(MDnsSendRecvSocketPair socket_pair,
+                                             MDnsConnection* connection)
+    : send_socket_(std::move(socket_pair.first)),
+      recv_socket_(std::move(socket_pair.second)),
       connection_(connection),
       response_(dns_protocol::kMaxMulticastSize),
-      send_in_progress_(false) {}
+      send_in_progress_(false) {
+  DCHECK(send_socket_);
+  DCHECK(recv_socket_);
+}
 
 MDnsConnection::SocketHandler::~SocketHandler() = default;
 
 int MDnsConnection::SocketHandler::Start() {
   IPEndPoint end_point;
-  int rv = socket_->GetLocalAddress(&end_point);
+  int rv = recv_socket_->GetLocalAddress(&end_point);
   if (rv != OK)
     return rv;
-  DCHECK(end_point.GetFamily() == ADDRESS_FAMILY_IPV4 ||
-         end_point.GetFamily() == ADDRESS_FAMILY_IPV6);
-  multicast_addr_ = dns_util::GetMdnsGroupEndPoint(end_point.GetFamily());
+  const AddressFamily af = end_point.GetFamily();
+#ifdef DEBUG
+  DCHECK(af == net::ADDRESS_FAMILY_IPV4 || af == net::ADDRESS_FAMILY_IPV6);
+  net::IPEndPoint send_socket_end_point;
+  DCHECK(send_socket_->GetLocalAddress(&send_socket_end_point));
+  DCHECK_EQ(af, send_socket_end_point.GetFamily());
+#endif
+  multicast_addr_ = dns_util::GetMdnsGroupEndPoint(af);
   return DoLoop(0);
 }
 
@@ -80,7 +116,7 @@ int MDnsConnection::SocketHandler::DoLoop(int rv) {
     if (rv > 0)
       connection_->OnDatagramReceived(&response_, recv_addr_, rv);
 
-    rv = socket_->RecvFrom(
+    rv = recv_socket_->RecvFrom(
         response_.io_buffer(), response_.io_buffer_size(), &recv_addr_,
         base::Bind(&MDnsConnection::SocketHandler::OnDatagramReceived,
                    base::Unretained(this)));
@@ -106,11 +142,11 @@ void MDnsConnection::SocketHandler::Send(const scoped_refptr<IOBuffer>& buffer,
     send_queue_.push(std::make_pair(buffer, size));
     return;
   }
-  int rv = socket_->SendTo(buffer.get(),
-                           size,
-                           multicast_addr_,
-                           base::Bind(&MDnsConnection::SocketHandler::SendDone,
-                                      base::Unretained(this)));
+  int rv =
+      send_socket_->Write(buffer.get(), size,
+                          base::Bind(&MDnsConnection::SocketHandler::SendDone,
+                                     base::Unretained(this)),
+                          kTrafficAnnotation);
   if (rv == ERR_IO_PENDING) {
     send_in_progress_ = true;
   } else if (rv < OK) {
@@ -137,12 +173,12 @@ MDnsConnection::MDnsConnection(MDnsConnection::Delegate* delegate)
 MDnsConnection::~MDnsConnection() = default;
 
 bool MDnsConnection::Init(MDnsSocketFactory* socket_factory) {
-  std::vector<std::unique_ptr<DatagramServerSocket>> sockets;
-  socket_factory->CreateSockets(&sockets);
+  std::vector<MDnsSendRecvSocketPair> socket_pairs;
+  socket_factory->CreateSocketPairs(&socket_pairs);
 
-  for (std::unique_ptr<DatagramServerSocket>& socket : sockets) {
+  for (auto& send_recv_sockets : socket_pairs) {
     socket_handlers_.push_back(std::make_unique<MDnsConnection::SocketHandler>(
-        std::move(socket), this));
+        std::move(send_recv_sockets), this));
   }
 
   // All unbound sockets need to be bound before processing untrusted input.
