@@ -30,12 +30,13 @@ class GPU_EXPORT GpuMemoryBufferImplDXGI : public GpuMemoryBufferImpl {
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
-      const DestructionCallback& callback);
+      DestructionCallback callback);
 
-  static base::Closure AllocateForTesting(const gfx::Size& size,
-                                          gfx::BufferFormat format,
-                                          gfx::BufferUsage usage,
-                                          gfx::GpuMemoryBufferHandle* handle);
+  static base::OnceClosure AllocateForTesting(
+      const gfx::Size& size,
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage,
+      gfx::GpuMemoryBufferHandle* handle);
 
   bool Map() override;
   void* memory(size_t plane) override;
@@ -48,7 +49,7 @@ class GPU_EXPORT GpuMemoryBufferImplDXGI : public GpuMemoryBufferImpl {
   GpuMemoryBufferImplDXGI(gfx::GpuMemoryBufferId id,
                           const gfx::Size& size,
                           gfx::BufferFormat format,
-                          const DestructionCallback& callback,
+                          DestructionCallback callback,
                           base::win::ScopedHandle dxgi_handle);
 
   base::win::ScopedHandle dxgi_handle_;
