@@ -14,13 +14,11 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/strings/grit/components_strings.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/experimental_flags.h"
-#include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/constants.h"
@@ -295,8 +293,8 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
   std::string lastSignedInAccountId =
       browserState->GetPrefs()->GetString(prefs::kGoogleServicesLastAccountId);
   std::string currentSignedInAccountId =
-      ios::AccountTrackerServiceFactory::GetForBrowserState(browserState)
-          ->PickAccountIdForAccount(
+      IdentityManagerFactory::GetForBrowserState(browserState)
+          ->LegacyPickAccountIdForAccount(
               base::SysNSStringToUTF8([identity gaiaID]),
               base::SysNSStringToUTF8([identity userEmail]));
   if (!lastSignedInAccountId.empty()) {
