@@ -555,7 +555,9 @@ proto_library("sqlite3_lpm_fuzzer_input") {
 }
 
 # Generates a good corpus for the sqlite_lpm_fuzzer
-if (use_fuzzing_engine) {
+# Don't build this tool on Windows since it uses a POSIX-only API and because it
+# only needs to be used on devs' machines.
+if (use_fuzzing_engine && !is_win) {
   executable("sqlite3_lpm_corpus_gen") {
     sources = [
       "fuzz/sql_generate_corpus.cc",
