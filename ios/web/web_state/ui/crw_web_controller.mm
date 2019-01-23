@@ -4765,6 +4765,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return;
   }
 
+  _webStateImpl->GetNavigationManagerImpl()
+      .OnRendererInitiatedNavigationStarted(webViewURL);
+
   std::unique_ptr<web::NavigationContextImpl> navigationContext =
       [self registerLoadRequestForURL:webViewURL
                sameDocumentNavigation:NO

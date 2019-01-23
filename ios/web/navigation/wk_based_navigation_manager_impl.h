@@ -94,6 +94,7 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   void InitializeSession() override;
   void OnNavigationItemsPruned(size_t pruned_item_count) override;
   void OnNavigationItemCommitted() override;
+  void OnRendererInitiatedNavigationStarted(const GURL& url) override;
   void DetachFromWebView() override;
   CRWSessionController* GetSessionController() const override;
   void AddTransientItem(const GURL& url) override;
@@ -274,7 +275,8 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   std::unique_ptr<base::ElapsedTimer> restoration_timer_;
 
   // The active navigation entry in the restored session. GetVisibleItem()
-  // returns this item when |is_restore_session_in_progress_| is true so that
+  // returns this item in the window between |is_restore_session_in_progress_|
+  // becomes true until the first post-restore navigation is finished, so that
   // clients of this navigation manager gets sane values for visible title and
   // URL.
   std::unique_ptr<NavigationItem> restored_visible_item_;

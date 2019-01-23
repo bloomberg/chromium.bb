@@ -197,9 +197,7 @@ class NavigationManager {
                        std::vector<std::unique_ptr<NavigationItem>> items) = 0;
 
   // Returns true after session restoration has started, until the first
-  // post-restore navigation is finished. Returns true when first post-restore
-  // navigation is started, even though technically session restoration is
-  // complete.
+  // post-restore navigation is started.
   virtual bool IsRestoreSessionInProgress() const = 0;
 
   // Registers a callback to be run when session restoration is completed.

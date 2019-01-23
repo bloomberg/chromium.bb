@@ -227,37 +227,44 @@ NavigationItem* NavigationManagerImpl::GetLastCommittedItem() const {
   // GetLastCommittedItem() should return null while session restoration is in
   // progress and real item after the first post-restore navigation is
   // finished. IsRestoreSessionInProgress(), will return true until the first
-  // post-restore is finished.
+  // post-restore is started.
   if (IsRestoreSessionInProgress())
     return nullptr;
 
-  return GetLastCommittedItemInCurrentOrRestoredSession();
+  NavigationItem* result = GetLastCommittedItemInCurrentOrRestoredSession();
+  if (!result || wk_navigation_util::IsRestoreSessionUrl(result->GetURL())) {
+    // Session restoration has completed, but the first post-restore navigation
+    // has not finished yet, so there is no committed URLs in the navigation
+    // stack.
+    return nullptr;
+  }
+
+  return result;
 }
 
 int NavigationManagerImpl::GetLastCommittedItemIndex() const {
   // GetLastCommittedItemIndex() should return -1 while session restoration is
   // in progress and real item after the first post-restore navigation is
   // finished. IsRestoreSessionInProgress(), will return true until the first
-  // post-restore is finished.
+  // post-restore is started.
   if (IsRestoreSessionInProgress())
     return -1;
+
+  NavigationItem* item = GetLastCommittedItemInCurrentOrRestoredSession();
+  if (!item || wk_navigation_util::IsRestoreSessionUrl(item->GetURL())) {
+    // Session restoration has completed, but the first post-restore
+    // navigation has not finished yet, so there is no committed URLs in the
+    // navigation stack.
+    return -1;
+  }
 
   return GetLastCommittedItemIndexInCurrentOrRestoredSession();
 }
 
 NavigationItem* NavigationManagerImpl::GetPendingItem() const {
-  NavigationItem* item = GetPendingItemInCurrentOrRestoredSession();
-
-  // GetPendingItem() should return null while session restoration is in
-  // progress and real item when the first post-restore navigation has started.
-  // It's not possible to rely on IsRestoreSessionInProgress(), because this
-  // method may return true until the first post-restore is finished, hence
-  // this code relies on actual navigation URL to determine if restoration is
-  // complete.
-  if (item && wk_navigation_util::IsRestoreSessionUrl(item->GetURL()))
+  if (IsRestoreSessionInProgress())
     return nullptr;
-
-  return item;
+  return GetPendingItemInCurrentOrRestoredSession();
 }
 
 NavigationItem* NavigationManagerImpl::GetTransientItem() const {

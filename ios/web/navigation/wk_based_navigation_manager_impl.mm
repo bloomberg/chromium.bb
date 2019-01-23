@@ -85,10 +85,21 @@ void WKBasedNavigationManagerImpl::DetachFromWebView() {
 
 void WKBasedNavigationManagerImpl::OnNavigationItemCommitted() {
   NavigationItem* item = GetLastCommittedItemInCurrentOrRestoredSession();
-  if (!wk_navigation_util::IsRestoreSessionUrl(item->GetURL()) &&
-      is_restore_session_in_progress_) {
-    is_restore_session_in_progress_ = false;
+  DCHECK(item);
+  delegate_->OnNavigationItemCommitted(item);
+
+  if (!wk_navigation_util::IsRestoreSessionUrl(item->GetURL())) {
     restored_visible_item_.reset();
+  }
+}
+
+void WKBasedNavigationManagerImpl::OnRendererInitiatedNavigationStarted(
+    const GURL& url) {
+  if (!wk_navigation_util::IsRestoreSessionUrl(url) &&
+      is_restore_session_in_progress_) {
+    // Session restoration navigations are rendered-initiated.
+
+    is_restore_session_in_progress_ = false;
 
     UMA_HISTOGRAM_TIMES(kRestoreNavigationTime, restoration_timer_->Elapsed());
     restoration_timer_.reset();
@@ -100,8 +111,6 @@ void WKBasedNavigationManagerImpl::OnNavigationItemCommitted() {
 
     LoadIfNecessary();
   }
-
-  delegate_->OnNavigationItemCommitted(item);
 }
 
 CRWSessionController* WKBasedNavigationManagerImpl::GetSessionController()
@@ -299,7 +308,7 @@ WebState* WKBasedNavigationManagerImpl::GetWebState() const {
 }
 
 NavigationItem* WKBasedNavigationManagerImpl::GetVisibleItem() const {
-  if (is_restore_session_in_progress_)
+  if (is_restore_session_in_progress_ || restored_visible_item_)
     return restored_visible_item_.get();
 
   NavigationItem* transient_item = GetTransientItem();
