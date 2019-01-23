@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -11,6 +12,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselCoordinator;
+import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetails;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestCoordinator;
@@ -81,8 +83,8 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
                 mActivity, mBottomBarCoordinator.getView(), mModel.getHeaderModel());
         mCarouselCoordinator = new AssistantCarouselCoordinator(mActivity,
                 mModel.getCarouselModel(), mBottomBarCoordinator::onChildVisibilityChanged);
-        mDetailsCoordinator = new AssistantDetailsCoordinator(
-                mActivity, mBottomBarCoordinator::onChildVisibilityChanged);
+        mDetailsCoordinator = new AssistantDetailsCoordinator(mActivity, mModel.getDetailsModel(),
+                mBottomBarCoordinator::onChildVisibilityChanged);
         mPaymentRequestCoordinator = new AssistantPaymentRequestCoordinator(
                 mActivity, mBottomBarCoordinator::onChildVisibilityChanged);
         mKeyboardCoordinator = new AssistantKeyboardCoordinator(activity);
@@ -93,10 +95,8 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
         mBottomBarCoordinator.setPaymentRequestView(mPaymentRequestCoordinator.getView());
         mBottomBarCoordinator.setCarouselView(mCarouselCoordinator.getView());
 
-        // Details, PR and carousel are initially hidden.
-        mDetailsCoordinator.setVisible(false);
+        // PR is initially hidden.
         mPaymentRequestCoordinator.setVisible(false);
-        mCarouselCoordinator.setVisible(false);
 
         showAssistantView();
     }
@@ -124,7 +124,7 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
 
         // Hide everything except header.
         mOverlayCoordinator.hide();
-        mDetailsCoordinator.setVisible(false);
+        mModel.getDetailsModel().clearDetails();
         mPaymentRequestCoordinator.setVisible(false);
         mModel.getCarouselModel().clearChips();
 
@@ -260,11 +260,10 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
     /**
      * Show the Chrome feedback form.
      */
-    public void showFeedback(String debugContext) {
+    public void showFeedback(String debugContext, @Nullable AssistantDetails details) {
         HelpAndFeedback.getInstance(mActivity).showFeedback(mActivity, Profile.getLastUsedProfile(),
                 mActivity.getActivityTab().getUrl(), FEEDBACK_CATEGORY_TAG,
-                FeedbackContext.buildContextString(mActivity, debugContext,
-                        mDetailsCoordinator.getCurrentDetails(),
+                FeedbackContext.buildContextString(mActivity, debugContext, details,
                         mHeaderCoordinator.getStatusMessage(), 4));
     }
 

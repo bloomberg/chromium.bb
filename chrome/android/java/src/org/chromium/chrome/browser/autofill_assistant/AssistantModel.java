@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.autofill_assistant;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselModel;
+import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsModel;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
 
 /**
@@ -15,11 +16,17 @@ import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderMode
 @JNINamespace("autofill_assistant")
 class AssistantModel {
     private final AssistantHeaderModel mHeaderModel = new AssistantHeaderModel();
+    private final AssistantDetailsModel mDetailsModel = new AssistantDetailsModel();
     private final AssistantCarouselModel mCarouselModel = new AssistantCarouselModel();
 
     @CalledByNative
     public AssistantHeaderModel getHeaderModel() {
         return mHeaderModel;
+    }
+
+    @CalledByNative
+    public AssistantDetailsModel getDetailsModel() {
+        return mDetailsModel;
     }
 
     @CalledByNative
