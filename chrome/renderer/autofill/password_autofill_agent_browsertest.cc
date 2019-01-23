@@ -833,15 +833,7 @@ TEST_F(PasswordAutofillAgentTest,
 // Fill username and password fields when username field contains a prefilled
 // value that matches the list of known possible prefilled values usually used
 // as placeholders.
-// TODO(crbug.com/855383): Leaks under ASAN.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_AutocompleteForPrefilledUsernameValue \
-  DISABLED_AutocompleteForPrefilledUsernameValue
-#else
-#define MAYBE_AutocompleteForPrefilledUsernameValue \
-  AutocompleteForPrefilledUsernameValue
-#endif
-TEST_F(PasswordAutofillAgentTest, MAYBE_AutocompleteForPrefilledUsernameValue) {
+TEST_F(PasswordAutofillAgentTest, AutocompleteForPrefilledUsernameValue) {
   // Set the username element to a value from the prefilled values list.
   // Comparison should be insensitive to leading and trailing whitespaces.
   username_element_.SetValue(
@@ -1270,13 +1262,7 @@ TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_Redirection) {
 
 // Tests that a password will only be filled as a suggested and will not be
 // accessible by the DOM until a user gesture has occurred.
-// TODO(crbug.com/855383): Leaks under ASAN.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_GestureRequiredTest DISABLED_GestureRequiredTest
-#else
-#define MAYBE_GestureRequiredTest GestureRequiredTest
-#endif
-TEST_F(PasswordAutofillAgentTest, MAYBE_GestureRequiredTest) {
+TEST_F(PasswordAutofillAgentTest, GestureRequiredTest) {
   // Trigger the initial autocomplete.
   SimulateOnFillPasswordForm(fill_data_);
 
@@ -1304,16 +1290,8 @@ TEST_F(PasswordAutofillAgentTest, NoDOMActivationTest) {
 
 // Verifies that password autofill triggers events in JavaScript for forms that
 // are filled on page load.
-// TODO(crbug.com/855383): Leaks under ASAN.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_PasswordAutofillTriggersOnChangeEventsOnLoad \
-  DISABLED_PasswordAutofillTriggersOnChangeEventsOnLoad
-#else
-#define MAYBE_PasswordAutofillTriggersOnChangeEventsOnLoad \
-  PasswordAutofillTriggersOnChangeEventsOnLoad
-#endif
 TEST_F(PasswordAutofillAgentTest,
-       MAYBE_PasswordAutofillTriggersOnChangeEventsOnLoad) {
+       PasswordAutofillTriggersOnChangeEventsOnLoad) {
   std::vector<base::string16> username_event_checkers;
   std::vector<base::string16> password_event_checkers;
   std::string events_registration_script =
@@ -1725,14 +1703,7 @@ TEST_F(PasswordAutofillAgentTest, FillIntoFocusedReadonlyTextField) {
 }
 
 // Tests that |FillIntoFocusedField| properly fills user-provided credentials.
-// TODO(crbug.com/855383): Leaks under ASAN.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_FillIntoFocusedWritableTextField \
-  DISABLED_FillIntoFocusedWritableTextField
-#else
-#define MAYBE_FillIntoFocusedWritableTextField FillIntoFocusedWritableTextField
-#endif
-TEST_F(PasswordAutofillAgentTest, MAYBE_FillIntoFocusedWritableTextField) {
+TEST_F(PasswordAutofillAgentTest, FillIntoFocusedWritableTextField) {
   // Neither field should be autocompleted.
   CheckTextFieldsDOMState(std::string(), false, std::string(), false);
 
@@ -3274,9 +3245,8 @@ TEST_F(PasswordAutofillAgentTest,
 
 // Tests that password manager sees both autofill assisted and user entered
 // data on saving that is triggered by form submission.
-// TODO(crbug.com/855383): Leaks under ASAN.
 // Disabled on Win due to https://crbug.com/835865.
-#if defined(ADDRESS_SANITIZER) || defined(OS_WIN)
+#if defined(OS_WIN)
 #define MAYBE_UsernameChangedAfterPasswordInput_FormSubmitted \
   DISABLED_UsernameChangedAfterPasswordInput_FormSubmitted
 #else
@@ -3302,14 +3272,7 @@ TEST_F(PasswordAutofillAgentTest,
 
 // Tests that a suggestion dropdown is shown on a password field even if a
 // username field is present.
-// TODO(crbug.com/855383): Leaks under ASAN.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_SuggestPasswordFieldSignInForm \
-  DISABLED_SuggestPasswordFieldSignInForm
-#else
-#define MAYBE_SuggestPasswordFieldSignInForm SuggestPasswordFieldSignInForm
-#endif
-TEST_F(PasswordAutofillAgentTest, MAYBE_SuggestPasswordFieldSignInForm) {
+TEST_F(PasswordAutofillAgentTest, SuggestPasswordFieldSignInForm) {
   // Simulate the browser sending back the login info.
   SimulateOnFillPasswordForm(fill_data_);
 

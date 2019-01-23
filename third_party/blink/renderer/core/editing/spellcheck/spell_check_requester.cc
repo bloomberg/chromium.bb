@@ -59,12 +59,14 @@ class WebTextCheckingCompletionImpl : public WebTextCheckingCompletion {
 
   void DidFinishCheckingText(
       const WebVector<WebTextCheckingResult>& results) override {
-    request_->DidSucceed(ToCoreResults(results));
+    if (request_)
+      request_->DidSucceed(ToCoreResults(results));
     delete this;
   }
 
   void DidCancelCheckingText() override {
-    request_->DidCancel();
+    if (request_)
+      request_->DidCancel();
     // TODO(dgozman): use std::unique_ptr.
     delete this;
   }
@@ -72,7 +74,9 @@ class WebTextCheckingCompletionImpl : public WebTextCheckingCompletion {
  private:
   virtual ~WebTextCheckingCompletionImpl() = default;
 
-  Persistent<SpellCheckRequest> request_;
+  // As |WebTextCheckingCompletionImpl| is mananaged outside Blink, it should
+  // only keep weak references to Blink objects to prevent memory leaks.
+  WeakPersistent<SpellCheckRequest> request_;
 };
 
 }  // namespace
