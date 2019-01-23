@@ -29,8 +29,7 @@ class TestNavigationPredictor : public NavigationPredictor {
       : NavigationPredictor(render_frame_host), binding_(this) {
     binding_.Bind(std::move(request));
     const std::vector<base::Feature> features = {
-        blink::features::kRecordAnchorMetricsVisible,
-        blink::features::kRecordAnchorMetricsClicked};
+        blink::features::kNavigationPredictor};
     feature_list_.InitWithFeatures(features, {});
   }
 
@@ -123,7 +122,7 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
           base::IntToString(prefetch_url_score_threshold.value());
     }
     scoped_feature_list.InitAndEnableFeatureWithParameters(
-        blink::features::kRecordAnchorMetricsVisible, params);
+        blink::features::kNavigationPredictor, params);
   }
 
   blink::mojom::AnchorElementMetricsHostPtr predictor_service_;

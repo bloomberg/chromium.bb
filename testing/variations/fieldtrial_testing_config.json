@@ -2763,8 +2763,7 @@
                         "target_engagement_score_scale": "100"
                     },
                     "enable_features": [
-                        "RecordAnchorMetricsClicked",
-                        "RecordAnchorMetricsVisible"
+                        "NavigationPredictor"
                     ]
                 }
             ]
