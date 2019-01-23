@@ -28,12 +28,6 @@
 namespace cc {
 namespace {
 
-// If we have more than this many colors, abort deserialization.
-const size_t kMaxShaderColorsSupported = 10000;
-const size_t kMaxMergeFilterCount = 10000;
-const size_t kMaxKernelSize = 1000;
-const size_t kMaxRegionByteSize = 10 * 1024;
-
 bool IsValidPaintShaderType(PaintShader::Type type) {
   return static_cast<uint8_t>(type) <
          static_cast<uint8_t>(PaintShader::Type::kShaderCount);
@@ -515,7 +509,7 @@ void PaintOpReader::Read(sk_sp<PaintShader>* shader) {
   ReadSize(&colors_size);
 
   // If there are too many colors, abort.
-  if (colors_size > kMaxShaderColorsSupported) {
+  if (colors_size > remaining_bytes_) {
     SetInvalid();
     return;
   }
@@ -910,7 +904,7 @@ void PaintOpReader::ReadMatrixConvolutionPaintFilter(
     return;
   auto size =
       static_cast<size_t>(sk_64_mul(kernel_size.width(), kernel_size.height()));
-  if (size > kMaxKernelSize) {
+  if (size > remaining_bytes_) {
     SetInvalid();
     return;
   }
@@ -1009,7 +1003,12 @@ void PaintOpReader::ReadMergePaintFilter(
     const base::Optional<PaintFilter::CropRect>& crop_rect) {
   size_t input_count = 0;
   ReadSimple(&input_count);
-  if (input_count > kMaxMergeFilterCount)
+
+  // The minimum size for a serialized filter is 4 bytes (a zero uint32_t to
+  // indicate a null filter). Make sure the |input_count| doesn't exceed the
+  // maximum number of filters possible for the remaining data.
+  const size_t max_filters = remaining_bytes_ / 4u;
+  if (input_count > max_filters)
     SetInvalid();
   if (!valid_)
     return;
@@ -1272,7 +1271,7 @@ size_t PaintOpReader::Read(sk_sp<PaintRecord>* record) {
 void PaintOpReader::Read(SkRegion* region) {
   size_t region_bytes = 0;
   ReadSize(&region_bytes);
-  if (region_bytes == 0 || region_bytes > kMaxRegionByteSize)
+  if (region_bytes == 0 || region_bytes > remaining_bytes_)
     SetInvalid();
   if (!valid_)
     return;
