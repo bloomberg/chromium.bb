@@ -14033,7 +14033,7 @@
             'mode': {
               'type': 'string',
               'enum': [
-                'drop_down',
+                'drop_down', 'pre_mount',
               ]
             }
           },
@@ -14057,7 +14057,7 @@
       'tags': [],
       'desc': '''Specifies a list of preconfigued network file shares.
 
-      Each list item of the policy is an object with two members: "share_url" and "mode". "share_url" should be the URL of the share and "mode" should be "drop_down" which indicates that "share_url" will be added to the share discovery drop down.''',
+      Each list item of the policy is an object with two members: "share_url" and "mode". "share_url" should be the URL of the share and "mode" should be either "drop_down" or "pre_mount". "drop_down" mode indicates that "share_url" will be added to the share discovery drop down. "pre_mount" mode indicates that "share_url" will be mounted.''',
     },
     {
       'name': 'ScreenBrightnessPercent',
