@@ -61,6 +61,31 @@ TEST_F(ReportingServiceTest, QueueReport) {
   EXPECT_EQ(kType_, reports[0]->type);
 }
 
+TEST_F(ReportingServiceTest, QueueReportSanitizeUrl) {
+  // Same as kUrl_ but with username, password, and fragment.
+  GURL url = GURL("https://username:password@origin/path#fragment");
+  service()->QueueReport(url, kUserAgent_, kGroup_, kType_,
+                         std::make_unique<base::DictionaryValue>(), 0);
+
+  std::vector<const ReportingReport*> reports;
+  context()->cache()->GetReports(&reports);
+  ASSERT_EQ(1u, reports.size());
+  EXPECT_EQ(kUrl_, reports[0]->url);
+  EXPECT_EQ(kUserAgent_, reports[0]->user_agent);
+  EXPECT_EQ(kGroup_, reports[0]->group);
+  EXPECT_EQ(kType_, reports[0]->type);
+}
+
+TEST_F(ReportingServiceTest, DontQueueReportInvalidUrl) {
+  GURL url = GURL("https://");
+  service()->QueueReport(url, kUserAgent_, kGroup_, kType_,
+                         std::make_unique<base::DictionaryValue>(), 0);
+
+  std::vector<const ReportingReport*> reports;
+  context()->cache()->GetReports(&reports);
+  ASSERT_EQ(0u, reports.size());
+}
+
 TEST_F(ReportingServiceTest, ProcessHeader) {
   service()->ProcessHeader(kUrl_, "{\"endpoints\":[{\"url\":\"" +
                                       kEndpoint_.spec() +
