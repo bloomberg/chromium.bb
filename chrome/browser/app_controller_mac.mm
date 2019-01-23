@@ -826,10 +826,15 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   waitTitle =
       l10n_util::GetNSString(IDS_ABANDON_DOWNLOAD_DIALOG_CONTINUE_BUTTON);
 
+  base::scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
+  [alert setMessageText:titleText];
+  [alert setInformativeText:explanationText];
+  [alert addButtonWithTitle:waitTitle];
+  [alert addButtonWithTitle:exitTitle];
+
   // 'waitButton' is the default choice.
-  int choice = NSRunAlertPanel(titleText, @"%@",
-                               waitTitle, exitTitle, nil, explanationText);
-  return choice == NSAlertDefaultReturn ? YES : NO;
+  int choice = [alert runModal];
+  return choice == NSAlertFirstButtonReturn ? YES : NO;
 }
 
 // Check all profiles for in progress downloads, and if we find any, prompt the

@@ -17,6 +17,11 @@
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 
+// This entire file is written in terms of the launch_data_t API, which is
+// deprecated with no replacement, so just ignore the warnings for now.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 namespace {
 
 class ScopedLaunchData {
@@ -260,3 +265,5 @@ bool RemoveJob(const std::string& label) {
 
 }  // namespace services
 }  // namespace mac
+
+#pragma clang diagnostic pop

@@ -98,13 +98,16 @@ LSSharedFileListItemRef GetLoginItemForApp() {
   for(NSUInteger i = 0; i < [login_items_array count]; ++i) {
     LSSharedFileListItemRef item =
         reinterpret_cast<LSSharedFileListItemRef>(login_items_array[i]);
-    CFURLRef item_url_ref = NULL;
+    base::ScopedCFTypeRef<CFErrorRef> error;
+    CFURLRef item_url_ref =
+        LSSharedFileListItemCopyResolvedURL(item, 0, error.InitializeInto());
 
-    // It seems that LSSharedFileListItemResolve() can return NULL in
-    // item_url_ref even if the function itself returns noErr. See
-    // https://crbug.com/760989
-    if (LSSharedFileListItemResolve(item, 0, &item_url_ref, NULL) == noErr &&
-        item_url_ref) {
+    // This function previously used LSSharedFileListItemResolve(), which could
+    // return a NULL URL even when returning no error. This caused
+    // <https://crbug.com/760989>. It's not clear one way or the other whether
+    // LSSharedFileListItemCopyResolvedURL() shares this behavior, so this check
+    // remains in place.
+    if (!error && item_url_ref) {
       ScopedCFTypeRef<CFURLRef> item_url(item_url_ref);
       if (CFEqual(item_url, url)) {
         CFRetain(item);

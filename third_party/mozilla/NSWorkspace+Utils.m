@@ -81,22 +81,6 @@
   return [(NSString*)LSCopyDefaultHandlerForURLScheme(CFSTR("feed")) autorelease];
 }
 
-- (NSURL*)defaultBrowserURL
-{
-  NSString* defaultBundleId = [self defaultBrowserIdentifier];
-  if (defaultBundleId)
-    return [self urlOfApplicationWithIdentifier:defaultBundleId];
-  return nil;
-}
-
-- (NSURL*)defaultFeedViewerURL
-{
-  NSString* defaultBundleId = [self defaultFeedViewerIdentifier];
-  if (defaultBundleId)
-    return [self urlOfApplicationWithIdentifier:defaultBundleId];
-  return nil;
-}
-
 - (void)setDefaultBrowserWithIdentifier:(NSString*)bundleID
 {
   LSSetDefaultHandlerForURLScheme(CFSTR("http"), (CFStringRef)bundleID);
@@ -108,17 +92,6 @@
 - (void)setDefaultFeedViewerWithIdentifier:(NSString*)bundleID
 {
   LSSetDefaultHandlerForURLScheme(CFSTR("feed"), (CFStringRef)bundleID);
-}
-
-- (NSURL*)urlOfApplicationWithIdentifier:(NSString*)bundleID
-{
-  if (!bundleID)
-    return nil;
-  NSURL* appURL = nil;
-  if (LSFindApplicationForInfo(kLSUnknownCreator, (CFStringRef)bundleID, NULL, NULL, (CFURLRef*)&appURL) == noErr)
-    return [appURL autorelease];
-
-  return nil;
 }
 
 - (NSString*)identifierForBundle:(NSURL*)inBundleURL

@@ -26,11 +26,7 @@ bool IsFileQuarantined(const base::FilePath& file,
     return false;
 
   base::scoped_nsobject<NSMutableDictionary> properties;
-  bool success = false;
-  if (@available(macos 10.10, *))
-    success = GetQuarantineProperties(file, &properties);
-  else
-    success = GetQuarantinePropertiesDeprecated(file, &properties);
+  bool success = GetQuarantineProperties(file, &properties);
 
   if (!success || !properties)
     return false;

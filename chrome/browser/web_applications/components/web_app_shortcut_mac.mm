@@ -935,17 +935,8 @@ std::vector<base::FilePath> WebAppShortcutCreator::GetAppBundlesByIdUnsorted()
       base::SysUTF8ToCFStringRef(GetBundleIdentifier()));
 
   // Retrieve the URLs found by LaunchServices.
-  base::scoped_nsobject<NSArray> urls;
-  if (@available(macOS 10.10, *)) {
-    urls.reset(base::mac::CFToNSCast(
-        LSCopyApplicationURLsForBundleIdentifier(bundle_id_cf.get(), nullptr)));
-  } else {
-    base::ScopedCFTypeRef<CFURLRef> cf_url;
-    LSFindApplicationForInfo(kLSUnknownCreator, bundle_id_cf.get(), NULL, NULL,
-                             cf_url.InitializeInto());
-    if (cf_url)
-      urls.reset([@[ base::mac::CFToNSCast(cf_url) ] retain]);
-  }
+  base::scoped_nsobject<NSArray> urls(base::mac::CFToNSCast(
+      LSCopyApplicationURLsForBundleIdentifier(bundle_id_cf.get(), nullptr)));
 
   // Store only those results corresponding to this user data dir.
   std::vector<base::FilePath> paths;

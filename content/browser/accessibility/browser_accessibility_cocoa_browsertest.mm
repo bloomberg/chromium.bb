@@ -19,6 +19,11 @@
 #include "testing/gtest_mac.h"
 #include "url/gurl.h"
 
+// This file uses the deprecated NSObject accessibility APIs:
+// https://crbug.com/921109
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 namespace content {
 
 namespace {
@@ -119,3 +124,5 @@ IN_PROC_BROWSER_TEST_F(BrowserAccessibilityCocoaBrowserTest,
 }
 
 }  // namespace content
+
+#pragma clang diagnostic pop

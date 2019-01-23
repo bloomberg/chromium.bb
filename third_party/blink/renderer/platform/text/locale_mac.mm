@@ -89,7 +89,8 @@ LocaleMac::LocaleMac(NSLocale* locale)
     : locale_(locale),
       gregorian_calendar_(
           kAdoptNS,
-          [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar]),
+          [[NSCalendar alloc]
+              initWithCalendarIdentifier:NSCalendarIdentifierGregorian]),
       did_initialize_number_data_(false) {
   NSArray* available_languages = [NSLocale ISOLanguageCodes];
   // NSLocale returns a lower case NSLocaleLanguageCode so we don't have care

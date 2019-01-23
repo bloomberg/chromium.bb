@@ -7,6 +7,11 @@
 #include "base/logging.h"
 #include "base/mac/scoped_launch_data.h"
 
+// This file is written in terms of launch_data_t, which is deprecated but has
+// no replacement. Ignore the deprecation warnings for now.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 namespace base {
 namespace mac {
 
@@ -73,3 +78,5 @@ pid_t PIDForJob(const std::string& job_label) {
 
 }  // namespace mac
 }  // namespace base
+
+#pragma clang diagnostic pop

@@ -31,9 +31,8 @@ const int kPasswordFieldTag = 2;
 
 - (NSAlert*)alert;
 - (NSView*)accessoryView;
-- (void)alertDidEnd:(NSAlert*)alert
-         returnCode:(int)returnCode
-        contextInfo:(void*)contextInfo;
+- (void)alertDidEndWithResponse:(NSModalResponse)response
+                         dialog:(content::ShellLoginDialog*)dialog;
 - (void)cancel;
 
 @end
@@ -57,20 +56,17 @@ const int kPasswordFieldTag = 2;
   return accessory_view;
 }
 
-- (void)alertDidEnd:(NSAlert*)alert
-         returnCode:(int)returnCode
-        contextInfo:(void*)contextInfo {
-  if (returnCode == NSRunStoppedResponse)
+- (void)alertDidEndWithResponse:(NSModalResponse)returnCode
+                         dialog:(content::ShellLoginDialog*)dialog {
+  if (returnCode == NSModalResponseStop)
     return;
 
-  content::ShellLoginDialog* this_dialog =
-      reinterpret_cast<content::ShellLoginDialog*>(contextInfo);
   if (returnCode == NSAlertFirstButtonReturn) {
-    this_dialog->UserAcceptedAuth(
+    dialog->UserAcceptedAuth(
         base::SysNSStringToUTF16([usernameField_ stringValue]),
         base::SysNSStringToUTF16([passwordField_ stringValue]));
   } else {
-    this_dialog->UserCancelledAuth();
+    dialog->UserCancelledAuth();
   }
 }
 
@@ -95,11 +91,10 @@ void ShellLoginDialog::PlatformCreateDialog(const base::string16& message) {
   [alert addButtonWithTitle:@"OK"];
   NSButton* other = [alert addButtonWithTitle:@"Cancel"];
   [other setKeyEquivalent:@"\e"];
-  [alert
-      beginSheetModalForWindow:nil  // nil here makes it app-modal
-                 modalDelegate:helper_
-                didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:)
-                   contextInfo:this];
+  [alert beginSheetModalForWindow:nil
+                completionHandler:^void(NSModalResponse resp) {
+                  [helper_ alertDidEndWithResponse:resp dialog:this];
+                }];
 }
 
 void ShellLoginDialog::PlatformCleanUp() {

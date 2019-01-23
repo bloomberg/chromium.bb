@@ -157,8 +157,11 @@ const char kTestFileContents[] = "test";
 
 - (instancetype)init:(NSString*)name {
   if ((self = [super init])) {
+    base::scoped_nsobject<NSDateFormatter> iso8601day(
+        [[NSDateFormatter alloc] init]);
+    [iso8601day setDateFormat:@"yyyy-MM-dd"];
     name_.reset([name retain]);
-    date_.reset([[NSDate dateWithNaturalLanguageString:@"12/12/12"] retain]);
+    date_.reset([[iso8601day dateFromString:@"2012-12-12"] retain]);
   }
   return self;
 }
