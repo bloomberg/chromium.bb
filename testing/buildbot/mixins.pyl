@@ -273,6 +273,21 @@
       },
     },
   },
+  # TODO(jmadill): Remove this after upgrade. http://crbug.com/887241
+  'linux_nvidia_quadro_p400_upgrade': {
+    'swarming': {
+      'optional_dimensions': {
+        # Wait 10 minutes for this new driver version and then fall back to the
+        # current "stable" driver version. The format for optional dimensions
+        # is: expiration: [{key, value}, ..].
+        600: [
+          {
+            'gpu': '10de:1cb3-410.78',
+          }
+        ],
+      },
+    }
+  },
   'lollipop': {
     'swarming': {
       'dimensions': {
