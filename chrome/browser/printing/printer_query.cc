@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/printing/print_job_worker.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -22,7 +23,9 @@
 namespace printing {
 
 PrinterQuery::PrinterQuery(int render_process_id, int render_frame_id)
-    : cookie_(PrintSettings::NewCookie()),
+    : base::RefCountedDeleteOnSequence<PrinterQuery>(
+          base::ThreadTaskRunnerHandle::Get()),
+      cookie_(PrintSettings::NewCookie()),
       worker_(std::make_unique<PrintJobWorker>(render_process_id,
                                                render_frame_id,
                                                this)) {
@@ -57,7 +60,7 @@ void PrinterQuery::GetSettingsDone(const PrintSettings& new_settings,
 }
 
 std::unique_ptr<PrintJobWorker> PrinterQuery::DetachWorker() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!callback_);
   DCHECK(worker_);
 

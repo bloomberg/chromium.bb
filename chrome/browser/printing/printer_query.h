@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/values.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
@@ -24,7 +24,7 @@ namespace printing {
 class PrintJobWorker;
 
 // Query the printer for settings.
-class PrinterQuery : public base::RefCountedThreadSafe<PrinterQuery> {
+class PrinterQuery : public base::RefCountedDeleteOnSequence<PrinterQuery> {
  public:
   // GetSettings() UI parameter.
   enum class GetSettingsAskParam {
@@ -41,6 +41,8 @@ class PrinterQuery : public base::RefCountedThreadSafe<PrinterQuery> {
 
   // Detach the PrintJobWorker associated to this object. Virtual so that tests
   // can override.
+  // Called on the UI thread.
+  // TODO(thestig): Do |worker_| and |callback_| need locks?
   virtual std::unique_ptr<PrintJobWorker> DetachWorker();
 
   // Virtual so that tests can override.
@@ -84,8 +86,9 @@ class PrinterQuery : public base::RefCountedThreadSafe<PrinterQuery> {
   bool PostTask(const base::Location& from_here, base::OnceClosure task);
 
  protected:
-  // Refcounted class.
-  friend class base::RefCountedThreadSafe<PrinterQuery>;
+  // RefCountedDeleteOnSequence class.
+  friend class base::RefCountedDeleteOnSequence<PrinterQuery>;
+  friend class base::DeleteHelper<PrinterQuery>;
 
   virtual ~PrinterQuery();
 
