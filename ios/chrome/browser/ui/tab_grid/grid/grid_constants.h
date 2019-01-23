@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_GRID_CONSTANTS_H_
 #define IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_GRID_CONSTANTS_H_
 
+#include <CoreGraphics/CoreGraphics.h>
 #import <UIKit/UIKit.h>
 
 // Accessibility identifier prefix of a grid cell. To reference a specific cell,

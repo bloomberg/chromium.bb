@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_TAB_GRID_TAB_GRID_EMPTY_STATE_VIEW_H_
 #define IOS_CHROME_BROWSER_UI_TAB_GRID_TAB_GRID_EMPTY_STATE_VIEW_H_
 
+#include <CoreGraphics/CoreGraphics.h>
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_empty_view.h"
