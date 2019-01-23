@@ -158,14 +158,15 @@ std::string PickFirstGaiaAccount(
 }  // namespace
 
 AccountReconcilor::Lock::Lock(AccountReconcilor* reconcilor)
-    : reconcilor_(reconcilor) {
+    : reconcilor_(reconcilor->weak_factory_.GetWeakPtr()) {
   DCHECK(reconcilor_);
   reconcilor_->IncrementLockCount();
 }
 
 AccountReconcilor::Lock::~Lock() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  reconcilor_->DecrementLockCount();
+  if (reconcilor_)
+    reconcilor_->DecrementLockCount();
 }
 
 AccountReconcilor::ScopedSyncedDataDeletion::ScopedSyncedDataDeletion(
