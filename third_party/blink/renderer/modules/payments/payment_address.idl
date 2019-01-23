@@ -9,7 +9,7 @@
     SecureContext,
     Exposed=Window
 ] interface PaymentAddress {
-    serializer = {attribute};
+    [CallWith=ScriptState, ImplementedAs=toJSONForBinding] object toJSON();
     readonly attribute DOMString city;
     readonly attribute DOMString country;
     readonly attribute DOMString dependentLocality;

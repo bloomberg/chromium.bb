@@ -97,5 +97,5 @@ interface Performance : EventTarget {
     // TODO(npm): This is an experimental attribute with no current plan to standardize. Remove once experiment has concluded. Only exposed to Window because we do not consider worker threads to contain high priority work.
     [Exposed=Window, RuntimeEnabled=ExperimentalShouldYield] readonly attribute boolean shouldYield;
 
-    serializer = {attribute};
+    [CallWith=ScriptState, ImplementedAs=toJSONForBinding] object toJSON();
 };

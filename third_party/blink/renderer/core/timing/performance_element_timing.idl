@@ -6,5 +6,7 @@
 [OriginTrialEnabled=ElementTiming]
 interface PerformanceElementTiming : PerformanceEntry {
     readonly attribute DOMRectReadOnly intersectionRect;
-    serializer = {inherit, attribute};
+
+    // TODO(peria): toJSON is not in spec. https://crbug.com/736332
+    [CallWith=ScriptState, ImplementedAs=toJSONForBinding] object toJSON();
 };

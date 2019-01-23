@@ -28,6 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://w3c.github.io/webrtc-pc/#rtcicecandidate-interface
 [
     Constructor(RTCIceCandidateInit candidateInitDict),
     ConstructorCallWith=ExecutionContext,
@@ -37,5 +38,6 @@
     attribute DOMString candidate;
     attribute DOMString sdpMid;
     attribute unsigned short sdpMLineIndex;
-    serializer = {attribute};
+    // TODO(peria): Return type should be RTCIceCandidateInit.
+    [CallWith=ScriptState, ImplementedAs=toJSONForBinding] object toJSON();
 };

@@ -36,5 +36,5 @@ interface MediaDeviceInfo {
     readonly attribute MediaDeviceKind kind;
     readonly attribute DOMString label;
     readonly attribute DOMString groupId;
-    serializer = {attribute};
+    [CallWith=ScriptState, ImplementedAs=toJSONForBinding] object toJSON();
 };
