@@ -973,6 +973,9 @@ enum aome_enc_control_id {
   /*!\brief Control to use a reduced tx type set */
   AV1E_SET_REDUCED_TX_TYPE_SET,
 
+  /*!\brief Control to use adaptive quantize_b */
+  AV1E_SET_QUANT_B_ADAPT,
+
   /*!\brief Control to select maximum height for the GF group pyramid structure
    * (valid values: 1 - 4) */
   AV1E_SET_GF_MAX_PYRAMID_HEIGHT,
@@ -1349,6 +1352,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_CHROMA_SUBSAMPLING_Y, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_REDUCED_TX_TYPE_SET, unsigned int)
 #define AOM_CTRL_AV1E_SET_REDUCED_TX_TYPE_SET
+
+AOM_CTRL_USE_TYPE(AV1E_SET_QUANT_B_ADAPT, unsigned int)
+#define AOM_CTRL_AV1E_SET_QUANT_B_ADAPT
 
 AOM_CTRL_USE_TYPE(AV1E_SET_GF_MAX_PYRAMID_HEIGHT, unsigned int)
 #define AOM_CTRL_AV1E_SET_GF_MAX_PYRAMID_HEIGHT

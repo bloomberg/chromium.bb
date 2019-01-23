@@ -163,6 +163,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   qparam.tx_size = tx_size;
   qparam.qmatrix = qmatrix;
   qparam.iqmatrix = iqmatrix;
+  qparam.use_quant_b_adapt = cm->use_quant_b_adapt;
   TxfmParam txfm_param;
   txfm_param.tx_type = tx_type;
   txfm_param.tx_size = tx_size;

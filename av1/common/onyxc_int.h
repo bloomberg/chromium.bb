@@ -432,6 +432,7 @@ typedef struct AV1Common {
   int qm_v;
   int min_qmlevel;
   int max_qmlevel;
+  int use_quant_b_adapt;
 
   /* We allocate a MB_MODE_INFO struct for each macroblock, together with
      an extra row on top and column on the left to simplify prediction. */
