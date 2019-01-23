@@ -63,37 +63,6 @@ void GamepadPlatformDataFetcherLinux::GetGamepadData(bool) {
     ReadDeviceData(i);
 }
 
-// static
-void GamepadPlatformDataFetcherLinux::UpdateGamepadStrings(
-    const std::string& name,
-    uint16_t vendor_id,
-    uint16_t product_id,
-    bool has_standard_mapping,
-    Gamepad* pad) {
-  // Set the ID string. The ID contains the device name, vendor and product IDs,
-  // and an indication of whether the standard mapping is in use.
-  std::string id = base::StringPrintf(
-      "%s (%sVendor: %04x Product: %04x)", name.c_str(),
-      has_standard_mapping ? "STANDARD GAMEPAD " : "", vendor_id, product_id);
-  base::TruncateUTF8ToByteSize(id, Gamepad::kIdLengthCap - 1, &id);
-  base::string16 tmp16 = base::UTF8ToUTF16(id);
-  memset(pad->id, 0, sizeof(pad->id));
-  tmp16.copy(pad->id, base::size(pad->id) - 1);
-
-  // Set the mapper string to "standard" if the gamepad has a standard mapping,
-  // or the empty string otherwise.
-  if (has_standard_mapping) {
-    std::string mapping = "standard";
-    base::TruncateUTF8ToByteSize(mapping, Gamepad::kMappingLengthCap - 1,
-                                 &mapping);
-    tmp16 = base::UTF8ToUTF16(mapping);
-    memset(pad->mapping, 0, sizeof(pad->mapping));
-    tmp16.copy(pad->mapping, base::size(pad->mapping) - 1);
-  } else {
-    pad->mapping[0] = 0;
-  }
-}
-
 // Used during enumeration, and monitor notifications.
 void GamepadPlatformDataFetcherLinux::RefreshDevice(udev_device* dev) {
   std::unique_ptr<UdevGamepadLinux> udev_gamepad =
@@ -198,7 +167,7 @@ void GamepadPlatformDataFetcherLinux::RefreshJoydevDevice(
 
   Gamepad& pad = state->data;
   UpdateGamepadStrings(device->GetName(), device->GetVendorId(),
-                       device->GetProductId(), state->mapper != nullptr, &pad);
+                       device->GetProductId(), state->mapper != nullptr, pad);
 
   pad.vibration_actuator.type = GamepadHapticActuatorType::kDualRumble;
   pad.vibration_actuator.not_null = device->SupportsVibration();
@@ -240,7 +209,7 @@ void GamepadPlatformDataFetcherLinux::RefreshEvdevDevice(
       if (mapper != state->mapper) {
         state->mapper = mapper;
         UpdateGamepadStrings(device->GetName(), device->GetVendorId(),
-                             device->GetProductId(), mapper != nullptr, &pad);
+                             device->GetProductId(), mapper != nullptr, pad);
       }
 
       pad.vibration_actuator.not_null = device->SupportsVibration();

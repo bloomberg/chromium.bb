@@ -29,6 +29,12 @@
 #include "device/gamepad/gamepad_platform_data_fetcher_linux.h"
 #endif
 
+#if !defined(OS_ANDROID)
+// NintendoDataFetcher requires the HID service, which is not implemented on
+// Android.
+#include "device/gamepad/nintendo_data_fetcher.h"
+#endif
+
 namespace device {
 
 void AddGamepadPlatformDataFetchers(GamepadDataFetcherManager* manager) {
@@ -39,6 +45,7 @@ void AddGamepadPlatformDataFetchers(GamepadDataFetcherManager* manager) {
 #elif defined(OS_WIN)
 
   manager->AddFactory(new GamepadPlatformDataFetcherWin::Factory());
+  manager->AddFactory(new NintendoDataFetcher::Factory());
   manager->AddFactory(new RawInputDataFetcher::Factory());
 
 #elif defined(OS_MACOSX)
