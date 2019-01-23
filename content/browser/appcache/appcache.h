@@ -19,6 +19,7 @@
 #include "content/browser/appcache/appcache_database.h"
 #include "content/browser/appcache/appcache_entry.h"
 #include "content/browser/appcache/appcache_manifest_parser.h"
+#include "content/browser/appcache/appcache_namespace.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "url/gurl.h"

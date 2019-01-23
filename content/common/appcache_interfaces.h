@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "content/common/content_export.h"
@@ -30,29 +31,11 @@ enum AppCacheLogLevel {
   APPCACHE_LOG_ERROR
 };
 
-enum AppCacheNamespaceType {
-  APPCACHE_FALLBACK_NAMESPACE,
-  APPCACHE_INTERCEPT_NAMESPACE,
-  APPCACHE_NETWORK_NAMESPACE
-};
-
-struct CONTENT_EXPORT AppCacheNamespace {
-  AppCacheNamespace();  // Type is APPCACHE_FALLBACK_NAMESPACE by default.
-  AppCacheNamespace(AppCacheNamespaceType type, const GURL& url,
-      const GURL& target, bool is_pattern);
-  ~AppCacheNamespace();
-
-  bool IsMatch(const GURL& url) const;
-
-  AppCacheNamespaceType type;
-  GURL namespace_url;
-  GURL target_url;
-  bool is_pattern;
-};
-
 // Interface used by backend (browser-process) to talk to frontend (renderer).
 class CONTENT_EXPORT AppCacheFrontend {
  public:
+  virtual ~AppCacheFrontend() = default;
+
   virtual void OnCacheSelected(int host_id,
                                const blink::mojom::AppCacheInfo& info) = 0;
   virtual void OnStatusChanged(const std::vector<int>& host_ids,
@@ -75,8 +58,6 @@ class CONTENT_EXPORT AppCacheFrontend {
   virtual void OnSetSubresourceFactory(
       int host_id,
       network::mojom::URLLoaderFactoryPtr url_loader_factory) = 0;
-
-  virtual ~AppCacheFrontend() {}
 };
 
 // Useful string constants.
@@ -84,8 +65,7 @@ CONTENT_EXPORT extern const char kHttpGETMethod[];
 CONTENT_EXPORT extern const char kHttpHEADMethod[];
 
 CONTENT_EXPORT bool IsSchemeSupportedForAppCache(const GURL& url);
-CONTENT_EXPORT bool IsMethodSupportedForAppCache(
-    const std::string& method);
+CONTENT_EXPORT bool IsMethodSupportedForAppCache(const std::string& method);
 
 }  // namespace
 

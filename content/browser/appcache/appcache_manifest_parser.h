@@ -36,6 +36,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "content/browser/appcache/appcache_namespace.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/content_export.h"
 
