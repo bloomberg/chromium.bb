@@ -145,8 +145,16 @@ body.hide-fakebox #fakebox {
   transition: background-color 300ms ease-in-out, opacity 200ms
 }
 
+html[darkmode=true] #fakebox {
+  background-color: rgb(var(--GG900-rgb));
+}
+
 #fakebox:hover {
   background-color: rgb(var(--GG200-rgb));
+}
+
+html[darkmode=true] #fakebox:hover {
+  background-color: rgb(42, 43, 46);
 }
 
 .non-google-page #fakebox-container {
@@ -188,6 +196,10 @@ html[dir=rtl] #fakebox > input {
   white-space: nowrap;
 }
 
+html[darkmode=true] #fakebox-text {
+  color: rgb(var(--GG200-rgb));
+}
+
 html[dir=rtl] #fakebox-text {
   left: auto;
   right: 0;
@@ -206,6 +218,10 @@ html[dir=rtl] #fakebox-text {
 html[dir=rtl] #fakebox-cursor {
   left: auto;
   right: 20px;
+}
+
+html[darkmode=true] #fakebox-cursor {
+  background: rgb(var(--GB300-rgb));
 }
 
 #fakebox-microphone {
