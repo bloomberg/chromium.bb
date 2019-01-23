@@ -23,6 +23,8 @@
 #include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/device/public/mojom/wake_lock.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 
@@ -121,6 +123,10 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
   // stops capture and this VideoCaptureDevice.
   void OnFatalError(std::string message);
 
+  // Helper that requests wake lock to prevent the display from sleeping while
+  // capturing is going on.
+  void RequestWakeLock(std::unique_ptr<service_manager::Connector> connector);
+
   // Current capture target. This is cached to resolve a race where
   // OnTargetChanged() can be called before the |capturer_| is created in
   // OnCapturerCreated().
@@ -158,6 +164,9 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
   const std::unique_ptr<MouseCursorOverlayController,
                         BrowserThread::DeleteOnUIThread>
       cursor_controller_;
+
+  // Prevent display sleeping while content capture is in progress.
+  device::mojom::WakeLockPtr wake_lock_;
 
   // Creates WeakPtrs for use on the device thread.
   base::WeakPtrFactory<FrameSinkVideoCaptureDevice> weak_factory_;
