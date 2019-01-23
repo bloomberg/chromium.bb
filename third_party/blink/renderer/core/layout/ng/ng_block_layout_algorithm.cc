@@ -1245,6 +1245,8 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
       !child_space.FloatsBfcBlockOffset();
   bool is_empty_block = IsEmptyBlock(child_space, *layout_result);
 
+  bool has_clearance = layout_result->IsPushedByFloats();
+
   // A child may have aborted its layout if it resolved its BFC block offset.
   // If we don't have a BFC block offset yet, we need to propagate the abortion
   // up to our parent.
@@ -1258,7 +1260,9 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
     DCHECK(child_bfc_block_offset);
     abort_when_bfc_block_offset_updated_ = true;
     ResolveBfcBlockOffset(previous_inflow_position,
-                          child_bfc_block_offset.value());
+                          has_clearance
+                              ? NextBorderEdge(*previous_inflow_position)
+                              : child_bfc_block_offset.value());
     return false;
   }
 
@@ -1269,7 +1273,6 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   // We try and position the child within the block formatting context. This
   // may cause our BFC block offset to be resolved, in which case we should
   // abort our layout if needed.
-  bool has_clearance = layout_result->IsPushedByFloats();
   if (!child_bfc_block_offset) {
     if (!has_clearance && child_space.HasClearanceOffset() &&
         child.Style().Clear() != EClear::kNone) {
@@ -2217,6 +2220,10 @@ bool NGBlockLayoutAlgorithm::NeedsAbortOnBfcBlockOffsetChange() const {
   // Otherwise, we need to abort.
   LayoutUnit old_bfc_block_offset =
       ConstraintSpace().FloatsBfcBlockOffset().value();
+
+  // In order to determine if the two offsets are equal, we also need to adjust
+  // floats offset by the clearance offset.
+  ApplyClearance(ConstraintSpace(), &old_bfc_block_offset);
   return container_builder_.BfcBlockOffset().value() != old_bfc_block_offset;
 }
 
