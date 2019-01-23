@@ -54,6 +54,9 @@ class AccessibilityLayer : public ui::LayerDelegate,
   // animation observer.
   virtual bool CanAnimate() const = 0;
 
+  // Returns true if a layer needs to animate.
+  virtual bool NeedToAnimate() const = 0;
+
   // Gets the inset for this layer in DIPs. This is used to increase
   // the bounding box to provide space for any margins or padding.
   virtual int GetInset() const = 0;

@@ -288,6 +288,7 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, FocusRingMovesWithMouse) {
 
   ash::AccessibilityFocusRingController* controller =
       ash::Shell::Get()->accessibility_focus_ring_controller();
+  controller->SetNoFadeForTesting();
   const ash::AccessibilityFocusRingGroup* focus_ring_group =
       controller->GetFocusRingGroupForTesting(
           extension_misc::kSelectToSpeakExtensionId);

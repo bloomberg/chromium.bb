@@ -48,6 +48,8 @@ class ASH_EXPORT AccessibilityFocusRingGroup {
 
   LayerAnimationInfo* focus_animation_info() { return &focus_animation_info_; }
 
+  void set_no_fade_for_testing() { no_fade_for_testing_ = true; }
+
   const std::vector<std::unique_ptr<AccessibilityFocusRingLayer>>&
   focus_layers_for_testing() const {
     return focus_layers_;
@@ -81,6 +83,7 @@ class ASH_EXPORT AccessibilityFocusRingGroup {
   LayerAnimationInfo focus_animation_info_;
   mojom::FocusRingBehavior focus_ring_behavior_ =
       mojom::FocusRingBehavior::FADE_OUT_FOCUS_RING;
+  bool no_fade_for_testing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityFocusRingGroup);
 };

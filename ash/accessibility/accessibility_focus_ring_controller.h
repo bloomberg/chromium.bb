@@ -116,6 +116,8 @@ class ASH_EXPORT AccessibilityFocusRingController
   SkColor highlight_color_ = SK_ColorBLACK;
   float highlight_opacity_ = 0.f;
 
+  bool no_fade_for_testing_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(AccessibilityFocusRingController);
 };
 
