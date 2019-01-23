@@ -253,8 +253,6 @@ cr.define('settings_sections_tests', function() {
             selectElement.value);
         assertEquals(
             capabilityAndValue.expectedValue, page.getSettingValue('color'));
-        // Check that setting is not marked as managed.
-        assertFalse(colorElement.$$('print-preview-settings-section').managed);
         assertFalse(selectElement.disabled);
       });
     });
@@ -406,14 +404,6 @@ cr.define('settings_sections_tests', function() {
      */
     function isSectionHidden(checkbox) {
       return checkbox.parentNode.parentNode.hidden;
-    }
-
-    /**
-     * @param {!CrCheckboxElement} checkbox The checkbox to check
-     * @return {boolean} Whether the checkbox's parent section is managed.
-     */
-    function isSectionManaged(checkbox) {
-      return checkbox.parentNode.parentNode.managed;
     }
 
     test(assert(TestNames.Other), function() {
@@ -1187,9 +1177,6 @@ cr.define('settings_sections_tests', function() {
           assertEquals(
               subtestParams.expectedValue ? 'color' : 'bw',
               selectElement.value);
-          assertEquals(
-              subtestParams.expectedManaged,
-              colorElement.$$('print-preview-settings-section').managed);
           assertEquals(subtestParams.expectedManaged, selectElement.disabled);
         }
       });
@@ -1267,8 +1254,6 @@ cr.define('settings_sections_tests', function() {
             subtestParams.expectedHidden, isSectionHidden(duplexElement));
         if (!subtestParams.expectedHidden) {
           assertEquals(subtestParams.expectedValue, duplexElement.checked);
-          assertEquals(
-              subtestParams.expectedManaged, isSectionManaged(duplexElement));
           assertEquals(subtestParams.expectedManaged, duplexElement.disabled);
         }
       });
