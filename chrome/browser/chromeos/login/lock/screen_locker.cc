@@ -589,6 +589,12 @@ void ScreenLocker::Hide() {
   }));
 }
 
+void ScreenLocker::RefreshPinAndFingerprintTimeout() {
+  MaybeDisablePinAndFingerprintFromTimeout(
+      "RefreshPinAndFingerprintTimeout",
+      user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId());
+}
+
 // static
 void ScreenLocker::ScheduleDeletion() {
   // Avoid possible multiple calls.

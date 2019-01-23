@@ -350,6 +350,7 @@ void WebUIScreenLocker::SuspendDone(const base::TimeDelta& sleep_duration) {
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
                            base::BindOnce(&WebUIScreenLocker::FocusUserPod,
                                           weak_factory_.GetWeakPtr()));
+  screen_locker_->RefreshPinAndFingerprintTimeout();
 }
 
 void WebUIScreenLocker::RenderProcessGone(base::TerminationStatus status) {

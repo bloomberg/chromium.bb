@@ -169,6 +169,8 @@ class ScreenLocker : public AuthStatusConsumer,
   // Hide the screen locker.
   static void Hide();
 
+  void RefreshPinAndFingerprintTimeout();
+
   // Saves sync password hash and salt to user profile prefs based on
   // |user_context|.
   void SaveSyncPasswordHash(const UserContext& user_context);
