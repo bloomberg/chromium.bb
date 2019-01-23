@@ -120,6 +120,25 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
   const GURL& https_no_transform_url() const { return https_no_transform_url_; }
   const GURL& http_url() const { return http_url_; }
   const GURL& redirect_url() const { return redirect_url_; }
+
+  // Triggers a navigation to |url| to prime the OptimizationGuide hints for the
+  // url's host and ensure that they have been loaded from the store (via
+  // histogram) prior to the navigation that tests functionality.
+  void LoadUrlHints(const GURL& url) {
+    base::HistogramTester histogram_tester;
+
+    ui_test_utils::NavigateToURL(browser(), url);
+
+    RetryForHistogramUntilCountReached(
+        &histogram_tester,
+        previews::kPreviewsOptimizationGuideOnLoadedHintResultHistogramString,
+        1);
+
+    // Reset state for any subsequent test.
+    noscript_css_requested_ = false;
+    noscript_js_requested_ = false;
+  }
+
   bool noscript_css_requested() const {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     return noscript_css_requested_;
@@ -244,8 +263,7 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
 // Previews InfoBar (which these tests triggers) does not work on Mac.
 // See https://crbug.com/782322 for detail.
 // Also occasional flakes on win7 (https://crbug.com/789542).
-// Also occasional flakes on chromeos (https://crbug.com/923161).
-#if defined(OS_ANDROID) || defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_NoScriptPreviewsEnabled NoScriptPreviewsEnabled
 #define MAYBE_NoScriptPreviewsEnabledHttpRedirectToHttps \
   NoScriptPreviewsEnabledHttpRedirectToHttps
@@ -260,26 +278,35 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
 // script resource is not loaded.
 IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                        MAYBE_NoScriptPreviewsEnabled) {
+  GURL url = https_url();
+
   // Whitelist test URL for NoScript.
-  SetUpNoScriptWhitelist({https_url().host()});
+  SetUpNoScriptWhitelist({url.host()});
+
+  LoadUrlHints(url);
 
   base::HistogramTester histogram_tester;
-  ui_test_utils::NavigateToURL(browser(), https_url());
+  ui_test_utils::NavigateToURL(browser(), url);
 
   // Verify loaded noscript tag triggered css resource but not js one.
   EXPECT_TRUE(noscript_css_requested());
   EXPECT_FALSE(noscript_js_requested());
 
   // Verify info bar presented via histogram check.
-  histogram_tester.ExpectUniqueSample("Previews.InfoBarAction.NoScript", 0, 1);
+  EXPECT_FALSE(histogram_tester.GetAllSamples("Previews.InfoBarAction.NoScript")
+                   .empty());
 }
 
 IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                        NoScriptPreviewsEnabledButHttpRequest) {
-  // Whitelist test URL for NoScript.
-  SetUpNoScriptWhitelist({http_url().host()});
+  GURL url = http_url();
 
-  ui_test_utils::NavigateToURL(browser(), http_url());
+  // Whitelist test URL for NoScript.
+  SetUpNoScriptWhitelist({url.host()});
+
+  LoadUrlHints(url);
+
+  ui_test_utils::NavigateToURL(browser(), url);
 
   // Verify loaded js resource but not css triggered by noscript tag.
   EXPECT_TRUE(noscript_js_requested());
@@ -297,11 +324,15 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                        MAYBE_NoScriptPreviewsEnabledButNoTransformDirective) {
+  GURL url = https_no_transform_url();
+
   // Whitelist test URL for NoScript.
-  SetUpNoScriptWhitelist({https_no_transform_url().host()});
+  SetUpNoScriptWhitelist({url.host()});
+
+  LoadUrlHints(url);
 
   base::HistogramTester histogram_tester;
-  ui_test_utils::NavigateToURL(browser(), https_no_transform_url());
+  ui_test_utils::NavigateToURL(browser(), url);
 
   // Verify loaded js resource but not css triggered by noscript tag.
   EXPECT_TRUE(noscript_js_requested());
@@ -313,18 +344,23 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                        MAYBE_NoScriptPreviewsEnabledHttpRedirectToHttps) {
+  GURL url = redirect_url();
+
   // Whitelist test URL for NoScript.
-  SetUpNoScriptWhitelist({redirect_url().host()});
+  SetUpNoScriptWhitelist({url.host()});
+
+  LoadUrlHints(url);
 
   base::HistogramTester histogram_tester;
-  ui_test_utils::NavigateToURL(browser(), redirect_url());
+  ui_test_utils::NavigateToURL(browser(), url);
 
   // Verify loaded noscript tag triggered css resource but not js one.
   EXPECT_TRUE(noscript_css_requested());
   EXPECT_FALSE(noscript_js_requested());
 
   // Verify info bar presented via histogram check.
-  histogram_tester.ExpectUniqueSample("Previews.InfoBarAction.NoScript", 0, 1);
+  EXPECT_FALSE(histogram_tester.GetAllSamples("Previews.InfoBarAction.NoScript")
+                   .empty());
 }
 
 // Flaky in all platforms except Android. See https://crbug.com/803626 for
@@ -337,20 +373,24 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                        MAYBE_NoScriptPreviewsRecordsOptOut) {
+  GURL url = redirect_url();
+
   // Whitelist test URL for NoScript.
-  SetUpNoScriptWhitelist({redirect_url().host()});
+  SetUpNoScriptWhitelist({url.host()});
+
+  LoadUrlHints(url);
 
   base::HistogramTester histogram_tester;
 
-  // Navigate to a No Script Preview page.
-  ui_test_utils::NavigateToURL(browser(), redirect_url());
+  // Navigate to a NoScript Preview page.
+  ui_test_utils::NavigateToURL(browser(), url);
 
-  // Terminate the previous page (non-opt out) and pull up a new No Script page.
-  ui_test_utils::NavigateToURL(browser(), redirect_url());
+  // Terminate the previous page (non-opt out) and pull up a new NoScript page.
+  ui_test_utils::NavigateToURL(browser(), url);
   histogram_tester.ExpectUniqueSample("Previews.OptOut.UserOptedOut.NoScript",
-                                      0, 1);
+                                      0, 2);
 
-  // Opt out of the No Script Preview page.
+  // Opt out of the NoScript Preview page.
   PreviewsUITabHelper::FromWebContents(
       browser()->tab_strip_model()->GetActiveWebContents())
       ->ReloadWithoutPreviews();
@@ -373,10 +413,14 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                        MAYBE_NoScriptPreviewsEnabledByWhitelist) {
-  // Whitelist test URL for NoScript.
-  SetUpNoScriptWhitelist({https_url().host()});
+  GURL url = https_url();
 
-  ui_test_utils::NavigateToURL(browser(), https_url());
+  // Whitelist test URL for NoScript.
+  SetUpNoScriptWhitelist({url.host()});
+
+  LoadUrlHints(url);
+
+  ui_test_utils::NavigateToURL(browser(), url);
 
   // Verify loaded noscript tag triggered css resource but not js one.
   EXPECT_TRUE(noscript_css_requested());
@@ -385,10 +429,14 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                        NoScriptPreviewsNotEnabledByWhitelist) {
+  GURL url = https_url();
+
   // Whitelist random site for NoScript.
   SetUpNoScriptWhitelist({"foo.com"});
 
-  ui_test_utils::NavigateToURL(browser(), https_url());
+  LoadUrlHints(url);
+
+  ui_test_utils::NavigateToURL(browser(), url);
 
   // Verify loaded js resource but not css triggered by noscript tag.
   EXPECT_TRUE(noscript_js_requested());

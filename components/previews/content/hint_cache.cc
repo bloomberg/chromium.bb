@@ -74,6 +74,7 @@ void HintCache::LoadHint(const std::string& host, HintLoadedCallback callback) {
 
   HintCacheStore::EntryKey hint_entry_key;
   if (!FindHintEntryKey(host, &hint_entry_key)) {
+    std::move(callback).Run(nullptr);
     return;
   }
 
