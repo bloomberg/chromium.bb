@@ -94,7 +94,7 @@ void ArcKioskSplashScreenHandler::PopulateAppInfo(
 }
 
 void ArcKioskSplashScreenHandler::SetLaunchText(const std::string& text) {
-  CallJSWithPrefix("updateArcKioskMessage", text);
+  CallJS("login.ArcKioskSplashScreen.updateArcKioskMessage", text);
 }
 
 int ArcKioskSplashScreenHandler::GetProgressMessageFromState(

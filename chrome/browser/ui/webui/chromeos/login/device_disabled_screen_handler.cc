@@ -34,10 +34,9 @@ void DeviceDisabledScreenHandler::Show() {
   }
 
   if (delegate_) {
-    CallJSWithPrefix("setSerialNumberAndEnrollmentDomain",
-                     delegate_->GetSerialNumber(),
-                     delegate_->GetEnrollmentDomain());
-    CallJSWithPrefix("setMessage", delegate_->GetMessage());
+    CallJS("login.DeviceDisabledScreen.setSerialNumberAndEnrollmentDomain",
+           delegate_->GetSerialNumber(), delegate_->GetEnrollmentDomain());
+    CallJS("login.DeviceDisabledScreen.setMessage", delegate_->GetMessage());
   }
   ShowScreen(kScreenId);
 }
@@ -54,7 +53,7 @@ void DeviceDisabledScreenHandler::SetDelegate(Delegate* delegate) {
 
 void DeviceDisabledScreenHandler::UpdateMessage(const std::string& message) {
   if (page_is_ready())
-    CallJSWithPrefix("setMessage", message);
+    CallJS("login.DeviceDisabledScreen.setMessage", message);
 }
 
 void DeviceDisabledScreenHandler::DeclareLocalizedValues(

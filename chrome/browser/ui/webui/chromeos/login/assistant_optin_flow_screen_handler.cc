@@ -161,16 +161,19 @@ void AssistantOptInFlowScreenHandler::Initialize() {
 }
 
 void AssistantOptInFlowScreenHandler::OnListeningHotword() {
-  CallJSWithPrefix("onVoiceMatchUpdate", base::Value("listen"));
+  CallJS("login.AssistantOptInFlowScreen.onVoiceMatchUpdate",
+         base::Value("listen"));
 }
 
 void AssistantOptInFlowScreenHandler::OnProcessingHotword() {
-  CallJSWithPrefix("onVoiceMatchUpdate", base::Value("process"));
+  CallJS("login.AssistantOptInFlowScreen.onVoiceMatchUpdate",
+         base::Value("process"));
 }
 
 void AssistantOptInFlowScreenHandler::OnSpeakerIdEnrollmentDone() {
   settings_manager_->StopSpeakerIdEnrollment(base::DoNothing());
-  CallJSWithPrefix("onVoiceMatchUpdate", base::Value("done"));
+  CallJS("login.AssistantOptInFlowScreen.onVoiceMatchUpdate",
+         base::Value("done"));
 }
 
 void AssistantOptInFlowScreenHandler::OnSpeakerIdEnrollmentFailure() {
@@ -192,7 +195,7 @@ void AssistantOptInFlowScreenHandler::SetupAssistantConnection() {
 }
 
 void AssistantOptInFlowScreenHandler::ShowNextScreen() {
-  CallJSWithPrefix("showNextScreen");
+  CallJS("login.AssistantOptInFlowScreen.showNextScreen");
 }
 
 void AssistantOptInFlowScreenHandler::OnActivityControlOptInResult(
@@ -271,12 +274,12 @@ void AssistantOptInFlowScreenHandler::SendGetSettingsRequest() {
 }
 
 void AssistantOptInFlowScreenHandler::ReloadContent(const base::Value& dict) {
-  CallJSWithPrefix("reloadContent", dict);
+  CallJS("login.AssistantOptInFlowScreen.reloadContent", dict);
 }
 
 void AssistantOptInFlowScreenHandler::AddSettingZippy(const std::string& type,
                                                       const base::Value& data) {
-  CallJSWithPrefix("addSettingZippy", type, data);
+  CallJS("login.AssistantOptInFlowScreen.addSettingZippy", type, data);
 }
 
 void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
@@ -490,7 +493,7 @@ void AssistantOptInFlowScreenHandler::HandleFlowFinished() {
   if (screen_)
     screen_->OnUserAction(kFlowFinished);
   else
-    CallJSWithPrefix("closeDialog");
+    CallJS("login.AssistantOptInFlowScreen.closeDialog");
 }
 
 void AssistantOptInFlowScreenHandler::HandleFlowInitialized(
