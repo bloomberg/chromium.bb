@@ -1861,9 +1861,6 @@ extern const char kArcUsbHostDescription[];
 extern const char kArcVpnName[];
 extern const char kArcVpnDescription[];
 
-extern const char kAshDisableLoginDimAndBlurName[];
-extern const char kAshDisableLoginDimAndBlurDescription[];
-
 extern const char kAshEnableDisplayMoveWindowAccelsName[];
 extern const char kAshEnableDisplayMoveWindowAccelsDescription[];
 

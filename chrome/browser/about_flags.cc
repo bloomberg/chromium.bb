@@ -3465,13 +3465,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kStopInBackgroundDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(blink::features::kStopInBackground)},
 
-#if defined(OS_CHROMEOS)
-    {"ash-disable-login-dim-and-blur",
-     flag_descriptions::kAshDisableLoginDimAndBlurName,
-     flag_descriptions::kAshDisableLoginDimAndBlurDescription, kOsCrOS,
-     SINGLE_DISABLE_VALUE_TYPE(ash::switches::kAshDisableLoginDimAndBlur)},
-#endif  // OS_CHROMEOS
-
     {"clipboard-content-setting",
      flag_descriptions::kClipboardContentSettingName,
      flag_descriptions::kClipboardContentSettingDescription, kOsAll,

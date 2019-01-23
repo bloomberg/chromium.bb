@@ -18,9 +18,6 @@ const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
 // Enable keyboard shortcuts used by developers only.
 const char kAshDeveloperShortcuts[] = "ash-dev-shortcuts";
 
-// Disables the dimming and blur of the wallpaper on login and lock screens.
-const char kAshDisableLoginDimAndBlur[] = "ash-disable-login-dim-and-blur";
-
 // Disables the split view on tablet mode.
 const char kAshDisableTabletSplitView[] = "disable-tablet-splitview";
 
