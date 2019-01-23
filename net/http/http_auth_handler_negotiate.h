@@ -15,6 +15,7 @@
 #include "net/dns/host_resolver.h"
 #include "net/http/http_auth_handler.h"
 #include "net/http/http_auth_handler_factory.h"
+#include "net/http/http_negotiate_auth_system.h"
 
 #if defined(OS_ANDROID)
 #include "net/android/http_auth_negotiate_android.h"
@@ -35,19 +36,15 @@ class HttpAuthPreferences;
 
 class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
  public:
-#if defined(OS_ANDROID)
-  typedef net::android::HttpAuthNegotiateAndroid AuthSystem;
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
   typedef SSPILibrary AuthLibrary;
-  typedef HttpAuthSSPI AuthSystem;
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) && !defined(OS_ANDROID)
   typedef GSSAPILibrary AuthLibrary;
-  typedef HttpAuthGSSAPI AuthSystem;
 #endif
 
   class NET_EXPORT_PRIVATE Factory : public HttpAuthHandlerFactory {
    public:
-    Factory();
+    Factory(NegotiateAuthSystemFactory negotiate_auth_system_factory);
     ~Factory() override;
 
     void set_host_resolver(HostResolver* host_resolver);
@@ -82,6 +79,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
                           std::unique_ptr<HttpAuthHandler>* handler) override;
 
    private:
+    NegotiateAuthSystemFactory negotiate_auth_system_factory_;
     HostResolver* resolver_ = nullptr;
 #if defined(OS_WIN)
     ULONG max_token_length_ = 0;
@@ -95,15 +93,9 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
 #endif  // !defined(OS_ANDROID)
   };
 
-  HttpAuthHandlerNegotiate(
-#if !defined(OS_ANDROID)
-      AuthLibrary* auth_library,
-#endif
-#if defined(OS_WIN)
-      ULONG max_token_length,
-#endif
-      const HttpAuthPreferences* prefs,
-      HostResolver* host_resolver);
+  HttpAuthHandlerNegotiate(std::unique_ptr<HttpNegotiateAuthSystem> auth_system,
+                           const HttpAuthPreferences* prefs,
+                           HostResolver* host_resolver);
 
   ~HttpAuthHandlerNegotiate() override;
 
@@ -146,7 +138,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
   int DoGenerateAuthTokenComplete(int rv);
   bool CanDelegate() const;
 
-  AuthSystem auth_system_;
+  std::unique_ptr<HttpNegotiateAuthSystem> auth_system_;
   HostResolver* const resolver_;
 
   // Members which are needed for DNS lookup + SPN.

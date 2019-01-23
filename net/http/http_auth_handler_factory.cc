@@ -96,16 +96,21 @@ HttpAuthHandlerFactory* HttpAuthHandlerRegistryFactory::GetSchemeFactory(
 
 // static
 std::unique_ptr<HttpAuthHandlerRegistryFactory>
-HttpAuthHandlerFactory::CreateDefault(HostResolver* host_resolver,
-                                      const HttpAuthPreferences* prefs
+HttpAuthHandlerFactory::CreateDefault(
+    HostResolver* host_resolver,
+    const HttpAuthPreferences* prefs
 #if defined(OS_CHROMEOS)
-                                      ,
-                                      bool allow_gssapi_library_load
+    ,
+    bool allow_gssapi_library_load
 #elif (defined(OS_POSIX) && !defined(OS_ANDROID)) || defined(OS_FUCHSIA)
-                                      ,
-                                      const std::string& gssapi_library_name
+    ,
+    const std::string& gssapi_library_name
 #endif
-                                      ) {
+#if BUILDFLAG(USE_KERBEROS)
+    ,
+    NegotiateAuthSystemFactory negotiate_auth_system_factory
+#endif
+) {
   std::vector<std::string> auth_types(std::begin(kDefaultAuthSchemes),
                                       std::end(kDefaultAuthSchemes));
   return HttpAuthHandlerRegistryFactory::Create(host_resolver, prefs, auth_types
@@ -117,7 +122,11 @@ HttpAuthHandlerFactory::CreateDefault(HostResolver* host_resolver,
                                                 ,
                                                 allow_gssapi_library_load
 #endif
-                                                );
+#if BUILDFLAG(USE_KERBEROS)
+                                                ,
+                                                negotiate_auth_system_factory
+#endif
+  );
 }
 
 // static
@@ -133,7 +142,11 @@ HttpAuthHandlerRegistryFactory::Create(
     ,
     const std::string& gssapi_library_name
 #endif
-    ) {
+#if BUILDFLAG(USE_KERBEROS)
+    ,
+    NegotiateAuthSystemFactory negotiate_auth_system_factory
+#endif
+) {
   std::set<std::string> auth_schemes_set(auth_schemes.begin(),
                                          auth_schemes.end());
 
@@ -162,7 +175,7 @@ HttpAuthHandlerRegistryFactory::Create(
   if (base::ContainsKey(auth_schemes_set, kNegotiateAuthScheme)) {
     DCHECK(host_resolver);
     HttpAuthHandlerNegotiate::Factory* negotiate_factory =
-        new HttpAuthHandlerNegotiate::Factory();
+        new HttpAuthHandlerNegotiate::Factory(negotiate_auth_system_factory);
 #if defined(OS_WIN)
     negotiate_factory->set_library(std::make_unique<SSPILibraryDefault>());
 #elif defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)

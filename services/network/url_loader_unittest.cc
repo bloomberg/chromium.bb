@@ -2308,6 +2308,17 @@ class MockNetworkServiceClient : public mojom::NetworkServiceClient {
                        int64_t recv_bytes,
                        int64_t sent_bytes) override {}
 
+#if defined(OS_ANDROID)
+  void OnGenerateHttpNegotiateAuthToken(
+      const std::string& server_auth_token,
+      bool can_delegate,
+      const std::string& auth_negotiate_android_account_type,
+      const std::string& spn,
+      OnGenerateHttpNegotiateAuthTokenCallback callback) override {
+    NOTREACHED();
+  }
+#endif
+
   void set_credentials_response(CredentialsResponse credentials_response) {
     credentials_response_ = credentials_response;
   }

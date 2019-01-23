@@ -41,9 +41,36 @@ std::unique_ptr<base::Value> NetLogParameterChannelBindings(
   return std::move(dict);
 }
 
+// Uses |negotiate_auth_system_factory| to create the auth system, otherwise
+// creates the default auth system for each platform.
+std::unique_ptr<HttpNegotiateAuthSystem> CreateAuthSystem(
+#if !defined(OS_ANDROID)
+    HttpAuthHandlerNegotiate::AuthLibrary* auth_library,
+#endif
+#if defined(OS_WIN)
+    ULONG max_token_length,
+#endif
+    const HttpAuthPreferences* prefs,
+    HttpAuthHandlerFactory::NegotiateAuthSystemFactory
+        negotiate_auth_system_factory) {
+  if (negotiate_auth_system_factory)
+    return negotiate_auth_system_factory.Run(prefs);
+#if defined(OS_ANDROID)
+  return std::make_unique<net::android::HttpAuthNegotiateAndroid>(prefs);
+#elif defined(OS_WIN)
+  return std::make_unique<HttpAuthSSPI>(auth_library, "Negotiate", NEGOSSP_NAME,
+                                        max_token_length);
+#elif defined(OS_POSIX)
+  return std::make_unique<HttpAuthGSSAPI>(auth_library, "Negotiate",
+                                          CHROME_GSS_SPNEGO_MECH_OID_DESC);
+#endif
+}
+
 }  // namespace
 
-HttpAuthHandlerNegotiate::Factory::Factory() {}
+HttpAuthHandlerNegotiate::Factory::Factory(
+    NegotiateAuthSystemFactory negotiate_auth_system_factory)
+    : negotiate_auth_system_factory_(negotiate_auth_system_factory) {}
 
 HttpAuthHandlerNegotiate::Factory::~Factory() = default;
 
@@ -81,9 +108,10 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
   }
   // TODO(cbentzel): Move towards model of parsing in the factory
   //                 method and only constructing when valid.
-  std::unique_ptr<HttpAuthHandler> tmp_handler(
-      new HttpAuthHandlerNegotiate(auth_library_.get(), max_token_length_,
-                                   http_auth_preferences(), resolver_));
+  std::unique_ptr<HttpAuthHandler> tmp_handler(new HttpAuthHandlerNegotiate(
+      CreateAuthSystem(auth_library_.get(), max_token_length_,
+                       http_auth_preferences(), negotiate_auth_system_factory_),
+      http_auth_preferences(), resolver_));
 #elif defined(OS_ANDROID)
   if (is_unsupported_ || !http_auth_preferences() ||
       http_auth_preferences()->AuthAndroidNegotiateAccountType().empty() ||
@@ -91,8 +119,9 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
     return ERR_UNSUPPORTED_AUTH_SCHEME;
   // TODO(cbentzel): Move towards model of parsing in the factory
   //                 method and only constructing when valid.
-  std::unique_ptr<HttpAuthHandler> tmp_handler(
-      new HttpAuthHandlerNegotiate(http_auth_preferences(), resolver_));
+  std::unique_ptr<HttpAuthHandler> tmp_handler(new HttpAuthHandlerNegotiate(
+      CreateAuthSystem(http_auth_preferences(), negotiate_auth_system_factory_),
+      http_auth_preferences(), resolver_));
 #elif defined(OS_POSIX)
   if (is_unsupported_ || !allow_gssapi_library_load_)
     return ERR_UNSUPPORTED_AUTH_SCHEME;
@@ -103,7 +132,9 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
   // TODO(ahendrickson): Move towards model of parsing in the factory
   //                     method and only constructing when valid.
   std::unique_ptr<HttpAuthHandler> tmp_handler(new HttpAuthHandlerNegotiate(
-      auth_library_.get(), http_auth_preferences(), resolver_));
+      CreateAuthSystem(auth_library_.get(), http_auth_preferences(),
+                       negotiate_auth_system_factory_),
+      http_auth_preferences(), resolver_));
 #endif
   if (!tmp_handler->InitFromChallenge(challenge, target, ssl_info, origin,
                                       net_log))
@@ -113,39 +144,27 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
 }
 
 HttpAuthHandlerNegotiate::HttpAuthHandlerNegotiate(
-#if !defined(OS_ANDROID)
-    AuthLibrary* auth_library,
-#endif
-#if defined(OS_WIN)
-    ULONG max_token_length,
-#endif
+    std::unique_ptr<HttpNegotiateAuthSystem> auth_system,
     const HttpAuthPreferences* prefs,
     HostResolver* resolver)
-#if defined(OS_ANDROID)
-    : auth_system_(prefs),
-#elif defined(OS_WIN)
-    : auth_system_(auth_library, "Negotiate", NEGOSSP_NAME, max_token_length),
-#elif defined(OS_POSIX)
-    : auth_system_(auth_library, "Negotiate", CHROME_GSS_SPNEGO_MECH_OID_DESC),
-#endif
+    : auth_system_(std::move(auth_system)),
       resolver_(resolver),
       already_called_(false),
       has_credentials_(false),
       auth_token_(NULL),
       next_state_(STATE_NONE),
-      http_auth_preferences_(prefs) {
-}
+      http_auth_preferences_(prefs) {}
 
 HttpAuthHandlerNegotiate::~HttpAuthHandlerNegotiate() = default;
 
 HttpAuth::AuthorizationResult HttpAuthHandlerNegotiate::HandleAnotherChallenge(
     HttpAuthChallengeTokenizer* challenge) {
-  return auth_system_.ParseChallenge(challenge);
+  return auth_system_->ParseChallenge(challenge);
 }
 
 // Require identity on first pass instead of second.
 bool HttpAuthHandlerNegotiate::NeedsIdentity() {
-  return auth_system_.NeedsIdentity();
+  return auth_system_->NeedsIdentity();
 }
 
 bool HttpAuthHandlerNegotiate::AllowsDefaultCredentials() {
@@ -157,7 +176,7 @@ bool HttpAuthHandlerNegotiate::AllowsDefaultCredentials() {
 }
 
 bool HttpAuthHandlerNegotiate::AllowsExplicitCredentials() {
-  return auth_system_.AllowsExplicitCredentials();
+  return auth_system_->AllowsExplicitCredentials();
 }
 
 // The Negotiate challenge header looks like:
@@ -165,7 +184,7 @@ bool HttpAuthHandlerNegotiate::AllowsExplicitCredentials() {
 bool HttpAuthHandlerNegotiate::Init(HttpAuthChallengeTokenizer* challenge,
                                     const SSLInfo& ssl_info) {
 #if defined(OS_POSIX)
-  if (!auth_system_.Init()) {
+  if (!auth_system_->Init()) {
     VLOG(1) << "can't initialize GSSAPI library";
     return false;
   }
@@ -177,13 +196,13 @@ bool HttpAuthHandlerNegotiate::Init(HttpAuthChallengeTokenizer* challenge,
     return false;
 #endif
   if (CanDelegate())
-    auth_system_.Delegate();
+    auth_system_->Delegate();
   auth_scheme_ = HttpAuth::AUTH_SCHEME_NEGOTIATE;
   score_ = 4;
   properties_ = ENCRYPTS_IDENTITY | IS_CONNECTION_BASED;
 
   HttpAuth::AuthorizationResult auth_result =
-      auth_system_.ParseChallenge(challenge);
+      auth_system_->ParseChallenge(challenge);
   if (auth_result != HttpAuth::AUTHORIZATION_RESULT_ACCEPT)
     return false;
 
@@ -359,7 +378,7 @@ int HttpAuthHandlerNegotiate::DoResolveCanonicalNameComplete(int rv) {
 int HttpAuthHandlerNegotiate::DoGenerateAuthToken() {
   next_state_ = STATE_GENERATE_AUTH_TOKEN_COMPLETE;
   AuthCredentials* credentials = has_credentials_ ? &credentials_ : NULL;
-  return auth_system_.GenerateAuthToken(
+  return auth_system_->GenerateAuthToken(
       credentials, spn_, channel_bindings_, auth_token_,
       base::BindOnce(&HttpAuthHandlerNegotiate::OnIOComplete,
                      base::Unretained(this)));

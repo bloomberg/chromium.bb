@@ -133,4 +133,15 @@ void TestNetworkServiceClient::OnDataUseUpdate(
     int64_t recv_bytes,
     int64_t sent_bytes) {}
 
+#if defined(OS_ANDROID)
+void TestNetworkServiceClient::OnGenerateHttpNegotiateAuthToken(
+    const std::string& server_auth_token,
+    bool can_delegate,
+    const std::string& auth_negotiate_android_account_type,
+    const std::string& spn,
+    OnGenerateHttpNegotiateAuthTokenCallback callback) {
+  NOTREACHED();
+}
+#endif
+
 }  // namespace network
