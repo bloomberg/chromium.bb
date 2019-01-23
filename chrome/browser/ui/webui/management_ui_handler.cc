@@ -20,7 +20,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/buildflags/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -35,13 +34,37 @@
 #endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/common/extensions/permissions/chrome_permission_message_provider.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_namespace.h"
+#include "components/policy/core/common/policy_service.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permissions_data.h"
+
+const char kManagementExtensionReportMachineName[] =
+    "managementExtensionReportMachineName";
+const char kManagementExtensionReportMachineNameAddress[] =
+    "managementExtensionReportMachineNameAddress";
+const char kManagementExtensionReportUsername[] =
+    "managementExtensionReportUsername";
+const char kManagementExtensionReportVersion[] =
+    "managementExtensionReportVersion";
+const char kManagementExtensionReportPolicies[] =
+    "managementExtensionReportPolicies";
+const char kManagementExtensionReportExtensionsPlugin[] =
+    "managementExtensionReportExtensionsPlugin";
+const char kManagementExtensionReportSafeBrowsingWarnings[] =
+    "managementExtensionReportSafeBrowsingWarnings";
+const char kManagementExtensionReportPerfCrash[] =
+    "managementExtensionReportPerfCrash";
+const char kManagementExtensionReportWebsiteUsageStatistics[] =
+    "managementExtensionReportTimePerSite";
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 const char kManagementLogUploadEnabled[] = "managementLogUploadEnabled";
@@ -213,6 +236,21 @@ void AddChromeOSReportingInfo(base::Value* report_sources) {
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 
+const char kOnPremReportingExtensionStableId[] =
+    "emahakmocgideepebncgnmlmliepgpgb";
+const char kOnPremReportingExtensionBetaId[] =
+    "kigjhoekjcpdfjpimbdjegmgecmlicaf";
+const char kCloudReportingExtensionId[] = "empjldejiginopiohodkdoklcjklbaa";
+const char kPolicyKeyReportMachineIdData[] = "report_machine_id_data";
+const char kPolicyKeyReportUserIdData[] = "report_user_id_data";
+const char kPolicyKeyReportVersionData[] = "report_version_data";
+const char kPolicyKeyReportPolicyData[] = "report_policy_data";
+const char kPolicyKeyReportExtensionsData[] = "report_extensions_data";
+const char kPolicyKeyReportSafeBrowsingData[] = "report_safe_browsing_data";
+const char kPolicyKeyReportSystemTelemetryData[] =
+    "report_system_telemetry_data";
+const char kPolicyKeyReportUserBrowsingData[] = "report_user_browsing_data";
+
 std::vector<base::Value> GetPermissionsForExtension(
     scoped_refptr<const extensions::Extension> extension) {
   std::vector<base::Value> permission_messages;
@@ -292,6 +330,10 @@ void ManagementUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getReportingInfo",
       base::BindRepeating(&ManagementUIHandler::HandleGetReportingInfo,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getBrowserReportingInfo",
+      base::BindRepeating(&ManagementUIHandler::HandleGetBrowserReportingInfo,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getExtensions",
@@ -405,6 +447,20 @@ void ManagementUIHandler::HandleGetReportingInfo(const base::ListValue* args) {
                             report_sources);
 }
 
+void ManagementUIHandler::HandleGetBrowserReportingInfo(
+    const base::ListValue* args) {
+  base::Value report_sources(base::Value::Type::LIST);
+  AllowJavascript();
+
+// Only browsers with extensions enabled report status.
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  AddExtensionReportingInfo(&report_sources);
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
+                            report_sources);
+}
+
 void ManagementUIHandler::HandleGetExtensions(const base::ListValue* args) {
   AllowJavascript();
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -440,3 +496,83 @@ void ManagementUIHandler::HandleGetLocalTrustRootsInfo(
   ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
                             trust_roots_configured);
 }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+void ManagementUIHandler::AddExtensionReportingInfo(
+    base::Value* report_sources) {
+  std::unordered_set<std::string> messages;
+
+  const extensions::Extension* cloud_reporting_extension =
+      extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))
+          ->GetExtensionById(kCloudReportingExtensionId,
+                             extensions::ExtensionRegistry::ENABLED);
+
+  if (cloud_reporting_extension != nullptr) {
+    messages.insert(kManagementExtensionReportMachineName);
+    messages.insert(kManagementExtensionReportUsername);
+    messages.insert(kManagementExtensionReportVersion);
+    messages.insert(kManagementExtensionReportPolicies);
+    messages.insert(kManagementExtensionReportExtensionsPlugin);
+    messages.insert(kManagementExtensionReportSafeBrowsingWarnings);
+  }
+
+  policy::PolicyNamespace on_prem_reporting_extension_stable_policy_namespace =
+      policy::PolicyNamespace(policy::POLICY_DOMAIN_EXTENSIONS,
+                              kOnPremReportingExtensionStableId);
+  policy::PolicyNamespace on_prem_reporting_extension_beta_policy_namespace =
+      policy::PolicyNamespace(policy::POLICY_DOMAIN_EXTENSIONS,
+                              kOnPremReportingExtensionBetaId);
+
+  const policy::PolicyService* policyService =
+      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
+          Profile::FromWebUI(web_ui()))
+          ->policy_service();
+
+  const policy::PolicyMap& on_prem_reporting_extension_stable_policy_map =
+      policyService->GetPolicies(
+          on_prem_reporting_extension_stable_policy_namespace);
+  const policy::PolicyMap& on_prem_reporting_extension_beta_policy_map =
+      policyService->GetPolicies(
+          on_prem_reporting_extension_beta_policy_namespace);
+
+  const policy::PolicyMap* policy_maps[] = {
+      &on_prem_reporting_extension_stable_policy_map,
+      &on_prem_reporting_extension_beta_policy_map};
+
+  static const struct {
+    const char* policy_key;
+    const char* message;
+  } policy_keys_messages[] = {
+      {kPolicyKeyReportMachineIdData,
+       kManagementExtensionReportMachineNameAddress},
+      {kPolicyKeyReportUserIdData, kManagementExtensionReportUsername},
+      {kPolicyKeyReportVersionData, kManagementExtensionReportVersion},
+      {kPolicyKeyReportPolicyData, kManagementExtensionReportPolicies},
+      {kPolicyKeyReportExtensionsData,
+       kManagementExtensionReportExtensionsPlugin},
+      {kPolicyKeyReportSafeBrowsingData,
+       kManagementExtensionReportSafeBrowsingWarnings},
+      {kPolicyKeyReportSystemTelemetryData,
+       kManagementExtensionReportPerfCrash},
+      {kPolicyKeyReportUserBrowsingData,
+       kManagementExtensionReportWebsiteUsageStatistics}};
+
+  for (const auto* policy_map : policy_maps) {
+    for (const auto& policy_key_message : policy_keys_messages) {
+      const base::Value* policy_value =
+          policy_map->GetValue(policy_key_message.policy_key);
+      if (policy_value && policy_value->is_bool() && policy_value->GetBool())
+        messages.insert(policy_key_message.message);
+    }
+  }
+
+  if (messages.find(kManagementExtensionReportMachineNameAddress) !=
+      messages.end()) {
+    messages.erase(kManagementExtensionReportMachineName);
+  }
+
+  for (const auto& message : messages) {
+    report_sources->GetList().push_back(base::Value(message));
+  }
+}
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
