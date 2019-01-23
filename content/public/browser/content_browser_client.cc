@@ -680,9 +680,9 @@ ContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   return base::nullopt;
 }
 
-std::vector<ContentBrowserClient::ServiceManifestInfo>
+std::vector<service_manager::Manifest>
 ContentBrowserClient::GetExtraServiceManifests() {
-  return std::vector<ContentBrowserClient::ServiceManifestInfo>();
+  return std::vector<service_manager::Manifest>();
 }
 
 std::vector<std::string> ContentBrowserClient::GetStartupServices() {

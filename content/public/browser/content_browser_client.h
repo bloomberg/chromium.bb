@@ -1027,20 +1027,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
       base::StringPiece name);
 
-  struct ServiceManifestInfo {
-    // The name of the service.
-    std::string name;
-
-    // The resource ID of a blob of manifest JSON. Used if not -1.
-    int resource_id;
-
-    // A Manifest value to use if |resource_id| is -1.
-    service_manager::Manifest manifest;
-  };
-
   // Allows the embedder to provide extra service manifests to be registered
   // with the service manager context.
-  virtual std::vector<ServiceManifestInfo> GetExtraServiceManifests();
+  virtual std::vector<service_manager::Manifest> GetExtraServiceManifests();
 
   // Allows the embedder to have a list of services started after the
   // in-process Service Manager has been initialized.

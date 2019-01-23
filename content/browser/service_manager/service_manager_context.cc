@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/feature_list.h"
-#include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -218,21 +217,6 @@ void StartServiceInGpuProcess(
   BindInterfaceInGpuProcess(mojo::MakeRequest(&service_factory));
   service_factory->CreateService(std::move(request), service_name,
                                  std::move(pid_receiver));
-}
-
-service_manager::Manifest LoadServiceManifest(base::StringPiece service_name,
-                                              int resource_id) {
-  std::string contents =
-      GetContentClient()
-          ->GetDataResource(resource_id, ui::ScaleFactor::SCALE_FACTOR_NONE)
-          .as_string();
-  DCHECK(!contents.empty());
-
-  service_manager::Manifest manifest =
-      service_manager::Manifest::FromValueDeprecated(
-          base::JSONReader::Read(contents));
-
-  return manifest;
 }
 
 class NullServiceProcessLauncherFactory
@@ -562,12 +546,9 @@ ServiceManagerContext::ServiceManagerContext(
             manifest.service_name, std::move(preloaded_files_map));
       }
     }
-    for (const auto& info :
+    for (auto& extra_manifest :
          GetContentClient()->browser()->GetExtraServiceManifests()) {
-      if (info.resource_id != -1)
-        manifests.push_back(LoadServiceManifest(info.name, info.resource_id));
-      else
-        manifests.push_back(info.manifest);
+      manifests.emplace_back(std::move(extra_manifest));
     }
     in_process_context_ =
         new InProcessServiceManagerContext(service_manager_thread_task_runner_);
