@@ -1116,22 +1116,22 @@
   },
   {
     "name": "enable-desktop-pwas",
-    // "owners": [ "your-team" ],
+    "owners": [ "desktop-pwas-team@google.com" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-desktop-pwas-custom-tab-ui",
-    // "owners": [ "your-team" ],
+    "owners": [ "desktop-pwas-team@google.com" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-desktop-pwas-link-capturing",
-    // "owners": [ "your-team" ],
+    "owners": [ "desktop-pwas-team@google.com" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-desktop-pwas-stay-in-window",
-    // "owners": [ "your-team" ],
+    "owners": [ "desktop-pwas-team@google.com" ],
     "expiry_milestone": 76
   },
   {
@@ -1216,7 +1216,7 @@
   },
   {
     "name": "enable-experimental-app-banners",
-    // "owners": [ "your-team" ],
+    "owners": [ "desktop-pwas-team@google.com" ],
     "expiry_milestone": 76
   },
   {
@@ -2920,12 +2920,12 @@
   },
   {
     "name": "pwa-improved-splash-screen",
-    // "owners": [ "your-team" ],
+    "owners": [ "desktop-pwas-team@google.com" ],
     "expiry_milestone": 76
   },
   {
     "name": "pwa-persistent-notification",
-    // "owners": [ "your-team" ],
+    "owners": [ "desktop-pwas-team@google.com" ],
     "expiry_milestone": 76
   },
   {
