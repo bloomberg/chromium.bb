@@ -738,7 +738,10 @@ enum class EnterTabSwitcherSnapshotResult {
   feature_engagement::TrackerFactory::GetForBrowserState(chromeBrowserState)
       ->NotifyEvent(feature_engagement::events::kChromeOpened);
 
-  // Ensure the main tab model is created.
+  // Make sure Roboto is available before any UI is created.
+  [MDCTypography setFontLoader:[MDFRobotoFontLoader sharedInstance]];
+
+  // Ensure the main tab model is created. This also creates the BVC.
   [_browserViewWrangler createMainBrowser];
 
   _spotlightManager =
@@ -760,8 +763,6 @@ enum class EnterTabSwitcherSnapshotResult {
   }
   if (switchFromIncognito)
     startInIncognito = NO;
-
-  [MDCTypography setFontLoader:[MDFRobotoFontLoader sharedInstance]];
 
   if ([PreviousSessionInfo sharedInstance].isFirstSessionAfterLanguageChange) {
     IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(

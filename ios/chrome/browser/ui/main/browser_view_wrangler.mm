@@ -161,6 +161,13 @@
   breakpad::MonitorURLsForTabModel(self.mainBrowser->GetTabModel());
   ios::GetChromeBrowserProvider()->InitializeCastService(
       self.mainBrowser->GetTabModel());
+
+  // Create the main coordinator, and thus the main interface.
+  _mainBrowserCoordinator = [self coordinatorForBrowser:self.mainBrowser];
+  [_mainBrowserCoordinator start];
+  DCHECK(_mainBrowserCoordinator.viewController);
+  _mainInterface =
+      [[WrangledBrowser alloc] initWithCoordinator:_mainBrowserCoordinator];
 }
 
 #pragma mark - BrowserViewInformation property implementations
@@ -191,20 +198,9 @@
   [self updateDeviceSharingManager];
 }
 
-- (id<BrowserInterface>)mainInterface {
-  if (!_mainInterface) {
-    // The backing coordinator should not have been created yet.
-    DCHECK(!_mainBrowserCoordinator);
-    _mainBrowserCoordinator = [self coordinatorForBrowser:self.mainBrowser];
-    [_mainBrowserCoordinator start];
-    DCHECK(_mainBrowserCoordinator.viewController);
-    _mainInterface =
-        [[WrangledBrowser alloc] initWithCoordinator:_mainBrowserCoordinator];
-  }
-  return _mainInterface;
-}
-
 - (id<BrowserInterface>)incognitoInterface {
+  if (!_mainInterface)
+    return nil;
   if (!_incognitoInterface) {
     // The backing coordinator should not have been created yet.
     DCHECK(!_incognitoBrowserCoordinator);

@@ -48,8 +48,10 @@ class ChromeBrowserState;
 - (instancetype)init NS_UNAVAILABLE;
 
 // Creates the main Browser used by the receiver, using the browser state
-// and tab model observer it was configured with. This should be done before
-// the main interface is accessed, usually immediately after initialization.
+// and tab model observer it was configured with. The main interface is then
+// created; until this method is called, the main and incognito interfaces will
+// be nil. This should be done before the main interface is accessed, usually
+// immediately after initialization.
 - (void)createMainBrowser;
 
 // Update the device sharing manager. This should be done after updates to the
