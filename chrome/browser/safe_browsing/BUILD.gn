@@ -17,10 +17,32 @@ static_library("safe_browsing") {
 
   deps = [
     "//chrome/app:generated_resources",
+    "//chrome/common",
+    "//chrome/common:constants",
+    "//chrome/common/safe_browsing:file_type_policies",
+    "//components/browser_sync",
     "//components/chrome_cleaner/public/interfaces",
+    "//components/data_use_measurement/core",
+    "//components/keyed_service/content",
+    "//components/language/core/browser",
+    "//components/password_manager/core/browser",
+    "//components/password_manager/core/browser:hash_password_manager",
+    "//components/pref_registry",
+    "//components/resources:components_resources_grit",
+    "//components/safe_browsing:features",
+    "//components/safe_browsing:ping_manager",
+    "//components/safe_browsing/browser:referrer_chain_provider",
     "//components/safe_browsing/common:interfaces",
+    "//components/safe_browsing/db:database_manager",
+    "//components/safe_browsing/db:v4_local_database_manager",
+    "//components/safe_browsing/web_ui",
+    "//components/search_engines",
+    "//components/sessions",
+    "//components/url_formatter",
     "//mojo/public/cpp/platform",
     "//mojo/public/cpp/system",
+    "//services/identity/public/cpp",
+    "//services/preferences/public/cpp",
   ]
 
   if (enable_extensions) {
@@ -67,7 +89,10 @@ static_library("safe_browsing") {
       "settings_reset_prompt/settings_reset_prompt_util_win.cc",
       "settings_reset_prompt/settings_reset_prompt_util_win.h",
     ]
-    deps += [ "//components/keep_alive_registry" ]
+    deps += [
+      "//components/keep_alive_registry",
+      "//extensions/browser",
+    ]
   }
 
   if (is_chrome_branded && is_win) {
@@ -217,7 +242,10 @@ static_library("safe_browsing") {
       ]
       deps += [
         ":advanced_protection",
+        "//chrome/common/safe_browsing:archive_analyzer_results",
+        "//chrome/common/safe_browsing:binary_feature_extractor",
         "//chrome/common/safe_browsing:disk_image_type_sniffer_mac",
+        "//chrome/common/safe_browsing:download_type_util",
         "//chrome/services/file_util/public/cpp",
         "//components/content_settings/core/browser:browser",
         "//components/language/core/common:common",

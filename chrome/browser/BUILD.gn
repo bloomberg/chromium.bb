@@ -1711,6 +1711,7 @@ jumbo_split_static_library("browser") {
   allow_circular_includes_from = [
     "//chrome/browser/ui",
     "//chrome/browser/ui/webui/bluetooth_internals",
+    "//chrome/browser/safe_browsing",
   ]
 
   public_deps = [
