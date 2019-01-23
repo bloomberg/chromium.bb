@@ -370,12 +370,8 @@ void TCPSocketPosix::SetDefaultOptionsForClient() {
   // If SetTCPNoDelay fails, we don't care.
   SetTCPNoDelay(socket_->socket_fd(), true);
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_FUCHSIA)
-  // TCP keep alive wakes up the radio, which is expensive on mobile.
-  // It's also not implemented on Fuchsia. Do not enable it there.
-  // TODO(crbug.com/758706): Consider enabling keep-alive on Fuchsia.
-  //
-  // It's useful to prevent TCP middleboxes from timing out
+  // TCP keep alive wakes up the radio, which is expensive on mobile. Do not
+  // enable it there. It's useful to prevent TCP middleboxes from timing out
   // connection mappings. Packets for timed out connection mappings at
   // middleboxes will either lead to:
   // a) Middleboxes sending TCP RSTs. It's up to higher layers to check for this
@@ -385,6 +381,7 @@ void TCPSocketPosix::SetDefaultOptionsForClient() {
   // are very high (on the order of seconds). Given the number of
   // retransmissions required before killing the connection, this can lead to
   // tens of seconds or even minutes of delay, depending on OS.
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   const int kTCPKeepAliveSeconds = 45;
 
   SetTCPKeepAlive(socket_->socket_fd(), true, kTCPKeepAliveSeconds);
