@@ -846,11 +846,13 @@ TEST_F(VolumeManagerTest, OnExternalStorageReadOnlyChanged) {
 }
 
 TEST_F(VolumeManagerTest, GetVolumeList) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(chromeos::features::kMyFilesVolume);
   volume_manager()->Initialize();  // Adds "Downloads"
   std::vector<base::WeakPtr<Volume>> volume_list =
       volume_manager()->GetVolumeList();
   ASSERT_EQ(1u, volume_list.size());
-  EXPECT_EQ("downloads:Downloads", volume_list[0]->volume_id());
+  EXPECT_EQ("downloads:MyFiles", volume_list[0]->volume_id());
   EXPECT_EQ(VOLUME_TYPE_DOWNLOADS_DIRECTORY, volume_list[0]->type());
 }
 
@@ -870,14 +872,16 @@ TEST_F(VolumeManagerTest, VolumeManagerInitializeMyFilesVolume) {
 }
 
 TEST_F(VolumeManagerTest, FindVolumeById) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(chromeos::features::kMyFilesVolume);
   volume_manager()->Initialize();  // Adds "Downloads"
   base::WeakPtr<Volume> bad_volume =
       volume_manager()->FindVolumeById("nonexistent");
   ASSERT_FALSE(bad_volume.get());
   base::WeakPtr<Volume> good_volume =
-      volume_manager()->FindVolumeById("downloads:Downloads");
+      volume_manager()->FindVolumeById("downloads:MyFiles");
   ASSERT_TRUE(good_volume.get());
-  EXPECT_EQ("downloads:Downloads", good_volume->volume_id());
+  EXPECT_EQ("downloads:MyFiles", good_volume->volume_id());
   EXPECT_EQ(VOLUME_TYPE_DOWNLOADS_DIRECTORY, good_volume->type());
 }
 
