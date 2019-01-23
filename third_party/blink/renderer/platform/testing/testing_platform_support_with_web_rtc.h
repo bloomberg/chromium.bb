@@ -23,10 +23,12 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
   bool Initialize(const webrtc::PeerConnectionInterface::RTCConfiguration&,
                   const WebMediaConstraints&) override;
 
-  void CreateOffer(const WebRTCSessionDescriptionRequest&,
-                   const WebMediaConstraints&) override;
-  void CreateOffer(const WebRTCSessionDescriptionRequest&,
-                   const WebRTCOfferOptions&) override;
+  std::vector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
+      const WebRTCSessionDescriptionRequest&,
+      const WebMediaConstraints&) override;
+  std::vector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
+      const WebRTCSessionDescriptionRequest&,
+      const WebRTCOfferOptions&) override;
   void CreateAnswer(const WebRTCSessionDescriptionRequest&,
                     const WebMediaConstraints&) override;
   void CreateAnswer(const WebRTCSessionDescriptionRequest&,

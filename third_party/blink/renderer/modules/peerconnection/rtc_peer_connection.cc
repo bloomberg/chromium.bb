@@ -848,7 +848,10 @@ ScriptPromise RTCPeerConnection::createOffer(ScriptState* script_state,
         context,
         WebFeature::kRTCPeerConnectionCreateOfferOptionsOfferToReceive);
   }
-  peer_handler_->CreateOffer(request, ConvertToWebRTCOfferOptions(options));
+  auto web_transceivers =
+      peer_handler_->CreateOffer(request, ConvertToWebRTCOfferOptions(options));
+  for (auto& web_transceiver : web_transceivers)
+    CreateOrUpdateTransceiver(std::move(web_transceiver));
   return promise;
 }
 
@@ -878,6 +881,7 @@ ScriptPromise RTCPeerConnection::createOffer(
           RTCCreateSessionDescriptionOperation::kCreateOffer, this,
           success_callback, error_callback);
 
+  std::vector<std::unique_ptr<WebRTCRtpTransceiver>> web_transceivers;
   if (offer_options) {
     if (offer_options->OfferToReceiveAudio() != -1 ||
         offer_options->OfferToReceiveVideo() != -1) {
@@ -888,7 +892,8 @@ ScriptPromise RTCPeerConnection::createOffer(
           context, WebFeature::kRTCPeerConnectionCreateOfferLegacyCompliant);
     }
 
-    peer_handler_->CreateOffer(request, WebRTCOfferOptions(offer_options));
+    web_transceivers =
+        peer_handler_->CreateOffer(request, WebRTCOfferOptions(offer_options));
   } else {
     MediaErrorState media_error_state;
     WebMediaConstraints constraints = media_constraints_impl::Create(
@@ -912,8 +917,10 @@ ScriptPromise RTCPeerConnection::createOffer(
           context, WebFeature::kRTCPeerConnectionCreateOfferLegacyCompliant);
     }
 
-    peer_handler_->CreateOffer(request, constraints);
+    web_transceivers = peer_handler_->CreateOffer(request, constraints);
   }
+  for (auto& web_transceiver : web_transceivers)
+    CreateOrUpdateTransceiver(std::move(web_transceiver));
 
   return ScriptPromise::CastUndefined(script_state);
 }

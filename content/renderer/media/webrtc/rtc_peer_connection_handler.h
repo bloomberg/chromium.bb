@@ -112,10 +112,12 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
                       server_configuration,
                   const blink::WebMediaConstraints& options) override;
 
-  void CreateOffer(const blink::WebRTCSessionDescriptionRequest& request,
-                   const blink::WebMediaConstraints& options) override;
-  void CreateOffer(const blink::WebRTCSessionDescriptionRequest& request,
-                   const blink::WebRTCOfferOptions& options) override;
+  std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>> CreateOffer(
+      const blink::WebRTCSessionDescriptionRequest& request,
+      const blink::WebMediaConstraints& options) override;
+  std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>> CreateOffer(
+      const blink::WebRTCSessionDescriptionRequest& request,
+      const blink::WebRTCOfferOptions& options) override;
 
   void CreateAnswer(const blink::WebRTCSessionDescriptionRequest& request,
                     const blink::WebMediaConstraints& options) override;
@@ -286,6 +288,13 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       rtc::scoped_refptr<webrtc::RtpSenderInterface> sender,
       TransceiverStateSurfacer* transceiver_state_surfacer,
       bool* result);
+  std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>> CreateOfferInternal(
+      const blink::WebRTCSessionDescriptionRequest& request,
+      webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options);
+  void CreateOfferOnSignalingThread(
+      webrtc::CreateSessionDescriptionObserver* observer,
+      webrtc::PeerConnectionInterface::RTCOfferAnswerOptions offer_options,
+      TransceiverStateSurfacer* transceiver_state_surfacer);
   std::vector<std::unique_ptr<RTCRtpSender>>::iterator FindSender(uintptr_t id);
   std::vector<std::unique_ptr<RTCRtpReceiver>>::iterator FindReceiver(
       uintptr_t id);
