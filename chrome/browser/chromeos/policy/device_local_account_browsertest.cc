@@ -59,6 +59,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_manager_base_test_util.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
+#include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -95,6 +96,7 @@
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/login/auth/mock_auth_status_consumer.h"
 #include "chromeos/login/auth/user_context.h"
+#include "chromeos/network/policy_certificate_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
@@ -218,6 +220,28 @@ const char* const kInvalidRecommendedLocale[] = {
 };
 const char kPublicSessionLocale[] = "de";
 const char kPublicSessionInputMethodIDTemplate[] = "_comp_ime_%sxkb:de:neo:ger";
+
+const char kFakeOncWithCertificate[] =
+    "{\"Certificates\":["
+    "{\"Type\":\"Authority\","
+    "\"TrustBits\":[\"Web\"],"
+    "\"X509\":\"-----BEGIN CERTIFICATE-----\n"
+    "MIICVTCCAb6gAwIBAgIJAK8kOY/OQDsKMA0GCSqGSIb3DQEBCwUAMEIxCzAJBgNV\n"
+    "BAYTAkRFMRAwDgYDVQQIDAdCYXZhcmlhMSEwHwYDVQQKDBhJbnRlcm5ldCBXaWRn\n"
+    "aXRzIFB0eSBMdGQwHhcNMTgxMjI3MTIyNjI0WhcNMTkxMjI3MTIyNjI0WjBCMQsw\n"
+    "CQYDVQQGEwJERTEQMA4GA1UECAwHQmF2YXJpYTEhMB8GA1UECgwYSW50ZXJuZXQg\n"
+    "V2lkZ2l0cyBQdHkgTHRkMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDbFncT\n"
+    "Q8slhRgLg7sK9DhkYZaNiD1jVbdGvuXahex3uQl+2bACyQ7Peq/MkpFLy4M75nj3\n"
+    "WrydAycw1KCDPENPz2jmdHwGl5+6P7bob0Rqe+4i/9XwGdl8EPH5GFZbaz8aSYiL\n"
+    "/aaVvOm+8IYrhbp44s3cOLriPaQDbWtZMZKCiwIDAQABo1MwUTAdBgNVHQ4EFgQU\n"
+    "26bvyiqj3uQynNcZru72m3Uv3eswHwYDVR0jBBgwFoAU26bvyiqj3uQynNcZru72\n"
+    "m3Uv3eswDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOBgQCHKz8NJg6f\n"
+    "qwkFmG+tOsfyn3JHj3NfkMGJugSV6Yf7LYJXHpc4kWmfGuseTtHt57PG/BzCjLs1\n"
+    "qTF8svVecDj5Qku/SbGQCf2Vg/tLnq8XidbMmp26nUXrLzNQnTm0MJYEk6PJRiod\n"
+    "BIrpuq5z+9r//9f27iXidR94qFbbvServw==\n"
+    "-----END CERTIFICATE-----\","
+    "\"GUID\":\"{00f79111-51e0-e6e0-76b3b55450d80a1b}\"}"
+    "]}";
 
 bool IsLogoutConfirmationDialogShowing() {
   // Wait for any browser window close mojo messages to propagate to ash.
@@ -2343,6 +2367,21 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyForExtensions) {
 
 class ManagedSessionsTest : public DeviceLocalAccountTest {
  protected:
+  class CertsObserver : public chromeos::PolicyCertificateProvider::Observer {
+   public:
+    explicit CertsObserver(base::OnceClosure on_change)
+        : on_change_(std::move(on_change)) {}
+
+    void OnPolicyProvidedCertsChanged(
+        const net::CertificateList& all_server_and_authority_certs,
+        const net::CertificateList& trust_anchors) override {
+      std::move(on_change_).Run();
+    }
+
+   private:
+    base::OnceClosure on_change_;
+  };
+
   void StartTestExtensionsServer() {
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
     scoped_refptr<TestingUpdateManifestProvider>
@@ -2379,6 +2418,26 @@ class ManagedSessionsTest : public DeviceLocalAccountTest {
 
   void AddForceInstalledWhitelistedExtension() {
     AddExtension(kPublicSessionWhitelistedExtensionID);
+  }
+
+  void WaitForCertificateUpdate() {
+    policy::DeviceNetworkConfigurationUpdater* updater =
+        g_browser_process->platform_part()
+            ->browser_policy_connector_chromeos()
+            ->GetDeviceNetworkConfigurationUpdater();
+    base::RunLoop run_loop;
+    auto observer = std::make_unique<CertsObserver>(run_loop.QuitClosure());
+    updater->AddPolicyProvidedCertsObserver(observer.get());
+    run_loop.Run();
+    updater->RemovePolicyProvidedCertsObserver(observer.get());
+  }
+
+  void AddNetworkCertificateToDevicePolicy() {
+    em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+    proto.mutable_open_network_configuration()->set_open_network_configuration(
+        kFakeOncWithCertificate);
+    RefreshDevicePolicy();
+    WaitForCertificateUpdate();
   }
 };
 
@@ -2465,6 +2524,35 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, WhitelistedExtension) {
   // Check that white-listed extension is not considered risky and doesn't
   // activate managed session mode.
   EXPECT_FALSE(
+      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
+          broker));
+}
+
+IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, NetworkCertificate) {
+  SetManagedSessionsEnabled(/* managed_sessions_enabled */ true);
+
+  // Install and refresh the device policy now. This will also fetch the initial
+  // user policy for the device-local account now.
+  UploadAndInstallDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(kAccountId1);
+  AddNetworkCertificateToDevicePolicy();
+  WaitForPolicy();
+
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(account_id_1_);
+  ASSERT_TRUE(user);
+  auto* broker = GetDeviceLocalAccountPolicyBroker();
+  ASSERT_TRUE(broker);
+
+  // Check that 'DeviceLocalAccountManagedSessionEnabled' policy was applied
+  // correctly.
+  EXPECT_TRUE(
+      chromeos::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(
+          *user));
+
+  // Check that network certificate pushed via policy activates managed sessions
+  // mode.
+  EXPECT_TRUE(
       chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
           broker));
 }
