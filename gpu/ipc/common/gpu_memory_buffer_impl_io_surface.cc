@@ -43,10 +43,10 @@ GpuMemoryBufferImplIOSurface::GpuMemoryBufferImplIOSurface(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
     gfx::BufferFormat format,
-    const DestructionCallback& callback,
+    DestructionCallback callback,
     IOSurfaceRef io_surface,
     uint32_t lock_flags)
-    : GpuMemoryBufferImpl(id, size, format, callback),
+    : GpuMemoryBufferImpl(id, size, format, std::move(callback)),
       io_surface_(io_surface),
       lock_flags_(lock_flags) {}
 
@@ -59,7 +59,7 @@ GpuMemoryBufferImplIOSurface::CreateFromHandle(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
-    const DestructionCallback& callback) {
+    DestructionCallback callback) {
   if (!handle.mach_port) {
     LOG(ERROR) << "Invalid IOSurface mach port returned to client.";
     return nullptr;
@@ -77,13 +77,13 @@ GpuMemoryBufferImplIOSurface::CreateFromHandle(
     return nullptr;
   }
 
-  return base::WrapUnique(
-      new GpuMemoryBufferImplIOSurface(handle.id, size, format, callback,
-                                       io_surface.release(), LockFlags(usage)));
+  return base::WrapUnique(new GpuMemoryBufferImplIOSurface(
+      handle.id, size, format, std::move(callback), io_surface.release(),
+      LockFlags(usage)));
 }
 
 // static
-base::Closure GpuMemoryBufferImplIOSurface::AllocateForTesting(
+base::OnceClosure GpuMemoryBufferImplIOSurface::AllocateForTesting(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,

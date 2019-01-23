@@ -32,11 +32,11 @@ GpuMemoryBufferImplNativePixmap::GpuMemoryBufferImplNativePixmap(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
     gfx::BufferFormat format,
-    const DestructionCallback& callback,
+    DestructionCallback callback,
     std::unique_ptr<gfx::ClientNativePixmap> pixmap,
     const std::vector<gfx::NativePixmapPlane>& planes,
     base::ScopedFD fd)
-    : GpuMemoryBufferImpl(id, size, format, callback),
+    : GpuMemoryBufferImpl(id, size, format, std::move(callback)),
       pixmap_(std::move(pixmap)),
       planes_(planes),
       fd_(std::move(fd)) {}
@@ -51,7 +51,7 @@ GpuMemoryBufferImplNativePixmap::CreateFromHandle(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
-    const DestructionCallback& callback) {
+    DestructionCallback callback) {
   // GpuMemoryBufferImpl needs the FD to implement GetHandle() but
   // gfx::ClientNativePixmapFactory::ImportFromHandle is expected to take
   // ownership of the FD passed in the handle so we have to dup it here in
@@ -86,12 +86,12 @@ GpuMemoryBufferImplNativePixmap::CreateFromHandle(
   DCHECK(native_pixmap);
 
   return base::WrapUnique(new GpuMemoryBufferImplNativePixmap(
-      handle.id, size, format, callback, std::move(native_pixmap),
+      handle.id, size, format, std::move(callback), std::move(native_pixmap),
       handle.native_pixmap_handle.planes, std::move(scoped_fd)));
 }
 
 // static
-base::Closure GpuMemoryBufferImplNativePixmap::AllocateForTesting(
+base::OnceClosure GpuMemoryBufferImplNativePixmap::AllocateForTesting(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
@@ -109,7 +109,7 @@ base::Closure GpuMemoryBufferImplNativePixmap::AllocateForTesting(
   NOTIMPLEMENTED();
 #endif
   handle->type = gfx::NATIVE_PIXMAP;
-  return base::Bind(&FreeNativePixmapForTesting, pixmap);
+  return base::BindOnce(&FreeNativePixmapForTesting, pixmap);
 }
 
 bool GpuMemoryBufferImplNativePixmap::Map() {

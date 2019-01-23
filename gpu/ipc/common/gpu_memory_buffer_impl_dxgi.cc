@@ -24,14 +24,14 @@ GpuMemoryBufferImplDXGI::CreateFromHandle(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
-    const DestructionCallback& callback) {
+    DestructionCallback callback) {
   DCHECK(handle.dxgi_handle.IsValid());
   return base::WrapUnique(new GpuMemoryBufferImplDXGI(
-      handle.id, size, format, callback,
+      handle.id, size, format, std::move(callback),
       base::win::ScopedHandle(handle.dxgi_handle.GetHandle())));
 }
 
-base::Closure GpuMemoryBufferImplDXGI::AllocateForTesting(
+base::OnceClosure GpuMemoryBufferImplDXGI::AllocateForTesting(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
@@ -123,9 +123,9 @@ GpuMemoryBufferImplDXGI::GpuMemoryBufferImplDXGI(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
     gfx::BufferFormat format,
-    const DestructionCallback& callback,
+    DestructionCallback callback,
     base::win::ScopedHandle dxgi_handle)
-    : GpuMemoryBufferImpl(id, size, format, callback),
+    : GpuMemoryBufferImpl(id, size, format, std::move(callback)),
       dxgi_handle_(std::move(dxgi_handle)) {}
 
 }  // namespace gpu

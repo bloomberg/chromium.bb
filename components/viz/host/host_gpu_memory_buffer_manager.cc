@@ -22,9 +22,10 @@ namespace {
 
 void OnGpuMemoryBufferDestroyed(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const gpu::GpuMemoryBufferImpl::DestructionCallback& callback,
+    gpu::GpuMemoryBufferImpl::DestructionCallback callback,
     const gpu::SyncToken& sync_token) {
-  task_runner->PostTask(FROM_HERE, base::BindOnce(callback, sync_token));
+  task_runner->PostTask(FROM_HERE,
+                        base::BindOnce(std::move(callback), sync_token));
 }
 
 }  // namespace
@@ -209,11 +210,10 @@ HostGpuMemoryBufferManager::CreateGpuMemoryBuffer(
   // onto the |task_runner_| thread to do the real work.
   return gpu_memory_buffer_support_->CreateGpuMemoryBufferImplFromHandle(
       std::move(handle), size, format, usage,
-      base::BindRepeating(
+      base::BindOnce(
           &OnGpuMemoryBufferDestroyed, task_runner_,
-          base::BindRepeating(
-              &HostGpuMemoryBufferManager::DestroyGpuMemoryBuffer, weak_ptr_,
-              id, client_id_)));
+          base::BindOnce(&HostGpuMemoryBufferManager::DestroyGpuMemoryBuffer,
+                         weak_ptr_, id, client_id_)));
 }
 
 void HostGpuMemoryBufferManager::SetDestructionSyncToken(
