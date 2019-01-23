@@ -302,7 +302,6 @@ void AboutSigninInternals::Initialize(SigninClient* client) {
   signin_error_controller_->AddObserver(this);
   identity_manager_->AddObserver(this);
   identity_manager_->AddDiagnosticsObserver(this);
-  token_service_->AddObserver(this);
   token_service_->AddDiagnosticsObserver(this);
   cookie_manager_service_->AddObserver(this);
 }
@@ -311,7 +310,6 @@ void AboutSigninInternals::Shutdown() {
   signin_error_controller_->RemoveObserver(this);
   identity_manager_->RemoveObserver(this);
   identity_manager_->RemoveDiagnosticsObserver(this);
-  token_service_->RemoveObserver(this);
   token_service_->RemoveDiagnosticsObserver(this);
   cookie_manager_service_->RemoveObserver(this);
 }
@@ -402,7 +400,7 @@ void AboutSigninInternals::OnRefreshTokensLoaded() {
   NotifyObservers();
 }
 
-void AboutSigninInternals::OnEndBatchChanges() {
+void AboutSigninInternals::OnEndBatchOfRefreshTokenStateChanges() {
   NotifyObservers();
 }
 
