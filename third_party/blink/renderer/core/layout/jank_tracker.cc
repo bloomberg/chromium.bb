@@ -120,6 +120,12 @@ void JankTracker::AccumulateJank(const LayoutObject& source,
       SmallerThanRegionGranularity(new_rect, scale))
     return;
 
+  // Ignore layout objects that move (in the coordinate space of the paint
+  // invalidation container) on scroll.
+  // TODO(skobes): Find a way to detect when these objects jank.
+  if (source.IsFixedPositioned() || source.IsStickyPositioned())
+    return;
+
   const auto* local_xform = TransformNodeFor(painting_layer.GetLayoutObject());
   const auto* root_xform = TransformNodeFor(*source.View());
 
