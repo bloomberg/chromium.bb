@@ -88,9 +88,9 @@ class MockPasswordStore : public PasswordStore {
   MOCK_METHOD0(ClearAllGaiaPasswordHash, void());
   MOCK_METHOD0(ClearAllEnterprisePasswordHash, void());
 #endif
-
   MOCK_METHOD0(BeginTransaction, bool());
   MOCK_METHOD0(CommitTransaction, bool());
+  MOCK_METHOD1(ReadAllLogins, bool(PrimaryKeyToFormMap*));
   MOCK_METHOD0(GetMetadataStore, syncer::SyncMetadataStore*());
 
   PasswordStoreSync* GetSyncInterface() { return this; }

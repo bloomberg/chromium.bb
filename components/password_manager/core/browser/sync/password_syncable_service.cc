@@ -326,10 +326,8 @@ bool PasswordSyncableService::ReadFromPasswordStore(
     std::vector<std::unique_ptr<autofill::PasswordForm>>* password_entries,
     PasswordEntryMap* passwords_entry_map) const {
   DCHECK(password_entries);
-  std::vector<std::unique_ptr<autofill::PasswordForm>> autofillable_entries;
-  std::vector<std::unique_ptr<autofill::PasswordForm>> blacklist_entries;
-  if (!password_store_->FillAutofillableLogins(&autofillable_entries) ||
-      !password_store_->FillBlacklistLogins(&blacklist_entries)) {
+  PrimaryKeyToFormMap all_entries_map;
+  if (!password_store_->ReadAllLogins(&all_entries_map)) {
     // Password store often fails to load passwords. Track failures with UMA.
     // (http://crbug.com/249000)
     // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
@@ -338,12 +336,11 @@ bool PasswordSyncableService::ReadFromPasswordStore(
                               static_cast<int>(syncer::MODEL_TYPE_COUNT));
     return false;
   }
-  password_entries->resize(autofillable_entries.size() +
-                           blacklist_entries.size());
-  std::move(autofillable_entries.begin(), autofillable_entries.end(),
-            password_entries->begin());
-  std::move(blacklist_entries.begin(), blacklist_entries.end(),
-            password_entries->begin() + autofillable_entries.size());
+  password_entries->clear();
+  password_entries->reserve(all_entries_map.size());
+  for (auto& pair : all_entries_map) {
+    password_entries->push_back(std::move(pair.second));
+  }
 
   if (!passwords_entry_map)
     return true;

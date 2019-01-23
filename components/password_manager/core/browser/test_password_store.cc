@@ -220,6 +220,11 @@ bool TestPasswordStore::CommitTransaction() {
   return true;
 }
 
+bool TestPasswordStore::ReadAllLogins(PrimaryKeyToFormMap* key_to_form_map) {
+  NOTIMPLEMENTED();
+  return true;
+}
+
 syncer::SyncMetadataStore* TestPasswordStore::GetMetadataStore() {
   return nullptr;
 }

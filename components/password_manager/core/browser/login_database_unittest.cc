@@ -265,10 +265,14 @@ class LoginDatabaseTest : public testing::Test {
 
 TEST_F(LoginDatabaseTest, Logins) {
   std::vector<std::unique_ptr<PasswordForm>> result;
+  PrimaryKeyToFormMap key_to_form_map;
 
   // Verify the database is empty.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(0U, result.size());
+
+  EXPECT_TRUE(db().GetAllLogins(&key_to_form_map));
+  EXPECT_EQ(0U, key_to_form_map.size());
 
   // Example password form.
   PasswordForm form;
@@ -283,6 +287,11 @@ TEST_F(LoginDatabaseTest, Logins) {
   ASSERT_EQ(1U, result.size());
   EXPECT_EQ(form, *result[0]);
   result.clear();
+
+  EXPECT_TRUE(db().GetAllLogins(&key_to_form_map));
+  EXPECT_EQ(1U, key_to_form_map.size());
+  EXPECT_EQ(form, *key_to_form_map[1]);
+  key_to_form_map.clear();
 
   // Match against an exact copy.
   EXPECT_TRUE(db().GetLogins(PasswordStore::FormDigest(form), &result));
