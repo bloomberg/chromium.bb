@@ -233,16 +233,20 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   void CreateFormManagers(PasswordManagerDriver* driver,
                           const std::vector<autofill::PasswordForm>& forms);
 
-  // Passes |form| to NewPasswordManager that manages it for using it after
+  // Create NewPasswordFormManager for |form|, adds the newly created one to
+  // |form_managers_| and returns it.
+  NewPasswordFormManager* CreateFormManager(PasswordManagerDriver* driver,
+                                            const autofill::FormData& forms);
+
+  // Passes |form| to NewPasswordFormManager that manages it for using it after
   // detecting submission success for saving. |driver| is needed to determine
   // the match. If the function is called multiple times, only the form from the
   // last call is provisionally saved. Multiple calls is possible because it is
-  // called on any user keystroke.
-  // Returns manager which manages |form| or nullptr if such manager is not
-  // found.
-  NewPasswordFormManager* ProvisionallySaveForm(
-      const autofill::FormData& form,
-      const PasswordManagerDriver* driver);
+  // called on any user keystroke. If there is no NewPasswordFormManager that
+  // manages |form|, the new one is created.
+  // Returns manager which manages |form|.
+  NewPasswordFormManager* ProvisionallySaveForm(const autofill::FormData& form,
+                                                PasswordManagerDriver* driver);
 
   // Returns the best match in |pending_login_managers_| for |form|. May return
   // nullptr if no match exists.

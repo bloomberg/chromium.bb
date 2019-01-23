@@ -860,19 +860,26 @@ void PasswordManager::CreateFormManagers(
 
   // Create form manager for new forms.
   for (const PasswordForm* new_form : new_forms) {
-    form_managers_.push_back(std::make_unique<NewPasswordFormManager>(
-        client_,
-        driver ? driver->AsWeakPtr() : base::WeakPtr<PasswordManagerDriver>(),
-        new_form->form_data, nullptr,
-        std::make_unique<FormSaverImpl>(client_->GetPasswordStore()), nullptr));
-    form_managers_.back()->set_old_parsing_result(*new_form);
-    form_managers_.back()->ProcessServerPredictions(predictions_);
+    auto* manager = CreateFormManager(driver, new_form->form_data);
+    manager->set_old_parsing_result(*new_form);
   }
+}
+
+NewPasswordFormManager* PasswordManager::CreateFormManager(
+    PasswordManagerDriver* driver,
+    const autofill::FormData& form) {
+  form_managers_.push_back(std::make_unique<NewPasswordFormManager>(
+      client_,
+      driver ? driver->AsWeakPtr() : base::WeakPtr<PasswordManagerDriver>(),
+      form, nullptr,
+      std::make_unique<FormSaverImpl>(client_->GetPasswordStore()), nullptr));
+  form_managers_.back()->ProcessServerPredictions(predictions_);
+  return form_managers_.back().get();
 }
 
 NewPasswordFormManager* PasswordManager::ProvisionallySaveForm(
     const FormData& submitted_form,
-    const PasswordManagerDriver* driver) {
+    PasswordManagerDriver* driver) {
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
@@ -906,13 +913,13 @@ NewPasswordFormManager* PasswordManager::ProvisionallySaveForm(
                 kMissingProvisionallySave;
   if (client_ && client_->GetMetricsRecorder())
     client_->GetMetricsRecorder()->RecordFormManagerAvailable(availability);
+
   if (!matching_form_manager) {
-    // TODO(https://crbug.com/831123): Implement more robust handling when
-    // |matching_form_manager| is not found.
     RecordProvisionalSaveFailure(
         PasswordManagerMetricsRecorder::NO_MATCHING_FORM, submitted_form.origin,
         logger.get());
-    return nullptr;
+    matching_form_manager = CreateFormManager(driver, submitted_form);
+    matching_form_manager->ProvisionallySaveIfIsManaged(submitted_form, driver);
   }
 
   // Set all other form managers to no submission state.
@@ -1390,7 +1397,7 @@ void PasswordManager::RecordProvisionalSaveFailure(
 
 scoped_refptr<PasswordFormMetricsRecorder>
 PasswordManager::GetMetricRecorderFromNewPasswordFormManager(
-    const autofill::FormData& form,
+    const FormData& form,
     const PasswordManagerDriver* driver) {
   for (auto& form_manager : form_managers_) {
     if (form_manager->DoesManage(form, driver))
@@ -1400,9 +1407,11 @@ PasswordManager::GetMetricRecorderFromNewPasswordFormManager(
   return nullptr;
 }
 
+// TODO(https://crbug.com/831123): Implement creating missing
+// NewPasswordFormManager when PasswordFormManager is gone.
 PasswordFormManagerInterface* PasswordManager::GetMatchedManager(
     const PasswordManagerDriver* driver,
-    const autofill::PasswordForm& form) {
+    const PasswordForm& form) {
   if (!is_new_form_parsing_for_saving_enabled_)
     return GetMatchingPendingManager(form);
 
