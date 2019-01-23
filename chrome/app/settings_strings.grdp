@@ -2527,7 +2527,7 @@
     Help improve Chrome's features and performance
   </message>
   <message name="IDS_SETTINGS_ENABLE_LOGGING_DESC_UNIFIED_CONSENT" desc="The description of the checkbox to enable/disable crash and user metrics logging">
-    Automatically send usage statistics and crash reports to Google
+    Automatically sends usage statistics and crash reports to Google
   </message>
   <message name="IDS_SETTINGS_ENABLE_URL_KEYED_ANONYMIZED_DATA_COLLECTION" desc="The label of the checkbox to enable/disable url keyed anonymized data collection.">
     Make searches and browsing better
