@@ -200,6 +200,7 @@ AccountReconcilor::AccountReconcilor(
       first_execution_(true),
       error_during_last_reconcile_(GoogleServiceAuthError::AuthErrorNone()),
       reconcile_is_noop_(true),
+      set_accounts_in_progress_(false),
       chrome_accounts_changed_(false),
       account_reconcilor_lock_count_(0),
       reconcile_on_unblock_(false),
@@ -406,7 +407,6 @@ void AccountReconcilor::PerformMergeAction(const std::string& account_id) {
 void AccountReconcilor::PerformSetCookiesAction(
     const signin::MultiloginParameters& parameters) {
   reconcile_is_noop_ = false;
-  is_reconcile_started_ = true;
   VLOG(1) << "AccountReconcilor::PerformSetCookiesAction: "
           << base::JoinString(parameters.accounts_to_send, " ");
   // TODO (https://crbug.com/890321): pass mode to GaiaCookieManagerService.
@@ -456,8 +456,6 @@ void AccountReconcilor::StartReconcile() {
   reconcile_is_noop_ = true;
 
   if (!timeout_.is_max()) {
-    // Keep using base::Bind() until base::OnceCallback get supported by
-    // base::OneShotTimer.
     timer_->Start(FROM_HERE, timeout_,
                   base::BindOnce(&AccountReconcilor::HandleReconcileTimeout,
                                  base::Unretained(this)));
@@ -488,6 +486,7 @@ void AccountReconcilor::FinishReconcileWithMultiloginEndpoint(
     const std::vector<std::string>& chrome_accounts,
     std::vector<gaia::ListedAccount>&& gaia_accounts) {
   DCHECK(base::FeatureList::IsEnabled(kUseMultiloginEndpoint));
+  DCHECK(!set_accounts_in_progress_);
 
   bool primary_has_error =
       identity_manager_->HasAccountWithRefreshTokenInPersistentErrorState(
@@ -504,7 +503,9 @@ void AccountReconcilor::FinishReconcileWithMultiloginEndpoint(
     // and any StartReconcile() calls that are made in the meantime will be
     // aborted until OnSetAccountsInCookieCompleted is called and
     // is_reconcile_started_ is set to false.
+    set_accounts_in_progress_ = true;
     PerformSetCookiesAction(parameters_for_multilogin);
+    DCHECK(is_reconcile_started_);
   } else {
     OnSetAccountsInCookieCompleted(GoogleServiceAuthError::AuthErrorNone());
     DCHECK(!is_reconcile_started_);
@@ -536,6 +537,18 @@ void AccountReconcilor::OnGaiaAccountsInCookieUpdated(
           << "CookieJar " << accounts.size() << " accounts, "
           << "Reconcilor's state is " << is_reconcile_started_ << ", "
           << "Error was " << error.ToString();
+
+  // If cookies change while the reconcilor is running, ignore the changes and
+  // let it complete. Adding accounts to the cookie will trigger new
+  // notifications anyway, and these will be handled in a new reconciliation
+  // cycle. See https://crbug.com/923716
+  if (IsMultiloginEndpointEnabled()) {
+    if (set_accounts_in_progress_)
+      return;
+  } else {
+    if (!add_to_cookie_.empty())
+      return;
+  }
 
   if (error.state() != GoogleServiceAuthError::NONE) {
     // We may have seen a series of errors during reconciliation. Delegates may
@@ -834,6 +847,8 @@ void AccountReconcilor::OnSetAccountsInCookieCompleted(
       error_during_last_reconcile_ = error;
       delegate_->OnReconcileError(error_during_last_reconcile_);
     }
+
+    set_accounts_in_progress_ = false;
     is_reconcile_started_ = false;
 
     timer_->Stop();

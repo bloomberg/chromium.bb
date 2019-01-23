@@ -233,6 +233,21 @@ struct Cookie {
   }
 };
 
+// Converts CookieParams to ListedAccounts.
+gaia::ListedAccount ListedAccounfFromCookieParams(
+    const signin::CookieParams& params,
+    const std::string& account_id) {
+  gaia::ListedAccount listed_account;
+  listed_account.id = account_id;
+  listed_account.email = params.email;
+  listed_account.gaia_id = params.gaia_id;
+  listed_account.raw_email = params.email;
+  listed_account.valid = params.valid;
+  listed_account.signed_out = params.signed_out;
+  listed_account.verified = params.verified;
+  return listed_account;
+}
+
 }  // namespace
 
 class AccountReconcilorTest : public ::testing::Test {
@@ -1910,6 +1925,54 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, GetAccountsFromCookieFailure) {
 
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_ERROR, reconcilor->GetState());
+}
+
+// Regression test for https://crbug.com/923716
+TEST_P(AccountReconcilorMirrorEndpointParamTest,
+       ExtraCookieChangeNotification) {
+  AccountInfo account_info = ConnectProfileToAccount("user@gmail.com");
+  const std::string account_id = account_info.account_id;
+  signin::CookieParams cookie_params = {
+      account_info.email, account_info.gaia, false /* valid */,
+      false /* signed_out */, true /* verified */};
+
+  cookie_manager_service()->SetListAccountsResponseOneAccountWithParams(
+      cookie_params);
+
+  if (!IsMultiloginEnabled()) {
+    EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id));
+  } else {
+    std::vector<std::string> accounts_to_send = {account_id};
+    const signin::MultiloginParameters params(
+        gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
+        accounts_to_send);
+    EXPECT_CALL(*GetMockReconcilor(), PerformSetCookiesAction(params));
+  }
+
+  AccountReconcilor* reconcilor = GetMockReconcilor();
+  ASSERT_TRUE(reconcilor);
+
+  ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
+  reconcilor->StartReconcile();
+  ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_RUNNING, reconcilor->GetState());
+
+  // Add extra cookie change notification. Reconcilor should ignore it.
+  gaia::ListedAccount listed_account =
+      ListedAccounfFromCookieParams(cookie_params, account_id);
+  reconcilor->OnGaiaAccountsInCookieUpdated(
+      {listed_account}, {}, GoogleServiceAuthError::AuthErrorNone());
+
+  base::RunLoop().RunUntilIdle();
+
+  if (!IsMultiloginEnabled()) {
+    SimulateAddAccountToCookieCompleted(
+        reconcilor, account_id, GoogleServiceAuthError::AuthErrorNone());
+  } else {
+    SimulateSetAccountsInCookieCompleted(
+        reconcilor, GoogleServiceAuthError::AuthErrorNone());
+  }
+  ASSERT_FALSE(reconcilor->is_reconcile_started_);
+  ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
 }
 
 TEST_P(AccountReconcilorMirrorEndpointParamTest, StartReconcileNoop) {

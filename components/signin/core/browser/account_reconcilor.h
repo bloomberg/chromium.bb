@@ -190,6 +190,8 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            GetAccountsFromCookieFailure);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           ExtraCookieChangeNotification);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            StartReconcileNoop);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            StartReconcileNoopWithDots);
@@ -345,8 +347,8 @@ class AccountReconcilor : public KeyedService,
   bool reconcile_is_noop_;
 
   // Used during reconcile action.
-  // These members are used to validate the tokens in IdentityManager.
-  std::vector<std::string> add_to_cookie_;
+  std::vector<std::string> add_to_cookie_;  // Progress of AddAccount calls.
+  bool set_accounts_in_progress_;           // Progress of SetAccounts calls.
   bool chrome_accounts_changed_;
 
   // Used for the Lock.
