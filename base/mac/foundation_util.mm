@@ -215,6 +215,7 @@ TYPE_NAME_FOR_CF_TYPE_DEFN(CTFont);
 TYPE_NAME_FOR_CF_TYPE_DEFN(CTRun);
 
 #if !defined(OS_IOS)
+TYPE_NAME_FOR_CF_TYPE_DEFN(SecCertificate);
 TYPE_NAME_FOR_CF_TYPE_DEFN(SecKey);
 TYPE_NAME_FOR_CF_TYPE_DEFN(SecPolicy);
 #endif
@@ -414,6 +415,7 @@ CFCastStrict<CTFontRef>(const CFTypeRef& cf_val) {
 
 #if !defined(OS_IOS)
 CF_CAST_DEFN(SecACL);
+CF_CAST_DEFN(SecCertificate);
 CF_CAST_DEFN(SecKey);
 CF_CAST_DEFN(SecPolicy);
 CF_CAST_DEFN(SecTrustedApplication);
