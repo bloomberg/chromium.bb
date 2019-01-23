@@ -69,23 +69,6 @@ typedef std::vector<DCLayerOverlay> DCLayerOverlayList;
 
 class DCLayerOverlayProcessor {
  public:
-  // This is used for a histogram to determine why overlays are or aren't
-  // used, so don't remove entries and make sure to update enums.xml if
-  // it changes.
-  enum DCLayerResult {
-    DC_LAYER_SUCCESS,
-    DC_LAYER_FAILED_UNSUPPORTED_QUAD,
-    DC_LAYER_FAILED_QUAD_BLEND_MODE,
-    DC_LAYER_FAILED_TEXTURE_NOT_CANDIDATE,
-    DC_LAYER_FAILED_OCCLUDED,
-    DC_LAYER_FAILED_COMPLEX_TRANSFORM,
-    DC_LAYER_FAILED_TRANSPARENT,
-    DC_LAYER_FAILED_NON_ROOT,
-    DC_LAYER_FAILED_TOO_MANY_OVERLAYS,
-    DC_LAYER_FAILED_NO_HW_OVERLAY_SUPPORT,
-    kMaxValue = DC_LAYER_FAILED_NO_HW_OVERLAY_SUPPORT,
-  };
-
   explicit DCLayerOverlayProcessor(OutputSurface* surface);
   ~DCLayerOverlayProcessor();
 
@@ -102,11 +85,6 @@ class DCLayerOverlayProcessor {
   void SetHasHwOverlaySupport() { has_hw_overlay_support_ = true; }
 
  private:
-  DCLayerResult FromDrawQuad(DisplayResourceProvider* resource_provider,
-                             QuadList::ConstIterator quad_list_begin,
-                             QuadList::ConstIterator quad,
-                             const gfx::Transform& transform_to_root_target,
-                             DCLayerOverlay* dc_layer_overlay);
   // Returns an iterator to the element after |it|.
   QuadList::Iterator ProcessRenderPassDrawQuad(RenderPass* render_pass,
                                                gfx::Rect* damage_rect,
