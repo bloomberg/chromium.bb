@@ -297,7 +297,14 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          }
         },
         "test": "angle_unittests"
       },
@@ -314,7 +321,14 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          }
         },
         "test": "gl_tests"
       },
@@ -331,7 +345,14 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          }
         },
         "test": "gl_unittests"
       }
@@ -358,7 +379,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          }
         }
       },
       {
@@ -382,7 +410,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          }
         }
       },
       {
@@ -406,7 +441,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          }
         }
       },
       {
@@ -430,7 +472,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          }
         }
       },
       {
@@ -458,7 +507,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          }
         }
       },
       {
@@ -489,7 +545,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          }
         }
       },
       {
@@ -528,7 +591,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          }
         }
       },
       {
@@ -553,7 +623,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          }
         }
       },
       {
@@ -577,7 +654,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          }
         }
       },
       {
@@ -602,6 +686,13 @@
             }
           ],
           "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          },
           "shards": 2
         }
       }
@@ -624,7 +715,14 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          }
         },
         "test": "angle_unittests"
       },
@@ -645,7 +743,14 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          }
         },
         "test": "browser_tests"
       },
@@ -662,7 +767,14 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          }
         },
         "test": "gl_tests"
       },
@@ -679,7 +791,14 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          }
         },
         "test": "gl_unittests"
       }
@@ -706,7 +825,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          }
         }
       },
       {
@@ -730,7 +856,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          }
         }
       },
       {
@@ -754,7 +887,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          }
         }
       },
       {
@@ -778,7 +918,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          }
         }
       },
       {
@@ -806,7 +953,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          }
         }
       },
       {
@@ -837,7 +991,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          }
         }
       },
       {
@@ -876,7 +1037,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          }
         }
       },
       {
@@ -901,7 +1069,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          }
         }
       },
       {
@@ -925,7 +1100,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          }
         }
       },
       {
@@ -950,6 +1132,13 @@
             }
           ],
           "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "gpu": "10de:1cb3-410.78"
+              }
+            ]
+          },
           "shards": 2
         }
       }
