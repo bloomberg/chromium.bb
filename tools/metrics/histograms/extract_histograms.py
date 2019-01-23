@@ -303,14 +303,14 @@ def _ExtractHistogramsFromXmlTree(tree, enums):
     # Handle expiry attribute.
     if histogram.hasAttribute('expires_after'):
       expiry_str = histogram.getAttribute('expires_after')
-      if _ValidateMilestoneString(expiry_str) or _ValidateDateString(
-          expiry_str):
+      if (expiry_str == "never" or _ValidateMilestoneString(expiry_str) or
+          _ValidateDateString(expiry_str)):
         histogram_entry['expires_after'] = expiry_str
       else:
         logging.error(
-            'Expiry of histogram %s does not match expected date format: "%s"'
-            ' or milestone format: M* found %s.', name, EXPIRY_DATE_PATTERN,
-            expiry_str)
+            'Expiry of histogram %s does not match expected date format ("%s"),'
+            ' milestone format (M*), or "never": found %s.', name,
+            EXPIRY_DATE_PATTERN, expiry_str)
         have_errors = True
 
     # Find <owner> tag.
