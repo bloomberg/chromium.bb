@@ -638,7 +638,7 @@ cr.define('omnibox_output', function() {
 
       /** @type {!Element} */
       this.image_ = document.createElement('img');
-      this.image_.classList.add('pair-item', 'image');
+      this.image_.classList.add('pair-item');
       this.container_.appendChild(this.image_);
 
       /** @type {!Element} */
@@ -655,6 +655,11 @@ cr.define('omnibox_output', function() {
       this.answer_ = document.createElement('div');
       this.answer_.classList.add('pair-item', 'answer');
       this.container_.appendChild(this.answer_);
+
+      /** @type {!Element} */
+      this.imageUrl_ = document.createElement('a');
+      this.imageUrl_.classList.add('pair-item', 'image-url');
+      this.container_.appendChild(this.imageUrl_);
     }
 
     /** @param {string} imageData */
@@ -667,6 +672,8 @@ cr.define('omnibox_output', function() {
       this.contents_.textContent = this.values_[1];
       this.description_.textContent = this.values_[2];
       this.answer_.textContent = this.values_[3];
+      this.imageUrl_.textContent = this.values_[0];
+      this.imageUrl_.href = this.values_[0];
     }
 
     /** @override @return {string} */
