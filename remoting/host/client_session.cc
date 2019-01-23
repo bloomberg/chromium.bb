@@ -246,8 +246,13 @@ void ClientSession::SelectDesktopDisplay(
       // Default to fullscreen if unable to parse id.
       id = webrtc::kFullDesktopScreenId;
     }
+    // Invalid display index defaults to showing all displays.
+    if (!desktop_display_info_.GetDisplayInfo(id)) {
+      id = webrtc::kFullDesktopScreenId;
+    }
   }
   video_stream_->SelectSource(id);
+  show_display_id_ = id;
 }
 
 void ClientSession::OnConnectionAuthenticating() {
@@ -263,6 +268,8 @@ void ClientSession::OnConnectionAuthenticated() {
   DCHECK(!video_stream_);
 
   is_authenticated_ = true;
+
+  desktop_display_info_.Reset();
 
   if (max_duration_ > base::TimeDelta()) {
     max_duration_timer_.Start(
@@ -481,21 +488,31 @@ void ClientSession::OnVideoSizeChanged(protocol::VideoStream* video_stream,
                                        const webrtc::DesktopSize& size,
                                        const webrtc::DesktopVector& dpi) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  mouse_clamping_filter_.set_output_size(size);
+  webrtc::DesktopVector origin;
+  if (show_display_id_ != webrtc::kFullDesktopScreenId) {
+    const DisplayGeometry* display_info =
+        desktop_display_info_.GetDisplayInfo(show_display_id_);
+    if (display_info) {
+      origin.set(display_info->x, display_info->y);
+    }
+  }
+  mouse_clamping_filter_.set_output_size(
+      webrtc::DesktopRect::MakeOriginSize(origin, size));
 
   switch (connection_->session()->config().protocol()) {
     case protocol::SessionConfig::Protocol::ICE:
-      mouse_clamping_filter_.set_input_size(size);
+      mouse_clamping_filter_.set_input_size(
+          webrtc::DesktopRect::MakeSize(size));
       break;
 
     case protocol::SessionConfig::Protocol::WEBRTC: {
       // When using WebRTC protocol the client sends mouse coordinates in DIPs,
       // while InputInjector expects them in physical pixels.
       // TODO(sergeyu): Fix InputInjector implementations to use DIPs as well.
-      webrtc::DesktopSize size_dips(size.width() * kDefaultDpi / dpi.x(),
-                                    size.height() * kDefaultDpi / dpi.y());
-      mouse_clamping_filter_.set_input_size(size_dips);
+      webrtc::DesktopSize size_dips =
+          DesktopDisplayInfo::CalcSizeDips(size, dpi.x(), dpi.y());
+      mouse_clamping_filter_.set_input_size(
+          webrtc::DesktopRect::MakeSize(size_dips));
 
       // Generate and send VideoLayout message.
       protocol::VideoLayout layout;
@@ -547,10 +564,9 @@ void ClientSession::OnDesktopDisplayChanged(
 
   // Calc desktop scaled geometry (in DIPs)
   // See comment in OnVideoSizeChanged() for details.
-  int scaled_width = (max_x - min_x) * kDefaultDpi / dpi_x;
-  int scaled_height = (max_y - min_y) * kDefaultDpi / dpi_y;
-  webrtc::DesktopSize size_dips(scaled_width, scaled_height);
-  mouse_clamping_filter_.set_input_size(size_dips);
+  const webrtc::DesktopSize size(max_x - min_x, max_y - min_y);
+  webrtc::DesktopSize size_dips =
+      DesktopDisplayInfo::CalcSizeDips(size, dpi_x, dpi_y);
 
   // Generate and send VideoLayout message.
   protocol::VideoLayout layout;
@@ -563,8 +579,8 @@ void ClientSession::OnDesktopDisplayChanged(
   video_track = layout.add_video_track();
   video_track->set_position_x(0);
   video_track->set_position_y(0);
-  video_track->set_width(scaled_width);
-  video_track->set_height(scaled_height);
+  video_track->set_width(size_dips.width());
+  video_track->set_height(size_dips.height());
   video_track->set_x_dpi(dpi_x);
   video_track->set_y_dpi(dpi_y);
 
@@ -578,10 +594,14 @@ void ClientSession::OnDesktopDisplayChanged(
   video_track->set_y_dpi(dpi_y);
 
   // Add a VideoTrackLayout entry for each separate display.
+  desktop_display_info_.Reset();
   for (int display_id = 0; display_id < displays->video_track_size();
        display_id++) {
+    protocol::VideoTrackLayout display = displays->video_track(display_id);
+    desktop_display_info_.AddDisplayFrom(display);
+
     protocol::VideoTrackLayout* video_track = layout.add_video_track();
-    video_track->CopyFrom(displays->video_track(display_id));
+    video_track->CopyFrom(display);
   }
 
   connection_->client_stub()->SetVideoLayout(layout);

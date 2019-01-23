@@ -112,3 +112,25 @@ message SelectDesktopDisplayRequest {
   // The "all" string is used to select the entire desktop.
   optional string id = 1;
 }
+
+message DesktopDisplayInfo {
+  // Unique display identifier.
+  optional int32 id = 1;
+
+  // Position of the top left corner of this display (in pixels).
+  optional int32 x = 2;
+  optional int32 y = 3;
+
+  // Size of the display (in pixels).
+  optional int32 width = 4;
+  optional int32 height = 5;
+
+  // DPI of the screen.
+  optional int32 dpi = 6;
+
+  // Bits per pixel.
+  optional int32 bpp = 7;
+
+  // True if this is the default display.
+  optional bool is_default = 8;
+}

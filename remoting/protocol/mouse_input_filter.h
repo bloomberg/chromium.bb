@@ -23,17 +23,18 @@ class MouseInputFilter : public InputFilter {
   ~MouseInputFilter() override;
 
   // Specify the input dimensions for mouse events.
-  void set_input_size(const webrtc::DesktopSize& size);
+  // This is specified in DIPs for WebRTC and pixels for ICE protocol.
+  void set_input_size(const webrtc::DesktopRect& r);
 
-  // Specify the output dimensions.
-  void set_output_size(const webrtc::DesktopSize& size);
+  // Specify the output dimensions (always in physical pixels).
+  void set_output_size(const webrtc::DesktopRect& r);
 
   // InputStub overrides.
   void InjectMouseEvent(const protocol::MouseEvent& event) override;
 
  private:
-  webrtc::DesktopSize input_max_;
-  webrtc::DesktopSize output_max_;
+  webrtc::DesktopRect input_rect_;
+  webrtc::DesktopRect output_rect_;
 
   DISALLOW_COPY_AND_ASSIGN(MouseInputFilter);
 };

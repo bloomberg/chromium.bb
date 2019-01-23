@@ -5,6 +5,7 @@
 #include "remoting/host/desktop_display_info.h"
 
 #include "build/build_config.h"
+#include "remoting/base/constants.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -38,6 +39,45 @@ bool DesktopDisplayInfo::operator==(const DesktopDisplayInfo& other) {
 
 bool DesktopDisplayInfo::operator!=(const DesktopDisplayInfo& other) {
   return !(*this == other);
+}
+
+/* static */
+webrtc::DesktopSize DesktopDisplayInfo::CalcSizeDips(webrtc::DesktopSize size,
+                                                     int dpi_x,
+                                                     int dpi_y) {
+  webrtc::DesktopSize size_dips(size.width() * kDefaultDpi / dpi_x,
+                                size.height() * kDefaultDpi / dpi_y);
+  return size_dips;
+}
+
+void DesktopDisplayInfo::Reset() {
+  displays_.clear();
+}
+
+int DesktopDisplayInfo::NumDisplays() {
+  return displays_.size();
+}
+
+const DisplayGeometry* DesktopDisplayInfo::GetDisplayInfo(unsigned int id) {
+  if (id >= displays_.size())
+    return nullptr;
+  return &displays_[id];
+}
+
+void DesktopDisplayInfo::AddDisplay(DisplayGeometry* display) {
+  displays_.push_back(*display);
+}
+
+void DesktopDisplayInfo::AddDisplayFrom(protocol::VideoTrackLayout track) {
+  auto* display = new DisplayGeometry();
+  display->x = track.position_x();
+  display->y = track.position_y();
+  display->width = track.width();
+  display->height = track.height();
+  display->dpi = track.x_dpi();
+  display->bpp = kDefaultDpi;
+  display->is_default = false;
+  displays_.push_back(*display);
 }
 
 void DesktopDisplayInfo::LoadCurrentDisplayInfo() {
