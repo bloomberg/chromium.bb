@@ -176,10 +176,11 @@ void PrintViewManagerBase::OnPrintSettingsDone(
     PrinterHandler::PrintCallback callback,
     scoped_refptr<printing::PrinterQuery> printer_query) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(printer_query);
+
   // Check if the job was cancelled. This should only happen on Windows when
   // the system dialog is cancelled.
-  if (printer_query &&
-      printer_query->last_status() == PrintingContext::CANCEL) {
+  if (printer_query->last_status() == PrintingContext::CANCEL) {
     queue_->QueuePrinterQuery(printer_query.get());
 #if defined(OS_WIN)
     base::PostTaskWithTraits(
@@ -191,8 +192,7 @@ void PrintViewManagerBase::OnPrintSettingsDone(
     return;
   }
 
-  if (!printer_query || !printer_query->cookie() ||
-      !printer_query->settings().dpi()) {
+  if (!printer_query->cookie() || !printer_query->settings().dpi()) {
     if (printer_query)
       printer_query->StopWorker();
     std::move(callback).Run(base::Value("Update settings failed"));
