@@ -97,6 +97,9 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
   //
   // Hence allow the leak detector to effectively stop the spell checker to
   // ensure leak reporting stability.
+  //
+  // TODO(xiaochengh): Now that there's no strong reference to SpellCheckRequest
+  // from outside Blink, this function may have become redundant. Investigate.
   void PrepareForLeakDetection();
 
   void DidAttachDocument(Document*);
