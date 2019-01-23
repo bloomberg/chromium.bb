@@ -76,7 +76,7 @@ def DownloadCrx(ext, extension, crxdir):
 
 
 def CreateValidationFiles(validationdir, crxdir, identifier):
-  """Create validationfiles for all extensions in |crxdir|."""
+  """Create validation files for all extensions in |crxdir|."""
 
   verified_files = []
 
@@ -101,24 +101,50 @@ def CreateCacheTarball(extensions, outputdir, identifier, tarball):
   """Cache |extensions| in |outputdir| and pack them in |tarball|."""
 
   crxdir = os.path.join(outputdir, 'crx')
-  jsondir = os.path.join(outputdir, 'json')
+  jsondir = os.path.join(outputdir, 'json', 'extensions')
   validationdir = os.path.join(outputdir, 'validation')
 
-  osutils.SafeMakedirs(os.path.join(crxdir, 'extensions', 'managed_users'))
-  osutils.SafeMakedirs(os.path.join(jsondir, 'extensions', 'managed_users'))
-  osutils.SafeMakedirs(os.path.join(jsondir, 'extensions', 'child_users'))
+  osutils.SafeMakedirs(os.path.join(crxdir, 'extensions'))
+  osutils.SafeMakedirs(jsondir)
   was_errors = False
   for ext in extensions:
-    managed_users = extensions[ext].get('managed_users', 'no')
-    cache_crx = extensions[ext].get('cache_crx', 'yes')
-    child_users = extensions[ext].get('child_users', 'no')
+    extension = extensions[ext]
+    # It should not be in use at this moment.
+    if 'managed_users' in extension:
+      cros_build_lib.Die('managed_users is deprecated and not supported. '
+                         'Please use user_type.')
+    # In case we work with old type json, use default 'user_type'.
+    # TODO: Update all external_extensions.json files and deprecate this.
+    if 'user_type' not in extension:
+      user_type = ['unmanaged']
+      if extension.get('child_users', 'no') == 'yes':
+        user_type.append('child')
+      logging.warn('user_type filter has to be set explicitly for %s, using '
+                   '%s by default.', ext, user_type)
+      extension['user_type'] = user_type
+    else:
+      if 'child_users' in extension:
+        cros_build_lib.Die('child_users is not supported when user_type is '
+                           'set.')
+
+    # Verify user type is well-formed.
+    allowed_user_types = {'unmanaged', 'managed', 'child', 'supervised',
+                          'guest'}
+    if not extension['user_type']:
+      cros_build_lib.Die('user_type is not set')
+    ext_keys = set(extension['user_type'])
+    unknown_keys = ext_keys - allowed_user_types
+    if unknown_keys:
+      cros_build_lib.Die('user_type %s is not allowed', unknown_keys)
+
+    cache_crx = extension.get('cache_crx', 'yes')
 
     # Remove fields that shouldn't be in the output file.
-    for key in ('cache_crx', 'managed_users'):
-      extensions[ext].pop(key, None)
+    for key in ('cache_crx', 'child_users'):
+      extension.pop(key, None)
 
     if cache_crx == 'yes':
-      if not DownloadCrx(ext, extensions[ext], crxdir):
+      if not DownloadCrx(ext, extension, crxdir):
         was_errors = True
     elif cache_crx == 'no':
       pass
@@ -126,25 +152,12 @@ def CreateCacheTarball(extensions, outputdir, identifier, tarball):
       cros_build_lib.Die('Unknown value for "cache_crx" %s for %s',
                          cache_crx, ext)
 
-    if managed_users == 'yes':
-      json_file = os.path.join(jsondir,
-                               'extensions/managed_users/%s.json' % ext)
-      json.dump(extensions[ext],
-                open(json_file, 'w'),
-                sort_keys=True,
-                indent=2,
-                separators=(',', ': '))
-
-    if managed_users != 'only':
-      target_json_dir = 'extensions'
-      if child_users == 'yes':
-        target_json_dir = 'extensions/child_users'
-      json_file = os.path.join(jsondir, target_json_dir, '%s.json' % ext)
-      json.dump(extensions[ext],
-                open(json_file, 'w'),
-                sort_keys=True,
-                indent=2,
-                separators=(',', ': '))
+    json_file = os.path.join(jsondir, '%s.json' % ext)
+    json.dump(extension,
+              open(json_file, 'w'),
+              sort_keys=True,
+              indent=2,
+              separators=(',', ': '))
 
   if was_errors:
     cros_build_lib.Die('FAIL to download some extensions')
