@@ -121,14 +121,17 @@ void WebTestContentRendererClient::
     SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() {
   // We always expose GC to web tests.
   std::string flags("--expose-gc");
+  auto* command_line = base::CommandLine::ForCurrentProcess();
   v8::V8::SetFlagsFromString(flags.c_str(), static_cast<int>(flags.size()));
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kStableReleaseMode)) {
+  if (!command_line->HasSwitch(switches::kStableReleaseMode)) {
     blink::WebRuntimeFeatures::EnableTestOnlyFeatures(true);
   }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableFontAntialiasing)) {
+  if (command_line->HasSwitch(switches::kEnableFontAntialiasing)) {
     blink::SetFontAntialiasingEnabledForTest(true);
+  }
+  if (command_line->HasSwitch(
+          switches::kDisableOriginTrialControlledBlinkFeatures)) {
+    blink::WebRuntimeFeatures::EnableOriginTrialControlledFeatures(false);
   }
 }
 
