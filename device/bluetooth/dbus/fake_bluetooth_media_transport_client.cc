@@ -20,13 +20,12 @@
 #include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_media_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_media_endpoint_service_provider.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 using dbus::ObjectPath;
 
 namespace {
 
-// TODO(mcchou): Remove this constants once it is in cros_system_api.
-const char kBluetoothMediaTransportInterface[] = "org.bluez.MediaTransport1";
 const char kNotImplemented[] = "org.bluez.NotImplemented";
 const char kNotAuthorized[] = "org.bluez.NotAuthorized";
 const char kFailed[] = "org.bluez.Failed";
@@ -66,7 +65,7 @@ FakeBluetoothMediaTransportClient::Properties::Properties(
     const PropertyChangedCallback& callback)
     : BluetoothMediaTransportClient::Properties(
           nullptr,
-          kBluetoothMediaTransportInterface,
+          bluetooth_media_transport::kBluetoothMediaTransportInterface,
           callback) {}
 
 FakeBluetoothMediaTransportClient::Properties::~Properties() = default;
