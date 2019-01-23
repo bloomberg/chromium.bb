@@ -19,16 +19,14 @@
         class="first primary-toggle"
         pref="{{prefs.settings.voice_interaction.enabled}}"
         label="[[getAssistantOnOffLabel_(
-            prefs.settings.voice_interaction.enabled.value)]]"
-        on-change="onGoogleAssistantEnableChange_">
+            prefs.settings.voice_interaction.enabled.value)]]">
     </settings-toggle-button>
     <template is="dom-if"
         if="[[prefs.settings.voice_interaction.enabled.value]]">
       <settings-toggle-button id="googleAssistantContextEnable"
           pref="{{prefs.settings.voice_interaction.context.enabled}}"
           label="$i18n{googleAssistantEnableContext}"
-          sub-label="$i18n{googleAssistantEnableContextDescription}"
-          on-change="onGoogleAssistantContextEnableChange_">
+          sub-label="$i18n{googleAssistantEnableContextDescription}">
       </settings-toggle-button>
       <template is="dom-if" if="[[assistantFeatureEnabled_]]">
         <settings-toggle-button id="googleAssistantHotwordEnable"

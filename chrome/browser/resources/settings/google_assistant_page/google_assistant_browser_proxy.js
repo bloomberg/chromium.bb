@@ -10,18 +10,6 @@
 cr.define('settings', function() {
   /** @interface */
   class GoogleAssistantBrowserProxy {
-    /**
-     * Enables or disables the Google Assistant.
-     * @param {boolean} enabled
-     */
-    setGoogleAssistantEnabled(enabled) {}
-
-    /**
-     * Enables or disables screen context for the Google Assistant.
-     * @param {boolean} enabled
-     */
-    setGoogleAssistantContextEnabled(enabled) {}
-
     /** Launches into the Google Assistant app settings. */
     launchGoogleAssistantSettings() {}
 
@@ -34,16 +22,6 @@ cr.define('settings', function() {
 
   /** @implements {settings.GoogleAssistantBrowserProxy} */
   class GoogleAssistantBrowserProxyImpl {
-    /** @override */
-    setGoogleAssistantEnabled(enabled) {
-      chrome.send('setGoogleAssistantEnabled', [enabled]);
-    }
-
-    /** @override */
-    setGoogleAssistantContextEnabled(enabled) {
-      chrome.send('setGoogleAssistantContextEnabled', [enabled]);
-    }
-
     /** @override */
     showGoogleAssistantSettings() {
       chrome.send('showGoogleAssistantSettings');

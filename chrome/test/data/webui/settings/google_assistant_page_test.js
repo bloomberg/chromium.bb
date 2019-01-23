@@ -8,20 +8,8 @@
 class TestGoogleAssistantBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
-      'setGoogleAssistantEnabled',
-      'setGoogleAssistantContextEnabled',
       'showGoogleAssistantSettings',
     ]);
-  }
-
-  /** @override */
-  setGoogleAssistantEnabled(enabled) {
-    this.methodCalled('setGoogleAssistantEnabled', enabled);
-  }
-
-  /** @override */
-  setGoogleAssistantContextEnabled(enabled) {
-    this.methodCalled('setGoogleAssistantContextEnabled', enabled);
   }
 
   /** @override */
@@ -69,8 +57,6 @@ suite('GoogleAssistantHandler', function() {
     button.click();
     Polymer.dom.flush();
     assertTrue(button.checked);
-    return browserProxy.whenCalled('setGoogleAssistantEnabled')
-        .then(assertTrue);
   });
 
   test('toggleAssistantContext', function() {
@@ -86,8 +72,6 @@ suite('GoogleAssistantHandler', function() {
     button.click();
     Polymer.dom.flush();
     assertTrue(button.checked);
-    return browserProxy.whenCalled('setGoogleAssistantContextEnabled')
-        .then(assertTrue);
   });
 
   test('tapOnAssistantSettings', function() {

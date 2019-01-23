@@ -97,18 +97,6 @@ Polymer({
   },
 
   /** @private */
-  onGoogleAssistantEnableChange_: function() {
-    this.browserProxy_.setGoogleAssistantEnabled(
-        !!this.getPref('settings.voice_interaction.enabled.value'));
-  },
-
-  /** @private */
-  onGoogleAssistantContextEnableChange_: function() {
-    this.browserProxy_.setGoogleAssistantContextEnabled(
-        !!this.getPref('settings.voice_interaction.context.enabled.value'));
-  },
-
-  /** @private */
   onGoogleAssistantSettingsTapped_: function() {
     this.browserProxy_.showGoogleAssistantSettings();
   },
