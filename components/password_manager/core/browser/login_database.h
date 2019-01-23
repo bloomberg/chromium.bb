@@ -89,9 +89,11 @@ class LoginDatabase : public syncer::SyncMetadataStore {
   bool RemoveLogin(const autofill::PasswordForm& form,
                    PasswordStoreChangeList* changes) WARN_UNUSED_RESULT;
 
-  // Removes the form with |id| from the list of remembered password forms.
-  // Returns true if the form was successfully removed from the database.
-  bool RemoveLoginById(int id) WARN_UNUSED_RESULT;
+  // Removes the form with |primary_key| from the list of remembered password
+  // forms. Returns true if the form was successfully removed from the database.
+  bool RemoveLoginByPrimaryKey(int primary_key,
+                               PasswordStoreChangeList* changes)
+      WARN_UNUSED_RESULT;
 
   // Removes all logins created from |delete_begin| onwards (inclusive) and
   // before |delete_end|. You may use a null Time value to do an unbounded
