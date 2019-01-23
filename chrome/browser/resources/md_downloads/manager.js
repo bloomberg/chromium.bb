@@ -126,15 +126,17 @@ cr.define('downloads', function() {
      */
     insertItems_: function(index, items) {
       // Insert |items| at the given |index| via Array#splice().
-      this.items_.splice.apply(this.items_, [index, 0].concat(items));
-      this.updateHideDates_(index, index + items.length);
-      this.notifySplices('items_', [{
-                           index: index,
-                           addedCount: items.length,
-                           object: this.items_,
-                           type: 'splice',
-                           removed: [],
-                         }]);
+      if (items.length > 0) {
+        this.items_.splice.apply(this.items_, [index, 0].concat(items));
+        this.updateHideDates_(index, index + items.length);
+        this.notifySplices('items_', [{
+                             index: index,
+                             addedCount: items.length,
+                             object: this.items_,
+                             type: 'splice',
+                             removed: [],
+                           }]);
+      }
 
       if (this.hasAttribute('loading')) {
         this.removeAttribute('loading');
