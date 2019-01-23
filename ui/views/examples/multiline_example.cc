@@ -97,9 +97,9 @@ class MultilineExample::RenderTextView : public View {
     render_text_->SetText(new_contents);
     render_text_->SetColor(SK_ColorBLACK);
     render_text_->ApplyColor(0xFFFF0000, color_range);
-    render_text_->SetStyle(gfx::UNDERLINE, false);
-    render_text_->ApplyStyle(gfx::UNDERLINE, true, color_range);
-    render_text_->ApplyStyle(gfx::ITALIC, true, italic_range);
+    render_text_->SetStyle(gfx::TEXT_STYLE_UNDERLINE, false);
+    render_text_->ApplyStyle(gfx::TEXT_STYLE_UNDERLINE, true, color_range);
+    render_text_->ApplyStyle(gfx::TEXT_STYLE_ITALIC, true, italic_range);
     render_text_->ApplyWeight(gfx::Font::Weight::BOLD, bold_range);
     InvalidateLayout();
   }

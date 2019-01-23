@@ -78,8 +78,9 @@ void UpdateRenderText(gfx::RenderText* render_text,
   }
 
   const int font_style = font_list.GetFontStyle();
-  render_text->SetStyle(gfx::ITALIC, (font_style & gfx::Font::ITALIC) != 0);
-  render_text->SetStyle(gfx::UNDERLINE,
+  render_text->SetStyle(gfx::TEXT_STYLE_ITALIC,
+                        (font_style & gfx::Font::ITALIC) != 0);
+  render_text->SetStyle(gfx::TEXT_STYLE_UNDERLINE,
                         (font_style & gfx::Font::UNDERLINE) != 0);
   render_text->SetWeight(font_list.GetFontWeight());
 }

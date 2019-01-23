@@ -150,12 +150,12 @@ void TextfieldExample::ButtonPressed(Button* sender, const ui::Event& event) {
       if (name_->text().length() >= 5) {
         size_t fifth = name_->text().length() / 5;
         const gfx::Range big_range(1 * fifth, 4 * fifth);
-        name_->ApplyStyle(gfx::UNDERLINE, true, big_range);
+        name_->ApplyStyle(gfx::TEXT_STYLE_UNDERLINE, true, big_range);
         name_->ApplyColor(SK_ColorBLUE, big_range);
 
         const gfx::Range small_range(2 * fifth, 3 * fifth);
-        name_->ApplyStyle(gfx::ITALIC, true, small_range);
-        name_->ApplyStyle(gfx::UNDERLINE, false, small_range);
+        name_->ApplyStyle(gfx::TEXT_STYLE_ITALIC, true, small_range);
+        name_->ApplyStyle(gfx::TEXT_STYLE_UNDERLINE, false, small_range);
         name_->ApplyColor(SK_ColorRED, small_range);
       }
     }

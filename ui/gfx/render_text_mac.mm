@@ -362,8 +362,9 @@ base::ScopedCFTypeRef<CFMutableArrayRef> RenderTextMac::ApplyStyles(
                                    kCTForegroundColorAttributeName, foreground);
     CFArrayAppendValue(attributes, foreground);
 
-    if (style.style(UNDERLINE) || style.style(HEAVY_UNDERLINE)) {
-      CTUnderlineStyle value = style.style(HEAVY_UNDERLINE)
+    if (style.style(TEXT_STYLE_UNDERLINE) ||
+        style.style(TEXT_STYLE_HEAVY_UNDERLINE)) {
+      CTUnderlineStyle value = style.style(TEXT_STYLE_HEAVY_UNDERLINE)
                                    ? kCTUnderlineStyleThick
                                    : kCTUnderlineStyleSingle;
       base::ScopedCFTypeRef<CFNumberRef> underline_value(
@@ -375,7 +376,7 @@ base::ScopedCFTypeRef<CFMutableArrayRef> RenderTextMac::ApplyStyles(
 
     // TODO(mboc): Apply font weights other than bold below.
     const int traits =
-        (style.style(ITALIC) ? kCTFontItalicTrait : 0) |
+        (style.style(TEXT_STYLE_ITALIC) ? kCTFontItalicTrait : 0) |
         (style.weight() >= Font::Weight::BOLD ? kCTFontBoldTrait : 0);
     if (traits != 0) {
       base::ScopedCFTypeRef<CTFontRef> styled_font =

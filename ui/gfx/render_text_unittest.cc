@@ -69,9 +69,9 @@ const char kRtlLtrRtl[] = "\u05d0a\u05d1";
 
 // Bitmasks based on gfx::TextStyle.
 enum {
-  ITALIC_MASK = 1 << ITALIC,
-  STRIKE_MASK = 1 << STRIKE,
-  UNDERLINE_MASK = 1 << UNDERLINE,
+  ITALIC_MASK = 1 << TEXT_STYLE_ITALIC,
+  STRIKE_MASK = 1 << TEXT_STYLE_STRIKE,
+  UNDERLINE_MASK = 1 << TEXT_STYLE_UNDERLINE,
 };
 
 // Checks whether |range| contains |index|. This is not the same as calling
@@ -508,7 +508,7 @@ TEST_F(RenderTextTest, DefaultStyles) {
     EXPECT_TRUE(test_api()->colors().EqualsValueForTesting(SK_ColorBLACK));
     EXPECT_TRUE(test_api()->baselines().EqualsValueForTesting(NORMAL_BASELINE));
     EXPECT_TRUE(test_api()->font_size_overrides().EqualsValueForTesting(0));
-    for (size_t style = 0; style < NUM_TEXT_STYLES; ++style)
+    for (size_t style = 0; style < static_cast<int>(TEXT_STYLE_COUNT); ++style)
       EXPECT_TRUE(test_api()->styles()[style].EqualsValueForTesting(false));
     render_text->SetText(UTF8ToUTF16(cases[i]));
   }
@@ -521,21 +521,24 @@ TEST_F(RenderTextTest, SetStyles) {
   render_text->SetColor(color);
   render_text->SetBaselineStyle(SUPERSCRIPT);
   render_text->SetWeight(Font::Weight::BOLD);
-  render_text->SetStyle(UNDERLINE, false);
+  render_text->SetStyle(TEXT_STYLE_UNDERLINE, false);
   const char* const cases[] = {kWeak, kLtr, "Hello", kRtl, "", ""};
   for (size_t i = 0; i < base::size(cases); ++i) {
     EXPECT_TRUE(test_api()->colors().EqualsValueForTesting(color));
     EXPECT_TRUE(test_api()->baselines().EqualsValueForTesting(SUPERSCRIPT));
     EXPECT_TRUE(
         test_api()->weights().EqualsValueForTesting(Font::Weight::BOLD));
-    EXPECT_TRUE(test_api()->styles()[UNDERLINE].EqualsValueForTesting(false));
+    EXPECT_TRUE(
+        test_api()->styles()[TEXT_STYLE_UNDERLINE].EqualsValueForTesting(
+            false));
     render_text->SetText(UTF8ToUTF16(cases[i]));
 
     // Ensure custom default styles can be applied after text has been set.
     if (i == 1)
-      render_text->SetStyle(STRIKE, true);
+      render_text->SetStyle(TEXT_STYLE_STRIKE, true);
     if (i >= 1)
-      EXPECT_TRUE(test_api()->styles()[STRIKE].EqualsValueForTesting(true));
+      EXPECT_TRUE(
+          test_api()->styles()[TEXT_STYLE_STRIKE].EqualsValueForTesting(true));
   }
 }
 
@@ -587,32 +590,37 @@ TEST_F(RenderTextTest, ApplyStyles) {
       {{0, Font::Weight::NORMAL}, {2, Font::Weight::BOLD}}));
 
   // Ensure ranged values adjust to accommodate text length changes.
-  render_text->ApplyStyle(ITALIC, true, Range(0, 2));
-  render_text->ApplyStyle(ITALIC, true, Range(3, 6));
-  render_text->ApplyStyle(ITALIC, true, Range(7, text_length));
+  render_text->ApplyStyle(TEXT_STYLE_ITALIC, true, Range(0, 2));
+  render_text->ApplyStyle(TEXT_STYLE_ITALIC, true, Range(3, 6));
+  render_text->ApplyStyle(TEXT_STYLE_ITALIC, true, Range(7, text_length));
   std::vector<std::pair<size_t, bool>> expected_italic = {
       {0, true}, {2, false}, {3, true}, {6, false}, {7, true}};
-  EXPECT_TRUE(test_api()->styles()[ITALIC].EqualsForTesting(expected_italic));
+  EXPECT_TRUE(test_api()->styles()[TEXT_STYLE_ITALIC].EqualsForTesting(
+      expected_italic));
 
   // Changing the text should clear any breaks except for the first one.
   render_text->SetText(UTF8ToUTF16("0123456"));
   expected_italic.resize(1);
-  EXPECT_TRUE(test_api()->styles()[ITALIC].EqualsForTesting(expected_italic));
-  render_text->ApplyStyle(ITALIC, false, Range(2, 4));
+  EXPECT_TRUE(test_api()->styles()[TEXT_STYLE_ITALIC].EqualsForTesting(
+      expected_italic));
+  render_text->ApplyStyle(TEXT_STYLE_ITALIC, false, Range(2, 4));
   render_text->SetText(UTF8ToUTF16("012345678"));
-  EXPECT_TRUE(test_api()->styles()[ITALIC].EqualsForTesting(expected_italic));
-  render_text->ApplyStyle(ITALIC, false, Range(0, 1));
+  EXPECT_TRUE(test_api()->styles()[TEXT_STYLE_ITALIC].EqualsForTesting(
+      expected_italic));
+  render_text->ApplyStyle(TEXT_STYLE_ITALIC, false, Range(0, 1));
   render_text->SetText(UTF8ToUTF16("0123456"));
   expected_italic.begin()->second = false;
-  EXPECT_TRUE(test_api()->styles()[ITALIC].EqualsForTesting(expected_italic));
-  render_text->ApplyStyle(ITALIC, true, Range(2, 4));
+  EXPECT_TRUE(test_api()->styles()[TEXT_STYLE_ITALIC].EqualsForTesting(
+      expected_italic));
+  render_text->ApplyStyle(TEXT_STYLE_ITALIC, true, Range(2, 4));
   render_text->SetText(UTF8ToUTF16("012345678"));
-  EXPECT_TRUE(test_api()->styles()[ITALIC].EqualsForTesting(expected_italic));
+  EXPECT_TRUE(test_api()->styles()[TEXT_STYLE_ITALIC].EqualsForTesting(
+      expected_italic));
 
   // Styles shouldn't be changed mid-grapheme.
   render_text->SetText(UTF8ToUTF16("0\u0915\u093f1\u0915\u093f2"));
-  render_text->ApplyStyle(UNDERLINE, true, Range(2, 5));
-  EXPECT_TRUE(test_api()->styles()[UNDERLINE].EqualsForTesting(
+  render_text->ApplyStyle(TEXT_STYLE_UNDERLINE, true, Range(2, 5));
+  EXPECT_TRUE(test_api()->styles()[TEXT_STYLE_UNDERLINE].EqualsForTesting(
       {{0, false}, {1, true}, {6, false}}));
 }
 
@@ -622,7 +630,7 @@ TEST_F(RenderTextTest, AppendTextKeepsStyles) {
   render_text->SetText(UTF8ToUTF16("abcd"));
   render_text->ApplyColor(SK_ColorRED, Range(0, 1));
   render_text->ApplyBaselineStyle(SUPERSCRIPT, Range(1, 2));
-  render_text->ApplyStyle(UNDERLINE, true, Range(2, 3));
+  render_text->ApplyStyle(TEXT_STYLE_UNDERLINE, true, Range(2, 3));
   render_text->ApplyFontSizeOverride(20, Range(3, 4));
   // Verify basic functionality.
   const std::vector<std::pair<size_t, SkColor>> expected_color = {
@@ -633,7 +641,8 @@ TEST_F(RenderTextTest, AppendTextKeepsStyles) {
   EXPECT_TRUE(test_api()->baselines().EqualsForTesting(expected_baseline));
   const std::vector<std::pair<size_t, bool>> expected_style = {
       {0, false}, {2, true}, {3, false}};
-  EXPECT_TRUE(test_api()->styles()[UNDERLINE].EqualsForTesting(expected_style));
+  EXPECT_TRUE(test_api()->styles()[TEXT_STYLE_UNDERLINE].EqualsForTesting(
+      expected_style));
   const std::vector<std::pair<size_t, int>> expected_font_size = {{0, 0},
                                                                   {3, 20}};
   EXPECT_TRUE(
@@ -644,7 +653,8 @@ TEST_F(RenderTextTest, AppendTextKeepsStyles) {
   EXPECT_EQ(render_text->GetDisplayText(), UTF8ToUTF16("abcdefg"));
   EXPECT_TRUE(test_api()->colors().EqualsForTesting(expected_color));
   EXPECT_TRUE(test_api()->baselines().EqualsForTesting(expected_baseline));
-  EXPECT_TRUE(test_api()->styles()[UNDERLINE].EqualsForTesting(expected_style));
+  EXPECT_TRUE(test_api()->styles()[TEXT_STYLE_UNDERLINE].EqualsForTesting(
+      expected_style));
   EXPECT_TRUE(
       test_api()->font_size_overrides().EqualsForTesting(expected_font_size));
 }
@@ -961,7 +971,7 @@ TEST_F(RenderTextTest, MultilineElide) {
   // with these styles. This can expose a behavior in layout where text is
   // slightly different width. This must be done after |SetText()|.
   render_text->ApplyWeight(Font::Weight::BOLD, Range(1, 20));
-  render_text->ApplyStyle(ITALIC, true, Range(1, 20));
+  render_text->ApplyStyle(TEXT_STYLE_ITALIC, true, Range(1, 20));
   render_text->SetMultiline(true);
   render_text->SetElideBehavior(ELIDE_TAIL);
   render_text->SetMaxLines(3);
@@ -1010,7 +1020,7 @@ TEST_F(RenderTextTest, MultilineElideWrap) {
   render_text->SetText(input_text);
 
   render_text->ApplyWeight(Font::Weight::BOLD, Range(1, 20));
-  render_text->ApplyStyle(ITALIC, true, Range(1, 20));
+  render_text->ApplyStyle(TEXT_STYLE_ITALIC, true, Range(1, 20));
   render_text->SetMultiline(true);
   render_text->SetMaxLines(3);
   render_text->SetElideBehavior(ELIDE_TAIL);
@@ -4470,7 +4480,7 @@ TEST_F(RenderTextTest, StylePropagated) {
   DrawVisualText();
   EXPECT_EQ(SkFontStyle::Bold(), GetRendererFont().getTypeface()->fontStyle());
 
-  render_text->SetStyle(TextStyle::ITALIC, true);
+  render_text->SetStyle(TEXT_STYLE_ITALIC, true);
   DrawVisualText();
   EXPECT_EQ(SkFontStyle::BoldItalic(),
             GetRendererFont().getTypeface()->fontStyle());
@@ -4565,9 +4575,9 @@ TEST_F(RenderTextTest, GetWordLookupDataAtPoint_LTR) {
   render_text->SetDisplayRect(Rect(100, 30));
   render_text->SetText(ltr);
   render_text->ApplyWeight(Font::Weight::SEMIBOLD, Range(0, 3));
-  render_text->ApplyStyle(UNDERLINE, true, Range(1, 5));
-  render_text->ApplyStyle(ITALIC, true, Range(3, 8));
-  render_text->ApplyStyle(STRIKE, true, Range(1, 7));
+  render_text->ApplyStyle(TEXT_STYLE_UNDERLINE, true, Range(1, 5));
+  render_text->ApplyStyle(TEXT_STYLE_ITALIC, true, Range(3, 8));
+  render_text->ApplyStyle(TEXT_STYLE_STRIKE, true, Range(1, 7));
   const int cursor_y = GetCursorYForTesting();
 
   const std::vector<RenderText::FontSpan> font_spans =
@@ -4645,9 +4655,9 @@ TEST_F(RenderTextTest, GetWordLookupDataAtPoint_RTL) {
   render_text->SetDisplayRect(Rect(100, 30));
   render_text->SetText(rtl);
   render_text->ApplyWeight(Font::Weight::SEMIBOLD, Range(2, 3));
-  render_text->ApplyStyle(UNDERLINE, true, Range(3, 6));
-  render_text->ApplyStyle(ITALIC, true, Range(0, 3));
-  render_text->ApplyStyle(STRIKE, true, Range(2, 5));
+  render_text->ApplyStyle(TEXT_STYLE_UNDERLINE, true, Range(3, 6));
+  render_text->ApplyStyle(TEXT_STYLE_ITALIC, true, Range(0, 3));
+  render_text->ApplyStyle(TEXT_STYLE_STRIKE, true, Range(2, 5));
   const int cursor_y = GetCursorYForTesting();
 
   const std::vector<RenderText::FontSpan> font_spans =
@@ -4726,9 +4736,9 @@ TEST_F(RenderTextTest, GetWordLookupDataAtPoint_Multiline) {
   render_text->SetDisplayRect(Rect(500, 500));
   render_text->SetText(text);
   render_text->ApplyWeight(Font::Weight::SEMIBOLD, Range(0, 3));
-  render_text->ApplyStyle(UNDERLINE, true, Range(1, 7));
-  render_text->ApplyStyle(STRIKE, true, Range(1, 8));
-  render_text->ApplyStyle(ITALIC, true, Range(5, 9));
+  render_text->ApplyStyle(TEXT_STYLE_UNDERLINE, true, Range(1, 7));
+  render_text->ApplyStyle(TEXT_STYLE_STRIKE, true, Range(1, 8));
+  render_text->ApplyStyle(TEXT_STYLE_ITALIC, true, Range(5, 9));
 
   // Set up test expectations.
   const std::vector<RenderText::FontSpan> font_spans =
@@ -4835,7 +4845,7 @@ TEST_F(RenderTextTest, GetLookupDataAtRange_Multiline) {
   render_text->SetDisplayRect(Rect(500, 500));
   render_text->SetText(text);
   render_text->ApplyWeight(Font::Weight::SEMIBOLD, kWordOneRange);
-  render_text->ApplyStyle(UNDERLINE, true, kWordTwoRange);
+  render_text->ApplyStyle(TEXT_STYLE_UNDERLINE, true, kWordTwoRange);
 
   // Set up test expectations.
   const std::vector<RenderText::FontSpan> font_spans =
