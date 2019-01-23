@@ -70,12 +70,10 @@ bool EnableInProcessStackDumping() {
   return (sigaction(SIGPIPE, &action, NULL) == 0);
 }
 
-StackTrace::StackTrace(size_t count) {
-  count = std::min(base::size(trace_), count);
-
-  StackCrawlState state(reinterpret_cast<uintptr_t*>(trace_), count);
+size_t CollectStackTrace(void** trace, size_t count) {
+  StackCrawlState state(reinterpret_cast<uintptr_t*>(trace), count);
   _Unwind_Backtrace(&TraceStackFrame, &state);
-  count_ = state.frame_count;
+  return state.frame_count;
 }
 
 void StackTrace::PrintWithPrefix(const char* prefix_string) const {

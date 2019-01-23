@@ -127,6 +127,10 @@ class BASE_EXPORT StackTrace {
   size_t count_;
 };
 
+// Record a stack trace with up to |count| frames into |trace|. Returns the
+// number of frames read.
+BASE_EXPORT size_t CollectStackTrace(void** trace, size_t count);
+
 #if BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
 // Traces the stack by using frame pointers. This function is faster but less
 // reliable than StackTrace. It should work for debug and profiling builds,
