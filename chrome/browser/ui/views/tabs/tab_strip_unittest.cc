@@ -22,6 +22,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/gfx/animation/animation_test_api.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
@@ -145,7 +146,10 @@ class TestTabStripObserver : public TabStripObserver {
 class TabStripTest : public ChromeViewsTestBase,
                      public testing::WithParamInterface<bool> {
  public:
-  TabStripTest() : test_api_(GetParam()) {}
+  TabStripTest()
+      : test_api_(GetParam()),
+        animation_mode_reset_(gfx::AnimationTestApi::SetRichAnimationRenderMode(
+            gfx::Animation::RichAnimationRenderMode::FORCE_ENABLED)) {}
 
   ~TabStripTest() override {}
 
@@ -222,6 +226,8 @@ class TabStripTest : public ChromeViewsTestBase,
 
  private:
   ui::test::MaterialDesignControllerTestAPI test_api_;
+  std::unique_ptr<base::AutoReset<gfx::Animation::RichAnimationRenderMode>>
+      animation_mode_reset_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStripTest);
 };
