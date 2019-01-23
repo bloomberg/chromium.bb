@@ -24,8 +24,6 @@ enum MediaControlElementType {
   kMediaOverflowButton,
   kMediaOverflowList,
   kMediaScrubbingMessage,
-  kMediaEnterPictureInPictureButton,
-  kMediaExitPictureInPictureButton,
   kMediaDisplayCutoutFullscreenButton,
   kMediaAnimatedArrowContainer,
   kMediaIgnore

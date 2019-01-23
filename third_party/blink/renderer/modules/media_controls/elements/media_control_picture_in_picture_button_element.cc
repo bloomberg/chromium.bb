@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_controller_impl.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
 
@@ -19,6 +20,14 @@ MediaControlPictureInPictureButtonElement::
     MediaControlPictureInPictureButtonElement(MediaControlsImpl& media_controls)
     : MediaControlInputElement(media_controls, kMediaIgnore) {
   setType(input_type_names::kButton);
+  setAttribute(html_names::kRoleAttr, "button");
+
+  bool isInPictureInPicture =
+      PictureInPictureController::IsElementInPictureInPicture(
+          &ToHTMLVideoElement(MediaElement()));
+
+  UpdateAriaString(isInPictureInPicture);
+
   SetShadowPseudoId(
       AtomicString("-internal-media-controls-picture-in-picture-button"));
   SetIsWanted(false);
@@ -34,10 +43,10 @@ void MediaControlPictureInPictureButtonElement::UpdateDisplayType() {
   bool isInPictureInPicture =
       PictureInPictureController::IsElementInPictureInPicture(
           &ToHTMLVideoElement(MediaElement()));
-  SetDisplayType(isInPictureInPicture ? kMediaExitPictureInPictureButton
-                                      : kMediaEnterPictureInPictureButton);
   SetClass("on", isInPictureInPicture);
   UpdateOverflowString();
+
+  UpdateAriaString(isInPictureInPicture);
 
   MediaControlInputElement::UpdateDisplayType();
 }
@@ -80,6 +89,18 @@ void MediaControlPictureInPictureButtonElement::DefaultEventHandler(
   }
 
   MediaControlInputElement::DefaultEventHandler(event);
+}
+
+void MediaControlPictureInPictureButtonElement::UpdateAriaString(
+    bool isInPictureInPicture) {
+  String aria_string =
+      isInPictureInPicture
+          ? GetLocale().QueryString(
+                WebLocalizedString::kAXMediaExitPictureInPictureButton)
+          : GetLocale().QueryString(
+                WebLocalizedString::kAXMediaEnterPictureInPictureButton);
+
+  setAttribute(html_names::kAriaLabelAttr, WTF::AtomicString(aria_string));
 }
 
 }  // namespace blink
