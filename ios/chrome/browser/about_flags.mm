@@ -122,6 +122,38 @@ const FeatureEntry::Choice kAutofillIOSDelayBetweenFieldsChoices[] = {
     {"1000", autofill::switches::kAutofillIOSDelayBetweenFields, "1000"},
 };
 
+const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches3[] = {
+    {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "3"}};
+const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches4[] = {
+    {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "4"}};
+const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches5[] = {
+    {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "5"}};
+const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches6[] = {
+    {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "6"}};
+const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches8[] = {
+    {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "8"}};
+const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches10[] = {
+    {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "10"}};
+const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches12[] = {
+    {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "12"}};
+
+const FeatureEntry::FeatureVariation
+    kOmniboxUIMaxAutocompleteMatchesVariations[] = {
+        {"3 matches", kOmniboxUIMaxAutocompleteMatches3,
+         base::size(kOmniboxUIMaxAutocompleteMatches3), nullptr},
+        {"4 matches", kOmniboxUIMaxAutocompleteMatches4,
+         base::size(kOmniboxUIMaxAutocompleteMatches4), nullptr},
+        {"5 matches", kOmniboxUIMaxAutocompleteMatches5,
+         base::size(kOmniboxUIMaxAutocompleteMatches5), nullptr},
+        {"6 matches", kOmniboxUIMaxAutocompleteMatches6,
+         base::size(kOmniboxUIMaxAutocompleteMatches6), nullptr},
+        {"8 matches", kOmniboxUIMaxAutocompleteMatches8,
+         base::size(kOmniboxUIMaxAutocompleteMatches8), nullptr},
+        {"10 matches", kOmniboxUIMaxAutocompleteMatches10,
+         base::size(kOmniboxUIMaxAutocompleteMatches10), nullptr},
+        {"12 matches", kOmniboxUIMaxAutocompleteMatches12,
+         base::size(kOmniboxUIMaxAutocompleteMatches12), nullptr}};
+
 const FeatureEntry::FeatureParam kIconForSearchButtonGrey[] = {
     {kIconForSearchButtonFeatureParameterName,
      kIconForSearchButtonParameterGrey}};
@@ -406,6 +438,14 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxTabSwitchSuggestionsDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxTabSwitchSuggestions)},
+    {"omnibox-ui-max-autocomplete-matches",
+     flag_descriptions::kOmniboxUIMaxAutocompleteMatchesName,
+     flag_descriptions::kOmniboxUIMaxAutocompleteMatchesDescription,
+     flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         omnibox::kUIExperimentMaxAutocompleteMatches,
+         kOmniboxUIMaxAutocompleteMatchesVariations,
+         "OmniboxUIMaxAutocompleteVariations")},
     {"fcm-invalidations", flag_descriptions::kFCMInvalidationsName,
      flag_descriptions::kFCMInvalidationsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(invalidation::switches::kFCMInvalidations)},

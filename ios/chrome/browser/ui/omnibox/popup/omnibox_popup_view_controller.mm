@@ -29,7 +29,7 @@
 #endif
 
 namespace {
-const int kRowCount = 6;
+const int kRowCount = 12;
 const CGFloat kRowHeight = 48.0;
 const CGFloat kShortcutsRowHeight = 220;
 const CGFloat kAnswerRowHeight = 64.0;
