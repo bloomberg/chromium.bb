@@ -119,6 +119,20 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
     cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
   }
 
+  // Triggers a navigation to |url| to prime the OptimizationGuide hints for the
+  // url's host and  ensure that they have been loaded from the store (via
+  // histogram) prior to the navigation that tests functionality.
+  void LoadUrlHints(const GURL& url) {
+    base::HistogramTester histogram_tester;
+
+    ui_test_utils::NavigateToURL(browser(), url);
+
+    RetryForHistogramUntilCountReached(
+        &histogram_tester,
+        previews::kPreviewsOptimizationGuideOnLoadedHintResultHistogramString,
+        1);
+  }
+
   void ProcessHintsComponent(
       const optimization_guide::HintsComponentInfo& component_info) {
     base::HistogramTester histogram_tester;
@@ -314,15 +328,19 @@ class ResourceLoadingHintsBrowserTest
 IN_PROC_BROWSER_TEST_F(
     ResourceLoadingHintsBrowserTest,
     DISABLE_ON_WIN_MAC(ResourceLoadingHintsHttpsWhitelisted)) {
-  SetExpectedFooJpgRequest(false);
-  SetExpectedBarJpgRequest(true);
+  GURL url = https_url();
 
   // Whitelist test URL for resource loading hints.
-  SetDefaultOnlyResourceLoadingHints({https_url().host()});
+  SetDefaultOnlyResourceLoadingHints({url.host()});
+  LoadUrlHints(url);
+
+  SetExpectedFooJpgRequest(false);
+  SetExpectedBarJpgRequest(true);
+  ResetResourceLoadingHintInterventionHeaderSeen();
 
   base::HistogramTester histogram_tester;
 
-  ui_test_utils::NavigateToURL(browser(), https_url());
+  ui_test_utils::NavigateToURL(browser(), url);
 
   RetryForHistogramUntilCountReached(
       &histogram_tester, "ResourceLoadingHints.CountBlockedSubresourcePatterns",
@@ -347,7 +365,7 @@ IN_PROC_BROWSER_TEST_F(
   SetExpectedBarJpgRequest(true);
   ResetResourceLoadingHintInterventionHeaderSeen();
 
-  ui_test_utils::NavigateToURL(browser(), https_url());
+  ui_test_utils::NavigateToURL(browser(), url);
 
   RetryForHistogramUntilCountReached(
       &histogram_tester, "ResourceLoadingHints.CountBlockedSubresourcePatterns",
@@ -373,15 +391,19 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     ResourceLoadingHintsBrowserTest,
     DISABLE_ON_WIN_MAC(ExperimentalHints_ExperimentIsNotEnabled)) {
-  SetExpectedFooJpgRequest(true);
-  SetExpectedBarJpgRequest(true);
+  GURL url = https_url();
 
   // Whitelist test URL for resource loading hints.
-  SetExperimentOnlyResourceLoadingHints({https_url().host()});
+  SetExperimentOnlyResourceLoadingHints({url.host()});
+  LoadUrlHints(url);
+
+  SetExpectedFooJpgRequest(true);
+  SetExpectedBarJpgRequest(true);
+  ResetResourceLoadingHintInterventionHeaderSeen();
 
   base::HistogramTester histogram_tester;
 
-  ui_test_utils::NavigateToURL(browser(), https_url());
+  ui_test_utils::NavigateToURL(browser(), url);
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",
@@ -403,15 +425,20 @@ IN_PROC_BROWSER_TEST_F(
       previews::features::kOptimizationHintsExperiments,
       {{previews::features::kOptimizationHintsExperimentNameParam,
         optimization_guide::testing::kFooExperimentName}});
-  SetExpectedFooJpgRequest(false);
-  SetExpectedBarJpgRequest(true);
+
+  GURL url = https_url();
 
   // Whitelist test URL for resource loading hints.
-  SetExperimentOnlyResourceLoadingHints({https_url().host()});
+  SetExperimentOnlyResourceLoadingHints({url.host()});
+  LoadUrlHints(url);
+
+  SetExpectedFooJpgRequest(false);
+  SetExpectedBarJpgRequest(true);
+  ResetResourceLoadingHintInterventionHeaderSeen();
 
   base::HistogramTester histogram_tester;
 
-  ui_test_utils::NavigateToURL(browser(), https_url());
+  ui_test_utils::NavigateToURL(browser(), url);
 
   RetryForHistogramUntilCountReached(
       &histogram_tester, "ResourceLoadingHints.CountBlockedSubresourcePatterns",
@@ -442,16 +469,21 @@ IN_PROC_BROWSER_TEST_F(
       previews::features::kOptimizationHintsExperiments,
       {{previews::features::kOptimizationHintsExperimentNameParam,
         optimization_guide::testing::kFooExperimentName}});
-  SetExpectedFooJpgRequest(false);
-  SetExpectedBarJpgRequest(true);
+
+  GURL url = https_url();
 
   // Whitelist test URL for resource loading hints. Set both experimental and
   // non-experimental hints.
-  SetMixResourceLoadingHints({https_url().host()});
+  SetMixResourceLoadingHints({url.host()});
+  LoadUrlHints(url);
+
+  SetExpectedFooJpgRequest(false);
+  SetExpectedBarJpgRequest(true);
+  ResetResourceLoadingHintInterventionHeaderSeen();
 
   base::HistogramTester histogram_tester;
 
-  ui_test_utils::NavigateToURL(browser(), https_url());
+  ui_test_utils::NavigateToURL(browser(), url);
 
   RetryForHistogramUntilCountReached(
       &histogram_tester, "ResourceLoadingHints.CountBlockedSubresourcePatterns",
@@ -482,15 +514,20 @@ IN_PROC_BROWSER_TEST_F(
       previews::features::kOptimizationHintsExperiments,
       {{previews::features::kOptimizationHintsExperimentNameParam,
         "some_other_experiment"}});
-  SetExpectedFooJpgRequest(true);
-  SetExpectedBarJpgRequest(false);
+
+  GURL url = https_url();
 
   // Whitelist test URL for resource loading hints.
-  SetMixResourceLoadingHints({https_url().host()});
+  SetMixResourceLoadingHints({url.host()});
+  LoadUrlHints(url);
+
+  SetExpectedFooJpgRequest(true);
+  SetExpectedBarJpgRequest(false);
+  ResetResourceLoadingHintInterventionHeaderSeen();
 
   base::HistogramTester histogram_tester;
 
-  ui_test_utils::NavigateToURL(browser(), https_url());
+  ui_test_utils::NavigateToURL(browser(), url);
 
   RetryForHistogramUntilCountReached(
       &histogram_tester, "ResourceLoadingHints.CountBlockedSubresourcePatterns",
@@ -500,22 +537,27 @@ IN_PROC_BROWSER_TEST_F(
       static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 1);
   // Infobar would still be shown since there were at least one resource
   // loading hints available, even though none of them matched.
-  histogram_tester.ExpectTotalCount(
-      "Previews.InfoBarAction.ResourceLoadingHints", 1);
+  EXPECT_FALSE(histogram_tester
+                   .GetAllSamples("Previews.InfoBarAction.ResourceLoadingHints")
+                   .empty());
   EXPECT_TRUE(resource_loading_hint_intervention_header_seen());
 }
 
 IN_PROC_BROWSER_TEST_F(
     ResourceLoadingHintsBrowserTest,
     DISABLE_ON_WIN_MAC(ResourceLoadingHintsHttpsWhitelistedRedirectToHttps)) {
-  SetExpectedFooJpgRequest(false);
-  SetExpectedBarJpgRequest(true);
+  GURL url = redirect_url();
 
   SetDefaultOnlyResourceLoadingHints({https_url().host()});
+  LoadUrlHints(url);
+
+  SetExpectedFooJpgRequest(false);
+  SetExpectedBarJpgRequest(true);
+  ResetResourceLoadingHintInterventionHeaderSeen();
 
   base::HistogramTester histogram_tester;
 
-  ui_test_utils::NavigateToURL(browser(), redirect_url());
+  ui_test_utils::NavigateToURL(browser(), url);
 
   RetryForHistogramUntilCountReached(
       &histogram_tester, "ResourceLoadingHints.CountBlockedSubresourcePatterns",
@@ -528,8 +570,9 @@ IN_PROC_BROWSER_TEST_F(
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",
       static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 2);
-  histogram_tester.ExpectTotalCount(
-      "Previews.InfoBarAction.ResourceLoadingHints", 1);
+  EXPECT_FALSE(histogram_tester
+                   .GetAllSamples("Previews.InfoBarAction.ResourceLoadingHints")
+                   .empty());
   // SetDefaultOnlyResourceLoadingHints sets 3 resource loading hints patterns.
   histogram_tester.ExpectBucketCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 1);
@@ -539,15 +582,19 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     ResourceLoadingHintsBrowserTest,
     DISABLE_ON_WIN_MAC(ResourceLoadingHintsHttpsNoWhitelisted)) {
-  SetExpectedFooJpgRequest(true);
-  SetExpectedBarJpgRequest(true);
+  GURL url = https_url();
 
   SetDefaultOnlyResourceLoadingHints({});
+  LoadUrlHints(url);
+
+  SetExpectedFooJpgRequest(true);
+  SetExpectedBarJpgRequest(true);
+  ResetResourceLoadingHintInterventionHeaderSeen();
 
   base::HistogramTester histogram_tester;
 
   // The URL is not whitelisted.
-  ui_test_utils::NavigateToURL(browser(), https_url());
+  ui_test_utils::NavigateToURL(browser(), url);
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectBucketCount(
@@ -564,15 +611,19 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
                        DISABLE_ON_WIN_MAC(ResourceLoadingHintsHttp)) {
-  SetExpectedFooJpgRequest(true);
-  SetExpectedBarJpgRequest(true);
+  GURL url = http_url();
 
   // Whitelist test HTTP URL for resource loading hints.
   SetDefaultOnlyResourceLoadingHints({https_url().host()});
+  LoadUrlHints(url);
+
+  SetExpectedFooJpgRequest(true);
+  SetExpectedBarJpgRequest(true);
+  ResetResourceLoadingHintInterventionHeaderSeen();
 
   base::HistogramTester histogram_tester;
 
-  ui_test_utils::NavigateToURL(browser(), http_url());
+  ui_test_utils::NavigateToURL(browser(), url);
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectBucketCount(
@@ -588,15 +639,19 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     ResourceLoadingHintsBrowserTest,
     DISABLE_ON_WIN_MAC(ResourceLoadingHintsHttpsWhitelistedNoTransform)) {
-  SetExpectedFooJpgRequest(true);
-  SetExpectedBarJpgRequest(true);
+  GURL url = https_no_transform_url();
 
   // Whitelist test URL for resource loading hints.
   SetDefaultOnlyResourceLoadingHints({https_url().host()});
+  LoadUrlHints(url);
+
+  SetExpectedFooJpgRequest(true);
+  SetExpectedBarJpgRequest(true);
+  ResetResourceLoadingHintInterventionHeaderSeen();
 
   base::HistogramTester histogram_tester;
 
-  ui_test_utils::NavigateToURL(browser(), https_no_transform_url());
+  ui_test_utils::NavigateToURL(browser(), url);
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectBucketCount(

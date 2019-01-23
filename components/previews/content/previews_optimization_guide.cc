@@ -142,6 +142,11 @@ void PreviewsOptimizationGuide::OnLoadedHint(
     const optimization_guide::proto::Hint* loaded_hint) const {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
+  // Record that the hint finished loading. This is used as a signal during
+  // tests.
+  LOCAL_HISTOGRAM_BOOLEAN(
+      kPreviewsOptimizationGuideOnLoadedHintResultHistogramString, loaded_hint);
+
   // Run the callback now that the hint is loaded. This is used as a signal by
   // tests.
   std::move(callback).Run();
