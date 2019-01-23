@@ -108,6 +108,7 @@
     'chromium.chromiumos': {
       'Linux ChromiumOS Full': 'chromeos_with_codecs_release_bot',
 
+      'chromeos-amd64-generic-cfi-thin-lto-rel': 'cros_chrome_sdk_headless_ozone_cfi_thin_lto',
       'chromeos-amd64-generic-rel': 'cros_chrome_sdk_headless_ozone',
       'chromeos-daisy-rel': 'cros_chrome_sdk',
       'linux-chromeos-rel': 'chromeos_with_codecs_release_bot',
@@ -644,8 +645,9 @@
     },
 
     'tryserver.chromium.chromiumos': {
-      # TODO(crbug.com/913750): Enable DCHECKS on this bot when the PFQ has it
-      # enabled.
+      # TODO(crbug.com/913750): Enable DCHECKS on the two amd64-generic bots
+      # when the PFQ has it enabled.
+      'chromeos-amd64-generic-cfi-thin-lto-rel': 'cros_chrome_sdk_headless_ozone_cfi_thin_lto',
       'chromeos-amd64-generic-rel': 'cros_chrome_sdk_headless_ozone',
       'chromeos-daisy-rel': 'cros_chrome_sdk_dchecks_always_on',
       'chromeos-kevin-rel': 'cros_chrome_sdk_headless_ozone_dcheck_always_on',
@@ -1287,6 +1289,10 @@
 
     'cros_chrome_sdk_headless_ozone': [
       'cros_chrome_sdk', 'ozone_platform_headless',
+    ],
+
+    'cros_chrome_sdk_headless_ozone_cfi_thin_lto': [
+      'cros_chrome_sdk', 'ozone_platform_headless', 'cfi_full', 'thin_lto',
     ],
 
     'cros_chrome_sdk_headless_ozone_dcheck_always_on': [
