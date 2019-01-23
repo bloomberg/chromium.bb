@@ -15,7 +15,11 @@ class PLATFORM_EXPORT AnimationWorkletMutatorDispatcher {
   virtual ~AnimationWorkletMutatorDispatcher() = default;
 
   // Run the animation frame callbacks from all connected AnimationWorklets.
-  virtual void Mutate(std::unique_ptr<AnimationWorkletDispatcherInput>) = 0;
+  virtual void MutateSynchronously(
+      std::unique_ptr<AnimationWorkletDispatcherInput>) = 0;
+  virtual void MutateAsynchronously(
+      std::unique_ptr<AnimationWorkletDispatcherInput>) = 0;
+
   // Returns true if Mutate may do something if called 'now'.
   virtual bool HasMutators() = 0;
 };

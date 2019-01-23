@@ -19,6 +19,15 @@
 
 namespace blink {
 
+namespace {
+
+int next_async_mutation_id = 0;
+int GetNextAsyncMutationId() {
+  return next_async_mutation_id++;
+}
+
+}  // end namespace
+
 // Wrap output vector in a thread safe and ref-counted object since it is
 // accessed from animation worklet threads and its lifetime must be guaranteed
 // to outlive the mutation update cycle.
@@ -84,13 +93,14 @@ AnimationWorkletMutatorDispatcherImpl::CreateMainThreadClient(
   return CreateClient<MainThreadMutatorClient>(weak_interface, queue, true);
 }
 
-void AnimationWorkletMutatorDispatcherImpl::Mutate(
+void AnimationWorkletMutatorDispatcherImpl::MutateSynchronously(
     std::unique_ptr<AnimationWorkletDispatcherInput> mutator_input) {
   TRACE_EVENT0("cc", "AnimationWorkletMutatorDispatcherImpl::mutate");
   if (mutator_map_.IsEmpty() || !mutator_input)
     return;
   base::ElapsedTimer timer;
   DCHECK(client_);
+  DCHECK(host_queue_->BelongsToCurrentThread());
   DCHECK(mutator_input_map_.IsEmpty());
   DCHECK(outputs_->get().IsEmpty());
 
@@ -104,20 +114,64 @@ void AnimationWorkletMutatorDispatcherImpl::Mutate(
   RequestMutations(std::move(on_done));
   event.Wait();
 
-  for (auto& output : outputs_->get()) {
-    // Animator that has no input does not produce any output.
-    if (!output)
-      continue;
-    client_->SetMutationUpdate(std::move(output));
-  }
-
-  mutator_input_map_.clear();
-  outputs_->get().clear();
+  ApplyMutationsOnHostThread();
 
   UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
       "Animation.AnimationWorklet.Dispatcher.SynchronousMutateDuration",
       timer.Elapsed(), base::TimeDelta::FromMicroseconds(1),
       base::TimeDelta::FromMilliseconds(100), 50);
+}
+
+void AnimationWorkletMutatorDispatcherImpl::MutateAsynchronously(
+    std::unique_ptr<AnimationWorkletDispatcherInput> mutator_input) {
+  if (mutator_map_.IsEmpty() || !mutator_input)
+    return;
+  DCHECK(client_);
+  DCHECK(host_queue_->BelongsToCurrentThread());
+  if (!mutator_input_map_.IsEmpty()) {
+    // Still running mutations from a previous frame. Skip this frame to avoid
+    // lagging behind.
+    // TODO(kevers): Consider queuing pending mutation cycle. A pending tree
+    // mutation should likely be queued an active tree mutation cycle is still
+    // running.
+    return;
+  }
+
+  mutator_input_map_ = CreateInputMap(*mutator_input);
+  if (mutator_input_map_.IsEmpty())
+    return;
+
+  int next_async_mutation_id = GetNextAsyncMutationId();
+  TRACE_EVENT_ASYNC_BEGIN0("cc",
+                           "AnimationWorkletMutatorDispatcherImpl::MutateAsync",
+                           next_async_mutation_id);
+
+  WTF::CrossThreadClosure on_done = CrossThreadBind(
+      [](scoped_refptr<base::SingleThreadTaskRunner> host_queue,
+         base::WeakPtr<AnimationWorkletMutatorDispatcherImpl> dispatcher,
+         int next_async_mutation_id) {
+        PostCrossThreadTask(
+            *host_queue, FROM_HERE,
+            CrossThreadBind(
+                &AnimationWorkletMutatorDispatcherImpl::AsyncMutationsDone,
+                dispatcher, next_async_mutation_id));
+      },
+      host_queue_, weak_factory_.GetWeakPtr(), next_async_mutation_id);
+
+  client_->NotifyAnimationsPending();
+  RequestMutations(std::move(on_done));
+}
+
+void AnimationWorkletMutatorDispatcherImpl::AsyncMutationsDone(
+    int async_mutation_id) {
+  DCHECK(client_);
+  DCHECK(host_queue_->BelongsToCurrentThread());
+  ApplyMutationsOnHostThread();
+  client_->NotifyAnimationsReady();
+  TRACE_EVENT_ASYNC_END0("cc",
+                         "AnimationWorkletMutatorDispatcherImpl::MutateAsync",
+                         async_mutation_id);
+  // TODO(kevers): Add UMA metric to track the asynchronous mutate duration.
 }
 
 void AnimationWorkletMutatorDispatcherImpl::RegisterAnimationWorkletMutator(
@@ -171,6 +225,7 @@ AnimationWorkletMutatorDispatcherImpl::CreateInputMap(
 
 void AnimationWorkletMutatorDispatcherImpl::RequestMutations(
     WTF::CrossThreadClosure done_callback) {
+  DCHECK(client_);
   DCHECK(outputs_->get().IsEmpty());
 
   int num_requests = mutator_map_.size();
@@ -212,6 +267,17 @@ void AnimationWorkletMutatorDispatcherImpl::RequestMutations(
             outputs_, next_request_index++,
             WTF::Passed(WTF::CrossThreadClosure(on_mutator_done))));
   }
+}
+
+void AnimationWorkletMutatorDispatcherImpl::ApplyMutationsOnHostThread() {
+  DCHECK(client_);
+  DCHECK(host_queue_->BelongsToCurrentThread());
+  for (auto& output : outputs_->get()) {
+    if (output)
+      client_->SetMutationUpdate(std::move(output));
+  }
+  mutator_input_map_.clear();
+  outputs_->get().clear();
 }
 
 }  // namespace blink

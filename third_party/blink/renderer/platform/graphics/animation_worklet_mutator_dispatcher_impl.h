@@ -48,7 +48,12 @@ class PLATFORM_EXPORT AnimationWorkletMutatorDispatcherImpl final
   ~AnimationWorkletMutatorDispatcherImpl() override;
 
   // AnimationWorkletMutatorDispatcher implementation.
-  void Mutate(std::unique_ptr<AnimationWorkletDispatcherInput>) override;
+  void MutateSynchronously(
+      std::unique_ptr<AnimationWorkletDispatcherInput>) override;
+
+  void MutateAsynchronously(
+      std::unique_ptr<AnimationWorkletDispatcherInput>) override;
+
   // TODO(majidvp): Remove when timeline inputs are known.
   bool HasMutators() override;
 
@@ -65,6 +70,8 @@ class PLATFORM_EXPORT AnimationWorkletMutatorDispatcherImpl final
 
   void SynchronizeAnimatorName(const String& animator_name);
 
+  MutatorClient* client() { return client_; }
+
  private:
   class OutputVectorRef;
 
@@ -80,6 +87,10 @@ class PLATFORM_EXPORT AnimationWorkletMutatorDispatcherImpl final
   // all mutation updates have been computed on the animation worklet thread
   // associated with the last mutation to complete.
   void RequestMutations(WTF::CrossThreadClosure done_callback);
+
+  void AsyncMutationsDone(int async_mutation_id);
+
+  void ApplyMutationsOnHostThread();
 
   // The AnimationWorkletProxyClients are also owned by the WorkerClients
   // dictionary.

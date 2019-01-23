@@ -9,11 +9,15 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_thread_type.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/waitable_event.h"
 
 #include <memory>
 
@@ -21,6 +25,7 @@ using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::Mock;
 using ::testing::Return;
+using ::testing::Sequence;
 using ::testing::StrictMock;
 using ::testing::Truly;
 
@@ -64,7 +69,7 @@ class MockCompositorMutatorClient : public CompositorMutatorClient {
  public:
   MockCompositorMutatorClient(
       std::unique_ptr<AnimationWorkletMutatorDispatcherImpl> mutator)
-      : CompositorMutatorClient(std::move(mutator)) {}
+      : CompositorMutatorClient(std::move(mutator)), done_event_(nullptr) {}
   ~MockCompositorMutatorClient() override {}
   // gmock cannot mock methods with move-only args so we forward it to ourself.
   void SetMutationUpdate(
@@ -72,8 +77,26 @@ class MockCompositorMutatorClient : public CompositorMutatorClient {
     SetMutationUpdateRef(output_state.get());
   }
 
+  MOCK_METHOD0(NotifyAnimationsPending, void());
+
+  void NotifyAnimationsReady() override {
+    NotifyAnimationsReadyRef();
+    if (done_event_) {
+      done_event_->Signal();
+    }
+  }
+
+  MOCK_METHOD0(NotifyAnimationsReadyRef, void());
+
+  void SignalWhenComplete(WaitableEvent* done_event) {
+    done_event_ = done_event;
+  }
+
   MOCK_METHOD1(SetMutationUpdateRef,
                void(cc::MutatorOutputState* output_state));
+
+ private:
+  WaitableEvent* done_event_;  // not owned.
 };
 
 class AnimationWorkletMutatorDispatcherImplTest : public ::testing::Test {
@@ -130,8 +153,7 @@ TEST_F(AnimationWorkletMutatorDispatcherImplTest,
       .Times(1)
       .WillOnce(Return(new AnimationWorkletOutput()));
   EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(1);
-
-  mutator_->Mutate(CreateTestMutatorInput());
+  mutator_->MutateSynchronously(CreateTestMutatorInput());
 }
 
 TEST_F(AnimationWorkletMutatorDispatcherImplTest,
@@ -156,7 +178,7 @@ TEST_F(AnimationWorkletMutatorDispatcherImplTest,
   auto input = std::make_unique<AnimationWorkletDispatcherInput>();
   input->Add(std::move(state2));
 
-  mutator_->Mutate(std::move(input));
+  mutator_->MutateSynchronously(std::move(input));
 }
 
 TEST_F(AnimationWorkletMutatorDispatcherImplTest,
@@ -164,7 +186,7 @@ TEST_F(AnimationWorkletMutatorDispatcherImplTest,
   EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(0);
   std::unique_ptr<AnimationWorkletDispatcherInput> input =
       std::make_unique<AnimationWorkletDispatcherInput>();
-  mutator_->Mutate(std::move(input));
+  mutator_->MutateSynchronously(std::move(input));
 }
 
 TEST_F(AnimationWorkletMutatorDispatcherImplTest,
@@ -177,12 +199,13 @@ TEST_F(AnimationWorkletMutatorDispatcherImplTest,
 
   mutator_->RegisterAnimationWorkletMutator(first_mutator,
                                             first_thread->GetTaskRunner());
+
   EXPECT_CALL(*first_mutator, GetWorkletId())
       .Times(AtLeast(1))
       .WillRepeatedly(Return(11));
   EXPECT_CALL(*first_mutator, MutateRef(_)).Times(1).WillOnce(Return(nullptr));
   EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(0);
-  mutator_->Mutate(CreateTestMutatorInput());
+  mutator_->MutateSynchronously(CreateTestMutatorInput());
 }
 
 TEST_F(AnimationWorkletMutatorDispatcherImplTest,
@@ -195,6 +218,7 @@ TEST_F(AnimationWorkletMutatorDispatcherImplTest,
 
   mutator_->RegisterAnimationWorkletMutator(first_mutator,
                                             first_thread->GetTaskRunner());
+
   EXPECT_CALL(*first_mutator, GetWorkletId())
       .Times(AtLeast(1))
       .WillRepeatedly(Return(11));
@@ -202,7 +226,7 @@ TEST_F(AnimationWorkletMutatorDispatcherImplTest,
       .Times(1)
       .WillOnce(Return(new AnimationWorkletOutput()));
   EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(1);
-  mutator_->Mutate(CreateTestMutatorInput());
+  mutator_->MutateSynchronously(CreateTestMutatorInput());
 
   // The above call blocks on mutator threads running their tasks so we can
   // safely verify here.
@@ -210,10 +234,12 @@ TEST_F(AnimationWorkletMutatorDispatcherImplTest,
 
   // Ensure mutator is not invoked after unregistration.
   EXPECT_CALL(*first_mutator, MutateRef(_)).Times(0);
+  EXPECT_CALL(*client_, NotifyAnimationsPending()).Times(0);
   EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(0);
+  EXPECT_CALL(*client_, NotifyAnimationsReadyRef()).Times(0);
   mutator_->UnregisterAnimationWorkletMutator(first_mutator);
 
-  mutator_->Mutate(CreateTestMutatorInput());
+  mutator_->MutateSynchronously(CreateTestMutatorInput());
   Mock::VerifyAndClearExpectations(client_.get());
 }
 
@@ -244,9 +270,8 @@ TEST_F(AnimationWorkletMutatorDispatcherImplTest,
   EXPECT_CALL(*second_mutator, MutateRef(_))
       .Times(1)
       .WillOnce(Return(new AnimationWorkletOutput()));
-
   EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(2);
-  mutator_->Mutate(CreateTestMutatorInput());
+  mutator_->MutateSynchronously(CreateTestMutatorInput());
 }
 
 TEST_F(
@@ -280,13 +305,13 @@ TEST_F(
       .Times(1)
       .WillOnce(Return(new AnimationWorkletOutput()));
   EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(2);
-  mutator_->Mutate(CreateTestMutatorInput());
+  mutator_->MutateSynchronously(CreateTestMutatorInput());
 
   // The above call blocks on mutator threads running their tasks so we can
   // safely verify here.
   Mock::VerifyAndClearExpectations(client_.get());
 
-  // Ensure mutator is not invoked after unregistration.
+  // Ensure first_mutator is not invoked after unregistration.
   mutator_->UnregisterAnimationWorkletMutator(first_mutator);
 
   EXPECT_CALL(*first_mutator, GetWorkletId()).Times(0);
@@ -298,8 +323,331 @@ TEST_F(
       .Times(1)
       .WillOnce(Return(new AnimationWorkletOutput()));
   EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(1);
-  mutator_->Mutate(CreateTestMutatorInput());
+  mutator_->MutateSynchronously(CreateTestMutatorInput());
+
   Mock::VerifyAndClearExpectations(client_.get());
+}
+
+// -----------------------------------------------------------------------
+// Asynchronous version of tests.
+
+// Callback wrapping portion of the async test that is required to run on the
+// compositor thread.
+using MutateAsyncCallback = WTF::CrossThreadFunction<void()>;
+
+using MutatorDispatcherRef =
+    scoped_refptr<AnimationWorkletMutatorDispatcherImpl>;
+
+class AnimationWorkletMutatorDispatcherImplAsyncTest
+    : public AnimationWorkletMutatorDispatcherImplTest {
+ public:
+  void SetUp() override {
+    if (!Thread::CompositorThread()) {
+      Thread::CreateAndSetCompositorThread();
+    }
+    AnimationWorkletMutatorDispatcherImplTest::SetUp();
+  }
+
+  // Call this version of mutate and wait if expecting a mutate completion
+  // notification from the client.
+  void CallMutateAndWaitForClientCompletion(
+      MutateAsyncCallback mutate_callback) {
+    WaitableEvent done_event;
+    client_->SignalWhenComplete(&done_event);
+    PostCrossThreadTask(*Thread::CompositorThread()->GetTaskRunner(), FROM_HERE,
+                        std::move(mutate_callback));
+    done_event.Wait();
+  }
+
+  // Call this version of mutate and wait if there is no expectation of client
+  // notifications. There are no notificaitons if the mutate call is a no-op
+  // such as when there are no inputs.
+  void CallMutateAndWaitForCallbackCompletion(
+      MutateAsyncCallback mutate_callback) {
+    WaitableEvent done_event;
+    PostCrossThreadTask(
+        *Thread::CompositorThread()->GetTaskRunner(), FROM_HERE,
+        CrossThreadBind(
+            [](MutateAsyncCallback mutate_callback, WaitableEvent* done_event) {
+              mutate_callback.Run();
+              done_event->Signal();
+            },
+            WTF::Passed(std::move(mutate_callback)),
+            WTF::CrossThreadUnretained(&done_event)));
+    done_event.Wait();
+  }
+};
+
+TEST_F(AnimationWorkletMutatorDispatcherImplAsyncTest,
+       RegisteredAnimatorShouldOnlyReceiveInputForItself) {
+  std::unique_ptr<Thread> first_thread = CreateThread("FirstThread");
+  MockAnimationWorkletMutator* first_mutator =
+      MakeGarbageCollected<MockAnimationWorkletMutator>(
+          first_thread->GetTaskRunner());
+
+  // Call MutateAsynchronously from the compositor thread.
+  MutateAsyncCallback mutate_callback = CrossThreadBind(
+      [](std::unique_ptr<Thread> first_thread,
+         MockAnimationWorkletMutator* first_mutator,
+         AnimationWorkletMutatorDispatcherImplAsyncTest* async_test) {
+        async_test->mutator_->RegisterAnimationWorkletMutator(
+            first_mutator, first_thread->GetTaskRunner());
+        async_test->mutator_->MutateAsynchronously(CreateTestMutatorInput());
+      },
+      WTF::Passed(std::move(first_thread)),
+      WrapCrossThreadWeakPersistent(first_mutator),
+      WTF::CrossThreadUnretained(this));
+
+  Sequence s;
+  EXPECT_CALL(*first_mutator, GetWorkletId())
+      .Times(AtLeast(1))
+      .WillRepeatedly(Return(11));
+  EXPECT_CALL(*first_mutator, MutateRef(_))
+      .Times(1)
+      .WillOnce(Return(new AnimationWorkletOutput()));
+  EXPECT_CALL(*client_, NotifyAnimationsPending()).Times(1).InSequence(s);
+  EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(1).InSequence(s);
+  EXPECT_CALL(*client_, NotifyAnimationsReadyRef()).Times(1).InSequence(s);
+  CallMutateAndWaitForClientCompletion(std::move(mutate_callback));
+}
+
+TEST_F(AnimationWorkletMutatorDispatcherImplAsyncTest,
+       RegisteredAnimatorShouldNotBeMutatedWhenNoInput) {
+  std::unique_ptr<Thread> first_thread = CreateThread("FirstThread");
+  MockAnimationWorkletMutator* first_mutator =
+      MakeGarbageCollected<MockAnimationWorkletMutator>(
+          first_thread->GetTaskRunner());
+
+  // Call MutateAsynchronously from the compositor thread.
+  MutateAsyncCallback mutate_callback = CrossThreadBind(
+      [](std::unique_ptr<Thread> first_thread,
+         MockAnimationWorkletMutator* first_mutator,
+         AnimationWorkletMutatorDispatcherImplAsyncTest* async_test) {
+        async_test->mutator_->RegisterAnimationWorkletMutator(
+            first_mutator, first_thread->GetTaskRunner());
+
+        AnimationWorkletInput::AddAndUpdateState state2{
+            {22, 2}, "test2", 5000, nullptr, 1};
+
+        auto input = std::make_unique<AnimationWorkletDispatcherInput>();
+        input->Add(std::move(state2));
+
+        async_test->mutator_->MutateAsynchronously(std::move(input));
+      },
+      WTF::Passed(std::move(first_thread)),
+      WrapCrossThreadWeakPersistent(first_mutator),
+      WTF::CrossThreadUnretained(this));
+
+  // The start of the mutation process will be synchronous. If a pending
+  // notification is not received by the time the callback returns, it will not
+  // be triggered later.
+  EXPECT_CALL(*first_mutator, GetWorkletId())
+      .Times(AtLeast(1))
+      .WillRepeatedly(Return(11));
+  EXPECT_CALL(*client_, NotifyAnimationsPending()).Times(0);
+  CallMutateAndWaitForCallbackCompletion(std::move(mutate_callback));
+}
+
+TEST_F(AnimationWorkletMutatorDispatcherImplAsyncTest,
+       MutationUpdateIsNotInvokedWithNoRegisteredAnimators) {
+  // Call MutateAsynchronously from the compositor thread.
+  MutateAsyncCallback mutate_callback = CrossThreadBind(
+      [](AnimationWorkletMutatorDispatcherImplAsyncTest* async_test) {
+        std::unique_ptr<AnimationWorkletDispatcherInput> input =
+            std::make_unique<AnimationWorkletDispatcherInput>();
+        async_test->mutator_->MutateAsynchronously(std::move(input));
+      },
+      WTF::CrossThreadUnretained(this));
+
+  // The start of the mutation process will be synchronous. If a pending
+  // notification is not received by the time the callback returns, it will not
+  // be triggered later.
+  EXPECT_CALL(*client_, NotifyAnimationsPending()).Times(0);
+  CallMutateAndWaitForCallbackCompletion(std::move(mutate_callback));
+}
+
+TEST_F(AnimationWorkletMutatorDispatcherImplAsyncTest,
+       MutationUpdateIsNotInvokedWithNullOutput) {
+  // Create a thread to run mutator tasks.
+  std::unique_ptr<Thread> first_thread = CreateThread("FirstAnimationThread");
+  MockAnimationWorkletMutator* first_mutator =
+      MakeGarbageCollected<MockAnimationWorkletMutator>(
+          first_thread->GetTaskRunner());
+
+  // Call MutateAsynchronously from the compositor thread.
+  MutateAsyncCallback mutate_callback = CrossThreadBind(
+      [](std::unique_ptr<Thread> first_thread,
+         MockAnimationWorkletMutator* first_mutator,
+         AnimationWorkletMutatorDispatcherImplAsyncTest* async_test) {
+        async_test->mutator_->RegisterAnimationWorkletMutator(
+            first_mutator, first_thread->GetTaskRunner());
+        async_test->mutator_->MutateAsynchronously(CreateTestMutatorInput());
+      },
+      WTF::Passed(std::move(first_thread)),
+      WrapCrossThreadWeakPersistent(first_mutator),
+      WTF::CrossThreadUnretained(this));
+
+  Sequence s;
+  EXPECT_CALL(*first_mutator, GetWorkletId())
+      .Times(AtLeast(1))
+      .WillRepeatedly(Return(11));
+  EXPECT_CALL(*first_mutator, MutateRef(_)).Times(1).WillOnce(Return(nullptr));
+  EXPECT_CALL(*client_, NotifyAnimationsPending()).Times(1).InSequence(s);
+  EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(0);
+  EXPECT_CALL(*client_, NotifyAnimationsReadyRef()).Times(1).InSequence(s);
+  CallMutateAndWaitForClientCompletion(std::move(mutate_callback));
+}
+
+TEST_F(AnimationWorkletMutatorDispatcherImplAsyncTest,
+       MutationUpdateIsInvokedCorrectlyWithSingleRegisteredAnimator) {
+  // Create a thread to run mutator tasks.
+  std::unique_ptr<Thread> first_thread = CreateThread("FirstAnimationThread");
+  MockAnimationWorkletMutator* first_mutator =
+      MakeGarbageCollected<MockAnimationWorkletMutator>(
+          first_thread->GetTaskRunner());
+
+  // Call MutateAsynchronously from the compositor thread.
+  MutateAsyncCallback mutate_callback = CrossThreadBind(
+      [](std::unique_ptr<Thread> first_thread,
+         MockAnimationWorkletMutator* first_mutator,
+         AnimationWorkletMutatorDispatcherImplAsyncTest* async_test) {
+        async_test->mutator_->RegisterAnimationWorkletMutator(
+            first_mutator, first_thread->GetTaskRunner());
+        async_test->mutator_->MutateAsynchronously(CreateTestMutatorInput());
+      },
+      WTF::Passed(std::move(first_thread)),
+      WrapCrossThreadWeakPersistent(first_mutator),
+      WTF::CrossThreadUnretained(this));
+
+  Sequence s;
+  EXPECT_CALL(*first_mutator, GetWorkletId())
+      .Times(AtLeast(1))
+      .WillRepeatedly(Return(11));
+  EXPECT_CALL(*first_mutator, MutateRef(_))
+      .Times(1)
+      .WillOnce(Return(new AnimationWorkletOutput()));
+  EXPECT_CALL(*client_, NotifyAnimationsPending()).Times(1).InSequence(s);
+  EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(1).InSequence(s);
+  EXPECT_CALL(*client_, NotifyAnimationsReadyRef()).Times(1).InSequence(s);
+  CallMutateAndWaitForClientCompletion(std::move(mutate_callback));
+
+  // Above call blocks until complete signal is received.
+  Mock::VerifyAndClearExpectations(client_.get());
+
+  // Call MutateAsynchronously from the compositor thread.
+  MutateAsyncCallback mutate_callback2 = CrossThreadBind(
+      [](MockAnimationWorkletMutator* first_mutator,
+         AnimationWorkletMutatorDispatcherImplAsyncTest* async_test) {
+        // Ensure mutator is not invoked after unregistration.
+        async_test->mutator_->UnregisterAnimationWorkletMutator(first_mutator);
+        async_test->mutator_->MutateAsynchronously(CreateTestMutatorInput());
+      },
+      WrapCrossThreadWeakPersistent(first_mutator),
+      WTF::CrossThreadUnretained(this));
+
+  // The start of the mutation process will be synchronous. If a pending
+  // notification is not received by the time the callback returns, it will not
+  // be triggered later.
+  EXPECT_CALL(*client_, NotifyAnimationsPending()).Times(0);
+  CallMutateAndWaitForCallbackCompletion(std::move(mutate_callback2));
+  Mock::VerifyAndClearExpectations(client_.get());
+}
+
+TEST_F(AnimationWorkletMutatorDispatcherImplAsyncTest,
+       MutationUpdateInvokedCorrectlyWithTwoRegisteredAnimatorsOnSameThread) {
+  std::unique_ptr<Thread> first_thread = CreateThread("FirstAnimationThread");
+  MockAnimationWorkletMutator* first_mutator =
+      MakeGarbageCollected<MockAnimationWorkletMutator>(
+          first_thread->GetTaskRunner());
+  MockAnimationWorkletMutator* second_mutator =
+      MakeGarbageCollected<MockAnimationWorkletMutator>(
+          first_thread->GetTaskRunner());
+
+  // Call MutateAsynchronously from the compositor thread.
+  MutateAsyncCallback mutate_callback = CrossThreadBind(
+      [](std::unique_ptr<Thread> first_thread,
+         MockAnimationWorkletMutator* first_mutator,
+         MockAnimationWorkletMutator* second_mutator,
+         AnimationWorkletMutatorDispatcherImplAsyncTest* async_test) {
+        async_test->mutator_->RegisterAnimationWorkletMutator(
+            first_mutator, first_thread->GetTaskRunner());
+        async_test->mutator_->RegisterAnimationWorkletMutator(
+            second_mutator, first_thread->GetTaskRunner());
+        async_test->mutator_->MutateAsynchronously(CreateTestMutatorInput());
+      },
+      WTF::Passed(std::move(first_thread)),
+      WrapCrossThreadWeakPersistent(first_mutator),
+      WrapCrossThreadWeakPersistent(second_mutator),
+      WTF::CrossThreadUnretained(this));
+
+  Sequence s;
+  EXPECT_CALL(*first_mutator, GetWorkletId())
+      .Times(AtLeast(1))
+      .WillRepeatedly(Return(11));
+  EXPECT_CALL(*first_mutator, MutateRef(_))
+      .Times(1)
+      .WillOnce(Return(new AnimationWorkletOutput()));
+  EXPECT_CALL(*second_mutator, GetWorkletId())
+      .Times(AtLeast(1))
+      .WillRepeatedly(Return(22));
+  EXPECT_CALL(*second_mutator, MutateRef(_))
+      .Times(1)
+      .WillOnce(Return(new AnimationWorkletOutput()));
+  EXPECT_CALL(*client_, NotifyAnimationsPending()).Times(1).InSequence(s);
+  EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(2).InSequence(s);
+  EXPECT_CALL(*client_, NotifyAnimationsReadyRef()).Times(1).InSequence(s);
+  CallMutateAndWaitForClientCompletion(std::move(mutate_callback));
+}
+
+TEST_F(
+    AnimationWorkletMutatorDispatcherImplAsyncTest,
+    MutationUpdateInvokedCorrectlyWithTwoRegisteredAnimatorsOnDifferentThreads) {
+  std::unique_ptr<Thread> first_thread = CreateThread("FirstAnimationThread");
+  MockAnimationWorkletMutator* first_mutator =
+      MakeGarbageCollected<MockAnimationWorkletMutator>(
+          first_thread->GetTaskRunner());
+
+  std::unique_ptr<Thread> second_thread = CreateThread("SecondAnimationThread");
+  MockAnimationWorkletMutator* second_mutator =
+      MakeGarbageCollected<MockAnimationWorkletMutator>(
+          second_thread->GetTaskRunner());
+
+  // Call MutateAsynchronously from the compositor thread.
+  MutateAsyncCallback mutate_callback = CrossThreadBind(
+      [](std::unique_ptr<Thread> first_thread,
+         std::unique_ptr<Thread> second_thread,
+         MockAnimationWorkletMutator* first_mutator,
+         MockAnimationWorkletMutator* second_mutator,
+         AnimationWorkletMutatorDispatcherImplAsyncTest* async_test) {
+        async_test->mutator_->RegisterAnimationWorkletMutator(
+            first_mutator, first_thread->GetTaskRunner());
+        async_test->mutator_->RegisterAnimationWorkletMutator(
+            second_mutator, second_thread->GetTaskRunner());
+        async_test->mutator_->MutateAsynchronously(CreateTestMutatorInput());
+      },
+      WTF::Passed(std::move(first_thread)),
+      WTF::Passed(std::move(second_thread)),
+      WrapCrossThreadWeakPersistent(first_mutator),
+      WrapCrossThreadWeakPersistent(second_mutator),
+      WTF::CrossThreadUnretained(this));
+
+  Sequence s;
+  EXPECT_CALL(*first_mutator, GetWorkletId())
+      .Times(AtLeast(1))
+      .WillRepeatedly(Return(11));
+  EXPECT_CALL(*first_mutator, MutateRef(_))
+      .Times(1)
+      .WillOnce(Return(new AnimationWorkletOutput()));
+  EXPECT_CALL(*second_mutator, GetWorkletId())
+      .Times(AtLeast(1))
+      .WillRepeatedly(Return(22));
+  EXPECT_CALL(*second_mutator, MutateRef(_))
+      .Times(1)
+      .WillOnce(Return(new AnimationWorkletOutput()));
+  EXPECT_CALL(*client_, NotifyAnimationsPending()).Times(1).InSequence(s);
+  EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(2).InSequence(s);
+  EXPECT_CALL(*client_, NotifyAnimationsReadyRef()).Times(1).InSequence(s);
+  CallMutateAndWaitForClientCompletion(std::move(mutate_callback));
 }
 
 }  // namespace
