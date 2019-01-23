@@ -339,8 +339,8 @@ void ClearBrowsingDataHandler::OnStateChanged(syncer::SyncService* sync) {
 void ClearBrowsingDataHandler::UpdateSyncState() {
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
-  CallJavascriptFunction(
-      "cr.webUIListenerCallback", base::Value("update-sync-state"),
+  FireWebUIListener(
+      "update-sync-state",
       base::Value(identity_manager && identity_manager->HasPrimaryAccount()),
       base::Value(sync_service_ && sync_service_->IsSyncFeatureActive() &&
                   sync_service_->GetActiveDataTypes().Has(
@@ -383,9 +383,8 @@ void ClearBrowsingDataHandler::AddCounter(
 
 void ClearBrowsingDataHandler::UpdateCounterText(
     std::unique_ptr<browsing_data::BrowsingDataCounter::Result> result) {
-  CallJavascriptFunction(
-      "cr.webUIListenerCallback", base::Value("update-counter-text"),
-      base::Value(result->source()->GetPrefName()),
+  FireWebUIListener(
+      "update-counter-text", base::Value(result->source()->GetPrefName()),
       base::Value(browsing_data_counter_utils::GetChromeCounterTextFromResult(
           result.get(), profile_)));
 }

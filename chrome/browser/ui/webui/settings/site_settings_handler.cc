@@ -495,8 +495,7 @@ void SiteSettingsHandler::OnUsageCleared() {
 
 #if defined(OS_CHROMEOS)
 void SiteSettingsHandler::OnPrefEnableDrmChanged() {
-  CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::Value("prefEnableDrmChanged"));
+  FireWebUIListener("prefEnableDrmChanged");
 }
 #endif
 
@@ -509,15 +508,12 @@ void SiteSettingsHandler::OnContentSettingChanged(
     return;
 
   if (primary_pattern.ToString().empty()) {
-    CallJavascriptFunction(
-        "cr.webUIListenerCallback",
-        base::Value("contentSettingCategoryChanged"),
-        base::Value(
-            site_settings::ContentSettingsTypeToGroupName(content_type)));
+    FireWebUIListener("contentSettingCategoryChanged",
+                      base::Value(site_settings::ContentSettingsTypeToGroupName(
+                          content_type)));
   } else {
-    CallJavascriptFunction(
-        "cr.webUIListenerCallback",
-        base::Value("contentSettingSitePermissionChanged"),
+    FireWebUIListener(
+        "contentSettingSitePermissionChanged",
         base::Value(
             site_settings::ContentSettingsTypeToGroupName(content_type)),
         base::Value(primary_pattern.ToString()),

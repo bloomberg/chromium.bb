@@ -108,10 +108,8 @@ const extensions::Extension* FontHandler::GetAdvancedFontSettingsExtension() {
 }
 
 void FontHandler::NotifyAdvancedFontSettingsAvailability() {
-  CallJavascriptFunction(
-      "cr.webUIListenerCallback",
-      base::Value("advanced-font-settings-installed"),
-      base::Value(GetAdvancedFontSettingsExtension() != nullptr));
+  FireWebUIListener("advanced-font-settings-installed",
+                    base::Value(GetAdvancedFontSettingsExtension() != nullptr));
 }
 
 void FontHandler::OnExtensionLoaded(content::BrowserContext*,

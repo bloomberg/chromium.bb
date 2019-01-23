@@ -392,9 +392,7 @@ void PowerHandler::SendPowerManagementSettings(bool force) {
   dict.SetInteger(kLidClosedBehaviorKey, lid_closed_behavior);
   dict.SetBoolean(kLidClosedControlledKey, lid_closed_controlled);
   dict.SetBoolean(kHasLidKey, has_lid);
-  CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::Value(kPowerManagementSettingsChangedName),
-                         dict);
+  FireWebUIListener(kPowerManagementSettingsChangedName, dict);
 
   last_idle_behavior_ = idle_behavior;
   last_idle_controlled_ = idle_controlled;
