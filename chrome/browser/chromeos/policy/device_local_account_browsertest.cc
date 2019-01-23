@@ -53,6 +53,7 @@
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_test_util.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -189,6 +190,9 @@ const char kHostedAppVersion[] = "1.0.0.0";
 const char kGoodExtensionID[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
 const char kGoodExtensionCRXPath[] = "extensions/good.crx";
 const char kGoodExtensionVersion[] = "1.0";
+// Chrome RDP extension
+const char kPublicSessionWhitelistedExtensionID[] =
+    "cbkkbcmdlboombapidmoeolnmdacpkch";
 const char kPackagedAppCRXPath[] = "extensions/platform_apps/app_window_2.crx";
 const char kShowManagedStorageID[] = "ongnjlefhnoajpbodoldndkbkdgfomlp";
 const char kShowManagedStorageCRXPath[] = "extensions/show_managed_storage.crx";
@@ -547,9 +551,7 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
         kDisplayName1);
 
     // Don't enable new managed sessions, use old public sessions.
-    device_local_account_policy_.payload()
-        .mutable_devicelocalaccountmanagedsessionenabled()
-        ->set_value(false);
+    SetManagedSessionsEnabled(/* managed_sessions_enabled */ false);
   }
 
   void BuildDeviceLocalAccountPolicy() {
@@ -594,6 +596,13 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     ASSERT_TRUE(test_server_.UpdatePolicy(dm_protocol::kChromeDevicePolicyType,
                                           std::string(),
                                           proto.SerializeAsString()));
+  }
+
+  void SetManagedSessionsEnabled(bool managed_sessions_enabled) {
+    device_local_account_policy_.payload()
+        .mutable_devicelocalaccountmanagedsessionenabled()
+        ->set_value(managed_sessions_enabled);
+    UploadDeviceLocalAccountPolicy();
   }
 
   void EnableAutoLogin() {
@@ -2330,6 +2339,134 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyForExtensions) {
   base::Value expected_new_value("policy test value two");
   EXPECT_EQ(expected_new_value,
             *policy_service->GetPolicies(ns).GetValue("string"));
+}
+
+class ManagedSessionsTest : public DeviceLocalAccountTest {
+ protected:
+  void StartTestExtensionsServer() {
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
+    scoped_refptr<TestingUpdateManifestProvider>
+        testing_update_manifest_provider(
+            new TestingUpdateManifestProvider(kRelativeUpdateURL));
+    testing_update_manifest_provider->AddUpdate(
+        kGoodExtensionID, kGoodExtensionVersion,
+        embedded_test_server()->GetURL(std::string("/") +
+                                       kGoodExtensionCRXPath));
+    embedded_test_server()->RegisterRequestHandler(
+        base::BindRepeating(&TestingUpdateManifestProvider::HandleRequest,
+                            testing_update_manifest_provider));
+    embedded_test_server()->StartAcceptingConnections();
+  }
+
+  DeviceLocalAccountPolicyBroker* GetDeviceLocalAccountPolicyBroker() {
+    return g_browser_process->platform_part()
+        ->browser_policy_connector_chromeos()
+        ->GetDeviceLocalAccountPolicyService()
+        ->GetBrokerForUser(account_id_1_.GetUserEmail());
+  }
+
+  void AddExtension(const char* extension_id) {
+    // Specify policy to install an extension.
+    em::StringList* forcelist = device_local_account_policy_.payload()
+                                    .mutable_extensioninstallforcelist()
+                                    ->mutable_value();
+    forcelist->add_entries(base::StringPrintf(
+        "%s;%s", extension_id,
+        embedded_test_server()->GetURL(kRelativeUpdateURL).spec().c_str()));
+  }
+
+  void AddForceInstalledExtension() { AddExtension(kGoodExtensionID); }
+
+  void AddForceInstalledWhitelistedExtension() {
+    AddExtension(kPublicSessionWhitelistedExtensionID);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, ManagedSessionsDisabled) {
+  SetManagedSessionsEnabled(/* managed_sessions_enabled */ false);
+
+  // Install and refresh the device policy now. This will also fetch the initial
+  // user policy for the device-local account now.
+  UploadAndInstallDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(kAccountId1);
+  WaitForPolicy();
+
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(account_id_1_);
+  ASSERT_TRUE(user);
+  auto* broker = GetDeviceLocalAccountPolicyBroker();
+  ASSERT_TRUE(broker);
+
+  // Check that managed sessions mode is disabled.
+  EXPECT_FALSE(
+      chromeos::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(
+          *user));
+
+  // Check that disabled managed sessions mode hides full management disclosure
+  // warning.
+  EXPECT_FALSE(
+      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
+          broker));
+}
+
+IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, ForceInstalledExtension) {
+  SetManagedSessionsEnabled(/* managed_sessions_enabled */ true);
+  StartTestExtensionsServer();
+  AddForceInstalledExtension();
+
+  // Install and refresh the device policy now. This will also fetch the initial
+  // user policy for the device-local account now.
+  UploadAndInstallDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(kAccountId1);
+  WaitForPolicy();
+
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(account_id_1_);
+  ASSERT_TRUE(user);
+  auto* broker = GetDeviceLocalAccountPolicyBroker();
+  ASSERT_TRUE(broker);
+
+  // Check that 'DeviceLocalAccountManagedSessionEnabled' policy was applied
+  // correctly.
+  EXPECT_TRUE(
+      chromeos::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(
+          *user));
+
+  // Check that force-installed extension activates managed session mode for
+  // device-local users.
+  EXPECT_TRUE(
+      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
+          broker));
+}
+
+IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, WhitelistedExtension) {
+  SetManagedSessionsEnabled(/* managed_sessions_enabled */ true);
+  StartTestExtensionsServer();
+  AddForceInstalledWhitelistedExtension();
+
+  // Install and refresh the device policy now. This will also fetch the initial
+  // user policy for the device-local account now.
+  UploadAndInstallDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(kAccountId1);
+  WaitForPolicy();
+
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(account_id_1_);
+  ASSERT_TRUE(user);
+  auto* broker = GetDeviceLocalAccountPolicyBroker();
+  ASSERT_TRUE(broker);
+
+  // Check that 'DeviceLocalAccountManagedSessionEnabled' policy was applied
+  // correctly.
+  EXPECT_TRUE(
+      chromeos::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(
+          *user));
+
+  // Check that white-listed extension is not considered risky and doesn't
+  // activate managed session mode.
+  EXPECT_FALSE(
+      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
+          broker));
 }
 
 class TermsOfServiceDownloadTest : public DeviceLocalAccountTest,
