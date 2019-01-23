@@ -349,6 +349,9 @@ Still reading?
     <ignore regexp="The resource `R.string.search_widget_title.*` appears to be unused"/>
     <!-- 1 resource used by android tv to generate resources.zip file -->
     <ignore regexp="chromecast/internal/shell/browser/android/java/res/drawable-hdpi/ic_settings_cast.png"/>
+    <!-- TODO(crbug.com/909915): Remove this after full Lite mode launch. -->
+    <!-- 12 resources used by Data Saver during rebranding to Lite mode -->
+    <ignore regexp="The resource `R.string..*lite_mode` appears to be unused"/>
     <!-- Endnote: Please specify number of suppressions when adding more -->
   </issue>
   <issue id="UseCompoundDrawables">
