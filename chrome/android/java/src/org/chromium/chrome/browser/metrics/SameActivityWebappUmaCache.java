@@ -13,9 +13,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Centralizes UMA data collection for web apps.
+ * Used by SameActivityWebappSplashDelegate to cache webapp splash screen UMA values. Records UMA
+ * when {@link #commitMetrics()} is called.
  */
-public class WebappUma {
+public class SameActivityWebappUmaCache {
     // SplashColorStatus defined in tools/metrics/histograms/enums.xml.
     // NUM_ENTRIES is intentionally included into @IntDef.
     @IntDef({SplashColorStatus.DEFAULT, SplashColorStatus.CUSTOM, SplashColorStatus.NUM_ENTRIES})
@@ -76,19 +77,19 @@ public class WebappUma {
                 determineIconTypeForUma(selectedIconClassification, usingDedicatedIcon);
     }
 
-    private static @WebappUma.SplashIconType int determineIconTypeForUma(
+    private static @SplashIconType int determineIconTypeForUma(
             @SplashLayout.IconClassification int selectedIconClassification,
             boolean usingDedicatedIcon) {
         if (selectedIconClassification == SplashLayout.IconClassification.INVALID) {
-            return WebappUma.SplashIconType.NONE;
+            return SplashIconType.NONE;
         }
         if (!usingDedicatedIcon) {
-            return WebappUma.SplashIconType.FALLBACK;
+            return SplashIconType.FALLBACK;
         }
         if (selectedIconClassification == SplashLayout.IconClassification.SMALL) {
-            return WebappUma.SplashIconType.CUSTOM_SMALL;
+            return SplashIconType.CUSTOM_SMALL;
         }
-        return WebappUma.SplashIconType.CUSTOM;
+        return SplashIconType.CUSTOM;
     }
 
     public void recordSplashscreenIconSize(int size) {
