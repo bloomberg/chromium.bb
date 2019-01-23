@@ -3986,9 +3986,6 @@
         "test": "http_service_tests"
       },
       {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ipc_tests.filter"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -4192,9 +4189,6 @@
         "test": "http_service_tests"
       },
       {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ipc_tests.filter"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4453,9 +4447,6 @@
         "test": "http_service_tests"
       },
       {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ipc_tests.filter"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
