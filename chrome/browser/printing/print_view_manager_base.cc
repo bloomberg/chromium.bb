@@ -75,25 +75,28 @@ void ShowWarningMessageBox(const base::string16& message) {
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-void CreateQueryWithSettings(base::Value job_settings,
-                             int render_process_id,
-                             int render_frame_id,
-                             scoped_refptr<PrintQueriesQueue> queue,
-                             PrintSettingsCallback callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  scoped_refptr<printing::PrinterQuery> printer_query =
-      queue->CreatePrinterQuery(render_process_id, render_frame_id);
-  printer_query->SetSettings(
-      std::move(job_settings),
-      base::BindOnce(std::move(callback), printer_query));
-}
-
 void OnPrintSettingsDoneWrapper(PrintSettingsCallback settings_callback,
                                 scoped_refptr<PrinterQuery> query) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
                            base::BindOnce(std::move(settings_callback), query));
+}
+
+void CreateQueryWithSettings(base::Value job_settings,
+                             int render_process_id,
+                             int render_frame_id,
+                             scoped_refptr<PrintQueriesQueue> queue,
+                             PrintSettingsCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  PrintSettingsCallback callback_wrapper =
+      base::BindOnce(OnPrintSettingsDoneWrapper, std::move(callback));
+  scoped_refptr<printing::PrinterQuery> printer_query =
+      queue->CreatePrinterQuery(render_process_id, render_frame_id);
+  printer_query->SetSettings(
+      std::move(job_settings),
+      base::BindOnce(std::move(callback_wrapper), printer_query));
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
@@ -143,8 +146,7 @@ void PrintViewManagerBase::PrintForPrintPreview(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(CreateQueryWithSettings, std::move(job_settings),
                      rfh->GetProcess()->GetID(), rfh->GetRoutingID(), queue_,
-                     base::BindOnce(OnPrintSettingsDoneWrapper,
-                                    std::move(settings_callback))));
+                     std::move(settings_callback)));
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
