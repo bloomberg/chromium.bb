@@ -17,17 +17,7 @@ using ::std::vector;
 TEST(NNClassifierTest, XorTest) {
   // Creates a NN with a single hidden layer of 5 units that solves XOR.
   // Creates a DNNClassifier model containing the trained biases and weights.
-  const NNClassifierModel model = CreateModel(
-      // Hidden biases.
-      {{-0.45737201, 0.2009858, 1.02393341, -1.72199488, -0.54427308}},
-      // Hidden weights.
-      {{2.21626472, -0.08185583, -0.7542417, 1.97279537, 0.62363654},
-       {-1.71283901, 2.0275352, -1.14731216, 1.56915629, 0.49627137}},
-      // Logits biases.
-      {-1.27781141},
-      // Logits weights.
-      {{2.8636384}, {1.84202337}, {-1.76555872}, {-2.96390629}, {-1.00649774}});
-
+  const NNClassifierModel model = CreateXorClassifierModel();
   ASSERT_TRUE(Validate(model));
   EXPECT_TRUE(CheckInference(model, {0, 0}, {-2.7154054}));
   EXPECT_TRUE(CheckInference(model, {0, 1}, {2.8271765}));

@@ -6,6 +6,8 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
+import "example_preprocessor.proto";
+
 package assist_ranker;
 
 // A vector of floating-point values.
@@ -30,4 +32,8 @@ message NNClassifierModel {
 
   // The output logits layer.
   optional NNLayer logits_layer = 2;
+
+  // The preprocessing config for this model. This is used to vectorize the
+  // examples so they can be used as input for the classifier.
+  optional ExamplePreprocessorConfig preprocessor_config = 3;
 }
