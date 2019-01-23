@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "base/strings/string_piece_forward.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 
 class GURL;
@@ -78,7 +79,11 @@ class ContentSettingsPattern {
   struct PatternParts {
     PatternParts();
     PatternParts(const PatternParts& other);
+    PatternParts(PatternParts&& other);
     ~PatternParts();
+
+    PatternParts& operator=(const PatternParts& other);
+    PatternParts& operator=(PatternParts&& other);
 
     // Lowercase string of the URL scheme to match. This string is empty if the
     // |is_scheme_wildcard| flag is set.
@@ -165,7 +170,7 @@ class ContentSettingsPattern {
   //   - file://path (The path has to be an absolute path and start with a '/')
   //   - a.b.c.d (matches an exact IPv4 ip)
   //   - [a:b:c:d:e:f:g:h] (matches an exact IPv6 ip)
-  static ContentSettingsPattern FromString(const std::string& pattern_spec);
+  static ContentSettingsPattern FromString(base::StringPiece pattern_spec);
 
   // Sets schemes that do not support domain wildcards and ports.
   // Needs to be called by the embedder before using ContentSettingsPattern.
@@ -179,7 +184,7 @@ class ContentSettingsPattern {
                                                  size_t count);
 
   // Compares |scheme| against the schemes set by the embedder.
-  static bool IsNonWildcardDomainNonPortScheme(const std::string& scheme);
+  static bool IsNonWildcardDomainNonPortScheme(base::StringPiece scheme);
 
   // Constructs an empty pattern. Empty patterns are invalid patterns. Invalid
   // patterns match nothing.
@@ -248,7 +253,7 @@ class ContentSettingsPattern {
       const ContentSettingsPattern::PatternParts& parts,
       const ContentSettingsPattern::PatternParts& other_parts);
 
-  ContentSettingsPattern(const PatternParts& parts, bool valid);
+  ContentSettingsPattern(PatternParts parts, bool valid);
 
   PatternParts parts_;
 

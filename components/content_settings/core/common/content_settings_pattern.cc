@@ -8,10 +8,12 @@
 
 #include <memory>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "base/optional.h"
 #include "base/stl_util.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "components/content_settings/core/common/content_settings_pattern_parser.h"
@@ -35,19 +37,21 @@ const char* const kSchemeNames[] = {"wildcard",       "other",
 static_assert(base::size(kSchemeNames) == ContentSettingsPattern::SCHEME_MAX,
               "kSchemeNames should have SCHEME_MAX elements");
 
-std::string GetDefaultPort(const std::string& scheme) {
+// Note: it is safe to return a base::StringPiece here as long as they are
+// either empty or referencing constant string literals.
+base::StringPiece GetDefaultPort(base::StringPiece scheme) {
   if (scheme == url::kHttpScheme)
     return "80";
   if (scheme == url::kHttpsScheme)
     return "443";
-  return std::string();
+  return base::StringPiece();
 }
 
 // Returns true if |sub_domain| is a sub domain or equals |domain|.  E.g.
 // "mail.google.com" is a sub domain of "google.com" but "evilhost.com" is not a
 // subdomain of "host.com".
-bool IsSubDomainOrEqual(const std::string& sub_domain,
-                        const std::string& domain) {
+bool IsSubDomainOrEqual(base::StringPiece sub_domain,
+                        base::StringPiece domain) {
   // The empty string serves as wildcard. Each domain is a subdomain of the
   // wildcard.
   if (domain.empty())
@@ -160,7 +164,7 @@ BuilderInterface* ContentSettingsPattern::Builder::WithPort(
 }
 
 BuilderInterface* ContentSettingsPattern::Builder::WithPortWildcard() {
-  parts_.port = "";
+  parts_.port.clear();
   parts_.is_port_wildcard = true;
   return this;
 }
@@ -184,7 +188,7 @@ BuilderInterface* ContentSettingsPattern::Builder::WithScheme(
 }
 
 BuilderInterface* ContentSettingsPattern::Builder::WithSchemeWildcard() {
-  parts_.scheme = "";
+  parts_.scheme.clear();
   parts_.is_scheme_wildcard = true;
   return this;
 }
@@ -197,7 +201,7 @@ BuilderInterface* ContentSettingsPattern::Builder::WithPath(
 }
 
 BuilderInterface* ContentSettingsPattern::Builder::WithPathWildcard() {
-  parts_.path = "";
+  parts_.path.clear();
   parts_.is_path_wildcard = true;
   return this;
 }
@@ -217,44 +221,45 @@ ContentSettingsPattern ContentSettingsPattern::Builder::Build() {
     return ContentSettingsPattern();
 
   // A pattern is invalid if canonicalization is not idempotent.
-  PatternParts parts(parts_);
-  if (!Canonicalize(&parts))
+  PatternParts twice_canonicalized_parts(parts_);
+  if (!Canonicalize(&twice_canonicalized_parts))
     return ContentSettingsPattern();
-  if (ContentSettingsPattern(parts_, true) !=
-      ContentSettingsPattern(parts, true)) {
-    return ContentSettingsPattern();
-  }
 
-  return ContentSettingsPattern(parts_, is_valid_);
+  ContentSettingsPattern canonical_pattern(std::move(parts_), true);
+  ContentSettingsPattern doubly_canonical_pattern(
+      std::move(twice_canonicalized_parts), true);
+  if (canonical_pattern != doubly_canonical_pattern)
+    return ContentSettingsPattern();
+  return canonical_pattern;
 }
 
 // static
 bool ContentSettingsPattern::Builder::Canonicalize(PatternParts* parts) {
   // Canonicalize the scheme part.
-  const std::string scheme(base::ToLowerASCII(parts->scheme));
-  parts->scheme = scheme;
+  parts->scheme = base::ToLowerASCII(parts->scheme);
 
-  if (parts->scheme == std::string(url::kFileScheme) &&
-      !parts->is_path_wildcard) {
+  if (parts->scheme == url::kFileScheme && !parts->is_path_wildcard) {
     GURL url(std::string(url::kFileScheme) +
              std::string(url::kStandardSchemeSeparator) + parts->path);
     parts->path = url.path();
   }
 
   // Canonicalize the host part.
-  const std::string host(parts->host);
   url::CanonHostInfo host_info;
-  std::string canonicalized_host(net::CanonicalizeHost(host, &host_info));
+  std::string canonicalized_host(
+      net::CanonicalizeHost(parts->host, &host_info));
   if (host_info.IsIPAddress() && parts->has_domain_wildcard)
     return false;
   canonicalized_host = net::TrimEndingDot(canonicalized_host);
 
-  parts->host = "";
-  if ((host.find('*') == std::string::npos) &&
+  if ((parts->host.find('*') == std::string::npos) &&
       !canonicalized_host.empty()) {
     // Valid host.
-    parts->host += canonicalized_host;
+    parts->host = std::move(canonicalized_host);
+  } else {
+    parts->host.clear();
   }
+
   return true;
 }
 
@@ -270,14 +275,13 @@ bool ContentSettingsPattern::Builder::Validate(const PatternParts& parts) {
   }
 
   // file:// URL patterns have an empty host and port.
-  if (parts.scheme == std::string(url::kFileScheme)) {
+  if (parts.scheme == url::kFileScheme) {
     if (parts.has_domain_wildcard || !parts.host.empty() || !parts.port.empty())
       return false;
     if (parts.is_path_wildcard)
       return parts.path.empty();
-    return (!parts.path.empty() &&
-            parts.path != "/" &&
-            parts.path.find("*") == std::string::npos);
+    return (!parts.path.empty() && parts.path != "/" &&
+            parts.path.find('*') == std::string::npos);
   }
 
   // If the pattern is for a URL with a non-wildcard domain without a port,
@@ -296,13 +300,12 @@ bool ContentSettingsPattern::Builder::Validate(const PatternParts& parts) {
     return false;
   }
 
-  if (parts.host.find("*") != std::string::npos)
+  if (parts.host.find('*') != std::string::npos)
     return false;
 
   // Test if the scheme is supported or a wildcard.
-  if (!parts.is_scheme_wildcard &&
-      parts.scheme != std::string(url::kHttpScheme) &&
-      parts.scheme != std::string(url::kHttpsScheme)) {
+  if (!parts.is_scheme_wildcard && parts.scheme != url::kHttpScheme &&
+      parts.scheme != url::kHttpsScheme) {
     return false;
   }
   return true;
@@ -319,8 +322,15 @@ ContentSettingsPattern::PatternParts::PatternParts()
 
 ContentSettingsPattern::PatternParts::PatternParts(const PatternParts& other) =
     default;
+ContentSettingsPattern::PatternParts::PatternParts(PatternParts&& other) =
+    default;
 
 ContentSettingsPattern::PatternParts::~PatternParts() {}
+
+ContentSettingsPattern::PatternParts& ContentSettingsPattern::PatternParts::
+operator=(const PatternParts& other) = default;
+ContentSettingsPattern::PatternParts& ContentSettingsPattern::PatternParts::
+operator=(PatternParts&& other) = default;
 
 // ////////////////////////////////////////////////////////////////////////////
 // ContentSettingsPattern
@@ -377,9 +387,9 @@ ContentSettingsPattern ContentSettingsPattern::FromURL(
     } else {
       // Unsupported scheme
     }
-    if (local_url->port().empty()) {
+    if (local_url->port_piece().empty()) {
       if (local_url->SchemeIs(url::kHttpsScheme))
-        builder.WithPort(GetDefaultPort(url::kHttpsScheme));
+        builder.WithPort(GetDefaultPort(url::kHttpsScheme).as_string());
       else
         builder.WithPortWildcard();
     } else {
@@ -401,8 +411,8 @@ ContentSettingsPattern ContentSettingsPattern::FromURLNoWildcard(
     builder.WithScheme(local_url->scheme())->WithPath(local_url->path());
   } else {
     builder.WithScheme(local_url->scheme())->WithHost(local_url->host());
-    if (local_url->port().empty()) {
-      builder.WithPort(GetDefaultPort(local_url->scheme()));
+    if (local_url->port_piece().empty()) {
+      builder.WithPort(GetDefaultPort(local_url->scheme_piece()).as_string());
     } else {
       builder.WithPort(local_url->port());
     }
@@ -412,7 +422,7 @@ ContentSettingsPattern ContentSettingsPattern::FromURLNoWildcard(
 
 // static
 ContentSettingsPattern ContentSettingsPattern::FromString(
-    const std::string& pattern_spec) {
+    base::StringPiece pattern_spec) {
   ContentSettingsPattern::Builder builder;
   content_settings::PatternParser::Parse(pattern_spec, &builder);
   return builder.Build();
@@ -436,7 +446,7 @@ void ContentSettingsPattern::SetNonWildcardDomainNonPortSchemes(
 
 // static
 bool ContentSettingsPattern::IsNonWildcardDomainNonPortScheme(
-    const std::string& scheme) {
+    base::StringPiece scheme) {
   DCHECK(g_non_domain_wildcard_non_port_schemes ||
          g_non_domain_wildcard_non_port_schemes_count == 0);
   for (size_t i = 0; i < g_non_domain_wildcard_non_port_schemes_count; ++i) {
@@ -451,12 +461,8 @@ ContentSettingsPattern::ContentSettingsPattern()
   : is_valid_(false) {
 }
 
-ContentSettingsPattern::ContentSettingsPattern(
-    const PatternParts& parts,
-    bool valid)
-    : parts_(parts),
-      is_valid_(valid) {
-}
+ContentSettingsPattern::ContentSettingsPattern(PatternParts parts, bool valid)
+    : parts_(std::move(parts)), is_valid_(valid) {}
 
 bool ContentSettingsPattern::Matches(
     const GURL& url) const {
@@ -470,9 +476,8 @@ bool ContentSettingsPattern::Matches(
   }
 
   // Match the scheme part.
-  const std::string scheme(local_url->scheme());
   if (!parts_.is_scheme_wildcard &&
-      parts_.scheme != scheme) {
+      parts_.scheme != local_url->scheme_piece()) {
     return false;
   }
 
@@ -482,17 +487,17 @@ bool ContentSettingsPattern::Matches(
   // filesystem:file:///temporary/... are equivalent.
   // TODO(msramek): The file scheme should not behave differently when nested
   // inside the filesystem scheme. Investigate and fix.
-  if (!parts_.is_scheme_wildcard && scheme == url::kFileScheme)
-    return parts_.is_path_wildcard ||
-        parts_.path == std::string(local_url->path());
+  if (!parts_.is_scheme_wildcard &&
+      local_url->scheme_piece() == url::kFileScheme)
+    return parts_.is_path_wildcard || parts_.path == local_url->path_piece();
 
   // Match the host part.
-  const std::string host(net::TrimEndingDot(local_url->host()));
+  const std::string trimmed_host = net::TrimEndingDot(local_url->host_piece());
   if (!parts_.has_domain_wildcard) {
-    if (parts_.host != host)
+    if (parts_.host != trimmed_host)
       return false;
   } else {
-    if (!IsSubDomainOrEqual(host, parts_.host))
+    if (!IsSubDomainOrEqual(trimmed_host, parts_.host))
       return false;
   }
 
@@ -501,17 +506,13 @@ bool ContentSettingsPattern::Matches(
     return true;
 
   // Match the port part.
-  std::string port(local_url->port());
-
   // Use the default port if the port string is empty. GURL returns an empty
   // string if no port at all was specified or if the default port was
   // specified.
-  if (port.empty()) {
-    port = GetDefaultPort(scheme);
-  }
-
-  if (!parts_.is_port_wildcard &&
-      parts_.port != port ) {
+  const base::StringPiece port = local_url->port_piece().empty()
+                                     ? GetDefaultPort(local_url->scheme_piece())
+                                     : local_url->port_piece();
+  if (!parts_.is_port_wildcard && parts_.port != port) {
     return false;
   }
 

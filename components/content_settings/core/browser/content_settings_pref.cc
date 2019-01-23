@@ -293,9 +293,9 @@ void ContentSettingsPref::ReadContentSettingsFromPref() {
     if (value) {
       base::Time last_modified = GetTimeStamp(settings_dictionary);
       DCHECK(IsValueAllowedForType(value, content_type_));
-      value_map_.SetValue(pattern_pair.first, pattern_pair.second,
-                          content_type_, ResourceIdentifier(), last_modified,
-                          value->Clone());
+      value_map_.SetValue(std::move(pattern_pair.first),
+                          std::move(pattern_pair.second), content_type_,
+                          ResourceIdentifier(), last_modified, value->Clone());
     }
   }
 }
