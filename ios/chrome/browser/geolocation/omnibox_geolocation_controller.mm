@@ -218,15 +218,6 @@ const char* const kGeolocationAuthorizationActionNewUser =
   [self stopUpdatingLocation];
 }
 
-- (void)locationBarDidSubmitURL:(const GURL&)url
-                     transition:(ui::PageTransition)transition
-                   browserState:(ios::ChromeBrowserState*)browserState {
-  // Stop updating the location when the user submits a query from the Omnibox.
-  // We're not interested in further updates until the next time the user puts
-  // the focus on the Omnbox.
-  [self stopUpdatingLocation];
-}
-
 - (BOOL)addLocationToNavigationItem:(web::NavigationItem*)item
                        browserState:(ios::ChromeBrowserState*)browserState {
   // If this is incognito mode or is not an Omnibox query, then do nothing.
