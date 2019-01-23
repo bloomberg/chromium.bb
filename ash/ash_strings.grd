@@ -1480,7 +1480,7 @@ This file contains the strings for ash.
         Remove this user
       </message>
       <message name="IDS_ASH_LOGIN_POD_LEGACY_SUPERVISED_EXPIRATION_WARNING" desc="Text shown as a warning that supervised users will be deprecated.">
-        Your supervised user account is expiring soon.
+        Your supervised user profile will be removed soon. Sign in to learn more.
       </message>
       <message name="IDS_ASH_LOGIN_POD_LEGACY_SUPERVISED_USER_REMOVE_WARNING" desc="Text shown as a warning when attempting to remove legacy supervised user.">
         All files and local data associated with the supervised user will be permanently deleted once this supervised user is removed. Visited websites and settings for this supervised user may still be visible by the manager at <ph name="MANAGEMENT_URL">$1<ex>www.example.com</ex></ph>.
