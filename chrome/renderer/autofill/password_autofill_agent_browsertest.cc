@@ -121,7 +121,8 @@ const char kNonDisplayedFormHTML[] =
     "</body>";
 
 const char kSignupFormHTML[] =
-    "<FORM name='LoginTestForm' action='http://www.bidule.com'>"
+    "<FORM id='LoginTestForm' name='LoginTestForm' "
+    "    action='http://www.bidule.com'>"
     "  <INPUT type='text' id='random_info'/>"
     "  <INPUT type='password' id='new_password'/>"
     "  <INPUT type='password' id='confirm_password'/>"
@@ -450,8 +451,8 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   }
 
   void SimulateSuggestionChoice(WebInputElement& username_input) {
-    base::string16 username(base::ASCIIToUTF16(kAliceUsername));
-    base::string16 password(base::ASCIIToUTF16(kAlicePassword));
+    base::string16 username(ASCIIToUTF16(kAliceUsername));
+    base::string16 password(ASCIIToUTF16(kAlicePassword));
     SimulateSuggestionChoiceOfUsernameAndPassword(username_input, username,
                                                   password);
   }
@@ -892,6 +893,38 @@ TEST_F(PasswordAutofillAgentTest,
   SimulateOnFillPasswordForm(fill_data_);
   CheckUsernameDOMStatePasswordSuggestedState(UTF16ToUTF8(username_at), false,
                                               UTF16ToUTF8(password3_), true);
+}
+
+// Credentials are sent to the renderer even for sign-up forms as these may be
+// eligible for filling via manual fall back. In this case, the password_field
+// is not set. This test verifies that no failures are recorded in
+// PasswordManager.FirstRendererFillingResult.
+TEST_F(PasswordAutofillAgentTest, NoFillingOnSignupForm_NoMetrics) {
+  LoadHTML(kSignupFormHTML);
+
+  WebDocument document = GetMainFrame()->GetDocument();
+  WebElement element =
+      document.GetElementById(WebString::FromUTF8("random_info"));
+  ASSERT_FALSE(element.IsNull());
+  username_element_ = element.To<WebInputElement>();
+
+  fill_data_.has_renderer_ids = true;
+
+  fill_data_.username_field.name = ASCIIToUTF16("random_info");
+  fill_data_.username_field.unique_renderer_id =
+      username_element_.UniqueRendererFormControlId();
+
+  fill_data_.password_field.name = base::string16();
+  fill_data_.password_field.unique_renderer_id =
+      FormFieldData::kNotSetFormControlRendererId;
+
+  WebFormElement form_element =
+      document.GetElementById("LoginTestForm").To<WebFormElement>();
+  fill_data_.form_renderer_id = form_element.UniqueRendererFormId();
+
+  SimulateOnFillPasswordForm(fill_data_);
+  histogram_tester_.ExpectTotalCount(
+      "PasswordManager.FirstRendererFillingResult", 0);
 }
 
 // Do not fill a password field if the stored username is a prefix without @
@@ -1355,7 +1388,7 @@ TEST_F(PasswordAutofillAgentTest,
   // the matching autofill from the dropdown.
   SimulateUsernameTyping("a");
   // Since the username element has focus, blur event will be not triggered.
-  base::Erase(event_checkers, base::ASCIIToUTF16("username_blur_event"));
+  base::Erase(event_checkers, ASCIIToUTF16("username_blur_event"));
   SimulateSuggestionChoice(username_element_);
 
   // The username and password should now have been autocompleted.
@@ -2555,7 +2588,7 @@ TEST_F(PasswordAutofillAgentTest,
   SetAccountCreationFormsDetectedMessage(password_generation_,
                                          GetMainFrame()->GetDocument(), 0, 2);
 
-  base::string16 password = base::ASCIIToUTF16("NewPass22");
+  base::string16 password = ASCIIToUTF16("NewPass22");
   EXPECT_CALL(fake_pw_client_,
               PresaveGeneratedPassword(testing::Field(
                   &autofill::PasswordForm::password_value, password)));
@@ -2572,7 +2605,7 @@ TEST_F(PasswordAutofillAgentTest,
   SetNotBlacklistedMessage(password_generation_, kFormHTML);
   SetAccountCreationFormsDetectedMessage(password_generation_,
                                          GetMainFrame()->GetDocument(), 0, 2);
-  base::string16 password = base::ASCIIToUTF16("NewPass22");
+  base::string16 password = ASCIIToUTF16("NewPass22");
   EXPECT_CALL(fake_pw_client_,
               PresaveGeneratedPassword(testing::Field(
                   &autofill::PasswordForm::password_value, password)));
@@ -2614,7 +2647,7 @@ TEST_F(PasswordAutofillAgentTest, PasswordGenerationSupersedesAutofill) {
   // show UI when the password field is focused.
   fill_data_.wait_for_username = true;
   fill_data_.username_field = FormFieldData();
-  fill_data_.password_field.name = base::ASCIIToUTF16("new_password");
+  fill_data_.password_field.name = ASCIIToUTF16("new_password");
   UpdateOriginForHTML(kSignupFormHTML);
   SimulateOnFillPasswordForm(fill_data_);
 
