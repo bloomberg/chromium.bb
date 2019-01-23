@@ -79,6 +79,16 @@ source_set("cronet_common") {
   }
 }
 
+source_set("metrics_util") {
+  sources = [
+    "metrics_util.cc",
+    "metrics_util.h",
+  ]
+  deps = [
+    "//base",
+  ]
+}
+
 # Unit tests for Cronet common implementation.
 source_set("cronet_common_unittests") {
   testonly = true
