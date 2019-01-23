@@ -15,6 +15,8 @@
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_worklet_input.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkYUVAIndex.h"
+#include "third_party/skia/include/core/SkYUVASizeInfo.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
@@ -146,10 +148,10 @@ class CC_PAINT_EXPORT PaintImage {
   // GetSupportedDecodeSize(size).
   SkISize GetSupportedDecodeSize(const SkISize& requested_size) const;
 
-  // Decode the image into the given memory for the given SkImageInfo.
+  // Decode the image into RGBX into the given memory for the given SkImageInfo.
   // - Size in |info| must be supported.
   // - The amount of memory allocated must be at least
-  //   |info|.minRowBytes() * |info|.height().
+  //   |info|.minRowBytes() * |info|.height()
   // Returns true on success and false on failure. Updates |info| to match the
   // requested color space, if provided.
   // Note that for non-lazy images this will do a copy or readback if the image
@@ -159,6 +161,25 @@ class CC_PAINT_EXPORT PaintImage {
               sk_sp<SkColorSpace> color_space,
               size_t frame_index,
               GeneratorClientId client_id) const;
+
+  // Decode the image into YUV into |planes| for the given SkYUVASizeInfo.
+  //  - Elements of the |planes| array are pointers to some underlying memory
+  //    for each plane. It is assumed to have been split up by a call to
+  //    SkYUVASizeInfo::computePlanes with the given |yuva_size_info|.
+  //  - The amount of memory allocated must be at least
+  //    |yuva_size_info|.computeTotalBytes(), though there are places in the
+  //    code that assume YUV420 without alpha because it is currently the only
+  //    subsampling supported for direct YUV rendering.
+  //  - The dimensions of YUV planes are tracked in |yuva_size_info|.
+  //    This struct is initialized by QueryYUVA8 in calls to
+  //    PaintImage::IsYuv(), including within this method.
+  //  - The |frame_index| parameter will be passed along to
+  //    ImageDecoder::DecodeToYUV but for multi-frame YUV support, ImageDecoder
+  //    needs a separate YUV frame buffer cache.
+  bool DecodeYuv(void* planes[SkYUVASizeInfo::kMaxCount],
+                 size_t frame_index,
+                 GeneratorClientId client_id,
+                 const SkYUVASizeInfo& yuva_size_info) const;
 
   Id stable_id() const { return id_; }
   const sk_sp<SkImage>& GetSkImage() const;
@@ -202,6 +223,12 @@ class CC_PAINT_EXPORT PaintImage {
     return paint_worklet_input_ ? nullptr : GetSkImage()->colorSpace();
   }
 
+  // Returns whether this image will be decoded and rendered from YUV data
+  // and fills out plane size and plane index information respectively in
+  // |yuva_size_info| and |plane_indices|, if provided.
+  bool IsYuv(SkYUVASizeInfo* yuva_size_info = nullptr,
+             SkYUVAIndex* plane_indices = nullptr) const;
+
   // Returns the color type of this image.
   SkColorType GetColorType() const;
 
@@ -233,6 +260,8 @@ class CC_PAINT_EXPORT PaintImage {
   static const Id kNonLazyStableId;
   friend class ScopedRasterFlags;
   friend class PaintOpReader;
+
+  bool CanDecodeFromGenerator() const;
 
   bool DecodeFromGenerator(void* memory,
                            SkImageInfo* info,
