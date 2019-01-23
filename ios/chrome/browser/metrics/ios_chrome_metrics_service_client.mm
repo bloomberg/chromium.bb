@@ -53,7 +53,7 @@
 #include "ios/chrome/browser/metrics/ios_chrome_stability_metrics_provider.h"
 #include "ios/chrome/browser/metrics/mobile_session_shutdown_metrics_provider.h"
 #include "ios/chrome/browser/signin/ios_chrome_signin_status_metrics_provider_delegate.h"
-#include "ios/chrome/browser/sync/ios_chrome_sync_client.h"
+#include "ios/chrome/browser/sync/device_info_sync_service_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/tab_parenting_global_observer.h"
 #import "ios/chrome/browser/tabs/tab_model_list.h"
@@ -236,8 +236,8 @@ void IOSChromeMetricsServiceClient::Initialize() {
           metrics_service_.get()));
 
   metrics_service_->RegisterMetricsProvider(
-      std::make_unique<syncer::DeviceCountMetricsProvider>(
-          base::Bind(&IOSChromeSyncClient::GetDeviceInfoTrackers)));
+      std::make_unique<syncer::DeviceCountMetricsProvider>(base::BindRepeating(
+          &DeviceInfoSyncServiceFactory::GetAllDeviceInfoTrackers)));
 
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<translate::TranslateRankerMetricsProvider>());

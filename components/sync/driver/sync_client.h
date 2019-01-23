@@ -44,6 +44,7 @@ class SessionSyncService;
 
 namespace syncer {
 
+class DeviceInfoSyncService;
 class ModelTypeStoreService;
 class SyncableService;
 
@@ -68,6 +69,7 @@ class SyncClient {
   virtual base::FilePath GetLocalSyncBackendFolder() = 0;
 
   // DataType specific service getters.
+  virtual DeviceInfoSyncService* GetDeviceInfoSyncService() = 0;
   virtual bookmarks::BookmarkModel* GetBookmarkModel() = 0;
   virtual favicon::FaviconService* GetFaviconService() = 0;
   virtual history::HistoryService* GetHistoryService() = 0;

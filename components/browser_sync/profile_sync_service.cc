@@ -30,13 +30,12 @@
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/base/stop_source.h"
 #include "components/sync/base/sync_base_switches.h"
-#include "components/sync/device_info/device_info_sync_bridge.h"
-#include "components/sync/device_info/device_info_tracker.h"
+#include "components/sync/device_info/device_info_sync_service.h"
+#include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/backend_migrator.h"
 #include "components/sync/driver/clear_server_data_events.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/directory_data_type_controller.h"
-#include "components/sync/driver/model_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_type_preference_provider.h"
@@ -49,11 +48,8 @@
 #include "components/sync/engine/polling_constants.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/model/change_processor.h"
-#include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/model_type_store_service.h"
 #include "components/sync/model/sync_error.h"
-#include "components/sync/model_impl/client_tag_based_model_type_processor.h"
-#include "components/sync/model_impl/forwarding_model_type_controller_delegate.h"
 #include "components/sync/syncable/base_transaction.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync_sessions/session_sync_service.h"
@@ -160,7 +156,6 @@ ProfileSyncService::InitParams::~InitParams() = default;
 
 ProfileSyncService::ProfileSyncService(InitParams init_params)
     : sync_client_(std::move(init_params.sync_client)),
-      local_device_(std::move(init_params.local_device_info_provider)),
       sync_prefs_(sync_client_->GetPrefService()),
       identity_manager_(init_params.identity_manager),
       auth_manager_(std::make_unique<SyncAuthManager>(
@@ -173,7 +168,9 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       debug_identifier_(init_params.debug_identifier),
       sync_service_url_(
           syncer::GetSyncServiceURL(*base::CommandLine::ForCurrentProcess(),
-                                    local_device_->GetChannel())),
+                                    sync_client_->GetDeviceInfoSyncService()
+                                        ->GetLocalDeviceInfoProvider()
+                                        ->GetChannel())),
       crypto_(
           base::BindRepeating(&ProfileSyncService::NotifyObservers,
                               base::Unretained(this)),
@@ -199,7 +196,6 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       weak_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sync_client_);
-  DCHECK(local_device_);
 
   // If Sync is disabled via command line flag, then ProfileSyncService
   // shouldn't be instantiated.
@@ -225,8 +221,11 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
                           base::Unretained(this)));
 
   sync_stopped_reporter_ = std::make_unique<syncer::SyncStoppedReporter>(
-      sync_service_url_, local_device_->GetSyncUserAgent(), url_loader_factory_,
-      syncer::SyncStoppedReporter::ResultCallback());
+      sync_service_url_,
+      sync_client_->GetDeviceInfoSyncService()
+          ->GetLocalDeviceInfoProvider()
+          ->GetSyncUserAgent(),
+      url_loader_factory_, syncer::SyncStoppedReporter::ResultCallback());
 
   if (identity_manager_)
     identity_manager_->AddObserver(this);
@@ -259,26 +258,6 @@ void ProfileSyncService::Initialize() {
   // TODO(mastiz): The controllers map should be provided as argument.
   data_type_controllers_ =
       BuildDataTypeControllerMap(sync_client_->CreateDataTypeControllers(this));
-
-  syncer::ModelTypeStoreService* model_type_store_service =
-      sync_client_->GetModelTypeStoreService();
-  DCHECK(model_type_store_service);
-  syncer::RepeatingModelTypeStoreFactory model_type_store_factory =
-      model_type_store_service->GetStoreFactory();
-
-  device_info_sync_bridge_ = std::make_unique<syncer::DeviceInfoSyncBridge>(
-      local_device_.get(), model_type_store_factory,
-      std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
-          syncer::DEVICE_INFO,
-          /*dump_stack=*/base::BindRepeating(&syncer::ReportUnrecoverableError,
-                                             local_device_->GetChannel())));
-  data_type_controllers_[syncer::DEVICE_INFO] =
-      std::make_unique<syncer::ModelTypeController>(
-          syncer::DEVICE_INFO,
-          std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
-              device_info_sync_bridge_->change_processor()
-                  ->GetControllerDelegate()
-                  .get()));
 
   user_settings_ = std::make_unique<SyncUserSettingsImpl>(
       &crypto_, &sync_prefs_, GetRegisteredDataTypes(),
@@ -352,11 +331,6 @@ bool ProfileSyncService::IsDataTypeControllerRunning(
     return false;
   }
   return iter->second->state() == DataTypeController::RUNNING;
-}
-
-syncer::DeviceInfoTracker* ProfileSyncService::GetDeviceInfoTracker() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return device_info_sync_bridge_.get();
 }
 
 syncer::WeakHandle<syncer::JsEventHandler>
@@ -560,7 +534,9 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   params.extensions_activity = sync_client_->GetExtensionsActivity();
   params.event_handler = GetJsEventHandler();
   params.service_url = sync_service_url();
-  params.sync_user_agent = GetLocalDeviceInfoProvider()->GetSyncUserAgent();
+  params.sync_user_agent = sync_client_->GetDeviceInfoSyncService()
+                               ->GetLocalDeviceInfoProvider()
+                               ->GetSyncUserAgent();
   params.http_factory_getter = MakeHttpPostProviderFactoryGetter();
   params.credentials = auth_manager_->GetCredentials();
   DCHECK(!params.credentials.account_id.empty() || IsLocalSyncEnabled());
@@ -586,7 +562,9 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
           EngineSwitchesFromCommandLine());
   params.unrecoverable_error_handler = GetUnrecoverableErrorHandler();
   params.report_unrecoverable_error_function = base::BindRepeating(
-      syncer::ReportUnrecoverableError, local_device_->GetChannel());
+      syncer::ReportUnrecoverableError, sync_client_->GetDeviceInfoSyncService()
+                                            ->GetLocalDeviceInfoProvider()
+                                            ->GetChannel());
   params.saved_nigori_state = crypto_.TakeSavedNigoriState();
   sync_prefs_.GetInvalidationVersions(&params.invalidation_versions);
   params.short_poll_interval = sync_prefs_.GetShortPollInterval();
@@ -693,7 +671,7 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
   // If the sync DB is getting destroyed, the local DeviceInfo is no longer
   // valid and should be cleared from the cache.
   if (reason == syncer::ShutdownReason::DISABLE_SYNC) {
-    local_device_->Clear();
+    sync_client_->GetDeviceInfoSyncService()->ClearLocalCacheGuid();
   }
 
   // Clear various state.
@@ -960,7 +938,8 @@ void ProfileSyncService::OnEngineInitialized(
   sync_js_controller_.AttachJsBackend(js_backend);
 
   // Initialize local device info.
-  local_device_->Initialize(cache_guid, session_name);
+  sync_client_->GetDeviceInfoSyncService()->InitLocalCacheGuid(cache_guid,
+                                                               session_name);
 
   // Copy some data to preferences to be able to one day migrate away from the
   // directory.
@@ -1453,7 +1432,9 @@ void ProfileSyncService::ConfigureDataTypeManager(
   syncer::ConfigureContext configure_context;
   configure_context.authenticated_account_id =
       GetAuthenticatedAccountInfo().account_id;
-  configure_context.cache_guid = local_device_->GetLocalSyncCacheGUID();
+  configure_context.cache_guid = sync_client_->GetDeviceInfoSyncService()
+                                     ->GetLocalDeviceInfoProvider()
+                                     ->GetLocalSyncCacheGUID();
   configure_context.storage_option = syncer::STORAGE_ON_DISK;
   configure_context.reason = reason;
   configure_context.configuration_start_time = base::Time::Now();
@@ -1801,13 +1782,7 @@ bool ProfileSyncService::HasPreferenceProvider(
 const syncer::LocalDeviceInfoProvider*
 ProfileSyncService::GetLocalDeviceInfoProvider() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return local_device_.get();
-}
-
-syncer::LocalDeviceInfoProvider*
-ProfileSyncService::GetLocalDeviceInfoProviderForTest() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return local_device_.get();
+  return sync_client_->GetDeviceInfoSyncService()->GetLocalDeviceInfoProvider();
 }
 
 namespace {
@@ -2054,7 +2029,9 @@ ProfileSyncService::GetEncryptionObserverForTest() {
 void ProfileSyncService::RemoveClientFromServer() const {
   if (!engine_initialized_)
     return;
-  const std::string cache_guid = local_device_->GetLocalSyncCacheGUID();
+  const std::string cache_guid = sync_client_->GetDeviceInfoSyncService()
+                                     ->GetLocalDeviceInfoProvider()
+                                     ->GetLocalSyncCacheGUID();
   std::string birthday;
   syncer::UserShare* user_share = GetUserShare();
   if (user_share && user_share->directory.get()) {

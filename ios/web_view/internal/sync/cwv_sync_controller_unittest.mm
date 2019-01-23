@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/test/bind_test_util.h"
 #include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/device_id_helper.h"
@@ -20,9 +21,13 @@
 #include "components/signin/ios/browser/fake_profile_oauth2_token_service_ios_provider.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_provider.h"
-#include "components/sync/device_info/local_device_info_provider_mock.h"
+#include "components/sync/device_info/device_info_sync_service_impl.h"
+#include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/sync_service_observer.h"
+#include "components/sync/model/test_model_type_store_service.h"
+#include "components/version_info/version_info.h"
+#include "components/version_info/version_string.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -43,10 +48,38 @@
 #endif
 
 namespace ios_web_view {
+namespace {
 
 using testing::_;
 using testing::Invoke;
 using testing::Return;
+
+// TODO(crbug.com/922971): Hopefully this class is not needed when
+// ProfileSyncService doesn't have a direct dependency to DeviceInfoSyncService.
+class TestSyncClient : public syncer::FakeSyncClient {
+ public:
+  TestSyncClient()
+      : device_info_sync_service_(
+            model_type_store_service_.GetStoreFactory(),
+            std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
+                version_info::Channel::UNKNOWN,
+                /*version=*/"",
+                /*is_tablet=*/false,
+                /*signin_scoped_device_id_callback=*/
+                base::BindLambdaForTesting([]() { return std::string(); }))) {}
+
+  ~TestSyncClient() override = default;
+
+  syncer::DeviceInfoSyncService* GetDeviceInfoSyncService() override {
+    return &device_info_sync_service_;
+  }
+
+ private:
+  syncer::TestModelTypeStoreService model_type_store_service_;
+  syncer::DeviceInfoSyncServiceImpl device_info_sync_service_;
+};
+
+}  // namespace
 
 class CWVSyncControllerTest : public PlatformTest {
  protected:
@@ -78,11 +111,9 @@ class CWVSyncControllerTest : public PlatformTest {
 
     browser_sync::ProfileSyncService::InitParams init_params;
     init_params.start_behavior = browser_sync::ProfileSyncService::MANUAL_START;
-    init_params.sync_client = std::make_unique<syncer::FakeSyncClient>();
+    init_params.sync_client = std::make_unique<TestSyncClient>();
     init_params.url_loader_factory = browser_state_.GetSharedURLLoaderFactory();
     init_params.network_time_update_callback = base::DoNothing();
-    init_params.local_device_info_provider =
-        std::make_unique<syncer::LocalDeviceInfoProviderMock>();
     profile_sync_service_ =
         std::make_unique<browser_sync::ProfileSyncServiceMock>(
             std::move(init_params));

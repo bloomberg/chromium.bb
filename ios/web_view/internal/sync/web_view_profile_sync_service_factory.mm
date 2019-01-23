@@ -11,17 +11,16 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
-#include "components/signin/core/browser/device_id_helper.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/sync/driver/startup_controller.h"
 #include "components/sync/driver/sync_util.h"
-#include "components/version_info/version_info.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web_view/internal/app/application_context.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
+#import "ios/web_view/internal/sync/web_view_device_info_sync_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_gcm_profile_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_model_type_store_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_profile_invalidation_provider_factory.h"
@@ -30,7 +29,6 @@
 #include "ios/web_view/internal/webdata_services/web_view_web_data_service_wrapper_factory.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -62,6 +60,7 @@ WebViewProfileSyncServiceFactory::WebViewProfileSyncServiceFactory()
   // The ProfileSyncService depends on various SyncableServices being around
   // when it is shut down.  Specify those dependencies here to build the proper
   // destruction order.
+  DependsOn(WebViewDeviceInfoSyncServiceFactory::GetInstance());
   DependsOn(WebViewIdentityManagerFactory::GetInstance());
   DependsOn(WebViewPersonalDataManagerFactory::GetInstance());
   DependsOn(WebViewWebDataServiceWrapperFactory::GetInstance());
@@ -96,13 +95,6 @@ WebViewProfileSyncServiceFactory::BuildServiceInstanceFor(
       WebViewProfileInvalidationProviderFactory::GetForBrowserState(
           browser_state)
           ->GetIdentityProvider());
-  init_params.local_device_info_provider =
-      std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
-          version_info::Channel::UNKNOWN, version_info::GetVersionNumber(),
-          ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
-          /*signin_scoped_device_id_callback=*/
-          base::BindRepeating(&signin::GetSigninScopedDeviceId,
-                              browser_state->GetPrefs()));
 
   auto profile_sync_service =
       std::make_unique<ProfileSyncService>(std::move(init_params));

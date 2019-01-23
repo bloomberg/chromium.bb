@@ -22,13 +22,11 @@
 #include "components/browser_sync/profile_sync_test_util.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
-#include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/sync/driver/startup_controller.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "ui/base/device_form_factor.h"
 
 using browser_sync::ProfileSyncService;
 using testing::NiceMock;
@@ -70,13 +68,6 @@ ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess();
   init_params.debug_identifier = profile->GetDebugName();
-  init_params.local_device_info_provider =
-      std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
-          chrome::GetChannel(), chrome::GetVersionString(),
-          ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
-          /*signin_scoped_device_id_callback=*/base::BindRepeating([]() {
-            return std::string();
-          }));
 
   return init_params;
 }

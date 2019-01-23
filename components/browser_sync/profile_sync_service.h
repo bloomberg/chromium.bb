@@ -55,8 +55,6 @@ class SharedURLLoaderFactory;
 
 namespace syncer {
 class BackendMigrator;
-class DeviceInfoSyncBridge;
-class DeviceInfoTracker;
 class LocalDeviceInfoProvider;
 class NetworkResources;
 class SyncTypePreferenceProvider;
@@ -177,7 +175,6 @@ class ProfileSyncService : public syncer::SyncService,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
     network::NetworkConnectionTracker* network_connection_tracker = nullptr;
     std::string debug_identifier;
-    std::unique_ptr<syncer::LocalDeviceInfoProvider> local_device_info_provider;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(InitParams);
@@ -250,13 +247,9 @@ class ProfileSyncService : public syncer::SyncService,
   bool HasPreferenceProvider(
       syncer::SyncTypePreferenceProvider* provider) const;
 
+  // TODO(crbug.com/922971): Remove this getter and migrate away callers to
+  // DeviceInfoSyncService.
   const syncer::LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() const;
-
-  syncer::LocalDeviceInfoProvider* GetLocalDeviceInfoProviderForTest();
-
-  // Returns synced devices tracker.
-  // Virtual for testing.
-  virtual syncer::DeviceInfoTracker* GetDeviceInfoTracker() const;
 
   // SyncEngineHost implementation.
   void OnEngineInitialized(
@@ -524,8 +517,6 @@ class ProfileSyncService : public syncer::SyncService,
   // the Sync API component factory.
   const std::unique_ptr<syncer::SyncClient> sync_client_;
 
-  const std::unique_ptr<syncer::LocalDeviceInfoProvider> local_device_;
-
   // The class that handles getting, setting, and persisting sync preferences.
   syncer::SyncPrefs sync_prefs_;
 
@@ -637,8 +628,6 @@ class ProfileSyncService : public syncer::SyncService,
   // syncing account, so we'll need to update this whenever the account changes.
   std::vector<invalidation::IdentityProvider*> const
       invalidations_identity_providers_;
-
-  std::unique_ptr<syncer::DeviceInfoSyncBridge> device_info_sync_bridge_;
 
   // List of available data type controllers.
   syncer::DataTypeController::TypeMap data_type_controllers_;

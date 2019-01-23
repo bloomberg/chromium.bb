@@ -28,18 +28,17 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
-#include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/sync/bookmark_sync_service_factory.h"
 #include "chrome/browser/sync/chrome_sync_client.h"
+#include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/model_type_store_service_factory.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
-#include "chrome/common/channel_info.h"
 #include "components/browser_sync/profile_sync_components_factory_impl.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/invalidation/impl/invalidation_switches.h"
@@ -47,7 +46,6 @@
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/network_time/network_time_tracker.h"
-#include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/sync/driver/startup_controller.h"
 #include "components/sync/driver/sync_util.h"
 #include "components/unified_consent/feature.h"
@@ -58,7 +56,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -139,6 +136,7 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(BookmarkSyncServiceFactory::GetInstance());
   DependsOn(browser_sync::UserEventServiceFactory::GetInstance());
   DependsOn(ConsentAuditorFactory::GetInstance());
+  DependsOn(DeviceInfoSyncServiceFactory::GetInstance());
   DependsOn(dom_distiller::DomDistillerServiceFactory::GetInstance());
   DependsOn(FaviconServiceFactory::GetInstance());
   DependsOn(gcm::GCMProfileServiceFactory::GetInstance());
@@ -194,8 +192,6 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
   init_params.debug_identifier = profile->GetDebugName();
 
   bool local_sync_backend_enabled = false;
-  syncer::LocalDeviceInfoProviderImpl::SigninScopedDeviceIdCallback
-      signin_scoped_device_id_callback;
 
 // Since the local sync backend is currently only supported on Windows don't
 // even check the pref on other os-es.
@@ -215,9 +211,6 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
     if (local_sync_backend_folder.empty())
       return nullptr;
 
-    signin_scoped_device_id_callback =
-        base::BindRepeating([]() { return std::string("local_device"); });
-
     init_params.start_behavior = ProfileSyncService::AUTO_START;
   }
 #endif  // defined(OS_WIN)
@@ -234,9 +227,6 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
 
     init_params.identity_manager =
         IdentityManagerFactory::GetForProfile(profile);
-
-    signin_scoped_device_id_callback =
-        base::BindRepeating(&GetSigninScopedDeviceIdForProfile, profile);
 
     bool use_fcm_invalidations =
         base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations);
@@ -270,12 +260,6 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
                                      ? ProfileSyncService::AUTO_START
                                      : ProfileSyncService::MANUAL_START;
   }
-
-  init_params.local_device_info_provider =
-      std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
-          chrome::GetChannel(), chrome::GetVersionString(),
-          ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
-          signin_scoped_device_id_callback);
 
   auto pss = std::make_unique<ProfileSyncService>(std::move(init_params));
   pss->Initialize();

@@ -48,7 +48,7 @@
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_metrics_provider.h"
-#include "chrome/browser/sync/chrome_sync_client.h"
+#include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/translate/translate_ranker_metrics_provider.h"
 #include "chrome/browser/ui/browser_otr_state.h"
@@ -708,8 +708,8 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
 #endif  // !defined(OS_CHROMEOS)
 
   metrics_service_->RegisterMetricsProvider(
-      std::make_unique<syncer::DeviceCountMetricsProvider>(
-          base::Bind(&browser_sync::ChromeSyncClient::GetDeviceInfoTrackers)));
+      std::make_unique<syncer::DeviceCountMetricsProvider>(base::BindRepeating(
+          &DeviceInfoSyncServiceFactory::GetAllDeviceInfoTrackers)));
 
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<HttpsEngagementMetricsProvider>());

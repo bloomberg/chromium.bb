@@ -14,8 +14,6 @@
 
 namespace syncer {
 
-class ModelTypeSyncBridge;
-
 // Fake implementation of SyncClient interface for tests.
 class FakeSyncClient : public SyncClient {
  public:
@@ -26,6 +24,7 @@ class FakeSyncClient : public SyncClient {
   PrefService* GetPrefService() override;
   base::FilePath GetLocalSyncBackendFolder() override;
   ModelTypeStoreService* GetModelTypeStoreService() override;
+  DeviceInfoSyncService* GetDeviceInfoSyncService() override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   favicon::FaviconService* GetFaviconService() override;
   history::HistoryService* GetHistoryService() override;
@@ -46,11 +45,8 @@ class FakeSyncClient : public SyncClient {
       ModelSafeGroup group) override;
   SyncApiComponentFactory* GetSyncApiComponentFactory() override;
 
-  void SetModelTypeSyncBridge(ModelTypeSyncBridge* bridge);
-
  private:
   sync_preferences::TestingPrefServiceSyncable pref_service_;
-  ModelTypeSyncBridge* bridge_;
   SyncApiComponentFactory* factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSyncClient);
