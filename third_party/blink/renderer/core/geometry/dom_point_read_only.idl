@@ -19,5 +19,5 @@
 
     [RaisesException] DOMPoint matrixTransform(optional DOMMatrixInit matrix);
 
-    serializer = { attribute };
+    [CallWith=ScriptState, ImplementedAs=toJSONForBinding] object toJSON();
 };

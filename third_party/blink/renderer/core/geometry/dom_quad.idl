@@ -5,10 +5,9 @@
 // https://drafts.fxtf.org/geometry/#domquad
 
 [
- Constructor(optional DOMPointInit p1, optional DOMPointInit p2,
-                  optional DOMPointInit p3, optional DOMPointInit p4),
- Exposed=(Window,Worker),
- Serializable
+    Constructor(optional DOMPointInit p1, optional DOMPointInit p2, optional DOMPointInit p3, optional DOMPointInit p4),
+    Exposed=(Window,Worker),
+    Serializable
 ]
 interface DOMQuad {
     [NewObject] static DOMQuad fromRect(optional DOMRectInit other);
@@ -20,5 +19,5 @@ interface DOMQuad {
     [SameObject] readonly attribute DOMPoint p4;
     [NewObject] DOMRect getBounds();
 
-    serializer = { attribute };
+    [CallWith=ScriptState, ImplementedAs=toJSONForBinding] object toJSON();
 };

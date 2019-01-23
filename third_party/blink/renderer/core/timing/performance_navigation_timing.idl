@@ -23,5 +23,5 @@ enum NavigationType {
     readonly attribute DOMHighResTimeStamp loadEventEnd;
     readonly attribute NavigationType      type;
     readonly attribute unsigned short      redirectCount;
-    serializer = {inherit, attribute};
+    [CallWith=ScriptState, ImplementedAs=toJSONForBinding] object toJSON();
 };

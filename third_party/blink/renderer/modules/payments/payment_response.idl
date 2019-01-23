@@ -18,7 +18,7 @@ enum PaymentComplete {
     Exposed=Window,
     ActiveScriptWrappable
 ] interface PaymentResponse : EventTarget {
-    serializer = {attribute};
+    [CallWith=ScriptState, ImplementedAs=toJSONForBinding] object toJSON();
 
     readonly attribute DOMString requestId;
     readonly attribute DOMString methodName;
