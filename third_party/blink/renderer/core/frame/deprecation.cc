@@ -173,18 +173,6 @@ String ReplacedWillBeRemoved(const char* feature,
       feature, MilestoneString(milestone), replacement, details);
 }
 
-String DeprecatedWillBeDisabledByFeaturePolicyInCrossOriginIframe(
-    const char* function,
-    const char* allow_string,
-    Milestone milestone) {
-  return String::Format(
-      "%s usage in cross-origin iframes is deprecated and will be disabled in "
-      "%s. To continue to use this feature, it must be enabled by the "
-      "embedding document using Feature Policy, e.g. "
-      "<iframe allow=\"%s\" ...>. See https://goo.gl/EuHzyv for more details.",
-      function, MilestoneString(milestone), allow_string);
-}
-
 DeprecationInfo GetDeprecationInfo(WebFeature feature) {
   switch (feature) {
     // Quota
@@ -479,39 +467,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
           ReplacedWillBeRemoved(":unresolved pseudo selector", ":not(:defined)",
                                 kM73, "4642138092470272")};
 
-    case WebFeature::
-        kEncryptedMediaDisallowedByFeaturePolicyInCrossOriginIframe:
-      return {"EncryptedMediaDisallowedByFeaturePolicyInCrossOriginIframe",
-              kM64,
-              DeprecatedWillBeDisabledByFeaturePolicyInCrossOriginIframe(
-                  "requestMediaKeySystemAccess", "encrypted-media", kM64)};
-
-    case WebFeature::kGeolocationDisallowedByFeaturePolicyInCrossOriginIframe:
-      return {"GeolocationDisallowedByFeaturePolicyInCrossOriginIframe", kM64,
-              DeprecatedWillBeDisabledByFeaturePolicyInCrossOriginIframe(
-                  "getCurrentPosition and watchPosition", "geolocation", kM64)};
-
-    case WebFeature::
-        kGetUserMediaMicDisallowedByFeaturePolicyInCrossOriginIframe:
-      return {"GetUserMediaMicDisallowedByFeaturePolicyInCrossOriginIframe",
-              kM64,
-              DeprecatedWillBeDisabledByFeaturePolicyInCrossOriginIframe(
-                  "getUserMedia (microphone)", "microphone", kM64)};
-
-    case WebFeature::
-        kGetUserMediaCameraDisallowedByFeaturePolicyInCrossOriginIframe:
-      return {"GetUserMediaCameraDisallowedByFeaturePolicyInCrossOriginIframe",
-              kM64,
-              DeprecatedWillBeDisabledByFeaturePolicyInCrossOriginIframe(
-                  "getUserMedia (camera)", "camera", kM64)};
-
-    case WebFeature::
-        kRequestMIDIAccessDisallowedByFeaturePolicyInCrossOriginIframe:
-      return {"RequestMIDIAccessDisallowedByFeaturePolicyInCrossOriginIframe",
-              kM64,
-              DeprecatedWillBeDisabledByFeaturePolicyInCrossOriginIframe(
-                  "requestMIDIAccess", "midi", kM64)};
-
     case WebFeature::kPresentationRequestStartInsecureOrigin:
     case WebFeature::kPresentationReceiverInsecureOrigin:
       return {
@@ -746,58 +701,6 @@ void Deprecation::CountDeprecationCrossOriginIframe(const Document& document,
   if (!frame)
     return;
   CountDeprecationCrossOriginIframe(frame, feature);
-}
-
-void Deprecation::CountDeprecationFeaturePolicy(
-    const Document& document,
-    mojom::FeaturePolicyFeature feature) {
-  LocalFrame* frame = document.GetFrame();
-  if (!frame)
-    return;
-
-  // If the feature is allowed, don't log a warning.
-  if (document.IsFeatureEnabled(feature))
-    return;
-
-  // If the feature is disabled, log a warning but only if the request is from a
-  // cross-origin iframe. Ideally we would check here if the feature is actually
-  // disabled due to the parent frame's policy (as opposed to the current frame
-  // disabling the feature on itself) but that can't happen right now anyway
-  // (until the general syntax is shipped) and this is also a good enough
-  // approximation for deprecation messages.
-  switch (feature) {
-    case mojom::FeaturePolicyFeature::kEncryptedMedia:
-      CountDeprecationCrossOriginIframe(
-          frame,
-          WebFeature::
-              kEncryptedMediaDisallowedByFeaturePolicyInCrossOriginIframe);
-      break;
-    case mojom::FeaturePolicyFeature::kGeolocation:
-      CountDeprecationCrossOriginIframe(
-          frame,
-          WebFeature::kGeolocationDisallowedByFeaturePolicyInCrossOriginIframe);
-      break;
-    case mojom::FeaturePolicyFeature::kMicrophone:
-      CountDeprecationCrossOriginIframe(
-          frame,
-          WebFeature::
-              kGetUserMediaMicDisallowedByFeaturePolicyInCrossOriginIframe);
-      break;
-    case mojom::FeaturePolicyFeature::kCamera:
-      CountDeprecationCrossOriginIframe(
-          frame,
-          WebFeature::
-              kGetUserMediaCameraDisallowedByFeaturePolicyInCrossOriginIframe);
-      break;
-    case mojom::FeaturePolicyFeature::kMidiFeature:
-      CountDeprecationCrossOriginIframe(
-          frame,
-          WebFeature::
-              kRequestMIDIAccessDisallowedByFeaturePolicyInCrossOriginIframe);
-      break;
-    default:
-      NOTREACHED();
-  }
 }
 
 void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {
