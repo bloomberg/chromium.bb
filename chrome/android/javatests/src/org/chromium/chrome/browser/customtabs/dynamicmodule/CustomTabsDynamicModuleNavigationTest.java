@@ -122,6 +122,7 @@ public class CustomTabsDynamicModuleNavigationTest {
                 0, 3);
         activityDelegate.waitForNavigationEvent(CustomTabsCallback.NAVIGATION_FINISHED,
                 0, 3);
+        activityDelegate.waitForFirstContentfulPaint(0, 3);
     }
 
     private CustomTabActivity getActivity() {

@@ -171,6 +171,12 @@ public class ActivityDelegate implements StartStopWithNativeObserver,
         safeRun(() -> mActivityDelegate.onNavigationEvent(navigationEvent, extras));
     }
 
+    public void onPageMetricEvent(String metricName, long navigationStart,
+            long offset, long navigationId) {
+        safeRun(() -> mActivityDelegate.onPageMetricEvent(
+                metricName, navigationStart, offset, navigationId));
+    }
+
     public void onMessageChannelReady() {
         safeRun(mActivityDelegate::onMessageChannelReady);
     }

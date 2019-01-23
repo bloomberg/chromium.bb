@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
+import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -156,6 +157,7 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
 
     private final DynamicModuleNavigationEventObserver mModuleNavigationEventObserver =
             new DynamicModuleNavigationEventObserver();
+    private final DynamicModulePageLoadObserver mPageLoadObserver;
 
     @Inject
     public DynamicModuleCoordinator(CustomTabIntentDataProvider intentDataProvider,
@@ -167,7 +169,8 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
                                     Lazy<CustomTabBottomBarDelegate> bottomBarDelegate,
                                     Lazy<ChromeFullscreenManager> fullscreenManager,
                                     CustomTabsConnection connection, ChromeActivity activity,
-                                    CustomTabActivityTabController tabController) {
+                                    CustomTabActivityTabController tabController,
+                                    DynamicModulePageLoadObserver pageLoadObserver) {
         mIntentDataProvider = intentDataProvider;
         mTabObserverRegistrar = tabObserverRegistrar;
         mActivity = activity;
@@ -177,6 +180,9 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
         mTabObserverRegistrar.registerTabObserver(mModuleNavigationEventObserver);
         mTabObserverRegistrar.registerTabObserver(mHeaderVisibilityObserver);
         mTabObserverRegistrar.registerTabObserver(mCustomRequestHeaderModifier);
+
+        mPageLoadObserver = pageLoadObserver;
+        mTabObserverRegistrar.registerPageLoadMetricsObserver(mPageLoadObserver);
 
         mActivityDelegate = activityDelegate;
         mTopBarDelegate = topBarDelegate;
@@ -357,6 +363,13 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
                     unregisterObserver(mModuleNavigationEventObserver);
                 }
 
+                if (mModuleEntryPoint.getModuleVersion()
+                        >= DynamicModuleConstants.ON_PAGE_LOAD_METRIC_API_VERSION) {
+                    mPageLoadObserver.setActivityDelegate(mActivityDelegate);
+                } else {
+                    PageLoadMetrics.removeObserver(mPageLoadObserver);
+                }
+
                 // Initialise the PostMessageHandler for the current web contents.
 
                 maybeInitialiseDynamicModulePostMessageHandler(
@@ -450,6 +463,7 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
         unregisterObserver(mModuleNavigationEventObserver);
         unregisterObserver(mHeaderVisibilityObserver);
         unregisterObserver(mCustomRequestHeaderModifier);
+        PageLoadMetrics.removeObserver(mPageLoadObserver);
     }
 
     private void unregisterObserver(TabObserver observer) {
