@@ -351,6 +351,7 @@ bool NotificationChannelsProviderAndroid::SetWebsiteSetting(
       NOTREACHED();
       break;
   }
+  delete value;
   return true;
 }
 
