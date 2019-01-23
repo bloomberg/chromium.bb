@@ -13,6 +13,7 @@
 namespace gpu {
 
 class DecoderClient;
+class SharedContextState;
 class ServiceTransferCache;
 
 namespace gles2 {
@@ -24,7 +25,6 @@ class Outputter;
 }  // namespace gles2
 
 namespace raster {
-struct RasterDecoderContextState;
 
 // This class implements the AsyncAPIInterface interface, decoding
 // RasterInterface commands and calling GL.
@@ -36,7 +36,7 @@ class GPU_GLES2_EXPORT RasterDecoder : public DecoderContext,
       CommandBufferServiceBase* command_buffer_service,
       gles2::Outputter* outputter,
       gles2::ContextGroup* group,
-      scoped_refptr<RasterDecoderContextState> raster_decoder_context_state);
+      scoped_refptr<SharedContextState> shared_context_state);
 
   ~RasterDecoder() override;
 

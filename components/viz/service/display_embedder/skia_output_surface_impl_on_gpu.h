@@ -155,7 +155,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   // It will do nothing when Vulkan is used.
   bool MakeCurrent();
 
-  GrContext* gr_context() { return context_state_->gr_context; }
+  GrContext* gr_context() { return context_state_->gr_context(); }
 
   const gpu::CommandBufferId command_buffer_id_;
   GpuServiceImpl* const gpu_service_;
@@ -173,7 +173,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   gpu::GpuPreferences gpu_preferences_;
   scoped_refptr<gl::GLSurface> gl_surface_;
   sk_sp<SkSurface> sk_surface_;
-  scoped_refptr<gpu::raster::RasterDecoderContextState> context_state_;
+  scoped_refptr<gpu::SharedContextState> context_state_;
   const gl::GLVersionInfo* gl_version_info_ = nullptr;
   OutputSurface::Capabilities capabilities_;
   std::unique_ptr<gpu::SharedImageRepresentationFactory>

@@ -56,6 +56,7 @@ class Size;
 }
 
 namespace gpu {
+class SharedContextState;
 class GpuChannelManagerDelegate;
 class GpuProcessActivityFlags;
 class GpuMemoryBufferManager;
@@ -69,7 +70,6 @@ struct SwapBuffersCompleteParams;
 
 namespace raster {
 class GrShaderCache;
-struct RasterDecoderContextState;
 }
 
 // This class provides a thread-safe interface to the global GPU service (for
@@ -373,7 +373,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   base::circular_deque<SwapBufferParams> pending_presented_params_;
   base::circular_deque<SwapBufferParams> pending_swap_completed_params_;
 
-  scoped_refptr<raster::RasterDecoderContextState> context_state_;
+  scoped_refptr<SharedContextState> context_state_;
 
   base::WeakPtrFactory<InProcessCommandBuffer> client_thread_weak_ptr_factory_;
   base::WeakPtrFactory<InProcessCommandBuffer> gpu_thread_weak_ptr_factory_;

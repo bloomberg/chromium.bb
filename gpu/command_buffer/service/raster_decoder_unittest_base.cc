@@ -233,23 +233,23 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
       init.lose_context_when_out_of_memory;
   attribs.context_type = context_type;
 
-  // Setup expectations for RasterDecoderContextState::InitializeGL().
+  // Setup expectations for SharedContextState::InitializeGL().
   EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_VERTEX_ATTRIBS, _))
       .WillOnce(SetArgPointee<1>(8u))
       .RetiresOnSaturation();
   SetupInitCapabilitiesExpectations(group_->feature_info()->IsES3Capable());
   SetupInitStateExpectations(group_->feature_info()->IsES3Capable());
 
-  raster_decoder_context_state_ = new raster::RasterDecoderContextState(
+  shared_context_state_ = base::MakeRefCounted<SharedContextState>(
       new gl::GLShareGroup(), surface_, context_,
       feature_info->workarounds().use_virtualized_gl_contexts,
       base::DoNothing());
 
-  raster_decoder_context_state_->InitializeGL(GpuPreferences(), feature_info);
+  shared_context_state_->InitializeGL(GpuPreferences(), feature_info);
 
   decoder_.reset(RasterDecoder::Create(this, command_buffer_service_.get(),
                                        &outputter_, group_.get(),
-                                       raster_decoder_context_state_));
+                                       shared_context_state_));
   decoder_->SetIgnoreCachedStateForTest(ignore_cached_state_for_test_);
   decoder_->DisableFlushWorkaroundForTest();
   decoder_->GetLogger()->set_log_synthesized_gl_errors(false);
@@ -257,10 +257,9 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   copy_texture_manager_ = new gles2::MockCopyTextureResourceManager();
   decoder_->SetCopyTextureResourceManagerForTest(copy_texture_manager_);
 
-  ASSERT_EQ(
-      decoder_->Initialize(surface_, raster_decoder_context_state_->context(),
-                           true, gles2::DisallowedFeatures(), attribs),
-      gpu::ContextResult::kSuccess);
+  ASSERT_EQ(decoder_->Initialize(surface_, shared_context_state_->context(),
+                                 true, gles2::DisallowedFeatures(), attribs),
+            gpu::ContextResult::kSuccess);
 
   EXPECT_CALL(*context_, MakeCurrent(surface_.get())).WillOnce(Return(true));
   if (context_->WasAllocatedUsingRobustnessExtension()) {

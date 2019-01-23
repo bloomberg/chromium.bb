@@ -52,7 +52,7 @@ class SharedImageBackingAHB : public SharedImageBacking {
                         uint32_t usage,
                         base::android::ScopedHardwareBufferHandle handle,
                         size_t estimated_size,
-                        raster::RasterDecoderContextState* context_state);
+                        SharedContextState* context_state);
 
   ~SharedImageBackingAHB() override;
 
@@ -61,7 +61,7 @@ class SharedImageBackingAHB : public SharedImageBacking {
   void Update() override;
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
   void Destroy() override;
-  raster::RasterDecoderContextState* GetContextState() const;
+  SharedContextState* GetContextState() const;
   base::ScopedFD TakeGLWriteSyncFd();
   base::ScopedFD TakeVkReadSyncFd();
   base::android::ScopedHardwareBufferHandle GetAhbHandle();
@@ -92,7 +92,7 @@ class SharedImageBackingAHB : public SharedImageBacking {
   // will not know if SetCleared() arrives during begin write happening on GL
   // texture representation.
   bool is_cleared_ = false;
-  raster::RasterDecoderContextState* context_state_ = nullptr;
+  SharedContextState* context_state_ = nullptr;
   base::ScopedFD gl_write_sync_fd_;
   base::ScopedFD vk_read_sync_fd_;
 
@@ -271,17 +271,18 @@ class SharedImageRepresentationSkiaVkAHB
     SharedImageBackingAHB* ahb_backing =
         static_cast<SharedImageBackingAHB*>(backing);
     DCHECK(ahb_backing);
-    raster::RasterDecoderContextState* context_state =
-        ahb_backing->GetContextState();
+    SharedContextState* context_state = ahb_backing->GetContextState();
     DCHECK(context_state);
-    DCHECK(context_state->vk_context_provider);
+    DCHECK(context_state->vk_context_provider());
 
-    vk_device_ =
-        context_state->vk_context_provider->GetDeviceQueue()->GetVulkanDevice();
-    vk_phy_device_ = context_state->vk_context_provider->GetDeviceQueue()
+    vk_device_ = context_state->vk_context_provider()
+                     ->GetDeviceQueue()
+                     ->GetVulkanDevice();
+    vk_phy_device_ = context_state->vk_context_provider()
+                         ->GetDeviceQueue()
                          ->GetVulkanPhysicalDevice();
     vk_implementation_ =
-        context_state->vk_context_provider->GetVulkanImplementation();
+        context_state->vk_context_provider()->GetVulkanImplementation();
   }
 
   ~SharedImageRepresentationSkiaVkAHB() override { DCHECK(!read_surface_); }
@@ -433,7 +434,7 @@ SharedImageBackingAHB::SharedImageBackingAHB(
     uint32_t usage,
     base::android::ScopedHardwareBufferHandle handle,
     size_t estimated_size,
-    raster::RasterDecoderContextState* context_state)
+    SharedContextState* context_state)
     : SharedImageBacking(mailbox,
                          format,
                          size,
@@ -485,8 +486,7 @@ void SharedImageBackingAHB::Destroy() {
   hardware_buffer_handle_.reset();
 }
 
-raster::RasterDecoderContextState* SharedImageBackingAHB::GetContextState()
-    const {
+SharedContextState* SharedImageBackingAHB::GetContextState() const {
   return context_state_;
 }
 
@@ -531,7 +531,7 @@ SharedImageBackingAHB::ProduceSkia(SharedImageManager* manager,
 
   // Check whether we are in Vulkan mode OR GL mode and accordingly create
   // Skia representation.
-  if (context_state_->use_vulkan_gr_context) {
+  if (context_state_->use_vulkan_gr_context()) {
     return std::make_unique<SharedImageRepresentationSkiaVkAHB>(manager, this);
   }
 
@@ -621,7 +621,7 @@ bool SharedImageBackingAHB::GenGLTexture() {
 SharedImageBackingFactoryAHB::SharedImageBackingFactoryAHB(
     const GpuDriverBugWorkarounds& workarounds,
     const GpuFeatureInfo& gpu_feature_info,
-    raster::RasterDecoderContextState* context_state)
+    SharedContextState* context_state)
     : context_state_(context_state) {
   scoped_refptr<gles2::FeatureInfo> feature_info =
       new gles2::FeatureInfo(workarounds, gpu_feature_info);

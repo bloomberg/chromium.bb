@@ -53,7 +53,7 @@ class SharedImageBackingFactoryAHBTest : public testing::Test {
     workarounds.max_texture_size = INT_MAX - 1;
 
     scoped_refptr<gl::GLShareGroup> share_group = new gl::GLShareGroup();
-    context_state_ = new raster::RasterDecoderContextState(
+    context_state_ = base::MakeRefCounted<SharedContextState>(
         std::move(share_group), surface_, context_,
         false /* use_virtualized_gl_contexts */, base::DoNothing());
     context_state_->InitializeGrContext(workarounds, nullptr);
@@ -70,12 +70,12 @@ class SharedImageBackingFactoryAHBTest : public testing::Test {
             &shared_image_manager_, nullptr);
   }
 
-  GrContext* gr_context() { return context_state_->gr_context; }
+  GrContext* gr_context() { return context_state_->gr_context(); }
 
  protected:
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
-  scoped_refptr<raster::RasterDecoderContextState> context_state_;
+  scoped_refptr<SharedContextState> context_state_;
   std::unique_ptr<SharedImageBackingFactoryAHB> backing_factory_;
   gles2::MailboxManagerImpl mailbox_manager_;
   SharedImageManager shared_image_manager_;

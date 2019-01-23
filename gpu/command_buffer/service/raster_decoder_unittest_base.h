@@ -259,8 +259,7 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
   uint32_t immediate_buffer_[64];
 
   const bool ignore_cached_state_for_test_;
-  scoped_refptr<raster::RasterDecoderContextState>
-      raster_decoder_context_state_;
+  scoped_refptr<SharedContextState> shared_context_state_;
 
  private:
   GpuPreferences gpu_preferences_;

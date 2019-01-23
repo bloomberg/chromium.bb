@@ -234,7 +234,7 @@ bool SharedImageStub::MakeContextCurrentAndCreateFactory() {
     auto* channel_manager = channel_->gpu_channel_manager();
     DCHECK(!context_state_);
     ContextResult result;
-    context_state_ = channel_manager->GetRasterDecoderContextState(&result);
+    context_state_ = channel_manager->GetSharedContextState(&result);
     if (result != ContextResult::kSuccess) {
       LOG(ERROR) << "SharedImageStub: unable to create context";
       return false;

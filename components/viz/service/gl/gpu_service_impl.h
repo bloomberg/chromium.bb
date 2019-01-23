@@ -51,9 +51,7 @@ class MediaGpuChannelManager;
 }
 
 namespace gpu {
-namespace raster {
-struct RasterDecoderContextState;
-}  // namespace raster
+class SharedContextState;
 }  // namespace gpu
 
 namespace viz {
@@ -89,10 +87,9 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
       base::WaitableEvent* shutdown_event = nullptr);
   void Bind(mojom::GpuServiceRequest request);
 
-  scoped_refptr<gpu::raster::RasterDecoderContextState>
-  GetContextStateForGLSurface(gl::GLSurface* surface);
-  scoped_refptr<gpu::raster::RasterDecoderContextState>
-  GetContextStateForVulkan();
+  scoped_refptr<gpu::SharedContextState> GetContextStateForGLSurface(
+      gl::GLSurface* surface);
+  scoped_refptr<gpu::SharedContextState> GetContextStateForVulkan();
 
   // Notifies the GpuHost to stop using GPU compositing. This should be called
   // in response to an error in the GPU process that occurred after

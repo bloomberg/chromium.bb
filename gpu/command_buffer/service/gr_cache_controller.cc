@@ -13,7 +13,7 @@ namespace gpu {
 namespace raster {
 
 GrCacheController::GrCacheController(
-    RasterDecoderContextState* context_state,
+    SharedContextState* context_state,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : context_state_(context_state), task_runner_(std::move(task_runner)) {}
 
@@ -23,7 +23,7 @@ void GrCacheController::ScheduleGrContextCleanup() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(context_state_->IsCurrent(nullptr));
 
-  if (!context_state_->gr_context)
+  if (!context_state_->gr_context())
     return;
 
   current_idle_id_++;
@@ -35,8 +35,8 @@ void GrCacheController::ScheduleGrContextCleanup() {
   // a long while even if it is under budget. Below we set a call back to
   // purge all possible GrContext resources if the context itself is not being
   // used.
-  context_state_->need_context_state_reset = true;
-  context_state_->gr_context->performDeferredCleanup(
+  context_state_->set_need_context_state_reset(true);
+  context_state_->gr_context()->performDeferredCleanup(
       std::chrono::seconds(kOldResourceCleanupDelaySeconds));
 
   constexpr int kIdleCleanupDelaySeconds = 1;
@@ -63,8 +63,8 @@ void GrCacheController::PurgeGrCache(uint64_t idle_id) {
     return;
   }
 
-  context_state_->need_context_state_reset = true;
-  context_state_->gr_context->freeGpuResources();
+  context_state_->set_need_context_state_reset(true);
+  context_state_->gr_context()->freeGpuResources();
 }
 
 }  // namespace raster

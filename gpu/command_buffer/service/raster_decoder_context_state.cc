@@ -28,54 +28,53 @@ static constexpr size_t kInitialScratchDeserializationBufferSize = 1024;
 }
 
 namespace gpu {
-namespace raster {
 
-RasterDecoderContextState::RasterDecoderContextState(
+SharedContextState::SharedContextState(
     scoped_refptr<gl::GLShareGroup> share_group,
     scoped_refptr<gl::GLSurface> surface,
     scoped_refptr<gl::GLContext> context,
     bool use_virtualized_gl_contexts,
     base::OnceClosure context_lost_callback,
     viz::VulkanContextProvider* vulkan_context_provider)
-    : use_virtualized_gl_contexts(use_virtualized_gl_contexts),
-      context_lost_callback(std::move(context_lost_callback)),
-      vk_context_provider(vulkan_context_provider),
+    : use_virtualized_gl_contexts_(use_virtualized_gl_contexts),
+      context_lost_callback_(std::move(context_lost_callback)),
+      vk_context_provider_(vulkan_context_provider),
 #if BUILDFLAG(ENABLE_VULKAN)
-      gr_context(vk_context_provider ? vk_context_provider->GetGrContext()
-                                     : nullptr),
+      gr_context_(vk_context_provider_ ? vk_context_provider_->GetGrContext()
+                                       : nullptr),
 #endif
-      use_vulkan_gr_context(!!vk_context_provider),
+      use_vulkan_gr_context_(!!vk_context_provider_),
       share_group_(std::move(share_group)),
       context_(context),
       real_context_(std::move(context)),
       surface_(std::move(surface)),
       weak_ptr_factory_(this) {
-  if (use_vulkan_gr_context) {
-    DCHECK(gr_context);
-    use_virtualized_gl_contexts = false;
+  if (use_vulkan_gr_context_) {
+    DCHECK(gr_context_);
+    use_virtualized_gl_contexts_ = false;
   }
   if (base::ThreadTaskRunnerHandle::IsSet()) {
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        this, "RasterDecoderContextState", base::ThreadTaskRunnerHandle::Get());
+        this, "SharedContextState", base::ThreadTaskRunnerHandle::Get());
   }
   // Initialize the scratch buffer to some small initial size.
   scratch_deserialization_buffer_.resize(
       kInitialScratchDeserializationBufferSize);
 }
 
-RasterDecoderContextState::~RasterDecoderContextState() {
-  if (gr_context)
-    gr_context->abandonContext();
+SharedContextState::~SharedContextState() {
+  if (gr_context_)
+    gr_context_->abandonContext();
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
 }
 
-void RasterDecoderContextState::InitializeGrContext(
+void SharedContextState::InitializeGrContext(
     const GpuDriverBugWorkarounds& workarounds,
     GrContextOptions::PersistentCache* cache,
     GpuProcessActivityFlags* activity_flags,
     gl::ProgressReporter* progress_reporter) {
-  if (!use_vulkan_gr_context) {
+  if (!use_vulkan_gr_context_) {
     DCHECK(context_->IsCurrent(nullptr));
     sk_sp<GrGLInterface> interface(gl::init::CreateGrGLInterface(
         *context_->GetVersionInfo(), workarounds.use_es2_for_oopr,
@@ -108,25 +107,25 @@ void RasterDecoderContextState::InitializeGrContext(
     options.fDisableCoverageCountingPaths = true;
     size_t max_resource_cache_bytes = 0u;
     raster::DetermineGrCacheLimitsFromAvailableMemory(
-        &max_resource_cache_bytes, &glyph_cache_max_texture_bytes);
-    options.fGlyphCacheTextureMaximumBytes = glyph_cache_max_texture_bytes;
+        &max_resource_cache_bytes, &glyph_cache_max_texture_bytes_);
+    options.fGlyphCacheTextureMaximumBytes = glyph_cache_max_texture_bytes_;
     options.fPersistentCache = cache;
     options.fAvoidStencilBuffers = workarounds.avoid_stencil_buffers;
-    owned_gr_context = GrContext::MakeGL(std::move(interface), options);
-    gr_context = owned_gr_context.get();
-    if (!gr_context) {
+    owned_gr_context_ = GrContext::MakeGL(std::move(interface), options);
+    gr_context_ = owned_gr_context_.get();
+    if (!gr_context_) {
       LOG(ERROR) << "OOP raster support disabled: GrContext creation "
                     "failed.";
     } else {
       constexpr int kMaxGaneshResourceCacheCount = 16384;
-      gr_context->setResourceCacheLimits(kMaxGaneshResourceCacheCount,
-                                         max_resource_cache_bytes);
+      gr_context_->setResourceCacheLimits(kMaxGaneshResourceCacheCount,
+                                          max_resource_cache_bytes);
     }
   }
-  transfer_cache = std::make_unique<ServiceTransferCache>();
+  transfer_cache_ = std::make_unique<ServiceTransferCache>();
 }
 
-bool RasterDecoderContextState::InitializeGL(
+bool SharedContextState::InitializeGL(
     const GpuPreferences& gpu_preferences,
     scoped_refptr<gles2::FeatureInfo> feature_info) {
   // We still need initialize GL when Vulkan is used, because RasterDecoder
@@ -168,7 +167,7 @@ bool RasterDecoderContextState::InitializeGL(
   context_state_->InitCapabilities(nullptr);
   context_state_->InitState(nullptr);
 
-  if (use_virtualized_gl_contexts) {
+  if (use_virtualized_gl_contexts_) {
     auto virtual_context = base::MakeRefCounted<GLContextVirtual>(
         share_group_.get(), real_context_.get(),
         weak_ptr_factory_.GetWeakPtr());
@@ -183,8 +182,8 @@ bool RasterDecoderContextState::InitializeGL(
   return true;
 }
 
-bool RasterDecoderContextState::MakeCurrent(gl::GLSurface* surface) {
-  if (use_vulkan_gr_context)
+bool SharedContextState::MakeCurrent(gl::GLSurface* surface) {
+  if (use_vulkan_gr_context_)
     return true;
 
   if (context_lost_)
@@ -197,36 +196,36 @@ bool RasterDecoderContextState::MakeCurrent(gl::GLSurface* surface) {
   return true;
 }
 
-void RasterDecoderContextState::MarkContextLost() {
+void SharedContextState::MarkContextLost() {
   if (!context_lost_) {
     context_lost_ = true;
     // context_state_ could be nullptr for some unittests.
     if (context_state_)
       context_state_->MarkContextLost();
-    if (gr_context)
-      gr_context->abandonContext();
-    std::move(context_lost_callback).Run();
+    if (gr_context_)
+      gr_context_->abandonContext();
+    std::move(context_lost_callback_).Run();
   }
 }
 
-bool RasterDecoderContextState::IsCurrent(gl::GLSurface* surface) {
-  if (use_vulkan_gr_context)
+bool SharedContextState::IsCurrent(gl::GLSurface* surface) {
+  if (use_vulkan_gr_context_)
     return true;
   return context_->IsCurrent(surface);
 }
 
-bool RasterDecoderContextState::OnMemoryDump(
+bool SharedContextState::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
-  if (gr_context)
-    DumpGrMemoryStatistics(gr_context, pmd, base::nullopt);
+  if (gr_context_)
+    raster::DumpGrMemoryStatistics(gr_context_, pmd, base::nullopt);
   return true;
 }
 
-void RasterDecoderContextState::PurgeMemory(
+void SharedContextState::PurgeMemory(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
-  if (!gr_context) {
-    DCHECK(!transfer_cache);
+  if (!gr_context_) {
+    DCHECK(!transfer_cache_);
     return;
   }
 
@@ -240,36 +239,36 @@ void RasterDecoderContextState::PurgeMemory(
       return;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
       // With moderate pressure, clear any unlocked resources.
-      gr_context->purgeUnlockedResources(true /* scratchResourcesOnly */);
+      gr_context_->purgeUnlockedResources(true /* scratchResourcesOnly */);
       scratch_deserialization_buffer_.resize(
           kInitialScratchDeserializationBufferSize);
       scratch_deserialization_buffer_.shrink_to_fit();
       break;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
       // With critical pressure, purge as much as possible.
-      gr_context->freeGpuResources();
+      gr_context_->freeGpuResources();
       scratch_deserialization_buffer_.resize(0u);
       scratch_deserialization_buffer_.shrink_to_fit();
       break;
   }
 
-  transfer_cache->PurgeMemory(memory_pressure_level);
+  transfer_cache_->PurgeMemory(memory_pressure_level);
 }
 
-void RasterDecoderContextState::PessimisticallyResetGrContext() const {
+void SharedContextState::PessimisticallyResetGrContext() const {
   // Calling GrContext::resetContext() is very cheap, so we do it
   // pessimistically. We could dirty less state if skia state setting
   // performance becomes an issue.
-  if (gr_context && !use_vulkan_gr_context)
-    gr_context->resetContext();
+  if (gr_context_ && !use_vulkan_gr_context_)
+    gr_context_->resetContext();
 }
 
-bool RasterDecoderContextState::initialized() const {
+bool SharedContextState::initialized() const {
   return true;
 }
 
-const gles2::ContextState* RasterDecoderContextState::GetContextState() {
-  if (need_context_state_reset) {
+const gles2::ContextState* SharedContextState::GetContextState() {
+  if (need_context_state_reset_) {
     // Returning nullptr to force full state restoration by the caller.  We do
     // this because GrContext changes to GL state are untracked in our
     // context_state_.
@@ -278,34 +277,33 @@ const gles2::ContextState* RasterDecoderContextState::GetContextState() {
   return context_state_.get();
 }
 
-void RasterDecoderContextState::RestoreState(
-    const gles2::ContextState* prev_state) {
+void SharedContextState::RestoreState(const gles2::ContextState* prev_state) {
   PessimisticallyResetGrContext();
   context_state_->RestoreState(prev_state);
-  need_context_state_reset = false;
+  need_context_state_reset_ = false;
 }
 
-void RasterDecoderContextState::RestoreGlobalState() const {
+void SharedContextState::RestoreGlobalState() const {
   PessimisticallyResetGrContext();
   context_state_->RestoreGlobalState(nullptr);
 }
-void RasterDecoderContextState::ClearAllAttributes() const {}
+void SharedContextState::ClearAllAttributes() const {}
 
-void RasterDecoderContextState::RestoreActiveTexture() const {
+void SharedContextState::RestoreActiveTexture() const {
   PessimisticallyResetGrContext();
 }
 
-void RasterDecoderContextState::RestoreAllTextureUnitAndSamplerBindings(
+void SharedContextState::RestoreAllTextureUnitAndSamplerBindings(
     const gles2::ContextState* prev_state) const {
   PessimisticallyResetGrContext();
 }
 
-void RasterDecoderContextState::RestoreActiveTextureUnitBinding(
+void SharedContextState::RestoreActiveTextureUnitBinding(
     unsigned int target) const {
   PessimisticallyResetGrContext();
 }
 
-void RasterDecoderContextState::RestoreBufferBinding(unsigned int target) {
+void SharedContextState::RestoreBufferBinding(unsigned int target) {
   PessimisticallyResetGrContext();
   if (target == GL_PIXEL_PACK_BUFFER) {
     context_state_->UpdatePackParameters();
@@ -315,43 +313,41 @@ void RasterDecoderContextState::RestoreBufferBinding(unsigned int target) {
   context_state_->api()->glBindBufferFn(target, 0);
 }
 
-void RasterDecoderContextState::RestoreBufferBindings() const {
+void SharedContextState::RestoreBufferBindings() const {
   PessimisticallyResetGrContext();
   context_state_->RestoreBufferBindings();
 }
 
-void RasterDecoderContextState::RestoreFramebufferBindings() const {
+void SharedContextState::RestoreFramebufferBindings() const {
   PessimisticallyResetGrContext();
   context_state_->fbo_binding_for_scissor_workaround_dirty = true;
   context_state_->stencil_state_changed_since_validation = true;
 }
 
-void RasterDecoderContextState::RestoreRenderbufferBindings() {
+void SharedContextState::RestoreRenderbufferBindings() {
   PessimisticallyResetGrContext();
   context_state_->RestoreRenderbufferBindings();
 }
 
-void RasterDecoderContextState::RestoreProgramBindings() const {
+void SharedContextState::RestoreProgramBindings() const {
   PessimisticallyResetGrContext();
   context_state_->RestoreProgramSettings(nullptr, false);
 }
 
-void RasterDecoderContextState::RestoreTextureUnitBindings(
-    unsigned unit) const {
+void SharedContextState::RestoreTextureUnitBindings(unsigned unit) const {
   PessimisticallyResetGrContext();
 }
 
-void RasterDecoderContextState::RestoreVertexAttribArray(unsigned index) {
+void SharedContextState::RestoreVertexAttribArray(unsigned index) {
   NOTIMPLEMENTED();
 }
 
-void RasterDecoderContextState::RestoreAllExternalTextureBindingsIfNeeded() {
+void SharedContextState::RestoreAllExternalTextureBindingsIfNeeded() {
   PessimisticallyResetGrContext();
 }
 
-QueryManager* RasterDecoderContextState::GetQueryManager() {
+QueryManager* SharedContextState::GetQueryManager() {
   return nullptr;
 }
 
-}  // namespace raster
 }  // namespace gpu

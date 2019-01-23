@@ -94,23 +94,22 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
   }
 
   ContextResult result;
-  auto raster_decoder_context_state =
-      manager->GetRasterDecoderContextState(&result);
-  if (!raster_decoder_context_state) {
+  auto shared_context_state = manager->GetSharedContextState(&result);
+  if (!shared_context_state) {
     LOG(ERROR) << "ContextResult::kFatalFailure: "
                   "Failed to create raster decoder state.";
     DCHECK_NE(result, gpu::ContextResult::kSuccess);
     return result;
   }
 
-  if (!raster_decoder_context_state->IsGLInitialized()) {
-    if (!raster_decoder_context_state->MakeCurrent(nullptr) ||
-        !raster_decoder_context_state->InitializeGL(
+  if (!shared_context_state->IsGLInitialized()) {
+    if (!shared_context_state->MakeCurrent(nullptr) ||
+        !shared_context_state->InitializeGL(
             manager->gpu_preferences(),
             base::MakeRefCounted<gles2::FeatureInfo>(
                 manager->gpu_driver_bug_workarounds(),
                 manager->gpu_feature_info()))) {
-      LOG(ERROR) << "Failed to Initialize GL for RasterDecoderContextState";
+      LOG(ERROR) << "Failed to Initialize GL for SharedContextState";
       return ContextResult::kFatalFailure;
     }
   }
@@ -122,7 +121,7 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
       manager->mailbox_manager(), CreateMemoryTracker(init_params),
       manager->shader_translator_cache(),
       manager->framebuffer_completeness_cache(),
-      raster_decoder_context_state->feature_info(),
+      shared_context_state->feature_info(),
       init_params.attribs.bind_generates_resource, channel_->image_manager(),
       gmb_factory ? gmb_factory->AsImageFactory() : nullptr,
       /*progress_reporter=*/manager->watchdog(), manager->gpu_feature_info(),
@@ -130,16 +129,16 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
       manager->passthrough_discardable_manager(),
       manager->shared_image_manager());
 
-  surface_ = raster_decoder_context_state->surface();
-  share_group_ = raster_decoder_context_state->share_group();
+  surface_ = shared_context_state->surface();
+  share_group_ = shared_context_state->share_group();
   use_virtualized_gl_context_ =
-      raster_decoder_context_state->use_virtualized_gl_contexts;
+      shared_context_state->use_virtualized_gl_contexts();
 
   command_buffer_ = std::make_unique<CommandBufferService>(
       this, context_group_->transfer_buffer_manager());
   std::unique_ptr<raster::RasterDecoder> decoder(raster::RasterDecoder::Create(
       this, command_buffer_.get(), manager->outputter(), context_group_.get(),
-      raster_decoder_context_state));
+      shared_context_state));
 
   sync_point_client_state_ =
       channel_->sync_point_manager()->CreateSyncPointClientState(
@@ -149,9 +148,8 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
   crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"
                                                                         : "0");
 
-  scoped_refptr<gl::GLContext> context =
-      raster_decoder_context_state->context();
-  if (!raster_decoder_context_state->MakeCurrent(nullptr)) {
+  scoped_refptr<gl::GLContext> context = shared_context_state->context();
+  if (!shared_context_state->MakeCurrent(nullptr)) {
     LOG(ERROR) << "ContextResult::kTransientFailure: "
                   "Failed to make context current.";
     return gpu::ContextResult::kTransientFailure;
