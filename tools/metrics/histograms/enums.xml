@@ -51231,6 +51231,11 @@ would be helpful to identify which type is being sent.
   <int value="28" label="Language"/>
 </enum>
 
+<enum name="SystemNotificationActionType">
+  <int value="0" label="Download paused"/>
+  <int value="1" label="Download resumed"/>
+</enum>
+
 <enum name="SystemNotificationType">
   <int value="0" label="Downloads - Files"/>
   <int value="1" label="Downloads - Pages"/>

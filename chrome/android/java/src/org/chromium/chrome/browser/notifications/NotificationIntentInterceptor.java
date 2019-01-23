@@ -32,6 +32,8 @@ public class NotificationIntentInterceptor {
             "notifications.NotificationIntentInterceptor.EXTRA_INTENT_TYPE";
     private static final String EXTRA_NOTIFICATION_TYPE =
             "notifications.NotificationIntentInterceptor.EXTRA_NOTIFICATION_TYPE";
+    private static final String EXTRA_ACTION_TYPE =
+            "notifications.NotificationIntentInterceptor.EXTRA_ACTION_TYPE";
 
     /**
      * Enum that defines type of notification intent.
@@ -72,7 +74,9 @@ public class NotificationIntentInterceptor {
                     NotificationUmaTracker.getInstance().onNotificationDismiss(notificationType);
                     break;
                 case IntentType.ACTION_INTENT:
-                    // TODO(xingliu): Tracks action click event.
+                    int actionType = intent.getIntExtra(
+                            EXTRA_ACTION_TYPE, NotificationUmaTracker.ActionType.UNKNOWN);
+                    NotificationUmaTracker.getInstance().onNotificationActionClick(actionType);
                     break;
             }
 
@@ -106,6 +110,9 @@ public class NotificationIntentInterceptor {
         intent.putExtra(EXTRA_PENDING_INTENT, pendingIntent);
         intent.putExtra(EXTRA_INTENT_TYPE, intentType);
         intent.putExtra(EXTRA_NOTIFICATION_TYPE, metadata.type);
+        if (intentType == IntentType.ACTION_INTENT) {
+            intent.putExtra(EXTRA_ACTION_TYPE, intentId);
+        }
 
         // This flag ensures the broadcast is delivered with foreground priority to speed up the
         // broadcast delivery.

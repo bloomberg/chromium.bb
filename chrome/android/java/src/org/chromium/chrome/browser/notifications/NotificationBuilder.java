@@ -163,9 +163,36 @@ public class NotificationBuilder implements ChromeNotificationBuilder {
     }
 
     @Override
+    public ChromeNotificationBuilder addAction(int icon, CharSequence title,
+            PendingIntentProvider pendingIntentProvider,
+            @NotificationUmaTracker.ActionType int actionType) {
+        assert (mMetadata != null);
+        PendingIntent pendingIntent = NotificationIntentInterceptor.createInterceptPendingIntent(
+                NotificationIntentInterceptor.IntentType.ACTION_INTENT, actionType, mMetadata,
+                pendingIntentProvider);
+        addAction(icon, title, pendingIntent);
+        return this;
+    }
+
+    @Override
     public ChromeNotificationBuilder addAction(Notification.Action action) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
             mBuilder.addAction(action);
+        }
+        return this;
+    }
+
+    @Override
+    public ChromeNotificationBuilder addAction(Notification.Action action, int flags,
+            @NotificationUmaTracker.ActionType int actionType) {
+        assert (mMetadata != null);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            PendingIntent pendingIntent =
+                    NotificationIntentInterceptor.createInterceptPendingIntent(
+                            NotificationIntentInterceptor.IntentType.ACTION_INTENT, actionType,
+                            mMetadata, new PendingIntentProvider(action.actionIntent, flags));
+            action.actionIntent = pendingIntent;
+            addAction(action);
         }
         return this;
     }
