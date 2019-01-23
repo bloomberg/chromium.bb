@@ -5,21 +5,10 @@
 #ifndef CONTENT_COMMON_APPCACHE_INTERFACES_H_
 #define CONTENT_COMMON_APPCACHE_INTERFACES_H_
 
-#include <stdint.h>
-
 #include <string>
-#include <vector>
 
-#include "base/files/file_path.h"
 #include "content/common/content_export.h"
 #include "content/public/common/appcache_info.h"
-#include "mojo/public/cpp/system/message_pipe.h"
-#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
-#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
-
-namespace net {
-class URLRequest;
-}
 
 namespace content {
 
@@ -29,35 +18,6 @@ enum AppCacheLogLevel {
   APPCACHE_LOG_INFO,
   APPCACHE_LOG_WARNING,
   APPCACHE_LOG_ERROR
-};
-
-// Interface used by backend (browser-process) to talk to frontend (renderer).
-class CONTENT_EXPORT AppCacheFrontend {
- public:
-  virtual ~AppCacheFrontend() = default;
-
-  virtual void OnCacheSelected(int host_id,
-                               const blink::mojom::AppCacheInfo& info) = 0;
-  virtual void OnStatusChanged(const std::vector<int>& host_ids,
-                               blink::mojom::AppCacheStatus status) = 0;
-  virtual void OnEventRaised(const std::vector<int>& host_ids,
-                             blink::mojom::AppCacheEventID event_id) = 0;
-  virtual void OnProgressEventRaised(const std::vector<int>& host_ids,
-                                     const GURL& url,
-                                     int num_total, int num_complete) = 0;
-  virtual void OnErrorEventRaised(
-      const std::vector<int>& host_ids,
-      const blink::mojom::AppCacheErrorDetails& details) = 0;
-  virtual void OnContentBlocked(int host_id,
-                                const GURL& manifest_url) = 0;
-  virtual void OnLogMessage(int host_id, AppCacheLogLevel log_level,
-                            const std::string& message) = 0;
-  // In the network service world, we pass the URLLoaderFactory instance to be
-  // used to issue subresource requeste in the |loader_factory_pipe_handle|
-  // parameter.
-  virtual void OnSetSubresourceFactory(
-      int host_id,
-      network::mojom::URLLoaderFactoryPtr url_loader_factory) = 0;
 };
 
 // Useful string constants.
