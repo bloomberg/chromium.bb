@@ -6,9 +6,9 @@
 
 #include <memory>
 
+#include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/base/assistant_button.h"
-#include "ash/assistant/util/views_util.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ui/gfx/color_palette.h"
@@ -34,9 +34,9 @@ views::ImageButton* CreateCaptionButton(const gfx::VectorIcon& icon,
                                         int accessible_name_id,
                                         AssistantButtonId button_id,
                                         views::ButtonListener* listener) {
-  return assistant::util::CreateImageButton(
-      listener, icon, kCaptionButtonSizeDip, kVectorIconSizeDip,
-      accessible_name_id, button_id, gfx::kGoogleGrey700);
+  return AssistantButton::Create(listener, icon, kCaptionButtonSizeDip,
+                                 kVectorIconSizeDip, accessible_name_id,
+                                 button_id, gfx::kGoogleGrey700);
 }
 
 }  // namespace

@@ -20,6 +20,7 @@
 
 namespace ash {
 
+enum class AssistantButtonId;
 class AssistantViewDelegate;
 
 // AssistantWebView is a child of AssistantBubbleView which allows Assistant UI

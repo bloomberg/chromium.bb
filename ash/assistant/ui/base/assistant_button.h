@@ -8,28 +8,37 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/views/controls/button/image_button.h"
+
+namespace gfx {
+struct VectorIcon;
+}  // namespace gfx
+
+namespace views {
+class ButtonListener;
+class ImageButton;
+}  // namespace views
 
 namespace ash {
 
-// Enumeration of Assistant button ID. These values are persisted to logs.
-// Entries should not be renumbered and numeric values should never be reused.
-// Only append to this enum is allowed if more buttons will be added.
-enum class AssistantButtonId {
-  kBack = 1,
-  kClose = 2,
-  kMinimize = 3,
-  kKeyboardInputToggle = 4,
-  kVoiceInputToggle = 5,
-  kSettings = 6,
-  kMaxValue = kSettings,
-};
+enum class AssistantButtonId;
 
 class AssistantButton : public views::ImageButton,
                         public views::ButtonListener {
  public:
   AssistantButton(views::ButtonListener* listener, AssistantButtonId button_id);
   ~AssistantButton() override;
+
+  // Creates an ImageButton with the default Assistant styles.
+  static views::ImageButton* Create(views::ButtonListener* listener,
+                                    const gfx::VectorIcon& icon,
+                                    int size_in_dip,
+                                    int icon_size_in_dip,
+                                    int accessible_name_id,
+                                    AssistantButtonId button_id,
+                                    SkColor icon_color = gfx::kGoogleGrey700);
 
   // views::Button:
   const char* GetClassName() const override;

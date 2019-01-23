@@ -6,9 +6,9 @@
 
 #include <memory>
 
+#include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/logo_view/base_logo_view.h"
-#include "ash/assistant/util/views_util.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 

@@ -12,6 +12,7 @@
 namespace ash {
 
 class ActionView;
+enum class AssistantButtonId;
 class AssistantViewDelegate;
 class BaseLogoView;
 
