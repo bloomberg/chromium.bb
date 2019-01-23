@@ -663,6 +663,25 @@
       },
     },
   },
+  'monochrome_public_test_ar_apk': {
+    'modifications': {
+      # chromium.android
+      # We need to match the Playstore version as well because AR tests fail on
+      # old versions of the Playstore.
+      'Oreo Phone Tester': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'OPR3.170623.008',
+              'device_playstore_version': '12.8.23-all',
+              'device_type': 'marlin',
+              'os': 'Android',
+            },
+          ],
+        },
+      },
+    },
+  },
   'nacl_helper_nonsfi_unittests': {
     'remove_from': [
       # chromium.memory
