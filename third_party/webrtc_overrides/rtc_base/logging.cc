@@ -58,32 +58,6 @@ base::subtle::Atomic32 g_init_logging_delegate_thread_id = 0;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
-// Constant Labels
-/////////////////////////////////////////////////////////////////////////////
-
-const char* FindLabel(int value, const ConstantLabel entries[]) {
-  for (int i = 0; entries[i].label; ++i) {
-    if (value == entries[i].value)
-      return entries[i].label;
-  }
-  return 0;
-}
-
-std::string ErrorName(int err, const ConstantLabel* err_table) {
-  if (err == 0)
-    return "No error";
-
-  if (err_table != 0) {
-    if (const char* value = FindLabel(err, err_table))
-      return value;
-  }
-
-  char buffer[16];
-  base::snprintf(buffer, sizeof(buffer), "0x%08x", err);
-  return buffer;
-}
-
-/////////////////////////////////////////////////////////////////////////////
 // Log helper functions
 /////////////////////////////////////////////////////////////////////////////
 
