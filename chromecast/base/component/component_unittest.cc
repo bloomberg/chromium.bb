@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromecast {
@@ -153,18 +154,27 @@ class ComponentC : public Component<ComponentC> {
   ComponentB::Dependency b_;
 };
 
+std::string DeathRegex(const std::string& regex) {
+#if defined(OS_ANDROID)
+  return "";
+#else
+  return regex;
+#endif
+}
+
 #if (!defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)) && GTEST_HAS_DEATH_TEST
 TEST_F(ComponentDeathTest, SelfDependency) {
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   ComponentA a;
-  EXPECT_DEATH(a.MakeSelfDependency(), "Circular dependency");
+  EXPECT_DEATH(a.MakeSelfDependency(), DeathRegex("Circular dependency"));
 }
 
 TEST_F(ComponentDeathTest, CircularDependency) {
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   ComponentA a;
   ComponentB b(a.GetRef());
-  EXPECT_DEATH(a.MakeCircularDependency(b.GetRef()), "Circular dependency");
+  EXPECT_DEATH(a.MakeCircularDependency(b.GetRef()),
+               DeathRegex("Circular dependency"));
 }
 
 TEST_F(ComponentDeathTest, TransitiveCircularDependency) {
@@ -173,7 +183,7 @@ TEST_F(ComponentDeathTest, TransitiveCircularDependency) {
   ComponentB b(a.GetRef());
   ComponentC c(b.GetRef());
   EXPECT_DEATH(a.MakeTransitiveCircularDependency(c.GetRef()),
-               "Circular dependency");
+               DeathRegex("Circular dependency"));
 }
 #endif  // (!defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)) &&
         //     GTEST_HAS_DEATH_TEST
