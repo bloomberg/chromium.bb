@@ -371,6 +371,8 @@ jumbo_source_set("browser") {
     "appcache/appcache_job.h",
     "appcache/appcache_manifest_parser.cc",
     "appcache/appcache_manifest_parser.h",
+    "appcache/appcache_namespace.cc",
+    "appcache/appcache_namespace.h",
     "appcache/appcache_navigation_handle.cc",
     "appcache/appcache_navigation_handle.h",
     "appcache/appcache_navigation_handle_core.cc",
