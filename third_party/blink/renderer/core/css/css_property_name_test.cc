@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/css_property_name.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/properties/css_property.h"
 
 namespace blink {
 
@@ -45,6 +46,11 @@ TEST(CSSPropertyNameTest, From) {
 
   EXPECT_EQ(*CSSPropertyName::From("color"), CSSPropertyName(CSSPropertyColor));
   EXPECT_EQ(*CSSPropertyName::From("--x"), CSSPropertyName("--x"));
+}
+
+TEST(CSSPropertyNameTest, FromNativeCSSProperty) {
+  CSSPropertyName name = GetCSSPropertyFontSize().GetCSSPropertyName();
+  EXPECT_EQ(CSSPropertyName(CSSPropertyFontSize), name);
 }
 
 }  // namespace blink
