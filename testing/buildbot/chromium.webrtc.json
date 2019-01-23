@@ -38,6 +38,18 @@
     "gtest_tests": [
       {
         "args": [
+          "--gtest_filter=WebRtcApprtcBrowserTest.*",
+          "--run-manual",
+          "--test-launcher-jobs=1"
+        ],
+        "name": "browser_tests_apprtc",
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc_functional.browser_tests.filter",
           "--run-manual",
           "--test-launcher-jobs=1"
@@ -47,17 +59,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--gtest_filter=WebRtcApprtcBrowserTest.*",
-          "--run-manual",
-          "--test-launcher-jobs=1"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "browser_tests_apprtc"
       },
       {
         "args": [
@@ -141,6 +142,18 @@
     "gtest_tests": [
       {
         "args": [
+          "--gtest_filter=WebRtcApprtcBrowserTest.*",
+          "--run-manual",
+          "--test-launcher-jobs=1"
+        ],
+        "name": "browser_tests_apprtc",
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc_functional.browser_tests.filter",
           "--run-manual",
           "--test-launcher-jobs=1"
@@ -150,17 +163,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--gtest_filter=WebRtcApprtcBrowserTest.*",
-          "--run-manual",
-          "--test-launcher-jobs=1"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "browser_tests_apprtc"
       },
       {
         "args": [
@@ -244,6 +246,18 @@
     "gtest_tests": [
       {
         "args": [
+          "--gtest_filter=WebRtcApprtcBrowserTest.*",
+          "--run-manual",
+          "--test-launcher-jobs=1"
+        ],
+        "name": "browser_tests_apprtc",
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc_functional.browser_tests.filter",
           "--run-manual",
           "--test-launcher-jobs=1"
@@ -253,17 +267,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--gtest_filter=WebRtcApprtcBrowserTest.*",
-          "--run-manual",
-          "--test-launcher-jobs=1"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "browser_tests_apprtc"
       },
       {
         "args": [
@@ -340,6 +343,18 @@
     "gtest_tests": [
       {
         "args": [
+          "--gtest_filter=WebRtcApprtcBrowserTest.*",
+          "--run-manual",
+          "--test-launcher-jobs=1"
+        ],
+        "name": "browser_tests_apprtc",
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc_functional.browser_tests.filter",
           "--run-manual",
           "--test-launcher-jobs=1"
@@ -349,17 +364,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--gtest_filter=WebRtcApprtcBrowserTest.*",
-          "--run-manual",
-          "--test-launcher-jobs=1"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "browser_tests_apprtc"
       },
       {
         "args": [
@@ -436,6 +440,18 @@
     "gtest_tests": [
       {
         "args": [
+          "--gtest_filter=WebRtcApprtcBrowserTest.*",
+          "--run-manual",
+          "--test-launcher-jobs=1"
+        ],
+        "name": "browser_tests_apprtc",
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc_functional.browser_tests.filter",
           "--run-manual",
           "--test-launcher-jobs=1"
@@ -445,17 +461,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--gtest_filter=WebRtcApprtcBrowserTest.*",
-          "--run-manual",
-          "--test-launcher-jobs=1"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "browser_tests_apprtc"
       },
       {
         "args": [
