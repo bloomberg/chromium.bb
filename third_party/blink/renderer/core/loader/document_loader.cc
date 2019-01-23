@@ -560,17 +560,10 @@ bool DocumentLoader::RedirectReceived(
   const KURL& request_url = request_.Url();
   navigation_timing_info_->AddRedirect(redirect_response, request_url);
 
-  // If the redirecting url is not allowed to display content from the target
-  // origin, then block the redirect.
-  scoped_refptr<const SecurityOrigin> redirecting_origin =
-      SecurityOrigin::Create(redirect_response.CurrentRequestUrl());
-  if (!redirecting_origin->CanDisplay(request_url)) {
-    frame_->Console().AddMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, kErrorMessageLevel,
-        "Not allowed to load local resource: " + request_url.GetString()));
-    fetcher_->StopFetching();
-    return false;
-  }
+  // Browser process should have already checked that redirecting url is
+  // allowed to display content from the target origin.
+  CHECK(SecurityOrigin::Create(redirect_response.CurrentRequestUrl())
+            ->CanDisplay(request_url));
 
   DCHECK(!GetTiming().FetchStart().is_null());
   AppendRedirect(request_url);
