@@ -44,6 +44,8 @@ if (enable_pdf) {
     ]
 
     sources = [
+      "accessibility.cc",
+      "accessibility.h",
       "chunk_stream.h",
       "document_loader.h",
       "document_loader_impl.cc",
@@ -174,6 +176,7 @@ if (enable_pdf) {
         "//third_party/pdfium",
       ]
       sources += [
+        "pdfium/accessibility_unittest.cc",
         "pdfium/findtext_unittest.cc",
         "pdfium/pdfium_engine_exports_unittest.cc",
         "pdfium/pdfium_print_unittest.cc",
