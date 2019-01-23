@@ -80,10 +80,16 @@ void BrowserAppMenuButton::SetTypeAndSeverity(
     AppMenuIconController::TypeAndSeverity type_and_severity) {
   type_and_severity_ = type_and_severity;
 
-  SetTooltipText(
-      type_and_severity_.severity == AppMenuIconController::Severity::NONE
-          ? l10n_util::GetStringUTF16(IDS_APPMENU_TOOLTIP)
-          : l10n_util::GetStringUTF16(IDS_APPMENU_TOOLTIP_UPDATE_AVAILABLE));
+  int message_id;
+  if (type_and_severity.severity == AppMenuIconController::Severity::NONE) {
+    message_id = IDS_APPMENU_TOOLTIP;
+  } else if (type_and_severity.type ==
+             AppMenuIconController::IconType::UPGRADE_NOTIFICATION) {
+    message_id = IDS_APPMENU_TOOLTIP_UPDATE_AVAILABLE;
+  } else {
+    message_id = IDS_APPMENU_TOOLTIP_ALERT;
+  }
+  SetTooltipText(l10n_util::GetStringUTF16(message_id));
   UpdateIcon();
 }
 

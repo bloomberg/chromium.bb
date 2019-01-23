@@ -574,6 +574,10 @@ Chromium is unable to recover your settings.
         Customize and control Chromium. Update is available.
       </message>
 
+      <message name="IDS_APPMENU_TOOLTIP_ALERT" desc="The tooltip to show for the browser menu when a non-update alert is displayed">
+        Customize and control Chromium. Something needs your attention - click for details.
+      </message>
+
       <message name="IDS_OPEN_IN_CHROME" desc="The text label of the Open in Chrome menu item for the Hosted App app menu">
         &amp;Open in Chromium
       </message>
