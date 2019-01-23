@@ -231,7 +231,8 @@ TEST_F(SearchSuggestLoaderImplTest, NetworkErrorIsTransient) {
   loop.Run();
 }
 
-TEST_F(SearchSuggestLoaderImplTest, InvalidJsonErrorIsFatal) {
+// Flaky, see https://crbug.com/923953.
+TEST_F(SearchSuggestLoaderImplTest, DISABLED_InvalidJsonErrorIsFatal) {
   SetUpResponseWithData(kMinimalValidResponse + std::string(")"));
 
   base::MockCallback<SearchSuggestLoader::SearchSuggestionsCallback> callback;
