@@ -13,11 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_error_controller_factory.h"
-#include "chrome/browser/signin/signin_global_error.h"
-#include "chrome/browser/signin/signin_global_error_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -26,9 +22,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/identity_utils.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/user_manager/user_manager.h"
@@ -198,12 +191,16 @@ void EnableSyncFromPromo(
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 std::string GetDisplayEmail(Profile* profile, const std::string& account_id) {
-  AccountTrackerService* account_tracker =
-      AccountTrackerServiceFactory::GetForProfile(profile);
-  std::string email = account_tracker->GetAccountInfo(account_id).email;
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  std::string email =
+      identity_manager
+          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+          ->email;
   if (email.empty()) {
-    DCHECK_EQ(AccountTrackerService::MIGRATION_NOT_STARTED,
-              account_tracker->GetMigrationState());
+    DCHECK_EQ(identity::IdentityManager::AccountIdMigrationState::
+                  MIGRATION_NOT_STARTED,
+              identity_manager->GetAccountIdMigrationState());
     return account_id;
   }
   return email;
