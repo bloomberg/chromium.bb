@@ -238,6 +238,11 @@ bool PasswordStoreDefault::CommitTransaction() {
   return false;
 }
 
+bool PasswordStoreDefault::ReadAllLogins(PrimaryKeyToFormMap* key_to_form_map) {
+  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
+  return login_db_ && login_db_->GetAllLogins(key_to_form_map);
+}
+
 syncer::SyncMetadataStore* PasswordStoreDefault::GetMetadataStore() {
   return login_db_.get();
 }

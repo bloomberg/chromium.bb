@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_SYNC_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_SYNC_H_
 
+#include <map>
 #include <memory>
 #include <vector>
 
@@ -21,6 +22,9 @@ class SyncMetadataStore;
 }
 
 namespace password_manager {
+
+using PrimaryKeyToFormMap =
+    std::map<int, std::unique_ptr<autofill::PasswordForm>>;
 
 // This enum is used to determine result status when deleting undecryptable
 // logins from database.
@@ -39,16 +43,9 @@ class PasswordStoreSync {
  public:
   PasswordStoreSync();
 
-  // Overwrites |forms| with all stored non-blacklisted credentials. Returns
-  // true on success.
-  virtual bool FillAutofillableLogins(
-      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms)
-      WARN_UNUSED_RESULT = 0;
-
-  // Overwrites |forms| with all stored blacklisted credentials. Returns true on
-  // success.
-  virtual bool FillBlacklistLogins(
-      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms)
+  // Overwrites |key_to_form_map| with a map from the DB primary key to the
+  // corresponding form for all stored credentials. Returns true on success.
+  virtual bool ReadAllLogins(PrimaryKeyToFormMap* key_to_form_map)
       WARN_UNUSED_RESULT = 0;
 
   // Deletes logins that cannot be decrypted.

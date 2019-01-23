@@ -37,9 +37,6 @@ namespace password_manager {
 
 class SQLTableBuilder;
 
-using PrimaryKeyToFormMap =
-    std::map<int, std::unique_ptr<autofill::PasswordForm>>;
-
 extern const int kCurrentVersionNumber;
 extern const int kCompatibleVersionNumber;
 
@@ -144,6 +141,9 @@ class LoginDatabase : public syncer::SyncMetadataStore {
                                base::Time end,
                                PrimaryKeyToFormMap* key_to_form_map)
       WARN_UNUSED_RESULT;
+
+  // Gets the complete list of all credentials.
+  bool GetAllLogins(PrimaryKeyToFormMap* key_to_form_map) WARN_UNUSED_RESULT;
 
   // Gets the complete list of not blacklisted credentials.
   bool GetAutofillableLogins(

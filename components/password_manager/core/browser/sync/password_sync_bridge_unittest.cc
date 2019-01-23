@@ -79,10 +79,7 @@ class MockPasswordStoreSync : public PasswordStoreSync {
   MockPasswordStoreSync() = default;
   ~MockPasswordStoreSync() = default;
 
-  MOCK_METHOD1(FillAutofillableLogins,
-               bool(std::vector<std::unique_ptr<autofill::PasswordForm>>*));
-  MOCK_METHOD1(FillBlacklistLogins,
-               bool(std::vector<std::unique_ptr<autofill::PasswordForm>>*));
+  MOCK_METHOD1(ReadAllLogins, bool(PrimaryKeyToFormMap*));
   MOCK_METHOD0(DeleteUndecryptableLogins, DatabaseCleanupResult());
   MOCK_METHOD1(AddLoginSync,
                PasswordStoreChangeList(const autofill::PasswordForm&));

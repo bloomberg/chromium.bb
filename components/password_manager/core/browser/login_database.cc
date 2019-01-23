@@ -1424,6 +1424,16 @@ bool LoginDatabase::GetLoginsSyncedBetween(
   return StatementToForms(&s, nullptr, key_to_form_map);
 }
 
+bool LoginDatabase::GetAllLogins(PrimaryKeyToFormMap* key_to_form_map) {
+  DCHECK(key_to_form_map);
+  key_to_form_map->clear();
+
+  sql::Statement s(
+      db_.GetCachedStatement(SQL_FROM_HERE, "SELECT * FROM logins"));
+
+  return StatementToForms(&s, nullptr, key_to_form_map);
+}
+
 bool LoginDatabase::GetAutofillableLogins(
     std::vector<std::unique_ptr<PasswordForm>>* forms) {
   return GetAllLoginsWithBlacklistSetting(false, forms);
