@@ -598,8 +598,6 @@ check_targets = [
   "//third_party/yara/*",
   "//third_party/yasm/*",
   "//third_party/zlib/*",
-  "//third_party/webrtc/*",
-  "//third_party/webrtc_overrides/*",
   "//third_party/woff2/*",
 
   "//tools/*",
