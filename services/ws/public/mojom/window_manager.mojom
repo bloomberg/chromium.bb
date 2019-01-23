@@ -70,6 +70,9 @@ interface WindowManager {
   // "com.google.Photos". Type: mojom::String.
   const string kArcPackageName_Property = "prop:arc-package-name";
 
+  // The aspect ratio to be kept. Type: gfx::SizeF.
+  const string kAspectRatio_Property = "prop:aspect-ratio";
+
   // The accessibility ui::AXTreeID for a views::Widget.
   // TODO(dmazzoni): Convert to base::UnguessableToken. https://crbug.com/881986
   // Type: mojom::String
@@ -98,6 +101,10 @@ interface WindowManager {
   // Used to control the color of the window frame. Type: SkColor.
   const string kFrameActiveColor_Property = "prop:frame-active-color";
   const string kFrameInactiveColor_Property = "prop:frame-inactive-color";
+
+  // The window's maximum size as defined by its content. Maps to
+  // aura::client::kMaximumSize_Property. Type: gfx::Size.
+  const string kMaximumSize_Property = "prop:maximum-size";
 
   // The window's minimum size as defined by its content. Maps to
   // aura::client::kMinimumSize_Property. Type: gfx::Size.

@@ -15,6 +15,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/size_f.h"
 
 namespace mojo {
 
@@ -66,6 +67,45 @@ std::vector<uint8_t> TypeConverter<std::vector<uint8_t>, gfx::Size>::Convert(
   vec[5] = (input.height() >> 16) & 0xFF;
   vec[6] = (input.height() >> 8) & 0xFF;
   vec[7] = input.height() & 0xFF;
+  return vec;
+}
+
+namespace {
+
+union float2bytes {
+  float f;
+  uint32_t i;
+};
+
+}  // namespace
+
+// static
+gfx::SizeF TypeConverter<gfx::SizeF, std::vector<uint8_t>>::Convert(
+    const std::vector<uint8_t>& input) {
+  if (input.size() != 8)
+    return gfx::SizeF();
+
+  float2bytes width, height;
+  width.i = input[0] << 24 | input[1] << 16 | input[2] << 8 | input[3];
+  height.i = input[4] << 24 | input[5] << 16 | input[6] << 8 | input[7];
+  return gfx::SizeF(width.f, height.f);
+}
+
+// static
+std::vector<uint8_t> TypeConverter<std::vector<uint8_t>, gfx::SizeF>::Convert(
+    const gfx::SizeF& input) {
+  std::vector<uint8_t> vec(8);
+  float2bytes width, height;
+  width.f = input.width();
+  height.f = input.height();
+  vec[0] = (width.i >> 24) & 0xFF;
+  vec[1] = (width.i >> 16) & 0xFF;
+  vec[2] = (width.i >> 8) & 0xFF;
+  vec[3] = width.i & 0xFF;
+  vec[4] = (height.i >> 24) & 0xFF;
+  vec[5] = (height.i >> 16) & 0xFF;
+  vec[6] = (height.i >> 8) & 0xFF;
+  vec[7] = height.i & 0xFF;
   return vec;
 }
 

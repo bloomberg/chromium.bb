@@ -958,6 +958,11 @@ void DesktopWindowTreeHostMus::SetOpacity(float opacity) {
   WindowTreeHostMus::SetOpacity(opacity);
 }
 
+void DesktopWindowTreeHostMus::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
+  window()->SetProperty(aura::client::kAspectRatio,
+                        new gfx::SizeF(aspect_ratio));
+}
+
 void DesktopWindowTreeHostMus::SetWindowIcons(const gfx::ImageSkia& window_icon,
                                               const gfx::ImageSkia& app_icon) {
   NativeWidgetAura::AssignIconToAuraWindow(window(), window_icon, app_icon);

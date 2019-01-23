@@ -414,6 +414,12 @@ void DesktopWindowTreeHostPlatform::SetOpacity(float opacity) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
+void DesktopWindowTreeHostPlatform::SetAspectRatio(
+    const gfx::SizeF& aspect_ratio) {
+  // TODO: needs PlatformWindow support.
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
 void DesktopWindowTreeHostPlatform::SetWindowIcons(
     const gfx::ImageSkia& window_icon,
     const gfx::ImageSkia& app_icon) {

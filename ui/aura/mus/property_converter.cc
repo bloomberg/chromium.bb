@@ -91,12 +91,16 @@ PropertyConverter::PropertyConverter() {
                        ws::mojom::WindowManager::kRestoreBounds_Property);
   RegisterSizeProperty(client::kPreferredSize,
                        ws::mojom::WindowManager::kPreferredSize_Property);
+  RegisterSizeProperty(client::kMaximumSize,
+                       ws::mojom::WindowManager::kMaximumSize_Property);
   RegisterSizeProperty(client::kMinimumSize,
                        ws::mojom::WindowManager::kMinimumSize_Property);
   RegisterStringProperty(client::kNameKey,
                          ws::mojom::WindowManager::kName_Property);
   RegisterString16Property(client::kTitleKey,
                            ws::mojom::WindowManager::kWindowTitle_Property);
+  RegisterSizeFProperty(client::kAspectRatio,
+                        ws::mojom::WindowManager::kAspectRatio_Property);
   RegisterPrimitiveProperty(
       client::kWindowCornerRadiusKey,
       ws::mojom::WindowManager::kWindowCornerRadius_Property,
@@ -136,6 +140,11 @@ const void* PropertyConverter::GetPropertyKeyFromTransportName(
   for (const auto& size_property : size_properties_) {
     if (size_property.second == transport_name)
       return size_property.first->name;
+  }
+
+  for (const auto& size_f_property : size_f_properties_) {
+    if (size_f_property.second == transport_name)
+      return size_f_property.first->name;
   }
 
   for (const auto& string_property : string_properties_) {
@@ -201,6 +210,12 @@ bool PropertyConverter::ConvertPropertyForTransport(
     return true;
   }
 
+  auto* size_f_key = static_cast<const WindowProperty<gfx::SizeF*>*>(key);
+  if (size_f_properties_.count(size_f_key) > 0) {
+    *transport_value = GetArray(window, size_f_key);
+    return true;
+  }
+
   auto* string_key = static_cast<const WindowProperty<std::string*>*>(key);
   if (string_properties_.count(string_key) > 0) {
     *transport_value = GetArray(window, string_key);
@@ -253,6 +268,10 @@ std::string PropertyConverter::GetTransportNameForPropertyKey(const void* key) {
   auto* size_key = static_cast<const WindowProperty<gfx::Size*>*>(key);
   if (size_properties_.count(size_key) > 0)
     return size_properties_[size_key];
+
+  auto* size_f_key = static_cast<const WindowProperty<gfx::SizeF*>*>(key);
+  if (size_f_properties_.count(size_f_key) > 0)
+    return size_f_properties_[size_f_key];
 
   auto* string_key = static_cast<const WindowProperty<std::string*>*>(key);
   if (string_properties_.count(string_key) > 0)
@@ -331,6 +350,18 @@ void PropertyConverter::SetPropertyFromTransportValue(
       }
       const gfx::Size value = mojo::ConvertTo<gfx::Size>(*data);
       window->SetProperty(size_property.first, new gfx::Size(value));
+      return;
+    }
+  }
+
+  for (const auto& size_f_property : size_f_properties_) {
+    if (size_f_property.second == transport_name) {
+      if (data->size() != 8u) {
+        DVLOG(2) << "Property size mismatch (gfx::Size): " << transport_name;
+        return;
+      }
+      const gfx::SizeF value = mojo::ConvertTo<gfx::SizeF>(*data);
+      window->SetProperty(size_f_property.first, new gfx::SizeF(value));
       return;
     }
   }
@@ -433,6 +464,15 @@ void PropertyConverter::RegisterSizeProperty(
   DCHECK(!IsTransportNameRegistered(transport_name))
       << "Property already registered: " << transport_name;
   size_properties_[property] = transport_name;
+  transport_names_.insert(transport_name);
+}
+
+void PropertyConverter::RegisterSizeFProperty(
+    const WindowProperty<gfx::SizeF*>* property,
+    const char* transport_name) {
+  DCHECK(!IsTransportNameRegistered(transport_name))
+      << "Property already registered: " << transport_name;
+  size_f_properties_[property] = transport_name;
   transport_names_.insert(transport_name);
 }
 

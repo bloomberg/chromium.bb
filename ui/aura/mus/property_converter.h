@@ -112,6 +112,8 @@ class AURA_EXPORT PropertyConverter {
                             const char* transport_name);
   void RegisterSizeProperty(const WindowProperty<gfx::Size*>* property,
                             const char* transport_name);
+  void RegisterSizeFProperty(const WindowProperty<gfx::SizeF*>* property,
+                             const char* transport_name);
   void RegisterStringProperty(const WindowProperty<std::string*>* property,
                               const char* transport_name);
   void RegisterString16Property(const WindowProperty<base::string16*>* property,
@@ -165,6 +167,7 @@ class AURA_EXPORT PropertyConverter {
       image_properties_;
   std::map<const WindowProperty<gfx::Rect*>*, const char*> rect_properties_;
   std::map<const WindowProperty<gfx::Size*>*, const char*> size_properties_;
+  std::map<const WindowProperty<gfx::SizeF*>*, const char*> size_f_properties_;
   std::map<const WindowProperty<std::string*>*, const char*> string_properties_;
   std::map<const WindowProperty<base::string16*>*, const char*>
       string16_properties_;
