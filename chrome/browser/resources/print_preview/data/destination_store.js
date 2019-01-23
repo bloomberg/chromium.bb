@@ -1302,10 +1302,15 @@ cr.define('print_preview', function() {
       if (this.autoSelectMatchingDestination_ &&
           this.autoSelectMatchingDestination_.matchIdAndOrigin(
               eventDetail.destinationId, eventDetail.origin)) {
-        console.error(
+        console.warn(
             'Failed to fetch last used printer caps: ' +
             eventDetail.destinationId);
         this.selectDefaultDestination_();
+      } else {
+        // Log the failure
+        console.warn(
+            'Failed to fetch printer capabilities for ' +
+            eventDetail.destinationId + ' with origin ' + eventDetail.origin);
       }
     }
 

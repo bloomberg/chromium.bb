@@ -78,6 +78,16 @@ cr.define('print_preview', function() {
         this.eventTarget_.dispatchEvent(new CustomEvent(
             cloudprint.CloudPrintInterfaceEventType.PRINTER_DONE,
             {detail: printer}));
+      } else {
+        this.eventTarget_.dispatchEvent(new CustomEvent(
+            cloudprint.CloudPrintInterfaceEventType.PRINTER_FAILED, {
+              detail: {
+                origin: origin,
+                destinationId: printerId,
+                status: 200,
+                message: 'Unknown printer',
+              },
+            }));
       }
     }
   }

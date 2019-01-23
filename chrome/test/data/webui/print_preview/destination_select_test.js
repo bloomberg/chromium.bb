@@ -13,6 +13,7 @@ cr.define('destination_select_test', function() {
     SystemDefaultPrinterPolicy: 'system default printer policy',
     KioskModeSelectsFirstPrinter: 'kiosk mode selects first printer',
     NoPrintersShowsError: 'no printers shows error',
+    UnreachableRecentCloudPrinter: 'unreachable recent cloud printer',
   };
 
   const suiteName = 'DestinationSelectTests';
@@ -56,9 +57,12 @@ cr.define('destination_select_test', function() {
       nativeLayer.setInitialSettings(initialSettings);
       nativeLayer.setLocalDestinations(localDestinations);
       print_preview.NativeLayer.setInstance(nativeLayer);
+      const cloudPrintInterface = new print_preview.CloudPrintInterfaceStub();
+      cloudprint.setCloudPrintInterfaceForTesting(cloudPrintInterface);
       PolymerTest.clearBody();
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);
+      cr.webUIListenerCallback('use-cloud-print', 'cloudprint url', false);
 
       return nativeLayer.whenCalled('getInitialSettings').then(() => {
         page.destinationStore_.addEventListener(
@@ -87,6 +91,7 @@ cr.define('destination_select_test', function() {
         // Check that the throbber is hidden and the dropdown is shown.
         assertTrue(destinationSettings.$$('.throbber-container').hidden);
         assertFalse(destinationSelect.hidden);
+        assertFalse(destinationSelect.disabled);
 
         const options = destinationSelect.shadowRoot.querySelectorAll('option');
         const selectedOption =
@@ -303,6 +308,30 @@ cr.define('destination_select_test', function() {
             const selected = destinationSelect.$$('option[selected]');
             assertEquals('noDestinations', selected.value);
           });
+    });
+
+    /**
+     * Tests that if the user has a recent destination that triggers a cloud
+     * print error this does not disable the dialog.
+     */
+    test(assert(TestNames.UnreachableRecentCloudPrinter), function() {
+      const cloudPrinter =
+          print_preview_test_utils.createDestinationWithCertificateStatus(
+              'BarDevice', 'BarName', false);
+      const recentDestination =
+          print_preview.makeRecentDestination(cloudPrinter);
+      initialSettings.serializedAppStateStr = JSON.stringify({
+        version: 2,
+        recentDestinations: [recentDestination],
+      });
+
+      return setInitialSettings().then(function(args) {
+        assertEquals(print_preview_new.State.READY, page.state);
+        assertEquals('FooDevice', args.destinationId);
+        assertEquals(print_preview.PrinterType.LOCAL, args.type);
+        assertEquals('FooDevice', page.destination_.id);
+        return assertPrinterDisplay('FooName');
+      });
     });
   });
 

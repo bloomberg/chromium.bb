@@ -592,6 +592,7 @@ PrintPreviewDestinationSelectTest = class extends NewPrintPreviewTest {
     return super.extraLibraries.concat([
       '../settings/test_util.js',
       '../test_browser_proxy.js',
+      'cloud_print_interface_stub.js',
       'native_layer_stub.js',
       'print_preview_test_utils.js',
       'destination_select_test.js',
@@ -653,6 +654,13 @@ TEST_F('PrintPreviewDestinationSelectTest', 'NoPrintersShowsError', function() {
   this.runMochaTest(destination_select_test.TestNames.NoPrintersShowsError);
 });
 GEN('#endif');
+
+TEST_F(
+    'PrintPreviewDestinationSelectTest', 'UnreachableRecentCloudPrinter',
+    function() {
+      this.runMochaTest(
+          destination_select_test.TestNames.UnreachableRecentCloudPrinter);
+    });
 
 PrintPreviewDestinationDialogTest = class extends NewPrintPreviewTest {
   /** @override */
