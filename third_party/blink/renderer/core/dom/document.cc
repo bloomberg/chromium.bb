@@ -3972,10 +3972,10 @@ void Document::writeln(const String& text,
   write("\n", entered_document);
 }
 
-void Document::write(LocalDOMWindow* calling_window,
+void Document::write(LocalDOMWindow* entered_window,
                      const Vector<String>& text,
                      ExceptionState& exception_state) {
-  DCHECK(calling_window);
+  DCHECK(entered_window);
 
   if (GetSecurityContext().RequireTrustedTypes()) {
     DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
@@ -3990,13 +3990,13 @@ void Document::write(LocalDOMWindow* calling_window,
   StringBuilder builder;
   for (const String& string : text)
     builder.Append(string);
-  write(builder.ToString(), calling_window->document(), exception_state);
+  write(builder.ToString(), entered_window->document(), exception_state);
 }
 
-void Document::writeln(LocalDOMWindow* calling_window,
+void Document::writeln(LocalDOMWindow* entered_window,
                        const Vector<String>& text,
                        ExceptionState& exception_state) {
-  DCHECK(calling_window);
+  DCHECK(entered_window);
 
   if (GetSecurityContext().RequireTrustedTypes()) {
     DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
@@ -4011,23 +4011,23 @@ void Document::writeln(LocalDOMWindow* calling_window,
   StringBuilder builder;
   for (const String& string : text)
     builder.Append(string);
-  writeln(builder.ToString(), calling_window->document(), exception_state);
+  writeln(builder.ToString(), entered_window->document(), exception_state);
 }
 
-void Document::write(LocalDOMWindow* calling_window,
+void Document::write(LocalDOMWindow* entered_window,
                      TrustedHTML* text,
                      ExceptionState& exception_state) {
-  DCHECK(calling_window);
+  DCHECK(entered_window);
   DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
-  write(text->toString(), calling_window->document(), exception_state);
+  write(text->toString(), entered_window->document(), exception_state);
 }
 
-void Document::writeln(LocalDOMWindow* calling_window,
+void Document::writeln(LocalDOMWindow* entered_window,
                        TrustedHTML* text,
                        ExceptionState& exception_state) {
-  DCHECK(calling_window);
+  DCHECK(entered_window);
   DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
-  writeln(text->toString(), calling_window->document(), exception_state);
+  writeln(text->toString(), entered_window->document(), exception_state);
 }
 
 DOMTimerCoordinator* Document::Timers() {

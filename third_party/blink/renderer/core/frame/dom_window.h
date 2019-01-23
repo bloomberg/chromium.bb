@@ -109,10 +109,10 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
   DOMWindow* AnonymousIndexedGetter(uint32_t index) const;
 
   String SanitizedCrossDomainAccessErrorMessage(
-      const LocalDOMWindow* calling_window) const;
+      const LocalDOMWindow* accessing_window) const;
   String CrossDomainAccessErrorMessage(
-      const LocalDOMWindow* calling_window) const;
-  bool IsInsecureScriptAccess(LocalDOMWindow& calling_window, const KURL&);
+      const LocalDOMWindow* accessing_window) const;
+  bool IsInsecureScriptAccess(LocalDOMWindow& accessing_window, const KURL&);
 
   // FIXME: When this DOMWindow is no longer the active DOMWindow (i.e.,
   // when its document is no longer the document that is displayed in its
