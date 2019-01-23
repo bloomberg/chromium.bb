@@ -1748,6 +1748,17 @@ if (enable_java_templates) {
         "--extras",
         "@FileArg($_rebased_build_config:extra_android_manifests)",
       ]
+
+      if (defined(invoker.expected_manifest)) {
+        inputs += [ invoker.expected_manifest ]
+        args += [
+          "--expected-manifest",
+          rebase_path(invoker.expected_manifest, root_build_dir),
+        ]
+        if (check_android_configuration) {
+          args += [ "--verify-expected-manifest" ]
+        }
+      }
     }
   }
 
