@@ -19,9 +19,14 @@ from chromite.lib import osutils
 
 DLC_META_DIR = 'opt/google/dlc/'
 DLC_IMAGE_DIR = 'build/rootfs/dlc/'
+LSB_RELEASE = 'etc/lsb-release'
+
+DLC_ID_KEY = 'DLC_ID'
+DLC_NAME_KEY = 'DLC_NAME'
 
 _SQUASHFS_TYPE = 'squashfs'
 _EXT4_TYPE = 'ext4'
+
 
 def HashFile(file_path):
   """Calculate the sha256 hash of a file.
@@ -119,6 +124,7 @@ class DlcGenerator(object):
       try:
         # Copy DLC files over to the image.
         osutils.CopyDirContents(self.src_dir, dlc_root_dir)
+        self.PrepareLsbRelease(mount_point)
 
         self.SquashOwnerships(mount_point)
       finally:
@@ -137,6 +143,7 @@ class DlcGenerator(object):
       dlc_root_dir = os.path.join(squashfs_root, self._DLC_ROOT_DIR)
       osutils.SafeMakedirs(dlc_root_dir)
       osutils.CopyDirContents(self.src_dir, dlc_root_dir)
+      self.PrepareLsbRelease(squashfs_root)
 
       self.SquashOwnerships(squashfs_root)
 
@@ -147,6 +154,25 @@ class DlcGenerator(object):
       # We changed the ownership and permissions of the squashfs_root
       # directory. Now we need to remove it manually.
       osutils.RmDir(squashfs_root, sudo=True)
+
+  def PrepareLsbRelease(self, dlc_dir):
+    """Prepare the file /etc/lsb-release in the DLC module.
+
+    This file is used dropping some identification parameters for the DLC.
+
+    Args:
+      dlc_dir: (str) The path to root directory of the DLC. e.g. mounted point
+          when we are creating the image.
+    """
+    lsb_release = os.path.join(dlc_dir, LSB_RELEASE)
+    osutils.SafeMakedirs(os.path.dirname(lsb_release))
+
+    fields = {
+        DLC_ID_KEY: self.dlc_id,
+        DLC_NAME_KEY: self.name,
+    }
+    content = ''.join(['%s=%s\n' % (k, v) for k, v in fields.items()])
+    osutils.WriteFile(lsb_release, content)
 
   def CreateImage(self):
     """Create the image and copy the DLC files to it."""

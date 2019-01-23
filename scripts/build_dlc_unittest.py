@@ -91,6 +91,16 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
     copy_dir_mock.assert_called_once_with(partial_mock.HasString('src'),
                                           partial_mock.HasString('root'))
 
+  def testPrepareLsbRelease(self):
+    """Tests that lsb-release is created correctly."""
+    generator = self.GetDlcGenerator()
+    dlc_dir = os.path.join(self.tempdir, 'dlc_dir')
+
+    generator.PrepareLsbRelease(dlc_dir)
+
+    self.assertEqual(osutils.ReadFile(os.path.join(dlc_dir, 'etc/lsb-release')),
+                     'DLC_ID=%s\nDLC_NAME=%s\n' %  (_ID, _NAME))
+
   def testGetImageloaderJsonContent(self):
     """Test that GetImageloaderJsonContent returns correct content."""
     blocks = 100
