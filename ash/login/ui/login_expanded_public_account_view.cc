@@ -87,6 +87,36 @@ views::Label* CreateLabel(const base::string16& text, SkColor color) {
   return label;
 }
 
+class LoginExpandedPublicAccountEventHandler : public ui::EventHandler {
+ public:
+  explicit LoginExpandedPublicAccountEventHandler(
+      LoginExpandedPublicAccountView* view)
+      : view_(view) {
+    Shell::Get()->AddPreTargetHandler(this);
+  }
+  ~LoginExpandedPublicAccountEventHandler() override {
+    Shell::Get()->RemovePreTargetHandler(this);
+  }
+
+ private:
+  // ui::EventHandler:
+  void OnMouseEvent(ui::MouseEvent* event) override {
+    if (event->type() == ui::ET_MOUSE_PRESSED)
+      view_->ProcessPressedEvent(event->AsLocatedEvent());
+  }
+  void OnGestureEvent(ui::GestureEvent* event) override {
+    if ((event->type() == ui::ET_GESTURE_TAP ||
+         event->type() == ui::ET_GESTURE_TAP_DOWN)) {
+      view_->ProcessPressedEvent(event->AsLocatedEvent());
+    }
+  }
+  void OnKeyEvent(ui::KeyEvent* event) override { view_->OnKeyEvent(event); }
+
+  LoginExpandedPublicAccountView* view_;
+
+  DISALLOW_COPY_AND_ASSIGN(LoginExpandedPublicAccountEventHandler);
+};
+
 }  // namespace
 
 // Button with text on the left side and an icon on the right side.
@@ -648,8 +678,9 @@ LoginExpandedPublicAccountView::TestApi::monitoring_warning_icon() {
 LoginExpandedPublicAccountView::LoginExpandedPublicAccountView(
     const OnPublicSessionViewDismissed& on_dismissed)
     : NonAccessibleView(kLoginExpandedPublicAccountViewClassName),
-      on_dismissed_(on_dismissed) {
-  Shell::Get()->AddPreTargetHandler(this);
+      on_dismissed_(on_dismissed),
+      event_handler_(
+          std::make_unique<LoginExpandedPublicAccountEventHandler>(this)) {
   SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
   SetPreferredSize(gfx::Size(kExpandedViewWidthDp, kExpandedViewHeightDp));
@@ -681,9 +712,7 @@ LoginExpandedPublicAccountView::LoginExpandedPublicAccountView(
   AddChildView(right_pane_);
 }
 
-LoginExpandedPublicAccountView::~LoginExpandedPublicAccountView() {
-  Shell::Get()->RemovePreTargetHandler(this);
-}
+LoginExpandedPublicAccountView::~LoginExpandedPublicAccountView() = default;
 
 void LoginExpandedPublicAccountView::ProcessPressedEvent(
     const ui::LocatedEvent* event) {
@@ -757,18 +786,6 @@ void LoginExpandedPublicAccountView::OnPaint(gfx::Canvas* canvas) {
   flags.setColor(kPublicSessionBackgroundColor);
   flags.setAntiAlias(true);
   canvas->DrawRoundRect(GetContentsBounds(), kRoundRectCornerRadiusDp, flags);
-}
-
-void LoginExpandedPublicAccountView::OnMouseEvent(ui::MouseEvent* event) {
-  if (event->type() == ui::ET_MOUSE_PRESSED)
-    ProcessPressedEvent(event->AsLocatedEvent());
-}
-
-void LoginExpandedPublicAccountView::OnGestureEvent(ui::GestureEvent* event) {
-  if ((event->type() == ui::ET_GESTURE_TAP ||
-       event->type() == ui::ET_GESTURE_TAP_DOWN)) {
-    ProcessPressedEvent(event->AsLocatedEvent());
-  }
 }
 
 void LoginExpandedPublicAccountView::OnKeyEvent(ui::KeyEvent* event) {

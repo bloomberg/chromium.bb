@@ -34,7 +34,9 @@ constexpr char kKeyboardNameForItem1[] = "keyboard1";
 constexpr char kKeyboardIdForItem2[] = "keyboard_id2";
 constexpr char kKeyboardNameForItem2[] = "keyboard2";
 
-class LoginExpandedPublicAccountViewTest : public LoginTestBase {
+class LoginExpandedPublicAccountViewTest
+    : public LoginTestBase,
+      public ::testing::WithParamInterface<const char*> {
  protected:
   LoginExpandedPublicAccountViewTest() = default;
   ~LoginExpandedPublicAccountViewTest() override = default;
@@ -95,9 +97,16 @@ class LoginExpandedPublicAccountViewTest : public LoginTestBase {
   }
 
   void TapOnView(views::View* tap_target) {
-    GetEventGenerator()->MoveMouseTo(
-        tap_target->GetBoundsInScreen().CenterPoint());
-    GetEventGenerator()->ClickLeftButton();
+    if (GetParam() == std::string("mouse")) {
+      GetEventGenerator()->MoveMouseTo(
+          tap_target->GetBoundsInScreen().CenterPoint());
+      GetEventGenerator()->ClickLeftButton();
+    } else {
+      GetEventGenerator()->MoveTouch(
+          tap_target->GetBoundsInScreen().CenterPoint());
+      GetEventGenerator()->PressTouch();
+      GetEventGenerator()->ReleaseTouch();
+    }
   }
 
   mojom::LoginUserInfoPtr user_;
@@ -114,7 +123,7 @@ class LoginExpandedPublicAccountViewTest : public LoginTestBase {
 }  // namespace
 
 // Verifies toggle advanced view will update the layout correctly.
-TEST_F(LoginExpandedPublicAccountViewTest, ToggleAdvancedView) {
+TEST_P(LoginExpandedPublicAccountViewTest, ToggleAdvancedView) {
   public_account_->SizeToPreferredSize();
   EXPECT_EQ(public_account_->width(), kBubbleTotalWidthDp);
   EXPECT_EQ(public_account_->height(), kBubbleTotalHeightDp);
@@ -142,7 +151,7 @@ TEST_F(LoginExpandedPublicAccountViewTest, ToggleAdvancedView) {
 }
 
 // Verifies warning dialog shows up correctly.
-TEST_F(LoginExpandedPublicAccountViewTest, ShowWarningDialog) {
+TEST_P(LoginExpandedPublicAccountViewTest, ShowWarningDialog) {
   LoginExpandedPublicAccountView::TestApi test_api(public_account_);
   views::StyledLabel::TestApi styled_label_test(test_api.learn_more_label());
   EXPECT_EQ(test_api.warning_dialog(), nullptr);
@@ -150,17 +159,13 @@ TEST_F(LoginExpandedPublicAccountViewTest, ShowWarningDialog) {
 
   // Tap on the learn more link.
   views::View* link_view = styled_label_test.link_targets().begin()->first;
-  GetEventGenerator()->MoveMouseTo(
-      link_view->GetBoundsInScreen().CenterPoint());
-  GetEventGenerator()->ClickLeftButton();
+  TapOnView(link_view);
   EXPECT_NE(test_api.warning_dialog(), nullptr);
   EXPECT_TRUE(test_api.warning_dialog()->IsVisible());
 
   // When warning dialog is shown, tap outside of public account expanded view
   // should not hide it.
-  GetEventGenerator()->MoveMouseTo(
-      other_view_->GetBoundsInScreen().CenterPoint());
-  GetEventGenerator()->ClickLeftButton();
+  TapOnView(other_view_);
   EXPECT_TRUE(public_account_->visible());
   EXPECT_NE(test_api.warning_dialog(), nullptr);
   EXPECT_TRUE(test_api.warning_dialog()->IsVisible());
@@ -184,7 +189,7 @@ TEST_F(LoginExpandedPublicAccountViewTest, ShowWarningDialog) {
 }
 
 // Verifies tap on submit button will try to launch public session.
-TEST_F(LoginExpandedPublicAccountViewTest, LaunchPublicSession) {
+TEST_P(LoginExpandedPublicAccountViewTest, LaunchPublicSession) {
   LoginExpandedPublicAccountView::TestApi test_api(public_account_);
 
   // Verify the language and keyboard information is populated correctly.
@@ -205,7 +210,7 @@ TEST_F(LoginExpandedPublicAccountViewTest, LaunchPublicSession) {
 }
 
 // Verifies both language and keyboard menus shows up correctly.
-TEST_F(LoginExpandedPublicAccountViewTest, ShowLanguageAndKeyboardMenu) {
+TEST_P(LoginExpandedPublicAccountViewTest, ShowLanguageAndKeyboardMenu) {
   LoginExpandedPublicAccountView::TestApi test_api(public_account_);
   EXPECT_FALSE(user_->public_account_info->show_advanced_view);
   EXPECT_FALSE(test_api.advanced_view()->visible());
@@ -248,7 +253,7 @@ TEST_F(LoginExpandedPublicAccountViewTest, ShowLanguageAndKeyboardMenu) {
   EXPECT_EQ(nullptr, test_api.keyboard_menu_view());
 }
 
-TEST_F(LoginExpandedPublicAccountViewTest, ChangeMenuSelection) {
+TEST_P(LoginExpandedPublicAccountViewTest, ChangeMenuSelection) {
   LoginExpandedPublicAccountView::TestApi test_api(public_account_);
   user_->public_account_info->show_advanced_view = true;
   public_account_->UpdateForUser(user_);
@@ -290,5 +295,9 @@ TEST_F(LoginExpandedPublicAccountViewTest, ChangeMenuSelection) {
   EXPECT_EQ(nullptr, test_api.keyboard_menu_view());
   EXPECT_EQ(test_api.selected_keyboard_item().value, kKeyboardIdForItem1);
 }
+
+INSTANTIATE_TEST_CASE_P(,
+                        LoginExpandedPublicAccountViewTest,
+                        ::testing::Values("mouse", "touch"));
 
 }  // namespace ash
