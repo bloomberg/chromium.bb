@@ -32,9 +32,7 @@
 class ImmersiveModeControllerAshTest : public TestWithBrowserView {
  public:
   ImmersiveModeControllerAshTest()
-      : TestWithBrowserView(Browser::TYPE_TABBED, false) {}
-  ImmersiveModeControllerAshTest(Browser::Type browser_type, bool hosted_app)
-      : TestWithBrowserView(browser_type, hosted_app) {}
+      : TestWithBrowserView(Browser::TYPE_TABBED) {}
   ~ImmersiveModeControllerAshTest() override {}
 
   // TestWithBrowserView override:

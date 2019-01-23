@@ -49,32 +49,6 @@ using content::RenderFrameHost;
 using content::RenderFrameHostTester;
 using content::WebContents;
 
-BrowserWithTestWindowTest::BrowserWithTestWindowTest()
-    : BrowserWithTestWindowTest(Browser::TYPE_TABBED,
-                                false,
-                                content::TestBrowserThreadBundle::DEFAULT) {}
-
-BrowserWithTestWindowTest::BrowserWithTestWindowTest(
-    content::TestBrowserThreadBundle::Options thread_bundle_options)
-    : BrowserWithTestWindowTest(Browser::TYPE_TABBED,
-                                false,
-                                thread_bundle_options) {}
-
-BrowserWithTestWindowTest::BrowserWithTestWindowTest(Browser::Type browser_type,
-                                                     bool hosted_app)
-    : BrowserWithTestWindowTest(browser_type,
-                                hosted_app,
-                                content::TestBrowserThreadBundle::DEFAULT) {}
-
-BrowserWithTestWindowTest::BrowserWithTestWindowTest(
-    Browser::Type browser_type,
-    bool hosted_app,
-    content::TestBrowserThreadBundle::Options thread_bundle_options)
-    : thread_bundle_(thread_bundle_options),
-      browser_type_(browser_type),
-      hosted_app_(hosted_app) {
-}
-
 BrowserWithTestWindowTest::~BrowserWithTestWindowTest() {}
 
 void BrowserWithTestWindowTest::SetUp() {
@@ -237,3 +211,11 @@ Browser* BrowserWithTestWindowTest::CreateBrowser(
   params.window = browser_window;
   return new Browser(params);
 }
+
+BrowserWithTestWindowTest::BrowserWithTestWindowTest(
+    std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle,
+    Browser::Type browser_type,
+    bool hosted_app)
+    : thread_bundle_(std::move(thread_bundle)),
+      browser_type_(browser_type),
+      hosted_app_(hosted_app) {}

@@ -22,8 +22,7 @@ namespace {
 
 class JsonFileSanitizerTest : public testing::Test {
  public:
-  JsonFileSanitizerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::DEFAULT) {}
+  JsonFileSanitizerTest() {}
 
  protected:
   base::FilePath CreateFilePath(const base::FilePath::StringType& file_name) {

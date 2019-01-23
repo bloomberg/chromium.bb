@@ -5,6 +5,7 @@
 #ifndef BASE_TEST_SCOPED_TASK_ENVIRONMENT_H_
 #define BASE_TEST_SCOPED_TASK_ENVIRONMENT_H_
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
@@ -126,7 +127,7 @@ class ScopedTaskEnvironment {
   template <class... ArgTypes,
             class CheckArgumentsAreValid = std::enable_if_t<
                 trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>::value>>
-  ScopedTaskEnvironment(ArgTypes... args)
+  NOINLINE ScopedTaskEnvironment(ArgTypes... args)
       : ScopedTaskEnvironment(
             trait_helpers::GetEnum<MainThreadType, MainThreadType::DEFAULT>(
                 args...),
@@ -204,9 +205,13 @@ class ScopedTaskEnvironment {
   TimeDelta NextMainThreadPendingTaskDelay() const;
 
  protected:
-  MainThreadType main_thread_type() const { return main_thread_type_; }
+  explicit ScopedTaskEnvironment(ScopedTaskEnvironment&& other);
 
-  ExecutionMode execution_control_mode() const {
+  constexpr MainThreadType main_thread_type() const {
+    return main_thread_type_;
+  }
+
+  constexpr ExecutionMode execution_control_mode() const {
     return execution_control_mode_;
   }
 
@@ -217,6 +222,8 @@ class ScopedTaskEnvironment {
   class MockTimeDomain;
   class TestTaskTracker;
 
+  // The template constructor has to be in the header but it delegates to this
+  // constructor to initialize all other members out-of-line.
   ScopedTaskEnvironment(MainThreadType main_thread_type,
                         ExecutionMode execution_control_mode,
                         NowSource now_source,
@@ -227,17 +234,17 @@ class ScopedTaskEnvironment {
   const MainThreadType main_thread_type_;
   const ExecutionMode execution_control_mode_;
 
-  const std::unique_ptr<MockTimeDomain> mock_time_domain_;
+  std::unique_ptr<MockTimeDomain> mock_time_domain_;
   std::unique_ptr<sequence_manager::SequenceManager> sequence_manager_;
 
   scoped_refptr<sequence_manager::TaskQueue> task_queue_;
 
   // Only set for instances with a MOCK_TIME MainThreadType.
-  const std::unique_ptr<Clock> mock_clock_;
+  std::unique_ptr<Clock> mock_clock_;
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
   // Enables the FileDescriptorWatcher API iff running a MainThreadType::IO.
-  const std::unique_ptr<FileDescriptorWatcher> file_descriptor_watcher_;
+  std::unique_ptr<FileDescriptorWatcher> file_descriptor_watcher_;
 #endif
 
   const TaskScheduler* task_scheduler_ = nullptr;
@@ -246,11 +253,13 @@ class ScopedTaskEnvironment {
   TestTaskTracker* const task_tracker_;
 
   // Ensures destruction of lazy TaskRunners when this is destroyed.
-  internal::ScopedLazyTaskRunnerListForTesting
+  std::unique_ptr<internal::ScopedLazyTaskRunnerListForTesting>
       scoped_lazy_task_runner_list_for_testing_;
 
   // Sets RunLoop::Run() to LOG(FATAL) if not Quit() in a timely manner.
-  RunLoop::ScopedRunTimeoutForTest run_loop_timeout_;
+  std::unique_ptr<RunLoop::ScopedRunTimeoutForTest> run_loop_timeout_;
+
+  std::unique_ptr<bool> owns_instance_ = std::make_unique<bool>(true);
 
   DISALLOW_COPY_AND_ASSIGN(ScopedTaskEnvironment);
 };

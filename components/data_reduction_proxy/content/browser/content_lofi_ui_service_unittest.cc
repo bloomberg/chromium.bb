@@ -31,10 +31,7 @@ namespace data_reduction_proxy {
 
 class ContentLoFiUIServiceTest : public content::RenderViewHostTestHarness {
  public:
-  ContentLoFiUIServiceTest()
-      : content::RenderViewHostTestHarness(
-            content::TestBrowserThreadBundle::DEFAULT),
-        callback_called_(false) {}
+  ContentLoFiUIServiceTest() : callback_called_(false) {}
 
   void RunTestOnIOThread(base::RunLoop* ui_run_loop) {
     ASSERT_TRUE(ui_run_loop);

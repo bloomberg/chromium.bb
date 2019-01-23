@@ -12,6 +12,8 @@ namespace {
 
 struct ExampleTrait {};
 
+struct ExampleTrait2 {};
+
 enum class EnumTraitA { A, B, C };
 
 enum class EnumTraitB { ONE, TWO };
@@ -39,6 +41,15 @@ struct TestTraits {
   const EnumTraitB enum_trait_b;
 };
 
+// Like TestTraits, except ExampleTrait is filtered away.
+struct FilteredTestTraits : public TestTraits {
+  template <class... ArgTypes,
+            class CheckArgumentsAreValid = std::enable_if_t<
+                trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>::value>>
+  constexpr FilteredTestTraits(ArgTypes... args)
+      : TestTraits(Exclude<ExampleTrait>::Filter(args)...) {}
+};
+
 struct RequiredEnumTestTraits {
   // List of traits that are required inputs for the constructor below.
   struct ValidTrait {
@@ -53,6 +64,22 @@ struct RequiredEnumTestTraits {
       : enum_trait_a(trait_helpers::GetEnum<EnumTraitA>(args...)) {}
 
   const EnumTraitA enum_trait_a;
+};
+
+struct OptionalEnumTestTraits {
+  // List of traits that are optional inputs for the constructor below.
+  struct ValidTrait {
+    ValidTrait(EnumTraitA);
+  };
+
+  // EnumTraitA can optionally be specified.
+  template <class... ArgTypes,
+            class CheckArgumentsAreValid = std::enable_if_t<
+                trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>::value>>
+  constexpr OptionalEnumTestTraits(ArgTypes... args)
+      : enum_trait_a(trait_helpers::GetOptionalEnum<EnumTraitA>(args...)) {}
+
+  const Optional<EnumTraitA> enum_trait_a;
 };
 
 }  // namespace
@@ -127,6 +154,15 @@ TEST(TraitsBagTest, RequiredEnum) {
   EXPECT_EQ(c.enum_trait_a, EnumTraitA::C);
 }
 
+TEST(TraitsBagTest, OptionalEnum) {
+  constexpr OptionalEnumTestTraits not_set;
+  constexpr OptionalEnumTestTraits set(EnumTraitA::B);
+
+  EXPECT_FALSE(not_set.enum_trait_a.has_value());
+  ASSERT_TRUE(set.enum_trait_a.has_value());
+  EXPECT_EQ(*set.enum_trait_a, EnumTraitA::B);
+}
+
 TEST(TraitsBagTest, ValidTraitInheritance) {
   struct ValidTraitsA {
     ValidTraitsA(EnumTraitA);
@@ -139,6 +175,47 @@ TEST(TraitsBagTest, ValidTraitInheritance) {
 
   static_assert(AreValidTraits<ValidTraitsA, EnumTraitA>(), "");
   static_assert(AreValidTraits<ValidTraitsB, EnumTraitA, EnumTraitB>(), "");
+}
+
+TEST(TraitsBagTest, Filtering) {
+  using Predicate = Exclude<ExampleTrait, EnumTraitA>;
+  static_assert(
+      std::is_same<ExampleTrait2,
+                   decltype(Predicate::Filter(ExampleTrait2{}))>::value,
+      "ExampleTrait2 should not be filtered");
+
+  static_assert(
+      std::is_same<EmptyTrait,
+                   decltype(Predicate::Filter(ExampleTrait{}))>::value,
+      "ExampleTrait should be filtered");
+
+  static_assert(std::is_same<EmptyTrait,
+                             decltype(Predicate::Filter(EnumTraitA::A))>::value,
+                "EnumTraitA should be filtered");
+
+  static_assert(
+      std::is_same<EnumTraitB,
+                   decltype(Predicate::Filter(EnumTraitB::TWO))>::value,
+      "EnumTraitB should not be filtered");
+
+  static_assert(std::is_same<EmptyTrait,
+                             decltype(Predicate::Filter(EmptyTrait{}))>::value,
+                "EmptyTrait should not be filtered");
+}
+
+TEST(TraitsBagTest, FilteredTestTraits) {
+  FilteredTestTraits filtered(ExampleTrait(), EnumTraitA::C, EnumTraitB::TWO);
+
+  // ExampleTrait should have been filtered away.
+  EXPECT_FALSE(filtered.has_example_trait);
+
+  // The other traits should have been set however.
+  EXPECT_EQ(filtered.enum_trait_a, EnumTraitA::C);
+  EXPECT_EQ(filtered.enum_trait_b, EnumTraitB::TWO);
+}
+
+TEST(TraitsBagTest, EmptyTraitIsValid) {
+  static_assert(IsValidTrait<TestTraits::ValidTrait, EmptyTrait>(), "");
 }
 
 }  // namespace trait_helpers

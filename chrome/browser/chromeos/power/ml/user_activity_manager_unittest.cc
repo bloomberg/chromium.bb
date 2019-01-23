@@ -105,7 +105,8 @@ class TestingUserActivityUkmLogger : public UserActivityUkmLogger {
 // Testing smart dim model.
 class FakeSmartDimModel : public SmartDimModel {
  public:
-  FakeSmartDimModel(const scoped_refptr<base::SequencedTaskRunner> runner)
+  explicit FakeSmartDimModel(
+      const scoped_refptr<base::SequencedTaskRunner> runner)
       : task_runner_(runner) {}
   ~FakeSmartDimModel() override = default;
 
@@ -171,8 +172,7 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
   UserActivityManagerTest()
       : ChromeRenderViewHostTestHarness(
             base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME,
-            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED,
-            content::TestBrowserThreadBundle::Options::DEFAULT),
+            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
         model_(thread_bundle()->GetMainThreadTaskRunner()) {
     fake_power_manager_client_.Init(nullptr);
     viz::mojom::VideoDetectorObserverPtr observer;

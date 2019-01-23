@@ -84,8 +84,7 @@ class AdaptiveScreenBrightnessManagerTest
   AdaptiveScreenBrightnessManagerTest()
       : ChromeRenderViewHostTestHarness(
             base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME,
-            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED,
-            content::TestBrowserThreadBundle::Options::DEFAULT) {
+            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED) {
     auto logger = std::make_unique<TestingAdaptiveScreenBrightnessUkmLogger>();
     ukm_logger_ = logger.get();
 

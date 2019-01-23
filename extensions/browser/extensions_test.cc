@@ -43,13 +43,9 @@ class ExtensionTestBrowserContext : public content::TestBrowserContext {
 
 namespace extensions {
 
-ExtensionsTest::ExtensionsTest()
-    : ExtensionsTest(content::TestBrowserThreadBundle::Options::DEFAULT) {}
-
 ExtensionsTest::ExtensionsTest(
-    content::TestBrowserThreadBundle::Options thread_options)
-    : thread_bundle_(
-          std::make_unique<content::TestBrowserThreadBundle>(thread_options)),
+    std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle)
+    : thread_bundle_(std::move(thread_bundle)),
       rvh_test_enabler_(
           std::make_unique<content::RenderViewHostTestEnabler>()) {}
 

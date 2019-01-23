@@ -315,12 +315,14 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
                                    : nullptr),
 #endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
       task_tracker_(new TestTaskTracker()),
+      scoped_lazy_task_runner_list_for_testing_(
+          std::make_unique<internal::ScopedLazyTaskRunnerListForTesting>()),
       // TODO(https://crbug.com/918724): Enable Run() timeouts even for
       // instances created with *MOCK_TIME, and determine whether the timeout
       // can be reduced from action_max_timeout() to action_timeout().
-      run_loop_timeout_(
+      run_loop_timeout_(std::make_unique<RunLoop::ScopedRunTimeoutForTest>(
           mock_time_domain_ ? TimeDelta() : TestTimeouts::action_max_timeout(),
-          BindRepeating([]() { LOG(FATAL) << "Run() timed out."; })) {
+          BindRepeating([]() { LOG(FATAL) << "Run() timed out."; }))) {
   CHECK(now_source == NowSource::REAL_TIME || mock_time_domain_)
       << "NowSource must be REAL_TIME unless we're using mock time";
   CHECK(!TaskScheduler::GetInstance())
@@ -380,7 +382,14 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
   }
 }
 
+ScopedTaskEnvironment::ScopedTaskEnvironment(ScopedTaskEnvironment&& other) =
+    default;
+
 ScopedTaskEnvironment::~ScopedTaskEnvironment() {
+  // If we've been moved then bail out.
+  if (!owns_instance_)
+    return;
+
   // Ideally this would RunLoop().RunUntilIdle() here to catch any errors or
   // infinite post loop in the remaining work but this isn't possible right now
   // because base::~MessageLoop() didn't use to do this and adding it here would

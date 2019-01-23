@@ -65,10 +65,7 @@ class RefCountedSanitizerCallback
 
 class ImageSanitizerTest : public testing::Test {
  public:
-  ImageSanitizerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::DEFAULT) {
-    InitTestDataDecoderService(/*service=*/nullptr);
-  }
+  ImageSanitizerTest() { InitTestDataDecoderService(/*service=*/nullptr); }
 
  protected:
   void InitTestDataDecoderService(

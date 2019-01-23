@@ -21,7 +21,7 @@
 class BrowserNonClientFrameViewTest : public TestWithBrowserView {
  public:
   explicit BrowserNonClientFrameViewTest(Browser::Type type)
-      : TestWithBrowserView(type, false), frame_view_(nullptr) {}
+      : TestWithBrowserView(type), frame_view_(nullptr) {}
 
   // TestWithBrowserView override:
   void SetUp() override {
