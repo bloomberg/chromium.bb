@@ -27,6 +27,12 @@ const MessageHandler = {
   Destination: {BACKGROUND: 'background', MENU_PANEL: 'menu_panel.html'},
 
   /**
+   * Constant that signals readiness.
+   * @type {string}
+   */
+  READY: 'ready',
+
+  /**
    * Sends a message to the Switch Access menu panel with the given name and
    * parameters.
    *
