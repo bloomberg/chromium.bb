@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "media/learning/impl/distribution_reporter.h"
 #include "media/learning/impl/learning_task_controller_impl.h"
 
 namespace media {
@@ -15,7 +16,8 @@ LearningSessionImpl::LearningSessionImpl()
     : controller_factory_(
           base::BindRepeating([](const LearningTask& task)
                                   -> std::unique_ptr<LearningTaskController> {
-            return std::make_unique<LearningTaskControllerImpl>(task);
+            return std::make_unique<LearningTaskControllerImpl>(
+                task, DistributionReporter::Create(task));
           })) {}
 
 LearningSessionImpl::~LearningSessionImpl() = default;

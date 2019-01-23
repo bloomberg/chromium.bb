@@ -7768,6 +7768,13 @@ Called by update_net_error_codes.py.-->
   <int value="13" label="FAILURE_TRACKING_ONLY_PARSE"/>
 </enum>
 
+<enum name="ConfusionMatrix">
+  <int value="0" label="True Negative"/>
+  <int value="1" label="False Negative"/>
+  <int value="2" label="False Positive"/>
+  <int value="3" label="True Positive"/>
+</enum>
+
 <enum name="ConnectionDiagnosticsIssue">
   <int value="0" label="IP collision detected."/>
   <int value="1" label="Routing problem detected."/>

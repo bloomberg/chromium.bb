@@ -133,7 +133,7 @@ struct LeafNode : public Model {
 RandomTreeTrainer::RandomTreeTrainer(RandomNumberGenerator* rng)
     : HasRandomNumberGenerator(rng) {}
 
-RandomTreeTrainer::~RandomTreeTrainer() = default;
+RandomTreeTrainer::~RandomTreeTrainer() {}
 
 void RandomTreeTrainer::Train(const LearningTask& task,
                               const TrainingData& training_data,

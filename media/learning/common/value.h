@@ -28,7 +28,9 @@ class COMPONENT_EXPORT(LEARNING_COMMON) Value {
   Value();
   template <typename T>
   explicit Value(T x) : value_(x) {
-    static_assert(std::is_arithmetic<T>::value,
+    // We want to rule out mostly pointers, since they wouldn't make much sense.
+    // Note that the implicit cast would likely fail anyway.
+    static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
                   "media::learning::Value works only with arithmetic types");
   }
 

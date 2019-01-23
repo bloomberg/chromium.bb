@@ -12,6 +12,9 @@ component("common") {
     "//media/learning/mojo/public/mojom:mojom",
     "//media/learning/mojo:*",
     "//media/learning/common:unit_tests",
+
+    # Actual client code
+    "//media/capabilities",
   ]
 
   defines = [ "IS_LEARNING_COMMON_IMPL" ]

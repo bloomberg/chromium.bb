@@ -463,6 +463,11 @@ const base::Feature kPreloadMediaEngagementData{
     "PreloadMediaEngagementData", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+// Enables experimental local learning for media.  Adds reporting only; does not
+// change media behavior.
+const base::Feature kMediaLearningExperiment{"MediaLearningExperiment",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables flash to be ducked by audio focus.
 const base::Feature kAudioFocusDuckFlash{"AudioFocusDuckFlash",
                                          base::FEATURE_DISABLED_BY_DEFAULT};

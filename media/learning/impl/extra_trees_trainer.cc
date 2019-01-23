@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "media/learning/impl/random_tree_trainer.h"
 #include "media/learning/impl/voting_ensemble.h"
 
 namespace media {

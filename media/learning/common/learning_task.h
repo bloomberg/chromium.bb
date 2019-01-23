@@ -96,8 +96,9 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) LearningTask {
   // we currently have, which might be less than |max_data_set_size|.
   double min_new_data_fraction = 0.1;
 
-  // Should the accuracy of this model be recorded to UMA?
-  bool record_accuracy_via_uma = true;
+  // If set, then we'll record a confusion matrix hackily to UMA using this as
+  // the histogram name.
+  std::string uma_hacky_confusion_matrix;
 
   // RandomTree parameters
 
@@ -127,9 +128,6 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) LearningTask {
   // In particular, if the percentage of dropped frames is greater than this,
   // then report "false" (not smooth), else we report true.
   double smoothness_threshold = 0.1;
-
-  // For our hacky confusion matrix reporting, this is the UMA histogram name.
-  std::string uma_name;
 };
 
 }  // namespace learning
