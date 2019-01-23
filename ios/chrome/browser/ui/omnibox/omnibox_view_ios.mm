@@ -546,7 +546,7 @@ bool OmniboxViewIOS::OnWillChange(NSRange range, NSString* new_text) {
 
 void OmniboxViewIOS::OnDidChange(bool processing_user_event) {
   omnibox_interacted_while_focused_ = YES;
-  DCHECK(processing_user_event);
+
   // Sanitize pasted text.
   if (model()->is_pasting()) {
     base::string16 pastedText = base::SysNSStringToUTF16([field_ text]);
