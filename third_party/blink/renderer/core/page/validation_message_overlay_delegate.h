@@ -38,6 +38,7 @@ class ValidationMessageOverlayDelegate : public FrameOverlay::Delegate {
                          GraphicsContext&,
                          const IntSize& view_size) const override;
   void StartToHide();
+  bool IsHiding() const;
 
  private:
   ValidationMessageOverlayDelegate(Page&,
@@ -52,7 +53,6 @@ class ValidationMessageOverlayDelegate : public FrameOverlay::Delegate {
   void WriteDocument(SharedBuffer*);
   Element& GetElementById(const AtomicString&) const;
   void AdjustBubblePosition(const IntSize& view_size);
-  bool IsHiding() const;
 
   // An internal Page and a ChromeClient for it.
   Persistent<Page> page_;

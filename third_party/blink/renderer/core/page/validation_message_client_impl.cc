@@ -99,8 +99,12 @@ void ValidationMessageClientImpl::HideValidationMessage(const Element& anchor) {
     HideValidationMessageImmediately(anchor);
     return;
   }
-  if (!current_anchor_ || !IsValidationMessageVisible(anchor))
+  if (!current_anchor_ || !IsValidationMessageVisible(anchor) ||
+      overlay_delegate_->IsHiding()) {
+    // Do not continue if already hiding, otherwise timer will never complete
+    // and Reset() is never called.
     return;
+  }
   DCHECK(overlay_);
   overlay_delegate_->StartToHide();
   timer_ = std::make_unique<TaskRunnerTimer<ValidationMessageClientImpl>>(
