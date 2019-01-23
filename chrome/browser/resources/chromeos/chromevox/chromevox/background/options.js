@@ -120,7 +120,18 @@ cvox.OptionsPage.init = function() {
     });
   };
 
-  registerEventStreamFiltersListener();
+  chrome.commandLinePrivate.hasSwitch(
+      'enable-chromevox-developer-option', function(enable) {
+        if (!enable) {
+          $('developerDescription').hidden = true;
+          $('developerSpeechLogging').hidden = true;
+          $('developerEarconLogging').hidden = true;
+          $('developerBrailleLogging').hidden = true;
+          $('developerEventStream').hidden = true;
+          return;
+        }
+        registerEventStreamFiltersListener();
+      });
 
   Msgs.addTranslatedMessagesToDom(document);
   cvox.OptionsPage.hidePlatformSpecifics();
