@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/autofill/local_card_migration_dialog_view.h"
 
+#include "base/i18n/message_formatter.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -83,29 +84,38 @@ std::unique_ptr<views::Label> CreateTitle(
   return title;
 }
 
-// Create the explanation text label container for the migration dialogs. The
-// text depends on the |view_state| of the dialog and the |card_list_size|.
+// Create the explanation text label with |user_email| for the migration
+// dialogs. The text content depends on the |view_state| of the dialog and the
+// |card_list_size|.
 std::unique_ptr<views::Label> CreateExplanationText(
     LocalCardMigrationDialogState view_state,
-    int card_list_size) {
-  int message_id;
+    int card_list_size,
+    const base::string16& user_email) {
+  DCHECK_NE((int)user_email.length(), 0);
+  auto explanation_text =
+      std::make_unique<views::Label>(base::string16(), CONTEXT_BODY_TEXT_LARGE,
+                                     ChromeTextStyle::STYLE_SECONDARY);
   switch (view_state) {
     case LocalCardMigrationDialogState::kOffered:
-      message_id = IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_OFFER;
+      explanation_text->SetText(
+          base::i18n::MessageFormatter::FormatWithNumberedArgs(
+              l10n_util::GetStringFUTF16(
+                  IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_OFFER,
+                  user_email),
+              card_list_size));
       break;
     case LocalCardMigrationDialogState::kFinished:
-      message_id =
+      explanation_text->SetText(l10n_util::GetPluralStringFUTF16(
           card_list_size == 0
               ? IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_INVALID_CARD_REMOVED
-              : IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_DONE;
+              : IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_DONE,
+          card_list_size));
       break;
     case LocalCardMigrationDialogState::kActionRequired:
-      message_id = IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_FIX;
+      explanation_text->SetText(l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_FIX));
       break;
   }
-  auto explanation_text = std::make_unique<views::Label>(
-      l10n_util::GetPluralStringFUTF16(message_id, card_list_size),
-      CONTEXT_BODY_TEXT_LARGE, ChromeTextStyle::STYLE_SECONDARY);
   explanation_text->SetMultiLine(true);
   explanation_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   return explanation_text;
@@ -206,7 +216,8 @@ std::unique_ptr<views::View> CreateFeedbackContentView(
   const int card_list_size = card_list.size();
 
   feedback_view->AddChildView(
-      CreateExplanationText(view_state, card_list_size).release());
+      CreateExplanationText(view_state, card_list_size, base::string16())
+          .release());
 
   if (card_list_size > 0) {
     feedback_view->AddChildView(
@@ -256,7 +267,8 @@ class LocalCardMigrationOfferView : public views::View,
     int card_list_size = card_list.size();
 
     contents_container->AddChildView(
-        CreateExplanationText(controller_->GetViewState(), card_list_size)
+        CreateExplanationText(controller_->GetViewState(), card_list_size,
+                              base::UTF8ToUTF16(controller_->GetUserEmail()))
             .release());
 
     std::unique_ptr<views::ScrollView> scroll_view =

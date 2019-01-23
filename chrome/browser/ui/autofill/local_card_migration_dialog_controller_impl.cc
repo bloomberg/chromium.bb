@@ -47,6 +47,7 @@ LocalCardMigrationDialogControllerImpl::
 
 void LocalCardMigrationDialogControllerImpl::ShowOfferDialog(
     std::unique_ptr<base::DictionaryValue> legal_message,
+    const std::string& user_email,
     const std::vector<MigratableCreditCard>& migratable_credit_cards,
     AutofillClient::LocalCardMigrationCallback start_migrating_cards_callback) {
   if (local_card_migration_dialog_)
@@ -67,6 +68,7 @@ void LocalCardMigrationDialogControllerImpl::ShowOfferDialog(
       CreateLocalCardMigrationDialogView(this, web_contents());
   start_migrating_cards_callback_ = std::move(start_migrating_cards_callback);
   migratable_credit_cards_ = migratable_credit_cards;
+  user_email_ = user_email;
   local_card_migration_dialog_->ShowDialog();
   UpdateIcon();
   dialog_is_visible_duration_timer_ = base::ElapsedTimer();
@@ -142,6 +144,11 @@ LocalCardMigrationDialogControllerImpl::GetLegalMessageLines() const {
 const base::string16& LocalCardMigrationDialogControllerImpl::GetTipMessage()
     const {
   return tip_message_;
+}
+
+const std::string& LocalCardMigrationDialogControllerImpl::GetUserEmail()
+    const {
+  return user_email_;
 }
 
 void LocalCardMigrationDialogControllerImpl::OnSaveButtonClicked(

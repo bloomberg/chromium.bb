@@ -56,6 +56,7 @@ class ManageMigrationUiController
 
   void ShowOfferDialog(
       std::unique_ptr<base::DictionaryValue> legal_message,
+      const std::string& user_email,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       AutofillClient::LocalCardMigrationCallback
           start_migrating_cards_callback);

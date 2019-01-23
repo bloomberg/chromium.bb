@@ -93,6 +93,7 @@ void TestAutofillClient::ShowLocalCardMigrationDialog(
 
 void TestAutofillClient::ConfirmMigrateLocalCardToCloud(
     std::unique_ptr<base::DictionaryValue> legal_message,
+    const std::string& user_email,
     const std::vector<MigratableCreditCard>& migratable_credit_cards,
     LocalCardMigrationCallback start_migrating_cards_callback) {
   // If |migration_card_selection_| hasn't been preset by tests, default to

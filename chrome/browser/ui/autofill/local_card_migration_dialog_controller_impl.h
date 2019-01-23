@@ -33,6 +33,7 @@ class LocalCardMigrationDialogControllerImpl
 
   void ShowOfferDialog(
       std::unique_ptr<base::DictionaryValue> legal_message,
+      const std::string& user_email,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       AutofillClient::LocalCardMigrationCallback
           start_migrating_cards_callback);
@@ -61,6 +62,7 @@ class LocalCardMigrationDialogControllerImpl
   const std::vector<MigratableCreditCard>& GetCardList() const override;
   const LegalMessageLines& GetLegalMessageLines() const override;
   const base::string16& GetTipMessage() const override;
+  const std::string& GetUserEmail() const override;
   void OnSaveButtonClicked(
       const std::vector<std::string>& selected_cards_guids) override;
   void OnCancelButtonClicked() override;
@@ -122,6 +124,9 @@ class LocalCardMigrationDialogControllerImpl
   // The message containing information from Google Payments. Shown in the
   // feedback dialogs after migration process is finished.
   base::string16 tip_message_;
+
+  // The user email shown in the dialogs.
+  std::string user_email_;
 
   // Contains observer listening to user's interactions with the dialog. The
   // observer is responsible for setting flow step upon these interactions.
