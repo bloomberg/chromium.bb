@@ -16,10 +16,6 @@
 
 namespace chromeos {
 
-namespace {
-const char kMethodContextChanged[] = "contextChanged";
-}  // namespace
-
 JSCallsContainer::JSCallsContainer() = default;
 
 JSCallsContainer::~JSCallsContainer() = default;
@@ -66,7 +62,7 @@ void BaseWebUIHandler::CommitContextChanges(const base::DictionaryValue& diff) {
   if (!page_is_ready())
     pending_context_changes_.MergeDictionary(&diff);
   else
-    CallJS(FullMethodPath(kMethodContextChanged), diff);
+    CallJS(FullMethodPath("contextChanged"), diff);
 }
 
 void BaseWebUIHandler::GetAdditionalParameters(base::DictionaryValue* dict) {}
