@@ -150,7 +150,7 @@ static model_rd_from_sse_type model_rd_sse_fn[MODELRD_TYPES] = {
 // 3: DNN regression model
 // 4: Full rd model
 #define MODELRD_TYPE_INTERP_FILTER 1
-#define MODELRD_TYPE_TX_SEARCH_PRUNE 2
+#define MODELRD_TYPE_TX_SEARCH_PRUNE 1
 #define MODELRD_TYPE_MASKED_COMPOUND 1
 #define MODELRD_TYPE_INTERINTRA 1
 #define MODELRD_TYPE_INTRA 1
