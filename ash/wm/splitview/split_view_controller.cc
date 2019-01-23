@@ -17,10 +17,10 @@
 #include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_manager.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_utils.h"
-#include "ash/wm/overview/window_grid.h"
-#include "ash/wm/overview/window_selector_controller.h"
-#include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -123,11 +123,11 @@ bool IsSnapped(aura::Window* window) {
   return wm::GetWindowState(window)->IsSnapped();
 }
 
-// Returns the window selector if overview mode is active, otherwise returns
+// Returns the overview session if overview mode is active, otherwise returns
 // nullptr.
-WindowSelector* GetWindowSelector() {
-  return Shell::Get()->window_selector_controller()->IsSelecting()
-             ? Shell::Get()->window_selector_controller()->window_selector()
+OverviewSession* GetOverviewSession() {
+  return Shell::Get()->overview_controller()->IsSelecting()
+             ? Shell::Get()->overview_controller()->overview_session()
              : nullptr;
 }
 
@@ -477,7 +477,7 @@ void SplitViewController::EndResize(const gfx::Point& location_in_screen) {
     // Track the window that needs to be put back into the overview list if we
     // remain in overview mode.
     aura::Window* insert_overview_window = nullptr;
-    if (Shell::Get()->window_selector_controller()->IsSelecting())
+    if (Shell::Get()->overview_controller()->IsSelecting())
       insert_overview_window = GetDefaultSnappedWindow();
     EndSplitView();
     if (active_window) {
@@ -631,8 +631,8 @@ void SplitViewController::OnWindowActivated(ActivationReason reason,
   // will end the overview start animations which will cause the overview focus
   // window to be activated.
   aura::Window* overview_focus_window =
-      GetWindowSelector() ? GetWindowSelector()->GetOverviewFocusWindow()
-                          : nullptr;
+      GetOverviewSession() ? GetOverviewSession()->GetOverviewFocusWindow()
+                           : nullptr;
   DCHECK(IsSplitViewModeActive() ||
          (overview_focus_window && overview_focus_window == gained_active));
 
@@ -690,13 +690,13 @@ void SplitViewController::OnOverviewModeStarting() {
 }
 
 void SplitViewController::OnOverviewModeEnding(
-    WindowSelector* window_selector) {
+    OverviewSession* overview_session) {
   DCHECK(IsSplitViewModeActive());
 
   // Early exit if overview is ended while swiping up on the shelf to avoid
   // snapping a window or showing a toast.
-  if (window_selector->enter_exit_overview_type() ==
-      WindowSelector::EnterExitOverviewType::kSwipeFromShelf) {
+  if (overview_session->enter_exit_overview_type() ==
+      OverviewSession::EnterExitOverviewType::kSwipeFromShelf) {
     EndSplitView();
     return;
   }
@@ -705,12 +705,12 @@ void SplitViewController::OnOverviewModeEnding(
   if (state_ == BOTH_SNAPPED) {
     // If overview is ended because of the window gets snapped, do not do
     // exiting overview animation.
-    window_selector->SetWindowListNotAnimatedWhenExiting(root_window);
+    overview_session->SetWindowListNotAnimatedWhenExiting(root_window);
     return;
   }
 
-  WindowGrid* current_grid =
-      window_selector->GetGridWithRootWindow(root_window);
+  OverviewGrid* current_grid =
+      overview_session->GetGridWithRootWindow(root_window);
   if (!current_grid)
     return;
 
@@ -719,13 +719,13 @@ void SplitViewController::OnOverviewModeEnding(
   // grid and snap it.
   const auto& windows = current_grid->window_list();
   if (windows.size() > 0) {
-    for (const auto& window_selector_item : windows) {
-      aura::Window* window = window_selector_item->GetWindow();
+    for (const auto& overview_item : windows) {
+      aura::Window* window = overview_item->GetWindow();
       if (CanSnapInSplitview(window) && window != GetDefaultSnappedWindow()) {
         SnapWindow(window, (default_snap_position_ == LEFT) ? RIGHT : LEFT);
         // If ending overview causes a window to snap, also do not do exiting
         // overview animation.
-        window_selector->SetWindowListNotAnimatedWhenExiting(root_window);
+        overview_session->SetWindowListNotAnimatedWhenExiting(root_window);
         return;
       }
     }
@@ -1326,7 +1326,7 @@ void SplitViewController::RestoreTransformIfApplicable(aura::Window* window) {
     const gfx::Rect snapped_bounds = GetSnappedWindowBoundsInScreen(
         window, (window == left_window_) ? LEFT : RIGHT);
     const gfx::Transform starting_transform =
-        ScopedTransformOverviewWindow::GetTransformForRect(snapped_bounds,
+        ScopedOverviewTransformWindow::GetTransformForRect(snapped_bounds,
                                                            item_bounds);
     SetTransformWithAnimation(window, starting_transform, gfx::Transform());
   }
@@ -1439,17 +1439,16 @@ void SplitViewController::SetTransformWithAnimation(
 
 void SplitViewController::RemoveWindowFromOverviewIfApplicable(
     aura::Window* window) {
-  if (!Shell::Get()->window_selector_controller()->IsSelecting())
+  if (!Shell::Get()->overview_controller()->IsSelecting())
     return;
 
-  WindowSelector* window_selector = GetWindowSelector();
-  WindowGrid* current_grid =
-      window_selector->GetGridWithRootWindow(window->GetRootWindow());
+  OverviewSession* overview_session = GetOverviewSession();
+  OverviewGrid* current_grid =
+      overview_session->GetGridWithRootWindow(window->GetRootWindow());
   if (!current_grid)
     return;
 
-  WindowSelectorItem* item =
-      current_grid->GetWindowSelectorItemContaining(window);
+  OverviewItem* item = current_grid->GetOverviewItemContaining(window);
   if (!item)
     return;
 
@@ -1458,7 +1457,7 @@ void SplitViewController::RemoveWindowFromOverviewIfApplicable(
   // repositioned in this case as they have been positioned to the right place
   // during dragging.
   item->RestoreWindow(/*reset_transform=*/false);
-  window_selector->RemoveWindowSelectorItem(item, /*reposition=*/false);
+  overview_session->RemoveOverviewItem(item, /*reposition=*/false);
 }
 
 void SplitViewController::UpdateSnappingWindowTransformedBounds(
@@ -1470,19 +1469,19 @@ void SplitViewController::UpdateSnappingWindowTransformedBounds(
 }
 
 void SplitViewController::InsertWindowToOverview(aura::Window* window) {
-  if (!window || !GetWindowSelector())
+  if (!window || !GetOverviewSession())
     return;
-  GetWindowSelector()->AddItem(window, /*reposition=*/true, /*animate=*/true);
+  GetOverviewSession()->AddItem(window, /*reposition=*/true, /*animate=*/true);
 }
 
 void SplitViewController::StartOverview() {
-  if (!Shell::Get()->window_selector_controller()->IsSelecting())
-    Shell::Get()->window_selector_controller()->ToggleOverview();
+  if (!Shell::Get()->overview_controller()->IsSelecting())
+    Shell::Get()->overview_controller()->ToggleOverview();
 }
 
 void SplitViewController::EndOverview() {
-  if (Shell::Get()->window_selector_controller()->IsSelecting())
-    Shell::Get()->window_selector_controller()->ToggleOverview();
+  if (Shell::Get()->overview_controller()->IsSelecting())
+    Shell::Get()->overview_controller()->ToggleOverview();
 }
 
 void SplitViewController::FinishWindowResizing(aura::Window* window) {
@@ -1508,7 +1507,7 @@ void SplitViewController::EndWindowDragImpl(
 
   // If dragged window was in overview before or it has been added to overview
   // window by dropping on the new selector item, do nothing.
-  if (GetWindowSelector() && GetWindowSelector()->IsWindowInOverview(window))
+  if (GetOverviewSession() && GetOverviewSession()->IsWindowInOverview(window))
     return;
 
   const bool was_splitview_active = IsSplitViewModeActive();
@@ -1528,20 +1527,20 @@ void SplitViewController::EndWindowDragImpl(
       SetTransformWithAnimation(window, window->layer()->GetTargetTransform(),
                                 gfx::Transform());
 
-      WindowSelector* window_selector = GetWindowSelector();
-      if (window_selector) {
-        window_selector->SetWindowListNotAnimatedWhenExiting(
+      OverviewSession* overview_session = GetOverviewSession();
+      if (overview_session) {
+        overview_session->SetWindowListNotAnimatedWhenExiting(
             window->GetRootWindow());
         // Set the overview exit type to kWindowDragged to avoid update bounds
         // animation of the windows in overview grid.
-        window_selector->set_enter_exit_overview_type(
-            WindowSelector::EnterExitOverviewType::kWindowDragged);
+        overview_session->set_enter_exit_overview_type(
+            OverviewSession::EnterExitOverviewType::kWindowDragged);
       }
       // Activate the dragged window will end the overview at the same time.The
       // dragged window will be restored back to its previous state before
       // dragging.
       wm::ActivateWindow(window);
-      DCHECK(!Shell::Get()->window_selector_controller()->IsSelecting());
+      DCHECK(!Shell::Get()->overview_controller()->IsSelecting());
 
       // Update the dragged window's bounds. It's possible that the dragged
       // window's bounds was changed during dragging. Update its bounds after

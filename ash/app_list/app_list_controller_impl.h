@@ -190,7 +190,7 @@ class ASH_EXPORT AppListControllerImpl
 
   // ShellObserver:
   void OnOverviewModeStarting() override;
-  void OnOverviewModeEnding(WindowSelector* window_selector) override;
+  void OnOverviewModeEnding(OverviewSession* overview_session) override;
   void OnOverviewModeEndingAnimationComplete(bool canceled) override;
 
   // TabletModeObserver:
@@ -270,7 +270,7 @@ class ASH_EXPORT AppListControllerImpl
   // Each time overview mode is exited, set this variable based on whether
   // overview mode is sliding out, so the home launcher knows what to do when
   // overview mode exit animations are finished.
-  bool use_slide_to_exit_overview_mode_ = false;
+  bool use_slide_to_exit_overview_ = false;
 
   // Whether the wallpaper is being previewed. The home launcher (if enabled)
   // should be hidden during wallpaper preview.

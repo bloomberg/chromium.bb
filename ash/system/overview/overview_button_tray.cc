@@ -13,8 +13,8 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/overview/window_selector.h"
-#include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_session.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -66,7 +66,7 @@ void OverviewButtonTray::UpdateAfterLoginStatusChange(LoginStatus status) {
 void OverviewButtonTray::OnGestureEvent(ui::GestureEvent* event) {
   Button::OnGestureEvent(event);
   if (event->type() == ui::ET_GESTURE_LONG_PRESS) {
-    Shell::Get()->window_selector_controller()->OnOverviewButtonTrayLongPressed(
+    Shell::Get()->overview_controller()->OnOverviewButtonTrayLongPressed(
         event->location());
   }
 }
@@ -75,11 +75,10 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
   DCHECK(event.type() == ui::ET_MOUSE_RELEASED ||
          event.type() == ui::ET_GESTURE_TAP);
 
-  WindowSelectorController* window_selector_controller =
-      Shell::Get()->window_selector_controller();
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
   // Skip if the second tap happened outside of overview. This can happen if a
   // window gets activated in between, which cancels overview mode.
-  if (window_selector_controller->IsSelecting() && last_press_event_time_ &&
+  if (overview_controller->IsSelecting() && last_press_event_time_ &&
       event.time_stamp() - last_press_event_time_.value() <
           kDoubleTapThresholdMs) {
     base::RecordAction(base::UserMetricsAction("Tablet_QuickSwitch"));
@@ -93,9 +92,8 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
     // current window) if it exists, unless splitview mode is active. Do not
     // switch we entered overview mode will all windows minimized.
     if (mru_window_list.size() > 1u &&
-        window_selector_controller->window_selector()
-                ->enter_exit_overview_type() !=
-            WindowSelector::EnterExitOverviewType::kWindowsMinimized) {
+        overview_controller->overview_session()->enter_exit_overview_type() !=
+            OverviewSession::EnterExitOverviewType::kWindowsMinimized) {
       aura::Window* new_active_window = mru_window_list[1];
 
       // In splitview mode, quick switch will only affect the windows on the non
@@ -123,13 +121,11 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
 
   // If not in overview mode record the time of this tap. A subsequent tap will
   // be checked against this to see if we should quick switch.
-  last_press_event_time_ =
-      Shell::Get()->window_selector_controller()->IsSelecting()
-          ? base::nullopt
-          : base::make_optional(event.time_stamp());
+  last_press_event_time_ = Shell::Get()->overview_controller()->IsSelecting()
+                               ? base::nullopt
+                               : base::make_optional(event.time_stamp());
 
-  WindowSelectorController* controller =
-      Shell::Get()->window_selector_controller();
+  OverviewController* controller = Shell::Get()->overview_controller();
   // Note: Toggling overview mode will fail if there is no window to show, the
   // screen is locked, a modal dialog is open or is running in kiosk app
   // session.
@@ -167,7 +163,7 @@ void OverviewButtonTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
 
 void OverviewButtonTray::UpdateIconVisibility() {
   // The visibility of the OverviewButtonTray has diverged from
-  // WindowSelectorController::CanSelect. The visibility of the button should
+  // OverviewController::CanSelect. The visibility of the button should
   // not change during transient times in which CanSelect is false. Such as when
   // a modal dialog is present.
   SessionController* session_controller = Shell::Get()->session_controller();

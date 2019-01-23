@@ -11,7 +11,7 @@
 #include "ash/shell.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/power_button_controller.h"
-#include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/ws/window_service_owner.h"
@@ -114,7 +114,7 @@ void ShellTestApi::ToggleFullscreen(ToggleFullscreenCallback cb) {
 }
 
 void ShellTestApi::ToggleOverviewMode(ToggleOverviewModeCallback cb) {
-  shell_->window_selector_controller()->ToggleOverview();
+  shell_->overview_controller()->ToggleOverview();
   std::move(cb).Run();
 }
 

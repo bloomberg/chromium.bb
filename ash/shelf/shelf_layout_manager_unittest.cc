@@ -34,7 +34,7 @@
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/window_factory.h"
 #include "ash/wm/lock_state_controller.h"
-#include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
@@ -1270,16 +1270,15 @@ TEST_F(ShelfLayoutManagerTest, VisibleInOverview) {
   EXPECT_EQ(display.bounds().bottom() - kHiddenShelfInScreenPortion,
             GetShelfWidget()->GetWindowBoundsInScreen().y());
 
-  WindowSelectorController* window_selector_controller =
-      Shell::Get()->window_selector_controller();
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
   // Tests that the shelf is visible when in overview mode
-  window_selector_controller->ToggleOverview();
+  overview_controller->ToggleOverview();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
 
   // Test that on exiting overview mode, the shelf returns to auto hide state.
-  window_selector_controller->ToggleOverview();
+  overview_controller->ToggleOverview();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 }
@@ -2394,7 +2393,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColorInSplitView) {
   wm::GetWindowState(window1.get())->OnWMEvent(&minimize_event);
   EXPECT_EQ(split_view_controller->IsSplitViewModeActive(), true);
   EXPECT_EQ(split_view_controller->state(), SplitViewController::RIGHT_SNAPPED);
-  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
   EXPECT_EQ(SHELF_BACKGROUND_SPLIT_VIEW, GetShelfWidget()->GetBackgroundType());
 
   // Drag the divider to left to end split view mode, which will maximize the
@@ -2406,7 +2405,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColorInSplitView) {
   drag_point.set_x(0);
   split_view_controller->EndResize(drag_point);
 
-  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
   EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, GetShelfWidget()->GetBackgroundType());
 }
 

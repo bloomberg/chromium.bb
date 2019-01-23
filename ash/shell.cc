@@ -138,7 +138,7 @@
 #include "ash/wm/native_cursor_manager_ash.h"
 #include "ash/wm/non_client_frame_controller.h"
 #include "ash/wm/overlay_event_filter.h"
-#include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/screen_pinning_controller.h"
@@ -586,10 +586,10 @@ void Shell::NotifyOverviewModeStartingAnimationComplete(bool canceled) {
     observer.OnOverviewModeStartingAnimationComplete(canceled);
 }
 
-void Shell::NotifyOverviewModeEnding(WindowSelector* window_selector) {
-  DCHECK(window_selector);
+void Shell::NotifyOverviewModeEnding(OverviewSession* overview_session) {
+  DCHECK(overview_session);
   for (auto& observer : shell_observers_)
-    observer.OnOverviewModeEnding(window_selector);
+    observer.OnOverviewModeEnding(overview_session);
 }
 
 void Shell::NotifyOverviewModeEnded() {
@@ -814,10 +814,10 @@ Shell::~Shell() {
 
   // Has to happen before ~MruWindowTracker.
   window_cycle_controller_.reset();
-  window_selector_controller_.reset();
+  overview_controller_.reset();
 
   // |split_view_controller_| needs to be deleted after
-  // |window_selector_controller_|.
+  // |overview_controller_|.
   split_view_controller_.reset();
 
   // Stop dispatching events (e.g. synthesized mouse exits from window close).
@@ -1080,7 +1080,7 @@ void Shell::Init(
   focus_controller_ = std::make_unique<::wm::FocusController>(focus_rules_);
   focus_controller_->AddObserver(this);
 
-  window_selector_controller_ = std::make_unique<WindowSelectorController>();
+  overview_controller_ = std::make_unique<OverviewController>();
 
   screen_position_controller_ = std::make_unique<ScreenPositionController>();
 
