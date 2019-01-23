@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "crypto/hmac.h"
@@ -121,6 +122,7 @@ class WebrtcTransport : public Transport {
   void OnStatsDelivered(
       const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report);
 
+  void RequestRtcStats();
   void RequestNegotiation();
   void SendOffer();
   void EnsurePendingTransportInfoMessage();
@@ -146,6 +148,8 @@ class WebrtcTransport : public Transport {
   bool negotiation_pending_ = false;
 
   bool connected_ = false;
+
+  base::Optional<bool> connection_relayed_;
 
   bool want_ice_restart_ = false;
 
