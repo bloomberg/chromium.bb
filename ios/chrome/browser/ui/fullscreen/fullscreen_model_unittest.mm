@@ -256,9 +256,10 @@ TEST_F(FullscreenModelTest, DisableForShortContent) {
   ASSERT_TRUE(model().enabled());
   // The model should be disabled when the rendered content height is less than
   // the height of the scroll view.
-  model().SetContentHeight(model().GetScrollViewHeight() - 1.0);
+  model().SetContentHeight(model().GetScrollViewHeight());
   EXPECT_FALSE(model().enabled());
   // Reset the height to kContentHeight and verify that the model is re-enabled.
-  model().SetContentHeight(model().GetScrollViewHeight() + 1.0);
+  model().SetContentHeight(model().GetScrollViewHeight() + 2 * kToolbarHeight +
+                           1.0);
   EXPECT_TRUE(model().enabled());
 }

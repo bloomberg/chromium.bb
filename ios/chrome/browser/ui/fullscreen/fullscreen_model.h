@@ -143,6 +143,10 @@ class FullscreenModel : public ChromeBroadcastObserverInterface {
   void SetScrollViewIsDragging(bool dragging);
   bool IsScrollViewDragging() const;
 
+  // Setter for whether the scroll view is resized for fullscreen events.
+  void SetResizesScrollView(bool resizes_scroll_view);
+  bool ResizesScrollView() const;
+
  private:
   // Returns how a scroll to the current |y_content_offset_| from |from_offset|
   // should be handled.
@@ -214,6 +218,8 @@ class FullscreenModel : public ChromeBroadcastObserverInterface {
   bool dragging_ = false;
   // Whether the in-progress scroll is being ignored.
   bool ignoring_current_scroll_ = false;
+  // Whether the scroll view is resized for fullscreen events.
+  bool resizes_scroll_view_ = false;
   // The number of FullscreenModelObserver callbacks currently being executed.
   size_t observer_callback_count_ = 0;
 

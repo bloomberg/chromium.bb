@@ -220,6 +220,14 @@ bool FullscreenModel::IsScrollViewDragging() const {
   return dragging_;
 }
 
+void FullscreenModel::SetResizesScrollView(bool resizes_scroll_view) {
+  resizes_scroll_view_ = resizes_scroll_view;
+}
+
+bool FullscreenModel::ResizesScrollView() const {
+  return resizes_scroll_view_;
+}
+
 FullscreenModel::ScrollAction FullscreenModel::ActionForScrollFromOffset(
     CGFloat from_offset) const {
   // Update the base offset but don't recalculate progress if:
@@ -264,7 +272,20 @@ void FullscreenModel::UpdateProgress() {
 }
 
 void FullscreenModel::UpdateDisabledCounterForContentHeight() {
-  bool disable = content_height_ < scroll_view_height_;
+  // The model should be disabled when the content fits.
+  CGFloat disabling_threshold = scroll_view_height_;
+  if (resizes_scroll_view_) {
+    // When the FullscreenProvider is disabled, the scroll view can sometimes be
+    // resized to account for the viewport insets after the page has been
+    // rendered, so account for the maximum toolbar insets in the threshold.
+    disabling_threshold += expanded_toolbar_height_ + bottom_toolbar_height_;
+  }
+
+  // Don't disable fullscreen if both heights have not been received.
+  bool areBothHeightsSet = !AreCGFloatsEqual(content_height_, 0.0) &&
+                           !AreCGFloatsEqual(scroll_view_height_, 0.0);
+
+  bool disable = areBothHeightsSet && content_height_ <= disabling_threshold;
   if (disabled_for_short_content_ == disable)
     return;
   disabled_for_short_content_ = disable;
