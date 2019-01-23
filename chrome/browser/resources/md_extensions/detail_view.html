@@ -24,6 +24,7 @@
 <link rel="import" href="navigation_helper.html">
 <link rel="import" href="runtime_host_permissions.html">
 <link rel="import" href="shared_style.html">
+<link rel="import" href="shared_vars.html">
 <link rel="import" href="strings.html">
 <link rel="import" href="toggle_row.html">
 
@@ -31,7 +32,7 @@
   <template>
     <style include="iron-flex cr-shared-style cr-icons action-link paper-button-style shared-style">
       :host {
-        --iron-icon-fill-color: var(--google-grey-refresh-700);
+        --iron-icon-fill-color: var(--cr-secondary-text-color);
         display: block;
         height: 100%;
       }
@@ -53,6 +54,10 @@
         color: var(--google-blue-500);
       }
 
+      :host-context([dark]) #enable-section .enabled-text {
+        color: var(--google-blue-refresh-300);
+      }
+
       #icon {
         height: 24px;
         margin-inline-end: 12px;
@@ -63,11 +68,6 @@
       #name {
         flex-grow: 1;
         @apply --cr-title-text;
-      }
-
-      #learn-more-link {
-        color: var(--google-blue-700);
-        text-decoration: none;
       }
 
       .section {
@@ -102,27 +102,26 @@
       }
 
       .inspectable-view {
-        color: var(--google-blue-700);
         height: 20px;
         width: auto;  /* override the default button size of 24x24 */
       }
 
-      .warning .action-button {
+      :host-context(html:not([dark])) .warning .action-button {
         background: white;
         color: var(--google-blue-500);
       }
 
-      #reload-button {
+      :host-context(html:not([dark])) #reload-button {
         color: var(--google-blue-500);
       }
 
       .warning span {
-        color: var(--google-red-700);
+        color: var(--error-color);
         flex: 1;
       }
 
       .warning-icon {
-        --iron-icon-fill-color: var(--google-red-700);
+        --iron-icon-fill-color: var(--error-color);
         flex-shrink: 0;
         height: 18px;
         margin-inline-end: 8px;
@@ -180,7 +179,7 @@
           <span id="name">[[data.name]]</span>
         </div>
         <div class="section continuation control-line" id="enable-section">
-          <span class$="{{computeEnabledStyle_(data.state)}}">
+          <span class$="[[computeEnabledStyle_(data.state)]]">
             [[computeEnabledText_(data.state, '$i18nPolymer{itemOn}',
                 '$i18nPolymer{itemOff}')]]
           </span>
@@ -222,8 +221,7 @@
             <iron-icon class="warning-icon" icon="cr:warning"></iron-icon>
             <span>
               $i18n{itemSuspiciousInstall}
-              <a target="_blank" id="learn-more-link"
-                  href="$i18n{suspiciousInstallHelpUrl}">
+              <a target="_blank" href="$i18n{suspiciousInstallHelpUrl}">
                 $i18n{learnMore}
               </a>
             </span>
