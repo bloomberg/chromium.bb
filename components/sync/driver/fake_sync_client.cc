@@ -8,11 +8,10 @@
 #include "base/bind_helpers.h"
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/sync_prefs.h"
-#include "components/sync/model/model_type_sync_bridge.h"
 
 namespace syncer {
 
-FakeSyncClient::FakeSyncClient() : bridge_(nullptr), factory_(nullptr) {
+FakeSyncClient::FakeSyncClient() : factory_(nullptr) {
   // Register sync preferences and set them to "Sync everything" state.
   SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
 }
@@ -33,6 +32,10 @@ base::FilePath FakeSyncClient::GetLocalSyncBackendFolder() {
 }
 
 ModelTypeStoreService* FakeSyncClient::GetModelTypeStoreService() {
+  return nullptr;
+}
+
+DeviceInfoSyncService* FakeSyncClient::GetDeviceInfoSyncService() {
   return nullptr;
 }
 
@@ -90,7 +93,7 @@ base::WeakPtr<SyncableService> FakeSyncClient::GetSyncableServiceForType(
 
 base::WeakPtr<ModelTypeControllerDelegate>
 FakeSyncClient::GetControllerDelegateForModelType(ModelType type) {
-  return bridge_->change_processor()->GetControllerDelegate();
+  return nullptr;
 }
 
 scoped_refptr<ModelSafeWorker> FakeSyncClient::CreateModelWorkerForGroup(
@@ -100,10 +103,6 @@ scoped_refptr<ModelSafeWorker> FakeSyncClient::CreateModelWorkerForGroup(
 
 SyncApiComponentFactory* FakeSyncClient::GetSyncApiComponentFactory() {
   return factory_;
-}
-
-void FakeSyncClient::SetModelTypeSyncBridge(ModelTypeSyncBridge* bridge) {
-  bridge_ = bridge;
 }
 
 }  // namespace syncer

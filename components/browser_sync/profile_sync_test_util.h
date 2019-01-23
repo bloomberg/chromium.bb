@@ -13,6 +13,7 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
+#include "components/sync/device_info/device_info_sync_service_impl.h"
 #include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "components/sync/model/test_model_type_store_service.h"
@@ -140,6 +141,7 @@ class ProfileSyncServiceBundle {
   scoped_refptr<base::SequencedTaskRunner> db_thread_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   syncer::TestModelTypeStoreService model_type_store_service_;
+  syncer::DeviceInfoSyncServiceImpl device_info_sync_service_;
   identity::IdentityTestEnvironment identity_test_env_;
   testing::NiceMock<syncer::SyncApiComponentFactoryMock> component_factory_;
   std::unique_ptr<invalidation::ProfileIdentityProvider> identity_provider_;

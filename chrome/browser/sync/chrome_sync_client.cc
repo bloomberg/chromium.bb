@@ -15,7 +15,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -25,9 +24,9 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sync/bookmark_sync_service_factory.h"
+#include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/glue/theme_data_type_controller.h"
 #include "chrome/browser/sync/model_type_store_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -53,7 +52,6 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_components_factory_impl.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/history/core/browser/history_service.h"
@@ -239,6 +237,10 @@ base::FilePath ChromeSyncClient::GetLocalSyncBackendFolder() {
 syncer::ModelTypeStoreService* ChromeSyncClient::GetModelTypeStoreService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return ModelTypeStoreServiceFactory::GetForProfile(profile_);
+}
+
+syncer::DeviceInfoSyncService* ChromeSyncClient::GetDeviceInfoSyncService() {
+  return DeviceInfoSyncServiceFactory::GetForProfile(profile_);
 }
 
 bookmarks::BookmarkModel* ChromeSyncClient::GetBookmarkModel() {
@@ -676,28 +678,6 @@ ChromeSyncClient::GetSyncApiComponentFactory() {
 void ChromeSyncClient::SetSyncApiComponentFactoryForTesting(
     std::unique_ptr<syncer::SyncApiComponentFactory> component_factory) {
   component_factory_ = std::move(component_factory);
-}
-
-// static
-void ChromeSyncClient::GetDeviceInfoTrackers(
-    std::vector<const syncer::DeviceInfoTracker*>* trackers) {
-  DCHECK(trackers);
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  std::vector<Profile*> profile_list = profile_manager->GetLoadedProfiles();
-  for (Profile* profile : profile_list) {
-    const browser_sync::ProfileSyncService* profile_sync_service =
-        ProfileSyncServiceFactory::GetForProfile(profile);
-    if (profile_sync_service != nullptr) {
-      const syncer::DeviceInfoTracker* tracker =
-          profile_sync_service->GetDeviceInfoTracker();
-      if (tracker != nullptr) {
-        // Even when sync is disabled and/or user is signed out, a tracker will
-        // still be present. It will only be missing when the ProfileSyncService
-        // has not sufficiently initialized yet.
-        trackers->push_back(tracker);
-      }
-    }
-  }
 }
 
 }  // namespace browser_sync

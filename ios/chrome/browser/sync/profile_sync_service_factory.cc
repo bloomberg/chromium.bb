@@ -14,8 +14,6 @@
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/network_time/network_time_tracker.h"
-#include "components/signin/core/browser/device_id_helper.h"
-#include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/sync/driver/startup_controller.h"
 #include "components/sync/driver/sync_util.h"
 #include "ios/chrome/browser/application_context.h"
@@ -35,16 +33,15 @@
 #include "ios/chrome/browser/signin/about_signin_internals_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/consent_auditor_factory.h"
+#include "ios/chrome/browser/sync/device_info_sync_service_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_sync_client.h"
 #include "ios/chrome/browser/sync/model_type_store_service_factory.h"
 #include "ios/chrome/browser/sync/session_sync_service_factory.h"
 #include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
-#include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
 
 using browser_sync::ProfileSyncService;
@@ -105,6 +102,7 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   // destruction order.
   DependsOn(autofill::PersonalDataManagerFactory::GetInstance());
   DependsOn(ConsentAuditorFactory::GetInstance());
+  DependsOn(DeviceInfoSyncServiceFactory::GetInstance());
   DependsOn(ios::AboutSigninInternalsFactory::GetInstance());
   DependsOn(ios::BookmarkModelFactory::GetInstance());
   DependsOn(ios::BookmarkSyncServiceFactory::GetInstance());
@@ -152,13 +150,6 @@ ProfileSyncServiceFactory::BuildServiceInstanceFor(
   init_params.network_connection_tracker =
       GetApplicationContext()->GetNetworkConnectionTracker();
   init_params.debug_identifier = browser_state->GetDebugName();
-  init_params.local_device_info_provider =
-      std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
-          ::GetChannel(), ::GetVersionString(),
-          ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
-          /*signin_scoped_device_id_callback=*/
-          base::BindRepeating(&signin::GetSigninScopedDeviceId,
-                              browser_state->GetPrefs()));
 
   bool use_fcm_invalidations =
       base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations);

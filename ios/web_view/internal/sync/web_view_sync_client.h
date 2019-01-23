@@ -36,6 +36,7 @@ class WebViewSyncClient : public syncer::SyncClient {
   PrefService* GetPrefService() override;
   base::FilePath GetLocalSyncBackendFolder() override;
   syncer::ModelTypeStoreService* GetModelTypeStoreService() override;
+  syncer::DeviceInfoSyncService* GetDeviceInfoSyncService() override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   favicon::FaviconService* GetFaviconService() override;
   history::HistoryService* GetHistoryService() override;

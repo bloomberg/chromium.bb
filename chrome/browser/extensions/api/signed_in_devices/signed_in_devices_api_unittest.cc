@@ -15,10 +15,9 @@
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/profile_sync_test_util.h"
-#include "components/browser_sync/profile_sync_service_mock.h"
+#include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "components/sync/device_info/device_info.h"
+#include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/device_info/device_info_tracker.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
@@ -137,28 +136,42 @@ TEST(SignedInDevicesAPITest, GetSignedInDevices) {
   EXPECT_NE(public_id3, public_id2);
 }
 
-class ProfileSyncServiceMockForExtensionTests
-    : public browser_sync::ProfileSyncServiceMock {
+class MockDeviceInfoSyncService : public syncer::DeviceInfoSyncService {
  public:
-  explicit ProfileSyncServiceMockForExtensionTests(Profile* p)
-      : ProfileSyncServiceMock(CreateProfileSyncServiceParamsForTest(p)) {}
-  ~ProfileSyncServiceMockForExtensionTests() override {}
+  MockDeviceInfoSyncService() = default;
+  ~MockDeviceInfoSyncService() override = default;
 
-  MOCK_METHOD0(Shutdown, void());
-  MOCK_CONST_METHOD0(GetDeviceInfoTracker, DeviceInfoTracker*());
+  MockDeviceInfoTracker* mock_tracker() { return &tracker_; }
+
+  // DeviceInfoSyncService implementation.
+  syncer::LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() override {
+    return nullptr;
+  }
+  syncer::DeviceInfoTracker* GetDeviceInfoTracker() override {
+    return &tracker_;
+  }
+  base::WeakPtr<syncer::ModelTypeControllerDelegate> GetControllerDelegate()
+      override {
+    return nullptr;
+  }
+  void InitLocalCacheGuid(const std::string& cache_guid,
+                          const std::string& session_name) override {}
+  void ClearLocalCacheGuid() override {}
+
+ private:
+  MockDeviceInfoTracker tracker_;
 };
 
-std::unique_ptr<KeyedService> CreateProfileSyncServiceMock(
+std::unique_ptr<KeyedService> CreateMockDeviceInfoSyncService(
     content::BrowserContext* context) {
-  return std::make_unique<ProfileSyncServiceMockForExtensionTests>(
-      Profile::FromBrowserContext(context));
+  return std::make_unique<MockDeviceInfoSyncService>();
 }
 
 class ExtensionSignedInDevicesTest : public ExtensionApiUnittest {
  private:
   TestingProfile::TestingFactories GetTestingFactories() override {
-    return {{ProfileSyncServiceFactory::GetInstance(),
-             base::BindRepeating(&CreateProfileSyncServiceMock)}};
+    return {{DeviceInfoSyncServiceFactory::GetInstance(),
+             base::BindRepeating(&CreateMockDeviceInfoSyncService)}};
   }
 };
 
@@ -191,10 +204,10 @@ base::DictionaryValue* GetDictionaryFromList(int index,
 }
 
 TEST_F(ExtensionSignedInDevicesTest, GetAll) {
-  ProfileSyncServiceMockForExtensionTests* pss_mock =
-      static_cast<ProfileSyncServiceMockForExtensionTests*>(
-          ProfileSyncServiceFactory::GetForProfile(profile()));
-  MockDeviceInfoTracker device_tracker;
+  MockDeviceInfoTracker* device_tracker =
+      static_cast<MockDeviceInfoSyncService*>(
+          DeviceInfoSyncServiceFactory::GetForProfile(profile()))
+          ->mock_tracker();
 
   DeviceInfo device_info1(base::GenerateGUID(),
                           "abc Device",
@@ -210,13 +223,8 @@ TEST_F(ExtensionSignedInDevicesTest, GetAll) {
                           sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
                           "device_id");
 
-  device_tracker.Add(&device_info1);
-  device_tracker.Add(&device_info2);
-
-  EXPECT_CALL(*pss_mock, GetDeviceInfoTracker())
-      .WillOnce(Return(&device_tracker));
-
-  EXPECT_CALL(*pss_mock, Shutdown());
+  device_tracker->Add(&device_info1);
+  device_tracker->Add(&device_info2);
 
   std::unique_ptr<base::ListValue> result(
       RunFunctionAndReturnList(new SignedInDevicesGetFunction(), "[null]"));
@@ -237,16 +245,6 @@ TEST_F(ExtensionSignedInDevicesTest, GetAll) {
 }
 
 TEST_F(ExtensionSignedInDevicesTest, DeviceInfoTrackerNotInitialized) {
-  ProfileSyncServiceMockForExtensionTests* pss_mock =
-      static_cast<ProfileSyncServiceMockForExtensionTests*>(
-          ProfileSyncServiceFactory::GetForProfile(profile()));
-
-  MockDeviceInfoTracker device_tracker;
-
-  EXPECT_CALL(*pss_mock, GetDeviceInfoTracker())
-      .WillOnce(Return(&device_tracker));
-  EXPECT_CALL(*pss_mock, Shutdown());
-
   std::vector<std::unique_ptr<DeviceInfo>> output =
       GetAllSignedInDevices(extension()->id(), profile());
 

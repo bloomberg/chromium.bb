@@ -1,9 +1,12 @@
 include_rules = [
+  "+components/keyed_service",
   "+components/metrics",
   "+components/sync/base",
+  # TODO(crbug.com/922971): The dependency to driver/ is only needed for
+  # MakeUserAgentForSync() which can be moved elsewhere.
   "+components/sync/driver",
-  "+components/sync/engine",
   "+components/sync/model",
+  "+components/sync/model_impl",
   "+components/sync/protocol",
   "+components/sync/test",
 ]

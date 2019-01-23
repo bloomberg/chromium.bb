@@ -11,6 +11,8 @@ source_set("sync") {
     # BUILD.gn depedency.
     "consent_auditor_factory.cc",
     "consent_auditor_factory.h",
+    "device_info_sync_service_factory.h",
+    "device_info_sync_service_factory.mm",
     "ios_chrome_sync_client.h",
     "ios_chrome_sync_client.mm",
     "ios_chrome_synced_tab_delegate.h",

@@ -6,7 +6,6 @@
 #define IOS_CHROME_BROWSER_SYNC_IOS_CHROME_SYNC_CLIENT_H__
 
 #include <memory>
-#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -27,7 +26,6 @@ class PasswordStore;
 }
 
 namespace syncer {
-class DeviceInfoTracker;
 class SyncApiComponentFactory;
 }
 
@@ -40,6 +38,7 @@ class IOSChromeSyncClient : public syncer::SyncClient {
   PrefService* GetPrefService() override;
   base::FilePath GetLocalSyncBackendFolder() override;
   syncer::ModelTypeStoreService* GetModelTypeStoreService() override;
+  syncer::DeviceInfoSyncService* GetDeviceInfoSyncService() override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   favicon::FaviconService* GetFaviconService() override;
   history::HistoryService* GetHistoryService() override;
@@ -62,10 +61,6 @@ class IOSChromeSyncClient : public syncer::SyncClient {
 
   void SetSyncApiComponentFactoryForTesting(
       std::unique_ptr<syncer::SyncApiComponentFactory> component_factory);
-
-  // Iterates over browser states and returns any trackers that can be found.
-  static void GetDeviceInfoTrackers(
-      std::vector<const syncer::DeviceInfoTracker*>* trackers);
 
  private:
   ios::ChromeBrowserState* const browser_state_;

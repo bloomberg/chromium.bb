@@ -36,6 +36,7 @@
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
 #include "ios/web_view/internal/pref_names.h"
+#import "ios/web_view/internal/sync/web_view_device_info_sync_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_model_type_store_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_profile_invalidation_provider_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
@@ -100,6 +101,11 @@ base::FilePath WebViewSyncClient::GetLocalSyncBackendFolder() {
 
 syncer::ModelTypeStoreService* WebViewSyncClient::GetModelTypeStoreService() {
   return WebViewModelTypeStoreServiceFactory::GetForBrowserState(
+      browser_state_);
+}
+
+syncer::DeviceInfoSyncService* WebViewSyncClient::GetDeviceInfoSyncService() {
+  return WebViewDeviceInfoSyncServiceFactory::GetForBrowserState(
       browser_state_);
 }
 

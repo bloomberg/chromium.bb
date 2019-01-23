@@ -25,7 +25,6 @@ class PasswordStore;
 }
 
 namespace syncer {
-class DeviceInfoTracker;
 class SyncApiComponentFactory;
 class SyncService;
 }
@@ -43,6 +42,7 @@ class ChromeSyncClient : public syncer::SyncClient {
   PrefService* GetPrefService() override;
   base::FilePath GetLocalSyncBackendFolder() override;
   syncer::ModelTypeStoreService* GetModelTypeStoreService() override;
+  syncer::DeviceInfoSyncService* GetDeviceInfoSyncService() override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   favicon::FaviconService* GetFaviconService() override;
   history::HistoryService* GetHistoryService() override;
@@ -66,12 +66,6 @@ class ChromeSyncClient : public syncer::SyncClient {
   // Helpers for overriding getters in tests.
   void SetSyncApiComponentFactoryForTesting(
       std::unique_ptr<syncer::SyncApiComponentFactory> component_factory);
-
-  // Iterates over all of the profiles that have been loaded so far, and
-  // extracts their tracker if present. If some profiles don't have trackers, no
-  // indication is given in the passed vector.
-  static void GetDeviceInfoTrackers(
-      std::vector<const syncer::DeviceInfoTracker*>* trackers);
 
  private:
   Profile* const profile_;

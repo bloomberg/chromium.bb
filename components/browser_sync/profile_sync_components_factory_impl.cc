@@ -31,6 +31,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/features/reading_list_switches.h"
 #include "components/sync/base/report_unrecoverable_error.h"
+#include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/driver/async_directory_type_controller.h"
 #include "components/sync/driver/data_type_manager_impl.h"
 #include "components/sync/driver/glue/sync_backend_host_impl.h"
@@ -135,6 +136,19 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   syncer::DataTypeController::TypeVector controllers;
   const base::RepeatingClosure dump_stack =
       base::BindRepeating(&syncer::ReportUnrecoverableError, channel_);
+
+  syncer::ModelTypeStoreService* model_type_store_service =
+      sync_client_->GetModelTypeStoreService();
+  DCHECK(model_type_store_service);
+  syncer::RepeatingModelTypeStoreFactory model_type_store_factory =
+      model_type_store_service->GetStoreFactory();
+
+  controllers.push_back(std::make_unique<ModelTypeController>(
+      syncer::DEVICE_INFO,
+      std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+          sync_client_->GetDeviceInfoSyncService()
+              ->GetControllerDelegate()
+              .get())));
 
   // These features are enabled only if there's a DB thread to post tasks to.
   if (db_thread_) {

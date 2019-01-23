@@ -1565,6 +1565,8 @@ jumbo_split_static_library("browser") {
     "sync/bookmark_sync_service_factory.h",
     "sync/chrome_sync_client.cc",
     "sync/chrome_sync_client.h",
+    "sync/device_info_sync_service_factory.cc",
+    "sync/device_info_sync_service_factory.h",
     "sync/glue/extensions_activity_monitor.cc",
     "sync/glue/extensions_activity_monitor.h",
     "sync/glue/sync_start_util.cc",

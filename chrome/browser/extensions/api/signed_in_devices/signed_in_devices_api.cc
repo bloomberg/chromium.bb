@@ -10,9 +10,9 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/signed_in_devices/id_mapping_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/common/extensions/api/signed_in_devices.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/device_info/device_info_tracker.h"
 #include "components/sync/device_info/local_device_info_provider.h"
 #include "extensions/browser/extension_prefs.h"
@@ -82,7 +82,8 @@ std::vector<std::unique_ptr<DeviceInfo>> GetAllSignedInDevices(
   // Get the device tracker and extension prefs pointers
   // and call the helper.
   DeviceInfoTracker* device_tracker =
-      ProfileSyncServiceFactory::GetForProfile(profile)->GetDeviceInfoTracker();
+      DeviceInfoSyncServiceFactory::GetForProfile(profile)
+          ->GetDeviceInfoTracker();
   DCHECK(device_tracker);
   if (!device_tracker->IsSyncing()) {
     // Devices are not sync'ing.
@@ -96,14 +97,14 @@ std::vector<std::unique_ptr<DeviceInfo>> GetAllSignedInDevices(
 
 std::unique_ptr<DeviceInfo> GetLocalDeviceInfo(const std::string& extension_id,
                                                Profile* profile) {
-  browser_sync::ProfileSyncService* pss =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-  if (!pss) {
+  syncer::DeviceInfoSyncService* service =
+      DeviceInfoSyncServiceFactory::GetForProfile(profile);
+  if (!service) {
     return std::unique_ptr<DeviceInfo>();
   }
 
   const LocalDeviceInfoProvider* local_device =
-      pss->GetLocalDeviceInfoProvider();
+      service->GetLocalDeviceInfoProvider();
   DCHECK(local_device);
   std::string guid = local_device->GetLocalSyncCacheGUID();
   std::unique_ptr<DeviceInfo> device =

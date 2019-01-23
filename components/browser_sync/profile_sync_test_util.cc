@@ -16,7 +16,7 @@
 #include "components/history/core/browser/sync/history_model_worker.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync/base/sync_prefs.h"
-#include "components/sync/device_info/local_device_info_provider_mock.h"
+#include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/sync/engine/passive_model_worker.h"
 #include "components/sync/engine/sequenced_model_worker.h"
 #include "components/sync/engine/ui_model_worker.h"
@@ -36,6 +36,7 @@ class BundleSyncClient : public syncer::FakeSyncClient {
   BundleSyncClient(syncer::SyncApiComponentFactory* factory,
                    PrefService* pref_service,
                    syncer::ModelTypeStoreService* model_type_store_service,
+                   syncer::DeviceInfoSyncService* device_info_sync_service,
                    autofill::PersonalDataManager* personal_data_manager,
                    const base::Callback<base::WeakPtr<syncer::SyncableService>(
                        syncer::ModelType type)>& get_syncable_service_callback,
@@ -52,6 +53,7 @@ class BundleSyncClient : public syncer::FakeSyncClient {
   base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
       syncer::ModelType type) override;
   syncer::ModelTypeStoreService* GetModelTypeStoreService() override;
+  syncer::DeviceInfoSyncService* GetDeviceInfoSyncService() override;
   scoped_refptr<syncer::ModelSafeWorker> CreateModelWorkerForGroup(
       syncer::ModelSafeGroup group) override;
   history::HistoryService* GetHistoryService() override;
@@ -60,6 +62,7 @@ class BundleSyncClient : public syncer::FakeSyncClient {
  private:
   PrefService* const pref_service_;
   syncer::ModelTypeStoreService* const model_type_store_service_;
+  syncer::DeviceInfoSyncService* const device_info_sync_service_;
   autofill::PersonalDataManager* const personal_data_manager_;
   const base::Callback<base::WeakPtr<syncer::SyncableService>(
       syncer::ModelType type)>
@@ -76,6 +79,7 @@ BundleSyncClient::BundleSyncClient(
     syncer::SyncApiComponentFactory* factory,
     PrefService* pref_service,
     syncer::ModelTypeStoreService* model_type_store_service,
+    syncer::DeviceInfoSyncService* device_info_sync_service,
     autofill::PersonalDataManager* personal_data_manager,
     const base::Callback<base::WeakPtr<syncer::SyncableService>(
         syncer::ModelType type)>& get_syncable_service_callback,
@@ -87,6 +91,7 @@ BundleSyncClient::BundleSyncClient(
     : syncer::FakeSyncClient(factory),
       pref_service_(pref_service),
       model_type_store_service_(model_type_store_service),
+      device_info_sync_service_(device_info_sync_service),
       personal_data_manager_(personal_data_manager),
       get_syncable_service_callback_(get_syncable_service_callback),
       get_bookmark_model_callback_(get_bookmark_model_callback),
@@ -144,6 +149,10 @@ syncer::ModelTypeStoreService* BundleSyncClient::GetModelTypeStoreService() {
   return model_type_store_service_;
 }
 
+syncer::DeviceInfoSyncService* BundleSyncClient::GetDeviceInfoSyncService() {
+  return device_info_sync_service_;
+}
+
 history::HistoryService* BundleSyncClient::GetHistoryService() {
   if (history_service_)
     return history_service_;
@@ -191,8 +200,9 @@ std::unique_ptr<syncer::FakeSyncClient>
 ProfileSyncServiceBundle::SyncClientBuilder::Build() {
   return std::make_unique<BundleSyncClient>(
       bundle_->component_factory(), bundle_->pref_service(),
-      &bundle_->model_type_store_service_, personal_data_manager_,
-      get_syncable_service_callback_, get_bookmark_model_callback_,
+      &bundle_->model_type_store_service_, &bundle_->device_info_sync_service_,
+      personal_data_manager_, get_syncable_service_callback_,
+      get_bookmark_model_callback_,
       activate_model_creation_ ? bundle_->db_thread() : nullptr,
       activate_model_creation_ ? base::SequencedTaskRunnerHandle::Get()
                                : nullptr,
@@ -201,6 +211,15 @@ ProfileSyncServiceBundle::SyncClientBuilder::Build() {
 
 ProfileSyncServiceBundle::ProfileSyncServiceBundle()
     : db_thread_(base::SequencedTaskRunnerHandle::Get()),
+      device_info_sync_service_(
+          model_type_store_service_.GetStoreFactory(),
+          std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
+              version_info::Channel::UNKNOWN,
+              "someversion",
+              /*is_tablet=*/false,
+              /*signin_scoped_device_id_callback=*/base::BindRepeating([]() {
+                return std::string();
+              }))),
       identity_test_env_(&test_url_loader_factory_, &pref_service_) {
   syncer::SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
   identity_test_env_.SetAutomaticIssueOfAccessTokens(true);
@@ -227,8 +246,6 @@ ProfileSyncService::InitParams ProfileSyncServiceBundle::CreateBasicInitParams(
   init_params.network_connection_tracker =
       network::TestNetworkConnectionTracker::GetInstance();
   init_params.debug_identifier = "dummyDebugName";
-  init_params.local_device_info_provider =
-      std::make_unique<syncer::LocalDeviceInfoProviderMock>();
 
   return init_params;
 }
