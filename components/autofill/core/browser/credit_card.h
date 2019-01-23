@@ -48,8 +48,8 @@ class CreditCard : public AutofillDataModel {
     // convert to a FULL_SERVER_CARD.
     MASKED_SERVER_CARD,
 
-    // A card from the Wallet server with full information. This card is not
-    // locally editable.
+    // A card from the Wallet server with full information store locally. This
+    // card is not locally editable.
     FULL_SERVER_CARD,
   };
 

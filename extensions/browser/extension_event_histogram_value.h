@@ -451,6 +451,8 @@ enum HistogramValue {
   STORAGE_LOCAL_ON_CHANGE = 430,
   STORAGE_SYNC_ON_CHANGE = 431,
   STORAGE_MANAGED_ON_CHANGE = 432,
+  AUTOFILL_PRIVATE_ON_LOCAL_CREDIT_CARD_LIST_CHANGED = 433,
+  AUTOFILL_PRIVATE_ON_SERVER_CREDIT_CARD_LIST_CHANGED = 434,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY
