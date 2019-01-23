@@ -472,7 +472,13 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
 void JSONTraceExporter::OnDetach(bool) {
   NOTREACHED();
 }
+
 void JSONTraceExporter::OnAttach(bool, const perfetto::TraceConfig&) {
+  NOTREACHED();
+}
+
+void JSONTraceExporter::OnTraceStats(bool, const perfetto::TraceStats&) {
+  // We don't currently use GetTraceStats().
   NOTREACHED();
 }
 

@@ -88,6 +88,7 @@ class MockConsumerEndpoint : public perfetto::TracingService::ConsumerEndpoint {
   // Unused in chrome.
   void Detach(const std::string& /*key*/) override {}
   void Attach(const std::string& /*key*/) override {}
+  void GetTraceStats() override {}
 
  private:
   MockService* mock_service_;
