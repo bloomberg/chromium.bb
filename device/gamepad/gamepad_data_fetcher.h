@@ -51,6 +51,13 @@ class DEVICE_GAMEPAD_EXPORT GamepadDataFetcher {
   // the |timestamp| gamepad member.
   static int64_t TimeInMicroseconds(base::TimeTicks update_time);
 
+  // Perform one-time string initialization on the gamepad state in |pad|.
+  static void UpdateGamepadStrings(const std::string& name,
+                                   uint16_t vendor_id,
+                                   uint16_t product_id,
+                                   bool has_standard_mapping,
+                                   Gamepad& pad);
+
   // Call a vibration callback on the same sequence that the vibration command
   // was issued on.
   static void RunVibrationCallback(

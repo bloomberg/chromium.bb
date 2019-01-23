@@ -53,13 +53,6 @@ class DEVICE_GAMEPAD_EXPORT GamepadPlatformDataFetcherLinux
       scoped_refptr<base::SequencedTaskRunner>) override;
 
  private:
-  // Updates the ID and mapper strings in |pad| with new device info.
-  static void UpdateGamepadStrings(const std::string& name,
-                                   uint16_t vendor_id,
-                                   uint16_t product_id,
-                                   bool has_standard_mapping,
-                                   Gamepad* pad);
-
   void OnAddedToProvider() override;
 
   void RefreshDevice(udev_device* dev);

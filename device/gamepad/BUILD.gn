@@ -78,6 +78,10 @@ component("gamepad") {
     "hid_haptic_gamepad_mac.h",
     "hid_haptic_gamepad_win.cc",
     "hid_haptic_gamepad_win.h",
+    "nintendo_controller.cc",
+    "nintendo_controller.h",
+    "nintendo_data_fetcher.cc",
+    "nintendo_data_fetcher.h",
     "raw_input_data_fetcher_win.cc",
     "raw_input_data_fetcher_win.h",
     "raw_input_gamepad_device_win.cc",
@@ -131,6 +135,12 @@ component("gamepad") {
 
   if (is_android) {
     deps += [ ":jni_headers" ]
+    sources -= [
+      "nintendo_controller.cc",
+      "nintendo_controller.h",
+      "nintendo_data_fetcher.cc",
+      "nintendo_data_fetcher.h",
+    ]
   }
 
   if (is_mac) {
