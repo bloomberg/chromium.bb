@@ -274,11 +274,9 @@ bool EnableInProcessStackDumping() {
   return InitializeSymbols();
 }
 
-NOINLINE StackTrace::StackTrace(size_t count) {
-  count = std::min(base::size(trace_), count);
-
+NOINLINE size_t CollectStackTrace(void** trace, size_t count) {
   // When walking our own stack, use CaptureStackBackTrace().
-  count_ = CaptureStackBackTrace(0, count, trace_, NULL);
+  return CaptureStackBackTrace(0, count, trace, NULL);
 }
 
 StackTrace::StackTrace(EXCEPTION_POINTERS* exception_pointers) {

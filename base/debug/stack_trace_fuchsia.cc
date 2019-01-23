@@ -169,10 +169,11 @@ bool EnableInProcessStackDumping() {
   return true;
 }
 
-StackTrace::StackTrace(size_t count) : count_(0) {
-  BacktraceData data = {&trace_[0], &count_,
-                        std::min(count, static_cast<size_t>(kMaxTraces))};
+size_t CollectStackTrace(void** trace, size_t count) {
+  size_t frame_count = 0;
+  BacktraceData data = {trace, &frame_count, count};
   _Unwind_Backtrace(&UnwindStore, &data);
+  return frame_count;
 }
 
 void StackTrace::PrintWithPrefix(const char* prefix_string) const {

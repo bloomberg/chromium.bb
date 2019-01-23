@@ -202,6 +202,10 @@ uintptr_t GetStackEnd() {
 
 StackTrace::StackTrace() : StackTrace(base::size(trace_)) {}
 
+StackTrace::StackTrace(size_t count) {
+  count_ = CollectStackTrace(trace_, std::min(count, base::size(trace_)));
+}
+
 StackTrace::StackTrace(const void* const* trace, size_t count) {
   count = std::min(count, base::size(trace_));
   if (count)
