@@ -121,7 +121,7 @@ struct CORE_EXPORT NGInlineItemResult {
                      bool has_unpositioned_floats);
 
 #if DCHECK_IS_ON()
-  void CheckConsistency(bool during_line_break = false) const;
+  void CheckConsistency(bool allow_null_shape_result = false) const;
 #endif
 };
 

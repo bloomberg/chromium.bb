@@ -226,7 +226,7 @@ void NGLineBreaker::NextLine(NGLineInfo* line_info) {
 
 #if DCHECK_IS_ON()
   for (const auto& result : *item_results_)
-    result.CheckConsistency();
+    result.CheckConsistency(mode_ == NGLineBreakerMode::kMinContent);
 #endif
 
   // We should create a line-box when:
@@ -401,10 +401,15 @@ void NGLineBreaker::HandleText(const NGInlineItem& item) {
 
   NGInlineItemResult* item_result = AddItem(item);
   item_result->should_create_line_box = true;
-  LayoutUnit available_width = AvailableWidthToFit();
 
   if (auto_wrap_) {
+    if (mode_ == NGLineBreakerMode::kMinContent &&
+        HandleTextForFastMinContent(item_result, item)) {
+      return;
+    }
+
     // Try to break inside of this text item.
+    LayoutUnit available_width = AvailableWidthToFit();
     BreakText(item_result, item, available_width - position_);
 
     if (item.IsSymbolMarker()) {
@@ -549,6 +554,103 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
         break_iterator_.IsBreakable(item_result->end_offset);
     trailing_whitespace_ = WhitespaceState::kUnknown;
   }
+}
+
+// This function handles text item for min-content. The specialized logic is
+// because min-content is very expensive by breaking at every break opportunity
+// and producing as many lines as the number of break opportunities.
+//
+// This function breaks the text in NGInlineItem at every break opportunity,
+// computes the maximum width of all words, and creates one NGInlineItemResult
+// that has the maximum width. For example, for a text item of "1 2 34 5 6",
+// only the width of "34" matters for min-content.
+//
+// The first word and the last word, "1" and "6" in the example above, are
+// handled in normal |HandleText()| because they may form a word with the
+// previous/next item.
+bool NGLineBreaker::HandleTextForFastMinContent(NGInlineItemResult* item_result,
+                                                const NGInlineItem& item) {
+  DCHECK_EQ(mode_, NGLineBreakerMode::kMinContent);
+  DCHECK(auto_wrap_);
+  DCHECK_EQ(item.Type(), NGInlineItem::kText);
+
+  // If this is the first part of the text, it may form a word with the previous
+  // item. Fallback to |HandleText()|.
+  unsigned start_offset = item_result->start_offset;
+  DCHECK_LT(start_offset, item.EndOffset());
+  if (start_offset != line_info_->StartOffset() &&
+      start_offset == item.StartOffset())
+    return false;
+  // If this is the last part of the text, it may form a word with the next
+  // item. Fallback to |HandleText()|.
+  if (fast_min_content_item_ == &item)
+    return false;
+
+  // Hyphenation is not supported yet.
+  if (hyphenation_)
+    return false;
+
+  base::Optional<LineBreakType> saved_line_break_type;
+  if (break_anywhere_if_overflow_ && !override_break_anywhere_) {
+    saved_line_break_type = break_iterator_.BreakType();
+    break_iterator_.SetBreakType(LineBreakType::kBreakCharacter);
+  }
+
+  // Break the text at every break opportunity and measure each word.
+  DCHECK(item.TextShapeResult());
+  const ShapeResult& shape_result = *item.TextShapeResult();
+  DCHECK_EQ(shape_result.StartIndex(), item.StartOffset());
+  DCHECK_GE(start_offset, shape_result.StartIndex());
+  shape_result.EnsurePositionData();
+  const String& text = Text();
+  float min_width = 0;
+  unsigned last_end_offset = 0;
+  while (true) {
+    unsigned end_offset =
+        break_iterator_.NextBreakOpportunity(start_offset + 1);
+    if (end_offset >= item.EndOffset())
+      break;
+
+    // Inserting a hyphenation character is not supported yet.
+    if (text[end_offset - 1] == kSoftHyphenCharacter)
+      return false;
+
+    float start_position = shape_result.CachedPositionForOffset(
+        start_offset - shape_result.StartIndex());
+    float end_position = shape_result.CachedPositionForOffset(
+        end_offset - shape_result.StartIndex());
+    float word_width = IsLtr(shape_result.Direction())
+                           ? end_position - start_position
+                           : start_position - end_position;
+    min_width = std::max(word_width, min_width);
+
+    last_end_offset = end_offset;
+    start_offset = end_offset;
+    while (start_offset < item.EndOffset() &&
+           text[start_offset] == kSpaceCharacter) {
+      ++start_offset;
+    }
+  }
+
+  if (saved_line_break_type.has_value())
+    break_iterator_.SetBreakType(saved_line_break_type.value());
+
+  // If there was only one break opportunity in this item, it may form a word
+  // with previous and/or next item. Fallback to |HandleText()|.
+  if (!last_end_offset)
+    return false;
+
+  // Create an NGInlineItemResult that has the max of widths of all words.
+  item_result->end_offset = last_end_offset;
+  item_result->inline_size = LayoutUnit::FromFloatCeil(min_width);
+  item_result->can_break_after = true;
+
+  trailing_whitespace_ = WhitespaceState::kUnknown;
+  position_ += item_result->inline_size;
+  state_ = LineBreakState::kTrailing;
+  fast_min_content_item_ = &item;
+  MoveToNextOf(*item_result);
+  return true;
 }
 
 // Re-shape the specified range of |NGInlineItem|.
