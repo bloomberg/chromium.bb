@@ -26,6 +26,7 @@ class ASH_EXPORT AccessibilityHighlightLayer : public AccessibilityLayer {
 
   // AccessibilityLayer overrides:
   bool CanAnimate() const override;
+  bool NeedToAnimate() const override;
   int GetInset() const override;
 
  private:

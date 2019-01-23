@@ -65,7 +65,7 @@ void AccessibilityLayer::CreateOrUpdateLayer(aura::Window* root_window,
   gfx::Rect layer_bounds(0, 0, bounds.width(), bounds.height());
   layer_->SchedulePaint(layer_bounds);
 
-  if (CanAnimate()) {
+  if (NeedToAnimate()) {
     // Update the animation observer.
     display::Display display =
         display::Screen::GetScreen()->GetDisplayMatching(bounds);

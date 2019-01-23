@@ -162,8 +162,10 @@ void AccessibilityFocusRingController::HideCaretRing() {
 }
 
 void AccessibilityFocusRingController::SetNoFadeForTesting() {
+  no_fade_for_testing_ = true;
   for (auto iter = focus_ring_groups_.begin(); iter != focus_ring_groups_.end();
        ++iter) {
+    iter->second->set_no_fade_for_testing();
     iter->second->focus_animation_info()->fade_in_time = base::TimeDelta();
     iter->second->focus_animation_info()->fade_out_time =
         base::TimeDelta::FromHours(1);
@@ -253,6 +255,9 @@ AccessibilityFocusRingController::GetFocusRingGroupForCallerId(
   // Add it and then return it.
   focus_ring_groups_[caller_id_to_focus_ring_group_] =
       std::make_unique<AccessibilityFocusRingGroup>();
+  if (no_fade_for_testing_) {
+    SetNoFadeForTesting();
+  }
   return focus_ring_groups_[caller_id_to_focus_ring_group_].get();
 }
 

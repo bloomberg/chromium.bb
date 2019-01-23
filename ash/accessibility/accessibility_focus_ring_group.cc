@@ -83,9 +83,10 @@ void AccessibilityFocusRingGroup::UpdateFocusRingsFromFocusRects(
   }
 
   if (focus_ring_behavior_ == mojom::FocusRingBehavior::PERSIST_FOCUS_RING &&
-      focus_layers_[0]->CanAnimate()) {
+      focus_layers_[0]->CanAnimate() && !no_fade_for_testing_) {
     // In PERSIST mode, animate the first ring to its destination
     // location, then set the rest of the rings directly.
+    // If no_fade_for_testing_ is set, don't wait for animation.
     for (size_t i = 1; i < focus_rings_.size(); ++i)
       focus_layers_[i]->Set(focus_rings_[i]);
   } else {
