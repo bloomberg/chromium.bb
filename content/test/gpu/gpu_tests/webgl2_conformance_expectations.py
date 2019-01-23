@@ -95,12 +95,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'integer-cubemap-specification-order-bug.html',
         bug=905003) # owner:cwallez, test might be buggy
 
-    # The following actually passes on gl_passthrough and also Mac Intel with
-    # command buffer.
-    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
-        'texturelodoffset.html',
-        bug=794335)
-
     # Nvidia bugs fixed in latest driver
     # TODO(http://crbug.com/887241): Upgrade the drivers on the bots.
     self.Fail('conformance/glsl/bugs/assign-to-swizzled-twice-in-function.html',
