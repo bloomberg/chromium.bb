@@ -41,28 +41,28 @@ class ViewsHostableView {
     virtual void OnHostableViewDestroying() = 0;
   };
 
-  // Called when the content::WebContentsView's NSView is added as a subview of
-  // the views::View's NSView (note that these are the browser-side NSViews).
-  // This is responsible for:
+  // Called to add the content::WebContentsView's NSView as a subview of the
+  // views::View's NSView. This is responsible for:
   // - Adding the WebContentsView's ui::Layer to the parent's ui::Layer tree.
   // - Stitching together the accessibility tree between the views::View and
   //   the WebContentsView.
-  // - Stitching together any app-shim-side NSViews.
-  virtual void OnViewsHostableAttached(Host* host) = 0;
+  // - Adding the WebContents browser-side and app-shim-side NSViews as children
+  //   to the views::View's NSViews.
+  virtual void ViewsHostableAttach(Host* host) = 0;
 
   // Called when the WebContentsView's NSView has been removed from the
   // views::View's NSView. This is responsible for un-doing all of the actions
   // taken when attaching.
-  virtual void OnViewsHostableDetached() = 0;
+  virtual void ViewsHostableDetach() = 0;
 
-  // Called when the WebContentsView's NSView is to be shown or resized.
-  virtual void OnViewsHostableShow(const gfx::Rect& bounds_in_window) = 0;
+  // Resize the WebContentsView's NSView.
+  virtual void ViewsHostableSetBounds(const gfx::Rect& bounds_in_window) = 0;
 
-  // Called when the WebContentsView's NSView is to be hidden.
-  virtual void OnViewsHostableHide() = 0;
+  // Show or hide the WebContentsView's NSView.
+  virtual void ViewsHostableSetVisible(bool visible) = 0;
 
-  // Called when the WebContentsView's NSView is to be made a first responder.
-  virtual void OnViewsHostableMakeFirstResponder() = 0;
+  // Make the WebContentsView's NSView be a first responder.
+  virtual void ViewsHostableMakeFirstResponder() = 0;
 };
 
 }  // namespace ui

@@ -115,21 +115,23 @@ void NativeViewHostMac::AttachNativeView() {
   DCHECK(host_->native_view());
   DCHECK(!native_view_);
   native_view_.reset([host_->native_view().GetNativeNSView() retain]);
+  if ([native_view_ conformsToProtocol:@protocol(ViewsHostable)]) {
+    id hostable = native_view_;
+    native_view_hostable_ = [hostable viewsHostableView];
+  }
   EnsureNativeViewHasNoChildWidgets(native_view_);
 
   auto* bridge_host = GetBridgedNativeWidgetHost();
   DCHECK(bridge_host);
-  NSView* superview =
-      bridge_host->native_widget_mac()->GetNativeView().GetNativeNSView();
-  [superview addSubview:native_view_];
-  bridge_host->SetAssociationForView(host_, native_view_);
 
-  if ([native_view_ conformsToProtocol:@protocol(ViewsHostable)]) {
-    id hostable = native_view_;
-    native_view_hostable_ = [hostable viewsHostableView];
-    if (native_view_hostable_)
-      native_view_hostable_->OnViewsHostableAttached(this);
+  if (native_view_hostable_) {
+    native_view_hostable_->ViewsHostableAttach(this);
+  } else {
+    NSView* superview =
+        bridge_host->native_widget_mac()->GetNativeView().GetNativeNSView();
+    [superview addSubview:native_view_];
   }
+  bridge_host->SetAssociationForView(host_, native_view_);
 }
 
 void NativeViewHostMac::NativeViewDetaching(bool destroyed) {
@@ -146,12 +148,12 @@ void NativeViewHostMac::NativeViewDetaching(bool destroyed) {
   }
 
   DCHECK(native_view_ == host_native_view);
-  [native_view_ setHidden:YES];
-  [native_view_ removeFromSuperview];
-
   if (native_view_hostable_) {
-    native_view_hostable_->OnViewsHostableDetached();
+    native_view_hostable_->ViewsHostableDetach();
     native_view_hostable_ = nullptr;
+  } else {
+    [native_view_ setHidden:YES];
+    [native_view_ removeFromSuperview];
   }
 
   EnsureNativeViewHasNoChildWidgets(native_view_);
@@ -207,39 +209,40 @@ void NativeViewHostMac::ShowWidget(int x,
                                    int native_h) {
   // TODO(https://crbug.com/415024): Implement host_->fast_resize().
 
-  // Coordinates will be from the top left of the parent Widget. The NativeView
-  // is already in the same NSWindow, so just flip to get Cooca coordinates and
-  // then convert to the containing view.
-  NSRect window_rect = NSMakeRect(
-      x,
-      host_->GetWidget()->GetClientAreaBoundsInScreen().height() - y - h,
-      w,
-      h);
+  if (native_view_hostable_) {
+    native_view_hostable_->ViewsHostableSetBounds(gfx::Rect(x, y, w, h));
+    native_view_hostable_->ViewsHostableSetVisible(true);
+  } else {
+    // Coordinates will be from the top left of the parent Widget. The
+    // NativeView is already in the same NSWindow, so just flip to get Cooca
+    // coordinates and then convert to the containing view.
+    NSRect window_rect = NSMakeRect(
+        x, host_->GetWidget()->GetClientAreaBoundsInScreen().height() - y - h,
+        w, h);
 
-  // Convert window coordinates to the hosted view's superview, since that's how
-  // coordinates of the hosted view's frame is based.
-  NSRect container_rect =
-      [[native_view_ superview] convertRect:window_rect fromView:nil];
-  [native_view_ setFrame:container_rect];
-  [native_view_ setHidden:NO];
-
-  if (native_view_hostable_)
-    native_view_hostable_->OnViewsHostableShow(gfx::Rect(x, y, w, h));
+    // Convert window coordinates to the hosted view's superview, since that's
+    // how coordinates of the hosted view's frame is based.
+    NSRect container_rect = [[native_view_ superview] convertRect:window_rect
+                                                         fromView:nil];
+    [native_view_ setFrame:container_rect];
+    [native_view_ setHidden:NO];
+  }
 }
 
 void NativeViewHostMac::HideWidget() {
-  [native_view_ setHidden:YES];
-
   if (native_view_hostable_)
-    native_view_hostable_->OnViewsHostableHide();
+    native_view_hostable_->ViewsHostableSetVisible(false);
+  else
+    [native_view_ setHidden:YES];
 }
 
 void NativeViewHostMac::SetFocus() {
-  if ([native_view_ acceptsFirstResponder])
-    [[native_view_ window] makeFirstResponder:native_view_];
-
-  if (native_view_hostable_)
-    native_view_hostable_->OnViewsHostableMakeFirstResponder();
+  if (native_view_hostable_) {
+    native_view_hostable_->ViewsHostableMakeFirstResponder();
+  } else {
+    if ([native_view_ acceptsFirstResponder])
+      [[native_view_ window] makeFirstResponder:native_view_];
+  }
 }
 
 gfx::NativeView NativeViewHostMac::GetNativeViewContainer() const {
@@ -266,7 +269,10 @@ gfx::NativeCursor NativeViewHostMac::GetCursor(int x, int y) {
 }
 
 void NativeViewHostMac::SetVisible(bool visible) {
-  [native_view_ setHidden:!visible];
+  if (native_view_hostable_)
+    native_view_hostable_->ViewsHostableSetVisible(visible);
+  else
+    [native_view_ setHidden:!visible];
 }
 
 void NativeViewHostMac::SetParentAccessible(gfx::NativeViewAccessible) {}

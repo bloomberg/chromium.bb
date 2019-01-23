@@ -328,6 +328,8 @@ void BridgedNativeWidgetHostImpl::CreateRemoteBridge(
         local_window_create_params.get());
     [local_window_ setBridgedNativeWidgetId:widget_id_];
     [local_window_ setAlphaValue:0.0];
+    local_view_id_mapping_ = std::make_unique<ui::ScopedNSViewIdMapping>(
+        root_view_id_, [local_window_ contentView]);
   }
 
   // Initialize |bridge_ptr_| to point to a bridge created by |factory|.

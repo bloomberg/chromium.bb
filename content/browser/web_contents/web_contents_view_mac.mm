@@ -535,11 +535,11 @@ void WebContentsViewMac::PerformDragOperation(
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewMac, ViewsHostableView:
 
-void WebContentsViewMac::OnViewsHostableAttached(
-    ViewsHostableView::Host* host) {
+void WebContentsViewMac::ViewsHostableAttach(ViewsHostableView::Host* host) {
   views_host_ = host;
-  [cocoa_view()
-      setAccessibilityParentElement:views_host_->GetAccessibilityElement()];
+  std::vector<uint8_t> token = ui::RemoteAccessibility::GetTokenForLocalElement(
+      views_host_->GetAccessibilityElement());
+  ns_view_bridge_local_->SetParentNSView(views_host_->GetNSViewId(), token);
 
   // Create an NSView in the target process, if one exists.
   uint64_t factory_host_id = views_host_->GetViewsFactoryHostId();
@@ -554,9 +554,6 @@ void WebContentsViewMac::OnViewsHostableAttached(
     factory_host->GetFactory()->CreateWebContentsNSViewBridge(
         ns_view_id_, client.PassInterface(), std::move(bridge_request));
 
-    std::vector<uint8_t> token =
-        ui::RemoteAccessibility::GetTokenForLocalElement(
-            views_host_->GetAccessibilityElement());
     ns_view_bridge_remote_->SetParentNSView(views_host_->GetNSViewId(), token);
 
     // TODO(ccameron): Communicate window visibility and occlusion from the
@@ -572,16 +569,16 @@ void WebContentsViewMac::OnViewsHostableAttached(
   }
 }
 
-void WebContentsViewMac::OnViewsHostableDetached() {
+void WebContentsViewMac::ViewsHostableDetach() {
   DCHECK(views_host_);
+  ns_view_bridge_local_->SetVisible(false);
+  ns_view_bridge_local_->ResetParentNSView();
   views_host_ = nullptr;
 
   for (auto* rwhv_mac : GetChildViews()) {
     rwhv_mac->MigrateNSViewBridge(nullptr, 0);
     rwhv_mac->SetParentUiLayer(nullptr);
   }
-
-  [cocoa_view() setAccessibilityParentElement:nil];
 
   // Disconnect from the remote bridge, if it exists. This will have the effect
   // of destroying the associated bridge instance with its NSView.
@@ -593,22 +590,27 @@ void WebContentsViewMac::OnViewsHostableDetached() {
   }
 }
 
-void WebContentsViewMac::OnViewsHostableShow(
+void WebContentsViewMac::ViewsHostableSetBounds(
     const gfx::Rect& bounds_in_window) {
-  if (ns_view_bridge_remote_) {
-    ns_view_bridge_remote_->SetBounds(bounds_in_window);
-    ns_view_bridge_remote_->SetVisible(true);
-  }
-}
-
-void WebContentsViewMac::OnViewsHostableHide() {
+  // Update both the in-process and out-of-process NSViews' bounds.
+  ns_view_bridge_local_->SetBounds(bounds_in_window);
   if (ns_view_bridge_remote_)
-    ns_view_bridge_remote_->SetVisible(false);
+    ns_view_bridge_remote_->SetBounds(bounds_in_window);
 }
 
-void WebContentsViewMac::OnViewsHostableMakeFirstResponder() {
+void WebContentsViewMac::ViewsHostableSetVisible(bool visible) {
+  // Update both the in-process and out-of-process NSViews' visibility.
+  ns_view_bridge_local_->SetVisible(visible);
+  if (ns_view_bridge_remote_)
+    ns_view_bridge_remote_->SetVisible(visible);
+}
+
+void WebContentsViewMac::ViewsHostableMakeFirstResponder() {
+  // Only make the true NSView become the first responder.
   if (ns_view_bridge_remote_)
     ns_view_bridge_remote_->MakeFirstResponder();
+  else
+    ns_view_bridge_local_->MakeFirstResponder();
 }
 
 }  // namespace content
