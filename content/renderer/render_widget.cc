@@ -1402,10 +1402,6 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
   if (render_thread)
     render_thread->SetRenderingColorSpace(params.screen_info.color_space);
 
-  // Ignore this during shutdown.
-  if (!GetWebWidget())
-    return;
-
   // Only propagate the external PSF to non-main-frames.
   if (!delegate())
     layer_tree_view_->SetExternalPageScaleFactor(params.page_scale_factor);
