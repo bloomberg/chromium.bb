@@ -109,25 +109,47 @@ CommandHandler.onCommand = function(command) {
       chrome.windows.create(explorerPage);
       break;
     case 'showLogPage':
-      var logPage = {url: 'cvox2/background/log.html'};
-      chrome.tabs.create(logPage);
+      chrome.commandLinePrivate.hasSwitch(
+          'enable-chromevox-developer-option', function(enable) {
+            if (enable) {
+              var logPage = {url: 'cvox2/background/log.html'};
+              chrome.tabs.create(logPage);
+            }
+          });
       break;
     case 'enableLogging':
-      var prefs = new cvox.ChromeVoxPrefs();
-      for (var type in cvox.ChromeVoxPrefs.loggingPrefs) {
-        prefs.setLoggingPrefs(cvox.ChromeVoxPrefs.loggingPrefs[type], true);
-      }
+      chrome.commandLinePrivate.hasSwitch(
+          'enable-chromevox-developer-option', function(enable) {
+            if (enable) {
+              var prefs = new cvox.ChromeVoxPrefs();
+              for (var type in cvox.ChromeVoxPrefs.loggingPrefs) {
+                prefs.setLoggingPrefs(
+                    cvox.ChromeVoxPrefs.loggingPrefs[type], true);
+              }
+            }
+          });
       break;
     case 'disableLogging':
-      var prefs = new cvox.ChromeVoxPrefs();
-      for (var type in cvox.ChromeVoxPrefs.loggingPrefs) {
-        prefs.setLoggingPrefs(cvox.ChromeVoxPrefs.loggingPrefs[type], false);
-      }
+      chrome.commandLinePrivate.hasSwitch(
+          'enable-chromevox-developer-option', function(enable) {
+            if (enable) {
+              var prefs = new cvox.ChromeVoxPrefs();
+              for (var type in cvox.ChromeVoxPrefs.loggingPrefs) {
+                prefs.setLoggingPrefs(
+                    cvox.ChromeVoxPrefs.loggingPrefs[type], false);
+              }
+            }
+          });
       break;
     case 'dumpTree':
-      chrome.automation.getDesktop(function(root) {
-        LogStore.getInstance().writeTreeLog(new TreeDumper(root));
-      });
+      chrome.commandLinePrivate.hasSwitch(
+          'enable-chromevox-developer-option', function(enable) {
+            if (enable) {
+              chrome.automation.getDesktop(function(root) {
+                LogStore.getInstance().writeTreeLog(new TreeDumper(root));
+              });
+            }
+          });
       break;
     case 'decreaseTtsRate':
       CommandHandler.increaseOrDecreaseSpeechProperty_(
@@ -1189,4 +1211,5 @@ CommandHandler.init = function() {
     }
   });
 };
+
 });  //  goog.scope
