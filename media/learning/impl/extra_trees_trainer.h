@@ -14,6 +14,7 @@
 #include "media/learning/common/learning_task.h"
 #include "media/learning/impl/one_hot.h"
 #include "media/learning/impl/random_number_generator.h"
+#include "media/learning/impl/random_tree_trainer.h"
 #include "media/learning/impl/training_algorithm.h"
 
 namespace media {

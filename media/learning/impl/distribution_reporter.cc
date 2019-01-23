@@ -31,20 +31,33 @@ class RegressionReporter : public DistributionReporter {
 
   void OnPrediction(TargetDistribution observed,
                     TargetDistribution predicted) override {
+    DCHECK_EQ(task().target_description.ordering,
+              LearningTask::Ordering::kNumeric);
+    DCHECK(!task().uma_hacky_confusion_matrix.empty());
+
     // As a complete hack, record accuracy with a fixed threshold.  The average
     // is the observed / predicted percentage of dropped frames.
     bool observed_smooth = observed.Average() <= task().smoothness_threshold;
     bool predicted_smooth = predicted.Average() <= task().smoothness_threshold;
+    DVLOG(2) << "Learning: " << task().name
+             << ": predicted: " << predicted_smooth << " ("
+             << predicted.Average() << ") observed: " << observed_smooth << " ("
+             << observed.Average() << ")";
 
     // Convert to a bucket from which we can get the confusion matrix.
     ConfusionMatrix uma_bucket = static_cast<ConfusionMatrix>(
         (observed_smooth ? 1 : 0) | (predicted_smooth ? 2 : 0));
-    base::UmaHistogramEnumeration(task().uma_name, uma_bucket);
+    base::UmaHistogramEnumeration(task().uma_hacky_confusion_matrix,
+                                  uma_bucket);
   }
 };
 
 std::unique_ptr<DistributionReporter> DistributionReporter::Create(
     const LearningTask& task) {
+  // Hacky reporting is the only thing we know how to report.
+  if (task.uma_hacky_confusion_matrix.empty())
+    return nullptr;
+
   if (task.target_description.ordering == LearningTask::Ordering::kNumeric)
     return std::make_unique<RegressionReporter>(task);
   return nullptr;

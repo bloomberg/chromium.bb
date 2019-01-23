@@ -4,7 +4,12 @@
 
 component("impl") {
   output_name = "learning_impl"
-  visibility = [ "//media/learning/impl:unit_tests" ]
+  visibility = [
+    "//media/learning/impl:unit_tests",
+
+    # Actual clients.
+    "//media/capabilities",
+  ]
 
   sources = [
     "distribution_reporter.cc",

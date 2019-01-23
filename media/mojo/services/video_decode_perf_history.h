@@ -24,6 +24,8 @@
 
 namespace media {
 
+class LearningHelper;
+
 // This class saves and retrieves video decode performance statistics on behalf
 // of the MediaCapabilities API. It also helps to grade the accuracy of the API
 // by comparing its history-based assessment of smoothness/power-efficiency to
@@ -179,6 +181,9 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
   // Maps bindings from several render-processes to this single browser-process
   // service.
   mojo::BindingSet<mojom::VideoDecodePerfHistory> bindings_;
+
+  // Optional helper for local learning.
+  std::unique_ptr<LearningHelper> learning_helper_;
 
   // Ensures all access to class members come on the same sequence.
   SEQUENCE_CHECKER(sequence_checker_);
