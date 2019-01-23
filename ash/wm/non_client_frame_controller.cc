@@ -139,6 +139,15 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
     return cursor_;
   }
 
+  gfx::Size GetMaximumSize() const override {
+    aura::Window* window = GetNativeWindow();
+    if (window && client_provides_frame_ &&
+        window->GetProperty(aura::client::kMaximumSize)) {
+      return *window->GetProperty(aura::client::kMaximumSize);
+    }
+    return views::NativeWidgetAura::GetMaximumSize();
+  }
+
   gfx::Size GetMinimumSize() const override {
     aura::Window* window = GetNativeWindow();
     if (window && client_provides_frame_ &&
