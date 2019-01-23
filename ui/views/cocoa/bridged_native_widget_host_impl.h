@@ -14,6 +14,7 @@
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/accelerated_widget_mac/display_link_mac.h"
 #include "ui/base/cocoa/accessibility_focus_overrider.h"
+#include "ui/base/cocoa/ns_view_ids.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/compositor/layer_owner.h"
 #include "ui/views/cocoa/bridge_factory_host.h"
@@ -408,6 +409,9 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
 
   // Window that is guaranteed to exist in this process (see GetLocalNSWindow).
   base::scoped_nsobject<NativeWidgetMacNSWindow> local_window_;
+
+  // Id mapping for |local_window_|'s content NSView.
+  std::unique_ptr<ui::ScopedNSViewIdMapping> local_view_id_mapping_;
 
   std::unique_ptr<TooltipManager> tooltip_manager_;
   std::unique_ptr<ui::InputMethod> input_method_;

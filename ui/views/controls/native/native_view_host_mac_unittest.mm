@@ -26,15 +26,13 @@ class TestViewsHostable : public ui::ViewsHostableView {
 
  private:
   // ui::ViewsHostableView:
-  void OnViewsHostableAttached(ui::ViewsHostableView::Host* host) override {
+  void ViewsHostableAttach(ui::ViewsHostableView::Host* host) override {
     parent_accessibility_element_ = host->GetAccessibilityElement();
   }
-  void OnViewsHostableDetached() override {
-    parent_accessibility_element_ = nil;
-  }
-  void OnViewsHostableShow(const gfx::Rect& bounds_in_window) override {}
-  void OnViewsHostableHide() override {}
-  void OnViewsHostableMakeFirstResponder() override {}
+  void ViewsHostableDetach() override { parent_accessibility_element_ = nil; }
+  void ViewsHostableSetBounds(const gfx::Rect& bounds_in_window) override {}
+  void ViewsHostableSetVisible(bool visible) override {}
+  void ViewsHostableMakeFirstResponder() override {}
 
   id parent_accessibility_element_ = nil;
 };

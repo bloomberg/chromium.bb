@@ -112,11 +112,11 @@ class WebContentsViewMac : public WebContentsView,
   void OnMenuClosed() override;
 
   // ViewsHostableView:
-  void OnViewsHostableAttached(ViewsHostableView::Host* host) override;
-  void OnViewsHostableDetached() override;
-  void OnViewsHostableShow(const gfx::Rect& bounds_in_window) override;
-  void OnViewsHostableHide() override;
-  void OnViewsHostableMakeFirstResponder() override;
+  void ViewsHostableAttach(ViewsHostableView::Host* host) override;
+  void ViewsHostableDetach() override;
+  void ViewsHostableSetBounds(const gfx::Rect& bounds_in_window) override;
+  void ViewsHostableSetVisible(bool visible) override;
+  void ViewsHostableMakeFirstResponder() override;
 
   // A helper method for closing the tab in the
   // CloseTabAfterEventTracking() implementation.
