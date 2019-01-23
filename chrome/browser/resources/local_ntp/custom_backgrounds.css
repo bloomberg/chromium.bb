@@ -82,6 +82,12 @@ html[dir=rtl] #edit-bg {
   right: 16px;
 }
 
+html[darkmode=true] #edit-bg-dialog {
+  background-color: rgb(41, 42, 45);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3),
+      0 4px 8px 3px rgba(0, 0, 0, 0.15);
+}
+
 #edit-bg-menu {
   padding: 0 0 16px 0;
   width: 325px;
@@ -104,6 +110,10 @@ html[dir=rtl] #edit-bg-title {
   padding: 16px 16px 0 0;
 }
 
+html[darkmode=true] #edit-bg-title {
+  color: rgb(var(--GG200-rgb));
+}
+
 .bg-option {
   color: rgb(var(--GG800-rgb));
   font-family: 'Roboto', arial, sans-serif;
@@ -112,8 +122,16 @@ html[dir=rtl] #edit-bg-title {
   line-height: 40px;
 }
 
+html[darkmode=true] .bg-option {
+  color: rgb(var(--GG200-rgb));
+}
+
 .bg-option:hover {
   background-color: rgb(var(--GG100-rgb));
+}
+
+html[darkmode=true] .bg-option:hover {
+  background-color: rgb(var(--GG800-rgb));
 }
 
 .bg-option-img {
@@ -133,6 +151,10 @@ html[dir=rtl] .bg-option-img {
 
 .bg-option.bg-option-disabled {
   opacity: 0.28;
+}
+
+html[darkmode=true] .bg-option.bg-option-disabled {
+  opacity: 0.38;
 }
 
 .bg-option.bg-option-disabled:focus {
@@ -162,6 +184,10 @@ html[dir=rtl] .bg-option-img {
   width: 100%;
 }
 
+html[darkmode=true] #edit-bg-divider {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
 #custom-links-restore-default .bg-option-img {
   background: rgb(var(--GG100-rgb)) url(icons/link_gray.svg) no-repeat center;
   border-radius: 50%;
@@ -188,6 +214,10 @@ html[dir=rtl] .bg-option-img {
   background-color: rgba(255, 255, 255, .75);
 }
 
+html[darkmode=true] #bg-sel-menu::backdrop {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
 /* The width here should match that used in customBackgrounds.getNextTile. */
 #bg-sel-menu {
   background-color: #fff;
@@ -208,6 +238,12 @@ html[dir=rtl] .bg-option-img {
    * scrollbar width on Windows.*/
   width: 517px;
   z-index: 10000;
+}
+
+html[darkmode=true] #bg-sel-menu {
+  background-color: rgb(41, 42, 45);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3),
+      0 4px 8px 3px rgba(0, 0, 0, 0.15);
 }
 
 /* The width is decided by the longest text length plus 16px margin on the
@@ -241,12 +277,36 @@ right, so that every text can stay on its row even on the smallest window */
   user-select: none;
 }
 
+html[darkmode=true] #bg-sel-title-bar {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
 #bg-sel-back {
   background: url(../../../../ui/webui/resources/images/icon_arrow_back.svg) no-repeat center;
   background-size: 20px 20px;
   display: none;
   height: 20px;
   outline: none;
+  position: relative;
+  width: 20px;
+}
+
+html[darkmode=true] #bg-sel-back {
+  background: transparent;
+}
+
+/* We use ::after without content to provide the masked arrow element. */
+html[darkmode=true] #bg-sel-back::after {
+  -webkit-mask-image: url(../../../../ui/webui/resources/images/icon_arrow_back.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 20px;
+  background-color: rgb(var(--GG200-rgb));
+  content: '';
+  display: block;
+  height: 20px;
+  left: 0;
+  position: absolute;
+  top: 0;
   width: 20px;
 }
 
@@ -264,6 +324,11 @@ right, so that every text can stay on its row even on the smallest window */
   background: rgb(var(--GG300-rgb));
   background-position: center;
   background-size: 36px 36px;
+}
+
+html[darkmode=true] #bg-sel-back-circle:active,
+html[darkmode=true] #bg-sel-back-circle:focus {
+  background: rgb(var(--GG800-rgb));
 }
 
 .is-col-sel #bg-sel-back {
@@ -309,6 +374,10 @@ html[dir=rtl] .is-img-sel #bg-sel-back {
   text-align: center;
 }
 
+html[darkmode=true] #bg-sel-title {
+  color: rgb(var(--GG200-rgb));
+}
+
 .is-col-sel #bg-sel-title {
   padding-inline-start: 0;
   text-align: center;
@@ -335,6 +404,10 @@ html[dir=rtl] .is-img-sel #bg-sel-title {
   text-align: end;
   user-select: none;
   width: 100%;
+}
+
+html[darkmode=true] #bg-sel-footer {
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .bg-sel-footer-button {
@@ -380,6 +453,10 @@ html[dir=rtl] .bg-sel-tile-bg {
   width: calc(33% - 8px);
 }
 
+html[darkmode=true] .bg-sel-tile-bg {
+  background-color: rgb(var(--GG900-rgb));
+}
+
 /* The width here should match that used in customBackgrounds.getTilesWide. */
 @media (max-width: 517px) {
   #bg-sel-menu {
@@ -416,6 +493,10 @@ html[dir=rtl] .bg-sel-tile-bg {
   width: 100%;
 }
 
+html[darkmode=true] .selected-border {
+  border-color: rgb(var(--GB300-rgb));
+}
+
 .selected-circle {
   background: #FFF no-repeat center;
   border-radius: 50%;
@@ -431,6 +512,10 @@ html[dir=rtl] .selected-circle {
   right: 66px;
 }
 
+html[darkmode=true] .selected-circle {
+  background-color: rgb(var(--GG900-rgb));
+}
+
 .selected-check {
   background: url(../../../../ui/webui/resources/images/check_circle.svg) no-repeat center;
   background-size: 28px 28px;
@@ -444,6 +529,25 @@ html[dir=rtl] .selected-circle {
 html[dir=rtl] .selected-check {
   left: auto;
   right: 63px;
+}
+
+html[darkmode=true] .selected-check {
+  background: transparent;
+}
+
+/* We use ::after without content to provide the masked check element. */
+html[darkmode=true] .selected-check::after {
+  -webkit-mask-image: url(../../../../ui/webui/resources/images/check_circle.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 28px;
+  background-color: rgb(var(--GB300-rgb));
+  content: '';
+  display: block;
+  height: 28px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 28px;
 }
 
 .bg-sel-tile-title {
