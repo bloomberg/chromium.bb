@@ -6,7 +6,6 @@
 
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/model/assistant_ui_model.h"
-#include "ash/assistant/ui/base/assistant_button.h"
 #include "base/metrics/histogram_macros.h"
 
 namespace ash {

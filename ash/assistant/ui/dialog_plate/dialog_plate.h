@@ -29,6 +29,7 @@ class ImageButton;
 namespace ash {
 
 class ActionView;
+enum class AssistantButtonId;
 class AssistantViewDelegate;
 
 // DialogPlateObserver ---------------------------------------------------------

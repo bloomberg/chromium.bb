@@ -25,6 +25,7 @@ namespace ash {
 
 class AssistantController;
 class AssistantInteractionModelObserver;
+enum class AssistantButtonId;
 enum class AssistantQuerySource;
 
 class AssistantInteractionController

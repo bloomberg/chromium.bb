@@ -4,7 +4,11 @@
 
 #include "ash/assistant/ui/base/assistant_button.h"
 
+#include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/util/histogram_util.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
@@ -42,6 +46,22 @@ AssistantButton::AssistantButton(views::ButtonListener* listener,
 }
 
 AssistantButton::~AssistantButton() = default;
+
+// static
+views::ImageButton* AssistantButton::Create(views::ButtonListener* listener,
+                                            const gfx::VectorIcon& icon,
+                                            int size_in_dip,
+                                            int icon_size_in_dip,
+                                            int accessible_name_id,
+                                            AssistantButtonId button_id,
+                                            SkColor icon_color) {
+  auto* button = new AssistantButton(listener, button_id);
+  button->SetAccessibleName(l10n_util::GetStringUTF16(accessible_name_id));
+  button->SetImage(views::Button::STATE_NORMAL,
+                   gfx::CreateVectorIcon(icon, icon_size_in_dip, icon_color));
+  button->SetPreferredSize(gfx::Size(size_in_dip, size_in_dip));
+  return button;
+}
 
 const char* AssistantButton::GetClassName() const {
   return "AssistantButton";

@@ -4,10 +4,11 @@
 
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 
+#include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/assistant/ui/base/assistant_button.h"
 #include "ash/assistant/util/animation_util.h"
-#include "ash/assistant/util/views_util.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
@@ -284,10 +285,10 @@ void DialogPlate::InitLayout() {
   InitVoiceLayoutContainer();
 
   // Settings.
-  settings_button_ = assistant::util::CreateImageButton(
-      this, kSettingsIcon, kButtonSizeDip, kIconSizeDip,
-      IDS_ASH_ASSISTANT_DIALOG_PLATE_SETTINGS_ACCNAME,
-      AssistantButtonId::kSettings);
+  settings_button_ =
+      AssistantButton::Create(this, kSettingsIcon, kButtonSizeDip, kIconSizeDip,
+                              IDS_ASH_ASSISTANT_DIALOG_PLATE_SETTINGS_ACCNAME,
+                              AssistantButtonId::kSettings);
   AddChildView(settings_button_);
 
   // Artificially trigger event to set initial state.
@@ -333,10 +334,10 @@ void DialogPlate::InitKeyboardLayoutContainer() {
   layout_manager->SetFlexForView(textfield_, 1);
 
   // Voice input toggle.
-  voice_input_toggle_ = assistant::util::CreateImageButton(
-      this, kMicIcon, kButtonSizeDip, kIconSizeDip,
-      IDS_ASH_ASSISTANT_DIALOG_PLATE_MIC_ACCNAME,
-      AssistantButtonId::kVoiceInputToggle);
+  voice_input_toggle_ =
+      AssistantButton::Create(this, kMicIcon, kButtonSizeDip, kIconSizeDip,
+                              IDS_ASH_ASSISTANT_DIALOG_PLATE_MIC_ACCNAME,
+                              AssistantButtonId::kVoiceInputToggle);
   keyboard_layout_container_->AddChildView(voice_input_toggle_);
 
   input_modality_layout_container_->AddChildView(keyboard_layout_container_);
@@ -358,10 +359,10 @@ void DialogPlate::InitVoiceLayoutContainer() {
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
 
   // Keyboard input toggle.
-  keyboard_input_toggle_ = assistant::util::CreateImageButton(
-      this, kKeyboardIcon, kButtonSizeDip, kIconSizeDip,
-      IDS_ASH_ASSISTANT_DIALOG_PLATE_KEYBOARD_ACCNAME,
-      AssistantButtonId::kKeyboardInputToggle);
+  keyboard_input_toggle_ =
+      AssistantButton::Create(this, kKeyboardIcon, kButtonSizeDip, kIconSizeDip,
+                              IDS_ASH_ASSISTANT_DIALOG_PLATE_KEYBOARD_ACCNAME,
+                              AssistantButtonId::kKeyboardInputToggle);
   voice_layout_container_->AddChildView(keyboard_input_toggle_);
 
   // Spacer.
