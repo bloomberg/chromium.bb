@@ -49,9 +49,6 @@ class CORE_EXPORT Deprecation {
   static void CountDeprecationCrossOriginIframe(const LocalFrame*, WebFeature);
   static void CountDeprecationCrossOriginIframe(const Document&, WebFeature);
 
-  static void CountDeprecationFeaturePolicy(const Document&,
-                                            mojom::FeaturePolicyFeature);
-
   static String DeprecationMessage(WebFeature);
 
   // Note: this is only public for tests.
