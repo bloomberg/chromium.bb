@@ -18519,6 +18519,13 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="Failed"/>
 </enum>
 
+<enum name="FeatureModuleInstallStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failure"/>
+  <int value="2" label="Request Error"/>
+  <int value="3" label="Cancellation"/>
+</enum>
+
 <enum name="FeatureObserver">
 <!-- Generated from third_party/blink/public/platform/web_feature.mojom.-->
 
