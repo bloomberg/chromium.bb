@@ -65,6 +65,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/application_status_listener.h"
+#include "net/android/http_auth_negotiate_android.h"
 #endif
 
 namespace network {
@@ -136,6 +137,70 @@ bool LoadInfoIsMoreInteresting(const mojom::LoadInfo& a,
 
   return a.load_state > b.load_state;
 }
+
+#if defined(OS_ANDROID) && BUILDFLAG(USE_KERBEROS)
+// Used for Negotiate authentication on Android, which needs to generate tokens
+// in the browser process.
+class NetworkServiceAuthNegotiateAndroid : public net::HttpNegotiateAuthSystem {
+ public:
+  NetworkServiceAuthNegotiateAndroid(NetworkService* network_service,
+                                     const net::HttpAuthPreferences* prefs)
+      : network_service_(network_service), auth_negotiate_(prefs) {}
+  ~NetworkServiceAuthNegotiateAndroid() override = default;
+
+  // HttpNegotiateAuthSystem implementation:
+  bool Init() override { return auth_negotiate_.Init(); }
+
+  bool NeedsIdentity() const override {
+    return auth_negotiate_.NeedsIdentity();
+  }
+
+  bool AllowsExplicitCredentials() const override {
+    return auth_negotiate_.AllowsExplicitCredentials();
+  }
+
+  net::HttpAuth::AuthorizationResult ParseChallenge(
+      net::HttpAuthChallengeTokenizer* tok) override {
+    return auth_negotiate_.ParseChallenge(tok);
+  }
+
+  int GenerateAuthToken(const net::AuthCredentials* credentials,
+                        const std::string& spn,
+                        const std::string& channel_bindings,
+                        std::string* auth_token,
+                        net::CompletionOnceCallback callback) override {
+    network_service_->client()->OnGenerateHttpNegotiateAuthToken(
+        auth_negotiate_.server_auth_token(), auth_negotiate_.can_delegate(),
+        auth_negotiate_.GetAuthAndroidNegotiateAccountType(), spn,
+        base::BindOnce(&NetworkServiceAuthNegotiateAndroid::Finish,
+                       weak_factory_.GetWeakPtr(), auth_token,
+                       std::move(callback)));
+    return net::ERR_IO_PENDING;
+  }
+
+  void Delegate() override { auth_negotiate_.Delegate(); }
+
+ private:
+  void Finish(std::string* auth_token_out,
+              net::CompletionOnceCallback callback,
+              int result,
+              const std::string& auth_token) {
+    *auth_token_out = auth_token;
+    std::move(callback).Run(result);
+  }
+
+  NetworkService* network_service_ = nullptr;
+  net::android::HttpAuthNegotiateAndroid auth_negotiate_;
+  base::WeakPtrFactory<NetworkServiceAuthNegotiateAndroid> weak_factory_{this};
+};
+
+std::unique_ptr<net::HttpNegotiateAuthSystem> CreateAuthSystem(
+    NetworkService* network_service,
+    const net::HttpAuthPreferences* prefs) {
+  return std::make_unique<NetworkServiceAuthNegotiateAndroid>(network_service,
+                                                              prefs);
+}
+#endif
 
 }  // namespace
 
@@ -413,7 +478,11 @@ void NetworkService::SetUpHttpAuth(
       ,
       http_auth_static_params->gssapi_library_name
 #endif
-      );
+#if defined(OS_ANDROID) && BUILDFLAG(USE_KERBEROS)
+      ,
+      base::BindRepeating(&CreateAuthSystem, this)
+#endif
+  );
 }
 
 void NetworkService::ConfigureHttpAuthPrefs(
@@ -558,7 +627,12 @@ void NetworkService::OnApplicationStateChange(
 net::HttpAuthHandlerFactory* NetworkService::GetHttpAuthHandlerFactory() {
   if (!http_auth_handler_factory_) {
     http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault(
-        host_resolver_.get(), &http_auth_preferences_);
+        host_resolver_.get(), &http_auth_preferences_
+#if defined(OS_ANDROID) && BUILDFLAG(USE_KERBEROS)
+        ,
+        base::BindRepeating(&CreateAuthSystem, this)
+#endif
+    );
   }
   return http_auth_handler_factory_.get();
 }

@@ -37,6 +37,8 @@ using net::test::IsOk;
 
 namespace net {
 
+constexpr char kFakeToken[] = "FakeToken";
+
 #if defined(OS_ANDROID)
 typedef net::android::DummySpnegoAuthenticator MockAuthLibrary;
 #elif defined(OS_WIN)
@@ -55,7 +57,8 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest,
         "alias", "10.0.0.2", "canonical.example.com");
 
     http_auth_preferences_.reset(new MockAllowHttpAuthPreferences());
-    factory_.reset(new HttpAuthHandlerNegotiate::Factory());
+    factory_.reset(new HttpAuthHandlerNegotiate::Factory(
+        net::HttpAuthHandlerFactory::NegotiateAuthSystemFactory()));
     factory_->set_http_auth_preferences(http_auth_preferences_.get());
 #if defined(OS_ANDROID)
     http_auth_preferences_->set_auth_android_negotiate_account_type(
@@ -232,6 +235,10 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest,
   }
 
   MockAuthLibrary* AuthLibrary() { return auth_library_; }
+  MockHostResolver* resolver() { return resolver_.get(); }
+  MockAllowHttpAuthPreferences* http_auth_preferences() {
+    return http_auth_preferences_.get();
+  }
 
  private:
 #if defined(OS_WIN)
@@ -377,7 +384,8 @@ TEST_F(HttpAuthHandlerNegotiateTest, MissingGSSAPI) {
   std::unique_ptr<HostResolver> host_resolver(new MockHostResolver());
   MockAllowHttpAuthPreferences http_auth_preferences;
   std::unique_ptr<HttpAuthHandlerNegotiate::Factory> negotiate_factory(
-      new HttpAuthHandlerNegotiate::Factory());
+      new HttpAuthHandlerNegotiate::Factory(
+          net::HttpAuthHandlerFactory::NegotiateAuthSystemFactory()));
   negotiate_factory->set_host_resolver(host_resolver);
   negotiate_factory->set_http_auth_preferences(&http_auth_preferences);
   negotiate_factory->set_library(
@@ -394,5 +402,61 @@ TEST_F(HttpAuthHandlerNegotiateTest, MissingGSSAPI) {
 #endif  // defined(DLOPEN_KERBEROS)
 
 #endif  // defined(OS_POSIX)
+
+class TestAuthSystem : public HttpNegotiateAuthSystem {
+ public:
+  TestAuthSystem() = default;
+  ~TestAuthSystem() override = default;
+
+  // HttpNegotiateAuthSystem implementation:
+  bool Init() override { return true; }
+  bool NeedsIdentity() const override { return true; }
+  bool AllowsExplicitCredentials() const override { return true; }
+
+  net::HttpAuth::AuthorizationResult ParseChallenge(
+      net::HttpAuthChallengeTokenizer* tok) override {
+    return net::HttpAuth::AUTHORIZATION_RESULT_ACCEPT;
+  }
+
+  int GenerateAuthToken(const net::AuthCredentials* credentials,
+                        const std::string& spn,
+                        const std::string& channel_bindings,
+                        std::string* auth_token,
+                        net::CompletionOnceCallback callback) override {
+    *auth_token = kFakeToken;
+    return net::OK;
+  }
+
+  void Delegate() override {}
+};
+
+TEST_F(HttpAuthHandlerNegotiateTest, OverrideAuthSystem) {
+  auto negotiate_factory = std::make_unique<HttpAuthHandlerNegotiate::Factory>(
+      base::BindRepeating([](const HttpAuthPreferences*)
+                              -> std::unique_ptr<HttpNegotiateAuthSystem> {
+        return std::make_unique<TestAuthSystem>();
+      }));
+  negotiate_factory->set_host_resolver(resolver());
+  negotiate_factory->set_http_auth_preferences(http_auth_preferences());
+#if !defined(OS_ANDROID)
+  auto auth_library = std::make_unique<MockAuthLibrary>();
+  SetupMocks(auth_library.get());
+  negotiate_factory->set_library(std::move(auth_library));
+#endif
+
+  GURL gurl("http://www.example.com");
+  std::unique_ptr<HttpAuthHandler> handler;
+  EXPECT_EQ(OK, negotiate_factory->CreateAuthHandlerFromString(
+                    "Negotiate", HttpAuth::AUTH_SERVER, SSLInfo(), gurl,
+                    NetLogWithSource(), &handler));
+  EXPECT_TRUE(handler);
+
+  TestCompletionCallback callback;
+  std::string auth_token;
+  HttpRequestInfo request_info;
+  EXPECT_EQ(OK, callback.GetResult(handler->GenerateAuthToken(
+                    nullptr, &request_info, callback.callback(), &auth_token)));
+  EXPECT_EQ(kFakeToken, auth_token);
+}
 
 }  // namespace net
