@@ -87,7 +87,7 @@ void NetworkScreenHandler::ShowConnectingStatus(
     const base::string16& network_id) {}
 
 void NetworkScreenHandler::SetOfflineDemoModeEnabled(bool enabled) {
-  CallJSWithPrefix("setOfflineDemoModeEnabled", enabled);
+  CallJS("login.NetworkScreen.setOfflineDemoModeEnabled", enabled);
 }
 
 void NetworkScreenHandler::DeclareLocalizedValues(
