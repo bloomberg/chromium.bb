@@ -226,7 +226,7 @@ SignedExchangeHandler::SignedExchangeHandler(
         devtools_proxy_.get(),
         base::StringPrintf("Unsupported version of the content type. Currently "
                            "content type must be "
-                           "\"application/signed-exchange;v=b2\". But the "
+                           "\"application/signed-exchange;v=b3\". But the "
                            "response content type was \"%s\"",
                            content_type.c_str()));
     // Proceed to extract and redirect to the fallback URL.

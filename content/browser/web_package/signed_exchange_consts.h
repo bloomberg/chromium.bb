@@ -8,7 +8,7 @@
 namespace content {
 
 constexpr char kAcceptHeaderSignedExchangeSuffix[] =
-    ",application/signed-exchange;v=b2";
+    ",application/signed-exchange;v=b3";
 
 // TODO(crbug.com/919424) Remove support for kB2
 enum class SignedExchangeVersion { kUnknown, kB2, kB3 };
