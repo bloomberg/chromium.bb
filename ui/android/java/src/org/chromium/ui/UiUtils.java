@@ -85,9 +85,13 @@ public class UiUtils {
          * @param listener The listener that will be notified of the action the user took in the
          *                 picker.
          * @param allowMultiple Whether to allow multiple contacts to be picked.
+         * @param includeNames Whether to include names of the contacts shared.
+         * @param includeEmails Whether to include emails of the contacts shared.
+         * @param includeTel Whether to include telephone numbers of the contacts shared.
          */
-        void showContactsPicker(
-                Context context, ContactsPickerListener listener, boolean allowMultiple);
+        void showContactsPicker(Context context, ContactsPickerListener listener,
+                boolean allowMultiple, boolean includeNames, boolean includeEmails,
+                boolean includeTel);
 
         /**
          * Called when the contacts picker dialog has been dismissed.
@@ -139,10 +143,12 @@ public class UiUtils {
      * @param listener The listener that will be notified of the action the user took in the
      *                 picker.
      */
-    public static boolean showContactsPicker(
-            Context context, ContactsPickerListener listener, boolean allowMultiple) {
+    public static boolean showContactsPicker(Context context, ContactsPickerListener listener,
+            boolean allowMultiple, boolean includeNames, boolean includeEmails,
+            boolean includeTel) {
         if (sContactsPickerDelegate == null) return false;
-        sContactsPickerDelegate.showContactsPicker(context, listener, allowMultiple);
+        sContactsPickerDelegate.showContactsPicker(
+                context, listener, allowMultiple, includeNames, includeEmails, includeTel);
         return true;
     }
 

@@ -6,7 +6,7 @@
 <script>
 promise_test(function() {
   return assert_promise_rejects_with_message(
-      navigator.contacts.select({}),
+      navigator.contacts.select({multiple: true, properties: ['name', 'email', 'tel']}),
       new DOMException('Unable to open a contact selector', 'AbortError'),
       'navigator.contacts.select');
 }, 'Select function throws exception.');

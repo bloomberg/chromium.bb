@@ -18,6 +18,6 @@ interface ContactsManager {
   // website. The array of contacts returned can be null, in case of an error,
   // for example if the dialog cannot be shown. The array is empty if the user
   // does not select any contacts (e.g. cancels selection).
-  Select(bool multiple, bool include_names, bool include_emails)
+  Select(bool multiple, bool include_names, bool include_emails, bool include_tel)
       => (array<ContactInfo>? contacts);
 };

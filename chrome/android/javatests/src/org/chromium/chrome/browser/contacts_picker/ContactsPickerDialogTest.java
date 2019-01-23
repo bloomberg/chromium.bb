@@ -119,14 +119,15 @@ public class ContactsPickerDialogTest
         return (RecyclerView) mDialog.findViewById(R.id.recycler_view);
     }
 
-    private ContactsPickerDialog createDialog(final boolean multiselect) throws Exception {
+    private ContactsPickerDialog createDialog(final boolean multiselect, final boolean includeNames,
+            final boolean includeEmails, final boolean includeTel) throws Exception {
         final ContactsPickerDialog dialog =
                 ThreadUtils.runOnUiThreadBlocking(new Callable<ContactsPickerDialog>() {
                     @Override
                     public ContactsPickerDialog call() {
-                        final ContactsPickerDialog dialog =
-                                new ContactsPickerDialog(mActivityTestRule.getActivity(),
-                                        ContactsPickerDialogTest.this, multiselect);
+                        final ContactsPickerDialog dialog = new ContactsPickerDialog(
+                                mActivityTestRule.getActivity(), ContactsPickerDialogTest.this,
+                                multiselect, includeNames, includeEmails, includeTel);
                         dialog.show();
                         return dialog;
                     }
@@ -238,7 +239,9 @@ public class ContactsPickerDialogTest
     @Test
     @LargeTest
     public void testNoSelection() throws Throwable {
-        createDialog(/* multiselect = */ false);
+        createDialog(/* multiselect = */ false, /* includeNames = */ true,
+                /* includeEmails = */ true,
+                /* includeTel = */ true);
         Assert.assertTrue(mDialog.isShowing());
 
         int expectedSelectionCount = 1;
@@ -254,7 +257,9 @@ public class ContactsPickerDialogTest
     @Test
     @LargeTest
     public void testSingleSelectionContacts() throws Throwable {
-        createDialog(/* multiselect = */ false);
+        createDialog(/* multiselect = */ false, /* includeNames = */ true,
+                /* includeEmails = */ true,
+                /* includeTel = */ true);
         Assert.assertTrue(mDialog.isShowing());
 
         // Expected selection count is 1 because clicking on a new view deselects other.
@@ -278,7 +283,9 @@ public class ContactsPickerDialogTest
     @Test
     @LargeTest
     public void testMultiSelectionContacts() throws Throwable {
-        createDialog(/* multiselect = */ true);
+        createDialog(/* multiselect = */ true, /* includeNames = */ true,
+                /* includeEmails = */ true,
+                /* includeTel = */ true);
         Assert.assertTrue(mDialog.isShowing());
 
         // Multi-selection is enabled, so each click is counted.
@@ -305,7 +312,9 @@ public class ContactsPickerDialogTest
     @Test
     @LargeTest
     public void testSelectAll() throws Throwable {
-        createDialog(/* multiselect = */ true);
+        createDialog(/* multiselect = */ true, /* includeNames = */ true,
+                /* includeEmails = */ true,
+                /* includeTel = */ true);
         Assert.assertTrue(mDialog.isShowing());
 
         toggleSelectAll(6, ContactsPickerAction.SELECT_ALL);
@@ -332,7 +341,9 @@ public class ContactsPickerDialogTest
     @Test
     @LargeTest
     public void testNoSearchStringNoCrash() throws Throwable {
-        createDialog(/* multiselect = */ true);
+        createDialog(/* multiselect = */ true, /* includeNames = */ true,
+                /* includeEmails = */ true,
+                /* includeTel = */ true);
         Assert.assertTrue(mDialog.isShowing());
 
         clickSearchButton();

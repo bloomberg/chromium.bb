@@ -244,7 +244,7 @@ public class SelectFileDialog
 
         // Use the new contacts picker, if available.
         if (shouldUseContactsPicker()
-                && UiUtils.showContactsPicker(activity, this, mAllowMultiple)) {
+                && UiUtils.showContactsPicker(activity, this, mAllowMultiple, true, true, true)) {
             return;
         }
 

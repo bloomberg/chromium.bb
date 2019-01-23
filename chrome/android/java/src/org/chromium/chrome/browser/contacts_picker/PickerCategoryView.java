@@ -98,16 +98,29 @@ public class PickerCategoryView extends RelativeLayout
     // Whether the picker is in multi-selection mode.
     private boolean mMultiSelectionAllowed;
 
+    // Whether the contacts data returned includes names.
+    public final boolean includeNames;
+
+    // Whether the contacts data returned includes emails.
+    public final boolean includeEmails;
+
+    // Whether the contacts data returned includes telephone numbers.
+    public final boolean includeTel;
+
     /**
      * @param multiSelectionAllowed Whether the contacts picker should allow multiple items to be
      * selected.
      */
     @SuppressWarnings("unchecked") // mSelectableListLayout
-    public PickerCategoryView(Context context, boolean multiSelectionAllowed) {
+    public PickerCategoryView(Context context, boolean multiSelectionAllowed,
+            boolean shouldIncludeNames, boolean shouldIncludeEmails, boolean shouldIncludeTel) {
         super(context);
 
         mActivity = (ChromeActivity) context;
         mMultiSelectionAllowed = multiSelectionAllowed;
+        includeNames = shouldIncludeNames;
+        includeEmails = shouldIncludeEmails;
+        includeTel = shouldIncludeTel;
 
         mSelectionDelegate = new SelectionDelegate<ContactDetails>();
         if (!multiSelectionAllowed) mSelectionDelegate.setSingleSelectionMode();
@@ -308,8 +321,10 @@ public class PickerCategoryView extends RelativeLayout
             writer.beginArray();
             for (ContactDetails contactDetails : selectedContacts) {
                 contactDetails.appendJson(writer);
-                contacts.add(new ContactsPickerListener.Contact(contactDetails.getDisplayNames(),
-                        contactDetails.getEmails(), contactDetails.getPhoneNumbers()));
+                contacts.add(new ContactsPickerListener.Contact(
+                        includeNames ? contactDetails.getDisplayNames() : null,
+                        includeEmails ? contactDetails.getEmails() : null,
+                        includeTel ? contactDetails.getPhoneNumbers() : null));
             }
             writer.endArray();
             executeAction(ContactsPickerListener.ContactsPickerAction.CONTACTS_SELECTED,
