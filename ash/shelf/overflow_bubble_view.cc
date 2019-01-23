@@ -60,10 +60,8 @@ OverflowBubbleView::OverflowBubbleView(ShelfView* shelf_view,
   else
     set_margins(gfx::Insets(kEndPadding, 0));
 
-  // Makes bubble view has a layer and clip its children layers.
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
-  layer()->SetMasksToBounds(true);
 
   CreateBubble();
 
