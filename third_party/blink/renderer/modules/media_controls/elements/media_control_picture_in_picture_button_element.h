@@ -30,6 +30,8 @@ class MediaControlPictureInPictureButtonElement final
 
  private:
   void DefaultEventHandler(Event&) override;
+
+  void UpdateAriaString(bool);
 };
 
 }  // namespace blink

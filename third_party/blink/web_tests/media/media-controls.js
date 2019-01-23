@@ -63,6 +63,14 @@ function downloadButton(videoElement) {
     return button;
 }
 
+function pictureInPictureButton(videoElement) {
+  var controlID = '-internal-media-controls-picture-in-picture-button';
+  var button = mediaControlsElement(internals.shadowRoot(videoElement).firstChild, controlID);
+  if (!button)
+    throw 'Failed to find picture-in-picture button';
+  return button;
+}
+
 function fullscreenButton(videoElement) {
     var controlID = '-webkit-media-controls-fullscreen-button';
     var button = mediaControlsElement(internals.shadowRoot(videoElement).firstChild, controlID);

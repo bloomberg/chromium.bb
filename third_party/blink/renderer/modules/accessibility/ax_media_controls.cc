@@ -77,8 +77,6 @@ AXObject* AccessibilityMediaControl::Create(
     case kMediaOverflowButton:
     case kMediaOverflowList:
     case kMediaScrubbingMessage:
-    case kMediaEnterPictureInPictureButton:
-    case kMediaExitPictureInPictureButton:
     case kMediaDisplayCutoutFullscreenButton:
     case kMediaAnimatedArrowContainer:
       return MakeGarbageCollected<AccessibilityMediaControl>(layout_object,
@@ -142,12 +140,6 @@ String AccessibilityMediaControl::TextAlternative(
     case kMediaScrubbingMessage:
     case kMediaAnimatedArrowContainer:
       return QueryString(WebLocalizedString::kAXMediaDefault);
-    case kMediaEnterPictureInPictureButton:
-      return QueryString(
-          WebLocalizedString::kAXMediaEnterPictureInPictureButton);
-    case kMediaExitPictureInPictureButton:
-      return QueryString(
-          WebLocalizedString::kAXMediaExitPictureInPictureButton);
     case kMediaDisplayCutoutFullscreenButton:
       return QueryString(
           WebLocalizedString::kAXMediaDisplayCutoutFullscreenButton);
@@ -181,8 +173,6 @@ String AccessibilityMediaControl::Description(
     case kMediaOverlayCastOffButton:
     case kMediaCastOnButton:
     case kMediaOverlayCastOnButton:
-    case kMediaEnterPictureInPictureButton:
-    case kMediaExitPictureInPictureButton:
       return "";
     case kMediaSliderThumb:
     case kMediaTextTrackList:
@@ -221,8 +211,6 @@ ax::mojom::Role AccessibilityMediaControl::RoleValue() const {
     case kMediaOverflowButton:
     case kMediaCastOnButton:
     case kMediaCastOffButton:
-    case kMediaEnterPictureInPictureButton:
-    case kMediaExitPictureInPictureButton:
     case kMediaDisplayCutoutFullscreenButton:
       return ax::mojom::Role::kButton;
 
