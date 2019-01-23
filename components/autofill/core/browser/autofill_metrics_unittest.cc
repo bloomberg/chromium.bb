@@ -3007,8 +3007,7 @@ TEST_P(AutofillMetricsCompanyTest, CompanyNameSuggestions) {
       histogram_tester.ExpectUniqueSample("Autofill.AddressSuggestionsCount", 2,
                                           1);
     } else {
-      EXPECT_EQ(nullptr, base::StatisticsRecorder::FindHistogram(
-                             "Autofill.AddressSuggestionsCount"));
+      histogram_tester.ExpectTotalCount("Autofill.AddressSuggestionsCount", 0);
     }
   }
 }
