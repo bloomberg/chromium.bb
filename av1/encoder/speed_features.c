@@ -204,6 +204,8 @@ static void set_good_speed_features_framesize_independent(
     const AV1_COMP *const cpi, SPEED_FEATURES *const sf, int speed) {
   const AV1_COMMON *const cm = &cpi->common;
   const int boosted = frame_is_boosted(cpi);
+  const int is_boosted_arf2_bwd_type =
+      boosted || cpi->refresh_bwd_ref_frame || cpi->refresh_alt2_ref_frame;
 
   // Speed 0 for all speed features that give neutral coding performance change.
   sf->reduce_inter_modes = 1;
@@ -221,8 +223,7 @@ static void set_good_speed_features_framesize_independent(
   // TODO(debargha): Test, tweak and turn on either 1 or 2
   sf->inter_mode_rd_model_estimation = 1;
 
-  sf->prune_ref_frame_for_rect_partitions =
-      !(boosted || cpi->refresh_bwd_ref_frame || cpi->refresh_alt2_ref_frame);
+  sf->prune_ref_frame_for_rect_partitions = !is_boosted_arf2_bwd_type;
   sf->prune_ref_mode_for_partitions = sf->prune_ref_frame_for_rect_partitions;
   sf->less_rectangular_check_level = 1;
   sf->gm_search_type = GM_REDUCED_REF_SEARCH_SKIP_L2_L3;
@@ -331,7 +332,7 @@ static void set_good_speed_features_framesize_independent(
     // TODO(yunqing): evaluate this speed feature for speed 1 & 2, and combine
     // it with cpi->sf.disable_wedge_search_var_thresh.
     sf->disable_wedge_interintra_search = 1;
-    sf->perform_coeff_opt = boosted ? 0 : 3;
+    sf->perform_coeff_opt = is_boosted_arf2_bwd_type ? 2 : 3;
   }
 
   if (speed >= 4) {
@@ -345,7 +346,7 @@ static void set_good_speed_features_framesize_independent(
     sf->cb_partition_search = !boosted;
     sf->alt_ref_search_fp = 1;
     sf->skip_sharp_interp_filter_search = 1;
-    sf->perform_coeff_opt = boosted ? 0 : 4;
+    sf->perform_coeff_opt = is_boosted_arf2_bwd_type ? 2 : 4;
     sf->adaptive_txb_search_level = boosted ? 2 : 3;
   }
 
