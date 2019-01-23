@@ -163,11 +163,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "ash-enable-cursor-motion-blur",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "ash-enable-docked-magnifier",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

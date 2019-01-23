@@ -334,9 +334,6 @@ extern const char kEnableClientLoFiDescription[];
 extern const char kEnableCSSFragmentIdentifiersName[];
 extern const char kEnableCSSFragmentIdentifiersDescription[];
 
-extern const char kEnableCursorMotionBlurName[];
-extern const char kEnableCursorMotionBlurDescription[];
-
 extern const char kEnableNoScriptPreviewsName[];
 extern const char kEnableNoScriptPreviewsDescription[];
 
