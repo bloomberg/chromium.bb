@@ -163,6 +163,7 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
     load_url_params.is_renderer_initiated = params.is_renderer_initiated;
     load_url_params.should_replace_current_entry =
         params.should_replace_current_entry;
+    load_url_params.reload_type = params.reload_type;
 
     if (params.uses_post) {
       load_url_params.load_type =

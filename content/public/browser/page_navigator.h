@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/reload_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/child_process_host.h"
@@ -123,6 +124,9 @@ struct CONTENT_EXPORT OpenURLParams {
   // hrefTranslate attribute, this contains the attribute's value (a BCP47
   // language code). Empty otherwise.
   std::string href_translate;
+
+  // Indicates if this navigation is a reload.
+  ReloadType reload_type;
 
  private:
   OpenURLParams();

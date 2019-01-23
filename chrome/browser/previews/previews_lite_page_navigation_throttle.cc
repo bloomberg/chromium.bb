@@ -101,6 +101,7 @@ content::OpenURLParams MakeOpenURLParams(content::NavigationHandle* handle,
   url_params.frame_tree_node_id = handle->GetFrameTreeNodeId();
   url_params.user_gesture = handle->HasUserGesture();
   url_params.started_from_context_menu = handle->WasStartedFromContextMenu();
+  url_params.reload_type = handle->GetReloadType();
   return url_params;
 }
 
@@ -517,7 +518,8 @@ PreviewsLitePageNavigationThrottle::WillStartRequest() {
   std::string original_url;
   if (previews::ExtractOriginalURLFromLitePageRedirectURL(
           navigation_handle()->GetURL(), &original_url) &&
-      navigation_handle()->GetReloadType() == content::ReloadType::NORMAL) {
+      navigation_handle()->GetReloadType() != content::ReloadType::NONE &&
+      !GetServerLitePageInfo()) {
     // Don't use |LoadAndBypass| because we might not want to bypass.
     WebContentsLifetimeHelper::CreateForWebContents(
         navigation_handle()->GetWebContents());

@@ -215,6 +215,9 @@ class NavigationController {
     // language code). Empty otherwise.
     std::string href_translate;
 
+    // Indicates the reload type of this navigation.
+    ReloadType reload_type = ReloadType::NONE;
+
     explicit LoadURLParams(const GURL& url);
     ~LoadURLParams();
 

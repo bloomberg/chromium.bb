@@ -330,6 +330,7 @@ void LoadURLInContents(WebContents* target_contents,
   load_url_params.input_start = params->input_start;
   load_url_params.was_activated = params->was_activated;
   load_url_params.href_translate = params->href_translate;
+  load_url_params.reload_type = params->reload_type;
 
   // |frame_tree_node_id| is kNoFrameTreeNodeId for main frame navigations.
   if (params->frame_tree_node_id ==

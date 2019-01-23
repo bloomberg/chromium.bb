@@ -212,8 +212,19 @@ PreviewsLitePageDecider::MaybeCreateThrottleFor(
   if (!previews_data)
     return nullptr;
 
+  // If this navigation is reloading on a lite page, always create a navigation
+  // throttle. In this event, the navigation throttle will always cancel and
+  // restart the navigation to a non-preview page. This is important for the
+  // experiment that disables previews on reloads since it won't enable the
+  // previews state.
+  bool reload_load_original =
+      previews::ExtractOriginalURLFromLitePageRedirectURL(handle->GetURL(),
+                                                          nullptr) &&
+      handle->GetReloadType() != content::ReloadType::NONE;
+
   if (previews_data->allowed_previews_state() &
-      content::LITE_PAGE_REDIRECT_ON) {
+          content::LITE_PAGE_REDIRECT_ON ||
+      reload_load_original) {
     return std::make_unique<PreviewsLitePageNavigationThrottle>(
         handle, previews_service->previews_lite_page_decider());
   }

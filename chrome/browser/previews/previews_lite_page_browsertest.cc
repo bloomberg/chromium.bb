@@ -853,19 +853,6 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   GetWebContents()->GetController().Reload(content::ReloadType::NORMAL, false);
   VerifyPreviewLoaded();
   VerifyInfoStatus(previews::ServerLitePageStatus::kSuccess);
-
-  // Set the ECT so that a preview won't be triggered on the reload.
-  g_browser_process->network_quality_tracker()
-      ->ReportEffectiveConnectionTypeForTesting(
-          net::EFFECTIVE_CONNECTION_TYPE_4G);
-
-  GetWebContents()->GetController().Reload(content::ReloadType::NORMAL, false);
-  VerifyPreviewNotLoaded();
-
-  // Reset ECT for future tests.
-  g_browser_process->network_quality_tracker()
-      ->ReportEffectiveConnectionTypeForTesting(
-          net::EFFECTIVE_CONNECTION_TYPE_2G);
 }
 
 IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
@@ -874,20 +861,8 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   scoped_feature_list.InitWithFeatures(
       {previews::features::kPreviewsDisallowedOnReloads}, {});
 
-  // Set the ECT so that a preview won't be triggered.
-  // TODO(robertogden): Remove this and serve a preview when reloads work
-  // correctly. https://crbug.com/914547
-  g_browser_process->network_quality_tracker()
-      ->ReportEffectiveConnectionTypeForTesting(
-          net::EFFECTIVE_CONNECTION_TYPE_4G);
-
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
-  VerifyPreviewNotLoaded();
-
-  // Set the ECT so that a preview should be triggered for non-reloads.
-  g_browser_process->network_quality_tracker()
-      ->ReportEffectiveConnectionTypeForTesting(
-          net::EFFECTIVE_CONNECTION_TYPE_2G);
+  VerifyPreviewLoaded();
 
   GetWebContents()->GetController().Reload(content::ReloadType::NORMAL, false);
   VerifyPreviewNotLoaded();

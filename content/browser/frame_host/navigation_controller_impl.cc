@@ -2194,6 +2194,7 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
   /* params.navigation_ui_data: skip */
   /* params.input_start: skip */
   params.was_activated = WasActivatedOption::kUnknown;
+  /* params.reload_type: skip */
 
   std::unique_ptr<NavigationRequest> request =
       CreateNavigationRequestFromLoadParams(
@@ -2656,8 +2657,9 @@ void NavigationControllerImpl::NavigateWithoutEntry(
   // expect to see treated as reload, and it only works because they pass a
   // FrameTreeNode id in their LoadURLParams. Change this once they no longer do
   // that. See https://crbug.com/850926.
-  ReloadType reload_type = ReloadType::NONE;
-  if (ShouldTreatNavigationAsReload(
+  ReloadType reload_type = params.reload_type;
+  if (reload_type == ReloadType::NONE &&
+      ShouldTreatNavigationAsReload(
           params.url, pending_entry_->GetVirtualURL(),
           params.base_url_for_data_url, params.transition_type,
           params.frame_tree_node_id == RenderFrameHost::kNoFrameTreeNodeId,
@@ -2780,6 +2782,7 @@ NavigationControllerImpl::CreateNavigationEntryFromLoadParams(
   entry->set_should_clear_history_list(params.should_clear_history_list);
   entry->SetIsOverridingUserAgent(override_user_agent);
   entry->set_has_user_gesture(has_user_gesture);
+  entry->set_reload_type(params.reload_type);
 
   switch (params.load_type) {
     case LOAD_TYPE_DEFAULT:
