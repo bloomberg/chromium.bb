@@ -10,18 +10,12 @@
 
 #include "base/component_export.h"
 #include "base/memory/ref_counted.h"
-#include "chromeos/network/certificate_pattern.h"
+#include "chromeos/network/onc/onc_certificate_pattern.h"
 #include "components/onc/onc_constants.h"
 
 namespace base {
 class Value;
 class DictionaryValue;
-}
-
-namespace net {
-struct CertPrincipal;
-class X509Certificate;
-typedef std::vector<scoped_refptr<X509Certificate>> CertificateList;
 }
 
 namespace chromeos {
@@ -51,7 +45,7 @@ struct COMPONENT_EXPORT(CHROMEOS_NETWORK) ClientCertConfig {
   std::string client_cert_type;
 
   // If |client_cert_type| equals |kPattern|, this contains the pattern.
-  CertificatePattern pattern;
+  OncCertificatePattern pattern;
 
   // If |client_cert_type| equals |kRef|, this contains the GUID of the
   // referenced certificate.
@@ -63,13 +57,6 @@ struct COMPONENT_EXPORT(CHROMEOS_NETWORK) ClientCertConfig {
   // source of this ClientCertConfig.
   ::onc::ONCSource onc_source;
 };
-
-// Returns true only if any fields set in this pattern match exactly with
-// similar fields in the principal.  If organization_ or organizational_unit_
-// are set, then at least one of the organizations or units in the principal
-// must match.
-bool CertPrincipalMatches(const IssuerSubjectPattern& pattern,
-                          const net::CertPrincipal& principal);
 
 // Returns the PKCS11 and slot ID of |cert_id|, which is expected to be a
 // value of the Shill property |kEapCertIdProperty| or |kEapKeyIdProperty|,
@@ -107,7 +94,7 @@ COMPONENT_EXPORT(CHROMEOS_NETWORK)
 void SetEmptyShillProperties(const ConfigType cert_config_type,
                              base::Value* properties);
 
-// Determines the type of the CertificatePattern configuration, i.e. is it a
+// Determines the type of the OncCertificatePattern configuration, i.e. is it a
 // pattern within an EAP, IPsec or OpenVPN configuration.
 COMPONENT_EXPORT(CHROMEOS_NETWORK)
 void OncToClientCertConfig(::onc::ONCSource onc_source,

@@ -1766,6 +1766,7 @@ jumbo_split_static_library("browser") {
     "//components/browsing_data/content",
     "//components/browsing_data/core",
     "//components/captive_portal",
+    "//components/certificate_matching",
     "//components/certificate_transparency",
     "//components/cloud_devices/common",
     "//components/component_updater",

@@ -182,6 +182,7 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
+#include "components/certificate_matching/certificate_principal_pattern.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -705,24 +706,6 @@ bool HandleNewTabPageLocationOverride(
 
   *url = GURL(ntp_location);
   return true;
-}
-
-bool CertMatchesFilter(const net::X509Certificate& cert,
-                       const base::DictionaryValue& filter) {
-  // TODO(markusheintz): This is the minimal required filter implementation.
-  // Implement a better matcher.
-
-  // An empty filter matches any client certificate since no requirements are
-  // specified at all.
-  if (filter.empty())
-    return true;
-
-  std::string common_name;
-  if (filter.GetString("ISSUER.CN", &common_name) &&
-      (cert.issuer().common_name == common_name)) {
-    return true;
-  }
-  return false;
 }
 
 #if !defined(OS_ANDROID)
@@ -2751,6 +2734,12 @@ void ChromeContentBrowserClient::AllowCertificateError(
 
 namespace {
 
+certificate_matching::CertificatePrincipalPattern
+ParseCertificatePrincipalPattern(const base::Value* pattern) {
+  return certificate_matching::CertificatePrincipalPattern::
+      ParseFromOptionalDict(pattern, "CN", "L", "O", "OU");
+}
+
 // Attempts to auto-select a client certificate according to the value of
 // |CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE| content setting for
 // |requesting_url|. If no certificate was auto-selected, returns nullptr.
@@ -2765,32 +2754,12 @@ std::unique_ptr<net::ClientCertIdentity> AutoSelectCertificate(
           requesting_url, requesting_url,
           CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, std::string(), NULL);
 
-  if (!setting)
+  if (!setting || !setting->is_dict())
     return nullptr;
-
-  const base::DictionaryValue* setting_dict;
-  if (!setting->GetAsDictionary(&setting_dict)) {
-    NOTREACHED();
-    return nullptr;
-  }
 
   const base::Value* filters =
-      setting_dict->FindKeyOfType("filters", base::Value::Type::LIST);
-  if (filters) {
-    for (const base::Value& filter : filters->GetList()) {
-      const base::DictionaryValue* filter_dict;
-      if (!filter.GetAsDictionary(&filter_dict)) {
-        NOTREACHED();
-        continue;
-      }
-      // Use the first certificate that is matched by the filter.
-      for (size_t i = 0; i < client_certs.size(); ++i) {
-        if (CertMatchesFilter(*client_certs[i]->certificate(), *filter_dict)) {
-          return std::move(client_certs[i]);
-        }
-      }
-    }
-  } else {
+      setting->FindKeyOfType("filters", base::Value::Type::LIST);
+  if (!filters) {
     // |setting_dict| has the wrong format (e.g. single filter instead of a
     // list of filters). This content setting is only provided by
     // the |PolicyProvider|, which should always set it to a valid format.
@@ -2798,6 +2767,23 @@ std::unique_ptr<net::ClientCertIdentity> AutoSelectCertificate(
     host_content_settings_map->SetWebsiteSettingDefaultScope(
         requesting_url, requesting_url,
         CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, std::string(), nullptr);
+    return nullptr;
+  }
+
+  for (const base::Value& filter : filters->GetList()) {
+    DCHECK(filter.is_dict());
+
+    auto issuer_pattern = ParseCertificatePrincipalPattern(
+        filter.FindKeyOfType("ISSUER", base::Value::Type::DICTIONARY));
+    auto subject_pattern = ParseCertificatePrincipalPattern(
+        filter.FindKeyOfType("SUBJECT", base::Value::Type::DICTIONARY));
+    // Use the first certificate that is matched by the filter.
+    for (auto& client_cert : client_certs) {
+      if (issuer_pattern.Matches(client_cert->certificate()->issuer()) &&
+          subject_pattern.Matches(client_cert->certificate()->subject())) {
+        return std::move(client_cert);
+      }
+    }
   }
 
   return nullptr;
