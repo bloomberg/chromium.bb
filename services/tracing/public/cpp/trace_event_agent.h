@@ -6,6 +6,7 @@
 #define SERVICES_TRACING_PUBLIC_CPP_TRACE_EVENT_AGENT_H_
 
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -21,10 +22,6 @@ namespace base {
 class TimeTicks;
 }  // namespace base
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace tracing {
 
 // Agent used to interface with the legacy tracing system.
@@ -36,7 +33,6 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventAgent : public BaseAgent {
  public:
   static TraceEventAgent* GetInstance();
 
-  void Connect(service_manager::Connector* connector) override;
   void GetCategories(std::set<std::string>* category_set) override;
 
   using MetadataGeneratorFunction =

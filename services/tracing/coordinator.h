@@ -41,20 +41,27 @@ namespace tracing {
 // implement the same interface.
 class Coordinator : public mojom::Coordinator {
  public:
-  explicit Coordinator(AgentRegistry* agent_registry);
+  Coordinator(AgentRegistry* agent_registry,
+              const base::RepeatingClosure& on_disconnect_callback);
 
   void BindCoordinatorRequest(
       mojom::CoordinatorRequest request,
       const service_manager::BindSourceInfo& source_info);
 
+  bool IsConnected();
+
  protected:
   ~Coordinator() override;
+
+  virtual void OnClientConnectionError();
 
  private:
   friend std::default_delete<Coordinator>;
   friend class CoordinatorTest;  // For testing.
 
   class TraceStreamer;
+
+  void Reset();
 
   // mojom::Coordinator
   void StartTracing(const std::string& config,
@@ -82,6 +89,7 @@ class Coordinator : public mojom::Coordinator {
                                      uint32_t capacity,
                                      uint32_t count);
 
+  base::RepeatingClosure on_disconnect_callback_;
   mojo::Binding<mojom::Coordinator> binding_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   const scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
