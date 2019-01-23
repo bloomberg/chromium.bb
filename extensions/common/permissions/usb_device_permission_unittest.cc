@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/ref_counted.h"
-#include "device/usb/mock_usb_device.h"
-#include "device/usb/usb_descriptors.h"
+#include "device/usb/public/cpp/fake_usb_device_info.h"
+#include "device/usb/public/mojom/device.mojom.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/features/feature_session_type.h"
@@ -27,20 +28,36 @@ const int kUsbConfigWithInterfaces = 1;
 // no interfaces.
 const int kUsbConfigWithoutInterfaces = 2;
 
-scoped_refptr<device::MockUsbDevice> CreateTestUsbDevice(
+scoped_refptr<device::FakeUsbDeviceInfo> CreateTestUsbDevice(
     uint16_t vendor_id,
     uint16_t product_id,
     uint8_t device_class,
     const std::vector<uint8_t> interface_classes) {
-  std::vector<device::UsbConfigDescriptor> configs;
-  configs.emplace_back(kUsbConfigWithInterfaces, false, false, 0);
-  configs.emplace_back(kUsbConfigWithoutInterfaces, false, false, 0);
+  std::vector<device::mojom::UsbConfigurationInfoPtr> configs;
+  auto config_1 = device::mojom::UsbConfigurationInfo::New();
+  config_1->configuration_value = kUsbConfigWithInterfaces;
+  configs.push_back(std::move(config_1));
 
-  for (size_t i = 0; i < interface_classes.size(); ++i)
-    configs[0].interfaces.emplace_back(i, 0, interface_classes[i], 255, 255);
+  auto config_2 = device::mojom::UsbConfigurationInfo::New();
+  config_2->configuration_value = kUsbConfigWithoutInterfaces;
+  configs.push_back(std::move(config_2));
 
-  return new device::MockUsbDevice(vendor_id, product_id, device_class,
-                                   configs);
+  for (size_t i = 0; i < interface_classes.size(); ++i) {
+    auto interface = device::mojom::UsbInterfaceInfo::New();
+    interface->interface_number = i;
+    interface->alternates.push_back(
+        device::mojom::UsbAlternateInterfaceInfo::New(
+            /*alternate_setting=*/0, interface_classes[i],
+            /*subclass_code=*/255,
+            /*protocol_code=*/255,
+            /*interface_name=*/base::nullopt,
+            std::vector<device::mojom::UsbEndpointInfoPtr>()));
+
+    configs[0]->interfaces.push_back(std::move(interface));
+  }
+
+  return new device::FakeUsbDeviceInfo(vendor_id, product_id, device_class,
+                                       std::move(configs));
 }
 
 scoped_refptr<const Extension> CreateTestApp(
@@ -338,19 +355,21 @@ TEST(USBDevicePermissionTest, CheckDeviceAgainstDeviceIds) {
       CreateTestApp(std::move(permission_data_value));
 
   {
-    scoped_refptr<device::MockUsbDevice> device =
+    scoped_refptr<device::FakeUsbDeviceInfo> device =
         CreateTestUsbDevice(0x02ad, 0x138c, 0x9, std::vector<uint8_t>());
     std::unique_ptr<UsbDevicePermission::CheckParam> param =
-        UsbDevicePermission::CheckParam::ForUsbDevice(app.get(), device.get());
+        UsbDevicePermission::CheckParam::ForUsbDevice(app.get(),
+                                                      device->GetDeviceInfo());
 
     EXPECT_TRUE(permission_data.Check(param.get()));
   }
 
   {
-    scoped_refptr<device::MockUsbDevice> device =
+    scoped_refptr<device::FakeUsbDeviceInfo> device =
         CreateTestUsbDevice(0x138c, 0x138c, 0x9, std::vector<uint8_t>());
     std::unique_ptr<UsbDevicePermission::CheckParam> param =
-        UsbDevicePermission::CheckParam::ForUsbDevice(app.get(), device.get());
+        UsbDevicePermission::CheckParam::ForUsbDevice(app.get(),
+                                                      device->GetDeviceInfo());
 
     EXPECT_FALSE(permission_data.Check(param.get()));
   }
@@ -366,10 +385,11 @@ TEST(USBDevicePermissionTest, CheckDeviceAgainstDeviceClass) {
       CreateTestApp(std::move(permission_data_value));
 
   {
-    scoped_refptr<device::MockUsbDevice> device =
+    scoped_refptr<device::FakeUsbDeviceInfo> device =
         CreateTestUsbDevice(0x02ad, 0x138c, 0x9, std::vector<uint8_t>());
     std::unique_ptr<UsbDevicePermission::CheckParam> param =
-        UsbDevicePermission::CheckParam::ForUsbDevice(app.get(), device.get());
+        UsbDevicePermission::CheckParam::ForUsbDevice(app.get(),
+                                                      device->GetDeviceInfo());
 
     EXPECT_FALSE(permission_data.Check(param.get()));
   }
@@ -379,10 +399,11 @@ TEST(USBDevicePermissionTest, CheckDeviceAgainstDeviceClass) {
         ScopedCurrentFeatureSessionType(FeatureSessionType::KIOSK));
     ScopedCurrentChannel channel(version_info::Channel::DEV);
 
-    scoped_refptr<device::MockUsbDevice> device =
+    scoped_refptr<device::FakeUsbDeviceInfo> device =
         CreateTestUsbDevice(0x02ad, 0x138c, 0x9, std::vector<uint8_t>());
     std::unique_ptr<UsbDevicePermission::CheckParam> param =
-        UsbDevicePermission::CheckParam::ForUsbDevice(app.get(), device.get());
+        UsbDevicePermission::CheckParam::ForUsbDevice(app.get(),
+                                                      device->GetDeviceInfo());
 
     EXPECT_TRUE(permission_data.Check(param.get()));
   }
@@ -391,10 +412,11 @@ TEST(USBDevicePermissionTest, CheckDeviceAgainstDeviceClass) {
         ScopedCurrentFeatureSessionType(FeatureSessionType::KIOSK));
     ScopedCurrentChannel channel(version_info::Channel::DEV);
 
-    scoped_refptr<device::MockUsbDevice> device =
+    scoped_refptr<device::FakeUsbDeviceInfo> device =
         CreateTestUsbDevice(0x02ad, 0x138c, 0x3, std::vector<uint8_t>());
     std::unique_ptr<UsbDevicePermission::CheckParam> param =
-        UsbDevicePermission::CheckParam::ForUsbDevice(app.get(), device.get());
+        UsbDevicePermission::CheckParam::ForUsbDevice(app.get(),
+                                                      device->GetDeviceInfo());
 
     EXPECT_FALSE(permission_data.Check(param.get()));
   }
@@ -414,10 +436,11 @@ TEST(USBDevicePermissionTest, IgnoreNullDeviceClass) {
         ScopedCurrentFeatureSessionType(FeatureSessionType::KIOSK));
     ScopedCurrentChannel channel(version_info::Channel::DEV);
 
-    scoped_refptr<device::MockUsbDevice> device =
+    scoped_refptr<device::FakeUsbDeviceInfo> device =
         CreateTestUsbDevice(0x02ad, 0x138c, 0, std::vector<uint8_t>());
     std::unique_ptr<UsbDevicePermission::CheckParam> param =
-        UsbDevicePermission::CheckParam::ForUsbDevice(app.get(), device.get());
+        UsbDevicePermission::CheckParam::ForUsbDevice(app.get(),
+                                                      device->GetDeviceInfo());
 
     EXPECT_FALSE(permission_data.Check(param.get()));
   }
@@ -433,10 +456,11 @@ TEST(USBDevicePermissionTest, CheckDeviceAgainstInterfaceClass) {
       CreateTestApp(std::move(permission_data_value));
 
   {
-    scoped_refptr<device::MockUsbDevice> device =
+    scoped_refptr<device::FakeUsbDeviceInfo> device =
         CreateTestUsbDevice(0x02ad, 0x138c, 0, {2, 3});
     std::unique_ptr<UsbDevicePermission::CheckParam> param =
-        UsbDevicePermission::CheckParam::ForUsbDevice(app.get(), device.get());
+        UsbDevicePermission::CheckParam::ForUsbDevice(app.get(),
+                                                      device->GetDeviceInfo());
 
     EXPECT_FALSE(permission_data.Check(param.get()));
   }
@@ -448,10 +472,11 @@ TEST(USBDevicePermissionTest, CheckDeviceAgainstInterfaceClass) {
         ScopedCurrentFeatureSessionType(FeatureSessionType::KIOSK));
     ScopedCurrentChannel channel(version_info::Channel::DEV);
 
-    scoped_refptr<device::MockUsbDevice> device =
+    scoped_refptr<device::FakeUsbDeviceInfo> device =
         CreateTestUsbDevice(0x02ad, 0x138c, 0, {2, 3});
     std::unique_ptr<UsbDevicePermission::CheckParam> param =
-        UsbDevicePermission::CheckParam::ForUsbDevice(app.get(), device.get());
+        UsbDevicePermission::CheckParam::ForUsbDevice(app.get(),
+                                                      device->GetDeviceInfo());
 
     EXPECT_TRUE(permission_data.Check(param.get()));
   }
@@ -461,11 +486,12 @@ TEST(USBDevicePermissionTest, CheckDeviceAgainstInterfaceClass) {
         ScopedCurrentFeatureSessionType(FeatureSessionType::KIOSK));
     ScopedCurrentChannel channel(version_info::Channel::DEV);
 
-    scoped_refptr<device::MockUsbDevice> device =
+    scoped_refptr<device::FakeUsbDeviceInfo> device =
         CreateTestUsbDevice(0x02ad, 0x138c, 0, {2, 3});
-    device->ActiveConfigurationChanged(kUsbConfigWithInterfaces);
+    device->SetActiveConfig(kUsbConfigWithInterfaces);
     std::unique_ptr<UsbDevicePermission::CheckParam> param =
-        UsbDevicePermission::CheckParam::ForUsbDevice(app.get(), device.get());
+        UsbDevicePermission::CheckParam::ForUsbDevice(app.get(),
+                                                      device->GetDeviceInfo());
 
     EXPECT_TRUE(permission_data.Check(param.get()));
   }
@@ -477,11 +503,12 @@ TEST(USBDevicePermissionTest, CheckDeviceAgainstInterfaceClass) {
         ScopedCurrentFeatureSessionType(FeatureSessionType::KIOSK));
     ScopedCurrentChannel channel(version_info::Channel::DEV);
 
-    scoped_refptr<device::MockUsbDevice> device =
+    scoped_refptr<device::FakeUsbDeviceInfo> device =
         CreateTestUsbDevice(0x02ad, 0x138c, 0, {2, 3});
-    device->ActiveConfigurationChanged(kUsbConfigWithoutInterfaces);
+    device->SetActiveConfig(kUsbConfigWithoutInterfaces);
     std::unique_ptr<UsbDevicePermission::CheckParam> param =
-        UsbDevicePermission::CheckParam::ForUsbDevice(app.get(), device.get());
+        UsbDevicePermission::CheckParam::ForUsbDevice(app.get(),
+                                                      device->GetDeviceInfo());
 
     EXPECT_TRUE(permission_data.Check(param.get()));
   }
@@ -491,10 +518,11 @@ TEST(USBDevicePermissionTest, CheckDeviceAgainstInterfaceClass) {
         ScopedCurrentFeatureSessionType(FeatureSessionType::KIOSK));
     ScopedCurrentChannel channel(version_info::Channel::DEV);
 
-    scoped_refptr<device::MockUsbDevice> device =
+    scoped_refptr<device::FakeUsbDeviceInfo> device =
         CreateTestUsbDevice(0x02ad, 0x138c, 0, {4, 5});
     std::unique_ptr<UsbDevicePermission::CheckParam> param =
-        UsbDevicePermission::CheckParam::ForUsbDevice(app.get(), device.get());
+        UsbDevicePermission::CheckParam::ForUsbDevice(app.get(),
+                                                      device->GetDeviceInfo());
 
     EXPECT_FALSE(permission_data.Check(param.get()));
   }
@@ -514,21 +542,21 @@ TEST(USBDevicePermissionTest, CheckDeviceAndInterfaceId) {
       CreateTestApp(std::move(permission_data_value));
 
   {
-    scoped_refptr<device::MockUsbDevice> device =
+    scoped_refptr<device::FakeUsbDeviceInfo> device =
         CreateTestUsbDevice(0x02ad, 0x138c, 0, std::vector<uint8_t>());
     std::unique_ptr<UsbDevicePermission::CheckParam> param =
         UsbDevicePermission::CheckParam::ForUsbDeviceAndInterface(
-            app.get(), device.get(), 3);
+            app.get(), device->GetDeviceInfo(), 3);
 
     EXPECT_TRUE(permission_data.Check(param.get()));
   }
 
   {
-    scoped_refptr<device::MockUsbDevice> device =
+    scoped_refptr<device::FakeUsbDeviceInfo> device =
         CreateTestUsbDevice(0x02ad, 0x138c, 0, std::vector<uint8_t>());
     std::unique_ptr<UsbDevicePermission::CheckParam> param =
         UsbDevicePermission::CheckParam::ForUsbDeviceAndInterface(
-            app.get(), device.get(), 2);
+            app.get(), device->GetDeviceInfo(), 2);
 
     EXPECT_FALSE(permission_data.Check(param.get()));
   }
@@ -548,11 +576,11 @@ TEST(USBDevicePermissionTest,
       CreateTestApp(std::move(permission_data_value));
 
   {
-    scoped_refptr<device::MockUsbDevice> device =
+    scoped_refptr<device::FakeUsbDeviceInfo> device =
         CreateTestUsbDevice(0x02ad, 0x138c, 0, std::vector<uint8_t>());
     std::unique_ptr<UsbDevicePermission::CheckParam> param =
         UsbDevicePermission::CheckParam::ForUsbDeviceAndInterface(
-            app.get(), device.get(), 3);
+            app.get(), device->GetDeviceInfo(), 3);
 
     EXPECT_FALSE(permission_data.Check(param.get()));
   }
