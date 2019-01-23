@@ -4655,13 +4655,6 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          },
           "shards": 4
         },
         "test": "dawn_end2end_tests"
@@ -4809,13 +4802,6 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          },
           "shards": 4
         },
         "test": "angle_end2end_tests"
@@ -4835,14 +4821,7 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          ]
         },
         "test": "angle_unittests"
       },
@@ -4859,14 +4838,7 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          ]
         },
         "test": "angle_white_box_tests"
       },
@@ -4884,13 +4856,6 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          },
           "shards": 4
         },
         "test": "dawn_end2end_tests"
@@ -4908,14 +4873,7 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          ]
         },
         "test": "gl_tests"
       },
@@ -4932,14 +4890,7 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          ]
         },
         "test": "gl_unittests"
       },
@@ -4955,14 +4906,7 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          ]
         },
         "test": "gles2_conform_test"
       },
@@ -4975,14 +4919,7 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          ]
         },
         "test": "swiftshader_unittests"
       }
@@ -5009,14 +4946,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -5040,14 +4970,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -5071,14 +4994,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -5102,14 +5018,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -5137,14 +5046,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -5175,14 +5077,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -5221,14 +5116,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -5253,14 +5141,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -5284,14 +5165,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -5316,13 +5190,6 @@
             }
           ],
           "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          },
           "shards": 2
         }
       },
@@ -5348,13 +5215,6 @@
             }
           ],
           "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          },
           "shards": 2
         }
       }
@@ -5905,13 +5765,6 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          },
           "shards": 4
         },
         "test": "angle_end2end_tests"
@@ -5931,14 +5784,7 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          ]
         },
         "test": "angle_unittests"
       },
@@ -5955,14 +5801,7 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          ]
         },
         "test": "angle_white_box_tests"
       },
@@ -5980,13 +5819,6 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          },
           "shards": 4
         },
         "test": "dawn_end2end_tests"
@@ -6004,14 +5836,7 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          ]
         },
         "test": "gl_tests"
       },
@@ -6028,14 +5853,7 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          ]
         },
         "test": "gl_unittests"
       },
@@ -6051,14 +5869,7 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          ]
         },
         "test": "gles2_conform_test"
       },
@@ -6071,14 +5882,7 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          ]
         },
         "test": "swiftshader_unittests"
       }
@@ -6099,14 +5903,7 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          ]
         }
       }
     ]
@@ -7127,13 +6924,6 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          },
           "shards": 4
         },
         "test": "angle_end2end_tests"
@@ -7153,14 +6943,7 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          ]
         },
         "test": "angle_unittests"
       },
@@ -7177,14 +6960,7 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          ]
         },
         "test": "angle_white_box_tests"
       },
@@ -7205,14 +6981,7 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          ]
         },
         "test": "browser_tests"
       },
@@ -7230,13 +6999,6 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          },
           "shards": 4
         },
         "test": "dawn_end2end_tests"
@@ -7254,14 +7016,7 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          ]
         },
         "test": "gl_tests"
       },
@@ -7278,14 +7033,7 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          ]
         },
         "test": "gl_unittests"
       },
@@ -7301,14 +7049,7 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          ]
         },
         "test": "gles2_conform_test"
       },
@@ -7321,14 +7062,7 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          ]
         },
         "test": "swiftshader_unittests"
       }
@@ -7349,14 +7083,7 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          ]
         }
       },
       {
@@ -7380,14 +7107,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -7411,14 +7131,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -7442,14 +7155,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -7473,14 +7179,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -7508,14 +7207,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -7546,14 +7238,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -7592,14 +7277,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -7624,14 +7302,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -7655,14 +7326,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -7689,13 +7353,6 @@
             }
           ],
           "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          },
           "shards": 20
         }
       },
@@ -7723,13 +7380,6 @@
             }
           ],
           "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          },
           "shards": 20
         }
       },
@@ -7755,13 +7405,6 @@
             }
           ],
           "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          },
           "shards": 2
         }
       },
@@ -7787,13 +7430,6 @@
             }
           ],
           "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          },
           "shards": 2
         }
       }
@@ -7841,13 +7477,6 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          },
           "shards": 4
         },
         "test": "angle_deqp_egl_tests"
@@ -7868,13 +7497,6 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          },
           "shards": 4
         },
         "test": "angle_deqp_gles2_tests"
@@ -7895,13 +7517,6 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          },
           "shards": 6
         },
         "test": "angle_deqp_gles31_tests"
@@ -7922,13 +7537,6 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          },
           "shards": 12
         },
         "test": "angle_deqp_gles3_tests"
@@ -14889,13 +14497,6 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          },
           "shards": 4
         },
         "test": "angle_end2end_tests"
@@ -14913,14 +14514,7 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          ]
         },
         "test": "angle_white_box_tests"
       },
@@ -14938,13 +14532,6 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          },
           "shards": 4
         },
         "test": "dawn_end2end_tests"
@@ -14961,14 +14548,7 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          ]
         },
         "test": "gles2_conform_test"
       },
@@ -14981,14 +14561,7 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          ]
         },
         "test": "swiftshader_unittests"
       }
@@ -15009,14 +14582,7 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          ]
         }
       },
       {
@@ -15044,14 +14610,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -15078,13 +14637,6 @@
             }
           ],
           "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          },
           "shards": 20
         }
       },
@@ -15110,13 +14662,6 @@
             }
           ],
           "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "gpu": "10de:1cb3-410.78"
-              }
-            ]
-          },
           "shards": 2
         }
       }

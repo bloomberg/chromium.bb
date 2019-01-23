@@ -1793,7 +1793,6 @@
         'os_type': 'linux',
         'mixins': [
           'linux_nvidia_quadro_p400',
-          'linux_nvidia_quadro_p400_upgrade',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_desktop_gtests',
@@ -1805,7 +1804,6 @@
         'os_type': 'linux',
         'mixins': [
           'linux_nvidia_quadro_p400',
-          'linux_nvidia_quadro_p400_upgrade',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_desktop_gtests',
@@ -2179,7 +2177,6 @@
         'browser_config': 'release',
         'mixins': [
           'linux_nvidia_quadro_p400',
-          'linux_nvidia_quadro_p400_upgrade',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_end2end_tests',
@@ -2254,7 +2251,6 @@
         'os_type': 'linux',
         'mixins': [
           'linux_nvidia_quadro_p400',
-          'linux_nvidia_quadro_p400_upgrade',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_linux_debug_gtests',
@@ -2279,7 +2275,6 @@
         'os_type': 'linux',
         'mixins': [
           'linux_nvidia_quadro_p400',
-          'linux_nvidia_quadro_p400_upgrade',
         ],
         'test_suites': {
           # This bot doesn't run any browser-based tests
@@ -2330,7 +2325,6 @@
         'browser_config': 'release',
         'mixins': [
           'linux_nvidia_quadro_p400',
-          'linux_nvidia_quadro_p400_upgrade',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_linux_release_gtests',
@@ -2353,7 +2347,6 @@
         'browser_config': 'release',
         'mixins': [
           'linux_nvidia_quadro_p400',
-          'linux_nvidia_quadro_p400_upgrade',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_deqp_linux_nvidia_gtests',
@@ -2589,7 +2582,6 @@
         'browser_config': 'release',
         'mixins': [
           'linux_nvidia_quadro_p400',
-          'linux_nvidia_quadro_p400_upgrade',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_linux_optional_gtests',
@@ -3686,7 +3678,6 @@
         'browser_config': 'release',
         'mixins': [
           'linux_nvidia_quadro_p400',
-          'linux_nvidia_quadro_p400_upgrade',
         ],
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_v8_desktop_telemetry_tests',
@@ -3697,7 +3688,6 @@
         'browser_config': 'release',
         'mixins': [
           'linux_nvidia_quadro_p400',
-          'linux_nvidia_quadro_p400_upgrade',
         ],
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_v8_desktop_telemetry_tests',
