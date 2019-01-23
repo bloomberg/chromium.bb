@@ -1483,9 +1483,7 @@ void FrameLoader::ProcessFragment(const KURL& url,
          GetDocumentLoader()->GetHistoryItem()->ScrollRestorationType() ==
              kScrollRestorationManual));
 
-  view->ProcessUrlFragment(url, should_scroll_to_fragment
-                                    ? FragmentAnchor::kBehaviorScroll
-                                    : FragmentAnchor::kBehaviorDontScroll);
+  view->ProcessUrlFragment(url, should_scroll_to_fragment);
 
   if (boundary_frame && boundary_frame->IsLocalFrame())
     ToLocalFrame(boundary_frame)

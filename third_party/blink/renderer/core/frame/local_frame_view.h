@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/frame/frame_view.h"
 #include "third_party/blink/renderer/core/frame/layout_subtree_root_list.h"
 #include "third_party/blink/renderer/core/layout/depth_ordered_layout_object_list.h"
-#include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/layout_object_counter.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
@@ -65,6 +64,7 @@ class DocumentLifecycle;
 class ElementVisibilityObserver;
 class FloatRect;
 class FloatSize;
+class FragmentAnchor;
 class Frame;
 class FrameViewAutoSizeInfo;
 class JSONObject;
@@ -392,9 +392,7 @@ class CORE_EXPORT LocalFrameView final
   // still performing all related side-effects like setting :target (used for
   // e.g. in history restoration to override the scroll offset). The scroll
   // offset is maintained during the frame loading process.
-  void ProcessUrlFragment(
-      const KURL&,
-      FragmentAnchor::Behavior = FragmentAnchor::kBehaviorScroll);
+  void ProcessUrlFragment(const KURL&, bool should_scroll = true);
   FragmentAnchor* GetFragmentAnchor() { return fragment_anchor_; }
   void InvokeFragmentAnchor();
 

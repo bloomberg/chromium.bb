@@ -26,20 +26,17 @@ class KURL;
 // should be handled by scroll-anchoring?
 class CORE_EXPORT FragmentAnchor : public GarbageCollected<FragmentAnchor> {
  public:
-  // In some cases, we want to change the fragment's behavior. E.g. If we're
-  // restoring the scroll position from history, we want to prevent scrolling
-  // the target into view but we still want to parse and set the :target on the
-  // document.
-  enum Behavior { kBehaviorScroll, kBehaviorDontScroll };
-
   // Parses the fragment string and tries to create a FragmentAnchor object. If
   // an appropriate target was found based on the given fragment, this method
   // will create and return a FragmentAnchor object that can be used to keep it
   // in view.  Otherwise, this will return nullptr. In either case,
   // side-effects on the document will be performed, for example,
-  // setting/clearing :target and svgView().
+  // setting/clearing :target and svgView(). If needs_invoke is false, only the
+  // side effects will be performed, the element won't be scrolled/focused and
+  // this method returns nullptr (e.g. used during history navigation where we
+  // don't want to clobber the history scroll restoration).
   static FragmentAnchor* TryCreate(const KURL& url,
-                                   Behavior behavior,
+                                   bool needs_invoke,
                                    LocalFrame& frame);
 
   FragmentAnchor(Node& anchor_node, LocalFrame& frame);
@@ -56,11 +53,15 @@ class CORE_EXPORT FragmentAnchor : public GarbageCollected<FragmentAnchor> {
   // scrolls.
   void DidScroll(ScrollType type);
 
+  void PerformPreRafActions();
+
   void DidCompleteLoad();
 
   void Trace(blink::Visitor*);
 
  private:
+  void ApplyFocusIfNeeded();
+
   WeakMember<Node> anchor_node_;
   Member<LocalFrame> frame_;
   bool needs_focus_;
