@@ -140,8 +140,10 @@ const int16_t kAcQLookup[][kQIndexRange] = {
 static_assert(base::size(kDcQLookup[0]) == base::size(kAcQLookup[0]),
               "quantizer lookup arrays of incorrect size");
 
-size_t ClampQ(size_t q) {
-  return std::min(q, kQIndexRange - 1);
+size_t ClampQ(int64_t q) {
+  return q < 0 ? 0
+               : base::checked_cast<size_t>(
+                     std::min(q, static_cast<int64_t>(kQIndexRange - 1)));
 }
 
 int ClampLf(int lf) {
@@ -815,20 +817,19 @@ base::circular_deque<Vp9Parser::FrameInfo> Vp9Parser::ParseSuperframe() {
 }
 
 // 8.6.1 Dequantization functions
-size_t Vp9Parser::GetQIndex(const Vp9QuantizationParams& quant,
-                            size_t segid) const {
+int64_t Vp9Parser::GetQIndex(const Vp9QuantizationParams& quant,
+                             size_t segid) const {
   const Vp9SegmentationParams& segmentation = context_.segmentation();
 
   if (segmentation.FeatureEnabled(segid,
                                   Vp9SegmentationParams::SEG_LVL_ALT_Q)) {
     int16_t feature_data =
         segmentation.FeatureData(segid, Vp9SegmentationParams::SEG_LVL_ALT_Q);
-    size_t q_index = segmentation.abs_or_delta_update
-                         ? feature_data
-                         : quant.base_q_idx + feature_data;
+    int64_t q_index = segmentation.abs_or_delta_update
+                          ? feature_data
+                          : quant.base_q_idx + feature_data;
     return ClampQ(q_index);
   }
-
   return quant.base_q_idx;
 }
 
@@ -846,7 +847,7 @@ bool Vp9Parser::SetupSegmentationDequant() {
 
   if (segmentation.enabled) {
     for (size_t i = 0; i < Vp9SegmentationParams::kNumSegments; ++i) {
-      const size_t q_index = GetQIndex(quant, i);
+      const int64_t q_index = GetQIndex(quant, i);
       segmentation.y_dequant[i][0] =
           kDcQLookup[bit_depth_index][ClampQ(q_index + quant.delta_q_y_dc)];
       segmentation.y_dequant[i][1] =
@@ -857,7 +858,7 @@ bool Vp9Parser::SetupSegmentationDequant() {
           kAcQLookup[bit_depth_index][ClampQ(q_index + quant.delta_q_uv_ac)];
     }
   } else {
-    const size_t q_index = quant.base_q_idx;
+    const int64_t q_index = quant.base_q_idx;
     segmentation.y_dequant[0][0] =
         kDcQLookup[bit_depth_index][ClampQ(q_index + quant.delta_q_y_dc)];
     segmentation.y_dequant[0][1] = kAcQLookup[bit_depth_index][ClampQ(q_index)];
