@@ -263,20 +263,7 @@ ArcInputMethodManagerService::ArcInputMethodManagerService(
   }
 }
 
-ArcInputMethodManagerService::~ArcInputMethodManagerService() {
-  // Remove any Arc IME entry from preferences before shutting down.
-  // IME states (installed/enabled/disabled) are stored in Android's settings,
-  // that will be restored after Arc container starts next time.
-  RemoveArcIMEFromPrefs();
-  profile_->GetPrefs()->CommitPendingWrite();
-
-  if (TabletModeClient::Get())
-    TabletModeClient::Get()->RemoveObserver(tablet_mode_observer_.get());
-
-  auto* imm = chromeos::input_method::InputMethodManager::Get();
-  imm->RemoveImeMenuObserver(this);
-  imm->RemoveObserver(this);
-}
+ArcInputMethodManagerService::~ArcInputMethodManagerService() = default;
 
 void ArcInputMethodManagerService::SetInputMethodManagerBridgeForTesting(
     std::unique_ptr<ArcInputMethodManagerBridge> test_bridge) {
@@ -289,6 +276,21 @@ void ArcInputMethodManagerService::AddObserver(Observer* observer) {
 
 void ArcInputMethodManagerService::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void ArcInputMethodManagerService::Shutdown() {
+  // Remove any Arc IME entry from preferences before shutting down.
+  // IME states (installed/enabled/disabled) are stored in Android's settings,
+  // that will be restored after Arc container starts next time.
+  RemoveArcIMEFromPrefs();
+  profile_->GetPrefs()->CommitPendingWrite();
+
+  if (TabletModeClient::Get())
+    TabletModeClient::Get()->RemoveObserver(tablet_mode_observer_.get());
+
+  auto* imm = chromeos::input_method::InputMethodManager::Get();
+  imm->RemoveImeMenuObserver(this);
+  imm->RemoveObserver(this);
 }
 
 void ArcInputMethodManagerService::OnActiveImeChanged(

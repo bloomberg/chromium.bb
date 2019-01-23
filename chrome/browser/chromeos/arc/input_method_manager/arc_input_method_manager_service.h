@@ -61,6 +61,9 @@ class ArcInputMethodManagerService
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // KeyedService overrides:
+  void Shutdown() override;
+
   // ArcInputMethodManagerBridge::Delegate overrides:
   void OnActiveImeChanged(const std::string& ime_id) override;
   void OnImeDisabled(const std::string& ime_id) override;
