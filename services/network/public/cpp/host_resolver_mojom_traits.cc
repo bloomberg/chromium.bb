@@ -18,6 +18,8 @@ using network::mojom::DnsHostPtr;
 using network::mojom::DnsOverHttpsServer;
 using network::mojom::DnsOverHttpsServerDataView;
 using network::mojom::DnsOverHttpsServerPtr;
+using network::mojom::DnsQueryType;
+using network::mojom::MdnsListenClient;
 using network::mojom::ResolveHostParameters;
 
 namespace {
@@ -215,46 +217,45 @@ bool StructTraits<DnsConfigOverridesDataView, net::DnsConfigOverrides>::Read(
 }
 
 // static
-ResolveHostParameters::DnsQueryType
-EnumTraits<ResolveHostParameters::DnsQueryType, net::DnsQueryType>::ToMojom(
+DnsQueryType EnumTraits<DnsQueryType, net::DnsQueryType>::ToMojom(
     net::DnsQueryType input) {
   switch (input) {
     case net::DnsQueryType::UNSPECIFIED:
-      return ResolveHostParameters::DnsQueryType::UNSPECIFIED;
+      return DnsQueryType::UNSPECIFIED;
     case net::DnsQueryType::A:
-      return ResolveHostParameters::DnsQueryType::A;
+      return DnsQueryType::A;
     case net::DnsQueryType::AAAA:
-      return ResolveHostParameters::DnsQueryType::AAAA;
+      return DnsQueryType::AAAA;
     case net::DnsQueryType::TXT:
-      return ResolveHostParameters::DnsQueryType::TXT;
+      return DnsQueryType::TXT;
     case net::DnsQueryType::PTR:
-      return ResolveHostParameters::DnsQueryType::PTR;
+      return DnsQueryType::PTR;
     case net::DnsQueryType::SRV:
-      return ResolveHostParameters::DnsQueryType::SRV;
+      return DnsQueryType::SRV;
   }
 }
 
 // static
-bool EnumTraits<ResolveHostParameters::DnsQueryType, net::DnsQueryType>::
-    FromMojom(ResolveHostParameters::DnsQueryType input,
-              net::DnsQueryType* output) {
+bool EnumTraits<DnsQueryType, net::DnsQueryType>::FromMojom(
+    DnsQueryType input,
+    net::DnsQueryType* output) {
   switch (input) {
-    case ResolveHostParameters::DnsQueryType::UNSPECIFIED:
+    case DnsQueryType::UNSPECIFIED:
       *output = net::DnsQueryType::UNSPECIFIED;
       return true;
-    case ResolveHostParameters::DnsQueryType::A:
+    case DnsQueryType::A:
       *output = net::DnsQueryType::A;
       return true;
-    case ResolveHostParameters::DnsQueryType::AAAA:
+    case DnsQueryType::AAAA:
       *output = net::DnsQueryType::AAAA;
       return true;
-    case ResolveHostParameters::DnsQueryType::TXT:
+    case DnsQueryType::TXT:
       *output = net::DnsQueryType::TXT;
       return true;
-    case ResolveHostParameters::DnsQueryType::PTR:
+    case DnsQueryType::PTR:
       *output = net::DnsQueryType::PTR;
       return true;
-    case ResolveHostParameters::DnsQueryType::SRV:
+    case DnsQueryType::SRV:
       *output = net::DnsQueryType::SRV;
       return true;
   }
@@ -292,6 +293,39 @@ bool EnumTraits<ResolveHostParameters::Source, net::HostResolverSource>::
       return true;
     case ResolveHostParameters::Source::MULTICAST_DNS:
       *output = net::HostResolverSource::MULTICAST_DNS;
+      return true;
+  }
+}
+
+// static
+MdnsListenClient::UpdateType
+EnumTraits<MdnsListenClient::UpdateType,
+           net::HostResolver::MdnsListener::Delegate::UpdateType>::
+    ToMojom(net::HostResolver::MdnsListener::Delegate::UpdateType input) {
+  switch (input) {
+    case net::HostResolver::MdnsListener::Delegate::UpdateType::ADDED:
+      return MdnsListenClient::UpdateType::ADDED;
+    case net::HostResolver::MdnsListener::Delegate::UpdateType::CHANGED:
+      return MdnsListenClient::UpdateType::CHANGED;
+    case net::HostResolver::MdnsListener::Delegate::UpdateType::REMOVED:
+      return MdnsListenClient::UpdateType::REMOVED;
+  }
+}
+
+// static
+bool EnumTraits<MdnsListenClient::UpdateType,
+                net::HostResolver::MdnsListener::Delegate::UpdateType>::
+    FromMojom(MdnsListenClient::UpdateType input,
+              net::HostResolver::MdnsListener::Delegate::UpdateType* output) {
+  switch (input) {
+    case MdnsListenClient::UpdateType::ADDED:
+      *output = net::HostResolver::MdnsListener::Delegate::UpdateType::ADDED;
+      return true;
+    case MdnsListenClient::UpdateType::CHANGED:
+      *output = net::HostResolver::MdnsListener::Delegate::UpdateType::CHANGED;
+      return true;
+    case MdnsListenClient::UpdateType::REMOVED:
+      *output = net::HostResolver::MdnsListener::Delegate::UpdateType::REMOVED;
       return true;
   }
 }

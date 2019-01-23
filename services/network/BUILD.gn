@@ -38,6 +38,8 @@ jumbo_component("network_service") {
     "empty_url_loader_client.h",
     "host_resolver.cc",
     "host_resolver.h",
+    "host_resolver_mdns_listener.cc",
+    "host_resolver_mdns_listener.h",
     "http_auth_cache_copier.cc",
     "http_auth_cache_copier.h",
     "http_cache_data_counter.cc",

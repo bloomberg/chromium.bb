@@ -72,13 +72,10 @@ struct StructTraits<network::mojom::DnsConfigOverridesDataView,
 };
 
 template <>
-struct EnumTraits<network::mojom::ResolveHostParameters::DnsQueryType,
-                  net::DnsQueryType> {
-  static network::mojom::ResolveHostParameters::DnsQueryType ToMojom(
-      net::DnsQueryType input);
-  static bool FromMojom(
-      network::mojom::ResolveHostParameters::DnsQueryType input,
-      net::DnsQueryType* output);
+struct EnumTraits<network::mojom::DnsQueryType, net::DnsQueryType> {
+  static network::mojom::DnsQueryType ToMojom(net::DnsQueryType input);
+  static bool FromMojom(network::mojom::DnsQueryType input,
+                        net::DnsQueryType* output);
 };
 
 template <>
@@ -88,6 +85,16 @@ struct EnumTraits<network::mojom::ResolveHostParameters::Source,
       net::HostResolverSource input);
   static bool FromMojom(network::mojom::ResolveHostParameters::Source input,
                         net::HostResolverSource* output);
+};
+
+template <>
+struct EnumTraits<network::mojom::MdnsListenClient::UpdateType,
+                  net::HostResolver::MdnsListener::Delegate::UpdateType> {
+  static network::mojom::MdnsListenClient::UpdateType ToMojom(
+      net::HostResolver::MdnsListener::Delegate::UpdateType input);
+  static bool FromMojom(
+      network::mojom::MdnsListenClient::UpdateType input,
+      net::HostResolver::MdnsListener::Delegate::UpdateType* output);
 };
 
 }  // namespace mojo

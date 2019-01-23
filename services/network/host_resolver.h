@@ -7,12 +7,14 @@
 
 #include <memory>
 #include <set>
+#include <string>
 
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "net/dns/public/dns_query_type.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 
 namespace net {
@@ -22,6 +24,7 @@ class NetLog;
 }  // namespace net
 
 namespace network {
+class HostResolverMdnsListener;
 class ResolveHostRequest;
 
 class COMPONENT_EXPORT(NETWORK_SERVICE) HostResolver
@@ -47,6 +50,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) HostResolver
   void ResolveHost(const net::HostPortPair& host,
                    mojom::ResolveHostParametersPtr optional_parameters,
                    mojom::ResolveHostClientPtr response_client) override;
+  void MdnsListen(const net::HostPortPair& host,
+                  net::DnsQueryType query_type,
+                  mojom::MdnsListenClientPtr response_client,
+                  MdnsListenCallback callback) override;
 
   size_t GetNumOutstandingRequestsForTesting() const;
 
@@ -57,12 +64,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) HostResolver
 
  private:
   void OnResolveHostComplete(ResolveHostRequest* request, int error);
+  void OnMdnsListenerCancelled(HostResolverMdnsListener* listener);
   void OnConnectionError();
 
   mojo::Binding<mojom::HostResolver> binding_;
   ConnectionShutdownCallback connection_shutdown_callback_;
   std::set<std::unique_ptr<ResolveHostRequest>, base::UniquePtrComparator>
       requests_;
+  std::set<std::unique_ptr<HostResolverMdnsListener>, base::UniquePtrComparator>
+      listeners_;
 
   net::HostResolver* const internal_resolver_;
   net::NetLog* const net_log_;

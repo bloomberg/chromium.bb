@@ -14,6 +14,7 @@
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_source.h"
 #include "net/log/net_log.h"
+#include "services/network/host_resolver_mdns_listener.h"
 #include "services/network/resolve_host_request.h"
 
 namespace network {
@@ -100,6 +101,28 @@ void HostResolver::ResolveHost(
   DCHECK(insertion_result);
 }
 
+void HostResolver::MdnsListen(const net::HostPortPair& host,
+                              net::DnsQueryType query_type,
+                              mojom::MdnsListenClientPtr response_client,
+                              MdnsListenCallback callback) {
+#if !BUILDFLAG(ENABLE_MDNS)
+  NOTREACHED();
+#endif  // !BUILDFLAG(ENABLE_MDNS)
+
+  auto listener = std::make_unique<HostResolverMdnsListener>(internal_resolver_,
+                                                             host, query_type);
+  int rv =
+      listener->Start(std::move(response_client),
+                      base::BindOnce(&HostResolver::OnMdnsListenerCancelled,
+                                     base::Unretained(this), listener.get()));
+  if (rv == net::OK) {
+    bool insertion_result = listeners_.emplace(std::move(listener)).second;
+    DCHECK(insertion_result);
+  }
+
+  std::move(callback).Run(rv);
+}
+
 size_t HostResolver::GetNumOutstandingRequestsForTesting() const {
   return requests_.size();
 }
@@ -116,6 +139,12 @@ void HostResolver::OnResolveHostComplete(ResolveHostRequest* request,
   auto found_request = requests_.find(request);
   DCHECK(found_request != requests_.end());
   requests_.erase(found_request);
+}
+
+void HostResolver::OnMdnsListenerCancelled(HostResolverMdnsListener* listener) {
+  auto found_listener = listeners_.find(listener);
+  DCHECK(found_listener != listeners_.end());
+  listeners_.erase(found_listener);
 }
 
 void HostResolver::OnConnectionError() {

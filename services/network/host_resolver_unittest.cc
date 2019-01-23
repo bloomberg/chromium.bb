@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <memory>
-#include <string>
+#include "services/network/host_resolver.h"
+
+#include <map>
 #include <utility>
 #include <vector>
 
@@ -13,7 +14,6 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
@@ -22,13 +22,11 @@
 #include "net/base/net_errors.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_test_util.h"
+#include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_impl.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/dns/public/dns_protocol.h"
-#include "net/dns/public/dns_query_type.h"
 #include "net/log/net_log.h"
-#include "services/network/host_resolver.h"
-#include "services/network/public/mojom/host_resolver.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -116,6 +114,72 @@ class TestResolveHostClient : public mojom::ResolveHostClient {
   base::Optional<std::vector<std::string>> result_text_;
   base::Optional<std::vector<net::HostPortPair>> result_hosts_;
   base::RunLoop* const run_loop_;
+};
+
+class TestMdnsListenClient : public mojom::MdnsListenClient {
+ public:
+  using UpdateType = net::HostResolver::MdnsListener::Delegate::UpdateType;
+  using UpdateKey = std::pair<UpdateType, net::DnsQueryType>;
+
+  explicit TestMdnsListenClient(mojom::MdnsListenClientPtr* interface_ptr)
+      : binding_(this, mojo::MakeRequest(interface_ptr)) {}
+
+  void OnAddressResult(UpdateType update_type,
+                       net::DnsQueryType result_type,
+                       const net::IPEndPoint& address) override {
+    address_results_.insert({{update_type, result_type}, address});
+  }
+
+  void OnTextResult(UpdateType update_type,
+                    net::DnsQueryType result_type,
+                    const std::vector<std::string>& text_records) override {
+    for (auto& text_record : text_records) {
+      text_results_.insert({{update_type, result_type}, text_record});
+    }
+  }
+
+  void OnHostnameResult(UpdateType update_type,
+                        net::DnsQueryType result_type,
+                        const net::HostPortPair& host) override {
+    hostname_results_.insert({{update_type, result_type}, host});
+  }
+
+  void OnUnhandledResult(UpdateType update_type,
+                         net::DnsQueryType result_type) override {
+    unhandled_results_.insert({update_type, result_type});
+  }
+
+  const std::multimap<UpdateKey, net::IPEndPoint>& address_results() {
+    return address_results_;
+  }
+
+  const std::multimap<UpdateKey, std::string>& text_results() {
+    return text_results_;
+  }
+
+  const std::multimap<UpdateKey, net::HostPortPair>& hostname_results() {
+    return hostname_results_;
+  }
+
+  const std::multiset<UpdateKey>& unhandled_results() {
+    return unhandled_results_;
+  }
+
+  template <typename T>
+  static std::pair<UpdateKey, T> CreateExpectedResult(
+      UpdateType update_type,
+      net::DnsQueryType query_type,
+      T result) {
+    return std::make_pair(std::make_pair(update_type, query_type), result);
+  }
+
+ private:
+  mojo::Binding<mojom::MdnsListenClient> binding_;
+
+  std::multimap<UpdateKey, net::IPEndPoint> address_results_;
+  std::multimap<UpdateKey, std::string> text_results_;
+  std::multimap<UpdateKey, net::HostPortPair> hostname_results_;
+  std::multiset<UpdateKey> unhandled_results_;
 };
 
 TEST_F(HostResolverTest, Sync) {
@@ -1147,6 +1211,162 @@ TEST_F(HostResolverTest, HostResults) {
                   net::HostPortPair("chromium.org", 160))));
   EXPECT_EQ(0u, resolver.GetNumOutstandingRequestsForTesting());
 }
+
+#if BUILDFLAG(ENABLE_MDNS)
+TEST_F(HostResolverTest, MdnsListener_AddressResult) {
+  net::NetLog net_log;
+  auto inner_resolver = std::make_unique<net::MockHostResolver>();
+  HostResolver resolver(inner_resolver.get(), &net_log);
+
+  mojom::MdnsListenClientPtr response_client_ptr;
+  TestMdnsListenClient response_client(&response_client_ptr);
+
+  int error = net::ERR_FAILED;
+  base::RunLoop run_loop;
+  net::HostPortPair host("host.local", 41);
+  resolver.MdnsListen(host, net::DnsQueryType::A,
+                      std::move(response_client_ptr),
+                      base::BindLambdaForTesting([&](int error_val) {
+                        error = error_val;
+                        run_loop.Quit();
+                      }));
+
+  run_loop.Run();
+  ASSERT_EQ(net::OK, error);
+
+  net::IPAddress result_address(1, 2, 3, 4);
+  net::IPEndPoint result(result_address, 41);
+  inner_resolver->TriggerMdnsListeners(
+      host, net::DnsQueryType::A,
+      net::HostResolver::MdnsListener::Delegate::UpdateType::ADDED, result);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_THAT(response_client.address_results(),
+              testing::ElementsAre(TestMdnsListenClient::CreateExpectedResult(
+                  net::HostResolver::MdnsListener::Delegate::UpdateType::ADDED,
+                  net::DnsQueryType::A, result)));
+
+  EXPECT_THAT(response_client.text_results(), testing::IsEmpty());
+  EXPECT_THAT(response_client.hostname_results(), testing::IsEmpty());
+  EXPECT_THAT(response_client.unhandled_results(), testing::IsEmpty());
+}
+
+TEST_F(HostResolverTest, MdnsListener_TextResult) {
+  net::NetLog net_log;
+  auto inner_resolver = std::make_unique<net::MockHostResolver>();
+  HostResolver resolver(inner_resolver.get(), &net_log);
+
+  mojom::MdnsListenClientPtr response_client_ptr;
+  TestMdnsListenClient response_client(&response_client_ptr);
+
+  int error = net::ERR_FAILED;
+  base::RunLoop run_loop;
+  net::HostPortPair host("host.local", 42);
+  resolver.MdnsListen(host, net::DnsQueryType::TXT,
+                      std::move(response_client_ptr),
+                      base::BindLambdaForTesting([&](int error_val) {
+                        error = error_val;
+                        run_loop.Quit();
+                      }));
+
+  run_loop.Run();
+  ASSERT_EQ(net::OK, error);
+
+  inner_resolver->TriggerMdnsListeners(
+      host, net::DnsQueryType::TXT,
+      net::HostResolver::MdnsListener::Delegate::UpdateType::CHANGED,
+      {"foo", "bar"});
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_THAT(
+      response_client.text_results(),
+      testing::UnorderedElementsAre(
+          TestMdnsListenClient::CreateExpectedResult(
+              net::HostResolver::MdnsListener::Delegate::UpdateType::CHANGED,
+              net::DnsQueryType::TXT, "foo"),
+          TestMdnsListenClient::CreateExpectedResult(
+              net::HostResolver::MdnsListener::Delegate::UpdateType::CHANGED,
+              net::DnsQueryType::TXT, "bar")));
+
+  EXPECT_THAT(response_client.address_results(), testing::IsEmpty());
+  EXPECT_THAT(response_client.hostname_results(), testing::IsEmpty());
+  EXPECT_THAT(response_client.unhandled_results(), testing::IsEmpty());
+}
+
+TEST_F(HostResolverTest, MdnsListener_HostnameResult) {
+  net::NetLog net_log;
+  auto inner_resolver = std::make_unique<net::MockHostResolver>();
+  HostResolver resolver(inner_resolver.get(), &net_log);
+
+  mojom::MdnsListenClientPtr response_client_ptr;
+  TestMdnsListenClient response_client(&response_client_ptr);
+
+  int error = net::ERR_FAILED;
+  base::RunLoop run_loop;
+  net::HostPortPair host("host.local", 43);
+  resolver.MdnsListen(host, net::DnsQueryType::PTR,
+                      std::move(response_client_ptr),
+                      base::BindLambdaForTesting([&](int error_val) {
+                        error = error_val;
+                        run_loop.Quit();
+                      }));
+
+  run_loop.Run();
+  ASSERT_EQ(net::OK, error);
+
+  net::HostPortPair result("example.com", 43);
+  inner_resolver->TriggerMdnsListeners(
+      host, net::DnsQueryType::PTR,
+      net::HostResolver::MdnsListener::Delegate::UpdateType::REMOVED, result);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_THAT(
+      response_client.hostname_results(),
+      testing::ElementsAre(TestMdnsListenClient::CreateExpectedResult(
+          net::HostResolver::MdnsListener::Delegate::UpdateType::REMOVED,
+          net::DnsQueryType::PTR, result)));
+
+  EXPECT_THAT(response_client.address_results(), testing::IsEmpty());
+  EXPECT_THAT(response_client.text_results(), testing::IsEmpty());
+  EXPECT_THAT(response_client.unhandled_results(), testing::IsEmpty());
+}
+
+TEST_F(HostResolverTest, MdnsListener_UnhandledResult) {
+  net::NetLog net_log;
+  auto inner_resolver = std::make_unique<net::MockHostResolver>();
+  HostResolver resolver(inner_resolver.get(), &net_log);
+
+  mojom::MdnsListenClientPtr response_client_ptr;
+  TestMdnsListenClient response_client(&response_client_ptr);
+
+  int error = net::ERR_FAILED;
+  base::RunLoop run_loop;
+  net::HostPortPair host("host.local", 44);
+  resolver.MdnsListen(host, net::DnsQueryType::PTR,
+                      std::move(response_client_ptr),
+                      base::BindLambdaForTesting([&](int error_val) {
+                        error = error_val;
+                        run_loop.Quit();
+                      }));
+
+  run_loop.Run();
+  ASSERT_EQ(net::OK, error);
+
+  inner_resolver->TriggerMdnsListeners(
+      host, net::DnsQueryType::PTR,
+      net::HostResolver::MdnsListener::Delegate::UpdateType::ADDED);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_THAT(response_client.unhandled_results(),
+              testing::ElementsAre(std::make_pair(
+                  net::HostResolver::MdnsListener::Delegate::UpdateType::ADDED,
+                  net::DnsQueryType::PTR)));
+
+  EXPECT_THAT(response_client.address_results(), testing::IsEmpty());
+  EXPECT_THAT(response_client.text_results(), testing::IsEmpty());
+  EXPECT_THAT(response_client.hostname_results(), testing::IsEmpty());
+}
+#endif  // BUILDFLAG(ENABLE_MDNS)
 
 }  // namespace
 }  // namespace network
