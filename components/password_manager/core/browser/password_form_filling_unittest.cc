@@ -181,10 +181,14 @@ TEST_F(PasswordFormFillingTest, TestFillOnLoadSuggestion) {
     best_matches[saved_match_.username_value] = &saved_match_;
 
     PasswordForm observed_form = observed_form_;
+    observed_form.password_element_renderer_id = 123;
     if (!test_case.new_password_present)
       observed_form.new_password_element = ASCIIToUTF16("New Passwd");
-    if (!test_case.current_password_present)
+    if (!test_case.current_password_present) {
       observed_form.password_element.clear();
+      observed_form.password_element_renderer_id =
+          autofill::FormFieldData::kNotSetFormControlRendererId;
+    }
 
     PasswordFormFillData fill_data;
     EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
@@ -194,9 +198,13 @@ TEST_F(PasswordFormFillingTest, TestFillOnLoadSuggestion) {
         client_, &driver_, false, observed_form, best_matches,
         federated_matches_, &saved_match_, metrics_recorder_.get());
 
-    // In all cases, fill on load should not be prevented. If there is no
-    // current-password field, the renderer will not fill anyway.
-    EXPECT_EQ(LikelyFormFilling::kFillOnPageLoad, likely_form_filling);
+    // In all cases where a current password exists, fill on load should be
+    // permitted. Otherwise, the renderer will not fill anyway and return
+    // kFillOnAccountSelect.
+    if (test_case.current_password_present)
+      EXPECT_EQ(LikelyFormFilling::kFillOnPageLoad, likely_form_filling);
+    else
+      EXPECT_EQ(LikelyFormFilling::kFillOnAccountSelect, likely_form_filling);
   }
 }
 
