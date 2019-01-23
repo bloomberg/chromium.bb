@@ -79,6 +79,10 @@ class ANIMATION_EXPORT Animation : public AnimationContainerElement {
   // process.
   static bool ScrollAnimationsEnabledBySystem();
 
+  // Determines whether the user desires reduced motion based on platform APIs.
+  // Should only be called from the browser process.
+  static bool PrefersReducedMotion();
+
  protected:
   // Invoked from Start to allow subclasses to prepare for the animation.
   virtual void AnimationStarted() {}

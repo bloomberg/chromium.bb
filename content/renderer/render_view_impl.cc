@@ -757,6 +757,7 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->SetShouldClearDocumentBackground(
       prefs.should_clear_document_background);
   settings->SetEnableScrollAnimator(prefs.enable_scroll_animator);
+  settings->SetPrefersReducedMotion(prefs.prefers_reduced_motion);
 
   WebRuntimeFeatures::EnableTouchEventFeatureDetection(
       prefs.touch_event_feature_detection_enabled);
