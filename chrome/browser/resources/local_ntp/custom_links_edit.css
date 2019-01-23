@@ -25,6 +25,12 @@ body {
   z-index: 10000;
 }
 
+html[darkmode=true] #edit-link-dialog {
+  background-color: rgb(41, 42, 45);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3),
+      0 4px 8px 3px rgba(0, 0, 0, 0.15);
+}
+
 #edit-link-dialog::backdrop {
   background: transparent;
 }
@@ -41,6 +47,10 @@ body {
   margin-bottom: 16px;
 }
 
+html[darkmode=true] #dialog-title {
+  color: rgb(var(--GG200-rgb));
+}
+
 .field-container {
   margin-bottom: 16px;
 }
@@ -50,6 +60,10 @@ body {
   font-size: 10px;
   font-weight: 500;
   margin-bottom: 4px;
+}
+
+html[darkmode=true] .field-title {
+  color: rgb(var(--GG400-rgb));
 }
 
 .input-container {
@@ -76,8 +90,18 @@ html[dir=rtl] input {
   text-align: right;  /* csschecker-disable-line left-right */
 }
 
+html[darkmode=true] input {
+  background-color: rgba(0, 0, 0, 0.3);
+  caret-color: rgb(var(--GB300-rgb));
+  color: rgb(var(--GG200-rgb));
+}
+
 input::placeholder {
   color: rgba(var(--GG900-rgb), 0.38);
+}
+
+html[darkmode=true] input::placeholder {
+  color: rgb(var(--GG500-rgb));
 }
 
 .underline {
@@ -93,6 +117,10 @@ input::placeholder {
   width: 0;
 }
 
+html[darkmode=true] .underline {
+  border-color: rgb(var(--GB300-rgb));
+}
+
 input:focus + .underline {
   opacity: 1;
   transition: width 180ms ease-out, opacity 120ms ease-in;
@@ -103,6 +131,10 @@ input:focus + .underline {
   color: rgb(var(--GB600-rgb));
 }
 
+html[darkmode=true] .field-title.focused {
+  color: rgb(var(--GB300-rgb));
+}
+
 .error-msg {
   color: rgb(var(--GR600-rgb));
   display: none;
@@ -111,8 +143,16 @@ input:focus + .underline {
   margin-top: 6px;
 }
 
+html[darkmode=true] .error-msg {
+  color: rgb(var(--GR300-rgb));
+}
+
 .invalid label {
   color: rgb(var(--GR600-rgb));
+}
+
+html[darkmode=true] .invalid label {
+  color: rgb(var(--GR300-rgb));
 }
 
 .invalid .error-msg {
@@ -124,6 +164,10 @@ input:focus + .underline {
   opacity: 1;
   transition: width 180ms ease-out, opacity 120ms ease-in;
   width: 100%;
+}
+
+html[darkmode=true] .invalid .underline {
+  border-color: rgb(var(--GR300-rgb));
 }
 
 .buttons-container {

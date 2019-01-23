@@ -256,10 +256,13 @@ function init() {
   document.title = queryArgs['editTitle'];
 
   // Enable RTL.
-  // TODO(851293): Add RTL formatting.
   if (queryArgs['rtl'] == '1') {
-    let html = document.querySelector('html');
-    html.dir = 'rtl';
+    document.documentElement.setAttribute('dir', 'rtl');
+  }
+
+  // Enable dark mode.
+  if (queryArgs['enableDarkMode'] == '1') {
+    document.documentElement.setAttribute('darkmode', true);
   }
 
   // Populate text content.

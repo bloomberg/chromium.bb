@@ -210,14 +210,6 @@ html[darkmode=true] #edit-bg-divider {
   white-space: nowrap;
 }
 
-#bg-sel-menu::backdrop {
-  background-color: rgba(255, 255, 255, .75);
-}
-
-html[darkmode=true] #bg-sel-menu::backdrop {
-  background-color: rgba(0, 0, 0, 0.4);
-}
-
 /* The width here should match that used in customBackgrounds.getNextTile. */
 #bg-sel-menu {
   background-color: #fff;

@@ -71,6 +71,8 @@ var NTP_DESIGN = {
  */
 var CLASSES = {
   ALTERNATE_LOGO: 'alternate-logo',  // Shows white logo if required by theme
+  // Applies styles to dialogs used in customization.
+  CUSTOMIZE_DIALOG: 'customize-dialog',
   DARK: 'dark',
   DEFAULT_THEME: 'default-theme',
   DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
@@ -93,7 +95,7 @@ var CLASSES = {
   // Vertically centers the most visited section for a non-Google provided page.
   NON_GOOGLE_PAGE: 'non-google-page',
   NON_WHITE_BG: 'non-white-bg',
-  RTL: 'rtl',              // Right-to-left language text.
+  RTL: 'rtl',  // Right-to-left language text.
 };
 
 
@@ -1163,6 +1165,10 @@ function createIframes() {
       clArgs.push('rtl=1');
     }
 
+    if (configData.isDarkModeEnabled) {
+      clArgs.push('enableDarkMode=1');
+    }
+
     clArgs.push(
         'addTitle=' +
         encodeURIComponent(configData.translatedStrings.addLinkTitle));
@@ -1196,6 +1202,7 @@ function createIframes() {
     clIframe.src = 'chrome-search://most-visited/edit.html?' + clArgs.join('&');
     let clIframeDialog = document.createElement('dialog');
     clIframeDialog.id = IDS.CUSTOM_LINKS_EDIT_IFRAME_DIALOG;
+    clIframeDialog.classList.add(CLASSES.CUSTOMIZE_DIALOG);
     clIframeDialog.appendChild(clIframe);
     document.body.appendChild(clIframeDialog);
   }
