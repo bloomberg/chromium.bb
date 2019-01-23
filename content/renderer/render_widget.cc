@@ -753,6 +753,28 @@ void RenderWidget::OnSynchronizeVisualProperties(
     if (screen_metrics_emulator_) {
       screen_metrics_emulator_->OnSynchronizeVisualProperties(params);
     } else {
+      if (!delegate()) {
+        // The main frame controls the page scale factor, from blink. For other
+        // frame widgets, the page scale is received from its parent as part of
+        // the visual properties here. While blink doesn't need to know this
+        // page scale factor outside the main frame, the compositor does in
+        // order to produce its output at the correct scale.
+        layer_tree_view_->SetExternalPageScaleFactor(params.page_scale_factor);
+        // Store the value to give to any new RenderFrameProxy that is
+        // registered.
+        page_scale_factor_from_mainframe_ = params.page_scale_factor;
+        // Push the page scale factor down to any child RenderWidgets via our
+        // child proxy frames.
+        // TODO(danakj): This ends up setting the page scale factor in the
+        // RenderWidgetHost of the child RenderWidget, so that it can bounce
+        // the value down to its RenderWidget. Since this is essentially a
+        // global value per-page, we could instead store it once in the browser
+        // (such as in RenderViewHost) and distribute it to each frame-hosted
+        // RenderWidget from there.
+        for (auto& child_proxy : render_frame_proxies_)
+          child_proxy.OnPageScaleFactorChanged(params.page_scale_factor);
+      }
+
       gfx::Size old_visible_viewport_size = visible_viewport_size_;
       SynchronizeVisualProperties(params);
       if (old_visible_viewport_size != visible_viewport_size_) {
@@ -779,7 +801,6 @@ void RenderWidget::OnEnableDeviceEmulation(
     visual_properties.visible_viewport_size = visible_viewport_size_;
     visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
     visual_properties.display_mode = display_mode_;
-    visual_properties.page_scale_factor = page_scale_factor_from_mainframe_;
     screen_metrics_emulator_.reset(new RenderWidgetScreenMetricsEmulator(
         this, params, visual_properties, widget_screen_rect_,
         window_screen_rect_));
@@ -1397,10 +1418,6 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
   if (render_thread)
     render_thread->SetRenderingColorSpace(params.screen_info.color_space);
 
-  // Only propagate the external PSF to non-main-frames.
-  if (!delegate())
-    layer_tree_view_->SetExternalPageScaleFactor(params.page_scale_factor);
-
   gfx::Size new_compositor_viewport_pixel_size =
       params.auto_resize_enabled
           ? gfx::ScaleToCeiledSize(size_,
@@ -1442,14 +1459,6 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
 
     // NOTE: We may have entered fullscreen mode without changing our size.
     SetIsFullscreen(params.is_fullscreen_granted);
-  }
-
-  if (!delegate()) {
-    // Make sure that page scale factor changes propagating down from the main
-    // frame are relayed to nested OOPIFs/non-main-frames.
-    page_scale_factor_from_mainframe_ = params.page_scale_factor;
-    for (auto& observer : render_frame_proxies_)
-      observer.OnPageScaleFactorChanged(params.page_scale_factor);
   }
 }
 
@@ -2069,7 +2078,6 @@ void RenderWidget::SetWindowRectSynchronously(
   visual_properties.display_mode = display_mode_;
   visual_properties.local_surface_id_allocation =
       local_surface_id_allocation_from_parent_;
-  visual_properties.page_scale_factor = page_scale_factor_from_mainframe_;
   // We are resizing the window from the renderer, so allocate a new
   // viz::LocalSurfaceId to avoid surface invariants violations in tests.
   if (layer_tree_view_)
@@ -3097,9 +3105,10 @@ void RenderWidget::SetTouchAction(cc::TouchAction touch_action) {
 
 void RenderWidget::RegisterRenderFrameProxy(RenderFrameProxy* proxy) {
   render_frame_proxies_.AddObserver(proxy);
-  // During initial page load, the main frame may have received page
-  // scale factor information before the sub-frame proxies were registered, so
-  // make sure we pass the page scale factor along here.
+  // Page scale factor is propagated down the RenderWidget tree (across
+  // frame trees). A new RenderFrameProxy means there is a new child
+  // RenderWidget in another frame tree. In order for it to hear about
+  // the page scale factor we pass along the last seen value here.
   proxy->OnPageScaleFactorChanged(page_scale_factor_from_mainframe_);
 }
 
@@ -3243,15 +3252,24 @@ bool RenderWidget::IsSurfaceSynchronizationEnabled() const {
 }
 
 void RenderWidget::PageScaleFactorChanged(float page_scale_factor) {
-  // Only the main frame pulls page scale information from the layer tree host.
-  // Pages scale is shared with non-mainframe widgets via the IPC for
-  // OnSynchronizeVisualProperties.
-  if (!delegate())
-    return;
+  // The page scale is controlled by the WebView for the local main frame of
+  // the Page. So this is called from blink by for the RenderWidget of that
+  // local main frame. We forward the value on to each child RenderWidget (each
+  // of which will be via proxy child frame). These will each in turn forward
+  // the message to their child RenderWidgets (through their proxy child
+  // frames).
+  // TODO(crbug.com/924336): This value is continuously propagated during a
+  // pinch-zoom, causing the child RenderWidgets to re-raster, while the main
+  // frame is able to throttle re-raster to powers of 2. We could find some way
+  // to throttle child RenderWidgets also, perhaps by informing them when the
+  // pinch-zoom gesture is started and stopped.
+  DCHECK(!is_frozen_);
+  DCHECK(delegate());
 
-  page_scale_factor_from_mainframe_ = page_scale_factor;
   for (auto& observer : render_frame_proxies_)
     observer.OnPageScaleFactorChanged(page_scale_factor);
+  // Store the value to give to any new RenderFrameProxy that is registered.
+  page_scale_factor_from_mainframe_ = page_scale_factor;
 }
 
 void RenderWidget::UseSynchronousResizeModeForTesting(bool enable) {
@@ -3274,7 +3292,6 @@ void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
   visual_properties.display_mode = display_mode_;
   visual_properties.local_surface_id_allocation =
       local_surface_id_allocation_from_parent_;
-  visual_properties.page_scale_factor = page_scale_factor_from_mainframe_;
   // We are changing the device scale factor from the renderer, so allocate a
   // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
   if (layer_tree_view_)
@@ -3298,7 +3315,6 @@ void RenderWidget::SetDeviceColorSpaceForTesting(
   visual_properties.display_mode = display_mode_;
   visual_properties.local_surface_id_allocation =
       local_surface_id_allocation_from_parent_;
-  visual_properties.page_scale_factor = page_scale_factor_from_mainframe_;
   // We are changing the device color space from the renderer, so allocate a
   // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
   if (layer_tree_view_)
@@ -3322,7 +3338,6 @@ void RenderWidget::EnableAutoResizeForTesting(const gfx::Size& min_size,
           viz::LocalSurfaceIdAllocation(
               viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create()),
               base::TimeTicks::Now()));
-  visual_properties.page_scale_factor = page_scale_factor_from_mainframe_;
   OnSynchronizeVisualProperties(visual_properties);
 }
 
@@ -3342,7 +3357,6 @@ void RenderWidget::DisableAutoResizeForTesting(const gfx::Size& new_size) {
   visual_properties.visible_viewport_size = visible_viewport_size_;
   visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
   visual_properties.display_mode = display_mode_;
-  visual_properties.page_scale_factor = page_scale_factor_from_mainframe_;
   OnSynchronizeVisualProperties(visual_properties);
 }
 
