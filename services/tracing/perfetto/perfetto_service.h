@@ -17,6 +17,10 @@
 #include "services/tracing/public/cpp/perfetto/task_runner.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 
+namespace service_manager {
+struct BindSourceInfo;
+}  // namespace service_manager
+
 namespace perfetto {
 class TracingService;
 }  // namespace perfetto
@@ -35,7 +39,8 @@ class PerfettoService : public mojom::PerfettoService {
 
   static PerfettoService* GetInstance();
 
-  void BindRequest(mojom::PerfettoServiceRequest request);
+  void BindRequest(mojom::PerfettoServiceRequest request,
+                   const service_manager::BindSourceInfo& source_info);
 
   // mojom::PerfettoService implementation.
   void ConnectToProducerHost(mojom::ProducerClientPtr producer_client,
@@ -47,12 +52,13 @@ class PerfettoService : public mojom::PerfettoService {
   }
 
  private:
-  void BindOnSequence(mojom::PerfettoServiceRequest request);
+  void BindOnSequence(mojom::PerfettoServiceRequest request,
+                      const service_manager::Identity& identity);
   void CreateServiceOnSequence();
 
   PerfettoTaskRunner perfetto_task_runner_;
   std::unique_ptr<perfetto::TracingService> service_;
-  mojo::BindingSet<mojom::PerfettoService> bindings_;
+  mojo::BindingSet<mojom::PerfettoService, service_manager::Identity> bindings_;
   mojo::StrongBindingSet<mojom::ProducerHost> producer_bindings_;
   SEQUENCE_CHECKER(sequence_checker_);
 

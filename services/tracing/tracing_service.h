@@ -21,7 +21,6 @@
 
 namespace tracing {
 
-class ServiceListener;
 class PerfettoTracingCoordinator;
 
 class TracingService : public service_manager::Service {
@@ -31,16 +30,11 @@ class TracingService : public service_manager::Service {
 
   // service_manager::Service:
   void OnStart() override;
-  void OnDisconnected() override;
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
  private:
-  void OnCoordinatorConnectionClosed(
-      scoped_refptr<base::SequencedTaskRunner> task_runner);
-  void CloseAgentConnectionsAndTerminate();
-
   service_manager::ServiceBinding service_binding_;
 
   service_manager::BinderRegistryWithArgs<
@@ -50,8 +44,6 @@ class TracingService : public service_manager::Service {
   std::unique_ptr<Coordinator> tracing_coordinator_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   std::unique_ptr<PerfettoTracingCoordinator> perfetto_tracing_coordinator_;
-
-  std::unique_ptr<ServiceListener> service_listener_;
 
   // WeakPtrFactory members should always come last so WeakPtrs are destructed
   // before other members.

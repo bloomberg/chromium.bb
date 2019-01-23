@@ -35,7 +35,6 @@
 #include "net/base/network_change_notifier.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/tracing/public/cpp/trace_event_agent.h"
-#include "services/tracing/public/cpp/traced_process.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "v8/include/v8-version-string.h"
 
@@ -128,8 +127,9 @@ TracingControllerImpl::TracingControllerImpl()
 TracingControllerImpl::~TracingControllerImpl() = default;
 
 void TracingControllerImpl::AddAgents() {
-  tracing::TracedProcess::GetInstance()->SetTaskRunner(
-      base::SequencedTaskRunnerHandle::Get());
+  auto* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  connector->BindInterface(tracing::mojom::kServiceName, &coordinator_);
 
 #if defined(OS_CHROMEOS)
   agents_.push_back(std::make_unique<CrOSTracingAgent>());
@@ -137,9 +137,14 @@ void TracingControllerImpl::AddAgents() {
   agents_.push_back(std::make_unique<CastTracingAgent>());
 #endif
 
+  for (auto& agent : agents_)
+    agent->Connect(connector);
+
+  auto* trace_event_agent = tracing::TraceEventAgent::GetInstance();
+  trace_event_agent->Connect(connector);
+
   // For adding general CPU, network, OS, and other system information to the
   // metadata.
-  auto* trace_event_agent = tracing::TraceEventAgent::GetInstance();
   trace_event_agent->AddMetadataGeneratorFunction(base::BindRepeating(
       &TracingControllerImpl::GenerateMetadataDict, base::Unretained(this)));
   if (delegate_) {
@@ -149,18 +154,6 @@ void TracingControllerImpl::AddAgents() {
   }
 }
 
-void TracingControllerImpl::ConnectToServiceIfNeeded() {
-  if (!coordinator_) {
-    ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-        tracing::mojom::kServiceName, &coordinator_);
-  }
-}
-
-void TracingControllerImpl::DisconnectFromService() {
-  coordinator_ = nullptr;
-}
-
-// Can be called on any thread.
 std::unique_ptr<base::DictionaryValue>
 TracingControllerImpl::GenerateMetadataDict() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -326,8 +319,6 @@ bool TracingControllerImpl::StartTracing(
   }
   trace_config_ =
       std::make_unique<base::trace_event::TraceConfig>(trace_config);
-
-  ConnectToServiceIfNeeded();
   coordinator_->StartTracing(
       trace_config.ToString(),
       base::BindOnce(
@@ -385,7 +376,6 @@ bool TracingControllerImpl::GetTraceBufferUsage(
     GetTraceBufferUsageCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  ConnectToServiceIfNeeded();
   coordinator_->RequestBufferUsage(base::BindOnce(
       [](GetTraceBufferUsageCallback callback, bool success, float percent_full,
          uint32_t approximate_count) {
