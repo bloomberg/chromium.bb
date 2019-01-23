@@ -41,6 +41,13 @@ SharedImageManager::~SharedImageManager() {
 std::unique_ptr<SharedImageRepresentationFactoryRef>
 SharedImageManager::Register(std::unique_ptr<SharedImageBacking> backing,
                              MemoryTypeTracker* tracker) {
+  DCHECK(backing->mailbox().IsSharedImage());
+  if (images_.find(backing->mailbox()) != images_.end()) {
+    LOG(ERROR) << "ShraedImageManager::Register: Trying to register an "
+                  "already registered mailbox.";
+    backing->Destroy();
+    return nullptr;
+  }
   auto factory_ref = std::make_unique<SharedImageRepresentationFactoryRef>(
       this, backing.get(), tracker);
   images_.emplace(std::move(backing));
@@ -56,11 +63,6 @@ void SharedImageManager::OnContextLost(const Mailbox& mailbox) {
   }
 
   (*found)->OnContextLost();
-}
-
-bool SharedImageManager::IsSharedImage(const Mailbox& mailbox) {
-  auto found = images_.find(mailbox);
-  return found != images_.end();
 }
 
 std::unique_ptr<SharedImageRepresentationGLTexture>

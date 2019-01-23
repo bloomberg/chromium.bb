@@ -61,7 +61,7 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
     const gfx::ColorSpace& color_space,
     uint32_t usage) {
   GpuChannelMsg_CreateSharedImage_Params params;
-  params.mailbox = Mailbox::Generate();
+  params.mailbox = Mailbox::GenerateForSharedImage();
   params.format = format;
   params.size = size;
   params.color_space = color_space;
@@ -104,7 +104,7 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
   }
 
   GpuChannelMsg_CreateSharedImageWithData_Params params;
-  params.mailbox = Mailbox::Generate();
+  params.mailbox = Mailbox::GenerateForSharedImage();
   params.format = format;
   params.size = size;
   params.color_space = color_space;
@@ -125,7 +125,7 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
     uint32_t usage) {
   DCHECK(gpu_memory_buffer_manager);
   GpuChannelMsg_CreateGMBSharedImage_Params params;
-  params.mailbox = Mailbox::Generate();
+  params.mailbox = Mailbox::GenerateForSharedImage();
   params.handle = gpu_memory_buffer->CloneHandle();
   params.size = gpu_memory_buffer->GetSize();
   params.format = gpu_memory_buffer->GetFormat();
