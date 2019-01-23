@@ -765,7 +765,8 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
   // Save input state
   uint8_t *input_buffer[MAX_MB_PLANE];
   int i;
-  if (mbd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+  const int is_hbd = is_cur_buf_hbd(mbd);
+  if (is_hbd) {
     predictor = CONVERT_TO_BYTEPTR(predictor16);
   } else {
     predictor = predictor8;
@@ -887,20 +888,21 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
               const unsigned int w = plane ? mb_uv_width : BW;
               const unsigned int h = plane ? mb_uv_height : BH;
 
-              if (mbd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+              if (is_hbd) {
                 highbd_apply_temporal_filter_self(pred, pred_stride, w, h,
                                                   blk_fw[0], accum, cnt);
-              else
+              } else {
                 apply_temporal_filter_self(pred, pred_stride, w, h, blk_fw[0],
                                            accum, cnt);
+              }
 
               pred += BLK_PELS;
               accum += BLK_PELS;
               cnt += BLK_PELS;
             }
           } else {
-            if (mbd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-              int adj_strength = strength + 2 * (mbd->bd - 8);
+            if (is_hbd) {
+              const int adj_strength = strength + 2 * (mbd->bd - 8);
 
               if (num_planes <= 1) {
                 // Single plane case
@@ -943,7 +945,7 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
       }
 
       // Normalize filter output to produce AltRef frame
-      if (mbd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+      if (is_hbd) {
         uint16_t *dst1_16;
         uint16_t *dst2_16;
         dst1 = cpi->alt_ref_buffer.y_buffer;
@@ -1139,7 +1141,7 @@ static void adjust_arnr_filter(AV1_COMP *cpi, int distance, int group_boost,
   MACROBLOCKD *mbd = &cpi->td.mb.e_mbd;
   struct lookahead_entry *buf = av1_lookahead_peek(cpi->lookahead, distance);
   double noiselevel;
-  if (mbd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+  if (is_cur_buf_hbd(mbd)) {
     noiselevel = highbd_estimate_noise(
         buf->img.y_buffer, buf->img.y_crop_width, buf->img.y_crop_height,
         buf->img.y_stride, mbd->bd, EDGE_THRESHOLD);

@@ -380,7 +380,7 @@ static void first_pass_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
 
   // Override the default variance function to use MSE.
   v_fn_ptr.vf = get_block_variance_fn(bsize);
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+  if (is_cur_buf_hbd(xd)) {
     v_fn_ptr.vf = highbd_get_block_variance_fn(bsize, xd->bd);
   }
 
@@ -701,14 +701,15 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
       // Accumulate the intra error.
       intra_error += (int64_t)this_error;
 
-      int stride = x->plane[0].src.stride;
+      const int hbd = is_cur_buf_hbd(xd);
+      const int stride = x->plane[0].src.stride;
       uint8_t *buf = x->plane[0].src.buf;
-      for (int r8 = 0; r8 < 2; ++r8)
+      for (int r8 = 0; r8 < 2; ++r8) {
         for (int c8 = 0; c8 < 2; ++c8) {
-          int hbd = xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH;
           frame_avg_wavelet_energy += av1_haar_ac_sad_8x8_uint8_input(
               buf + c8 * 8 + r8 * 8 * stride, stride, hbd);
         }
+      }
 
 #if CONFIG_FP_MB_STATS
       if (cpi->use_fp_mb_stats) {
@@ -730,7 +731,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
         struct buf_2d unscaled_last_source_buf_2d;
 
         xd->plane[0].pre[0].buf = first_ref_buf->y_buffer + recon_yoffset;
-        if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+        if (is_cur_buf_hbd(xd)) {
           motion_error = highbd_get_prediction_error(
               bsize, &x->plane[0].src, &xd->plane[0].pre[0], xd->bd);
         } else {
@@ -745,7 +746,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
             cpi->unscaled_last_source->y_buffer + recon_yoffset;
         unscaled_last_source_buf_2d.stride =
             cpi->unscaled_last_source->y_stride;
-        if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+        if (is_cur_buf_hbd(xd)) {
           raw_motion_error = highbd_get_prediction_error(
               bsize, &x->plane[0].src, &unscaled_last_source_buf_2d, xd->bd);
         } else {
@@ -777,7 +778,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
             int gf_motion_error;
 
             xd->plane[0].pre[0].buf = gld_yv12->y_buffer + recon_yoffset;
-            if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+            if (is_cur_buf_hbd(xd)) {
               gf_motion_error = highbd_get_prediction_error(
                   bsize, &x->plane[0].src, &xd->plane[0].pre[0], xd->bd);
             } else {

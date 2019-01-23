@@ -957,7 +957,7 @@ static unsigned pixel_dist_visible_only(
   }
   const MACROBLOCKD *xd = &x->e_mbd;
 
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+  if (is_cur_buf_hbd(xd)) {
     uint64_t sse64 = aom_highbd_sse_odd_size(src, src_stride, dst, dst_stride,
                                              visible_cols, visible_rows);
     return (unsigned int)ROUND_POWER_OF_TWO(sse64, (xd->bd - 8) * 2);
@@ -1213,7 +1213,7 @@ int64_t av1_dist_8x8(const AV1_COMP *const cpi, const MACROBLOCK *x,
 
   if (x->tune_metric == AOM_TUNE_CDEF_DIST ||
       x->tune_metric == AOM_TUNE_DAALA_DIST) {
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    if (is_cur_buf_hbd(xd)) {
       for (j = 0; j < bsh; j++)
         for (i = 0; i < bsw; i++)
           orig[j * bsw + i] = CONVERT_TO_SHORTPTR(src)[j * src_stride + i];
@@ -1277,8 +1277,7 @@ int64_t av1_dist_8x8(const AV1_COMP *const cpi, const MACROBLOCK *x,
                                  bsw, coeff_shift);
       }
     }
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-      d = ((uint64_t)d) >> 2 * coeff_shift;
+    if (is_cur_buf_hbd(xd)) d = ((uint64_t)d) >> 2 * coeff_shift;
   } else {
     // Otherwise, MSE by default
     d = pixel_dist_visible_only(cpi, x, src, src_stride, dst, dst_stride,
@@ -1306,7 +1305,7 @@ static int64_t dist_8x8_diff(const MACROBLOCK *x, const uint8_t *src,
 
   if (x->tune_metric == AOM_TUNE_CDEF_DIST ||
       x->tune_metric == AOM_TUNE_DAALA_DIST) {
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    if (is_cur_buf_hbd(xd)) {
       for (j = 0; j < bsh; j++)
         for (i = 0; i < bsw; i++)
           orig[j * bsw + i] = CONVERT_TO_SHORTPTR(src)[j * src_stride + i];
@@ -1947,8 +1946,7 @@ static void model_rd_from_sse(const AV1_COMP *const cpi,
   (void)num_samples;
   const MACROBLOCKD *const xd = &x->e_mbd;
   const struct macroblockd_plane *const pd = &xd->plane[plane];
-  const int dequant_shift =
-      (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? xd->bd - 5 : 3;
+  const int dequant_shift = (is_cur_buf_hbd(xd)) ? xd->bd - 5 : 3;
 
   // Fast approximate the modelling function.
   if (cpi->sf.simple_model_rd_from_var) {
@@ -2027,7 +2025,7 @@ static void model_rd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
 
     if (x->skip_chroma_rd && plane) continue;
 
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    if (is_cur_buf_hbd(xd)) {
       sse = aom_highbd_sse(p->src.buf, p->src.stride, pd->dst.buf,
                            pd->dst.stride, bw, bh);
     } else {
@@ -2285,7 +2283,7 @@ static INLINE void dist_block_tx_domain(MACROBLOCK *x, int plane, int block,
   tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
 
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+  if (is_cur_buf_hbd(xd))
     *out_dist = av1_highbd_block_error(coeff, dqcoeff, buffer_length, &this_sse,
                                        xd->bd);
   else
@@ -2321,7 +2319,7 @@ static INLINE int64_t dist_block_px_domain(const AV1_COMP *cpi, MACROBLOCK *x,
   uint8_t *recon;
   DECLARE_ALIGNED(16, uint16_t, recon16[MAX_TX_SQUARE]);
 
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+  if (is_cur_buf_hbd(xd)) {
     recon = CONVERT_TO_BYTEPTR(recon16);
     av1_highbd_convolve_2d_copy_sr(CONVERT_TO_SHORTPTR(dst), dst_stride,
                                    CONVERT_TO_SHORTPTR(recon), MAX_TX_SIZE, bsw,
@@ -2458,8 +2456,7 @@ static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const int txw = tx_size_wide[tx_size];
   const int txh = tx_size_high[tx_size];
-  const int dequant_shift =
-      (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? xd->bd - 5 : 3;
+  const int dequant_shift = (is_cur_buf_hbd(xd)) ? xd->bd - 5 : 3;
   const int q_step = pd->dequant_Q3[1] >> dequant_shift;
   const int num_samples = txw * txh;
 
@@ -2567,8 +2564,7 @@ static void PrintPredictionUnitStats(const AV1_COMP *const cpi,
   get_txb_dimensions(xd, plane, plane_bsize, 0, 0, plane_bsize, NULL, NULL, &bw,
                      &bh);
   const int num_samples = bw * bh;
-  const int dequant_shift =
-      (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? xd->bd - 5 : 3;
+  const int dequant_shift = (is_cur_buf_hbd(xd)) ? xd->bd - 5 : 3;
   const int q_step = pd->dequant_Q3[1] >> dequant_shift;
 
   const double rate_norm = (double)rd_stats->rate / num_samples;
@@ -2668,8 +2664,7 @@ static void model_rd_with_dnn(const AV1_COMP *const cpi,
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const int log_numpels = num_pels_log2_lookup[plane_bsize];
 
-  const int dequant_shift =
-      (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? xd->bd - 5 : 3;
+  const int dequant_shift = (is_cur_buf_hbd(xd)) ? xd->bd - 5 : 3;
   const int q_step = AOMMAX(pd->dequant_Q3[1] >> dequant_shift, 1);
 
   const struct macroblock_plane *const p = &x->plane[plane];
@@ -2785,7 +2780,7 @@ static void model_rd_for_sb_with_dnn(
     int bw, bh;
     get_txb_dimensions(xd, plane, plane_bsize, 0, 0, plane_bsize, NULL, NULL,
                        &bw, &bh);
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    if (is_cur_buf_hbd(xd)) {
       sse = aom_highbd_sse(p->src.buf, p->src.stride, pd->dst.buf,
                            pd->dst.stride, bw, bh);
     } else {
@@ -2824,8 +2819,7 @@ static void model_rd_with_surffit(const AV1_COMP *const cpi,
   (void)plane_bsize;
   const MACROBLOCKD *const xd = &x->e_mbd;
   const struct macroblockd_plane *const pd = &xd->plane[plane];
-  const int dequant_shift =
-      (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? xd->bd - 5 : 3;
+  const int dequant_shift = (is_cur_buf_hbd(xd)) ? xd->bd - 5 : 3;
   const int qstep = AOMMAX(pd->dequant_Q3[1] >> dequant_shift, 1);
   if (sse == 0) {
     if (rate) *rate = 0;
@@ -2889,7 +2883,7 @@ static void model_rd_for_sb_with_surffit(
     const int shift = (xd->bd - 8);
     get_txb_dimensions(xd, plane, plane_bsize, 0, 0, plane_bsize, NULL, NULL,
                        &bw, &bh);
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    if (is_cur_buf_hbd(xd)) {
       sse = aom_highbd_sse(p->src.buf, p->src.stride, pd->dst.buf,
                            pd->dst.stride, bw, bh);
     } else {
@@ -2929,8 +2923,7 @@ static void model_rd_with_curvfit(const AV1_COMP *const cpi,
   (void)plane_bsize;
   const MACROBLOCKD *const xd = &x->e_mbd;
   const struct macroblockd_plane *const pd = &xd->plane[plane];
-  const int dequant_shift =
-      (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? xd->bd - 5 : 3;
+  const int dequant_shift = (is_cur_buf_hbd(xd)) ? xd->bd - 5 : 3;
   const int qstep = AOMMAX(pd->dequant_Q3[1] >> dequant_shift, 1);
 
   if (sse == 0) {
@@ -2995,7 +2988,7 @@ static void model_rd_for_sb_with_curvfit(
     get_txb_dimensions(xd, plane, plane_bsize, 0, 0, plane_bsize, NULL, NULL,
                        &bw, &bh);
 
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    if (is_cur_buf_hbd(xd)) {
       sse = aom_highbd_sse(p->src.buf, p->src.stride, pd->dst.buf,
                            pd->dst.stride, bw, bh);
     } else {
@@ -3156,7 +3149,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   block_sse = pixel_diff_dist(x, plane, blk_row, blk_col, plane_bsize, tx_bsize,
                               &block_mse_q8);
   assert(block_mse_q8 != UINT_MAX);
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+  if (is_cur_buf_hbd(xd)) {
     block_sse = ROUND_POWER_OF_TWO(block_sse, (xd->bd - 8) * 2);
     block_mse_q8 = ROUND_POWER_OF_TWO(block_mse_q8, (xd->bd - 8) * 2);
   }
@@ -4502,8 +4495,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   if (cpi->sf.intra_angle_estimation) {
     const int src_stride = x->plane[0].src.stride;
     const uint8_t *src = x->plane[0].src.buf;
-    angle_estimation(src, src_stride, rows, cols, bsize,
-                     xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH,
+    angle_estimation(src, src_stride, rows, cols, bsize, is_cur_buf_hbd(xd),
                      directional_mode_skip_mask);
   }
   mbmi->filter_intra_mode_info.use_filter_intra = 0;
@@ -5748,7 +5740,7 @@ static void calc_regional_sse(MACROBLOCK *x, BLOCK_SIZE bsize, int64_t dist,
   dist_3 = pixel_diff_dist(x, AOM_PLANE_Y, bh_mi / 2, bw_mi / 2, bsize,
                            split_size, NULL);
 
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+  if (is_cur_buf_hbd(xd)) {
     dist = ROUND_POWER_OF_TWO(dist, (xd->bd - 8) * 2);
     dist_0 = ROUND_POWER_OF_TWO(dist_0, (xd->bd - 8) * 2);
     dist_1 = ROUND_POWER_OF_TWO(dist_1, (xd->bd - 8) * 2);
@@ -5777,8 +5769,7 @@ static void set_skip_flag(MACROBLOCK *x, RD_STATS *rd_stats, int bsize,
   mbmi->tx_size = tx_size;
   for (int i = 0; i < n4; ++i) set_blk_skip(x, 0, i, 1);
   rd_stats->skip = 1;
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-    dist = ROUND_POWER_OF_TWO(dist, (xd->bd - 8) * 2);
+  if (is_cur_buf_hbd(xd)) dist = ROUND_POWER_OF_TWO(dist, (xd->bd - 8) * 2);
   rd_stats->dist = rd_stats->sse = (dist << 4);
   // Though decision is to make the block as skip based on luma stats,
   // it is possible that block becomes non skip after chroma rd. In addition
@@ -5953,7 +5944,7 @@ static void model_rd_for_sb_with_fullrdy(
 
     if (x->skip_chroma_rd && plane) continue;
 
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    if (is_cur_buf_hbd(xd)) {
       sse = aom_highbd_sse(p->src.buf, p->src.stride, pd->dst.buf,
                            pd->dst.stride, bw, bh);
     } else {
@@ -7356,7 +7347,7 @@ static void compound_single_motion_search_interinter(
   // Prediction buffer from second frame.
   DECLARE_ALIGNED(16, uint16_t, second_pred_alloc_16[MAX_SB_SQUARE]);
   uint8_t *second_pred;
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+  if (is_cur_buf_hbd(xd))
     second_pred = CONVERT_TO_BYTEPTR(second_pred_alloc_16);
   else
     second_pred = (uint8_t *)second_pred_alloc_16;
@@ -7486,7 +7477,7 @@ static int estimate_wedge_sign(const AV1_COMP *cpi, const MACROBLOCK *x,
   const BLOCK_SIZE f_index = split_qtr[bsize];
   assert(f_index != BLOCK_INVALID);
 
-  if (x->e_mbd.cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+  if (is_cur_buf_hbd(&x->e_mbd)) {
     pred0 = CONVERT_TO_BYTEPTR(pred0);
     pred1 = CONVERT_TO_BYTEPTR(pred1);
   }
@@ -7536,7 +7527,7 @@ static int64_t pick_wedge(const AV1_COMP *const cpi, const MACROBLOCK *const x,
   int wedge_types = (1 << get_wedge_bits_lookup(bsize));
   const uint8_t *mask;
   uint64_t sse;
-  const int hbd = xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH;
+  const int hbd = is_cur_buf_hbd(xd);
   const int bd_round = hbd ? (xd->bd - 8) * 2 : 0;
 
   DECLARE_ALIGNED(32, int16_t, residual0[MAX_SB_SQUARE]);  // src - pred0
@@ -7607,7 +7598,7 @@ static int64_t pick_wedge_fixed_sign(const AV1_COMP *const cpi,
   int wedge_types = (1 << get_wedge_bits_lookup(bsize));
   const uint8_t *mask;
   uint64_t sse;
-  const int hbd = xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH;
+  const int hbd = is_cur_buf_hbd(xd);
   const int bd_round = hbd ? (xd->bd - 8) * 2 : 0;
   for (wedge_index = 0; wedge_index < wedge_types; ++wedge_index) {
     mask = av1_get_contiguous_soft_mask(wedge_index, wedge_sign, bsize);
@@ -7673,7 +7664,7 @@ static int64_t pick_interinter_seg(const AV1_COMP *const cpi,
   DIFFWTD_MASK_TYPE cur_mask_type;
   int64_t best_rd = INT64_MAX;
   DIFFWTD_MASK_TYPE best_mask_type = 0;
-  const int hbd = xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH;
+  const int hbd = is_cur_buf_hbd(xd);
   const int bd_round = hbd ? (xd->bd - 8) * 2 : 0;
   DECLARE_ALIGNED(16, uint8_t, seg_mask[2 * MAX_SB_SQUARE]);
   uint8_t *tmp_mask[2] = { xd->seg_mask, seg_mask };
@@ -7839,7 +7830,7 @@ static int64_t build_and_cost_compound_type(
   }
   if (cpi->sf.prune_wedge_pred_diff_based && compound_type == COMPOUND_WEDGE) {
     unsigned int sse;
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+    if (is_cur_buf_hbd(xd))
       (void)cpi->fn_ptr[bsize].vf(CONVERT_TO_BYTEPTR(*preds0), *strides,
                                   CONVERT_TO_BYTEPTR(*preds1), *strides, &sse);
     else
@@ -10885,7 +10876,7 @@ static void set_params_rd_pick_inter_mode(
   for (int i = 0; i < MB_MODE_COUNT; ++i)
     for (int k = 0; k < REF_FRAMES; ++k) args->single_filter[i][k] = SWITCHABLE;
 
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+  if (is_cur_buf_hbd(xd)) {
     int len = sizeof(uint16_t);
     args->above_pred_buf[0] = CONVERT_TO_BYTEPTR(x->above_pred_buf);
     args->above_pred_buf[1] =
@@ -11486,8 +11477,7 @@ static int64_t handle_intra_mode(InterModeSearchState *search_state,
     if (sf->intra_angle_estimation && !search_state->angle_stats_ready) {
       const int src_stride = x->plane[0].src.stride;
       const uint8_t *src = x->plane[0].src.buf;
-      angle_estimation(src, src_stride, rows, cols, bsize,
-                       xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH,
+      angle_estimation(src, src_stride, rows, cols, bsize, is_cur_buf_hbd(xd),
                        search_state->directional_mode_skip_mask);
       search_state->angle_stats_ready = 1;
     }
@@ -12726,7 +12716,7 @@ static INLINE void calc_target_weighted_pred_above(
   int32_t *wsrc = ctxt->x->wsrc_buf + (rel_mi_col * MI_SIZE);
   int32_t *mask = ctxt->x->mask_buf + (rel_mi_col * MI_SIZE);
   const uint8_t *tmp = ctxt->tmp + rel_mi_col * MI_SIZE;
-  const int is_hbd = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? 1 : 0;
+  const int is_hbd = is_cur_buf_hbd(xd);
 
   if (!is_hbd) {
     for (int row = 0; row < ctxt->overlap; ++row) {
@@ -12772,7 +12762,7 @@ static INLINE void calc_target_weighted_pred_left(
   int32_t *wsrc = ctxt->x->wsrc_buf + (rel_mi_row * MI_SIZE * bw);
   int32_t *mask = ctxt->x->mask_buf + (rel_mi_row * MI_SIZE * bw);
   const uint8_t *tmp = ctxt->tmp + (rel_mi_row * MI_SIZE * ctxt->tmp_stride);
-  const int is_hbd = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? 1 : 0;
+  const int is_hbd = is_cur_buf_hbd(xd);
 
   if (!is_hbd) {
     for (int row = 0; row < nb_mi_height * MI_SIZE; ++row) {
@@ -12854,7 +12844,7 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
   int32_t *mask_buf = x->mask_buf;
   int32_t *wsrc_buf = x->wsrc_buf;
 
-  const int is_hbd = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? 1 : 0;
+  const int is_hbd = is_cur_buf_hbd(xd);
   const int src_scale = AOM_BLEND_A64_MAX_ALPHA * AOM_BLEND_A64_MAX_ALPHA;
 
   // plane 0 should not be subsampled

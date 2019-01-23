@@ -336,7 +336,7 @@ static unsigned int setup_center_error(
     int *mvcost[2], unsigned int *sse1, int *distortion) {
   unsigned int besterr;
   if (second_pred != NULL) {
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    if (is_cur_buf_hbd(xd)) {
       DECLARE_ALIGNED(16, uint16_t, comp_pred16[MAX_SB_SQUARE]);
       uint8_t *comp_pred = CONVERT_TO_BYTEPTR(comp_pred16);
       if (mask) {
@@ -641,7 +641,7 @@ static int upsampled_pref_error(MACROBLOCKD *xd, const AV1_COMMON *const cm,
                                 int mask_stride, int invert_mask, int w, int h,
                                 unsigned int *sse, int subpel_search) {
   unsigned int besterr;
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+  if (is_cur_buf_hbd(xd)) {
     DECLARE_ALIGNED(16, uint16_t, pred16[MAX_SB_SQUARE]);
     uint8_t *pred8 = CONVERT_TO_BYTEPTR(pred16);
     if (second_pred != NULL) {
@@ -2213,9 +2213,8 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
                   : av1_get_ref_frame_hash_map(&cpi->common,
                                                x->e_mbd.mi[0]->ref_frame[0]);
 
-        av1_get_block_hash_value(
-            what, what_stride, block_width, &hash_value1, &hash_value2,
-            x->e_mbd.cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, x);
+        av1_get_block_hash_value(what, what_stride, block_width, &hash_value1,
+                                 &hash_value2, is_cur_buf_hbd(&x->e_mbd), x);
 
         const int count = av1_hash_table_count(ref_frame_hash, hash_value1);
         // for intra, at lest one matching can be found, itself.
@@ -2334,7 +2333,7 @@ static int upsampled_obmc_pref_error(
   unsigned int besterr;
 
   DECLARE_ALIGNED(16, uint8_t, pred[2 * MAX_SB_SQUARE]);
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+  if (is_cur_buf_hbd(xd)) {
     uint8_t *pred8 = CONVERT_TO_BYTEPTR(pred);
     aom_highbd_upsampled_pred(xd, cm, mi_row, mi_col, mv, pred8, w, h,
                               subpel_x_q3, subpel_y_q3, y, y_stride, xd->bd,

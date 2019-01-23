@@ -6447,7 +6447,7 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
         cm, xd, block_size_wide[bsize], block_size_high[bsize], tx_size, mode,
         0, 0, FILTER_INTRA_MODES, src, src_stride, dst, dst_stride, 0, 0, 0);
 
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    if (is_cur_buf_hbd(xd)) {
       aom_highbd_subtract_block(bh, bw, src_diff, bw, src, src_stride, dst,
                                 dst_stride, xd->bd);
     } else {
@@ -6489,7 +6489,7 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
         &predictor[0], bw, &x->best_mv.as_mv, sf, bw, bh, &conv_params, kernel,
         &warp_types, mi_col * MI_SIZE, mi_row * MI_SIZE, 0, 0, MV_PRECISION_Q3,
         mi_col * MI_SIZE, mi_row * MI_SIZE, xd, 0);
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    if (is_cur_buf_hbd(xd)) {
       aom_highbd_subtract_block(
           bh, bw, src_diff, bw, xd->cur_buf->y_buffer + mb_y_offset,
           xd->cur_buf->y_stride, &predictor[0], bw, xd->bd);
@@ -6554,7 +6554,7 @@ static void mc_flow_dispenser(AV1_COMP *cpi, GF_PICTURE *gf_picture,
       &sf, this_frame->y_crop_width, this_frame->y_crop_height,
       this_frame->y_crop_width, this_frame->y_crop_height);
 
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+  if (is_cur_buf_hbd(xd))
     predictor = CONVERT_TO_BYTEPTR(predictor16);
   else
     predictor = predictor8;

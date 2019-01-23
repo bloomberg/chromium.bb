@@ -43,7 +43,7 @@ static void subtract_block(const MACROBLOCKD *xd, int rows, int cols,
                            const uint8_t *src8, ptrdiff_t src_stride,
                            const uint8_t *pred8, ptrdiff_t pred_stride) {
   if (check_subtract_block_size(rows, cols)) {
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    if (is_cur_buf_hbd(xd)) {
       aom_highbd_subtract_block_c(rows, cols, diff, diff_stride, src8,
                                   src_stride, pred8, pred_stride, xd->bd);
       return;
@@ -54,7 +54,7 @@ static void subtract_block(const MACROBLOCKD *xd, int rows, int cols,
     return;
   }
 
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+  if (is_cur_buf_hbd(xd)) {
     aom_highbd_subtract_block(rows, cols, diff, diff_stride, src8, src_stride,
                               pred8, pred_stride, xd->bd);
     return;

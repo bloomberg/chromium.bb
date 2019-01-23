@@ -453,7 +453,7 @@ void av1_build_obmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
   int dst_height1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
   int dst_height2[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
 
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+  if (is_cur_buf_hbd(xd)) {
     int len = sizeof(uint16_t);
     dst_buf1[0] = CONVERT_TO_BYTEPTR(xd->tmp_obmc_bufs[0]);
     dst_buf1[1] =
@@ -576,37 +576,41 @@ static void build_wedge_inter_predictor_from_buf(
   uint8_t *const dst = dst_buf->buf + dst_buf->stride * y + x;
   mbmi->interinter_comp.seg_mask = xd->seg_mask;
   const INTERINTER_COMPOUND_DATA *comp_data = &mbmi->interinter_comp;
+  const int is_hbd = is_cur_buf_hbd(xd);
 
   if (is_compound && is_masked_compound_type(comp_data->type)) {
     if (!plane && comp_data->type == COMPOUND_DIFFWTD) {
-      if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+      if (is_hbd) {
         av1_build_compound_diffwtd_mask_highbd(
             comp_data->seg_mask, comp_data->mask_type,
             CONVERT_TO_BYTEPTR(ext_dst0), ext_dst_stride0,
             CONVERT_TO_BYTEPTR(ext_dst1), ext_dst_stride1, h, w, xd->bd);
-      else
+      } else {
         av1_build_compound_diffwtd_mask(
             comp_data->seg_mask, comp_data->mask_type, ext_dst0,
             ext_dst_stride0, ext_dst1, ext_dst_stride1, h, w);
+      }
     }
 
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+    if (is_hbd) {
       build_masked_compound_highbd(
           dst, dst_buf->stride, CONVERT_TO_BYTEPTR(ext_dst0), ext_dst_stride0,
           CONVERT_TO_BYTEPTR(ext_dst1), ext_dst_stride1, comp_data,
           mbmi->sb_type, h, w, xd->bd);
-    else
+    } else {
       build_masked_compound(dst, dst_buf->stride, ext_dst0, ext_dst_stride0,
                             ext_dst1, ext_dst_stride1, comp_data, mbmi->sb_type,
                             h, w);
+    }
   } else {
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+    if (is_hbd) {
       aom_highbd_convolve_copy(CONVERT_TO_BYTEPTR(ext_dst0), ext_dst_stride0,
                                dst, dst_buf->stride, NULL, 0, NULL, 0, w, h,
                                xd->bd);
-    else
+    } else {
       aom_convolve_copy(ext_dst0, ext_dst_stride0, dst, dst_buf->stride, NULL,
                         0, NULL, 0, w, h);
+    }
   }
 }
 

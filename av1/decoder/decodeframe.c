@@ -734,7 +734,7 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
                                &scaled_mv, &subpel_x_mv, &subpel_y_mv);
         pre = pre_buf->buf0 + block.y0 * pre_buf->stride + block.x0;
         src_stride = pre_buf->stride;
-        highbd = xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH;
+        highbd = is_cur_buf_hbd(xd);
         extend_mc_border(sf, pre_buf, scaled_mv, block, subpel_x_mv,
                          subpel_y_mv, 0, is_intrabc, highbd, xd->mc_buf[ref],
                          &pre, &src_stride);
@@ -780,7 +780,7 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
                              &scaled_mv, &subpel_x_mv, &subpel_y_mv);
       pre[ref] = pre_buf->buf0 + block.y0 * pre_buf->stride + block.x0;
       src_stride[ref] = pre_buf->stride;
-      highbd = xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH;
+      highbd = is_cur_buf_hbd(xd);
 
       WarpTypesAllowed warp_types;
       warp_types.global_warp_allowed = is_global[ref];
@@ -1013,7 +1013,7 @@ static void dec_build_obmc_inter_predictors_sb(const AV1_COMMON *cm,
   int dst_height1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
   int dst_height2[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
 
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+  if (is_cur_buf_hbd(xd)) {
     int len = sizeof(uint16_t);
     dst_buf1[0] = CONVERT_TO_BYTEPTR(xd->tmp_obmc_bufs[0]);
     dst_buf1[1] =

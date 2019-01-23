@@ -600,7 +600,7 @@ static void rd_pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
     return;
   }
 
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+  if (is_cur_buf_hbd(xd)) {
     x->source_variance = av1_high_get_sby_perpixel_variance(
         cpi, &x->plane[0].src, bsize, xd->bd);
   } else {
@@ -613,8 +613,7 @@ static void rd_pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
     x->edge_strength = UINT16_MAX;
   } else {
     x->edge_strength =
-        edge_strength(&x->plane[0].src, bsize,
-                      xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd);
+        edge_strength(&x->plane[0].src, bsize, is_cur_buf_hbd(xd), xd->bd);
   }
   // Save rdmult before it might be changed, so it can be restored later.
   orig_rdmult = x->rdmult;
@@ -2980,7 +2979,7 @@ static void ml_prune_rect_partition(const AV1_COMP *const cpi,
   // Variance ratios
   const MACROBLOCKD *const xd = &x->e_mbd;
   int whole_block_variance;
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+  if (is_cur_buf_hbd(xd)) {
     whole_block_variance = av1_high_get_sby_perpixel_variance(
         cpi, &x->plane[0].src, bsize, xd->bd);
   } else {
@@ -2998,7 +2997,7 @@ static void ml_prune_rect_partition(const AV1_COMP *const cpi,
     const int x_idx = (i & 1) * bw / 2;
     const int y_idx = (i >> 1) * bw / 2;
     buf.buf = x->plane[0].src.buf + x_idx + y_idx * buf.stride;
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    if (is_cur_buf_hbd(xd)) {
       split_variance[i] =
           av1_high_get_sby_perpixel_variance(cpi, &buf, subsize, xd->bd);
     } else {
@@ -3180,7 +3179,7 @@ static void ml_prune_4_partition(const AV1_COMP *const cpi, MACROBLOCK *const x,
           src + i * block_size_high[horz_4_bs] * src_stride;
       const uint8_t *vert_src = src + i * block_size_wide[vert_4_bs];
       unsigned int horz_var, vert_var, sse;
-      if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+      if (is_cur_buf_hbd(xd)) {
         switch (xd->bd) {
           case 10:
             horz_var = cpi->fn_ptr[horz_4_bs].vf(
@@ -4609,7 +4608,7 @@ BEGIN_PARTITION_SEARCH:
 
   if (pb_source_variance == UINT_MAX) {
     av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes, bsize);
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    if (is_cur_buf_hbd(xd)) {
       pb_source_variance = av1_high_get_sby_perpixel_variance(
           cpi, &x->plane[0].src, bsize, xd->bd);
     } else {
@@ -6350,11 +6349,10 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                  do_gm_search_logic(&cpi->sf, num_refs_using_gm, frame) &&
                  !(cpi->sf.selective_ref_gm && skip_gm_frame(cm, frame))) {
         TransformationType model;
-        const int64_t ref_frame_error =
-            av1_frame_error(xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
-                            ref_buf[frame]->y_buffer, ref_buf[frame]->y_stride,
-                            cpi->source->y_buffer, cpi->source->y_width,
-                            cpi->source->y_height, cpi->source->y_stride);
+        const int64_t ref_frame_error = av1_frame_error(
+            is_cur_buf_hbd(xd), xd->bd, ref_buf[frame]->y_buffer,
+            ref_buf[frame]->y_stride, cpi->source->y_buffer,
+            cpi->source->y_width, cpi->source->y_height, cpi->source->y_stride);
 
         if (ref_frame_error == 0) continue;
 
@@ -6380,9 +6378,8 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 
             if (tmp_wm_params.wmtype != IDENTITY) {
               const int64_t warp_error = av1_refine_integerized_param(
-                  &tmp_wm_params, tmp_wm_params.wmtype,
-                  xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
-                  ref_buf[frame]->y_buffer, ref_buf[frame]->y_width,
+                  &tmp_wm_params, tmp_wm_params.wmtype, is_cur_buf_hbd(xd),
+                  xd->bd, ref_buf[frame]->y_buffer, ref_buf[frame]->y_width,
                   ref_buf[frame]->y_height, ref_buf[frame]->y_stride,
                   cpi->source->y_buffer, cpi->source->y_width,
                   cpi->source->y_height, cpi->source->y_stride, 5,
