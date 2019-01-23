@@ -108,16 +108,16 @@ device::mojom::HidDeviceInfoPtr TestHidDevice() {
   return hid_device;
 }
 
-std::unique_ptr<MockHidConnection> CreateHidConnectionWithHidInitExpectations(
-    base::span<const uint8_t> channel_id,
-    FakeHidManager* fake_hid_manager,
-    ::testing::Sequence sequence) {
+std::unique_ptr<MockFidoHidConnection>
+CreateHidConnectionWithHidInitExpectations(base::span<const uint8_t> channel_id,
+                                           FakeHidManager* fake_hid_manager,
+                                           ::testing::Sequence sequence) {
   auto hid_device = TestHidDevice();
   device::mojom::HidConnectionPtr connection_client;
 
   // Replace device HID connection with custom client connection bound to mock
   // server-side mojo connection.
-  auto mock_connection = std::make_unique<MockHidConnection>(
+  auto mock_connection = std::make_unique<MockFidoHidConnection>(
       hid_device.Clone(), mojo::MakeRequest(&connection_client),
       fido_parsing_utils::Materialize(channel_id));
 
@@ -276,7 +276,7 @@ TEST_F(FidoHidDeviceTest, TestRetryChannelAllocation) {
   // Replace device HID connection with custom client connection bound to mock
   // server-side mojo connection.
   device::mojom::HidConnectionPtr connection_client;
-  MockHidConnection mock_connection(
+  MockFidoHidConnection mock_connection(
       hid_device.Clone(), mojo::MakeRequest(&connection_client),
       fido_parsing_utils::Materialize(kChannelId));
 

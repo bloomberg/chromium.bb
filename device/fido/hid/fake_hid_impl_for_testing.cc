@@ -23,7 +23,7 @@ MATCHER_P(IsCtapHidCommand, expected_command, "") {
 
 }  // namespace
 
-MockHidConnection::MockHidConnection(
+MockFidoHidConnection::MockFidoHidConnection(
     device::mojom::HidDeviceInfoPtr device,
     device::mojom::HidConnectionRequest request,
     std::vector<uint8_t> connection_channel_id)
@@ -31,34 +31,36 @@ MockHidConnection::MockHidConnection(
       device_(std::move(device)),
       connection_channel_id_(connection_channel_id) {}
 
-MockHidConnection::~MockHidConnection() {}
+MockFidoHidConnection::~MockFidoHidConnection() {}
 
-void MockHidConnection::Read(ReadCallback callback) {
+void MockFidoHidConnection::Read(ReadCallback callback) {
   return ReadPtr(&callback);
 }
 
-void MockHidConnection::Write(uint8_t report_id,
-                              const std::vector<uint8_t>& buffer,
-                              WriteCallback callback) {
+void MockFidoHidConnection::Write(uint8_t report_id,
+                                  const std::vector<uint8_t>& buffer,
+                                  WriteCallback callback) {
   return WritePtr(report_id, buffer, &callback);
 }
 
-void MockHidConnection::GetFeatureReport(uint8_t report_id,
-                                         GetFeatureReportCallback callback) {
+void MockFidoHidConnection::GetFeatureReport(
+    uint8_t report_id,
+    GetFeatureReportCallback callback) {
   NOTREACHED();
 }
 
-void MockHidConnection::SendFeatureReport(uint8_t report_id,
-                                          const std::vector<uint8_t>& buffer,
-                                          SendFeatureReportCallback callback) {
+void MockFidoHidConnection::SendFeatureReport(
+    uint8_t report_id,
+    const std::vector<uint8_t>& buffer,
+    SendFeatureReportCallback callback) {
   NOTREACHED();
 }
 
-void MockHidConnection::SetNonce(base::span<uint8_t const> nonce) {
+void MockFidoHidConnection::SetNonce(base::span<uint8_t const> nonce) {
   nonce_ = std::vector<uint8_t>(nonce.begin(), nonce.end());
 }
 
-void MockHidConnection::ExpectWriteHidInit() {
+void MockFidoHidConnection::ExpectWriteHidInit() {
   EXPECT_CALL(*this, WritePtr(::testing::_,
                               IsCtapHidCommand(FidoHidDeviceCommand::kInit),
                               ::testing::_))
@@ -73,7 +75,8 @@ void MockHidConnection::ExpectWriteHidInit() {
           }));
 }
 
-void MockHidConnection::ExpectHidWriteWithCommand(FidoHidDeviceCommand cmd) {
+void MockFidoHidConnection::ExpectHidWriteWithCommand(
+    FidoHidDeviceCommand cmd) {
   EXPECT_CALL(*this,
               WritePtr(::testing::_, IsCtapHidCommand(cmd), ::testing::_))
       .WillOnce(::testing::Invoke(
