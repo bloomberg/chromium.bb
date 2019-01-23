@@ -1429,10 +1429,6 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
   if (!params.auto_resize_enabled) {
     visible_viewport_size_ = params.visible_viewport_size;
 
-    // NOTE: We may have entered fullscreen mode without changing our size.
-    bool fullscreen_change =
-        is_fullscreen_granted_ != params.is_fullscreen_granted;
-    is_fullscreen_granted_ = params.is_fullscreen_granted;
     display_mode_ = params.display_mode;
 
     size_ = params.new_size;
@@ -1449,8 +1445,8 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
     }
     GetWebWidget()->ResizeVisualViewport(visual_viewport_size);
 
-    if (fullscreen_change)
-      DidToggleFullscreen();
+    // NOTE: We may have entered fullscreen mode without changing our size.
+    SetIsFullscreen(params.is_fullscreen_granted);
   }
 
   if (!delegate()) {
@@ -2373,10 +2369,10 @@ void RenderWidget::SetHidden(bool hidden) {
     layer_tree_view_->SetVisible(!is_hidden_);
 }
 
-void RenderWidget::DidToggleFullscreen() {
-  if (!GetWebWidget())
+void RenderWidget::SetIsFullscreen(bool fullscreen) {
+  if (fullscreen == is_fullscreen_granted_)
     return;
-
+  is_fullscreen_granted_ = fullscreen;
   if (is_fullscreen_granted_) {
     GetWebWidget()->DidEnterFullscreen();
   } else {
