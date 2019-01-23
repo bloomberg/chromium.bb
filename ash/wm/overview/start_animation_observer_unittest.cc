@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/overview/overview_delegate.h"
+#include "ash/wm/overview/window_selector_delegate.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -17,13 +17,13 @@ namespace ash {
 
 namespace {
 
-class TestOverviewDelegate : public OverviewDelegate {
+class TestWindowSelectorDelegate : public WindowSelectorDelegate {
  public:
-  TestOverviewDelegate() = default;
+  TestWindowSelectorDelegate() = default;
 
-  ~TestOverviewDelegate() override = default;
+  ~TestWindowSelectorDelegate() override = default;
 
-  // OverviewDelegate:
+  // WindowSelectorDelegate:
   void OnSelectionEnded() override {}
   void AddDelayedAnimationObserver(
       std::unique_ptr<DelayedAnimationObserver> animation_observer) override {}
@@ -44,7 +44,7 @@ class TestOverviewDelegate : public OverviewDelegate {
  private:
   std::vector<std::unique_ptr<DelayedAnimationObserver>> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestOverviewDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TestWindowSelectorDelegate);
 };
 
 }  // namespace
@@ -53,7 +53,7 @@ using StartAnimationObserverTest = AshTestBase;
 
 // Tests that adding a StartAnimationObserver works as intended.
 TEST_F(StartAnimationObserverTest, Basic) {
-  TestOverviewDelegate delegate;
+  TestWindowSelectorDelegate delegate;
   std::unique_ptr<aura::Window> window = CreateTestWindow();
 
   {

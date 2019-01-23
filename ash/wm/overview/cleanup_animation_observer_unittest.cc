@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/overview/overview_delegate.h"
+#include "ash/wm/overview/window_selector_delegate.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -20,18 +20,18 @@
 namespace ash {
 namespace {
 
-class TestOverviewDelegate : public OverviewDelegate {
+class TestWindowSelectorDelegate : public WindowSelectorDelegate {
  public:
-  TestOverviewDelegate() = default;
+  TestWindowSelectorDelegate() = default;
 
-  ~TestOverviewDelegate() override {
+  ~TestWindowSelectorDelegate() override {
     // Destroy widgets that may be still animating if shell shuts down soon
     // after exiting overview mode.
     for (std::unique_ptr<DelayedAnimationObserver>& observer : observers_)
       observer->Shutdown();
   }
 
-  // OverviewDelegate:
+  // WindowSelectorDelegate:
   void OnSelectionEnded() override {}
 
   void AddDelayedAnimationObserver(
@@ -53,7 +53,7 @@ class TestOverviewDelegate : public OverviewDelegate {
  private:
   std::vector<std::unique_ptr<DelayedAnimationObserver>> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestOverviewDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TestWindowSelectorDelegate);
 };
 
 class CleanupAnimationObserverTest : public AshTestBase,
@@ -102,17 +102,17 @@ class CleanupAnimationObserverTest : public AshTestBase,
 
 // Tests that basic create-destroy sequence does not crash.
 TEST_F(CleanupAnimationObserverTest, CreateDestroy) {
-  TestOverviewDelegate delegate;
+  TestWindowSelectorDelegate delegate;
   std::unique_ptr<views::Widget> widget = CreateWindowWidget(gfx::Rect(40, 40));
   auto observer = std::make_unique<CleanupAnimationObserver>(std::move(widget));
   delegate.AddDelayedAnimationObserver(std::move(observer));
 }
 
 // Tests that completing animation deletes the animation observer and the
-// test widget and that deleting the OverviewDelegate instance which
+// test widget and that deleting the WindowSelectorDelegate instance which
 // owns the observer does not crash.
 TEST_F(CleanupAnimationObserverTest, CreateAnimateComplete) {
-  TestOverviewDelegate delegate;
+  TestWindowSelectorDelegate delegate;
   std::unique_ptr<views::Widget> widget = CreateWindowWidget(gfx::Rect(40, 40));
   aura::Window* widget_window = widget->GetNativeWindow();
   {
@@ -135,14 +135,14 @@ TEST_F(CleanupAnimationObserverTest, CreateAnimateComplete) {
   // the animation and calls OnImplicitAnimationsCompleted() on the cleanup
   // observer and auto-deletes the owned widget.
   EXPECT_TRUE(widget_destroyed());
-  // TestOverviewDelegate going out of scope should not crash.
+  // TestWindowSelectorDelegate going out of scope should not crash.
 }
 
 // Tests that starting an animation and exiting doesn't crash. If not for
-// TestOverviewDelegate calling Shutdown() on a CleanupAnimationObserver
+// TestWindowSelectorDelegate calling Shutdown() on a CleanupAnimationObserver
 // instance in destructor, this test would have crashed.
 TEST_F(CleanupAnimationObserverTest, CreateAnimateShutdown) {
-  TestOverviewDelegate delegate;
+  TestWindowSelectorDelegate delegate;
   std::unique_ptr<views::Widget> widget = CreateWindowWidget(gfx::Rect(40, 40));
   aura::Window* widget_window = widget->GetNativeWindow();
   {

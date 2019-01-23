@@ -5,8 +5,8 @@
 #include "ash/wm/wm_shadow_controller_delegate.h"
 
 #include "ash/shell.h"
-#include "ash/wm/overview/overview_controller.h"
-#include "ash/wm/overview/overview_session.h"
+#include "ash/wm/overview/window_selector.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/client/aura_constants.h"
@@ -31,12 +31,14 @@ bool WmShadowControllerDelegate::ShouldShowShadowForWindow(
   }
 
   // Hide the shadow while we are in overview mode.
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
-  if (overview_controller && overview_controller->IsSelecting()) {
-    OverviewSession* overview_session = overview_controller->overview_session();
-    // IsSelecting() being true implies |overview_session| exists.
-    DCHECK(overview_session);
-    if (overview_session->IsWindowInOverview(window))
+  WindowSelectorController* window_selector_controller =
+      Shell::Get()->window_selector_controller();
+  if (window_selector_controller && window_selector_controller->IsSelecting()) {
+    WindowSelector* window_selector =
+        window_selector_controller->window_selector();
+    // IsSelecting() being true implies |window_selector| exists.
+    DCHECK(window_selector);
+    if (window_selector->IsWindowInOverview(window))
       return false;
   }
 

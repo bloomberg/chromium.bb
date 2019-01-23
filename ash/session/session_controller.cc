@@ -21,7 +21,7 @@
 #include "ash/system/screen_security/screen_switch_check_controller.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -447,7 +447,8 @@ void SessionController::SetSessionLengthLimit(base::TimeDelta length_limit,
 void SessionController::CanSwitchActiveUser(
     CanSwitchActiveUserCallback callback) {
   // Cancel overview mode when switching user profiles.
-  OverviewController* controller = Shell::Get()->overview_controller();
+  WindowSelectorController* controller =
+      Shell::Get()->window_selector_controller();
   if (controller->IsSelecting())
     controller->ToggleOverview();
 

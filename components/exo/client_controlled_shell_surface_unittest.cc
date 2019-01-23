@@ -16,7 +16,7 @@
 #include "ash/shell_test_api.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/wm/drag_window_resizer.h"
-#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_drag_delegate.h"
@@ -1117,7 +1117,7 @@ TEST_F(ClientControlledShellSurfaceTest, DragWindowFromTopInTabletMode) {
 
   // FLING the window not inisde preview area with large enough y veloicty
   // (larger than kFlingToOverviewThreshold) will drop the window into overview.
-  EXPECT_FALSE(shell->overview_controller()->IsSelecting());
+  EXPECT_FALSE(shell->window_selector_controller()->IsSelecting());
   end = gfx::Point(400, 210);
   const base::TimeDelta duration =
       event_generator->CalculateScrollDurationForFlingVelocity(
@@ -1125,16 +1125,16 @@ TEST_F(ClientControlledShellSurfaceTest, DragWindowFromTopInTabletMode) {
           ash::TabletModeWindowDragDelegate::kFlingToOverviewThreshold + 10.f,
           200);
   event_generator->GestureScrollSequence(start, end, duration, 200);
-  EXPECT_TRUE(shell->overview_controller()->IsSelecting());
-  EXPECT_TRUE(
-      shell->overview_controller()->overview_session()->IsWindowInOverview(
-          window));
+  EXPECT_TRUE(shell->window_selector_controller()->IsSelecting());
+  EXPECT_TRUE(shell->window_selector_controller()
+                  ->window_selector()
+                  ->IsWindowInOverview(window));
 
   // Drag the window long enough (pass one fourth of the screen vertical
   // height) to snap the window to splitscreen.
   end = gfx::Point(0, 210);
-  shell->overview_controller()->ToggleOverview();
-  EXPECT_FALSE(shell->overview_controller()->IsSelecting());
+  shell->window_selector_controller()->ToggleOverview();
+  EXPECT_FALSE(shell->window_selector_controller()->IsSelecting());
   EXPECT_TRUE(ash::wm::GetWindowState(window)->IsMaximized());
   event_generator->GestureScrollSequence(
       start, end, base::TimeDelta::FromMilliseconds(100), 20);

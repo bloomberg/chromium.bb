@@ -7,10 +7,10 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/overview/overview_controller.h"
-#include "ash/wm/overview/overview_grid.h"
-#include "ash/wm/overview/overview_item.h"
-#include "ash/wm/overview/overview_session.h"
+#include "ash/wm/overview/window_grid.h"
+#include "ash/wm/overview/window_selector.h"
+#include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/compositor/layer_type.h"
@@ -133,18 +133,19 @@ TEST_F(WindowFinderTest, TopmostWindowWithOverviewActive) {
   std::unique_ptr<aura::Window> window2 =
       CreateTestWindow(gfx::Rect(0, 0, 100, 100));
 
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->ToggleOverview();
-  EXPECT_TRUE(overview_controller->IsSelecting());
+  WindowSelectorController* window_selector_controller =
+      Shell::Get()->window_selector_controller();
+  window_selector_controller->ToggleOverview();
+  EXPECT_TRUE(window_selector_controller->IsSelecting());
 
   // Get |window1| and |window2|'s transformed bounds in overview.
-  OverviewGrid* grid =
-      overview_controller->overview_session()->GetGridWithRootWindow(
+  WindowGrid* grid =
+      window_selector_controller->window_selector()->GetGridWithRootWindow(
           window1->GetRootWindow());
   gfx::Rect bounds1 =
-      grid->GetOverviewItemContaining(window1.get())->target_bounds();
+      grid->GetWindowSelectorItemContaining(window1.get())->target_bounds();
   gfx::Rect bounds2 =
-      grid->GetOverviewItemContaining(window2.get())->target_bounds();
+      grid->GetWindowSelectorItemContaining(window2.get())->target_bounds();
 
   std::set<aura::Window*> ignore;
   aura::Window* real_topmost = nullptr;

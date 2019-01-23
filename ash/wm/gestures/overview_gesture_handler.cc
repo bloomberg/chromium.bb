@@ -5,7 +5,7 @@
 #include "ash/wm/gestures/overview_gesture_handler.h"
 
 #include "ash/shell.h"
-#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -33,11 +33,12 @@ bool OverviewGestureHandler::ProcessScrollEvent(const ui::ScrollEvent& event) {
   scroll_x_ += event.x_offset();
   scroll_y_ += event.y_offset();
 
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  WindowSelectorController* window_selector_controller =
+      Shell::Get()->window_selector_controller();
 
   // Horizontal 3-finger scroll moves selection when already in overview mode.
   if (std::fabs(scroll_x_) >= std::fabs(scroll_y_)) {
-    if (!overview_controller->IsSelecting()) {
+    if (!window_selector_controller->IsSelecting()) {
       scroll_x_ = scroll_y_ = 0;
       return false;
     }
@@ -46,12 +47,12 @@ bool OverviewGestureHandler::ProcessScrollEvent(const ui::ScrollEvent& event) {
 
     const int increment = scroll_x_ > 0 ? 1 : -1;
     scroll_x_ = scroll_y_ = 0;
-    overview_controller->IncrementSelection(increment);
+    window_selector_controller->IncrementSelection(increment);
     return true;
   }
 
   // Use vertical 3-finger scroll gesture up to enter overview, down to exit.
-  if (overview_controller->IsSelecting()) {
+  if (window_selector_controller->IsSelecting()) {
     if (scroll_y_ < 0)
       scroll_x_ = scroll_y_ = 0;
     if (scroll_y_ < vertical_threshold_pixels_)
@@ -66,11 +67,11 @@ bool OverviewGestureHandler::ProcessScrollEvent(const ui::ScrollEvent& event) {
   // Reset scroll amount on toggling.
   scroll_x_ = scroll_y_ = 0;
   base::RecordAction(base::UserMetricsAction("Touchpad_Gesture_Overview"));
-  if (overview_controller->IsSelecting() &&
-      overview_controller->AcceptSelection()) {
+  if (window_selector_controller->IsSelecting() &&
+      window_selector_controller->AcceptSelection()) {
     return true;
   }
-  overview_controller->ToggleOverview();
+  window_selector_controller->ToggleOverview();
   return true;
 }
 
