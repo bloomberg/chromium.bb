@@ -84,6 +84,8 @@ void LayoutFlexibleBox::ComputeIntrinsicLogicalWidths(
 
     LayoutUnit min_preferred_logical_width;
     LayoutUnit max_preferred_logical_width;
+    if (child->NeedsPreferredWidthsRecalculation())
+      child->SetPreferredLogicalWidthsDirty();
     ComputeChildPreferredLogicalWidths(*child, min_preferred_logical_width,
                                        max_preferred_logical_width);
     DCHECK_GE(min_preferred_logical_width, LayoutUnit());
