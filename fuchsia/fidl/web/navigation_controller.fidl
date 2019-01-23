@@ -4,14 +4,14 @@
 
 library chromium.web;
 
-// Provides methods for controlling and querying the navigation state
-// of a Frame.
+/// Provides methods for controlling and querying the navigation state
+/// of a Frame.
 interface NavigationController {
-  // Tells the Frame to navigate to a |url|.
-  //
-  // |url|:    The address to navigate to.
-  // |params|: Additional parameters that affect how the resource will be
-  //           loaded (e.g. cookies, HTTP headers, etc.)
+  /// Tells the Frame to navigate to a |url|.
+  ///
+  /// |url|:    The address to navigate to.
+  /// |params|: Additional parameters that affect how the resource will be
+  ///           loaded (e.g. cookies, HTTP headers, etc.)
   LoadUrl(string url, LoadUrlParams? params);
 
   GoBack();
@@ -19,48 +19,53 @@ interface NavigationController {
   Stop();
   Reload(ReloadType type);
 
-  // Returns information for the currently visible content regardless of
-  // loading state, or a null entry if no content is being displayed.
+  /// Returns information for the currently visible content regardless of
+  /// loading state, or a null entry if no content is being displayed.
   GetVisibleEntry() -> (NavigationEntry? entry);
 };
 
-// Additional parameters for modifying the behavior of LoadUrl().
+/// Additional parameters for modifying the behavior of LoadUrl().
 struct LoadUrlParams {
-  // Provides a hint to the browser UI about how LoadUrl was triggered.
+  /// Provides a hint to the browser UI about how LoadUrl was triggered.
   LoadUrlReason type;
 
-  // The URL that linked to the resource being requested.
+  /// The URL that linked to the resource being requested.
   string referrer;
 
-  // Should be set to true to propagate user activation to the frame. User
-  // activation implies that the user is interacting with the web frame. It
-  // enables some web features that are not available otherwise. For example
-  // autoplay will work only when this flag is set to true.
+  /// Should be set to true to propagate user activation to the frame. User
+  /// activation implies that the user is interacting with the web frame. It
+  /// enables some web features that are not available otherwise. For example
+  /// autoplay will work only when this flag is set to true.
   bool user_activated = false;
 
-  // Custom HTTP headers.
+  /// Custom HTTP headers.
   vector<vector<uint8>> headers;
 };
 
-// Characterizes the origin of a LoadUrl request.
+/// Characterizes the origin of a LoadUrl request.
 enum LoadUrlReason {
-  LINK = 0;   // Navigation was initiated by the user following a link.
-  TYPED = 1;  // Navigation was initiated by a user-provided URL.
+  /// Navigation was initiated by the user following a link.
+  LINK = 0;
+  /// Navigation was initiated by a user-provided URL.
+  TYPED = 1;
 };
 
-// Contains information about the Frame's navigation state.
-// The Frame's navigation history can be represented as an aggregation of
-// NavigationEntries.
+/// Contains information about the Frame's navigation state.
+/// The Frame's navigation history can be represented as an aggregation of
+/// NavigationEntries.
 struct NavigationEntry {
-  string url;     // The page's URL.
-  string title;   // The user-visible page title.
-  bool is_error;  // Indicates if an error occurred during this navigation.
+  /// The page's URL.
+  string url;
+  /// The user-visible page title.
+  string title;
+  /// Indicates if an error occurred during this navigation.
+  bool is_error;
 };
 
 enum ReloadType {
-  // Reloads the current entry, bypassing the cache for the main resource.
+  /// Reloads the current entry, bypassing the cache for the main resource.
   PARTIAL_CACHE = 0;
 
-  // Reloads the current entry, bypassing the cache entirely.
+  /// Reloads the current entry, bypassing the cache entirely.
   NO_CACHE = 1;
 };
