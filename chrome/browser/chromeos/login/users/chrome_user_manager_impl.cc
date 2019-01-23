@@ -95,6 +95,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/service_manager_connection.h"
+#include "extensions/browser/device_local_account_util.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -217,6 +218,49 @@ bool IsManagedSessionEnabled(policy::DeviceLocalAccountPolicyBroker* broker) {
   if (!entry)
     return kManagedSessionEnabledByDefault;
   return entry->value && entry->value->GetBool();
+}
+
+const base::Value::ListStorage* GetListPolicyValue(
+    const policy::PolicyMap& policy_map,
+    const char* policy_key) {
+  const policy::PolicyMap::Entry* entry = policy_map.Get(policy_key);
+  if (!entry || !entry->value || !entry->value->is_list())
+    return nullptr;
+
+  return &entry->value->GetList();
+}
+
+bool AreRiskyExtensionsForceInstalled(
+    policy::DeviceLocalAccountPolicyBroker* broker) {
+  const policy::PolicyMap& policy_map = broker->core()->store()->policy_map();
+
+  const base::Value::ListStorage* forcelist =
+      GetListPolicyValue(policy_map, policy::key::kExtensionInstallForcelist);
+
+  // Extension is risky if it's present in force-installed extensions and is not
+  // whitelisted for public sessions.
+
+  if (!forcelist || forcelist->empty())
+    return false;
+
+  for (const base::Value& extension : *forcelist) {
+    if (!extension.is_string())
+      continue;
+
+    // Each extension entry contains an extension id and optional update URL
+    // separated by ';'.
+    std::vector<std::string> extension_items =
+        base::SplitString(extension.GetString(), ";", base::TRIM_WHITESPACE,
+                          base::SPLIT_WANT_NONEMPTY);
+    if (extension_items.empty())
+      continue;
+
+    // If current force-installed extension is not whitelisted for public
+    // sessions, consider the extension risky.
+    if (!extensions::IsWhitelistedForPublicSession(extension_items[0]))
+      return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -1426,7 +1470,11 @@ bool ChromeUserManagerImpl::IsManagedSessionEnabledForUser(
 
 bool ChromeUserManagerImpl::IsFullManagementDisclosureNeeded(
     policy::DeviceLocalAccountPolicyBroker* broker) const {
-  return IsManagedSessionEnabled(broker);
+  if (!IsManagedSessionEnabled(broker))
+    return false;
+  if (!AreRiskyExtensionsForceInstalled(broker))
+    return false;
+  return true;
 }
 
 void ChromeUserManagerImpl::AddReportingUser(const AccountId& account_id) {
