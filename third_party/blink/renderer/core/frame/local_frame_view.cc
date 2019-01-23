@@ -747,195 +747,193 @@ void LocalFrameView::UpdateLayout() {
   DCHECK_EQ(frame_->View(), this);
   DCHECK(frame_->GetPage());
 
+  ScriptForbiddenScope forbid_script;
+
+  if (IsInPerformLayout() || ShouldThrottleRendering() ||
+      !frame_->GetDocument()->IsActive())
+    return;
+
+  TRACE_EVENT0("blink,benchmark", "LocalFrameView::layout");
+
+  RUNTIME_CALL_TIMER_SCOPE(V8PerIsolateData::MainThreadIsolate(),
+                           RuntimeCallStats::CounterId::kUpdateLayout);
+
+  // The actual call to UpdateGeometries is in PerformPostLayoutTasks.
+  SetNeedsUpdateGeometries();
+
+  if (auto_size_info_)
+    auto_size_info_->AutoSizeIfNeeded();
+
+  has_pending_layout_ = false;
+
+  Document* document = frame_->GetDocument();
+  TRACE_EVENT_BEGIN1("devtools.timeline", "Layout", "beginData",
+                     inspector_layout_event::BeginData(this));
+  probe::UpdateLayout probe(document);
+
+  PerformPreLayoutTasks();
+
+  VisualViewport& visual_viewport = frame_->GetPage()->GetVisualViewport();
+  DoubleSize viewport_size(visual_viewport.VisibleWidthCSSPx(),
+                           visual_viewport.VisibleHeightCSSPx());
+
+  // TODO(crbug.com/460956): The notion of a single root for layout is no
+  // longer applicable. Remove or update this code.
+  LayoutObject* root_for_this_layout = GetLayoutView();
+
+  FontCachePurgePreventer font_cache_purge_preventer;
   {
-    ScriptForbiddenScope forbid_script;
+    base::AutoReset<bool> change_scheduling_enabled(&layout_scheduling_enabled_,
+                                                    false);
+    nested_layout_count_++;
 
-    if (IsInPerformLayout() || ShouldThrottleRendering() ||
-        !frame_->GetDocument()->IsActive())
-      return;
+    // If the layout view was marked as needing layout after we added items in
+    // the subtree roots we need to clear the roots and do the layout from the
+    // layoutView.
+    if (GetLayoutView()->NeedsLayout())
+      ClearLayoutSubtreeRootsAndMarkContainingBlocks();
+    GetLayoutView()->ClearHitTestCache();
 
-    TRACE_EVENT0("blink,benchmark", "LocalFrameView::layout");
-
-    RUNTIME_CALL_TIMER_SCOPE(V8PerIsolateData::MainThreadIsolate(),
-                             RuntimeCallStats::CounterId::kUpdateLayout);
-
-    // The actual call to UpdateGeometries is in PerformPostLayoutTasks.
-    SetNeedsUpdateGeometries();
-
-    if (auto_size_info_)
-      auto_size_info_->AutoSizeIfNeeded();
-
-    has_pending_layout_ = false;
-
-    Document* document = frame_->GetDocument();
-    TRACE_EVENT_BEGIN1("devtools.timeline", "Layout", "beginData",
-                       inspector_layout_event::BeginData(this));
-    probe::UpdateLayout probe(document);
-
-    PerformPreLayoutTasks();
-
-    VisualViewport& visual_viewport = frame_->GetPage()->GetVisualViewport();
-    DoubleSize viewport_size(visual_viewport.VisibleWidthCSSPx(),
-                             visual_viewport.VisibleHeightCSSPx());
+    bool in_subtree_layout = IsSubtreeLayout();
 
     // TODO(crbug.com/460956): The notion of a single root for layout is no
     // longer applicable. Remove or update this code.
-    LayoutObject* root_for_this_layout = GetLayoutView();
+    if (in_subtree_layout)
+      root_for_this_layout = layout_subtree_root_list_.RandomRoot();
 
-    FontCachePurgePreventer font_cache_purge_preventer;
-    {
-      base::AutoReset<bool> change_scheduling_enabled(
-          &layout_scheduling_enabled_, false);
-      nested_layout_count_++;
+    if (!root_for_this_layout) {
+      // FIXME: Do we need to set m_size here?
+      NOTREACHED();
+      return;
+    }
 
-      // If the layout view was marked as needing layout after we added items in
-      // the subtree roots we need to clear the roots and do the layout from the
-      // layoutView.
-      if (GetLayoutView()->NeedsLayout())
-        ClearLayoutSubtreeRootsAndMarkContainingBlocks();
-      GetLayoutView()->ClearHitTestCache();
-
-      bool in_subtree_layout = IsSubtreeLayout();
-
-      // TODO(crbug.com/460956): The notion of a single root for layout is no
-      // longer applicable. Remove or update this code.
-      if (in_subtree_layout)
-        root_for_this_layout = layout_subtree_root_list_.RandomRoot();
-
-      if (!root_for_this_layout) {
-        // FIXME: Do we need to set m_size here?
-        NOTREACHED();
-        return;
-      }
-
-      if (!in_subtree_layout) {
-        ClearLayoutSubtreeRootsAndMarkContainingBlocks();
-        Node* body = document->body();
-        if (body && body->GetLayoutObject()) {
-          if (IsHTMLFrameSetElement(*body)) {
+    if (!in_subtree_layout) {
+      ClearLayoutSubtreeRootsAndMarkContainingBlocks();
+      Node* body = document->body();
+      if (body && body->GetLayoutObject()) {
+        if (IsHTMLFrameSetElement(*body)) {
+          body->GetLayoutObject()->SetChildNeedsLayout();
+        } else if (IsHTMLBodyElement(*body)) {
+          if (!first_layout_ && size_.Height() != GetLayoutSize().Height() &&
+              body->GetLayoutObject()->EnclosingBox()->StretchesToViewport())
             body->GetLayoutObject()->SetChildNeedsLayout();
-          } else if (IsHTMLBodyElement(*body)) {
-            if (!first_layout_ && size_.Height() != GetLayoutSize().Height() &&
-                body->GetLayoutObject()->EnclosingBox()->StretchesToViewport())
-              body->GetLayoutObject()->SetChildNeedsLayout();
-          }
-        }
-
-        if (first_layout_) {
-          first_layout_ = false;
-          last_viewport_size_ = GetLayoutSize();
-          last_zoom_factor_ = GetLayoutView()->StyleRef().Zoom();
-
-          ScrollbarMode h_mode;
-          ScrollbarMode v_mode;
-          GetLayoutView()->CalculateScrollbarModes(h_mode, v_mode);
-          if (v_mode == kScrollbarAuto) {
-            GetLayoutView()
-                ->GetScrollableArea()
-                ->ForceVerticalScrollbarForFirstLayout();
-          }
-        }
-
-        LayoutSize old_size = size_;
-
-        size_ = LayoutSize(GetLayoutSize());
-
-        if (old_size != size_ && !first_layout_) {
-          LayoutBox* root_layout_object =
-              document->documentElement()
-                  ? document->documentElement()->GetLayoutBox()
-                  : nullptr;
-          LayoutBox* body_layout_object = root_layout_object && document->body()
-                                              ? document->body()->GetLayoutBox()
-                                              : nullptr;
-          if (body_layout_object && body_layout_object->StretchesToViewport())
-            body_layout_object->SetChildNeedsLayout();
-          else if (root_layout_object &&
-                   root_layout_object->StretchesToViewport())
-            root_layout_object->SetChildNeedsLayout();
         }
       }
 
-      TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
-          TRACE_DISABLED_BY_DEFAULT("blink.debug.layout.trees"), "LayoutTree",
-          this, TracedLayoutObject::Create(*GetLayoutView(), false));
+      if (first_layout_) {
+        first_layout_ = false;
+        last_viewport_size_ = GetLayoutSize();
+        last_zoom_factor_ = GetLayoutView()->StyleRef().Zoom();
 
-      IntSize old_size(Size());
-
-      PerformLayout(in_subtree_layout);
-
-      IntSize new_size(Size());
-      if (old_size != new_size) {
-        SetNeedsLayout();
-        MarkViewportConstrainedObjectsForLayout(
-            old_size.Width() != new_size.Width(),
-            old_size.Height() != new_size.Height());
+        ScrollbarMode h_mode;
+        ScrollbarMode v_mode;
+        GetLayoutView()->CalculateScrollbarModes(h_mode, v_mode);
+        if (v_mode == kScrollbarAuto) {
+          GetLayoutView()
+              ->GetScrollableArea()
+              ->ForceVerticalScrollbarForFirstLayout();
+        }
       }
 
-      if (NeedsLayout()) {
-        base::AutoReset<bool> suppress(&suppress_adjust_view_size_, true);
-        UpdateLayout();
+      LayoutSize old_size = size_;
+
+      size_ = LayoutSize(GetLayoutSize());
+
+      if (old_size != size_ && !first_layout_) {
+        LayoutBox* root_layout_object =
+            document->documentElement()
+                ? document->documentElement()->GetLayoutBox()
+                : nullptr;
+        LayoutBox* body_layout_object = root_layout_object && document->body()
+                                            ? document->body()->GetLayoutBox()
+                                            : nullptr;
+        if (body_layout_object && body_layout_object->StretchesToViewport())
+          body_layout_object->SetChildNeedsLayout();
+        else if (root_layout_object &&
+                 root_layout_object->StretchesToViewport())
+          root_layout_object->SetChildNeedsLayout();
       }
-
-      DCHECK(layout_subtree_root_list_.IsEmpty());
-    }  // Reset m_layoutSchedulingEnabled to its previous value.
-    CheckDoesNotNeedLayout();
-
-    DocumentLifecycle::Scope lifecycle_scope(Lifecycle(),
-                                             DocumentLifecycle::kLayoutClean);
-
-    frame_timing_requests_dirty_ = true;
-
-    // FIXME: Could find the common ancestor layer of all dirty subtrees and
-    // mark from there. crbug.com/462719
-    GetLayoutView()->EnclosingLayer()->UpdateLayerPositionsAfterLayout();
+    }
 
     TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
         TRACE_DISABLED_BY_DEFAULT("blink.debug.layout.trees"), "LayoutTree",
-        this, TracedLayoutObject::Create(*GetLayoutView(), true));
+        this, TracedLayoutObject::Create(*GetLayoutView(), false));
 
-    GetLayoutView()->Compositor()->DidLayout();
-    layout_count_for_testing_++;
+    IntSize old_size(Size());
 
-    if (AXObjectCache* cache = document->ExistingAXObjectCache()) {
-      const KURL& url = document->Url();
-      if (url.IsValid() && !url.IsAboutBlankURL()) {
-        cache->HandleLayoutComplete(document);
-        cache->ProcessUpdatesAfterLayout(*document);
-      }
+    PerformLayout(in_subtree_layout);
+
+    IntSize new_size(Size());
+    if (old_size != new_size) {
+      SetNeedsLayout();
+      MarkViewportConstrainedObjectsForLayout(
+          old_size.Width() != new_size.Width(),
+          old_size.Height() != new_size.Height());
     }
-    UpdateDocumentAnnotatedRegions();
+
+    if (NeedsLayout()) {
+      base::AutoReset<bool> suppress(&suppress_adjust_view_size_, true);
+      UpdateLayout();
+    }
+
+    DCHECK(layout_subtree_root_list_.IsEmpty());
+  }  // Reset m_layoutSchedulingEnabled to its previous value.
+  CheckDoesNotNeedLayout();
+
+  DocumentLifecycle::Scope lifecycle_scope(Lifecycle(),
+                                           DocumentLifecycle::kLayoutClean);
+
+  frame_timing_requests_dirty_ = true;
+
+  // FIXME: Could find the common ancestor layer of all dirty subtrees and
+  // mark from there. crbug.com/462719
+  GetLayoutView()->EnclosingLayer()->UpdateLayerPositionsAfterLayout();
+
+  TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
+      TRACE_DISABLED_BY_DEFAULT("blink.debug.layout.trees"), "LayoutTree", this,
+      TracedLayoutObject::Create(*GetLayoutView(), true));
+
+  GetLayoutView()->Compositor()->DidLayout();
+  layout_count_for_testing_++;
+
+  if (AXObjectCache* cache = document->ExistingAXObjectCache()) {
+    const KURL& url = document->Url();
+    if (url.IsValid() && !url.IsAboutBlankURL()) {
+      cache->HandleLayoutComplete(document);
+      cache->ProcessUpdatesAfterLayout(*document);
+    }
+  }
+  UpdateDocumentAnnotatedRegions();
+  CheckDoesNotNeedLayout();
+
+  if (nested_layout_count_ == 1) {
+    PerformPostLayoutTasks();
     CheckDoesNotNeedLayout();
+  }
 
-    if (nested_layout_count_ == 1) {
-      PerformPostLayoutTasks();
-      CheckDoesNotNeedLayout();
-    }
+  // FIXME: The notion of a single root for layout is no longer applicable.
+  // Remove or update this code. crbug.com/460596
+  TRACE_EVENT_END1("devtools.timeline", "Layout", "endData",
+                   inspector_layout_event::EndData(root_for_this_layout));
+  probe::didChangeViewport(frame_.Get());
 
-    // FIXME: The notion of a single root for layout is no longer applicable.
-    // Remove or update this code. crbug.com/460596
-    TRACE_EVENT_END1("devtools.timeline", "Layout", "endData",
-                     inspector_layout_event::EndData(root_for_this_layout));
-    probe::didChangeViewport(frame_.Get());
-
-    nested_layout_count_--;
-    if (nested_layout_count_)
-      return;
+  nested_layout_count_--;
+  if (nested_layout_count_)
+    return;
 
 #if DCHECK_IS_ON()
-    // Post-layout assert that nobody was re-marked as needing layout during
-    // layout.
-    GetLayoutView()->AssertSubtreeIsLaidOut();
+  // Post-layout assert that nobody was re-marked as needing layout during
+  // layout.
+  GetLayoutView()->AssertSubtreeIsLaidOut();
 #endif
 
-    if (frame_->IsMainFrame()) {
-      // Scrollbars changing state can cause a visual viewport size change.
-      DoubleSize new_viewport_size(visual_viewport.VisibleWidthCSSPx(),
-                                   visual_viewport.VisibleHeightCSSPx());
-      if (new_viewport_size != viewport_size)
-        frame_->GetDocument()->EnqueueVisualViewportResizeEvent();
-    }
-  }  // ScriptForbiddenScope
+  if (frame_->IsMainFrame()) {
+    // Scrollbars changing state can cause a visual viewport size change.
+    DoubleSize new_viewport_size(visual_viewport.VisibleWidthCSSPx(),
+                                 visual_viewport.VisibleHeightCSSPx());
+    if (new_viewport_size != viewport_size)
+      frame_->GetDocument()->EnqueueVisualViewportResizeEvent();
+  }
 
   GetFrame().GetDocument()->LayoutUpdated();
   CheckDoesNotNeedLayout();
@@ -1349,22 +1347,8 @@ bool LocalFrameView::InvalidateViewportConstrainedObjects() {
   return fast_path_allowed;
 }
 
-void LocalFrameView::ProcessUrlFragment(const KURL& url,
-                                        FragmentAnchor::Behavior behavior) {
-  fragment_anchor_ = FragmentAnchor::TryCreate(url, behavior, *frame_);
-
-  // If rendering is blocked, we'll necessarily have a layout to invoke the
-  // anchor.
-  if (fragment_anchor_ && frame_->GetDocument()->IsRenderingReady()) {
-    frame_->GetDocument()->UpdateStyleAndLayoutTree();
-
-    // If layout is needed, we will scroll in performPostLayoutTasks. Otherwise,
-    // scroll and focus immediately.
-    if (NeedsLayout())
-      UpdateLayout();
-    else
-      InvokeFragmentAnchor();
-  }
+void LocalFrameView::ProcessUrlFragment(const KURL& url, bool should_scroll) {
+  fragment_anchor_ = FragmentAnchor::TryCreate(url, should_scroll, *frame_);
 }
 
 void LocalFrameView::SetLayoutSize(const IntSize& size) {

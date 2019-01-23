@@ -135,6 +135,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/page_popup_client.h"
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
+#include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
@@ -1506,6 +1507,11 @@ void WebViewImpl::BeginFrame(base::TimeTicks last_frame_time) {
 
   if (!MainFrameImpl())
     return;
+
+  if (LocalFrameView* view = MainFrameImpl()->GetFrameView()) {
+    if (FragmentAnchor* anchor = view->GetFragmentAnchor())
+      anchor->PerformPreRafActions();
+  }
 
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       MainFrameImpl()->GetFrame()->GetDocument()->Lifecycle());

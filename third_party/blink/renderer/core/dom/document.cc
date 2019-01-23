@@ -2445,6 +2445,7 @@ void Document::UpdateStyleAndLayout() {
   DCHECK(IsMainThread());
 
   HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
+  ScriptForbiddenScope forbid_script;
 
   LocalFrameView* frame_view = View();
   DCHECK(!frame_view || !frame_view->IsInPerformLayout())
@@ -2478,16 +2479,7 @@ void Document::LayoutUpdated() {
   // If we're restoring a scroll position from history, that takes precedence
   // over scrolling to the anchor in the URL.
   View()->InvokeFragmentAnchor();
-
-  // Script run in the call above may detach the document.
-  if (GetFrame() && View()) {
-    GetFrame()->Loader().RestoreScrollPositionAndViewState();
-
-    // The focus call above can execute JS which can dirty layout. Ensure
-    // layout is clean since this is called from UpdateLayout.
-    if (View()->NeedsLayout())
-      View()->UpdateLayout();
-  }
+  GetFrame()->Loader().RestoreScrollPositionAndViewState();
 
   // Plugins can run script inside layout which can detach the page.
   // TODO(dcheng): Does it make sense to do any of this work if detached?

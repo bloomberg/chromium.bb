@@ -59,7 +59,7 @@ Node* FindAnchorFromFragment(const String& fragment, Document& doc) {
 }  // namespace
 
 FragmentAnchor* FragmentAnchor::TryCreate(const KURL& url,
-                                          Behavior behavior,
+                                          bool needs_invoke,
                                           LocalFrame& frame) {
   DCHECK(frame.GetDocument());
   Document& doc = *frame.GetDocument();
@@ -103,32 +103,54 @@ FragmentAnchor* FragmentAnchor::TryCreate(const KURL& url,
   if (target)
     target->DispatchActivateInvisibleEventIfNeeded();
 
-  if (frame.GetDocument()->IsSVGDocument() && !frame.IsMainFrame())
+  if (doc.IsSVGDocument() && !frame.IsMainFrame())
     return nullptr;
 
-  if (!anchor_node || behavior == kBehaviorDontScroll)
+  if (!anchor_node || !needs_invoke)
     return nullptr;
 
-  return MakeGarbageCollected<FragmentAnchor>(*anchor_node, frame);
+  auto* anchor = MakeGarbageCollected<FragmentAnchor>(*anchor_node, frame);
+
+  // If rendering isn't ready yet, we'll focus and scroll as part of the
+  // document lifecycle.
+  if (doc.IsRenderingReady()) {
+    anchor->ApplyFocusIfNeeded();
+
+    // Layout needs to be clean for scrolling but if layout is needed, we'll
+    // invoke after layout is completed so no need to do it here. Note, the
+    // view may have been detached by script run during focus() call.
+    if (frame.View() && !frame.View()->NeedsLayout())
+      anchor->Invoke();
+  }
+
+  return anchor;
 }
 
 FragmentAnchor::FragmentAnchor(Node& anchor_node, LocalFrame& frame)
     : anchor_node_(&anchor_node),
       frame_(&frame),
-      needs_focus_(!anchor_node.IsDocumentNode()) {}
+      needs_focus_(!anchor_node.IsDocumentNode()) {
+  DCHECK(frame_->View());
+}
 
 bool FragmentAnchor::Invoke() {
-  if (!frame_ || !anchor_node_ || !needs_invoke_)
+  if (!frame_ || !anchor_node_)
     return false;
 
-  if (!frame_->GetDocument()->IsRenderingReady())
+  // Don't remove the fragment anchor until focus has been applied.
+  if (!needs_invoke_)
+    return needs_focus_;
+
+  Document& doc = *frame_->GetDocument();
+
+  if (!doc.IsRenderingReady() || !frame_->View())
     return true;
 
   LayoutRect rect;
-  if (anchor_node_ != frame_->GetDocument()) {
+  if (anchor_node_ != &doc) {
     rect = anchor_node_->BoundingBoxForScrollIntoView();
   } else {
-    if (Element* document_element = frame_->GetDocument()->documentElement())
+    if (Element* document_element = doc.documentElement())
       rect = document_element->BoundingBoxForScrollIntoView();
   }
 
@@ -143,7 +165,7 @@ bool FragmentAnchor::Invoke() {
 
   Element* element_to_scroll = anchor_node_->IsElementNode()
                                    ? ToElement(anchor_node_)
-                                   : frame_->GetDocument()->documentElement();
+                                   : doc.documentElement();
   if (element_to_scroll) {
     ScrollIntoViewOptions* options = ScrollIntoViewOptions::Create();
     options->setBlock("start");
@@ -157,26 +179,13 @@ bool FragmentAnchor::Invoke() {
         ->SetSafeToPropagateScrollToParent(true);
   }
 
-  if (AXObjectCache* cache = frame_->GetDocument()->ExistingAXObjectCache())
+  if (AXObjectCache* cache = doc.ExistingAXObjectCache())
     cache->HandleScrolledToAnchor(anchor_node_);
 
-  // If the anchor accepts keyboard focus and fragment scrolling is allowed,
-  // move focus there to aid users relying on keyboard navigation.
-  // If anchorNode is not focusable or fragment scrolling is not allowed,
-  // clear focus, which matches the behavior of other browsers.
-  if (needs_focus_) {
-    if (anchor_node_->IsElementNode() &&
-        ToElement(anchor_node_)->IsFocusable()) {
-      ToElement(anchor_node_)->focus();
-    } else {
-      frame_->GetDocument()->SetSequentialFocusNavigationStartingPoint(
-          anchor_node_);
-      frame_->GetDocument()->ClearFocusedElement();
-    }
-    needs_focus_ = false;
-  }
+  // Scroll into view above will cause us to clear needs_invoke_ via the
+  // DidScroll so recompute it here.
+  needs_invoke_ = !doc.IsLoadCompleted() || needs_focus_;
 
-  needs_invoke_ = !frame_->GetDocument()->IsLoadCompleted();
   return needs_invoke_;
 }
 
@@ -204,6 +213,38 @@ void FragmentAnchor::DidCompleteLoad() {
 void FragmentAnchor::Trace(blink::Visitor* visitor) {
   visitor->Trace(anchor_node_);
   visitor->Trace(frame_);
+}
+
+void FragmentAnchor::PerformPreRafActions() {
+  ApplyFocusIfNeeded();
+}
+
+void FragmentAnchor::ApplyFocusIfNeeded() {
+  // SVG images can load synchronously during style recalc but it's ok to focus
+  // since we disallow scripting. For everything else, focus() could run script
+  // so make sure we're at a valid point to do so.
+  DCHECK(frame_->GetDocument()->IsSVGDocument() ||
+         !ScriptForbiddenScope::IsScriptForbidden());
+
+  if (!needs_focus_)
+    return;
+
+  if (!frame_->GetDocument()->IsRenderingReady())
+    return;
+
+  // If the anchor accepts keyboard focus and fragment scrolling is allowed,
+  // move focus there to aid users relying on keyboard navigation.
+  // If anchorNode is not focusable or fragment scrolling is not allowed,
+  // clear focus, which matches the behavior of other browsers.
+  frame_->GetDocument()->UpdateStyleAndLayoutTree();
+  if (anchor_node_->IsElementNode() && ToElement(anchor_node_)->IsFocusable()) {
+    ToElement(anchor_node_)->focus();
+  } else {
+    frame_->GetDocument()->SetSequentialFocusNavigationStartingPoint(
+        anchor_node_);
+    frame_->GetDocument()->ClearFocusedElement();
+  }
+  needs_focus_ = false;
 }
 
 }  // namespace blink

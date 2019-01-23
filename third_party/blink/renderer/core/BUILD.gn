@@ -2116,6 +2116,7 @@ jumbo_source_set("unit_tests") {
     "page/focus_controller_test.cc",
     "page/page_popup_client_test.cc",
     "page/print_context_test.cc",
+    "page/scrolling/fragment_anchor_test.cc",
     "page/scrolling/main_thread_scrolling_reasons_test.cc",
     "page/scrolling/root_scroller_test.cc",
     "page/scrolling/scroll_into_view_test.cc",
