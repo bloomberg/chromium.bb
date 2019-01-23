@@ -357,6 +357,11 @@ void CommandLine::AppendSwitchASCII(const std::string& switch_string,
 #endif
 }
 
+void CommandLine::RemoveSwitch(const StringPiece& switch_string) {
+  DCHECK_EQ(ToLowerASCII(switch_string), switch_string);
+  switches_.erase(switch_string.as_string());
+}
+
 void CommandLine::CopySwitchesFrom(const CommandLine& source,
                                    const char* const switches[],
                                    size_t count) {

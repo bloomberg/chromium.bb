@@ -182,6 +182,9 @@ class BASE_EXPORT CommandLine {
   void AppendSwitchASCII(const std::string& switch_string,
                          const std::string& value);
 
+  // Removes a switch.
+  void RemoveSwitch(const StringPiece& switch_string);
+
   // Copy a set of switches (and any values) from another command line.
   // Commonly used when launching a subprocess.
   void CopySwitchesFrom(const CommandLine& source,

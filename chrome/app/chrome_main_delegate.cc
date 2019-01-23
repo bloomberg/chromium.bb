@@ -541,6 +541,22 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
+  // Only allow disabling web security via the command-line flag if the user has
+  // specified a distinct profile directory. This still enables tests to disable
+  // web security by setting the kWebKitWebSecurityEnabled pref directly.
+  //
+  // Note that this is done in ChromeMainDelegate::BasicStartupComplete()
+  // because this is the earliest callback. Many places in Chromium gate
+  // security features around kDisableWebSecurity, and it is unreasonable to
+  // expect them all to properly also check for kUserDataDir.
+  if (command_line.HasSwitch(switches::kDisableWebSecurity) &&
+      !command_line.HasSwitch(switches::kUserDataDir)) {
+    LOG(ERROR) << "Web security may only be disabled if '--user-data-dir' is "
+                  "also specified.";
+    base::CommandLine::ForCurrentProcess()->RemoveSwitch(
+        switches::kDisableWebSecurity);
+  }
+
 #if defined(OS_WIN)
   // Browser should not be sandboxed.
   const bool is_browser = !command_line.HasSwitch(switches::kProcessType);
