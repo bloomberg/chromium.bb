@@ -177,6 +177,8 @@ void MockConsumer::OnTraceData(std::vector<perfetto::TracePacket> packets,
 
 void MockConsumer::OnDetach(bool /*success*/) {}
 void MockConsumer::OnAttach(bool /*success*/, const perfetto::TraceConfig&) {}
+void MockConsumer::OnTraceStats(bool /*success*/, const perfetto::TraceStats&) {
+}
 
 MockProducerHost::MockProducerHost(
     const std::string& data_source_name,
