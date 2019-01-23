@@ -60,7 +60,6 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
   WebRuntimeFeatures::EnableAudioOutputDevices(false);
   // Android does not yet support SystemMonitor.
   WebRuntimeFeatures::EnableOnDeviceChange(false);
-  WebRuntimeFeatures::EnableMediaSession(true);
   WebRuntimeFeatures::EnableMediaControlsOverlayPlayButton(true);
   WebRuntimeFeatures::EnableRemotePlaybackBackend(true);
   WebRuntimeFeatures::EnablePictureInPictureAPI(false);
@@ -97,6 +96,12 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
 // The Notification Center on Mac OS X does not support content images.
 #if !defined(OS_MACOSX)
   WebRuntimeFeatures::EnableNotificationContentImage(true);
+#endif
+
+// The Media Session API is enabled by default on Android, Chrome OS and
+// Windows.
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_WIN)
+  WebRuntimeFeatures::EnableMediaSession(true);
 #endif
 }
 
