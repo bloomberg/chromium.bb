@@ -55,6 +55,8 @@ source_set("wayland") {
     "wl_shm.h",
     "wl_subcompositor.cc",
     "wl_subcompositor.h",
+    "zcr_vsync_feedback.cc",
+    "zcr_vsync_feedback.h",
   ]
 
   defines = [ "EXO_IMPLEMENTATION" ]
