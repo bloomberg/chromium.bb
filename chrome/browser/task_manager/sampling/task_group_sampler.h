@@ -32,9 +32,9 @@ class TaskGroupSampler : public base::RefCountedThreadSafe<TaskGroupSampler> {
   using OnCpuRefreshCallback = base::Callback<void(double)>;
   using OnSwappedMemRefreshCallback = base::Callback<void(int64_t)>;
   using OnIdleWakeupsCallback = base::Callback<void(int)>;
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
   using OnOpenFdCountCallback = base::Callback<void(int)>;
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
   using OnProcessPriorityCallback = base::Callback<void(bool)>;
 
   TaskGroupSampler(
@@ -43,9 +43,9 @@ class TaskGroupSampler : public base::RefCountedThreadSafe<TaskGroupSampler> {
       const OnCpuRefreshCallback& on_cpu_refresh,
       const OnSwappedMemRefreshCallback& on_memory_refresh,
       const OnIdleWakeupsCallback& on_idle_wakeups,
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
       const OnOpenFdCountCallback& on_open_fd_count,
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
       const OnProcessPriorityCallback& on_process_priority);
 
   // Refreshes the expensive process' stats (CPU usage, memory usage, and idle
@@ -60,9 +60,9 @@ class TaskGroupSampler : public base::RefCountedThreadSafe<TaskGroupSampler> {
   double RefreshCpuUsage();
   int64_t RefreshSwappedMem();
   int RefreshIdleWakeupsPerSecond();
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
   int RefreshOpenFdCount();
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
   bool RefreshProcessPriority();
 
   // The process that holds the handle that we own so that we can use it for
@@ -80,9 +80,9 @@ class TaskGroupSampler : public base::RefCountedThreadSafe<TaskGroupSampler> {
   const OnCpuRefreshCallback on_cpu_refresh_callback_;
   const OnSwappedMemRefreshCallback on_swapped_mem_refresh_callback_;
   const OnIdleWakeupsCallback on_idle_wakeups_callback_;
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
   const OnOpenFdCountCallback on_open_fd_count_callback_;
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
   const OnProcessPriorityCallback on_process_priority_callback_;
 
   // To assert we're running on the correct thread.
