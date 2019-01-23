@@ -638,9 +638,9 @@ TEST_F(UkmPageLoadMetricsObserverTest, FirstInputDelayAndTimestamp) {
     test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
                                                 GURL(kTestUrl1));
     test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(), PageLoad::kInteractiveTiming_FirstInputDelayName, 50);
+        kv.second.get(), PageLoad::kInteractiveTiming_FirstInputDelay2Name, 50);
     test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(), PageLoad::kInteractiveTiming_FirstInputTimestampName,
+        kv.second.get(), PageLoad::kInteractiveTiming_FirstInputTimestamp2Name,
         712);
   }
 }
@@ -669,11 +669,11 @@ TEST_F(UkmPageLoadMetricsObserverTest, LongestInputDelayAndTimestamp) {
     test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
                                                 GURL(kTestUrl1));
     test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(), PageLoad::kInteractiveTiming_LongestInputDelayName,
+        kv.second.get(), PageLoad::kInteractiveTiming_LongestInputDelay2Name,
         50);
     test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(), PageLoad::kInteractiveTiming_LongestInputTimestampName,
-        712);
+        kv.second.get(),
+        PageLoad::kInteractiveTiming_LongestInputTimestamp2Name, 712);
   }
 }
 

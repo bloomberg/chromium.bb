@@ -99,13 +99,13 @@ const char kHistogramTimeToInteractive[] =
 const char kHistogramInteractiveToInteractiveDetection[] =
     "PageLoad.Internal.InteractiveToInteractiveDetection";
 const char kHistogramFirstInputDelay[] =
-    "PageLoad.InteractiveTiming.FirstInputDelay";
+    "PageLoad.InteractiveTiming.FirstInputDelay2";
 const char kHistogramFirstInputTimestamp[] =
-    "PageLoad.InteractiveTiming.FirstInputTimestamp";
+    "PageLoad.InteractiveTiming.FirstInputTimestamp2";
 const char kHistogramLongestInputDelay[] =
-    "PageLoad.InteractiveTiming.LongestInputDelay";
+    "PageLoad.InteractiveTiming.LongestInputDelay2";
 const char kHistogramLongestInputTimestamp[] =
-    "PageLoad.InteractiveTiming.LongestInputTimestamp";
+    "PageLoad.InteractiveTiming.LongestInputTimestamp2";
 const char kHistogramParseStartToFirstMeaningfulPaint[] =
     "PageLoad.Experimental.PaintTiming.ParseStartToFirstMeaningfulPaint";
 const char kHistogramParseStartToFirstContentfulPaint[] =

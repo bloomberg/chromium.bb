@@ -5220,14 +5220,21 @@ TEST_F(WebViewTest, InputDelayReported) {
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event3));
 
-  histogram_tester.ExpectTotalCount("PageLoad.InteractiveTiming.InputDelay", 3);
-  histogram_tester.ExpectBucketCount("PageLoad.InteractiveTiming.InputDelay", 50, 2);
-  histogram_tester.ExpectBucketCount("PageLoad.InteractiveTiming.InputDelay", 70, 1);
+  histogram_tester.ExpectTotalCount("PageLoad.InteractiveTiming.InputDelay2",
+                                    3);
+  histogram_tester.ExpectBucketCount("PageLoad.InteractiveTiming.InputDelay2",
+                                     50, 2);
+  histogram_tester.ExpectBucketCount("PageLoad.InteractiveTiming.InputDelay2",
+                                     70, 1);
 
-  histogram_tester.ExpectTotalCount("PageLoad.InteractiveTiming.InputTimestamp", 3);
-  histogram_tester.ExpectBucketCount("PageLoad.InteractiveTiming.InputTimestamp", 70, 1);
-  histogram_tester.ExpectBucketCount("PageLoad.InteractiveTiming.InputTimestamp", 120, 1);
-  histogram_tester.ExpectBucketCount("PageLoad.InteractiveTiming.InputTimestamp", 170, 1);
+  histogram_tester.ExpectTotalCount(
+      "PageLoad.InteractiveTiming.InputTimestamp2", 3);
+  histogram_tester.ExpectBucketCount(
+      "PageLoad.InteractiveTiming.InputTimestamp2", 70, 1);
+  histogram_tester.ExpectBucketCount(
+      "PageLoad.InteractiveTiming.InputTimestamp2", 120, 1);
+  histogram_tester.ExpectBucketCount(
+      "PageLoad.InteractiveTiming.InputTimestamp2", 170, 1);
 }
 
 // Tests that if the page was backgrounded while an input event was queued,
@@ -5429,6 +5436,7 @@ TEST_F(WebViewTest, PointerDownCancelFirstInputDelay) {
   ASSERT_NE(nullptr, document);
 
   WTF::ScopedMockClock clock;
+  clock.Advance(TimeDelta::FromMilliseconds(70));
 
   InteractiveDetector* interactive_detector(
       InteractiveDetector::From(*document));
@@ -5446,7 +5454,7 @@ TEST_F(WebViewTest, PointerDownCancelFirstInputDelay) {
   // can't report its delay. We don't consider a scroll to be meaningful input.
   EXPECT_TRUE(interactive_detector->GetFirstInputDelay().is_zero());
 
-  // When we receive a pointer up, we report the delay of the pointer down.
+  // When we receive a pointer cancel, we should not report the pointer down.
   WebPointerEvent pointer_cancel(
       WebInputEvent::kPointerCancel,
       WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
@@ -5459,6 +5467,130 @@ TEST_F(WebViewTest, PointerDownCancelFirstInputDelay) {
   // input has occurred yet.
   EXPECT_TRUE(interactive_detector->GetFirstInputDelay().is_zero());
   EXPECT_TRUE(interactive_detector->GetFirstInputTimestamp().is_null());
+}
+
+// Check that input delay isn't reported when there is pointer down, pointer
+// cancel, and pointer up.
+TEST_F(WebViewTest, PointerDownCancelUpInputDelay) {
+  WebViewImpl* web_view = web_view_helper_.Initialize();
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
+  frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(),
+                                     "<html><body></body onpointerdown="
+                                     "></html>",
+                                     base_url);
+
+  LocalFrame* main_frame = web_view->MainFrameImpl()->GetFrame();
+  ASSERT_NE(nullptr, main_frame);
+  Document* document = main_frame->GetDocument();
+  ASSERT_NE(nullptr, document);
+
+  WTF::ScopedMockClock clock;
+  clock.Advance(TimeDelta::FromMilliseconds(70));
+
+  InteractiveDetector* interactive_detector(
+      InteractiveDetector::From(*document));
+  ASSERT_NE(nullptr, interactive_detector);
+
+  WebPointerEvent pointer_down(
+      WebInputEvent::kPointerDown,
+      WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
+  pointer_down.SetTimeStamp(CurrentTimeTicks());
+  clock.Advance(TimeDelta::FromMilliseconds(50));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(pointer_down));
+
+  // We don't know if this pointer event will result in a scroll or not, so we
+  // can't report its delay. We don't consider a scroll to be meaningful input.
+  EXPECT_TRUE(interactive_detector->GetFirstInputDelay().is_zero());
+
+  // When we receive a pointer cancel, we should not report the pointer down.
+  WebPointerEvent pointer_cancel(
+      WebInputEvent::kPointerCancel,
+      WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
+  clock.Advance(TimeDelta::FromMilliseconds(60));
+  pointer_cancel.SetTimeStamp(CurrentTimeTicks());
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(pointer_cancel));
+
+  EXPECT_TRUE(interactive_detector->GetFirstInputDelay().is_zero());
+
+  // When we receive a pointer up, because we received a pointer cancel, no
+  // input delay should be recorded.
+  WebPointerEvent pointer_up(
+      WebInputEvent::kPointerUp,
+      WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
+  clock.Advance(TimeDelta::FromMilliseconds(60));
+  pointer_up.SetTimeStamp(CurrentTimeTicks());
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(pointer_up));
+
+  EXPECT_TRUE(interactive_detector->GetFirstInputDelay().is_zero());
+  EXPECT_TRUE(interactive_detector->GetFirstInputTimestamp().is_null());
+  EXPECT_TRUE(interactive_detector->GetLongestInputDelay().is_zero());
+  EXPECT_TRUE(interactive_detector->GetLongestInputTimestamp().is_null());
+}
+
+// Check that first input delay isn't reported when there is pointer down,
+// pointer caused UA action, and pointer up.
+TEST_F(WebViewTest, PointerDownCausedUaActionUpInputDelay) {
+  WebViewImpl* web_view = web_view_helper_.Initialize();
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
+  frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(),
+                                     "<html><body></body onpointerdown="
+                                     "></html>",
+                                     base_url);
+
+  LocalFrame* main_frame = web_view->MainFrameImpl()->GetFrame();
+  ASSERT_NE(nullptr, main_frame);
+  Document* document = main_frame->GetDocument();
+  ASSERT_NE(nullptr, document);
+
+  WTF::ScopedMockClock clock;
+  clock.Advance(TimeDelta::FromMilliseconds(70));
+
+  InteractiveDetector* interactive_detector(
+      InteractiveDetector::From(*document));
+  ASSERT_NE(nullptr, interactive_detector);
+
+  WebPointerEvent pointer_down(
+      WebInputEvent::kPointerDown,
+      WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
+  pointer_down.SetTimeStamp(CurrentTimeTicks());
+  clock.Advance(TimeDelta::FromMilliseconds(50));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(pointer_down));
+
+  // We don't know if this pointer event will result in a scroll or not, so we
+  // can't report its delay. We don't consider a scroll to be meaningful input.
+  EXPECT_TRUE(interactive_detector->GetFirstInputDelay().is_zero());
+
+  // When we receive a pointer caused UA action, we should not report the
+  // pointer down.
+  WebPointerEvent pointer_cancel(
+      WebInputEvent::kPointerCausedUaAction,
+      WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
+  clock.Advance(TimeDelta::FromMilliseconds(60));
+  pointer_cancel.SetTimeStamp(CurrentTimeTicks());
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(pointer_cancel));
+
+  EXPECT_TRUE(interactive_detector->GetFirstInputDelay().is_zero());
+  EXPECT_TRUE(interactive_detector->GetFirstInputTimestamp().is_null());
+
+  // When we receive a pointer up, because we received a pointer caused UA
+  // action, no input delay should be recorded.
+  WebPointerEvent pointer_up(
+      WebInputEvent::kPointerUp,
+      WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
+  clock.Advance(TimeDelta::FromMilliseconds(60));
+  pointer_up.SetTimeStamp(CurrentTimeTicks());
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(pointer_up));
+
+  EXPECT_TRUE(interactive_detector->GetFirstInputDelay().is_zero());
+  EXPECT_TRUE(interactive_detector->GetFirstInputTimestamp().is_null());
+  EXPECT_TRUE(interactive_detector->GetLongestInputDelay().is_zero());
+  EXPECT_TRUE(interactive_detector->GetLongestInputTimestamp().is_null());
 }
 
 // We need a way for JS to advance the mock clock. Hook into console.log, so
