@@ -45,9 +45,10 @@ class ConnectionManagerTest : public testing::Test {
     ASSERT_EQ(
         count,
         fake_connection_establisher_->establish_connection_calls().size());
-    for (content::ServiceWorkerContext* service_worker_context :
+    for (const auto& call_parameters :
          fake_connection_establisher_->establish_connection_calls())
-      EXPECT_EQ(fake_service_worker_context_.get(), service_worker_context);
+      EXPECT_EQ(fake_service_worker_context_.get(),
+                std::get<2>(call_parameters));
   }
 
   void SetFeatureState(bool enable) {

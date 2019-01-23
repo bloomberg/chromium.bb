@@ -28,18 +28,21 @@ ConnectionEstablisherImpl::ConnectionEstablisherImpl(base::Clock* clock)
 ConnectionEstablisherImpl::~ConnectionEstablisherImpl() = default;
 
 void ConnectionEstablisherImpl::EstablishConnection(
-    content::ServiceWorkerContext* service_worker_context,
-    ConnectionMode connection_mode) {
+    const GURL& url,
+    ConnectionMode connection_mode,
+    content::ServiceWorkerContext* service_worker_context) {
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &ConnectionEstablisherImpl::SendStartStreamingMessageIfNotConnected,
-          base::Unretained(this), service_worker_context, connection_mode));
+          base::Unretained(this), url, connection_mode,
+          service_worker_context));
 }
 
 void ConnectionEstablisherImpl::SendStartStreamingMessageIfNotConnected(
-    content::ServiceWorkerContext* service_worker_context,
-    ConnectionMode connection_mode) {
+    const GURL& url,
+    ConnectionMode connection_mode,
+    content::ServiceWorkerContext* service_worker_context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (is_connected_) {
     PA_LOG(VERBOSE) << "Connection already exists. Skipped sending start "
@@ -64,7 +67,7 @@ void ConnectionEstablisherImpl::SendStartStreamingMessageIfNotConnected(
   is_connected_ = true;
   start_connection_message_time_ = clock_->Now();
   service_worker_context->StartServiceWorkerAndDispatchLongRunningMessage(
-      GetAndroidMessagesURL(), std::move(msg),
+      url, std::move(msg),
       base::BindOnce(&ConnectionEstablisherImpl::OnMessageDispatchResult,
                      base::Unretained(this)));
 }
