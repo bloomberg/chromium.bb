@@ -123,7 +123,7 @@ GREYElementInteraction* GetInteractionForPasswordsExportConfirmAlert(
 
 // Matcher for a UITextField inside a SettingsSearchCell.
 id<GREYMatcher> SearchTextField() {
-  return grey_accessibilityID(@"SettingsSearchCellTextField");
+  return grey_accessibilityID(kPasswordsSearchBarId);
 }
 
 id<GREYMatcher> SiteHeader() {
@@ -1621,8 +1621,11 @@ PasswordForm CreateSampleFormWithIndex(int index) {
 
   OpenPasswordSettings();
 
-  [[EarlGrey selectElementWithMatcher:SearchTextField()]
-      performAction:grey_typeText(@"u\n")];
+  // TODO(crbug.com/922511): Comment out because currently activating the search
+  // bar will hide the "Edit" button in the top toolbar. Recover this when the
+  // "Edit" button is moved to the bottom toolbar in the new Settings UI.
+  //  [[EarlGrey selectElementWithMatcher:SearchTextField()]
+  //      performAction:grey_typeText(@"u\n")];
 
   TapEdit();
 
@@ -1666,8 +1669,11 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   SaveExamplePasswordForms();
   OpenPasswordSettings();
 
-  [[EarlGrey selectElementWithMatcher:SearchTextField()]
-      performAction:grey_typeText(@"2")];
+  // TODO(crbug.com/922511): Comment out because currently activating the search
+  // bar will hide the "Edit" button in the top toolbar. Recover this when the
+  // "Edit" button is moved to the bottom toolbar in the new Settings UI.
+  //  [[EarlGrey selectElementWithMatcher:SearchTextField()]
+  //      performAction:grey_typeText(@"2")];
 
   TapEdit();
 
@@ -1680,10 +1686,13 @@ PasswordForm CreateSampleFormWithIndex(int index) {
       performAction:grey_tap()];
 
   // Filter results in nothing.
-  [GetInteractionForPasswordEntry(@"example11.com, user1")
-      assertWithMatcher:grey_nil()];
-  [GetInteractionForPasswordEntry(@"example12.com, user2")
-      assertWithMatcher:grey_nil()];
+  // TODO(crbug.com/922511): Comment out because currently activating the search
+  // bar will hide the "Edit" button in the top toolbar. Recover this when the
+  // "Edit" button is moved to the bottom toolbar in the new Settings UI.
+  //  [GetInteractionForPasswordEntry(@"example11.com, user1")
+  //      assertWithMatcher:grey_nil()];
+  //  [GetInteractionForPasswordEntry(@"example12.com, user2")
+  //      assertWithMatcher:grey_nil()];
 
   // Get out of edit mode.
   [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]

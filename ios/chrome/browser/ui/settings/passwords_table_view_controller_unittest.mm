@@ -15,7 +15,6 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/passwords/save_passwords_consumer.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_search_item.h"
 #import "ios/chrome/browser/ui/settings/password_details_table_view_controller.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
@@ -179,16 +178,16 @@ TEST_F(PasswordsTableViewControllerTest, TestInitialization) {
 TEST_F(PasswordsTableViewControllerTest, AddSavedPasswords) {
   AddSavedForm1();
 
-  EXPECT_EQ(4, NumberOfSections());
-  EXPECT_EQ(1, NumberOfItemsInSection(2));
+  EXPECT_EQ(3, NumberOfSections());
+  EXPECT_EQ(1, NumberOfItemsInSection(1));
 }
 
 // Tests adding one item in blacklisted password section.
 TEST_F(PasswordsTableViewControllerTest, AddBlacklistedPasswords) {
   AddBlacklistedForm1();
 
-  EXPECT_EQ(4, NumberOfSections());
-  EXPECT_EQ(1, NumberOfItemsInSection(2));
+  EXPECT_EQ(3, NumberOfSections());
+  EXPECT_EQ(1, NumberOfItemsInSection(1));
 }
 
 // Tests adding one item in saved password section, and two items in blacklisted
@@ -199,33 +198,33 @@ TEST_F(PasswordsTableViewControllerTest, AddSavedAndBlacklisted) {
   AddBlacklistedForm2();
 
   // There should be two sections added.
-  EXPECT_EQ(5, NumberOfSections());
+  EXPECT_EQ(4, NumberOfSections());
 
   // There should be 1 row in saved password section.
-  EXPECT_EQ(1, NumberOfItemsInSection(2));
+  EXPECT_EQ(1, NumberOfItemsInSection(1));
   // There should be 2 rows in blacklisted password section.
-  EXPECT_EQ(2, NumberOfItemsInSection(3));
+  EXPECT_EQ(2, NumberOfItemsInSection(2));
 }
 
 // Tests the order in which the saved passwords are displayed.
 TEST_F(PasswordsTableViewControllerTest, TestSavedPasswordsOrder) {
   AddSavedForm2();
 
-  CheckTextCellTextAndDetailText(@"example2.com", @"test@egmail.com", 2, 0);
+  CheckTextCellTextAndDetailText(@"example2.com", @"test@egmail.com", 1, 0);
 
   AddSavedForm1();
-  CheckTextCellTextAndDetailText(@"example.com", @"test@egmail.com", 2, 0);
-  CheckTextCellTextAndDetailText(@"example2.com", @"test@egmail.com", 2, 1);
+  CheckTextCellTextAndDetailText(@"example.com", @"test@egmail.com", 1, 0);
+  CheckTextCellTextAndDetailText(@"example2.com", @"test@egmail.com", 1, 1);
 }
 
 // Tests the order in which the blacklisted passwords are displayed.
 TEST_F(PasswordsTableViewControllerTest, TestBlacklistedPasswordsOrder) {
   AddBlacklistedForm2();
-  CheckTextCellText(@"secret2.com", 2, 0);
+  CheckTextCellText(@"secret2.com", 1, 0);
 
   AddBlacklistedForm1();
-  CheckTextCellText(@"secret.com", 2, 0);
-  CheckTextCellText(@"secret2.com", 2, 1);
+  CheckTextCellText(@"secret.com", 1, 0);
+  CheckTextCellText(@"secret2.com", 1, 1);
 }
 
 // Tests displaying passwords in the saved passwords section when there are
@@ -234,8 +233,8 @@ TEST_F(PasswordsTableViewControllerTest, AddSavedDuplicates) {
   AddSavedForm1();
   AddSavedForm1();
 
-  EXPECT_EQ(4, NumberOfSections());
-  EXPECT_EQ(1, NumberOfItemsInSection(2));
+  EXPECT_EQ(3, NumberOfSections());
+  EXPECT_EQ(1, NumberOfItemsInSection(1));
 }
 
 // Tests displaying passwords in the blacklisted passwords section when there
@@ -244,8 +243,8 @@ TEST_F(PasswordsTableViewControllerTest, AddBlacklistedDuplicates) {
   AddBlacklistedForm1();
   AddBlacklistedForm1();
 
-  EXPECT_EQ(4, NumberOfSections());
-  EXPECT_EQ(1, NumberOfItemsInSection(2));
+  EXPECT_EQ(3, NumberOfSections());
+  EXPECT_EQ(1, NumberOfItemsInSection(1));
 }
 
 // Tests deleting items from saved passwords and blacklisted passwords sections.
@@ -255,19 +254,19 @@ TEST_F(PasswordsTableViewControllerTest, DeleteItems) {
   AddBlacklistedForm2();
 
   // Delete item in save passwords section.
-  ASSERT_TRUE(deleteItemAndWait(2, 0, ^{
-    return NumberOfSections() == 4;
+  ASSERT_TRUE(deleteItemAndWait(1, 0, ^{
+    return NumberOfSections() == 3;
   }));
   // Section 2 should now be the blacklisted passwords section, and should still
   // have both its items.
-  EXPECT_EQ(2, NumberOfItemsInSection(2));
+  EXPECT_EQ(2, NumberOfItemsInSection(1));
 
   // Delete item in blacklisted passwords section.
-  ASSERT_TRUE(deleteItemAndWait(2, 0, ^{
-    return NumberOfItemsInSection(2) == 1;
+  ASSERT_TRUE(deleteItemAndWait(1, 0, ^{
+    return NumberOfItemsInSection(1) == 1;
   }));
   // There should be no password sections remaining and no search bar.
-  EXPECT_TRUE(deleteItemAndWait(2, 0, ^{
+  EXPECT_TRUE(deleteItemAndWait(1, 0, ^{
     return NumberOfSections() == 2;
   }));
 }
@@ -282,19 +281,19 @@ TEST_F(PasswordsTableViewControllerTest, DeleteItemsWithDuplicates) {
   AddBlacklistedForm2();
 
   // Delete item in save passwords section.
-  ASSERT_TRUE(deleteItemAndWait(2, 0, ^{
-    return NumberOfSections() == 4;
+  ASSERT_TRUE(deleteItemAndWait(1, 0, ^{
+    return NumberOfSections() == 3;
   }));
   // Section 2 should now be the blacklisted passwords section, and should still
   // have both its items.
-  EXPECT_EQ(2, NumberOfItemsInSection(2));
+  EXPECT_EQ(2, NumberOfItemsInSection(1));
 
   // Delete item in blacklisted passwords section.
-  ASSERT_TRUE(deleteItemAndWait(2, 0, ^{
-    return NumberOfItemsInSection(2) == 1;
+  ASSERT_TRUE(deleteItemAndWait(1, 0, ^{
+    return NumberOfItemsInSection(1) == 1;
   }));
   // There should be no password sections remaining and no search bar.
-  EXPECT_TRUE(deleteItemAndWait(2, 0, ^{
+  EXPECT_TRUE(deleteItemAndWait(1, 0, ^{
     return NumberOfSections() == 2;
   }));
 }
@@ -330,9 +329,9 @@ TEST_F(PasswordsTableViewControllerTest,
   AddSavedForm1();
   [passwords_controller updateExportPasswordsButton];
 
-  TableViewDetailTextItem* exportButton = GetTableViewItem(3, 0);
+  TableViewDetailTextItem* exportButton = GetTableViewItem(2, 0);
 
-  CheckTextCellTextWithId(IDS_IOS_EXPORT_PASSWORDS, 3, 0);
+  CheckTextCellTextWithId(IDS_IOS_EXPORT_PASSWORDS, 2, 0);
 
   EXPECT_NSEQ(UIColorFromRGB(kTableViewTextLabelColorBlue),
               exportButton.textColor);
@@ -347,8 +346,8 @@ TEST_F(PasswordsTableViewControllerTest, TestExportButtonDisabledEditMode) {
   AddSavedForm1();
   [passwords_controller updateExportPasswordsButton];
 
-  TableViewDetailTextItem* exportButton = GetTableViewItem(3, 0);
-  CheckTextCellTextWithId(IDS_IOS_EXPORT_PASSWORDS, 3, 0);
+  TableViewDetailTextItem* exportButton = GetTableViewItem(2, 0);
+  CheckTextCellTextWithId(IDS_IOS_EXPORT_PASSWORDS, 2, 0);
 
   [passwords_controller setEditing:YES animated:NO];
 
@@ -367,8 +366,8 @@ TEST_F(PasswordsTableViewControllerTest,
   AddSavedForm1();
   [passwords_controller updateExportPasswordsButton];
 
-  TableViewDetailTextItem* exportButton = GetTableViewItem(3, 0);
-  CheckTextCellTextWithId(IDS_IOS_EXPORT_PASSWORDS, 3, 0);
+  TableViewDetailTextItem* exportButton = GetTableViewItem(2, 0);
+  CheckTextCellTextWithId(IDS_IOS_EXPORT_PASSWORDS, 2, 0);
 
   [passwords_controller setEditing:YES animated:NO];
   [passwords_controller setEditing:NO animated:NO];
@@ -408,17 +407,10 @@ TEST_F(PasswordsTableViewControllerTest, FilterItems) {
   AddBlacklistedForm1();
   AddBlacklistedForm2();
 
-  EXPECT_EQ(5, NumberOfSections());
+  EXPECT_EQ(4, NumberOfSections());
 
   PasswordsTableViewController* passwords_controller =
       static_cast<PasswordsTableViewController*>(controller());
-  // TODO(crbug.com/894791): Remove this comment when SettingsSearchItem is
-  // removed.
-  //   Currently |bar| is not actually the UISearchBar displayed on screen, the
-  //   displayed one is from SettingsSearchItem. Once MDC navigation bar gets
-  //   deprecated in Settings, PasswordsTableViewController will use
-  //   UISearchController instead and |bar| will be the real UISearchBar on
-  //   screen.
   UISearchBar* bar =
       passwords_controller.navigationItem.searchController.searchBar;
 
@@ -429,28 +421,28 @@ TEST_F(PasswordsTableViewControllerTest, FilterItems) {
   // Search item in save passwords section.
   [passwords_controller searchBar:bar textDidChange:@"example.com"];
   // Only one item in saved passwords should remain.
-  EXPECT_EQ(1, NumberOfItemsInSection(2));
-  EXPECT_EQ(0, NumberOfItemsInSection(3));
-  CheckTextCellTextAndDetailText(@"example.com", @"test@egmail.com", 2, 0);
+  EXPECT_EQ(1, NumberOfItemsInSection(1));
+  EXPECT_EQ(0, NumberOfItemsInSection(2));
+  CheckTextCellTextAndDetailText(@"example.com", @"test@egmail.com", 1, 0);
 
   [passwords_controller searchBar:bar textDidChange:@"test@egmail.com"];
   // Only two items in saved passwords should remain.
-  EXPECT_EQ(2, NumberOfItemsInSection(2));
-  EXPECT_EQ(0, NumberOfItemsInSection(3));
-  CheckTextCellTextAndDetailText(@"example.com", @"test@egmail.com", 2, 0);
-  CheckTextCellTextAndDetailText(@"example2.com", @"test@egmail.com", 2, 1);
+  EXPECT_EQ(2, NumberOfItemsInSection(1));
+  EXPECT_EQ(0, NumberOfItemsInSection(2));
+  CheckTextCellTextAndDetailText(@"example.com", @"test@egmail.com", 1, 0);
+  CheckTextCellTextAndDetailText(@"example2.com", @"test@egmail.com", 1, 1);
 
   [passwords_controller searchBar:bar textDidChange:@"secret"];
   // Only two items in blacklisted should remain.
-  EXPECT_EQ(0, NumberOfItemsInSection(2));
-  EXPECT_EQ(2, NumberOfItemsInSection(3));
-  CheckTextCellText(@"secret.com", 3, 0);
-  CheckTextCellText(@"secret2.com", 3, 1);
+  EXPECT_EQ(0, NumberOfItemsInSection(1));
+  EXPECT_EQ(2, NumberOfItemsInSection(2));
+  CheckTextCellText(@"secret.com", 2, 0);
+  CheckTextCellText(@"secret2.com", 2, 1);
 
   [passwords_controller searchBar:bar textDidChange:@""];
   // All items should be back.
+  EXPECT_EQ(2, NumberOfItemsInSection(1));
   EXPECT_EQ(2, NumberOfItemsInSection(2));
-  EXPECT_EQ(2, NumberOfItemsInSection(3));
 }
 
 }  // namespace
