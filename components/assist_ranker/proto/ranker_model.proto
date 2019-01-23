@@ -8,6 +8,7 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
+import "nn_classifier.proto";
 import "translate_ranker_model.proto";
 import "generic_logistic_regression_model.proto";
 
@@ -56,5 +57,6 @@ message RankerModelProto {
   oneof model {
     TranslateRankerModel translate = 2;
     GenericLogisticRegressionModel logistic_regression = 3;
+    NNClassifierModel nn_classifier = 4;
   }
 }

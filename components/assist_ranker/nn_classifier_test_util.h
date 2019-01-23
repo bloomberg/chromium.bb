@@ -25,6 +25,11 @@ bool CheckInference(const NNClassifierModel& model,
                     const std::vector<float>& input,
                     const std::vector<float>& expected_scores);
 
+// Creates a NNClassiferModel that implements eXclusive-OR. True results
+// are > 1, false results are < -1. This is a simple classification problem
+// that cannot be solved linearly, so is a good test for a neural network.
+NNClassifierModel CreateXorClassifierModel();
+
 }  // namespace nn_classifier
 }  // namespace assist_ranker
 
