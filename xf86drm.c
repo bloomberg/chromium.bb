@@ -3513,15 +3513,28 @@ free_device:
 static int drmParsePlatformBusInfo(int maj, int min, drmPlatformBusInfoPtr info)
 {
 #ifdef __linux__
-    char path[PATH_MAX + 1], *name;
+    char path[PATH_MAX + 1], *name, *tmp_name;
 
     snprintf(path, sizeof(path), "/sys/dev/char/%d:%d/device", maj, min);
 
     name = sysfs_uevent_get(path, "OF_FULLNAME");
-    if (!name)
-        return -ENOENT;
+    tmp_name = name;
+    if (!name) {
+        /* If the device lacks OF data, pick the MODALIAS info */
+        name = sysfs_uevent_get(path, "MODALIAS");
+        if (!name)
+            return -ENOENT;
 
-    strncpy(info->fullname, name, DRM_PLATFORM_DEVICE_NAME_LEN);
+        /* .. and strip the MODALIAS=[platform,usb...]: part. */
+        tmp_name = strrchr(name, ':');
+        if (!tmp_name) {
+            free(name);
+            return -ENOENT;
+        }
+        tmp_name++;
+    }
+
+    strncpy(info->fullname, tmp_name, DRM_PLATFORM_DEVICE_NAME_LEN);
     info->fullname[DRM_PLATFORM_DEVICE_NAME_LEN - 1] = '\0';
     free(name);
 
@@ -3536,18 +3549,20 @@ static int drmParsePlatformDeviceInfo(int maj, int min,
                                       drmPlatformDeviceInfoPtr info)
 {
 #ifdef __linux__
-    char path[PATH_MAX + 1], *value;
+    char path[PATH_MAX + 1], *value, *tmp_name;
     unsigned int count, i;
     int err;
 
     snprintf(path, sizeof(path), "/sys/dev/char/%d:%d/device", maj, min);
 
     value = sysfs_uevent_get(path, "OF_COMPATIBLE_N");
-    if (!value)
-        return -ENOENT;
-
-    sscanf(value, "%u", &count);
-    free(value);
+    if (value) {
+        sscanf(value, "%u", &count);
+        free(value);
+    } else {
+        /* Assume one entry if the device lack OF data */
+        count = 1;
+    }
 
     info->compatible = calloc(count + 1, sizeof(*info->compatible));
     if (!info->compatible)
@@ -3555,12 +3570,26 @@ static int drmParsePlatformDeviceInfo(int maj, int min,
 
     for (i = 0; i < count; i++) {
         value = sysfs_uevent_get(path, "OF_COMPATIBLE_%u", i);
+        tmp_name = value;
         if (!value) {
-            err = -ENOENT;
-            goto free;
+            /* If the device lacks OF data, pick the MODALIAS info */
+            value = sysfs_uevent_get(path, "MODALIAS");
+            if (!value) {
+                err = -ENOENT;
+                goto free;
+            }
+
+            /* .. and strip the MODALIAS=[platform,usb...]: part. */
+            tmp_name = strrchr(value, ':');
+            if (!tmp_name) {
+                free(value);
+                return -ENOENT;
+            }
+            tmp_name = strdup(tmp_name + 1);
+            free(value);
         }
 
-        info->compatible[i] = value;
+        info->compatible[i] = tmp_name;
     }
 
     return 0;
