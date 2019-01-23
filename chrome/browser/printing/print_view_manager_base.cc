@@ -56,9 +56,6 @@
 #include "chrome/browser/printing/print_error_dialog.h"
 #endif
 
-using base::TimeDelta;
-using content::BrowserThread;
-
 namespace printing {
 
 namespace {
@@ -612,11 +609,11 @@ bool PrintViewManagerBase::RunInnerMessageLoop() {
   // - If we're looping because of renderer page generation, the renderer could
   // be CPU bound, the page overly complex/large or the system just
   // memory-bound.
-  static const int kPrinterSettingsTimeout = 60000;
+  static constexpr base::TimeDelta kPrinterSettingsTimeout =
+      base::TimeDelta::FromSeconds(60);
   base::OneShotTimer quit_timer;
   base::RunLoop run_loop;
-  quit_timer.Start(FROM_HERE,
-                   TimeDelta::FromMilliseconds(kPrinterSettingsTimeout),
+  quit_timer.Start(FROM_HERE, kPrinterSettingsTimeout,
                    run_loop.QuitWhenIdleClosure());
 
   quit_inner_loop_ = run_loop.QuitClosure();
@@ -694,7 +691,7 @@ void PrintViewManagerBase::ReleasePrinterQuery() {
   if (!printer_query)
     return;
   base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&PrinterQuery::StopWorker, printer_query));
 }
 
