@@ -97,7 +97,6 @@ class CWVSyncControllerTest : public PlatformTest {
 
     sync_controller_ = [[CWVSyncController alloc]
         initWithProfileSyncService:profile_sync_service_.get()
-             accountTrackerService:&account_tracker_service_
                    identityManager:identity_test_env_.identity_manager()
                       tokenService:&token_service_
              signinErrorController:&signin_error_controller_];

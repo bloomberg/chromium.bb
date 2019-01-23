@@ -22,7 +22,6 @@ namespace identity {
 class IdentityManager;
 }
 
-class AccountTrackerService;
 class ProfileOAuth2TokenService;
 class SigninErrorController;
 
@@ -32,7 +31,6 @@ class SigninErrorController;
 - (instancetype)
     initWithProfileSyncService:
         (browser_sync::ProfileSyncService*)profileSyncService
-         accountTrackerService:(AccountTrackerService*)accountTrackerService
                identityManager:(identity::IdentityManager*)identityManager
                   tokenService:(ProfileOAuth2TokenService*)tokenService
          signinErrorController:(SigninErrorController*)SigninErrorController
