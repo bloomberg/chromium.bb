@@ -103,6 +103,10 @@ class OmniboxViewViews : public OmniboxView,
   using OmniboxView::SetUserText;
   void SetUserText(const base::string16& text,
                    bool update_popup) override;
+  void SetWindowTextAndCaretPos(const base::string16& text,
+                                size_t caret_pos,
+                                bool update_popup,
+                                bool notify_text_changed) override;
   void EnterKeywordModeForDefaultSearchProvider() override;
   bool IsSelectAll() const override;
   void GetSelectionBounds(base::string16::size_type* start,
@@ -192,10 +196,6 @@ class OmniboxViewViews : public OmniboxView,
   bool MaybeUnfocusTabButton();
 
   // OmniboxView:
-  void SetWindowTextAndCaretPos(const base::string16& text,
-                                size_t caret_pos,
-                                bool update_popup,
-                                bool notify_text_changed) override;
   void SetCaretPos(size_t caret_pos) override;
   void UpdatePopup() override;
   void ApplyCaretVisibility() override;
