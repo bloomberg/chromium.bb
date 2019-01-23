@@ -29,7 +29,8 @@ class CoordinatorTest : public testing::Test,
   // testing::Test
   void SetUp() override {
     agent_registry_ = std::make_unique<AgentRegistry>();
-    coordinator_ = std::make_unique<Coordinator>(agent_registry_.get());
+    coordinator_ = std::make_unique<Coordinator>(agent_registry_.get(),
+                                                 base::RepeatingClosure());
     output_ = "";
   }
 
@@ -341,6 +342,7 @@ TEST_F(CoordinatorTest, StopAndFlushWithMetadata) {
 
 TEST_F(CoordinatorTest, IsTracing) {
   base::RunLoop run_loop;
+  AddArrayAgent();
   StartTracing("config", true);
   IsTracing(true);
   run_loop.RunUntilIdle();

@@ -75,6 +75,8 @@ class TracingControllerImpl : public TracingController,
 
   ~TracingControllerImpl() override;
   void AddAgents();
+  void ConnectToServiceIfNeeded();
+  void DisconnectFromService();
   std::unique_ptr<base::DictionaryValue> GenerateMetadataDict() const;
 
   // mojo::DataPipeDrainer::Client
@@ -85,7 +87,6 @@ class TracingControllerImpl : public TracingController,
 
   void CompleteFlush();
 
-  tracing::mojom::AgentRegistryPtr agent_registry_;
   tracing::mojom::CoordinatorPtr coordinator_;
   std::vector<std::unique_ptr<tracing::BaseAgent>> agents_;
   std::unique_ptr<TracingDelegate> delegate_;

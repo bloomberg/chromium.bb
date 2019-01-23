@@ -7,6 +7,19 @@ module tracing.mojom;
 import "mojo/public/mojom/base/process_id.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/values.mojom";
+import "services/tracing/public/mojom/perfetto_service.mojom";
+
+struct ConnectToTracingRequest {
+  PerfettoService perfetto_service;
+  AgentRegistry agent_registry;
+};
+
+// The tracing service will bind this interface on every other service,
+// and pass it pointers to the interfaces within the tracing service
+// that the other services should register themselves with.
+interface TracedProcess {
+  ConnectToTracingService(ConnectToTracingRequest request);
+};
 
 // The JSON type of data coming from a tracing agents.
 //

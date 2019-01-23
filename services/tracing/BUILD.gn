@@ -33,6 +33,7 @@ source_set("lib") {
   public_deps = [
     "//base",
     "//mojo/public/cpp/bindings",
+    "//services/service_manager/public/cpp",
     "//services/tracing/public/cpp",
     "//third_party/perfetto:libperfetto",
   ]

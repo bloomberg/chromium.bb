@@ -42,6 +42,14 @@ component("cpp") {
     "//url",
   ]
 
+  deps = [
+    "//services/tracing/public/mojom",
+  ]
+
+  if (!is_nacl) {
+    deps += [ "//services/tracing/public/cpp" ]
+  }
+
   defines = [
     "IS_SERVICE_MANAGER_CPP_IMPL",
 

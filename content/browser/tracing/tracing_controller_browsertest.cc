@@ -129,6 +129,29 @@ class TestTracingDelegate : public TracingDelegate {
   }
 };
 
+class WaitForTraceLogEnabled
+    : public base::trace_event::TraceLog::EnabledStateObserver {
+ public:
+  WaitForTraceLogEnabled() {
+    base::trace_event::TraceLog::GetInstance()->AddEnabledStateObserver(this);
+  }
+
+  ~WaitForTraceLogEnabled() override {
+    base::trace_event::TraceLog::GetInstance()->RemoveEnabledStateObserver(
+        this);
+  }
+
+  void Wait() { wait_for_tracelog_.Run(); }
+
+  // TraceLog::EnabledStateObserver overrides:
+  void OnTraceLogEnabled() override { wait_for_tracelog_.Quit(); }
+
+  void OnTraceLogDisabled() override {}
+
+ private:
+  base::RunLoop wait_for_tracelog_;
+};
+
 class TracingControllerTest : public ContentBrowserTest {
  public:
   TracingControllerTest() {}
@@ -222,9 +245,11 @@ class TracingControllerTest : public ContentBrowserTest {
       TraceConfig config;
       if (enable_systrace)
         config.EnableSystrace();
+      WaitForTraceLogEnabled wait_for_tracelog;
       bool result = controller->StartTracing(config, std::move(callback));
       ASSERT_TRUE(result);
       run_loop.Run();
+      wait_for_tracelog.Wait();
       EXPECT_EQ(enable_recording_done_callback_count(), 1);
     }
 
@@ -266,9 +291,11 @@ class TracingControllerTest : public ContentBrowserTest {
       TraceConfig config = TraceConfig();
       config.EnableArgumentFilter();
 
+      WaitForTraceLogEnabled wait_for_tracelog;
       bool result = controller->StartTracing(config, std::move(callback));
       ASSERT_TRUE(result);
       run_loop.Run();
+      wait_for_tracelog.Wait();
       EXPECT_EQ(enable_recording_done_callback_count(), 1);
     }
 
@@ -305,10 +332,12 @@ class TracingControllerTest : public ContentBrowserTest {
       TracingController::StartTracingDoneCallback callback =
           base::BindOnce(&TracingControllerTest::StartTracingDoneCallbackTest,
                          base::Unretained(this), run_loop.QuitClosure());
+      WaitForTraceLogEnabled wait_for_tracelog;
       bool result =
           controller->StartTracing(TraceConfig(), std::move(callback));
       ASSERT_TRUE(result);
       run_loop.Run();
+      wait_for_tracelog.Wait();
       EXPECT_EQ(enable_recording_done_callback_count(), 1);
     }
 
@@ -340,10 +369,12 @@ class TracingControllerTest : public ContentBrowserTest {
       TracingController::StartTracingDoneCallback callback =
           base::BindOnce(&TracingControllerTest::StartTracingDoneCallbackTest,
                          base::Unretained(this), run_loop.QuitClosure());
+      WaitForTraceLogEnabled wait_for_tracelog;
       bool result =
           controller->StartTracing(TraceConfig(), std::move(callback));
       ASSERT_TRUE(result);
       run_loop.Run();
+      wait_for_tracelog.Wait();
       EXPECT_EQ(enable_recording_done_callback_count(), 1);
     }
 

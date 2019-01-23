@@ -18,6 +18,8 @@ component("cpp") {
     "perfetto/traced_value_proto_writer.h",
     "trace_event_agent.cc",
     "trace_event_agent.h",
+    "traced_process.cc",
+    "traced_process.h",
     "tracing_features.cc",
     "tracing_features.h",
   ]
@@ -30,7 +32,6 @@ component("cpp") {
   public_deps = [
     "//base",
     "//mojo/public/cpp/bindings",
-    "//services/service_manager/public/cpp",
     "//services/tracing/public/mojom",
     "//third_party/perfetto:libperfetto",
   ]
