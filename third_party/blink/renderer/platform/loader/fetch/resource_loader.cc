@@ -415,12 +415,15 @@ void ResourceLoader::Start() {
         ResourceLoadScheduler::ThrottleOption::kCanNotBeStoppedOrThrottled;
   }
   scheduler_->Request(this, throttle_option, request.Priority(),
-                      request.IntraPriorityValue(), GetConsoleLogger(),
-                      &scheduler_client_id_);
+                      request.IntraPriorityValue(), &scheduler_client_id_);
 }
 
 void ResourceLoader::Run() {
   StartWith(resource_->GetResourceRequest());
+}
+
+ConsoleLogger* ResourceLoader::GetConsoleLogger() {
+  return fetcher_->GetConsoleLogger();
 }
 
 void ResourceLoader::StartWith(const ResourceRequest& request) {
@@ -1216,10 +1219,6 @@ void ResourceLoader::FinishedCreatingBlob(
                      load_did_finish_before_blob_->should_report_corb_blocking,
                      std::vector<network::cors::PreflightTimingInfo>());
   }
-}
-
-ConsoleLogger* ResourceLoader::GetConsoleLogger() {
-  return fetcher_->GetConsoleLogger();
 }
 
 base::Optional<ResourceRequestBlockedReason>

@@ -28,6 +28,10 @@ class PLATFORM_EXPORT ResourceLoadSchedulerClient
   // Called when the request is granted to run.
   virtual void Run() = 0;
 
+  // Called to obtain a ConsoleLogger instance.
+  // TODO(yhirano): Remove this once https://crbug.com/855189 is fixed.
+  virtual ConsoleLogger* GetConsoleLogger() = 0;
+
   void Trace(blink::Visitor* visitor) override {}
 };
 
@@ -172,7 +176,6 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
                ThrottleOption,
                ResourceLoadPriority,
                int intra_priority,
-               ConsoleLogger* console_logger,
                ClientId*);
 
   // Updates the priority information of the given client. This function may
@@ -266,7 +269,7 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
 
   size_t GetOutstandingLimit() const;
 
-  bool IsThrottledState() const;
+  void ShowConsoleMessageIfNeeded();
 
   // A flag to indicate an internal running state.
   // TODO(toyoshim): We may want to use enum once we start to have more states.
@@ -298,9 +301,8 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   // Largest number of running requests seen so far.
   unsigned maximum_running_requests_seen_ = 0;
 
-  // Holds a flag to omit repeating console messages. Will be reset on
-  // SchedulingLifecycleState changes.
-  bool omit_console_log_ = false;
+  // Holds a flag to omit repeating console messages.
+  bool is_console_info_shown_ = false;
 
   enum class ThrottlingHistory {
     kInitial,
@@ -320,6 +322,9 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   std::map<ThrottleOption,
            std::set<ClientIdWithPriority, ClientIdWithPriority::Compare>>
       pending_requests_;
+
+  // Remembers times when the top request in each queue is processed.
+  std::map<ThrottleOption, base::TimeTicks> pending_queue_update_times_;
 
   // Holds an internal class instance to monitor and report traffic.
   std::unique_ptr<TrafficMonitor> traffic_monitor_;
