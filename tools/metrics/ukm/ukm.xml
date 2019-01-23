@@ -3436,6 +3436,26 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="InteractiveTiming.FirstInputDelay">
+    <obsolete>
+      Deprecated on January 2019 in favor of InteractiveTiming.FirstInputDelay2,
+      which correctly excludes some scrolling cases that were previously not
+      excluded from this metric.
+    </obsolete>
+    <summary>
+      Measures First Input Delay, the duration between the hardware timestamp
+      and the start of event processing on the main thread for the first
+      meaningful input per navigation. See https://goo.gl/tr1oTZ for a detailed
+      explanation. In ms.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="InteractiveTiming.FirstInputDelay2">
     <summary>
       Measures First Input Delay, the duration between the hardware timestamp
       and the start of event processing on the main thread for the first
@@ -3451,6 +3471,18 @@ be describing additional metrics about the same event.
     </aggregation>
   </metric>
   <metric name="InteractiveTiming.FirstInputTimestamp">
+    <obsolete>
+      Deprecated on January 2019 in favor of
+      InteractiveTiming.FirstInputTimestamp2, which correctly excludes some
+      scrolling cases that were previously not excluded from this metric.
+    </obsolete>
+    <summary>
+      The duration between navigation start and the hardware timestamp of the
+      first meaningful input per navigation. See https://goo.gl/tr1oTZ for a
+      detailed explanation. In ms.
+    </summary>
+  </metric>
+  <metric name="InteractiveTiming.FirstInputTimestamp2">
     <summary>
       The duration between navigation start and the hardware timestamp of the
       first meaningful input per navigation. See https://goo.gl/tr1oTZ for a
@@ -3458,6 +3490,18 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="InteractiveTiming.LongestInputDelay">
+    <obsolete>
+      Deprecated on January 2019 in favor of
+      InteractiveTiming.LongestInputDelay2, which correctly excludes some
+      scrolling cases that were previously not excluded from this metric.
+    </obsolete>
+    <summary>
+      Measures longest Input Delay, the longest duration between the hardware
+      timestamp and the start of event processing on the main thread for the
+      meaningful input per navigation. In ms.
+    </summary>
+  </metric>
+  <metric name="InteractiveTiming.LongestInputDelay2">
     <summary>
       Measures longest Input Delay, the longest duration between the hardware
       timestamp and the start of event processing on the main thread for the
@@ -3465,6 +3509,17 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="InteractiveTiming.LongestInputTimestamp">
+    <obsolete>
+      Deprecated on January 2019 in favor of
+      InteractiveTiming.LongestInputTimestamp2, which correctly excludes some
+      scrolling cases that were previously not excluded from this metric.
+    </obsolete>
+    <summary>
+      The duration between navigation start and the hardware timestamp of the
+      meaningful input with longest queuing delay per navigation. In ms.
+    </summary>
+  </metric>
+  <metric name="InteractiveTiming.LongestInputTimestamp2">
     <summary>
       The duration between navigation start and the hardware timestamp of the
       meaningful input with longest queuing delay per navigation. In ms.

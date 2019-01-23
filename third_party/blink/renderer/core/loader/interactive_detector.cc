@@ -22,9 +22,9 @@ constexpr auto kTimeToInteractiveWindow = TimeDelta::FromSeconds(5);
 // requests for this duration of time.
 constexpr int kNetworkQuietMaximumConnections = 2;
 
-const char kHistogramInputDelay[] = "PageLoad.InteractiveTiming.InputDelay";
+const char kHistogramInputDelay[] = "PageLoad.InteractiveTiming.InputDelay2";
 const char kHistogramInputTimestamp[] =
-    "PageLoad.InteractiveTiming.InputTimestamp";
+    "PageLoad.InteractiveTiming.InputTimestamp2";
 
 // static
 const char InteractiveDetector::kSupplementName[] = "InteractiveDetector";
@@ -182,6 +182,12 @@ void InteractiveDetector::HandleForInputDelay(const WebInputEvent& event) {
   if (event.GetType() == WebInputEvent::kPointerDown) {
     pending_pointerdown_delay_ = CurrentTimeTicks() - event.TimeStamp();
     pending_pointerdown_timestamp_ = event.TimeStamp();
+    return;
+  }
+  if (event.GetType() == WebInputEvent::kPointerCancel ||
+      event.GetType() == WebInputEvent::kPointerCausedUaAction) {
+    pending_pointerdown_delay_ = base::TimeDelta();
+    pending_pointerdown_timestamp_ = base::TimeTicks();
     return;
   }
 

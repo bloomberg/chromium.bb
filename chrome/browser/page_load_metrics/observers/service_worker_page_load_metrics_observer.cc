@@ -29,7 +29,7 @@ const char kBackgroundHistogramServiceWorkerParseStart[] =
     "PageLoad.Clients.ServiceWorker2.ParseTiming.NavigationToParseStart."
     "Background";
 const char kHistogramServiceWorkerFirstInputDelay[] =
-    "PageLoad.Clients.ServiceWorker2.InteractiveTiming.FirstInputDelay";
+    "PageLoad.Clients.ServiceWorker2.InteractiveTiming.FirstInputDelay2";
 const char kHistogramServiceWorkerFirstPaint[] =
     "PageLoad.Clients.ServiceWorker2.PaintTiming.NavigationToFirstPaint";
 const char kHistogramServiceWorkerFirstContentfulPaint[] =
