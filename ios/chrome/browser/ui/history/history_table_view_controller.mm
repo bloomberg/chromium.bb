@@ -235,7 +235,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   self.scrimView.accessibilityIdentifier = kHistorySearchScrimIdentifier;
   [self.scrimView addTarget:self
                      action:@selector(dismissSearchController:)
-           forControlEvents:UIControlEventAllTouchEvents];
+           forControlEvents:UIControlEventTouchUpInside];
 
   // Place the search bar in the navigation bar.
   self.navigationItem.searchController = self.searchController;
