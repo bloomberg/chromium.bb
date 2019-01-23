@@ -395,6 +395,42 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldShowInteractiveLogo) {
 }
 
 IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
+                       ShouldShowInteractiveLogoWithoutImage) {
+  EncodedLogo cached_logo;
+  cached_logo.encoded_image = nullptr;
+  cached_logo.metadata.type = LogoType::INTERACTIVE;
+  cached_logo.metadata.full_page_url =
+      GURL("https://www.chromium.org/interactive");
+  cached_logo.metadata.alt_text = "alt text";
+  cached_logo.metadata.iframe_width_px = 500;
+  cached_logo.metadata.iframe_height_px = 200;
+
+  EXPECT_CALL(*logo_service(), GetLogoPtr(_))
+      .WillRepeatedly(DoAll(
+          ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
+          ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
+
+  // Open a new blank tab, then go to NTP.
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  base::HistogramTester histograms;
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+
+  EXPECT_THAT(GetDimension(active_tab, "fakebox", "top"), Eq(kFakeboxTopPx));
+  EXPECT_THAT(GetComputedOpacity(active_tab, "logo-default"), Eq(0.0));
+  EXPECT_THAT(GetComputedOpacity(active_tab, "logo-doodle"), Eq(1.0));
+  EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-container"),
+              Eq<std::string>("none"));
+  EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-iframe"),
+              Eq<std::string>("block"));
+
+  EXPECT_THAT(GetElementProperty(active_tab, "logo-doodle-iframe", "src"),
+              Eq<std::string>("https://www.chromium.org/interactive"));
+  EXPECT_THAT(GetElementProperty(active_tab, "logo-doodle-iframe", "title"),
+              Eq<std::string>("alt text"));
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
                        ShouldFadeSimpleDoodleToDefaultWhenFetched) {
   EncodedLogo cached_logo;
   cached_logo.encoded_image = MakeRefPtr(kCachedB64);

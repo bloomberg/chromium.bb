@@ -371,6 +371,7 @@ TEST(GoogleNewLogoApiTest, ParsesInteractiveDoodle) {
   EXPECT_EQ(LogoType::INTERACTIVE, logo->metadata.type);
   EXPECT_EQ(500, logo->metadata.iframe_width_px);
   EXPECT_EQ(200, logo->metadata.iframe_height_px);
+  EXPECT_EQ(nullptr, logo->encoded_image);
 }
 
 TEST(GoogleNewLogoApiTest, ParsesInteractiveDoodleWithNewWindowAsSimple) {
