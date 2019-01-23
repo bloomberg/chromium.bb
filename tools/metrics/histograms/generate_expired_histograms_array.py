@@ -67,6 +67,8 @@ def _GetExpiredHistograms(histograms, base_date, current_milestone):
     if "obsolete" in content or "expires_after" not in content:
       continue
     expiry_str = content["expires_after"]
+    if expiry_str == "never":
+      continue
 
     match = _MILESTONE_EXPIRY_RE.search(expiry_str)
     if match:
