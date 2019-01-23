@@ -257,4 +257,79 @@ TEST_F(DisplayLockContextTest, LockedElementIsNotSearchableViaFindInPage) {
   EXPECT_EQ(1, client.Count());
   client.Reset();
 }
+
+TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
+  ResizeAndFocus();
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+    #container {
+      width: 100px;
+      height: 100px;
+      contain: content;
+    }
+    </style>
+    <body>
+    <div id="container">
+      <input id="textfield", type="text">
+    </div>
+    </body>
+  )HTML");
+
+  // We start off as being focusable.
+  ASSERT_TRUE(GetDocument().getElementById("textfield")->IsKeyboardFocusable());
+  ASSERT_TRUE(GetDocument().getElementById("textfield")->IsMouseFocusable());
+  ASSERT_TRUE(GetDocument().getElementById("textfield")->IsFocusable());
+
+  auto* element = GetDocument().getElementById("container");
+  {
+    auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
+    ScriptState::Scope scope(script_state);
+    element->getDisplayLockForBindings()->acquire(script_state, nullptr);
+  }
+
+  // We should be in pending acquire state, which means we would allow things
+  // like style and layout but disallow paint.
+  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldStyle());
+  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldLayout());
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
+
+  UpdateAllLifecyclePhasesForTest();
+
+  // Sanity checks to ensure the element is locked.
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle());
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout());
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
+
+  // The input should not be focusable now.
+  EXPECT_FALSE(
+      GetDocument().getElementById("textfield")->IsKeyboardFocusable());
+  EXPECT_FALSE(GetDocument().getElementById("textfield")->IsMouseFocusable());
+  EXPECT_FALSE(GetDocument().getElementById("textfield")->IsFocusable());
+
+  // Calling explicit focus() should also not focus the element.
+  GetDocument().getElementById("textfield")->focus();
+  EXPECT_FALSE(GetDocument().FocusedElement());
+
+  // Now commit the lock and ensure we can focus the input
+  {
+    auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
+    ScriptState::Scope scope(script_state);
+    element->getDisplayLockForBindings()->commit(script_state);
+  }
+
+  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldStyle());
+  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldLayout());
+  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldPaint());
+
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_TRUE(GetDocument().getElementById("textfield")->IsKeyboardFocusable());
+  EXPECT_TRUE(GetDocument().getElementById("textfield")->IsMouseFocusable());
+  EXPECT_TRUE(GetDocument().getElementById("textfield")->IsFocusable());
+
+  // Calling explicit focus() should focus the element
+  GetDocument().getElementById("textfield")->focus();
+  EXPECT_EQ(GetDocument().FocusedElement(),
+            GetDocument().getElementById("textfield"));
+}
 }  // namespace blink

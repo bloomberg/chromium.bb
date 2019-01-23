@@ -3357,7 +3357,8 @@ bool Element::IsKeyboardFocusable() const {
   return isConnected() && !IsInert() && IsFocusableStyle() &&
          ((SupportsFocus() && tabIndex() >= 0) ||
           (RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled() &&
-           IsScrollableNode(this)));
+           IsScrollableNode(this))) &&
+         !IsDisplayLockedForFocus();
 }
 
 bool Element::IsMouseFocusable() const {
@@ -3365,7 +3366,29 @@ bool Element::IsMouseFocusable() const {
   // isn't active (style can't be invalidated in a non-active document).
   DCHECK(!GetDocument().IsActive() ||
          !GetDocument().NeedsLayoutTreeUpdateForNode(*this));
-  return isConnected() && !IsInert() && IsFocusableStyle() && SupportsFocus();
+  return isConnected() && !IsInert() && IsFocusableStyle() && SupportsFocus() &&
+         !IsDisplayLockedForFocus();
+}
+
+bool Element::IsDisplayLockedForFocus() const {
+  if (!RuntimeEnabledFeatures::DisplayLockingEnabled())
+    return false;
+  // TODO(vmpstr): Similar to Document::EnsurePaintLocationDataValidForNode(),
+  // this iterates up to the ancestor hierarchy looking for locked display
+  // locks. This is inefficient, particularly since it's unlikely that this will
+  // yield any "true" results in practice. We need to come up with a way to
+  // check whether a node is in a locked subtree quickly.
+  // See crbug.com/924550 for more details.
+  for (const Node* current = this; current;
+       current = current->ParentOrShadowHostNode()) {
+    if (!current->IsElementNode())
+      continue;
+    if (auto* context = ToElement(current)->GetDisplayLockContext()) {
+      if (!context->IsSearchable())
+        return true;
+    }
+  }
+  return false;
 }
 
 bool Element::IsFocusedElementInDocument() const {
