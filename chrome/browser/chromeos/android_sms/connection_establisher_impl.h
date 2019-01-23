@@ -24,15 +24,17 @@ class ConnectionEstablisherImpl : public ConnectionEstablisher {
   ~ConnectionEstablisherImpl() override;
 
   void EstablishConnection(
-      content::ServiceWorkerContext* service_worker_context,
-      ConnectionMode connection_mode) override;
+      const GURL& url,
+      ConnectionMode connection_mode,
+      content::ServiceWorkerContext* service_worker_context) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ConnectionEstablisherImplTest, EstablishConnection);
 
   void SendStartStreamingMessageIfNotConnected(
-      content::ServiceWorkerContext* service_worker_context,
-      ConnectionMode connection_mode);
+      const GURL& url,
+      ConnectionMode connection_mode,
+      content::ServiceWorkerContext* service_worker_context);
 
   void OnMessageDispatchResult(bool status);
 
