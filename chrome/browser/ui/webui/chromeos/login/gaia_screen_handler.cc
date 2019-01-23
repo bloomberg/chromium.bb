@@ -371,6 +371,8 @@ void GaiaScreenHandler::LoadGaiaWithPartition(
           Profile::FromWebUI(web_ui()));
   content::StoragePartition* partition =
       signin_partition_manager->GetCurrentStoragePartition();
+  if (!partition)
+    return;
 
   std::string gaps_cookie_value(kGAPSCookie);
   gaps_cookie_value += "=" + context.gaps_cookie;
