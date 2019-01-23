@@ -44,8 +44,8 @@ struct WebWindowFeatures;
 DOMWindow* CreateWindow(const String& url_string,
                         const AtomicString& frame_name,
                         const String& window_features_string,
-                        LocalDOMWindow& calling_window,
-                        LocalFrame& first_frame,
+                        LocalDOMWindow& incumbent_window,
+                        LocalFrame& entered_window_frame,
                         LocalFrame& opener_frame,
                         ExceptionState&);
 

@@ -657,13 +657,17 @@ class CORE_EXPORT Document : public ContainerNode,
   void writeln(const String& text,
                Document* entered_document = nullptr,
                ExceptionState& = ASSERT_NO_EXCEPTION);
-  void write(LocalDOMWindow*, const Vector<String>& text, ExceptionState&);
-  void writeln(LocalDOMWindow*, const Vector<String>& text, ExceptionState&);
+  void write(LocalDOMWindow* entered_window,
+             const Vector<String>& text,
+             ExceptionState&);
+  void writeln(LocalDOMWindow* entered_window,
+               const Vector<String>& text,
+               ExceptionState&);
 
   // TrustedHTML variants of the above.
   // TODO(mkwst): Write a spec for this.
-  void write(LocalDOMWindow*, TrustedHTML*, ExceptionState&);
-  void writeln(LocalDOMWindow*, TrustedHTML*, ExceptionState&);
+  void write(LocalDOMWindow* entered_window, TrustedHTML*, ExceptionState&);
+  void writeln(LocalDOMWindow* entered_window, TrustedHTML*, ExceptionState&);
 
   bool WellFormed() const { return well_formed_; }
 
