@@ -89,6 +89,9 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
 
     @VisibleForTesting
     public static void setAlwaysUseFallbackDelegate(boolean useFallbackDelegate) {
+        // TODO(bsheedy): Change this to an "assert sDelegateProvider == null" once we change the
+        // restriction checking code to use the Daydream API directly so that a delegate provider
+        // doesn't get created during pre-test setup.
         sDelegateProvider = null;
         sAlwaysUseFallbackDelegate = useFallbackDelegate;
     }
