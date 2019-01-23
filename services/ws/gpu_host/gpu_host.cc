@@ -198,6 +198,26 @@ void GpuHost::AddArc(mojom::ArcRequest request) {
 }
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(USE_OZONE)
+void GpuHost::BindOzoneGpuInterface(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  // This is only used when viz is run in-process.
+  DCHECK(gpu_thread_.IsRunning());
+
+  // Interfaces should be bound on gpu thread.
+  if (!gpu_thread_.task_runner()->BelongsToCurrentThread()) {
+    gpu_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&GpuHost::BindOzoneGpuInterface, base::Unretained(this),
+                       interface_name, std::move(interface_pipe)));
+    return;
+  }
+  DCHECK(viz_main_impl_);
+  viz_main_impl_->BindInterface(interface_name, std::move(interface_pipe));
+}
+#endif  // defined(USE_OZONE)
+
 void GpuHost::OnBadMessageFromGpu() {
   // TODO(sad): Received some unexpected message from the gpu process. We
   // should kill the process and restart it.

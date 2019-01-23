@@ -33,8 +33,8 @@ class AshGpuInterfaceProvider : public ws::GpuInterfaceProvider {
   // ws::GpuInterfaceProvider:
   void RegisterGpuInterfaces(
       service_manager::BinderRegistry* registry) override;
-  void RegisterOzoneGpuInterfaces(
-      service_manager::BinderRegistry* registry) override;
+  void BindOzoneGpuInterface(const std::string& interface_name,
+                             mojo::ScopedMessagePipeHandle handle) override;
 
  private:
   void BindArcRequest(ws::mojom::ArcRequest request);
