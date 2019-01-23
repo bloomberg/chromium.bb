@@ -80,7 +80,8 @@ class UserTiming final : public GarbageCollected<UserTiming> {
                                 ExceptionState&);
   double FindExistingMarkStartTime(const AtomicString& mark_name,
                                    ExceptionState&);
-  double FindStartMarkOrTime(const StringOrDouble& start, ExceptionState&);
+  double GetTimeOrFindMarkTime(const StringOrDouble& mark_or_time,
+                               ExceptionState&);
 
   Member<Performance> performance_;
   PerformanceEntryMap marks_map_;

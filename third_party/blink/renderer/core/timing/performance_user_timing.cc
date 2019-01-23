@@ -186,16 +186,14 @@ double UserTiming::FindExistingMarkStartTime(const AtomicString& mark_name,
   return 0.0;
 }
 
-double UserTiming::FindStartMarkOrTime(const StringOrDouble& start,
-                                       ExceptionState& exception_state) {
-  if (start.IsString()) {
-    return FindExistingMarkStartTime(AtomicString(start.GetAsString()),
+double UserTiming::GetTimeOrFindMarkTime(const StringOrDouble& mark_or_time,
+                                         ExceptionState& exception_state) {
+  if (mark_or_time.IsString()) {
+    return FindExistingMarkStartTime(AtomicString(mark_or_time.GetAsString()),
                                      exception_state);
   }
-  if (start.IsDouble())
-    return start.GetAsDouble();
-  NOTREACHED();
-  return 0;
+  DCHECK(mark_or_time.IsDouble());
+  return mark_or_time.GetAsDouble();
 }
 
 PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
@@ -204,24 +202,15 @@ PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
                                         const StringOrDouble& end,
                                         const ScriptValue& detail,
                                         ExceptionState& exception_state) {
-  double start_time = 0.0;
-  double end_time = 0.0;
+  double start_time =
+      start.IsNull() ? 0.0 : GetTimeOrFindMarkTime(start, exception_state);
+  if (exception_state.HadException())
+    return nullptr;
 
-  if (start.IsNull()) {
-    end_time = performance_->now();
-  } else if (end.IsNull()) {
-    end_time = performance_->now();
-    start_time = FindStartMarkOrTime(start, exception_state);
-    if (exception_state.HadException())
-      return nullptr;
-  } else {
-    end_time = FindStartMarkOrTime(end, exception_state);
-    if (exception_state.HadException())
-      return nullptr;
-    start_time = FindStartMarkOrTime(start, exception_state);
-    if (exception_state.HadException())
-      return nullptr;
-  }
+  double end_time = end.IsNull() ? performance_->now()
+                                 : GetTimeOrFindMarkTime(end, exception_state);
+  if (exception_state.HadException())
+    return nullptr;
 
   // User timing events are stored as integer milliseconds from the start of
   // navigation, whereas trace events accept double seconds based off of
