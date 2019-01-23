@@ -348,6 +348,11 @@ void ProxyMain::DidPresentCompositorFrame(
                                               feedback);
 }
 
+void ProxyMain::DidGenerateLocalSurfaceIdAllocation(
+    const viz::LocalSurfaceIdAllocation& allocation) {
+  layer_tree_host_->DidGenerateLocalSurfaceIdAllocation(allocation);
+}
+
 bool ProxyMain::IsStarted() const {
   DCHECK(IsMainThread());
   return started_;

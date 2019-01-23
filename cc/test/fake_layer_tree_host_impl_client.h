@@ -43,6 +43,8 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
       uint32_t frame_token,
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
       const gfx::PresentationFeedback& feedback) override {}
+  void DidGenerateLocalSurfaceIdAllocationOnImplThread(
+      const viz::LocalSurfaceIdAllocation& allocation) override {}
 
   void reset_did_request_impl_side_invalidation() {
     did_request_impl_side_invalidation_ = false;

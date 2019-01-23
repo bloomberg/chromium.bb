@@ -2021,7 +2021,7 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
   if (child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
           .IsValid()) {
     if (allocate_new_local_surface_id)
-      child_local_surface_id_allocator_.GenerateId();
+      AllocateLocalSurfaceId();
     metadata.local_surface_id_allocation =
         child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
   }
@@ -2896,7 +2896,7 @@ void LayerTreeHostImpl::ActivateSyncTree() {
     child_local_surface_id_allocator_.UpdateFromParent(
         active_tree()->local_surface_id_allocation_from_parent());
     if (active_tree()->TakeNewLocalSurfaceIdRequest())
-      child_local_surface_id_allocator_.GenerateId();
+      AllocateLocalSurfaceId();
   }
 
   // Dump property trees and layers if run with:
@@ -3360,7 +3360,7 @@ bool LayerTreeHostImpl::InitializeFrameSink(
     const viz::LocalSurfaceIdAllocation& local_surface_id_allocation =
         child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
     if (local_surface_id_allocation.IsValid())
-      child_local_surface_id_allocator_.GenerateId();
+      AllocateLocalSurfaceId();
   } else {
     layer_tree_frame_sink_->ForceAllocateNewId();
   }
@@ -5686,6 +5686,12 @@ void LayerTreeHostImpl::SetActiveURL(const GURL& url) {
   // case to occur.
   if (ukm_manager_)
     ukm_manager_->SetSourceURL(url);
+}
+
+void LayerTreeHostImpl::AllocateLocalSurfaceId() {
+  child_local_surface_id_allocator_.GenerateId();
+  client_->DidGenerateLocalSurfaceIdAllocationOnImplThread(
+      child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation());
 }
 
 }  // namespace cc

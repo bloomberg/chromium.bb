@@ -688,6 +688,11 @@ void LayerTreeHost::DidPresentCompositorFrame(
   client_->DidPresentCompositorFrame(frame_token, feedback);
 }
 
+void LayerTreeHost::DidGenerateLocalSurfaceIdAllocation(
+    const viz::LocalSurfaceIdAllocation& allocation) {
+  client_->DidGenerateLocalSurfaceIdAllocation(allocation);
+}
+
 void LayerTreeHost::DidCompletePageScaleAnimation() {
   did_complete_scale_animation_ = true;
 }

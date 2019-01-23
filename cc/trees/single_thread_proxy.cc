@@ -499,6 +499,11 @@ void SingleThreadProxy::DidPresentCompositorFrameOnImplThread(
                                               feedback);
 }
 
+void SingleThreadProxy::DidGenerateLocalSurfaceIdAllocationOnImplThread(
+    const viz::LocalSurfaceIdAllocation& allocation) {
+  layer_tree_host_->DidGenerateLocalSurfaceIdAllocation(allocation);
+}
+
 void SingleThreadProxy::RequestBeginMainFrameNotExpected(bool new_state) {
   if (scheduler_on_impl_thread_) {
     scheduler_on_impl_thread_->SetMainThreadWantsBeginMainFrameNotExpected(

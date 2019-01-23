@@ -11,6 +11,10 @@
 #include "cc/trees/proxy.h"
 #include "cc/trees/proxy_common.h"
 
+namespace viz {
+class LocalSurfaceIdAllocation;
+}
+
 namespace cc {
 
 class MutatorEvents;
@@ -57,6 +61,8 @@ class CC_EXPORT ProxyMain : public Proxy {
       uint32_t frame_token,
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
       const gfx::PresentationFeedback& feedback);
+  void DidGenerateLocalSurfaceIdAllocation(
+      const viz::LocalSurfaceIdAllocation& allocation);
 
   CommitPipelineStage max_requested_pipeline_stage() const {
     return max_requested_pipeline_stage_;

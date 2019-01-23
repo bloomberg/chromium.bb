@@ -8,6 +8,10 @@
 #include "base/time/time.h"
 #include "ui/compositor/compositor_export.h"
 
+namespace viz {
+class LocalSurfaceIdAllocation;
+}
+
 namespace ui {
 
 class Compositor;
@@ -40,6 +44,14 @@ class COMPOSITOR_EXPORT CompositorObserver {
   // Called at the top of the compositor's destructor, to give observers a
   // chance to remove themselves.
   virtual void OnCompositingShuttingDown(Compositor* compositor) = 0;
+
+  // Called (asynchronously) when the compositor generates a new
+  // LocalSurfaceIdAllocation. For example, if
+  // LayerTreeHost::RequestNewLocalSurfaceId() is called, then this function
+  // is called once the compositor generates the new LocalSurfaceIdAllocation.
+  virtual void DidGenerateLocalSurfaceIdAllocation(
+      Compositor* compositor,
+      const viz::LocalSurfaceIdAllocation& allocation) {}
 };
 
 }  // namespace ui

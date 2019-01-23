@@ -88,6 +88,12 @@ class CC_EXPORT ScopedDeferMainFrameUpdate {
 class CC_EXPORT LayerTreeHost : public MutatorHostClient {
  public:
   struct CC_EXPORT InitParams {
+    InitParams();
+    ~InitParams();
+
+    InitParams(InitParams&&);
+    InitParams& operator=(InitParams&&);
+
     LayerTreeHostClient* client = nullptr;
     TaskGraphRunner* task_graph_runner = nullptr;
     LayerTreeSettings const* settings = nullptr;
@@ -100,12 +106,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner;
 
     std::unique_ptr<UkmRecorderFactory> ukm_recorder_factory;
-
-    InitParams();
-    ~InitParams();
-
-    InitParams(InitParams&&);
-    InitParams& operator=(InitParams&&);
   };
 
   // Constructs a LayerTreeHost with a compositor thread where scrolling and
@@ -589,6 +589,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
       uint32_t frame_token,
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
       const gfx::PresentationFeedback& feedback);
+  void DidGenerateLocalSurfaceIdAllocation(
+      const viz::LocalSurfaceIdAllocation& allocation);
   // Called when the compositor completed page scale animation.
   void DidCompletePageScaleAnimation();
   void ApplyScrollAndScale(ScrollAndScaleSet* info);

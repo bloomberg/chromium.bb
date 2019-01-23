@@ -154,6 +154,9 @@ class LayerTreeHostImplClient {
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
       const gfx::PresentationFeedback& feedback) = 0;
 
+  virtual void DidGenerateLocalSurfaceIdAllocationOnImplThread(
+      const viz::LocalSurfaceIdAllocation& allocation) = 0;
+
  protected:
   virtual ~LayerTreeHostImplClient() {}
 };
@@ -876,6 +879,8 @@ class CC_EXPORT LayerTreeHostImpl
 
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel level);
+
+  void AllocateLocalSurfaceId();
 
   const LayerTreeSettings settings_;
   const bool is_synchronous_single_threaded_;
