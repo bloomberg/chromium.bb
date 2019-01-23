@@ -35231,6 +35231,7 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="Completed"/>
   <int value="2" label="Cancelled"/>
   <int value="3" label="Failed"/>
+  <int value="4" label="Interrupted"/>
 </enum>
 
 <enum name="MobileDownloadCancelReason">
