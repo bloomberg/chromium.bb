@@ -95,11 +95,6 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
 
     @Override
-    public String getDebugContext() {
-        return safeNativeOnRequestDebugContext();
-    }
-
-    @Override
     public void updateTouchableArea() {
         safeNativeUpdateTouchableArea();
     }
@@ -262,6 +257,16 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         mCoordinator.getBottomBarCoordinator().expand();
     }
 
+    @CalledByNative
+    private void showFeedback(String debugContext) {
+        mCoordinator.showFeedback(debugContext);
+    }
+
+    @CalledByNative
+    private void dismissAndShowSnackbar(String message) {
+        mCoordinator.dismissAndShowSnackbar(message);
+    }
+
     // Native methods.
     void safeNativeStop() {
         if (mNativeUiController != 0) nativeStop(mNativeUiController);
@@ -298,10 +303,4 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
             @Nullable PersonalDataManager.AutofillProfile address, @Nullable String payerName,
             @Nullable String payerPhone, @Nullable String payerEmail,
             boolean isTermsAndConditionsAccepted);
-
-    String safeNativeOnRequestDebugContext() {
-        if (mNativeUiController != 0) return nativeOnRequestDebugContext(mNativeUiController);
-        return "";
-    }
-    private native String nativeOnRequestDebugContext(long nativeUiControllerAndroid);
 }

@@ -11,6 +11,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "chrome/browser/android/autofill_assistant/assistant_header_delegate.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
 
@@ -59,8 +60,11 @@ class UiControllerAndroid : public UiController {
   void HideProgressBar() override;
   void UpdateTouchableArea(bool enabled,
                            const std::vector<RectF>& areas) override;
-  std::string GetDebugContext() const override;
   void ExpandBottomSheet() override;
+
+  // Called by AssistantHeaderDelegate:
+  void OnFeedbackButtonClicked();
+  void OnCloseButtonClicked();
 
   // Called by Java.
   void Stop(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
@@ -85,13 +89,12 @@ class UiControllerAndroid : public UiController {
   base::android::ScopedJavaLocalRef<jstring> GetPrimaryAccountName(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller);
-  base::android::ScopedJavaLocalRef<jstring> OnRequestDebugContext(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jcaller);
 
+ protected:
  private:
   Client* const client_;
   UiDelegate* const ui_delegate_;
+  AssistantHeaderDelegate header_delegate_;
 
   base::android::ScopedJavaLocalRef<jobject> GetModel();
   base::android::ScopedJavaLocalRef<jobject> GetHeaderModel();
@@ -104,6 +107,7 @@ class UiControllerAndroid : public UiController {
   void OnUserApproval(const ShowDetailsProto& show_details,
                       const std::string& previous_status_message,
                       bool success);
+  std::string GetDebugContext();
 
   // Java-side AutofillAssistantUiController object.
   base::android::ScopedJavaGlobalRef<jobject>

@@ -31,5 +31,8 @@
     <message name="IDS_AUTOFILL_ASSISTANT_CONTINUE_BUTTON" desc="Generic label for a button to continue to the next screen.">
       Continue
     </message>
+    <message name="IDS_AUTOFILL_ASSISTANT_STOPPED" desc="Text label that is shown when stopping the Autofill Assistant.">
+        Google Assistant in Chrome stopping
+      </message>
   </if>
 </grit-part>

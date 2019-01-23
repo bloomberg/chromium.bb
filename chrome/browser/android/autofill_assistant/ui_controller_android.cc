@@ -47,14 +47,22 @@ namespace autofill_assistant {
 UiControllerAndroid::UiControllerAndroid(content::WebContents* web_contents,
                                          Client* client,
                                          UiDelegate* ui_delegate)
-    : client_(client), ui_delegate_(ui_delegate), weak_ptr_factory_(this) {
+    : client_(client),
+      ui_delegate_(ui_delegate),
+      header_delegate_(this),
+      weak_ptr_factory_(this) {
   DCHECK(web_contents);
   DCHECK(client);
   DCHECK(ui_delegate);
+  JNIEnv* env = AttachCurrentThread();
   java_autofill_assistant_ui_controller_ =
       Java_AutofillAssistantUiController_createAndStartUi(
-          AttachCurrentThread(), web_contents->GetJavaWebContents(),
+          env, web_contents->GetJavaWebContents(),
           reinterpret_cast<intptr_t>(this));
+
+  // Register header_delegate_ as delegate for clicks on header buttons.
+  Java_AssistantHeaderModel_setDelegate(env, GetHeaderModel(),
+                                        header_delegate_.GetJavaObject());
 }
 
 UiControllerAndroid::~UiControllerAndroid() {
@@ -109,6 +117,27 @@ void UiControllerAndroid::HideProgressBar() {
 void UiControllerAndroid::SetProgressPulsingEnabled(bool enabled) {
   Java_AssistantHeaderModel_setProgressPulsingEnabled(
       AttachCurrentThread(), GetHeaderModel(), enabled);
+}
+
+void UiControllerAndroid::OnFeedbackButtonClicked() {
+  JNIEnv* env = AttachCurrentThread();
+  Java_AutofillAssistantUiController_showFeedback(
+      env, java_autofill_assistant_ui_controller_,
+      base::android::ConvertUTF8ToJavaString(env, GetDebugContext()));
+}
+
+void UiControllerAndroid::OnCloseButtonClicked() {
+  JNIEnv* env = AttachCurrentThread();
+  // TODO(crbug.com/806868): Move here the logic that shutdowns immediately if
+  // close button is clicked during graceful shutdown.
+  Java_AutofillAssistantUiController_dismissAndShowSnackbar(
+      env, java_autofill_assistant_ui_controller_,
+      base::android::ConvertUTF8ToJavaString(
+          env, l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_STOPPED)));
+}
+
+std::string UiControllerAndroid::GetDebugContext() {
+  return ui_delegate_->GetDebugContext();
 }
 
 // Other methods.
@@ -232,13 +261,6 @@ void UiControllerAndroid::OnGetPaymentInformation(
     }
   }
   std::move(get_payment_information_callback_).Run(std::move(payment_info));
-}
-
-base::android::ScopedJavaLocalRef<jstring>
-UiControllerAndroid::OnRequestDebugContext(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller) {
-  return base::android::ConvertUTF8ToJavaString(env, GetDebugContext());
 }
 
 void UiControllerAndroid::SetChips(std::unique_ptr<std::vector<Chip>> chips) {
@@ -413,9 +435,5 @@ void UiControllerAndroid::UpdateTouchableArea(bool enabled,
 void UiControllerAndroid::ExpandBottomSheet() {
   Java_AutofillAssistantUiController_expandBottomSheet(
       AttachCurrentThread(), java_autofill_assistant_ui_controller_);
-}
-
-std::string UiControllerAndroid::GetDebugContext() const {
-  return ui_delegate_->GetDebugContext();
 }
 }  // namespace autofill_assistant.

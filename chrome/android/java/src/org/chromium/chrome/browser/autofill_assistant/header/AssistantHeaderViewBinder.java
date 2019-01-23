@@ -59,6 +59,12 @@ class AssistantHeaderViewBinder
             } else {
                 view.mProgressBar.disablePulsing();
             }
+        } else if (AssistantHeaderModel.FEEDBACK_BUTTON_CALLBACK == propertyKey) {
+            Runnable listener = model.get(AssistantHeaderModel.FEEDBACK_BUTTON_CALLBACK);
+            view.mFeedbackButton.setOnClickListener(unusedView -> listener.run());
+        } else if (AssistantHeaderModel.CLOSE_BUTTON_CALLBACK == propertyKey) {
+            Runnable listener = model.get(AssistantHeaderModel.CLOSE_BUTTON_CALLBACK);
+            view.mCloseButton.setOnClickListener(unusedView -> listener.run());
         } else {
             assert false : "Unhandled property detected in AssistantHeaderViewBinder!";
         }

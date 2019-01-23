@@ -13,38 +13,15 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
  * Coordinator for the header of the Autofill Assistant.
  */
 public class AssistantHeaderCoordinator {
-    /**
-     * A client for this coordinator.
-     */
-    public interface Delegate {
-        /**
-         * Called when the feedback button is clicked.
-         */
-        void onFeedbackClicked();
-
-        /**
-         * Called when the close button is clicked.
-         */
-        void onCloseClicked();
-    }
-
-    private final Delegate mDelegate;
     private final AssistantHeaderMediator mMediator;
 
-    public AssistantHeaderCoordinator(
-            Context context, View root, AssistantHeaderModel model, Delegate client) {
-        mDelegate = client;
-
+    public AssistantHeaderCoordinator(Context context, View root, AssistantHeaderModel model) {
         // Bind view and mediator through the model.
         AssistantHeaderViewBinder.ViewHolder viewHolder =
                 new AssistantHeaderViewBinder.ViewHolder(context, root);
         AssistantHeaderViewBinder viewBinder = new AssistantHeaderViewBinder();
         PropertyModelChangeProcessor.create(model, viewHolder, viewBinder);
         mMediator = new AssistantHeaderMediator(model);
-
-        // Notify the client when header buttons are clicked.
-        viewHolder.mFeedbackButton.setOnClickListener(unusedView -> mDelegate.onFeedbackClicked());
-        viewHolder.mCloseButton.setOnClickListener(unusedView -> mDelegate.onCloseClicked());
     }
 
     // TODO(crbug.com/806868): Remove all methods here and delete mediator once UI is modified only
