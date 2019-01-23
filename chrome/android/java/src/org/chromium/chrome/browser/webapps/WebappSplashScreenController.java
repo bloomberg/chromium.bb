@@ -5,33 +5,22 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Context;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
-import android.util.DisplayMetrics;
-import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
-import android.widget.FrameLayout;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
-import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.metrics.WebApkUma;
-import org.chromium.chrome.browser.metrics.WebappUma;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.net.NetError;
 import org.chromium.net.NetworkChangeNotifier;
-import org.chromium.webapk.lib.common.splash.SplashLayout;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -57,22 +46,13 @@ public class WebappSplashScreenController extends EmptyTabObserver {
     // No error.
     public static final int ERROR_OK = 0;
 
+    private WebappSplashDelegate mDelegate;
+
     /** Used to schedule splash screen hiding. */
     private CompositorViewHolder mCompositorViewHolder;
 
     /** View to which the splash screen is added. */
     private ViewGroup mParentView;
-
-    /** Whether native was loaded. Native must be loaded in order to record metrics. */
-    private boolean mNativeLoaded;
-
-    /** Whether the splash screen layout was initialized. */
-    private boolean mInitializedLayout;
-
-    private ViewGroup mSplashScreen;
-    private WebappUma mWebappUma;
-
-    private WebApkOfflineDialog mOfflineDialog;
 
     /** Indicates whether reloading is allowed. */
     private boolean mAllowReloads;
@@ -81,13 +61,15 @@ public class WebappSplashScreenController extends EmptyTabObserver {
 
     private boolean mIsForWebApk;
 
+    private boolean mDidShowNetworkErrorDialog;
+
     /** Time that the splash screen was shown. */
     private long mSplashShownTimestamp;
 
     private ObserverList<SplashscreenObserver> mObservers;
 
     public WebappSplashScreenController() {
-        mWebappUma = new WebappUma();
+        mDelegate = new SameActivityWebappSplashDelegate();
         mObservers = new ObserverList<>();
     }
 
@@ -97,36 +79,10 @@ public class WebappSplashScreenController extends EmptyTabObserver {
         mIsForWebApk = webappInfo.isForWebApk();
         mAppName = webappInfo.name();
 
-        Context context = ContextUtils.getApplicationContext();
-        final int backgroundColor = ColorUtils.getOpaqueColor(webappInfo.backgroundColor(
-                ApiCompatibilityUtils.getColor(context.getResources(), R.color.webapp_default_bg)));
-
-        mSplashScreen = new FrameLayout(context);
-        mSplashScreen.setBackgroundColor(backgroundColor);
-        mParentView.addView(mSplashScreen);
-        startSplashscreenTraceEvents();
-
         mSplashShownTimestamp = SystemClock.elapsedRealtime();
+        mDelegate.showSplash(parentView, webappInfo);
+
         notifySplashscreenVisible(mSplashShownTimestamp);
-
-        if (mIsForWebApk) {
-            initializeLayout(webappInfo, backgroundColor, ((WebApkInfo) webappInfo).splashIcon());
-            return;
-        }
-
-        WebappDataStorage storage =
-                WebappRegistry.getInstance().getWebappDataStorage(webappInfo.id());
-        if (storage == null) {
-            initializeLayout(webappInfo, backgroundColor, null);
-            return;
-        }
-
-        storage.getSplashScreenImage(new WebappDataStorage.FetchCallback<Bitmap>() {
-            @Override
-            public void onDataRetrieved(Bitmap splashImage) {
-                initializeLayout(webappInfo, backgroundColor, splashImage);
-            }
-        });
     }
 
     /**
@@ -134,21 +90,23 @@ public class WebappSplashScreenController extends EmptyTabObserver {
      * splashscreen on top.
      */
     public void setViewHierarchyBelowSplashscreen(ViewGroup viewHierarchy) {
+        ViewGroup splashView = mDelegate.getSplashViewIfChildOf(mParentView);
         WarmupManager.transferViewHeirarchy(viewHierarchy, mParentView);
-        mParentView.bringChildToFront(mSplashScreen);
+        if (splashView != null) {
+            mParentView.bringChildToFront(splashView);
+        }
     }
 
     /** Should be called once native has loaded. */
     public void onFinishedNativeInit(Tab tab, CompositorViewHolder compositorViewHolder) {
-        mNativeLoaded = true;
         mCompositorViewHolder = compositorViewHolder;
         tab.addObserver(this);
-        if (mInitializedLayout) mWebappUma.commitMetrics();
+        mDelegate.onNativeLoaded();
     }
 
     @VisibleForTesting
     ViewGroup getSplashScreenForTests() {
-        return mSplashScreen;
+        return mDelegate.getSplashViewIfChildOf(mParentView);
     }
 
     @Override
@@ -186,10 +144,7 @@ public class WebappSplashScreenController extends EmptyTabObserver {
 
         switch (errorCode) {
             case ERROR_OK:
-                if (mOfflineDialog != null) {
-                    mOfflineDialog.cancel();
-                    mOfflineDialog = null;
-                }
+                mDelegate.hideNetworkErrorDialog();
                 break;
             case NetError.ERR_NETWORK_CHANGED:
                 onNetworkChanged(tab);
@@ -202,11 +157,7 @@ public class WebappSplashScreenController extends EmptyTabObserver {
     }
 
     protected boolean canHideSplashScreen() {
-        if (mOfflineDialog == null) return true;
-
-        // {@link mOfflineDialog} is not nulled out when the user closes the network error dialog
-        // via the <Back> key.
-        return !mOfflineDialog.isShowing();
+        return !mDelegate.isNetworkErrorDialogVisible();
     }
 
     private void onNetworkChanged(Tab tab) {
@@ -221,7 +172,13 @@ public class WebappSplashScreenController extends EmptyTabObserver {
     }
 
     private void onNetworkError(final Tab tab, int errorCode) {
-        if (mOfflineDialog != null || tab.getActivity() == null) return;
+        if (tab.getActivity() == null) return;
+
+        // Do not show the network error dialog more than once (e.g. if the user backed out of
+        // the dialog).
+        if (mDidShowNetworkErrorDialog) return;
+
+        mDidShowNetworkErrorDialog = true;
 
         final NetworkChangeNotifier.ConnectionTypeObserver observer =
                 new NetworkChangeNotifier.ConnectionTypeObserver() {
@@ -237,93 +194,31 @@ public class WebappSplashScreenController extends EmptyTabObserver {
                 };
 
         NetworkChangeNotifier.addConnectionTypeObserver(observer);
-        mOfflineDialog = new WebApkOfflineDialog();
-        mOfflineDialog.show(tab.getActivity(), mAppName, errorCode);
+        mDelegate.showNetworkErrorDialog(tab, generateNetworkErrorWebApkDialogMessage(errorCode));
     }
 
-    /** Sets the splash screen layout and sets the splash screen's title and icon. */
-    private void initializeLayout(WebappInfo webappInfo, int backgroundColor, Bitmap splashImage) {
-        mInitializedLayout = true;
+    /** Generates network error dialog message for the given error code. */
+    private String generateNetworkErrorWebApkDialogMessage(int errorCode) {
         Context context = ContextUtils.getApplicationContext();
-        Resources resources = context.getResources();
-
-        Bitmap selectedIcon = splashImage;
-        boolean selectedIconGenerated = false;
-        boolean selectedIconAdaptive = false;
-        if (selectedIcon == null) {
-            selectedIcon = webappInfo.icon();
-            selectedIconGenerated = webappInfo.isIconGenerated();
-            selectedIconAdaptive = webappInfo.isIconAdaptive();
-        }
-        @SplashLayout.IconClassification
-        int selectedIconClassification =
-                SplashLayout.classifyIcon(resources, selectedIcon, selectedIconGenerated);
-
-        SplashLayout.createLayout(context, mSplashScreen, selectedIcon, selectedIconAdaptive,
-                selectedIconClassification, webappInfo.name(),
-                ColorUtils.shouldUseLightForegroundOnBackground(backgroundColor));
-
-        recordUma(resources, webappInfo, selectedIconClassification, selectedIcon,
-                (splashImage != null));
-        if (mNativeLoaded) mWebappUma.commitMetrics();
-    }
-
-    /**
-     * Records splash screen UMA metrics.
-     * @param resources
-     * @param webappInfo
-     * @param selectedIconClassification.
-     * @param selectedIcon The icon used on the splash screen.
-     * @param usingDedicatedIcon Whether the PWA provides different icons for the splash screen and
-     *                           for the app icon.
-     */
-    private void recordUma(Resources resources, WebappInfo webappInfo,
-            @SplashLayout.IconClassification int selectedIconClassification, Bitmap selectedIcon,
-            boolean usingDedicatedIcon) {
-        mWebappUma.recordSplashscreenBackgroundColor(webappInfo.hasValidBackgroundColor()
-                        ? WebappUma.SplashColorStatus.CUSTOM
-                        : WebappUma.SplashColorStatus.DEFAULT);
-        mWebappUma.recordSplashscreenThemeColor(webappInfo.hasValidThemeColor()
-                        ? WebappUma.SplashColorStatus.CUSTOM
-                        : WebappUma.SplashColorStatus.DEFAULT);
-
-        mWebappUma.recordSplashscreenIconType(selectedIconClassification, usingDedicatedIcon);
-        if (selectedIconClassification != SplashLayout.IconClassification.INVALID) {
-            DisplayMetrics displayMetrics = resources.getDisplayMetrics();
-            mWebappUma.recordSplashscreenIconSize(Math.round(
-                    selectedIcon.getScaledWidth(displayMetrics) / displayMetrics.density));
+        switch (errorCode) {
+            case NetError.ERR_INTERNET_DISCONNECTED:
+                return context.getString(R.string.webapk_offline_dialog, mAppName);
+            case NetError.ERR_TUNNEL_CONNECTION_FAILED:
+                return context.getString(
+                        R.string.webapk_network_error_message_tunnel_connection_failed);
+            default:
+                return context.getString(R.string.webapk_cannot_connect_to_site);
         }
     }
 
-    /** Schedules the splash screen hiding once the compositor has finished drawing a frame. */
-    private void hideSplash(final Tab tab, final @SplashHidesReason int reason) {
-        // Don't try to hide the splash screen again if is already hidden.
-        if (mSplashScreen == null) return;
+    /** Hides the splash screen. */
+    private void hideSplash(Tab tab, final @SplashHidesReason int reason) {
+        if (!mDelegate.isSplashVisible()) return;
 
-        if (reason == SplashHidesReason.LOAD_FAILED || reason == SplashHidesReason.CRASH) {
-            animateHidingSplashScreen(tab, reason);
-            return;
-        }
-
-        // Delay hiding the splash screen till the compositor has finished drawing the next frame.
-        // Without this callback we were seeing a short flash of white between the splash screen and
-        // the web content (crbug.com/734500).
-        mCompositorViewHolder.getCompositorView().surfaceRedrawNeededAsync(
-                () -> { animateHidingSplashScreen(tab, reason); });
-    }
-
-    /** Performs the splash screen hiding animation. */
-    private void animateHidingSplashScreen(final Tab tab, final @SplashHidesReason int reason) {
-        if (mSplashScreen == null) return;
-
-        mSplashScreen.animate().alpha(0f).withEndAction(new Runnable() {
+        final Runnable onHiddenCallback = new Runnable() {
             @Override
             public void run() {
-                if (mSplashScreen == null) return;
-                mParentView.removeView(mSplashScreen);
-                finishSplashscreenTraceEvents();
                 tab.removeObserver(WebappSplashScreenController.this);
-                mSplashScreen = null;
                 mCompositorViewHolder = null;
 
                 long splashHiddenTimestamp = SystemClock.elapsedRealtime();
@@ -331,6 +226,17 @@ public class WebappSplashScreenController extends EmptyTabObserver {
 
                 recordSplashHiddenUma(reason, splashHiddenTimestamp);
             }
+        };
+        if (reason == SplashHidesReason.LOAD_FAILED || reason == SplashHidesReason.CRASH) {
+            mDelegate.hideSplash(onHiddenCallback);
+            return;
+        }
+        // Delay hiding the splash screen till the compositor has finished drawing the next frame.
+        // Without this callback we were seeing a short flash of white between the splash screen and
+        // the web content (crbug.com/734500).
+        mCompositorViewHolder.getCompositorView().surfaceRedrawNeededAsync(() -> {
+            if (!mDelegate.isSplashVisible()) return;
+            mDelegate.hideSplash(onHiddenCallback);
         });
     }
 
@@ -342,43 +248,6 @@ public class WebappSplashScreenController extends EmptyTabObserver {
         assert mSplashShownTimestamp != 0;
         RecordHistogram.recordMediumTimesHistogram(HISTOGRAM_SPLASHSCREEN_DURATION,
                 splashHiddenTimestamp - mSplashShownTimestamp, TimeUnit.MILLISECONDS);
-    }
-
-    private static class SingleShotOnDrawListener implements ViewTreeObserver.OnDrawListener {
-        private final View mView;
-        private final Runnable mAction;
-        private boolean mHasRun;
-
-        public static void install(View view, Runnable action) {
-            SingleShotOnDrawListener listener = new SingleShotOnDrawListener(view, action);
-            view.getViewTreeObserver().addOnDrawListener(listener);
-        }
-
-        private SingleShotOnDrawListener(View view, Runnable action) {
-            mView = view;
-            mAction = action;
-        }
-
-        @Override
-        public void onDraw() {
-            if (mHasRun) return;
-            mHasRun = true;
-            mAction.run();
-            // Cannot call removeOnDrawListener within OnDraw, so do on next tick.
-            mView.post(() -> mView.getViewTreeObserver().removeOnDrawListener(this));
-        }
-    };
-
-    private void startSplashscreenTraceEvents() {
-        TraceEvent.startAsync("WebappSplashScreen", hashCode());
-        SingleShotOnDrawListener.install(mParentView,
-                () -> { TraceEvent.startAsync("WebappSplashScreen.visible", hashCode()); });
-    }
-
-    private void finishSplashscreenTraceEvents() {
-        TraceEvent.finishAsync("WebappSplashScreen", hashCode());
-        SingleShotOnDrawListener.install(mParentView,
-                () -> { TraceEvent.finishAsync("WebappSplashScreen.visible", hashCode()); });
     }
 
     /**
