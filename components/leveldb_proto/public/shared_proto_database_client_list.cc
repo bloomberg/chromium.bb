@@ -8,16 +8,27 @@
 
 #include <string>
 
+#include "base/metrics/field_trial_params.h"
 #include "base/stl_util.h"
 
+#include "components/leveldb_proto/internal/leveldb_proto_feature_list.h"
+
 namespace leveldb_proto {
+
+const char* const kDBNameParamPrefix = "migrate_";
 
 // static
 bool SharedProtoDatabaseClientList::ShouldUseSharedDB(
     const std::string& client_name) {
-  // TODO(thildebr): Make this check variations flags instead of just returning
-  // false.
-  return false;
+  if (!base::FeatureList::IsEnabled(kProtoDBSharedMigration))
+    return false;
+
+  std::map<std::string, std::string> params;
+  if (!base::GetFieldTrialParamsByFeature(kProtoDBSharedMigration, &params))
+    return false;
+
+  return base::GetFieldTrialParamByFeatureAsBool(
+      kProtoDBSharedMigration, kDBNameParamPrefix + client_name, false);
 }
 
 }  // namespace leveldb_proto
