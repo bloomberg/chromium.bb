@@ -4,7 +4,6 @@
 
 #include "net/base/network_change_notifier_fuchsia.h"
 
-#include <fuchsia/hardware/ethernet/cpp/fidl.h>
 #include <fuchsia/netstack/cpp/fidl_test_base.h>
 #include <memory>
 #include <utility>
@@ -129,7 +128,7 @@ class FakeNetstack : public fuchsia::netstack::testing::Netstack_TestBase {
   void GetRouteTable(GetRouteTableCallback callback) override {
     std::vector<fuchsia::netstack::RouteTableEntry> table(2);
     table[0] = CreateRouteTableEntry(kDefaultNic, true);
-    table[1] = CreateRouteTableEntry(kSecondaryNic, false);
+    table[1] = CreateRouteTableEntry(kSecondaryNic, true);
     callback(std::move(table));
   }
 
@@ -161,9 +160,8 @@ class NetworkChangeNotifierFuchsiaTest : public testing::Test {
 
   // Creates a NetworkChangeNotifier, which will be seeded with the list of
   // interfaces which have already been added to |netstack_|.
-  void CreateNotifier(uint32_t required_features = 0) {
-    notifier_.reset(new NetworkChangeNotifierFuchsia(std::move(netstack_ptr_),
-                                                     required_features));
+  void CreateNotifier() {
+    notifier_.reset(new NetworkChangeNotifierFuchsia(std::move(netstack_ptr_)));
     NetworkChangeNotifier::AddNetworkChangeObserver(&observer_);
   }
 
@@ -467,27 +465,6 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, FoundWiFi) {
                          CreateIPv4Address(255, 255, 255, 0), {}));
   CreateNotifier();
   EXPECT_EQ(NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI,
-            notifier_->GetCurrentConnectionType());
-}
-
-TEST_F(NetworkChangeNotifierFuchsiaTest, FindsInterfaceWithRequiredFeature) {
-  netstack_.PushInterface(
-      CreateNetInterface(kDefaultNic, fuchsia::netstack::NetInterfaceFlagUp,
-                         fuchsia::hardware::ethernet::INFO_FEATURE_WLAN,
-                         CreateIPv4Address(169, 254, 0, 1),
-                         CreateIPv4Address(255, 255, 255, 0), {}));
-  CreateNotifier(fuchsia::hardware::ethernet::INFO_FEATURE_WLAN);
-  EXPECT_EQ(NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI,
-            notifier_->GetCurrentConnectionType());
-}
-
-TEST_F(NetworkChangeNotifierFuchsiaTest, IgnoresInterfaceWithMissingFeature) {
-  netstack_.PushInterface(
-      CreateNetInterface(kDefaultNic, fuchsia::netstack::NetInterfaceFlagUp, 0,
-                         CreateIPv4Address(169, 254, 0, 1),
-                         CreateIPv4Address(255, 255, 255, 0), {}));
-  CreateNotifier(fuchsia::hardware::ethernet::INFO_FEATURE_WLAN);
-  EXPECT_EQ(NetworkChangeNotifier::ConnectionType::CONNECTION_NONE,
             notifier_->GetCurrentConnectionType());
 }
 
