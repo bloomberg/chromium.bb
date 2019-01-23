@@ -13,10 +13,12 @@
 namespace app_list {
 
 namespace {
+
 // The lowest a value's score is allowed to be before it is deleted regardless
 // of how full the store is.
 static constexpr float kMinScoreBeforeDelete =
     std::numeric_limits<float>::epsilon();
+
 }  // namespace
 
 FrecencyStore::FrecencyStore(int value_limit, float decay_coeff)
@@ -74,15 +76,13 @@ FrecencyStore::GetAll() {
   return values_;
 }
 
-FrecencyStoreProto FrecencyStore::ToProto() const {
-  FrecencyStoreProto proto;
+void FrecencyStore::ToProto(FrecencyStoreProto* proto) const {
+  proto->set_value_limit(value_limit_);
+  proto->set_decay_coeff(decay_coeff_);
+  proto->set_num_updates(num_updates_);
+  proto->set_next_id(next_id_);
 
-  proto.set_value_limit(value_limit_);
-  proto.set_decay_coeff(decay_coeff_);
-  proto.set_num_updates(num_updates_);
-  proto.set_next_id(next_id_);
-
-  auto* proto_values = proto.mutable_values();
+  auto* proto_values = proto->mutable_values();
   for (auto& pair : values_) {
     FrecencyStoreProto::ValueData proto_data;
     proto_data.set_id(pair.second.id);
@@ -90,8 +90,6 @@ FrecencyStoreProto FrecencyStore::ToProto() const {
     proto_data.set_last_num_updates(pair.second.last_num_updates);
     (*proto_values)[pair.first] = proto_data;
   }
-
-  return proto;
 }
 
 void FrecencyStore::FromProto(const FrecencyStoreProto& proto) {

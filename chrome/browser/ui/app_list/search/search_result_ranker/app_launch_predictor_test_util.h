@@ -10,6 +10,8 @@
 #include "base/logging.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_predictor.pb.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/frecency_store.pb.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_predictor.pb.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.pb.h"
 #include "third_party/protobuf/src/google/protobuf/stubs/mathutil.h"
 
 namespace app_list {
@@ -127,6 +129,15 @@ class EquivToProtoLiteImpl<google::protobuf::RepeatedPtrField<T>> {
   }
 };
 
+#define DEFINE_EQUIVTO_PROTO_LITE_DEFAULT(Proto)               \
+  template <>                                                  \
+  class EquivToProtoLiteImpl<Proto> {                          \
+   public:                                                     \
+    bool operator()(const Proto& t1, const Proto& t2) {        \
+      return t1.SerializeAsString() == t2.SerializeAsString(); \
+    }                                                          \
+  };
+
 #define DEFINE_EQUIVTO_PROTO_LITE_1(Proto, f1)          \
   template <>                                           \
   class EquivToProtoLiteImpl<Proto> {                   \
@@ -204,6 +215,10 @@ DEFINE_EQUIVTO_PROTO_LITE_3(AppLaunchPredictorProto,
 
 DEFINE_EQUIVTO_PROTO_LITE_1(FakeAppLaunchPredictorProto, rank_result);
 
+DEFINE_EQUIVTO_PROTO_LITE_1(FakePredictorProto, counts);
+
+DEFINE_EQUIVTO_PROTO_LITE_DEFAULT(FrecencyPredictorProto);
+
 DEFINE_EQUIVTO_PROTO_LITE_5(FrecencyStoreProto,
                             values,
                             value_limit,
@@ -222,6 +237,15 @@ DEFINE_EQUIVTO_PROTO_LITE_1(HourAppLaunchPredictorProto,
 DEFINE_EQUIVTO_PROTO_LITE_2(HourAppLaunchPredictorProto_FrequencyTable,
                             total_counts,
                             frequency);
+
+DEFINE_EQUIVTO_PROTO_LITE_2(RecurrencePredictorProto,
+                            fake_predictor,
+                            frecency_predictor);
+
+DEFINE_EQUIVTO_PROTO_LITE_3(RecurrenceRankerProto,
+                            config_hash,
+                            predictor,
+                            targets);
 
 DEFINE_EQUIVTO_PROTO_LITE_2(SerializedMrfuAppLaunchPredictorProto,
                             num_of_trains,
