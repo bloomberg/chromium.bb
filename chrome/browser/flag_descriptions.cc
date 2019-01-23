@@ -58,6 +58,12 @@ const char kUseMessagesGoogleComDomainDescription[] =
     "Use the messages.google.com domain as part of the \"Messages\" "
     "feature under \"Connected Devices\" settings.";
 
+const char kEnableMessagesWebPushName[] =
+    "Web push in Android Messages integration";
+const char kEnableMessagesWebPushDescription[] =
+    "Use web push for background notificatons in Chrome OS integration "
+    "with Android Messages for Web";
+
 const char kAndroidSiteSettingsUIRefreshName[] =
     "Android Site Settings UI changes.";
 const char kAndroidSiteSettingsUIRefreshDescription[] =

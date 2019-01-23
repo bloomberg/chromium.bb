@@ -41,6 +41,11 @@ const base::Feature kDiscoverApp{"DiscoverApp",
 // If enabled, DriveFS will be used for Drive sync.
 const base::Feature kDriveFs{"DriveFS", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables web push for background notifications in
+// Android Messages Integration on Chrome OS.
+const base::Feature kEnableMessagesWebPush{"EnableMessagesWebPush",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, MyFiles will be a root/volume and user can create other
 // sub-folders and files in addition to the Downloads folder inside MyFiles.
 const base::Feature kMyFilesVolume{"MyFilesVolume",
