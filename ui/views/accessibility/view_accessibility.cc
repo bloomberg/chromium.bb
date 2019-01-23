@@ -90,6 +90,7 @@ std::unique_ptr<AXVirtualView> ViewAccessibility::RemoveVirtualChildView(
       std::move(virtual_children_[cur_index]);
   virtual_children_.erase(virtual_children_.begin() + cur_index);
   child->set_parent_view(nullptr);
+  child->UnsetPopulateDataCallback();
   if (focused_virtual_child_ && child->Contains(focused_virtual_child_))
     focused_virtual_child_ = nullptr;
   return child;

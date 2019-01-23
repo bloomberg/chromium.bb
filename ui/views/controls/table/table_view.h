@@ -17,6 +17,13 @@
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"
 
+namespace ui {
+
+struct AXActionData;
+struct AXNodeData;
+
+}  // namespace ui
+
 // A TableView is a view that displays multiple rows with any number of columns.
 // TableView is driven by a TableModel. The model returns the contents
 // to display. TableModel also has an Observer which is used to notify
@@ -34,6 +41,7 @@
 // sort by way of overriding TableModel::CompareValues().
 namespace views {
 
+class AXVirtualView;
 class FocusRing;
 struct GroupRange;
 class TableGrouper;
@@ -326,6 +334,24 @@ class VIEWS_EXPORT TableView
   bool GetTooltipImpl(const gfx::Point& location,
                       base::string16* tooltip,
                       gfx::Point* tooltip_origin) const;
+
+  // Updates a set of accessibility views that expose the visible table contents
+  // to assistive software.
+  void UpdateVirtualAccessibilityChildren();
+
+  // Updates the internal accessibility state and fires the required
+  // accessibility events to indicate to assistive software which row is active
+  // and which cell is focused, if any.
+  void UpdateAccessibilityFocus();
+
+  // Returns the virtual accessibility view corresponding to the specified row.
+  // |row| should be a view index, not a model index.
+  AXVirtualView* GetVirtualAccessibilityRow(int row);
+
+  // Returns the virtual accessibility view corresponding to the specified cell.
+  // |row| should be a view index, not a model index.
+  // |visible_column_index| indexes into |visible_columns_|.
+  AXVirtualView* GetVirtualAccessibilityCell(int row, int visible_column_index);
 
   ui::TableModel* model_;
 
