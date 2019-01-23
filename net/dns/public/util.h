@@ -25,13 +25,13 @@ NET_EXPORT bool IsValidDoHTemplate(const std::string& server_template,
 
 // Gets the endpoint for the multicast group a socket should join to receive
 // MDNS messages. Such sockets should also bind to the endpoint from
-// GetMDnsReceiveEndPoint().
+// GetMdnsReceiveEndPoint().
 //
 // This is also the endpoint messages should be sent to to send MDNS messages.
 NET_EXPORT IPEndPoint GetMdnsGroupEndPoint(AddressFamily address_family);
 
 // Gets the endpoint sockets should be bound to to receive MDNS messages. Such
-// sockets should also join the multicast group from GetMDnsGroupEndPoint().
+// sockets should also join the multicast group from GetMdnsGroupEndPoint().
 NET_EXPORT IPEndPoint GetMdnsReceiveEndPoint(AddressFamily address_family);
 
 }  // namespace dns_util
