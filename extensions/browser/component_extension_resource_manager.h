@@ -5,6 +5,10 @@
 #ifndef EXTENSIONS_BROWSER_COMPONENT_EXTENSION_RESOURCE_MANAGER_H_
 #define EXTENSIONS_BROWSER_COMPONENT_EXTENSION_RESOURCE_MANAGER_H_
 
+#include <string>
+
+#include "ui/base/template_expressions.h"
+
 namespace base {
 class FilePath;
 }
@@ -25,6 +29,12 @@ class ComponentExtensionResourceManager {
       const base::FilePath& extension_path,
       const base::FilePath& resource_path,
       int* resource_id) const = 0;
+
+  // Returns the i18n template replacements for a component extension if they
+  // exist, or nullptr otherwise. If non-null, the returned value must remain
+  // valid for the life of this ComponentExtensionResourceManager.
+  virtual const ui::TemplateReplacements* GetTemplateReplacementsForExtension(
+      const std::string& extension_id) const = 0;
 };
 
 }  // namespace extensions

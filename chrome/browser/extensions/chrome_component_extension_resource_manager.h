@@ -27,6 +27,8 @@ class ChromeComponentExtensionResourceManager
   bool IsComponentExtensionResource(const base::FilePath& extension_path,
                                     const base::FilePath& resource_path,
                                     int* resource_id) const override;
+  const ui::TemplateReplacements* GetTemplateReplacementsForExtension(
+      const std::string& extension_id) const override;
 
  private:
   void AddComponentResourceEntries(const GritResourceMap* entries, size_t size);
@@ -34,6 +36,10 @@ class ChromeComponentExtensionResourceManager
   // A map from a resource path to the resource ID.  Used by
   // IsComponentExtensionResource.
   std::map<base::FilePath, int> path_to_resource_id_;
+
+  // A map from an extension ID to its i18n template replacements.
+  std::map<std::string, ui::TemplateReplacements>
+      extension_template_replacements_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeComponentExtensionResourceManager);
 };
