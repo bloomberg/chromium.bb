@@ -37,14 +37,17 @@ std::function<R(Args...)> WrapCallbackAsFunction(
 
 }  // namespace
 
-NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia()
+NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
+    uint32_t required_features)
     : NetworkChangeNotifierFuchsia(
           base::fuchsia::ComponentContext::GetDefault()
-              ->ConnectToService<fuchsia::netstack::Netstack>()) {}
+              ->ConnectToService<fuchsia::netstack::Netstack>(),
+          required_features) {}
 
 NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
-    fuchsia::netstack::NetstackPtr netstack)
-    : netstack_(std::move(netstack)) {
+    fuchsia::netstack::NetstackPtr netstack,
+    uint32_t required_features)
+    : netstack_(std::move(netstack)), required_features_(required_features) {
   DCHECK(netstack_);
 
   netstack_.set_error_handler([](zx_status_t status) {
@@ -90,39 +93,52 @@ void NetworkChangeNotifierFuchsia::OnRouteTableReceived(
     base::OnceClosure on_initialized_cb,
     std::vector<fuchsia::netstack::NetInterface> interfaces,
     std::vector<fuchsia::netstack::RouteTableEntry> route_table) {
-  // Find the default interface in the routing table.
-  auto default_route_interface = std::find_if(
-      route_table.begin(), route_table.end(),
-      [](const fuchsia::netstack::RouteTableEntry& rt) {
-        return MaskPrefixLength(
-                   internal::FuchsiaIpAddressToIPAddress(rt.netmask)) == 0;
-      });
-
-  // Find the default interface in the NetInterface list.
-  const fuchsia::netstack::NetInterface* default_interface = nullptr;
-  if (default_route_interface != route_table.end()) {
-    for (const auto& cur_interface : interfaces) {
-      if (cur_interface.id == default_route_interface->nicid) {
-        default_interface = &cur_interface;
-      }
+  // Create a set of NICs that have default routes (ie 0.0.0.0).
+  base::flat_set<uint32_t> default_route_ids;
+  for (const auto& route : route_table) {
+    if (MaskPrefixLength(
+            internal::FuchsiaIpAddressToIPAddress(route.netmask)) == 0) {
+      default_route_ids.insert(route.nicid);
     }
   }
 
-  base::flat_set<IPAddress> addresses;
-  std::string ssid;
   ConnectionType connection_type = CONNECTION_NONE;
-  if (default_interface) {
+  base::flat_set<IPAddress> addresses;
+  for (auto& interface : interfaces) {
+    // Filter out loopback and invalid connection types.
+    if ((internal::ConvertConnectionType(interface) ==
+         NetworkChangeNotifier::CONNECTION_NONE) ||
+        (interface.features &
+         fuchsia::hardware::ethernet::INFO_FEATURE_LOOPBACK)) {
+      continue;
+    }
+
+    // Filter out interfaces that do not meet the |required_features_|.
+    if ((interface.features & required_features_) != required_features_) {
+      continue;
+    }
+
+    // Filter out interfaces with non-default routes.
+    if (!default_route_ids.contains(interface.id)) {
+      continue;
+    }
+
     std::vector<NetworkInterface> flattened_interfaces =
-        internal::NetInterfaceToNetworkInterfaces(*default_interface);
+        internal::NetInterfaceToNetworkInterfaces(interface);
+    if (flattened_interfaces.empty()) {
+      continue;
+    }
+
+    // Add the addresses from this interface to the list of all addresses.
     std::transform(
         flattened_interfaces.begin(), flattened_interfaces.end(),
         std::inserter(addresses, addresses.begin()),
         [](const NetworkInterface& interface) { return interface.address; });
-    if (!flattened_interfaces.empty()) {
+
+    // Set the default connection to the first interface connection found.
+    if (connection_type == CONNECTION_NONE) {
       connection_type = flattened_interfaces.front().type;
     }
-
-    // TODO(https://crbug.com/848355): Treat SSID changes as IP address changes.
   }
 
   bool connection_type_changed = false;
@@ -130,6 +146,8 @@ void NetworkChangeNotifierFuchsia::OnRouteTableReceived(
     base::subtle::Release_Store(&cached_connection_type_, connection_type);
     connection_type_changed = true;
   }
+
+  // TODO(https://crbug.com/848355): Treat SSID changes as IP address changes.
 
   if (addresses != cached_addresses_) {
     std::swap(cached_addresses_, addresses);
