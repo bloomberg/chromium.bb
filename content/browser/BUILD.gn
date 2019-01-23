@@ -88,6 +88,7 @@ jumbo_source_set("browser") {
     "//content/common",
     "//content/common:buildflags",
     "//content/common:mojo_bindings",
+    "//content/public/app:service_manifests",
     "//content/public/common:common_sources",
     "//crypto",
     "//device/base",
