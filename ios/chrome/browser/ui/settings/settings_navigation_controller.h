@@ -24,6 +24,10 @@ class ChromeBrowserState;
 // Notifies the controller that the settings screen is being dismissed.
 - (void)settingsWillBeDismissed;
 
+// Notifies the controller that is popped out from the settings navigation
+// controller.
+- (void)viewControllerWasPopped;
+
 @end
 
 @protocol SettingsNavigationControllerDelegate<NSObject>

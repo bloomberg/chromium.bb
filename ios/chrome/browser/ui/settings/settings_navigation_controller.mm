@@ -295,6 +295,16 @@ initWithRootViewController:(UIViewController*)rootViewController
   }
 }
 
+- (UIViewController*)popViewControllerAnimated:(BOOL)animated {
+  UIViewController* poppedViewController =
+      [super popViewControllerAnimated:animated];
+  if ([poppedViewController
+          respondsToSelector:@selector(viewControllerWasPopped)]) {
+    [poppedViewController performSelector:@selector(viewControllerWasPopped)];
+  }
+  return poppedViewController;
+}
+
 #pragma mark - Private
 
 // Creates an autoreleased "X" button that closes the settings when tapped.
