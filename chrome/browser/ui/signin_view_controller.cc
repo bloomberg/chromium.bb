@@ -8,6 +8,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/dice_tab_helper.h"
@@ -29,7 +30,6 @@
 
 namespace {
 
-#if !defined(OS_CHROMEOS)
 // Returns the sign-in reason for |mode|.
 signin_metrics::Reason GetSigninReasonFromMode(profiles::BubbleViewMode mode) {
   DCHECK(SigninViewController::ShouldShowSigninForMode(mode));
@@ -93,8 +93,6 @@ signin_metrics::PromoAction GetPromoActionForNewAccount(
                    PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT;
 }
 
-#endif
-
 }  // namespace
 
 SigninViewController::SigninViewController() : delegate_(nullptr) {}
@@ -117,9 +115,6 @@ void SigninViewController::ShowSignin(profiles::BubbleViewMode mode,
                                       const GURL& redirect_url) {
   DCHECK(ShouldShowSigninForMode(mode));
 
-#if defined(OS_CHROMEOS)
-  ShowModalSigninDialog(mode, browser, access_point);
-#else
   Profile* profile = browser->profile();
   signin::AccountConsistencyMethod account_consistency =
       AccountConsistencyModeManager::GetMethodForProfile(profile);
@@ -134,27 +129,7 @@ void SigninViewController::ShowSignin(profiles::BubbleViewMode mode,
       account_consistency);
   ShowDiceSigninTab(browser, signin_reason, access_point, promo_action, email,
                     redirect_url);
-#endif
 }
-
-#if defined(OS_CHROMEOS)
-void SigninViewController::ShowModalSigninDialog(
-    profiles::BubbleViewMode mode,
-    Browser* browser,
-    signin_metrics::AccessPoint access_point) {
-  CloseModalSignin();
-  // The delegate will delete itself on request of the UI code when the widget
-  // is closed.
-  delegate_ = SigninViewControllerDelegate::CreateModalSigninDelegate(
-      this, mode, browser, access_point);
-
-  // When the user has a proxy that requires HTTP auth, loading the sign-in
-  // dialog can trigger the HTTP auth dialog.  This means the signin view
-  // controller needs a dialog manager to handle any such dialog.
-  delegate_->AttachDialogManager();
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::SIGN_IN);
-}
-#endif  // defined(OS_CHROMEOS)
 
 void SigninViewController::ShowModalSyncConfirmationDialog(Browser* browser) {
   CloseModalSignin();
@@ -200,7 +175,6 @@ void SigninViewController::ResetModalSigninDelegate() {
   delegate_ = nullptr;
 }
 
-#if !defined(OS_CHROMEOS)
 void SigninViewController::ShowDiceSigninTab(
     Browser* browser,
     signin_metrics::Reason signin_reason,
@@ -242,7 +216,6 @@ void SigninViewController::ShowDiceSigninTab(
   tab_helper->InitializeSigninFlow(signin_url, access_point, signin_reason,
                                    promo_action, redirect_url);
 }
-#endif  // !defined(OS_CHROMEOS)
 
 content::WebContents*
 SigninViewController::GetModalDialogWebContentsForTesting() {

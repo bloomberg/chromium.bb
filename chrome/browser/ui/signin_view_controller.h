@@ -31,6 +31,7 @@ enum class Reason;
 // Class responsible for showing and hiding all sign-in related UIs
 // (modal sign-in, DICE full-tab sign-in page, sync confirmation dialog, sign-in
 // error dialog).
+// This is only used on desktop platforms, not used on Android and ChromeOS.
 class SigninViewController {
  public:
   SigninViewController();
@@ -47,7 +48,6 @@ class SigninViewController {
                   signin_metrics::AccessPoint access_point,
                   const GURL& redirect_url = GURL::EmptyGURL());
 
-#if !defined(OS_CHROMEOS)
   // Shows the DICE-specific sign-in flow: opens a Gaia sign-in webpage in a new
   // tab attached to |browser|.
   void ShowDiceSigninTab(Browser* browser,
@@ -56,7 +56,6 @@ class SigninViewController {
                          signin_metrics::PromoAction promo_action,
                          const std::string& email,
                          const GURL& redirect_url = GURL::EmptyGURL());
-#endif  // !defined(OS_CHROMEOS)
 
   // Shows the modal sync confirmation dialog as a browser-modal dialog on top
   // of the |browser|'s window.
@@ -86,16 +85,6 @@ class SigninViewController {
 
  private:
   friend class login_ui_test_utils::SigninViewControllerTestUtil;
-
-#if defined(OS_CHROMEOS)
-  // Shows the signin flow as a tab modal dialog attached to |browser|'s active
-  // web contents.
-  // |access_point| indicates the access point used to open the Gaia sign in
-  // page.
-  void ShowModalSigninDialog(profiles::BubbleViewMode mode,
-                             Browser* browser,
-                             signin_metrics::AccessPoint access_point);
-#endif
 
   // Returns the web contents of the modal dialog.
   content::WebContents* GetModalDialogWebContentsForTesting();

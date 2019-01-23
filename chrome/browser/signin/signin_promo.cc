@@ -4,22 +4,16 @@
 
 #include "chrome/browser/signin/signin_promo.h"
 
-#include <limits.h>
-
 #include "base/strings/string_number_conversions.h"
-#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/signin/gaia_auth_extension_loader.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_promo_util.h"
-#include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -28,10 +22,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "content/public/browser/url_data_source.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_ui.h"
-#include "content/public/browser/web_ui_data_source.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
@@ -39,8 +29,6 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
-
-using content::WebContents;
 
 namespace signin {
 
@@ -188,40 +176,6 @@ GURL GetEmbeddedPromoURLForTab(signin_metrics::AccessPoint access_point,
                                signin_metrics::Reason reason,
                                bool auto_close) {
   return GetEmbeddedPromoURL(access_point, reason, auto_close);
-}
-
-GURL GetEmbeddedSigninURLFromBubbleViewMode(
-    Profile* profile,
-    profiles::BubbleViewMode mode,
-    signin_metrics::AccessPoint access_point) {
-  switch (mode) {
-    case profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN:
-      return GetEmbeddedPromoURL(
-          access_point, signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
-          false /* auto_close */);
-      break;
-    case profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT:
-      return GetEmbeddedPromoURL(
-          access_point, signin_metrics::Reason::REASON_ADD_SECONDARY_ACCOUNT,
-          false /* auto_close */);
-      break;
-    case profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH: {
-      const SigninErrorController* error_controller =
-          SigninErrorControllerFactory::GetForProfile(profile);
-      CHECK(error_controller);
-      DCHECK(error_controller->HasError());
-      AccountInfo info =
-          AccountTrackerServiceFactory::GetForProfile(profile)->GetAccountInfo(
-              error_controller->error_account_id());
-      return GetEmbeddedReauthURLInternal(
-          access_point, signin_metrics::Reason::REASON_REAUTHENTICATION,
-          info.email);
-      break;
-    }
-    default:
-      NOTREACHED() << "Called with invalid mode=" << mode;
-      return GURL();
-  }
 }
 #endif
 
