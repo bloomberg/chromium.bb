@@ -9,7 +9,8 @@
     android:id="@+id/suggestions_url_view"
     android:minHeight="@dimen/omnibox_suggestion_edit_url_min_height"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content" >
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground" >
 
     <LinearLayout
         android:id="@+id/edit_url_suggestion_icons"
