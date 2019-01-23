@@ -106,7 +106,7 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
     ~DetailedInfo();
 
     DetailedInfo& Init(NodeType type);
-    DetailedInfo& InitHost();
+    DetailedInfo& InitHost(const GURL& origin);
     DetailedInfo& InitCookie(const net::CanonicalCookie* cookie);
     DetailedInfo& InitDatabase(
         const BrowsingDataDatabaseHelper::DatabaseInfo* database_info);
@@ -155,17 +155,14 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
         nullptr;
   };
 
-  using SizeRetrievalCallback =
-      base::RepeatingCallback<void(const url::Origin& origin, int64_t size)>;
-
   CookieTreeNode() {}
   explicit CookieTreeNode(const base::string16& title)
       : ui::TreeNode<CookieTreeNode>(title) {}
   ~CookieTreeNode() override {}
 
-  // Recursively traverse the child nodes of this node and synchronously run
-  // |callback| on each one that has storage data size.
-  virtual void RetrieveSize(const SizeRetrievalCallback& callback);
+  // Recursively traverse the child nodes of this node and collect the storage
+  // size data.
+  virtual int64_t InclusiveSize() const;
 
   // Delete backend storage for this node, and any children nodes. (E.g. delete
   // the cookie from CookieMonster, clear the database, and so forth.)
@@ -197,7 +194,6 @@ class CookieTreeRootNode : public CookieTreeNode {
   // CookieTreeNode methods:
   CookiesTreeModel* GetModel() const override;
   DetailedInfo GetDetailedInfo() const override;
-  void RetrieveSize(const SizeRetrievalCallback& callback) override;
 
  private:
   CookiesTreeModel* model_;
@@ -216,7 +212,7 @@ class CookieTreeHostNode : public CookieTreeNode {
 
   // CookieTreeNode methods:
   DetailedInfo GetDetailedInfo() const override;
-  void RetrieveSize(const SizeRetrievalCallback& callback) override;
+  int64_t InclusiveSize() const override;
 
   // CookieTreeHostNode methods:
   CookieTreeCookiesNode* GetOrCreateCookiesNode();
@@ -245,6 +241,8 @@ class CookieTreeHostNode : public CookieTreeNode {
   bool CanCreateContentException() const;
 
   std::string GetHost() const;
+
+  void UpdateHostUrl(const GURL& url);
 
  private:
   // Pointers to the cookies, databases, local and session storage and appcache

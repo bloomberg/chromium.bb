@@ -292,11 +292,10 @@ bool IsPatternValidForType(const std::string& pattern_string,
 void UpdateDataFromCookiesTree(
     std::map<std::string, std::set<std::string>>* all_sites_map,
     std::map<std::string, int>* origin_size_map,
-    const url::Origin& origin,
+    const GURL& origin,
     int64_t size) {
-  GURL origin_gurl = origin.GetURL();
-  UpdateDataForOrigin(origin_gurl, size, origin_size_map);
-  CreateOrAppendSiteGroupEntryForUrl(all_sites_map, origin_gurl);
+  UpdateDataForOrigin(origin, size, origin_size_map);
+  CreateOrAppendSiteGroupEntryForUrl(all_sites_map, origin);
 }
 
 }  // namespace
@@ -1472,10 +1471,15 @@ void SiteSettingsHandler::GetOriginStorage(
     std::map<std::string, int>* origin_size_map) {
   CHECK(cookies_tree_model_.get());
 
-  // RetrieveSize runs its callback synchronously so binding pointers to members
-  // is safe.
-  cookies_tree_model_->GetRoot()->RetrieveSize(base::BindRepeating(
-      &UpdateDataFromCookiesTree, all_sites_map, origin_size_map));
+  const CookieTreeNode* root = cookies_tree_model_->GetRoot();
+  for (int i = 0; i < root->child_count(); ++i) {
+    const CookieTreeNode* site = root->GetChild(i);
+    int64_t size = site->InclusiveSize();
+    if (size == 0)
+      continue;
+    UpdateDataFromCookiesTree(all_sites_map, origin_size_map,
+                              site->GetDetailedInfo().origin.GetURL(), size);
+  }
 }
 
 void SiteSettingsHandler::GetOriginCookies(

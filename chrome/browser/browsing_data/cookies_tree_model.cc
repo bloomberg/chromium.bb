@@ -187,8 +187,10 @@ CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::Init(
   return *this;
 }
 
-CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitHost() {
+CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitHost(
+    const GURL& origin) {
   Init(TYPE_HOST);
+  this->origin = url::Origin::Create(origin);
   return *this;
 }
 
@@ -312,7 +314,9 @@ CookiesTreeModel* CookieTreeNode::GetModel() const {
   return nullptr;
 }
 
-void CookieTreeNode::RetrieveSize(const SizeRetrievalCallback& callback) {}
+int64_t CookieTreeNode::InclusiveSize() const {
+  return 0;
+}
 
 void CookieTreeNode::AddChildSortedByTitle(
     std::unique_ptr<CookieTreeNode> new_child) {
@@ -386,10 +390,7 @@ class CookieTreeAppCacheNode : public CookieTreeNode {
     return DetailedInfo().InitAppCache(origin_.GetURL(), &*appcache_info_);
   }
 
-  void RetrieveSize(const SizeRetrievalCallback& callback) override {
-    const DetailedInfo info = GetDetailedInfo();
-    callback.Run(info.origin, info.appcache_info->size);
-  }
+  int64_t InclusiveSize() const override { return appcache_info_->size; }
 
  private:
   url::Origin origin_;
@@ -431,10 +432,7 @@ class CookieTreeDatabaseNode : public CookieTreeNode {
     return DetailedInfo().InitDatabase(&*database_info_);
   }
 
-  void RetrieveSize(const SizeRetrievalCallback& callback) override {
-    const DetailedInfo info = GetDetailedInfo();
-    callback.Run(info.origin, info.database_info->size);
-  }
+  int64_t InclusiveSize() const override { return database_info_->size; }
 
  private:
   // |database_info_| is expected to remain valid as long as the
@@ -474,10 +472,7 @@ class CookieTreeLocalStorageNode : public CookieTreeNode {
     return DetailedInfo().InitLocalStorage(&*local_storage_info_);
   }
 
-  void RetrieveSize(const SizeRetrievalCallback& callback) override {
-    const DetailedInfo info = GetDetailedInfo();
-    callback.Run(info.origin, info.local_storage_info->size);
-  }
+  int64_t InclusiveSize() const override { return local_storage_info_->size; }
 
  private:
   // |local_storage_info_| is expected to remain valid as long as the
@@ -558,9 +553,8 @@ class CookieTreeIndexedDBNode : public CookieTreeNode {
     return DetailedInfo().InitIndexedDB(&*usage_info_);
   }
 
-  void RetrieveSize(const SizeRetrievalCallback& callback) override {
-    const DetailedInfo info = GetDetailedInfo();
-    callback.Run(info.origin, info.usage_info->total_size_bytes);
+  int64_t InclusiveSize() const override {
+    return usage_info_->total_size_bytes;
   }
 
  private:
@@ -601,13 +595,12 @@ class CookieTreeFileSystemNode : public CookieTreeNode {
     return DetailedInfo().InitFileSystem(&*file_system_info_);
   }
 
-  void RetrieveSize(const SizeRetrievalCallback& callback) override {
+  int64_t InclusiveSize() const override {
     int64_t size = 0;
-    const DetailedInfo info = GetDetailedInfo();
-    for (auto const& usage : info.file_system_info->usage_map) {
+    for (auto const& usage : file_system_info_->usage_map) {
       size += usage.second;
     }
-    callback.Run(info.origin, size);
+    return size;
   }
 
  private:
@@ -685,9 +678,8 @@ class CookieTreeServiceWorkerNode : public CookieTreeNode {
     return DetailedInfo().InitServiceWorker(&*usage_info_);
   }
 
-  void RetrieveSize(const SizeRetrievalCallback& callback) override {
-    const DetailedInfo info = GetDetailedInfo();
-    callback.Run(info.origin, info.usage_info->total_size_bytes);
+  int64_t InclusiveSize() const override {
+    return usage_info_->total_size_bytes;
   }
 
  private:
@@ -767,9 +759,8 @@ class CookieTreeCacheStorageNode : public CookieTreeNode {
     return DetailedInfo().InitCacheStorage(&*usage_info_);
   }
 
-  void RetrieveSize(const SizeRetrievalCallback& callback) override {
-    const DetailedInfo info = GetDetailedInfo();
-    callback.Run(info.origin, info.usage_info->total_size_bytes);
+  int64_t InclusiveSize() const override {
+    return usage_info_->total_size_bytes;
   }
 
  private:
@@ -811,10 +802,7 @@ class CookieTreeMediaLicenseNode : public CookieTreeNode {
     return DetailedInfo().InitMediaLicense(&*media_license_info_);
   }
 
-  void RetrieveSize(const SizeRetrievalCallback& callback) override {
-    const DetailedInfo info = GetDetailedInfo();
-    callback.Run(info.origin, info.media_license_info->size);
-  }
+  int64_t InclusiveSize() const override { return media_license_info_->size; }
 
  private:
   // |media_license_info_| is expected to remain valid as long as the
@@ -843,8 +831,17 @@ CookieTreeHostNode* CookieTreeRootNode::GetOrCreateHostNode(const GURL& url) {
       children().begin(), children().end(), host_node, HostNodeComparator());
   if (host_node_iterator != children().end() &&
       CookieTreeHostNode::TitleForUrl(url) ==
-      (*host_node_iterator)->GetTitle())
-    return static_cast<CookieTreeHostNode*>(host_node_iterator->get());
+          (*host_node_iterator)->GetTitle()) {
+    CookieTreeHostNode* found_node =
+        static_cast<CookieTreeHostNode*>(host_node_iterator->get());
+    // Cookies node will create fake url with http scheme, so update the url if
+    // there is a more valid url.
+    if (found_node->GetDetailedInfo().origin.GetURL().SchemeIs(
+            url::kHttpScheme) &&
+        url.SchemeIs(url::kHttpsScheme))
+      found_node->UpdateHostUrl(url);
+    return found_node;
+  }
   // Node doesn't exist, insert the new one into the (ordered) children.
   DCHECK(model_);
   return static_cast<CookieTreeHostNode*>(model_->Add(
@@ -857,12 +854,6 @@ CookiesTreeModel* CookieTreeRootNode::GetModel() const {
 
 CookieTreeNode::DetailedInfo CookieTreeRootNode::GetDetailedInfo() const {
   return DetailedInfo().Init(DetailedInfo::TYPE_ROOT);
-}
-
-void CookieTreeRootNode::RetrieveSize(const SizeRetrievalCallback& callback) {
-  for (int i = 0; i < this->child_count(); ++i) {
-    this->GetChild(i)->RetrieveSize(callback);
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -897,10 +888,12 @@ class CookieTreeCollectionNode : public CookieTreeNode {
 
   ~CookieTreeCollectionNode() override {}
 
-  void RetrieveSize(const SizeRetrievalCallback& callback) final {
+  int64_t InclusiveSize() const final {
+    int64_t total_size = 0;
     for (int i = 0; i < this->child_count(); ++i) {
-      this->GetChild(i)->RetrieveSize(callback);
+      total_size += this->GetChild(i)->InclusiveSize();
     }
+    return total_size;
   }
 
  private:
@@ -1195,8 +1188,12 @@ std::string CookieTreeHostNode::GetHost() const {
   return url_.SchemeIsFile() ? file_origin_node_name : url_.host();
 }
 
+void CookieTreeHostNode::UpdateHostUrl(const GURL& url) {
+  this->url_ = url;
+}
+
 CookieTreeNode::DetailedInfo CookieTreeHostNode::GetDetailedInfo() const {
-  return DetailedInfo().InitHost();
+  return DetailedInfo().InitHost(url_);
 }
 
 CookieTreeCookiesNode* CookieTreeHostNode::GetOrCreateCookiesNode() {
@@ -1328,10 +1325,12 @@ bool CookieTreeHostNode::CanCreateContentException() const {
   return !url_.SchemeIsFile();
 }
 
-void CookieTreeHostNode::RetrieveSize(const SizeRetrievalCallback& callback) {
+int64_t CookieTreeHostNode::InclusiveSize() const {
+  int64_t total_size = 0;
   for (int i = 0; i < this->child_count(); ++i) {
-    this->GetChild(i)->RetrieveSize(callback);
+    total_size += this->GetChild(i)->InclusiveSize();
   }
+  return total_size;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
