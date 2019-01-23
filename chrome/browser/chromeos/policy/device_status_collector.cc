@@ -1246,6 +1246,12 @@ void DeviceStatusCollector::SuspendDone(const base::TimeDelta& sleep_duration) {
                        session_manager::SessionState::ACTIVE;
 }
 
+void DeviceStatusCollector::PowerChanged(
+    const power_manager::PowerSupplyProperties& prop) {
+  if (!power_status_callback_.is_null())
+    std::move(power_status_callback_).Run(prop);
+}
+
 void DeviceStatusCollector::UpdateChildUsageTime() {
   if (!report_activity_times_ ||
       !user_manager::UserManager::Get()->IsLoggedInAsChildUser()) {
@@ -1383,14 +1389,18 @@ void DeviceStatusCollector::ReceiveCPUStatistics(const base::Time& timestamp,
   if (report_power_status_) {
     runtime_probe::ProbeRequest request;
     request.add_categories(runtime_probe::ProbeRequest::battery);
+    auto sample = std::make_unique<SampledData>();
+    sample->timestamp = timestamp;
     runtime_probe_->ProbeCategories(
         request, base::BindOnce(&DeviceStatusCollector::SampleProbeData,
-                                weak_factory_.GetWeakPtr(), timestamp));
+                                weak_factory_.GetWeakPtr(), std::move(sample),
+                                SamplingProbeResultCallback()));
   }
 }
 
 void DeviceStatusCollector::SampleProbeData(
-    const base::Time& timestamp,
+    std::unique_ptr<SampledData> sample,
+    SamplingProbeResultCallback callback,
     base::Optional<runtime_probe::ProbeResult> result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!result.has_value())
@@ -1401,11 +1411,9 @@ void DeviceStatusCollector::SampleProbeData(
   if (result.value().battery_size() == 0)
     return;
 
-  std::unique_ptr<SampledData> sample = std::make_unique<SampledData>();
-  sample->timestamp = timestamp;
   for (const auto& battery : result.value().battery()) {
     enterprise_management::BatterySample battery_sample;
-    battery_sample.set_timestamp(timestamp.ToJavaTime());
+    battery_sample.set_timestamp(sample->timestamp.ToJavaTime());
     // Convert uV to mV
     battery_sample.set_voltage(battery.values().voltage_now() / 1000);
     // Convert uAh to mAh
@@ -1415,13 +1423,49 @@ void DeviceStatusCollector::SampleProbeData(
         (battery.values().temperature_smart() - 2731) / 10);
     sample->battery_samples[battery.name()] = battery_sample;
   }
+  SamplingCallback completion_callback;
+  if (!callback.is_null())
+    completion_callback = base::BindOnce(std::move(callback), result);
 
+  // PowerManagerClient::Observer::PowerChanged can be called as a result of
+  // power_manager_->RequestStatusUpdate() as well as for other reasons,
+  // so we store power_status_callback_ here instead of triggering
+  // SampleDischargeRate from PowerChanged().
+  DCHECK(power_status_callback_.is_null());  // Previous sampling is completed.
+
+  power_status_callback_ = base::BindOnce(
+      &DeviceStatusCollector::SampleDischargeRate, weak_factory_.GetWeakPtr(),
+      std::move(sample), std::move(completion_callback));
+  power_manager_->RequestStatusUpdate();
+}
+
+void DeviceStatusCollector::SampleDischargeRate(
+    std::unique_ptr<SampledData> sample,
+    SamplingCallback callback,
+    const power_manager::PowerSupplyProperties& prop) {
+  if (prop.has_battery_discharge_rate()) {
+    int discharge_rate_mW = (int)(prop.has_battery_discharge_rate() * 1000);
+    for (auto it = sample->battery_samples.begin();
+         it != sample->battery_samples.end(); it++) {
+      it->second.set_discharge_rate(discharge_rate_mW);
+    }
+  }
+  AddDataSample(std::move(sample), std::move(callback));
+}
+
+void DeviceStatusCollector::AddDataSample(std::unique_ptr<SampledData> sample,
+                                          SamplingCallback callback) {
   sampled_data_.push_back(std::move(sample));
 
   // If our cache of samples is full, throw out old samples to make room for new
   // sample.
   if (sampled_data_.size() > kMaxResourceUsageSamples)
     sampled_data_.pop_front();
+  // We have two code paths that end here. One is regular sampling, that does
+  // not have final callback, and full report request, that would use callback
+  // to receive ProbeResponse.
+  if (!callback.is_null())
+    std::move(callback).Run();
 }
 
 void DeviceStatusCollector::FetchProbeData(
@@ -1433,16 +1477,22 @@ void DeviceStatusCollector::FetchProbeData(
   if (report_storage_status_)
     request.add_categories(runtime_probe::ProbeRequest::storage);
 
+  auto sample = std::make_unique<SampledData>();
+  sample->timestamp = base::Time::Now();
+  auto completion_callback =
+      base::BindOnce(&DeviceStatusCollector::OnProbeDataFetched,
+                     weak_factory_.GetWeakPtr(), std::move(callback));
+
   runtime_probe_->ProbeCategories(
-      request, base::BindOnce(&DeviceStatusCollector::OnProbeDataFetched,
-                              weak_factory_.GetWeakPtr(), std::move(callback)));
+      request, base::BindOnce(&DeviceStatusCollector::SampleProbeData,
+                              weak_factory_.GetWeakPtr(), std::move(sample),
+                              std::move(completion_callback)));
 }
 
 void DeviceStatusCollector::OnProbeDataFetched(
     policy::DeviceStatusCollector::ProbeDataReceiver callback,
     base::Optional<runtime_probe::ProbeResult> reply) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  SampleProbeData(base::Time(), reply);
   std::move(callback).Run(reply, sampled_data_);
 }
 

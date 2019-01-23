@@ -800,7 +800,9 @@ message BatterySample {
   optional int64 remaining_capacity = 3;
   // Temperature in Celsius.
   optional int32 temperature = 4;
-  // TODO(crbug/916991): We should also include battery charge rate here.
+  // The battery discharge rate measured in mW. Positive if the battery is being
+  // discharged, negative if it's being charged.
+  optional int32 discharge_rate = 5;
 }
 
 // Status of the single battery
