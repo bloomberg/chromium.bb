@@ -13,7 +13,6 @@
 #include "base/task/task_traits.h"
 #include "base/trace_event/malloc_dump_provider.h"
 #include "build/build_config.h"
-#include "components/services/heap_profiling/public/cpp/allocator_shim.h"
 #include "components/services/heap_profiling/public/cpp/sampling_profiler_wrapper.h"
 #include "components/services/heap_profiling/public/cpp/sender_pipe.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
@@ -56,7 +55,7 @@ Client::~Client() {
     return;
 
   sampling_profiler_->StopProfiling();
-  FlushBuffersAndClosePipe();
+  SamplingProfilerWrapper::FlushBuffersAndClosePipe();
 
   base::trace_event::MallocDumpProvider::GetInstance()->EnableMetrics();
 
@@ -125,14 +124,11 @@ void Client::StartProfiling(mojom::ProfilingParamsPtr params) {
 }
 
 void Client::FlushMemlogPipe(uint32_t barrier_id) {
-  AllocatorShimFlushPipe(barrier_id);
+  SamplingProfilerWrapper::FlushPipe(barrier_id);
 }
 
 void Client::StartProfilingInternal(mojom::ProfilingParamsPtr params) {
-  uint32_t sampling_rate = params->sampling_rate;
-  InitAllocationRecorder(sender_pipe_.get(), std::move(params));
-  sampling_profiler_->StartProfiling(sampling_rate);
-  AllocatorHooksHaveBeenInitialized();
+  sampling_profiler_->StartProfiling(sender_pipe_.get(), std::move(params));
 }
 
 }  // namespace heap_profiling

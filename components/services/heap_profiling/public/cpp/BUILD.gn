@@ -4,8 +4,6 @@
 
 static_library("cpp") {
   sources = [
-    "allocator_shim.cc",
-    "allocator_shim.h",
     "client.cc",
     "client.h",
     "controller.cc",
