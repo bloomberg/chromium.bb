@@ -1110,6 +1110,8 @@ class CORE_EXPORT Element : public ContainerNode {
 
   void NotifyDisplayLockDidRecalcStyle();
 
+  bool IsDisplayLockedForFocus() const;
+
   Member<ElementData> element_data_;
 };
 
