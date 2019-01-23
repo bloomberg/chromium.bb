@@ -4205,6 +4205,13 @@ jumbo_split_static_library("browser") {
       "nacl_host/nacl_infobar_delegate.h",
     ]
     deps += [ "//components/nacl/browser" ]
+
+    if (enable_nacl) {
+      deps += [ "//components/nacl/loader:nacl_loader_manifest" ]
+      if (is_win && target_cpu == "x86") {
+        deps += [ "//components/nacl/broker:nacl_broker_manifest" ]
+      }
+    }
   }
 
   if (enable_offline_pages) {

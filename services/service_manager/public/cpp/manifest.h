@@ -11,7 +11,6 @@
 
 #include "base/component_export.h"
 #include "base/files/file_path.h"
-#include "base/values.h"
 
 namespace service_manager {
 
@@ -258,11 +257,6 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Manifest {
 
   Manifest& operator=(const Manifest&);
   Manifest& operator=(Manifest&&);
-
-  // Creates a new Manifest object from a |base::Value| representation of the
-  // deprecated JSON manifest format. This is a temporary function and should
-  // only be used to transition services away from JSON manifests.
-  static Manifest FromValueDeprecated(std::unique_ptr<base::Value> value_ptr);
 
   // Amends this Manifest with a subset of |other|. Namely, exposed and required
   // capabilities, exposed and required interface filter capabilities, packaged

@@ -332,6 +332,13 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+#if BUILDFLAG(ENABLE_NACL)
+#include "components/nacl/loader/nacl_loader_manifest.h"
+#if defined(OS_WIN) && defined(ARCH_CPU_X86)
+#include "components/nacl/broker/nacl_broker_manifest.h"
+#endif
+#endif
+
 #if defined(OS_WIN)
 #include "base/strings/string_tokenizer.h"
 #include "chrome/browser/chrome_browser_main_win.h"
@@ -3930,17 +3937,17 @@ ChromeContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   return base::nullopt;
 }
 
-std::vector<content::ContentBrowserClient::ServiceManifestInfo>
+std::vector<service_manager::Manifest>
 ChromeContentBrowserClient::GetExtraServiceManifests() {
-  return std::vector<content::ContentBrowserClient::ServiceManifestInfo>({
+  return std::vector<service_manager::Manifest> {
+    GetChromeRendererManifest(),
 #if BUILDFLAG(ENABLE_NACL)
-    {nacl::kNaClLoaderServiceName, IDR_NACL_LOADER_MANIFEST},
-#if defined(OS_WIN)
-        {nacl::kNaClBrokerServiceName, IDR_NACL_BROKER_MANIFEST},
+        nacl_loader::GetManifest(),
+#if defined(OS_WIN) && defined(ARCH_CPU_X86)
+        nacl_broker::GetManifest(),
 #endif  // defined(OS_WIN)
 #endif  // BUILDFLAG(ENABLE_NACL)
-        {chrome::mojom::kRendererServiceName, -1, GetChromeRendererManifest()},
-  });
+  };
 }
 
 std::vector<std::string> ChromeContentBrowserClient::GetStartupServices() {

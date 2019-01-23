@@ -8,10 +8,8 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "base/json/json_reader.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
-#include "base/values.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -95,102 +93,6 @@ TEST(ManifestTest, BasicBuilder) {
   EXPECT_EQ(manifest.packaged_services[0].service_name,
             GetPackagedService1Manifest().service_name);
   EXPECT_EQ(3u, manifest.preloaded_files.size());
-}
-
-TEST(ManifestTest, FromValueDeprecated) {
-  constexpr const char kTestManifestJson[] = R"(
-    {
-      "name": "foo",
-      "display_name": "bar",
-      "sandbox_type": "utility",
-      "services": [
-        { "name": "packaged1" },
-        { "name": "packaged2" }
-      ],
-      "options": {
-        "can_connect_to_other_services_as_any_user": true,
-        "can_connect_to_other_services_with_any_instance_name": true,
-        "can_create_other_service_instances": true,
-        "instance_sharing": "singleton"
-      },
-      "interface_provider_specs": {
-        "service_manager:connector": {
-          "provides": {
-            "cap1": ["interface1", "interface2"],
-            "cap2": ["interface3"],
-            "cap3": []
-          },
-          "requires": {
-            "a_service": ["cap3"],
-            "another_service": ["cap4", "cap5"],
-            "one_more_service": []
-          }
-        },
-        "navigation:frame": {
-          "provides": {
-            "cap6": ["interface4"]
-          },
-          "requires": {
-            "yet_another_service": ["cap7", "cap8"]
-          }
-        }
-      }
-    }
-  )";
-  const Manifest manifest{
-      Manifest::FromValueDeprecated(base::JSONReader::Read(kTestManifestJson))};
-
-  EXPECT_EQ("foo", manifest.service_name);
-  EXPECT_EQ("bar", manifest.display_name.raw_string);
-
-  EXPECT_EQ("utility", manifest.options.sandbox_type);
-  EXPECT_EQ(Manifest::InstanceSharingPolicy::kSingleton,
-            manifest.options.instance_sharing_policy);
-  EXPECT_EQ(true, manifest.options.can_connect_to_instances_in_any_group);
-  EXPECT_EQ(true, manifest.options.can_connect_to_instances_with_any_id);
-  EXPECT_EQ(true, manifest.options.can_register_other_service_instances);
-
-  const auto& exposed_capabilities = manifest.exposed_capabilities;
-  ASSERT_EQ(3u, exposed_capabilities.size());
-  EXPECT_EQ("cap1", exposed_capabilities[0].capability_name);
-  EXPECT_THAT(exposed_capabilities[0].interface_names,
-              ElementsAre("interface1", "interface2"));
-  EXPECT_EQ("cap2", exposed_capabilities[1].capability_name);
-  EXPECT_THAT(exposed_capabilities[1].interface_names,
-              ElementsAre("interface3"));
-  EXPECT_EQ("cap3", exposed_capabilities[2].capability_name);
-  EXPECT_TRUE(exposed_capabilities[2].interface_names.empty());
-
-  const auto& required_capabilities = manifest.required_capabilities;
-  ASSERT_EQ(4u, required_capabilities.size());
-  EXPECT_EQ("a_service", required_capabilities[0].service_name);
-  EXPECT_EQ("cap3", required_capabilities[0].capability_name);
-  EXPECT_EQ("another_service", required_capabilities[1].service_name);
-  EXPECT_EQ("cap4", required_capabilities[1].capability_name);
-  EXPECT_EQ("another_service", required_capabilities[2].service_name);
-  EXPECT_EQ("cap5", required_capabilities[2].capability_name);
-  EXPECT_EQ("one_more_service", required_capabilities[3].service_name);
-  EXPECT_EQ("", required_capabilities[3].capability_name);
-
-  const auto& exposed_filters = manifest.exposed_interface_filter_capabilities;
-  ASSERT_EQ(1u, exposed_filters.size());
-  EXPECT_EQ("navigation:frame", exposed_filters[0].filter_name);
-  EXPECT_EQ("cap6", exposed_filters[0].capability_name);
-  EXPECT_THAT(exposed_filters[0].interface_names, ElementsAre("interface4"));
-
-  const auto& required_filters =
-      manifest.required_interface_filter_capabilities;
-  ASSERT_EQ(2u, required_filters.size());
-  EXPECT_EQ("navigation:frame", required_filters[0].filter_name);
-  EXPECT_EQ("yet_another_service", required_filters[0].service_name);
-  EXPECT_EQ("cap7", required_filters[0].capability_name);
-  EXPECT_EQ("navigation:frame", required_filters[1].filter_name);
-  EXPECT_EQ("yet_another_service", required_filters[1].service_name);
-  EXPECT_EQ("cap8", required_filters[1].capability_name);
-
-  ASSERT_EQ(2u, manifest.packaged_services.size());
-  EXPECT_EQ("packaged1", manifest.packaged_services[0].service_name);
-  EXPECT_EQ("packaged2", manifest.packaged_services[1].service_name);
 }
 
 TEST(ManifestTest, Amend) {

@@ -675,10 +675,6 @@
         <include name="IDR_IME_WINDOW_CLOSE_C" file="resources\input_ime\ime_window_close_click.png" type="BINDATA" />
         <include name="IDR_IME_WINDOW_CLOSE_H" file="resources\input_ime\ime_window_close_hover.png" type="BINDATA" />
       </if>
-      <include name="IDR_NACL_LOADER_MANIFEST" file="../../components/nacl/loader/nacl_loader_manifest.json" type="BINDATA" />
-      <if expr="is_win">
-        <include name="IDR_NACL_BROKER_MANIFEST" file="../../components/nacl/broker/nacl_broker_manifest.json" type="BINDATA" />
-      </if>
       <if expr="is_win">
         <include name="IDR_WELCOME_WIN10_DEFAULT_WEBP" file="resources\welcome\default.webp" type="BINDATA" />
         <include name="IDR_WELCOME_WIN10_PIN_WEBP" file="resources\welcome\pin.webp" type="BINDATA" />
