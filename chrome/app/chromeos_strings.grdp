@@ -2257,8 +2257,8 @@
   <message name="IDS_3G_DATASAVER_TITLE" desc="Title of the 3G data notification prompting user to install Data Saver.">
     You are using mobile data
   </message>
-  <message name="IDS_3G_DATASAVER_MESSAGE" desc="Text of the 3G data notification prompting user to install Lite mode.">
-    Browse faster and use less data with Lite mode. Click to learn more.
+  <message name="IDS_3G_DATASAVER_MESSAGE" desc="Text of the 3G data notification prompting user to install Data Saver.">
+    Save data and browse faster using Google Data Saver. Click to learn more.
   </message>
 
   <!-- chrome://mobilesetup strings -->
