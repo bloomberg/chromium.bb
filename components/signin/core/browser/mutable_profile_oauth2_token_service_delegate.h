@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_MUTABLE_PROFILE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
-#define CHROME_BROWSER_SIGNIN_MUTABLE_PROFILE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_MUTABLE_PROFILE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_MUTABLE_PROFILE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
 
 #include <memory>
 #include <vector>
@@ -22,10 +22,8 @@
 #include "net/base/backoff_entry.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 
+class PrefRegistrySimple;
 class SigninClient;
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
 
 class MutableProfileOAuth2TokenServiceDelegate
     : public OAuth2TokenServiceDelegate,
@@ -45,7 +43,7 @@ class MutableProfileOAuth2TokenServiceDelegate
       FixRequestErrorCallback fix_request_error_callback);
   ~MutableProfileOAuth2TokenServiceDelegate() override;
 
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Overridden from OAuth2TokenServiceDelegate.
   OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
@@ -205,7 +203,7 @@ class MutableProfileOAuth2TokenServiceDelegate
 
   // Used to verify that certain methods are called only on the thread on which
   // this instance was created.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // Used to rate-limit network token requests so as to not overload the server.
   net::BackoffEntry::Policy backoff_policy_;

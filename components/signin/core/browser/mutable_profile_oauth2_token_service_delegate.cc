@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/mutable_profile_oauth2_token_service_delegate.h"
+#include "components/signin/core/browser/mutable_profile_oauth2_token_service_delegate.h"
 
 #include <stddef.h>
 
@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
-#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_client.h"
@@ -261,9 +261,9 @@ MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken::
   RecordRefreshTokenRevocationRequestEvent(
       TokenRevocationRequestProgress::kRequestCreated);
   client->DelayNetworkCall(
-      base::Bind(&MutableProfileOAuth2TokenServiceDelegate::
-                     RevokeServerRefreshToken::Start,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&MutableProfileOAuth2TokenServiceDelegate::
+                              RevokeServerRefreshToken::Start,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken::
@@ -274,8 +274,7 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken::
 }
 
 MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken::
-    ~RevokeServerRefreshToken() {
-}
+    ~RevokeServerRefreshToken() {}
 
 bool MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken::
     ShouldRetry(GaiaAuthConsumer::TokenRevocationStatus status) {
@@ -369,7 +368,7 @@ MutableProfileOAuth2TokenServiceDelegate::
 
 // static
 void MutableProfileOAuth2TokenServiceDelegate::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
+    PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kTokenServiceDiceCompatible, false);
 }
 
@@ -733,7 +732,7 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
 void MutableProfileOAuth2TokenServiceDelegate::UpdateCredentials(
     const std::string& account_id,
     const std::string& refresh_token) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!account_id.empty());
   DCHECK(!refresh_token.empty());
 
@@ -753,7 +752,7 @@ void MutableProfileOAuth2TokenServiceDelegate::UpdateCredentials(
 void MutableProfileOAuth2TokenServiceDelegate::UpdateCredentialsInMemory(
     const std::string& account_id,
     const std::string& refresh_token) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!account_id.empty());
   DCHECK(!refresh_token.empty());
 
@@ -811,7 +810,7 @@ void MutableProfileOAuth2TokenServiceDelegate::PersistCredentials(
 void MutableProfileOAuth2TokenServiceDelegate::RevokeAllCredentials() {
   if (!can_revoke_credentials_)
     return;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   VLOG(1) << "MutablePO2TS::RevokeAllCredentials";
 
@@ -902,7 +901,7 @@ void MutableProfileOAuth2TokenServiceDelegate::OnConnectionChanged(
 }
 
 const net::BackoffEntry*
-    MutableProfileOAuth2TokenServiceDelegate::BackoffEntry() const {
+MutableProfileOAuth2TokenServiceDelegate::BackoffEntry() const {
   return &backoff_entry_;
 }
 
@@ -929,7 +928,7 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeCredentialsImpl(
     const std::string& account_id,
     bool revoke_on_server) {
   ValidateAccountId(account_id);
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (refresh_tokens_.count(account_id) > 0) {
     VLOG(1) << "MutablePO2TS::RevokeCredentials for account_id=" << account_id;
