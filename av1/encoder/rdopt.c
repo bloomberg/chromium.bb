@@ -5702,7 +5702,7 @@ static int predict_skip_flag(MACROBLOCK *x, BLOCK_SIZE bsize, int64_t *dist,
   param.tx_type = DCT_DCT;
   param.tx_size = max_tx_size;
   param.bd = xd->bd;
-  param.is_hbd = get_bitdepth_data_path_index(xd);
+  param.is_hbd = is_cur_buf_hbd(xd);
   param.lossless = 0;
   param.tx_set_type = av1_get_ext_tx_set_type(
       param.tx_size, is_inter_block(xd->mi[0]), reduced_tx_set);
@@ -7724,7 +7724,7 @@ static int64_t pick_interintra_wedge(const AV1_COMP *const cpi,
   const int bh = block_size_high[bsize];
   DECLARE_ALIGNED(32, int16_t, residual1[MAX_SB_SQUARE]);  // src - pred1
   DECLARE_ALIGNED(32, int16_t, diff10[MAX_SB_SQUARE]);     // pred1 - pred0
-  if (get_bitdepth_data_path_index(xd)) {
+  if (is_cur_buf_hbd(xd)) {
     aom_highbd_subtract_block(bh, bw, residual1, bw, src->buf, src->stride,
                               CONVERT_TO_BYTEPTR(p1), bw, xd->bd);
     aom_highbd_subtract_block(bh, bw, diff10, bw, CONVERT_TO_BYTEPTR(p1), bw,
@@ -7803,7 +7803,7 @@ static void get_inter_predictors_masked_compound(
   av1_build_inter_predictors_for_planes_single_buf(
       xd, bsize, 0, 0, mi_row, mi_col, 1, preds1, strides, can_use_previous);
   const struct buf_2d *const src = &x->plane[0].src;
-  if (get_bitdepth_data_path_index(xd)) {
+  if (is_cur_buf_hbd(xd)) {
     aom_highbd_subtract_block(bh, bw, residual1, bw, src->buf, src->stride,
                               CONVERT_TO_BYTEPTR(*preds1), bw, xd->bd);
     aom_highbd_subtract_block(bh, bw, diff10, bw, CONVERT_TO_BYTEPTR(*preds1),

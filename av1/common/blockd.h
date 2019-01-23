@@ -596,7 +596,7 @@ typedef struct macroblockd {
   uint8_t *tmp_obmc_bufs[2];
 } MACROBLOCKD;
 
-static INLINE int get_bitdepth_data_path_index(const MACROBLOCKD *xd) {
+static INLINE int is_cur_buf_hbd(const MACROBLOCKD *xd) {
   return xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH ? 1 : 0;
 }
 

@@ -171,7 +171,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
       txfm_param.tx_size, is_inter_block(mbmi), cm->reduced_tx_set_used);
 
   txfm_param.bd = xd->bd;
-  txfm_param.is_hbd = get_bitdepth_data_path_index(xd);
+  txfm_param.is_hbd = is_cur_buf_hbd(xd);
 
   av1_fwd_txfm(src_diff, coeff, diff_stride, &txfm_param);
 
@@ -431,7 +431,7 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
 
   if (p->eobs[block] > 0) {
     txfm_param.bd = xd->bd;
-    txfm_param.is_hbd = get_bitdepth_data_path_index(xd);
+    txfm_param.is_hbd = is_cur_buf_hbd(xd);
     txfm_param.tx_type = DCT_DCT;
     txfm_param.tx_size = tx_size;
     txfm_param.eob = p->eobs[block];
