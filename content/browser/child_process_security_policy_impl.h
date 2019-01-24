@@ -168,14 +168,14 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // this method exactly once.
   void Add(int child_id);
 
-  // Upon destruction, child processess should unregister themselves by caling
+  // Upon destruction, child processes should unregister themselves by calling
   // this method exactly once.
   //
-  // Note: Pre-Remove() permissions remain in effect until the task posted
-  // to the IO thread by this call runs AND the task posted, by that IO thread
-  // task, to the UI thread removes the entry from |pending_remove_state_|.
-  // This UI -> IO -> UI task sequence ensures that any pending tasks on either
-  // thread for this |child_id| are allowed to run before access is completely
+  // Note: Pre-Remove() permissions remain in effect on the IO thread until
+  // the task posted to the IO thread by this call runs and removes the entry
+  // from |pending_remove_state_|.
+  // This UI -> IO task sequence ensures that any pending tasks, on the IO
+  // thread, for this |child_id| are allowed to run before access is completely
   // revoked.
   void Remove(int child_id);
 
@@ -469,10 +469,9 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
   // This map holds the SecurityState for a child process after Remove()
   // is called on the UI thread. An entry stays in this map until a task has
-  // run on the IO thread and then a task posted from there runs on the UI
-  // thread. This is necessary to provide consistent security decisions and
-  // avoid races between the UI & IO threads during child process shutdown.
-  // This separate map is used to preserve SecurityState info AND
+  // run on the IO thread. This is necessary to provide consistent security
+  // decisions and avoid races between the UI & IO threads during child process
+  // shutdown. This separate map is used to preserve SecurityState info AND
   // preventing mutation of that state after Remove() is called.
   SecurityStateMap pending_remove_state_ GUARDED_BY(lock_);
 
