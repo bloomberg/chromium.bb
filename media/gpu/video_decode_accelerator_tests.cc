@@ -229,6 +229,32 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream_MultipleOutstandingDecodes) {
   EXPECT_EQ(0u, frame_validator_->GetMismatchedFramesCount());
 }
 
+// Reset the decoder immediately when encountering the first config info in a
+// H.264 video stream. After resetting the video is played until the end.
+TEST_F(VideoDecoderTest, ResetAfterFirstConfigInfo) {
+  // This test is only relevant for H.264 video streams.
+  if (g_env->video_->Profile() < H264PROFILE_MIN ||
+      g_env->video_->Profile() > H264PROFILE_MAX)
+    GTEST_SKIP();
+
+  auto tvp = CreateVideoPlayer(g_env->video_);
+
+  tvp->PlayUntil(VideoPlayerEvent::kConfigInfo);
+  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kConfigInfo));
+  tvp->Reset();
+  EXPECT_TRUE(tvp->WaitForResetDone());
+  size_t numFramesDecoded = tvp->GetFrameDecodedCount();
+  tvp->Play();
+  EXPECT_TRUE(tvp->WaitForFlushDone());
+
+  EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
+  EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
+  EXPECT_EQ(tvp->GetFrameDecodedCount(),
+            numFramesDecoded + g_env->video_->NumFrames());
+  EXPECT_GE(tvp->GetEventCount(VideoPlayerEvent::kConfigInfo), 1u);
+  EXPECT_EQ(0u, frame_validator_->GetMismatchedFramesCount());
+}
+
 }  // namespace test
 }  // namespace media
 

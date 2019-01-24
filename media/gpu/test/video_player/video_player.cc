@@ -79,17 +79,22 @@ void VideoPlayer::Destroy() {
 
 void VideoPlayer::Play() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DVLOGF(4);
+
+  // Play until the end of the video.
+  PlayUntil(VideoPlayerEvent::kNumEvents, 0);
+}
+
+void VideoPlayer::PlayUntil(VideoPlayerEvent event, size_t event_count) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(video_player_state_, VideoPlayerState::kIdle);
   DCHECK(video_);
   DVLOGF(4);
 
   // Start decoding the video.
+  play_until_ = std::make_pair(event, event_count);
   video_player_state_ = VideoPlayerState::kDecoding;
   decoder_client_->Play();
-}
-
-void VideoPlayer::Stop() {
-  NOTIMPLEMENTED();
 }
 
 void VideoPlayer::Reset() {
@@ -187,15 +192,25 @@ size_t VideoPlayer::GetFrameDecodedCount() const {
   return GetEventCount(VideoPlayerEvent::kFrameDecoded);
 }
 
-void VideoPlayer::NotifyEvent(VideoPlayerEvent event) {
+bool VideoPlayer::NotifyEvent(VideoPlayerEvent event) {
   base::AutoLock auto_lock(event_lock_);
   if (event == VideoPlayerEvent::kFlushDone ||
       event == VideoPlayerEvent::kResetDone) {
     video_player_state_ = VideoPlayerState::kIdle;
   }
+
   video_player_events_.push_back(event);
   video_player_event_counts_[static_cast<size_t>(event)]++;
   event_cv_.Signal();
+
+  // Check whether video playback should be paused after this event.
+  if (play_until_.first == event &&
+      play_until_.second ==
+          video_player_event_counts_[static_cast<size_t>(event)]) {
+    video_player_state_ = VideoPlayerState::kIdle;
+    return false;
+  }
+  return true;
 }
 
 }  // namespace test
