@@ -249,13 +249,8 @@ void Tab::Layout() {
   if (showing_icon_) {
     // Height should go to the bottom of the tab for the crashed tab animation
     // to pop out of the bottom.
-    favicon_bounds.set_y(
-        contents_rect.y() +
-        Center(contents_rect.height(),
-               gfx::kFaviconSize + icon_->GetInsets().height()));
-    favicon_bounds.set_size(
-        gfx::Size(icon_->GetPreferredSize().width(),
-                  contents_rect.height() - favicon_bounds.y()));
+    favicon_bounds.set_y(contents_rect.y() +
+                         Center(contents_rect.height(), gfx::kFaviconSize));
     if (center_icon_) {
       // When centering the favicon, the favicon is allowed to escape the normal
       // contents rect.
@@ -263,6 +258,11 @@ void Tab::Layout() {
     } else {
       MaybeAdjustLeftForPinnedTab(&favicon_bounds, gfx::kFaviconSize);
     }
+    // Add space for insets outside the favicon bounds.
+    favicon_bounds.Inset(-icon_->GetInsets());
+    favicon_bounds.set_size(
+        gfx::Size(icon_->GetPreferredSize().width(),
+                  contents_rect.height() - favicon_bounds.y()));
   }
   icon_->SetBoundsRect(favicon_bounds);
   icon_->SetVisible(showing_icon_);
@@ -339,7 +339,8 @@ void Tab::Layout() {
       // icon view width (which will include extra room for the alert
       // indicator), but rather the normal favicon width which is what it will
       // look like.
-      const int after_favicon = favicon_bounds.x() + gfx::kFaviconSize +
+      const int after_favicon = favicon_bounds.x() + icon_->GetInsets().left() +
+                                gfx::kFaviconSize +
                                 GetLayoutConstant(TAB_PRE_TITLE_PADDING);
       title_left = std::max(title_left, after_favicon);
     }
