@@ -533,6 +533,7 @@ void OverlayWindowViews::CreateCustomControl(
   base::string16 custom_button_label = base::UTF8ToUTF16(info.label);
   control_button->SetAccessibleName(custom_button_label);
   control_button->SetTooltipText(custom_button_label);
+  control_button->SetInstallFocusRingOnFocus(true);
   control_button->SetFocusForPlatform();
 }
 
