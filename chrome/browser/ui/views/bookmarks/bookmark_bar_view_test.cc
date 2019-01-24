@@ -47,7 +47,7 @@
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window.h"
 #include "ui/base/clipboard/clipboard.h"
-#include "ui/base/test/test_clipboard.h"
+#include "ui/base/clipboard/test/test_clipboard.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/background.h"

@@ -78,9 +78,8 @@ class VIEWS_EXPORT SubmenuView : public View,
   void PaintChildren(const PaintInfo& paint_info) override;
 
   // Drag and drop methods. These are forwarded to the MenuController.
-  bool GetDropFormats(
-      int* formats,
-      std::set<ui::Clipboard::FormatType>* format_types) override;
+  bool GetDropFormats(int* formats,
+                      std::set<ui::ClipboardFormatType>* format_types) override;
   bool AreDropTypesRequired() override;
   bool CanDrop(const OSExchangeData& data) override;
   void OnDragEntered(const ui::DropTargetEvent& event) override;

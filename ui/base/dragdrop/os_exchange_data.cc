@@ -6,6 +6,7 @@
 
 #include "base/pickle.h"
 #include "build/build_config.h"
+#include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 #include "url/gurl.h"
 
@@ -56,7 +57,7 @@ void OSExchangeData::SetFilenames(
   provider_->SetFilenames(filenames);
 }
 
-void OSExchangeData::SetPickledData(const Clipboard::FormatType& format,
+void OSExchangeData::SetPickledData(const ClipboardFormatType& format,
                                     const base::Pickle& data) {
   provider_->SetPickledData(format, data);
 }
@@ -79,7 +80,7 @@ bool OSExchangeData::GetFilenames(std::vector<FileInfo>* filenames) const {
   return provider_->GetFilenames(filenames);
 }
 
-bool OSExchangeData::GetPickledData(const Clipboard::FormatType& format,
+bool OSExchangeData::GetPickledData(const ClipboardFormatType& format,
                                     base::Pickle* data) const {
   return provider_->GetPickledData(format, data);
 }
@@ -96,14 +97,13 @@ bool OSExchangeData::HasFile() const {
   return provider_->HasFile();
 }
 
-bool OSExchangeData::HasCustomFormat(
-    const Clipboard::FormatType& format) const {
+bool OSExchangeData::HasCustomFormat(const ClipboardFormatType& format) const {
   return provider_->HasCustomFormat(format);
 }
 
 bool OSExchangeData::HasAnyFormat(
     int formats,
-    const std::set<Clipboard::FormatType>& format_types) const {
+    const std::set<ClipboardFormatType>& format_types) const {
   if ((formats & STRING) != 0 && HasString())
     return true;
   if ((formats & URL) != 0 && HasURL(CONVERT_FILENAMES))

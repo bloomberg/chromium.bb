@@ -8,8 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/filename_util.h"
-#include "ui/base/clipboard/clipboard.h"
-#include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/dragdrop/file_info.h"
 
 namespace ui {
@@ -75,7 +74,7 @@ void OSExchangeDataProviderAura::SetFilenames(
 }
 
 void OSExchangeDataProviderAura::SetPickledData(
-    const Clipboard::FormatType& format,
+    const ClipboardFormatType& format,
     const base::Pickle& data) {
   pickle_data_[format] = data;
   formats_ |= OSExchangeData::PICKLED_DATA;
@@ -123,7 +122,7 @@ bool OSExchangeDataProviderAura::GetFilenames(
 }
 
 bool OSExchangeDataProviderAura::GetPickledData(
-    const Clipboard::FormatType& format,
+    const ClipboardFormatType& format,
     base::Pickle* data) const {
   PickleData::const_iterator i = pickle_data_.find(format);
   if (i == pickle_data_.end())
@@ -152,7 +151,7 @@ bool OSExchangeDataProviderAura::HasFile() const {
 }
 
 bool OSExchangeDataProviderAura::HasCustomFormat(
-    const Clipboard::FormatType& format) const {
+    const ClipboardFormatType& format) const {
   return pickle_data_.find(format) != pickle_data_.end();
 }
 

@@ -13,6 +13,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 
@@ -30,11 +31,12 @@ class ClipboardAndroid : public Clipboard {
                             const base::android::JavaParamRef<jobject>& obj);
 
   // Sets the callback called whenever the clipboard is modified.
-  UI_BASE_EXPORT void SetModifiedCallback(ModifiedCallback cb);
+  COMPONENT_EXPORT(BASE_CLIPBOARD)
+  void SetModifiedCallback(ModifiedCallback cb);
 
   // Sets the last modified time without calling the above callback.
-  UI_BASE_EXPORT void SetLastModifiedTimeWithoutRunningCallback(
-      base::Time time);
+  COMPONENT_EXPORT(BASE_CLIPBOARD)
+  void SetLastModifiedTimeWithoutRunningCallback(base::Time time);
 
  private:
   friend class Clipboard;
@@ -45,7 +47,7 @@ class ClipboardAndroid : public Clipboard {
   // Clipboard overrides:
   void OnPreShutdown() override;
   uint64_t GetSequenceNumber(ClipboardType type) const override;
-  bool IsFormatAvailable(const FormatType& format,
+  bool IsFormatAvailable(const ClipboardFormatType& format,
                          ClipboardType type) const override;
   void Clear(ClipboardType type) override;
   void ReadAvailableTypes(ClipboardType type,
@@ -64,7 +66,8 @@ class ClipboardAndroid : public Clipboard {
                       const base::string16& type,
                       base::string16* result) const override;
   void ReadBookmark(base::string16* title, std::string* url) const override;
-  void ReadData(const FormatType& format, std::string* result) const override;
+  void ReadData(const ClipboardFormatType& format,
+                std::string* result) const override;
   base::Time GetLastModifiedTime() const override;
   void ClearLastModifiedTime() override;
   void WriteObjects(ClipboardType type, const ObjectMap& objects) override;
@@ -80,7 +83,7 @@ class ClipboardAndroid : public Clipboard {
                      size_t url_len) override;
   void WriteWebSmartPaste() override;
   void WriteBitmap(const SkBitmap& bitmap) override;
-  void WriteData(const FormatType& format,
+  void WriteData(const ClipboardFormatType& format,
                  const char* data_data,
                  size_t data_len) override;
 

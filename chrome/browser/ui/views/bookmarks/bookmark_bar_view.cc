@@ -993,7 +993,7 @@ void BookmarkBarView::PaintChildren(const views::PaintInfo& paint_info) {
 
 bool BookmarkBarView::GetDropFormats(
     int* formats,
-    std::set<ui::Clipboard::FormatType>* format_types) {
+    std::set<ui::ClipboardFormatType>* format_types) {
   if (!model_ || !model_->loaded())
     return false;
   *formats = ui::OSExchangeData::URL;

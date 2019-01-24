@@ -91,7 +91,7 @@ class DragTestView : public views::View {
 
   bool GetDropFormats(
       int* formats,
-      std::set<ui::Clipboard::FormatType>* format_types) override {
+      std::set<ui::ClipboardFormatType>* format_types) override {
     *formats = ui::OSExchangeData::STRING;
     return true;
   }
@@ -615,7 +615,7 @@ TEST_F(DragDropControllerTest, DragLeavesClipboardAloneTest) {
     ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
     scw.WriteText(base::ASCIIToUTF16(clip_str));
   }
-  EXPECT_TRUE(cb->IsFormatAvailable(ui::Clipboard::GetPlainTextFormatType(),
+  EXPECT_TRUE(cb->IsFormatAvailable(ui::ClipboardFormatType::GetPlainTextType(),
                                     ui::CLIPBOARD_TYPE_COPY_PASTE));
 
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
@@ -636,7 +636,7 @@ TEST_F(DragDropControllerTest, DragLeavesClipboardAloneTest) {
 
   // Verify the clipboard contents haven't changed
   std::string result;
-  EXPECT_TRUE(cb->IsFormatAvailable(ui::Clipboard::GetPlainTextFormatType(),
+  EXPECT_TRUE(cb->IsFormatAvailable(ui::ClipboardFormatType::GetPlainTextType(),
                                     ui::CLIPBOARD_TYPE_COPY_PASTE));
   cb->ReadAsciiText(ui::CLIPBOARD_TYPE_COPY_PASTE, &result);
   EXPECT_EQ(clip_str, result);

@@ -184,7 +184,7 @@ TEST_F(DataOfferTest, SetPickleDropData) {
   pickle.WriteInt64(1000);   // file size
   pickle.WriteString("id");  // filesystem id
   data.SetPickledData(
-      ui::Clipboard::GetFormatType("chromium/x-file-system-files"), pickle);
+      ui::ClipboardFormatType::GetType("chromium/x-file-system-files"), pickle);
   data_offer.SetDropData(&file_helper, data);
 
   EXPECT_EQ(1u, delegate.mime_types().size());
@@ -242,7 +242,7 @@ TEST_F(DataOfferTest, ReceiveUriListFromPickle_ReceiveAfterUrlIsResolved) {
   pickle.WriteInt64(1000);   // file size
   pickle.WriteString("id");  // filesystem id
   data.SetPickledData(
-      ui::Clipboard::GetFormatType("chromium/x-file-system-files"), pickle);
+      ui::ClipboardFormatType::GetType("chromium/x-file-system-files"), pickle);
   data_offer.SetDropData(&file_helper, data);
 
   // Run callback with a resolved URL.
@@ -278,7 +278,7 @@ TEST_F(DataOfferTest, ReceiveUriListFromPickle_ReceiveBeforeUrlIsResolved) {
   pickle.WriteInt64(1000);   // file size
   pickle.WriteString("id");  // filesystem id
   data.SetPickledData(
-      ui::Clipboard::GetFormatType("chromium/x-file-system-files"), pickle);
+      ui::ClipboardFormatType::GetType("chromium/x-file-system-files"), pickle);
   data_offer.SetDropData(&file_helper, data);
 
   base::ScopedFD read_pipe1;
@@ -326,7 +326,7 @@ TEST_F(DataOfferTest,
   pickle.WriteInt64(1000);   // file size
   pickle.WriteString("id");  // filesystem id
   data.SetPickledData(
-      ui::Clipboard::GetFormatType("chromium/x-file-system-files"), pickle);
+      ui::ClipboardFormatType::GetType("chromium/x-file-system-files"), pickle);
   data_offer.SetDropData(&file_helper, data);
 
   base::ScopedFD read_pipe;

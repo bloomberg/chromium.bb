@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "url/gurl.h"
@@ -65,23 +66,24 @@ void ClipboardHostImpl::IsFormatAvailable(blink::mojom::ClipboardFormat format,
   bool result = false;
   switch (format) {
     case blink::mojom::ClipboardFormat::kPlaintext:
-      result = clipboard_->IsFormatAvailable(
-                   ui::Clipboard::GetPlainTextWFormatType(), clipboard_type) ||
-               clipboard_->IsFormatAvailable(
-                   ui::Clipboard::GetPlainTextFormatType(), clipboard_type);
+      result =
+          clipboard_->IsFormatAvailable(
+              ui::ClipboardFormatType::GetPlainTextWType(), clipboard_type) ||
+          clipboard_->IsFormatAvailable(
+              ui::ClipboardFormatType::GetPlainTextType(), clipboard_type);
       break;
     case blink::mojom::ClipboardFormat::kHtml:
-      result = clipboard_->IsFormatAvailable(ui::Clipboard::GetHtmlFormatType(),
-                                             clipboard_type);
+      result = clipboard_->IsFormatAvailable(
+          ui::ClipboardFormatType::GetHtmlType(), clipboard_type);
       break;
     case blink::mojom::ClipboardFormat::kSmartPaste:
       result = clipboard_->IsFormatAvailable(
-          ui::Clipboard::GetWebKitSmartPasteFormatType(), clipboard_type);
+          ui::ClipboardFormatType::GetWebKitSmartPasteType(), clipboard_type);
       break;
     case blink::mojom::ClipboardFormat::kBookmark:
 #if defined(OS_WIN) || defined(OS_MACOSX)
-      result = clipboard_->IsFormatAvailable(ui::Clipboard::GetUrlWFormatType(),
-                                             clipboard_type);
+      result = clipboard_->IsFormatAvailable(
+          ui::ClipboardFormatType::GetUrlWType(), clipboard_type);
 #else
       result = false;
 #endif
@@ -93,11 +95,11 @@ void ClipboardHostImpl::IsFormatAvailable(blink::mojom::ClipboardFormat format,
 void ClipboardHostImpl::ReadText(ui::ClipboardType clipboard_type,
                                  ReadTextCallback callback) {
   base::string16 result;
-  if (clipboard_->IsFormatAvailable(ui::Clipboard::GetPlainTextWFormatType(),
-                                    clipboard_type)) {
+  if (clipboard_->IsFormatAvailable(
+          ui::ClipboardFormatType::GetPlainTextWType(), clipboard_type)) {
     clipboard_->ReadText(clipboard_type, &result);
   } else if (clipboard_->IsFormatAvailable(
-                 ui::Clipboard::GetPlainTextFormatType(), clipboard_type)) {
+                 ui::ClipboardFormatType::GetPlainTextType(), clipboard_type)) {
     std::string ascii;
     clipboard_->ReadAsciiText(clipboard_type, &ascii);
     result = base::ASCIIToUTF16(ascii);
@@ -159,7 +161,7 @@ void ClipboardHostImpl::WriteCustomData(
   base::Pickle pickle;
   ui::WriteCustomDataToPickle(data, &pickle);
   clipboard_writer_->WritePickledData(
-      pickle, ui::Clipboard::GetWebCustomDataFormatType());
+      pickle, ui::ClipboardFormatType::GetWebCustomDataType());
 }
 
 void ClipboardHostImpl::WriteBookmark(ui::ClipboardType,

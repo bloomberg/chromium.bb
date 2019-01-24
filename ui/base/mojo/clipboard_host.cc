@@ -33,7 +33,7 @@ void ClipboardHost::GetSequenceNumber(ClipboardType type,
 void ClipboardHost::IsFormatAvailable(const std::string& format,
                                       ClipboardType type,
                                       IsFormatAvailableCallback callback) {
-  auto format_type = Clipboard::FormatType::Deserialize(format);
+  auto format_type = ClipboardFormatType::Deserialize(format);
   bool result = clipboard_->IsFormatAvailable(format_type, type);
   std::move(callback).Run(result);
 }
@@ -52,11 +52,11 @@ void ClipboardHost::ReadAvailableTypes(ClipboardType type,
 
 void ClipboardHost::ReadText(ClipboardType type, ReadTextCallback callback) {
   base::string16 result;
-  if (clipboard_->IsFormatAvailable(Clipboard::GetPlainTextWFormatType(),
+  if (clipboard_->IsFormatAvailable(ClipboardFormatType::GetPlainTextWType(),
                                     type)) {
     clipboard_->ReadText(type, &result);
-  } else if (clipboard_->IsFormatAvailable(Clipboard::GetPlainTextFormatType(),
-                                           type)) {
+  } else if (clipboard_->IsFormatAvailable(
+                 ClipboardFormatType::GetPlainTextType(), type)) {
     std::string ascii;
     clipboard_->ReadAsciiText(type, &ascii);
     result = base::ASCIIToUTF16(ascii);
@@ -111,7 +111,7 @@ void ClipboardHost::ReadBookmark(ReadBookmarkCallback callback) {
 void ClipboardHost::ReadData(const std::string& format,
                              ReadDataCallback callback) {
   std::string result;
-  clipboard_->ReadData(Clipboard::FormatType::Deserialize(format), &result);
+  clipboard_->ReadData(ClipboardFormatType::Deserialize(format), &result);
   std::move(callback).Run(std::move(result));
 }
 

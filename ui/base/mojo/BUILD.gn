@@ -34,6 +34,7 @@ source_set("lib") {
     "//base",
     "//mojo/public/cpp/bindings",
     "//ui/base",
+    "//ui/base/clipboard",
   ]
 }
 

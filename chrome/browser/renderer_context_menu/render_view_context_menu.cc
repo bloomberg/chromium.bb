@@ -2349,7 +2349,7 @@ bool RenderViewContextMenu::IsPasteAndMatchStyleEnabled() const {
     return false;
 
   return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
-      ui::Clipboard::GetPlainTextFormatType(),
+      ui::ClipboardFormatType::GetPlainTextType(),
       ui::CLIPBOARD_TYPE_COPY_PASTE);
 }
 

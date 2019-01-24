@@ -25,7 +25,7 @@ class HeadlessClipboard : public ui::Clipboard {
   // Clipboard overrides.
   void OnPreShutdown() override;
   uint64_t GetSequenceNumber(ui::ClipboardType type) const override;
-  bool IsFormatAvailable(const FormatType& format,
+  bool IsFormatAvailable(const ui::ClipboardFormatType& format,
                          ui::ClipboardType type) const override;
   void Clear(ui::ClipboardType type) override;
   void ReadAvailableTypes(ui::ClipboardType type,
@@ -45,7 +45,8 @@ class HeadlessClipboard : public ui::Clipboard {
                       const base::string16& type,
                       base::string16* result) const override;
   void ReadBookmark(base::string16* title, std::string* url) const override;
-  void ReadData(const FormatType& format, std::string* result) const override;
+  void ReadData(const ui::ClipboardFormatType& format,
+                std::string* result) const override;
   void WriteObjects(ui::ClipboardType type, const ObjectMap& objects) override;
   void WriteText(const char* text_data, size_t text_len) override;
   void WriteHTML(const char* markup_data,
@@ -59,7 +60,7 @@ class HeadlessClipboard : public ui::Clipboard {
                      size_t url_len) override;
   void WriteWebSmartPaste() override;
   void WriteBitmap(const SkBitmap& bitmap) override;
-  void WriteData(const FormatType& format,
+  void WriteData(const ui::ClipboardFormatType& format,
                  const char* data_data,
                  size_t data_len) override;
 
@@ -69,7 +70,7 @@ class HeadlessClipboard : public ui::Clipboard {
     ~DataStore();
     void Clear();
     uint64_t sequence_number;
-    std::map<FormatType, std::string> data;
+    std::map<ui::ClipboardFormatType, std::string> data;
     std::string url_title;
     std::string html_src_url;
     SkBitmap image;

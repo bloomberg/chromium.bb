@@ -123,7 +123,7 @@ BookmarkNodeData::~BookmarkNodeData() {
 // static
 bool BookmarkNodeData::ClipboardContainsBookmarks() {
   return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
-      ui::Clipboard::GetFormatType(kClipboardFormatString),
+      ui::ClipboardFormatType::GetType(kClipboardFormatString),
       ui::CLIPBOARD_TYPE_COPY_PASTE);
 }
 #endif
@@ -197,15 +197,15 @@ void BookmarkNodeData::WriteToClipboard() {
 
   base::Pickle pickle;
   WriteToPickle(base::FilePath(), &pickle);
-  scw.WritePickledData(pickle,
-                       ui::Clipboard::GetFormatType(kClipboardFormatString));
+  scw.WritePickledData(
+      pickle, ui::ClipboardFormatType::GetType(kClipboardFormatString));
 }
 
 bool BookmarkNodeData::ReadFromClipboard(ui::ClipboardType type) {
   DCHECK_EQ(type, ui::CLIPBOARD_TYPE_COPY_PASTE);
   std::string data;
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  clipboard->ReadData(ui::Clipboard::GetFormatType(kClipboardFormatString),
+  clipboard->ReadData(ui::ClipboardFormatType::GetType(kClipboardFormatString),
                       &data);
 
   if (!data.empty()) {

@@ -2,23 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/test/test_clipboard.h"
+#include "ui/base/clipboard/test/test_clipboard.h"
 
 #include <stddef.h>
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "skia/ext/skia_utils_base.h"
+#include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
 
 namespace ui {
 
 TestClipboard::TestClipboard()
-    : default_store_type_(CLIPBOARD_TYPE_COPY_PASTE) {
-}
+    : default_store_type_(CLIPBOARD_TYPE_COPY_PASTE) {}
 
-TestClipboard::~TestClipboard() {
-}
+TestClipboard::~TestClipboard() {}
 
 Clipboard* TestClipboard::CreateForCurrentThread() {
   base::AutoLock lock(Clipboard::clipboard_map_lock_.Get());
@@ -38,7 +37,7 @@ uint64_t TestClipboard::GetSequenceNumber(ClipboardType type) const {
   return GetStore(type).sequence_number;
 }
 
-bool TestClipboard::IsFormatAvailable(const FormatType& format,
+bool TestClipboard::IsFormatAvailable(const ClipboardFormatType& format,
                                       ClipboardType type) const {
   const DataStore& store = GetStore(type);
   return store.data.find(format) != store.data.end();
@@ -53,14 +52,14 @@ void TestClipboard::ReadAvailableTypes(ClipboardType type,
                                        bool* contains_filenames) const {
   types->clear();
 
-  if (IsFormatAvailable(Clipboard::GetPlainTextFormatType(), type))
+  if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), type))
     types->push_back(base::UTF8ToUTF16(kMimeTypeText));
-  if (IsFormatAvailable(Clipboard::GetHtmlFormatType(), type))
+  if (IsFormatAvailable(ClipboardFormatType::GetHtmlType(), type))
     types->push_back(base::UTF8ToUTF16(kMimeTypeHTML));
 
-  if (IsFormatAvailable(Clipboard::GetRtfFormatType(), type))
+  if (IsFormatAvailable(ClipboardFormatType::GetRtfType(), type))
     types->push_back(base::UTF8ToUTF16(kMimeTypeRTF));
-  if (IsFormatAvailable(Clipboard::GetBitmapFormatType(), type))
+  if (IsFormatAvailable(ClipboardFormatType::GetBitmapType(), type))
     types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
 
   *contains_filenames = false;
@@ -76,7 +75,7 @@ void TestClipboard::ReadAsciiText(ClipboardType type,
                                   std::string* result) const {
   result->clear();
   const DataStore& store = GetStore(type);
-  auto it = store.data.find(GetPlainTextFormatType());
+  auto it = store.data.find(ClipboardFormatType::GetPlainTextType());
   if (it != store.data.end())
     *result = it->second;
 }
@@ -89,7 +88,7 @@ void TestClipboard::ReadHTML(ClipboardType type,
   markup->clear();
   src_url->clear();
   const DataStore& store = GetStore(type);
-  auto it = store.data.find(GetHtmlFormatType());
+  auto it = store.data.find(ClipboardFormatType::GetHtmlType());
   if (it != store.data.end())
     *markup = base::UTF8ToUTF16(it->second);
   *src_url = store.html_src_url;
@@ -100,7 +99,7 @@ void TestClipboard::ReadHTML(ClipboardType type,
 void TestClipboard::ReadRTF(ClipboardType type, std::string* result) const {
   result->clear();
   const DataStore& store = GetStore(type);
-  auto it = store.data.find(GetRtfFormatType());
+  auto it = store.data.find(ClipboardFormatType::GetRtfType());
   if (it != store.data.end())
     *result = it->second;
 }
@@ -111,19 +110,18 @@ SkBitmap TestClipboard::ReadImage(ClipboardType type) const {
 
 void TestClipboard::ReadCustomData(ClipboardType clipboard_type,
                                    const base::string16& type,
-                                   base::string16* result) const {
-}
+                                   base::string16* result) const {}
 
 void TestClipboard::ReadBookmark(base::string16* title,
                                  std::string* url) const {
   const DataStore& store = GetDefaultStore();
-  auto it = store.data.find(GetUrlWFormatType());
+  auto it = store.data.find(ClipboardFormatType::GetUrlWType());
   if (it != store.data.end())
     *url = it->second;
   *title = base::UTF8ToUTF16(store.url_title);
 }
 
-void TestClipboard::ReadData(const FormatType& format,
+void TestClipboard::ReadData(const ClipboardFormatType& format,
                              std::string* result) const {
   result->clear();
   const DataStore& store = GetDefaultStore();
@@ -150,11 +148,12 @@ void TestClipboard::WriteObjects(ClipboardType type, const ObjectMap& objects) {
 
 void TestClipboard::WriteText(const char* text_data, size_t text_len) {
   std::string text(text_data, text_len);
-  GetDefaultStore().data[GetPlainTextFormatType()] = text;
+  GetDefaultStore().data[ClipboardFormatType::GetPlainTextType()] = text;
   // Create a dummy entry.
-  GetDefaultStore().data[GetPlainTextWFormatType()];
+  GetDefaultStore().data[ClipboardFormatType::GetPlainTextWType()];
   if (IsSupportedClipboardType(CLIPBOARD_TYPE_SELECTION))
-    GetStore(CLIPBOARD_TYPE_SELECTION).data[GetPlainTextFormatType()] = text;
+    GetStore(CLIPBOARD_TYPE_SELECTION)
+        .data[ClipboardFormatType::GetPlainTextType()] = text;
   ui::ClipboardMonitor::GetInstance()->NotifyClipboardDataChanged();
 }
 
@@ -164,31 +163,33 @@ void TestClipboard::WriteHTML(const char* markup_data,
                               size_t url_len) {
   base::string16 markup;
   base::UTF8ToUTF16(markup_data, markup_len, &markup);
-  GetDefaultStore().data[GetHtmlFormatType()] = base::UTF16ToUTF8(markup);
+  GetDefaultStore().data[ClipboardFormatType::GetHtmlType()] =
+      base::UTF16ToUTF8(markup);
   GetDefaultStore().html_src_url = std::string(url_data, url_len);
 }
 
 void TestClipboard::WriteRTF(const char* rtf_data, size_t data_len) {
-  GetDefaultStore().data[GetRtfFormatType()] = std::string(rtf_data, data_len);
+  GetDefaultStore().data[ClipboardFormatType::GetRtfType()] =
+      std::string(rtf_data, data_len);
 }
 
 void TestClipboard::WriteBookmark(const char* title_data,
                                   size_t title_len,
                                   const char* url_data,
                                   size_t url_len) {
-  GetDefaultStore().data[GetUrlWFormatType()] = std::string(url_data, url_len);
+  GetDefaultStore().data[ClipboardFormatType::GetUrlWType()] =
+      std::string(url_data, url_len);
   GetDefaultStore().url_title = std::string(title_data, title_len);
 }
 
 void TestClipboard::WriteWebSmartPaste() {
   // Create a dummy entry.
-  GetDefaultStore().data[GetWebKitSmartPasteFormatType()];
+  GetDefaultStore().data[ClipboardFormatType::GetWebKitSmartPasteType()];
 }
 
 void TestClipboard::WriteBitmap(const SkBitmap& bitmap) {
   // Create a dummy entry.
-  GetDefaultStore().data[GetBitmapFormatType()];
-
+  GetDefaultStore().data[ClipboardFormatType::GetBitmapType()];
   SkBitmap& dst = GetDefaultStore().image;
   // Either points bitmap at in_bitmap, or allocates and converts pixels.
   if (!skia::SkBitmapToN32OpaqueOrPremul(bitmap, &dst)) {
@@ -197,19 +198,17 @@ void TestClipboard::WriteBitmap(const SkBitmap& bitmap) {
   }
 }
 
-void TestClipboard::WriteData(const FormatType& format,
+void TestClipboard::WriteData(const ClipboardFormatType& format,
                               const char* data_data,
                               size_t data_len) {
   GetDefaultStore().data[format] = std::string(data_data, data_len);
 }
 
-TestClipboard::DataStore::DataStore() : sequence_number(0) {
-}
+TestClipboard::DataStore::DataStore() : sequence_number(0) {}
 
 TestClipboard::DataStore::DataStore(const DataStore& other) = default;
 
-TestClipboard::DataStore::~DataStore() {
-}
+TestClipboard::DataStore::~DataStore() {}
 
 void TestClipboard::DataStore::Clear() {
   data.clear();

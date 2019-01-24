@@ -150,10 +150,9 @@ class VIEWS_EXPORT MenuDelegate {
   virtual bool CanDrop(MenuItemView* menu, const OSExchangeData& data);
 
   // See view for a description of this method.
-  virtual bool GetDropFormats(
-      MenuItemView* menu,
-      int* formats,
-      std::set<ui::Clipboard::FormatType>* format_types);
+  virtual bool GetDropFormats(MenuItemView* menu,
+                              int* formats,
+                              std::set<ui::ClipboardFormatType>* format_types);
 
   // See view for a description of this method.
   virtual bool AreDropTypesRequired(MenuItemView* menu);

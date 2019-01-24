@@ -14,6 +14,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
@@ -53,7 +54,7 @@ mojom::ClipRepresentationPtr CreateHTML(const ui::Clipboard* clipboard) {
   std::string text(base::UTF16ToUTF8(
       markup16.substr(fragment_start, fragment_end - fragment_start)));
 
-  std::string mime_type(ui::Clipboard::kMimeTypeHTML);
+  std::string mime_type(ui::kMimeTypeHTML);
 
   // Send non-sanitized HTML content. Instance should sanitize it if needed.
   return mojom::ClipRepresentation::New(mime_type,
@@ -66,7 +67,7 @@ mojom::ClipRepresentationPtr CreatePlainText(const ui::Clipboard* clipboard) {
   // Unused. Title is not used at Instance.
   base::string16 title;
   std::string text;
-  std::string mime_type(ui::Clipboard::kMimeTypeText);
+  std::string mime_type(ui::kMimeTypeText);
 
   // Both Bookmark and AsciiText are represented by text/plain. If both are
   // present, only use Bookmark.
@@ -91,9 +92,9 @@ mojom::ClipDataPtr GetClipData(const ui::Clipboard* clipboard) {
   // Populate ClipData with ClipRepresentation objects.
   for (const auto& mime_type16 : mime_types) {
     const std::string mime_type(base::UTF16ToUTF8(mime_type16));
-    if (mime_type == ui::Clipboard::kMimeTypeHTML) {
+    if (mime_type == ui::kMimeTypeHTML) {
       clip_data->representations.push_back(CreateHTML(clipboard));
-    } else if (mime_type == ui::Clipboard::kMimeTypeText) {
+    } else if (mime_type == ui::kMimeTypeText) {
       clip_data->representations.push_back(CreatePlainText(clipboard));
     } else {
       // TODO(ricardoq): Add other supported mime_types here.
@@ -175,9 +176,9 @@ void ArcClipboardBridge::SetClipContent(mojom::ClipDataPtr clip_data) {
 
   for (const auto& repr : clip_data->representations) {
     const std::string& mime_type(repr->mime_type);
-    if (mime_type == ui::Clipboard::kMimeTypeHTML) {
+    if (mime_type == ui::kMimeTypeHTML) {
       ProcessHTML(repr.get(), &writer);
-    } else if (mime_type == ui::Clipboard::kMimeTypeText) {
+    } else if (mime_type == ui::kMimeTypeText) {
       ProcessPlainText(repr.get(), &writer);
     }
   }

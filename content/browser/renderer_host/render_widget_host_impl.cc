@@ -101,7 +101,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "third_party/blink/public/web/web_ime_text_span.h"
-#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/screen.h"
@@ -226,20 +226,17 @@ std::vector<DropData::Metadata> DropDataToMetaData(const DropData& drop_data) {
   std::vector<DropData::Metadata> metadata;
   if (!drop_data.text.is_null()) {
     metadata.push_back(DropData::Metadata::CreateForMimeType(
-        DropData::Kind::STRING,
-        base::ASCIIToUTF16(ui::Clipboard::kMimeTypeText)));
+        DropData::Kind::STRING, base::ASCIIToUTF16(ui::kMimeTypeText)));
   }
 
   if (drop_data.url.is_valid()) {
     metadata.push_back(DropData::Metadata::CreateForMimeType(
-        DropData::Kind::STRING,
-        base::ASCIIToUTF16(ui::Clipboard::kMimeTypeURIList)));
+        DropData::Kind::STRING, base::ASCIIToUTF16(ui::kMimeTypeURIList)));
   }
 
   if (!drop_data.html.is_null()) {
     metadata.push_back(DropData::Metadata::CreateForMimeType(
-        DropData::Kind::STRING,
-        base::ASCIIToUTF16(ui::Clipboard::kMimeTypeHTML)));
+        DropData::Kind::STRING, base::ASCIIToUTF16(ui::kMimeTypeHTML)));
   }
 
   // On Aura, filenames are available before drop.

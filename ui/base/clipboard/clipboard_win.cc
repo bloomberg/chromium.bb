@@ -28,6 +28,7 @@
 #include "skia/ext/skia_utils_base.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_util_win.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/gfx/canvas.h"
@@ -220,201 +221,6 @@ void TrimAfterNull(StringType* result) {
 
 }  // namespace
 
-// Clipboard::FormatType implementation.
-Clipboard::FormatType::FormatType() : data_() {}
-
-Clipboard::FormatType::FormatType(UINT native_format) : data_() {
-  // There's no good way to actually initialize this in the constructor in
-  // C++03.
-  data_.cfFormat = static_cast<CLIPFORMAT>(native_format);
-  data_.dwAspect = DVASPECT_CONTENT;
-  data_.lindex = -1;
-  data_.tymed = TYMED_HGLOBAL;
-}
-
-Clipboard::FormatType::FormatType(UINT native_format, LONG index) : data_() {
-  // There's no good way to actually initialize this in the constructor in
-  // C++03.
-  data_.cfFormat = static_cast<CLIPFORMAT>(native_format);
-  data_.dwAspect = DVASPECT_CONTENT;
-  data_.lindex = index;
-  data_.tymed = TYMED_HGLOBAL;
-}
-
-Clipboard::FormatType::~FormatType() {
-}
-
-std::string Clipboard::FormatType::Serialize() const {
-  return base::IntToString(data_.cfFormat);
-}
-
-// static
-Clipboard::FormatType Clipboard::FormatType::Deserialize(
-    const std::string& serialization) {
-  int clipboard_format = -1;
-  if (!base::StringToInt(serialization, &clipboard_format)) {
-    NOTREACHED();
-    return FormatType();
-  }
-  return FormatType(clipboard_format);
-}
-
-bool Clipboard::FormatType::operator<(const FormatType& other) const {
-  return data_.cfFormat < other.data_.cfFormat;
-}
-
-bool Clipboard::FormatType::Equals(const FormatType& other) const {
-  return data_.cfFormat == other.data_.cfFormat;
-}
-
-// Various predefined FormatTypes.
-// static
-Clipboard::FormatType Clipboard::GetFormatType(
-    const std::string& format_string) {
-  return FormatType(
-      ::RegisterClipboardFormat(base::ASCIIToUTF16(format_string).c_str()));
-}
-
-// The following formats can be referenced by ClipboardUtilWin::GetPlainText.
-// For reasons (COM), they must be initialized in a thread-safe manner.
-// TODO(dcheng): We probably need to make static initialization of "known"
-// FormatTypes thread-safe on all platforms.
-#define CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(name, ...) \
-  struct FormatTypeArgumentForwarder : public FormatType { \
-    FormatTypeArgumentForwarder() : FormatType(__VA_ARGS__) { } \
-  }; \
-  static base::LazyInstance<FormatTypeArgumentForwarder>::Leaky name = \
-      LAZY_INSTANCE_INITIALIZER
-// static
-const Clipboard::FormatType& Clipboard::GetUrlFormatType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
-    type, ::RegisterClipboardFormat(CFSTR_INETURLA));
-  return type.Get();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetUrlWFormatType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
-      type, ::RegisterClipboardFormat(CFSTR_INETURLW));
-  return type.Get();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetMozUrlFormatType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
-      type, ::RegisterClipboardFormat(L"text/x-moz-url"));
-  return type.Get();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetPlainTextFormatType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(type, CF_TEXT);
-  return type.Get();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetPlainTextWFormatType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(type, CF_UNICODETEXT);
-  return type.Get();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetFilenameFormatType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
-      type, ::RegisterClipboardFormat(CFSTR_FILENAMEA));
-  return type.Get();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetFilenameWFormatType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
-      type, ::RegisterClipboardFormat(CFSTR_FILENAMEW));
-  return type.Get();
-}
-
-// MS HTML Format
-// static
-const Clipboard::FormatType& Clipboard::GetHtmlFormatType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
-      type, ::RegisterClipboardFormat(L"HTML Format"));
-  return type.Get();
-}
-
-// MS RTF Format
-// static
-const Clipboard::FormatType& Clipboard::GetRtfFormatType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
-      type, ::RegisterClipboardFormat(L"Rich Text Format"));
-  return type.Get();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetBitmapFormatType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(type, CF_BITMAP);
-  return type.Get();
-}
-
-// Firefox text/html
-// static
-const Clipboard::FormatType& Clipboard::GetTextHtmlFormatType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
-      type, ::RegisterClipboardFormat(L"text/html"));
-  return type.Get();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetCFHDropFormatType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(type, CF_HDROP);
-  return type.Get();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetFileDescriptorFormatType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
-      type, ::RegisterClipboardFormat(CFSTR_FILEDESCRIPTOR));
-  return type.Get();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetFileContentZeroFormatType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
-      type, ::RegisterClipboardFormat(CFSTR_FILECONTENTS), 0);
-  return type.Get();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetIDListFormatType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
-      type, ::RegisterClipboardFormat(CFSTR_SHELLIDLIST));
-  return type.Get();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetWebKitSmartPasteFormatType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
-      type,
-      ::RegisterClipboardFormat(L"WebKit Smart Paste Format"));
-  return type.Get();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType() {
-  // TODO(dcheng): This name is temporary. See http://crbug.com/106449.
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
-      type,
-      ::RegisterClipboardFormat(L"Chromium Web Custom MIME Data Format"));
-  return type.Get();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
-      type,
-      ::RegisterClipboardFormat(L"Chromium Pepper MIME Data Format"));
-  return type.Get();
-}
-#undef CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE
-
 // Clipboard factory method.
 // static
 Clipboard* Clipboard::Create() {
@@ -437,7 +243,7 @@ uint64_t ClipboardWin::GetSequenceNumber(ClipboardType type) const {
   return ::GetClipboardSequenceNumber();
 }
 
-bool ClipboardWin::IsFormatAvailable(const Clipboard::FormatType& format,
+bool ClipboardWin::IsFormatAvailable(const ClipboardFormatType& format,
                                      ClipboardType type) const {
   DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
   return ::IsClipboardFormatAvailable(format.ToFormatEtc().cfFormat) != FALSE;
@@ -462,11 +268,13 @@ void ClipboardWin::ReadAvailableTypes(ClipboardType type,
 
   types->clear();
   if (::IsClipboardFormatAvailable(
-          GetPlainTextFormatType().ToFormatEtc().cfFormat))
+          ClipboardFormatType::GetPlainTextType().ToFormatEtc().cfFormat))
     types->push_back(base::UTF8ToUTF16(kMimeTypeText));
-  if (::IsClipboardFormatAvailable(GetHtmlFormatType().ToFormatEtc().cfFormat))
+  if (::IsClipboardFormatAvailable(
+          ClipboardFormatType::GetHtmlType().ToFormatEtc().cfFormat))
     types->push_back(base::UTF8ToUTF16(kMimeTypeHTML));
-  if (::IsClipboardFormatAvailable(GetRtfFormatType().ToFormatEtc().cfFormat))
+  if (::IsClipboardFormatAvailable(
+          ClipboardFormatType::GetRtfType().ToFormatEtc().cfFormat))
     types->push_back(base::UTF8ToUTF16(kMimeTypeRTF));
   if (::IsClipboardFormatAvailable(CF_DIB))
     types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
@@ -477,8 +285,8 @@ void ClipboardWin::ReadAvailableTypes(ClipboardType type,
   if (!clipboard.Acquire(GetClipboardWindow()))
     return;
 
-  HANDLE hdata =
-      ::GetClipboardData(GetWebCustomDataFormatType().ToFormatEtc().cfFormat);
+  HANDLE hdata = ::GetClipboardData(
+      ClipboardFormatType::GetWebCustomDataType().ToFormatEtc().cfFormat);
   if (!hdata)
     return;
 
@@ -555,7 +363,8 @@ void ClipboardWin::ReadHTML(ClipboardType type,
   if (!clipboard.Acquire(GetClipboardWindow()))
     return;
 
-  HANDLE data = ::GetClipboardData(GetHtmlFormatType().ToFormatEtc().cfFormat);
+  HANDLE data = ::GetClipboardData(
+      ClipboardFormatType::GetHtmlType().ToFormatEtc().cfFormat);
   if (!data)
     return;
 
@@ -594,7 +403,7 @@ void ClipboardWin::ReadHTML(ClipboardType type,
 void ClipboardWin::ReadRTF(ClipboardType type, std::string* result) const {
   DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
 
-  ReadData(GetRtfFormatType(), result);
+  ReadData(ClipboardFormatType::GetRtfType(), result);
   TrimAfterNull(result);
 }
 
@@ -690,8 +499,8 @@ void ClipboardWin::ReadCustomData(ClipboardType clipboard_type,
   if (!clipboard.Acquire(GetClipboardWindow()))
     return;
 
-  HANDLE hdata =
-      ::GetClipboardData(GetWebCustomDataFormatType().ToFormatEtc().cfFormat);
+  HANDLE hdata = ::GetClipboardData(
+      ClipboardFormatType::GetWebCustomDataType().ToFormatEtc().cfFormat);
   if (!hdata)
     return;
 
@@ -711,7 +520,8 @@ void ClipboardWin::ReadBookmark(base::string16* title, std::string* url) const {
   if (!clipboard.Acquire(GetClipboardWindow()))
     return;
 
-  HANDLE data = ::GetClipboardData(GetUrlWFormatType().ToFormatEtc().cfFormat);
+  HANDLE data = ::GetClipboardData(
+      ClipboardFormatType::GetUrlWType().ToFormatEtc().cfFormat);
   if (!data)
     return;
 
@@ -723,7 +533,7 @@ void ClipboardWin::ReadBookmark(base::string16* title, std::string* url) const {
   ParseBookmarkClipboardFormat(bookmark, title, url);
 }
 
-void ClipboardWin::ReadData(const FormatType& format,
+void ClipboardWin::ReadData(const ClipboardFormatType& format,
                             std::string* result) const {
   if (!result) {
     NOTREACHED();
@@ -779,11 +589,12 @@ void ClipboardWin::WriteHTML(const char* markup_data,
   std::string html_fragment = ClipboardUtil::HtmlToCFHtml(markup, url);
   HGLOBAL glob = CreateGlobalData(html_fragment);
 
-  WriteToClipboard(Clipboard::GetHtmlFormatType().ToFormatEtc().cfFormat, glob);
+  WriteToClipboard(ClipboardFormatType::GetHtmlType().ToFormatEtc().cfFormat,
+                   glob);
 }
 
 void ClipboardWin::WriteRTF(const char* rtf_data, size_t data_len) {
-  WriteData(GetRtfFormatType(), rtf_data, data_len);
+  WriteData(ClipboardFormatType::GetRtfType(), rtf_data, data_len);
 }
 
 void ClipboardWin::WriteBookmark(const char* title_data,
@@ -797,13 +608,15 @@ void ClipboardWin::WriteBookmark(const char* title_data,
   base::string16 wide_bookmark = base::UTF8ToUTF16(bookmark);
   HGLOBAL glob = CreateGlobalData(wide_bookmark);
 
-  WriteToClipboard(GetUrlWFormatType().ToFormatEtc().cfFormat, glob);
+  WriteToClipboard(ClipboardFormatType::GetUrlWType().ToFormatEtc().cfFormat,
+                   glob);
 }
 
 void ClipboardWin::WriteWebSmartPaste() {
   DCHECK(clipboard_owner_->hwnd() != NULL);
-  ::SetClipboardData(GetWebKitSmartPasteFormatType().ToFormatEtc().cfFormat,
-                     NULL);
+  ::SetClipboardData(
+      ClipboardFormatType::GetWebKitSmartPasteType().ToFormatEtc().cfFormat,
+      NULL);
 }
 
 void ClipboardWin::WriteBitmap(const SkBitmap& in_bitmap) {
@@ -849,7 +662,7 @@ void ClipboardWin::WriteBitmap(const SkBitmap& in_bitmap) {
   ::ReleaseDC(NULL, dc);
 }
 
-void ClipboardWin::WriteData(const FormatType& format,
+void ClipboardWin::WriteData(const ClipboardFormatType& format,
                              const char* data_data,
                              size_t data_len) {
   HGLOBAL hdata = ::GlobalAlloc(GMEM_MOVEABLE, data_len);

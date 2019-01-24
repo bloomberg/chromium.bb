@@ -17,7 +17,7 @@
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aurax11.h"
@@ -774,7 +774,7 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
     actions.push_back(gfx::GetAtom(kXdndActionDirectSave));
     ui::SetStringProperty(
         xwindow_, gfx::GetAtom(kXdndDirectSave0),
-        gfx::GetAtom(ui::Clipboard::kMimeTypeText),
+        gfx::GetAtom(ui::kMimeTypeText),
         source_provider_->file_contents_name().AsUTF8Unsafe());
   }
   ui::SetAtomArrayProperty(xwindow_, kXdndActionList, "ATOM", actions);

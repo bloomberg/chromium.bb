@@ -81,7 +81,7 @@ bool MenuDelegate::CanDrop(MenuItemView* menu, const OSExchangeData& data) {
 bool MenuDelegate::GetDropFormats(
     MenuItemView* menu,
     int* formats,
-    std::set<ui::Clipboard::FormatType>* format_types) {
+    std::set<ui::ClipboardFormatType>* format_types) {
   return false;
 }
 

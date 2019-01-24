@@ -1286,7 +1286,7 @@ gfx::Point View::GetKeyboardContextMenuLocation() {
 // Drag and drop ---------------------------------------------------------------
 
 bool View::GetDropFormats(int* formats,
-                          std::set<ui::Clipboard::FormatType>* format_types) {
+                          std::set<ui::ClipboardFormatType>* format_types) {
   return false;
 }
 

@@ -386,6 +386,7 @@ jumbo_component("headless") {
     "//content/public/common:service_names",
     "//services/service_manager/public/cpp",
     "//ui/base",
+    "//ui/base/clipboard",
     "//ui/compositor",
     "//ui/display",
     "//ui/events/devices",
@@ -738,6 +739,7 @@ test("headless_browsertests") {
     "//services/network/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/base/clipboard",
   ]
 
   if (!is_fuchsia) {

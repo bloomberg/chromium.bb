@@ -5,11 +5,11 @@
 #ifndef UI_BASE_CLIPBOARD_CLIPBOARD_MONITOR_H_
 #define UI_BASE_CLIPBOARD_CLIPBOARD_MONITOR_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
-#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
@@ -17,7 +17,7 @@ class ClipboardObserver;
 
 // A singleton instance to monitor and notify ClipboardObservers for clipboard
 // changes.
-class UI_BASE_EXPORT ClipboardMonitor {
+class COMPONENT_EXPORT(BASE_CLIPBOARD) ClipboardMonitor {
  public:
   static ClipboardMonitor* GetInstance();
 

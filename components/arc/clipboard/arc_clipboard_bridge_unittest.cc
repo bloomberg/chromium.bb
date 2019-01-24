@@ -13,6 +13,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
 namespace arc {
@@ -84,7 +85,7 @@ TEST_F(ArcClipboardBridgeTest, GetClipContent_PlainText) {
   }
 
   mojom::ClipDataPtr expected_clip_data =
-      CreateClipData(ui::Clipboard::kMimeTypeText, kSampleText);
+      CreateClipData(ui::kMimeTypeText, kSampleText);
   base::MockCallback<ArcClipboardBridge::GetClipContentCallback> callback;
   EXPECT_CALL(std::move(callback),
               Run(ClipDataMatcher(expected_clip_data.get())))
@@ -100,7 +101,7 @@ TEST_F(ArcClipboardBridgeTest, GetClipContent_Html) {
   }
 
   mojom::ClipDataPtr expected_clip_data =
-      CreateClipData(ui::Clipboard::kMimeTypeHTML, kSampleHtml);
+      CreateClipData(ui::kMimeTypeHTML, kSampleHtml);
   base::MockCallback<ArcClipboardBridge::GetClipContentCallback> callback;
   EXPECT_CALL(std::move(callback),
               Run(ClipDataMatcher(expected_clip_data.get())))
@@ -110,8 +111,7 @@ TEST_F(ArcClipboardBridgeTest, GetClipContent_Html) {
 }
 
 TEST_F(ArcClipboardBridgeTest, SetClipContent_PlainText) {
-  mojom::ClipDataPtr clip_data =
-      CreateClipData(ui::Clipboard::kMimeTypeText, kSampleText);
+  mojom::ClipDataPtr clip_data = CreateClipData(ui::kMimeTypeText, kSampleText);
 
   clipboard_bridge_->SetClipContent(std::move(clip_data));
 
@@ -120,7 +120,7 @@ TEST_F(ArcClipboardBridgeTest, SetClipContent_PlainText) {
   GetClipboard()->ReadAvailableTypes(ui::CLIPBOARD_TYPE_COPY_PASTE, &mime_types,
                                      &contains_files);
   ASSERT_EQ(1u, mime_types.size());
-  EXPECT_EQ(ui::Clipboard::kMimeTypeText, base::UTF16ToUTF8(mime_types[0]));
+  EXPECT_EQ(ui::kMimeTypeText, base::UTF16ToUTF8(mime_types[0]));
 
   base::string16 result;
   GetClipboard()->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &result);
@@ -128,8 +128,7 @@ TEST_F(ArcClipboardBridgeTest, SetClipContent_PlainText) {
 }
 
 TEST_F(ArcClipboardBridgeTest, SetClipContent_Html) {
-  mojom::ClipDataPtr clip_data =
-      CreateClipData(ui::Clipboard::kMimeTypeHTML, kSampleHtml);
+  mojom::ClipDataPtr clip_data = CreateClipData(ui::kMimeTypeHTML, kSampleHtml);
 
   clipboard_bridge_->SetClipContent(std::move(clip_data));
 
@@ -138,7 +137,7 @@ TEST_F(ArcClipboardBridgeTest, SetClipContent_Html) {
   GetClipboard()->ReadAvailableTypes(ui::CLIPBOARD_TYPE_COPY_PASTE, &mime_types,
                                      &contains_files);
   ASSERT_EQ(1u, mime_types.size());
-  EXPECT_EQ(ui::Clipboard::kMimeTypeHTML, base::UTF16ToUTF8(mime_types[0]));
+  EXPECT_EQ(ui::kMimeTypeHTML, base::UTF16ToUTF8(mime_types[0]));
 
   base::string16 markup16;
   std::string url;

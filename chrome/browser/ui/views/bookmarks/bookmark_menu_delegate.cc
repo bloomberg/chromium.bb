@@ -199,7 +199,7 @@ bool BookmarkMenuDelegate::ShouldExecuteCommandWithoutClosingMenu(
 bool BookmarkMenuDelegate::GetDropFormats(
     MenuItemView* menu,
     int* formats,
-    std::set<ui::Clipboard::FormatType>* format_types) {
+    std::set<ui::ClipboardFormatType>* format_types) {
   *formats = ui::OSExchangeData::URL;
   format_types->insert(BookmarkNodeData::GetBookmarkFormatType());
   return true;

@@ -164,19 +164,19 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgIsFormatAvailable(
   switch (format) {
     case PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT: {
       bool plain = clipboard->IsFormatAvailable(
-          ui::Clipboard::GetPlainTextFormatType(), type);
+          ui::ClipboardFormatType::GetPlainTextType(), type);
       bool plainw = clipboard->IsFormatAvailable(
-          ui::Clipboard::GetPlainTextWFormatType(), type);
+          ui::ClipboardFormatType::GetPlainTextWType(), type);
       available = plain || plainw;
       break;
     }
     case PP_FLASH_CLIPBOARD_FORMAT_HTML:
       available = clipboard->IsFormatAvailable(
-          ui::Clipboard::GetHtmlFormatType(), type);
+          ui::ClipboardFormatType::GetHtmlType(), type);
       break;
     case PP_FLASH_CLIPBOARD_FORMAT_RTF:
-      available =
-          clipboard->IsFormatAvailable(ui::Clipboard::GetRtfFormatType(), type);
+      available = clipboard->IsFormatAvailable(
+          ui::ClipboardFormatType::GetRtfType(), type);
       break;
     case PP_FLASH_CLIPBOARD_FORMAT_INVALID:
       break;
@@ -184,7 +184,7 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgIsFormatAvailable(
       if (custom_formats_.IsFormatRegistered(format)) {
         std::string format_name = custom_formats_.GetFormatName(format);
         std::string clipboard_data;
-        clipboard->ReadData(ui::Clipboard::GetPepperCustomDataFormatType(),
+        clipboard->ReadData(ui::ClipboardFormatType::GetPepperCustomDataType(),
                             &clipboard_data);
         base::Pickle pickle(clipboard_data.data(), clipboard_data.size());
         available =
@@ -211,8 +211,8 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgReadData(
   int32_t result = PP_ERROR_FAILED;
   switch (format) {
     case PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT: {
-      if (clipboard->IsFormatAvailable(ui::Clipboard::GetPlainTextWFormatType(),
-                                       type)) {
+      if (clipboard->IsFormatAvailable(
+              ui::ClipboardFormatType::GetPlainTextWType(), type)) {
         base::string16 text;
         clipboard->ReadText(type, &text);
         if (!text.empty()) {
@@ -223,15 +223,15 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgReadData(
       }
       // If the PlainTextW format isn't available or is empty, take the
       // ASCII text format.
-      if (clipboard->IsFormatAvailable(ui::Clipboard::GetPlainTextFormatType(),
-                                       type)) {
+      if (clipboard->IsFormatAvailable(
+              ui::ClipboardFormatType::GetPlainTextType(), type)) {
         result = PP_OK;
         clipboard->ReadAsciiText(type, &clipboard_string);
       }
       break;
     }
     case PP_FLASH_CLIPBOARD_FORMAT_HTML: {
-      if (!clipboard->IsFormatAvailable(ui::Clipboard::GetHtmlFormatType(),
+      if (!clipboard->IsFormatAvailable(ui::ClipboardFormatType::GetHtmlType(),
                                         type)) {
         break;
       }
@@ -247,7 +247,7 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgReadData(
       break;
     }
     case PP_FLASH_CLIPBOARD_FORMAT_RTF: {
-      if (!clipboard->IsFormatAvailable(ui::Clipboard::GetRtfFormatType(),
+      if (!clipboard->IsFormatAvailable(ui::ClipboardFormatType::GetRtfType(),
                                         type)) {
         break;
       }
@@ -262,7 +262,7 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgReadData(
         base::string16 format_name =
             base::UTF8ToUTF16(custom_formats_.GetFormatName(format));
         std::string clipboard_data;
-        clipboard->ReadData(ui::Clipboard::GetPepperCustomDataFormatType(),
+        clipboard->ReadData(ui::ClipboardFormatType::GetPepperCustomDataType(),
                             &clipboard_data);
         base::Pickle pickle(clipboard_data.data(), clipboard_data.size());
         if (IsFormatAvailableInPickle(format_name, pickle)) {
@@ -342,7 +342,7 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgWriteData(
     base::Pickle pickle;
     WriteDataToPickle(custom_data_map, &pickle);
     scw.WritePickledData(pickle,
-                         ui::Clipboard::GetPepperCustomDataFormatType());
+                         ui::ClipboardFormatType::GetPepperCustomDataType());
   }
 
   if (res != PP_OK) {

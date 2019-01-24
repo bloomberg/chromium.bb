@@ -11,7 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/test/test_clipboard.h"
+#include "ui/base/clipboard/test/test_clipboard.h"
 #include "url/gurl.h"
 
 class ClipboardRecentContentGenericTest : public testing::Test {

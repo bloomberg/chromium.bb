@@ -324,6 +324,7 @@ jumbo_static_library("content_shell_lib") {
     "//third_party/blink/public:test_support",
     "//third_party/icu",
     "//ui/base",
+    "//ui/base/clipboard",
     "//ui/base/ime",
     "//ui/display",
     "//ui/events:events_base",

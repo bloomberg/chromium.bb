@@ -109,10 +109,9 @@ class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
                           const ui::Event& e);
   void ExecuteCommand(int id, int mouse_event_flags);
   bool ShouldExecuteCommandWithoutClosingMenu(int id, const ui::Event& e);
-  bool GetDropFormats(
-      views::MenuItemView* menu,
-      int* formats,
-      std::set<ui::Clipboard::FormatType>* format_types);
+  bool GetDropFormats(views::MenuItemView* menu,
+                      int* formats,
+                      std::set<ui::ClipboardFormatType>* format_types);
   bool AreDropTypesRequired(views::MenuItemView* menu);
   bool CanDrop(views::MenuItemView* menu, const ui::OSExchangeData& data);
   int GetDropOperation(views::MenuItemView* item,

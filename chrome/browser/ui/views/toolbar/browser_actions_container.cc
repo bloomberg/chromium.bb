@@ -488,7 +488,7 @@ void BrowserActionsContainer::Layout() {
 
 bool BrowserActionsContainer::GetDropFormats(
     int* formats,
-    std::set<ui::Clipboard::FormatType>* format_types) {
+    std::set<ui::ClipboardFormatType>* format_types) {
   return BrowserActionDragData::GetDropFormats(format_types);
 }
 

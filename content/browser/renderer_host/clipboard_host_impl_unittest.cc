@@ -15,7 +15,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/test/test_clipboard.h"
+#include "ui/base/clipboard/test/test_clipboard.h"
 #include "ui/gfx/skia_util.h"
 
 namespace content {
@@ -55,9 +55,10 @@ TEST_F(ClipboardHostImplTest, SimpleImage) {
   EXPECT_NE(sequence_number, system_clipboard()->GetSequenceNumber(
                                  ui::CLIPBOARD_TYPE_COPY_PASTE));
   EXPECT_FALSE(system_clipboard()->IsFormatAvailable(
-      ui::Clipboard::GetPlainTextFormatType(), ui::CLIPBOARD_TYPE_COPY_PASTE));
+      ui::ClipboardFormatType::GetPlainTextType(),
+      ui::CLIPBOARD_TYPE_COPY_PASTE));
   EXPECT_TRUE(system_clipboard()->IsFormatAvailable(
-      ui::Clipboard::GetBitmapFormatType(), ui::CLIPBOARD_TYPE_COPY_PASTE));
+      ui::ClipboardFormatType::GetBitmapType(), ui::CLIPBOARD_TYPE_COPY_PASTE));
 
   SkBitmap actual =
       system_clipboard()->ReadImage(ui::CLIPBOARD_TYPE_COPY_PASTE);

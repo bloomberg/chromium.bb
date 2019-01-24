@@ -102,7 +102,7 @@ View* DropHelper::CalculateTargetViewImpl(
   }
 #else
   int formats = 0;
-  std::set<ui::Clipboard::FormatType> format_types;
+  std::set<ui::ClipboardFormatType> format_types;
   while (view && view != target_view_) {
     if (view->enabled() &&
         view->GetDropFormats(&formats, &format_types) &&

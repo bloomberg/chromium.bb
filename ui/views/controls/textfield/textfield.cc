@@ -914,7 +914,7 @@ bool Textfield::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
 
 bool Textfield::GetDropFormats(
     int* formats,
-    std::set<ui::Clipboard::FormatType>* format_types) {
+    std::set<ui::ClipboardFormatType>* format_types) {
   if (!enabled() || read_only())
     return false;
   // TODO(msw): Can we support URL, FILENAME, etc.?
@@ -926,7 +926,7 @@ bool Textfield::GetDropFormats(
 
 bool Textfield::CanDrop(const OSExchangeData& data) {
   int formats;
-  std::set<ui::Clipboard::FormatType> format_types;
+  std::set<ui::ClipboardFormatType> format_types;
   GetDropFormats(&formats, &format_types);
   return enabled() && !read_only() && data.HasAnyFormat(formats, format_types);
 }

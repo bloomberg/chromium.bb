@@ -12,6 +12,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+#include "ui/base/clipboard/clipboard_constants.h"
+#include "ui/base/clipboard/clipboard_format_type.h"
 #import "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #import "ui/base/dragdrop/cocoa_dnd_util.h"
@@ -78,7 +80,7 @@ void OSExchangeDataProviderMac::SetFilenames(
 }
 
 void OSExchangeDataProviderMac::SetPickledData(
-    const Clipboard::FormatType& format,
+    const ClipboardFormatType& format,
     const base::Pickle& data) {
   NSData* ns_data = [NSData dataWithBytes:data.data() length:data.size()];
   [pasteboard_->get() setData:ns_data forType:format.ToNSString()];
@@ -160,7 +162,7 @@ bool OSExchangeDataProviderMac::GetFilenames(
 }
 
 bool OSExchangeDataProviderMac::GetPickledData(
-    const Clipboard::FormatType& format,
+    const ClipboardFormatType& format,
     base::Pickle* data) const {
   DCHECK(data);
   NSData* ns_data = [pasteboard_->get() dataForType:format.ToNSString()];
@@ -189,7 +191,7 @@ bool OSExchangeDataProviderMac::HasFile() const {
 }
 
 bool OSExchangeDataProviderMac::HasCustomFormat(
-    const Clipboard::FormatType& format) const {
+    const ClipboardFormatType& format) const {
   return [[pasteboard_->get() types] containsObject:format.ToNSString()];
 }
 

@@ -736,6 +736,7 @@ target(link_target_type, "renderer") {
     "//third_party/widevine/cdm:headers",
     "//ui/accessibility",
     "//ui/base",
+    "//ui/base/clipboard",
     "//ui/base/ime",
     "//ui/display",
     "//ui/events:dom_keycode_converter",

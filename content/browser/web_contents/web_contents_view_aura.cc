@@ -227,13 +227,12 @@ void PrepareDragForDownload(
 }
 #endif  // defined(OS_WIN)
 
-// Returns the FormatType to store file system files.
-const ui::Clipboard::FormatType& GetFileSystemFileFormatType() {
-  static base::NoDestructor<ui::Clipboard::FormatType> format(
-      ui::Clipboard::GetFormatType("chromium/x-file-system-files"));
+// Returns the ClipboardFormatType to store file system files.
+const ui::ClipboardFormatType& GetFileSystemFileFormatType() {
+  static base::NoDestructor<ui::ClipboardFormatType> format(
+      ui::ClipboardFormatType::GetType("chromium/x-file-system-files"));
   return *format;
 }
-
 
 // Utility to fill a ui::OSExchangeDataProvider object from DropData.
 void PrepareDragData(const DropData& drop_data,
@@ -274,7 +273,7 @@ void PrepareDragData(const DropData& drop_data,
   if (!drop_data.custom_data.empty()) {
     base::Pickle pickle;
     ui::WriteCustomDataToPickle(drop_data.custom_data, &pickle);
-    provider->SetPickledData(ui::Clipboard::GetWebCustomDataFormatType(),
+    provider->SetPickledData(ui::ClipboardFormatType::GetWebCustomDataType(),
                              pickle);
   }
 }
@@ -314,7 +313,8 @@ void PrepareDropData(DropData* drop_data, const ui::OSExchangeData& data) {
           pickle, &file_system_files))
     drop_data->file_system_files = file_system_files;
 
-  if (data.GetPickledData(ui::Clipboard::GetWebCustomDataFormatType(), &pickle))
+  if (data.GetPickledData(ui::ClipboardFormatType::GetWebCustomDataType(),
+                          &pickle))
     ui::ReadCustomDataIntoMap(
         pickle.data(), pickle.size(), &drop_data->custom_data);
 }
