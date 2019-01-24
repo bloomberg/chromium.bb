@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/system_tray_test_api.test-mojom-test-utils.h"
 #include "ash/public/interfaces/system_tray_test_api.test-mojom.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"

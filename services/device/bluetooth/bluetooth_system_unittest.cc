@@ -21,6 +21,7 @@
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/device_service_test_base.h"
+#include "services/device/public/mojom/bluetooth_system.mojom-test-utils.h"
 #include "services/device/public/mojom/bluetooth_system.mojom.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"

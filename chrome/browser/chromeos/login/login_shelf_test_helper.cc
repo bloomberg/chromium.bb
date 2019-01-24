@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/login_shelf_test_helper.h"
 
 #include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/login_screen_test_api.test-mojom-test-utils.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 

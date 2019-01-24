@@ -8,6 +8,10 @@
 {%-   set variant_path = module.path -%}
 {%- endif %}
 
+{%- set header_guard_for_jumbo = "%s_JUMBO_H_"|format(
+        variant_path|upper|replace("/","_")|replace(".","_")|
+            replace("-", "_")) %}
+
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-private-field"
@@ -40,9 +44,13 @@
 #include "mojo/public/cpp/bindings/lib/wtf_serialization.h"
 {%- endif %}
 
+{# This is include guard for jumbo build. #}
+#ifndef {{header_guard_for_jumbo}}
+#define {{header_guard_for_jumbo}}
 {%- for header in extra_traits_headers %}
 #include "{{header}}"
 {%- endfor %}
+#endif
 
 {%- for namespace in namespaces_as_array %}
 namespace {{namespace}} {

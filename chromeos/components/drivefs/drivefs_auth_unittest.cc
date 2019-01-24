@@ -11,6 +11,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "services/identity/public/mojom/constants.mojom.h"
+#include "services/identity/public/mojom/identity_manager.mojom-test-utils.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
