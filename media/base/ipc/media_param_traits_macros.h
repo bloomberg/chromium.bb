@@ -24,6 +24,7 @@
 #include "media/base/encryption_scheme.h"
 #include "media/base/hdr_metadata.h"
 #include "media/base/media_log_event.h"
+#include "media/base/media_status.h"
 #include "media/base/output_device_info.h"
 #include "media/base/overlay_info.h"
 #include "media/base/pipeline_status.h"
@@ -109,6 +110,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::HdcpVersion,
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::MediaLogEvent::Type,
                           media::MediaLogEvent::TYPE_LAST)
+
+IPC_ENUM_TRAITS_MAX_VALUE(media::MediaStatus::State,
+                          media::MediaStatus::State::STATE_MAX)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::OutputDeviceStatus,
                           media::OUTPUT_DEVICE_STATUS_MAX)

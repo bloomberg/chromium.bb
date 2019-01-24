@@ -85,6 +85,7 @@ class MojoRenderer : public Renderer, public mojom::RendererClient {
   void OnWaiting(WaitingReason reason) override;
   void OnStatisticsUpdate(const PipelineStatistics& stats) override;
   void OnDurationChange(base::TimeDelta duration) override;
+  void OnRemotePlayStateChange(media::MediaStatus::State state) override;
 
   // Binds |remote_renderer_| to the mojo message pipe. Can be called multiple
   // times. If an error occurs during connection, OnConnectionError will be

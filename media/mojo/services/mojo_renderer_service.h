@@ -92,6 +92,7 @@ class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
   void OnVideoNaturalSizeChange(const gfx::Size& size) final;
   void OnVideoOpacityChange(bool opaque) final;
   void OnDurationChange(base::TimeDelta duration) final;
+  void OnRemotePlayStateChange(MediaStatus::State state) final;
 
   // Called when the MediaResourceShim is ready to go (has a config,
   // pipe handle, etc) and can be handed off to a renderer for use.

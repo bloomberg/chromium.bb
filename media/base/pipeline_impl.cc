@@ -138,6 +138,7 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
   void OnVideoNaturalSizeChange(const gfx::Size& size) final;
   void OnVideoOpacityChange(bool opaque) final;
   void OnDurationChange(base::TimeDelta duration) final;
+  void OnRemotePlayStateChange(MediaStatus::State state) final;
 
   // Common handlers for notifications from renderers and demuxer.
   void OnPipelineError(PipelineStatus error);
@@ -765,6 +766,13 @@ void PipelineImpl::RendererWrapper::OnVideoConfigChange(
 void PipelineImpl::RendererWrapper::OnDurationChange(base::TimeDelta duration) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   SetDuration(duration);
+}
+
+void PipelineImpl::RendererWrapper::OnRemotePlayStateChange(
+    MediaStatus::State state) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+
+  // TODO(tguilbert): post change to Pipeline
 }
 
 void PipelineImpl::RendererWrapper::OnPipelineError(PipelineStatus error) {

@@ -173,4 +173,10 @@ void MediaPlayerRendererClient::OnDurationChange(base::TimeDelta duration) {
   client_->OnDurationChange(duration);
 }
 
+void MediaPlayerRendererClient::OnRemotePlayStateChange(
+    media::MediaStatus::State state) {
+  // Only used with the FlingingRenderer.
+  NOTREACHED();
+}
+
 }  // namespace content

@@ -94,4 +94,10 @@ interface RendererClient {
   // Executed the first time the metadata is updated, and whenever the duration
   // changes.
   OnDurationChange(mojo_base.mojom.TimeDelta duration);
+
+  // Executed whenever a renderer receives notification of a status change that
+  // was not originated by its owner.
+  // Only used with the FlingingRenderer (when external devices play/pause the
+  // video playing remotely).
+  OnRemotePlayStateChange(MediaStatusState state);
 };

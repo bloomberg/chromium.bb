@@ -108,6 +108,7 @@ class MockRendererClient : public mojom::RendererClient {
                void(const media::PipelineStatistics& stats));
   MOCK_METHOD1(OnWaiting, void(WaitingReason));
   MOCK_METHOD1(OnDurationChange, void(base::TimeDelta duration));
+  MOCK_METHOD1(OnRemotePlayStateChange, void(MediaStatus::State state));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockRendererClient);
