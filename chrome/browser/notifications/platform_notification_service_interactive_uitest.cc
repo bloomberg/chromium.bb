@@ -558,6 +558,51 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
+                       CloseAndUserClosePersistentNotificationWithTag) {
+  GrantNotificationPermissionForTest();
+  {
+    std::string script_result;
+    ASSERT_TRUE(RunScript(
+        R"(DisplayPersistentNotification('action_close', {
+            tag: 'tag-1'
+        }))",
+        &script_result));
+    EXPECT_EQ("ok", script_result);
+
+    std::vector<message_center::Notification> notifications =
+        GetDisplayedNotifications(true /* is_persistent */);
+    ASSERT_EQ(1u, notifications.size());
+
+    display_service_tester_->SimulateClick(
+        NotificationHandler::Type::WEB_PERSISTENT, notifications[0].id(),
+        base::nullopt /* action_index */, base::nullopt /* reply */);
+
+    ASSERT_TRUE(RunScript("GetMessageFromWorker()", &script_result));
+    EXPECT_EQ("action_close", script_result);
+  }
+  {
+    std::string script_result;
+    ASSERT_TRUE(RunScript(
+        R"(DisplayPersistentNotification('close_test', {
+            tag: 'tag-1'
+        }))",
+        &script_result));
+    EXPECT_EQ("ok", script_result);
+
+    std::vector<message_center::Notification> notifications =
+        GetDisplayedNotifications(true /* is_persistent */);
+    ASSERT_EQ(1u, notifications.size());
+
+    display_service_tester_->RemoveNotification(
+        NotificationHandler::Type::WEB_PERSISTENT, notifications[0].id(),
+        true /* by_user */);
+
+    ASSERT_TRUE(RunScript("GetMessageFromWorker()", &script_result));
+    EXPECT_EQ("closing notification: close_test", script_result);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
                        TestDisplayOriginContextMessage) {
   RequestAndAcceptPermission();
 

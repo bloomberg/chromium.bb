@@ -158,6 +158,8 @@ void PlatformNotificationServiceImpl::DisplayPersistentNotification(
     const blink::NotificationResources& notification_resources) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  closed_notifications_.erase(notification_id);
+
   // Posted tasks can request notifications to be added, which would cause a
   // crash (see |ScopedKeepAlive|). We just do nothing here, the user would not
   // see the notification anyway, since we are shutting down.
