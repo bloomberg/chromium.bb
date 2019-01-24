@@ -11,7 +11,6 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
@@ -32,18 +31,17 @@ import java.lang.annotation.RetentionPolicy;
  */
 public class DownloadForegroundService extends Service {
     private static final String TAG = "DownloadFg";
+    // Deprecated, remove this after M75.
     private static final String KEY_PERSISTED_NOTIFICATION_ID = "PersistedNotificationId";
     private final IBinder mBinder = new LocalBinder();
 
     private NotificationManager mNotificationManager;
 
-    @IntDef({StopForegroundNotification.KILL, StopForegroundNotification.DETACH_OR_PERSIST,
-            StopForegroundNotification.DETACH_OR_ADJUST})
+    @IntDef({StopForegroundNotification.KILL, StopForegroundNotification.DETACH})
     @Retention(RetentionPolicy.SOURCE)
     public @interface StopForegroundNotification {
         int KILL = 0; // Kill notification regardless of ability to detach.
-        int DETACH_OR_PERSIST = 1; // Try to detach, otherwise persist info.
-        int DETACH_OR_ADJUST = 2; // Try detach, otherwise kill and relaunch.
+        int DETACH = 1; // Try to detach, otherwise kill and relaunch.
     }
 
     @Override
@@ -53,6 +51,7 @@ public class DownloadForegroundService extends Service {
         mNotificationManager =
                 (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
                         Context.NOTIFICATION_SERVICE);
+        clearPersistedNotificationId();
     }
 
     /**
@@ -123,11 +122,8 @@ public class DownloadForegroundService extends Service {
      *                                      and would need adjustment.
      * @param pinnedNotification            The actual notification that is pinned to the foreground
      *                                      and would need adjustment.
-     * @return                              Whether the notification was handled properly (ie. if it
-     *                                      was detached or killed as intended). If this is false,
-     *                                      the notification will be persisted and handled later.
      */
-    public boolean stopDownloadForegroundService(
+    public void stopDownloadForegroundService(
             @StopForegroundNotification int stopForegroundNotification, int pinnedNotificationId,
             Notification pinnedNotification) {
         Log.w(TAG,
@@ -140,7 +136,6 @@ public class DownloadForegroundService extends Service {
                 DownloadNotificationUmaHelper.ServiceStopped.STOPPED, true /* withForeground */);
 
         // Handle notifications and stop foreground.
-        boolean notificationHandledProperly = true;
         if (stopForegroundNotification == StopForegroundNotification.KILL) {
             // Regardless of the SDK level, stop foreground and kill if so indicated.
             stopForegroundInternal(ServiceCompat.STOP_FOREGROUND_REMOVE);
@@ -152,40 +147,19 @@ public class DownloadForegroundService extends Service {
             } else if (getCurrentSdk() >= 23) {
                 // Android M+ can't detach the notification but doesn't have other caveats. Kill the
                 // notification and relaunch if detach was desired.
-                if (stopForegroundNotification == StopForegroundNotification.DETACH_OR_ADJUST) {
-                    stopForegroundInternal(ServiceCompat.STOP_FOREGROUND_REMOVE);
-                    relaunchOldNotification(pinnedNotificationId, pinnedNotification);
-                } else {
-                    updatePersistedNotificationId(pinnedNotificationId);
-                    stopForegroundInternal(ServiceCompat.STOP_FOREGROUND_DETACH);
-                    notificationHandledProperly = false;
-                }
-
-            } else if (getCurrentSdk() >= 21) {
+                stopForegroundInternal(ServiceCompat.STOP_FOREGROUND_REMOVE);
+                relaunchOldNotification(pinnedNotificationId, pinnedNotification);
+            } else {
                 // In phones that are Lollipop and older (API < 23), the service gets killed with
                 // the task, which might result in the notification being unable to be relaunched
-                // where it needs to be. Relaunch the old notification before stopping the service.
-                if (stopForegroundNotification == StopForegroundNotification.DETACH_OR_ADJUST) {
-                    // Clear pinned id in case the service stops before we can do this properly.
-                    relaunchOldNotification(
-                            getNewNotificationIdFor(pinnedNotificationId), pinnedNotification);
-                    stopForegroundInternal(ServiceCompat.STOP_FOREGROUND_REMOVE);
-                } else {
-                    updatePersistedNotificationId(pinnedNotificationId);
-                    stopForegroundInternal(ServiceCompat.STOP_FOREGROUND_DETACH);
-                    notificationHandledProperly = false;
-                }
-
-            } else {
-                // For pre-Lollipop phones (API < 21), we need to kill all notifications because
-                // otherwise the notification gets stuck in the ongoing state.
+                // where it needs to be. kill and relaunch the old notification before stopping the
+                // service.
                 relaunchOldNotification(
                         getNewNotificationIdFor(pinnedNotificationId), pinnedNotification);
                 stopForegroundInternal(ServiceCompat.STOP_FOREGROUND_REMOVE);
             }
         }
         stopSelf();
-        return notificationHandledProperly;
     }
 
     @VisibleForTesting
@@ -201,15 +175,6 @@ public class DownloadForegroundService extends Service {
         if (intent == null) {
             DownloadNotificationUmaHelper.recordServiceStoppedHistogram(
                     DownloadNotificationUmaHelper.ServiceStopped.START_STICKY, true);
-
-            // Alert observers that the service restarted with null intent.
-            // Pass along the id of the notification that was pinned to the service when it died so
-            // that the observers can do any corrections (ie. relaunch notification) if needed.
-            int persistedNotificationId = getPersistedNotificationId();
-            Log.w(TAG, "onStartCommand intent: " + null + ", id: " + persistedNotificationId);
-            DownloadForegroundServiceObservers.alertObserversServiceRestarted(
-                    persistedNotificationId);
-            clearPersistedNotificationId();
 
             // Allow observers to restart service on their own, if needed.
             stopSelf();
@@ -257,28 +222,6 @@ public class DownloadForegroundService extends Service {
         }
     }
 
-    /**
-     * Get stored value for the id of the notification pinned to the service.
-     * This has to be persisted in the case that the service dies and the notification dies with it.
-     * @return Id of the notification pinned to the service.
-     */
-    @VisibleForTesting
-    static int getPersistedNotificationId() {
-        SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
-        return sharedPrefs.getInt(KEY_PERSISTED_NOTIFICATION_ID, INVALID_NOTIFICATION_ID);
-    }
-
-    /**
-     * Set stored value for the id of the notification pinned to the service.
-     * This has to be persisted in the case that the service dies and the notification dies with it.
-     * @param pinnedNotificationId Id of the notification pinned to the service.
-     */
-    private static void updatePersistedNotificationId(int pinnedNotificationId) {
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putInt(KEY_PERSISTED_NOTIFICATION_ID, pinnedNotificationId)
-                .apply();
-    }
 
     /**
      * Clear stored value for the id of the notification pinned to the service.
