@@ -11,6 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using leveldb_proto::test::FakeDB;
+using testing::ElementsAre;
 
 namespace usage_stats {
 
@@ -21,6 +22,24 @@ const char kFqdn2[] = "bar.org";
 
 const char kToken1[] = "token1";
 const char kToken2[] = "token2";
+
+const WebsiteEvent CreateWebsiteEvent(const std::string& fqdn,
+                                      int seconds,
+                                      const WebsiteEvent::EventType& type) {
+  WebsiteEvent event;
+  event.set_fqdn(fqdn);
+  Timestamp* timestamp = event.mutable_timestamp();
+  timestamp->set_seconds(seconds);
+  event.set_type(type);
+  return event;
+}
+
+MATCHER_P(EqualsWebsiteEvent, other, "") {
+  return other.fqdn() == arg.fqdn() &&
+         other.timestamp().seconds() == arg.timestamp().seconds() &&
+         other.timestamp().nanos() == arg.timestamp().nanos() &&
+         other.type() == arg.type();
+}
 
 }  // namespace
 
@@ -43,6 +62,8 @@ class UsageStatsDatabaseTest : public testing::Test {
   FakeDB<UsageStat>* fake_db() { return fake_db_unowned_; }
 
   MOCK_METHOD1(OnUpdateDone, void(UsageStatsDatabase::Error));
+  MOCK_METHOD2(OnGetAllEventsDone,
+               void(UsageStatsDatabase::Error, std::vector<WebsiteEvent>));
   MOCK_METHOD2(OnGetAllSuspensionsDone,
                void(UsageStatsDatabase::Error, std::vector<std::string>));
   MOCK_METHOD2(OnGetAllTokenMappingsDone,
@@ -61,8 +82,103 @@ TEST_F(UsageStatsDatabaseTest, Initialization) {
   ASSERT_NE(nullptr, fake_db());
 }
 
-// Suspension Tests
+// Website Event Tests
+TEST_F(UsageStatsDatabaseTest, GetAllEventsSuccess) {
+  EXPECT_CALL(*this, OnGetAllEventsDone(UsageStatsDatabase::Error::kNoError,
+                                        ElementsAre()));
 
+  usage_stats_database()->GetAllEvents(base::BindOnce(
+      &UsageStatsDatabaseTest::OnGetAllEventsDone, base::Unretained(this)));
+
+  fake_db()->LoadCallback(true);
+}
+
+TEST_F(UsageStatsDatabaseTest, GetAllEventsFailure) {
+  EXPECT_CALL(*this,
+              OnGetAllEventsDone(UsageStatsDatabase::Error::kUnknownError,
+                                 ElementsAre()));
+
+  usage_stats_database()->GetAllEvents(base::BindOnce(
+      &UsageStatsDatabaseTest::OnGetAllEventsDone, base::Unretained(this)));
+
+  fake_db()->LoadCallback(false);
+}
+
+TEST_F(UsageStatsDatabaseTest, AddEventsEmpty) {
+  std::vector<WebsiteEvent> events;
+
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
+
+  usage_stats_database()->AddEvents(
+      events, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
+                             base::Unretained(this)));
+
+  fake_db()->UpdateCallback(true);
+}
+
+TEST_F(UsageStatsDatabaseTest, AddAndGetOneEvent) {
+  WebsiteEvent event1 =
+      CreateWebsiteEvent(kFqdn1, 1, WebsiteEvent::START_BROWSING);
+  std::vector<WebsiteEvent> events({event1});
+
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
+
+  usage_stats_database()->AddEvents(
+      events, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
+                             base::Unretained(this)));
+
+  fake_db()->UpdateCallback(true);
+
+  EXPECT_CALL(*this,
+              OnGetAllEventsDone(UsageStatsDatabase::Error::kNoError,
+                                 ElementsAre(EqualsWebsiteEvent(event1))));
+
+  usage_stats_database()->GetAllEvents(base::BindOnce(
+      &UsageStatsDatabaseTest::OnGetAllEventsDone, base::Unretained(this)));
+
+  fake_db()->LoadCallback(true);
+}
+
+TEST_F(UsageStatsDatabaseTest, AddAndDeleteEventsMatchingDomain) {
+  // Add 3 events
+  WebsiteEvent event1 =
+      CreateWebsiteEvent(kFqdn1, 1, WebsiteEvent::START_BROWSING);
+  WebsiteEvent event2 =
+      CreateWebsiteEvent(kFqdn1, 1, WebsiteEvent::STOP_BROWSING);
+  WebsiteEvent event3 =
+      CreateWebsiteEvent(kFqdn2, 1, WebsiteEvent::START_BROWSING);
+  std::vector<WebsiteEvent> events({event1, event2, event3});
+
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
+
+  usage_stats_database()->AddEvents(
+      events, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
+                             base::Unretained(this)));
+
+  fake_db()->UpdateCallback(true);
+
+  // Delete 2 events by FQDN
+  base::flat_set<std::string> domains({kFqdn1});
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
+
+  usage_stats_database()->DeleteEventsWithMatchingDomains(
+      domains, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
+                              base::Unretained(this)));
+
+  fake_db()->UpdateCallback(true);
+
+  // Get 1 remaining event with non-matching FQDN
+  EXPECT_CALL(*this,
+              OnGetAllEventsDone(UsageStatsDatabase::Error::kNoError,
+                                 ElementsAre(EqualsWebsiteEvent(event3))));
+
+  usage_stats_database()->GetAllEvents(base::BindOnce(
+      &UsageStatsDatabaseTest::OnGetAllEventsDone, base::Unretained(this)));
+
+  fake_db()->LoadCallback(true);
+}
+
+// Suspension Tests
 TEST_F(UsageStatsDatabaseTest, SetSuspensionsSuccess) {
   base::flat_set<std::string> domains({kFqdn1, kFqdn2});
 

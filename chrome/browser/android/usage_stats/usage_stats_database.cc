@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/strings/safe_sprintf.h"
+#include "base/strings/strcat.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/android/usage_stats/website_event.pb.h"
 #include "components/leveldb_proto/content/proto_database_provider_factory.h"
@@ -16,8 +18,18 @@ namespace usage_stats {
 const char kNamespace[] = "usage_stats";
 const char kTypePrefix[] = "usage_stats";
 
-const char kSuspensionPrefix[] = "suspension_";
-const char kTokenMappingPrefix[] = "token_mapping_";
+const char kKeySeparator[] = "_";
+
+const char kWebsiteEventPrefix[] = "website_event";
+const char kSuspensionPrefix[] = "suspension";
+const char kTokenMappingPrefix[] = "token_mapping";
+
+const int kUnixTimeDigits = 11;
+// Formats an integer with a minimum width of 11, right-justified, and
+// zero-filled (example: 1548353315 => 01548353315).
+const char kUnixTimeFormat[] = "%011d";
+
+const int kFqdnPosition = base::size(kWebsiteEventPrefix) + kUnixTimeDigits + 1;
 
 UsageStatsDatabase::UsageStatsDatabase(Profile* profile)
     : weak_ptr_factory_(this) {
@@ -42,18 +54,83 @@ UsageStatsDatabase::UsageStatsDatabase(
 UsageStatsDatabase::~UsageStatsDatabase() = default;
 
 namespace {
+
 bool DoesNotContainFilter(const base::flat_set<std::string>& set,
                           const std::string& key) {
   return !set.contains(key);
+}
+
+bool KeyContainsDomainFilter(const base::flat_set<std::string>& domains,
+                             const std::string& key) {
+  return domains.contains(key.substr(kFqdnPosition));
 }
 
 UsageStatsDatabase::Error ToError(bool success) {
   return success ? UsageStatsDatabase::Error::kNoError
                  : UsageStatsDatabase::Error::kUnknownError;
 }
+
+std::string CreateWebsiteEventKey(int64_t seconds, const std::string& fqdn) {
+  // Zero-pad the Unix time in seconds since epoch. Allows ascending timestamps
+  // to sort lexicographically, supporting efficient range queries by key.
+  char unixTime[kUnixTimeDigits + 1];
+  ssize_t printed =
+      base::strings::SafeSPrintf(unixTime, kUnixTimeFormat, seconds);
+  DCHECK(printed == kUnixTimeDigits);
+
+  // Create the key from the prefix, time, and fqdn (example:
+  // website_event_01548276551_foo.com).
+  return base::StrCat(
+      {kWebsiteEventPrefix, kKeySeparator, unixTime, kKeySeparator, fqdn});
+}
+
 }  // namespace
 
-void UsageStatsDatabase::GetAllSuspensions(SuspensionCallback callback) {
+void UsageStatsDatabase::GetAllEvents(EventsCallback callback) {
+  // Load all UsageStats with the website events prefix.
+  proto_db_->LoadEntriesWithFilter(
+      leveldb_proto::KeyFilter(), leveldb::ReadOptions(), kWebsiteEventPrefix,
+      base::BindOnce(&UsageStatsDatabase::OnLoadEntriesForGetAllEvents,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void UsageStatsDatabase::AddEvents(std::vector<WebsiteEvent> events,
+                                   StatusCallback callback) {
+  auto entries = std::make_unique<
+      leveldb_proto::ProtoDatabase<UsageStat>::KeyEntryVector>();
+  entries->reserve(events.size());
+
+  for (WebsiteEvent event : events) {
+    std::string key =
+        CreateWebsiteEventKey(event.timestamp().seconds(), event.fqdn());
+
+    UsageStat value;
+    WebsiteEvent* website_event = value.mutable_website_event();
+    *website_event = event;
+
+    entries->emplace_back(key, value);
+  }
+
+  // Add all entries created from input vector.
+  proto_db_->UpdateEntries(
+      std::move(entries), std::make_unique<std::vector<std::string>>(),
+      base::BindOnce(&UsageStatsDatabase::OnUpdateEntries,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void UsageStatsDatabase::DeleteEventsWithMatchingDomains(
+    base::flat_set<std::string> domains,
+    StatusCallback callback) {
+  // Remove all events with domains in the given set.
+  proto_db_->UpdateEntriesWithRemoveFilter(
+      std::make_unique<
+          leveldb_proto::ProtoDatabase<UsageStat>::KeyEntryVector>(),
+      base::BindRepeating(&KeyContainsDomainFilter, std::move(domains)),
+      base::BindOnce(&UsageStatsDatabase::OnUpdateEntries,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void UsageStatsDatabase::GetAllSuspensions(SuspensionsCallback callback) {
   // Load all UsageStats with the suspension prefix.
   proto_db_->LoadEntriesWithFilter(
       leveldb_proto::KeyFilter(), leveldb::ReadOptions(), kSuspensionPrefix,
@@ -71,7 +148,7 @@ void UsageStatsDatabase::SetSuspensions(base::flat_set<std::string> domains,
 
   for (std::string domain : domains) {
     // Prepend prefix to form key.
-    std::string key = kSuspensionPrefix + domain;
+    std::string key = base::StrCat({kSuspensionPrefix, kKeySeparator, domain});
 
     keys.emplace_back(key);
 
@@ -110,7 +187,8 @@ void UsageStatsDatabase::SetTokenMappings(TokenMap mappings,
 
   for (const auto& mapping : mappings) {
     // Prepend prefix to token to form key.
-    std::string key = kTokenMappingPrefix + mapping.first;
+    std::string key =
+        base::StrCat({kTokenMappingPrefix, kKeySeparator, mapping.first});
 
     keys.emplace_back(key);
 
@@ -137,8 +215,24 @@ void UsageStatsDatabase::OnUpdateEntries(StatusCallback callback,
   std::move(callback).Run(ToError(success));
 }
 
+void UsageStatsDatabase::OnLoadEntriesForGetAllEvents(
+    EventsCallback callback,
+    bool success,
+    std::unique_ptr<std::vector<UsageStat>> stats) {
+  std::vector<WebsiteEvent> results;
+
+  if (stats) {
+    results.reserve(stats->size());
+    for (UsageStat stat : *stats) {
+      results.emplace_back(stat.website_event());
+    }
+  }
+
+  std::move(callback).Run(ToError(success), std::move(results));
+}
+
 void UsageStatsDatabase::OnLoadEntriesForGetAllSuspensions(
-    SuspensionCallback callback,
+    SuspensionsCallback callback,
     bool success,
     std::unique_ptr<std::vector<UsageStat>> stats) {
   std::vector<std::string> results;
