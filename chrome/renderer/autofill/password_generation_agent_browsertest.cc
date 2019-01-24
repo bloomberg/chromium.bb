@@ -122,6 +122,13 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
     base::RunLoop().RunUntilIdle();
     ASSERT_EQ(available, GetCalledAutomaticGenerationStatusChangedTrue());
     fake_pw_client_.reset_called_automatic_generation_status_changed_true();
+
+    // Check that aria-autocomplete attribute is set correctly.
+    if (available) {
+      WebDocument doc = GetMainFrame()->GetDocument();
+      WebElement element = doc.GetElementById(WebString::FromUTF8(element_id));
+      EXPECT_EQ("list", element.GetAttribute("aria-autocomplete"));
+    }
   }
 
   void ExpectFormClassifierVoteReceived(
