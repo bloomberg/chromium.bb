@@ -141,7 +141,7 @@ interface Element : Node {
     attribute EventHandler onsearch;
 
     // Display locking. Returns a display lock context.
-    [RuntimeEnabled=DisplayLocking, ImplementedAs=getDisplayLockForBindings] DisplayLockContext getDisplayLock();
+    [RuntimeEnabled=DisplayLocking, ImplementedAs=getDisplayLockForBindings] readonly attribute DisplayLockContext displayLock;
 };
 
 Element implements ParentNode;

@@ -31,7 +31,7 @@ function runTest() {
   let container = document.createElement("div");
   container.id = "container";
 
-  container.getDisplayLock().acquire({ timeout: 100 }).then(() => {
+  container.displayLock.acquire({ timeout: 100 }).then(() => {
     document.body.appendChild(container);
     setTimeout(() => { finishTest("PASS if container is visible"); }, 200);
   });

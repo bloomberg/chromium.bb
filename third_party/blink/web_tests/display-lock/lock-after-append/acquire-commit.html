@@ -35,12 +35,12 @@ function finishTest(status_string) {
 
 function runTest() {
   let container = document.getElementById("container");
-  container.getDisplayLock().acquire({ timeout: Infinity }).then(() => {
+  container.displayLock.acquire({ timeout: Infinity }).then(() => {
     let child = document.createElement("div");
     child.id = "child";
     container.appendChild(child);
 
-    container.getDisplayLock().commit().then(
+    container.displayLock.commit().then(
       () => { finishTest("PASS"); },
       () => { finishTest("FAIL"); });
   });

@@ -30,7 +30,7 @@ function finishTest(status_string) {
 function runTest() {
   let container = document.createElement("div");
   container.id = "container";
-  container.getDisplayLock().acquire({ timeout: Infinity }).then(() => {
+  container.displayLock.acquire({ timeout: Infinity }).then(() => {
     document.body.appendChild(container);
     setTimeout(() => { finishTest("PASS"); }, 100);
   });

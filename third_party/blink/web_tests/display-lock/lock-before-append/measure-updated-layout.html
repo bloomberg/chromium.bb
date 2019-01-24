@@ -74,14 +74,14 @@ async_test((t) => {
   async function runTest() {
     let container = document.createElement("div");
     container.id = "container";
-    await container.getDisplayLock().acquire({ timeout: Infinity });
+    await container.displayLock.acquire({ timeout: Infinity });
 
     document.getElementById("parent").appendChild(container);
     construct(container);
 
-    container.getDisplayLock().update().then(() => {
+    container.displayLock.update().then(() => {
       measureInUpdate();
-      container.getDisplayLock().commit().then(() => {
+      container.displayLock.commit().then(() => {
         measureInCommit();
         t.done();
       });

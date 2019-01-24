@@ -34,7 +34,7 @@ function finishTest(status_string) {
 
 function runTest() {
   let container = document.createElement("div");
-  container.getDisplayLock().acquire({ timeout: Infinity }).then(() => {
+  container.displayLock.acquire({ timeout: Infinity }).then(() => {
     let child = document.createElement("div");
     child.id = "child";
     container.appendChild(child);
@@ -43,8 +43,8 @@ function runTest() {
     document.body.appendChild(container);
 
     Promise.all([
-      container.getDisplayLock().update(),
-      container.getDisplayLock().commit()
+      container.displayLock.update(),
+      container.displayLock.commit()
     ]).then(() => { finishTest("PASS"); },
             () => { finishTest("FAIL"); });
   });

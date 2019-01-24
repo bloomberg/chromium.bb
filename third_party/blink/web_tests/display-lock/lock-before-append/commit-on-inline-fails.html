@@ -28,9 +28,9 @@ function finishTest(status_string) {
 async function acquire() {
   let container = document.createElement("span");
   container.id = "container";
-  await container.getDisplayLock().acquire({ timeout: Infinity });
+  await container.displayLock.acquire({ timeout: Infinity });
   document.body.appendChild(container);
-  container.getDisplayLock().commit().then(
+  container.displayLock.commit().then(
     () => { finishTest("FAIL"); },
     () => { finishTest("PASS"); });
 }
