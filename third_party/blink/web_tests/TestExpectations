@@ -4996,9 +4996,6 @@ crbug.com/831720 virtual/video-surface-layer/media/controls/modern/tap-to-hide-c
 
 crbug.com/802915 css3/blending/isolation-should-include-non-local-background.html [ Failure ]
 
-# Sheriff faulures 2017-12-12
-crbug.com/794180 http/tests/devtools/layers/layer-compositing-reasons.js [ Failure Pass ]
-
 # These tests require Unified Autoplay.
 crbug.com/779087 external/wpt/html/semantics/embedded-content/media-elements/autoplay-allowed-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Skip ]
 crbug.com/779087 external/wpt/html/semantics/embedded-content/media-elements/autoplay-default-feature-policy.https.sub.html [ Skip ]
@@ -5334,7 +5331,7 @@ crbug.com/855816 [ Win ] virtual/outofblink-cors-ns/http/tests/navigation/rename
 crbug.com/855816 [ Win ] virtual/stable/http/tests/navigation/rename-subframe-goback.html [ Pass Timeout ]
 
 # Sheriff 2018-06-29
-crbug.com/859169 http/tests/devtools/layers/layer-scroll-rects-get.js [ Failure Pass ]
+crbug.com/859169 [ Linux Debug ] http/tests/devtools/layers/layer-scroll-rects-get.js [ Failure Pass ]
 
 # User Activation
 crbug.com/736415 external/wpt/html/user-activation/activation-api-iframe.tenative.html [ Failure ]
