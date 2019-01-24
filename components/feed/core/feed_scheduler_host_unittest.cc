@@ -792,7 +792,7 @@ TEST_F(FeedSchedulerHostTest, OnArticlesCleared) {
   scheduler()->OnForegrounded();
   EXPECT_EQ(0, refresh_call_count());
 
-  scheduler()->OnArticlesCleared(/*suppress_refreshes*/ true);
+  EXPECT_FALSE(scheduler()->OnArticlesCleared(/*suppress_refreshes*/ true));
 
   scheduler()->OnForegrounded();
   EXPECT_EQ(0, refresh_call_count());
@@ -823,7 +823,7 @@ TEST_F(FeedSchedulerHostTest, SuppressRefreshDuration) {
       kInterestFeedContentSuggestions.name,
       {{kSuppressRefreshDurationMinutes.name, "100"}},
       {kInterestFeedContentSuggestions.name});
-  scheduler()->OnArticlesCleared(/*suppress_refreshes*/ true);
+  EXPECT_FALSE(scheduler()->OnArticlesCleared(/*suppress_refreshes*/ true));
 
   test_clock()->Advance(TimeDelta::FromMinutes(99));
   scheduler()->OnForegrounded();
@@ -835,21 +835,17 @@ TEST_F(FeedSchedulerHostTest, SuppressRefreshDuration) {
 }
 
 TEST_F(FeedSchedulerHostTest, OnArticlesClearedNoSuppress) {
+  EXPECT_TRUE(scheduler()->OnArticlesCleared(/*suppress_refreshes*/ false));
+  scheduler()->OnReceiveNewContent(test_clock()->Now());
+
+  EXPECT_TRUE(scheduler()->OnArticlesCleared(/*suppress_refreshes*/ false));
+  scheduler()->OnReceiveNewContent(test_clock()->Now());
+
+  EXPECT_FALSE(scheduler()->OnArticlesCleared(/*suppress_refreshes*/ true));
+  EXPECT_FALSE(scheduler()->OnArticlesCleared(/*suppress_refreshes*/ false));
+
+  // OnArticlesCleared() should never trigger the refresh itself.
   EXPECT_EQ(0, refresh_call_count());
-
-  scheduler()->OnArticlesCleared(/*suppress_refreshes*/ false);
-  EXPECT_EQ(1, refresh_call_count());
-  scheduler()->OnReceiveNewContent(test_clock()->Now());
-
-  scheduler()->OnArticlesCleared(/*suppress_refreshes*/ false);
-  EXPECT_EQ(2, refresh_call_count());
-  scheduler()->OnReceiveNewContent(test_clock()->Now());
-
-  scheduler()->OnArticlesCleared(/*suppress_refreshes*/ true);
-  EXPECT_EQ(2, refresh_call_count());
-
-  scheduler()->OnArticlesCleared(/*suppress_refreshes*/ false);
-  EXPECT_EQ(2, refresh_call_count());
 }
 
 TEST_F(FeedSchedulerHostTest, OnArticlesClearedIgnoresOutstanding) {
@@ -861,8 +857,10 @@ TEST_F(FeedSchedulerHostTest, OnArticlesClearedIgnoresOutstanding) {
   EXPECT_EQ(1, refresh_call_count());
 
   // Clearing articles should disregard the outstanding request logic.
-  scheduler()->OnArticlesCleared(/*suppress_refreshes*/ false);
-  EXPECT_EQ(2, refresh_call_count());
+  EXPECT_TRUE(scheduler()->OnArticlesCleared(/*suppress_refreshes*/ false));
+  // OnArticlesCleared() should have returned true instead of triggering a
+  // refresh directly.
+  EXPECT_EQ(1, refresh_call_count());
 }
 
 TEST_F(FeedSchedulerHostTest, OustandingRequest) {

@@ -316,7 +316,7 @@ void FeedSchedulerHost::OnSuggestionsShown() {
   user_classifier_.OnEvent(UserClassifier::Event::kSuggestionsViewed);
 }
 
-void FeedSchedulerHost::OnArticlesCleared(bool suppress_refreshes) {
+bool FeedSchedulerHost::OnArticlesCleared(bool suppress_refreshes) {
   base::TimeDelta attempt_age =
       clock_->Now() - profile_prefs_->GetTime(prefs::kLastFetchAttemptTime);
   UMA_HISTOGRAM_CUSTOM_TIMES(
@@ -340,8 +340,13 @@ void FeedSchedulerHost::OnArticlesCleared(bool suppress_refreshes) {
         clock_->Now() +
         base::TimeDelta::FromMinutes(kSuppressRefreshDurationMinutes.Get());
   } else if (ShouldRefresh(TriggerType::kNtpShown)) {
-    refresh_callback_.Run();
+    // Instead of using |refresh_callback_|, instead return our desire to
+    // refresh back up to our caller. This allows more information to be given
+    // all at once to the Feed which allows it to act more intelligently.
+    return true;
   }
+
+  return false;
 }
 
 void FeedSchedulerHost::OnEulaAccepted() {

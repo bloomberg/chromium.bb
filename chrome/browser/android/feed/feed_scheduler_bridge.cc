@@ -100,11 +100,11 @@ void FeedSchedulerBridge::OnSuggestionConsumed(
   scheduler_host_->OnSuggestionConsumed();
 }
 
-void FeedSchedulerBridge::OnArticlesCleared(
+bool FeedSchedulerBridge::OnArticlesCleared(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& j_this,
     jboolean j_suppress_refreshes) {
-  scheduler_host_->OnArticlesCleared(j_suppress_refreshes);
+  return scheduler_host_->OnArticlesCleared(j_suppress_refreshes);
 }
 
 void FeedSchedulerBridge::TriggerRefresh() {

@@ -175,12 +175,15 @@ public class FeedAppLifecycle
 
     private void onClearAll(boolean suppressRefreshes) {
         reportEvent(AppLifecycleEvent.CLEAR_ALL);
-        // It is important that #onClearAll() is called before notifying the scheduler, otherwise
-        // the clear all could wipe out the new results. These are both async operations that are
-        // kicked off here, but the Feed is responsible for tracking them and making sure they're
-        // correctly respected.
-        mAppLifecycleListener.onClearAll();
-        mFeedScheduler.onArticlesCleared(suppressRefreshes);
+        // Clearing and triggering refreshes are both asynchronous operations. The Feed is able to
+        // better coordinate them if {@link AppLifecycleListener#onClearAllWithRefresh} is called.
+        // If the scheduler returns true from {@link FeedScheduler#onArticlesCleared}, this means
+        // that it did not trigger the refresh, but is allowing us to do so.
+        if (mFeedScheduler.onArticlesCleared(suppressRefreshes)) {
+            mAppLifecycleListener.onClearAllWithRefresh();
+        } else {
+            mAppLifecycleListener.onClearAll();
+        }
     }
 
     private void initialize() {

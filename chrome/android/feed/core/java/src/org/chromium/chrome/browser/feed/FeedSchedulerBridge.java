@@ -123,9 +123,9 @@ public class FeedSchedulerBridge implements FeedScheduler {
     }
 
     @Override
-    public void onArticlesCleared(boolean suppressRefreshes) {
+    public boolean onArticlesCleared(boolean suppressRefreshes) {
         assert mNativeBridge != 0;
-        nativeOnArticlesCleared(mNativeBridge, suppressRefreshes);
+        return nativeOnArticlesCleared(mNativeBridge, suppressRefreshes);
     }
 
     @CalledByNative
@@ -159,6 +159,6 @@ public class FeedSchedulerBridge implements FeedScheduler {
     private native void nativeOnForegrounded(long nativeFeedSchedulerBridge);
     private native void nativeOnFixedTimer(long nativeFeedSchedulerBridge, Runnable onCompletion);
     private native void nativeOnSuggestionConsumed(long nativeFeedSchedulerBridge);
-    private native void nativeOnArticlesCleared(
+    private native boolean nativeOnArticlesCleared(
             long nativeFeedSchedulerBridge, boolean suppressRefreshes);
 }
