@@ -7,7 +7,7 @@
 
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/ash_export.h"
-#include "ash/public/interfaces/accessibility_controller.mojom.h"
+#include "ash/public/interfaces/accessibility_controller_enums.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_bubble_view.h"
