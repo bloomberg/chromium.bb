@@ -161,7 +161,7 @@ class BackendDatabaseWithMockedClose
                    int64_t index_id,
                    const WTF::String& new_name) override {}
   void Abort(int64_t transaction_id) override {}
-  void Commit(int64_t transaction_id) override {}
+  void Commit(int64_t transaction_id, int64_t num_errors_handled) override {}
 
   bool destroyed() { return destroyed_; }
 

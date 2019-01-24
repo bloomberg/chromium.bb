@@ -198,6 +198,7 @@ void IndexedDBTransaction::ForcePendingCommit() {
 void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
   DCHECK(!processing_event_queue_);
   DCHECK(!is_commit_pending_);
+
   if (state_ == FINISHED)
     return;
 
@@ -356,6 +357,16 @@ leveldb::Status IndexedDBTransaction::Commit() {
   // but are processed asynchronously.
   if (HasPendingTasks())
     return leveldb::Status::OK();
+
+  // If a transaction is being committed but it has sent more errors to the
+  // front end than have been handled at this point, the transaction should be
+  // aborted as it is unknown whether or not any errors unaccounted for will be
+  // properly handled.
+  if (num_errors_sent_ != num_errors_handled_) {
+    is_commit_pending_ = false;
+    Abort(IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionUnknownError));
+    return leveldb::Status::OK();
+  }
 
   state_ = COMMITTING;
 
