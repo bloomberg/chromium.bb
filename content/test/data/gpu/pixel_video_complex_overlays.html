@@ -18,24 +18,7 @@ the video playback starts (video.currentTime > 0).
   transform: rotate(20deg);
 }
 </style>
-<script>
-var video;
-
-function main() {
-  video = document.getElementById("video");
-  video.loop = true;
-  video.addEventListener('timeupdate', SendSuccess);
-  video.play();
-}
-
-function SendSuccess() {
-  if (video.currentTime > 0) {
-    video.removeEventListener('timeupdate', SendSuccess);
-    domAutomationController.send("SUCCESS");
-  }
-}
-
-</script>
+<script src="pixel_video_test.js"></script>
 </head>
 <body onload="main()">
 <div id="container" style="position:absolute; top:0px; left:0px;">
