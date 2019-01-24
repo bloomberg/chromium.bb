@@ -633,13 +633,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TouchHandling) {
   RunTestsInFile("touch_handling_test.js", "test.pdf");
 }
 
-// Flaky on ASan/LSan bots: https://crbug.com/915555.
-#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
-#define MAYBE_Elements DISABLED_Elements
-#else
-#define MAYBE_Elements Elements
-#endif
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, MAYBE_Elements) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Elements) {
   // Although this test file does not require a PDF to be loaded, loading the
   // elements without loading a PDF is difficult.
   RunTestsInFile("material_elements_test.js", "test.pdf");
