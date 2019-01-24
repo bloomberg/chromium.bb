@@ -60,6 +60,44 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_family.h"
 
+// A TerminationObserver observes a NSRunningApplication for when it
+// terminates. On termination, it will run the specified callback, and then
+// release itself.
+@interface TerminationObserver : NSObject {
+  NSRunningApplication* app_;
+  base::OnceClosure callback_;
+}
+- (id)initWithRunningApplication:(NSRunningApplication*)app
+                        callback:(base::OnceClosure)callback;
+@end
+
+@implementation TerminationObserver
+- (id)initWithRunningApplication:(NSRunningApplication*)app
+                        callback:(base::OnceClosure)callback {
+  if (self = [super init]) {
+    app_ = app;
+    callback_ = std::move(callback);
+    [app_ retain];
+    [app_ addObserver:self
+           forKeyPath:@"isTerminated"
+              options:NSKeyValueObservingOptionNew
+              context:nullptr];
+  }
+  return self;
+}
+- (void)observeValueForKeyPath:(NSString*)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary*)change
+                       context:(void*)context {
+  [app_ removeObserver:self forKeyPath:@"isTerminated" context:nullptr];
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                           std::move(callback_));
+  [app_ release];
+  app_ = nil;
+  [self release];
+}
+@end
+
 bool g_app_shims_allow_update_and_launch_in_tests = false;
 
 namespace {
@@ -235,13 +273,17 @@ void LaunchShimOnFileThread(web_app::LaunchShimUpdateBehavior update_behavior,
       command_line.AppendSwitch(app_mode::kLaunchedAfterRebuild);
 
     // Launch without activating (NSWorkspaceLaunchWithoutActivation).
-    base::Process process = base::mac::OpenApplicationWithPath(
+    NSRunningApplication* app = base::mac::OpenApplicationWithPath(
         shim_path, command_line,
         NSWorkspaceLaunchDefault | NSWorkspaceLaunchWithoutActivation);
-    if (process.IsValid()) {
+    if (app) {
+      base::Process process([app processIdentifier]);
       base::PostTaskWithTraits(
           FROM_HERE, {content::BrowserThread::UI},
           base::BindOnce(std::move(launched_callback), std::move(process)));
+      [[TerminationObserver alloc]
+          initWithRunningApplication:app
+                            callback:std::move(terminated_callback)];
       return;
     }
   }

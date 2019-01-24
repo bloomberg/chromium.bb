@@ -174,6 +174,9 @@ class ExtensionAppShimHandler : public AppShimHandler,
   typedef std::set<Browser*> BrowserSet;
   typedef std::map<std::string, BrowserSet> AppBrowserMap;
 
+  // Virtual for tests.
+  virtual bool IsAcceptablyCodeSigned(pid_t pid) const;
+
   // Exposed for testing.
   void set_delegate(Delegate* delegate);
   HostMap& hosts() { return hosts_; }

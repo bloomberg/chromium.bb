@@ -29,10 +29,11 @@ AppShimHost::AppShimHost(const std::string& app_id,
                          bool uses_remote_views)
     : host_binding_(this),
       app_shim_request_(mojo::MakeRequest(&app_shim_)),
+      launch_shim_has_been_called_(false),
       app_id_(app_id),
       profile_path_(profile_path),
       uses_remote_views_(uses_remote_views),
-      weak_factory_(this) {
+      launch_weak_factory_(this) {
   // Create the interfaces used to host windows, so that browser windows may be
   // created before the host process finishes launching.
   if (uses_remote_views_) {
@@ -85,27 +86,38 @@ apps::AppShimHandler* AppShimHost::GetAppShimHandler() const {
 }
 
 void AppShimHost::LaunchShimInternal(bool recreate_shims) {
+  DCHECK(launch_shim_has_been_called_);
   DCHECK(!bootstrap_);
   apps::AppShimHandler* handler = GetAppShimHandler();
   if (!handler)
     return;
+  launch_weak_factory_.InvalidateWeakPtrs();
   handler->OnShimLaunchRequested(
       this, recreate_shims,
       base::BindOnce(&AppShimHost::OnShimProcessLaunched,
-                     weak_factory_.GetWeakPtr(), recreate_shims),
+                     launch_weak_factory_.GetWeakPtr(), recreate_shims),
       base::BindOnce(&AppShimHost::OnShimProcessTerminated,
-                     weak_factory_.GetWeakPtr()));
+                     launch_weak_factory_.GetWeakPtr(), recreate_shims));
 }
 
 void AppShimHost::OnShimProcessLaunched(bool recreate_shims_requested,
                                         base::Process shim_process) {
-  // If the shim process was created, assume that it will successfully create
-  // an AppShimHostBootstrap.
-  // TODO(https://crbug.com/913362): We should add a callback for when
-  // |shim_process| exits, and handle the case where that happens without the
-  // creation of an AppShimHostBootstrap.
+  // If a bootstrap connected, then it should have invalidated all weak
+  // pointers, preventing this from being called.
+  DCHECK(!bootstrap_);
+
+  // If the shim process was created, then await either an AppShimHostBootstrap
+  // connecting or the process exiting.
   if (shim_process.IsValid())
     return;
+
+  // Shim launch failing is treated the same as the shim launching but
+  // terminating before connecting.
+  OnShimProcessTerminated(recreate_shims_requested);
+}
+
+void AppShimHost::OnShimProcessTerminated(bool recreate_shims_requested) {
+  DCHECK(!bootstrap_);
 
   // If this was a launch without recreating shims, then the launch may have
   // failed because the shims were not present, or because they were out of
@@ -125,8 +137,6 @@ void AppShimHost::OnShimProcessLaunched(bool recreate_shims_requested,
   OnAppClosed();
 }
 
-void AppShimHost::OnShimProcessTerminated() {}
-
 ////////////////////////////////////////////////////////////////////////////////
 // AppShimHost, chrome::mojom::AppShimHost
 
@@ -136,6 +146,10 @@ bool AppShimHost::HasBootstrapConnected() const {
 
 void AppShimHost::OnBootstrapConnected(
     std::unique_ptr<AppShimHostBootstrap> bootstrap) {
+  // Prevent any callbacks from any pending launches (e.g, if an internal and
+  // external launch happen to race).
+  launch_weak_factory_.InvalidateWeakPtrs();
+
   DCHECK(!bootstrap_);
   bootstrap_ = std::move(bootstrap);
   bootstrap_->OnConnectedToHost(std::move(app_shim_request_));
@@ -147,6 +161,10 @@ void AppShimHost::OnBootstrapConnected(
 }
 
 void AppShimHost::LaunchShim() {
+  if (launch_shim_has_been_called_)
+    return;
+  launch_shim_has_been_called_ = true;
+
   apps::AppShimHandler* handler = GetAppShimHandler();
   if (!handler)
     return;
