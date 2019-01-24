@@ -114,12 +114,10 @@ typedef struct {
   unsigned char arf_src_offset[MAX_STATIC_GF_GROUP_LENGTH + 1];
   unsigned char arf_update_idx[MAX_STATIC_GF_GROUP_LENGTH + 1];
   unsigned char arf_ref_idx[MAX_STATIC_GF_GROUP_LENGTH + 1];
-#if USE_SYMM_MULTI_LAYER
   unsigned char arf_pos_in_gf[MAX_STATIC_GF_GROUP_LENGTH + 1];
   unsigned char pyramid_level[MAX_STATIC_GF_GROUP_LENGTH + 1];
   unsigned char pyramid_height;
   unsigned char pyramid_lvl_nodes[MAX_PYRAMID_LVL];
-#endif  // USE_SYMM_MULTI_LAYER
   unsigned char brf_src_offset[MAX_STATIC_GF_GROUP_LENGTH + 1];
   unsigned char bidir_pred_enabled[MAX_STATIC_GF_GROUP_LENGTH + 1];
   int bit_allocation[MAX_STATIC_GF_GROUP_LENGTH + 1];

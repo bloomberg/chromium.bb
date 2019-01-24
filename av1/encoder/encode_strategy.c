@@ -86,41 +86,29 @@ static void check_show_existing_frame(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   const FRAME_UPDATE_TYPE next_frame_update_type =
       gf_group->update_type[gf_group->index];
-#if USE_SYMM_MULTI_LAYER
   const int which_arf = (cpi->new_bwdref_update_rule == 1)
                             ? gf_group->arf_update_idx[gf_group->index] > 0
                             : gf_group->arf_update_idx[gf_group->index];
-#else
-  const int which_arf = gf_group->arf_update_idx[gf_group->index];
-#endif
 
   if (cm->show_existing_frame == 1) {
     cm->show_existing_frame = 0;
   } else if (cpi->rc.is_last_bipred_frame) {
-#if USE_SYMM_MULTI_LAYER
     // NOTE: When new structure is used, every bwdref will have one overlay
     //       frame. Therefore, there is no need to find out which frame to
     //       show in advance.
     if (cpi->new_bwdref_update_rule == 0) {
-#endif
       // NOTE: If the current frame is a last bi-predictive frame, it is
       //       needed next to show the BWDREF_FRAME, which is pointed by
       //       the last_fb_idxes[0] after reference frame buffer update
       cpi->rc.is_last_bipred_frame = 0;
       cm->show_existing_frame = 1;
       cpi->existing_fb_idx_to_show = cm->remapped_ref_idx[0];
-#if USE_SYMM_MULTI_LAYER
     }
-#endif
   } else if (cpi->is_arf_filter_off[which_arf] &&
              (next_frame_update_type == OVERLAY_UPDATE ||
               next_frame_update_type == INTNL_OVERLAY_UPDATE)) {
-#if USE_SYMM_MULTI_LAYER
     const int bwdref_to_show =
         (cpi->new_bwdref_update_rule == 1) ? BWDREF_FRAME : ALTREF2_FRAME;
-#else
-    const int bwdref_to_show = ALTREF2_FRAME;
-#endif
     // Other parameters related to OVERLAY_UPDATE will be taken care of
     // in av1_rc_get_second_pass_params(cpi)
     cm->show_existing_frame = 1;
@@ -129,10 +117,9 @@ static void check_show_existing_frame(AV1_COMP *cpi) {
         (next_frame_update_type == OVERLAY_UPDATE)
             ? get_ref_frame_map_idx(cm, ALTREF_FRAME)
             : get_ref_frame_map_idx(cm, bwdref_to_show);
-#if USE_SYMM_MULTI_LAYER
-    if (cpi->new_bwdref_update_rule == 0)
-#endif
+    if (cpi->new_bwdref_update_rule == 0) {
       cpi->is_arf_filter_off[which_arf] = 0;
+    }
   }
   cpi->rc.is_src_frame_ext_arf = 0;
 }

@@ -3509,7 +3509,6 @@ static INLINE void shift_last_ref_frames(AV1_COMP *cpi) {
   }
 }
 
-#if USE_SYMM_MULTI_LAYER
 // This function is used to shift the virtual indices of bwd reference
 // frames as follows:
 // BWD_REF -> ALT2_REF -> EXT_REF
@@ -3549,7 +3548,6 @@ static INLINE void lshift_bwd_ref_frames(AV1_COMP *cpi) {
         cpi->common.remapped_ref_idx[ordered_bwd[i + 1] - LAST_FRAME];
   }
 }
-#endif  // USE_SYMM_MULTI_LAYER
 
 static void update_reference_frames(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
@@ -3623,13 +3621,9 @@ static void update_reference_frames(AV1_COMP *cpi) {
 #if CONFIG_DEBUG
     const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
     assert(gf_group->update_type[gf_group->index] == INTNL_OVERLAY_UPDATE);
-#endif
-#if USE_SYMM_MULTI_LAYER
+#endif  // CONFIG_DEBUG
     const int bwdref_to_show =
         (cpi->new_bwdref_update_rule == 1) ? BWDREF_FRAME : ALTREF2_FRAME;
-#else
-    const int bwdref_to_show = ALTREF2_FRAME;
-#endif
     // Deal with the special case for showing existing internal ALTREF_FRAME
     // Refresh the LAST_FRAME with the ALTREF_FRAME and retire the LAST3_FRAME
     // by updating the virtual indices.
@@ -3642,18 +3636,14 @@ static void update_reference_frames(AV1_COMP *cpi) {
     memcpy(cpi->interp_filter_selected[LAST_FRAME],
            cpi->interp_filter_selected[bwdref_to_show],
            sizeof(cpi->interp_filter_selected[bwdref_to_show]));
-#if USE_SYMM_MULTI_LAYER
     if (cpi->new_bwdref_update_rule == 1) {
       lshift_bwd_ref_frames(cpi);
       // pass outdated forward reference frame (previous LAST3) to the
       // spared space
       cm->remapped_ref_idx[EXTREF_FRAME - LAST_FRAME] = last3_remapped_idx;
     } else {
-#endif
       cm->remapped_ref_idx[bwdref_to_show - LAST_FRAME] = last3_remapped_idx;
-#if USE_SYMM_MULTI_LAYER
     }
-#endif
   } else { /* For non key/golden frames */
     // === ALTREF_FRAME ===
     if (cpi->refresh_alt_ref_frame) {
@@ -3678,7 +3668,6 @@ static void update_reference_frames(AV1_COMP *cpi) {
 
     // === BWDREF_FRAME ===
     if (cpi->refresh_bwd_ref_frame) {
-#if USE_SYMM_MULTI_LAYER
       if (cpi->new_bwdref_update_rule) {
         // We shift the backward reference frame as follows:
         // BWDREF -> ALTREF2 -> EXTREF
@@ -3690,13 +3679,10 @@ static void update_reference_frames(AV1_COMP *cpi) {
         rshift_bwd_ref_frames(cpi);
         cm->remapped_ref_idx[BWDREF_FRAME - LAST_FRAME] = tmp;
       } else {
-#endif  // USE_SYMM_MULTI_LAYER
         assign_frame_buffer_p(
             &cm->ref_frame_map[get_ref_frame_map_idx(cm, BWDREF_FRAME)],
             cm->cur_frame);
-#if USE_SYMM_MULTI_LAYER
       }
-#endif
       memcpy(cpi->interp_filter_selected[BWDREF_FRAME],
              cpi->interp_filter_selected[0],
              sizeof(cpi->interp_filter_selected[0]));
@@ -3762,11 +3748,7 @@ static void update_reference_frames(AV1_COMP *cpi) {
     // If the new structure is used, we will always have overlay frames coupled
     // with bwdref frames. Therefore, we won't have to perform this update
     // in advance (we do this update when the overlay frame shows up).
-#if USE_SYMM_MULTI_LAYER
     if (cpi->new_bwdref_update_rule == 0 && cpi->rc.is_last_bipred_frame) {
-#else
-    if (cpi->rc.is_last_bipred_frame) {
-#endif
       // Refresh the LAST_FRAME with the BWDREF_FRAME and retire the
       // LAST3_FRAME by updating the virtual indices.
       //
@@ -4480,12 +4462,8 @@ static int get_refresh_frame_flags(const AV1_COMP *const cpi) {
   refresh_mask |=
       (cpi->refresh_last_frame << get_ref_frame_map_idx(cm, LAST3_FRAME));
 
-#if USE_SYMM_MULTI_LAYER
   const int bwd_ref_frame =
       (cpi->new_bwdref_update_rule == 1) ? EXTREF_FRAME : BWDREF_FRAME;
-#else
-  const int bwd_ref_frame = BWDREF_FRAME;
-#endif
   refresh_mask |=
       (cpi->refresh_bwd_ref_frame << get_ref_frame_map_idx(cm, bwd_ref_frame));
 

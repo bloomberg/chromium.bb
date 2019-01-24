@@ -1567,7 +1567,6 @@ static int calculate_boost_bits(int frame_count, int boost,
                 0);
 }
 
-#if USE_SYMM_MULTI_LAYER
 // #define CHCEK_GF_PARAMETER
 #ifdef CHCEK_GF_PARAMETER
 void check_frame_params(GF_GROUP *const gf_group, int gf_interval,
@@ -1923,12 +1922,10 @@ static int define_gf_group_structure_4(AV1_COMP *cpi) {
   return gf_update_frames;
 }
 #endif  // USE_MANUAL_GF4_STRUCT
-#endif  // USE_SYMM_MULTI_LAYER
 
 static void define_gf_group_structure(AV1_COMP *cpi) {
   RATE_CONTROL *const rc = &cpi->rc;
 
-#if USE_SYMM_MULTI_LAYER
   const int max_pyr_height = cpi->oxcf.gf_max_pyr_height;
   const int valid_customized_gf_length =
       max_pyr_height >= MIN_PYRAMID_LVL && max_pyr_height <= MAX_PYRAMID_LVL &&
@@ -1948,7 +1945,6 @@ static void define_gf_group_structure(AV1_COMP *cpi) {
   } else {
     cpi->new_bwdref_update_rule = 0;
   }
-#endif
 
   TWO_PASS *const twopass = &cpi->twopass;
   GF_GROUP *const gf_group = &twopass->gf_group;
@@ -2165,7 +2161,6 @@ static void define_gf_group_structure(AV1_COMP *cpi) {
   gf_group->brf_src_offset[frame_index] = 0;
 }
 
-#if USE_SYMM_MULTI_LAYER
 #define NEW_MULTI_LVL_BOOST_VBR_ALLOC 1
 
 #if NEW_MULTI_LVL_BOOST_VBR_ALLOC
@@ -2174,7 +2169,6 @@ static double lvl_budget_factor[MAX_PYRAMID_LVL - 1][MAX_PYRAMID_LVL - 1] = {
   { 1.0, 0.0, 0.0 }, { 0.6, 0.4, 0 }, { 0.45, 0.35, 0.20 }
 };
 #endif  // NEW_MULTI_LVL_BOOST_VBR_ALLOC
-#endif  // USE_SYMM_MULTI_LAYER
 static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
                                    double group_error, int gf_arf_bits) {
   RATE_CONTROL *const rc = &cpi->rc;
@@ -2229,13 +2223,11 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
     }
   }
 
-#if USE_SYMM_MULTI_LAYER
 #if NEW_MULTI_LVL_BOOST_VBR_ALLOC
   // Save.
   const int tmp_frame_index = frame_index;
   int budget_reduced_from_leaf_level = 0;
 #endif  // NEW_MULTI_LVL_BOOST_VBR_ALLOC
-#endif  // USE_SYMM_MULTI_LAYER
 
   // Allocate bits to the other frames in the group.
   const int normal_frames =
@@ -2266,7 +2258,6 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
       // TODO(zoeliu): To investigate whether the allocated bits on
       // BIPRED_UPDATE frames need to be further adjusted.
       gf_group->bit_allocation[frame_index] = target_frame_size;
-#if USE_SYMM_MULTI_LAYER
     } else if (cpi->new_bwdref_update_rule &&
                gf_group->update_type[frame_index] == INTNL_OVERLAY_UPDATE) {
       assert(gf_group->pyramid_height <= MAX_PYRAMID_LVL &&
@@ -2277,7 +2268,6 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
 
       gf_group->bit_allocation[arf_pos] = target_frame_size;
       // Note: Boost, if needed, is added in the next loop.
-#endif  // USE_SYMM_MULTI_LAYER
     } else {
       assert(gf_group->update_type[frame_index] == LF_UPDATE ||
              gf_group->update_type[frame_index] == INTNL_OVERLAY_UPDATE);
@@ -2305,7 +2295,6 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
     }
   }
 
-#if USE_SYMM_MULTI_LAYER
 #if MULTI_LVL_BOOST_VBR_CQ
   if (budget_reduced_from_leaf_level > 0) {
     // Restore.
@@ -2342,13 +2331,8 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
     }
   }
 #endif  // MULTI_LVL_BOOST_VBR_CQ
-#endif  // USE_SYMM_MULTI_LAYER
 
-#if USE_SYMM_MULTI_LAYER
   if (cpi->new_bwdref_update_rule == 0 && rc->source_alt_ref_pending) {
-#else
-  if (rc->source_alt_ref_pending) {
-#endif
     if (cpi->num_extra_arfs) {
       // NOTE: For bit allocation, move the allocated bits associated with
       //       INTNL_OVERLAY_UPDATE to the corresponding INTNL_ARF_UPDATE.
@@ -2662,7 +2646,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     // Note: When new pyramid structure is used through
     // 'define_customized_gf_group_structure()' function, this value is
     // overridden.
-#if USE_SYMM_MULTI_LAYER
     if (rc->baseline_gf_interval == MIN_GF_INTERVAL &&
         rc->source_alt_ref_pending) {
       cpi->num_extra_arfs = 1;
@@ -2671,17 +2654,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
                                                      rc->source_alt_ref_pending,
                                                      oxcf->gf_max_pyr_height);
     }
-#else
-    cpi->num_extra_arfs = get_number_of_extra_arfs(rc->baseline_gf_interval,
-                                                   rc->source_alt_ref_pending,
-                                                   oxcf->gf_max_pyr_height);
-#endif  // USE_SYMM_MULTI_LAYER
   }
-
-#if !USE_SYMM_MULTI_LAYER
-  // Currently at maximum two extra ARFs' are allowed
-  assert(cpi->num_extra_arfs <= MAX_EXT_ARFS);
-#endif
 
   rc->frames_till_gf_update_due = rc->baseline_gf_interval;
 

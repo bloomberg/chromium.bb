@@ -1053,7 +1053,7 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
       // Constrained quality use slightly lower active best.
       active_best_quality = active_best_quality * 15 / 16;
 
-#if USE_SYMM_MULTI_LAYER && MULTI_LVL_BOOST_VBR_CQ
+#if MULTI_LVL_BOOST_VBR_CQ
       if (gf_group->update_type[gf_group->index] == ARF_UPDATE ||
           (is_intrl_arf_boost && !cpi->new_bwdref_update_rule)) {
 #if REDUCE_LAST_ALT_BOOST
@@ -1074,7 +1074,7 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
           ++this_height;
         }
       }
-#endif  // USE_SYMM_MULTI_LAYER && MULTI_LVL_BOOST_VBR_CQ
+#endif  // MULTI_LVL_BOOST_VBR_CQ
     } else if (oxcf->rc_mode == AOM_Q) {
       if (!cpi->refresh_alt_ref_frame && !is_intrl_arf_boost) {
         active_best_quality = cq_level;
@@ -1092,7 +1092,6 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
           assert(rc->arf_q >= 0);  // Ensure it is set to a valid value.
           active_best_quality = rc->arf_q;
         }
-#if USE_SYMM_MULTI_LAYER
         if (cpi->new_bwdref_update_rule && is_intrl_arf_boost) {
           int this_height = gf_group_pyramid_level(cpi);
           while (this_height < gf_group->pyramid_height) {
@@ -1100,14 +1099,11 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
             ++this_height;
           }
         } else {
-#endif
           // Modify best quality for second level arfs. For mode AOM_Q this
           // becomes the baseline frame q.
           if (gf_group->rf_level[gf_group->index] == GF_ARF_LOW)
             active_best_quality = (active_best_quality + cq_level + 1) / 2;
-#if USE_SYMM_MULTI_LAYER
         }
-#endif
       }
     } else {
       active_best_quality = get_gf_active_quality(rc, q, bit_depth);
@@ -1117,7 +1113,6 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
 
       active_best_quality = min_boost - (int)(boost * rc->arf_boost_factor);
 #endif
-#if USE_SYMM_MULTI_LAYER
       if (cpi->new_bwdref_update_rule && is_intrl_arf_boost) {
         int this_height = gf_group_pyramid_level(cpi);
         while (this_height < gf_group->pyramid_height) {
@@ -1126,7 +1121,6 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
           ++this_height;
         }
       }
-#endif
     }
   } else {
     if (oxcf->rc_mode == AOM_Q) {
@@ -1431,17 +1425,13 @@ void av1_configure_buffer_updates(AV1_COMP *cpi) {
     case INTNL_ARF_UPDATE:
       cpi->refresh_last_frame = 0;
       cpi->refresh_golden_frame = 0;
-#if USE_SYMM_MULTI_LAYER
       if (cpi->new_bwdref_update_rule == 1) {
         cpi->refresh_bwd_ref_frame = 1;
         cpi->refresh_alt2_ref_frame = 0;
       } else {
-#endif
         cpi->refresh_bwd_ref_frame = 0;
         cpi->refresh_alt2_ref_frame = 1;
-#if USE_SYMM_MULTI_LAYER
       }
-#endif
       cpi->refresh_alt_ref_frame = 0;
       break;
 
