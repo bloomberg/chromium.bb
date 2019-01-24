@@ -1485,6 +1485,14 @@ void DeviceStatusCollector::SampleDischargeRate(
     }
   }
 
+  if (prop.has_battery_percent() && prop.battery_percent() >= 0) {
+    int percent = static_cast<int>(prop.battery_percent());
+    for (auto it = sample->battery_samples.begin();
+         it != sample->battery_samples.end(); it++) {
+      it->second.set_charge_rate(percent);
+    }
+  }
+
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&InvokeCpuTempFetcher, cpu_temp_fetcher_),
