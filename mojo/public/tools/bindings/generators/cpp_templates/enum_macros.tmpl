@@ -2,7 +2,7 @@
   Macro for enum definition, and the declaration of associated functions.
 ---#}
 
-{%- macro enum_decl(enum) %}
+{%- macro enum_decl(enum, export_attribute) %}
 {%-   set enum_name = enum|get_name_for_kind(flatten_nested_kind=True) %}
 enum class {{enum_name}} : int32_t {
 {%-   for field in enum.fields %}
@@ -20,7 +20,19 @@ enum class {{enum_name}} : int32_t {
 {%-   endif %}
 };
 
-inline std::ostream& operator<<(std::ostream& os, {{enum_name}} value) {
+{{export_attribute}} std::ostream& operator<<(std::ostream& os, {{enum_name}} value);
+
+{#-   Returns true if the given enum value exists in this version of enum. #}
+inline bool IsKnownEnumValue({{enum_name}} value) {
+  return {{enum|get_name_for_kind(internal=True,
+                                  flatten_nested_kind=True)}}::IsKnownValue(
+      static_cast<int32_t>(value));
+}
+{%- endmacro %}
+
+{%- macro enum_stream(enum) %}
+{%-   set enum_name = enum|get_name_for_kind(flatten_nested_kind=True) %}
+std::ostream& operator<<(std::ostream& os, {{enum_name}} value) {
 {%- if enum.fields %}
   switch(value) {
 {%-   for _, values in enum.fields|groupby('numeric_value') %}
@@ -41,13 +53,6 @@ inline std::ostream& operator<<(std::ostream& os, {{enum_name}} value) {
 {%- else %}
   return os << "Unknown {{enum_name}} value: " << static_cast<int32_t>(value);
 {%- endif %}
-}
-
-{#-   Returns true if the given enum value exists in this version of enum. #}
-inline bool IsKnownEnumValue({{enum_name}} value) {
-  return {{enum|get_name_for_kind(internal=True,
-                                  flatten_nested_kind=True)}}::IsKnownValue(
-      static_cast<int32_t>(value));
 }
 {%- endmacro %}
 
