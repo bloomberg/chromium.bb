@@ -27,6 +27,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/os_metrics.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -832,4 +833,28 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   CheckAllUkmEntries(2);
   CheckPageInfoUkmMetrics(url1, false /* is_visible */, 2);
   CheckPageInfoUkmMetrics(url2, true /* is_visible */, 2);
+}
+
+// Build id is only emitted for official builds.
+#if defined(OFFICIAL_BUILD)
+#define MAYBE_RendererBuildId RendererBuildId
+#else
+#define MAYBE_RendererBuildId DISABLED_RendererBuildId
+#endif
+IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest, MAYBE_RendererBuildId) {
+  for (content::RenderProcessHost::iterator rph_iter =
+           content::RenderProcessHost::AllHostsIterator();
+       !rph_iter.IsAtEnd(); rph_iter.Advance()) {
+    const base::Process& process = rph_iter.GetCurrentValue()->GetProcess();
+    auto maps =
+        memory_instrumentation::OSMetrics::GetProcessMemoryMaps(process.Pid());
+    bool found = false;
+    for (const memory_instrumentation::mojom::VmRegionPtr& region : maps) {
+      if (region->module_debugid.empty())
+        continue;
+      found = true;
+      break;
+    }
+    EXPECT_TRUE(found);
+  }
 }
