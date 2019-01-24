@@ -25,6 +25,7 @@
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/wm/window_util.h"
 #include "ash/ws/window_service_owner.h"
+#include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -42,6 +43,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/compositor.h"
+#include "ui/compositor/compositor_switches.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/manager/display_layout_store.h"
@@ -87,6 +89,27 @@ void ClearDisplayPropertiesOnHost(AshWindowTreeHost* ash_host) {
 aura::Window* GetWindow(AshWindowTreeHost* ash_host) {
   CHECK(ash_host->AsWindowTreeHost());
   return ash_host->AsWindowTreeHost()->window();
+}
+
+const char* GetUICompositorMemoryLimitMB() {
+  display::DisplayManager* display_manager =
+      ash::Shell::Get()->display_manager();
+  int width;
+  if (display::Display::HasInternalDisplay()) {
+    // If the device has an internal display, use it even if
+    // it's disabled (can happen when booted in docked mode.
+    const display::ManagedDisplayInfo& display_info =
+        display_manager->GetDisplayInfo(display::Display::InternalDisplayId());
+    width = display_info.size_in_pixel().width();
+  } else {
+    // Otherwise just use the primary.
+    width = display::Screen::GetScreen()
+                ->GetPrimaryDisplay()
+                .GetSizeInPixel()
+                .width();
+  }
+
+  return width >= 3000 ? "1024" : "512";
 }
 
 }  // namespace
@@ -216,6 +239,14 @@ void WindowTreeHostManager::Shutdown() {
 
 void WindowTreeHostManager::CreatePrimaryHost(
     const AshWindowTreeHostInitParams& init_params) {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(
+          switches::kUiCompositorMemoryLimitWhenVisibleMB)) {
+    command_line->AppendSwitchASCII(
+        switches::kUiCompositorMemoryLimitWhenVisibleMB,
+        GetUICompositorMemoryLimitMB());
+  }
+
   const display::Display& primary_candidate =
       GetDisplayManager()->GetPrimaryDisplayCandidate();
   primary_display_id = primary_candidate.id();
