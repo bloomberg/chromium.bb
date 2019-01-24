@@ -2074,6 +2074,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-web-authentication-cable-support",
+    "owners": [ "webauthn-team@google.com" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "enable-web-authentication-testing-api",
     "owners": [ "webauthn-team@google.com" ],
     "expiry_milestone": -1

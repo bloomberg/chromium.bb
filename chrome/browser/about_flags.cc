@@ -3503,6 +3503,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop, FEATURE_VALUE_TYPE(features::kWebAuthBle)},
 #endif  // !defined(OS_ANDROID)
 
+#if !defined(OS_ANDROID)
+    {"enable-web-authentication-cable-support",
+     flag_descriptions::kEnableWebAuthenticationCableSupportName,
+     flag_descriptions::kEnableWebAuthenticationCableSupportDescription,
+     kOsDesktop, FEATURE_VALUE_TYPE(features::kWebAuthCable)},
+#endif  // !defined(OS_ANDROID)
+
 #if defined(OS_ANDROID)
     {"enable-sole-integration", flag_descriptions::kSoleIntegrationName,
      flag_descriptions::kSoleIntegrationDescription, kOsAndroid,
