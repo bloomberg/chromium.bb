@@ -86,6 +86,8 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   DedicatedWorkerObjectProxy& WorkerObjectProxy() const;
 
  private:
+  mojom::RequestContextType GetDestinationForMainScript() override;
+
   const String name_;
 };
 

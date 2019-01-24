@@ -167,6 +167,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
       const KURL& script_url,
       const Vector<uint8_t>* meta_data) override;
   void ExceptionThrown(ErrorEvent*) override;
+  mojom::RequestContextType GetDestinationForMainScript() override;
 
   // Counts the |script_size| and |cached_metadata_size| for UMA to measure the
   // number of scripts and the total bytes of scripts.

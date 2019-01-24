@@ -94,4 +94,9 @@ void SharedWorkerGlobalScope::Trace(blink::Visitor* visitor) {
   WorkerGlobalScope::Trace(visitor);
 }
 
+mojom::RequestContextType
+SharedWorkerGlobalScope::GetDestinationForMainScript() {
+  return mojom::RequestContextType::SHARED_WORKER;
+}
+
 }  // namespace blink
