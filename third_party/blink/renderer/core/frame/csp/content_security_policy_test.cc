@@ -1365,6 +1365,7 @@ TEST_F(ContentSecurityPolicyTest, IsValidCSPAttrTest) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypesNoDirective) {
+  execution_context->SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("", kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
@@ -1372,6 +1373,7 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesNoDirective) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypesSimpleDirective) {
+  execution_context->SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types one two three",
                         kContentSecurityPolicyHeaderTypeEnforce,
@@ -1383,6 +1385,7 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesSimpleDirective) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypesWhitespace) {
+  execution_context->SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types one\ntwo\rthree",
                         kContentSecurityPolicyHeaderTypeEnforce,
@@ -1393,6 +1396,7 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesWhitespace) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypesEmpty) {
+  execution_context->SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types",
                         kContentSecurityPolicyHeaderTypeEnforce,
@@ -1401,6 +1405,7 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesEmpty) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypesStar) {
+  execution_context->SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types *",
                         kContentSecurityPolicyHeaderTypeEnforce,
@@ -1409,6 +1414,7 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesStar) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypesReserved) {
+  execution_context->SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types one \"two\" 'three'",
                         kContentSecurityPolicyHeaderTypeEnforce,

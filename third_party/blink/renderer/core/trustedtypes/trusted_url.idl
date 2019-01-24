@@ -8,7 +8,7 @@ typedef (USVString or TrustedURL) URLString;
 
 [
     Exposed=Window,
-    RuntimeEnabled=TrustedDOMTypes
+    OriginTrialEnabled=TrustedDOMTypes
 ] interface TrustedURL {
     stringifier;
 };

@@ -463,6 +463,7 @@ class CORE_EXPORT ContentSecurityPolicy
   void EnforceSandboxFlags(SandboxFlags);
   void TreatAsPublicAddress();
   void RequireTrustedTypes();
+  bool IsRequireTrustedTypes() const { return require_safe_types_; }
   String EvalDisabledErrorMessage() const;
 
   // Upgrade-Insecure-Requests and Block-All-Mixed-Content are represented in

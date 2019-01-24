@@ -26,7 +26,7 @@ void GetStringFromTrustedTypeThrows(
     const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&
         string_or_trusted_type) {
   Document* document = Document::CreateForTest();
-  document->SetRequireTrustedTypes();
+  document->SetRequireTrustedTypesForTesting();
   DummyExceptionStateForTesting exception_state;
   ASSERT_FALSE(exception_state.HadException());
   String s = GetStringFromTrustedType(string_or_trusted_type, document,
@@ -41,7 +41,7 @@ void GetStringFromTrustedHTMLThrows(
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       DummyPageHolder::Create(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
-  document.SetRequireTrustedTypes();
+  document.SetRequireTrustedTypesForTesting();
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   ASSERT_FALSE(exception_state.HadException());
@@ -57,7 +57,7 @@ void GetStringFromTrustedScriptThrows(
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       DummyPageHolder::Create(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
-  document.SetRequireTrustedTypes();
+  document.SetRequireTrustedTypesForTesting();
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   ASSERT_FALSE(exception_state.HadException());
@@ -73,7 +73,7 @@ void GetStringFromTrustedScriptURLThrows(
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       DummyPageHolder::Create(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
-  document.SetRequireTrustedTypes();
+  document.SetRequireTrustedTypesForTesting();
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   ASSERT_FALSE(exception_state.HadException());
@@ -89,7 +89,7 @@ void GetStringFromTrustedURLThrows(
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       DummyPageHolder::Create(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
-  document.SetRequireTrustedTypes();
+  document.SetRequireTrustedTypesForTesting();
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   ASSERT_FALSE(exception_state.HadException());
@@ -106,7 +106,7 @@ void GetStringFromTrustedTypeWorks(
         string_or_trusted_type,
     String expected) {
   Document* document = Document::CreateForTest();
-  document->SetRequireTrustedTypes();
+  document->SetRequireTrustedTypesForTesting();
   DummyExceptionStateForTesting exception_state;
   String s = GetStringFromTrustedType(string_or_trusted_type, document,
                                       exception_state);
@@ -119,7 +119,7 @@ void GetStringFromTrustedHTMLWorks(
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       DummyPageHolder::Create(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
-  document.SetRequireTrustedTypes();
+  document.SetRequireTrustedTypesForTesting();
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   String s = GetStringFromTrustedHTML(string_or_trusted_html, &document,
@@ -133,7 +133,7 @@ void GetStringFromTrustedScriptWorks(
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       DummyPageHolder::Create(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
-  document.SetRequireTrustedTypes();
+  document.SetRequireTrustedTypesForTesting();
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   String s = GetStringFromTrustedScript(string_or_trusted_script, &document,
@@ -147,7 +147,7 @@ void GetStringFromTrustedScriptURLWorks(
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       DummyPageHolder::Create(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
-  document.SetRequireTrustedTypes();
+  document.SetRequireTrustedTypesForTesting();
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   String s = GetStringFromTrustedScriptURL(string_or_trusted_script_url,
@@ -161,7 +161,7 @@ void GetStringFromTrustedURLWorks(
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       DummyPageHolder::Create(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
-  document.SetRequireTrustedTypes();
+  document.SetRequireTrustedTypesForTesting();
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   String s = GetStringFromTrustedURL(string_or_trusted_url, &document,

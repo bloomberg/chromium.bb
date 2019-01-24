@@ -3967,8 +3967,8 @@ void Document::writeln(const String& text,
 void Document::write(v8::Isolate* isolate,
                      const Vector<String>& text,
                      ExceptionState& exception_state) {
-  if (GetSecurityContext().RequireTrustedTypes()) {
-    DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
+  if (IsTrustedTypesEnabledForDoc()) {
+    DCHECK(origin_trials::TrustedDOMTypesEnabled(this));
     exception_state.ThrowTypeError(
         "This document can only write `TrustedHTML` objects.");
     return;
@@ -3987,8 +3987,8 @@ void Document::write(v8::Isolate* isolate,
 void Document::writeln(v8::Isolate* isolate,
                        const Vector<String>& text,
                        ExceptionState& exception_state) {
-  if (GetSecurityContext().RequireTrustedTypes()) {
-    DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
+  if (IsTrustedTypesEnabledForDoc()) {
+    DCHECK(origin_trials::TrustedDOMTypesEnabled(this));
     exception_state.ThrowTypeError(
         "This document can only write `TrustedHTML` objects.");
     return;
@@ -4004,10 +4004,15 @@ void Document::writeln(v8::Isolate* isolate,
           exception_state);
 }
 
+bool Document::IsTrustedTypesEnabledForDoc() const {
+  return SecurityContext::RequireTrustedTypes() &&
+         origin_trials::TrustedDOMTypesEnabled(this);
+}
+
 void Document::write(v8::Isolate* isolate,
                      TrustedHTML* text,
                      ExceptionState& exception_state) {
-  DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
+  DCHECK(origin_trials::TrustedDOMTypesEnabled(this));
   write(text->toString(), EnteredDOMWindow(isolate)->document(),
         exception_state);
 }
@@ -4015,7 +4020,7 @@ void Document::write(v8::Isolate* isolate,
 void Document::writeln(v8::Isolate* isolate,
                        TrustedHTML* text,
                        ExceptionState& exception_state) {
-  DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
+  DCHECK(origin_trials::TrustedDOMTypesEnabled(this));
   writeln(text->toString(), EnteredDOMWindow(isolate)->document(),
           exception_state);
 }

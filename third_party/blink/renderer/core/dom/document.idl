@@ -123,9 +123,11 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     [CallWith=Isolate, CEReactions, CustomElementCallbacks, RaisesException] void writeln(DOMString... text);
 
     // TrustedTypes variants of the above.
-    // TODO(mkwst): Write a spec for this.
-    [RuntimeEnabled=TrustedDOMTypes, CallWith=Isolate, CEReactions, CustomElementCallbacks, RaisesException] void write(TrustedHTML text);
-    [RuntimeEnabled=TrustedDOMTypes, CallWith=Isolate, CEReactions, CustomElementCallbacks, RaisesException] void writeln(TrustedHTML text);
+    // Note: This should be gated on [OriginTrialEnabled=TrustedDOMTypes], but
+    // since OriginTrialEnabled isn't compatible with overloaded methods, we're
+    // handling these unconditionally.
+    [CallWith=Isolate, CEReactions, CustomElementCallbacks, RaisesException] void write(TrustedHTML text);
+    [CallWith=Isolate, CEReactions, CustomElementCallbacks, RaisesException] void writeln(TrustedHTML text);
 
     // user interaction
     [Affects=Nothing] readonly attribute Window? defaultView;

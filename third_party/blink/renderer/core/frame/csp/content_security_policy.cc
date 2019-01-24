@@ -1082,8 +1082,8 @@ void ContentSecurityPolicy::TreatAsPublicAddress() {
 }
 
 void ContentSecurityPolicy::RequireTrustedTypes() {
-  if (!RuntimeEnabledFeatures::TrustedDOMTypesEnabled())
-    return;
+  // We store whether CSP demands a policy. The caller still needs to check
+  // whether the feature is enabled in the first place.
   require_safe_types_ = true;
 }
 
