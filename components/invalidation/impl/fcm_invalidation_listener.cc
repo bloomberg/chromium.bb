@@ -243,6 +243,11 @@ std::unique_ptr<base::DictionaryValue>
 FCMInvalidationListener::CollectDebugData() const {
   std::unique_ptr<base::DictionaryValue> return_value =
       per_user_topic_registration_manager_->CollectDebugData();
+  return_value->SetString("FCM channel state",
+                          InvalidatorStateToString(fcm_network_state_));
+  return_value->SetString(
+      "Subscription channel state",
+      InvalidatorStateToString(subscription_channel_state_));
   for (const Topic& topic : registered_topics_) {
     if (!return_value->HasKey(topic)) {
       return_value->SetString(topic, "Unregistered");
