@@ -73,7 +73,7 @@ DownloadsManagerTest.prototype = {
   /** @override */
   extraLibraries: DownloadsTest.prototype.extraLibraries.concat([
     ROOT_PATH + 'ui/webui/resources/js/cr.js',
-    ROOT_PATH + 'chrome/browser/resources/md_downloads/constants.js',
+    ROOT_PATH + 'chrome/browser/resources/downloads/constants.js',
     '../test_browser_proxy.js',
     'test_support.js',
     'manager_tests.js',

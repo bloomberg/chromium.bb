@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/md_downloads/mock_md_downloads_page.h"
+#include "chrome/browser/ui/webui/downloads/mock_downloads_page.h"
 
 MockPage::MockPage() : binding_(this) {}
 MockPage::~MockPage() = default;

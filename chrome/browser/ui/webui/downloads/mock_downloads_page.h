@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_MD_DOWNLOADS_MOCK_MD_DOWNLOADS_PAGE_H_
-#define CHROME_BROWSER_UI_WEBUI_MD_DOWNLOADS_MOCK_MD_DOWNLOADS_PAGE_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_DOWNLOADS_MOCK_DOWNLOADS_PAGE_H_
+#define CHROME_BROWSER_UI_WEBUI_DOWNLOADS_MOCK_DOWNLOADS_PAGE_H_
 
-#include "chrome/browser/ui/webui/md_downloads/md_downloads.mojom.h"
+#include "chrome/browser/ui/webui/downloads/downloads.mojom.h"
 
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -26,4 +26,4 @@ class MockPage : public md_downloads::mojom::Page {
   mojo::Binding<md_downloads::mojom::Page> binding_;
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_MD_DOWNLOADS_MOCK_MD_DOWNLOADS_PAGE_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_DOWNLOADS_MOCK_DOWNLOADS_PAGE_H_

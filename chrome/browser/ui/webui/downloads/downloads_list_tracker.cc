@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/md_downloads/downloads_list_tracker.h"
+#include "chrome/browser/ui/webui/downloads/downloads_list_tracker.h"
 
 #include <iterator>
 

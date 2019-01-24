@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/md_downloads/downloads_list_tracker.h"
+#include "chrome/browser/ui/webui/downloads/downloads_list_tracker.h"
 
 #include <limits.h>
 #include <stdint.h>
@@ -15,7 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/download/download_item_model.h"
-#include "chrome/browser/ui/webui/md_downloads/mock_md_downloads_page.h"
+#include "chrome/browser/ui/webui/downloads/mock_downloads_page.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"

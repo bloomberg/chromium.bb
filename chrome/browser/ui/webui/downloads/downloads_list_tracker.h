@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_MD_DOWNLOADS_DOWNLOADS_LIST_TRACKER_H_
-#define CHROME_BROWSER_UI_WEBUI_MD_DOWNLOADS_DOWNLOADS_LIST_TRACKER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_DOWNLOADS_DOWNLOADS_LIST_TRACKER_H_
+#define CHROME_BROWSER_UI_WEBUI_DOWNLOADS_DOWNLOADS_LIST_TRACKER_H_
 
 #include <stddef.h>
 
@@ -15,7 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/ui/webui/md_downloads/md_downloads.mojom.h"
+#include "chrome/browser/ui/webui/downloads/downloads.mojom.h"
 #include "components/download/content/public/all_download_item_notifier.h"
 #include "components/download/public/common/download_item.h"
 
@@ -132,4 +132,4 @@ class DownloadsListTracker
   DISALLOW_COPY_AND_ASSIGN(DownloadsListTracker);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_MD_DOWNLOADS_DOWNLOADS_LIST_TRACKER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_DOWNLOADS_DOWNLOADS_LIST_TRACKER_H_
