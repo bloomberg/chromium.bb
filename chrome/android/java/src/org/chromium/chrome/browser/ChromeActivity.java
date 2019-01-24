@@ -112,6 +112,7 @@ import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.offlinepages.indicator.OfflineIndicatorController;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
+import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper.MenuButtonState;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
@@ -323,6 +324,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     /** Whether or not the activity is in started state. */
     private boolean mStarted;
+
+    private final Runnable mUpdateStateChangedListener = this::onUpdateStateChanged;
 
     /**
      * @param factory The {@link AppMenuHandlerFactory} for creating {@link #mAppMenuHandler}
@@ -1139,8 +1142,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 return currentTab.getUrl();
             });
 
-            UpdateMenuItemHelper.getInstance().checkForUpdateOnBackgroundThread(
-                    ChromeActivity.this);
+            UpdateMenuItemHelper.getInstance().registerObserver(mUpdateStateChangedListener);
         });
 
         final String simpleName = getClass().getSimpleName();
@@ -1360,6 +1362,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             TabModelSelector selector = getTabModelSelector();
             if (selector != null) selector.destroy();
         }
+
+        UpdateMenuItemHelper.getInstance().unregisterObserver(mUpdateStateChangedListener);
 
         AccessibilityManager manager = (AccessibilityManager)
                 getBaseContext().getSystemService(Context.ACCESSIBILITY_SERVICE);
@@ -2086,10 +2090,14 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
-     * Callback after UpdateMenuItemHelper#checkForUpdateOnBackgroundThread is complete.
+     * Callback for when UpdateMenuItemHelper has a state change.
      */
-    public void onCheckForUpdate() {
-        if (UpdateMenuItemHelper.getInstance().shouldShowToolbarBadge(this)) {
+    public void onUpdateStateChanged() {
+        if (isActivityDestroyed()) return;
+
+        MenuButtonState buttonState = UpdateMenuItemHelper.getInstance().getUiState().buttonState;
+
+        if (buttonState != null) {
             mToolbarManager.showAppMenuUpdateBadge();
             mCompositorViewHolder.requestRender();
         } else {

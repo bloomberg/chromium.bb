@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.graphics.drawable.Drawable;
+import android.support.annotation.DrawableRes;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -18,6 +18,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
+import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper.MenuButtonState;
 
 /**
  * The overflow menu button.
@@ -69,23 +70,13 @@ public class MenuButton extends FrameLayout implements TintObserver {
      * TODO(crbug.com/865801): Clean this up when MenuButton and UpdateMenuItemHelper is MVCed.
      */
     public void setUpdateBadgeVisibilityIfValidState(boolean visible) {
-        switch (UpdateMenuItemHelper.getInstance().getUpdateType()) {
-            case UpdateMenuItemHelper.UpdateType.UPDATE_AVAILABLE:
-            // Intentional fall through.
-            case UpdateMenuItemHelper.UpdateType.UNSUPPORTED_OS_VERSION:
-                mUpdateBadgeView.setVisibility(visible ? View.VISIBLE : View.GONE);
-                updateImageResources();
-                updateContentDescription(visible);
-                break;
-            case UpdateMenuItemHelper.UpdateType.NONE:
-            // Intentional fall through.
-            case UpdateMenuItemHelper.UpdateType.UNKNOWN:
-            // Intentional fall through.
-            default:
-                mUpdateBadgeView.setVisibility(View.GONE);
-                updateContentDescription(false);
-                break;
-        }
+        MenuButtonState buttonState = UpdateMenuItemHelper.getInstance().getUiState().buttonState;
+
+        visible &= buttonState != null;
+
+        mUpdateBadgeView.setVisibility(visible ? View.VISIBLE : View.GONE);
+        if (visible) updateImageResources();
+        updateContentDescription(visible);
     }
 
     /**
@@ -98,16 +89,12 @@ public class MenuButton extends FrameLayout implements TintObserver {
     }
 
     public void updateImageResources() {
-        Drawable drawable;
-        if (mUseLightDrawables) {
-            drawable = UpdateMenuItemHelper.getInstance().getLightBadgeDrawable(
-                    mUpdateBadgeView.getResources());
-        } else {
-            drawable = UpdateMenuItemHelper.getInstance().getDarkBadgeDrawable(
-                    mUpdateBadgeView.getResources());
-        }
-        if (drawable == null) return;
-        mUpdateBadgeView.setImageDrawable(drawable);
+        MenuButtonState buttonState = UpdateMenuItemHelper.getInstance().getUiState().buttonState;
+        if (buttonState == null) return;
+        @DrawableRes
+        int drawable = mUseLightDrawables ? buttonState.lightBadgeIcon : buttonState.darkBadgeIcon;
+        mUpdateBadgeView.setImageDrawable(
+                ApiCompatibilityUtils.getDrawable(getResources(), drawable));
     }
 
     /**
@@ -123,22 +110,11 @@ public class MenuButton extends FrameLayout implements TintObserver {
      */
     public void updateContentDescription(boolean isUpdateBadgeVisible) {
         if (isUpdateBadgeVisible) {
-            switch (UpdateMenuItemHelper.getInstance().getUpdateType()) {
-                case UpdateMenuItemHelper.UpdateType.UPDATE_AVAILABLE:
-                    mMenuImageButton.setContentDescription(getResources().getString(
-                            R.string.accessibility_toolbar_btn_menu_update));
-                    break;
-                case UpdateMenuItemHelper.UpdateType.UNSUPPORTED_OS_VERSION:
-                    mMenuImageButton.setContentDescription(getResources().getString(
-                            R.string.accessibility_toolbar_btn_menu_os_version_unsupported));
-                    break;
-                case UpdateMenuItemHelper.UpdateType.NONE:
-                // Intentional fall through.
-                case UpdateMenuItemHelper.UpdateType.UNKNOWN:
-                // Intentional fall through.
-                default:
-                    break;
-            }
+            MenuButtonState buttonState =
+                    UpdateMenuItemHelper.getInstance().getUiState().buttonState;
+            assert buttonState != null : "No button state when trying to show the badge.";
+            mMenuImageButton.setContentDescription(
+                    getResources().getString(buttonState.menuContentDescription));
         } else {
             mMenuImageButton.setContentDescription(
                     getResources().getString(R.string.accessibility_toolbar_btn_menu));
