@@ -82,7 +82,7 @@ void ValidationMessageClientImpl::ShowValidationMessage(
 
   auto* target_frame = page_->MainFrame() && page_->MainFrame()->IsLocalFrame()
                            ? ToLocalFrame(page_->MainFrame())
-                           : &anchor.GetDocument().GetFrame()->LocalFrameRoot();
+                           : anchor.GetDocument().GetFrame();
   auto delegate = ValidationMessageOverlayDelegate::Create(
       *page_, anchor, message_, message_dir, sub_message, sub_message_dir);
   overlay_delegate_ = delegate.get();
