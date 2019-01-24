@@ -438,8 +438,6 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
      IDS_MANAGEMENT_REPORT_DEVICE_NETWORK_INTERFACES},
     {kManagementReportUsers, IDS_MANAGEMENT_REPORT_DEVICE_USERS},
     {"managementLocalTrustRoots", IDS_MANAGEMENT_LOCAL_TRUST_ROOTS},
-    {"managementTrustRootsNotConfigured",
-     IDS_MANAGEMENT_TRUST_ROOTS_NOT_CONFIGURED},
     {"managementTrustRootsConfigured", IDS_MANAGEMENT_TRUST_ROOTS_CONFIGURED}
 #endif  // defined(OS_CHROMEOS)
   };

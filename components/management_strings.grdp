@@ -1,69 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
-  <message name="IDS_MANAGEMENT_TITLE" desc="Title of chrome://management page, which shows the administrator's capabilities in a managed environment" translateable="false">
-    Management overview
+  <message name="IDS_MANAGEMENT_TITLE" desc="Title of chrome://management page, which shows the administrator's capabilities in a managed environment">
+    <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> management
   </message>
-
-  <message name="IDS_MANAGEMENT_TITLE_BY" desc="Title of chrome://management page, shows when device managed by known organization" translateable="false">
+  <message name="IDS_MANAGEMENT_TITLE_BY" desc="Title of chrome://management page, shows when device managed by known organization">
     Device managed by <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph>
   </message>
 
-  <message name="IDS_MANAGEMENT_DEVICE_NOT_MANAGED" desc="Message indicating that the device is not managed" translateable="false">
-    Your device is not managed by an administrator
+  <message name="IDS_MANAGEMENT_DEVICE_NOT_MANAGED" desc="Message indicating that the device is not managed">
+    Your device is not managed by an administrator.
   </message>
-  <message name="IDS_MANAGEMENT_DEVICE_MANAGED_BY" desc="Message indicating that the device is enterprise enrolled to be managed by an administrator, from a specific domain" translateable="false">
-    Your device is managed by <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph>. This means your administrators may remotely configure your device and account.
+  <message name="IDS_MANAGEMENT_DEVICE_MANAGED_BY" desc="Message indicating that the device is enterprise enrolled to be managed by an administrator, from a specific domain">
+    Your device is managed by <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph>. This means your administrator may remotely configure your device.
   </message>
-  <message name="IDS_MANAGEMENT_DEVICE_MANAGED" desc="Message indicating that the device is enterprise enrolled to be managed by an administrator" translateable="false">
-    Your device is managed by an administrator
+  <message name="IDS_MANAGEMENT_DEVICE_MANAGED_BY_ACCOUNT_MANAGED_BY" desc="Message indicating that the device is enterprise enrolled to be managed by an administrator, from a specific domain. And account is managed by an administrator, from another specific domain.">
+    Your device is managed by <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph > and your account is managed by <ph name="ACCOUNT_DOMAIN">$2<ex>example.com</ex></ph>. This means your administrators may remotely configure your device and account.
+  </message>
+  <message name="IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_BY" desc="Message indicating that the device and account is enterprise enrolled to be managed by an administrator, from a specific domain">
+    Your device and account is managed by <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph>. This means your administrator may remotely configure your device and account.
+  </message>
+  <message name="IDS_MANAGEMENT_ACCOUNT_MANAGED_BY" desc="Message indicating that the account is enterprise enrolled to be managed by an administrator">
+    Your account is managed by <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph>. This means your administrator may remotely configure your account.
   </message>
 
-  <message name="IDS_MANAGEMENT_DEVICE_REPORTING" desc="Title of the types of device reporting section of the page" translateable="false">
-    Device reporting
+  <message name="IDS_MANAGEMENT_DEVICE_REPORTING" desc="Title of the types of device reporting section of the page">
+    Reporting
   </message>
   <message name="IDS_MANAGEMENT_BROWSER_REPORTING" desc="Title of the types of browser reporting section of the page" translateable="false">
     Browser reporting
   </message>
-  <message name="IDS_MANAGEMENT_DEVICE_CONFIGURATION" desc="Message telling users that their administrator has set some specific policies on their device" translateable="false">
+  <message name="IDS_MANAGEMENT_DEVICE_CONFIGURATION" desc="Message telling users that their administrator has set some specific policies on their device">
     Your device has been configured to:
   </message>
-  <message name="IDS_MANAGEMENT_LOG_UPLOAD_ENABLED" desc="Message stating that administrators have access to system logs on user's device." translateable="false">
+  <message name="IDS_MANAGEMENT_LOG_UPLOAD_ENABLED" desc="Message stating that administrators have access to system logs on user's device.">
     send system logs to the management server
   </message>
-  <message name="IDS_MANAGEMENT_REPORT_DEVICE_ACTIVITY_TIMES" desc="Message stating that administrators see device activity times." translateable="false">
+  <message name="IDS_MANAGEMENT_REPORT_DEVICE_ACTIVITY_TIMES" desc="Message stating that administrators see device activity times.">
     report time periods when a user is active on the device
   </message>
-  <message name="IDS_MANAGEMENT_REPORT_DEVICE_HARDWARE_STATUS" desc="Message stating that administrators see device hardware status." translateable="false">
+  <message name="IDS_MANAGEMENT_REPORT_DEVICE_HARDWARE_STATUS" desc="Message stating that administrators see device hardware status.">
     report hardware statistics such as CPU/RAM usage
   </message>
-  <message name="IDS_MANAGEMENT_REPORT_DEVICE_NETWORK_INTERFACES" desc="Message stating that administrators see device network interfaces." translateable="false">
+  <message name="IDS_MANAGEMENT_REPORT_DEVICE_NETWORK_INTERFACES" desc="Message stating that administrators see device network interfaces.">
     report list of network interfaces with their types and hardware addresses
   </message>
-  <message name="IDS_MANAGEMENT_REPORT_DEVICE_USERS" desc="Message stating that administrators see all users that have used the device recently." translateable="false">
+  <message name="IDS_MANAGEMENT_REPORT_DEVICE_USERS" desc="Message stating that administrators see all users that have used the device recently.">
     report list of device users that have recently logged in
   </message>
 
-  <message name="IDS_MANAGEMENT_EXTENSION_REPORTING" desc="Title of the force installed extensions section of the page" translateable="false">
+  <message name="IDS_MANAGEMENT_EXTENSION_REPORTING" desc="Title of the force installed extensions section of the page">
     Extension reporting
   </message>
-  <message name="IDS_MANAGEMENT_EXTENSIONS_INSTALLED" desc="Message describing that the administrator has installed some powerful extensions on the managed user's browser" translateable="false">
-    Your administrators have installed extensions with powerful capabilities
+  <message name="IDS_MANAGEMENT_EXTENSIONS_INSTALLED" desc="Message describing that the administrator has installed some powerful extensions on the managed user's browser">
+    Your administrators have installed extensions with powerful capabilities.
   </message>
-  <message name="IDS_MANAGEMENT_EXTENSIONS_NAME" desc="Title of a column of the extension table showing the name of the extension" translateable="false">
+  <message name="IDS_MANAGEMENT_EXTENSIONS_NAME" desc="Title of a column of the extension table showing the name of the extension">
     Name
   </message>
-  <message name="IDS_MANAGEMENT_EXTENSIONS_PERMISSIONS" desc="Title of a column of the extension table showing the permissions of the extension" translateable="false">
+  <message name="IDS_MANAGEMENT_EXTENSIONS_PERMISSIONS" desc="Title of a column of the extension table showing the permissions of the extension">
     Permissions
   </message>
 
-  <message name="IDS_MANAGEMENT_LOCAL_TRUST_ROOTS" desc="Title of the types of local trust roots section of the page" translateable="false">
-    Local trust roots
+  <message name="IDS_MANAGEMENT_LOCAL_TRUST_ROOTS" desc="Title of the types of local trust roots section of the page">
+    Custom root certificates
   </message>
   <message name="IDS_MANAGEMENT_TRUST_ROOTS_NOT_CONFIGURED" desc="Message describing that the administrators have not installed certificates" translateable="false">
     The contents of websites that you visit is not seen by your administrators
-  </message>
-  <message name="IDS_MANAGEMENT_DESKTOP_MONITORING_NOTICE" desc="Message explaining that the administrators have ways to monitor users outside of chrome's control" translateable="false">
-    Administrators may have other ways of monitoring users, outside of Chrome.
   </message>
   <message name="IDS_MANAGEMENT_EXTENSION_REPORT_MACHINE_NAME" desc="Message explaining that an extension currently reports the user's machine name" translateable="false">
     Report your machine's name
@@ -93,8 +95,11 @@
     Report how much time you spend on each website
   </message>
   <if expr="chromeos">
-    <message name="IDS_MANAGEMENT_TRUST_ROOTS_CONFIGURED" desc="Message describing that the administrators have installed their own certificates" translateable="false">
-      Your account/device has been configured with local trust roots, which might allow administrators to see the contents of websites that you visit
+    <message name="IDS_MANAGEMENT_TRUST_ROOTS_CONFIGURED" desc="Message describing that the administrators have installed their own certificates">
+      Your administrator has configured custom root certificates, which may allow the administrator to see the contents of websites that you visit.
     </message>
   </if>
+  <message name="IDS_MANAGEMENT_DESKTOP_MONITORING_NOTICE" desc="Message explaining that the administrators have ways to monitor users outside of chrome's control" translateable="false">
+    Administrators may have other ways of monitoring users, outside of Chrome.
+  </message>
 </grit-part>
