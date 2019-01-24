@@ -122,6 +122,25 @@ class SmbProviderClientImpl : public SmbProviderClient {
     CallDefaultMethod(&method_call, &callback);
   }
 
+  void Premount(const base::FilePath& share_path,
+                bool ntlm_enabled,
+                MountCallback callback) override {
+    smbprovider::PremountOptionsProto options;
+    options.set_path(share_path.value());
+
+    std::unique_ptr<smbprovider::MountConfigProto> config =
+        CreateMountConfigProto(ntlm_enabled);
+    options.set_allocated_mount_config(config.release());
+
+    dbus::MethodCall method_call(smbprovider::kSmbProviderInterface,
+                                 smbprovider::kPremountMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(options);
+
+    CallMethod(&method_call, &SmbProviderClientImpl::HandleMountCallback,
+               &callback);
+  }
+
   void Unmount(int32_t mount_id, StatusCallback callback) override {
     smbprovider::UnmountOptionsProto options;
     options.set_mount_id(mount_id);

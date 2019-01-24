@@ -82,6 +82,13 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) SmbProviderClient
   // the list of valid mounts. Subsequent operations on |mount_id| will fail.
   virtual void Unmount(int32_t mount_id, StatusCallback callback) = 0;
 
+  // Calls Premount. This attempts to mount the share at |share_path|. Premount
+  // succeeds even if authentication fails and the user can provide the
+  // credentials at a later time.
+  virtual void Premount(const base::FilePath& share_path,
+                        bool ntlm_enabled,
+                        MountCallback callback) = 0;
+
   // Calls ReadDirectory. Using the corresponding mount of |mount_id|, this
   // reads the directory on a given |directory_path| and passes the
   // DirectoryEntryList to the supplied ReadDirectoryCallback.
