@@ -16,19 +16,10 @@ visibility = [
 
 config("wtf_config") {
   if (is_win) {
-    defines = [
-      "__STD_C",
-      "_CRT_SECURE_NO_DEPRECATE",
-      "_SCL_SECURE_NO_DEPRECATE",
-    ]
-
     cflags = [
       # Don't complain about calling specific versions of templatized
       # functions (e.g. in RefPtrHashMap.h).
       "/wd4344",
-
-      # dtoa, icu, etc. like doing assignment within conditional.
-      "/wd4706",
     ]
 
     if (is_component_build) {
