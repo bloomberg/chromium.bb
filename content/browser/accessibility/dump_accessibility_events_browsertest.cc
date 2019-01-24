@@ -451,6 +451,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("remove-hidden-attribute.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsReportValidityInvalidField) {
+  RunEventTest(FILE_PATH_LITERAL("report-validity-invalid-field.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(
     DumpAccessibilityEventsTest,
     AccessibilityEventsRemoveHiddenAttributeSubtree) {

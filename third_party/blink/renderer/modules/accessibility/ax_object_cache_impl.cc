@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_label_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
+#include "third_party/blink/renderer/core/html/forms/listed_element.h"
 #include "third_party/blink/renderer/core/html/html_area_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
@@ -81,6 +82,7 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_relation_cache.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_slider.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_svg_root.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_validation_message.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_virtual_object.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
@@ -98,6 +100,7 @@ AXObjectCacheImpl::AXObjectCacheImpl(Document& document)
     : AXObjectCacheBase(document),
       document_(document),
       modification_count_(0),
+      validation_message_axid_(0),
       relation_cache_(new AXRelationCache(this)),
       notification_post_timer_(
           document.GetTaskRunner(TaskType::kInternalDefault),
@@ -1111,6 +1114,8 @@ void AXObjectCacheImpl::HandleAttributeChanged(const QualifiedName& attr_name,
     ChildrenChanged(element->parentNode());
   else if (attr_name == kAriaInvalidAttr)
     PostNotification(element, ax::mojom::Event::kInvalidStatusChanged);
+  else if (attr_name == kAriaErrormessageAttr)
+    MarkElementDirty(element, false);
   else if (attr_name == kAriaOwnsAttr)
     ChildrenChanged(element);
   else
@@ -1121,6 +1126,68 @@ void AXObjectCacheImpl::HandleAutofillStateChanged(Element* elem,
                                                    bool is_available) {
   if (AXObject* obj = Get(elem))
     obj->HandleAutofillStateChanged(is_available);
+}
+
+AXObject* AXObjectCacheImpl::GetOrCreateValidationMessageObject() {
+  AXObject* message_ax_object = nullptr;
+  // Create only if it does not already exist.
+  if (validation_message_axid_) {
+    message_ax_object = ObjectFromAXID(validation_message_axid_);
+  }
+  if (!message_ax_object) {
+    message_ax_object = AXValidationMessage::Create(*this);
+    DCHECK(message_ax_object);
+    // Cache the validation message container for reuse.
+    validation_message_axid_ = GetOrCreateAXID(message_ax_object);
+    message_ax_object->Init();
+  }
+  return message_ax_object;
+}
+
+AXObject* AXObjectCacheImpl::ValidationMessageObjectIfVisible() {
+  Element* focused_element = document_->FocusedElement();
+  if (!focused_element)
+    return nullptr;
+  ListedElement* form_control = ListedElement::From(*focused_element);
+  if (!form_control || !form_control->IsValidationMessageVisible())
+    return nullptr;
+
+  AXObject* focused_object = this->FocusedObject();
+  DCHECK(focused_object);
+
+  // Return as long as the focused form control isn't overriding with a
+  // different message via aria-errormessage.
+  bool override_native_validation_message =
+      focused_object->GetAOMPropertyOrARIAAttribute(
+          AOMRelationProperty::kErrorMessage);
+  if (override_native_validation_message)
+    return nullptr;
+
+  return GetOrCreateValidationMessageObject();
+}
+
+// Native validation error popup for focused form control in current document.
+void AXObjectCacheImpl::HandleValidationMessageVisibilityChanged(
+    const Element* form_control) {
+  AXObject* message_ax_object = ValidationMessageObjectIfVisible();
+  if (!message_ax_object && validation_message_axid_) {
+    // Remove when it becomes hidden, so that a new object is created the next
+    // time the message becomes visible. It's not possible to reuse the same
+    // alert, because the event generator will not generate an alert event if
+    // the same object is hidden and made visible quickly, which occurs if the
+    // user submits the form when an alert is already visible.
+    Remove(validation_message_axid_);
+    validation_message_axid_ = 0;
+  }
+
+  // Form control will now have an error message relation to message container.
+  MarkElementDirty(form_control, false);
+
+  // Validation message alert object is a child of the document, as not all form
+  // controls can have a child. Also, there are form controls such as listbox
+  // that technically can have children, but they are probably not expected to
+  // have alerts within AT client code.
+  ChildrenChanged(document_);
 }
 
 void AXObjectCacheImpl::LabelChanged(Element* element) {
@@ -1233,6 +1300,11 @@ void AXObjectCacheImpl::MarkAXObjectDirty(AXObject* obj, bool subtree) {
       WebLocalFrameImpl::FromFrame(document_->AXObjectCacheOwner().GetFrame());
   if (webframe && webframe->Client())
     webframe->Client()->MarkWebAXObjectDirty(WebAXObject(obj), subtree);
+}
+
+void AXObjectCacheImpl::MarkElementDirty(const Element* element, bool subtree) {
+  if (AXObject* obj = Get(element))
+    MarkAXObjectDirty(obj, subtree);
 }
 
 void AXObjectCacheImpl::HandleFocusedUIElementChanged(Node* old_focused_node,

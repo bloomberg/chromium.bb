@@ -103,6 +103,8 @@ class CORE_EXPORT AXObjectCache
   virtual void HandleLayoutComplete(Document*) = 0;
   virtual void HandleClicked(Node*) = 0;
   virtual void HandleAutofillStateChanged(Element*, bool) = 0;
+  virtual void HandleValidationMessageVisibilityChanged(
+      const Element* form_control) = 0;
 
   // Handle any notifications which arrived while layout was dirty.
   virtual void ProcessUpdatesAfterLayout(Document&) = 0;

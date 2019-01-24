@@ -427,6 +427,13 @@ WebAXObject WebAXObject::AriaActiveDescendant() const {
   return WebAXObject(private_->ActiveDescendant());
 }
 
+WebAXObject WebAXObject::ErrorMessage() const {
+  if (IsDetached())
+    return WebAXObject();
+
+  return WebAXObject(private_->ErrorMessage());
+}
+
 ax::mojom::HasPopup WebAXObject::HasPopup() const {
   if (IsDetached())
     return ax::mojom::HasPopup::kFalse;

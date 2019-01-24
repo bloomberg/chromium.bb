@@ -115,14 +115,15 @@ class AXContentNodeDataSparseAttributeAdapter
       case WebAXObjectAttribute::kAriaActiveDescendant:
         // TODO(dmazzoni): WebAXObject::ActiveDescendant currently returns
         // more information than the sparse interface does.
+        // ******** Why is this a TODO? ********
         break;
       case WebAXObjectAttribute::kAriaDetails:
         dst_->AddIntAttribute(ax::mojom::IntAttribute::kDetailsId,
                               value.AxID());
         break;
       case WebAXObjectAttribute::kAriaErrorMessage:
-        dst_->AddIntAttribute(ax::mojom::IntAttribute::kErrormessageId,
-                              value.AxID());
+        // Use WebAXObject::ErrorMessage(), which provides both ARIA error
+        // messages as well as built-in HTML form validation messages.
         break;
       default:
         NOTREACHED();
@@ -691,6 +692,11 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
     if (!src.AriaActiveDescendant().IsDetached()) {
       dst->AddIntAttribute(ax::mojom::IntAttribute::kActivedescendantId,
                            src.AriaActiveDescendant().AxID());
+    }
+
+    if (!src.ErrorMessage().IsDetached()) {
+      dst->AddIntAttribute(ax::mojom::IntAttribute::kErrormessageId,
+                           src.ErrorMessage().AxID());
     }
 
     if (ui::IsHeading(dst->role) && src.HeadingLevel()) {
