@@ -176,7 +176,11 @@ bool IsOzoneDrmMojo() {
          IsMultiProcessMash();
 }
 
+#if defined(OS_MACOSX)
+const base::Feature kDarkMode = {"DarkMode", base::FEATURE_ENABLED_BY_DEFAULT};
+#else
 const base::Feature kDarkMode = {"DarkMode", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 #if defined(OS_CHROMEOS)
 const base::Feature kHandwritingGesture = {"HandwritingGesture",
