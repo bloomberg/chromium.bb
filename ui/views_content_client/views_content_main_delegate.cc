@@ -15,6 +15,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/views_content_client/views_content_browser_client.h"
+#include "ui/views_content_client/views_content_client_main_parts.h"
 
 #if defined(OS_WIN)
 #include "base/logging_win.h"
@@ -77,6 +78,11 @@ void ViewsContentMainDelegate::PreSandboxStartup() {
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
         ui_test_resources_200, ui::SCALE_FACTOR_200P);
   }
+}
+
+void ViewsContentMainDelegate::PreCreateMainMessageLoop() {
+  content::ContentMainDelegate::PreCreateMainMessageLoop();
+  ViewsContentClientMainParts::PreCreateMainMessageLoop();
 }
 
 content::ContentBrowserClient*
