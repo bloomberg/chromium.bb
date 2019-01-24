@@ -1407,8 +1407,9 @@ static_library("browser_test_support") {
 
 # Unwind tables are added to only official builds (public_apk(s)) so that
 # developer builds are not affected.
-_add_unwind_tables_in_chrome_public_apk =
-    can_unwind_with_cfi_table && is_official_build
+_add_unwind_tables_in_chrome_32bit_apk =
+    is_android && !is_component_build && is_official_build &&
+    (target_cpu == "arm" || target_cpu == "arm64")
 
 # Defines a target that derives from the chrome public application. This
 # can be either an APK or an app bundle module. This supports both the
@@ -1462,8 +1463,9 @@ template("chrome_public_apk_or_module_tmpl") {
     }
 
     shared_libraries = [ ":libchrome${_suffix}" ]
-    add_unwind_tables_in_apk = _add_unwind_tables_in_chrome_public_apk
-    if (_add_unwind_tables_in_chrome_public_apk) {
+    add_unwind_tables_in_apk =
+        _add_unwind_tables_in_chrome_32bit_apk && target_cpu == "arm"
+    if (add_unwind_tables_in_apk) {
       shared_library_for_unwind_asset = "chrome${_suffix}"
     }
 
@@ -1575,8 +1577,10 @@ template("monochrome_public_apk_or_module_tmpl") {
       "//chrome/android:chrome_java",
     ]
 
+    _needs_arm32_lib = target_cpu == "arm" ||
+                       (target_cpu == "arm64" && build_apk_secondary_abi)
     add_unwind_tables_in_apk =
-        _add_unwind_tables_in_chrome_public_apk &&
+        _add_unwind_tables_in_chrome_32bit_apk && _needs_arm32_lib &&
         (!defined(use_trichrome_library) || !use_trichrome_library)
 
     version_name = chrome_version_name
@@ -1684,8 +1688,9 @@ template("chrome_test_apk_tmpl") {
 
     testonly = true
     target_type = "instrumentation_test_apk"
-    add_unwind_tables_in_apk = _add_unwind_tables_in_chrome_public_apk
-    if (_add_unwind_tables_in_chrome_public_apk) {
+    add_unwind_tables_in_apk =
+        _add_unwind_tables_in_chrome_32bit_apk && target_cpu == "arm"
+    if (add_unwind_tables_in_apk) {
       shared_library_for_unwind_asset = "chromefortest"
     }
 
