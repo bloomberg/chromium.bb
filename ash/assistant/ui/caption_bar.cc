@@ -58,6 +58,14 @@ bool CaptionBar::AcceleratorPressed(const ui::Accelerator& accelerator) {
     case ui::VKEY_BROWSER_BACK:
       HandleButton(AssistantButtonId::kBack);
       break;
+    case ui::VKEY_W:
+      if (accelerator.IsCtrlDown())
+        HandleButton(AssistantButtonId::kClose);
+      else {
+        NOTREACHED();
+        return false;
+      }
+      break;
     default:
       NOTREACHED();
       return false;
@@ -119,6 +127,8 @@ void CaptionBar::InitLayout() {
                           AssistantButtonId::kClose, this);
   AddChildView(close_button);
 
+  // Add a keyboard accelerator Ctrl + W to close Assistant UI.
+  AddAccelerator(ui::Accelerator(ui::VKEY_W, ui::EF_CONTROL_DOWN));
   AddAccelerator(ui::Accelerator(ui::VKEY_BROWSER_BACK, ui::EF_NONE));
 }
 

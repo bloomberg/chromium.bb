@@ -5,6 +5,10 @@
 #ifndef ASH_ASSISTANT_UI_ASSISTANT_VIEW_DELEGATE_H_
 #define ASH_ASSISTANT_UI_ASSISTANT_VIEW_DELEGATE_H_
 
+#include <map>
+#include <string>
+#include <vector>
+
 #include "ash/assistant/model/assistant_cache_model.h"
 #include "ash/assistant/model/assistant_cache_model_observer.h"
 #include "ash/assistant/model/assistant_interaction_model.h"
@@ -52,7 +56,7 @@ class ASH_PUBLIC_EXPORT AssistantViewDelegate {
   // Gets the cache model associated with the view delegate.
   virtual const AssistantCacheModel* GetCacheModel() const = 0;
 
-  // Gets the interactoin model associated with the view delegate.
+  // Gets the interaction model associated with the view delegate.
   virtual const AssistantInteractionModel* GetInteractionModel() const = 0;
 
   // Gets the ui model associated with the view delegate.
