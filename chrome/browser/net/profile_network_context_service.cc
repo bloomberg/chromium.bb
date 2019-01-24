@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -75,6 +76,15 @@ std::string ComputeAcceptLanguageFromPref(const std::string& language_pref) {
           ? net::HttpUtil::ExpandLanguageList(language_pref)
           : language_pref;
   return net::HttpUtil::GenerateAcceptLanguageHeader(accept_languages_str);
+}
+
+void DeleteChannelIDFiles(base::FilePath channel_id_path) {
+  UMA_HISTOGRAM_BOOLEAN("DomainBoundCerts.DBExists",
+                        base::PathExists(channel_id_path));
+  base::DeleteFile(channel_id_path, false);
+  base::DeleteFile(
+      base::FilePath(channel_id_path.value() + FILE_PATH_LITERAL("-journal")),
+      false);
 }
 
 }  // namespace
@@ -413,9 +423,14 @@ ProfileNetworkContextService::CreateNetworkContextParams(
     cookie_path = cookie_path.Append(chrome::kCookieFilename);
     network_context_params->cookie_path = cookie_path;
 
-    base::FilePath channel_id_path = path;
-    channel_id_path = channel_id_path.Append(chrome::kChannelIDFilename);
-    network_context_params->channel_id_path = channel_id_path;
+    // TODO(nharper): Remove the following when no longer needed - see
+    // crbug.com/903642.
+    base::PostTaskWithTraits(
+        FROM_HERE,
+        {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        base::BindOnce(DeleteChannelIDFiles,
+                       path.Append(chrome::kChannelIDFilename)));
 
     if (relative_partition_path.empty()) {  // This is the main partition.
       network_context_params->restore_old_session_cookies =
