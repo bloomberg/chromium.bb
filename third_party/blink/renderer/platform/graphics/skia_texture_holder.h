@@ -27,7 +27,6 @@ class PLATFORM_EXPORT SkiaTextureHolder final : public TextureHolder {
   bool IsValid() const final;
   bool CurrentFrameKnownToBeOpaque() final { return image_->isOpaque(); }
   sk_sp<SkImage> GetSkImage() final { return image_; }
-  void Abandon() final;
 
   // When creating a AcceleratedStaticBitmap from a texture-backed SkImage, this
   // function will be called to create a TextureHolder object.

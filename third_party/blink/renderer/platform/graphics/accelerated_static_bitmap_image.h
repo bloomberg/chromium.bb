@@ -88,8 +88,6 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
 
   PaintImage PaintImageForCurrentFrame() override;
 
-  void Abandon() final;
-
   TextureHolder* TextureHolderForTesting() { return texture_holder_.get(); }
 
  private:
