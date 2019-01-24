@@ -54,25 +54,25 @@ These builders must pass before a CL may land.
 
 * [linux-ozone-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-ozone-rel) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux-ozone-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-ozone-rel))
 
+* [linux-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-rel) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-rel))
+
 * [linux_chromium_asan_rel_ng](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_asan_rel_ng) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux_chromium_asan_rel_ng)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_chromium_asan_rel_ng))
 
 * [linux_chromium_compile_dbg_ng](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_compile_dbg_ng) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux_chromium_compile_dbg_ng)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_chromium_compile_dbg_ng))
 
 * [linux_chromium_headless_rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_headless_rel) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux_chromium_headless_rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_chromium_headless_rel))
 
-* [linux_chromium_rel_ng](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_rel_ng) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux_chromium_rel_ng)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_chromium_rel_ng))
-
 * [linux_chromium_tsan_rel_ng](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_tsan_rel_ng) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux_chromium_tsan_rel_ng)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_chromium_tsan_rel_ng))
 
-* [mac_chromium_compile_dbg_ng](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/mac_chromium_compile_dbg_ng) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+mac_chromium_compile_dbg_ng)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+mac_chromium_compile_dbg_ng))
+* [mac-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/mac-rel) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+mac-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+mac-rel))
 
-* [mac_chromium_rel_ng](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/mac_chromium_rel_ng) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+mac_chromium_rel_ng)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+mac_chromium_rel_ng))
+* [mac_chromium_compile_dbg_ng](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/mac_chromium_compile_dbg_ng) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+mac_chromium_compile_dbg_ng)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+mac_chromium_compile_dbg_ng))
 
 * [win-libfuzzer-asan-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win-libfuzzer-asan-rel) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+win-libfuzzer-asan-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+win-libfuzzer-asan-rel))
 
 * [win10_chromium_x64_rel_ng](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win10_chromium_x64_rel_ng) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+win10_chromium_x64_rel_ng)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+win10_chromium_x64_rel_ng))
 
-* [win7_chromium_rel_ng](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7_chromium_rel_ng) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+win7_chromium_rel_ng)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+win7_chromium_rel_ng))
+* [win7-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7-rel) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+win7-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+win7-rel))
 
 * [win_chromium_compile_dbg_ng](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win_chromium_compile_dbg_ng) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+win_chromium_compile_dbg_ng)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+win_chromium_compile_dbg_ng))
 
