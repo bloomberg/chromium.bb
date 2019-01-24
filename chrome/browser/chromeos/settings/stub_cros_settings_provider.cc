@@ -60,6 +60,26 @@ void StubCrosSettingsProvider::SetCurrentUserIsOwner(bool owner) {
   current_user_is_owner_ = owner;
 }
 
+void StubCrosSettingsProvider::SetBoolean(const std::string& path,
+                                          bool in_value) {
+  Set(path, base::Value(in_value));
+}
+
+void StubCrosSettingsProvider::SetInteger(const std::string& path,
+                                          int in_value) {
+  Set(path, base::Value(in_value));
+}
+
+void StubCrosSettingsProvider::SetDouble(const std::string& path,
+                                         double in_value) {
+  Set(path, base::Value(in_value));
+}
+
+void StubCrosSettingsProvider::SetString(const std::string& path,
+                                         const std::string& in_value) {
+  Set(path, base::Value(in_value));
+}
+
 void StubCrosSettingsProvider::DoSet(const std::string& path,
                                      const base::Value& value) {
   bool is_value_changed = false;

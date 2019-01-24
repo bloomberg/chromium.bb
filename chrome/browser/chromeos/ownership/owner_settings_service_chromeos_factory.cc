@@ -101,8 +101,8 @@ KeyedService* OwnerSettingsServiceChromeOSFactory::BuildInstanceFor(
   // This is done using the FakeOwnerSettingsService.
   if (g_stub_cros_settings_provider_for_testing_ != nullptr) {
     return new FakeOwnerSettingsService(
-        profile, GetInstance()->GetOwnerKeyUtil(),
-        g_stub_cros_settings_provider_for_testing_);
+        g_stub_cros_settings_provider_for_testing_, profile,
+        GetInstance()->GetOwnerKeyUtil());
   }
 
   return new OwnerSettingsServiceChromeOS(
