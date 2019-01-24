@@ -227,12 +227,11 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent} e
+   * @param {!CustomEvent<string>} e
    * @private
    */
   onRefreshPref_: function(e) {
-    const prefName = /** @type {string} */ (e.detail);
-    return /** @type {SettingsPrefsElement} */ (this.$.prefs).refresh(prefName);
+    return /** @type {SettingsPrefsElement} */ (this.$.prefs).refresh(e.detail);
   },
 
   /**

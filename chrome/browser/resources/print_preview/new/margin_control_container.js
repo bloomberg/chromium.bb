@@ -436,11 +436,11 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent} e Event containing the new textbox value.
+   * @param {!CustomEvent<string>} e Event containing the new textbox value.
    * @private
    */
   onTextChange_: function(e) {
-    const marginValue = this.parseValueToPts_(/** @type {string} */ (e.detail));
+    const marginValue = this.parseValueToPts_(e.detail);
     const control =
         /** @type {!PrintPreviewMarginControlElement} */ (e.target);
     if (marginValue == null) {

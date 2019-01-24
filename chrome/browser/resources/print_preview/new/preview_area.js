@@ -505,8 +505,8 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent} e Contains information about where the plugin
-   *     should scroll to.
+   * @param {!CustomEvent<{x: number, y: number}>} e Contains information about
+   *     where the plugin should scroll to.
    * @private
    */
   onTextFocusPosition_: function(e) {
@@ -519,7 +519,7 @@ Polymer({
     this.scrollTop = 0;
     this.scrollLeft = 0;
 
-    const position = /** @type {{ x: number, y: number }} */ (e.detail);
+    const position = e.detail;
     if (position.x === 0 && position.y === 0) {
       return;
     }

@@ -91,11 +91,11 @@ cr.define('extensions', function() {
     },
 
     /**
-     * @param {!CustomEvent} e
+     * @param {!CustomEvent<boolean>} e
      * @private
      */
     onDevModeToggleChange_: function(e) {
-      this.delegate.setProfileInDevMode(/** @type {boolean} */ (e.detail));
+      this.delegate.setProfileInDevMode(e.detail);
       chrome.metricsPrivate.recordUserAction(
           'Options_ToggleDeveloperMode_' + (e.detail ? 'Enabled' : 'Disabled'));
     },

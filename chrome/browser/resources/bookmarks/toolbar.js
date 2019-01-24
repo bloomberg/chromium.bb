@@ -84,13 +84,12 @@ Polymer({
   },
 
   /**
-   * @param {Event} e
+   * @param {!CustomEvent<string>} e
    * @private
    */
   onSearchChanged_: function(e) {
-    const searchTerm = /** @type {string} */ (e.detail);
-    if (searchTerm != this.searchTerm_) {
-      this.dispatch(bookmarks.actions.setSearchTerm(searchTerm));
+    if (e.detail != this.searchTerm_) {
+      this.dispatch(bookmarks.actions.setSearchTerm(e.detail));
     }
   },
 
