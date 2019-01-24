@@ -45,7 +45,7 @@ void WildcardLoginChecker::StartWithRefreshToken(
   start_timestamp_ = base::Time::Now();
   callback_ = std::move(callback);
 
-  token_fetcher_.reset(PolicyOAuth2TokenFetcher::CreateInstance());
+  token_fetcher_ = PolicyOAuth2TokenFetcher::CreateInstance();
   token_fetcher_->StartWithRefreshToken(
       refresh_token,
       g_browser_process->system_network_context_manager()

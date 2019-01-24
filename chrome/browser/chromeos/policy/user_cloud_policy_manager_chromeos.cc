@@ -603,7 +603,7 @@ void UserCloudPolicyManagerChromeOS::FetchPolicyOAuthToken() {
           .GetRefreshToken());
 
   if (!refresh_token.empty()) {
-    token_fetcher_.reset(PolicyOAuth2TokenFetcher::CreateInstance());
+    token_fetcher_ = PolicyOAuth2TokenFetcher::CreateInstance();
     token_fetcher_->StartWithRefreshToken(
         refresh_token, system_url_loader_factory,
         base::Bind(&UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched,
