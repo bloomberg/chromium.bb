@@ -30,7 +30,9 @@ class VideoFrameProcessor {
 
   // Process the specified |video_frame|. This can e.g. validate the frame,
   // calculate the frame's checksum, write the frame to file,... The
-  // |frame_index| is the index of the video frame in display order.
+  // |frame_index| is the index of the video frame in display order. The caller
+  // should not modify the video frame while a reference is being held by the
+  // VideoFrameProcessor.
   virtual void ProcessVideoFrame(scoped_refptr<const VideoFrame> video_frame,
                                  size_t frame_index) = 0;
 };
