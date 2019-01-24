@@ -20,7 +20,8 @@ extern "C" {
 // frame placement, etc.  It populates an EncodeFrameParams struct with the
 // results of these decisions and then calls av1_encode()
 int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
-                        uint8_t *const dest, unsigned int *frame_flags);
+                        uint8_t *const dest, unsigned int *frame_flags,
+                        struct lookahead_entry *source);
 
 #ifdef __cplusplus
 }  // extern "C"

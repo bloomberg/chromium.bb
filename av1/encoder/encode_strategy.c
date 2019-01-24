@@ -11,12 +11,131 @@
 
 #include <stdint.h>
 
+#include "config/aom_config.h"
+
 #include "aom/aom_codec.h"
+
+#if CONFIG_MISMATCH_DEBUG
+#include "aom_util/debug_util.h"
+#endif  // CONFIG_MISMATCH_DEBUG
 
 #include "av1/common/onyxc_int.h"
 
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/encode_strategy.h"
+
+static void set_additional_frame_flags(const AV1_COMMON *const cm,
+                                       unsigned int *const frame_flags) {
+  if (frame_is_intra_only(cm)) *frame_flags |= FRAMEFLAGS_INTRAONLY;
+  if (frame_is_sframe(cm)) *frame_flags |= FRAMEFLAGS_SWITCH;
+  if (cm->error_resilient_mode) *frame_flags |= FRAMEFLAGS_ERROR_RESILIENT;
+}
+
+static INLINE void update_keyframe_counters(AV1_COMP *cpi) {
+  // TODO(zoeliu): To investigate whether we should treat BWDREF_FRAME
+  //               differently here for rc->avg_frame_bandwidth.
+  if (cpi->common.show_frame || cpi->rc.is_bwd_ref_frame) {
+    if (!cpi->common.show_existing_frame || cpi->rc.is_src_frame_alt_ref ||
+        cpi->common.current_frame.frame_type == KEY_FRAME) {
+      // If this is a show_existing_frame with a source other than altref,
+      // or if it is not a displayed forward keyframe, the keyframe update
+      // counters were incremented when it was originally encoded.
+      cpi->rc.frames_since_key++;
+      cpi->rc.frames_to_key--;
+    }
+  }
+}
+
+static INLINE int is_frame_droppable(const AV1_COMP *const cpi) {
+  return !(cpi->refresh_alt_ref_frame || cpi->refresh_alt2_ref_frame ||
+           cpi->refresh_bwd_ref_frame || cpi->refresh_golden_frame ||
+           cpi->refresh_last_frame);
+}
+
+static INLINE void update_frames_till_gf_update(AV1_COMP *cpi) {
+  // TODO(weitinglin): Updating this counter for is_frame_droppable
+  // is a work-around to handle the condition when a frame is drop.
+  // We should fix the cpi->common.show_frame flag
+  // instead of checking the other condition to update the counter properly.
+  if (cpi->common.show_frame || is_frame_droppable(cpi)) {
+    // Decrement count down till next gf
+    if (cpi->rc.frames_till_gf_update_due > 0)
+      cpi->rc.frames_till_gf_update_due--;
+  }
+}
+
+static INLINE void update_twopass_gf_group_index(AV1_COMP *cpi) {
+  // Increment the gf group index ready for the next frame. If this is
+  // a show_existing_frame with a source other than altref, or if it is not
+  // a displayed forward keyframe, the index was incremented when it was
+  // originally encoded.
+  if (!cpi->common.show_existing_frame || cpi->rc.is_src_frame_alt_ref ||
+      cpi->common.current_frame.frame_type == KEY_FRAME) {
+    ++cpi->twopass.gf_group.index;
+  }
+}
+
+static void update_rc_counts(AV1_COMP *cpi) {
+  update_keyframe_counters(cpi);
+  update_frames_till_gf_update(cpi);
+  if (cpi->oxcf.pass == 2) update_twopass_gf_group_index(cpi);
+}
+
+static void check_show_existing_frame(AV1_COMP *cpi) {
+  const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
+  AV1_COMMON *const cm = &cpi->common;
+  const FRAME_UPDATE_TYPE next_frame_update_type =
+      gf_group->update_type[gf_group->index];
+#if USE_SYMM_MULTI_LAYER
+  const int which_arf = (cpi->new_bwdref_update_rule == 1)
+                            ? gf_group->arf_update_idx[gf_group->index] > 0
+                            : gf_group->arf_update_idx[gf_group->index];
+#else
+  const int which_arf = gf_group->arf_update_idx[gf_group->index];
+#endif
+
+  if (cm->show_existing_frame == 1) {
+    cm->show_existing_frame = 0;
+  } else if (cpi->rc.is_last_bipred_frame) {
+#if USE_SYMM_MULTI_LAYER
+    // NOTE: When new structure is used, every bwdref will have one overlay
+    //       frame. Therefore, there is no need to find out which frame to
+    //       show in advance.
+    if (cpi->new_bwdref_update_rule == 0) {
+#endif
+      // NOTE: If the current frame is a last bi-predictive frame, it is
+      //       needed next to show the BWDREF_FRAME, which is pointed by
+      //       the last_fb_idxes[0] after reference frame buffer update
+      cpi->rc.is_last_bipred_frame = 0;
+      cm->show_existing_frame = 1;
+      cpi->existing_fb_idx_to_show = cm->remapped_ref_idx[0];
+#if USE_SYMM_MULTI_LAYER
+    }
+#endif
+  } else if (cpi->is_arf_filter_off[which_arf] &&
+             (next_frame_update_type == OVERLAY_UPDATE ||
+              next_frame_update_type == INTNL_OVERLAY_UPDATE)) {
+#if USE_SYMM_MULTI_LAYER
+    const int bwdref_to_show =
+        (cpi->new_bwdref_update_rule == 1) ? BWDREF_FRAME : ALTREF2_FRAME;
+#else
+    const int bwdref_to_show = ALTREF2_FRAME;
+#endif
+    // Other parameters related to OVERLAY_UPDATE will be taken care of
+    // in av1_rc_get_second_pass_params(cpi)
+    cm->show_existing_frame = 1;
+    cpi->rc.is_src_frame_alt_ref = 1;
+    cpi->existing_fb_idx_to_show =
+        (next_frame_update_type == OVERLAY_UPDATE)
+            ? get_ref_frame_map_idx(cm, ALTREF_FRAME)
+            : get_ref_frame_map_idx(cm, bwdref_to_show);
+#if USE_SYMM_MULTI_LAYER
+    if (cpi->new_bwdref_update_rule == 0)
+#endif
+      cpi->is_arf_filter_off[which_arf] = 0;
+  }
+  cpi->rc.is_src_frame_ext_arf = 0;
+}
 
 static void set_ext_overrides(AV1_COMP *const cpi,
                               EncodeFrameParams *const frame_params) {
@@ -130,10 +249,84 @@ static int get_ref_frame_flags(const AV1_COMP *const cpi) {
   return flags;
 }
 
+static int Pass0Encode(AV1_COMP *const cpi, uint8_t *const dest,
+                       EncodeFrameParams *const frame_params,
+                       EncodeFrameResults *const frame_results) {
+  if (cpi->oxcf.rc_mode == AOM_CBR) {
+    av1_rc_get_one_pass_cbr_params(cpi);
+  } else {
+    av1_rc_get_one_pass_vbr_params(cpi);
+  }
+
+  // Apply external override flags
+  set_ext_overrides(cpi, frame_params);
+
+  // Work out which reference frame slots may be used.
+  frame_params->ref_frame_flags = get_ref_frame_flags(cpi);
+
+  if (av1_encode(cpi, dest, frame_params, frame_results) != AOM_CODEC_OK) {
+    return AOM_CODEC_ERROR;
+  }
+
+  set_additional_frame_flags(&cpi->common, frame_params->frame_flags);
+
+  update_rc_counts(cpi);
+
+  // Will the next frame be a show_existing frame?
+  check_show_existing_frame(cpi);
+
+  return AOM_CODEC_OK;
+}
+
+static int Pass2Encode(AV1_COMP *const cpi, uint8_t *const dest,
+                       EncodeFrameParams *const frame_params,
+                       EncodeFrameResults *const frame_results) {
+  AV1_COMMON *const cm = &cpi->common;
+
+#if CONFIG_MISMATCH_DEBUG
+  mismatch_move_frame_idx_w();
+#endif
+#if TXCOEFF_COST_TIMER
+  cm->txcoeff_cost_timer = 0;
+  cm->txcoeff_cost_count = 0;
+#endif
+
+  // Apply external override flags
+  set_ext_overrides(cpi, frame_params);
+
+  // Work out which reference frame slots may be used.
+  frame_params->ref_frame_flags = get_ref_frame_flags(cpi);
+
+  if (av1_encode(cpi, dest, frame_params, frame_results) != AOM_CODEC_OK) {
+    return AOM_CODEC_ERROR;
+  }
+
+  set_additional_frame_flags(cm, frame_params->frame_flags);
+
+#if TXCOEFF_COST_TIMER
+  cm->cum_txcoeff_cost_timer += cm->txcoeff_cost_timer;
+  fprintf(stderr,
+          "\ntxb coeff cost block number: %ld, frame time: %ld, cum time %ld "
+          "in us\n",
+          cm->txcoeff_cost_count, cm->txcoeff_cost_timer,
+          cm->cum_txcoeff_cost_timer);
+#endif
+
+  av1_twopass_postencode_update(cpi);
+  update_rc_counts(cpi);
+
+  // Will the next frame be a show_existing frame?
+  check_show_existing_frame(cpi);
+
+  return AOM_CODEC_OK;
+}
+
 int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
-                        uint8_t *const dest, unsigned int *frame_flags) {
+                        uint8_t *const dest, unsigned int *frame_flags,
+                        struct lookahead_entry *source) {
   EncodeFrameParams frame_params = { 0, 0, 0 };
   EncodeFrameResults frame_results = { 0 };
+  const AV1EncoderConfig *const oxcf = &cpi->oxcf;
 
   frame_params.frame_flags = frame_flags;
 
@@ -143,17 +336,26 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
   // TODO(david.turner@argondesign.com): Change all the encode strategy to
   // modify frame_params instead of cm or cpi.
 
-  // Apply external override flags
-  set_ext_overrides(cpi, &frame_params);
-
-  // Work out which reference frame slots may be used.
-  frame_params.ref_frame_flags = get_ref_frame_flags(cpi);
-
-  if (av1_encode(cpi, dest, &frame_params, &frame_results) != AOM_CODEC_OK) {
-    return AOM_CODEC_ERROR;
+  if (oxcf->pass == 0) {  // Single pass encode
+    if (Pass0Encode(cpi, dest, &frame_params, &frame_results) != AOM_CODEC_OK) {
+      return AOM_CODEC_ERROR;
+    }
+  } else if (oxcf->pass == 1) {  // Two-pass encode, first pass
+    cpi->td.mb.e_mbd.lossless[0] = is_lossless_requested(oxcf);
+    av1_first_pass(cpi, source);
+  } else if (oxcf->pass == 2) {  // Two-pass encode, second pass
+    if (Pass2Encode(cpi, dest, &frame_params, &frame_results) != AOM_CODEC_OK) {
+      return AOM_CODEC_ERROR;
+    }
   }
 
+  // Unpack frame_results:
   *size = frame_results.size;
+
+  // Leave a signal for a higher level caller about if this frame is droppable
+  if (*size > 0) {
+    cpi->droppable = is_frame_droppable(cpi);
+  }
 
   return AOM_CODEC_OK;
 }

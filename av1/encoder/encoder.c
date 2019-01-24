@@ -33,9 +33,9 @@
 #include "aom_ports/mem.h"
 #include "aom_ports/system_state.h"
 #include "aom_scale/aom_scale.h"
-#if CONFIG_BITSTREAM_DEBUG || CONFIG_MISMATCH_DEBUG
+#if CONFIG_BITSTREAM_DEBUG
 #include "aom_util/debug_util.h"
-#endif  // CONFIG_BITSTREAM_DEBUG || CONFIG_MISMATCH_DEBUG
+#endif  // CONFIG_BITSTREAM_DEBUG
 
 #include "av1/common/alloccommon.h"
 #include "av1/common/cdef.h"
@@ -3327,62 +3327,6 @@ void aom_write_yuv_frame_420(YV12_BUFFER_CONFIG *s, FILE *f) {
 }
 #endif
 
-static void check_show_existing_frame(AV1_COMP *cpi) {
-  const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
-  AV1_COMMON *const cm = &cpi->common;
-  const FRAME_UPDATE_TYPE next_frame_update_type =
-      gf_group->update_type[gf_group->index];
-#if USE_SYMM_MULTI_LAYER
-  const int which_arf = (cpi->new_bwdref_update_rule == 1)
-                            ? gf_group->arf_update_idx[gf_group->index] > 0
-                            : gf_group->arf_update_idx[gf_group->index];
-#else
-  const int which_arf = gf_group->arf_update_idx[gf_group->index];
-#endif
-
-  if (cm->show_existing_frame == 1) {
-    cm->show_existing_frame = 0;
-  } else if (cpi->rc.is_last_bipred_frame) {
-#if USE_SYMM_MULTI_LAYER
-    // NOTE: When new structure is used, every bwdref will have one overlay
-    //       frame. Therefore, there is no need to find out which frame to
-    //       show in advance.
-    if (cpi->new_bwdref_update_rule == 0) {
-#endif
-      // NOTE: If the current frame is a last bi-predictive frame, it is
-      //       needed next to show the BWDREF_FRAME, which is pointed by
-      //       the last_fb_idxes[0] after reference frame buffer update
-      cpi->rc.is_last_bipred_frame = 0;
-      cm->show_existing_frame = 1;
-      cpi->existing_fb_idx_to_show = cm->remapped_ref_idx[0];
-#if USE_SYMM_MULTI_LAYER
-    }
-#endif
-  } else if (cpi->is_arf_filter_off[which_arf] &&
-             (next_frame_update_type == OVERLAY_UPDATE ||
-              next_frame_update_type == INTNL_OVERLAY_UPDATE)) {
-#if USE_SYMM_MULTI_LAYER
-    const int bwdref_to_show =
-        (cpi->new_bwdref_update_rule == 1) ? BWDREF_FRAME : ALTREF2_FRAME;
-#else
-    const int bwdref_to_show = ALTREF2_FRAME;
-#endif
-    // Other parameters related to OVERLAY_UPDATE will be taken care of
-    // in av1_rc_get_second_pass_params(cpi)
-    cm->show_existing_frame = 1;
-    cpi->rc.is_src_frame_alt_ref = 1;
-    cpi->existing_fb_idx_to_show =
-        (next_frame_update_type == OVERLAY_UPDATE)
-            ? get_ref_frame_map_idx(cm, ALTREF_FRAME)
-            : get_ref_frame_map_idx(cm, bwdref_to_show);
-#if USE_SYMM_MULTI_LAYER
-    if (cpi->new_bwdref_update_rule == 0)
-#endif
-      cpi->is_arf_filter_off[which_arf] = 0;
-  }
-  cpi->rc.is_src_frame_ext_arf = 0;
-}
-
 #ifdef OUTPUT_YUV_REC
 void aom_write_one_yuv_frame(AV1_COMMON *cm, YV12_BUFFER_CONFIG *s) {
   uint8_t *src = s->y_buffer;
@@ -5050,12 +4994,6 @@ static void dump_filtered_recon_frames(AV1_COMP *cpi) {
 }
 #endif  // DUMP_RECON_FRAMES
 
-static INLINE int is_frame_droppable(AV1_COMP *cpi) {
-  return !(cpi->refresh_alt_ref_frame || cpi->refresh_alt2_ref_frame ||
-           cpi->refresh_bwd_ref_frame || cpi->refresh_golden_frame ||
-           cpi->refresh_last_frame);
-}
-
 static int setup_interp_filter_search_mask(AV1_COMP *cpi) {
   InterpFilters ifilter;
   int ref_total[REF_FRAMES] = { 0 };
@@ -5625,105 +5563,6 @@ int av1_encode(AV1_COMP *const cpi, uint8_t *const dest,
     return AOM_CODEC_ERROR;
   }
 
-  return AOM_CODEC_OK;
-}
-
-static INLINE void update_keyframe_counters(AV1_COMP *cpi) {
-  // TODO(zoeliu): To investigate whether we should treat BWDREF_FRAME
-  //               differently here for rc->avg_frame_bandwidth.
-  if (cpi->common.show_frame || cpi->rc.is_bwd_ref_frame) {
-    if (!cpi->common.show_existing_frame || cpi->rc.is_src_frame_alt_ref ||
-        cpi->common.current_frame.frame_type == KEY_FRAME) {
-      // If this is a show_existing_frame with a source other than altref,
-      // or if it is not a displayed forward keyframe, the keyframe update
-      // counters were incremented when it was originally encoded.
-      cpi->rc.frames_since_key++;
-      cpi->rc.frames_to_key--;
-    }
-  }
-}
-
-static INLINE void update_frames_till_gf_update(AV1_COMP *cpi) {
-  // TODO(weitinglin): Updating this counter for is_frame_droppable
-  // is a work-around to handle the condition when a frame is drop.
-  // We should fix the cpi->common.show_frame flag
-  // instead of checking the other condition to update the counter properly.
-  if (cpi->common.show_frame || is_frame_droppable(cpi)) {
-    // Decrement count down till next gf
-    if (cpi->rc.frames_till_gf_update_due > 0)
-      cpi->rc.frames_till_gf_update_due--;
-  }
-}
-
-static INLINE void update_twopass_gf_group_index(AV1_COMP *cpi) {
-  // Increment the gf group index ready for the next frame. If this is
-  // a show_existing_frame with a source other than altref, or if it is not
-  // a displayed forward keyframe, the index was incremented when it was
-  // originally encoded.
-  if (!cpi->common.show_existing_frame || cpi->rc.is_src_frame_alt_ref ||
-      cpi->common.current_frame.frame_type == KEY_FRAME) {
-    ++cpi->twopass.gf_group.index;
-  }
-}
-
-static void update_rc_counts(AV1_COMP *cpi) {
-  update_keyframe_counters(cpi);
-  update_frames_till_gf_update(cpi);
-  if (cpi->oxcf.pass == 2) update_twopass_gf_group_index(cpi);
-}
-
-static void set_additional_frame_flags(AV1_COMMON *const cm,
-                                       unsigned int *frame_flags) {
-  if (frame_is_intra_only(cm)) *frame_flags |= FRAMEFLAGS_INTRAONLY;
-  if (frame_is_sframe(cm)) *frame_flags |= FRAMEFLAGS_SWITCH;
-  if (cm->error_resilient_mode) *frame_flags |= FRAMEFLAGS_ERROR_RESILIENT;
-}
-
-static int Pass0Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
-                       unsigned int *frame_flags) {
-  if (cpi->oxcf.rc_mode == AOM_CBR) {
-    av1_rc_get_one_pass_cbr_params(cpi);
-  } else {
-    av1_rc_get_one_pass_vbr_params(cpi);
-  }
-  if (av1_encode_strategy(cpi, size, dest, frame_flags) != AOM_CODEC_OK) {
-    return AOM_CODEC_ERROR;
-  }
-  set_additional_frame_flags(&cpi->common, frame_flags);
-
-  update_rc_counts(cpi);
-  check_show_existing_frame(cpi);
-  return AOM_CODEC_OK;
-}
-
-static int Pass2Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
-                       unsigned int *frame_flags) {
-#if CONFIG_MISMATCH_DEBUG
-  mismatch_move_frame_idx_w();
-#endif
-#if TXCOEFF_COST_TIMER
-  AV1_COMMON *cm = &cpi->common;
-  cm->txcoeff_cost_timer = 0;
-  cm->txcoeff_cost_count = 0;
-#endif
-
-  if (av1_encode_strategy(cpi, size, dest, frame_flags) != AOM_CODEC_OK) {
-    return AOM_CODEC_ERROR;
-  }
-  set_additional_frame_flags(&cpi->common, frame_flags);
-
-#if TXCOEFF_COST_TIMER
-  cm->cum_txcoeff_cost_timer += cm->txcoeff_cost_timer;
-  fprintf(stderr,
-          "\ntxb coeff cost block number: %ld, frame time: %ld, cum time %ld "
-          "in us\n",
-          cm->txcoeff_cost_count, cm->txcoeff_cost_timer,
-          cm->cum_txcoeff_cost_timer);
-#endif
-
-  av1_twopass_postencode_update(cpi);
-  update_rc_counts(cpi);
-  check_show_existing_frame(cpi);
   return AOM_CODEC_OK;
 }
 
@@ -6901,20 +6740,9 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     }
   }
 
-  if (oxcf->pass == 1) {
-    cpi->td.mb.e_mbd.lossless[0] = is_lossless_requested(oxcf);
-    av1_first_pass(cpi, source);
-  } else if (oxcf->pass == 2) {
-    if (Pass2Encode(cpi, size, dest, frame_flags) != AOM_CODEC_OK)
-      return AOM_CODEC_ERROR;
-  } else {
-    // One pass encode
-    if (Pass0Encode(cpi, size, dest, frame_flags) != AOM_CODEC_OK)
-      return AOM_CODEC_ERROR;
-  }
-
-  if (*size > 0) {
-    cpi->droppable = is_frame_droppable(cpi);
+  if (av1_encode_strategy(cpi, size, dest, frame_flags, source) !=
+      AOM_CODEC_OK) {
+    return AOM_CODEC_ERROR;
   }
 
   aom_usec_timer_mark(&cmptimer);
