@@ -3504,13 +3504,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     kSimplifyHttpsIndicatorVariations,
                                     "SimplifyHttpsIndicator")},
 
-#if defined(OS_CHROMEOS)
-    {"ash-enable-trilinear-filtering",
-     flag_descriptions::kAshEnableTrilinearFilteringName,
-     flag_descriptions::kAshEnableTrilinearFilteringDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kTrilinearFiltering)},
-#endif  // OS_CHROMEOS
-
 #if defined(OS_WIN)
     {"enable-gpu-appcontainer", flag_descriptions::kEnableGpuAppcontainerName,
      flag_descriptions::kEnableGpuAppcontainerDescription, kOsWin,

@@ -1848,9 +1848,6 @@ extern const char kAshEnablePersistentWindowBoundsDescription[];
 extern const char kAshEnablePipRoundedCornersName[];
 extern const char kAshEnablePipRoundedCornersDescription[];
 
-extern const char kAshEnableTrilinearFilteringName[];
-extern const char kAshEnableTrilinearFilteringDescription[];
-
 extern const char kAshEnableUnifiedDesktopName[];
 extern const char kAshEnableUnifiedDesktopDescription[];
 

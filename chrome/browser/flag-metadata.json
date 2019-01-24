@@ -188,11 +188,6 @@
     "expiry_milestone": 74
   },
   {
-    "name": "ash-enable-trilinear-filtering",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "ash-enable-unified-desktop",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
