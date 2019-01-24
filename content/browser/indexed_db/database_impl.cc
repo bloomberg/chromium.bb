@@ -136,7 +136,7 @@ class DatabaseImpl::IDBSequenceHelper {
   void AbortWithError(int64_t transaction_id,
                       scoped_refptr<IndexedDBCallbacks> callbacks,
                       const IndexedDBDatabaseError& error);
-  void Commit(int64_t transaction_id);
+  void Commit(int64_t transaction_id, int64_t num_errors_handled);
   void OnGotUsageAndQuotaForCommit(int64_t transaction_id,
                                    blink::mojom::QuotaStatusCode status,
                                    int64_t usage,
@@ -471,10 +471,11 @@ void DatabaseImpl::Abort(int64_t transaction_id) {
                                 base::Unretained(helper_), transaction_id));
 }
 
-void DatabaseImpl::Commit(int64_t transaction_id) {
+void DatabaseImpl::Commit(int64_t transaction_id, int64_t num_errors_handled) {
   idb_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&IDBSequenceHelper::Commit,
-                                base::Unretained(helper_), transaction_id));
+      FROM_HERE,
+      base::BindOnce(&IDBSequenceHelper::Commit, base::Unretained(helper_),
+                     transaction_id, num_errors_handled));
 }
 
 DatabaseImpl::IDBSequenceHelper::IDBSequenceHelper(
@@ -904,7 +905,8 @@ void DatabaseImpl::IDBSequenceHelper::AbortWithError(
   connection_->AbortTransaction(transaction, error);
 }
 
-void DatabaseImpl::IDBSequenceHelper::Commit(int64_t transaction_id) {
+void DatabaseImpl::IDBSequenceHelper::Commit(int64_t transaction_id,
+                                             int64_t num_errors_handled) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!connection_->IsConnected())
     return;
@@ -913,6 +915,8 @@ void DatabaseImpl::IDBSequenceHelper::Commit(int64_t transaction_id) {
       connection_->GetTransaction(transaction_id);
   if (!transaction)
     return;
+
+  transaction->SetNumErrorsHandled(num_errors_handled);
 
   // Always allow empty or delete-only transactions.
   if (transaction->size() == 0) {

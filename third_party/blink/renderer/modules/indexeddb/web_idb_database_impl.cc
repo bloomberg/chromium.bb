@@ -260,8 +260,9 @@ void WebIDBDatabaseImpl::Abort(long long transaction_id) {
   database_->Abort(transaction_id);
 }
 
-void WebIDBDatabaseImpl::Commit(long long transaction_id) {
-  database_->Commit(transaction_id);
+void WebIDBDatabaseImpl::Commit(long long transaction_id,
+                                long long num_errors_handled) {
+  database_->Commit(transaction_id, num_errors_handled);
 }
 
 mojom::blink::IDBCallbacksAssociatedPtrInfo

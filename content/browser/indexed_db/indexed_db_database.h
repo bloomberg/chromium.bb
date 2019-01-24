@@ -298,6 +298,13 @@ class CONTENT_EXPORT IndexedDBDatabase
   // May be overridden in tests.
   virtual size_t GetUsableMessageSizeInBytes() const;
 
+  static IndexedDBDatabaseError CreateError(uint16_t code,
+                                            const char* message,
+                                            IndexedDBTransaction* transaction);
+  static IndexedDBDatabaseError CreateError(uint16_t code,
+                                            const base::string16& message,
+                                            IndexedDBTransaction* transaction);
+
  private:
   friend class base::RefCounted<IndexedDBDatabase>;
   friend class IndexedDBClassFactory;

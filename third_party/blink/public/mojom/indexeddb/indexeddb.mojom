@@ -383,7 +383,8 @@ interface IDBDatabase {
               int64 index_id,
               mojo_base.mojom.String16 new_name);
   Abort(int64 transaction_id);
-  Commit(int64 transaction_id);
+  Commit(int64 transaction_id,
+         int64 num_errors_handled);
 };
 
 interface IDBFactory {

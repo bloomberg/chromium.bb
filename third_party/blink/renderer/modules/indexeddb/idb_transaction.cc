@@ -337,7 +337,7 @@ void IDBTransaction::SetActive(bool active) {
   state_ = active ? kActive : kInactive;
 
   if (!active && request_list_.IsEmpty() && BackendDB())
-    BackendDB()->Commit(id_);
+    BackendDB()->Commit(id_, num_errors_handled_);
 }
 
 void IDBTransaction::abort(ExceptionState& exception_state) {
@@ -381,7 +381,7 @@ void IDBTransaction::commit(ExceptionState& exception_state) {
   state_ = kFinishing;
 
   if (BackendDB())
-    BackendDB()->Commit(id_);
+    BackendDB()->Commit(id_, num_errors_handled_);
 }
 
 void IDBTransaction::RegisterRequest(IDBRequest* request) {

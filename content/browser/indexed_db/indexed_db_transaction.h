@@ -111,6 +111,12 @@ class CONTENT_EXPORT IndexedDBTransaction {
   IndexedDBDatabaseCallbacks* callbacks() const { return callbacks_.get(); }
   IndexedDBConnection* connection() const { return connection_.get(); }
   bool is_commit_pending() const { return is_commit_pending_; }
+  int64_t num_errors_sent() const { return num_errors_sent_; }
+  int64_t num_errors_handled() const { return num_errors_handled_; }
+  void IncrementNumErrorsSent() { ++num_errors_sent_; }
+  void SetNumErrorsHandled(int64_t num_errors_handled) {
+    num_errors_handled_ = num_errors_handled;
+  }
 
   State state() const { return state_; }
   bool IsTimeoutTimerRunning() const { return timeout_timer_.IsRunning(); }
@@ -249,6 +255,9 @@ class CONTENT_EXPORT IndexedDBTransaction {
   bool should_process_queue_ = false;
   int pending_preemptive_events_ = 0;
   bool processing_event_queue_ = false;
+
+  int64_t num_errors_sent_ = 0;
+  int64_t num_errors_handled_ = 0;
 
   std::set<IndexedDBCursor*> open_cursors_;
 

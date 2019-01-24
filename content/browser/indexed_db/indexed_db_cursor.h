@@ -65,6 +65,14 @@ class CONTENT_EXPORT IndexedDBCursor {
       scoped_refptr<IndexedDBCallbacks> callbacks,
       IndexedDBTransaction* transaction);
 
+  static IndexedDBDatabaseError CreateError(uint16_t code,
+                                            const char* message,
+                                            IndexedDBTransaction* transaction);
+  static blink::mojom::IDBErrorPtr CreateIDBError(
+      uint16_t code,
+      const base::string16& message,
+      IndexedDBTransaction* transaction);
+
  private:
   blink::mojom::IDBTaskType task_type_;
   indexed_db::CursorType cursor_type_;

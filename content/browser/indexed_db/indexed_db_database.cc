@@ -1160,8 +1160,8 @@ Status IndexedDBDatabase::GetAllOperation(
       response_size += return_value.SizeEstimate();
     if (response_size > GetUsableMessageSizeInBytes()) {
       callbacks->OnError(
-          IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionUnknownError,
-                                 "Maximum IPC message size exceeded."));
+          CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
+                      "Maximum IPC message size exceeded.", transaction));
       return s;
     }
 
@@ -1287,8 +1287,8 @@ Status IndexedDBDatabase::PutOperation(
     key_was_generated = true;
     if (!auto_inc_key->IsValid()) {
       params->callbacks->OnError(
-          IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionConstraintError,
-                                 "Maximum key generator value reached."));
+          CreateError(blink::kWebIDBDatabaseExceptionConstraintError,
+                      "Maximum key generator value reached.", transaction));
       return s;
     }
     key = std::move(auto_inc_key);
@@ -1308,8 +1308,8 @@ Status IndexedDBDatabase::PutOperation(
       return found_status;
     if (found) {
       params->callbacks->OnError(
-          IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionConstraintError,
-                                 "Key already exists in the object store."));
+          CreateError(blink::kWebIDBDatabaseExceptionConstraintError,
+                      "Key already exists in the object store.", transaction));
       return found_status;
     }
   }
@@ -1328,14 +1328,16 @@ Status IndexedDBDatabase::PutOperation(
                                                 &error_message,
                                                 &obeys_constraints);
   if (!backing_store_success) {
-    params->callbacks->OnError(IndexedDBDatabaseError(
-        blink::kWebIDBDatabaseExceptionUnknownError,
-        "Internal error: backing store error updating index keys."));
+    params->callbacks->OnError(
+        CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
+                    "Internal error: backing store error updating index keys.",
+                    transaction));
     return s;
   }
   if (!obeys_constraints) {
-    params->callbacks->OnError(IndexedDBDatabaseError(
-        blink::kWebIDBDatabaseExceptionConstraintError, error_message));
+    params->callbacks->OnError(
+        CreateError(blink::kWebIDBDatabaseExceptionConstraintError,
+                    error_message, transaction));
     return s;
   }
 
@@ -1985,6 +1987,22 @@ void IndexedDBDatabase::ReportErrorWithDetails(Status status,
   } else {
     factory_->HandleBackingStoreFailure(backing_store_->origin());
   }
+}
+
+IndexedDBDatabaseError IndexedDBDatabase::CreateError(
+    uint16_t code,
+    const char* message,
+    IndexedDBTransaction* transaction) {
+  transaction->IncrementNumErrorsSent();
+  return IndexedDBDatabaseError(code, message);
+}
+
+IndexedDBDatabaseError IndexedDBDatabase::CreateError(
+    uint16_t code,
+    const base::string16& message,
+    IndexedDBTransaction* transaction) {
+  transaction->IncrementNumErrorsSent();
+  return IndexedDBDatabaseError(code, message);
 }
 
 }  // namespace content

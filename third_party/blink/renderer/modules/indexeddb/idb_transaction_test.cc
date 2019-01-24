@@ -324,7 +324,7 @@ TEST_F(IDBTransactionTest, DocumentShutdownWithQueuedAndBlockedResults) {
 TEST_F(IDBTransactionTest, TransactionFinish) {
   V8TestingScope scope;
   std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::Create();
-  EXPECT_CALL(*backend, Commit(kTransactionId)).Times(1);
+  EXPECT_CALL(*backend, Commit(kTransactionId, 0)).Times(1);
   EXPECT_CALL(*backend, Close()).Times(1);
   BuildTransaction(scope, std::move(backend));
 
