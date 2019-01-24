@@ -106,6 +106,11 @@
 #include "chrome/browser/loader/data_reduction_proxy_resource_throttle_android.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/signin/merge_session_resource_throttle.h"
+#include "chrome/browser/chromeos/login/signin/merge_session_throttling_utils.h"
+#endif
+
 using content::BrowserThread;
 using content::LoginDelegate;
 using content::RenderViewHost;
@@ -324,6 +329,21 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
                      info->GetWebContentsGetterForRequest(),
                      info->GetResourceType()));
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
+
+#if defined(OS_CHROMEOS)
+  // Check if we need to add merge session throttle. This throttle will postpone
+  // loading of XHR requests.
+  if (resource_type == content::RESOURCE_TYPE_XHR) {
+    // Add interstitial page while merge session process (cookie
+    // reconstruction from OAuth2 refresh token in ChromeOS login) is still in
+    // progress while we are attempting to load a google property.
+    if (!merge_session_throttling_utils::AreAllSessionMergedAlready() &&
+        request->url().SchemeIsHTTPOrHTTPS()) {
+      throttles->push_back(
+          std::make_unique<MergeSessionResourceThrottle>(request));
+    }
+  }
+#endif
 
   // Don't attempt to append headers to requests that have already started.
   // TODO(stevet): Remove this once the request ordering issues are resolved

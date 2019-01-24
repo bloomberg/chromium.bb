@@ -764,11 +764,6 @@ const char kDisableLoginScreenApps[] = "disable-login-screen-apps";
 // NOTE: Used by the Chrome OS crash_reporter to identify mash processes. If you
 // change or remove the flag please update platform2/crash_reporter.
 const char kMashServiceName[] = "mash-service-name";
-
-// Use a short (1 second) timeout for merge session loader throttle testing.
-const char kShortMergeSessionTimeoutForTest[] =
-    "short-merge-session-timeout-for-test";
-
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)

@@ -434,15 +434,6 @@ jumbo_static_library("renderer") {
       "net/page_auto_fetcher_helper_android.h",
     ]
   }
-
-  if (is_chromeos) {
-    sources += [
-      "chromeos_delayed_callback_group.cc",
-      "chromeos_delayed_callback_group.h",
-      "chromeos_merge_session_loader_throttle.cc",
-      "chromeos_merge_session_loader_throttle.h",
-    ]
-  }
 }
 
 jumbo_static_library("test_support") {

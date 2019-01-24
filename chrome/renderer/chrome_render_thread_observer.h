@@ -16,12 +16,6 @@
 #include "content/public/renderer/render_thread_observer.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/renderer/chromeos_delayed_callback_group.h"
-
-class IOConfigurationHelper;
-#endif  // defined(OS_CHROMEOS)
-
 namespace content {
 class ResourceDispatcherDelegate;
 }
@@ -54,18 +48,6 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
     return visited_link_slave_.get();
   }
 
-#if defined(OS_CHROMEOS)
-  // Run the |callback| when the Chrome OS merge session process is finished
-  // or timeout. This call is thread-safe.
-  void RunWhenMergeSessionFinished(DelayedCallbackGroup::Callback callback);
-
-  // Return status of merge session. This call is thread-safe.
-  bool IsMergeSessionRunning() const;
-#endif  // defined(OS_CHROMEOS)
-
-  // Return a weak pointer to |this|.
-  base::WeakPtr<ChromeRenderThreadObserver> GetWeakPtr();
-
  private:
   // content::RenderThreadObserver:
   void RegisterMojoInterfaces(
@@ -74,9 +56,7 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
       blink::AssociatedInterfaceRegistry* associated_interfaces) override;
 
   // chrome::mojom::RendererConfiguration:
-  void SetInitialConfiguration(bool is_incognito_process,
-                               chrome::mojom::ChromeOSListenerRequest
-                                   chromeos_listener_request) override;
+  void SetInitialConfiguration(bool is_incognito_process) override;
   void SetConfiguration(chrome::mojom::DynamicParamsPtr params) override;
   void SetContentSettingRules(
       const RendererContentSettingRules& rules) override;
@@ -94,15 +74,6 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
 
   mojo::AssociatedBindingSet<chrome::mojom::RendererConfiguration>
       renderer_configuration_bindings_;
-
-#if defined(OS_CHROMEOS)
-  // Callbacks to be run when the Chrome OS session merge process has finished
-  // running.
-  scoped_refptr<DelayedCallbackGroup> session_merged_callbacks_;
-  // Only set if the Chrome OS merge session was running when the renderer
-  // was started.
-  scoped_refptr<IOConfigurationHelper> io_configuration_helper_;
-#endif  // defined(OS_CHROMEOS)
 
   base::WeakPtrFactory<ChromeRenderThreadObserver> weak_factory_;
 
