@@ -304,7 +304,7 @@ The task ID can be found in the stdio for the "trigger" step for the test. For
 example, look at a recent build from the [Mac Release (Intel)] bot, and
 look at the `gl_unittests` step. You will see something like:
 
-[Mac Release (Intel)]: https://ci.chromium.org/buildbot/chromium.gpu/Mac%20Release%20%28Intel%29/
+[Mac Release (Intel)]: https://ci.chromium.org/p/chromium/builders/luci.chromium.ci/Mac%20Release%20%28Intel%29/
 
 ```
 Triggered task: gl_unittests on Intel GPU on Mac/Mac-10.12.6/[TRUNCATED_ISOLATE_HASH]/Mac Release (Intel)/83664

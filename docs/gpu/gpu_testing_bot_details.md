@@ -31,7 +31,7 @@ on the desired GPU and operating system type. So, for example, the [Win10
 Release (NVIDIA)] bot is actually a virtual machine which spawns all of its jobs
 with the Swarming parameters:
 
-[Win10 Release (NVIDIA)]: https://ci.chromium.org/buildbot/chromium.gpu/Win10%20Release%20%28NVIDIA%29/?limit=200
+[Win10 Release (NVIDIA)]: https://ci.chromium.org/p/chromium/builders/luci.chromium.ci/Win10%20Release%20%28NVIDIA%29
 
 ```json
 {
@@ -71,10 +71,9 @@ There are a few one-off GPU configurations on the waterfall where the tests are
 run locally on physical hardware, rather than via Swarming. A few examples are:
 
 <!-- XXX: update this list -->
-*   [Mac Pro Release (AMD)](https://luci-milo.appspot.com/buildbot/chromium.gpu.fyi/Mac%20Pro%20Release%20%28AMD%29/)
-*   [Mac Pro Debug (AMD)](https://luci-milo.appspot.com/buildbot/chromium.gpu.fyi/Mac%20Pro%20Debug%20%28AMD%29/)
-*   [Linux Release (Intel HD 630)](https://luci-milo.appspot.com/buildbot/chromium.gpu.fyi/Linux%20Release%20%28Intel%20HD%20630%29/)
-*   [Linux Release (AMD R7 240)](https://luci-milo.appspot.com/buildbot/chromium.gpu.fyi/Linux%20Release%20%28AMD%20R7%20240%29/)
+*   [Mac Pro Release (AMD)](https://luci-milo.appspot.com/p/chromium/builders/luci.chromium.ci/Mac%20Pro%20FYI%20Release%20%28AMD%29)
+*   [Linux Release (Intel HD 630)](https://luci-milo.appspot.com/p/chromium/builders/luci.chromium.ci/Linux%20FYI%20Release%20%28Intel%20HD%20630%29)
+*   [Linux Release (AMD R7 240)](https://luci-milo.appspot.com/p/chromium/builders/luci.chromium.ci/Linux%20FYI%20Release%20%28AMD%20R7%20240%29/)
 
 There are a couple of reasons to continue to support running tests on a
 specific machine: it might be too expensive to deploy the required multiple
