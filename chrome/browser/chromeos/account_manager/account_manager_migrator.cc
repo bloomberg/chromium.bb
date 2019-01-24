@@ -66,7 +66,6 @@ AccountManager::AccountKey GetDeviceAccount(const Profile* profile) {
           account_id.GetGaiaId(),
           account_manager::AccountType::ACCOUNT_TYPE_GAIA};
     case AccountType::UNKNOWN:
-      NOTREACHED();
       return AccountManager::AccountKey{
           std::string(),
           account_manager::AccountType::ACCOUNT_TYPE_UNSPECIFIED};
@@ -456,6 +455,15 @@ bool AccountManagerMigrator::ShouldRunMigrations() const {
 }
 
 void AccountManagerMigrator::AddMigrationSteps() {
+  const AccountManager::AccountKey device_account = GetDeviceAccount(profile_);
+  if (device_account.account_type ==
+      account_manager::AccountType::ACCOUNT_TYPE_UNSPECIFIED) {
+    // Unfortunately this is a valid case for tests. See
+    // https://crbug.com/915628. Early exit here because if the Device Account
+    // itself is invalid, we should not attempt any migration.
+    return;
+  }
+
   chromeos::AccountManagerFactory* factory =
       g_browser_process->platform_part()->GetAccountManagerFactory();
   chromeos::AccountManager* account_manager =
@@ -465,7 +473,7 @@ void AccountManagerMigrator::AddMigrationSteps() {
       AccountTrackerServiceFactory::GetForProfile(profile_);
 
   migration_runner_.AddStep(std::make_unique<DeviceAccountMigration>(
-      GetDeviceAccount(profile_), account_manager, account_tracker_service,
+      device_account, account_manager, account_tracker_service,
       WebDataServiceFactory::GetTokenWebDataForProfile(
           profile_, ServiceAccessType::EXPLICIT_ACCESS) /* token_web_data */));
   migration_runner_.AddStep(std::make_unique<ContentAreaAccountsMigration>(
