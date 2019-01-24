@@ -47,7 +47,6 @@ crbug.com/882756 external/wpt/requestidlecallback/cancel-invoked.html [ Timeout 
 
 # Stack use-after-return detection
 crbug.com/438499 [ Linux ] crypto/worker-random-values-limits.html [ Timeout ]
-crbug.com/438499 [ Linux ] fast/workers/simultaneous-errors.html [ Timeout ]
 crbug.com/438499 [ Linux ] fast/workers/worker-multi-startup.html [ Timeout ]
 crbug.com/438499 [ Linux ] http/tests/websocket/workers/worker-simple.html [ Timeout ]
 crbug.com/438499 [ Linux ] http/tests/workers/text-encoding.html [ Timeout ]

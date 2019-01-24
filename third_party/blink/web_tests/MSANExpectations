@@ -9,7 +9,6 @@ crbug.com/420198 [ Linux ] fast/css/fontface-arraybuffer.html [ Skip ]
 
 # Deliberate infinite recursion. A JS exception is expected, but may crash with
 # a stack overflow due to bloated stack frames under MSan.
-crbug.com/420606 [ Linux ] fast/workers/shared-worker-constructor.html [ Skip ]
 crbug.com/420606 [ Linux ] fast/workers/worker-constructor.html [ Skip ]
 
 # Flaky under MSan (hang forever).
