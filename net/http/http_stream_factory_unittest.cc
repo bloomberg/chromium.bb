@@ -104,7 +104,8 @@ class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
     kStreamTypeSpdy,
   };
 
-  explicit MockWebSocketHandshakeStream(StreamType type) : type_(type) {}
+  explicit MockWebSocketHandshakeStream(StreamType type)
+      : type_(type), weak_ptr_factory_(this) {}
 
   ~MockWebSocketHandshakeStream() override = default;
 
@@ -157,8 +158,13 @@ class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
     return std::unique_ptr<WebSocketStream>();
   }
 
+  base::WeakPtr<WebSocketHandshakeStreamBase> GetWeakPtr() override {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
  private:
   const StreamType type_;
+  base::WeakPtrFactory<MockWebSocketHandshakeStream> weak_ptr_factory_;
 };
 
 // HttpStreamFactory subclass that can wait until a preconnect is complete.

@@ -82,6 +82,8 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream final
   // Upgrade() has been called and should be disposed of as soon as possible.
   std::unique_ptr<WebSocketStream> Upgrade() override;
 
+  base::WeakPtr<WebSocketHandshakeStreamBase> GetWeakPtr() override;
+
   // Set the value used for the next Sec-WebSocket-Key header
   // deterministically. The key is only used once, and then discarded.
   // For tests only.
@@ -146,6 +148,8 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream final
   WebSocketStreamRequestAPI* const stream_request_;
 
   WebSocketEndpointLockManager* const websocket_endpoint_lock_manager_;
+
+  base::WeakPtrFactory<WebSocketBasicHandshakeStream> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketBasicHandshakeStream);
 };

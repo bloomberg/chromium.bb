@@ -94,6 +94,8 @@ class NET_EXPORT_PRIVATE WebSocketHttp2HandshakeStream
   // Upgrade() has been called and should be disposed of as soon as possible.
   std::unique_ptr<WebSocketStream> Upgrade() override;
 
+  base::WeakPtr<WebSocketHandshakeStreamBase> GetWeakPtr() override;
+
   // WebSocketSpdyStreamAdapter::Delegate methods.
   void OnHeadersSent() override;
   void OnHeadersReceived(
@@ -174,6 +176,8 @@ class NET_EXPORT_PRIVATE WebSocketHttp2HandshakeStream
   // The extension parameters. The class is defined in the implementation file
   // to avoid including extension-related header files here.
   std::unique_ptr<WebSocketExtensionParams> extension_params_;
+
+  base::WeakPtrFactory<WebSocketHttp2HandshakeStream> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketHttp2HandshakeStream);
 };
