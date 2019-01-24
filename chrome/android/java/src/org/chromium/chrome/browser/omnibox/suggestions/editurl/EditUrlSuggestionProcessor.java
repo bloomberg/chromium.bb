@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 
+import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
@@ -67,9 +68,18 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
         int NUM_ENTRIES = 4;
     }
 
+    /** Cached metrics in the event this code is triggered prior to native being initialized. */
     private static final EnumeratedHistogramSample ENUMERATED_SUGGESTION_ACTION =
             new EnumeratedHistogramSample(
                     "Omnibox.EditUrlSuggestionAction", SuggestionAction.NUM_ENTRIES);
+    private static final CachedMetrics.ActionEvent ACTION_EDIT_URL_SUGGESTION_TAP =
+            new CachedMetrics.ActionEvent("Omnibox.EditUrlSuggestion.Tap");
+    private static final CachedMetrics.ActionEvent ACTION_EDIT_URL_SUGGESTION_COPY =
+            new CachedMetrics.ActionEvent("Omnibox.EditUrlSuggestion.Copy");
+    private static final CachedMetrics.ActionEvent ACTION_EDIT_URL_SUGGESTION_EDIT =
+            new CachedMetrics.ActionEvent("Omnibox.EditUrlSuggestion.Edit");
+    private static final CachedMetrics.ActionEvent ACTION_EDIT_URL_SUGGESTION_SHARE =
+            new CachedMetrics.ActionEvent("Omnibox.EditUrlSuggestion.Share");
 
     /** The name of the parameter for getting the experiment variation. */
     private static final String FIELD_TRIAL_PARAM_NAME = "variation";
@@ -222,9 +232,11 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
 
         if (R.id.url_copy_icon == view.getId()) {
             ENUMERATED_SUGGESTION_ACTION.record(SuggestionAction.COPY);
+            ACTION_EDIT_URL_SUGGESTION_COPY.record();
             Clipboard.getInstance().copyUrlToClipboard(mLastProcessedSuggestion.getUrl());
         } else if (R.id.url_share_icon == view.getId()) {
             ENUMERATED_SUGGESTION_ACTION.record(SuggestionAction.SHARE);
+            ACTION_EDIT_URL_SUGGESTION_SHARE.record();
             mLocationBarDelegate.clearOmniboxFocus();
             // TODO(mdjones): This should only share the displayed URL instead of the background
             //                tab.
@@ -232,9 +244,11 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
                     activityTab.getActivity(), activityTab, false, activityTab.isIncognito());
         } else if (R.id.url_edit_icon == view.getId()) {
             ENUMERATED_SUGGESTION_ACTION.record(SuggestionAction.EDIT);
+            ACTION_EDIT_URL_SUGGESTION_EDIT.record();
             mLocationBarDelegate.setOmniboxEditingText(mLastProcessedSuggestion.getUrl());
         } else {
             ENUMERATED_SUGGESTION_ACTION.record(SuggestionAction.TAP);
+            ACTION_EDIT_URL_SUGGESTION_TAP.record();
             // If the event wasn't on any of the buttons, treat is as a tap on the general
             // suggestion.
             if (mSelectionHandler != null) {

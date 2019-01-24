@@ -13244,6 +13244,64 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Omnibox.EditUrlSuggestion.Copy">
+  <owner>mdjones@chromium.org</owner>
+  <owner>lzbylut@google.com</owner>
+  <description>
+    User tapped on the copy icon in the edit-URL omnibox suggestion on Android.
+  </description>
+</action>
+
+<action name="Omnibox.EditUrlSuggestion.Edit">
+  <owner>mdjones@chromium.org</owner>
+  <owner>lzbylut@google.com</owner>
+  <description>
+    User tapped on the edit icon in the edit-URL omnibox suggestion on Android.
+  </description>
+</action>
+
+<action name="Omnibox.EditUrlSuggestion.Share">
+  <owner>mdjones@chromium.org</owner>
+  <owner>lzbylut@google.com</owner>
+  <description>
+    User tapped on the share icon in the edit-URL omnibox suggestion on Android.
+  </description>
+</action>
+
+<action name="Omnibox.EditUrlSuggestion.Tap">
+  <owner>mdjones@chromium.org</owner>
+  <owner>lzbylut@google.com</owner>
+  <description>
+    User tapped on the edit-URL omnibox suggestion on Android.
+  </description>
+</action>
+
+<action name="Omnibox.LongPress.Copy">
+  <owner>mdjones@chromium.org</owner>
+  <owner>lzbylut@google.com</owner>
+  <description>
+    User tapped on the copy button after long-pressing on the omnibox on
+    Android.
+  </description>
+</action>
+
+<action name="Omnibox.LongPress.Cut">
+  <owner>mdjones@chromium.org</owner>
+  <owner>lzbylut@google.com</owner>
+  <description>
+    User tapped on the cut button after long-pressing on the omnibox on Android.
+  </description>
+</action>
+
+<action name="Omnibox.LongPress.Share">
+  <owner>mdjones@chromium.org</owner>
+  <owner>lzbylut@google.com</owner>
+  <description>
+    User tapped on the share button after long-pressing on the omnibox on
+    Android.
+  </description>
+</action>
+
 <action name="Omnibox.ServerSuggestDelete.Failure">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

@@ -35,6 +35,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.ui.KeyboardVisibilityDelegate;
@@ -49,6 +50,13 @@ public class UrlBar extends AutocompleteEditText {
     private static final String TAG = "cr_UrlBar";
 
     private static final boolean DEBUG = false;
+
+    private static final CachedMetrics.ActionEvent ACTION_LONG_PRESS_COPY =
+            new CachedMetrics.ActionEvent("Omnibox.LongPress.Copy");
+    private static final CachedMetrics.ActionEvent ACTION_LONG_PRESS_CUT =
+            new CachedMetrics.ActionEvent("Omnibox.LongPress.Cut");
+    private static final CachedMetrics.ActionEvent ACTION_LONG_PRESS_SHARE =
+            new CachedMetrics.ActionEvent("Omnibox.LongPress.Share");
 
     // TODO(tedchoc): Replace with EditorInfoCompat#IME_FLAG_NO_PERSONALIZED_LEARNING or
     //                EditorInfo#IME_FLAG_NO_PERSONALIZED_LEARNING as soon as either is available in
@@ -564,6 +572,11 @@ public class UrlBar extends AutocompleteEditText {
 
         if ((id == android.R.id.cut || id == android.R.id.copy)
                 && !mUrlBarDelegate.shouldCutCopyVerbatim()) {
+            if (id == android.R.id.cut) {
+                ACTION_LONG_PRESS_CUT.record();
+            } else {
+                ACTION_LONG_PRESS_COPY.record();
+            }
             String currentText = getText().toString();
             String replacementCutCopyText = mTextContextMenuDelegate.getReplacementCutCopyText(
                     currentText, getSelectionStart(), getSelectionEnd());
@@ -587,6 +600,10 @@ public class UrlBar extends AutocompleteEditText {
             }
 
             return retVal;
+        }
+
+        if (id == android.R.id.shareText) {
+            ACTION_LONG_PRESS_SHARE.record();
         }
 
         return super.onTextContextMenuItem(id);
