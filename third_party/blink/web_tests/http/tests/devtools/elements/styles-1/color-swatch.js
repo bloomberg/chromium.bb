@@ -64,12 +64,21 @@
   ]);
 
   function createShiftClick() {
-    var event = document.createEvent('MouseEvent');
-    event.initMouseEvent('click', true, true, null, 1, 0, 0, 0, 0, false, false, true, false, 0, null);
+    const event = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      detail: 1,
+      screenX: 0,
+      screenY: 0,
+      clientX: 0,
+      clientY: 0,
+      shiftKey: true,
+      composed: true
+    });
     return event;
   }
 
   function popoverVisible() {
-    return !!document.body.querySelector('* /deep/ .spectrum-color');
+    return !!UI.GlassPane._panes.size;
   }
 })();

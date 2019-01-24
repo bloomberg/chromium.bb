@@ -8,33 +8,45 @@
 
   TestRunner.runTestSuite([
     function traverseNextNodeInShadowDom(next) {
-      function createContent(parent, selection) {
-        var content = parent.createChild('content');
-        content.setAttribute('select', selection);
+      function createSlot(parent, name) {
+        const slot = parent.createChild('slot');
+        if (name)
+          slot.name = name;
+        return slot;
+      }
+
+      function createChild(parent, tagName, name, text = '') {
+        const child = parent.createChild(tagName, name);
+        if (name)
+          child.slot = name;
+        child.textContent = text;
+        return child;
       }
 
       var component1 = createElementWithClass('div', 'component1');
-      var shadow1 = component1.createShadowRoot();
-      component1.createChild('div', 'component1-content').textContent = 'text 1';
-      component1.createChild('div', 'component2-content').textContent = 'text 2';
-      component1.createChild('span').textContent = 'text 3';
-      component1.createChild('span', 'component1-content').textContent = 'text 4';
+      var shadow1 = component1.attachShadow({mode: 'open'});
+      createChild(component1, 'div', 'component1-content', 'text 1');
+      createChild(component1, 'div', 'component2-content', 'text 2');
+      createChild(component1, 'span', undefined, 'text 3');
+      createChild(component1, 'span', 'component1-content', 'text 4');
 
       var shadow1Content = createElementWithClass('div', 'shadow-component1');
       shadow1.appendChild(shadow1Content);
-      createContent(shadow1Content, '.component1-content');
-      createContent(shadow1Content, 'span');
+      createSlot(shadow1Content, 'component1-content');
+      createSlot(shadow1Content);
 
       var component2 = shadow1Content.createChild('div', 'component2');
-      var shadow2 = component2.createShadowRoot();
-      createContent(component2, '.component2-content');
-      component2.createChild('div', 'component2-content').textContent = 'component2 light dom text';
+      var shadow2 = component2.attachShadow({mode: 'open'});
+      createSlot(component2, 'component2-content');
+      createChild(
+          component2, 'div', 'component2-content', 'component2 light dom text');
 
       var shadow2Content = createElementWithClass('div', 'shadow-component1');
       shadow2.appendChild(shadow2Content);
-      var midDiv = shadow2Content.createChild('div', 'mid-div');
-      midDiv.createChild('div').textContent = 'component2-text';
-      createContent(midDiv, '.component2-content');
+      var midDiv = createChild(shadow2Content, 'div', 'mid-div');
+      createChild(midDiv, 'div', undefined, 'component2-text');
+      createSlot(midDiv);
+      createSlot(midDiv, 'component2-content');
 
       var node = component1;
       while ((node = node.traverseNextNode(component1))) {

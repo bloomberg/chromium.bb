@@ -1,7 +1,7 @@
 Tests that the panel includes Certificate Transparency compliance status
 
 Panel on origin view:
-<DIV class=widget vbox security-origin-view insertion-point-main >
+<DIV class=widget vbox security-origin-view slot=insertion-point-main >
     <STYLE type=text/css >
     </STYLE>
     <STYLE type=text/css >
@@ -13,7 +13,7 @@ Origin
         <DIV class=origin-display >
             <SPAN class=security-property security-property-secure >
             </SPAN>
-            <SPAN is=url-text >
+            <SPAN >
                 <SPAN class=url-scheme-secure >
 https
                 </SPAN>
