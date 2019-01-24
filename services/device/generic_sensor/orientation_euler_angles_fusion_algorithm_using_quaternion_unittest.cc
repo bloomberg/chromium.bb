@@ -4,7 +4,7 @@
 
 #include "services/device/generic_sensor/orientation_euler_angles_fusion_algorithm_using_quaternion.h"
 #include "base/memory/ref_counted.h"
-#include "services/device/device_service_test_base.h"
+#include "base/test/scoped_task_environment.h"
 #include "services/device/generic_sensor/fake_platform_sensor_fusion.h"
 #include "services/device/generic_sensor/generic_sensor_consts.h"
 #include "services/device/generic_sensor/orientation_test_data.h"
@@ -13,7 +13,7 @@
 namespace device {
 
 class OrientationEulerAnglesFusionAlgorithmUsingQuaternionTest
-    : public DeviceServiceTestBase {
+    : public testing::Test {
  public:
   OrientationEulerAnglesFusionAlgorithmUsingQuaternionTest() {
     auto fusion_algorithm =
@@ -26,6 +26,7 @@ class OrientationEulerAnglesFusionAlgorithmUsingQuaternionTest
   }
 
  protected:
+  base::test::ScopedTaskEnvironment task_environment_;
   scoped_refptr<FakePlatformSensorFusion> fake_fusion_sensor_;
   OrientationEulerAnglesFusionAlgorithmUsingQuaternion* fusion_algorithm_;
 };
