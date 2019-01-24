@@ -56,8 +56,8 @@ class OomInterventionTabHelper
   void RenderProcessGone(base::TerminationStatus status) override;
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void DocumentAvailableInMainFrame() override;
   void OnVisibilityChanged(content::Visibility visibility) override;
+  void DocumentOnLoadCompletedInMainFrame() override;
 
   // CrashDumpManager::Observer:
   void OnCrashDumpProcessed(
@@ -84,6 +84,7 @@ class OomInterventionTabHelper
   void ResetInterfaces();
 
   bool navigation_started_ = false;
+  bool load_finished_ = false;
   base::Optional<base::TimeTicks> near_oom_detected_time_;
   std::unique_ptr<NearOomMonitor::Subscription> subscription_;
   base::OneShotTimer renderer_detection_timer_;
