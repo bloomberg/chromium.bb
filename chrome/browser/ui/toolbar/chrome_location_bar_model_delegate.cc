@@ -34,6 +34,13 @@
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/browser/extension_registry.h"
+
+// Id for extension that enables users to report sites to Safe Browsing.
+const char kPreventElisionExtensionId[] = "ekpgepffboojnckiahkpangdldnjafnj";
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
 ChromeLocationBarModelDelegate::ChromeLocationBarModelDelegate() {}
 
 ChromeLocationBarModelDelegate::~ChromeLocationBarModelDelegate() {}
@@ -61,6 +68,17 @@ bool ChromeLocationBarModelDelegate::GetURL(GURL* url) const {
 
   *url = ShouldDisplayURL() ? entry->GetVirtualURL() : GURL();
   return true;
+}
+
+bool ChromeLocationBarModelDelegate::ShouldPreventElision() const {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  Profile* const profile = GetProfile();
+  return profile && extensions::ExtensionRegistry::Get(profile)
+                        ->enabled_extensions()
+                        .Contains(kPreventElisionExtensionId);
+#else
+  return false;
+#endif
 }
 
 bool ChromeLocationBarModelDelegate::ShouldDisplayURL() const {

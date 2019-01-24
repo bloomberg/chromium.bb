@@ -48,6 +48,11 @@ base::string16 LocationBarModelImpl::GetURLForDisplay() const {
   url_formatter::FormatUrlTypes format_types =
       url_formatter::kFormatUrlOmitDefaults;
 
+  // Early exit to prevent elision of URLs when relevant extension is enabled.
+  if (delegate_->ShouldPreventElision()) {
+    return GetFormattedURL(format_types);
+  }
+
 #if defined(OS_IOS)
   format_types |= url_formatter::kFormatUrlTrimAfterHost;
 #endif
@@ -102,7 +107,8 @@ security_state::SecurityLevel LocationBarModelImpl::GetSecurityLevel(
 }
 
 bool LocationBarModelImpl::GetDisplaySearchTerms(base::string16* search_terms) {
-  if (!base::FeatureList::IsEnabled(omnibox::kQueryInOmnibox))
+  if (!base::FeatureList::IsEnabled(omnibox::kQueryInOmnibox) ||
+      delegate_->ShouldPreventElision())
     return false;
 
   // Only show the search terms if the site is secure. However, make an
