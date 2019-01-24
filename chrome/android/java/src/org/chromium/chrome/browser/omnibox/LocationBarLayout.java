@@ -407,8 +407,17 @@ public class LocationBarLayout extends FrameLayout
             // be recalculated.
             if (didFocusUrlFromFakebox() && !inProgress && mUrlHasFocus
                     && AccessibilityUtil.isAccessibilityEnabled()) {
+                String existingText = mUrlCoordinator.getTextWithoutAutocomplete();
                 mUrlBar.clearFocus();
                 mUrlBar.requestFocus();
+                // Existing text (e.g. if the user pasted via the fakebox) from the fake box
+                // should be restored after toggling the focus.
+                if (!TextUtils.isEmpty(existingText)) {
+                    mUrlCoordinator.setUrlBarData(UrlBarData.forNonUrlText(existingText),
+                            UrlBar.ScrollType.NO_SCROLL,
+                            UrlBarCoordinator.SelectionState.SELECT_END);
+                    mAutocompleteCoordinator.onTextChangedForAutocomplete();
+                }
             }
 
             for (UrlFocusChangeListener listener : mUrlFocusChangeListeners) {
