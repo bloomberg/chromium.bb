@@ -15,6 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/platform/ax_platform_node_base.h"
 #include "ui/accessibility/platform/ax_platform_node_unittest.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 #include "ui/accessibility/platform/test_ax_node_wrapper.h"
@@ -91,7 +92,7 @@ class AXPlatformNodeWinTest : public ui::AXPlatformNodeTest {
   void TearDown() override {
     // Destroy the tree and make sure we're not leaking any objects.
     tree_.reset(nullptr);
-    ASSERT_EQ(0U, AXPlatformNodeWin::GetInstanceCountForTesting());
+    ASSERT_EQ(0U, AXPlatformNodeBase::GetInstanceCountForTesting());
   }
 
  protected:

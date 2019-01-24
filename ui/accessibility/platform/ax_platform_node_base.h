@@ -199,6 +199,12 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // child object appears.
   static const base::char16 kEmbeddedCharacter;
 
+  // Get a node given its unique id or null in the case that the id is unknown.
+  static AXPlatformNode* GetFromUniqueId(int32_t unique_id);
+
+  // Return the number of instances of AXPlatformNodeBase, for leak testing.
+  static size_t GetInstanceCountForTesting();
+
   //
   // Delegate.  This is a weak reference which owns |this|.
   //

@@ -65,8 +65,6 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
       gint* x, gint* y, gint* width, gint* height,
       AtkCoordType coord_type);
 
-  static AXPlatformNodeAuraLinux* GetFromUniqueId(int32_t unique_id);
-
   // AtkDocument helpers
   const gchar* GetDocumentAttributeValue(const gchar* attribute) const;
   AtkAttributeSet* GetDocumentAttributes() const;

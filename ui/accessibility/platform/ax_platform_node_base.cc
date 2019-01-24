@@ -5,6 +5,7 @@
 #include "ui/accessibility/platform/ax_platform_node_base.h"
 
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -24,6 +25,11 @@ namespace ui {
 
 const base::char16 AXPlatformNodeBase::kEmbeddedCharacter = L'\xfffc';
 
+// Map from each AXPlatformNode's unique id to its instance.
+using UniqueIdMap = std::unordered_map<int32_t, AXPlatformNode*>;
+base::LazyInstance<UniqueIdMap>::Leaky g_unique_id_map =
+    LAZY_INSTANCE_INITIALIZER;
+
 #if !BUILDFLAG_INTERNAL_HAS_NATIVE_ACCESSIBILITY()
 // static
 AXPlatformNode* AXPlatformNode::Create(AXPlatformNodeDelegate* delegate) {
@@ -33,12 +39,30 @@ AXPlatformNode* AXPlatformNode::Create(AXPlatformNodeDelegate* delegate) {
 }
 #endif
 
+// static
+AXPlatformNode* AXPlatformNodeBase::GetFromUniqueId(int32_t unique_id) {
+  UniqueIdMap* unique_ids = g_unique_id_map.Pointer();
+  auto iter = unique_ids->find(unique_id);
+  if (iter != unique_ids->end())
+    return iter->second;
+
+  return nullptr;
+}
+
+// static
+size_t AXPlatformNodeBase::GetInstanceCountForTesting() {
+  return g_unique_id_map.Get().size();
+}
+
 AXPlatformNodeBase::AXPlatformNodeBase() = default;
 
 AXPlatformNodeBase::~AXPlatformNodeBase() = default;
 
 void AXPlatformNodeBase::Init(AXPlatformNodeDelegate* delegate) {
   delegate_ = delegate;
+
+  // This must be called after assigning our delegate.
+  g_unique_id_map.Get()[GetUniqueId()] = this;
 }
 
 const AXNodeData& AXPlatformNodeBase::GetData() const {
@@ -79,7 +103,10 @@ int AXPlatformNodeBase::GetIndexInParent() {
 // AXPlatformNode overrides.
 
 void AXPlatformNodeBase::Destroy() {
+  g_unique_id_map.Get().erase(GetUniqueId());
+
   AXPlatformNode::Destroy();
+
   delegate_ = nullptr;
   Dispose();
 }
