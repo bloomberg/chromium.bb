@@ -118,19 +118,21 @@ String Location::hash() const {
   return DOMURLUtilsReadOnly::hash(Url());
 }
 
-void Location::setHref(LocalDOMWindow* current_window,
-                       LocalDOMWindow* entered_window,
-                       const USVStringOrTrustedURL& stringOrUrl,
+void Location::setHref(v8::Isolate* isolate,
+                       const USVStringOrTrustedURL& string_or_url,
                        ExceptionState& exception_state) {
-  String url = GetStringFromTrustedURL(stringOrUrl, current_window->document(),
-                                       exception_state);
-  if (!exception_state.HadException()) {
-    SetLocation(url, current_window, entered_window, &exception_state);
-  }
+  LocalDOMWindow* incumbent_window = IncumbentDOMWindow(isolate);
+  LocalDOMWindow* entered_window = EnteredDOMWindow(isolate);
+
+  const String& url = GetStringFromTrustedURL(
+      string_or_url, incumbent_window->document(), exception_state);
+  if (exception_state.HadException())
+    return;
+
+  SetLocation(url, incumbent_window, entered_window, &exception_state);
 }
 
-void Location::setProtocol(LocalDOMWindow* current_window,
-                           LocalDOMWindow* entered_window,
+void Location::setProtocol(v8::Isolate* isolate,
                            const String& protocol,
                            ExceptionState& exception_state) {
   KURL url = GetDocument()->Url();
@@ -140,62 +142,57 @@ void Location::setProtocol(LocalDOMWindow* current_window,
         "'" + protocol + "' is an invalid protocol.");
     return;
   }
-  SetLocation(url.GetString(), current_window, entered_window,
-              &exception_state);
+
+  SetLocation(url.GetString(), IncumbentDOMWindow(isolate),
+              EnteredDOMWindow(isolate), &exception_state);
 }
 
-void Location::setHost(LocalDOMWindow* current_window,
-                       LocalDOMWindow* entered_window,
+void Location::setHost(v8::Isolate* isolate,
                        const String& host,
                        ExceptionState& exception_state) {
   KURL url = GetDocument()->Url();
   url.SetHostAndPort(host);
-  SetLocation(url.GetString(), current_window, entered_window,
-              &exception_state);
+  SetLocation(url.GetString(), IncumbentDOMWindow(isolate),
+              EnteredDOMWindow(isolate), &exception_state);
 }
 
-void Location::setHostname(LocalDOMWindow* current_window,
-                           LocalDOMWindow* entered_window,
+void Location::setHostname(v8::Isolate* isolate,
                            const String& hostname,
                            ExceptionState& exception_state) {
   KURL url = GetDocument()->Url();
   url.SetHost(hostname);
-  SetLocation(url.GetString(), current_window, entered_window,
-              &exception_state);
+  SetLocation(url.GetString(), IncumbentDOMWindow(isolate),
+              EnteredDOMWindow(isolate), &exception_state);
 }
 
-void Location::setPort(LocalDOMWindow* current_window,
-                       LocalDOMWindow* entered_window,
-                       const String& port_string,
+void Location::setPort(v8::Isolate* isolate,
+                       const String& port,
                        ExceptionState& exception_state) {
   KURL url = GetDocument()->Url();
-  url.SetPort(port_string);
-  SetLocation(url.GetString(), current_window, entered_window,
-              &exception_state);
+  url.SetPort(port);
+  SetLocation(url.GetString(), IncumbentDOMWindow(isolate),
+              EnteredDOMWindow(isolate), &exception_state);
 }
 
-void Location::setPathname(LocalDOMWindow* current_window,
-                           LocalDOMWindow* entered_window,
+void Location::setPathname(v8::Isolate* isolate,
                            const String& pathname,
                            ExceptionState& exception_state) {
   KURL url = GetDocument()->Url();
   url.SetPath(pathname);
-  SetLocation(url.GetString(), current_window, entered_window,
-              &exception_state);
+  SetLocation(url.GetString(), IncumbentDOMWindow(isolate),
+              EnteredDOMWindow(isolate), &exception_state);
 }
 
-void Location::setSearch(LocalDOMWindow* current_window,
-                         LocalDOMWindow* entered_window,
+void Location::setSearch(v8::Isolate* isolate,
                          const String& search,
                          ExceptionState& exception_state) {
   KURL url = GetDocument()->Url();
   url.SetQuery(search);
-  SetLocation(url.GetString(), current_window, entered_window,
-              &exception_state);
+  SetLocation(url.GetString(), IncumbentDOMWindow(isolate),
+              EnteredDOMWindow(isolate), &exception_state);
 }
 
-void Location::setHash(LocalDOMWindow* current_window,
-                       LocalDOMWindow* entered_window,
+void Location::setHash(v8::Isolate* isolate,
                        const String& hash,
                        ExceptionState& exception_state) {
   KURL url = GetDocument()->Url();
@@ -209,42 +206,40 @@ void Location::setHash(LocalDOMWindow* current_window,
   // cases where fragment identifiers are ignored or invalid.
   if (EqualIgnoringNullity(old_fragment_identifier, url.FragmentIdentifier()))
     return;
-  SetLocation(url.GetString(), current_window, entered_window,
-              &exception_state);
+  SetLocation(url.GetString(), IncumbentDOMWindow(isolate),
+              EnteredDOMWindow(isolate), &exception_state);
 }
 
-void Location::assign(LocalDOMWindow* current_window,
-                      LocalDOMWindow* entered_window,
-                      const USVStringOrTrustedURL& stringOrUrl,
+void Location::assign(v8::Isolate* isolate,
+                      const USVStringOrTrustedURL& string_or_url,
                       ExceptionState& exception_state) {
-  // TODO(yukishiino): Remove this check once we remove [CrossOrigin] from
-  // the |assign| DOM operation's definition in Location.idl.  See the comment
-  // in Location.idl for details.
-  if (!BindingSecurity::ShouldAllowAccessTo(current_window, this,
-                                            exception_state)) {
+  LocalDOMWindow* incumbent_window = IncumbentDOMWindow(isolate);
+  LocalDOMWindow* entered_window = EnteredDOMWindow(isolate);
+
+  const String& url = GetStringFromTrustedURL(
+      string_or_url, incumbent_window->document(), exception_state);
+  if (exception_state.HadException())
     return;
-  }
 
-  String url = GetStringFromTrustedURL(stringOrUrl, current_window->document(),
-                                       exception_state);
-  if (!exception_state.HadException()) {
-    SetLocation(url, current_window, entered_window, &exception_state);
-  }
+  SetLocation(url, incumbent_window, entered_window, &exception_state);
 }
 
-void Location::replace(LocalDOMWindow* current_window,
-                       LocalDOMWindow* entered_window,
-                       const USVStringOrTrustedURL& stringOrUrl,
+void Location::replace(v8::Isolate* isolate,
+                       const USVStringOrTrustedURL& string_or_url,
                        ExceptionState& exception_state) {
-  String url = GetStringFromTrustedURL(stringOrUrl, current_window->document(),
-                                       exception_state);
-  if (!exception_state.HadException()) {
-    SetLocation(url, current_window, entered_window, &exception_state,
-                SetLocationPolicy::kReplaceThisFrame);
-  }
+  LocalDOMWindow* incumbent_window = IncumbentDOMWindow(isolate);
+  LocalDOMWindow* entered_window = EnteredDOMWindow(isolate);
+
+  const String& url = GetStringFromTrustedURL(
+      string_or_url, incumbent_window->document(), exception_state);
+  if (exception_state.HadException())
+    return;
+
+  SetLocation(url, incumbent_window, entered_window, &exception_state,
+              SetLocationPolicy::kReplaceThisFrame);
 }
 
-void Location::reload(LocalDOMWindow* current_window) {
+void Location::reload() {
   if (!IsAttached())
     return;
   if (GetDocument()->Url().ProtocolIsJavaScript())
