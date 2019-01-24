@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_string_util.h"
 #include "chrome/browser/chromeos/file_manager/open_with_browser.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
@@ -18,7 +17,6 @@
 #include "chromeos/system/statistics_provider.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/webui/web_ui_util.h"
 
 namespace extensions {
 
@@ -54,9 +52,6 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
       "MY_FILES_VOLUME_ENABLED",
       base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume));
   dict->SetString("UI_LOCALE", extension_l10n_util::CurrentLocaleOrDefault());
-
-  const std::string& app_locale = g_browser_process->GetApplicationLocale();
-  webui::SetLoadTimeDataDefaults(app_locale, dict.get());
 
   return RespondNow(OneArgument(std::move(dict)));
 }

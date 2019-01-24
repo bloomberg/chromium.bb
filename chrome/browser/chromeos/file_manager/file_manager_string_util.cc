@@ -7,9 +7,11 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/webui/web_ui_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
 namespace {
@@ -830,6 +832,9 @@ std::unique_ptr<base::DictionaryValue> GetFileManagerStrings() {
   dict->SetString(
       "NO_TASK_FOR_FILE_URL",
       base::StringPrintf(kHelpURLFormat, kNoActionForFileHelpNumber));
+
+  webui::SetLoadTimeDataDefaults(g_browser_process->GetApplicationLocale(),
+                                 dict.get());
 
   return dict;
 }

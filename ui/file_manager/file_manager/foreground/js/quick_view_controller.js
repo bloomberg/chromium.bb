@@ -179,7 +179,6 @@ QuickViewController.prototype.createQuickView_ = function() {
   return new Promise(function(resolve, reject) {
     Polymer.Base.importHref(constants.FILES_QUICK_VIEW_HTML, function() {
       var quickView = document.querySelector('#quick-view');
-      i18nTemplate.process(quickView, loadTimeData);
       resolve(quickView);
     }, reject);
   });

@@ -37,7 +37,6 @@
 // <include src="../../../../webui/resources/js/action_link.js">
 // <include src="../../../../webui/resources/js/cr.js">
 // <include src="../../../../webui/resources/js/util.js">
-// <include src="../../../../webui/resources/js/i18n_template_no_process.js">
 //
 // <include src="../../../../webui/resources/js/event_tracker.js">
 // <include src="../../../../webui/resources/js/cr/ui.js">

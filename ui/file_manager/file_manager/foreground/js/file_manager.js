@@ -999,9 +999,6 @@ FileManager.prototype = /** @struct */ {
 
     util.addIsFocusedMethod();
 
-    // Populate the static localized strings.
-    i18nTemplate.process(this.document_, loadTimeData);
-
     // The cwd is not known at this point.  Hide the import status column before
     // redrawing, to avoid ugly flashing in the UI, caused when the first redraw
     // has a visible status column, and then the cwd is later discovered to be

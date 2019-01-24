@@ -12,9 +12,6 @@
  * @struct
  */
 function FileManagerUI(providersModel, element, launchParam) {
-  // Pre-populate the static localized strings.
-  i18nTemplate.process(element.ownerDocument, loadTimeData);
-
   // Initialize the dialog label. This should be done before constructing dialog
   // instances.
   cr.ui.dialogs.BaseDialog.OK_LABEL = str('OK_LABEL');
