@@ -114,6 +114,7 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
   class LinkHighlightFragment : private cc::ContentLayerClient {
    public:
     LinkHighlightFragment(CompositorElementId);
+    ~LinkHighlightFragment() override;
 
     cc::PictureLayer* Layer() const { return layer_.get(); }
     const Path& GetPath() const { return path_; }

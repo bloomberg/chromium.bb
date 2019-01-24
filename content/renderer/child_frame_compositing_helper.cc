@@ -27,24 +27,25 @@ ChildFrameCompositingHelper::ChildFrameCompositingHelper(
   DCHECK(child_frame_compositor_);
 }
 
-ChildFrameCompositingHelper::~ChildFrameCompositingHelper() = default;
+ChildFrameCompositingHelper::~ChildFrameCompositingHelper() {
+  if (crash_ui_layer_)
+    crash_ui_layer_->ClearClient();
+}
 
 void ChildFrameCompositingHelper::ChildFrameGone(
     const gfx::Size& frame_size_in_dip,
     float device_scale_factor) {
   surface_id_ = viz::SurfaceId();
-  crashed_ = true;
   device_scale_factor_ = device_scale_factor;
 
-  auto crash_ui_layer = cc::PictureLayer::Create(this);
-  crash_ui_layer->SetMasksToBounds(true);
+  crash_ui_layer_ = cc::PictureLayer::Create(this);
+  crash_ui_layer_->SetMasksToBounds(true);
+  crash_ui_layer_->SetIsDrawable(true);
 
   bool prevent_contents_opaque_changes = false;
   bool is_surface_layer = false;
-  child_frame_compositor_->SetLayer(std::move(crash_ui_layer),
-                                    prevent_contents_opaque_changes,
-                                    is_surface_layer);
-  UpdateVisibility(true);
+  child_frame_compositor_->SetLayer(
+      crash_ui_layer_, prevent_contents_opaque_changes, is_surface_layer);
 }
 
 void ChildFrameCompositingHelper::SetSurfaceId(
@@ -82,15 +83,15 @@ void ChildFrameCompositingHelper::UpdateVisibility(bool visible) {
 }
 
 gfx::Rect ChildFrameCompositingHelper::PaintableRegion() {
-  DCHECK(crashed_);
-  return gfx::Rect(child_frame_compositor_->GetLayer()->bounds());
+  DCHECK(crash_ui_layer_);
+  return gfx::Rect(crash_ui_layer_->bounds());
 }
 
 scoped_refptr<cc::DisplayItemList>
 ChildFrameCompositingHelper::PaintContentsToDisplayList(
     PaintingControlSetting) {
-  DCHECK(crashed_);
-  auto layer_size = child_frame_compositor_->GetLayer()->bounds();
+  DCHECK(crash_ui_layer_);
+  auto layer_size = crash_ui_layer_->bounds();
   auto display_list = base::MakeRefCounted<cc::DisplayItemList>();
   display_list->StartPaint();
   display_list->push<cc::DrawColorOp>(SK_ColorGRAY, SkBlendMode::kSrc);

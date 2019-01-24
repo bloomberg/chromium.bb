@@ -32,7 +32,9 @@ ContentLayerClientImpl::ContentLayerClientImpl()
   cc_picture_layer_->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
 }
 
-ContentLayerClientImpl::~ContentLayerClientImpl() = default;
+ContentLayerClientImpl::~ContentLayerClientImpl() {
+  cc_picture_layer_->ClearClient();
+}
 
 static int GetTransformId(const TransformPaintPropertyNode* transform,
                           ContentLayerClientImpl::LayerAsJSONContext& context) {

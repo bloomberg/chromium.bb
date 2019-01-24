@@ -656,6 +656,7 @@ class SynthesizedClip : private cc::ContentLayerClient {
         CompositorElementIdFromUniqueObjectId(NewUniqueObjectId());
     layer_->SetIsDrawable(true);
   }
+  ~SynthesizedClip() override { layer_->ClearClient(); }
 
   void Update(const FloatRoundedRect& rrect,
               scoped_refptr<const RefCountedPath> path) {
