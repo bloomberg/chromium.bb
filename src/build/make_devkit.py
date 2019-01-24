@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from __future__ import print_function
-import os, sys, bbutil, shutil
+import os, sys, bbutil, shutil, re
 from blpwtk2 import content_version
 
 
@@ -93,6 +93,39 @@ def copyIncludeFiles(destDir):
   copyIncludeFilesFrom(
       os.path.join(destDir, 'include', 'v8'),
       [os.path.join(srcDir, 'v8', 'include')])
+
+def generateMsvsMapFiles(destDir, version):
+  productAppend = '.' + version
+  products = [
+    'blpwtk2' + productAppend + '.dll',
+    'blpcr_egl' + productAppend + '.dll',
+    'blpcr_glesv2' + productAppend + '.dll',
+    'blpwtk2_subprocess' + productAppend + '.exe',
+  ]
+
+  configs = ['debug', 'release']
+  for config in configs:
+    srcBinDir = os.path.join(srcDir, 'out', 'static_' + config)
+    for p in products:
+      binPath = os.path.join(srcBinDir, p)
+      mapPath = os.path.join(
+        srcBinDir, re.match('(.*)[.](?:\\bdll\\b|\\bexe\\b)$', p).group(1) + '.map')
+
+      # Append a '.llvm' to the original map file
+      shutil.move(mapPath, mapPath + '.llvm')
+
+      # Execute dumpbin to generate the dumpbin-style map file
+      rc = bbutil.shellExecNoPipe(
+        'dumpbin -map {0} > {1}'.format(binPath, mapPath + '.dumpbin'))
+      if rc != 0:
+        raise Exception("dumpbin failed to generate map file")
+
+      # Execute msvs_map.py to generate MSVS-style map file
+      rc = bbutil.shellExecNoPipe(
+        'python src/build/msvs_map.py --llvm-map {0} --dumpbin-map {1} > {2}'.format(
+            mapPath + '.llvm', mapPath + '.dumpbin', mapPath))
+      if rc != 0:
+        raise Exception("msvs_map.py failed to generate map file")
 
 def copyBin(destDir, version):
   productAppend = '.' + version
@@ -213,8 +246,14 @@ def main(args):
   os.chdir(chromiumDir)
   version = content_version + '_' + version
   destDir = os.path.join(outDir, version)
+
+  # Pre-flight checks
   if os.path.exists(destDir):
     raise Exception("Path already exists: " + destDir)
+
+  rc = bbutil.shellExecNoPipe('which dumpbin')
+  if rc != 0:
+    raise Exception("Please make sure dumpbin is in your PATH")
 
   if doClean:
     print("Cleaning source tree...")
@@ -271,6 +310,7 @@ def main(args):
   os.mkdir(os.path.join(destDir, 'lib', 'debug'))
   os.mkdir(os.path.join(destDir, 'lib', 'release'))
 
+  generateMsvsMapFiles(destDir, version)
   copyIncludeFiles(destDir)
   copyBin(destDir, version)
   copyLib(destDir, version)
