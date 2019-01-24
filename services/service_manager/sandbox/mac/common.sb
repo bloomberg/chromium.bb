@@ -64,6 +64,15 @@
     ; (https://crbug.com/662686)
     (allow file-read* (extension "com.apple.app-sandbox.read"))))
 
+; Reads of signed Mach-O blobs created by the CVMS server.
+; https://crbug.com/850021
+(define (allow-cvms-blobs)
+  (if (>= os-version 1014)
+    (allow file-read*
+      (extension "com.apple.cvms.kernel")
+      (subpath "/private/var/db/CVMS")
+    )))
+
 ; Allow logging for all processes.
 (allow file-write*
   (require-all
