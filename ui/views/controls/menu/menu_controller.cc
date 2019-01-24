@@ -783,7 +783,7 @@ void MenuController::OnMouseMoved(SubmenuView* source,
     ConvertLocatedEventForRootView(source, root_view, &event_for_root);
     View* view = root_view->GetEventHandlerForPoint(event_for_root.location());
     Button* button = Button::AsButton(view);
-    if (button && button->IsHotTracked())
+    if (button)
       SetHotTrackedButton(button);
   }
 

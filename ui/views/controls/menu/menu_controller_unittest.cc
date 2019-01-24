@@ -965,6 +965,8 @@ TEST_F(MenuControllerTest, SelectChildButtonView) {
   ui::MouseEvent event(ui::ET_MOUSE_MOVED, location, location,
                        ui::EventTimeForNow(), 0, 0);
   ProcessMouseMoved(sub_menu, event);
+  EXPECT_EQ(button1, GetHotButton());
+  EXPECT_TRUE(button1->IsHotTracked());
 
   // Incrementing selection should move hot tracking to the second button (next
   // after the first button).
