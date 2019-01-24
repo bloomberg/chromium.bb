@@ -4,6 +4,11 @@
 
 ; --- The contents of common.sb implicitly included here. ---
 
+; Allow cf prefs to work.
+(allow user-preference-read)
+
+(allow-cvms-blobs)
+
 ; Allow communication between the GPU process and the UI server.
 (allow mach-lookup
   (global-name "com.apple.CoreServices.coreservicesd")
@@ -37,6 +42,14 @@
 
 ; Needed for VideoToolbox usage - https://crbug.com/767037
 (if (>= os-version 1013)
-  (allow mach-lookup (global-name "com.apple.coremedia.videodecoder")))
+  (allow mach-lookup (global-name "com.apple.coremedia.videodecoder"))
+  (allow mach-lookup (global-name "com.apple.coremedia.videoencoder"))
+)
 
-(allow sysctl-read (sysctl-name "hw.model"))
+(allow sysctl-read
+  (sysctl-name "hw.logicalcpu_max")
+  (sysctl-name "hw.model")
+)
+
+(allow file-read-data
+  (regex (user-homedir-path #"/Library/Preferences/ByHost/com.apple.AppleGVA.*")))
