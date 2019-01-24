@@ -58,6 +58,7 @@ import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
+import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper.MenuButtonState;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarPhone;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
@@ -2685,11 +2686,13 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     }
 
     private void setTabSwitcherAnimationMenuBadgeDrawable() {
+        MenuButtonState buttonState = UpdateMenuItemHelper.getInstance().getUiState().buttonState;
+        if (buttonState == null) return;
+
         Drawable darkDrawable =
-                UpdateMenuItemHelper.getInstance().getDarkBadgeDrawable(this.getResources());
+                ApiCompatibilityUtils.getDrawable(getResources(), buttonState.darkBadgeIcon);
         Drawable lightDrawable =
-                UpdateMenuItemHelper.getInstance().getLightBadgeDrawable(this.getResources());
-        if (darkDrawable == null || lightDrawable == null) return;
+                ApiCompatibilityUtils.getDrawable(getResources(), buttonState.lightBadgeIcon);
 
         mTabSwitcherAnimationMenuBadgeDarkDrawable = darkDrawable;
         mTabSwitcherAnimationMenuBadgeDarkDrawable.mutate();

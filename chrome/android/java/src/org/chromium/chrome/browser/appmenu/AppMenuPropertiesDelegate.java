@@ -151,8 +151,8 @@ public class AppMenuPropertiesDelegate {
                 }
             }
 
-            menu.findItem(R.id.update_menu_id).setVisible(
-                    UpdateMenuItemHelper.getInstance().shouldShowMenuItem(mActivity));
+            menu.findItem(R.id.update_menu_id)
+                    .setVisible(UpdateMenuItemHelper.getInstance().getUiState().itemState != null);
 
             boolean hasMoreThanOneTab = mActivity.getTabModelSelector().getTotalTabCount() > 1;
             menu.findItem(R.id.move_to_other_window_menu_id).setVisible(

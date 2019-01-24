@@ -907,7 +907,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     }
 
     @Override
-    public void onCheckForUpdate() {}
+    public void onUpdateStateChanged() {}
 
     /**
      * @return The {@link CustomTabIntentDataProvider} for this {@link CustomTabActivity}. For test

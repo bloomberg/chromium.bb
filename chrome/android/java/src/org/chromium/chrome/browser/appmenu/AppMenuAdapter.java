@@ -8,6 +8,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.IntDef;
 import android.support.v7.content.res.AppCompatResources;
@@ -25,6 +26,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
+import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper.MenuItemState;
 import org.chromium.chrome.browser.widget.ViewHighlighter;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
@@ -199,10 +201,22 @@ class AppMenuAdapter extends BaseAdapter {
                     holder = (CustomMenuItemViewHolder) convertView.getTag();
                 }
                 setupStandardMenuItemViewHolder(holder, convertView, item);
-                boolean updateItemEnabled =
-                        UpdateMenuItemHelper.getInstance().decorateMenuItemViews(
-                                mInflater.getContext(), holder.text, holder.image, holder.summary);
-                convertView.setEnabled(updateItemEnabled);
+                MenuItemState itemState = UpdateMenuItemHelper.getInstance().getUiState().itemState;
+                if (itemState != null) {
+                    Resources resources = convertView.getResources();
+
+                    holder.text.setText(itemState.title);
+                    holder.text.setContentDescription(resources.getString(itemState.title));
+                    holder.text.setTextColor(
+                            ApiCompatibilityUtils.getColor(resources, itemState.titleColor));
+
+                    if (!TextUtils.isEmpty(itemState.summary)) {
+                        holder.summary.setText(itemState.summary);
+                    }
+
+                    holder.image.setImageResource(itemState.icon);
+                    convertView.setEnabled(itemState.enabled);
+                }
                 break;
             }
             case MenuItemType.THREE_BUTTON:

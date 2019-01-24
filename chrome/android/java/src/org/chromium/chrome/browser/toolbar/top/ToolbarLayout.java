@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.toolbar.top;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Canvas;
@@ -24,6 +25,7 @@ import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -36,7 +38,6 @@ import org.chromium.chrome.browser.compositor.Invalidator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -51,6 +52,7 @@ import org.chromium.chrome.browser.widget.PulseDrawable;
 import org.chromium.chrome.browser.widget.ToolbarProgressBar;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 /**
  * Layout class that contains the base shared logic for manipulating the toolbar component. For
@@ -791,8 +793,7 @@ public abstract class ToolbarLayout extends FrameLayout {
         // Set initial states.
         mMenuButton.setAlpha(0.f);
 
-        mMenuBadgeAnimatorSet =
-                UpdateMenuItemHelper.createHideUpdateBadgeAnimation(mMenuButton, mMenuBadge);
+        mMenuBadgeAnimatorSet = createHideUpdateBadgeAnimation(mMenuButton, mMenuBadge);
 
         mMenuBadgeAnimatorSet.addListener(new AnimatorListenerAdapter() {
             @Override
@@ -852,8 +853,7 @@ public abstract class ToolbarLayout extends FrameLayout {
         mMenuBadge.setAlpha(0.f);
         mMenuBadge.setVisibility(View.VISIBLE);
 
-        mMenuBadgeAnimatorSet =
-                UpdateMenuItemHelper.createShowUpdateBadgeAnimation(mMenuButton, mMenuBadge);
+        mMenuBadgeAnimatorSet = createShowUpdateBadgeAnimation(mMenuButton, mMenuBadge);
 
         mMenuBadgeAnimatorSet.addListener(new AnimatorListenerAdapter() {
             @Override
@@ -928,4 +928,90 @@ public abstract class ToolbarLayout extends FrameLayout {
      * it.
      */
     void setTabModelSelector(TabModelSelector selector) {}
+
+    /**
+     * Creates an {@link AnimatorSet} for showing the update badge that is displayed on top
+     * of the app menu button.
+     *
+     * @param menuButton The {@link View} containing the app menu button.
+     * @param menuBadge The {@link View} containing the update badge.
+     * @return An {@link AnimatorSet} to run when showing the update badge.
+     */
+    private static AnimatorSet createShowUpdateBadgeAnimation(
+            final View menuButton, final View menuBadge) {
+        // Create badge ObjectAnimators.
+        ObjectAnimator badgeFadeAnimator = ObjectAnimator.ofFloat(menuBadge, View.ALPHA, 1.f);
+        badgeFadeAnimator.setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
+
+        int pixelTranslation = menuBadge.getResources().getDimensionPixelSize(
+                R.dimen.menu_badge_translation_y_distance);
+        ObjectAnimator badgeTranslateYAnimator =
+                ObjectAnimator.ofFloat(menuBadge, View.TRANSLATION_Y, pixelTranslation, 0.f);
+        badgeTranslateYAnimator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
+
+        // Create menu button ObjectAnimator.
+        ObjectAnimator menuButtonFadeAnimator = ObjectAnimator.ofFloat(menuButton, View.ALPHA, 0.f);
+        menuButtonFadeAnimator.setInterpolator(new LinearInterpolator());
+
+        // Create AnimatorSet and listeners.
+        AnimatorSet set = new AnimatorSet();
+        set.playTogether(badgeFadeAnimator, badgeTranslateYAnimator, menuButtonFadeAnimator);
+        set.setDuration(350);
+        set.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                // Make sure the menu button is visible again.
+                menuButton.setAlpha(1.f);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                // Jump to the end state if the animation is canceled.
+                menuBadge.setAlpha(1.f);
+                menuBadge.setTranslationY(0.f);
+                menuButton.setAlpha(1.f);
+            }
+        });
+
+        return set;
+    }
+
+    /**
+     * Creates an {@link AnimatorSet} for hiding the update badge that is displayed on top
+     * of the app menu button.
+     *
+     * @param menuButton The {@link View} containing the app menu button.
+     * @param menuBadge The {@link View} containing the update badge.
+     * @return An {@link AnimatorSet} to run when hiding the update badge.
+     */
+    private static AnimatorSet createHideUpdateBadgeAnimation(
+            final View menuButton, final View menuBadge) {
+        // Create badge ObjectAnimator.
+        ObjectAnimator badgeFadeAnimator = ObjectAnimator.ofFloat(menuBadge, View.ALPHA, 0.f);
+        badgeFadeAnimator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
+
+        // Create menu button ObjectAnimator.
+        ObjectAnimator menuButtonFadeAnimator = ObjectAnimator.ofFloat(menuButton, View.ALPHA, 1.f);
+        menuButtonFadeAnimator.setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
+
+        // Create AnimatorSet and listeners.
+        AnimatorSet set = new AnimatorSet();
+        set.playTogether(badgeFadeAnimator, menuButtonFadeAnimator);
+        set.setDuration(200);
+        set.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                menuBadge.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                // Jump to the end state if the animation is canceled.
+                menuButton.setAlpha(1.f);
+                menuBadge.setVisibility(View.GONE);
+            }
+        });
+
+        return set;
+    }
 }

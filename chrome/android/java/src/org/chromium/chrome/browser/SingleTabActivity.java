@@ -134,5 +134,5 @@ public abstract class SingleTabActivity extends ChromeActivity {
     }
 
     @Override
-    public void onCheckForUpdate() {}
+    public void onUpdateStateChanged() {}
 }
