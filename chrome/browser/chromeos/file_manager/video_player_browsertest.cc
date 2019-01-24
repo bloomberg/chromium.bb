@@ -73,7 +73,8 @@ IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, ClickControlButtons) {
   StartTest();
 }
 
-IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, NativeMediaKey) {
+// Flaky see https://crbug.com/921418.
+IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, DISABLED_NativeMediaKey) {
   set_test_case_name("mediaKeyNative");
   StartTest();
 }
