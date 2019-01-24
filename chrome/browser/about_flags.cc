@@ -3569,7 +3569,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if BUILDFLAG(ENABLE_PRINTING)
     {"use-pdf-compositor-service-for-print",
      flag_descriptions::kUsePdfCompositorServiceName,
-     flag_descriptions::kUsePdfCompositorServiceDescription, kOsDesktop,
+     flag_descriptions::kUsePdfCompositorServiceDescription, kOsAll,
      FEATURE_VALUE_TYPE(printing::features::kUsePdfCompositorServiceForPrint)},
 #endif
 
