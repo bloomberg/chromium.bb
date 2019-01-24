@@ -109,20 +109,20 @@
 @property(nonatomic, strong, readwrite)
     DeviceSharingManager* deviceSharingManager;
 
-// Creates a new autoreleased tab model for |browserState|; if |empty| is NO,
+// Sets up the given |tabModel| for use.  If |restorePersistedState| is YES,
 // then any existing tabs that have been saved for |browserState| will be
-// loaded; otherwise, the tab model will be created empty.
-- (TabModel*)tabModelForBrowserState:(ios::ChromeBrowserState*)browserState
-                               empty:(BOOL)empty;
+// loaded; otherwise, the tab model will be left empty.
+- (void)setUpTabModel:(TabModel*)tabModel
+         withBrowserState:(ios::ChromeBrowserState*)browserState
+    restorePersistedState:(BOOL)restorePersistedState;
 
 // Setters for the main and otr Browsers.
 - (void)setMainBrowser:(std::unique_ptr<Browser>)browser;
 - (void)setOtrBrowser:(std::unique_ptr<Browser>)browser;
 
 // Creates a new off-the-record ("incognito") browser state for |_browserState|,
-// then calls -tabModelForBrowserState:empty: and returns a Browser for the
-// result.
-- (std::unique_ptr<Browser>)buildOtrBrowser:(BOOL)empty;
+// then creates and sets up a TabModel and returns a Browser for the result.
+- (std::unique_ptr<Browser>)buildOtrBrowser:(BOOL)restorePersistedState;
 
 // Creates the correct BrowserCoordinator for the corresponding browser state
 // and Browser.
@@ -153,7 +153,12 @@
 }
 
 - (void)createMainBrowser {
-  TabModel* tabModel = [self tabModelForBrowserState:_browserState empty:NO];
+  TabModel* tabModel =
+      [[TabModel alloc] initWithSessionService:[SessionServiceIOS sharedService]
+                                  browserState:_browserState];
+  [self setUpTabModel:tabModel
+           withBrowserState:_browserState
+      restorePersistedState:YES];
 
   _mainBrowser = Browser::Create(_browserState, tabModel);
   // Follow loaded URLs in the main tab model to send those in case of
@@ -224,7 +229,7 @@
 
 - (Browser*)otrBrowser {
   if (!_otrBrowser) {
-    _otrBrowser = [self buildOtrBrowser:NO];
+    _otrBrowser = [self buildOtrBrowser:YES];
   }
   return _otrBrowser.get();
 }
@@ -333,7 +338,7 @@
   // possible to prevent the tabChanged notification being sent. Otherwise,
   // when it is created, a notification with no tabs will be sent, and it will
   // be immediately deleted.
-  [self setOtrBrowser:[self buildOtrBrowser:YES]];
+  [self setOtrBrowser:[self buildOtrBrowser:NO]];
   DCHECK(![self.otrBrowser->GetTabModel() count]);
   DCHECK(_browserState->HasOffTheRecordChromeBrowserState());
 
@@ -367,21 +372,27 @@
 
 #pragma mark - Internal methods
 
-- (std::unique_ptr<Browser>)buildOtrBrowser:(BOOL)empty {
+- (std::unique_ptr<Browser>)buildOtrBrowser:(BOOL)restorePersistedState {
   DCHECK(_browserState);
   // Ensure that the OTR ChromeBrowserState is created.
   ios::ChromeBrowserState* otrBrowserState =
       _browserState->GetOffTheRecordChromeBrowserState();
   DCHECK(otrBrowserState);
-  TabModel* tabModel = [self tabModelForBrowserState:otrBrowserState
-                                               empty:empty];
+  TabModel* tabModel =
+      [[TabModel alloc] initWithSessionService:[SessionServiceIOS sharedService]
+                                  browserState:otrBrowserState];
+  [self setUpTabModel:tabModel
+           withBrowserState:otrBrowserState
+      restorePersistedState:restorePersistedState];
   return Browser::Create(otrBrowserState, tabModel);
 }
 
-- (TabModel*)tabModelForBrowserState:(ios::ChromeBrowserState*)browserState
-                               empty:(BOOL)empty {
+- (void)setUpTabModel:(TabModel*)tabModel
+         withBrowserState:(ios::ChromeBrowserState*)browserState
+    restorePersistedState:(BOOL)restorePersistedState {
+  DCHECK_EQ(0U, tabModel.count);
   SessionWindowIOS* sessionWindow = nil;
-  if (!empty) {
+  if (restorePersistedState) {
     // Load existing saved tab model state.
     NSString* statePath =
         base::SysUTF8ToNSString(browserState->GetStatePath().AsUTF8Unsafe());
@@ -391,21 +402,16 @@
       DCHECK_EQ(session.sessionWindows.count, 1u);
       sessionWindow = session.sessionWindows[0];
     }
+
+    [tabModel restoreSessionWindow:sessionWindow forInitialRestore:YES];
   }
 
-  // Create tab model from saved session (nil is ok).
-  TabModel* tabModel =
-      [[TabModel alloc] initWithSessionService:[SessionServiceIOS sharedService]
-                                  browserState:browserState];
-  [tabModel restoreSessionWindow:sessionWindow forInitialRestore:YES];
   // Add observers.
   if (_tabModelObserver) {
     [tabModel addObserver:_tabModelObserver];
     [tabModel addObserver:self];
   }
   breakpad::MonitorTabStateForTabModel(tabModel);
-
-  return tabModel;
 }
 
 - (BrowserCoordinator*)coordinatorForBrowser:(Browser*)browser {
