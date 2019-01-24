@@ -1251,7 +1251,7 @@ TEST_F(LazyLoadFramesTest, LazyLoadWhenDataSaverDisabledAndRestrictedAttrOn) {
 
   GetNetworkStateNotifier().SetSaveDataEnabled(false);
   WebView().GetPage()->GetSettings().SetDataSaverHoldbackWebApi(false);
-  TestCrossOriginFrameIsLazilyLoaded("lazyload='on'");
+  TestCrossOriginFrameIsImmediatelyLoaded("lazyload='on'");
 }
 
 }  // namespace
