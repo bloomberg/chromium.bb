@@ -40,7 +40,7 @@
 #include "ios/web/public/navigation_manager.h"
 #include "ios/web/public/user_agent.h"
 #include "ios/web/public/web_client.h"
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
