@@ -89,16 +89,16 @@ ReflectMissing=*
 ReflectOnly=*
 Replaceable
 # Valid values for [RuntimeEnabled] are the Runtime Enabled Features, listed in
-# Source/platform/runtime_enabled_features.json5
+# third_party/blink/renderer/platform/runtime_enabled_features.json5
 RuntimeEnabled=*
 # Valid values for [RuntimeCallStatsCounter] are counters defined in
-# Source/platform/bindings/RuntimeCallStats.h
+# third_party/blink/renderer/platform/bindings/runtime_call_stats.h
 RuntimeCallStatsCounter=*
 SameObject
 SaveSameObject
 SecureContext=|*
 Serializable
-SetterCallWith=ExecutionContext|ScriptState|ScriptArguments|CurrentWindow|EnteredWindow
+SetterCallWith=CurrentWindow|EnteredWindow|ExecutionContext|Isolate|ScriptArguments|ScriptState
 Transferable
 TreatNonObjectAsNull
 TreatNullAs=EmptyString

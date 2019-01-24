@@ -6,10 +6,11 @@ PASS: toString('targetWindow.location', '') should be '' and is.
 Firefox allows access to 'location.toString' but throws an exception when you call it.
 PASS: canGet('targetWindow.location.toString') should be 'false' and is.
 PASS: accessThrowsException('targetWindow.location.toString') should be 'true' and is.
-PASS: canGet('targetWindow.location.href') should be 'false' and is.
+PASS: canGet('targetWindow.location.assign') should be 'false' and is.
 PASS: canGet('targetWindow.location.hash') should be 'false' and is.
 PASS: canGet('targetWindow.location.host') should be 'false' and is.
 PASS: canGet('targetWindow.location.hostname') should be 'false' and is.
+PASS: canGet('targetWindow.location.href') should be 'false' and is.
 PASS: canGet('targetWindow.location.pathname') should be 'false' and is.
 PASS: canGet('targetWindow.location.port') should be 'false' and is.
 PASS: canGet('targetWindow.location.protocol') should be 'false' and is.
@@ -27,6 +28,5 @@ PASS: accessThrowsException('targetWindow.location.protocol') should be 'true' a
 PASS: accessThrowsException('targetWindow.location.search') should be 'true' and is.
 PASS: accessThrowsException('targetWindow.location.existingCustomProperty') should be 'true' and is.
 PASS: accessThrowsException('targetWindow.location[1]') should be 'true' and is.
-PASS: canGet('targetWindow.location.assign') should be 'true' and is.
 PASS: canGet('targetWindow.location.replace') should be 'true' and is.
 

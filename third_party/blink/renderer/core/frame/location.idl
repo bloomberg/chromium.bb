@@ -26,22 +26,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/multipage/browsers.html#location
+// https://html.spec.whatwg.org/C/#the-location-interface
 
 [
     CheckSecurity=Receiver,
     Exposed=Window
 ] interface Location {
-    // |assign| is *NOT* cross-origin accessible in the spec, but it needs
-    // the Incumbent realm when navigating the page.  See the below link.
-    // https://html.spec.whatwg.org/multipage/browsers.html#location-object-navigate
-    // Unfortunately, Blink does not support the Incumbent realm so far, and
-    // we need a hack of assignOriginSafeMethodGetter to simulate the Incumbent
-    // realm.  Thus, we have [CrossOrigin] here just for the hack although
-    // |assign| itself is not cross-origin accessible.
-    // TODO(yukishiino): Remove [CrossOrigin] once we support the Incumbent
-    // realm correctly.
-    [CallWith=(CurrentWindow,EnteredWindow), CrossOrigin, RaisesException, Unforgeable] void assign(URLString url);
+    [CallWith=Isolate, RaisesException, Unforgeable] void assign(URLString url);
 
     // |replace|, and *writing* |href| do not require a security check, as they
     // *change* the page, and thus these do not change any property of an
@@ -49,24 +40,24 @@
     // However, *reading* |href|, or accessing any component, is a security
     // problem, since that allows tracking navigation.
     // https://html.spec.whatwg.org/multipage/browsers.html#crossoriginproperties-(-o-)
-    [CallWith=(CurrentWindow,EnteredWindow), CrossOrigin, RaisesException, Unforgeable] void replace(URLString url);
-    [CallWith=CurrentWindow, Unforgeable] void reload();
+    [CallWith=Isolate, CrossOrigin, RaisesException, Unforgeable] void replace(URLString url);
+    [Unforgeable] void reload();
 
     // TODO(foolip): |ancestorOrigins| should have [Unforgeable, SameObject].
     [Unforgeable] readonly attribute DOMStringList ancestorOrigins;
 
-    [Affects=Nothing, SetterCallWith=(CurrentWindow,EnteredWindow), CrossOrigin=Setter, RaisesException=Setter, Unforgeable] attribute URLString href;
+    [Affects=Nothing, SetterCallWith=Isolate, CrossOrigin=Setter, RaisesException=Setter, Unforgeable] attribute URLString href;
     // TODO(yukishiino): Use [Unforgeable] stringifier instead of toString.
     [Unforgeable] DOMString toString();
     [MeasureAs=LocationOrigin, Unforgeable] readonly attribute USVString origin;
 
-    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter, Unforgeable] attribute USVString protocol;
-    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter, Unforgeable] attribute USVString host;
-    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter, Unforgeable] attribute USVString hostname;
-    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter, Unforgeable] attribute USVString port;
-    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter, Unforgeable] attribute USVString pathname;
-    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter, Unforgeable] attribute USVString search;
-    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter, Unforgeable] attribute USVString hash;
+    [SetterCallWith=Isolate, RaisesException=Setter, Unforgeable] attribute USVString protocol;
+    [SetterCallWith=Isolate, RaisesException=Setter, Unforgeable] attribute USVString host;
+    [SetterCallWith=Isolate, RaisesException=Setter, Unforgeable] attribute USVString hostname;
+    [SetterCallWith=Isolate, RaisesException=Setter, Unforgeable] attribute USVString port;
+    [SetterCallWith=Isolate, RaisesException=Setter, Unforgeable] attribute USVString pathname;
+    [SetterCallWith=Isolate, RaisesException=Setter, Unforgeable] attribute USVString search;
+    [SetterCallWith=Isolate, RaisesException=Setter, Unforgeable] attribute USVString hash;
 
     // TODO(foolip): Location does not have a valueOf() override in the spec.
     // See the comment in Location.h for the purpose of this.

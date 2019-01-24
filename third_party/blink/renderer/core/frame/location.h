@@ -61,56 +61,26 @@ class CORE_EXPORT Location final : public ScriptWrappable {
 
   DOMWindow* DomWindow() const { return dom_window_.Get(); }
 
-  void setHref(LocalDOMWindow* current_window,
-               LocalDOMWindow* entered_window,
-               const USVStringOrTrustedURL&,
-               ExceptionState&);
+  void setHref(v8::Isolate*, const USVStringOrTrustedURL&, ExceptionState&);
   void href(USVStringOrTrustedURL&) const;
 
-  void assign(LocalDOMWindow* current_window,
-              LocalDOMWindow* entered_window,
-              const USVStringOrTrustedURL&,
-              ExceptionState&);
-  void replace(LocalDOMWindow* current_window,
-               LocalDOMWindow* entered_window,
-               const USVStringOrTrustedURL&,
-               ExceptionState&);
-  void reload(LocalDOMWindow* current_window);
+  void assign(v8::Isolate*, const USVStringOrTrustedURL&, ExceptionState&);
+  void replace(v8::Isolate*, const USVStringOrTrustedURL&, ExceptionState&);
+  void reload();
 
-  void setProtocol(LocalDOMWindow* current_window,
-                   LocalDOMWindow* entered_window,
-                   const String&,
-                   ExceptionState&);
+  void setProtocol(v8::Isolate*, const String&, ExceptionState&);
   String protocol() const;
-  void setHost(LocalDOMWindow* current_window,
-               LocalDOMWindow* entered_window,
-               const String&,
-               ExceptionState&);
+  void setHost(v8::Isolate*, const String&, ExceptionState&);
   String host() const;
-  void setHostname(LocalDOMWindow* current_window,
-                   LocalDOMWindow* entered_window,
-                   const String&,
-                   ExceptionState&);
+  void setHostname(v8::Isolate*, const String&, ExceptionState&);
   String hostname() const;
-  void setPort(LocalDOMWindow* current_window,
-               LocalDOMWindow* entered_window,
-               const String&,
-               ExceptionState&);
+  void setPort(v8::Isolate*, const String&, ExceptionState&);
   String port() const;
-  void setPathname(LocalDOMWindow* current_window,
-                   LocalDOMWindow* entered_window,
-                   const String&,
-                   ExceptionState&);
+  void setPathname(v8::Isolate*, const String&, ExceptionState&);
   String pathname() const;
-  void setSearch(LocalDOMWindow* current_window,
-                 LocalDOMWindow* entered_window,
-                 const String&,
-                 ExceptionState&);
+  void setSearch(v8::Isolate*, const String&, ExceptionState&);
   String search() const;
-  void setHash(LocalDOMWindow* current_window,
-               LocalDOMWindow* entered_window,
-               const String&,
-               ExceptionState&);
+  void setHash(v8::Isolate*, const String&, ExceptionState&);
   String hash() const;
   String origin() const;
 
