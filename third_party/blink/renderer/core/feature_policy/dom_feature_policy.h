@@ -30,6 +30,8 @@ class CORE_EXPORT DOMFeaturePolicy : public ScriptWrappable {
   // Returns whether or not the given feature is allowed on the origin of the
   // given URL.
   bool allowsFeature(const String& feature, const String& url) const;
+  // Returns a list of feature names that are supported by the user agent.
+  Vector<String> features() const;
   // Returns a list of feature names that are allowed on the self origin.
   Vector<String> allowedFeatures() const;
   // Returns a list of feature name that are allowed on the origin of the given

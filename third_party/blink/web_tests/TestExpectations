@@ -5899,6 +5899,9 @@ crbug.com/840659 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/protocol/video-co
 # Sheriff 2019-01-11
 crbug.com/921038 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/legacy-performance-memory-counters-enabled.html [ Skip ]
 
+# Fails until document.featurePolicy is available in stable
+crbug.com/917070 virtual/stable/webexposed/feature-policy-features.html [ Failure ]
+
 # Sheriff 2019-01-14
 crbug.com/921583 http/tests/preload/meta-viewport-link-headers.html [ Failure Pass ]
 crbug.com/921151 [ Linux ] http/tests/security/mixedContent/insecure-iframe-with-hsts.https.html [ Failure Pass ]
@@ -5975,3 +5978,6 @@ crbug.com/921242 [ Mac ] fast/overflow/clip-rects-fixed-ancestor.html [ Failure 
 
 # Sheriff 2019-01-24
 crbug.com/924954 http/tests/images/feature-policy-image-policies-with-border-radius.html [ Pass Failure ]
+
+# WebXR feature policy feature name in Chrome doesn't match spec.
+crbug.com/924670 external/wpt/webvr/webvr-supported-by-feature-policy.html [ Failure ]
