@@ -1124,7 +1124,8 @@
     // Enables the use of the RTCIceTransport with extensions.
     {
       name: "RTCIceTransportExtension",
-      status: "test",
+      origin_trial_feature_name: "RTCQuicTransport",
+      status: "experimental",
     },
     {
       name: "RtcPeerConnectionId",
@@ -1134,7 +1135,8 @@
     // Enables the use of the RTCQuicTransport object.
     {
       name: "RTCQuicTransport",
-      status: "test",
+      origin_trial_feature_name: "RTCQuicTransport",
+      status: "experimental",
     },
     {
       name: "RTCRtpSenderParameters",
