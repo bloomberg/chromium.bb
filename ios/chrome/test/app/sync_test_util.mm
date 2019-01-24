@@ -17,6 +17,7 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/net/http_bridge_network_resources.h"
@@ -28,6 +29,7 @@
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
+#include "ios/chrome/browser/sync/device_info_sync_service_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
@@ -162,11 +164,10 @@ std::string GetSyncCacheGuid() {
   DCHECK(IsSyncInitialized());
   ios::ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
-  browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetAsProfileSyncServiceForBrowserState(
-          browser_state);
+  syncer::DeviceInfoSyncService* service =
+      DeviceInfoSyncServiceFactory::GetForBrowserState(browser_state);
   const syncer::LocalDeviceInfoProvider* info_provider =
-      sync_service->GetLocalDeviceInfoProvider();
+      service->GetLocalDeviceInfoProvider();
   return info_provider->GetLocalSyncCacheGUID();
 }
 
