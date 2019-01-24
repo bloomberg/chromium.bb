@@ -18,6 +18,9 @@ namespace {
 class FakeLocationBarModelDelegate : public LocationBarModelDelegate {
  public:
   void SetURL(const GURL& url) { url_ = url; }
+  void SetShouldPreventElision(bool should_prevent_elision) {
+    should_prevent_elision_ = should_prevent_elision;
+  }
   void SetSecurityInfo(const security_state::SecurityInfo& info) {
     security_info_ = info;
   }
@@ -33,6 +36,8 @@ class FakeLocationBarModelDelegate : public LocationBarModelDelegate {
     *url = url_;
     return true;
   }
+
+  bool ShouldPreventElision() const override { return should_prevent_elision_; }
 
   void GetSecurityInfo(security_state::SecurityInfo* result) const override {
     *result = security_info_;
@@ -50,6 +55,7 @@ class FakeLocationBarModelDelegate : public LocationBarModelDelegate {
   GURL url_;
   security_state::SecurityInfo security_info_;
   TestOmniboxClient omnibox_client_;
+  bool should_prevent_elision_ = false;
 };
 
 class LocationBarModelImplTest : public testing::Test {
@@ -84,6 +90,28 @@ TEST_F(LocationBarModelImplTest,
             model()->GetFormattedFullURL());
   EXPECT_EQ(base::ASCIIToUTF16("google.com/TestSuffix"),
             model()->GetURLForDisplay());
+}
+
+TEST_F(LocationBarModelImplTest, PreventElisionWorks) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {omnibox::kHideSteadyStateUrlScheme,
+       omnibox::kHideSteadyStateUrlTrivialSubdomains, omnibox::kQueryInOmnibox},
+      {});
+
+  delegate()->SetShouldPreventElision(true);
+  delegate()->SetURL(GURL("https://www.google.com/search?q=foo+query+unelide"));
+
+  EXPECT_EQ(base::ASCIIToUTF16(
+                "https://www.google.com/search?q=foo+query+unelide/TestSuffix"),
+            model()->GetURLForDisplay());
+
+  // Verify that query in omnibox is turned off.
+  security_state::SecurityInfo info;
+  info.connection_info_initialized = true;
+  info.security_level = security_state::SecurityLevel::SECURE;
+  delegate()->SetSecurityInfo(info);
+  EXPECT_FALSE(model()->GetDisplaySearchTerms(nullptr));
 }
 
 TEST_F(LocationBarModelImplTest, QueryInOmniboxFeatureFlagWorks) {

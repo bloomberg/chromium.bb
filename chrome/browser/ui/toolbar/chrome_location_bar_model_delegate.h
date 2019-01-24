@@ -23,6 +23,9 @@ class ChromeLocationBarModelDelegate : public LocationBarModelDelegate {
   // Returns active WebContents.
   virtual content::WebContents* GetActiveWebContents() const = 0;
 
+  // Prevents URL elision depending on whether a specified extension installed.
+  bool ShouldPreventElision() const override;
+
   // LocationBarModelDelegate:
   bool ShouldDisplayURL() const override;
 
