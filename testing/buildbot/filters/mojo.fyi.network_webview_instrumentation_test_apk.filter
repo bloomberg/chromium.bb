@@ -11,9 +11,6 @@
 # Uncategorized timeouts or test failures.
 -org.chromium.android_webview.test.AwContentsStaticsTest.testSetCheckClearTextPermittedTrue
 
-# https://crbug.com/882650
--*__multiprocess_mode
-
 # https://crbug.com/893566
 -org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testBaseUrlOfLoadDataSentInRefererHeader
 -org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testCalledForUnsupportedSchemes
