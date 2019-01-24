@@ -225,6 +225,7 @@
     },
     {
       name: "ContactsManager",
+      origin_trial_feature_name: "ContactsManager",
       status: "experimental",
     },
     {
