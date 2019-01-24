@@ -2202,8 +2202,7 @@ test("content_unittests") {
   }
 }
 
-# Disabled on jumbo builds because of timeouts (crbug.com/882852).
-if (enable_nocompile_tests && !use_jumbo_build) {
+if (enable_nocompile_tests) {
   nocompile_test("content_nocompile_tests") {
     sources = [
       "../public/browser/browser_task_traits_unittest.nc",
