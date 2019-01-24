@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/task/post_task.h"
 #include "components/safe_browsing/common/safebrowsing_constants.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -20,6 +21,17 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace safe_browsing {
+
+namespace {
+
+void DeleteChannelIDFiles(base::FilePath channel_id_path) {
+  base::DeleteFile(channel_id_path, false);
+  base::DeleteFile(
+      base::FilePath(channel_id_path.value() + FILE_PATH_LITERAL("-journal")),
+      false);
+}
+
+}  // namespace
 
 class SafeBrowsingNetworkContext::SharedURLLoaderFactory
     : public network::SharedURLLoaderFactory {
@@ -169,6 +181,16 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
         base::FilePath::StringType(kSafeBrowsingBaseFilename) + kCookiesFile);
     network_context_params->cookie_path = cookie_path;
     network_context_params->enable_encrypted_cookies = false;
+
+    // TODO(nharper): Remove the following when no longer needed - see
+    // crbug.com/903642.
+    base::FilePath::StringType channel_id_path =
+        base::FilePath::StringType(kSafeBrowsingBaseFilename) + kChannelIDFile;
+    base::PostTaskWithTraits(
+        FROM_HERE,
+        {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        base::BindOnce(DeleteChannelIDFiles, base::FilePath(channel_id_path)));
 
     return network_context_params;
   }
