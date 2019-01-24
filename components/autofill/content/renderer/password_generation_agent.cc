@@ -36,9 +36,10 @@
 #include "ui/gfx/geometry/rect.h"
 
 using blink::WebAutofillState;
-using blink::WebInputElement;
+using blink::WebDocument;
 using blink::WebFormControlElement;
 using blink::WebFormElement;
+using blink::WebInputElement;
 using blink::WebLocalFrame;
 
 namespace autofill {
@@ -490,6 +491,20 @@ void PasswordGenerationAgent::FoundFormsEligibleForGeneration(
 void PasswordGenerationAgent::FoundFormEligibleForGeneration(
     const NewPasswordFormGenerationData& form) {
   generation_enabled_fields_[form.new_password_renderer_id] = form;
+
+  if (mark_generation_element_) {
+    // Mark the input element with renderer id |form.new_password_renderer_id|.
+    if (!render_frame())
+      return;
+    WebDocument doc = render_frame()->GetWebFrame()->GetDocument();
+    if (doc.IsNull())
+      return;
+    WebFormControlElement new_password_input =
+        form_util::FindFormControlElementsByUniqueRendererId(
+            doc, form.new_password_renderer_id);
+    if (!new_password_input.IsNull())
+      new_password_input.SetAttribute("password_creation_field", "1");
+  }
 }
 
 void PasswordGenerationAgent::UserTriggeredGeneratePassword(
@@ -828,7 +843,7 @@ void PasswordGenerationAgent::PasswordNoLongerGenerated() {
 }
 
 void PasswordGenerationAgent::MaybeCreateCurrentGenerationItem(
-    const WebInputElement& element) {
+    WebInputElement element) {
   // Do not create |current_generation_item_| if it already is created for
   // |element| or the user accepted generated password. So if the user accepted
   // the generated password, generation is not offered on any other field.
@@ -861,6 +876,8 @@ void PasswordGenerationAgent::MaybeCreateCurrentGenerationItem(
 
   current_generation_item_.reset(new GenerationItemInfo(
       element, std::move(*password_form), std::move(passwords)));
+
+  element.SetAttribute("aria-autocomplete", "list");
 }
 
 const mojom::PasswordManagerDriverAssociatedPtr&
