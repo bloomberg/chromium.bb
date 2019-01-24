@@ -245,24 +245,8 @@ ScriptPromise BackgroundFetchManager::fetch(
     kurls.insert(request_url);
   }
 
-  const bool has_duplicate_requests = kurls.size() != fetch_api_requests.size();
-
   UMA_HISTOGRAM_BOOLEAN("BackgroundFetch.HasDuplicateRequests",
-                        has_duplicate_requests);
-
-  // Note: This is a proprietary check, due to the way Chrome currently handles
-  // storing background fetch records. Entries are keyed by the URL, so if two
-  // requests have the same URL, and different responses, the first response
-  // will be lost when the second request/response pair is stored.
-  if (has_duplicate_requests) {
-    return ScriptPromise::Reject(
-        script_state,
-        V8ThrowException::CreateTypeError(
-            script_state->GetIsolate(),
-            "Fetches with duplicate requests are not yet supported. "
-            "Consider adding query params to make the requests unique. "
-            "For updates check http://crbug.com/871174"));
-  }
+                        kurls.size() != fetch_api_requests.size());
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
