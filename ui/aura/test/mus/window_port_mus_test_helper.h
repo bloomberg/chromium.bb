@@ -20,6 +20,8 @@ class ParentLocalSurfaceIdAllocator;
 
 namespace aura {
 
+class ClientSurfaceEmbedder;
+class ParentAllocator;
 class Window;
 class WindowPortMus;
 
@@ -32,9 +34,13 @@ class WindowPortMusTestHelper {
 
   base::WeakPtr<cc::LayerTreeFrameSink> GetFrameSink();
 
+  ClientSurfaceEmbedder* GetClientSurfaceEmbedder();
+
   viz::ParentLocalSurfaceIdAllocator* GetParentLocalSurfaceIdAllocator();
 
  private:
+  ParentAllocator* GetParentAllocator();
+
   static uint32_t next_client_id_;
 
   WindowPortMus* window_port_mus_;

@@ -4,6 +4,7 @@
 
 #include "ui/aura/test/mus/window_port_mus_test_helper.h"
 
+#include "ui/aura/mus/mus_lsi_allocator.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/window.h"
 
@@ -21,18 +22,32 @@ WindowPortMusTestHelper::WindowPortMusTestHelper(Window* window)
 WindowPortMusTestHelper::~WindowPortMusTestHelper() = default;
 
 void WindowPortMusTestHelper::SimulateEmbedding() {
-  window_port_mus_->GetWindow()->SetEmbedFrameSinkId(
-      viz::FrameSinkId(next_client_id_++, 1));
   window_port_mus_->PrepareForEmbed();
+  window_port_mus_->SetFrameSinkIdFromServer(
+      viz::FrameSinkId(next_client_id_++, 1));
 }
 
 base::WeakPtr<cc::LayerTreeFrameSink> WindowPortMusTestHelper::GetFrameSink() {
   return window_port_mus_->local_layer_tree_frame_sink_;
 }
 
+ClientSurfaceEmbedder* WindowPortMusTestHelper::GetClientSurfaceEmbedder() {
+  return GetParentAllocator()
+             ? GetParentAllocator()->client_surface_embedder_.get()
+             : nullptr;
+}
+
 viz::ParentLocalSurfaceIdAllocator*
 WindowPortMusTestHelper::GetParentLocalSurfaceIdAllocator() {
-  return &(window_port_mus_->parent_local_surface_id_allocator_);
+  return GetParentAllocator()
+             ? &(GetParentAllocator()->parent_local_surface_id_allocator_)
+             : nullptr;
+}
+
+ParentAllocator* WindowPortMusTestHelper::GetParentAllocator() {
+  return window_port_mus_->allocator_
+             ? static_cast<ParentAllocator*>(window_port_mus_->allocator_.get())
+             : nullptr;
 }
 
 }  // namespace aura

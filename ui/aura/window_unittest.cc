@@ -3255,6 +3255,11 @@ TEST_P(WindowTest, RootWindowUsesCompositorFrameSinkId) {
 }
 
 TEST_P(WindowTest, LocalSurfaceIdChanges) {
+  // This uses Window::CreateLayerTreeFrameSink(), which is not wired up in
+  // Mus. At this time it is only used for LOCAL, so it's not wired up for MUS.
+  if (GetParam() == Env::Mode::MUS)
+    return;
+
   Window window(nullptr);
   window.Init(ui::LAYER_NOT_DRAWN);
   window.SetBounds(gfx::Rect(300, 300));

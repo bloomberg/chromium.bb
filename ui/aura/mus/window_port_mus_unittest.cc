@@ -7,6 +7,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
+#include "components/viz/common/surfaces/child_local_surface_id_allocator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/mus/client_surface_embedder.h"
@@ -96,11 +97,13 @@ TEST_F(WindowPortMusTest, ClientSurfaceEmbedderUpdatesLayer) {
   // Allocate a new LocalSurfaceId. The ui::Layer should be updated.
   window.AllocateLocalSurfaceId();
 
-  auto* window_mus = WindowPortMus::Get(&window);
   viz::LocalSurfaceId local_surface_id =
       window.GetLocalSurfaceIdAllocation().local_surface_id();
+  ClientSurfaceEmbedder* client_surface_embedder =
+      WindowPortMusTestHelper(&window).GetClientSurfaceEmbedder();
+  ASSERT_TRUE(client_surface_embedder);
   viz::SurfaceId primary_surface_id =
-      window_mus->client_surface_embedder()->GetSurfaceIdForTesting();
+      client_surface_embedder->GetSurfaceIdForTesting();
   EXPECT_EQ(local_surface_id, primary_surface_id.local_surface_id());
 }
 
@@ -133,18 +136,20 @@ TEST_F(WindowPortMusTest,
       parent_allocator->GetCurrentLocalSurfaceIdAllocation());
 
   // Updating the LocalSurfaceId should propagate to the ClientSurfaceEmbedder.
-  auto* window_mus = WindowPortMus::Get(&window);
-  ASSERT_TRUE(window_mus);
-  ASSERT_TRUE(window_mus->client_surface_embedder());
-  EXPECT_EQ(updated_id, window_mus->client_surface_embedder()
-                            ->GetSurfaceIdForTesting()
-                            .local_surface_id());
+  ClientSurfaceEmbedder* client_surface_embedder =
+      WindowPortMusTestHelper(&window).GetClientSurfaceEmbedder();
+  ASSERT_TRUE(client_surface_embedder);
+  EXPECT_EQ(
+      updated_id,
+      client_surface_embedder->GetSurfaceIdForTesting().local_surface_id());
 
   // The server is notified of a bounds change, so that it sees the new
   // LocalSurfaceId.
   ASSERT_EQ(1u,
             window_tree()->GetChangeCountForType(WindowTreeChangeType::BOUNDS));
   ASSERT_TRUE(window_tree()->last_local_surface_id());
+  auto* window_mus = WindowPortMus::Get(&window);
+  ASSERT_TRUE(window_mus);
   EXPECT_EQ(window_mus->server_id(), window_tree()->window_id());
   EXPECT_EQ(updated_id, *(window_tree()->last_local_surface_id()));
 }
@@ -210,9 +215,10 @@ TEST_F(WindowPortMusTest, PrepareForEmbed) {
 
   WindowPortMusTestHelper helper(&window);
   helper.SimulateEmbedding();
-  auto* window_mus = WindowPortMus::Get(&window);
-  ASSERT_TRUE(window_mus->client_surface_embedder());
-  EXPECT_TRUE(window_mus->client_surface_embedder()->HasPrimarySurfaceId());
+  ClientSurfaceEmbedder* client_surface_embedder =
+      WindowPortMusTestHelper(&window).GetClientSurfaceEmbedder();
+  ASSERT_TRUE(client_surface_embedder);
+  EXPECT_TRUE(client_surface_embedder->HasPrimarySurfaceId());
 }
 
 class TestDragDropDelegate : public client::DragDropDelegate {
@@ -251,6 +257,37 @@ TEST_F(WindowPortMusTest, CanAcceptDrops) {
   client::SetDragDropDelegate(&window, nullptr);
   EXPECT_EQ(1u, window_tree()->get_and_clear_accepts_drops_count());
   EXPECT_FALSE(window_tree()->last_accepts_drops());
+}
+
+TEST_F(WindowPortMusTest, RegisterFrameSinkId) {
+  Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  window.set_owned_by_parent(false);
+  window.SetBounds(gfx::Rect(400, 300));
+
+  root_window()->AddChild(&window);
+  window_tree()->AckAllChanges();
+  window.SetEmbedFrameSinkId(viz::FrameSinkId(0, 1));
+
+  // Setting a FrameSinkId should trigger generating LocalSurfaceIds.
+  ASSERT_EQ(1u,
+            window_tree()->GetChangeCountForType(WindowTreeChangeType::BOUNDS));
+  ASSERT_TRUE(window_tree()->last_local_surface_id());
+  EXPECT_EQ(window_tree()->last_local_surface_id(),
+            window.GetLocalSurfaceIdAllocation().local_surface_id());
+  auto local_surface_id =
+      window.GetLocalSurfaceIdAllocation().local_surface_id();
+  window_tree()->AckAllChanges();
+
+  // Changing the bounds should trigger a new LocalSurfaceId.
+  window.SetBounds(gfx::Rect(400, 310));
+  ASSERT_EQ(1u,
+            window_tree()->GetChangeCountForType(WindowTreeChangeType::BOUNDS));
+  ASSERT_TRUE(window_tree()->last_local_surface_id());
+  EXPECT_EQ(window_tree()->last_local_surface_id(),
+            window.GetLocalSurfaceIdAllocation().local_surface_id());
+  EXPECT_NE(local_surface_id,
+            window.GetLocalSurfaceIdAllocation().local_surface_id());
 }
 
 }  // namespace aura

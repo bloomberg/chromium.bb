@@ -28,7 +28,6 @@ enum class OrderDirection;
 
 namespace viz {
 class FrameSinkId;
-class LocalSurfaceId;
 }
 
 namespace aura {
@@ -82,9 +81,7 @@ class AURA_EXPORT WindowMus {
   virtual void ReorderFromServer(WindowMus* child,
                                  WindowMus* relative,
                                  ws::mojom::OrderDirection) = 0;
-  virtual void SetBoundsFromServer(
-      const gfx::Rect& bounds,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id) = 0;
+  virtual void SetBoundsFromServer(const gfx::Rect& bounds) = 0;
   virtual void SetTransformFromServer(const gfx::Transform& transform) = 0;
   virtual void SetVisibleFromServer(bool visible) = 0;
   virtual void SetOpacityFromServer(float opacity) = 0;
@@ -93,8 +90,6 @@ class AURA_EXPORT WindowMus {
                                      const std::vector<uint8_t>* data) = 0;
   virtual void SetFrameSinkIdFromServer(
       const viz::FrameSinkId& frame_sink_id) = 0;
-  virtual const viz::LocalSurfaceId& GetOrAllocateLocalSurfaceId(
-      const gfx::Size& new_size) = 0;
   // The window was deleted on the server side. DestroyFromServer() should
   // result in deleting |this|.
   virtual void DestroyFromServer() = 0;
@@ -109,6 +104,9 @@ class AURA_EXPORT WindowMus {
   // an invalid viz::LocalSurfaceIdAllocaton.
   virtual const viz::LocalSurfaceIdAllocation&
   GetLocalSurfaceIdAllocation() = 0;
+
+  // Returns true if the window has a LocalSurfaceId.
+  virtual bool HasLocalSurfaceId() = 0;
 
   // Called in the rare case when WindowTreeClient needs to change state and
   // can't go through one of the SetFooFromServer() functions above. Generally
@@ -126,8 +124,6 @@ class AURA_EXPORT WindowMus {
   virtual void PrepareForDestroy() = 0;
 
   virtual void NotifyEmbeddedAppDisconnected() = 0;
-
-  virtual bool HasLocalLayerTreeFrameSink() = 0;
 
   virtual float GetDeviceScaleFactor() = 0;
 

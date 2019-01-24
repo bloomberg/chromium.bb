@@ -283,11 +283,6 @@ void WindowTreeClient::RegisterFrameSinkId(
     WindowMus* window,
     const viz::FrameSinkId& frame_sink_id) {
   tree_->AttachFrameSinkId(window->server_id(), frame_sink_id);
-
-  // Call OnWindowMusBoundsChanged() to force allocation of a LocalSurfaceId as
-  // well as notifying the server of the LocalSurfaceId.
-  const gfx::Rect bounds = window->GetWindow()->bounds();
-  OnWindowMusBoundsChanged(window, bounds, bounds);
 }
 
 void WindowTreeClient::UnregisterFrameSinkId(WindowMus* window) {
@@ -527,7 +522,7 @@ WindowMus* WindowTreeClient::NewWindowFromWindowData(
   SetWindowType(window, GetWindowTypeFromProperties(properties));
   window->Init(ui::LAYER_NOT_DRAWN);
   SetLocalPropertiesFromServerProperties(window_mus, window_data);
-  window_mus->SetBoundsFromServer(window_data.bounds, base::nullopt);
+  window_mus->SetBoundsFromServer(window_data.bounds);
   if (parent)
     parent->AddChildFromServer(window_port_mus_ptr);
   if (window_data.visible)
@@ -640,7 +635,7 @@ void WindowTreeClient::SetWindowBoundsFromServer(
     return;
   }
 
-  window->SetBoundsFromServer(revert_bounds, local_surface_id);
+  window->SetBoundsFromServer(revert_bounds);
 }
 
 void WindowTreeClient::SetWindowTransformFromServer(
@@ -681,12 +676,10 @@ void WindowTreeClient::ScheduleInFlightBoundsChange(
           this, window, old_bounds,
           window->GetLocalSurfaceIdAllocation().local_surface_id()));
   base::Optional<viz::LocalSurfaceId> local_surface_id;
-  if (window->GetWindow()->IsEmbeddingClient() ||
-      window->HasLocalLayerTreeFrameSink()) {
-    // Do not use ConvertRectToPixel, enclosing rects cause problems.
-    const gfx::Size size = gfx::ScaleToCeiledSize(
-        new_bounds.size(), window->GetDeviceScaleFactor());
-    local_surface_id = window->GetOrAllocateLocalSurfaceId(size);
+  if (window->HasLocalSurfaceId()) {
+    local_surface_id = window->GetLocalSurfaceIdAllocation().local_surface_id();
+    DCHECK(local_surface_id);
+    DCHECK(local_surface_id->is_valid());
     // |window_tree_host| may be null if this is called during creation of
     // the window associated with the WindowTreeHostMus, or if there is an
     // embedding.
@@ -1542,6 +1535,11 @@ void WindowTreeClient::RequestClose(ws::Id window_id) {
 void WindowTreeClient::OnWindowTreeHostBoundsWillChange(
     WindowTreeHostMus* window_tree_host,
     const gfx::Rect& bounds_in_pixels) {
+  // The only other type of window that may hit this code path is EMBED. Clients
+  // are not allowed to change the bounds of EMBED windows (only the server).
+  // LOCAL and OTHER types don't have a WindowTreeHost.
+  DCHECK_EQ(WindowMusType::TOP_LEVEL,
+            WindowMus::Get(window_tree_host->window())->window_mus_type());
   gfx::Rect old_bounds = window_tree_host->GetBoundsInPixels();
   gfx::Rect new_bounds = bounds_in_pixels;
   const float device_scale_factor = window_tree_host->device_scale_factor();
