@@ -431,6 +431,7 @@ PerUserTopicRegistrationManager::CollectDebugData() const {
     return_value->SetString(topic_to_private_topic.first,
                             topic_to_private_topic.second);
   }
+  return_value->SetString("Instance id token", token_);
   return return_value;
 }
 
