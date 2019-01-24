@@ -615,6 +615,9 @@ typedef struct SPEED_FEATURES {
   // Enable/disable ME for interinter wedge search.
   int disable_interinter_wedge_newmv_search;
 
+  // Enable/disable smooth inter-intra mode
+  int disable_smooth_interintra;
+
   // skip sharp_filter evaluation based on regular and smooth filter rd for
   // dual_filter=0 case
   int skip_sharp_interp_filter_search;

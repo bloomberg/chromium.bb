@@ -344,6 +344,13 @@ static void set_good_speed_features_framesize_independent(
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED;
     sf->adaptive_pred_interp_filter = 0;
     sf->adaptive_mode_search = 1;
+    // TODO(any): evaluate this speed feature for 2 and 3
+    if (cpi->oxcf.enable_smooth_interintra) {
+      sf->disable_smooth_interintra =
+          (boosted || cpi->refresh_bwd_ref_frame || cpi->refresh_alt2_ref_frame)
+              ? 0
+              : 1;
+    }
     sf->cb_partition_search = !boosted;
     sf->alt_ref_search_fp = 1;
     sf->skip_sharp_interp_filter_search = 1;
@@ -774,6 +781,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->skip_sharp_interp_filter_search = 0;
   sf->prune_comp_type_by_comp_avg = 0;
   sf->disable_interinter_wedge_newmv_search = 0;
+  sf->disable_smooth_interintra = 0;
   sf->prune_motion_mode_level = 0;
   sf->prune_warp_using_wmtype = 0;
   sf->disable_wedge_interintra_search = 0;
