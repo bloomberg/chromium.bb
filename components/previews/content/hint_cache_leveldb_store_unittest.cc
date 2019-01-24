@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -249,8 +250,29 @@ class HintCacheLevelDBStoreTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(HintCacheLevelDBStoreTest);
 };
 
+TEST_F(HintCacheLevelDBStoreTest, NoInitialization) {
+  base::HistogramTester histogram_tester;
+
+  SeedInitialData(MetadataSchemaState::kMissing);
+  CreateDatabase();
+
+  histogram_tester.ExpectTotalCount(
+      "Previews.HintCacheLevelDBStore.LoadMetadataResult", 0);
+
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     0 /* kUninitialized */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     1 /* kInitializing */, 0);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     2 /* kAvailable */, 0);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     3 /* kFailed */, 0);
+}
+
 TEST_F(HintCacheLevelDBStoreTest,
        InitializeFailedOnInitializeWithNoInitialData) {
+  base::HistogramTester histogram_tester;
+
   SeedInitialData(MetadataSchemaState::kMissing);
   CreateDatabase();
   InitializeDatabase(false /*=success*/);
@@ -258,10 +280,24 @@ TEST_F(HintCacheLevelDBStoreTest,
   // In the case where initialization fails, the store should be fully purged.
   EXPECT_EQ(GetDBStoreEntryCount(), static_cast<size_t>(0));
   EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
+
+  histogram_tester.ExpectTotalCount(
+      "Previews.HintCacheLevelDBStore.LoadMetadataResult", 0);
+
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     0 /* kUninitialized */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     1 /* kInitializing */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     2 /* kAvailable */, 0);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     3 /* kFailed */, 1);
 }
 
 TEST_F(HintCacheLevelDBStoreTest,
        InitializeFailedOnLoadMetadataWithNoInitialData) {
+  base::HistogramTester histogram_tester;
+
   SeedInitialData(MetadataSchemaState::kMissing);
   CreateDatabase();
   InitializeDatabase(true /*=success*/);
@@ -272,10 +308,25 @@ TEST_F(HintCacheLevelDBStoreTest,
   // In the case where initialization fails, the store should be fully purged.
   EXPECT_EQ(GetDBStoreEntryCount(), static_cast<size_t>(0));
   EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
+
+  histogram_tester.ExpectBucketCount(
+      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
+      1 /* kLoadMetadataFailed */, 1);
+
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     0 /* kUninitialized */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     1 /* kInitializing */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     2 /* kAvailable */, 0);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     3 /* kFailed */, 1);
 }
 
 TEST_F(HintCacheLevelDBStoreTest,
        InitializeFailedOnUpdateMetadataNoInitialData) {
+  base::HistogramTester histogram_tester;
+
   SeedInitialData(MetadataSchemaState::kMissing);
   CreateDatabase();
 
@@ -289,9 +340,24 @@ TEST_F(HintCacheLevelDBStoreTest,
   // In the case where initialization fails, the store should be fully purged.
   EXPECT_EQ(GetDBStoreEntryCount(), static_cast<size_t>(0));
   EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
+
+  histogram_tester.ExpectBucketCount(
+      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
+      2 /* kSchemaMetadataMissing */, 1);
+
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     0 /* kUninitialized */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     1 /* kInitializing */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     2 /* kAvailable */, 0);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     3 /* kFailed */, 1);
 }
 
 TEST_F(HintCacheLevelDBStoreTest, InitializeFailedOnInitializeWithInitialData) {
+  base::HistogramTester histogram_tester;
+
   SeedInitialData(MetadataSchemaState::kValid, 10);
   CreateDatabase();
   InitializeDatabase(false /*=success*/);
@@ -299,10 +365,24 @@ TEST_F(HintCacheLevelDBStoreTest, InitializeFailedOnInitializeWithInitialData) {
   // In the case where initialization fails, the store should be fully purged.
   EXPECT_EQ(GetDBStoreEntryCount(), static_cast<size_t>(0));
   EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
+
+  histogram_tester.ExpectTotalCount(
+      "Previews.HintCacheLevelDBStore.LoadMetadataResult", 0);
+
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     0 /* kUninitialized */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     1 /* kInitializing */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     2 /* kAvailable */, 0);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     3 /* kFailed */, 1);
 }
 
 TEST_F(HintCacheLevelDBStoreTest,
        InitializeFailedOnLoadMetadataWithInitialData) {
+  base::HistogramTester histogram_tester;
+
   SeedInitialData(MetadataSchemaState::kValid, 10);
   CreateDatabase();
   InitializeDatabase(true /*=success*/);
@@ -313,10 +393,25 @@ TEST_F(HintCacheLevelDBStoreTest,
   // In the case where initialization fails, the store should be fully purged.
   EXPECT_EQ(GetDBStoreEntryCount(), static_cast<size_t>(0));
   EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
+
+  histogram_tester.ExpectBucketCount(
+      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
+      1 /* kLoadMetadataFailed */, 1);
+
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     0 /* kUninitialized */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     1 /* kInitializing */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     2 /* kAvailable */, 0);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     3 /* kFailed */, 1);
 }
 
 TEST_F(HintCacheLevelDBStoreTest,
        InitializeFailedOnUpdateMetadataWithInvalidSchemaEntry) {
+  base::HistogramTester histogram_tester;
+
   SeedInitialData(MetadataSchemaState::kInvalid, 10);
   CreateDatabase();
   InitializeDatabase(true /*=success*/);
@@ -329,10 +424,25 @@ TEST_F(HintCacheLevelDBStoreTest,
   // In the case where initialization fails, the store should be fully purged.
   EXPECT_EQ(GetDBStoreEntryCount(), static_cast<size_t>(0));
   EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
+
+  histogram_tester.ExpectBucketCount(
+      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
+      3 /* kSchemaMetadataWrongVersion */, 1);
+
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     0 /* kUninitialized */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     1 /* kInitializing */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     2 /* kAvailable */, 0);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     3 /* kFailed */, 1);
 }
 
 TEST_F(HintCacheLevelDBStoreTest,
        InitializeFailedOnLoadHintEntryKeysWithInitialData) {
+  base::HistogramTester histogram_tester;
+
   SeedInitialData(MetadataSchemaState::kValid, 10);
   CreateDatabase();
   InitializeDatabase(true /*=success*/);
@@ -345,9 +455,23 @@ TEST_F(HintCacheLevelDBStoreTest,
   // In the case where initialization fails, the store should be fully purged.
   EXPECT_EQ(GetDBStoreEntryCount(), static_cast<size_t>(0));
   EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
+
+  histogram_tester.ExpectBucketCount(
+      "Previews.HintCacheLevelDBStore.LoadMetadataResult", 0 /* kSuccess */, 1);
+
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     0 /* kUninitialized */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     1 /* kInitializing */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     2 /* kAvailable */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     3 /* kFailed */, 1);
 }
 
 TEST_F(HintCacheLevelDBStoreTest, InitializeSucceededWithoutSchemaEntry) {
+  base::HistogramTester histogram_tester;
+
   MetadataSchemaState schema_state = MetadataSchemaState::kMissing;
   SeedInitialData(schema_state);
   CreateDatabase();
@@ -358,9 +482,24 @@ TEST_F(HintCacheLevelDBStoreTest, InitializeSucceededWithoutSchemaEntry) {
   EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
 
   EXPECT_TRUE(IsMetadataSchemaEntryKeyPresent());
+
+  histogram_tester.ExpectBucketCount(
+      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
+      2 /* kSchemaMetadataMissing */, 1);
+
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     0 /* kUninitialized */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     1 /* kInitializing */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     2 /* kAvailable */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     3 /* kFailed */, 0);
 }
 
 TEST_F(HintCacheLevelDBStoreTest, InitializeSucceededWithInvalidSchemaEntry) {
+  base::HistogramTester histogram_tester;
+
   MetadataSchemaState schema_state = MetadataSchemaState::kInvalid;
   SeedInitialData(schema_state);
   CreateDatabase();
@@ -371,9 +510,24 @@ TEST_F(HintCacheLevelDBStoreTest, InitializeSucceededWithInvalidSchemaEntry) {
   EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
 
   EXPECT_TRUE(IsMetadataSchemaEntryKeyPresent());
+
+  histogram_tester.ExpectBucketCount(
+      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
+      3 /* kSchemaMetadataWrongVersion */, 1);
+
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     0 /* kUninitialized */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     1 /* kInitializing */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     2 /* kAvailable */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     3 /* kFailed */, 0);
 }
 
 TEST_F(HintCacheLevelDBStoreTest, InitializeSucceededWithValidSchemaEntry) {
+  base::HistogramTester histogram_tester;
+
   MetadataSchemaState schema_state = MetadataSchemaState::kValid;
   SeedInitialData(schema_state);
   CreateDatabase();
@@ -384,10 +538,25 @@ TEST_F(HintCacheLevelDBStoreTest, InitializeSucceededWithValidSchemaEntry) {
   EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
 
   EXPECT_TRUE(IsMetadataSchemaEntryKeyPresent());
+
+  histogram_tester.ExpectBucketCount(
+      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
+      4 /* kComponentMetadataMissing */, 1);
+
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     0 /* kUninitialized */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     1 /* kInitializing */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     2 /* kAvailable */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     3 /* kFailed */, 0);
 }
 
 TEST_F(HintCacheLevelDBStoreTest,
        InitializeSucceededWithInvalidSchemaEntryAndInitialData) {
+  base::HistogramTester histogram_tester;
+
   MetadataSchemaState schema_state = MetadataSchemaState::kInvalid;
   SeedInitialData(schema_state, 10);
   CreateDatabase();
@@ -399,9 +568,24 @@ TEST_F(HintCacheLevelDBStoreTest,
   EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
 
   EXPECT_TRUE(IsMetadataSchemaEntryKeyPresent());
+
+  histogram_tester.ExpectBucketCount(
+      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
+      3 /* kSchemaMetadataWrongVersion */, 1);
+
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     0 /* kUninitialized */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     1 /* kInitializing */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     2 /* kAvailable */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     3 /* kFailed */, 0);
 }
 
 TEST_F(HintCacheLevelDBStoreTest, InitializeSucceededWithPurgeExistingData) {
+  base::HistogramTester histogram_tester;
+
   MetadataSchemaState schema_state = MetadataSchemaState::kValid;
   SeedInitialData(schema_state, 10);
   CreateDatabase();
@@ -412,10 +596,24 @@ TEST_F(HintCacheLevelDBStoreTest, InitializeSucceededWithPurgeExistingData) {
   EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
 
   EXPECT_TRUE(IsMetadataSchemaEntryKeyPresent());
+
+  histogram_tester.ExpectTotalCount(
+      "Previews.HintCacheLevelDBStore.LoadMetadataResult", 0);
+
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     0 /* kUninitialized */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     1 /* kInitializing */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     2 /* kAvailable */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     3 /* kFailed */, 0);
 }
 
 TEST_F(HintCacheLevelDBStoreTest,
        InitializeSucceededWithValidSchemaEntryAndInitialData) {
+  base::HistogramTester histogram_tester;
+
   MetadataSchemaState schema_state = MetadataSchemaState::kValid;
   size_t component_hint_count = 10;
   SeedInitialData(schema_state, component_hint_count);
@@ -430,6 +628,18 @@ TEST_F(HintCacheLevelDBStoreTest,
 
   EXPECT_TRUE(IsMetadataSchemaEntryKeyPresent());
   ExpectComponentHintsPresent(kDefaultComponentVersion, component_hint_count);
+
+  histogram_tester.ExpectBucketCount(
+      "Previews.HintCacheLevelDBStore.LoadMetadataResult", 0 /* kSuccess */, 1);
+
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     0 /* kUninitialized */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     1 /* kInitializing */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     2 /* kAvailable */, 1);
+  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
+                                     3 /* kFailed */, 0);
 }
 
 TEST_F(HintCacheLevelDBStoreTest,

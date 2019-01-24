@@ -4,6 +4,7 @@
 
 #include "components/previews/content/hint_cache_leveldb_store.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 
 namespace previews {
@@ -28,6 +29,43 @@ constexpr size_t kDatabaseWriteBufferSizeBytes = 128 * 1024;
 //    "[EntryType::kComponentHint]_[component_version]_[host]"
 constexpr char kKeySectionDelimiter = '_';
 
+// Enumerates the possible outcomes of loading metadata. Used in UMA histograms,
+// so the order of enumerators should not be changed.
+//
+// Keep in sync with PreviewsHintCacheLevelDBStoreProcessMetadataResult in
+// tools/metrics/histograms/enums.xml.
+enum class PreviewsHintCacheLevelDBStoreLoadMetadataResult {
+  kSuccess = 0,
+  kLoadMetadataFailed = 1,
+  kSchemaMetadataMissing = 2,
+  kSchemaMetadataWrongVersion = 3,
+  kComponentMetadataMissing = 4,
+  kMaxValue = kComponentMetadataMissing,
+};
+
+// Util class for recording the result of loading the metadata. The result is
+// recorded when it goes out of scope and its destructor is called.
+class ScopedLoadMetadataResultRecorder {
+ public:
+  ScopedLoadMetadataResultRecorder()
+      : result_(PreviewsHintCacheLevelDBStoreLoadMetadataResult::kSuccess) {}
+  ~ScopedLoadMetadataResultRecorder() {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Previews.HintCacheLevelDBStore.LoadMetadataResult", result_);
+  }
+
+  void set_result(PreviewsHintCacheLevelDBStoreLoadMetadataResult result) {
+    result_ = result;
+  }
+
+ private:
+  PreviewsHintCacheLevelDBStoreLoadMetadataResult result_;
+};
+
+void RecordStatusChange(HintCacheLevelDBStore::Status status) {
+  UMA_HISTOGRAM_ENUMERATION("Previews.HintCacheLevelDBStore.Status", status);
+}
+
 }  // namespace
 
 HintCacheLevelDBStore::HintCacheLevelDBStore(
@@ -46,7 +84,9 @@ HintCacheLevelDBStore::HintCacheLevelDBStore(
       database_(std::move(database)),
       status_(Status::kUninitialized),
       component_data_update_in_flight_(false),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  RecordStatusChange(status_);
+}
 
 HintCacheLevelDBStore::~HintCacheLevelDBStore() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -268,15 +308,16 @@ void HintCacheLevelDBStore::UpdateStatus(Status new_status) {
   // The status can never transition from Status::kFailed.
   DCHECK(status_ != Status::kFailed || new_status == Status::kFailed);
 
-  // If the database transitions into a failed state from a non-failed state,
-  // then fully destroy it. This ensures that it'll have a clean state the next
-  // time it is created.
-  bool destroy_database =
-      status_ != Status::kFailed && new_status == Status::kFailed;
+  // If the status is not changing, simply return; the remaining logic handles
+  // status changes.
+  if (status_ == new_status) {
+    return;
+  }
 
   status_ = new_status;
+  RecordStatusChange(status_);
 
-  if (destroy_database) {
+  if (status_ == Status::kFailed) {
     database_->Destroy(
         base::BindOnce(&HintCacheLevelDBStore::OnDatabaseDestroyed,
                        weak_ptr_factory_.GetWeakPtr()));
@@ -401,7 +442,14 @@ void HintCacheLevelDBStore::OnLoadMetadata(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(metadata_entries);
 
+  // Create a scoped load metadata result recorder. It records the result when
+  // its destructor is called.
+  ScopedLoadMetadataResultRecorder result_recorder;
+
   if (!success) {
+    result_recorder.set_result(
+        PreviewsHintCacheLevelDBStoreLoadMetadataResult::kLoadMetadataFailed);
+
     UpdateStatus(Status::kFailed);
     std::move(callback).Run();
     return;
@@ -414,6 +462,16 @@ void HintCacheLevelDBStore::OnLoadMetadata(
   if (schema_entry == metadata_entries->end() ||
       !schema_entry->second.has_version() ||
       schema_entry->second.version() != kStoreSchemaVersion) {
+    if (schema_entry == metadata_entries->end()) {
+      result_recorder.set_result(
+          PreviewsHintCacheLevelDBStoreLoadMetadataResult::
+              kSchemaMetadataMissing);
+    } else {
+      result_recorder.set_result(
+          PreviewsHintCacheLevelDBStoreLoadMetadataResult::
+              kSchemaMetadataWrongVersion);
+    }
+
     PurgeDatabase(std::move(callback));
     return;
   }
@@ -425,6 +483,9 @@ void HintCacheLevelDBStore::OnLoadMetadata(
   if (component_entry != metadata_entries->end()) {
     DCHECK(component_entry->second.has_version());
     SetComponentVersion(base::Version(component_entry->second.version()));
+  } else {
+    result_recorder.set_result(PreviewsHintCacheLevelDBStoreLoadMetadataResult::
+                                   kComponentMetadataMissing);
   }
 
   UpdateStatus(Status::kAvailable);

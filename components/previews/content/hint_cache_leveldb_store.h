@@ -33,6 +33,22 @@ class HintCacheLevelDBStore : public HintCacheStore {
   using StoreEntryProtoDatabase =
       leveldb_proto::ProtoDatabase<previews::proto::StoreEntry>;
 
+  // Status of the store. The store begins in kUninitialized, transitions to
+  // kInitializing after Initialize() is called, and transitions to kAvailable
+  // if initialization successfully completes. In the case where anything fails,
+  // the store transitions to kFailed, at which point it is fully purged and
+  // becomes unusable.
+  //
+  // Keep in sync with PreviewsHintCacheLevelDBStoreStatus in
+  // tools/metrics/histograms/enums.xml.
+  enum class Status {
+    kUninitialized = 0,
+    kInitializing = 1,
+    kAvailable = 2,
+    kFailed = 3,
+    kMaxValue = kFailed,
+  };
+
   HintCacheLevelDBStore(
       const base::FilePath& database_dir,
       scoped_refptr<base::SequencedTaskRunner> store_task_runner);
@@ -65,18 +81,6 @@ class HintCacheLevelDBStore : public HintCacheStore {
   using EntryVector =
       leveldb_proto::ProtoDatabase<previews::proto::StoreEntry>::KeyEntryVector;
   using EntryMap = std::map<EntryKey, previews::proto::StoreEntry>;
-
-  // Status of the store. The store begins in kUninitialized, transitions to
-  // kInitializing after Initialize() is called, and transitions to kAvailable
-  // if initialization successfully completes. In the case where anything fails,
-  // the store transitions to kFailed, at which point it is fully purged and
-  // becomes unusable.
-  enum class Status {
-    kUninitialized,
-    kInitializing,
-    kAvailable,
-    kFailed,
-  };
 
   // Entry types within the store appear at the start of the keys of entries.
   // These values are converted into strings within the key: a key starting with
