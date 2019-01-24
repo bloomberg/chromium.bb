@@ -9,8 +9,6 @@ const char kIOSChromeMultiBrowserStatePrefix[] = "Profile ";
 
 const base::FilePath::CharType kIOSChromeCacheDirname[] =
     FILE_PATH_LITERAL("Cache");
-const base::FilePath::CharType kIOSChromeChannelIDFilename[] =
-    FILE_PATH_LITERAL("Origin Bound Certs");
 const base::FilePath::CharType kIOSChromeCookieFilename[] =
     FILE_PATH_LITERAL("Cookies");
 const base::FilePath::CharType kIOSChromeCRLSetFilename[] =

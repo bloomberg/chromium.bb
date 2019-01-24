@@ -13,7 +13,6 @@ extern const char kIOSChromeInitialBrowserState[];
 extern const char kIOSChromeMultiBrowserStatePrefix[];
 
 extern const base::FilePath::CharType kIOSChromeCacheDirname[];
-extern const base::FilePath::CharType kIOSChromeChannelIDFilename[];
 extern const base::FilePath::CharType kIOSChromeCookieFilename[];
 extern const base::FilePath::CharType kIOSChromeCRLSetFilename[];
 extern const base::FilePath::CharType

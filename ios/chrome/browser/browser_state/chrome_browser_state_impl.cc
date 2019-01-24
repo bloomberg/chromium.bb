@@ -68,6 +68,9 @@ base::FilePath GetCachePath(const base::FilePath& base) {
   return base.Append(kIOSChromeCacheDirname);
 }
 
+const base::FilePath::CharType kIOSChromeChannelIDFilename[] =
+    FILE_PATH_LITERAL("Origin Bound Certs");
+
 }  // namespace
 
 ChromeBrowserStateImpl::ChromeBrowserStateImpl(
@@ -109,15 +112,20 @@ ChromeBrowserStateImpl::ChromeBrowserStateImpl(
       this);
 
   base::FilePath cookie_path = state_path_.Append(kIOSChromeCookieFilename);
-  base::FilePath channel_id_path =
-      state_path_.Append(kIOSChromeChannelIDFilename);
   base::FilePath cache_path = GetCachePath(base_cache_path);
   int cache_max_size = 0;
 
+  // TODO(crbug.com/903642): Remove the following when no longer needed.
+  base::FilePath channel_id_path =
+      state_path_.Append(kIOSChromeChannelIDFilename);
+  base::DeleteFile(channel_id_path, false);
+  base::DeleteFile(
+      base::FilePath(channel_id_path.value() + FILE_PATH_LITERAL("-journal")),
+      false);
+
   // Make sure we initialize the io_data_ after everything else has been
   // initialized that we might be reading from the IO thread.
-  io_data_->Init(cookie_path, channel_id_path, cache_path, cache_max_size,
-                 state_path_);
+  io_data_->Init(cookie_path, cache_path, cache_max_size, state_path_);
 
   // Listen for bookmark model load, to bootstrap the sync service.
   bookmarks::BookmarkModel* model =
