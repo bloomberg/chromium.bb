@@ -26,7 +26,6 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/extensions/chrome_extension_test_notification_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -97,8 +96,9 @@ const char kTestIdTokenAdvancedProtectionDisabled[] =
 std::string PickAccountId(Profile* profile,
                           const std::string& gaia_id,
                           const std::string& email) {
-  return AccountTrackerService::PickAccountIdForAccount(profile->GetPrefs(),
-                                                        gaia_id, email);
+  return IdentityManagerFactory::GetInstance()
+      ->GetForProfile(profile)
+      ->LegacyPickAccountIdForAccount(gaia_id, email);
 }
 
 class OAuth2LoginManagerStateWaiter : public OAuth2LoginManager::Observer {
@@ -663,10 +663,12 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, VerifyInAdvancedProtectionAfterOnlineAuth) {
                       /*is_under_advanced_protection=*/true);
 
   // Verify that AccountInfo is properly updated.
-  AccountTrackerService* account_tracker =
-      AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile());
+  auto* identity_manager =
+      IdentityManagerFactory::GetInstance()->GetForProfile(profile());
   EXPECT_TRUE(
-      account_tracker->GetAccountInfo(kTestEmail).is_under_advanced_protection);
+      identity_manager
+          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(kTestEmail)
+          ->is_under_advanced_protection);
 }
 
 IN_PROC_BROWSER_TEST_F(OAuth2Test,
@@ -675,10 +677,12 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test,
                       /*is_under_advanced_protection=*/false);
 
   // Verify that AccountInfo is properly updated.
-  AccountTrackerService* account_tracker =
-      AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile());
+  auto* identity_manager =
+      IdentityManagerFactory::GetInstance()->GetForProfile(profile());
   EXPECT_FALSE(
-      account_tracker->GetAccountInfo(kTestEmail).is_under_advanced_protection);
+      identity_manager
+          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(kTestEmail)
+          ->is_under_advanced_protection);
 }
 
 // Sets up a new user with stored refresh token.
