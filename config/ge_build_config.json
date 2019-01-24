@@ -2413,6 +2413,12 @@
       "models": [
         {
           "board_name": "sarien",
+          "name": "arcada",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "sarien",
           "name": "sarien",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
