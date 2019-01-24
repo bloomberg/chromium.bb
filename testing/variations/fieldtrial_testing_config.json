@@ -3748,6 +3748,109 @@
             ]
         }
     ],
+    "QuotaExpandPoolSize": [
+        {
+            "platforms": [
+                "android",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_Pool_TwoThirds_Origin_OneFifth",
+                    "params": {
+                        "PerHostPortion": "0.2",
+                        "PoolSizeRatio": "0.6666666666666666"
+                    },
+                    "enable_features": [
+                        "QuotaExpandPoolSize"
+                    ]
+                },
+                {
+                    "name": "Enabled_Pool_ThreeQuarters_Origin_OneFifth",
+                    "params": {
+                        "PerHostPortion": "0.2",
+                        "PoolSizeRatio": "0.75"
+                    },
+                    "enable_features": [
+                        "QuotaExpandPoolSize"
+                    ]
+                },
+                {
+                    "name": "Enabled_Pool_Full_Origin_OneFifth",
+                    "params": {
+                        "PerHostPortion": "0.2",
+                        "PoolSizeRatio": "1.0"
+                    },
+                    "enable_features": [
+                        "QuotaExpandPoolSize"
+                    ]
+                },
+                {
+                    "name": "Enabled_Pool_TwoThirds_Origin_OneHalf",
+                    "params": {
+                        "PerHostPortion": "0.5",
+                        "PoolSizeRatio": "0.6666666666666666"
+                    },
+                    "enable_features": [
+                        "QuotaExpandPoolSize"
+                    ]
+                },
+                {
+                    "name": "Enabled_Pool_ThreeQuarters_Origin_OneHalf",
+                    "params": {
+                        "PerHostPortion": "0.5",
+                        "PoolSizeRatio": "0.75"
+                    },
+                    "enable_features": [
+                        "QuotaExpandPoolSize"
+                    ]
+                },
+                {
+                    "name": "Enabled_Pool_Full_Origin_OneHalf",
+                    "params": {
+                        "PerHostPortion": "0.5",
+                        "PoolSizeRatio": "1.0"
+                    },
+                    "enable_features": [
+                        "QuotaExpandPoolSize"
+                    ]
+                },
+                {
+                    "name": "Enabled_Pool_TwoThirds_Origin_TwoThirds",
+                    "params": {
+                        "PerHostPortion": "0.6666666666666666",
+                        "PoolSizeRatio": "0.6666666666666666"
+                    },
+                    "enable_features": [
+                        "QuotaExpandPoolSize"
+                    ]
+                },
+                {
+                    "name": "Enabled_Pool_ThreeQuarters_Origin_TwoThirds",
+                    "params": {
+                        "PerHostPortion": "0.6666666666666666",
+                        "PoolSizeRatio": "0.75"
+                    },
+                    "enable_features": [
+                        "QuotaExpandPoolSize"
+                    ]
+                },
+                {
+                    "name": "Enabled_Pool_Full_Origin_TwoThirds",
+                    "params": {
+                        "PerHostPortion": "0.6666666666666666",
+                        "PoolSizeRatio": "1.0"
+                    },
+                    "enable_features": [
+                        "QuotaExpandPoolSize"
+                    ]
+                }
+            ]
+        }
+    ],
     "ReaderModeUI": [
         {
             "platforms": [
