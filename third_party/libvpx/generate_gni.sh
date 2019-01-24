@@ -305,6 +305,7 @@ function gen_config_files {
     fi
   fi
 
+  mkdir -p $BASE_DIR/$LIBVPX_CONFIG_DIR/$1
   cp vpx_config.* $BASE_DIR/$LIBVPX_CONFIG_DIR/$1
   make_clean
   rm -rf vpx_config.*
@@ -348,8 +349,8 @@ gen_config_files linux/arm "--target=armv7-linux-gcc --disable-neon ${all_platfo
 gen_config_files linux/arm-neon "--target=armv7-linux-gcc ${all_platforms}"
 gen_config_files linux/arm-neon-cpu-detect "--target=armv7-linux-gcc --enable-runtime-cpu-detect ${all_platforms}"
 gen_config_files linux/arm64 "--target=armv8-linux-gcc ${all_platforms}"
-gen_config_files linux/chromeos-arm-neon "--target=armv7-linux-gcc ${all_platforms} ${HIGHBD}"
-gen_config_files linux/chromeos-arm64 "--target=armv8-linux-gcc ${all_platforms} ${HIGHBD}"
+gen_config_files linux/arm-neon-highbd "--target=armv7-linux-gcc ${all_platforms} ${HIGHBD}"
+gen_config_files linux/arm64-highbd "--target=armv8-linux-gcc ${all_platforms} ${HIGHBD}"
 gen_config_files linux/mipsel "--target=mips32-linux-gcc ${all_platforms}"
 gen_config_files linux/mips64el "--target=mips64-linux-gcc ${all_platforms}"
 gen_config_files linux/generic "--target=generic-gnu $HIGHBD ${all_platforms}"
@@ -373,8 +374,8 @@ lint_config linux/arm
 lint_config linux/arm-neon
 lint_config linux/arm-neon-cpu-detect
 lint_config linux/arm64
-lint_config linux/chromeos-arm-neon
-lint_config linux/chromeos-arm64
+lint_config linux/arm-neon-highbd
+lint_config linux/arm64-highbd
 lint_config linux/mipsel
 lint_config linux/mips64el
 lint_config linux/generic
@@ -402,8 +403,8 @@ gen_rtcd_header linux/arm armv7 "--disable-neon --disable-neon_asm"
 gen_rtcd_header linux/arm-neon armv7
 gen_rtcd_header linux/arm-neon-cpu-detect armv7
 gen_rtcd_header linux/arm64 armv8
-gen_rtcd_header linux/chromeos-arm-neon armv7
-gen_rtcd_header linux/chromeos-arm64 armv8
+gen_rtcd_header linux/arm-neon-highbd armv7
+gen_rtcd_header linux/arm64-highbd armv8
 gen_rtcd_header linux/mipsel mipsel
 gen_rtcd_header linux/mips64el mips64el
 gen_rtcd_header linux/generic generic
@@ -468,17 +469,17 @@ if [ -z $ONLY_CONFIGS ]; then
   make libvpx_srcs.txt target=libs $config > /dev/null
   convert_srcs_to_project_files libvpx_srcs.txt libvpx_srcs_arm64
 
-  echo "Generate ChromeOS ARM NEON source list."
-  config=$(print_config linux/chromeos-arm-neon)
+  echo "Generate ARM NEON HighBD source list."
+  config=$(print_config linux/arm-neon-highbd)
   make_clean
   make libvpx_srcs.txt target=libs $config > /dev/null
-  convert_srcs_to_project_files libvpx_srcs.txt libvpx_srcs_chromeos_arm_neon
+  convert_srcs_to_project_files libvpx_srcs.txt libvpx_srcs_arm_neon_highbd
 
-  echo "Generate ChromeOS ARM64 source list."
-  config=$(print_config linux/chromeos-arm64)
+  echo "Generate ARM64 HighBD source list."
+  config=$(print_config linux/arm64-highbd)
   make_clean
   make libvpx_srcs.txt target=libs $config > /dev/null
-  convert_srcs_to_project_files libvpx_srcs.txt libvpx_srcs_chromeos_arm64
+  convert_srcs_to_project_files libvpx_srcs.txt libvpx_srcs_arm64_highbd
 
   echo "Generate MIPS source list."
   config=$(print_config_basic linux/mipsel)
