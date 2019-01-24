@@ -1,0 +1,33 @@
+This test documents Blink's web-exposed policy-controlled features.
+All changes to this list should go through Blink's feature review process: http://www.chromium.org/blink#new-features
+
+accelerometer
+ambient-light-sensor
+autoplay
+camera
+document-domain
+document-write
+encrypted-media
+font-display-late-swap
+fullscreen
+geolocation
+gyroscope
+layout-animations
+lazyload
+legacy-image-formats
+magnetometer
+microphone
+midi
+oversized-images
+payment
+picture-in-picture
+speaker
+sync-script
+sync-xhr
+unoptimized-images
+unsized-media
+usb
+vertical-scroll
+vr
+wake-lock
+

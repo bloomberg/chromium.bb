@@ -5,7 +5,7 @@ PASS Partial interface HTMLIFrameElement: original interface defined
 PASS Stringification of document.featurePolicy
 PASS FeaturePolicy interface: document.featurePolicy must inherit property "allowsFeature(DOMString, DOMString)" with the proper type
 PASS FeaturePolicy interface: calling allowsFeature(DOMString, DOMString) on document.featurePolicy with too few arguments must throw TypeError
-FAIL FeaturePolicy interface: document.featurePolicy must inherit property "features()" with the proper type assert_inherits: property "features" not found in prototype chain
+PASS FeaturePolicy interface: document.featurePolicy must inherit property "features()" with the proper type
 PASS FeaturePolicy interface: document.featurePolicy must inherit property "allowedFeatures()" with the proper type
 PASS FeaturePolicy interface: document.featurePolicy must inherit property "getAllowlistForFeature(DOMString)" with the proper type
 PASS FeaturePolicy interface: calling getAllowlistForFeature(DOMString) on document.featurePolicy with too few arguments must throw TypeError

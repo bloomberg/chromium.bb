@@ -42,6 +42,13 @@ bool DOMFeaturePolicy::allowsFeature(const String& feature,
       GetDefaultFeatureNameMap().at(feature), origin->ToUrlOrigin());
 }
 
+Vector<String> DOMFeaturePolicy::features() const {
+  Vector<String> features;
+  for (const auto& entry : GetDefaultFeatureNameMap())
+    features.push_back(entry.key);
+  return features;
+}
+
 Vector<String> DOMFeaturePolicy::allowedFeatures() const {
   Vector<String> allowed_features;
   for (const auto& entry : GetDefaultFeatureNameMap()) {

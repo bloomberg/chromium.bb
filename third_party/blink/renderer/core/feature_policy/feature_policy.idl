@@ -9,6 +9,7 @@
   ImplementedAs=DOMFeaturePolicy
 ] interface FeaturePolicy {
   [MeasureAs=FeaturePolicyJSAPI] boolean allowsFeature(DOMString feature, optional DOMString url);
+  [MeasureAs=FeaturePolicyJSAPI] sequence<DOMString> features();
   [MeasureAs=FeaturePolicyJSAPI] sequence<DOMString> allowedFeatures();
   [MeasureAs=FeaturePolicyJSAPI] sequence<DOMString> getAllowlistForFeature(DOMString feature);
 };
