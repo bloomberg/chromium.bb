@@ -9551,6 +9551,7 @@ class RemoteNavigationClient
   void Navigate(const WebURLRequest& request,
                 bool should_replace_current_entry,
                 bool is_opener_navigation,
+                bool prevent_sandboxed_download,
                 mojo::ScopedMessagePipeHandle) override {
     last_request_ = request;
   }

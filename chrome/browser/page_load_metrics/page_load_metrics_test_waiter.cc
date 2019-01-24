@@ -46,6 +46,11 @@ void PageLoadMetricsTestWaiter::AddWebFeatureExpectation(
   }
 }
 
+void PageLoadMetricsTestWaiter::AddSubframeNavigationExpectation(
+    size_t expected_subframe_navigations) {
+  expected_subframe_navigations_ = expected_subframe_navigations;
+}
+
 void PageLoadMetricsTestWaiter::AddMinimumCompleteResourcesExpectation(
     int expected_minimum_complete_resources) {
   expected_minimum_complete_resources_ = expected_minimum_complete_resources;
@@ -155,6 +160,17 @@ void PageLoadMetricsTestWaiter::OnFeaturesUsageObserved(
     run_loop_->Quit();
 }
 
+void PageLoadMetricsTestWaiter::OnDidFinishSubFrameNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (SubframeNavigationExpectationsSatisfied())
+    return;
+
+  ++observed_subframe_navigations_;
+
+  if (ExpectationsSatisfied() && run_loop_)
+    run_loop_->Quit();
+}
+
 bool PageLoadMetricsTestWaiter::IsPageLevelField(TimingField field) {
   switch (field) {
     case TimingField::kFirstPaint:
@@ -229,10 +245,16 @@ bool PageLoadMetricsTestWaiter::WebFeaturesExpectationsSatisfied() const {
       .none();
 }
 
+bool PageLoadMetricsTestWaiter::SubframeNavigationExpectationsSatisfied()
+    const {
+  return observed_subframe_navigations_ >= expected_subframe_navigations_;
+}
+
 bool PageLoadMetricsTestWaiter::ExpectationsSatisfied() const {
   return subframe_expected_fields_.Empty() && page_expected_fields_.Empty() &&
          ResourceUseExpectationsSatisfied() &&
-         WebFeaturesExpectationsSatisfied();
+         WebFeaturesExpectationsSatisfied() &&
+         SubframeNavigationExpectationsSatisfied();
 }
 
 PageLoadMetricsTestWaiter::WaiterMetricsObserver::~WaiterMetricsObserver() {}
@@ -271,6 +293,13 @@ void PageLoadMetricsTestWaiter::WaiterMetricsObserver::OnFeaturesUsageObserved(
     const PageLoadExtraInfo& extra_info) {
   if (waiter_)
     waiter_->OnFeaturesUsageObserved(nullptr, features, extra_info);
+}
+
+void PageLoadMetricsTestWaiter::WaiterMetricsObserver::
+    OnDidFinishSubFrameNavigation(
+        content::NavigationHandle* navigation_handle) {
+  if (waiter_)
+    waiter_->OnDidFinishSubFrameNavigation(navigation_handle);
 }
 
 }  // namespace page_load_metrics
