@@ -8,11 +8,11 @@
 #include <memory>
 
 #include "base/strings/sys_string_conversions.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "ios/web/public/web_thread.h"
 #import "ios/web_view/public/cwv_identity.h"
@@ -78,7 +78,7 @@ CWVSyncError CWVConvertGoogleServiceAuthErrorStateToCWVSyncError(
 
 namespace ios_web_view {
 
-// Bridge that observes browser_sync::ProfileSyncService and calls analagous
+// Bridge that observes syncer::SyncService and calls analagous
 // methods on CWVSyncController.
 class WebViewSyncControllerObserverBridge
     : public syncer::SyncServiceObserver,
@@ -107,7 +107,7 @@ class WebViewSyncControllerObserverBridge
 }  // namespace ios_web_view
 
 @implementation CWVSyncController {
-  browser_sync::ProfileSyncService* _profileSyncService;
+  syncer::SyncService* _syncService;
   identity::IdentityManager* _identityManager;
   ProfileOAuth2TokenService* _tokenService;
   SigninErrorController* _signinErrorController;
@@ -119,22 +119,21 @@ class WebViewSyncControllerObserverBridge
 
 @synthesize delegate = _delegate;
 
-- (instancetype)
-    initWithProfileSyncService:
-        (browser_sync::ProfileSyncService*)profileSyncService
-               identityManager:(identity::IdentityManager*)identityManager
-                  tokenService:(ProfileOAuth2TokenService*)tokenService
-         signinErrorController:(SigninErrorController*)signinErrorController {
+- (instancetype)initWithSyncService:(syncer::SyncService*)syncService
+                    identityManager:(identity::IdentityManager*)identityManager
+                       tokenService:(ProfileOAuth2TokenService*)tokenService
+              signinErrorController:
+                  (SigninErrorController*)signinErrorController {
   self = [super init];
   if (self) {
-    _profileSyncService = profileSyncService;
+    _syncService = syncService;
     _identityManager = identityManager;
     _tokenService = tokenService;
     _signinErrorController = signinErrorController;
     _observer =
         std::make_unique<ios_web_view::WebViewSyncControllerObserverBridge>(
             self);
-    _profileSyncService->AddObserver(_observer.get());
+    _syncService->AddObserver(_observer.get());
     _signinErrorController->AddObserver(_observer.get());
 
     // Refresh access tokens on foreground to extend expiration dates.
@@ -148,7 +147,7 @@ class WebViewSyncControllerObserverBridge
 }
 
 - (void)dealloc {
-  _profileSyncService->RemoveObserver(_observer.get());
+  _syncService->RemoveObserver(_observer.get());
   _signinErrorController->RemoveObserver(_observer.get());
 }
 
@@ -167,7 +166,7 @@ class WebViewSyncControllerObserverBridge
 }
 
 - (BOOL)isPassphraseNeeded {
-  return _profileSyncService->IsPassphraseRequiredForDecryption();
+  return _syncService->IsPassphraseRequiredForDecryption();
 }
 
 - (void)startSyncWithIdentity:(CWVIdentity*)identity
@@ -199,7 +198,7 @@ class WebViewSyncControllerObserverBridge
 }
 
 - (BOOL)unlockWithPassphrase:(NSString*)passphrase {
-  return _profileSyncService->GetUserSettings()->SetDecryptionPassphrase(
+  return _syncService->GetUserSettings()->SetDecryptionPassphrase(
       base::SysNSStringToUTF8(passphrase));
 }
 
@@ -212,7 +211,7 @@ class WebViewSyncControllerObserverBridge
 }
 
 - (void)didShutdownSync {
-  _profileSyncService->RemoveObserver(_observer.get());
+  _syncService->RemoveObserver(_observer.get());
   _signinErrorController->RemoveObserver(_observer.get());
 }
 

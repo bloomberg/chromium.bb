@@ -11,9 +11,9 @@
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
-namespace browser_sync {
-class ProfileSyncService;
-}  // namespace browser_sync
+namespace syncer {
+class SyncService;
+}  // namespace syncer
 
 namespace ios_web_view {
 class WebViewBrowserState;
@@ -23,7 +23,7 @@ class WebViewBrowserState;
 class WebViewProfileSyncServiceFactory
     : public BrowserStateKeyedServiceFactory {
  public:
-  static browser_sync::ProfileSyncService* GetForBrowserState(
+  static syncer::SyncService* GetForBrowserState(
       WebViewBrowserState* browser_state);
 
   static WebViewProfileSyncServiceFactory* GetInstance();

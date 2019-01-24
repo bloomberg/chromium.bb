@@ -15,18 +15,30 @@ namespace browser_sync {
 class ProfileSyncService;
 }  // namespace browser_sync
 
+namespace syncer {
+class SyncService;
+}  // namespace syncer
+
 namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
 
-// Singleton that owns all ProfileSyncService and associates them with
+// Singleton that owns all SyncServices and associates them with
 // ios::ChromeBrowserState.
 class ProfileSyncServiceFactory : public BrowserStateKeyedServiceFactory {
  public:
-  static browser_sync::ProfileSyncService* GetForBrowserState(
+  static syncer::SyncService* GetForBrowserState(
       ios::ChromeBrowserState* browser_state);
 
-  static browser_sync::ProfileSyncService* GetForBrowserStateIfExists(
+  static syncer::SyncService* GetForBrowserStateIfExists(
+      ios::ChromeBrowserState* browser_state);
+
+  static browser_sync::ProfileSyncService*
+  GetAsProfileSyncServiceForBrowserState(
+      ios::ChromeBrowserState* browser_state);
+
+  static browser_sync::ProfileSyncService*
+  GetAsProfileSyncServiceForBrowserStateIfExists(
       ios::ChromeBrowserState* browser_state);
 
   static ProfileSyncServiceFactory* GetInstance();

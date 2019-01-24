@@ -9,9 +9,9 @@
 #include "base/i18n/time_formatting.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/google/core/common/google_util.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -80,7 +80,7 @@ const CGFloat kSpinnerButtonPadding = 18;
         AuthenticationServiceFactory::GetForBrowserState(browserState_)
             ->GetAuthenticatedUserEmail();
     DCHECK(userEmail);
-    browser_sync::ProfileSyncService* service =
+    syncer::SyncService* service =
         ProfileSyncServiceFactory::GetForBrowserState(browserState_);
     if (service->IsEngineInitialized() &&
         service->IsUsingSecondaryPassphrase()) {
@@ -271,7 +271,7 @@ const CGFloat kSpinnerButtonPadding = 18;
   // Clear out the error message.
   self.syncErrorMessage = nil;
 
-  browser_sync::ProfileSyncService* service =
+  syncer::SyncService* service =
       ProfileSyncServiceFactory::GetForBrowserState(browserState_);
   DCHECK(service);
   // It is possible for a race condition to happen where a user is allowed
@@ -451,7 +451,7 @@ const CGFloat kSpinnerButtonPadding = 18;
 #pragma mark - SyncObserverModelBridge
 
 - (void)onSyncStateChanged {
-  browser_sync::ProfileSyncService* service =
+  syncer::SyncService* service =
       ProfileSyncServiceFactory::GetForBrowserState(browserState_);
 
   if (!service->IsEngineInitialized()) {

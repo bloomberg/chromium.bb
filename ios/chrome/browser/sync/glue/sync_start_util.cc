@@ -8,7 +8,6 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/task/post_task.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"

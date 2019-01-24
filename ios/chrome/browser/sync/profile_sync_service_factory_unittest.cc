@@ -12,11 +12,11 @@
 #include "base/feature_list.h"
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "components/browser_sync/browser_sync_switches.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -118,9 +118,9 @@ TEST_F(ProfileSyncServiceFactoryTest, DisableSyncFlag) {
 // Verify that a normal (no command line flags) PSS can be created and
 // properly initialized.
 TEST_F(ProfileSyncServiceFactoryTest, CreatePSSDefault) {
-  browser_sync::ProfileSyncService* pss =
+  syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForBrowserState(chrome_browser_state());
-  syncer::ModelTypeSet types = pss->GetRegisteredDataTypes();
+  syncer::ModelTypeSet types = sync_service->GetRegisteredDataTypes();
   EXPECT_EQ(DefaultDatatypesCount(), types.Size());
   CheckDefaultDatatypesInSetExcept(types, syncer::ModelTypeSet());
 }
@@ -130,9 +130,9 @@ TEST_F(ProfileSyncServiceFactoryTest, CreatePSSDefault) {
 TEST_F(ProfileSyncServiceFactoryTest, CreatePSSDisableOne) {
   syncer::ModelTypeSet disabled_types(syncer::AUTOFILL);
   SetDisabledTypes(disabled_types);
-  browser_sync::ProfileSyncService* pss =
+  syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForBrowserState(chrome_browser_state());
-  syncer::ModelTypeSet types = pss->GetRegisteredDataTypes();
+  syncer::ModelTypeSet types = sync_service->GetRegisteredDataTypes();
   EXPECT_EQ(DefaultDatatypesCount() - disabled_types.Size(), types.Size());
   CheckDefaultDatatypesInSetExcept(types, disabled_types);
 }
@@ -143,9 +143,9 @@ TEST_F(ProfileSyncServiceFactoryTest, CreatePSSDisableMultiple) {
   syncer::ModelTypeSet disabled_types(syncer::AUTOFILL_PROFILE,
                                       syncer::BOOKMARKS);
   SetDisabledTypes(disabled_types);
-  browser_sync::ProfileSyncService* pss =
+  syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForBrowserState(chrome_browser_state());
-  syncer::ModelTypeSet types = pss->GetRegisteredDataTypes();
+  syncer::ModelTypeSet types = sync_service->GetRegisteredDataTypes();
   EXPECT_EQ(DefaultDatatypesCount() - disabled_types.Size(), types.Size());
   CheckDefaultDatatypesInSetExcept(types, disabled_types);
 }

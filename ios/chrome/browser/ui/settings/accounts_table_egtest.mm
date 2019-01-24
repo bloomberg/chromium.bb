@@ -8,6 +8,10 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/base/nigori.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/engine/sync_encryption_handler.h"
+#include "components/sync/protocol/proto_value_conversions.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
@@ -288,7 +292,8 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
     ios::ChromeBrowserState* browser_state =
         chrome_test_util::GetOriginalBrowserState();
     browser_sync::ProfileSyncService* profile_sync_service =
-        ProfileSyncServiceFactory::GetForBrowserState(browser_state);
+        ProfileSyncServiceFactory::GetAsProfileSyncServiceForBrowserState(
+            browser_state);
     profile_sync_service->GetEncryptionObserverForTest()->OnPassphraseRequired(
         syncer::REASON_DECRYPTION,
         syncer::KeyDerivationParams::CreateForPbkdf2(),

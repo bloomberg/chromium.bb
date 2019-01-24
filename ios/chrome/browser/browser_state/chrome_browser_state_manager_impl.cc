@@ -15,7 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/prefs/pref_service.h"
@@ -36,7 +35,6 @@
 #include "ios/chrome/browser/signin/account_reconcilor_factory.h"
 #include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
@@ -222,7 +220,7 @@ void ChromeBrowserStateManagerImpl::DoFinalInitForServices(
       ->SetupInvalidationsOnProfileLoad(invalidation_service);
   ios::AccountReconcilorFactory::GetForBrowserState(browser_state);
   // Initialization needs to happen after the browser context is available
-  // because ProfileSyncService needs the URL context getter.
+  // because UnifiedConsentService's dependencies needs the URL context getter.
   UnifiedConsentServiceFactory::GetForBrowserState(browser_state);
 }
 

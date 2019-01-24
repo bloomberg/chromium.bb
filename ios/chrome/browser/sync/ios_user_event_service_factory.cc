@@ -8,10 +8,10 @@
 #include <utility>
 
 #include "base/no_destructor.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/report_unrecoverable_error.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync/model/model_type_store_service.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "components/sync/user_events/no_op_user_event_service.h"

@@ -19,7 +19,6 @@
 #include "base/rand_util.h"
 #include "base/strings/string16.h"
 #include "base/threading/platform_thread.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/crash/core/common/crash_keys.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -41,6 +40,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_status_metrics_provider.h"
 #include "components/sync/device_info/device_count_metrics_provider.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/ukm/ukm_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
@@ -293,11 +293,10 @@ bool IOSChromeMetricsServiceClient::RegisterForBrowserStateEvents(
       ios::HistoryServiceFactory::GetForBrowserState(
           browser_state, ServiceAccessType::IMPLICIT_ACCESS);
   ObserveServiceForDeletions(history_service);
-  browser_sync::ProfileSyncService* sync =
+  syncer::SyncService* sync =
       ProfileSyncServiceFactory::GetInstance()->GetForBrowserState(
           browser_state);
-  ObserveServiceForSyncDisables(static_cast<syncer::SyncService*>(sync),
-                                browser_state->GetPrefs());
+  ObserveServiceForSyncDisables(sync, browser_state->GetPrefs());
   return (history_service != nullptr && sync != nullptr);
 }
 

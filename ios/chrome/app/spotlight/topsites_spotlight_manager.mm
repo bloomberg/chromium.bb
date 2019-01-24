@@ -9,11 +9,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/history/core/browser/top_sites_observer.h"
 #include "components/suggestions/suggestions_service.h"
+#include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #include "ios/chrome/browser/history/top_sites_factory.h"
@@ -46,7 +46,7 @@ class SpotlightSuggestionsBridge;
 
   bookmarks::BookmarkModel* _bookmarkModel;             // weak
   suggestions::SuggestionsService* _suggestionService;  // weak
-  browser_sync::ProfileSyncService* _syncService;       // weak
+  syncer::SyncService* _syncService;                    // weak
 
   scoped_refptr<history::TopSites> _topSites;
   std::unique_ptr<
@@ -60,11 +60,12 @@ class SpotlightSuggestionsBridge;
 @property(nonatomic, readonly) scoped_refptr<history::TopSites> topSites;
 
 - (instancetype)
-initWithLargeIconService:(favicon::LargeIconService*)largeIconService
-                topSites:(scoped_refptr<history::TopSites>)topSites
-           bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
-      profileSyncService:(browser_sync::ProfileSyncService*)syncService
-      suggestionsService:(suggestions::SuggestionsService*)suggestionsService;
+    initWithLargeIconService:(favicon::LargeIconService*)largeIconService
+                    topSites:(scoped_refptr<history::TopSites>)topSites
+               bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
+                 syncService:(syncer::SyncService*)syncService
+          suggestionsService:
+              (suggestions::SuggestionsService*)suggestionsService;
 
 // Updates all indexed top sites from appropriate source, within limit of number
 // of sites shown on NTP.
@@ -157,18 +158,19 @@ class SpotlightSuggestionsBridge
                                    browserState)
                  bookmarkModel:ios::BookmarkModelFactory::GetForBrowserState(
                                    browserState)
-            profileSyncService:ProfileSyncServiceFactory::GetForBrowserState(
+                   syncService:ProfileSyncServiceFactory::GetForBrowserState(
                                    browserState)
             suggestionsService:suggestions::SuggestionsServiceFactory::
                                    GetForBrowserState(browserState)];
 }
 
 - (instancetype)
-initWithLargeIconService:(favicon::LargeIconService*)largeIconService
-                topSites:(scoped_refptr<history::TopSites>)topSites
-           bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
-      profileSyncService:(browser_sync::ProfileSyncService*)syncService
-      suggestionsService:(suggestions::SuggestionsService*)suggestionsService {
+    initWithLargeIconService:(favicon::LargeIconService*)largeIconService
+                    topSites:(scoped_refptr<history::TopSites>)topSites
+               bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
+                 syncService:(syncer::SyncService*)syncService
+          suggestionsService:
+              (suggestions::SuggestionsService*)suggestionsService {
   self = [super initWithLargeIconService:largeIconService
                                   domain:spotlight::DOMAIN_TOPSITES];
   if (self) {

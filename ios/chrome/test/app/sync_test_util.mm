@@ -18,6 +18,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/sync/device_info/local_device_info_provider.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/net/http_bridge_network_resources.h"
 #include "components/sync/test/fake_server/entity_builder_factory.h"
 #include "components/sync/test/fake_server/fake_server.h"
@@ -51,7 +52,8 @@ void OverrideSyncNetworkResources(
       chrome_test_util::GetOriginalBrowserState();
   DCHECK(browser_state);
   browser_sync::ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetForBrowserState(browser_state);
+      ProfileSyncServiceFactory::GetAsProfileSyncServiceForBrowserState(
+          browser_state);
   service->OverrideNetworkResourcesForTest(std::move(resources));
 }
 
@@ -96,9 +98,9 @@ void StopSync() {
 void TriggerSyncCycle(syncer::ModelType type) {
   ios::ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
-  browser_sync::ProfileSyncService* profile_sync_service =
+  syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForBrowserState(browser_state);
-  profile_sync_service->TriggerRefresh({type});
+  sync_service->TriggerRefresh({type});
 }
 
 void ClearSyncServerData() {
@@ -160,10 +162,11 @@ std::string GetSyncCacheGuid() {
   DCHECK(IsSyncInitialized());
   ios::ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
-  browser_sync::ProfileSyncService* profile_sync_service =
-      ProfileSyncServiceFactory::GetForBrowserState(browser_state);
+  browser_sync::ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetAsProfileSyncServiceForBrowserState(
+          browser_state);
   const syncer::LocalDeviceInfoProvider* info_provider =
-      profile_sync_service->GetLocalDeviceInfoProvider();
+      sync_service->GetLocalDeviceInfoProvider();
   return info_provider->GetLocalSyncCacheGUID();
 }
 

@@ -29,7 +29,6 @@
 #include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/autofill/ios/browser/autofill_util.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/password_manager/core/browser/form_parsing/ios_form_parser.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"

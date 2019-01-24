@@ -9,11 +9,11 @@
 #include "base/auto_reset.h"
 #include "base/mac/foundation_util.h"
 #include "components/autofill/core/common/autofill_prefs.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/google/core/common/google_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -219,7 +219,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _syncSetupService =
         SyncSetupServiceFactory::GetForBrowserState(_browserState);
     self.title = l10n_util::GetNSString(IDS_IOS_SYNC_SETTING_TITLE);
-    browser_sync::ProfileSyncService* syncService =
+    syncer::SyncService* syncService =
         ProfileSyncServiceFactory::GetForBrowserState(_browserState);
     _syncObserver.reset(new SyncObserverBridge(self, syncService));
     _identityManagerObserver.reset(new identity::IdentityManagerObserverBridge(
@@ -753,7 +753,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)showEncryption {
-  browser_sync::ProfileSyncService* syncService =
+  syncer::SyncService* syncService =
       ProfileSyncServiceFactory::GetForBrowserState(_browserState);
   if (!syncService->IsEngineInitialized() ||
       !_syncSetupService->IsSyncEnabled() ||
@@ -978,7 +978,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (BOOL)shouldEncryptionItemBeEnabled {
-  browser_sync::ProfileSyncService* syncService =
+  syncer::SyncService* syncService =
       ProfileSyncServiceFactory::GetForBrowserState(_browserState);
   return (syncService->IsEngineInitialized() &&
           _syncSetupService->IsSyncEnabled() &&

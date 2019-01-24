@@ -27,7 +27,7 @@ AuthenticationServiceFake::AuthenticationServiceFake(
     SyncSetupService* sync_setup_service,
     AccountTrackerService* account_tracker,
     identity::IdentityManager* identity_manager,
-    browser_sync::ProfileSyncService* sync_service)
+    syncer::SyncService* sync_service)
     : AuthenticationService(pref_service,
                             token_service,
                             sync_setup_service,

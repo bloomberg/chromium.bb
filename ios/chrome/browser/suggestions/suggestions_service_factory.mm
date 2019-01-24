@@ -11,11 +11,11 @@
 #include "base/memory/singleton.h"
 #include "base/task/post_task.h"
 #include "base/time/default_tick_clock.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/suggestions/blacklist_store.h"
 #include "components/suggestions/suggestions_service_impl.h"
 #include "components/suggestions/suggestions_store.h"
+#include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
@@ -60,7 +60,7 @@ SuggestionsServiceFactory::BuildServiceInstanceFor(
       ios::ChromeBrowserState::FromBrowserState(context);
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForBrowserState(browser_state);
-  browser_sync::ProfileSyncService* sync_service =
+  syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForBrowserState(browser_state);
 
   std::unique_ptr<SuggestionsStore> suggestions_store(

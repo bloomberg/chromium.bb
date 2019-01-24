@@ -10,8 +10,8 @@
 
 #include <memory>
 
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
+#include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/metrics/ios_profile_session_durations_service.h"

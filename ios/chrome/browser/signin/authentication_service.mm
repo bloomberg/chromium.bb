@@ -12,7 +12,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_info.h"
@@ -73,7 +72,7 @@ AuthenticationService::AuthenticationService(
     SyncSetupService* sync_setup_service,
     AccountTrackerService* account_tracker,
     identity::IdentityManager* identity_manager,
-    browser_sync::ProfileSyncService* sync_service)
+    syncer::SyncService* sync_service)
     : pref_service_(pref_service),
       token_service_(token_service),
       sync_setup_service_(sync_setup_service),

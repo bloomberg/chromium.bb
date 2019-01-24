@@ -13,6 +13,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/sync/device_info/local_device_info_provider.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync/model/model_type_store_service.h"
 #include "components/sync_sessions/local_session_event_router.h"
 #include "components/sync_sessions/session_sync_prefs.h"
@@ -94,7 +95,8 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
   const syncer::DeviceInfo* GetLocalDeviceInfo() override {
     DCHECK_CURRENTLY_ON(web::WebThread::UI);
     browser_sync::ProfileSyncService* profile_sync_service =
-        ProfileSyncServiceFactory::GetForBrowserStateIfExists(browser_state_);
+        ProfileSyncServiceFactory::
+            GetAsProfileSyncServiceForBrowserStateIfExists(browser_state_);
     if (!profile_sync_service) {
       return nullptr;
     }

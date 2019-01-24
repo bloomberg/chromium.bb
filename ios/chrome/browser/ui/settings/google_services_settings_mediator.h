@@ -18,9 +18,10 @@ class AuthenticationService;
 class PrefService;
 class SyncSetupService;
 
-namespace browser_sync {
-class ProfileSyncService;
-}  // namespace browser_sync
+namespace syncer {
+class SyncService;
+}  // namespace syncer
+
 namespace identity {
 class IdentityManager;
 }  // namespace identity
@@ -38,7 +39,7 @@ class IdentityManager;
 @property(nonatomic, weak) id<GoogleServicesSettingsCommandHandler>
     commandHandler;
 // Sync service.
-@property(nonatomic, assign) browser_sync::ProfileSyncService* syncService;
+@property(nonatomic, assign) syncer::SyncService* syncService;
 // Identity manager;
 @property(nonatomic, assign) identity::IdentityManager* identityManager;
 
