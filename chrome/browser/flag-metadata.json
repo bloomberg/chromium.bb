@@ -2245,7 +2245,7 @@
   },
   {
     "name": "extension-content-verification",
-    // "owners": [ "your-team" ],
+    "owners": [ "//extensions/OWNERS" ],
     "expiry_milestone": 76
   },
   {
