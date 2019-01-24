@@ -273,9 +273,8 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
   }
 
   // Log the aliased context type used.
-  if (!context_) {
+  if (!context_)
     UMA_HISTOGRAM_ENUMERATION("Blink.Canvas.ContextType", context_type);
-  }
 
   context_type =
       CanvasRenderingContext::ResolveContextTypeAliases(context_type);
@@ -317,7 +316,7 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
     DidDraw();
   }
 
-  if (attributes.low_latency &&
+  if (context_->CreationAttributes().low_latency &&
       origin_trials::LowLatencyCanvasEnabled(&GetDocument())) {
     CreateLayer();
     SetNeedsUnbufferedInputEvents(true);

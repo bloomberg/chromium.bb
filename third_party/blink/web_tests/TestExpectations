@@ -5893,6 +5893,9 @@ crbug.com/921038 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_t
 # Fails until document.featurePolicy is available in stable
 crbug.com/917070 virtual/stable/webexposed/feature-policy-features.html [ Failure ]
 
+# Mac doesn't support lowLatency Canvas Contexts.
+crbug.com/922218 [ Mac ] fast/canvas-api/canvas-lowlatency-getContext.html [ Failure ]
+
 # Sheriff 2019-01-14
 crbug.com/921583 http/tests/preload/meta-viewport-link-headers.html [ Failure Pass ]
 crbug.com/921151 [ Linux ] http/tests/security/mixedContent/insecure-iframe-with-hsts.https.html [ Failure Pass ]
