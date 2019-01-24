@@ -100,7 +100,13 @@ class TestResponseDelegate
 
   std::unique_ptr<android_webview::InputStream> OpenInputStream(
       JNIEnv* env) override {
+    EXPECT_TRUE(!thread_checker_.CalledOnValidThread());
     return std::move(input_stream_);
+  }
+
+  void OnInputStreamOpenFailed(bool* restarted) override {
+    EXPECT_TRUE(thread_checker_.CalledOnValidThread());
+    *restarted = false;
   }
 
   bool GetMimeType(JNIEnv* env,
@@ -136,6 +142,8 @@ class TestResponseDelegate
   const std::string custom_status_;
   const std::string custom_header_name_;
   const std::string custom_header_value_;
+
+  base::ThreadChecker thread_checker_;
 };
 
 class AndroidStreamReaderURLLoaderTest : public ::testing::Test {

@@ -11,6 +11,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
@@ -24,6 +25,31 @@ const char kResponseHeaderViaShouldInterceptRequest[] =
     "Client-Via: shouldInterceptRequest";
 const char kHTTPOkText[] = "OK";
 const char kHTTPNotFoundText[] = "Not Found";
+
+}  // namespace
+
+namespace {
+
+using OnInputStreamOpenedCallback = base::OnceCallback<void(
+    std::unique_ptr<AndroidStreamReaderURLLoader::ResponseDelegate>,
+    std::unique_ptr<InputStream>)>;
+
+// static
+void OpenInputStreamOnWorkerThread(
+    scoped_refptr<base::SingleThreadTaskRunner> job_thread_task_runner,
+    std::unique_ptr<AndroidStreamReaderURLLoader::ResponseDelegate> delegate,
+    OnInputStreamOpenedCallback callback) {
+  DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  JNIEnv* env = base::android::AttachCurrentThread();
+  DCHECK(env);
+
+  std::unique_ptr<InputStream> input_stream = delegate->OpenInputStream(env);
+
+  job_thread_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(delegate),
+                                std::move(input_stream)));
+}
 
 }  // namespace
 
@@ -76,6 +102,7 @@ AndroidStreamReaderURLLoader::AndroidStreamReaderURLLoader(
                                mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                                base::SequencedTaskRunnerHandle::Get()),
       weak_factory_(this) {
+  DCHECK(response_delegate_);
   // If there is a client error, clean up the request.
   client_.set_connection_error_handler(
       base::BindOnce(&AndroidStreamReaderURLLoader::RequestComplete,
@@ -95,27 +122,43 @@ void AndroidStreamReaderURLLoader::PauseReadingBodyFromNet() {}
 void AndroidStreamReaderURLLoader::ResumeReadingBodyFromNet() {}
 
 void AndroidStreamReaderURLLoader::Start() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   if (!ParseRange(resource_request_.headers)) {
     RequestComplete(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE);
     return;
   }
 
-  JNIEnv* env = base::android::AttachCurrentThread();
-  DCHECK(env);
-
-  // TODO(timvolodine): keep the original threading behavior (as in
-  // AndroidStreamReaderURLRequestJob) and open the stream on a dedicated
-  // thread. (crbug.com/913524).
-  std::unique_ptr<InputStream> input_stream =
-      response_delegate_->OpenInputStream(env);
-  OnInputStreamOpened(std::move(input_stream));
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(
+          &OpenInputStreamOnWorkerThread, base::ThreadTaskRunnerHandle::Get(),
+          // This is intentional - the loader could be deleted while the
+          // callback is executing on the background thread. The delegate will
+          // be "returned" to the loader once the InputStream open attempt is
+          // completed.
+          std::move(response_delegate_),
+          base::BindOnce(&AndroidStreamReaderURLLoader::OnInputStreamOpened,
+                         weak_factory_.GetWeakPtr())));
 }
 
 void AndroidStreamReaderURLLoader::OnInputStreamOpened(
+    std::unique_ptr<AndroidStreamReaderURLLoader::ResponseDelegate>
+        returned_delegate,
     std::unique_ptr<InputStream> input_stream) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(returned_delegate);
+  response_delegate_ = std::move(returned_delegate);
+
   if (!input_stream) {
-    // restart not required
-    HeadersComplete(net::HTTP_NOT_FOUND, kHTTPNotFoundText);
+    bool restarted = false;
+    response_delegate_->OnInputStreamOpenFailed(&restarted);
+    if (restarted) {
+      // request has been restarted with a new loader.
+      CleanUp();
+    } else {
+      HeadersComplete(net::HTTP_NOT_FOUND, kHTTPNotFoundText);
+    }
     return;
   }
 
@@ -136,6 +179,8 @@ void AndroidStreamReaderURLLoader::OnInputStreamOpened(
 }
 
 void AndroidStreamReaderURLLoader::OnReaderSeekCompleted(int result) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   if (result >= 0) {
     // we've got the expected content size here
     expected_content_size_ = result;
@@ -148,6 +193,8 @@ void AndroidStreamReaderURLLoader::OnReaderSeekCompleted(int result) {
 void AndroidStreamReaderURLLoader::HeadersComplete(
     int status_code,
     const std::string& status_text) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   std::string status("HTTP/1.1 ");
   status.append(base::IntToString(status_code));
   status.append(" ");
@@ -203,6 +250,8 @@ void AndroidStreamReaderURLLoader::HeadersComplete(
 }
 
 void AndroidStreamReaderURLLoader::SendBody() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   mojo::ScopedDataPipeConsumerHandle consumer_handle;
   if (CreateDataPipe(nullptr /*options*/, &producer_handle_,
                      &consumer_handle) != MOJO_RESULT_OK) {
@@ -219,7 +268,9 @@ void AndroidStreamReaderURLLoader::SendBody() {
 }
 
 void AndroidStreamReaderURLLoader::ReadMore() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!pending_buffer_.get());
+
   uint32_t num_bytes;
   MojoResult mojo_result = network::NetToMojoPendingBuffer::BeginWrite(
       &producer_handle_, &pending_buffer_, &num_bytes);
@@ -258,6 +309,8 @@ void AndroidStreamReaderURLLoader::ReadMore() {
 }
 
 void AndroidStreamReaderURLLoader::DidRead(int result) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   DCHECK(pending_buffer_);
   if (result < 0) {
     // error case
@@ -290,11 +343,15 @@ void AndroidStreamReaderURLLoader::OnDataPipeWritable(MojoResult result) {
 }
 
 void AndroidStreamReaderURLLoader::RequestComplete(int status_code) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   client_->OnComplete(network::URLLoaderCompletionStatus(status_code));
   CleanUp();
 }
 
 void AndroidStreamReaderURLLoader::CleanUp() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   // Resets the watchers and pipes, so that we will never be called back.
   writable_handle_watcher_.Cancel();
   pending_buffer_ = nullptr;
@@ -307,6 +364,8 @@ void AndroidStreamReaderURLLoader::CleanUp() {
 // TODO(timvolodine): consider moving this to the net_helpers.cc
 bool AndroidStreamReaderURLLoader::ParseRange(
     const net::HttpRequestHeaders& headers) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   std::string range_header;
   if (headers.GetHeader(net::HttpRequestHeaders::kRange, &range_header)) {
     // This loader only cares about the Range header so that we know how many

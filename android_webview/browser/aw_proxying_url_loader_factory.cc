@@ -46,6 +46,8 @@ class InterceptResponseDelegate
     return response_->GetInputStream(env);
   }
 
+  void OnInputStreamOpenFailed(bool* restarted) override { *restarted = false; }
+
   bool GetMimeType(JNIEnv* env,
                    const GURL& url,
                    android_webview::InputStream* stream,
@@ -166,10 +168,12 @@ class ProtocolResponseDelegate
 
   std::unique_ptr<android_webview::InputStream> OpenInputStream(
       JNIEnv* env) override {
-    auto stream = CreateInputStream(env, url_);
-    if (!stream && request_)
-      request_->InputStreamFailed();
-    return stream;
+    return CreateInputStream(env, url_);
+  }
+
+  void OnInputStreamOpenFailed(bool* restarted) override {
+    request_->InputStreamFailed();
+    *restarted = true;
   }
 
   bool GetMimeType(JNIEnv* env,
