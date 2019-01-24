@@ -6,6 +6,7 @@
 #include "net/quic/quic_chromium_connection_helper.h"
 #include "net/third_party/quic/core/crypto/quic_random.h"
 #include "net/third_party/quic/core/quic_config.h"
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/core/tls_client_handshaker.h"
 #include "net/third_party/quic/core/tls_server_handshaker.h"
 #include "net/third_party/quic/tools/quic_simple_crypto_server_stream_helper.h"
@@ -157,9 +158,16 @@ std::unique_ptr<quic::QuicConnection> CreateQuicConnection(
   quic::QuicIpAddress ip;
   ip.FromString("0.0.0.0");
   quic::QuicSocketAddress dummy_address(ip, 0 /* Port */);
+  quic::QuicConnectionId dummy_connection_id;
+  if (GetQuicRestartFlag(quic_variable_length_connection_ids_client)) {
+    char connection_id_bytes[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    dummy_connection_id = quic::QuicConnectionId(connection_id_bytes,
+                                                 sizeof(connection_id_bytes));
+  } else {
+    dummy_connection_id = quic::EmptyQuicConnectionId();
+  }
   return std::make_unique<quic::QuicConnection>(
-      quic::EmptyQuicConnectionId() /* dummy ID */, dummy_address, helper,
-      alarm_factory, packet_writer,
+      dummy_connection_id, dummy_address, helper, alarm_factory, packet_writer,
       /* owns_writer */ true, perspective, quic::CurrentSupportedVersions());
 }
 
@@ -174,7 +182,7 @@ class DummyCryptoServerStreamHelper
 
   quic::QuicConnectionId GenerateConnectionIdForReject(
       quic::QuicConnectionId connection_id) const override {
-    return quic::QuicConnectionIdFromUInt64(random_->RandUint64());
+    return quic::QuicUtils::CreateRandomConnectionId(random_);
   }
 
   bool CanAcceptClientHello(const quic::CryptoHandshakeMessage& message,

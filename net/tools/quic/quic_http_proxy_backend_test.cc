@@ -9,6 +9,7 @@
 #include "net/base/url_util.h"
 #include "net/third_party/quic/core/quic_connection_id.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
+#include "net/third_party/quic/test_tools/quic_test_utils.h"
 
 #include "net/tools/quic/quic_http_proxy_backend.h"
 #include "net/tools/quic/quic_http_proxy_backend_stream.h"
@@ -24,7 +25,7 @@ class TestQuicServerStream
   ~TestQuicServerStream() override {}
 
   quic::QuicConnectionId connection_id() const override {
-    return quic::QuicConnectionIdFromUInt64(123);
+    return quic::test::TestConnectionId(123);
   };
   quic::QuicStreamId stream_id() const override { return 5; };
   std::string peer_host() const override { return "127.0.0.1"; };

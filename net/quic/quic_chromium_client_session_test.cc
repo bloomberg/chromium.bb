@@ -44,6 +44,7 @@
 #include "net/third_party/quic/core/http/quic_client_promised_info.h"
 #include "net/third_party/quic/core/quic_connection_id.h"
 #include "net/third_party/quic/core/quic_packet_writer.h"
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/core/tls_client_handshaker.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
@@ -113,13 +114,13 @@ class QuicChromiumClientSessionTest
                      SocketTag()),
         destination_(kServerHostname, kServerPort),
         client_maker_(version_,
-                      quic::EmptyQuicConnectionId(),
+                      quic::QuicUtils::CreateRandomConnectionId(&random_),
                       &clock_,
                       kServerHostname,
                       quic::Perspective::IS_CLIENT,
                       client_headers_include_h2_stream_dependency_),
         server_maker_(version_,
-                      quic::EmptyQuicConnectionId(),
+                      quic::QuicUtils::CreateRandomConnectionId(&random_),
                       &clock_,
                       kServerHostname,
                       quic::Perspective::IS_SERVER,
@@ -147,7 +148,7 @@ class QuicChromiumClientSessionTest
     QuicChromiumPacketWriter* writer = new net::QuicChromiumPacketWriter(
         socket.get(), base::ThreadTaskRunnerHandle::Get().get());
     quic::QuicConnection* connection = new quic::QuicConnection(
-        quic::EmptyQuicConnectionId(),
+        quic::QuicUtils::CreateRandomConnectionId(&random_),
         quic::QuicSocketAddress(quic::QuicSocketAddressImpl(kIpEndPoint)),
         &helper_, &alarm_factory_, writer, true, quic::Perspective::IS_CLIENT,
         quic::test::SupportedVersions(
@@ -730,6 +731,9 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionCloseBeforeStreamRequest) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, ConnectionCloseBeforeHandshakeConfirmed) {
+  // Force the connection close packet to use long headers with connection ID.
+  server_maker_.SetEncryptionLevel(quic::ENCRYPTION_INITIAL);
+
   MockQuicData quic_data;
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(

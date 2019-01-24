@@ -4,6 +4,7 @@
 
 #include "net/tools/quic/quic_simple_server_session_helper.h"
 #include "net/third_party/quic/core/quic_connection_id.h"
+#include "net/third_party/quic/core/quic_utils.h"
 
 namespace net {
 
@@ -16,7 +17,7 @@ QuicSimpleServerSessionHelper::~QuicSimpleServerSessionHelper() = default;
 quic::QuicConnectionId
 QuicSimpleServerSessionHelper::GenerateConnectionIdForReject(
     quic::QuicConnectionId /*connection_id*/) const {
-  return quic::QuicConnectionIdFromUInt64(random_->RandUint64());
+  return quic::QuicUtils::CreateRandomConnectionId(random_);
 }
 
 bool QuicSimpleServerSessionHelper::CanAcceptClientHello(

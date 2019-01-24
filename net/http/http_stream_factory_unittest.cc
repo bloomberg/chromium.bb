@@ -62,6 +62,7 @@
 #include "net/test/test_data_directory.h"
 #include "net/test/test_with_scoped_task_environment.h"
 #include "net/third_party/quic/core/quic_server_id.h"
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/test_tools/crypto_test_utils.h"
 #include "net/third_party/quic/test_tools/mock_random.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
@@ -2360,19 +2361,21 @@ class HttpStreamFactoryBidirectionalQuicTest
       : default_url_(kDefaultUrl),
         version_(std::get<0>(GetParam())),
         client_headers_include_h2_stream_dependency_(std::get<1>(GetParam())),
-        client_packet_maker_(version_,
-                             quic::EmptyQuicConnectionId(),
-                             &clock_,
-                             "www.example.org",
-                             quic::Perspective::IS_CLIENT,
-                             client_headers_include_h2_stream_dependency_),
-        server_packet_maker_(version_,
-                             quic::EmptyQuicConnectionId(),
-                             &clock_,
-                             "www.example.org",
-                             quic::Perspective::IS_SERVER,
-                             false),
         random_generator_(0),
+        client_packet_maker_(
+            version_,
+            quic::QuicUtils::CreateRandomConnectionId(&random_generator_),
+            &clock_,
+            "www.example.org",
+            quic::Perspective::IS_CLIENT,
+            client_headers_include_h2_stream_dependency_),
+        server_packet_maker_(
+            version_,
+            quic::QuicUtils::CreateRandomConnectionId(&random_generator_),
+            &clock_,
+            "www.example.org",
+            quic::Perspective::IS_SERVER,
+            false),
         proxy_resolution_service_(ProxyResolutionService::CreateDirect()),
         ssl_config_service_(new SSLConfigServiceDefaults) {
     clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(20));
@@ -2451,11 +2454,11 @@ class HttpStreamFactoryBidirectionalQuicTest
   const quic::QuicTransportVersion version_;
   const bool client_headers_include_h2_stream_dependency_;
   quic::MockClock clock_;
+  quic::test::MockRandom random_generator_;
   test::QuicTestPacketMaker client_packet_maker_;
   test::QuicTestPacketMaker server_packet_maker_;
   MockTaggingClientSocketFactory socket_factory_;
   std::unique_ptr<HttpNetworkSession> session_;
-  quic::test::MockRandom random_generator_;
   MockCertVerifier cert_verifier_;
   ProofVerifyDetailsChromium verify_details_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;

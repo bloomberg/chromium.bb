@@ -53,6 +53,7 @@
 #include "net/third_party/quic/core/crypto/quic_random.h"
 #include "net/third_party/quic/core/http/quic_client_promised_info.h"
 #include "net/third_party/quic/core/quic_connection.h"
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/core/tls_client_handshaker.h"
 #include "net/third_party/quic/platform/api/quic_clock.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
@@ -1754,7 +1755,7 @@ int QuicStreamFactory::CreateSession(
   }
 
   quic::QuicConnectionId connection_id =
-      quic::QuicConnectionIdFromUInt64(random_generator_->RandUint64());
+      quic::QuicUtils::CreateRandomConnectionId(random_generator_);
   std::unique_ptr<QuicServerInfo> server_info;
   if (store_server_configs_in_properties_) {
     server_info = std::make_unique<PropertiesBasedQuicServerInfo>(

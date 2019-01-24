@@ -114,7 +114,7 @@ class QuicProxyClientSocketTest
         client_headers_include_h2_stream_dependency_(std::get<1>(GetParam())),
         crypto_config_(quic::test::crypto_test_utils::ProofVerifierForTesting(),
                        quic::TlsClientHandshaker::CreateSslCtx()),
-        connection_id_(quic::QuicConnectionIdFromUInt64(2)),
+        connection_id_(quic::test::TestConnectionId(2)),
         client_maker_(version_,
                       connection_id_,
                       &clock_,
