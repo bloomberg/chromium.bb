@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,10 +17,9 @@ cca.views = cca.views || {};
 /**
  * Creates the camera-view controller.
  * @param {cca.models.Gallery} model Model object.
- * @param {function(number)} onAspectRatio Callback to report aspect ratio.
  * @constructor
  */
-cca.views.Camera = function(model, onAspectRatio) {
+cca.views.Camera = function(model) {
   cca.views.View.call(this, '#camera');
 
   /**
@@ -63,8 +62,7 @@ cca.views.Camera = function(model, onAspectRatio) {
    * @type {cca.views.camera.Preview}
    * @private
    */
-  this.preview_ = new cca.views.camera.Preview(
-      this.stop_.bind(this), onAspectRatio);
+  this.preview_ = new cca.views.camera.Preview(this.stop_.bind(this));
 
   /**
    * Options for the camera.

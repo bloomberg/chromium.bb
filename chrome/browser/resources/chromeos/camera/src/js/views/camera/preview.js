@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium OS Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,21 +22,14 @@ cca.views.camera = cca.views.camera || {};
 /**
  * Creates a controller for the video preview of Camera view.
  * @param {function()} onNewStreamNeeded Callback to request new stream.
- * @param {function(number)} onAspectRatio Callback to report aspect ratio.
  * @constructor
  */
-cca.views.camera.Preview = function(onNewStreamNeeded, onAspectRatio) {
+cca.views.camera.Preview = function(onNewStreamNeeded) {
   /**
    * @type {function()}
    * @private
    */
   this.onNewStreamNeeded_ = onNewStreamNeeded;
-
-  /**
-   * @type {function(number)}
-   * @private
-   */
-  this.onAspectRatio_ = onAspectRatio;
 
   /**
    * Video element to capture the stream.
@@ -66,8 +59,26 @@ cca.views.camera.Preview = function(onNewStreamNeeded, onAspectRatio) {
    */
   this.focus_ = null;
 
+  /**
+   * Timeout for resizing the window.
+   * @type {?number}
+   * @private
+   */
+  this.resizeWindowTimeout_ = null;
+
+  /**
+   * Aspect ratio for the window.
+   * @type {number}
+   * @private
+   */
+  this.aspectRatio_ = 1;
+
   // End of properties, seal the object.
   Object.seal(this);
+
+  var inner = chrome.app.window.current().innerBounds;
+  this.aspectRatio_ = inner.width / inner.height;
+  window.addEventListener('resize', this.onWindowResize_.bind(this, null));
 
   this.video_.cleanup = () => {};
 };
@@ -176,12 +187,54 @@ cca.views.camera.Preview.prototype.toImage = function() {
 };
 
 /**
+ * Handles resizing the window for preview's aspect ratio changes.
+ * @param {number=} aspectRatio Aspect ratio changed.
+ * @private
+ */
+cca.views.camera.Preview.prototype.onWindowResize_ = function(aspectRatio) {
+  if (this.resizeWindowTimeout_) {
+    clearTimeout(this.resizeWindowTimeout_);
+    this.resizeWindowTimeout_ = null;
+  }
+  // Resize window for changed preview's aspect ratio or restore window size by
+  // the last known window's aspect ratio.
+  new Promise((resolve) => {
+    if (aspectRatio) {
+      this.aspectRatio_ = aspectRatio;
+      resolve();
+    } else {
+      this.resizeWindowTimeout_ = setTimeout(() => {
+        this.resizeWindowTimeout_ = null;
+        resolve();
+      }, 500);  // Delay further resizing for smooth UX.
+    }
+  }).then(() => {
+    // Resize window by aspect ratio only if it's not maximized or fullscreen.
+    if (cca.util.isWindowFullSize()) {
+      return;
+    }
+    // Keep the width fixed and calculate the height by the aspect ratio.
+    // TODO(yuli): Update min-width for resizing at portrait orientation.
+    var inner = chrome.app.window.current().innerBounds;
+    var innerW = inner.minWidth;
+    var innerH = Math.round(innerW / this.aspectRatio_);
+
+    // Limit window resizing capability by setting min-height. Don't limit
+    // max-height here as it may disable maximize/fullscreen capabilities.
+    inner.minHeight = innerH;
+    inner.width = innerW;
+    inner.height = innerH;
+  });
+  cca.nav.onWindowResized();
+};
+
+/**
  * Handles changed intrinsic size (first loaded or orientation changes).
  * @private
  */
 cca.views.camera.Preview.prototype.onIntrinsicSizeChanged_ = function() {
   if (this.video_.videoWidth && this.video_.videoHeight) {
-    this.onAspectRatio_(this.video_.videoWidth / this.video_.videoHeight);
+    this.onWindowResize_(this.video_.videoWidth / this.video_.videoHeight);
   }
   this.cancelFocus_();
 };
