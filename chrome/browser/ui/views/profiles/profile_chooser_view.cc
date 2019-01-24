@@ -1248,8 +1248,7 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
 
   // Add sign out button.
   signout_button_ = views::MdTextButton::Create(
-      this, l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_SIGN_OUT),
-      views::style::CONTEXT_BUTTON);
+      this, l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_SIGN_OUT));
   promo_button_container->AddChildView(signout_button_);
 
   view->AddChildView(promo_button_container);

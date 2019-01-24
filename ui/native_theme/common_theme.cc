@@ -86,7 +86,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       case NativeTheme::kColorId_LinkPressed:
         return gfx::kGoogleBlue300;
       case NativeTheme::kColorId_HighlightedMenuItemBackgroundColor:
-        return gfx::kGoogleGrey700;
+        return SkColorSetRGB(0x32, 0x36, 0x39);
       case NativeTheme::kColorId_TreeBackground:
         return gfx::kGoogleGrey800;
       case NativeTheme::kColorId_TreeText:
