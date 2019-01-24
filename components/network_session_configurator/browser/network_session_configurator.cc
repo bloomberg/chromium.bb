@@ -28,7 +28,7 @@
 #include "net/quic/quic_utils_chromium.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/third_party/quic/core/quic_packets.h"
-#include "net/third_party/spdy/core/spdy_protocol.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/mac/mac_util.h"

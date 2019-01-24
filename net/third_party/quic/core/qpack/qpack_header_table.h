@@ -9,8 +9,8 @@
 
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
-#include "net/third_party/spdy/core/hpack/hpack_entry.h"
-#include "net/third_party/spdy/core/hpack/hpack_header_table.h"
+#include "net/third_party/quiche/src/spdy/core/hpack/hpack_entry.h"
+#include "net/third_party/quiche/src/spdy/core/hpack/hpack_header_table.h"
 
 namespace quic {
 

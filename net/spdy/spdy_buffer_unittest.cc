@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "net/base/io_buffer.h"
-#include "net/third_party/spdy/core/spdy_protocol.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {

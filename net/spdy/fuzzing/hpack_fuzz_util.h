@@ -11,11 +11,11 @@
 #include <memory>
 #include <vector>
 
-#include "net/third_party/spdy/core/hpack/hpack_decoder_adapter.h"
-#include "net/third_party/spdy/core/hpack/hpack_encoder.h"
-#include "net/third_party/spdy/platform/api/spdy_export.h"
-#include "net/third_party/spdy/platform/api/spdy_string.h"
-#include "net/third_party/spdy/platform/api/spdy_string_piece.h"
+#include "net/third_party/quiche/src/spdy/core/hpack/hpack_decoder_adapter.h"
+#include "net/third_party/quiche/src/spdy/core/hpack/hpack_encoder.h"
+#include "net/third_party/quiche/src/spdy/platform/api/spdy_export.h"
+#include "net/third_party/quiche/src/spdy/platform/api/spdy_string.h"
+#include "net/third_party/quiche/src/spdy/platform/api/spdy_string_piece.h"
 
 namespace spdy {
 

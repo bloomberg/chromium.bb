@@ -8,7 +8,7 @@
 #include "net/third_party/quic/core/qpack/qpack_test_utils.h"
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
-#include "net/third_party/spdy/core/hpack/hpack_entry.h"
+#include "net/third_party/quiche/src/spdy/core/hpack/hpack_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace quic {

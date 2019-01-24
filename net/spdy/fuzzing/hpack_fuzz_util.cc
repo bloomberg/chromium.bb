@@ -9,8 +9,8 @@
 
 #include "base/rand_util.h"
 #include "base/sys_byteorder.h"
-#include "net/third_party/spdy/core/hpack/hpack_constants.h"
-#include "net/third_party/spdy/platform/api/spdy_ptr_util.h"
+#include "net/third_party/quiche/src/spdy/core/hpack/hpack_constants.h"
+#include "net/third_party/quiche/src/spdy/platform/api/spdy_ptr_util.h"
 
 namespace spdy {
 

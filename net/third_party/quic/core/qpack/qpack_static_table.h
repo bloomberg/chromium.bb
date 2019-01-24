@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "net/third_party/quic/platform/api/quic_export.h"
-#include "net/third_party/spdy/core/hpack/hpack_constants.h"
-#include "net/third_party/spdy/core/hpack/hpack_static_table.h"
+#include "net/third_party/quiche/src/spdy/core/hpack/hpack_constants.h"
+#include "net/third_party/quiche/src/spdy/core/hpack/hpack_static_table.h"
 
 namespace quic {
 
