@@ -110,7 +110,6 @@ class SignedExchangeLoader final : public network::mojom::URLLoaderClient,
       SignedExchangeLoadResult result,
       net::Error error,
       const GURL& request_url,
-      const std::string& request_method,
       const network::ResourceResponseHead& resource_response,
       std::unique_ptr<net::SourceStream> payload_stream);
 

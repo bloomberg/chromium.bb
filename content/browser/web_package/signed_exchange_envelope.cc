@@ -293,8 +293,6 @@ base::Optional<SignedExchangeEnvelope> SignedExchangeEnvelope::Parse(
   ret.set_cbor_header(cbor_header);
   ret.set_request_url(request_url);
 
-  ret.set_request_method("GET");
-
   if (!ParseResponseMap(*value, &ret, devtools_proxy)) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy, "Failed to parse response map.");

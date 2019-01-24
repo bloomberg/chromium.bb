@@ -266,7 +266,6 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
     SignedExchangeLoadResult result,
     net::Error error,
     const GURL& request_url,
-    const std::string& request_method,
     const network::ResourceResponseHead& resource_response,
     std::unique_ptr<net::SourceStream> payload_stream) {
   UMA_HISTOGRAM_ENUMERATION(kLoadResultHistogram, result);
@@ -297,7 +296,6 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
   }
   inner_request_url_ = request_url;
 
-  // TODO(https://crbug.com/803774): Handle no-GET request_method as a error.
   DCHECK(outer_response_timing_info_);
   forwarding_client_->OnReceiveRedirect(
       CreateRedirectInfo(request_url, outer_request_, outer_response_),

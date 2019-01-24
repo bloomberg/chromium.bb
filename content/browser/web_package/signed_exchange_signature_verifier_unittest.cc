@@ -237,7 +237,6 @@ TEST_P(SignedExchangeSignatureVerifierTest, VerifyECDSAP256) {
   ASSERT_EQ(1u, certlist.size());
 
   SignedExchangeEnvelope envelope;
-  envelope.set_request_method("GET");
   envelope.set_request_url(signed_exchange_utils::URLWithRawString(
       "https://test.example.org/test/"));
   envelope.set_response_code(net::HTTP_OK);
@@ -265,7 +264,6 @@ TEST_P(SignedExchangeSignatureVerifierTest, VerifyECDSAP384) {
   ASSERT_EQ(1u, certlist.size());
 
   SignedExchangeEnvelope envelope;
-  envelope.set_request_method("GET");
   envelope.set_request_url(signed_exchange_utils::URLWithRawString(
       "https://test.example.org/test/"));
   envelope.set_response_code(net::HTTP_OK);

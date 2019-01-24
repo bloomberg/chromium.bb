@@ -59,8 +59,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
   // validated against a verified certificate, or on failure.
   // On success:
   // - |result| is kSuccess.
-  // - |request_url| and |request_method| are the exchange's request's URL and
-  //   method.
+  // - |request_url| is the exchange's request's URL.
   // - |resource_response| contains inner response's headers.
   // - The payload stream can be read from |payload_stream|.
   // On failure:
@@ -71,7 +70,6 @@ class CONTENT_EXPORT SignedExchangeHandler {
       SignedExchangeLoadResult result,
       net::Error error,
       const GURL& request_url,
-      const std::string& request_method,
       const network::ResourceResponseHead& resource_response,
       std::unique_ptr<net::SourceStream> payload_stream)>;
 

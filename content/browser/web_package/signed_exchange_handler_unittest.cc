@@ -316,7 +316,6 @@ class SignedExchangeHandlerTest
   void OnHeaderFound(SignedExchangeLoadResult result,
                      net::Error error,
                      const GURL& url,
-                     const std::string&,
                      const network::ResourceResponseHead& resource_response,
                      std::unique_ptr<net::SourceStream> payload_stream) {
     read_header_ = true;
