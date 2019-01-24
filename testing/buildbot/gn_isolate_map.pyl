@@ -649,7 +649,7 @@
   "components_perftests": {
     "args": [
       "--xvfb",
-      "--benchmark=components_perftests",
+      "--gtest-benchmark-name=components_perftests",
       "--non-telemetry=true",
       "--migrated-test=true",
       "components_perftests",
@@ -2578,7 +2578,7 @@
   "views_perftests": {
     "args": [
       "--xvfb",
-      "--benchmark=views_perftests",
+      "--gtest-benchmark-name=views_perftests",
       "--non-telemetry=true",
       "--migrated-test=true",
       "views_perftests",
