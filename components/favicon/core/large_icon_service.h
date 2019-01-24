@@ -40,8 +40,8 @@ class LargeIconService : public KeyedService {
   // - Returns the default fallback icon style.
   // For cases 4 and 5, this function returns the style of the fallback icon
   // instead of rendering an icon so clients can render the icon themselves.
-  // TODO(crbug.com/903617): Rename to GetLargeIconRawBitmapOrFallbackStyle.
-  virtual base::CancelableTaskTracker::TaskId GetLargeIconOrFallbackStyle(
+  virtual base::CancelableTaskTracker::TaskId
+  GetLargeIconRawBitmapOrFallbackStyleForPageUrl(
       const GURL& page_url,
       int min_source_size_in_pixel,
       int desired_size_in_pixel,
@@ -50,7 +50,8 @@ class LargeIconService : public KeyedService {
 
   // Behaves the same as GetLargeIconOrFallbackStyle(), only returns the large
   // icon (if available) decoded.
-  virtual base::CancelableTaskTracker::TaskId GetLargeIconImageOrFallbackStyle(
+  virtual base::CancelableTaskTracker::TaskId
+  GetLargeIconImageOrFallbackStyleForPageUrl(
       const GURL& page_url,
       int min_source_size_in_pixel,
       int desired_size_in_pixel,

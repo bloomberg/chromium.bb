@@ -36,13 +36,15 @@ class LargeIconServiceImpl : public LargeIconService {
   ~LargeIconServiceImpl() override;
 
   // LargeIconService Implementation.
-  base::CancelableTaskTracker::TaskId GetLargeIconOrFallbackStyle(
+  base::CancelableTaskTracker::TaskId
+  GetLargeIconRawBitmapOrFallbackStyleForPageUrl(
       const GURL& page_url,
       int min_source_size_in_pixel,
       int desired_size_in_pixel,
       const favicon_base::LargeIconCallback& callback,
       base::CancelableTaskTracker* tracker) override;
-  base::CancelableTaskTracker::TaskId GetLargeIconImageOrFallbackStyle(
+  base::CancelableTaskTracker::TaskId
+  GetLargeIconImageOrFallbackStyleForPageUrl(
       const GURL& page_url,
       int min_source_size_in_pixel,
       int desired_size_in_pixel,

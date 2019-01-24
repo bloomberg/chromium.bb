@@ -259,7 +259,7 @@ void PartnerBookmarksReader::GetFaviconFromCacheOrServer(
     bool from_server,
     int desired_favicon_size_px,
     FaviconFetchedCallback callback) {
-  GetLargeIconService()->GetLargeIconOrFallbackStyle(
+  GetLargeIconService()->GetLargeIconRawBitmapOrFallbackStyleForPageUrl(
       page_url, kPartnerBookmarksMinimumFaviconSizePx, desired_favicon_size_px,
       base::Bind(&PartnerBookmarksReader::OnGetFaviconFromCacheFinished,
                  base::Unretained(this), page_url,

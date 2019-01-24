@@ -216,7 +216,7 @@ void IconCacherImpl::StartFetchMostLikely(const GURL& page_url,
 
   // Desired size 0 means that we do not want the service to resize the image
   // (as we will not use it anyway).
-  large_icon_service_->GetLargeIconOrFallbackStyle(
+  large_icon_service_->GetLargeIconRawBitmapOrFallbackStyleForPageUrl(
       page_url, GetMinimumFetchingSizeForChromeSuggestionsFaviconsFromServer(),
       /*desired_size_in_pixel=*/0,
       base::Bind(&IconCacherImpl::OnGetLargeIconOrFallbackStyleFinished,
