@@ -736,36 +736,6 @@
             ]
         }
     ],
-    "AutofillPrimaryInfoStyleExperiment": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_medium",
-                    "params": {
-                        "font_weight": "medium"
-                    },
-                    "enable_features": [
-                        "AutofillPrimaryInfoStyleExperiment"
-                    ]
-                },
-                {
-                    "name": "Enabled_bold",
-                    "params": {
-                        "font_weight": "bold"
-                    },
-                    "enable_features": [
-                        "AutofillPrimaryInfoStyleExperiment"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillRefreshStyleAndroid": [
         {
             "platforms": [

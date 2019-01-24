@@ -31,13 +31,6 @@ extern const char kAutofillDropdownLayoutParameterTrailingIcon[];
 extern const char kAutofillDropdownLayoutParameterTwoLinesLeadingIcon[];
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-extern const base::Feature kAutofillPrimaryInfoStyleExperiment;
-extern const char kAutofillForcedFontWeightParameterName[];
-extern const char kAutofillForcedFontWeightParameterMedium[];
-extern const char kAutofillForcedFontWeightParameterBold[];
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-
 // Returns true if uploading credit cards to Wallet servers is enabled. This
 // requires the appropriate flags and user settings to be true and the user to
 // be a member of a supported domain.
@@ -65,20 +58,6 @@ bool OfferStoreUnmaskedCards(bool is_off_the_record);
 
 // Returns whether the account of the active signed-in user should be used.
 bool ShouldUseActiveSignedInAccount();
-
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-enum class ForcedFontWeight {
-  kDefault,  // No change to the font weight.
-  kMedium,
-  kBold,
-};
-
-// Returns the font weight to be used for primary information on the Autofill
-// dropdown for Addresses and Credit Cards. Returns kDefault if feature
-// kAutofillPrimaryInfoStyleExperiment is disabled or if the corresponding
-// feature param is invalid.
-ForcedFontWeight GetForcedFontWeight();
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 enum class ForcedPopupLayoutState {
