@@ -150,6 +150,7 @@ static_library("libwebp_dsp") {
     "src/dsp/mips_macro.h",
     "src/dsp/msa_macro.h",
     "src/dsp/neon.h",
+    "src/dsp/quant.h",
     "src/dsp/rescaler.c",
     "src/dsp/rescaler_mips32.c",
     "src/dsp/rescaler_mips_dsp_r2.c",
@@ -252,6 +253,7 @@ if (use_dsp_neon) {
   static_library("libwebp_dsp_neon") {
     sources = [
       "src/dsp/alpha_processing_neon.c",
+      "src/dsp/cost_neon.c",
       "src/dsp/dec_neon.c",
       "src/dsp/enc_neon.c",
       "src/dsp/filters_neon.c",
