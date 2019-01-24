@@ -146,7 +146,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/android_sms/android_sms_app_helper_delegate_impl.h"
+#include "chrome/browser/chromeos/android_sms/android_sms_app_manager.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_pairing_state_tracker_impl.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
@@ -1303,9 +1303,8 @@ std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
             this),
         chromeos::multidevice_setup::OobeCompletionTrackerFactory::
             GetForProfile(this),
-        android_sms_service
-            ? android_sms_service->android_sms_app_helper_delegate()
-            : nullptr,
+        android_sms_service ? android_sms_service->android_sms_app_manager()
+                            : nullptr,
         android_sms_service
             ? android_sms_service->android_sms_pairing_state_tracker()
             : nullptr,

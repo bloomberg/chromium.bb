@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/proximity_auth/proximity_auth_pref_names.h"
-#include "chromeos/services/multidevice_setup/public/cpp/android_sms_app_helper_delegate.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/prefs/pref_service.h"
@@ -55,13 +54,14 @@ MultideviceHandler::MultideviceHandler(
     multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
     multidevice_setup::AndroidSmsPairingStateTracker*
         android_sms_pairing_state_tracker,
-    multidevice_setup::AndroidSmsAppHelperDelegate* android_sms_app_helper)
+    android_sms::AndroidSmsAppManager* android_sms_app_manager)
     : prefs_(prefs),
       multidevice_setup_client_(multidevice_setup_client),
       android_sms_pairing_state_tracker_(android_sms_pairing_state_tracker),
-      android_sms_app_helper_(android_sms_app_helper),
+      android_sms_app_manager_(android_sms_app_manager),
       multidevice_setup_observer_(this),
       android_sms_pairing_state_tracker_observer_(this),
+      android_sms_app_manager_observer_(this),
       callback_weak_ptr_factory_(this) {
   RegisterPrefChangeListeners();
 }
@@ -115,16 +115,26 @@ void MultideviceHandler::OnJavascriptAllowed() {
   if (multidevice_setup_client_)
     multidevice_setup_observer_.Add(multidevice_setup_client_);
 
-  if (android_sms_pairing_state_tracker_)
-    android_sms_pairing_state_tracker_->AddObserver(this);
+  if (android_sms_pairing_state_tracker_) {
+    android_sms_pairing_state_tracker_observer_.Add(
+        android_sms_pairing_state_tracker_);
+  }
+
+  if (android_sms_app_manager_)
+    android_sms_app_manager_observer_.Add(android_sms_app_manager_);
 }
 
 void MultideviceHandler::OnJavascriptDisallowed() {
   if (multidevice_setup_client_)
     multidevice_setup_observer_.Remove(multidevice_setup_client_);
 
-  if (android_sms_pairing_state_tracker_)
-    android_sms_pairing_state_tracker_->RemoveObserver(this);
+  if (android_sms_pairing_state_tracker_) {
+    android_sms_pairing_state_tracker_observer_.Remove(
+        android_sms_pairing_state_tracker_);
+  }
+
+  if (android_sms_app_manager_)
+    android_sms_app_manager_observer_.Remove(android_sms_app_manager_);
 
   // Ensure that pending callbacks do not complete and cause JS to be evaluated.
   callback_weak_ptr_factory_.InvalidateWeakPtrs();
@@ -145,6 +155,11 @@ void MultideviceHandler::OnFeatureStatesChanged(
 }
 
 void MultideviceHandler::OnPairingStateChanged() {
+  UpdatePageContent();
+  NotifyAndroidSmsInfoChange();
+}
+
+void MultideviceHandler::OnInstalledAppUrlChanged() {
   UpdatePageContent();
   NotifyAndroidSmsInfoChange();
 }
@@ -230,7 +245,7 @@ void MultideviceHandler::HandleRetryPendingHostSetup(
 
 void MultideviceHandler::HandleSetUpAndroidSms(const base::ListValue* args) {
   DCHECK(args->empty());
-  android_sms_app_helper_->SetUpAndLaunchAndroidSmsApp();
+  android_sms_app_manager_->SetUpAndLaunchAndroidSmsApp();
 }
 
 void MultideviceHandler::HandleGetSmartLockSignInEnabled(
@@ -277,12 +292,16 @@ void MultideviceHandler::HandleGetSmartLockSignInAllowed(
 
 std::unique_ptr<base::DictionaryValue>
 MultideviceHandler::GenerateAndroidSmsInfo() {
+  base::Optional<GURL> app_url;
+  if (android_sms_app_manager_)
+    app_url = android_sms_app_manager_->GetInstalledAppUrl();
+  if (!app_url)
+    app_url = android_sms::GetAndroidMessagesURL();
+
   auto android_sms_info = std::make_unique<base::DictionaryValue>();
   android_sms_info->SetString(
       kAndroidSmsInfoOriginKey,
-      ContentSettingsPattern::FromURLNoWildcard(
-          chromeos::android_sms::GetAndroidMessagesURL())
-          .ToString());
+      ContentSettingsPattern::FromURLNoWildcard(*app_url).ToString());
 
   chromeos::multidevice_setup::mojom::FeatureState messages_state =
       multidevice_setup_client_->GetFeatureState(

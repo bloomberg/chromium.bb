@@ -7,12 +7,8 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/optional.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_switches.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "content/public/browser/browser_context.h"
-#include "content/public/browser/storage_partition.h"
 #include "url/gurl.h"
 
 namespace chromeos {
@@ -46,18 +42,6 @@ GURL GetAndroidMessagesURL() {
 GURL GetAndroidMessagesURLOld() {
   return GetAndroidMessagesURL(
       !base::FeatureList::IsEnabled(features::kUseMessagesGoogleComDomain));
-}
-
-content::StoragePartition* GetStoragePartitionForAndroidMessagesURL(
-    Profile* profile) {
-  return content::BrowserContext::GetStoragePartitionForSite(
-      profile, GetAndroidMessagesURL());
-}
-
-network::mojom::CookieManager* GetCookieManagerForAndroidMessagesURL(
-    Profile* profile) {
-  return GetStoragePartitionForAndroidMessagesURL(profile)
-      ->GetCookieManagerForBrowserProcess();
 }
 
 }  // namespace android_sms

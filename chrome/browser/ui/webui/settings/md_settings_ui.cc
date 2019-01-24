@@ -78,7 +78,7 @@
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/android_sms/android_sms_app_helper_delegate_impl.h"
+#include "chrome/browser/chromeos/android_sms/android_sms_app_manager.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -296,9 +296,8 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
             android_sms_service
                 ? android_sms_service->android_sms_pairing_state_tracker()
                 : nullptr,
-            android_sms_service
-                ? android_sms_service->android_sms_app_helper_delegate()
-                : nullptr));
+            android_sms_service ? android_sms_service->android_sms_app_manager()
+                                : nullptr));
   }
   html_source->AddBoolean(
       "multideviceAllowedByPolicy",

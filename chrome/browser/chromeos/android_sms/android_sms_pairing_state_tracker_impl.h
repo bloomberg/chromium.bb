@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_CHROMEOS_ANDROID_SMS_ANDROID_SMS_PAIRING_STATE_TRACKER_IMPL_H_
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/android_sms/android_sms_app_manager.h"
 #include "chromeos/services/multidevice_setup/public/cpp/android_sms_pairing_state_tracker.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "url/gurl.h"
 
 class Profile;
 
@@ -19,9 +21,12 @@ namespace android_sms {
 // Concrete AndroidSmsPairingStateTracker implementation.
 class AndroidSmsPairingStateTrackerImpl
     : public multidevice_setup::AndroidSmsPairingStateTracker,
-      public network::mojom::CookieChangeListener {
+      public network::mojom::CookieChangeListener,
+      public AndroidSmsAppManager::Observer {
  public:
-  explicit AndroidSmsPairingStateTrackerImpl(Profile* profile);
+  AndroidSmsPairingStateTrackerImpl(
+      Profile* profile,
+      AndroidSmsAppManager* android_sms_app_manager);
   ~AndroidSmsPairingStateTrackerImpl() override;
 
   // AndroidSmsPairingStateTracker:
@@ -32,12 +37,19 @@ class AndroidSmsPairingStateTrackerImpl
   void OnCookieChange(const net::CanonicalCookie& cookie,
                       network::mojom::CookieChangeCause cause) override;
 
-  void FetchMessagesPairingState();
+  // AndroidSmsAppManager::Observer:
+  void OnInstalledAppUrlChanged() override;
+
+  GURL GetPairingUrl();
+  network::mojom::CookieManager* GetCookieManager();
+
+  void AttemptFetchMessagesPairingState();
   void OnCookiesRetrieved(const std::vector<net::CanonicalCookie>& cookies);
 
   void AddCookieChangeListener();
 
   Profile* profile_;
+  AndroidSmsAppManager* android_sms_app_manager_;
 
   mojo::Binding<network::mojom::CookieChangeListener> cookie_listener_binding_;
   bool was_paired_on_last_update_ = false;

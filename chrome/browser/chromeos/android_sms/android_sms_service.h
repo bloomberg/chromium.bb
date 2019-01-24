@@ -6,13 +6,17 @@
 #define CHROME_BROWSER_CHROMEOS_ANDROID_SMS_ANDROID_SMS_SERVICE_H_
 
 #include <memory>
-#include "chrome/browser/chromeos/android_sms/android_sms_app_helper_delegate_impl.h"
+#include "chrome/browser/chromeos/android_sms/android_sms_app_manager_impl.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_pairing_state_tracker_impl.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/session_manager/core/session_manager_observer.h"
 
 class HostContentSettingsMap;
 class Profile;
+
+namespace app_list {
+class AppListSyncableService;
+}  // namespace app_list
 
 namespace web_app {
 class WebAppProvider;
@@ -21,13 +25,14 @@ class WebAppProvider;
 namespace chromeos {
 
 namespace multidevice_setup {
-class AndroidSmsAppHelperDelegate;
 class AndroidSmsPairingStateTracker;
 class MultiDeviceSetupClient;
 }  // namespace multidevice_setup
 
 namespace android_sms {
 
+class AndroidSmsAppManager;
+class AndroidSmsAppSetupController;
 class ConnectionManager;
 class PairingLostNotifier;
 
@@ -44,12 +49,12 @@ class AndroidSmsService : public KeyedService,
       Profile* profile,
       HostContentSettingsMap* host_content_settings_map,
       multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
-      web_app::WebAppProvider* web_app_provider);
+      web_app::WebAppProvider* web_app_provider,
+      app_list::AppListSyncableService* app_list_syncable_service);
   ~AndroidSmsService() override;
 
-  multidevice_setup::AndroidSmsAppHelperDelegate*
-  android_sms_app_helper_delegate() {
-    return android_sms_app_helper_delegate_.get();
+  AndroidSmsAppManager* android_sms_app_manager() {
+    return android_sms_app_manager_.get();
   }
 
   multidevice_setup::AndroidSmsPairingStateTracker*
@@ -67,8 +72,9 @@ class AndroidSmsService : public KeyedService,
   Profile* profile_;
   multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client_;
 
-  std::unique_ptr<AndroidSmsAppHelperDelegateImpl>
-      android_sms_app_helper_delegate_;
+  std::unique_ptr<AndroidSmsAppSetupController>
+      andoid_sms_app_setup_controller_;
+  std::unique_ptr<AndroidSmsAppManager> android_sms_app_manager_;
   std::unique_ptr<AndroidSmsPairingStateTrackerImpl>
       android_sms_pairing_state_tracker_;
   std::unique_ptr<PairingLostNotifier> pairing_lost_notifier_;

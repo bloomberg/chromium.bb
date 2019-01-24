@@ -8,8 +8,8 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
+#include "chrome/browser/chromeos/android_sms/fake_android_sms_app_manager.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
-#include "chromeos/services/multidevice_setup/public/cpp/fake_android_sms_app_helper_delegate.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_android_sms_pairing_state_tracker.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -30,11 +30,11 @@ class TestMultideviceHandler : public MultideviceHandler {
       multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
       multidevice_setup::AndroidSmsPairingStateTracker*
           android_sms_pairing_state_tracker,
-      multidevice_setup::AndroidSmsAppHelperDelegate* android_sms_app_helper)
+      android_sms::AndroidSmsAppManager* android_sms_app_manager)
       : MultideviceHandler(prefs,
                            multidevice_setup_client,
                            android_sms_pairing_state_tracker,
-                           std::move(android_sms_app_helper)) {}
+                           android_sms_app_manager) {}
   ~TestMultideviceHandler() override = default;
 
   // Make public for testing.
@@ -121,15 +121,15 @@ class MultideviceHandlerTest : public testing::Test {
         std::make_unique<multidevice_setup::FakeMultiDeviceSetupClient>();
     fake_android_sms_pairing_state_tracker_ = std::make_unique<
         multidevice_setup::FakeAndroidSmsPairingStateTracker>();
-    fake_android_sms_app_helper_delegate_ =
-        std::make_unique<multidevice_setup::FakeAndroidSmsAppHelperDelegate>();
+    fake_android_sms_app_manager_ =
+        std::make_unique<android_sms::FakeAndroidSmsAppManager>();
 
     prefs_.reset(new TestingPrefServiceSimple());
 
     handler_ = std::make_unique<TestMultideviceHandler>(
         prefs_.get(), fake_multidevice_setup_client_.get(),
         fake_android_sms_pairing_state_tracker_.get(),
-        fake_android_sms_app_helper_delegate_.get());
+        fake_android_sms_app_manager_.get());
     handler_->set_web_ui(test_web_ui_.get());
     handler_->RegisterMessages();
     handler_->AllowJavascript();
@@ -162,7 +162,7 @@ class MultideviceHandlerTest : public testing::Test {
               fake_multidevice_setup_client()->num_remove_host_device_called());
   }
 
-  void CallGetAndroidSmsInfo(bool enabled) {
+  void CallGetAndroidSmsInfo(bool expected_enabled, const GURL& expected_url) {
     size_t call_data_count_before_call = test_web_ui()->call_data().size();
 
     base::ListValue args;
@@ -176,11 +176,11 @@ class MultideviceHandlerTest : public testing::Test {
     EXPECT_EQ("cr.webUIResponse", call_data.function_name());
     EXPECT_EQ("handlerFunctionName", call_data.arg1()->GetString());
     ASSERT_TRUE(call_data.arg2()->GetBool());
-    EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(
-                  chromeos::android_sms::GetAndroidMessagesURL())
-                  .ToString(),
-              call_data.arg3()->FindKey("origin")->GetString());
-    EXPECT_EQ(enabled, call_data.arg3()->FindKey("enabled")->GetBool());
+    EXPECT_EQ(
+        ContentSettingsPattern::FromURLNoWildcard(expected_url).ToString(),
+        call_data.arg3()->FindKey("origin")->GetString());
+    EXPECT_EQ(expected_enabled,
+              call_data.arg3()->FindKey("enabled")->GetBool());
   }
 
   void SimulateHostStatusUpdate(
@@ -287,9 +287,8 @@ class MultideviceHandlerTest : public testing::Test {
     return fake_multidevice_setup_client_.get();
   }
 
-  multidevice_setup::FakeAndroidSmsAppHelperDelegate*
-  fake_android_sms_app_helper_delegate() {
-    return fake_android_sms_app_helper_delegate_.get();
+  android_sms::FakeAndroidSmsAppManager* fake_android_sms_app_manager() {
+    return fake_android_sms_app_manager_.get();
   }
 
   const multidevice::RemoteDeviceRef test_device_;
@@ -306,7 +305,6 @@ class MultideviceHandlerTest : public testing::Test {
   std::unique_ptr<content::TestWebUI> test_web_ui_;
   std::unique_ptr<multidevice_setup::FakeMultiDeviceSetupClient>
       fake_multidevice_setup_client_;
-  std::unique_ptr<TestMultideviceHandler> handler_;
   std::unique_ptr<multidevice_setup::FakeAndroidSmsPairingStateTracker>
       fake_android_sms_pairing_state_tracker_;
 
@@ -314,8 +312,10 @@ class MultideviceHandlerTest : public testing::Test {
       host_status_with_device_;
   multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap
       feature_states_map_;
-  std::unique_ptr<multidevice_setup::FakeAndroidSmsAppHelperDelegate>
-      fake_android_sms_app_helper_delegate_;
+  std::unique_ptr<android_sms::FakeAndroidSmsAppManager>
+      fake_android_sms_app_manager_;
+
+  std::unique_ptr<TestMultideviceHandler> handler_;
 
   DISALLOW_COPY_AND_ASSIGN(MultideviceHandlerTest);
 };
@@ -355,11 +355,11 @@ TEST_F(MultideviceHandlerTest, RetryPendingHostSetup) {
 }
 
 TEST_F(MultideviceHandlerTest, SetUpAndroidSms) {
-  EXPECT_FALSE(fake_android_sms_app_helper_delegate()->has_installed_app());
-  EXPECT_FALSE(fake_android_sms_app_helper_delegate()->has_launched_app());
+  EXPECT_FALSE(fake_android_sms_app_manager()->has_installed_app());
+  EXPECT_FALSE(fake_android_sms_app_manager()->has_launched_app());
   CallSetUpAndroidSms();
-  EXPECT_TRUE(fake_android_sms_app_helper_delegate()->has_installed_app());
-  EXPECT_TRUE(fake_android_sms_app_helper_delegate()->has_launched_app());
+  EXPECT_TRUE(fake_android_sms_app_manager()->has_installed_app());
+  EXPECT_TRUE(fake_android_sms_app_manager()->has_launched_app());
 }
 
 TEST_F(MultideviceHandlerTest, SetFeatureEnabledState) {
@@ -382,7 +382,9 @@ TEST_F(MultideviceHandlerTest, RemoveHostDevice) {
 
 TEST_F(MultideviceHandlerTest, GetAndroidSmsInfo) {
   // Check that getAndroidSmsInfo returns correct value.
-  CallGetAndroidSmsInfo(false /* enabled */);
+  CallGetAndroidSmsInfo(
+      false /* expected_enabled */,
+      android_sms::GetAndroidMessagesURL() /* expected_url */);
 
   // Change messages feature state and assert that the change
   // callback is fired.
@@ -393,13 +395,26 @@ TEST_F(MultideviceHandlerTest, GetAndroidSmsInfo) {
 
   size_t call_data_count_before_call = test_web_ui()->call_data().size();
   SimulateFeatureStatesUpdate(feature_states_map);
-  const content::TestWebUI::CallData& call_data =
+  const content::TestWebUI::CallData& call_data_1 =
       CallDataAtIndex(call_data_count_before_call + 1);
-  EXPECT_EQ("cr.webUIListenerCallback", call_data.function_name());
-  EXPECT_EQ("settings.onAndroidSmsInfoChange", call_data.arg1()->GetString());
+  EXPECT_EQ("cr.webUIListenerCallback", call_data_1.function_name());
+  EXPECT_EQ("settings.onAndroidSmsInfoChange", call_data_1.arg1()->GetString());
 
   // Check that getAndroidSmsInfo returns update value.
-  CallGetAndroidSmsInfo(true /* enabled */);
+  CallGetAndroidSmsInfo(
+      true /* enabled */,
+      android_sms::GetAndroidMessagesURL() /* expected_url */);
+
+  // Now, update the installed URL. This should have resulted in another call.
+  fake_android_sms_app_manager()->SetInstalledAppUrl(
+      android_sms::GetAndroidMessagesURLOld());
+  const content::TestWebUI::CallData& call_data_2 =
+      CallDataAtIndex(call_data_count_before_call + 4);
+  EXPECT_EQ("cr.webUIListenerCallback", call_data_2.function_name());
+  EXPECT_EQ("settings.onAndroidSmsInfoChange", call_data_2.arg1()->GetString());
+  CallGetAndroidSmsInfo(
+      true /* enabled */,
+      android_sms::GetAndroidMessagesURLOld() /* expected_url */);
 }
 
 }  // namespace settings
