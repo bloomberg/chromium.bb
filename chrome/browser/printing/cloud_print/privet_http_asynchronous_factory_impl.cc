@@ -39,21 +39,21 @@ PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::~ResolutionImpl() {}
 
 void PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::Start(
     const net::HostPortPair& address,
-    const ResultCallback& callback) {
-  endpoint_resolver_->Start(address,
-                            base::Bind(&ResolutionImpl::ResolveComplete,
-                                       base::Unretained(this), callback));
+    ResultCallback callback) {
+  endpoint_resolver_->Start(
+      address, base::BindOnce(&ResolutionImpl::ResolveComplete,
+                              base::Unretained(this), std::move(callback)));
 }
 
 void PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::ResolveComplete(
-    const ResultCallback& callback,
+    ResultCallback callback,
     const net::IPEndPoint& endpoint) {
   if (endpoint.address().empty())
-    return callback.Run(std::unique_ptr<PrivetHTTPClient>());
+    return std::move(callback).Run(nullptr);
 
   net::HostPortPair new_address = net::HostPortPair::FromIPEndPoint(endpoint);
-  callback.Run(std::make_unique<PrivetHTTPClientImpl>(name_, new_address,
-                                                      url_loader_factory_));
+  std::move(callback).Run(std::make_unique<PrivetHTTPClientImpl>(
+      name_, new_address, url_loader_factory_));
 }
 
 }  // namespace cloud_print
