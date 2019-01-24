@@ -434,16 +434,6 @@ Polymer({
   // </if>
 
   // <if expr="not chromeos">
-  /**
-   * @private
-   * @param {string} domain
-   * @return {string}
-   */
-  getDomainHtml_: function(domain) {
-    const innerSpan = '<span id="managed-by-domain-name">' + domain + '</span>';
-    return loadTimeData.getStringF('domainManagedProfile', innerSpan);
-  },
-
   /** @private */
   onImportDataTap_: function() {
     settings.navigateTo(settings.routes.IMPORT_DATA);
