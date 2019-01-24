@@ -242,6 +242,7 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
           base::WrapUnique(g_initial_track_all_paint_invalidations
                                ? new Vector<ObjectPaintInvalidation>
                                : nullptr)),
+      composited_element_ids_(CompositorElementIdSet()),
       main_thread_scrolling_reasons_(0),
       forced_layout_stack_depth_(0),
       forced_layout_start_time_(TimeTicks()),
@@ -2400,8 +2401,7 @@ void LocalFrameView::RunPaintLifecyclePhase() {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
       RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
     if (!print_mode_enabled) {
-      base::Optional<CompositorElementIdSet> composited_element_ids =
-          CompositorElementIdSet();
+      auto& composited_element_ids = composited_element_ids_;
       PushPaintArtifactToCompositor(composited_element_ids.value());
       ForAllNonThrottledLocalFrameViews(
           [&composited_element_ids](LocalFrameView& frame_view) {
@@ -2642,8 +2642,13 @@ void LocalFrameView::PaintTree() {
     // Devtools overlays query the inspected page's paint data so this update
     // needs to be after other paintings. Because devtools overlays can add
     // layers, this needs to be before layers are collected.
-    if (auto* web_local_frame_impl = WebLocalFrameImpl::FromFrame(frame_))
+    auto* web_local_frame_impl = WebLocalFrameImpl::FromFrame(frame_);
+    if (web_local_frame_impl && web_local_frame_impl->HasDevToolsOverlays()) {
       web_local_frame_impl->UpdateDevToolsOverlays();
+      // Devtools overlays can change cc::Layer property tree nodes and we need
+      // to ensure these updated values are pushed to the compositor.
+      SetPaintArtifactCompositorNeedsUpdate();
+    }
   }
 
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
@@ -3967,6 +3972,12 @@ void LocalFrameView::SetIntersectionObservationState(
   if (intersection_observation_state_ >= state)
     return;
   intersection_observation_state_ = state;
+}
+
+void LocalFrameView::SetPaintArtifactCompositorNeedsUpdate() const {
+  LocalFrameView* root = GetFrame().LocalFrameRoot().View();
+  if (root && root->paint_artifact_compositor_)
+    root->paint_artifact_compositor_->SetNeedsUpdate(true);
 }
 
 unsigned LocalFrameView::GetIntersectionObservationFlags() const {

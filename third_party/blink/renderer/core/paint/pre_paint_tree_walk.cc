@@ -362,13 +362,23 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
           auto* mapping = paint_invalidation_layer->GetCompositedLayerMapping();
           if (!mapping)
             mapping = paint_invalidation_layer->GroupedMapping();
-          if (mapping)
+          if (mapping) {
             mapping->SetNeedsCheckRasterInvalidation();
+            mapping->SetPaintArtifactCompositorNeedsUpdate();
+          }
         }
-      } else if (!context.tree_builder_context
-                      ->supports_composited_raster_invalidation) {
-        paint_invalidator_context.subtree_flags |=
-            PaintInvalidatorContext::kSubtreeFullInvalidation;
+      } else {
+        if (object.GetFrame() && object.GetFrame()->LocalFrameRoot().View()) {
+          object.GetFrame()
+              ->LocalFrameRoot()
+              .View()
+              ->SetPaintArtifactCompositorNeedsUpdate();
+        }
+        if (!context.tree_builder_context
+                 ->supports_composited_raster_invalidation) {
+          paint_invalidator_context.subtree_flags |=
+              PaintInvalidatorContext::kSubtreeFullInvalidation;
+        }
       }
     }
   }

@@ -167,6 +167,9 @@ class InspectorOverlayAgent::InspectorPageOverlayDelegate final
 
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       layer_->SetBounds(gfx::Size(frame_overlay.Size()));
+      overlay_->OverlayMainFrame()
+          ->View()
+          ->SetPaintArtifactCompositorNeedsUpdate();
       RecordForeignLayer(graphics_context,
                          DisplayItem::kForeignLayerDevToolsOverlay, layer_,
                          PropertyTreeState::Root());

@@ -1115,6 +1115,11 @@ void VisualViewport::SetOverlayScrollbarsHidden(bool hidden) {
   ScrollableArea::SetScrollbarsHiddenIfOverlay(hidden);
 }
 
+void VisualViewport::SetPaintArtifactCompositorNeedsUpdate() const {
+  if (MainFrame() && MainFrame()->View())
+    MainFrame()->View()->SetPaintArtifactCompositorNeedsUpdate();
+}
+
 String VisualViewport::DebugName(const GraphicsLayer* graphics_layer) const {
   String name;
   if (graphics_layer == inner_viewport_container_layer_.get()) {

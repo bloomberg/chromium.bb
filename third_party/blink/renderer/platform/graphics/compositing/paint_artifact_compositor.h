@@ -132,6 +132,9 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
                                      const PropertyTreeState& layer_state,
                                      const PaintChunkSubset& paint_chunks);
 
+  void SetNeedsUpdate(bool needs_update) { needs_update_ = needs_update; }
+  bool NeedsUpdate() const { return needs_update_; }
+
  private:
   // A pending layer is a collection of paint chunks that will end up in
   // the same cc::Layer.
@@ -246,6 +249,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
       scroll_callback_;
 
   bool tracks_raster_invalidations_;
+  bool needs_update_;
 
   scoped_refptr<cc::Layer> root_layer_;
   Vector<std::unique_ptr<ContentLayerClientImpl>> content_layer_clients_;

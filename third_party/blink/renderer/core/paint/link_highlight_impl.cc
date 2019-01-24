@@ -254,6 +254,12 @@ bool LinkHighlightImpl::ComputeHighlightLayerPathAndPosition(
     FloatPoint offset(current_graphics_layer_->GetOffsetFromTransformNode());
     offset.MoveBy(bounding_rect.Location());
     layer->SetOffsetToTransformParent(gfx::Vector2dF(offset.X(), offset.Y()));
+    if (node_ && node_->GetLayoutObject() &&
+        node_->GetLayoutObject()->GetFrameView()) {
+      node_->GetLayoutObject()
+          ->GetFrameView()
+          ->SetPaintArtifactCompositorNeedsUpdate();
+    }
   }
 
   return path_has_changed;
@@ -489,6 +495,12 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
     // Always set offset because it is excluded from the above equality check.
     layer->SetOffsetToTransformParent(
         gfx::Vector2dF(bounding_rect.X(), bounding_rect.Y()));
+    if (node_ && node_->GetLayoutObject() &&
+        node_->GetLayoutObject()->GetFrameView()) {
+      node_->GetLayoutObject()
+          ->GetFrameView()
+          ->SetPaintArtifactCompositorNeedsUpdate();
+    }
 
     auto property_tree_state = fragment->LocalBorderBoxProperties();
     DCHECK(fragment->PaintProperties());

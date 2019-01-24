@@ -139,6 +139,7 @@ class PaintArtifactCompositorTest : public testing::Test,
       CompositorElementIdSet& element_ids,
       const ViewportProperties& viewport_properties = ViewportProperties(),
       const Settings& settings = Settings()) {
+    paint_artifact_compositor_->SetNeedsUpdate(true);
     paint_artifact_compositor_->Update(artifact, element_ids,
                                        viewport_properties, settings);
     layer_tree_->layer_tree_host()->LayoutAndUpdateLayers();

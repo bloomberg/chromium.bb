@@ -180,6 +180,7 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
     // When compositing is after paint, composited plugins should have their
     // layers inserted rather than invoking WebPlugin::paint.
     RecordForeignLayer(context, DisplayItem::kForeignLayerPlugin, layer_);
+    ParentFrameView().SetPaintArtifactCompositorNeedsUpdate();
     return;
   }
 
