@@ -292,10 +292,11 @@ void PolicyOAuth2TokenFetcher::UseFakeTokensForTesting() {
 }
 
 // static
-PolicyOAuth2TokenFetcher* PolicyOAuth2TokenFetcher::CreateInstance() {
+std::unique_ptr<PolicyOAuth2TokenFetcher>
+PolicyOAuth2TokenFetcher::CreateInstance() {
   if (use_fake_tokens_for_testing_)
-    return new PolicyOAuth2TokenFetcherFake();
-  return new PolicyOAuth2TokenFetcherImpl();
+    return std::make_unique<PolicyOAuth2TokenFetcherFake>();
+  return std::make_unique<PolicyOAuth2TokenFetcherImpl>();
 }
 
 PolicyOAuth2TokenFetcher::PolicyOAuth2TokenFetcher() {}

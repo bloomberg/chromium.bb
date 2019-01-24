@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper_impl.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -98,7 +100,7 @@ void EnterpriseEnrollmentHelperImpl::EnrollUsingAuthCode(
     bool fetch_additional_token) {
   DCHECK(oauth_status_ == OAUTH_NOT_STARTED);
   oauth_status_ = OAUTH_STARTED_WITH_AUTH_CODE;
-  oauth_fetcher_.reset(policy::PolicyOAuth2TokenFetcher::CreateInstance());
+  oauth_fetcher_ = policy::PolicyOAuth2TokenFetcher::CreateInstance();
   oauth_fetcher_->StartWithAuthCode(
       auth_code,
       g_browser_process->system_network_context_manager()
@@ -350,7 +352,7 @@ void EnterpriseEnrollmentHelperImpl::OnTokenFetched(
 
   additional_token_ = token;
   std::string refresh_token = oauth_fetcher_->OAuth2RefreshToken();
-  oauth_fetcher_.reset(policy::PolicyOAuth2TokenFetcher::CreateInstance());
+  oauth_fetcher_ = policy::PolicyOAuth2TokenFetcher::CreateInstance();
   oauth_fetcher_->StartWithRefreshToken(
       refresh_token,
       g_browser_process->system_network_context_manager()
