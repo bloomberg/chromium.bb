@@ -18,12 +18,9 @@ thakis@chromium.org
 per-file chromium.fyi.json=creis@chromium.org
 
 per-file chromium.clang.json=hans@chromium.org
-per-file *chromium.perf*.json=dtu@chromium.org
+per-file *chromium.perf*.json=crouleau@chromium.org
 per-file *chromium.perf*.json=eyaich@chromium.org
 per-file *chromium.perf*.json=martiniss@chromium.org
-per-file *chromium.perf*.json=nednguyen@google.com
-per-file chromium.perf.json=eakuefner@chromium.org
-per-file chromium.perf.json=fmeawad@chromium.org
 per-file chromium.perf.json=simonhatch@chromium.org
 per-file chromium.perf.json=sullivan@chromium.org
 per-file chromium.webrtc.json=phoglund@chromium.org
