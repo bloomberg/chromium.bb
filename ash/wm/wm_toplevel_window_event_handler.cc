@@ -18,6 +18,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 namespace wm {
@@ -312,10 +313,33 @@ void WmToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event,
     return;
 
   switch (event->type()) {
-    case ui::ET_GESTURE_SCROLL_UPDATE:
+    case ui::ET_GESTURE_SCROLL_UPDATE: {
+      gfx::Rect bounds_in_screen = target->GetRootWindow()->GetBoundsInScreen();
+      gfx::Point screen_location = event->location();
+      ::wm::ConvertPointToScreen(target, &screen_location);
+
+      // It is physically not possible to move a touch pointer from one display
+      // to another, so constrain the bounds to the display. This is important,
+      // as it is possible for touch points to extend outside the bounds of the
+      // display (as happens with gestures on the bezel), and dragging via touch
+      // should not trigger moving to a new display.(see
+      // https://crbug.com/917060)
+      if (!bounds_in_screen.Contains(screen_location)) {
+        int x = std::max(
+            std::min(screen_location.x(), bounds_in_screen.right() - 1),
+            bounds_in_screen.x());
+        int y = std::max(
+            std::min(screen_location.y(), bounds_in_screen.bottom() - 1),
+            bounds_in_screen.y());
+        gfx::Point updated_location(x, y);
+        ::wm::ConvertPointFromScreen(target, &updated_location);
+        event->set_location(updated_location);
+      }
+
       HandleDrag(target, event);
       event->StopPropagation();
       return;
+    }
     case ui::ET_GESTURE_SCROLL_END:
       // We must complete the drag here instead of as a result of ET_GESTURE_END
       // because otherwise the drag will be reverted when EndMoveLoop() is
