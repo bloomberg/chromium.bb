@@ -28,7 +28,7 @@ class UsageStatsDatabase {
   using EventsCallback =
       base::OnceCallback<void(Error, std::vector<WebsiteEvent>)>;
 
-  using SuspensionCallback =
+  using SuspensionsCallback =
       base::OnceCallback<void(Error, std::vector<std::string>)>;
 
   using TokenMap = std::map<std::string, std::string>;
@@ -62,7 +62,7 @@ class UsageStatsDatabase {
   void DeleteEventsWithMatchingDomains(base::flat_set<std::string> domains,
                                        StatusCallback callback);
 
-  void GetAllSuspensions(SuspensionCallback callback);
+  void GetAllSuspensions(SuspensionsCallback callback);
 
   // Persists all the suspensions in |domains| and deletes any suspensions *not*
   // in |domains|.
@@ -78,8 +78,13 @@ class UsageStatsDatabase {
  private:
   void OnUpdateEntries(StatusCallback callback, bool success);
 
+  void OnLoadEntriesForGetAllEvents(
+      EventsCallback callback,
+      bool success,
+      std::unique_ptr<std::vector<UsageStat>> stats);
+
   void OnLoadEntriesForGetAllSuspensions(
-      SuspensionCallback callback,
+      SuspensionsCallback callback,
       bool success,
       std::unique_ptr<std::vector<UsageStat>> stats);
 
