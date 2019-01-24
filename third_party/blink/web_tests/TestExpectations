@@ -5972,7 +5972,3 @@ crbug.com/v8/8319 external/wpt/wasm/jsapi/memory/grow.any.worker.html [ Pass Fai
 # Sheriff 2019-01-22
 # Likely needs a rebaseline
 crbug.com/921242 [ Mac ] fast/overflow/clip-rects-fixed-ancestor.html [ Failure ]
-
-# Sheriff 2019-01-24
-crbug.com/924752 external/wpt/signed-exchange/sxg-referrer.tentative.https.html [ Timeout Pass ]
-crbug.com/924752 virtual/sxg-with-network-service/external/wpt/signed-exchange/sxg-referrer.tentative.https.html [ Timeout Pass ]
