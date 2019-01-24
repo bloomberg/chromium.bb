@@ -1107,9 +1107,31 @@
       },
       {
         "args": [
+          "--enable-features=VizDisplayCompositor,UseSkiaRenderer"
+        ],
+        "name": "skia_renderer_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 10
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
           "--disable-features=VizDisplayCompositor"
         ],
         "name": "non_viz_content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 10
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "args": [
+          "--enable-features=VizDisplayCompositor,UseSkiaRenderer"
+        ],
+        "name": "skia_renderer_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 10
