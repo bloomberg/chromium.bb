@@ -20,6 +20,7 @@
 #include "ios/chrome/grit/ios_resources.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/web_state/web_frame.h"
+#include "ios/web/public/web_state/web_frame_util.h"
 #import "ios/web/public/web_state/web_frames_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_ui_ios_data_source.h"
@@ -97,6 +98,10 @@ class InspectDOMHandler : public web::WebUIIOSMessageHandler,
                           web::WebState* web_state,
                           int index,
                           bool activating) override;
+  void WillCloseWebStateAt(WebStateList* web_state_list,
+                           web::WebState* web_state,
+                           int index,
+                           bool user_action) override;
 
  private:
   // Handles the message from JavaScript to enable or disable console logging.
@@ -181,19 +186,15 @@ void InspectDOMHandler::DidReceiveConsoleMessage(
     web::WebFrame* sender_frame,
     const JavaScriptConsoleMessage& message) {
   std::vector<base::Value> params;
-  web::WebFrame* main_web_frame =
-      web::WebFramesManager::FromWebState(web_state)->GetMainWebFrame();
+  web::WebFrame* main_web_frame = web::GetMainWebFrame(web_state);
   params.push_back(base::Value(main_web_frame->GetFrameId()));
   params.push_back(base::Value(sender_frame->GetFrameId()));
   params.push_back(base::Value(message.url.spec()));
   params.push_back(base::Value(message.level));
   params.push_back(message.message->Clone());
 
-  web::WebFrame* inspect_ui_web_frame =
-      web::WebFramesManager::FromWebState(web_ui()->GetWebState())
-          ->GetMainWebFrame();
-  inspect_ui_web_frame->CallJavaScriptFunction(
-      "inspectWebUI.logMessageReceived", params);
+  web::GetMainWebFrame(web_ui()->GetWebState())
+      ->CallJavaScriptFunction("inspectWebUI.logMessageReceived", params);
 }
 
 void InspectDOMHandler::SetDelegateForWebStatesInTabModel(
@@ -226,6 +227,17 @@ void InspectDOMHandler::WebStateInsertedAt(WebStateList* web_state_list,
                                            int index,
                                            bool activating) {
   JavaScriptConsoleTabHelper::FromWebState(web_state)->SetDelegate(this);
+}
+
+void InspectDOMHandler::WillCloseWebStateAt(WebStateList* web_state_list,
+                                            web::WebState* web_state,
+                                            int index,
+                                            bool user_action) {
+  std::vector<base::Value> params;
+  params.push_back(base::Value(web::GetMainWebFrameId(web_state)));
+
+  web::GetMainWebFrame(web_ui()->GetWebState())
+      ->CallJavaScriptFunction("inspectWebUI.tabClosed", params);
 }
 
 }  // namespace

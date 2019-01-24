@@ -99,6 +99,18 @@ function logMessageReceived(
 }
 
 /**
+ * Removes the messages and UI associated with |mainFrameId| and all children.
+ * @param {!string} mainFrameId The frame ID for the main frame of the webpage
+ *                  which sent the message.
+ */
+function tabClosed(mainFrameId) {
+  let tab = $(getFrameIdString_(mainFrameId));
+  if (tab) {
+    $('tabs').removeChild(tab);
+  }
+}
+
+/**
  * Notify the application to start collecting console logs.
  */
 function startLogging() {
@@ -121,8 +133,9 @@ document.addEventListener('DOMContentLoaded', function() {
   $('start-logging').onclick = startLogging;
   $('stop-logging').onclick = stopLogging;
 
-  // Expose |logMessageReceived| function through global namespace as it will be
-  // called from native app.
+  // Expose |logMessageReceived| and |tabClosed| functions through global
+  // namespace as they will be called from the native app.
   __gCrWeb.inspectWebUI = {};
   __gCrWeb.inspectWebUI.logMessageReceived = logMessageReceived;
+  __gCrWeb.inspectWebUI.tabClosed = tabClosed;
 });
