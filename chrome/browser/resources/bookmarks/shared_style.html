@@ -24,6 +24,10 @@
         margin: 8px 0;
       }
 
+      :host-context([dark]) hr {
+        background: var(--cr-separator-color);
+      }
+
       .drag-above::before,
       .drag-below::after {
         background-clip: padding-box;
