@@ -1692,6 +1692,14 @@ class AppCacheStorageImplTest : public testing::Test {
       EXPECT_EQ(static_cast<int>(kCorruptData.length()),
                 base::WriteFile(
                     index_file, kCorruptData.data(), kCorruptData.length()));
+
+      // Also add a corrupt entry file so that simple disk_cache does not try
+      // to automatically recover from the corrupted index.
+      base::FilePath entry_file =
+          disk_cache_directory.AppendASCII("01234567_0");
+      EXPECT_EQ(static_cast<int>(kCorruptData.length()),
+                base::WriteFile(entry_file, kCorruptData.data(),
+                                kCorruptData.length()));
     }
 
     // Create records for a degenerate cached manifest that only contains

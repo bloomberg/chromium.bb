@@ -777,6 +777,34 @@ SimpleBackendImpl::DiskStatResult SimpleBackendImpl::InitCacheStructureOnDisk(
   result.net_error = net::OK;
   SimpleCacheConsistencyResult consistency = FileStructureConsistent(path);
   SIMPLE_CACHE_UMA(ENUMERATION, "ConsistencyResult", cache_type, consistency);
+
+  // If the cache structure is inconsistent make a single attempt at
+  // recovering it.  Previously there were bugs that could cause a partially
+  // written fake index file to be left in an otherwise empty cache.  In
+  // that case we can delete the index files and start over.  Also, some
+  // consistency failures may leave an empty directory directly and we can
+  // retry those cases as well.
+  if (consistency != SimpleCacheConsistencyResult::kOK) {
+    bool deleted_files = disk_cache::DeleteIndexFilesIfCacheIsEmpty(path);
+    SIMPLE_CACHE_UMA(BOOLEAN, "DidDeleteIndexFilesAfterFailedConsistency",
+                     cache_type, deleted_files);
+    if (base::IsDirectoryEmpty(path)) {
+      SimpleCacheConsistencyResult orig_consistency = consistency;
+      consistency = FileStructureConsistent(path);
+      SIMPLE_CACHE_UMA(ENUMERATION, "RetryConsistencyResult", cache_type,
+                       consistency);
+      if (consistency == SimpleCacheConsistencyResult::kOK) {
+        SIMPLE_CACHE_UMA(ENUMERATION,
+                         "OriginalConsistencyResultBeforeSuccessfulRetry",
+                         cache_type, orig_consistency);
+      }
+    }
+    if (deleted_files) {
+      SIMPLE_CACHE_UMA(ENUMERATION, "ConsistencyResultAfterIndexFilesDeleted",
+                       cache_type, consistency);
+    }
+  }
+
   if (consistency != SimpleCacheConsistencyResult::kOK) {
     LOG(ERROR) << "Simple Cache Backend: wrong file structure on disk: "
                << static_cast<int>(consistency)

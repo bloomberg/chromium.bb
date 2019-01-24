@@ -46,6 +46,12 @@ enum class SimpleCacheConsistencyResult {
 NET_EXPORT_PRIVATE SimpleCacheConsistencyResult
 UpgradeSimpleCacheOnDisk(const base::FilePath& path);
 
+// Check if the cache structure at the given path is empty except for index
+// files.  If so, then delete the index files.  Returns true if any files
+// were deleted.
+NET_EXPORT_PRIVATE bool DeleteIndexFilesIfCacheIsEmpty(
+    const base::FilePath& path);
+
 struct NET_EXPORT_PRIVATE FakeIndexData {
   FakeIndexData();
 
