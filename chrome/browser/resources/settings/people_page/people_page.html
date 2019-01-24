@@ -55,10 +55,6 @@
         width: 40px;
       }
 
-      #managed-by-domain-name {
-        font-weight: bold;
-      }
-
       iron-icon[icon='cr:sync'] {
        --iron-icon-fill-color: var(--google-green-700);
       }
@@ -211,19 +207,6 @@
           </template> <!-- if="[[!diceEnabled_]]" -->
 </if>
         </template>
-
-<if expr="not chromeos">
-        <template is="dom-if" if="[[syncStatus.domain]]">
-          <div class="settings-box">
-            <div class="icon-container">
-              <iron-icon icon="cr20:domain"></iron-icon>
-            </div>
-            <div class="middle settings-box-text"
-                inner-h-t-m-l="[[getDomainHtml_(syncStatus.domain)]]">
-            </div>
-          </div>
-        </template>
-</if>
 
         <template is="dom-if"
             if="[[isPreUnifiedConsentAdvancedSyncSettingsVisible_(
