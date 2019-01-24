@@ -48,6 +48,9 @@ const char kEnableTouchDragDrop[] = "enable-touch-drag-drop";
 const char kEnableTouchableAppContextMenu[] =
     "enable-touchable-app-context-menus";
 
+// Forces the caption style for WebVTT captions.
+const char kForceCaptionStyle[] = "force-caption-style";
+
 // Forces dark mode in UI for platforms that support it.
 const char kForceDarkMode[] = "force-dark-mode";
 

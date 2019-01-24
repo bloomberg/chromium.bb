@@ -54,4 +54,12 @@ bool NativeTheme::SystemDarkModeEnabled() const {
       switches::kForceDarkMode);
 }
 
+CaptionStyle NativeTheme::GetSystemCaptionStyle() const {
+  std::string style =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kForceCaptionStyle);
+
+  return CaptionStyle::FromSpec(style);
+}
+
 }  // namespace ui

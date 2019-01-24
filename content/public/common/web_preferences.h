@@ -210,6 +210,11 @@ struct CONTENT_EXPORT WebPreferences {
 
   bool user_gesture_required_for_presentation;
 
+  // These fields specify the foreground and background color for WebVTT text
+  // tracks. Their values can be any legal CSS color descriptor.
+  std::string text_track_background_color;
+  std::string text_track_text_color;
+
   // Specifies the margin for WebVTT text tracks as a percentage of media
   // element height/width (for horizontal/vertical text respectively).
   // Cues will not be placed in this margin area.

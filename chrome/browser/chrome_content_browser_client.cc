@@ -328,6 +328,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/native_theme/caption_style.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -3323,6 +3325,14 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 #endif  // !defined(OS_ANDROID)
 
   web_prefs->translate_service_available = TranslateService::IsAvailable(prefs);
+
+  // Apply native CaptionStyle parameters.
+  // TODO(ellyjones): Support more native caption styling.
+  ui::CaptionStyle style =
+      ui::NativeTheme::GetInstanceForWeb()->GetSystemCaptionStyle();
+  web_prefs->text_track_background_color = style.background_color;
+  web_prefs->text_track_text_color = style.text_color;
+
   for (size_t i = 0; i < extra_parts_.size(); ++i)
     extra_parts_[i]->OverrideWebkitPrefs(rvh, web_prefs);
 }
