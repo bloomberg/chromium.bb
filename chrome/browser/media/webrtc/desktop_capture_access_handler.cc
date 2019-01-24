@@ -457,6 +457,10 @@ void DesktopCaptureAccessHandler::ProcessQueuedAccessRequest(
                                                                       : true;
   pending_request.picker->Show(picker_params, std::move(source_lists),
                                done_callback);
+
+  // Focus on the tab with the picker for easy access.
+  if (auto* delegate = web_contents->GetDelegate())
+    delegate->ActivateContents(web_contents);
 }
 
 void DesktopCaptureAccessHandler::OnPickerDialogResults(
