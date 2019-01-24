@@ -128,9 +128,7 @@ void ValidationMessageOverlayDelegate::UpdateFrameViewState(
     FrameView().Resize(view_size);
     page_->GetVisualViewport().SetSize(view_size);
   }
-  IntRect intersection = overlay.Frame().RemoteViewportIntersection();
-  AdjustBubblePosition(intersection.IsEmpty() ? IntRect(IntPoint(), view_size)
-                                              : intersection);
+  AdjustBubblePosition(view_size);
 
   // This manual invalidation is necessary to avoid a DCHECK failure in
   // FindVisualRectNeedingUpdateScopeBase::CheckVisualRect().
@@ -246,23 +244,23 @@ Element& ValidationMessageOverlayDelegate::GetElementById(
 }
 
 void ValidationMessageOverlayDelegate::AdjustBubblePosition(
-    const IntRect& view_rect) {
+    const IntSize& view_size) {
   if (IsHiding())
     return;
   float zoom_factor = ToLocalFrame(page_->MainFrame())->PageZoomFactor();
   IntRect anchor_rect = anchor_->VisibleBoundsInVisualViewport();
   bool show_bottom_arrow = false;
   double bubble_y = anchor_rect.MaxY();
-  if (view_rect.MaxY() - anchor_rect.MaxY() < bubble_size_.Height()) {
+  if (view_size.Height() - anchor_rect.MaxY() < bubble_size_.Height()) {
     bubble_y = anchor_rect.Y() - bubble_size_.Height();
     show_bottom_arrow = true;
   }
   double bubble_x =
       anchor_rect.X() + anchor_rect.Width() / 2 - bubble_size_.Width() / 2;
-  if (bubble_x < view_rect.X())
-    bubble_x = view_rect.X();
-  else if (bubble_x + bubble_size_.Width() > view_rect.MaxX())
-    bubble_x = view_rect.MaxX() - bubble_size_.Width();
+  if (bubble_x < 0)
+    bubble_x = 0;
+  else if (bubble_x + bubble_size_.Width() > view_size.Width())
+    bubble_x = view_size.Width() - bubble_size_.Width();
 
   Element& container = GetElementById("container");
   container.SetInlineStyleProperty(CSSPropertyLeft, bubble_x / zoom_factor,

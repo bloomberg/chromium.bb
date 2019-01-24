@@ -356,9 +356,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // viewport intersection and occlusion/obscuration available that accounts for
   // remote ancestor frames and their respective scroll positions, clips, etc.
   void SetViewportIntersectionFromParent(const IntRect&, bool);
-  IntRect RemoteViewportIntersection() const {
-    return remote_viewport_intersection_;
-  }
+  IntRect RemoteViewportIntersection() { return remote_viewport_intersection_; }
   bool MayBeOccludedOrObscuredByRemoteAncestor() const {
     return occluded_or_obscured_by_ancestor_;
   }

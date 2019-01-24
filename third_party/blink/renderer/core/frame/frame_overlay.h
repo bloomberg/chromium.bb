@@ -83,7 +83,6 @@ class CORE_EXPORT FrameOverlay : public GraphicsLayerClient,
   void EnsureOverlayAttached() const;
 
   const Delegate* GetDelegate() const { return delegate_.get(); }
-  const LocalFrame& Frame() const { return *frame_; }
 
   // DisplayItemClient methods.
   String DebugName() const final { return "FrameOverlay"; }
