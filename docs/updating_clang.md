@@ -50,7 +50,7 @@ An archive of all packages built so far is at https://is.gd/chromeclang
       -b linux_chromium_cfi_rel_ng \
       -b linux_chromium_chromeos_asan_rel_ng -b linux_chromium_msan_rel_ng \
       -b linux_chromium_chromeos_msan_rel_ng -b linux-chromeos-dbg \
-      -b win-asan
+      -b win-asan -b chromeos-amd64-generic-cfi-thin-lto-rel
     ```
 
 1.  Optional: Start Pinpoint perf tryjobs. These are generally too noisy to
