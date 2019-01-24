@@ -616,7 +616,7 @@ if (!is_ios) {
     data = [
       "$root_out_dir/components_tests_resources.pak",
       "$root_out_dir/ui_test.pak",
-      "//components/subresource_filter/core/common/perftests/data",
+      "//components/subresource_filter/core/common/perftests/data/",
     ]
 
     if (is_android) {
