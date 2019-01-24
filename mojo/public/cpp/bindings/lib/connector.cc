@@ -17,6 +17,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/trace_event/trace_event.h"
+#include "mojo/public/cpp/bindings/features.h"
 #include "mojo/public/cpp/bindings/lib/may_auto_lock.h"
 #include "mojo/public/cpp/bindings/mojo_buildflags.h"
 #include "mojo/public/cpp/bindings/sync_handle_watcher.h"
@@ -44,6 +45,16 @@ Connector::OutgoingSerializationMode g_default_outgoing_serialization_mode =
 // The default incoming serialization mode for new Connectors.
 Connector::IncomingSerializationMode g_default_incoming_serialization_mode =
     Connector::IncomingSerializationMode::kDispatchAsIs;
+
+bool EnableTaskPerMessage() {
+  // Const since this may be called from any thread. Initialization is
+  // thread-safe. This is a workaround since some consumers of Mojo (e.g. many
+  // browser tests) use base::FeatureList incorrectly and thus cause data races
+  // when features are queried from arbitrary threads.
+  static const bool enable =
+      base::FeatureList::IsEnabled(features::kTaskPerMessage);
+  return enable;
+}
 
 }  // namespace
 
@@ -146,6 +157,7 @@ Connector::Connector(ScopedMessagePipeHandle message_pipe,
     : message_pipe_(std::move(message_pipe)),
       task_runner_(std::move(runner)),
       error_(false),
+      force_immediate_dispatch_(!EnableTaskPerMessage()),
       outgoing_serialization_mode_(g_default_outgoing_serialization_mode),
       incoming_serialization_mode_(g_default_incoming_serialization_mode),
       nesting_observer_(RunLoopNestingObserver::GetForThread()),
