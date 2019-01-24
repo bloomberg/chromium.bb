@@ -662,6 +662,27 @@ void BackgroundTracingManagerImpl::AbortScenario() {
 void BackgroundTracingManagerImpl::OnAbortScenarioReceived(
     std::unique_ptr<const base::DictionaryValue> metadata,
     base::RefCountedString* trace_str) {
+  if (base::trace_event::TraceLog::GetInstance()->IsEnabled()) {
+    // Since the BackgroundTracingManager directly enables tracing
+    // in TraceLog, in addition to going through Mojo, there's an edge-case
+    // where tracing is rapidly stopped after starting, too quickly for the
+    // TraceEventAgent of the browser process to register itself, which means
+    // that we're left in a state where the Mojo interface doesn't think we're
+    // tracing but TraceLog is still enabled. If that's the case, we abort
+    // tracing here.
+    auto record_mode =
+        (config_->tracing_mode() == BackgroundTracingConfigImpl::PREEMPTIVE)
+            ? base::trace_event::RECORD_CONTINUOUSLY
+            : base::trace_event::RECORD_UNTIL_FULL;
+    TraceConfig config =
+        GetConfigForCategoryPreset(config_->category_preset(), record_mode);
+
+    uint8_t modes = base::trace_event::TraceLog::RECORDING_MODE;
+    if (!config.event_filters().empty())
+      modes |= base::trace_event::TraceLog::FILTERING_MODE;
+    base::trace_event::TraceLog::GetInstance()->SetDisabled(modes);
+  }
+
   is_tracing_ = false;
   triggered_named_event_handle_ = -1;
   config_.reset();

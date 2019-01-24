@@ -10,6 +10,8 @@
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/tracing/public/cpp/traced_process.h"
+#include "services/tracing/public/mojom/tracing.mojom.h"
 
 namespace service_manager {
 
@@ -163,6 +165,12 @@ void ServiceBinding::OnBindInterface(
       GetBinderOverrides().GetOverride(identity_.name(), interface_name);
   if (override) {
     override.Run(source_info, std::move(interface_pipe));
+    return;
+  }
+
+  if (interface_name == tracing::mojom::TracedProcess::Name_) {
+    tracing::TracedProcess::OnTracedProcessRequest(
+        tracing::mojom::TracedProcessRequest(std::move(interface_pipe)));
     return;
   }
 

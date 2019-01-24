@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "services/service_manager/public/cpp/connector.h"
+#include "services/tracing/public/cpp/traced_process_impl.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 
 namespace tracing {
@@ -14,21 +14,28 @@ namespace tracing {
 BaseAgent::BaseAgent(const std::string& label,
                      mojom::TraceDataType type,
                      base::ProcessId pid)
-    : binding_(this), label_(label), type_(type), pid_(pid) {}
+    : binding_(this), label_(label), type_(type), pid_(pid) {
+  TracedProcessImpl::GetInstance()->RegisterAgent(this);
+}
 
-BaseAgent::~BaseAgent() = default;
+BaseAgent::~BaseAgent() {
+  TracedProcessImpl::GetInstance()->UnregisterAgent(this);
+}
 
-void BaseAgent::Connect(service_manager::Connector* connector) {
-  DCHECK(!binding_ || !binding_.is_bound());
-  tracing::mojom::AgentRegistryPtr agent_registry;
-  connector->BindInterface(tracing::mojom::kServiceName, &agent_registry);
-
+void BaseAgent::Connect(tracing::mojom::AgentRegistry* agent_registry) {
   tracing::mojom::AgentPtr agent;
   binding_.Bind(mojo::MakeRequest(&agent));
+  binding_.set_connection_error_handler(
+      base::BindRepeating(&BaseAgent::Disconnect, base::Unretained(this)));
+
   agent_registry->RegisterAgent(std::move(agent), label_, type_, pid_);
 }
 
 void BaseAgent::GetCategories(std::set<std::string>* category_set) {}
+
+void BaseAgent::Disconnect() {
+  binding_.Close();
+}
 
 void BaseAgent::StartTracing(const std::string& config,
                              base::TimeTicks coordinator_time,

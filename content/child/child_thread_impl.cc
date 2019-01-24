@@ -71,7 +71,6 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
-#include "services/tracing/public/cpp/trace_event_agent.h"
 
 #if defined(OS_POSIX)
 #include "base/posix/global_descriptors.h"
@@ -571,8 +570,6 @@ void ChildThreadImpl::InitTracing() {
 
   channel_->AddFilter(new tracing::ChildTraceMessageFilter(
       ChildProcess::current()->io_task_runner()));
-
-  tracing::TraceEventAgent::GetInstance()->Connect(GetConnector());
 }
 
 ChildThreadImpl::~ChildThreadImpl() {
