@@ -683,6 +683,25 @@
             ]
         }
     ],
+    "AutofillLocalCardMigrationWithFeedback": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnableLocalCardMigrationWithFeedback",
+                    "enable_features": [
+                        "AutofillCreditCardLocalCardMigration",
+                        "AutofillLocalCardMigrationShowFeedback"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillMetadataUploads": [
         {
             "platforms": [
