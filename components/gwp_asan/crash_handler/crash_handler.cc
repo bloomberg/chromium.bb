@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/compiler_specific.h"
+#include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/gwp_asan/crash_handler/crash.pb.h"
@@ -72,6 +73,17 @@ const char* ErrorToString(Crash_ErrorType type) {
   }
 }
 
+#if !defined(NDEBUG)
+void PrintStackTrace(
+    const ::google::protobuf::RepeatedField<::google::protobuf::uint64>&
+        trace_pb) {
+  void* trace_array[trace_pb.size()];
+  for (int i = 0; i < trace_pb.size(); i++)
+    trace_array[i] = reinterpret_cast<void*>(trace_pb.Get(i));
+  base::debug::StackTrace(trace_array, trace_pb.size()).Print();
+}
+#endif
+
 std::unique_ptr<crashpad::MinidumpUserExtensionStreamDataSource>
 HandleException(const crashpad::ProcessSnapshot& snapshot) {
   gwp_asan::Crash proto;
@@ -84,6 +96,17 @@ HandleException(const crashpad::ProcessSnapshot& snapshot) {
   LOG(ERROR) << "Detected GWP-ASan crash for allocation at 0x" << std::hex
              << proto.allocation_address() << std::dec << " of type "
              << ErrorToString(proto.error_type());
+
+#if !defined(NDEBUG)
+  if (proto.has_deallocation() && proto.deallocation().stack_trace_size() > 0) {
+    LOG(ERROR) << "Deallocation stack trace:";
+    PrintStackTrace(proto.deallocation().stack_trace());
+  }
+  if (proto.has_allocation() && proto.allocation().stack_trace_size() > 0) {
+    LOG(ERROR) << "Allocation stack trace:";
+    PrintStackTrace(proto.allocation().stack_trace());
+  }
+#endif
 
   return std::make_unique<BufferExtensionStreamDataSource>(
       kGwpAsanMinidumpStreamType, proto);
