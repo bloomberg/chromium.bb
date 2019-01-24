@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <list>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/run_loop.h"
@@ -129,14 +130,6 @@ class TestSafeBrowsingBlockingPageFactory
   }
 };
 
-class MockTestingProfile : public TestingProfile {
- public:
-  MockTestingProfile() {}
-  ~MockTestingProfile() override {}
-
-  MOCK_CONST_METHOD0(IsOffTheRecord, bool());
-};
-
 class TestSafeBrowsingBlockingPageQuiet : public SafeBrowsingBlockingPage {
  public:
   TestSafeBrowsingBlockingPageQuiet(
@@ -214,7 +207,8 @@ class TestSafeBrowsingBlockingQuietPageFactory
 
 }  // namespace
 
-class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
+class SafeBrowsingBlockingPageTestBase
+    : public ChromeRenderViewHostTestHarness {
  public:
   // The decision the user made.
   enum UserResponse {
@@ -223,8 +217,9 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
     CANCEL
   };
 
-  SafeBrowsingBlockingPageTest()
-      : scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()) {
+  explicit SafeBrowsingBlockingPageTestBase(bool is_incognito)
+      : scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()),
+        is_incognito_(is_incognito) {
     ResetUserResponse();
     // The safe browsing UI manager does not need a service for this test.
     ui_manager_ = new TestSafeBrowsingUIManager(NULL);
@@ -232,6 +227,13 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
+
+    if (is_incognito_) {
+      auto incognito_web_contents =
+          content::WebContentsTester::CreateTestWebContents(
+              profile()->GetOffTheRecordProfile(), nullptr);
+      SetContents(std::move(incognito_web_contents));
+    }
 
     system_request_context_getter_ =
         base::MakeRefCounted<net::TestURLRequestContextGetter>(
@@ -257,7 +259,11 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
         Profile::FromBrowserContext(web_contents()->GetBrowserContext());
     safe_browsing_service->AddPrefService(profile->GetPrefs());
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    test_event_router_ = extensions::CreateAndUseTestEventRouter(profile);
+    // EventRouterFactory redirects incognito context to original profile.
+    test_event_router_ =
+        extensions::CreateAndUseTestEventRouter(profile->GetOriginalProfile());
+    DCHECK(test_event_router_);
+
     extensions::SafeBrowsingPrivateEventRouterFactory::GetInstance()
         ->SetTestingFactory(
             profile, base::BindRepeating(&BuildSafeBrowsingPrivateEventRouter));
@@ -277,19 +283,6 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
     // Clean up singleton reference (crbug.com/110594).
     ThreatDetails::RegisterFactory(NULL);
     ChromeRenderViewHostTestHarness::TearDown();
-  }
-
-  content::BrowserContext* CreateBrowserContext() override {
-    // Set custom profile object so that we can mock calls to IsOffTheRecord.
-    // This needs to happen before we call the parent SetUp() function.  We use
-    // a nice mock because other parts of the code are calling IsOffTheRecord.
-    mock_profile_ = new testing::NiceMock<MockTestingProfile>();
-    return mock_profile_;
-  }
-
-  void SetProfileOffTheRecord() {
-    EXPECT_CALL(*mock_profile_, IsOffTheRecord())
-          .WillRepeatedly(testing::Return(true));
   }
 
   void OnBlockingPageComplete(bool proceed) {
@@ -351,9 +344,6 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
   scoped_refptr<TestSafeBrowsingUIManager> ui_manager_;
   scoped_refptr<net::URLRequestContextGetter> system_request_context_getter_;
 
-  // Owned by TestSafeBrowsingBlockingPage.
-  MockTestingProfile* mock_profile_;
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::TestEventRouter* test_event_router_;
   std::unique_ptr<TestExtensionEventObserver> observer_;
@@ -365,7 +355,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
                     const GURL& url,
                     SBThreatType type) {
     resource->callback =
-        base::Bind(&SafeBrowsingBlockingPageTest::OnBlockingPageComplete,
+        base::Bind(&SafeBrowsingBlockingPageTestBase::OnBlockingPageComplete,
                    base::Unretained(this));
     resource->callback_thread = base::CreateSingleThreadTaskRunnerWithTraits(
         {content::BrowserThread::IO});
@@ -382,6 +372,20 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
   ScopedTestingLocalState scoped_testing_local_state_;
   UserResponse user_response_;
   TestSafeBrowsingBlockingPageFactory factory_;
+  const bool is_incognito_;
+};
+
+class SafeBrowsingBlockingPageTest : public SafeBrowsingBlockingPageTestBase {
+ public:
+  SafeBrowsingBlockingPageTest()
+      : SafeBrowsingBlockingPageTestBase(false /*is_incognito*/) {}
+};
+
+class SafeBrowsingBlockingPageIncognitoTest
+    : public SafeBrowsingBlockingPageTestBase {
+ public:
+  SafeBrowsingBlockingPageIncognitoTest()
+      : SafeBrowsingBlockingPageTestBase(true /*is_incognito*/) {}
 };
 
 // Tests showing a blocking page for a malware page and not proceeding.
@@ -888,13 +892,11 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsToggling) {
 }
 
 // Test that extended reporting option is not shown in incognito window.
-TEST_F(SafeBrowsingBlockingPageTest,
+TEST_F(SafeBrowsingBlockingPageIncognitoTest,
        ExtendedReportingNotShownInIncognito) {
-  // Make profile in incognito mode.
-  SetProfileOffTheRecord();
   // Enable malware details.
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   ASSERT_TRUE(profile->IsOffTheRecord());
   SetExtendedReportingPref(profile->GetPrefs(), true);
 
@@ -1086,9 +1088,6 @@ class SafeBrowsingBlockingQuietPageTest
   }
 
   scoped_refptr<TestSafeBrowsingUIManager> ui_manager_;
-
-  // Owned by TestSafeBrowsingBlockingQuietPage.
-  MockTestingProfile* mock_profile_;
 
  private:
   void InitResource(security_interstitials::UnsafeResource* resource,

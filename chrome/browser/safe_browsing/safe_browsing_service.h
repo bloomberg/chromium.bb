@@ -220,7 +220,7 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
   friend class base::DeleteHelper<SafeBrowsingService>;
-  friend class SafeBrowsingBlockingPageTest;
+  friend class SafeBrowsingBlockingPageTestBase;
   friend class SafeBrowsingBlockingQuietPageTest;
   friend class SafeBrowsingServerTest;
   friend class SafeBrowsingUIManagerTest;
