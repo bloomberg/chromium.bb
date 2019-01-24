@@ -780,6 +780,8 @@ message CPUTempInfo {
   optional string cpu_label = 1;
   // CPU temperature in Celsius.
   optional int32 cpu_temp = 2;
+  // Unix timestamp.
+  optional int64 timestamp = 3;
 }
 
 // Chrome release channel, shared for different reports.

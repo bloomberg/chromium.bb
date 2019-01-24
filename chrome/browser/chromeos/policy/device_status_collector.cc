@@ -367,6 +367,12 @@ bool IsKioskApp() {
          user_type == chromeos::LoginState::LOGGED_IN_USER_ARC_KIOSK_APP;
 }
 
+// Utility method to turn cpu_temp_fetcher_ to OnceCallback
+std::vector<em::CPUTempInfo> InvokeCpuTempFetcher(
+    policy::DeviceStatusCollector::CPUTempFetcher fetcher) {
+  return fetcher.Run();
+}
+
 }  // namespace
 
 namespace policy {
@@ -477,12 +483,18 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
 
   void OnCPUTempInfoReceived(
       const std::vector<em::CPUTempInfo>& cpu_temp_info) {
-    if (cpu_temp_info.empty())
-      DLOG(WARNING) << "Unable to read CPU temp information.";
+    // Only one of OnProbeDataReceived and OnCPUTempInfoReceived should be
+    // called.
+    DCHECK(device_status_->cpu_temp_info_size() == 0);
 
-    device_status_->clear_cpu_temp_info();
-    for (const em::CPUTempInfo& info : cpu_temp_info)
-      *device_status_->add_cpu_temp_info() = info;
+    DLOG_IF(WARNING, cpu_temp_info.empty())
+        << "Unable to read CPU temp information.";
+    base::Time timestamp = base::Time::Now();
+    for (const em::CPUTempInfo& info : cpu_temp_info) {
+      auto* new_info = device_status_->add_cpu_temp_info();
+      *new_info = info;
+      new_info->set_timestamp(timestamp.ToJavaTime());
+    }
   }
 
   void OnAndroidInfoReceived(const std::string& status,
@@ -523,6 +535,20 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
       const base::circular_deque<std::unique_ptr<SampledData>>& samples) {
     // Make sure we edit the state on the right thread.
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    // Only one of OnProbeDataReceived and OnCPUTempInfoReceived should be
+    // called.
+    DCHECK(device_status_->cpu_temp_info_size() == 0);
+
+    // Store CPU measurement samples.
+    for (const std::unique_ptr<SampledData>& sample_data : samples) {
+      for (auto it = sample_data->cpu_samples.begin();
+           it != sample_data->cpu_samples.end(); it++) {
+        auto* new_info = device_status_->add_cpu_temp_info();
+        *new_info = it->second;
+      }
+    }
+
     if (!probe_result.has_value())
       return;
     if (probe_result.value().error() !=
@@ -1386,15 +1412,23 @@ void DeviceStatusCollector::ReceiveCPUStatistics(const base::Time& timestamp,
   if (resource_usage_.size() > kMaxResourceUsageSamples)
     resource_usage_.pop_front();
 
+  std::unique_ptr<SampledData> sample = std::make_unique<SampledData>();
+  sample->timestamp = base::Time::Now();
+
   if (report_power_status_) {
     runtime_probe::ProbeRequest request;
     request.add_categories(runtime_probe::ProbeRequest::battery);
-    auto sample = std::make_unique<SampledData>();
-    sample->timestamp = timestamp;
     runtime_probe_->ProbeCategories(
         request, base::BindOnce(&DeviceStatusCollector::SampleProbeData,
                                 weak_factory_.GetWeakPtr(), std::move(sample),
                                 SamplingProbeResultCallback()));
+  } else {
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+        base::BindOnce(&InvokeCpuTempFetcher, cpu_temp_fetcher_),
+        base::BindOnce(&DeviceStatusCollector::ReceiveCPUTemperature,
+                       weak_factory_.GetWeakPtr(), std::move(sample),
+                       SamplingCallback()));
   }
 }
 
@@ -1449,6 +1483,24 @@ void DeviceStatusCollector::SampleDischargeRate(
          it != sample->battery_samples.end(); it++) {
       it->second.set_discharge_rate(discharge_rate_mW);
     }
+  }
+
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&InvokeCpuTempFetcher, cpu_temp_fetcher_),
+      base::BindOnce(&DeviceStatusCollector::ReceiveCPUTemperature,
+                     weak_factory_.GetWeakPtr(), std::move(sample),
+                     std::move(callback)));
+}
+
+void DeviceStatusCollector::ReceiveCPUTemperature(
+    std::unique_ptr<SampledData> sample,
+    SamplingCallback callback,
+    std::vector<em::CPUTempInfo> measurements) {
+  auto timestamp = sample->timestamp.ToJavaTime();
+  for (const auto& measurement : measurements) {
+    sample->cpu_samples[measurement.cpu_label()] = measurement;
+    sample->cpu_samples[measurement.cpu_label()].set_timestamp(timestamp);
   }
   AddDataSample(std::move(sample), std::move(callback));
 }
@@ -1778,9 +1830,6 @@ bool DeviceStatusCollector::GetHardwareStatus(
   // Sample disk volume info in a background thread.
   state->SampleVolumeInfo(volume_info_fetcher_);
 
-  // Sample CPU temperature in a background thread.
-  state->SampleCPUTempInfo(cpu_temp_fetcher_);
-
   // Add CPU utilization and free RAM. Note that these stats are sampled in
   // regular intervals. Unlike CPU temp and volume info these are not one-time
   // sampled values, hence the difference in logic.
@@ -1799,8 +1848,14 @@ bool DeviceStatusCollector::GetHardwareStatus(
   // Fetch TPM status information on a background thread.
   state->FetchTpmStatus(tpm_status_fetcher_);
 
+  // clear
+  status->clear_cpu_temp_info();
+
   if (report_power_status_ || report_storage_status_) {
     state->FetchProbeData(probe_data_fetcher_);
+  } else {
+    // Sample CPU temperature in a background thread.
+    state->SampleCPUTempInfo(cpu_temp_fetcher_);
   }
   return true;
 }
