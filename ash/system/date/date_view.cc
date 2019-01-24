@@ -22,6 +22,7 @@
 #include "third_party/icu/source/i18n/unicode/smpdtfmt.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
@@ -179,7 +180,13 @@ void TimeView::UpdateTextInternal(const base::Time& now) {
 
   NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
 
-  base::string16 current_time = base::TimeFormatTimeOfDayWithHourClockType(
+  base::string16 current_time;
+  // Add a subtle indicator for SingleProcessMash that shows up in screenshots.
+  // TODO(crbug.com/918537): Remove before M-74 branch.
+  if (::features::IsSingleProcessMash()) {
+    current_time = base::ASCIIToUTF16("- ");
+  }
+  current_time += base::TimeFormatTimeOfDayWithHourClockType(
       now, model_->hour_clock_type(), base::kDropAmPm);
   horizontal_label_->SetText(current_time);
   horizontal_label_->SetTooltipText(base::TimeFormatFriendlyDate(now));
