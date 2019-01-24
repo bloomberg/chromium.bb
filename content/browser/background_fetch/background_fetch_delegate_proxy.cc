@@ -573,10 +573,8 @@ void BackgroundFetchDelegateProxy::GetUploadData(
   auto& job_details = job_details_map_.find(job_unique_id)->second;
   DCHECK(job_details.controller);
 
-  const auto& request =
-      job_details.current_request_map[download_guid]->fetch_request_ptr();
-  job_details.controller->GetUploadData(
-      BackgroundFetchSettledFetch::CloneRequest(request), std::move(callback));
+  const auto& request = job_details.current_request_map[download_guid];
+  job_details.controller->GetUploadData(request, std::move(callback));
 }
 
 }  // namespace content

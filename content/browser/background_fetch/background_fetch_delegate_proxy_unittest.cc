@@ -159,7 +159,7 @@ class FakeController : public BackgroundFetchDelegateProxy::Controller {
       blink::mojom::BackgroundFetchFailureReason reason_to_abort) override {}
 
   void GetUploadData(
-      blink::mojom::FetchAPIRequestPtr request,
+      const scoped_refptr<BackgroundFetchRequestInfo>& request,
       BackgroundFetchDelegate::GetUploadDataCallback callback) override {}
 
   bool request_started_ = false;

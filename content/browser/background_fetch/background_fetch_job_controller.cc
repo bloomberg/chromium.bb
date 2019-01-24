@@ -318,13 +318,10 @@ void BackgroundFetchJobController::DidMarkRequestAsComplete(
 }
 
 void BackgroundFetchJobController::GetUploadData(
-    blink::mojom::FetchAPIRequestPtr request,
+    const scoped_refptr<BackgroundFetchRequestInfo>& request,
     BackgroundFetchDelegate::GetUploadDataCallback callback) {
-  data_manager_->MatchRequests(
-      registration_id(),
-      std::make_unique<BackgroundFetchRequestMatchParams>(
-          std::move(request), /* match_params= */ nullptr,
-          /* match_all= */ false),
+  data_manager_->GetRequestBlob(
+      registration_id(), request,
       base::BindOnce(&BackgroundFetchJobController::DidGetUploadData,
                      GetWeakPtr(), std::move(callback)));
 }
@@ -332,17 +329,15 @@ void BackgroundFetchJobController::GetUploadData(
 void BackgroundFetchJobController::DidGetUploadData(
     BackgroundFetchDelegate::GetUploadDataCallback callback,
     BackgroundFetchError error,
-    std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> fetches) {
+    blink::mojom::SerializedBlobPtr blob) {
   if (error != BackgroundFetchError::NONE) {
     Abort(BackgroundFetchFailureReason::SERVICE_WORKER_UNAVAILABLE,
           base::DoNothing());
     std::move(callback).Run(nullptr);
-    return;
   }
 
-  DCHECK_EQ(fetches.size(), 1u);
-  DCHECK(fetches[0]->request->blob);
-  std::move(callback).Run(std::move(fetches[0]->request->blob));
+  DCHECK(blob);
+  std::move(callback).Run(std::move(blob));
 }
 
 }  // namespace content
