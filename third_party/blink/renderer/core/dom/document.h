@@ -594,7 +594,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // This is the DOM API document.open() implementation.
   // document.open() opens a new window when called with three arguments.
-  Document* open(LocalDOMWindow* entered_window,
+  Document* open(v8::Isolate*,
                  const AtomicString& type,
                  const AtomicString& replace,
                  ExceptionState&);
@@ -657,17 +657,13 @@ class CORE_EXPORT Document : public ContainerNode,
   void writeln(const String& text,
                Document* entered_document = nullptr,
                ExceptionState& = ASSERT_NO_EXCEPTION);
-  void write(LocalDOMWindow* entered_window,
-             const Vector<String>& text,
-             ExceptionState&);
-  void writeln(LocalDOMWindow* entered_window,
-               const Vector<String>& text,
-               ExceptionState&);
+  void write(v8::Isolate*, const Vector<String>& text, ExceptionState&);
+  void writeln(v8::Isolate*, const Vector<String>& text, ExceptionState&);
 
   // TrustedHTML variants of the above.
   // TODO(mkwst): Write a spec for this.
-  void write(LocalDOMWindow* entered_window, TrustedHTML*, ExceptionState&);
-  void writeln(LocalDOMWindow* entered_window, TrustedHTML*, ExceptionState&);
+  void write(v8::Isolate*, TrustedHTML*, ExceptionState&);
+  void writeln(v8::Isolate*, TrustedHTML*, ExceptionState&);
 
   bool WellFormed() const { return well_formed_; }
 
