@@ -84,6 +84,10 @@ cast_source_set("renderer") {
       "extensions/automation_ax_tree_wrapper.h",
       "extensions/automation_internal_custom_bindings.cc",
       "extensions/automation_internal_custom_bindings.h",
+      "extensions/extension_hooks_delegate.cc",
+      "extensions/extension_hooks_delegate.h",
+      "extensions/tabs_hooks_delegate.cc",
+      "extensions/tabs_hooks_delegate.h",
     ]
 
     deps += [

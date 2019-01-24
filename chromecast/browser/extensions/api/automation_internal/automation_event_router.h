@@ -17,6 +17,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/extension_messages.h"
+#include "ui/accessibility/ax_event_bundle_sink.h"
+#include "ui/accessibility/ax_tree_id.h"
 
 namespace content {
 class BrowserContext;
@@ -33,8 +35,9 @@ namespace extensions {
 namespace cast {
 struct AutomationListener;
 
-class AutomationEventRouter : public AutomationEventRouterInterface,
-                              content::NotificationObserver {
+class AutomationEventRouter : public ui::AXEventBundleSink,
+                              public AutomationEventRouterInterface,
+                              public content::NotificationObserver {
  public:
   static AutomationEventRouter* GetInstance();
 
@@ -88,6 +91,12 @@ class AutomationEventRouter : public AutomationEventRouterInterface,
                 int listener_process_id,
                 ui::AXTreeID source_ax_tree_id,
                 bool desktop);
+
+  // ui::AXEventBundleSink:
+  void DispatchAccessibilityEvents(const ui::AXTreeID& tree_id,
+                                   std::vector<ui::AXTreeUpdate> updates,
+                                   const gfx::Point& mouse_location,
+                                   std::vector<ui::AXEvent> events) override;
 
   // content::NotificationObserver interface.
   void Observe(int type,

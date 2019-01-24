@@ -10,8 +10,10 @@
 #include "base/feature_list.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
-#include "chromecast/renderer/grit/extensions_renderer_resources.h"
 #include "chromecast/renderer/extensions/automation_internal_custom_bindings.h"
+#include "chromecast/renderer/extensions/extension_hooks_delegate.h"
+#include "chromecast/renderer/extensions/tabs_hooks_delegate.h"
+#include "chromecast/renderer/grit/extensions_renderer_resources.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_thread.h"
@@ -24,6 +26,7 @@
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
+#include "extensions/renderer/bindings/api_binding_hooks.h"
 #include "extensions/renderer/bindings/api_bindings_system.h"
 #include "extensions/renderer/css_native_handler.h"
 #include "extensions/renderer/dispatcher.h"
@@ -82,5 +85,11 @@ void CastExtensionsDispatcherDelegate::InitializeBindingsSystem(
     extensions::Dispatcher* dispatcher,
     extensions::NativeExtensionBindingsSystem* bindings_system) {
   DCHECK(base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings));
-  // TODO(rmrossi): Stub
+  extensions::APIBindingsSystem* bindings = bindings_system->api_system();
+  bindings->GetHooksForAPI("extension")
+      ->SetDelegate(std::make_unique<extensions::ExtensionHooksDelegate>(
+          bindings_system->messaging_service()));
+  bindings->GetHooksForAPI("tabs")->SetDelegate(
+      std::make_unique<extensions::TabsHooksDelegate>(
+          bindings_system->messaging_service()));
 }

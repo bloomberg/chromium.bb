@@ -7,7 +7,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <algorithm>
 #include <memory>
+#include <set>
+#include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/i18n/string_search.h"
@@ -704,10 +708,8 @@ void AutomationInternalCustomBindings::AddRoutes() {
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node, int start,
          int end) {
-        if (node->data().role != ax::mojom::Role::kInlineTextBox) {
-          gfx::Rect global_bounds = ComputeGlobalNodeBounds(tree_wrapper, node);
-          result.Set(RectToV8Object(isolate, global_bounds));
-        }
+        if (node->data().role != ax::mojom::Role::kInlineTextBox)
+          return;
 
         // Use character offsets to compute the local bounds of this subrange.
         gfx::RectF local_bounds(0, 0,
@@ -811,8 +813,18 @@ void AutomationInternalCustomBindings::AddRoutes() {
         ax::mojom::IntAttribute attribute =
             ui::ParseIntAttribute(attribute_name.c_str());
         int attr_value;
-        if (!node->data().GetIntAttribute(attribute, &attr_value))
+
+        if (attribute == ax::mojom::IntAttribute::kPosInSet) {
+          attr_value = node->GetPosInSet();
+          if (attr_value == 0)
+            return;
+        } else if (attribute == ax::mojom::IntAttribute::kSetSize) {
+          attr_value = node->GetSetSize();
+          if (attr_value == 0)
+            return;
+        } else if (!node->data().GetIntAttribute(attribute, &attr_value)) {
           return;
+        }
 
         result.Set(v8::Integer::New(isolate, attr_value));
       });
@@ -1134,6 +1146,16 @@ void AutomationInternalCustomBindings::AddRoutes() {
                             v8::Integer::New(isolate, row_headers[i]));
         result.Set(array_result);
       });
+  RouteNodeIDFunction(
+      "GetTableCellColumnIndex",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper,
+         ui::AXNode* node) { result.Set(node->GetTableCellColIndex()); });
+  RouteNodeIDFunction(
+      "GetTableCellRowIndex",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper,
+         ui::AXNode* node) { result.Set(node->GetTableCellRowIndex()); });
 }
 
 void AutomationInternalCustomBindings::Invalidate() {
@@ -1148,7 +1170,7 @@ void AutomationInternalCustomBindings::Invalidate() {
 // http://crbug.com/784266
 // clang-format off
 void AutomationInternalCustomBindings::OnMessageReceived(
-    const IPC::Message& message){
+    const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(AutomationInternalCustomBindings, message)
     IPC_MESSAGE_HANDLER(ExtensionMsg_AccessibilityEventBundle,
                         OnAccessibilityEvents)
@@ -1335,7 +1357,6 @@ void AutomationInternalCustomBindings::GetFocus(
     ThrowInvalidArgumentsException(this);
     return;
   }
-
   ui::AXTreeID tree_id = ui::AXTreeID::FromString(
       *v8::String::Utf8Value(args.GetIsolate(), args[0]));
   AutomationAXTreeWrapper* tree_wrapper =

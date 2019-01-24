@@ -179,6 +179,18 @@ var GetLocation = natives.GetLocation;
 var GetBoundsForRange = natives.GetBoundsForRange;
 
 /**
+ * @param {number} left The left location of the text range.
+ * @param {number} top The top location of the text range.
+ * @param {number} width The width of text range.
+ * @param {number} height The height of the text range.
+ * @param {number} requestID The request id associated with the query
+ *    for this range.
+ * @return {?automation.Rect} The bounding box of the subrange of this node,
+ *     specified by arguments provided to the function.
+ */
+var ComputeGlobalBounds = natives.ComputeGlobalBounds;
+
+/**
  * @param {string} axTreeID The id of the accessibility tree.
  * @param {number} nodeID The id of a node.
  * @return {?automation.Rect} The unclipped location of the node, or
@@ -354,6 +366,20 @@ var GetTableCellColumnHeaders = natives.GetTableCellColumnHeaders;
  */
 var GetTableCellRowHeaders = natives.GetTableCellRowHeaders;
 
+/**
+ * @param {string} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @return {number} Column index for this cell.
+ */
+var GetTableCellColumnIndex = natives.GetTableCellColumnIndex;
+
+/**
+ * @param {string} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @return {number} Row index for this cell.
+ */
+var GetTableCellRowIndex = natives.GetTableCellRowIndex;
+
 var logging = requireNative('logging');
 var utils = require('utils');
 
@@ -369,7 +395,7 @@ function AutomationNodeImpl(root) {
 
 AutomationNodeImpl.prototype = {
   __proto__: null,
-  treeID: "",
+  treeID: '',
   id: -1,
   isRootNode: false,
 
@@ -413,8 +439,33 @@ AutomationNodeImpl.prototype = {
     return GetLocation(this.treeID, this.id);
   },
 
-  boundsForRange: function(startIndex, endIndex) {
-    return GetBoundsForRange(this.treeID, this.id, startIndex, endIndex);
+  boundsForRange: function(startIndex, endIndex, callback) {
+    if (!this.rootImpl)
+      return;
+
+    // Not yet initialized.
+    if (this.rootImpl.treeID === undefined || this.id === undefined) {
+      return;
+    }
+
+    if (!callback)
+      return;
+
+    if (!GetBoolAttribute(this.treeID, this.id, 'supportsTextLocation')) {
+      try {
+        callback(
+            GetBoundsForRange(this.treeID, this.id, startIndex, endIndex));
+        return;
+      } catch (e) {
+        logging.WARNING('Error with bounds for range callback' + e);
+      }
+      return;
+    }
+
+    this.performAction_(
+        'getTextLocation', {startIndex: startIndex, endIndex: endIndex},
+        callback);
+    return;
   },
 
   get unclippedLocation() {
@@ -543,6 +594,14 @@ AutomationNodeImpl.prototype = {
         result.push(this.rootImpl.get(ids[i]));
       return result;
     }
+  },
+
+  get tableCellColumnIndex() {
+    return GetTableCellColumnIndex(this.treeID, this.id);
+  },
+
+  get tableCellRowIndex() {
+    return GetTableCellRowIndex(this.treeID, this.id);
   },
 
   doDefault: function() {
@@ -906,7 +965,7 @@ AutomationNodeImpl.prototype = {
       return false;
 
     if ('role' in params && this.role != params.role)
-        return false;
+      return false;
 
     if ('state' in params) {
       for (var state in params.state) {
@@ -958,14 +1017,8 @@ var stringAttributes = [
     'value'];
 
 var boolAttributes = [
-    'busy',
-    'clickable',
-    'containerLiveAtomic',
-    'containerLiveBusy',
-    'liveAtomic',
-    'modal',
-    'scrollable',
-    'selected'
+  'busy', 'clickable', 'containerLiveAtomic', 'containerLiveBusy', 'liveAtomic',
+  'modal', 'scrollable', 'selected', 'supportsTextLocation'
 ];
 
 var intAttributes = [
@@ -981,10 +1034,8 @@ var intAttributes = [
     'scrollYMax',
     'scrollYMin',
     'setSize',
-    'tableCellColumnIndex',
     'ariaCellColumnIndex',
     'tableCellColumnSpan',
-    'tableCellRowIndex',
     'ariaCellRowIndex',
     'tableCellRowSpan',
     'tableColumnCount',
@@ -1217,7 +1268,10 @@ utils.defineProperty(AutomationRootNodeImpl, 'getOrCreate', function(treeID) {
 
 utils.defineProperty(
     AutomationRootNodeImpl, 'getNodeFromTree', function(treeId, nodeId) {
-  var impl = privates(AutomationRootNodeImpl.get(treeId)).impl;
+  var tree = AutomationRootNodeImpl.get(treeId);
+  if (!tree)
+    return;
+  var impl = privates(tree).impl;
   if (impl)
     return impl.get(nodeId);
 });
@@ -1249,7 +1303,7 @@ AutomationRootNodeImpl.prototype = {
   /**
    * @type {string}
    */
-  treeID: "",
+  treeID: '',
 
   /**
    * A map from id to AutomationNode.
@@ -1332,7 +1386,7 @@ AutomationRootNodeImpl.prototype = {
     if (id == this.id)
       return this.wrapper;
 
-   var obj = this.axNodeDataCache_[id];
+    var obj = this.axNodeDataCache_[id];
     if (obj)
       return obj;
 
@@ -1385,6 +1439,28 @@ AutomationRootNodeImpl.prototype = {
         ++AutomationRootNodeImpl.actionRequestCounter] = callback;
     return AutomationRootNodeImpl.actionRequestCounter;
   },
+
+  onGetTextLocationResult: function(textLocationParams) {
+    let requestID = textLocationParams.requestID;
+    if (requestID in AutomationRootNodeImpl.actionRequestIDToCallback) {
+      let callback =
+          AutomationRootNodeImpl.actionRequestIDToCallback[requestID];
+      try {
+        if (textLocationParams.result) {
+          callback(ComputeGlobalBounds(
+              this.treeID, textLocationParams.nodeID, textLocationParams.left,
+              textLocationParams.top, textLocationParams.width,
+              textLocationParams.height));
+        } else {
+          callback(undefined);
+        }
+      } catch (e) {
+        logging.WARNING('Error with onGetTextLocationResult callback:' + e);
+      }
+      delete AutomationNodeImpl.actionRequestIDToCallback[requestID];
+    }
+  },
+
 
   onActionResult: function(requestID, result) {
     if (requestID in AutomationRootNodeImpl.actionRequestIDToCallback) {
@@ -1450,35 +1526,39 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
     'toString',
     'boundsForRange',
   ],
-  readonly: $Array.concat(publicAttributes, [
-      'parent',
-      'firstChild',
-      'lastChild',
-      'children',
-      'previousSibling',
-      'nextSibling',
-      'isRootNode',
-      'role',
-      'checked',
-      'defaultActionVerb',
-      'restriction',
-      'state',
-      'location',
-      'indexInParent',
-      'lineStartOffsets',
-      'root',
-      'htmlAttributes',
-      'nameFrom',
-      'bold',
-      'italic',
-      'underline',
-      'lineThrough',
-      'customActions',
-      'standardActions',
-      'unclippedLocation',
-      'tableCellColumnHeaders',
-      'tableCellRowHeaders',
-  ]),
+  readonly: $Array.concat(
+      publicAttributes,
+      [
+        'parent',
+        'firstChild',
+        'lastChild',
+        'children',
+        'previousSibling',
+        'nextSibling',
+        'isRootNode',
+        'role',
+        'checked',
+        'defaultActionVerb',
+        'restriction',
+        'state',
+        'location',
+        'indexInParent',
+        'lineStartOffsets',
+        'root',
+        'htmlAttributes',
+        'nameFrom',
+        'bold',
+        'italic',
+        'underline',
+        'lineThrough',
+        'customActions',
+        'standardActions',
+        'unclippedLocation',
+        'tableCellColumnHeaders',
+        'tableCellRowHeaders',
+        'tableCellColumnIndex',
+        'tableCellRowIndex',
+      ]),
 });
 
 function AutomationRootNode() {

@@ -191,6 +191,7 @@
     list,
     listBox,
     listBoxOption,
+    listGrid,  // Native
     listItem,
     listMarker,
     log,
@@ -291,6 +292,7 @@
     doDefault,
     focus,
     getImageData,
+    getTextLocation,
     hitTest,
     increment,
     loadInlineTextBoxes,
@@ -489,6 +491,8 @@
   // Callback called for actions with a response.
   callback PerformActionCallback = void(boolean result);
   callback PerformActionCallbackWithNode = void(AutomationNode node);
+  callback BoundsForRangeCallback = void(Rect bounds);
+
 
   dictionary CustomAction {
     long id;
@@ -515,11 +519,12 @@
     // screen coordinates.
     Rect? location;
 
-    // Computes the bounding box of a subrange of this node in global screen
-    // coordinates. Returns the same as |location| if range information
-    // is not available. The start and end indices are zero-based offsets
-    // into the node's "name" string attribute.
-    static Rect boundsForRange(long startIndex, long endIndex);
+    // Determines the location of the text within the node specified by
+    // |startIndex| and |endIndex|, inclusively. Invokes |callback| with the
+    // bounding rectangle, in screen coordinates. |callback| can be invoked
+    // either synchronously or asynchronously.
+    static void boundsForRange(long startIndex, long endIndex,
+        BoundsForRangeCallback callback);
 
     // The location (as a bounding box) of this node in global screen
     // coordinates without applying any clipping from ancestors.
