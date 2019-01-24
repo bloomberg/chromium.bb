@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/payments/payment_request_picker_view_controller.h"
 
-#import "base/logging.h"
+#include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/material_components/chrome_app_bar_view_controller.h"

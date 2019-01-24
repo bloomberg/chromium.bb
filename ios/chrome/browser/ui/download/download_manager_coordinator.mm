@@ -9,7 +9,7 @@
 
 #include <memory>
 
-#import "base/logging.h"
+#include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"

@@ -9,7 +9,7 @@
 #import <cmath>
 #include <memory>
 
-#import "base/logging.h"
+#include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_model.h"
 #import "ios/chrome/browser/find_in_page/js_findinpage_manager.h"
