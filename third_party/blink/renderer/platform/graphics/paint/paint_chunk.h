@@ -37,7 +37,14 @@ struct PLATFORM_EXPORT PaintChunk {
         id(id),
         properties(props),
         is_cacheable(id.client.IsCacheable()),
-        client_is_just_created(id.client.IsJustCreated()) {}
+        client_is_just_created(id.client.IsJustCreated()) {
+    // PaintChunk properties should not be null. If these checks are hit,
+    // we may be missing a call to ScopedPaintChunkProperties, see comment in
+    // PaintChunker::IncrementDisplayItemIndex for more information.
+    CHECK(props.Transform());
+    CHECK(props.Clip());
+    CHECK(props.Effect());
+  }
 
   size_t size() const {
     DCHECK_GE(end_index, begin_index);
