@@ -107,9 +107,10 @@ void DatabaseTask::DidGetStorageVersion(StorageVersionCallback callback,
                                         blink::ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kNotFound:
-    case DatabaseStatus::kFailed:
-      // This shouldn't happen.
       std::move(callback).Run(proto::SV_UNINITIALIZED);
+      return;
+    case DatabaseStatus::kFailed:
+      std::move(callback).Run(proto::SV_ERROR);
       return;
     case DatabaseStatus::kOk:
       break;
@@ -120,7 +121,7 @@ void DatabaseTask::DidGetStorageVersion(StorageVersionCallback callback,
 
   if (!base::StringToInt(data[0], &storage_version) ||
       !proto::BackgroundFetchStorageVersion_IsValid(storage_version)) {
-    storage_version = proto::SV_UNINITIALIZED;
+    storage_version = proto::SV_ERROR;
   }
 
   std::move(callback).Run(
