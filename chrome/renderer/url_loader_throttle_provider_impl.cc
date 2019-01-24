@@ -37,10 +37,6 @@
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/renderer/chromeos_merge_session_loader_throttle.h"
-#endif  // defined(OS_CHROMEOS)
-
 namespace {
 
 chrome::mojom::PrerenderCanceler* GetPrerenderCanceller(int render_frame_id) {
@@ -275,11 +271,6 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
   throttles.push_back(std::make_unique<GoogleURLLoaderThrottle>(
       ChromeRenderThreadObserver::is_incognito_process(),
       ChromeRenderThreadObserver::GetDynamicParams()));
-
-#if defined(OS_CHROMEOS)
-  throttles.push_back(std::make_unique<MergeSessionLoaderThrottle>(
-      chrome_content_renderer_client_->GetChromeObserver()));
-#endif  // defined(OS_CHROMEOS)
 
   return throttles;
 }

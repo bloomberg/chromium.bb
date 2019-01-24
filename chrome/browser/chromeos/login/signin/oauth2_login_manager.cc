@@ -38,9 +38,7 @@ OAuth2LoginManager::OAuth2LoginManager(Profile* user_profile)
   }
 }
 
-OAuth2LoginManager::~OAuth2LoginManager() {
-  DCHECK(!observer_list_.might_have_observers());
-}
+OAuth2LoginManager::~OAuth2LoginManager() {}
 
 void OAuth2LoginManager::AddObserver(OAuth2LoginManager::Observer* observer) {
   observer_list_.AddObserver(observer);

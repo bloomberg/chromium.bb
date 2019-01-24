@@ -24,7 +24,6 @@
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -64,10 +63,6 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/renderer/extensions/extension_localization_peer.h"
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "chrome/renderer/chromeos_merge_session_loader_throttle.h"
 #endif
 
 using blink::WebCache;
@@ -138,80 +133,17 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
   DISALLOW_COPY_AND_ASSIGN(RendererResourceDelegate);
 };
 
-}  // namespace
-
-bool ChromeRenderThreadObserver::is_incognito_process_ = false;
-
-#if defined(OS_CHROMEOS)
-// A helper class to handle Mojo calls that need to be dispatched to the IO
-// thread instead of the main thread as is the norm.
-class IOConfigurationHelper
-    : public chrome::mojom::ChromeOSListener,
-      public base::RefCountedThreadSafe<IOConfigurationHelper> {
- public:
-  static scoped_refptr<IOConfigurationHelper> Create(
-      scoped_refptr<DelayedCallbackGroup> session_merged_callbacks,
-      chrome::mojom::ChromeOSListenerRequest chromeos_listener_request) {
-    scoped_refptr<IOConfigurationHelper> helper =
-        new IOConfigurationHelper(session_merged_callbacks);
-    content::ChildThread::Get()->GetIOTaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&IOConfigurationHelper::BindOnIOThread, helper,
-                       std::move(chromeos_listener_request)));
-    return helper;
-  }
-
-  bool IsMergeSessionRunning() const {
-    base::AutoLock lock(lock_);
-    return merge_session_running_;
-  }
-
- protected:
-  // chrome::mojom::ChromeOSListener:
-  void MergeSessionComplete() override {
-    {
-      base::AutoLock lock(lock_);
-      merge_session_running_ = false;
-    }
-    session_merged_callbacks_->RunAll();
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<IOConfigurationHelper>;
-
-  explicit IOConfigurationHelper(
-      scoped_refptr<DelayedCallbackGroup> session_merged_callbacks)
-      : session_merged_callbacks_(std::move(session_merged_callbacks)),
-        merge_session_running_(true),
-        binding_(this) {}
-  ~IOConfigurationHelper() override = default;
-
-  void BindOnIOThread(
-      chrome::mojom::ChromeOSListenerRequest chromeos_listener_request) {
-    binding_.Bind(std::move(chromeos_listener_request));
-  }
-
-  scoped_refptr<DelayedCallbackGroup> session_merged_callbacks_;
-  bool merge_session_running_ GUARDED_BY(lock_);
-  mutable base::Lock lock_;
-  mojo::Binding<chrome::mojom::ChromeOSListener> binding_;
-
-  DISALLOW_COPY_AND_ASSIGN(IOConfigurationHelper);
-};
-#endif  // defined(OS_CHROMEOS)
-
 chrome::mojom::DynamicParams* GetDynamicConfigParams() {
   static base::NoDestructor<chrome::mojom::DynamicParams> dynamic_params;
   return dynamic_params.get();
 }
 
+}  // namespace
+
+bool ChromeRenderThreadObserver::is_incognito_process_ = false;
+
 ChromeRenderThreadObserver::ChromeRenderThreadObserver()
     : visited_link_slave_(new visitedlink::VisitedLinkSlave),
-#if defined(OS_CHROMEOS)
-      session_merged_callbacks_(base::MakeRefCounted<DelayedCallbackGroup>(
-          MergeSessionLoaderThrottle::GetMergeSessionTimeout(),
-          content::ChildThread::Get()->GetIOTaskRunner())),
-#endif
       weak_factory_(this) {
   RenderThread* thread = RenderThread::Get();
   resource_delegate_.reset(new RendererResourceDelegate());
@@ -253,25 +185,6 @@ ChromeRenderThreadObserver::GetDynamicParams() {
   return *GetDynamicConfigParams();
 }
 
-#if defined(OS_CHROMEOS)
-void ChromeRenderThreadObserver::RunWhenMergeSessionFinished(
-    DelayedCallbackGroup::Callback callback) {
-  DCHECK(IsMergeSessionRunning());
-  session_merged_callbacks_->Add(std::move(callback));
-}
-
-bool ChromeRenderThreadObserver::IsMergeSessionRunning() const {
-  if (!io_configuration_helper_)
-    return false;
-  return io_configuration_helper_->IsMergeSessionRunning();
-}
-#endif  // defined(OS_CHROMEOS)
-
-base::WeakPtr<ChromeRenderThreadObserver>
-ChromeRenderThreadObserver::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
-}
-
 void ChromeRenderThreadObserver::RegisterMojoInterfaces(
     blink::AssociatedInterfaceRegistry* associated_interfaces) {
   associated_interfaces->AddInterface(base::Bind(
@@ -286,15 +199,8 @@ void ChromeRenderThreadObserver::UnregisterMojoInterfaces(
 }
 
 void ChromeRenderThreadObserver::SetInitialConfiguration(
-    bool is_incognito_process,
-    chrome::mojom::ChromeOSListenerRequest chromeos_listener_request) {
+    bool is_incognito_process) {
   is_incognito_process_ = is_incognito_process;
-#if defined(OS_CHROMEOS)
-  if (chromeos_listener_request) {
-    io_configuration_helper_ = IOConfigurationHelper::Create(
-        session_merged_callbacks_, std::move(chromeos_listener_request));
-  }
-#endif  // defined(OS_CHROMEOS)
 }
 
 void ChromeRenderThreadObserver::SetConfiguration(
