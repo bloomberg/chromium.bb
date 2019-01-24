@@ -344,11 +344,12 @@ void ExtensionAppShimHandler::Delegate::LaunchShim(
     web_app::GetShortcutInfoForApp(
         extension, profile,
         base::BindOnce(
-            &web_app::LaunchShim, web_app::LaunchShimUpdateBehavior::RECREATE,
+            &web_app::LaunchShim,
+            web_app::LaunchShimUpdateBehavior::RECREATE_UNCONDITIONALLY,
             std::move(launched_callback), std::move(terminated_callback)));
   } else {
     web_app::LaunchShim(
-        web_app::LaunchShimUpdateBehavior::NO_UPDATE,
+        web_app::LaunchShimUpdateBehavior::DO_NOT_RECREATE,
         std::move(launched_callback), std::move(terminated_callback),
         web_app::ShortcutInfoForExtensionAndProfile(extension, profile));
   }
