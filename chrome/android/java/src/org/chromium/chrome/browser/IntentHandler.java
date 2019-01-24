@@ -439,7 +439,7 @@ public class IntentHandler {
      * @param intent Target intent.
      * @return Whether the Intent was successfully handled.
      */
-    boolean onNewIntent(Intent intent) {
+    public boolean onNewIntent(Intent intent) {
         updateDeferredIntent(null);
 
         assert intentHasValidUrl(intent);
