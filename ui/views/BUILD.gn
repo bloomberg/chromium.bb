@@ -1152,6 +1152,13 @@ test("views_unittests") {
     ]
   }
 
+  if (has_native_accessibility) {
+    sources += [
+      "accessibility/ax_virtual_view_unittest.cc",
+      "accessibility/view_ax_platform_node_delegate_unittest.cc",
+    ]
+  }
+
   if (is_mac) {
     # views_unittests not yet compiling on Mac. http://crbug.com/378134
     sources -= [ "controls/native/native_view_host_unittest.cc" ]
