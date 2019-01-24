@@ -1026,7 +1026,9 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
 
   // TODO(jonross): Enable on ChromeOS once blocking mus bugs are fixed:
   // https://crbug.com/920642 https://crbug.com/920006
-#if !defined(OS_CHROMEOS)
+  // TODO(jonross): Enable on Android once root cause of crash is found and
+  // fixed: https://crbug.com/923742
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   // When the size has changed, we must ensure that there is a new, updated
   // viz::LocalSurfaceId. Otherwise we encounter Surface Invariants Violation at
   // the time of frame submission. Check for this violation here in order to
