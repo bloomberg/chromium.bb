@@ -313,6 +313,11 @@ class ProfileSyncServiceTest : public ::testing::Test {
     return profile_sync_service_bundle_.component_factory();
   }
 
+  const syncer::LocalDeviceInfoProvider* local_device_info_provider() {
+    return profile_sync_service_bundle_.device_info_sync_service()
+        ->GetLocalDeviceInfoProvider();
+  }
+
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   ProfileSyncServiceBundle profile_sync_service_bundle_;
@@ -908,7 +913,7 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportTest, ClearDataOnSignOut) {
             service()->GetTransportState());
   ASSERT_LT(base::Time::Now() - service()->GetLastSyncedTime(),
             base::TimeDelta::FromMinutes(1));
-  ASSERT_TRUE(service()->GetLocalDeviceInfoProvider()->GetLocalDeviceInfo());
+  ASSERT_TRUE(local_device_info_provider()->GetLocalDeviceInfo());
 
   // Sign out.
   service()->StopAndClear();
@@ -918,7 +923,7 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportTest, ClearDataOnSignOut) {
   EXPECT_FALSE(service()->IsSyncFeatureEnabled());
 
   EXPECT_TRUE(service()->GetLastSyncedTime().is_null());
-  EXPECT_FALSE(service()->GetLocalDeviceInfoProvider()->GetLocalDeviceInfo());
+  EXPECT_FALSE(local_device_info_provider()->GetLocalDeviceInfo());
 }
 
 TEST_F(ProfileSyncServiceWithStandaloneTransportTest, ClearDataOnSignOut) {
@@ -930,7 +935,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportTest, ClearDataOnSignOut) {
   base::Time last_synced_time = service()->GetLastSyncedTime();
   ASSERT_LT(base::Time::Now() - last_synced_time,
             base::TimeDelta::FromMinutes(1));
-  ASSERT_TRUE(service()->GetLocalDeviceInfoProvider()->GetLocalDeviceInfo());
+  ASSERT_TRUE(local_device_info_provider()->GetLocalDeviceInfo());
 
   // Sign out.
   service()->StopAndClear();
@@ -942,7 +947,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportTest, ClearDataOnSignOut) {
   EXPECT_FALSE(service()->IsSyncFeatureEnabled());
 
   EXPECT_NE(service()->GetLastSyncedTime(), last_synced_time);
-  EXPECT_TRUE(service()->GetLocalDeviceInfoProvider()->GetLocalDeviceInfo());
+  EXPECT_TRUE(local_device_info_provider()->GetLocalDeviceInfo());
 }
 
 // Verify that credential errors get returned from GetAuthError().
@@ -1383,7 +1388,7 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportTest, DisableSyncOnClient) {
             service()->GetTransportState());
   ASSERT_LT(base::Time::Now() - service()->GetLastSyncedTime(),
             base::TimeDelta::FromMinutes(1));
-  ASSERT_TRUE(service()->GetLocalDeviceInfoProvider()->GetLocalDeviceInfo());
+  ASSERT_TRUE(local_device_info_provider()->GetLocalDeviceInfo());
 
   syncer::SyncProtocolError client_cmd;
   client_cmd.action = syncer::DISABLE_SYNC_ON_CLIENT;
@@ -1404,7 +1409,7 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportTest, DisableSyncOnClient) {
   EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
             service()->GetTransportState());
   EXPECT_TRUE(service()->GetLastSyncedTime().is_null());
-  EXPECT_FALSE(service()->GetLocalDeviceInfoProvider()->GetLocalDeviceInfo());
+  EXPECT_FALSE(local_device_info_provider()->GetLocalDeviceInfo());
 #endif
 
   EXPECT_FALSE(service()->IsSyncFeatureEnabled());
@@ -1420,7 +1425,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportTest, DisableSyncOnClient) {
             service()->GetTransportState());
   ASSERT_LT(base::Time::Now() - service()->GetLastSyncedTime(),
             base::TimeDelta::FromMinutes(1));
-  ASSERT_TRUE(service()->GetLocalDeviceInfoProvider()->GetLocalDeviceInfo());
+  ASSERT_TRUE(local_device_info_provider()->GetLocalDeviceInfo());
 
   syncer::SyncProtocolError client_cmd;
   client_cmd.action = syncer::DISABLE_SYNC_ON_CLIENT;
@@ -1443,7 +1448,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportTest, DisableSyncOnClient) {
   EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
             service()->GetTransportState());
   EXPECT_TRUE(service()->GetLastSyncedTime().is_null());
-  EXPECT_FALSE(service()->GetLocalDeviceInfoProvider()->GetLocalDeviceInfo());
+  EXPECT_FALSE(local_device_info_provider()->GetLocalDeviceInfo());
 #endif
 
   EXPECT_FALSE(service()->IsSyncFeatureEnabled());

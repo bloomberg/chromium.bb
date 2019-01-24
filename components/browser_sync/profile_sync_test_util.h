@@ -137,6 +137,10 @@ class ProfileSyncServiceBundle {
     db_thread_ = db_thread;
   }
 
+  syncer::DeviceInfoSyncService* device_info_sync_service() {
+    return &device_info_sync_service_;
+  }
+
  private:
   scoped_refptr<base::SequencedTaskRunner> db_thread_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;

@@ -55,7 +55,6 @@ class SharedURLLoaderFactory;
 
 namespace syncer {
 class BackendMigrator;
-class LocalDeviceInfoProvider;
 class NetworkResources;
 class SyncTypePreferenceProvider;
 class TypeDebugInfoObserver;
@@ -237,10 +236,6 @@ class ProfileSyncService : public syncer::SyncService,
   // Check whether a given sync type preference provider has been added.
   bool HasPreferenceProvider(
       syncer::SyncTypePreferenceProvider* provider) const;
-
-  // TODO(crbug.com/922971): Remove this getter and migrate away callers to
-  // DeviceInfoSyncService.
-  const syncer::LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() const;
 
   // SyncEngineHost implementation.
   void OnEngineInitialized(

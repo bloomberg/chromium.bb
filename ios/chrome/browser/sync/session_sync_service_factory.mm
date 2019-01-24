@@ -9,9 +9,9 @@
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
+#include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/model/model_type_store_service.h"
@@ -24,9 +24,9 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
+#include "ios/chrome/browser/sync/device_info_sync_service_factory.h"
 #include "ios/chrome/browser/sync/glue/sync_start_util.h"
 #include "ios/chrome/browser/sync/model_type_store_service_factory.h"
-#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/sync/sessions/ios_chrome_local_session_event_router.h"
 #include "ios/chrome/browser/tabs/tab_model_synced_window_delegate_getter.h"
 #include "ios/chrome/common/channel_info.h"
@@ -94,13 +94,8 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
 
   const syncer::DeviceInfo* GetLocalDeviceInfo() override {
     DCHECK_CURRENTLY_ON(web::WebThread::UI);
-    browser_sync::ProfileSyncService* profile_sync_service =
-        ProfileSyncServiceFactory::
-            GetAsProfileSyncServiceForBrowserStateIfExists(browser_state_);
-    if (!profile_sync_service) {
-      return nullptr;
-    }
-    return profile_sync_service->GetLocalDeviceInfoProvider()
+    return DeviceInfoSyncServiceFactory::GetForBrowserState(browser_state_)
+        ->GetLocalDeviceInfoProvider()
         ->GetLocalDeviceInfo();
   }
 
@@ -153,6 +148,7 @@ SessionSyncServiceFactory::SessionSyncServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "SessionSyncService",
           BrowserStateDependencyManager::GetInstance()) {
+  DependsOn(DeviceInfoSyncServiceFactory::GetInstance());
   DependsOn(ios::FaviconServiceFactory::GetInstance());
   DependsOn(ios::HistoryServiceFactory::GetInstance());
   DependsOn(ModelTypeStoreServiceFactory::GetInstance());

@@ -1779,12 +1779,6 @@ bool ProfileSyncService::HasPreferenceProvider(
   return preference_providers_.count(provider) > 0;
 }
 
-const syncer::LocalDeviceInfoProvider*
-ProfileSyncService::GetLocalDeviceInfoProvider() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return sync_client_->GetDeviceInfoSyncService()->GetLocalDeviceInfoProvider();
-}
-
 namespace {
 
 class GetAllNodesRequestHelper
