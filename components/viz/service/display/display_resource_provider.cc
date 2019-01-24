@@ -15,7 +15,6 @@
 #include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/service/display/shared_bitmap_manager.h"
 #include "components/viz/service/display/skia_output_surface.h"
-#include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
@@ -461,28 +460,17 @@ DisplayResourceProvider::LockForRead(ResourceId id) {
   // calling LockForRead().
   DCHECK_NE(NEEDS_WAIT, resource->synchronization_state());
 
-  const gpu::Mailbox& mailbox = resource->transferable.mailbox_holder.mailbox;
-  if (resource->is_gpu_resource_type()) {
+  if (resource->is_gpu_resource_type() && !resource->gl_id) {
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
-    if (!resource->gl_id) {
-      if (mailbox.IsSharedImage()) {
-        resource->gl_id =
-            gl->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox.name);
-      } else {
-        resource->gl_id = gl->CreateAndConsumeTextureCHROMIUM(
-            resource->transferable.mailbox_holder.mailbox.name);
-      }
-      resource->SetLocallyUsed();
-    }
-    if (mailbox.IsSharedImage()) {
-      gl->BeginSharedImageAccessDirectCHROMIUM(
-          resource->gl_id, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
-    }
+    resource->gl_id = gl->CreateAndConsumeTextureCHROMIUM(
+        resource->transferable.mailbox_holder.mailbox.name);
+    resource->SetLocallyUsed();
   }
 
   if (!resource->shared_bitmap && !resource->is_gpu_resource_type()) {
-    const SharedBitmapId& shared_bitmap_id = mailbox;
+    const SharedBitmapId& shared_bitmap_id =
+        resource->transferable.mailbox_holder.mailbox;
     std::unique_ptr<SharedBitmap> bitmap =
         shared_bitmap_manager_->GetSharedBitmapFromId(
             resource->transferable.size, resource->transferable.format,
@@ -516,13 +504,6 @@ void DisplayResourceProvider::UnlockForRead(ResourceId id) {
 
   ChildResource* resource = &it->second;
   DCHECK_GT(resource->lock_for_read_count, 0);
-  if (resource->transferable.mailbox_holder.mailbox.IsSharedImage() &&
-      resource->is_gpu_resource_type()) {
-    DCHECK(resource->gl_id);
-    GLES2Interface* gl = ContextGL();
-    DCHECK(gl);
-    gl->EndSharedImageAccessDirectCHROMIUM(resource->gl_id);
-  }
   resource->lock_for_read_count--;
   TryReleaseResource(it);
 }
