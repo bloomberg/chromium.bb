@@ -656,8 +656,10 @@ typedef struct SPEED_FEATURES {
 
 struct AV1_COMP;
 
-void av1_set_speed_features_framesize_independent(struct AV1_COMP *cpi);
-void av1_set_speed_features_framesize_dependent(struct AV1_COMP *cpi);
+void av1_set_speed_features_framesize_independent(struct AV1_COMP *cpi,
+                                                  int speed);
+void av1_set_speed_features_framesize_dependent(struct AV1_COMP *cpi,
+                                                int speed);
 
 #ifdef __cplusplus
 }  // extern "C"

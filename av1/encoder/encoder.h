@@ -719,6 +719,9 @@ typedef struct AV1_COMP {
   int ref_frame_flags;
   int ext_ref_frame_flags;
 
+  // speed is passed as a per-frame parameter into the encoder
+  int speed;
+  // sf contains fine-grained config set internally based on speed
   SPEED_FEATURES sf;
 
   unsigned int max_mv_magnitude;
@@ -875,6 +878,9 @@ typedef struct {
 
   // This is a bitmask of which reference slots can be used in this frame
   int ref_frame_flags;
+
+  // Speed level to use for this frame: Bigger number means faster.
+  int speed;
 
   unsigned int *frame_flags;
 } EncodeFrameParams;

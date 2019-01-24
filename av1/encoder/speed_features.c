@@ -80,7 +80,7 @@ static int frame_is_boosted(const AV1_COMP *cpi) {
 // partly on the screen area that over which they propogate. Propogation is
 // limited by transform block size but the screen area take up by a given block
 // size will be larger for a small image format stretched to full screen.
-static BLOCK_SIZE set_partition_min_limit(AV1_COMMON *const cm) {
+static BLOCK_SIZE set_partition_min_limit(const AV1_COMMON *const cm) {
   unsigned int screen_area = (cm->width * cm->height);
 
   // Select block size based on image format size.
@@ -103,10 +103,9 @@ static int has_internal_image_edge(const AV1_COMP *cpi) {
           (cpi->twopass.this_frame_stats.inactive_zone_cols > 0));
 }
 
-static void set_good_speed_feature_framesize_dependent(AV1_COMP *cpi,
-                                                       SPEED_FEATURES *sf,
-                                                       int speed) {
-  AV1_COMMON *const cm = &cpi->common;
+static void set_good_speed_feature_framesize_dependent(
+    const AV1_COMP *const cpi, SPEED_FEATURES *const sf, int speed) {
+  const AV1_COMMON *const cm = &cpi->common;
   const int is_720p_or_larger = AOMMIN(cm->width, cm->height) >= 720;
   const int is_480p_or_larger = AOMMIN(cm->width, cm->height) >= 480;
 
@@ -201,10 +200,9 @@ static void set_good_speed_feature_framesize_dependent(AV1_COMP *cpi,
   }
 }
 
-static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
-                                                          SPEED_FEATURES *sf,
-                                                          int speed) {
-  AV1_COMMON *const cm = &cpi->common;
+static void set_good_speed_features_framesize_independent(
+    const AV1_COMP *const cpi, SPEED_FEATURES *const sf, int speed) {
+  const AV1_COMMON *const cm = &cpi->common;
   const int boosted = frame_is_boosted(cpi);
 
   // Speed 0 for all speed features that give neutral coding performance change.
@@ -409,12 +407,12 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
   }
 }
 
-void av1_set_speed_features_framesize_dependent(AV1_COMP *cpi) {
+void av1_set_speed_features_framesize_dependent(AV1_COMP *cpi, int speed) {
   SPEED_FEATURES *const sf = &cpi->sf;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
 
   if (oxcf->mode == GOOD) {
-    set_good_speed_feature_framesize_dependent(cpi, sf, oxcf->speed);
+    set_good_speed_feature_framesize_dependent(cpi, sf, speed);
   }
 
   if (sf->disable_split_mask == DISABLE_ALL_SPLIT) {
@@ -428,7 +426,7 @@ void av1_set_speed_features_framesize_dependent(AV1_COMP *cpi) {
     cpi->find_fractional_mv_step = av1_return_min_sub_pixel_mv;
 }
 
-void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
+void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   AV1_COMMON *const cm = &cpi->common;
   SPEED_FEATURES *const sf = &cpi->sf;
   MACROBLOCK *const x = &cpi->td.mb;
@@ -577,7 +575,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->perform_coeff_opt = 0;
 
   if (oxcf->mode == GOOD)
-    set_good_speed_features_framesize_independent(cpi, sf, oxcf->speed);
+    set_good_speed_features_framesize_independent(cpi, sf, speed);
 
   if (!cpi->seq_params_locked) {
     cpi->common.seq_params.enable_dual_filter &= !sf->disable_dual_filter;
@@ -592,28 +590,31 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   cpi->diamond_search_sad = av1_diamond_search_sad;
 
   sf->allow_exhaustive_searches = 1;
-  int speed = (oxcf->speed > MAX_MESH_SPEED) ? MAX_MESH_SPEED : oxcf->speed;
+
+  const int mesh_speed = AOMMIN(speed, MAX_MESH_SPEED);
   if (cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION)
     sf->exhaustive_searches_thresh = (1 << 24);
   else
     sf->exhaustive_searches_thresh = (1 << 25);
-  sf->max_exaustive_pct = good_quality_max_mesh_pct[speed];
-  if (speed > 0)
+  sf->max_exaustive_pct = good_quality_max_mesh_pct[mesh_speed];
+  if (mesh_speed > 0)
     sf->exhaustive_searches_thresh = sf->exhaustive_searches_thresh << 1;
 
   for (i = 0; i < MAX_MESH_STEP; ++i) {
-    sf->mesh_patterns[i].range = good_quality_mesh_patterns[speed][i].range;
+    sf->mesh_patterns[i].range =
+        good_quality_mesh_patterns[mesh_speed][i].range;
     sf->mesh_patterns[i].interval =
-        good_quality_mesh_patterns[speed][i].interval;
+        good_quality_mesh_patterns[mesh_speed][i].interval;
   }
   if ((frame_is_intra_only(cm) && cm->allow_screen_content_tools) &&
       (cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION ||
        cpi->oxcf.content == AOM_CONTENT_SCREEN)) {
     for (i = 0; i < MAX_MESH_STEP; ++i) {
-      sf->mesh_patterns[i].range = intrabc_mesh_patterns[speed][i].range;
-      sf->mesh_patterns[i].interval = intrabc_mesh_patterns[speed][i].interval;
+      sf->mesh_patterns[i].range = intrabc_mesh_patterns[mesh_speed][i].range;
+      sf->mesh_patterns[i].interval =
+          intrabc_mesh_patterns[mesh_speed][i].interval;
     }
-    sf->max_exaustive_pct = intrabc_max_mesh_pct[speed];
+    sf->max_exaustive_pct = intrabc_max_mesh_pct[mesh_speed];
   }
 
   // Slow quant, dct and trellis not worthwhile for first pass
@@ -654,9 +655,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
       comp_type_rd_threshold_mul[sf->prune_comp_type_by_comp_avg];
   cpi->max_comp_type_rd_threshold_div =
       comp_type_rd_threshold_div[sf->prune_comp_type_by_comp_avg];
-  int tx_domain_speed = (oxcf->speed >= MAX_TX_DOMAIN_EVAL_SPEED)
-                            ? MAX_TX_DOMAIN_EVAL_SPEED
-                            : oxcf->speed;
+  const int tx_domain_speed = AOMMIN(speed, MAX_TX_DOMAIN_EVAL_SPEED);
   cpi->tx_domain_dist_threshold = tx_domain_dist_thresholds[tx_domain_speed];
 
   // assert ensures that coeff_opt_dist_thresholds is accessed correctly

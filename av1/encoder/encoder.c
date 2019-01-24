@@ -358,6 +358,9 @@ static BLOCK_SIZE select_sb_size(const AV1_COMP *const cpi) {
   // When superres / resize is on, 'cm->width / height' can change between
   // calls, so we don't apply this heuristic there. Also, this heuristic gives
   // compression gain for speed >= 2 only.
+  // Things break if superblock size changes per-frame which is why this
+  // heuristic is set based on configured speed rather than actual
+  // speed-features (which may change per-frame in future)
   if (cpi->oxcf.superres_mode == SUPERRES_NONE &&
       cpi->oxcf.resize_mode == RESIZE_NONE && cpi->oxcf.speed >= 2) {
     return (cm->width >= 480 && cm->height >= 360) ? BLOCK_128X128
@@ -2806,8 +2809,8 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
                   (int32_t *)aom_memalign(
                       16, MAX_SB_SQUARE * sizeof(*cpi->td.mb.mask_buf)));
 
-  av1_set_speed_features_framesize_independent(cpi);
-  av1_set_speed_features_framesize_dependent(cpi);
+  av1_set_speed_features_framesize_independent(cpi, oxcf->speed);
+  av1_set_speed_features_framesize_dependent(cpi, oxcf->speed);
 
   for (int frame = 0; frame < MAX_LAG_BUFFERS; ++frame) {
     int mi_cols = ALIGN_POWER_OF_TWO(cm->mi_cols, MAX_MIB_SIZE_LOG2);
@@ -3907,7 +3910,7 @@ static void set_size_independent_vars(AV1_COMP *cpi) {
     cm->global_motion[i] = default_warp_params;
   }
   cpi->global_motion_search_done = 0;
-  av1_set_speed_features_framesize_independent(cpi);
+  av1_set_speed_features_framesize_independent(cpi, cpi->speed);
   av1_set_rd_speed_thresholds(cpi);
   cm->interp_filter = SWITCHABLE;
   cm->switchable_motion_mode = 1;
@@ -3934,7 +3937,7 @@ static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
 
   // Setup variables that depend on the dimensions of the frame.
-  av1_set_speed_features_framesize_dependent(cpi);
+  av1_set_speed_features_framesize_dependent(cpi, cpi->speed);
 
   // Decide q and q bounds.
   *q = av1_rc_pick_q_and_bounds(cpi, cm->width, cm->height, bottom_index,
@@ -5557,6 +5560,7 @@ int av1_encode(AV1_COMP *const cpi, uint8_t *const dest,
 
   cm->error_resilient_mode = frame_params->error_resilient_mode;
   cpi->ref_frame_flags = frame_params->ref_frame_flags;
+  cpi->speed = frame_params->speed;
 
   if (encode_frame_to_data_rate(cpi, &frame_results->size, dest,
                                 frame_params->frame_flags) != AOM_CODEC_OK) {

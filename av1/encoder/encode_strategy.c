@@ -324,9 +324,12 @@ static int Pass2Encode(AV1_COMP *const cpi, uint8_t *const dest,
 int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
                         uint8_t *const dest, unsigned int *frame_flags,
                         struct lookahead_entry *source) {
-  EncodeFrameParams frame_params = { 0, 0, 0 };
-  EncodeFrameResults frame_results = { 0 };
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
+
+  EncodeFrameParams frame_params;
+  EncodeFrameResults frame_results;
+  memset(&frame_params, 0, sizeof(frame_params));
+  memset(&frame_results, 0, sizeof(frame_results));
 
   frame_params.frame_flags = frame_flags;
 
@@ -335,6 +338,11 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 
   // TODO(david.turner@argondesign.com): Change all the encode strategy to
   // modify frame_params instead of cm or cpi.
+
+  // Per-frame encode speed.  In theory this can vary, but things may have been
+  // written assuming speed-level will not change within a sequence, so this
+  // parameter should be used with caution.
+  frame_params.speed = oxcf->speed;
 
   if (oxcf->pass == 0) {  // Single pass encode
     if (Pass0Encode(cpi, dest, &frame_params, &frame_results) != AOM_CODEC_OK) {
