@@ -14,13 +14,17 @@
 #include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/class_property.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
+#include "ui/events/gestures/gesture_recognizer.h"
+#include "ui/events/gestures/gesture_recognizer_observer.h"
 #include "ui/platform_window/stub/stub_window.h"
 
 DEFINE_UI_CLASS_PROPERTY_TYPE(aura::WindowTreeHostMus*);
@@ -36,6 +40,62 @@ DEFINE_UI_CLASS_PROPERTY_KEY(
 // overlap with values assigned by Ozone's PlatformWindow (which starts at 1
 // and increases).
 uint32_t next_accelerated_widget_id = std::numeric_limits<uint32_t>::max();
+
+// ScopedTouchTransferController controls the transfer of touch events for
+// window move loop. It transfers touches before the window move starts, and
+// then transfers them back to the original window when the window move ends.
+// However this transferring back to the original shouldn't happen if the client
+// wants to continue the dragging on another window (like attaching the dragged
+// tab to another window).
+class ScopedTouchTransferController : public ui::GestureRecognizerObserver {
+ public:
+  ScopedTouchTransferController(Window* source, Window* dest)
+      : tracker_({source, dest}),
+        gesture_recognizer_(source->env()->gesture_recognizer()) {
+    gesture_recognizer_->TransferEventsTo(
+        source, dest, ui::TransferTouchesBehavior::kDontCancel);
+    gesture_recognizer_->AddObserver(this);
+  }
+  ~ScopedTouchTransferController() override {
+    gesture_recognizer_->RemoveObserver(this);
+    if (tracker_.windows().size() == 2) {
+      Window* source = tracker_.Pop();
+      Window* dest = tracker_.Pop();
+      gesture_recognizer_->TransferEventsTo(
+          dest, source, ui::TransferTouchesBehavior::kDontCancel);
+    }
+  }
+
+ private:
+  // ui::GestureRecognizerObserver:
+  void OnActiveTouchesCanceledExcept(
+      ui::GestureConsumer* not_cancelled) override {}
+  void OnEventsTransferred(
+      ui::GestureConsumer* current_consumer,
+      ui::GestureConsumer* new_consumer,
+      ui::TransferTouchesBehavior transfer_touches_behavior) override {
+    if (tracker_.windows().size() <= 1)
+      return;
+    Window* dest = tracker_.windows()[1];
+    if (current_consumer == dest)
+      tracker_.Remove(dest);
+  }
+  void OnActiveTouchesCanceled(ui::GestureConsumer* consumer) override {}
+
+  WindowTracker tracker_;
+
+  ui::GestureRecognizer* gesture_recognizer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedTouchTransferController);
+};
+
+void OnPerformWindowMoveDone(
+    std::unique_ptr<ScopedTouchTransferController> controller,
+    base::OnceCallback<void(bool)> callback,
+    bool success) {
+  controller.reset();
+  std::move(callback).Run(success);
+}
 
 }  // namespace
 
@@ -155,11 +215,21 @@ void WindowTreeHostMus::StackAtTop() {
 }
 
 void WindowTreeHostMus::PerformWindowMove(
+    Window* content_window,
     ws::mojom::MoveLoopSource mus_source,
     const gfx::Point& cursor_location,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
+  DCHECK(window()->Contains(content_window));
+  std::unique_ptr<ScopedTouchTransferController> scoped_controller;
+  if (content_window != window()) {
+    scoped_controller = std::make_unique<ScopedTouchTransferController>(
+        content_window, window());
+  }
+  content_window->ReleaseCapture();
   delegate_->OnWindowTreeHostPerformWindowMove(
-      this, mus_source, cursor_location, callback);
+      this, mus_source, cursor_location,
+      base::BindOnce(&OnPerformWindowMoveDone, std::move(scoped_controller),
+                     std::move(callback)));
 }
 
 void WindowTreeHostMus::CancelWindowMove() {

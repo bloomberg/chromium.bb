@@ -91,8 +91,6 @@ class BrowserNonClientFrameViewAsh
   void OnThemeChanged() override;
   void ChildPreferredSizeChanged(views::View* child) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
-  bool OnMouseDragged(const ui::MouseEvent& event) override;
-  void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   // BrowserFrameHeaderAsh::AppearanceProvider:
@@ -218,10 +216,6 @@ class BrowserNonClientFrameViewAsh
   // Returns whether this window is currently in the overview list.
   bool IsInOverviewMode() const;
 
-  void StartWindowMove(const ui::LocatedEvent& event);
-
-  void OnWindowMoveDone(bool success);
-
   // Returns the top level aura::Window for this browser window.
   const aura::Window* GetFrameWindow() const;
   aura::Window* GetFrameWindow();
@@ -250,8 +244,6 @@ class BrowserNonClientFrameViewAsh
   mojo::Binding<ash::mojom::SplitViewObserver> observer_binding_{this};
 
   ScopedObserver<aura::Window, aura::WindowObserver> window_observer_{this};
-
-  bool performing_window_move_ = false;
 
   // Maintains the current split view state.
   ash::mojom::SplitViewState split_view_state_ =
