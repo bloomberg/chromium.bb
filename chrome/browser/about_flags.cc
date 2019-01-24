@@ -417,15 +417,6 @@ const FeatureEntry::FeatureVariation kCCTModuleCacheVariations[] = {
 
 #endif  // OS_ANDROID
 
-const FeatureEntry::Choice kNumRasterThreadsChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kNumRasterThreadsOne, switches::kNumRasterThreads, "1"},
-    {flag_descriptions::kNumRasterThreadsTwo, switches::kNumRasterThreads, "2"},
-    {flag_descriptions::kNumRasterThreadsThree, switches::kNumRasterThreads,
-     "3"},
-    {flag_descriptions::kNumRasterThreadsFour, switches::kNumRasterThreads,
-     "4"}};
-
 const FeatureEntry::Choice kMHTMLGeneratorOptionChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kMhtmlSkipNostoreMain, switches::kMHTMLGeneratorOption,
@@ -1915,9 +1906,6 @@ const FeatureEntry kFeatureEntries[] = {
          feature_engagement::kIPHDemoMode,
          feature_engagement::kIPHDemoModeChoiceVariations,
          "IPH_DemoMode")},
-    {"num-raster-threads", flag_descriptions::kNumRasterThreadsName,
-     flag_descriptions::kNumRasterThreadsDescription, kOsAll,
-     MULTI_VALUE_TYPE(kNumRasterThreadsChoices)},
     {"disable-cast-streaming-hw-encoding",
      flag_descriptions::kCastStreamingHwEncodingName,
      flag_descriptions::kCastStreamingHwEncodingDescription, kOsAll,

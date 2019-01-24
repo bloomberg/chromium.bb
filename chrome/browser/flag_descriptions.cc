@@ -1333,14 +1333,6 @@ const char kNtlmV2EnabledDescription[] =
     "Enable NTLMv2 HTTP Authentication. This disables NTLMv1 support.";
 #endif
 
-const char kNumRasterThreadsName[] = "Number of raster threads";
-const char kNumRasterThreadsDescription[] =
-    "Specify the number of raster threads.";
-const char kNumRasterThreadsOne[] = "1";
-const char kNumRasterThreadsTwo[] = "2";
-const char kNumRasterThreadsThree[] = "3";
-const char kNumRasterThreadsFour[] = "4";
-
 const char kOfferStoreUnmaskedWalletCardsName[] =
     "Google Payments card saving checkbox";
 const char kOfferStoreUnmaskedWalletCardsDescription[] =

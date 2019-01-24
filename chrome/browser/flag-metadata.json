@@ -2599,11 +2599,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "num-raster-threads",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "oculus-vr",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

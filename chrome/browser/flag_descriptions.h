@@ -816,13 +816,6 @@ extern const char kNtlmV2EnabledName[];
 extern const char kNtlmV2EnabledDescription[];
 #endif
 
-extern const char kNumRasterThreadsName[];
-extern const char kNumRasterThreadsDescription[];
-extern const char kNumRasterThreadsOne[];
-extern const char kNumRasterThreadsTwo[];
-extern const char kNumRasterThreadsThree[];
-extern const char kNumRasterThreadsFour[];
-
 extern const char kOfferStoreUnmaskedWalletCardsName[];
 extern const char kOfferStoreUnmaskedWalletCardsDescription[];
 
