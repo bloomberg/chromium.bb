@@ -1473,9 +1473,9 @@ class PluginController extends ContentController {
         this.saveData_(message.data);
         break;
       case 'consumeSaveToken':
-        const resolve = this.pendingTokens_.get(message.data.token);
+        const resolver = this.pendingTokens_.get(message.data.token);
         assert(this.pendingTokens_.delete(message.data.token));
-        resolve(null);
+        resolver.resolve(null);
         break;
     }
   }
