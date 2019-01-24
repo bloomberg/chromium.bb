@@ -4,6 +4,28 @@
 
 import("//build/config/locales.gni")
 
+config("mdc_components_ios_public_headers_config") {
+  include_dirs = [ "$root_gen_dir/frameworks/material_components_ios" ]
+}
+
+copy("mdc_components_ios_public_headers") {
+  sources = [
+    "src/components/Buttons/src/ColorThemer/MaterialButtons+ColorThemer.h",
+    "src/components/Buttons/src/MaterialButtons.h",
+    "src/components/Buttons/src/ShapeThemer/MaterialButtons+ShapeThemer.h",
+    "src/components/Buttons/src/TypographyThemer/MaterialButtons+TypographyThemer.h",
+    "src/components/Dialogs/src/MaterialDialogs.h",
+    "src/components/ShadowElevations/src/MaterialShadowElevations.h",
+    "src/components/schemes/Color/src/MaterialColorScheme.h",
+    "src/components/schemes/Shape/src/MaterialShapeScheme.h",
+    "src/components/schemes/Typography/src/MaterialTypographyScheme.h",
+  ]
+  outputs = [
+    "$root_gen_dir/frameworks/material_components_ios/MaterialComponents/{{source_file_part}}",
+  ]
+  public_configs = [ ":mdc_components_ios_public_headers_config" ]
+}
+
 config("config") {
   visibility = [ ":material_components_ios" ]
   include_dirs = [
@@ -438,6 +460,7 @@ source_set("material_components_ios") {
   ]
 
   public_deps = [
+    ":mdc_components_ios_public_headers",
     "//ios/third_party/motion_animator_objc",
     "//ios/third_party/motion_transitioning_objc",
   ]
