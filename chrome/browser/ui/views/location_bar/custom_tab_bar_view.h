@@ -12,6 +12,10 @@
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "ui/views/controls/button/button.h"
 
+namespace gfx {
+class Rect;
+}
+
 class CustomTabBarTitleOriginView;
 class BrowserView;
 
@@ -31,6 +35,9 @@ class CustomTabBarView : public views::View,
   ~CustomTabBarView() override;
 
   LocationIconView* location_icon_view() { return location_icon_view_; }
+
+  // views::View:
+  gfx::Rect GetAnchorBoundsInScreen() const override;
 
   // TabstripModelObserver:
   void TabChangedAt(content::WebContents* contents,

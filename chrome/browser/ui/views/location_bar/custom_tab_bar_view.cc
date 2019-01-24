@@ -23,6 +23,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
@@ -187,6 +188,11 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
 }
 
 CustomTabBarView::~CustomTabBarView() {}
+
+gfx::Rect CustomTabBarView::GetAnchorBoundsInScreen() const {
+  return gfx::UnionRects(location_icon_view_->GetAnchorBoundsInScreen(),
+                         title_origin_view_->GetAnchorBoundsInScreen());
+}
 
 void CustomTabBarView::TabChangedAt(content::WebContents* contents,
                                     int index,
