@@ -323,9 +323,9 @@ suite('AllSites', function() {
 
       assertEquals(fooEtldPlus1, siteEntries[0].siteGroup.etldPlus1);
       assertEquals(2, siteEntries[0].siteGroup.origins.length);
+      assertEquals(fooOrigin, siteEntries[0].siteGroup.origins[0].origin);
       assertEquals(
-          'https://foo.com', siteEntries[0].siteGroup.origins[0].origin);
-      assertEquals(fooOrigin, siteEntries[0].siteGroup.origins[1].origin);
+          'https://foo.com', siteEntries[0].siteGroup.origins[1].origin);
 
       assertEquals(addEtldPlus1, siteEntries[3].siteGroup.etldPlus1);
       assertEquals(1, siteEntries[3].siteGroup.origins.length);
