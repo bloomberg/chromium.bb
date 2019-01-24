@@ -1044,6 +1044,25 @@ bool CSSSelector::IsTreeAbidingPseudoElement() const {
           GetPseudoType() == kPseudoPlaceholder);
 }
 
+bool CSSSelector::IsAllowedAfterPart() const {
+  if (Match() != CSSSelector::kPseudoElement) {
+    return false;
+  }
+  // Everything that makes sense should work following ::part. This whitelist
+  // restricts it to what has been tested.
+  switch (GetPseudoType()) {
+    case kPseudoBefore:
+    case kPseudoAfter:
+    case kPseudoPlaceholder:
+    case kPseudoFirstLine:
+    case kPseudoFirstLetter:
+    case kPseudoSelection:
+      return true;
+    default:
+      return false;
+  }
+}
+
 template <typename Functor>
 static bool ForAnyInTagHistory(const Functor& functor,
                                const CSSSelector& selector) {

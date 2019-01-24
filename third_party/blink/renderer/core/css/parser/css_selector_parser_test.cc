@@ -564,8 +564,10 @@ TEST(CSSSelectorParserTest, ShadowPartPseudoElementValid) {
 }
 
 TEST(CSSSelectorParserTest, ShadowPartAndBeforeAfterPseudoElementValid) {
-  const char* test_cases[] = {"::part(ident)::before", "::part(ident)::after",
-                              "::part(ident)::placeholder"};
+  const char* test_cases[] = {
+      "::part(ident)::before",       "::part(ident)::after",
+      "::part(ident)::placeholder",  "::part(ident)::first-line",
+      "::part(ident)::first-letter", "::part(ident)::selection"};
 
   for (auto* test_case : test_cases) {
     SCOPED_TRACE(test_case);
