@@ -2971,6 +2971,18 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_MENU_UPDATE_UNSUPPORTED_SUMMARY_DEFAULT" desc="Summary string for update menu item explaining that the Android version on the device is unsupported. [CHAR-LIMIT=30]">
         Android version is unsupported
       </message>
+      <message name="IDS_MENU_INLINE_UPDATE_DOWNLOADING" desc="Menu item for when Chrome is in the process of updating. [CHAR-LIMIT=24]">
+        Downloading…
+      </message>
+      <message name="IDS_MENU_INLINE_UPDATE_FAILED" desc="Menu item for when Chrome failed to download an update. [CHAR-LIMIT=24]">
+        Couldn’t download
+      </message>
+      <message name="IDS_MENU_INLINE_UPDATE_READY" desc="Menu item text that is shown when Chrome has downloaded an update for itself and is ready to be restarted, which will apply the update. [CHAR-LIMIT=24]">
+        Update ready
+      </message>
+      <message name="IDS_MENU_INLINE_UPDATE_READY_SUMMARY" desc="Summary text that is shown when Chrome has downloaded an update for itself and is ready to be restarted, which will apply the update.  This lets the user know the update will restart. [CHAR-LIMIT=24]">
+        Restart Chrome
+      </message>
       <message name="IDS_MENU_MOVE_TO_OTHER_WINDOW" desc="Menu item for moving the current tab into the other window. [CHAR-LIMIT=27]">
         Move to other window
       </message>

@@ -394,6 +394,14 @@ const FeatureEntry::Choice kForceUpdateMenuTypeChoices[] = {
      switches::kForceUpdateMenuType, "update_available"},
     {flag_descriptions::kUpdateMenuTypeUnsupportedOSVersion,
      switches::kForceUpdateMenuType, "unsupported_os_version"},
+    {flag_descriptions::kUpdateMenuTypeInlineUpdateAvailable,
+     switches::kForceUpdateMenuType, "inline_update_available"},
+    {flag_descriptions::kUpdateMenuTypeInlineUpdateDownloading,
+     switches::kForceUpdateMenuType, "inline_update_downloading"},
+    {flag_descriptions::kUpdateMenuTypeInlineUpdateReady,
+     switches::kForceUpdateMenuType, "inline_update_ready"},
+    {flag_descriptions::kUpdateMenuTypeInlineUpdateFailed,
+     switches::kForceUpdateMenuType, "inline_update_failed"},
 };
 
 const FeatureEntry::FeatureParam kCCTModuleCache_ZeroMinutes[] = {
