@@ -4808,3 +4808,48 @@ TEST_F(DiskCacheBackendTest, SimpleOpenOrCreateEntry) {
   SetSimpleCacheMode();
   BackendOpenOrCreateEntry();
 }
+
+TEST_F(DiskCacheBackendTest, EmptyCorruptSimpleCacheRecovery) {
+  SetSimpleCacheMode();
+
+  const std::string kCorruptData("corrupted");
+
+  // Create a corrupt fake index in an otherwise empty simple cache.
+  ASSERT_TRUE(base::PathExists(cache_path_));
+  const base::FilePath index = cache_path_.AppendASCII("index");
+  ASSERT_EQ(static_cast<int>(kCorruptData.length()),
+            base::WriteFile(index, kCorruptData.data(), kCorruptData.length()));
+
+  base::RunLoop run_loop;
+  std::unique_ptr<disk_cache::Backend> cache;
+  net::TestCompletionCallback cb;
+
+  // Simple cache should be able to recover.
+  int rv = disk_cache::CreateCacheBackend(
+      net::APP_CACHE, net::CACHE_BACKEND_SIMPLE, cache_path_, 0, false, nullptr,
+      &cache, cb.callback());
+  EXPECT_THAT(cb.GetResult(rv), IsOk());
+}
+
+TEST_F(DiskCacheBackendTest, NonEmptyCorruptSimpleCacheDoesNotRecover) {
+  SetSimpleCacheMode();
+  BackendOpenOrCreateEntry();
+
+  const std::string kCorruptData("corrupted");
+
+  // Corrupt the fake index file for the populated simple cache.
+  ASSERT_TRUE(base::PathExists(cache_path_));
+  const base::FilePath index = cache_path_.AppendASCII("index");
+  ASSERT_EQ(static_cast<int>(kCorruptData.length()),
+            base::WriteFile(index, kCorruptData.data(), kCorruptData.length()));
+
+  base::RunLoop run_loop;
+  std::unique_ptr<disk_cache::Backend> cache;
+  net::TestCompletionCallback cb;
+
+  // Simple cache should not be able to recover when there are entry files.
+  int rv = disk_cache::CreateCacheBackend(
+      net::APP_CACHE, net::CACHE_BACKEND_SIMPLE, cache_path_, 0, false, nullptr,
+      &cache, cb.callback());
+  EXPECT_THAT(cb.GetResult(rv), IsError(net::ERR_FAILED));
+}
