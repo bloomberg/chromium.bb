@@ -31,6 +31,8 @@ this.was.Deobfuscated -> FOO:
 """
 
 TEST_DATA = [
+    "FOO",
+    "FOO.bar",
     "Here is a FOO",
     "Here is a FOO baz",
     "Here is a \"FOO\" baz",
@@ -50,9 +52,12 @@ TEST_DATA = [
      " FOO.bar(int,android.os.Bundle)' on a null object reference"),
     ("Caused by: java.lang.NullPointerException: Attempt to read from field"
      " 'int[] FOO.a' on a null object reference"),
+    "java.lang.VerifyError: FOO",
 ]
 
 EXPECTED_OUTPUT = [
+    "this.was.Deobfuscated",
+    "this.was.Deobfuscated.someMethod",
     "Here is a this.was.Deobfuscated",
     "Here is a FOO baz",
     "Here is a \"this.was.Deobfuscated\" baz",
@@ -74,6 +79,7 @@ EXPECTED_OUTPUT = [
      " object reference"),
     ("Caused by: java.lang.NullPointerException: Attempt to read from field"
      " 'int[] this.was.Deobfuscated.FontFamily' on a null object reference"),
+    "java.lang.VerifyError: this.was.Deobfuscated",
 ]
 TEST_DATA = [s + "\n" for s in TEST_DATA]
 EXPECTED_OUTPUT = [s + "\n" for s in EXPECTED_OUTPUT]
