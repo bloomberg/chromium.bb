@@ -463,8 +463,6 @@ interface TestObject {
     [CallWith=ScriptState] void callWithScriptStateVoidMethod();
     [CallWith=ScriptState] long callWithScriptStateLongMethod();
     [CallWith=(ScriptState,ExecutionContext,Isolate)] void callWithScriptStateExecutionContextIsolateVoidMethod();
-    [CallWith=(ScriptState,ScriptArguments)] void callWithScriptStateScriptArgumentsVoidMethod();
-    [CallWith=(ScriptState,ScriptArguments)] void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(optional boolean optionalBooleanArg);
     [CallWith=CurrentWindow] void callWithCurrentWindow();
     [CallWith=(CurrentWindow,EnteredWindow)] void callWithCurrentWindowScriptWindow();
     [CallWith=ThisValue] void callWithThisValue();

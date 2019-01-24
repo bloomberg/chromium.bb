@@ -139,10 +139,6 @@ def method_context(interface, method, is_visible=True):
 
     this_cpp_value = cpp_value(interface, method, len(arguments))
 
-    is_call_with_script_arguments = has_extended_attribute_value(method, 'CallWith', 'ScriptArguments')
-    if is_call_with_script_arguments:
-        includes.update(['bindings/core/v8/script_call_stack.h',
-                         'core/inspector/script_arguments.h'])
     is_call_with_script_state = has_extended_attribute_value(method, 'CallWith', 'ScriptState')
     is_call_with_this_value = has_extended_attribute_value(method, 'CallWith', 'ThisValue')
     if is_call_with_script_state or is_call_with_this_value:
@@ -210,7 +206,6 @@ def method_context(interface, method, is_visible=True):
                 if argument_context['is_optional_without_default_value']),
         'idl_type': idl_type.base_type,
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
-        'is_call_with_script_arguments': is_call_with_script_arguments,
         'is_call_with_script_state': is_call_with_script_state,
         'is_call_with_this_value': is_call_with_this_value,
         'is_ce_reactions': is_ce_reactions,
