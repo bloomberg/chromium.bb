@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/date/date_view.h"
+#include "ash/system/time/time_view.h"
 
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"

@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/date/tray_system_info.h"
+#include "ash/system/time/time_tray_item_view.h"
 
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
-#include "ash/system/date/date_view.h"
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/system_tray_model.h"
-#include "ash/system/tray/system_tray_notifier.h"
+#include "ash/system/time/time_view.h"
 
 namespace ash {
 
