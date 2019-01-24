@@ -100,7 +100,7 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   ~SaveCardBubbleViews() override;
 
  private:
-  friend class SaveCardBubbleViewsBrowserTestBase;
+  friend class SaveCardBubbleViewsFullFormBrowserTest;
 
   views::View* footnote_view_ = nullptr;
 

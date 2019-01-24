@@ -715,15 +715,20 @@ std::string ObfuscatedCardDigitsAsUTF8(const std::string& str) {
       internal::GetObfuscatedStringForCardDigits(base::ASCIIToUTF16(str)));
 }
 
+std::string LastYear() {
+  base::Time::Exploded now;
+  base::Time::Now().LocalExplode(&now);
+  return std::to_string(now.year - 1);
+}
 std::string NextYear() {
   base::Time::Exploded now;
   base::Time::Now().LocalExplode(&now);
   return std::to_string(now.year + 1);
 }
-std::string LastYear() {
+std::string TenYearsFromNow() {
   base::Time::Exploded now;
   base::Time::Now().LocalExplode(&now);
-  return std::to_string(now.year - 1);
+  return std::to_string(now.year + 10);
 }
 
 }  // namespace test

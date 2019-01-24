@@ -20,11 +20,20 @@ class MonthComboboxModel : public ui::ComboboxModel {
   MonthComboboxModel();
   ~MonthComboboxModel() override;
 
+  // Set |default_index_| to the given |month| before user interaction. There is
+  // no effect if the |month| is out of the range.
+  void SetDefaultIndexByMonth(int month);
+
   // ui::Combobox implementation:
   int GetItemCount() const override;
   base::string16 GetItemAt(int index) override;
+  int GetDefaultIndex() const override;
 
  private:
+  // The index of the item that is selected by default (before user
+  // interaction).
+  int default_index_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(MonthComboboxModel);
 };
 
@@ -37,7 +46,18 @@ class YearComboboxModel : public ui::SimpleComboboxModel {
   explicit YearComboboxModel(int additional_year = 0);
   ~YearComboboxModel() override;
 
+  // Set |default_index_| to the given |year| before user interaction. There is
+  // no effect if the |year| is out of the range.
+  void SetDefaultIndexByYear(int year);
+
+  // ui::Combobox implementation:
+  int GetDefaultIndex() const override;
+
  private:
+  // The index of the item that is selected by default (before user
+  // interaction).
+  int default_index_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(YearComboboxModel);
 };
 

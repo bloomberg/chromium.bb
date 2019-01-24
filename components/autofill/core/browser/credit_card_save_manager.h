@@ -125,7 +125,7 @@ class CreditCardSaveManager {
   friend class CreditCardSaveManagerTest;
   friend class CreditCardSaveManagerTestObserverBridge;
   friend class TestCreditCardSaveManager;
-  friend class SaveCardBubbleViewsBrowserTestBase;
+  friend class SaveCardBubbleViewsFullFormBrowserTest;
 
   // Returns the CreditCardSaveStrikeDatabase for |client_|.
   CreditCardSaveStrikeDatabase* GetCreditCardSaveStrikeDatabase();

@@ -137,7 +137,7 @@ class SaveCardBubbleControllerImpl
 
  private:
   friend class content::WebContentsUserData<SaveCardBubbleControllerImpl>;
-  friend class SaveCardBubbleViewsBrowserTestBase;
+  friend class SaveCardBubbleViewsFullFormBrowserTest;
 
   void FetchAccountInfo();
 
