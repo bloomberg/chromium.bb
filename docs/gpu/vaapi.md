@@ -208,13 +208,17 @@ To run Chromium using VaAPI two arguments are necessary:
 * `--ignore-gpu-blacklist`
 * `--use-gl=desktop` or `--use-gl=egl`
 
-Also, the environment variable `MESA_GLSL_CACHE_DISABLE=false` should be set:
-
-**TODO(crbug.com/917091): Further clarify the env variable and the flags**
-
 ```shell
- MESA_GLSL_CACHE_DISABLE=false ./out/gn/chrome --ignore-gpu-blacklist --use-gl=egl
+./out/gn/chrome --ignore-gpu-blacklist --use-gl=egl
 ```
+
+Note that you can set the environment variable `MESA_GLSL_CACHE_DISABLE=false`
+if you want the gpu process to run in sandboxed mode, see
+[crbug.com/264818](https://crbug.com/264818). To check if the running gpu
+process is sandboxed or not, just open `chrome://gpu` and search for
+`Sandboxed` in the driver information table. In addition, passing
+`--gpu-sandbox-failures-fatal=yes` will prevent the gpu process to run in
+non-sandboxed mode.
 
 Refer to the [previous section](#verify-vaapi) to verify support and use of
 the VaAPI.
