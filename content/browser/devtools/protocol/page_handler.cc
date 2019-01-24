@@ -627,6 +627,18 @@ void PageHandler::CaptureScreenshot(
     callback->sendFailure(Response::InternalError());
     return;
   }
+  if (clip.isJust()) {
+    if (clip.fromJust()->GetWidth() == 0) {
+      callback->sendFailure(
+          Response::Error("Cannot take screenshot with 0 width."));
+      return;
+    }
+    if (clip.fromJust()->GetHeight() == 0) {
+      callback->sendFailure(
+          Response::Error("Cannot take screenshot with 0 height."));
+      return;
+    }
+  }
 
   RenderWidgetHostImpl* widget_host = host_->GetRenderWidgetHost();
   std::string screenshot_format = format.fromMaybe(kPng);
