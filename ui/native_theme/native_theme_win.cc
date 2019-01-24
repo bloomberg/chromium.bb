@@ -1919,7 +1919,7 @@ HANDLE NativeThemeWin::GetThemeHandle(ThemeName theme_name) const {
 
 void NativeThemeWin::RegisterThemeRegkeyObserver() {
   DCHECK(hkcu_themes_regkey_.Valid());
-  hkcu_themes_regkey_.StartWatching(base::BindRepeating(
+  hkcu_themes_regkey_.StartWatching(base::BindOnce(
       [](NativeThemeWin* native_theme) {
         native_theme->NotifyObservers();
         // RegKey::StartWatching only provides one notification. Reregistration
