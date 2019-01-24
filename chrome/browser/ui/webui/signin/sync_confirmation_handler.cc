@@ -12,7 +12,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -23,12 +22,10 @@
 #include "chrome/common/webui_url_constants.h"
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/avatar_icon_util.h"
 #include "components/unified_consent/feature.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "url/gurl.h"
 
 const int kProfileImageSize = 128;
@@ -50,7 +47,7 @@ SyncConfirmationHandler::SyncConfirmationHandler(
 
 SyncConfirmationHandler::~SyncConfirmationHandler() {
   BrowserList::RemoveObserver(this);
-  AccountTrackerServiceFactory::GetForProfile(profile_)->RemoveObserver(this);
+  identity_manager_->RemoveObserver(this);
 
   // Abort signin and prevent sync from starting if none of the actions on the
   // sync confirmation dialog are taken by the user.
@@ -105,14 +102,11 @@ void SyncConfirmationHandler::HandleUndo(const base::ListValue* args) {
 
 void SyncConfirmationHandler::HandleAccountImageRequest(
     const base::ListValue* args) {
-  std::string account_id = identity_manager_->GetPrimaryAccountId();
-  AccountInfo account_info =
-      AccountTrackerServiceFactory::GetForProfile(profile_)->GetAccountInfo(
-          account_id);
+  AccountInfo account_info = identity_manager_->GetPrimaryAccountInfo();
 
   // Fire the "account-image-changed" listener from |SetUserImageURL()|.
   // Note: If the account info is not available yet in the
-  // AccountTrackerService, i.e. account_info is empty, the listener will be
+  // IdentityManager, i.e. account_info is empty, the listener will be
   // fired again through |OnAccountUpdated()|.
   SetUserImageURL(account_info.picture_url);
 }
@@ -196,7 +190,7 @@ void SyncConfirmationHandler::OnAccountUpdated(const AccountInfo& info) {
   if (info.account_id != identity_manager_->GetPrimaryAccountId())
     return;
 
-  AccountTrackerServiceFactory::GetForProfile(profile_)->RemoveObserver(this);
+  identity_manager_->RemoveObserver(this);
   SetUserImageURL(info.picture_url);
 }
 
@@ -226,19 +220,16 @@ void SyncConfirmationHandler::HandleInitializedWithSize(
   if (!browser_)
     return;
 
-  std::string account_id = identity_manager_->GetPrimaryAccountId();
-  if (account_id.empty()) {
+  if (!identity_manager_->HasPrimaryAccount()) {
     // No account is signed in, so there is nothing to be displayed in the sync
     // confirmation dialog.
     return;
   }
-  AccountTrackerService* account_tracker =
-      AccountTrackerServiceFactory::GetForProfile(profile_);
-  AccountInfo account_info = account_tracker->GetAccountInfo(account_id);
+  AccountInfo account_info = identity_manager_->GetPrimaryAccountInfo();
 
   if (!account_info.IsValid()) {
     SetUserImageURL(kNoPictureURLFound);
-    account_tracker->AddObserver(this);
+    identity_manager_->AddObserver(this);
   } else {
     SetUserImageURL(account_info.picture_url);
   }
