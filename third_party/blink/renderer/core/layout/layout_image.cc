@@ -71,11 +71,15 @@ bool CheckForOptimizedImagePolicy(const Document& document,
   // Render the image as a placeholder image if the document does not have the
   // 'unoptimized-images' feature enabled and the image is not
   // sufficiently-well-compressed.
-  if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
-      !document.IsFeatureEnabled(
-          mojom::FeaturePolicyFeature::kUnoptimizedImages)) {
-    if (!new_image->IsAcceptableCompressionRatio())
+  if (!new_image->IsAcceptableCompressionRatio()) {
+    document.CountPotentialFeaturePolicyViolation(
+        mojom::FeaturePolicyFeature::kUnoptimizedImages);
+    if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
+        !document.IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kUnoptimizedImages,
+            ReportOptions::kReportOnFailure)) {
       return true;
+    }
   }
   return false;
 }
