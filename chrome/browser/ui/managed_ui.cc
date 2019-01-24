@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_features.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "components/user_manager/user_manager.h"
@@ -24,6 +25,12 @@ namespace chrome {
 bool ShouldDisplayManagedUi(Profile* profile) {
   if (!base::FeatureList::IsEnabled(features::kShowManagedUi))
     return false;
+
+#if defined(OS_CHROMEOS)
+  // Don't show the UI in demo mode.
+  if (chromeos::DemoSession::IsDeviceInDemoMode())
+    return false;
+#endif
 
   // This profile may have policies configured.
   auto* profile_connector =
