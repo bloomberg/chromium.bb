@@ -30,11 +30,13 @@
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/account_manager/account_manager.h"
 #include "chromeos/account_manager/account_manager_factory.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/account_id/account_id.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
@@ -49,8 +51,12 @@ namespace {
 constexpr char kDeviceAccountMigration[] = "DeviceAccountMigration";
 constexpr char kContentAreaAccountsMigration[] = "ContentAreaAccountsMigration";
 constexpr char kArcAccountsMigration[] = "ArcAccountsMigration";
+constexpr char kSuccessStorage[] = "SuccessStorage";
 constexpr char kMigrationResultMetricName[] =
     "AccountManager.Migrations.Result";
+
+// Maximum number of times migrations should be run.
+constexpr int kMaxMigrationRuns = 1;
 
 AccountManager::AccountKey GetDeviceAccount(const Profile* profile) {
   const user_manager::User* user =
@@ -416,6 +422,34 @@ class ArcAccountsMigration : public AccountMigrationBaseStep,
   DISALLOW_COPY_AND_ASSIGN(ArcAccountsMigration);
 };
 
+// Stores a successful migration run in Prefs.
+// This MUST be the last |Step| of the migration run.
+// |AccountMigrationRunner::Step|s are run only if the previous
+// |AccountMigrationRunner::Step| was successful. The fact that this step is
+// being run implies that the "real" migration steps ran successfully.
+class SuccessStorage : public AccountMigrationRunner::Step {
+ public:
+  explicit SuccessStorage(PrefService* pref_service)
+      : AccountMigrationRunner::Step(kSuccessStorage),
+        pref_service_(pref_service) {}
+  ~SuccessStorage() override = default;
+
+  void Run() override {
+    const int num_times_ran_successfully = pref_service_->GetInteger(
+        prefs::kAccountManagerNumTimesMigrationRanSuccessfully);
+    pref_service_->SetInteger(
+        prefs::kAccountManagerNumTimesMigrationRanSuccessfully,
+        num_times_ran_successfully + 1);
+    FinishWithSuccess();
+  }
+
+ private:
+  // A non-owning pointer.
+  PrefService* const pref_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(SuccessStorage);
+};
+
 }  // namespace
 
 AccountManagerMigrator::AccountManagerMigrator(Profile* profile)
@@ -446,10 +480,18 @@ void AccountManagerMigrator::Start() {
 bool AccountManagerMigrator::ShouldRunMigrations() const {
   // Account migration does not make sense for ephemeral (Guest, Managed
   // Session, Kiosk, Demo etc.) sessions.
-  if (user_manager::UserManager::Get()->IsCurrentUserCryptohomeDataEphemeral())
+  if (user_manager::UserManager::Get()
+          ->IsCurrentUserCryptohomeDataEphemeral()) {
+    VLOG(1) << "Skipping migrations for ephemeral session";
     return false;
+  }
 
-  // TODO(https://crbug.com/923947): Check success state from Preferences.
+  if (profile_->GetPrefs()->GetInteger(
+          prefs::kAccountManagerNumTimesMigrationRanSuccessfully) >=
+      kMaxMigrationRuns) {
+    VLOG(1) << "Skipping migrations because of previous successful runs";
+    return false;
+  }
 
   return true;
 }
@@ -494,7 +536,11 @@ void AccountManagerMigrator::AddMigrationSteps() {
                "provisioned yet";
   }
 
-  // TODO(https://crbug.com/923947): Store success state in Preferences.
+  // This MUST be the last step. Check the class level documentation of
+  // |SuccessStorage| for the reason.
+  migration_runner_.AddStep(
+      std::make_unique<SuccessStorage>(profile_->GetPrefs()));
+
   // TODO(sinhak): Verify Device Account LST state.
 }
 
