@@ -77,9 +77,11 @@
 #include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/crash/content/browser/child_process_crash_observer_android.h"
 #include "net/android/network_change_notifier_factory_android.h"
-#else
+#elif defined(OS_FUCHSIA)
+#include "chromecast/net/network_change_notifier_factory_fuchsia.h"
+#else  // defined(OS_FUCHSIA)
 #include "chromecast/net/network_change_notifier_factory_cast.h"
-#endif
+#endif  // !(defined(OS_ANDROID) || defined(OS_FUCHSIA))
 
 #if defined(OS_FUCHSIA)
 #include "chromecast/net/fake_connectivity_checker.h"
@@ -376,10 +378,13 @@ void CastBrowserMainParts::PreMainMessageLoopStart() {
 #if defined(OS_ANDROID)
   net::NetworkChangeNotifier::SetFactory(
       new net::NetworkChangeNotifierFactoryAndroid());
-#elif !defined(OS_FUCHSIA)
+#elif defined(OS_FUCHSIA)
+  net::NetworkChangeNotifier::SetFactory(
+      new NetworkChangeNotifierFactoryFuchsia());
+#else   // defined(OS_FUCHSIA)
   net::NetworkChangeNotifier::SetFactory(
       new NetworkChangeNotifierFactoryCast());
-#endif  // !defined(OS_FUCHSIA)
+#endif  // !(defined(OS_ANDROID) || defined(OS_FUCHSIA))
 }
 
 void CastBrowserMainParts::PostMainMessageLoopStart() {
@@ -463,17 +468,10 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   cast_browser_process_->SetNetLog(net_log_.get());
   url_request_context_factory_->InitializeOnUIThread(net_log_.get());
 
-#if defined(OS_FUCHSIA)
-  // TODO(777973): Switch to using the real ConnectivityChecker once setup works
-  // properly.
-  LOG(WARNING) << "Using FakeConnectivityChecker.";
-  cast_browser_process_->SetConnectivityChecker(new FakeConnectivityChecker());
-#else
   cast_browser_process_->SetConnectivityChecker(ConnectivityChecker::Create(
       base::CreateSingleThreadTaskRunnerWithTraits(
           {content::BrowserThread::IO}),
       url_request_context_factory_->GetSystemGetter()));
-#endif  // defined(OS_FUCHSIA)
 
   cast_browser_process_->SetBrowserContext(
       std::make_unique<CastBrowserContext>(url_request_context_factory_));
