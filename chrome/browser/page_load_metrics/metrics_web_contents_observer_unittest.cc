@@ -1190,7 +1190,8 @@ TEST_F(MetricsWebContentsObserverTest,
 
 // Main frame delivers an input notification. Subsequently, a subframe delivers
 // an input notification, where the input occurred first. Verify that
-// FirstInputDelay and FirstInputTimestamp come from the subframe.
+// FirstInputDelay and FirstInputTimestamp come from the main frame, as FID is
+// currently main-frame-only.
 TEST_F(MetricsWebContentsObserverTest,
        FirstInputDelayAndTimingSubframeFirstDeliveredSecond) {
   mojom::PageLoadTiming timing;
@@ -1231,12 +1232,11 @@ TEST_F(MetricsWebContentsObserverTest,
   const mojom::InteractiveTiming& interactive_timing =
       *complete_timings().back()->interactive_timing;
 
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(15),
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(10),
             interactive_timing.first_input_delay);
-  // Ensure the timestamp is from the subframe. The main frame timestamp was 100
-  // minutes.
-  EXPECT_LT(interactive_timing.first_input_timestamp,
-            base::TimeDelta::FromMinutes(10));
+  // Ensure the timestamp is from the main frame.
+  EXPECT_EQ(interactive_timing.first_input_timestamp,
+            base::TimeDelta::FromMinutes(100));
 
   CheckNoErrorEvents();
 }
@@ -1280,7 +1280,6 @@ TEST_F(MetricsWebContentsObserverTest,
   timing.interactive_timing->first_input_timestamp =
       base::TimeDelta::FromMilliseconds(90);
 
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
   SimulateTimingUpdate(timing);
 
   // Navigate again to confirm the timing updated for the mainframe message.
@@ -1330,7 +1329,6 @@ TEST_F(MetricsWebContentsObserverTest, LongestInputInMainFrame) {
       base::TimeDelta::FromMilliseconds(100);
   main_frame_timing.interactive_timing->longest_input_timestamp =
       base::TimeDelta::FromMilliseconds(2000);
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
   SimulateTimingUpdate(main_frame_timing);
 
   // Second subframe.
@@ -1366,6 +1364,9 @@ TEST_F(MetricsWebContentsObserverTest, LongestInputInMainFrame) {
 //     LID (15ms)                 LID (100ms)                LID (200ms)
 //
 // Delivery order: Main Frame -> Subframe1 -> Subframe2.
+//
+// Since LID is only recorded in the main frame, we expect the subframe LID to
+// be ignored.
 TEST_F(MetricsWebContentsObserverTest, LongestInputInSubframe) {
   content::WebContentsTester* web_contents_tester =
       content::WebContentsTester::For(web_contents());
@@ -1413,15 +1414,11 @@ TEST_F(MetricsWebContentsObserverTest, LongestInputInSubframe) {
   const mojom::InteractiveTiming& interactive_timing =
       *complete_timings().back()->interactive_timing;
 
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(200),
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(100),
             interactive_timing.longest_input_delay);
 
-  // Actual LID timestamp includes the delta between navigation start in
-  // subframe2 and navigation time in the main frame. That delta varies with
-  // different runs, so we only check here that the timestamp is greater than
-  // 3s.
-  EXPECT_GT(interactive_timing.longest_input_timestamp.value(),
-            base::TimeDelta::FromMilliseconds(3000));
+  EXPECT_EQ(interactive_timing.longest_input_timestamp.value(),
+            base::TimeDelta::FromMilliseconds(2000));
 
   CheckNoErrorEvents();
 }

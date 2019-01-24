@@ -369,29 +369,16 @@ class PageLoadTimingMerger {
           new_interactive_timing.first_invalidating_input;
       target_interactive_timing->interactive_detection =
           new_interactive_timing.interactive_detection;
-    }
 
-    if (MaybeUpdateTimeDelta(&target_interactive_timing->first_input_timestamp,
-                             navigation_start_offset,
-                             new_interactive_timing.first_input_timestamp)) {
-      // If we updated the first input timestamp, also update the
-      // associated first input delay.
+      // first/longest input delay are currently only tracked in the main frame.
       target_interactive_timing->first_input_delay =
           new_interactive_timing.first_input_delay;
-    }
-
-    if (new_interactive_timing.longest_input_delay.has_value()) {
-      base::TimeDelta new_longest_input_timestamp =
-          navigation_start_offset +
-          new_interactive_timing.longest_input_timestamp.value();
-      if (!target_interactive_timing->longest_input_delay.has_value() ||
-          new_interactive_timing.longest_input_delay.value() >
-              target_interactive_timing->longest_input_delay.value()) {
-        target_interactive_timing->longest_input_delay =
-            new_interactive_timing.longest_input_delay;
-        target_interactive_timing->longest_input_timestamp =
-            new_longest_input_timestamp;
-      }
+      target_interactive_timing->first_input_timestamp =
+          new_interactive_timing.first_input_timestamp;
+      target_interactive_timing->longest_input_delay =
+          new_interactive_timing.longest_input_delay;
+      target_interactive_timing->longest_input_timestamp =
+          new_interactive_timing.longest_input_timestamp;
     }
   }
 
