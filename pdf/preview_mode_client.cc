@@ -117,10 +117,6 @@ PreviewModeClient::SearchString(const base::char16* string,
   return std::vector<SearchStringResult>();
 }
 
-void PreviewModeClient::DocumentPaintOccurred() {
-  NOTREACHED();
-}
-
 void PreviewModeClient::DocumentLoadComplete(
     const PDFEngine::DocumentFeatures& document_features,
     uint32_t file_size) {

@@ -644,7 +644,7 @@ wchar_t SimplifyForSearch(wchar_t c) {
       return L'\"';
     case kHebrewPunctuationGereshCharacter:
     case kLeftSingleQuotationMarkCharacter:
-    case kRightSingleQuotationMarkCharacter:;
+    case kRightSingleQuotationMarkCharacter:
       return L'\'';
     default:
       return c;
@@ -3035,8 +3035,6 @@ void PDFiumEngine::FinishPaint(int progressive_index,
 
   FPDF_RenderPage_Close(pages_[page_index]->GetPage());
   progressive_paints_.erase(progressive_paints_.begin() + progressive_index);
-
-  client_->DocumentPaintOccurred();
 }
 
 void PDFiumEngine::CancelPaints() {
