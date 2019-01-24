@@ -333,12 +333,23 @@ bool WindowPerformance::ShouldBufferEntries() {
   return !timing() || !timing()->loadEventStart();
 }
 
+bool WindowPerformance::FirstInputDesired() const {
+  if (!GetFrame() || !GetFrame()->IsMainFrame())
+    return false;
+
+  return !first_input_timing_;
+}
+
 void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
                                             TimeTicks start_time,
                                             TimeTicks processing_start,
                                             TimeTicks processing_end,
                                             bool cancelable) {
-  DCHECK(origin_trials::EventTimingEnabled(GetExecutionContext()));
+  if (!GetFrame())
+    return;
+
+  DCHECK(FirstInputDesired() ||
+         origin_trials::EventTimingEnabled(GetExecutionContext()));
 
   // |start_time| could be null in some tests that inject input.
   DCHECK(!processing_start.is_null());
@@ -368,7 +379,11 @@ void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
 
 void WindowPerformance::ReportEventTimings(WebLayerTreeView::SwapResult result,
                                            TimeTicks timestamp) {
-  DCHECK(origin_trials::EventTimingEnabled(GetExecutionContext()));
+  if (!GetFrame())
+    return;
+
+  DCHECK(FirstInputDesired() ||
+         origin_trials::EventTimingEnabled(GetExecutionContext()));
 
   DOMHighResTimeStamp end_time = MonotonicTimeToDOMHighResTimeStamp(timestamp);
   for (const auto& entry : event_timings_) {
@@ -386,8 +401,11 @@ void WindowPerformance::ReportEventTimings(WebLayerTreeView::SwapResult result,
             PerformanceEventTiming::CreateFirstInputTiming(entry));
       }
     }
-    if (duration_in_ms <= kEventTimingDurationThresholdInMs)
+    // Do not report EventTiming unless origin trial is enabled!
+    if (!origin_trials::EventTimingEnabled(GetExecutionContext()) ||
+        duration_in_ms <= kEventTimingDurationThresholdInMs) {
       continue;
+    }
 
     if (HasObserverFor(PerformanceEntry::kEvent)) {
       UseCounter::Count(GetFrame(),
@@ -418,8 +436,6 @@ void WindowPerformance::AddElementTiming(const AtomicString& name,
 
 void WindowPerformance::DispatchFirstInputTiming(
     PerformanceEventTiming* entry) {
-  DCHECK(origin_trials::EventTimingEnabled(GetExecutionContext()));
-
   if (!entry)
     return;
   DCHECK_EQ("firstInput", entry->entryType());

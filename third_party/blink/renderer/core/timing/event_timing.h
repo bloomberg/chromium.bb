@@ -26,6 +26,7 @@ class CORE_EXPORT EventTiming final {
   void DidDispatchEvent(const Event&);
 
  private:
+  void FinishWillDispatch();
   bool ShouldReportForEventTiming(const Event& event) const;
   // The time the first event handler or default action started to execute.
   TimeTicks processing_start_;

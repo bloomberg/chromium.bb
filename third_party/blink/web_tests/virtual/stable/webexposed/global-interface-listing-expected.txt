@@ -4510,6 +4510,13 @@ interface PerformanceEntry
     getter startTime
     method constructor
     method toJSON
+interface PerformanceEventTiming : PerformanceEntry
+    attribute @@toStringTag
+    getter cancelable
+    getter processingEnd
+    getter processingStart
+    method constructor
+    method toJSON
 interface PerformanceLongTaskTiming : PerformanceEntry
     attribute @@toStringTag
     getter attribution

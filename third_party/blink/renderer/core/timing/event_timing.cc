@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -25,22 +26,29 @@ bool EventTiming::ShouldReportForEventTiming(const Event& event) const {
          event.isTrusted();
 }
 
+void EventTiming::FinishWillDispatch() {
+  processing_start_ = CurrentTimeTicks();
+  finished_will_dispatch_event_ = true;
+}
+
 void EventTiming::WillDispatchEvent(const Event& event) {
   // Assume each event can be dispatched only once.
   DCHECK(!finished_will_dispatch_event_);
   if (!performance_ || !ShouldReportForEventTiming(event))
     return;
 
-  // Although we screen the events for timing by setting these conditions here,
-  // we cannot assume that the conditions should still hold true in
-  // DidDispatchEvent. These conditions have to be re-tested before an entry is
-  // dispatched.
+  // We care about events when the first input is desired or
+  // when the EventTiming origin trial is enabled.
+  if (performance_->FirstInputDesired()) {
+    FinishWillDispatch();
+    return;
+  }
+  if (!origin_trials::EventTimingEnabled(performance_->GetExecutionContext()))
+    return;
   if ((performance_->ShouldBufferEntries() &&
        !performance_->IsEventTimingBufferFull()) ||
-      performance_->HasObserverFor(PerformanceEntry::kEvent) ||
-      !performance_->FirstInputDetected()) {
-    processing_start_ = CurrentTimeTicks();
-    finished_will_dispatch_event_ = true;
+      performance_->HasObserverFor(PerformanceEntry::kEvent)) {
+    FinishWillDispatch();
   }
 }
 
