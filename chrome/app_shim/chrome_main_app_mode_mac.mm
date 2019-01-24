@@ -277,9 +277,9 @@ int ChromeAppModeStart_v5(const app_mode::ChromeAppModeInfo* info) {
                                     base::FilePath(info->profile_dir));
     }
 
-    base::Process app = base::mac::OpenApplicationWithPath(
+    NSRunningApplication* running_app = base::mac::OpenApplicationWithPath(
         base::mac::OuterBundlePath(), command_line, NSWorkspaceLaunchDefault);
-    if (!app.IsValid())
+    if (!running_app)
       return 1;
 
     base::Callback<void(bool)> on_ping_chrome_reply = base::Bind(

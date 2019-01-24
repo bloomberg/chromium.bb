@@ -124,7 +124,7 @@ std::string CertificateSHA1Digest(SecCertificateRef certificate) {
 // - True if the caller is unsigned (there's nothing to verify).
 // - True if |pid| satisfies the caller's designated requirement.
 // - False otherwise (|pid| does not satisfy caller's designated requirement).
-bool IsAcceptablyCodeSigned(pid_t pid) {
+bool IsAcceptablyCodeSignedInternal(pid_t pid) {
   base::ScopedCFTypeRef<SecCodeRef> own_code;
   base::ScopedCFTypeRef<CFDictionaryRef> own_signing_info;
 
@@ -674,23 +674,6 @@ void ExtensionAppShimHandler::OnExtensionEnabled(
     return;
   }
 
-  // If the connecting shim process doesn't have an acceptable code signature,
-  // reject the connection and recreate the shim.
-  if (!IsAcceptablyCodeSigned(bootstrap->GetAppShimPid())) {
-    // TODO(https://crbug.com/923612): Should only be here for a day or two.
-    LOG(ERROR) << "The attaching app shim's code signature is invalid. This "
-                  "will fail in future builds of Chrome.";
-#if 0
-    if (bootstrap->GetLaunchType() == APP_SHIM_LAUNCH_NORMAL) {
-      constexpr bool recreate_shims = true;
-      delegate_->LaunchShim(profile, extension, recreate_shims,
-                            base::BindOnce([](base::Process) {}));
-    }
-    bootstrap->OnFailedToConnectToHost(APP_SHIM_LAUNCH_FAILED_VALIDATION);
-    return;
-#endif
-  }
-
   AppShimHost* host = delegate_->AllowShimToConnect(profile, extension)
                           ? FindOrCreateHost(profile, extension)
                           : nullptr;
@@ -706,7 +689,16 @@ void ExtensionAppShimHandler::OnExtensionEnabled(
       bootstrap->OnFailedToConnectToHost(APP_SHIM_LAUNCH_DUPLICATE_HOST);
       return;
     }
-    host->OnBootstrapConnected(std::move(bootstrap));
+    if (IsAcceptablyCodeSigned(bootstrap->GetAppShimPid())) {
+      host->OnBootstrapConnected(std::move(bootstrap));
+    } else {
+      // If the connecting shim process doesn't have an acceptable code
+      // signature, reject the connection and re-launch the shim. The internal
+      // re-launch will likely fail, whereupon the shim will be recreated.
+      LOG(ERROR) << "The attaching app shim's code signature is invalid.";
+      bootstrap->OnFailedToConnectToHost(APP_SHIM_LAUNCH_FAILED_VALIDATION);
+      host->LaunchShim();
+    }
   } else {
     // If it's an app that has a shim to launch it but shouldn't use a host
     // (e.g, a hosted app that opens in a tab), terminate the shim, but still
@@ -718,6 +710,10 @@ void ExtensionAppShimHandler::OnExtensionEnabled(
   // a browser window for it).
   if (launch_type == APP_SHIM_LAUNCH_NORMAL)
     delegate_->LaunchApp(profile, extension, files);
+}
+
+bool ExtensionAppShimHandler::IsAcceptablyCodeSigned(pid_t pid) const {
+  return IsAcceptablyCodeSignedInternal(pid);
 }
 
 void ExtensionAppShimHandler::OnShimClose(AppShimHost* host) {

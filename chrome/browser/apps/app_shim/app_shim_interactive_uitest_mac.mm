@@ -368,9 +368,10 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_HostedAppLaunch) {
     HostedAppBrowserListObserver listener(app->id());
     base::CommandLine shim_cmdline(base::CommandLine::NO_PROGRAM);
     shim_cmdline.AppendSwitch(app_mode::kLaunchedForTest);
-    base::Process shim_process = base::mac::OpenApplicationWithPath(
+    NSRunningApplication* shim_app = base::mac::OpenApplicationWithPath(
         shim_path_, shim_cmdline, NSWorkspaceLaunchDefault);
-    ASSERT_TRUE(shim_process.IsValid());
+    ASSERT_TRUE(shim_app);
+    base::Process shim_process([shim_app processIdentifier]);
     listener.WaitUntilAdded();
 
     ASSERT_TRUE(GetFirstHostedAppWindow());
@@ -438,9 +439,10 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_Launch) {
     ExtensionTestMessageListener launched_listener("Launched", false);
     base::CommandLine shim_cmdline(base::CommandLine::NO_PROGRAM);
     shim_cmdline.AppendSwitch(app_mode::kLaunchedForTest);
-    base::Process shim_process = base::mac::OpenApplicationWithPath(
+    NSRunningApplication* shim_app = base::mac::OpenApplicationWithPath(
         shim_path_, shim_cmdline, NSWorkspaceLaunchDefault);
-    ASSERT_TRUE(shim_process.IsValid());
+    ASSERT_TRUE(shim_app);
+    base::Process shim_process([shim_app processIdentifier]);
     ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
     ASSERT_TRUE(GetFirstAppWindow());
@@ -657,9 +659,9 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_RebuildShim) {
   //     behave normally.
   ExtensionTestMessageListener launched_listener("Launched", false);
   base::CommandLine shim_cmdline(base::CommandLine::NO_PROGRAM);
-  base::Process shim_process = base::mac::OpenApplicationWithPath(
+  NSRunningApplication* shim_app = base::mac::OpenApplicationWithPath(
       shim_path, shim_cmdline, NSWorkspaceLaunchDefault);
-  ASSERT_TRUE(shim_process.IsValid());
+  ASSERT_TRUE(shim_app);
 
   // Wait for the app to start (1). At this point there is no shim host.
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
