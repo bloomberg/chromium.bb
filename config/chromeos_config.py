@@ -3045,6 +3045,7 @@ def FactoryBuilders(site_config, boards_dict, ge_build_config):
       uprev=True,
       overlays=constants.BOTH_OVERLAYS,
       push_overlays=constants.BOTH_OVERLAYS,
+      useflags=config_lib.append_useflags(['-cros-debug', 'chrome_internal']),
       builder_class_name='workspace_builders.FactoryBranchBuilder',
       build_timeout=6*60 * 60,
       description='TOT builder to build a firmware branch.',

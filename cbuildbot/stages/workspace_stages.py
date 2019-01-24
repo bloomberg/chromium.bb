@@ -43,6 +43,26 @@ class InvalidWorkspace(failures_lib.StepFailure):
   """Raised when a workspace isn't usable."""
 
 
+def ChrootArgs(options):
+  """cros_sdk command line arguments.
+
+  To ensure consistent arguments passed into cros_sdk for workspace stages,
+  compute them here.
+
+  Args:
+    options: self._run.options
+
+  Returns:
+    List of command line arguments, normally passed into RunCommand as
+    chroot_args.
+  """
+  chroot_args = ['--cache-dir', options.cache_dir]
+  if options.chrome_root:
+    chroot_args += ['--chrome_root', options.chrome_root]
+
+  return chroot_args
+
+
 class WorkspaceStageBase(generic_stages.BuilderStage):
   """Base class for Workspace stages."""
   def __init__(self, builder_run, buildstore, build_root, **kwargs):
@@ -362,8 +382,10 @@ class WorkspaceInitSDKStage(WorkspaceStageBase):
                                constants.DEFAULT_CHROOT_DIR)
 
     # Worksapce chroots are always wiped by cleanup stage, no need to update.
-    cmd = ['cros_sdk', '--create', '--cache-dir', self._run.options.cache_dir]
-    commands.RunBuildScript(self._build_root, cmd, chromite_cmd=True)
+    cmd = ['cros_sdk', '--create'] + ChrootArgs(self._run.options)
+
+    commands.RunBuildScript(self._build_root, cmd, chromite_cmd=True,
+                            extra_env=self._portage_extra_env)
 
     post_ver = cros_sdk_lib.GetChrootVersion(chroot_path)
     logging.PrintBuildbotStepText(post_ver)
@@ -379,9 +401,10 @@ class WorkspaceSetupBoardStage(generic_stages.BoardSpecificBuilderStage,
     commands.SetupBoard(
         self._build_root, board=self._current_board, usepkg=usepkg,
         force=self._run.config.board_replace,
-        extra_env=self._portage_extra_env, chroot_upgrade=True,
         profile=self._run.options.profile or self._run.config.profile,
-        chroot_args=['--cache-dir', self._run.options.cache_dir])
+        chroot_upgrade=True,
+        chroot_args=ChrootArgs(self._run.options),
+        extra_env=self._portage_extra_env)
 
 
 class WorkspaceBuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
@@ -412,16 +435,10 @@ class WorkspaceBuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     if self._run.config.nobuildretry:
       cmd.append('--nobuildretry')
 
-    chroot_args = ['--cache-dir', self._run.options.cache_dir]
-    if self._run.options.chrome_root:
-      chroot_args += ['--chrome_root', self._run.options.chrome_root]
-
-    # TODO: Add event file handling, for build package performance tracking.
-    #if self.AfterLimit(BUILD_PACKAGES_EVENTS):
-    #  cmd.append('--withevents')
-    #  cmd.append('--eventfile=%s' % event_file)
-
     cmd.extend(packages)
 
     commands.RunBuildScript(
-        self._build_root, cmd, chroot_args=chroot_args, enter_chroot=True)
+        self._build_root, cmd,
+        enter_chroot=True,
+        chroot_args=ChrootArgs(self._run.options),
+        extra_env=self._portage_extra_env)

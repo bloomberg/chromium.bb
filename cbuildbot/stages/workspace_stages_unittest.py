@@ -364,6 +364,35 @@ class WorkspaceInitSDKStageTest(WorkspaceStageBase):
             '--create',
             '--cache-dir', '/cache',
         ],
+        extra_env={
+            'USE': '-cros-debug chrome_internal chromeless_tty',
+            'FEATURES': 'separatedebug',
+        },
+        cwd=self.workspace,
+    )
+
+  def testInitSDKWithChrome(self):
+    """Test InitSDK old workspace version."""
+    self._Prepare(
+        'test-firmwarebranch',
+        site_config=workspace_builders_unittest.CreateMockSiteConfig(),
+        extra_cmd_args=['--cache-dir', '/cache', '--chrome_root', '/chrome'])
+
+    self.RunStage()
+
+    self.assertEqual(self.rc.call_count, 1)
+    self.rc.assertCommandCalled(
+        [
+            os.path.join(self.workspace, 'chromite', 'bin', 'cros_sdk'),
+            '--create',
+            '--cache-dir', '/cache',
+            '--chrome_root', '/chrome',
+        ],
+        extra_env={
+            'USE': '-cros-debug chrome_internal chromeless_tty',
+            'FEATURES': 'separatedebug',
+            'CHROME_ORIGIN': 'LOCAL_SOURCE',
+        },
         cwd=self.workspace,
     )
 
@@ -394,11 +423,39 @@ class WorkspaceSetupBoardStageTest(WorkspaceStageBase):
             '--reuse_pkgs_from_local_boards',
         ],
         enter_chroot=True,
+        chroot_args=['--cache-dir', '/cache'],
         extra_env={
             'USE': '-cros-debug chrome_internal chromeless_tty',
             'FEATURES': 'separatedebug',
         },
-        chroot_args=['--cache-dir', '/cache'],
+        cwd=self.workspace,
+    )
+
+  def testSetupBoardWithChrome(self):
+    """Test setup_board old workspace version."""
+    self._Prepare(
+        'test-firmwarebranch',
+        site_config=workspace_builders_unittest.CreateMockSiteConfig(),
+        extra_cmd_args=['--cache-dir', '/cache', '--chrome_root', '/chrome'])
+
+    self.RunStage()
+
+    self.assertEqual(self.rc.call_count, 1)
+    self.rc.assertCommandCalled(
+        [
+            './setup_board',
+            '--board=board',
+            '--accept_licenses=@CHROMEOS',
+            '--nousepkg',
+            '--reuse_pkgs_from_local_boards',
+        ],
+        enter_chroot=True,
+        chroot_args=['--cache-dir', '/cache', '--chrome_root', '/chrome'],
+        extra_env={
+            'USE': '-cros-debug chrome_internal chromeless_tty',
+            'FEATURES': 'separatedebug',
+            'CHROME_ORIGIN': 'LOCAL_SOURCE',
+        },
         cwd=self.workspace,
     )
 
@@ -430,8 +487,12 @@ class WorkspaceBuildPackagesStageTest(WorkspaceStageBase):
             '--reuse_pkgs_from_local_boards',
             'virtual/chromeos-firmware',
         ],
-        chroot_args=['--cache-dir', '/cache'],
         enter_chroot=True,
+        chroot_args=['--cache-dir', '/cache'],
+        extra_env={
+            'USE': u'-cros-debug chrome_internal chromeless_tty',
+            'FEATURES': 'separatedebug',
+        },
         cwd=self.workspace,
     )
 
@@ -458,8 +519,12 @@ class WorkspaceBuildPackagesStageTest(WorkspaceStageBase):
             '--reuse_pkgs_from_local_boards',
             'virtual/chromeos-firmware',
         ],
-        chroot_args=['--cache-dir', '/cache'],
         enter_chroot=True,
+        chroot_args=['--cache-dir', '/cache'],
+        extra_env={
+            'USE': u'-cros-debug chrome_internal chromeless_tty',
+            'FEATURES': 'separatedebug',
+        },
         cwd=self.workspace,
     )
 
@@ -468,7 +533,7 @@ class WorkspaceBuildPackagesStageTest(WorkspaceStageBase):
     self._Prepare(
         'test-factorybranch',
         site_config=workspace_builders_unittest.CreateMockSiteConfig(),
-        extra_cmd_args=['--cache-dir', '/cache'])
+        extra_cmd_args=['--cache-dir', '/cache', '--chrome_root', '/chrome'])
 
     self.RunStage()
 
@@ -488,7 +553,12 @@ class WorkspaceBuildPackagesStageTest(WorkspaceStageBase):
             'virtual/target-os-factory-shim',
             'chromeos-base/autotest-all',
         ],
-        chroot_args=['--cache-dir', '/cache'],
         enter_chroot=True,
+        chroot_args=['--cache-dir', '/cache', '--chrome_root', '/chrome'],
+        extra_env={
+            'USE': u'-cros-debug chrome_internal',
+            'FEATURES': 'separatedebug',
+            'CHROME_ORIGIN': 'LOCAL_SOURCE',
+        },
         cwd=self.workspace,
     )
