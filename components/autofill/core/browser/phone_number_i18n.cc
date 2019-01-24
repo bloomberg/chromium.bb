@@ -108,7 +108,7 @@ bool IsPrintable(base::StringPiece str) {
 
 namespace i18n {
 
-const size_t kMaxPhoneNumberSize = 1000u;
+const size_t kMaxPhoneNumberSize = 40u;
 
 // Returns true if |phone_number| is a possible number.
 bool IsPossiblePhoneNumber(
