@@ -30,7 +30,7 @@ class UI_BASE_EXPORT GlobalMediaKeysListenerWin : public MediaKeysListener {
   static bool has_instance() { return has_instance_; }
 
   // MediaKeysListener implementation.
-  void StartWatchingMediaKey(KeyboardCode key_code) override;
+  bool StartWatchingMediaKey(KeyboardCode key_code) override;
   void StopWatchingMediaKey(KeyboardCode key_code) override;
 
  private:

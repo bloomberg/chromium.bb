@@ -159,6 +159,9 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver,
   bool ExecuteCommands(const ui::Accelerator& accelerator,
                        const std::string& extension_id);
 
+  // Returns true if any media keys are registered.
+  bool IsListeningToAnyMediaKeys() const;
+
   // The content notification registrar for listening to extension events.
   content::NotificationRegistrar registrar_;
 
