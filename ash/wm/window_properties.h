@@ -56,7 +56,8 @@ ASH_EXPORT extern const aura::WindowProperty<bool>* const kWindowIsJanky;
 
 // A property key to store WindowState in the window. The window state
 // is owned by the window.
-extern const aura::WindowProperty<wm::WindowState*>* const kWindowStateKey;
+ASH_EXPORT extern const aura::WindowProperty<wm::WindowState*>* const
+    kWindowStateKey;
 
 // Alphabetical sort.
 

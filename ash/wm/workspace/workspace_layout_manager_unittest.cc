@@ -34,6 +34,7 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_backdrop_delegate_impl.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -680,6 +681,17 @@ TEST_F(WorkspaceLayoutManagerTest,
   Shell::Get()->SetDisplayWorkAreaInsets(window.get(),
                                          gfx::Insets(50, 0, 0, 0));
   EXPECT_EQ(expected_bounds.ToString(), window2->bounds().ToString());
+}
+
+TEST_F(WorkspaceLayoutManagerTest, EnsureWindowStateInOverlay) {
+  std::unique_ptr<aura::Window> window =
+      window_factory::NewWindow(nullptr, aura::client::WINDOW_TYPE_NORMAL);
+  window->Init(ui::LAYER_TEXTURED);
+  auto* overlay_container =
+      Shell::GetPrimaryRootWindowController()->GetContainer(
+          kShellWindowId_OverlayContainer);
+  overlay_container->AddChild(window.get());
+  EXPECT_TRUE(window->GetProperty(kWindowStateKey));
 }
 
 // Following "Solo" tests were originally written for BaseLayoutManager.

@@ -259,6 +259,13 @@ void WorkspaceLayoutManager::OnWindowHierarchyChanged(
     const HierarchyChangeParams& params) {
   if (params.new_parent && params.new_parent == settings_bubble_container_)
     settings_bubble_window_observer_.ObserveWindow(params.target);
+  // The window should have a parent (unless it's being removed), so we can
+  // create WindowState, which requires its parent. (crbug.com/924305)
+  // TODO(oshima): Change this to |EnsureWindowState|, then change
+  // GetWindowState so that it simply returns the WindowState associated with
+  // the window, or nullptr.
+  if (params.new_parent)
+    wm::GetWindowState(params.target);
 
   if (!wm::IsActiveWindow(params.target))
     return;
