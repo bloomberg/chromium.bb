@@ -210,7 +210,7 @@ Polymer({
    */
   onSelectedDestinationOptionChange_: function(e) {
     const value = e.detail;
-    if (value === 'moreDestinations') {
+    if (value === 'seeMore') {
       this.destinationStore.startLoadAllDestinations();
       if (this.activeUser) {
         this.invitationStore.startLoadingInvitations(this.activeUser);
