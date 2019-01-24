@@ -17,6 +17,12 @@
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_surface.h"
 
+namespace base {
+namespace android {
+class ScopedHardwareBufferFenceSync;
+}  // namespace android
+}  // namespace base
+
 namespace gpu {
 class DecoderContext;
 namespace gles2 {
@@ -87,7 +93,7 @@ class MEDIA_GPU_EXPORT TextureOwner
   // Retrieves the AHardwareBuffer from the latest available image data.
   // Note that the object must be used and destroyed on the same thread the
   // TextureOwner is bound to.
-  virtual std::unique_ptr<gl::GLImage::ScopedHardwareBuffer>
+  virtual std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
   GetAHardwareBuffer() = 0;
 
  protected:

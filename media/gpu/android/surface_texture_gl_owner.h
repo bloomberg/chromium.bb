@@ -12,6 +12,12 @@
 #include "media/gpu/media_gpu_export.h"
 #include "ui/gl/android/surface_texture.h"
 
+namespace base {
+namespace android {
+class ScopedHardwareBufferFenceSync;
+}  // namespace android
+}  // namespace base
+
 namespace media {
 
 struct FrameAvailableEvent;
@@ -34,8 +40,8 @@ class MEDIA_GPU_EXPORT SurfaceTextureGLOwner : public TextureOwner {
   void IgnorePendingRelease() override;
   bool IsExpectingFrameAvailable() override;
   void WaitForFrameAvailable() override;
-  std::unique_ptr<gl::GLImage::ScopedHardwareBuffer> GetAHardwareBuffer()
-      override;
+  std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
+  GetAHardwareBuffer() override;
 
  protected:
   void OnTextureDestroyed(gpu::gles2::AbstractTexture*) override;

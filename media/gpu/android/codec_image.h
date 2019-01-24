@@ -17,6 +17,12 @@
 #include "media/gpu/android/surface_texture_gl_owner.h"
 #include "media/gpu/media_gpu_export.h"
 
+namespace base {
+namespace android {
+class ScopedHardwareBufferFenceSync;
+}  // namespace android
+}  // namespace base
+
 namespace media {
 
 // A GLImage that renders MediaCodec buffers to a TextureOwner or overlay
@@ -54,7 +60,8 @@ class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t process_tracing_id,
                     const std::string& dump_name) override;
-  std::unique_ptr<ScopedHardwareBuffer> GetAHardwareBuffer() override;
+  std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
+  GetAHardwareBuffer() override;
   // gpu::gles2::GLStreamTextureMatrix implementation
   void GetTextureMatrix(float xform[16]) override;
   void NotifyPromotionHint(bool promotion_hint,

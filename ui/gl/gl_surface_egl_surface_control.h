@@ -6,6 +6,7 @@
 #define UI_GL_GL_SURFACE_EGL_SURFACE_CONTROL_H_
 
 #include <android/native_window.h>
+#include <memory>
 
 #include "base/android/scoped_hardware_buffer_handle.h"
 #include "base/memory/weak_ptr.h"
@@ -16,6 +17,10 @@
 
 namespace base {
 class SingleThreadTaskRunner;
+
+namespace android {
+class ScopedHardwareBufferFenceSync;
+}  // namespace android
 }  // namespace base
 
 namespace gl {
@@ -83,8 +88,8 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public gl::GLSurfaceEGL {
     gl::SurfaceControl::Surface surface;
   };
 
-  using ResourceRefs =
-      std::vector<std::unique_ptr<GLImage::ScopedHardwareBuffer>>;
+  using ResourceRefs = std::vector<
+      std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>>;
 
   void CommitPendingTransaction(
       const SwapCompletionCallback& completion_callback,

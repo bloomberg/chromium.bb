@@ -4,6 +4,9 @@
 
 #include "media/gpu/android/surface_texture_gl_owner.h"
 
+#include <memory>
+
+#include "base/android/scoped_hardware_buffer_fence_sync.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -143,7 +146,7 @@ void SurfaceTextureGLOwner::WaitForFrameAvailable() {
   }
 }
 
-std::unique_ptr<gl::GLImage::ScopedHardwareBuffer>
+std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
 SurfaceTextureGLOwner::GetAHardwareBuffer() {
   NOTREACHED() << "Don't use AHardwareBuffers with SurfaceTextureGLOwner";
   return nullptr;
