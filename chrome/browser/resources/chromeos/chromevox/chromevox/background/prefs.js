@@ -81,6 +81,7 @@ cvox.ChromeVoxPrefs.DEFAULT_PREFS = {
   'enableEventStreamLogging': false,
   'focusFollowsMouse': false,
   'granularity': undefined,
+  'languageSwitching': false,
   'position': '{}',
   'siteSpecificEnhancements': true,
   'siteSpecificScriptBase':
