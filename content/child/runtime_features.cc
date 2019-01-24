@@ -97,12 +97,6 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
 #if !defined(OS_MACOSX)
   WebRuntimeFeatures::EnableNotificationContentImage(true);
 #endif
-
-// The Media Session API is enabled by default on Android, Chrome OS and
-// Windows.
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_WIN)
-  WebRuntimeFeatures::EnableMediaSession(true);
-#endif
 }
 
 void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(

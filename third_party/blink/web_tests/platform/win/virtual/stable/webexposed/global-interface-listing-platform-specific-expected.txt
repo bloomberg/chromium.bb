@@ -74,28 +74,8 @@ interface BluetoothUUID
     static method getService
     attribute @@toStringTag
     method constructor
-interface MediaMetadata
-    attribute @@toStringTag
-    getter album
-    getter artist
-    getter artwork
-    getter title
-    method constructor
-    setter album
-    setter artist
-    setter artwork
-    setter title
-interface MediaSession
-    attribute @@toStringTag
-    getter metadata
-    getter playbackState
-    method constructor
-    method setActionHandler
-    setter metadata
-    setter playbackState
 interface Navigator
     getter bluetooth
-    getter mediaSession
 interface Notification : EventTarget
     getter image
 [GLOBAL OBJECT]
