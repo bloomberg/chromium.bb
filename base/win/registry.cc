@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <algorithm>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -42,14 +43,12 @@ class RegKey::Watcher : public ObjectWatcher::Delegate {
   Watcher() {}
   ~Watcher() override {}
 
-  bool StartWatching(HKEY key, const ChangeCallback& callback);
+  bool StartWatching(HKEY key, ChangeCallback callback);
 
   // Implementation of ObjectWatcher::Delegate.
   void OnObjectSignaled(HANDLE object) override {
     DCHECK(watch_event_.IsValid() && watch_event_.Get() == object);
-    ChangeCallback callback = callback_;
-    callback_.Reset();
-    callback.Run();
+    std::move(callback_).Run();
   }
 
  private:
@@ -59,7 +58,7 @@ class RegKey::Watcher : public ObjectWatcher::Delegate {
   DISALLOW_COPY_AND_ASSIGN(Watcher);
 };
 
-bool RegKey::Watcher::StartWatching(HKEY key, const ChangeCallback& callback) {
+bool RegKey::Watcher::StartWatching(HKEY key, ChangeCallback callback) {
   DCHECK(key);
   DCHECK(callback_.is_null());
 
@@ -82,7 +81,7 @@ bool RegKey::Watcher::StartWatching(HKEY key, const ChangeCallback& callback) {
     return false;
   }
 
-  callback_ = callback;
+  callback_ = std::move(callback);
   return object_watcher_.StartWatchingOnce(watch_event_.Get(), this);
 }
 
@@ -410,11 +409,11 @@ LONG RegKey::WriteValue(const wchar_t* name,
   return result;
 }
 
-bool RegKey::StartWatching(const ChangeCallback& callback) {
+bool RegKey::StartWatching(ChangeCallback callback) {
   if (!key_watcher_)
     key_watcher_.reset(new Watcher());
 
-  if (!key_watcher_->StartWatching(key_, callback))
+  if (!key_watcher_->StartWatching(key_, std::move(callback)))
     return false;
 
   return true;

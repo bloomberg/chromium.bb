@@ -4,6 +4,8 @@
 
 #include "ui/events/devices/input_device_observer_win.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/singleton.h"
@@ -44,9 +46,9 @@ InputDeviceObserverWin::InputDeviceObserverWin() : weak_factory_(this) {
     slate_mode_enabled_ = IsSlateModeEnabled(registry_key_.get());
     // Start watching the registry for changes.
     base::win::RegKey::ChangeCallback callback =
-        base::Bind(&InputDeviceObserverWin::OnRegistryKeyChanged,
-                   weak_factory_.GetWeakPtr(), registry_key_.get());
-    registry_key_->StartWatching(callback);
+        base::BindOnce(&InputDeviceObserverWin::OnRegistryKeyChanged,
+                       weak_factory_.GetWeakPtr(), registry_key_.get());
+    registry_key_->StartWatching(std::move(callback));
   }
 }
 

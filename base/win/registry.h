@@ -11,6 +11,7 @@
 #include "base/win/windows_types.h"
 
 #include "base/base_export.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/win/object_watcher.h"
 #include "base/win/scoped_handle.h"
@@ -30,7 +31,7 @@ namespace win {
 class BASE_EXPORT RegKey {
  public:
   // Called from the MessageLoop when the key changes.
-  typedef base::Callback<void()> ChangeCallback;
+  using ChangeCallback = base::OnceCallback<void()>;
 
   RegKey();
   explicit RegKey(HKEY key);
@@ -130,7 +131,7 @@ class BASE_EXPORT RegKey {
   // Returns true on success.
   // To stop watching, delete this RegKey object. To continue watching the
   // object after the callback is invoked, call StartWatching again.
-  bool StartWatching(const ChangeCallback& callback);
+  bool StartWatching(ChangeCallback callback);
 
   HKEY Handle() const { return key_; }
 
