@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_APPLICATION_CACHE_HOST_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_APPLICATION_CACHE_HOST_H_
 
+#include "third_party/blink/public/mojom/appcache/appcache.mojom-shared.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_url.h"

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "content/common/content_export.h"
-#include "content/public/common/appcache_info.h"
+#include "url/gurl.h"
 
 namespace content {
 

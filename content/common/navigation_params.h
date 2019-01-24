@@ -19,7 +19,6 @@
 #include "content/common/content_security_policy/csp_disposition_enum.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/common/appcache_info.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
@@ -28,6 +27,7 @@
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/resource_response_info.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
 #include "ui/base/page_transition_types.h"
@@ -370,7 +370,7 @@ struct CONTENT_EXPORT CommitNavigationParams {
 
   // PlzNavigate
   // The AppCache host id to be used to identify this navigation.
-  int appcache_host_id = kAppCacheNoHostId;
+  int appcache_host_id = blink::mojom::kAppCacheNoHostId;
 
   // Set to |kYes| if a navigation is following the rules of user activation
   // propagation. This is different from |has_user_gesture|

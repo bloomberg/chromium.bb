@@ -149,7 +149,6 @@ void LocalDataContainer::Init(CookiesTreeModel* model) {
 void LocalDataContainer::OnAppCacheModelInfoLoaded(
     scoped_refptr<content::AppCacheInfoCollection> appcache_info) {
   using content::AppCacheInfoCollection;
-  using content::AppCacheInfoVector;
 
   if (!appcache_info.get() || appcache_info->infos_by_origin.empty()) {
     // This batch has been canceled, so let the model know it won't be arriving.

@@ -92,7 +92,7 @@ void ApplicationCacheHost::WillStartLoading(ResourceRequest& request) {
     return;
 
   int host_id = host_->GetHostID();
-  if (host_id != WebApplicationCacheHost::kAppCacheNoHostId)
+  if (host_id != mojom::blink::kAppCacheNoHostId)
     request.SetAppCacheHostID(host_id);
 }
 
@@ -230,7 +230,7 @@ ApplicationCacheHost::CacheInfo ApplicationCacheHost::ApplicationCacheInfo() {
 
 int ApplicationCacheHost::GetHostID() const {
   if (!host_)
-    return WebApplicationCacheHost::kAppCacheNoHostId;
+    return mojom::blink::kAppCacheNoHostId;
   return host_->GetHostID();
 }
 

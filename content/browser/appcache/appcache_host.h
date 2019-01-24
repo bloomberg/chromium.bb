@@ -251,7 +251,7 @@ class CONTENT_EXPORT AppCacheHost
 
   // Returns true if this host is for a dedicated worker context.
   bool is_for_dedicated_worker() const {
-    return parent_host_id_ != kAppCacheNoHostId;
+    return parent_host_id_ != blink::mojom::kAppCacheNoHostId;
   }
 
   // Returns the parent context's host instance. This is only valid

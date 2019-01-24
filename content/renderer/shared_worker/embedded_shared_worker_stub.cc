@@ -11,7 +11,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/possibly_associated_wrapper_shared_url_loader_factory.h"
-#include "content/public/common/appcache_info.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
@@ -35,6 +34,7 @@
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/privacy_preferences.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
@@ -110,7 +110,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   // The ID of the precreated AppCacheHost can be valid only when the
   // NetworkService is enabled.
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-         appcache_host_id == kAppCacheNoHostId);
+         appcache_host_id == blink::mojom::kAppCacheNoHostId);
 
   if (main_script_load_params) {
     response_override_ =

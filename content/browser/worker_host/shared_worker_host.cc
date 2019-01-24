@@ -31,6 +31,7 @@
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom.h"
 #include "third_party/blink/public/platform/web_feature.mojom.h"
 
@@ -266,7 +267,7 @@ void SharedWorkerHost::Start(
       renderer_preferences, std::move(preference_watcher_request),
       std::move(content_settings), std::move(service_worker_provider_info),
       appcache_handle_ ? appcache_handle_->appcache_host_id()
-                       : kAppCacheNoHostId,
+                       : blink::mojom::kAppCacheNoHostId,
       std::move(main_script_loader_factory), std::move(main_script_load_params),
       std::move(subresource_loader_factories), std::move(controller),
       std::move(host), std::move(worker_request_),

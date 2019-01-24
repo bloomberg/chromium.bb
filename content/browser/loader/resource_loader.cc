@@ -26,7 +26,6 @@
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/login_delegate.h"
-#include "content/public/common/appcache_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/navigation_policy.h"

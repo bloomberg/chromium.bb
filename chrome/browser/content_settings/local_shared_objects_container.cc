@@ -4,6 +4,8 @@
 
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
 
+#include <vector>
+
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cache_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
@@ -21,6 +23,7 @@
 #include "content/public/common/url_constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "url/gurl.h"
 
 namespace {
@@ -184,7 +187,7 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
       OriginAppCacheInfoMap;
   const OriginAppCacheInfoMap& map = appcaches()->GetOriginAppCacheInfoMap();
   for (auto it = map.begin(); it != map.end(); ++it) {
-    const content::AppCacheInfoVector& info_vector = it->second;
+    const std::vector<blink::mojom::AppCacheInfo>& info_vector = it->second;
     for (auto info = info_vector.begin(); info != info_vector.end(); ++info) {
       if (SameDomainOrHost(origin, info->manifest_url))
         ++count;

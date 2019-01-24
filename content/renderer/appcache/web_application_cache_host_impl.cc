@@ -69,13 +69,13 @@ WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
       was_select_cache_called_(false) {
   DCHECK(client && backend);
   // PlzNavigate: The browser passes the ID to be used.
-  if (appcache_host_id != kAppCacheNoHostId) {
+  if (appcache_host_id != blink::mojom::kAppCacheNoHostId) {
     all_hosts()->AddWithID(this, appcache_host_id);
     host_id_ = appcache_host_id;
   } else {
     host_id_ = all_hosts()->Add(this);
   }
-  DCHECK(host_id_ != kAppCacheNoHostId);
+  DCHECK(host_id_ != blink::mojom::kAppCacheNoHostId);
 
   backend_->RegisterHost(host_id_);
 }
