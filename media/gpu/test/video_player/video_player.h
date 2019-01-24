@@ -6,6 +6,7 @@
 #define MEDIA_GPU_TEST_VIDEO_PLAYER_VIDEO_PLAYER_H_
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -40,6 +41,7 @@ enum class VideoPlayerEvent : size_t {
   kFlushDone,
   kResetting,
   kResetDone,
+  kConfigInfo,  // A config info was encountered in a H.264 video stream.
   kNumEvents,
 };
 
@@ -48,7 +50,7 @@ enum class VideoPlayerEvent : size_t {
 // events to occur.
 class VideoPlayer {
  public:
-  using EventCallback = base::RepeatingCallback<void(VideoPlayerEvent)>;
+  using EventCallback = base::RepeatingCallback<bool(VideoPlayerEvent)>;
 
   ~VideoPlayer();
 
@@ -61,9 +63,14 @@ class VideoPlayer {
       const std::vector<VideoFrameProcessor*>& frame_processors,
       const VideoDecoderClientConfig& config);
 
+  // Play the video asynchronously.
   void Play();
-  void Stop();
+  // Play the video asynchronously. Automatically pause decoding when the
+  // specified |event| occurred |event_count| times.
+  void PlayUntil(VideoPlayerEvent event, size_t event_count = 1);
+  // Reset the decoder to the beginning of the video stream.
   void Reset();
+  // Flush the decoder.
   void Flush();
 
   // Get current media time.
@@ -105,8 +112,9 @@ class VideoPlayer {
                   const VideoDecoderClientConfig& config);
   void Destroy();
 
-  // Notify the client an event has occurred (e.g. frame decoded).
-  void NotifyEvent(VideoPlayerEvent event);
+  // Notify the video player an event has occurred (e.g. frame decoded). Returns
+  // whether the decoder client should continue decoding frames.
+  bool NotifyEvent(VideoPlayerEvent event);
 
   const Video* video_;
   VideoPlayerState video_player_state_;
@@ -120,6 +128,10 @@ class VideoPlayer {
       VideoPlayerEvent::kNumEvents)] GUARDED_BY(event_lock_);
   // The next event ID to start at, when waiting for events.
   size_t event_id_ GUARDED_BY(event_lock_);
+
+  // Automatically pause decoding once the video player has seen the specified
+  // number of events occur.
+  std::pair<VideoPlayerEvent, size_t> play_until_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(VideoPlayer);

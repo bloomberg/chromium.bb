@@ -123,6 +123,9 @@ class VideoDecoderClient : public VideoDecodeAccelerator::Client {
   // Instruct the decoder to perform a Reset.
   void ResetTask();
 
+  // Fire the specified event.
+  void FireEvent(VideoPlayerEvent event);
+
   // Called when a picture buffer is ready to be re-used.
   void ReusePictureBufferTask(int32_t picture_buffer_id);
 
@@ -137,6 +140,7 @@ class VideoDecoderClient : public VideoDecodeAccelerator::Client {
 
   std::unique_ptr<GpuVideoDecodeAcceleratorFactory> decoder_factory_;
   std::unique_ptr<VideoDecodeAccelerator> decoder_;
+  VideoDecodeAccelerator::Config decoder_config_;
   base::Thread decoder_client_thread_;
 
   // Decoder client state, should only be accessed on the decoder client thread.

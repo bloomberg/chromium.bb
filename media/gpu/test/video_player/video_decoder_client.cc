@@ -169,7 +169,7 @@ void VideoDecoderClient::PictureReady(const Picture& picture) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
   DVLOGF(4) << "Picture buffer ID: " << picture.picture_buffer_id();
 
-  event_cb_.Run(VideoPlayerEvent::kFrameDecoded);
+  FireEvent(VideoPlayerEvent::kFrameDecoded);
 
   auto it = video_frames_.find(picture.picture_buffer_id());
   LOG_ASSERT(it != video_frames_.end());
@@ -214,7 +214,7 @@ void VideoDecoderClient::NotifyFlushDone() {
   DCHECK_EQ(0u, num_outstanding_decode_requests_);
 
   decoder_client_state_ = VideoDecoderClientState::kIdle;
-  event_cb_.Run(VideoPlayerEvent::kFlushDone);
+  FireEvent(VideoPlayerEvent::kFlushDone);
 }
 
 void VideoDecoderClient::NotifyResetDone() {
@@ -227,7 +227,7 @@ void VideoDecoderClient::NotifyResetDone() {
   current_frame_index_ = 0;
 
   decoder_client_state_ = VideoDecoderClientState::kIdle;
-  event_cb_.Run(VideoPlayerEvent::kResetDone);
+  FireEvent(VideoPlayerEvent::kResetDone);
 }
 
 void VideoDecoderClient::NotifyError(VideoDecodeAccelerator::Error error) {
@@ -285,6 +285,7 @@ void VideoDecoderClient::CreateDecoderTask(
   LOG_ASSERT(!decoder_) << "Can't create decoder: already created";
   DVLOGF(4) << "Profile: " << config.profile;
 
+  decoder_config_ = config;
   encoded_data_helper_ =
       std::make_unique<EncodedDataHelper>(*stream, config.profile);
 
@@ -359,6 +360,13 @@ void VideoDecoderClient::DecodeNextFragmentTask() {
   DVLOGF(4) << "Bitstream buffer id: " << bitstream_buffer_id;
   decoder_->Decode(bitstream_buffer);
   num_outstanding_decode_requests_++;
+
+  // Throw event when we encounter a config info in a H.264 stream.
+  if (media::test::EncodedDataHelper::HasConfigInfo(
+          reinterpret_cast<const uint8_t*>(fragment_bytes.data()),
+          fragment_size, decoder_config_.profile)) {
+    FireEvent(VideoPlayerEvent::kConfigInfo);
+  }
 }
 
 void VideoDecoderClient::PlayTask() {
@@ -385,7 +393,7 @@ void VideoDecoderClient::FlushTask() {
   // Changing the state to flushing will abort any pending decodes.
   decoder_client_state_ = VideoDecoderClientState::kFlushing;
   decoder_->Flush();
-  event_cb_.Run(VideoPlayerEvent::kFlushing);
+  FireEvent(VideoPlayerEvent::kFlushing);
 }
 
 void VideoDecoderClient::ResetTask() {
@@ -397,7 +405,15 @@ void VideoDecoderClient::ResetTask() {
   // TODO(dstaessens@) Allow resetting to any point in the stream.
   encoded_data_helper_->Rewind();
   decoder_->Reset();
-  event_cb_.Run(VideoPlayerEvent::kResetting);
+  FireEvent(VideoPlayerEvent::kResetting);
+}
+
+void VideoDecoderClient::FireEvent(VideoPlayerEvent event) {
+  bool continue_decoding = event_cb_.Run(event);
+  if (!continue_decoding) {
+    // Changing the state to idle will abort any pending decodes.
+    decoder_client_state_ = VideoDecoderClientState::kIdle;
+  }
 }
 
 void VideoDecoderClient::ReusePictureBufferTask(int32_t picture_buffer_id) {
