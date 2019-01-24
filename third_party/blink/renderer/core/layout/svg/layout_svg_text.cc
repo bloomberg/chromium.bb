@@ -297,6 +297,7 @@ void LayoutSVGText::UpdateLayout() {
   DCHECK(!needs_transform_update_);
   DCHECK(!needs_text_metrics_update_);
   DCHECK(!needs_positioning_values_update_);
+  ClearSelfNeedsLayoutOverflowRecalc();
   ClearNeedsLayout();
 }
 

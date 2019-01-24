@@ -99,6 +99,7 @@ void LayoutEmbeddedObject::UpdateLayout() {
   if (!GetEmbeddedContentView() && GetFrameView())
     GetFrameView()->AddPartToUpdate(*this);
 
+  ClearSelfNeedsLayoutOverflowRecalc();
   ClearNeedsLayout();
 }
 
