@@ -3486,11 +3486,6 @@ const char kSmartTextSelectionDescription[] =
     "Shows quick actions for text "
     "selections in the context menu.";
 
-const char kSysInternalsName[] = "Enable Sys-Internals";
-const char kSysInternalsDescription[] =
-    "If enabled, user can monitor system information at "
-    "chrome://sys-internals.";
-
 const char kTetherName[] = "Instant Tethering";
 const char kTetherDescription[] =
     "Enables Instant Tethering. Instant Tethering allows your nearby Google "
