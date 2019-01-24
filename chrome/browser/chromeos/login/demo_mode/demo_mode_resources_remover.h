@@ -173,7 +173,7 @@ class DemoModeResourcesRemover
   bool AttemptRemovalIfUsageOverThreshold();
 
   // Passes as the callback to directory removal file operations.
-  void OnRemovalDone(RemovalResult result);
+  void OnRemovalDone(RemovalReason reason, RemovalResult result);
 
   PrefService* const local_state_;
 
