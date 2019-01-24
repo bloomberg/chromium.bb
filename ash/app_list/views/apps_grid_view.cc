@@ -54,6 +54,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/paint_info.h"
 #include "ui/views/view_model_utils.h"
 #include "ui/views/widget/widget.h"
 
@@ -248,7 +249,18 @@ class AppsGridView::FadeoutLayerDelegate : public ui::LayerDelegate {
     gfx::Rect top_rect(0, 0, size.width(), kFadeoutZoneHeight);
     gfx::Rect bottom_rect(0, size.height() - kFadeoutZoneHeight, size.width(),
                           kFadeoutZoneHeight);
-    ui::PaintRecorder recorder(context, size);
+
+    views::PaintInfo paint_info =
+        views::PaintInfo::CreateRootPaintInfo(context, size);
+    const auto& prs = paint_info.paint_recording_size();
+
+    //  Pass the scale factor when constructing PaintRecorder so the MaskLayer
+    //  size is not incorrectly rounded (see https://crbug.com/921274).
+    ui::PaintRecorder recorder(context, paint_info.paint_recording_size(),
+                               static_cast<float>(prs.width()) / size.width(),
+                               static_cast<float>(prs.height()) / size.height(),
+                               nullptr);
+
     gfx::Canvas* canvas = recorder.canvas();
     // Clear the canvas.
     canvas->DrawColor(SK_ColorBLACK, SkBlendMode::kSrc);
