@@ -244,9 +244,11 @@ SkColor ChromeTypographyProvider::GetColor(const views::View& view,
       return native_theme->SystemDarkModeEnabled() ? gfx::kGoogleGrey500
                                                    : gfx::kGoogleGrey700;
     case STYLE_RED:
-      return gfx::kGoogleRed700;
+      return native_theme->SystemDarkModeEnabled() ? gfx::kGoogleRed300
+                                                   : gfx::kGoogleRed700;
     case STYLE_GREEN:
-      return gfx::kGoogleGreen700;
+      return native_theme->SystemDarkModeEnabled() ? gfx::kGoogleGreen300
+                                                   : gfx::kGoogleGreen700;
   }
 
   // Use default primary color for everything else.
