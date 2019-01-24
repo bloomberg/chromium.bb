@@ -3,7 +3,7 @@
 ## Android Instructions
 
 Please follow the instructions at
-[android_test_instructions.md](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/android_test_instructions.md).
+[android_test_instructions.md](/docs/android_test_instructions.md).
 This guide is an extension with WebView-specific content.
 
 *** note
@@ -28,6 +28,11 @@ $ out/Default/bin/run_webview_instrumentation_test_apk -f AwContentsTest#testCle
 $ out/Default/bin/run_webview_instrumentation_test_apk -f AwContentsTest#*Succession # Any glob pattern matching 1 or more tests
 ```
 
+*** aside
+You can optionally use `ClassName.methodName` instead of `ClassName#methodName`;
+the chromium test runner understands either syntax.
+***
+
 ### Native unittests
 
 These are any `*_test.cc` or `*_unittest.cc` test under `//android_webview/`.
@@ -42,6 +47,27 @@ $ autoninja -C out/Default android_webview_unittests
 $ out/Default/bin/run_android_webview_unittests # All tests
 $ out/Default/bin/run_android_webview_unittests -f AndroidStreamReaderURLRequestJobTest.* # Same glob patterns work here
 ```
+
+### Layout tests and page cycler tests
+
+WebView's layout tests and page cycler tests exercise the WebView installed on
+the system, instrumenting the WebView shell (`system_webview_shell_apk`,
+`org.chromium.webview_shell`). These test cases are defined in
+`//android_webview/tools/system_webview_shell/`.
+
+```sh
+# Build
+$ autoninja -C out/Default system_webview_shell_layout_test_apk
+
+# Install the desired WebView APK
+...
+
+# Run layout tests (installs WebView shell):
+$ out/Default/bin/run_system_webview_shell_layout_test_apk
+```
+
+To run page cycler tests instead, use the `system_webview_shell_page_cycler_apk`
+target and test runner in the steps above.
 
 ### Useful test runner options
 
@@ -74,22 +100,25 @@ tests, we have scripts to help chromium developers check these tests.
 All of these tests are end-to-end, so they exercise whatever WebView
 implementation you've installed and selected on your device. This also means you
 can enable Features and commandline flags the same way [as you would for
-production](https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/commandline-flags.md).
+production](./commandline-flags.md).
 ***
 
 ### CTS
 
 WebView has [CTS](https://source.android.com/compatibility/cts) tests, testing
-end-to-end behavior. These tests live in the Android source tree (under
-`//platform/cts/tests/tests/webkit/`).
+end-to-end behavior (using the WebView installed on the system). These tests
+live in the Android source tree (under `//platform/cts/tests/tests/webkit/`).
 
-Chromium developers can run these tests with:
+Chromium developers can download and run pre-built APKs for these test cases
+with:
 
 ```sh
+# Install the desired WebView APK
+...
+
+# Run pre-built WebView CTS tests:
 $ android_webview/tools/run_cts.py \
-    --arch=arm64 \ # Choose your device arch
-    --platform=M \ # CTS test suite version; must be <= device SDK level
-    --apk-dir="$HOME/run-cts-apk-dir" \ # Any folder, it's just a cache
+    --apk-dir="$HOME/run-cts-apk-dir" \ # Any folder, to use as an optional cache
     --verbose \ # Optional
     -f=android.webkit.cts.WebViewTest#* # Supports similar test filters
 ```
