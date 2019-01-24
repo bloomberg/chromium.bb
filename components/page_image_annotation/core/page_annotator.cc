@@ -6,9 +6,12 @@
 
 namespace page_image_annotation {
 
+namespace ia_mojom = image_annotation::mojom;
+
 PageAnnotator::Observer::~Observer() {}
 
-PageAnnotator::PageAnnotator() {}
+PageAnnotator::PageAnnotator(ia_mojom::AnnotatorPtr annotator_ptr)
+    : annotator_ptr_(std::move(annotator_ptr)) {}
 
 PageAnnotator::~PageAnnotator() {}
 
@@ -45,6 +48,20 @@ void PageAnnotator::ImageRemoved(const uint64_t node_id) {
   }
 }
 
+void PageAnnotator::AnnotateImage(Observer* const observer,
+                                  const uint64_t node_id) {
+  DCHECK(observers_.HasObserver(observer));
+
+  const auto lookup = images_.find(node_id);
+  if (lookup == images_.end())
+    return;
+
+  annotator_ptr_->AnnotateImage(
+      lookup->second.first.source_id, lookup->second.second.GetPtr(),
+      base::BindOnce(&PageAnnotator::NotifyObserver, base::Unretained(this),
+                     observer, node_id));
+}
+
 void PageAnnotator::AddObserver(Observer* const observer) {
   observers_.AddObserver(observer);
 
@@ -61,6 +78,12 @@ void PageAnnotator::AddNewImage(
   images_.emplace(std::piecewise_construct,
                   std::forward_as_tuple(metadata.node_id),
                   std::forward_as_tuple(metadata, std::move(pixels_callback)));
+}
+
+void PageAnnotator::NotifyObserver(Observer* const observer,
+                                   const uint64_t node_id,
+                                   ia_mojom::AnnotateImageResultPtr result) {
+  observer->OnImageAnnotated(node_id, std::move(result));
 }
 
 }  // namespace page_image_annotation

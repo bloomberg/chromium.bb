@@ -6,6 +6,7 @@
 #define COMPONENTS_PAGE_IMAGE_ANNOTATION_CORE_PAGE_ANNOTATOR_H_
 
 #include <map>
+#include <string>
 #include <utility>
 
 #include "base/callback.h"
@@ -14,6 +15,7 @@
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "services/image_annotation/public/cpp/image_processor.h"
+#include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace page_image_annotation {
@@ -56,10 +58,23 @@ class PageAnnotator {
 
     // Called at the point that an image disappears from the page.
     virtual void OnImageRemoved(uint64_t node_id) = 0;
+
+    // Called when annotation is complete (either successfully or
+    // unsuccessfully) for a request made by this client.
+    virtual void OnImageAnnotated(
+        uint64_t node_id,
+        image_annotation::mojom::AnnotateImageResultPtr result) = 0;
   };
 
-  PageAnnotator();
+  explicit PageAnnotator(image_annotation::mojom::AnnotatorPtr annotator_ptr);
   ~PageAnnotator();
+
+  // Request annotation of the given image via the image annotation service.
+  // When annotation is complete (or fails), the OnImageAnnotated() method of
+  // the observer is called.
+  //
+  // Must be called on a valid (i.e. added and not yet removed) node ID.
+  void AnnotateImage(Observer* observer, uint64_t node_id);
 
   // Called by platform drivers.
   void ImageAddedOrPossiblyModified(
@@ -79,6 +94,14 @@ class PageAnnotator {
   // but we limit the complexity to this method.
   void AddNewImage(const ImageMetadata& metadata,
                    base::RepeatingCallback<SkBitmap()> pixels_callback);
+
+  // Callback passed to the image annotation service to receive image annotation
+  // results.
+  void NotifyObserver(Observer* observer,
+                      uint64_t node_id,
+                      image_annotation::mojom::AnnotateImageResultPtr result);
+
+  image_annotation::mojom::AnnotatorPtr annotator_ptr_;
 
   base::ObserverList<Observer> observers_;
 
