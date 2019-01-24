@@ -63,6 +63,7 @@ class MockPipelineClient : public Pipeline::Client {
   MOCK_METHOD0(OnVideoAverageKeyframeDistanceUpdate, void());
   MOCK_METHOD1(OnAudioDecoderChange, void(const std::string&));
   MOCK_METHOD1(OnVideoDecoderChange, void(const std::string&));
+  MOCK_METHOD1(OnRemotePlayStateChange, void(MediaStatus::State state));
 };
 
 class MockPipeline : public Pipeline {

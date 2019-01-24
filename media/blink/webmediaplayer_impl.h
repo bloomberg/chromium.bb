@@ -353,6 +353,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnVideoAverageKeyframeDistanceUpdate() override;
   void OnAudioDecoderChange(const std::string& name) override;
   void OnVideoDecoderChange(const std::string& name) override;
+  void OnRemotePlayStateChange(MediaStatus::State state) override;
 
   // Actually seek. Avoids causing |should_notify_time_changed_| to be set when
   // |time_updated| is false.

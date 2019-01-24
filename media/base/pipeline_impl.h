@@ -146,6 +146,7 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   void OnVideoAverageKeyframeDistanceUpdate();
   void OnAudioDecoderChange(const std::string& name);
   void OnVideoDecoderChange(const std::string& name);
+  void OnRemotePlayStateChange(MediaStatus::State state);
 
   // Task completion callbacks from RendererWrapper.
   void OnSeekDone(bool is_suspended);
