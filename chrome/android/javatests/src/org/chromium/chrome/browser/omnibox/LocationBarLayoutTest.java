@@ -237,6 +237,7 @@ public class LocationBarLayoutTest {
 
     @Test
     @SmallTest
+    @DisableFeatures(ChromeFeatureList.SEARCH_READY_OMNIBOX)
     public void testEditingTextShownOnFocus() {
         final UrlBar urlBar = getUrlBar();
         final LocationBarLayout locationBar = getLocationBar();

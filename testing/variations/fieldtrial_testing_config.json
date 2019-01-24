@@ -4244,6 +4244,21 @@
             ]
         }
     ],
+    "SearchReadyOmnibox": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SearchReadyOmnibox"
+                    ]
+                }
+            ]
+        }
+    ],
     "SequenceManagerRollout": [
         {
             "platforms": [
