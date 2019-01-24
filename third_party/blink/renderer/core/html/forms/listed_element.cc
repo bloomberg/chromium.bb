@@ -142,14 +142,14 @@ void ListedElement::RemovedFrom(ContainerNode& insertion_point) {
   if (insertion_point.isConnected() && element->FastHasAttribute(kFormAttr)) {
     SetFormAttributeTargetObserver(nullptr);
     ResetFormOwner();
-    return;
+  } else {
+    // If the form and element are both in the same tree, preserve the
+    // connection to the form.  Otherwise, null out our form and remove
+    // ourselves from the form's list of elements.
+    if (form_ && NodeTraversal::HighestAncestorOrSelf(*element) !=
+                     NodeTraversal::HighestAncestorOrSelf(*form_.Get()))
+      ResetFormOwner();
   }
-  // If the form and element are both in the same tree, preserve the connection
-  // to the form.  Otherwise, null out our form and remove ourselves from the
-  // form's list of elements.
-  if (form_ && NodeTraversal::HighestAncestorOrSelf(*element) !=
-                   NodeTraversal::HighestAncestorOrSelf(*form_.Get()))
-    ResetFormOwner();
 
   DisabledStateMightBeChanged();
 
