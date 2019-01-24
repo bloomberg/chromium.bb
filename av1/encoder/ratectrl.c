@@ -963,12 +963,8 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
   const int bit_depth = cm->seq_params.bit_depth;
   ASSIGN_MINQ_TABLE(bit_depth, inter_minq);
 
-#if CUSTOMIZED_GF
   const int is_intrl_arf_boost =
       gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE;
-#else
-  const int is_intrl_arf_boost = cpi->refresh_alt2_ref_frame;
-#endif  // CUSTOMIZED_GF
 
   if (frame_is_intra_only(cm)) {
     if (rc->frames_to_key == 1 && oxcf->rc_mode == AOM_Q) {
@@ -1277,16 +1273,12 @@ static void update_alt_ref_frame_stats(AV1_COMP *cpi) {
 
 static void update_golden_frame_stats(AV1_COMP *cpi) {
   RATE_CONTROL *const rc = &cpi->rc;
-#if CUSTOMIZED_GF
   const TWO_PASS *const twopass = &cpi->twopass;
   const GF_GROUP *const gf_group = &twopass->gf_group;
   const int is_intrnl_arf =
       cpi->oxcf.pass == 2
           ? gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE
           : cpi->refresh_alt2_ref_frame;
-#else
-  const int is_intnl_arf = cpi->refresh_alt2_ref_frame;
-#endif
 
   // Update the Golden frame usage counts.
   // NOTE(weitinglin): If we use show_existing_frame for an OVERLAY frame,
@@ -1457,16 +1449,12 @@ void av1_rc_postencode_update(AV1_COMP *cpi, uint64_t bytes_used) {
   const AV1_COMMON *const cm = &cpi->common;
   const CurrentFrame *const current_frame = &cm->current_frame;
   RATE_CONTROL *const rc = &cpi->rc;
-#if CUSTOMIZED_GF
   const TWO_PASS *const twopass = &cpi->twopass;
   const GF_GROUP *const gf_group = &twopass->gf_group;
   const int is_intrnl_arf =
       cpi->oxcf.pass == 2
           ? gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE
           : cpi->refresh_alt2_ref_frame;
-#else
-  const int is_intrnl_arf = cpi->refresh_alt2_ref_frame;
-#endif
 
   const int qindex = cm->base_qindex;
 
