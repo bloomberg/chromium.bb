@@ -84,12 +84,30 @@ ASSERT_SIZE(BorderValue, SameSizeAsBorderValue);
 
 // Since different compilers/architectures pack ComputedStyle differently,
 // re-create the same structure for an accurate size comparison.
-struct SameSizeAsComputedStyle : public RefCounted<SameSizeAsComputedStyle> {
-  struct ComputedStyleBase {
-    void* data_refs[7];
-    unsigned bitfields_[4];
-  } base_;
+//
+// Keep a separate struct for ComputedStyleBase so that we can recreate the
+// inheritance structure. Make sure the fields have the same access specifiers
+// as in the "real" class since it can affect the layout. Reference the fields
+// so that they are not seen as unused (-Wunused-private-field).
+struct SameSizeAsComputedStyleBase {
+  SameSizeAsComputedStyleBase() {
+    base::debug::Alias(&data_refs);
+    base::debug::Alias(&bitfields);
+  }
 
+ private:
+  void* data_refs[7];
+  unsigned bitfields[4];
+};
+
+struct SameSizeAsComputedStyle : public SameSizeAsComputedStyleBase,
+                                 public RefCounted<SameSizeAsComputedStyle> {
+  SameSizeAsComputedStyle() {
+    base::debug::Alias(&own_ptrs);
+    base::debug::Alias(&data_ref_svg_style);
+  }
+
+ private:
   void* own_ptrs[1];
   void* data_ref_svg_style;
 };
