@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <string>
 #include <utility>
 #include <vector>
@@ -402,6 +403,10 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
 
   // Clear the previous results now that new results are available.
   matches->clear();
+  // Ensure server's suggestions are added with monotonically decreasing scores.
+  // When previous_score is >= 0, it enforces a maximum score for subsequent
+  // results.
+  int previous_score = -1;
   for (size_t i = 0; i < num_results; i++) {
     if (matches->size() >= AutocompleteProvider::kMaxMatches) {
       break;
@@ -433,8 +438,13 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
     }
     int server_score;
     if (result->GetInteger("score", &server_score)) {
+      if (previous_score >= 0 && server_score >= previous_score) {
+        server_score = previous_score - 1;
+      }
       relevance = server_score;
+      previous_score = relevance;
     }
+    relevance = std::max(relevance, 0);
     AutocompleteMatch match(this, relevance, false,
                             AutocompleteMatchType::DOCUMENT_SUGGESTION);
     // Use full URL for displayed text and navigation. Use "originalUrl" for

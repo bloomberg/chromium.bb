@@ -265,6 +265,168 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResults) {
   ASSERT_FALSE(provider_->backoff_for_session_);
 }
 
+TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTies) {
+  const char kGoodJSONResponseWithTies[] = R"({
+      "results": [
+        {
+          "title": "Document 1",
+          "url": "https://documentprovider.tld/doc?id=1",
+          "score": 1234,
+          "originalUrl": "https://shortened.url"
+        },
+        {
+          "title": "Document 2",
+          "score": 1234,
+          "url": "https://documentprovider.tld/doc?id=2"
+        },
+        {
+          "title": "Document 3",
+          "score": 1234,
+          "url": "https://documentprovider.tld/doc?id=3"
+        }
+      ]
+     })";
+
+  std::unique_ptr<base::DictionaryValue> response = base::DictionaryValue::From(
+      base::JSONReader::Read(kGoodJSONResponseWithTies));
+  ASSERT_TRUE(response != nullptr);
+
+  ACMatches matches;
+  provider_->ParseDocumentSearchResults(*response, &matches);
+  EXPECT_EQ(matches.size(), 3u);
+
+  // Server is suggesting relevances of [1234, 1234, 1234]
+  // We should break ties to [1234, 1233, 1232]
+  EXPECT_EQ(matches[0].contents, base::ASCIIToUTF16("Document 1"));
+  EXPECT_EQ(matches[0].destination_url,
+            GURL("https://documentprovider.tld/doc?id=1"));
+  EXPECT_EQ(matches[0].relevance, 1234);  // As the server specified.
+  EXPECT_EQ(matches[0].stripped_destination_url, GURL("https://shortened.url"));
+
+  EXPECT_EQ(matches[1].contents, base::ASCIIToUTF16("Document 2"));
+  EXPECT_EQ(matches[1].destination_url,
+            GURL("https://documentprovider.tld/doc?id=2"));
+  EXPECT_EQ(matches[1].relevance, 1233);  // Tie demoted
+  EXPECT_TRUE(matches[1].stripped_destination_url.is_empty());
+
+  EXPECT_EQ(matches[2].contents, base::ASCIIToUTF16("Document 3"));
+  EXPECT_EQ(matches[2].destination_url,
+            GURL("https://documentprovider.tld/doc?id=3"));
+  EXPECT_EQ(matches[2].relevance, 1232);  // Tie demoted, twice.
+  EXPECT_TRUE(matches[2].stripped_destination_url.is_empty());
+
+  ASSERT_FALSE(provider_->backoff_for_session_);
+}
+
+TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTiesCascade) {
+  const char kGoodJSONResponseWithTies[] = R"({
+      "results": [
+        {
+          "title": "Document 1",
+          "url": "https://documentprovider.tld/doc?id=1",
+          "score": 1234,
+          "originalUrl": "https://shortened.url"
+        },
+        {
+          "title": "Document 2",
+          "score": 1234,
+          "url": "https://documentprovider.tld/doc?id=2"
+        },
+        {
+          "title": "Document 3",
+          "score": 1233,
+          "url": "https://documentprovider.tld/doc?id=3"
+        }
+      ]
+     })";
+
+  std::unique_ptr<base::DictionaryValue> response = base::DictionaryValue::From(
+      base::JSONReader::Read(kGoodJSONResponseWithTies));
+  ASSERT_TRUE(response != nullptr);
+
+  ACMatches matches;
+  provider_->ParseDocumentSearchResults(*response, &matches);
+  EXPECT_EQ(matches.size(), 3u);
+
+  // Server is suggesting relevances of [1233, 1234, 1233, 1000, 1000]
+  // We should break ties to [1234, 1233, 1232, 1000, 999]
+  EXPECT_EQ(matches[0].contents, base::ASCIIToUTF16("Document 1"));
+  EXPECT_EQ(matches[0].destination_url,
+            GURL("https://documentprovider.tld/doc?id=1"));
+  EXPECT_EQ(matches[0].relevance, 1234);  // As the server specified.
+  EXPECT_EQ(matches[0].stripped_destination_url, GURL("https://shortened.url"));
+
+  EXPECT_EQ(matches[1].contents, base::ASCIIToUTF16("Document 2"));
+  EXPECT_EQ(matches[1].destination_url,
+            GURL("https://documentprovider.tld/doc?id=2"));
+  EXPECT_EQ(matches[1].relevance, 1233);  // Tie demoted
+  EXPECT_TRUE(matches[1].stripped_destination_url.is_empty());
+
+  EXPECT_EQ(matches[2].contents, base::ASCIIToUTF16("Document 3"));
+  EXPECT_EQ(matches[2].destination_url,
+            GURL("https://documentprovider.tld/doc?id=3"));
+  // Document 2's demotion caused an implicit tie.
+  // Ensure we demote this one as well.
+  EXPECT_EQ(matches[2].relevance, 1232);
+  EXPECT_TRUE(matches[2].stripped_destination_url.is_empty());
+
+  ASSERT_FALSE(provider_->backoff_for_session_);
+}
+
+TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTiesZeroLimit) {
+  const char kGoodJSONResponseWithTies[] = R"({
+      "results": [
+        {
+          "title": "Document 1",
+          "url": "https://documentprovider.tld/doc?id=1",
+          "score": 1,
+          "originalUrl": "https://shortened.url"
+        },
+        {
+          "title": "Document 2",
+          "score": 1,
+          "url": "https://documentprovider.tld/doc?id=2"
+        },
+        {
+          "title": "Document 3",
+          "score": 1,
+          "url": "https://documentprovider.tld/doc?id=3"
+        }
+      ]
+     })";
+
+  std::unique_ptr<base::DictionaryValue> response = base::DictionaryValue::From(
+      base::JSONReader::Read(kGoodJSONResponseWithTies));
+  ASSERT_TRUE(response != nullptr);
+
+  ACMatches matches;
+  provider_->ParseDocumentSearchResults(*response, &matches);
+  EXPECT_EQ(matches.size(), 3u);
+
+  // Server is suggesting relevances of [1, 1, 1]
+  // We should break ties, but not below zero, to [1, 0, 0]
+  EXPECT_EQ(matches[0].contents, base::ASCIIToUTF16("Document 1"));
+  EXPECT_EQ(matches[0].destination_url,
+            GURL("https://documentprovider.tld/doc?id=1"));
+  EXPECT_EQ(matches[0].relevance, 1);  // As the server specified.
+  EXPECT_EQ(matches[0].stripped_destination_url, GURL("https://shortened.url"));
+
+  EXPECT_EQ(matches[1].contents, base::ASCIIToUTF16("Document 2"));
+  EXPECT_EQ(matches[1].destination_url,
+            GURL("https://documentprovider.tld/doc?id=2"));
+  EXPECT_EQ(matches[1].relevance, 0);  // Tie demoted
+  EXPECT_TRUE(matches[1].stripped_destination_url.is_empty());
+
+  EXPECT_EQ(matches[2].contents, base::ASCIIToUTF16("Document 3"));
+  EXPECT_EQ(matches[2].destination_url,
+            GURL("https://documentprovider.tld/doc?id=3"));
+  // Tie is demoted further.
+  EXPECT_EQ(matches[2].relevance, 0);
+  EXPECT_TRUE(matches[2].stripped_destination_url.is_empty());
+
+  ASSERT_FALSE(provider_->backoff_for_session_);
+}
+
 TEST_F(DocumentProviderTest, ParseDocumentSearchResultsWithBackoff) {
   // Response where the server wishes to trigger backoff.
   const char kBackoffJSONResponse[] = R"({
