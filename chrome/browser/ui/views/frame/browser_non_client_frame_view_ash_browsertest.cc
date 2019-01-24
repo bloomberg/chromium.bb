@@ -366,33 +366,6 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
       ash::kBlockedForAssistantSnapshotKey));
 }
 
-// Tests that FrameCaptionButtonContainer has been relaid out in response to
-// tablet mode being toggled.
-IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
-                       ToggleTabletModeRelayout) {
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
-  BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
-
-  const gfx::Rect initial = frame_view->caption_button_container_->bounds();
-  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
-  ash::FrameCaptionButtonContainerView::TestApi test(
-      frame_view->caption_button_container_);
-  test.EndAnimations();
-  const gfx::Rect during_maximize =
-      frame_view->caption_button_container_->bounds();
-  EXPECT_GT(initial.width(), during_maximize.width());
-  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(false));
-  test.EndAnimations();
-  const gfx::Rect after_restore =
-      frame_view->caption_button_container_->bounds();
-  EXPECT_EQ(initial.origin(), after_restore.origin());
-  EXPECT_EQ(initial.width(), after_restore.width());
-
-  // Switching from non-tablet to tablet mode will increase the height of the
-  // top frame and toolbar if the MD mode is set to "Dynamic Refresh".
-  EXPECT_GE(initial.height(), after_restore.height());
-}
-
 // Tests that browser frame minimum size constraint is updated in response to
 // browser view layout.
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,

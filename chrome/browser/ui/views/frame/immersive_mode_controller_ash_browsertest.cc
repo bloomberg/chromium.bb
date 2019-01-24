@@ -286,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
   test::SetAndWaitForTabletMode(true);
   frame_test_api.EndAnimations();
 
-  EXPECT_FALSE(frame_test_api.size_button()->visible());
+  EXPECT_TRUE(frame_test_api.size_button()->visible());
 
   VerifyButtonsInImmersiveMode(frame_view);
 
