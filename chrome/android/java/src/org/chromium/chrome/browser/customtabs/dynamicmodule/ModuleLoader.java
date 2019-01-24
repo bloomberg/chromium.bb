@@ -233,7 +233,7 @@ public class ModuleLoader {
     }
 
     public void destroyModule(@DestructionReason int reason) {
-        assert mModuleEntryPoint != null;
+        if (mModuleEntryPoint == null) return;
 
         ModuleMetrics.recordDestruction(reason);
         mModuleEntryPoint.onDestroy();
