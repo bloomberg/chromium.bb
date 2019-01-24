@@ -41,9 +41,6 @@
     --settings-separator-height: var(--cr-separator-height);
     --settings-separator-line: var(--cr-separator-line);
 
-    --settings-title-bar-color: rgb(255, 255, 255);
-    --settings-title-search-color: rgb(192, 199, 205);
-
     /* Spacing between a control (e.g. checkbox) and its label. */
     --settings-control-label-spacing: 20px;
 
@@ -60,6 +57,8 @@
   }
 
   html[dark] {
+    --iron-icon-fill-color: var(--google-grey-refresh-500);
+    --settings-error-color: var(--google-red-refresh-300);
     --settings-nav-icon-color: var(--google-grey-refresh-500);
     --settings-nav-item-color: var(--cr-primary-text-color);
   }
