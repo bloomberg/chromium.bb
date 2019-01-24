@@ -5717,6 +5717,7 @@ interface RTCQuicTransport : EventTarget
     method constructor
     method createStream
     method getKey
+    method getStats
     method listen
     method stop
     setter onerror

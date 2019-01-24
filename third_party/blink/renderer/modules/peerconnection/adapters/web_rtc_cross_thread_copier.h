@@ -117,6 +117,12 @@ struct CrossThreadCopier<P2PQuicTransport::StartConfig>
   }
 };
 
+template <>
+struct CrossThreadCopier<P2PQuicTransportStats>
+    : public CrossThreadCopierPassThrough<P2PQuicTransportStats> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_WEB_RTC_CROSS_THREAD_COPIER_H_

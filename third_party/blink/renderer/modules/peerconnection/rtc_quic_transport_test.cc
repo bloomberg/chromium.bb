@@ -9,6 +9,8 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_transport_test.h"
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_quic_transport_stats.h"
+#include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/test/mock_p2p_quic_packet_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_gather_options.h"
 #include "third_party/webrtc/rtc_base/rtc_certificate_generator.h"
@@ -21,6 +23,7 @@ using testing::Assign;
 using testing::ElementsAre;
 using testing::Invoke;
 using testing::Mock;
+using testing::Return;
 
 HeapVector<Member<RTCCertificate>> GenerateLocalRTCCertificates() {
   HeapVector<Member<RTCCertificate>> certificates;
@@ -631,4 +634,182 @@ TEST_F(RTCQuicTransportTest, GetKeyReturnsValidKey) {
   EXPECT_GE(key->ByteLength(), 16u);
 }
 
+// Test that stats are converted correctly to the RTCQuicTransportStats
+// dictionary.
+TEST_F(RTCQuicTransportTest, OnStatsConvertsRTCStatsDictionary) {
+  V8TestingScope scope;
+
+  auto mock_transport = std::make_unique<MockP2PQuicTransport>();
+  MockP2PQuicTransport* mock_transport_ptr = mock_transport.get();
+  P2PQuicTransport::Delegate* delegate = nullptr;
+  Persistent<RTCQuicTransport> quic_transport =
+      CreateConnectedQuicTransport(scope, std::move(mock_transport), &delegate);
+  DCHECK(delegate);
+
+  // Create some dummy values.
+  P2PQuicTransportStats stats;
+  stats.bytes_sent = 0;
+  stats.packets_sent = 1;
+  stats.stream_bytes_sent = 2;
+  stats.stream_bytes_received = 3;
+  stats.num_outgoing_streams_created = 4;
+  stats.num_incoming_streams_created = 5;
+  stats.bytes_received = 6;
+  stats.packets_received = 7;
+  stats.packets_processed = 8;
+  stats.bytes_retransmitted = 9;
+  stats.packets_retransmitted = 10;
+  stats.packets_lost = 11;
+  stats.packets_dropped = 12;
+  stats.crypto_retransmit_count = 13;
+  stats.min_rtt_us = 14;
+  stats.srtt_us = 15;
+  stats.max_packet_size = 16;
+  stats.max_received_packet_size = 17;
+  stats.estimated_bandwidth_bps = 18;
+  stats.packets_reordered = 19;
+  stats.blocked_frames_received = 20;
+  stats.blocked_frames_sent = 21;
+  stats.connectivity_probing_packets_received = 22;
+  EXPECT_CALL(*mock_transport_ptr, GetStats()).WillOnce(Return(stats));
+  ScriptPromise stats_promise =
+      quic_transport->getStats(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
+
+  RunUntilIdle();
+
+  ASSERT_EQ(v8::Promise::kFulfilled,
+            stats_promise.V8Value().As<v8::Promise>()->State());
+
+  RTCQuicTransportStats* rtc_quic_stats =
+      NativeValueTraits<RTCQuicTransportStats>::NativeValue(
+          scope.GetIsolate(),
+          stats_promise.V8Value().As<v8::Promise>()->Result(),
+          ASSERT_NO_EXCEPTION);
+  ASSERT_TRUE(rtc_quic_stats->hasTimestamp());
+  EXPECT_EQ(ConvertTimeTicksToDOMHighResTimeStamp(stats.timestamp),
+            rtc_quic_stats->timestamp());
+  ASSERT_TRUE(rtc_quic_stats->hasBytesSent());
+  EXPECT_EQ(stats.bytes_sent, rtc_quic_stats->bytesSent());
+  ASSERT_TRUE(rtc_quic_stats->hasPacketsSent());
+  EXPECT_EQ(stats.packets_sent, rtc_quic_stats->packetsSent());
+  ASSERT_TRUE(rtc_quic_stats->hasStreamBytesSent());
+  EXPECT_EQ(stats.stream_bytes_sent, rtc_quic_stats->streamBytesSent());
+  ASSERT_TRUE(rtc_quic_stats->hasStreamBytesSent());
+  EXPECT_EQ(stats.stream_bytes_received, rtc_quic_stats->streamBytesReceived());
+  ASSERT_TRUE(rtc_quic_stats->hasNumOutgoingStreamsCreated());
+  EXPECT_EQ(stats.num_outgoing_streams_created,
+            rtc_quic_stats->numOutgoingStreamsCreated());
+  ASSERT_TRUE(rtc_quic_stats->hasNumIncomingStreamsCreated());
+  EXPECT_EQ(stats.num_incoming_streams_created,
+            rtc_quic_stats->numIncomingStreamsCreated());
+  ASSERT_TRUE(rtc_quic_stats->hasBytesReceived());
+  EXPECT_EQ(stats.bytes_received, rtc_quic_stats->bytesReceived());
+  ASSERT_TRUE(rtc_quic_stats->hasPacketsReceived());
+  EXPECT_EQ(stats.packets_received, rtc_quic_stats->packetsReceived());
+  ASSERT_TRUE(rtc_quic_stats->hasPacketsProcessed());
+  EXPECT_EQ(stats.packets_processed, rtc_quic_stats->packetsProcessed());
+  ASSERT_TRUE(rtc_quic_stats->hasBytesRetransmitted());
+  EXPECT_EQ(stats.bytes_retransmitted, rtc_quic_stats->bytesRetransmitted());
+  ASSERT_TRUE(rtc_quic_stats->hasPacketsRetransmitted());
+  EXPECT_EQ(stats.packets_retransmitted,
+            rtc_quic_stats->packetsRetransmitted());
+  ASSERT_TRUE(rtc_quic_stats->hasPacketsLost());
+  EXPECT_EQ(stats.packets_lost, rtc_quic_stats->packetsLost());
+  ASSERT_TRUE(rtc_quic_stats->hasPacketsDropped());
+  EXPECT_EQ(stats.packets_dropped, rtc_quic_stats->packetsDropped());
+  ASSERT_TRUE(rtc_quic_stats->hasCryptoRetransmitCount());
+  EXPECT_EQ(stats.crypto_retransmit_count,
+            rtc_quic_stats->cryptoRetransmitCount());
+  ASSERT_TRUE(rtc_quic_stats->hasMinRttUs());
+  EXPECT_EQ(stats.min_rtt_us, rtc_quic_stats->minRttUs());
+  ASSERT_TRUE(rtc_quic_stats->hasSmoothedRttUs());
+  EXPECT_EQ(stats.srtt_us, rtc_quic_stats->smoothedRttUs());
+  ASSERT_TRUE(rtc_quic_stats->hasMaxPacketSize());
+  EXPECT_EQ(stats.max_packet_size, rtc_quic_stats->maxPacketSize());
+  ASSERT_TRUE(rtc_quic_stats->hasMaxReceivedPacketSize());
+  EXPECT_EQ(stats.max_received_packet_size,
+            rtc_quic_stats->maxReceivedPacketSize());
+  ASSERT_TRUE(rtc_quic_stats->hasEstimatedBandwidthBps());
+  EXPECT_EQ(stats.estimated_bandwidth_bps,
+            rtc_quic_stats->estimatedBandwidthBps());
+  ASSERT_TRUE(rtc_quic_stats->hasPacketsReordered());
+  EXPECT_EQ(stats.packets_reordered, rtc_quic_stats->packetsReordered());
+  ASSERT_TRUE(rtc_quic_stats->hasBlockedFramesReceived());
+  EXPECT_EQ(stats.blocked_frames_received,
+            rtc_quic_stats->blockedFramesReceived());
+  ASSERT_TRUE(rtc_quic_stats->hasBlockedFramesSent());
+  EXPECT_EQ(stats.blocked_frames_sent, rtc_quic_stats->blockedFramesSent());
+  ASSERT_TRUE(rtc_quic_stats->hasConnectivityProbingPacketsReceived());
+  EXPECT_EQ(stats.connectivity_probing_packets_received,
+            rtc_quic_stats->connectivityProbingPacketsReceived());
+}
+
+// Test that all promises are rejected if the connection closes before
+// the OnStats callback is called.
+TEST_F(RTCQuicTransportTest, FailedConnectionRejectsStatsPromises) {
+  V8TestingScope scope;
+
+  auto mock_transport = std::make_unique<MockP2PQuicTransport>();
+  P2PQuicTransport::Delegate* delegate = nullptr;
+  Persistent<RTCQuicTransport> quic_transport =
+      CreateConnectedQuicTransport(scope, std::move(mock_transport), &delegate);
+  DCHECK(delegate);
+
+  ScriptPromise promise_1 =
+      quic_transport->getStats(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
+  ScriptPromise promise_2 =
+      quic_transport->getStats(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
+  delegate->OnConnectionFailed("test_failure", /*from_remote=*/false);
+
+  RunUntilIdle();
+
+  EXPECT_EQ(v8::Promise::kRejected,
+            promise_1.V8Value().As<v8::Promise>()->State());
+  EXPECT_EQ(v8::Promise::kRejected,
+            promise_2.V8Value().As<v8::Promise>()->State());
+}
+
+// Test that all promises are rejected if the remote side closes before
+// the OnStats callback is called.
+TEST_F(RTCQuicTransportTest, RemoteStopRejectsStatsPromises) {
+  V8TestingScope scope;
+
+  auto mock_transport = std::make_unique<MockP2PQuicTransport>();
+  P2PQuicTransport::Delegate* delegate = nullptr;
+  Persistent<RTCQuicTransport> quic_transport =
+      CreateConnectedQuicTransport(scope, std::move(mock_transport), &delegate);
+  DCHECK(delegate);
+
+  ScriptPromise promise_1 =
+      quic_transport->getStats(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
+  ScriptPromise promise_2 =
+      quic_transport->getStats(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
+  delegate->OnRemoteStopped();
+
+  RunUntilIdle();
+
+  EXPECT_EQ(v8::Promise::kRejected,
+            promise_1.V8Value().As<v8::Promise>()->State());
+  EXPECT_EQ(v8::Promise::kRejected,
+            promise_2.V8Value().As<v8::Promise>()->State());
+}
+
+// Test that calling getStats() after going to the "failed" state
+// raises a kInvalidStateError.
+TEST_F(RTCQuicTransportTest, FailedStateGetStatsRaisesInvalidStateError) {
+  V8TestingScope scope;
+
+  auto mock_transport = std::make_unique<MockP2PQuicTransport>();
+  P2PQuicTransport::Delegate* delegate = nullptr;
+  Persistent<RTCQuicTransport> quic_transport =
+      CreateConnectedQuicTransport(scope, std::move(mock_transport), &delegate);
+  DCHECK(delegate);
+
+  delegate->OnRemoteStopped();
+  RunUntilIdle();
+
+  quic_transport->getStats(scope.GetScriptState(), scope.GetExceptionState());
+  EXPECT_EQ(DOMExceptionCode::kInvalidStateError,
+            scope.GetExceptionState().CodeAs<DOMExceptionCode>());
+}
 }  // namespace blink

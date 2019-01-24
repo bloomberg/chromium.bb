@@ -8,6 +8,7 @@
 #include "net/third_party/quic/platform/impl/quic_chromium_clock.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
@@ -16,6 +17,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_stream.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_stream_event.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_quic_transport_stats.h"
 
 namespace blink {
 namespace {
@@ -338,6 +340,26 @@ RTCQuicStream* RTCQuicTransport::createStream(ExceptionState& exception_state) {
   return AddStream(proxy_->CreateStream());
 }
 
+ScriptPromise RTCQuicTransport::getStats(ScriptState* script_state,
+                                         ExceptionState& exception_state) {
+  // TODO(https://crbug.com/874296): If a shutdown procedure is implemented, we
+  // can cache the stats before the underlying transport is torn down. This
+  // would allow getting stats after your transport has closed.
+  if (state_ != RTCQuicTransportState::kConnected &&
+      state_ != RTCQuicTransportState::kConnecting) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The RTCQuicTransport's state is not 'connecting' or 'connected'.");
+    return ScriptPromise();
+  }
+  ScriptPromiseResolver* promise_resolver =
+      ScriptPromiseResolver::Create(script_state);
+  uint32_t request_id = ++get_stats_id_counter_;
+  stats_promise_map_.Set(request_id, promise_resolver);
+  proxy_->GetStats(request_id);
+  return promise_resolver->Promise();
+}
+
 RTCQuicStream* RTCQuicTransport::AddStream(QuicStreamProxy* stream_proxy) {
   auto* stream = MakeGarbageCollected<RTCQuicStream>(GetExecutionContext(),
                                                      this, stream_proxy);
@@ -370,6 +392,48 @@ void RTCQuicTransport::OnRemoteStopped() {
 void RTCQuicTransport::OnStream(QuicStreamProxy* stream_proxy) {
   RTCQuicStream* stream = AddStream(stream_proxy);
   DispatchEvent(*RTCQuicStreamEvent::Create(stream));
+}
+
+static RTCQuicTransportStats* CreateRTCQuicTransportStats(
+    const P2PQuicTransportStats& p2p_stats) {
+  RTCQuicTransportStats* rtc_stats = RTCQuicTransportStats::Create();
+  rtc_stats->setTimestamp(
+      ConvertTimeTicksToDOMHighResTimeStamp(p2p_stats.timestamp));
+  rtc_stats->setBytesSent(p2p_stats.bytes_sent);
+  rtc_stats->setPacketsSent(p2p_stats.packets_sent);
+  rtc_stats->setStreamBytesSent(p2p_stats.stream_bytes_sent);
+  rtc_stats->setStreamBytesReceived(p2p_stats.stream_bytes_received);
+  rtc_stats->setNumOutgoingStreamsCreated(
+      p2p_stats.num_outgoing_streams_created);
+  rtc_stats->setNumIncomingStreamsCreated(
+      p2p_stats.num_incoming_streams_created);
+  rtc_stats->setBytesReceived(p2p_stats.bytes_received);
+  rtc_stats->setPacketsReceived(p2p_stats.packets_received);
+  rtc_stats->setPacketsProcessed(p2p_stats.packets_processed);
+  rtc_stats->setBytesRetransmitted(p2p_stats.bytes_retransmitted);
+  rtc_stats->setPacketsRetransmitted(p2p_stats.packets_retransmitted);
+  rtc_stats->setPacketsLost(p2p_stats.packets_lost);
+  rtc_stats->setPacketsDropped(p2p_stats.packets_dropped);
+  rtc_stats->setCryptoRetransmitCount(p2p_stats.crypto_retransmit_count);
+  rtc_stats->setMinRttUs(p2p_stats.min_rtt_us);
+  rtc_stats->setSmoothedRttUs(p2p_stats.srtt_us);
+  rtc_stats->setMaxPacketSize(p2p_stats.max_packet_size);
+  rtc_stats->setMaxReceivedPacketSize(p2p_stats.max_received_packet_size);
+  rtc_stats->setEstimatedBandwidthBps(p2p_stats.estimated_bandwidth_bps);
+  rtc_stats->setPacketsReordered(p2p_stats.packets_reordered);
+  rtc_stats->setBlockedFramesReceived(p2p_stats.blocked_frames_received);
+  rtc_stats->setBlockedFramesSent(p2p_stats.blocked_frames_sent);
+  rtc_stats->setConnectivityProbingPacketsReceived(
+      p2p_stats.connectivity_probing_packets_received);
+  return rtc_stats;
+}
+
+void RTCQuicTransport::OnStats(uint32_t request_id,
+                               const P2PQuicTransportStats& stats) {
+  auto it = stats_promise_map_.find(request_id);
+  DCHECK(it != stats_promise_map_.end());
+  it->value->Resolve(CreateRTCQuicTransportStats(stats));
+  stats_promise_map_.erase(it);
 }
 
 void RTCQuicTransport::OnIceTransportClosed(
@@ -419,6 +483,11 @@ void RTCQuicTransport::Close(CloseReason reason) {
       break;
   }
 
+  if (reason != CloseReason::kContextDestroyed) {
+    // Cannot reject/resolve promises when ExecutionContext is being destroyed.
+    RejectPendingStatsPromises();
+  }
+
   DCHECK(!proxy_);
   DCHECK(IsDisposed());
 }
@@ -457,6 +526,19 @@ bool RTCQuicTransport::RaiseExceptionIfStarted(
   return false;
 }
 
+void RTCQuicTransport::RejectPendingStatsPromises() {
+  for (ScriptPromiseResolver* promise_resolver : stats_promise_map_.Values()) {
+    ScriptState::Scope scope(promise_resolver->GetScriptState());
+    ExceptionState exception_state(
+        promise_resolver->GetScriptState()->GetIsolate(),
+        ExceptionState::kExecutionContext, "RTCQuicStream", "getStats");
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The RTCQuicTransport is closed.");
+    promise_resolver->Reject(exception_state);
+  }
+  stats_promise_map_.clear();
+}
+
 const AtomicString& RTCQuicTransport::InterfaceName() const {
   return event_target_names::kRTCQuicTransport;
 }
@@ -472,6 +554,7 @@ void RTCQuicTransport::Trace(blink::Visitor* visitor) {
   visitor->Trace(remote_parameters_);
   visitor->Trace(streams_);
   visitor->Trace(key_);
+  visitor->Trace(stats_promise_map_);
   EventTargetWithInlineData::Trace(visitor);
   ContextClient::Trace(visitor);
 }

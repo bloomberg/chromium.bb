@@ -80,6 +80,15 @@ void QuicTransportHost::CreateStream(
       std::make_pair(stream_host.get(), std::move(stream_host)));
 }
 
+void QuicTransportHost::GetStats(uint32_t request_id) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  P2PQuicTransportStats stats = quic_transport_->GetStats();
+  PostCrossThreadTask(
+      *proxy_thread(), FROM_HERE,
+      CrossThreadBind(&QuicTransportProxy::OnStats, proxy_, request_id, stats));
+}
+
 void QuicTransportHost::OnRemoveStream(QuicStreamHost* stream_host_to_remove) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
