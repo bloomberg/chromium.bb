@@ -40,8 +40,7 @@ config("blpwtk2_shared") {
 
 config("blpwtk2_gen_map") {
   ldflags = [
-    "/MAP",
-    "/MAPINFO:EXPORTS",
+    "/lldmap"
   ]
 }
 
