@@ -146,14 +146,6 @@ bool FragmentAnchor::Invoke() {
   if (!doc.IsRenderingReady() || !frame_->View())
     return true;
 
-  LayoutRect rect;
-  if (anchor_node_ != &doc) {
-    rect = anchor_node_->BoundingBoxForScrollIntoView();
-  } else {
-    if (Element* document_element = doc.documentElement())
-      rect = document_element->BoundingBoxForScrollIntoView();
-  }
-
   Frame* boundary_frame = frame_->FindUnsafeParentScrollPropagationBoundary();
 
   // FIXME: Handle RemoteFrames
