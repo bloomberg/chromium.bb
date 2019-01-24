@@ -111,10 +111,10 @@ void QueryLinkedFontsFromRegistry(const Font& font,
     if (!font_name.empty()) {
       AppendFont(font_name, font.GetFontSize(), linked_fonts);
     } else if (!filename.empty()) {
-      std::vector<std::string> font_names;
-      GetFontNamesFromFilename(filename, font_map, &font_names);
-      for (size_t i = 0; i < font_names.size(); ++i)
-        AppendFont(font_names[i], font.GetFontSize(), linked_fonts);
+      std::vector<std::string> filename_fonts;
+      GetFontNamesFromFilename(filename, font_map, &filename_fonts);
+      for (const std::string& filename_font : filename_fonts)
+        AppendFont(filename_font, font.GetFontSize(), linked_fonts);
     }
   }
 

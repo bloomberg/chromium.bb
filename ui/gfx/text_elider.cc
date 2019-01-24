@@ -651,9 +651,9 @@ void RectangleText::AddLine(const base::string16& line) {
         if (lines_added) {
           if (truncate) {
             // Trim trailing whitespace from the line that was added.
-            const size_t line = lines_->size() - lines_added;
-            base::TrimWhitespace(lines_->at(line), base::TRIM_TRAILING,
-                                 &lines_->at(line));
+            const size_t new_line = lines_->size() - lines_added;
+            base::TrimWhitespace(lines_->at(new_line), base::TRIM_TRAILING,
+                                 &lines_->at(new_line));
           }
           if (base::ContainsOnlyChars(word, base::kWhitespaceUTF16)) {
             // Skip the first space if the previous line was carried over.

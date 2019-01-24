@@ -21,8 +21,12 @@ jumbo_static_library("url_formatter") {
     "url_formatter_android.cc",
   ]
 
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+  configs += [
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+
+    "//build/config/compiler:noshadowing",
+  ]
 
   deps = [
     "//base",

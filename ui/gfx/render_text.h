@@ -100,7 +100,7 @@ class StyleIterator {
   SkColor color() const { return color_->second; }
   BaselineStyle baseline() const { return baseline_->second; }
   int font_size_override() const { return font_size_override_->second; }
-  bool style(TextStyle s) const { return style_[static_cast<int>(s)]->second; }
+  bool style(TextStyle s) const { return style_[s]->second; }
   Font::Weight weight() const { return weight_->second; }
 
   // Get the intersecting range of the current iterator set.

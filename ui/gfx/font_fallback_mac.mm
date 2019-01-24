@@ -60,10 +60,10 @@ std::vector<Font> GetFallbackFonts(const Font& font) {
     CTFontDescriptorRef descriptor =
         base::mac::CFCastStrict<CTFontDescriptorRef>(
             CFArrayGetValueAtIndex(cascade_list, i));
-    base::ScopedCFTypeRef<CTFontRef> font(
+    base::ScopedCFTypeRef<CTFontRef> fallback_font(
         CTFontCreateWithFontDescriptor(descriptor, 0.0, nullptr));
-    if (font.get())
-      fallback_fonts.push_back(Font(static_cast<NSFont*>(font.get())));
+    if (fallback_font.get())
+      fallback_fonts.push_back(Font(static_cast<NSFont*>(fallback_font.get())));
   }
 
   if (fallback_fonts.empty())

@@ -541,8 +541,8 @@ SkColor CalculateKMeanColorOfBuffer(uint8_t* decoded_data,
     clusters.resize(kNumberOfClusters, KMeanCluster());
 
     // Pick a starting point for each cluster
-    auto cluster = clusters.begin();
-    while (cluster != clusters.end()) {
+    auto new_cluster = clusters.begin();
+    while (new_cluster != clusters.end()) {
       // Try up to 10 times to find a unique color. If no unique color can be
       // found, destroy this cluster.
       bool color_unique = false;
@@ -562,9 +562,9 @@ SkColor CalculateKMeanColorOfBuffer(uint8_t* decoded_data,
         // Loop through the previous clusters and check to see if we have seen
         // this color before.
         color_unique = true;
-        for (auto cluster_check = clusters.begin(); cluster_check != cluster;
-             ++cluster_check) {
-          if (cluster_check->IsAtCentroid(r, g, b)) {
+        for (auto cluster = clusters.begin(); cluster != new_cluster;
+             ++cluster) {
+          if (cluster->IsAtCentroid(r, g, b)) {
             color_unique = false;
             break;
           }
@@ -573,19 +573,19 @@ SkColor CalculateKMeanColorOfBuffer(uint8_t* decoded_data,
         // If we have a unique color set the center of the cluster to
         // that color.
         if (color_unique) {
-          cluster->SetCentroid(r, g, b);
+          new_cluster->SetCentroid(r, g, b);
           break;
         }
       }
 
       // If we don't have a unique color erase this cluster.
       if (!color_unique) {
-        cluster = clusters.erase(cluster);
+        new_cluster = clusters.erase(new_cluster);
       } else {
         // Have to increment the iterator here, otherwise the increment in the
         // for loop will skip a cluster due to the erase if the color wasn't
         // unique.
-        ++cluster;
+        ++new_cluster;
       }
     }
 

@@ -107,8 +107,8 @@ SkBitmap SkBitmapOperations::CreateMaskedBitmap(const SkBitmap& rgb,
     uint32_t* dst_row = masked.getAddr32(0, y);
 
     for (int x = 0; x < masked.width(); ++x) {
-      unsigned alpha = SkGetPackedA32(alpha_row[x]);
-      unsigned scale = SkAlpha255To256(alpha);
+      unsigned alpha32 = SkGetPackedA32(alpha_row[x]);
+      unsigned scale = SkAlpha255To256(alpha32);
       dst_row[x] = SkAlphaMulQ(rgb_row[x], scale);
     }
   }
