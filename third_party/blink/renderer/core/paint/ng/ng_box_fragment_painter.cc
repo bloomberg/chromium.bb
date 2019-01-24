@@ -804,6 +804,17 @@ void NGBoxFragmentPainter::PaintTextChild(const NGPaintFragment& text_fragment,
       paint_info.phase != PaintPhase::kMask)
     return;
 
+  // Note: To paint selection for <br>, we don't check intersection with
+  // fragment paint rect and cull rect since computing selection rect is
+  // expensive.
+  if (!text_fragment.Size().IsEmpty()) {
+    LayoutRect physical_visual_overflow = text_fragment.SelfInkOverflow();
+    physical_visual_overflow.MoveBy(text_fragment.Offset().ToLayoutPoint());
+    physical_visual_overflow.MoveBy(paint_offset);
+    if (!paint_info.GetCullRect().Intersects(physical_visual_overflow))
+      return;
+  }
+
   // The text clip phase already has a DrawingRecorder. Text clips are initiated
   // only in BoxPainterBase::PaintFillLayer, which is already within a
   // DrawingRecorder.
