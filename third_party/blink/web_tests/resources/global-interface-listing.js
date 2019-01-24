@@ -110,8 +110,6 @@ var platformSpecificInterfaces = new Set([
     'BluetoothRemoteGATTServer',
     'BluetoothRemoteGATTService',
     'BluetoothUUID',
-    'MediaMetadata',
-    'MediaSession',
 ]);
 
 // List of all platform-specific properties on interfaces that appear on all
@@ -120,7 +118,6 @@ var platformSpecificInterfaces = new Set([
 var platformSpecificProperties = {
     Navigator: new Set([
         'getter bluetooth',
-        'getter mediaSession',
     ]),
     Notification: new Set([
         'getter image',

@@ -4456,6 +4456,17 @@ interface MediaList
     method item
     method toString
     setter mediaText
+interface MediaMetadata
+    attribute @@toStringTag
+    getter album
+    getter artist
+    getter artwork
+    getter title
+    method constructor
+    setter album
+    setter artist
+    setter artwork
+    setter title
 interface MediaQueryList : EventTarget
     attribute @@toStringTag
     getter matches
@@ -4496,6 +4507,14 @@ interface MediaRecorder : EventTarget
     setter onresume
     setter onstart
     setter onstop
+interface MediaSession
+    attribute @@toStringTag
+    getter metadata
+    getter playbackState
+    method constructor
+    method setActionHandler
+    setter metadata
+    setter playbackState
 interface MediaSettingsRange
     attribute @@toStringTag
     getter max
@@ -4781,6 +4800,7 @@ interface Navigator
     getter maxTouchPoints
     getter mediaCapabilities
     getter mediaDevices
+    getter mediaSession
     getter mimeTypes
     getter nfc
     getter onLine

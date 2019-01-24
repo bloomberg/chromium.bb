@@ -781,11 +781,9 @@
       name: "MediaQueryShape",
       status: "experimental",
     },
-    // MediaSession is enabled by default on Android only.
-    // TODO(rbyers): Add parameter to specify platform.
     {
       name: "MediaSession",
-      status: "test",
+      status: "stable",
     },
     {
       name: "MediaSourceExperimental",
