@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ui/views/autofill/local_card_migration_dialog_view.h"
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/i18n/message_formatter.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -311,6 +315,8 @@ class LocalCardMigrationOfferView : public views::View,
   }
 
  private:
+  friend class LocalCardMigrationDialogView;
+
   LocalCardMigrationDialogController* controller_;
 
   views::View* card_list_view_ = nullptr;
@@ -467,6 +473,8 @@ void LocalCardMigrationDialogView::ConstructView() {
 
   if (view_state == LocalCardMigrationDialogState::kOffered) {
     offer_view_ = new LocalCardMigrationOfferView(controller_, this);
+    offer_view_->set_id(DialogViewId::MAIN_CONTENT_VIEW_MIGRATION_OFFER_DIALOG);
+    card_list_view_ = offer_view_->card_list_view_;
     AddChildView(offer_view_);
   } else {
     AddChildView(CreateFeedbackContentView(controller_, this).release());
