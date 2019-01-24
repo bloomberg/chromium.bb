@@ -246,55 +246,74 @@ void PerUserTopicRegistrationManager::StartRegistrationRequest(
       parse_json_, url_loader_factory_);
 }
 
+void PerUserTopicRegistrationManager::ActOnSuccesfullRegistration(
+    const Topic& topic,
+    const std::string& private_topic_name,
+    PerUserTopicRegistrationRequest::RequestType type) {
+  auto it = registration_statuses_.find(topic);
+  it->second->request_backoff_.InformOfRequest(true);
+  registration_statuses_.erase(it);
+  if (type == PerUserTopicRegistrationRequest::SUBSCRIBE) {
+    DictionaryPrefUpdate update(local_state_, kTypeRegisteredForInvalidation);
+    update->SetKey(topic, base::Value(private_topic_name));
+    topic_to_private_topic_[topic] = private_topic_name;
+    local_state_->CommitPendingWrite();
+  }
+  bool all_subscription_completed = true;
+  for (const auto& entry : registration_statuses_) {
+    if (entry.second->type == PerUserTopicRegistrationRequest::SUBSCRIBE) {
+      all_subscription_completed = false;
+    }
+  }
+  // Emit ENABLED once we recovered from failed request.
+  if (all_subscription_completed &&
+      base::FeatureList::IsEnabled(
+          invalidation::switches::kFCMInvalidationsConservativeEnabling)) {
+    NotifySubscriptionChannelStateChange(INVALIDATIONS_ENABLED);
+  }
+}
+
+void PerUserTopicRegistrationManager::ScheduleRequestForRepetition(
+    const Topic& topic) {
+  auto completition_callback = base::BindOnce(
+      &PerUserTopicRegistrationManager::RegistrationFinishedForTopic,
+      base::Unretained(this));
+  registration_statuses_[topic]->completion_callback =
+      std::move(completition_callback);
+  registration_statuses_[topic]->request_backoff_.InformOfRequest(false);
+  registration_statuses_[topic]->request_retry_timer_.Start(
+      FROM_HERE,
+      registration_statuses_[topic]->request_backoff_.GetTimeUntilRelease(),
+      base::BindRepeating(
+          &PerUserTopicRegistrationManager::StartRegistrationRequest,
+          base::Unretained(this), topic));
+}
+
 void PerUserTopicRegistrationManager::RegistrationFinishedForTopic(
     Topic topic,
     Status code,
     std::string private_topic_name,
     PerUserTopicRegistrationRequest::RequestType type) {
   if (code.IsSuccess()) {
-    auto it = registration_statuses_.find(topic);
-    registration_statuses_.erase(it);
-    if (type == PerUserTopicRegistrationRequest::SUBSCRIBE) {
-      DictionaryPrefUpdate update(local_state_, kTypeRegisteredForInvalidation);
-      update->SetKey(topic, base::Value(private_topic_name));
-      topic_to_private_topic_[topic] = private_topic_name;
-      local_state_->CommitPendingWrite();
-    }
-    bool all_subscription_completed = true;
-    for (const auto& entry : registration_statuses_) {
-      if (entry.second->type == PerUserTopicRegistrationRequest::SUBSCRIBE) {
-        all_subscription_completed = false;
-      }
-    }
-    // Emit ENABLED once we recovered from failed request.
-    if (all_subscription_completed &&
-        base::FeatureList::IsEnabled(
-            invalidation::switches::kFCMInvalidationsConservativeEnabling)) {
-      NotifySubscriptionChannelStateChange(INVALIDATIONS_ENABLED);
-    }
+    ActOnSuccesfullRegistration(topic, private_topic_name, type);
   } else {
+    auto it = registration_statuses_.find(topic);
+    it->second->request_backoff_.InformOfRequest(false);
     if (code.IsAuthFailure()) {
       // Re-request access token and fire registrations again.
       RequestAccessToken();
     } else {
-      // If one of the registration requests failed emit SUBSCRIPTION_FAILURE.
+      // If one of the registration requests failed, emit SUBSCRIPTION_FAILURE.
       if (type == PerUserTopicRegistrationRequest::SUBSCRIBE &&
           base::FeatureList::IsEnabled(
               invalidation::switches::kFCMInvalidationsConservativeEnabling)) {
         NotifySubscriptionChannelStateChange(SUBSCRIPTION_FAILURE);
       }
-      auto completition_callback = base::BindOnce(
-          &PerUserTopicRegistrationManager::RegistrationFinishedForTopic,
-          base::Unretained(this));
-      registration_statuses_[topic]->completion_callback =
-          std::move(completition_callback);
-      registration_statuses_[topic]->request_backoff_.InformOfRequest(false);
-      registration_statuses_[topic]->request_retry_timer_.Start(
-          FROM_HERE,
-          registration_statuses_[topic]->request_backoff_.GetTimeUntilRelease(),
-          base::BindRepeating(
-              &PerUserTopicRegistrationManager::StartRegistrationRequest,
-              base::Unretained(this), topic));
+      if (!code.ShouldRetry()) {
+        registration_statuses_.erase(it);
+        return;
+      }
+      ScheduleRequestForRepetition(topic);
     }
   }
 }
