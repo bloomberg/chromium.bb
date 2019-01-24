@@ -17,7 +17,7 @@
 #include "net/third_party/quic/tools/quic_backend_response.h"
 #include "net/third_party/quic/tools/quic_simple_server_backend.h"
 #include "net/third_party/quic/tools/quic_url.h"
-#include "net/third_party/spdy/core/spdy_framer.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_framer.h"
 
 namespace quic {
 

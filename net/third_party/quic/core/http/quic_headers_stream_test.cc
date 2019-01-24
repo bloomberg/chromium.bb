@@ -26,10 +26,10 @@
 #include "net/third_party/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/third_party/quic/test_tools/quic_stream_peer.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/spdy/core/http2_frame_decoder_adapter.h"
-#include "net/third_party/spdy/core/spdy_alt_svc_wire_format.h"
-#include "net/third_party/spdy/core/spdy_protocol.h"
-#include "net/third_party/spdy/core/spdy_test_utils.h"
+#include "net/third_party/quiche/src/spdy/core/http2_frame_decoder_adapter.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_alt_svc_wire_format.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_test_utils.h"
 
 using spdy::ERROR_CODE_PROTOCOL_ERROR;
 using spdy::SETTINGS_ENABLE_PUSH;

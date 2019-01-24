@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/core/qpack/qpack_encoder_test_utils.h"
 
-#include "net/third_party/spdy/core/hpack/hpack_encoder.h"
+#include "net/third_party/quiche/src/spdy/core/hpack/hpack_encoder.h"
 
 namespace quic {
 namespace test {

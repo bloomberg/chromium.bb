@@ -9,7 +9,7 @@
 #include "net/third_party/quic/core/qpack/qpack_encoder_test_utils.h"
 #include "net/third_party/quic/platform/api/quic_fuzzed_data_provider.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
-#include "net/third_party/spdy/core/spdy_header_block.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
 
 namespace quic {
 namespace test {

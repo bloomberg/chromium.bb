@@ -13,7 +13,7 @@
 #include "net/third_party/quic/platform/api/quic_containers.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_map_util.h"
-#include "net/third_party/spdy/core/priority_write_scheduler.h"
+#include "net/third_party/quiche/src/spdy/core/priority_write_scheduler.h"
 
 namespace quic {
 

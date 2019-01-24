@@ -9,7 +9,7 @@
 #include "net/third_party/quic/core/qpack/qpack_test_utils.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
-#include "net/third_party/spdy/core/spdy_header_block.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
 
 using ::testing::Eq;
 using ::testing::Sequence;
