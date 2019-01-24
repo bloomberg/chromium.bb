@@ -139,7 +139,6 @@ Polymer({
         }
       }, 500);
     });
-    this.populateList_();
   },
 
   /** @override */
@@ -149,6 +148,21 @@ Polymer({
     Polymer.RenderStatus.afterNextRender(this, () => {
       this.$.allSitesList.scrollOffset = this.$.allSitesList.offsetTop;
     });
+  },
+
+  /**
+   * Reload the site list when the all sites page is visited.
+   *
+   * settings.RouteObserverBehavior
+   * @param {!settings.Route} currentRoute
+   * @protected
+   */
+  currentRouteChanged: function(currentRoute) {
+    settings.GlobalScrollTargetBehaviorImpl.currentRouteChanged.call(
+        this, currentRoute);
+    if (currentRoute == settings.routes.SITE_SETTINGS_ALL) {
+      this.populateList_();
+    }
   },
 
   /**
@@ -185,30 +199,7 @@ Polymer({
     const newMap = /** @type {!Map<string, !SiteGroup>} */
                     (new Map(this.siteGroupMap));
     list.forEach(storageSiteGroup => {
-      if (newMap.has(storageSiteGroup.etldPlus1)) {
-        const siteGroup = newMap.get(storageSiteGroup.etldPlus1);
-        const storageOriginInfoMap = new Map();
-
-        siteGroup.numCookies = storageSiteGroup.numCookies;
-        storageSiteGroup.origins.forEach(
-            originInfo =>
-                storageOriginInfoMap.set(originInfo.origin, originInfo));
-
-        // If there is an overlapping origin, update the original
-        // |originInfo|.
-        siteGroup.origins.forEach(originInfo => {
-          if (storageOriginInfoMap.has(originInfo.origin)) {
-            Object.assign(
-                originInfo, storageOriginInfoMap.get(originInfo.origin));
-            storageOriginInfoMap.delete(originInfo.origin);
-          }
-        });
-        // Otherwise, add it to the list.
-        storageOriginInfoMap.forEach(
-            originInfo => siteGroup.origins.push(originInfo));
-      } else {
-        newMap.set(storageSiteGroup.etldPlus1, storageSiteGroup);
-      }
+      newMap.set(storageSiteGroup.etldPlus1, storageSiteGroup);
     });
     this.siteGroupMap = newMap;
   },
