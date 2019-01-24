@@ -19,9 +19,9 @@ void ArCoreDeviceProvider::Initialize(
                                  mojom::XRRuntimePtr)> add_device_callback,
     base::RepeatingCallback<void(mojom::XRDeviceId)> remove_device_callback,
     base::OnceClosure initialization_complete) {
-  if (vr::SupportsArCore())
+  if (vr::IsArCoreSupported()) {
     arcore_device_ = std::make_unique<ArCoreDevice>();
-  if (arcore_device_) {
+
     add_device_callback.Run(arcore_device_->GetId(),
                             arcore_device_->GetVRDisplayInfo(),
                             arcore_device_->BindXRRuntimePtr());
