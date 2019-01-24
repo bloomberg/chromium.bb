@@ -216,6 +216,8 @@ const SecurityOrigin* MediaKeySystemAccessInitializer::GetSecurityOrigin()
 
 void MediaKeySystemAccessInitializer::RequestSucceeded(
     WebContentDecryptionModuleAccess* access) {
+  DVLOG(3) << __func__;
+
   if (!IsExecutionContextValid())
     return;
 
@@ -226,6 +228,8 @@ void MediaKeySystemAccessInitializer::RequestSucceeded(
 
 void MediaKeySystemAccessInitializer::RequestNotSupported(
     const WebString& error_message) {
+  DVLOG(3) << __func__ << " error: " << error_message.Ascii();
+
   if (!IsExecutionContextValid())
     return;
 
