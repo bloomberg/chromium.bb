@@ -536,7 +536,6 @@ extern const char kContentSuggestionsNotificationsSentCount[];
 extern const char kNtpCustomBackgroundDict[];
 extern const char kNtpCustomBackgroundLocalToDevice[];
 extern const char kNtpSearchSuggestionsBlacklist[];
-extern const char kNtpSearchSuggestionsImpressions[];
 extern const char kNtpSearchSuggestionsOptOut[];
 #endif  // defined(OS_ANDROID)
 extern const char kNtpShownPage[];
