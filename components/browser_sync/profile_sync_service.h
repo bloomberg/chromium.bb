@@ -185,25 +185,28 @@ class ProfileSyncService : public syncer::SyncService,
   int GetDisableReasons() const override;
   TransportState GetTransportState() const override;
   bool IsLocalSyncEnabled() const override;
-  void TriggerRefresh(const syncer::ModelTypeSet& types) override;
-  void OnDataTypeRequestsSyncStartup(syncer::ModelType type) override;
-  void StopAndClear() override;
-  void AddObserver(syncer::SyncServiceObserver* observer) override;
-  void RemoveObserver(syncer::SyncServiceObserver* observer) override;
-  bool HasObserver(const syncer::SyncServiceObserver* observer) const override;
+  AccountInfo GetAuthenticatedAccountInfo() const override;
+  bool IsAuthenticatedAccountPrimary() const override;
+  const GoogleServiceAuthError& GetAuthError() const override;
+  std::unique_ptr<syncer::SyncSetupInProgressHandle> GetSetupInProgressHandle()
+      override;
+  bool IsSetupInProgress() const override;
   syncer::ModelTypeSet GetRegisteredDataTypes() const override;
   syncer::ModelTypeSet GetForcedDataTypes() const override;
   syncer::ModelTypeSet GetPreferredDataTypes() const override;
   syncer::ModelTypeSet GetActiveDataTypes() const override;
-  std::unique_ptr<syncer::SyncSetupInProgressHandle> GetSetupInProgressHandle()
-      override;
-  bool IsSetupInProgress() const override;
-  const GoogleServiceAuthError& GetAuthError() const override;
+  void StopAndClear() override;
+  void OnDataTypeRequestsSyncStartup(syncer::ModelType type) override;
+  void TriggerRefresh(const syncer::ModelTypeSet& types) override;
+  void ReenableDatatype(syncer::ModelType type) override;
+  void ReadyForStartChanged(syncer::ModelType type) override;
+  void SetInvalidationsForSessionsEnabled(bool enabled) override;
+  void AddObserver(syncer::SyncServiceObserver* observer) override;
+  void RemoveObserver(syncer::SyncServiceObserver* observer) override;
+  bool HasObserver(const syncer::SyncServiceObserver* observer) const override;
   bool IsPassphraseRequiredForDecryption() const override;
   bool IsUsingSecondaryPassphrase() const override;
   syncer::UserShare* GetUserShare() const override;
-  void ReenableDatatype(syncer::ModelType type) override;
-  void ReadyForStartChanged(syncer::ModelType type) override;
   syncer::SyncTokenStatus GetSyncTokenStatus() const override;
   bool QueryDetailedSyncStatus(syncer::SyncStatus* result) const override;
   base::Time GetLastSyncedTime() const override;
@@ -223,9 +226,6 @@ class ProfileSyncService : public syncer::SyncService,
   base::WeakPtr<syncer::JsController> GetJsController() override;
   void GetAllNodes(const base::Callback<void(std::unique_ptr<base::ListValue>)>&
                        callback) override;
-  AccountInfo GetAuthenticatedAccountInfo() const override;
-  bool IsAuthenticatedAccountPrimary() const override;
-  void SetInvalidationsForSessionsEnabled(bool enabled) override;
 
   // Add a sync type preference provider. Each provider may only be added once.
   void AddPreferenceProvider(syncer::SyncTypePreferenceProvider* provider);
