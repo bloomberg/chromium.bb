@@ -6859,7 +6859,8 @@ void RenderFrameImpl::BeginNavigationInternal(
   bool prevent_sandboxed_download =
       (frame_->EffectiveSandboxFlags() & blink::WebSandboxFlags::kDownloads) !=
           blink::WebSandboxFlags::kNone &&
-      info->blocking_downloads_in_sandbox_enabled;
+      !info->url_request.HasUserGesture() &&
+      info->blocking_downloads_in_sandbox_without_user_activation_enabled;
 
   GetFrameHost()->BeginNavigation(
       MakeCommonNavigationParams(frame_->GetSecurityOrigin(), std::move(info),

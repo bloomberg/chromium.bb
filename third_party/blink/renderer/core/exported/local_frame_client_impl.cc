@@ -568,8 +568,10 @@ void LocalFrameClientImpl::BeginNavigation(
       origin_document->GetFrame()->Client()->Opener() ==
           ToCoreFrame(web_frame_);
 
-  navigation_info->blocking_downloads_in_sandbox_enabled =
-      RuntimeEnabledFeatures::BlockingDownloadsInSandboxEnabled();
+  navigation_info
+      ->blocking_downloads_in_sandbox_without_user_activation_enabled =
+      RuntimeEnabledFeatures::
+          BlockingDownloadsInSandboxWithoutUserActivationEnabled();
 
   // The frame has navigated either by itself or by the action of the
   // |origin_document| when it is defined. |source_location| represents the

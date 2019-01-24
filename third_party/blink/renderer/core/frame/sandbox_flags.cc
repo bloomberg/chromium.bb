@@ -73,8 +73,10 @@ SandboxFlags ParseSandboxPolicy(const SpaceSplitString& policy,
     } else if (EqualIgnoringASCIICase(
                    sandbox_token, "allow-top-navigation-by-user-activation")) {
       flags &= ~kSandboxTopNavigationByUserActivation;
-    } else if (EqualIgnoringASCIICase(sandbox_token, "allow-downloads") &&
-               RuntimeEnabledFeatures::BlockingDownloadsInSandboxEnabled()) {
+    } else if (EqualIgnoringASCIICase(
+                   sandbox_token, "allow-downloads-without-user-activation") &&
+               RuntimeEnabledFeatures::
+                   BlockingDownloadsInSandboxWithoutUserActivationEnabled()) {
       flags &= ~kSandboxDownloads;
     } else {
       token_errors.Append(token_errors.IsEmpty() ? "'" : ", '");

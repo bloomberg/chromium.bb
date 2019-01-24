@@ -158,7 +158,7 @@
       status: "stable",
     },
     {
-      name: "BlockingDownloadsInSandbox",
+      name: "BlockingDownloadsInSandboxWithoutUserActivation",
     },
     {
       name: "BlockMetaSetCookie",

@@ -31,8 +31,9 @@ bool IsTokenSupported(const AtomicString& token) {
     if (token == supported_token)
       return true;
   }
-  if (token == "allow-downloads" &&
-      RuntimeEnabledFeatures::BlockingDownloadsInSandboxEnabled()) {
+  if (token == "allow-downloads-without-user-activation" &&
+      RuntimeEnabledFeatures::
+          BlockingDownloadsInSandboxWithoutUserActivationEnabled()) {
     return true;
   }
   return false;
