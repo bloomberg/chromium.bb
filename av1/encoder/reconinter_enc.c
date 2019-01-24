@@ -258,14 +258,14 @@ static void build_inter_predictors_for_planes(const AV1_COMMON *cm,
 }
 
 void av1_build_inter_predictors_sby(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                    int mi_row, int mi_col, BUFFER_SET *ctx,
-                                    BLOCK_SIZE bsize) {
+                                    int mi_row, int mi_col,
+                                    const BUFFER_SET *ctx, BLOCK_SIZE bsize) {
   av1_build_inter_predictors_sbp(cm, xd, mi_row, mi_col, ctx, bsize, 0);
 }
 
 void av1_build_inter_predictors_sbuv(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                     int mi_row, int mi_col, BUFFER_SET *ctx,
-                                     BLOCK_SIZE bsize) {
+                                     int mi_row, int mi_col,
+                                     const BUFFER_SET *ctx, BLOCK_SIZE bsize) {
   for (int plane_idx = 1; plane_idx < MAX_MB_PLANE; plane_idx++) {
     av1_build_inter_predictors_sbp(cm, xd, mi_row, mi_col, ctx, bsize,
                                    plane_idx);
@@ -273,8 +273,9 @@ void av1_build_inter_predictors_sbuv(const AV1_COMMON *cm, MACROBLOCKD *xd,
 }
 
 void av1_build_inter_predictors_sbp(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                    int mi_row, int mi_col, BUFFER_SET *ctx,
-                                    BLOCK_SIZE bsize, int plane_idx) {
+                                    int mi_row, int mi_col,
+                                    const BUFFER_SET *ctx, BLOCK_SIZE bsize,
+                                    int plane_idx) {
   build_inter_predictors_for_planes(cm, xd, bsize, mi_row, mi_col, plane_idx,
                                     plane_idx);
 
@@ -292,8 +293,8 @@ void av1_build_inter_predictors_sbp(const AV1_COMMON *cm, MACROBLOCKD *xd,
 }
 
 void av1_build_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                   int mi_row, int mi_col, BUFFER_SET *ctx,
-                                   BLOCK_SIZE bsize) {
+                                   int mi_row, int mi_col,
+                                   const BUFFER_SET *ctx, BLOCK_SIZE bsize) {
   const int num_planes = av1_num_planes(cm);
   av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, ctx, bsize);
   if (num_planes > 1)

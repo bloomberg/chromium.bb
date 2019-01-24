@@ -24,20 +24,21 @@ extern "C" {
 #endif
 
 void av1_build_inter_predictors_sby(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                    int mi_row, int mi_col, BUFFER_SET *ctx,
-                                    BLOCK_SIZE bsize);
+                                    int mi_row, int mi_col,
+                                    const BUFFER_SET *ctx, BLOCK_SIZE bsize);
 
 void av1_build_inter_predictors_sbuv(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                     int mi_row, int mi_col, BUFFER_SET *ctx,
-                                     BLOCK_SIZE bsize);
+                                     int mi_row, int mi_col,
+                                     const BUFFER_SET *ctx, BLOCK_SIZE bsize);
 
 void av1_build_inter_predictors_sbp(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                    int mi_row, int mi_col, BUFFER_SET *ctx,
-                                    BLOCK_SIZE bsize, int plane_idx);
+                                    int mi_row, int mi_col,
+                                    const BUFFER_SET *ctx, BLOCK_SIZE bsize,
+                                    int plane_idx);
 
 void av1_build_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                   int mi_row, int mi_col, BUFFER_SET *ctx,
-                                   BLOCK_SIZE bsize);
+                                   int mi_row, int mi_col,
+                                   const BUFFER_SET *ctx, BLOCK_SIZE bsize);
 
 void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
                                int dst_stride, const MV *src_mv,

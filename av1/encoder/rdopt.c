@@ -7171,10 +7171,9 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
     x->pred_mv[ref] = x->best_mv.as_mv;
 }
 
-static INLINE void restore_dst_buf(MACROBLOCKD *xd, BUFFER_SET dst,
+static INLINE void restore_dst_buf(MACROBLOCKD *xd, const BUFFER_SET dst,
                                    const int num_planes) {
-  int i;
-  for (i = 0; i < num_planes; i++) {
+  for (int i = 0; i < num_planes; i++) {
     xd->plane[i].dst.buf = dst.plane[i];
     xd->plane[i].dst.stride = dst.stride[i];
   }
@@ -7811,7 +7810,7 @@ static void get_inter_predictors_masked_compound(
 static int64_t build_and_cost_compound_type(
     const AV1_COMP *const cpi, MACROBLOCK *x, const int_mv *const cur_mv,
     const BLOCK_SIZE bsize, const PREDICTION_MODE this_mode, int *rs2,
-    int rate_mv, BUFFER_SET *ctx, int *out_rate_mv, uint8_t **preds0,
+    int rate_mv, const BUFFER_SET *ctx, int *out_rate_mv, uint8_t **preds0,
     uint8_t **preds1, int16_t *residual1, int16_t *diff10, int *strides,
     int mi_row, int mi_col, int mode_rate, int64_t ref_best_rd,
     int *calc_pred_masked_compound, int32_t *comp_rate, int64_t *comp_dist) {
@@ -8099,10 +8098,11 @@ static INLINE int get_switchable_rate(MACROBLOCK *const x,
 static INLINE int64_t interpolation_filter_rd(
     MACROBLOCK *const x, const AV1_COMP *const cpi,
     const TileDataEnc *tile_data, BLOCK_SIZE bsize, int mi_row, int mi_col,
-    BUFFER_SET *const orig_dst, int64_t *const rd, int *const switchable_rate,
-    int *const skip_txfm_sb, int64_t *const skip_sse_sb,
-    const BUFFER_SET *dst_bufs[2], int filter_idx, const int switchable_ctx[2],
-    const int skip_pred, int *rate, int64_t *dist) {
+    const BUFFER_SET *const orig_dst, int64_t *const rd,
+    int *const switchable_rate, int *const skip_txfm_sb,
+    int64_t *const skip_sse_sb, const BUFFER_SET *dst_bufs[2], int filter_idx,
+    const int switchable_ctx[2], const int skip_pred, int *rate,
+    int64_t *dist) {
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -8217,12 +8217,12 @@ static INLINE int64_t interpolation_filter_rd(
 static INLINE void pred_dual_interp_filter_rd(
     MACROBLOCK *const x, const AV1_COMP *const cpi,
     const TileDataEnc *tile_data, BLOCK_SIZE bsize, int mi_row, int mi_col,
-    BUFFER_SET *const orig_dst, int64_t *const rd, int *const switchable_rate,
-    int *const skip_txfm_sb, int64_t *const skip_sse_sb,
-    const BUFFER_SET *dst_bufs[2], InterpFilters filter_idx,
-    const int switchable_ctx[2], const int skip_pred, int *rate, int64_t *dist,
-    InterpFilters af_horiz, InterpFilters af_vert, InterpFilters lf_horiz,
-    InterpFilters lf_vert) {
+    const BUFFER_SET *const orig_dst, int64_t *const rd,
+    int *const switchable_rate, int *const skip_txfm_sb,
+    int64_t *const skip_sse_sb, const BUFFER_SET *dst_bufs[2],
+    InterpFilters filter_idx, const int switchable_ctx[2], const int skip_pred,
+    int *rate, int64_t *dist, InterpFilters af_horiz, InterpFilters af_vert,
+    InterpFilters lf_horiz, InterpFilters lf_vert) {
   if ((af_horiz == lf_horiz) && (af_horiz != SWITCHABLE)) {
     if (((af_vert == lf_vert) && (af_vert != SWITCHABLE))) {
       filter_idx = af_horiz + (af_vert * SWITCHABLE_FILTERS);
@@ -8260,11 +8260,11 @@ static INLINE void pred_dual_interp_filter_rd(
 static INLINE void find_best_non_dual_interp_filter(
     MACROBLOCK *const x, const AV1_COMP *const cpi,
     const TileDataEnc *tile_data, BLOCK_SIZE bsize, int mi_row, int mi_col,
-    BUFFER_SET *const orig_dst, int64_t *const rd, int *const switchable_rate,
-    int *const skip_txfm_sb, int64_t *const skip_sse_sb,
-    const BUFFER_SET *dst_bufs[2], const int switchable_ctx[2],
-    const int skip_ver, const int skip_hor, int *rate, int64_t *dist,
-    int filter_set_size) {
+    const BUFFER_SET *const orig_dst, int64_t *const rd,
+    int *const switchable_rate, int *const skip_txfm_sb,
+    int64_t *const skip_sse_sb, const BUFFER_SET *dst_bufs[2],
+    const int switchable_ctx[2], const int skip_ver, const int skip_hor,
+    int *rate, int64_t *dist, int filter_set_size) {
   int16_t i;
 
   // Regular filter evaluation should have been done and hence the same should
@@ -8457,7 +8457,7 @@ static INLINE void save_comp_rd_search_stat(MACROBLOCK *x,
 static int64_t interpolation_filter_search(
     MACROBLOCK *const x, const AV1_COMP *const cpi,
     const TileDataEnc *tile_data, BLOCK_SIZE bsize, int mi_row, int mi_col,
-    const BUFFER_SET *const tmp_dst, BUFFER_SET *const orig_dst,
+    const BUFFER_SET *const tmp_dst, const BUFFER_SET *const orig_dst,
     InterpFilter (*const single_filter)[REF_FRAMES], int64_t *const rd,
     int *const switchable_rate, int *const skip_txfm_sb,
     int64_t *const skip_sse_sb, const int skip_build_pred,
@@ -8851,7 +8851,7 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
                                    int mi_row, int mi_col, MB_MODE_INFO *mbmi,
                                    HandleInterModeArgs *args,
                                    int64_t ref_best_rd, int *rate_mv,
-                                   int *tmp_rate2, BUFFER_SET *orig_dst) {
+                                   int *tmp_rate2, const BUFFER_SET *orig_dst) {
   const AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *xd = &x->e_mbd;
@@ -9075,7 +9075,7 @@ static int64_t motion_mode_rd(
     BLOCK_SIZE bsize, RD_STATS *rd_stats, RD_STATS *rd_stats_y,
     RD_STATS *rd_stats_uv, int *disable_skip, int mi_row, int mi_col,
     HandleInterModeArgs *const args, int64_t ref_best_rd, const int *refs,
-    int *rate_mv, BUFFER_SET *orig_dst
+    int *rate_mv, const BUFFER_SET *orig_dst
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
     ,
     int64_t *best_est_rd, int do_tx_search, InterModesInfo *inter_modes_info
@@ -9442,7 +9442,7 @@ static int64_t motion_mode_rd(
 
 static int64_t skip_mode_rd(RD_STATS *rd_stats, const AV1_COMP *const cpi,
                             MACROBLOCK *const x, BLOCK_SIZE bsize, int mi_row,
-                            int mi_col, BUFFER_SET *const orig_dst) {
+                            int mi_col, const BUFFER_SET *const orig_dst) {
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -9618,7 +9618,8 @@ typedef struct {
 static int compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
                             BLOCK_SIZE bsize, int mi_col, int mi_row,
                             int_mv *cur_mv, int masked_compound_used,
-                            BUFFER_SET *orig_dst, const BUFFER_SET *tmp_dst,
+                            const BUFFER_SET *orig_dst,
+                            const BUFFER_SET *tmp_dst,
                             CompoundTypeRdBuffers *buffers, int *rate_mv,
                             int64_t *rd, RD_STATS *rd_stats,
                             int64_t ref_best_rd, int *is_luma_interp_done) {
@@ -9828,7 +9829,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi,
   // one for future predictions. In the end, copy from tmp_buf to
   // dst if necessary.
   struct macroblockd_plane *p = xd->plane;
-  BUFFER_SET orig_dst = {
+  const BUFFER_SET orig_dst = {
     { p[0].dst.buf, p[1].dst.buf, p[2].dst.buf },
     { p[0].dst.stride, p[1].dst.stride, p[2].dst.stride },
   };

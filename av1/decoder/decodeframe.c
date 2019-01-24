@@ -856,7 +856,7 @@ static void dec_build_inter_predictors_for_planes(const AV1_COMMON *cm,
 
 static void dec_build_inter_predictors_sby(const AV1_COMMON *cm,
                                            MACROBLOCKD *xd, int mi_row,
-                                           int mi_col, BUFFER_SET *ctx,
+                                           int mi_col, const BUFFER_SET *ctx,
                                            BLOCK_SIZE bsize) {
   dec_build_inter_predictors_for_planes(cm, xd, bsize, mi_row, mi_col, 0, 0);
 
@@ -871,7 +871,7 @@ static void dec_build_inter_predictors_sby(const AV1_COMMON *cm,
 
 static void dec_build_inter_predictors_sbuv(const AV1_COMMON *cm,
                                             MACROBLOCKD *xd, int mi_row,
-                                            int mi_col, BUFFER_SET *ctx,
+                                            int mi_col, const BUFFER_SET *ctx,
                                             BLOCK_SIZE bsize) {
   dec_build_inter_predictors_for_planes(cm, xd, bsize, mi_row, mi_col, 1,
                                         MAX_MB_PLANE - 1);
