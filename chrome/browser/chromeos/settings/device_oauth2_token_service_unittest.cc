@@ -17,7 +17,8 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_delegate.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
+#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/chromeos/settings/token_encryptor.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -201,8 +202,11 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   };
 
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
-  ScopedCrosSettingsTestHelper cros_settings_test_helper_;
+  ScopedStubInstallAttributes scoped_stub_install_attributes_;
   ScopedTestingLocalState scoped_testing_local_state_;
+  ScopedTestDeviceSettingsService scoped_device_settings_service_;
+  ScopedTestCrosSettings scoped_test_cros_settings_{
+      scoped_testing_local_state_.Get()};
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       test_shared_loader_factory_;

@@ -5,7 +5,8 @@
 #include "chrome/browser/chromeos/policy/bluetooth_policy_handler.h"
 
 #include "base/test/scoped_task_environment.h"
-#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
+#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,41 +35,45 @@ class BluetoothPolicyHandlerTest : public testing::Test {
   // testing::Test
   void SetUp() override {
     testing::Test::SetUp();
-    settings_helper_.ReplaceDeviceSettingsProviderWithStub();
     device::BluetoothAdapterFactory::SetAdapterForTesting(adapter_);
   }
 
   void TearDown() override {}
 
  protected:
+  void SetAllowBluetooth(bool allow_bluetooth) {
+    scoped_testing_cros_settings_.device_settings()->SetBoolean(
+        chromeos::kAllowBluetooth, allow_bluetooth);
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<TestingBluetoothAdapter> adapter_;
-  chromeos::ScopedCrosSettingsTestHelper settings_helper_;
+  chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
 };
 
 TEST_F(BluetoothPolicyHandlerTest, TestZeroOnOffOn) {
   BluetoothPolicyHandler shutdown_policy_handler(chromeos::CrosSettings::Get());
   EXPECT_TRUE(adapter_->IsPresent());
 
-  settings_helper_.SetBoolean(chromeos::kAllowBluetooth, true);
+  SetAllowBluetooth(true);
   EXPECT_TRUE(adapter_->IsPresent());
 
-  settings_helper_.SetBoolean(chromeos::kAllowBluetooth, false);
+  SetAllowBluetooth(false);
   EXPECT_FALSE(adapter_->IsPresent());
 
   // Once the Bluetooth stack goes down, it needs a reboot to come back up.
-  settings_helper_.SetBoolean(chromeos::kAllowBluetooth, true);
+  SetAllowBluetooth(true);
   EXPECT_FALSE(adapter_->IsPresent());
 }
 
 TEST_F(BluetoothPolicyHandlerTest, OffDuringStartup) {
-  settings_helper_.SetBoolean(chromeos::kAllowBluetooth, false);
+  SetAllowBluetooth(false);
   BluetoothPolicyHandler shutdown_policy_handler(chromeos::CrosSettings::Get());
   EXPECT_FALSE(adapter_->IsPresent());
 }
 
 TEST_F(BluetoothPolicyHandlerTest, OnDuringStartup) {
-  settings_helper_.SetBoolean(chromeos::kAllowBluetooth, true);
+  SetAllowBluetooth(true);
   BluetoothPolicyHandler shutdown_policy_handler(chromeos::CrosSettings::Get());
   EXPECT_TRUE(adapter_->IsPresent());
 }
