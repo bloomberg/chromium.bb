@@ -117,7 +117,8 @@ class SmbService : public KeyedService,
   void RestoreMounts();
 
   void OnHostsDiscovered(
-      const std::vector<ProvidedFileSystemInfo>& file_systems);
+      const std::vector<ProvidedFileSystemInfo>& file_systems,
+      const std::vector<SmbUrl>& preconfigured_shares);
 
   // Attempts to remount a share with the information in |file_system_info|.
   void Remount(const ProvidedFileSystemInfo& file_system_info);
