@@ -5,20 +5,27 @@
 #include "chrome/browser/safe_browsing/telemetry/android/android_telemetry_service.h"
 
 #include <algorithm>
+#include <memory>
+#include <utility>
 
+#include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "components/download/public/common/download_item.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/features.h"
-#include "components/safe_browsing/triggers/trigger_manager.h"
+#include "components/safe_browsing/ping_manager.h"
+#include "components/safe_browsing/web_ui/safe_browsing_ui.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_contents.h"
 
 namespace safe_browsing {
 
@@ -26,23 +33,67 @@ namespace {
 // MIME-type for APKs.
 const char kApkMimeType[] = "application/vnd.android.package-archive";
 
+// The number of user gestures to trace back for the referrer chain.
+const int kAndroidTelemetryUserGestureLimit = 2;
+
 bool IsFeatureEnabled() {
   return base::FeatureList::IsEnabled(safe_browsing::kTelemetryForApkDownloads);
 }
+
+// Enumerates the possibilities for whether the CSBRR report was sent (or not).
+enum class ApkDownloadTelemetryOutcome {
+  NOT_SENT_SAFE_BROWSING_NOT_ENABLED = 0,
+  // |web_contents| was nullptr. This happens sometimes when downloads are
+  // resumed but it's not clear exactly when.
+  NOT_SENT_MISSING_WEB_CONTENTS = 1,
+  // No ping sent because the user is in Incognito mode.
+  NOT_SENT_INCOGNITO = 2,
+  // No ping sent because the user hasn't enabled extended reporting.
+  NOT_SENT_EXTENDED_REPORTING_DISABLED = 3,
+  // Download was cancelled.
+  NOT_SENT_DOWNLOAD_CANCELLED = 4,
+  // Failed to serialize the report.
+  NOT_SENT_FAILED_TO_SERIALIZE = 5,
+  // Feature not enabled so don't send.
+  NOT_SENT_FEATURE_NOT_ENABLED = 6,
+  // Download completed. Ping sent.
+  SENT = 7,
+
+  kMaxValue = SENT
+};
+
+void RecordApkDownloadTelemetryOutcome(ApkDownloadTelemetryOutcome outcome) {
+  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.AndroidTelemetry.ApkDownload.Outcome",
+                            outcome);
+}
+
+enum class ApkDownloadTelemetryIncompleteReason {
+  // |web_contents| was nullptr. This happens sometimes when downloads are
+  // resumed but it's not clear exactly when.
+  MISSING_WEB_CONTENTS = 0,
+  // Navigation manager wasn't ready yet to provide the referrer chain.
+  SB_NAVIGATION_MANAGER_NOT_READY = 1,
+  // Full referrer chain captured.
+  COMPLETE = 2,
+
+  kMaxValue = COMPLETE,
+};
+
+void RecordApkDownloadTelemetryIncompleteReason(
+    ApkDownloadTelemetryIncompleteReason reason) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "SafeBrowsing.AndroidTelemetry.ApkDownload.IncompleteReason", reason);
+}
+
 }  // namespace
 
 AndroidTelemetryService::AndroidTelemetryService(
     SafeBrowsingService* sb_service,
     Profile* profile)
-    : TelemetryService(),
-      profile_(profile),
-      sb_service_(sb_service),
-      trigger_manager_(sb_service->trigger_manager()) {
+    : TelemetryService(), profile_(profile), sb_service_(sb_service) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
-  DCHECK(IsSafeBrowsingEnabled());
-  if (!IsFeatureEnabled()) {
-    return;
-  }
+  DCHECK(sb_service_);
 
   content::DownloadManager* download_manager =
       content::BrowserContext::GetDownloadManager(profile_);
@@ -53,6 +104,7 @@ AndroidTelemetryService::AndroidTelemetryService(
 }
 
 AndroidTelemetryService::~AndroidTelemetryService() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::DownloadManager* download_manager =
       content::BrowserContext::GetDownloadManager(profile_);
   if (download_manager) {
@@ -63,34 +115,69 @@ AndroidTelemetryService::~AndroidTelemetryService() {
 void AndroidTelemetryService::OnDownloadCreated(
     content::DownloadManager* manager,
     download::DownloadItem* item) {
-  DCHECK(IsFeatureEnabled());
-
-  content::WebContents* web_contents =
-      content::DownloadItemUtils::GetWebContents(item);
-  if (!web_contents) {
-    // TODO(vakh): This can happen sometimes on a browser launch. Identify this
-    // case and document it better.
-    return;
-  }
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (item->GetMimeType() != kApkMimeType) {
     return;
   }
 
+  if (!CanSendPing(item)) {
+    return;
+  }
+
   item->AddObserver(this);
-  StartThreatDetailsCollection(web_contents);
 }
 
 void AndroidTelemetryService::OnDownloadUpdated(download::DownloadItem* item) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(IsFeatureEnabled());
   DCHECK_EQ(kApkMimeType, item->GetMimeType());
 
   if (item->GetState() == download::DownloadItem::COMPLETE) {
-    // Download completed. Send report, if allowed.
-    content::WebContents* web_contents =
-        content::DownloadItemUtils::GetWebContents(item);
-    FinishCollectingThreatDetails(web_contents);
+    // Download completed. Send report.
+    MaybeSendApkDownloadReport(item);
+  } else if (item->GetState() == download::DownloadItem::CANCELLED) {
+    RecordApkDownloadTelemetryOutcome(
+        ApkDownloadTelemetryOutcome::NOT_SENT_DOWNLOAD_CANCELLED);
   }
+}
+
+bool AndroidTelemetryService::CanSendPing(download::DownloadItem* item) {
+  content::WebContents* web_contents =
+      content::DownloadItemUtils::GetWebContents(item);
+  if (!web_contents) {
+    // TODO(vakh): This can happen sometimes when a download resumes on a
+    // browser re-launch. Identify this case and document it better.
+    RecordApkDownloadTelemetryOutcome(
+        ApkDownloadTelemetryOutcome::NOT_SENT_MISSING_WEB_CONTENTS);
+    return false;
+  }
+
+  if (!IsSafeBrowsingEnabled()) {
+    RecordApkDownloadTelemetryOutcome(
+        ApkDownloadTelemetryOutcome::NOT_SENT_SAFE_BROWSING_NOT_ENABLED);
+    return false;
+  }
+
+  if (web_contents->GetBrowserContext()->IsOffTheRecord()) {
+    RecordApkDownloadTelemetryOutcome(
+        ApkDownloadTelemetryOutcome::NOT_SENT_INCOGNITO);
+    return false;
+  }
+
+  if (!IsExtendedReportingEnabled(*GetPrefs())) {
+    RecordApkDownloadTelemetryOutcome(
+        ApkDownloadTelemetryOutcome::NOT_SENT_EXTENDED_REPORTING_DISABLED);
+    return false;
+  }
+
+  if (!IsFeatureEnabled()) {
+    RecordApkDownloadTelemetryOutcome(
+        ApkDownloadTelemetryOutcome::NOT_SENT_FEATURE_NOT_ENABLED);
+    return false;
+  }
+
+  return true;
 }
 
 const PrefService* AndroidTelemetryService::GetPrefs() {
@@ -101,36 +188,85 @@ bool AndroidTelemetryService::IsSafeBrowsingEnabled() {
   return GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled);
 }
 
-void AndroidTelemetryService::StartThreatDetailsCollection(
-    content::WebContents* web_contents) {
-  security_interstitials::UnsafeResource resource;
-  resource.threat_type = SB_THREAT_TYPE_APK_DOWNLOAD;
-  resource.url = web_contents->GetLastCommittedURL();
-  resource.web_contents_getter = resource.GetWebContentsGetter(
-      web_contents->GetMainFrame()->GetProcess()->GetID(),
-      web_contents->GetMainFrame()->GetRoutingID());
+void AndroidTelemetryService::FillReferrerChain(
+    content::WebContents* web_contents,
+    ClientSafeBrowsingReportRequest* report) {
+  if (!SafeBrowsingNavigationObserverManager::IsEnabledAndReady(profile_)) {
+    RecordApkDownloadTelemetryIncompleteReason(
+        ApkDownloadTelemetryIncompleteReason::SB_NAVIGATION_MANAGER_NOT_READY);
+    return;
+  }
 
-  TriggerManagerReason reason;
-  // Ignores the return of |StartCollectingThreatDetails()| here and
-  // let TriggerManager decide whether it should start data
-  // collection.
-  trigger_manager_->StartCollectingThreatDetailsWithReason(
-      safe_browsing::TriggerType::APK_DOWNLOAD, web_contents, resource,
-      sb_service_->GetURLLoaderFactory(),
-      HistoryServiceFactory::GetForProfile(profile_,
-                                           ServiceAccessType::EXPLICIT_ACCESS),
-      TriggerManager::GetSBErrorDisplayOptions(*GetPrefs(), web_contents),
-      &reason);
-  // TODO(vakh): Log |reason|.
+  RecordApkDownloadTelemetryIncompleteReason(
+      web_contents
+          ? ApkDownloadTelemetryIncompleteReason::COMPLETE
+          : ApkDownloadTelemetryIncompleteReason::MISSING_WEB_CONTENTS);
+  SafeBrowsingNavigationObserverManager::AttributionResult result =
+      sb_service_->navigation_observer_manager()
+          ->IdentifyReferrerChainByWebContents(
+              web_contents, kAndroidTelemetryUserGestureLimit,
+              report->mutable_referrer_chain());
+
+  size_t referrer_chain_length = report->referrer_chain().size();
+  UMA_HISTOGRAM_COUNTS_100(
+      "SafeBrowsing.ReferrerURLChainSize.ApkDownloadTelemetry",
+      referrer_chain_length);
+  UMA_HISTOGRAM_ENUMERATION(
+      "SafeBrowsing.ReferrerAttributionResult.ApkDownloadTelemetry", result,
+      SafeBrowsingNavigationObserverManager::ATTRIBUTION_FAILURE_TYPE_MAX);
+
+  // Determines how many recent navigation events to append to referrer chain.
+  size_t recent_navigations_to_collect =
+      profile_ ? SafeBrowsingNavigationObserverManager::
+                     CountOfRecentNavigationsToAppend(*profile_, result)
+               : 0u;
+  sb_service_->navigation_observer_manager()->AppendRecentNavigations(
+      recent_navigations_to_collect, report->mutable_referrer_chain());
 }
 
-void AndroidTelemetryService::FinishCollectingThreatDetails(
-    content::WebContents* web_contents) {
-  trigger_manager_->FinishCollectingThreatDetails(
-      safe_browsing::TriggerType::APK_DOWNLOAD, web_contents,
-      base::TimeDelta::FromMilliseconds(0), /*did_proceed=*/false,
-      /*num_visit=*/0,
-      TriggerManager::GetSBErrorDisplayOptions(*GetPrefs(), web_contents));
+void AndroidTelemetryService::MaybeSendApkDownloadReport(
+    download::DownloadItem* item) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(item->IsDone());
+
+  std::unique_ptr<ClientSafeBrowsingReportRequest> report(
+      new ClientSafeBrowsingReportRequest());
+  report->set_type(
+      safe_browsing::ClientSafeBrowsingReportRequest::APK_DOWNLOAD);
+  report->set_url(item->GetOriginalUrl().spec());
+
+  // Fill referrer chain.
+  content::WebContents* web_contents =
+      content::DownloadItemUtils::GetWebContents(item);
+  FillReferrerChain(web_contents, report.get());
+
+  // Fill DownloadItemInfo
+  ClientSafeBrowsingReportRequest::DownloadItemInfo*
+      mutable_download_item_info = report->mutable_download_item_info();
+  mutable_download_item_info->set_url(item->GetURL().spec());
+  mutable_download_item_info->mutable_digests()->set_sha256(item->GetHash());
+  mutable_download_item_info->set_length(item->GetReceivedBytes());
+  mutable_download_item_info->set_file_basename(
+      item->GetTargetFilePath().BaseName().value());
+  // TODO(vakh): Capture |safety_net_id_on_ui_thread_|. It is unset currently.
+  report->set_safety_net_id(safety_net_id_on_ui_thread_);
+
+  std::string serialized;
+  if (!report->SerializeToString(&serialized)) {
+    DLOG(ERROR) << "Unable to serialize the APK download telemetry report.";
+    RecordApkDownloadTelemetryOutcome(
+        ApkDownloadTelemetryOutcome::NOT_SENT_FAILED_TO_SERIALIZE);
+    return;
+  }
+  sb_service_->ping_manager()->ReportThreatDetails(serialized);
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&WebUIInfoSingleton::AddToCSBRRsSent,
+                     base::Unretained(WebUIInfoSingleton::GetInstance()),
+                     std::move(report)));
+
+  RecordApkDownloadTelemetryOutcome(ApkDownloadTelemetryOutcome::SENT);
 }
 
 }  // namespace safe_browsing
