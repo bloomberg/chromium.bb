@@ -1937,7 +1937,8 @@ TEST_F('ChromeVoxBackgroundTest', 'AriaSliderWithValueText', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'ValidationTest', function() {
+// See https://crbug.com/924976
+TEST_F('ChromeVoxBackgroundTest', 'DISABLED_ValidationTest', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*
     <label for="in1">Name:</label>
