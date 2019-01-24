@@ -582,6 +582,15 @@ _BANNED_CPP_FUNCTIONS = (
       False,
       (),
     ),
+    (
+      'GetAddressOf',
+      (
+        'Improper use of Microsoft::WRL::ComPtr<T>::GetAddressOf() has been ',
+        'implicated in a few leaks. Use operator& instead.'
+      ),
+      True,
+      (),
+    ),
 )
 
 
