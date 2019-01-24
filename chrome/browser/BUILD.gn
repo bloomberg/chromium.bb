@@ -1511,6 +1511,8 @@ jumbo_split_static_library("browser") {
     "ssl/insecure_sensitive_input_driver_factory.h",
     "ssl/mitm_software_blocking_page.cc",
     "ssl/mitm_software_blocking_page.h",
+    "ssl/origin_util.cc",
+    "ssl/origin_util.h",
     "ssl/secure_origin_policy_handler.cc",
     "ssl/secure_origin_policy_handler.h",
     "ssl/security_state_tab_helper.cc",
