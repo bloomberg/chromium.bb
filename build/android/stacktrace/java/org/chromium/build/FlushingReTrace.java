@@ -44,7 +44,9 @@ public class FlushingReTrace {
             + "(?:.*L%C;.*)|"
             // E.g.: Caused by: java.lang.NullPointerException: Attempt to read from field 'int bLA'
             // on a null object reference
-            + "(?:.*NullPointerException.*[\"']%t\\s*%c\\.(?:%f|%m\\(%a\\))[\"'].*)|"
+            + "(?:.*java\\.lang\\.NullPointerException.*[\"']%t\\s*%c\\.(?:%f|%m\\(%a\\))[\"'].*)|"
+            // E.g.: java.lang.VerifyError: bLA
+            + "(?:java\\.lang\\.VerifyError: %c)|"
             // E.g.: END SomeTestClass#someMethod
             + "(?:.*?%c#%m.*?)|"
             // E.g.: The member "Foo.bar"
@@ -62,8 +64,8 @@ public class FlushingReTrace {
             // E.g.: NoClassDefFoundError: SomeFrameworkClass in isTestClass for Foo
             // E.g.: Could not find class 'SomeFrameworkClass', referenced from method Foo.bar
             // E.g.: Could not find method SomeFrameworkMethod, referenced from method Foo.bar
-            + "(?:.*(?:=|:\\s*|\\s+)%c\\.%m)|"
-            + "(?:.*(?:=|:\\s*|\\s+)%c)"
+            + "(?:.*(?:=|:\\s*|\\b)%c\\.%m)|"
+            + "(?:.*(?:=|:\\s*|\\b)%c)"
             + ")";
 
     private static void usage() {
