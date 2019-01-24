@@ -27,5 +27,5 @@
     readonly attribute unsigned long length;
     getter Plugin? item(unsigned long index);
     getter Plugin? namedItem(DOMString name);
-    void refresh([Default=Undefined] optional boolean reload);
+    void refresh([DefaultValue=Undefined] optional boolean reload);
 };

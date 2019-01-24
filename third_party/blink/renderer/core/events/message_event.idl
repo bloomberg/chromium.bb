@@ -40,14 +40,14 @@
     [CachedAttribute=isPortsDirty] readonly attribute FrozenArray<MessagePort> ports;
     [RuntimeEnabled=UserActivationAPI] readonly attribute UserActivation? userActivation;
 
-    // TODO(foolip): none of the arguments should have [Default=Undefined] (they
+    // TODO(foolip): none of the arguments should have [DefaultValue=Undefined] (they
     // have other default values in the spec) and |sourceArg|'s type is wrong.
     [Custom, MeasureAs=InitMessageEvent] void initMessageEvent(DOMString typeArg,
-                                   [Default=Undefined] optional boolean canBubbleArg,
-                                   [Default=Undefined] optional boolean cancelableArg,
-                                   [Default=Undefined] optional any dataArg,
-                                   [Default=Undefined] optional DOMString originArg,
-                                   [Default=Undefined] optional DOMString lastEventIdArg,
-                                   [Default=Undefined] optional EventTarget sourceArg,
-                                   [Default=Undefined] optional sequence<MessagePort> portsArg);
+                                   [DefaultValue=Undefined] optional boolean canBubbleArg,
+                                   [DefaultValue=Undefined] optional boolean cancelableArg,
+                                   [DefaultValue=Undefined] optional any dataArg,
+                                   [DefaultValue=Undefined] optional DOMString originArg,
+                                   [DefaultValue=Undefined] optional DOMString lastEventIdArg,
+                                   [DefaultValue=Undefined] optional EventTarget sourceArg,
+                                   [DefaultValue=Undefined] optional sequence<MessagePort> portsArg);
 };

@@ -222,7 +222,7 @@ As shorthand, a constructor with no arguments can be written as `[Constructor]` 
 Whether you should allow an interface to have constructor depends on the spec of the interface.
 
 *** note
-Currently `[Constructor(...)]` does not yet support optional arguments w/o defaults. It just supports optional `[Default=Undefined]`.
+Currently `[Constructor(...)]` does not yet support optional arguments w/o defaults. It just supports optional `[DefaultValue=Undefined]`.
 ***
 
 ### [EnforceRange] _(t)_
@@ -948,29 +948,6 @@ This attribute must be accompanied by either `[Measure]` or `[MeasureAs]`.
 [HighEntropy, Measure] const INTERESTING_CONSTANT = 1;
 ```
 
-### [Default] _(p)_
-
-Summary: `[Default]` allows one to specify the default values for optional arguments. This removes the need to have C++ overloads in the Blink implementation.
-
-Standard: In Web IDL, [default values for optional arguments](https://heycam.github.io/webidl/#dfn-optional-argument-default-value) are written as `optional type identifier = value`. Blink supports this but not all implementations have been updated to handle overloaded functions - see [bug 258153](https://crbug.com/258153). `[Default=Undefined]` was added to all optional parameters to preserve compatibility until the C++ implementations are updated.
-
-Usage: `[Default=Undefined]` can be specified on any optional parameter:
-
-```webidl
-interface HTMLFoo {
-    void func1(long a, long b, optional long c, optional long d);
-    void func2(long a, long b, [Default=Undefined] optional long c);
-};
-```
-
-The parameters marked with the standard Web IDL `optional` qualifier are optional, and JavaScript can omit the parameters. Obviously, if parameter X is marked with `optional` then all subsequent parameters of X should be marked with `optional`.
-
-The difference between `optional` and `[Default=Undefined]` optional is whether the Blink implementation requires overloaded methods or not: without a default value, the Blink implementation must have overloaded C++ functions, while with a default value, the Blink implementation only needs a single C++ function.
-
-In case of func1(...), if JavaScript calls func1(100, 200), then `HTMLFoo::func1(int a, int b)` is called in Blink. If JavaScript calls `func1(100, 200, 300)`, then `HTMLFoo::func1(int a, int b, int c)` is called in Blink. If JavaScript calls `func1(100, 200, 300, 400)`, then `HTMLFoo::func1(int a, int b, int c, int d)` is called in Blink. In other words, if the Blink implementation has overloaded methods, you can use `optional`.
-
-In case of func2(...) which adds `[Default=Undefined]`, if JavaScript calls `func2(100, 200)`, then it behaves as if JavaScript called `func2(100, 200, undefined)`. Consequently, `HTMLFoo::func2(int a, int b, int c)` is called in Blink. 100 is passed to `a`, 200 is passed to `b`, and 0 is passed to `c`. (A JavaScript `undefined` is converted to 0, following the value conversion rule in the Web IDL spec; if it were a DOMString parameter, it would end up as the string `"undefined"`.) In this way, Blink needs to just implement `func2(int a, int b, int c)` and needs not to implement both `func2(int a, int b)` and `func2(int a, int b, int c)`.
-
 ### [DeprecateAs] _(m, a, c)_
 
 Summary: Measures usage of a deprecated feature via UseCounter, and notifies developers about deprecation via a console warning.
@@ -1574,6 +1551,30 @@ interface HTMLFoo {
     void removeItems();
 };
 ```
+
+
+### [DefaultValue] _(p)_
+
+Summary: `[DefaultValue]` allows one to specify the default values for optional arguments. This removes the need to have C++ overloads in the Blink implementation.
+
+Standard: In Web IDL, [default values for optional arguments](https://heycam.github.io/webidl/#dfn-optional-argument-default-value) are written as `optional type identifier = value`. Blink supports this but not all implementations have been updated to handle overloaded functions - see [bug 258153](https://crbug.com/258153). `[DefaultValue=Undefined]` was added to all optional parameters to preserve compatibility until the C++ implementations are updated.
+
+Usage: `[DefaultValue=Undefined]` can be specified on any optional parameter:
+
+```webidl
+interface HTMLFoo {
+    void func1(long a, long b, optional long c, optional long d);
+    void func2(long a, long b, [DefaultValue=Undefined] optional long c);
+};
+```
+
+The parameters marked with the standard Web IDL `optional` qualifier are optional, and JavaScript can omit the parameters. Obviously, if parameter X is marked with `optional` then all subsequent parameters of X should be marked with `optional`.
+
+The difference between `optional` and `[DefaultValue=Undefined]` optional is whether the Blink implementation requires overloaded methods or not: without a default value, the Blink implementation must have overloaded C++ functions, while with a default value, the Blink implementation only needs a single C++ function.
+
+In case of `func1(...)`, if JavaScript calls `func1(100, 200)`, then `HTMLFoo::func1(int a, int b)` is called in Blink. If JavaScript calls `func1(100, 200, 300)`, then `HTMLFoo::func1(int a, int b, int c)` is called in Blink. If JavaScript calls `func1(100, 200, 300, 400)`, then `HTMLFoo::func1(int a, int b, int c, int d)` is called in Blink. In other words, if the Blink implementation has overloaded methods, you can use `optional` without `[DefaultValue=Undefined]`.
+
+In case of `func2(...)` which adds `[DefaultValue=Undefined]`, if JavaScript calls `func2(100, 200)`, then it behaves as if JavaScript called `func2(100, 200, undefined)`. Consequently, `HTMLFoo::func2(int a, int b, int c)` is called in Blink. 100 is passed to `a`, 200 is passed to `b`, and 0 is passed to `c`. (A JavaScript `undefined` is converted to 0, following the value conversion rule in the Web IDL spec; if it were a DOMString parameter, it would end up as the string `"undefined"`.) In this way, Blink needs to just implement `func2(int a, int b, int c)` and needs not to implement both `func2(int a, int b)` and `func2(int a, int b, int c)`.
 
 
 ## Discouraged Blink-specific IDL Extended Attributes

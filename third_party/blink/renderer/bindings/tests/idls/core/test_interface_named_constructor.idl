@@ -30,9 +30,9 @@
     ActiveScriptWrappable,
     NamedConstructor=Audio(
         DOMString stringArg,
-        [Default=Undefined] optional boolean defaultUndefinedOptionalBooleanArg,
-        [Default=Undefined] optional long defaultUndefinedOptionalLongArg,
-        [Default=Undefined] optional DOMString defaultUndefinedOptionalStringArg,
+        [DefaultValue=Undefined] optional boolean defaultUndefinedOptionalBooleanArg,
+        [DefaultValue=Undefined] optional long defaultUndefinedOptionalLongArg,
+        [DefaultValue=Undefined] optional DOMString defaultUndefinedOptionalStringArg,
         optional DOMString defaultNullStringOptionalstringArg = null,
         optional DOMString optionalStringArg),
     ConstructorCallWith=Document,
