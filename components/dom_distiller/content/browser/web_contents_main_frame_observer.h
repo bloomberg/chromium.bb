@@ -21,11 +21,11 @@ class WebContentsMainFrameObserver
  public:
   ~WebContentsMainFrameObserver() override;
 
-  bool is_document_loaded_in_main_frame() {
+  bool is_document_loaded_in_main_frame() const {
     return is_document_loaded_in_main_frame_;
   }
 
-  bool is_initialized() { return is_initialized_; }
+  bool is_initialized() const { return is_initialized_; }
 
   // content::WebContentsObserver implementation.
   void DocumentLoadedInFrame(
