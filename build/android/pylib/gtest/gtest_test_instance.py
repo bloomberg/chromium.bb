@@ -447,6 +447,12 @@ class GtestTestInstance(test_instance.TestInstance):
     return 'gtest'
 
   #override
+  def GetPreferredAbis(self):
+    if not self._apk_helper:
+      return None
+    return self._apk_helper.GetAbis()
+
+  #override
   def SetUp(self):
     """Map data dependencies via isolate."""
     self._data_deps.extend(

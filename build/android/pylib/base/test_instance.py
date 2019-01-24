@@ -20,6 +20,12 @@ class TestInstance(object):
   def TestType(self):
     raise NotImplementedError
 
+  # pylint: disable=no-self-use
+  def GetPreferredAbis(self):
+    return None
+
+  # pylint: enable=no-self-use
+
   def SetUp(self):
     raise NotImplementedError
 

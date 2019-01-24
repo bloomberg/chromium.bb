@@ -828,6 +828,13 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     return 'instrumentation'
 
   #override
+  def GetPreferredAbis(self):
+    ret = self._test_apk.GetAbis()
+    if not ret and self._apk_under_test:
+      ret = self._apk_under_test.GetAbis()
+    return ret
+
+  #override
   def SetUp(self):
     self._data_deps.extend(
         self._data_deps_delegate(self._runtime_deps_path))
