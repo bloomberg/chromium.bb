@@ -1271,8 +1271,8 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
         // Draw the menu button if necessary.
         final ImageButton menuButton = getMenuButton();
-        if (menuButton != null && !mShowMenuBadge && mTabSwitcherAnimationMenuDrawable != null
-                && mUrlExpansionPercent != 1f) {
+        if (menuButton != null && !isShowingAppMenuUpdateBadge()
+                && mTabSwitcherAnimationMenuDrawable != null && mUrlExpansionPercent != 1f) {
             mTabSwitcherAnimationMenuDrawable.setBounds(menuButton.getPaddingLeft(),
                     menuButton.getPaddingTop(),
                     menuButton.getWidth() - menuButton.getPaddingRight(),
@@ -1291,7 +1291,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                 : mTabSwitcherAnimationMenuBadgeDarkDrawable;
 
         final View menuBadge = getMenuBadge();
-        if (menuBadge != null && mShowMenuBadge && badgeDrawable != null
+        if (menuBadge != null && isShowingAppMenuUpdateBadge() && badgeDrawable != null
                 && mUrlExpansionPercent != 1f) {
             badgeDrawable.setBounds(menuBadge.getPaddingLeft(), menuBadge.getPaddingTop(),
                     menuBadge.getWidth() - menuBadge.getPaddingRight(),
@@ -1741,8 +1741,6 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
      */
     public void setTabSwitcherMode(boolean inTabSwitcherMode, boolean showToolbar,
             boolean delayAnimation, boolean animate) {
-        if (inTabSwitcherMode) cancelAppMenuUpdateBadgeAnimation();
-
         // If setting tab switcher mode to true and the browser is already animating or in the tab
         // switcher skip.
         if (inTabSwitcherMode
@@ -2399,21 +2397,12 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             }
         }
 
-        if (getMenuButton() != null) {
-            ColorStateList tintList = mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint;
-            ApiCompatibilityUtils.setImageTintList(getMenuButton(), tintList);
-        }
-
         updateModernLocationBarColor(getLocationBarColorForToolbarColor(currentPrimaryColor));
         if (mExperimentalButton != null) {
             ColorStateList tintList = mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint;
             ApiCompatibilityUtils.setImageTintList(mExperimentalButton, tintList);
         }
 
-        setMenuButtonHighlightDrawable(mHighlightingMenu);
-        if (mShowMenuBadge && inOrEnteringStaticTab) {
-            setAppMenuUpdateBadgeDrawable(mUseLightToolbarDrawables);
-        }
         ColorStateList tint = mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint;
         if (mIsHomeButtonEnabled && mHomeButton != null) {
             ApiCompatibilityUtils.setImageTintList(mHomeButton, tint);
@@ -2428,6 +2417,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         }
 
         if (getMenuButtonWrapper() != null) {
+            setMenuButtonHighlightDrawable();
             getMenuButtonWrapper().setVisibility(View.VISIBLE);
         }
 
@@ -2445,30 +2435,6 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     @Override
     boolean useLightDrawables() {
         return mUseLightToolbarDrawables;
-    }
-
-    @Override
-    void setMenuButtonHighlightDrawable(boolean highlighting) {
-        highlighting &= !isTabSwitcherAnimationRunning();
-        super.setMenuButtonHighlightDrawable(highlighting);
-    }
-
-    @Override
-    void showAppMenuUpdateBadge() {
-        if (getMenuBadge() == null) return;
-        super.showAppMenuUpdateBadge();
-
-        // Finish any in-progress animations and set the TabSwitcherAnimationMenuBadgeDrawables.
-        finishAnimations();
-        setTabSwitcherAnimationMenuBadgeDrawable();
-
-        // Show the badge.
-        if (mTabSwitcherState == STATIC_TAB) {
-            if (mUseLightToolbarDrawables) {
-                setAppMenuUpdateBadgeDrawable(mUseLightToolbarDrawables);
-            }
-            setAppMenuUpdateBadgeToVisible(true);
-        }
     }
 
     @Override

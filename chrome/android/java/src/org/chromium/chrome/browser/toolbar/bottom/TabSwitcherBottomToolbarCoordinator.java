@@ -79,8 +79,7 @@ public class TabSwitcherBottomToolbarCoordinator {
 
         mMenuButton = root.findViewById(R.id.menu_button_wrapper);
         mMenuButton.setThemeColorProvider(themeColorProvider);
-        mMenuButton.setTouchListener(menuButtonHelper);
-        mMenuButton.setAccessibilityDelegate(menuButtonHelper);
+        mMenuButton.setAppMenuButtonHelper(menuButtonHelper);
     }
 
     /**

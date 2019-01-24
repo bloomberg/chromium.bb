@@ -4,10 +4,6 @@
 
 package org.chromium.chrome.browser.toolbar.top;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Canvas;
@@ -18,17 +14,14 @@ import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import org.chromium.base.VisibleForTesting;
@@ -48,11 +41,9 @@ import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarTabController;
 import org.chromium.chrome.browser.util.ViewUtils;
-import org.chromium.chrome.browser.widget.PulseDrawable;
 import org.chromium.chrome.browser.widget.ToolbarProgressBar;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.ui.UiUtils;
-import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 /**
  * Layout class that contains the base shared logic for manipulating the toolbar component. For
@@ -67,10 +58,7 @@ public abstract class ToolbarLayout extends FrameLayout {
     /**
      * The app menu button.
      */
-    private ImageButton mMenuButton;
-    private ImageView mMenuBadge;
     private MenuButton mMenuButtonWrapper;
-    private AppMenuButtonHelper mAppMenuButtonHelper;
 
     protected final ColorStateList mDarkModeTint;
     protected final ColorStateList mLightModeTint;
@@ -86,13 +74,6 @@ public abstract class ToolbarLayout extends FrameLayout {
     private long mFirstDrawTimeMs;
 
     private boolean mFindInPageToolbarShowing;
-
-    protected boolean mHighlightingMenu;
-    private PulseDrawable mHighlightDrawable;
-
-    protected boolean mShowMenuBadge;
-    private AnimatorSet mMenuBadgeAnimatorSet;
-    private boolean mIsMenuBadgeAnimationRunning;
 
     /**
      * Basic constructor for {@link ToolbarLayout}.
@@ -128,12 +109,8 @@ public abstract class ToolbarLayout extends FrameLayout {
             AppMenuButtonHelper appMenuButtonHelper) {
         mToolbarDataProvider = toolbarDataProvider;
         mToolbarTabController = tabController;
-
-        mAppMenuButtonHelper = appMenuButtonHelper;
-
-        if (mMenuButton != null) {
-            mMenuButton.setOnTouchListener(mAppMenuButtonHelper);
-            mMenuButton.setAccessibilityDelegate(mAppMenuButtonHelper);
+        if (mMenuButtonWrapper != null) {
+            mMenuButtonWrapper.setAppMenuButtonHelper(appMenuButtonHelper);
         }
     }
 
@@ -162,18 +139,16 @@ public abstract class ToolbarLayout extends FrameLayout {
      * instance vars.
      */
     void disableMenuButton() {
-        UiUtils.removeViewFromParent(getMenuButtonWrapper());
-        mMenuButtonWrapper = null;
-        mMenuButton = null;
-        mMenuBadge = null;
+        if (mMenuButtonWrapper != null) {
+            mMenuButtonWrapper.destroy();
+            mMenuButtonWrapper = null;
+        }
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mMenuButton = findViewById(R.id.menu_button);
-        mMenuBadge = (ImageView) findViewById(R.id.menu_badge);
         mMenuButtonWrapper = findViewById(R.id.menu_button_wrapper);
 
         // Initialize the provider to an empty version to avoid null checking everywhere.
@@ -261,7 +236,9 @@ public abstract class ToolbarLayout extends FrameLayout {
 
         // Set menu button background in case it was previously called before inflation
         // finished (i.e. mMenuButtonWrapper == null)
-        setMenuButtonHighlightDrawable(mHighlightingMenu);
+        if (mMenuButtonWrapper != null) {
+            mMenuButtonWrapper.setMenuButtonHighlightDrawable();
+        }
     }
 
     /**
@@ -301,14 +278,16 @@ public abstract class ToolbarLayout extends FrameLayout {
      * @return The {@link ImageButton} containing the menu button.
      */
     ImageButton getMenuButton() {
-        return mMenuButton;
+        if (mMenuButtonWrapper == null) return null;
+        return mMenuButtonWrapper.getImageButton();
     }
 
     /**
      * @return The view containing the menu badge.
      */
     View getMenuBadge() {
-        return mMenuBadge;
+        if (mMenuButtonWrapper == null) return null;
+        return mMenuButtonWrapper.getMenuBadge();
     }
 
     /**
@@ -326,7 +305,8 @@ public abstract class ToolbarLayout extends FrameLayout {
      * @return The helper for menu button UI interactions.
      */
     AppMenuButtonHelper getMenuButtonHelper() {
-        return mAppMenuButtonHelper;
+        if (mMenuButtonWrapper == null) return null;
+        return mMenuButtonWrapper.getAppMenuButtonHelper();
     }
 
     /**
@@ -620,8 +600,9 @@ public abstract class ToolbarLayout extends FrameLayout {
     void setTextureCaptureMode(boolean textureMode) {}
 
     boolean shouldIgnoreSwipeGesture() {
+        final AppMenuButtonHelper appMenuButtonHelper = mMenuButtonWrapper.getAppMenuButtonHelper();
         return mUrlHasFocus
-                || (mAppMenuButtonHelper != null && mAppMenuButtonHelper.isAppMenuActive())
+                || (appMenuButtonHelper != null && appMenuButtonHelper.isAppMenuActive())
                 || mFindInPageToolbarShowing;
     }
 
@@ -762,57 +743,23 @@ public abstract class ToolbarLayout extends FrameLayout {
     }
 
     void setMenuButtonHighlight(boolean highlight) {
-        mHighlightingMenu = highlight;
-        setMenuButtonHighlightDrawable(mHighlightingMenu);
+        if (mMenuButtonWrapper == null) return;
+        mMenuButtonWrapper.setMenuButtonHighlight(highlight);
     }
 
-    void showAppMenuUpdateBadge() {
-        mShowMenuBadge = true;
-        mMenuButtonWrapper.updateImageResources();
+    void showAppMenuUpdateBadge(boolean animate) {
+        if (mMenuButtonWrapper == null) return;
+        mMenuButtonWrapper.showAppMenuUpdateBadge(animate);
     }
 
     boolean isShowingAppMenuUpdateBadge() {
-        return mShowMenuBadge;
+        if (mMenuButtonWrapper == null) return false;
+        return mMenuButtonWrapper.isShowingAppMenuUpdateBadge();
     }
 
     void removeAppMenuUpdateBadge(boolean animate) {
-        if (mMenuBadge == null) return;
-        boolean wasShowingMenuBadge = mShowMenuBadge;
-        mShowMenuBadge = false;
-        setMenuButtonContentDescription(false);
-
-        if (!animate || !wasShowingMenuBadge) {
-            mMenuButtonWrapper.setUpdateBadgeVisibilityIfValidState(false);
-            return;
-        }
-
-        if (mIsMenuBadgeAnimationRunning && mMenuBadgeAnimatorSet != null) {
-            mMenuBadgeAnimatorSet.cancel();
-        }
-
-        // Set initial states.
-        mMenuButton.setAlpha(0.f);
-
-        mMenuBadgeAnimatorSet = createHideUpdateBadgeAnimation(mMenuButton, mMenuBadge);
-
-        mMenuBadgeAnimatorSet.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                mIsMenuBadgeAnimationRunning = true;
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                mIsMenuBadgeAnimationRunning = false;
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-                mIsMenuBadgeAnimationRunning = false;
-            }
-        });
-
-        mMenuBadgeAnimatorSet.start();
+        if (mMenuButtonWrapper == null) return;
+        mMenuButtonWrapper.removeAppMenuUpdateBadge(animate);
     }
 
     /**
@@ -838,89 +785,13 @@ public abstract class ToolbarLayout extends FrameLayout {
     void disableExperimentalButton() {}
 
     /**
-     * Sets the update badge visibility to VISIBLE and sets the menu button image to the badged
-     * bitmap.
-     */
-    void setAppMenuUpdateBadgeToVisible(boolean animate) {
-        if (mMenuBadge == null || mMenuButton == null || mMenuButtonWrapper == null) return;
-        setMenuButtonContentDescription(true);
-        if (!animate || mIsMenuBadgeAnimationRunning) {
-            mMenuButtonWrapper.setUpdateBadgeVisibilityIfValidState(true);
-            return;
-        }
-
-        // Set initial states.
-        mMenuBadge.setAlpha(0.f);
-        mMenuBadge.setVisibility(View.VISIBLE);
-
-        mMenuBadgeAnimatorSet = createShowUpdateBadgeAnimation(mMenuButton, mMenuBadge);
-
-        mMenuBadgeAnimatorSet.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                mIsMenuBadgeAnimationRunning = true;
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                mIsMenuBadgeAnimationRunning = false;
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-                mIsMenuBadgeAnimationRunning = false;
-            }
-        });
-
-        mMenuBadgeAnimatorSet.start();
-    }
-
-    void cancelAppMenuUpdateBadgeAnimation() {
-        if (mIsMenuBadgeAnimationRunning && mMenuBadgeAnimatorSet != null) {
-            mMenuBadgeAnimatorSet.cancel();
-        }
-    }
-
-    /**
-     * Sets the update menu badge drawable to the light or dark asset.
-     * @param useLightDrawable Whether the light drawable should be used.
-     */
-    void setAppMenuUpdateBadgeDrawable(boolean useLightDrawable) {
-        if (mMenuButtonWrapper == null) return;
-        mMenuButtonWrapper.setUseLightDrawables(useLightDrawable);
-    }
-
-    /**
      * Sets the menu button's background depending on whether or not we are highlighting and whether
      * or not we are using light or dark assets.
      * @param highlighting Whether or not the menu button should be highlighted.
      */
-    void setMenuButtonHighlightDrawable(boolean highlighting) {
-        // Return if onFinishInflate didn't finish
-        if (mMenuButtonWrapper == null || mMenuButton == null) return;
-
-        if (highlighting) {
-            if (mHighlightDrawable == null) {
-                mHighlightDrawable = PulseDrawable.createCircle(getContext());
-                mHighlightDrawable.setInset(ViewCompat.getPaddingStart(mMenuButton),
-                        mMenuButton.getPaddingTop(), ViewCompat.getPaddingEnd(mMenuButton),
-                        mMenuButton.getPaddingBottom());
-            }
-            mHighlightDrawable.setUseLightPulseColor(useLightDrawables());
-            mMenuButtonWrapper.setBackground(mHighlightDrawable);
-            mHighlightDrawable.start();
-        } else {
-            mMenuButtonWrapper.setBackground(null);
-        }
-    }
-
-    /**
-     * Sets the content description for the menu button.
-     * @param isUpdateBadgeVisible Whether the update menu badge is visible
-     */
-    void setMenuButtonContentDescription(boolean isUpdateBadgeVisible) {
+    void setMenuButtonHighlightDrawable() {
         if (mMenuButtonWrapper == null) return;
-        mMenuButtonWrapper.updateContentDescription(isUpdateBadgeVisible);
+        mMenuButtonWrapper.setMenuButtonHighlightDrawable();
     }
 
     /**
@@ -928,90 +799,4 @@ public abstract class ToolbarLayout extends FrameLayout {
      * it.
      */
     void setTabModelSelector(TabModelSelector selector) {}
-
-    /**
-     * Creates an {@link AnimatorSet} for showing the update badge that is displayed on top
-     * of the app menu button.
-     *
-     * @param menuButton The {@link View} containing the app menu button.
-     * @param menuBadge The {@link View} containing the update badge.
-     * @return An {@link AnimatorSet} to run when showing the update badge.
-     */
-    private static AnimatorSet createShowUpdateBadgeAnimation(
-            final View menuButton, final View menuBadge) {
-        // Create badge ObjectAnimators.
-        ObjectAnimator badgeFadeAnimator = ObjectAnimator.ofFloat(menuBadge, View.ALPHA, 1.f);
-        badgeFadeAnimator.setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
-
-        int pixelTranslation = menuBadge.getResources().getDimensionPixelSize(
-                R.dimen.menu_badge_translation_y_distance);
-        ObjectAnimator badgeTranslateYAnimator =
-                ObjectAnimator.ofFloat(menuBadge, View.TRANSLATION_Y, pixelTranslation, 0.f);
-        badgeTranslateYAnimator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
-
-        // Create menu button ObjectAnimator.
-        ObjectAnimator menuButtonFadeAnimator = ObjectAnimator.ofFloat(menuButton, View.ALPHA, 0.f);
-        menuButtonFadeAnimator.setInterpolator(new LinearInterpolator());
-
-        // Create AnimatorSet and listeners.
-        AnimatorSet set = new AnimatorSet();
-        set.playTogether(badgeFadeAnimator, badgeTranslateYAnimator, menuButtonFadeAnimator);
-        set.setDuration(350);
-        set.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                // Make sure the menu button is visible again.
-                menuButton.setAlpha(1.f);
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-                // Jump to the end state if the animation is canceled.
-                menuBadge.setAlpha(1.f);
-                menuBadge.setTranslationY(0.f);
-                menuButton.setAlpha(1.f);
-            }
-        });
-
-        return set;
-    }
-
-    /**
-     * Creates an {@link AnimatorSet} for hiding the update badge that is displayed on top
-     * of the app menu button.
-     *
-     * @param menuButton The {@link View} containing the app menu button.
-     * @param menuBadge The {@link View} containing the update badge.
-     * @return An {@link AnimatorSet} to run when hiding the update badge.
-     */
-    private static AnimatorSet createHideUpdateBadgeAnimation(
-            final View menuButton, final View menuBadge) {
-        // Create badge ObjectAnimator.
-        ObjectAnimator badgeFadeAnimator = ObjectAnimator.ofFloat(menuBadge, View.ALPHA, 0.f);
-        badgeFadeAnimator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
-
-        // Create menu button ObjectAnimator.
-        ObjectAnimator menuButtonFadeAnimator = ObjectAnimator.ofFloat(menuButton, View.ALPHA, 1.f);
-        menuButtonFadeAnimator.setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
-
-        // Create AnimatorSet and listeners.
-        AnimatorSet set = new AnimatorSet();
-        set.playTogether(badgeFadeAnimator, menuButtonFadeAnimator);
-        set.setDuration(200);
-        set.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                menuBadge.setVisibility(View.GONE);
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-                // Jump to the end state if the animation is canceled.
-                menuButton.setAlpha(1.f);
-                menuBadge.setVisibility(View.GONE);
-            }
-        });
-
-        return set;
-    }
 }

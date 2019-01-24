@@ -347,8 +347,6 @@ public class ToolbarTablet extends ToolbarLayout
             getProgressBar().setThemeColor(color, isIncognito());
 
             ApiCompatibilityUtils.setImageTintList(
-                    getMenuButton(), incognito ? mLightModeTint : mDarkModeTint);
-            ApiCompatibilityUtils.setImageTintList(
                     mHomeButton, incognito ? mLightModeTint : mDarkModeTint);
             ApiCompatibilityUtils.setImageTintList(
                     mBackButton, incognito ? mLightModeTint : mDarkModeTint);
@@ -364,13 +362,9 @@ public class ToolbarTablet extends ToolbarLayout
             }
             mAccessibilitySwitcherButton.setUseLightDrawables(incognito);
             mLocationBar.updateVisualsForState();
-            if (mShowMenuBadge) {
-                setAppMenuUpdateBadgeDrawable(incognito);
-            }
             mUseLightColorAssets = incognito;
         }
 
-        setMenuButtonHighlightDrawable(mHighlightingMenu);
         updateNtp();
     }
 
@@ -467,7 +461,6 @@ public class ToolbarTablet extends ToolbarLayout
     @Override
     void setTabSwitcherMode(
             boolean inTabSwitcherMode, boolean showToolbar, boolean delayAnimation) {
-        if (inTabSwitcherMode) cancelAppMenuUpdateBadgeAnimation();
 
         if (mShowTabStack && inTabSwitcherMode) {
             mIsInTabSwitcherMode = true;
@@ -475,18 +468,13 @@ public class ToolbarTablet extends ToolbarLayout
             mForwardButton.setEnabled(false);
             mReloadButton.setEnabled(false);
             mLocationBar.getContainerView().setVisibility(View.INVISIBLE);
-            if (mShowMenuBadge) {
-                getMenuBadge().setVisibility(View.GONE);
-                setMenuButtonContentDescription(false);
-            }
+            removeAppMenuUpdateBadge(false);
         } else {
             mIsInTabSwitcherMode = false;
             mLocationBar.getContainerView().setVisibility(View.VISIBLE);
-            if (mShowMenuBadge) {
-                setAppMenuUpdateBadgeToVisible(false);
-            }
+
+            showAppMenuUpdateBadge(false);
         }
-        setMenuButtonHighlightDrawable(mHighlightingMenu);
     }
 
     @Override
@@ -531,17 +519,6 @@ public class ToolbarTablet extends ToolbarLayout
     @Override
     boolean useLightDrawables() {
         return mUseLightColorAssets != null && mUseLightColorAssets;
-    }
-
-    @Override
-    void showAppMenuUpdateBadge() {
-        super.showAppMenuUpdateBadge();
-        if (!mIsInTabSwitcherMode) {
-            if (mUseLightColorAssets != null && mUseLightColorAssets) {
-                setAppMenuUpdateBadgeDrawable(mUseLightColorAssets);
-            }
-            setAppMenuUpdateBadgeToVisible(true);
-        }
     }
 
     @Override

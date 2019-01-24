@@ -299,14 +299,14 @@ public class ToolbarManager
 
         mIncognitoStateProvider = new IncognitoStateProvider(mActivity);
         mTabCountProvider = new TabCountProvider();
+        mThemeColorProvider = themeColorProvider;
+        mThemeColorProvider.addThemeColorObserver(this);
 
         mToolbarProvider = AsyncViewProvider.of(controlContainer, R.id.toolbar_stub, R.id.toolbar);
         mToolbar = new TopToolbarCoordinator(controlContainer, mToolbarProvider);
         mToolbarProvider.whenLoaded((toolbar)
                                             -> onToolbarInflationComplete(menuHandler,
                                                     appMenuPropertiesDelegate, invalidator));
-        mThemeColorProvider = themeColorProvider;
-        mThemeColorProvider.addThemeColorObserver(this);
     }
 
     @Override
@@ -729,6 +729,7 @@ public class ToolbarManager
 
         mToolbar.setTabCountProvider(mTabCountProvider);
         mToolbar.setIncognitoStateProvider(mIncognitoStateProvider);
+        mToolbar.setThemeColorProvider(mThemeColorProvider);
     }
 
     /**
@@ -1288,7 +1289,8 @@ public class ToolbarManager
 
             @Override
             public void onMenuHighlightChanged(boolean highlighting) {
-                mToolbar.setMenuButtonHighlight(highlighting);
+                final MenuButton menuButton = getMenuButtonWrapper();
+                if (menuButton != null) menuButton.setMenuButtonHighlight(highlighting);
 
                 if (mControlsVisibilityDelegate == null) return;
                 if (highlighting) {
