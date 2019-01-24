@@ -54,18 +54,22 @@ namespace {
 // Owned by ash::Shell.
 KeyboardController* g_keyboard_controller = nullptr;
 
-constexpr int kHideKeyboardDelayMs = 100;
+// How long the keyboard stays in WILL_HIDE state before moving to HIDDEN.
+constexpr base::TimeDelta kHideKeyboardDelay =
+    base::TimeDelta::FromMilliseconds(100);
 
 // Reports an error histogram if the keyboard state is lingering in an
 // intermediate state for more than 5 seconds.
-constexpr int kReportLingeringStateDelayMs = 5000;
+constexpr base::TimeDelta kReportLingeringStateDelay =
+    base::TimeDelta::FromMilliseconds(5000);
 
 // Delay threshold after the keyboard enters the WILL_HIDE state. If text focus
 // is regained during this threshold, the keyboard will show again, even if it
 // is an asynchronous event. This is for the benefit of things like login flow
 // where the password field may get text focus after an animation that plays
 // after the user enters their username.
-constexpr int kTransientBlurThresholdMs = 3500;
+constexpr base::TimeDelta kTransientBlurThreshold =
+    base::TimeDelta::FromMilliseconds(3500);
 
 // State transition diagram (document linked from crbug.com/719905)
 bool IsAllowedStateTransition(KeyboardControllerState from,
@@ -630,7 +634,7 @@ void KeyboardController::HideKeyboardImplicitlyBySystem() {
       base::BindOnce(&KeyboardController::HideKeyboard,
                      weak_factory_will_hide_.GetWeakPtr(),
                      HIDE_REASON_SYSTEM_IMPLICIT),
-      base::TimeDelta::FromMilliseconds(kHideKeyboardDelayMs));
+      kHideKeyboardDelay);
 }
 
 // private
@@ -818,12 +822,7 @@ void KeyboardController::OnTextInputStateChanged(
 }
 
 void KeyboardController::ShowKeyboardIfWithinTransientBlurThreshold() {
-  static const base::TimeDelta kTransientBlurThreshold =
-      base::TimeDelta::FromMilliseconds(kTransientBlurThresholdMs);
-
-  const base::Time now = base::Time::Now();
-  const base::TimeDelta time_since_last_blur = now - time_of_last_blur_;
-  if (time_since_last_blur < kTransientBlurThreshold)
+  if (base::Time::Now() - time_of_last_blur_ < kTransientBlurThreshold)
     ShowKeyboard(false);
 }
 
@@ -982,7 +981,7 @@ void KeyboardController::ChangeState(KeyboardControllerState state) {
           FROM_HERE,
           base::BindOnce(&KeyboardController::ReportLingeringState,
                          weak_factory_report_lingering_state_.GetWeakPtr()),
-          base::TimeDelta::FromMilliseconds(kReportLingeringStateDelayMs));
+          kReportLingeringStateDelay);
       break;
     default:
       // Do nothing
