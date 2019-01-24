@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL unresolvable url assert_throws: function "function() { new Worker('http://invalid url/'); }" threw object "SecurityError: Failed to construct 'Worker': Script at 'http://invalid%20url/' cannot be accessed from origin 'http://web-platform.test:8001'." that is not a DOMException SyntaxError: property "code" is equal to 18, expected 12
+Harness: the test ran to completion.
+
