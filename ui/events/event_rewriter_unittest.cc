@@ -85,9 +85,9 @@ class TestEventRewriteSource : public EventSource {
 // same event type; it is used to test simple rewriting, and rewriter addition,
 // removal, and sequencing. Consequently EVENT_REWRITE_DISPATCH_ANOTHER is not
 // supported here (calls to NextDispatchEvent() would continue indefinitely).
-class TestConstantEventRewriter : public EventRewriter {
+class TestConstantEventRewriterOld : public EventRewriter {
  public:
-  TestConstantEventRewriter(EventRewriteStatus status, EventType type)
+  TestConstantEventRewriterOld(EventRewriteStatus status, EventType type)
       : status_(status), type_(type) {
     CHECK_NE(EVENT_REWRITE_DISPATCH_ANOTHER, status);
   }
@@ -113,9 +113,9 @@ class TestConstantEventRewriter : public EventRewriter {
 
 // This EventRewriter runs a simple state machine; it is used to test
 // EVENT_REWRITE_DISPATCH_ANOTHER.
-class TestStateMachineEventRewriter : public EventRewriter {
+class TestStateMachineEventRewriterOld : public EventRewriter {
  public:
-  TestStateMachineEventRewriter() : last_rewritten_event_(0), state_(0) {}
+  TestStateMachineEventRewriterOld() : last_rewritten_event_(0), state_(0) {}
   void AddRule(int from_state, EventType from_type,
                int to_state, EventType to_type, EventRewriteStatus to_status) {
     RewriteResult r = {to_state, to_type, to_status};
@@ -160,27 +160,111 @@ class TestStateMachineEventRewriter : public EventRewriter {
   int state_;
 };
 
+// This EventRewriter always accepts the original event. It is used to test
+// simple rewriting, and rewriter addition, removal, and sequencing.
+class TestAlwaysAcceptEventRewriter : public EventRewriter {
+ public:
+  TestAlwaysAcceptEventRewriter() {}
+  EventDispatchDetails RewriteEvent(
+      const Event& event,
+      const base::WeakPtr<Continuation> continuation) override {
+    return SendEvent(continuation, &event);
+  }
+};
+
+// This EventRewriter always rewrites with the same event type; it is used
+// to test simple rewriting, and rewriter addition, removal, and sequencing.
+class TestConstantEventRewriter : public EventRewriter {
+ public:
+  explicit TestConstantEventRewriter(EventType type) : type_(type) {}
+  EventDispatchDetails RewriteEvent(
+      const Event& event,
+      const base::WeakPtr<Continuation> continuation) override {
+    std::unique_ptr<Event> replacement_event = CreateEventForType(type_);
+    return SendEventFinally(continuation, replacement_event.get());
+  }
+
+ private:
+  EventType type_;
+};
+
+// This EventRewriter runs a simple state machine; it is used to test
+// EVENT_REWRITE_DISPATCH_ANOTHER.
+class TestStateMachineEventRewriter : public EventRewriter {
+ public:
+  enum RewriteAction { ACCEPT, DISCARD, REPLACE };
+  enum StateAction { RETURN, PROCEED };
+  TestStateMachineEventRewriter() : state_(0) {}
+  void AddRule(int from_state,
+               EventType from_type,
+               int to_state,
+               EventType to_type,
+               RewriteAction rewrite_action,
+               StateAction state_action) {
+    RewriteResult r = {to_state, to_type, rewrite_action, state_action};
+    rules_.insert({RewriteCase(from_state, from_type), r});
+  }
+  EventDispatchDetails RewriteEvent(
+      const Event& event,
+      const base::WeakPtr<Continuation> continuation) override {
+    for (;;) {
+      RewriteRules::iterator find =
+          rules_.find(RewriteCase(state_, event.type()));
+      if (find == rules_.end())
+        return SendEvent(continuation, &event);
+      state_ = find->second.state;
+      EventDispatchDetails details;
+      switch (find->second.rewrite_action) {
+        case ACCEPT:
+          details = SendEvent(continuation, &event);
+          break;
+        case DISCARD:
+          break;
+        case REPLACE:
+          details = SendEventFinally(
+              continuation, CreateEventForType(find->second.type).get());
+          break;
+      }
+      if (details.dispatcher_destroyed || find->second.state_action == RETURN)
+        return details;
+    }
+    NOTREACHED();
+  }
+
+ private:
+  typedef std::pair<int, EventType> RewriteCase;
+  struct RewriteResult {
+    int state;
+    EventType type;
+    RewriteAction rewrite_action;
+    StateAction state_action;
+  };
+  typedef std::map<RewriteCase, RewriteResult> RewriteRules;
+  RewriteRules rules_;
+  int state_;
+};
+
 }  // namespace
 
-TEST(EventRewriterTest, EventRewriting) {
+TEST(EventRewriterTest, EventRewritingOld) {
   // TestEventRewriter r0 always rewrites events to ET_CANCEL_MODE;
   // it is placed at the beginning of the chain and later removed,
   // to verify that rewriter removal works.
-  TestConstantEventRewriter r0(EVENT_REWRITE_REWRITTEN, ET_CANCEL_MODE);
+  TestConstantEventRewriterOld r0(EVENT_REWRITE_REWRITTEN, ET_CANCEL_MODE);
 
   // TestEventRewriter r1 always returns EVENT_REWRITE_CONTINUE;
-  // it is placed at the beginning of the chain to verify that a
-  // later rewriter sees the events.
-  TestConstantEventRewriter r1(EVENT_REWRITE_CONTINUE, ET_UNKNOWN);
+  // it is at the beginning of the chain (once r0 is removed)
+  // to verify that a later rewriter sees the events.
+  TestConstantEventRewriterOld r1(EVENT_REWRITE_CONTINUE, ET_UNKNOWN);
 
   // TestEventRewriter r2 has a state machine, primarily to test
   // |EVENT_REWRITE_DISPATCH_ANOTHER|.
-  TestStateMachineEventRewriter r2;
+  TestStateMachineEventRewriterOld r2;
 
   // TestEventRewriter r3 always rewrites events to ET_CANCEL_MODE;
   // it is placed at the end of the chain to verify that previously
   // rewritten events are not passed further down the chain.
-  TestConstantEventRewriter r3(EVENT_REWRITE_REWRITTEN, ET_CANCEL_MODE);
+  TestConstantEventRewriterOld r3(EVENT_REWRITE_REWRITTEN, ET_CANCEL_MODE);
 
   TestEventRewriteProcessor p;
   TestEventRewriteSource s(&p);
@@ -196,6 +280,12 @@ TEST(EventRewriterTest, EventRewriting) {
   p.CheckAllReceived();
 
   // Remove r0, and verify that it's gone and that events make it through.
+  // - r0 is removed, so the resulting event should NOT be ET_CANCEL_MODE.
+  // - r2 should rewrite ET_SCROLL_FLING_START to ET_SCROLL_FLING_CANCEL,
+  //   and skip subsequent rewriters, so the resulting event should be
+  //   ET_SCROLL_FLING_CANCEL.
+  // - r3 should be skipped after r2 returns, so the resulting event
+  //   should NOT be ET_CANCEL_MODE.
   s.AddEventRewriter(&r3);
   s.RemoveEventRewriter(&r0);
   r2.AddRule(0, ET_SCROLL_FLING_START,
@@ -223,14 +313,98 @@ TEST(EventRewriterTest, EventRewriting) {
   p.AddExpectedEvent(ET_MOUSE_PRESSED);
   s.Send(ET_MOUSE_PRESSED);
 
-  // Removing rewriters r1 and r3 shouldn't affect r2.
+  // Removing rewriter r1 shouldn't affect r2.
   s.RemoveEventRewriter(&r1);
-  s.RemoveEventRewriter(&r3);
 
   // Continue with the state-based rewriting.
   p.AddExpectedEvent(ET_MOUSE_RELEASED);
   p.AddExpectedEvent(ET_KEY_RELEASED);
   s.Send(ET_MOUSE_RELEASED);
+  p.CheckAllReceived();
+}
+
+TEST(EventRewriterTest, EventRewriting) {
+  // TestEventRewriter r0 always rewrites events to ET_CANCEL_MODE;
+  // it is placed at the beginning of the chain and later removed,
+  // to verify that rewriter removal works.
+  TestConstantEventRewriter r0(ET_CANCEL_MODE);
+
+  // TestEventRewriter r1 always returns EVENT_REWRITE_CONTINUE;
+  // it is at the beginning of the chain (once r0 is removed)
+  // to verify that a later rewriter sees the events.
+  TestAlwaysAcceptEventRewriter r1;
+
+  // TestEventRewriter r2 has a state machine, primarily to test
+  // |EVENT_REWRITE_DISPATCH_ANOTHER|.
+  TestStateMachineEventRewriter r2;
+
+  // TestEventRewriter r3 always rewrites events to ET_CANCEL_MODE;
+  // it is placed at the end of the chain to verify that previously
+  // rewritten events are not passed further down the chain.
+  TestConstantEventRewriter r3(ET_CANCEL_MODE);
+
+  TestEventRewriteProcessor p;
+  TestEventRewriteSource s(&p);
+  s.AddEventRewriter(&r0);
+  s.AddEventRewriter(&r1);
+  s.AddEventRewriter(&r2);
+
+  // These events should be rewritten by r0 to ET_CANCEL_MODE.
+  p.AddExpectedEvent(ET_CANCEL_MODE);
+  s.Send(ET_MOUSE_DRAGGED);
+  p.AddExpectedEvent(ET_CANCEL_MODE);
+  s.Send(ET_MOUSE_PRESSED);
+  p.CheckAllReceived();
+
+  // Remove r0, and verify that it's gone and that events make it through.
+  // - r0 is removed, so the resulting event should NOT be ET_CANCEL_MODE.
+  // - r2 should rewrite ET_SCROLL_FLING_START to ET_SCROLL_FLING_CANCEL,
+  //   and skip subsequent rewriters, so the resulting event should be
+  //   ET_SCROLL_FLING_CANCEL.
+  // - r3 should be skipped after r2 returns, so the resulting event
+  //   should NOT be ET_CANCEL_MODE.
+  s.AddEventRewriter(&r3);
+  s.RemoveEventRewriter(&r0);
+  r2.AddRule(0, ET_SCROLL_FLING_START, 0, ET_SCROLL_FLING_CANCEL,
+             TestStateMachineEventRewriter::REPLACE,
+             TestStateMachineEventRewriter::RETURN);
+  p.AddExpectedEvent(ET_SCROLL_FLING_CANCEL);
+  s.Send(ET_SCROLL_FLING_START);
+  p.CheckAllReceived();
+  s.RemoveEventRewriter(&r3);
+
+  // Verify replacing an event with multiple events using a state machine
+  // (that happens to be analogous to sticky keys).
+  r2.AddRule(0, ET_KEY_PRESSED, 1, ET_UNKNOWN,
+             TestStateMachineEventRewriter::ACCEPT,
+             TestStateMachineEventRewriter::RETURN);
+  r2.AddRule(1, ET_MOUSE_PRESSED, 0, ET_UNKNOWN,
+             TestStateMachineEventRewriter::ACCEPT,
+             TestStateMachineEventRewriter::RETURN);
+  r2.AddRule(1, ET_KEY_RELEASED, 2, ET_UNKNOWN,
+             TestStateMachineEventRewriter::DISCARD,
+             TestStateMachineEventRewriter::RETURN);
+  r2.AddRule(2, ET_MOUSE_RELEASED, 3, ET_MOUSE_RELEASED,
+             TestStateMachineEventRewriter::REPLACE,
+             TestStateMachineEventRewriter::PROCEED);
+  r2.AddRule(3, ET_MOUSE_RELEASED, 0, ET_KEY_RELEASED,
+             TestStateMachineEventRewriter::REPLACE,
+             TestStateMachineEventRewriter::RETURN);
+  p.AddExpectedEvent(ET_KEY_PRESSED);
+  s.Send(ET_KEY_PRESSED);   // state 0 ET_KEY_PRESSED -> 1 ACCEPT ET_KEY_PRESSED
+  s.Send(ET_KEY_RELEASED);  // state 1 ET_KEY_RELEASED -> 2 DISCARD
+  p.AddExpectedEvent(ET_MOUSE_PRESSED);
+  s.Send(ET_MOUSE_PRESSED);  // no matching rule; pass event through.
+
+  // Removing rewriter r1 shouldn't affect r2.
+  s.RemoveEventRewriter(&r1);
+
+  // Continue with the state-based rewriting.
+  p.AddExpectedEvent(ET_MOUSE_RELEASED);
+  p.AddExpectedEvent(ET_KEY_RELEASED);
+  s.Send(
+      ET_MOUSE_RELEASED);  // 2 ET_MOUSE_RELEASED -> 3 PROCEED ET_MOUSE_RELEASED
+                           // 3 ET_MOUSE_RELEASED -> 0 REPLACE ET_KEY_RELEASED
   p.CheckAllReceived();
 }
 
