@@ -254,7 +254,6 @@ js_library("file_manager_ui") {
     "//ui/file_manager/file_manager/foreground/elements:files_tooltip",
     "//ui/file_manager/file_manager/foreground/js:launch_param",
     "//ui/file_manager/file_manager/foreground/js:providers_model",
-    "//ui/webui/resources/js:i18n_template_no_process",
     "//ui/webui/resources/js:util",
     "//ui/webui/resources/js/cr/ui:context_menu_button",
     "//ui/webui/resources/js/cr/ui:dialogs",
