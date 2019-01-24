@@ -13,6 +13,9 @@ import android.util.Pair;
 import android.util.TypedValue;
 import android.view.View;
 
+import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
@@ -32,6 +35,7 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
     private final Context mContext;
     private final SuggestionHost mSuggestionHost;
     private final UrlBarEditingTextStateProvider mUrlBarEditingTextProvider;
+    private boolean mEnableNewAnswerLayout;
 
     /**
      * @param context An Android context.
@@ -73,6 +77,16 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
     @Override
     public void onUrlFocusChange(boolean hasFocus) {}
 
+    /**
+     * Signals that native initialization has completed.
+     */
+    @Override
+    public void onNativeInitialized() {
+        // Experiment: controls presence of certain answer icon types.
+        mEnableNewAnswerLayout =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_NEW_ANSWER_LAYOUT);
+    }
+
     private void setStateForSuggestion(PropertyModel model, OmniboxSuggestion suggestion) {
         int suggestionType = suggestion.getType();
         @SuggestionIcon
@@ -95,8 +109,10 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
                 urlHighlighted = applyHighlightToMatchRegions(
                         str, suggestion.getDisplayTextClassifications());
                 textLine2 = str;
-                textLine2Color = SuggestionViewViewBinder.getStandardUrlColor(
-                        mContext, model.get(SuggestionCommonProperties.USE_DARK_COLORS));
+                textLine2Color = ApiCompatibilityUtils.getColor(mContext.getResources(),
+                        model.get(SuggestionCommonProperties.USE_DARK_COLORS)
+                                ? R.color.suggestion_url_dark_modern
+                                : R.color.suggestion_url_light_modern);
                 textLine2Direction = View.TEXT_DIRECTION_LTR;
             } else {
                 textLine2 = null;
@@ -117,6 +133,15 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
                 textLine2 = SpannableString.valueOf(suggestion.getDescription());
                 textLine2Color = SuggestionViewViewBinder.getStandardFontColor(
                         mContext, model.get(SuggestionCommonProperties.USE_DARK_COLORS));
+                textLine2Direction = View.TEXT_DIRECTION_INHERIT;
+            } else if (mEnableNewAnswerLayout
+                    && suggestionType == OmniboxSuggestionType.CALCULATOR) {
+                suggestionIcon = SuggestionIcon.CALCULATOR;
+                textLine2 = SpannableString.valueOf(
+                        mUrlBarEditingTextProvider.getTextWithAutocomplete());
+
+                textLine2Color = ApiCompatibilityUtils.getColor(
+                        mContext.getResources(), R.color.answers_answer_text);
                 textLine2Direction = View.TEXT_DIRECTION_INHERIT;
             } else {
                 textLine2 = null;
@@ -204,6 +229,16 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
                         new OmniboxSuggestion.MatchClassification(
                                 0, MatchClassificationStyle.NONE));
             }
+        } else if (mEnableNewAnswerLayout
+                && suggestion.getType() == OmniboxSuggestionType.CALCULATOR) {
+            // Trim preceding equal sign since we're going to present an icon instead.
+            // This is probably best placed in search_suggestion_parser.cc file, but at this point
+            // this would affect other devices that still want to present the sign (eg. iOS) so
+            // until these devices adopt the new entities we need to manage this here.
+            if (suggestedQuery.subSequence(0, 2).equals("= ")) {
+                suggestedQuery = suggestedQuery.substring(2);
+            }
+            shouldHighlight = false;
         }
 
         Spannable str = SpannableString.valueOf(suggestedQuery);

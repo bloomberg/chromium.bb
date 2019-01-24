@@ -52,9 +52,7 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
         return suggestion.hasAnswer();
     }
 
-    /**
-     * Signals that native initialization has completed.
-     */
+    @Override
     public void onNativeInitialized() {
         // Experiment: controls presence of certain answer icon types.
         mEnableNewAnswerLayout =

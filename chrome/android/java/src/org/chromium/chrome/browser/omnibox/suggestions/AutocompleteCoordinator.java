@@ -73,6 +73,11 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
         void onUrlFocusChange(boolean hasFocus);
 
         /**
+         * Signals that native initialization has completed.
+         */
+        void onNativeInitialized();
+
+        /**
          * Create a model for a suggestion at the specified position.
          * @param suggestion The suggestion to create the model for.
          * @return A model for the suggestion.
@@ -185,6 +190,8 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
                 list.setClipToPadding(false);
 
                 // Register a view type for a default omnibox suggestion.
+                // Note: clang-format does a bad job formatting lambdas so we turn it off here.
+                // clang-format off
                 adapter.registerType(
                         OmniboxSuggestionUiType.DEFAULT,
                         () -> new SuggestionView(mListView.getContext()),
@@ -194,6 +201,7 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
                         OmniboxSuggestionUiType.EDIT_URL_SUGGESTION,
                         () -> EditUrlSuggestionProcessor.createView(mListView.getContext()),
                         EditUrlSuggestionViewBinder::bind);
+                // clang-format on
 
                 mHolder = new SuggestionListViewHolder(container, list, adapter);
 

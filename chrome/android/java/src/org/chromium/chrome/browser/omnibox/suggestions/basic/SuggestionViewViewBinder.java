@@ -207,18 +207,4 @@ public class SuggestionViewViewBinder {
                                 : R.color.url_emphasis_light_default_text;
         return ApiCompatibilityUtils.getColor(context.getResources(), res);
     }
-
-    /**
-     * Get the appropriate font color to be used for URL text in suggestions.
-     * @param context The context to load the color.
-     * @param useDarkColors Whether dark colors should be used.
-     * @return The font color to be used.
-     */
-    @ColorInt
-    public static int getStandardUrlColor(Context context, boolean useDarkColors) {
-        @ColorRes
-        int res = useDarkColors ? R.color.suggestion_url_dark_modern
-                                : R.color.suggestion_url_light_modern;
-        return ApiCompatibilityUtils.getColor(context.getResources(), res);
-    }
 }

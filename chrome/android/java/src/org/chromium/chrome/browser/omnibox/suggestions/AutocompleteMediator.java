@@ -266,6 +266,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
         }
         mDeferredNativeRunnables.clear();
         mAnswerSuggestionProcessor.onNativeInitialized();
+        mBasicSuggestionProcessor.onNativeInitialized();
+        if (mEditUrlProcessor != null) mEditUrlProcessor.onNativeInitialized();
     }
 
     /**
