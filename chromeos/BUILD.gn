@@ -281,7 +281,12 @@ if (is_cros_chrome_sdk) {
   }
   tast_test("chrome_kevin_tast_tests") {
     # Tests that fail on Kevin devices.
-    tast_disabled_tests = [ "arc.Boot" ]  # crbug.com/916367
+    tast_disabled_tests = [
+      # Disabled due to misleading USE flags on full boards. crbug.com/916367
+      "arc.Boot",
+      "security.NetworkListenersARC",
+      "video.WebRTCPeerConnCameraVP8",  # crbug.com/923061
+    ]
   }
 
   group("cros_chrome_deploy") {
