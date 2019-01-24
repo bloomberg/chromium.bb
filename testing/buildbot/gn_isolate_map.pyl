@@ -2758,6 +2758,9 @@
   },
   "webview_cts_tests": {
     "args": [
+      "--logdog-bin-cmd",
+      "../../bin/logdog_butler",
+      "../../third_party/catapult/devil/devil/android/tools/system_app.py",
       "remove",
       "--package",
       "com.android.webview",
@@ -2775,7 +2778,7 @@
       "-v",
     ],
     "label": "//android_webview/test:webview_cts_tests",
-    "script": "//third_party/catapult/devil/devil/android/tools/system_app.py",
+    "script": "//build/android/test_wrapper/logdog_wrapper.py",
     "type": "script",
   },
   "webview_instrumentation_test_apk": {
