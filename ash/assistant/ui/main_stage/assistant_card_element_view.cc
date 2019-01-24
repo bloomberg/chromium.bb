@@ -88,6 +88,15 @@ void AssistantCardElementView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
+void AssistantCardElementView::AboutToRequestFocusFromTabTraversal(
+    bool reverse) {
+  contents_->FocusThroughTabTraversal(reverse);
+}
+
+void AssistantCardElementView::OnFocus() {
+  contents_->Focus();
+}
+
 void AssistantCardElementView::OnGestureEvent(ui::GestureEvent* event) {
   // We need to route GESTURE_TAP events to our Assistant card because links
   // should be tappable. The Assistant card window will not receive gesture
@@ -147,6 +156,7 @@ void AssistantCardElementView::DidSuppressNavigation(
 
 void AssistantCardElementView::InitLayout(
     const AssistantCardElement* card_element) {
+  SetFocusBehavior(FocusBehavior::ALWAYS);
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   // Contents view.
