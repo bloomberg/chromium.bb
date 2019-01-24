@@ -192,6 +192,7 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
           std::make_unique<syncer::HttpBridgeNetworkResources>()),
       start_behavior_(init_params.start_behavior),
       passphrase_prompt_triggered_by_version_(false),
+      is_stopping_and_clearing_(false),
       sync_enabled_weak_factory_(this),
       weak_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -1674,7 +1675,12 @@ void ProfileSyncService::OnSyncRequestedPrefChange(bool is_sync_requested) {
     }
   } else {
     // This will notify the observers.
-    StopImpl(KEEP_DATA);
+    if (is_stopping_and_clearing_) {
+      is_stopping_and_clearing_ = false;
+      StopImpl(CLEAR_DATA);
+    } else {
+      StopImpl(KEEP_DATA);
+    }
 
     // TODO(crbug.com/856179): Evaluate whether we can get away without a full
     // restart (i.e. just reconfigure plus whatever cleanup is necessary).
@@ -1912,7 +1918,11 @@ bool ProfileSyncService::IsSyncAllowedByFlag() {
 
 void ProfileSyncService::StopAndClear() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  StopImpl(CLEAR_DATA);
+  DCHECK(!is_stopping_and_clearing_);
+  // We need to remember that clearing of data is needed when sync will be
+  // stopped. This flag is cleared in OnSyncRequestedPrefChange() where sync
+  // gets stopped.
+  is_stopping_and_clearing_ = true;
   user_settings_->SetSyncRequested(false);
 }
 

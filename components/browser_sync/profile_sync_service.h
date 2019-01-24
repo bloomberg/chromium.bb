@@ -634,6 +634,10 @@ class ProfileSyncService : public syncer::SyncService,
   // IsPassphrasePrompted sync preference.
   bool passphrase_prompt_triggered_by_version_;
 
+  // Used by StopAndClear() to remember that clearing of data is needed (as
+  // sync is stopped after a callback from |user_settings_|).
+  bool is_stopping_and_clearing_;
+
   // This weak factory invalidates its issued pointers when Sync is disabled.
   base::WeakPtrFactory<ProfileSyncService> sync_enabled_weak_factory_;
 
