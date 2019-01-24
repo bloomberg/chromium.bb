@@ -6,10 +6,6 @@ package org.chromium.chrome.browser.vr;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.os.Bundle;
-import android.support.annotation.IntDef;
 
 import dalvik.system.BaseDexClassLoader;
 
@@ -20,7 +16,6 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
@@ -28,8 +23,6 @@ import org.chromium.chrome.browser.modules.ModuleInstallUi;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.module_installer.ModuleInstaller;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 
 /**
  * Provides ARCore classes access to java-related app functionality.
@@ -37,22 +30,9 @@ import java.lang.annotation.RetentionPolicy;
 @JNINamespace("vr")
 public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
     private static final String TAG = "ArCoreJavaUtils";
-    private static final String AR_CORE_PACKAGE = "com.google.ar.core";
-    private static final String METADATA_KEY_MIN_APK_VERSION = "com.google.ar.core.min_apk_version";
-    private static final int ARCORE_NOT_INSTALLED_VERSION_CODE = -1;
-
-    @IntDef({ArCoreInstallStatus.ARCORE_NEEDS_UPDATE, ArCoreInstallStatus.ARCORE_NOT_INSTALLED,
-            ArCoreInstallStatus.ARCORE_INSTALLED})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface ArCoreInstallStatus {
-        int ARCORE_NEEDS_UPDATE = 0;
-        int ARCORE_NOT_INSTALLED = 1;
-        int ARCORE_INSTALLED = 2;
-    }
 
     private long mNativeArCoreJavaUtils;
     private boolean mAppInfoInitialized;
-    private int mAppMinArCoreApkVersionCode = ARCORE_NOT_INSTALLED_VERSION_CODE;
     private Tab mTab;
 
     // Instance that requested installation of ARCore.
@@ -82,7 +62,6 @@ public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
         return sArCoreInstance;
     }
 
-    @UsedByReflection("ArDelegate.java")
     public static void installArCoreDeviceProviderFactory() {
         nativeInstallArCoreDeviceProviderFactory();
     }
@@ -134,78 +113,23 @@ public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
     }
 
     private void initializeAppInfo() {
-        try {
-            mAppMinArCoreApkVersionCode = getMinArCoreApkVersionCode();
-        } catch (IllegalStateException ise) {
-            mAppMinArCoreApkVersionCode = ARCORE_NOT_INSTALLED_VERSION_CODE;
-        }
-
         mAppInfoInitialized = true;
 
         // Need to be called before trying to access the AR module.
         ModuleInstaller.init();
     }
 
-    /**
-     * Gets minimum required version of ARCore APK that is needed by ARCore SDK.
-     *
-     * If the ARCore SDK is not yet available, the method will throw IllegalStateException.
-     * It might be possible to reattempt to call this method at a later time, for example
-     * when the ARCore SDK gets installed.
-     *
-     * @return minimum required version of ARCore APK that is needed by ARCore SDK.
-     */
-    private int getMinArCoreApkVersionCode() {
-        Context context = getApplicationContext();
-        PackageManager packageManager = context.getPackageManager();
-        String packageName = context.getPackageName();
-
-        Bundle metadata;
-        try {
-            metadata = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
-                               .metaData;
-        } catch (PackageManager.NameNotFoundException e) {
-            throw new IllegalStateException("Could not load application package metadata", e);
-        }
-
-        if (metadata.containsKey(METADATA_KEY_MIN_APK_VERSION)) {
-            return metadata.getInt(METADATA_KEY_MIN_APK_VERSION);
-        } else {
-            throw new IllegalStateException(
-                    "Application manifest must contain meta-data " + METADATA_KEY_MIN_APK_VERSION);
-        }
-    }
-
-    private int getArCoreApkVersionNumber() {
-        try {
-            PackageInfo info = getApplicationContext().getPackageManager().getPackageInfo(
-                    AR_CORE_PACKAGE, PackageManager.GET_SERVICES);
-            int version = info.versionCode;
-            if (version == 0) {
-                return ARCORE_NOT_INSTALLED_VERSION_CODE;
-            }
-            return version;
-        } catch (PackageManager.NameNotFoundException e) {
-            return ARCORE_NOT_INSTALLED_VERSION_CODE;
-        }
-    }
-
-    // TODO(bialpio): this method could be converted to start using ArCoreApk.checkAvailability()
-    private @ArCoreInstallStatus int getArCoreInstallStatus() {
-        assert mAppInfoInitialized;
-        int arCoreApkVersionNumber = getArCoreApkVersionNumber();
-        if (arCoreApkVersionNumber == ARCORE_NOT_INSTALLED_VERSION_CODE) {
-            return ArCoreInstallStatus.ARCORE_NOT_INSTALLED;
-        } else if (arCoreApkVersionNumber == 0
-                || arCoreApkVersionNumber < mAppMinArCoreApkVersionCode) {
-            return ArCoreInstallStatus.ARCORE_NEEDS_UPDATE;
-        }
-        return ArCoreInstallStatus.ARCORE_INSTALLED;
+    private @ArCoreShim.Availability int getArCoreInstallStatus() {
+        return getArCoreShimInstance().checkAvailability(getApplicationContext());
     }
 
     @CalledByNative
     private boolean shouldRequestInstallSupportedArCore() {
-        return getArCoreInstallStatus() != ArCoreInstallStatus.ARCORE_INSTALLED;
+        @ArCoreShim.Availability
+        int availability = getArCoreInstallStatus();
+        // Skip ARCore installation if we are certain that it is already installed.
+        // In all other cases, we might as well try to install it and handle installation failures.
+        return availability != ArCoreShim.Availability.SUPPORTED_INSTALLED;
     }
 
     @CalledByNative
@@ -217,17 +141,25 @@ public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
             assert shouldRequestInstallArModule() != success;
 
             if (success) {
-                mAppMinArCoreApkVersionCode = getMinArCoreApkVersionCode();
+                // As per documentation, it's recommended to issue a call to
+                // ArCoreApk.checkAvailability() early in application lifecycle & ignore the result
+                // so that subsequent calls can return cached result:
+                // https://developers.google.com/ar/develop/java/enable-arcore
+                // This is as early in the app lifecycle as it gets for us - just after installing
+                // AR module.
+                getArCoreInstallStatus();
             }
 
             if (mNativeArCoreJavaUtils != 0) {
-                if (!success) {
+                if (success) {
+                    ui.showInstallSuccessUi();
+                    nativeOnRequestInstallSupportedArCoreResult(mNativeArCoreJavaUtils, success);
+                } else {
                     ui.showInstallFailureUi();
+                    // early exit - user will be offered a choice to retry & install flow will
+                    // continue from onRetry / onCancel
                     return;
                 }
-
-                ui.showInstallSuccessUi();
-                nativeOnRequestInstallArModuleResult(mNativeArCoreJavaUtils, success);
             }
         });
     }
@@ -235,21 +167,27 @@ public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
     @CalledByNative
     private void requestInstallSupportedArCore(final Tab tab) {
         assert shouldRequestInstallSupportedArCore();
-        @ArCoreInstallStatus
-        int arcoreInstallStatus = getArCoreInstallStatus();
+        @ArCoreShim.Availability
+        int arCoreAvailability = getArCoreInstallStatus();
         final Activity activity = tab.getActivity();
         String infobarText = null;
         String buttonText = null;
-        switch (arcoreInstallStatus) {
-            case ArCoreInstallStatus.ARCORE_NOT_INSTALLED:
+        switch (arCoreAvailability) {
+            case ArCoreShim.Availability.UNSUPPORTED_DEVICE_NOT_CAPABLE:
+                maybeNotifyNativeOnRequestInstallSupportedArCoreResult(false);
+                break;
+            case ArCoreShim.Availability.UNKNOWN_CHECKING:
+            case ArCoreShim.Availability.UNKNOWN_ERROR:
+            case ArCoreShim.Availability.UNKNOWN_TIMED_OUT:
+            case ArCoreShim.Availability.SUPPORTED_NOT_INSTALLED:
                 infobarText = activity.getString(R.string.ar_core_check_infobar_install_text);
                 buttonText = activity.getString(R.string.app_banner_install);
                 break;
-            case ArCoreInstallStatus.ARCORE_NEEDS_UPDATE:
+            case ArCoreShim.Availability.SUPPORTED_APK_TOO_OLD:
                 infobarText = activity.getString(R.string.ar_core_check_infobar_update_text);
                 buttonText = activity.getString(R.string.update_from_market);
                 break;
-            case ArCoreInstallStatus.ARCORE_INSTALLED:
+            case ArCoreShim.Availability.SUPPORTED_INSTALLED:
                 assert false;
                 break;
         }
@@ -257,7 +195,8 @@ public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
         SimpleConfirmInfoBarBuilder.Listener listener = new SimpleConfirmInfoBarBuilder.Listener() {
             @Override
             public void onInfoBarDismissed() {
-                maybeNotifyNativeOnRequestInstallSupportedArCoreResult(false);
+                maybeNotifyNativeOnRequestInstallSupportedArCoreResult(
+                        !shouldRequestInstallSupportedArCore());
             }
 
             @Override
@@ -332,7 +271,6 @@ public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
      * We are only interested in the cases where our current Activity got paused
      * as a result of a call to ArCoreApk.requestInstall() method.
      */
-    @UsedByReflection("ArDelegate.java")
     public static void onResumeActivityWithNative(Activity activity) {
         if (sRequestInstallInstance != null) {
             sRequestInstallInstance.onArCoreRequestInstallReturned(activity);
