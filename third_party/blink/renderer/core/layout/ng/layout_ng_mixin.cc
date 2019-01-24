@@ -266,7 +266,7 @@ scoped_refptr<NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
   if (!RuntimeEnabledFeatures::LayoutNGFragmentCachingEnabled())
     return nullptr;
   if (!cached_result_ || !Base::cached_constraint_space_ || break_token ||
-      Base::NeedsLayout())
+      (Base::NeedsLayout() && !NeedsRelativePositionedLayoutOnly()))
     return nullptr;
   const NGConstraintSpace& old_space = *Base::cached_constraint_space_;
   // If we used to contain abspos items, we can't reuse the fragment, because
@@ -321,6 +321,14 @@ scoped_refptr<NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
                          new_space.BfcOffset().block_offset;
     }
   }
+
+  // We can safely re-use this fragment if we are position relative, and only
+  // our position constraints changed (left/top/etc). However we need to clear
+  // the dirty layout bit.
+  if (NeedsRelativePositionedLayoutOnly())
+    Base::ClearNeedsLayout();
+  else
+    DCHECK(!Base::NeedsLayout());
 
   // The checks above should be enough to bail if layout is incomplete, but
   // let's verify:
@@ -549,6 +557,12 @@ void LayoutNGMixin<Base>::DirtyLinesFromChangedChild(
   // NGInlineNode::MarkLineBoxesDirty().
   if (child->IsInLayoutNGInlineFormattingContext())
     NGPaintFragment::DirtyLinesFromChangedChild(child);
+}
+
+template <typename Base>
+bool LayoutNGMixin<Base>::NeedsRelativePositionedLayoutOnly() const {
+  return Base::NeedsPositionedMovementLayoutOnly() &&
+         Base::StyleRef().GetPosition() == EPosition::kRelative;
 }
 
 template class CORE_TEMPLATE_EXPORT LayoutNGMixin<LayoutTableCaption>;

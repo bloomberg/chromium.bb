@@ -903,6 +903,14 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
            bitfields_.NeedsPositionedMovementLayout();
   }
 
+  bool NeedsPositionedMovementLayoutOnly() const {
+    return bitfields_.NeedsPositionedMovementLayout() &&
+           !bitfields_.SelfNeedsLayout() &&
+           !bitfields_.NormalChildNeedsLayout() &&
+           !bitfields_.PosChildNeedsLayout() &&
+           !bitfields_.NeedsSimplifiedNormalFlowLayout();
+  }
+
   bool SelfNeedsLayout() const { return bitfields_.SelfNeedsLayout(); }
   bool NeedsPositionedMovementLayout() const {
     return bitfields_.NeedsPositionedMovementLayout();
