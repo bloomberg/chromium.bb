@@ -378,6 +378,158 @@ class FillFromMetadataTask : public InitializationSubTask {
   DISALLOW_COPY_AND_ASSIGN(FillFromMetadataTask);
 };
 
+// If the storage version was updated, this performs the necessary schema
+// updates on startup.
+class CacheStorageMigrationTask : public InitializationSubTask {
+ public:
+  CacheStorageMigrationTask(DatabaseTaskHost* host,
+                            const SubTaskInit& sub_task_init,
+                            base::OnceClosure done_closure)
+      : InitializationSubTask(host, sub_task_init, std::move(done_closure)),
+        weak_factory_(this) {}
+
+  ~CacheStorageMigrationTask() override = default;
+
+  void Start() override {
+    GetStorageVersion(
+        sub_task_init().service_worker_registration_id,
+        sub_task_init().unique_id,
+        base::BindOnce(&CacheStorageMigrationTask::DidGetStorageVersion,
+                       weak_factory_.GetWeakPtr()));
+  }
+
+ private:
+  void DidGetStorageVersion(
+      proto::BackgroundFetchStorageVersion storage_version) {
+    if (storage_version == proto::SV_ERROR) {
+      FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+      return;
+    }
+
+    if (storage_version == proto::SV_CURRENT) {
+      // Already on latest version, nothing to do here.
+      FinishWithError(blink::mojom::BackgroundFetchError::NONE);
+      return;
+    }
+
+    cache_storage_handle_ = GetOrOpenCacheStorage(
+        sub_task_init().initialization_data->registration_id);
+    cache_storage_handle_.value()->OpenCache(
+        /* cache_name= */ sub_task_init().unique_id,
+        base::BindOnce(&CacheStorageMigrationTask::DidOpenCache,
+                       weak_factory_.GetWeakPtr()));
+  }
+
+  void DidOpenCache(CacheStorageCacheHandle handle,
+                    blink::mojom::CacheStorageError error) {
+    if (error != blink::mojom::CacheStorageError::kSuccess) {
+      SetStorageErrorAndFinish(BackgroundFetchStorageError::kCacheStorageError);
+      return;
+    }
+
+    DCHECK(handle.value());
+    // Get all entries in the cache.
+    handle.value()->GetAllMatchedEntries(
+        /* request= */ nullptr, /* query_params= */ nullptr,
+        base::BindOnce(&CacheStorageMigrationTask::DidGetAllMatchedEntries,
+                       weak_factory_.GetWeakPtr(), handle.Clone()));
+  }
+
+  void DidGetAllMatchedEntries(
+      CacheStorageCacheHandle handle,
+      blink::mojom::CacheStorageError error,
+      std::vector<CacheStorageCache::CacheEntry> entries) {
+    if (error != blink::mojom::CacheStorageError::kSuccess) {
+      SetStorageErrorAndFinish(BackgroundFetchStorageError::kCacheStorageError);
+      return;
+    }
+
+    entries_ = std::move(entries);
+
+    // Delete Cache.
+    cache_storage_handle_.value()->DoomCache(
+        /* cache_name= */ sub_task_init().unique_id,
+        base::BindOnce(&CacheStorageMigrationTask::DidDoomCache,
+                       weak_factory_.GetWeakPtr()));
+  }
+
+  void DidDoomCache(blink::mojom::CacheStorageError error) {
+    if (error != blink::mojom::CacheStorageError::kSuccess) {
+      SetStorageErrorAndFinish(BackgroundFetchStorageError::kCacheStorageError);
+      return;
+    }
+
+    // Recreate the cache.
+    cache_storage_handle_.value()->OpenCache(
+        /* cache_name= */ sub_task_init().unique_id,
+        base::BindOnce(&CacheStorageMigrationTask::DidReopenCache,
+                       weak_factory_.GetWeakPtr()));
+  }
+
+  void DidReopenCache(CacheStorageCacheHandle handle,
+                      blink::mojom::CacheStorageError error) {
+    if (error != blink::mojom::CacheStorageError::kSuccess) {
+      SetStorageErrorAndFinish(BackgroundFetchStorageError::kCacheStorageError);
+      return;
+    }
+
+    std::vector<blink::mojom::BatchOperationPtr> operations;
+    operations.reserve(entries_.size());
+    for (size_t i = 0; i < entries_.size(); i++) {
+      auto& entry = entries_[i];
+      auto operation = blink::mojom::BatchOperation::New();
+      operation->operation_type = blink::mojom::OperationType::kPut;
+      entry.first->url =
+          MakeCacheUrlUnique(entry.first->url, sub_task_init().unique_id, i);
+      operation->request = std::move(entry.first);
+      operation->response = std::move(entry.second);
+      operations.push_back(std::move(operation));
+    }
+
+    DCHECK(handle.value());
+
+    // Rewrite the URLs with the new format.
+    handle.value()->BatchOperation(
+        std::move(operations), /* fail_on_duplicates= */ false,
+        base::BindOnce(&CacheStorageMigrationTask::DidStoreRequests,
+                       weak_factory_.GetWeakPtr(), handle.Clone()),
+        base::DoNothing());
+  }
+
+  void DidStoreRequests(CacheStorageCacheHandle handle,
+                        blink::mojom::CacheStorageVerboseErrorPtr error) {
+    if (error->value != blink::mojom::CacheStorageError::kSuccess) {
+      SetStorageErrorAndFinish(BackgroundFetchStorageError::kCacheStorageError);
+      return;
+    }
+
+    // Update the storage version.
+    service_worker_context()->StoreRegistrationUserData(
+        sub_task_init().service_worker_registration_id,
+        sub_task_init().initialization_data->registration_id.origin().GetURL(),
+        {{StorageVersionKey(sub_task_init().unique_id),
+          base::NumberToString(proto::SV_CURRENT)}},
+        base::BindOnce(&CacheStorageMigrationTask::DidUpdateStorageVersion,
+                       weak_factory_.GetWeakPtr()));
+  }
+
+  void DidUpdateStorageVersion(blink::ServiceWorkerStatusCode status) {
+    if (status == blink::ServiceWorkerStatusCode::kOk) {
+      FinishWithError(blink::mojom::BackgroundFetchError::NONE);
+      return;
+    }
+    SetStorageErrorAndFinish(
+        BackgroundFetchStorageError::kServiceWorkerStorageError);
+  }
+
+  CacheStorageHandle cache_storage_handle_;
+  std::vector<CacheStorageCache::CacheEntry> entries_;
+
+  base::WeakPtrFactory<CacheStorageMigrationTask> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(CacheStorageMigrationTask);
+};
+
 // Asynchronously calls the SubTasks required to collect all the information for
 // the BackgroundFetchInitializationData.
 class FillBackgroundFetchInitializationDataTask : public InitializationSubTask {
@@ -397,20 +549,33 @@ class FillBackgroundFetchInitializationDataTask : public InitializationSubTask {
     // 2. Request statuses and state sanitization
     // 3. UI Options (+ icon deserialization)
     base::RepeatingClosure barrier_closure = base::BarrierClosure(
-        3u,
-        base::BindOnce(
-            [](base::WeakPtr<FillBackgroundFetchInitializationDataTask> task) {
-              if (task)
-                task->FinishWithError(
-                    task->sub_task_init().initialization_data->error);
-            },
-            weak_factory_.GetWeakPtr()));
+        3u, base::BindOnce(&FillBackgroundFetchInitializationDataTask::
+                               DidQueryInitializationData,
+                           weak_factory_.GetWeakPtr()));
     AddSubTask(std::make_unique<FillFromMetadataTask>(this, sub_task_init(),
                                                       barrier_closure));
     AddSubTask(std::make_unique<GetRequestsTask>(this, sub_task_init(),
                                                  barrier_closure));
     AddSubTask(std::make_unique<GetUIOptionsTask>(this, sub_task_init(),
                                                   barrier_closure));
+  }
+
+  void DidQueryInitializationData() {
+    if (sub_task_init().initialization_data->error !=
+        blink::mojom::BackgroundFetchError::NONE) {
+      FinishWithError(sub_task_init().initialization_data->error);
+      return;
+    }
+
+    AddSubTask(std::make_unique<CacheStorageMigrationTask>(
+        this, sub_task_init(),
+        base::BindOnce(&FillBackgroundFetchInitializationDataTask::
+                           DidMigrateCacheStorageTask,
+                       weak_factory_.GetWeakPtr())));
+  }
+
+  void DidMigrateCacheStorageTask() {
+    FinishWithError(sub_task_init().initialization_data->error);
   }
 
  private:

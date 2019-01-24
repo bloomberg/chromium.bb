@@ -104,6 +104,12 @@ void DidGetRegistrationUserDataByKeyPrefix(
   std::move(quit_closure).Run();
 }
 
+void DidStoreUserData(base::OnceClosure quit_closure,
+                      blink::ServiceWorkerStatusCode status) {
+  DCHECK_EQ(blink::ServiceWorkerStatusCode::kOk, status);
+  std::move(quit_closure).Run();
+}
+
 void AnnotateRequestInfoWithFakeDownloadManagerData(
     BackgroundFetchRequestInfo* request_info,
     bool success = false,
@@ -428,6 +434,19 @@ class BackgroundFetchDataManagerTest
     return data;
   }
 
+  // Synchronously writes data to the SW DB.
+  void StoreUserData(int64_t service_worker_registration_id,
+                     const std::string& key,
+                     const std::string& value) {
+    std::vector<std::string> data;
+
+    base::RunLoop run_loop;
+    embedded_worker_test_helper()->context_wrapper()->StoreRegistrationUserData(
+        service_worker_registration_id, origin().GetURL(), {{key, value}},
+        base::BindOnce(&DidStoreUserData, run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
   // Synchronous version of CacheStorageManager::HasCache().
   bool HasCache(const std::string& cache_name) {
     bool result = false;
@@ -494,6 +513,42 @@ class BackgroundFetchDataManagerTest
           BackgroundFetchSettledFetch::CloneRequest(request);
       operation_ptr_vec[0]->match_params = blink::mojom::QueryParams::New();
       operation_ptr_vec[0]->match_params->ignore_search = true;
+      handle.value()->BatchOperation(
+          std::move(operation_ptr_vec), /* fail_on_duplicates= */ true,
+          base::BindOnce(&BackgroundFetchDataManagerTest::DidDeleteFromCache,
+                         base::Unretained(this), run_loop.QuitClosure()),
+          base::DoNothing());
+
+      run_loop.Run();
+    }
+  }
+
+  void PutInCache(const blink::mojom::FetchAPIRequestPtr& request,
+                  blink::mojom::FetchAPIResponsePtr response) {
+    CacheStorageCacheHandle handle;
+    {
+      base::RunLoop run_loop;
+      CacheStorageHandle cache_storage =
+          background_fetch_data_manager_->cache_manager()->OpenCacheStorage(
+              origin(), CacheStorageOwner::kBackgroundFetch);
+      cache_storage.value()->OpenCache(
+          /* cache_name= */ kExampleUniqueId,
+          base::BindOnce(&BackgroundFetchDataManagerTest::DidOpenCache,
+                         base::Unretained(this), run_loop.QuitClosure(),
+                         &handle));
+      run_loop.Run();
+    }
+
+    DCHECK(handle.value());
+
+    {
+      base::RunLoop run_loop;
+      std::vector<blink::mojom::BatchOperationPtr> operation_ptr_vec;
+      operation_ptr_vec.push_back(blink::mojom::BatchOperation::New());
+      operation_ptr_vec[0]->operation_type = blink::mojom::OperationType::kPut;
+      operation_ptr_vec[0]->request =
+          BackgroundFetchSettledFetch::CloneRequest(request);
+      operation_ptr_vec[0]->response = std::move(response);
       handle.value()->BatchOperation(
           std::move(operation_ptr_vec), /* fail_on_duplicates= */ true,
           base::BindOnce(&BackgroundFetchDataManagerTest::DidDeleteFromCache,
@@ -2383,6 +2438,74 @@ TEST_F(BackgroundFetchDataManagerTest, NotifyObserversOnRequestCompletion) {
     EXPECT_EQ(failure_reason,
               blink::mojom::BackgroundFetchFailureReason::BAD_STATUS);
   }
+}
+
+TEST_F(BackgroundFetchDataManagerTest, CacheUrlMigration) {
+  int64_t sw_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
+
+  BackgroundFetchRegistrationId registration_id(
+      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+
+  std::vector<blink::mojom::FetchAPIRequestPtr> requests =
+      CreateValidRequests(origin(), 2u);
+
+  // Create a Registration and complete one of the entries.
+  {
+    blink::mojom::BackgroundFetchError error;
+    CreateRegistration(registration_id, CloneRequestVector(requests),
+                       blink::mojom::BackgroundFetchOptions::New(), SkBitmap(),
+                       &error);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+    scoped_refptr<BackgroundFetchRequestInfo> request_info;
+    PopNextRequest(registration_id, &error, &request_info);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+    AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
+                                                   /* succeeded= */ true);
+    EXPECT_CALL(*this, OnRequestCompleted(kExampleUniqueId, _, _));
+    MarkRequestAsComplete(registration_id, request_info.get(), &error);
+    EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  }
+
+  // Delete the entries from Cache and rewrite them in the old format.
+  DeleteFromCache(requests[0]);
+  DeleteFromCache(requests[1]);
+  PutInCache(requests[0], blink::mojom::FetchAPIResponse::New());
+  auto response = blink::mojom::FetchAPIResponse::New();
+  response->blob = BuildBlob("data!");
+  response->url_list = {requests[1]->url};
+  PutInCache(requests[1], std::move(response));
+
+  // Rewrite the storage version.
+  StoreUserData(sw_id, background_fetch::StorageVersionKey(kExampleUniqueId),
+                base::NumberToString(proto::SV_UNIQUE_CACHE_KEYS));
+
+  // Run the DB migration task.
+  std::vector<BackgroundFetchInitializationData> data = GetInitializationData();
+  ASSERT_EQ(data.size(), 1u);
+
+  // Check that the storage version was updated.
+  auto storage_version = GetRegistrationUserDataByKeyPrefix(
+      sw_id, background_fetch::StorageVersionKey(kExampleUniqueId));
+  ASSERT_EQ(storage_version.size(), 1u);
+  EXPECT_EQ(storage_version[0], base::NumberToString(proto::SV_CURRENT));
+
+  // Check that the data in the cache makes sense.
+  std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> settled_fetches;
+  blink::mojom::BackgroundFetchError error;
+  MatchRequests(registration_id, /* request_to_match= */ nullptr,
+                /* cache_query_params= */ nullptr, /* match_all= */ true,
+                &error, &settled_fetches);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  ASSERT_EQ(settled_fetches.size(), requests.size());
+
+  EXPECT_EQ(settled_fetches[0]->request->url, requests[0]->url);
+  EXPECT_EQ(settled_fetches[1]->request->url, requests[1]->url);
+
+  ASSERT_TRUE(settled_fetches[1]->response);
+  blink::mojom::BlobPtr blob(
+      std::move(settled_fetches[1]->response->blob->blob));
+  EXPECT_EQ(CopyBody(blob.get()), "data!");
 }
 
 }  // namespace content

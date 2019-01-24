@@ -93,16 +93,24 @@ message BackgroundFetchOptions {
 // the following steps:
 // 1. Add a new enum value (SV_ENABLE_NEW_KEY_FORMAT) and increment
 //    `SV_CURRENT`
-// 2. Migrate the old formats on database load (GetInitializationDataTask).
+// 2. Migrate the old formats on database load (DatabaseMigrationTask).
 // 3. Add a TODO with a bug to clean this up after 2 milestones or so.
 //
-// Next Tag: 2
+// Next Value: 3
 enum BackgroundFetchStorageVersion {
+  // There was an error when trying to get the storage version.
+  SV_ERROR = -1;
+  // No storage version was found.
   SV_UNINITIALIZED = 0;
+
+  // Migrate registered fetches to use the new Cache URL key format, to make
+  // them unique, and allow for duplicate requests in a registration.
+  SV_UNIQUE_CACHE_KEYS = 1;
+
   // Add new versions here.
 
   // Must be last.
-  SV_CURRENT = 1;
+  SV_CURRENT = 2;
 }
 
 // Stores information about the background fetch that will be persisted
