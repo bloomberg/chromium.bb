@@ -350,6 +350,7 @@ static void set_good_speed_features_framesize_independent(
     sf->alt_ref_search_fp = 1;
     sf->skip_sharp_interp_filter_search = 1;
     sf->perform_coeff_opt = is_boosted_arf2_bwd_type ? 2 : 4;
+    sf->prune_comp_type_by_model_rd = boosted ? 0 : 1;
     sf->adaptive_txb_search_level = boosted ? 2 : 3;
   }
 
@@ -785,6 +786,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->prune_warp_using_wmtype = 0;
   sf->disable_wedge_interintra_search = 0;
   sf->perform_coeff_opt = 0;
+  sf->prune_comp_type_by_model_rd = 0;
   sf->disable_smooth_intra = 0;
 
   if (oxcf->mode == GOOD)

@@ -194,6 +194,7 @@ typedef struct {
 typedef struct {
   int32_t rate[COMPOUND_TYPES];
   int64_t dist[COMPOUND_TYPES];
+  int64_t comp_model_rd[COMPOUND_TYPES];
   int_mv mv[2];
   MV_REFERENCE_FRAME ref_frames[2];
   PREDICTION_MODE mode;

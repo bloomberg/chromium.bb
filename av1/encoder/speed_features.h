@@ -670,6 +670,10 @@ typedef struct SPEED_FEATURES {
   // This flag controls the use of non-RD mode decision.
   int use_nonrd_pick_mode;
 
+  // prune wedge and compound segment approximate rd evaluation based on
+  // compound average modeled rd
+  int prune_comp_type_by_model_rd;
+
   // Enable/disable smooth intra modes.
   int disable_smooth_intra;
 } SPEED_FEATURES;
