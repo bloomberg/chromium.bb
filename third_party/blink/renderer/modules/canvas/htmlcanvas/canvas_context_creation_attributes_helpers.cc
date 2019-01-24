@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 #include "third_party/blink/renderer/modules/canvas/htmlcanvas/canvas_context_creation_attributes_helpers.h"
 
+#include "build/build_config.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/modules/canvas/htmlcanvas/canvas_context_creation_attributes_module.h"
 
@@ -17,7 +18,12 @@ CanvasContextCreationAttributesCore ToCanvasContextCreationAttributes(
   result.depth = attrs->depth();
   result.fail_if_major_performance_caveat =
       attrs->failIfMajorPerformanceCaveat();
+#if defined(OS_MACOSX)
+  // TODO(crbug.com/922218): enable lowLatency on Mac.
+  result.low_latency = false;
+#else
   result.low_latency = attrs->lowLatency();
+#endif
   result.pixel_format = attrs->pixelFormat();
   result.premultiplied_alpha = attrs->premultipliedAlpha();
   result.preserve_drawing_buffer = attrs->preserveDrawingBuffer();

@@ -135,3 +135,7 @@ class PixelExpectations(GpuTestExpectations):
         ['mac', ('amd', 0x679e)], bug=911413)
     self.Fail('Pixel_Video_MP4_FourColors_Rot_270',
         ['mac', ('amd', 0x679e)], bug=911413)
+
+    # TODO(mcasas): re-enable after rebaselining, https://crbug.com/922218
+    self.Fail('Pixel_CanvasLowLatency2D', ['mac'], bug=922218)
+    self.Fail('Pixel_CanvasUnacceleratedLowLatency2D', ['mac'], bug=922218)
