@@ -451,12 +451,14 @@ base::FilePath DownloadPrefs::SanitizeDownloadTargetPath(
     const base::FilePath& path) const {
 #if defined(OS_CHROMEOS)
   // If |path| isn't absolute, fall back to the default directory.
-  base::FilePath profile_download_dir = GetDefaultDownloadDirectoryForProfile();
-  if (!path.IsAbsolute() || path.ReferencesParent())
-    return profile_download_dir;
+  base::FilePath profile_myfiles_path =
+      file_manager::util::GetMyFilesFolderForProfile(profile_);
 
-  // Allow default download directory and subdirs.
-  if (profile_download_dir == path || profile_download_dir.IsParent(path))
+  if (!path.IsAbsolute() || path.ReferencesParent())
+    return profile_myfiles_path;
+
+  // Allow myfiles directory and subdirs.
+  if (profile_myfiles_path == path || profile_myfiles_path.IsParent(path))
     return path;
 
   // Allow paths under the drive mount point.
@@ -482,7 +484,7 @@ base::FilePath DownloadPrefs::SanitizeDownloadTargetPath(
     return path;
 
   // Fall back to the default download directory for all other paths.
-  return profile_download_dir;
+  return GetDefaultDownloadDirectoryForProfile();
 #endif
   return path;
 }
