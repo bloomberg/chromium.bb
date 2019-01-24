@@ -8,6 +8,7 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/feature_list.h"
@@ -177,6 +178,7 @@ void DocumentProvider::Start(const AutocompleteInput& input,
                              bool minimal_changes) {
   TRACE_EVENT0("omnibox", "DocumentProvider::Start");
   matches_.clear();
+  field_trial_triggered_ = false;
 
   // Perform various checks - feature is enabled, user is allowed to use the
   // feature, we're not under backoff, etc.
@@ -247,14 +249,35 @@ void DocumentProvider::DeleteMatch(const AutocompleteMatch& match) {
 }
 
 void DocumentProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
-  // TODO(skare): Verify that we don't lose metrics based on what
-  // zero_suggest_provider and BaseSearchProvider add.
-  return;
+  provider_info->push_back(metrics::OmniboxEventProto_ProviderInfo());
+  metrics::OmniboxEventProto_ProviderInfo& new_entry = provider_info->back();
+  new_entry.set_provider(metrics::OmniboxEventProto::DOCUMENT);
+  new_entry.set_provider_done(done_);
+
+  if (field_trial_triggered_ || field_trial_triggered_in_session_) {
+    std::vector<uint32_t> field_trial_hashes;
+    OmniboxFieldTrial::GetActiveSuggestFieldTrialHashes(&field_trial_hashes);
+    for (uint32_t trial : field_trial_hashes) {
+      if (field_trial_triggered_) {
+        new_entry.mutable_field_trial_triggered()->Add(trial);
+      }
+      if (field_trial_triggered_in_session_) {
+        new_entry.mutable_field_trial_triggered_in_session()->Add(trial);
+      }
+    }
+  }
+}
+
+void DocumentProvider::ResetSession() {
+  field_trial_triggered_in_session_ = false;
+  field_trial_triggered_ = false;
 }
 
 DocumentProvider::DocumentProvider(AutocompleteProviderClient* client,
                                    AutocompleteProviderListener* listener)
     : AutocompleteProvider(AutocompleteProvider::TYPE_DOCUMENT),
+      field_trial_triggered_(false),
+      field_trial_triggered_in_session_(false),
       backoff_for_session_(false),
       client_(client),
       listener_(listener),
@@ -372,6 +395,11 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
   int score2 = base::GetFieldTrialParamByFeatureAsInt(
       omnibox::kDocumentProvider, "DocumentScoreResult3", 300);
 
+  // Some users may be in a counterfactual study arm in which we perform all
+  // necessary work but do not forward the autocomplete matches.
+  bool in_counterfactual_group = base::GetFieldTrialParamByFeatureAsBool(
+      omnibox::kDocumentProvider, "DocumentProviderCounterfactualArm", false);
+
   // Clear the previous results now that new results are available.
   matches->clear();
   for (size_t i = 0; i < num_results; i++) {
@@ -450,7 +478,11 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
           &match.description_class, 0, ACMatchClassification::NONE);
     }
     match.transition = ui::PAGE_TRANSITION_GENERATED;
-    matches->push_back(match);
+    if (!in_counterfactual_group) {
+      matches->push_back(match);
+    }
+    field_trial_triggered_ = true;
+    field_trial_triggered_in_session_ = true;
   }
   return true;
 }
