@@ -153,10 +153,13 @@ mojom("android_mojo_bindings") {
 
 # Kept separate from "mojom_platform" because the Java bindings are needed by
 # Android's implementation of speech recognition.
-mojom("speech_recognition_error_code") {
+mojom_component("speech_recognition_error_code") {
   sources = [
     "speech/speech_recognition_error_code.mojom",
   ]
+
+  macro_prefix = "SPEECH_RECOGNITION_ERROR_CODE_MOJOM"
+  output_prefix = "speech_recognition_error_code_mojom"
 }
 
 # This target can include mojom interfaces which do use types that are

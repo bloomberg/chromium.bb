@@ -812,10 +812,13 @@ group("generate_mojo_bindings") {
 # The web_feature_mojo_bindings is separated from the rest of the mojom files
 # because the chromium typemap for blink mojo_bindings has private content
 # dependencies.
-mojom("web_feature_mojo_bindings") {
+mojom_component("web_feature_mojo_bindings") {
   sources = [
     "platform/web_feature.mojom",
   ]
+
+  macro_prefix = "WEB_FEATURE_MOJO_BINDINGS_MOJOM"
+  output_prefix = "web_feature_mojo_bindings_mojom"
 }
 
 # The web_feature_mojo_bindings is separated from the rest of the mojom files

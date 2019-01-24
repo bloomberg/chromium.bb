@@ -17,16 +17,13 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-mojom("ax_enums_mojo") {
+mojom_component("ax_enums_mojo") {
   sources = [
     "ax_enums.mojom",
   ]
 
-  public_deps = [
-    "//mojo/public/mojom/base",
-    "//ui/gfx/geometry/mojo",
-    "//ui/gfx/mojo",
-  ]
+  macro_prefix = "UI_ACCESSIBILITY_AX_MOJOM"
+  output_prefix = "ui_accessibility_ax_mojom"
 }
 
 jumbo_component("accessibility") {
