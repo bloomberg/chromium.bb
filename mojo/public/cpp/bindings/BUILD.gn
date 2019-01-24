@@ -39,6 +39,8 @@ component("bindings_base") {
     "disconnect_reason.h",
     "enum_traits.h",
     "equals_traits.h",
+    "features.cc",
+    "features.h",
     "interface_data_view.h",
     "interface_id.h",
     "lib/array_internal.cc",

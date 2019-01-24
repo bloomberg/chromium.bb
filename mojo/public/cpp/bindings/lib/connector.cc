@@ -17,6 +17,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/trace_event/trace_event.h"
+#include "mojo/public/cpp/bindings/features.h"
 #include "mojo/public/cpp/bindings/lib/may_auto_lock.h"
 #include "mojo/public/cpp/bindings/mojo_buildflags.h"
 #include "mojo/public/cpp/bindings/sync_handle_watcher.h"
@@ -146,6 +147,8 @@ Connector::Connector(ScopedMessagePipeHandle message_pipe,
     : message_pipe_(std::move(message_pipe)),
       task_runner_(std::move(runner)),
       error_(false),
+      force_immediate_dispatch_(
+          !base::FeatureList::IsEnabled(features::kTaskPerMessage)),
       outgoing_serialization_mode_(g_default_outgoing_serialization_mode),
       incoming_serialization_mode_(g_default_incoming_serialization_mode),
       nesting_observer_(RunLoopNestingObserver::GetForThread()),
