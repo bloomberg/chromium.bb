@@ -28,7 +28,8 @@ class ContactsProviderAndroid : public ContactsProvider {
               blink::mojom::ContactsManager::SelectCallback callback) override;
 
   // Adds one contact to the list of contacts selected. Note, EndContactsList
-  // must be called to signal the end of the construction of the contacts list.
+  // (or EndWithPermissionDenied) must be called to signal the end of the
+  // construction of the contacts list.
   void AddContact(JNIEnv* env,
                   const base::android::JavaParamRef<jobject>& obj,
                   jboolean includeNames,
@@ -42,6 +43,10 @@ class ContactsProviderAndroid : public ContactsProvider {
   // returned to the web page.
   void EndContactsList(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj);
+
+  // Signals the end (due to a permission error).
+  void EndWithPermissionDenied(JNIEnv* env,
+                               const base::android::JavaParamRef<jobject>& obj);
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> dialog_;
