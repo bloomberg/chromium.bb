@@ -18,6 +18,7 @@ js_library("personalization_options") {
     "..:page_visibility",
     "..:route",
     "../controls:settings_toggle_button",
+    "../people_page:sync_browser_proxy",
     "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
   externs_list = [ "$externs_path/settings_private.js" ]
