@@ -103,7 +103,7 @@ void CannedBrowsingDataAppCacheHelper::AddAppCache(const GURL& manifest_url) {
     return;  // Ignore non-websafe schemes.
 
   OriginAppCacheInfoMap& origin_map = info_collection_->infos_by_origin;
-  content::AppCacheInfoVector& appcache_infos =
+  std::vector<blink::mojom::AppCacheInfo>& appcache_infos =
       origin_map[url::Origin::Create(manifest_url)];
 
   for (const auto& appcache : appcache_infos) {

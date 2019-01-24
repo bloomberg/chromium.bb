@@ -8,6 +8,8 @@ import "third_party/blink/public/mojom/appcache/appcache_info.mojom";
 import "url/mojom/url.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 
+const int64 kAppCacheNoHostId = 0;
+
 enum AppCacheEventID {
   APPCACHE_CHECKING_EVENT = 0,
   APPCACHE_ERROR_EVENT,

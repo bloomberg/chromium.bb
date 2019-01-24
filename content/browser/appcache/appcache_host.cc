@@ -18,7 +18,6 @@
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_subresource_url_factory.h"
 #include "content/common/appcache_interfaces.h"
-#include "content/public/common/appcache_info.h"
 #include "content/public/common/content_features.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/features.h"
@@ -64,9 +63,9 @@ AppCacheHost::AppCacheHost(int host_id,
                            AppCacheServiceImpl* service)
     : host_id_(host_id),
       process_id_(process_id),
-      spawning_host_id_(kAppCacheNoHostId),
+      spawning_host_id_(blink::mojom::kAppCacheNoHostId),
       spawning_process_id_(0),
-      parent_host_id_(kAppCacheNoHostId),
+      parent_host_id_(blink::mojom::kAppCacheNoHostId),
       parent_process_id_(0),
       pending_main_resource_cache_id_(blink::mojom::kAppCacheNoCacheId),
       pending_selected_cache_id_(blink::mojom::kAppCacheNoCacheId),

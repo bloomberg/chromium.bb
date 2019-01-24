@@ -11,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/content_export.h"
-#include "content/public/common/appcache_info.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"

@@ -18,6 +18,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
@@ -234,7 +235,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   GURL site_for_cookies_;
   bool is_secure_context_ = false;
   GURL origin_url_;
-  int appcache_host_id_ = blink::WebApplicationCacheHost::kAppCacheNoHostId;
+  int appcache_host_id_ = blink::mojom::kAppCacheNoHostId;
 
   RendererPreferences renderer_preferences_;
 

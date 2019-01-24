@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -19,13 +20,19 @@ namespace content {
 class BrowserContext;
 }
 
+namespace blink {
+namespace mojom {
+class AppCacheInfo;
+}  // namespace mojom
+}  // namespace blink
+
 // This class fetches appcache information on behalf of a caller
 // on the UI thread.
 class BrowsingDataAppCacheHelper
     : public base::RefCountedThreadSafe<BrowsingDataAppCacheHelper> {
  public:
   using OriginAppCacheInfoMap =
-      std::map<url::Origin, content::AppCacheInfoVector>;
+      std::map<url::Origin, std::vector<blink::mojom::AppCacheInfo>>;
 
   using FetchCallback =
       base::OnceCallback<void(scoped_refptr<content::AppCacheInfoCollection>)>;

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/browsing_data/mock_browsing_data_appcache_helper.h"
 
+#include <vector>
+
 #include "base/callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
@@ -40,7 +42,7 @@ void MockBrowsingDataAppCacheHelper::AddAppCacheSamples() {
   mock_manifest_2.size = 2;
   mock_manifest_3.manifest_url = kOriginURL.Resolve("manifest3");
   mock_manifest_3.size = 3;
-  content::AppCacheInfoVector info_vector;
+  std::vector<blink::mojom::AppCacheInfo> info_vector;
   info_vector.push_back(mock_manifest_1);
   info_vector.push_back(mock_manifest_2);
   info_vector.push_back(mock_manifest_3);

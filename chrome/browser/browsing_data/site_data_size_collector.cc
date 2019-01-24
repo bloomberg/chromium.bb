@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "content/public/common/content_constants.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 namespace {
 

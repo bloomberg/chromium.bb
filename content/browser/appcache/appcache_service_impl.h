@@ -67,6 +67,7 @@ class CONTENT_EXPORT AppCacheStorageReference
 // exclusive access to its cache_directory on disk.
 class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
  public:
+  using OnceCompletionCallback = base::OnceCallback<void(int)>;
 
   class CONTENT_EXPORT Observer {
    public:

@@ -86,6 +86,7 @@
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 
 // TODO(eroman): Write unit tests for SafeBrowsing that exercise
 //               SafeBrowsingResourceHandler.
@@ -107,7 +108,7 @@ static network::ResourceRequest CreateResourceRequest(const char* method,
   request.load_flags = 0;
   request.plugin_child_id = -1;
   request.resource_type = type;
-  request.appcache_host_id = kAppCacheNoHostId;
+  request.appcache_host_id = blink::mojom::kAppCacheNoHostId;
   request.should_reset_appcache = false;
   request.render_frame_id = 0;
   request.is_main_frame = true;

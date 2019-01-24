@@ -30,6 +30,8 @@ namespace content {
 
 namespace {
 
+using OnceCompletionCallback = base::OnceCallback<void(int)>;
+
 // Disk cache entry data indices.
 enum { kResponseInfoIndex, kResponseContentIndex, kResponseMetadataIndex };
 

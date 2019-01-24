@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -222,7 +223,7 @@ TEST_F(AppCacheServiceImplTest, DeleteAppCachesForOrigin) {
   mock_manifest_1.manifest_url = kOriginURL.Resolve("manifest1");
   mock_manifest_2.manifest_url = kOriginURL.Resolve("manifest2");
   mock_manifest_3.manifest_url = kOriginURL.Resolve("manifest3");
-  AppCacheInfoVector info_vector;
+  std::vector<blink::mojom::AppCacheInfo> info_vector;
   info_vector.push_back(mock_manifest_1);
   info_vector.push_back(mock_manifest_2);
   info_vector.push_back(mock_manifest_3);

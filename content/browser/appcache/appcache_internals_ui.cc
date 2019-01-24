@@ -5,6 +5,7 @@
 #include "content/browser/appcache/appcache_internals_ui.h"
 
 #include <stddef.h>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -91,7 +92,7 @@ std::unique_ptr<base::DictionaryValue> GetDictionaryValueForAppCacheInfo(
 }
 
 std::unique_ptr<base::ListValue> GetListValueForAppCacheInfoVector(
-    const AppCacheInfoVector& appcache_info_vector) {
+    const std::vector<blink::mojom::AppCacheInfo> appcache_info_vector) {
   std::unique_ptr<base::ListValue> list(new base::ListValue());
   for (const blink::mojom::AppCacheInfo& info : appcache_info_vector)
     list->Append(GetDictionaryValueForAppCacheInfo(info));
