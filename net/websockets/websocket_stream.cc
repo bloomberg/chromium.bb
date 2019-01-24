@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -119,7 +120,6 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
                                             &delegate_,
                                             kTrafficAnnotation)),
         connect_delegate_(std::move(connect_delegate)),
-        handshake_stream_(nullptr),
         perform_upgrade_has_been_called_(false),
         api_delegate_(std::move(api_delegate)) {
     HttpRequestHeaders headers = additional_headers;
@@ -197,13 +197,15 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
     if (!handshake_stream_) {
       // TODO(https://crbug.com/850183):
       // Find out why this can happen and make it stop.
-      ReportFailureWithMessage("No handshake stream has been created.");
+      ReportFailureWithMessage(
+          "No handshake stream has been created "
+          "or handshake stream is already destroyed.");
       return;
     }
 
     std::unique_ptr<URLRequest> url_request = std::move(url_request_);
-    WebSocketHandshakeStreamBase* handshake_stream = handshake_stream_;
-    handshake_stream_ = nullptr;
+    WebSocketHandshakeStreamBase* handshake_stream = handshake_stream_.get();
+    handshake_stream_.reset();
     // TODO(bnc): Combine into one line after https://crbug.com/850183 is fixed.
     std::unique_ptr<WebSocketStream> stream = handshake_stream->Upgrade();
     connect_delegate_->OnSuccess(std::move(stream));
@@ -272,7 +274,7 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
     // TODO(bnc): Change to DCHECK after https://crbug.com/850183 is fixed.
     CHECK(handshake_stream);
 
-    handshake_stream_ = handshake_stream;
+    handshake_stream_ = handshake_stream->GetWeakPtr();
   }
 
   // |delegate_| needs to be declared before |url_request_| so that it gets
@@ -291,7 +293,7 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
   // during the destruction of the URLRequest object associated with the
   // handshake. This is only guaranteed to be a valid pointer if the handshake
   // succeeded.
-  WebSocketHandshakeStreamBase* handshake_stream_;
+  base::WeakPtr<WebSocketHandshakeStreamBase> handshake_stream_;
 
   // TODO(bnc): Remove after https://crbug.com/850183 is fixed.
   bool perform_upgrade_has_been_called_;

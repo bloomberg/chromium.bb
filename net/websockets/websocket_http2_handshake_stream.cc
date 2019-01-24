@@ -52,7 +52,8 @@ WebSocketHttp2HandshakeStream::WebSocketHttp2HandshakeStream(
       request_info_(nullptr),
       stream_closed_(false),
       stream_error_(OK),
-      response_headers_complete_(false) {
+      response_headers_complete_(false),
+      weak_ptr_factory_(this) {
   DCHECK(connect_delegate);
   DCHECK(request);
 }
@@ -248,6 +249,11 @@ std::unique_ptr<WebSocketStream> WebSocketHttp2HandshakeStream::Upgrade() {
   return std::make_unique<WebSocketDeflateStream>(
       std::move(basic_stream), extension_params_->deflate_parameters,
       std::make_unique<WebSocketDeflatePredictorImpl>());
+}
+
+base::WeakPtr<WebSocketHandshakeStreamBase>
+WebSocketHttp2HandshakeStream::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void WebSocketHttp2HandshakeStream::OnHeadersSent() {
