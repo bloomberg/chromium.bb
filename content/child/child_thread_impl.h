@@ -181,7 +181,7 @@ class CONTENT_EXPORT ChildThreadImpl
 
   void Init(const Options& options);
 
-  // Sets chrome_trace_event_agent_ if necessary.
+  // Initializes tracing if necessary.
   void InitTracing();
 
   // We create the channel first without connecting it so we can add filters

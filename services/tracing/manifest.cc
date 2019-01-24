@@ -21,15 +21,15 @@ const service_manager::Manifest& GetManifest() {
                            .WithInstanceSharingPolicy(
                                service_manager::Manifest::
                                    InstanceSharingPolicy::kSingleton)
+                           .CanConnectToInstancesWithAnyId(true)
                            .Build())
           .ExposeCapability(
               "tracing",
               service_manager::Manifest::InterfaceList<mojom::Coordinator>())
-          .ExposeCapability("app",
-                            service_manager::Manifest::InterfaceList<
-                                mojom::AgentRegistry, mojom::PerfettoService>())
           .RequireCapability("service_manager",
                              "service_manager:service_manager")
+          .WithInterfacesBindableOnAnyService(
+              service_manager::Manifest::InterfaceList<mojom::TracedProcess>())
           .Build()};
   return *manifest;
 }

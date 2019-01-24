@@ -42,6 +42,10 @@ component("cpp") {
     "//url",
   ]
 
+  deps = [
+    "//services/tracing/public/cpp:traced_process",
+  ]
+
   defines = [
     "IS_SERVICE_MANAGER_CPP_IMPL",
 

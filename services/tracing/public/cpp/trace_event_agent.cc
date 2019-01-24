@@ -48,16 +48,6 @@ TraceEventAgent::TraceEventAgent()
 
 TraceEventAgent::~TraceEventAgent() = default;
 
-void TraceEventAgent::Connect(service_manager::Connector* connector) {
-  // |connector| can be null in tests.
-  if (!connector) {
-    return;
-  }
-
-  BaseAgent::Connect(connector);
-  ProducerClient::Get()->Connect(connector);
-}
-
 void TraceEventAgent::GetCategories(std::set<std::string>* category_set) {
   for (size_t i = base::trace_event::BuiltinCategories::kVisibleCategoryStart;
        i < base::trace_event::BuiltinCategories::Size(); ++i) {
