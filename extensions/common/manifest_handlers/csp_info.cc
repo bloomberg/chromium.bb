@@ -107,22 +107,21 @@ CSPInfo::~CSPInfo() {
 }
 
 // static
-const std::string* CSPInfo::GetContentSecurityPolicy(
-    const Extension* extension) {
+const std::string& CSPInfo::GetExtensionPagesCSP(const Extension* extension) {
   CSPInfo* csp_info = static_cast<CSPInfo*>(
           extension->GetManifestData(keys::kContentSecurityPolicy));
-  return csp_info ? &csp_info->extension_pages_csp : nullptr;
+  return csp_info ? csp_info->extension_pages_csp : base::EmptyString();
 }
 
 // static
-const std::string& CSPInfo::GetIsolatedWorldCSP(const Extension& extension) {
+const std::string* CSPInfo::GetIsolatedWorldCSP(const Extension& extension) {
   // TODO(crbug.com/914224): This should be only called for extensions which can
   // have isolated worlds. Figure out the case of TYPE_USER_SCRIPT and add
   // DCHECK(csp_info).
   CSPInfo* csp_info = static_cast<CSPInfo*>(
       extension.GetManifestData(keys::kContentSecurityPolicy));
 
-  return csp_info ? csp_info->isolated_world_csp : base::EmptyString();
+  return csp_info ? &csp_info->isolated_world_csp : nullptr;
 }
 
 // static
@@ -137,11 +136,9 @@ const std::string& CSPInfo::GetSandboxContentSecurityPolicy(
 const std::string& CSPInfo::GetResourceContentSecurityPolicy(
     const Extension* extension,
     const std::string& relative_path) {
-  if (SandboxedPageInfo::IsSandboxedPage(extension, relative_path))
-    return GetSandboxContentSecurityPolicy(extension);
-
-  const std::string* csp = GetContentSecurityPolicy(extension);
-  return csp ? *csp : base::EmptyString();
+  return SandboxedPageInfo::IsSandboxedPage(extension, relative_path)
+             ? GetSandboxContentSecurityPolicy(extension)
+             : GetExtensionPagesCSP(extension);
 }
 
 CSPHandler::CSPHandler() = default;

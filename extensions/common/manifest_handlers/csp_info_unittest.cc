@@ -110,9 +110,8 @@ TEST_F(CSPInfoUnitTest, CSPStringKey) {
   scoped_refptr<Extension> extension =
       LoadAndExpectSuccess("csp_string_valid.json");
   ASSERT_TRUE(extension);
-  const std::string* csp = CSPInfo::GetContentSecurityPolicy(extension.get());
-  ASSERT_TRUE(csp);
-  EXPECT_EQ("script-src 'self'; default-src 'none';", *csp);
+  EXPECT_EQ("script-src 'self'; default-src 'none';",
+            CSPInfo::GetExtensionPagesCSP(extension.get()));
 
   RunTestcase(Testcase("csp_invalid_1.json", GetInvalidManifestKeyError(
                                                  keys::kContentSecurityPolicy)),
@@ -138,10 +137,7 @@ TEST_F(CSPInfoUnitTest, CSPDictionary_ExtensionPages) {
       scoped_refptr<Extension> extension =
           LoadAndExpectSuccess(test_case.file_name);
       ASSERT_TRUE(extension.get());
-      const std::string* csp =
-          CSPInfo::GetContentSecurityPolicy(extension.get());
-      ASSERT_TRUE(csp);
-      EXPECT_EQ(test_case.csp, *csp);
+      EXPECT_EQ(test_case.csp, CSPInfo::GetExtensionPagesCSP(extension.get()));
     }
   }
 
@@ -234,7 +230,10 @@ TEST_F(CSPInfoUnitTest, CSPDictionary_IsolatedWorlds) {
     scoped_refptr<Extension> extension =
         LoadAndExpectSuccess(test_case.file_name);
     ASSERT_TRUE(extension);
-    EXPECT_EQ(test_case.expected_csp, CSPInfo::GetIsolatedWorldCSP(*extension));
+
+    const std::string* csp = CSPInfo::GetIsolatedWorldCSP(*extension);
+    ASSERT_TRUE(csp);
+    EXPECT_EQ(test_case.expected_csp, *csp);
   }
 
   const char* key = keys::kContentSecurityPolicy_IsolatedWorldPath;
@@ -271,14 +270,14 @@ TEST_F(CSPInfoUnitTest, CSPDictionaryMandatoryForV3) {
     scoped_refptr<Extension> extension = LoadAndExpectSuccess(filename);
     ASSERT_TRUE(extension);
 
-    EXPECT_EQ(kDefaultIsolatedWorldCSP_Secure,
-              CSPInfo::GetIsolatedWorldCSP(*extension));
+    const std::string* isolated_world_csp =
+        CSPInfo::GetIsolatedWorldCSP(*extension);
+    ASSERT_TRUE(isolated_world_csp);
+    EXPECT_EQ(kDefaultIsolatedWorldCSP_Secure, *isolated_world_csp);
     EXPECT_EQ(kDefaultSandboxedPageCSP,
               CSPInfo::GetSandboxContentSecurityPolicy(extension.get()));
-    const std::string* extension_pages_csp =
-        CSPInfo::GetContentSecurityPolicy(extension.get());
-    ASSERT_TRUE(extension_pages_csp);
-    EXPECT_EQ(kDefaultExtensionPagesCSP, *extension_pages_csp);
+    EXPECT_EQ(kDefaultExtensionPagesCSP,
+              CSPInfo::GetExtensionPagesCSP(extension.get()));
   }
 }
 
