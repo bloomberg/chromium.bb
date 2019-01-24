@@ -263,7 +263,7 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   QuicPacketNumber last_sent_packet_;
   // Acknowledgement of any packet after |current_round_trip_end_| will cause
   // the round trip counter to advance.
-  QuicPacketCount current_round_trip_end_;
+  QuicPacketNumber current_round_trip_end_;
 
   // The filter that tracks the maximum bandwidth over the multiple recent
   // round-trips.

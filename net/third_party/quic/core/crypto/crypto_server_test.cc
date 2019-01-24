@@ -723,6 +723,26 @@ TEST_P(CryptoServerTest, CorruptSourceAddressToken) {
   CheckRejectReasons(kRejectReasons, QUIC_ARRAYSIZE(kRejectReasons));
 }
 
+TEST_P(CryptoServerTest, CorruptSourceAddressTokenIsStillAccepted) {
+  // This tests corrupted source address token.
+  CryptoHandshakeMessage msg = crypto_test_utils::CreateCHLO(
+      {{"PDMD", "X509"},
+       {"AEAD", "AESG"},
+       {"KEXS", "C255"},
+       {"SCID", scid_hex_},
+       {"#004b5453", (QuicString(1, 'X') + srct_hex_)},
+       {"PUBS", pub_hex_},
+       {"NONC", nonce_hex_},
+       {"XLCT", XlctHexString()},
+       {"VER\0", client_version_string_}},
+      kClientHelloMinimumSize);
+
+  config_.set_validate_source_address_token(false);
+
+  ShouldSucceed(msg);
+  EXPECT_EQ(kSHLO, out_.tag());
+}
+
 TEST_P(CryptoServerTest, CorruptClientNonceAndSourceAddressToken) {
   // This test corrupts client nonce and source address token.
   CryptoHandshakeMessage msg = crypto_test_utils::CreateCHLO(

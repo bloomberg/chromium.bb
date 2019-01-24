@@ -181,7 +181,7 @@ const size_t kDiversificationNonceSize = 32;
 
 // The largest gap in packets we'll accept without closing the connection.
 // This will likely have to be tuned.
-const QuicPacketNumber kMaxPacketGap = 5000;
+const QuicPacketCount kMaxPacketGap = 5000;
 
 // The maximum number of random padding bytes to add.
 const QuicByteCount kMaxNumRandomPaddingBytes = 256;
@@ -223,6 +223,11 @@ const size_t kMinRandomBytesLengthInStatelessReset = 24;
 
 // Maximum length allowed for the token in a NEW_TOKEN frame.
 const size_t kMaxNewTokenTokenLength = 0xffff;
+
+// Packet number of first sending packet of a connection. Please note, this
+// cannot be used as first received packet because peer can choose its starting
+// packet number.
+const QuicPacketNumber kFirstSendingPacketNumber = 1;
 
 // Used to represent an invalid packet number.
 const QuicPacketNumber kInvalidPacketNumber = 0;

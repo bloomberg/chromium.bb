@@ -591,7 +591,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructAckAndRstStreamPacket(
       quic::QuicPacketNumber packet_number) {
-    return ConstructAckAndRstStreamPacket(packet_number, 2, 1, 1);
+    return ConstructAckAndRstStreamPacket(packet_number, 2, 1, 2);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructClientAckPacket(
@@ -774,7 +774,7 @@ TEST_P(QuicHttpStreamTest, GetRequest) {
             stream_->SendRequest(headers_, &response_, callback_.callback()));
 
   // Ack the request.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 1, 1, 1));
 
   EXPECT_THAT(stream_->ReadResponseHeaders(callback_.callback()),
               IsError(ERR_IO_PENDING));
@@ -826,7 +826,7 @@ TEST_P(QuicHttpStreamTest, LoadTimingTwoRequests) {
       3, GetNthClientInitiatedBidirectionalStreamId(1), kIncludeVersion, kFin,
       DEFAULT_PRIORITY, GetNthClientInitiatedBidirectionalStreamId(0),
       &spdy_request_header_frame_length, &offset));
-  AddWrite(ConstructClientAckPacket(4, 3, 1, 1));  // Ack the responses.
+  AddWrite(ConstructClientAckPacket(4, 3, 1, 2));  // Ack the responses.
 
   Initialize();
 
@@ -850,7 +850,7 @@ TEST_P(QuicHttpStreamTest, LoadTimingTwoRequests) {
             stream2.SendRequest(headers_, &response_, callback2.callback()));
 
   // Ack both requests.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 1, 1, 1));
 
   EXPECT_THAT(stream_->ReadResponseHeaders(callback_.callback()),
               IsError(ERR_IO_PENDING));
@@ -907,7 +907,7 @@ TEST_P(QuicHttpStreamTest, GetRequestWithTrailers) {
       2, GetNthClientInitiatedBidirectionalStreamId(0), kIncludeVersion, kFin,
       DEFAULT_PRIORITY, &spdy_request_header_frame_length,
       &header_stream_offset));
-  AddWrite(ConstructClientAckPacket(3, 3, 1, 1));  // Ack the data packet.
+  AddWrite(ConstructClientAckPacket(3, 3, 1, 2));  // Ack the data packet.
 
   Initialize();
 
@@ -921,7 +921,7 @@ TEST_P(QuicHttpStreamTest, GetRequestWithTrailers) {
   EXPECT_EQ(OK,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
   // Ack the request.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 1, 1, 1));
 
   EXPECT_THAT(stream_->ReadResponseHeaders(callback_.callback()),
               IsError(ERR_IO_PENDING));
@@ -1016,7 +1016,7 @@ TEST_P(QuicHttpStreamTest, GetRequestLargeResponse) {
             stream_->SendRequest(headers_, &response_, callback_.callback()));
 
   // Ack the request.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 1, 1, 1));
 
   EXPECT_THAT(stream_->ReadResponseHeaders(callback_.callback()),
               IsError(ERR_IO_PENDING));
@@ -1145,7 +1145,7 @@ TEST_P(QuicHttpStreamTest, LogGranularQuicConnectionError) {
             stream_->SendRequest(headers_, &response_, callback_.callback()));
 
   // Ack the request.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 1, 1, 1));
   EXPECT_THAT(stream_->ReadResponseHeaders(callback_.callback()),
               IsError(ERR_IO_PENDING));
 
@@ -1186,7 +1186,7 @@ TEST_P(QuicHttpStreamTest, LogGranularQuicErrorIfHandshakeNotConfirmed) {
             stream_->SendRequest(headers_, &response_, callback_.callback()));
 
   // Ack the request.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 1, 1, 1));
   EXPECT_THAT(stream_->ReadResponseHeaders(callback_.callback()),
               IsError(ERR_IO_PENDING));
 
@@ -1252,7 +1252,7 @@ TEST_P(QuicHttpStreamTest, SendPostRequest) {
         &spdy_request_headers_frame_length, {header, kUploadData}));
   }
 
-  AddWrite(ConstructClientAckPacket(3, 3, 1, 1));
+  AddWrite(ConstructClientAckPacket(3, 3, 1, 2));
 
   Initialize();
 
@@ -1275,7 +1275,7 @@ TEST_P(QuicHttpStreamTest, SendPostRequest) {
             stream_->SendRequest(headers_, &response_, callback_.callback()));
 
   // Ack both packets in the request.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 1, 1, 1));
 
   // Send the response headers (but not the body).
   SetResponse("200 OK", string());
@@ -1333,7 +1333,7 @@ TEST_P(QuicHttpStreamTest, SendPostRequestAndReceiveSoloFin) {
         &spdy_request_headers_frame_length, {header, kUploadData}));
   }
 
-  AddWrite(ConstructClientAckPacket(3, 3, 1, 1));
+  AddWrite(ConstructClientAckPacket(3, 3, 1, 2));
 
   Initialize();
 
@@ -1356,7 +1356,7 @@ TEST_P(QuicHttpStreamTest, SendPostRequestAndReceiveSoloFin) {
             stream_->SendRequest(headers_, &response_, callback_.callback()));
 
   // Ack both packets in the request.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 1, 1, 1));
 
   // Send the response headers (but not the body).
   SetResponse("200 OK", string());
@@ -1422,7 +1422,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequest) {
                                        kUploadData));
   }
 
-  AddWrite(ConstructClientAckPacket(4, 3, 1, 1));
+  AddWrite(ConstructClientAckPacket(4, 3, 1, 2));
   Initialize();
 
   upload_data_stream_ = std::make_unique<ChunkedUploadDataStream>(0);
@@ -1446,7 +1446,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequest) {
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
 
   // Ack both packets in the request.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 1, 1, 1));
 
   // Send the response headers (but not the body).
   SetResponse("200 OK", string());
@@ -1505,7 +1505,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithFinalEmptyDataPacket) {
   }
   AddWrite(ConstructClientDataPacket(3, kIncludeVersion, kFin,
                                      chunk_size + header.length(), ""));
-  AddWrite(ConstructClientAckPacket(4, 3, 1, 1));
+  AddWrite(ConstructClientAckPacket(4, 3, 1, 2));
   Initialize();
 
   upload_data_stream_ = std::make_unique<ChunkedUploadDataStream>(0);
@@ -1528,7 +1528,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithFinalEmptyDataPacket) {
   chunked_upload_stream->AppendData(nullptr, 0, true);
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
 
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 1, 1, 1));
 
   // Send the response headers (but not the body).
   SetResponse("200 OK", string());
@@ -1575,7 +1575,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithOneEmptyDataPacket) {
       DEFAULT_PRIORITY, &spdy_request_headers_frame_length,
       &header_stream_offset));
   AddWrite(ConstructClientDataPacket(3, kIncludeVersion, kFin, 0, ""));
-  AddWrite(ConstructClientAckPacket(4, 3, 1, 1));
+  AddWrite(ConstructClientAckPacket(4, 3, 1, 2));
   Initialize();
 
   upload_data_stream_ = std::make_unique<ChunkedUploadDataStream>(0);
@@ -1597,7 +1597,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithOneEmptyDataPacket) {
   chunked_upload_stream->AppendData(nullptr, 0, true);
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
 
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 1, 1, 1));
 
   // Send the response headers (but not the body).
   SetResponse("200 OK", string());
@@ -1656,7 +1656,7 @@ TEST_P(QuicHttpStreamTest, DestroyedEarly) {
             stream_->SendRequest(headers_, &response_, callback_.callback()));
 
   // Ack the request.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 1, 1, 1));
   EXPECT_THAT(stream_->ReadResponseHeaders(
                   base::Bind(&QuicHttpStreamTest::CloseStream,
                              base::Unretained(this), stream_.get())),
@@ -1702,7 +1702,7 @@ TEST_P(QuicHttpStreamTest, Priority) {
             stream_->SendRequest(headers_, &response_, callback_.callback()));
 
   // Ack the request.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 1, 1, 1));
   EXPECT_THAT(stream_->ReadResponseHeaders(callback_.callback()),
               IsError(ERR_IO_PENDING));
 
@@ -2316,7 +2316,7 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckFail) {
       client_packet_number++, stream_id_ + quic::test::NextStreamId(version_),
       !kIncludeVersion, kFin, DEFAULT_PRIORITY, promise_id_,
       &spdy_request_header_frame_length, &header_stream_offset));
-  AddWrite(ConstructClientAckPacket(client_packet_number++, 3, 1, 1));
+  AddWrite(ConstructClientAckPacket(client_packet_number++, 3, 1, 2));
   AddWrite(ConstructClientRstStreamCancelledPacket(client_packet_number++));
 
   Initialize();
@@ -2384,7 +2384,7 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckFail) {
   // client-initiated version of |promised_stream_| works as intended.
 
   // Ack the request.
-  ProcessPacket(ConstructServerAckPacket(2, 0, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(2, 1, 1, 1));
 
   SetResponse("404 Not Found", string());
   size_t spdy_response_header_frame_length;
@@ -2482,7 +2482,7 @@ TEST_P(QuicHttpStreamTest, DataReadErrorAsynchronous) {
 
   int result = stream_->SendRequest(headers_, &response_, callback_.callback());
 
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
+  ProcessPacket(ConstructServerAckPacket(1, 1, 1, 1));
   SetResponse("200 OK", string());
 
   EXPECT_THAT(result, IsError(ERR_IO_PENDING));

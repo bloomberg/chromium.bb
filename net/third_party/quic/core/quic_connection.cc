@@ -47,10 +47,6 @@ class QuicEncrypter;
 
 namespace {
 
-// The largest gap in packets we'll accept without closing the connection.
-// This will likely have to be tuned.
-const QuicPacketNumber kMaxPacketGap = 5000;
-
 // Maximum number of acks received before sending an ack in response.
 // TODO(fayang): Remove this constant when deprecating QUIC_VERSION_35.
 const QuicPacketCount kMaxPacketsReceivedBeforeAckSend = 20;
@@ -79,7 +75,7 @@ const int kMessageTooBigErrorCode = net::ERR_MSG_TOO_BIG;
 const int kMinReleaseTimeIntoFutureMs = 1;
 
 bool Near(QuicPacketNumber a, QuicPacketNumber b) {
-  QuicPacketNumber delta = (a > b) ? a - b : b - a;
+  QuicPacketCount delta = (a > b) ? a - b : b - a;
   return delta <= kMaxPacketGap;
 }
 

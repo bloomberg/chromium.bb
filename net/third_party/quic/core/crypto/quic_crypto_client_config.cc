@@ -13,6 +13,7 @@
 #include "net/third_party/quic/core/crypto/channel_id.h"
 #include "net/third_party/quic/core/crypto/common_cert_set.h"
 #include "net/third_party/quic/core/crypto/crypto_framer.h"
+#include "net/third_party/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quic/core/crypto/crypto_utils.h"
 #include "net/third_party/quic/core/crypto/curve25519_key_exchange.h"
 #include "net/third_party/quic/core/crypto/key_exchange.h"
@@ -442,7 +443,11 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
     CryptoHandshakeMessage* out) const {
   out->set_tag(kCHLO);
   // TODO(rch): Remove this when we remove quic_use_chlo_packet_size flag.
-  out->set_minimum_size(kClientHelloMinimumSize);
+  if (pad_inchoate_hello_) {
+    out->set_minimum_size(kClientHelloMinimumSize);
+  } else {
+    out->set_minimum_size(1);
+  }
 
   // Server name indication. We only send SNI if it's a valid domain name, as
   // per the spec.
@@ -524,6 +529,12 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
 
   FillInchoateClientHello(server_id, preferred_version, cached, rand,
                           /* demand_x509_proof= */ true, out_params, out);
+
+  if (pad_full_hello_) {
+    out->set_minimum_size(kClientHelloMinimumSize);
+  } else {
+    out->set_minimum_size(1);
+  }
 
   const CryptoHandshakeMessage* scfg = cached->GetServerConfig();
   if (!scfg) {

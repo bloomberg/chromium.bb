@@ -6,7 +6,9 @@
 #define NET_THIRD_PARTY_QUIC_CORE_PACKET_NUMBER_INDEXED_QUEUE_H_
 
 #include "base/logging.h"
+#include "net/third_party/quic/core/quic_constants.h"
 #include "net/third_party/quic/core/quic_types.h"
+#include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_containers.h"
 
 namespace quic {
@@ -36,7 +38,7 @@ template <typename T>
 class PacketNumberIndexedQueue {
  public:
   PacketNumberIndexedQueue()
-      : number_of_present_entries_(0), first_packet_(0) {}
+      : number_of_present_entries_(0), first_packet_(kInvalidPacketNumber) {}
 
   // Retrieve the entry associated with the packet number.  Returns the pointer
   // to the entry in case of success, or nullptr if the entry does not exist.
@@ -65,15 +67,15 @@ class PacketNumberIndexedQueue {
   // proportional to the memory usage of the queue.
   size_t entry_slots_used() const { return entries_.size(); }
 
-  // Packet number of the first entry in the queue.  Zero if the queue is empty.
-  size_t first_packet() const { return first_packet_; }
+  // Packet number of the first entry in the queue.
+  QuicPacketNumber first_packet() const { return first_packet_; }
 
   // Packet number of the last entry ever inserted in the queue.  Note that the
   // entry in question may have already been removed.  Zero if the queue is
   // empty.
-  size_t last_packet() const {
+  QuicPacketNumber last_packet() const {
     if (IsEmpty()) {
-      return 0;
+      return kInvalidPacketNumber;
     }
     return first_packet_ + entries_.size() - 1;
   }
@@ -127,9 +129,14 @@ template <typename T>
 template <typename... Args>
 bool PacketNumberIndexedQueue<T>::Emplace(QuicPacketNumber packet_number,
                                           Args&&... args) {
+  if (packet_number == kInvalidPacketNumber) {
+    QUIC_BUG << "Try to insert an uninitialized packet number";
+    return false;
+  }
+
   if (IsEmpty()) {
     DCHECK(entries_.empty());
-    DCHECK_EQ(0u, first_packet_);
+    DCHECK_EQ(kInvalidPacketNumber, first_packet_);
 
     entries_.emplace_back(std::forward<Args>(args)...);
     number_of_present_entries_ = 1;
@@ -176,18 +183,19 @@ void PacketNumberIndexedQueue<T>::Cleanup() {
     first_packet_++;
   }
   if (entries_.empty()) {
-    first_packet_ = 0;
+    first_packet_ = kInvalidPacketNumber;
   }
 }
 
 template <typename T>
-auto PacketNumberIndexedQueue<T>::GetEntryWrapper(QuicPacketNumber offset) const
-    -> const EntryWrapper* {
-  if (offset < first_packet_) {
+auto PacketNumberIndexedQueue<T>::GetEntryWrapper(
+    QuicPacketNumber packet_number) const -> const EntryWrapper* {
+  if (packet_number == kInvalidPacketNumber || IsEmpty() ||
+      packet_number < first_packet_) {
     return nullptr;
   }
 
-  offset -= first_packet_;
+  uint64_t offset = packet_number - first_packet_;
   if (offset >= entries_.size()) {
     return nullptr;
   }

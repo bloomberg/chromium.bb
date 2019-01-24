@@ -54,7 +54,7 @@ class MockDebugDelegate : public QuicSentPacketManager::DebugDelegate {
 
 class QuicSentPacketManagerTest : public QuicTestWithParam<bool> {
  public:
-  void RetransmitCryptoPacket(QuicPacketNumber packet_number) {
+  void RetransmitCryptoPacket(uint64_t packet_number) {
     EXPECT_CALL(*send_algorithm_,
                 OnPacketSent(_, BytesInFlight(), packet_number, kDefaultLength,
                              HAS_RETRANSMITTABLE_DATA));
@@ -66,8 +66,7 @@ class QuicSentPacketManagerTest : public QuicTestWithParam<bool> {
                           HAS_RETRANSMITTABLE_DATA);
   }
 
-  void RetransmitDataPacket(QuicPacketNumber packet_number,
-                            TransmissionType type) {
+  void RetransmitDataPacket(uint64_t packet_number, TransmissionType type) {
     EXPECT_CALL(*send_algorithm_,
                 OnPacketSent(_, BytesInFlight(), packet_number, kDefaultLength,
                              HAS_RETRANSMITTABLE_DATA));
@@ -139,7 +138,7 @@ class QuicSentPacketManagerTest : public QuicTestWithParam<bool> {
     }
   }
 
-  void ExpectAck(QuicPacketNumber largest_observed) {
+  void ExpectAck(uint64_t largest_observed) {
     EXPECT_CALL(
         *send_algorithm_,
         // Ensure the AckedPacketVector argument contains largest_observed.
@@ -149,15 +148,15 @@ class QuicSentPacketManagerTest : public QuicTestWithParam<bool> {
     EXPECT_CALL(*network_change_visitor_, OnCongestionChange());
   }
 
-  void ExpectUpdatedRtt(QuicPacketNumber largest_observed) {
+  void ExpectUpdatedRtt(uint64_t largest_observed) {
     EXPECT_CALL(*send_algorithm_,
                 OnCongestionEvent(true, _, _, IsEmpty(), IsEmpty()));
     EXPECT_CALL(*network_change_visitor_, OnCongestionChange());
   }
 
   void ExpectAckAndLoss(bool rtt_updated,
-                        QuicPacketNumber largest_observed,
-                        QuicPacketNumber lost_packet) {
+                        uint64_t largest_observed,
+                        uint64_t lost_packet) {
     EXPECT_CALL(
         *send_algorithm_,
         OnCongestionEvent(rtt_updated, _, _,
@@ -188,14 +187,14 @@ class QuicSentPacketManagerTest : public QuicTestWithParam<bool> {
         .Times(AnyNumber());
   }
 
-  void RetransmitAndSendPacket(QuicPacketNumber old_packet_number,
-                               QuicPacketNumber new_packet_number) {
+  void RetransmitAndSendPacket(uint64_t old_packet_number,
+                               uint64_t new_packet_number) {
     RetransmitAndSendPacket(old_packet_number, new_packet_number,
                             TLP_RETRANSMISSION);
   }
 
-  void RetransmitAndSendPacket(QuicPacketNumber old_packet_number,
-                               QuicPacketNumber new_packet_number,
+  void RetransmitAndSendPacket(uint64_t old_packet_number,
+                               uint64_t new_packet_number,
                                TransmissionType transmission_type) {
     bool is_lost = false;
     if (manager_.session_decides_what_to_write()) {
@@ -243,12 +242,11 @@ class QuicSentPacketManagerTest : public QuicTestWithParam<bool> {
                                                             new_packet_number));
   }
 
-  SerializedPacket CreateDataPacket(QuicPacketNumber packet_number) {
+  SerializedPacket CreateDataPacket(uint64_t packet_number) {
     return CreatePacket(packet_number, true);
   }
 
-  SerializedPacket CreatePacket(QuicPacketNumber packet_number,
-                                bool retransmittable) {
+  SerializedPacket CreatePacket(uint64_t packet_number, bool retransmittable) {
     SerializedPacket packet(packet_number, PACKET_4BYTE_PACKET_NUMBER, nullptr,
                             kDefaultLength, false, false);
     if (retransmittable) {
@@ -258,7 +256,7 @@ class QuicSentPacketManagerTest : public QuicTestWithParam<bool> {
     return packet;
   }
 
-  void SendDataPacket(QuicPacketNumber packet_number) {
+  void SendDataPacket(uint64_t packet_number) {
     EXPECT_CALL(*send_algorithm_,
                 OnPacketSent(_, BytesInFlight(), packet_number, _, _));
     SerializedPacket packet(CreateDataPacket(packet_number));
@@ -266,7 +264,7 @@ class QuicSentPacketManagerTest : public QuicTestWithParam<bool> {
                           HAS_RETRANSMITTABLE_DATA);
   }
 
-  void SendCryptoPacket(QuicPacketNumber packet_number) {
+  void SendCryptoPacket(uint64_t packet_number) {
     EXPECT_CALL(*send_algorithm_,
                 OnPacketSent(_, BytesInFlight(), packet_number, kDefaultLength,
                              HAS_RETRANSMITTABLE_DATA));
@@ -282,8 +280,7 @@ class QuicSentPacketManagerTest : public QuicTestWithParam<bool> {
     }
   }
 
-  void SendAckPacket(QuicPacketNumber packet_number,
-                     QuicPacketNumber largest_acked) {
+  void SendAckPacket(uint64_t packet_number, uint64_t largest_acked) {
     EXPECT_CALL(*send_algorithm_,
                 OnPacketSent(_, BytesInFlight(), packet_number, kDefaultLength,
                              NO_RETRANSMITTABLE_DATA));
@@ -294,7 +291,7 @@ class QuicSentPacketManagerTest : public QuicTestWithParam<bool> {
   }
 
   // Based on QuicConnection's WritePendingRetransmissions.
-  void RetransmitNextPacket(QuicPacketNumber retransmission_packet_number) {
+  void RetransmitNextPacket(uint64_t retransmission_packet_number) {
     EXPECT_TRUE(manager_.HasPendingRetransmissions());
     EXPECT_CALL(*send_algorithm_,
                 OnPacketSent(_, _, retransmission_packet_number, kDefaultLength,

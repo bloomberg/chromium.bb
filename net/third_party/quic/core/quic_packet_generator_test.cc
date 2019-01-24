@@ -154,7 +154,8 @@ class QuicPacketGeneratorTest : public QuicTest {
                    &random_generator_,
                    &delegate_,
                    &producer_),
-        creator_(QuicPacketGeneratorPeer::GetPacketCreator(&generator_)) {
+        creator_(QuicPacketGeneratorPeer::GetPacketCreator(&generator_)),
+        ack_frame_(InitAckFrame(QuicPacketNumber(1))) {
     EXPECT_CALL(delegate_, GetPacketBuffer()).WillRepeatedly(Return(nullptr));
     creator_->SetEncrypter(
         ENCRYPTION_FORWARD_SECURE,
@@ -468,6 +469,35 @@ TEST_F(QuicPacketGeneratorTest, ConsumeData_Handshake) {
   ASSERT_EQ(1u, packets_.size());
   ASSERT_EQ(kDefaultMaxPacketSize, generator_.GetCurrentMaxPacketLength());
   EXPECT_EQ(kDefaultMaxPacketSize, packets_[0].encrypted_length);
+}
+
+// Test the behavior of ConsumeData when the data is for the crypto handshake
+// stream, but padding is disabled.
+TEST_F(QuicPacketGeneratorTest, ConsumeData_Handshake_PaddingDisabled) {
+  generator_.set_fully_pad_crypto_hadshake_packets(false);
+
+  delegate_.SetCanWriteAnything();
+
+  EXPECT_CALL(delegate_, OnSerializedPacket(_))
+      .WillOnce(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
+  MakeIOVector("foo", &iov_);
+  QuicConsumedData consumed = generator_.ConsumeData(
+      QuicUtils::GetCryptoStreamId(framer_.transport_version()), &iov_, 1u,
+      iov_.iov_len, 0, NO_FIN);
+  EXPECT_EQ(3u, consumed.bytes_consumed);
+  EXPECT_FALSE(generator_.HasQueuedFrames());
+  EXPECT_FALSE(generator_.HasRetransmittableFrames());
+
+  PacketContents contents;
+  contents.num_stream_frames = 1;
+  contents.num_padding_frames = 0;
+  CheckPacketContains(contents, 0);
+
+  ASSERT_EQ(1u, packets_.size());
+
+  // Packet is not fully padded, but we want to future packets to be larger.
+  ASSERT_EQ(kDefaultMaxPacketSize, generator_.GetCurrentMaxPacketLength());
+  EXPECT_EQ(27, packets_[0].encrypted_length);
 }
 
 TEST_F(QuicPacketGeneratorTest, ConsumeData_EmptyData) {

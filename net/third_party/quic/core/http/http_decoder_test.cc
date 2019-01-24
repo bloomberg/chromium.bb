@@ -23,6 +23,7 @@ class MockVisitor : public HttpDecoder::Visitor {
   MOCK_METHOD1(OnMaxPushIdFrame, void(const MaxPushIdFrame& frame));
   MOCK_METHOD1(OnGoAwayFrame, void(const GoAwayFrame& frame));
   MOCK_METHOD1(OnSettingsFrame, void(const SettingsFrame& frame));
+  MOCK_METHOD1(OnDuplicatePushFrame, void(const DuplicatePushFrame& frame));
 
   MOCK_METHOD1(OnDataFrameStart, void(Http3FrameLengths frame_lengths));
   MOCK_METHOD1(OnDataFramePayload, void(QuicStringPiece payload));
@@ -175,6 +176,29 @@ TEST_F(HttpDecoderTest, MaxPushId) {
 
   // Process the frame incremently.
   EXPECT_CALL(visitor_, OnMaxPushIdFrame(MaxPushIdFrame({1})));
+  for (char c : input) {
+    EXPECT_EQ(1u, decoder_.ProcessInput(&c, 1));
+  }
+  EXPECT_EQ(QUIC_NO_ERROR, decoder_.error());
+  EXPECT_EQ("", decoder_.error_detail());
+}
+
+TEST_F(HttpDecoderTest, DuplicatePush) {
+  char input[] = {// length
+                  0x1,
+                  // type (DUPLICATE_PUSH)
+                  0x0E,
+                  // Push Id
+                  0x01};
+  // Process the full frame.
+  EXPECT_CALL(visitor_, OnDuplicatePushFrame(DuplicatePushFrame({1})));
+  EXPECT_EQ(QUIC_ARRAYSIZE(input),
+            decoder_.ProcessInput(input, QUIC_ARRAYSIZE(input)));
+  EXPECT_EQ(QUIC_NO_ERROR, decoder_.error());
+  EXPECT_EQ("", decoder_.error_detail());
+
+  // Process the frame incremently.
+  EXPECT_CALL(visitor_, OnDuplicatePushFrame(DuplicatePushFrame({1})));
   for (char c : input) {
     EXPECT_EQ(1u, decoder_.ProcessInput(&c, 1));
   }

@@ -134,8 +134,8 @@ class QuicUnackedPacketMapTest : public QuicTestWithParam<bool> {
     unacked_packets_.GetMutableTransmissionInfo(packet_number)->state = state;
   }
 
-  void RetransmitAndSendPacket(QuicPacketNumber old_packet_number,
-                               QuicPacketNumber new_packet_number,
+  void RetransmitAndSendPacket(uint64_t old_packet_number,
+                               uint64_t new_packet_number,
                                TransmissionType transmission_type) {
     DCHECK(unacked_packets_.HasRetransmittableFrames(old_packet_number));
     if (!unacked_packets_.session_decides_what_to_write()) {

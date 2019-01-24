@@ -108,7 +108,7 @@ class TaggingEncrypter : public QuicEncrypter {
   bool SetIV(QuicStringPiece iv) override { return true; }
 
   bool EncryptPacket(QuicTransportVersion /*version*/,
-                     QuicPacketNumber packet_number,
+                     uint64_t packet_number,
                      QuicStringPiece associated_data,
                      QuicStringPiece plaintext,
                      char* output,
@@ -173,7 +173,7 @@ class TaggingDecrypter : public QuicDecrypter {
   }
 
   bool DecryptPacket(QuicTransportVersion /*version*/,
-                     QuicPacketNumber packet_number,
+                     uint64_t packet_number,
                      QuicStringPiece associated_data,
                      QuicStringPiece ciphertext,
                      char* output,
@@ -575,7 +575,7 @@ class TestConnection : public QuicConnection {
   }
 
   void SendPacket(EncryptionLevel level,
-                  QuicPacketNumber packet_number,
+                  uint64_t packet_number,
                   std::unique_ptr<QuicPacket> packet,
                   HasRetransmittableData retransmittable,
                   bool has_ack,
@@ -930,7 +930,7 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
 
   void use_tagging_decrypter() { writer_->use_tagging_decrypter(); }
 
-  void ProcessPacket(QuicPacketNumber number) {
+  void ProcessPacket(uint64_t number) {
     EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
     ProcessDataPacket(number);
     if (connection_.GetSendAlarm()->IsSet()) {
@@ -1005,7 +1005,7 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
         QuicReceivedPacket(encrypted_buffer, encrypted_length, clock_.Now()));
   }
 
-  size_t ProcessFramePacketAtLevel(QuicPacketNumber number,
+  size_t ProcessFramePacketAtLevel(uint64_t number,
                                    QuicFrame frame,
                                    EncryptionLevel level) {
     QuicPacketHeader header;
@@ -1030,11 +1030,11 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
     return encrypted_length;
   }
 
-  size_t ProcessDataPacket(QuicPacketNumber number) {
+  size_t ProcessDataPacket(uint64_t number) {
     return ProcessDataPacketAtLevel(number, false, ENCRYPTION_NONE);
   }
 
-  size_t ProcessDataPacketAtLevel(QuicPacketNumber number,
+  size_t ProcessDataPacketAtLevel(uint64_t number,
                                   bool has_stop_waiting,
                                   EncryptionLevel level) {
     std::unique_ptr<QuicPacket> packet(
@@ -1051,7 +1051,7 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
     return encrypted_length;
   }
 
-  void ProcessClosePacket(QuicPacketNumber number) {
+  void ProcessClosePacket(uint64_t number) {
     std::unique_ptr<QuicPacket> packet(ConstructClosePacket(number));
     char buffer[kMaxPacketSize];
     size_t encrypted_length = peer_framer_.EncryptPayload(
@@ -1105,7 +1105,7 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
     connection_.OnStreamReset(id, error);
   }
 
-  void ProcessAckPacket(QuicPacketNumber packet_number, QuicAckFrame* frame) {
+  void ProcessAckPacket(uint64_t packet_number, QuicAckFrame* frame) {
     QuicPacketCreatorPeer::SetPacketNumber(&peer_creator_, packet_number - 1);
     ProcessFramePacket(QuicFrame(frame));
   }
@@ -1118,7 +1118,7 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
     ProcessFramePacket(QuicFrame(frame));
   }
 
-  size_t ProcessStopWaitingPacketAtLevel(QuicPacketNumber number,
+  size_t ProcessStopWaitingPacketAtLevel(uint64_t number,
                                          QuicStopWaitingFrame* frame,
                                          EncryptionLevel level) {
     return ProcessFramePacketAtLevel(number, QuicFrame(frame),
@@ -1129,7 +1129,7 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
     ProcessFramePacket(QuicFrame(frame));
   }
 
-  bool IsMissing(QuicPacketNumber number) {
+  bool IsMissing(uint64_t number) {
     return IsAwaitingPacket(*outgoing_ack(), number, 0);
   }
 
@@ -1140,7 +1140,7 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
     return packet;
   }
 
-  std::unique_ptr<QuicPacket> ConstructDataPacket(QuicPacketNumber number,
+  std::unique_ptr<QuicPacket> ConstructDataPacket(uint64_t number,
                                                   bool has_stop_waiting) {
     QuicPacketHeader header;
     // Set connection_id to peer's in memory representation as this data packet
@@ -1174,7 +1174,7 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
         &peer_creator_);
   }
 
-  std::unique_ptr<QuicPacket> ConstructClosePacket(QuicPacketNumber number) {
+  std::unique_ptr<QuicPacket> ConstructClosePacket(uint64_t number) {
     QuicPacketHeader header;
     // Set connection_id to peer's in memory representation as this connection
     // close packet is created by peer_framer.
@@ -1201,8 +1201,7 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
     return QuicTime::Delta::FromMilliseconds(kDefaultDelayedAckTimeMs);
   }
 
-  const QuicStopWaitingFrame InitStopWaitingFrame(
-      QuicPacketNumber least_unacked) {
+  const QuicStopWaitingFrame InitStopWaitingFrame(uint64_t least_unacked) {
     QuicStopWaitingFrame frame;
     frame.least_unacked = least_unacked;
     return frame;
@@ -1211,8 +1210,7 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
   // Construct a ack_frame that acks all packet numbers between 1 and
   // |largest_acked|, except |missing|.
   // REQUIRES: 1 <= |missing| < |largest_acked|
-  QuicAckFrame ConstructAckFrame(QuicPacketNumber largest_acked,
-                                 QuicPacketNumber missing) {
+  QuicAckFrame ConstructAckFrame(uint64_t largest_acked, uint64_t missing) {
     if (missing == 1) {
       return InitAckFrame({{missing + 1, largest_acked + 1}});
     }
@@ -2457,17 +2455,11 @@ TEST_P(QuicConnectionTest, AckUnsentData) {
   ProcessAckPacket(&frame);
 }
 
-TEST_P(QuicConnectionTest, AckAll) {
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  ProcessPacket(1);
-
-  QuicPacketCreatorPeer::SetPacketNumber(&peer_creator_, 1);
-  QuicAckFrame frame1;
-  ProcessAckPacket(&frame1);
-}
-
 TEST_P(QuicConnectionTest, BasicSending) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
+  ProcessDataPacket(QuicPacketNumber(1));
+  QuicPacketCreatorPeer::SetPacketNumber(&peer_creator_, QuicPacketNumber(2));
   QuicPacketNumber last_packet;
   SendStreamDataToPeer(1, "foo", 0, NO_FIN, &last_packet);  // Packet 1
   EXPECT_EQ(1u, last_packet);
@@ -2665,6 +2657,10 @@ TEST_P(QuicConnectionTest, FramePackingAckResponse) {
   // Process a data packet to queue up a pending ack.
   EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
   ProcessDataPacket(1);
+  QuicPacketNumber last_packet;
+  SendStreamDataToPeer(1, "foo", 0, NO_FIN, &last_packet);
+  // Verify ack is bundled with outging packet.
+  EXPECT_FALSE(writer_->ack_frames().empty());
 
   EXPECT_CALL(visitor_, OnCanWrite())
       .WillOnce(DoAll(IgnoreResult(InvokeWithoutArgs(
@@ -2674,9 +2670,9 @@ TEST_P(QuicConnectionTest, FramePackingAckResponse) {
 
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
 
-  // Process an ack to cause the visitor's OnCanWrite to be invoked.
-  QuicAckFrame ack_one;
-  ProcessAckPacket(3, &ack_one);
+  // Process a data packet to cause the visitor's OnCanWrite to be invoked.
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
+  ProcessDataPacket(2);
 
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
   EXPECT_FALSE(connection_.HasQueuedData());
@@ -3379,6 +3375,10 @@ TEST_P(QuicConnectionTest, NoLimitPacketsPerNack) {
 
 // Test sending multiple acks from the connection to the session.
 TEST_P(QuicConnectionTest, MultipleAcks) {
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
+  ProcessDataPacket(1);
+  QuicPacketCreatorPeer::SetPacketNumber(&peer_creator_, 2);
   QuicPacketNumber last_packet;
   SendStreamDataToPeer(1, "foo", 0, NO_FIN, &last_packet);  // Packet 1
   EXPECT_EQ(1u, last_packet);
@@ -3395,7 +3395,6 @@ TEST_P(QuicConnectionTest, MultipleAcks) {
   // Client will ack packets 1, 2, [!3], 4, 5.
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _, _));
   QuicAckFrame frame1 = ConstructAckFrame(5, 3);
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   ProcessAckPacket(&frame1);
 
   // Now the client implicitly acks 3, and explicitly acks 6.
@@ -3405,11 +3404,14 @@ TEST_P(QuicConnectionTest, MultipleAcks) {
 }
 
 TEST_P(QuicConnectionTest, DontLatchUnackedPacket) {
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
+  ProcessDataPacket(1);
+  QuicPacketCreatorPeer::SetPacketNumber(&peer_creator_, 2);
   SendStreamDataToPeer(1, "foo", 0, NO_FIN, nullptr);  // Packet 1;
   // From now on, we send acks, so the send algorithm won't mark them pending.
   SendAckPacketToPeer();  // Packet 2
 
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _, _));
   QuicAckFrame frame = InitAckFrame(1);
   ProcessAckPacket(&frame);
@@ -4153,7 +4155,8 @@ TEST_P(QuicConnectionTest, MtuDiscoveryEnabled) {
   connection_.GetMtuDiscoveryAlarm()->Fire();
   EXPECT_EQ(kMtuDiscoveryTargetPacketSizeHigh, probe_size);
 
-  const QuicPacketCount probe_packet_number = packets_between_probes_base + 1;
+  const QuicPacketNumber probe_packet_number =
+      kFirstSendingPacketNumber + packets_between_probes_base;
   ASSERT_EQ(probe_packet_number, creator_->packet_number());
 
   // Acknowledge all packets sent so far.
@@ -4282,7 +4285,8 @@ TEST_P(QuicConnectionTest, MtuDiscoveryWriterLimited) {
   connection_.GetMtuDiscoveryAlarm()->Fire();
   EXPECT_EQ(mtu_limit, probe_size);
 
-  const QuicPacketCount probe_sequence_number = packets_between_probes_base + 1;
+  const QuicPacketNumber probe_sequence_number =
+      kFirstSendingPacketNumber + packets_between_probes_base;
   ASSERT_EQ(probe_sequence_number, creator_->packet_number());
 
   // Acknowledge all packets sent so far.
@@ -6590,6 +6594,9 @@ TEST_P(QuicConnectionTest, ReevaluateTimeUntilSendOnAck) {
 }
 
 TEST_P(QuicConnectionTest, SendAcksImmediately) {
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
+  ProcessDataPacket(1);
   CongestionBlockWrites();
   SendAckPacketToPeer();
 }
@@ -6981,6 +6988,9 @@ TEST_P(QuicConnectionTest, NoPathDegradingOnServer) {
 }
 
 TEST_P(QuicConnectionTest, NoPathDegradingAfterSendingAck) {
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
+  ProcessDataPacket(1);
   SendAckPacketToPeer();
   EXPECT_FALSE(connection_.sent_packet_manager().unacked_packets().empty());
   EXPECT_FALSE(connection_.sent_packet_manager().HasInFlightPackets());

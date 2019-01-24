@@ -169,5 +169,22 @@ TEST_F(HttpEncoderTest, SerializeMaxPushIdFrame) {
                                 QUIC_ARRAYSIZE(output));
 }
 
+TEST_F(HttpEncoderTest, SerializeDuplicatePushFrame) {
+  DuplicatePushFrame duplicate_push;
+  duplicate_push.push_id = 0x1;
+  char output[] = {// length
+                   0x1,
+                   // type (DUPLICATE_PUSH)
+                   0x0E,
+                   // Push Id
+                   0x01};
+  std::unique_ptr<char[]> buffer;
+  uint64_t length =
+      encoder_.SerializeDuplicatePushFrame(duplicate_push, &buffer);
+  EXPECT_EQ(QUIC_ARRAYSIZE(output), length);
+  CompareCharArraysWithHexError("DUPLICATE_PUSH", buffer.get(), length, output,
+                                QUIC_ARRAYSIZE(output));
+}
+
 }  // namespace test
 }  // namespace quic

@@ -33,6 +33,7 @@
 #include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
+#include "net/third_party/quic/platform/api/quic_cert_utils.h"
 #include "net/third_party/quic/platform/api/quic_clock.h"
 #include "net/third_party/quic/platform/api/quic_endian.h"
 #include "net/third_party/quic/platform/api/quic_fallthrough.h"
@@ -220,7 +221,11 @@ QuicCryptoServerConfig::QuicCryptoServerConfig(
       source_address_token_future_secs_(3600),
       source_address_token_lifetime_secs_(86400),
       enable_serving_sct_(false),
-      rejection_observer_(nullptr) {
+      rejection_observer_(nullptr),
+      pad_rej_(true),
+      pad_shlo_(true),
+      validate_chlo_size_(true),
+      validate_source_address_token_(true) {
   DCHECK(proof_source_.get());
   source_address_token_boxer_.SetKeys(
       {DeriveSourceAddressTokenKey(source_address_token_secret)});
@@ -965,25 +970,13 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
   // TODO(rch): Would it be better to implement a move operator and just
   // std::move(helper) instead of done_cb?
   helper.DetachCallback();
-  if (GetQuicRestartFlag(quic_use_async_key_exchange)) {
-    QUIC_RESTART_FLAG_COUNT(quic_use_async_key_exchange);
-    auto cb = QuicMakeUnique<ProcessClientHelloAfterGetProofCallback>(
-        this, std::move(proof_source_details), key_exchange->GetFactory(),
-        std::move(out), public_value, validate_chlo_result, connection_id,
-        client_address, supported_versions, clock, rand, params, signed_config,
-        requested_config, primary_config, std::move(done_cb));
-    key_exchange->CalculateSharedKey(
-        public_value, &params->initial_premaster_secret, std::move(cb));
-  } else {
-    found_error = !key_exchange->CalculateSharedKey(
-        public_value, &params->initial_premaster_secret);
-    ProcessClientHelloAfterCalculateSharedKeys(
-        found_error, std::move(proof_source_details),
-        key_exchange->GetFactory(), std::move(out), public_value,
-        *validate_chlo_result, connection_id, client_address,
-        supported_versions, clock, rand, params, signed_config,
-        requested_config, primary_config, std::move(done_cb));
-  }
+  auto cb = QuicMakeUnique<ProcessClientHelloAfterGetProofCallback>(
+      this, std::move(proof_source_details), key_exchange->GetFactory(),
+      std::move(out), public_value, validate_chlo_result, connection_id,
+      client_address, supported_versions, clock, rand, params, signed_config,
+      requested_config, primary_config, std::move(done_cb));
+  key_exchange->CalculateSharedKey(
+      public_value, &params->initial_premaster_secret, std::move(cb));
 }
 
 void QuicCryptoServerConfig::ProcessClientHelloAfterCalculateSharedKeys(
@@ -1392,7 +1385,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   const CryptoHandshakeMessage& client_hello = client_hello_state->client_hello;
   ClientHelloInfo* info = &(client_hello_state->info);
 
-  if (client_hello.size() < kClientHelloMinimumSize) {
+  if (validate_chlo_size_ && client_hello.size() < kClientHelloMinimumSize) {
     helper.ValidationComplete(QUIC_CRYPTO_INVALID_VALUE_LENGTH,
                               "Client hello too small", nullptr);
     return;
@@ -1408,22 +1401,27 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   client_hello.GetStringPiece(kUAID, &info->user_agent_id);
 
   HandshakeFailureReason source_address_token_error = MAX_FAILURE_REASON;
-  QuicStringPiece srct;
-  if (client_hello.GetStringPiece(kSourceAddressTokenTag, &srct)) {
-    Config& config =
-        requested_config != nullptr ? *requested_config : *primary_config;
-    source_address_token_error =
-        ParseSourceAddressToken(config, srct, &info->source_address_tokens);
+  if (validate_source_address_token_) {
+    QuicStringPiece srct;
+    if (client_hello.GetStringPiece(kSourceAddressTokenTag, &srct)) {
+      Config& config =
+          requested_config != nullptr ? *requested_config : *primary_config;
+      source_address_token_error =
+          ParseSourceAddressToken(config, srct, &info->source_address_tokens);
 
-    if (source_address_token_error == HANDSHAKE_OK) {
-      source_address_token_error = ValidateSourceAddressTokens(
-          info->source_address_tokens, info->client_ip, info->now,
-          &client_hello_state->cached_network_params);
+      if (source_address_token_error == HANDSHAKE_OK) {
+        source_address_token_error = ValidateSourceAddressTokens(
+            info->source_address_tokens, info->client_ip, info->now,
+            &client_hello_state->cached_network_params);
+      }
+      info->valid_source_address_token =
+          (source_address_token_error == HANDSHAKE_OK);
+    } else {
+      source_address_token_error = SOURCE_ADDRESS_TOKEN_INVALID_FAILURE;
     }
-    info->valid_source_address_token =
-        (source_address_token_error == HANDSHAKE_OK);
   } else {
-    source_address_token_error = SOURCE_ADDRESS_TOKEN_INVALID_FAILURE;
+    source_address_token_error = HANDSHAKE_OK;
+    info->valid_source_address_token = true;
   }
 
   if (!requested_config.get()) {
@@ -1719,8 +1717,22 @@ void QuicCryptoServerConfig::BuildRejection(
     out->SetStringPiece(kPROF, signed_config.proof.signature);
     if (should_return_sct) {
       if (cert_sct.empty()) {
-        QUIC_LOG_EVERY_N_SEC(WARNING, 60)
-            << "SCT is expected but it is empty. sni :" << params->sni;
+        if (!GetQuicReloadableFlag(quic_log_cert_name_for_empty_sct)) {
+          QUIC_LOG_EVERY_N_SEC(WARNING, 60)
+              << "SCT is expected but it is empty. sni :" << params->sni;
+        } else {
+          // Log SNI and subject name for the leaf cert if its SCT is empty.
+          // This is for debugging b/28342827.
+          const std::vector<quic::QuicString>& certs =
+              signed_config.chain->certs;
+          QuicStringPiece ca_subject;
+          if (!certs.empty()) {
+            QuicCertUtils::ExtractSubjectNameFromDERCert(certs[0], &ca_subject);
+          }
+          QUIC_LOG_EVERY_N_SEC(WARNING, 60)
+              << "SCT is expected but it is empty. sni: '" << params->sni
+              << "' cert subject: '" << ca_subject << "'";
+        }
       } else {
         out->SetStringPiece(kCertificateSCTTag, cert_sct);
       }

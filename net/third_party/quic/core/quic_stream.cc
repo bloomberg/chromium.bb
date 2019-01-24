@@ -293,12 +293,15 @@ void QuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
       (kMaxStreamLength - frame.offset < frame.data_length);
   if (is_stream_too_long) {
     // Close connection if stream becomes too long.
-    QUIC_PEER_BUG
-        << "Receive stream frame reaches max stream length. frame offset "
-        << frame.offset << " length " << frame.data_length;
+    QUIC_PEER_BUG << "Receive stream frame on stream " << id_
+                  << " reaches max stream length. frame offset " << frame.offset
+                  << " length " << frame.data_length << ". "
+                  << sequencer_.DebugString();
     CloseConnectionWithDetails(
         QUIC_STREAM_LENGTH_OVERFLOW,
-        "Peer sends more data than allowed on this stream.");
+        QuicStrCat("Peer sends more data than allowed on stream ", id_,
+                   ". frame: offset = ", frame.offset, ", length = ",
+                   frame.data_length, ". ", sequencer_.DebugString()));
     return;
   }
   if (frame.fin) {
