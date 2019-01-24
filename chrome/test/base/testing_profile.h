@@ -246,7 +246,9 @@ class TestingProfile : public Profile {
       const base::FilePath& partition_path) override;
 #endif  // !defined(OS_ANDROID)
   scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() override;
-  bool IsOffTheRecord() const override;
+  // Do not override IsOffTheRecord to turn a normal profile into an incognito
+  // profile dynamically.
+  bool IsOffTheRecord() const final;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   content::ResourceContext* GetResourceContext() override;
   content::BrowserPluginGuestManager* GetGuestManager() override;
