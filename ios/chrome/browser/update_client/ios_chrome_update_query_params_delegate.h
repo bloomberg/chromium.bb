@@ -16,7 +16,7 @@ class IOSChromeUpdateQueryParamsDelegate
   IOSChromeUpdateQueryParamsDelegate();
   ~IOSChromeUpdateQueryParamsDelegate() override;
 
-  // Gets the LazyInstance for IOSChromeUpdateQueryParamsDelegate.
+  // Gets the instance for IOSChromeUpdateQueryParamsDelegate.
   static IOSChromeUpdateQueryParamsDelegate* GetInstance();
 
   // update_client::UpdateQueryParamsDelegate:
