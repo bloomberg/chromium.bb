@@ -1011,9 +1011,9 @@ TEST_F('CrSettingsCertificateManagerTest', 'All', function() {
 
 GEN('#endif  // defined(USE_NSS_CERTS)');
 
-GEN('#if defined(GOOGLE_CHROME_BUILD)');
 /**
- * Test fixture for chrome/browser/resources/settings/privacy_page/.
+ * Test fixture for
+ * chrome/browser/resources/settings/privacy_page/personalization_options.html.
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */
@@ -1035,14 +1035,19 @@ CrSettingsPersonalizationOptionsTest.prototype = {
   ]),
 };
 
+TEST_F('CrSettingsPersonalizationOptionsTest', 'AllBuilds', function() {
+  mocha.grep('PersonalizationOptionsTests_AllBuilds').run();
+});
 
+GEN('#if defined(GOOGLE_CHROME_BUILD)');
 TEST_F('CrSettingsPersonalizationOptionsTest', 'OfficialBuild', function() {
-  mocha.run();
+  mocha.grep('PersonalizationOptionsTests_OfficialBuild').run();
 });
 GEN('#endif');
 
 /**
- * Test fixture for chrome/browser/resources/settings/privacy_page/.
+ * Test fixture for
+ * chrome/browser/resources/settings/privacy_page/privacy_page.html.
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */

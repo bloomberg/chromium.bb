@@ -133,14 +133,6 @@ Polymer({
           'syncStatus.hasError, syncStatus.statusAction)',
     },
 
-    /** @private */
-    driveSuggestAvailable_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('driveSuggestAvailable');
-      }
-    },
-
     // <if expr="not chromeos">
     diceEnabled: Boolean,
     // </if>
@@ -541,6 +533,15 @@ Polymer({
   /** @private */
   onSyncAdvancedTap_: function() {
     settings.navigateTo(settings.routes.SYNC_ADVANCED);
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowDriveSuggest_: function() {
+    return loadTimeData.getBoolean('driveSuggestAvailable') &&
+        !this.unifiedConsentEnabled;
   },
 });
 

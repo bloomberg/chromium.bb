@@ -82,6 +82,14 @@
         hidden="[[!showSpellCheckControl_(prefs.spellcheck.dictionaries)]]">
     </settings-toggle-button>
 </if><!-- _google_chrome -->
+    <template is="dom-if" if="[[shouldShowDriveSuggest_(unifiedConsentEnabled,
+        syncStatus, syncStatus.signedIn, syncStatus.statusAction)]]" restamp>
+      <settings-toggle-button id="driveSuggestControl"
+          pref="{{prefs.documentsuggest.enabled}}"
+          label="$i18n{driveSuggestPref}"
+          sub-label="$i18n{driveSuggestPrefDesc}">
+      </settings-toggle-button>
+    </template>
   </template>
   <script src="personalization_options.js"></script>
 </dom-module>

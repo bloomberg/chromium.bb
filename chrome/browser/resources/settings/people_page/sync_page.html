@@ -218,7 +218,8 @@
             </div>
           </template>
 
-          <template is="dom-if" if="[[driveSuggestAvailable_]]">
+          <template is="dom-if"
+              if="[[shouldShowDriveSuggest_(unifiedConsentEnabled)]]" restamp>
             <settings-toggle-button
                 class$="[[getListItemClass_(unifiedConsentEnabled)]]"
                 pref="{{prefs.documentsuggest.enabled}}"
@@ -325,7 +326,7 @@
         <h2>$i18n{nonPersonalizedServicesSectionLabel}</h2>
       </div>
       <settings-personalization-options class="list-frame" prefs="{{prefs}}"
-          page-visibility="[[pageVisibility]]"
+          page-visibility="[[pageVisibility]]" sync-status="[[syncStatus]]"
           unified-consent-enabled="[[unifiedConsentEnabled]]">
       </settings-personalization-options>
     </template>
