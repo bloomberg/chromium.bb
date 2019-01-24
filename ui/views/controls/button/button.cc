@@ -516,7 +516,7 @@ Button::Button(ButtonListener* listener)
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   SetProperty(kIsButtonProperty, true);
   hover_animation_.SetSlideDuration(kHoverFadeDurationMs);
-  SetInstallFocusRingOnFocus(PlatformStyle::kPreferFocusRings);
+  SetInstallFocusRingOnFocus(true);
 }
 
 Button::KeyClickAction Button::GetKeyClickActionForEvent(
