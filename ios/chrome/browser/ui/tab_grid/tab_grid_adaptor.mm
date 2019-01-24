@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_adaptor.h"
 
-#import "base/logging.h"
+#include "base/logging.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/main/view_controller_swapping.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_paging.h"

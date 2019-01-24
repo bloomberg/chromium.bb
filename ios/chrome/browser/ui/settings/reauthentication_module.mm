@@ -5,7 +5,7 @@
 
 #import <LocalAuthentication/LocalAuthentication.h>
 
-#import "base/logging.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 

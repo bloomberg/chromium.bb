@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/translate/language_selection_view_controller.h"
 
-#import "base/logging.h"
+#include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/translate/language_selection_provider.h"
 

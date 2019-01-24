@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_view_controller.h"
 
 #include "base/ios/block_types.h"
-#import "base/logging.h"
+#include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"

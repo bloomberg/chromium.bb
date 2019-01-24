@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/translate/language_selection_coordinator.h"
 
-#import "base/logging.h"
+#include "base/logging.h"
 #import "ios/chrome/browser/translate/language_selection_delegate.h"
 #import "ios/chrome/browser/translate/language_selection_handler.h"
 #import "ios/chrome/browser/ui/presenters/contained_presenter.h"

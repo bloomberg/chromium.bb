@@ -8,7 +8,7 @@
 #error "This file requires ARC support."
 #endif
 
-#import "base/logging.h"
+#include "base/logging.h"
 
 @implementation GridItem
 

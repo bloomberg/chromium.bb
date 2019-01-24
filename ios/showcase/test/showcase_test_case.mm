@@ -6,7 +6,7 @@
 
 #import <EarlGrey/EarlGrey.h>
 
-#import "base/logging.h"
+#include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #import "ios/showcase/core/app_delegate.h"
 #include "testing/coverage_util_ios.h"

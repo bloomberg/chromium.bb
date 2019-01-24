@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 
-#import "base/logging.h"
+#include "base/logging.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
