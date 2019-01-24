@@ -718,6 +718,54 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
                                     0);
 }
 
+class RemoteFrameNavigationBrowserTest
+    : public AdsPageLoadMetricsObserverResourceBrowserTest {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII("enable-blink-features",
+                                    "BlockingDownloadsInSandbox");
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(RemoteFrameNavigationBrowserTest,
+                       DownloadsBlockedInSandbox) {
+  embedded_test_server()->ServeFilesFromSourceDirectory(
+      "chrome/test/data/ad_tagging");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  base::HistogramTester histogram_tester;
+  std::string origin1 = "foo.com";
+  std::string origin2 = "bar.com";
+  GURL tab1_url =
+      embedded_test_server()->GetURL(origin1, "/frame_factory.html");
+
+  auto subframe_navigation_waiter =
+      std::make_unique<page_load_metrics::PageLoadMetricsTestWaiter>(
+          web_contents());
+  subframe_navigation_waiter->AddSubframeNavigationExpectation(2);
+
+  ui_test_utils::NavigateToURL(browser(), tab1_url);
+
+  std::string subframe_url =
+      embedded_test_server()->GetURL(origin2, "/frame_factory.html").spec();
+  content::TestNavigationObserver new_subframe_waiter(web_contents());
+  std::string script =
+      base::StringPrintf("createFrame('%s','test','');", subframe_url.c_str());
+  web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::ASCIIToUTF16(script));
+  new_subframe_waiter.Wait();
+
+  GURL dld_url = embedded_test_server()->GetURL(origin1, "/allow.zip");
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
+      web_contents(),
+      "document.getElementById('test').src = \"" + dld_url.spec() + "\";"));
+
+  subframe_navigation_waiter->Wait();
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  histogram_tester.ExpectTotalCount("Download.Subframe.SandboxOriginAdGesture",
+                                    0 /* expected_count */);
+}
+
 class MainFrameDownloadFlagsBrowserTest
     : public AdsPageLoadMetricsObserverResourceBrowserTest,
       public ::testing::WithParamInterface<
@@ -941,6 +989,10 @@ IN_PROC_BROWSER_TEST_P(SubframeDownloadDownloadFlagsBrowserTest, Download) {
       browser()->tab_strip_model()->GetActiveWebContents();
 
   std::unique_ptr<AdsPageLoadMetricsTestWaiter> waiter;
+  if (origin == Origin::kNavigation) {
+    waiter = std::make_unique<AdsPageLoadMetricsTestWaiter>(contents);
+    waiter->AddSubframeNavigationExpectation(2);
+  }
   if (expected_download && is_ad_frame) {
     if (!waiter)
       waiter = std::make_unique<AdsPageLoadMetricsTestWaiter>(contents);

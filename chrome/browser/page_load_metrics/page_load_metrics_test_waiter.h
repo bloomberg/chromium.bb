@@ -45,6 +45,9 @@ class PageLoadMetricsTestWaiter
   // Add a single WebFeature expectation.
   void AddWebFeatureExpectation(blink::mojom::WebFeature web_feature);
 
+  // Add number of subframe navigations expectation.
+  void AddSubframeNavigationExpectation(size_t expected_subframe_navigations);
+
   // Add a minimum completed resource expectation.
   void AddMinimumCompleteResourcesExpectation(
       int expected_minimum_complete_resources);
@@ -104,6 +107,9 @@ class PageLoadMetricsTestWaiter
         content::RenderFrameHost* rfh,
         const page_load_metrics::mojom::PageLoadFeatures&,
         const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+
+    void OnDidFinishSubFrameNavigation(
+        content::NavigationHandle* navigation_handle) override;
 
    private:
     const base::WeakPtr<PageLoadMetricsTestWaiter> waiter_;
@@ -173,6 +179,9 @@ class PageLoadMetricsTestWaiter
                                const mojom::PageLoadFeatures& features,
                                const PageLoadExtraInfo& extra_info);
 
+  void OnDidFinishSubFrameNavigation(
+      content::NavigationHandle* navigation_handle);
+
   void OnTrackerCreated(page_load_metrics::PageLoadTracker* tracker) override;
 
   void OnCommit(page_load_metrics::PageLoadTracker* tracker) override;
@@ -181,16 +190,20 @@ class PageLoadMetricsTestWaiter
 
   bool WebFeaturesExpectationsSatisfied() const;
 
+  bool SubframeNavigationExpectationsSatisfied() const;
+
   std::unique_ptr<base::RunLoop> run_loop_;
 
   TimingFieldBitSet page_expected_fields_;
   TimingFieldBitSet subframe_expected_fields_;
   std::bitset<static_cast<size_t>(blink::mojom::WebFeature::kNumberOfFeatures)>
       expected_web_features_;
+  size_t expected_subframe_navigations_ = 0;
 
   TimingFieldBitSet observed_page_fields_;
   std::bitset<static_cast<size_t>(blink::mojom::WebFeature::kNumberOfFeatures)>
       observed_web_features_;
+  size_t observed_subframe_navigations_ = 0;
 
   int current_complete_resources_ = 0;
   int64_t current_network_bytes_ = 0;
