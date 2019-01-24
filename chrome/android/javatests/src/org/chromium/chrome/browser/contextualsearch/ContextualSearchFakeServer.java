@@ -32,6 +32,7 @@ import java.util.concurrent.TimeoutException;
 @VisibleForTesting
 class ContextualSearchFakeServer
         implements ContextualSearchNetworkCommunicator, OverlayPanelContentFactory {
+    static final long LOGGED_EVENT_ID = 2 ^ 50; // Arbitrary value larger than 32 bits.
 
     private final ContextualSearchPolicy mPolicy;
 
@@ -181,6 +182,7 @@ class ContextualSearchFakeServer
         private final String mCaption;
         private final String mQuickActionUri;
         private final int mQuickActionCategory;
+        private final long mLoggedEventId;
 
         boolean mDidStartResolution;
         boolean mDidFinishResolution;
@@ -201,12 +203,15 @@ class ContextualSearchFakeServer
          * @param caption               The caption to display.
          * @param quickActionUri        The URI for the intent associated with the quick action.
          * @param quickActionCategory   The category for the quick action.
+         * @param loggedEventId         The EventID logged by the server, which should be recorded
+         *                              and sent back to the server along with user action results
+         *                              in a subsequent request.
          */
         FakeTapSearch(String nodeId, boolean isNetworkUnavailable, int responseCode,
                 String searchTerm, String displayText, String alternateTerm, String mid,
                 boolean doPreventPreload, int startAdjust, int endAdjust, String contextLanguage,
-                String thumbnailUrl, String caption, String quickActionUri,
-                int quickActionCategory) {
+                String thumbnailUrl, String caption, String quickActionUri, int quickActionCategory,
+                long loggedEventId) {
             super(nodeId);
 
             mIsNetworkUnavailable = isNetworkUnavailable;
@@ -223,6 +228,21 @@ class ContextualSearchFakeServer
             mCaption = caption;
             mQuickActionUri = quickActionUri;
             mQuickActionCategory = quickActionCategory;
+            mLoggedEventId = loggedEventId;
+        }
+
+        /**
+         * @param nodeId                The id of the node where the touch event will be simulated.
+         * @param isNetworkUnavailable  Whether the network is unavailable.
+         * @param responseCode          The HTTP response code of the resolution.
+         * @param searchTerm            The resolved search term.
+         * @param displayText           The display text.
+         */
+        FakeTapSearch(String nodeId, boolean isNetworkUnavailable, int responseCode,
+                String searchTerm, String displayText) {
+            this(nodeId, isNetworkUnavailable, responseCode, searchTerm, displayText,
+                    "alternate-term", "", false, -7, 0, "", "", "", "", QuickActionCategory.NONE,
+                    0L);
         }
 
         @Override
@@ -295,7 +315,7 @@ class ContextualSearchFakeServer
                         handleSearchTermResolutionResponse(mIsNetworkUnavailable, mResponseCode,
                                 mSearchTerm, mDisplayText, mAlternateTerm, mMid, mDoPreventPreload,
                                 mStartAdjust, mEndAdjust, mContextLanguage, mThumbnailUrl, mCaption,
-                                mQuickActionUri, mQuickActionCategory);
+                                mQuickActionUri, mQuickActionCategory, mLoggedEventId);
 
                         mActiveFakeTapSearch = null;
                         mDidFinishResolution = true;
@@ -333,11 +353,11 @@ class ContextualSearchFakeServer
         FakeSlowResolveSearch(String nodeId, boolean isNetworkUnavailable, int responseCode,
                 String searchTerm, String displayText, String alternateTerm, String mid,
                 boolean doPreventPreload, int startAdjust, int endAdjust, String contextLanguage,
-                String thumbnailUrl, String caption, String quickActionUri,
-                int quickActionCategory) {
+                String thumbnailUrl, String caption, String quickActionUri, int quickActionCategory,
+                long loggedEventId) {
             super(nodeId, isNetworkUnavailable, responseCode, searchTerm, displayText,
                     alternateTerm, mid, doPreventPreload, startAdjust, endAdjust, contextLanguage,
-                    thumbnailUrl, caption, quickActionUri, quickActionCategory);
+                    thumbnailUrl, caption, quickActionUri, quickActionCategory, loggedEventId);
         }
 
         @Override
@@ -563,11 +583,11 @@ class ContextualSearchFakeServer
             String searchTerm, String displayText, String alternateTerm, String mid,
             boolean doPreventPreload, int selectionStartAdjust, int selectionEndAdjust,
             String contextLanguage, String thumbnailUrl, String caption, String quickActionUri,
-            int quickActionCategory) {
+            int quickActionCategory, long loggedEventId) {
         mBaseManager.handleSearchTermResolutionResponse(isNetworkUnavailable, responseCode,
                 searchTerm, displayText, alternateTerm, mid, doPreventPreload, selectionStartAdjust,
                 selectionEndAdjust, contextLanguage, thumbnailUrl, caption, quickActionUri,
-                quickActionCategory);
+                quickActionCategory, loggedEventId);
     }
 
     @Override
@@ -612,26 +632,27 @@ class ContextualSearchFakeServer
         registerFakeLongPressSearch(new FakeLongPressSearch("term", "Term"));
         registerFakeLongPressSearch(new FakeLongPressSearch("resolution", "Resolution"));
 
-        registerFakeTapSearch(new FakeTapSearch("search", false, 200, "Search", "Search",
-                "alternate-term", "", false, 0, 0, "", "", "", "", QuickActionCategory.NONE));
-        registerFakeTapSearch(new FakeTapSearch("term", false, 200, "Term", "Term",
-                "alternate-term", "", false, 0, 0, "", "", "", "", QuickActionCategory.NONE));
-        registerFakeTapSearch(new FakeTapSearch("resolution", false, 200, "Resolution",
-                "Resolution", "alternate-term", "", false, 0, 0, "", "", "", "",
-                QuickActionCategory.NONE));
+        registerFakeTapSearch(new FakeTapSearch("search", false, 200, "Search", "Search"));
+        registerFakeTapSearch(new FakeTapSearch("term", false, 200, "Term", "Term"));
+        registerFakeTapSearch(
+                new FakeTapSearch("resolution", false, 200, "Resolution", "Resolution"));
         registerFakeTapSearch(new FakeTapSearch("german", false, 200, "Deutsche", "Deutsche",
-                "alternate-term", "", false, 0, 0, "de", "", "", "", QuickActionCategory.NONE));
-        registerFakeTapSearch(new FakeTapSearch("intelligence", false, 200, "Intelligence",
-                "Intelligence", "alternate-term", "", false, 0, 0, "", "", "", "",
-                QuickActionCategory.NONE));
+                "alternate-term", "", false, 0, 0, "de", "", "", "", QuickActionCategory.NONE, 0));
+        registerFakeTapSearch(
+                new FakeTapSearch("intelligence", false, 200, "Intelligence", "Intelligence"));
+
+        // Register a fake tap search that will fake a logged event ID from the server.
+        registerFakeTapSearch(new FakeTapSearch("intelligence-logged-event-id", false, 200,
+                "Intelligence", "Intelligence", "alternate-term", "", false, 0, 0, "", "", "", "",
+                QuickActionCategory.NONE, LOGGED_EVENT_ID));
 
         // Register a resolving search of "States" that expands to "United States".
         registerFakeSlowResolveSearch(new FakeSlowResolveSearch("states", false, 200, "States",
                 "States", "alternate-term", "", false, -7, 0, "", "", "", "",
-                QuickActionCategory.NONE));
+                QuickActionCategory.NONE, 0));
         registerFakeSlowResolveSearch(new FakeSlowResolveSearch("search", false, 200, "Search",
                 "Search", "alternate-term", "", false, 0, 0, "", "", "", "",
-                QuickActionCategory.NONE));
+                QuickActionCategory.NONE, 0));
     }
 
     /**

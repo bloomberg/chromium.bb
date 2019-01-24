@@ -44,7 +44,9 @@ struct ContextualSearchContext {
       JNIEnv* env,
       jobject obj,
       const base::android::JavaParamRef<jstring>& j_home_country,
-      jboolean j_may_send_base_page_url);
+      jboolean j_may_send_base_page_url,
+      jlong j_previous_event_id,
+      jint j_previous_event_results);
 
   // Adjust the current selection offsets by the given signed amounts.
   void AdjustSelection(JNIEnv* env,
@@ -81,6 +83,9 @@ struct ContextualSearchContext {
   // characters).
   int GetEndOffset() const;
 
+  int64_t GetPreviousEventId() const;
+  int GetPreviousEventResults() const;
+
   // Detects the language of the context using CLD from the translate utility.
   base::android::ScopedJavaLocalRef<jstring> DetectLanguage(
       JNIEnv* env,
@@ -99,6 +104,8 @@ struct ContextualSearchContext {
   base::string16 surrounding_text;
   int start_offset;
   int end_offset;
+  int64_t previous_event_id;
+  int previous_event_results;
 
   // The linked Java object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
