@@ -369,6 +369,12 @@ void TestingProfile::Init() {
 
   set_is_guest_profile(guest_session_);
 
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  if (profile_manager) {
+    set_is_system_profile(profile_path_ ==
+                          profile_manager->GetSystemProfilePath());
+  }
+
   BrowserContext::Initialize(this, profile_path_);
 
 #if defined(OS_ANDROID)
