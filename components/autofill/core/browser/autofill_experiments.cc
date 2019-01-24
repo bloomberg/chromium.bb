@@ -29,26 +29,6 @@
 namespace autofill {
 
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-namespace {
-// Returns the font weight corresponding to the value of param
-// kAutofillForcedFontWeightParameterName, or kDefault if the param is not
-// valid.
-ForcedFontWeight GetFontWeightFromParam() {
-  std::string param = base::GetFieldTrialParamValueByFeature(
-      kAutofillPrimaryInfoStyleExperiment,
-      kAutofillForcedFontWeightParameterName);
-
-  if (param == kAutofillForcedFontWeightParameterMedium)
-    return ForcedFontWeight::kMedium;
-  if (param == kAutofillForcedFontWeightParameterBold)
-    return ForcedFontWeight::kBold;
-
-  return ForcedFontWeight::kDefault;
-}
-}  // namespace
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 const base::Feature kAutofillDropdownLayoutExperiment{
     "AutofillDropdownLayout", base::FEATURE_DISABLED_BY_DEFAULT};
 const char kAutofillDropdownLayoutParameterName[] = "variant";
@@ -56,14 +36,6 @@ const char kAutofillDropdownLayoutParameterLeadingIcon[] = "leading-icon";
 const char kAutofillDropdownLayoutParameterTrailingIcon[] = "trailing-icon";
 const char kAutofillDropdownLayoutParameterTwoLinesLeadingIcon[] =
     "two-lines-leading-icon";
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-const base::Feature kAutofillPrimaryInfoStyleExperiment{
-    "AutofillPrimaryInfoStyleExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
-const char kAutofillForcedFontWeightParameterName[] = "font_weight";
-const char kAutofillForcedFontWeightParameterMedium[] = "medium";
-const char kAutofillForcedFontWeightParameterBold[] = "bold";
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
 bool IsCreditCardUploadEnabled(const PrefService* pref_service,
@@ -208,17 +180,6 @@ bool ShouldUseActiveSignedInAccount() {
          base::FeatureList::IsEnabled(
              features::kAutofillGetPaymentsIdentityFromSync);
 }
-
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-ForcedFontWeight GetForcedFontWeight() {
-  if (!base::FeatureList::IsEnabled(kAutofillPrimaryInfoStyleExperiment))
-    return ForcedFontWeight::kDefault;
-
-  // Only read the feature param's value the first time it's needed.
-  static ForcedFontWeight font_weight_from_param = GetFontWeightFromParam();
-  return font_weight_from_param;
-}
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 ForcedPopupLayoutState GetForcedPopupLayoutState() {

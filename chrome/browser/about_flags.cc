@@ -751,22 +751,6 @@ const FeatureEntry::FeatureVariation kAutofillPreviewStyleVariations[] = {
      base::size(kAutofillPreviewStyleBlackOnYellow050), nullptr}};
 
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-const FeatureEntry::FeatureParam kAutofillPrimaryInfoStyleMedium[] = {
-    {autofill::kAutofillForcedFontWeightParameterName,
-     autofill::kAutofillForcedFontWeightParameterMedium},
-};
-const FeatureEntry::FeatureParam kAutofillPrimaryInfoStyleBold[] = {
-    {autofill::kAutofillForcedFontWeightParameterName,
-     autofill::kAutofillForcedFontWeightParameterBold},
-};
-
-const FeatureEntry::FeatureVariation kAutofillPrimaryInfoStyleVariations[] = {
-    {"(medium)", kAutofillPrimaryInfoStyleMedium,
-     base::size(kAutofillPrimaryInfoStyleMedium), nullptr},
-    {"(bold)", kAutofillPrimaryInfoStyleBold,
-     base::size(kAutofillPrimaryInfoStyleBold), nullptr},
-};
-
 const FeatureEntry::FeatureParam kPedalSuggestionInSuggestion[] = {
     {OmniboxFieldTrial::kPedalSuggestionModeParam, "in_suggestion"}};
 const FeatureEntry::FeatureParam kPedalSuggestionDedicated[] = {
@@ -3701,17 +3685,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillCacheQueryResponsesName,
      flag_descriptions::kAutofillCacheQueryResponsesDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillCacheQueryResponses)},
-
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-    {"autofill-primary-info-style",
-     flag_descriptions::kAutofillPrimaryInfoStyleExperimentName,
-     flag_descriptions::kAutofillPrimaryInfoStyleExperimentDescription,
-     kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         autofill::kAutofillPrimaryInfoStyleExperiment,
-         kAutofillPrimaryInfoStyleVariations,
-         "AutofillPrimaryInfoStyleExperiment")},
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
     {"autofill-enable-company-name",
      flag_descriptions::kAutofillEnableCompanyNameName,

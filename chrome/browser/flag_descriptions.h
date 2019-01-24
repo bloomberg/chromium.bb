@@ -1668,9 +1668,6 @@ extern const char kAccountConsistencyChoiceDice[];
 extern const char kAutofillDropdownLayoutName[];
 extern const char kAutofillDropdownLayoutDescription[];
 
-extern const char kAutofillPrimaryInfoStyleExperimentName[];
-extern const char kAutofillPrimaryInfoStyleExperimentDescription[];
-
 extern const char kDoodlesOnLocalNtpName[];
 extern const char kDoodlesOnLocalNtpDescription[];
 
