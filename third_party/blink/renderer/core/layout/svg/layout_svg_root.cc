@@ -210,6 +210,7 @@ void LayoutSVGRoot::UpdateLayout() {
   }
 
   const auto& old_overflow_rect = VisualOverflowRect();
+  ClearSelfNeedsLayoutOverflowRecalc();
   ClearLayoutOverflow();
 
   // The scale of one or more of the SVG elements may have changed, content
