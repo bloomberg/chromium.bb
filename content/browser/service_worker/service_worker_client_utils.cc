@@ -128,8 +128,6 @@ blink::mojom::ServiceWorkerClientInfoPtr GetWindowClientInfoOnUI(
   // for a frame that is actually being navigated and isn't exactly what we are
   // expecting.
   PageVisibilityState visibility = render_frame_host->GetVisibilityState();
-  // Service workers do no prerender, this would be an invalid visibility state.
-  DCHECK_NE(visibility, PageVisibilityState::kPrerender);
   bool page_hidden = visibility != PageVisibilityState::kVisible;
   return blink::mojom::ServiceWorkerClientInfo::New(
       render_frame_host->GetLastCommittedURL(),
