@@ -35,6 +35,18 @@ cast_source_set("net") {
     "//components/proxy_config",
     "//net",
   ]
+
+  if (is_fuchsia) {
+    sources += [
+      "network_change_notifier_factory_fuchsia.cc",
+      "network_change_notifier_factory_fuchsia.h",
+    ]
+
+    deps += [
+      "//chromecast/base:chromecast_switches",
+      "//third_party/fuchsia-sdk/sdk:hardware_ethernet",
+    ]
+  }
 }
 
 cast_source_set("small_message_socket") {

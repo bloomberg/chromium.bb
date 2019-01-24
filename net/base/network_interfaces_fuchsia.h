@@ -7,6 +7,8 @@
 
 #include <vector>
 
+#include "net/base/network_change_notifier.h"
+
 namespace fuchsia {
 namespace net {
 class IpAddress;
@@ -22,6 +24,12 @@ class IPAddress;
 struct NetworkInterface;
 
 namespace internal {
+
+// Returns the //net ConnectionType for the supplied netstack interface
+// description. Returns ConnectionType::CONNECTION_NONE if the interface is not
+// "up".
+NetworkChangeNotifier::ConnectionType ConvertConnectionType(
+    const fuchsia::netstack::NetInterface& iface);
 
 // Converts a Fuchsia Netstack NetInterface object to NetworkInterface objects.
 // Interfaces with more than one IPv6 address will yield multiple
