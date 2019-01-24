@@ -17,14 +17,20 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.compat.ApiHelperForN;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.ui.widget.Toast;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Fallback {@link VrDelegate} implementation if the VR module is not available.
  */
 /* package */ class VrDelegateFallback extends VrDelegate {
+    /* package */ static final CachedMetrics
+            .BooleanHistogramSample ENTER_VR_BROWSER_WITHOUT_FEATURE_MODULE_METRIC =
+            new CachedMetrics.BooleanHistogramSample("VR.EnterVrBrowserWithoutFeatureModule");
     private static final String TAG = "VrDelegateFallback";
     private static final boolean DEBUG_LOGS = false;
     private static final String DEFAULT_VR_MODE_PACKAGE = "com.google.vr.vrcore";
@@ -143,10 +149,17 @@ import org.chromium.ui.widget.Toast;
             return;
         }
 
-        VrModuleProvider.installModule(this::onVrModuleInstallFinished);
+        // Flag whether enter VR flow is handled already.
+        AtomicBoolean enterVrHandled = new AtomicBoolean(false);
+
+        VrModuleProvider.installModule((success) -> {
+            if (enterVrHandled.getAndSet(true)) return;
+            onVrModuleInstallFinished(success);
+        });
 
         ThreadUtils.postOnUiThreadDelayed(() -> {
-            if (VrModuleProvider.isModuleInstalled()) return;
+            if (enterVrHandled.getAndSet(true)) return;
+            assert !VrModuleProvider.isModuleInstalled();
             onVrModuleInstallFailure(activity);
         }, WAITING_FOR_MODULE_TIMEOUT_MS);
     }
@@ -185,6 +198,8 @@ import org.chromium.ui.widget.Toast;
         }
         assert VrModuleProvider.isModuleInstalled();
 
+        ENTER_VR_BROWSER_WITHOUT_FEATURE_MODULE_METRIC.record(true);
+
         // We need native to enter VR. Enter VR flow will automatically continue once native is
         // loaded.
         if (!LibraryLoader.getInstance().isInitialized()) return;
@@ -198,6 +213,8 @@ import org.chromium.ui.widget.Toast;
     }
 
     private void onVrModuleInstallFailure(Activity activity) {
+        ENTER_VR_BROWSER_WITHOUT_FEATURE_MODULE_METRIC.record(false);
+
         // For SVR close Chrome. For standalones launch into 2D-in-VR (if that fails, close Chrome).
         if (bootsToVr()) {
             if (!setVrMode(activity, false)) {
