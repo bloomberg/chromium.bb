@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/content_paths.h"
+#include "content/shell/browser/shell_application_mac.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "ui/views_content_client/views_content_client.h"
 #include "ui/views_content_client/views_content_client_main_parts.h"
@@ -84,6 +85,15 @@ ViewsContentClientMainParts* ViewsContentClientMainParts::Create(
       new ViewsContentClientMainPartsMac(content_params, views_content_client);
 }
 
+// static
+void ViewsContentClientMainParts::PreCreateMainMessageLoop() {
+  // Simply instantiating an instance of ShellCrApplication serves to register
+  // it as the application class. Do make sure that no other code has done this
+  // first, though.
+  CHECK_EQ(NSApp, nil);
+  [ShellCrApplication sharedApplication];
+}
+
 }  // namespace ui
 
 @implementation ViewsContentClientAppController
@@ -113,6 +123,8 @@ ViewsContentClientMainParts* ViewsContentClientMainParts::Create(
                      action:@selector(terminate:)
               keyEquivalent:@"q"];
   [appMenuItem setSubmenu:appMenu];
+
+  CHECK([NSApp isKindOfClass:[ShellCrApplication class]]);
 
   task_.Run();
 }

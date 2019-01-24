@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "content/public/browser/context_factory.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "ui/base/ime/input_method_initializer.h"
@@ -24,6 +25,10 @@ ViewsContentClientMainParts::ViewsContentClientMainParts(
 
 ViewsContentClientMainParts::~ViewsContentClientMainParts() {
 }
+
+#if !defined(OS_MACOSX)
+void ViewsContentClientMainParts::PreCreateMainMessageLoop() {}
+#endif
 
 void ViewsContentClientMainParts::PreMainMessageLoopRun() {
   ui::MaterialDesignController::Initialize();
