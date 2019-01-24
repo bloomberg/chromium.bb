@@ -47,6 +47,14 @@ from pylib import constants
 constants.SetBuildType('Release')
 
 
+# Architecture specific GN args. Trying to build an orderfile for an
+# architecture not listed here will eventually throw.
+_ARCH_GN_ARGS = {
+    'arm': [ 'target_cpu = "arm"' ],
+    'arm64': [ 'target_cpu = "arm64"',
+               'android_64bit_browser = true'],
+}
+
 class CommandError(Exception):
   """Indicates that a dispatched shell command exited with a non-zero status."""
 
@@ -269,11 +277,11 @@ class ClankCompiler(object):
         'is_chrome_branded=true',
         'is_debug=false',
         'is_official_build=true',
-        'target_cpu="' + self._arch + '"',
         'target_os="android"',
         'use_goma=' + str(self._use_goma).lower(),
         'use_order_profiling=' + str(instrumented).lower(),
     ]
+    args += _ARCH_GN_ARGS[self._arch]
     if self._goma_dir:
       args += ['goma_dir="%s"' % self._goma_dir]
     if self._system_health_profiling:
@@ -779,8 +787,8 @@ def CreateArgumentParser():
       help='If true, the script only verifies the current orderfile')
   parser.add_argument('--target-arch', action='store', dest='arch',
                       default='arm',
-                      choices=['arm', 'arm64', 'x86', 'x86_64', 'x64', 'mips'],
-                      help='The target architecture for which to build')
+                      choices=['arm', 'arm64'],
+                      help='The target architecture for which to build.')
   parser.add_argument('--output-json', action='store', dest='json_file',
                       help='Location to save stats in json format')
   parser.add_argument(
