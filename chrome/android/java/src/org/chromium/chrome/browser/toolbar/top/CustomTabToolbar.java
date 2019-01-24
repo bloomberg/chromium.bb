@@ -780,18 +780,12 @@ public class CustomTabToolbar
     public void setAutocompleteProfile(Profile profile) {}
 
     @Override
-    void showAppMenuUpdateBadge() {}
-
-    @Override
     boolean isShowingAppMenuUpdateBadge() {
         return false;
     }
 
     @Override
     void removeAppMenuUpdateBadge(boolean animate) {}
-
-    @Override
-    void setAppMenuUpdateBadgeToVisible(boolean animate) {}
 
     @Override
     View getMenuButtonWrapper() {
@@ -811,13 +805,6 @@ public class CustomTabToolbar
             mCustomActionButtons.setLayoutParams(p);
         }
     }
-
-    // Temporary fix to override ToolbarLayout's highlight-related methods
-    @Override
-    void setMenuButtonHighlight(boolean highlight) {}
-
-    @Override
-    void setMenuButtonHighlightDrawable(boolean highlighting) {}
 
     @Override
     public int getUrlContainerMarginEnd() {

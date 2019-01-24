@@ -15,6 +15,7 @@ import android.widget.ImageButton;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.compositor.Invalidator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -417,6 +418,15 @@ public class TopToolbarCoordinator implements Toolbar {
     }
 
     /**
+     * @param provider The provider used to determine theme color.
+     */
+    public void setThemeColorProvider(ThemeColorProvider provider) {
+        final MenuButton menuButtonWrapper = getMenuButtonWrapper();
+        if (menuButtonWrapper == null) return;
+        menuButtonWrapper.setThemeColorProvider(provider);
+    }
+
+    /**
      * Gives inheriting classes the chance to update themselves based on default search engine
      * changes.
      */
@@ -528,7 +538,7 @@ public class TopToolbarCoordinator implements Toolbar {
 
     @Override
     public void showAppMenuUpdateBadge() {
-        mToolbarProvider.whenLoaded((toolbar) -> mToolbarLayout.showAppMenuUpdateBadge());
+        mToolbarProvider.whenLoaded((toolbar) -> mToolbarLayout.showAppMenuUpdateBadge(true));
     }
 
     @Override

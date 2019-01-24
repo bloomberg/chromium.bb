@@ -149,23 +149,22 @@ public class BrowsingModeBottomToolbarCoordinator {
         mTabSwitcherButtonCoordinator.setThemeColorProvider(themeColorProvider);
         mTabSwitcherButtonCoordinator.setTabCountProvider(tabCountProvider);
 
-        mMenuButton.setTouchListener(menuButtonHelper);
+        mMenuButton.setAppMenuButtonHelper(menuButtonHelper);
         mMenuButton.setThemeColorProvider(themeColorProvider);
-        mMenuButton.setAccessibilityDelegate(menuButtonHelper);
     }
 
     /**
      * Show the update badge over the bottom toolbar's app menu.
      */
     public void showAppMenuUpdateBadge() {
-        mMenuButton.setUpdateBadgeVisibilityIfValidState(true);
+        mMenuButton.showAppMenuUpdateBadge(true);
     }
 
     /**
      * Remove the update badge.
      */
     public void removeAppMenuUpdateBadge() {
-        mMenuButton.setUpdateBadgeVisibilityIfValidState(false);
+        mMenuButton.removeAppMenuUpdateBadge(true);
     }
 
     /**
