@@ -399,7 +399,7 @@ void UrlFetchRequestBase::OnResponseStarted(
 }
 
 // static
-bool UrlFetchRequestBase::WriteFileData(base::StringPiece string_piece,
+bool UrlFetchRequestBase::WriteFileData(std::string file_data,
                                         DownloadData* download_data) {
   if (!download_data->output_file.IsValid()) {
     download_data->output_file.Initialize(
@@ -408,8 +408,8 @@ bool UrlFetchRequestBase::WriteFileData(base::StringPiece string_piece,
     if (!download_data->output_file.IsValid())
       return false;
   }
-  if (download_data->output_file.WriteAtCurrentPos(string_piece.data(),
-                                                   string_piece.size()) == -1) {
+  if (download_data->output_file.WriteAtCurrentPos(file_data.data(),
+                                                   file_data.size()) == -1) {
     download_data->output_file.Close();
     return false;
   }
@@ -419,10 +419,9 @@ bool UrlFetchRequestBase::WriteFileData(base::StringPiece string_piece,
   // errors. The size limit is to avoid consuming too much redundant memory.
   const size_t kMaxStringSize = 1024 * 1024;
   if (download_data->response_body.size() < kMaxStringSize) {
-    size_t bytes_to_copy =
-        std::min(string_piece.size(),
-                 kMaxStringSize - download_data->response_body.size());
-    download_data->response_body.append(string_piece.data(), bytes_to_copy);
+    size_t bytes_to_copy = std::min(
+        file_data.size(), kMaxStringSize - download_data->response_body.size());
+    download_data->response_body.append(file_data.data(), bytes_to_copy);
   }
 
   return true;
@@ -456,7 +455,7 @@ void UrlFetchRequestBase::OnDataReceived(base::StringPiece string_piece,
     base::PostTaskAndReplyWithResult(
         blocking_task_runner(), FROM_HERE,
         base::BindOnce(&UrlFetchRequestBase::WriteFileData,
-                       std::move(string_piece), download_data_ptr),
+                       string_piece.as_string(), download_data_ptr),
         base::BindOnce(&UrlFetchRequestBase::OnWriteComplete,
                        weak_ptr_factory_.GetWeakPtr(),
                        std::move(download_data_), std::move(resume)));
