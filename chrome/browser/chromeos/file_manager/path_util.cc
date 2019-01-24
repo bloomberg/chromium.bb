@@ -166,7 +166,7 @@ bool MigratePathFromOldFormat(Profile* profile,
                               const base::FilePath& old_path,
                               base::FilePath* new_path) {
   const base::FilePath old_base = DownloadPrefs::GetDefaultDownloadDirectory();
-  const base::FilePath new_base = GetDownloadsFolderForProfile(profile);
+  const base::FilePath new_base = GetMyFilesFolderForProfile(profile);
 
   base::FilePath relative;
   if (old_path == old_base ||
