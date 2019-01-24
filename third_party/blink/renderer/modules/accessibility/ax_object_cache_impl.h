@@ -107,6 +107,8 @@ class MODULES_EXPORT AXObjectCacheImpl
   void HandleAttributeChanged(const QualifiedName& attr_name,
                               Element*) override;
   void HandleAutofillStateChanged(Element*, bool) override;
+  void HandleValidationMessageVisibilityChanged(
+      const Element* form_control) override;
   void HandleFocusedUIElementChanged(Node* old_focused_node,
                                      Node* new_focused_node) override;
   void HandleInitialFocus() override;
@@ -193,6 +195,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   void PostNotification(Node*, ax::mojom::Event);
   void PostNotification(AXObject*, ax::mojom::Event);
   void MarkAXObjectDirty(AXObject*, bool subtree);
+  void MarkElementDirty(const Element*, bool subtree);
 
   //
   // Aria-owns support.
@@ -228,6 +231,9 @@ class MODULES_EXPORT AXObjectCacheImpl
   // granted, it only applies to the next event received.
   void RequestAOMEventListenerPermission();
 
+  // For built-in HTML form validation messages.
+  AXObject* ValidationMessageObjectIfVisible();
+
  protected:
   void PostPlatformNotification(AXObject*, ax::mojom::Event);
   void LabelChanged(Element*);
@@ -248,6 +254,12 @@ class MODULES_EXPORT AXObjectCacheImpl
   int modification_count_;
 
   HashSet<AXID> ids_in_use_;
+
+  // Used for a mock AXObject representing the message displayed in the
+  // validation message bubble.
+  // There can be only one of these per document with invalid form controls,
+  // and it will always be related to the currently focused control.
+  AXID validation_message_axid_;
 
   std::unique_ptr<AXRelationCache> relation_cache_;
 
@@ -288,6 +300,9 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   // Must be called an entire subtree of accessible objects are no longer valid.
   void InvalidateTableSubtree(AXObject* subtree);
+
+  // Object for HTML validation alerts. Created at most once per object cache.
+  AXObject* GetOrCreateValidationMessageObject();
 
   // Whether the user has granted permission for the user to install event
   // listeners for accessibility events using the AOM.

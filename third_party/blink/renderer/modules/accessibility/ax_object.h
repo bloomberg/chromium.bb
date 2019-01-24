@@ -528,6 +528,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool IsTextControl() const { return false; }
   bool IsTextObject() const;
   bool IsTree() const { return RoleValue() == ax::mojom::Role::kTree; }
+  virtual bool IsValidationMessage() const { return false; }
   virtual bool IsVirtualObject() const { return false; }
   bool IsWebArea() const {
     return RoleValue() == ax::mojom::Role::kRootWebArea;
@@ -744,6 +745,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual String AriaAutoComplete() const { return String(); }
   virtual void AriaOwnsElements(AXObjectVector& owns) const {}
   virtual void AriaDescribedbyElements(AXObjectVector&) const {}
+  virtual AXObject* ErrorMessage() const { return nullptr; }
   virtual ax::mojom::HasPopup HasPopup() const {
     return ax::mojom::HasPopup::kFalse;
   }

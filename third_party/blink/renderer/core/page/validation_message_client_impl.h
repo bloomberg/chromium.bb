@@ -59,6 +59,7 @@ class ValidationMessageClientImpl final
   LocalFrameView* CurrentView();
   void HideValidationMessageImmediately(const Element& anchor);
   void Reset(TimerBase*);
+  void ValidationMessageVisibilityChanged(const Element& anchor);
 
   void ShowValidationMessage(const Element& anchor,
                              const String& message,

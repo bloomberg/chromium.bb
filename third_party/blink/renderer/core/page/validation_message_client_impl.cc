@@ -32,6 +32,7 @@
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/web/web_text_direction.h"
+#include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -88,6 +89,8 @@ void ValidationMessageClientImpl::ShowValidationMessage(
   overlay_ = FrameOverlay::Create(target_frame, std::move(delegate));
   bool success =
       target_frame->View()->UpdateLifecycleToCompositingCleanPlusScrolling();
+  ValidationMessageVisibilityChanged(anchor);
+
   // The lifecycle update should always succeed, because this is not inside
   // of a throttling scope.
   DCHECK(success);
@@ -124,6 +127,8 @@ void ValidationMessageClientImpl::HideValidationMessageImmediately(
 }
 
 void ValidationMessageClientImpl::Reset(TimerBase*) {
+  const Element& anchor = *current_anchor_;
+
   timer_ = nullptr;
   current_anchor_ = nullptr;
   message_ = String();
@@ -131,6 +136,14 @@ void ValidationMessageClientImpl::Reset(TimerBase*) {
   overlay_ = nullptr;
   overlay_delegate_ = nullptr;
   page_->GetChromeClient().UnregisterPopupOpeningObserver(this);
+  ValidationMessageVisibilityChanged(anchor);
+}
+
+void ValidationMessageClientImpl::ValidationMessageVisibilityChanged(
+    const Element& element) {
+  Document& document = element.GetDocument();
+  if (AXObjectCache* cache = document.ExistingAXObjectCache())
+    cache->HandleValidationMessageVisibilityChanged(&element);
 }
 
 bool ValidationMessageClientImpl::IsValidationMessageVisible(

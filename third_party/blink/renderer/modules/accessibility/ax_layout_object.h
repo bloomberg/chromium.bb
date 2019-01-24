@@ -207,6 +207,10 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   // For a table row or column.
   AXObject* HeaderObject() const override;
 
+  // The aria-errormessage object or native object from a validationMessage
+  // alert.
+  AXObject* ErrorMessage() const override;
+
  private:
   bool IsTabItemSelected() const;
   bool IsValidSelectionBound(const AXObject*) const;
@@ -224,6 +228,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   void AddRemoteSVGChildren();
   void AddTableChildren();
   void AddInlineTextBoxChildren(bool force);
+  void AddValidationMessageChild();
   ax::mojom::Role DetermineTableCellRole() const;
   ax::mojom::Role DetermineTableRowRole() const;
   bool FindAllTableCellsWithRole(ax::mojom::Role, AXObjectVector&) const;

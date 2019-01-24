@@ -2091,6 +2091,7 @@ void AXLayoutObject::AddChildren() {
   AddRemoteSVGChildren();
   AddTableChildren();
   AddInlineTextBoxChildren(false);
+  AddValidationMessageChild();
   AddAccessibleNodeChildren();
 
   for (const auto& child : children_) {
@@ -2779,6 +2780,30 @@ void AXLayoutObject::AddInlineTextBoxChildren(bool force) {
     if (!ax_object->AccessibilityIsIgnored())
       children_.push_back(ax_object);
   }
+}
+
+void AXLayoutObject::AddValidationMessageChild() {
+  if (!IsWebArea())
+    return;
+  AXObject* ax_object = AXObjectCache().ValidationMessageObjectIfVisible();
+  if (ax_object)
+    children_.push_back(ax_object);
+}
+
+AXObject* AXLayoutObject::ErrorMessage() const {
+  // Check for aria-errormessage.
+  Element* existing_error_message =
+      GetAOMPropertyOrARIAAttribute(AOMRelationProperty::kErrorMessage);
+  if (existing_error_message)
+    return AXObjectCache().GetOrCreate(existing_error_message);
+
+  // Check for visible validationMessage. This can only be visible for a focused
+  // control. Corollary: if there is a visible validationMessage alert box, then
+  // it is related to the current focus.
+  if (this != AXObjectCache().FocusedObject())
+    return nullptr;
+
+  return AXObjectCache().ValidationMessageObjectIfVisible();
 }
 
 void AXLayoutObject::LineBreaks(Vector<int>& line_breaks) const {

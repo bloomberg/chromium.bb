@@ -252,6 +252,7 @@ void DumpAccessibilityTreeTest::AddDefaultFilters(
   AddFilter(filters, "invalidState=false",
             Filter::DENY);  // Don't show false value
   AddFilter(filters, "roleDescription=*");
+  AddFilter(filters, "errormessageId=*");
 
   //
   // OS X
@@ -1271,6 +1272,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityForm) {
   RunHtmlTest(FILE_PATH_LITERAL("form.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityFormValidationMessage) {
+  RunHtmlTest(FILE_PATH_LITERAL("form-validation-message.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityFrameset) {
