@@ -70,18 +70,17 @@ static const char kDeviceTypeTablet[] = "tablet";
 
 // Gets the name and type of a device for the given sync client ID.
 // |name| and |type| are out parameters.
-void GetDeviceNameAndType(syncer::DeviceInfoSyncService* service,
+void GetDeviceNameAndType(const syncer::DeviceInfoTracker* tracker,
                           const std::string& client_id,
                           std::string* name,
                           std::string* type) {
   // DeviceInfoTracker must be syncing in order for remote history entries to
   // be available.
-  DCHECK(service);
-  DCHECK(service->GetDeviceInfoTracker());
-  DCHECK(service->GetDeviceInfoTracker()->IsSyncing());
+  DCHECK(tracker);
+  DCHECK(tracker->IsSyncing());
 
   std::unique_ptr<syncer::DeviceInfo> device_info =
-      service->GetDeviceInfoTracker()->GetDeviceInfo(client_id);
+      tracker->GetDeviceInfo(client_id);
   if (device_info.get()) {
     *name = device_info->client_name();
     switch (device_info->device_type()) {
@@ -138,7 +137,7 @@ std::unique_ptr<base::DictionaryValue> HistoryEntryToValue(
     const BrowsingHistoryService::HistoryEntry& entry,
     BookmarkModel* bookmark_model,
     SupervisedUserService* supervised_user_service,
-    syncer::DeviceInfoSyncService* service,
+    const syncer::DeviceInfoTracker* tracker,
     base::Clock* clock) {
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   SetHistoryEntryUrlAndTitle(entry, result.get());
@@ -202,7 +201,7 @@ std::unique_ptr<base::DictionaryValue> HistoryEntryToValue(
   std::string device_name;
   std::string device_type;
   if (!entry.client_id.empty())
-    GetDeviceNameAndType(service, entry.client_id, &device_name, &device_type);
+    GetDeviceNameAndType(tracker, entry.client_id, &device_name, &device_type);
   result->SetString("deviceName", device_name);
   result->SetString("deviceType", device_type);
 
@@ -363,14 +362,17 @@ void BrowsingHistoryHandler::OnQueryComplete(
     supervised_user_service =
         SupervisedUserServiceFactory::GetForProfile(profile);
 #endif
-  syncer::DeviceInfoSyncService* service =
-      DeviceInfoSyncServiceFactory::GetForProfile(profile);
+
+  const syncer::DeviceInfoTracker* tracker =
+      DeviceInfoSyncServiceFactory::GetForProfile(profile)
+          ->GetDeviceInfoTracker();
 
   // Convert the result vector into a ListValue.
+  DCHECK(tracker);
   base::ListValue results_value;
   for (const BrowsingHistoryService::HistoryEntry& entry : results) {
     std::unique_ptr<base::Value> value(HistoryEntryToValue(
-        entry, bookmark_model, supervised_user_service, service, clock_));
+        entry, bookmark_model, supervised_user_service, tracker, clock_));
     results_value.Append(std::move(value));
   }
 
