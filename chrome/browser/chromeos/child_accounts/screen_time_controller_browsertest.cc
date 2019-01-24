@@ -8,6 +8,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -16,6 +17,8 @@
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller.h"
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller_factory.h"
 #include "chrome/browser/chromeos/child_accounts/time_limit_test_utils.h"
+#include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
 #include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,24 +27,12 @@
 #include "content/public/browser/notification_service.h"
 
 namespace chromeos {
-namespace {
-
-void WaitForScreenLock() {
-  content::WindowedNotificationObserver lock_state_observer(
-      chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-      content::NotificationService::AllSources());
-  lock_state_observer.Wait();
-}
-
-}  // namespace
-
 namespace utils = time_limit_test_utils;
 
 class ScreenTimeControllerTest : public policy::LoginPolicyTestBase {
  public:
   ScreenTimeControllerTest() {
-    base::Time start_time;
-    EXPECT_TRUE(base::Time::FromUTCString("1 Jan 2018 10:00:00", &start_time));
+    base::Time start_time = utils::TimeFromString("1 Jan 2018 10:00:00 GMT");
     task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
         start_time, base::TimeTicks::UnixEpoch());
   }
@@ -56,6 +47,10 @@ class ScreenTimeControllerTest : public policy::LoginPolicyTestBase {
         "example.com");
 
     policy::LoginPolicyTestBase::SetUp();
+
+    // By default the tests use the GMT timezone.
+    system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
+        base::UTF8ToUTF16("GMT"));
   }
 
   void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const override {
@@ -82,7 +77,12 @@ class ScreenTimeControllerTest : public policy::LoginPolicyTestBase {
     // Mock time for ScreenTimeController.
     ScreenTimeControllerFactory::GetForBrowserContext(child_profile_)
         ->SetClocksForTesting(task_runner_->GetMockClock(),
-                              task_runner_->GetMockTickClock());
+                              task_runner_->GetMockTickClock(), task_runner_);
+  }
+
+  bool IsAuthEnabled() {
+    return ScreenLocker::default_screen_locker()->IsAuthEnabledForUser(
+        AccountId::FromUserEmail(kAccountId));
   }
 
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
@@ -98,13 +98,16 @@ IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest, LockOverride) {
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword, test::kChildAccountServiceFlags);
   MockClockForActiveUser();
+  std::unique_ptr<chromeos::ScreenLockerTester> tester =
+      chromeos::ScreenLockerTester::Create();
+  tester->Lock();
 
-  // Verify screen is unlocked.
-  EXPECT_FALSE(session_manager::SessionManager::Get()->IsScreenLocked());
+  // Verify user is able to log in.
+  EXPECT_TRUE(IsAuthEnabled());
 
   // Wait one hour.
   task_runner_->FastForwardBy(base::TimeDelta::FromHours(1));
-  EXPECT_FALSE(session_manager::SessionManager::Get()->IsScreenLocked());
+  EXPECT_TRUE(IsAuthEnabled());
 
   // Set new policy.
   std::unique_ptr<base::DictionaryValue> policy_content =
@@ -118,8 +121,74 @@ IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest, LockOverride) {
   user_policy_helper()->UpdatePolicy(*policy, base::DictionaryValue(),
                                      child_profile_);
 
-  WaitForScreenLock();
-  EXPECT_TRUE(session_manager::SessionManager::Get()->IsScreenLocked());
+  EXPECT_FALSE(IsAuthEnabled());
+}
+
+// Tests the default time window limit.
+IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest, DefaultBedtime) {
+  SkipToLoginScreen();
+  LogIn(kAccountId, kAccountPassword, test::kChildAccountServiceFlags);
+  MockClockForActiveUser();
+  std::unique_ptr<chromeos::ScreenLockerTester> tester =
+      chromeos::ScreenLockerTester::Create();
+  tester->Lock();
+
+  system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
+      base::UTF8ToUTF16("GMT"));
+
+  // Set new policy.
+  base::Time last_updated = utils::TimeFromString("1 Jan 2018 0:00 GMT");
+  std::unique_ptr<base::DictionaryValue> policy_content =
+      utils::CreateTimeLimitPolicy(utils::CreateTime(6, 0));
+  utils::AddTimeWindowLimit(policy_content.get(), utils::kMonday,
+                            utils::CreateTime(21, 0), utils::CreateTime(7, 0),
+                            last_updated);
+  utils::AddTimeWindowLimit(policy_content.get(), utils::kTuesday,
+                            utils::CreateTime(21, 0), utils::CreateTime(7, 0),
+                            last_updated);
+  utils::AddTimeWindowLimit(policy_content.get(), utils::kWednesday,
+                            utils::CreateTime(21, 0), utils::CreateTime(7, 0),
+                            last_updated);
+  utils::AddTimeWindowLimit(policy_content.get(), utils::kThursday,
+                            utils::CreateTime(21, 0), utils::CreateTime(7, 0),
+                            last_updated);
+  utils::AddTimeWindowLimit(policy_content.get(), utils::kFriday,
+                            utils::CreateTime(21, 0), utils::CreateTime(7, 0),
+                            last_updated);
+  utils::AddTimeWindowLimit(policy_content.get(), utils::kSaturday,
+                            utils::CreateTime(21, 0), utils::CreateTime(7, 0),
+                            last_updated);
+  utils::AddTimeWindowLimit(policy_content.get(), utils::kSunday,
+                            utils::CreateTime(21, 0), utils::CreateTime(7, 0),
+                            last_updated);
+
+  auto policy = std::make_unique<base::DictionaryValue>();
+  policy->SetKey("UsageTimeLimit",
+                 base::Value(utils::PolicyToString(policy_content.get())));
+
+  user_policy_helper()->UpdatePolicy(*policy, base::DictionaryValue(),
+                                     child_profile_);
+
+  // Iterate over a week checking that the device is locked properly everyday.
+  for (int i = 0; i < 7; i++) {
+    // Verify that auth is enabled at 10 AM.
+    EXPECT_TRUE(IsAuthEnabled());
+
+    // Verify that auth is enabled at 8 PM.
+    task_runner_->FastForwardBy(base::TimeDelta::FromHours(10));
+    EXPECT_TRUE(IsAuthEnabled());
+
+    // Verify that the auth was disabled at 9 PM (start of bedtime).
+    task_runner_->FastForwardBy(base::TimeDelta::FromHours(1));
+    EXPECT_FALSE(IsAuthEnabled());
+
+    // Forward to 7 AM and check that auth was re-enabled (end of bedtime).
+    task_runner_->FastForwardBy(base::TimeDelta::FromHours(10));
+    EXPECT_TRUE(IsAuthEnabled());
+
+    // Forward to 10 AM.
+    task_runner_->FastForwardBy(base::TimeDelta::FromHours(3));
+  }
 }
 
 }  // namespace chromeos

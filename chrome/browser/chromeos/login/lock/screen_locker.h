@@ -175,6 +175,10 @@ class ScreenLocker : public AuthStatusConsumer,
   // |user_context|.
   void SaveSyncPasswordHash(const UserContext& user_context);
 
+  // Ruturns true if authentication is enabled on the lock screen for the given
+  // user.
+  bool IsAuthEnabledForUser(const AccountId& account_id);
+
   // Change the authenticators; should only be used by tests.
   void SetAuthenticatorsForTesting(
       scoped_refptr<Authenticator> authenticator,
