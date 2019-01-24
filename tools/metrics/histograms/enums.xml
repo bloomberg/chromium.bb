@@ -43377,6 +43377,21 @@ Called by update_net_trust_anchors.py.-->
   <int value="15" label="Device was reported as offline."/>
 </enum>
 
+<enum name="PreviewsHintCacheLevelDBStoreLoadMetadataResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="LoadMetadataFailed"/>
+  <int value="2" label="SchemaMetadataMissing"/>
+  <int value="3" label="SchemaMetadataWrongVersion"/>
+  <int value="4" label="ComponentMetadataMissing"/>
+</enum>
+
+<enum name="PreviewsHintCacheLevelDBStoreStatus">
+  <int value="0" label="Unitialized"/>
+  <int value="1" label="Initializing"/>
+  <int value="2" label="Available"/>
+  <int value="3" label="Failed"/>
+</enum>
+
 <enum name="PreviewsInfoBarAction">
   <int value="0" label="Infobar shown"/>
   <int value="1" label="Infobar 'Load original' clicked"/>
