@@ -2155,9 +2155,17 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       ExecPictureInPicture();
       break;
 
-    case IDC_CONTENT_CONTEXT_EMOJI:
-      GetBrowser()->window()->ShowEmojiPanel();
+    case IDC_CONTENT_CONTEXT_EMOJI: {
+      Browser* browser = GetBrowser();
+      if (browser) {
+        browser->window()->ShowEmojiPanel();
+      } else {
+        // TODO(https://crbug.com/919167): Ensure this is called in the correct
+        // process. This fails in print preview for PWA windows on Mac.
+        ui::ShowEmojiPanel();
+      }
       break;
+    }
 
     default:
       NOTREACHED();

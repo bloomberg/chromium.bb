@@ -548,6 +548,17 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
   EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_EMOJI));
 }
 
+// Executing the emoji panel item with no associated browser should not crash.
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
+                       ContextMenuForEmojiPanel_NullBrowserCrash) {
+  std::unique_ptr<content::WebContents> detached_web_contents =
+      content::WebContents::Create(
+          content::WebContents::CreateParams(browser()->profile()));
+  TestRenderViewContextMenu menu(detached_web_contents->GetMainFrame(), {});
+  menu.Init();
+  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_EMOJI, 0);
+}
+
 // Only Chrome OS supports emoji panel callbacks.
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
