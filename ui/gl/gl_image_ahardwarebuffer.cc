@@ -4,6 +4,7 @@
 
 #include "ui/gl/gl_image_ahardwarebuffer.h"
 #include "base/android/android_hardware_buffer_compat.h"
+#include "base/android/scoped_hardware_buffer_fence_sync.h"
 
 #include "ui/gl/gl_bindings.h"
 
@@ -83,9 +84,9 @@ void GLImageAHardwareBuffer::OnMemoryDump(
     uint64_t process_tracing_id,
     const std::string& dump_name) {}
 
-std::unique_ptr<GLImage::ScopedHardwareBuffer>
+std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
 GLImageAHardwareBuffer::GetAHardwareBuffer() {
-  return std::make_unique<ScopedHardwareBuffer>(
+  return std::make_unique<base::android::ScopedHardwareBufferFenceSync>(
       base::android::ScopedHardwareBufferHandle::Create(handle_.get()),
       base::ScopedFD());
 }

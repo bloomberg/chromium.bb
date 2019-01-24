@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "base/android/jni_android.h"
+#include "base/android/scoped_hardware_buffer_fence_sync.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
@@ -48,14 +49,14 @@ struct FrameAvailableEvent_ImageReader
 };
 
 class ImageReaderGLOwner::ScopedHardwareBufferImpl
-    : public gl::GLImage::ScopedHardwareBuffer {
+    : public base::android::ScopedHardwareBufferFenceSync {
  public:
   ScopedHardwareBufferImpl(scoped_refptr<ImageReaderGLOwner> texture_owner,
                            AImage* image,
                            base::android::ScopedHardwareBufferHandle handle,
                            base::ScopedFD fence_fd)
-      : gl::GLImage::ScopedHardwareBuffer(std::move(handle),
-                                          std::move(fence_fd)),
+      : base::android::ScopedHardwareBufferFenceSync(std::move(handle),
+                                                     std::move(fence_fd)),
         texture_owner_(std::move(texture_owner)),
         image_(image) {}
   ~ScopedHardwareBufferImpl() override {
@@ -276,7 +277,7 @@ bool ImageReaderGLOwner::MaybeDeleteCurrentImage() {
   return gpu::DeleteAImageAsync(current_image_, &loader_);
 }
 
-std::unique_ptr<gl::GLImage::ScopedHardwareBuffer>
+std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
 ImageReaderGLOwner::GetAHardwareBuffer() {
   if (!current_image_)
     return nullptr;

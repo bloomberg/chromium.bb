@@ -6,6 +6,7 @@
 
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/android/android_hardware_buffer_compat.h"
+#include "base/android/scoped_hardware_buffer_fence_sync.h"
 #include "base/native_library.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"

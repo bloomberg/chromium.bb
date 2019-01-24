@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/android/scoped_hardware_buffer_fence_sync.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_context.h"
@@ -237,7 +238,7 @@ void CodecImage::ReleaseCodecBuffer() {
   phase_ = Phase::kInvalidated;
 }
 
-std::unique_ptr<gl::GLImage::ScopedHardwareBuffer>
+std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
 CodecImage::GetAHardwareBuffer() {
   DCHECK(texture_owner_);
 

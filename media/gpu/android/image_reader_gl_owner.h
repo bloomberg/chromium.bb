@@ -13,6 +13,12 @@
 #include "ui/gl/gl_fence_egl.h"
 #include "ui/gl/gl_image_ahardwarebuffer.h"
 
+namespace base {
+namespace android {
+class ScopedHardwareBufferFenceSync;
+}  // namespace android
+}  // namespace base
+
 namespace media {
 
 struct FrameAvailableEvent_ImageReader;
@@ -35,8 +41,8 @@ class MEDIA_GPU_EXPORT ImageReaderGLOwner : public TextureOwner {
   void IgnorePendingRelease() override;
   bool IsExpectingFrameAvailable() override;
   void WaitForFrameAvailable() override;
-  std::unique_ptr<gl::GLImage::ScopedHardwareBuffer> GetAHardwareBuffer()
-      override;
+  std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
+  GetAHardwareBuffer() override;
 
  protected:
   void OnTextureDestroyed(gpu::gles2::AbstractTexture*) override;
