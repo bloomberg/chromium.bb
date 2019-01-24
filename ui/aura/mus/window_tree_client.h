@@ -58,6 +58,7 @@ class Gpu;
 
 namespace aura {
 class CaptureSynchronizer;
+class ClientSideWindowMoveHandler;
 class DragDropControllerMus;
 class EmbedRoot;
 class EmbedRootDelegate;
@@ -492,7 +493,7 @@ class AURA_EXPORT WindowTreeClient
       WindowTreeHostMus* window_tree_host,
       ws::mojom::MoveLoopSource mus_source,
       const gfx::Point& cursor_location,
-      const base::Callback<void(bool)>& callback) override;
+      base::OnceCallback<void(bool)> callback) override;
   void OnWindowTreeHostCancelWindowMove(
       WindowTreeHostMus* window_tree_host) override;
   std::unique_ptr<WindowPortMus> CreateWindowPortForTopLevel(
@@ -545,6 +546,8 @@ class AURA_EXPORT WindowTreeClient
 
   std::unique_ptr<GestureSynchronizer> gesture_synchronizer_;
 
+  std::unique_ptr<ClientSideWindowMoveHandler> client_side_window_move_handler_;
+
   mojo::Binding<ws::mojom::WindowTreeClient> binding_;
   ws::mojom::WindowTreePtr tree_ptr_;
   // Typically this is the value contained in |tree_ptr_|, but tests may
@@ -572,7 +575,7 @@ class AURA_EXPORT WindowTreeClient
 
   // Callback executed when a move loop initiated by PerformWindowMove() is
   // completed.
-  base::Callback<void(bool)> on_current_move_finished_;
+  base::OnceCallback<void(bool)> on_current_move_finished_;
 
   std::unique_ptr<DragDropControllerMus> drag_drop_controller_;
 

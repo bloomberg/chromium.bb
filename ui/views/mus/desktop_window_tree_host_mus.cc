@@ -219,54 +219,6 @@ void OnMoveLoopEnd(bool* out_success,
   quit_closure.Run();
 }
 
-// ScopedTouchTransferController controls the transfer of touch events for
-// window move loop. It transfers touches before the window move starts, and
-// then transfers them back to the original window when the window move ends.
-// However this transferring back to the original shouldn't happen if the client
-// wants to continue the dragging on another window (like attaching the dragged
-// tab to another window).
-class ScopedTouchTransferController : public ui::GestureRecognizerObserver {
- public:
-  ScopedTouchTransferController(aura::Window* source, aura::Window* dest)
-      : tracker_({source, dest}),
-        gesture_recognizer_(source->env()->gesture_recognizer()) {
-    gesture_recognizer_->TransferEventsTo(
-        source, dest, ui::TransferTouchesBehavior::kDontCancel);
-    gesture_recognizer_->AddObserver(this);
-  }
-  ~ScopedTouchTransferController() override {
-    gesture_recognizer_->RemoveObserver(this);
-    if (tracker_.windows().size() == 2) {
-      aura::Window* source = tracker_.Pop();
-      aura::Window* dest = tracker_.Pop();
-      gesture_recognizer_->TransferEventsTo(
-          dest, source, ui::TransferTouchesBehavior::kDontCancel);
-    }
-  }
-
- private:
-  // ui::GestureRecognizerObserver:
-  void OnActiveTouchesCanceledExcept(
-      ui::GestureConsumer* not_cancelled) override {}
-  void OnEventsTransferred(
-      ui::GestureConsumer* current_consumer,
-      ui::GestureConsumer* new_consumer,
-      ui::TransferTouchesBehavior transfer_touches_behavior) override {
-    if (tracker_.windows().size() <= 1)
-      return;
-    aura::Window* dest = tracker_.windows()[1];
-    if (current_consumer == dest)
-      tracker_.Remove(dest);
-  }
-  void OnActiveTouchesCanceled(ui::GestureConsumer* consumer) override {}
-
-  aura::WindowTracker tracker_;
-
-  ui::GestureRecognizer* gesture_recognizer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedTouchTransferController);
-};
-
 }  // namespace
 
 // WindowObserver installed on DesktopWindowTreeHostMus::window(). Mostly
@@ -884,14 +836,6 @@ Widget::MoveLoopResult DesktopWindowTreeHostMus::RunMoveLoop(
     const gfx::Vector2d& drag_offset,
     Widget::MoveLoopSource source,
     Widget::MoveLoopEscapeBehavior escape_behavior) {
-  // When using WindowService, the touch events for the window move will
-  // happen on the root window, so the events need to be transferred from
-  // widget to its root before starting move loop.
-  ScopedTouchTransferController scoped_controller(content_window(), window());
-
-  static_cast<internal::NativeWidgetPrivate*>(
-      desktop_native_widget_aura_)->ReleaseCapture();
-
   base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
 
   ws::mojom::MoveLoopSource mus_source =
@@ -906,8 +850,8 @@ Widget::MoveLoopResult DesktopWindowTreeHostMus::RunMoveLoop(
   gfx::Point cursor_location = window()->GetBoundsInScreen().origin() +
                                gfx::ToFlooredVector2d(drag_offset);
   WindowTreeHostMus::PerformWindowMove(
-      mus_source, cursor_location,
-      base::Bind(OnMoveLoopEnd, &success, run_loop.QuitClosure()));
+      content_window(), mus_source, cursor_location,
+      base::BindOnce(&OnMoveLoopEnd, &success, run_loop.QuitClosure()));
 
   run_loop.Run();
 

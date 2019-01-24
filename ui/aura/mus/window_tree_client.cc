@@ -34,6 +34,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/env_input_state_controller.h"
 #include "ui/aura/mus/capture_synchronizer.h"
+#include "ui/aura/mus/client_side_window_move_handler.h"
 #include "ui/aura/mus/drag_drop_controller_mus.h"
 #include "ui/aura/mus/embed_root.h"
 #include "ui/aura/mus/embed_root_delegate.h"
@@ -552,6 +553,8 @@ void WindowTreeClient::WindowTreeConnectionEstablished(
   Env::GetInstance()->SetGestureRecognizer(
       std::make_unique<GestureRecognizerImplMus>(this));
   gesture_synchronizer_ = std::make_unique<GestureSynchronizer>(tree_);
+  client_side_window_move_handler_ =
+      std::make_unique<ClientSideWindowMoveHandler>(Env::GetInstance());
 }
 
 void WindowTreeClient::OnConnectionLost() {
@@ -1467,8 +1470,7 @@ void WindowTreeClient::OnChangeCompleted(uint32_t change_id, bool success) {
   // is deleted, but still we want to invoke the finished callback.
   if (change_id == current_move_loop_change_) {
     current_move_loop_change_ = 0;
-    on_current_move_finished_.Run(success);
-    on_current_move_finished_.Reset();
+    std::move(on_current_move_finished_).Run(success);
     for (auto& observer : observers_)
       observer.OnWindowMoveEnded(success);
   }
@@ -1596,9 +1598,9 @@ void WindowTreeClient::OnWindowTreeHostPerformWindowMove(
     WindowTreeHostMus* window_tree_host,
     ws::mojom::MoveLoopSource source,
     const gfx::Point& cursor_location,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   DCHECK(on_current_move_finished_.is_null());
-  on_current_move_finished_ = callback;
+  on_current_move_finished_ = std::move(callback);
 
   WindowMus* window_mus = WindowMus::Get(window_tree_host->window());
   current_move_loop_change_ = ScheduleInFlightChange(

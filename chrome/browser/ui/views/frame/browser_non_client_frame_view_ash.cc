@@ -489,29 +489,6 @@ bool BrowserNonClientFrameViewAsh::OnMousePressed(const ui::MouseEvent& event) {
   return false;
 }
 
-bool BrowserNonClientFrameViewAsh::OnMouseDragged(const ui::MouseEvent& event) {
-  if (!features::IsUsingWindowService())
-    return false;
-
-  StartWindowMove(event);
-  return true;
-}
-
-void BrowserNonClientFrameViewAsh::OnMouseReleased(
-    const ui::MouseEvent& event) {
-  // If a window move has already been triggered and OnMouseReleased() is
-  // called, it means the mouse was released before the Ash asserted mouse
-  // capture, and the move should be cancelled. Note that if something else
-  // grabs mouse capture right after PerformWindowMove(), Ash may re-assert that
-  // capture instead of cancelling the move.
-  if (performing_window_move_) {
-    aura::WindowTreeHostMus* window_tree_host_mus =
-        static_cast<aura::WindowTreeHostMus*>(
-            GetWidget()->GetNativeWindow()->GetHost());
-    window_tree_host_mus->CancelWindowMove();
-  }
-}
-
 void BrowserNonClientFrameViewAsh::OnGestureEvent(ui::GestureEvent* event) {
   if (!features::IsUsingWindowService())
     return;
@@ -529,16 +506,9 @@ void BrowserNonClientFrameViewAsh::OnGestureEvent(ui::GestureEvent* event) {
       }
       break;
 
-    case ui::ET_GESTURE_SCROLL_UPDATE:
-      StartWindowMove(*event);
-      break;
-
     default:
       break;
   }
-  // Always set the event as handled, otherwise the gesture recognizer will not
-  // emit ui::ET_GESTURE_SCROLL_UPDATE events.
-  event->SetHandled();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -919,44 +889,6 @@ ws::Id BrowserNonClientFrameViewAsh::GetServerWindowId() const {
 
 bool BrowserNonClientFrameViewAsh::IsInOverviewMode() const {
   return GetFrameWindow()->GetProperty(ash::kIsShowingInOverviewKey);
-}
-
-void BrowserNonClientFrameViewAsh::StartWindowMove(
-    const ui::LocatedEvent& event) {
-  DCHECK(features::IsUsingWindowService());
-
-  // The client may receive multiple events before Ash has taken over the window
-  // move. In this case, ignore the extras.
-  if (performing_window_move_)
-    return;
-
-  aura::WindowTreeHostMus* window_tree_host_mus =
-      static_cast<aura::WindowTreeHostMus*>(
-          GetWidget()->GetNativeWindow()->GetHost());
-  performing_window_move_ = true;
-  // Don't use display::Screen::GetCursorScreenPoint(), that's incorrect for
-  // touch events.
-  aura::Window* window = GetWidget()->GetNativeWindow();
-  gfx::Point cursor_location = window->GetBoundsInScreen().origin() +
-                               event.location().OffsetFromOrigin();
-  ws::mojom::MoveLoopSource source = ws::mojom::MoveLoopSource::MOUSE;
-  if (!event.IsMouseEvent()) {
-    source = ws::mojom::MoveLoopSource::TOUCH;
-    aura::Window* root = window->GetRootWindow();
-    // When using WindowService, the touch events for the window move will
-    // happen on the root window, so the events need to be transferred from
-    // widget to its root before starting move loop.
-    window->env()->gesture_recognizer()->TransferEventsTo(
-        window, root, ui::TransferTouchesBehavior::kDontCancel);
-  }
-  window_tree_host_mus->PerformWindowMove(
-      source, cursor_location,
-      base::BindRepeating(&BrowserNonClientFrameViewAsh::OnWindowMoveDone,
-                          weak_ptr_factory_.GetWeakPtr()));
-}
-
-void BrowserNonClientFrameViewAsh::OnWindowMoveDone(bool success) {
-  performing_window_move_ = false;
 }
 
 const aura::Window* BrowserNonClientFrameViewAsh::GetFrameWindow() const {
