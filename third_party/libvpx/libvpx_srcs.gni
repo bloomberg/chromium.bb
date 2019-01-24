@@ -2553,7 +2553,7 @@ libvpx_srcs_arm64 = [
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.h",
 ]
 libvpx_srcs_arm64_assembly = []
-libvpx_srcs_chromeos_arm_neon = [
+libvpx_srcs_arm_neon_highbd = [
   "//third_party/libvpx/source/libvpx/vp8/common/alloccommon.c",
   "//third_party/libvpx/source/libvpx/vp8/common/alloccommon.h",
   "//third_party/libvpx/source/libvpx/vp8/common/arm/loopfilter_arm.c",
@@ -2971,7 +2971,7 @@ libvpx_srcs_chromeos_arm_neon = [
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.c",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.h",
 ]
-libvpx_srcs_chromeos_arm_neon_assembly = [
+libvpx_srcs_arm_neon_highbd_assembly = [
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/idct4x4_1_add_neon.asm",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/idct4x4_add_neon.asm",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/idct_neon.asm",
@@ -2991,7 +2991,7 @@ libvpx_srcs_chromeos_arm_neon_assembly = [
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/vpx_convolve_avg_neon_asm.asm",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/vpx_convolve_copy_neon_asm.asm",
 ]
-libvpx_srcs_chromeos_arm64 = [
+libvpx_srcs_arm64_highbd = [
   "//third_party/libvpx/source/libvpx/vp8/common/alloccommon.c",
   "//third_party/libvpx/source/libvpx/vp8/common/alloccommon.h",
   "//third_party/libvpx/source/libvpx/vp8/common/arm/loopfilter_arm.c",
@@ -3413,7 +3413,7 @@ libvpx_srcs_chromeos_arm64 = [
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.c",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.h",
 ]
-libvpx_srcs_chromeos_arm64_assembly = []
+libvpx_srcs_arm64_highbd_assembly = []
 libvpx_srcs_mips = [
   "//third_party/libvpx/source/libvpx/vp8/common/alloccommon.c",
   "//third_party/libvpx/source/libvpx/vp8/common/alloccommon.h",
