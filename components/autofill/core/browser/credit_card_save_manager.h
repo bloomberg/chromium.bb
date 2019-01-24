@@ -124,7 +124,6 @@ class CreditCardSaveManager {
  private:
   friend class CreditCardSaveManagerTest;
   friend class CreditCardSaveManagerTestObserverBridge;
-  friend class LocalCardMigrationBrowserTest;
   friend class TestCreditCardSaveManager;
   friend class SaveCardBubbleViewsBrowserTestBase;
 
