@@ -8,6 +8,7 @@
 #import "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -150,7 +151,7 @@ web::test::ElementSelector StartLoggingButton() {
   [ChromeEarlGrey tapWebViewElementWithID:kLogMessageButtonId];
   [ChromeEarlGrey tapWebViewElementWithID:kWarningMessageButtonId];
 
-  [ChromeEarlGrey closeCurrentTab];
+  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
   // Validate messages and labels are displayed.
   [ChromeEarlGrey waitForWebViewContainingText:kDebugMessageLabel];
   [ChromeEarlGrey waitForWebViewContainingText:kDebugMessageText];
@@ -202,7 +203,7 @@ web::test::ElementSelector StartLoggingButton() {
   GREYAssertTrue(TapWebViewElementWithIdInIframe(warnButtonID),
                  @"Failed to tap warn button.");
 
-  [ChromeEarlGrey closeCurrentTab];
+  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
   // Validate messages and labels are displayed.
   [ChromeEarlGrey waitForWebViewContainingText:kDebugMessageLabel];
   [ChromeEarlGrey waitForWebViewContainingText:kIFrameDebugMessageText];
@@ -235,7 +236,7 @@ web::test::ElementSelector StartLoggingButton() {
 
   // Log a message and verify it is displayed.
   [ChromeEarlGrey tapWebViewElementWithID:kDebugMessageButtonId];
-  [ChromeEarlGrey closeCurrentTab];
+  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
   [ChromeEarlGrey waitForWebViewContainingText:kDebugMessageLabel];
   [ChromeEarlGrey waitForWebViewContainingText:kDebugMessageText];
 
@@ -248,7 +249,7 @@ web::test::ElementSelector StartLoggingButton() {
 
   // Log another message and verify it is displayed.
   [ChromeEarlGrey tapWebViewElementWithID:kLogMessageButtonId];
-  [ChromeEarlGrey closeCurrentTab];
+  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
   [ChromeEarlGrey waitForWebViewContainingText:kLogMessageLabel];
   [ChromeEarlGrey waitForWebViewContainingText:kLogMessageText];
 
@@ -276,7 +277,7 @@ web::test::ElementSelector StartLoggingButton() {
 
   // Log a message and verify it is displayed.
   [ChromeEarlGrey tapWebViewElementWithID:kDebugMessageButtonId];
-  [ChromeEarlGrey closeCurrentTab];
+  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
   [ChromeEarlGrey waitForWebViewContainingText:kDebugMessageLabel];
   [ChromeEarlGrey waitForWebViewContainingText:kDebugMessageText];
 
@@ -306,13 +307,38 @@ web::test::ElementSelector StartLoggingButton() {
 
   // Log a message and verify it is displayed.
   [ChromeEarlGrey tapWebViewElementWithID:kDebugMessageButtonId];
-  [ChromeEarlGrey closeCurrentTab];
+  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
   [ChromeEarlGrey waitForWebViewContainingText:kDebugMessageLabel];
   [ChromeEarlGrey waitForWebViewContainingText:kDebugMessageText];
 
   // Reload page.
   [ChromeEarlGrey reload];
   // Ensure message was cleared.
+  [ChromeEarlGrey waitForWebViewNotContainingText:kDebugMessageLabel];
+  [ChromeEarlGrey waitForWebViewNotContainingText:kDebugMessageText];
+}
+
+// Tests that messages are cleared for a tab which is closed.
+- (void)testMessagesClearedOnTabClosure {
+  [ChromeEarlGrey loadURL:GURL(kChromeUIInspectURL)];
+
+  // Start logging.
+  [ChromeEarlGrey waitForWebViewContainingElement:StartLoggingButton()];
+  [ChromeEarlGrey tapWebViewElementWithID:kStartLoggingButtonId];
+
+  // Open console test page.
+  [ChromeEarlGrey openNewTab];
+  const GURL consoleTestsURL = self.testServer->GetURL(kConsolePage);
+  [ChromeEarlGrey loadURL:consoleTestsURL];
+  std::string debugButtonID = base::SysNSStringToUTF8(kDebugMessageButtonId);
+  [ChromeEarlGrey
+      waitForWebViewContainingElement:ElementSelector::ElementSelectorId(
+                                          debugButtonID)];
+
+  [ChromeEarlGrey tapWebViewElementWithID:kDebugMessageButtonId];
+  [ChromeEarlGrey closeCurrentTab];
+
+  // Validate message and label are not displayed.
   [ChromeEarlGrey waitForWebViewNotContainingText:kDebugMessageLabel];
   [ChromeEarlGrey waitForWebViewNotContainingText:kDebugMessageText];
 }
