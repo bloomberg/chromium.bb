@@ -243,8 +243,10 @@ typedef struct MB_MODE_INFO {
   // Joint sign of alpha Cb and alpha Cr
   int cfl_alpha_signs;
 
-  int compound_idx;
+  // Indicate if masked compound is used(1) or not(0).
   int comp_group_idx;
+  // If comp_group_idx=0, indicate if dist_wtd_comp(0) or avg_comp(1) is used.
+  int compound_idx;
 #if CONFIG_INSPECTION
   int16_t tx_skip[TXK_TYPE_BUF_LEN];
 #endif
