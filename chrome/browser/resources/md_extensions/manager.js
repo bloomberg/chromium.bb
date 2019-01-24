@@ -406,8 +406,6 @@ cr.define('extensions', function() {
           this.errorPageItem_ && this.errorPageItem_.id == item.id &&
           this.currentPage_.page == Page.ERRORS) {
         this.errorPageItem_ = item;
-      } else if (this.currentPage_.page == Page.ACTIVITY_LOG) {
-        this.activityLogItemId_ = item.id;
       }
     },
 

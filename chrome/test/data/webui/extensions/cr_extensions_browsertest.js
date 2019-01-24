@@ -416,6 +416,22 @@ TEST_F('CrExtensionsManagerUnitTest', 'KioskMode', function() {
 });
 GEN('#endif');
 
+CrExtensionsManagerUnitTestWithActivityLogFlag =
+    class extends CrExtensionsManagerUnitTest {
+  /** @override */
+  get commandLineSwitches() {
+    return [{
+      switchName: 'enable-extension-activity-logging',
+    }];
+  }
+};
+
+TEST_F(
+    'CrExtensionsManagerUnitTestWithActivityLogFlag', 'UpdateFromActivityLog',
+    function() {
+      this.runMochaTest(
+          extension_manager_tests.TestNames.UpdateFromActivityLog);
+    });
 
 CrExtensionsManagerTestWithMultipleExtensionTypesInstalled =
     class extends CrExtensionsBrowserTest {
