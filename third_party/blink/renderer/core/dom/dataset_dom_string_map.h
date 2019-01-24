@@ -49,7 +49,7 @@ class DatasetDOMStringMap final : public DOMStringMap {
                ExceptionState&) override;
   bool DeleteItem(const String& name) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<Element> element_;

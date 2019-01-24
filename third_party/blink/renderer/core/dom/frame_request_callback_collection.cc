@@ -88,7 +88,7 @@ void FrameRequestCallbackCollection::ExecuteCallbacks(
   callbacks_to_invoke_.clear();
 }
 
-void FrameRequestCallbackCollection::Trace(blink::Visitor* visitor) {
+void FrameRequestCallbackCollection::Trace(Visitor* visitor) {
   visitor->Trace(callbacks_);
   visitor->Trace(callbacks_to_invoke_);
   visitor->Trace(context_);

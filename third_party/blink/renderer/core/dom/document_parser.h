@@ -42,7 +42,7 @@ class CORE_EXPORT DocumentParser
       public NameClient {
  public:
   virtual ~DocumentParser();
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
   const char* NameInHeapSnapshot() const override { return "DocumentParser"; }
 
   virtual ScriptableDocumentParser* AsScriptableDocumentParser() {

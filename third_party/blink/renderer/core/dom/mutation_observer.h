@@ -85,7 +85,7 @@ class CORE_EXPORT MutationObserver final
     virtual ExecutionContext* GetExecutionContext() const = 0;
     virtual void Deliver(const MutationRecordVector& records,
                          MutationObserver&) = 0;
-    virtual void Trace(blink::Visitor* visitor) {}
+    virtual void Trace(Visitor* visitor) {}
     const char* NameInHeapSnapshot() const override {
       return "MutationObserver::Delegate";
     }
@@ -117,7 +117,7 @@ class CORE_EXPORT MutationObserver final
 
   // Eagerly finalized as destructor accesses heap object members.
   EAGERLY_FINALIZE();
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   struct ObserverLessThan;

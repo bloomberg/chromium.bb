@@ -417,7 +417,7 @@ void EventPath::CheckReachability(TreeScope& tree_scope,
 }
 #endif
 
-void EventPath::Trace(blink::Visitor* visitor) {
+void EventPath::Trace(Visitor* visitor) {
   visitor->Trace(node_event_contexts_);
   visitor->Trace(node_);
   visitor->Trace(event_);

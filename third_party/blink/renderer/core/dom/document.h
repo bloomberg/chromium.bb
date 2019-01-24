@@ -1302,7 +1302,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void UpdateActiveStyle();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   AtomicString ConvertLocalName(const AtomicString&);
 

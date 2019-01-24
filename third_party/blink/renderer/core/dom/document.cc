@@ -576,7 +576,7 @@ class Document::NetworkStateObserver final
     online_observer_handle_ = nullptr;
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     ContextLifecycleObserver::Trace(visitor);
   }
 
@@ -7654,7 +7654,7 @@ StylePropertyMapReadOnly* Document::RemoveComputedStyleMapItem(
   return computed_style;
 }
 
-void Document::Trace(blink::Visitor* visitor) {
+void Document::Trace(Visitor* visitor) {
   visitor->Trace(imports_controller_);
   visitor->Trace(doc_type_);
   visitor->Trace(implementation_);

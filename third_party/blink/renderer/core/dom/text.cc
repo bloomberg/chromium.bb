@@ -472,7 +472,7 @@ Text* Text::CloneWithData(Document& factory, const String& data) const {
   return Create(factory, data);
 }
 
-void Text::Trace(blink::Visitor* visitor) {
+void Text::Trace(Visitor* visitor) {
   CharacterData::Trace(visitor);
 }
 

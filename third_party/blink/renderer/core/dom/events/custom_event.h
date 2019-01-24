@@ -62,7 +62,7 @@ class CORE_EXPORT CustomEvent final : public Event {
 
   ScriptValue detail(ScriptState*) const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   WorldSafeV8Reference<v8::Value> detail_;

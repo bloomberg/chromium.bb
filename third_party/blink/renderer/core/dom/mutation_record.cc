@@ -53,7 +53,7 @@ class ChildListRecord : public MutationRecord {
         previous_sibling_(previous_sibling),
         next_sibling_(next_sibling) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(target_);
     visitor->Trace(added_nodes_);
     visitor->Trace(removed_nodes_);
@@ -82,7 +82,7 @@ class RecordWithEmptyNodeLists : public MutationRecord {
   RecordWithEmptyNodeLists(Node* target, const String& old_value)
       : target_(target), old_value_(old_value) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(target_);
     visitor->Trace(added_nodes_);
     visitor->Trace(removed_nodes_);
@@ -145,7 +145,7 @@ class MutationRecordWithNullOldValue : public MutationRecord {
  public:
   MutationRecordWithNullOldValue(MutationRecord* record) : record_(record) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(record_);
     MutationRecord::Trace(visitor);
   }

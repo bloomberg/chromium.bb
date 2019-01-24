@@ -88,7 +88,7 @@ Element* LiveNodeList::TraverseBackwardToOffset(
       current_element, &RootNode(), offset, current_offset, IsMatch(*this));
 }
 
-void LiveNodeList::Trace(blink::Visitor* visitor) {
+void LiveNodeList::Trace(Visitor* visitor) {
   visitor->Trace(collection_items_cache_);
   LiveNodeListBase::Trace(visitor);
   NodeList::Trace(visitor);

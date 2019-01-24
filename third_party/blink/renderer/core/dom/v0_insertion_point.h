@@ -75,7 +75,7 @@ class CORE_EXPORT V0InsertionPoint : public HTMLElement {
     return distributed_nodes_.PreviousTo(node);
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   V0InsertionPoint(const QualifiedName&, Document&);

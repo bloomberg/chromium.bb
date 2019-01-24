@@ -367,7 +367,7 @@ class CORE_EXPORT ContainerNode : public Node {
 
   virtual bool ChildrenCanHaveStyle() const { return true; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   ContainerNode(TreeScope*, ConstructionType = kCreateContainer);

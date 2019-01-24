@@ -292,7 +292,7 @@ void ReattachLegacyLayoutObjectList::ForceLegacyLayoutIfNeeded() {
   state_ = State::kClosed;
 }
 
-void ReattachLegacyLayoutObjectList::Trace(blink::Visitor* visitor) {
+void ReattachLegacyLayoutObjectList::Trace(Visitor* visitor) {
   visitor->Trace(document_);
 }
 

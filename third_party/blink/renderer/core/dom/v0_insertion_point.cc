@@ -262,7 +262,7 @@ void V0InsertionPoint::RemovedFrom(ContainerNode& insertion_point) {
   HTMLElement::RemovedFrom(insertion_point);
 }
 
-void V0InsertionPoint::Trace(blink::Visitor* visitor) {
+void V0InsertionPoint::Trace(Visitor* visitor) {
   visitor->Trace(distributed_nodes_);
   HTMLElement::Trace(visitor);
 }

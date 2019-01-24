@@ -37,7 +37,7 @@ class CORE_EXPORT ScriptedIdleTaskController
   explicit ScriptedIdleTaskController(ExecutionContext*);
   ~ScriptedIdleTaskController() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   const char* NameInHeapSnapshot() const override {
     return "ScriptedIdleTaskController";
   }
@@ -49,7 +49,7 @@ class CORE_EXPORT ScriptedIdleTaskController
   class IdleTask : public GarbageCollectedFinalized<IdleTask>,
                    public NameClient {
    public:
-    virtual void Trace(blink::Visitor* visitor) {}
+    virtual void Trace(Visitor* visitor) {}
     const char* NameInHeapSnapshot() const override { return "IdleTask"; }
     virtual ~IdleTask() = default;
     virtual void invoke(IdleDeadline*) = 0;
@@ -67,7 +67,7 @@ class CORE_EXPORT ScriptedIdleTaskController
     ~V8IdleTask() override = default;
 
     void invoke(IdleDeadline*) override;
-    void Trace(blink::Visitor*) override;
+    void Trace(Visitor*) override;
 
    private:
     TraceWrapperMember<V8IdleRequestCallback> callback_;

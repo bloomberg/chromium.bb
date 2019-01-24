@@ -317,7 +317,7 @@ class CORE_EXPORT Event : public ScriptWrappable {
 
   virtual DispatchEventResult DispatchEvent(EventDispatcher&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   virtual void ReceivedTarget();

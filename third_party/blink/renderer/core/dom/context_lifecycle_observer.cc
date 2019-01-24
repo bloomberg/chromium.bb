@@ -34,7 +34,7 @@ LocalFrame* ContextClient::GetFrame() const {
   return document ? document->GetFrame() : nullptr;
 }
 
-void ContextClient::Trace(blink::Visitor* visitor) {
+void ContextClient::Trace(Visitor* visitor) {
   visitor->Trace(execution_context_);
 }
 
@@ -57,7 +57,7 @@ LocalFrame* DOMWindowClient::GetFrame() const {
   return dom_window_ ? dom_window_->GetFrame() : nullptr;
 }
 
-void DOMWindowClient::Trace(blink::Visitor* visitor) {
+void DOMWindowClient::Trace(Visitor* visitor) {
   visitor->Trace(dom_window_);
 }
 }

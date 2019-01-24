@@ -292,7 +292,7 @@ Document* DOMImplementation::createDocument(const String& type,
   return HTMLDocument::Create(init);
 }
 
-void DOMImplementation::Trace(blink::Visitor* visitor) {
+void DOMImplementation::Trace(Visitor* visitor) {
   visitor->Trace(document_);
   ScriptWrappable::Trace(visitor);
 }

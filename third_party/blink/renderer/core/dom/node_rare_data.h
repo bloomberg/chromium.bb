@@ -59,7 +59,7 @@ class NodeMutationObserverData final
   void AddRegistration(MutationObserverRegistration* registration);
   void RemoveRegistration(MutationObserverRegistration* registration);
 
-  void Trace(blink::Visitor* visitor);
+  void Trace(Visitor* visitor);
 
  private:
   HeapVector<TraceWrapperMember<MutationObserverRegistration>> registry_;
@@ -191,7 +191,7 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
     kNumberOfDynamicRestyleFlags = 14
   };
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
   void TraceAfterDispatch(blink::Visitor*);
   void FinalizeGarbageCollectedObject();
 

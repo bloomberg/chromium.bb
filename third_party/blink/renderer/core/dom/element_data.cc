@@ -108,7 +108,7 @@ bool ElementData::IsEquivalent(const ElementData* other) const {
   return true;
 }
 
-void ElementData::Trace(blink::Visitor* visitor) {
+void ElementData::Trace(Visitor* visitor) {
   if (is_unique_)
     ToUniqueElementData(this)->TraceAfterDispatch(visitor);
   else

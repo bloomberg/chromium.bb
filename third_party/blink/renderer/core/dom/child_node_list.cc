@@ -83,7 +83,7 @@ Node* ChildNodeList::TraverseBackwardToOffset(unsigned offset,
   return nullptr;
 }
 
-void ChildNodeList::Trace(blink::Visitor* visitor) {
+void ChildNodeList::Trace(Visitor* visitor) {
   visitor->Trace(parent_);
   visitor->Trace(collection_index_cache_);
   NodeList::Trace(visitor);
