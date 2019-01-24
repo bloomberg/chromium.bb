@@ -225,6 +225,13 @@ class MediaSourcePipelineIntegrationFuzzerTest
 // Disable noisy logging.
 struct Environment {
   Environment() {
+    base::CommandLine::Init(0, nullptr);
+
+    // |test| instances uses ScopedTaskEnvironment, which needs TestTimeouts.
+    TestTimeouts::Initialize();
+
+    media::InitializeMediaLibrary();
+
     // Note, instead of LOG_FATAL, use a value at or below logging::LOG_VERBOSE
     // here to assist local debugging.
     logging::SetMinLogLevel(logging::LOG_FATAL);
@@ -233,18 +240,7 @@ struct Environment {
 
 Environment* env = new Environment();
 
-// Entry points for LibFuzzer.
-
-extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
-  base::CommandLine::Init(0, nullptr);
-
-  // |test| instances uses ScopedTaskEnvironment, which needs TestTimeouts.
-  TestTimeouts::Initialize();
-
-  media::InitializeMediaLibrary();
-  return 0;
-}
-
+// Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Media pipeline starts new threads, which needs AtExitManager.
   base::AtExitManager at_exit;
