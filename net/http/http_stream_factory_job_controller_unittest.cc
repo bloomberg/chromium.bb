@@ -43,6 +43,7 @@
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_test_util_common.h"
 #include "net/test/test_with_scoped_task_environment.h"
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/test_tools/mock_random.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -349,7 +350,7 @@ class HttpStreamFactoryJobControllerTest
   quic::test::MockRandom random_generator_{0};
   QuicTestPacketMaker client_maker_{
       HttpNetworkSession::Params().quic_supported_versions[0],
-      quic::EmptyQuicConnectionId(),
+      quic::QuicUtils::CreateRandomConnectionId(&random_generator_),
       &clock_,
       kServerHostname,
       quic::Perspective::IS_CLIENT,

@@ -301,19 +301,19 @@ QUIC_FLAG(
 // byte order.
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_connection_ids_network_byte_order,
-          false)
+          true)
 
 // Allows use of new QUIC connection ID constructor designed for
 // variable-length connection IDs when acting as client.
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_variable_length_connection_ids_client,
-          false)
+          true)
 
 // Allows use of new QUIC connection ID constructor designed for
 // variable-length connection IDs when acting as server
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_variable_length_connection_ids_server,
-          false)
+          true)
 // If true, QuicPacketCreator::SetTransmissionType will set the transmission
 // type of the next successfully added frame.
 QUIC_FLAG(bool,

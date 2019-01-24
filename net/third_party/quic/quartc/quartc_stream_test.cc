@@ -225,7 +225,7 @@ class QuartcStreamTest : public QuicTest, public QuicConnectionHelperInterface {
     alarm_factory_ = QuicMakeUnique<test::MockAlarmFactory>();
 
     connection_ = QuicMakeUnique<QuicConnection>(
-        EmptyQuicConnectionId(), QuicSocketAddress(ip, 0),
+        test::TestConnectionId(0), QuicSocketAddress(ip, 0),
         this /*QuicConnectionHelperInterface*/, alarm_factory_.get(),
         new DummyPacketWriter(), owns_writer, perspective,
         ParsedVersionOfIndex(CurrentSupportedVersions(), 0));

@@ -99,9 +99,8 @@ std::unique_ptr<base::Value> NetLogQuicPacketHeaderCallback(
     const quic::QuicPacketHeader* header,
     NetLogCaptureMode /* capture_mode */) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetKey("connection_id",
-               NetLogNumberValue(quic::QuicConnectionIdToUInt64(
-                   header->destination_connection_id)));
+  dict->SetString("connection_id",
+                  header->destination_connection_id.ToString());
   dict->SetInteger("reset_flag", header->reset_flag);
   dict->SetInteger("version_flag", header->version_flag);
   dict->SetKey("packet_number", NetLogNumberValue(header->packet_number));

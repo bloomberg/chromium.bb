@@ -49,6 +49,7 @@
 #include "net/third_party/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quic/core/http/quic_client_promised_info.h"
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "net/third_party/quic/test_tools/mock_clock.h"
 #include "net/third_party/quic/test_tools/mock_random.h"
@@ -226,18 +227,20 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
         version_(version),
         client_headers_include_h2_stream_dependency_(
             client_headers_include_h2_stream_dependency),
-        client_maker_(version_,
-                      quic::EmptyQuicConnectionId(),
-                      &clock_,
-                      kDefaultServerHostName,
-                      quic::Perspective::IS_CLIENT,
-                      client_headers_include_h2_stream_dependency_),
-        server_maker_(version_,
-                      quic::EmptyQuicConnectionId(),
-                      &clock_,
-                      kDefaultServerHostName,
-                      quic::Perspective::IS_SERVER,
-                      false),
+        client_maker_(
+            version_,
+            quic::QuicUtils::CreateRandomConnectionId(&random_generator_),
+            &clock_,
+            kDefaultServerHostName,
+            quic::Perspective::IS_CLIENT,
+            client_headers_include_h2_stream_dependency_),
+        server_maker_(
+            version_,
+            quic::QuicUtils::CreateRandomConnectionId(&random_generator_),
+            &clock_,
+            kDefaultServerHostName,
+            quic::Perspective::IS_SERVER,
+            false),
         cert_verifier_(std::make_unique<MockCertVerifier>()),
         cert_transparency_verifier_(std::make_unique<DoNothingCTVerifier>()),
         scoped_mock_network_change_notifier_(nullptr),

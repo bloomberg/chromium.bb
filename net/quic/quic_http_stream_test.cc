@@ -197,7 +197,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
         read_buffer_(base::MakeRefCounted<IOBufferWithSize>(4096)),
         promise_id_(GetNthServerInitiatedUnidirectionalStreamId(0)),
         stream_id_(GetNthClientInitiatedBidirectionalStreamId(0)),
-        connection_id_(quic::QuicConnectionIdFromUInt64(2)),
+        connection_id_(quic::test::TestConnectionId(2)),
         client_maker_(version_,
                       connection_id_,
                       &clock_,
