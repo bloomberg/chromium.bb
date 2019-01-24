@@ -14,9 +14,7 @@
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_utils.h"
-#include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -24,12 +22,9 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/shadow_value.h"
 #include "ui/gfx/transform.h"
-#include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_animations.h"
 
@@ -312,27 +307,6 @@ views::Widget* CreateWallpaperWidget(aura::Window* root_window,
 
   aura::Window* container = root_window->GetChildById(container_id);
   wallpaper_widget->SetBounds(container->bounds());
-
-  // SingleProcessMash changes a large chunk of underlying code, so put a label
-  // in the top-right of the screen to let developers and QA know that it is on.
-  if (::features::IsSingleProcessMash()) {
-    views::Label* label =
-        new views::Label(base::ASCIIToUTF16("SingleProcessMash enabled"));
-    label->SetTooltipText(base::ASCIIToUTF16("Use about:flags to disable"));
-    const int screen_width = root_window->GetBoundsInScreen().width();
-    const int padding = 8;
-    label->SetBounds(padding, 0, screen_width - 2 * padding, 32);
-    label->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-    label->SetAutoColorReadabilityEnabled(false);
-    label->SetEnabledColor(SK_ColorWHITE);
-    label->SetFontList(views::Label::GetDefaultFontList().Derive(
-        -1, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL));
-    const int elevation = 3;  // DIPs.
-    label->SetShadows({gfx::ShadowValue::MakeMdShadowValues(elevation)});
-    label->SetSubpixelRenderingEnabled(false);
-    label->SetVisible(true);
-    wallpaper_view->AddChildView(label);
-  }
 
   return wallpaper_widget;
 }

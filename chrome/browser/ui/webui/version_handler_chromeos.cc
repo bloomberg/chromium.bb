@@ -6,7 +6,10 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "chrome/common/channel_info.h"
+#include "components/version_info/channel.h"
 #include "content/public/browser/web_ui.h"
+#include "ui/base/ui_base_features.h"
 
 VersionHandlerChromeOS::VersionHandlerChromeOS() : weak_factory_(this) {}
 
@@ -37,7 +40,15 @@ void VersionHandlerChromeOS::HandleRequestVersionInfo(
 }
 
 void VersionHandlerChromeOS::OnVersion(const std::string& version) {
-  base::Value arg(version);
+  std::string os_version = version;
+  // Put a string in about:version so it's easy to copy/paste into bug reports,
+  // similar to the OS label on the login/lock screen in canary and dev.
+  // String does not need to be localized since it is a feature name.
+  if (chrome::GetChannel() <= version_info::Channel::DEV &&
+      ::features::IsSingleProcessMash()) {
+    os_version += " SingleProcessMash";
+  }
+  base::Value arg(os_version);
   web_ui()->CallJavascriptFunctionUnsafe("returnOsVersion", arg);
 }
 
