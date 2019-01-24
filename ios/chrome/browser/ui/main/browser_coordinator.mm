@@ -243,12 +243,17 @@
     [self.ARQuickLookCoordinator start];
   }
 
-  self.formInputAccessoryCoordinator = [[FormInputAccessoryCoordinator alloc]
-      initWithBaseViewController:self.viewController
-                    browserState:self.browserState
-                    webStateList:self.tabModel.webStateList];
-  self.formInputAccessoryCoordinator.delegate = self;
-  [self.formInputAccessoryCoordinator start];
+  // TODO(crbug.com/923857): add manual fallback to incognito mode.  Right now
+  // two formInputAccessoryViews are (lazy) created for normal and incognito,
+  // and the incognito remains on top when going back to normal.
+  if (!self.browserState->IsOffTheRecord()) {
+    self.formInputAccessoryCoordinator = [[FormInputAccessoryCoordinator alloc]
+        initWithBaseViewController:self.viewController
+                      browserState:self.browserState
+                      webStateList:self.tabModel.webStateList];
+    self.formInputAccessoryCoordinator.delegate = self;
+    [self.formInputAccessoryCoordinator start];
+  }
 
   if (base::FeatureList::IsEnabled(translate::kCompactTranslateInfobarIOS)) {
     self.translatePopupMenuCoordinator = [[TranslatePopupMenuCoordinator alloc]
