@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "components/url_formatter/elide_url.h"
 #include "content/browser/media/session/audio_focus_delegate.h"
 #include "content/browser/media/session/media_session_controller.h"
 #include "content/browser/media/session/media_session_player_observer.h"
@@ -935,8 +936,8 @@ media_session::MediaMetadata MediaSessionImpl::GetMediaMetadata() const {
           ? *routed_service_->metadata()
           : media_session::MediaMetadata();
 
-  metadata.source_title = base::ASCIIToUTF16(
-      web_contents()->GetLastCommittedURL().GetOrigin().host());
+  metadata.source_title = url_formatter::FormatOriginForSecurityDisplay(
+      url::Origin::Create(web_contents()->GetLastCommittedURL()));
 
   return metadata;
 }

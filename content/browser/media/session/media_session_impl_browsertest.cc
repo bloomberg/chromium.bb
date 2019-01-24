@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_samples.h"
+#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -22,8 +23,10 @@
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/content_browser_test.h"
+#include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "media/base/media_content_type.h"
+#include "net/dns/mock_host_resolver.h"
 #include "services/media_session/public/cpp/test/mock_media_session.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -49,6 +52,9 @@ namespace {
 const double kDefaultVolumeMultiplier = 1.0;
 const double kDuckingVolumeMultiplier = 0.2;
 const double kDifferentDuckingVolumeMultiplier = 0.018;
+
+const base::string16 kExpectedSourceTitlePrefix =
+    base::ASCIIToUTF16("http://example.com:");
 
 class MockAudioFocusDelegate : public AudioFocusDelegate {
  public:
@@ -104,6 +110,12 @@ class MediaSessionImplBrowserTest : public content::ContentBrowserTest {
 
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
+
+    // Navigate to a test page with a a real origin.
+    ASSERT_TRUE(embedded_test_server()->Start());
+    host_resolver()->AddRule("*", "127.0.0.1");
+    NavigateToURL(
+        shell(), embedded_test_server()->GetURL("example.com", "/title1.html"));
 
     media_session_ = MediaSessionImpl::Get(shell()->web_contents());
     mock_media_session_observer_.reset(
@@ -236,8 +248,9 @@ class MediaSessionImplBrowserTest : public content::ContentBrowserTest {
   bool IsDucking() const { return media_session_->is_ducking_; }
 
   base::string16 GetExpectedSourceTitle() {
-    return base::ASCIIToUTF16(
-        shell()->web_contents()->GetLastCommittedURL().GetOrigin().host());
+    return base::StrCat(
+        {kExpectedSourceTitlePrefix,
+         base::NumberToString16(embedded_test_server()->port())});
   }
 
  protected:

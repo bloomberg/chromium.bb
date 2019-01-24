@@ -668,10 +668,10 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 TEST_F(MediaSessionImplServiceRoutingTest, NotifyMojoObserverOnNavigation) {
   media_session::test::MockMediaSessionMojoObserver observer(
       *GetMediaSession());
-  contents()->NavigateAndCommit(GURL("http://www.google.com"));
+  contents()->NavigateAndCommit(GURL("http://www.google.com/test"));
 
   media_session::MediaMetadata expected_metadata;
-  expected_metadata.source_title = base::ASCIIToUTF16("www.google.com");
+  expected_metadata.source_title = base::ASCIIToUTF16("http://www.google.com");
   EXPECT_EQ(expected_metadata, observer.WaitForNonEmptyMetadata());
 }
 
