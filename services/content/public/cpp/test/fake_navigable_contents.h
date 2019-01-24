@@ -39,6 +39,8 @@ class FakeNavigableContents : public mojom::NavigableContents {
   void GoBack(mojom::NavigableContents::GoBackCallback callback) override;
   void CreateView(bool in_service_process,
                   CreateViewCallback callback) override;
+  void Focus() override;
+  void FocusThroughTabTraversal(bool reverse) override;
 
   mojo::Binding<mojom::NavigableContents> binding_{this};
   mojom::NavigableContentsClientPtr client_;

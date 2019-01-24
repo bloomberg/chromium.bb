@@ -40,6 +40,8 @@ class AssistantWebView : public views::View,
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void ChildPreferredSizeChanged(views::View* child) override;
+  void OnFocus() override;
+  void AboutToRequestFocusFromTabTraversal(bool reverse) override;
 
   // views::WindowObserver:
   void OnWindowBoundsChanged(aura::Window* window,

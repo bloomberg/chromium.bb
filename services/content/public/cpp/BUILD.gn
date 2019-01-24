@@ -32,6 +32,8 @@ component("cpp") {
     "//base",
     "//net",
     "//services/content/public/mojom",
+    "//ui/accessibility",
+    "//ui/accessibility/mojom",
     "//ui/base",
     "//ui/gfx:native_widget_types",
     "//ui/gfx/geometry",

@@ -3,6 +3,7 @@ include_rules = [
 
   "+services/ws/public",
 
+  "+ui/accessibility",
   "+ui/aura",
   "+ui/views",
 ]

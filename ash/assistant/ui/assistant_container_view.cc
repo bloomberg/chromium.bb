@@ -219,6 +219,13 @@ int AssistantContainerView::GetDialogButtons() const {
 }
 
 views::FocusTraversable* AssistantContainerView::GetFocusTraversable() {
+  auto* focus_manager = GetFocusManager();
+  if (focus_manager && focus_manager->GetFocusedView())
+    return nullptr;
+
+  if (!FindFirstFocusableView())
+    return nullptr;
+
   return &focus_traversable_;
 }
 

@@ -99,6 +99,16 @@ void AssistantWebView::ChildPreferredSizeChanged(views::View* child) {
   SchedulePaint();
 }
 
+void AssistantWebView::OnFocus() {
+  if (contents_)
+    contents_->Focus();
+}
+
+void AssistantWebView::AboutToRequestFocusFromTabTraversal(bool reverse) {
+  if (contents_)
+    contents_->FocusThroughTabTraversal(reverse);
+}
+
 void AssistantWebView::OnWindowBoundsChanged(aura::Window* window,
                                              const gfx::Rect& old_bounds,
                                              const gfx::Rect& new_bounds,
@@ -191,6 +201,7 @@ void AssistantWebView::DidAutoResizeView(const gfx::Size& new_size) {
 
 void AssistantWebView::DidStopLoading() {
   AddChildView(contents_->GetView()->view());
+  SetFocusBehavior(FocusBehavior::ALWAYS);
 
   gfx::NativeView native_view = contents_->GetView()->native_view();
 
@@ -239,6 +250,7 @@ void AssistantWebView::RemoveContents() {
   if (view)
     RemoveChildView(view);
 
+  SetFocusBehavior(FocusBehavior::NEVER);
   contents_->RemoveObserver(this);
   contents_.reset();
 }

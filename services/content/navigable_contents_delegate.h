@@ -39,6 +39,14 @@ class NavigableContentsDelegate {
   // navigation attempt will fail if the history stack is empty.
   virtual void GoBack(
       content::mojom::NavigableContents::GoBackCallback callback) = 0;
+
+  // Attempts to transfer global input focus to the navigated contents if they
+  // have an active visual representation.
+  virtual void Focus() = 0;
+
+  // Similar to above but for use specifically when UI element traversal is
+  // being done via Tab-key cycling or a similar mechanism.
+  virtual void FocusThroughTabTraversal(bool reverse) = 0;
 };
 
 }  // namespace content
