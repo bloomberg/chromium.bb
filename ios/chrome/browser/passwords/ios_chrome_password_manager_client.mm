@@ -9,7 +9,6 @@
 
 #include "base/no_destructor.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
@@ -18,6 +17,7 @@
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/store_metrics_reporter.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -76,7 +76,7 @@ IOSChromePasswordManagerClient::IOSChromePasswordManagerClient(
 IOSChromePasswordManagerClient::~IOSChromePasswordManagerClient() = default;
 
 SyncState IOSChromePasswordManagerClient::GetPasswordSyncState() const {
-  browser_sync::ProfileSyncService* sync_service =
+  syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForBrowserState(delegate_.browserState);
   return password_manager_util::GetPasswordSyncState(sync_service);
 }

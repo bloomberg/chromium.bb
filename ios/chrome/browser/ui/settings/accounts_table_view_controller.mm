@@ -8,8 +8,8 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
@@ -128,7 +128,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if (self) {
     _browserState = browserState;
     _closeSettingsOnAddAccount = closeSettingsOnAddAccount;
-    browser_sync::ProfileSyncService* syncService =
+    syncer::SyncService* syncService =
         ProfileSyncServiceFactory::GetForBrowserState(_browserState);
     if (!unified_consent::IsUnifiedConsentFeatureEnabled()) {
       // When unified consent flag is enabled, the sync settings are available

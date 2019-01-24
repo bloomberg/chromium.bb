@@ -12,6 +12,7 @@
 #include "components/google/core/common/google_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -63,7 +64,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if (self) {
     self.title = l10n_util::GetNSString(IDS_IOS_SYNC_ENCRYPTION_TITLE);
     _browserState = browserState;
-    browser_sync::ProfileSyncService* syncService =
+    syncer::SyncService* syncService =
         ProfileSyncServiceFactory::GetForBrowserState(_browserState);
     _isUsingSecondaryPassphrase = syncService->IsEngineInitialized() &&
                                   syncService->IsUsingSecondaryPassphrase();
@@ -175,7 +176,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   switch (item.type) {
     case ItemTypePassphrase: {
       DCHECK(browser_sync::ProfileSyncService::IsSyncAllowedByFlag());
-      browser_sync::ProfileSyncService* service =
+      syncer::SyncService* service =
           ProfileSyncServiceFactory::GetForBrowserState(_browserState);
       if (service->IsEngineInitialized() &&
           !service->IsUsingSecondaryPassphrase()) {
@@ -202,7 +203,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark SyncObserverModelBridge
 
 - (void)onSyncStateChanged {
-  browser_sync::ProfileSyncService* service =
+  syncer::SyncService* service =
       ProfileSyncServiceFactory::GetForBrowserState(_browserState);
   BOOL isNowUsingSecondaryPassphrase =
       service->IsEngineInitialized() && service->IsUsingSecondaryPassphrase();

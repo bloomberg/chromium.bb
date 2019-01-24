@@ -15,6 +15,7 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/sync/driver/startup_controller.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_util.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
@@ -44,8 +45,6 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
-using browser_sync::ProfileSyncService;
-
 namespace {
 
 void UpdateNetworkTimeOnUIThread(base::Time network_time,
@@ -74,23 +73,39 @@ ProfileSyncServiceFactory* ProfileSyncServiceFactory::GetInstance() {
 }
 
 // static
-ProfileSyncService* ProfileSyncServiceFactory::GetForBrowserState(
+syncer::SyncService* ProfileSyncServiceFactory::GetForBrowserState(
     ios::ChromeBrowserState* browser_state) {
-  if (!ProfileSyncService::IsSyncAllowedByFlag())
+  if (!browser_sync::ProfileSyncService::IsSyncAllowedByFlag())
     return nullptr;
 
-  return static_cast<ProfileSyncService*>(
+  return static_cast<syncer::SyncService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
 
 // static
-ProfileSyncService* ProfileSyncServiceFactory::GetForBrowserStateIfExists(
+syncer::SyncService* ProfileSyncServiceFactory::GetForBrowserStateIfExists(
     ios::ChromeBrowserState* browser_state) {
-  if (!ProfileSyncService::IsSyncAllowedByFlag())
+  if (!browser_sync::ProfileSyncService::IsSyncAllowedByFlag())
     return nullptr;
 
-  return static_cast<ProfileSyncService*>(
+  return static_cast<syncer::SyncService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, false));
+}
+
+// static
+browser_sync::ProfileSyncService*
+ProfileSyncServiceFactory::GetAsProfileSyncServiceForBrowserState(
+    ios::ChromeBrowserState* browser_state) {
+  return static_cast<browser_sync::ProfileSyncService*>(
+      GetForBrowserState(browser_state));
+}
+
+// static
+browser_sync::ProfileSyncService*
+ProfileSyncServiceFactory::GetAsProfileSyncServiceForBrowserStateIfExists(
+    ios::ChromeBrowserState* browser_state) {
+  return static_cast<browser_sync::ProfileSyncService*>(
+      GetForBrowserStateIfExists(browser_state));
 }
 
 ProfileSyncServiceFactory::ProfileSyncServiceFactory()
@@ -139,10 +154,10 @@ ProfileSyncServiceFactory::BuildServiceInstanceFor(
   // startup once bug has been fixed.
   ios::AboutSigninInternalsFactory::GetForBrowserState(browser_state);
 
-  ProfileSyncService::InitParams init_params;
+  browser_sync::ProfileSyncService::InitParams init_params;
   init_params.identity_manager =
       IdentityManagerFactory::GetForBrowserState(browser_state);
-  init_params.start_behavior = ProfileSyncService::MANUAL_START;
+  init_params.start_behavior = browser_sync::ProfileSyncService::MANUAL_START;
   init_params.sync_client =
       std::make_unique<IOSChromeSyncClient>(browser_state);
   init_params.network_time_update_callback = base::Bind(&UpdateNetworkTime);
@@ -174,7 +189,8 @@ ProfileSyncServiceFactory::BuildServiceInstanceFor(
         deprecated_invalidation_provider->GetIdentityProvider());
   }
 
-  auto pss = std::make_unique<ProfileSyncService>(std::move(init_params));
+  auto pss = std::make_unique<browser_sync::ProfileSyncService>(
+      std::move(init_params));
   pss->Initialize();
   return pss;
 }

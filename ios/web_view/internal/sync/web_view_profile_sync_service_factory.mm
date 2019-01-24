@@ -14,6 +14,7 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/sync/driver/startup_controller.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_util.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web_view/internal/app/application_context.h"
@@ -37,8 +38,6 @@
 
 namespace ios_web_view {
 
-using browser_sync::ProfileSyncService;
-
 // static
 WebViewProfileSyncServiceFactory*
 WebViewProfileSyncServiceFactory::GetInstance() {
@@ -47,9 +46,9 @@ WebViewProfileSyncServiceFactory::GetInstance() {
 }
 
 // static
-ProfileSyncService* WebViewProfileSyncServiceFactory::GetForBrowserState(
+syncer::SyncService* WebViewProfileSyncServiceFactory::GetForBrowserState(
     WebViewBrowserState* browser_state) {
-  return static_cast<ProfileSyncService*>(
+  return static_cast<syncer::SyncService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
 
@@ -82,9 +81,9 @@ WebViewProfileSyncServiceFactory::BuildServiceInstanceFor(
       WebViewIdentityManagerFactory::GetForBrowserState(browser_state);
   WebViewGCMProfileServiceFactory::GetForBrowserState(browser_state);
 
-  ProfileSyncService::InitParams init_params;
+  browser_sync::ProfileSyncService::InitParams init_params;
   init_params.identity_manager = identity_manager;
-  init_params.start_behavior = ProfileSyncService::MANUAL_START;
+  init_params.start_behavior = browser_sync::ProfileSyncService::MANUAL_START;
   init_params.sync_client = std::make_unique<WebViewSyncClient>(browser_state);
   init_params.url_loader_factory = browser_state->GetSharedURLLoaderFactory();
   // ios/web_view has no need to update network time.
@@ -97,7 +96,8 @@ WebViewProfileSyncServiceFactory::BuildServiceInstanceFor(
           ->GetIdentityProvider());
 
   auto profile_sync_service =
-      std::make_unique<ProfileSyncService>(std::move(init_params));
+      std::make_unique<browser_sync::ProfileSyncService>(
+          std::move(init_params));
   profile_sync_service->Initialize();
   return profile_sync_service;
 }

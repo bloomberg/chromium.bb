@@ -14,9 +14,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-namespace browser_sync {
-class ProfileSyncService;
-}  // namespace browser_sync
+namespace syncer {
+class SyncService;
+}  // namespace syncer
 
 namespace identity {
 class IdentityManager;
@@ -28,12 +28,11 @@ class SigninErrorController;
 @interface CWVSyncController ()
 
 // All dependencies must out live this class.
-- (instancetype)
-    initWithProfileSyncService:
-        (browser_sync::ProfileSyncService*)profileSyncService
-               identityManager:(identity::IdentityManager*)identityManager
-                  tokenService:(ProfileOAuth2TokenService*)tokenService
-         signinErrorController:(SigninErrorController*)SigninErrorController
+- (instancetype)initWithSyncService:(syncer::SyncService*)syncService
+                    identityManager:(identity::IdentityManager*)identityManager
+                       tokenService:(ProfileOAuth2TokenService*)tokenService
+              signinErrorController:
+                  (SigninErrorController*)SigninErrorController
     NS_DESIGNATED_INITIALIZER;
 
 // Called by WebViewProfileOAuth2TokenServiceIOSProviderImpl to obtain

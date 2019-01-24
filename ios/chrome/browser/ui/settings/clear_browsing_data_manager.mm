@@ -8,7 +8,6 @@
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/browsing_data/core/history_notice_utils.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/feature_engagement/public/event_constants.h"
@@ -17,6 +16,7 @@
 #include "components/history/core/browser/web_history_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_counter_wrapper.h"
@@ -274,7 +274,7 @@ actionSheetCoordinatorWithDataTypesToRemove:
         toSectionWithIdentifier:SectionIdentifierGoogleAccount];
   }
 
-  browser_sync::ProfileSyncService* syncService =
+  syncer::SyncService* syncService =
       ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
   if (syncService && syncService->IsSyncFeatureActive()) {
     // TODO(crbug.com/650424): Footer items must currently go into a separate

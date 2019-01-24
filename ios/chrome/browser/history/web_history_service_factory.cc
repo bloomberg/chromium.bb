@@ -5,7 +5,6 @@
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 
 #include "base/no_destructor.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/prefs/pref_service.h"

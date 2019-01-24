@@ -6,9 +6,9 @@
 
 #include "base/auto_reset.h"
 #include "base/mac/foundation_util.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/unified_consent/pref_names.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
