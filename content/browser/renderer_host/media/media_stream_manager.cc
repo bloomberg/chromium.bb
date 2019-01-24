@@ -42,6 +42,7 @@
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/browser/renderer_host/media/video_capture_provider_switcher.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/screenlock_monitor/screenlock_monitor.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -49,7 +50,9 @@
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/desktop_streams_registry.h"
 #include "content/public/browser/media_observer.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents_media_capture_id.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -1518,7 +1521,19 @@ void MediaStreamManager::FinalizeRequestFailed(
       break;
     }
     case blink::MEDIA_DEVICE_UPDATE: {
-      // Fail to change desktop capture source, keep everything unchanged.
+      // Fail to change desktop capture source, keep everything unchanged and
+      // bring the previous shared tab to the front.
+      for (const auto& device : request->devices) {
+        if (device.type == blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE) {
+          DesktopMediaID source = DesktopMediaID::Parse(device.id);
+          DCHECK(source.type == DesktopMediaID::TYPE_WEB_CONTENTS);
+          base::PostTaskWithTraits(
+              FROM_HERE, {BrowserThread::UI},
+              base::BindOnce(&MediaStreamManager::ActivateTabOnUIThread,
+                             base::Unretained(this), source));
+          break;
+        }
+      }
       return;
     }
     default:
@@ -2155,6 +2170,15 @@ MediaStreamDevices MediaStreamManager::ConvertToMediaStreamDevices(
         video_capture_manager()->GetCameraCalibration(device.id);
   }
   return devices;
+}
+
+void MediaStreamManager::ActivateTabOnUIThread(const DesktopMediaID source) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderFrameHost* rfh =
+      RenderFrameHost::FromID(source.web_contents_id.render_process_id,
+                              source.web_contents_id.main_render_frame_id);
+  if (rfh)
+    rfh->GetRenderViewHost()->GetDelegate()->Activate();
 }
 
 void MediaStreamManager::OnStreamStarted(const std::string& label) {

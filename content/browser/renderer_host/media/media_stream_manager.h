@@ -490,6 +490,9 @@ class CONTENT_EXPORT MediaStreamManager
       blink::MediaStreamType stream_type,
       const blink::WebMediaDeviceInfoArray& device_infos);
 
+  // Activate the specified tab and bring it to the front.
+  void ActivateTabOnUIThread(const DesktopMediaID source);
+
   media::AudioSystem* const audio_system_;  // not owned
   scoped_refptr<AudioInputDeviceManager> audio_input_device_manager_;
   scoped_refptr<VideoCaptureManager> video_capture_manager_;
