@@ -235,9 +235,6 @@ class PDFEngine {
         const base::char16* term,
         bool case_sensitive) = 0;
 
-    // Notifies the client that the engine has painted a page from the document.
-    virtual void DocumentPaintOccurred() {}
-
     // Notifies the client that the document has finished loading.
     virtual void DocumentLoadComplete(const DocumentFeatures& document_features,
                                       uint32_t file_size) {}

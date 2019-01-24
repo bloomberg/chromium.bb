@@ -1614,8 +1614,6 @@ OutOfProcessInstance::SearchString(const base::char16* string,
   return results;
 }
 
-void OutOfProcessInstance::DocumentPaintOccurred() {}
-
 void OutOfProcessInstance::DocumentLoadComplete(
     const PDFEngine::DocumentFeatures& document_features,
     uint32_t file_size) {

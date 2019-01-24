@@ -131,7 +131,6 @@ class OutOfProcessInstance : public pp::Instance,
   std::vector<SearchStringResult> SearchString(const base::char16* string,
                                                const base::char16* term,
                                                bool case_sensitive) override;
-  void DocumentPaintOccurred() override;
   void DocumentLoadComplete(
       const PDFEngine::DocumentFeatures& document_features,
       uint32_t file_size) override;
