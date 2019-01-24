@@ -846,13 +846,15 @@ class RTCPeerConnectionHandler::Observer
   }
 
   void OnIceConnectionChange(
+      PeerConnectionInterface::IceConnectionState new_state) override {}
+  void OnStandardizedIceConnectionChange(
+
       PeerConnectionInterface::IceConnectionState new_state) override {
     if (!main_thread_->BelongsToCurrentThread()) {
       main_thread_->PostTask(
-          FROM_HERE,
-          base::BindOnce(
-              &RTCPeerConnectionHandler::Observer::OnIceConnectionChange, this,
-              new_state));
+          FROM_HERE, base::BindOnce(&RTCPeerConnectionHandler::Observer::
+                                        OnStandardizedIceConnectionChange,
+                                    this, new_state));
     } else if (handler_) {
       handler_->OnIceConnectionChange(new_state);
     }
