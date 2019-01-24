@@ -15,11 +15,13 @@ from chromite.cli.cros.cros_branch import Branch
 from chromite.cli.cros.cros_branch import BranchCommand
 from chromite.cli.cros.cros_branch import CanBranchProject
 from chromite.cli.cros.cros_branch import CanPinProject
+from chromite.cli.cros.cros_branch import CheckoutManager
 from chromite.cli.cros.cros_branch import FactoryBranch
 from chromite.cli.cros.cros_branch import FirmwareBranch
 from chromite.cli.cros.cros_branch import ManifestRepository
 from chromite.cli.cros.cros_branch import ReleaseBranch
 from chromite.cli.cros.cros_branch import StabilizeBranch
+from chromite.cli.cros.cros_branch import WhichVersionShouldBump
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import partial_mock
@@ -31,12 +33,11 @@ class ManifestTestCase(cros_test_lib.MockTestCase):
   """Test case requiring manifest test data."""
 
   PATH = 'path/to'
+
   MANIFEST_OUTER_XML = '''\
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest>%s</manifest>
   '''
-  MANIFEST_BASE_FILE = 'official.xml'
-  MANIFEST_BASE_PATH = os.path.join(PATH, MANIFEST_BASE_FILE)
   MANIFEST_BASE_XML = '''
   <remote fetch="https://chromium.googlesource.com"
           name="cros"
@@ -45,9 +46,9 @@ class ManifestTestCase(cros_test_lib.MockTestCase):
   <default remote="cros" revision="refs/heads/master" sync-j="8"/>
 
   <!-- Test legacy heristic to determine branching strategy for projects. -->
-  <project name="chromiumos/chromite"
-           path="path/to/chromite"
-           revision="refs/heads/chromite"/>
+  <project name="chromiumos/overlays/chromiumos-overlay"
+           path="path/to/chromiumos-overlay"
+           revision="refs/heads/chromiumos-overlay"/>
   <project name="chromiumos/special"
            path="path/to/special-new"
            revision="refs/heads/special-new"/>
@@ -58,8 +59,6 @@ class ManifestTestCase(cros_test_lib.MockTestCase):
            path="path/to/external"
            revision="refs/heads/pinned"/>
   '''
-  MANIFEST_INCLUDED_FILE = 'included.xml'
-  MANIFEST_INCLUDED_PATH = os.path.join(PATH, MANIFEST_INCLUDED_FILE)
   MANIFEST_INCLUDED_XML = '''
   <!-- Test the explicitly specified branching strategy for projects. -->
   <project name="chromiumos/explicit-branch"
@@ -78,23 +77,44 @@ class ManifestTestCase(cros_test_lib.MockTestCase):
   </project>
   '''
   INCLUDES_XML = '''<include name="included.xml"/>'''
+
+  MANIFEST_BASE_FILE = 'official.xml'
+  MANIFEST_BASE_PATH = os.path.join(PATH, MANIFEST_BASE_FILE)
   MANIFEST_BASE_FULL_XML = MANIFEST_OUTER_XML % (
       INCLUDES_XML + MANIFEST_BASE_XML)
+
+  MANIFEST_INCLUDED_FILE = 'included.xml'
+  MANIFEST_INCLUDED_PATH = os.path.join(PATH, MANIFEST_INCLUDED_FILE)
   MANIFEST_INCLUDED_FULL_XML = MANIFEST_OUTER_XML % MANIFEST_INCLUDED_XML
+
   MANIFEST_FULL_FILE = 'manifest.xml'
   MANIFEST_FULL_PATH = os.path.join(PATH, MANIFEST_FULL_FILE)
   MANIFEST_FULL_XML = MANIFEST_OUTER_XML % (
       MANIFEST_BASE_XML + MANIFEST_INCLUDED_XML)
+
   MANIFEST_TABLE = {
       MANIFEST_BASE_FILE: MANIFEST_BASE_FULL_XML,
       MANIFEST_INCLUDED_FILE: MANIFEST_INCLUDED_FULL_XML,
       MANIFEST_FULL_FILE: MANIFEST_FULL_XML,
   }
-  PINNED_PROJECTS = ('explicit-external', 'external')
-  TOT_PROJECTS = ('explicit-unpinned',)
-  MULTI_CHECKOUT_PROJECTS = ('special-old', 'special-new')
-  SINGLE_CHECKOUT_PROJECTS = ('chromite', 'explicit-branch')
+
+  EXPLICIT_EXTERNAL = 'explicit-external'
+  EXTERNAL = 'external'
+  PINNED_PROJECTS = (EXPLICIT_EXTERNAL, EXTERNAL)
+
+  EXPLICIT_UNPINNED = 'explicit-unpinned'
+  TOT_PROJECTS = (EXPLICIT_UNPINNED,)
+
+  SPECIAL_OLD = 'special-old'
+  SPECIAL_NEW = 'special-new'
+  MULTI_CHECKOUT_PROJECTS = (SPECIAL_OLD, SPECIAL_NEW)
+
+  CHROMIUMOS_OVERLAY = 'chromiumos-overlay'
+  EXPLICIT_BRANCH = 'explicit-branch'
+  SINGLE_CHECKOUT_PROJECTS = (CHROMIUMOS_OVERLAY, EXPLICIT_BRANCH)
+
   BRANCHED_PROJECTS = SINGLE_CHECKOUT_PROJECTS + MULTI_CHECKOUT_PROJECTS
+
   PINNED_BRANCH = git.NormalizeRef('pinned')
   TOT_BRANCH = git.NormalizeRef('master')
 
@@ -102,7 +122,7 @@ class ManifestTestCase(cros_test_lib.MockTestCase):
     """Return the test project's path.
 
     Args:
-      pid: The test project ID (e.g. 'chromite').
+      pid: The test project ID (e.g. 'chromiumos-overlay').
 
     Returns:
       Path to the project, always of the form '<test path>/<project ID>'.
@@ -113,12 +133,23 @@ class ManifestTestCase(cros_test_lib.MockTestCase):
     """Return the test project's revision.
 
     Args:
-      pid: The test project ID (e.g. 'chromite')
+      pid: The test project ID (e.g. 'chromiumos-overlay')
 
     Returns:
       Reivision for the project, always of form 'refs/heads/<project ID>'.
     """
     return git.NormalizeRef(pid)
+
+  def ProjectFor(self, pid):
+    """Return the test project's repo_manifest.Project.
+
+    Args:
+      pid: The test project ID (e.g. 'chromiumos-overlay')
+
+    Returns:
+      Corresponding repo_manifest.Project.
+    """
+    return [p for p in self.full_manifest.Projects() if p.name.endswith(pid)][0]
 
   def FromFileMock(self, source, allow_unsupported_features=False):
     """Forward repo_manifest.FromFile to repo_manifest.FromString.
@@ -161,6 +192,56 @@ class UtilitiesTest(ManifestTestCase):
     projects = filter(is_tot, self.full_manifest.Projects())
     self.assertItemsEqual([p.Path() for p in projects],
                           map(self.PathFor, self.TOT_PROJECTS))
+
+  def testWhichVersionShouldBump(self):
+    self.assertEqual(WhichVersionShouldBump('1.0.0'), 'branch')
+    self.assertEqual(WhichVersionShouldBump('1.2.0'), 'patch')
+
+
+class CheckoutManagerTest(ManifestTestCase):
+  """Tests for CheckoutManager functions."""
+
+  def AssertCommandCalledInProject(self, cmd, expected=True):
+    self.rc_mock.assertCommandContains(
+        cmd,
+        cwd=partial_mock.ListRegex('.*/' + self.project.Path()),
+        expected=expected)
+
+  def SetCurrentBranch(self, branch):
+    self.PatchObject(git, 'GetCurrentBranch', return_value=branch)
+
+  def setUp(self):
+    self.project = self.ProjectFor(self.CHROMIUMOS_OVERLAY)
+    self.branch = self.project.Revision()
+    self.remote = self.project.Remote().GitName()
+    self.rc_mock = cros_test_lib.RunCommandMock()
+    self.rc_mock.SetDefaultCmdResult()
+    self.StartPatcher(self.rc_mock)
+
+  def testEnterNoCheckout(self):
+    self.SetCurrentBranch(self.branch)
+    with CheckoutManager(self.project):
+      self.AssertCommandCalledInProject(['git', 'fetch'], expected=False)
+      self.AssertCommandCalledInProject(['git', 'checkout'], expected=False)
+
+  def testEnterWithCheckout(self):
+    self.SetCurrentBranch(self.TOT_BRANCH)
+    with CheckoutManager(self.project):
+      self.AssertCommandCalledInProject(
+          ['git', 'fetch', self.remote, self.branch])
+      self.AssertCommandCalledInProject(['git', 'checkout', 'FETCH_HEAD'])
+
+  def testExitNoCheckout(self):
+    self.SetCurrentBranch(self.branch)
+    with CheckoutManager(self.project):
+      pass
+    self.AssertCommandCalledInProject(['git', 'checkout'], expected=False)
+
+  def testExitWithCheckout(self):
+    self.SetCurrentBranch(self.TOT_BRANCH)
+    with CheckoutManager(self.project):
+      pass
+    self.AssertCommandCalledInProject(['git', 'checkout', self.TOT_BRANCH])
 
 
 class ManifestRepositoryTest(ManifestTestCase):
@@ -216,11 +297,12 @@ class BranchTest(ManifestTestCase):
   """Establishes environment for testing sublcasses of Branch."""
 
   MILESTONE = '12'
-  VERSION = '3.4.5'
+  VERSION = '3.4.0'
+  BRANCH_KIND = 'kind'
   BRANCH_NAME = 'branch'
 
   def CreateInstance(self):
-    return Branch('fake-kind', self.BRANCH_NAME)
+    return Branch(self.BRANCH_KIND, self.BRANCH_NAME)
 
   def AssertSynced(self, version):
     self.rc_mock.assertCommandContains(
@@ -243,24 +325,24 @@ class BranchTest(ManifestTestCase):
     self.rc_mock.SetDefaultCmdResult()
     self.StartPatcher(self.rc_mock)
 
+    # ManifestRepository and VersionInfo tested separately, so mock it.
+    self.PatchObject(ManifestRepository, 'RepairManifestsOnDisk')
     self.PatchObject(
         VersionInfo,
         'from_repo',
         return_value=VersionInfo(self.VERSION, self.MILESTONE))
-
-    # ManifestRepository is tested separately, so mock it out.
-    self.PatchObject(ManifestRepository, 'RepairManifestsOnDisk')
+    self.PatchObject(VersionInfo, 'IncrementVersion')
+    self.PatchObject(VersionInfo, 'UpdateVersionFile')
 
     # Instance must be created last for patches to be applied.
     self.inst = self.CreateInstance()
 
-  def testCreateLocal(self):
+  def testCreateSyncsLocalCheckout(self):
     self.inst.Create(self.VERSION)
-
-    # Assert that local checkout was synced to correct version.
     self.AssertSynced(self.VERSION)
 
-    # Assert that all branchable projects were branched.
+  def testCreateBranchesCorrectProjects(self):
+    self.inst.Create(self.VERSION)
     for proj in self.SINGLE_CHECKOUT_PROJECTS:
       self.AssertProjectBranched(proj, self.BRANCH_NAME)
     for proj in self.MULTI_CHECKOUT_PROJECTS:
@@ -268,7 +350,9 @@ class BranchTest(ManifestTestCase):
     for proj in self.PINNED_PROJECTS + self.TOT_PROJECTS:
       self.AssertProjectNotBranched(proj)
 
-    # Assuming ManifestRepository did its job, make sure repairs are committed.
+  def testCreateRepairsManifests(self):
+    self.inst.Create(self.VERSION)
+    # Assuming ManifestRepo did its job, check that changes were committed.
     for manifest_project in ('manifest', 'manifest-internal'):
       self.rc_mock.assertCommandContains(
           ['git', 'commit', '-a'],

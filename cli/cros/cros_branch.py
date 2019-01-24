@@ -41,9 +41,9 @@ def AbsoluteProjectPath(relative_path):
   return os.path.join(constants.SOURCE_ROOT, relative_path)
 
 
-def ReadVersionInfo():
+def ReadVersionInfo(**kwargs):
   """Returns VersionInfo for the current checkout."""
-  return manifest_version.VersionInfo.from_repo(constants.SOURCE_ROOT)
+  return manifest_version.VersionInfo.from_repo(constants.SOURCE_ROOT, **kwargs)
 
 
 def BranchMode(project):
@@ -89,6 +89,42 @@ def CanPinProject(project):
   if not explicit_mode:
     return not CanBranchProject(project)
   return explicit_mode == constants.MANIFEST_ATTR_BRANCHING_PIN
+
+
+def WhichVersionShouldBump(branched_version):
+  """Returns which version is incremented by builds on a new branch."""
+  return 'branch' if branched_version.endswith('0.0') else 'patch'
+
+
+class CheckoutManager(object):
+  """Context manager for checking out a chromiumos project to a revision.
+
+  This manager handles fetching and checking out to a project's remote ref, as
+  specified in the manifest. It also ensures that the local checkout always
+  returns to its initial state once the context exits.
+  """
+
+  def __init__(self, project):
+    """Determine whether project needs to be checked out.
+
+    Args:
+      project: A repo_manifest.Project to be checked out.
+    """
+    self._path = AbsoluteProjectPath(project.Path())
+    self._remote = project.Remote().GitName()
+    self._ref = git.NormalizeRef(project.upstream or project.Revision())
+    self._original_ref = git.NormalizeRef(git.GetCurrentBranch(self._path))
+    self._needs_checkout = self._ref != self._original_ref
+
+  def __enter__(self):
+    if self._needs_checkout:
+      git.RunGit(self._path, ['fetch', self._remote, self._ref])
+      git.RunGit(self._path, ['checkout', 'FETCH_HEAD'])
+    return self
+
+  def __exit__(self, exc_type, exc_value, traceback):
+    if self._needs_checkout:
+      git.RunGit(self._path, ['checkout', self._original_ref])
 
 
 class ManifestRepository(object):
@@ -212,6 +248,25 @@ class Branch(object):
     self._kind = kind
     self._name = name or self.GenerateName()
     self._repo = repo_util.Repository(constants.SOURCE_ROOT)
+    self._manifest = self._repo.Manifest()
+
+  def _SyncToVersion(self, version):
+    """Sync current checkout to the given version and reread manifest.
+
+    Args:
+      version: Version string to sync to, e.g. '1234.0.0'.
+    """
+    logging.info('Syncing to manifest version %s', version)
+    cros_build_lib.RunCommand(
+        [
+            os.path.join(constants.CHROMITE_DIR, 'scripts/repo_sync_manifest'),
+            '--repo-root', constants.SOURCE_ROOT, '--manifest-versions-int',
+            AbsoluteProjectPath(
+                config_lib.GetSiteParams().INTERNAL_MANIFEST_VERSIONS_PATH),
+            '--version', version
+        ],
+        quiet=True)
+    self._manifest = self._repo.Manifest()
 
   def _ProjectBranchName(self, project, manifest):
     """Determine's the git branch name for the project.
@@ -232,8 +287,40 @@ class Branch(object):
     suffix = git.StripRefs(project.upstream or project.Revision())
     return '%s-%s' % (self._name, suffix)
 
+  def _RepairManifestRepositories(self, branches):
+    """Repair all manifests in all manifest repositories.
+
+    Args:
+      branches: Dict mapping project names to branch names.
+    """
+    for repo_name in ('manifest', 'manifest-internal'):
+      manifest_repo_path = AbsoluteProjectPath(repo_name)
+      ManifestRepository(manifest_repo_path).RepairManifestsOnDisk(branches)
+      git.RunGit(
+          manifest_repo_path,
+          ['commit', '-a', '-m',
+           'Manifests point to branch %s.' % self._name])
+
+  def _BumpVersion(self, which):
+    """Increment version in chromeos_version.sh and commit it.
+
+    Args:
+      which: Which version should be incremented. One of
+          'chrome_branch', 'build', 'branch, 'patch'.
+    """
+    new_version = ReadVersionInfo(incr_type=which)
+    new_version.IncrementVersion()
+    new_version.UpdateVersionFile(
+        'Bumping %s number after creating branch %s.' % (which, self._name),
+        dry_run=True)
+
   def GenerateName(self):
+    """Returns a generated branch name. Overridden by subclasses."""
     return '%s-%s.B' % (self._kind, ReadVersionInfo().build_number)
+
+  def ReportCreateSuccess(self):
+    """Report branch creation successful. Behavior depends on branch type."""
+    pass
 
   def Create(self, version, push=False, force=False):
     """Creates a new branch from the given version.
@@ -247,38 +334,28 @@ class Branch(object):
     if push or force:
       raise NotImplementedError('--push and --force unavailable.')
 
-    site_params = config_lib.GetSiteParams()
-
     # Sync to the manifest version.
-    logging.info('Syncing to manifest version %s', version)
-    cros_build_lib.RunCommand(
-        [
-            os.path.join(constants.CHROMITE_DIR, 'scripts/repo_sync_manifest'),
-            '--repo-root', constants.SOURCE_ROOT, '--manifest-versions-int',
-            AbsoluteProjectPath(site_params.INTERNAL_MANIFEST_VERSIONS_PATH),
-            '--version', version
-        ],
-        quiet=True)
-    manifest = self._repo.Manifest()
+    self._SyncToVersion(version)
 
     # Create local git branches. If a local branch with the same name exists
     # in any project, it is overwritten.
     logging.info('Will create branch %s for all viable projects.', self._name)
     branches = {}
-    for project in filter(CanBranchProject, manifest.Projects()):
+    for project in filter(CanBranchProject, self._manifest.Projects()):
       path = project.Path()
-      branch = self._ProjectBranchName(project, manifest)
+      branch = self._ProjectBranchName(project, self._manifest)
       branches[path] = branch
       git.CreateBranch(AbsoluteProjectPath(path), branch, project.Revision())
 
     # Modify manifests so that all branchable projects point to new branch.
-    for repo_name in ('manifest', 'manifest-internal'):
-      manifest_repo_path = AbsoluteProjectPath(repo_name)
-      ManifestRepository(manifest_repo_path).RepairManifestsOnDisk(branches)
-      git.RunGit(
-          manifest_repo_path,
-          ['commit', '-a', '-m',
-           'Manifests point to branch %s.' % self._name])
+    self._RepairManifestRepositories(branches)
+
+    # Bump version on new branch.
+    self._BumpVersion(WhichVersionShouldBump(version))
+
+    # Huzzah! The branch has been created. Now handle any reporting or cleanup.
+    # The meaning of "report" varies across branch types.
+    self.ReportCreateSuccess()
 
 
 class ReleaseBranch(Branch):
@@ -290,6 +367,14 @@ class ReleaseBranch(Branch):
   def GenerateName(self):
     vinfo = ReadVersionInfo()
     return '%s-R%s-%s.B' % (self._kind, vinfo.chrome_branch, vinfo.build_number)
+
+  def ReportCreateSuccess(self):
+    # When a release branch has been successfully created, we report it by
+    # bumping the milestone on the source branch (usually master).
+    chromiumos_overlay_source = self._manifest.GetUniqueProject(
+        'chromiumos/overlays/chromiumos-overlay')
+    with CheckoutManager(chromiumos_overlay_source):
+      self._BumpVersion('chrome_branch')
 
 
 class FactoryBranch(Branch):
