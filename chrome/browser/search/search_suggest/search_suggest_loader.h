@@ -26,12 +26,8 @@ class SearchSuggestLoader {
     // A fatal error occurred, such as the server responding with an error code
     // or with invalid data. Any previously cached response should be cleared.
     FATAL_ERROR,
-    // The user has opted out of seeing search suggestions on the NTP
-    OPTED_OUT,
-    // The limit for number of impressions was hit.
-    IMPRESSION_CAP,
-    // Received an empty response so requests are temporarily frozen.
-    REQUESTS_FROZEN
+    // The user has opted out of seeing search suggestions on the NTP.
+    OPTED_OUT
   };
   using SearchSuggestionsCallback =
       base::OnceCallback<void(Status,
