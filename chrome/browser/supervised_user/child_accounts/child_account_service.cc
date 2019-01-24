@@ -13,7 +13,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/supervised_user/child_accounts/permission_request_creator_apiary.h"
@@ -104,7 +103,7 @@ void ChildAccountService::RegisterProfilePrefs(
 
 void ChildAccountService::Init() {
   SupervisedUserServiceFactory::GetForProfile(profile_)->SetDelegate(this);
-  AccountTrackerServiceFactory::GetForProfile(profile_)->AddObserver(this);
+  IdentityManagerFactory::GetForProfile(profile_)->AddObserver(this);
 
   PropagateChildStatusToUser(profile_->IsChild());
 
@@ -122,7 +121,7 @@ bool ChildAccountService::IsChildAccountStatusKnown() {
 
 void ChildAccountService::Shutdown() {
   family_fetcher_.reset();
-  AccountTrackerServiceFactory::GetForProfile(profile_)->RemoveObserver(this);
+  IdentityManagerFactory::GetForProfile(profile_)->RemoveObserver(this);
   SupervisedUserServiceFactory::GetForProfile(profile_)->SetDelegate(nullptr);
   DCHECK(!active_);
 }
@@ -270,7 +269,7 @@ void ChildAccountService::OnAccountUpdated(const AccountInfo& info) {
   SetIsChildAccount(info.is_child_account);
 }
 
-void ChildAccountService::OnAccountRemoved(const AccountInfo& info) {
+void ChildAccountService::OnAccountRemovedWithInfo(const AccountInfo& info) {
   SetIsChildAccount(false);
 }
 
