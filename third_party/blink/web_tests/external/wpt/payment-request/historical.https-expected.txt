@@ -6,6 +6,7 @@ PASS totalAmount in PaymentResponse
 PASS paymentRequestId in PaymentRequest
 PASS paymentRequestId in PaymentResponse
 FAIL languageCode in PaymentAddress assert_false: expected false got true
+PASS regionCode in PaymentAddress
 PASS supportedMethods must not support sequence<DOMString>
 Harness: the test ran to completion.
 
