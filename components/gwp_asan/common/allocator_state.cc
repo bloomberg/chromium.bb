@@ -9,13 +9,12 @@
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 
-using base::debug::StackTrace;
-
 namespace gwp_asan {
 namespace internal {
 
 // TODO: Delete out-of-line constexpr defininitons once C++17 is in use.
 constexpr size_t AllocatorState::kGpaMaxPages;
+constexpr size_t AllocatorState::kMaxStackFrames;
 
 AllocatorState::GetMetadataReturnType AllocatorState::GetMetadataForAddress(
     uintptr_t exception_address,

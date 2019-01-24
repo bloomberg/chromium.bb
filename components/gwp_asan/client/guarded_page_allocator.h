@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/debug/stack_trace.h"
 #include "base/gtest_prod_util.h"
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
@@ -97,17 +96,6 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // Marks the specified slot as unreserved.
   void FreeSlot(size_t slot) LOCKS_EXCLUDED(lock_);
 
-  // Allocate total_pages stack traces.
-  void AllocateStackTraces();
-
-  // Deallocate stack traces. May only be called after AllocateStackTraces().
-  void DeallocateStackTraces();
-
-  // Call the destructor on the allocation and deallocation stack traces for
-  // a given slot index if the constructors for those stack traces have been
-  // called.
-  void DestructStackTrace(size_t slot);
-
   // Record an allocation or deallocation for a given slot index. This
   // encapsulates the logic for updating the stack traces and metadata for a
   // given slot.
@@ -136,12 +124,6 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // We dynamically allocate the SlotMetadata array to avoid allocating
   // extraneous memory for when total_pages < kGpaMaxPages.
   std::unique_ptr<AllocatorState::SlotMetadata[]> slots_;
-
-  // StackTrace objects for every slot in AllocatorState::data_. We avoid
-  // statically allocating the StackTrace objects because they are large and
-  // the allocator may be initialized with total_pages < kGpaMaxPages.
-  base::debug::StackTrace* alloc_traces[AllocatorState::kGpaMaxPages];
-  base::debug::StackTrace* dealloc_traces[AllocatorState::kGpaMaxPages];
 
   // Required for a singleton to access the constructor.
   friend base::NoDestructor<GuardedPageAllocator>;

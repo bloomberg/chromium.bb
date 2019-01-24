@@ -19,8 +19,6 @@
 #include "components/gwp_asan/common/allocator_state.h"
 #include "components/gwp_asan/common/crash_key_name.h"
 
-using base::debug::StackTrace;
-
 namespace gwp_asan {
 namespace internal {
 
@@ -56,17 +54,13 @@ void GuardedPageAllocator::Init(size_t max_alloced_pages, size_t total_pages) {
                         std::next(free_slot_ring_buffer_.begin(), total_pages));
   }
 
-  AllocateStackTraces();
-
   slots_ = std::make_unique<AllocatorState::SlotMetadata[]>(total_pages);
   state_.slot_metadata = reinterpret_cast<uintptr_t>(slots_.get());
 }
 
 GuardedPageAllocator::~GuardedPageAllocator() {
-  if (state_.total_pages) {
+  if (state_.total_pages)
     UnmapRegion();
-    DeallocateStackTraces();
-  }
 }
 
 void* GuardedPageAllocator::Allocate(size_t size, size_t align) {
@@ -111,7 +105,7 @@ void GuardedPageAllocator::Deallocate(void* ptr) {
   size_t slot = state_.AddrToSlot(state_.GetPageAddr(addr));
   DCHECK_EQ(addr, slots_[slot].alloc_ptr);
   // Check for double free.
-  if (slots_[slot].dealloc.trace_addr) {
+  if (slots_[slot].dealloc.trace_collected) {
     state_.double_free_detected = true;
     base::subtle::MemoryBarrier();
     // Trigger an exception by writing to the inaccessible free()d allocation.
@@ -168,39 +162,6 @@ void GuardedPageAllocator::FreeSlot(size_t slot) {
             free_slot_start_idx_);
 }
 
-void GuardedPageAllocator::AllocateStackTraces() {
-  // new is not used so that we can explicitly call the constructor when we
-  // want to collect a stack trace.
-  for (size_t i = 0; i < state_.total_pages; i++) {
-    alloc_traces[i] =
-        static_cast<StackTrace*>(malloc(sizeof(*alloc_traces[i])));
-    CHECK(alloc_traces[i]);
-    dealloc_traces[i] =
-        static_cast<StackTrace*>(malloc(sizeof(*dealloc_traces[i])));
-    CHECK(dealloc_traces[i]);
-  }
-}
-
-void GuardedPageAllocator::DeallocateStackTraces() {
-  for (size_t i = 0; i < state_.total_pages; i++) {
-    DestructStackTrace(i);
-
-    free(alloc_traces[i]);
-    alloc_traces[i] = nullptr;
-    free(dealloc_traces[i]);
-    dealloc_traces[i] = nullptr;
-  }
-}
-
-void GuardedPageAllocator::DestructStackTrace(size_t slot) {
-  // Destruct previous allocation/deallocation traces. The constructor was only
-  // called if trace_addr is non-null.
-  if (slots_[slot].alloc.trace_addr)
-    alloc_traces[slot]->~StackTrace();
-  if (slots_[slot].dealloc.trace_addr)
-    dealloc_traces[slot]->~StackTrace();
-}
-
 void GuardedPageAllocator::RecordAllocationInSlot(size_t slot,
                                                   size_t size,
                                                   void* ptr) {
@@ -208,20 +169,22 @@ void GuardedPageAllocator::RecordAllocationInSlot(size_t slot,
   slots_[slot].alloc_ptr = reinterpret_cast<uintptr_t>(ptr);
 
   slots_[slot].alloc.tid = base::PlatformThread::CurrentId();
-  new (alloc_traces[slot]) StackTrace();
-  slots_[slot].alloc.trace_addr = reinterpret_cast<uintptr_t>(
-      alloc_traces[slot]->Addresses(&slots_[slot].alloc.trace_len));
+  slots_[slot].alloc.trace_len = base::debug::CollectStackTrace(
+      reinterpret_cast<void**>(&slots_[slot].alloc.trace),
+      AllocatorState::kMaxStackFrames);
+  slots_[slot].alloc.trace_collected = true;
 
   slots_[slot].dealloc.tid = base::kInvalidThreadId;
-  slots_[slot].dealloc.trace_addr = 0;
   slots_[slot].dealloc.trace_len = 0;
+  slots_[slot].dealloc.trace_collected = false;
 }
 
 void GuardedPageAllocator::RecordDeallocationInSlot(size_t slot) {
   slots_[slot].dealloc.tid = base::PlatformThread::CurrentId();
-  new (dealloc_traces[slot]) StackTrace();
-  slots_[slot].dealloc.trace_addr = reinterpret_cast<uintptr_t>(
-      dealloc_traces[slot]->Addresses(&slots_[slot].dealloc.trace_len));
+  slots_[slot].dealloc.trace_len = base::debug::CollectStackTrace(
+      reinterpret_cast<void**>(&slots_[slot].dealloc.trace),
+      AllocatorState::kMaxStackFrames);
+  slots_[slot].dealloc.trace_collected = true;
 }
 
 uintptr_t GuardedPageAllocator::GetCrashKeyAddress() const {
