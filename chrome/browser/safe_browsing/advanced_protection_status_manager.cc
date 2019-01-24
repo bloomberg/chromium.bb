@@ -8,7 +8,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
@@ -16,6 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/oauth2_id_token_decoder.h"
+#include "services/identity/public/cpp/accounts_mutator.h"
 #include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 
 using content::BrowserThread;
@@ -38,7 +38,6 @@ AdvancedProtectionStatusManager::AdvancedProtectionStatusManager(
     : profile_(profile),
       identity_manager_(nullptr),
       access_token_fetcher_(nullptr),
-      account_tracker_service_(nullptr),
       is_under_advanced_protection_(false),
       minimum_delay_(kMinimumRefreshDelay) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -51,8 +50,6 @@ AdvancedProtectionStatusManager::AdvancedProtectionStatusManager(
 
 void AdvancedProtectionStatusManager::Initialize() {
   identity_manager_ = IdentityManagerFactory::GetForProfile(profile_);
-  account_tracker_service_ =
-      AccountTrackerServiceFactory::GetForProfile(profile_);
   SubscribeToSigninEvents();
 }
 
@@ -88,12 +85,10 @@ void AdvancedProtectionStatusManager::Shutdown() {
 AdvancedProtectionStatusManager::~AdvancedProtectionStatusManager() {}
 
 void AdvancedProtectionStatusManager::SubscribeToSigninEvents() {
-  AccountTrackerServiceFactory::GetForProfile(profile_)->AddObserver(this);
   IdentityManagerFactory::GetForProfile(profile_)->AddObserver(this);
 }
 
 void AdvancedProtectionStatusManager::UnsubscribeFromSigninEvents() {
-  AccountTrackerServiceFactory::GetForProfile(profile_)->RemoveObserver(this);
   IdentityManagerFactory::GetForProfile(profile_)->RemoveObserver(this);
 }
 
@@ -117,7 +112,7 @@ void AdvancedProtectionStatusManager::OnAccountUpdated(
   }
 }
 
-void AdvancedProtectionStatusManager::OnAccountRemoved(
+void AdvancedProtectionStatusManager::OnAccountRemovedWithInfo(
     const AccountInfo& info) {
   if (profile_->IsOffTheRecord())
     return;
@@ -267,8 +262,9 @@ void AdvancedProtectionStatusManager::OnGetIDToken(
   // This also triggers |OnAccountUpdated()|.
   if (is_under_advanced_protection_ !=
       service_flags.is_under_advanced_protection) {
-    account_tracker_service_->SetIsAdvancedProtectionAccount(
-        GetPrimaryAccountId(), service_flags.is_under_advanced_protection);
+    identity_manager_->GetAccountsMutator()->UpdateAccountInfo(
+        GetPrimaryAccountId(), false,
+        service_flags.is_under_advanced_protection);
   } else if (service_flags.is_under_advanced_protection) {
     OnAdvancedProtectionEnabled();
   } else {
@@ -281,7 +277,6 @@ AdvancedProtectionStatusManager::AdvancedProtectionStatusManager(
     const base::TimeDelta& min_delay)
     : profile_(profile),
       identity_manager_(nullptr),
-      account_tracker_service_(nullptr),
       is_under_advanced_protection_(false),
       minimum_delay_(min_delay) {
   if (profile_->IsOffTheRecord())
