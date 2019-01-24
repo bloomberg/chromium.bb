@@ -166,7 +166,8 @@ Polymer({
   /**
    * Completes the transaction of setting the Smart Lock 'sign-in enabled' pref
    * after the user authenticates.
-   * @param {!{detail: !Object}} event The event containing the auth token.
+   * @param {!CustomEvent<!{value: string}>} event The event containing the auth
+   *     token.
    * @private
    */
   onAuthTokenChanged_: function(event) {

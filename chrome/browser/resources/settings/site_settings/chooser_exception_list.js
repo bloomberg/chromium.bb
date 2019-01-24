@@ -111,7 +111,7 @@ Polymer({
   /**
    * Need to use a common tooltip since the tooltip in the entry is cut off from
    * the iron-list.
-   * @param{!{detail: {target: HTMLElement, text: string}}} e
+   * @param{!CustomEvent<!{target: HTMLElement, text: string}>} e
    * @private
    */
   onShowTooltip_: function(e) {

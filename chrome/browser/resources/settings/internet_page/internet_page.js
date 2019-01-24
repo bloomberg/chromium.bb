@@ -282,8 +282,10 @@ Polymer({
 
   /**
    * Event triggered by a device state enabled toggle.
-   * @param {!{detail: {enabled: boolean,
-   *                    type: chrome.networkingPrivate.NetworkType}}} event
+   * @param {!CustomEvent<!{
+   *     enabled: boolean,
+   *     type: chrome.networkingPrivate.NetworkType
+   * }>} event
    * @private
    */
   onDeviceEnabledToggled_: function(event) {
@@ -295,7 +297,7 @@ Polymer({
   },
 
   /**
-   * @param {!{detail: !CrOnc.NetworkProperties}} event
+   * @param {!CustomEvent<!CrOnc.NetworkProperties>} event
    * @private
    */
   onShowConfig_: function(event) {
@@ -329,7 +331,7 @@ Polymer({
   },
 
   /**
-   * @param {!{detail: !CrOnc.NetworkStateProperties}} event
+   * @param {!CustomEvent<!CrOnc.NetworkStateProperties>} event
    * @private
    */
   onShowDetail_: function(event) {
@@ -344,7 +346,7 @@ Polymer({
   },
 
   /**
-   * @param {!{detail: {type: string}}} event
+   * @param {!CustomEvent<!{type: string}>} event
    * @private
    */
   onShowNetworks_: function(event) {
@@ -402,7 +404,7 @@ Polymer({
   },
 
   /**
-   * @param {!{detail: {type: string}}} event
+   * @param {!CustomEvent<!{type: string}>} event
    * @private
    */
   onShowKnownNetworks_: function(event) {
@@ -582,10 +584,11 @@ Polymer({
   /**
    * Handles UI requests to connect to a network.
    * TODO(stevenjb): Handle Cellular activation, etc.
-   * @param {!{detail:
-   *            {networkProperties:
-                   (!CrOnc.NetworkProperties|!CrOnc.NetworkStateProperties),
-   *             bypassConnectionDialog: (boolean|undefined)}}} event
+   * @param {!CustomEvent<!{
+   *     networkProperties: (!CrOnc.NetworkProperties|
+   *         !CrOnc.NetworkStateProperties),
+   *     bypassConnectionDialog: (boolean|undefined)
+   * }>} event
    * @private
    */
   onNetworkConnect_: function(event) {

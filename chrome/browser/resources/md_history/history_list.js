@@ -306,7 +306,7 @@ Polymer({
 
   /**
    * Remove bookmark star for history items with matching URLs.
-   * @param {{detail: !string}} e
+   * @param {!CustomEvent<string>} e
    * @private
    */
   onRemoveBookmarkStars_: function(e) {
@@ -339,10 +339,10 @@ Polymer({
    * Open the overflow menu and ensure that the item is visible in the scroll
    * pane when its menu is opened (it is possible to open off-screen items using
    * keyboard shortcuts).
-   * @param {{detail: {
+   * @param {!CustomEvent<{
    *    index: number, item: !HistoryEntry,
    *    path: string, target: !HTMLElement
-   * }}} e
+   * }>} e
    * @private
    */
   onOpenMenu_: function(e) {

@@ -238,7 +238,7 @@ Polymer({
   /**
    * Called when usage has been deleted for an origin via a non-Site Details
    * source, e.g. clear browsing data.
-   * @param {!{detail: !{origin: string}}} event
+   * @param {!CustomEvent<!{origin: string}>} event
    * @private
    */
   onUsageDeleted_: function(event) {
