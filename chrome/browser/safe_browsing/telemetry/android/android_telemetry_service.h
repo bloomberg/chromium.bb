@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_TELEMETRY_ANDROID_ANDROID_TELEMETRY_SERVICE_H_
 #define CHROME_BROWSER_SAFE_BROWSING_TELEMETRY_ANDROID_ANDROID_TELEMETRY_SERVICE_H_
 
-#include <vector>
+#include <string>
 
 #include "chrome/browser/safe_browsing/telemetry/telemetry_service.h"
 #include "components/download/public/common/download_item.h"
@@ -22,7 +22,6 @@ class WebContents;
 namespace safe_browsing {
 
 class SafeBrowsingService;
-class TriggerManager;
 
 // This class is used to send telemetry information to Safe Browsing for
 // security related incidents. The information is sent only if:
@@ -51,16 +50,19 @@ class AndroidTelemetryService : public download::DownloadItem::Observer,
   void OnDownloadUpdated(download::DownloadItem* download) override;
 
  private:
-  // Calls into |trigger_manager_| to start collecting information about the
-  // download event. This information is then sent to Safe Browsing service
-  // in the form of a |ClientSafeBrowsingReportRequest| message.
-  // If the download gets cancelled, the report isn't sent.
-  void StartThreatDetailsCollection(content::WebContents* web_contents);
+  // Whether the ping can be sent, based on empty web_contents, or incognito
+  // mode, or extended reporting opt-in status,
+  bool CanSendPing(download::DownloadItem* item);
 
-  // Calls into |trigger_manager_| to prepare to send the referrer chain and
-  // other information to Safe Browsing service. Only called when the download
-  // completes and only for users who have opted into extended reporting.
-  void FinishCollectingThreatDetails(content::WebContents* web_contents);
+  // Fill the referrer chain in |report| with the actual referrer chain for the
+  // given |web_contents|, as well as recent navigations.
+  void FillReferrerChain(content::WebContents* web_contents,
+                         ClientSafeBrowsingReportRequest* report);
+
+  // Sets the relevant fields in an instance of
+  // |ClientSafeBrowsingReportRequest| and sends it to the Safe Browsing
+  // backend. The report may not be sent if the proto fails to serialize.
+  void MaybeSendApkDownloadReport(download::DownloadItem* item);
 
   // Helper method to get prefs from |profile_|.
   const PrefService* GetPrefs();
@@ -71,11 +73,10 @@ class AndroidTelemetryService : public download::DownloadItem::Observer,
   // Profile associated with this instance. Unowned.
   Profile* profile_;
 
+  std::string safety_net_id_on_ui_thread_;
+
   // Unowned.
   SafeBrowsingService* sb_service_;
-
-  // Used to send the ClientSafeBrowsingReportRequest report. Unowned.
-  TriggerManager* trigger_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidTelemetryService);
 };

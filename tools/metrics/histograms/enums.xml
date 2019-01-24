@@ -1239,6 +1239,23 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="15" label="RESULT_WSC_NOT_AVAILABLE"/>
 </enum>
 
+<enum name="ApkDownloadTelemetryIncompleteReason">
+  <int value="0" label="MISSING_WEB_CONTENTS"/>
+  <int value="1" label="SB_NAVIGATION_MANAGER_NOT_READY"/>
+  <int value="2" label="COMPLETE"/>
+</enum>
+
+<enum name="ApkDownloadTelemetryOutcome">
+  <int value="0" label="NOT_SENT_SAFE_BROWSING_NOT_ENABLED"/>
+  <int value="1" label="NOT_SENT_MISSING_WEB_CONTENTS"/>
+  <int value="2" label="NOT_SENT_INCOGNITO"/>
+  <int value="3" label="NOT_SENT_EXTENDED_REPORTING_DISABLED"/>
+  <int value="4" label="NOT_SENT_DOWNLOAD_CANCELLED"/>
+  <int value="5" label="NOT_SENT_FAILED_TO_SERIALIZE"/>
+  <int value="6" label="NOT_SENT_FEATURE_NOT_ENABLED"/>
+  <int value="7" label="SENT"/>
+</enum>
+
 <enum name="AppBannersBeforeInstallEvent">
   <int value="1" label="Event created and dispatched"/>
   <int value="2" label="Showing the banner"/>
