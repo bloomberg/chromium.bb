@@ -301,8 +301,10 @@ source_set("chromeos") {
     "account_manager/account_migration_runner.h",
     "account_mapper_util.cc",
     "account_mapper_util.h",
-    "android_sms/android_sms_app_helper_delegate_impl.cc",
-    "android_sms/android_sms_app_helper_delegate_impl.h",
+    "android_sms/android_sms_app_manager.cc",
+    "android_sms/android_sms_app_manager.h",
+    "android_sms/android_sms_app_manager_impl.cc",
+    "android_sms/android_sms_app_manager_impl.h",
     "android_sms/android_sms_app_setup_controller.h",
     "android_sms/android_sms_app_setup_controller_impl.cc",
     "android_sms/android_sms_app_setup_controller_impl.h",
@@ -2044,6 +2046,8 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "android_sms/fake_android_sms_app_manager.cc",
+    "android_sms/fake_android_sms_app_manager.h",
     "android_sms/fake_android_sms_app_setup_controller.cc",
     "android_sms/fake_android_sms_app_setup_controller.h",
     "android_sms/fake_connection_establisher.cc",
@@ -2095,6 +2099,7 @@ static_library("test_support") {
     "//chromeos/components/drivefs",
     "//chromeos/components/drivefs:test_support",
     "//chromeos/dbus:test_support",
+    "//chromeos/services/multidevice_setup/public/cpp:test_support",
     "//chromeos/settings",
     "//components/crx_file",
     "//components/drive",
@@ -2129,7 +2134,7 @@ source_set("unit_tests") {
     "accessibility/ax_host_service_unittest.cc",
     "accessibility/switch_access_panel_unittest.cc",
     "account_manager/account_migration_runner_unittest.cc",
-    "android_sms/android_sms_app_helper_delegate_impl_unittest.cc",
+    "android_sms/android_sms_app_manager_impl_unittest.cc",
     "android_sms/android_sms_app_setup_controller_impl_unittest.cc",
     "android_sms/connection_establisher_impl_unittest.cc",
     "android_sms/connection_manager_unittest.cc",

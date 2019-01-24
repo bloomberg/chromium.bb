@@ -12,7 +12,8 @@ namespace chromeos {
 
 namespace multidevice_setup {
 
-class FakeAndroidSmsAppHelperDelegate : public AndroidSmsAppHelperDelegate {
+class FakeAndroidSmsAppHelperDelegate
+    : virtual public AndroidSmsAppHelperDelegate {
  public:
   FakeAndroidSmsAppHelperDelegate();
   ~FakeAndroidSmsAppHelperDelegate() override;

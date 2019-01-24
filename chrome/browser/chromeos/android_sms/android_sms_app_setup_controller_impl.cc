@@ -6,12 +6,14 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_context.h"
@@ -37,6 +39,10 @@ AndroidSmsAppSetupControllerImpl::PwaDelegate::~PwaDelegate() = default;
 const extensions::Extension*
 AndroidSmsAppSetupControllerImpl::PwaDelegate::GetPwaForUrl(const GURL& url,
                                                             Profile* profile) {
+  // PWA windowing is disabled for some browser tests.
+  if (!base::FeatureList::IsEnabled(features::kDesktopPWAWindowing))
+    return nullptr;
+
   return extensions::util::GetInstalledPwaForUrl(profile, url);
 }
 
