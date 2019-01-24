@@ -21,6 +21,7 @@
 // <include src="../../../../../ui/login/display_manager.js">
 // <include src="md_header_bar.js">
 // <include src="md_top_header_bar.js">
+// <include src="demo_mode_test_helper.js">
 
 // <include
 // src="../../../../../ui/login/account_picker/md_screen_account_picker.js">
@@ -411,6 +412,13 @@ cr.define('cr.ui', function() {
 
     return $('oauth-enrollment')
         .classList.contains('oauth-enroll-state-success');
+  };
+
+  /**
+   * Starts online demo mode setup for telemetry.
+   */
+  Oobe.setUpOnlineDemoModeForTesting = function() {
+    DemoModeTestHelper.setUp('online');
   };
 
   /**
