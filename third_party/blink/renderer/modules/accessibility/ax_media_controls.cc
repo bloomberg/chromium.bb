@@ -58,11 +58,6 @@ AXObject* AccessibilityMediaControl::Create(
     case kMediaSlider:
       return AccessibilityMediaTimeline::Create(layout_object, ax_object_cache);
 
-    case kMediaCurrentTimeDisplay:
-    case kMediaTimeRemainingDisplay:
-      return AccessibilityMediaTimeDisplay::Create(layout_object,
-                                                   ax_object_cache);
-
     case kMediaControlsPanel:
       return AXMediaControlsContainer::Create(layout_object, ax_object_cache);
 
@@ -119,10 +114,6 @@ String AccessibilityMediaControl::TextAlternative(
     AXRelatedObjectVector* related_objects,
     NameSources* name_sources) const {
   switch (ControlType()) {
-    case kMediaCurrentTimeDisplay:
-      return QueryString(WebLocalizedString::kAXMediaCurrentTimeDisplay);
-    case kMediaTimeRemainingDisplay:
-      return QueryString(WebLocalizedString::kAXMediaTimeRemainingDisplay);
     case kMediaCastOffButton:
     case kMediaOverlayCastOffButton:
       return QueryString(WebLocalizedString::kAXMediaCastOffButton);
@@ -159,10 +150,6 @@ String AccessibilityMediaControl::Description(
     ax::mojom::DescriptionFrom& description_from,
     AXObjectVector* description_objects) const {
   switch (ControlType()) {
-    case kMediaCurrentTimeDisplay:
-      return QueryString(WebLocalizedString::kAXMediaCurrentTimeDisplayHelp);
-    case kMediaTimeRemainingDisplay:
-      return QueryString(WebLocalizedString::kAXMediaTimeRemainingDisplayHelp);
     case kMediaOverflowButton:
       return QueryString(WebLocalizedString::kAXMediaOverflowButtonHelp);
     // The following descriptions are repeats of their respective titles. When
@@ -220,8 +207,6 @@ ax::mojom::Role AccessibilityMediaControl::RoleValue() const {
       return ax::mojom::Role::kGroup;
 
     case kMediaControlsPanel:
-    case kMediaCurrentTimeDisplay:
-    case kMediaTimeRemainingDisplay:
     case kMediaSliderThumb:
     case kMediaTrackSelectionCheckmark:
     case kMediaScrubbingMessage:
@@ -282,12 +267,6 @@ bool AXMediaControlsContainer::ComputeAccessibilityIsIgnored(
 //
 // AccessibilityMediaTimeline
 
-static String LocalizedMediaTimeDescription(float /*time*/) {
-  // FIXME: To be fixed. See
-  // http://trac.webkit.org/browser/trunk/Source/WebCore/platform/LocalizedStrings.cpp#L928
-  return String();
-}
-
 AccessibilityMediaTimeline::AccessibilityMediaTimeline(
     LayoutObject* layout_object,
     AXObjectCacheImpl& ax_object_cache)
@@ -307,55 +286,6 @@ String AccessibilityMediaTimeline::Description(
   return QueryString(IsControllingVideoElement()
                          ? WebLocalizedString::kAXMediaVideoSliderHelp
                          : WebLocalizedString::kAXMediaAudioSliderHelp);
-}
-
-//
-// AccessibilityMediaTimeDisplay
-
-AccessibilityMediaTimeDisplay::AccessibilityMediaTimeDisplay(
-    LayoutObject* layout_object,
-    AXObjectCacheImpl& ax_object_cache)
-    : AccessibilityMediaControl(layout_object, ax_object_cache) {}
-
-AXObject* AccessibilityMediaTimeDisplay::Create(
-    LayoutObject* layout_object,
-    AXObjectCacheImpl& ax_object_cache) {
-  return MakeGarbageCollected<AccessibilityMediaTimeDisplay>(layout_object,
-                                                             ax_object_cache);
-}
-
-bool AccessibilityMediaTimeDisplay::ComputeAccessibilityIsIgnored(
-    IgnoredReasons* ignored_reasons) const {
-  if (!layout_object_ || !layout_object_->Style() ||
-      layout_object_->Style()->Visibility() != EVisibility::kVisible)
-    return true;
-
-  if (!layout_object_->Style()->Width().Value())
-    return true;
-
-  return AccessibilityIsIgnoredByDefault(ignored_reasons);
-}
-
-String AccessibilityMediaTimeDisplay::TextAlternative(
-    bool recursive,
-    bool in_aria_labelled_by_traversal,
-    AXObjectSet& visited,
-    ax::mojom::NameFrom& name_from,
-    AXRelatedObjectVector* related_objects,
-    NameSources* name_sources) const {
-  if (ControlType() == kMediaCurrentTimeDisplay)
-    return QueryString(WebLocalizedString::kAXMediaCurrentTimeDisplay);
-  return QueryString(WebLocalizedString::kAXMediaTimeRemainingDisplay);
-}
-
-String AccessibilityMediaTimeDisplay::StringValue() const {
-  if (!layout_object_ || !layout_object_->GetNode())
-    return String();
-
-  MediaControlTimeDisplayElement* element =
-      static_cast<MediaControlTimeDisplayElement*>(layout_object_->GetNode());
-  float time = element->CurrentValue();
-  return LocalizedMediaTimeDescription(fabsf(time));
 }
 
 }  // namespace blink
