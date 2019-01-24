@@ -193,14 +193,15 @@ void PrintViewManagerBase::OnPrintSettingsDone(
   }
 
   if (!printer_query->cookie() || !printer_query->settings().dpi()) {
-    if (printer_query)
-      printer_query->StopWorker();
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
+        base::BindOnce(&PrinterQuery::StopWorker, printer_query));
     std::move(callback).Run(base::Value("Update settings failed"));
     return;
   }
 
   // Post task so that the query has time to reset the callback before calling
-  // OnDidGetPrintedPagesCount.
+  // OnDidGetPrintedPagesCount().
   queue_->QueuePrinterQuery(printer_query.get());
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
