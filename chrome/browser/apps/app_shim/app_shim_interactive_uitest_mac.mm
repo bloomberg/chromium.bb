@@ -106,11 +106,13 @@ class WindowedAppShimLaunchObserver : public apps::AppShimHandler {
   void OnShimLaunchRequested(
       AppShimHost* host,
       bool recreate_shims,
-      apps::LaunchShimCallback launch_callback) override {
+      apps::ShimLaunchedCallback launch_callback,
+      apps::ShimTerminatedCallback terminated_callback) override {
     apps::AppShimHandler::RemoveHandler(app_mode_id_);
     apps::AppShimHandler::GetForAppMode(app_mode_id_)
         ->OnShimLaunchRequested(host, recreate_shims,
-                                std::move(launch_callback));
+                                std::move(launch_callback),
+                                std::move(terminated_callback));
     apps::AppShimHandler::RegisterHandler(app_mode_id_, this);
   }
   void OnShimProcessConnected(

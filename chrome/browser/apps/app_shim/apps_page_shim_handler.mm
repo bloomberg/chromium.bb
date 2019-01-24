@@ -56,7 +56,8 @@ void OpenAppsPage(Profile* fallback_profile) {
 void AppsPageShimHandler::OnShimLaunchRequested(
     AppShimHost* host,
     bool recreate_shims,
-    apps::LaunchShimCallback launch_callback) {}
+    apps::ShimLaunchedCallback launched_callback,
+    apps::ShimTerminatedCallback terminated_callback) {}
 
 void AppsPageShimHandler::OnShimProcessConnected(
     std::unique_ptr<AppShimHostBootstrap> bootstrap) {

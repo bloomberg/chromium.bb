@@ -86,9 +86,16 @@ class AppShimHost : public chrome::mojom::AppShimHost {
   // Closes the channel and destroys the AppShimHost.
   void Close();
 
+  // Helper function to launch the app shim process.
+  void LaunchShimInternal(bool recreate_shims);
+
   // Called when LaunchShim has launched (or failed to launch) a process.
-  void OnShimLaunchCompleted(bool recreate_shims_requested,
+  void OnShimProcessLaunched(bool recreate_shims_requested,
                              base::Process shim_process);
+
+  // Called when a shim process returned via OnShimLaunchCompleted has
+  // terminated.
+  void OnShimProcessTerminated();
 
   // Return the AppShimHandler for this app (virtual for tests).
   virtual apps::AppShimHandler* GetAppShimHandler() const;

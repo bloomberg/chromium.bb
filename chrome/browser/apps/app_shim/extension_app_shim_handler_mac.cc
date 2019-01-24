@@ -336,19 +336,20 @@ void ExtensionAppShimHandler::Delegate::LaunchShim(
     Profile* profile,
     const Extension* extension,
     bool recreate_shims,
-    LaunchShimCallback launch_callback) {
+    apps::ShimLaunchedCallback launched_callback,
+    apps::ShimTerminatedCallback terminated_callback) {
   if (recreate_shims) {
     // Load the resources needed to build the app shim (icons, etc), and then
     // recreate the shim and launch it.
     web_app::GetShortcutInfoForApp(
         extension, profile,
-        base::BindOnce(&web_app::LaunchShim,
-                       web_app::LaunchShimUpdateBehavior::RECREATE,
-                       std::move(launch_callback)));
+        base::BindOnce(
+            &web_app::LaunchShim, web_app::LaunchShimUpdateBehavior::RECREATE,
+            std::move(launched_callback), std::move(terminated_callback)));
   } else {
     web_app::LaunchShim(
         web_app::LaunchShimUpdateBehavior::NO_UPDATE,
-        std::move(launch_callback),
+        std::move(launched_callback), std::move(terminated_callback),
         web_app::ShortcutInfoForExtensionAndProfile(extension, profile));
   }
 }
@@ -536,13 +537,15 @@ void ExtensionAppShimHandler::OnChromeWillHide() {
 void ExtensionAppShimHandler::OnShimLaunchRequested(
     AppShimHost* host,
     bool recreate_shims,
-    LaunchShimCallback launch_callback) {
+    apps::ShimLaunchedCallback launched_callback,
+    apps::ShimTerminatedCallback terminated_callback) {
   Profile* profile = nullptr;
   const Extension* extension = MaybeGetExtensionOrCloseHost(host, &profile);
   if (!profile || !extension)
     return;
   delegate_->LaunchShim(profile, extension, recreate_shims,
-                        std::move(launch_callback));
+                        std::move(launched_callback),
+                        std::move(terminated_callback));
 }
 
 void ExtensionAppShimHandler::OnShimProcessConnected(
