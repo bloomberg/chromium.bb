@@ -31,17 +31,13 @@
 #include "av1/encoder/temporal_filter.h"
 #include "av1/encoder/tpl_model.h"
 
-// Define the reference buffers that will be updated post encode.
 void av1_configure_buffer_updates(AV1_COMP *const cpi,
-                                  const FRAME_UPDATE_TYPE type) {
+                                  const FRAME_UPDATE_TYPE type,
+                                  int force_refresh_all) {
   // NOTE(weitinglin): Should we define another function to take care of
   // cpi->rc.is_$Source_Type to make this function as it is in the comment?
 
-  // show_existing_frame is a flag left set from the end of encoding the
-  // previous frame.  Alongside it, is_src_frame_alt_ref may also be left
-  // set so shouldn't be cleared in this case.
-  if (!cpi->common.show_existing_frame) cpi->rc.is_src_frame_alt_ref = 0;
-
+  cpi->rc.is_src_frame_alt_ref = 0;
   cpi->rc.is_bwd_ref_frame = 0;
   cpi->rc.is_last_bipred_frame = 0;
   cpi->rc.is_bipred_frame = 0;
@@ -149,6 +145,23 @@ void av1_configure_buffer_updates(AV1_COMP *const cpi,
 
     default: assert(0); break;
   }
+
+  if (cpi->ext_refresh_frame_flags_pending &&
+      (cpi->oxcf.pass == 0 || cpi->oxcf.pass == 2)) {
+    cpi->refresh_last_frame = cpi->ext_refresh_last_frame;
+    cpi->refresh_golden_frame = cpi->ext_refresh_golden_frame;
+    cpi->refresh_alt_ref_frame = cpi->ext_refresh_alt_ref_frame;
+    cpi->refresh_bwd_ref_frame = cpi->ext_refresh_bwd_ref_frame;
+    cpi->refresh_alt2_ref_frame = cpi->ext_refresh_alt2_ref_frame;
+  }
+
+  if (force_refresh_all) {
+    cpi->refresh_last_frame = 1;
+    cpi->refresh_golden_frame = 1;
+    cpi->refresh_bwd_ref_frame = 1;
+    cpi->refresh_alt2_ref_frame = 1;
+    cpi->refresh_alt_ref_frame = 1;
+  }
 }
 
 static void set_additional_frame_flags(const AV1_COMMON *const cm,
@@ -238,7 +251,6 @@ static void check_show_existing_frame(AV1_COMP *cpi) {
     // Other parameters related to OVERLAY_UPDATE will be taken care of
     // in av1_rc_get_second_pass_params(cpi)
     cm->show_existing_frame = 1;
-    cpi->rc.is_src_frame_alt_ref = 1;
     cpi->existing_fb_idx_to_show =
         (frame_update_type == OVERLAY_UPDATE)
             ? get_ref_frame_map_idx(cm, ALTREF_FRAME)
@@ -247,7 +259,6 @@ static void check_show_existing_frame(AV1_COMP *cpi) {
       cpi->is_arf_filter_off[which_arf] = 0;
     }
   }
-  cpi->rc.is_src_frame_ext_arf = 0;
 }
 
 static void set_ext_overrides(AV1_COMP *const cpi,
@@ -266,14 +277,6 @@ static void set_ext_overrides(AV1_COMP *const cpi,
   if (cpi->ext_refresh_frame_context_pending) {
     cm->refresh_frame_context = cpi->ext_refresh_frame_context;
     cpi->ext_refresh_frame_context_pending = 0;
-  }
-  if (cpi->ext_refresh_frame_flags_pending) {
-    cpi->refresh_last_frame = cpi->ext_refresh_last_frame;
-    cpi->refresh_golden_frame = cpi->ext_refresh_golden_frame;
-    cpi->refresh_alt_ref_frame = cpi->ext_refresh_alt_ref_frame;
-    cpi->refresh_bwd_ref_frame = cpi->ext_refresh_bwd_ref_frame;
-    cpi->refresh_alt2_ref_frame = cpi->ext_refresh_alt2_ref_frame;
-    cpi->ext_refresh_frame_flags_pending = 0;
   }
   cm->allow_ref_frame_mvs = cpi->ext_use_ref_frame_mvs;
 
@@ -508,42 +511,6 @@ static void adjust_frame_rate(AV1_COMP *cpi,
   cpi->last_end_time_stamp_seen = source->ts_end;
 }
 
-static void check_src_altref(AV1_COMP *cpi,
-                             const struct lookahead_entry *source) {
-  RATE_CONTROL *const rc = &cpi->rc;
-
-  // If pass == 2, the parameters set here will be reset in
-  // av1_rc_get_second_pass_params()
-
-  if (cpi->oxcf.pass == 2) {
-    const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
-    rc->is_src_frame_alt_ref =
-        (gf_group->update_type[gf_group->index] == INTNL_OVERLAY_UPDATE) ||
-        (gf_group->update_type[gf_group->index] == OVERLAY_UPDATE);
-    rc->is_src_frame_ext_arf =
-        gf_group->update_type[gf_group->index] == INTNL_OVERLAY_UPDATE;
-  } else {
-    rc->is_src_frame_alt_ref =
-        cpi->alt_ref_source && (source == cpi->alt_ref_source);
-  }
-
-  if (rc->is_src_frame_alt_ref) {
-    // Current frame is an ARF overlay frame.
-    cpi->alt_ref_source = NULL;
-
-    if (rc->is_src_frame_ext_arf && !cpi->common.show_existing_frame) {
-      // For INTNL_OVERLAY, when show_existing_frame == 0, they do need to
-      // refresh the LAST_FRAME, i.e. LAST3 gets retired, LAST2 becomes LAST3,
-      // LAST becomes LAST2, and INTNL_OVERLAY becomes LAST.
-      cpi->refresh_last_frame = 1;
-    } else {
-      // Don't refresh the last buffer for an ARF overlay frame. It will
-      // become the GF so preserve last as an alternative prediction option.
-      cpi->refresh_last_frame = 0;
-    }
-  }
-}
-
 // Returns 0 if this is not an alt ref else the offset of the source frame
 // used as the arf midpoint.
 static int get_arf_src_index(AV1_COMP *cpi) {
@@ -633,12 +600,6 @@ static struct lookahead_entry *setup_arf_or_arf2(
       }
     }
     frame_params->show_frame = 0;
-
-    if (oxcf->pass < 2) {
-      // In second pass, the buffer updates configure will be set
-      // in the function av1_rc_get_second_pass_params
-      av1_configure_buffer_updates(cpi, arf2 ? INTNL_ARF_UPDATE : ARF_UPDATE);
-    }
   }
   rc->source_alt_ref_pending = 0;
   return source;
@@ -664,10 +625,11 @@ static int is_forced_keyframe_pending(struct lookahead_ctx *lookahead,
 
 // Check if we should encode an ARF, ARF2 or BRF.  If not, try a LAST
 // Do some setup associated with the chosen source
+// temporal_filtered, flush, and frame_update_type are outputs.
 // Return the frame source, or NULL if we couldn't find one
 struct lookahead_entry *choose_frame_source(
     AV1_COMP *const cpi, int *const temporal_filtered, int *const flush,
-    struct lookahead_entry **last_source,
+    struct lookahead_entry **last_source, FRAME_UPDATE_TYPE *frame_update_type,
     EncodeFrameParams *const frame_params) {
   AV1_COMMON *const cm = &cpi->common;
   struct lookahead_entry *source = NULL;
@@ -684,6 +646,7 @@ struct lookahead_entry *choose_frame_source(
   if (arf_src_index) {
     source = setup_arf_or_arf2(cpi, arf_src_index, 0, temporal_filtered,
                                frame_params);
+    *frame_update_type = ARF_UPDATE;
   }
 
   // Should we encode an arf2 frame (mutually exclusive to ARF)
@@ -697,6 +660,7 @@ struct lookahead_entry *choose_frame_source(
   if (arf_src_index) {
     source = setup_arf_or_arf2(cpi, arf_src_index, 1, temporal_filtered,
                                frame_params);
+    *frame_update_type = INTNL_ARF_UPDATE;
   }
 
   int brf_src_index = get_brf_src_index(cpi);
@@ -705,12 +669,7 @@ struct lookahead_entry *choose_frame_source(
     if ((source = av1_lookahead_peek(cpi->lookahead, brf_src_index)) != NULL) {
       cm->showable_frame = 1;
       frame_params->show_frame = 0;
-
-      if (cpi->oxcf.pass < 2) {
-        // In second pass, the buffer updates configure will be set
-        // in the function av1_rc_get_second_pass_params
-        av1_configure_buffer_updates(cpi, BRF_UPDATE);
-      }
+      *frame_update_type = BRF_UPDATE;
     }
   }
 
@@ -721,12 +680,14 @@ struct lookahead_entry *choose_frame_source(
     }
     // Read in the source frame.
     source = av1_lookahead_pop(cpi->lookahead, *flush);
+    if (source == NULL) return NULL;
+    *frame_update_type = LF_UPDATE;  // Default update type
+    frame_params->show_frame = 1;
 
-    if (source != NULL) {
-      frame_params->show_frame = 1;
-
-      // Check to see if the frame should be encoded as an arf overlay.
-      check_src_altref(cpi, source);
+    // Check to see if the frame should be encoded as an arf overlay.
+    if (cpi->alt_ref_source == source) {
+      *frame_update_type = OVERLAY_UPDATE;
+      cpi->alt_ref_source = NULL;
     }
   }
   return source;
@@ -776,11 +737,19 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
   int temporal_filtered = 0;
   struct lookahead_entry *source = NULL;
   struct lookahead_entry *last_source = NULL;
+  FRAME_UPDATE_TYPE frame_update_type;
   if (cm->show_existing_frame) {
     source = av1_lookahead_pop(cpi->lookahead, flush);
+    frame_update_type = LF_UPDATE;
   } else {
     source = choose_frame_source(cpi, &temporal_filtered, &flush, &last_source,
-                                 &frame_params);
+                                 &frame_update_type, &frame_params);
+  }
+
+  // In pass 2 we get the frame_update_type from gf_group
+  if (oxcf->pass == 2) {
+    frame_update_type =
+        cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index];
   }
 
   if (source == NULL) {  // If no source was found, we can't encode a frame.
@@ -807,8 +776,10 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     *frame_flags = (source->flags & AOM_EFLAG_FORCE_KF) ? FRAMEFLAGS_KEY : 0;
   cpi->frame_flags = *frame_flags;
 
-  if (frame_params.show_frame ||
-      (cm->show_existing_frame && cpi->rc.is_src_frame_alt_ref)) {
+  const int is_overlay =
+      cm->show_existing_frame && (frame_update_type == OVERLAY_UPDATE ||
+                                  frame_update_type == INTNL_OVERLAY_UPDATE);
+  if (frame_params.show_frame || is_overlay) {
     // Shown frames and arf-overlay frames need frame-rate considering
     adjust_frame_rate(cpi, source);
   }
@@ -835,24 +806,16 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     cpi->common.frame_presentation_time = (uint32_t)pts64;
   }
 
-  if (oxcf->pass == 2 &&
-      (!cm->show_existing_frame || cpi->rc.is_src_frame_alt_ref)) {
+  if (oxcf->pass == 2 && (!cm->show_existing_frame || is_overlay)) {
     // GF_GROUP needs updating for arf overlays as well as non-show-existing
     av1_rc_get_second_pass_params(cpi, &frame_params);
+    frame_update_type =
+        cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index];
   }
+
   if (cm->show_existing_frame && frame_params.frame_type != KEY_FRAME) {
     // Force show-existing frames to be INTER, except forward keyframes
     frame_params.frame_type = INTER_FRAME;
-  }
-
-  if (!cm->show_existing_frame) {
-    cm->using_qmatrix = cpi->oxcf.using_qm;
-    cm->min_qmlevel = cpi->oxcf.qm_minlevel;
-    cm->max_qmlevel = cpi->oxcf.qm_maxlevel;
-    if (cpi->twopass.gf_group.index == 1 && cpi->oxcf.enable_tpl_model) {
-      av1_set_frame_size(cpi, cm->width, cm->height);
-      av1_tpl_setup_stats(cpi, &frame_input);
-    }
   }
 
   frame_params.frame_flags = frame_flags;
@@ -868,18 +831,30 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
   // parameter should be used with caution.
   frame_params.speed = oxcf->speed;
 
+  if (!cm->show_existing_frame) {
+    cm->using_qmatrix = cpi->oxcf.using_qm;
+    cm->min_qmlevel = cpi->oxcf.qm_minlevel;
+    cm->max_qmlevel = cpi->oxcf.qm_maxlevel;
+    if (cpi->twopass.gf_group.index == 1 && cpi->oxcf.enable_tpl_model) {
+      av1_configure_buffer_updates(cpi, frame_update_type, 0);
+      av1_set_frame_size(cpi, cm->width, cm->height);
+      av1_tpl_setup_stats(cpi, &frame_input);
+    }
+  }
+
   // Work out some encoding parameters specific to the pass:
   if (oxcf->pass == 0) {
     if (cpi->oxcf.rc_mode == AOM_CBR) {
-      av1_rc_get_one_pass_cbr_params(cpi, &frame_params);
+      av1_rc_get_one_pass_cbr_params(cpi, &frame_update_type, &frame_params);
     } else {
-      av1_rc_get_one_pass_vbr_params(cpi, &frame_params);
+      av1_rc_get_one_pass_vbr_params(cpi, &frame_update_type, &frame_params);
     }
   } else if (oxcf->pass == 1) {
-    av1_setup_frame_size(cpi);
     cpi->td.mb.e_mbd.lossless[0] = is_lossless_requested(&cpi->oxcf);
-    if (!cpi->refresh_alt_ref_frame && (cm->current_frame.frame_number == 0 ||
-                                        (cpi->frame_flags & FRAMEFLAGS_KEY))) {
+    const int kf_requested = (cm->current_frame.frame_number == 0 ||
+                              (cpi->frame_flags & FRAMEFLAGS_KEY));
+    if (kf_requested && frame_update_type != OVERLAY_UPDATE &&
+        frame_update_type != INTNL_OVERLAY_UPDATE) {
       frame_params.frame_type = KEY_FRAME;
     } else {
       frame_params.frame_type = INTER_FRAME;
@@ -894,15 +869,20 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 #endif
   }
 
-  if (oxcf->pass == 0 || oxcf->pass == 2) {
-    // Apply external override flags
-    set_ext_overrides(cpi, &frame_params);
+  if (oxcf->pass == 0 || oxcf->pass == 2) set_ext_overrides(cpi, &frame_params);
 
+  // Shown keyframes and S frames refresh all reference buffers
+  const int force_refresh_all =
+      ((frame_params.frame_type == KEY_FRAME && frame_params.show_frame) ||
+       frame_params.frame_type == S_FRAME) &&
+      !cm->show_existing_frame;
+
+  av1_configure_buffer_updates(cpi, frame_update_type, force_refresh_all);
+
+  if (oxcf->pass == 0 || oxcf->pass == 2) {
     // Work out which reference frame slots may be used.
     frame_params.ref_frame_flags = get_ref_frame_flags(cpi);
-  }
 
-  if (oxcf->pass == 0 || oxcf->pass == 2) {
     frame_params.primary_ref_frame =
         choose_primary_ref_frame(cpi, &frame_params);
     frame_params.order_offset = get_order_offset(cpi, &frame_params);

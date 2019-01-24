@@ -537,6 +537,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   }
 #endif
 
+  av1_setup_frame_size(cpi);
   aom_clear_system_state();
 
   xd->mi = cm->mi_grid_visible;
@@ -2978,9 +2979,9 @@ void av1_rc_get_second_pass_params(AV1_COMP *cpi,
   // advance the input pointer as we already have what we need.
   if (gf_group->update_type[gf_group->index] == ARF_UPDATE ||
       gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE) {
-    av1_configure_buffer_updates(cpi, gf_group->update_type[gf_group->index]);
     target_rate = gf_group->bit_allocation[gf_group->index];
-    target_rate = av1_rc_clamp_pframe_target_size(cpi, target_rate);
+    target_rate = av1_rc_clamp_pframe_target_size(
+        cpi, target_rate, gf_group->update_type[gf_group->index]);
     rc->base_frame_target = target_rate;
 
     if (cpi->no_show_kf) {
@@ -3070,8 +3071,6 @@ void av1_rc_get_second_pass_params(AV1_COMP *cpi,
 #endif
   }
 
-  av1_configure_buffer_updates(cpi, gf_group->update_type[gf_group->index]);
-
   // Do the firstpass stats indicate that this frame is skippable for the
   // partition search?
   if (cpi->sf.allow_partition_search_skip && cpi->oxcf.pass == 2) {
@@ -3080,10 +3079,12 @@ void av1_rc_get_second_pass_params(AV1_COMP *cpi,
 
   target_rate = gf_group->bit_allocation[gf_group->index];
 
-  if (frame_params->frame_type == KEY_FRAME)
+  if (frame_params->frame_type == KEY_FRAME) {
     target_rate = av1_rc_clamp_iframe_target_size(cpi, target_rate);
-  else
-    target_rate = av1_rc_clamp_pframe_target_size(cpi, target_rate);
+  } else {
+    target_rate = av1_rc_clamp_pframe_target_size(
+        cpi, target_rate, gf_group->update_type[gf_group->index]);
+  }
 
   rc->base_frame_target = target_rate;
 

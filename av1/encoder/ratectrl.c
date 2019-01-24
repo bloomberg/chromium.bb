@@ -175,13 +175,15 @@ int av1_estimate_bits_at_q(FRAME_TYPE frame_type, int q, int mbs,
                 (int)((uint64_t)bpm * mbs) >> BPER_MB_NORMBITS);
 }
 
-int av1_rc_clamp_pframe_target_size(const AV1_COMP *const cpi, int target) {
+int av1_rc_clamp_pframe_target_size(const AV1_COMP *const cpi, int target,
+                                    FRAME_UPDATE_TYPE frame_update_type) {
   const RATE_CONTROL *rc = &cpi->rc;
   const AV1EncoderConfig *oxcf = &cpi->oxcf;
   const int min_frame_target =
       AOMMAX(rc->min_frame_bandwidth, rc->avg_frame_bandwidth >> 5);
   // Clip the frame target to the minimum setup value.
-  if (cpi->rc.is_src_frame_alt_ref) {
+  if (frame_update_type == OVERLAY_UPDATE ||
+      frame_update_type == INTNL_OVERLAY_UPDATE) {
     // If there is an active ARF at this location use the minimum
     // bits on this frame even if it is a constructed arf.
     // The active maximum quantizer insures that an appropriate
@@ -1320,7 +1322,7 @@ void av1_estimate_qp_gop(AV1_COMP *cpi) {
     cpi->twopass.gf_group.index = idx;
     rc_set_frame_target(cpi, target_rate, cm->width, cm->height);
     av1_configure_buffer_updates(
-        cpi, cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index]);
+        cpi, cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index], 0);
     tpl_frame->base_qindex = rc_pick_q_and_bounds_two_pass(
         cpi, cm->width, cm->height, &bottom_index, &top_index, &arf_q);
     tpl_frame->base_qindex = AOMMAX(tpl_frame->base_qindex, 1);
@@ -1328,7 +1330,7 @@ void av1_estimate_qp_gop(AV1_COMP *cpi) {
   // Reset the actual index and frame update
   cpi->twopass.gf_group.index = gf_index;
   av1_configure_buffer_updates(
-      cpi, cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index]);
+      cpi, cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index], 0);
 }
 
 void av1_rc_postencode_update(AV1_COMP *cpi, uint64_t bytes_used) {
@@ -1447,22 +1449,24 @@ void av1_rc_postencode_update_drop_frame(AV1_COMP *cpi) {
 // Use this macro to turn on/off use of alt-refs in one-pass mode.
 #define USE_ALTREF_FOR_ONE_PASS 1
 
-static int calc_pframe_target_size_one_pass_vbr(const AV1_COMP *const cpi) {
+static int calc_pframe_target_size_one_pass_vbr(
+    const AV1_COMP *const cpi, FRAME_UPDATE_TYPE frame_update_type) {
   static const int af_ratio = 10;
   const RATE_CONTROL *const rc = &cpi->rc;
   int target;
 #if USE_ALTREF_FOR_ONE_PASS
-  target =
-      (!rc->is_src_frame_alt_ref &&
-       (cpi->refresh_golden_frame || cpi->refresh_alt_ref_frame))
-          ? (rc->avg_frame_bandwidth * rc->baseline_gf_interval * af_ratio) /
-                (rc->baseline_gf_interval + af_ratio - 1)
-          : (rc->avg_frame_bandwidth * rc->baseline_gf_interval) /
-                (rc->baseline_gf_interval + af_ratio - 1);
+  if (frame_update_type == KF_UPDATE || frame_update_type == GF_UPDATE ||
+      frame_update_type == ARF_UPDATE) {
+    target = (rc->avg_frame_bandwidth * rc->baseline_gf_interval * af_ratio) /
+             (rc->baseline_gf_interval + af_ratio - 1);
+  } else {
+    target = (rc->avg_frame_bandwidth * rc->baseline_gf_interval) /
+             (rc->baseline_gf_interval + af_ratio - 1);
+  }
 #else
   target = rc->avg_frame_bandwidth;
 #endif
-  return av1_rc_clamp_pframe_target_size(cpi, target);
+  return av1_rc_clamp_pframe_target_size(cpi, target, frame_update_type);
 }
 
 static int calc_iframe_target_size_one_pass_vbr(const AV1_COMP *const cpi) {
@@ -1473,6 +1477,7 @@ static int calc_iframe_target_size_one_pass_vbr(const AV1_COMP *const cpi) {
 }
 
 void av1_rc_get_one_pass_vbr_params(AV1_COMP *cpi,
+                                    FRAME_UPDATE_TYPE *const frame_update_type,
                                     EncodeFrameParams *const frame_params) {
   AV1_COMMON *const cm = &cpi->common;
   RATE_CONTROL *const rc = &cpi->rc;
@@ -1483,7 +1488,7 @@ void av1_rc_get_one_pass_vbr_params(AV1_COMP *cpi,
   int sframe_mode = cpi->oxcf.sframe_mode;
   int sframe_enabled = cpi->oxcf.sframe_enabled;
   // TODO(yaowu): replace the "auto_key && 0" below with proper decision logic.
-  if (!cpi->refresh_alt_ref_frame &&
+  if (*frame_update_type != ARF_UPDATE &&
       (current_frame->frame_number == 0 ||
        (cpi->frame_flags & FRAMEFLAGS_KEY) || rc->frames_to_key == 0 ||
        (cpi->oxcf.auto_key && 0))) {
@@ -1501,7 +1506,8 @@ void av1_rc_get_one_pass_vbr_params(AV1_COMP *cpi,
           // sframe_mode == 1: insert sframe if it matches altref frame.
 
           if (current_frame->frame_number % sframe_dist == 0 &&
-              current_frame->frame_number != 0 && cpi->refresh_alt_ref_frame) {
+              current_frame->frame_number != 0 &&
+              *frame_update_type == ARF_UPDATE) {
             frame_params->frame_type = S_FRAME;
           }
         } else {
@@ -1513,7 +1519,7 @@ void av1_rc_get_one_pass_vbr_params(AV1_COMP *cpi,
             rc->sframe_due = 1;
           }
 
-          if (rc->sframe_due && cpi->refresh_alt_ref_frame) {
+          if (rc->sframe_due && *frame_update_type == ARF_UPDATE) {
             frame_params->frame_type = S_FRAME;
             rc->sframe_due = 0;
           }
@@ -1536,7 +1542,7 @@ void av1_rc_get_one_pass_vbr_params(AV1_COMP *cpi,
     } else {
       rc->constrained_gf_group = 0;
     }
-    cpi->refresh_golden_frame = 1;
+    if (*frame_update_type == LF_UPDATE) *frame_update_type = GF_UPDATE;
     rc->source_alt_ref_pending = USE_ALTREF_FOR_ONE_PASS;
     rc->gfu_boost = DEFAULT_GF_BOOST;
   }
@@ -1547,11 +1553,12 @@ void av1_rc_get_one_pass_vbr_params(AV1_COMP *cpi,
   if (frame_params->frame_type == KEY_FRAME)
     target = calc_iframe_target_size_one_pass_vbr(cpi);
   else
-    target = calc_pframe_target_size_one_pass_vbr(cpi);
+    target = calc_pframe_target_size_one_pass_vbr(cpi, *frame_update_type);
   rc_set_frame_target(cpi, target, cm->width, cm->height);
 }
 
-static int calc_pframe_target_size_one_pass_cbr(const AV1_COMP *cpi) {
+static int calc_pframe_target_size_one_pass_cbr(
+    const AV1_COMP *cpi, FRAME_UPDATE_TYPE frame_update_type) {
   const AV1EncoderConfig *oxcf = &cpi->oxcf;
   const RATE_CONTROL *rc = &cpi->rc;
   const int64_t diff = rc->optimal_buffer_level - rc->buffer_level;
@@ -1562,12 +1569,14 @@ static int calc_pframe_target_size_one_pass_cbr(const AV1_COMP *cpi) {
 
   if (oxcf->gf_cbr_boost_pct) {
     const int af_ratio_pct = oxcf->gf_cbr_boost_pct + 100;
-    target = cpi->refresh_golden_frame
-                 ? (rc->avg_frame_bandwidth * rc->baseline_gf_interval *
-                    af_ratio_pct) /
-                       (rc->baseline_gf_interval * 100 + af_ratio_pct - 100)
-                 : (rc->avg_frame_bandwidth * rc->baseline_gf_interval * 100) /
-                       (rc->baseline_gf_interval * 100 + af_ratio_pct - 100);
+    if (frame_update_type == GF_UPDATE || frame_update_type == OVERLAY_UPDATE) {
+      target =
+          (rc->avg_frame_bandwidth * rc->baseline_gf_interval * af_ratio_pct) /
+          (rc->baseline_gf_interval * 100 + af_ratio_pct - 100);
+    } else {
+      target = (rc->avg_frame_bandwidth * rc->baseline_gf_interval * 100) /
+               (rc->baseline_gf_interval * 100 + af_ratio_pct - 100);
+    }
   } else {
     target = rc->avg_frame_bandwidth;
   }
@@ -1611,6 +1620,7 @@ static int calc_iframe_target_size_one_pass_cbr(const AV1_COMP *cpi) {
 }
 
 void av1_rc_get_one_pass_cbr_params(AV1_COMP *cpi,
+                                    FRAME_UPDATE_TYPE *const frame_update_type,
                                     EncodeFrameParams *const frame_params) {
   AV1_COMMON *const cm = &cpi->common;
   RATE_CONTROL *const rc = &cpi->rc;
@@ -1639,7 +1649,7 @@ void av1_rc_get_one_pass_cbr_params(AV1_COMP *cpi,
     // NOTE: frames_till_gf_update_due must be <= frames_to_key.
     if (rc->frames_till_gf_update_due > rc->frames_to_key)
       rc->frames_till_gf_update_due = rc->frames_to_key;
-    cpi->refresh_golden_frame = 1;
+    if (*frame_update_type == LF_UPDATE) *frame_update_type = GF_UPDATE;
     rc->gfu_boost = DEFAULT_GF_BOOST;
   }
 
@@ -1651,7 +1661,7 @@ void av1_rc_get_one_pass_cbr_params(AV1_COMP *cpi,
   if (frame_params->frame_type == KEY_FRAME)
     target = calc_iframe_target_size_one_pass_cbr(cpi);
   else
-    target = calc_pframe_target_size_one_pass_cbr(cpi);
+    target = calc_pframe_target_size_one_pass_cbr(cpi, *frame_update_type);
 
   rc_set_frame_target(cpi, target, cm->width, cm->height);
   // TODO(afergs): Decide whether to scale up, down, or not at all

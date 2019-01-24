@@ -381,13 +381,9 @@ static void setup_frame(AV1_COMP *cpi) {
   }
 
   if (cm->current_frame.frame_type == KEY_FRAME && cm->show_frame) {
-    cpi->refresh_golden_frame = 1;
-    cpi->refresh_alt_ref_frame = 1;
     av1_zero(cpi->interp_filter_selected);
     set_sb_size(&cm->seq_params, select_sb_size(cpi));
   } else if (frame_is_sframe(cm)) {
-    cpi->refresh_golden_frame = 1;
-    cpi->refresh_alt_ref_frame = 1;
     av1_zero(cpi->interp_filter_selected);
     set_sb_size(&cm->seq_params, select_sb_size(cpi));
   } else {
@@ -5307,12 +5303,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     }
   }
 
-  // If the encoder forced a KEY_FRAME decision or if frame is an S_FRAME
-  if ((current_frame->frame_type == KEY_FRAME && cm->show_frame) ||
-      frame_is_sframe(cm)) {
-    cpi->refresh_last_frame = 1;
-  }
-
   cm->cur_frame->buf.color_primaries = seq_params->color_primaries;
   cm->cur_frame->buf.transfer_characteristics =
       seq_params->transfer_characteristics;
@@ -5734,9 +5724,6 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   if (oxcf->large_scale_tile)
     cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
 
-  // default reference buffers update config
-  av1_configure_buffer_updates(cpi, LF_UPDATE);
-
   // Initialize fields related to forward keyframes
   cpi->no_show_kf = 0;
 
@@ -5959,6 +5946,8 @@ void av1_apply_encoding_flags(AV1_COMP *cpi, aom_enc_frame_flags_t flags) {
     cpi->ext_refresh_bwd_ref_frame = (upd & AOM_BWD_FLAG) != 0;
     cpi->ext_refresh_alt2_ref_frame = (upd & AOM_ALT2_FLAG) != 0;
     cpi->ext_refresh_frame_flags_pending = 1;
+  } else {
+    cpi->ext_refresh_frame_flags_pending = 0;
   }
 
   cpi->ext_use_ref_frame_mvs = cpi->oxcf.allow_ref_frame_mvs &

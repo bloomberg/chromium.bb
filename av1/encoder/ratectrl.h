@@ -15,6 +15,8 @@
 #include "aom/aom_codec.h"
 #include "aom/aom_integer.h"
 
+#include "aom_ports/mem.h"
+
 #include "av1/common/blockd.h"
 #include "av1/common/onyxc_int.h"
 
@@ -201,9 +203,11 @@ int av1_rc_get_fixed_gf_length(int max_pyr_height);
 // encode_frame_to_data_rate() function.
 struct EncodeFrameParams;
 void av1_rc_get_one_pass_vbr_params(
-    struct AV1_COMP *cpi, struct EncodeFrameParams *const frame_params);
+    struct AV1_COMP *cpi, uint8_t *const frame_update_type,
+    struct EncodeFrameParams *const frame_params);
 void av1_rc_get_one_pass_cbr_params(
-    struct AV1_COMP *cpi, struct EncodeFrameParams *const frame_params);
+    struct AV1_COMP *cpi, uint8_t *const frame_update_type,
+    struct EncodeFrameParams *const frame_params);
 
 // Post encode update of the rate control parameters based
 // on bytes used
@@ -243,7 +247,7 @@ int av1_rc_bits_per_mb(FRAME_TYPE frame_type, int qindex,
 int av1_rc_clamp_iframe_target_size(const struct AV1_COMP *const cpi,
                                     int target);
 int av1_rc_clamp_pframe_target_size(const struct AV1_COMP *const cpi,
-                                    int target);
+                                    int target, uint8_t frame_update_type);
 
 // Computes a q delta (in "q index" terms) to get from a starting q value
 // to a target q value
