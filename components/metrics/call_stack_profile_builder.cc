@@ -47,8 +47,10 @@ uint64_t HashModuleFilename(const base::FilePath& filename) {
 
 CallStackProfileBuilder::CallStackProfileBuilder(
     const CallStackProfileParams& profile_params,
+    const WorkIdRecorder* work_id_recorder,
     base::OnceClosure completed_callback)
-    : profile_start_time_(base::TimeTicks::Now()) {
+    : work_id_recorder_(work_id_recorder),
+      profile_start_time_(base::TimeTicks::Now()) {
   completed_callback_ = std::move(completed_callback);
   sampled_profile_.set_process(
       ToExecutionContextProcess(profile_params.process));
@@ -59,7 +61,20 @@ CallStackProfileBuilder::CallStackProfileBuilder(
 
 CallStackProfileBuilder::~CallStackProfileBuilder() = default;
 
-// static
+// This function is invoked on the profiler thread while the target thread is
+// suspended so must not take any locks, including indirectly through use of
+// heap allocation, LOG, CHECK, or DCHECK.
+void CallStackProfileBuilder::RecordMetadata() {
+  if (!work_id_recorder_)
+    return;
+  unsigned int work_id = work_id_recorder_->RecordWorkId();
+  // A work id of 0 indicates that the message loop has not yet started.
+  if (work_id == 0)
+    return;
+  is_continued_work_ = (last_work_id_ == work_id);
+  last_work_id_ = work_id;
+}
+
 void CallStackProfileBuilder::OnSampleCompleted(
     std::vector<base::StackSamplingProfiler::Frame> frames) {
   // Write CallStackProfile::Stack protobuf message.
@@ -110,6 +125,8 @@ void CallStackProfileBuilder::OnSampleCompleted(
   CallStackProfile::StackSample* stack_sample_proto =
       call_stack_profile->add_stack_sample();
   stack_sample_proto->set_stack_index(stack_loc->second);
+  if (is_continued_work_)
+    stack_sample_proto->set_continued_work(is_continued_work_);
 }
 
 void CallStackProfileBuilder::OnProfileCompleted(

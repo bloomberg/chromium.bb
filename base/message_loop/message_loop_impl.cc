@@ -215,6 +215,7 @@ void MessageLoopImpl::BindToCurrentThread(std::unique_ptr<MessagePump> pump) {
   message_loop_controller_->StartScheduling();
   SetThreadTaskRunnerHandle();
   thread_id_ = PlatformThread::CurrentId();
+  work_id_provider_ = WorkIdProvider::GetForCurrentThread();
 
   scoped_set_sequence_local_storage_map_for_current_thread_ = std::make_unique<
       internal::ScopedSetSequenceLocalStorageMapForCurrentThread>(
@@ -342,6 +343,8 @@ bool MessageLoopImpl::ProcessNextDelayedNonNestableTask() {
 void MessageLoopImpl::RunTask(PendingTask* pending_task) {
   DCHECK(task_execution_allowed_);
 
+  work_id_provider_->IncrementWorkId();
+
   // Execute the task and assume the worst: It is probably not reentrant.
   task_execution_allowed_ = false;
 
@@ -427,6 +430,10 @@ void MessageLoopImpl::ScheduleWork() {
 
 TimeTicks MessageLoopImpl::CapAtOneDay(TimeTicks next_run_time) {
   return std::min(next_run_time, recent_time_ + TimeDelta::FromDays(1));
+}
+
+void MessageLoopImpl::BeforeDoInternalWork() {
+  work_id_provider_->IncrementWorkId();
 }
 
 bool MessageLoopImpl::DoWork() {

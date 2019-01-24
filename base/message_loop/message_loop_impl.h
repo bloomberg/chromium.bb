@@ -18,6 +18,7 @@
 #include "base/message_loop/message_pump.h"
 #include "base/message_loop/pending_task_queue.h"
 #include "base/message_loop/timer_slack.h"
+#include "base/message_loop/work_id_provider.h"
 #include "base/observer_list.h"
 #include "base/pending_task.h"
 #include "base/run_loop.h"
@@ -135,6 +136,7 @@ class BASE_EXPORT MessageLoopImpl : public MessageLoopBase,
   TimeTicks CapAtOneDay(TimeTicks next_run_time);
 
   // MessagePump::Delegate methods:
+  void BeforeDoInternalWork() override;
   bool DoWork() override;
   bool DoDelayedWork(TimeTicks* next_delayed_work_time) override;
   bool DoIdleWork() override;
@@ -199,6 +201,11 @@ class BASE_EXPORT MessageLoopImpl : public MessageLoopBase,
   // Instantiated in BindToCurrentThread().
   std::unique_ptr<internal::ScopedSetSequenceLocalStorageMapForCurrentThread>
       scoped_set_sequence_local_storage_map_for_current_thread_;
+
+  // Non-null provider of id state for identifying distinct work items executed
+  // by the message loop (task, event, etc.). Cached on the class to avoid TLS
+  // lookups on task execution.
+  WorkIdProvider* work_id_provider_ = nullptr;
 
   ObserverList<DestructionObserver>::Unchecked destruction_observers_;
 

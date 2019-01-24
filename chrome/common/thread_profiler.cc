@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/message_loop/work_id_provider.h"
 #include "base/rand_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequence_local_storage_slot.h"
@@ -65,14 +66,6 @@ CallStackProfileParams::Process GetProcess() {
   return CallStackProfileParams::UNKNOWN_PROCESS;
 }
 
-std::unique_ptr<base::StackSamplingProfiler::ProfileBuilder>
-CreateProfileBuilder(
-    const CallStackProfileParams& params,
-    base::OnceClosure completed_callback = base::OnceClosure()) {
-  return std::make_unique<CallStackProfileBuilder>(
-      params, std::move(completed_callback));
-}
-
 }  // namespace
 
 // The scheduler works by splitting execution time into repeated periods such
@@ -124,7 +117,26 @@ base::TimeTicks PeriodicSamplingScheduler::Now() const {
   return base::TimeTicks::Now();
 }
 
-ThreadProfiler::~ThreadProfiler() {}
+// Records the current unique id for the work item being executed in the target
+// thread's message loop.
+class ThreadProfiler::WorkIdRecorder : public metrics::WorkIdRecorder {
+ public:
+  explicit WorkIdRecorder(base::WorkIdProvider* work_id_provider)
+      : work_id_provider_(work_id_provider) {}
+
+  // Invoked on the profiler thread while the target thread is suspended.
+  unsigned int RecordWorkId() const override {
+    return work_id_provider_->GetWorkId();
+  }
+
+  WorkIdRecorder(const WorkIdRecorder&) = delete;
+  WorkIdRecorder& operator=(const WorkIdRecorder&) = delete;
+
+ private:
+  base::WorkIdProvider* const work_id_provider_;
+};
+
+ThreadProfiler::~ThreadProfiler() = default;
 
 // static
 std::unique_ptr<ThreadProfiler> ThreadProfiler::CreateAndStartOnMainThread() {
@@ -201,14 +213,18 @@ ThreadProfiler::ThreadProfiler(
     scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner)
     : thread_(thread),
       owning_thread_task_runner_(owning_thread_task_runner),
+      work_id_recorder_(std::make_unique<WorkIdRecorder>(
+          base::WorkIdProvider::GetForCurrentThread())),
       weak_factory_(this) {
   if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
     return;
 
   startup_profiler_ = std::make_unique<StackSamplingProfiler>(
       base::PlatformThread::CurrentId(), kSamplingParams,
-      CreateProfileBuilder(CallStackProfileParams(
-          GetProcess(), thread, CallStackProfileParams::PROCESS_STARTUP)));
+      std::make_unique<CallStackProfileBuilder>(
+          CallStackProfileParams(GetProcess(), thread,
+                                 CallStackProfileParams::PROCESS_STARTUP),
+          work_id_recorder_.get()));
 
   startup_profiler_->Start();
 
@@ -251,9 +267,10 @@ void ThreadProfiler::StartPeriodicSamplingCollection() {
   // NB: Destroys the previous profiler as side effect.
   periodic_profiler_ = std::make_unique<StackSamplingProfiler>(
       base::PlatformThread::CurrentId(), kSamplingParams,
-      CreateProfileBuilder(
+      std::make_unique<CallStackProfileBuilder>(
           CallStackProfileParams(GetProcess(), thread_,
                                  CallStackProfileParams::PERIODIC_COLLECTION),
+          work_id_recorder_.get(),
           base::BindOnce(&ThreadProfiler::OnPeriodicCollectionCompleted,
                          owning_thread_task_runner_,
                          weak_factory_.GetWeakPtr())));

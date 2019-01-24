@@ -91,6 +91,8 @@ class ThreadProfiler {
       service_manager::Connector* connector);
 
  private:
+  class WorkIdRecorder;
+
   // Creates the profiler. The task runner will be supplied for child threads
   // but not for main threads.
   ThreadProfiler(
@@ -113,6 +115,8 @@ class ThreadProfiler {
   metrics::CallStackProfileParams::Thread thread_;
 
   scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner_;
+
+  std::unique_ptr<WorkIdRecorder> work_id_recorder_;
 
   std::unique_ptr<base::StackSamplingProfiler> startup_profiler_;
 

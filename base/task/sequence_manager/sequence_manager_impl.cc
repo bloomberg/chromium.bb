@@ -218,6 +218,7 @@ void SequenceManagerImpl::BindToCurrentThread(
 
 void SequenceManagerImpl::CompleteInitializationOnBoundThread() {
   controller_->AddNestingObserver(this);
+  work_id_provider_ = WorkIdProvider::GetForCurrentThread();
   main_thread_only().nesting_observer_registered_ = true;
   if (GetMessagePump())
     MessageLoopCurrent::BindToCurrentThreadInternal(this);
@@ -437,6 +438,8 @@ Optional<PendingTask> SequenceManagerImpl::TakeTask() {
                      "SequenceManager::RunTask", "queue_type",
                      executing_task.task_queue->GetName(), "task_type",
                      executing_task.task_type);
+
+  work_id_provider_->IncrementWorkId();
 
   return task;
 }
