@@ -70,6 +70,9 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   using MarkRegistrationForDeletionCallback =
       base::OnceCallback<void(blink::mojom::BackgroundFetchError,
                               blink::mojom::BackgroundFetchFailureReason)>;
+  using GetRequestBlobCallback =
+      base::OnceCallback<void(blink::mojom::BackgroundFetchError,
+                              blink::mojom::SerializedBlobPtr)>;
   using MarkRequestCompleteCallback =
       base::OnceCallback<void(blink::mojom::BackgroundFetchError)>;
   using NextRequestCallback =
@@ -126,6 +129,13 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   // |callback| with it.
   void PopNextRequest(const BackgroundFetchRegistrationId& registration_id,
                       NextRequestCallback callback);
+
+  // Retrieves the request blob associated with |request_info|. THis should be
+  // called for requests that are known to have a blob.
+  void GetRequestBlob(
+      const BackgroundFetchRegistrationId& registration_id,
+      const scoped_refptr<BackgroundFetchRequestInfo>& request_info,
+      GetRequestBlobCallback callback);
 
   // Marks |request_info| as complete and calls |callback| when done.
   void MarkRequestAsComplete(

@@ -59,7 +59,7 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
     // Called by the delegate when the Download Service is requesting the
     // upload data.
     virtual void GetUploadData(
-        blink::mojom::FetchAPIRequestPtr request,
+        const scoped_refptr<BackgroundFetchRequestInfo>& request,
         BackgroundFetchDelegate::GetUploadDataCallback callback) = 0;
 
     virtual ~Controller() {}
