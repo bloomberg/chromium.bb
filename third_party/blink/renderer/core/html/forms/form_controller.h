@@ -24,6 +24,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_FORM_CONTROLLER_H_
 
 #include <memory>
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -76,7 +77,8 @@ inline void FormControlState::Append(const String& value) {
 using SavedFormStateMap =
     HashMap<AtomicString, std::unique_ptr<SavedFormState>>;
 
-class DocumentState final : public GarbageCollectedFinalized<DocumentState> {
+class CORE_EXPORT DocumentState final
+    : public GarbageCollectedFinalized<DocumentState> {
  public:
   DocumentState(Document& document);
   void Trace(Visitor*);
@@ -92,7 +94,8 @@ class DocumentState final : public GarbageCollectedFinalized<DocumentState> {
   bool form_controls_dirty_ = true;
 };
 
-class FormController final : public GarbageCollectedFinalized<FormController> {
+class CORE_EXPORT FormController final
+    : public GarbageCollectedFinalized<FormController> {
  public:
   FormController(Document& document);
   ~FormController();
