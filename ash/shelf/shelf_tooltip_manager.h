@@ -51,6 +51,7 @@ class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
   // ui::EventHandler overrides:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnTouchEvent(ui::TouchEvent* event) override;
+  void OnKeyEvent(ui::KeyEvent* event) override;
 
   // ShelfObserver overrides:
   void WillChangeVisibilityState(ShelfVisibilityState new_state) override;

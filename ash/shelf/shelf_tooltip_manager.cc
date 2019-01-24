@@ -146,6 +146,11 @@ void ShelfTooltipManager::OnTouchEvent(ui::TouchEvent* event) {
     ProcessPressedEvent(*event);
 }
 
+void ShelfTooltipManager::OnKeyEvent(ui::KeyEvent* event) {
+  // Close any currently shown bubble.
+  Close();
+}
+
 void ShelfTooltipManager::WillChangeVisibilityState(
     ShelfVisibilityState new_state) {
   if (new_state == SHELF_HIDDEN)
