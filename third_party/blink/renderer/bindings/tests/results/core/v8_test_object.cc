@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/js_event_handler.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_call_stack.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
@@ -61,7 +60,6 @@
 #include "third_party/blink/renderer/core/html/html_table_rows_collection.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/core/inspector/script_arguments.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/core/typed_arrays/flexible_array_buffer_view.h"
@@ -7963,42 +7961,6 @@ static void CallWithScriptStateExecutionContextIsolateVoidMethodMethod(const v8:
   impl->callWithScriptStateExecutionContextIsolateVoidMethod(info.GetIsolate(), script_state, execution_context);
 }
 
-static void CallWithScriptStateScriptArgumentsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObject* impl = V8TestObject::ToImpl(info.Holder());
-
-  ScriptState* script_state = ScriptState::ForRelevantRealm(info);
-
-  ScriptArguments* scriptArguments(ScriptArguments::Create(script_state, info, 0));
-  impl->callWithScriptStateScriptArgumentsVoidMethod(script_state, script_arguments);
-}
-
-static void CallWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg");
-
-  TestObject* impl = V8TestObject::ToImpl(info.Holder());
-
-  ScriptState* script_state = ScriptState::ForRelevantRealm(info);
-
-  bool optional_boolean_arg;
-  int num_args_passed = info.Length();
-  while (num_args_passed > 0) {
-    if (!info[num_args_passed - 1]->IsUndefined())
-      break;
-    --num_args_passed;
-  }
-  if (UNLIKELY(num_args_passed <= 0)) {
-    ScriptArguments* scriptArguments(ScriptArguments::Create(script_state, info, 1));
-    impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(script_state, script_arguments);
-    return;
-  }
-  optional_boolean_arg = NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), info[0], exception_state);
-  if (exception_state.HadException())
-    return;
-
-  ScriptArguments* scriptArguments(ScriptArguments::Create(script_state, info, 1));
-  impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(script_state, script_arguments, optional_boolean_arg);
-}
-
 static void CallWithCurrentWindowMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
@@ -12824,18 +12786,6 @@ void V8TestObject::CallWithScriptStateExecutionContextIsolateVoidMethodMethodCal
   test_object_v8_internal::CallWithScriptStateExecutionContextIsolateVoidMethodMethod(info);
 }
 
-void V8TestObject::CallWithScriptStateScriptArgumentsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_callWithScriptStateScriptArgumentsVoidMethod");
-
-  test_object_v8_internal::CallWithScriptStateScriptArgumentsVoidMethodMethod(info);
-}
-
-void V8TestObject::CallWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg");
-
-  test_object_v8_internal::CallWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod(info);
-}
-
 void V8TestObject::CallWithCurrentWindowMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_callWithCurrentWindow");
 
@@ -13700,8 +13650,6 @@ static constexpr V8DOMConfiguration::MethodConfiguration kV8TestObjectMethods[] 
     {"callWithScriptStateVoidMethod", V8TestObject::CallWithScriptStateVoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"callWithScriptStateLongMethod", V8TestObject::CallWithScriptStateLongMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"callWithScriptStateExecutionContextIsolateVoidMethod", V8TestObject::CallWithScriptStateExecutionContextIsolateVoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
-    {"callWithScriptStateScriptArgumentsVoidMethod", V8TestObject::CallWithScriptStateScriptArgumentsVoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
-    {"callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg", V8TestObject::CallWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"callWithCurrentWindow", V8TestObject::CallWithCurrentWindowMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"callWithCurrentWindowScriptWindow", V8TestObject::CallWithCurrentWindowScriptWindowMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"callWithThisValue", V8TestObject::CallWithThisValueMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},

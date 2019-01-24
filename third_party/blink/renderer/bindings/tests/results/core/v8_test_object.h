@@ -552,8 +552,6 @@ class V8TestObject {
   CORE_EXPORT static void CallWithScriptStateVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void CallWithScriptStateLongMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void CallWithScriptStateExecutionContextIsolateVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void CallWithScriptStateScriptArgumentsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void CallWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void CallWithCurrentWindowMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void CallWithCurrentWindowScriptWindowMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void CallWithThisValueMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);

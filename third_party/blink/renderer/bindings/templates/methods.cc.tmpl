@@ -264,10 +264,6 @@ ExecutionContext* execution_context = ExecutionContext::ForCurrentRealm(info);
 ExecutionContext* execution_context = ExecutionContext::ForRelevantRealm(info);
 {% endif %}
 {% endif %}
-{% if method.is_call_with_script_arguments %}
-{# [CallWith=ScriptArguments] #}
-ScriptArguments* scriptArguments(ScriptArguments::Create(script_state, info, {{method.number_of_arguments}}));
-{% endif %}
 {% if method.is_call_with_document %}
 {# [ConstructorCallWith=Document] #}
 Document& document = *To<Document>(ToExecutionContext(
