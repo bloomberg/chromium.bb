@@ -165,11 +165,22 @@ bool CSPHandler::Parse(Extension* extension, base::string16* error) {
   bool csp_dictionary_supported =
       extension->GetType() == Manifest::TYPE_EXTENSION &&
       GetCurrentChannel() == version_info::Channel::UNKNOWN;
-  if (csp_dictionary_supported && csp && csp->is_dict())
-    return ParseCSPDictionary(extension, error);
 
-  // TODO(crbug.com/914224) Disallow the usages below in manifest v3 for
-  // extensions.
+  if (csp_dictionary_supported) {
+    // CSP key as dictionary is mandatory for manifest v3 extensions.
+    if (extension->manifest_version() == 3) {
+      if (csp && !csp->is_dict()) {
+        *error = GetInvalidManifestKeyError(key);
+        return false;
+      }
+      return ParseCSPDictionary(extension, error);
+    }
+
+    // CSP key as dictionary is optional for manifest v2 extensions.
+    if (csp && csp->is_dict())
+      return ParseCSPDictionary(extension, error);
+  }
+
   if (!ParseExtensionPagesCSP(extension, error, key, csp))
     return false;
 
