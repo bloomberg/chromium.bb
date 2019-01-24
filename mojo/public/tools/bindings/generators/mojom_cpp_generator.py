@@ -396,6 +396,14 @@ class Generator(generator.Generator):
   def _GenerateModuleSharedSource(self):
     return self._GetJinjaExports()
 
+  @UseJinja("module-test-utils.h.tmpl")
+  def _GenerateModuleTestUtilsHeader(self):
+    return self._GetJinjaExports()
+
+  @UseJinja("module-test-utils.cc.tmpl")
+  def _GenerateModuleTestUtilsSource(self):
+    return self._GetJinjaExports()
+
   def GenerateFiles(self, args):
     self.module.Stylize(generator.Stylizer())
 
@@ -416,6 +424,10 @@ class Generator(generator.Generator):
                  "%s%s.h" % (self.module.path, suffix))
       self.Write(self._GenerateModuleSource(),
                  "%s%s.cc" % (self.module.path, suffix))
+      self.Write(self._GenerateModuleTestUtilsHeader(),
+                 "%s%s-test-utils.h" % (self.module.path, suffix))
+      self.Write(self._GenerateModuleTestUtilsSource(),
+                 "%s%s-test-utils.cc" % (self.module.path, suffix))
 
   def _ConstantValue(self, constant):
     return self._ExpressionToText(constant.value, kind=constant.kind)

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/time_to_first_present_recorder_test_api.test-mojom-test-utils.h"
 #include "ash/public/interfaces/time_to_first_present_recorder_test_api.test-mojom.h"
 #include "base/command_line.h"
 #include "chrome/test/base/in_process_browser_test.h"

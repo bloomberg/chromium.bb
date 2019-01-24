@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/system_tray_test_api.test-mojom-test-utils.h"
 #include "ash/public/interfaces/system_tray_test_api.test-mojom.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/chromeos/first_run/first_run_controller.h"

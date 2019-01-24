@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/shell_test_api.test-mojom-test-utils.h"
 #include "ash/public/interfaces/shell_test_api.test-mojom.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"

@@ -754,6 +754,8 @@ template("mojom") {
       generator_cpp_outputs += [
         "{{source_gen_dir}}/{{source_file_part}}${variant_dash_suffix}.cc",
         "{{source_gen_dir}}/{{source_file_part}}${variant_dash_suffix}.h",
+        "{{source_gen_dir}}/{{source_file_part}}${variant_dash_suffix}-test-utils.cc",
+        "{{source_gen_dir}}/{{source_file_part}}${variant_dash_suffix}-test-utils.h",
       ]
       enabled_sources = []
       if (defined(bindings_configuration.blacklist)) {
@@ -828,6 +830,8 @@ template("mojom") {
           outputs += [
             "$target_gen_dir/${source}${variant_dash_suffix}.cc",
             "$target_gen_dir/${source}${variant_dash_suffix}.h",
+            "$target_gen_dir/${source}${variant_dash_suffix}-test-utils.cc",
+            "$target_gen_dir/${source}${variant_dash_suffix}-test-utils.h",
           ]
         }
 

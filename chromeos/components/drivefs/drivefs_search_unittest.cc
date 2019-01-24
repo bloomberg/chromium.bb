@@ -8,6 +8,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "chromeos/components/drivefs/mojom/drivefs.mojom-test-utils.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/mock_network_change_notifier.h"
 #include "testing/gmock/include/gmock/gmock.h"

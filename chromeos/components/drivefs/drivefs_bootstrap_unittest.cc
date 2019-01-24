@@ -8,6 +8,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "chromeos/components/drivefs/mojom/drivefs.mojom-test-utils.h"
 #include "chromeos/components/drivefs/pending_connection_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -11,6 +11,7 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/portal/portal.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/frame.mojom-test-utils.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -23,6 +24,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/portal/portal.mojom-test-utils.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom.h"
 #include "url/url_constants.h"
 

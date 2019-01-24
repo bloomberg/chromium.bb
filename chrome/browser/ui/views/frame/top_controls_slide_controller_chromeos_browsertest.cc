@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/cros_display_config.mojom-test-utils.h"
 #include "ash/public/interfaces/cros_display_config.mojom.h"
 #include "base/bind.h"
 #include "base/command_line.h"
