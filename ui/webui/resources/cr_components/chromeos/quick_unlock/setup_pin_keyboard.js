@@ -283,11 +283,11 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent} e Custom event containing the new pin.
+   * @param {!CustomEvent<{pin: string}>} e Custom event containing the new pin.
    * @private
    */
   onPinChange_: function(e) {
-    const newPin = /** @type {{pin: string}} */ (e.detail).pin;
+    const newPin = e.detail.pin;
     if (!this.isConfirmStep) {
       if (newPin) {
         this.quickUnlockPrivate.checkCredential(

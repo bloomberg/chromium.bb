@@ -68,11 +68,11 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent} e
+   * @param {!CustomEvent<string>} e
    * @private
    */
   onSearchChanged_: function(e) {
-    this.filterValue_ = /** @type {string} */ (e.detail);
+    this.filterValue_ = e.detail;
   },
 
   /**

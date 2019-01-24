@@ -438,16 +438,14 @@ cr.define('extensions', function() {
     },
 
     /**
-     * @param {!CustomEvent} e
+     * @param {!CustomEvent<!chrome.developerPrivate.LoadError>} e
      * @private
      */
     onLoadError_: function(e) {
-      const loadError =
-          /** @type {!chrome.developerPrivate.LoadError} */ (e.detail);
       this.showLoadErrorDialog_ = true;
       this.async(() => {
         const dialog = this.$$('#load-error');
-        dialog.loadError = loadError;
+        dialog.loadError = e.detail;
         dialog.show();
       });
     },

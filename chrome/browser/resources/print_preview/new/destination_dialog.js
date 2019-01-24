@@ -186,13 +186,12 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent} e Event containing the selected destination list item
-   *     element.
+   * @param {!CustomEvent<!PrintPreviewDestinationListItemElement>} e Event
+   *     containing the selected destination list item element.
    * @private
    */
   onDestinationSelected_: function(e) {
-    const listItem =
-        /** @type {!PrintPreviewDestinationListItemElement} */ (e.detail);
+    const listItem = e.detail;
     const destination = listItem.destination;
 
     // ChromeOS local destinations that don't have capabilities need to be

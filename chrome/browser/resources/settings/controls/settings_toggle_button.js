@@ -85,11 +85,11 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent} e
+   * @param {!CustomEvent<boolean>} e
    * @private
    */
   onChange_: function(e) {
-    this.checked = /** @type {boolean} */ (e.detail);
+    this.checked = e.detail;
     this.notifyChangedByUserInteraction();
   },
 });

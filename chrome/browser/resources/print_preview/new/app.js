@@ -447,11 +447,12 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent} e Event containing the sticky settings string.
+   * @param {!CustomEvent<string>} e Event containing the sticky settings
+   *     string.
    * @private
    */
   onSaveStickySettings_: function(e) {
-    this.nativeLayer_.saveAppState(/** @type {string} */ (e.detail));
+    this.nativeLayer_.saveAppState(e.detail);
   },
 
   /** @private */
@@ -510,14 +511,13 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent} e The event containing the new validity.
+   * @param {!CustomEvent<boolean>} e The event containing the new validity.
    * @private
    */
   onSettingValidChanged_: function(e) {
     this.$.state.transitTo(
-        /** @type {boolean} */ (e.detail) ?
-            print_preview_new.State.READY :
-            print_preview_new.State.INVALID_TICKET);
+        e.detail ? print_preview_new.State.READY :
+                   print_preview_new.State.INVALID_TICKET);
   },
 
   /** @private */
@@ -708,11 +708,11 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent} e Contains the new preview request ID.
+   * @param {!CustomEvent<number>} e Contains the new preview request ID.
    * @private
    */
   onPreviewStart_: function(e) {
-    this.$.documentInfo.inFlightRequestId = /** @type {number} */ (e.detail);
+    this.$.documentInfo.inFlightRequestId = e.detail;
   },
 
   // <if expr="chromeos">

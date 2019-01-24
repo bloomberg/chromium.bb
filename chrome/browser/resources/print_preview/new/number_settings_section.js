@@ -55,11 +55,11 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent} e Contains the new input value.
+   * @param {!CustomEvent<string>} e Contains the new input value.
    * @private
    */
   onInputChange_: function(e) {
-    this.inputString_ = /** @type {string} */ (e.detail);
+    this.inputString_ = e.detail;
   },
 
   /**
