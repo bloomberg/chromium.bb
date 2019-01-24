@@ -27,9 +27,6 @@ namespace internal {
 
 using GwpAsanCrashAnalysisResult = CrashAnalyzer::GwpAsanCrashAnalysisResult;
 
-// TODO: Delete out-of-line constexpr defininitons once C++17 is in use.
-constexpr size_t CrashAnalyzer::kMaxStackTraceLen;
-
 GwpAsanCrashAnalysisResult CrashAnalyzer::GetExceptionInfo(
     const crashpad::ProcessSnapshot& process_snapshot,
     gwp_asan::Crash* proto) {
@@ -125,14 +122,14 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
   }
 
   AllocatorState::ErrorType error = valid_state.GetErrorType(
-      exception_addr, slot.alloc.trace_addr != 0, slot.dealloc.trace_addr != 0);
+      exception_addr, slot.alloc.trace_collected, slot.dealloc.trace_collected);
   proto->set_error_type(static_cast<Crash_ErrorType>(error));
   proto->set_allocation_address(slot.alloc_ptr);
   proto->set_allocation_size(slot.alloc_size);
   if (slot.alloc.tid != base::kInvalidThreadId || slot.alloc.trace_len)
-    ReadAllocationInfo(memory, slot.alloc, proto->mutable_allocation());
+    ReadAllocationInfo(slot.alloc, proto->mutable_allocation());
   if (slot.dealloc.tid != base::kInvalidThreadId || slot.dealloc.trace_len)
-    ReadAllocationInfo(memory, slot.dealloc, proto->mutable_deallocation());
+    ReadAllocationInfo(slot.dealloc, proto->mutable_deallocation());
   proto->set_region_start(valid_state.pages_base_addr);
   proto->set_region_size(valid_state.pages_end_addr -
                          valid_state.pages_base_addr);
@@ -140,45 +137,26 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
   return GwpAsanCrashAnalysisResult::kGwpAsanCrash;
 }
 
-bool CrashAnalyzer::ReadAllocationInfo(
-    const crashpad::ProcessMemory& memory,
+void CrashAnalyzer::ReadAllocationInfo(
     const SlotMetadata::AllocationInfo& slot_info,
     gwp_asan::Crash_AllocationInfo* proto_info) {
   if (slot_info.tid != base::kInvalidThreadId)
     proto_info->set_thread_id(slot_info.tid);
 
-  if (!slot_info.trace_len)
-    return true;
+  if (!slot_info.trace_len || !slot_info.trace_collected)
+    return;
 
-  size_t trace_len = std::min(slot_info.trace_len, kMaxStackTraceLen);
-  // On 32-bit platforms we can't read directly to
-  // proto_info->mutable_stack_trace()->mutable_data(), so we read to an
-  // intermediate uintptr_t array.
-  uintptr_t trace[kMaxStackTraceLen];
-  if (!ReadStackTrace(memory,
-                      static_cast<crashpad::VMAddress>(slot_info.trace_addr),
-                      trace, trace_len))
-    return false;
-
-  proto_info->mutable_stack_trace()->Resize(trace_len, 0);
-  uint64_t* output = proto_info->mutable_stack_trace()->mutable_data();
-  for (size_t i = 0; i < trace_len; i++)
-    output[i] = trace[i];
-
-  return true;
-}
-
-bool CrashAnalyzer::ReadStackTrace(const crashpad::ProcessMemory& memory,
-                                   crashpad::VMAddress crashing_trace_addr,
-                                   uintptr_t* trace_output,
-                                   size_t trace_len) {
-  if (!memory.Read(crashing_trace_addr, sizeof(uintptr_t) * trace_len,
-                   trace_output)) {
-    DLOG(ERROR) << "Memory read should always succeed.";
-    return false;
+  if (slot_info.trace_len > AllocatorState::kMaxStackFrames) {
+    DLOG(ERROR) << "Stack trace length is corrupted: " << slot_info.trace_len;
+    return;
   }
 
-  return true;
+  // On 32-bit platforms we can't copy directly to
+  // proto_info->mutable_stack_trace()->mutable_data().
+  proto_info->mutable_stack_trace()->Resize(slot_info.trace_len, 0);
+  uint64_t* output = proto_info->mutable_stack_trace()->mutable_data();
+  for (size_t i = 0; i < slot_info.trace_len; i++)
+    output[i] = slot_info.trace[i];
 }
 
 }  // namespace internal

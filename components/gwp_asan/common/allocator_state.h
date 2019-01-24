@@ -25,7 +25,6 @@
 #ifndef COMPONENTS_GWP_ASAN_COMMON_ALLOCATOR_STATE_H_
 #define COMPONENTS_GWP_ASAN_COMMON_ALLOCATOR_STATE_H_
 
-#include "base/debug/stack_trace.h"
 #include "base/threading/platform_thread.h"
 
 namespace gwp_asan {
@@ -37,6 +36,8 @@ class AllocatorState {
  public:
   // Maximum number of pages this class can allocate.
   static constexpr size_t kGpaMaxPages = 128;
+  // Maximum number of stack trace frames to collect.
+  static constexpr size_t kMaxStackFrames = 60;
 
   enum class ErrorType {
     kUseAfterFree = 0,
@@ -59,10 +60,12 @@ class AllocatorState {
       // (De)allocation thread id or base::kInvalidThreadId if no (de)allocation
       // occurred.
       base::PlatformThreadId tid = base::kInvalidThreadId;
-      // Pointer to stack trace addresses or null if no (de)allocation occurred.
-      uintptr_t trace_addr = 0;
-      // Stack trace length or 0 if no (de)allocation occurred.
+      // Stack trace contents.
+      uintptr_t trace[kMaxStackFrames];
+      // Stack trace length.
       size_t trace_len = 0;
+      // Whether a stack trace has been collected for this (de)allocation.
+      bool trace_collected = false;
     };
 
     // Size of the allocation
