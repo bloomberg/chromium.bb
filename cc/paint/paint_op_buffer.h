@@ -18,7 +18,6 @@
 #include "base/memory/aligned_memory.h"
 #include "base/optional.h"
 #include "cc/base/math_util.h"
-#include "cc/paint/image_provider.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_flags.h"
@@ -40,6 +39,7 @@ class SkStrikeServer;
 // See: third_party/skia/src/core/SkLiteDL.h.
 namespace cc {
 class ClientPaintCache;
+class ImageProvider;
 class ServicePaintCache;
 class PaintWorkletImageProvider;
 

@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 
 #include "base/test/simple_test_tick_clock.h"
+#include "cc/paint/image_provider.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "cc/tiles/mipmap_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
