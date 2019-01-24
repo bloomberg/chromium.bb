@@ -524,6 +524,33 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
             window_state->GetRestoreBoundsInScreen().ToString());
 }
 
+// Verifies that window dragged by touch-gestures to the edge of display
+// will not lead to system crash (see https://crbug.com/917060).
+TEST_F(ToplevelWindowEventHandlerTest, GestureDragMultiDisplays) {
+  UpdateDisplay("800x600, 800x600");
+  std::unique_ptr<aura::Window> target(CreateTestWindowInShellWithDelegate(
+      new TestWindowDelegate(HTCAPTION), 0, gfx::Rect(0, 0, 100, 100)));
+  wm::WindowState* window_state = wm::GetWindowState(target.get());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     target.get());
+  gfx::Rect old_bounds = target->bounds();
+  gfx::Point location(5, 5);
+  gfx::Point end = location;
+
+  // On real device, gesture event's location may not be accurate. For example,
+  // when window is dragged by touch-gestures to the edge of display, it may
+  // create gesture events with location out of the display bounds. Let |end| be
+  // out of the primary display's bounds to emulate this situation.
+  end.Offset(800, 0);
+  generator.GestureScrollSequence(location, end,
+                                  base::TimeDelta::FromMilliseconds(5), 10);
+
+  // Verify that the window has moved after the gesture.
+  EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
+  EXPECT_EQ(mojom::WindowStateType::RIGHT_SNAPPED,
+            window_state->GetStateType());
+}
+
 // Tests that a gesture cannot minimize an unminimizeable window.
 TEST_F(ToplevelWindowEventHandlerTest,
        GestureAttemptMinimizeUnminimizeableWindow) {
