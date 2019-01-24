@@ -192,7 +192,7 @@ typedef struct {
   int32_t rate[COMPOUND_TYPES];
   int64_t dist[COMPOUND_TYPES];
   int_mv mv[2];
-  int8_t ref_frames[2];
+  MV_REFERENCE_FRAME ref_frames[2];
   PREDICTION_MODE mode;
   InterpFilters filter;
   int ref_mv_idx;

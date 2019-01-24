@@ -8345,17 +8345,18 @@ static INLINE int is_interp_filter_match(const INTERPOLATION_FILTER_STATS *st,
   if (has_second_ref(mi) && st->comp_type != mi->interinter_comp.type) return 0;
   return 1;
 }
-// Checks if charactersticts of search match
-static INLINE int is_comp_rd_match(MACROBLOCK *const x, const COMP_RD_STATS *st,
-                                   MB_MODE_INFO *const mi, int32_t *comp_rate,
-                                   int64_t *comp_dist) {
-  MACROBLOCKD *const xd = &x->e_mbd;
 
+// Checks if characteristics of search match
+static INLINE int is_comp_rd_match(const MACROBLOCK *const x,
+                                   const COMP_RD_STATS *st,
+                                   const MB_MODE_INFO *const mi,
+                                   int32_t *comp_rate, int64_t *comp_dist) {
   // TODO(ranjit): Ensure that compound type search use regular filter always
   // and check if following check can be removed
   // Check if interp filter matches with previous case
   if (st->filter != mi->interp_filters) return 0;
 
+  const MACROBLOCKD *const xd = &x->e_mbd;
   // Match MV and reference indices
   for (int i = 0; i < 2; ++i) {
     if ((st->ref_frames[i] != mi->ref_frame[i]) ||
@@ -8363,8 +8364,7 @@ static INLINE int is_comp_rd_match(MACROBLOCK *const x, const COMP_RD_STATS *st,
       return 0;
     }
     const WarpedMotionParams *const wm = &xd->global_motion[mi->ref_frame[i]];
-    int is_global = is_global_mv_block(mi, wm->wmtype);
-    if (is_global != st->is_global[i]) return 0;
+    if (is_global_mv_block(mi, wm->wmtype) != st->is_global[i]) return 0;
   }
 
   // Store the stats for compound average
@@ -8377,7 +8377,6 @@ static INLINE int is_comp_rd_match(MACROBLOCK *const x, const COMP_RD_STATS *st,
       !have_newmv_in_inter_mode(st->mode)) {
     memcpy(&comp_rate[1], &st->rate[1], sizeof(comp_rate[1]) * 2);
     memcpy(&comp_dist[1], &st->dist[1], sizeof(comp_dist[1]) * 2);
-    return 1;
   }
 
   // TODO(ranjit) : Check if compound wedge/segment can reuse data for NEWMV
@@ -8400,18 +8399,17 @@ static INLINE int find_interp_filter_in_stats(MACROBLOCK *x,
   return -1;  // no match result found
 }
 // Checks if similar compound type search case is accounted earlier
-// If found, returns relevent rd data
-static INLINE int find_comp_rd_in_stats(MACROBLOCK *x, MB_MODE_INFO *const mbmi,
+// If found, returns relevant rd data
+static INLINE int find_comp_rd_in_stats(const MACROBLOCK *x,
+                                        const MB_MODE_INFO *const mbmi,
                                         int32_t *comp_rate,
                                         int64_t *comp_dist) {
-  const int offset = x->comp_rd_stats_idx;
-  for (int j = 0; j < offset; ++j) {
-    const COMP_RD_STATS *st = &x->comp_rd_stats[j];
-    if (is_comp_rd_match(x, st, mbmi, comp_rate, comp_dist)) {
+  for (int j = 0; j < x->comp_rd_stats_idx; ++j) {
+    if (is_comp_rd_match(x, &x->comp_rd_stats[j], mbmi, comp_rate, comp_dist)) {
       return 1;
     }
   }
-  return -1;  // no match result found
+  return 0;  // no match result found
 }
 
 static INLINE void save_interp_filter_search_stat(MACROBLOCK *x,
@@ -8430,29 +8428,27 @@ static INLINE void save_interp_filter_search_stat(MACROBLOCK *x,
 }
 
 static INLINE void save_comp_rd_search_stat(MACROBLOCK *x,
-                                            MB_MODE_INFO *const mbmi,
-                                            int32_t *comp_rate,
-                                            int64_t *comp_dist,
-                                            int_mv *cur_mv) {
+                                            const MB_MODE_INFO *const mbmi,
+                                            const int32_t *comp_rate,
+                                            const int64_t *comp_dist,
+                                            const int_mv *cur_mv) {
   const int offset = x->comp_rd_stats_idx;
   if (offset < MAX_COMP_RD_STATS) {
-    MACROBLOCKD *const xd = &x->e_mbd;
-    COMP_RD_STATS stat = { { comp_rate[0], comp_rate[1], comp_rate[2] },
-                           { comp_dist[0], comp_dist[1], comp_dist[2] },
-                           { cur_mv[0], cur_mv[1] },
-                           { mbmi->ref_frame[0], mbmi->ref_frame[1] },
-                           mbmi->mode,
-                           mbmi->interp_filters,
-                           mbmi->ref_mv_idx,
-                           { 0, 0 } };
+    COMP_RD_STATS *const rd_stats = x->comp_rd_stats + offset;
+    memcpy(rd_stats->rate, comp_rate, sizeof(rd_stats->rate));
+    memcpy(rd_stats->dist, comp_dist, sizeof(rd_stats->dist));
+    memcpy(rd_stats->mv, cur_mv, sizeof(rd_stats->mv));
+    memcpy(rd_stats->ref_frames, mbmi->ref_frame, sizeof(rd_stats->ref_frames));
+    rd_stats->mode = mbmi->mode;
+    rd_stats->filter = mbmi->interp_filters;
+    rd_stats->ref_mv_idx = mbmi->ref_mv_idx;
+    const MACROBLOCKD *const xd = &x->e_mbd;
     for (int i = 0; i < 2; ++i) {
       const WarpedMotionParams *const wm =
           &xd->global_motion[mbmi->ref_frame[i]];
-      int is_global = is_global_mv_block(mbmi, wm->wmtype);
-      stat.is_global[i] = is_global;
+      rd_stats->is_global[i] = is_global_mv_block(mbmi, wm->wmtype);
     }
-    x->comp_rd_stats[offset] = stat;
-    x->comp_rd_stats_idx++;
+    ++x->comp_rd_stats_idx;
   }
 }
 
@@ -9655,7 +9651,7 @@ static int compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
   int calc_pred_masked_compound = 1;
   int64_t comp_dist[COMPOUND_TYPES] = { INT64_MAX, INT64_MAX, INT64_MAX };
   int32_t comp_rate[COMPOUND_TYPES] = { INT_MAX, INT_MAX, INT_MAX };
-  int match_found = find_comp_rd_in_stats(x, mbmi, comp_rate, comp_dist);
+  const int match_found = find_comp_rd_in_stats(x, mbmi, comp_rate, comp_dist);
   best_mv[0].as_int = cur_mv[0].as_int;
   best_mv[1].as_int = cur_mv[1].as_int;
   *rd = INT64_MAX;
@@ -9765,7 +9761,7 @@ static int compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
     }
   }
   restore_dst_buf(xd, *orig_dst, 1);
-  if (match_found == -1)
+  if (!match_found)
     save_comp_rd_search_stat(x, mbmi, comp_rate, comp_dist, cur_mv);
   return best_compmode_interinter_cost;
 }
