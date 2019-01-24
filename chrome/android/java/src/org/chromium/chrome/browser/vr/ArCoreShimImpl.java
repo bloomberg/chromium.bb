@@ -5,12 +5,15 @@
 package org.chromium.chrome.browser.vr;
 
 import android.app.Activity;
+import android.content.Context;
 
 import com.google.ar.core.ArCoreApk;
 
 import org.chromium.base.annotations.UsedByReflection;
+import org.chromium.chrome.browser.vr.ArCoreShim.Availability;
 import org.chromium.chrome.browser.vr.ArCoreShim.InstallStatus;
 
+@UsedByReflection("ArCoreJavaUtils.java")
 class ArCoreShimImpl implements ArCoreShim {
     @UsedByReflection("ArCoreJavaUtils.java")
     public ArCoreShimImpl() {}
@@ -30,6 +33,13 @@ class ArCoreShimImpl implements ArCoreShim {
         }
     }
 
+    @Override
+    public @Availability int checkAvailability(Context applicationContext) {
+        ArCoreApk.Availability availability =
+                ArCoreApk.getInstance().checkAvailability(applicationContext);
+        return mapArCoreApkAvailability(availability);
+    }
+
     private InstallStatus mapArCoreApkInstallStatus(ArCoreApk.InstallStatus installStatus) {
         switch (installStatus) {
             case INSTALLED:
@@ -39,6 +49,28 @@ class ArCoreShimImpl implements ArCoreShim {
             default:
                 throw new RuntimeException(
                         String.format("Unknown value of InstallStatus: %s", installStatus));
+        }
+    }
+
+    private @Availability int mapArCoreApkAvailability(ArCoreApk.Availability availability) {
+        switch (availability) {
+            case SUPPORTED_APK_TOO_OLD:
+                return Availability.SUPPORTED_APK_TOO_OLD;
+            case SUPPORTED_INSTALLED:
+                return Availability.SUPPORTED_INSTALLED;
+            case SUPPORTED_NOT_INSTALLED:
+                return Availability.SUPPORTED_NOT_INSTALLED;
+            case UNKNOWN_CHECKING:
+                return Availability.UNKNOWN_CHECKING;
+            case UNKNOWN_ERROR:
+                return Availability.UNKNOWN_ERROR;
+            case UNKNOWN_TIMED_OUT:
+                return Availability.UNKNOWN_TIMED_OUT;
+            case UNSUPPORTED_DEVICE_NOT_CAPABLE:
+                return Availability.UNSUPPORTED_DEVICE_NOT_CAPABLE;
+            default:
+                throw new RuntimeException(
+                        String.format("Unknown value of Availability: %s", availability));
         }
     }
 }
