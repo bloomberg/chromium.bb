@@ -45,6 +45,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/fill_layout.h"
@@ -478,11 +479,6 @@ void AppListView::Layout() {
   UpdateAppListBackgroundYPosition();
 }
 
-void AppListView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->SetName(state_announcement_);
-  node_data->role = ax::mojom::Role::kAlert;
-}
-
 ax::mojom::Role AppListView::GetAccessibleWindowRole() const {
   // Default role of root view is ax::mojom::Role::kWindow which traps ChromeVox
   // focus within the root view. Assign ax::mojom::Role::kGroup here to allow
@@ -549,6 +545,9 @@ void AppListView::InitContents(int initial_apps_page) {
   search_box_view_->Init();
 
   app_list_main_view_->Init(0, search_box_view_);
+
+  announcement_view_ = new views::View;
+  AddChildView(announcement_view_);
 }
 
 void AppListView::InitChildWidgets() {
@@ -887,17 +886,17 @@ void AppListView::MaybeCreateAccessibilityEvent(AppListViewState new_state) {
       new_state != AppListViewState::FULLSCREEN_ALL_APPS)
     return;
 
-  DCHECK(state_announcement_ == base::string16());
+  base::string16 state_announcement;
 
   if (new_state == AppListViewState::PEEKING) {
-    state_announcement_ = l10n_util::GetStringUTF16(
+    state_announcement = l10n_util::GetStringUTF16(
         IDS_APP_LIST_SUGGESTED_APPS_ACCESSIBILITY_ANNOUNCEMENT);
   } else {
-    state_announcement_ = l10n_util::GetStringUTF16(
+    state_announcement = l10n_util::GetStringUTF16(
         IDS_APP_LIST_ALL_APPS_ACCESSIBILITY_ANNOUNCEMENT);
   }
-  NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
-  state_announcement_ = base::string16();
+  announcement_view_->GetViewAccessibility().OverrideName(state_announcement);
+  announcement_view_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }
 
 display::Display AppListView::GetDisplayNearestView() const {
