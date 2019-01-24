@@ -4,6 +4,10 @@
 
 package org.chromium.content.browser;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.text.TextUtils;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.ui.ContactsPickerListener;
@@ -41,12 +45,32 @@ public class ContactsDialogHost implements ContactsPickerListener {
     private void showDialog(
             boolean multiple, boolean includeNames, boolean includeEmails, boolean includeTel) {
         if (mWindowAndroid.getActivity().get() == null) {
-            nativeEndContactsList(mNativeContactsProviderAndroid);
+            nativeEndWithPermissionDenied(mNativeContactsProviderAndroid);
             return;
         }
 
-        UiUtils.showContactsPicker(mWindowAndroid.getActivity().get(), this, multiple, includeNames,
-                includeEmails, includeTel);
+        if (mWindowAndroid.hasPermission(Manifest.permission.READ_CONTACTS)) {
+            UiUtils.showContactsPicker(mWindowAndroid.getActivity().get(), this, multiple,
+                    includeNames, includeEmails, includeTel);
+            return;
+        }
+
+        if (!mWindowAndroid.canRequestPermission(Manifest.permission.READ_CONTACTS)) {
+            nativeEndWithPermissionDenied(mNativeContactsProviderAndroid);
+            return;
+        }
+
+        mWindowAndroid.requestPermissions(
+                new String[] {Manifest.permission.READ_CONTACTS}, (permissions, grantResults) -> {
+                    if (permissions.length == 1 && grantResults.length == 1
+                            && TextUtils.equals(permissions[0], Manifest.permission.READ_CONTACTS)
+                            && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        UiUtils.showContactsPicker(mWindowAndroid.getActivity().get(), this,
+                                multiple, includeNames, includeEmails, includeTel);
+                    } else {
+                        nativeEndWithPermissionDenied(mNativeContactsProviderAndroid);
+                    }
+                });
     }
 
     @Override
@@ -84,4 +108,5 @@ public class ContactsDialogHost implements ContactsPickerListener {
             boolean includeNames, boolean includeEmails, boolean includeTel, String[] names,
             String[] emails, String[] tel);
     private static native void nativeEndContactsList(long nativeContactsProviderAndroid);
+    private static native void nativeEndWithPermissionDenied(long nativeContactsProviderAndroid);
 }

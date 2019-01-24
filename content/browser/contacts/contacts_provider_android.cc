@@ -103,4 +103,11 @@ void ContactsProviderAndroid::EndContactsList(
   std::move(callback_).Run(std::move(contacts_));
 }
 
+void ContactsProviderAndroid::EndWithPermissionDenied(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  DCHECK(callback_);
+  std::move(callback_).Run(base::nullopt);
+}
+
 }  // namespace content
