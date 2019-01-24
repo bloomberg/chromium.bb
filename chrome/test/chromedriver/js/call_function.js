@@ -8,7 +8,7 @@
  */
 var StatusCode = {
   STALE_ELEMENT_REFERENCE: 10,
-  UNKNOWN_ERROR: 13,
+  JAVA_SCRIPT_ERROR: 17,
 };
 
 /**
@@ -361,7 +361,7 @@ function callFunction(shadowHostIds, func, args, w3c, opt_unwrappedReturn) {
   try {
     var returnValue = wrap(func.apply(null, unwrap(args, cache)));
   } catch (error) {
-    status = error.code || StatusCode.UNKNOWN_ERROR;
+    status = error.code || StatusCode.JAVA_SCRIPT_ERROR;
     var returnValue = error.message;
   }
   return {

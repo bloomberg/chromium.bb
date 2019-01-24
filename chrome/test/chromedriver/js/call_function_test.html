@@ -43,7 +43,7 @@ function testCallFunctionThrows() {
 
   var result = callFunction(null, function() { throw new Error('fake error'); },
       []);
-  assertEquals(StatusCode.UNKNOWN_ERROR, result.status);
+  assertEquals(StatusCode.JAVA_SCRIPT_ERROR, result.status);
   assertEquals('fake error', result.value);
 
   result = callFunction(null, function() {

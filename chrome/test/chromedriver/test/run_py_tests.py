@@ -1793,7 +1793,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
 
   def testThrowErrorWithExecuteScript(self):
     self.assertRaisesRegexp(
-        chromedriver.UnknownError, "some error",
+        chromedriver.JavaScriptError, "some error",
         self._driver.ExecuteScript, 'throw new Error("some error")')
 
   def testDoesntCrashWhenScriptLogsUndefinedValue(self):

@@ -1010,7 +1010,8 @@ HttpHandler::PrepareStandardResponse(
       response.reset(new net::HttpServerResponseInfo(net::HTTP_BAD_REQUEST));
       break;
     case kJavaScriptError:
-      response.reset(new net::HttpServerResponseInfo(net::HTTP_BAD_REQUEST));
+      response.reset(
+          new net::HttpServerResponseInfo(net::HTTP_INTERNAL_SERVER_ERROR));
       break;
     case kMoveTargetOutOfBounds:
       response.reset(
