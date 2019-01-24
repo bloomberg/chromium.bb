@@ -79,11 +79,11 @@ void FrameOverlay::Update() {
   if (!local_root_frame_widget->IsAcceleratedCompositingActive())
     return;
 
+  GraphicsLayer* parent_layer =
+      frame_->IsMainFrame()
+          ? frame_->GetPage()->GetVisualViewport().ContainerLayer()
+          : local_root_frame_widget->RootGraphicsLayer();
   if (!layer_) {
-    GraphicsLayer* parent_layer =
-        frame_->IsMainFrame()
-            ? frame_->GetPage()->GetVisualViewport().ContainerLayer()
-            : local_root_frame_widget->RootGraphicsLayer();
     if (!parent_layer)
       return;
     layer_ = GraphicsLayer::Create(*this);
@@ -104,6 +104,8 @@ void FrameOverlay::Update() {
 
   layer_->SetSize(gfx::Size(Size()));
   layer_->SetNeedsDisplay();
+  if (parent_layer)
+    parent_layer->SetPaintArtifactCompositorNeedsUpdate();
 }
 
 IntSize FrameOverlay::Size() const {

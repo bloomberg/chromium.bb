@@ -3388,6 +3388,13 @@ void PaintLayer::ComputeSelfHitTestRects(
 void PaintLayer::SetNeedsRepaint() {
   SetNeedsRepaintInternal();
 
+  // If you need repaint, then you might issue raster invalidations, and in
+  // Composite after Paint mode, we do these in PAC::Update().
+  LocalFrameView* frame_view = GetLayoutObject().GetDocument().View();
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() && frame_view) {
+    frame_view->SetPaintArtifactCompositorNeedsUpdate();
+  }
+
   // Do this unconditionally to ensure container chain is marked when
   // compositing status of the layer changes.
   MarkCompositingContainerChainForNeedsRepaint();

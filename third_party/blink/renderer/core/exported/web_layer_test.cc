@@ -257,6 +257,10 @@ class WebLayerListSimTest : public PaintTestConfigurations, public SimTest {
         WebWidget::LifecycleUpdateReason::kTest);
   }
 
+  cc::PropertyTrees* GetPropertyTrees() {
+    return Compositor().layer_tree_view().layer_tree_host()->property_trees();
+  }
+
  private:
   PaintArtifactCompositor* paint_artifact_compositor() {
     return MainFrame().GetFrameView()->GetPaintArtifactCompositorForTesting();
@@ -378,7 +382,8 @@ TEST_P(WebLayerListSimTest, LayerUpdatesDoNotInvalidateLaterLayers) {
   EXPECT_FALSE(host->LayersThatShouldPushProperties().count(c_layer));
 }
 
-TEST_P(WebLayerListSimTest, NoopChangeDoesNotCauseFullTreeSync) {
+TEST_P(WebLayerListSimTest,
+       NoopChangeDoesNotCauseFullTreeSyncOrPropertyTreeUpdate) {
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -396,10 +401,15 @@ TEST_P(WebLayerListSimTest, NoopChangeDoesNotCauseFullTreeSync) {
   // Initially the host should not need to sync.
   auto* layer_tree_host = Compositor().layer_tree_view().layer_tree_host();
   EXPECT_FALSE(layer_tree_host->needs_full_tree_sync());
+  int sequence_number = GetPropertyTrees()->sequence_number;
+  EXPECT_GT(sequence_number, 0);
 
   // A no-op update should not cause the host to need a full tree sync.
   UpdateAllLifecyclePhases();
   EXPECT_FALSE(layer_tree_host->needs_full_tree_sync());
+  // It should also not cause a property tree update - the sequence number
+  // should not change.
+  EXPECT_EQ(sequence_number, GetPropertyTrees()->sequence_number);
 }
 
 // When a property tree change occurs that affects layer position, all layers

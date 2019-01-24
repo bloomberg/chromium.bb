@@ -68,7 +68,8 @@ PaintArtifactCompositor::PaintArtifactCompositor(
     base::RepeatingCallback<void(const gfx::ScrollOffset&,
                                  const cc::ElementId&)> scroll_callback)
     : scroll_callback_(std::move(scroll_callback)),
-      tracks_raster_invalidations_(false) {
+      tracks_raster_invalidations_(false),
+      needs_update_(true) {
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
       !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
     return;
@@ -87,6 +88,8 @@ PaintArtifactCompositor::~PaintArtifactCompositor() {
 }
 
 void PaintArtifactCompositor::EnableExtraDataForTesting() {
+  if (!extra_data_for_testing_enabled_)
+    SetNeedsUpdate(true);
   extra_data_for_testing_enabled_ = true;
   extra_data_for_testing_ = std::make_unique<ExtraDataForTesting>();
 }
@@ -789,6 +792,11 @@ void PaintArtifactCompositor::Update(
   if (!host)
     return;
 
+  // Skip updating property trees, pushing cc::Layers, and issuing raster
+  // invalidations if possible.
+  if (!NeedsUpdate())
+    return;
+
   // When using BlinkGenPropertyTrees, the compositor accepts a list of layers
   // and property trees instead of building property trees. This DCHECK ensures
   // we have not forgotten to set |use_layer_lists|.
@@ -818,6 +826,8 @@ void PaintArtifactCompositor::Update(
   for (auto& entry : synthesized_clip_cache_)
     entry.in_use = false;
 
+  // Clear prior frame ids before inserting new ones.
+  composited_element_ids.clear();
   for (auto& pending_layer : pending_layers) {
     const auto& property_state = pending_layer.property_tree_state;
     const auto* transform = property_state.Transform();
@@ -923,6 +933,7 @@ void PaintArtifactCompositor::Update(
   // Mark the property trees as having been rebuilt.
   host->property_trees()->needs_rebuild = false;
   host->property_trees()->ResetCachedData();
+  SetNeedsUpdate(false);
 
   g_s_property_tree_sequence_number++;
 

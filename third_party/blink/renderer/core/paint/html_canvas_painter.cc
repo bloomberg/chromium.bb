@@ -47,6 +47,10 @@ void HTMLCanvasPainter::PaintReplaced(const PaintInfo& paint_info,
       layer->SetBounds(gfx::Size(pixel_snapped_rect.Size()));
       layer->SetIsDrawable(true);
       RecordForeignLayer(context, DisplayItem::kForeignLayerCanvas, layer);
+      if (layout_html_canvas_.GetFrameView()) {
+        layout_html_canvas_.GetFrameView()
+            ->SetPaintArtifactCompositorNeedsUpdate();
+      }
       return;
     }
   }

@@ -452,6 +452,7 @@ void GraphicsLayer::UpdateContentsRect() {
     const auto& offset = GetContentsOffsetFromTransformNode();
     contents_layer->SetOffsetToTransformParent(
         gfx::Vector2dF(offset.X(), offset.Y()));
+    SetPaintArtifactCompositorNeedsUpdate();
   }
   contents_layer->SetPosition(
       FloatPoint(contents_rect_.X(), contents_rect_.Y()));
@@ -739,6 +740,10 @@ void GraphicsLayer::SetContentsVisible(bool contents_visible) {
 
   contents_visible_ = contents_visible;
   UpdateLayerIsDrawable();
+}
+
+void GraphicsLayer::SetPaintArtifactCompositorNeedsUpdate() const {
+  client_.SetPaintArtifactCompositorNeedsUpdate();
 }
 
 void GraphicsLayer::SetClipParent(cc::Layer* parent) {
@@ -1057,6 +1062,7 @@ void GraphicsLayer::SetLayerState(const PropertyTreeState& layer_state,
       ContentsLayer()->SetOffsetToTransformParent(
           gfx::Vector2dF(offset.X(), offset.Y()));
     }
+    SetPaintArtifactCompositorNeedsUpdate();
   }
 }
 

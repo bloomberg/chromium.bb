@@ -420,6 +420,19 @@ Bug(none) compositing/overflow/overlap-testing-ancestor-scroller-high-dpi.html [
 crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-global.html [ Failure ]
 crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-non-composited-scroll.html [ Failure ]
 
+# These were introduced by the new dirty bit on PaintArtifactCompositor.
+crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-animation.html [ Failure ]
+crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-many.html [ Failure ]
+crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-scroll.html [ Failure ]
+crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-squashing.html [ Failure ]
+crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-table.html [ Failure ]
+crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-transform-changed-nolayout.html [ Failure ]
+crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-visibility-hidden.html [ Failure ]
+crbug.com/909749 fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
+crbug.com/909749 fast/events/touch/touch-rect-crash-on-unpromote-layer.html [ Failure ]
+crbug.com/924680 virtual/threaded/fast/events/pinch/pinch-zoom-into-center.html [ Failure ]
+crbug.com/924680 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchpad.html [ Failure ]
+
 # Backdrop filter
 crbug.com/923429 compositing/layer-creation/fixed-position-out-of-view-with-backdrop-filter.html [ Failure ]
 crbug.com/923429 compositing/overflow/scroll-parent-absolute-with-backdrop-filter.html [ Failure ]

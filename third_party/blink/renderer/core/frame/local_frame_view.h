@@ -218,6 +218,8 @@ class CORE_EXPORT LocalFrameView final
   // view.
   unsigned GetIntersectionObservationFlags() const;
 
+  void SetPaintArtifactCompositorNeedsUpdate() const;
+
   // Marks this frame, and ancestor frames, as needing a mandatory compositing
   // update. This overrides throttling for one frame, up to kCompositingClean.
   void SetNeedsForcedCompositingUpdate();
@@ -989,6 +991,13 @@ class CORE_EXPORT LocalFrameView final
   // For CompositeAfterPaint only.
   std::unique_ptr<PaintController> paint_controller_;
   std::unique_ptr<PaintArtifactCompositor> paint_artifact_compositor_;
+
+  // The set of ElementIds that were composited by PaintArtifactCompositor
+  // during the Paint lifecycle phase. Only used by BlinkGenPropertyTrees and
+  // CompositeAfterPaint. These are stored here because sometimes
+  // PaintArtifactCompositor::Update() does not run (if the dirty bit is not
+  // set) and in that case, the element ids from the prior run are retained.
+  base::Optional<CompositorElementIdSet> composited_element_ids_;
 
   MainThreadScrollingReasons main_thread_scrolling_reasons_;
 
