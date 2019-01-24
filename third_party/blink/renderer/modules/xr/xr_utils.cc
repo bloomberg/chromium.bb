@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_utils.h"
 
+#include <cmath>
+
 namespace blink {
 
 DOMFloat32Array* transformationMatrixToDOMFloat32Array(
@@ -19,6 +21,21 @@ DOMFloat32Array* transformationMatrixToDOMFloat32Array(
       static_cast<float>(matrix.M43()), static_cast<float>(matrix.M44())};
 
   return DOMFloat32Array::Create(array, 16);
+}
+
+// Normalize to have length = 1.0
+DOMPointReadOnly* makeNormalizedQuaternion(DOMPointInit* q) {
+  double x = q->x();
+  double y = q->y();
+  double z = q->z();
+  double w = q->w();
+  double length = std::sqrt((x * x) + (y * y) + (z * z) + (w * w));
+  if (length == 0.0) {
+    // Return a default value instead of crashing.
+    return DOMPointReadOnly::Create(0.0, 0.0, 0.0, 1.0);
+  }
+  return DOMPointReadOnly::Create(x / length, y / length, z / length,
+                                  w / length);
 }
 
 }  // namespace blink

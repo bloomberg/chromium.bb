@@ -10404,6 +10404,12 @@ interface XRReferenceSpace : XRSpace
     getter onreset
     method constructor
     setter onreset
+interface XRRigidTransform
+    attribute @@toStringTag
+    getter matrix
+    getter orientation
+    getter position
+    method constructor
 interface XRSession : EventTarget
     attribute @@toStringTag
     getter baseLayer
