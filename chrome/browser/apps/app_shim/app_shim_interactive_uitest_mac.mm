@@ -310,7 +310,7 @@ const extensions::Extension* AppShimInteractiveTest::InstallAppWithShim(
 namespace apps {
 
 // Shims require static libraries http://crbug.com/386024.
-#if 0 && defined(COMPONENT_BUILD)
+#if defined(COMPONENT_BUILD)
 #define MAYBE_Launch DISABLED_Launch
 #define MAYBE_HostedAppLaunch DISABLED_HostedAppLaunch
 #define MAYBE_ShowWindow DISABLED_ShowWindow
