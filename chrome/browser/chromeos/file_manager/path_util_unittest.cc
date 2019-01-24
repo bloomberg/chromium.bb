@@ -160,13 +160,21 @@ TEST_F(FileManagerPathUtilTest, GetPathDisplayTextForSettings) {
             GetPathDisplayTextForSettings(
                 profile_.get(), "/home/chronos/u-0123456789abcdef/Downloads"));
 
-  EXPECT_EQ("Downloads",
+  EXPECT_EQ("My files \u203a Downloads",
             GetPathDisplayTextForSettings(
                 profile_.get(), "/home/chronos/user/MyFiles/Downloads"));
-  EXPECT_EQ("Downloads",
+  EXPECT_EQ("My files \u203a Downloads",
             GetPathDisplayTextForSettings(
                 profile_.get(),
                 "/home/chronos/u-0123456789abcdef/MyFiles/Downloads"));
+
+  EXPECT_EQ("My files \u203a other-folder",
+            GetPathDisplayTextForSettings(
+                profile_.get(), "/home/chronos/user/MyFiles/other-folder"));
+  EXPECT_EQ("My files \u203a other-folder",
+            GetPathDisplayTextForSettings(
+                profile_.get(),
+                "/home/chronos/u-0123456789abcdef/MyFiles/other-folder"));
 
   EXPECT_EQ("Play files \u203a foo \u203a bar",
             GetPathDisplayTextForSettings(

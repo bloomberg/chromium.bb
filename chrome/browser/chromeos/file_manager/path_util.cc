@@ -454,15 +454,15 @@ std::string GetPathDisplayTextForSettings(Profile* profile,
                                profile->GetPath().BaseName().value() +
                                "/Downloads",
                            kFolderNameDownloads)) {
-  } else if (ReplacePrefix(&result,
-                           std::string("/home/chronos/user/") +
-                               kFolderNameMyFiles + "/" + kFolderNameDownloads,
-                           kFolderNameDownloads)) {
+  } else if (ReplacePrefix(
+                 &result,
+                 std::string("/home/chronos/user/") + kFolderNameMyFiles,
+                 "My files")) {
   } else if (ReplacePrefix(&result,
                            "/home/chronos/" +
                                profile->GetPath().BaseName().value() + "/" +
-                               kFolderNameMyFiles + "/" + kFolderNameDownloads,
-                           kFolderNameDownloads)) {
+                               kFolderNameMyFiles,
+                           "My files")) {
   } else if (drive_integration_service &&
              ReplacePrefix(&result,
                            drive_integration_service->GetMountPointPath()
