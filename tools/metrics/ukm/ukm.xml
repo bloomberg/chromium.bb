@@ -6151,4 +6151,13 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="HistoryManipulationIntervention">
+  <owner>shivanisha@chromium.org</owner>
+  <summary>
+    Logged when an entry in the back-forward list is marked to be skipped on
+    subsequent back/forward button clicks as part of the history manipulation
+    intervention. This is logged when the entry is navigated away from.
+  </summary>
+</event>
+
 </ukm-configuration>
