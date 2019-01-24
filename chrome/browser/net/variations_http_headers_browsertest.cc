@@ -101,21 +101,25 @@ class VariationsHttpHeadersBrowserTest : public InProcessBrowserTest {
   const net::EmbeddedTestServer* server() const { return &https_server_; }
   net::EmbeddedTestServer* server() { return &https_server_; }
 
-  GURL GetGoogleUrl(const std::string& path) const {
+  GURL GetGoogleUrlWithPath(const std::string& path) const {
     return server()->GetURL("www.google.com", path);
   }
 
-  GURL GetGoogleUrl() const { return GetGoogleUrl("/landing.html"); }
+  GURL GetGoogleUrl() const { return GetGoogleUrlWithPath("/landing.html"); }
 
-  GURL GetGoogleRedirectUrl1() const { return GetGoogleUrl("/redirect"); }
+  GURL GetGoogleRedirectUrl1() const {
+    return GetGoogleUrlWithPath("/redirect");
+  }
 
-  GURL GetGoogleRedirectUrl2() const { return GetGoogleUrl("/redirect2"); }
+  GURL GetGoogleRedirectUrl2() const {
+    return GetGoogleUrlWithPath("/redirect2");
+  }
 
-  GURL GetExampleUrl(const std::string& path) const {
+  GURL GetExampleUrlWithPath(const std::string& path) const {
     return server()->GetURL("www.example.com", path);
   }
 
-  GURL GetExampleUrl() const { return GetExampleUrl("/landing.html"); }
+  GURL GetExampleUrl() const { return GetExampleUrlWithPath("/landing.html"); }
 
   // Returns whether a given |header| has been received for a |url|. If
   // |url| has not been observed, fails an EXPECT and returns false.
@@ -153,12 +157,14 @@ class VariationsHttpHeadersBrowserTest : public InProcessBrowserTest {
 
   // Registers a service worker for google.com root scope.
   void RegisterServiceWorker(const std::string& worker_path) {
-    GURL url = GetGoogleUrl("/service_worker/create_service_worker.html");
+    GURL url =
+        GetGoogleUrlWithPath("/service_worker/create_service_worker.html");
     EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
     const std::string scope = "/";
-    EXPECT_EQ("DONE", EvalJs(GetWebContents(), "register('" + worker_path +
-                                                   "', '" + scope + "');"));
+    EXPECT_EQ("DONE",
+              EvalJs(GetWebContents(), base::StrCat({"register('", worker_path,
+                                                     "', '", scope, "');"})));
   }
 
   // Registers the given service worker for google.com then tests navigation and
@@ -168,7 +174,8 @@ class VariationsHttpHeadersBrowserTest : public InProcessBrowserTest {
     RegisterServiceWorker(worker_path);
 
     // Navigate to a Google URL.
-    GURL page_url = GetGoogleUrl("/service_worker/fetch_from_page.html");
+    GURL page_url =
+        GetGoogleUrlWithPath("/service_worker/fetch_from_page.html");
     ui_test_utils::NavigateToURL(browser(), page_url);
     EXPECT_TRUE(HasReceivedHeader(page_url, "X-Client-Data"));
     // Check that there is a controller to check that the test is really testing
@@ -177,15 +184,15 @@ class VariationsHttpHeadersBrowserTest : public InProcessBrowserTest {
               EvalJs(GetWebContents(), "!!navigator.serviceWorker.controller"));
 
     // Verify subresource requests from the page also have X-Client-Data.
-    EXPECT_EQ("hello",
-              EvalJs(GetWebContents(),
-                     "fetch_from_page('" + GetGoogleUrl().spec() + "');"));
+    EXPECT_EQ("hello", EvalJs(GetWebContents(),
+                              base::StrCat({"fetch_from_page('",
+                                            GetGoogleUrl().spec(), "');"})));
     EXPECT_TRUE(HasReceivedHeader(GetGoogleUrl(), "X-Client-Data"));
 
     // But not if they are to non-Google domains.
-    EXPECT_EQ("hello",
-              EvalJs(GetWebContents(),
-                     "fetch_from_page('" + GetExampleUrl().spec() + "');"));
+    EXPECT_EQ("hello", EvalJs(GetWebContents(),
+                              base::StrCat({"fetch_from_page('",
+                                            GetExampleUrl().spec(), "');"})));
     EXPECT_FALSE(HasReceivedHeader(GetExampleUrl(), "X-Client-Data"));
   }
 
@@ -199,17 +206,17 @@ class VariationsHttpHeadersBrowserTest : public InProcessBrowserTest {
   void WorkerScriptTest(const std::string& page, const std::string& worker) {
     // Build a worker URL for a google.com worker that imports
     // an example.com script.
-    GURL absolute_import = GetExampleUrl("/workers/empty.js");
+    GURL absolute_import = GetExampleUrlWithPath("/workers/empty.js");
     const std::string worker_path = base::StrCat(
         {worker, "?import=",
          net::EscapeQueryParamValue(absolute_import.spec(), false)});
-    GURL worker_url = GetGoogleUrl(worker_path);
+    GURL worker_url = GetGoogleUrlWithPath(worker_path);
 
     // Build the page URL that tells the page to create the worker.
     const std::string page_path = base::StrCat(
         {page,
          "?worker_url=", net::EscapeQueryParamValue(worker_url.spec(), false)});
-    GURL page_url = GetGoogleUrl(page_path);
+    GURL page_url = GetGoogleUrlWithPath(page_path);
 
     // Navigate and test.
     EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), page_url));
@@ -219,8 +226,8 @@ class VariationsHttpHeadersBrowserTest : public InProcessBrowserTest {
     EXPECT_TRUE(HasReceivedHeader(worker_url, "X-Client-Data"));
 
     // And on import script requests to Google.
-    EXPECT_TRUE(
-        HasReceivedHeader(GetGoogleUrl("/workers/empty.js"), "X-Client-Data"));
+    EXPECT_TRUE(HasReceivedHeader(GetGoogleUrlWithPath("/workers/empty.js"),
+                                  "X-Client-Data"));
 
     // But not on requests not to Google.
     EXPECT_FALSE(HasReceivedHeader(absolute_import, "X-Client-Data"));
@@ -464,18 +471,20 @@ IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
 // attached to requests for service worker scripts.
 IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest, ServiceWorkerScript) {
   // Register a service worker that imports scripts.
-  GURL absolute_import = GetExampleUrl("/service_worker/empty.js");
+  GURL absolute_import = GetExampleUrlWithPath("/service_worker/empty.js");
   const std::string worker_path =
       "/service_worker/import_scripts_worker.js?import=" +
       net::EscapeQueryParamValue(absolute_import.spec(), false);
   RegisterServiceWorker(worker_path);
 
   // Test that the header is present on the main script request.
-  EXPECT_TRUE(HasReceivedHeader(GetGoogleUrl(worker_path), "X-Client-Data"));
+  EXPECT_TRUE(
+      HasReceivedHeader(GetGoogleUrlWithPath(worker_path), "X-Client-Data"));
 
   // And on import script requests to Google.
-  EXPECT_TRUE(HasReceivedHeader(GetGoogleUrl("/service_worker/empty.js"),
-                                "X-Client-Data"));
+  EXPECT_TRUE(HasReceivedHeader(
+      GetGoogleUrlWithPath("/service_worker/empty.js"), "X-Client-Data"));
+
   // But not on requests not to Google.
   EXPECT_FALSE(HasReceivedHeader(absolute_import, "X-Client-Data"));
 }
