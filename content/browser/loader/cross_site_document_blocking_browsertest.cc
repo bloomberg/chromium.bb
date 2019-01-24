@@ -573,6 +573,33 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockImages) {
   }
 }
 
+// This test covers an aspect of Cross-Origin-Resource-Policy (CORP, different
+// from CORB) that cannot be covered by wpt/fetch/cross-origin-resource-policy:
+// whether blocking occurs *before* the response reaches the renderer process.
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
+                       CrossOriginResourcePolicy) {
+  embedded_test_server()->StartAcceptingConnections();
+
+  // Navigate to the test page while request interceptor is active.
+  GURL resource_url("http://cross-origin.com/site_isolation/png-corp.png");
+  RequestInterceptor interceptor(resource_url);
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("http://foo.com/title1.html")));
+
+  // Issue the request that will be intercepted.
+  const char kScriptTemplate[] = R"(
+      var img = document.createElement('img');
+      img.src = $1;
+      document.body.appendChild(img); )";
+  EXPECT_TRUE(ExecJs(shell(), JsReplace(kScriptTemplate, resource_url)));
+  interceptor.WaitForRequestCompletion();
+
+  // Verify that Cross-Origin-Resource-Policy blocked the response before it
+  // reached the renderer process.
+  EXPECT_EQ(net::ERR_BLOCKED_BY_RESPONSE,
+            interceptor.completion_status().error_code);
+  EXPECT_EQ("", interceptor.response_body());
+}
+
 IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockFetches) {
   embedded_test_server()->StartAcceptingConnections();
   GURL foo_url("http://foo.com/cross_site_document_blocking/request.html");

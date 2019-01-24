@@ -26,6 +26,7 @@
 #include "services/network/cross_origin_read_blocking.h"
 #include "services/network/initiator_lock_compatibility.h"
 #include "services/network/keepalive_statistics_recorder.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/resource_scheduler.h"
@@ -199,6 +200,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       const base::Optional<std::string>& headers,
       const GURL& allowed_unsafe_redirect_url);
 
+  void CompleteBlockedResponse(int error_code,
+                               bool should_report_corb_blocking);
+
   enum BlockResponseForCorbResult {
     // Returned when caller of BlockResponseForCorb doesn't need to continue,
     // because the request will be cancelled soon.
@@ -292,6 +296,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // was not using CORS. Such requests are exempt from blocking, while other
   // CORB-excluded requests must be blocked if the CORS check fails.
   bool is_nocors_corb_excluded_request_ = false;
+
+  mojom::FetchRequestMode fetch_request_mode_;
 
   scoped_refptr<ResourceSchedulerClient> resource_scheduler_client_;
 

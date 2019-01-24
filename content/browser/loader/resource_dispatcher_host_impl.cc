@@ -1136,11 +1136,8 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
 
   if (!IsResourceTypeFrame(resource_type)) {
     // Add a handler to block cross-site documents from the renderer process.
-    bool is_nocors_plugin_request =
-        resource_type == RESOURCE_TYPE_PLUGIN_RESOURCE &&
-        fetch_request_mode == network::mojom::FetchRequestMode::kNoCors;
     handler.reset(new CrossSiteDocumentResourceHandler(
-        std::move(handler), request, is_nocors_plugin_request));
+        std::move(handler), request, fetch_request_mode));
   }
 
   // Insert a buffered event handler to sniff the mime type.

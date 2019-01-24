@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL fetch.any.js test Cannot read property 'getRegistration' of undefined
-Harness: the test ran to completion.
-
