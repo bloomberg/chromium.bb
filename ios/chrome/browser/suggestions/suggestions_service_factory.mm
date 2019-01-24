@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/files/file_path.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/time/default_tick_clock.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -32,7 +32,8 @@ namespace suggestions {
 
 // static
 SuggestionsServiceFactory* SuggestionsServiceFactory::GetInstance() {
-  return base::Singleton<SuggestionsServiceFactory>::get();
+  static base::NoDestructor<SuggestionsServiceFactory> instance;
+  return instance.get();
 }
 
 // static

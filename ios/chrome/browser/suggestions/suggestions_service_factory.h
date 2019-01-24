@@ -8,12 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
 
 namespace ios {
 class ChromeBrowserState;
@@ -34,7 +30,7 @@ class SuggestionsServiceFactory : public BrowserStateKeyedServiceFactory {
       ios::ChromeBrowserState* browser_state);
 
  private:
-  friend struct base::DefaultSingletonTraits<SuggestionsServiceFactory>;
+  friend class base::NoDestructor<SuggestionsServiceFactory>;
 
   SuggestionsServiceFactory();
   ~SuggestionsServiceFactory() override;
