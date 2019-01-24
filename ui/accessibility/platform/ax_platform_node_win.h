@@ -273,14 +273,10 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   ~AXPlatformNodeWin() override;
 
-  // Return the number of instances of AXPlatformNodeWin, for leak testing.
-  static size_t GetInstanceCountForTesting();
-
   void Init(AXPlatformNodeDelegate* delegate) override;
 
   // Clear any AXPlatformRelationWin nodes owned by this node.
   void ClearOwnRelations();
-  static AXPlatformNode* GetFromUniqueId(int32_t unique_id);
 
   // AXPlatformNode overrides.
   gfx::NativeViewAccessible GetNativeViewAccessible() override;

@@ -10,7 +10,6 @@
 #include <map>
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -251,20 +250,6 @@ AXPlatformNode* AXPlatformNode::FromNativeViewAccessible(
   return ax_platform_node.Get();
 }
 
-using UniqueIdMap = std::unordered_map<int32_t, AXPlatformNode*>;
-// Map from each AXPlatformNode's unique id to its instance.
-base::LazyInstance<UniqueIdMap>::Leaky g_unique_id_map =
-    LAZY_INSTANCE_INITIALIZER;
-
-// static
-AXPlatformNode* AXPlatformNodeWin::GetFromUniqueId(int32_t unique_id) {
-  UniqueIdMap* unique_ids = g_unique_id_map.Pointer();
-  auto iter = unique_ids->find(unique_id);
-  if (iter != unique_ids->end())
-    return iter->second;
-
-  return nullptr;
-}
 //
 // AXPlatformNodeWin
 //
@@ -277,12 +262,6 @@ AXPlatformNodeWin::~AXPlatformNodeWin() {
 
 void AXPlatformNodeWin::Init(AXPlatformNodeDelegate* delegate) {
   AXPlatformNodeBase::Init(delegate);
-  g_unique_id_map.Get()[GetUniqueId()] = this;
-}
-
-// static
-size_t AXPlatformNodeWin::GetInstanceCountForTesting() {
-  return g_unique_id_map.Get().size();
 }
 
 void AXPlatformNodeWin::ClearOwnRelations() {
@@ -471,8 +450,6 @@ void AXPlatformNodeWin::Dispose() {
 }
 
 void AXPlatformNodeWin::Destroy() {
-  g_unique_id_map.Get().erase(GetUniqueId());
-
   RemoveAlertTarget();
 
   // This will end up calling Dispose() which may result in deleting this object

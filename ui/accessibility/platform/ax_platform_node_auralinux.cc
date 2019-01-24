@@ -10,7 +10,6 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -743,7 +742,8 @@ static AtkHyperlink* AXPlatformNodeAuraLinuxHypertextGetLink(
     return nullptr;
 
   int32_t id = ax_hypertext.hyperlinks[index];
-  auto* link = AXPlatformNodeAuraLinux::GetFromUniqueId(id);
+  auto* link = static_cast<AXPlatformNodeAuraLinux*>(
+      AXPlatformNodeBase::GetFromUniqueId(id));
   if (!link)
     return nullptr;
 
@@ -1470,22 +1470,6 @@ AXPlatformNode* AXPlatformNode::FromNativeViewAccessible(
   return AtkObjectToAXPlatformNodeAuraLinux(accessible);
 }
 
-using UniqueIdMap = std::unordered_map<int32_t, AXPlatformNodeAuraLinux*>;
-// Map from each AXPlatformNode's unique id to its instance.
-base::LazyInstance<UniqueIdMap>::Leaky g_unique_id_map =
-    LAZY_INSTANCE_INITIALIZER;
-
-// static
-AXPlatformNodeAuraLinux* AXPlatformNodeAuraLinux::GetFromUniqueId(
-    int32_t unique_id) {
-  UniqueIdMap* unique_ids = g_unique_id_map.Pointer();
-  auto iter = unique_ids->find(unique_id);
-  if (iter != unique_ids->end())
-    return iter->second;
-
-  return nullptr;
-}
-
 //
 // AXPlatformNodeAuraLinux implementation.
 //
@@ -2105,8 +2089,6 @@ AXPlatformNodeAuraLinux::~AXPlatformNodeAuraLinux() {
 }
 
 void AXPlatformNodeAuraLinux::Destroy() {
-  g_unique_id_map.Get().erase(GetUniqueId());
-
   DestroyAtkObjects();
   AXPlatformNodeBase::Destroy();
 }
@@ -2114,7 +2096,6 @@ void AXPlatformNodeAuraLinux::Destroy() {
 void AXPlatformNodeAuraLinux::Init(AXPlatformNodeDelegate* delegate) {
   // Initialize ATK.
   AXPlatformNodeBase::Init(delegate);
-  g_unique_id_map.Get()[GetUniqueId()] = this;
   DataChanged();
 }
 
