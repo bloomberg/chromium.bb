@@ -20,5 +20,6 @@
   readonly attribute AnimationPlayState playState;
   readonly attribute double? currentTime;
   [RaisesException] void play();
+  [RaisesException] void pause();
   void cancel();
 };

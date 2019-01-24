@@ -10248,6 +10248,7 @@ interface WorkletAnimation
     getter timeline
     method cancel
     method constructor
+    method pause
     method play
 interface WritableStream
     attribute @@toStringTag
