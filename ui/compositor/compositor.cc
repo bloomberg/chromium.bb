@@ -179,6 +179,20 @@ Compositor::Compositor(
 #endif
 
   settings.memory_policy.bytes_limit_when_visible = 512 * 1024 * 1024;
+
+  // Used to configure ui compositor memory limit for chromeos devices.
+  // See crbug.com/923141.
+  if (command_line->HasSwitch(
+          switches::kUiCompositorMemoryLimitWhenVisibleMB)) {
+    std::string value_str = command_line->GetSwitchValueASCII(
+        switches::kUiCompositorMemoryLimitWhenVisibleMB);
+    unsigned value_in_mb;
+    if (base::StringToUint(value_str, &value_in_mb)) {
+      settings.memory_policy.bytes_limit_when_visible =
+          1024 * 1024 * value_in_mb;
+    }
+  }
+
   settings.memory_policy.priority_cutoff_when_visible =
       gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
 

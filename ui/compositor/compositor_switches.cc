@@ -29,6 +29,9 @@ const char kUISlowAnimations[] = "ui-slow-animations";
 
 const char kDisableVsyncForTests[] = "disable-vsync-for-tests";
 
+const char kUiCompositorMemoryLimitWhenVisibleMB[] =
+    "ui-compositor-memory-limit-when-visible-mb";
+
 }  // namespace switches
 
 namespace features {
