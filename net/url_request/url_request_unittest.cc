@@ -150,6 +150,7 @@
 
 #if BUILDFLAG(ENABLE_REPORTING)
 #include "net/network_error_logging/network_error_logging_service.h"
+#include "net/network_error_logging/network_error_logging_test_util.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 #if defined(OS_ANDROID) || defined(USE_BUILTIN_CERT_VERIFIER)
@@ -7049,6 +7050,151 @@ TEST_F(URLRequestTestHTTP, MultipleExpectCTHeaders) {
 }
 
 #endif  // !defined(OS_IOS)
+
+#if BUILDFLAG(ENABLE_REPORTING)
+
+TEST_F(URLRequestTestHTTP, NetworkErrorLogging_BasicSuccess) {
+  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.ServeFilesFromSourceDirectory(
+      base::FilePath(kTestFilePath));
+  ASSERT_TRUE(https_test_server.Start());
+  GURL request_url = https_test_server.GetURL("/simple.html");
+
+  TestNetworkErrorLoggingService nel_service;
+  TestURLRequestContext context(true);
+  context.set_network_error_logging_service(&nel_service);
+  context.Init();
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> request(context.CreateRequest(
+      request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->Start();
+  d.RunUntilComplete();
+
+  ASSERT_EQ(1u, nel_service.errors().size());
+  const TestNetworkErrorLoggingService::RequestDetails& error =
+      nel_service.errors()[0];
+  EXPECT_EQ(request_url, error.uri);
+  EXPECT_EQ(200, error.status_code);
+  EXPECT_EQ(OK, error.type);
+}
+
+TEST_F(URLRequestTestHTTP, NetworkErrorLogging_BasicError) {
+  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.AddDefaultHandlers(base::FilePath(kTestFilePath));
+  ASSERT_TRUE(https_test_server.Start());
+  GURL request_url = https_test_server.GetURL("/close-socket");
+
+  TestNetworkErrorLoggingService nel_service;
+  TestURLRequestContext context(true);
+  context.set_network_error_logging_service(&nel_service);
+  context.Init();
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> request(context.CreateRequest(
+      request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->Start();
+  d.RunUntilComplete();
+
+  ASSERT_EQ(1u, nel_service.errors().size());
+  const TestNetworkErrorLoggingService::RequestDetails& error =
+      nel_service.errors()[0];
+  EXPECT_EQ(request_url, error.uri);
+  EXPECT_EQ(0, error.status_code);
+  EXPECT_EQ(ERR_EMPTY_RESPONSE, error.type);
+}
+
+TEST_F(URLRequestTestHTTP, NetworkErrorLogging_Redirect) {
+  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.ServeFilesFromSourceDirectory(
+      base::FilePath(kTestFilePath));
+  ASSERT_TRUE(https_test_server.Start());
+  GURL request_url = https_test_server.GetURL("/redirect-test.html");
+  GURL redirect_url = https_test_server.GetURL("/with-headers.html");
+
+  TestNetworkErrorLoggingService nel_service;
+  TestURLRequestContext context(true);
+  context.set_network_error_logging_service(&nel_service);
+  context.Init();
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> request(context.CreateRequest(
+      request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->Start();
+  d.RunUntilComplete();
+
+  ASSERT_EQ(2u, nel_service.errors().size());
+  const TestNetworkErrorLoggingService::RequestDetails& error1 =
+      nel_service.errors()[0];
+  EXPECT_EQ(request_url, error1.uri);
+  EXPECT_EQ(302, error1.status_code);
+  EXPECT_EQ(OK, error1.type);
+  const TestNetworkErrorLoggingService::RequestDetails& error2 =
+      nel_service.errors()[1];
+  EXPECT_EQ(redirect_url, error2.uri);
+  EXPECT_EQ(200, error2.status_code);
+  EXPECT_EQ(OK, error2.type);
+}
+
+TEST_F(URLRequestTestHTTP, NetworkErrorLogging_Auth) {
+  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.AddDefaultHandlers(base::FilePath(kTestFilePath));
+  ASSERT_TRUE(https_test_server.Start());
+  GURL request_url = https_test_server.GetURL("/auth-basic");
+
+  TestNetworkErrorLoggingService nel_service;
+  TestURLRequestContext context(true);
+  context.set_network_error_logging_service(&nel_service);
+  context.Init();
+
+  TestDelegate d;
+  d.set_credentials(AuthCredentials(kUser, kSecret));
+  std::unique_ptr<URLRequest> request(context.CreateRequest(
+      request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->Start();
+  d.RunUntilComplete();
+
+  ASSERT_EQ(2u, nel_service.errors().size());
+  const TestNetworkErrorLoggingService::RequestDetails& error1 =
+      nel_service.errors()[0];
+  EXPECT_EQ(request_url, error1.uri);
+  EXPECT_EQ(401, error1.status_code);
+  EXPECT_EQ(OK, error1.type);
+  const TestNetworkErrorLoggingService::RequestDetails& error2 =
+      nel_service.errors()[1];
+  EXPECT_EQ(request_url, error2.uri);
+  EXPECT_EQ(200, error2.status_code);
+  EXPECT_EQ(OK, error2.type);
+}
+
+TEST_F(URLRequestTestHTTP, NetworkErrorLogging_Cancel) {
+  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.ServeFilesFromSourceDirectory(
+      base::FilePath(kTestFilePath));
+  ASSERT_TRUE(https_test_server.Start());
+  GURL request_url = https_test_server.GetURL("/simple.html");
+
+  TestNetworkErrorLoggingService nel_service;
+  TestURLRequestContext context(true);
+  context.set_network_error_logging_service(&nel_service);
+  context.Init();
+
+  TestDelegate d;
+  d.set_cancel_in_response_started(true);
+  std::unique_ptr<URLRequest> request(context.CreateRequest(
+      request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->Start();
+  d.RunUntilComplete();
+
+  ASSERT_EQ(1u, nel_service.errors().size());
+  const TestNetworkErrorLoggingService::RequestDetails& error =
+      nel_service.errors()[0];
+  EXPECT_EQ(request_url, error.uri);
+  EXPECT_EQ(200, error.status_code);
+  EXPECT_EQ(OK, error.type);
+}
+
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 TEST_F(URLRequestTestHTTP, ContentTypeNormalizationTest) {
   ASSERT_TRUE(http_test_server()->Start());

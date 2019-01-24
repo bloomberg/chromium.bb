@@ -74,7 +74,7 @@
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_header_parser.h"
 #include "net/reporting/reporting_service.h"
-#endif
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 namespace {
 
@@ -110,6 +110,10 @@ HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
       can_send_early_data_(false),
       server_ssl_client_cert_was_cached_(false),
       request_headers_(),
+#if BUILDFLAG(ENABLE_REPORTING)
+      network_error_logging_report_generated_(false),
+      request_reporting_upload_depth_(0),
+#endif  // BUILDFLAG(ENABLE_REPORTING)
       read_buf_len_(0),
       total_received_bytes_(0),
       total_sent_bytes_(0),
@@ -121,9 +125,20 @@ HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
       net_error_details_(),
       retry_attempts_(0),
       num_restarts_(0),
-      ssl_version_interference_error_(OK) {}
+      ssl_version_interference_error_(OK) {
+}
 
 HttpNetworkTransaction::~HttpNetworkTransaction() {
+#if BUILDFLAG(ENABLE_REPORTING)
+  // Report a success if we have not already done so. Errors would have been
+  // reported from DoCallback(), DoReadBodyComplete(), HandleIOError(), or
+  // DoReadHeadersComplete().
+  // Note: This may incorrectly report an error as a success, e.g. if the
+  // request is cancelled after successfully receiving headers but would
+  // otherwise have encountered an error on reading the body.
+  if (headers_valid_ && next_state_ == STATE_NONE)
+    GenerateNetworkErrorLoggingReport(OK);
+#endif  // BUILDFLAG(ENABLE_REPORTING)
   if (stream_.get()) {
     // TODO(mbelshe): The stream_ should be able to compute whether or not the
     //                stream should be kept alive.  No reason to compute here
@@ -151,13 +166,15 @@ int HttpNetworkTransaction::Start(const HttpRequestInfo* request_info,
   request_ = request_info;
   url_ = request_->url;
 #if BUILDFLAG(ENABLE_REPORTING)
+  // Store values for later use in NEL report generation.
   request_method_ = request_->method;
   request_->extra_headers.GetHeader(HttpRequestHeaders::kReferer,
                                     &request_referrer_);
   request_->extra_headers.GetHeader(HttpRequestHeaders::kUserAgent,
                                     &request_user_agent_);
   request_reporting_upload_depth_ = request_->reporting_upload_depth;
-#endif
+  start_timeticks_ = base::TimeTicks::Now();
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
   // Now that we have an HttpRequestInfo object, update server_ssl_config_.
   session_->GetSSLConfig(*request_, &server_ssl_config_, &proxy_ssl_config_);
@@ -178,6 +195,11 @@ int HttpNetworkTransaction::Start(const HttpRequestInfo* request_info,
   int rv = DoLoop(OK);
   if (rv == ERR_IO_PENDING)
     callback_ = std::move(callback);
+
+  // This always returns ERR_IO_PENDING because DoCreateStream() does, but
+  // GenerateNetworkErrorLoggingReportIfError() should be called here if any
+  // other net::Error can be returned.
+  DCHECK_EQ(rv, ERR_IO_PENDING);
   return rv;
 }
 
@@ -195,6 +217,11 @@ int HttpNetworkTransaction::RestartIgnoringLastError(
   int rv = DoLoop(OK);
   if (rv == ERR_IO_PENDING)
     callback_ = std::move(callback);
+
+  // This always returns ERR_IO_PENDING because DoCreateStream() does, but
+  // GenerateNetworkErrorLoggingReportIfError() should be called here if any
+  // other net::Error can be returned.
+  DCHECK_EQ(rv, ERR_IO_PENDING);
   return rv;
 }
 
@@ -226,6 +253,11 @@ int HttpNetworkTransaction::RestartWithCertificate(
   int rv = DoLoop(OK);
   if (rv == ERR_IO_PENDING)
     callback_ = std::move(callback);
+
+  // This always returns ERR_IO_PENDING because DoCreateStream() does, but
+  // GenerateNetworkErrorLoggingReportIfError() should be called here if any
+  // other net::Error can be returned.
+  DCHECK_EQ(rv, ERR_IO_PENDING);
   return rv;
 }
 
@@ -260,6 +292,11 @@ int HttpNetworkTransaction::RestartWithAuth(const AuthCredentials& credentials,
     DCHECK(stream_request_ == NULL);
     PrepareForAuthRestart(target);
     rv = DoLoop(OK);
+    // Note: If an error is encountered while draining the old response body, no
+    // Network Error Logging report will be generated, because the error was
+    // with the old request, which will already have had a NEL report generated
+    // for it due to the auth challenge (so we don't report a second error for
+    // that request).
   }
 
   if (rv == ERR_IO_PENDING)
@@ -661,9 +698,9 @@ void HttpNetworkTransaction::DoCallback(int rv) {
 
 #if BUILDFLAG(ENABLE_REPORTING)
   // Just before invoking the caller's completion callback, generate a NEL
-  // report about this network request.
-  GenerateNetworkErrorLoggingReport(rv);
-#endif
+  // report about this network request if the result was an error.
+  GenerateNetworkErrorLoggingReportIfError(rv);
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
   // Since Run may result in Read being called, clear user_callback_ up front.
   base::ResetAndReturn(&callback_).Run(rv);
@@ -1133,6 +1170,9 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
   if (response_.headers.get() &&
       response_.headers->response_code() == HTTP_REQUEST_TIMEOUT &&
       stream_->IsConnectionReused()) {
+#if BUILDFLAG(ENABLE_REPORTING)
+    GenerateNetworkErrorLoggingReport(OK);
+#endif  // BUILDFLAG(ENABLE_REPORTING)
     net_log_.AddEventWithNetErrorCode(
         NetLogEventType::HTTP_TRANSACTION_RESTART_AFTER_ERROR,
         response_.headers->response_code());
@@ -1183,6 +1223,9 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
 
   if (response_.headers->response_code() == 421 &&
       (enable_ip_based_pooling_ || enable_alternative_services_)) {
+#if BUILDFLAG(ENABLE_REPORTING)
+    GenerateNetworkErrorLoggingReport(OK);
+#endif  // BUILDFLAG(ENABLE_REPORTING)
     // Retry the request with both IP based pooling and Alternative Services
     // disabled.
     enable_ip_based_pooling_ = false;
@@ -1208,9 +1251,22 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
     return rv;
 
 #if BUILDFLAG(ENABLE_REPORTING)
+  // Note: Unless there is a pre-existing NEL policy for this origin, any NEL
+  // reports generated before the NEL header is processed here will just be
+  // dropped by the NetworkErrorLoggingService.
   ProcessReportToHeader();
   ProcessNetworkErrorLoggingHeader();
-#endif
+
+  // Generate NEL report here if we have to report an HTTP error (4xx or 5xx
+  // code), or if the response body will not be read.
+  int response_code = response_.headers->response_code();
+  if ((response_code >= 400 && response_code < 600) ||
+      response_code == HTTP_NO_CONTENT || response_code == HTTP_RESET_CONTENT ||
+      response_code == HTTP_NOT_MODIFIED || request_->method == "HEAD" ||
+      response_.headers->GetContentLength() == 0) {
+    GenerateNetworkErrorLoggingReport(OK);
+  }
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
   headers_valid_ = true;
 
@@ -1275,6 +1331,10 @@ int HttpNetworkTransaction::DoReadBodyComplete(int result) {
       session_->http_server_properties()->MarkAlternativeServiceBroken(
           retried_alternative_service_);
     }
+
+#if BUILDFLAG(ENABLE_REPORTING)
+    GenerateNetworkErrorLoggingReport(result);
+#endif  // BUILDFLAG(ENABLE_REPORTING)
   }
 
   // Clear these to avoid leaving around old state.
@@ -1302,6 +1362,9 @@ int HttpNetworkTransaction::DoDrainBodyForAuthRestartComplete(int result) {
   bool done = false, keep_alive = true;
   if (result < 0) {
     // Error or closed connection while reading the socket.
+    // Note: No Network Error Logging report is generated here because a report
+    // will have already been generated for the original request due to the auth
+    // challenge, so a second report is not generated for the same request here.
     done = true;
     keep_alive = false;
   } else if (stream_->IsResponseBodyComplete()) {
@@ -1379,7 +1442,20 @@ void HttpNetworkTransaction::ProcessNetworkErrorLoggingHeader() {
                     value);
 }
 
+void HttpNetworkTransaction::GenerateNetworkErrorLoggingReportIfError(int rv) {
+  if (rv < 0 && rv != ERR_IO_PENDING)
+    GenerateNetworkErrorLoggingReport(rv);
+}
+
 void HttpNetworkTransaction::GenerateNetworkErrorLoggingReport(int rv) {
+  // |rv| should be a valid net::Error
+  DCHECK_NE(rv, ERR_IO_PENDING);
+  DCHECK_LE(rv, 0);
+
+  if (network_error_logging_report_generated_)
+    return;
+  network_error_logging_report_generated_ = true;
+
   NetworkErrorLoggingService* service =
       session_->network_error_logging_service();
   if (!service) {
@@ -1400,33 +1476,33 @@ void HttpNetworkTransaction::GenerateNetworkErrorLoggingReport(int rv) {
   if (!request_referrer_.empty())
     details.referrer = GURL(request_referrer_);
   details.user_agent = request_user_agent_;
-  IPEndPoint endpoint;
-  if (!remote_endpoint_.address().empty())
+  if (!remote_endpoint_.address().empty()) {
     details.server_ip = remote_endpoint_.address();
+  } else {
+    details.server_ip = IPAddress();
+  }
   // HttpResponseHeaders::response_code() returns 0 if response code couldn't
   // be parsed, which is also how NEL represents the same.
-  if (response_.headers)
+  if (response_.headers) {
     details.status_code = response_.headers->response_code();
-  else
+  } else {
     details.status_code = 0;
+  }
   // If we got response headers, assume that the connection used HTTP/1.1
   // unless ALPN negotiation tells us otherwise (handled below).
-  if (response_.was_alpn_negotiated)
+  if (response_.was_alpn_negotiated) {
     details.protocol = response_.alpn_negotiated_protocol;
-  else
+  } else {
     details.protocol = "http/1.1";
-  details.method = request_method_;
-  if (stream_) {
-    LoadTimingInfo timing;
-    stream_->GetLoadTimingInfo(&timing);
-    details.elapsed_time = base::TimeTicks::Now() - timing.request_start;
   }
+  details.method = request_method_;
+  details.elapsed_time = base::TimeTicks::Now() - start_timeticks_;
   details.type = static_cast<Error>(rv);
   details.reporting_upload_depth = request_reporting_upload_depth_;
 
   service->OnRequest(std::move(details));
 }
-#endif
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 int HttpNetworkTransaction::HandleCertificateRequest(int error) {
   // There are two paths through which the server can request a certificate
@@ -1548,6 +1624,10 @@ int HttpNetworkTransaction::HandleIOError(int error) {
   // any time, check and handle client authentication errors.
   error = HandleSSLClientAuthError(error);
 
+#if BUILDFLAG(ENABLE_REPORTING)
+  GenerateNetworkErrorLoggingReportIfError(error);
+#endif  // BUILDFLAG(ENABLE_REPORTING)
+
   switch (error) {
     // If we try to reuse a connection that the server is in the process of
     // closing, we may end up successfully writing out our request (or a
@@ -1658,6 +1738,10 @@ void HttpNetworkTransaction::ResetStateForAuthRestart() {
   remote_endpoint_ = IPEndPoint();
   net_error_details_.quic_broken = false;
   net_error_details_.quic_connection_error = quic::QUIC_NO_ERROR;
+#if BUILDFLAG(ENABLE_REPORTING)
+  network_error_logging_report_generated_ = false;
+  start_timeticks_ = base::TimeTicks::Now();
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 }
 
 void HttpNetworkTransaction::CacheNetErrorDetailsAndResetStream() {
@@ -1702,6 +1786,12 @@ void HttpNetworkTransaction::ResetConnectionAndRequestForResend() {
   // the SSL tunnel.
   request_headers_.Clear();
   next_state_ = STATE_CREATE_STREAM;  // Resend the request.
+
+#if BUILDFLAG(ENABLE_REPORTING)
+  // Reset for new request.
+  network_error_logging_report_generated_ = false;
+  start_timeticks_ = base::TimeTicks::Now();
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 }
 
 bool HttpNetworkTransaction::ShouldApplyProxyAuth() const {

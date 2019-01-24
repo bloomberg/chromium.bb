@@ -214,6 +214,10 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // Reporting API.
   void ProcessNetworkErrorLoggingHeader();
 
+  // Calls GenerateNetworkErrorLoggingReport() if |rv| represents a NET_ERROR
+  // other than ERR_IO_PENDING.
+  void GenerateNetworkErrorLoggingReportIfError(int rv);
+
   // Generates a NEL report about this request.  The NetworkErrorLoggingService
   // will discard the report if there is no NEL policy registered for this
   // origin.
@@ -356,6 +360,8 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
 
   HttpRequestHeaders request_headers_;
 #if BUILDFLAG(ENABLE_REPORTING)
+  // Whether a NEL report has already been generated. Reset when restarting.
+  bool network_error_logging_report_generated_;
   // Cache some fields from |request_| that we'll need to construct a NEL
   // report about the request.  (NEL report construction happens after we've
   // cleared the |request_| pointer.)
@@ -363,6 +369,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   std::string request_referrer_;
   std::string request_user_agent_;
   int request_reporting_upload_depth_;
+  base::TimeTicks start_timeticks_;
 #endif
 
   // The size in bytes of the buffer we use to drain the response body that
