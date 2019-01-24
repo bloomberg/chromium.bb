@@ -44,18 +44,12 @@
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/manifest_handlers/oauth2_manifest_handler.h"
-#include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_mint_token_flow.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
@@ -428,9 +422,6 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
   }
 
   void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
-    // Replace the signin manager and token service with fakes. Do this ahead of
-    // creating the browser so that a bunch of classes don't register as
-    // observers and end up needing to unregister when the fake is substituted.
     IdentityTestEnvironmentProfileAdaptor::
         SetIdentityTestEnvironmentFactoriesOnBrowserContext(context);
 
