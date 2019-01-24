@@ -65,7 +65,6 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   virtual bool HasMailbox() const { return false; }
   virtual bool IsValid() const { return true; }
   virtual void Transfer() {}
-  virtual void Abandon() {}
 
   // Creates a non-gpu copy of the image, or returns this if image is already
   // non-gpu.
