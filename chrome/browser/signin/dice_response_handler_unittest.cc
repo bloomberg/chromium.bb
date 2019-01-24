@@ -246,7 +246,7 @@ TEST_F(DiceResponseHandlerTest, Signin) {
   InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
-  std::string account_id = account_tracker_service_.PickAccountIdForAccount(
+  std::string account_id = identity_manager()->LegacyPickAccountIdForAccount(
       account_info.gaia_id, account_info.email);
   EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id));
   dice_response_handler_->ProcessDiceHeader(
@@ -268,8 +268,11 @@ TEST_F(DiceResponseHandlerTest, Signin) {
   EXPECT_EQ(1, reconcilor_blocked_count_);
   EXPECT_EQ(1, reconcilor_unblocked_count_);
   // Check that the AccountInfo::is_under_advanced_protection is set.
-  EXPECT_TRUE(account_tracker_service_.GetAccountInfo(account_id)
-                  .is_under_advanced_protection);
+  EXPECT_TRUE(
+      identity_manager()
+          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+          .value()
+          .is_under_advanced_protection);
 }
 
 // Checks that a GaiaAuthFetcher failure is handled correctly.
@@ -277,7 +280,7 @@ TEST_F(DiceResponseHandlerTest, SigninFailure) {
   InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
-  std::string account_id = account_tracker_service_.PickAccountIdForAccount(
+  std::string account_id = identity_manager()->LegacyPickAccountIdForAccount(
       account_info.gaia_id, account_info.email);
   EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id));
   dice_response_handler_->ProcessDiceHeader(
@@ -305,7 +308,7 @@ TEST_F(DiceResponseHandlerTest, SigninRepeatedWithSameAccount) {
   InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
-  std::string account_id = account_tracker_service_.PickAccountIdForAccount(
+  std::string account_id = identity_manager()->LegacyPickAccountIdForAccount(
       account_info.gaia_id, account_info.email);
   ASSERT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id));
   dice_response_handler_->ProcessDiceHeader(
@@ -325,8 +328,11 @@ TEST_F(DiceResponseHandlerTest, SigninRepeatedWithSameAccount) {
       false /* is_advanced_protection*/));
   // Check that the token has been inserted in the token service.
   EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(account_id));
-  EXPECT_FALSE(account_tracker_service_.GetAccountInfo(account_id)
-                   .is_under_advanced_protection);
+  EXPECT_FALSE(
+      identity_manager()
+          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+          .value()
+          .is_under_advanced_protection);
 }
 
 // Checks that two SIGNIN requests can happen concurrently.
@@ -338,9 +344,9 @@ TEST_F(DiceResponseHandlerTest, SigninWithTwoAccounts) {
   dice_params_2.signin_info->account_info.email = "other_email";
   dice_params_2.signin_info->account_info.gaia_id = "other_gaia_id";
   const auto& account_info_2 = dice_params_2.signin_info->account_info;
-  std::string account_id_1 = account_tracker_service_.PickAccountIdForAccount(
+  std::string account_id_1 = identity_manager()->LegacyPickAccountIdForAccount(
       account_info_1.gaia_id, account_info_1.email);
-  std::string account_id_2 = account_tracker_service_.PickAccountIdForAccount(
+  std::string account_id_2 = identity_manager()->LegacyPickAccountIdForAccount(
       account_info_2.gaia_id, account_info_2.email);
   ASSERT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id_1));
   ASSERT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id_2));
@@ -364,16 +370,22 @@ TEST_F(DiceResponseHandlerTest, SigninWithTwoAccounts) {
       true /* is_advanced_protection*/));
   // Check that the token has been inserted in the token service.
   EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(account_id_1));
-  EXPECT_TRUE(account_tracker_service_.GetAccountInfo(account_id_1)
-                  .is_under_advanced_protection);
+  EXPECT_TRUE(
+      identity_manager()
+          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id_1)
+          .value()
+          .is_under_advanced_protection);
   // Simulate GaiaAuthFetcher success for the second request.
   consumer_2->OnClientOAuthSuccess(GaiaAuthConsumer::ClientOAuthResult(
       "refresh_token", "access_token", 10, false /* is_child_account */,
       false /* is_advanced_protection*/));
   // Check that the token has been inserted in the token service.
   EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(account_id_2));
-  EXPECT_FALSE(account_tracker_service_.GetAccountInfo(account_id_2)
-                   .is_under_advanced_protection);
+  EXPECT_FALSE(
+      identity_manager()
+          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id_2)
+          .value()
+          .is_under_advanced_protection);
   // Check that the reconcilor was blocked and unblocked exactly once.
   EXPECT_EQ(1, reconcilor_blocked_count_);
   EXPECT_EQ(1, reconcilor_unblocked_count_);
@@ -385,7 +397,7 @@ TEST_F(DiceResponseHandlerTest, SigninEnableSyncAfterRefreshTokenFetched) {
   InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
-  std::string account_id = account_tracker_service_.PickAccountIdForAccount(
+  std::string account_id = identity_manager()->LegacyPickAccountIdForAccount(
       account_info.gaia_id, account_info.email);
   ASSERT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id));
   dice_response_handler_->ProcessDiceHeader(
@@ -417,7 +429,7 @@ TEST_F(DiceResponseHandlerTest, SigninEnableSyncBeforeRefreshTokenFetched) {
   InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
-  std::string account_id = account_tracker_service_.PickAccountIdForAccount(
+  std::string account_id = identity_manager()->LegacyPickAccountIdForAccount(
       account_info.gaia_id, account_info.email);
   ASSERT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id));
   dice_response_handler_->ProcessDiceHeader(
@@ -447,7 +459,7 @@ TEST_F(DiceResponseHandlerTest, Timeout) {
   InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
-  std::string account_id = account_tracker_service_.PickAccountIdForAccount(
+  std::string account_id = identity_manager()->LegacyPickAccountIdForAccount(
       account_info.gaia_id, account_info.email);
   ASSERT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id));
   dice_response_handler_->ProcessDiceHeader(
@@ -660,9 +672,9 @@ TEST_F(DiceResponseHandlerTest, SigninSignoutDifferentAccount) {
   signin_params_2.signin_info->account_info.gaia_id = "other_gaia_id";
   const auto& signin_account_info_1 = signin_params_1.signin_info->account_info;
   const auto& signin_account_info_2 = signin_params_2.signin_info->account_info;
-  std::string account_id_1 = account_tracker_service_.PickAccountIdForAccount(
+  std::string account_id_1 = identity_manager()->LegacyPickAccountIdForAccount(
       signin_account_info_1.gaia_id, signin_account_info_1.email);
-  std::string account_id_2 = account_tracker_service_.PickAccountIdForAccount(
+  std::string account_id_2 = identity_manager()->LegacyPickAccountIdForAccount(
       signin_account_info_2.gaia_id, signin_account_info_2.email);
   dice_response_handler_->ProcessDiceHeader(
       signin_params_1, std::make_unique<TestProcessDiceHeaderDelegate>(this));
