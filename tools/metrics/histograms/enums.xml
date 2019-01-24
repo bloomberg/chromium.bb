@@ -4914,6 +4914,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Played"/>
 </enum>
 
+<enum name="BooleanHasReadStoragePermission">
+  <int value="0" label="Lacks Read Storage Permission"/>
+  <int value="1" label="Has Read Storage Permission"/>
+</enum>
+
 <enum name="BooleanHasSeekPenalty">
   <int value="0" label="Has no seek penalty (e.g. is flash memory)"/>
   <int value="1" label="Has seek penalty (e.g. spinning disk)"/>
