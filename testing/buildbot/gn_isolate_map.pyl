@@ -649,6 +649,9 @@
   "components_perftests": {
     "args": [
       "--xvfb",
+      "--benchmark=components_perftests",
+      "--non-telemetry=true",
+      "--migrated-test=true",
       "components_perftests",
     ],
     "label": "//components:components_perftests",
@@ -2575,6 +2578,9 @@
   "views_perftests": {
     "args": [
       "--xvfb",
+      "--benchmark=views_perftests",
+      "--non-telemetry=true",
+      "--migrated-test=true",
       "views_perftests",
     ],
     "label": "//ui/views:views_perftests",

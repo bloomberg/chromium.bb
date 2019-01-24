@@ -2650,7 +2650,14 @@
     },
 
     'components_perftests_isolated_scripts' : {
-      'components_perftests': {},
+      'components_perftests': {
+        'merge': {
+          'script': '//tools/perf/process_perf_results.py',
+        },
+        'args': [
+          '--smoke-test-mode',
+        ],
+      },
     },
 
     'cronet_gtests': {
@@ -2693,7 +2700,14 @@
           'shards': 4,
         },
       },
-      'views_perftests': {},
+      'views_perftests': {
+        'merge': {
+          'script': '//tools/perf/process_perf_results.py',
+          'args': [
+            '--smoke-test-mode',
+          ],
+        },
+      },
       'webkit_layout_tests': {
         # layout test failures are retried 3 times when '--test-list' is not
         # passed, but 0 times when '--test-list' is passed. We want to always

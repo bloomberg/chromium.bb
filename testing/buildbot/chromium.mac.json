@@ -995,7 +995,13 @@
         }
       },
       {
+        "args": [
+          "--smoke-test-mode"
+        ],
         "isolate_name": "components_perftests",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "components_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1087,6 +1093,12 @@
       },
       {
         "isolate_name": "views_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "views_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2121,7 +2133,13 @@
         }
       },
       {
+        "args": [
+          "--smoke-test-mode"
+        ],
         "isolate_name": "components_perftests",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "components_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2213,6 +2231,12 @@
       },
       {
         "isolate_name": "views_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "views_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3330,7 +3354,13 @@
         }
       },
       {
+        "args": [
+          "--smoke-test-mode"
+        ],
         "isolate_name": "components_perftests",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "components_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3422,6 +3452,12 @@
       },
       {
         "isolate_name": "views_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "views_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -4456,7 +4492,13 @@
         }
       },
       {
+        "args": [
+          "--smoke-test-mode"
+        ],
         "isolate_name": "components_perftests",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "components_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -4529,6 +4571,12 @@
       },
       {
         "isolate_name": "views_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "views_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -5632,6 +5680,12 @@
       },
       {
         "isolate_name": "views_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "views_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
