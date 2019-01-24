@@ -44,8 +44,6 @@ extern "C" {
 #define REDUCE_LAST_GF_LENGTH 1
 #define MULTI_LVL_BOOST_VBR_CQ 1
 
-#define USE_MANUAL_GF4_STRUCT 0
-
 #define MIN_GF_INTERVAL 4
 #define MAX_GF_INTERVAL 16
 #define FIXED_GF_INTERVAL 8  // Used in some testing modes only
