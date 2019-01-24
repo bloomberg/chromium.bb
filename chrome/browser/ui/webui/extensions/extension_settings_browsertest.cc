@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/developer_private/developer_private_api.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -217,6 +218,31 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsUIBrowserTest, ListenerRegistration) {
     SCOPED_TRACE("After page unload");
     expect_has_listeners(false);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsUIBrowserTest,
+                       ActivityLogInactiveWithoutSwitch) {
+  // Navigate to chrome://extensions which is a whitelisted URL for the
+  // chrome.activityLogPrivate API.
+  GURL extensions_url("chrome://extensions");
+  ui_test_utils::NavigateToURL(browser(), extensions_url);
+  content::WebContents* page_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(page_contents);
+
+  // Attempt to add an event listener for the
+  // activityLogPrivate.onExtensionActivity event.
+  ASSERT_TRUE(content::ExecuteScript(page_contents, R"(
+      let activityLogListener = () => {};
+      chrome.activityLogPrivate.onExtensionActivity.addListener(
+          activityLogListener);
+    )"));
+
+  // Activity log will be inactive as the command line switch is not present and
+  // no whitelisted extensions for activityLogPrivate are enabled.
+  extensions::ActivityLog* activity_log =
+      extensions::ActivityLog::GetInstance(browser()->profile());
+  ASSERT_FALSE(activity_log->is_active());
 }
 
 class ExtensionsActivityLogTest : public ExtensionSettingsUIBrowserTest {

@@ -562,6 +562,7 @@ ActivityLog::ActivityLog(content::BrowserContext* context)
       extension_registry_observer_(this),
       active_consumers_(0),
       cached_consumer_count_(0),
+      has_listeners_(false),
       is_active_(false),
       weak_factory_(this) {
   SetActivityHandlers();
@@ -653,6 +654,11 @@ void ActivityLog::SetWatchdogAppActiveForTesting(bool active) {
   CheckActive(false);  // don't use cached
 }
 
+void ActivityLog::SetHasListeners(bool has_listeners) {
+  has_listeners_ = has_listeners;
+  CheckActive(false);  // don't use cached
+}
+
 void ActivityLog::OnExtensionLoaded(content::BrowserContext* browser_context,
                                     const Extension* extension) {
   if (!ActivityLogAPI::IsExtensionWhitelisted(extension->id()))
@@ -733,14 +739,17 @@ void ActivityLog::LogAction(scoped_refptr<Action> action) {
   }
   if (IsDatabaseEnabled() && database_policy_)
     database_policy_->ProcessAction(action);
-  if (IsWatchdogAppActive())
+  if (has_listeners_)
     observers_->Notify(FROM_HERE, &Observer::OnExtensionActivity, action);
   if (testing_mode_)
     VLOG(1) << action->PrintForDebug();
 }
 
 bool ActivityLog::ShouldLog(const std::string& extension_id) const {
-  return is_active_ && !ActivityLogAPI::IsExtensionWhitelisted(extension_id);
+  // Do not log for activities from the browser/WebUI, which is indicated by an
+  // empty extension ID.
+  return is_active_ && !extension_id.empty() &&
+         !ActivityLogAPI::IsExtensionWhitelisted(extension_id);
 }
 
 void ActivityLog::OnScriptsExecuted(content::WebContents* web_contents,
@@ -850,12 +859,16 @@ void ActivityLog::DeleteDatabase() {
 }
 
 void ActivityLog::CheckActive(bool use_cached) {
-  bool has_consumer =
-      active_consumers_ || (use_cached && cached_consumer_count_);
-  bool needs_db =
-      has_consumer || base::CommandLine::ForCurrentProcess()->HasSwitch(
-                          switches::kEnableExtensionActivityLogging);
-  bool should_be_active = needs_db || has_consumer;
+  const bool has_switch = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableExtensionActivityLogging);
+  const bool has_consumer =
+      active_consumers_ || (use_cached && cached_consumer_count_) ||
+      // Only check |has_listeners_| if the switch is also present, since
+      // we want to ensure the activity log is inactive unless the switch
+      // or the app (covered by active_consumers_) is present.
+      (has_listeners_ && has_switch);
+  const bool needs_db = has_consumer || has_switch;
+  const bool should_be_active = needs_db || has_consumer;
 
   if (should_be_active == is_active_)
     return;
