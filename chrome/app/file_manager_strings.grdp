@@ -1024,9 +1024,6 @@
   <message name="IDS_FILE_BROWSER_DRIVE_WELCOME_TITLE" desc="In the Welcome to Google Drive banner, title of banner.">
     Welcome to Google Drive!
   </message>
-  <message name="IDS_FILE_BROWSER_DRIVE_WELCOME_TITLE_ALTERNATIVE" desc="In the Welcome to Google Drive banner, title of the alternative banner offering 100GB free storage.">
-    Get 100 GB free with Google Drive
-  </message>
   <message name="IDS_FILE_BROWSER_DRIVE_WELCOME_TEXT_SHORT" desc="In the Welcome to Google Drive banner, text of the welcome message, short version.">
     All files saved in this folder are backed up online automatically
   </message>
@@ -1037,9 +1034,6 @@
     No matter what happens to your device, your files are safely stored in Google Drive.<ph name="MARKUP_6">&lt;/p&gt;<ex>&lt;/p&gt;</ex></ph>
     <ph name="MARKUP_7">&lt;p&gt;&lt;strong&gt;<ex>&lt;strong&gt;</ex></ph>Share, create and collaborate<ph name="MARKUP_8">&lt;/strong&gt;<ex>&lt;/strong&gt;</ex></ph>
     on files with others all in one place.<ph name="MARKUP_9">&lt;/p&gt;<ex>&lt;/p&gt;</ex></ph>
-  </message>
-  <message name="IDS_FILE_BROWSER_DRIVE_WELCOME_CHECK_ELIGIBILITY" desc="In the Welcome to Google Drive banner, a text on the button to check promo eligibility.">
-    Check eligibility
   </message>
   <message name="IDS_FILE_BROWSER_DRIVE_WELCOME_DISMISS" desc="In the Welcome to Google Drive banner, a text on the button to dismiss the banner.">
     Dismiss
