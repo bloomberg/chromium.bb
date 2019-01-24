@@ -21,7 +21,6 @@
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
-#include "chrome/browser/prerender/prerender_resource_throttle.h"
 #include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
@@ -56,23 +55,6 @@ using content::SessionStorageNamespace;
 using content::WebContents;
 
 namespace prerender {
-
-namespace {
-
-void ResumeThrottles(
-    std::vector<base::WeakPtr<PrerenderResourceThrottle>> throttles,
-    std::vector<base::WeakPtr<PrerenderResourceThrottle>> idle_resources) {
-  for (auto resource : idle_resources) {
-    if (resource)
-      resource->ResetResourcePriority();
-  }
-  for (size_t i = 0; i < throttles.size(); i++) {
-    if (throttles[i])
-      throttles[i]->ResumeHandler();
-  }
-}
-
-}  // namespace
 
 class PrerenderContentsFactoryImpl : public PrerenderContents::Factory {
  public:
@@ -740,12 +722,6 @@ void PrerenderContents::PrepareForUse() {
   }
 
   NotifyPrerenderStop();
-
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&ResumeThrottles, resource_throttles_, idle_resources_));
-  resource_throttles_.clear();
-  idle_resources_.clear();
 }
 
 void PrerenderContents::CancelPrerenderForPrinting() {
@@ -769,16 +745,6 @@ void PrerenderContents::OnPrerenderCancelerRequest(
     chrome::mojom::PrerenderCancelerRequest request) {
   if (!prerender_canceler_binding_.is_bound())
     prerender_canceler_binding_.Bind(std::move(request));
-}
-
-void PrerenderContents::AddResourceThrottle(
-    const base::WeakPtr<PrerenderResourceThrottle>& throttle) {
-  resource_throttles_.push_back(throttle);
-}
-
-void PrerenderContents::AddIdleResource(
-    const base::WeakPtr<PrerenderResourceThrottle>& throttle) {
-  idle_resources_.push_back(throttle);
 }
 
 void PrerenderContents::AddNetworkBytes(int64_t bytes) {

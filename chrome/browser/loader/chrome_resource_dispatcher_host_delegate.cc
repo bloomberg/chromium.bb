@@ -29,7 +29,6 @@
 #include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
-#include "chrome/browser/prerender/prerender_resource_throttle.h"
 #include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -444,18 +443,6 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
 
   if (first_throttle)
     throttles->push_back(base::WrapUnique(first_throttle));
-
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-  if (info->IsPrerendering()) {
-    // TODO(jam): remove this throttle once http://crbug.com/740130 is fixed and
-    // PrerendererURLLoaderThrottle can be used for frame requests in the
-    // network-service-disabled mode.
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-        content::IsResourceTypeFrame(info->GetResourceType())) {
-      throttles->push_back(
-          std::make_unique<prerender::PrerenderResourceThrottle>(request));
-    }
-  }
 }
 
 bool ChromeResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
