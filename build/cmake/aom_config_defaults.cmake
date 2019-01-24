@@ -101,8 +101,6 @@ set_aom_config_var(CONFIG_DENOISE 1 NUMBER
                    "Denoise/noise modeling support in encoder.")
 set_aom_config_var(CONFIG_FILEOPTIONS 1 NUMBER
                    "Enables encoder config file support.")
-set_aom_config_var(CONFIG_FIX_GF_LENGTH 1 NUMBER
-                   "Fix the GF length if possible")
 set_aom_config_var(CONFIG_INSPECTION 0 NUMBER "Enables bitstream inspection.")
 set_aom_config_var(CONFIG_INTERNAL_STATS 0 NUMBER
                    "Enables internal encoder stats.")

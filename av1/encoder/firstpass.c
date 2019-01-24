@@ -1694,7 +1694,6 @@ static int construct_multi_layer_gf_structure(GF_GROUP *const gf_group,
 // Given the maximum allowed height of the pyramid structure, return the maximum
 // GF length supported by the same.
 static INLINE int get_max_gf_length(int max_pyr_height) {
-#if CONFIG_FIX_GF_LENGTH
   // We allow a frame to have at most two left/right descendants before changing
   // them into to a subtree, i.e., we allow the following structure:
   /*                    OUT_OF_ORDER_FRAME
@@ -1711,9 +1710,6 @@ static INLINE int get_max_gf_length(int max_pyr_height) {
       return MAX_GF_INTERVAL;  // Special case: uses the old pyramid structure.
     default: assert(0 && "Invalid max_pyr_height"); return -1;
   }
-#else
-  return 16;
-#endif  // CONFIG_FIX_GF_LENGTH
 }
 
 // Given the maximum allowed height of the pyramid structure, return the fixed
@@ -2380,9 +2376,7 @@ static INLINE int is_almost_static(double gf_zero_motion, int kf_zero_motion) {
          (kf_zero_motion >= STATIC_KF_GROUP_THRESH);
 }
 
-#if CONFIG_FIX_GF_LENGTH
 #define ARF_ABS_ZOOM_THRESH 4.4
-#endif  // CONFIG_FIX_GF_LENGTH
 
 // Analyse and define a gf/arf group.
 static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
@@ -2395,10 +2389,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   int i;
 
   double boost_score = 0.0;
-#if !CONFIG_FIX_GF_LENGTH
-  double old_boost_score = 0.0;
-  int active_max_gf_interval;
-#endif  // !CONFIG_FIX_GF_LENGTH
   int active_min_gf_interval;
   double gf_group_err = 0.0;
 #if GROUP_ADAPTIVE_MAXQ
@@ -2463,35 +2453,8 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   const double mv_ratio_accumulator_thresh =
       (cpi->initial_height + cpi->initial_width) / 4.0;
 
-#if CONFIG_FIX_GF_LENGTH
-  // TODO(urvang): Try the 'else' like logic to vary min and max interval.
+  // TODO(urvang): Try logic to vary min and max interval based on q.
   active_min_gf_interval = rc->min_gf_interval;
-#else
-  // Set a maximum and minimum interval for the GF group.
-  // If the image appears almost completely static we can extend beyond this.
-  {
-    int int_max_q = (int)(av1_convert_qindex_to_q(
-        twopass->active_worst_quality, cpi->common.seq_params.bit_depth));
-    int int_lbq = (int)(av1_convert_qindex_to_q(
-        rc->last_boosted_qindex, cpi->common.seq_params.bit_depth));
-
-    active_min_gf_interval = rc->min_gf_interval + AOMMIN(2, int_max_q / 200);
-    if (active_min_gf_interval > rc->max_gf_interval)
-      active_min_gf_interval = rc->max_gf_interval;
-
-    // The value chosen depends on the active Q range. At low Q we have
-    // bits to spare and are better with a smaller interval and smaller boost.
-    // At high Q when there are few bits to spare we are better with a longer
-    // interval to spread the cost of the GF.
-    active_max_gf_interval = 12 + AOMMIN(4, (int_lbq / 6));
-
-    // We have: active_min_gf_interval <= rc->max_gf_interval
-    if (active_max_gf_interval < active_min_gf_interval)
-      active_max_gf_interval = active_min_gf_interval;
-    else if (active_max_gf_interval > rc->max_gf_interval)
-      active_max_gf_interval = rc->max_gf_interval;
-  }
-#endif  // CONFIG_FIX_GF_LENGTH
 
   double avg_sr_coded_error = 0;
   double avg_raw_err_stdev = 0;
@@ -2553,7 +2516,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     boost_score +=
         decay_accumulator *
         calc_frame_boost(cpi, &next_frame, this_frame_mv_in_out, GF_MAX_BOOST);
-#if CONFIG_FIX_GF_LENGTH
     // If almost totally static, we will not use the the fixed GF length later,
     // so we can continue for more frames.
     if (i >= (av1_rc_get_fixed_gf_length(oxcf->gf_max_pyr_height) + 1) &&
@@ -2571,39 +2533,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
          abs_mv_in_out_accumulator > ARF_ABS_ZOOM_THRESH)) {
       break;
     }
-#else
-    // Break out conditions.
-    // Break at maximum of active_max_gf_interval unless almost totally static.
-    //
-    // Note that the addition of a test of rc->source_alt_ref_active is
-    // deliberate. The effect of this is that after a normal altref group even
-    // if the material is static there will be one normal length GF group
-    // before allowing longer GF groups. The reason for this is that in cases
-    // such as slide shows where slides are separated by a complex transition
-    // such as a fade, the arf group spanning the transition may not be coded
-    // at a very high quality and hence this frame (with its overlay) is a
-    // poor golden frame to use for an extended group.
-    if ((i >= (active_max_gf_interval + arf_active_or_kf) &&
-         ((zero_motion_accumulator < 0.995) || (rc->source_alt_ref_active))) ||
-        (
-            // Don't break out with a very short interval.
-            (i >= active_min_gf_interval + arf_active_or_kf) &&
-            (!flash_detected) &&
-            ((mv_ratio_accumulator > mv_ratio_accumulator_thresh) ||
-             (abs_mv_in_out_accumulator > 3.0) ||
-             (mv_in_out_accumulator < -2.0) ||
-             ((boost_score - old_boost_score) < BOOST_BREAKOUT)))) {
-      // If GF group interval is < 12, we force it to be 8. Otherwise,
-      // if it is >= 12, we keep it as is.
-      // NOTE: 'i' is 1 more than the GF group interval candidate that is being
-      //       checked.
-      if (i == (8 + 1) || i >= (12 + 1)) {
-        boost_score = old_boost_score;
-        break;
-      }
-    }
-    old_boost_score = boost_score;
-#endif  // CONFIG_FIX_GF_LENGTH
     *this_frame = next_frame;
   }
   twopass->gf_zeromotion_pct = (int)(zero_motion_accumulator * 1000.0);

@@ -36,7 +36,6 @@ extern "C" {
 
 #define CUSTOMIZED_GF 1
 
-#if CONFIG_FIX_GF_LENGTH
 // Minimum and maximum height for the new pyramid structure.
 // (Old structure supports height = 1, but does NOT support height = 4).
 #define MIN_PYRAMID_LVL 2
@@ -45,12 +44,6 @@ extern "C" {
 #define REDUCE_LAST_ALT_BOOST 1
 #define REDUCE_LAST_GF_LENGTH 1
 #define MULTI_LVL_BOOST_VBR_CQ 1
-#else
-#define USE_SYMM_MULTI_LAYER 0
-#define REDUCE_LAST_ALT_BOOST 0
-#define REDUCE_LAST_GF_LENGTH 0
-#define MULTI_LVL_BOOST_VBR_CQ 0
-#endif
 
 #if USE_SYMM_MULTI_LAYER
 #define USE_MANUAL_GF4_STRUCT 0
@@ -191,9 +184,7 @@ int av1_rc_get_default_min_gf_interval(int width, int height, double framerate);
 int av1_rc_get_default_max_gf_interval(double framerate, int min_frame_rate,
                                        int max_pyr_height);
 
-#if CONFIG_FIX_GF_LENGTH
 int av1_rc_get_fixed_gf_length(int max_pyr_height);
-#endif  // CONFIG_FIX_GF_LENGTH
 
 // Generally at the high level, the following flow is expected
 // to be enforced for rate control:
