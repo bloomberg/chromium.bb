@@ -58,16 +58,6 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(kbr): flakily timing out on this configuration.
     self.Flaky('*', ['linux', 'intel', 'debug'], bug=648369)
 
-    # TODO(sunnyps): re-enable after rebaselining
-    # self.Flaky('Pixel_Video_MP4', ['android', 'nvidia'], bug=716564)
-    # self.Flaky('Pixel_Video_MP4', ['linux', 'nvidia'], bug=819635)
-
-    # TODO(sunnyps): temporarily disabling for rebaselining.
-    self.Fail('Pixel_Video_MP4', bug=869677)
-    self.Fail('Pixel_Video_VP9', bug=869677)
-    self.Fail('Pixel_DirectComposition_Video_MP4', bug=869677)
-    self.Fail('Pixel_DirectComposition_Video_VP9', bug=869677)
-
     # Flaky for unknown reasons only on macOS. Not planning to investigate
     # further.
     self.Flaky('Pixel_ScissorTestWithPreserveDrawingBuffer', ['mac'],
@@ -82,12 +72,6 @@ class PixelExpectations(GpuTestExpectations):
     self.Skip('Pixel_WebGL2_ClearBufferfv_Result_Displayed',
         ['android', ('qualcomm', 'Adreno (TM) 330')], bug=773293)
 
-    # Failing on Mac Intel HighSierra
-    # TODO(sunnyps): re-enable after rebaselining.
-    # self.Fail('Pixel_Video_MP4',
-    #     ['highsierra', ('intel', 0xa2e)], bug=774809)
-    # self.Fail('Pixel_Video_VP9',
-    #     ['highsierra', ('intel', 0xa2e)], bug=774809)
     self.Fail('Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha',
         ['highsierra', 'mojave', ('intel', 0xa2e)], bug=774809)
     self.Flaky('Pixel_OffscreenCanvasTransferBeforeStyleResize',
@@ -116,10 +100,6 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_WebGLSadCanvas', ['mac'], bug=872423)
     self.Fail('Pixel_WebGLSadCanvas', ['android'], bug=575305)
 
-    # Flaky on Android: crbug.com/860548
-    # TODO(sunnyps): re-enable after rebaselining.
-    # self.Flaky('Pixel_Video_VP9', ['android'], bug=860548)
-
     self.Fail('Pixel_CanvasLowLatencyWebGL', ['android', 'nvidia'], bug=868596)
     self.Fail('Pixel_OffscreenCanvasWebGLPaintAfterResize',
               ['android', 'nvidia'], bug=868596)
@@ -132,11 +112,19 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_BackgroundImage',
         ['android', ('qualcomm', 'Adreno (TM) 430')], bug=883500)
 
-    # Fails on android-marshmallow-arm64-rel
-    self.Fail('Pixel_Video_MP4_FourColors_Aspect_4x3', ['android'], bug=911898)
-    self.Fail('Pixel_Video_MP4_FourColors_Rot_90', ['android'], bug=911898)
-    self.Fail('Pixel_Video_MP4_FourColors_Rot_180', ['android'], bug=911898)
-    self.Fail('Pixel_Video_MP4_FourColors_Rot_270', ['android'], bug=911898)
+    # Fails on android-marshmallow-arm64-rel (Nexus 5X)
+    self.Fail('Pixel_Video_MP4',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=911898)
+    self.Fail('Pixel_Video_MP4_FourColors_Aspect_4x3',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=911898)
+    self.Fail('Pixel_Video_MP4_FourColors_Rot_90',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=911898)
+    self.Fail('Pixel_Video_MP4_FourColors_Rot_180',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=911898)
+    self.Fail('Pixel_Video_MP4_FourColors_Rot_270',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=911898)
+    self.Fail('Pixel_Video_VP9',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=911898)
 
     # Fails on Mac Pro FYI Release (AMD)
     self.Fail('Pixel_Video_MP4_FourColors_Aspect_4x3',
@@ -147,7 +135,3 @@ class PixelExpectations(GpuTestExpectations):
         ['mac', ('amd', 0x679e)], bug=911413)
     self.Fail('Pixel_Video_MP4_FourColors_Rot_270',
         ['mac', ('amd', 0x679e)], bug=911413)
-
-    # Flaky on Windows: crbug.com/921279
-    self.Flaky('Pixel_DirectComposition_ComplexOverlays',
-        ['win', 'nvidia'], bug=921279)
