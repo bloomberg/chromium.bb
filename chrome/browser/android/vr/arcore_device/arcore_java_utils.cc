@@ -108,8 +108,7 @@ void ArCoreJavaUtils::OnRequestInstallArModuleResult(
 }
 
 bool ArCoreJavaUtils::EnsureLoaded() {
-  if (!vr::SupportsArCore())
-    return false;
+  DCHECK(vr::IsArCoreSupported());
 
   JNIEnv* env = AttachCurrentThread();
 
