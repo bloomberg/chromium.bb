@@ -91,6 +91,55 @@ void MoveSkippedLanguagesToEndIfNecessary(
 
 }  // namespace
 
+struct TranslateManager::TranslateTriggerDecision {
+  void PreventAllTriggering() {
+    can_auto_translate_ = false;
+    can_show_ui_ = false;
+  }
+
+  void PreventAutoTranslate() { can_auto_translate_ = false; }
+  bool can_auto_translate() const { return can_auto_translate_; }
+
+  void PreventShowingUI() { can_show_ui_ = false; }
+  bool can_show_ui() const { return can_show_ui_; }
+
+  void SuppressFromRanker() { should_suppress_from_ranker_ = true; }
+  bool should_suppress_from_ranker() const {
+    return should_suppress_from_ranker_;
+  }
+
+  bool IsTriggeringPossible() const {
+    return can_auto_translate_ || can_show_ui_;
+  }
+
+  bool ShouldAutoTranslate() const { return can_auto_translate_; }
+
+  // Returns true iff:
+  // 1. Showing the UI is disallowed (otherwise it would be chosen over showing
+  //    the UI).
+  // 2. It's possible to show the UI (language/site not blacklisted, connected
+  //    to the internet, etc)
+  // 3. Ranker isn't requesting that the UI be suppressed.
+  bool ShouldShowUI() const {
+    return !can_auto_translate_ && can_show_ui_ &&
+           !should_suppress_from_ranker_;
+  }
+
+  std::vector<TranslateBrowserMetrics::InitiationStatusType>
+      initiation_statuses;
+  std::vector<int> ranker_events;
+  std::string auto_translate_target;
+
+ private:
+  // These fields are private because they should only be set one way. Filters
+  // "blacklist" outcomes, so for example once |can_show_ui_| is set to false,
+  // it shouldn't be reset to true.
+  bool can_auto_translate_ = true;
+  bool can_show_ui_ = true;
+
+  bool should_suppress_from_ranker_ = false;
+};
+
 TranslateManager::~TranslateManager() {}
 
 // static
@@ -119,190 +168,29 @@ base::WeakPtr<TranslateManager> TranslateManager::GetWeakPtr() {
 }
 
 void TranslateManager::InitiateTranslation(const std::string& page_lang) {
-  // Short-circuit out if not in a state where initiating translation makes
-  // sense (this method may be called muhtiple times for a given page).
-  if (!language_state_.page_needs_translation() ||
-      language_state_.translation_pending() ||
-      language_state_.translation_declined() ||
-      language_state_.IsPageTranslated() ||
-      !base::FeatureList::IsEnabled(translate::kTranslateUI)) {
-    return;
-  }
-
-  // Also, skip if the connection is currently offline - initiation doesn't make
-  // sense there, either.
-  if (net::NetworkChangeNotifier::IsOffline())
-    return;
-
-  if (!ignore_missing_key_for_testing_ &&
-      !::google_apis::HasAPIKeyConfigured()) {
-    // Without an API key, translate won't work, so don't offer to translate in
-    // the first place. Leave prefs::kOfferTranslateEnabled on, though, because
-    // that settings syncs and we don't want to turn off translate everywhere
-    // else.
-    TranslateBrowserMetrics::ReportInitiationStatus(
-        TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_KEY);
-    return;
-  }
-
   std::unique_ptr<TranslatePrefs> translate_prefs(
       translate_client_->GetTranslatePrefs());
-
-  if (!translate_prefs->IsOfferTranslateEnabled()) {
-    TranslateBrowserMetrics::ReportInitiationStatus(
-        TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_PREFS);
-    std::string target_lang =
-        GetTargetLanguage(translate_prefs.get(), language_model_);
-    std::string language_code =
-        TranslateDownloadManager::GetLanguageCode(page_lang);
-    InitTranslateEvent(language_code, target_lang, *translate_prefs);
-    RecordTranslateEvent(metrics::TranslateEventProto::DISABLED_BY_PREF);
-    const std::string& locale =
-        TranslateDownloadManager::GetInstance()->application_locale();
-    TranslateBrowserMetrics::ReportLocalesOnDisabledByPrefs(locale);
-    return;
-  }
-
-  // MHTML pages currently cannot be translated.
-  // See bug: 217945.
-  if (translate_driver_->GetContentsMimeType() == "multipart/related") {
-    TranslateBrowserMetrics::ReportInitiationStatus(
-        TranslateBrowserMetrics::INITIATION_STATUS_MIME_TYPE_IS_NOT_SUPPORTED);
-    return;
-  }
-
-  // Don't translate any Chrome specific page, e.g., New Tab Page, Download,
-  // History, and so on.
-  const GURL& page_url = translate_driver_->GetVisibleURL();
-  if (!translate_client_->IsTranslatableURL(page_url)) {
-    TranslateBrowserMetrics::ReportInitiationStatus(
-        TranslateBrowserMetrics::INITIATION_STATUS_URL_IS_NOT_SUPPORTED);
-    return;
-  }
-
-  std::string language_code =
+  std::string page_language_code =
       TranslateDownloadManager::GetLanguageCode(page_lang);
   const std::set<std::string>& skipped_languages =
-      GetSkippedLanguagesForExperiments(language_code, translate_prefs.get());
+      GetSkippedLanguagesForExperiments(page_language_code,
+                                        translate_prefs.get());
   std::string target_lang = GetTargetLanguage(
       translate_prefs.get(), language_model_, skipped_languages);
 
-  // Don't translate similar languages (ex: en-US to en).
-  if (language_code == target_lang) {
-    TranslateBrowserMetrics::ReportInitiationStatus(
-        TranslateBrowserMetrics::INITIATION_STATUS_SIMILAR_LANGUAGES);
-    return;
-  }
+  // TODO(crbug.com/924980): The ranker event shouldn't be a global on this
+  // object. It should instead be passed around to code that uses it.
+  InitTranslateEvent(page_language_code, target_lang, *translate_prefs);
 
-  InitTranslateEvent(language_code, target_lang, *translate_prefs);
+  const TranslateTriggerDecision& decision = ComputePossibleOutcomes(
+      translate_prefs.get(), page_language_code, target_lang);
 
-  // Querying the ranker now, but not exiting immediately so that we may log
-  // other potential suppression reasons.
-  // Ignore Ranker's decision under triggering experiments since it wasn't
-  // trained appropriately under those scenarios.
-  bool should_offer_translation =
-      language::ShouldPreventRankerEnforcementInIndia(
-          translate_prefs->GetForceTriggerOnEnglishPagesCount()) ||
-      translate_ranker_->ShouldOfferTranslation(translate_event_.get());
-
-  // Nothing to do if either the language Chrome is in or the language of
-  // the page is not supported by the translation server.
-  if (target_lang.empty() ||
-      !TranslateDownloadManager::IsSupportedLanguage(language_code)) {
-    TranslateBrowserMetrics::ReportInitiationStatus(
-        TranslateBrowserMetrics::INITIATION_STATUS_LANGUAGE_IS_NOT_SUPPORTED);
-    TranslateBrowserMetrics::ReportUnsupportedLanguageAtInitiation(
-        language_code);
-    RecordTranslateEvent(metrics::TranslateEventProto::UNSUPPORTED_LANGUAGE);
-    return;
-  }
-
-  TranslateAcceptLanguages* accept_languages =
-      translate_client_->GetTranslateAcceptLanguages();
-  // Don't translate any user black-listed languages.
-  if (!translate_prefs->CanTranslateLanguage(accept_languages, language_code)) {
-    TranslateBrowserMetrics::ReportInitiationStatus(
-        TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_CONFIG);
-    RecordTranslateEvent(
-        metrics::TranslateEventProto::LANGUAGE_DISABLED_BY_USER_CONFIG);
-    return;
-  }
-
-  // Don't translate any user black-listed URLs.
-  if (translate_prefs->IsSiteBlacklisted(page_url.HostNoBrackets())) {
-    TranslateBrowserMetrics::ReportInitiationStatus(
-        TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_CONFIG);
-    RecordTranslateEvent(
-        metrics::TranslateEventProto::URL_DISABLED_BY_USER_CONFIG);
-    return;
-  }
-
-  // If the user has previously selected "always translate" for this language we
-  // automatically translate.  Note that in incognito mode we disable that
-  // feature; the user will get an infobar, so they can control whether the
-  // page's text is sent to the translate server.
-  if (!translate_driver_->IsIncognito()) {
-    std::string auto_target_lang =
-        GetAutoTargetLanguage(language_code, translate_prefs.get());
-    if (!auto_target_lang.empty()) {
-      TranslateBrowserMetrics::ReportInitiationStatus(
-          TranslateBrowserMetrics::INITIATION_STATUS_AUTO_BY_CONFIG);
-      translate_event_->set_modified_target_language(auto_target_lang);
-      RecordTranslateEvent(
-          metrics::TranslateEventProto::AUTO_TRANSLATION_BY_PREF);
-      TranslatePage(language_code, auto_target_lang, false);
-      return;
-    }
-  }
-
-  std::string auto_translate_to = language_state_.AutoTranslateTo();
-  if (!auto_translate_to.empty()) {
-    // This page was navigated through a click from a translated page.
-    TranslateBrowserMetrics::ReportInitiationStatus(
-        TranslateBrowserMetrics::INITIATION_STATUS_AUTO_BY_LINK);
-    translate_event_->set_modified_target_language(auto_translate_to);
-    RecordTranslateEvent(
-        metrics::TranslateEventProto::AUTO_TRANSLATION_BY_LINK);
-    TranslatePage(language_code, auto_translate_to, false);
-    return;
-  }
-
-  // Show the omnibar icon if we've gotten this far.
-  language_state_.SetTranslateEnabled(true);
-  TranslateBrowserMetrics::ReportInitiationStatus(
-      TranslateBrowserMetrics::INITIATION_STATUS_SHOW_ICON);
-
-  // Will be true if we've decided to show the infobar/bubble UI to the user.
-  bool did_show_ui = false;
-
-  if (should_offer_translation) {
-    TranslateBrowserMetrics::ReportInitiationStatus(
-        TranslateBrowserMetrics::INITIATION_STATUS_SHOW_INFOBAR);
-
-    // If the source language matches the UI language, it means the translation
-    // prompt is being forced by an experiment. Report this so the count of how
-    // often it happens can be tracked to suppress the experiment as necessary.
-    if (language_code ==
-        TranslateDownloadManager::GetLanguageCode(
-            TranslateDownloadManager::GetInstance()->application_locale())) {
-      translate_prefs->ReportForceTriggerOnEnglishPages();
-    }
-
-    // Prompts the user if they want the page translated.
-    did_show_ui = translate_client_->ShowTranslateUI(
-        translate::TRANSLATE_STEP_BEFORE_TRANSLATE, language_code, target_lang,
-        TranslateErrors::NONE, false);
-
-  } else {
-    TranslateBrowserMetrics::ReportInitiationStatus(
-        TranslateBrowserMetrics::INITIATION_STATUS_ABORTED_BY_RANKER);
-    RecordTranslateEvent(metrics::TranslateEventProto::DISABLED_BY_RANKER);
-  }
-
-  if (!did_show_ui) {
-    TranslateBrowserMetrics::ReportInitiationStatus(
-        TranslateBrowserMetrics::INITIATION_STATUS_SUPPRESS_INFOBAR);
-  }
+  MaybeShowOmniboxIcon(decision);
+  bool ui_shown = MaterializeDecision(decision, translate_prefs.get(),
+                                      page_language_code, target_lang);
+  RecordDecisionMetrics(decision, page_language_code, ui_shown);
+  RecordDecisionRankerEvent(decision, translate_prefs.get(), page_language_code,
+                            target_lang);
 }
 
 // static
@@ -719,6 +607,308 @@ void TranslateManager::AddTargetLanguageToAcceptLanguages(
   if (std::none_of(languages.begin(), languages.end(), is_redundant) &&
       language_state_.AutoTranslateTo() != target_language_code) {
     prefs->AddToLanguageList(target_language_code, /*force_blocked=*/false);
+  }
+}
+
+const TranslateManager::TranslateTriggerDecision
+TranslateManager::ComputePossibleOutcomes(TranslatePrefs* translate_prefs,
+                                          const std::string& page_language_code,
+                                          const std::string& target_lang) {
+  // This function looks at a bunch of signals and determines which of three
+  // outcomes should be selected:
+  // 1. Auto-translate the page
+  // 2. Show translate UI
+  // 3. Do nothing
+  // This is achieved by passing the |decision| object to the different Filter*
+  // functions, which will mark certain outcomes as undesirable. This |decision|
+  // object is then used to trigger the correct behavior, and finally record
+  // corresponding metrics in InitiateTranslation.
+  TranslateTriggerDecision decision;
+
+  FilterIsTranslatePossible(&decision, translate_prefs, page_language_code,
+                            target_lang);
+
+  // Querying the ranker now, but not exiting immediately so that we may log
+  // other potential suppression reasons.
+  // Ignore Ranker's decision under triggering experiments since it wasn't
+  // trained appropriately under those scenarios.
+  if (!language::ShouldPreventRankerEnforcementInIndia(
+          translate_prefs->GetForceTriggerOnEnglishPagesCount()) &&
+      !translate_ranker_->ShouldOfferTranslation(translate_event_.get())) {
+    decision.SuppressFromRanker();
+  }
+
+  FilterForUserPrefs(&decision, translate_prefs, page_language_code);
+  FilterAutoTranslate(&decision, translate_prefs, page_language_code);
+
+  return decision;
+}
+
+void TranslateManager::FilterIsTranslatePossible(
+    TranslateTriggerDecision* decision,
+    TranslatePrefs* translate_prefs,
+    const std::string& page_language_code,
+    const std::string& target_lang) {
+  // Short-circuit out if not in a state where initiating translation makes
+  // sense (this method may be called muhtiple times for a given page).
+  if (!language_state_.page_needs_translation() ||
+      language_state_.translation_pending() ||
+      language_state_.translation_declined() ||
+      language_state_.IsPageTranslated() ||
+      !base::FeatureList::IsEnabled(translate::kTranslateUI)) {
+    decision->PreventAllTriggering();
+  }
+
+  // Also, skip if the connection is currently offline - initiation doesn't make
+  // sense there, either.
+  if (net::NetworkChangeNotifier::IsOffline())
+    decision->PreventAllTriggering();
+
+  if (!ignore_missing_key_for_testing_ &&
+      !::google_apis::HasAPIKeyConfigured()) {
+    // Without an API key, translate won't work, so don't offer to translate in
+    // the first place. Leave prefs::kOfferTranslateEnabled on, though, because
+    // that settings syncs and we don't want to turn off translate everywhere
+    // else.
+    decision->PreventAllTriggering();
+    decision->initiation_statuses.push_back(
+        TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_KEY);
+  }
+
+  // MHTML pages currently cannot be translated.
+  // See bug: 217945.
+  if (translate_driver_->GetContentsMimeType() == "multipart/related") {
+    decision->PreventAllTriggering();
+    decision->initiation_statuses.push_back(
+        TranslateBrowserMetrics::INITIATION_STATUS_MIME_TYPE_IS_NOT_SUPPORTED);
+  }
+
+  // Don't translate any Chrome specific page, e.g., New Tab Page, Download,
+  // History, and so on.
+  const GURL& page_url = translate_driver_->GetVisibleURL();
+  if (!translate_client_->IsTranslatableURL(page_url)) {
+    decision->PreventAllTriggering();
+    decision->initiation_statuses.push_back(
+        TranslateBrowserMetrics::INITIATION_STATUS_URL_IS_NOT_SUPPORTED);
+  }
+
+  if (!translate_prefs->IsOfferTranslateEnabled()) {
+    decision->PreventAllTriggering();
+    decision->initiation_statuses.push_back(
+        TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_PREFS);
+    decision->ranker_events.push_back(
+        metrics::TranslateEventProto::DISABLED_BY_PREF);
+  }
+
+  // Don't translate similar languages (ex: en-US to en).
+  if (page_language_code == target_lang) {
+    // This doesn't prevent *all* possible translate outcomes because some could
+    // use a different target language, making this condition only relevant to
+    // regular auto-translate/show UI.
+    decision->PreventAutoTranslate();
+    decision->PreventShowingUI();
+    decision->initiation_statuses.push_back(
+        TranslateBrowserMetrics::INITIATION_STATUS_SIMILAR_LANGUAGES);
+  }
+
+  // Nothing to do if either the language Chrome is in or the language of
+  // the page is not supported by the translation server.
+  if (target_lang.empty() ||
+      !TranslateDownloadManager::IsSupportedLanguage(page_language_code)) {
+    // This doesn't prevent *all* possible translate outcomes because some could
+    // use a different target language, making this condition only relevant to
+    // regular auto-translate/show UI.
+    decision->PreventAutoTranslate();
+    decision->PreventShowingUI();
+    decision->initiation_statuses.push_back(
+        TranslateBrowserMetrics::INITIATION_STATUS_LANGUAGE_IS_NOT_SUPPORTED);
+    decision->ranker_events.push_back(
+        metrics::TranslateEventProto::UNSUPPORTED_LANGUAGE);
+  }
+}
+
+void TranslateManager::FilterAutoTranslate(
+    TranslateTriggerDecision* decision,
+    TranslatePrefs* translate_prefs,
+    const std::string& page_language_code) {
+  // Determine whether auto-translate is required, and if so for which target
+  // language.
+  std::string always_translate_target =
+      GetAutoTargetLanguage(page_language_code, translate_prefs);
+  std::string link_auto_translate_target = language_state_.AutoTranslateTo();
+  if (!translate_driver_->IsIncognito() && !always_translate_target.empty()) {
+    // If the user has previously selected "always translate" for this language
+    // we automatically translate.  Note that in incognito mode we disable that
+    // feature; the user will get an infobar, so they can control whether the
+    // page's text is sent to the translate server.
+    decision->auto_translate_target = always_translate_target;
+    decision->initiation_statuses.push_back(
+        TranslateBrowserMetrics::INITIATION_STATUS_AUTO_BY_CONFIG);
+    decision->ranker_events.push_back(
+        metrics::TranslateEventProto::AUTO_TRANSLATION_BY_PREF);
+  } else if (!link_auto_translate_target.empty()) {
+    // This page was navigated through a click from a translated page.
+    decision->auto_translate_target = link_auto_translate_target;
+    decision->initiation_statuses.push_back(
+        TranslateBrowserMetrics::INITIATION_STATUS_AUTO_BY_LINK);
+    decision->ranker_events.push_back(
+        metrics::TranslateEventProto::AUTO_TRANSLATION_BY_LINK);
+  }
+
+  if (decision->auto_translate_target.empty()) {
+    decision->PreventAutoTranslate();
+  }
+}
+
+void TranslateManager::FilterForUserPrefs(
+    TranslateTriggerDecision* decision,
+    TranslatePrefs* translate_prefs,
+    const std::string& page_language_code) {
+  TranslateAcceptLanguages* accept_languages =
+      translate_client_->GetTranslateAcceptLanguages();
+  // Don't translate any user black-listed languages.
+  if (!translate_prefs->CanTranslateLanguage(accept_languages,
+                                             page_language_code)) {
+    decision->PreventAllTriggering();
+    decision->initiation_statuses.push_back(
+        TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_CONFIG);
+    decision->ranker_events.push_back(
+        metrics::TranslateEventProto::LANGUAGE_DISABLED_BY_USER_CONFIG);
+  }
+
+  // Don't translate any user black-listed URLs.
+  const GURL& page_url = translate_driver_->GetVisibleURL();
+  if (translate_prefs->IsSiteBlacklisted(page_url.HostNoBrackets())) {
+    decision->PreventAllTriggering();
+    decision->initiation_statuses.push_back(
+        TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_CONFIG);
+    decision->ranker_events.push_back(
+        metrics::TranslateEventProto::URL_DISABLED_BY_USER_CONFIG);
+  }
+}
+
+void TranslateManager::MaybeShowOmniboxIcon(
+    const TranslateTriggerDecision& decision) {
+  if (decision.IsTriggeringPossible()) {
+    // Show the omnibox icon if any translate trigger is possible.
+    language_state_.SetTranslateEnabled(true);
+    TranslateBrowserMetrics::ReportInitiationStatus(
+        TranslateBrowserMetrics::INITIATION_STATUS_SHOW_ICON);
+  }
+}
+
+bool TranslateManager::MaterializeDecision(
+    const TranslateTriggerDecision& decision,
+    TranslatePrefs* translate_prefs,
+    const std::string& page_language_code,
+    const std::string target_lang) {
+  // Auto-translating always happens if it's still possible here.
+  if (decision.can_auto_translate()) {
+    TranslatePage(page_language_code, decision.auto_translate_target, false);
+    return false;
+  }
+
+  // Auto-translate didn't happen, so check if the UI should be shown. It must
+  // not be suppressed by preference, system state, or the Ranker.
+
+  // Will be true if we've decided to show the infobar/bubble UI to the user.
+  bool did_show_ui = false;
+  if (decision.ShouldShowUI()) {
+    // If the source language matches the UI language, it means the translation
+    // prompt is being forced by an experiment. Report this so the count of how
+    // often it happens can be tracked to suppress the experiment as necessary.
+    if (page_language_code ==
+        TranslateDownloadManager::GetLanguageCode(
+            TranslateDownloadManager::GetInstance()->application_locale())) {
+      translate_prefs->ReportForceTriggerOnEnglishPages();
+    }
+
+    // Prompts the user if they want the page translated.
+    did_show_ui = translate_client_->ShowTranslateUI(
+        translate::TRANSLATE_STEP_BEFORE_TRANSLATE, page_language_code,
+        target_lang, TranslateErrors::NONE, false);
+  }
+
+  return did_show_ui;
+}
+
+void TranslateManager::RecordDecisionMetrics(
+    const TranslateTriggerDecision& decision,
+    const std::string& page_language_code,
+    bool ui_shown) {
+  // If the chosen outcome is to show the UI or let it be suppressed, log a few
+  // explicit things.
+  if (!decision.can_auto_translate() && decision.can_show_ui()) {
+    // By getting here it's expected that nothing caused the translation to
+    // be aborted or happen automatically. Because of that,
+    // |decision.initiation_statuses| should be empty.
+    DCHECK(decision.initiation_statuses.empty());
+
+    if (decision.should_suppress_from_ranker() || !ui_shown) {
+      TranslateBrowserMetrics::ReportInitiationStatus(
+          TranslateBrowserMetrics::INITIATION_STATUS_SUPPRESS_INFOBAR);
+    }
+
+    // If the UI was suppressed, log the suppression source.
+    if (decision.should_suppress_from_ranker()) {
+      TranslateBrowserMetrics::ReportInitiationStatus(
+          TranslateBrowserMetrics::INITIATION_STATUS_ABORTED_BY_RANKER);
+    } else {
+      // Always log INITIATION_STATUS_SHOW_INFOBAR regardless of whether it's
+      // being subsequently suppressed or not. It's a measure of how often a
+      // decision is taken to show it, and other metrics track *actual*
+      // instances of it being shown.
+      TranslateBrowserMetrics::ReportInitiationStatus(
+          TranslateBrowserMetrics::INITIATION_STATUS_SHOW_INFOBAR);
+    }
+
+    // There's nothing else to log if the UI was shown.
+    return;
+  }
+
+  // To match previous behavior, this function will log the first initiation
+  // status that was recorded in the vector. This ensures that the histograms
+  // reflect which conditions were met first to either trigger or prevent
+  // translate triggering.
+  if (!decision.initiation_statuses.empty()) {
+    auto status = decision.initiation_statuses[0];
+    TranslateBrowserMetrics::ReportInitiationStatus(status);
+
+    // The following metrics are logged alongside extra info.
+    if (status ==
+        TranslateBrowserMetrics::INITIATION_STATUS_LANGUAGE_IS_NOT_SUPPORTED) {
+      TranslateBrowserMetrics::ReportUnsupportedLanguageAtInitiation(
+          page_language_code);
+    }
+
+    if (status ==
+        TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_PREFS) {
+      const std::string& locale =
+          TranslateDownloadManager::GetInstance()->application_locale();
+      TranslateBrowserMetrics::ReportLocalesOnDisabledByPrefs(locale);
+    }
+  }
+}
+
+void TranslateManager::RecordDecisionRankerEvent(
+    const TranslateTriggerDecision& decision,
+    TranslatePrefs* translate_prefs,
+    const std::string& page_language_code,
+    const std::string& target_lang) {
+  if (!decision.auto_translate_target.empty()) {
+    translate_event_->set_modified_target_language(
+        decision.auto_translate_target);
+  }
+
+  if (!decision.ranker_events.empty()) {
+    auto event = decision.ranker_events[0];
+    RecordTranslateEvent(event);
+  }
+
+  // Finally, if the decision was to show UI and ranker suppressed it, log that.
+  if (!decision.can_auto_translate() && decision.can_show_ui() &&
+      decision.should_suppress_from_ranker()) {
+    RecordTranslateEvent(metrics::TranslateEventProto::DISABLED_BY_RANKER);
   }
 }
 
