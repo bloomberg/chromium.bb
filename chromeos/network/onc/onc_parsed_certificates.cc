@@ -255,9 +255,11 @@ bool OncParsedCertificates::ParseClientCertificate(
     return false;
   }
 
+  std::string base64_pkcs12_data;
+  base::RemoveChars(base64_pkcs12_data_key->GetString(), "\n",
+                    &base64_pkcs12_data);
   std::string pkcs12_data;
-  base::RemoveChars(base64_pkcs12_data_key->GetString(), "\n", &pkcs12_data);
-  if (!base::Base64Decode(pkcs12_data, &pkcs12_data)) {
+  if (!base::Base64Decode(base64_pkcs12_data, &pkcs12_data)) {
     LOG(ERROR) << "Unable to base64 decode PKCS#12 data: \""
                << base64_pkcs12_data_key->GetString() << "\".";
     return false;
