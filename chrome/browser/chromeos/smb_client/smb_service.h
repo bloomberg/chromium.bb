@@ -128,6 +128,16 @@ class SmbService : public KeyedService,
   void OnRemountResponse(const std::string& file_system_id,
                          smbprovider::ErrorType error);
 
+  // Calls SmbProviderClient::Premount(). |temp_file_manager_| must be
+  // initialized before this is called.
+  void Premount(const base::FilePath& share_path);
+
+  // Handles the response from attempting to premount a share configured via
+  // policy. If premounting fails it will log and exit the operation.
+  void OnPremountResponse(const base::FilePath& share_path,
+                          smbprovider::ErrorType error,
+                          int32_t mount_id);
+
   // Sets up SmbService, including setting up Keberos if the user is ChromAD.
   void StartSetup();
 
