@@ -38,9 +38,6 @@ public class SameActivityWebappSplashDelegate implements WebappSplashDelegate {
     /** Whether native was loaded. Native must be loaded in order to record metrics. */
     private boolean mNativeLoaded;
 
-    /** Whether the splash screen layout was initialized. */
-    private boolean mInitializedLayout;
-
     private SameActivityWebappUmaCache mUmaCache;
 
     private WebApkOfflineDialog mOfflineDialog;
@@ -73,7 +70,6 @@ public class SameActivityWebappSplashDelegate implements WebappSplashDelegate {
     @Override
     public void showSplash(ViewGroup parentView, WebappInfo webappInfo) {
         mParentView = parentView;
-        mUmaCache = new SameActivityWebappUmaCache();
         mIsSplashVisible = true;
 
         Context context = ContextUtils.getApplicationContext();
@@ -108,7 +104,7 @@ public class SameActivityWebappSplashDelegate implements WebappSplashDelegate {
     @Override
     public void onNativeLoaded() {
         mNativeLoaded = true;
-        if (mInitializedLayout) mUmaCache.commitMetrics();
+        if (mUmaCache != null) mUmaCache.commitMetrics();
     }
 
     @Override
@@ -157,7 +153,6 @@ public class SameActivityWebappSplashDelegate implements WebappSplashDelegate {
 
     /** Sets the splash screen layout and sets the splash screen's title and icon. */
     private void initializeLayout(WebappInfo webappInfo, int backgroundColor, Bitmap splashImage) {
-        mInitializedLayout = true;
         Context context = ContextUtils.getApplicationContext();
         Resources resources = context.getResources();
 
@@ -193,6 +188,7 @@ public class SameActivityWebappSplashDelegate implements WebappSplashDelegate {
     private void recordUma(Resources resources, WebappInfo webappInfo,
             @SplashLayout.IconClassification int selectedIconClassification, Bitmap selectedIcon,
             boolean usingDedicatedIcon) {
+        mUmaCache = new SameActivityWebappUmaCache();
         mUmaCache.recordSplashscreenBackgroundColor(webappInfo.hasValidBackgroundColor()
                         ? SameActivityWebappUmaCache.SplashColorStatus.CUSTOM
                         : SameActivityWebappUmaCache.SplashColorStatus.DEFAULT);
