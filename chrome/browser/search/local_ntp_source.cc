@@ -1281,7 +1281,7 @@ void LocalNtpSource::MaybeServeSearchSuggestions(
   }
 
   SearchSuggestData suggest_data = *data;
-  search_suggest_service_->ClearSearchSuggestData();
+  search_suggest_service_->SuggestionsDisplayed();
   scoped_refptr<base::RefCountedString> result;
   std::string js;
   base::JSONWriter::Write(*ConvertSearchSuggestDataToDict(suggest_data), &js);

@@ -24,6 +24,11 @@ struct SearchSuggestData {
   // Javascript for search suggestion that should be appended at the end of the
   // New Tab Page <body>.
   std::string end_of_body_script;
+
+  // Parameters that control impression capping and freezing.
+  int impression_cap_expire_time_ms;
+  int request_freeze_time_ms;
+  int max_impressions;
 };
 
 bool operator==(const SearchSuggestData& lhs, const SearchSuggestData& rhs);
