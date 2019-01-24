@@ -31,7 +31,7 @@ class GeneralLossAlgorithmTest : public QuicTest {
 
   ~GeneralLossAlgorithmTest() override {}
 
-  void SendDataPacket(QuicPacketNumber packet_number) {
+  void SendDataPacket(uint64_t packet_number) {
     QuicStreamFrame frame;
     frame.stream_id = QuicUtils::GetHeadersStreamId(
         CurrentSupportedVersions()[0].transport_version);
@@ -49,9 +49,9 @@ class GeneralLossAlgorithmTest : public QuicTest {
                                    false);
   }
 
-  void VerifyLosses(QuicPacketNumber largest_newly_acked,
+  void VerifyLosses(uint64_t largest_newly_acked,
                     const AckedPacketVector& packets_acked,
-                    const std::vector<QuicPacketNumber>& losses_expected) {
+                    const std::vector<uint64_t>& losses_expected) {
     if (largest_newly_acked > unacked_packets_.largest_acked()) {
       unacked_packets_.IncreaseLargestAcked(largest_newly_acked);
     }

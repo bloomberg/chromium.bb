@@ -66,6 +66,12 @@ class QUIC_EXPORT_PRIVATE HttpEncoder {
   QuicByteCount SerializeMaxPushIdFrame(const MaxPushIdFrame& max_push_id,
                                         std::unique_ptr<char[]>* output);
 
+  // Serialize a DUPLICATE_PUSH frame into a new buffer stored in |output|.
+  // Returns the length of the buffer on success, or 0 otherwise.
+  QuicByteCount SerializeDuplicatePushFrame(
+      const DuplicatePushFrame& duplicate_push,
+      std::unique_ptr<char[]>* output);
+
  private:
   bool WriteFrameHeader(QuicByteCount length,
                         HttpFrameType type,

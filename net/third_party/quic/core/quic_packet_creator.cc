@@ -52,7 +52,12 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
       connection_id_length_(PACKET_8BYTE_CONNECTION_ID),
       packet_size_(0),
       connection_id_(connection_id),
-      packet_(0, PACKET_1BYTE_PACKET_NUMBER, nullptr, 0, false, false),
+      packet_(kInvalidPacketNumber,
+              PACKET_1BYTE_PACKET_NUMBER,
+              nullptr,
+              0,
+              false,
+              false),
       long_header_type_(HANDSHAKE),
       pending_padding_bytes_(0),
       needs_full_padding_(false),
@@ -123,7 +128,7 @@ void QuicPacketCreator::UpdatePacketNumberLength(
   }
 
   DCHECK_LE(least_packet_awaited_by_peer, packet_.packet_number + 1);
-  const QuicPacketNumber current_delta =
+  const uint64_t current_delta =
       packet_.packet_number + 1 - least_packet_awaited_by_peer;
   const uint64_t delta = std::max(current_delta, max_packets_in_flight);
   packet_.packet_number_length = QuicFramer::GetMinPacketNumberLength(
@@ -658,8 +663,8 @@ QuicPacketCreator::SerializePathResponseConnectivityProbingPacket(
 
 // TODO(b/74062209): Make this a public method of framer?
 SerializedPacket QuicPacketCreator::NoPacket() {
-  return SerializedPacket(0, PACKET_1BYTE_PACKET_NUMBER, nullptr, 0, false,
-                          false);
+  return SerializedPacket(kInvalidPacketNumber, PACKET_1BYTE_PACKET_NUMBER,
+                          nullptr, 0, false, false);
 }
 
 QuicConnectionIdLength QuicPacketCreator::GetDestinationConnectionIdLength()
@@ -702,7 +707,12 @@ void QuicPacketCreator::FillPacketHeader(QuicPacketHeader* header) {
   } else {
     header->nonce = nullptr;
   }
-  header->packet_number = ++packet_.packet_number;
+  if (packet_.packet_number == kInvalidPacketNumber) {
+    packet_.packet_number = kFirstSendingPacketNumber;
+  } else {
+    ++packet_.packet_number;
+  }
+  header->packet_number = packet_.packet_number;
   header->packet_number_length = GetPacketNumberLength();
   if (!HasIetfLongHeader()) {
     return;

@@ -13,11 +13,11 @@ namespace quic {
 namespace test {
 
 // static
-QuicPacketNumber QuicFramerPeer::CalculatePacketNumberFromWire(
+uint64_t QuicFramerPeer::CalculatePacketNumberFromWire(
     QuicFramer* framer,
     QuicPacketNumberLength packet_number_length,
     QuicPacketNumber last_packet_number,
-    QuicPacketNumber packet_number) {
+    uint64_t packet_number) {
   return framer->CalculatePacketNumberFromWire(
       packet_number_length, last_packet_number, packet_number);
 }

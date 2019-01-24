@@ -792,6 +792,20 @@ class QUIC_EXPORT_PRIVATE QuicConnection
     fill_up_link_during_probing_ = new_value;
   }
 
+  // This setting may be changed during the crypto handshake in order to
+  // enable/disable padding of different packets in the crypto handshake.
+  //
+  // This setting should never be set to false in public facing endpoints. It
+  // can only be set to false if there is some other mechanism of preventing
+  // amplification attacks, such as ICE (plus its a non-standard quic).
+  void set_fully_pad_crypto_hadshake_packets(bool new_value) {
+    packet_generator_.set_fully_pad_crypto_hadshake_packets(new_value);
+  }
+
+  bool fully_pad_during_crypto_handshake() const {
+    return packet_generator_.fully_pad_crypto_handshake_packets();
+  }
+
   size_t min_received_before_ack_decimation() const {
     return min_received_before_ack_decimation_;
   }

@@ -110,7 +110,7 @@ class TcpCubicSenderBytesTest : public QuicTest {
   }
 
   // Does not increment acked_packet_number_.
-  void LosePacket(QuicPacketNumber packet_number) {
+  void LosePacket(uint64_t packet_number) {
     AckedPacketVector acked_packets;
     LostPacketVector lost_packets;
     lost_packets.push_back(LostPacket(packet_number, kDefaultTCPMSS));
@@ -123,7 +123,7 @@ class TcpCubicSenderBytesTest : public QuicTest {
   MockClock clock_;
   std::unique_ptr<TcpCubicSenderBytesPeer> sender_;
   QuicPacketNumber packet_number_;
-  QuicPacketNumber acked_packet_number_;
+  uint64_t acked_packet_number_;
   QuicByteCount bytes_in_flight_;
 };
 

@@ -268,7 +268,7 @@ class QuicDispatcherTest : public QuicTest {
                      const QuicString& data,
                      QuicConnectionIdLength connection_id_length,
                      QuicPacketNumberLength packet_number_length,
-                     QuicPacketNumber packet_number) {
+                     uint64_t packet_number) {
     ProcessPacket(peer_address, connection_id, has_version_flag,
                   CurrentSupportedVersions().front(), data,
                   connection_id_length, packet_number_length, packet_number);
@@ -282,7 +282,7 @@ class QuicDispatcherTest : public QuicTest {
                      const QuicString& data,
                      QuicConnectionIdLength connection_id_length,
                      QuicPacketNumberLength packet_number_length,
-                     QuicPacketNumber packet_number) {
+                     uint64_t packet_number) {
     ParsedQuicVersionVector versions(SupportedVersions(version));
     std::unique_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
         connection_id, EmptyQuicConnectionId(), has_version_flag, false,

@@ -29,7 +29,7 @@ QuicUnackedPacketMap::QuicUnackedPacketMap()
       largest_sent_retransmittable_packet_(0),
       largest_sent_largest_acked_(0),
       largest_acked_(0),
-      least_unacked_(1),
+      least_unacked_(kFirstSendingPacketNumber),
       bytes_in_flight_(0),
       pending_crypto_packet_count_(0),
       last_crypto_packet_sent_time_(QuicTime::Zero()),

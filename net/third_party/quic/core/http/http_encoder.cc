@@ -225,6 +225,24 @@ QuicByteCount HttpEncoder::SerializeMaxPushIdFrame(
   return 0;
 }
 
+QuicByteCount HttpEncoder::SerializeDuplicatePushFrame(
+    const DuplicatePushFrame& duplicate_push,
+    std::unique_ptr<char[]>* output) {
+  QuicByteCount payload_length =
+      QuicDataWriter::GetVarInt62Len(duplicate_push.push_id);
+  QuicByteCount total_length = GetTotalLength(payload_length);
+
+  output->reset(new char[total_length]);
+  QuicDataWriter writer(total_length, output->get(), NETWORK_BYTE_ORDER);
+
+  if (WriteFrameHeader(payload_length, HttpFrameType::DUPLICATE_PUSH,
+                       &writer) &&
+      writer.WriteVarInt62(duplicate_push.push_id)) {
+    return total_length;
+  }
+  return 0;
+}
+
 bool HttpEncoder::WriteFrameHeader(QuicByteCount length,
                                    HttpFrameType type,
                                    QuicDataWriter* writer) {

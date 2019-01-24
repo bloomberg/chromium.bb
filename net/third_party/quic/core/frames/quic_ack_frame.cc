@@ -12,12 +12,13 @@
 namespace quic {
 
 namespace {
-const QuicPacketNumber kMaxPrintRange = 128;
+const QuicPacketCount kMaxPrintRange = 128;
 }  // namespace
 
 bool IsAwaitingPacket(const QuicAckFrame& ack_frame,
                       QuicPacketNumber packet_number,
                       QuicPacketNumber peer_least_packet_awaiting_ack) {
+  DCHECK_NE(kInvalidPacketNumber, packet_number);
   return packet_number >= peer_least_packet_awaiting_ack &&
          !ack_frame.packets.Contains(packet_number);
 }
@@ -73,6 +74,9 @@ PacketNumberQueue& PacketNumberQueue::operator=(PacketNumberQueue&& other) =
     default;
 
 void PacketNumberQueue::Add(QuicPacketNumber packet_number) {
+  if (packet_number == kInvalidPacketNumber) {
+    return;
+  }
   // Check if the deque is empty
   if (packet_number_deque_.empty()) {
     packet_number_deque_.push_front(
@@ -148,7 +152,8 @@ void PacketNumberQueue::Add(QuicPacketNumber packet_number) {
 
 void PacketNumberQueue::AddRange(QuicPacketNumber lower,
                                  QuicPacketNumber higher) {
-  if (lower >= higher) {
+  if (lower == kInvalidPacketNumber || higher == kInvalidPacketNumber ||
+      lower >= higher) {
     return;
   }
   if (packet_number_deque_.empty()) {
@@ -187,7 +192,7 @@ void PacketNumberQueue::AddRange(QuicPacketNumber lower,
 }
 
 bool PacketNumberQueue::RemoveUpTo(QuicPacketNumber higher) {
-  if (Empty()) {
+  if (higher == kInvalidPacketNumber || Empty()) {
     return false;
   }
   const QuicPacketNumber old_min = Min();
@@ -221,7 +226,7 @@ void PacketNumberQueue::Clear() {
 }
 
 bool PacketNumberQueue::Contains(QuicPacketNumber packet_number) const {
-  if (packet_number_deque_.empty()) {
+  if (packet_number == kInvalidPacketNumber || packet_number_deque_.empty()) {
     return false;
   }
   if (packet_number_deque_.front().min() > packet_number ||
@@ -278,7 +283,7 @@ PacketNumberQueue::const_reverse_iterator PacketNumberQueue::rend() const {
   return packet_number_deque_.rend();
 }
 
-QuicPacketNumber PacketNumberQueue::LastIntervalLength() const {
+QuicPacketCount PacketNumberQueue::LastIntervalLength() const {
   DCHECK(!Empty());
   return packet_number_deque_.back().Length();
 }

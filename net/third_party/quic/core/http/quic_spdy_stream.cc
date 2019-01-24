@@ -59,6 +59,10 @@ class QuicSpdyStream::HttpDecoderVisitor : public HttpDecoder::Visitor {
     CloseConnectionOnWrongFrame("Settings");
   }
 
+  void OnDuplicatePushFrame(const DuplicatePushFrame& frame) override {
+    CloseConnectionOnWrongFrame("Duplicate Push");
+  }
+
   void OnDataFrameStart(Http3FrameLengths frame_lengths) override {
     stream_->OnDataFrameStart(frame_lengths);
   }

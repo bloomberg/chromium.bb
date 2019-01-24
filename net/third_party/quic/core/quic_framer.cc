@@ -130,7 +130,7 @@ const uint8_t kDestinationConnectionIdLengthMask = 0xF0;
 const uint8_t kSourceConnectionIdLengthMask = 0x0F;
 
 // Returns the absolute value of the difference between |a| and |b|.
-QuicPacketNumber Delta(QuicPacketNumber a, QuicPacketNumber b) {
+uint64_t Delta(uint64_t a, uint64_t b) {
   // Since these are unsigned numbers, we can't just return abs(a - b)
   if (a < b) {
     return b - a;
@@ -138,9 +138,7 @@ QuicPacketNumber Delta(QuicPacketNumber a, QuicPacketNumber b) {
   return a - b;
 }
 
-QuicPacketNumber ClosestTo(QuicPacketNumber target,
-                           QuicPacketNumber a,
-                           QuicPacketNumber b) {
+uint64_t ClosestTo(uint64_t target, uint64_t a, uint64_t b) {
   return (Delta(target, a) < Delta(target, b)) ? a : b;
 }
 
@@ -331,7 +329,7 @@ QuicFramer::QuicFramer(const ParsedQuicVersionVector& supported_versions,
                        Perspective perspective)
     : visitor_(nullptr),
       error_(QUIC_NO_ERROR),
-      largest_packet_number_(0),
+      largest_packet_number_(kInvalidPacketNumber),
       last_serialized_connection_id_(EmptyQuicConnectionId()),
       last_version_label_(0),
       last_header_form_(GOOGLE_QUIC_PACKET),
@@ -1055,10 +1053,30 @@ size_t QuicFramer::BuildIetfDataPacket(const QuicPacketHeader& header,
   return writer.length();
 }
 
+size_t QuicFramer::BuildIetfConnectivityProbingPacket(
+    const QuicPacketHeader& header,
+    char* buffer,
+    size_t packet_length) {
+  QuicFrames frames;
+
+  // Write a PING frame, which has no data payload.
+  QuicPingFrame ping_frame;
+  frames.push_back(QuicFrame(ping_frame));
+
+  // Add padding to the rest of the packet.
+  QuicPaddingFrame padding_frame;
+  frames.push_back(QuicFrame(padding_frame));
+
+  return BuildIetfDataPacket(header, frames, buffer, packet_length);
+}
+
 size_t QuicFramer::BuildConnectivityProbingPacket(
     const QuicPacketHeader& header,
     char* buffer,
     size_t packet_length) {
+  if (version_.transport_version == QUIC_VERSION_99) {
+    return BuildIetfConnectivityProbingPacket(header, buffer, packet_length);
+  }
   QuicDataWriter writer(packet_length, buffer, endianness());
 
   if (!AppendPacketHeader(header, &writer)) {
@@ -1093,47 +1111,25 @@ size_t QuicFramer::BuildPaddedPathChallengePacket(
     size_t packet_length,
     QuicPathFrameBuffer* payload,
     QuicRandom* randomizer) {
-  QuicDataWriter writer(packet_length, buffer, endianness());
-  DCHECK_EQ(version_.transport_version, QUIC_VERSION_99)
-      << "Attempt to build a PATH_CHALLENGE Connectivity Probing packet and "
-         "not doing IETF QUIC";
-
-  if (!AppendPacketHeader(header, &writer)) {
-    QUIC_BUG << "AppendPacketHeader failed";
+  if (version_.transport_version != QUIC_VERSION_99) {
+    QUIC_BUG << "Attempt to build a PATH_CHALLENGE Connectivity Probing "
+                "packet and not doing IETF QUIC";
     return 0;
   }
+  QuicFrames frames;
 
   // Write a PATH_CHALLENGE frame, which has a random 8-byte payload
   randomizer->RandBytes(payload->data(), payload->size());
 
   QuicPathChallengeFrame path_challenge_frame(0, *payload);
-  if (!AppendTypeByte(QuicFrame(&path_challenge_frame),
-                      /* last_frame_in_packet = */ false, &writer)) {
-    QUIC_BUG
-        << "AppendTypeByte failed for PATH_CHALLENGE frame in probing packet";
-    return 0;
-  }
-
-  if (!AppendPathChallengeFrame(path_challenge_frame, &writer)) {
-    QUIC_BUG << "AppendPathChallengeFrame failed for PATH_CHALLENGE frame in "
-                "probing packet";
-    return 0;
-  }
+  frames.push_back(QuicFrame(&path_challenge_frame));
 
   // Add padding to the rest of the packet in order to assess Path MTU
   // characteristics.
   QuicPaddingFrame padding_frame;
-  if (!AppendTypeByte(QuicFrame(padding_frame), true, &writer)) {
-    QUIC_BUG << "AppendTypeByte failed for padding frame in probing packet";
-    return 0;
-  }
-  if (!AppendPaddingFrame(padding_frame, &writer)) {
-    QUIC_BUG << "AppendPaddingFrame of " << padding_frame.num_padding_bytes
-             << " failed";
-    return 0;
-  }
+  frames.push_back(QuicFrame(padding_frame));
 
-  return writer.length();
+  return BuildIetfDataPacket(header, frames, buffer, packet_length);
 }
 
 size_t QuicFramer::BuildPathResponsePacket(
@@ -1147,53 +1143,33 @@ size_t QuicFramer::BuildPathResponsePacket(
         << "Attempt to generate connectivity response with no request payloads";
     return 0;
   }
-
-  QuicDataWriter writer(packet_length, buffer, endianness());
-
-  DCHECK_EQ(version_.transport_version, QUIC_VERSION_99)
-      << "Attempt to build a PATH_RESPONSE Connectivity Probing packet and "
-         "not doing IETF QUIC";
-
-  if (!AppendPacketHeader(header, &writer)) {
-    QUIC_BUG << "AppendPacketHeader failed";
+  if (version_.transport_version != QUIC_VERSION_99) {
+    QUIC_BUG << "Attempt to build a PATH_RESPONSE Connectivity Probing "
+                "packet and not doing IETF QUIC";
     return 0;
   }
 
-  // Write a set of PATH_RESPONSE frames to a single packet, each with the
-  // 8-byte payload of the corresponding PATH_REQUEST frame from a single
-  // received packet.
+  std::vector<std::unique_ptr<QuicPathResponseFrame>> path_response_frames;
   for (const QuicPathFrameBuffer& payload : payloads) {
     // Note that the control frame ID can be 0 since this is not retransmitted.
-    QuicPathResponseFrame path_response_frame(0, payload);
+    path_response_frames.push_back(
+        QuicMakeUnique<QuicPathResponseFrame>(0, payload));
+  }
 
-    if (!AppendTypeByte(QuicFrame(&path_response_frame), false, &writer)) {
-      QUIC_BUG
-          << "AppendTypeByte failed for PATH_RESPONSE frame in probing packet";
-      return 0;
-    }
-
-    if (!AppendPathResponseFrame(path_response_frame, &writer)) {
-      QUIC_BUG << "AppendPathChallengeFrame failed for PATH_CHALLENGE frame in "
-                  "probing packet";
-      return 0;
-    }
+  QuicFrames frames;
+  for (const std::unique_ptr<QuicPathResponseFrame>& path_response_frame :
+       path_response_frames) {
+    frames.push_back(QuicFrame(path_response_frame.get()));
   }
 
   if (is_padded) {
     // Add padding to the rest of the packet in order to assess Path MTU
     // characteristics.
     QuicPaddingFrame padding_frame;
-    if (!AppendTypeByte(QuicFrame(padding_frame), true, &writer)) {
-      QUIC_BUG << "AppendTypeByte failed for padding frame in probing packet";
-      return 0;
-    }
-    if (!AppendPaddingFrame(padding_frame, &writer)) {
-      QUIC_BUG << "AppendPaddingFrame of " << padding_frame.num_padding_bytes
-               << " failed";
-      return 0;
-    }
+    frames.push_back(QuicFrame(padding_frame));
   }
-  return writer.length();
+
+  return BuildIetfDataPacket(header, frames, buffer, packet_length);
 }
 
 // static
@@ -1493,15 +1469,15 @@ bool QuicFramer::ProcessIetfDataPacket(QuicDataReader* encrypted_reader,
       header->long_packet_type != VERSION_NEGOTIATION) {
     // Process packet number.
     QuicPacketNumber base_packet_number = largest_packet_number_;
-
+    uint64_t full_packet_number;
     if (!ProcessAndCalculatePacketNumber(
             encrypted_reader, header->packet_number_length, base_packet_number,
-            &header->packet_number)) {
+            &full_packet_number)) {
       set_detailed_error("Unable to read packet number.");
       return RaiseError(QUIC_INVALID_PACKET_HEADER);
     }
 
-    if (header->packet_number == kInvalidPacketNumber) {
+    if (full_packet_number == kInvalidPacketNumber) {
       if (IsIetfStatelessResetPacket(*header)) {
         // This is a stateless reset packet.
         QuicIetfStatelessResetPacket packet(
@@ -1512,6 +1488,7 @@ bool QuicFramer::ProcessIetfDataPacket(QuicDataReader* encrypted_reader,
       set_detailed_error("packet numbers cannot be 0.");
       return RaiseError(QUIC_INVALID_PACKET_HEADER);
     }
+    header->packet_number = full_packet_number;
   }
 
   // A nonce should only present in SHLO from the server to the client when
@@ -1880,10 +1857,10 @@ const QuicTime::Delta QuicFramer::CalculateTimestampFromWire(
   return QuicTime::Delta::FromMicroseconds(time);
 }
 
-QuicPacketNumber QuicFramer::CalculatePacketNumberFromWire(
+uint64_t QuicFramer::CalculatePacketNumberFromWire(
     QuicPacketNumberLength packet_number_length,
     QuicPacketNumber base_packet_number,
-    QuicPacketNumber packet_number) const {
+    uint64_t packet_number) const {
   // The new packet number might have wrapped to the next epoch, or
   // it might have reverse wrapped to the previous epoch, or it might
   // remain in the same epoch.  Select the packet number closest to the
@@ -1892,12 +1869,14 @@ QuicPacketNumber QuicFramer::CalculatePacketNumberFromWire(
   // epoch_delta is the delta between epochs the packet number was serialized
   // with, so the correct value is likely the same epoch as the last sequence
   // number or an adjacent epoch.
-  const QuicPacketNumber epoch_delta = UINT64_C(1)
-                                       << (8 * packet_number_length);
-  QuicPacketNumber next_packet_number = base_packet_number + 1;
-  QuicPacketNumber epoch = base_packet_number & ~(epoch_delta - 1);
-  QuicPacketNumber prev_epoch = epoch - epoch_delta;
-  QuicPacketNumber next_epoch = epoch + epoch_delta;
+  if (base_packet_number == kInvalidPacketNumber) {
+    return packet_number;
+  }
+  const uint64_t epoch_delta = UINT64_C(1) << (8 * packet_number_length);
+  uint64_t next_packet_number = base_packet_number + 1;
+  uint64_t epoch = base_packet_number & ~(epoch_delta - 1);
+  uint64_t prev_epoch = epoch - epoch_delta;
+  uint64_t next_epoch = epoch + epoch_delta;
 
   return ClosestTo(next_packet_number, epoch + packet_number,
                    ClosestTo(next_packet_number, prev_epoch + packet_number,
@@ -2048,7 +2027,7 @@ QuicFramer::AckFrameInfo QuicFramer::GetAckFrameInfo(
          new_ack_info.num_ack_blocks < std::numeric_limits<uint8_t>::max();
        previous_start = itr->min(), ++itr) {
     const auto& interval = *itr;
-    const QuicPacketNumber total_gap = previous_start - interval.max();
+    const QuicPacketCount total_gap = previous_start - interval.max();
     new_ack_info.num_ack_blocks +=
         (total_gap + std::numeric_limits<uint8_t>::max() - 1) /
         std::numeric_limits<uint8_t>::max();
@@ -2061,18 +2040,19 @@ QuicFramer::AckFrameInfo QuicFramer::GetAckFrameInfo(
 bool QuicFramer::ProcessUnauthenticatedHeader(QuicDataReader* encrypted_reader,
                                               QuicPacketHeader* header) {
   QuicPacketNumber base_packet_number = largest_packet_number_;
-
+  uint64_t full_packet_number;
   if (!ProcessAndCalculatePacketNumber(
           encrypted_reader, header->packet_number_length, base_packet_number,
-          &header->packet_number)) {
+          &full_packet_number)) {
     set_detailed_error("Unable to read packet number.");
     return RaiseError(QUIC_INVALID_PACKET_HEADER);
   }
 
-  if (header->packet_number == kInvalidPacketNumber) {
+  if (full_packet_number == kInvalidPacketNumber) {
     set_detailed_error("packet numbers cannot be 0.");
     return RaiseError(QUIC_INVALID_PACKET_HEADER);
   }
+  header->packet_number = full_packet_number;
 
   if (!visitor_->OnUnauthenticatedHeader(*header)) {
     set_detailed_error(
@@ -2228,8 +2208,8 @@ bool QuicFramer::ProcessAndCalculatePacketNumber(
     QuicDataReader* reader,
     QuicPacketNumberLength packet_number_length,
     QuicPacketNumber base_packet_number,
-    QuicPacketNumber* packet_number) {
-  QuicPacketNumber wire_packet_number;
+    uint64_t* packet_number) {
+  uint64_t wire_packet_number;
   if (!reader->ReadBytesToUInt64(packet_number_length, &wire_packet_number)) {
     return false;
   }
@@ -2906,9 +2886,17 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader, uint8_t frame_type) {
       ExtractBits(frame_type, kQuicSequenceNumberLengthNumBits,
                   kLargestAckedOffset));
 
-  QuicPacketNumber largest_acked;
+  uint64_t largest_acked;
   if (!reader->ReadBytesToUInt64(largest_acked_length, &largest_acked)) {
     set_detailed_error("Unable to read largest acked.");
+    return false;
+  }
+
+  if (GetQuicReloadableFlag(quic_disallow_peer_ack_0) && largest_acked == 0u) {
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_disallow_peer_ack_0, 1, 3);
+    // Connection always sends packet starting from kFirstSendingPacketNumber >
+    // 0, peer has observed an unsent packet.
+    set_detailed_error("Largest acked is 0.");
     return false;
   }
 
@@ -2943,6 +2931,8 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader, uint8_t frame_type) {
 
   if (first_block_length == 0) {
     // For non-empty ACKs, the first block length must be non-zero.
+    // TODO(fayang): remove this if and return false directly when deprecating
+    // quic_reloadable_flag_quic_disallow_peer_ack_0.
     if (largest_acked != 0 || num_ack_blocks != 0) {
       set_detailed_error(
           QuicStrCat("First block length is zero but ACK is "
@@ -2952,9 +2942,15 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader, uint8_t frame_type) {
               .c_str());
       return false;
     }
+    DCHECK(!GetQuicReloadableFlag(quic_disallow_peer_ack_0));
   }
-
-  if (first_block_length > largest_acked + 1) {
+  bool first_ack_block_underflow = first_block_length > largest_acked + 1;
+  if (GetQuicReloadableFlag(quic_disallow_peer_ack_0) &&
+      first_block_length == largest_acked + 1) {
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_disallow_peer_ack_0, 2, 3);
+    first_ack_block_underflow = true;
+  }
+  if (first_ack_block_underflow) {
     set_detailed_error(QuicStrCat("Underflow with first ack block length ",
                                   first_block_length, " largest acked is ",
                                   largest_acked, ".")
@@ -2983,7 +2979,13 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader, uint8_t frame_type) {
         set_detailed_error("Unable to ack block length.");
         return false;
       }
-      if (first_received < gap + current_block_length) {
+      bool ack_block_underflow = first_received < gap + current_block_length;
+      if (GetQuicReloadableFlag(quic_disallow_peer_ack_0) &&
+          first_received == gap + current_block_length) {
+        QUIC_RELOADABLE_FLAG_COUNT_N(quic_disallow_peer_ack_0, 3, 3);
+        ack_block_underflow = true;
+      }
+      if (ack_block_underflow) {
         set_detailed_error(
             QuicStrCat("Underflow with ack block length ", current_block_length,
                        ", end of block is ", first_received - gap, ".")
@@ -3073,9 +3075,15 @@ bool QuicFramer::ProcessTimestampsInAckFrame(uint8_t num_received_packets,
 bool QuicFramer::ProcessIetfAckFrame(QuicDataReader* reader,
                                      uint64_t frame_type,
                                      QuicAckFrame* ack_frame) {
-  QuicPacketNumber largest_acked;
+  uint64_t largest_acked;
   if (!reader->ReadVarInt62(&largest_acked)) {
     set_detailed_error("Unable to read largest acked.");
+    return false;
+  }
+  if (largest_acked == 0u) {
+    // Connection always sends packet starting from kFirstSendingPacketNumber >
+    // 0, peer has observed an unsent packet.
+    set_detailed_error("Largest acked is 0.");
     return false;
   }
   ack_frame->largest_acked = static_cast<QuicPacketNumber>(largest_acked);
@@ -3146,7 +3154,7 @@ bool QuicFramer::ProcessIetfAckFrame(QuicDataReader* reader,
   // largest_acked packet which are in the block being acked. Thus,
   // its maximum value is largest_acked-1. Test this, reporting an
   // error if the value is wrong.
-  if (ack_block_value > largest_acked) {
+  if (ack_block_value >= largest_acked) {
     set_detailed_error(QuicStrCat("Underflow with first ack block length ",
                                   ack_block_value + 1, " largest acked is ",
                                   largest_acked, ".")
@@ -3197,7 +3205,7 @@ bool QuicFramer::ProcessIetfAckFrame(QuicDataReader* reader,
       set_detailed_error("Unable to read ack block value.");
       return false;
     }
-    if (ack_block_value > (block_high - 1)) {
+    if (ack_block_value >= (block_high - 1)) {
       set_detailed_error(
           QuicStrCat("Underflow with ack block length ", ack_block_value + 1,
                      " latest ack block end is ", block_high - 1, ".")
@@ -3225,7 +3233,7 @@ bool QuicFramer::ProcessIetfAckFrame(QuicDataReader* reader,
 bool QuicFramer::ProcessStopWaitingFrame(QuicDataReader* reader,
                                          const QuicPacketHeader& header,
                                          QuicStopWaitingFrame* stop_waiting) {
-  QuicPacketNumber least_unacked_delta;
+  uint64_t least_unacked_delta;
   if (!reader->ReadBytesToUInt64(header.packet_number_length,
                                  &least_unacked_delta)) {
     set_detailed_error("Unable to read least unacked delta.");
@@ -3639,18 +3647,18 @@ size_t QuicFramer::GetIetfAckFrameSize(const QuicAckFrame& frame) {
   size_t ack_block_count_size = QuicDataWriter::GetVarInt62Len(ack_block_count);
   ack_frame_size += ack_block_count_size;
 
-  QuicPacketNumber first_ack_block = ack_block_largest - ack_block_smallest;
+  uint64_t first_ack_block = ack_block_largest - ack_block_smallest;
   size_t first_ack_block_size = QuicDataWriter::GetVarInt62Len(first_ack_block);
   ack_frame_size += first_ack_block_size;
 
   // Account for the remaining Intervals, if any.
   while (ack_block_count != 0) {
-    QuicPacketNumber gap_size = ack_block_smallest - itr->max();
+    uint64_t gap_size = ack_block_smallest - itr->max();
     // Decrement per the protocol specification
     size_t size_of_gap_size = QuicDataWriter::GetVarInt62Len(gap_size - 1);
     ack_frame_size += size_of_gap_size;
 
-    QuicPacketNumber block_size = itr->max() - itr->min();
+    uint64_t block_size = itr->max() - itr->min();
     // Decrement per the protocol specification
     size_t size_of_block_size = QuicDataWriter::GetVarInt62Len(block_size - 1);
     ack_frame_size += size_of_block_size;
@@ -3666,6 +3674,7 @@ size_t QuicFramer::GetIetfAckFrameSize(const QuicAckFrame& frame) {
 size_t QuicFramer::GetAckFrameSize(
     const QuicAckFrame& ack,
     QuicPacketNumberLength packet_number_length) {
+  DCHECK(!ack.packets.Empty());
   size_t ack_size = 0;
 
   if (version_.transport_version == QUIC_VERSION_99) {
@@ -3939,7 +3948,7 @@ bool QuicFramer::AppendStreamOffset(size_t offset_length,
 // static
 bool QuicFramer::AppendAckBlock(uint8_t gap,
                                 QuicPacketNumberLength length_length,
-                                QuicPacketNumber length,
+                                uint64_t length,
                                 QuicDataWriter* writer) {
   return writer->WriteUInt8(gap) &&
          AppendPacketNumber(length_length, length, writer);
@@ -4227,7 +4236,7 @@ bool QuicFramer::AppendAckFrameAndTypeByte(const QuicAckFrame& frame,
          itr != frame.packets.rend() && num_ack_blocks_written < num_ack_blocks;
          previous_start = itr->min(), ++itr) {
       const auto& interval = *itr;
-      const QuicPacketNumber total_gap = previous_start - interval.max();
+      const uint64_t total_gap = previous_start - interval.max();
       const size_t num_encoded_gaps =
           (total_gap + std::numeric_limits<uint8_t>::max() - 1) /
           std::numeric_limits<uint8_t>::max();
@@ -4301,8 +4310,7 @@ bool QuicFramer::AppendTimestampsToAckFrame(const QuicAckFrame& frame,
 
   auto it = frame.received_packet_times.begin();
   QuicPacketNumber packet_number = it->first;
-  QuicPacketNumber delta_from_largest_observed =
-      LargestAcked(frame) - packet_number;
+  uint64_t delta_from_largest_observed = LargestAcked(frame) - packet_number;
 
   DCHECK_GE(std::numeric_limits<uint8_t>::max(), delta_from_largest_observed);
   if (delta_from_largest_observed > std::numeric_limits<uint8_t>::max()) {
@@ -4349,7 +4357,8 @@ bool QuicFramer::AppendStopWaitingFrame(const QuicPacketHeader& header,
                                         const QuicStopWaitingFrame& frame,
                                         QuicDataWriter* writer) {
   DCHECK_GE(QUIC_VERSION_43, version_.transport_version);
-  DCHECK_GE(header.packet_number, frame.least_unacked);
+  DCHECK(frame.least_unacked != kInvalidPacketNumber &&
+         header.packet_number >= frame.least_unacked);
   const QuicPacketNumber least_unacked_delta =
       header.packet_number - frame.least_unacked;
   const QuicPacketNumber length_shift = header.packet_number_length * 8;
@@ -4386,7 +4395,7 @@ int QuicFramer::CalculateIetfAckBlockCount(const QuicAckFrame& frame,
     return 0;
   }
   available_space -= encoded_size;
-  uint64_t previous_ack_end = itr->min();
+  QuicPacketNumber previous_ack_end = itr->min();
   ack_block_count--;
 
   while (ack_block_count) {
@@ -4517,7 +4526,7 @@ bool QuicFramer::AppendIetfAckFrameAndTypeByte(const QuicAckFrame& frame,
     return false;
   }
 
-  QuicPacketNumber first_ack_block = ack_block_largest - ack_block_smallest;
+  uint64_t first_ack_block = ack_block_largest - ack_block_smallest;
   if (!writer->WriteVarInt62(first_ack_block)) {
     set_detailed_error("No room for first ack block in ack frame");
     return false;
@@ -4525,13 +4534,13 @@ bool QuicFramer::AppendIetfAckFrameAndTypeByte(const QuicAckFrame& frame,
 
   // For the remaining QuicAckFrame Intervals, if any
   while (ack_block_count != 0) {
-    QuicPacketNumber gap_size = ack_block_smallest - itr->max();
+    uint64_t gap_size = ack_block_smallest - itr->max();
     if (!writer->WriteVarInt62(gap_size - 1)) {
       set_detailed_error("No room for gap block in ack frame");
       return false;
     }
 
-    QuicPacketNumber block_size = itr->max() - itr->min();
+    uint64_t block_size = itr->max() - itr->min();
     if (!writer->WriteVarInt62(block_size - 1)) {
       set_detailed_error("No room for nth ack block in ack frame");
       return false;

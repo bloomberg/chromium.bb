@@ -156,9 +156,6 @@ QUIC_FLAG(bool,
 
 // If true, disable QUIC version 35.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_35, true)
-// If true, then QuicCryptoServerConfig::ProcessClientHelloAfterGetProof() will
-// use the async interface to KeyExchange::CalculateSharedKeys.
-QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_use_async_key_exchange, true)
 
 // If true, increase size of random bytes in IETF stateless reset packet.
 QUIC_FLAG(bool,
@@ -329,3 +326,12 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_keep_ack_decimation_reordering,
           false)
+
+// If true, close QUIC connection if peer acks packet number 0 because our
+// implementation never sends packet number 0.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disallow_peer_ack_0, true)
+
+// If true, log leaf cert subject name into warning log.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_log_cert_name_for_empty_sct,
+          true)

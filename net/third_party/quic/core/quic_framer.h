@@ -378,6 +378,12 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                                         char* buffer,
                                         size_t packet_length);
 
+  // Serializes an IETF probing packet, which is a padded PING packet.
+  // Returns the length of the packet. Returns 0 if it fails to serialize.
+  size_t BuildIetfConnectivityProbingPacket(const QuicPacketHeader& header,
+                                            char* buffer,
+                                            size_t packet_length);
+
   // Serialize a probing packet that uses IETF QUIC's PATH CHALLENGE frame. Also
   // fills the packet with padding.
   size_t BuildPaddedPathChallengePacket(const QuicPacketHeader& header,
@@ -549,9 +555,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
     ~AckFrameInfo();
 
     // The maximum ack block length.
-    QuicPacketNumber max_block_length;
+    QuicPacketCount max_block_length;
     // Length of first ack block.
-    QuicPacketNumber first_block_length;
+    QuicPacketCount first_block_length;
     // Number of ACK blocks needed for the ACK frame.
     size_t num_ack_blocks;
   };
@@ -601,7 +607,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
       QuicDataReader* reader,
       QuicPacketNumberLength packet_number_length,
       QuicPacketNumber base_packet_number,
-      QuicPacketNumber* packet_number);
+      uint64_t* packet_number);
   bool ProcessFrameData(QuicDataReader* reader, const QuicPacketHeader& header);
   bool ProcessIetfFrameData(QuicDataReader* reader,
                             const QuicPacketHeader& header);
@@ -639,10 +645,10 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   // Returns the full packet number from the truncated
   // wire format version and the last seen packet number.
-  QuicPacketNumber CalculatePacketNumberFromWire(
+  uint64_t CalculatePacketNumberFromWire(
       QuicPacketNumberLength packet_number_length,
       QuicPacketNumber base_packet_number,
-      QuicPacketNumber packet_number) const;
+      uint64_t packet_number) const;
 
   // Returns the QuicTime::Delta corresponding to the time from when the framer
   // was created.
@@ -679,7 +685,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // successfully appended.
   static bool AppendAckBlock(uint8_t gap,
                              QuicPacketNumberLength length_length,
-                             QuicPacketNumber length,
+                             uint64_t length,
                              QuicDataWriter* writer);
 
   static uint8_t GetPacketNumberFlags(

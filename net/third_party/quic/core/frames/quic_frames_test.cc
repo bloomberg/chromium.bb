@@ -477,7 +477,7 @@ TEST_F(PacketNumberQueueTest, Contains) {
 TEST_F(PacketNumberQueueTest, Removal) {
   PacketNumberQueue queue;
   EXPECT_FALSE(queue.Contains(51));
-  queue.AddRange(0, 100);
+  queue.AddRange(1, 100);
 
   EXPECT_TRUE(queue.RemoveUpTo(51));
   EXPECT_FALSE(queue.RemoveUpTo(51));
@@ -494,7 +494,7 @@ TEST_F(PacketNumberQueueTest, Removal) {
   EXPECT_EQ(99u, queue.Max());
 
   PacketNumberQueue queue2;
-  queue2.AddRange(0, 5);
+  queue2.AddRange(1, 5);
   EXPECT_TRUE(queue2.RemoveUpTo(3));
   EXPECT_TRUE(queue2.RemoveUpTo(50));
   EXPECT_TRUE(queue2.Empty());
