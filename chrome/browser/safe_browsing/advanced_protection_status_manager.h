@@ -7,7 +7,7 @@
 
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/account_info.h"
 #include "services/identity/public/cpp/access_token_info.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
@@ -27,7 +27,6 @@ namespace safe_browsing {
 // of its original profile.
 class AdvancedProtectionStatusManager
     : public KeyedService,
-      public AccountTrackerService::Observer,
       public identity::IdentityManager::Observer {
  public:
   explicit AdvancedProtectionStatusManager(Profile* profile);
@@ -82,13 +81,11 @@ class AdvancedProtectionStatusManager
   // Subscribes from sign-in events.
   void UnsubscribeFromSigninEvents();
 
-  // AccountTrackerService::Observer implementations.
-  void OnAccountUpdated(const AccountInfo& info) override;
-  void OnAccountRemoved(const AccountInfo& info) override;
-
   // IdentityManager::Observer implementations.
   void OnPrimaryAccountSet(const AccountInfo& account_info) override;
   void OnPrimaryAccountCleared(const AccountInfo& account_info) override;
+  void OnAccountUpdated(const AccountInfo& info) override;
+  void OnAccountRemovedWithInfo(const AccountInfo& info) override;
 
   void OnAdvancedProtectionEnabled();
 
