@@ -44,6 +44,9 @@ class EVENTS_EXPORT PlatformKeyMap {
 
   PlatformKeyMap();
 
+  // Returns the PlatformKeyMap instance for the current thread.
+  static PlatformKeyMap* GetThreadLocalPlatformKeyMap();
+
   // TODO(input-dev): Expose this function when we need to access separate
   // layout. Returns the DomKey 'meaning' of |KeyboardCode| in the context of
   // specified |EventFlags| and stored keyboard layout.

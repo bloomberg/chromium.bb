@@ -10,8 +10,9 @@
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
-#include "base/threading/thread_local_storage.h"
+#include "base/threading/thread_local.h"
 
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
@@ -258,26 +259,6 @@ DomKey NonPrintableKeyboardCodeToDomKey(KeyboardCode key_code, HKL layout) {
   return DomKey::NONE;
 }
 
-void CleanupKeyMapTls(void* data) {
-  PlatformKeyMap* key_map = reinterpret_cast<PlatformKeyMap*>(data);
-  delete key_map;
-}
-
-struct PlatformKeyMapInstanceTlsTraits
-    : public base::internal::DestructorAtExitLazyInstanceTraits<
-          base::ThreadLocalStorage::Slot> {
-  static base::ThreadLocalStorage::Slot* New(void* instance) {
-    // Use placement new to initialize our instance in our preallocated space.
-    // TODO(input-dev): Use std::default_delete instead of providing own
-    // function.
-    return new (instance) base::ThreadLocalStorage::Slot(CleanupKeyMapTls);
-  }
-};
-
-base::LazyInstance<base::ThreadLocalStorage::Slot,
-                   PlatformKeyMapInstanceTlsTraits>
-    g_platform_key_map_tls_lazy = LAZY_INSTANCE_INITIALIZER;
-
 }  // anonymous namespace
 
 PlatformKeyMap::PlatformKeyMap() {}
@@ -287,6 +268,25 @@ PlatformKeyMap::PlatformKeyMap(HKL layout) {
 }
 
 PlatformKeyMap::~PlatformKeyMap() {}
+
+// static
+PlatformKeyMap* PlatformKeyMap::GetThreadLocalPlatformKeyMap() {
+  // DestructorAtExit so the main thread's instance is cleaned up between tests
+  // in the same process.
+  static base::LazyInstance<base::ThreadLocalOwnedPointer<PlatformKeyMap>>::
+      DestructorAtExit platform_key_map_tls_instance =
+          LAZY_INSTANCE_INITIALIZER;
+
+  auto& platform_key_map_tls = platform_key_map_tls_instance.Get();
+  PlatformKeyMap* platform_key_map = platform_key_map_tls.Get();
+  if (!platform_key_map) {
+    auto new_platform_key_map = base::WrapUnique(new PlatformKeyMap);
+    platform_key_map = new_platform_key_map.get();
+    platform_key_map_tls.Set(std::move(new_platform_key_map));
+  }
+
+  return platform_key_map;
+}
 
 DomKey PlatformKeyMap::DomKeyFromKeyboardCodeImpl(KeyboardCode key_code,
                                                   int* flags) const {
@@ -338,14 +338,7 @@ DomKey PlatformKeyMap::DomKeyFromKeyboardCode(KeyboardCode key_code,
   // Use TLS because KeyboardLayout is per thread.
   // However currently PlatformKeyMap will only be used by the host application,
   // which is just one process and one thread.
-  base::ThreadLocalStorage::Slot* platform_key_map_tls =
-      g_platform_key_map_tls_lazy.Pointer();
-  PlatformKeyMap* platform_key_map =
-      reinterpret_cast<PlatformKeyMap*>(platform_key_map_tls->Get());
-  if (!platform_key_map) {
-    platform_key_map = new PlatformKeyMap();
-    platform_key_map_tls->Set(platform_key_map);
-  }
+  PlatformKeyMap* platform_key_map = GetThreadLocalPlatformKeyMap();
 
   HKL current_layout = ::GetKeyboardLayout(0);
   platform_key_map->UpdateLayout(current_layout);
@@ -361,14 +354,7 @@ int PlatformKeyMap::ReplaceControlAndAltWithAltGraph(int flags) {
 
 // static
 bool PlatformKeyMap::UsesAltGraph() {
-  base::ThreadLocalStorage::Slot* platform_key_map_tls =
-      g_platform_key_map_tls_lazy.Pointer();
-  PlatformKeyMap* platform_key_map =
-      reinterpret_cast<PlatformKeyMap*>(platform_key_map_tls->Get());
-  if (!platform_key_map) {
-    platform_key_map = new PlatformKeyMap();
-    platform_key_map_tls->Set(platform_key_map);
-  }
+  PlatformKeyMap* platform_key_map = GetThreadLocalPlatformKeyMap();
 
   HKL current_layout = ::GetKeyboardLayout(0);
   platform_key_map->UpdateLayout(current_layout);

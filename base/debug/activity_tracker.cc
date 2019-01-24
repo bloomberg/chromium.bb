@@ -1403,24 +1403,21 @@ ThreadActivityTracker* GlobalActivityTracker::CreateTrackerForCurrentThread() {
 
   // Create a tracker with the acquired memory and set it as the tracker
   // for this particular thread in thread-local-storage.
-  ManagedActivityTracker* tracker =
-      new ManagedActivityTracker(mem_reference, mem_base, stack_memory_size_);
+  auto tracker = std::make_unique<ManagedActivityTracker>(
+      mem_reference, mem_base, stack_memory_size_);
   DCHECK(tracker->IsValid());
-  this_thread_tracker_.Set(tracker);
+  auto* tracker_raw = tracker.get();
+  this_thread_tracker_.Set(std::move(tracker));
   int old_count = thread_tracker_count_.fetch_add(1, std::memory_order_relaxed);
 
   UMA_HISTOGRAM_EXACT_LINEAR("ActivityTracker.ThreadTrackers.Count",
                              old_count + 1, static_cast<int>(kMaxThreadCount));
-  return tracker;
+  return tracker_raw;
 }
 
 void GlobalActivityTracker::ReleaseTrackerForCurrentThreadForTesting() {
-  ThreadActivityTracker* tracker =
-      reinterpret_cast<ThreadActivityTracker*>(this_thread_tracker_.Get());
-  if (tracker) {
+  if (this_thread_tracker_.Get())
     this_thread_tracker_.Set(nullptr);
-    delete tracker;
-  }
 }
 
 void GlobalActivityTracker::SetBackgroundTaskRunner(
@@ -1658,7 +1655,6 @@ GlobalActivityTracker::GlobalActivityTracker(
     : allocator_(std::move(allocator)),
       stack_memory_size_(ThreadActivityTracker::SizeForStackDepth(stack_depth)),
       process_id_(process_id == 0 ? GetCurrentProcId() : process_id),
-      this_thread_tracker_(&OnTLSDestroy),
       thread_tracker_count_(0),
       thread_tracker_allocator_(allocator_.get(),
                                 kTypeIdActivityTracker,
@@ -1738,11 +1734,6 @@ void GlobalActivityTracker::RecordExceptionImpl(const void* pc,
 
   tracker->RecordExceptionActivity(pc, origin, Activity::ACT_EXCEPTION,
                                    ActivityData::ForException(code));
-}
-
-// static
-void GlobalActivityTracker::OnTLSDestroy(void* value) {
-  delete reinterpret_cast<ManagedActivityTracker*>(value);
 }
 
 ScopedActivity::ScopedActivity(const void* program_counter,

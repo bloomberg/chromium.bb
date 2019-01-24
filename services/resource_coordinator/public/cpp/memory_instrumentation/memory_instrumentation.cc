@@ -12,10 +12,6 @@ namespace memory_instrumentation {
 namespace {
 MemoryInstrumentation* g_instance = nullptr;
 
-void DestroyCoordinatorTLS(void* tls_object) {
-  delete reinterpret_cast<mojom::CoordinatorPtr*>(tls_object);
-};
-
 void WrapGlobalMemoryDump(
     MemoryInstrumentation::RequestGlobalDumpCallback callback,
     bool success,
@@ -42,7 +38,6 @@ MemoryInstrumentation::MemoryInstrumentation(
     const std::string& service_name)
     : connector_(connector),
       connector_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      tls_coordinator_(&DestroyCoordinatorTLS),
       service_name_(service_name) {
   DCHECK(connector_task_runner_);
 }
@@ -90,11 +85,11 @@ void MemoryInstrumentation::RequestGlobalDumpAndAppendToTrace(
 
 const mojom::CoordinatorPtr&
 MemoryInstrumentation::GetCoordinatorBindingForCurrentThread() {
-  mojom::CoordinatorPtr* coordinator =
-      reinterpret_cast<mojom::CoordinatorPtr*>(tls_coordinator_.Get());
+  mojom::CoordinatorPtr* coordinator = tls_coordinator_.Get();
   if (!coordinator) {
-    coordinator = new mojom::CoordinatorPtr();
-    tls_coordinator_.Set(coordinator);
+    auto new_coordinator = std::make_unique<mojom::CoordinatorPtr>();
+    coordinator = new_coordinator.get();
+    tls_coordinator_.Set(std::move(new_coordinator));
     mojom::CoordinatorRequest coordinator_req = mojo::MakeRequest(coordinator);
 
     // The connector is not thread safe and BindInterface must be called on its
