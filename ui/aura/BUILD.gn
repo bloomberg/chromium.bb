@@ -124,6 +124,8 @@ jumbo_component("aura") {
     "mus/in_flight_change.cc",
     "mus/input_method_mus.cc",
     "mus/mus_context_factory.cc",
+    "mus/mus_lsi_allocator.cc",
+    "mus/mus_lsi_allocator.h",
     "mus/mus_mouse_location_updater.cc",
     "mus/os_exchange_data_provider_mus.cc",
     "mus/property_converter.cc",
@@ -161,6 +163,7 @@ jumbo_component("aura") {
   friend = [
     ":aura_interactive_ui_tests",
     ":aura_unittests",
+    ":test_support",
   ]
 
   defines = [ "AURA_IMPLEMENTATION" ]

@@ -220,6 +220,7 @@ class AURA_EXPORT WindowTreeClient
   friend class InFlightPropertyChange;
   friend class InFlightTransformChange;
   friend class InFlightVisibleChange;
+  friend class ParentAllocator;  // For OnWindowMusBoundsChanged().
   friend class TopmostWindowTracker;
   friend class WindowPortMus;
   friend class WindowTreeClientTestApi;

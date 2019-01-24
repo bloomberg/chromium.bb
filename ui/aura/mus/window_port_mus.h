@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "services/ws/public/mojom/window_tree.mojom.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
@@ -45,7 +44,7 @@ class RasterContextProvider;
 
 namespace aura {
 
-class ClientSurfaceEmbedder;
+class MusLsiAllocator;
 class PropertyConverter;
 class WindowTreeClient;
 class WindowTreeClientTestApi;
@@ -66,10 +65,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
 
   Window* window() { return window_; }
   const Window* window() const { return window_; }
-
-  ClientSurfaceEmbedder* client_surface_embedder() const {
-    return client_surface_embedder_.get();
-  }
 
   const viz::SurfaceId& PrimarySurfaceIdForTesting() const {
     return primary_surface_id_;
@@ -106,6 +101,9 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
 
   viz::FrameSinkId GenerateFrameSinkIdFromServerId() const;
+
+  gfx::Size GetSizeInPixels();
+  gfx::Size GetSizeInPixels(const gfx::Size& size);
 
  private:
   friend class WindowPortMusTestHelper;
@@ -212,6 +210,8 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   // and needs to consider ancestors' visibility as well.
   class VisibilityTracker;
 
+  void SetAllocator(std::unique_ptr<MusLsiAllocator> allocator);
+
   // Creates and adds a ServerChange to |server_changes_|. Returns the id
   // assigned to the ServerChange.
   ServerChangeIdType ScheduleChange(const ServerChangeType type,
@@ -220,7 +220,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   // Removes a ServerChange by id.
   void RemoveChangeById(ServerChangeIdType change_id);
 
-  // If there is a schedule change matching |type| and |data| it is removed and
+  // If there is a scheduled change matching |type| and |data| it is removed and
   // true is returned. If no matching change is scheduled returns false.
   bool RemoveChangeByTypeAndData(const ServerChangeType type,
                                  const ServerChangeData& data);
@@ -240,9 +240,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
 
   PropertyConverter* GetPropertyConverter();
 
-  // Calls GetOrAllocateLocalSurfaceId() with the current size.
-  void GetOrAllocateLocalSurfaceIdForCurrentSize();
-
   // WindowMus:
   Window* GetWindow() override;
   void AddChildFromServer(WindowMus* window) override;
@@ -250,9 +247,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void ReorderFromServer(WindowMus* child,
                          WindowMus* relative,
                          ws::mojom::OrderDirection) override;
-  void SetBoundsFromServer(
-      const gfx::Rect& bounds,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
+  void SetBoundsFromServer(const gfx::Rect& bounds) override;
   void SetTransformFromServer(const gfx::Transform& transform) override;
   void SetVisibleFromServer(bool visible) override;
   void SetOpacityFromServer(float opacity) override;
@@ -261,8 +256,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
       const std::string& property_name,
       const std::vector<uint8_t>* property_data) override;
   void SetFrameSinkIdFromServer(const viz::FrameSinkId& frame_sink_id) override;
-  const viz::LocalSurfaceId& GetOrAllocateLocalSurfaceId(
-      const gfx::Size& surface_size_in_pixels) override;
   void UpdateLocalSurfaceIdFromEmbeddedClient(
       const viz::LocalSurfaceIdAllocation&
           embedded_client_local_surface_id_allocation) override;
@@ -271,13 +264,13 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void RemoveTransientChildFromServer(WindowMus* child) override;
   ChangeSource OnTransientChildAdded(WindowMus* child) override;
   ChangeSource OnTransientChildRemoved(WindowMus* child) override;
+  bool HasLocalSurfaceId() override;
   std::unique_ptr<WindowMusChangeData> PrepareForServerBoundsChange(
       const gfx::Rect& bounds) override;
   std::unique_ptr<WindowMusChangeData> PrepareForServerVisibilityChange(
       bool value) override;
   void PrepareForDestroy() override;
   void NotifyEmbeddedAppDisconnected() override;
-  bool HasLocalLayerTreeFrameSink() override;
   float GetDeviceScaleFactor() override;
 
   // WindowPort:
@@ -309,8 +302,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void UnregisterFrameSinkId(const viz::FrameSinkId& frame_sink_id) override;
   void TrackOcclusionState() override;
 
-  void UpdatePrimarySurfaceId();
-
   // Called by WindowTreeClient to update window occlusion state.
   void SetOcclusionStateFromServer(ws::mojom::OcclusionState occlusion_state);
 
@@ -326,19 +317,17 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
 
   Window* window_ = nullptr;
 
-  // Used when this window is embedding a client.
-  std::unique_ptr<ClientSurfaceEmbedder> client_surface_embedder_;
-
   ServerChangeIdType next_server_change_id_ = 0;
   ServerChanges server_changes_;
 
   viz::SurfaceId primary_surface_id_;
 
-  // TODO(sad, fsamuel): For 'mash' mode, where the embedder is responsible for
-  // allocating the LocalSurfaceIds, this should use a
-  // ChildLocalSurfaceIdAllocator instead.
-  viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
-  gfx::Size last_surface_size_in_pixels_;
+  // Manages allocation of LocalSurfaceIds. Only created if this window needs
+  // allocated LocalSurfaceIds.
+  std::unique_ptr<MusLsiAllocator> allocator_;
+
+  // This is set the first time an id is generated.
+  base::Optional<gfx::Size> last_surface_size_in_pixels_;
 
   ui::Cursor cursor_;
 

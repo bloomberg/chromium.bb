@@ -2858,25 +2858,18 @@ TEST_F(RenderWidgetHostViewAuraTest, ConflictingAllocationsResolve) {
 
   // Cause a conflicting viz::LocalSurfaceId allocation
   aura_test_helper_->test_screen()->SetDeviceScaleFactor(2.0f);
-  viz::LocalSurfaceIdAllocation local_surface_id_allocation3(
-      view_->GetLocalSurfaceIdAllocation());
-  EXPECT_NE(local_surface_id_allocation1, local_surface_id_allocation3);
-
-  viz::LocalSurfaceIdAllocation local_surface_id_allocation4(
-      view_->GetLocalSurfaceIdAllocation());
-  EXPECT_NE(local_surface_id_allocation1, local_surface_id_allocation4);
-  EXPECT_NE(local_surface_id_allocation2, local_surface_id_allocation4);
   viz::LocalSurfaceIdAllocation merged_local_surface_id_allocation(
-      viz::LocalSurfaceId(
-          local_surface_id_allocation2.local_surface_id()
-                  .parent_sequence_number() +
-              1,
-          local_surface_id_allocation2.local_surface_id()
-              .child_sequence_number(),
-          local_surface_id_allocation2.local_surface_id().embed_token()),
-      base::TimeTicks::Now());
-  EXPECT_EQ(local_surface_id_allocation4.local_surface_id(),
-            merged_local_surface_id_allocation.local_surface_id());
+      view_->GetLocalSurfaceIdAllocation());
+  EXPECT_NE(local_surface_id_allocation1, merged_local_surface_id_allocation);
+  EXPECT_NE(local_surface_id_allocation2, merged_local_surface_id_allocation);
+  EXPECT_GT(
+      merged_local_surface_id_allocation.local_surface_id()
+          .parent_sequence_number(),
+      local_surface_id_allocation2.local_surface_id().parent_sequence_number());
+  EXPECT_EQ(
+      merged_local_surface_id_allocation.local_surface_id()
+          .child_sequence_number(),
+      local_surface_id_allocation2.local_surface_id().child_sequence_number());
 }
 
 // Checks that WidgetInputHandler::CursorVisibilityChange IPC messages are

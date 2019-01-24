@@ -255,6 +255,9 @@ TEST_F(WindowTreeClientTest, SetBoundsFailedLocalSurfaceId) {
   Window window(nullptr);
   window.Init(ui::LAYER_NOT_DRAWN);
   WindowPortMusTestHelper(&window).SimulateEmbedding();
+  // SimulateEmbedding() generates a bounds change.
+  ASSERT_TRUE(
+      window_tree()->AckSingleChangeOfType(WindowTreeChangeType::BOUNDS, true));
 
   const gfx::Rect original_bounds(window.bounds());
   const viz::LocalSurfaceId original_local_surface_id(
@@ -265,14 +268,19 @@ TEST_F(WindowTreeClientTest, SetBoundsFailedLocalSurfaceId) {
   EXPECT_EQ(new_bounds, window.bounds());
   WindowMus* window_mus = WindowMus::Get(&window);
   ASSERT_NE(nullptr, window_mus);
-  EXPECT_TRUE(window_mus->GetLocalSurfaceIdAllocation().IsValid());
+  ASSERT_TRUE(window_mus->GetLocalSurfaceIdAllocation().IsValid());
+  const viz::LocalSurfaceId new_surface_id =
+      window_mus->GetLocalSurfaceIdAllocation().local_surface_id();
 
   // Reverting the change should also revert the viz::LocalSurfaceId.
   ASSERT_TRUE(window_tree()->AckSingleChangeOfType(WindowTreeChangeType::BOUNDS,
                                                    false));
   EXPECT_EQ(original_bounds, window.bounds());
-  EXPECT_EQ(original_local_surface_id,
+  // Whenever the bounds changes a new LocalSurfaceId needs to be allocated.
+  EXPECT_NE(new_surface_id,
             window.GetLocalSurfaceIdAllocation().local_surface_id());
+  EXPECT_EQ(1u,
+            window_tree()->GetChangeCountForType(WindowTreeChangeType::BOUNDS));
 }
 
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
@@ -284,12 +292,13 @@ TEST_P(WindowTreeClientTestSurfaceSync, ClientSurfaceEmbedderCreated) {
   Window window(nullptr);
   window.Init(ui::LAYER_NOT_DRAWN);
 
-  WindowPortMus* window_port_mus = WindowPortMus::Get(&window);
-  ASSERT_TRUE(window_port_mus);
+  WindowPortMusTestHelper window_test_helper(&window);
 
   // A ClientSurfaceEmbedder is only created once there is an embedding.
-  EXPECT_EQ(nullptr, window_port_mus->client_surface_embedder());
-  WindowPortMusTestHelper(&window).SimulateEmbedding();
+  ClientSurfaceEmbedder* client_surface_embedder =
+      window_test_helper.GetClientSurfaceEmbedder();
+  EXPECT_EQ(nullptr, client_surface_embedder);
+  window_test_helper.SimulateEmbedding();
 
   gfx::Rect new_bounds(gfx::Rect(0, 0, 100, 100));
   ASSERT_NE(new_bounds, window.bounds());
@@ -298,8 +307,7 @@ TEST_P(WindowTreeClientTestSurfaceSync, ClientSurfaceEmbedderCreated) {
   EXPECT_TRUE(WindowMus::Get(&window)->GetLocalSurfaceIdAllocation().IsValid());
 
   // Once the bounds have been set, the ClientSurfaceEmbedder should be created.
-  ClientSurfaceEmbedder* client_surface_embedder =
-      window_port_mus->client_surface_embedder();
+  client_surface_embedder = window_test_helper.GetClientSurfaceEmbedder();
   ASSERT_NE(nullptr, client_surface_embedder);
 
   EXPECT_EQ(nullptr, client_surface_embedder->BottomGutterForTesting());
@@ -462,8 +470,7 @@ TEST_F(WindowTreeClientTest, FocusFromServer) {
 
 // Simulates a bounds change, and while the bounds change is in flight the
 // server replies with a new bounds and the original bounds change fails.
-// The server bounds change takes hold along with the associated
-// viz::LocalSurfaceId.
+// The server bounds change takes hold.
 TEST_F(WindowTreeClientTest, SetBoundsFailedWithPendingChange) {
   aura::Window root_window(nullptr);
   root_window.Init(ui::LAYER_NOT_DRAWN);
@@ -492,15 +499,12 @@ TEST_F(WindowTreeClientTest, SetBoundsFailedWithPendingChange) {
   ASSERT_TRUE(window_tree()->AckSingleChangeOfType(WindowTreeChangeType::BOUNDS,
                                                    false));
   EXPECT_EQ(server_changed_bounds, root_window.bounds());
-  EXPECT_EQ(server_changed_local_surface_id,
-            root_window_mus->GetLocalSurfaceIdAllocation().local_surface_id());
 
   // Simulate server changing back to original bounds. Should take immediately.
   window_tree_client()->OnWindowBoundsChanged(server_id(&root_window),
                                               server_changed_bounds,
                                               original_bounds, base::nullopt);
   EXPECT_EQ(original_bounds, root_window.bounds());
-  EXPECT_FALSE(root_window_mus->GetLocalSurfaceIdAllocation().IsValid());
 }
 
 TEST_F(WindowTreeClientTest, TwoInFlightBoundsChangesBothCanceled) {
