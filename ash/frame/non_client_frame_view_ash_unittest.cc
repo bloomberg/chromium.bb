@@ -263,28 +263,6 @@ TEST_F(NonClientFrameViewAshTest, AvatarIcon) {
   EXPECT_FALSE(non_client_frame_view->GetAvatarIconViewForTest());
 }
 
-// The visibility of the size button is updated when tablet mode is toggled.
-// Verify that the layout of the HeaderView is updated for the size button's
-// new visibility.
-TEST_F(NonClientFrameViewAshTest, HeaderViewNotifiedOfChildSizeChange) {
-  TestWidgetConstraintsDelegate* delegate = new TestWidgetConstraintsDelegate;
-  std::unique_ptr<views::Widget> widget = CreateTestWidget(
-      delegate, kShellWindowId_DefaultContainer, gfx::Rect(0, 0, 400, 500));
-
-  const gfx::Rect initial =
-      delegate->GetFrameCaptionButtonContainerViewBounds();
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
-  delegate->EndFrameCaptionButtonContainerViewAnimations();
-  const gfx::Rect tablet_mode_bounds =
-      delegate->GetFrameCaptionButtonContainerViewBounds();
-  EXPECT_GT(initial.width(), tablet_mode_bounds.width());
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
-  delegate->EndFrameCaptionButtonContainerViewAnimations();
-  const gfx::Rect after_restore =
-      delegate->GetFrameCaptionButtonContainerViewBounds();
-  EXPECT_EQ(initial, after_restore);
-}
-
 // Tests that a window is minimized, toggling tablet mode doesn't trigger
 // caption button update (https://crbug.com/822890).
 TEST_F(NonClientFrameViewAshTest, ToggleTabletModeOnMinimizedWindow) {
