@@ -248,7 +248,7 @@ Children:
   return nullptr;
 }
 
-void TreeWalker::Trace(blink::Visitor* visitor) {
+void TreeWalker::Trace(Visitor* visitor) {
   visitor->Trace(current_);
   ScriptWrappable::Trace(visitor);
   NodeIteratorBase::Trace(visitor);

@@ -64,7 +64,7 @@ class ChildNodeList final : public NodeList {
                                  Node& current_node,
                                  unsigned& current_offset) const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   bool IsChildNodeList() const override { return true; }

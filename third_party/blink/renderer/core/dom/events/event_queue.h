@@ -47,7 +47,7 @@ class CORE_EXPORT EventQueue final
   EventQueue(ExecutionContext*, TaskType);
   ~EventQueue();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   bool EnqueueEvent(const base::Location&, Event&);
   void CancelAllEvents();
   bool HasPendingEvents() const;

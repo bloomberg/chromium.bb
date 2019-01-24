@@ -37,7 +37,7 @@ class SourceKeyedCachedMetadataHandler;
 
 class CORE_EXPORT ScriptableDocumentParser : public DecodedDataDocumentParser {
  public:
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // Only used by Document::open for deciding if its safe to act on a
   // JavaScript document.open() call right now, or it should be ignored.

@@ -59,7 +59,7 @@ class RangeBoundaryPoint {
   void InvalidateOffset();
   void MarkValid() const;
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(Visitor* visitor) {
     visitor->Trace(container_node_);
     visitor->Trace(child_before_boundary_);
   }

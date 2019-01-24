@@ -31,7 +31,7 @@ class GC_PLUGIN_IGNORE("crbug.com/841830")
       : public GarbageCollectedFinalized<FrameCallback>,
         public NameClient {
    public:
-    virtual void Trace(blink::Visitor* visitor) {}
+    virtual void Trace(Visitor* visitor) {}
     const char* NameInHeapSnapshot() const override { return "FrameCallback"; }
     virtual ~FrameCallback() = default;
     virtual void Invoke(double) = 0;
@@ -61,7 +61,7 @@ class GC_PLUGIN_IGNORE("crbug.com/841830")
     static V8FrameCallback* Create(V8FrameRequestCallback* callback) {
       return MakeGarbageCollected<V8FrameCallback>(callback);
     }
-    void Trace(blink::Visitor*) override;
+    void Trace(Visitor*) override;
     const char* NameInHeapSnapshot() const override {
       return "V8FrameCallback";
     }
@@ -81,7 +81,7 @@ class GC_PLUGIN_IGNORE("crbug.com/841830")
 
   bool IsEmpty() const { return !callbacks_.size(); }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
   const char* NameInHeapSnapshot() const override {
     return "FrameRequestCallbackCollection";
   }

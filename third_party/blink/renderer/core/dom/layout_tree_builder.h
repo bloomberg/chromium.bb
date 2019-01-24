@@ -157,7 +157,7 @@ class CORE_EXPORT ReattachLegacyLayoutObjectList final {
   }
   void ForceLegacyLayoutIfNeeded();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   Member<Document> document_;

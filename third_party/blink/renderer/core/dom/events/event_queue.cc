@@ -48,7 +48,7 @@ EventQueue::EventQueue(ExecutionContext* context, TaskType task_type)
 
 EventQueue::~EventQueue() = default;
 
-void EventQueue::Trace(blink::Visitor* visitor) {
+void EventQueue::Trace(Visitor* visitor) {
   visitor->Trace(queued_events_);
   ContextLifecycleObserver::Trace(visitor);
 }

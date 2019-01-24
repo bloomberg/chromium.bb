@@ -51,7 +51,7 @@ void SlotAssignmentEngine::RecalcSlotAssignments() {
   DCHECK(shadow_roots_needing_recalc_.IsEmpty());
 }
 
-void SlotAssignmentEngine::Trace(blink::Visitor* visitor) {
+void SlotAssignmentEngine::Trace(Visitor* visitor) {
   visitor->Trace(shadow_roots_needing_recalc_);
 }
 

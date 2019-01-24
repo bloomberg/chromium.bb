@@ -252,7 +252,7 @@ void ShadowRoot::SetNeedsDistributionRecalc() {
     V0().ClearDistribution();
 }
 
-void ShadowRoot::Trace(blink::Visitor* visitor) {
+void ShadowRoot::Trace(Visitor* visitor) {
   visitor->Trace(style_sheet_list_);
   visitor->Trace(slot_assignment_);
   visitor->Trace(shadow_root_v0_);

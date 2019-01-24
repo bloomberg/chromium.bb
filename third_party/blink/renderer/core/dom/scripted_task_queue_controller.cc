@@ -30,7 +30,7 @@ ScriptedTaskQueueController::ScriptedTaskQueueController(
     ExecutionContext* context)
     : ContextLifecycleObserver(context) {}
 
-void ScriptedTaskQueueController::Trace(blink::Visitor* visitor) {
+void ScriptedTaskQueueController::Trace(Visitor* visitor) {
   visitor->Trace(task_queues_);
   Supplement<Document>::Trace(visitor);
   ScriptWrappable::Trace(visitor);

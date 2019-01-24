@@ -18,7 +18,7 @@ ExecutionContext* EventTargetImpl::GetExecutionContext() const {
   return ContextLifecycleObserver::GetExecutionContext();
 }
 
-void EventTargetImpl::Trace(blink::Visitor* visitor) {
+void EventTargetImpl::Trace(Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
 }

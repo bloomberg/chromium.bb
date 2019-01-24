@@ -72,7 +72,7 @@ class CORE_EXPORT EventListenerMap final {
 
   void CopyEventListenersNotCreatedFromMarkupToTarget(EventTarget*);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   friend class EventListenerIterator;

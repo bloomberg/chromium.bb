@@ -5128,7 +5128,7 @@ void Element::LogUpdateAttributeIfIsolatedWorldAndInDocument(
   activity_logger->LogEvent("blinkSetAttribute", argv.size(), argv.data());
 }
 
-void Element::Trace(blink::Visitor* visitor) {
+void Element::Trace(Visitor* visitor) {
   if (HasRareData())
     visitor->TraceWithWrappers(GetElementRareData());
   visitor->Trace(element_data_);

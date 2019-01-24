@@ -55,7 +55,7 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
 
   HTMLSlotElement* FindSlotChange(HTMLSlotElement& slot, Node& child);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   bool NeedsAssignmentRecalc() const { return needs_assignment_recalc_; }
   void SetNeedsAssignmentRecalc();

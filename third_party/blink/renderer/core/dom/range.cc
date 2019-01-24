@@ -1823,7 +1823,7 @@ void Range::RemoveFromSelectionIfInDifferentRoot(Document& old_document) {
   selection.ClearDocumentCachedRange();
 }
 
-void Range::Trace(blink::Visitor* visitor) {
+void Range::Trace(Visitor* visitor) {
   visitor->Trace(owner_document_);
   visitor->Trace(start_);
   visitor->Trace(end_);

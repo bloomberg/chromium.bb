@@ -162,7 +162,7 @@ EventTargetData::EventTargetData() = default;
 
 EventTargetData::~EventTargetData() = default;
 
-void EventTargetData::Trace(blink::Visitor* visitor) {
+void EventTargetData::Trace(Visitor* visitor) {
   visitor->Trace(event_listener_map);
 }
 

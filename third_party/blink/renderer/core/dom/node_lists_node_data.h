@@ -174,7 +174,7 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
     }
   }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   // Can be a ChildNodeList or an EmptyNodeList.

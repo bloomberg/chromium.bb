@@ -73,7 +73,7 @@ class MutationObserver::V8DelegateImpl final
     callback_->InvokeAndReportException(&observer, records, &observer);
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(callback_);
     MutationObserver::Delegate::Trace(visitor);
     ContextClient::Trace(visitor);
@@ -372,7 +372,7 @@ void MutationObserver::DeliverMutations() {
     slot->DispatchSlotChangeEvent();
 }
 
-void MutationObserver::Trace(blink::Visitor* visitor) {
+void MutationObserver::Trace(Visitor* visitor) {
   visitor->Trace(delegate_);
   visitor->Trace(records_);
   visitor->Trace(registrations_);

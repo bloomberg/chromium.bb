@@ -52,7 +52,7 @@ ScriptedTaskQueue::ScriptedTaskQueue(ExecutionContext* context,
   task_runner_ = GetExecutionContext()->GetTaskRunner(task_type);
 }
 
-void ScriptedTaskQueue::Trace(blink::Visitor* visitor) {
+void ScriptedTaskQueue::Trace(Visitor* visitor) {
   visitor->Trace(pending_tasks_);
   ScriptWrappable::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);

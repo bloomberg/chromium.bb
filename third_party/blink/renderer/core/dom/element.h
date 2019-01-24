@@ -882,7 +882,7 @@ class CORE_EXPORT Element : public ContainerNode {
       const char element[],
       const AttributeModificationParams&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   SpellcheckAttributeState GetSpellcheckAttributeState() const;
 

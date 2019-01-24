@@ -38,7 +38,7 @@ class CORE_EXPORT ScriptedTaskQueue final : public ScriptWrappable,
 
   void CallbackFired(CallbackId id);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // ContextLifecycleObserver interface.

@@ -53,7 +53,7 @@ class StaticNodeTypeList final : public NodeList {
   unsigned length() const override;
   NodeType* item(unsigned index) const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   HeapVector<TraceWrapperMember<NodeType>> nodes_;

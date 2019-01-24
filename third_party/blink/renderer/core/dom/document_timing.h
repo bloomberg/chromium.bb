@@ -59,7 +59,7 @@ class DocumentTiming final {
   TimeTicks DomComplete() const { return dom_complete_; }
   TimeTicks FirstLayout() const { return first_layout_; }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   LocalFrame* GetFrame() const;

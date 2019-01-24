@@ -131,7 +131,7 @@ class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
 
   Element* GetElementByAccessKey(const String& key) const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   ScopedStyleResolver* GetScopedStyleResolver() const {
     return scoped_style_resolver_.Get();

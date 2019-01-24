@@ -80,7 +80,7 @@ class ElementData : public GarbageCollectedFinalized<ElementData> {
   bool IsUnique() const { return is_unique_; }
 
   void TraceAfterDispatch(blink::Visitor*);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  protected:
   ElementData();

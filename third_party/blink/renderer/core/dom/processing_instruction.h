@@ -44,7 +44,7 @@ class CORE_EXPORT ProcessingInstruction final : public CharacterData,
 
   ProcessingInstruction(Document&, const String& target, const String& data);
   ~ProcessingInstruction() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   const String& target() const { return target_; }
   const String& LocalHref() const { return local_href_; }
@@ -64,7 +64,7 @@ class CORE_EXPORT ProcessingInstruction final : public CharacterData,
     // Detach event listener from its processing instruction.
     virtual void Detach() = 0;
 
-    void Trace(blink::Visitor* visitor) override {}
+    void Trace(Visitor* visitor) override {}
   };
 
   void SetEventListenerForXSLT(DetachableEventListener* listener) {

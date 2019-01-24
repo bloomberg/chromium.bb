@@ -83,7 +83,7 @@ class CORE_EXPORT EventPath final
 
   static EventTarget& EventTargetRespectingTargetRules(Node&);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
   void Clear() {
     node_event_contexts_.clear();
     tree_scope_event_contexts_.clear();

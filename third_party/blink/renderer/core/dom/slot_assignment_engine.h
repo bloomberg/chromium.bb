@@ -32,7 +32,7 @@ class SlotAssignmentEngine final
 
   void RecalcSlotAssignments();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   HeapHashSet<WeakMember<ShadowRoot>> shadow_roots_needing_recalc_;

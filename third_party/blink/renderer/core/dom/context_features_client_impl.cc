@@ -84,7 +84,7 @@ class ContextFeaturesCache final
 
   void ValidateAgainst(Document*);
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     Supplement<Document>::Trace(visitor);
   }
 

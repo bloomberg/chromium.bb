@@ -66,7 +66,7 @@ Node* DistributedNodes::PreviousTo(const Node* node) const {
   return at(index - 1);
 }
 
-void DistributedNodes::Trace(blink::Visitor* visitor) {
+void DistributedNodes::Trace(Visitor* visitor) {
   visitor->Trace(nodes_);
   visitor->Trace(indices_);
 }

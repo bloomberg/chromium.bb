@@ -45,7 +45,7 @@ std::pair<EventTarget*, StringImpl*> EventTargetKey(const Event* event) {
 ScriptedAnimationController::ScriptedAnimationController(Document* document)
     : document_(document), callback_collection_(document), suspend_count_(0) {}
 
-void ScriptedAnimationController::Trace(blink::Visitor* visitor) {
+void ScriptedAnimationController::Trace(Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(callback_collection_);
   visitor->Trace(event_queue_);

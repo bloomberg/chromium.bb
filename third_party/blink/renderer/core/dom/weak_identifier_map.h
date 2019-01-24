@@ -30,7 +30,7 @@ template <typename T, typename IdentifierType>
 class WeakIdentifierMapBase<T, IdentifierType, true>
     : public GarbageCollected<WeakIdentifierMapBase<T, IdentifierType, true>> {
  public:
-  void Trace(blink::Visitor* visitor) {
+  void Trace(Visitor* visitor) {
     visitor->Trace(object_to_identifier_);
     visitor->Trace(identifier_to_object_);
   }

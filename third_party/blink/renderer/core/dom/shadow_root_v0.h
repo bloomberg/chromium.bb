@@ -80,7 +80,7 @@ class CORE_EXPORT ShadowRootV0 final
   void SetNeedsSelectFeatureSet() { needs_select_feature_set_ = true; }
   SelectRuleFeatureSet& SelectFeatures() { return select_features_; }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(Visitor* visitor) {
     visitor->Trace(shadow_root_);
     visitor->Trace(descendant_insertion_points_);
     visitor->Trace(node_to_insertion_points_);
