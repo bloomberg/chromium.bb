@@ -2598,5 +2598,12 @@ CSSValue* ParsePaintStroke(CSSParserTokenRange& range,
   return css_property_parser_helpers::ConsumeColor(range, context.Mode());
 }
 
+css_property_parser_helpers::UnitlessQuirk UnitlessUnlessShorthand(
+    const CSSParserLocalContext& local_context) {
+  return local_context.CurrentShorthand() == CSSPropertyInvalid
+             ? css_property_parser_helpers::UnitlessQuirk::kAllow
+             : css_property_parser_helpers::UnitlessQuirk::kForbid;
+}
+
 }  // namespace css_parsing_utils
 }  // namespace blink

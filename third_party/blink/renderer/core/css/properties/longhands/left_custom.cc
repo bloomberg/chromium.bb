@@ -17,12 +17,13 @@ class CSSParserLocalContext;
 
 namespace css_longhand {
 
-const CSSValue* Left::ParseSingleValue(CSSParserTokenRange& range,
-                                       const CSSParserContext& context,
-                                       const CSSParserLocalContext&) const {
+const CSSValue* Left::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
   return css_parsing_utils::ConsumeMarginOrOffset(
       range, context.Mode(),
-      css_property_parser_helpers::UnitlessQuirk::kAllow);
+      css_parsing_utils::UnitlessUnlessShorthand(local_context));
 }
 
 bool Left::IsLayoutDependent(const ComputedStyle* style,

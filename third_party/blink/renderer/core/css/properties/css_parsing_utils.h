@@ -237,6 +237,9 @@ CSSValue* ConsumeBorderWidth(CSSParserTokenRange&,
 CSSValue* ParsePaintStroke(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ParseSpacing(CSSParserTokenRange&, const CSSParserContext&);
 
+css_property_parser_helpers::UnitlessQuirk UnitlessUnlessShorthand(
+    const CSSParserLocalContext&);
+
 template <CSSValueID start, CSSValueID end>
 CSSValue* ConsumePositionLonghand(CSSParserTokenRange& range,
                                   CSSParserMode css_parser_mode) {
