@@ -276,11 +276,27 @@ SaveCardOfferBubbleViews::CreateRequestExpirationDateView() {
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_MONTH));
   month_input_dropdown_->set_id(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH);
 
+  const CreditCard& card = controller()->GetCard();
+  // Pre-populate expiration date month if it is detected.
+  if (card.expiration_month()) {
+    month_combobox_model_.SetDefaultIndexByMonth(card.expiration_month());
+    month_input_dropdown_->SetSelectedIndex(
+        month_combobox_model_.GetDefaultIndex());
+  }
+
   year_input_dropdown_ = new views::Combobox(&year_combobox_model_);
   year_input_dropdown_->set_listener(this);
   year_input_dropdown_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_YEAR));
   year_input_dropdown_->set_id(DialogViewId::EXPIRATION_DATE_DROPBOX_YEAR);
+
+  // Pre-populate expiration date year if it is not passed.
+  if (IsValidCreditCardExpirationYear(card.expiration_year(),
+                                      AutofillClock::Now())) {
+    year_combobox_model_.SetDefaultIndexByYear(card.expiration_year());
+    year_input_dropdown_->SetSelectedIndex(
+        year_combobox_model_.GetDefaultIndex());
+  }
 
   auto input_row = std::make_unique<views::View>();
   input_row->SetLayoutManager(std::make_unique<views::BoxLayout>(

@@ -260,8 +260,9 @@ void GenerateTestAutofillPopup(
 
 std::string ObfuscatedCardDigitsAsUTF8(const std::string& str);
 
-std::string NextYear();
 std::string LastYear();
+std::string NextYear();
+std::string TenYearsFromNow();
 
 }  // namespace test
 }  // namespace autofill

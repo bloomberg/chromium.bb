@@ -43,6 +43,13 @@ bool IsValidCreditCardExpirationDate(int year,
   return true;
 }
 
+bool IsValidCreditCardExpirationYear(int year, const base::Time& now) {
+  base::Time::Exploded now_exploded;
+  now.LocalExplode(&now_exploded);
+
+  return year >= now_exploded.year;
+}
+
 bool IsValidCreditCardNumber(const base::string16& text) {
   base::string16 number = CreditCard::StripSeparators(text);
 

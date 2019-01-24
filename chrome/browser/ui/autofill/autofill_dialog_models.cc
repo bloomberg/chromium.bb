@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -71,11 +72,34 @@ base::string16 MonthComboboxModel::GetItemAt(int index) {
       FormatMonth(index);
 }
 
+void MonthComboboxModel::SetDefaultIndexByMonth(int month) {
+  if (month >= 1 && month <= 12)
+    default_index_ = month;
+}
+
+int MonthComboboxModel::GetDefaultIndex() const {
+  return default_index_;
+}
+
 // YearComboboxModel -----------------------------------------------------------
 
 YearComboboxModel::YearComboboxModel(int additional_year)
     : ui::SimpleComboboxModel(GetExpirationYearItems(additional_year)) {}
 
 YearComboboxModel::~YearComboboxModel() {}
+
+void YearComboboxModel::SetDefaultIndexByYear(int year) {
+  const base::string16& year_value = base::NumberToString16(year);
+  for (int i = 1; i < GetItemCount(); i++) {
+    if (year_value == GetItemAt(i)) {
+      default_index_ = i;
+      return;
+    }
+  }
+}
+
+int YearComboboxModel::GetDefaultIndex() const {
+  return default_index_;
+}
 
 }  // namespace autofill

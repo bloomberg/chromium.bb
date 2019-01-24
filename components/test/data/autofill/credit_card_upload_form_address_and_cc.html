@@ -22,7 +22,7 @@ found in the LICENSE file.
     <div>Name on card: <input type="text" name="name_cc" autocomplete="cc-name"></div>
     <div>Credit card number: <input type="text" name="cc_number" autocomplete="cc-number"></div>
     <div>Expiry Date:
-    <select name="cc_month_exp" autocomplete="cc-month-exp">
+    <select name="cc_month_exp" id="cc_month_exp_id" autocomplete="cc-month-exp">
       <option value="1">01</option>
       <option value="2">02</option>
       <option value="3">03</option>
@@ -37,7 +37,7 @@ found in the LICENSE file.
       <option value="12">12</option>
     </select>
     /
-    <input type="text" name="cc_year_exp" placeholder="YYYY" autocomplete="cc-exp-year"></div>
+    <input type="text" name="cc_year_exp" id="cc_year_exp_id" placeholder="YYYY" autocomplete="cc-exp-year"></div>
     <div>CVC: <input name="cc_cvc" autocomplete="cc-csc"></div>
     <hr>
     <button id="fill_form" type="button">Fill entire form with default (MasterCard) values</button>
@@ -47,6 +47,8 @@ found in the LICENSE file.
     <button id="fill_expired_expiration_date" type="button">Fill an expired expiration date</button>
     <button id="clear_cvc" type="button">Clear the CVC field</button>
     <button id="clear_name" type="button">Clear the name fields</button>
+    <button id="clear_month" type="button">Clear the month field</button>
+    <button id="clear_year" type="button">Clear the year field</button>
     <button id="clear_expiration_date" type="button">Clear the expiration date fields</button>
     <button id="clear_address" type="button">Clear the address fields</button>
     <button id="submit" type="submit">Submit</button>
@@ -112,6 +114,19 @@ found in the LICENSE file.
       function() {
         document.getElementsByName("name_address")[0].value = "";
         document.getElementsByName("name_cc")[0].value = "";
+      });
+
+  document.getElementById("clear_month").addEventListener(
+      "click",
+      function() {
+        document.getElementsByName("cc_month_exp")[0].value = "";
+
+      });
+
+  document.getElementById("clear_year").addEventListener(
+      "click",
+      function() {
+        document.getElementsByName("cc_year_exp")[0].value = "";
       });
 
   document.getElementById("clear_expiration_date").addEventListener(

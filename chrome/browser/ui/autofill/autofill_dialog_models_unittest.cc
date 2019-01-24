@@ -87,4 +87,49 @@ TEST(YearComboboxModelTest, ExpirationYear_ShowFarFutureYear) {
   EXPECT_EQ(base::ASCIIToUTF16("2042"), model.GetItemAt(11));
 }
 
+TEST(YearComboboxModelTest, SetDefaultIndexByYear) {
+  autofill::TestAutofillClock test_clock;
+  test_clock.SetNow(kJune2017);
+
+  YearComboboxModel model;
+  model.SetDefaultIndexByYear(2017);
+  ASSERT_EQ(base::ASCIIToUTF16("2017"),
+            model.GetItemAt(model.GetDefaultIndex()));
+}
+
+TEST(YearComboboxModelTest, SetDefaultIndexByYearOutOfRange) {
+  autofill::TestAutofillClock test_clock;
+  test_clock.SetNow(kJune2017);
+
+  YearComboboxModel model;
+  model.SetDefaultIndexByYear(2016);
+  ASSERT_EQ(
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_YEAR),
+      model.GetItemAt(model.GetDefaultIndex()));
+}
+
+TEST(YearComboboxModelTest, SetDefaultIndexByYearAdditionalYear) {
+  autofill::TestAutofillClock test_clock;
+  test_clock.SetNow(kJune2017);
+
+  YearComboboxModel model(2042);
+  model.SetDefaultIndexByYear(2042);
+  ASSERT_EQ(base::ASCIIToUTF16("2042"),
+            model.GetItemAt(model.GetDefaultIndex()));
+}
+
+TEST(MonthComboboxModelTest, SetDefaultIndexByMonth) {
+  MonthComboboxModel model;
+  model.SetDefaultIndexByMonth(6);
+  ASSERT_EQ(base::ASCIIToUTF16("06"), model.GetItemAt(model.GetDefaultIndex()));
+}
+
+TEST(MonthComboboxModelTest, SetDefaultIndexByMonthOutOfRange) {
+  MonthComboboxModel model;
+  model.SetDefaultIndexByMonth(13);
+  ASSERT_EQ(
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_MONTH),
+      model.GetItemAt(model.GetDefaultIndex()));
+}
+
 }  // namespace autofill

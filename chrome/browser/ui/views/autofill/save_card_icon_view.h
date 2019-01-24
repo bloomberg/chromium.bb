@@ -38,7 +38,7 @@ class SaveCardIconView : public PageActionIconView {
   const gfx::VectorIcon& GetVectorIcon() const override;
 
  private:
-  friend class SaveCardBubbleViewsBrowserTestBase;
+  friend class SaveCardBubbleViewsFullFormBrowserTest;
 
   SaveCardBubbleControllerImpl* GetController() const;
 
