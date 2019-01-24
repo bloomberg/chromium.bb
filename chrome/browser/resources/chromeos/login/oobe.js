@@ -20,7 +20,6 @@
 // <include src="oobe_screen_welcome.js">
 // <include src="multi_tap_detector.js">
 // <include src="web_view_helper.js">
-// <include src="demo_mode_test_helper.js">
 
 cr.define('cr.ui.Oobe', function() {
 
