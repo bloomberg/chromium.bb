@@ -17,18 +17,28 @@
 <dom-module id="print-preview-destination-select">
   <template>
     <style include="print-preview-shared md-select cr-hidden-style">
+      :host {
+        --printer-icon-side-padding: 4px;
+        --printer-icon-size: 20px;
+      }
+
       .md-select {
+        background-position: var(--printer-icon-side-padding) center,
+            calc(100% - var(--md-select-side-padding)) center;
+        background-size: var(--printer-icon-size), var(--md-arrow-width);
         padding-inline-start: 32px;
         --md-select-width: calc(100% - 4px);
       }
+
+      :host-context([dir=rtl]) .md-select {
+        background-position-x: calc(100% - var(--printer-icon-side-padding)),
+            var(--md-select-side-padding);
+      }
     </style>
     <select class="md-select" aria-label$="[[i18n(destinationLabel)]]"
-        style="background:
-            [[getIconImage_(destination.icon, noDestinationsFound)]]
-            4px center/20px no-repeat,
-            url(chrome://resources/images/arrow_down.svg)
-            calc(100% - 8px) center/10px no-repeat;
-            background-color: var(--google-grey-100);"
+        style="background-image:
+            [[getIconImage_(destination.icon, noDestinationsFound)]],
+            url(chrome://resources/images/arrow_down.svg);"
         disabled$="[[disabled]]"
         value="{{selectedValue::change}}">
       <option value="noDestinations" hidden$="[[!noDestinationsFound]]"
