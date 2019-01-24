@@ -339,6 +339,10 @@ class TokenPreloadScanner::StartTagScanner {
                !attribute_value.IsNull()) {
       SetReferrerPolicy(attribute_value,
                         kDoNotSupportReferrerPolicyLegacyKeywords);
+    } else if (!importance_mode_set_ &&
+               Match(attribute_name, kImportanceAttr) &&
+               priority_hints_origin_trial_enabled_) {
+      SetImportance(attribute_value);
     }
   }
 

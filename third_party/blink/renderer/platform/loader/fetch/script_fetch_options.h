@@ -35,20 +35,24 @@ class PLATFORM_EXPORT ScriptFetchOptions final {
   ScriptFetchOptions()
       : parser_state_(ParserDisposition::kNotParserInserted),
         credentials_mode_(network::mojom::FetchCredentialsMode::kOmit),
-        referrer_policy_(network::mojom::ReferrerPolicy::kDefault) {}
+        referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
+        importance_(mojom::FetchImportanceMode::kImportanceAuto) {}
 
   ScriptFetchOptions(const String& nonce,
                      const IntegrityMetadataSet& integrity_metadata,
                      const String& integrity_attribute,
                      ParserDisposition parser_state,
                      network::mojom::FetchCredentialsMode credentials_mode,
-                     network::mojom::ReferrerPolicy referrer_policy)
+                     network::mojom::ReferrerPolicy referrer_policy,
+                     mojom::FetchImportanceMode importance =
+                         mojom::FetchImportanceMode::kImportanceAuto)
       : nonce_(nonce),
         integrity_metadata_(integrity_metadata),
         integrity_attribute_(integrity_attribute),
         parser_state_(parser_state),
         credentials_mode_(credentials_mode),
-        referrer_policy_(referrer_policy) {}
+        referrer_policy_(referrer_policy),
+        importance_(importance) {}
   ~ScriptFetchOptions() = default;
 
   const String& Nonce() const { return nonce_; }
@@ -65,6 +69,7 @@ class PLATFORM_EXPORT ScriptFetchOptions final {
   network::mojom::ReferrerPolicy GetReferrerPolicy() const {
     return referrer_policy_;
   }
+  mojom::FetchImportanceMode Importance() const { return importance_; }
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-classic-script
   // Steps 1 and 3.
@@ -90,6 +95,10 @@ class PLATFORM_EXPORT ScriptFetchOptions final {
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-fetch-options-referrer-policy
   const network::mojom::ReferrerPolicy referrer_policy_;
+
+  // Priority Hints and a request's "importance" mode are currently
+  // non-standard. See https://crbug.com/821464.
+  const mojom::FetchImportanceMode importance_;
 };
 
 }  // namespace blink

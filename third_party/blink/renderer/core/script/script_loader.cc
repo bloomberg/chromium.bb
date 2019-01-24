@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/loader/importance_attribute.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/core/script/classic_pending_script.h"
@@ -382,6 +383,14 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         &referrer_policy);
   }
 
+  // Priority Hints is currently a non-standard feature, but we can assume the
+  // following (see https://crbug.com/821464):
+  // <spec step="21">Let importance be the current state of the element's
+  // importance content attribute.</spec>
+  String importance_attr = element_->ImportanceAttributeValue();
+  mojom::FetchImportanceMode importance =
+      GetFetchImportanceAttributeValue(importance_attr);
+
   // <spec step="21">Let parser metadata be "parser-inserted" if the script
   // element has been flagged as "parser-inserted", and "not-parser-inserted"
   // otherwise.</spec>
@@ -411,7 +420,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // parser metadata is parser metadata, credentials mode is module script
   // credentials mode, and referrer policy is referrer policy.</spec>
   ScriptFetchOptions options(nonce, integrity_metadata, integrity_attr,
-                             parser_state, credentials_mode, referrer_policy);
+                             parser_state, credentials_mode, referrer_policy,
+                             importance);
 
   // <spec step="23">Let settings object be the element's node document's
   // relevant settings object.</spec>

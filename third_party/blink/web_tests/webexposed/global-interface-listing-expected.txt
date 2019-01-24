@@ -3570,6 +3570,7 @@ interface HTMLScriptElement : HTMLElement
     getter defer
     getter event
     getter htmlFor
+    getter importance
     getter integrity
     getter noModule
     getter referrerPolicy
@@ -3583,6 +3584,7 @@ interface HTMLScriptElement : HTMLElement
     setter defer
     setter event
     setter htmlFor
+    setter importance
     setter integrity
     setter noModule
     setter referrerPolicy
