@@ -6859,12 +6859,6 @@ class StubbornTextCheckClient : public WebTextCheckClient {
                              WebTextCheckingCompletion* completion) override {
     completion_ = completion;
   }
-  void CancelAllPendingRequests() override {
-    if (!completion_)
-      return;
-    completion_->DidCancelCheckingText();
-    completion_ = nullptr;
-  }
 
   void KickNoResults() { Kick(-1, -1, kWebTextDecorationTypeSpelling); }
 

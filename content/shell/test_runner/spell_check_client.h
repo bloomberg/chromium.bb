@@ -50,7 +50,6 @@ class SpellCheckClient : public blink::WebTextCheckClient {
   void RequestCheckingOfText(
       const blink::WebString& text,
       blink::WebTextCheckingCompletion* completion) override;
-  void CancelAllPendingRequests() override;
 
  private:
   void FinishLastTextCheck();

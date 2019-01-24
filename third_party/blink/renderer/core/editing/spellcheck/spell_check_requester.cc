@@ -237,11 +237,6 @@ void SpellCheckRequester::PrepareForLeakDetection() {
   // the leak detector, they're all cancelled to prevent flaky leaks being
   // reported.
   request_queue_.clear();
-  // WebTextCheckClient stores a set of WebTextCheckingCompletion objects,
-  // which may store references to already invoked requests. We should clear
-  // these references to prevent them from being a leak source.
-  if (WebTextCheckClient* text_checker_client = GetTextCheckerClient())
-    text_checker_client->CancelAllPendingRequests();
 }
 
 void SpellCheckRequester::InvokeRequest(SpellCheckRequest* request) {

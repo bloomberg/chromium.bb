@@ -96,7 +96,6 @@ class SpellCheckProvider
   void RequestCheckingOfText(
       const blink::WebString& text,
       blink::WebTextCheckingCompletion* completion) override;
-  void CancelAllPendingRequests() override;
 
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   void OnRespondSpellingService(int identifier,
