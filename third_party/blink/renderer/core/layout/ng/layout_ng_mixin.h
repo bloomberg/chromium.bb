@@ -95,10 +95,6 @@ class LayoutNGMixin : public Base {
   void AddVisualOverflowFromChildren();
   void AddLayoutOverflowFromChildren() final;
 
- private:
-  void AddScrollingOverflowFromChildren();
-
- protected:
   void AddOutlineRects(Vector<LayoutRect>&,
                        const LayoutPoint& additional_offset,
                        NGOutlineType) const final;
@@ -116,6 +112,10 @@ class LayoutNGMixin : public Base {
   scoped_refptr<NGPaintFragment> paint_fragment_;
 
   friend class NGBaseLayoutAlgorithmTest;
+
+ private:
+  void AddScrollingOverflowFromChildren();
+  bool NeedsRelativePositionedLayoutOnly() const;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT

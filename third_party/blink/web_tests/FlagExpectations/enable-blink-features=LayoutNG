@@ -277,7 +277,6 @@ crbug.com/591099 paint/float/float-under-inline-self-painting-change.html [ Fail
 crbug.com/591099 paint/invalidation/flexbox/scrollbars-changed.html [ Failure ]
 crbug.com/835484 paint/invalidation/outline/inline-focus.html [ Failure ]
 crbug.com/591099 paint/invalidation/overflow/opacity-change-on-overflow-float.html [ Failure ]
-crbug.com/714962 paint/invalidation/position/relative-positioned-movement-repaint.html [ Failure ]
 crbug.com/591099 paint/invalidation/scroll/repaint-composited-child-in-scrolled-container.html [ Failure ]
 crbug.com/591099 paint/invalidation/svg/svg-background-partial-redraw.html [ Failure ]
 crbug.com/591099 paint/invalidation/svg/text-selection-update.svg [ Failure ]
