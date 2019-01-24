@@ -91,10 +91,6 @@ void BoxPainterBase::PaintNormalBoxShadow(const PaintInfo& info,
     if (fill_rect.IsEmpty())
       continue;
 
-    FloatRect shadow_rect(border.Rect());
-    shadow_rect.Inflate(shadow_blur + shadow_spread);
-    shadow_rect.Move(shadow_offset);
-
     // Save the state and clip, if not already done.
     // The clip does not depend on any shadow-specific properties.
     if (!state_saver.Saved()) {
@@ -136,14 +132,6 @@ void BoxPainterBase::PaintNormalBoxShadow(const PaintInfo& info,
                       DrawLooperBuilder::kShadowIgnoresAlpha, kDrawShadowOnly);
 
     if (has_border_radius) {
-      FloatRoundedRect influence_rect(
-          PixelSnappedIntRect(LayoutRect(shadow_rect)), border.GetRadii());
-      float change_amount = 2 * shadow_blur + shadow_spread;
-      if (change_amount >= 0)
-        influence_rect.ExpandRadii(change_amount);
-      else
-        influence_rect.ShrinkRadii(-change_amount);
-
       FloatRoundedRect rounded_fill_rect = border;
       rounded_fill_rect.Inflate(shadow_spread);
 
