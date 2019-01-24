@@ -288,8 +288,9 @@ def argument_context(interface, method, argument, index, is_visible=True):
         'enum_type': idl_type.enum_type,
         'enum_values': idl_type.enum_values,
         'handle': '%s_handle' % snake_case_name,
-        # FIXME: remove once [Default] removed and just use argument.default_value
-        'has_default': 'Default' in extended_attributes or set_default_value,
+        # TODO(peria): remove once [DefaultValue] removed and just use
+        # argument.default_value. https://crbug.com/924419
+        'has_default': 'DefaultValue' in extended_attributes or set_default_value,
         'has_type_checking_interface': has_type_checking_interface,
         # Dictionary is special-cased, but arrays and sequences shouldn't be
         'idl_type': idl_type.base_type,

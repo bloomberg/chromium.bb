@@ -49,7 +49,7 @@ CrossOrigin=|Getter|Setter
 Custom=|Getter|Setter|LegacyCallAsFunction|PropertyGetter|PropertyEnumerator|PropertyQuery|CallPrologue|CallEpilogue
 CustomConstructor
 CustomElementCallbacks
-Default=Undefined
+DefaultValue=Undefined
 DeprecateAs=*
 DoNotCheckConstants
 DoNotTestNewObject

@@ -443,18 +443,19 @@ interface TestObject {
     [RaisesException, CallWith=ScriptState] deleter boolean(unsigned long index);
     [CallWith=ScriptState] deleter boolean(DOMString name);
 
-    // Extended attributes for arguments
+    // Annotated types in arguments
     // [Clamp]
-    void voidMethodClampUnsignedShortArg([Clamp] unsigned short clampUnsignedShortArg);
     void voidMethodClampUnsignedLongArg([Clamp] unsigned long clampUnsignedLongArg);
-    // [Default]
-    void voidMethodDefaultUndefinedTestInterfaceEmptyArg([Default=Undefined] optional TestInterfaceEmpty defaultUndefinedTestInterfaceEmptyArg);
-    void voidMethodDefaultUndefinedLongArg([Default=Undefined] optional long defaultUndefinedLongArg);
-    void voidMethodDefaultUndefinedStringArg([Default=Undefined] optional DOMString defaultUndefinedStringArg);
     // [EnforceRange]
     void voidMethodEnforceRangeLongArg([EnforceRange] long enforceRangeLongArg);
     // [TreatNullAs]
     void voidMethodTreatNullAsEmptyStringStringArg([TreatNullAs=EmptyString] DOMString treatNullAsEmptyStringStringArg);
+
+    // Extended attributes for arguments
+    // [DefaultValue]
+    void voidMethodDefaultUndefinedTestInterfaceEmptyArg([DefaultValue=Undefined] optional TestInterfaceEmpty defaultUndefinedTestInterfaceEmptyArg);
+    void voidMethodDefaultUndefinedLongArg([DefaultValue=Undefined] optional long defaultUndefinedLongArg);
+    void voidMethodDefaultUndefinedStringArg([DefaultValue=Undefined] optional DOMString defaultUndefinedStringArg);
 
     // Extended attributes for methods
     [LogActivity, LogAllWorlds] void activityLoggingAccessForAllWorldsMethod();
@@ -544,7 +545,7 @@ interface TestObject {
     // Avoid redundant type checking
     void useToImpl4ArgumentsCheckingIfPossibleWithOptionalArg(Node node1, optional Node node2);
     void useToImpl4ArgumentsCheckingIfPossibleWithNullableArg(Node node1, Node? node2);
-    void useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArg(Node node1, [Default=Undefined] optional Node node2);
+    void useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArg(Node node1, [DefaultValue=Undefined] optional Node node2);
     [Unforgeable] void unforgeableVoidMethod();
     [NewObject] TestInterface newObjectTestInterfaceMethod();
     [NewObject] Promise<TestInterface> newObjectTestInterfacePromiseMethod();
