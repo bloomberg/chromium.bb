@@ -2026,14 +2026,10 @@ static void define_gf_group_structure(AV1_COMP *cpi) {
   gf_group->brf_src_offset[frame_index] = 0;
 }
 
-#define NEW_MULTI_LVL_BOOST_VBR_ALLOC 1
-
-#if NEW_MULTI_LVL_BOOST_VBR_ALLOC
 #define LEAF_REDUCTION_FACTOR 0.75
 static double lvl_budget_factor[MAX_PYRAMID_LVL - 1][MAX_PYRAMID_LVL - 1] = {
   { 1.0, 0.0, 0.0 }, { 0.6, 0.4, 0 }, { 0.45, 0.35, 0.20 }
 };
-#endif  // NEW_MULTI_LVL_BOOST_VBR_ALLOC
 static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
                                    double group_error, int gf_arf_bits) {
   RATE_CONTROL *const rc = &cpi->rc;
@@ -2088,11 +2084,9 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
     }
   }
 
-#if NEW_MULTI_LVL_BOOST_VBR_ALLOC
   // Save.
   const int tmp_frame_index = frame_index;
   int budget_reduced_from_leaf_level = 0;
-#endif  // NEW_MULTI_LVL_BOOST_VBR_ALLOC
 
   // Allocate bits to the other frames in the group.
   const int normal_frames =
@@ -2137,18 +2131,12 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
       assert(gf_group->update_type[frame_index] == LF_UPDATE ||
              gf_group->update_type[frame_index] == INTNL_OVERLAY_UPDATE);
       gf_group->bit_allocation[frame_index] = target_frame_size;
-#if MULTI_LVL_BOOST_VBR_CQ
       if (cpi->new_bwdref_update_rule) {
-#if NEW_MULTI_LVL_BOOST_VBR_ALLOC
         const int this_budget_reduction =
             (int)(target_frame_size * LEAF_REDUCTION_FACTOR);
         gf_group->bit_allocation[frame_index] -= this_budget_reduction;
         budget_reduced_from_leaf_level += this_budget_reduction;
-#else
-        gf_group->bit_allocation[frame_index] -= (target_frame_size >> 1);
-#endif  // NEW_MULTI_LVL_BOOST_VBR_ALLOC
       }
-#endif  // MULTI_LVL_BOOST_VBR_CQ
     }
 
     ++frame_index;
@@ -2160,7 +2148,6 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
     }
   }
 
-#if MULTI_LVL_BOOST_VBR_CQ
   if (budget_reduced_from_leaf_level > 0) {
     // Restore.
     frame_index = tmp_frame_index;
@@ -2174,16 +2161,11 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
         const int arf_pos = gf_group->arf_pos_in_gf[frame_index];
         const int this_lvl = gf_group->pyramid_level[arf_pos];
         const int dist2top = gf_group->pyramid_height - 1 - this_lvl;
-#if NEW_MULTI_LVL_BOOST_VBR_ALLOC
         const double lvl_boost_factor =
             lvl_budget_factor[gf_group->pyramid_height - 2][dist2top];
         const int extra_size =
             (int)(budget_reduced_from_leaf_level * lvl_boost_factor /
                   gf_group->pyramid_lvl_nodes[this_lvl]);
-#else
-        const int target_frame_size = gf_group->bit_allocation[arf_pos];
-        const int extra_size = target_frame_size >> dist2top;
-#endif  // NEW_MULTI_LVL_BOOST_VBR_ALLOC
         gf_group->bit_allocation[arf_pos] += extra_size;
       }
       ++frame_index;
@@ -2195,7 +2177,6 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
       }
     }
   }
-#endif  // MULTI_LVL_BOOST_VBR_CQ
 
   if (cpi->new_bwdref_update_rule == 0 && rc->source_alt_ref_pending) {
     if (cpi->num_extra_arfs) {
@@ -2417,7 +2398,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
 #define REDUCE_GF_LENGTH_TO_KEY_THRESH 9
 #define REDUCE_GF_LENGTH_BY 1
   int alt_offset = 0;
-#if REDUCE_LAST_GF_LENGTH
   // The length reduction strategy is tweaked using AOM_Q mode, and doesn't work
   // for VBR mode.
   // Also, we don't have do adjustment for lossless mode.
@@ -2449,7 +2429,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
       i -= roll_back;
     }
   }
-#endif  // REDUCE_LAST_GF_LENGTH
 
   // Should we use the alternate reference frame.
   if (use_alt_ref) {
@@ -2492,7 +2471,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     rc->baseline_gf_interval = i - rc->source_alt_ref_pending;
   }
 
-#if REDUCE_LAST_ALT_BOOST
 #define LAST_ALR_BOOST_FACTOR 0.2f
   rc->arf_boost_factor = 1.0;
   if (rc->source_alt_ref_pending && !is_lossless_requested(&cpi->oxcf)) {
@@ -2502,7 +2480,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
       rc->arf_boost_factor = LAST_ALR_BOOST_FACTOR;
     }
   }
-#endif
 
   if (!cpi->extra_arf_allowed) {
     cpi->num_extra_arfs = 0;

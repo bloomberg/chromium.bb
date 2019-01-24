@@ -40,9 +40,6 @@ extern "C" {
 // (Old structure supports height = 1, but does NOT support height = 4).
 #define MIN_PYRAMID_LVL 2
 #define MAX_PYRAMID_LVL 4
-#define REDUCE_LAST_ALT_BOOST 1
-#define REDUCE_LAST_GF_LENGTH 1
-#define MULTI_LVL_BOOST_VBR_CQ 1
 
 #define MIN_GF_INTERVAL 4
 #define MAX_GF_INTERVAL 16
