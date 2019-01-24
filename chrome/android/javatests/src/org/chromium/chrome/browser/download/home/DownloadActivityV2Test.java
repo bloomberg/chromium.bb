@@ -64,20 +64,20 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
     public void setUpTest() throws Exception {
         super.setUpTest();
         MockitoAnnotations.initMocks(this);
-        // TODO(yliuyliu): Write a new StubbedOfflineContentProvider for new Download UI testing.
-        StubbedProvider stubbedProvider = new StubbedProvider();
+        StubbedOfflineContentProvider stubbedOfflineContentProvider =
+                new StubbedOfflineContentProvider();
         OfflineContentAggregatorFactory.setOfflineContentProviderForTests(
-                stubbedProvider.getOfflineContentProvider());
+                stubbedOfflineContentProvider);
 
         OfflineItem item0 = StubbedProvider.createOfflineItem(0, "20151019 07:26");
         OfflineItem item1 = StubbedProvider.createOfflineItem(1, "20151020 07:27");
         OfflineItem item2 = StubbedProvider.createOfflineItem(2, "20151021 07:28");
         OfflineItem item3 = StubbedProvider.createOfflineItem(3, "20151021 07:29");
 
-        stubbedProvider.getOfflineContentProvider().items.add(item0);
-        stubbedProvider.getOfflineContentProvider().items.add(item1);
-        stubbedProvider.getOfflineContentProvider().items.add(item2);
-        stubbedProvider.getOfflineContentProvider().items.add(item3);
+        stubbedOfflineContentProvider.addItem(item0);
+        stubbedOfflineContentProvider.addItem(item1);
+        stubbedOfflineContentProvider.addItem(item2);
+        stubbedOfflineContentProvider.addItem(item3);
 
         TrackerFactory.setTrackerForTests(mTracker);
 
