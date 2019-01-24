@@ -14,7 +14,8 @@ enum RTCQuicStreamState {
 // https://w3c.github.io/webrtc-quic/#quicstream*
 [
    Exposed=Window,
-   RuntimeEnabled=RTCQuicTransport
+   RuntimeEnabled=RTCQuicTransport,
+   SecureContext
 ] interface RTCQuicStream : EventTarget {
     readonly attribute RTCQuicTransport transport;
     readonly attribute RTCQuicStreamState state;
