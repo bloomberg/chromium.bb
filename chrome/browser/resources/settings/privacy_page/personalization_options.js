@@ -52,6 +52,9 @@ Polymer({
 
     unifiedConsentEnabled: Boolean,
 
+    /** @type {settings.SyncStatus} */
+    syncStatus: Object,
+
     // <if expr="_google_chrome and not chromeos">
     // TODO(dbeam): make a virtual.* pref namespace and set/get this normally
     // (but handled differently in C++).
@@ -135,6 +138,17 @@ Polymer({
         (!!this.prefs.spellcheck &&
          /** @type {!Array<string>} */
          (this.prefs.spellcheck.dictionaries.value).length > 0);
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowDriveSuggest_: function() {
+    return loadTimeData.getBoolean('driveSuggestAvailable') &&
+        !!this.unifiedConsentEnabled && !!this.syncStatus &&
+        !!this.syncStatus.signedIn &&
+        this.syncStatus.statusAction !== settings.StatusAction.REAUTHENTICATE;
   },
 });
 })();
