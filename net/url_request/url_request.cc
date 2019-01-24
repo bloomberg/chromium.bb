@@ -33,7 +33,6 @@
 #include "net/log/net_log_source_type.h"
 #include "net/socket/next_proto.h"
 #include "net/ssl/ssl_cert_request_info.h"
-#include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/redirect_util.h"
 #include "net/url_request/url_request_context.h"
