@@ -378,7 +378,6 @@ void Layer::SetBounds(const gfx::Rect& bounds) {
 void Layer::SetSubpixelPositionOffset(const gfx::Vector2dF& offset) {
   subpixel_position_offset_ = offset;
   RecomputePosition();
-  RecomputeBackdropBounds();
 }
 
 gfx::Rect Layer::GetTargetBounds() const {
@@ -540,7 +539,6 @@ void Layer::SetLayerBackgroundFilters() {
         background_blur_sigma_, SkBlurImageFilter::kClamp_TileMode));
   }
   cc_layer_->SetBackdropFilters(filters);
-  RecomputeBackdropBounds();
 }
 
 float Layer::GetTargetOpacity() const {
@@ -1007,7 +1005,6 @@ void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
   device_scale_factor_ = device_scale_factor;
   RecomputeDrawsContentAndUVRect();
   RecomputePosition();
-  RecomputeBackdropBounds();
   if (nine_patch_layer_) {
     if (!nine_patch_layer_image_.isNull())
       UpdateNinePatchLayerImage(nine_patch_layer_image_);
@@ -1175,7 +1172,6 @@ void Layer::SetBoundsFromAnimation(const gfx::Rect& bounds,
 
   RecomputeDrawsContentAndUVRect();
   RecomputePosition();
-  RecomputeBackdropBounds();
 
   if (delegate_)
     delegate_->OnLayerBoundsChanged(old_bounds, reason);
@@ -1323,7 +1319,6 @@ void Layer::CreateCcLayer() {
   cc_layer_->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
   cc_layer_->SetElementId(cc::ElementId(cc_layer_->id()));
   RecomputePosition();
-  RecomputeBackdropBounds();
 }
 
 void Layer::RecomputeDrawsContentAndUVRect() {
@@ -1345,13 +1340,6 @@ void Layer::RecomputeDrawsContentAndUVRect() {
 void Layer::RecomputePosition() {
   cc_layer_->SetPosition(gfx::PointF(bounds_.origin()) +
                          subpixel_position_offset_);
-}
-
-void Layer::RecomputeBackdropBounds() {
-  gfx::RectF backdrop_filter_bounds =
-      gfx::RectF(bounds().width(), bounds().height());
-  backdrop_filter_bounds.Scale(GetDeviceScaleFactor());
-  cc_layer_->SetBackdropFilterBounds(backdrop_filter_bounds);
 }
 
 void Layer::SetCompositorForAnimatorsInTree(Compositor* compositor) {
