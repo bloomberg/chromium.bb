@@ -68,6 +68,7 @@ struct FieldDataDescription {
       FieldPropertiesFlags::NO_FLAGS;
   const char* autocomplete_attribute = nullptr;
   const char* value = kNonimportantValue;
+  const char* typed_value = nullptr;
   const char* name = kNonimportantValue;
   const char* form_control_type = "text";
   PasswordFieldPrediction prediction = {.type = autofill::MAX_VALID_FIELD_TYPE};
@@ -193,6 +194,8 @@ FormData GetFormDataAndExpectation(const FormParsingTestCase& test_case,
     }
     if (field_description.autocomplete_attribute)
       field.autocomplete_attribute = field_description.autocomplete_attribute;
+    if (field_description.typed_value)
+      field.typed_value = ASCIIToUTF16(field_description.typed_value);
     form_data.fields.push_back(field);
     if (field_description.role == ElementRole::NONE) {
       UpdateResultWithIdByRole(fill_result, unique_id,
@@ -261,8 +264,11 @@ void CheckField(const std::vector<FormFieldData>& fields,
   EXPECT_EQ(element_name, field_it->name);
 #endif
 
+  base::string16 expected_value =
+      field_it->typed_value.empty() ? field_it->value : field_it->typed_value;
+
   if (element_value)
-    EXPECT_EQ(*element_value, field_it->value);
+    EXPECT_EQ(expected_value, *element_value);
 }
 
 // Describes the |form_data| including field values and names. Use this in
@@ -1922,6 +1928,29 @@ TEST(FormParserTest, GetSignonRealm) {
     GURL input(test_case.input);
     EXPECT_EQ(test_case.expected_output, GetSignonRealm(input));
   }
+}
+
+TEST(FormParserTest, TypedValues) {
+  CheckTestData({{"Simple sign-in forms with typed values",
+                  // Tests that typed values are taken as username, password and
+                  // new password instead of values that are set by JavaScript.
+                  {
+                      {.role = ElementRole::USERNAME,
+                       .form_control_type = "text",
+                       .autocomplete_attribute = "username",
+                       .value = "js_username",
+                       .typed_value = "typed_username"},
+                      {.role = ElementRole::CURRENT_PASSWORD,
+                       .form_control_type = "password",
+                       .autocomplete_attribute = "current-password",
+                       .value = "js_password",
+                       .typed_value = "typed_password"},
+                      {.role = ElementRole::NEW_PASSWORD,
+                       .form_control_type = "password",
+                       .autocomplete_attribute = "new-password",
+                       .value = "js_new_password",
+                       .typed_value = "typed_new_password"},
+                  }}});
 }
 
 }  // namespace
