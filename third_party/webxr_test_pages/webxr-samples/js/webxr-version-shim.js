@@ -108,25 +108,28 @@ class WebXRVersionShim {
 
     // We can't test for the existence of the enums in question directly, so this code
     // will just try to create the requested type and fall back if it fails.
-    const NATIVE_REQUEST_FRAME_OF_REFERENCE = XRSession.prototype.requestFrameOfReference;
-    XRSession.prototype.requestFrameOfReference = function(type, options) {
+    const NATIVE_REQUEST_FRAME_OF_REFERENCE = XRSession.prototype.requestReferenceSpace;
+    XRSession.prototype.requestFrameOfReference = function(type, options_original) {
       let session = this;
+      let options = options_original || {};
+      options["type"] = "stationary";
+      options["subtype"] = type;
       // Try the current type.
-      return NATIVE_REQUEST_FRAME_OF_REFERENCE.call(session, type, options).catch((error)=>{
+      return NATIVE_REQUEST_FRAME_OF_REFERENCE.call(session, options).catch((error)=>{
         // FIXME: Should be checking for TypeError specifically. Requires a polyfill update.
         if(error instanceof Error) {
           // If the current type fails, switch to the other version.
           switch(type) {
             case 'eye-level':
-              type = 'eyeLevel';
+              options["subtype"] = 'eyeLevel';
               break;
             case 'head-model':
-              type = 'headModel';
+              options["subtype"] = 'headModel';
               break;
             default:
               return Promise.reject(error);
           }
-          return Promise.resolve(NATIVE_REQUEST_FRAME_OF_REFERENCE.call(session, type, options));
+          return Promise.resolve(NATIVE_REQUEST_FRAME_OF_REFERENCE.call(session, options));
         } else {
           return Promise.reject(error);
         }

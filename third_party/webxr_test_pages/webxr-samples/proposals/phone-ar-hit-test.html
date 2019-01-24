@@ -144,7 +144,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         if (!gl) {
           gl = createWebGLContext({
-            compatibleXRDevice: session.device
+            compatibleXRDevice: session.device,
+            xrCompatible : true,
           });
 
           renderer = new Renderer(gl);
@@ -226,7 +227,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // Called every time a XRSession requests that a new frame be drawn.
       function onXRFrame(t, frame) {
         let session = frame.session;
-        let pose = frame.getDevicePose(xrFrameOfRef);
+        let pose = frame.getViewerPose(xrFrameOfRef);
 
         // If requested, use the pose to cast a reticle into the scene using a
         // continuous hit test. For the moment we're just using the flower
