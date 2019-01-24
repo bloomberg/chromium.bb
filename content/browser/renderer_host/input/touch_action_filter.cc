@@ -331,6 +331,18 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
 
     case WebInputEvent::kGestureTapDown:
       gesture_sequence_in_progress_ = true;
+      if (allowed_touch_action_.has_value())
+        gesture_sequence_.append("AY");
+      else
+        gesture_sequence_.append("AN");
+      if (white_listed_touch_action_.has_value())
+        gesture_sequence_.append("WY");
+      else
+        gesture_sequence_.append("WN");
+      if (active_touch_action_.has_value())
+        gesture_sequence_.append("OY");
+      else
+        gesture_sequence_.append("ON");
       // TODO(xidachen): investigate why the touch action has no value.
       if (compositor_touch_action_enabled_ && !touch_action.has_value())
         SetTouchAction(cc::kTouchActionAuto);
@@ -339,10 +351,6 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       if (num_of_active_touches_ <= 0)
         SetTouchAction(cc::kTouchActionAuto);
       active_touch_action_ = allowed_touch_action_;
-      if (active_touch_action_.has_value())
-        gesture_sequence_.append("OY");
-      else
-        gesture_sequence_.append("ON");
       gesture_sequence_.append(
           base::NumberToString(gesture_event->unique_touch_event_id));
       DCHECK(!drop_current_tap_ending_event_);
