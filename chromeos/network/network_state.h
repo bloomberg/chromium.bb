@@ -116,7 +116,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   const std::string& network_technology() const { return network_technology_; }
   const std::string& activation_type() const { return activation_type_; }
   const std::string& activation_state() const { return activation_state_; }
-  const std::string& roaming() const { return roaming_; }
   const std::string& payment_url() const { return payment_url_; }
   const std::string& payment_post_data() const { return payment_post_data_; }
   bool cellular_out_of_credits() const { return cellular_out_of_credits_; }
@@ -146,7 +145,11 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   // |onc_source_|).
   bool IsManagedByPolicy() const;
 
-  // Returns true if current connection is using mobile data.
+  // Returns true if the network is romaing and the provider does not require
+  // roaming.
+  bool IndicateRoaming() const;
+
+  // Returns true if the current connection is using mobile data.
   bool IsUsingMobileData() const;
 
   // Returns true if the network securty is WEP_8021x (Dynamic WEP)
@@ -265,6 +268,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   std::string activation_type_;
   std::string activation_state_;
   std::string roaming_;
+  bool provider_requires_roaming_ = false;
   std::string payment_url_;
   std::string payment_post_data_;
   bool cellular_out_of_credits_ = false;

@@ -478,6 +478,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
   // |hex_ssid_to_captive_portal_provider_map_|.
   void UpdateCaptivePortalProvider(NetworkState* network);
 
+  // Update networkState properties from the associated DeviceState.
+  void UpdateCellularStateFromDevice(NetworkState* network);
+
   // Cellular networks may not have an associated Shill Service (e.g. when the
   // SIM is locked or a mobile network is not available). This returns a new
   // default cellular network if necessary.

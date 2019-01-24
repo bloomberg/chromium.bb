@@ -14,7 +14,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/vector_icons/vector_icons.h"
-#include "chromeos/network/device_state.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -28,7 +27,6 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vector_icon_types.h"
 
-using chromeos::DeviceState;
 using chromeos::NetworkConnectionHandler;
 using chromeos::NetworkHandler;
 using chromeos::NetworkPortalDetector;
@@ -92,7 +90,7 @@ class NetworkIconImpl {
   Badge vpn_badge_ = {};
 
   // Cached roaming state of the network when the icon was last generated.
-  std::string roaming_state_;
+  bool is_roaming_;
 
   // Cached portal state of the network when the icon was last generated.
   bool behind_captive_portal_;
@@ -439,9 +437,9 @@ bool NetworkIconImpl::UpdateCellularState(const NetworkState* network) {
     technology_badge_ = technology_badge;
     dirty = true;
   }
-  std::string roaming_state = network->roaming();
-  if (roaming_state != roaming_state_) {
-    roaming_state_ = roaming_state;
+  bool is_roaming = network->IndicateRoaming();
+  if (is_roaming != is_roaming_) {
+    is_roaming_ = is_roaming;
     dirty = true;
   }
   return dirty;
@@ -492,18 +490,8 @@ void NetworkIconImpl::GetBadges(const NetworkState* network, Badges* badges) {
     technology_badge_ = {&kNetworkBadgeTechnology4gIcon, icon_color};
   } else if (type == shill::kTypeCellular) {
     // technology_badge_ is set in UpdateCellularState.
-    if (network->IsConnectedState() &&
-        network->roaming() == shill::kRoamingStateRoaming) {
-      // For networks that are always in roaming don't show roaming badge.
-      const DeviceState* device =
-          NetworkHandler::Get()->network_state_handler()->GetDeviceState(
-              network->device_path());
-      LOG_IF(WARNING, !device)
-          << "Could not find device state for " << network->device_path();
-      if (!device || !device->provider_requires_roaming()) {
-        badges->bottom_right = {&kNetworkBadgeRoamingIcon, icon_color};
-      }
-    }
+    if (network->IsConnectedState() && network->IndicateRoaming())
+      badges->bottom_right = {&kNetworkBadgeRoamingIcon, icon_color};
   }
   // Only show technology, VPN, and captive portal badges when connected.
   if (network->IsConnectedState()) {
