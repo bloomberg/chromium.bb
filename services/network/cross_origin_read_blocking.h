@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece_forward.h"
 #include "services/network/initiator_lock_compatibility.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -69,7 +70,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     // ResponseAnalyzer will decide whether |response| needs to be blocked.
     ResponseAnalyzer(const net::URLRequest& request,
                      const ResourceResponse& response,
-                     base::Optional<url::Origin> request_initiator_site_lock);
+                     base::Optional<url::Origin> request_initiator_site_lock,
+                     mojom::FetchRequestMode fetch_request_mode);
 
     ~ResponseAnalyzer();
 
@@ -132,6 +134,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
       kNeedToSniffMore,
     };
     BlockingDecision ShouldBlockBasedOnHeaders(
+        mojom::FetchRequestMode fetch_request_mode,
         const net::URLRequest& request,
         const ResourceResponse& response);
 

@@ -24,6 +24,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+#include "services/network/cross_origin_resource_policy.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/resource_response_info.h"
@@ -565,13 +566,15 @@ class CrossOriginReadBlocking::ResponseAnalyzer::FetchOnlyResourceSniffer
 CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
     const net::URLRequest& request,
     const ResourceResponse& response,
-    base::Optional<url::Origin> request_initiator_site_lock) {
+    base::Optional<url::Origin> request_initiator_site_lock,
+    mojom::FetchRequestMode fetch_request_mode) {
   content_length_ = response.head.content_length;
   http_response_code_ =
       response.head.headers ? response.head.headers->response_code() : 0;
   request_initiator_site_lock_ = request_initiator_site_lock;
 
-  should_block_based_on_headers_ = ShouldBlockBasedOnHeaders(request, response);
+  should_block_based_on_headers_ =
+      ShouldBlockBasedOnHeaders(fetch_request_mode, request, response);
   if (should_block_based_on_headers_ == kNeedToSniffMore)
     CreateSniffers();
 }
@@ -580,6 +583,7 @@ CrossOriginReadBlocking::ResponseAnalyzer::~ResponseAnalyzer() = default;
 
 CrossOriginReadBlocking::ResponseAnalyzer::BlockingDecision
 CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
+    mojom::FetchRequestMode fetch_request_mode,
     const net::URLRequest& request,
     const ResourceResponse& response) {
   // The checks in this method are ordered to rule out blocking in most cases as
@@ -623,12 +627,22 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   if (initiator.scheme() == url::kFileScheme)
     return kAllow;
 
-  // Allow the response through if it has valid CORS headers.
-  std::string cors_header;
-  response.head.headers->GetNormalizedHeader("access-control-allow-origin",
-                                             &cors_header);
-  if (IsValidCorsHeaderSet(initiator, cors_header)) {
-    return kAllow;
+  // Allow the response through if this is a CORS request and the response has
+  // valid CORS headers.
+  switch (fetch_request_mode) {
+    case mojom::FetchRequestMode::kNavigate:
+    case mojom::FetchRequestMode::kNoCors:
+    case mojom::FetchRequestMode::kSameOrigin:
+      break;
+
+    case mojom::FetchRequestMode::kCors:
+    case mojom::FetchRequestMode::kCorsWithForcedPreflight:
+      std::string cors_header;
+      response.head.headers->GetNormalizedHeader("access-control-allow-origin",
+                                                 &cors_header);
+      if (IsValidCorsHeaderSet(initiator, cors_header))
+        return kAllow;
+      break;
   }
 
   // Requests from foo.example.com will consult foo.example.com's service worker
@@ -679,6 +693,40 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   // the checks during the SniffForFetchOnlyResource() phase.
   canonical_mime_type_ =
       network::CrossOriginReadBlocking::GetCanonicalMimeType(mime_type);
+
+  // CORS is currently implemented in the renderer process, so it's useful for
+  // CORB to filter failed "cors" mode fetches to avoid leaking the responses to
+  // the renderer when possible (e.g., depending on MIME type and sniffing).
+  // This will eventually be fixed with OOR-CORS.
+  //
+  // In the mean time, we can try to filter a few additional failed CORS
+  // fetches, treating the Cross-Origin-Resource-Policy (CORP) header as an
+  // opt-in to CORB.  CORP headers are enforced elsewhere and normally only
+  // apply to "no-cors" mode fetches.  If such a header happens to be on the
+  // response during other fetch modes, and if the same-origin and
+  // IsValidCorsHeaderSet checks above have failed (and thus the request will
+  // fail in the renderer), then we can let CORB filter the response without
+  // caring about MIME type or sniffing.
+  //
+  // To make CrossOriginResourcePolicy::Verify apply to all fetch modes in this
+  // case and not just "no-cors", we pass kNoCors as a hard-coded value.  This
+  // does not affect the usual enforcement of CORP headers.
+  //
+  // TODO(lukasza): Once OOR-CORS launches (https://crbug.com/736308), this code
+  // block will no longer be necessary since all failed CORS requests will be
+  // blocked before reaching the renderer process (even without CORB's help).
+  // Of course this assumes that OOR-CORS will use trustworthy
+  // |request_initiator| (i.e. vetted against |request_initiator|site_lock|).
+  constexpr mojom::FetchRequestMode kOverreachingFetchMode =
+      mojom::FetchRequestMode::kNoCors;
+  if (CrossOriginResourcePolicy::kBlock ==
+      CrossOriginResourcePolicy::Verify(request, response,
+                                        kOverreachingFetchMode,
+                                        request_initiator_site_lock_)) {
+    // Ignore mime types and/or sniffing and have CORB block all responses with
+    // COR*P* header.
+    return kBlock;
+  }
 
   // If this is a partial response, sniffing is not possible, so allow the
   // response if it's not a protected mime type.

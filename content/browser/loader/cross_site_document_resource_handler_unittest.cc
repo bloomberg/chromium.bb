@@ -1203,11 +1203,11 @@ class CrossSiteDocumentResourceHandlerTest
     stream_sink_ = stream_sink->GetWeakPtr();
 
     // Create the CrossSiteDocumentResourceHandler.
-    bool is_nocors_plugin_request =
-        resource_type == RESOURCE_TYPE_PLUGIN_RESOURCE &&
-        cors_request == OriginHeader::kOmit;
+    auto fetch_request_mode = cors_request == OriginHeader::kOmit
+                                  ? network::mojom::FetchRequestMode::kNoCors
+                                  : network::mojom::FetchRequestMode::kCors;
     auto document_blocker = std::make_unique<CrossSiteDocumentResourceHandler>(
-        std::move(stream_sink), request_.get(), is_nocors_plugin_request);
+        std::move(stream_sink), request_.get(), fetch_request_mode);
     document_blocker_ = document_blocker.get();
     first_handler_ = std::move(document_blocker);
 

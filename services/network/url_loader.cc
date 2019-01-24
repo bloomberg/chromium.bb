@@ -33,6 +33,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/chunked_data_pipe_upload_data_stream.h"
+#include "services/network/cross_origin_resource_policy.h"
 #include "services/network/data_pipe_element_reader.h"
 #include "services/network/empty_url_loader_client.h"
 #include "services/network/loader_util.h"
@@ -397,6 +398,7 @@ URLLoader::URLLoader(
       request.fetch_request_mode == mojom::FetchRequestMode::kNoCors &&
       CrossOriginReadBlocking::ShouldAllowForPlugin(
           factory_params_->process_id);
+  fetch_request_mode_ = request.fetch_request_mode;
 
   throttling_token_ = network::ScopedThrottlingToken::MaybeCreate(
       url_request_->net_log().source().id, request.throttling_profile_id);
@@ -657,6 +659,17 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
     raw_request_headers_ = net::HttpRawRequestHeaders();
     raw_response_headers_ = nullptr;
   }
+
+  // Enforce the Cross-Origin-Resource-Policy (CORP) header.
+  if (CrossOriginResourcePolicy::kBlock ==
+      CrossOriginResourcePolicy::Verify(
+          *url_request_, *response, fetch_request_mode_,
+          factory_params_->request_initiator_site_lock)) {
+    CompleteBlockedResponse(net::ERR_BLOCKED_BY_RESPONSE, false);
+    DeleteSelf();
+    return;
+  }
+
   url_loader_client_->OnReceiveRedirect(redirect_info, response->head);
 }
 
@@ -790,7 +803,18 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
       base::Bind(&URLLoader::OnResponseBodyStreamReady,
                  base::Unretained(this)));
 
-  // Figure out if we need to sniff (for MIME type detection or for CORB).
+  // Enforce the Cross-Origin-Resource-Policy (CORP) header.
+  if (CrossOriginResourcePolicy::kBlock ==
+      CrossOriginResourcePolicy::Verify(
+          *url_request_, *response_, fetch_request_mode_,
+          factory_params_->request_initiator_site_lock)) {
+    CompleteBlockedResponse(net::ERR_BLOCKED_BY_RESPONSE, false);
+    DeleteSelf();
+    return;
+  }
+
+  // Figure out if we need to sniff (for MIME type detection or for Cross-Origin
+  // Read Blocking / CORB).
   if (factory_params_->is_corb_enabled && !is_nocors_corb_excluded_request_) {
     CrossOriginReadBlocking::LogAction(
         CrossOriginReadBlocking::Action::kResponseStarted);
@@ -798,7 +822,7 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
     corb_analyzer_ =
         std::make_unique<CrossOriginReadBlocking::ResponseAnalyzer>(
             *url_request_, *response_,
-            factory_params_->request_initiator_site_lock);
+            factory_params_->request_initiator_site_lock, fetch_request_mode_);
     is_more_corb_sniffing_needed_ = corb_analyzer_->needs_sniffing();
     if (corb_analyzer_->ShouldBlock()) {
       DCHECK(!is_more_corb_sniffing_needed_);
@@ -1268,6 +1292,27 @@ void URLLoader::OnHeadersReceivedComplete(
   std::move(callback).Run(result);
 }
 
+void URLLoader::CompleteBlockedResponse(int error_code,
+                                        bool should_report_corb_blocking) {
+  // The response headers and body shouldn't yet be sent to the URLLoaderClient.
+  DCHECK(response_);
+  DCHECK(consumer_handle_.is_valid());
+
+  // Tell the URLLoaderClient that the response has been completed.
+  URLLoaderCompletionStatus status;
+  status.error_code = error_code;
+  status.completion_time = base::TimeTicks::Now();
+  status.encoded_data_length = 0;
+  status.encoded_body_length = 0;
+  status.decoded_body_length = 0;
+  status.should_report_corb_blocking = should_report_corb_blocking;
+  url_loader_client_->OnComplete(status);
+
+  // Reset the connection to the URLLoaderClient.  This helps ensure that we
+  // won't accidentally leak any data to the renderer from this point on.
+  url_loader_client_.reset();
+}
+
 URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
   // The response headers and body shouldn't yet be sent to the URLLoaderClient.
   DCHECK(response_);
@@ -1284,27 +1329,17 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
       std::move(empty_data_pipe.consumer_handle));
 
   // Tell the real URLLoaderClient that the response has been completed.
-  URLLoaderCompletionStatus status;
+  bool should_report_corb_blocking =
+      corb_analyzer_->ShouldReportBlockedResponse();
   if (resource_type_ == factory_params_->corb_detachable_resource_type) {
     // TODO(lukasza): https://crbug.com/827633#c5: Consider passing net::ERR_OK
     // instead.  net::ERR_ABORTED was chosen for consistency with the old CORB
     // implementation that used to go through DetachableResourceHandler.
-    status.error_code = net::ERR_ABORTED;
+    CompleteBlockedResponse(net::ERR_ABORTED, should_report_corb_blocking);
   } else {
     // CORB responses are reported as a success.
-    status.error_code = net::OK;
+    CompleteBlockedResponse(net::OK, should_report_corb_blocking);
   }
-  status.completion_time = base::TimeTicks::Now();
-  status.encoded_data_length = 0;
-  status.encoded_body_length = 0;
-  status.decoded_body_length = 0;
-  status.should_report_corb_blocking =
-      corb_analyzer_->ShouldReportBlockedResponse();
-  url_loader_client_->OnComplete(status);
-
-  // Reset the connection to the URLLoaderClient.  This helps ensure that we
-  // won't accidentally leak any data to the renderer from this point on.
-  url_loader_client_.reset();
 
   // If the factory is asking to complete requests of this type, then we need to
   // continue processing the response to make sure the network cache is
