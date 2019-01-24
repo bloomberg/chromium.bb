@@ -7,8 +7,16 @@ Date: 2019-01-15
 License: MIT
 License File: NOT_SHIPPED
 Security Critical: no
+
 Description:
 A fork of the WebXR samples to be kept in sync with Chrome and used for testing Chrome.
+
 Local Modifications:
 Forked to provide a stable set of test pages in sync with Chrome.
 Stripped out the media/ directory to minimize the size.
+
+Instructions:
+In order to serve the samples locally, few steps are required:
+1. Copy contents of src/chrome/test/data/xr/webxr_samples/media into src/third_party/webxr_test_pages/webxr-samples/media
+2. (optional) If editing cottontail code, run `npm install` and `npm run build-all` in src/third_party/webxr_test_pages/webxr-samples/js/cottontail
+3. Serve files, for example by running `python -m SimpleHTTPServer <port number>` in src/third_party/webxr_test_pages/webxr-samples
