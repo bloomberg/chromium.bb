@@ -260,7 +260,6 @@ class ScopedAllowThreadRecallForStackSamplingProfiler;
 class SimpleThread;
 class StackSamplingProfiler;
 class Thread;
-class ThreadTestHelper;
 
 #if DCHECK_IS_ON()
 #define INLINE_IF_DCHECK_IS_OFF BASE_EXPORT
@@ -456,8 +455,8 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
       MultiThreadedProxyResolverScopedAllowJoinOnIO;  // http://crbug.com/69710
   friend class net::NetworkChangeNotifierMac;         // http://crbug.com/125097
   friend class net::
-      ScopedAllowThreadJoinForProxyResolverV8Tracing; // http://crbug.com/69710
-  friend class printing::PrinterQuery;                // http://crbug.com/66082
+      ScopedAllowThreadJoinForProxyResolverV8Tracing;  // http://crbug.com/69710
+  friend class printing::PrinterQuery;                 // http://crbug.com/66082
   // Not used in production yet, https://crbug.com/844078.
   friend class service_manager::ServiceProcessLauncher;
   friend class ui::WindowResizeHelperMac;  // http://crbug.com/902829
@@ -557,52 +556,24 @@ class BASE_EXPORT ThreadRestrictions {
 #endif
 
  private:
-  // TODO(etiennep): Remove friendship for ScopedAllowWait.
   // DO NOT ADD ANY OTHER FRIEND STATEMENTS.
   // BEGIN ALLOWED USAGE.
-  friend class android_webview::AwFormDatabaseService;
-  friend class android_webview::CookieManager;
-  friend class base::StackSamplingProfiler;
   friend class content::BrowserMainLoop;
   friend class content::BrowserShutdownProfileDumper;
   friend class content::BrowserTestBase;
-  friend class content::NestedMessagePumpAndroid;
   friend class content::ScopedAllowWaitForDebugURL;
   friend class ::HistogramSynchronizer;
   friend class internal::TaskTracker;
-  friend class cc::CompletionEvent;
-  friend class cc::SingleThreadTaskGraphRunner;
-  friend class content::CategorizedWorkerPool;
-  friend class remoting::AutoThread;
-  friend class ui::WindowResizeHelperMac;
   friend class web::WebMainLoop;
   friend class MessagePumpDefault;
-  friend class SimpleThread;
-  friend class Thread;
-  friend class ThreadTestHelper;
   friend class PlatformThread;
-  friend class android::JavaHandlerThread;
-  friend class mojo::SyncCallRestrictions;
   friend class ui::CommandBufferClientImpl;
   friend class ui::CommandBufferLocal;
   friend class ui::GpuState;
 
   // END ALLOWED USAGE.
   // BEGIN USAGE THAT NEEDS TO BE FIXED.
-  friend class ::chromeos::BlockingMethodCaller;  // http://crbug.com/125360
-  friend class ::chromeos::system::StatisticsProviderImpl;  // http://crbug.com/125385
   friend class chrome_browser_net::Predictor;     // http://crbug.com/78451
-  friend class
-      content::BrowserGpuChannelHostFactory;      // http://crbug.com/125248
-  friend class content::TextInputClientMac;       // http://crbug.com/121917
-  friend class dbus::Bus;                         // http://crbug.com/125222
-  friend class disk_cache::BackendImpl;           // http://crbug.com/74623
-  friend class disk_cache::InFlightIO;            // http://crbug.com/74623
-  friend class gpu::GpuChannelHost;               // http://crbug.com/125264
-  friend class net::internal::AddressTrackerLinux;  // http://crbug.com/125097
-  friend class net::NetworkChangeNotifierMac;     // http://crbug.com/125097
-  friend class ::BrowserProcessImpl;              // http://crbug.com/125207
-  friend class ::NativeBackendKWallet;            // http://crbug.com/125331
 #if !defined(OFFICIAL_BUILD)
   friend class content::SoftwareOutputDeviceMus;  // Interim non-production code
 #endif
@@ -614,24 +585,6 @@ class BASE_EXPORT ThreadRestrictions {
 #else
   static bool SetWaitAllowed(bool allowed) { return true; }
 #endif
-
-  // Constructing a ScopedAllowWait temporarily allows waiting on the current
-  // thread.  Doing this is almost always incorrect, which is why we limit who
-  // can use this through friend.
-  //
-  // DEPRECATED. Use ScopedAllowBaseSyncPrimitives.
-  class BASE_EXPORT ScopedAllowWait {
-   public:
-    ScopedAllowWait() EMPTY_BODY_IF_DCHECK_IS_OFF;
-    ~ScopedAllowWait() EMPTY_BODY_IF_DCHECK_IS_OFF;
-
-   private:
-#if DCHECK_IS_ON()
-    const bool was_allowed_;
-#endif
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedAllowWait);
-  };
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ThreadRestrictions);
 };

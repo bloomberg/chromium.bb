@@ -188,13 +188,6 @@ bool ThreadRestrictions::SetWaitAllowed(bool allowed) {
   return !previous_disallowed;
 }
 
-ThreadRestrictions::ScopedAllowWait::ScopedAllowWait()
-    : was_allowed_(SetWaitAllowed(true)) {}
-
-ThreadRestrictions::ScopedAllowWait::~ScopedAllowWait() {
-  SetWaitAllowed(was_allowed_);
-}
-
 }  // namespace base
 
 #endif  // DCHECK_IS_ON()
