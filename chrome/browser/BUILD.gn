@@ -1222,8 +1222,6 @@ jumbo_split_static_library("browser") {
     "prerender/prerender_message_filter.h",
     "prerender/prerender_origin.cc",
     "prerender/prerender_origin.h",
-    "prerender/prerender_resource_throttle.cc",
-    "prerender/prerender_resource_throttle.h",
     "prerender/prerender_tab_helper.cc",
     "prerender/prerender_tab_helper.h",
     "prerender/prerender_util.cc",

@@ -4513,18 +4513,15 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
   }
 #endif  // defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
 
-  if (network_service_enabled) {
-    ChromeNavigationUIData* chrome_navigation_ui_data =
-        static_cast<ChromeNavigationUIData*>(navigation_ui_data);
-    if (chrome_navigation_ui_data &&
-        chrome_navigation_ui_data->prerender_mode() !=
-            prerender::NO_PRERENDER) {
-      result.push_back(std::make_unique<prerender::PrerenderURLLoaderThrottle>(
-          chrome_navigation_ui_data->prerender_mode(),
-          chrome_navigation_ui_data->prerender_histogram_prefix(),
-          base::BindOnce(GetPrerenderCanceller, wc_getter),
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})));
-    }
+  ChromeNavigationUIData* chrome_navigation_ui_data =
+      static_cast<ChromeNavigationUIData*>(navigation_ui_data);
+  if (chrome_navigation_ui_data &&
+      chrome_navigation_ui_data->prerender_mode() != prerender::NO_PRERENDER) {
+    result.push_back(std::make_unique<prerender::PrerenderURLLoaderThrottle>(
+        chrome_navigation_ui_data->prerender_mode(),
+        chrome_navigation_ui_data->prerender_histogram_prefix(),
+        base::BindOnce(GetPrerenderCanceller, wc_getter),
+        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})));
   }
 
   if (io_data) {
