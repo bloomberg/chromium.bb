@@ -68,7 +68,7 @@ Secure origins
                         </SPAN>
                         <DIV class=icon security-property security-property-secure >
                         </DIV>
-                        <SPAN is=url-text >
+                        <SPAN >
                             <SPAN class=url-scheme-secure >
 https
                             </SPAN>
@@ -89,7 +89,7 @@ foo.test
                         </SPAN>
                         <DIV class=icon security-property security-property-secure >
                         </DIV>
-                        <SPAN is=url-text >
+                        <SPAN >
                             <SPAN class=url-scheme-secure >
 https
                             </SPAN>
@@ -189,7 +189,7 @@ Secure origins
                         </SPAN>
                         <DIV class=icon security-property security-property-secure >
                         </DIV>
-                        <SPAN is=url-text >
+                        <SPAN >
                             <SPAN class=url-scheme-secure >
 https
                             </SPAN>
@@ -210,7 +210,7 @@ foo.test
                         </SPAN>
                         <DIV class=icon security-property security-property-secure >
                         </DIV>
-                        <SPAN is=url-text >
+                        <SPAN >
                             <SPAN class=url-scheme-secure >
 https
                             </SPAN>
@@ -310,7 +310,7 @@ Secure origins
                         </SPAN>
                         <DIV class=icon security-property security-property-secure >
                         </DIV>
-                        <SPAN is=url-text >
+                        <SPAN >
                             <SPAN class=url-scheme-secure >
 https
                             </SPAN>
@@ -331,7 +331,7 @@ foo.test
                         </SPAN>
                         <DIV class=icon security-property security-property-secure >
                         </DIV>
-                        <SPAN is=url-text >
+                        <SPAN >
                             <SPAN class=url-scheme-secure >
 https
                             </SPAN>
