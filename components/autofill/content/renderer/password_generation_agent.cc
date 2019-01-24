@@ -443,7 +443,7 @@ void PasswordGenerationAgent::GeneratedPasswordAccepted(
   std::unique_ptr<PasswordForm> presaved_form(CreatePasswordFormToPresave());
   if (presaved_form) {
     DCHECK_NE(base::string16(), presaved_form->password_value);
-    GetPasswordManagerClient()->PresaveGeneratedPassword(*presaved_form);
+    GetPasswordGenerationDriver()->PresaveGeneratedPassword(*presaved_form);
   }
 
   // Call UpdateStateForTextChange after the corresponding PasswordFormManager
@@ -492,7 +492,8 @@ void PasswordGenerationAgent::FoundFormEligibleForGeneration(
   generation_enabled_fields_[form.new_password_renderer_id] = form;
 }
 
-void PasswordGenerationAgent::UserTriggeredGeneratePassword() {
+void PasswordGenerationAgent::UserTriggeredGeneratePassword(
+    UserTriggeredGeneratePasswordCallback callback) {
   if (SetUpUserTriggeredGeneration()) {
     LogMessage(Logger::STRING_GENERATION_RENDERER_SHOW_MANUAL_GENERATION_POPUP);
     autofill::password_generation::PasswordGenerationUIData
@@ -505,11 +506,10 @@ void PasswordGenerationAgent::UserTriggeredGeneratePassword() {
             GetTextDirectionForElement(
                 current_generation_item_->generation_element_),
             current_generation_item_->form_);
-    // TODO(crbug.com/845458): remove it. The renderer should never invoke the
-    // prompt directly.
-    GetPasswordManagerClient()->ShowManualPasswordGenerationPopup(
-        password_generation_ui_data);
+    std::move(callback).Run(std::move(password_generation_ui_data));
     current_generation_item_->generation_popup_shown_ = true;
+  } else {
+    std::move(callback).Run(base::nullopt);
   }
 }
 
@@ -581,7 +581,7 @@ void PasswordGenerationAgent::DetermineGenerationElement() {
       current_generation_item_.reset(new GenerationItemInfo(
           *automatic_generation_form_data_, automatic_generation_element_));
     }
-    GetPasswordManagerClient()->GenerationAvailableForForm(
+    GetPasswordGenerationDriver()->GenerationAvailableForForm(
         automatic_generation_form_data_->form);
     return;
   }
@@ -710,7 +710,7 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
       std::unique_ptr<PasswordForm> presaved_form(
           CreatePasswordFormToPresave());
       if (presaved_form)
-        GetPasswordManagerClient()->PresaveGeneratedPassword(*presaved_form);
+        GetPasswordGenerationDriver()->PresaveGeneratedPassword(*presaved_form);
     }
     return false;
   }
@@ -748,7 +748,7 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
       std::unique_ptr<PasswordForm> presaved_form(
           CreatePasswordFormToPresave());
       if (presaved_form) {
-        GetPasswordManagerClient()->PresaveGeneratedPassword(*presaved_form);
+        GetPasswordGenerationDriver()->PresaveGeneratedPassword(*presaved_form);
       }
     }
   }
@@ -781,19 +781,19 @@ void PasswordGenerationAgent::AutomaticGenerationStatusChanged(bool available) {
                 current_generation_item_->generation_element_),
             current_generation_item_->form_);
     current_generation_item_->generation_popup_shown_ = true;
-    GetPasswordManagerClient()->AutomaticGenerationStatusChanged(
+    GetPasswordGenerationDriver()->AutomaticGenerationStatusChanged(
         true, password_generation_ui_data);
   } else {
     // Hide the generation popup.
-    GetPasswordManagerClient()->AutomaticGenerationStatusChanged(false,
-                                                                 base::nullopt);
+    GetPasswordGenerationDriver()->AutomaticGenerationStatusChanged(
+        false, base::nullopt);
   }
 }
 
 void PasswordGenerationAgent::ShowEditingPopup() {
   if (!render_frame())
     return;
-  GetPasswordManagerClient()->ShowPasswordEditingPopup(
+  GetPasswordGenerationDriver()->ShowPasswordEditingPopup(
       render_frame()->GetRenderView()->ElementBoundsInWindow(
           current_generation_item_->generation_element_),
       *CreatePasswordFormToPresave());
@@ -801,7 +801,7 @@ void PasswordGenerationAgent::ShowEditingPopup() {
 }
 
 void PasswordGenerationAgent::GenerationRejectedByTyping() {
-  GetPasswordManagerClient()->PasswordGenerationRejectedByTyping();
+  GetPasswordGenerationDriver()->PasswordGenerationRejectedByTyping();
 }
 
 void PasswordGenerationAgent::PasswordNoLongerGenerated() {
@@ -824,7 +824,7 @@ void PasswordGenerationAgent::PasswordNoLongerGenerated() {
   }
   std::unique_ptr<PasswordForm> presaved_form(CreatePasswordFormToPresave());
   if (presaved_form)
-    GetPasswordManagerClient()->PasswordNoLongerGenerated(*presaved_form);
+    GetPasswordGenerationDriver()->PasswordNoLongerGenerated(*presaved_form);
 }
 
 void PasswordGenerationAgent::MaybeCreateCurrentGenerationItem(
@@ -869,14 +869,14 @@ PasswordGenerationAgent::GetPasswordManagerDriver() {
   return password_agent_->GetPasswordManagerDriver();
 }
 
-const mojom::PasswordManagerClientAssociatedPtr&
-PasswordGenerationAgent::GetPasswordManagerClient() {
-  if (!password_manager_client_) {
+const mojom::PasswordGenerationDriverAssociatedPtr&
+PasswordGenerationAgent::GetPasswordGenerationDriver() {
+  if (!password_generation_client_) {
     render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
-        &password_manager_client_);
+        &password_generation_client_);
   }
 
-  return password_manager_client_;
+  return password_generation_client_;
 }
 
 void PasswordGenerationAgent::LogMessage(Logger::StringID message_id) {

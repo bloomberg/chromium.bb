@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_AUTOFILL_FAKE_PASSWORD_MANAGER_CLIENT_H_
-#define CHROME_RENDERER_AUTOFILL_FAKE_PASSWORD_MANAGER_CLIENT_H_
+#ifndef CHROME_RENDERER_AUTOFILL_FAKE_PASSWORD_GENERATION_DRIVER_H_
+#define CHROME_RENDERER_AUTOFILL_FAKE_PASSWORD_GENERATION_DRIVER_H_
 
 #include <string>
 #include <vector>
@@ -16,24 +16,20 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-class FakePasswordManagerClient
-    : public autofill::mojom::PasswordManagerClient {
+class FakePasswordGenerationDriver
+    : public autofill::mojom::PasswordGenerationDriver {
  public:
-  FakePasswordManagerClient();
+  FakePasswordGenerationDriver();
 
-  ~FakePasswordManagerClient() override;
+  ~FakePasswordGenerationDriver() override;
 
   void BindRequest(
-      autofill::mojom::PasswordManagerClientAssociatedRequest request);
+      autofill::mojom::PasswordGenerationDriverAssociatedRequest request);
 
   void Flush();
 
   bool called_automatic_generation_status_changed_true() const {
     return called_automatic_generation_status_changed_true_;
-  }
-
-  bool called_show_manual_pw_generation_popup() const {
-    return called_show_manual_pw_generation_popup_;
   }
 
   bool called_generation_available_for_form() const {
@@ -48,10 +44,6 @@ class FakePasswordManagerClient
     called_automatic_generation_status_changed_true_ = false;
   }
 
-  void reset_called_show_manual_pw_generation_popup() {
-    called_show_manual_pw_generation_popup_ = false;
-  }
-
   void reset_called_generation_available_for_form() {
     called_generation_available_for_form_ = false;
   }
@@ -61,7 +53,7 @@ class FakePasswordManagerClient
   }
 
   // TODO(crbug.com/851021): move all the methods to GMock.
-  // autofill::mojom::PasswordManagerClient:
+  // autofill::mojom::PasswordGenerationDriver:
   MOCK_METHOD1(PresaveGeneratedPassword,
                void(const autofill::PasswordForm& password_form));
   MOCK_METHOD1(PasswordNoLongerGenerated,
@@ -78,10 +70,6 @@ class FakePasswordManagerClient
           autofill::password_generation::PasswordGenerationUIData>& ui_data)
       override;
 
-  void ShowManualPasswordGenerationPopup(
-      const autofill::password_generation::PasswordGenerationUIData& ui_data)
-      override;
-
   void GenerationAvailableForForm(const autofill::PasswordForm& form) override;
 
   void PasswordGenerationRejectedByTyping() override;
@@ -89,18 +77,15 @@ class FakePasswordManagerClient
   // Records whether AutomaticGenerationStatusChanged(true) gets called.
   bool called_automatic_generation_status_changed_true_ = false;
 
-  // Records whether ShowPasswordGenerationPopup() gets called.
-  bool called_show_manual_pw_generation_popup_ = false;
-
   // Records whether GenerationAvailableForForm() gets called.
   bool called_generation_available_for_form_ = false;
 
   // Records whether PasswordGenerationRejecteByTyping() gets called.
   bool called_password_generation_rejected_by_typing_ = false;
 
-  mojo::AssociatedBinding<autofill::mojom::PasswordManagerClient> binding_;
+  mojo::AssociatedBinding<autofill::mojom::PasswordGenerationDriver> binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakePasswordManagerClient);
+  DISALLOW_COPY_AND_ASSIGN(FakePasswordGenerationDriver);
 };
 
-#endif  // CHROME_RENDERER_AUTOFILL_FAKE_PASSWORD_MANAGER_CLIENT_H_
+#endif  // CHROME_RENDERER_AUTOFILL_FAKE_PASSWORD_GENERATION_DRIVER_H_

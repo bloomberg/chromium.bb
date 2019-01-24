@@ -79,7 +79,7 @@ interface AutofillDriver {
 
 // There is one instance of this interface per web contents in the browser
 // process that handles all the frames. The motivation was to make the interface
-// associated with PasswordManagerClient.
+// associated with PasswordGenerationDriver.
 interface PasswordManagerDriver {
   // Notification that password forms have been seen that are candidates for
   // filling/submitting by the password manager.
@@ -141,7 +141,7 @@ interface PasswordManagerDriver {
 
 // There is one instance of this interface per web contents in the browser
 // process.
-interface PasswordManagerClient {
+interface PasswordGenerationDriver {
   // Instructs the browser that generation is available for this particular
   // form. This is used for UMA stats.
   GenerationAvailableForForm(PasswordForm password_form);
@@ -150,14 +150,6 @@ interface PasswordManagerClient {
   // unavailable and provides data needed by the UI.
   AutomaticGenerationStatusChanged(
       bool available, PasswordGenerationUIData? password_generation_ui_data);
-
-  // Instructs the browser to show the password generation popup for manual
-  // generation and provides the data necessary to display it.
-  // TODO(crbug.com/845458): Replace this with a method called from the browser
-  // when user triggers generation manually which returns a boolean signaling
-  // whether the state for generation could be saved or not.
-  ShowManualPasswordGenerationPopup(
-      PasswordGenerationUIData password_generation_ui_data);
 
   // Instructs the browser to show the popup for editing a generated password.
   // The location should be specified in the renderers coordinate system. Form

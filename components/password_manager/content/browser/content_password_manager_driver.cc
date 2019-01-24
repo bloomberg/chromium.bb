@@ -135,10 +135,6 @@ void ContentPasswordManagerDriver::ClearPreviewedForm() {
   GetAutofillAgent()->ClearPreviewedForm();
 }
 
-void ContentPasswordManagerDriver::GeneratePassword() {
-  GetPasswordGenerationAgent()->UserTriggeredGeneratePassword();
-}
-
 PasswordGenerationManager*
 ContentPasswordManagerDriver::GetPasswordGenerationManager() {
   return &password_generation_manager_;
@@ -182,6 +178,13 @@ void ContentPasswordManagerDriver::DidNavigateFrame(
                                GetPasswordManager());
     GetPasswordAutofillManager()->DidNavigateMainFrame();
   }
+}
+
+void ContentPasswordManagerDriver::GeneratePassword(
+    autofill::mojom::PasswordGenerationAgent::
+        UserTriggeredGeneratePasswordCallback callback) {
+  GetPasswordGenerationAgent()->UserTriggeredGeneratePassword(
+      std::move(callback));
 }
 
 const autofill::mojom::AutofillAgentAssociatedPtr&

@@ -14,7 +14,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/renderer/autofill/fake_mojo_password_manager_driver.h"
-#include "chrome/renderer/autofill/fake_password_manager_client.h"
+#include "chrome/renderer/autofill/fake_password_generation_driver.h"
 #include "chrome/renderer/autofill/password_generation_test_utils.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
@@ -297,7 +297,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     view_->GetMainRenderFrame()
         ->GetRemoteAssociatedInterfaces()
         ->OverrideBinderForTesting(
-            mojom::PasswordManagerClient::Name_,
+            mojom::PasswordGenerationDriver::Name_,
             base::BindRepeating([](mojo::ScopedInterfaceEndpointHandle handle) {
               handle.reset();
             }));
@@ -363,7 +363,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     blink::AssociatedInterfaceProvider* remote_associated_interfaces =
         view_->GetMainRenderFrame()->GetRemoteAssociatedInterfaces();
     remote_associated_interfaces->OverrideBinderForTesting(
-        mojom::PasswordManagerClient::Name_,
+        mojom::PasswordGenerationDriver::Name_,
         base::BindRepeating(
             &PasswordAutofillAgentTest::BindPasswordManagerClient,
             base::Unretained(this)));
@@ -684,7 +684,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
 
   void BindPasswordManagerClient(mojo::ScopedInterfaceEndpointHandle handle) {
     fake_pw_client_.BindRequest(
-        mojom::PasswordManagerClientAssociatedRequest(std::move(handle)));
+        mojom::PasswordGenerationDriverAssociatedRequest(std::move(handle)));
   }
 
   void SaveAndSubmitForm() { SaveAndSubmitForm(username_element_.Form()); }
@@ -720,7 +720,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   }
 
   FakeMojoPasswordManagerDriver fake_driver_;
-  FakePasswordManagerClient fake_pw_client_;
+  FakePasswordGenerationDriver fake_pw_client_;
 
   base::string16 username1_;
   base::string16 username2_;
