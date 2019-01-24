@@ -11,4 +11,6 @@ D8 is a dexer that converts java byte code to dex code. R8 is a proguard-like
 optimizer that also has the ability to dex. D8 is found within R8's repo.
 
 Local Modifications:
-None
+Turning off vertical and horizontal class merging, as described in
+https://issuetracker.google.com/122902374#comment11. We should no longer make
+this modification once the linked bug is fixed.
