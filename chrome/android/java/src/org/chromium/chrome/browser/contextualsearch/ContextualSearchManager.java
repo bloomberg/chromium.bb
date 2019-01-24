@@ -125,8 +125,11 @@ public class ContextualSearchManager
     private final ViewTreeObserver.OnGlobalFocusChangeListener mOnFocusChangeListener;
     private final TabModelObserver mTabModelObserver;
 
-    // The Ranker logger to use to write Tap Suppression Ranker logs to UMA.
-    private final ContextualSearchInteractionRecorder mTapSuppressionInteractionRecorder;
+    /**
+     * The {@link ContextualSearchInteractionRecorder} to use to record user interactions and apply
+     * ML, etc.
+     */
+    private final ContextualSearchInteractionRecorder mInteractionRecorder;
 
     private final ContextualSearchSelectionClient mContextualSearchSelectionClient;
 
@@ -259,7 +262,7 @@ public class ContextualSearchManager
         mTranslateController = new ContextualSearchTranslateController(mPolicy, this);
         mInternalStateController = new ContextualSearchInternalStateController(
                 mPolicy, getContextualSearchInternalStateHandler());
-        mTapSuppressionInteractionRecorder = new ContextualSearchRankerLoggerImpl();
+        mInteractionRecorder = new ContextualSearchRankerLoggerImpl();
         mContextualSearchSelectionClient = new ContextualSearchSelectionClient();
         mInProductHelp = new ContextualSearchIPH();
     }
@@ -674,17 +677,20 @@ public class ContextualSearchManager
      * @param caption The caption to display.
      * @param quickActionUri The URI for the intent associated with the quick action.
      * @param quickActionCategory The {@link QuickActionCategory} for the quick action.
+     * @param loggedEventId The EventID logged by the server, which should be recorded and sent back
+     *        to the server along with user action results in a subsequent request.
      */
     @CalledByNative
     public void onSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
             final String searchTerm, final String displayText, final String alternateTerm,
             final String mid, boolean doPreventPreload, int selectionStartAdjust,
             int selectionEndAdjust, final String contextLanguage, final String thumbnailUrl,
-            final String caption, final String quickActionUri, final int quickActionCategory) {
+            final String caption, final String quickActionUri, final int quickActionCategory,
+            final long loggedEventId) {
         mNetworkCommunicator.handleSearchTermResolutionResponse(isNetworkUnavailable, responseCode,
                 searchTerm, displayText, alternateTerm, mid, doPreventPreload, selectionStartAdjust,
                 selectionEndAdjust, contextLanguage, thumbnailUrl, caption, quickActionUri,
-                quickActionCategory);
+                quickActionCategory, loggedEventId);
     }
 
     @Override
@@ -692,7 +698,7 @@ public class ContextualSearchManager
             String searchTerm, String displayText, String alternateTerm, String mid,
             boolean doPreventPreload, int selectionStartAdjust, int selectionEndAdjust,
             String contextLanguage, String thumbnailUrl, String caption, String quickActionUri,
-            int quickActionCategory) {
+            int quickActionCategory, long loggedEventId) {
         if (!mInternalStateController.isStillWorkingOn(InternalState.RESOLVING)) return;
 
         // Show an appropriate message for what to search for.
@@ -783,6 +789,9 @@ public class ContextualSearchManager
                 mContext.onSelectionAdjusted(selectionStartAdjust, selectionEndAdjust);
             }
         }
+
+        // Tell the Interaction Recorder about the current Event ID for persisted interaction.
+        mInteractionRecorder.persistInteraction(loggedEventId);
 
         mInternalStateController.notifyFinishedWorkOn(InternalState.RESOLVING);
     }
@@ -1275,16 +1284,12 @@ public class ContextualSearchManager
         mInProductHelp.updateBubblePosition();
     }
 
-    /**
-     * @return The {@link SelectionClient} used by Contextual Search.
-     */
+    /** @return The {@link SelectionClient} used by Contextual Search. */
     SelectionClient getContextualSearchSelectionClient() {
         return mContextualSearchSelectionClient;
     }
 
-    /**
-     * Notifies Contextual Search whether the UI should be suppressed for Smart Selection.
-     */
+    /** Notifies Contextual Search whether the UI should be suppressed for Smart Selection. */
     void suppressContextualSearchForSmartSelection(boolean isSmartSelectionEnabled) {
         mDoSuppressContextualSearchForSmartSelection = isSmartSelectionEnabled;
     }
@@ -1354,9 +1359,7 @@ public class ContextualSearchManager
         }
     }
 
-    /**
-     * @return Whether the display is in a full-screen video overlay mode.
-     */
+    /** @return Whether the display is in a full-screen video overlay mode. */
     private boolean isOverlayVideoMode() {
         return mActivity.getFullscreenManager().isOverlayVideoMode();
     }
@@ -1428,7 +1431,7 @@ public class ContextualSearchManager
         if (mInternalStateController.isStillWorkingOn(InternalState.DECIDING_SUPPRESSION)) {
             mInternalStateController.notifyFinishedWorkOn(InternalState.DECIDING_SUPPRESSION);
         } else {
-            mTapSuppressionInteractionRecorder.reset();
+            mInteractionRecorder.reset();
         }
     }
 
@@ -1581,8 +1584,12 @@ public class ContextualSearchManager
                 }
 
                 if (isTap && mPolicy.shouldPreviousTapResolve()) {
-                    mContext.setResolveProperties(
-                            mPolicy.getHomeCountry(mActivity), mPolicy.maySendBasePageUrl());
+                    ContextualSearchInteractionPersister.PersistedInteraction interaction =
+                            mInteractionRecorder.getInteractionPersister()
+                                    .getAndClearPersistedInteraction();
+                    mContext.setResolveProperties(mPolicy.getHomeCountry(mActivity),
+                            mPolicy.maySendBasePageUrl(), interaction.getEventId(),
+                            interaction.getEncodedUserInteractions());
                 }
                 WebContents webContents = getBaseWebContents();
                 if (webContents != null) {
@@ -1610,9 +1617,8 @@ public class ContextualSearchManager
                     mSearchPanel.getPanelMetrics().writeInteractionOutcomesAndReset();
                 }
                 // Set up the next batch of Ranker logging.
-                mTapSuppressionInteractionRecorder.setupLoggingForPage(getBaseWebContents());
-                mSearchPanel.getPanelMetrics().setInteractionRecorder(
-                        mTapSuppressionInteractionRecorder);
+                mInteractionRecorder.setupLoggingForPage(getBaseWebContents());
+                mSearchPanel.getPanelMetrics().setInteractionRecorder(mInteractionRecorder);
                 ContextualSearchUma.logRankerFeaturesAvailable(false);
                 mInternalStateController.notifyFinishedWorkOn(InternalState.TAP_GESTURE_COMMIT);
             }
@@ -1622,8 +1628,7 @@ public class ContextualSearchManager
             public void decideSuppression() {
                 mInternalStateController.notifyStartingWorkOn(InternalState.DECIDING_SUPPRESSION);
                 // TODO(donnd): Move handleShouldSuppressTap out of the Selection Controller.
-                mSelectionController.handleShouldSuppressTap(
-                        mContext, mTapSuppressionInteractionRecorder);
+                mSelectionController.handleShouldSuppressTap(mContext, mInteractionRecorder);
             }
 
             /** Starts showing the Tap UI by selecting a word around the current caret. */
@@ -1824,7 +1829,12 @@ public class ContextualSearchManager
 
     @VisibleForTesting
     ContextualSearchInteractionRecorder getRankerLogger() {
-        return mTapSuppressionInteractionRecorder;
+        return mInteractionRecorder;
+    }
+
+    @VisibleForTesting
+    ContextualSearchContext getContext() {
+        return mContext;
     }
 
     // ============================================================================================

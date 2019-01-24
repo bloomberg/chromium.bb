@@ -89,6 +89,22 @@ public class ChromePreferenceManager {
      */
     public static final String CONTEXTUAL_SEARCH_PRE_UNIFIED_CONSENT_PREF =
             "contextual_search_pre_unified_consent_pref";
+    /**
+     * A user interaction event ID for interaction with Contextual Search, stored as a long.
+     */
+    public static final String CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_EVENT_ID =
+            "contextual_search_previous_interaction_event_id";
+    /**
+     * An encoded set of outcomes of user interaction with Contextual Search, stored as an int.
+     */
+    public static final String CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_ENCODED_OUTCOMES =
+            "contextual_search_previous_interaction_encoded_outcomes";
+    /**
+     * A timestamp indicating when we updated the user interaction with Contextual Search, stored
+     * as a long, with resolution in days.
+     */
+    public static final String CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_TIMESTAMP =
+            "contextual_search_previous_interaction_timestamp";
 
     /**
      * Whether the promotion for data reduction has been skipped on first invocation.
@@ -559,7 +575,7 @@ public class ChromePreferenceManager {
      * @param key The name of the preference to modify.
      * @param value The new value for the preference.
      */
-    private void writeLong(String key, long value) {
+    public void writeLong(String key, long value) {
         SharedPreferences.Editor ed = mSharedPreferences.edit();
         ed.putLong(key, value);
         ed.apply();
@@ -572,7 +588,7 @@ public class ChromePreferenceManager {
      * @param defaultValue The default value to return if there's no value stored.
      * @return The value of the preference if stored; defaultValue otherwise.
      */
-    private long readLong(String key, long defaultValue) {
+    public long readLong(String key, long defaultValue) {
         return mSharedPreferences.getLong(key, defaultValue);
     }
 

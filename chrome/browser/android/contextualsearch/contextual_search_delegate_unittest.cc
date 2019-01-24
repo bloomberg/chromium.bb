@@ -527,7 +527,8 @@ TEST_F(ContextualSearchDelegateTest, DecodeSearchTermFromJsonResponse) {
       "{\"mid\":\"/m/02mjmr\", \"search_term\":\"obama\","
       "\"info_text\":\"44th U.S. President\","
       "\"display_text\":\"Barack Obama\", \"mentions\":[0,15],"
-      "\"selected_text\":\"obama\", \"resolved_term\":\"barack obama\"}";
+      "\"selected_text\":\"obama\", \"resolved_term\":\"barack obama\","
+      "\"logged_event_id\":\"1234567890123456789\"}";
   std::string search_term;
   std::string display_text;
   std::string alternate_term;
@@ -539,12 +540,14 @@ TEST_F(ContextualSearchDelegateTest, DecodeSearchTermFromJsonResponse) {
   std::string thumbnail_url;
   std::string caption;
   std::string quick_action_uri;
+  int64_t logged_event_id;
   QuickActionCategory quick_action_category = QUICK_ACTION_CATEGORY_NONE;
 
   delegate_->DecodeSearchTermFromJsonResponse(
       json_with_escape, &search_term, &display_text, &alternate_term, &mid,
       &prevent_preload, &mention_start, &mention_end, &context_language,
-      &thumbnail_url, &caption, &quick_action_uri, &quick_action_category);
+      &thumbnail_url, &caption, &quick_action_uri, &quick_action_category,
+      &logged_event_id);
 
   EXPECT_EQ("obama", search_term);
   EXPECT_EQ("Barack Obama", display_text);
@@ -556,6 +559,7 @@ TEST_F(ContextualSearchDelegateTest, DecodeSearchTermFromJsonResponse) {
   EXPECT_EQ("", caption);
   EXPECT_EQ("", quick_action_uri);
   EXPECT_EQ(QUICK_ACTION_CATEGORY_NONE, quick_action_category);
+  EXPECT_EQ(1234567890123456789, logged_event_id);
 }
 
 TEST_F(ContextualSearchDelegateTest, ResponseWithLanguage) {

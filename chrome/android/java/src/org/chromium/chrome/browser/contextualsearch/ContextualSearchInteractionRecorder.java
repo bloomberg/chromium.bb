@@ -120,6 +120,12 @@ public interface ContextualSearchInteractionRecorder {
     @AssistRankerPrediction
     int getPredictionForTapSuppression();
 
+    /** Stores an Event ID from the server that we should persist along with user interactions. */
+    void persistInteraction(long eventId);
+
+    /* Gets the {@link ContextualSearchInteractionPersister} managed by this interface. */
+    ContextualSearchInteractionPersister getInteractionPersister();
+
     /**
      * Resets the logger so that future log calls accumulate into a new record.
      * Any accumulated logging for the current record is discarded.

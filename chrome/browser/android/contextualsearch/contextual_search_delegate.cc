@@ -146,7 +146,7 @@ void ContextualSearchDelegate::StartSearchTermResolutionRequest(
 
 void ContextualSearchDelegate::ResolveSearchTermFromContext() {
   DCHECK(context_ != nullptr);
-  GURL request_url(BuildRequestUrl(context_->GetHomeCountry()));
+  GURL request_url(BuildRequestUrl(context_.get()));
   DCHECK(request_url.is_valid());
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
@@ -212,12 +212,14 @@ ContextualSearchDelegate::GetResolvedSearchTermFromJson(
   std::string thumbnail_url = "";
   std::string caption = "";
   std::string quick_action_uri = "";
+  int64_t logged_event_id = 0;
   QuickActionCategory quick_action_category = QUICK_ACTION_CATEGORY_NONE;
 
   DecodeSearchTermFromJsonResponse(
       json_string, &search_term, &display_text, &alternate_term, &mid,
       &prevent_preload, &mention_start, &mention_end, &context_language,
-      &thumbnail_url, &caption, &quick_action_uri, &quick_action_category);
+      &thumbnail_url, &caption, &quick_action_uri, &quick_action_category,
+      &logged_event_id);
   if (mention_start != 0 || mention_end != 0) {
     // Sanity check that our selection is non-zero and it is less than
     // 100 characters as that would make contextual search bar hide.
@@ -239,11 +241,11 @@ ContextualSearchDelegate::GetResolvedSearchTermFromJson(
       is_invalid, response_code, search_term, display_text, alternate_term, mid,
       prevent_preload == kDoPreventPreloadValue, start_adjust, end_adjust,
       context_language, thumbnail_url, caption, quick_action_uri,
-      quick_action_category));
+      quick_action_category, logged_event_id));
 }
 
 std::string ContextualSearchDelegate::BuildRequestUrl(
-    std::string home_country) {
+    ContextualSearchContext* context) {
   if (!template_url_service_ ||
       !template_url_service_->GetDefaultSearchProvider()) {
     return std::string();
@@ -261,8 +263,9 @@ std::string ContextualSearchDelegate::BuildRequestUrl(
   }
 
   TemplateURLRef::SearchTermsArgs::ContextualSearchParams params(
-      kContextualSearchRequestVersion, contextual_cards_version, home_country,
-      0L, 0);
+      kContextualSearchRequestVersion, contextual_cards_version,
+      context->GetHomeCountry(), context->GetPreviousEventId(),
+      context->GetPreviousEventResults());
 
   search_terms_args.contextual_search_params = params;
 
@@ -427,7 +430,8 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
     std::string* thumbnail_url,
     std::string* caption,
     std::string* quick_action_uri,
-    QuickActionCategory* quick_action_category) {
+    QuickActionCategory* quick_action_category,
+    int64_t* logged_event_id) {
   bool contains_xssi_escape =
       base::StartsWith(response, kXssiEscape, base::CompareCase::SENSITIVE);
   const std::string& proper_json =
@@ -510,6 +514,13 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
   } else {
     DVLOG(0) << "The Contextual Cards backend response: ";
     DVLOG(0) << contextual_cards_diagnostic;
+  }
+
+  // Get the Event ID to use for sending event outcomes back to the server.
+  std::string logged_event_id_string;
+  dict->GetString("logged_event_id", &logged_event_id_string);
+  if (!logged_event_id_string.empty()) {
+    *logged_event_id = std::stoll(logged_event_id_string, nullptr);
   }
 }
 

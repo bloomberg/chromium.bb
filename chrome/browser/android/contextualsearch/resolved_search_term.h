@@ -40,7 +40,8 @@ struct ResolvedSearchTerm {
                      const std::string& thumbnail_url,
                      const std::string& caption,
                      const std::string& quick_action_uri,
-                     const QuickActionCategory& quick_action_category);
+                     const QuickActionCategory& quick_action_category,
+                     int64_t logged_event_id);
   ~ResolvedSearchTerm();
 
   const bool is_invalid;
@@ -58,6 +59,7 @@ struct ResolvedSearchTerm {
   const std::string caption;
   const std::string quick_action_uri;
   const QuickActionCategory quick_action_category;
+  const int64_t logged_event_id;  // Often 0.
 
   DISALLOW_COPY_AND_ASSIGN(ResolvedSearchTerm);
 };
