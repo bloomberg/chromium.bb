@@ -191,10 +191,6 @@ external/wpt/css/css-text/text-transform/text-transform-fullwidth-001.xht [ Skip
 external/wpt/css/css-text/text-transform/text-transform-fullwidth-002.xht [ Skip ]
 external/wpt/css/css-text/text-transform/text-transform-fullwidth-004.xht [ Skip ]
 external/wpt/css/css-text/text-transform/text-transform-fullwidth-005.xht [ Skip ]
-external/wpt/css/css-text/white-space/pre-wrap-008.html [ Skip ]
-external/wpt/css/css-text/white-space/pre-wrap-010.html [ Skip ]
-external/wpt/css/css-text/white-space/textarea-pre-wrap-010.html [ Skip ]
-external/wpt/css/css-text/white-space/textarea-pre-wrap-008.html [ Skip ]
 external/wpt/css/css-text/white-space/white-space-collapsing-discard-001.xht [ Skip ]
 external/wpt/css/css-text/white-space/white-space-collapsing-preserve-breaks-001.xht [ Skip ]
 
