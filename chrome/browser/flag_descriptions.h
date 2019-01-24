@@ -564,9 +564,6 @@ extern const char kEnableSharedArrayBufferDescription[];
 extern const char kEnableWasmName[];
 extern const char kEnableWasmDescription[];
 
-extern const char kEnableWebAuthenticationAPIName[];
-extern const char kEnableWebAuthenticationAPIDescription[];
-
 extern const char kEnableWebAuthenticationCableSupportName[];
 extern const char kEnableWebAuthenticationCableSupportDescription[];
 
@@ -1686,9 +1683,6 @@ extern const char kPromosOnLocalNtpDescription[];
 extern const char kEnableWebAuthenticationBleSupportName[];
 extern const char kEnableWebAuthenticationBleSupportDescription[];
 
-extern const char kEnableWebAuthenticationCtap2SupportName[];
-extern const char kEnableWebAuthenticationCtap2SupportDescription[];
-
 extern const char kEnableWebAuthenticationTestingAPIName[];
 extern const char kEnableWebAuthenticationTestingAPIDescription[];
 
@@ -1787,9 +1781,6 @@ extern const char kWindows10CustomTitlebarDescription[];
 
 extern const char kContentFullscreenName[];
 extern const char kContentFullscreenDescription[];
-
-extern const char kEnableWebAuthenticationTouchIdName[];
-extern const char kEnableWebAuthenticationTouchIdDescription[];
 
 extern const char kHostedAppsInWindowsName[];
 extern const char kHostedAppsInWindowsDescription[];

@@ -938,10 +938,6 @@ const char kEnableWasmName[] = "WebAssembly structured cloning support.";
 const char kEnableWasmDescription[] =
     "Enable web pages to use WebAssembly structured cloning.";
 
-const char kEnableWebAuthenticationAPIName[] = "Web Authentication API";
-const char kEnableWebAuthenticationAPIDescription[] =
-    "Enable Web Authentication API support.";
-
 const char kEnableWebAuthenticationCableSupportName[] =
     "Web Authentication caBLE support";
 const char kEnableWebAuthenticationCableSupportDescription[] =
@@ -2836,11 +2832,6 @@ const char kEnableWebAuthenticationBleSupportDescription[] =
     "Enable support for using Web Authentication API via Bluetooth security "
     "keys";
 
-const char kEnableWebAuthenticationCtap2SupportName[] =
-    "Enable Web Authentication API support for CTAP2 security keys";
-const char kEnableWebAuthenticationCtap2SupportDescription[] =
-    "Enable CTAP2 security keys for the Web Authentication API.";
-
 const char kEnableWebAuthenticationTestingAPIName[] =
     "Web Authentication Testing API";
 const char kEnableWebAuthenticationTestingAPIDescription[] =
@@ -3011,11 +3002,6 @@ const char kContentFullscreenName[] = "Improved Content Fullscreen";
 const char kContentFullscreenDescription[] =
     "Fullscreen content window detaches from main browser window and goes to "
     "a new space without moving or changing the original browser window.";
-
-const char kEnableWebAuthenticationTouchIdName[] =
-    "Web Authentication API Touch ID support";
-const char kEnableWebAuthenticationTouchIdDescription[] =
-    "Enables a built-in Touch ID authenticator for the Web Authentication API.";
 
 const char kHostedAppsInWindowsName[] =
     "Allow hosted apps to be opened in windows";

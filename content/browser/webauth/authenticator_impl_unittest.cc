@@ -989,6 +989,14 @@ TEST_F(AuthenticatorImplTest, TestCableDiscoveryByDefault) {
           device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
 }
 
+TEST_F(AuthenticatorImplTest, TestCableDiscoveryDisabledWithFlag) {
+  DisableFeature(features::kWebAuthCable);
+
+  auto authenticator = ConnectToAuthenticator();
+  EXPECT_FALSE(SupportsTransportProtocol(
+      device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
+}
+
 #if defined(OS_WIN)
 TEST_F(AuthenticatorImplTest, TestCableDiscoveryEnabled) {
   auto authenticator = ConnectToAuthenticator();

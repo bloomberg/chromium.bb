@@ -524,10 +524,10 @@ const base::Feature kWebAuthBle{"WebAuthenticationBle",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether CTAP2 devices can communicate via the WebAuthentication API
-// using pairingless BLE protocol on Windows.
+// using pairingless BLE protocol.
 // https://w3c.github.io/webauthn
-const base::Feature kWebAuthCableWin{"WebAuthenticationCableWin",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kWebAuthCable{"WebAuthenticationCable",
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether AuthenticatorAttestationResponse contains a getTransports
 // member to return the set of transports supported by an authenticator.
