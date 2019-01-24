@@ -55,12 +55,6 @@ Polymer({
         return loadTimeData.getBoolean('enableSiteSettings');
       },
     },
-
-    /**
-     * The type of storage for the origin.
-     * @private
-     */
-    storageType_: Number,
   },
 
   listeners: {
@@ -235,8 +229,7 @@ Polymer({
     // Since usage is only shown when "Site Settings" is enabled, don't
     // clear it when it's not shown.
     if (this.enableSiteSettings_ && this.storedData_ != '') {
-      this.$.usageApi.clearUsage(
-          this.toUrl(this.origin).href, this.storageType_);
+      this.$.usageApi.clearUsage(this.toUrl(this.origin).href);
     }
 
     this.onCloseDialog_(e);

@@ -52,10 +52,7 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   void OnJavascriptDisallowed() override;
 
   // Usage info.
-  void OnGetUsageInfo(const storage::UsageInfoEntries& entries);
-  void OnStorageCleared(base::OnceClosure callback,
-                        blink::mojom::QuotaStatusCode code);
-  void OnUsageCleared();
+  void OnGetUsageInfo();
 
   // CookiesTreeModel::Observer:
   // TODO(https://crbug.com/835712): Listen for backend data changes and notify
@@ -130,7 +127,7 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
                            HandleClearEtldPlus1DataAndCookies);
 
   // Creates the CookiesTreeModel if necessary.
-  void EnsureCookiesTreeModelCreated();
+  void EnsureCookiesTreeModelCreated(bool omit_cookies = false);
 
   // Add this class as an observer for content settings and chooser contexts.
   void ObserveSources();
@@ -275,13 +272,16 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   std::unique_ptr<CookiesTreeModel> cookies_tree_model_;
 
   // Whether to send all sites list on cookie tree model update.
-  bool should_send_list_ = false;
+  bool send_sites_list_ = false;
 
   // Populated every time the user reloads the All Sites page.
   std::map<std::string, std::set<std::string>> all_sites_map_;
 
   // Store the origins that has permission settings.
   std::set<std::string> origin_permission_set_;
+
+  // Whether to send site detail data on cookie tree model update.
+  bool update_site_details_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SiteSettingsHandler);
 };
