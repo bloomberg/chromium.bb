@@ -36,11 +36,13 @@
  *     type indentifier.
  * @param {!chrome.fileManagerPrivate.IconSet} iconSet Set of icons for this
  *     volume.
+ * @param {(string|undefined)} driveLabel Drive label of the volume. Removable
+ *     partitions belonging to the same device will share the same drive label.
  */
 function VolumeInfoImpl(
     volumeType, volumeId, fileSystem, error, deviceType, devicePath, isReadOnly,
     isReadOnlyRemovableDevice, profile, label, providerId, hasMedia,
-    configurable, watchable, source, diskFileSystemType, iconSet) {
+    configurable, watchable, source, diskFileSystemType, iconSet, driveLabel) {
   this.volumeType_ = volumeType;
   this.volumeId_ = volumeId;
   this.fileSystem_ = fileSystem;
@@ -87,6 +89,7 @@ function VolumeInfoImpl(
   this.source_ = source;
   this.diskFileSystemType_ = diskFileSystemType;
   this.iconSet_ = iconSet;
+  this.driveLabel_ = driveLabel;
 
   /** @type {Promise<!DirectoryEntry>} */
   this.displayRootPromise_ = this.resolveDisplayRootImpl_();
@@ -223,6 +226,14 @@ VolumeInfoImpl.prototype = /** @struct */ {
    */
   get iconSet() {
     return this.iconSet_;
+  },
+  /**
+   * @return {(string|undefined)} Drive label for the volume. Removable
+   * partitions belonging to the same physical media device will share the
+   * same drive label.
+   */
+  get driveLabel() {
+    return this.driveLabel_;
   },
   /**
    * @type {FilesAppEntry} an entry to be used as prefix of this volume on

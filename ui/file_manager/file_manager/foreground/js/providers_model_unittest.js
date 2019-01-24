@@ -122,7 +122,8 @@ function addProvidedVolume(volumeManager, providerId, volumeId) {
       false,                                       // watchable
       VolumeManagerCommon.Source.NETWORK,          // source
       VolumeManagerCommon.FileSystemType.UNKNOWN,  // diskFileSystemType
-      {});                                         // iconSet
+      {},                                          // iconSet
+      '');                                         // driveLabel
 
   volumeManager.volumeInfoList.add(volumeInfo);
 }

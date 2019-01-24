@@ -173,7 +173,8 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
                 /** @type {VolumeManagerCommon.Source} */
                 (volumeMetadata.source),
                 /** @type {VolumeManagerCommon.FileSystemType} */
-                (volumeMetadata.diskFileSystemType), volumeMetadata.iconSet);
+                (volumeMetadata.diskFileSystemType), volumeMetadata.iconSet,
+                (volumeMetadata.driveLabel));
           })
       .catch(
           /** @param {*} error */
@@ -197,6 +198,7 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
                 /** @type {VolumeManagerCommon.Source} */
                 (volumeMetadata.source),
                 /** @type {VolumeManagerCommon.FileSystemType} */
-                (volumeMetadata.diskFileSystemType), volumeMetadata.iconSet);
+                (volumeMetadata.diskFileSystemType), volumeMetadata.iconSet,
+                (volumeMetadata.driveLabel));
           });
 };

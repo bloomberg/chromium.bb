@@ -252,6 +252,7 @@ std::unique_ptr<Volume> Volume::CreateForRemovable(
     volume->is_read_only_ = disk->is_read_only();
     volume->is_read_only_removable_device_ = disk->is_read_only_hardware();
     volume->has_media_ = disk->has_media();
+    volume->drive_label_ = disk->drive_label();
   } else {
     volume->volume_label_ = volume->mount_path().BaseName().AsUTF8Unsafe();
     volume->device_type_ = chromeos::DEVICE_TYPE_UNKNOWN;
@@ -398,7 +399,8 @@ std::unique_ptr<Volume> Volume::CreateForTesting(
     VolumeType volume_type,
     chromeos::DeviceType device_type,
     bool read_only,
-    const base::FilePath& device_path) {
+    const base::FilePath& device_path,
+    const std::string& drive_label) {
   std::unique_ptr<Volume> volume(new Volume());
   volume->type_ = volume_type;
   volume->device_type_ = device_type;
@@ -409,6 +411,7 @@ std::unique_ptr<Volume> Volume::CreateForTesting(
   volume->mount_condition_ = chromeos::disks::MOUNT_CONDITION_NONE;
   volume->is_read_only_ = read_only;
   volume->volume_id_ = GenerateVolumeId(*volume);
+  volume->drive_label_ = drive_label;
   return volume;
 }
 
@@ -686,11 +689,12 @@ void VolumeManager::AddVolumeForTesting(const base::FilePath& path,
                                         VolumeType volume_type,
                                         chromeos::DeviceType device_type,
                                         bool read_only,
-                                        const base::FilePath& device_path) {
+                                        const base::FilePath& device_path,
+                                        const std::string& drive_label) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DoMountEvent(chromeos::MOUNT_ERROR_NONE,
                Volume::CreateForTesting(path, volume_type, device_type,
-                                        read_only, device_path));
+                                        read_only, device_path, drive_label));
 }
 
 void VolumeManager::AddVolumeForTesting(std::unique_ptr<Volume> volume) {
