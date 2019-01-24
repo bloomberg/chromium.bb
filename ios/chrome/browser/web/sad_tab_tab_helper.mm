@@ -20,7 +20,7 @@
 #import "ios/chrome/browser/web/sad_tab_tab_helper_delegate.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/navigation_context.h"
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

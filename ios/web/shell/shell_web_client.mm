@@ -8,7 +8,7 @@
 
 #include "ios/web/public/service_names.mojom.h"
 #include "ios/web/public/user_agent.h"
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "ios/web/shell/shell_web_main_parts.h"
 #import "ios/web/shell/web_usage_controller.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

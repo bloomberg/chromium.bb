@@ -26,7 +26,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/navigation_item.h"
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_thread.h"
 #import "net/base/mac/url_conversions.h"
 
