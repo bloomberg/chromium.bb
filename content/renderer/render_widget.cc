@@ -448,9 +448,6 @@ RenderWidget::~RenderWidget() {
   // browser tests delete a RenderWidget without correclty going through
   // the shutdown. https://crbug.com/545684
 
-  if (input_event_queue_)
-    input_event_queue_->ClearClient();
-
 #if defined(USE_AURA)
   // It is possible for a RenderWidget to be destroyed before it was embedded
   // in a mus window. The RendererWindowTreeClient will leak in such cases. So
@@ -676,6 +673,11 @@ void RenderWidget::OnClose() {
     }
   }
 
+  // Stop handling main thread input events immediately so we don't have them
+  // running while things are partly shut down.
+  if (input_event_queue_)
+    input_event_queue_->ClearClient();
+
   if (for_child_local_root_frame_) {
     // Widgets for frames may be created and closed at any time while the frame
     // is alive. However, WebWidget must be closed synchronously because frame
@@ -842,7 +844,7 @@ void RenderWidget::OnWasShown(base::TimeTicks show_request_timestamp,
     }
   }
 
-  if (layer_tree_view_ && !show_request_timestamp.is_null()) {
+  if (!show_request_timestamp.is_null()) {
     layer_tree_view_->layer_tree_host()->RequestPresentationTimeForNextFrame(
         CreateTabSwitchingTimeRecorder(show_request_timestamp));
   }
@@ -854,12 +856,10 @@ void RenderWidget::OnRequestSetBoundsAck() {
 }
 
 void RenderWidget::OnForceRedraw(int snapshot_id) {
-  if (LayerTreeView* ltv = layer_tree_view()) {
-    ltv->layer_tree_host()->RequestPresentationTimeForNextFrame(
-        base::BindOnce(&RenderWidget::DidPresentForceDrawFrame,
-                       weak_ptr_factory_.GetWeakPtr(), snapshot_id));
-    ltv->SetNeedsForcedRedraw();
-  }
+  layer_tree_view_->layer_tree_host()->RequestPresentationTimeForNextFrame(
+      base::BindOnce(&RenderWidget::DidPresentForceDrawFrame,
+                     weak_ptr_factory_.GetWeakPtr(), snapshot_id));
+  layer_tree_view_->SetNeedsForcedRedraw();
 }
 
 void RenderWidget::DidPresentForceDrawFrame(
@@ -1242,6 +1242,10 @@ void RenderWidget::SetInputHandler(RenderWidgetInputHandler* input_handler) {
 }
 
 void RenderWidget::ShowVirtualKeyboard() {
+  // Blink can continue running and change input state between the Close IPC
+  // and the task that actually closes this class.
+  if (closing_)
+    return;
   UpdateTextInputStateInternal(true, false);
 }
 
@@ -1255,6 +1259,10 @@ void RenderWidget::ClearTextInputState() {
 }
 
 void RenderWidget::UpdateTextInputState() {
+  // Blink can continue running and change input state between the Close IPC
+  // and the task that actually closes this class.
+  if (closing_)
+    return;
   UpdateTextInputStateInternal(false, false);
 }
 
@@ -1336,7 +1344,7 @@ void RenderWidget::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     // new RenderFrameMetadata, as the IME will need this info to be updated.
     // TODO(ericrk): Consider folding the above IPC into RenderFrameMetadata.
     // https://crbug.com/912309
-    if (layer_tree_view_ && IsSurfaceSynchronizationEnabled()) {
+    if (IsSurfaceSynchronizationEnabled()) {
       layer_tree_view_->RequestForceSendMetadata();
     }
 #endif
@@ -1428,13 +1436,11 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
                              new_compositor_viewport_pixel_size,
                              params.screen_info);
   UpdateCaptureSequenceNumber(params.capture_sequence_number);
-  if (layer_tree_view_) {
-    layer_tree_view_->SetBrowserControlsHeight(
-        params.top_controls_height, params.bottom_controls_height,
-        params.browser_controls_shrink_blink_size);
-    layer_tree_view_->SetRasterColorSpace(
-        screen_info_.color_space.GetRasterColorSpace());
-  }
+  layer_tree_view_->SetBrowserControlsHeight(
+      params.top_controls_height, params.bottom_controls_height,
+      params.browser_controls_shrink_blink_size);
+  layer_tree_view_->SetRasterColorSpace(
+      screen_info_.color_space.GetRasterColorSpace());
 
   UpdateZoom(params.zoom_level);
 
@@ -1515,8 +1521,11 @@ void RenderWidget::SetHandlingInputEvent(bool handling_input_event) {
 }
 
 void RenderWidget::QueueMessage(IPC::Message* msg) {
+  if (closing_)
+    return;
+
   // RenderThreadImpl::current() is NULL in some tests.
-  if (!layer_tree_view_ || !RenderThreadImpl::current()) {
+  if (!RenderThreadImpl::current()) {
     Send(msg);
     return;
   }
@@ -2040,15 +2049,13 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
   compositor_viewport_pixel_size_ = new_compositor_viewport_pixel_size;
   screen_info_ = new_screen_info;
 
-  if (layer_tree_view_) {
-    layer_tree_view_->SetViewportVisibleRect(ViewportVisibleRect());
-    // Note carefully that the DSF specified in |new_screen_info| is not the
-    // DSF used by the compositor during device emulation!
-    layer_tree_view_->SetViewportSizeAndScale(
-        compositor_viewport_pixel_size_,
-        GetOriginalScreenInfo().device_scale_factor,
-        local_surface_id_allocation_from_parent_);
-  }
+  layer_tree_view_->SetViewportVisibleRect(ViewportVisibleRect());
+  // Note carefully that the DSF specified in |new_screen_info| is not the
+  // DSF used by the compositor during device emulation!
+  layer_tree_view_->SetViewportSizeAndScale(
+      compositor_viewport_pixel_size_,
+      GetOriginalScreenInfo().device_scale_factor,
+      local_surface_id_allocation_from_parent_);
 
   if (orientation_changed)
     OnOrientationChange();
@@ -2080,8 +2087,7 @@ void RenderWidget::SetWindowRectSynchronously(
       local_surface_id_allocation_from_parent_;
   // We are resizing the window from the renderer, so allocate a new
   // viz::LocalSurfaceId to avoid surface invariants violations in tests.
-  if (layer_tree_view_)
-    layer_tree_view_->RequestNewLocalSurfaceId();
+  layer_tree_view_->RequestNewLocalSurfaceId();
   SynchronizeVisualProperties(visual_properties);
 
   widget_screen_rect_ = new_window_rect;
@@ -2308,6 +2314,10 @@ void RenderWidget::ConvertWindowToViewport(blink::WebFloatRect* rect) {
 
 void RenderWidget::OnRequestTextInputStateUpdate() {
 #if defined(OS_ANDROID)
+  // This task may run between the Close IPC and the task that actually closes
+  // this class.
+  if (closing_)
+    return;
   DCHECK(!ime_event_guard_);
   UpdateSelectionBounds();
   UpdateTextInputStateInternal(false, true /* reply_to_request */);
@@ -2469,6 +2479,11 @@ void RenderWidget::UpdateSelectionBounds() {
 }
 
 void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
+  // Blink can continue running and do a layout/resize between the Close IPC
+  // and the task that actually closes this class.
+  if (closing_)
+    return;
+
   WebRect new_size_in_window(0, 0, new_size.width(), new_size.height());
   ConvertViewportToWindow(&new_size_in_window);
   if (size_.width() != new_size_in_window.width ||
@@ -2486,8 +2501,7 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
     // |size_| from |compositor_viewport_pixel_size_|. Also note that the
     // calculation of |new_compositor_viewport_pixel_size| does not appear to
     // take into account device emulation.
-    if (layer_tree_view_)
-      layer_tree_view_->RequestNewLocalSurfaceId();
+    layer_tree_view_->RequestNewLocalSurfaceId();
     gfx::Size new_compositor_viewport_pixel_size =
         gfx::ScaleToCeiledSize(size_, GetWebScreenInfo().device_scale_factor);
     UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
@@ -3194,9 +3208,13 @@ uint32_t RenderWidget::GetContentSourceId() {
 }
 
 void RenderWidget::DidNavigate() {
+  // TODO(danakj): We are not sure if blink may be navigating still between the
+  // Close IPC and the task that actually closes this class, and if so if that
+  // would go through RenderFrameImpl::DidCommitProvisionalLoad().  We don't
+  // think so though. Verify! If this fails, we should early out here.
+  CHECK(!closing_);
+
   ++current_content_source_id_;
-  if (!layer_tree_view_)
-    return;
   layer_tree_view_->SetContentSourceId(current_content_source_id_);
   layer_tree_view_->ClearCachesOnNextCommit();
 }
@@ -3294,9 +3312,7 @@ void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
       local_surface_id_allocation_from_parent_;
   // We are changing the device scale factor from the renderer, so allocate a
   // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
-  if (layer_tree_view_)
-    layer_tree_view_->RequestNewLocalSurfaceId();
-
+  layer_tree_view_->RequestNewLocalSurfaceId();
   OnSynchronizeVisualProperties(visual_properties);
 }
 
@@ -3317,7 +3333,6 @@ void RenderWidget::SetDeviceColorSpaceForTesting(
       local_surface_id_allocation_from_parent_;
   // We are changing the device color space from the renderer, so allocate a
   // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
-  if (layer_tree_view_)
     layer_tree_view_->RequestNewLocalSurfaceId();
   OnSynchronizeVisualProperties(visual_properties);
 }
