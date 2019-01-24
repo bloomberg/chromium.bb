@@ -22,11 +22,6 @@ const char kGoogleDriveBuyStorageUrl[] =
 const char kGoogleDriveOverviewUrl[] =
     "https://support.google.com/chromebook/?p=filemanager_drive";
 
-// Location of Google drive redeem page.
-const char kGoogleDriveRedeemUrl[] =
-    "http://www.google.com/intl/en/chrome/devices/goodies.html"
-    "?utm_source=filesapp&utm_medium=banner&utm_campaign=gsg";
-
 // Location of Google Drive specific help.
 const char kGoogleDriveHelpUrl[] =
     "https://support.google.com/chromebook/?p=filemanager_drivehelp";
@@ -145,16 +140,12 @@ void AddStringsForDrive(base::DictionaryValue* dict) {
              IDS_FILE_BROWSER_DRIVE_SPACE_AVAILABLE_LONG);
   SET_STRING("DRIVE_VISIT_DRIVE_GOOGLE_COM",
              IDS_FILE_BROWSER_DRIVE_VISIT_DRIVE_GOOGLE_COM);
-  SET_STRING("DRIVE_WELCOME_CHECK_ELIGIBILITY",
-             IDS_FILE_BROWSER_DRIVE_WELCOME_CHECK_ELIGIBILITY);
   SET_STRING("DRIVE_WELCOME_DISMISS", IDS_FILE_BROWSER_DRIVE_WELCOME_DISMISS);
   SET_STRING("DRIVE_WELCOME_TEXT_LONG",
              IDS_FILE_BROWSER_DRIVE_WELCOME_TEXT_LONG);
   SET_STRING("DRIVE_WELCOME_TEXT_SHORT",
              IDS_FILE_BROWSER_DRIVE_WELCOME_TEXT_SHORT);
   SET_STRING("DRIVE_WELCOME_TITLE", IDS_FILE_BROWSER_DRIVE_WELCOME_TITLE);
-  SET_STRING("DRIVE_WELCOME_TITLE_ALTERNATIVE",
-             IDS_FILE_BROWSER_DRIVE_WELCOME_TITLE_ALTERNATIVE);
   SET_STRING("SYNC_DELETE_WITHOUT_PERMISSION_ERROR",
              IDS_FILE_BROWSER_SYNC_DELETE_WITHOUT_PERMISSION_ERROR);
   SET_STRING("SYNC_FILE_NAME", IDS_FILE_BROWSER_SYNC_FILE_NAME);
@@ -835,7 +826,6 @@ std::unique_ptr<base::DictionaryValue> GetFileManagerStrings() {
       base::StringPrintf(kHelpURLFormat, kGoogleDriveErrorHelpNumber));
   dict->SetString("GOOGLE_DRIVE_HELP_URL", kGoogleDriveHelpUrl);
   dict->SetString("GOOGLE_DRIVE_OVERVIEW_URL", kGoogleDriveOverviewUrl);
-  dict->SetString("GOOGLE_DRIVE_REDEEM_URL", kGoogleDriveRedeemUrl);
   dict->SetString("GOOGLE_DRIVE_ROOT_URL", kGoogleDriveRootUrl);
   dict->SetString(
       "NO_TASK_FOR_FILE_URL",

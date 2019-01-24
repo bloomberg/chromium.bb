@@ -22,7 +22,6 @@ function Banners(
   this.showWelcome_ = showWelcome;
   this.driveEnabled_ = false;
 
-  this.usePromoWelcomeBanner_ = true;
   this.privateOnDirectoryChangedBound_ =
       this.privateOnDirectoryChanged_.bind(this);
 
@@ -239,34 +238,15 @@ Banners.prototype.prepareAndShowWelcomeBanner_ = function(type, messageId) {
 
   var links = util.createChild(message, 'drive-welcome-links');
 
-  var more;
-  if (this.usePromoWelcomeBanner_) {
-    var welcomeTitle = str('DRIVE_WELCOME_TITLE_ALTERNATIVE');
-    title.textContent = welcomeTitle;
-    more = util.createChild(links, '', 'a');
-    more.href = str('GOOGLE_DRIVE_REDEEM_URL');
-    var moreInnerButton = util.createChild(
-        more, 'imitate-paper-button primary', 'button');
-    moreInnerButton.tabIndex = -1;
-    moreInnerButton.textContent = str('DRIVE_WELCOME_CHECK_ELIGIBILITY');
-  } else {
-    title.textContent = str('DRIVE_WELCOME_TITLE');
-    more = util.createChild(links, 'plain-link', 'a');
-    more.textContent = str('DRIVE_LEARN_MORE');
-    more.href = str('GOOGLE_DRIVE_OVERVIEW_URL');
-  }
+  title.textContent = str('DRIVE_WELCOME_TITLE');
+  const more = util.createChild(links, 'plain-link', 'a');
+  more.textContent = str('DRIVE_LEARN_MORE');
+  more.href = str('GOOGLE_DRIVE_OVERVIEW_URL');
   more.tabIndex = 21;  // See: go/filesapp-tabindex.
   more.id = 'drive-welcome-link';
   more.target = '_blank';
 
-  var dismiss;
-  if (this.usePromoWelcomeBanner_) {
-    dismiss = util.createChild(
-        links, 'imitate-paper-button secondary', 'button');
-  } else {
-    dismiss = util.createChild(links, 'plain-link');
-  }
-
+  const dismiss = util.createChild(links, 'plain-link');
   dismiss.classList.add('drive-welcome-dismiss');
   dismiss.textContent = str('DRIVE_WELCOME_DISMISS');
   dismiss.addEventListener('click', this.closeWelcomeBanner_.bind(this));
@@ -379,53 +359,7 @@ Banners.prototype.checkSpaceAndMaybeShowWelcomeBanner_ = function() {
       return;
     }
 
-    if (!this.showOffers_ || !this.showWelcome_) {
-      // Because it is not necessary to show the offer, set
-      // |usePromoWelcomeBanner_| false here. Note that it probably should be
-      // able to do this in the constructor, but there remains non-trivial path,
-      // which may be causes |usePromoWelcomeBanner_| == true's behavior even
-      // if |showOffers_| is false.
-      // TODO(hidehiko): Make sure if it is expected or not, and simplify
-      // |showOffers_| if possible.
-      this.usePromoWelcomeBanner_ = false;
-    }
-
-    var offerSize = 100;  // In GB.
-    var offerServiceId = 'drive.cros.echo.1';
-
-    // Perform asynchronous tasks in parallel.
-    var group = new AsyncUtil.Group();
-
-    // If the offer has been checked, then do not show the promo anymore.
-    group.add(function(onCompleted) {
-      chrome.echoPrivate.getOfferInfo(offerServiceId, function(offerInfo) {
-        // If the offer has not been checked, then an error is raised.
-        if (!chrome.runtime.lastError) {
-          this.usePromoWelcomeBanner_ = false;
-        }
-        onCompleted();
-      }.bind(this));
-    }.bind(this));
-
-    group.add(function(onCompleted) {
-      if (this.usePromoWelcomeBanner_) {
-        // getSizeStats for Drive file system accesses to the server, so we
-        // should minimize the invocation.
-
-        // Current directory must be set, since this code is called after
-        // scanning is completed. However, the volumeInfo may be gone.
-        chrome.fileManagerPrivate.getSizeStats(
-            driveVolume.volumeId, function(result) {
-              if (result &&
-                  result.totalSize >= offerSize * 1024 * 1024 * 1024) {
-                this.usePromoWelcomeBanner_ = false;
-              }
-              onCompleted();
-            }.bind(this));
-      }
-    }.bind(this));
-
-    group.run(this.maybeShowWelcomeBanner_.bind(this));
+    this.maybeShowWelcomeBanner_();
   }.bind(this));
 };
 
