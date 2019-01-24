@@ -245,6 +245,10 @@
       status: "experimental",
     },
     {
+      name: "CSS3TextBreakSpaces",
+      status: "experimental",
+    },
+    {
       name: "CSSAdditiveAnimations",
       depends_on: ["StackedCSSPropertyAnimations"],
       status: "experimental",

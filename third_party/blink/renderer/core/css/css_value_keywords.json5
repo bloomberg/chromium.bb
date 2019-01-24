@@ -455,6 +455,7 @@
     "bidi-override",
     "blink",
     "both",
+    "break-spaces",
     "close-quote",
     "embed",
     "fixed",
