@@ -65,7 +65,8 @@ void WindowServerTestImpl::OnSurfaceActivated(
     EnsureClientHasDrawnWindowCallback cb,
     const std::string& actual_client_name) {
   if (desired_client_name == actual_client_name) {
-    RequestWindowContents(desired_client_name, std::move(cb));
+    RequestWindowContents(desired_client_name, /*retry_count=*/0,
+                          std::move(cb));
   } else {
     // No tree with the given name, or it hasn't painted yet. Install a callback
     // for the next time a client creates a CompositorFramesink.
@@ -83,21 +84,23 @@ void WindowServerTestImpl::InstallCallback(
 
 void WindowServerTestImpl::RequestWindowContents(
     const std::string& client_name,
+    int retry_count,
     EnsureClientHasDrawnWindowCallback cb) {
   ClientRoot* client_root = GetWindowTreeWithClientName(client_name)
                                 ->GetFirstRootWithCompositorFrameSink();
   if (!client_root || client_root->window()->bounds().IsEmpty()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&WindowServerTestImpl::RequestWindowContents,
-                       base::Unretained(this), client_name, std::move(cb)));
+        FROM_HERE, base::BindOnce(&WindowServerTestImpl::RequestWindowContents,
+                                  base::Unretained(this), client_name,
+                                  retry_count, std::move(cb)));
     return;
   }
 
   auto copy_output_request = std::make_unique<viz::CopyOutputRequest>(
       viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
       base::BindOnce(&WindowServerTestImpl::OnWindowContentsCaptured,
-                     base::Unretained(this), client_name, std::move(cb)));
+                     base::Unretained(this), client_name, retry_count,
+                     std::move(cb)));
   aura::Window* window = client_root->window();
   copy_output_request->set_area(gfx::Rect(window->bounds().size()));
   window->layer()->RequestCopyOfOutput(std::move(copy_output_request));
@@ -105,14 +108,30 @@ void WindowServerTestImpl::RequestWindowContents(
 
 void WindowServerTestImpl::OnWindowContentsCaptured(
     const std::string& client_name,
+    int retry_count,
     EnsureClientHasDrawnWindowCallback cb,
     std::unique_ptr<viz::CopyOutputResult> result) {
-  if (result->IsEmpty()) {
-    RequestWindowContents(client_name, std::move(cb));
+  if (!result->IsEmpty() && SanityCheckOutputSkBitmap(result->AsSkBitmap())) {
+    std::move(cb).Run(/*success=*/true);
     return;
   }
 
-  std::move(cb).Run(SanityCheckOutputSkBitmap(result->AsSkBitmap()));
+  // Arbitrary retry params.
+  constexpr int kMaxRetry = 3;
+  constexpr base::TimeDelta kRetryDelay = base::TimeDelta::FromSeconds(1);
+
+  ++retry_count;
+  if (retry_count == kMaxRetry) {
+    std::move(cb).Run(/*success=*/false);
+    return;
+  }
+
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&WindowServerTestImpl::RequestWindowContents,
+                     base::Unretained(this), client_name, retry_count,
+                     std::move(cb)),
+      kRetryDelay);
 }
 
 void WindowServerTestImpl::EnsureClientHasDrawnWindow(
@@ -120,7 +139,7 @@ void WindowServerTestImpl::EnsureClientHasDrawnWindow(
     EnsureClientHasDrawnWindowCallback callback) {
   WindowTree* tree = GetWindowTreeWithClientName(client_name);
   if (tree && tree->GetFirstRootWithCompositorFrameSink()) {
-    RequestWindowContents(client_name, std::move(callback));
+    RequestWindowContents(client_name, /*retry_count=*/0, std::move(callback));
     return;
   }
   InstallCallback(client_name, std::move(callback));
