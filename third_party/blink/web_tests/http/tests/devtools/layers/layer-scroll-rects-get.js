@@ -11,9 +11,12 @@
           <div style="height:40px;width:40px;"></div>
       </div>
     `);
-  await TestRunner.evaluateInPagePromise(`
-          var element = document.getElementById('touchable');
-          element.addEventListener("touchstart", () => {}, false);
+  await TestRunner.evaluateInPageAsync(`
+      (function() {
+        var element = document.getElementById('touchable');
+        element.addEventListener("touchstart", () => {}, false);
+        return new Promise(f => testRunner.updateAllLifecyclePhasesAndCompositeThen(f));
+      })();
     `);
 
   await LayersTestRunner.requestLayers();
