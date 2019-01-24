@@ -105,6 +105,11 @@ HRESULT DWriteFontCollectionProxy::FindFamilyName(const WCHAR* family_name,
 
   if (!GetFontProxy().FindFamily(name, &family_index)) {
     LogFontProxyError(FIND_FAMILY_SEND_FAILED);
+    // TODO(https://crbug.com/922403): We're inserting an assertion here to
+    // gather crash reports and find more about clients in which this
+    // fails. Investigate crash reports resulting from this failure, then
+    // remove this assertion.
+    CHECK(false);
     return E_FAIL;
   }
 
