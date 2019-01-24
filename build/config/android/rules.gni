@@ -2024,16 +2024,6 @@ if (enable_java_templates) {
     _deps = []
     if (defined(invoker.deps)) {
       _deps = invoker.deps
-      set_sources_assignment_filter([ "*manifest*" ])
-      sources = _deps
-      set_sources_assignment_filter([])
-      if (sources != _deps) {
-        _bad_deps = _deps - sources
-        assert(
-            false,
-            "Possible manifest-generating dep found in deps. Use android_manifest_dep for this instead. Found: $_bad_deps")
-      }
-      sources = []
     }
 
     _srcjar_deps = []
