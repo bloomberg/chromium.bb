@@ -2270,7 +2270,7 @@
   },
   {
     "name": "fill-on-account-select",
-    // "owners": [ "your-team" ],
+    "owners": [ "jdoerrie" ],
     "expiry_milestone": 76
   },
   {
