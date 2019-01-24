@@ -304,19 +304,28 @@ SmbProviderClient* SmbService::GetSmbProviderClient() const {
 }
 
 void SmbService::RestoreMounts() {
-  const std::vector<ProvidedFileSystemInfo> file_systems =
+  std::vector<ProvidedFileSystemInfo> file_systems =
       GetProviderService()->GetProvidedFileSystemInfoList(provider_id_);
 
-  if (!file_systems.empty()) {
+  std::vector<SmbUrl> preconfigured_shares =
+      GetPreconfiguredSharePathsForPremount();
+
+  if (!file_systems.empty() || !preconfigured_shares.empty()) {
     share_finder_->DiscoverHostsInNetwork(base::BindOnce(
-        &SmbService::OnHostsDiscovered, AsWeakPtr(), file_systems));
+        &SmbService::OnHostsDiscovered, AsWeakPtr(), std::move(file_systems),
+        std::move(preconfigured_shares)));
   }
 }
 
 void SmbService::OnHostsDiscovered(
-    const std::vector<ProvidedFileSystemInfo>& file_systems) {
+    const std::vector<ProvidedFileSystemInfo>& file_systems,
+    const std::vector<SmbUrl>& preconfigured_shares) {
   for (const auto& file_system : file_systems) {
     Remount(file_system);
+  }
+  for (const auto& url : preconfigured_shares) {
+    const base::FilePath share_path(share_finder_->GetResolvedUrl(url));
+    Premount(share_path);
   }
 }
 
