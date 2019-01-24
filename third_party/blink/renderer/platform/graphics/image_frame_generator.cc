@@ -158,7 +158,7 @@ bool ImageFrameGenerator::DecodeToYUV(SegmentReader* data,
   if (decode_failed_)
     return false;
 
-  TRACE_EVENT1("blink", "ImageFrameGenerator::DecodeToYUV", "frame index",
+  TRACE_EVENT1("blink", "ImageFrameGenerator::decodeToYUV", "frame index",
                static_cast<int>(index));
 
   if (!planes || !planes[0] || !planes[1] || !planes[2] || !row_bytes ||
@@ -181,8 +181,7 @@ bool ImageFrameGenerator::DecodeToYUV(SegmentReader* data,
   DCHECK(decoder->CanDecodeToYUV());
 
   if (decoder->DecodeToYUV()) {
-    // TODO(crbug.com/910276): Set this properly for alpha support.
-    SetHasAlpha(index, false);
+    SetHasAlpha(0, false);  // YUV is always opaque
     return true;
   }
 
