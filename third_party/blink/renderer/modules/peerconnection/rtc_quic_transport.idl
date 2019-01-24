@@ -17,7 +17,7 @@ enum RTCQuicTransportState {
    ConstructorCallWith=ExecutionContext,
    RaisesException=Constructor,
    Exposed=Window,
-   RuntimeEnabled=RTCQuicTransport,
+   OriginTrialEnabled=RTCQuicTransport,
    SecureContext
 ] interface RTCQuicTransport : EventTarget {
     readonly attribute RTCIceTransport transport;
