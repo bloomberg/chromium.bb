@@ -282,6 +282,11 @@ void MojoRenderer::OnDurationChange(base::TimeDelta duration) {
   client_->OnDurationChange(duration);
 }
 
+void MojoRenderer::OnRemotePlayStateChange(media::MediaStatus::State state) {
+  DVLOG(2) << __func__ << ": state" << (int)state;
+  client_->OnRemotePlayStateChange(state);
+}
+
 void MojoRenderer::OnVideoOpacityChange(bool opaque) {
   DVLOG(2) << __func__ << ": " << opaque;
   DCHECK(task_runner_->BelongsToCurrentThread());

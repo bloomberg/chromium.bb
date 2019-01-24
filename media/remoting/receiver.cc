@@ -326,5 +326,10 @@ void Receiver::OnDurationChange(base::TimeDelta duration) {
   rpc_broker_->SendMessageToRemote(std::move(rpc));
 }
 
+void Receiver::OnRemotePlayStateChange(MediaStatus::State state) {
+  // Only used with the FlingingRenderer.
+  NOTREACHED();
+}
+
 }  // namespace remoting
 }  // namespace media

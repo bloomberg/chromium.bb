@@ -72,6 +72,10 @@ class RendererImpl::RendererClientInternal final : public RendererClient {
     // the DemuxerHost interface.
     NOTREACHED();
   }
+  void OnRemotePlayStateChange(MediaStatus::State state) override {
+    // Only used with FlingingRenderer.
+    NOTREACHED();
+  }
 
  private:
   DemuxerStream::Type type_;

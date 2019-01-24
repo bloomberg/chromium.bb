@@ -263,6 +263,7 @@ class MockRendererClient : public RendererClient {
   MOCK_METHOD1(OnVideoNaturalSizeChange, void(const gfx::Size&));
   MOCK_METHOD1(OnVideoOpacityChange, void(bool));
   MOCK_METHOD1(OnDurationChange, void(base::TimeDelta));
+  MOCK_METHOD1(OnRemotePlayStateChange, void(MediaStatus::State state));
 };
 
 class MockVideoRenderer : public VideoRenderer {

@@ -78,6 +78,10 @@ enum EncryptionMode;
 [Native]
 enum MediaContainerName;
 
+// See media/base/media_status.h for description.
+[Native]
+enum MediaStatusState;
+
 // This defines a mojo transport format for media::EncryptionPattern
 // See media/base/encryption_pattern.h for description.
 struct EncryptionPattern {
