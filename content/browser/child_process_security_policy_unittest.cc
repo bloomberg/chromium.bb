@@ -1052,8 +1052,7 @@ TEST_F(ChildProcessSecurityPolicyTest, RemoveRace) {
 // Tests behavior of CanAccessDataForOrigin() during race conditions that
 // can occur during Remove(). It verifies that permissions for a child ID are
 // preserved after a Remove() call until the task, that Remove() has posted to
-// the IO thread, has run AND the task posted back to the UI thread has also
-// run.
+// the IO thread, has run.
 //
 // We use a combination of waitable events and extra tasks posted to the
 // threads to capture permission state from the UI & IO threads during the
@@ -1151,16 +1150,15 @@ TEST_F(ChildProcessSecurityPolicyTest, RemoveRace_CanAccessDataForOrigin) {
   after_remove_complete_event.Wait();
 
   // Verify expected states at various parts of the removal.
-  // Note: UI & IO threads are expected to keep pre-Remove() permissions until
-  // the task Remove() posted runs on the IO thread and the task posted from
-  // the IO thread runs on the UI thread.
+  // Note: IO thread is expected to keep pre-Remove() permissions until
+  // the task Remove() posted runs on the IO thread.
   EXPECT_TRUE(io_before_remove);
   EXPECT_TRUE(io_while_io_task_pending);
-  EXPECT_TRUE(io_after_io_task_completed);
+  EXPECT_FALSE(io_after_io_task_completed);
 
   EXPECT_TRUE(ui_before_remove);
-  EXPECT_TRUE(ui_while_io_task_pending);
-  EXPECT_TRUE(ui_after_io_task_completed);
+  EXPECT_FALSE(ui_while_io_task_pending);
+  EXPECT_FALSE(ui_after_io_task_completed);
 
   EXPECT_FALSE(ui_after_remove_complete);
   EXPECT_FALSE(io_after_remove_complete);

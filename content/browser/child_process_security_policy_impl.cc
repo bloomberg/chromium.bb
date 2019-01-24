@@ -496,16 +496,16 @@ void ChildProcessSecurityPolicyImpl::Remove(int child_id) {
   pending_remove_state_[child_id] = std::move(state->second);
   security_state_.erase(child_id);
 
-  // |child_id| could be inside tasks that are on the UI thread and IO thread
-  // task queues. We need to keep the |pending_remove_state_| entry around
-  // until we have successfully executed a task on the IO thread followed by
-  // a task on the UI thread. This should ensure that any pending tasks on
-  // either thread will have completed before we remove the entry.
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {BrowserThread::IO}, base::DoNothing(),
+  // |child_id| could be inside tasks that are on the IO thread task queues. We
+  // need to keep the |pending_remove_state_| entry around until we have
+  // successfully executed a task on the IO thread. This should ensure that any
+  // pending tasks on the IO thread will have completed before we remove the
+  // entry.
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           [](ChildProcessSecurityPolicyImpl* policy, int child_id) {
-            DCHECK_CURRENTLY_ON(BrowserThread::UI);
+            DCHECK_CURRENTLY_ON(BrowserThread::IO);
             base::AutoLock lock(policy->lock_);
             policy->pending_remove_state_.erase(child_id);
           },
@@ -1498,11 +1498,13 @@ ChildProcessSecurityPolicyImpl::GetSecurityState(int child_id) {
     return itr->second.get();
 
   // Check to see if |child_id| is in the pending removal map since this
-  // may be a call that was already on the IO or UI thread's task queue when the
+  // may be a call that was already on the IO thread's task queue when the
   // Remove() call occurred.
-  itr = pending_remove_state_.find(child_id);
-  if (itr != pending_remove_state_.end())
-    return itr->second.get();
+  if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    itr = pending_remove_state_.find(child_id);
+    if (itr != pending_remove_state_.end())
+      return itr->second.get();
+  }
 
   return nullptr;
 }
