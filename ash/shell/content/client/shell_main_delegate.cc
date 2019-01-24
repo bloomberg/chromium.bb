@@ -78,6 +78,7 @@ class ShellContentUtilityClient : public content::ContentUtilityClient {
     if (service) {
       service_manager::Service::RunAsyncUntilTermination(
           std::move(service), base::BindOnce(&TerminateThisProcess));
+      return true;
     }
     return false;
   }

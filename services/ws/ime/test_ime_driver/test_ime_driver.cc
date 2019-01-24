@@ -22,10 +22,10 @@ class TestInputMethod : public mojom::InputMethod {
   // mojom::InputMethod:
   void OnTextInputStateChanged(
       ws::mojom::TextInputStatePtr text_input_state) override {
-    NOTIMPLEMENTED();
+    NOTIMPLEMENTED_LOG_ONCE();
   }
   void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) override {
-    NOTIMPLEMENTED();
+    NOTIMPLEMENTED_LOG_ONCE();
   }
   void ProcessKeyEvent(std::unique_ptr<ui::Event> key_event,
                        ProcessKeyEventCallback callback) override {
@@ -40,8 +40,8 @@ class TestInputMethod : public mojom::InputMethod {
                        base::Unretained(this), std::move(cloned_event),
                        std::move(callback)));
   }
-  void CancelComposition() override { NOTIMPLEMENTED(); }
-  void ShowVirtualKeyboardIfEnabled() override { NOTIMPLEMENTED(); }
+  void CancelComposition() override { NOTIMPLEMENTED_LOG_ONCE(); }
+  void ShowVirtualKeyboardIfEnabled() override { NOTIMPLEMENTED_LOG_ONCE(); }
 
   void PostProcssKeyEvent(std::unique_ptr<ui::Event> key_event,
                           ProcessKeyEventCallback callback,
