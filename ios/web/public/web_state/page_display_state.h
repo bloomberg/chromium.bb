@@ -9,7 +9,12 @@
 
 namespace web {
 
-// Class used to represent the scrolling offset of a webview.
+// Class used to represent the scrolling offset of a webview.  The offsets
+// stored are offsets from the scrolled-to-top-left resting position.  That
+// means an |offset_y| value of 0 corresponds to a UIScrollView.contentOffset.y
+// value of -UIScrollView.contentInset.top.
+// TODO(crbug.com/925073): Update this class to store contentInset and
+// contentOffset directly.
 class PageScrollState {
  public:
   // Default constructor.  Initializes scroll offsets to NAN.
@@ -21,7 +26,7 @@ class PageScrollState {
   // The scroll offset is valid if its x and y values are both non-NAN.
   bool IsValid() const;
 
-  // Accessors for scroll offsets and zoom scale.
+  // Accessors for scroll offsets.
   double offset_x() const { return offset_x_; }
   void set_offset_x(double offset_x) { offset_x_ = offset_x; }
   double offset_y() const { return offset_y_; }

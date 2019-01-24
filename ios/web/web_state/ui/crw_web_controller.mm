@@ -3596,8 +3596,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
     }
   } else if (_webView) {
     CGPoint scrollOffset = [self scrollPosition];
-    displayState.scroll_state().set_offset_x(std::floor(scrollOffset.x));
-    displayState.scroll_state().set_offset_y(std::floor(scrollOffset.y));
+    UIEdgeInsets contentInset = self.webScrollView.contentInset;
+    displayState.scroll_state().set_offset_x(
+        std::floor(scrollOffset.x + contentInset.left));
+    displayState.scroll_state().set_offset_y(
+        std::floor(scrollOffset.y + contentInset.top));
     UIScrollView* scrollView = self.webScrollView;
     displayState.zoom_state().set_minimum_zoom_scale(
         scrollView.minimumZoomScale);
@@ -3766,8 +3769,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
 - (void)applyWebViewScrollOffsetFromScrollState:
     (const web::PageScrollState&)scrollState {
   DCHECK(scrollState.IsValid());
-  CGPoint scrollOffset =
-      CGPointMake(scrollState.offset_x(), scrollState.offset_y());
+  UIEdgeInsets contentInset = self.webScrollView.contentInset;
+  CGPoint scrollOffset = CGPointMake(scrollState.offset_x() - contentInset.left,
+                                     scrollState.offset_y() - contentInset.top);
   if (_loadPhase == web::PAGE_LOADED) {
     // If the page is loaded, update the scroll immediately.
     [self.webScrollView setContentOffset:scrollOffset];
