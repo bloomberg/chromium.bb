@@ -1754,6 +1754,8 @@ jumbo_split_static_library("browser") {
     "//chrome/browser/ui/webui/bluetooth_internals",
     "//chrome/common/net",
     "//chrome/installer/util:with_no_strings",
+    "//chrome/services/noop/public/cpp",
+    "//chrome/services/noop/public/mojom",
     "//components/about_handler",
     "//components/app_modal",
     "//components/assist_ranker",

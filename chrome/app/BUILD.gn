@@ -543,6 +543,7 @@ source_set("chrome_packaged_service_manifests") {
     "//chrome/common:buildflags",
     "//chrome/common:mojo_bindings",
     "//chrome/services/file_util:manifest",
+    "//chrome/services/noop:manifest",
     "//components/services/patch:manifest",
     "//components/services/unzip:manifest",
     "//components/spellcheck/common:interfaces",

@@ -1,0 +1,17 @@
+{
+  "name": "noop",
+  "display_name": "No-op Service",
+  "sandbox_type": "network",
+  "options" : {
+    "instance_sharing" : "shared_instance_across_users"
+  },
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "noop": [
+          "chrome.mojom.Noop"
+        ]
+      }
+    }
+  }
+}

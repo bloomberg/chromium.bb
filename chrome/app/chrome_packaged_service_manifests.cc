@@ -9,6 +9,7 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/common/constants.mojom.h"
 #include "chrome/services/file_util/manifest.h"
+#include "chrome/services/noop/manifest.h"
 #include "components/services/patch/manifest.h"
 #include "components/services/unzip/manifest.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
@@ -137,6 +138,7 @@ GetChromePackagedServiceManifests() {
       file_util::GetManifest(),
       proxy_resolver::GetManifest(),
       local_state::GetManifest(),
+      noop::GetManifest(),
 #if BUILDFLAG(ENABLE_EXTENSIONS)
       removable_storage_writer::GetManifest(),
 #endif
