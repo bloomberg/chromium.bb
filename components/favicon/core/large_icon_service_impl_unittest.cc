@@ -521,14 +521,14 @@ class LargeIconServiceGetterTest : public LargeIconServiceTest,
       int desired_size_in_pixel) {
     // Switch over testing two analogous functions based on the bool param.
     if (GetParam()) {
-      large_icon_service_.GetLargeIconOrFallbackStyle(
+      large_icon_service_.GetLargeIconRawBitmapOrFallbackStyleForPageUrl(
           page_url, min_source_size_in_pixel, desired_size_in_pixel,
           base::BindRepeating(
               &LargeIconServiceGetterTest::RawBitmapResultCallback,
               base::Unretained(this)),
           &cancelable_task_tracker_);
     } else {
-      large_icon_service_.GetLargeIconImageOrFallbackStyle(
+      large_icon_service_.GetLargeIconImageOrFallbackStyleForPageUrl(
           page_url, min_source_size_in_pixel, desired_size_in_pixel,
           base::BindRepeating(&LargeIconServiceGetterTest::ImageResultCallback,
                               base::Unretained(this)),

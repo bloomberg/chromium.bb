@@ -140,7 +140,7 @@ FaviconAttributes* FaviconLoader::FaviconForUrl(
   CGFloat favicon_size_in_pixels = [UIScreen mainScreen].scale * size;
   CGFloat min_favicon_size = [UIScreen mainScreen].scale * min_size;
   DCHECK(large_icon_service_);
-  large_icon_service_->GetLargeIconOrFallbackStyle(
+  large_icon_service_->GetLargeIconRawBitmapOrFallbackStyleForPageUrl(
       block_url, min_favicon_size, favicon_size_in_pixels,
       base::BindRepeating(favicon_block), &cancelable_task_tracker_);
 

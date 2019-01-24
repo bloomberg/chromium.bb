@@ -466,7 +466,7 @@ LargeIconServiceImpl::LargeIconServiceImpl(
 LargeIconServiceImpl::~LargeIconServiceImpl() {}
 
 base::CancelableTaskTracker::TaskId
-LargeIconServiceImpl::GetLargeIconOrFallbackStyle(
+LargeIconServiceImpl::GetLargeIconRawBitmapOrFallbackStyleForPageUrl(
     const GURL& page_url,
     int min_source_size_in_pixel,
     int desired_size_in_pixel,
@@ -478,7 +478,7 @@ LargeIconServiceImpl::GetLargeIconOrFallbackStyle(
 }
 
 base::CancelableTaskTracker::TaskId
-LargeIconServiceImpl::GetLargeIconImageOrFallbackStyle(
+LargeIconServiceImpl::GetLargeIconImageOrFallbackStyleForPageUrl(
     const GURL& page_url,
     int min_source_size_in_pixel,
     int desired_size_in_pixel,

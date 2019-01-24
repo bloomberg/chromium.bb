@@ -36,7 +36,8 @@ class FakeLargeIconService : public favicon::LargeIconServiceImpl {
   FakeLargeIconService()
       : favicon::LargeIconServiceImpl(/*favicon_service=*/nullptr,
                                       /*image_fetcher=*/nullptr) {}
-  base::CancelableTaskTracker::TaskId GetLargeIconOrFallbackStyle(
+  base::CancelableTaskTracker::TaskId
+  GetLargeIconRawBitmapOrFallbackStyleForPageUrl(
       const GURL& page_url,
       int min_source_size_in_pixel,
       int desired_size_in_pixel,
