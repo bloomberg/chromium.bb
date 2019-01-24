@@ -263,9 +263,9 @@ static const arg_def_t global_error_resilient =
             "Enable global error resiliency features");
 static const arg_def_t lag_in_frames =
     ARG_DEF(NULL, "lag-in-frames", 1, "Max number of frames to lag");
-static const arg_def_t large_scale_tile =
-    ARG_DEF(NULL, "large-scale-tile", 1,
-            "Large scale tile coding (0: off (default), 1: on)");
+static const arg_def_t large_scale_tile = ARG_DEF(
+    NULL, "large-scale-tile", 1,
+    "Large scale tile coding (0: off (default), 1: on (ivf output only))");
 static const arg_def_t monochrome =
     ARG_DEF(NULL, "monochrome", 0, "Monochrome video (no chroma planes)");
 static const arg_def_t full_still_picture_hdr = ARG_DEF(
@@ -1349,6 +1349,9 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       config->cfg.g_lag_in_frames = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &large_scale_tile, argi)) {
       config->cfg.large_scale_tile = arg_parse_uint(&arg);
+      // If large_scale_tile = 1, only support to output to ivf format.
+      if (config->cfg.large_scale_tile && !config->write_ivf)
+        die("only support ivf output format while %s.\n", arg.name);
     } else if (arg_match(&arg, &monochrome, argi)) {
       config->cfg.monochrome = 1;
     } else if (arg_match(&arg, &full_still_picture_hdr, argi)) {
