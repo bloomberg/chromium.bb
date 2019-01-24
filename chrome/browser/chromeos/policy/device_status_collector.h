@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -103,6 +104,8 @@ class SampledData {
   std::map<std::string, enterprise_management::BatterySample> battery_samples;
   // Thermal samples for each thermal point.
   std::map<std::string, enterprise_management::ThermalSample> thermal_samples;
+  // CPU thermal samples.
+  std::map<std::string, enterprise_management::CPUTempInfo> cpu_samples;
 
   DISALLOW_COPY_AND_ASSIGN(SampledData);
 };
@@ -331,11 +334,18 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
   void SampleProbeData(std::unique_ptr<SampledData> sample,
                        SamplingProbeResultCallback callback,
                        base::Optional<runtime_probe::ProbeResult> result);
+
   // Callback triggered from PowerManagedClient that samples battery discharge
   // rate. |callback| will be called once all sampling is finished.
   void SampleDischargeRate(std::unique_ptr<SampledData> sample,
                            SamplingCallback callback,
                            const power_manager::PowerSupplyProperties& prop);
+
+  // Callback invoked to update our cpu temperature information.
+  void ReceiveCPUTemperature(std::unique_ptr<SampledData> sample,
+                             SamplingCallback callback,
+                             std::vector<enterprise_management::CPUTempInfo>);
+
   // Final sampling step that records data sample, invokes |callback|.
   void AddDataSample(std::unique_ptr<SampledData> sample,
                      SamplingCallback callback);
