@@ -86,11 +86,6 @@ void TrayNetworkStateObserver::NetworkPropertiesUpdated(
   SignalUpdate(false /* notify_a11y */);
 }
 
-void TrayNetworkStateObserver::DevicePropertiesUpdated(
-    const chromeos::DeviceState* device) {
-  SignalUpdate(false /* notify_a11y */);
-}
-
 void TrayNetworkStateObserver::OnPortalDetectionCompleted(
     const chromeos::NetworkState* network,
     const chromeos::NetworkPortalDetector::CaptivePortalState& state) {
