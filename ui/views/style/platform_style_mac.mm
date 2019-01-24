@@ -42,6 +42,7 @@ const bool PlatformStyle::kTextfieldUsesDragCursorWhenDraggable = false;
 const bool PlatformStyle::kTableViewSupportsKeyboardNavigationByCell = false;
 const bool PlatformStyle::kTreeViewSelectionPaintsEntireRow = true;
 const bool PlatformStyle::kUseRipples = false;
+const bool PlatformStyle::kPreferFocusRings = true;
 const bool PlatformStyle::kInactiveWidgetControlsAppearDisabled = true;
 
 const Button::NotifyAction PlatformStyle::kMenuNotifyActivationAction =
