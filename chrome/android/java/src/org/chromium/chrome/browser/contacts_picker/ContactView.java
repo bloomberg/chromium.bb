@@ -92,7 +92,7 @@ public class ContactView extends SelectableItemView<ContactDetails> {
         };
         mModel = new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
                          .with(ModalDialogProperties.CONTROLLER, controller)
-                         .with(ModalDialogProperties.TITLE, mDisplayName.getText().toString())
+                         .with(ModalDialogProperties.TITLE, mContactDetails.getDisplayName())
                          .with(ModalDialogProperties.MESSAGE,
                                  mContactDetails.getContactDetailsAsString(true, null))
                          .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, mContext.getResources(),
@@ -142,6 +142,7 @@ public class ContactView extends SelectableItemView<ContactDetails> {
 
         String displayName = contactDetails.getDisplayName();
         mDisplayName.setText(displayName);
+
         String details = contactDetails.getContactDetailsAsString(
                 /*longVersion=*/false, mContext.getResources());
         mDetailsView.setText(details);
