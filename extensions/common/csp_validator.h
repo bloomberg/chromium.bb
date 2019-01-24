@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_piece_forward.h"
 #include "extensions/common/manifest.h"
 
@@ -130,6 +131,11 @@ std::string GetEffectiveSandoxedPageCSP(const std::string& policy,
 // |type|.
 bool ContentSecurityPolicyIsSandboxed(
     const std::string& policy, Manifest::Type type);
+
+// Returns whether the given |isolated_world_csp| is secure. If not, populates
+// |error|.
+bool IsSecureIsolatedWorldCSP(const std::string& isolated_world_csp,
+                              base::string16* error);
 
 }  // namespace csp_validator
 

@@ -214,4 +214,52 @@ TEST_F(CSPInfoUnitTest, CSPDictionary_Sandbox) {
   RunTestcases(testcases, base::size(testcases), EXPECT_TYPE_ERROR);
 }
 
+TEST_F(CSPInfoUnitTest, CSPDictionary_IsolatedWorlds) {
+  ScopedCurrentChannel channel(version_info::Channel::UNKNOWN);
+
+  const char kDefaultIsolatedWorldCSP_BypassMainWorld[] = "";
+  const char kDefaultIsolatedWorldCSP_Secure[] =
+      "script-src 'self'; object-src 'self'; worker-src 'self'";
+
+  struct {
+    const char* file_name;
+    const char* expected_csp;
+  } success_cases[] = {{"isolated_world_csp_dictionary_default_v2.json",
+                        kDefaultIsolatedWorldCSP_Secure},
+                       {"isolated_world_csp_no_dictionary_default_v2.json",
+                        kDefaultIsolatedWorldCSP_BypassMainWorld},
+                       {"isolated_world_csp_dictionary_default_v3.json",
+                        kDefaultIsolatedWorldCSP_Secure},
+                       // TODO(crbug.com/914224): This is wrong. We should use
+                       // kDefaultIsolatedWorldCSP_Secure here.
+                       {"isolated_world_csp_no_dictionary_default_v3.json",
+                        kDefaultIsolatedWorldCSP_BypassMainWorld},
+                       {"isolated_world_csp_valid.json",
+                        "script-src 'self'; object-src http://localhost:80;"}};
+
+  for (const auto& test_case : success_cases) {
+    SCOPED_TRACE(test_case.file_name);
+    scoped_refptr<Extension> extension =
+        LoadAndExpectSuccess(test_case.file_name);
+    ASSERT_TRUE(extension);
+    EXPECT_EQ(test_case.expected_csp, CSPInfo::GetIsolatedWorldCSP(*extension));
+  }
+
+  const char* key = keys::kContentSecurityPolicy_IsolatedWorldPath;
+  Testcase invalid_cases[] = {
+      {"isolated_world_csp_invalid_type.json", GetInvalidManifestKeyError(key)},
+      {"isolated_world_csp_missing_src.json",
+       ErrorUtils::FormatErrorMessage(
+           errors::kInvalidCSPMissingSecureSrc,
+           keys::kContentSecurityPolicy_IsolatedWorldPath, "script-src")},
+      {"isolated_world_csp_insecure_src.json",
+       ErrorUtils::FormatErrorMessage(
+           manifest_errors::kInvalidCSPInsecureValueError,
+           manifest_keys::kContentSecurityPolicy_IsolatedWorldPath,
+           "google.com", "object-src")},
+  };
+
+  RunTestcases(invalid_cases, base::size(invalid_cases), EXPECT_TYPE_ERROR);
+}
+
 }  // namespace extensions
