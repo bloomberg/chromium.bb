@@ -438,7 +438,7 @@ class CanvasResourceProviderDirectGpuMemoryBuffer final
 
 namespace {
 
-enum class ResourceType {
+enum class CanvasResourceType {
   kDirectGpuMemoryBuffer,
   kTextureGpuMemoryBuffer,
   kBitmapGpuMemoryBuffer,
@@ -447,49 +447,51 @@ enum class ResourceType {
   kBitmap,
 };
 
-const std::vector<ResourceType>& GetResourceTypeFallbackList(
+const std::vector<CanvasResourceType>& GetResourceTypeFallbackList(
     CanvasResourceProvider::ResourceUsage usage) {
-  static const std::vector<ResourceType> kSoftwareFallbackList({
-      ResourceType::kBitmap,
+  static const std::vector<CanvasResourceType> kSoftwareFallbackList({
+      CanvasResourceType::kBitmap,
   });
 
-  static const std::vector<ResourceType> kAcceleratedFallbackList({
-      ResourceType::kTexture,
+  static const std::vector<CanvasResourceType> kAcceleratedFallbackList({
+      CanvasResourceType::kTexture,
       // Fallback to software
-      ResourceType::kBitmap,
+      CanvasResourceType::kBitmap,
   });
 
-  static const std::vector<ResourceType> kSoftwareCompositedFallbackList({
-      ResourceType::kBitmapGpuMemoryBuffer,
-      ResourceType::kSharedBitmap,
+  static const std::vector<CanvasResourceType> kSoftwareCompositedFallbackList({
+      CanvasResourceType::kBitmapGpuMemoryBuffer,
+      CanvasResourceType::kSharedBitmap,
       // Fallback to no direct compositing support
-      ResourceType::kBitmap,
+      CanvasResourceType::kBitmap,
   });
 
-  static const std::vector<ResourceType> kAcceleratedCompositedFallbackList({
-      ResourceType::kTextureGpuMemoryBuffer,
-      ResourceType::kTexture,
-      // Fallback to software composited (|kSoftwareCompositedFallbackList|).
-      ResourceType::kBitmapGpuMemoryBuffer,
-      ResourceType::kSharedBitmap,
-      // Fallback to no direct compositing support
-      ResourceType::kBitmap,
-  });
+  static const std::vector<CanvasResourceType>
+      kAcceleratedCompositedFallbackList({
+          CanvasResourceType::kTextureGpuMemoryBuffer,
+          CanvasResourceType::kTexture,
+          // Fallback to software composited
+          // (|kSoftwareCompositedFallbackList|).
+          CanvasResourceType::kBitmapGpuMemoryBuffer,
+          CanvasResourceType::kSharedBitmap,
+          // Fallback to no direct compositing support
+          CanvasResourceType::kBitmap,
+      });
   DCHECK(std::equal(kAcceleratedCompositedFallbackList.begin() + 2,
                     kAcceleratedCompositedFallbackList.end(),
                     kSoftwareCompositedFallbackList.begin(),
                     kSoftwareCompositedFallbackList.end()));
 
-  static const std::vector<ResourceType> kAcceleratedDirectFallbackList({
-      ResourceType::kDirectGpuMemoryBuffer,
+  static const std::vector<CanvasResourceType> kAcceleratedDirectFallbackList({
+      CanvasResourceType::kDirectGpuMemoryBuffer,
       // The rest is equal to |kAcceleratedCompositedFallbackList|.
-      ResourceType::kTextureGpuMemoryBuffer,
-      ResourceType::kTexture,
+      CanvasResourceType::kTextureGpuMemoryBuffer,
+      CanvasResourceType::kTexture,
       // Fallback to software composited
-      ResourceType::kBitmapGpuMemoryBuffer,
-      ResourceType::kSharedBitmap,
+      CanvasResourceType::kBitmapGpuMemoryBuffer,
+      CanvasResourceType::kSharedBitmap,
       // Fallback to no direct compositing support
-      ResourceType::kBitmap,
+      CanvasResourceType::kBitmap,
   });
   DCHECK(std::equal(kAcceleratedDirectFallbackList.begin() + 1,
                     kAcceleratedDirectFallbackList.end(),
@@ -523,16 +525,16 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
     base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
     bool is_origin_top_left) {
   std::unique_ptr<CanvasResourceProvider> provider;
-  const std::vector<ResourceType>& fallback_list =
+  const std::vector<CanvasResourceType>& fallback_list =
       GetResourceTypeFallbackList(usage);
-  for (ResourceType resource_type : fallback_list) {
+  for (CanvasResourceType resource_type : fallback_list) {
     // Note: We are deliberately not using std::move() on
     // |context_provider_wrapper| and |resource_dispatcher| to ensure that the
     // pointers remain valid for the next iteration of this loop if necessary.
     switch (resource_type) {
-      case ResourceType::kTextureGpuMemoryBuffer:
+      case CanvasResourceType::kTextureGpuMemoryBuffer:
         FALLTHROUGH;
-      case ResourceType::kDirectGpuMemoryBuffer:
+      case CanvasResourceType::kDirectGpuMemoryBuffer:
         if (!SharedGpuContext::IsGpuCompositingEnabled())
           continue;
         if (presentation_mode != kAllowImageChromiumPresentationMode)
@@ -552,7 +554,7 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
         DCHECK_EQ(color_params.GLUnsizedInternalFormat(),
                   gpu::InternalFormatForGpuMemoryBufferFormat(
                       color_params.GetBufferFormat()));
-        if (resource_type == ResourceType::kDirectGpuMemoryBuffer) {
+        if (resource_type == CanvasResourceType::kDirectGpuMemoryBuffer) {
           provider =
               std::make_unique<CanvasResourceProviderDirectGpuMemoryBuffer>(
                   size, msaa_sample_count, color_params,
@@ -566,7 +568,7 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
                   is_origin_top_left);
         }
         break;
-      case ResourceType::kBitmapGpuMemoryBuffer:
+      case CanvasResourceType::kBitmapGpuMemoryBuffer:
         if (!SharedGpuContext::IsGpuCompositingEnabled())
           continue;
         if (presentation_mode != kAllowImageChromiumPresentationMode)
@@ -584,20 +586,20 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
                 size, color_params, context_provider_wrapper,
                 resource_dispatcher);
         break;
-      case ResourceType::kSharedBitmap:
+      case CanvasResourceType::kSharedBitmap:
         if (!resource_dispatcher)
           continue;
         provider = std::make_unique<CanvasResourceProviderSharedBitmap>(
             size, color_params, resource_dispatcher);
         break;
-      case ResourceType::kTexture:
+      case CanvasResourceType::kTexture:
         if (!context_provider_wrapper)
           continue;
         provider = std::make_unique<CanvasResourceProviderTexture>(
             size, msaa_sample_count, color_params, context_provider_wrapper,
             resource_dispatcher, is_origin_top_left);
         break;
-      case ResourceType::kBitmap:
+      case CanvasResourceType::kBitmap:
         provider = std::make_unique<CanvasResourceProviderBitmap>(
             size, color_params, context_provider_wrapper, resource_dispatcher);
         break;
