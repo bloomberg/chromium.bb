@@ -177,9 +177,8 @@ Polymer({
   /**
    * Listens for history-item being selected or deselected (through checkbox)
    * and changes the view of the top toolbar.
-   * @param {{detail: {countAddition: number}}} e
    */
-  checkboxSelected: function(e) {
+  checkboxSelected: function() {
     const toolbar = /** @type {HistoryToolbarElement} */ (this.$.toolbar);
     toolbar.count = /** @type {HistoryListElement} */ (this.$.history)
                         .getSelectedItemCount();

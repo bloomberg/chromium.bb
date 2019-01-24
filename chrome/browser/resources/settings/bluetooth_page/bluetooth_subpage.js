@@ -360,7 +360,10 @@ Polymer({
   },
 
   /**
-   * @param {!{detail: {action: string, device: !chrome.bluetooth.Device}}} e
+   * @param {!CustomEvent<!{
+   *     action: string, device:
+   *     !chrome.bluetooth.Device
+   * }>} e
    * @private
    */
   onDeviceEvent_: function(e) {

@@ -128,7 +128,7 @@ Polymer({
         'contentSettingSitePermissionChanged', this.populateList_.bind(this));
     this.addEventListener(
         'site-entry-selected',
-        (/** @type {!{detail: !{item: !SiteGroup, index: number}}} */ e) => {
+        (/** @type {!CustomEvent<!{item: !SiteGroup, index: number}>} */ e) => {
           this.selectedItem_ = e.detail;
         });
     this.addEventListener('site-entry-storage-updated', () => {
@@ -382,7 +382,7 @@ Polymer({
 
   /**
    * Delete an entry from |siteGroupMap| for given etldPlus1.
-   * @param {!{detail: !{etldPlus1: string}}} e
+   * @param {!CustomEvent<!{etldPlus1: string}>} e
    * @private
    */
   onDeleteCurrentEntry_: function(e) {

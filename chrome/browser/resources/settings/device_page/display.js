@@ -720,7 +720,8 @@ Polymer({
   },
 
   /**
-   * @param {!{detail: string}} e |e.detail| is the id of the selected display.
+   * @param {!CustomEvent<string>} e |e.detail| is the id of the selected
+   *     display.
    * @private
    */
   onSelectDisplay_: function(e) {
@@ -738,11 +739,12 @@ Polymer({
 
   /**
    * Handles event when a display tab is selected.
-   * @param {!{detail: !{item: !{displayId: string}}}} e
+   * @param {!CustomEvent<!{item: !{displayId: string}}>} e
    * @private
    */
   onSelectDisplayTab_: function(e) {
-    this.onSelectDisplay_({detail: e.detail.item.displayId});
+    this.onSelectDisplay_(
+        new CustomEvent('select-display', {detail: e.detail.item.displayId}));
   },
 
   /**

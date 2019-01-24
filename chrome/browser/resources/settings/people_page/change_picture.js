@@ -204,7 +204,7 @@ Polymer({
 
   /**
    * Handler for when an image is activated.
-   * @param {!{detail: !CrPicture.ImageElement}} event
+   * @param {!CustomEvent<!CrPicture.ImageElement>} event
    * @private
    */
   onImageActivate_: function(event) {
@@ -217,7 +217,7 @@ Polymer({
   },
 
   /**
-   * @param {!{detail: !{photoDataUrl: string}}} event
+   * @param {!CustomEvent<{photoDataUrl: string}>} event
    * @private
    */
   onPhotoTaken_: function(event) {
@@ -230,7 +230,7 @@ Polymer({
   },
 
   /**
-   * @param {!{detail: boolean}} event
+   * @param {!CustomEvent<boolean>} event
    * @private
    */
   onSwitchMode_: function(event) {

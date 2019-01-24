@@ -312,7 +312,7 @@ Polymer({
   },
 
   /**
-   * @param {{detail: !Array<string>}} event
+   * @param {!CustomEvent<!Array<string>>} event
    * @private
    */
   checkNetworkExists_: function(event) {
@@ -321,7 +321,7 @@ Polymer({
   },
 
   /**
-   * @param {{detail: !Array<string>}} event
+   * @param {!CustomEvent<!Array<string>>} event
    * @private
    */
   updateNetworkDetails_: function(event) {
@@ -858,7 +858,10 @@ Polymer({
 
   /**
    * Event triggered for elements associated with network properties.
-   * @param {!{detail: !{field: string, value: !CrOnc.NetworkPropertyType}}} e
+   * @param {!CustomEvent<!{
+   *     field: string,
+   *     value: !CrOnc.NetworkPropertyType
+   * }>} e
    * @private
    */
   onNetworkPropertyChange_: function(e) {
@@ -895,10 +898,10 @@ Polymer({
 
   /**
    * Event triggered when the IP Config or NameServers element changes.
-   * @param {!{detail: !{field: string,
-   *                     value: (string|!CrOnc.IPConfigProperties|
-   *                             !Array<string>)}}} event
-   *     The network-ip-config or network-nameservers change event.
+   * @param {!CustomEvent<!{
+   *     field: string,
+   *     value: (string|!CrOnc.IPConfigProperties| !Array<string>)
+   * }>} event The network-ip-config or network-nameservers change event.
    * @private
    */
   onIPConfigChange_: function(event) {
@@ -980,7 +983,7 @@ Polymer({
 
   /**
    * Event triggered when the Proxy configuration element changes.
-   * @param {!{detail: {field: string, value: !CrOnc.ProxySettings}}} event
+   * @param {!CustomEvent<!{field: string, value: !CrOnc.ProxySettings}>} event
    *     The network-proxy change event.
    * @private
    */

@@ -91,8 +91,8 @@ Polymer({
    * triggering updateTetherNetworkState_ and rendering this callback
    * redundant. As a result, we return early if the active network is not
    * changed.
-   * @param {{detail: Array<string>}} event stores an array of the GUIDs of all
-   *     networks that changed in its detail property.
+   * @param {!CustomEvent<!Array<string>>} event stores an array of the GUIDs of
+   *     all networks that changed in its detail property.
    * @private
    */
   onNetworksChanged_: function(event) {

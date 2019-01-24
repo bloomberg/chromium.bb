@@ -273,7 +273,7 @@ Polymer({
   },
 
   /**
-   * @param {!{detail: !Object}} event
+   * @param {!CustomEvent<!{value: string}>} event
    * @private
    */
   onAuthTokenChanged_: function(event) {
@@ -285,7 +285,10 @@ Polymer({
    * |authToken_| is invalid), display the password prompt to begin the
    * authentication process.
    *
-   * @param {!{detail: !Object}} event
+   * @param {!CustomEvent<!{
+   *     feature: !settings.MultiDeviceFeature,
+   *     enabled: boolean
+   * }>} event
    * @private
    */
   onFeatureToggleClicked_: function(event) {

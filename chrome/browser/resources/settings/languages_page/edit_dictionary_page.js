@@ -138,7 +138,7 @@ Polymer({
 
   /**
    * Handles Enter and Escape key presses for the new-word input.
-   * @param {!{detail: !{key: string}}} e
+   * @param {!CustomEvent<!{key: string}>} e
    */
   onKeysPress_: function(e) {
     if (e.detail.key == 'enter' &&

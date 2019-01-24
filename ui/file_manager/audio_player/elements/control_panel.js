@@ -261,7 +261,7 @@ var AriaLabels;
     },
 
     /**
-     * @param {{detail: {value: boolean}}} e
+     * @param {!CustomEvent<{value: boolean}>} e
      * @private
      */
     onSeekingChanged_: function(e) {

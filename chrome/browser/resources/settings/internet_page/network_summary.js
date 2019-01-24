@@ -135,7 +135,7 @@ Polymer({
   },
 
   /**
-   * @param {{detail: !Array<string>}} event
+   * @param {!CustomEvent<!Array<string>>} event
    * @private
    */
   updateActiveNetworks_: function(event) {
