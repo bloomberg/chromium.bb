@@ -27,6 +27,8 @@ enum RTCQuicTransportState {
     [RaisesException] void listen(BufferSource remote_key);
     void stop();
     [RaisesException] RTCQuicStream createStream();
+    [CallWith=ScriptState, RaisesException]
+    Promise<RTCQuicTransportStats> getStats();
     attribute EventHandler onstatechange;
     attribute EventHandler onerror;
     attribute EventHandler onquicstream;

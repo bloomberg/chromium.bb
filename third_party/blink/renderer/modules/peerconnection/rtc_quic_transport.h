@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_QUIC_TRANSPORT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_QUIC_TRANSPORT_H_
 
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_piece.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
@@ -123,6 +124,9 @@ class MODULES_EXPORT RTCQuicTransport final
 
   void stop();
   RTCQuicStream* createStream(ExceptionState& exception_state);
+  // Resolves the promise with an RTCQuicTransportStats dictionary.
+  ScriptPromise getStats(ScriptState* script_state,
+                         ExceptionState& exception_state);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(quicstream, kQuicstream);
@@ -153,6 +157,8 @@ class MODULES_EXPORT RTCQuicTransport final
                           bool from_remote) override;
   void OnRemoteStopped() override;
   void OnStream(QuicStreamProxy* stream_proxy) override;
+  void OnStats(uint32_t request_id,
+               const P2PQuicTransportStats& stats) override;
 
   // Starts the underlying QUIC connection, by creating the underlying QUIC
   // transport objects and starting the QUIC handshake.
@@ -174,6 +180,7 @@ class MODULES_EXPORT RTCQuicTransport final
   }
   bool RaiseExceptionIfClosed(ExceptionState& exception_state) const;
   bool RaiseExceptionIfStarted(ExceptionState& exception_state) const;
+  void RejectPendingStatsPromises();
 
   Member<RTCIceTransport> transport_;
   RTCQuicTransportState state_ = RTCQuicTransportState::kNew;
@@ -189,6 +196,9 @@ class MODULES_EXPORT RTCQuicTransport final
   std::unique_ptr<P2PQuicTransportFactory> p2p_quic_transport_factory_;
   std::unique_ptr<QuicTransportProxy> proxy_;
   HeapHashSet<Member<RTCQuicStream>> streams_;
+  // Maps from the ID of the stats request to the promise to be resolved.
+  HeapHashMap<uint32_t, Member<ScriptPromiseResolver>> stats_promise_map_;
+  uint32_t get_stats_id_counter_ = 0;
 };
 
 }  // namespace blink

@@ -106,6 +106,15 @@ QuicStreamProxy* QuicTransportProxy::CreateStream() {
   return stream_proxy_ptr;
 }
 
+void QuicTransportProxy::GetStats(uint32_t request_id) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  PostCrossThreadTask(
+      *host_thread(), FROM_HERE,
+      CrossThreadBind(&QuicTransportHost::GetStats,
+                      CrossThreadUnretained(host_.get()), request_id));
+}
+
 void QuicTransportProxy::OnRemoveStream(
     QuicStreamProxy* stream_proxy_to_remove) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -143,6 +152,13 @@ void QuicTransportProxy::OnStream(
   stream_proxies_.insert(
       std::make_pair(stream_proxy_ptr, std::move(stream_proxy)));
   delegate_->OnStream(stream_proxy_ptr);
+}
+
+void QuicTransportProxy::OnStats(uint32_t request_id,
+                                 const P2PQuicTransportStats& stats) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  delegate_->OnStats(request_id, stats);
 }
 
 }  // namespace blink

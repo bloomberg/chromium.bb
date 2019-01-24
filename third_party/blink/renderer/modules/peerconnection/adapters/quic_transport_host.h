@@ -61,6 +61,8 @@ class QuicTransportHost final : public P2PQuicTransport::Delegate {
 
   void CreateStream(std::unique_ptr<QuicStreamHost> stream_host);
 
+  void GetStats(uint32_t request_id);
+
   // QuicStreamHost callbacks.
   void OnRemoveStream(QuicStreamHost* stream_host_to_remove);
 
