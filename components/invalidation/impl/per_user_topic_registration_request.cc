@@ -116,14 +116,18 @@ void PerUserTopicRegistrationRequest::OnURLFetchCompleteInternal(
     std::unique_ptr<std::string> response_body) {
 
   if (response_code != net::HTTP_OK) {
-    std::move(request_completed_callback_)
-        .Run(Status((response_code == net::HTTP_UNAUTHORIZED)
-                        ? StatusCode::AUTH_FAILURE
-                        : StatusCode::FAILED,
-                    base::StringPrintf("HTTP Error: %d", response_code)),
-             std::string());
+    StatusCode status = StatusCode::FAILED;
+    if (response_code == net::HTTP_UNAUTHORIZED) {
+      status = StatusCode::AUTH_FAILURE;
+    } else if (response_code >= 400 && response_code <= 499) {
+      status = StatusCode::FAILED_NON_RETRIABLE;
+    }
     RecordRequestStatus(SubscriptionStatus::kHttpFailure, type_, topic_,
                         net_error, response_code);
+    std::move(request_completed_callback_)
+        .Run(
+            Status(status, base::StringPrintf("HTTP Error: %d", response_code)),
+            std::string());
     return;
   }
 

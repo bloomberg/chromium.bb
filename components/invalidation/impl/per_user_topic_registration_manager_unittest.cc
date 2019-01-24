@@ -232,7 +232,7 @@ TEST_F(PerUserTopicRegistrationManagerTest, ShouldRepeatRequestsOnFailure) {
 
   AddCorrectSubscriptionResponce(
       /* private_topic */ std::string(), kFakeInstanceIdToken,
-      net::HTTP_FORBIDDEN);
+      net::HTTP_INTERNAL_SERVER_ERROR);
 
   per_user_topic_registration_manager->UpdateRegisteredTopics(
       ids, kFakeInstanceIdToken);
@@ -240,6 +240,25 @@ TEST_F(PerUserTopicRegistrationManagerTest, ShouldRepeatRequestsOnFailure) {
 
   EXPECT_TRUE(per_user_topic_registration_manager->GetRegisteredIds().empty());
   EXPECT_FALSE(
+      per_user_topic_registration_manager->HaveAllRequestsFinishedForTest());
+}
+
+TEST_F(PerUserTopicRegistrationManagerTest, ShouldRepeatRequestsOnForbidden) {
+  TopicSet ids = GetSequenceOfTopics(kInvalidationObjectIdsCount);
+
+  auto per_user_topic_registration_manager = BuildRegistrationManager();
+  ASSERT_TRUE(per_user_topic_registration_manager->GetRegisteredIds().empty());
+
+  AddCorrectSubscriptionResponce(
+      /* private_topic */ std::string(), kFakeInstanceIdToken,
+      net::HTTP_FORBIDDEN);
+
+  per_user_topic_registration_manager->UpdateRegisteredTopics(
+      ids, kFakeInstanceIdToken);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(per_user_topic_registration_manager->GetRegisteredIds().empty());
+  EXPECT_TRUE(
       per_user_topic_registration_manager->HaveAllRequestsFinishedForTest());
 }
 

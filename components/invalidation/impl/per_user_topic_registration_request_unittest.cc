@@ -282,4 +282,58 @@ TEST_F(PerUserTopicRegistrationRequestTest, ShouldUnsubscribe) {
   EXPECT_EQ(status.message, std::string());
 }
 
+class PerUserTopicRegistrationRequestParamTest
+    : public PerUserTopicRegistrationRequestTest,
+      public testing::WithParamInterface<net::HttpStatusCode> {
+ public:
+  PerUserTopicRegistrationRequestParamTest() = default;
+  ~PerUserTopicRegistrationRequestParamTest() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PerUserTopicRegistrationRequestParamTest);
+};
+
+TEST_P(PerUserTopicRegistrationRequestParamTest,
+       ShouldNotSubscribeWhenNonRepeatableError) {
+  std::string token = "1234567890";
+  std::string base_url = "http://valid-url.test";
+  std::string topic = "test";
+  std::string project_id = "smarty-pants-12345";
+  PerUserTopicRegistrationRequest::RequestType type =
+      PerUserTopicRegistrationRequest::SUBSCRIBE;
+
+  base::MockCallback<PerUserTopicRegistrationRequest::CompletedCallback>
+      callback;
+  Status status(StatusCode::FAILED, "initial");
+  std::string private_topic;
+  EXPECT_CALL(callback, Run(_, _))
+      .WillOnce(DoAll(SaveArg<0>(&status), SaveArg<1>(&private_topic)));
+
+  PerUserTopicRegistrationRequest::Builder builder;
+  std::unique_ptr<PerUserTopicRegistrationRequest> request =
+      builder.SetToken(token)
+          .SetScope(base_url)
+          .SetPublicTopicName(topic)
+          .SetProjectId(project_id)
+          .SetType(type)
+          .Build();
+  network::URLLoaderCompletionStatus response_status(net::OK);
+
+  url_loader_factory()->AddResponse(
+      url(request.get()), CreateHeadersForTest(GetParam()),
+      /* response_body */ std::string(), response_status);
+  request->Start(callback.Get(),
+                 base::BindRepeating(&syncer::JsonUnsafeParser::Parse),
+                 url_loader_factory());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(status.code, StatusCode::FAILED_NON_RETRIABLE);
+}
+
+INSTANTIATE_TEST_CASE_P(,
+                        PerUserTopicRegistrationRequestParamTest,
+                        testing::Values(net::HTTP_BAD_REQUEST,
+                                        net::HTTP_FORBIDDEN,
+                                        net::HTTP_NOT_FOUND));
+
 }  // namespace syncer

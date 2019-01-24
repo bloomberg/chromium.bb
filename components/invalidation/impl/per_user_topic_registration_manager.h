@@ -85,6 +85,11 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   // Tries to register |id|. No retry in case of failure.
   void StartRegistrationRequest(const Topic& id);
 
+  void ActOnSuccesfullRegistration(
+      const Topic& topic,
+      const std::string& private_topic_name,
+      PerUserTopicRegistrationRequest::RequestType type);
+  void ScheduleRequestForRepetition(const Topic& topic);
   void RegistrationFinishedForTopic(
       Topic topic,
       Status code,
