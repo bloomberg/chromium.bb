@@ -56,10 +56,13 @@ WorkletAnimation* CreateWorkletAnimation(
   scoped_refptr<SerializedScriptValue> options;
 
   ScriptState::Scope scope(script_state);
-  DummyExceptionStateForTesting exception_state;
   return WorkletAnimation::Create(script_state, animator_name, effects,
                                   timeline, std::move(options),
-                                  exception_state);
+                                  ASSERT_NO_EXCEPTION);
+}
+
+base::TimeDelta ToTimeDelta(double milliseconds) {
+  return base::TimeDelta::FromMillisecondsD(milliseconds);
 }
 
 }  // namespace
@@ -82,6 +85,14 @@ class WorkletAnimationTest : public RenderingTest {
         CreateWorkletAnimation(GetScriptState(), element_, animator_name_);
   }
 
+  void SimulateFrame(double milliseconds) {
+    base::TimeTicks tick = base::TimeTicks() + ToTimeDelta(milliseconds);
+    GetDocument().GetAnimationClock().ResetTimeForTesting(tick);
+    GetDocument().GetWorkletAnimationController().UpdateAnimationStates();
+    GetDocument().GetWorkletAnimationController().UpdateAnimationTimings(
+        kTimingUpdateForAnimationFrame);
+  }
+
   ScriptState* GetScriptState() {
     return ToScriptStateForMainWorld(&GetFrame());
   }
@@ -92,8 +103,7 @@ class WorkletAnimationTest : public RenderingTest {
 };
 
 TEST_F(WorkletAnimationTest, WorkletAnimationInElementAnimations) {
-  DummyExceptionStateForTesting exception_state;
-  worklet_animation_->play(exception_state);
+  worklet_animation_->play(ASSERT_NO_EXCEPTION);
   EXPECT_EQ(1u,
             element_->EnsureElementAnimations().GetWorkletAnimations().size());
   worklet_animation_->cancel();
@@ -105,8 +115,7 @@ TEST_F(WorkletAnimationTest, StyleHasCurrentAnimation) {
   scoped_refptr<ComputedStyle> style =
       GetDocument().EnsureStyleResolver().StyleForElement(element_).get();
   EXPECT_EQ(false, style->HasCurrentOpacityAnimation());
-  DummyExceptionStateForTesting exception_state;
-  worklet_animation_->play(exception_state);
+  worklet_animation_->play(ASSERT_NO_EXCEPTION);
   element_->EnsureElementAnimations().UpdateAnimationFlags(*style);
   EXPECT_EQ(true, style->HasCurrentOpacityAnimation());
 }
@@ -125,8 +134,7 @@ TEST_F(WorkletAnimationTest,
       base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111 + 123.4);
 
   GetDocument().GetAnimationClock().ResetTimeForTesting(first_ticks);
-  DummyExceptionStateForTesting exception_state;
-  worklet_animation_->play(exception_state);
+  worklet_animation_->play(ASSERT_NO_EXCEPTION);
   worklet_animation_->UpdateCompositingState();
 
   std::unique_ptr<AnimationWorkletDispatcherInput> state =
@@ -173,8 +181,7 @@ TEST_F(WorkletAnimationTest,
       GetScriptState(), element_, animator_name_, scroll_timeline);
   WorkletAnimationId id = worklet_animation->GetWorkletAnimationId();
 
-  DummyExceptionStateForTesting exception_state;
-  worklet_animation->play(exception_state);
+  worklet_animation->play(ASSERT_NO_EXCEPTION);
   worklet_animation->UpdateCompositingState();
 
   // Only expect precision up to 1 microsecond with an additional smaller
@@ -205,8 +212,7 @@ TEST_F(WorkletAnimationTest, MainThreadSendsPeekRequestTest) {
       base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111 + 123.4);
 
   GetDocument().GetAnimationClock().ResetTimeForTesting(first_ticks);
-  DummyExceptionStateForTesting exception_state;
-  worklet_animation_->play(exception_state);
+  worklet_animation_->play(ASSERT_NO_EXCEPTION);
   worklet_animation_->UpdateCompositingState();
 
   // Only peek if animation is running on compositor.
@@ -254,6 +260,33 @@ TEST_F(WorkletAnimationTest, MainThreadSendsPeekRequestTest) {
   EXPECT_EQ(input->updated_animations.size(), 0u);
   EXPECT_EQ(input->removed_animations.size(), 0u);
   state.reset(new AnimationWorkletDispatcherInput);
+}
+
+TEST_F(WorkletAnimationTest, PausePlay) {
+  SimulateFrame(0);
+  worklet_animation_->play(ASSERT_NO_EXCEPTION);
+  EXPECT_EQ(Animation::kPending, worklet_animation_->PlayState());
+  SimulateFrame(0);
+  EXPECT_EQ(Animation::kRunning, worklet_animation_->PlayState());
+  EXPECT_TRUE(worklet_animation_->Playing());
+  EXPECT_EQ(ToTimeDelta(0), worklet_animation_->CurrentTime().value());
+  SimulateFrame(10);
+  worklet_animation_->pause(ASSERT_NO_EXCEPTION);
+  EXPECT_EQ(Animation::kPaused, worklet_animation_->PlayState());
+  EXPECT_FALSE(worklet_animation_->Playing());
+  EXPECT_EQ(ToTimeDelta(10), worklet_animation_->CurrentTime().value());
+  SimulateFrame(20);
+  EXPECT_EQ(Animation::kPaused, worklet_animation_->PlayState());
+  EXPECT_EQ(ToTimeDelta(10), worklet_animation_->CurrentTime().value());
+  worklet_animation_->play(ASSERT_NO_EXCEPTION);
+  EXPECT_EQ(Animation::kPending, worklet_animation_->PlayState());
+  SimulateFrame(20);
+  EXPECT_EQ(Animation::kRunning, worklet_animation_->PlayState());
+  EXPECT_TRUE(worklet_animation_->Playing());
+  EXPECT_EQ(ToTimeDelta(10), worklet_animation_->CurrentTime().value());
+  SimulateFrame(30);
+  EXPECT_EQ(Animation::kRunning, worklet_animation_->PlayState());
+  EXPECT_EQ(ToTimeDelta(20), worklet_animation_->CurrentTime().value());
 }
 
 }  //  namespace blink
