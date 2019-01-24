@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/observer_list.h"
+#include "base/values.h"
 #include "components/invalidation/impl/network_channel.h"
 #include "components/invalidation/public/invalidator_state.h"
 
@@ -62,6 +63,11 @@ class FCMSyncNetworkChannel : public NetworkChannel {
   // Subclass should call DeliverToken for token to reach registration
   // manager.
   bool DeliverToken(const std::string& token);
+
+  // Subclass should implement RequestDetailedStatus to provide debugging
+  // information.
+  virtual void RequestDetailedStatus(
+      base::Callback<void(const base::DictionaryValue&)> callback);
 
  private:
   // Callbacks into invalidation library
