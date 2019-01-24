@@ -96,6 +96,9 @@ template("chrome_public_common_apk_or_module_tmpl") {
 
       library_target = invoker.shared_library_for_unwind_asset
       deps = invoker.shared_libraries
+      if (defined(invoker.secondary_abi_shared_libraries)) {
+        deps += invoker.secondary_abi_shared_libraries
+      }
     }
   }
 
