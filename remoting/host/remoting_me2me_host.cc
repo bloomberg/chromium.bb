@@ -466,7 +466,10 @@ HostProcess::HostProcess(std::unique_ptr<ChromotingHostContext> context,
   // And remove the same line from me2me_desktop_environment.cc.
 
 
+  // TODO(jarhar): Replace this ifdef with a chrome policy.
+#ifdef CHROME_REMOTE_DESKTOP_FILE_TRANSFER_ENABLED
   desktop_environment_options_.set_enable_file_transfer(true);
+#endif
 
   StartOnUiThread();
 }
