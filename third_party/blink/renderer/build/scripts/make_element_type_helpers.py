@@ -10,6 +10,7 @@ import hasher
 import json5_generator
 import template_expander
 
+from blinkbuild.name_style_converter import NameStyleConverter
 
 def _symbol(tag):
     return 'k' + tag['name'].to_upper_camel_case()
@@ -55,8 +56,8 @@ class MakeElementTypeHelpersWriter(json5_generator.Writer):
             (basename + '.cc'): self.generate_helper_implementation,
         }
 
-        base_element_header = 'third_party/blink/renderer/core/' \
-                              '{0}/{0}_element.h'.format(self.namespace.lower())
+        base_element_header = 'third_party/blink/renderer/core/{}/{}_element.h'.format(
+            self.namespace.lower(), NameStyleConverter(self.namespace).to_snake_case())
         self._template_context = {
             'base_element_header': base_element_header,
             'cpp_namespace': self.namespace.lower() + '_names',
