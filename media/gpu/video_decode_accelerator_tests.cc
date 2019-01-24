@@ -101,7 +101,7 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream) {
 
   EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
-  EXPECT_EQ(0u, frame_validator_->GetMismatchedFramesCount());
+  EXPECT_TRUE(frame_validator_->WaitUntilValidated());
 }
 
 // Flush the decoder immediately after initialization.
@@ -115,7 +115,7 @@ TEST_F(VideoDecoderTest, FlushAfterInitialize) {
 
   EXPECT_EQ(tvp->GetFlushDoneCount(), 2u);
   EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
-  EXPECT_EQ(0u, frame_validator_->GetMismatchedFramesCount());
+  EXPECT_TRUE(frame_validator_->WaitUntilValidated());
 }
 
 // Flush the decoder immediately after doing a mid-stream reset, without waiting
@@ -137,7 +137,7 @@ TEST_F(VideoDecoderTest, FlushBeforeResetDone) {
   EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
   EXPECT_LE(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
-  EXPECT_EQ(0u, frame_validator_->GetMismatchedFramesCount());
+  EXPECT_TRUE(frame_validator_->WaitUntilValidated());
 }
 
 // Reset the decoder immediately after initialization.
@@ -152,7 +152,7 @@ TEST_F(VideoDecoderTest, ResetAfterInitialize) {
   EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
-  EXPECT_EQ(0u, frame_validator_->GetMismatchedFramesCount());
+  EXPECT_TRUE(frame_validator_->WaitUntilValidated());
 }
 
 // Reset the decoder when the middle of the stream is reached.
@@ -171,7 +171,7 @@ TEST_F(VideoDecoderTest, ResetMidStream) {
   EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFrameDecodedCount(),
             numFramesDecoded + g_env->video_->NumFrames());
-  EXPECT_EQ(0u, frame_validator_->GetMismatchedFramesCount());
+  EXPECT_TRUE(frame_validator_->WaitUntilValidated());
 }
 
 // Reset the decoder when the end of the stream is reached.
@@ -189,7 +189,7 @@ TEST_F(VideoDecoderTest, ResetEndOfStream) {
   EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFlushDoneCount(), 2u);
   EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames() * 2);
-  EXPECT_EQ(0u, frame_validator_->GetMismatchedFramesCount());
+  EXPECT_TRUE(frame_validator_->WaitUntilValidated());
 }
 
 // Reset the decoder immediately when the end-of-stream flush starts, without
@@ -211,7 +211,7 @@ TEST_F(VideoDecoderTest, ResetBeforeFlushDone) {
   EXPECT_LE(tvp->GetFlushDoneCount(), 1u);
   EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
   EXPECT_LE(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
-  EXPECT_EQ(0u, frame_validator_->GetMismatchedFramesCount());
+  EXPECT_TRUE(frame_validator_->WaitUntilValidated());
 }
 
 // Play video from start to end. Multiple buffer decodes will be queued in the
@@ -226,7 +226,7 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream_MultipleOutstandingDecodes) {
 
   EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
-  EXPECT_EQ(0u, frame_validator_->GetMismatchedFramesCount());
+  EXPECT_TRUE(frame_validator_->WaitUntilValidated());
 }
 
 // Reset the decoder immediately when encountering the first config info in a

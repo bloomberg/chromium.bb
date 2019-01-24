@@ -191,7 +191,8 @@ void VideoDecoderClient::PictureReady(const Picture& picture) {
   frame_renderer_->RenderFrame(wrapped_video_frame);
 
   for (VideoFrameProcessor* frame_processor : frame_processors_)
-    frame_processor->ProcessVideoFrame(video_frame, current_frame_index_);
+    frame_processor->ProcessVideoFrame(wrapped_video_frame,
+                                       current_frame_index_);
   current_frame_index_++;
 }
 

@@ -607,6 +607,7 @@ void GLRenderingVDAClient::PictureReady(const Picture& picture) {
     ASSERT_NE(video_frame.get(), nullptr);
     video_frame_validator_->ProcessVideoFrame(std::move(video_frame),
                                               frame_index_);
+    video_frame_validator_->WaitUntilValidated();
     frame_index_++;
   }
   rendering_helper_->ConsumeVideoFrame(config_.window_id,

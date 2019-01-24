@@ -13,7 +13,9 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/video_types.h"
 #include "media/gpu/test/video_frame_helpers.h"
@@ -86,8 +88,12 @@ class VideoFrameValidator : public VideoFrameProcessor {
   // function is thread-safe.
   size_t GetMismatchedFramesCount() const;
 
+  // Wait until all currently scheduled frame validations are done. Returns true
+  // if no corrupt frames were found. This function might take a long time to
+  // complete, depending on the platform.
+  bool WaitUntilValidated() const;
+
   // Interface VideoFrameProcessor
-  // Validate the |video_frame|'s pixel content.
   void ProcessVideoFrame(scoped_refptr<const VideoFrame> video_frame,
                          size_t frame_index) override;
 
@@ -98,9 +104,19 @@ class VideoFrameValidator : public VideoFrameProcessor {
                       base::File md5_file,
                       std::unique_ptr<VideoFrameMapper> video_frame_mapper);
 
+  // Start the frame validation thread.
+  bool Initialize();
+  // Stop the frame validation thread.
+  void Destroy();
+
+  // Validate the |video_frame|'s content on the |frame_validator_thread_|.
+  void ProcessVideoFrameTask(const scoped_refptr<const VideoFrame> video_frame,
+                             size_t frame_index);
+
   // This maps |video_frame|, converts it to I420 format.
   // Returns the resulted I420 frame on success, and otherwise return nullptr.
   // |video_frame| is unchanged in this method.
+  // TODO(dstaessens@) Move frame helper functions to video_frame_helpers.h.
   scoped_refptr<VideoFrame> CreateStandardizedFrame(
       scoped_refptr<const VideoFrame> video_frame) const;
 
@@ -118,8 +134,7 @@ class VideoFrameValidator : public VideoFrameProcessor {
 
   // The results of invalid frame data.
   std::vector<MismatchedFrameInfo> mismatched_frames_
-      GUARDED_BY(mismatched_frames_lock_);
-  mutable base::Lock mismatched_frames_lock_;
+      GUARDED_BY(frame_validator_lock_);
 
   const uint32_t flags_;
 
@@ -134,7 +149,17 @@ class VideoFrameValidator : public VideoFrameProcessor {
 
   const std::unique_ptr<VideoFrameMapper> video_frame_mapper_;
 
-  THREAD_CHECKER(thread_checker_);
+  // The number of frames currently queued for validation.
+  size_t num_frames_validating_ GUARDED_BY(frame_validator_lock_);
+
+  // Thread on which video frame validation is done.
+  base::Thread frame_validator_thread_;
+  mutable base::Lock frame_validator_lock_;
+  mutable base::ConditionVariable frame_validator_cv_;
+
+  SEQUENCE_CHECKER(validator_sequence_checker_);
+  SEQUENCE_CHECKER(validator_thread_sequence_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(VideoFrameValidator);
 };
 }  // namespace test
