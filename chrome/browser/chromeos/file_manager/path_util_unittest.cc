@@ -304,10 +304,9 @@ TEST_F(FileManagerPathUtilTest, MultiProfileDownloadsFolderMigration) {
   chromeos::ScopedSetRunningOnChromeOSForTesting fake_release(kLsbRelease,
                                                               base::Time());
 
-  // This looks like "/home/chronos/u-hash/Downloads" in the production
+  // This looks like "/home/chronos/u-hash/MyFiles" in the production
   // environment.
-  const base::FilePath kDownloads =
-      GetDownloadsFolderForProfile(profile_.get());
+  const base::FilePath kDownloads = GetMyFilesFolderForProfile(profile_.get());
   const base::FilePath kOldDownloads =
       DownloadPrefs::GetDefaultDownloadDirectory();
 
