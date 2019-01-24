@@ -575,11 +575,7 @@ TEST_P(UserActivityHandlerTest, HandleStartupParamsNonU2F) {
   // Tests.
   EXPECT_OCMOCK_VERIFY(startupInformationMock);
   EXPECT_EQ(gurl, tabOpener.url);
-  if (GetParam() == ExternalFilesLoadedInWebStateFeature::Enabled) {
-    EXPECT_EQ(gurl, tabOpener.virtualURL);
-  } else {
-    EXPECT_TRUE(tabOpener.virtualURL.is_empty());
-  }
+  EXPECT_TRUE(tabOpener.virtualURL.is_empty());
   EXPECT_EQ(ApplicationMode::INCOGNITO, [tabOpener applicationMode]);
 }
 
