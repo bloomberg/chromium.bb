@@ -10967,7 +10967,7 @@ Called by update_net_error_codes.py.-->
 
 <enum name="DemoModeResourcesRemovalResult">
   <int value="0" label="Successfully removed"/>
-  <int value="1" label="Not found on disk"/>
+  <int value="1" label="Not found on disk (deprecated)"/>
   <int value="2" label="Removal not allowed (should not be reported)"/>
   <int value="3" label="Resources already removed (should not be reported)"/>
   <int value="4" label="Removal failed"/>
