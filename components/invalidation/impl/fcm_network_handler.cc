@@ -111,6 +111,8 @@ bool FCMNetworkHandler::IsListening() const {
 
 void FCMNetworkHandler::DidRetrieveToken(const std::string& subscription_token,
                                          InstanceID::Result result) {
+  UMA_HISTOGRAM_ENUMERATION("FCMInvalidations.InitialTokenRetrievalStatus",
+                            result, InstanceID::Result::LAST_RESULT + 1);
   switch (result) {
     case InstanceID::SUCCESS:
       // The received token is assumed to be valid, therefore, we reschedule
