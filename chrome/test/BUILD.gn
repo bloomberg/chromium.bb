@@ -1539,7 +1539,6 @@ test("browser_tests") {
         "../browser/ui/views/autofill/autofill_popup_base_view_browsertest.cc",
         "../browser/ui/views/autofill/card_unmask_prompt_view_tester_views.cc",
         "../browser/ui/views/autofill/card_unmask_prompt_view_tester_views.h",
-        "../browser/ui/views/autofill/local_card_migration_browsertest.cc",
         "../browser/ui/views/autofill/save_card_bubble_views_browsertest.cc",
         "../browser/ui/views/autofill/save_card_bubble_views_browsertest_base.cc",
         "../browser/ui/views/autofill/save_card_bubble_views_browsertest_base.h",

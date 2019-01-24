@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 #include <memory>
-#include <utility>
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -30,7 +29,6 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/style/typography.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace autofill {
 
@@ -156,7 +154,6 @@ void LocalCardMigrationBubbleViews::Init() {
   explanatory_message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   explanatory_message->SetMultiLine(true);
   AddChildView(explanatory_message);
-  set_id(DialogViewId::MAIN_CONTENT_VIEW_MIGRATION_BUBBLE);
 }
 
 }  // namespace autofill
