@@ -11,6 +11,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/internal_input_devices_event_blocker.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
@@ -193,6 +194,17 @@ void TabletModeController::EnableTabletModeWindowManager(bool should_enable) {
     RecordTabletModeUsageInterval(TABLET_MODE_INTERVAL_INACTIVE);
     for (auto& observer : tablet_mode_observers_)
       observer.OnTabletModeStarted();
+
+    // In some cases, TabletModeWindowManager::TabletModeWindowManager uses
+    // split view to represent windows that were snapped in desktop mode. If
+    // there is a window snapped on one side but no window snapped on the other
+    // side, then overview mode should be started (to be seen on the side with
+    // no snapped window).
+    const auto state = Shell::Get()->split_view_controller()->state();
+    if (state == SplitViewController::LEFT_SNAPPED ||
+        state == SplitViewController::RIGHT_SNAPPED) {
+      Shell::Get()->overview_controller()->ToggleOverview();
+    }
 
     if (client_)  // Null at startup and in tests.
       client_->OnTabletModeToggled(true);

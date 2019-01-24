@@ -345,9 +345,7 @@ void TabletModeWindowManager::ArrangeWindowsForTabletMode() {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
   split_view_controller->SnapWindow(windows[0], curr_win_snap_pos);
-  if (prev_win_snap_pos == SplitViewController::NONE)
-    Shell::Get()->overview_controller()->ToggleOverview();
-  else
+  if (prev_win_snap_pos != SplitViewController::NONE)
     split_view_controller->SnapWindow(windows[1], prev_win_snap_pos);
 
   for (auto* window : windows)

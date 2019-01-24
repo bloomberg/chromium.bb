@@ -170,22 +170,6 @@ class TabletModeWindowManagerTest : public AshTestBase {
     return window;
   }
 
-  // Creates a test window snapped on the left in desktop mode.
-  std::unique_ptr<aura::Window> CreateDesktopWindowSnappedLeft() {
-    std::unique_ptr<aura::Window> window = CreateTestWindow();
-    wm::WMEvent snap_to_left(wm::WMEventType::WM_EVENT_CYCLE_SNAP_LEFT);
-    wm::GetWindowState(window.get())->OnWMEvent(&snap_to_left);
-    return window;
-  }
-
-  // Creates a test window snapped on the right in desktop mode.
-  std::unique_ptr<aura::Window> CreateDesktopWindowSnappedRight() {
-    std::unique_ptr<aura::Window> window = CreateTestWindow();
-    wm::WMEvent snap_to_right(wm::WMEventType::WM_EVENT_CYCLE_SNAP_RIGHT);
-    wm::GetWindowState(window.get())->OnWMEvent(&snap_to_right);
-    return window;
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(TabletModeWindowManagerTest);
 };
@@ -1828,78 +1812,6 @@ TEST_F(TabletModeWindowManagerTest, DontMaximizeTransientChild) {
   EXPECT_NE(rect.size(), parent->bounds().size());
   EXPECT_FALSE(wm::GetWindowState(child.get())->IsMaximized());
   EXPECT_EQ(rect.size(), child->bounds().size());
-}
-
-// Test that if the active window is not snapped before tablet mode, then
-// neither split view nor overview is activated.
-TEST_F(TabletModeWindowManagerTest, ActiveNoSnap) {
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  std::unique_ptr<aura::Window> window = CreateTestWindow();
-  ::wm::ActivateWindow(window.get());
-  ASSERT_TRUE(CreateTabletModeWindowManager());
-  EXPECT_EQ(SplitViewController::NO_SNAP, split_view_controller->state());
-  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
-}
-
-// Test that if the active window is snapped on the left before tablet mode,
-// then split view is activated with the active window on the left.
-TEST_F(TabletModeWindowManagerTest, ActiveLeftSnap) {
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  std::unique_ptr<aura::Window> window = CreateDesktopWindowSnappedLeft();
-  ::wm::ActivateWindow(window.get());
-  ASSERT_TRUE(CreateTabletModeWindowManager());
-  EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
-  EXPECT_EQ(window.get(), split_view_controller->left_window());
-  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
-}
-
-// Test that if the active window is snapped on the right before tablet mode,
-// then split view is activated with the active window on the right.
-TEST_F(TabletModeWindowManagerTest, ActiveRightSnap) {
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  std::unique_ptr<aura::Window> window = CreateDesktopWindowSnappedRight();
-  ::wm::ActivateWindow(window.get());
-  ASSERT_TRUE(CreateTabletModeWindowManager());
-  EXPECT_EQ(SplitViewController::RIGHT_SNAPPED, split_view_controller->state());
-  EXPECT_EQ(window.get(), split_view_controller->right_window());
-  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
-}
-
-// Test that if before tablet mode, the active window is snapped on the left and
-// the previous window is snapped on the right, then split view is activated
-// with the active window on the left and the previous window on the right.
-TEST_F(TabletModeWindowManagerTest, ActiveLeftSnapPreviousRightSnap) {
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  std::unique_ptr<aura::Window> left_window = CreateDesktopWindowSnappedLeft();
-  std::unique_ptr<aura::Window> right_window =
-      CreateDesktopWindowSnappedRight();
-  ::wm::ActivateWindow(left_window.get());
-  ASSERT_TRUE(CreateTabletModeWindowManager());
-  EXPECT_EQ(SplitViewController::BOTH_SNAPPED, split_view_controller->state());
-  EXPECT_EQ(left_window.get(), split_view_controller->left_window());
-  EXPECT_EQ(right_window.get(), split_view_controller->right_window());
-  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
-}
-
-// Test that if before tablet mode, the active window is snapped on the right
-// and the previous window is snapped on the left, then split view is activated
-// with the active window on the right and the previous window on the left.
-TEST_F(TabletModeWindowManagerTest, ActiveRightSnapPreviousLeftSnap) {
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  std::unique_ptr<aura::Window> left_window = CreateDesktopWindowSnappedLeft();
-  std::unique_ptr<aura::Window> right_window =
-      CreateDesktopWindowSnappedRight();
-  ::wm::ActivateWindow(right_window.get());
-  ASSERT_TRUE(CreateTabletModeWindowManager());
-  EXPECT_EQ(SplitViewController::BOTH_SNAPPED, split_view_controller->state());
-  EXPECT_EQ(left_window.get(), split_view_controller->left_window());
-  EXPECT_EQ(right_window.get(), split_view_controller->right_window());
-  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
 }
 
 }  // namespace ash
