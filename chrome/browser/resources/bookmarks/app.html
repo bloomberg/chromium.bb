@@ -55,6 +55,11 @@
         transition: opacity 100ms ease-out;
       }
 
+      :host-context([dark]) #splitter:hover,
+      :host-context([dark]) #splitter.splitter-active {
+        border-inline-start-color: var(--cr-separator-color);
+      }
+
       #sidebar {
         display: flex;
         flex-direction: column;
