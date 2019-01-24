@@ -70,6 +70,8 @@ class ManagementUIHandler : public content::WebUIMessageHandler {
   void AddExtensionReportingInfo(base::Value* report_sources);
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
+  base::string16 GetEnterpriseManagementStatusString();
+
   DISALLOW_COPY_AND_ASSIGN(ManagementUIHandler);
 };
 

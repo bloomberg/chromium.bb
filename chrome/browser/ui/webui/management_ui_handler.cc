@@ -17,9 +17,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/profiles/profile_util.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
+
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/buildflags/buildflags.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -31,6 +36,9 @@
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/status_uploader.h"
 #include "chrome/browser/chromeos/policy/system_log_uploader.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/grit/chromium_strings.h"
+#include "components/user_manager/user_manager.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -76,43 +84,20 @@ const char kManagementReportUsers[] = "managementReportUsers";
 
 namespace {
 
-#if defined(OS_CHROMEOS)
-
-base::string16 GetTitleWithEnterpriseDomain(
-    policy::BrowserPolicyConnectorChromeOS* connector) {
-  if (!connector->IsEnterpriseManaged()) {
-    return l10n_util::GetStringUTF16(IDS_MANAGEMENT_TITLE);
-  }
-  std::string display_domain = connector->GetEnterpriseDisplayDomain();
-
-  if (display_domain.empty()) {
-    if (!connector->IsActiveDirectoryManaged())
-      return l10n_util::GetStringUTF16(IDS_MANAGEMENT_TITLE);
-
-    display_domain = connector->GetRealm();
-  }
-
-  return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_TITLE_BY,
-                                    base::UTF8ToUTF16(display_domain));
+bool IsProfileManaged(Profile* profile) {
+  return policy::ProfilePolicyConnectorFactory::IsProfileManaged(profile);
 }
 
-base::string16 GetEnterpriseDisplayDomain(
-    policy::BrowserPolicyConnectorChromeOS* connector) {
-  if (!connector->IsEnterpriseManaged()) {
-    return l10n_util::GetStringUTF16(IDS_MANAGEMENT_DEVICE_NOT_MANAGED);
-  }
+std::string GetAccountDomain(Profile* profile) {
+  return gaia::ExtractDomainName(profile->GetProfileUserName());
+}
 
-  std::string display_domain = connector->GetEnterpriseDisplayDomain();
+#if defined(OS_CHROMEOS)
 
-  if (display_domain.empty()) {
-    if (!connector->IsActiveDirectoryManaged())
-      return l10n_util::GetStringUTF16(IDS_MANAGEMENT_DEVICE_MANAGED);
-
-    display_domain = connector->GetRealm();
-  }
-
-  return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_DEVICE_MANAGED_BY,
-                                    base::UTF8ToUTF16(display_domain));
+base::string16 GetManagementPageTitle() {
+  return l10n_util::GetStringFUTF16(
+      IDS_MANAGEMENT_TITLE,
+      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME));
 }
 
 void AddChromeOSReportingDevice(base::Value* report_sources) {
@@ -345,18 +330,84 @@ void ManagementUIHandler::RegisterMessages() {
                           base::Unretained(this)));
 }
 
+base::string16 ManagementUIHandler::GetEnterpriseManagementStatusString() {
+  auto* profile = Profile::FromWebUI(web_ui());
+  const bool account_managed = IsProfileManaged(profile);
+  const std::string account_domain = GetAccountDomain(profile);
+  bool profile_associated_with_gaia_account = true;
+#if defined(OS_CHROMEOS)
+  profile_associated_with_gaia_account =
+      chromeos::IsProfileAssociatedWithGaiaAccount(profile);
+#endif  // defined(OS_CHROMEOS)
+
+  bool device_managed = false;
+  std::string device_domain;
+#if defined(OS_CHROMEOS)
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  device_managed = connector->IsEnterpriseManaged();
+  if (device_managed)
+    device_domain = connector->GetEnterpriseDisplayDomain();
+  if (device_domain.empty() && connector->IsActiveDirectoryManaged())
+    device_domain = connector->GetRealm();
+#endif  // defined(OS_CHROMEOS)
+
+  bool primary_user_managed = false;
+  std::string primary_user_account_domain;
+#if defined(OS_CHROMEOS)
+  auto* primary_user = user_manager::UserManager::Get()->GetPrimaryUser();
+  if (primary_user) {
+    auto* primary_profile =
+        chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user);
+    if (primary_profile) {
+      primary_user_managed = IsProfileManaged(primary_profile);
+      primary_user_account_domain = GetAccountDomain(primary_profile);
+    }
+  }
+#endif  // defined(OS_CHROMEOS)
+
+  if (device_managed) {
+    DCHECK(!device_domain.empty());
+    if (account_managed) {
+      if (device_domain == account_domain ||
+          !profile_associated_with_gaia_account) {
+        return l10n_util::GetStringFUTF16(
+            IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_BY,
+            base::UTF8ToUTF16(device_domain));
+      }
+      DCHECK(!account_domain.empty());
+      return l10n_util::GetStringFUTF16(
+          IDS_MANAGEMENT_DEVICE_MANAGED_BY_ACCOUNT_MANAGED_BY,
+          base::UTF8ToUTF16(device_domain), base::UTF8ToUTF16(account_domain));
+    }
+    return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_DEVICE_MANAGED_BY,
+                                      base::UTF8ToUTF16(device_domain));
+  }
+
+  if (account_managed) {
+    return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_BY,
+                                      base::UTF8ToUTF16(account_domain));
+  }
+
+  if (primary_user_managed) {
+    return l10n_util::GetStringFUTF16(
+        IDS_MANAGEMENT_ACCOUNT_MANAGED_BY,
+        base::UTF8ToUTF16(primary_user_account_domain));
+  }
+
+  return l10n_util::GetStringUTF16(IDS_MANAGEMENT_DEVICE_NOT_MANAGED);
+}
+
 void ManagementUIHandler::HandleGetManagementTitle(
     const base::ListValue* args) {
   AllowJavascript();
 #if defined(OS_CHROMEOS)
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-
-  base::Value title(GetTitleWithEnterpriseDomain(connector));
+  base::Value title(GetManagementPageTitle());
   ResolveJavascriptCallback(args->GetList()[0] /* callback_id */, title);
 #else
-  RejectJavascriptCallback(args->GetList()[0] /* callback_id */,
-                           base::Value("Management overview"));
+  RejectJavascriptCallback(
+      args->GetList()[0] /* callback_id */,
+      base::Value("No device management title on Chrome desktop"));
 #endif  // defined(OS_CHROMEOS)
 }
 
@@ -364,19 +415,9 @@ void ManagementUIHandler::HandleGetDeviceManagementStatus(
     const base::ListValue* args) {
   base::RecordAction(base::UserMetricsAction("ManagementPageViewed"));
   AllowJavascript();
-
-#if defined(OS_CHROMEOS)
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-
-  base::Value managed_string(GetEnterpriseDisplayDomain(connector));
+  base::Value managed_string(GetEnterpriseManagementStatusString());
   ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
                             managed_string);
-#else
-  RejectJavascriptCallback(
-      args->GetList()[0] /* callback_id */,
-      base::Value("No device management status on Chrome desktop"));
-#endif  // defined(OS_CHROMEOS)
 }
 
 void ManagementUIHandler::HandleGetReportingDevice(
