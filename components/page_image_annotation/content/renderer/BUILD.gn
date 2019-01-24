@@ -14,6 +14,8 @@ static_library("renderer") {
     "//content/public/common",
     "//content/public/renderer",
     "//crypto",
+    "//services/image_annotation/public/mojom",
+    "//services/service_manager/public/cpp",
     "//skia",
     "//third_party/blink/public:blink",
     "//third_party/blink/public/common",

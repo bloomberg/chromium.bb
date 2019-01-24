@@ -4,68 +4,197 @@
 
 #include "components/page_image_annotation/core/page_annotator.h"
 
+#include <vector>
+
 #include "base/test/scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace page_image_annotation {
 
+namespace {
+
+namespace ia_mojom = image_annotation::mojom;
+
+using testing::ElementsAre;
 using testing::Eq;
+using testing::NiceMock;
+using testing::SizeIs;
 
-// Tests that the right messages are sent to observers.
-TEST(PageAnnotatorTest, Observers) {
-  class TestObserver : public PageAnnotator::Observer {
-   public:
-    TestObserver() : last_added_(0), last_modified_(0), last_removed_(0) {}
+// A gMock matcher that compares an ImageMetadata to the given node and source
+// IDs.
+MATCHER_P2(IsImageMetadata, expected_node_id, expected_source_id, "") {
+  return arg.node_id == expected_node_id && arg.source_id == expected_source_id;
+}
 
-    void OnImageAdded(const PageAnnotator::ImageMetadata& metadata) override {
-      last_added_ = metadata.node_id;
-    }
+// A gMock matcher that (deep) compares an AnnotateImageResultPtr to the
+// expected result (which is of type AnnotateImageResult*).
+MATCHER_P(IsAnnotateImageResult, expected, "") {
+  return arg->Equals(*expected);
+}
 
-    void OnImageModified(
-        const PageAnnotator::ImageMetadata& metadata) override {
-      last_modified_ = metadata.node_id;
-    }
+class MockObserver : public PageAnnotator::Observer {
+ public:
+  MOCK_METHOD1(OnImageAdded,
+               void(const PageAnnotator::ImageMetadata& metadata));
+  MOCK_METHOD1(OnImageModified,
+               void(const PageAnnotator::ImageMetadata& metadata));
+  MOCK_METHOD1(OnImageRemoved, void(uint64_t node_id));
+  MOCK_METHOD2(OnImageAnnotated,
+               void(uint64_t node_id, ia_mojom::AnnotateImageResultPtr result));
+};
 
-    void OnImageRemoved(const uint64_t node_id) override {
-      last_removed_ = node_id;
-    }
+// An annotator that just stores and exposes the arguments with which its
+// AnnotateImage method was called.
+class TestAnnotator : public ia_mojom::Annotator {
+ public:
+  ia_mojom::AnnotatorPtr GetPtr() {
+    ia_mojom::AnnotatorPtr ptr;
+    bindings_.AddBinding(this, mojo::MakeRequest(&ptr));
+    return ptr;
+  }
 
-    uint64_t last_added_, last_modified_, last_removed_;
-  };
+  void AnnotateImage(const std::string& source_id,
+                     ia_mojom::ImageProcessorPtr image_processor,
+                     AnnotateImageCallback callback) override {
+    source_ids_.push_back(source_id);
+
+    image_processors_.push_back(std::move(image_processor));
+    image_processors_.back().set_connection_error_handler(
+        base::BindOnce(&TestAnnotator::ResetImageProcessor,
+                       base::Unretained(this), image_processors_.size() - 1));
+
+    callbacks_.push_back(std::move(callback));
+  }
+
+  // Tests should not delete entries in these lists.
+  std::vector<std::string> source_ids_;
+  std::vector<ia_mojom::ImageProcessorPtr> image_processors_;
+  std::vector<AnnotateImageCallback> callbacks_;
+
+ private:
+  void ResetImageProcessor(const size_t index) {
+    image_processors_[index].reset();
+  }
+
+  mojo::BindingSet<ia_mojom::Annotator> bindings_;
+};
+
+// Tests that correct image tracking messages are sent to observers.
+TEST(PageAnnotatorTest, ImageTracking) {
+  const auto get_pixels = base::BindRepeating([]() { return SkBitmap(); });
 
   base::test::ScopedTaskEnvironment test_task_env;
 
-  const auto get_pixels = base::BindRepeating([]() { return SkBitmap(); });
+  PageAnnotator page_annotator(ia_mojom::AnnotatorPtr{});
 
-  PageAnnotator page_annotator;
-
-  TestObserver o1;
+  MockObserver o1;
   page_annotator.AddObserver(&o1);
 
+  EXPECT_CALL(o1, OnImageAdded(IsImageMetadata(1ul, "test.jpg")));
   page_annotator.ImageAddedOrPossiblyModified({1ul, "test.jpg"}, get_pixels);
-  EXPECT_THAT(o1.last_added_, Eq(1ul));
 
+  EXPECT_CALL(o1, OnImageAdded(IsImageMetadata(2ul, "example.png")));
   page_annotator.ImageAddedOrPossiblyModified({2ul, "example.png"}, get_pixels);
-  EXPECT_THAT(o1.last_added_, Eq(2ul));
 
+  EXPECT_CALL(o1, OnImageModified(IsImageMetadata(1ul, "demo.gif")));
   page_annotator.ImageAddedOrPossiblyModified({1ul, "demo.gif"}, get_pixels);
-  EXPECT_THAT(o1.last_added_, Eq(2ul));
-  EXPECT_THAT(o1.last_modified_, Eq(1ul));
 
+  EXPECT_CALL(o1, OnImageRemoved(2ul));
   page_annotator.ImageRemoved(2ul);
-  EXPECT_THAT(o1.last_added_, Eq(2ul));
-  EXPECT_THAT(o1.last_modified_, Eq(1ul));
-  EXPECT_THAT(o1.last_removed_, Eq(2ul));
 
-  TestObserver o2;
+  MockObserver o2;
+  EXPECT_CALL(o2, OnImageAdded(IsImageMetadata(1ul, "demo.gif")));
   page_annotator.AddObserver(&o2);
-
-  EXPECT_THAT(o1.last_added_, Eq(2ul));
-  EXPECT_THAT(o2.last_added_, Eq(1ul));
 }
 
-// TODO(crbug.com/916363): add more tests when behavior is added to the
-//                         PageAnnotator class.
+// Tests service and observer communication when performing image annotation.
+TEST(PageAnnotatorTest, Annotation) {
+  // Returning a null SkBitmap is ok as long as we don't request JPG data from
+  // the local ImageProcessor.
+  const auto get_pixels = base::BindRepeating([]() { return SkBitmap(); });
+
+  base::test::ScopedTaskEnvironment test_task_env;
+
+  TestAnnotator test_annotator;
+  PageAnnotator page_annotator(test_annotator.GetPtr());
+  test_task_env.RunUntilIdle();
+
+  // We use NiceMocks here since we don't place expectations on image added /
+  // removed calls, which will otherwise cause many (benign) warnings to be
+  // logged.
+  NiceMock<MockObserver> o1, o2;
+  page_annotator.AddObserver(&o1);
+  page_annotator.AddObserver(&o2);
+
+  // First image added.
+  page_annotator.ImageAddedOrPossiblyModified({1ul, "test.jpg"}, get_pixels);
+
+  // Observer 1 requests annotation of the first image.
+  page_annotator.AnnotateImage(&o1, 1ul);
+  test_task_env.RunUntilIdle();
+
+  // The annotator should have been provided observer 1's request info.
+  EXPECT_THAT(test_annotator.source_ids_, ElementsAre("test.jpg"));
+  ASSERT_THAT(test_annotator.image_processors_, SizeIs(1));
+  EXPECT_THAT(test_annotator.image_processors_[0].is_bound(), Eq(true));
+  EXPECT_THAT(test_annotator.callbacks_, SizeIs(1));
+
+  // Observer 2 requests annotation of the same image.
+  page_annotator.AnnotateImage(&o2, 1ul);
+  test_task_env.RunUntilIdle();
+
+  // The annotator should have been provided observer 2's request info.
+  EXPECT_THAT(test_annotator.source_ids_, ElementsAre("test.jpg", "test.jpg"));
+  ASSERT_THAT(test_annotator.image_processors_, SizeIs(2));
+  EXPECT_THAT(test_annotator.image_processors_[0].is_bound(), Eq(true));
+  EXPECT_THAT(test_annotator.image_processors_[1].is_bound(), Eq(true));
+  EXPECT_THAT(test_annotator.callbacks_, SizeIs(2));
+
+  // Second image added.
+  page_annotator.ImageAddedOrPossiblyModified({2ul, "example.png"}, get_pixels);
+
+  // Observer 2 requests annotation of the second image.
+  page_annotator.AnnotateImage(&o2, 2ul);
+  test_task_env.RunUntilIdle();
+
+  // All three requests should have been provided to the annotator.
+  EXPECT_THAT(test_annotator.source_ids_,
+              ElementsAre("test.jpg", "test.jpg", "example.png"));
+  ASSERT_THAT(test_annotator.image_processors_, SizeIs(3));
+  EXPECT_THAT(test_annotator.image_processors_[0].is_bound(), Eq(true));
+  EXPECT_THAT(test_annotator.image_processors_[1].is_bound(), Eq(true));
+  EXPECT_THAT(test_annotator.image_processors_[2].is_bound(), Eq(true));
+  EXPECT_THAT(test_annotator.callbacks_, SizeIs(3));
+
+  // Image 1 goes away.
+  page_annotator.ImageRemoved(1ul);
+  test_task_env.RunUntilIdle();
+
+  // The corresponding image processors should have been disconnected.
+  ASSERT_THAT(test_annotator.image_processors_, SizeIs(3));
+  EXPECT_THAT(test_annotator.image_processors_[0].is_bound(), Eq(false));
+  EXPECT_THAT(test_annotator.image_processors_[1].is_bound(), Eq(false));
+  EXPECT_THAT(test_annotator.image_processors_[2].is_bound(), Eq(true));
+
+  // Expect success and failure to be reported.
+  const auto error = ia_mojom::AnnotateImageResult::NewErrorCode(
+      ia_mojom::AnnotateImageError::kCanceled);
+  const auto success =
+      ia_mojom::AnnotateImageResult::NewOcrText("text from image");
+
+  ASSERT_THAT(test_annotator.callbacks_, SizeIs(3));
+  std::move(test_annotator.callbacks_[0]).Run(error.Clone());
+  std::move(test_annotator.callbacks_[1]).Run(error.Clone());
+  std::move(test_annotator.callbacks_[2]).Run(success.Clone());
+
+  EXPECT_CALL(o1, OnImageAnnotated(1ul, IsAnnotateImageResult(error.get())));
+  EXPECT_CALL(o2, OnImageAnnotated(1ul, IsAnnotateImageResult(error.get())));
+  EXPECT_CALL(o2, OnImageAnnotated(2ul, IsAnnotateImageResult(success.get())));
+
+  test_task_env.RunUntilIdle();
+}
+
+}  // namespace
 
 }  // namespace page_image_annotation

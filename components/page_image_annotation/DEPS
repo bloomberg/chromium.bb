@@ -4,5 +4,6 @@ include_rules = [
   "-components/page_image_annotation/content",
   "+services/image_annotation/public/mojom",
   "+services/image_annotation/public/cpp",
+  "+services/service_manager/public/cpp",
   "+third_party/skia",
 ]
