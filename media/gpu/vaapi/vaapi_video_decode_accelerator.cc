@@ -74,8 +74,8 @@ void CloseGpuMemoryBufferHandle(const gfx::GpuMemoryBufferHandle& handle) {
 }
 #endif
 
-// Returns true if the CPU is an Intel Kaby Lake or later.
-// cpu platform id's are referenced from the following file in kernel source
+// Returns true if the CPU is an Intel Kaby/Gemini/Sky Lake or later.
+// Cpu platform id's are referenced from the following file in kernel source
 // arch/x86/include/asm/intel-family.h
 bool IsKabyLakeOrLater() {
   constexpr int kPentiumAndLaterFamily = 0x06;
@@ -86,7 +86,6 @@ bool IsKabyLakeOrLater() {
       cpuid.model() >= kFirstKabyLakeModelId;
   return is_kaby_lake_or_later;
 }
-
 bool IsGeminiLakeOrLater() {
   constexpr int kPentiumAndLaterFamily = 0x06;
   constexpr int kGeminiLakeModelId = 0x7A;
@@ -96,8 +95,16 @@ bool IsGeminiLakeOrLater() {
       cpuid.model() >= kGeminiLakeModelId;
   return is_geminilake_or_later;
 }
+bool IsSkyLakeOrLater() {
+  constexpr int kPentiumAndLaterFamily = 0x06;
+  constexpr int kFirstSkyLakeModelId = 0x4E;
+  static base::CPU cpuid;
+  static bool is_sky_lake_or_later = cpuid.family() == kPentiumAndLaterFamily &&
+                                     cpuid.model() >= kFirstSkyLakeModelId;
+  return is_sky_lake_or_later;
+}
 
-// Decides if the current platform and profile may decode using the client's
+// Decides if the current platform and |profile| may decode using the client's
 // PictureBuffers, or engage the Vpp to adapt VaApi's and the client's format.
 bool ShouldDecodeOnclientPictureBuffers(
     VideoDecodeAccelerator::Config::OutputMode output_mode,
@@ -105,6 +112,14 @@ bool ShouldDecodeOnclientPictureBuffers(
   return output_mode == VideoDecodeAccelerator::Config::OutputMode::ALLOCATE &&
          (IsKabyLakeOrLater() || IsGeminiLakeOrLater()) &&
          profile == VP9PROFILE_PROFILE0;
+}
+
+// Decides if the current platform and |output_mode| may used a reduced number
+// of buffer allocations. See https://crbug.com/920510 for more information.
+bool ShouldUseReducedNumberOfAllocations(
+    VideoDecodeAccelerator::Config::OutputMode output_mode) {
+  return output_mode == VideoDecodeAccelerator::Config::OutputMode::ALLOCATE &&
+         IsSkyLakeOrLater();
 }
 
 }  // namespace
@@ -256,7 +271,7 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
       ShouldDecodeOnclientPictureBuffers(output_mode_, profile_);
   use_reduced_number_of_allocations_ =
       !decode_using_client_picture_buffers_ &&
-      output_mode_ == Config::OutputMode::ALLOCATE;
+      ShouldUseReducedNumberOfAllocations(output_mode_);
   previously_requested_num_reference_frames_ = 0;
   return true;
 }
