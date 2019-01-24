@@ -34,10 +34,6 @@ class WebTextCheckClient {
       const WebString& text_to_check,
       WebTextCheckingCompletion* completion_callback) {}
 
-  // Clear all stored references to requests, so that it will not become a
-  // leak source.
-  virtual void CancelAllPendingRequests() {}
-
  protected:
   virtual ~WebTextCheckClient() = default;
 };

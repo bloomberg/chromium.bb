@@ -192,14 +192,6 @@ void SpellCheckProvider::RequestCheckingOfText(
   UMA_HISTOGRAM_COUNTS_1M("SpellCheck.api.async", text.length());
 }
 
-void SpellCheckProvider::CancelAllPendingRequests() {
-  for (WebTextCheckCompletions::iterator iter(&text_check_completions_);
-       !iter.IsAtEnd(); iter.Advance()) {
-    iter.GetCurrentValue()->DidCancelCheckingText();
-  }
-  text_check_completions_.Clear();
-}
-
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 void SpellCheckProvider::OnRespondSpellingService(
     int identifier,
