@@ -1248,9 +1248,6 @@ interface TransformStream
     getter readable
     getter writable
     method constructor
-interface TrustedTypePolicyFactory
-    attribute @@toStringTag
-    method constructor
 interface URL
     attribute @@toStringTag
     getter hash
@@ -3527,7 +3524,6 @@ interface WritableStream
     attribute console
     attribute globalThis
     attribute internals
-    getter TrustedTypes
     getter clients
     getter cookieStore
     getter onabortpayment

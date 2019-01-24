@@ -104,6 +104,20 @@ String SecurityContext::addressSpaceForBindings() const {
   return "public";
 }
 
+void SecurityContext::SetRequireTrustedTypes() {
+  DCHECK(require_safe_types_ ||
+         content_security_policy_->IsRequireTrustedTypes());
+  require_safe_types_ = true;
+}
+
+void SecurityContext::SetRequireTrustedTypesForTesting() {
+  require_safe_types_ = true;
+}
+
+bool SecurityContext::RequireTrustedTypes() const {
+  return require_safe_types_;
+}
+
 void SecurityContext::SetFeaturePolicy(
     std::unique_ptr<FeaturePolicy> feature_policy) {
   // This method should be called before a FeaturePolicy has been created.

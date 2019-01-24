@@ -1308,6 +1308,7 @@
     },
     {
       name: "TrustedDOMTypes",
+      origin_trial_feature_name: "TrustedDOMTypes",
       status: "experimental",
     },
     {

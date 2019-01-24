@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script_url.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy_factory.h"
@@ -143,15 +144,8 @@ void WorkerGlobalScope::importScripts(
     ExceptionState& exception_state) {
   Vector<String> string_urls;
   for (const StringOrTrustedScriptURL& stringOrUrl : urls) {
-    DCHECK(stringOrUrl.IsString() ||
-           RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
-    if (!stringOrUrl.IsTrustedScriptURL() &&
-        GetSecurityContext().RequireTrustedTypes()) {
-      exception_state.ThrowTypeError(
-          "This worker requires `TrustedScriptURL` assignment.");
-      return;
-    }
-
+    // TODO(vogelheim): Re-implement Trusted Types logic when supported by
+    // workers.
     String string_url = stringOrUrl.IsString()
                             ? stringOrUrl.GetAsString()
                             : stringOrUrl.GetAsTrustedScriptURL()->toString();
