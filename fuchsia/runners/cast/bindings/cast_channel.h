@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FUCHSIA_APP_CAST_BINDINGS_CAST_CHANNEL_H_
-#define FUCHSIA_APP_CAST_BINDINGS_CAST_CHANNEL_H_
+#ifndef FUCHSIA_RUNNERS_CAST_BINDINGS_CAST_CHANNEL_H_
+#define FUCHSIA_RUNNERS_CAST_BINDINGS_CAST_CHANNEL_H_
 
 #include <string>
 
@@ -12,13 +12,10 @@
 #include "base/strings/string_piece.h"
 #include "fuchsia/common/fuchsia_export.h"
 #include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
-#include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 
 namespace webrunner {
 class NamedMessagePortConnector;
 }
-
-namespace castrunner {
 
 // Handles the injection of cast.__platform__.channel bindings into pages'
 // scripting context, and establishes a bidirectional message pipe over
@@ -66,6 +63,4 @@ class FUCHSIA_EXPORT CastChannelImpl : public chromium::cast::CastChannel {
   DISALLOW_COPY_AND_ASSIGN(CastChannelImpl);
 };
 
-}  // namespace castrunner
-
-#endif  // FUCHSIA_APP_CAST_BINDINGS_CAST_CHANNEL_H_
+#endif  // FUCHSIA_RUNNERS_CAST_BINDINGS_CAST_CHANNEL_H_

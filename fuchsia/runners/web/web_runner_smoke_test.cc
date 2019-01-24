@@ -15,8 +15,6 @@
 using net::test_server::HttpRequest;
 using net::test_server::HttpResponse;
 
-namespace webrunner {
-
 namespace {
 
 class WebRunnerSmokeTest : public testing::Test {
@@ -78,5 +76,3 @@ TEST_F(WebRunnerSmokeTest, RequestHtmlAndImage) {
 }
 
 }  // anonymous namespace
-
-}  // namespace webrunner

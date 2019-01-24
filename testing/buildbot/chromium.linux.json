@@ -677,7 +677,7 @@
             }
           ]
         },
-        "test": "castrunner_unittests"
+        "test": "cast_runner_unittests"
       },
       {
         "args": [

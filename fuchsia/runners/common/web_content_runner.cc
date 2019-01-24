@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/app/common/web_content_runner.h"
+#include "fuchsia/runners/common/web_content_runner.h"
 
 #include <fuchsia/sys/cpp/fidl.h>
 #include <lib/fidl/cpp/binding_set.h>
@@ -15,11 +15,8 @@
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_directory.h"
 #include "base/logging.h"
-#include "fuchsia/app/common/web_component.h"
-#include "fuchsia/fidl/chromium/web/cpp/fidl.h"
+#include "fuchsia/runners/common/web_component.h"
 #include "url/gurl.h"
-
-namespace webrunner {
 
 // static
 chromium::web::ContextPtr WebContentRunner::CreateDefaultWebContext() {
@@ -110,5 +107,3 @@ void WebContentRunner::RunOnIdleClosureIfValid() {
   if (on_idle_closure_)
     std::move(on_idle_closure_).Run();
 }
-
-}  // namespace webrunner

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/app/cast/cast_runner.h"
+#include "fuchsia/runners/cast/cast_runner.h"
 
 #include <lib/fidl/cpp/binding.h>
 #include <lib/zx/channel.h>
@@ -13,12 +13,10 @@
 #include "base/fuchsia/service_directory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
-#include "fuchsia/app/cast/fake_application_config_manager.h"
-#include "fuchsia/app/cast/test_common.h"
+#include "fuchsia/runners/cast/fake_application_config_manager.h"
+#include "fuchsia/runners/cast/test_common.h"
 #include "fuchsia/test/fake_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace castrunner {
 
 class CastRunnerUnitTest : public testing::Test {
  public:
@@ -125,5 +123,3 @@ TEST_F(CastRunnerUnitTest, TeardownOnComponentControllerUnbind) {
   component_controller_ptr.Unbind();
   RunUntilCastRunnerIsIdle();
 }
-
-}  // namespace castrunner

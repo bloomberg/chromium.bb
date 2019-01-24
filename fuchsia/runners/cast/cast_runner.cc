@@ -2,25 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/app/cast/cast_runner.h"
+#include "fuchsia/runners/cast/cast_runner.h"
 
 #include <fuchsia/sys/cpp/fidl.h>
 #include <utility>
 
 #include "base/logging.h"
-#include "fuchsia/app/common/web_component.h"
+#include "fuchsia/runners/common/web_component.h"
 #include "url/gurl.h"
-
-namespace castrunner {
 
 CastRunner::CastRunner(
     base::fuchsia::ServiceDirectory* service_directory,
     chromium::web::ContextPtr context,
     chromium::cast::ApplicationConfigManagerPtr app_config_manager,
     base::OnceClosure on_idle_closure)
-    : webrunner::WebContentRunner(service_directory,
-                                  std::move(context),
-                                  std::move(on_idle_closure)),
+    : WebContentRunner(service_directory,
+                       std::move(context),
+                       std::move(on_idle_closure)),
       app_config_manager_(std::move(app_config_manager)) {}
 
 CastRunner::~CastRunner() = default;
@@ -65,15 +63,13 @@ void CastRunner::GetConfigCallback(
 
     // For test purposes, we need to call RegisterComponent even if there is no
     // URL to launch.
-    RegisterComponent(std::unique_ptr<webrunner::WebComponent>(nullptr));
+    RegisterComponent(std::unique_ptr<WebComponent>(nullptr));
     return;
   }
 
   // If a config was returned then use it to launch a component.
   GURL cast_app_url(app_config->web_url);
-  RegisterComponent(webrunner::WebComponent::ForUrlRequest(
-      this, std::move(cast_app_url), std::move(startup_info),
-      std::move(controller_request)));
+  RegisterComponent(WebComponent::ForUrlRequest(this, std::move(cast_app_url),
+                                                std::move(startup_info),
+                                                std::move(controller_request)));
 }
-
-}  // namespace castrunner

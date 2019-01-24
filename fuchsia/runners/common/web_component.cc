@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/app/common/web_component.h"
+#include "fuchsia/runners/common/web_component.h"
 
 #include <fuchsia/sys/cpp/fidl.h>
 #include <lib/fidl/cpp/binding_set.h>
@@ -12,10 +12,7 @@
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_directory.h"
 #include "base/logging.h"
-#include "fuchsia/app/common/web_content_runner.h"
-#include "fuchsia/fidl/chromium/web/cpp/fidl.h"
-
-namespace webrunner {
+#include "fuchsia/runners/common/web_content_runner.h"
 
 WebComponent::~WebComponent() {
   // Send process termination details to the client.
@@ -122,5 +119,3 @@ void WebComponent::DestroyComponent(int termination_exit_code,
   termination_exit_code_ = termination_exit_code;
   runner_->DestroyComponent(this);
 }
-
-}  // namespace webrunner
