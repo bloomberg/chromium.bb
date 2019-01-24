@@ -18,7 +18,7 @@ class GenericDmaBufVideoFrameMapper : public VideoFrameMapper {
 
   // VideoFrameMapper implementation.
   scoped_refptr<VideoFrame> Map(
-      scoped_refptr<VideoFrame> video_frame) const override;
+      scoped_refptr<const VideoFrame> video_frame) const override;
   DISALLOW_COPY_AND_ASSIGN(GenericDmaBufVideoFrameMapper);
 };
 

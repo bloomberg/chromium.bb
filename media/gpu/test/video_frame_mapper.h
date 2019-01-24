@@ -21,7 +21,7 @@ class VideoFrameMapper {
   // Maps data referred by |video_frame| and creates a VideoFrame whose dtor
   // unmap the mapped memory.
   virtual scoped_refptr<VideoFrame> Map(
-      scoped_refptr<VideoFrame> video_frame) const = 0;
+      scoped_refptr<const VideoFrame> video_frame) const = 0;
 
  protected:
   VideoFrameMapper() = default;

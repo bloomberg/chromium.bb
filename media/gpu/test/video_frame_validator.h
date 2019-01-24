@@ -88,7 +88,7 @@ class VideoFrameValidator : public VideoFrameProcessor {
 
   // Interface VideoFrameProcessor
   // Validate the |video_frame|'s pixel content.
-  void ProcessVideoFrame(scoped_refptr<VideoFrame> video_frame,
+  void ProcessVideoFrame(scoped_refptr<const VideoFrame> video_frame,
                          size_t frame_index) override;
 
  private:
@@ -102,7 +102,7 @@ class VideoFrameValidator : public VideoFrameProcessor {
   // Returns the resulted I420 frame on success, and otherwise return nullptr.
   // |video_frame| is unchanged in this method.
   scoped_refptr<VideoFrame> CreateStandardizedFrame(
-      scoped_refptr<VideoFrame> video_frame) const;
+      scoped_refptr<const VideoFrame> video_frame) const;
 
   // Returns md5 values of video frame represented by |video_frame|.
   std::string ComputeMD5FromVideoFrame(

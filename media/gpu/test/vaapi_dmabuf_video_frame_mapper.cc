@@ -90,7 +90,7 @@ VaapiDmaBufVideoFrameMapper::VaapiDmaBufVideoFrameMapper()
 VaapiDmaBufVideoFrameMapper::~VaapiDmaBufVideoFrameMapper() {}
 
 scoped_refptr<VideoFrame> VaapiDmaBufVideoFrameMapper::Map(
-    scoped_refptr<VideoFrame> video_frame) const {
+    scoped_refptr<const VideoFrame> video_frame) const {
   DCHECK(vaapi_wrapper_);
   DCHECK(vaapi_picture_factory_);
   if (!video_frame->HasDmaBufs()) {

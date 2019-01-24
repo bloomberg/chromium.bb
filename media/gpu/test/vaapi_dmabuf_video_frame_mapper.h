@@ -28,7 +28,7 @@ class VaapiDmaBufVideoFrameMapper : public VideoFrameMapper {
 
   // VideoFrameMapper override.
   scoped_refptr<VideoFrame> Map(
-      scoped_refptr<VideoFrame> video_frame) const override;
+      scoped_refptr<const VideoFrame> video_frame) const override;
 
  private:
   VaapiDmaBufVideoFrameMapper();
