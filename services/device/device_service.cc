@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -116,6 +117,11 @@ DeviceService::~DeviceService() {
 #if !defined(OS_ANDROID)
   device::BatteryStatusService::GetInstance()->Shutdown();
 #endif
+#if (defined(OS_LINUX) && defined(USE_UDEV)) || defined(OS_WIN) || \
+    defined(OS_MACOSX)
+  serial_port_manager_task_runner_->DeleteSoon(FROM_HERE,
+                                               std::move(serial_port_manager_));
+#endif
 }
 
 void DeviceService::OnStart() {
@@ -141,8 +147,6 @@ void DeviceService::OnStart() {
       &DeviceService::BindTimeZoneMonitorRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::WakeLockProvider>(base::Bind(
       &DeviceService::BindWakeLockProviderRequest, base::Unretained(this)));
-  registry_.AddInterface<mojom::SerialPortManager>(base::Bind(
-      &DeviceService::BindSerialPortManagerRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::UsbDeviceManager>(base::Bind(
       &DeviceService::BindUsbDeviceManagerRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::UsbDeviceManagerTest>(base::Bind(
@@ -165,6 +169,20 @@ void DeviceService::OnStart() {
       &DeviceService::BindNFCProviderRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::VibrationManager>(base::Bind(
       &DeviceService::BindVibrationManagerRequest, base::Unretained(this)));
+#endif
+
+#if (defined(OS_LINUX) && defined(USE_UDEV)) || defined(OS_WIN) || \
+    defined(OS_MACOSX)
+  // SerialPortManagerImpl must live on a thread that is allowed to do
+  // blocking IO.
+  serial_port_manager_ = std::make_unique<SerialPortManagerImpl>(
+      io_task_runner_, base::ThreadTaskRunnerHandle::Get());
+  serial_port_manager_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+  registry_.AddInterface<mojom::SerialPortManager>(
+      base::BindRepeating(&SerialPortManagerImpl::Bind,
+                          base::Unretained(serial_port_manager_.get())),
+      serial_port_manager_task_runner_);
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -303,15 +321,6 @@ void DeviceService::BindWakeLockProviderRequest(
     mojom::WakeLockProviderRequest request) {
   WakeLockProvider::Create(std::move(request), file_task_runner_,
                            wake_lock_context_callback_);
-}
-
-void DeviceService::BindSerialPortManagerRequest(
-    mojom::SerialPortManagerRequest request) {
-#if (defined(OS_LINUX) && defined(USE_UDEV)) || defined(OS_WIN) || \
-    defined(OS_MACOSX)
-  if (io_task_runner_)
-    SerialPortManagerImpl::Create(std::move(request), io_task_runner_);
-#endif
 }
 
 void DeviceService::BindUsbDeviceManagerRequest(

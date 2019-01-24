@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/device/public/mojom/serial.mojom.h"
 
 namespace base {
@@ -25,15 +26,12 @@ class SerialDeviceEnumerator;
 // crbug.com/748505
 class SerialPortManagerImpl : public mojom::SerialPortManager {
  public:
-  static void Create(
-      mojom::SerialPortManagerRequest request,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
-
   SerialPortManagerImpl(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   ~SerialPortManagerImpl() override;
 
+  void Bind(mojom::SerialPortManagerRequest request);
   void SetSerialEnumeratorForTesting(
       std::unique_ptr<SerialDeviceEnumerator> fake_enumerator);
 
@@ -47,6 +45,8 @@ class SerialPortManagerImpl : public mojom::SerialPortManager {
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+
+  mojo::BindingSet<SerialPortManager> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(SerialPortManagerImpl);
 };

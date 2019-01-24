@@ -6,7 +6,7 @@
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "services/device/device_service_test_base.h"
+#include "base/test/scoped_task_environment.h"
 #include "services/device/generic_sensor/fake_platform_sensor_and_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,7 +16,7 @@ using ::testing::NiceMock;
 
 namespace device {
 
-class PlatformSensorProviderTest : public DeviceServiceTestBase {
+class PlatformSensorProviderTest : public testing::Test {
  public:
   PlatformSensorProviderTest() {
     provider_ = std::make_unique<FakePlatformSensorProvider>();
@@ -27,6 +27,8 @@ class PlatformSensorProviderTest : public DeviceServiceTestBase {
   std::unique_ptr<FakePlatformSensorProvider> provider_;
 
  private:
+  base::test::ScopedTaskEnvironment task_environment_;
+
   DISALLOW_COPY_AND_ASSIGN(PlatformSensorProviderTest);
 };
 

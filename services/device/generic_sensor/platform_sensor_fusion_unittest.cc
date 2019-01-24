@@ -7,8 +7,8 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/device/device_service_test_base.h"
 #include "services/device/generic_sensor/absolute_orientation_euler_angles_fusion_algorithm_using_accelerometer_and_magnetometer.h"
 #include "services/device/generic_sensor/fake_platform_sensor_and_provider.h"
 #include "services/device/generic_sensor/linear_acceleration_fusion_algorithm_using_accelerometer.h"
@@ -25,7 +25,7 @@ namespace device {
 
 using mojom::SensorType;
 
-class PlatformSensorFusionTest : public DeviceServiceTestBase {
+class PlatformSensorFusionTest : public testing::Test {
  public:
   PlatformSensorFusionTest() {
     provider_ = std::make_unique<FakePlatformSensorProvider>();
@@ -90,6 +90,7 @@ class PlatformSensorFusionTest : public DeviceServiceTestBase {
     EXPECT_TRUE(platform_sensor_fusion_callback_called_);
   }
 
+  base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<FakePlatformSensorProvider> provider_;
   bool accelerometer_callback_called_ = false;
   scoped_refptr<FakePlatformSensor> accelerometer_;

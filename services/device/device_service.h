@@ -66,6 +66,7 @@ namespace device {
 
 #if !defined(OS_ANDROID)
 class HidManagerImpl;
+class SerialPortManagerImpl;
 #endif
 
 class DeviceService;
@@ -161,8 +162,6 @@ class DeviceService : public service_manager::Service {
 
   void BindWakeLockProviderRequest(mojom::WakeLockProviderRequest request);
 
-  void BindSerialPortManagerRequest(mojom::SerialPortManagerRequest request);
-
   void BindUsbDeviceManagerRequest(mojom::UsbDeviceManagerRequest request);
 
   void BindUsbDeviceManagerTestRequest(
@@ -196,6 +195,15 @@ class DeviceService : public service_manager::Service {
   base::android::ScopedJavaGlobalRef<jobject> java_nfc_delegate_;
 #else
   std::unique_ptr<HidManagerImpl> hid_manager_;
+#endif
+
+#if (defined(OS_LINUX) && defined(USE_UDEV)) || defined(OS_WIN) || \
+    defined(OS_MACOSX)
+  // Requests for the SerialPortManager interface must be bound to
+  // |serial_port_manager_| on |serial_port_manager_task_runner_| and it will
+  // be destroyed on that sequence.
+  std::unique_ptr<SerialPortManagerImpl> serial_port_manager_;
+  scoped_refptr<base::SequencedTaskRunner> serial_port_manager_task_runner_;
 #endif
 
 #if defined(OS_CHROMEOS)
