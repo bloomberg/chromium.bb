@@ -88,7 +88,7 @@ public class SideSlideLayout extends ViewGroup {
     private boolean mNavigating;
 
     private int mCurrentTargetOffset;
-    private float mTotalMotionY;
+    private float mTotalMotion;
 
     // Whether or not the starting offset has been determined.
     private boolean mOriginalOffsetCalculated;
@@ -134,9 +134,9 @@ public class SideSlideLayout extends ViewGroup {
         public void applyTransformation(float interpolatedTime, Transformation t) {
             int targetTop = mFrom + (int) ((mOriginalOffset - mFrom) * interpolatedTime);
             int offset = targetTop - mCircleView.getLeft();
-            mTotalMotionY += offset;
+            mTotalMotion += offset;
 
-            float progress = Math.min(1.f, Math.abs(mTotalMotionY) / mTotalDragDistance);
+            float progress = Math.min(1.f, getOverscroll() / mTotalDragDistance);
             mCircleView.setProgress(progress);
             setTargetOffsetLeftAndRight(offset);
         }
@@ -195,6 +195,10 @@ public class SideSlideLayout extends ViewGroup {
             mNavigating = navigating;
             if (mNavigating) startScaleDownAnimation(mNavigateListener);
         }
+    }
+
+    private float getOverscroll() {
+        return mIsForward ? -Math.min(0, mTotalMotion) : Math.max(0, mTotalMotion);
     }
 
     private void startScaleDownAnimation(AnimationListener listener) {
@@ -257,7 +261,7 @@ public class SideSlideLayout extends ViewGroup {
     public boolean start() {
         if (!isEnabled() || mNavigating || mListener == null) return false;
         mCircleView.clearAnimation();
-        mTotalMotionY = 0;
+        mTotalMotion = 0;
         mIsBeingDragged = true;
         mArrow.setAlpha(STARTING_ALPHA);
         mArrow.setDirection(mIsForward);
@@ -275,10 +279,10 @@ public class SideSlideLayout extends ViewGroup {
 
         float maxDelta = mTotalDragDistance / MIN_PULLS_TO_ACTIVATE;
         delta = Math.max(-maxDelta, Math.min(maxDelta, delta));
-        mTotalMotionY += delta;
+        mTotalMotion += delta;
 
-        float overscroll = mTotalMotionY;
-        float extraOs = Math.abs(overscroll) - mTotalDragDistance;
+        float overscroll = getOverscroll();
+        float extraOs = overscroll - mTotalDragDistance;
         float slingshotDist = mTotalDragDistance;
         float tensionSlingshotPercent =
                 Math.max(0, Math.min(extraOs, slingshotDist * 2) / slingshotDist);
@@ -290,7 +294,7 @@ public class SideSlideLayout extends ViewGroup {
         mCircleView.setScaleX(1f);
         mCircleView.setScaleY(1f);
 
-        float originalDragPercent = Math.abs(overscroll) / mTotalDragDistance;
+        float originalDragPercent = overscroll / mTotalDragDistance;
         float dragPercent = Math.min(1f, Math.abs(originalDragPercent));
         float adjustedPercent = (float) Math.max(dragPercent - .4, 0) * 5 / 3;
         mArrow.setArrowScale(Math.min(1f, adjustedPercent));
@@ -321,8 +325,7 @@ public class SideSlideLayout extends ViewGroup {
 
         // See ACTION_UP handling in {@link #onTouchEvent(...)}.
         mIsBeingDragged = false;
-        final float overscroll = Math.abs(mTotalMotionY);
-        if (isEnabled() && allowNav && overscroll > mTotalDragDistance) {
+        if (isEnabled() && allowNav && getOverscroll() > mTotalDragDistance) {
             setNavigating(true);
             return;
         }
