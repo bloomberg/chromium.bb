@@ -85,6 +85,8 @@ class ThirdPartyConflictsManager
       std::unique_ptr<ThirdPartyConflictsManager> instance);
 
   // ModuleDatabaseObserver:
+  void OnNewModuleFound(const ModuleInfoKey& module_key,
+                        const ModuleInfoData& module_data) override;
   void OnModuleDatabaseIdle() override;
 
   // Invoked when the Third Party Module List component is registered with the
@@ -139,10 +141,6 @@ class ThirdPartyConflictsManager
   }
 
  private:
-  // Called when |exe_certificate_info_| finishes its initialization.
-  void OnExeCertificateCreated(
-      std::unique_ptr<CertificateInfo> exe_certificate_info);
-
   // Called when |module_list_filter_| finishes its initialization.
   void OnModuleListFilterCreated(
       scoped_refptr<ModuleListFilter> module_list_filter);
@@ -186,6 +184,9 @@ class ThirdPartyConflictsManager
   // already. Used to prevent the creation of multiple InstalledApplications
   // instances.
   bool on_module_database_idle_called_;
+
+  // Path to the current executable (expected to be chrome.exe).
+  base::FilePath exe_path_;
 
   // The certificate info of the current executable.
   std::unique_ptr<CertificateInfo> exe_certificate_info_;

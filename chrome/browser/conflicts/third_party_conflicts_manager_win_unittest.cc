@@ -6,13 +6,17 @@
 
 #include <utility>
 
+#include "base/base_paths.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/optional.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/conflicts/module_info_win.h"
 #include "chrome/browser/conflicts/proto/module_list.pb.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -85,8 +89,29 @@ class ThirdPartyConflictsManagerTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(ThirdPartyConflictsManagerTest);
 };
 
+std::pair<ModuleInfoKey, ModuleInfoData> CreateExeModuleInfo() {
+  base::FilePath exe_path;
+  base::PathService::Get(base::FILE_EXE, &exe_path);
+
+  std::pair<ModuleInfoKey, ModuleInfoData> module_info(
+      std::piecewise_construct,
+      std::forward_as_tuple(std::move(exe_path), 0, 0, 0),
+      std::forward_as_tuple());
+
+  module_info.second.inspection_result =
+      base::make_optional<ModuleInspectionResult>();
+
+  return module_info;
+}
+
 TEST_F(ThirdPartyConflictsManagerTest, InitializeUpdaters) {
   ThirdPartyConflictsManager third_party_conflicts_manager(this);
+
+  // The ThirdPartyConflictsManager class looks for the certificate info of the
+  // current exe via the ModuleDatabaseObserver interface.
+  auto exe_module_info = CreateExeModuleInfo();
+  third_party_conflicts_manager.OnNewModuleFound(exe_module_info.first,
+                                                 exe_module_info.second);
 
   third_party_conflicts_manager.OnModuleDatabaseIdle();
   ASSERT_NO_FATAL_FAILURE(CreateModuleList());

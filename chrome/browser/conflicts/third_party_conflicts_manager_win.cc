@@ -27,6 +27,7 @@
 #include "chrome/browser/conflicts/module_blacklist_cache_updater_win.h"
 #include "chrome/browser/conflicts/module_blacklist_cache_util_win.h"
 #include "chrome/browser/conflicts/module_info_util_win.h"
+#include "chrome/browser/conflicts/module_info_win.h"
 #include "chrome/browser/conflicts/module_list_filter_win.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -38,16 +39,6 @@
 #include "content/public/browser/browser_thread.h"
 
 namespace {
-
-std::unique_ptr<CertificateInfo> CreateExeCertificateInfo() {
-  auto certificate_info = std::make_unique<CertificateInfo>();
-
-  base::FilePath exe_path;
-  if (base::PathService::Get(base::FILE_EXE, &exe_path))
-    GetCertificateInfo(exe_path, certificate_info.get());
-
-  return certificate_info;
-}
 
 scoped_refptr<ModuleListFilter> CreateModuleListFilter(
     const base::FilePath& module_list_path) {
@@ -144,11 +135,13 @@ ThirdPartyConflictsManager::ThirdPartyConflictsManager(
   LogChromeElfThirdPartyStatus();
 
   module_database_event_source_->AddObserver(this);
-  base::PostTaskAndReplyWithResult(
-      background_sequence_.get(), FROM_HERE,
-      base::BindOnce(&CreateExeCertificateInfo),
-      base::BindOnce(&ThirdPartyConflictsManager::OnExeCertificateCreated,
-                     weak_ptr_factory_.GetWeakPtr()));
+
+  // Get the path to the current executable as it will be used to retrieve its
+  // associated CertificateInfo from the ModuleDatabase. This shouldn't fail,
+  // but it is assumed that without the path, the executable is not signed
+  // (hence an empty CertificateInfo).
+  if (!base::PathService::Get(base::FILE_EXE, &exe_path_))
+    exe_certificate_info_ = std::make_unique<CertificateInfo>();
 }
 
 ThirdPartyConflictsManager::~ThirdPartyConflictsManager() {
@@ -188,6 +181,26 @@ void ThirdPartyConflictsManager::ShutdownAndDestroy(
     std::unique_ptr<ThirdPartyConflictsManager> instance) {
   DisableThirdPartyModuleBlocking(instance->background_sequence_.get());
   // |instance| is intentionally destroyed at the end of the function scope.
+}
+
+void ThirdPartyConflictsManager::OnNewModuleFound(
+    const ModuleInfoKey& module_key,
+    const ModuleInfoData& module_data) {
+  // Keep looking for the CertificateInfo of the current executable as long as
+  // it wasn't found yet.
+  if (exe_certificate_info_)
+    return;
+
+  DCHECK(!exe_path_.empty());
+
+  // The module represent the current executable only if the paths matches.
+  if (exe_path_ != module_key.module_path)
+    return;
+
+  exe_certificate_info_ = std::make_unique<CertificateInfo>(
+      module_data.inspection_result->certificate_info);
+
+  InitializeIfReady();
 }
 
 void ThirdPartyConflictsManager::OnModuleDatabaseIdle() {
@@ -318,13 +331,6 @@ void ThirdPartyConflictsManager::OnEvent(Events event,
   // component version is 0.0.0.0 (aka not installed).
   if (event == Events::COMPONENT_NOT_UPDATED)
     SetTerminalState(State::kNoModuleListAvailableFailure);
-}
-
-void ThirdPartyConflictsManager::OnExeCertificateCreated(
-    std::unique_ptr<CertificateInfo> exe_certificate_info) {
-  exe_certificate_info_ = std::move(exe_certificate_info);
-
-  InitializeIfReady();
 }
 
 void ThirdPartyConflictsManager::OnModuleListFilterCreated(
