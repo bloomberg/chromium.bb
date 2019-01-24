@@ -22,7 +22,9 @@
 #include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/notification_service.h"
 
@@ -47,10 +49,6 @@ class ScreenTimeControllerTest : public policy::LoginPolicyTestBase {
         "example.com");
 
     policy::LoginPolicyTestBase::SetUp();
-
-    // By default the tests use the GMT timezone.
-    system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
-        base::UTF8ToUTF16("GMT"));
   }
 
   void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const override {
@@ -83,6 +81,13 @@ class ScreenTimeControllerTest : public policy::LoginPolicyTestBase {
   bool IsAuthEnabled() {
     return ScreenLocker::default_screen_locker()->IsAuthEnabledForUser(
         AccountId::FromUserEmail(kAccountId));
+  }
+
+  void MockChildScreenTime(base::TimeDelta used_time) {
+    Profile::FromBrowserContext(child_profile_)
+        ->GetPrefs()
+        ->SetInteger(prefs::kChildScreenTimeMilliseconds,
+                     used_time.InMilliseconds());
   }
 
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
@@ -188,6 +193,76 @@ IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest, DefaultBedtime) {
 
     // Forward to 10 AM.
     task_runner_->FastForwardBy(base::TimeDelta::FromHours(3));
+  }
+}
+
+// Tests the default time window limit.
+IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest, DefaultDailyLimit) {
+  SkipToLoginScreen();
+  LogIn(kAccountId, kAccountPassword, test::kChildAccountServiceFlags);
+  MockClockForActiveUser();
+  std::unique_ptr<chromeos::ScreenLockerTester> tester =
+      chromeos::ScreenLockerTester::Create();
+  tester->Lock();
+
+  system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
+      base::UTF8ToUTF16("GMT"));
+
+  // Set new policy.
+  base::Time last_updated = utils::TimeFromString("1 Jan 2018 0:00 GMT");
+  std::unique_ptr<base::DictionaryValue> policy_content =
+      utils::CreateTimeLimitPolicy(utils::CreateTime(6, 0));
+  utils::AddTimeUsageLimit(policy_content.get(), utils::kMonday,
+                           base::TimeDelta::FromHours(3), last_updated);
+  utils::AddTimeUsageLimit(policy_content.get(), utils::kTuesday,
+                           base::TimeDelta::FromHours(3), last_updated);
+  utils::AddTimeUsageLimit(policy_content.get(), utils::kWednesday,
+                           base::TimeDelta::FromHours(3), last_updated);
+  utils::AddTimeUsageLimit(policy_content.get(), utils::kThursday,
+                           base::TimeDelta::FromHours(3), last_updated);
+  utils::AddTimeUsageLimit(policy_content.get(), utils::kFriday,
+                           base::TimeDelta::FromHours(3), last_updated);
+  utils::AddTimeUsageLimit(policy_content.get(), utils::kSaturday,
+                           base::TimeDelta::FromHours(3), last_updated);
+  utils::AddTimeUsageLimit(policy_content.get(), utils::kSunday,
+                           base::TimeDelta::FromHours(3), last_updated);
+
+  auto policy = std::make_unique<base::DictionaryValue>();
+  policy->SetKey("UsageTimeLimit",
+                 base::Value(utils::PolicyToString(policy_content.get())));
+
+  user_policy_helper()->UpdatePolicy(*policy, base::DictionaryValue(),
+                                     child_profile_);
+
+  // Iterate over a week checking that the device is locked properly
+  // every day.
+  for (int i = 0; i < 7; i++) {
+    // Check that auth is enabled at 10 AM with 0 usage time.
+    EXPECT_TRUE(IsAuthEnabled());
+
+    // Check that auth is enabled after forwarding to 1 PM and using the device
+    // for 2 hours.
+    MockChildScreenTime(base::TimeDelta::FromHours(2));
+    task_runner_->FastForwardBy(base::TimeDelta::FromHours(3));
+    EXPECT_TRUE(IsAuthEnabled());
+
+    // Check that auth is enabled after forwarding to 2 PM with no extra usage.
+    task_runner_->FastForwardBy(base::TimeDelta::FromHours(1));
+    EXPECT_TRUE(IsAuthEnabled());
+
+    // Check that auth is disabled after forwarding to 3 PM and using the device
+    // for 3 hours.
+    MockChildScreenTime(base::TimeDelta::FromHours(3));
+    task_runner_->FastForwardBy(base::TimeDelta::FromHours(1));
+    EXPECT_FALSE(IsAuthEnabled());
+
+    // Forward to 6 AM, reset the usage time and check that auth was re-enabled.
+    MockChildScreenTime(base::TimeDelta::FromHours(0));
+    task_runner_->FastForwardBy(base::TimeDelta::FromHours(15));
+    EXPECT_TRUE(IsAuthEnabled());
+
+    // Forward to 10 AM.
+    task_runner_->FastForwardBy(base::TimeDelta::FromHours(4));
   }
 }
 
