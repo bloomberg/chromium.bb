@@ -82,7 +82,7 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   virtual void OnMalwarePreClassificationDone(bool should_classify);
 
  private:
-  friend class ClientSideDetectionHostTest;
+  friend class ClientSideDetectionHostTestBase;
   class ShouldClassifyUrlRequest;
   friend class ShouldClassifyUrlRequest;
 
