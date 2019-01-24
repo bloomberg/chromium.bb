@@ -73,6 +73,7 @@ class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
 
  private:
   void ExceptionThrown(ErrorEvent*) override;
+  mojom::RequestContextType GetDestinationForMainScript() override;
 
   const String name_;
 };

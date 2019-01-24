@@ -65,6 +65,10 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
   }
 
   void ExceptionThrown(ErrorEvent*) override {}
+
+  mojom::RequestContextType GetDestinationForMainScript() override {
+    return mojom::RequestContextType::WORKER;
+  }
 };
 
 class WorkerThreadForTest : public WorkerThread {

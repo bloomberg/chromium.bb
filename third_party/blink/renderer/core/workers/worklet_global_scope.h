@@ -157,6 +157,8 @@ class CORE_EXPORT WorkletGlobalScope
 
   void BindContentSecurityPolicyToExecutionContext() override;
 
+  mojom::RequestContextType GetDestinationForMainScript() override;
+
   // The |url_| and |user_agent_| are inherited from the parent Document.
   const KURL url_;
   const String user_agent_;

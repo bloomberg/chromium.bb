@@ -366,8 +366,8 @@ void WorkerGlobalScope::ImportClassicScript(
 
   // Step 12. "Fetch a classic worker script given url, outside settings,
   // destination, and inside settings."
-  // TODO(nhiroki): Load a main script using |outside_settings_object|.
-  // (https://crbug.com/835717, https://crbug.com/880027)
+  mojom::RequestContextType destination = GetDestinationForMainScript();
+  DCHECK_EQ(mojom::RequestContextType::WORKER, destination);
 
   // Step 12.1. "Set request's reserved client to inside settings."
   // The browesr process takes care of this.
@@ -379,8 +379,7 @@ void WorkerGlobalScope::ImportClassicScript(
       MakeGarbageCollected<WorkerClassicScriptLoader>();
   classic_script_loader->LoadTopLevelScriptAsynchronously(
       *execution_context, CreateOutsideSettingsFetcher(outside_settings_object),
-      script_url, mojom::RequestContextType::WORKER,
-      network::mojom::FetchRequestMode::kSameOrigin,
+      script_url, destination, network::mojom::FetchRequestMode::kSameOrigin,
       network::mojom::FetchCredentialsMode::kSameOrigin,
       GetSecurityContext().AddressSpace(),
       WTF::Bind(&WorkerGlobalScope::DidReceiveResponseForClassicScript,
