@@ -77,6 +77,9 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
     /** The name of the experiment variation that shows the copy icon. */
     private static final String COPY_ICON_VARIATION_NAME = "copy_icon";
 
+    /** The name of the experiment variation that shows both the copy and share icon. */
+    private static final String COPY_SHARE_ICON_VARIATION_NAME = "copy_share_icon";
+
     /** The delegate for accessing the location bar for observation and modification. */
     private final LocationBarDelegate mLocationBarDelegate;
 
@@ -161,6 +164,9 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
         if (TextUtils.equals(COPY_ICON_VARIATION_NAME, variation)) {
             model.set(EditUrlSuggestionProperties.COPY_ICON_VISIBLE, true);
             model.set(EditUrlSuggestionProperties.SHARE_ICON_VISIBLE, false);
+        } else if (TextUtils.equals(COPY_SHARE_ICON_VARIATION_NAME, variation)) {
+            model.set(EditUrlSuggestionProperties.COPY_ICON_VISIBLE, true);
+            model.set(EditUrlSuggestionProperties.SHARE_ICON_VISIBLE, true);
         } else {
             model.set(EditUrlSuggestionProperties.COPY_ICON_VISIBLE, false);
             model.set(EditUrlSuggestionProperties.SHARE_ICON_VISIBLE, true);
