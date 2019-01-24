@@ -87,6 +87,8 @@ bool ConstraintSetHasNonImageCapture(
          constraint_set->hasChannelCount() || constraint_set->hasDepthFar() ||
          constraint_set->hasDepthNear() || constraint_set->hasDeviceId() ||
          constraint_set->hasEchoCancellation() ||
+         constraint_set->hasNoiseSuppression() ||
+         constraint_set->hasAutoGainControl() ||
          constraint_set->hasFacingMode() || constraint_set->hasResizeMode() ||
          constraint_set->hasFocalLengthX() ||
          constraint_set->hasFocalLengthY() || constraint_set->hasFrameRate() ||

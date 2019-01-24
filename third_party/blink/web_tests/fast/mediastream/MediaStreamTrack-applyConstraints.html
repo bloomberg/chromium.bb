@@ -242,6 +242,16 @@ constraintSyntaxTestContradictingProperties(
     {audio: {echoCancellation: {exact: true}}},
     {echoCancellation: {exact: false}});
 
+constraintSyntaxTestContradictingProperties(
+    'Contradicting noiseSuppression constraints', 'noiseSuppression',
+    {audio: {noiseSuppression: {exact: true}}},
+    {noiseSuppression: {exact: false}});
+
+constraintSyntaxTestContradictingProperties(
+    'Contradicting autoGainControl constraints', 'autoGainControl',
+    {audio: {autoGainControl: {exact: true}}},
+    {autoGainControl: {exact: false}});
+
 </script>
 </body>
 </html>
