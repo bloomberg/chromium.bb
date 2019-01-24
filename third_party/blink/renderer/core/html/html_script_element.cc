@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
 #include "third_party/blink/renderer/core/script/script_runner.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script.h"
@@ -93,6 +94,12 @@ void HTMLScriptElement::ParseAttribute(
     LogUpdateAttributeIfIsolatedWorldAndInDocument("script", params);
   } else if (params.name == kAsyncAttr) {
     loader_->HandleAsyncAttribute();
+  } else if (params.name == kImportanceAttr &&
+             origin_trials::PriorityHintsEnabled(&GetDocument())) {
+    // The only thing we need to do for the the importance attribute/Priority
+    // Hints is count usage upon parsing. Processing the value happens when the
+    // element loads.
+    UseCounter::Count(GetDocument(), WebFeature::kPriorityHints);
   } else {
     HTMLElement::ParseAttribute(params);
   }
@@ -199,6 +206,10 @@ String HTMLScriptElement::IntegrityAttributeValue() const {
 
 String HTMLScriptElement::ReferrerPolicyAttributeValue() const {
   return getAttribute(kReferrerpolicyAttr);
+}
+
+String HTMLScriptElement::ImportanceAttributeValue() const {
+  return getAttribute(kImportanceAttr);
 }
 
 String HTMLScriptElement::TextFromChildren() {

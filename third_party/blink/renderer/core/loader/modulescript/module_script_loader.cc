@@ -185,6 +185,12 @@ void ModuleScriptLoader::FetchInternal(
                                        fetch_params.GetResourceRequest().Url(),
                                        referrer_string));
 
+  // Priority Hints and a request's "importance" are currently non-standard, but
+  // we can assume the following (see https://crbug.com/821464):
+  // Step 5. "... importance is options's importance ..."
+  fetch_params.MutableResourceRequest().SetFetchImportanceMode(
+      options_.Importance());
+
   // Step 5. "... and client is fetch client settings object." [spec text]
   // -> set by ResourceFetcher
 

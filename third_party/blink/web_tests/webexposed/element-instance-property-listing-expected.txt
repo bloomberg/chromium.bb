@@ -901,6 +901,7 @@ html element script
     property defer
     property event
     property htmlFor
+    property importance
     property integrity
     property noModule
     property referrerPolicy
