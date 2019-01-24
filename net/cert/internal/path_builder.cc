@@ -357,7 +357,9 @@ class CertPathIter {
   // still be run through a chain validator. Once all paths have been exhausted
   // returns false.
   bool GetNextPath(ParsedCertificateList* out_certs,
-                   CertificateTrust* out_last_cert_trust);
+                   CertificateTrust* out_last_cert_trust,
+                   uint32_t* iteration_count,
+                   const uint32_t max_iteration_count);
 
  private:
   // Stores the next candidate issuer, until it is used during the
@@ -388,13 +390,21 @@ void CertPathIter::AddCertIssuerSource(CertIssuerSource* cert_issuer_source) {
 }
 
 bool CertPathIter::GetNextPath(ParsedCertificateList* out_certs,
-                               CertificateTrust* out_last_cert_trust) {
+                               CertificateTrust* out_last_cert_trust,
+                               uint32_t* iteration_count,
+                               const uint32_t max_iteration_count) {
   while (true) {
     if (!next_issuer_.cert) {
       if (cur_path_.Empty()) {
         DVLOG(1) << "CertPathIter exhausted all paths...";
         return false;
       }
+
+      (*iteration_count)++;
+      if (max_iteration_count > 0 && *iteration_count > max_iteration_count) {
+        return false;
+      }
+
       cur_path_.back()->GetNextIssuer(&next_issuer_);
       if (!next_issuer_.cert) {
         // TODO(mattm): should also include such paths in
@@ -535,14 +545,24 @@ void CertPathBuilder::AddCertIssuerSource(
   cert_path_iter_->AddCertIssuerSource(cert_issuer_source);
 }
 
+void CertPathBuilder::SetIterationLimit(uint32_t limit) {
+  max_iteration_count_ = limit;
+}
+
 void CertPathBuilder::Run() {
+  uint32_t iteration_count = 0;
+
   while (true) {
     std::unique_ptr<CertPathBuilderResultPath> result_path =
         std::make_unique<CertPathBuilderResultPath>();
 
     if (!cert_path_iter_->GetNextPath(&result_path->certs,
-                                      &result_path->last_cert_trust)) {
+                                      &result_path->last_cert_trust,
+                                      &iteration_count, max_iteration_count_)) {
       // No more paths to check.
+      if (max_iteration_count_ > 0 && iteration_count > max_iteration_count_) {
+        out_result_->exceeded_iteration_limit = true;
+      }
       return;
     }
 
