@@ -85,6 +85,7 @@ specific_include_rules = {
     "+chrome/services/file_util",
     "+chrome/services/isolated_xr_device",
     "+chrome/services/media_gallery_util",
+    "+chrome/services/noop",
     "+chrome/services/printing",
     "+chrome/services/removable_storage_writer",
     "+chrome/services/util_win",

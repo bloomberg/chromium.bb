@@ -154,6 +154,7 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
             .RequireCapability("multidevice_setup", "multidevice_setup")
             .RequireCapability("nacl_broker", "browser")
             .RequireCapability("nacl_loader", "browser")
+            .RequireCapability("noop", "noop")
             .RequireCapability("patch", "patch_file")
             .RequireCapability("pdf_compositor", "compositor")
             .RequireCapability("preferences", "pref_client")

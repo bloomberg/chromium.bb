@@ -178,6 +178,8 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "chrome/services/noop/public/cpp/utils.h"
+#include "chrome/services/noop/public/mojom/noop.mojom.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
@@ -3777,6 +3779,11 @@ void ChromeContentBrowserClient::RegisterIOThreadServiceHandlers(
 
 void ChromeContentBrowserClient::RegisterOutOfProcessServices(
     OutOfProcessServiceMap* services) {
+  if (chrome::IsNoopServiceEnabled()) {
+    (*services)[chrome::mojom::kNoopServiceName] = base::BindRepeating(
+        &l10n_util::GetStringUTF16, IDS_UTILITY_PROCESS_NOOP_SERVICE_NAME);
+  }
+
 #if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
   (*services)[device::mojom::kVrIsolatedServiceName] = base::BindRepeating(
       &l10n_util::GetStringUTF16, IDS_ISOLATED_XR_PROCESS_NAME);
@@ -4804,6 +4811,8 @@ void ChromeContentBrowserClient::WillCreateWebSocket(
 
 void ChromeContentBrowserClient::OnNetworkServiceCreated(
     network::mojom::NetworkService* network_service) {
+  chrome::MaybeStartNoopService();
+
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     return;
 

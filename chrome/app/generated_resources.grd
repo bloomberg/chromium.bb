@@ -3277,6 +3277,9 @@ are declared in tools/grit/grit_rule.gni.
           Media File Checker
         </message>
       </if>
+      <message name="IDS_UTILITY_PROCESS_NOOP_SERVICE_NAME" desc="The name of the utility process which does nothing, used for experimentation.">
+        No-op Service
+      </message>
       <message name="IDS_UTILITY_PROCESS_PATCH_NAME" desc="The name of the utility process used for patching file operations.">
         Patch Service
       </message>
