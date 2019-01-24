@@ -83,7 +83,7 @@ class LocalWindowLayoutManager : public aura::LayoutManager {
  private:
   void ResizeChildren() {
     for (auto* child : owner_->children())
-      SetChildBoundsDirect(child, owner_->bounds());
+      SetChildBoundsDirect(child, gfx::Rect(owner_->bounds().size()));
   }
 
   aura::Window* const owner_;
