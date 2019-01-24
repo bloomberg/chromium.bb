@@ -16,14 +16,6 @@ Polymer({
       type: String,
       notify: true,
     },
-
-    /**
-     * The type of data used by the given website.
-     */
-    websiteStorageType: {
-      type: Number,
-      notify: true,
-    },
   },
 
   /** @override */
@@ -38,10 +30,9 @@ Polymer({
 
   /**
    * @param {string} origin
-   * @param {number} type
    */
-  clearUsage: function(origin, type) {
-    settings.WebsiteUsagePrivateApi.clearUsage(origin, type);
+  clearUsage: function(origin) {
+    settings.WebsiteUsagePrivateApi.clearUsage(origin);
   },
 
   /** @param {string} origin */
@@ -84,9 +75,8 @@ cr.define('settings.WebsiteUsagePrivateApi', function() {
    * @param {string} host The host that the usage was fetched for.
    * @param {string} usage The string showing how much data the given host
    *     is using.
-   * @param {number} type The storage type.
    */
-  const returnUsageTotal = function(host, usage, type) {
+  const returnUsageTotal = function(host, usage) {
     const instance =
         settings.WebsiteUsagePrivateApi.websiteUsagePolymerInstance;
     if (instance == null) {
@@ -95,24 +85,15 @@ cr.define('settings.WebsiteUsagePrivateApi', function() {
 
     if (hostName == host) {
       instance.websiteDataUsage = usage;
-      instance.websiteStorageType = type;
     }
   };
 
   /**
    * Deletes the storage being used for a given origin.
    * @param {string} origin The origin to delete storage for.
-   * @param {number} type The type of storage to delete.
    */
-  const clearUsage = function(origin, type) {
-    chrome.send('clearUsage', [origin, type]);
-  };
-
-  /**
-   * Callback for when the usage has been cleared.
-   * @param {string} origin The origin that the usage was fetched for.
-   */
-  const onUsageCleared = function(origin) {
+  const clearUsage = function(origin) {
+    chrome.send('clearUsage', [origin]);
     const instance =
         settings.WebsiteUsagePrivateApi.websiteUsagePolymerInstance;
     if (instance == null) {
@@ -127,6 +108,5 @@ cr.define('settings.WebsiteUsagePrivateApi', function() {
     fetchUsageTotal: fetchUsageTotal,
     returnUsageTotal: returnUsageTotal,
     clearUsage: clearUsage,
-    onUsageCleared: onUsageCleared,
   };
 });

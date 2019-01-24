@@ -312,7 +312,6 @@ SiteSettingsHandler::~SiteSettingsHandler() {
 }
 
 void SiteSettingsHandler::RegisterMessages() {
-  EnsureCookiesTreeModelCreated();
 
   web_ui()->RegisterMessageCallback(
       "fetchUsageTotal",
@@ -465,32 +464,21 @@ void SiteSettingsHandler::OnJavascriptDisallowed() {
 #endif
 }
 
-void SiteSettingsHandler::OnGetUsageInfo(
-    const storage::UsageInfoEntries& entries) {
+void SiteSettingsHandler::OnGetUsageInfo() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  for (const auto& entry : entries) {
-    if (entry.usage <= 0) continue;
-    if (entry.host == usage_host_) {
-      CallJavascriptFunction("settings.WebsiteUsagePrivateApi.returnUsageTotal",
-                             base::Value(entry.host),
-                             base::Value(ui::FormatBytes(entry.usage)),
-                             base::Value(static_cast<int>(entry.type)));
+  // Site Details Page does not display the number of cookies for the origin.
+  const CookieTreeNode* root = cookies_tree_model_->GetRoot();
+  for (int i = 0; i < root->child_count(); ++i) {
+    const CookieTreeNode* site = root->GetChild(i);
+    std::string title = base::UTF16ToUTF8(site->GetTitle());
+    if (title == usage_host_) {
+      CallJavascriptFunction(
+          "settings.WebsiteUsagePrivateApi.returnUsageTotal",
+          base::Value(usage_host_),
+          base::Value(ui::FormatBytes(site->InclusiveSize())));
       return;
     }
   }
-}
-
-void SiteSettingsHandler::OnStorageCleared(base::OnceClosure callback,
-                                           blink::mojom::QuotaStatusCode code) {
-  if (code == blink::mojom::QuotaStatusCode::kOk) {
-    std::move(callback).Run();
-  }
-}
-
-void SiteSettingsHandler::OnUsageCleared() {
-  CallJavascriptFunction("settings.WebsiteUsagePrivateApi.onUsageCleared",
-                         base::Value(clearing_origin_));
 }
 
 #if defined(OS_CHROMEOS)
@@ -587,47 +575,37 @@ void SiteSettingsHandler::OnZoomLevelChanged(
 void SiteSettingsHandler::HandleFetchUsageTotal(
     const base::ListValue* args) {
   AllowJavascript();
-
   CHECK_EQ(1U, args->GetSize());
   std::string host;
   CHECK(args->GetString(0, &host));
   usage_host_ = host;
 
-  scoped_refptr<StorageInfoFetcher> storage_info_fetcher
-      = new StorageInfoFetcher(profile_);
-  storage_info_fetcher->FetchStorageInfo(
-      base::Bind(&SiteSettingsHandler::OnGetUsageInfo, base::Unretained(this)));
+  update_site_details_ = true;
+
+  if (cookies_tree_model_ && !send_sites_list_) {
+    cookies_tree_model_->RemoveCookiesTreeObserver(this);
+    cookies_tree_model_.reset();
+  }
+  EnsureCookiesTreeModelCreated(/*omit_cookies=*/true);
 }
 
 void SiteSettingsHandler::HandleClearUsage(
     const base::ListValue* args) {
-  CHECK_EQ(2U, args->GetSize());
+  CHECK_EQ(1U, args->GetSize());
   std::string origin;
   CHECK(args->GetString(0, &origin));
-  double storage_type;
-  CHECK(args->GetDouble(1, &storage_type));
 
   GURL url(origin);
-  if (url.is_valid()) {
-    clearing_origin_ = origin;
-
-    // Call OnUsageCleared when StorageInfoFetcher::ClearStorage and
-    // BrowsingDataLocalStorageHelper::DeleteOrigin are done.
-    base::RepeatingClosure barrier = base::BarrierClosure(
-        2, base::BindOnce(&SiteSettingsHandler::OnUsageCleared,
-                          base::Unretained(this)));
-
-    // Start by clearing the storage data asynchronously.
-    scoped_refptr<StorageInfoFetcher> storage_info_fetcher
-        = new StorageInfoFetcher(profile_);
-    storage_info_fetcher->ClearStorage(
-        url.host(),
-        static_cast<blink::mojom::StorageType>(static_cast<int>(storage_type)),
-        base::BindRepeating(&SiteSettingsHandler::OnStorageCleared,
-                            base::Unretained(this), barrier));
-
-    // Also clear the *local* storage data.
-    GetLocalStorageHelper()->DeleteOrigin(url, barrier);
+  if (!url.is_valid())
+    return;
+  AllowJavascript();
+  CookieTreeNode* parent = cookies_tree_model_->GetRoot();
+  for (int i = 0; i < parent->child_count(); ++i) {
+    CookieTreeNode* node = parent->GetChild(i);
+    if (origin == node->GetDetailedInfo().origin.GetURL().spec()) {
+      cookies_tree_model_->DeleteCookieNode(node);
+      return;
+    }
   }
 }
 
@@ -814,7 +792,7 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
   ConvertSiteGroupMapToListValue(all_sites_map_, origin_permission_set_,
                                  &result, profile);
 
-  should_send_list_ = true;
+  send_sites_list_ = true;
 
   ResolveJavascriptCallback(*callback_id, result);
 }
@@ -1415,10 +1393,11 @@ void SiteSettingsHandler::HandleSetBlockAutoplayEnabled(
   profile_->GetPrefs()->SetBoolean(prefs::kBlockAutoplayEnabled, value);
 }
 
-void SiteSettingsHandler::EnsureCookiesTreeModelCreated() {
-  if (cookies_tree_model_.get())
+void SiteSettingsHandler::EnsureCookiesTreeModelCreated(bool omit_cookies) {
+  if (cookies_tree_model_)
     return;
-  cookies_tree_model_ = CookiesTreeModel::CreateForProfile(profile_);
+  cookies_tree_model_ =
+      CookiesTreeModel::CreateForProfile(profile_, omit_cookies);
   cookies_tree_model_->AddCookiesTreeObserver(this);
 }
 
@@ -1454,12 +1433,15 @@ void SiteSettingsHandler::TreeNodeChanged(ui::TreeModel* model,
                                           ui::TreeModelNode* node) {}
 
 void SiteSettingsHandler::TreeModelEndBatch(CookiesTreeModel* model) {
-  if (!should_send_list_)
-    return;
-  should_send_list_ = false;
   // The WebUI may have shut down before we get the data.
-  if (IsJavascriptAllowed())
+  if (!IsJavascriptAllowed())
+    return;
+  if (send_sites_list_)
     OnStorageFetched();
+  if (update_site_details_)
+    OnGetUsageInfo();
+  send_sites_list_ = false;
+  update_site_details_ = false;
 }
 
 void SiteSettingsHandler::GetOriginStorage(
