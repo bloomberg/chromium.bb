@@ -24,21 +24,21 @@
         <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/url_copy_icon"
             style="@style/OmniboxSuggestionIconButton"
-            android:src="@drawable/ic_content_copy_black"
+            app:srcCompat="@drawable/ic_content_copy_black"
             android:contentDescription="@string/copy_link"
             android:visibility="gone" />
 
         <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/url_share_icon"
             style="@style/OmniboxSuggestionIconButton"
-            android:src="@drawable/ic_share_white_24dp"
+            app:srcCompat="@drawable/ic_share_white_24dp"
             android:contentDescription="@string/menu_share_page"
             android:visibility="gone" />
 
         <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/url_edit_icon"
             style="@style/OmniboxSuggestionIconButton"
-            android:src="@drawable/bookmark_edit_active"
+            app:srcCompat="@drawable/bookmark_edit_active"
             android:contentDescription="@string/bookmark_item_edit" />
 
     </LinearLayout>
