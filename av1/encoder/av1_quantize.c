@@ -41,47 +41,37 @@ static void quantize_fp_helper_c(
     const int16_t *scan, const int16_t *iscan, const qm_val_t *qm_ptr,
     const qm_val_t *iqm_ptr, int log_scale) {
   int i, eob = -1;
+  const int rounding[2] = { ROUND_POWER_OF_TWO(round_ptr[0], log_scale),
+                            ROUND_POWER_OF_TWO(round_ptr[1], log_scale) };
   // TODO(jingning) Decide the need of these arguments after the
   // quantization process is completed.
   (void)zbin_ptr;
   (void)quant_shift_ptr;
+  (void)iscan;
 
   memset(qcoeff_ptr, 0, n_coeffs * sizeof(*qcoeff_ptr));
   memset(dqcoeff_ptr, 0, n_coeffs * sizeof(*dqcoeff_ptr));
 
   if (qm_ptr == NULL && iqm_ptr == NULL) {
-    const int rounding0 = ROUND_POWER_OF_TWO(round_ptr[0], log_scale);
-    {  // rc == 0
-      const int coeff = coeff_ptr[0];
+    for (i = 0; i < n_coeffs; i++) {
+      const int rc = scan[i];
+      const int32_t thresh = (int32_t)(dequant_ptr[rc != 0]);
+      const int coeff = coeff_ptr[rc];
       const int coeff_sign = (coeff >> 31);
       int64_t abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
-      if ((abs_coeff << (1 + log_scale)) >= (int32_t)(dequant_ptr[0])) {
-        abs_coeff = clamp64(abs_coeff + rounding0, INT16_MIN, INT16_MAX);
-        const int tmp32 = (int)((abs_coeff * quant_ptr[0]) >> (16 - log_scale));
+      int tmp32 = 0;
+      if ((abs_coeff << (1 + log_scale)) >= thresh) {
+        abs_coeff =
+            clamp64(abs_coeff + rounding[rc != 0], INT16_MIN, INT16_MAX);
+        tmp32 = (int)((abs_coeff * quant_ptr[rc != 0]) >> (16 - log_scale));
         if (tmp32) {
-          qcoeff_ptr[0] = (tmp32 ^ coeff_sign) - coeff_sign;
-          const tran_low_t abs_dqcoeff = (tmp32 * dequant_ptr[0]) >> log_scale;
-          dqcoeff_ptr[0] = (abs_dqcoeff ^ coeff_sign) - coeff_sign;
-          eob = 0;
+          qcoeff_ptr[rc] = (tmp32 ^ coeff_sign) - coeff_sign;
+          const tran_low_t abs_dqcoeff =
+              (tmp32 * dequant_ptr[rc != 0]) >> log_scale;
+          dqcoeff_ptr[rc] = (abs_dqcoeff ^ coeff_sign) - coeff_sign;
         }
       }
-    }
-    const int rounding1 = ROUND_POWER_OF_TWO(round_ptr[1], log_scale);
-    const int32_t thresh1 = (int32_t)(dequant_ptr[1]);
-    for (i = 1; i < n_coeffs; i++) {
-      const int coeff = coeff_ptr[i];
-      const int coeff_sign = (coeff >> 31);
-      int64_t abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
-      if ((abs_coeff << (1 + log_scale)) >= thresh1) {
-        abs_coeff = clamp64(abs_coeff + rounding1, INT16_MIN, INT16_MAX);
-        const int tmp32 = (int)((abs_coeff * quant_ptr[1]) >> (16 - log_scale));
-        if (tmp32) {
-          qcoeff_ptr[i] = (tmp32 ^ coeff_sign) - coeff_sign;
-          const tran_low_t abs_dqcoeff = (tmp32 * dequant_ptr[1]) >> log_scale;
-          dqcoeff_ptr[i] = (abs_dqcoeff ^ coeff_sign) - coeff_sign;
-          eob = AOMMAX(iscan[i], eob);
-        }
-      }
+      if (tmp32) eob = i;
     }
   } else {
     // Quantization pass: All coefficients with index >= zero_flag are
@@ -99,7 +89,7 @@ static void quantize_fp_helper_c(
       int tmp32 = 0;
       if (abs_coeff * wt >=
           (dequant_ptr[rc != 0] << (AOM_QM_BITS - (1 + log_scale)))) {
-        abs_coeff += ROUND_POWER_OF_TWO(round_ptr[rc != 0], log_scale);
+        abs_coeff += rounding[rc != 0];
         abs_coeff = clamp64(abs_coeff, INT16_MIN, INT16_MAX);
         tmp32 = (int)((abs_coeff * wt * quant_ptr[rc != 0]) >>
                       (16 - log_scale + AOM_QM_BITS));
