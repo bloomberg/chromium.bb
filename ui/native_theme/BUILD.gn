@@ -8,6 +8,8 @@ import("//testing/test.gni")
 
 jumbo_component("native_theme") {
   sources = [
+    "caption_style.cc",
+    "caption_style.h",
     "common_theme.cc",
     "common_theme.h",
     "native_theme.cc",

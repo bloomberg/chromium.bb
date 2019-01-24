@@ -801,6 +801,10 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->SetPresentationRequiresUserGesture(
       prefs.user_gesture_required_for_presentation);
 
+  settings->SetTextTrackBackgroundColor(
+      WebString::FromASCII(prefs.text_track_background_color));
+  settings->SetTextTrackTextColor(
+      WebString::FromASCII(prefs.text_track_text_color));
   settings->SetTextTrackMarginPercentage(prefs.text_track_margin_percentage);
 
   // Needs to happen before SetDefaultPageScaleLimits below since that'll
