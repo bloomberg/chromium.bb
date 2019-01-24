@@ -350,6 +350,81 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_TypeInOmnibox) {
   EXPECT_EQ("z", speech_monitor_.GetNextUtterance());
 }
 
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, LauncherStateTransition) {
+  EnableChromeVox();
+
+  EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
+
+  while (true) {
+    std::string utterance = speech_monitor_.GetNextUtterance();
+    if (base::MatchPattern(utterance, "Launcher"))
+      break;
+  }
+
+  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ("Shelf", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ("Tool bar", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ(", window", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ("Press Search plus Space to activate.",
+            speech_monitor_.GetNextUtterance());
+
+  // Press space on the launcher button in shelf, this opens peeking launcher.
+  SendKeyPressWithSearch(ui::VKEY_SPACE);
+  EXPECT_EQ("Edit text", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ(", window", speech_monitor_.GetNextUtterance());
+
+  // Check that Launcher, partial view state is announced.
+  EXPECT_EQ("Launcher, partial view", speech_monitor_.GetNextUtterance());
+
+  // Move focus to expand all apps button;
+  SendKeyPressWithSearchAndShift(ui::VKEY_TAB);
+  EXPECT_EQ("Expand to all apps", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ("Press Search plus Space to activate.",
+            speech_monitor_.GetNextUtterance());
+
+  // Press space on expand arrow to go to fullscreen launcher.
+  SendKeyPressWithSearch(ui::VKEY_SPACE);
+  EXPECT_EQ("Edit text", speech_monitor_.GetNextUtterance());
+
+  // Check that Launcher, all apps state is announced.
+  EXPECT_EQ("Launcher, all apps", speech_monitor_.GetNextUtterance());
+}
+
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DisabledFullscreenExpandButton) {
+  EnableChromeVox();
+
+  EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
+
+  while (speech_monitor_.GetNextUtterance() !=
+         "Press Search plus Space to activate.") {
+  }
+
+  // Press space on the launcher button in shelf, this opens peeking launcher.
+  SendKeyPressWithSearch(ui::VKEY_SPACE);
+  while (speech_monitor_.GetNextUtterance() != "Launcher, partial view") {
+  }
+
+  // Move focus to expand all apps button.
+  SendKeyPressWithSearchAndShift(ui::VKEY_TAB);
+  while (speech_monitor_.GetNextUtterance() !=
+         "Press Search plus Space to activate.") {
+  }
+
+  // Press space on expand arrow to go to fullscreen launcher.
+  SendKeyPressWithSearch(ui::VKEY_SPACE);
+  while (speech_monitor_.GetNextUtterance() != "Launcher, all apps") {
+  }
+
+  // Make sure the first traversal left is not the expand arrow button.
+  SendKeyPressWithSearch(ui::VKEY_LEFT);
+  EXPECT_NE("Expand to all apps", speech_monitor_.GetNextUtterance());
+
+  // Make sure the second traversal left is not the expand arrow button.
+  SendKeyPressWithSearch(ui::VKEY_LEFT);
+  EXPECT_NE("Expand to all apps", speech_monitor_.GetNextUtterance());
+}
+
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, FocusShelf) {
   EnableChromeVox();
 
