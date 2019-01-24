@@ -206,6 +206,14 @@ testcase.fileDisplayUsbPartition = async function() {
       appId, '#directory-tree [entry-label="singleUSB"]');
   chrome.test.assertEq(
       'removable', singleUSB.attributes['volume-type-for-testing']);
+
+  // Check whether the drive label is shared by the partitions.
+  chrome.test.assertEq(
+      'PARTITION_DRIVE_LABEL', partitionOne.attributes['drive-label']);
+  chrome.test.assertEq(
+      'PARTITION_DRIVE_LABEL', partitionTwo.attributes['drive-label']);
+  chrome.test.assertEq(
+      'SINGLE_DRIVE_LABEL', singleUSB.attributes['drive-label']);
 };
 
 /**

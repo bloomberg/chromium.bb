@@ -595,11 +595,13 @@ class RemovableTestVolume : public LocalTestVolume {
   RemovableTestVolume(const std::string& name,
                       VolumeType volume_type,
                       chromeos::DeviceType device_type,
-                      const base::FilePath& device_path)
+                      const base::FilePath& device_path,
+                      const std::string& drive_label)
       : LocalTestVolume(name),
         volume_type_(volume_type),
         device_type_(device_type),
-        device_path_(device_path) {}
+        device_path_(device_path),
+        drive_label_(drive_label) {}
   ~RemovableTestVolume() override = default;
 
   bool PreparePartitionTestEntries(Profile* profile) {
@@ -644,7 +646,8 @@ class RemovableTestVolume : public LocalTestVolume {
 
     // Expose the mount point with the given volume and device type.
     VolumeManager::Get(profile)->AddVolumeForTesting(
-        root_path(), volume_type_, device_type_, read_only_, device_path_);
+        root_path(), volume_type_, device_type_, read_only_, device_path_,
+        drive_label_);
     base::RunLoop().RunUntilIdle();
     return true;
   }
@@ -658,6 +661,7 @@ class RemovableTestVolume : public LocalTestVolume {
   const chromeos::DeviceType device_type_;
   const base::FilePath& device_path_;
   const bool read_only_ = false;
+  const std::string drive_label_;
 
   DISALLOW_COPY_AND_ASSIGN(RemovableTestVolume);
 };
@@ -1634,18 +1638,21 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
         "target1:0:0/1:0:0:0";
     const base::FilePath usb_device_path(kSingleUsbDevicePath);
 
-    // Create partition volumes with the same device path.
+    // Create partition volumes with the same device path and drive label.
     partition_1_ = std::make_unique<RemovableTestVolume>(
         "partition-1", VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
-        chromeos::DEVICE_TYPE_USB, partition_device_path);
+        chromeos::DEVICE_TYPE_USB, partition_device_path,
+        "PARTITION_DRIVE_LABEL");
     partition_2_ = std::make_unique<RemovableTestVolume>(
         "partition-2", VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
-        chromeos::DEVICE_TYPE_USB, partition_device_path);
+        chromeos::DEVICE_TYPE_USB, partition_device_path,
+        "PARTITION_DRIVE_LABEL");
 
-    // Create an unpartitioned usb volume with a unique device path.
+    // Create an unpartitioned usb volume with a unique device path and
+    // unique device label.
     single_usb_volume_ = std::make_unique<RemovableTestVolume>(
         "singleUSB", VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
-        chromeos::DEVICE_TYPE_USB, usb_device_path);
+        chromeos::DEVICE_TYPE_USB, usb_device_path, "SINGLE_DRIVE_LABEL");
 
     // Create fake entries on partitions.
     ASSERT_TRUE(partition_1_->PreparePartitionTestEntries(profile()));

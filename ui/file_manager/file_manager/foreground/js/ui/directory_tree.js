@@ -900,6 +900,7 @@ function VolumeItem(modelItem, tree) {
   if (window.IN_TEST) {
     item.setAttribute('volume-type-for-testing', item.volumeInfo_.volumeType);
     item.setAttribute('dir-type', 'VolumeItem');
+    item.setAttribute('drive-label', item.volumeInfo_.driveLabel);
   }
 
   item.setupIcon_(item.querySelector('.icon'), item.volumeInfo_);

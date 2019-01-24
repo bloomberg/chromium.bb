@@ -448,6 +448,10 @@ dictionary VolumeMetadata {
 
   // Icons for the volume.
   IconSet iconSet;
+
+  // Drive label of the volume. Removable partitions that belong to the
+  // same physical removable device share the same drive label.
+  DOMString? driveLabel;
 };
 
 // Payload data for mount event.

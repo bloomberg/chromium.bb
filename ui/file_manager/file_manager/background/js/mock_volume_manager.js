@@ -167,7 +167,8 @@ MockVolumeManager.createMockVolumeInfo = function(type, volumeId, label) {
       false,                                       // watchable
       VolumeManagerCommon.Source.NETWORK,          // source
       VolumeManagerCommon.FileSystemType.UNKNOWN,  // diskFileSystemType
-      {});                                         // iconSet
+      {},                                          // iconSet
+      '');                                         // driveLabel
 
   return volumeInfo;
 };

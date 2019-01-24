@@ -122,7 +122,8 @@ class Volume : public base::SupportsWeakPtr<Volume> {
       VolumeType volume_type,
       chromeos::DeviceType device_type,
       bool read_only,
-      const base::FilePath& device_path);
+      const base::FilePath& device_path,
+      const std::string& drive_label);
   static std::unique_ptr<Volume> CreateForTesting(
       const base::FilePath& device_path,
       const base::FilePath& mount_path);
@@ -163,6 +164,7 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   bool configurable() const { return configurable_; }
   bool watchable() const { return watchable_; }
   const std::string& file_system_type() const { return file_system_type_; }
+  const std::string& drive_label() const { return drive_label_; }
   const chromeos::file_system_provider::IconSet& icon_set() const {
     return icon_set_;
   }
@@ -242,6 +244,10 @@ class Volume : public base::SupportsWeakPtr<Volume> {
 
   // Volume icon set.
   chromeos::file_system_provider::IconSet icon_set_;
+
+  // Device label of a physical removable device. Removable partitions
+  // belonging to the same device share the same device label.
+  std::string drive_label_;
 
   DISALLOW_COPY_AND_ASSIGN(Volume);
 };
@@ -329,12 +335,12 @@ class VolumeManager : public KeyedService,
 
   // For testing purpose, adds a volume info pointing to |path|, with TESTING
   // type. Assumes that the mount point is already registered.
-  void AddVolumeForTesting(
-      const base::FilePath& path,
-      VolumeType volume_type,
-      chromeos::DeviceType device_type,
-      bool read_only,
-      const base::FilePath& device_path = base::FilePath());
+  void AddVolumeForTesting(const base::FilePath& path,
+                           VolumeType volume_type,
+                           chromeos::DeviceType device_type,
+                           bool read_only,
+                           const base::FilePath& device_path = base::FilePath(),
+                           const std::string& drive_label = "");
 
   // For testing purpose, adds the volume info to the volume manager.
   void AddVolumeForTesting(std::unique_ptr<Volume> volume);

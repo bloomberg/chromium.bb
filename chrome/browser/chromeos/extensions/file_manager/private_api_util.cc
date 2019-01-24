@@ -292,6 +292,8 @@ void VolumeToVolumeMetadata(
       std::make_unique<std::string>(volume.volume_label());
   volume_metadata->disk_file_system_type =
       std::make_unique<std::string>(volume.file_system_type());
+  volume_metadata->drive_label =
+      std::make_unique<std::string>(volume.drive_label());
 
   switch (volume.type()) {
     case VOLUME_TYPE_GOOGLE_DRIVE:

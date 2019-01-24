@@ -376,7 +376,8 @@ function testWhenReady(callback) {
         /* watchable */ true,
         /* source */ VolumeManagerCommon.Source.FILE,
         /* diskFileSystemType */ VolumeManagerCommon.FileSystemType.UNKNOWN,
-        /* iconSet*/ {});
+        /* iconSet*/ {},
+        /* driveLabel*/ 'TEST_DRIVE_LABEL');
     volumeManager.volumeInfoList.add(volumeInfo);
     const promiseAfterAdd = volumeManager.whenVolumeInfoReady('volumeId');
     reportPromise(

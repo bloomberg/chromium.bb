@@ -323,7 +323,8 @@ chrome.fileManagerPrivate.IconSet;
  *   mountCondition: (!chrome.fileManagerPrivate.MountCondition|undefined),
  *   mountContext: (!chrome.fileManagerPrivate.MountContext|undefined),
  *   diskFileSystemType: (string|undefined),
- *   iconSet: !chrome.fileManagerPrivate.IconSet
+ *   iconSet: !chrome.fileManagerPrivate.IconSet,
+ *   driveLabel: (string|undefined)
  * }}
  */
 chrome.fileManagerPrivate.VolumeMetadata;
