@@ -15,29 +15,26 @@ namespace data_reduction_proxy {
 
 struct DataReductionProxyTypeInfo;
 
+// Records a data reduction proxy bypass event as a "BlockType" if
+// |bypass_all| is true and as a "BypassType" otherwise. Records the event as
+// "Primary" if |is_primary| is true and "Fallback" otherwise.
+void RecordDataReductionProxyBypassInfo(
+    bool is_primary,
+    bool bypass_all,
+    DataReductionProxyBypassType bypass_type);
+
+// For the given response |headers| that are expected to include the data
+// reduction proxy via header, records response code UMA if the data reduction
+// proxy via header is not present.
+void DetectAndRecordMissingViaHeaderResponseCode(
+    bool is_primary,
+    const net::HttpResponseHeaders& headers);
+
 // Class responsible for determining when a response should or should not cause
 // the data reduction proxy to be bypassed, and to what degree. Owned by the
 // DataReductionProxyInterceptor.
 class DataReductionProxyBypassProtocol {
  public:
-  // TODO(http://crbug.com/721403): This interface only exists as an
-  // intermediary step to avoid depending on data_reduction_proxy/core/browser.
-  // The correct dependency is DataReductionProxyBypassStats.
-  class Stats {
-   public:
-    virtual ~Stats();
-
-    virtual void RecordDataReductionProxyBypassInfo(
-        bool is_primary,
-        bool bypass_all,
-        const net::ProxyServer& proxy_server,
-        DataReductionProxyBypassType bypass_type) = 0;
-
-    virtual void DetectAndRecordMissingViaHeaderResponseCode(
-        bool is_primary,
-        const net::HttpResponseHeaders& headers) = 0;
-  };
-
   // Enum values that can be reported for the
   // DataReductionProxy.ResponseProxyServerStatus histogram. These values must
   // be kept in sync with their counterparts in histograms.xml. Visible here for
@@ -50,7 +47,7 @@ class DataReductionProxyBypassProtocol {
     RESPONSE_PROXY_SERVER_STATUS_MAX
   };
 
-  explicit DataReductionProxyBypassProtocol(Stats* stats);
+  DataReductionProxyBypassProtocol();
 
   // Decides whether to restart the request, whether to bypass proxies when
   // doing so, and whether to mark any data reduction proxies as bad based on
@@ -97,9 +94,6 @@ class DataReductionProxyBypassProtocol {
       DataReductionProxyBypassType* proxy_bypass_type,
       DataReductionProxyInfo* data_reduction_proxy_info,
       DataReductionProxyBypassType* bypass_type);
-
-  // Must outlive |this|.
-  Stats* stats_;
 
   base::ThreadChecker thread_checker_;
 

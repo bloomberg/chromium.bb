@@ -435,11 +435,15 @@ class DataReductionProxyFallbackBrowsertest
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
                        FallbackProxyUsedOn500Status) {
+  base::HistogramTester histogram_tester;
   // Should fall back to the secondary proxy if a 500 error occurs.
   SetStatusCode(net::HTTP_INTERNAL_SERVER_ERROR);
   ui_test_utils::NavigateToURL(
       browser(), GURL("http://does.not.resolve/echoheader?Chrome-Proxy"));
   EXPECT_THAT(GetBody(), kSecondaryResponse);
+  histogram_tester.ExpectUniqueSample(
+      "DataReductionProxy.BypassTypePrimary",
+      BYPASS_EVENT_TYPE_STATUS_500_HTTP_INTERNAL_SERVER_ERROR, 1);
 
   // Bad proxy should still be bypassed.
   SetStatusCode(net::HTTP_OK);
@@ -450,11 +454,14 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
                        FallbackProxyUsedWhenBypassHeaderSent) {
+  base::HistogramTester histogram_tester;
   // Should fall back to the secondary proxy if the bypass header is set.
   SetHeader("bypass=100");
   ui_test_utils::NavigateToURL(
       browser(), GURL("http://does.not.resolve/echoheader?Chrome-Proxy"));
   EXPECT_THAT(GetBody(), kSecondaryResponse);
+  histogram_tester.ExpectUniqueSample("DataReductionProxy.BypassTypePrimary",
+                                      BYPASS_EVENT_TYPE_MEDIUM, 1);
 
   // Bad proxy should still be bypassed.
   SetHeader("");
@@ -465,10 +472,13 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
                        BadProxiesResetWhenDisabled) {
+  base::HistogramTester histogram_tester;
   SetHeader("bypass=100");
   ui_test_utils::NavigateToURL(
       browser(), GURL("http://does.not.resolve/echoheader?Chrome-Proxy"));
   EXPECT_THAT(GetBody(), kSecondaryResponse);
+  histogram_tester.ExpectUniqueSample("DataReductionProxy.BypassTypePrimary",
+                                      BYPASS_EVENT_TYPE_MEDIUM, 1);
 
   // Disabling and enabling DRP should clear the bypass.
   EnableDataSaver(false);
@@ -482,6 +492,7 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
                        NoProxyUsedWhenBlockOnceHeaderSent) {
+  base::HistogramTester histogram_tester;
   net::EmbeddedTestServer test_server;
   test_server.RegisterRequestHandler(
       base::BindRepeating(&BasicResponse, kDummyBody));
@@ -492,6 +503,9 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
   ui_test_utils::NavigateToURL(browser(),
                                GetURLWithMockHost(test_server, "/echo"));
   EXPECT_THAT(GetBody(), kDummyBody);
+  EXPECT_LE(
+      1, histogram_tester.GetBucketCount("DataReductionProxy.BlockTypePrimary",
+                                         BYPASS_EVENT_TYPE_CURRENT));
 
   // Proxy should no longer be blocked, and use first proxy.
   SetHeader("");
@@ -502,6 +516,7 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
                        FallbackProxyUsedWhenBlockHeaderSent) {
+  base::HistogramTester histogram_tester;
   net::EmbeddedTestServer test_server;
   test_server.RegisterRequestHandler(
       base::BindRepeating(&BasicResponse, kDummyBody));
@@ -512,6 +527,8 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
   ui_test_utils::NavigateToURL(browser(),
                                GetURLWithMockHost(test_server, "/echo"));
   EXPECT_THAT(GetBody(), kDummyBody);
+  histogram_tester.ExpectUniqueSample("DataReductionProxy.BlockTypePrimary",
+                                      BYPASS_EVENT_TYPE_MEDIUM, 1);
 
   // Request should still not use proxy.
   SetHeader("");
@@ -522,6 +539,7 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
                        FallbackProxyUsedWhenBlockZeroHeaderSent) {
+  base::HistogramTester histogram_tester;
   net::EmbeddedTestServer test_server;
   test_server.RegisterRequestHandler(
       base::BindRepeating(&BasicResponse, kDummyBody));
@@ -533,6 +551,8 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
   ui_test_utils::NavigateToURL(browser(),
                                GetURLWithMockHost(test_server, "/echo"));
   EXPECT_THAT(GetBody(), kDummyBody);
+  histogram_tester.ExpectUniqueSample("DataReductionProxy.BlockTypePrimary",
+                                      BYPASS_EVENT_TYPE_MEDIUM, 1);
 
   // Request should still not use proxy.
   SetHeader("");

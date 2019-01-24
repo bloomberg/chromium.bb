@@ -17,7 +17,6 @@
 #include "services/network/public/cpp/network_connection_tracker.h"
 
 namespace net {
-class HttpResponseHeaders;
 class ProxyConfig;
 class ProxyServer;
 }
@@ -30,22 +29,6 @@ class DataReductionProxyBypassStats
     : public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   typedef base::Callback<void(bool /* unreachable */)> UnreachableCallback;
-
-  // Records a data reduction proxy bypass event as a "BlockType" if
-  // |bypass_all| is true and as a "BypassType" otherwise. Records the event as
-  // "Primary" if |is_primary| is true and "Fallback" otherwise.
-  static void RecordDataReductionProxyBypassInfo(
-      bool is_primary,
-      bool bypass_all,
-      const net::ProxyServer& proxy_server,
-      DataReductionProxyBypassType bypass_type);
-
-  // For the given response |headers| that are expected to include the data
-  // reduction proxy via header, records response code UMA if the data reduction
-  // proxy via header is not present.
-  static void DetectAndRecordMissingViaHeaderResponseCode(
-      bool is_primary,
-      const net::HttpResponseHeaders& headers);
 
   // |config| outlives this class instance. |unreachable_callback| provides a
   // hook to inform the user that the Data Reduction Proxy is unreachable.
