@@ -98,7 +98,9 @@ void RemoteFrame::Navigate(const FrameLoadRequest& passed_request,
   bool prevent_sandboxed_download =
       GetSecurityContext() &&
       GetSecurityContext()->IsSandboxed(kSandboxDownloads) &&
-      RuntimeEnabledFeatures::BlockingDownloadsInSandboxEnabled();
+      !frame_request.GetResourceRequest().HasUserGesture() &&
+      RuntimeEnabledFeatures::
+          BlockingDownloadsInSandboxWithoutUserActivationEnabled();
 
   Client()->Navigate(frame_request.GetResourceRequest(),
                      frame_load_type == WebFrameLoadType::kReplaceCurrentItem,

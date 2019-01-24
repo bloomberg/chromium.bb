@@ -418,11 +418,13 @@ void HTMLAnchorElement::HandleClick(Event& event) {
                             : WebFeature::kDownloadInAdFrameWithoutUserGesture);
     }
     if (GetDocument().IsSandboxed(kSandboxDownloads)) {
-      if (RuntimeEnabledFeatures::BlockingDownloadsInSandboxEnabled())
+      if (!LocalFrame::HasTransientUserActivation(frame) &&
+          RuntimeEnabledFeatures::
+              BlockingDownloadsInSandboxWithoutUserActivationEnabled())
         return;
       UseCounter::Count(
           GetDocument(),
-          UserGestureIndicator::ProcessingUserGesture()
+          LocalFrame::HasTransientUserActivation(frame)
               ? WebFeature::kHTMLAnchorElementDownloadInSandboxWithUserGesture
               : WebFeature::
                     kHTMLAnchorElementDownloadInSandboxWithoutUserGesture);
