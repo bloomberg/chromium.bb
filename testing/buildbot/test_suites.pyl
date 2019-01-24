@@ -2732,9 +2732,9 @@
 
     'fuchsia_gtests': {
       'base_unittests': {},
-      'castrunner_browsertests': {},
-      'castrunner_integration_tests': {},
-      'castrunner_unittests': {},
+      'cast_runner_browsertests': {},
+      'cast_runner_integration_tests': {},
+      'cast_runner_unittests': {},
       'content_unittests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter',
@@ -2767,8 +2767,8 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ui_base_unittests.filter',
         ],
       },
+      'web_runner_integration_tests': {},
       'webrunner_browsertests': {},
-      'webrunner_smoketests': {},
       'webrunner_unittests': {},
     },
 

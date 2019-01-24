@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/app/cast/bindings/cast_channel.h"
+#include "fuchsia/runners/cast/bindings/cast_channel.h"
 
 #include <lib/fit/function.h>
 #include <string>
@@ -17,9 +17,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "fuchsia/common/mem_buffer_util.h"
 #include "fuchsia/common/named_message_port_connector.h"
-#include "fuchsia/fidl/chromium/web/cpp/fidl.h"
-
-namespace castrunner {
 
 // Unique identifier of the Cast Channel message port, used by the JavaScript
 // API to connect to the port.
@@ -43,7 +40,7 @@ CastChannelImpl::CastChannelImpl(
   base::FilePath assets_path;
   CHECK(base::PathService::Get(base::DIR_ASSETS, &assets_path));
   fuchsia::mem::Buffer bindings_buf = webrunner::MemBufferFromFile(base::File(
-      assets_path.AppendASCII("fuchsia/app/cast/bindings/cast_channel.js"),
+      assets_path.AppendASCII("fuchsia/runners/cast/bindings/cast_channel.js"),
       base::File::FLAG_OPEN | base::File::FLAG_READ));
   CHECK(bindings_buf.vmo);
 
@@ -118,5 +115,3 @@ void CastChannelImpl::OnCastChannelMessageReceived(
 
   pending_channel_ = std::move(message.incoming_transfer->message_port());
 }
-
-}  // namespace castrunner

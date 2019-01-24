@@ -11,16 +11,14 @@
 #include "base/path_service.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "url/url_constants.h"
-#include "fuchsia/app/cast/bindings/cast_channel.h"
 #include "fuchsia/common/mem_buffer_util.h"
 #include "fuchsia/common/named_message_port_connector.h"
 #include "fuchsia/common/test/test_common.h"
 #include "fuchsia/common/test/webrunner_browser_test.h"
+#include "fuchsia/runners/cast/bindings/cast_channel.h"
 #include "fuchsia/test/promise.h"
-
-namespace castrunner {
+#include "testing/gtest/include/gtest/gtest.h"
+#include "url/url_constants.h"
 
 // Use a shorter name for NavigationEvent, because it is
 // referenced frequently in this file.
@@ -30,7 +28,7 @@ class CastChannelImplTest : public webrunner::WebRunnerBrowserTest,
                             public chromium::web::NavigationEventObserver {
  public:
   CastChannelImplTest() : run_timeout_(TestTimeouts::action_timeout()) {
-    set_test_server_root(base::FilePath("fuchsia/app/cast/test/data"));
+    set_test_server_root(base::FilePath("fuchsia/runners/cast/testdata"));
   }
 
   ~CastChannelImplTest() override = default;
@@ -218,5 +216,3 @@ IN_PROC_BROWSER_TEST_F(CastChannelImplTest, CastChannelReconnect) {
     CheckLoadUrl(empty_url.spec(), controller.get());
   }
 }
-
-}  // namespace castrunner

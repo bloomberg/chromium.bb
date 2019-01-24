@@ -11,15 +11,13 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_timeouts.h"
-#include "fuchsia/app/cast/cast_runner.h"
-#include "fuchsia/app/cast/fake_application_config_manager.h"
-#include "fuchsia/app/cast/test_common.h"
-#include "fuchsia/app/common/web_component.h"
-#include "fuchsia/app/common/web_content_runner.h"
+#include "fuchsia/runners/cast/cast_runner.h"
+#include "fuchsia/runners/cast/fake_application_config_manager.h"
+#include "fuchsia/runners/cast/test_common.h"
+#include "fuchsia/runners/common/web_component.h"
+#include "fuchsia/runners/common/web_content_runner.h"
 #include "fuchsia/test/promise.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace castrunner {
 
 namespace {
 
@@ -57,7 +55,7 @@ class CastRunnerIntegrationTest : public testing::Test {
     // Create the CastRunner, published into |test_service_directory_|.
     cast_runner_ = std::make_unique<CastRunner>(
         test_service_directory_.get(),
-        webrunner::WebContentRunner::CreateDefaultWebContext(),
+        WebContentRunner::CreateDefaultWebContext(),
         std::move(app_config_manager_interface),
         cast_runner_run_loop_.QuitClosure());
 
@@ -117,8 +115,7 @@ TEST_F(CastRunnerIntegrationTest, BasicRequest) {
   chromium::web::NavigationControllerPtr nav_controller;
   {
     base::RunLoop run_loop;
-    webrunner::Promise<webrunner::WebComponent*> web_component(
-        run_loop.QuitClosure());
+    webrunner::Promise<WebComponent*> web_component(run_loop.QuitClosure());
     cast_runner_->GetWebComponentForTest(web_component.GetReceiveCallback());
     run_loop.Run();
     ASSERT_NE(*web_component, nullptr);
@@ -149,11 +146,8 @@ TEST_F(CastRunnerIntegrationTest, IncorrectCastAppId) {
 
   // Ensure no WebComponent was created.
   base::RunLoop run_loop;
-  webrunner::Promise<webrunner::WebComponent*> web_component(
-      run_loop.QuitClosure());
+  webrunner::Promise<WebComponent*> web_component(run_loop.QuitClosure());
   cast_runner_->GetWebComponentForTest(web_component.GetReceiveCallback());
   run_loop.Run();
   EXPECT_EQ(*web_component, nullptr);
 }
-
-}  // namespace castrunner

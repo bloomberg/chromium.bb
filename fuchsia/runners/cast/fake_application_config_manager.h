@@ -2,15 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FUCHSIA_APP_CAST_FAKE_APPLICATION_CONFIG_MANAGER_H_
-#define FUCHSIA_APP_CAST_FAKE_APPLICATION_CONFIG_MANAGER_H_
-
-#include <fuchsia/fidl/chromium/cast/cpp/fidl.h>
+#ifndef FUCHSIA_RUNNERS_CAST_FAKE_APPLICATION_CONFIG_MANAGER_H_
+#define FUCHSIA_RUNNERS_CAST_FAKE_APPLICATION_CONFIG_MANAGER_H_
 
 #include "base/macros.h"
+#include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-
-namespace castrunner {
 
 // Test cast.ApplicationConfigManager implementation which maps a test Cast
 // AppId to an embedded test server address.
@@ -32,6 +29,4 @@ class FakeApplicationConfigManager
   DISALLOW_COPY_AND_ASSIGN(FakeApplicationConfigManager);
 };
 
-}  // namespace castrunner
-
-#endif  // FUCHSIA_APP_CAST_FAKE_APPLICATION_CONFIG_MANAGER_H_
+#endif  // FUCHSIA_RUNNERS_CAST_FAKE_APPLICATION_CONFIG_MANAGER_H_

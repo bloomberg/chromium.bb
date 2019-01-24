@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FUCHSIA_APP_COMMON_WEB_COMPONENT_H_
-#define FUCHSIA_APP_COMMON_WEB_COMPONENT_H_
+#ifndef FUCHSIA_RUNNERS_COMMON_WEB_COMPONENT_H_
+#define FUCHSIA_RUNNERS_COMMON_WEB_COMPONENT_H_
 
 #include <fuchsia/sys/cpp/fidl.h>
 #include <fuchsia/ui/app/cpp/fidl.h>
@@ -19,8 +19,6 @@
 #include "base/logging.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 #include "url/gurl.h"
-
-namespace webrunner {
 
 class WebContentRunner;
 
@@ -109,6 +107,4 @@ class WebComponent : public fuchsia::sys::ComponentController,
   DISALLOW_COPY_AND_ASSIGN(WebComponent);
 };
 
-}  // namespace webrunner
-
-#endif  // FUCHSIA_APP_COMMON_COMPONENT_CONTROLLER_IMPL_H_
+#endif  // FUCHSIA_RUNNERS_COMMON_WEB_COMPONENT_H_

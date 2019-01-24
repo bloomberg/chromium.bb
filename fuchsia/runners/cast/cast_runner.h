@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FUCHSIA_APP_CAST_CAST_RUNNER_H_
-#define FUCHSIA_APP_CAST_CAST_RUNNER_H_
+#ifndef FUCHSIA_RUNNERS_CAST_CAST_RUNNER_H_
+#define FUCHSIA_RUNNERS_CAST_CAST_RUNNER_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "fuchsia/app/common/web_content_runner.h"
 #include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
-
-namespace castrunner {
+#include "fuchsia/runners/common/web_content_runner.h"
 
 // sys::Runner which instantiates Cast activities specified via cast/casts URIs.
-class CastRunner : public webrunner::WebContentRunner {
+class CastRunner : public WebContentRunner {
  public:
   CastRunner(base::fuchsia::ServiceDirectory* service_directory,
              chromium::web::ContextPtr context,
@@ -41,6 +39,4 @@ class CastRunner : public webrunner::WebContentRunner {
   DISALLOW_COPY_AND_ASSIGN(CastRunner);
 };
 
-}  // namespace castrunner
-
-#endif  // FUCHSIA_APP_CAST_CAST_RUNNER_H_
+#endif  // FUCHSIA_RUNNERS_CAST_CAST_RUNNER_H_

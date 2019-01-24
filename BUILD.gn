@@ -766,6 +766,7 @@ group("gn_all") {
     deps += [
       "//fuchsia:webrunner_unittests",
       "//fuchsia/http:http_service_tests",
+      "//fuchsia/runners:cast_runner_unittests",
       "//headless",
     ]
   }

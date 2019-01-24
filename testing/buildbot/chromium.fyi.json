@@ -3938,19 +3938,19 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "castrunner_browsertests"
+        "test": "cast_runner_browsertests"
       },
       {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "castrunner_integration_tests"
+        "test": "cast_runner_integration_tests"
       },
       {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "castrunner_unittests"
+        "test": "cast_runner_unittests"
       },
       {
         "args": [
@@ -4055,13 +4055,13 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "webrunner_browsertests"
+        "test": "web_runner_integration_tests"
       },
       {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "webrunner_smoketests"
+        "test": "webrunner_browsertests"
       },
       {
         "swarming": {
@@ -4096,7 +4096,7 @@
             }
           ]
         },
-        "test": "castrunner_browsertests"
+        "test": "cast_runner_browsertests"
       },
       {
         "swarming": {
@@ -4107,7 +4107,7 @@
             }
           ]
         },
-        "test": "castrunner_integration_tests"
+        "test": "cast_runner_integration_tests"
       },
       {
         "swarming": {
@@ -4118,7 +4118,7 @@
             }
           ]
         },
-        "test": "castrunner_unittests"
+        "test": "cast_runner_unittests"
       },
       {
         "args": [
@@ -4303,7 +4303,7 @@
             }
           ]
         },
-        "test": "webrunner_browsertests"
+        "test": "web_runner_integration_tests"
       },
       {
         "swarming": {
@@ -4314,7 +4314,7 @@
             }
           ]
         },
-        "test": "webrunner_smoketests"
+        "test": "webrunner_browsertests"
       },
       {
         "swarming": {
@@ -4354,7 +4354,7 @@
             }
           ]
         },
-        "test": "castrunner_browsertests"
+        "test": "cast_runner_browsertests"
       },
       {
         "swarming": {
@@ -4365,7 +4365,7 @@
             }
           ]
         },
-        "test": "castrunner_integration_tests"
+        "test": "cast_runner_integration_tests"
       },
       {
         "swarming": {
@@ -4376,7 +4376,7 @@
             }
           ]
         },
-        "test": "castrunner_unittests"
+        "test": "cast_runner_unittests"
       },
       {
         "args": [
@@ -4575,7 +4575,7 @@
             }
           ]
         },
-        "test": "webrunner_browsertests"
+        "test": "web_runner_integration_tests"
       },
       {
         "swarming": {
@@ -4586,7 +4586,7 @@
             }
           ]
         },
-        "test": "webrunner_smoketests"
+        "test": "webrunner_browsertests"
       },
       {
         "swarming": {

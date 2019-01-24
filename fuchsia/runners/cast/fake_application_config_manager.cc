@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/app/cast/fake_application_config_manager.h"
+#include "fuchsia/runners/cast/fake_application_config_manager.h"
 
 #include "base/logging.h"
-
-namespace castrunner {
 
 const char FakeApplicationConfigManager::kTestCastAppId[] = "00000000";
 
@@ -30,5 +28,3 @@ void FakeApplicationConfigManager::GetConfig(std::string id,
   app_config->web_url = embedded_test_server_->base_url().spec();
   callback(std::move(app_config));
 }
-
-}  // namespace castrunner

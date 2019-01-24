@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FUCHSIA_APP_CAST_TEST_COMMON_H_
-#define FUCHSIA_APP_CAST_TEST_COMMON_H_
+#ifndef FUCHSIA_RUNNERS_CAST_TEST_COMMON_H_
+#define FUCHSIA_RUNNERS_CAST_TEST_COMMON_H_
 
 #include <fuchsia/sys/cpp/fidl.h>
 
 #include "base/strings/string_piece.h"
-
-namespace castrunner {
 
 // Starts a cast component from the runner |sys_runner| with the URL |cast_url|
 // and returns the service directory client channel.
@@ -19,6 +17,4 @@ zx::channel StartCastComponent(
     fidl::InterfaceRequest<fuchsia::sys::ComponentController>
         component_controller_request);
 
-}  // namespace castrunner
-
-#endif  // FUCHSIA_APP_CAST_TEST_COMMON_H_
+#endif  // FUCHSIA_RUNNERS_CAST_TEST_COMMON_H_

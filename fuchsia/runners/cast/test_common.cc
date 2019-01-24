@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/app/cast/test_common.h"
+#include "fuchsia/runners/cast/test_common.h"
 
 #include "base/fuchsia/fuchsia_logging.h"
-
-namespace castrunner {
 
 zx::channel StartCastComponent(
     const base::StringPiece& cast_url,
@@ -37,5 +35,3 @@ zx::channel StartCastComponent(
                                     std::move(component_controller_request));
   return service_directory_client;
 }
-
-}  // namespace castrunner
