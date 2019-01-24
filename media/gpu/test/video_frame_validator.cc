@@ -108,7 +108,7 @@ size_t VideoFrameValidator::GetMismatchedFramesCount() const {
 }
 
 void VideoFrameValidator::ProcessVideoFrame(
-    scoped_refptr<VideoFrame> video_frame,
+    scoped_refptr<const VideoFrame> video_frame,
     size_t frame_index) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto standard_frame = CreateStandardizedFrame(video_frame);
@@ -140,7 +140,7 @@ void VideoFrameValidator::ProcessVideoFrame(
 }
 
 scoped_refptr<VideoFrame> VideoFrameValidator::CreateStandardizedFrame(
-    scoped_refptr<VideoFrame> video_frame) const {
+    scoped_refptr<const VideoFrame> video_frame) const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto mapped_frame = video_frame_mapper_->Map(std::move(video_frame));
   if (!mapped_frame) {

@@ -31,7 +31,7 @@ uint8_t* Mmap(const size_t length, const int fd) {
 }
 
 void MunmapBuffers(const std::vector<std::pair<uint8_t*, size_t>>& chunks,
-                   scoped_refptr<VideoFrame> video_frame) {
+                   scoped_refptr<const VideoFrame> video_frame) {
   for (const auto& chunk : chunks) {
     DLOG_IF(ERROR, !chunk.first) << "Pointer to be released is nullptr.";
     munmap(chunk.first, chunk.second);
@@ -47,7 +47,7 @@ scoped_refptr<VideoFrame> CreateMappedVideoFrame(
     const gfx::Rect& visible_rect,
     uint8_t* plane_addrs[kNumOfYUVPlanes],
     const std::vector<std::pair<uint8_t*, size_t>>& chunks,
-    scoped_refptr<VideoFrame> src_video_frame) {
+    scoped_refptr<const VideoFrame> src_video_frame) {
   int32_t strides[kNumOfYUVPlanes] = {};
   for (size_t i = 0; i < layout.num_planes(); i++) {
     strides[i] = layout.planes()[i].stride;
@@ -69,7 +69,7 @@ scoped_refptr<VideoFrame> CreateMappedVideoFrame(
 }  // namespace
 
 scoped_refptr<VideoFrame> GenericDmaBufVideoFrameMapper::Map(
-    scoped_refptr<VideoFrame> video_frame) const {
+    scoped_refptr<const VideoFrame> video_frame) const {
   if (video_frame->storage_type() != VideoFrame::StorageType::STORAGE_DMABUFS) {
     VLOGF(1) << "VideoFrame's storage type is not DMABUF: "
              << video_frame->storage_type();
