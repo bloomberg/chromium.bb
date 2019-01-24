@@ -6,7 +6,7 @@
 #define ASH_AUTOCLICK_AUTOCLICK_CONTROLLER_H
 
 #include "ash/ash_export.h"
-#include "ash/public/interfaces/accessibility_controller.mojom.h"
+#include "ash/public/interfaces/accessibility_controller_enums.mojom.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/aura/window_observer.h"

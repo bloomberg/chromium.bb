@@ -5,7 +5,7 @@
 #ifndef ASH_SYSTEM_ACCESSIBILITY_AUTOCLICK_TRAY_ACTION_VIEW_H_
 #define ASH_SYSTEM_ACCESSIBILITY_AUTOCLICK_TRAY_ACTION_VIEW_H_
 
-#include "ash/public/interfaces/accessibility_controller.mojom.h"
+#include "ash/public/interfaces/accessibility_controller_enums.mojom.h"
 #include "ash/system/tray/actionable_view.h"
 #include "base/macros.h"
 
