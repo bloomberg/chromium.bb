@@ -1846,8 +1846,6 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   field_data_manager->UpdateFieldDataMap(
       *password_element, password,
       FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD);
-  ProvisionallySavePassword(password_element->Form(), *password_element,
-                            RESTRICTION_NONE);
   gatekeeper_.RegisterElement(password_element);
   password_element->SetAutofillState(WebAutofillState::kAutofilled);
 
