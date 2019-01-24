@@ -4,6 +4,8 @@
 
 #include "components/metrics/call_stack_profile_builder.h"
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/test/bind_test_util.h"
@@ -30,6 +32,7 @@ class TestingCallStackProfileBuilder : public CallStackProfileBuilder {
  public:
   TestingCallStackProfileBuilder(
       const CallStackProfileParams& profile_params,
+      const WorkIdRecorder* work_id_recorder = nullptr,
       base::OnceClosure completed_callback = base::OnceClosure());
 
   ~TestingCallStackProfileBuilder() override;
@@ -47,8 +50,11 @@ class TestingCallStackProfileBuilder : public CallStackProfileBuilder {
 
 TestingCallStackProfileBuilder::TestingCallStackProfileBuilder(
     const CallStackProfileParams& profile_params,
+    const WorkIdRecorder* work_id_recorder,
     base::OnceClosure completed_callback)
-    : CallStackProfileBuilder(profile_params, std::move(completed_callback)) {}
+    : CallStackProfileBuilder(profile_params,
+                              work_id_recorder,
+                              std::move(completed_callback)) {}
 
 TestingCallStackProfileBuilder::~TestingCallStackProfileBuilder() = default;
 
@@ -65,7 +71,7 @@ TEST(CallStackProfileBuilderTest, ProfilingCompleted) {
   EXPECT_CALL(mock_closure, Run()).Times(1);
 
   auto profile_builder = std::make_unique<TestingCallStackProfileBuilder>(
-      kProfileParams, mock_closure.Get());
+      kProfileParams, nullptr, mock_closure.Get());
 
 #if defined(OS_WIN)
   uint64_t module_md5 = 0x46C3E4166659AC02ULL;
@@ -90,7 +96,9 @@ TEST(CallStackProfileBuilderTest, ProfilingCompleted) {
   std::vector<Frame> frames1 = {frame1, frame2};
   std::vector<Frame> frames2 = {frame3};
 
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames1);
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames2);
   profile_builder->OnProfileCompleted(base::TimeDelta::FromMilliseconds(500),
                                       base::TimeDelta::FromMilliseconds(100));
@@ -133,7 +141,9 @@ TEST(CallStackProfileBuilderTest, ProfilingCompleted) {
 
   ASSERT_EQ(2, profile.stack_sample_size());
   EXPECT_EQ(0, profile.stack_sample(0).stack_index());
+  EXPECT_FALSE(profile.stack_sample(0).has_continued_work());
   EXPECT_EQ(1, profile.stack_sample(1).stack_index());
+  EXPECT_FALSE(profile.stack_sample(1).has_continued_work());
 
   ASSERT_TRUE(profile.has_profile_duration_ms());
   EXPECT_EQ(500, profile.profile_duration_ms());
@@ -163,7 +173,9 @@ TEST(CallStackProfileBuilderTest, StacksDeduped) {
 
   // Two stacks are completed with the same frames therefore they are deduped
   // to one.
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames);
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames);
 
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
@@ -207,7 +219,9 @@ TEST(CallStackProfileBuilderTest, StacksNotDeduped) {
   std::vector<Frame> frames2 = {frame2};
 
   // Two stacks are completed with the different frames therefore not deduped.
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames1);
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames2);
 
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
@@ -250,6 +264,7 @@ TEST(CallStackProfileBuilderTest, Modules) {
 
   std::vector<Frame> frames = {frame1, frame2};
 
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames);
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
 
@@ -301,6 +316,7 @@ TEST(CallStackProfileBuilderTest, DedupModules) {
 
   std::vector<Frame> frames = {frame1, frame2};
 
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames);
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
 
@@ -332,6 +348,62 @@ TEST(CallStackProfileBuilderTest, DedupModules) {
   EXPECT_EQ("1", profile.module_id(0).build_id());
   ASSERT_TRUE(profile.module_id(0).has_name_md5_prefix());
   EXPECT_EQ(module_md5, profile.module_id(0).name_md5_prefix());
+}
+
+TEST(CallStackProfileBuilderTest, WorkIds) {
+  class TestWorkIdRecorder : public WorkIdRecorder {
+   public:
+    unsigned int RecordWorkId() const override { return current_id; }
+
+    unsigned int current_id = 0;
+  };
+
+  TestWorkIdRecorder work_id_recorder;
+  auto profile_builder = std::make_unique<TestingCallStackProfileBuilder>(
+      kProfileParams, &work_id_recorder);
+
+#if defined(OS_WIN)
+  base::FilePath module_path(L"c:\\some\\path\\to\\chrome.exe");
+#else
+  base::FilePath module_path("/some/path/to/chrome");
+#endif
+
+  Module module = {0x1000, "1", module_path};
+  Frame frame = {0x1000 + 0x10, module};
+
+  // Id 0 means the message loop hasn't been started yet, so the sample should
+  // not have continued_work set.
+  profile_builder->RecordMetadata();
+  profile_builder->OnSampleCompleted({frame});
+
+  // The second sample with the same id should have continued_work set.
+  work_id_recorder.current_id = 1;
+  profile_builder->RecordMetadata();
+  profile_builder->OnSampleCompleted({frame});
+  profile_builder->RecordMetadata();
+  profile_builder->OnSampleCompleted({frame});
+
+  // Ids are in general non-contiguous across multiple samples.
+  work_id_recorder.current_id = 10;
+  profile_builder->RecordMetadata();
+  profile_builder->OnSampleCompleted({frame});
+  profile_builder->RecordMetadata();
+  profile_builder->OnSampleCompleted({frame});
+
+  profile_builder->OnProfileCompleted(base::TimeDelta::FromMilliseconds(500),
+                                      base::TimeDelta::FromMilliseconds(100));
+
+  const SampledProfile& proto = profile_builder->test_sampled_profile();
+
+  ASSERT_TRUE(proto.has_call_stack_profile());
+  const CallStackProfile& profile = proto.call_stack_profile();
+
+  ASSERT_EQ(5, profile.stack_sample_size());
+  EXPECT_FALSE(profile.stack_sample(0).has_continued_work());
+  EXPECT_FALSE(profile.stack_sample(1).has_continued_work());
+  EXPECT_TRUE(profile.stack_sample(2).continued_work());
+  EXPECT_FALSE(profile.stack_sample(3).has_continued_work());
+  EXPECT_TRUE(profile.stack_sample(4).continued_work());
 }
 
 }  // namespace metrics

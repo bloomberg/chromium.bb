@@ -22,6 +22,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/work_id_provider.h"
 #include "base/pending_task.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -391,6 +392,11 @@ class BASE_EXPORT SequenceManagerImpl
 
   // Whether to add the queue time to tasks.
   base::subtle::Atomic32 add_queue_time_to_tasks_ = 0;
+
+  // Non-null provider of id state for identifying distinct work items executed
+  // by the message loop (task, event, etc.). Cached on the class to avoid TLS
+  // lookups on task execution.
+  WorkIdProvider* work_id_provider_ = nullptr;
 
   // A check to bail out early during memory corruption.
   // https://crbug.com/757940
