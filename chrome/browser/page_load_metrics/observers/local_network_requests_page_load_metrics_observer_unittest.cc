@@ -722,7 +722,9 @@ TEST_F(LocalNetworkRequestsPageLoadMetricsObserverTest,
   }
 
   // At this point, we should still only see the domain type UKM entry.
-  EXPECT_EQ(1ul, test_ukm_recorder().entries_count());
+  // Also history manipulation intervention will log a UKM for navigating away
+  // from a page without user interaction.
+  EXPECT_EQ(2ul, test_ukm_recorder().entries_count());
 
   // Close the page.
   DeleteContents();
@@ -891,6 +893,8 @@ TEST_F(LocalNetworkRequestsPageLoadMetricsObserverTest, PrivatePageFailedLoad) {
   navigation_simulator->CommitErrorPage();
 
   // Nothing should have been generated.
-  EXPECT_EQ(0ul, test_ukm_recorder().entries_count());
+  // Note that the expected count is 1 because history manipulation intervention
+  // will log a UKM for navigating away from a page without user interaction.
+  EXPECT_EQ(1ul, test_ukm_recorder().entries_count());
   ExpectNoHistograms();
 }

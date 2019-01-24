@@ -81,6 +81,8 @@
 #include "media/base/mime_util.h"
 #include "net/base/escape.h"
 #include "net/http/http_status_code.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
@@ -1439,6 +1441,16 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
     GetLastCommittedEntry()->set_should_skip_on_back_forward_ui(true);
     UMA_HISTOGRAM_BOOLEAN("Navigation.BackForward.SetShouldSkipOnBackForwardUI",
                           true);
+
+    // Log UKM with the URL of the page we are navigating away from. Note that
+    // GetUkmSourceIdForLastCommittedSource looks into the WebContents to get
+    // the last committed source. Since WebContents has not yet been updated
+    // with the current URL being committed, this should give the correct source
+    // even though |rfh| here belongs to the current navigation.
+    ukm::SourceId source_id = rfh->delegate()
+        ->GetUkmSourceIdForLastCommittedSource();
+    ukm::builders::HistoryManipulationIntervention(source_id).Record(
+        ukm::UkmRecorder::Get());
   } else if (last_committed_entry_index_ != -1) {
     UMA_HISTOGRAM_BOOLEAN("Navigation.BackForward.SetShouldSkipOnBackForwardUI",
                           false);
