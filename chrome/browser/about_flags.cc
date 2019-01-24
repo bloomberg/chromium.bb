@@ -3323,9 +3323,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSlideTopChromeWithPageScrollsName,
      flag_descriptions::kSlideTopChromeWithPageScrollsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kSlideTopChromeWithPageScrolls)},
-    {"sys-internals", flag_descriptions::kSysInternalsName,
-     flag_descriptions::kSysInternalsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kSysInternals)},
 #endif  // defined(OS_CHROMEOS)
 
     {"enable-improved-geolanguage-data",

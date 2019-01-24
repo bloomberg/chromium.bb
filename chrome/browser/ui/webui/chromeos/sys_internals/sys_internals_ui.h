@@ -14,8 +14,6 @@ class SysInternalsUI : public content::WebUIController {
   explicit SysInternalsUI(content::WebUI* web_ui);
   ~SysInternalsUI() override;
 
-  static bool IsEnabled();
-
  private:
   DISALLOW_COPY_AND_ASSIGN(SysInternalsUI);
 };

@@ -519,8 +519,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::smb_dialog::SmbCredentialsDialogUI>;
   if (url.host_piece() == chrome::kChromeUISmbShareHost)
     return &NewWebUI<chromeos::smb_dialog::SmbShareDialogUI>;
-  if (url.host_piece() == chrome::kChromeUISysInternalsHost &&
-      SysInternalsUI::IsEnabled())
+  if (url.host_piece() == chrome::kChromeUISysInternalsHost)
     return &NewWebUI<SysInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIAssistantOptInHost)
     return &NewWebUI<chromeos::AssistantOptInUI>;

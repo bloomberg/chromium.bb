@@ -3136,11 +3136,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "sys-internals",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "system-keyboard-lock",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

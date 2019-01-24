@@ -46,8 +46,3 @@ SysInternalsUI::SysInternalsUI(content::WebUI* web_ui)
 }
 
 SysInternalsUI::~SysInternalsUI() {}
-
-// static
-bool SysInternalsUI::IsEnabled() {
-  return base::FeatureList::IsEnabled(features::kSysInternals);
-}
