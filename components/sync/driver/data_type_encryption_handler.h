@@ -15,8 +15,8 @@ class DataTypeEncryptionHandler {
   DataTypeEncryptionHandler();
   virtual ~DataTypeEncryptionHandler();
 
-  // Returns true if a passphrase is required for encryption to proceed, false
-  // otherwise.
+  // Returns whether a passphrase is required for encryption or decryption to
+  // proceed.
   virtual bool IsPassphraseRequired() const = 0;
 
   // Returns the current set of encrypted data types.

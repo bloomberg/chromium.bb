@@ -309,8 +309,8 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // we have an encrypted data type enabled.
   virtual bool IsPassphraseRequiredForDecryption() const = 0;
 
-  // Returns true if a secondary (explicit) passphrase is being used. It is not
-  // legal to call this method before the engine is initialized.
+  // Returns true if a secondary (explicit) passphrase is being used. Before the
+  // engine is initialized, this will always return false.
   virtual bool IsUsingSecondaryPassphrase() const = 0;
 
   //////////////////////////////////////////////////////////////////////////////
