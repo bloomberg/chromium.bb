@@ -430,8 +430,6 @@ void URLRequestHttpJob::Start() {
                                           referrer.spec());
   }
 
-  // This should be kept in sync with the corresponding code in
-  // URLRequest::GetUserAgent.
   request_info_.extra_headers.SetHeaderIfMissing(
       HttpRequestHeaders::kUserAgent,
       http_user_agent_settings_ ?
