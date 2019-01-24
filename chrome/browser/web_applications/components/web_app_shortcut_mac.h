@@ -33,13 +33,19 @@ enum class LaunchShimUpdateBehavior {
 
 // Callback type for LaunchShim. If |shim_process| is valid then the
 // app shim was launched.
-using LaunchShimCallback = base::OnceCallback<void(base::Process shim_process)>;
+using ShimLaunchedCallback =
+    base::OnceCallback<void(base::Process shim_process)>;
+
+// Callback on termination takes no arguments.
+using ShimTerminatedCallback = base::OnceClosure;
 
 // Launch the shim specified by |shortcut_info|. Update the shim prior to launch
-// if requested. Return in |callback| the pid that was launched (or an invalid
-// pid if none was launched).
+// if requested. Return in |launched_callback| the pid that was launched (or an
+// invalid pid if none was launched). If |launched_callback| returns a valid
+// pid, then |terminated_callback| will be called when that process terminates.
 void LaunchShim(LaunchShimUpdateBehavior update_behavior,
-                LaunchShimCallback callback,
+                ShimLaunchedCallback launched_callback,
+                ShimTerminatedCallback terminated_callback,
                 std::unique_ptr<web_app::ShortcutInfo> shortcut_info);
 
 std::unique_ptr<web_app::ShortcutInfo> RecordAppShimErrorAndBuildShortcutInfo(

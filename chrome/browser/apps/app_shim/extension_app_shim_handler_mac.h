@@ -78,7 +78,8 @@ class ExtensionAppShimHandler : public AppShimHandler,
     virtual void LaunchShim(Profile* profile,
                             const extensions::Extension* extension,
                             bool recreate_shims,
-                            LaunchShimCallback launch_callback);
+                            ShimLaunchedCallback launched_callback,
+                            ShimTerminatedCallback terminated_callback);
     virtual void LaunchUserManager();
 
     virtual void MaybeTerminate();
@@ -138,7 +139,8 @@ class ExtensionAppShimHandler : public AppShimHandler,
   void OnShimLaunchRequested(
       AppShimHost* host,
       bool recreate_shims,
-      base::OnceCallback<void(base::Process)> launch_callback) override;
+      base::OnceCallback<void(base::Process)> launched_callback,
+      base::OnceClosure terminated_callback) override;
   void OnShimProcessConnected(
       std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
   void OnShimClose(AppShimHost* host) override;

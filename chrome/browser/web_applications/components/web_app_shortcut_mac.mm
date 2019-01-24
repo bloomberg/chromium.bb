@@ -192,7 +192,8 @@ bool HasSameUserDataDir(const base::FilePath& bundle_path) {
 }
 
 void LaunchShimOnFileThread(web_app::LaunchShimUpdateBehavior update_behavior,
-                            web_app::LaunchShimCallback callback,
+                            web_app::ShimLaunchedCallback launched_callback,
+                            web_app::ShimTerminatedCallback terminated_callback,
                             const web_app::ShortcutInfo& shortcut_info) {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
@@ -241,14 +242,14 @@ void LaunchShimOnFileThread(web_app::LaunchShimUpdateBehavior update_behavior,
     if (process.IsValid()) {
       base::PostTaskWithTraits(
           FROM_HERE, {content::BrowserThread::UI},
-          base::BindOnce(std::move(callback), std::move(process)));
+          base::BindOnce(std::move(launched_callback), std::move(process)));
       return;
     }
   }
 
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(std::move(callback), base::Process()));
+      base::BindOnce(std::move(launched_callback), base::Process()));
 }
 
 base::FilePath GetAppLoaderPath() {
@@ -1024,18 +1025,20 @@ void WebAppShortcutCreator::RevealAppShimInFinder() const {
 }
 
 void LaunchShim(LaunchShimUpdateBehavior update_behavior,
-                LaunchShimCallback callback,
+                ShimLaunchedCallback launched_callback,
+                ShimTerminatedCallback terminated_callback,
                 std::unique_ptr<web_app::ShortcutInfo> shortcut_info) {
   if (web_app::AppShimLaunchDisabled()) {
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(std::move(callback), base::Process()));
+        base::BindOnce(std::move(launched_callback), base::Process()));
     return;
   }
 
   web_app::internals::PostShortcutIOTask(
       base::BindOnce(&LaunchShimOnFileThread, update_behavior,
-                     std::move(callback)),
+                     std::move(launched_callback),
+                     std::move(terminated_callback)),
       std::move(shortcut_info));
 }
 

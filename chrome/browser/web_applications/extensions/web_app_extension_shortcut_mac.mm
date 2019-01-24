@@ -91,10 +91,12 @@ void RebuildAppAndLaunch(std::unique_ptr<web_app::ShortcutInfo> shortcut_info) {
   if (!extension || !extension->is_platform_app())
     return;
   base::OnceCallback<void(base::Process)> launch_callback = base::DoNothing();
+  base::OnceClosure terminated_callback = base::DoNothing();
   web_app::GetShortcutInfoForApp(
       extension, profile,
       base::BindOnce(&LaunchShim, LaunchShimUpdateBehavior::UPDATE_IF_INSTALLED,
-                     std::move(launch_callback)));
+                     std::move(launch_callback),
+                     std::move(terminated_callback)));
 }
 
 bool MaybeRebuildShortcut(const base::CommandLine& command_line) {

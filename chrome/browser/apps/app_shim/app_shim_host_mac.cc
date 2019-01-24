@@ -84,7 +84,20 @@ apps::AppShimHandler* AppShimHost::GetAppShimHandler() const {
   return apps::AppShimHandler::GetForAppMode(app_id_);
 }
 
-void AppShimHost::OnShimLaunchCompleted(bool recreate_shims_requested,
+void AppShimHost::LaunchShimInternal(bool recreate_shims) {
+  DCHECK(!bootstrap_);
+  apps::AppShimHandler* handler = GetAppShimHandler();
+  if (!handler)
+    return;
+  handler->OnShimLaunchRequested(
+      this, recreate_shims,
+      base::BindOnce(&AppShimHost::OnShimProcessLaunched,
+                     weak_factory_.GetWeakPtr(), recreate_shims),
+      base::BindOnce(&AppShimHost::OnShimProcessTerminated,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void AppShimHost::OnShimProcessLaunched(bool recreate_shims_requested,
                                         base::Process shim_process) {
   // If the shim process was created, assume that it will successfully create
   // an AppShimHostBootstrap.
@@ -99,12 +112,7 @@ void AppShimHost::OnShimLaunchCompleted(bool recreate_shims_requested,
   // date. Try again, recreating the shims this time.
   if (!recreate_shims_requested) {
     DLOG(ERROR) << "Failed to launch shim, attempting to recreate.";
-    constexpr bool recreate_shims = true;
-    apps::AppShimHandler* handler = GetAppShimHandler();
-    handler->OnShimLaunchRequested(
-        this, recreate_shims,
-        base::BindOnce(&AppShimHost::OnShimLaunchCompleted,
-                       weak_factory_.GetWeakPtr(), recreate_shims));
+    LaunchShimInternal(true /* recreate_shims */);
     return;
   }
 
@@ -116,6 +124,8 @@ void AppShimHost::OnShimLaunchCompleted(bool recreate_shims_requested,
   DLOG(ERROR) << "Failed to launch recreated shim, giving up.";
   OnAppClosed();
 }
+
+void AppShimHost::OnShimProcessTerminated() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // AppShimHost, chrome::mojom::AppShimHost
@@ -146,11 +156,7 @@ void AppShimHost::LaunchShim() {
                          std::vector<base::FilePath>());
   } else {
     // Otherwise, attempt to launch whatever app shims we find.
-    constexpr bool recreate_shims = false;
-    handler->OnShimLaunchRequested(
-        this, recreate_shims,
-        base::BindOnce(&AppShimHost::OnShimLaunchCompleted,
-                       weak_factory_.GetWeakPtr(), recreate_shims));
+    LaunchShimInternal(false /* recreate_shims */);
   }
 }
 

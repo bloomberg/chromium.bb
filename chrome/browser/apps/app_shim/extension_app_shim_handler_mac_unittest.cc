@@ -78,12 +78,13 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
   void LaunchShim(Profile* profile,
                   const Extension* extension,
                   bool recreate_shim,
-                  LaunchShimCallback launch_callback) override {
+                  ShimLaunchedCallback launched_callback,
+                  ShimTerminatedCallback terminated_callback) override {
     if (launch_shim_callback_capture_)
-      *launch_shim_callback_capture_ = std::move(launch_callback);
+      *launch_shim_callback_capture_ = std::move(launched_callback);
     DoLaunchShim(profile, extension, recreate_shim);
   }
-  void SetCaptureLaunchShimCallback(LaunchShimCallback* callback) {
+  void SetCaptureShimLaunchedCallback(ShimLaunchedCallback* callback) {
     launch_shim_callback_capture_ = callback;
   }
 
@@ -123,7 +124,7 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
   }
 
  private:
-  LaunchShimCallback* launch_shim_callback_capture_ = nullptr;
+  ShimLaunchedCallback* launch_shim_callback_capture_ = nullptr;
   std::map<base::FilePath, base::OnceCallback<void(Profile*)>> callbacks_;
   AppShimHost* host_for_create_ = nullptr;
   bool allow_shim_to_connect_ = true;
@@ -540,8 +541,8 @@ TEST_F(ExtensionAppShimHandlerTest, AppLifetime) {
 
 TEST_F(ExtensionAppShimHandlerTest, FailToLaunch) {
   // When the app activates, it requests a launch.
-  LaunchShimCallback launch_callback;
-  delegate_->SetCaptureLaunchShimCallback(&launch_callback);
+  ShimLaunchedCallback launch_callback;
+  delegate_->SetCaptureShimLaunchedCallback(&launch_callback);
   delegate_->SetHostForCreate(host_aa_.get());
   EXPECT_CALL(*delegate_, DoLaunchShim(&profile_a_, extension_a_.get(), false));
   handler_->OnAppActivated(&profile_a_, kTestAppIdA);

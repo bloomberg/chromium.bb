@@ -19,7 +19,8 @@ class AppShimHostBootstrap;
 
 namespace apps {
 
-using LaunchShimCallback = base::OnceCallback<void(base::Process)>;
+using ShimLaunchedCallback = base::OnceCallback<void(base::Process)>;
+using ShimTerminatedCallback = base::OnceClosure;
 
 // Registrar, and interface for services that can handle interactions with OSX
 // shim processes.
@@ -54,7 +55,8 @@ class AppShimHandler {
   virtual void OnShimLaunchRequested(
       AppShimHost* host,
       bool recreate_shims,
-      apps::LaunchShimCallback launch_callback) = 0;
+      apps::ShimLaunchedCallback launched_callback,
+      apps::ShimTerminatedCallback terminated_callback) = 0;
 
   // Invoked by the AppShimHostBootstrap when a shim process has connected to
   // the browser process. This will connect to (creating, if needed) an
