@@ -6,9 +6,9 @@
 #include "content/public/app/content_main.h"
 
 int main(int argc, const char** argv) {
-  chromecast::shell::CastMainDelegate delegate;
+  chromecast::shell::CastMainDelegate delegate(argc, argv);
   content::ContentMainParams params(&delegate);
-  params.argc = argc;
-  params.argv = argv;
+  params.argc = delegate.argc();
+  params.argv = delegate.argv();
   return content::ContentMain(params);
 }

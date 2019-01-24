@@ -19,5 +19,6 @@
       "fuchsia.ui.viewsv1.ViewManager",
       "fuchsia.vulkan.loader.Loader",
       "fuchsia.wlan.service.Wlan"
-  ]
+  ],
+  "system": [ "data/cast" ]
 }
