@@ -4,6 +4,8 @@
 
 #include "components/dom_distiller/content/browser/distillable_page_utils.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -17,15 +19,18 @@
 #include "components/dom_distiller/core/page_features.h"
 #include "components/grit/components_resources.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace dom_distiller {
 namespace {
+
 void OnExtractFeaturesJsResult(const DistillablePageDetector* detector,
                                base::Callback<void(bool)> callback,
                                const base::Value* result) {
   callback.Run(detector->Classify(CalculateDerivedFeaturesFromJSON(result)));
 }
+
 }  // namespace
 
 void IsDistillablePageForDetector(content::WebContents* web_contents,
@@ -46,12 +51,12 @@ void IsDistillablePageForDetector(content::WebContents* web_contents,
       base::Bind(OnExtractFeaturesJsResult, detector, callback));
 }
 
-void setDelegate(content::WebContents* web_contents,
+void SetDelegate(content::WebContents* web_contents,
                  DistillabilityDelegate delegate) {
   CHECK(web_contents);
   DistillabilityDriver::CreateForWebContents(web_contents);
 
-  DistillabilityDriver *driver =
+  DistillabilityDriver* driver =
       DistillabilityDriver::FromWebContents(web_contents);
   CHECK(driver);
   driver->SetDelegate(delegate);
