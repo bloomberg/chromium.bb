@@ -358,6 +358,11 @@ public class ContextualSearchManager
         return mSearchPanel != null && mSearchPanel.isShowing();
     }
 
+    /** @return Whether the {@code mSearchPanel} is not {@code null} and is currently active. */
+    boolean isSearchPanelActive() {
+        return mSearchPanel != null && mSearchPanel.isActive();
+    }
+
     /**
      * @return the {@link WebContents} of the {@code mSearchPanel} or {@code null} if
      *         {@code mSearchPanel} is null or the search panel doesn't currently hold one.

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import android.app.Activity;
-import android.os.Handler;
 import android.view.ContextMenu;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -113,15 +112,10 @@ public class ContextualSearchTabHelper
             if (activityTab != mTab) return;
 
             // Removes the hooks if the panel other than contextual search panel just got shown.
-            // Post the task on handler since |isSearchPanelShowing| is not reliable right after
-            // this event is invoked because it is based on the panel height which might be
-            // changing for animation effect.
-            new Handler().post(() -> {
-                if (!getContextualSearchManager(mTab).isSearchPanelShowing()) {
-                    mUnhookedTab = activityTab;
-                    updateContextualSearchHooks(mUnhookedTab.getWebContents());
-                }
-            });
+            if (!getContextualSearchManager(mTab).isSearchPanelActive()) {
+                mUnhookedTab = activityTab;
+                updateContextualSearchHooks(mUnhookedTab.getWebContents());
+            }
         }
 
         @Override

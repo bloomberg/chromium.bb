@@ -349,6 +349,16 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
         }
     }
 
+    /**
+     * Returns whether the panel has been activated -- asked to show.  It may not yet be physically
+     * showing due animation.  Use {@link #isShowing} instead to determine if the panel is
+     * physically visible.
+     * @return Whether the panel is showing or about to show.
+     */
+    public boolean isActive() {
+        return mPanelShown;
+    }
+
     // ============================================================================================
     // ActivityStateListener
     // ============================================================================================
