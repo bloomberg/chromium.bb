@@ -3089,10 +3089,6 @@ const char kAshEnablePipRoundedCornersName[] =
 const char kAshEnablePipRoundedCornersDescription[] =
     "Enable rounded corners on the Picture-in-Picture window.";
 
-const char kAshEnableTrilinearFilteringName[] = "Enable trilinear filtering.";
-const char kAshEnableTrilinearFilteringDescription[] =
-    "Enable trilinear filtering.";
-
 const char kAshEnableUnifiedDesktopName[] = "Unified desktop mode";
 const char kAshEnableUnifiedDesktopDescription[] =
     "Enable unified desktop mode which allows a window to span multiple "
