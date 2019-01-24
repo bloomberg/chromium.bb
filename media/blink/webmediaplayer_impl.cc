@@ -2223,6 +2223,10 @@ void WebMediaPlayerImpl::OnVideoDecoderChange(const std::string& name) {
   UpdateSecondaryProperties();
 }
 
+void WebMediaPlayerImpl::OnRemotePlayStateChange(MediaStatus::State state) {
+  // TODO(tguilbert): request play/pause appropriately.
+}
+
 void WebMediaPlayerImpl::OnFrameHidden() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 

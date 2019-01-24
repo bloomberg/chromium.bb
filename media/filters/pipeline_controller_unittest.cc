@@ -155,6 +155,7 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
   void OnVideoAverageKeyframeDistanceUpdate() override {}
   void OnAudioDecoderChange(const std::string& name) override {}
   void OnVideoDecoderChange(const std::string& name) override {}
+  void OnRemotePlayStateChange(MediaStatus::State state) override {}
 
   base::MessageLoop message_loop_;
 

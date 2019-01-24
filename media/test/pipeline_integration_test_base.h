@@ -239,6 +239,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   MOCK_METHOD0(OnVideoAverageKeyframeDistanceUpdate, void());
   MOCK_METHOD1(OnAudioDecoderChange, void(const std::string&));
   MOCK_METHOD1(OnVideoDecoderChange, void(const std::string&));
+  MOCK_METHOD1(OnRemotePlayStateChange, void(MediaStatus::State state));
 
  private:
   // Runs |run_loop| until it is explicitly Quit() by some part of the calling
