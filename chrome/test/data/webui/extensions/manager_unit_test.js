@@ -15,6 +15,7 @@ cr.define('extension_manager_tests', function() {
     Uninstall: 'uninstall',
     UninstallFromDetails: 'uninstall while in details view',
     UpdateItemData: 'update item data',
+    UpdateFromActivityLog: 'update from activity log',
     KioskMode: 'kiosk mode',
   };
 
@@ -29,6 +30,8 @@ cr.define('extension_manager_tests', function() {
 
     /** @type {extensions.KioskBrowserProxy} */
     let browserProxy;
+
+    const testActivities = {activities: []};
 
     setup(function() {
       if (cr.isChromeOS) {
@@ -162,6 +165,37 @@ cr.define('extension_manager_tests', function() {
       expectEquals(
           newDescription,
           detailsView.$$('.section .section-content').textContent.trim());
+    });
+
+    test(assert(TestNames.UpdateFromActivityLog), function() {
+      service.testActivities = testActivities;
+
+      const extension = extension_test_util.createExtensionInfo();
+      simulateExtensionInstall(extension);
+      const secondExtension = extension_test_util.createExtensionInfo({
+        id: 'b'.repeat(32),
+      });
+      simulateExtensionInstall(secondExtension);
+
+      expectTrue(manager.showActivityLog);
+      extensions.navigation.navigateTo({
+        page: Page.ACTIVITY_LOG,
+        extensionId: extension.id,
+      });
+
+      const activityLog = manager.$$('extensions-activity-log');
+      expectTrue(!!activityLog);  // View should now be present.
+      expectEquals(extension.id, activityLog.extensionId);
+
+      // Test that updates to different extensions does not change which
+      // extension the activity log points to. Regression test for
+      // https://crbug.com/924373.
+      service.itemStateChangedTarget.callListeners({
+        event_type: chrome.developerPrivate.EventType.PREFS_CHANGED,
+        extensionInfo: secondExtension,
+      });
+
+      expectEquals(extension.id, activityLog.extensionId);
     });
 
     test(assert(TestNames.ProfileSettings), function() {
