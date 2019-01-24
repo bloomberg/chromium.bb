@@ -5963,7 +5963,7 @@ crbug.com/922951 virtual/video-surface-layer/media/controls/overflow-menu-toggle
 
 # Sheriff 2019-01-17
 crbug.com/922955 external/wpt/webrtc/RTCPeerConnection-track-stats.https.html [ Failure Pass ]
-crbug.com/922955 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCPeerConnection-track-stats.https.html [ Failure Pass ]
+crbug.com/924990 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-track-stats.https.html [ Failure Pass ]
 
 # Sheriff 2019-01-18
 crbug.com/922970 external/wpt/css/css-transitions/CSSTransition-startTime.tentative.html [ Failure Pass ]
