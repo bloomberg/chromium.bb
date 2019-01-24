@@ -34,7 +34,6 @@ class ChromeBrowserStateImplIOData : public ChromeBrowserStateIOData {
     // Init() must be called before ~Handle(). It records most of the
     // parameters needed to construct a ChromeURLRequestContextGetter.
     void Init(const base::FilePath& cookie_path,
-              const base::FilePath& channel_id_path,
               const base::FilePath& cache_path,
               int cache_max_size,
               const base::FilePath& profile_path);
