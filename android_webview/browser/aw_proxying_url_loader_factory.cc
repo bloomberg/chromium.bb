@@ -32,6 +32,7 @@ namespace android_webview {
 namespace {
 
 const char kAutoLoginHeaderName[] = "X-Auto-Login";
+const char kRequestedWithHeaderName[] = "X-Requested-With";
 
 class InterceptResponseDelegate
     : public AndroidStreamReaderURLLoader::ResponseDelegate {
@@ -241,24 +242,38 @@ void InterceptedRequest::Restart() {
   request_.load_flags =
       UpdateLoadFlags(request_.load_flags, io_thread_client.get());
 
-  // TODO: verify the case when WebContents::RenderFrameDeleted is called
-  // before network request is intercepted (i.e. if that's possible and
-  // whether it can result in any issues).
-  io_thread_client->ShouldInterceptRequestAsync(
-      AwWebResourceRequest(request_),
-      base::BindOnce(&InterceptedRequest::InterceptResponseReceived,
-                     weak_factory_.GetWeakPtr()));
+  if (!input_stream_previously_failed_ &&
+      (request_.url.SchemeIs(url::kContentScheme) ||
+       android_webview::IsAndroidSpecialFileUrl(request_.url))) {
+    // Do not call shouldInterceptRequest callback for special android urls,
+    // unless they fail to load on first attempt. Special android urls are urls
+    // such as "file:///android_asset/", "file:///android_res/" urls or
+    // "content:" scheme urls.
+    InterceptResponseReceived(nullptr);
+  } else {
+    // TODO: verify the case when WebContents::RenderFrameDeleted is called
+    // before network request is intercepted (i.e. if that's possible and
+    // whether it can result in any issues).
+    io_thread_client->ShouldInterceptRequestAsync(
+        AwWebResourceRequest(request_),
+        base::BindOnce(&InterceptedRequest::InterceptResponseReceived,
+                       weak_factory_.GetWeakPtr()));
+  }
+}
 
+void SetRequestedWithHeader(net::HttpRequestHeaders& headers) {
   // We send the application's package name in the X-Requested-With header for
   // compatibility with previous WebView versions. This should not be visible to
   // shouldInterceptRequest.
-  request_.headers.SetHeaderIfMissing(
-      "X-Requested-With",
+  headers.SetHeaderIfMissing(
+      kRequestedWithHeaderName,
       base::android::BuildInfo::GetInstance()->host_package_name());
 }
 
 void InterceptedRequest::InterceptResponseReceived(
     std::unique_ptr<AwWebResourceResponse> response) {
+  SetRequestedWithHeader(request_.headers);
+
   if (response) {
     // non-null response: make sure to use it as an override for the
     // normal network data.
