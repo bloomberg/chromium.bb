@@ -378,6 +378,45 @@ void SmbService::OnRemountResponse(const std::string& file_system_id,
   }
 }
 
+void SmbService::Premount(const base::FilePath& share_path) {
+  GetSmbProviderClient()->Premount(
+      share_path, IsNTLMAuthenticationEnabled(),
+      base::BindOnce(&SmbService::OnPremountResponse, AsWeakPtr(), share_path));
+}
+
+void SmbService::OnPremountResponse(const base::FilePath& share_path,
+                                    smbprovider::ErrorType error,
+                                    int32_t mount_id) {
+  const bool allowed_error = (error == smbprovider::ERROR_OK) ||
+                             (error == smbprovider::ERROR_ACCESS_DENIED);
+  if (!allowed_error) {
+    LOG(ERROR) << "Error mounting preconfigured share in smbprovider.";
+    return;
+  }
+
+  DCHECK_GE(mount_id, 0);
+
+  file_system_provider::MountOptions mount_options;
+  mount_options.display_name = share_path.BaseName().value();
+  mount_options.writable = true;
+  // |is_chromad_kerberos| is false because we do not pass user and workgroup
+  // at mount time. Premounts also do not get remounted and currently
+  // |is_chromad_kerberos| is only used at remounts to determine if the share
+  // was mounted with chromad kerberos.
+  // TODO(jimmyxgong): Support chromad kerberos for premount.
+  mount_options.file_system_id =
+      CreateFileSystemId(mount_id, share_path, false /* is_chromad_kerberos */);
+  // Disable remounting of preconfigured shares.
+  mount_options.persistent = false;
+
+  const base::File::Error result =
+      GetProviderService()->MountFileSystem(provider_id_, mount_options);
+
+  if (result != base::File::FILE_OK) {
+    LOG(ERROR) << "Error mounting preconfigured share with File Manager.";
+  }
+}
+
 void SmbService::StartSetup() {
   user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
