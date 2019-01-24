@@ -421,8 +421,7 @@
     },
     {
       name: "EncryptedMediaHdcpPolicyCheck",
-      origin_trial_feature_name: "EncryptedMediaHdcpPolicyCheck",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "EncryptedMediaPersistentUsageRecordSession",
