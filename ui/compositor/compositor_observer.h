@@ -28,22 +28,22 @@ class COMPOSITOR_EXPORT CompositorObserver {
   // between two composites (just before the composite as part of the
   // composite cycle). If the compositor is locked, it will not send this
   // this signal.
-  virtual void OnCompositingDidCommit(Compositor* compositor) = 0;
+  virtual void OnCompositingDidCommit(Compositor* compositor) {}
 
   // Called when compositing started: it has taken all the layer changes into
   // account and has issued the graphics commands.
   virtual void OnCompositingStarted(Compositor* compositor,
-                                    base::TimeTicks start_time) = 0;
+                                    base::TimeTicks start_time) {}
 
   // Called when compositing completes: the present to screen has completed.
-  virtual void OnCompositingEnded(Compositor* compositor) = 0;
+  virtual void OnCompositingEnded(Compositor* compositor) {}
 
   // Called when a child of the compositor is resizing.
-  virtual void OnCompositingChildResizing(Compositor* compositor) = 0;
+  virtual void OnCompositingChildResizing(Compositor* compositor) {}
 
   // Called at the top of the compositor's destructor, to give observers a
   // chance to remove themselves.
-  virtual void OnCompositingShuttingDown(Compositor* compositor) = 0;
+  virtual void OnCompositingShuttingDown(Compositor* compositor) {}
 
   // Called (asynchronously) when the compositor generates a new
   // LocalSurfaceIdAllocation. For example, if

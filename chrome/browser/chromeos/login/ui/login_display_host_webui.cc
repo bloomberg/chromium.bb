@@ -329,12 +329,6 @@ class CloseAfterCommit : public ui::CompositorObserver,
     widget_->Close();
   }
 
-  void OnCompositingStarted(ui::Compositor* compositor,
-                            base::TimeTicks start_time) override {}
-  void OnCompositingEnded(ui::Compositor* compositor) override {}
-  void OnCompositingChildResizing(ui::Compositor* compositor) override {}
-  void OnCompositingShuttingDown(ui::Compositor* compositor) override {}
-
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override {
     DCHECK_EQ(widget, widget_);

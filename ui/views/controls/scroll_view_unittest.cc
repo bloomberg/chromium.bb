@@ -318,11 +318,6 @@ class WidgetScrollViewTest : public test::WidgetTest,
     quit_closure_.Run();
     quit_closure_.Reset();
   }
-  void OnCompositingStarted(ui::Compositor* compositor,
-                            base::TimeTicks start_time) override {}
-  void OnCompositingEnded(ui::Compositor* compositor) override {}
-  void OnCompositingChildResizing(ui::Compositor* compositor) override {}
-  void OnCompositingShuttingDown(ui::Compositor* compositor) override {}
 
   Widget* widget_ = nullptr;
 

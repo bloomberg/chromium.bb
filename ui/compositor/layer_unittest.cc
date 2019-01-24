@@ -413,10 +413,6 @@ class TestCompositorObserver : public CompositorObserver {
 
   void OnCompositingEnded(Compositor* compositor) override { ended_ = true; }
 
-  void OnCompositingChildResizing(Compositor* compositor) override {}
-
-  void OnCompositingShuttingDown(Compositor* compositor) override {}
-
   bool committed_ = false;
   bool started_ = false;
   bool ended_ = false;

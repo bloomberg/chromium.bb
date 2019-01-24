@@ -336,9 +336,6 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
 
   // Overrided from CompositorObserver:
   void OnCompositingDidCommit(ui::Compositor* compositor) override;
-  void OnCompositingStarted(ui::Compositor* compositor,
-                            base::TimeTicks start_time) override;
-  void OnCompositingEnded(ui::Compositor* compositor) override;
   void OnCompositingChildResizing(ui::Compositor* compositor) override;
   void OnCompositingShuttingDown(ui::Compositor* compositor) override;
 
