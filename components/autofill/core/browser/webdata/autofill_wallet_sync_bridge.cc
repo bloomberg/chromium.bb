@@ -188,6 +188,15 @@ AutofillWalletSyncBridge::CreateMetadataChangeList() {
 base::Optional<syncer::ModelError> AutofillWalletSyncBridge::MergeSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
+  // All metadata changes have been already written, return early for an error.
+  base::Optional<syncer::ModelError> error =
+      static_cast<syncer::SyncMetadataStoreChangeList*>(
+          metadata_change_list.get())
+          ->TakeError();
+  if (error) {
+    return error;
+  }
+
   SetSyncData(entity_data);
 
   // After the first sync, we are sure that initial sync is done.
@@ -195,6 +204,8 @@ base::Optional<syncer::ModelError> AutofillWalletSyncBridge::MergeSyncData(
     initial_sync_done_ = true;
     active_callback_.Run(true);
   }
+  // TODO(crbug.com/853688): Update the AutofillTable API to know about write
+  // errors and report them here.
   return base::nullopt;
 }
 
