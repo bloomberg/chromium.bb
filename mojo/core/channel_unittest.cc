@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/optional.h"
+#include "base/process/process_handle.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "mojo/core/platform_handle_utils.h"
@@ -338,6 +339,27 @@ TEST(ChannelTest, RejectHandles) {
 
   receiver_delegate.WaitForError();
   EXPECT_EQ(0u, receiver_delegate.num_messages());
+}
+
+TEST(ChannelTest, DeserializeMessage_BadExtraHeaderSize) {
+  // Verifies that a message payload is rejected when the extra header chunk
+  // size not properly aligned.
+  constexpr uint16_t kBadAlignment = kChannelMessageAlignment + 1;
+  constexpr uint16_t kTotalHeaderSize =
+      sizeof(Channel::Message::Header) + kBadAlignment;
+  constexpr uint32_t kEmptyPayloadSize = 8;
+  constexpr uint32_t kMessageSize = kTotalHeaderSize + kEmptyPayloadSize;
+  char message[kMessageSize];
+  memset(message, 0, kMessageSize);
+
+  Channel::Message::Header* header =
+      reinterpret_cast<Channel::Message::Header*>(&message[0]);
+  header->num_bytes = kMessageSize;
+  header->num_header_bytes = kTotalHeaderSize;
+  header->message_type = Channel::Message::MessageType::NORMAL;
+  header->num_handles = 0;
+  EXPECT_EQ(nullptr, Channel::Message::Deserialize(&message[0], kMessageSize,
+                                                   base::kNullProcessHandle));
 }
 
 }  // namespace

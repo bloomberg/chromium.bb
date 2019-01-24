@@ -217,6 +217,13 @@ Channel::MessagePtr Channel::Message::Deserialize(
     payload = static_cast<const char*>(data) + header->num_header_bytes;
   }
 
+  if (!IsAlignedForChannelMessage(extra_header_size)) {
+    // Well-formed messages always have any extra header bytes aligned to a
+    // |kChannelMessageAlignment| boundary.
+    DLOG(ERROR) << "Invalid extra header size";
+    return nullptr;
+  }
+
 #if defined(OS_WIN)
   uint32_t max_handles = extra_header_size / sizeof(HandleEntry);
 #elif defined(OS_FUCHSIA)
