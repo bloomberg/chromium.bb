@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,10 +11,9 @@ var cca = cca || {};
 
 /**
  * Creates the Camera App main object.
- * @param {number} aspectRatio Aspect ratio of app window when launched.
  * @constructor
  */
-cca.App = function(aspectRatio) {
+cca.App = function() {
   /**
    * @type {cca.models.Gallery}
    * @private
@@ -25,8 +24,7 @@ cca.App = function(aspectRatio) {
    * @type {cca.views.Camera}
    * @private
    */
-  this.cameraView_ = new cca.views.Camera(
-      this.model_, this.onWindowResize_.bind(this));
+  this.cameraView_ = new cca.views.Camera(this.model_);
 
   /**
    * @type {cca.views.MasterSettings}
@@ -64,23 +62,10 @@ cca.App = function(aspectRatio) {
    */
   this.dialogView_ = new cca.views.Dialog();
 
-  /**
-   * @type {?number}
-   * @private
-   */
-  this.resizeWindowTimeout_ = null;
-
-  /**
-   * @type {number}
-   * @private
-   */
-  this.aspectRatio_ = aspectRatio;
-
   // End of properties. Seal the object.
   Object.seal(this);
 
   document.body.addEventListener('keydown', this.onKeyPressed_.bind(this));
-  window.addEventListener('resize', this.onWindowResize_.bind(this, null));
 
   document.title = chrome.i18n.getMessage('name');
   this.setupI18nElements_();
@@ -202,54 +187,6 @@ cca.App.prototype.start = function() {
 };
 
 /**
- * Resizes the window to match the last known aspect ratio if applicable.
- * @private
- */
-cca.App.prototype.resizeByAspectRatio_ = function() {
-  // Don't update window size if it's maximized or fullscreen.
-  if (cca.util.isWindowFullSize()) {
-    return;
-  }
-
-  // Keep the width fixed and calculate the height by the aspect ratio.
-  // TODO(yuli): Update min-width for resizing at portrait orientation.
-  var inner = chrome.app.window.current().innerBounds;
-  var innerW = inner.minWidth;
-  var innerH = Math.round(innerW / this.aspectRatio_);
-
-  // Limit window resizing capability by setting min-height. Don't limit
-  // max-height here as it may disable maximize/fullscreen capabilities.
-  inner.minHeight = innerH;
-
-  inner.width = innerW;
-  inner.height = innerH;
-};
-
-/**
- * Handles resizing window/views for size or aspect ratio changes.
- * @param {number=} aspectRatio Aspect ratio changed.
- * @private
- */
-cca.App.prototype.onWindowResize_ = function(aspectRatio) {
-  if (this.resizeWindowTimeout_) {
-    clearTimeout(this.resizeWindowTimeout_);
-    this.resizeWindowTimeout_ = null;
-  }
-  if (aspectRatio) {
-    // Update window size immediately for changed aspect ratio.
-    this.aspectRatio_ = aspectRatio;
-    this.resizeByAspectRatio_();
-  } else {
-    // Don't further resize window during resizing for smooth UX.
-    this.resizeWindowTimeout_ = setTimeout(() => {
-      this.resizeWindowTimeout_ = null;
-      this.resizeByAspectRatio_();
-    }, 500);
-  }
-  cca.nav.onWindowResized();
-};
-
-/**
  * Handles pressed keys.
  * @param {Event} event Key press event.
  * @private
@@ -269,11 +206,9 @@ cca.App.instance_ = null;
  * Creates the Camera object and starts screen capturing.
  */
 document.addEventListener('DOMContentLoaded', () => {
-  var appWindow = chrome.app.window.current();
   if (!cca.App.instance_) {
-    var inner = appWindow.innerBounds;
-    cca.App.instance_ = new cca.App(inner.width / inner.height);
+    cca.App.instance_ = new cca.App();
   }
   cca.App.instance_.start();
-  appWindow.show();
+  chrome.app.window.current().show();
 });
