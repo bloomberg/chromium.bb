@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_MD_DOWNLOADS_MD_DOWNLOADS_DOM_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_MD_DOWNLOADS_MD_DOWNLOADS_DOM_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_DOWNLOADS_DOWNLOADS_DOM_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_DOWNLOADS_DOWNLOADS_DOM_HANDLER_H_
 
 #include <stdint.h>
 
@@ -13,8 +13,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/download/download_danger_prompt.h"
-#include "chrome/browser/ui/webui/md_downloads/downloads_list_tracker.h"
-#include "chrome/browser/ui/webui/md_downloads/md_downloads.mojom.h"
+#include "chrome/browser/ui/webui/downloads/downloads_list_tracker.h"
+#include "chrome/browser/ui/webui/downloads/downloads.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -130,4 +130,4 @@ class MdDownloadsDOMHandler : public content::WebContentsObserver,
   DISALLOW_COPY_AND_ASSIGN(MdDownloadsDOMHandler);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_MD_DOWNLOADS_MD_DOWNLOADS_DOM_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_DOWNLOADS_DOWNLOADS_DOM_HANDLER_H_

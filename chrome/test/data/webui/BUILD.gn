@@ -160,14 +160,14 @@ js2gtest("browser_tests_js_mojo_lite_webui") {
   sources = [
     "app_management/app_management_browsertest.js",
     "bluetooth_internals_browsertest.js",
-    "md_downloads/downloads_browsertest.js",
+    "downloads/downloads_browsertest.js",
   ]
 
   deps = [
     "//chrome/browser/ui",
   ]
 
-  extra_js_files = [ "//chrome/browser/resources/md_downloads/constants.js" ]
+  extra_js_files = [ "//chrome/browser/resources/downloads/constants.js" ]
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 }
@@ -175,13 +175,13 @@ js2gtest("browser_tests_js_mojo_lite_webui") {
 js2gtest("unit_tests_js") {
   test_type = "unit"
   sources = [
-    "../../../browser/resources/md_downloads/search_service_unittest.gtestjs",
+    "../../../browser/resources/downloads/search_service_unittest.gtestjs",
     "../../../renderer/resources/extensions/notifications_custom_bindings.gtestjs",
     "../unit/framework_unittest.gtestjs",
   ]
   extra_js_files = [
-    "../../../browser/resources/md_downloads/browser_proxy.js",
-    "../../../browser/resources/md_downloads/search_service.js",
+    "../../../browser/resources/downloads/browser_proxy.js",
+    "../../../browser/resources/downloads/search_service.js",
     "../../../renderer/resources/extensions/notifications_custom_bindings.js",
     "../../../renderer/resources/extensions/notifications_test_util.js",
     "//ui/webui/resources/js/cr.js",

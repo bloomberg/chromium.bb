@@ -16,7 +16,7 @@ optimize_webui("build") {
   js_out_files = [ "crisper.js" ]
   excludes = [
     "chrome://resources/js/mojo_bindings_lite.js",
-    "chrome://downloads/md_downloads.mojom-lite.js",
+    "chrome://downloads/downloads.mojom-lite.js",
   ]
 }
 
@@ -34,7 +34,7 @@ js_type_check("closure_compile") {
 
 js_library("browser_proxy") {
   deps = [
-    "//chrome/browser/ui/webui/md_downloads:mojo_bindings_js_externs",
+    "//chrome/browser/ui/webui/downloads:mojo_bindings_js_externs",
     "//ui/webui/resources/js:cr",
   ]
   externs_list = [ "externs.js" ]

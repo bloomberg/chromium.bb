@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/md_downloads/md_downloads_ui.h"
+#include "chrome/browser/ui/webui/downloads/downloads_ui.h"
 
 #include <memory>
 
@@ -14,8 +14,8 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/dark_mode_handler.h"
+#include "chrome/browser/ui/webui/downloads/downloads_dom_handler.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
-#include "chrome/browser/ui/webui/md_downloads/md_downloads_dom_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/buildflags.h"
@@ -108,14 +108,14 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
                           IDR_MD_DOWNLOADS_1X_NO_DOWNLOADS_PNG);
   source->AddResourcePath("2x/no_downloads.png",
                           IDR_MD_DOWNLOADS_2X_NO_DOWNLOADS_PNG);
-  source->AddResourcePath("md_downloads.mojom-lite.js",
+  source->AddResourcePath("downloads.mojom-lite.js",
                           IDR_MD_DOWNLOADS_MOJO_LITE_JS);
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->UseGzip(base::BindRepeating([](const std::string& path) {
     return path != "1x/incognito_marker.png" && path != "1x/no_downloads.png" &&
            path != "2x/incognito_marker.png" && path != "2x/no_downloads.png" &&
-           path != "md_downloads.mojom-lite.js";
+           path != "downloads.mojom-lite.js";
   }));
 
   source->AddResourcePath("crisper.js", IDR_MD_DOWNLOADS_CRISPER_JS);

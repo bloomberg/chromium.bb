@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/md_downloads/md_downloads_dom_handler.h"
+#include "chrome/browser/ui/webui/downloads/downloads_dom_handler.h"
 
 #include <algorithm>
 #include <functional>
@@ -183,7 +183,7 @@ void MdDownloadsDOMHandler::RetryDownload(const std::string& id) {
   const GURL url = file->GetURL();
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("md_downloads_dom_handler", R"(
+      net::DefineNetworkTrafficAnnotation("downloads_dom_handler", R"(
         semantics {
           sender: "The downloads page."
           description: "Retrying a download."
