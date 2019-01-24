@@ -154,6 +154,8 @@ void OomInterventionTabHelper::RenderProcessGone(
 
 void OomInterventionTabHelper::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
+  load_finished_ = false;
+
   // Filter out sub-frame's navigation or if the navigation happens without
   // changing document.
   if (!navigation_handle->IsInMainFrame() ||
@@ -192,11 +194,6 @@ void OomInterventionTabHelper::DidStartNavigation(
   }
 }
 
-void OomInterventionTabHelper::DocumentAvailableInMainFrame() {
-  if (IsLastVisibleWebContents(web_contents()))
-    StartMonitoringIfNeeded();
-}
-
 void OomInterventionTabHelper::OnVisibilityChanged(
     content::Visibility visibility) {
   if (visibility == content::Visibility::VISIBLE) {
@@ -205,6 +202,12 @@ void OomInterventionTabHelper::OnVisibilityChanged(
   } else {
     StopMonitoring();
   }
+}
+
+void OomInterventionTabHelper::DocumentOnLoadCompletedInMainFrame() {
+  load_finished_ = true;
+  if (IsLastVisibleWebContents(web_contents()))
+    StartMonitoringIfNeeded();
 }
 
 void OomInterventionTabHelper::OnCrashDumpProcessed(
@@ -265,6 +268,9 @@ void OomInterventionTabHelper::StartMonitoringIfNeeded() {
     return;
 
   if (near_oom_detected_time_)
+    return;
+
+  if (!load_finished_)
     return;
 
   auto* config = OomInterventionConfig::GetInstance();
