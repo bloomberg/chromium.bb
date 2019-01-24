@@ -3368,14 +3368,14 @@ Element* Document::ViewportDefiningElement() const {
   return root_element;
 }
 
-Document* Document::open(LocalDOMWindow* entered_window,
+Document* Document::open(v8::Isolate* isolate,
                          const AtomicString& type,
                          const AtomicString& replace,
                          ExceptionState& exception_state) {
   if (replace == "replace") {
     UseCounter::Count(Loader(), WebFeature::kDocumentOpenTwoArgsWithReplace);
   }
-  open(entered_window->document(), exception_state);
+  open(EnteredDOMWindow(isolate)->document(), exception_state);
   return this;
 }
 
@@ -3964,11 +3964,9 @@ void Document::writeln(const String& text,
   write("\n", entered_document);
 }
 
-void Document::write(LocalDOMWindow* entered_window,
+void Document::write(v8::Isolate* isolate,
                      const Vector<String>& text,
                      ExceptionState& exception_state) {
-  DCHECK(entered_window);
-
   if (GetSecurityContext().RequireTrustedTypes()) {
     DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
     exception_state.ThrowTypeError(
@@ -3982,14 +3980,13 @@ void Document::write(LocalDOMWindow* entered_window,
   StringBuilder builder;
   for (const String& string : text)
     builder.Append(string);
-  write(builder.ToString(), entered_window->document(), exception_state);
+  write(builder.ToString(), EnteredDOMWindow(isolate)->document(),
+        exception_state);
 }
 
-void Document::writeln(LocalDOMWindow* entered_window,
+void Document::writeln(v8::Isolate* isolate,
                        const Vector<String>& text,
                        ExceptionState& exception_state) {
-  DCHECK(entered_window);
-
   if (GetSecurityContext().RequireTrustedTypes()) {
     DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
     exception_state.ThrowTypeError(
@@ -4003,23 +4000,24 @@ void Document::writeln(LocalDOMWindow* entered_window,
   StringBuilder builder;
   for (const String& string : text)
     builder.Append(string);
-  writeln(builder.ToString(), entered_window->document(), exception_state);
+  writeln(builder.ToString(), EnteredDOMWindow(isolate)->document(),
+          exception_state);
 }
 
-void Document::write(LocalDOMWindow* entered_window,
+void Document::write(v8::Isolate* isolate,
                      TrustedHTML* text,
                      ExceptionState& exception_state) {
-  DCHECK(entered_window);
   DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
-  write(text->toString(), entered_window->document(), exception_state);
+  write(text->toString(), EnteredDOMWindow(isolate)->document(),
+        exception_state);
 }
 
-void Document::writeln(LocalDOMWindow* entered_window,
+void Document::writeln(v8::Isolate* isolate,
                        TrustedHTML* text,
                        ExceptionState& exception_state) {
-  DCHECK(entered_window);
   DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
-  writeln(text->toString(), entered_window->document(), exception_state);
+  writeln(text->toString(), EnteredDOMWindow(isolate)->document(),
+          exception_state);
 }
 
 DOMTimerCoordinator* Document::Timers() {
