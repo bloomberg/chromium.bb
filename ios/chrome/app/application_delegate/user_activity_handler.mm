@@ -265,18 +265,18 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
             : ApplicationMode::NORMAL;
     GURL URL;
     GURL virtualURL;
-    if (base::FeatureList::IsEnabled(
+    GURL completeURL = startupInformation.startupParameters.completeURL;
+    GURL externalURL = startupInformation.startupParameters.externalURL;
+    if (completeURL.SchemeIsFile() &&
+        base::FeatureList::IsEnabled(
             experimental_flags::kExternalFilesLoadedInWebState)) {
       // External URL will be loaded by WebState, which expects |completeURL|.
       // Omnibox however suppose to display |externalURL|, which is used as
       // virtual URL.
-      URL = startupInformation.startupParameters.completeURL;
-      virtualURL = startupInformation.startupParameters.externalURL;
+      URL = completeURL;
+      virtualURL = externalURL;
     } else {
-      // |externalURL| is rewritten to chrome:// URL, which is expected by
-      // ExternalFileController. ExternalFileController will be used to load
-      // file:// URL. TODO(crbug.com/913602): Remove this code.
-      URL = startupInformation.startupParameters.externalURL;
+      URL = externalURL;
     }
     [tabOpener dismissModalsAndOpenSelectedTabInMode:targetMode
                                              withURL:URL
