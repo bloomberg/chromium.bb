@@ -1725,8 +1725,6 @@ void OmniboxViewViews::OnCompositingEnded(ui::Compositor* compositor) {
   }
 }
 
-void OmniboxViewViews::OnCompositingChildResizing(ui::Compositor* compositor) {}
-
 void OmniboxViewViews::OnCompositingShuttingDown(ui::Compositor* compositor) {
   scoped_compositor_observer_.RemoveAll();
 }

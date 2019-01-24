@@ -476,17 +476,6 @@ void DelegatedFrameHost::ContinueDelegatedFrameEviction() {
 ////////////////////////////////////////////////////////////////////////////////
 // DelegatedFrameHost, ui::CompositorObserver implementation:
 
-void DelegatedFrameHost::OnCompositingDidCommit(ui::Compositor* compositor) {
-}
-
-void DelegatedFrameHost::OnCompositingStarted(ui::Compositor* compositor,
-                                              base::TimeTicks start_time) {}
-
-void DelegatedFrameHost::OnCompositingEnded(ui::Compositor* compositor) {}
-
-void DelegatedFrameHost::OnCompositingChildResizing(
-    ui::Compositor* compositor) {}
-
 void DelegatedFrameHost::OnCompositingShuttingDown(ui::Compositor* compositor) {
   DCHECK_EQ(compositor, compositor_);
   DetachFromCompositor();

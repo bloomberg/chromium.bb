@@ -108,7 +108,6 @@ class CompositorWatcher : public ui::CompositorObserver {
 
     RunCallbackIfAllCompositingEnded();
   }
-  void OnCompositingChildResizing(ui::Compositor* compositor) override {}
   void OnCompositingShuttingDown(ui::Compositor* compositor) override {
     compositor_observer_.Remove(compositor);
     pending_compositing_.erase(compositor);

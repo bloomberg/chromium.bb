@@ -548,11 +548,6 @@ void WindowTreeHost::OnCompositingDidCommit(ui::Compositor* compositor) {
                       base::TimeTicks::Now() - synchronization_start_time_);
 }
 
-void WindowTreeHost::OnCompositingStarted(ui::Compositor* compositor,
-                                          base::TimeTicks start_time) {}
-
-void WindowTreeHost::OnCompositingEnded(ui::Compositor* compositor) {}
-
 void WindowTreeHost::OnCompositingChildResizing(ui::Compositor* compositor) {
   if (!window()->env()->throttle_input_on_resize() || holding_pointer_moves_)
     return;
