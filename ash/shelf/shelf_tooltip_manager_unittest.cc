@@ -209,14 +209,14 @@ TEST_F(ShelfTooltipManagerTest, HideForExternalEvents) {
   EXPECT_FALSE(tooltip_manager_->IsVisible());
 }
 
-TEST_F(ShelfTooltipManagerTest, DoNotHideForKeyEvents) {
+TEST_F(ShelfTooltipManagerTest, KeyEvents) {
   ui::test::EventGenerator* generator = GetEventGenerator();
 
-  // Should not hide for key events.
+  // Should hide when 'Esc' is pressed.
   tooltip_manager_->ShowTooltip(shelf_view_->GetAppListButton());
   ASSERT_TRUE(tooltip_manager_->IsVisible());
-  generator->PressKey(ui::VKEY_A, ui::EF_NONE);
-  EXPECT_TRUE(tooltip_manager_->IsVisible());
+  generator->PressKey(ui::VKEY_ESCAPE, ui::EF_NONE);
+  EXPECT_FALSE(tooltip_manager_->IsVisible());
 }
 
 }  // namespace ash
