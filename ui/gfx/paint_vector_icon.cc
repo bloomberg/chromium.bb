@@ -210,9 +210,6 @@ void PaintPath(Canvas* canvas,
                int dip_size,
                SkColor color,
                const base::TimeDelta& elapsed_time) {
-  SkPath path;
-  path.setFillType(SkPath::kEvenOdd_FillType);
-
   int canvas_size = kReferenceSizeDip;
   std::vector<SkPath> paths;
   std::vector<cc::PaintFlags> flags_array;
