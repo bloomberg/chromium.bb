@@ -79,7 +79,12 @@ IN_PROC_BROWSER_TEST_F(AudioPlayerBrowserTest, ChangeTracksPlayListIcon) {
   StartTest();
 }
 
-IN_PROC_BROWSER_TEST_F(AudioPlayerBrowserTest, NativeMediaKey) {
+#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
+#define MAYBE_NativeMediaKey DISABLED_NativeMediaKey
+#else
+#define MAYBE_NativeMediaKey NativeMediaKey
+#endif
+IN_PROC_BROWSER_TEST_F(AudioPlayerBrowserTest, MAYBE_NativeMediaKey) {
   set_test_case_name("mediaKeyNative");
   StartTest();
 }
