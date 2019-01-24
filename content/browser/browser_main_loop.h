@@ -93,6 +93,7 @@ class BrowserMainParts;
 class BrowserOnlineStateObserver;
 class BrowserThreadImpl;
 class LoaderDelegateImpl;
+class MediaKeysListenerManagerImpl;
 class MediaStreamManager;
 class ResourceDispatcherHostImpl;
 class SaveFileManager;
@@ -176,6 +177,9 @@ class CONTENT_EXPORT BrowserMainLoop {
   }
   net::NetworkChangeNotifier* network_change_notifier() const {
     return network_change_notifier_.get();
+  }
+  MediaKeysListenerManagerImpl* media_keys_listener_manager() const {
+    return media_keys_listener_manager_.get();
   }
 
 #if defined(OS_CHROMEOS)
@@ -359,6 +363,7 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   // Members initialized in |BrowserThreadsStarted()| --------------------------
   std::unique_ptr<mojo::core::ScopedIPCSupport> mojo_ipc_support_;
+  std::unique_ptr<MediaKeysListenerManagerImpl> media_keys_listener_manager_;
 
   // |user_input_monitor_| has to outlive |audio_manager_|, so declared first.
   std::unique_ptr<media::UserInputMonitor> user_input_monitor_;

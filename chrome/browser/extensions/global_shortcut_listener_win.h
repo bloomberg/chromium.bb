@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/extensions/global_shortcut_listener.h"
+#include "ui/base/accelerators/media_keys_listener.h"
 
 namespace gfx {
 
@@ -23,7 +24,8 @@ namespace extensions {
 // Windows-specific implementation of the GlobalShortcutListener class that
 // listens for global shortcuts. Handles setting up a keyboard hook and
 // forwarding its output to the base class for processing.
-class GlobalShortcutListenerWin : public GlobalShortcutListener {
+class GlobalShortcutListenerWin : public GlobalShortcutListener,
+                                  public ui::MediaKeysListener::Delegate {
  public:
   GlobalShortcutListenerWin();
   ~GlobalShortcutListenerWin() override;
@@ -38,10 +40,14 @@ class GlobalShortcutListenerWin : public GlobalShortcutListener {
   bool RegisterAcceleratorImpl(const ui::Accelerator& accelerator) override;
   void UnregisterAcceleratorImpl(const ui::Accelerator& accelerator) override;
 
+  // ui::MediaKeysListener::Delegate implementation.
+  void OnMediaKeysAccelerator(const ui::Accelerator& accelerator) override;
+
   // Whether this object is listening for global shortcuts.
   bool is_listening_;
 
-  // A map of registered accelerators and their registration ids.
+  // A map of registered accelerators and their registration ids. The value is
+  // null for media keys if kHardwareMediaKeyHandling is true.
   using HotKeyMap = std::map<ui::Accelerator,
                              std::unique_ptr<gfx::SingletonHwndHotKeyObserver>>;
   HotKeyMap hotkeys_;

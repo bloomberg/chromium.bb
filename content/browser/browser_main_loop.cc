@@ -79,6 +79,7 @@
 #include "content/browser/loader_delegate_impl.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_internals.h"
+#include "content/browser/media/media_keys_listener_manager_impl.h"
 #include "content/browser/memory/swap_metrics_delegate_uma.h"
 #include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
@@ -119,6 +120,7 @@
 #include "media/audio/audio_system.h"
 #include "media/audio/audio_thread_impl.h"
 #include "media/base/media.h"
+#include "media/base/media_switches.h"
 #include "media/base/user_input_monitor.h"
 #include "media/media_buildflags.h"
 #include "media/midi/midi_service.h"
@@ -1449,6 +1451,14 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   if (!parsed_command_line_.HasSwitch(
           switches::kDisableGpuProcessForDX12VulkanInfoCollection)) {
     GpuDataManagerImpl::GetInstance()->RequestGpuSupportedRuntimeVersion();
+  }
+#endif
+
+#if !defined(OS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(media::kHardwareMediaKeyHandling)) {
+    media_keys_listener_manager_ =
+        std::make_unique<MediaKeysListenerManagerImpl>(
+            content::ServiceManagerConnection::GetForProcess()->GetConnector());
   }
 #endif
 

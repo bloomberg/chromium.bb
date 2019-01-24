@@ -27,12 +27,12 @@ GlobalMediaKeysListenerWin::~GlobalMediaKeysListenerWin() {
   has_instance_ = false;
 }
 
-void GlobalMediaKeysListenerWin::StartWatchingMediaKey(KeyboardCode key_code) {
+bool GlobalMediaKeysListenerWin::StartWatchingMediaKey(KeyboardCode key_code) {
   DCHECK(IsMediaKeycode(key_code));
 
   // If the hotkey is already registered, do nothing.
   if (key_codes_hotkey_observers_.contains(key_code))
-    return;
+    return true;
 
   // Create an observer that registers a hot key for |key_code|.
   std::unique_ptr<gfx::SingletonHwndHotKeyObserver> observer =
@@ -48,6 +48,8 @@ void GlobalMediaKeysListenerWin::StartWatchingMediaKey(KeyboardCode key_code) {
 
   UMA_HISTOGRAM_BOOLEAN("Media.MediaKeysListener.RegisterHotKeyResult",
                         success);
+
+  return success;
 }
 
 void GlobalMediaKeysListenerWin::StopWatchingMediaKey(KeyboardCode key_code) {

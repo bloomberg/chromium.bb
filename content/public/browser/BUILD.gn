@@ -168,6 +168,8 @@ jumbo_source_set("browser_sources") {
     "media_capture_devices.h",
     "media_device_id.cc",
     "media_device_id.h",
+    "media_keys_listener_manager.cc",
+    "media_keys_listener_manager.h",
     "media_request_state.h",
     "media_session.h",
     "media_session_observer.cc",

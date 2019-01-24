@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/observer_list_types.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
@@ -24,9 +25,9 @@ class UI_BASE_EXPORT MediaKeysListener {
   };
 
   // Media keys accelerators receiver.
-  class UI_BASE_EXPORT Delegate {
+  class UI_BASE_EXPORT Delegate : public base::CheckedObserver {
    public:
-    virtual ~Delegate();
+    ~Delegate() override;
 
     // Called on media key event.
     virtual void OnMediaKeysAccelerator(const Accelerator& accelerator) = 0;
@@ -41,8 +42,11 @@ class UI_BASE_EXPORT MediaKeysListener {
 
   virtual ~MediaKeysListener();
 
-  // Start listening for a given media key.
-  virtual void StartWatchingMediaKey(KeyboardCode key_code) = 0;
+  // Start listening for a given media key. Returns true if the listener
+  // successfully started listening for the key. Some implementations may not be
+  // able to register if another application is already listening to the media
+  // key.
+  virtual bool StartWatchingMediaKey(KeyboardCode key_code) = 0;
   // Stop listening for a given media key.
   virtual void StopWatchingMediaKey(KeyboardCode key_code) = 0;
 };

@@ -12,14 +12,29 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/command.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/media_keys_listener_manager.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_constants.h"
 
+#if !defined(OS_CHROMEOS)
+#include "media/base/media_switches.h"
+#endif
+
 namespace {
+
+bool ShouldUseMediaKeysListenerManager() {
+#if defined(OS_CHROMEOS)
+  return false;
+#else
+  return base::FeatureList::IsEnabled(media::kHardwareMediaKeyHandling);
+#endif
+}
+
 const char kOnCommandEventName[] = "commands.onCommand";
+
 }  // namespace
 
 namespace extensions {
@@ -57,6 +72,7 @@ void ExtensionKeybindingRegistry::SetShortcutHandlingSuspended(bool suspended) {
 void ExtensionKeybindingRegistry::RemoveExtensionKeybinding(
     const Extension* extension,
     const std::string& command_name) {
+  bool any_media_keys_removed = false;
   auto it = event_targets_.begin();
   while (it != event_targets_.end()) {
     TargetList& target_list = it->second;
@@ -74,9 +90,11 @@ void ExtensionKeybindingRegistry::RemoveExtensionKeybinding(
       // Let each platform-specific implementation get a chance to clean up.
       RemoveExtensionKeybindingImpl(old->first, command_name);
 
-      // If the key is a media key, inform the MediaKeysListener.
-      if (media_keys_listener_ && Command::IsMediaKey(old->first))
-        media_keys_listener_->StopWatchingMediaKey(old->first.key_code());
+      if (Command::IsMediaKey(old->first)) {
+        any_media_keys_removed = true;
+        if (media_keys_listener_)
+          media_keys_listener_->StopWatchingMediaKey(old->first.key_code());
+      }
 
       event_targets_.erase(old);
 
@@ -85,6 +103,17 @@ void ExtensionKeybindingRegistry::RemoveExtensionKeybinding(
       if (!command_name.empty())
         break;
     }
+  }
+
+  // If we're no longer listening to any media keys, tell the browser that
+  // it can start handling media keys.
+  if (any_media_keys_removed && ShouldUseMediaKeysListenerManager() &&
+      !IsListeningToAnyMediaKeys()) {
+    content::MediaKeysListenerManager* media_keys_listener_manager =
+        content::MediaKeysListenerManager::GetInstance();
+    DCHECK(media_keys_listener_manager);
+
+    media_keys_listener_manager->EnableInternalMediaKeyHandling();
   }
 }
 
@@ -151,10 +180,22 @@ void ExtensionKeybindingRegistry::AddEventTarget(
       std::make_pair(extension_id, command_name));
   // Shortcuts except media keys have only one target in the list. See comment
   // about |event_targets_|.
-  if (!Command::IsMediaKey(accelerator))
+  if (!Command::IsMediaKey(accelerator)) {
     DCHECK_EQ(1u, event_targets_[accelerator].size());
-  else if (media_keys_listener_)
-    media_keys_listener_->StartWatchingMediaKey(accelerator.key_code());
+  } else {
+    if (media_keys_listener_)
+      media_keys_listener_->StartWatchingMediaKey(accelerator.key_code());
+
+    // Tell the browser that it should not handle media keys, since we're going
+    // to handle them.
+    if (ShouldUseMediaKeysListenerManager()) {
+      content::MediaKeysListenerManager* media_keys_listener_manager =
+          content::MediaKeysListenerManager::GetInstance();
+      DCHECK(media_keys_listener_manager);
+
+      media_keys_listener_manager->DisableInternalMediaKeyHandling();
+    }
+  }
 }
 
 bool ExtensionKeybindingRegistry::GetFirstTarget(
@@ -276,6 +317,14 @@ bool ExtensionKeybindingRegistry::ExecuteCommands(
   }
 
   return executed;
+}
+
+bool ExtensionKeybindingRegistry::IsListeningToAnyMediaKeys() const {
+  for (const auto& accelerator_target : event_targets_) {
+    if (Command::IsMediaKey(accelerator_target.first))
+      return true;
+  }
+  return false;
 }
 
 }  // namespace extensions

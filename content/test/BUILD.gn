@@ -1109,6 +1109,11 @@ test("content_browsertests") {
     ]
   }
 
+  if (!is_chromeos) {
+    sources +=
+        [ "../browser/media/media_keys_listener_manager_impl_browsertest.cc" ]
+  }
+
   if (is_win) {
     sources += [
       "../browser/accessibility/accessibility_win_browsertest.cc",
