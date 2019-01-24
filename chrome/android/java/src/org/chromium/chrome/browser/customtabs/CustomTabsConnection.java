@@ -1447,10 +1447,6 @@ public class CustomTabsConnection {
             CustomTabsSessionToken session, String url, String origin, int referrerPolicy,
             @DetachedResourceRequestMotivation int motivation);
 
-    public ModuleLoader getModuleLoader(ComponentName componentName) {
-        return getModuleLoader(componentName, 0);
-    }
-
     public ModuleLoader getModuleLoader(ComponentName componentName, int resourceId) {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE_DEX_LOADING)) {
             resourceId = 0;
