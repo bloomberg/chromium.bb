@@ -169,6 +169,7 @@ void FCMInvalidationListener::DoRegistrationUpdate() {
 
 void FCMInvalidationListener::RequestDetailedStatus(
     base::Callback<void(const base::DictionaryValue&)> callback) const {
+  network_channel_->RequestDetailedStatus(callback);
   callback.Run(*CollectDebugData());
 }
 
