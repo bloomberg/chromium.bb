@@ -35,7 +35,7 @@ function finishTest(status_string) {
 function runTest() {
   let container = document.createElement("div");
   container.id = "container";
-  container.getDisplayLock().commit().then(
+  container.displayLock.commit().then(
       () => { finishTest("FAIL"); },
       () => { finishTest("PASS"); });
   document.body.appendChild(container);

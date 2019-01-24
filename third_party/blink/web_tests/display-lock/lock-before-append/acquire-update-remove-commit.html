@@ -32,16 +32,16 @@ function runTest() {
   let container = document.createElement("div");
   container.id = "container";
 
-  container.getDisplayLock().acquire({ timeout: Infinity }).then(() => {
+  container.displayLock.acquire({ timeout: Infinity }).then(() => {
     document.body.appendChild(container);
-    container.getDisplayLock().update().then(
+    container.displayLock.update().then(
       () => { finishTest("FAIL"); },
       () => {
         document.body.appendChild(container);
         finishTest("PASS");
       });
     container.remove();
-    container.getDisplayLock().commit();
+    container.displayLock.commit();
   });
 }
 

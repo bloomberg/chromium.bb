@@ -38,7 +38,7 @@ function finishTest(status_string) {
 function runTest() {
   let container = document.getElementById("container");
   container.classList = "contained";
-  container.getDisplayLock().acquire({ timeout: Infinity }).then(
+  container.displayLock.acquire({ timeout: Infinity }).then(
     () => { finishTest("PASS"); },
     () => { finishTest("FAIL"); });
 }

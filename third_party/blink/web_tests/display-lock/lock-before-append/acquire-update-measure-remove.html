@@ -67,10 +67,10 @@ function construct(container) {
 function runTest() {
   let container = document.createElement("div");
   container.id = "container";
-  container.getDisplayLock().acquire({ timeout: Infinity }).then(() => {
+  container.displayLock.acquire({ timeout: Infinity }).then(() => {
     construct(container);
     document.getElementById("empty").appendChild(container);
-    container.getDisplayLock().update().then(measureAndRemove).then(finish);
+    container.displayLock.update().then(measureAndRemove).then(finish);
   });
 }
 

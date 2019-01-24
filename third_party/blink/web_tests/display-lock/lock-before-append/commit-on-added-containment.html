@@ -29,12 +29,12 @@ function finishTest(status_string) {
 
 async function runTest() {
   let container = document.createElement("div");
-  await container.getDisplayLock().acquire({ timeout: Infinity });
+  await container.displayLock.acquire({ timeout: Infinity });
 
   container.classList = "contained";
   document.body.appendChild(container);
 
-  container.getDisplayLock().commit().then(
+  container.displayLock.commit().then(
     () => { finishTest("PASS"); },
     () => { finishTest("FAIL"); });
 }

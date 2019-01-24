@@ -33,7 +33,7 @@ function finishTest() {
 
 function runTest() {
   let container = document.getElementById("container");
-  container.getDisplayLock().acquire({ timeout: Infinity }).then(() => {
+  container.displayLock.acquire({ timeout: Infinity }).then(() => {
     finishTest();
   });
 }
