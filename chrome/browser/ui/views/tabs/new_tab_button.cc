@@ -74,8 +74,6 @@ NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
   ink_drop_container_->SetVisible(false);
   SetInkDropMode(InkDropMode::ON);
   set_ink_drop_visible_opacity(0.08f);
-
-  SetInstallFocusRingOnFocus(true);
 }
 
 NewTabButton::~NewTabButton() {

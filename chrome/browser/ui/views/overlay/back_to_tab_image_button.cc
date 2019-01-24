@@ -46,7 +46,6 @@ BackToTabImageButton::BackToTabImageButton(ButtonListener* listener)
       IDS_PICTURE_IN_PICTURE_BACK_TO_TAB_CONTROL_TEXT));
   SetAccessibleName(back_to_tab_button_label);
   SetTooltipText(back_to_tab_button_label);
-  SetInstallFocusRingOnFocus(true);
 }
 
 void BackToTabImageButton::StateChanged(ButtonState old_state) {

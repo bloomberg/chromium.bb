@@ -162,7 +162,6 @@ TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBackground(std::unique_ptr<views::Background>(background_));
-  SetInstallFocusRingOnFocus(true);
   focus_ring()->SetColor(kFocusBorderColor);
   SetFocusPainter(nullptr);
 

@@ -58,7 +58,6 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxPopupContentsView* model,
   animation_->SetSlideDuration(500);
   SetElideBehavior(gfx::FADE_TAIL);
 
-  SetInstallFocusRingOnFocus(true);
   focus_ring()->SetHasFocusPredicate([](View* view) {
     auto* button = static_cast<OmniboxTabSwitchButton*>(view);
     return button->IsSelected();

@@ -30,7 +30,6 @@ PlaybackImageButton::PlaybackImageButton(ButtonListener* listener)
       l10n_util::GetStringUTF16(
           IDS_PICTURE_IN_PICTURE_PLAY_PAUSE_CONTROL_ACCESSIBLE_TEXT));
   SetAccessibleName(playback_accessible_button_label);
-  SetInstallFocusRingOnFocus(true);
 }
 
 PlaybackImageButton::~PlaybackImageButton() = default;
