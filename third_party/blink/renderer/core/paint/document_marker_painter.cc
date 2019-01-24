@@ -60,6 +60,8 @@ sk_sp<PaintRecord> RecordMarker(Color blink_color) {
 
 static const float kMarkerWidth = 4;
 static const float kMarkerHeight = 3;
+// Spacing between two dots.
+static const float kMarkerSpacing = 1;
 
 sk_sp<PaintRecord> RecordMarker(Color blink_color) {
   const SkColor color = blink_color.Rgb();
@@ -116,10 +118,8 @@ void DrawDocumentMarker(GraphicsContext& context,
 
 #if defined(OS_MACOSX)
   // Make sure to draw only complete dots, and finish inside the marked text.
-  width -= fmodf(width, kMarkerWidth * zoom);
-#else
-  // Offset it vertically by 1 so that there's some space under the text.
-  origin_y += 1;
+  float spacing = kMarkerSpacing * zoom;
+  width -= fmodf(width + spacing, kMarkerWidth * zoom) - spacing;
 #endif
 
   const auto rect = SkRect::MakeWH(width, kMarkerHeight * zoom);
@@ -164,19 +164,20 @@ void DocumentMarkerPainter::PaintStyleableMarkerUnderline(
   start += 1;
   width -= 2;
 
-  // Thick marked text underlines are 2px thick as long as there is room for the
-  // 2px line under the baseline.  All other marked text underlines are 1px
-  // thick.  If there's not enough space the underline will touch or overlap
-  // characters.
-  int line_thickness = 1;
+  // Thick marked text underlines are 2px (before zoom) thick as long as there
+  // is room for the 2px line under the baseline.  All other marked text
+  // underlines are 1px (before zoom) thick.  If there's not enough space the
+  // underline will touch or overlap characters. Line thickness should change
+  // with zoom.
+  int line_thickness = 1 * style.EffectiveZoom();
   const SimpleFontData* font_data = style.GetFont().PrimaryFont();
   DCHECK(font_data);
   int baseline = font_data ? font_data->GetFontMetrics().Ascent() : 0;
-  if (marker.HasThicknessThick() && logical_height.ToInt() - baseline >= 2)
-    line_thickness = 2;
-
-  // Line thickness should change with zoom.
-  line_thickness *= style.EffectiveZoom();
+  if (marker.HasThicknessThick()) {
+    int thick_line_thickness = 2 * style.EffectiveZoom();
+    if (logical_height.ToInt() - baseline >= thick_line_thickness)
+      line_thickness = thick_line_thickness;
+  }
 
   Color marker_color =
       marker.UseTextColor()
@@ -192,8 +193,6 @@ void DocumentMarkerPainter::PaintStyleableMarkerUnderline(
       width);
 }
 
-static const int kMisspellingLineThickness = 3;
-
 void DocumentMarkerPainter::PaintDocumentMarker(
     GraphicsContext& context,
     const LayoutPoint& box_origin,
@@ -208,26 +207,28 @@ void DocumentMarkerPainter::PaintDocumentMarker(
   // actually the most useful, and matches what AppKit does.  So, we generally
   // place the underline at the bottom of the text, but in larger fonts that's
   // not so good so we pin to two pixels under the baseline.
-  int line_thickness = kMisspellingLineThickness;
+  float zoom = style.EffectiveZoom();
+  int line_thickness = kMarkerHeight * zoom;
 
   const SimpleFontData* font_data = style.GetFont().PrimaryFont();
   DCHECK(font_data);
   int baseline = font_data->GetFontMetrics().Ascent();
-  int descent = (local_rect.Height() - baseline).ToInt();
+  int available_height = (local_rect.Height() - baseline).ToInt();
   int underline_offset;
-  if (descent <= (line_thickness + 2)) {
+  if (available_height <= line_thickness + 2 * zoom) {
     // Place the underline at the very bottom of the text in small/medium fonts.
+    // The underline will overlap with the bottom of the text if
+    // available_height is smaller than line_thickness.
     underline_offset = (local_rect.Height() - line_thickness).ToInt();
   } else {
     // In larger fonts, though, place the underline up near the baseline to
     // prevent a big gap.
-    underline_offset = baseline + 2;
+    underline_offset = baseline + 2 * zoom;
   }
   DrawDocumentMarker(context,
                      FloatPoint((box_origin.X() + local_rect.X()).ToFloat(),
                                 (box_origin.Y() + underline_offset).ToFloat()),
-                     local_rect.Width().ToFloat(), marker_type,
-                     style.EffectiveZoom());
+                     local_rect.Width().ToFloat(), marker_type, zoom);
 }
 
 TextPaintStyle DocumentMarkerPainter::ComputeTextPaintStyleFrom(
