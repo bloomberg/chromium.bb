@@ -43,8 +43,10 @@ class WindowServerTestImpl : public mojom::WindowServerTest {
   // Request to capture the window contents of the client and invoke the
   // callback with sanity check result of the captured pixels.
   void RequestWindowContents(const std::string& client_name,
+                             int retry_count,
                              EnsureClientHasDrawnWindowCallback cb);
   void OnWindowContentsCaptured(const std::string& client_name,
+                                int retry_count,
                                 EnsureClientHasDrawnWindowCallback cb,
                                 std::unique_ptr<viz::CopyOutputResult> result);
 
