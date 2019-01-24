@@ -14,17 +14,14 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.SecureRandomInitializer;
 import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
-import org.chromium.base.task.AsyncTask;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
 import javax.crypto.KeyGenerator;
@@ -48,7 +45,6 @@ public class WebappAuthenticator {
     private static final int MAC_KEY_BYTE_COUNT = 32;
     private static final Object sLock = new Object();
 
-    private static FutureTask<SecretKey> sMacKeyGenerator;
     private static SecretKey sKey;
 
     private static final TimesHistogramSample sWebappValidationTimes = new TimesHistogramSample(
@@ -180,20 +176,12 @@ public class WebappAuthenticator {
                     return sKey;
                 }
 
-                triggerMacKeyGeneration();
-                try {
-                    sKey = sMacKeyGenerator.get();
-                    sMacKeyGenerator = null;
-                    if (!writeKeyToFile(context, MAC_KEY_BASENAME, sKey)) {
-                        sKey = null;
-                        return null;
-                    }
-                    return sKey;
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                } catch (ExecutionException e) {
-                    throw new RuntimeException(e);
+                sKey = generateMacKey();
+                if (!writeKeyToFile(context, MAC_KEY_BASENAME, sKey)) {
+                    sKey = null;
+                    return null;
                 }
+                return sKey;
             }
             return sKey;
         }
@@ -201,27 +189,22 @@ public class WebappAuthenticator {
 
     /**
      * Generates the authentication encryption key in a background thread (if necessary).
+     * SecureRandomInitializer addresses the bug in SecureRandom that "TrulyRandom" warns about, so
+     * this lint warning can safely be suppressed.
      */
-    private static void triggerMacKeyGeneration() {
-        synchronized (sLock) {
-            if (sKey != null || sMacKeyGenerator != null) {
-                return;
-            }
-
-            sMacKeyGenerator = new FutureTask<SecretKey>(new Callable<SecretKey>() {
-                // SecureRandomInitializer addresses the bug in SecureRandom that "TrulyRandom"
-                // warns about, so this lint warning can safely be suppressed.
-                @SuppressLint("TrulyRandom")
-                @Override
-                public SecretKey call() throws Exception {
-                    KeyGenerator generator = KeyGenerator.getInstance(MAC_ALGORITHM_NAME);
-                    SecureRandom random = new SecureRandom();
-                    SecureRandomInitializer.initialize(random);
-                    generator.init(MAC_KEY_BYTE_COUNT * 8, random);
-                    return generator.generateKey();
-                }
-            });
-            AsyncTask.THREAD_POOL_EXECUTOR.execute(sMacKeyGenerator);
+    @SuppressLint("TrulyRandom")
+    private static SecretKey generateMacKey() {
+        if (sKey != null) {
+            return sKey;
+        }
+        try {
+            KeyGenerator generator = KeyGenerator.getInstance(MAC_ALGORITHM_NAME);
+            SecureRandom random = new SecureRandom();
+            SecureRandomInitializer.initialize(random);
+            generator.init(MAC_KEY_BYTE_COUNT * 8, random);
+            return generator.generateKey();
+        } catch (NoSuchAlgorithmException | IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
