@@ -159,7 +159,7 @@ const char* HomeButton::GetClassName() const {
 
 bool HomeButton::GetDropFormats(
     int* formats,
-    std::set<ui::Clipboard::FormatType>* format_types) {
+    std::set<ui::ClipboardFormatType>* format_types) {
   *formats = ui::OSExchangeData::URL;
   return true;
 }

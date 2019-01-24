@@ -44,7 +44,7 @@ class TargetView : public views::View {
   // views::View overrides:
   bool GetDropFormats(
       int* formats,
-      std::set<ui::Clipboard::FormatType>* format_types) override {
+      std::set<ui::ClipboardFormatType>* format_types) override {
     *formats = ui::OSExchangeData::STRING;
     return true;
   }

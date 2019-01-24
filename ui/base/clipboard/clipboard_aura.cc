@@ -19,6 +19,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "skia/ext/skia_utils_base.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/clipboard/clipboard_constants.h"
+#include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/gfx/geometry/size.h"
@@ -27,8 +29,6 @@ namespace ui {
 
 namespace {
 
-const char kMimeTypeFilename[] = "chromium/filename";
-const char kMimeTypeBitmap[] = "image/bmp";
 const size_t kMaxClipboardSize = 1;
 
 // Clipboard data format used by AuraClipboard.
@@ -404,117 +404,6 @@ class ClipboardDataBuilder {
 
 ClipboardData* ClipboardDataBuilder::current_data_ = nullptr;
 
-// Clipboard::FormatType implementation.
-Clipboard::FormatType::FormatType() {
-}
-
-Clipboard::FormatType::FormatType(const std::string& native_format)
-    : data_(native_format) {
-}
-
-Clipboard::FormatType::~FormatType() {
-}
-
-std::string Clipboard::FormatType::Serialize() const {
-  return data_;
-}
-
-// static
-Clipboard::FormatType Clipboard::FormatType::Deserialize(
-    const std::string& serialization) {
-  return FormatType(serialization);
-}
-
-bool Clipboard::FormatType::operator<(const FormatType& other) const {
-  return data_ < other.data_;
-}
-
-bool Clipboard::FormatType::Equals(const FormatType& other) const {
-  return data_ == other.data_;
-}
-
-// Various predefined FormatTypes.
-// static
-Clipboard::FormatType Clipboard::GetFormatType(
-    const std::string& format_string) {
-  return FormatType::Deserialize(format_string);
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetUrlFormatType() {
-  static base::NoDestructor<FormatType> type(kMimeTypeURIList);
-  return *type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetUrlWFormatType() {
-  return GetUrlFormatType();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetMozUrlFormatType() {
-  static base::NoDestructor<FormatType> type(kMimeTypeMozillaURL);
-  return *type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetPlainTextFormatType() {
-  static base::NoDestructor<FormatType> type(kMimeTypeText);
-  return *type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetPlainTextWFormatType() {
-  return GetPlainTextFormatType();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetFilenameFormatType() {
-  static base::NoDestructor<FormatType> type(kMimeTypeFilename);
-  return *type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetFilenameWFormatType() {
-  return Clipboard::GetFilenameFormatType();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetHtmlFormatType() {
-  static base::NoDestructor<FormatType> type(kMimeTypeHTML);
-  return *type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetRtfFormatType() {
-  static base::NoDestructor<FormatType> type(kMimeTypeRTF);
-  return *type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetBitmapFormatType() {
-  static base::NoDestructor<FormatType> type(kMimeTypeBitmap);
-  return *type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetWebKitSmartPasteFormatType() {
-  static base::NoDestructor<FormatType> type(kMimeTypeWebkitSmartPaste);
-  return *type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType() {
-  static base::NoDestructor<FormatType> type(kMimeTypeWebCustomData);
-  return *type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType() {
-  static base::NoDestructor<FormatType> type(kMimeTypePepperCustomData);
-  return *type;
-}
-
 // Clipboard factory method.
 Clipboard* Clipboard::Create() {
   return new ClipboardAura;
@@ -537,20 +426,20 @@ uint64_t ClipboardAura::GetSequenceNumber(ClipboardType type) const {
   return clipboard_internal_->sequence_number();
 }
 
-bool ClipboardAura::IsFormatAvailable(const FormatType& format,
+bool ClipboardAura::IsFormatAvailable(const ClipboardFormatType& format,
                                       ClipboardType type) const {
   DCHECK(CalledOnValidThread());
   DCHECK(IsSupportedClipboardType(type));
-  if (GetPlainTextFormatType().Equals(format) ||
-      GetUrlFormatType().Equals(format))
+  if (ClipboardFormatType::GetPlainTextType().Equals(format) ||
+      ClipboardFormatType::GetUrlType().Equals(format))
     return clipboard_internal_->IsFormatAvailable(TEXT);
-  if (GetHtmlFormatType().Equals(format))
+  if (ClipboardFormatType::GetHtmlType().Equals(format))
     return clipboard_internal_->IsFormatAvailable(HTML);
-  if (GetRtfFormatType().Equals(format))
+  if (ClipboardFormatType::GetRtfType().Equals(format))
     return clipboard_internal_->IsFormatAvailable(RTF);
-  if (GetBitmapFormatType().Equals(format))
+  if (ClipboardFormatType::GetBitmapType().Equals(format))
     return clipboard_internal_->IsFormatAvailable(BITMAP);
-  if (GetWebKitSmartPasteFormatType().Equals(format))
+  if (ClipboardFormatType::GetWebKitSmartPasteType().Equals(format))
     return clipboard_internal_->IsFormatAvailable(WEB);
   const ClipboardData* data = clipboard_internal_->GetData();
   return data && data->custom_data_format() == format.ToString();
@@ -573,13 +462,16 @@ void ClipboardAura::ReadAvailableTypes(ClipboardType type,
 
   types->clear();
   *contains_filenames = false;
-  if (IsFormatAvailable(GetPlainTextFormatType(), type))
-    types->push_back(base::UTF8ToUTF16(GetPlainTextFormatType().ToString()));
-  if (IsFormatAvailable(GetHtmlFormatType(), type))
-    types->push_back(base::UTF8ToUTF16(GetHtmlFormatType().ToString()));
-  if (IsFormatAvailable(GetRtfFormatType(), type))
-    types->push_back(base::UTF8ToUTF16(GetRtfFormatType().ToString()));
-  if (IsFormatAvailable(GetBitmapFormatType(), type))
+  if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), type))
+    types->push_back(
+        base::UTF8ToUTF16(ClipboardFormatType::GetPlainTextType().ToString()));
+  if (IsFormatAvailable(ClipboardFormatType::GetHtmlType(), type))
+    types->push_back(
+        base::UTF8ToUTF16(ClipboardFormatType::GetHtmlType().ToString()));
+  if (IsFormatAvailable(ClipboardFormatType::GetRtfType(), type))
+    types->push_back(
+        base::UTF8ToUTF16(ClipboardFormatType::GetRtfType().ToString()));
+  if (IsFormatAvailable(ClipboardFormatType::GetBitmapType(), type))
     types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
 
   if (clipboard_internal_->IsFormatAvailable(CUSTOM) &&
@@ -633,7 +525,7 @@ void ClipboardAura::ReadBookmark(base::string16* title,
   clipboard_internal_->ReadBookmark(title, url);
 }
 
-void ClipboardAura::ReadData(const FormatType& format,
+void ClipboardAura::ReadData(const ClipboardFormatType& format,
                              std::string* result) const {
   DCHECK(CalledOnValidThread());
   clipboard_internal_->ReadData(format.ToString(), result);
@@ -677,7 +569,7 @@ void ClipboardAura::WriteBitmap(const SkBitmap& bitmap) {
   ClipboardDataBuilder::WriteBitmap(bitmap);
 }
 
-void ClipboardAura::WriteData(const FormatType& format,
+void ClipboardAura::WriteData(const ClipboardFormatType& format,
                               const char* data_data,
                               size_t data_len) {
   ClipboardDataBuilder::WriteData(format.ToString(), data_data, data_len);

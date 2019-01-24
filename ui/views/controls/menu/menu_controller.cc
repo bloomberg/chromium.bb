@@ -923,7 +923,7 @@ void MenuController::ViewHierarchyChanged(
 bool MenuController::GetDropFormats(
     SubmenuView* source,
     int* formats,
-    std::set<ui::Clipboard::FormatType>* format_types) {
+    std::set<ui::ClipboardFormatType>* format_types) {
   return source->GetMenuItem()->GetDelegate()->GetDropFormats(
       source->GetMenuItem(), formats, format_types);
 }

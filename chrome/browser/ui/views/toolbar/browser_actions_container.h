@@ -192,9 +192,8 @@ class BrowserActionsContainer : public views::View,
   int GetHeightForWidth(int width) const override;
   gfx::Size GetMinimumSize() const override;
   void Layout() override;
-  bool GetDropFormats(
-      int* formats,
-      std::set<ui::Clipboard::FormatType>* format_types) override;
+  bool GetDropFormats(int* formats,
+                      std::set<ui::ClipboardFormatType>* format_types) override;
   bool AreDropTypesRequired() override;
   bool CanDrop(const ui::OSExchangeData& data) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;

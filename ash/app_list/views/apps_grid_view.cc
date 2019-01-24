@@ -816,7 +816,7 @@ gfx::Size AppsGridView::CalculatePreferredSize() const {
 
 bool AppsGridView::GetDropFormats(
     int* formats,
-    std::set<ui::Clipboard::FormatType>* format_types) {
+    std::set<ui::ClipboardFormatType>* format_types) {
   // TODO(koz): Only accept a specific drag type for app shortcuts.
   *formats = OSExchangeData::FILE_NAME;
   return true;

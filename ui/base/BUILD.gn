@@ -76,18 +76,6 @@ jumbo_component("base") {
     "accelerators/platform_accelerator_cocoa.mm",
     "class_property.cc",
     "class_property.h",
-    "clipboard/clipboard_android.cc",
-    "clipboard/clipboard_android.h",
-    "clipboard/clipboard_mac.h",
-    "clipboard/clipboard_mac.mm",
-    "clipboard/clipboard_types.h",
-    "clipboard/clipboard_util_mac.h",
-    "clipboard/clipboard_util_mac.mm",
-    "clipboard/clipboard_util_win.cc",
-    "clipboard/clipboard_util_win.h",
-    "clipboard/clipboard_win.cc",
-    "clipboard/clipboard_win.h",
-    "clipboard/custom_data_helper_mac.mm",
     "cocoa/accessibility_focus_overrider.h",
     "cocoa/accessibility_focus_overrider.mm",
     "cocoa/animation_utils.h",
@@ -319,16 +307,6 @@ jumbo_component("base") {
       "accelerators/accelerator_manager.h",
       "base_window.cc",
       "base_window.h",
-      "clipboard/clipboard.cc",
-      "clipboard/clipboard.h",
-      "clipboard/clipboard_constants.cc",
-      "clipboard/clipboard_monitor.cc",
-      "clipboard/clipboard_monitor.h",
-      "clipboard/clipboard_observer.h",
-      "clipboard/custom_data_helper.cc",
-      "clipboard/custom_data_helper.h",
-      "clipboard/scoped_clipboard_writer.cc",
-      "clipboard/scoped_clipboard_writer.h",
       "cocoa/bubble_closer.h",
       "cocoa/bubble_closer.mm",
       "cursor/cursor_util.cc",
@@ -420,6 +398,7 @@ jumbo_component("base") {
     "//net",
     "//third_party/icu",
     "//third_party/zlib:zlib",
+    "//ui/base/clipboard:clipboard_types",
     "//ui/display",
     "//ui/events",
     "//ui/events/devices",
@@ -530,6 +509,10 @@ jumbo_component("base") {
     ]
   }
 
+  if (is_mac || is_win) {
+    deps += [ "//ui/base/clipboard" ]
+  }
+
   libs = []
   if (is_win) {
     sources += [
@@ -627,20 +610,6 @@ jumbo_component("base") {
   }
 
   if (use_aura) {
-    # Aura clipboard.
-    if (use_x11 && is_desktop_linux) {
-      sources += [
-        "clipboard/clipboard_aurax11.cc",
-        "clipboard/clipboard_aurax11.h",
-      ]
-    } else if (!is_win) {
-      # This file is used for all non-X11, non-Windows aura Builds.
-      sources += [
-        "clipboard/clipboard_aura.cc",
-        "clipboard/clipboard_aura.h",
-      ]
-    }
-
     # Cursor
     sources += [
       "cursor/cursors_aura.cc",
@@ -687,8 +656,6 @@ jumbo_static_library("test_support") {
       "test/scoped_fake_nswindow_fullscreen.mm",
       "test/scoped_preferred_scroller_style_mac.h",
       "test/scoped_preferred_scroller_style_mac.mm",
-      "test/test_clipboard.cc",
-      "test/test_clipboard.h",
       "test/view_tree_validator.h",
       "test/view_tree_validator.mm",
       "test/windowed_nsnotification_observer.h",
@@ -840,8 +807,6 @@ if (is_ios) {
 test("ui_base_unittests") {
   sources = [
     "class_property_unittest.cc",
-    "clipboard/clipboard_mac_unittest.mm",
-    "clipboard/clipboard_util_mac_unittest.mm",
     "l10n/l10n_util_mac_unittest.mm",
     "l10n/l10n_util_unittest.cc",
     "l10n/time_format_unittest.cc",
@@ -863,7 +828,6 @@ test("ui_base_unittests") {
   if (!is_ios) {
     sources += [
       "test/scoped_fake_nswindow_fullscreen_unittest.mm",
-      "test/test_clipboard_unittest.cc",
       "test/view_tree_validator_unittest.mm",
     ]
   }
@@ -891,7 +855,6 @@ test("ui_base_unittests") {
       "accelerators/menu_label_accelerator_util_linux_unittest.cc",
       "accelerators/menu_label_accelerator_util_unittest.cc",
       "accelerators/platform_accelerator_cocoa_unittest.mm",
-      "clipboard/custom_data_helper_unittest.cc",
       "cocoa/base_view_unittest.mm",
       "cocoa/bubble_closer_unittest.mm",
       "cocoa/cocoa_base_utils_unittest.mm",
@@ -952,6 +915,8 @@ test("ui_base_unittests") {
     "//ui/base",
     "//ui/base:test_support",
     "//ui/base:ui_data_pack",
+    "//ui/base/clipboard:clipboard_test",
+    "//ui/base/clipboard:clipboard_types",
     "//ui/display",
     "//ui/events:events_base",
     "//ui/events:test_support",

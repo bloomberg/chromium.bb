@@ -8,6 +8,8 @@
 #include <set>
 
 #include "base/strings/string16.h"
+#include "ui/base/clipboard/clipboard_format_type.h"
+#include "ui/base/clipboard/clipboard_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/views/views_export.h"
 
@@ -76,7 +78,7 @@ class VIEWS_EXPORT TextfieldController {
   // Enables the controller to append to the accepted drop formats.
   virtual void AppendDropFormats(
       int* formats,
-      std::set<ui::Clipboard::FormatType>* format_types) {}
+      std::set<ui::ClipboardFormatType>* format_types) {}
 
   // Called when a drop of dragged data happens on the textfield. This method is
   // called before regular handling of the drop. If this returns a drag

@@ -24,6 +24,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/class_property.h"
+#include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
@@ -1091,9 +1092,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // |formats| is a bitmask of the formats defined bye OSExchangeData::Format.
   // The default implementation returns false, which means the view doesn't
   // support dropping.
-  virtual bool GetDropFormats(
-      int* formats,
-      std::set<ui::Clipboard::FormatType>* format_types);
+  virtual bool GetDropFormats(int* formats,
+                              std::set<ui::ClipboardFormatType>* format_types);
 
   // Override and return true if the data must be available before any drop
   // methods should be invoked. The default is false.

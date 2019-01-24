@@ -1709,7 +1709,7 @@ TEST_F(TextfieldTest, DragAndDrop_AcceptDrop) {
   base::string16 string(ASCIIToUTF16("string "));
   data.SetString(string);
   int formats = 0;
-  std::set<ui::Clipboard::FormatType> format_types;
+  std::set<ui::ClipboardFormatType> format_types;
 
   // Ensure that disabled textfields do not accept drops.
   textfield_->SetEnabled(false);
@@ -1743,7 +1743,7 @@ TEST_F(TextfieldTest, DragAndDrop_AcceptDrop) {
   // Ensure that textfields do not accept non-OSExchangeData::STRING types.
   ui::OSExchangeData bad_data;
   bad_data.SetFilename(base::FilePath(FILE_PATH_LITERAL("x")));
-  ui::Clipboard::FormatType fmt = ui::Clipboard::GetBitmapFormatType();
+  ui::ClipboardFormatType fmt = ui::ClipboardFormatType::GetBitmapType();
   bad_data.SetPickledData(fmt, base::Pickle());
   bad_data.SetFileContents(base::FilePath(L"x"), "x");
   bad_data.SetHtml(base::string16(ASCIIToUTF16("x")), GURL("x.org"));
@@ -1807,7 +1807,7 @@ TEST_F(TextfieldTest, DragAndDrop_ToTheRight) {
   ui::OSExchangeData data;
   int formats = 0;
   int operations = 0;
-  std::set<ui::Clipboard::FormatType> format_types;
+  std::set<ui::ClipboardFormatType> format_types;
 
   // Start dragging "ello".
   textfield_->SelectRange(gfx::Range(1, 5));
@@ -1858,7 +1858,7 @@ TEST_F(TextfieldTest, DragAndDrop_ToTheLeft) {
   ui::OSExchangeData data;
   int formats = 0;
   int operations = 0;
-  std::set<ui::Clipboard::FormatType> format_types;
+  std::set<ui::ClipboardFormatType> format_types;
 
   // Start dragging " worl".
   textfield_->SelectRange(gfx::Range(5, 10));

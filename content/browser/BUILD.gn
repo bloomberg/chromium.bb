@@ -200,6 +200,7 @@ jumbo_source_set("browser") {
     "//ui/accessibility:ax_enums_mojo",
     "//ui/base",
     "//ui/base:buildflags",
+    "//ui/base/clipboard",
     "//ui/base/ime",
     "//ui/display",
     "//ui/display/types",

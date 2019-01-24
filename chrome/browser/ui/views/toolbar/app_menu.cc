@@ -887,10 +887,9 @@ bool AppMenu::IsTriggerableEvent(views::MenuItemView* menu,
       MenuDelegate::IsTriggerableEvent(menu, e);
 }
 
-bool AppMenu::GetDropFormats(
-    MenuItemView* menu,
-    int* formats,
-    std::set<ui::Clipboard::FormatType>* format_types) {
+bool AppMenu::GetDropFormats(MenuItemView* menu,
+                             int* formats,
+                             std::set<ui::ClipboardFormatType>* format_types) {
   CreateBookmarkMenu();
   return bookmark_menu_delegate_.get() &&
       bookmark_menu_delegate_->GetDropFormats(menu, formats, format_types);

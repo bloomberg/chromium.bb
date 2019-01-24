@@ -13,7 +13,7 @@
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
-#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_constants.h"
 
 using blink::WebDragData;
 using blink::WebString;
@@ -31,20 +31,20 @@ DropData DropDataBuilder::Build(const WebDragData& drag_data) {
     switch (item.storage_type) {
       case WebDragData::Item::kStorageTypeString: {
         base::string16 str_type(item.string_type.Utf16());
-        if (base::EqualsASCII(str_type, ui::Clipboard::kMimeTypeText)) {
+        if (base::EqualsASCII(str_type, ui::kMimeTypeText)) {
           result.text = WebString::ToNullableString16(item.string_data);
           break;
         }
-        if (base::EqualsASCII(str_type, ui::Clipboard::kMimeTypeURIList)) {
+        if (base::EqualsASCII(str_type, ui::kMimeTypeURIList)) {
           result.url = blink::WebStringToGURL(item.string_data);
           result.url_title = item.title.Utf16();
           break;
         }
-        if (base::EqualsASCII(str_type, ui::Clipboard::kMimeTypeDownloadURL)) {
+        if (base::EqualsASCII(str_type, ui::kMimeTypeDownloadURL)) {
           result.download_metadata = item.string_data.Utf16();
           break;
         }
-        if (base::EqualsASCII(str_type, ui::Clipboard::kMimeTypeHTML)) {
+        if (base::EqualsASCII(str_type, ui::kMimeTypeHTML)) {
           result.html = WebString::ToNullableString16(item.string_data);
           result.html_base_url = item.base_url;
           break;

@@ -130,7 +130,7 @@ class DragDropView : public View {
   // View:
   bool GetDropFormats(
       int* formats,
-      std::set<ui::Clipboard::FormatType>* format_types) override {
+      std::set<ui::ClipboardFormatType>* format_types) override {
     *formats |= formats_;
     return true;
   }

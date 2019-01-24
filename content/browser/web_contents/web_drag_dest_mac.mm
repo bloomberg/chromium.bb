@@ -19,6 +19,7 @@
 #include "content/public/common/web_contents_ns_view_bridge.mojom.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+#include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"

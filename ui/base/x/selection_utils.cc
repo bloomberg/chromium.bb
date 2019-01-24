@@ -14,7 +14,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 
 namespace ui {
@@ -37,14 +37,14 @@ std::vector<::Atom> GetTextAtomsFrom() {
 
 std::vector<::Atom> GetURLAtomsFrom() {
   std::vector< ::Atom> atoms;
-  atoms.push_back(gfx::GetAtom(Clipboard::kMimeTypeURIList));
-  atoms.push_back(gfx::GetAtom(Clipboard::kMimeTypeMozillaURL));
+  atoms.push_back(gfx::GetAtom(kMimeTypeURIList));
+  atoms.push_back(gfx::GetAtom(kMimeTypeMozillaURL));
   return atoms;
 }
 
 std::vector<::Atom> GetURIListAtomsFrom() {
   std::vector< ::Atom> atoms;
-  atoms.push_back(gfx::GetAtom(Clipboard::kMimeTypeURIList));
+  atoms.push_back(gfx::GetAtom(kMimeTypeURIList));
   return atoms;
 }
 
@@ -198,7 +198,7 @@ std::string SelectionData::GetText() const {
 base::string16 SelectionData::GetHtml() const {
   base::string16 markup;
 
-  if (type_ == gfx::GetAtom(Clipboard::kMimeTypeHTML)) {
+  if (type_ == gfx::GetAtom(kMimeTypeHTML)) {
     const unsigned char* data = GetData();
     size_t size = GetSize();
 

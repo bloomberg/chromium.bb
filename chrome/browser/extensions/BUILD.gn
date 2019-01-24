@@ -883,6 +883,7 @@ jumbo_static_library("extensions") {
     "//third_party/zlib/google:zip",
     "//ui/accessibility:ax_enums_mojo",
     "//ui/base",
+    "//ui/base/clipboard",
     "//ui/base/ime",
     "//ui/display/manager",
     "//ui/gfx",

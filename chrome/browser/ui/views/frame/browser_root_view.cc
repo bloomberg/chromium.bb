@@ -113,7 +113,7 @@ BrowserRootView::~BrowserRootView() = default;
 
 bool BrowserRootView::GetDropFormats(
     int* formats,
-    std::set<ui::Clipboard::FormatType>* format_types) {
+    std::set<ui::ClipboardFormatType>* format_types) {
   if (tabstrip()->visible() || toolbar()->visible()) {
     *formats = ui::OSExchangeData::URL | ui::OSExchangeData::STRING;
     return true;

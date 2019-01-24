@@ -600,16 +600,16 @@ TEST_P(OmniboxViewViewsClipboardTest, ClipboardCopyOrCutURL) {
 
   // Make sure both HTML and Plain Text formats are available.
   EXPECT_TRUE(clipboard->IsFormatAvailable(
-      ui::Clipboard::GetPlainTextFormatType(), clipboard_type));
-  EXPECT_TRUE(clipboard->IsFormatAvailable(ui::Clipboard::GetHtmlFormatType(),
-                                           clipboard_type));
+      ui::ClipboardFormatType::GetPlainTextType(), clipboard_type));
+  EXPECT_TRUE(clipboard->IsFormatAvailable(
+      ui::ClipboardFormatType::GetHtmlType(), clipboard_type));
 
   // Windows clipboard only supports text URLs.
   // Mac clipboard not reporting URL format available for some reason.
   // crbug.com/751031
 #if defined(OS_LINUX)
-  EXPECT_TRUE(clipboard->IsFormatAvailable(ui::Clipboard::GetUrlFormatType(),
-                                           clipboard_type));
+  EXPECT_TRUE(clipboard->IsFormatAvailable(
+      ui::ClipboardFormatType::GetUrlType(), clipboard_type));
 #endif
 
   std::string read_from_clipboard;
@@ -635,9 +635,9 @@ TEST_P(OmniboxViewViewsClipboardTest, ClipboardCopyOrCutUserText) {
   // Make sure HTML format isn't written. See
   // BookmarkNodeData::WriteToClipboard() for details.
   EXPECT_TRUE(clipboard->IsFormatAvailable(
-      ui::Clipboard::GetPlainTextFormatType(), clipboard_type));
-  EXPECT_FALSE(clipboard->IsFormatAvailable(ui::Clipboard::GetHtmlFormatType(),
-                                            clipboard_type));
+      ui::ClipboardFormatType::GetPlainTextType(), clipboard_type));
+  EXPECT_FALSE(clipboard->IsFormatAvailable(
+      ui::ClipboardFormatType::GetHtmlType(), clipboard_type));
 
   std::string read_from_clipboard;
   clipboard->ReadAsciiText(clipboard_type, &read_from_clipboard);

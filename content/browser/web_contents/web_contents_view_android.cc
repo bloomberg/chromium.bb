@@ -28,6 +28,7 @@
 #include "jni/DragEvent_jni.h"
 #include "ui/android/overscroll_refresh_handler.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/display/screen.h"
 #include "ui/events/android/drag_event_android.h"
 #include "ui/events/android/gesture_event_android.h"
@@ -413,9 +414,9 @@ bool WebContentsViewAndroid::OnDragEvent(const ui::DragEventAndroid& event) {
       base::string16 drop_content =
           ConvertJavaStringToUTF16(env, event.GetJavaContent());
       for (const base::string16& mime_type : event.mime_types()) {
-        if (base::EqualsASCII(mime_type, ui::Clipboard::kMimeTypeURIList)) {
+        if (base::EqualsASCII(mime_type, ui::kMimeTypeURIList)) {
           drop_data.url = GURL(drop_content);
-        } else if (base::EqualsASCII(mime_type, ui::Clipboard::kMimeTypeText)) {
+        } else if (base::EqualsASCII(mime_type, ui::kMimeTypeText)) {
           drop_data.text = base::NullableString16(drop_content, false);
         } else {
           drop_data.html = base::NullableString16(drop_content, false);

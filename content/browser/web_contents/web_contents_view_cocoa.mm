@@ -14,6 +14,7 @@
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/common/web_contents_ns_view_bridge.mojom.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+#include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/dragdrop/cocoa_dnd_util.h"

@@ -106,7 +106,7 @@
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/public/web/web_widget.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/base_event_utils.h"
@@ -226,8 +226,7 @@ WebDragData DropMetaDataToWebDragData(
       // DropData::MetaData --> WebDragData-->DropData. In the end, DropData
       // will contain an empty URL (which means no URL is dragged) if the URL in
       // WebDragData is empty.
-      if (base::EqualsASCII(meta_data_item.mime_type,
-                            ui::Clipboard::kMimeTypeURIList)) {
+      if (base::EqualsASCII(meta_data_item.mime_type, ui::kMimeTypeURIList)) {
         item.string_data = WebString::FromUTF8("about:dragdrop-placeholder");
       }
       item_list.push_back(item);
@@ -272,7 +271,7 @@ WebDragData DropDataToWebDragData(const DropData& drop_data) {
   if (!drop_data.text.is_null()) {
     WebDragData::Item item;
     item.storage_type = WebDragData::Item::kStorageTypeString;
-    item.string_type = WebString::FromUTF8(ui::Clipboard::kMimeTypeText);
+    item.string_type = WebString::FromUTF8(ui::kMimeTypeText);
     item.string_data = WebString::FromUTF16(drop_data.text.string());
     item_list.push_back(item);
   }
@@ -280,7 +279,7 @@ WebDragData DropDataToWebDragData(const DropData& drop_data) {
   if (!drop_data.url.is_empty()) {
     WebDragData::Item item;
     item.storage_type = WebDragData::Item::kStorageTypeString;
-    item.string_type = WebString::FromUTF8(ui::Clipboard::kMimeTypeURIList);
+    item.string_type = WebString::FromUTF8(ui::kMimeTypeURIList);
     item.string_data = WebString::FromUTF8(drop_data.url.spec());
     item.title = WebString::FromUTF16(drop_data.url_title);
     item_list.push_back(item);
@@ -289,7 +288,7 @@ WebDragData DropDataToWebDragData(const DropData& drop_data) {
   if (!drop_data.html.is_null()) {
     WebDragData::Item item;
     item.storage_type = WebDragData::Item::kStorageTypeString;
-    item.string_type = WebString::FromUTF8(ui::Clipboard::kMimeTypeHTML);
+    item.string_type = WebString::FromUTF8(ui::kMimeTypeHTML);
     item.string_data = WebString::FromUTF16(drop_data.html.string());
     item.base_url = drop_data.html_base_url;
     item_list.push_back(item);

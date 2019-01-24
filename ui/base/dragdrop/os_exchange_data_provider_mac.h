@@ -35,7 +35,7 @@ class UI_BASE_EXPORT OSExchangeDataProviderMac
   void SetURL(const GURL& url, const base::string16& title) override;
   void SetFilename(const base::FilePath& path) override;
   void SetFilenames(const std::vector<FileInfo>& filenames) override;
-  void SetPickledData(const Clipboard::FormatType& format,
+  void SetPickledData(const ClipboardFormatType& format,
                       const base::Pickle& data) override;
   bool GetString(base::string16* data) const override;
   bool GetURLAndTitle(OSExchangeData::FilenameToURLPolicy policy,
@@ -43,12 +43,12 @@ class UI_BASE_EXPORT OSExchangeDataProviderMac
                       base::string16* title) const override;
   bool GetFilename(base::FilePath* path) const override;
   bool GetFilenames(std::vector<FileInfo>* filenames) const override;
-  bool GetPickledData(const Clipboard::FormatType& format,
+  bool GetPickledData(const ClipboardFormatType& format,
                       base::Pickle* data) const override;
   bool HasString() const override;
   bool HasURL(OSExchangeData::FilenameToURLPolicy policy) const override;
   bool HasFile() const override;
-  bool HasCustomFormat(const Clipboard::FormatType& format) const override;
+  bool HasCustomFormat(const ClipboardFormatType& format) const override;
   void SetDragImage(const gfx::ImageSkia& image,
                     const gfx::Vector2d& cursor_offset) override;
   gfx::ImageSkia GetDragImage() const override;

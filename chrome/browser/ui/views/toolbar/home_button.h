@@ -19,9 +19,8 @@ class HomeButton : public ToolbarButton {
  private:
   // ToolbarButton:
   const char* GetClassName() const override;
-  bool GetDropFormats(
-      int* formats,
-      std::set<ui::Clipboard::FormatType>* format_types) override;
+  bool GetDropFormats(int* formats,
+                      std::set<ui::ClipboardFormatType>* format_types) override;
   bool CanDrop(const OSExchangeData& data) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
   int OnPerformDrop(const ui::DropTargetEvent& event) override;

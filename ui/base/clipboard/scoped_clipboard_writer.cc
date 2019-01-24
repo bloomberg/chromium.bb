@@ -11,6 +11,7 @@
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/escape.h"
+#include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace ui {
@@ -107,7 +108,7 @@ void ScopedClipboardWriter::WriteImage(const SkBitmap& bitmap) {
 
 void ScopedClipboardWriter::WritePickledData(
     const base::Pickle& pickle,
-    const Clipboard::FormatType& format) {
+    const ClipboardFormatType& format) {
   std::string format_string = format.Serialize();
   Clipboard::ObjectMapParam format_parameter(format_string.begin(),
                                              format_string.end());

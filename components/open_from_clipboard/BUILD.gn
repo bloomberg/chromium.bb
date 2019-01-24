@@ -10,13 +10,6 @@ static_library("open_from_clipboard") {
     "clipboard_recent_content_ios.mm",
   ]
 
-  if (!is_ios) {
-    sources += [
-      "clipboard_recent_content_generic.cc",
-      "clipboard_recent_content_generic.h",
-    ]
-  }
-
   deps = [
     ":open_from_clipboard_impl",
     "//base",
@@ -25,6 +18,14 @@ static_library("open_from_clipboard") {
     "//ui/base:base",
     "//url",
   ]
+
+  if (!is_ios) {
+    sources += [
+      "clipboard_recent_content_generic.cc",
+      "clipboard_recent_content_generic.h",
+    ]
+    deps += [ "//ui/base/clipboard" ]
+  }
 }
 
 # Helper classes used by "open_from_clipboard" target. These classes must have
@@ -66,10 +67,6 @@ source_set("unit_tests") {
     "clipboard_recent_content_ios_unittest.mm",
   ]
 
-  if (!is_ios) {
-    sources += [ "clipboard_recent_content_generic_unittest.cc" ]
-  }
-
   deps = [
     ":open_from_clipboard",
     ":open_from_clipboard_impl",
@@ -78,4 +75,9 @@ source_set("unit_tests") {
     "//ui/base:test_support",
     "//url",
   ]
+
+  if (!is_ios) {
+    sources += [ "clipboard_recent_content_generic_unittest.cc" ]
+    deps += [ "//ui/base/clipboard:clipboard_test_support" ]
+  }
 }

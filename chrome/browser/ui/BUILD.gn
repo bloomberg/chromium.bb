@@ -525,6 +525,7 @@ jumbo_split_static_library("ui") {
     "//third_party/zlib",
     "//ui/accessibility",
     "//ui/base",
+    "//ui/base/clipboard",
     "//ui/base/ime",
     "//ui/compositor",
     "//ui/content_accelerators",

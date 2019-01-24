@@ -164,7 +164,7 @@ class VIEWS_EXPORT MenuController
 
   bool GetDropFormats(SubmenuView* source,
                       int* formats,
-                      std::set<ui::Clipboard::FormatType>* format_types);
+                      std::set<ui::ClipboardFormatType>* format_types);
   bool AreDropTypesRequired(SubmenuView* source);
   bool CanDrop(SubmenuView* source, const ui::OSExchangeData& data);
   void OnDragEntered(SubmenuView* source, const ui::DropTargetEvent& event);

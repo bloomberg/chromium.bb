@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_TEST_TEST_CLIPBOARD_H_
-#define UI_BASE_TEST_TEST_CLIPBOARD_H_
+#ifndef UI_BASE_CLIPBOARD_TEST_TEST_CLIPBOARD_H_
+#define UI_BASE_CLIPBOARD_TEST_TEST_CLIPBOARD_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -34,7 +34,7 @@ class TestClipboard : public Clipboard {
   // Clipboard overrides.
   void OnPreShutdown() override;
   uint64_t GetSequenceNumber(ClipboardType type) const override;
-  bool IsFormatAvailable(const FormatType& format,
+  bool IsFormatAvailable(const ClipboardFormatType& format,
                          ClipboardType type) const override;
   void Clear(ClipboardType type) override;
   void ReadAvailableTypes(ClipboardType type,
@@ -53,7 +53,8 @@ class TestClipboard : public Clipboard {
                       const base::string16& type,
                       base::string16* result) const override;
   void ReadBookmark(base::string16* title, std::string* url) const override;
-  void ReadData(const FormatType& format, std::string* result) const override;
+  void ReadData(const ClipboardFormatType& format,
+                std::string* result) const override;
   base::Time GetLastModifiedTime() const override;
   void ClearLastModifiedTime() override;
   void WriteObjects(ClipboardType type, const ObjectMap& objects) override;
@@ -69,7 +70,7 @@ class TestClipboard : public Clipboard {
                      size_t url_len) override;
   void WriteWebSmartPaste() override;
   void WriteBitmap(const SkBitmap& bitmap) override;
-  void WriteData(const FormatType& format,
+  void WriteData(const ClipboardFormatType& format,
                  const char* data_data,
                  size_t data_len) override;
 
@@ -80,7 +81,7 @@ class TestClipboard : public Clipboard {
     ~DataStore();
     void Clear();
     uint64_t sequence_number;
-    base::flat_map<FormatType, std::string> data;
+    base::flat_map<ClipboardFormatType, std::string> data;
     std::string url_title;
     std::string html_src_url;
     SkBitmap image;
@@ -101,4 +102,4 @@ class TestClipboard : public Clipboard {
 
 }  // namespace ui
 
-#endif  // UI_BASE_TEST_TEST_CLIPBOARD_H_
+#endif  // UI_BASE_CLIPBOARD_TEST_TEST_CLIPBOARD_H_

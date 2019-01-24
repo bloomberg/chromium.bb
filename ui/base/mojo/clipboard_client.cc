@@ -30,7 +30,7 @@ uint64_t ClipboardClient::GetSequenceNumber(ClipboardType type) const {
   return sequence_number;
 }
 
-bool ClipboardClient::IsFormatAvailable(const FormatType& format,
+bool ClipboardClient::IsFormatAvailable(const ClipboardFormatType& format,
                                         ClipboardType type) const {
   mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
   bool result = false;
@@ -96,7 +96,7 @@ void ClipboardClient::ReadBookmark(base::string16* title,
   clipboard_->ReadBookmark(title, url);
 }
 
-void ClipboardClient::ReadData(const FormatType& format,
+void ClipboardClient::ReadData(const ClipboardFormatType& format,
                                std::string* result) const {
   mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
   clipboard_->ReadData(format.Serialize(), result);
@@ -157,7 +157,7 @@ void ClipboardClient::WriteBitmap(const SkBitmap& bitmap) {
   clipboard_->WriteBitmap(out_bitmap);
 }
 
-void ClipboardClient::WriteData(const FormatType& format,
+void ClipboardClient::WriteData(const ClipboardFormatType& format,
                                 const char* data_data,
                                 size_t data_len) {
   mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
