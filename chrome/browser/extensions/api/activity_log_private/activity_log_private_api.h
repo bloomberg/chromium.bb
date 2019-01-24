@@ -50,6 +50,8 @@ class ActivityLogAPI : public BrowserContextKeyedAPI,
   void OnListenerAdded(const EventListenerInfo& details) override;
   void OnListenerRemoved(const EventListenerInfo& details) override;
 
+  void StartOrStopListeningForExtensionActivities();
+
   content::BrowserContext* browser_context_;
   ActivityLog* activity_log_;
   bool initialized_;

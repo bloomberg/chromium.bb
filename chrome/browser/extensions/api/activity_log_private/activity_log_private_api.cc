@@ -85,11 +85,19 @@ bool ActivityLogAPI::IsExtensionWhitelisted(const std::string& extension_id) {
 }
 
 void ActivityLogAPI::OnListenerAdded(const EventListenerInfo& details) {
-  // TODO(felt): Only observe activity_log_ events when we have a customer.
+  if (activity_log_->has_listeners())
+    return;
+  StartOrStopListeningForExtensionActivities();
 }
 
 void ActivityLogAPI::OnListenerRemoved(const EventListenerInfo& details) {
-  // TODO(felt): Only observe activity_log_ events when we have a customer.
+  StartOrStopListeningForExtensionActivities();
+}
+
+void ActivityLogAPI::StartOrStopListeningForExtensionActivities() {
+  EventRouter* event_router = EventRouter::Get(browser_context_);
+  activity_log_->SetHasListeners(event_router->HasEventListener(
+      activity_log_private::OnExtensionActivity::kEventName));
 }
 
 void ActivityLogAPI::OnExtensionActivity(scoped_refptr<Action> activity) {
