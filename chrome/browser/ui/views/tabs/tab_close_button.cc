@@ -43,6 +43,8 @@ TabCloseButton::TabCloseButton(views::ButtonListener* listener,
   // Disable animation so that the red danger sign shows up immediately
   // to help avoid mis-clicks.
   SetAnimationDuration(0);
+
+  SetInstallFocusRingOnFocus(true);
 }
 
 TabCloseButton::~TabCloseButton() {}

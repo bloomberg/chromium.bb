@@ -39,6 +39,7 @@ ResizeHandleButton::ResizeHandleButton(ButtonListener* listener)
       l10n_util::GetStringUTF16(IDS_PICTURE_IN_PICTURE_RESIZE_HANDLE_TEXT));
   SetAccessibleName(resize_button_label);
   SetTooltipText(resize_button_label);
+  SetInstallFocusRingOnFocus(true);
 }
 
 ResizeHandleButton::~ResizeHandleButton() = default;
