@@ -278,6 +278,8 @@ void ExpectFormFieldData(const FormFieldData& expected,
                          const base::Closure& closure,
                          const FormFieldData& passed) {
   EXPECT_EQ(expected, passed);
+  EXPECT_EQ(expected.value, passed.value);
+  EXPECT_EQ(expected.typed_value, passed.typed_value);
   closure.Run();
 }
 
@@ -368,6 +370,7 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormFieldData) {
   input.role = FormFieldData::ROLE_ATTRIBUTE_PRESENTATION;
   input.text_direction = base::i18n::RIGHT_TO_LEFT;
   input.properties_mask = FieldPropertiesFlags::HAD_FOCUS;
+  input.typed_value = base::ASCIIToUTF16("TestTypedValue");
 
   base::RunLoop loop;
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();

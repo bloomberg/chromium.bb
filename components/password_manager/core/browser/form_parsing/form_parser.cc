@@ -180,6 +180,11 @@ bool IsProbablyNotUsername(const base::string16& s) {
   return s.empty() || (s.size() < 3 && DoesStringContainOnlyDigits(s));
 }
 
+// Returns |typed_value| if it is not empty, |value| otherwise.
+base::string16 GetFieldValue(const FormFieldData& field) {
+  return field.typed_value.empty() ? field.value : field.typed_value;
+}
+
 // A helper struct that is used to capture significant fields to be used for
 // the construction of a PasswordForm.
 struct SignificantFields {
@@ -711,7 +716,7 @@ void SetFields(const SignificantFields& significant_fields,
   if (significant_fields.username) {
     password_form->username_element =
         GetPlatformSpecificIdentifier(*significant_fields.username);
-    password_form->username_value = significant_fields.username->value;
+    password_form->username_value = GetFieldValue(*significant_fields.username);
     password_form->username_element_renderer_id =
         significant_fields.username->unique_renderer_id;
   }
@@ -719,7 +724,7 @@ void SetFields(const SignificantFields& significant_fields,
   if (significant_fields.password) {
     password_form->password_element =
         GetPlatformSpecificIdentifier(*significant_fields.password);
-    password_form->password_value = significant_fields.password->value;
+    password_form->password_value = GetFieldValue(*significant_fields.password);
     password_form->password_element_renderer_id =
         significant_fields.password->unique_renderer_id;
   }
@@ -727,7 +732,8 @@ void SetFields(const SignificantFields& significant_fields,
   if (significant_fields.new_password) {
     password_form->new_password_element =
         GetPlatformSpecificIdentifier(*significant_fields.new_password);
-    password_form->new_password_value = significant_fields.new_password->value;
+    password_form->new_password_value =
+        GetFieldValue(*significant_fields.new_password);
     password_form->new_password_element_renderer_id =
         significant_fields.new_password->unique_renderer_id;
   }
