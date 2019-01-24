@@ -309,6 +309,10 @@ message LoginReputationClientRequest {
   // Content area width in DIPs. This field should only be filled for extended
   // reporting users.
   optional int32 content_area_width = 10;
+
+  // Visual features of the current page. This field should only be filled for
+  // extended reporting users.
+  optional VisualFeatures visual_features = 11;
 }
 
 // The message is used for client response for login reputation requests.
@@ -349,6 +353,56 @@ message LoginReputationClientResponse {
   // A token unique to each request which correlates response and post-warning
   // actions.
   optional bytes verdict_token = 5;
+}
+
+// This message encapsulates all the visual features of the current page.
+message VisualFeatures {
+  // One bin in a color histogram.
+  message ColorHistogramBin {
+    // The average x-coordinate of the pixels in this bin.
+    optional float centroid_x = 1;
+
+    // The average y-coordinate of the pixels in this bin.
+    optional float centroid_y = 2;
+
+    // The quantized R-value for this bin.
+    optional int32 quantized_r = 3;
+
+    // The quantized G-value for this bin.
+    optional int32 quantized_g = 4;
+
+    // The quantized B-value for this bin.
+    optional int32 quantized_b = 5;
+
+    // The normalized weight of this bin.
+    optional float weight = 6;
+  }
+
+  // Represents the color histogram of a login page.
+  message ColorHistogram { repeated ColorHistogramBin bins = 1; }
+
+  // Color histogram of the current page.
+  optional ColorHistogram color_histogram = 1;
+
+  // Represents the blurred, downsampled image of the login page.
+  message BlurredImage {
+    // The width of the image.
+    optional int32 width = 1;
+
+    // The height of the image.
+    optional int32 height = 2;
+
+    // The image data, stored in RGB order. This will have length
+    // 3*width*height. The bytes are stored in row-major order, starting from
+    // the top most row.
+    optional bytes data = 3;
+  }
+
+  // Blurred, downsampled image of the current page.
+  optional BlurredImage image = 2;
+
+  // The final pHash for the current page.
+  optional bytes phash = 3;
 }
 
 message ClientMalwareResponse {
