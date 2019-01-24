@@ -64,11 +64,6 @@ class CONTENT_EXPORT SignedExchangeEnvelope {
     request_url_ = url;
   }
 
-  const std::string& request_method() const { return request_method_; }
-  void set_request_method(base::StringPiece s) {
-    s.CopyToString(&request_method_);
-  }
-
   net::HttpStatusCode response_code() const { return response_code_; }
   void set_response_code(net::HttpStatusCode c) { response_code_ = c; }
 
@@ -86,8 +81,6 @@ class CONTENT_EXPORT SignedExchangeEnvelope {
   std::vector<uint8_t> cbor_header_;
 
   signed_exchange_utils::URLWithRawString request_url_;
-  std::string request_method_;
-
   net::HttpStatusCode response_code_;
   HeaderMap response_headers_;
   SignedExchangeSignatureHeaderField::Signature signature_;

@@ -1797,7 +1797,6 @@ void NetworkHandler::OnSignedExchangeReceived(
     signed_exchange_info->SetHeader(
         Network::SignedExchangeHeader::Create()
             .SetRequestUrl(envelope->request_url().url.spec())
-            .SetRequestMethod(envelope->request_method())
             .SetResponseCode(envelope->response_code())
             .SetResponseHeaders(Object::fromValue(headers_dict.get(), nullptr))
             .SetSignatures(std::move(signatures))

@@ -4,6 +4,8 @@
 
 #include "content/browser/web_package/signed_exchange_handler.h"
 
+#include <utility>
+
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
@@ -455,8 +457,8 @@ void SignedExchangeHandler::RunErrorCallback(SignedExchangeLoadResult result,
         nullptr);
   }
   std::move(headers_callback_)
-      .Run(result, error, GetFallbackUrl(), std::string(),
-           network::ResourceResponseHead(), nullptr);
+      .Run(result, error, GetFallbackUrl(), network::ResourceResponseHead(),
+           nullptr);
   state_ = State::kHeadersCallbackCalled;
 }
 
@@ -674,8 +676,7 @@ void SignedExchangeHandler::OnVerifyCert(
   response_head.ssl_info = std::move(ssl_info);
   std::move(headers_callback_)
       .Run(SignedExchangeLoadResult::kSuccess, net::OK,
-           envelope_->request_url().url, envelope_->request_method(),
-           response_head, std::move(mi_stream));
+           envelope_->request_url().url, response_head, std::move(mi_stream));
   state_ = State::kHeadersCallbackCalled;
 }
 
