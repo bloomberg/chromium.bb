@@ -253,12 +253,6 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest, StartAndImmediatelyStop) {
 #endif
 IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
                        MAYBE_ReceiveFramesFromFakeCaptureDevice) {
-#if defined(OS_ANDROID)
-  // TODO(chfremer): This test case is flaky on Android. Find out cause of
-  // flakiness and then re-enable. See https://crbug.com/709039.
-  if (params_.exercise_accelerated_jpeg_decoding)
-    return;
-#endif
   // Only fake device with index 2 delivers MJPEG.
   if (params_.exercise_accelerated_jpeg_decoding &&
       params_.device_index_to_use != 2) {
