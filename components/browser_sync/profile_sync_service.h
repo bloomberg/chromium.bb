@@ -84,14 +84,17 @@ class SyncAuthManager;
 //   'Preferred' (user preferences and opt-out for a datatype)
 //
 //      This means the user's opt-in or opt-out preference on a per-datatype
-//      basis.  The sync service will try to make active exactly these types.
+//      basis. The sync service will try to make active exactly these types.
 //      If a user has opted out of syncing a particular datatype, it will
-//      be registered, but not preferred.
+//      be registered, but not preferred. Also note that not all datatypes can
+//      be directly chosen by the user: e.g. AUTOFILL_PROFILE is implied by
+//      AUTOFILL but can't be selected separately. If AUTOFILL is chosen by the
+//      user, then AUTOFILL_PROFILE will also be considered preferred. See
+//      SyncPrefs::ResolvePrefGroups.
 //
-//      This state is controlled by OnUserChoseDatatypes and
-//      GetPreferredDataTypes.  They are stored in the preferences system,
-//      and persist; though if a datatype is not registered, it cannot
-//      be a preferred datatype.
+//      This state is controlled by SyncUserSettings::SetChosenDataTypes. They
+//      are stored in the preferences system and persist; though if a datatype
+//      is not registered, it cannot be a preferred datatype.
 //
 //   'Active' (run-time initialization of sync system for a datatype)
 //
@@ -103,28 +106,17 @@ class SyncAuthManager;
 //      as necessary.
 //
 //      When a datatype is in the process of becoming active, it may be
-//      in some intermediate state.  Those finer-grained intermediate states
-//      are differentiated by the DataTypeController state.
+//      in some intermediate state. Those finer-grained intermediate states
+//      are differentiated by the DataTypeController state, but not exposed.
 //
 // Sync Configuration:
 //
-//   Sync configuration is accomplished via the following APIs:
-//    * OnUserChoseDatatypes(): Set the data types the user wants to sync.
+//   Sync configuration is accomplished via SyncUserSettings, in particular:
+//    * SetChosenDataTypes(): Set the data types the user wants to sync.
 //    * SetDecryptionPassphrase(): Attempt to decrypt the user's encrypted data
 //        using the passed passphrase.
 //    * SetEncryptionPassphrase(): Re-encrypt the user's data using the passed
 //        passphrase.
-//
-//   Additionally, the current sync configuration can be fetched by calling
-//    * GetRegisteredDataTypes()
-//    * GetPreferredDataTypes()
-//    * GetActiveDataTypes()
-//    * IsUsingSecondaryPassphrase()
-//    * IsEncryptEverythingEnabled()
-//    * IsPassphraseRequired()/IsPassphraseRequiredForDecryption()
-//
-//   The "sync everything" state cannot be read from ProfileSyncService, but
-//   is instead pulled from SyncPrefs.HasKeepEverythingSynced().
 //
 // Initial sync setup:
 //
@@ -132,7 +124,7 @@ class SyncAuthManager;
 //   types until the user has finished setting up sync. There are two APIs
 //   that control the initial sync download:
 //
-//    * SetFirstSetupComplete()
+//    * SyncUserSettings::SetFirstSetupComplete()
 //    * GetSetupInProgressHandle()
 //
 //   SetFirstSetupComplete() should be called once the user has finished setting
@@ -141,8 +133,7 @@ class SyncAuthManager;
 //   should be deleted once configuration is complete.
 //
 //   Once first setup has completed and there are no outstanding
-//   setup-in-progress handles, CanConfigureDataTypes() will return true and
-//   datatype configuration can begin.
+//   setup-in-progress handles, datatype configuration will begin.
 class ProfileSyncService : public syncer::SyncService,
                            public syncer::SyncEngineHost,
                            public syncer::SyncPrefObserver,
