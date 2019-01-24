@@ -34,6 +34,7 @@ const char kAppSearchMethod[] = "AppSearch";
 const char kGetLinuxPackageInfoFromAptMethod[] =
     "GetLinuxPackageInfoFromAptMethod";
 const char kExportLxdContainerMethod[] = "ExportLxdContainer";
+const char kImportLxdContainerMethod[] = "ImportLxdContainer";
 
 // Methods to be called from debugd.
 const char kGetDebugInformationMethod[] = "GetDebugInformation";
@@ -49,6 +50,7 @@ const char kLxdContainerDownloadingSignal[] = "LxdContainerDownloading";
 const char kLxdContainerStartingSignal[] = "LxdContainerStarting";
 const char kTremplinStartedSignal[] = "TremplinStarted";
 const char kExportLxdContainerProgressSignal[] = "ExportLxdContainerProgress";
+const char kImportLxdContainerProgressSignal[] = "ImportLxdContainerProgress";
 
 }  // namespace cicerone
 }  // namespace vm_tools
