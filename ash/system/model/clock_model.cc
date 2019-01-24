@@ -6,7 +6,7 @@
 
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/system/date/clock_observer.h"
+#include "ash/system/model/clock_observer.h"
 #include "ash/system/model/system_tray_model.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 

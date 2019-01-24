@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_DATE_CLOCK_OBSERVER_H_
-#define ASH_SYSTEM_DATE_CLOCK_OBSERVER_H_
+#ifndef ASH_SYSTEM_MODEL_CLOCK_OBSERVER_H_
+#define ASH_SYSTEM_MODEL_CLOCK_OBSERVER_H_
 
 #include "ash/ash_export.h"
 
@@ -23,4 +23,4 @@ class ASH_EXPORT ClockObserver {
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_DATE_CLOCK_OBSERVER_H_
+#endif  // ASH_SYSTEM_MODEL_CLOCK_OBSERVER_H_

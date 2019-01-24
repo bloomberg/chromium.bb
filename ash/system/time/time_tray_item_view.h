@@ -2,16 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_DATE_TRAY_SYSTEM_INFO_H_
-#define ASH_SYSTEM_DATE_TRAY_SYSTEM_INFO_H_
-
-#include <memory>
+#ifndef ASH_SYSTEM_TIME_TIME_TRAY_ITEM_VIEW_H_
+#define ASH_SYSTEM_TIME_TIME_TRAY_ITEM_VIEW_H_
 
 #include "ash/ash_export.h"
-#include "ash/login_status.h"
-#include "ash/session/session_controller.h"
 #include "ash/session/session_observer.h"
-#include "ash/system/date/clock_observer.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "base/macros.h"
 
@@ -42,4 +37,4 @@ class TimeTrayItemView : public TrayItemView, public SessionObserver {
 }  // namespace tray
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_DATE_TRAY_SYSTEM_INFO_H_
+#endif  // ASH_SYSTEM_TIME_TIME_TRAY_ITEM_VIEW_H_

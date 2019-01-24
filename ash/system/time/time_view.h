@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_DATE_DATE_VIEW_H_
-#define ASH_SYSTEM_DATE_DATE_VIEW_H_
+#ifndef ASH_SYSTEM_TIME_TIME_VIEW_H_
+#define ASH_SYSTEM_TIME_TIME_VIEW_H_
 
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/system/date/clock_observer.h"
+#include "ash/system/model/clock_observer.h"
 #include "ash/system/tray/actionable_view.h"
 #include "base/i18n/time_formatting.h"
 #include "base/macros.h"
@@ -101,4 +101,4 @@ class ASH_EXPORT TimeView : public ActionableView, public ClockObserver {
 }  // namespace tray
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_DATE_DATE_VIEW_H_
+#endif  // ASH_SYSTEM_TIME_TIME_VIEW_H_
