@@ -620,6 +620,10 @@ void ScreenLocker::SaveSyncPasswordHash(const UserContext& user_context) {
     login::SaveSyncPasswordDataToProfile(user_context, profile);
 }
 
+bool ScreenLocker::IsAuthEnabledForUser(const AccountId& account_id) {
+  return !base::ContainsKey(users_with_disabled_auth_, account_id);
+}
+
 void ScreenLocker::SetAuthenticatorsForTesting(
     scoped_refptr<Authenticator> authenticator,
     scoped_refptr<ExtendedAuthenticator> extended_authenticator) {

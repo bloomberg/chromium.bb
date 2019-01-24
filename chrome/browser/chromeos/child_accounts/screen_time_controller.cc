@@ -82,9 +82,11 @@ base::TimeDelta ScreenTimeController::GetScreenTimeDuration() {
 
 void ScreenTimeController::SetClocksForTesting(
     const base::Clock* clock,
-    const base::TickClock* tick_clock) {
+    const base::TickClock* tick_clock,
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
   clock_ = clock;
   next_state_timer_ = std::make_unique<base::OneShotTimer>(tick_clock);
+  next_state_timer_->SetTaskRunner(task_runner);
 }
 
 void ScreenTimeController::CheckTimeLimit(const std::string& source) {

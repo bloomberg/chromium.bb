@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/child_accounts/time_limit_notifier.h"
 #include "chrome/browser/chromeos/child_accounts/usage_time_limit_processor.h"
@@ -22,6 +23,7 @@ namespace base {
 class Clock;
 class TickClock;
 class OneShotTimer;
+class SequencedTaskRunner;
 }  // namespace base
 
 namespace content {
@@ -49,8 +51,11 @@ class ScreenTimeController : public KeyedService,
   // used the device today (since the last reset).
   base::TimeDelta GetScreenTimeDuration();
 
-  void SetClocksForTesting(const base::Clock* clock,
-                           const base::TickClock* tick_clock);
+  // Method intended for testing purposes only.
+  void SetClocksForTesting(
+      const base::Clock* clock,
+      const base::TickClock* tick_clock,
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
 
  private:
   // Call time limit processor for new state.
