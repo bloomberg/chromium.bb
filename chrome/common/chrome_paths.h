@@ -104,9 +104,6 @@ enum {
   DIR_CHROMEOS_CUSTOM_WALLPAPERS,     // Directory where custom wallpapers
                                       // reside.
 #endif
-  DIR_SUPERVISED_USERS_DEFAULT_APPS,  // Directory where installer places .crx
-                                      // files to be installed when managed user
-                                      // session starts.
   DIR_SUPERVISED_USER_INSTALLED_WHITELISTS,  // Directory where sanitized
                                              // supervised user whitelists are
                                              // installed.
@@ -132,9 +129,6 @@ enum {
 #if defined(OS_CHROMEOS)
   FILE_CHROME_OS_COMPONENT_FLASH,  // The location of component updated Flash on
                                    // Chrome OS.
-  DIR_CHILD_USERS_DEFAULT_APPS,    // Directory where installer places .crx
-                                   // files to be installed when child user
-                                   // session starts.
 
   // File containing the location of the updated TPM firmware binary in the file
   // system.

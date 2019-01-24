@@ -34,13 +34,17 @@ class ExternalPrefLoader : public ExternalLoader {
     // Delay external preference load. It delays default apps installation
     // to not overload the system on first time user login.
     DELAY_LOAD_UNTIL_PRIORITY_SYNC = 1 << 1,
+
+    // Use profile user type filter to load extensions.
+    USE_USER_TYPE_PROFILE_FILTER = 1 << 2,
   };
 
   // |base_path_id| is the directory containing the external_extensions.json
   // file or the standalone extension manifest files. Relative file paths to
   // extension files are resolved relative to this path. |profile| is used to
   // wait priority sync if DELAY_LOAD_UNTIL_PRIORITY_SYNC set.
-  ExternalPrefLoader(int base_path_id, Options options, Profile* profile);
+  // |options| is combination of |Options|.
+  ExternalPrefLoader(int base_path_id, int options, Profile* profile);
 
   const base::FilePath GetBaseCrxFilePath() override;
 
@@ -56,7 +60,7 @@ class ExternalPrefLoader : public ExternalLoader {
   // file containing which extensions to load.
   const int base_path_id_;
 
-  const Options options_;
+  const int options_;
 
  private:
   friend class base::RefCountedThreadSafe<ExternalLoader>;

@@ -686,8 +686,9 @@ void ExternalProviderImpl::CreateExternalProviders(
   // In tests don't install extensions from default external sources.
   // It would only slowdown tests and make them flaky.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kDisableDefaultApps))
+          ::switches::kDisableDefaultApps)) {
     return;
+  }
 
   // On Mac OS, items in /Library/... should be written by the superuser.
   // Check that all components of the path are writable by root only.
@@ -707,29 +708,17 @@ void ExternalProviderImpl::CreateExternalProviders(
       Extension::WAS_INSTALLED_BY_DEFAULT;
 
   if (!is_chrome_os_public_session) {
-    std::vector<int> external_apps_path_ids;
-    if (profile->IsChild()) {
-      external_apps_path_ids.push_back(chrome::DIR_CHILD_USERS_DEFAULT_APPS);
-    } else if (profile->IsSupervised()) {
-      external_apps_path_ids.push_back(
-          chrome::DIR_SUPERVISED_USERS_DEFAULT_APPS);
-    } else {
-      external_apps_path_ids.push_back(
-          chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS);
-      external_apps_path_ids.push_back(chrome::DIR_CHILD_USERS_DEFAULT_APPS);
-    }
-    const ExternalPrefLoader::Options pref_load_flags =
+    int pref_load_flags =
         profile->IsNewProfile()
             ? ExternalPrefLoader::DELAY_LOAD_UNTIL_PRIORITY_SYNC
             : ExternalPrefLoader::NONE;
-    for (const auto external_apps_path_id : external_apps_path_ids) {
-      provider_list->push_back(std::make_unique<ExternalProviderImpl>(
-          service,
-          new ExternalPrefLoader(external_apps_path_id, pref_load_flags,
-                                 profile),
-          profile, Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
-          bundled_extension_creation_flags));
-    }
+    pref_load_flags |= ExternalPrefLoader::USE_USER_TYPE_PROFILE_FILTER;
+    provider_list->push_back(std::make_unique<ExternalProviderImpl>(
+        service,
+        new ExternalPrefLoader(chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS,
+                               pref_load_flags, profile),
+        profile, Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
+        bundled_extension_creation_flags));
 
     // OEM default apps.
     int oem_extension_creation_flags =
@@ -758,16 +747,14 @@ void ExternalProviderImpl::CreateExternalProviders(
     chromeos::DemoSession::Get()->SetExtensionsExternalLoader(loader);
     provider_list->push_back(std::move(demo_apps_provider));
   }
-
 #elif defined(OS_LINUX)
-  if (!profile->IsLegacySupervised()) {
-    provider_list->push_back(std::make_unique<ExternalProviderImpl>(
-        service,
-        new ExternalPrefLoader(chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS,
-                               ExternalPrefLoader::NONE, nullptr),
-        profile, Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
-        bundled_extension_creation_flags));
-  }
+  provider_list->push_back(std::make_unique<ExternalProviderImpl>(
+      service,
+      new ExternalPrefLoader(chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS,
+                             ExternalPrefLoader::USE_USER_TYPE_PROFILE_FILTER,
+                             profile),
+      profile, Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
+      bundled_extension_creation_flags));
 #endif
 
   if (!profile->IsLegacySupervised()) {

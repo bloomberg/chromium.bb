@@ -100,6 +100,8 @@ jumbo_split_static_library("browser") {
     "app_controller_mac.mm",
     "app_mode/app_mode_utils.cc",
     "app_mode/app_mode_utils.h",
+    "apps/user_type_filter.cc",
+    "apps/user_type_filter.h",
     "assist_ranker/assist_ranker_service_factory.cc",
     "assist_ranker/assist_ranker_service_factory.h",
     "autocomplete/autocomplete_classifier_factory.cc",

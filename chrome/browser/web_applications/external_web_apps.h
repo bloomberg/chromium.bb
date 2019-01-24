@@ -30,7 +30,8 @@ void ScanForExternalWebApps(Profile* profile,
 //
 // This function performs file I/O, and must not be scheduled on UI threads.
 std::vector<web_app::PendingAppManager::AppInfo>
-ScanDirForExternalWebAppsForTesting(const base::FilePath& dir);
+ScanDirForExternalWebAppsForTesting(const base::FilePath& dir,
+                                    Profile* profile);
 
 }  // namespace web_app
 
