@@ -38,7 +38,6 @@ SkipAdLabelButton::SkipAdLabelButton(ButtonListener* listener)
   SetFocusForPlatform();
   SetAccessibleName(label()->text());
   SetTooltipText(label()->text());
-  SetInstallFocusRingOnFocus(true);
 }
 
 void SkipAdLabelButton::SetPosition(const gfx::Size& size) {

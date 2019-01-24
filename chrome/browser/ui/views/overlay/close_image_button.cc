@@ -46,7 +46,6 @@ CloseImageButton::CloseImageButton(ButtonListener* listener)
       l10n_util::GetStringUTF16(IDS_PICTURE_IN_PICTURE_CLOSE_CONTROL_TEXT));
   SetAccessibleName(close_button_label);
   SetTooltipText(close_button_label);
-  SetInstallFocusRingOnFocus(true);
 }
 
 void CloseImageButton::StateChanged(ButtonState old_state) {

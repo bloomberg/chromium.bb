@@ -192,7 +192,6 @@ std::unique_ptr<views::ToggleImageButton> CreatePasswordViewButton(
     bool are_passwords_revealed) {
   auto button = std::make_unique<views::ToggleImageButton>(listener);
   button->SetFocusForPlatform();
-  button->SetInstallFocusRingOnFocus(true);
   button->set_request_focus_on_press(true);
   button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_SHOW_PASSWORD));
