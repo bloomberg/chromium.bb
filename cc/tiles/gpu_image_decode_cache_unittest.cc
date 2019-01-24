@@ -2548,12 +2548,6 @@ TEST_P(GpuImageDecodeCacheTest, MipsAddedSubsequentDraw) {
 }
 
 TEST_P(GpuImageDecodeCacheTest, MipsAddedWhileOriginalInUse) {
-#if defined(OS_WIN)
-  // TODO(ericrk): Mips are temporarily disabled to investigate a memory
-  // regression on Windows. https://crbug.com/867468
-  return;
-#endif  // defined(OS_WIN)
-
   auto cache = CreateCache();
   bool is_decomposable = true;
   auto filter_quality = kMedium_SkFilterQuality;
