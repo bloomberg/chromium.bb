@@ -199,7 +199,7 @@ public class ChromeContextMenuItem implements ContextMenuItem {
                         new SpanInfo("<new>", "</new>", new SuperscriptSpan(),
                                 new RelativeSizeSpan(0.75f),
                                 new ForegroundColorSpan(ApiCompatibilityUtils.getColor(
-                                        context.getResources(), R.color.modern_blue_600))));
+                                        context.getResources(), R.color.default_text_color_blue))));
             default:
                 return context.getString(getStringID(mItem));
         }

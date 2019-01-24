@@ -2755,6 +2755,11 @@ const char kUpdateMenuTypeDescription[] =
 const char kUpdateMenuTypeNone[] = "None";
 const char kUpdateMenuTypeUpdateAvailable[] = "Update Available";
 const char kUpdateMenuTypeUnsupportedOSVersion[] = "Unsupported OS Version";
+const char kUpdateMenuTypeInlineUpdateAvailable[] = "Inline Update Available";
+const char kUpdateMenuTypeInlineUpdateDownloading[] =
+    "Inline Update Downloading";
+const char kUpdateMenuTypeInlineUpdateReady[] = "Inline Update Ready";
+const char kUpdateMenuTypeInlineUpdateFailed[] = "Inline Update Failed";
 
 const char kThirdPartyDoodlesName[] =
     "Enable Doodles for third-party search engines";

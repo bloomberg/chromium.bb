@@ -22,7 +22,7 @@ public class NoUnderlineClickableSpan extends ClickableSpan {
     private final Callback<View> mOnClick;
 
     public NoUnderlineClickableSpan(Callback<View> onClickCallback) {
-        this(R.color.modern_blue_600, onClickCallback);
+        this(R.color.default_text_color_blue, onClickCallback);
     }
 
     public NoUnderlineClickableSpan(@ColorRes int colorResId, Callback<View> onClickCallback) {

@@ -40,12 +40,18 @@ import java.lang.annotation.RetentionPolicy;
  */
 class UpdateStatusProvider {
     /** Possible update states. */
-    @IntDef({UpdateState.NONE, UpdateState.UPDATE_AVAILABLE, UpdateState.UNSUPPORTED_OS_VERSION})
+    @IntDef({UpdateState.NONE, UpdateState.UPDATE_AVAILABLE, UpdateState.UNSUPPORTED_OS_VERSION,
+            UpdateState.INLINE_UPDATE_AVAILABLE, UpdateState.INLINE_UPDATE_DOWNLOADING,
+            UpdateState.INLINE_UPDATE_READY, UpdateState.INLINE_UPDATE_FAILED})
     @Retention(RetentionPolicy.SOURCE)
     public @interface UpdateState {
         int NONE = 1;
         int UPDATE_AVAILABLE = 2;
         int UNSUPPORTED_OS_VERSION = 3;
+        int INLINE_UPDATE_AVAILABLE = 4;
+        int INLINE_UPDATE_DOWNLOADING = 5;
+        int INLINE_UPDATE_READY = 6;
+        int INLINE_UPDATE_FAILED = 7;
     }
 
     /** A set of properties that represent the current update state for Chrome. */
@@ -183,17 +189,15 @@ class UpdateStatusProvider {
 
             UpdateStatus status = new UpdateStatus();
 
+            status.updateState = forcedUpdateState;
+
+            // Push custom configurations for certain update states.
             switch (forcedUpdateState) {
-                case UpdateState.NONE:
-                    status.updateState = UpdateState.NONE;
-                    break;
                 case UpdateState.UPDATE_AVAILABLE:
-                    status.updateState = UpdateState.UPDATE_AVAILABLE;
                     String updateUrl = UpdateConfigs.getMockMarketUrl();
                     if (!TextUtils.isEmpty(updateUrl)) status.updateUrl = updateUrl;
                     break;
                 case UpdateState.UNSUPPORTED_OS_VERSION:
-                    status.updateState = UpdateState.UNSUPPORTED_OS_VERSION;
                     status.latestUnsupportedVersion =
                             ChromePreferenceManager.getInstance().readString(
                                     ChromePreferenceManager.LATEST_UNSUPPORTED_VERSION, null);

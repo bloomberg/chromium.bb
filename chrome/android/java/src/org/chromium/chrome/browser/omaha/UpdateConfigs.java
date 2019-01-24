@@ -30,6 +30,11 @@ class UpdateConfigs {
     private static final String NONE_SWITCH_VALUE = "none";
     private static final String UPDATE_AVAILABLE_SWITCH_VALUE = "update_available";
     private static final String UNSUPPORTED_OS_VERSION_SWITCH_VALUE = "unsupported_os_version";
+    private static final String INLINE_UPDATE_AVAILABLE_SWITCH_VALUE = "inline_update_available";
+    private static final String INLINE_UPDATE_DOWNLOADING_SWITCH_VALUE =
+            "inline_update_downloading";
+    private static final String INLINE_UPDATE_READY_SWITCH_VALUE = "inline_update_ready";
+    private static final String INLINE_UPDATE_FAILED_SWITCH_VALUE = "inline_update_failed";
 
     /**
      * @return The minimum required storage to show the update prompt or {@code -1} if there is no
@@ -82,6 +87,14 @@ class UpdateConfigs {
                 return UpdateState.UPDATE_AVAILABLE;
             case UNSUPPORTED_OS_VERSION_SWITCH_VALUE:
                 return UpdateState.UNSUPPORTED_OS_VERSION;
+            case INLINE_UPDATE_AVAILABLE_SWITCH_VALUE:
+                return UpdateState.INLINE_UPDATE_AVAILABLE;
+            case INLINE_UPDATE_DOWNLOADING_SWITCH_VALUE:
+                return UpdateState.INLINE_UPDATE_DOWNLOADING;
+            case INLINE_UPDATE_FAILED_SWITCH_VALUE:
+                return UpdateState.INLINE_UPDATE_FAILED;
+            case INLINE_UPDATE_READY_SWITCH_VALUE:
+                return UpdateState.INLINE_UPDATE_READY;
             default:
                 return null;
         }
