@@ -17,6 +17,10 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "content/common/content_export.h"
 
+namespace cc {
+class PictureLayer;
+}
+
 namespace gfx {
 class Size;
 }
@@ -57,7 +61,7 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
   ChildFrameCompositor* const child_frame_compositor_;
   viz::SurfaceId surface_id_;
   scoped_refptr<cc::SurfaceLayer> surface_layer_;
-  bool crashed_ = false;
+  scoped_refptr<cc::PictureLayer> crash_ui_layer_;
   float device_scale_factor_ = 1.f;
 
   DISALLOW_COPY_AND_ASSIGN(ChildFrameCompositingHelper);

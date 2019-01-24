@@ -166,6 +166,9 @@ Layer::~Layer() {
   for (auto* child : children_)
     child->parent_ = nullptr;
 
+  if (content_layer_)
+    content_layer_->ClearClient();
+  cc_layer_->SetLayerClient(nullptr);
   cc_layer_->RemoveFromParent();
   if (transfer_release_callback_)
     transfer_release_callback_->Run(gpu::SyncToken(), false);
@@ -638,7 +641,10 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   new_layer->SetTrilinearFiltering(cc_layer_->trilinear_filtering());
 
   cc_layer_ = new_layer.get();
-  content_layer_ = nullptr;
+  if (content_layer_) {
+    content_layer_->ClearClient();
+    content_layer_ = nullptr;
+  }
   solid_color_layer_ = nullptr;
   texture_layer_ = nullptr;
   surface_layer_ = nullptr;

@@ -273,6 +273,10 @@ LinkHighlightImpl::LinkHighlightFragment::LinkHighlightFragment(
     layer_->SetElementId(element_id);
 }
 
+LinkHighlightImpl::LinkHighlightFragment::~LinkHighlightFragment() {
+  layer_->ClearClient();
+}
+
 gfx::Rect LinkHighlightImpl::LinkHighlightFragment::PaintableRegion() {
   return gfx::Rect(layer_->bounds());
 }
