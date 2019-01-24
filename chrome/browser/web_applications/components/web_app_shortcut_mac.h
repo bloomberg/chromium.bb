@@ -26,9 +26,9 @@ extern bool g_app_shims_allow_update_and_launch_in_tests;
 namespace web_app {
 
 enum class LaunchShimUpdateBehavior {
-  NO_UPDATE,
-  UPDATE_IF_INSTALLED,
-  RECREATE,
+  DO_NOT_RECREATE,
+  RECREATE_IF_INSTALLED,
+  RECREATE_UNCONDITIONALLY,
 };
 
 // Callback type for LaunchShim. If |shim_process| is valid then the
@@ -92,18 +92,15 @@ class WebAppShortcutCreator {
   // services, sorted by preference.
   std::vector<base::FilePath> GetAppBundlesById() const;
 
-  // The full path to the app bundle under the profile folder.
-  base::FilePath GetInternalShortcutPath() const;
-
   bool CreateShortcuts(ShortcutCreationReason creation_reason,
                        ShortcutLocations creation_locations);
   void DeleteShortcuts();
 
   // Recreate the shortcuts where they are found on disk and in the profile
-  // path. If |recreate_if_needed| is true, then recreate the shortcuts if no
+  // path. If |create_if_needed| is true, then create the shortcuts if no
   // matching shortcuts are found on disk. Populate |updated_paths| with the
   // paths that were updated.
-  bool UpdateShortcuts(bool recreate_if_needed,
+  bool UpdateShortcuts(bool create_if_needed,
                        std::vector<base::FilePath>* updated_paths);
 
   // Show the bundle we just generated in the Finder.

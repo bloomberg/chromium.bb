@@ -253,10 +253,7 @@ TEST_F(WebAppShortcutCreatorTest, UpdateShortcuts) {
   EXPECT_FALSE(base::PathExists(shim_path_));
   EXPECT_TRUE(base::PathExists(other_shim_path.Append("Contents")));
 
-  // The list of updated paths is the paths found by bundle, plus the internal
-  // path.
-  EXPECT_EQ(bundle_by_id_paths.size() + 1, updated_paths.size());
-  updated_paths.pop_back();
+  // The list of updated paths is the paths found by bundle.
   EXPECT_EQ(bundle_by_id_paths, updated_paths);
 
   // Also test case where GetAppBundlesByIdUnsorted fails.
@@ -283,7 +280,7 @@ TEST_F(WebAppShortcutCreatorTest, UpdateShortcuts) {
   // The default shim path is created along with the internal path.
   updated_paths.clear();
   EXPECT_TRUE(shortcut_creator.UpdateShortcuts(true, &updated_paths));
-  EXPECT_EQ(2u, updated_paths.size());
+  EXPECT_EQ(1u, updated_paths.size());
   EXPECT_EQ(shim_path_, updated_paths[0]);
   EXPECT_TRUE(base::PathExists(shim_path_));
   EXPECT_FALSE(base::PathExists(other_shim_path.Append("Contents")));
@@ -345,7 +342,6 @@ TEST_F(WebAppShortcutCreatorTest, DeleteShortcuts) {
 
   EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED,
                                                web_app::ShortcutLocations()));
-  EXPECT_TRUE(base::PathExists(internal_shim_path_));
   EXPECT_TRUE(base::PathExists(shim_path_));
 
   // Create an extra shim in another folder. It should be deleted since its
@@ -366,7 +362,6 @@ TEST_F(WebAppShortcutCreatorTest, DeleteShortcuts) {
   EXPECT_TRUE(
       base::PathService::Override(chrome::DIR_USER_DATA, app_data_dir_));
   shortcut_creator.DeleteShortcuts();
-  EXPECT_FALSE(base::PathExists(internal_shim_path_));
   EXPECT_TRUE(base::PathExists(shim_path_));
   EXPECT_FALSE(base::PathExists(other_shim_path));
 }

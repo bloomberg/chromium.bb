@@ -261,7 +261,7 @@ base::FilePath GetAppShimPath(Profile* profile,
   web_app::WebAppShortcutCreator shortcut_creator(
       web_app::GetWebAppDataDirectory(profile->GetPath(), app->id(), GURL()),
       shortcut_info.get());
-  return shortcut_creator.GetInternalShortcutPath();
+  return shortcut_creator.GetApplicationsShortcutPath(false);
 }
 
 Browser* GetFirstHostedAppWindow() {
@@ -291,8 +291,8 @@ const extensions::Extension* AppShimInteractiveTest::InstallAppWithShim(
   // Note that usually an install triggers shim creation, but that's disabled
   // (always) in tests. If it wasn't the case, the following test would fail
   // (but flakily since the creation happens on the FILE thread).
-  shim_path_ = GetAppShimPath(profile(), app);
   base::ScopedAllowBlockingForTesting allow_blocking;
+  shim_path_ = GetAppShimPath(profile(), app);
   EXPECT_FALSE(base::PathExists(shim_path_));
 
   // To create a shim in a test, instead call UpdateAllShortcuts, which has been
@@ -310,7 +310,7 @@ const extensions::Extension* AppShimInteractiveTest::InstallAppWithShim(
 namespace apps {
 
 // Shims require static libraries http://crbug.com/386024.
-#if defined(COMPONENT_BUILD)
+#if 0 && defined(COMPONENT_BUILD)
 #define MAYBE_Launch DISABLED_Launch
 #define MAYBE_HostedAppLaunch DISABLED_HostedAppLaunch
 #define MAYBE_ShowWindow DISABLED_ShowWindow
@@ -609,7 +609,7 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_RebuildShim) {
       shortcut_info.get());
   std::vector<base::FilePath> updated_paths;
   shortcut_creator.UpdateShortcuts(false, &updated_paths);
-  base::FilePath shim_path = shortcut_creator.GetInternalShortcutPath();
+  base::FilePath shim_path = updated_paths.front();
   NSMutableDictionary* plist_64 = [NSMutableDictionary
       dictionaryWithContentsOfFile:base::mac::FilePathToNSString(
           shim_path.Append("Contents").Append("Info.plist"))];
