@@ -94,10 +94,7 @@ void DataReductionProxyURLLoaderThrottle::BeforeWillProcessResponse(
 
   DataReductionProxyBypassType bypass_type = BYPASS_EVENT_TYPE_MAX;
 
-  // TODO(https://crbug.com/721403): Not logging stats.
-  DataReductionProxyBypassProtocol::Stats* stats = nullptr;
-
-  DataReductionProxyBypassProtocol protocol(stats);
+  DataReductionProxyBypassProtocol protocol;
   pending_restart_ = protocol.MaybeBypassProxyAndPrepareToRetry(
       request_method_, url_chain_, response_head.headers.get(),
       response_head.proxy_server, net_error, proxy_retry_info,
