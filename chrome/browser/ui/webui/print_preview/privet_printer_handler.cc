@@ -258,7 +258,7 @@ void PrivetPrinterHandler::CreateHTTP(
       printer_lister_ ? printer_lister_->GetDeviceDescription(name) : nullptr;
 
   if (!device_description) {
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
 
@@ -266,7 +266,8 @@ void PrivetPrinterHandler::CreateHTTP(
       cloud_print::PrivetHTTPAsynchronousFactory::CreateInstance(
           profile_->GetURLLoaderFactory());
   privet_http_resolution_ = privet_http_factory_->CreatePrivetHTTP(name);
-  privet_http_resolution_->Start(device_description->address, callback);
+  privet_http_resolution_->Start(device_description->address,
+                                 std::move(callback));
 }
 
 }  // namespace printing
