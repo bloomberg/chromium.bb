@@ -270,7 +270,10 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Connector : public MessageReceiver {
   bool paused_ = false;
 
   // See |set_force_immediate_dispatch()|.
-  bool force_immediate_dispatch_;
+  //
+  // TODO(https://866708): Temporarily reverted to batch dispatch mode until M73
+  // branch. Flip this back to |false| after branch.
+  bool force_immediate_dispatch_ = true;
 
   // Messages which have been read off the pipe but not yet dispatched. This
   // exists so that we can schedule individual dispatch tasks for each read
