@@ -169,6 +169,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
       DBusMethodCallback<vm_tools::cicerone::SetUpLxdContainerUserResponse>
           callback) = 0;
 
+  // Searches for not installed Linux packages in a container.
+  // |callback| is called after the method call finishes.
+  virtual void SearchApp(
+      const vm_tools::cicerone::AppSearchRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::AppSearchResponse> callback) = 0;
+
   // Registers |callback| to run when the Cicerone service becomes available.
   // If the service is already available, or if connecting to the name-owner-
   // changed signal fails, |callback| will be run once asynchronously.

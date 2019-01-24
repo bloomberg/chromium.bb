@@ -3510,6 +3510,10 @@
     An error occurred during uninstallation. Please uninstall through the Terminal.
   </message>
 
+  <message name="IDS_CROSTINI_REPOSITORY_SEARCH_RESULT_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder text for surfaced Crostini Repository Search results in the app launcher">
+    Install <ph name="LINUX_APP_NAME">$1<ex>GIMP</ex></ph>
+  </message>
+
   <!-- Time limit notification -->
   <message name="IDS_SCREEN_TIME_NOTIFICATION_TITLE" desc="The title of the notification when screen usage limit reaches before locking the device.">
     Almost time for a break

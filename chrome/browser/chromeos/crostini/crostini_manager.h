@@ -210,6 +210,9 @@ class CrostiniManager : public KeyedService,
   using ListUsbDevicesCallback = base::OnceCallback<void(
       CrostiniResult result,
       std::vector<device::mojom::UsbDeviceInfoPtr> devices)>;
+  // The type of the callback for CrostiniManager::SearchApp.
+  using SearchAppCallback =
+      base::OnceCallback<void(const std::vector<std::string>& package_names)>;
 
   // Observer class for the Crostini restart flow.
   class RestartObserver {
@@ -412,6 +415,13 @@ class CrostiniManager : public KeyedService,
   void LaunchContainerTerminal(const std::string& vm_name,
                                const std::string& container_name,
                                const std::vector<std::string>& terminal_args);
+
+  // Searches for not installed packages that have names matching the passed
+  // plaintext search query and returns a vector containing their names.
+  void SearchApp(const std::string& vm_name,
+                 const std::string& container_name,
+                 const std::string& query,
+                 SearchAppCallback callback);
 
   using RestartId = int;
   static const RestartId kUninitializedRestartId = -1;
@@ -653,6 +663,10 @@ class CrostiniManager : public KeyedService,
       vm_tools::concierge::ListUsbDeviceResponse response,
       ListUsbDevicesCallback callback,
       std::vector<device::mojom::UsbDeviceInfoPtr> device_info);
+
+  // Callback for CrostiniManager::SearchApp.
+  void OnSearchApp(SearchAppCallback callback,
+                   base::Optional<vm_tools::cicerone::AppSearchResponse> reply);
 
   // Helper for CrostiniManager::MaybeUpgradeCrostini. Makes blocking calls to
   // check for file paths and registered components.

@@ -116,6 +116,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
       DBusMethodCallback<vm_tools::cicerone::SetUpLxdContainerUserResponse>
           callback) override;
 
+  // Fake version of the method that searches for not installed apps.
+  // |callback| is called when the method completes.
+  void SearchApp(const vm_tools::cicerone::AppSearchRequest& request,
+                 DBusMethodCallback<vm_tools::cicerone::AppSearchResponse>
+                     callback) override;
+
   // Fake version of the method that waits for the Cicerone service to be
   // availble.  |callback| is called after the method call finishes.
   void WaitForServiceToBeAvailable(
@@ -267,6 +273,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
       get_lxd_container_username_response_;
   vm_tools::cicerone::SetUpLxdContainerUserResponse
       setup_lxd_container_user_response_;
+  vm_tools::cicerone::AppSearchResponse search_app_response_;
 
   base::ObserverList<Observer>::Unchecked observer_list_;
 
