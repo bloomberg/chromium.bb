@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/ui/settings/google_services_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_view_controller.h"
+#import "ios/chrome/browser/ui/settings/manage_sync_settings_coordinator.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -26,7 +27,8 @@
 
 @interface GoogleServicesSettingsCoordinator () <
     GoogleServicesSettingsCommandHandler,
-    GoogleServicesSettingsViewControllerPresentationDelegate>
+    GoogleServicesSettingsViewControllerPresentationDelegate,
+    ManageSyncSettingsCoordinatorDelegate>
 
 // Google services settings mediator.
 @property(nonatomic, strong) GoogleServicesSettingsMediator* mediator;
@@ -41,6 +43,9 @@
 // Settings page.
 @property(nonatomic, strong)
     SigninInteractionCoordinator* signinInteractionCoordinator;
+// Coordinator to present the manage sync settings.
+@property(nonatomic, strong)
+    ManageSyncSettingsCoordinator* manageSyncSettingsCoordinator;
 
 @end
 
@@ -162,12 +167,31 @@
   [self.navigationController pushViewController:controller animated:YES];
 }
 
+- (void)openManageSyncSettings {
+  DCHECK(!self.manageSyncSettingsCoordinator);
+  self.manageSyncSettingsCoordinator = [[ManageSyncSettingsCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                    browserState:self.browserState];
+  self.manageSyncSettingsCoordinator.navigationController =
+      self.navigationController;
+  self.manageSyncSettingsCoordinator.delegate = self;
+  [self.manageSyncSettingsCoordinator start];
+}
+
 #pragma mark - GoogleServicesSettingsViewControllerPresentationDelegate
 
 - (void)googleServicesSettingsViewControllerDidRemove:
     (GoogleServicesSettingsViewController*)controller {
   DCHECK_EQ(self.viewController, controller);
   [self.delegate googleServicesSettingsCoordinatorDidRemove:self];
+}
+
+#pragma mark - ManageSyncSettingsCoordinatorDelegate
+
+- (void)manageSyncSettingsCoordinatorWasPopped:
+    (ManageSyncSettingsCoordinator*)coordinator {
+  DCHECK_EQ(self.manageSyncSettingsCoordinator, coordinator);
+  self.manageSyncSettingsCoordinator = nil;
 }
 
 @end

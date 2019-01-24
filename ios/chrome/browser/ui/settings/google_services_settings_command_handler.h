@@ -23,6 +23,9 @@
 // Opens the account setting view.
 - (void)openAccountSettings;
 
+// Opens the manage sync settings view.
+- (void)openManageSyncSettings;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_SETTINGS_COMMAND_HANDLER_H_

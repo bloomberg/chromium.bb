@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/ui/authentication/resized_avatar_cache.h"
 #import "ios/chrome/browser/ui/settings/cells/account_sign_in_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_multiline_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
@@ -56,6 +57,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   RestartAuthenticationFlowErrorItemType,
   ReauthDialogAsSyncIsInAuthErrorItemType,
   ShowPassphraseDialogErrorItemType,
+  ManageSyncItemType,
   // NonPersonalizedSectionIdentifier section.
   AutocompleteSearchesAndURLsItemType,
   PreloadPagesItemType,
@@ -240,8 +242,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)updateSyncSection:(BOOL)notifyConsumer {
   BOOL needsAccountSigninItemUpdate = [self updateAccountSignInItem];
   BOOL needsSyncErrorItemsUpdate = [self updateSyncErrorItems];
+  BOOL needsManageSyncItemUpdate = [self updateManageSyncItem];
   if (notifyConsumer &&
-      (needsAccountSigninItemUpdate || needsSyncErrorItemsUpdate)) {
+      (needsAccountSigninItemUpdate || needsSyncErrorItemsUpdate ||
+       needsManageSyncItemUpdate)) {
     TableViewModel* model = self.consumer.tableViewModel;
     NSUInteger sectionIndex =
         [model sectionForSectionIdentifier:SyncSectionIdentifier];
@@ -336,6 +340,29 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return YES;
 }
 
+// Reloads the manage sync item, and returns YES if the section should be
+// reloaded.
+- (BOOL)updateManageSyncItem {
+  TableViewModel* model = self.consumer.tableViewModel;
+  BOOL hasManageSyncItem = [model hasItemForItemType:ManageSyncItemType
+                                   sectionIdentifier:SyncSectionIdentifier];
+  if (self.isAuthenticated) {
+    if (hasManageSyncItem)
+      return NO;
+    SettingsMultilineDetailItem* item =
+        [[SettingsMultilineDetailItem alloc] initWithType:ManageSyncItemType];
+    item.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    item.text = GetNSString(IDS_IOS_MANAGE_SYNC_SETTINGS_TITLE);
+    [model addItem:item toSectionWithIdentifier:SyncSectionIdentifier];
+    return YES;
+  }
+  if (!hasManageSyncItem)
+    return NO;
+  [model removeItemWithType:ManageSyncItemType
+      fromSectionWithIdentifier:SyncSectionIdentifier];
+  return YES;
+}
+
 #pragma mark - Load non personalized section
 
 // Loads NonPersonalizedSectionIdentifier section.
@@ -373,6 +400,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       case RestartAuthenticationFlowErrorItemType:
       case ReauthDialogAsSyncIsInAuthErrorItemType:
       case ShowPassphraseDialogErrorItemType:
+      case ManageSyncItemType:
         NOTREACHED();
         break;
     }
@@ -503,6 +531,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     case RestartAuthenticationFlowErrorItemType:
     case ReauthDialogAsSyncIsInAuthErrorItemType:
     case ShowPassphraseDialogErrorItemType:
+    case ManageSyncItemType:
       NOTREACHED();
       break;
   }
@@ -525,6 +554,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
       break;
     case ShowPassphraseDialogErrorItemType:
       [self.commandHandler openPassphraseDialog];
+      break;
+    case ManageSyncItemType:
+      [self.commandHandler openManageSyncSettings];
       break;
     case AutocompleteSearchesAndURLsItemType:
     case PreloadPagesItemType:
