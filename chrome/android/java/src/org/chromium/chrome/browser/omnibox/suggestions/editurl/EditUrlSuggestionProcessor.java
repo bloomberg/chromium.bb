@@ -172,6 +172,9 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
         model.set(EditUrlSuggestionProperties.URL_TEXT, mLastProcessedSuggestion.getUrl());
     }
 
+    @Override
+    public void onNativeInitialized() {}
+
     /**
      * @param provider A means of accessing the activity's tab.
      */
