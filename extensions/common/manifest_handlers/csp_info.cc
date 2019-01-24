@@ -5,6 +5,7 @@
 #include "extensions/common/manifest_handlers/csp_info.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -30,6 +31,10 @@ namespace {
 const char kDefaultContentSecurityPolicy[] =
     "script-src 'self' blob: filesystem: chrome-extension-resource:; "
     "object-src 'self' blob: filesystem:;";
+
+const char kDefaultIsolatedWorldCSP_BypassMainWorld[] = "";
+const char kDefaultIsolatedWorldCSP_Secure[] =
+    "script-src 'self'; object-src 'self'; worker-src 'self'";
 
 const char kDefaultSandboxedPageContentSecurityPolicy[] =
     "sandbox allow-scripts allow-forms allow-popups allow-modals; "
@@ -95,9 +100,8 @@ const base::Value* GetManifestPath(const Extension* extension,
 
 }  // namespace
 
-CSPInfo::CSPInfo(const std::string& security_policy)
-    : content_security_policy(security_policy) {
-}
+CSPInfo::CSPInfo(std::string extension_pages_csp)
+    : extension_pages_csp(std::move(extension_pages_csp)) {}
 
 CSPInfo::~CSPInfo() {
 }
@@ -107,7 +111,18 @@ const std::string* CSPInfo::GetContentSecurityPolicy(
     const Extension* extension) {
   CSPInfo* csp_info = static_cast<CSPInfo*>(
           extension->GetManifestData(keys::kContentSecurityPolicy));
-  return csp_info ? &csp_info->content_security_policy : nullptr;
+  return csp_info ? &csp_info->extension_pages_csp : nullptr;
+}
+
+// static
+const std::string& CSPInfo::GetIsolatedWorldCSP(const Extension& extension) {
+  // TODO(crbug.com/914224): This should be only called for extensions which can
+  // have isolated worlds. Figure out the case of TYPE_USER_SCRIPT and add
+  // DCHECK(csp_info).
+  CSPInfo* csp_info = static_cast<CSPInfo*>(
+      extension.GetManifestData(keys::kContentSecurityPolicy));
+
+  return csp_info ? csp_info->isolated_world_csp : base::EmptyString();
 }
 
 // static
@@ -115,8 +130,7 @@ const std::string& CSPInfo::GetSandboxContentSecurityPolicy(
     const Extension* extension) {
   CSPInfo* csp_info = static_cast<CSPInfo*>(
       extension->GetManifestData(keys::kContentSecurityPolicy));
-  return csp_info ? csp_info->sandbox_content_security_policy
-                  : base::EmptyString();
+  return csp_info ? csp_info->sandbox_csp : base::EmptyString();
 }
 
 // static
@@ -156,9 +170,16 @@ bool CSPHandler::Parse(Extension* extension, base::string16* error) {
 
   // TODO(crbug.com/914224) Disallow the usages below in manifest v3 for
   // extensions.
-  return ParseExtensionPagesCSP(extension, error, key, csp) &&
-         ParseSandboxCSP(extension, error, keys::kSandboxedPagesCSP,
-                         GetManifestPath(extension, keys::kSandboxedPagesCSP));
+  if (!ParseExtensionPagesCSP(extension, error, key, csp))
+    return false;
+
+  if (!ParseSandboxCSP(extension, error, keys::kSandboxedPagesCSP,
+                       GetManifestPath(extension, keys::kSandboxedPagesCSP))) {
+    return false;
+  }
+
+  SetIsolatedWorldCSP(extension, kDefaultIsolatedWorldCSP_BypassMainWorld);
+  return true;
 }
 
 bool CSPHandler::ParseCSPDictionary(Extension* extension,
@@ -178,9 +199,10 @@ bool CSPHandler::ParseCSPDictionary(Extension* extension,
   }
 
   return ParseSandboxCSP(
-      extension, error, keys::kContentSecurityPolicy_SandboxedPagesPath,
-      GetManifestPath(extension,
-                      keys::kContentSecurityPolicy_SandboxedPagesPath));
+             extension, error, keys::kContentSecurityPolicy_SandboxedPagesPath,
+             GetManifestPath(
+                 extension, keys::kContentSecurityPolicy_SandboxedPagesPath)) &&
+         ParseIsolatedWorldCSP(extension, error);
 }
 
 bool CSPHandler::ParseExtensionPagesCSP(
@@ -214,7 +236,36 @@ bool CSPHandler::ParseExtensionPagesCSP(
 
   extension->SetManifestData(
       keys::kContentSecurityPolicy,
-      std::make_unique<CSPInfo>(sanitized_content_security_policy));
+      std::make_unique<CSPInfo>(std::move(sanitized_content_security_policy)));
+  return true;
+}
+
+bool CSPHandler::ParseIsolatedWorldCSP(Extension* extension,
+                                       base::string16* error) {
+  const char* key = keys::kContentSecurityPolicy_IsolatedWorldPath;
+
+  const base::Value* isolated_world_csp = GetManifestPath(extension, key);
+
+  if (!isolated_world_csp) {
+    SetIsolatedWorldCSP(extension, kDefaultIsolatedWorldCSP_Secure);
+    return true;
+  }
+
+  if (!isolated_world_csp->is_string()) {
+    *error = GetInvalidManifestKeyError(key);
+    return false;
+  }
+
+  const std::string& isolated_world_csp_str = isolated_world_csp->GetString();
+  if (!ContentSecurityPolicyIsLegal(isolated_world_csp_str)) {
+    *error = GetInvalidManifestKeyError(key);
+    return false;
+  }
+
+  if (!csp_validator::IsSecureIsolatedWorldCSP(isolated_world_csp_str, error))
+    return false;
+
+  SetIsolatedWorldCSP(extension, isolated_world_csp_str);
   return true;
 }
 
@@ -233,7 +284,7 @@ bool CSPHandler::ParseSandboxCSP(Extension* extension,
   }
 
   const std::string& sandbox_csp_str = sandbox_csp->GetString();
-  if (!csp_validator::ContentSecurityPolicyIsLegal(sandbox_csp_str) ||
+  if (!ContentSecurityPolicyIsLegal(sandbox_csp_str) ||
       !csp_validator::ContentSecurityPolicyIsSandboxed(sandbox_csp_str,
                                                        extension->GetType())) {
     *error = GetInvalidManifestKeyError(manifest_key);
@@ -268,6 +319,15 @@ bool CSPHandler::SetDefaultExtensionPagesCSP(Extension* extension,
   return true;
 }
 
+void CSPHandler::SetIsolatedWorldCSP(Extension* extension,
+                                     std::string isolated_world_csp) {
+  // By now we must have parsed the extension page CSP.
+  CSPInfo* csp_info = static_cast<CSPInfo*>(
+      extension->GetManifestData(keys::kContentSecurityPolicy));
+  DCHECK(csp_info);
+  csp_info->isolated_world_csp = std::move(isolated_world_csp);
+}
+
 void CSPHandler::SetSandboxCSP(Extension* extension, std::string sandbox_csp) {
   CHECK(csp_validator::ContentSecurityPolicyIsSandboxed(sandbox_csp,
                                                         extension->GetType()));
@@ -276,7 +336,7 @@ void CSPHandler::SetSandboxCSP(Extension* extension, std::string sandbox_csp) {
   CSPInfo* csp_info = static_cast<CSPInfo*>(
       extension->GetManifestData(keys::kContentSecurityPolicy));
   DCHECK(csp_info);
-  csp_info->sandbox_content_security_policy = std::move(sandbox_csp);
+  csp_info->sandbox_csp = std::move(sandbox_csp);
 }
 
 bool CSPHandler::AlwaysParseForType(Manifest::Type type) const {

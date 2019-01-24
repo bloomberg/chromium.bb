@@ -17,15 +17,16 @@ class ContentSecurityPolicyManifestTest : public ChromeManifestTest {
 
 TEST_F(ContentSecurityPolicyManifestTest, InsecureContentSecurityPolicy) {
   Testcase testcases[] = {
+      Testcase("insecure_contentsecuritypolicy_1.json",
+               ErrorUtils::FormatErrorMessage(
+                   errors::kInvalidCSPInsecureValueIgnored,
+                   keys::kContentSecurityPolicy, "http://example.com",
+                   "script-src")),
       Testcase(
-          "insecure_contentsecuritypolicy_1.json",
-          ErrorUtils::FormatErrorMessage(errors::kInvalidCSPInsecureValue,
-                                         keys::kContentSecurityPolicy,
-                                         "http://example.com", "script-src")),
-      Testcase("insecure_contentsecuritypolicy_2.json",
-               ErrorUtils::FormatErrorMessage(errors::kInvalidCSPInsecureValue,
-                                              keys::kContentSecurityPolicy,
-                                              "'unsafe-inline'", "script-src")),
+          "insecure_contentsecuritypolicy_2.json",
+          ErrorUtils::FormatErrorMessage(
+              errors::kInvalidCSPInsecureValueIgnored,
+              keys::kContentSecurityPolicy, "'unsafe-inline'", "script-src")),
       Testcase("insecure_contentsecuritypolicy_3.json",
                ErrorUtils::FormatErrorMessage(
                    errors::kInvalidCSPMissingSecureSrc,

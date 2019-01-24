@@ -7,6 +7,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "extensions/common/csp_validator.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/install_warning.h"
@@ -32,8 +33,8 @@ std::string InsecureValueWarning(
     const std::string& manifest_key =
         extensions::manifest_keys::kContentSecurityPolicy) {
   return ErrorUtils::FormatErrorMessage(
-      extensions::manifest_errors::kInvalidCSPInsecureValue, manifest_key,
-      value, directive);
+      extensions::manifest_errors::kInvalidCSPInsecureValueIgnored,
+      manifest_key, value, directive);
 }
 
 std::string MissingSecureSrcWarning(const std::string& manifest_key,
@@ -613,5 +614,53 @@ TEST(ExtensionCSPValidator, ParseCSP) {
     // Cheat and compare serialized versions of the directives.
     EXPECT_EQ(::testing::PrintToString(parser.directives()),
               ::testing::PrintToString(test_case.expected_directives));
+  }
+}
+
+TEST(ExtensionCSPValidator, IsSecureIsolatedWorldCSP) {
+  auto insecure_value_error = [](const std::string& directive,
+                                 const std::string& value) {
+    return ErrorUtils::FormatErrorMessage(
+        extensions::manifest_errors::kInvalidCSPInsecureValueError,
+        extensions::manifest_keys::kContentSecurityPolicy_IsolatedWorldPath,
+        value, directive);
+  };
+
+  auto missing_secure_src_error = [](const std::string& directive) {
+    return MissingSecureSrcWarning(
+        extensions::manifest_keys::kContentSecurityPolicy_IsolatedWorldPath,
+        directive);
+  };
+
+  struct {
+    const char* policy;
+    std::string expected_error;  // Empty if no error expected.
+  } test_cases[] = {
+      {"frame-src google.com; default-src yahoo.com; script-src 'self'; "
+       "worker-src; object-src http://localhost:80 'none'",
+       ""},
+      {"worker-src http://localhost google.com; script-src; object-src 'self'",
+       insecure_value_error("worker-src", "google.com")},
+      {"script-src; worker-src 'self';",
+       missing_secure_src_error("object-src")},
+      // Duplicate directives are ignored.
+      {"script-src; worker-src 'self'; default-src 'self'; script-src "
+       "google.com",
+       ""},
+      // "object-src" falls back to "default-src".
+      {"script-src; worker-src 'self'; default-src google.com",
+       insecure_value_error("object-src", "google.com")},
+      // "worker-src" falls back to "script-src".
+      {"script-src 'self'; object-src 'none'; default-src google.com", ""},
+      {"script-src 'unsafe-eval'; worker-src; default-src;",
+       insecure_value_error("script-src", "'unsafe-eval'")}};
+
+  for (const auto& test_case : test_cases) {
+    SCOPED_TRACE(test_case.policy);
+    base::string16 error;
+    bool result = extensions::csp_validator::IsSecureIsolatedWorldCSP(
+        test_case.policy, &error);
+    EXPECT_EQ(test_case.expected_error.empty(), result);
+    EXPECT_EQ(base::ASCIIToUTF16(test_case.expected_error), error);
   }
 }

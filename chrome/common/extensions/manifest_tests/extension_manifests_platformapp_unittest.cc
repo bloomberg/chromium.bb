@@ -100,7 +100,7 @@ TEST_F(PlatformAppsManifestTest, PlatformAppContentSecurityPolicy) {
   // But even allowlisted ones must specify a secure policy.
   LoadAndExpectWarning(
       "init_platform_app_csp_insecure.json",
-      ErrorUtils::FormatErrorMessage(errors::kInvalidCSPInsecureValue,
+      ErrorUtils::FormatErrorMessage(errors::kInvalidCSPInsecureValueIgnored,
                                      keys::kPlatformAppContentSecurityPolicy,
                                      "http://www.google.com", "default-src"));
 }
