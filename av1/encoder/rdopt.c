@@ -5831,7 +5831,7 @@ static void pick_tx_size_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     // tighter.
     assert(cpi->sf.model_based_prune_tx_search_level >= 0 &&
            cpi->sf.model_based_prune_tx_search_level <= 2);
-    static const int prune_factor_by8[] = { 4, 6 };
+    static const int prune_factor_by8[] = { 3, 5 };
     if (!model_skip &&
         ((model_rd *
           prune_factor_by8[cpi->sf.model_based_prune_tx_search_level - 1]) >>
@@ -10031,7 +10031,6 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi,
                       best_rd = RDCOST(x->rdmult, best_rd_stats.rate,
                                        best_rd_stats.dist);
                       if (best_rd < ref_best_rd) ref_best_rd = best_rd;
-
                       skip = 1;
                       break;
                     }
