@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/important_file_writer.h"
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -55,6 +56,7 @@
 #include "third_party/leveldatabase/env_chromium.h"
 
 using base::FilePath;
+using base::ImportantFileWriter;
 using base::StringPiece;
 using blink::IndexedDBDatabaseMetadata;
 using blink::IndexedDBKey;
@@ -852,13 +854,8 @@ bool IndexedDBBackingStore::RecordCorruptionInfo(const FilePath& path_base,
   root_dict.SetString("message", message);
   std::string output_js;
   base::JSONWriter::Write(root_dict, &output_js);
-
-  base::File file(info_path,
-                  base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-  if (!file.IsValid())
-    return false;
-  int written = file.Write(0, output_js.c_str(), output_js.length());
-  return size_t(written) == output_js.length();
+  return base::ImportantFileWriter::WriteFileAtomically(info_path,
+                                                        output_js.c_str());
 }
 
 void IndexedDBBackingStore::GrantChildProcessPermissions(int child_process_id) {
