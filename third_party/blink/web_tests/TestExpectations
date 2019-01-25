@@ -5858,3 +5858,6 @@ crbug.com/924954 http/tests/images/feature-policy-image-policies-with-border-rad
 
 # WebXR feature policy feature name in Chrome doesn't match spec.
 crbug.com/924670 external/wpt/webvr/webvr-supported-by-feature-policy.html [ Failure ]
+
+# Sheriff 2019-01-25
+crbug.com/925325 [ Mac ] storage/indexeddb/index-population.html [ Pass Failure ]
