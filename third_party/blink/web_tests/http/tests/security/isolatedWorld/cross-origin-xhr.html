@@ -17,6 +17,9 @@ var tests = [
     },
     function() {
         debug('XHR from isolated world with unchanged security origin');
+        // Clear any existing csp or security origin as a side effect of
+        // another test.
+        testRunner.setIsolatedWorldInfo(1, null, null);
         runTestInWorld(1, 'xhr');
     },
     function() {
