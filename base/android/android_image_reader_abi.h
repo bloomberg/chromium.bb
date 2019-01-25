@@ -84,6 +84,9 @@ using pAImageReader_delete = void (*)(AImageReader* reader);
 using pAImageReader_getWindow = media_status_t (*)(AImageReader* reader,
                                                    ANativeWindow** window);
 
+using pAImageReader_getFormat = media_status_t (*)(const AImageReader* reader,
+                                                   int32_t* format);
+
 using pAImageReader_acquireLatestImageAsync =
     media_status_t (*)(AImageReader* reader,
                        AImage** image,

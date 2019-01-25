@@ -388,19 +388,26 @@ void MediaCodecVideoDecoder::StartLazyInit() {
   lazy_init_pending_ = false;
   codec_allocator_->StartThread(this);
 
-  // SurfaceControl allows TextureOwner to be promoted to an overlay in the
-  // compositing pipeline itself.
-  const bool use_texture_owner_as_overlays = is_surface_control_enabled_;
-
   // Only ask for promotion hints if we can actually switch surfaces, since we
   // wouldn't be able to do anything with them. Also, if threaded texture
-  // mailboxes are enabled, then we turn off overlays anyway. And if texture
-  // owner can be used as an overlay, no promotion hints are necessary.
+  // mailboxes are enabled, then we turn off overlays anyway.
   const bool want_promotion_hints =
       device_info_->IsSetOutputSurfaceSupported() &&
-      !enable_threaded_texture_mailboxes_ && !use_texture_owner_as_overlays;
+      !enable_threaded_texture_mailboxes_;
+
+  VideoFrameFactory::OverlayMode overlay_mode =
+      VideoFrameFactory::OverlayMode::kDontRequestPromotionHints;
+  if (is_surface_control_enabled_) {
+    overlay_mode =
+        requires_secure_codec_
+            ? VideoFrameFactory::OverlayMode::kSurfaceControlSecure
+            : VideoFrameFactory::OverlayMode::kSurfaceControlInsecure;
+  } else if (want_promotion_hints) {
+    overlay_mode = VideoFrameFactory::OverlayMode::kRequestPromotionHints;
+  }
+
   video_frame_factory_->Initialize(
-      want_promotion_hints, use_texture_owner_as_overlays,
+      overlay_mode,
       base::Bind(&MediaCodecVideoDecoder::OnVideoFrameFactoryInitialized,
                  weak_factory_.GetWeakPtr()));
 }

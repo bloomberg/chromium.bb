@@ -69,7 +69,8 @@ class ImageReaderGLOwner::ScopedHardwareBufferImpl
 };
 
 ImageReaderGLOwner::ImageReaderGLOwner(
-    std::unique_ptr<gpu::gles2::AbstractTexture> texture)
+    std::unique_ptr<gpu::gles2::AbstractTexture> texture,
+    SecureMode secure_mode)
     : TextureOwner(std::move(texture)),
       current_image_(nullptr),
       loader_(base::android::AndroidImageReader::GetInstance()),
@@ -79,18 +80,19 @@ ImageReaderGLOwner::ImageReaderGLOwner(
   DCHECK(context_);
   DCHECK(surface_);
 
-  // TODO(khushalsagar): Need plumbing here to select the correct format and
-  // usage for secure media.
-
   // Set the width, height and format to some default value. This parameters
   // are/maybe overriden by the producer sending buffers to this imageReader's
   // Surface.
   int32_t width = 1, height = 1, max_images = 3;
-  AIMAGE_FORMATS format = AIMAGE_FORMAT_YUV_420_888;
+  AIMAGE_FORMATS format = secure_mode == SecureMode::kSecure
+                              ? AIMAGE_FORMAT_PRIVATE
+                              : AIMAGE_FORMAT_YUV_420_888;
   AImageReader* reader = nullptr;
   // The usage flag below should be used when the buffer will be read from by
   // the GPU as a texture.
-  const uint64_t usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE;
+  const uint64_t usage = secure_mode == SecureMode::kSecure
+                             ? AHARDWAREBUFFER_USAGE_PROTECTED_CONTENT
+                             : AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE;
 
   // Create a new reader for images of the desired size and format.
   media_status_t return_code = loader_.AImageReader_newWithUsage(
