@@ -17,6 +17,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/base/device_client.h"
+#include "device/usb/mojo/type_converters.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_ids.h"
 #include "extensions/browser/api/hid/hid_device_manager.h"
@@ -264,19 +265,25 @@ std::set<scoped_refptr<DevicePermissionEntry>> GetDevicePermissionEntries(
 
 }  // namespace
 
-DevicePermissionEntry::DevicePermissionEntry(scoped_refptr<UsbDevice> device)
-    : usb_device_(device),
+DevicePermissionEntry::DevicePermissionEntry(
+    const device::mojom::UsbDeviceInfo& device)
+    : device_guid_(device.guid),
       type_(Type::USB),
-      vendor_id_(device->vendor_id()),
-      product_id_(device->product_id()),
-      serial_number_(device->serial_number()),
-      manufacturer_string_(device->manufacturer_string()),
-      product_string_(device->product_string()) {
+      vendor_id_(device.vendor_id),
+      product_id_(device.product_id) {
+  if (device.serial_number)
+    serial_number_ = *device.serial_number;
+
+  if (device.manufacturer_name)
+    manufacturer_string_ = *device.manufacturer_name;
+
+  if (device.product_name)
+    product_string_ = *device.product_name;
 }
 
 DevicePermissionEntry::DevicePermissionEntry(
     const device::mojom::HidDeviceInfo& device)
-    : hid_device_guid_(device.guid),
+    : device_guid_(device.guid),
       type_(Type::HID),
       vendor_id_(device.vendor_id),
       product_id_(device.product_id),
@@ -347,21 +354,29 @@ DevicePermissions::~DevicePermissions() {
 }
 
 scoped_refptr<DevicePermissionEntry> DevicePermissions::FindUsbDeviceEntry(
-    scoped_refptr<UsbDevice> device) const {
-  const auto& ephemeral_device_entry =
-      ephemeral_usb_devices_.find(device.get());
+    scoped_refptr<device::UsbDevice> device) const {
+  if (!device)
+    return nullptr;
+
+  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+  return FindUsbDeviceEntry(*device_info);
+}
+
+scoped_refptr<DevicePermissionEntry> DevicePermissions::FindUsbDeviceEntry(
+    const device::mojom::UsbDeviceInfo& device) const {
+  const auto& ephemeral_device_entry = ephemeral_usb_devices_.find(device.guid);
   if (ephemeral_device_entry != ephemeral_usb_devices_.end()) {
     return ephemeral_device_entry->second;
   }
 
-  if (device->serial_number().empty()) {
+  if (!device.serial_number || device.serial_number->empty()) {
     return nullptr;
   }
 
   for (const auto& entry : entries_) {
-    if (entry->IsPersistent() && entry->vendor_id() == device->vendor_id() &&
-        entry->product_id() == device->product_id() &&
-        entry->serial_number() == device->serial_number()) {
+    if (entry->IsPersistent() && entry->vendor_id() == device.vendor_id &&
+        entry->product_id() == device.product_id &&
+        entry->serial_number() == *device.serial_number) {
       return entry;
     }
   }
@@ -523,8 +538,9 @@ void DevicePermissionsManager::AllowUsbDevice(const std::string& extension_id,
   DCHECK(thread_checker_.CalledOnValidThread());
   DevicePermissions* device_permissions = GetForExtension(extension_id);
 
-  scoped_refptr<DevicePermissionEntry> device_entry(
-      new DevicePermissionEntry(device));
+  DCHECK(device);
+  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+  auto device_entry = base::MakeRefCounted<DevicePermissionEntry>(*device_info);
 
   if (device_entry->IsPersistent()) {
     for (const auto& entry : device_permissions->entries()) {
@@ -538,12 +554,13 @@ void DevicePermissionsManager::AllowUsbDevice(const std::string& extension_id,
     device_permissions->entries_.insert(device_entry);
     SaveDevicePermissionEntry(context_, extension_id, device_entry);
   } else if (!ContainsKey(device_permissions->ephemeral_usb_devices_,
-                          device.get())) {
+                          device_info->guid)) {
     // Non-persistent devices cannot be reliably identified when they are
     // reconnected so such devices are only remembered until disconnect.
     // Register an observer here so that this set doesn't grow undefinitely.
     device_permissions->entries_.insert(device_entry);
-    device_permissions->ephemeral_usb_devices_[device.get()] = device_entry;
+    device_permissions->ephemeral_usb_devices_[device_info->guid] =
+        device_entry;
 
     // Only start observing when an ephemeral device has been added so that
     // UsbService is not automatically initialized on profile creation (which it
@@ -613,9 +630,9 @@ void DevicePermissionsManager::RemoveEntry(
   if (entry->IsPersistent()) {
     RemoveDevicePermissionEntry(context_, extension_id, entry);
   } else if (entry->type_ == DevicePermissionEntry::Type::USB) {
-    device_permissions->ephemeral_usb_devices_.erase(entry->usb_device_.get());
+    device_permissions->ephemeral_usb_devices_.erase(entry->device_guid_);
   } else if (entry->type_ == DevicePermissionEntry::Type::HID) {
-    device_permissions->ephemeral_hid_devices_.erase(entry->hid_device_guid_);
+    device_permissions->ephemeral_hid_devices_.erase(entry->device_guid_);
   } else {
     NOTREACHED();
   }
@@ -661,7 +678,7 @@ void DevicePermissionsManager::OnDeviceRemovedCleanup(
     // permission to access it is cleared on disconnect.
     DevicePermissions* device_permissions = map_entry.second;
     const auto& device_entry =
-        device_permissions->ephemeral_usb_devices_.find(device.get());
+        device_permissions->ephemeral_usb_devices_.find(device->guid());
     if (device_entry != device_permissions->ephemeral_usb_devices_.end()) {
       device_permissions->entries_.erase(device_entry->second);
       device_permissions->ephemeral_usb_devices_.erase(device_entry);
