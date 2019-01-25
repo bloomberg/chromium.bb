@@ -44,7 +44,9 @@ public class AppModalPresenter extends ModalDialogManager.Presenter {
         mDialog = new Dialog(mContext, R.style.ModalDialogTheme);
         mDialog.setOnCancelListener(dialogInterface
                 -> dismissCurrentDialog(DialogDismissalCause.NAVIGATE_BACK_OR_TOUCH_OUTSIDE));
-
+        // Cancel on touch outside should be disabled by default. The ModelChangeProcessor wouldn't
+        // notify change if the property is not set during initialization.
+        mDialog.setCanceledOnTouchOutside(false);
         ModalDialogView dialogView = (ModalDialogView) LayoutInflater.from(mDialog.getContext())
                                              .inflate(R.layout.modal_dialog_view, null);
         mModelChangeProcessor =
