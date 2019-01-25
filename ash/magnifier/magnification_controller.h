@@ -164,9 +164,12 @@ class ASH_EXPORT MagnificationController : public ui::EventHandler,
   void OnTouchEvent(ui::TouchEvent* event) override;
 
   // ui::EventRewriter overrides:
-  ui::EventDispatchDetails RewriteEvent(
+  ui::EventRewriteStatus RewriteEvent(
       const ui::Event& event,
-      const base::WeakPtr<Continuation> continuation) override;
+      std::unique_ptr<ui::Event>* new_event) override;
+  ui::EventRewriteStatus NextDispatchEvent(
+      const ui::Event& last_event,
+      std::unique_ptr<ui::Event>* new_event) override;
 
   // Redraws the magnification window with the given origin position and the
   // given scale. Returns true if the window is changed; otherwise, false.

@@ -4,7 +4,6 @@
 
 #include "ash/magnifier/magnification_controller.h"
 
-#include <algorithm>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -491,14 +490,14 @@ void MagnificationController::OnTouchEvent(ui::TouchEvent* event) {
     SwitchTargetRootWindow(current_root, true);
 }
 
-ui::EventDispatchDetails MagnificationController::RewriteEvent(
+ui::EventRewriteStatus MagnificationController::RewriteEvent(
     const ui::Event& event,
-    const base::WeakPtr<Continuation> continuation) {
+    std::unique_ptr<ui::Event>* rewritten_event) {
   if (!IsEnabled())
-    return SendEvent(continuation, &event);
+    return ui::EVENT_REWRITE_CONTINUE;
 
   if (!event.IsTouchEvent())
-    return SendEvent(continuation, &event);
+    return ui::EVENT_REWRITE_CONTINUE;
 
   const ui::TouchEvent* touch_event = event.AsTouchEvent();
 
@@ -517,7 +516,7 @@ ui::EventDispatchDetails MagnificationController::RewriteEvent(
         touch_event_copy.unique_event_id(), false /* event_consumed */,
         false /* is_source_touch_event_set_non_blocking */);
   } else {
-    return DiscardEvent(continuation);
+    return ui::EVENT_REWRITE_DISCARD;
   }
 
   // User can change zoom level with two fingers pinch and pan around with two
@@ -548,13 +547,12 @@ ui::EventDispatchDetails MagnificationController::RewriteEvent(
       // TouchExplorationController confused. Send cancelled event for recorded
       // touch events to the next event rewriter here instead of rewriting an
       // event in the stream.
-      ui::EventDispatchDetails details =
-          SendEvent(continuation, &touch_cancel_event);
-      if (details.dispatcher_destroyed || details.target_destroyed)
-        return details;
+      SendEventToEventSource(root_window_->GetHost()->GetEventSource(),
+                             &touch_cancel_event);
     }
     press_event_map_.clear();
   }
+
   bool discard = consume_touch_event_;
 
   // Reset state once no point is touched on the screen.
@@ -572,9 +570,16 @@ ui::EventDispatchDetails MagnificationController::RewriteEvent(
   }
 
   if (discard)
-    return DiscardEvent(continuation);
+    return ui::EVENT_REWRITE_DISCARD;
 
-  return SendEvent(continuation, &event);
+  return ui::EVENT_REWRITE_CONTINUE;
+}
+
+ui::EventRewriteStatus MagnificationController::NextDispatchEvent(
+    const ui::Event& last_event,
+    std::unique_ptr<ui::Event>* new_event) {
+  NOTREACHED();
+  return ui::EVENT_REWRITE_CONTINUE;
 }
 
 bool MagnificationController::Redraw(const gfx::PointF& position,
