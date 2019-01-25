@@ -884,6 +884,8 @@ VideoFrameQualityValidator::VideoFrameQualityValidator(
       decoder_state_(UNINITIALIZED) {
   // Allow decoding of individual NALU. Entire frames are required by default.
   decoder_->set_decode_nalus(true);
+
+  DETACH_FROM_THREAD(thread_checker_);
 }
 
 void VideoFrameQualityValidator::Initialize(const gfx::Size& coded_size,
