@@ -115,7 +115,8 @@ ImageCaptureFrameGrabber::~ImageCaptureFrameGrabber() {
 
 void ImageCaptureFrameGrabber::GrabFrame(
     blink::WebMediaStreamTrack* track,
-    std::unique_ptr<blink::WebImageCaptureGrabFrameCallbacks> callbacks) {
+    std::unique_ptr<blink::WebImageCaptureGrabFrameCallbacks> callbacks,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!!callbacks);
 
@@ -139,12 +140,14 @@ void ImageCaptureFrameGrabber::GrabFrame(
   frame_grab_in_progress_ = true;
   MediaStreamVideoSink::ConnectToTrack(
       *track,
-      base::Bind(
+      base::BindRepeating(
           &SingleShotFrameHandler::OnVideoFrameOnIOThread,
           base::MakeRefCounted<SingleShotFrameHandler>(),
-          media::BindToCurrentLoop(base::Bind(
-              &ImageCaptureFrameGrabber::OnSkImage, weak_factory_.GetWeakPtr(),
-              base::Passed(&scoped_callbacks)))),
+          media::BindToLoop(
+              std::move(task_runner),
+              base::BindRepeating(&ImageCaptureFrameGrabber::OnSkImage,
+                                  weak_factory_.GetWeakPtr(),
+                                  base::Passed(&scoped_callbacks)))),
       false);
 }
 

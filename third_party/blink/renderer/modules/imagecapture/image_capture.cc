@@ -326,7 +326,9 @@ ScriptPromise ImageCapture::grabFrame(ScriptState* script_state) {
   WebMediaStreamTrack track(stream_track_->Component());
   auto resolver_callback_adapter =
       std::make_unique<CallbackPromiseAdapter<ImageBitmap, void>>(resolver);
-  frame_grabber_->GrabFrame(&track, std::move(resolver_callback_adapter));
+  frame_grabber_->GrabFrame(&track, std::move(resolver_callback_adapter),
+                            ExecutionContext::From(script_state)
+                                ->GetTaskRunner(TaskType::kDOMManipulation));
 
   return promise;
 }
