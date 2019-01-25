@@ -111,8 +111,6 @@ class MHTMLFrameSerializerDelegate final : public FrameSerializer::Delegate {
   bool ShouldIgnoreAttribute(const Element&, const Attribute&) override;
   bool RewriteLink(const Element&, String& rewritten_link) override;
   bool ShouldSkipResourceWithURL(const KURL&) override;
-  bool ShouldSkipResource(
-      FrameSerializer::ResourceHasCacheControlNoStoreHeader) override;
   Vector<Attribute> GetCustomAttributes(const Element&) override;
   std::pair<Node*, Element*> GetAuxiliaryDOMTree(const Element&) const override;
   bool ShouldCollectProblemMetric() override;
@@ -298,16 +296,6 @@ bool MHTMLFrameSerializerDelegate::ShouldSkipResourceWithURL(const KURL& url) {
   return web_delegate_.ShouldSkipResource(url);
 }
 
-bool MHTMLFrameSerializerDelegate::ShouldSkipResource(
-    FrameSerializer::ResourceHasCacheControlNoStoreHeader
-        has_cache_control_no_store_header) {
-  return web_delegate_.CacheControlPolicy() ==
-             WebFrameSerializerCacheControlPolicy::
-                 kSkipAnyFrameOrResourceMarkedNoStore &&
-         has_cache_control_no_store_header ==
-             FrameSerializer::kHasCacheControlNoStoreHeader;
-}
-
 Vector<Attribute> MHTMLFrameSerializerDelegate::GetCustomAttributes(
     const Element& element) {
   Vector<Attribute> attributes;
@@ -401,36 +389,6 @@ std::pair<Node*, Element*> MHTMLFrameSerializerDelegate::GetAuxiliaryDOMTree(
   return std::pair<Node*, Element*>(shadow_root, template_element);
 }
 
-bool CacheControlNoStoreHeaderPresent(
-    const WebLocalFrameImpl& web_local_frame) {
-  return web_local_frame.GetDocumentLoader()
-      ->GetResponse()
-      .ToResourceResponse()
-      .CacheControlContainsNoStore();
-}
-
-bool FrameShouldBeSerializedAsMHTML(
-    WebLocalFrame* frame,
-    WebFrameSerializerCacheControlPolicy cache_control_policy) {
-  WebLocalFrameImpl* web_local_frame = ToWebLocalFrameImpl(frame);
-  DCHECK(web_local_frame);
-
-  if (cache_control_policy == WebFrameSerializerCacheControlPolicy::kNone)
-    return true;
-
-  bool need_to_check_no_store =
-      cache_control_policy == WebFrameSerializerCacheControlPolicy::
-                                  kSkipAnyFrameOrResourceMarkedNoStore ||
-      (!frame->Parent() &&
-       cache_control_policy ==
-           WebFrameSerializerCacheControlPolicy::kFailForNoStoreMainFrame);
-
-  if (!need_to_check_no_store)
-    return true;
-
-  return !CacheControlNoStoreHeaderPresent(*web_local_frame);
-}
-
 }  // namespace
 
 WebThreadSafeData WebFrameSerializer::GenerateMHTMLHeader(
@@ -440,9 +398,6 @@ WebThreadSafeData WebFrameSerializer::GenerateMHTMLHeader(
   TRACE_EVENT0("page-serialization", "WebFrameSerializer::generateMHTMLHeader");
   DCHECK(frame);
   DCHECK(delegate);
-
-  if (!FrameShouldBeSerializedAsMHTML(frame, delegate->CacheControlPolicy()))
-    return WebThreadSafeData();
 
   WebLocalFrameImpl* web_local_frame = ToWebLocalFrameImpl(frame);
   DCHECK(web_local_frame);
@@ -463,10 +418,6 @@ WebThreadSafeData WebFrameSerializer::GenerateMHTMLParts(
   TRACE_EVENT0("page-serialization", "WebFrameSerializer::generateMHTMLParts");
   DCHECK(web_frame);
   DCHECK(web_delegate);
-
-  if (!FrameShouldBeSerializedAsMHTML(web_frame,
-                                      web_delegate->CacheControlPolicy()))
-    return WebThreadSafeData();
 
   // Translate arguments from public to internal blink APIs.
   LocalFrame* frame = ToWebLocalFrameImpl(web_frame)->GetFrame();

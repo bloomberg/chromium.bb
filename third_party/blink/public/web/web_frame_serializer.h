@@ -53,8 +53,6 @@ class WebFrameSerializer {
     // Used to deduplicate resources across multiple frames.
     virtual bool ShouldSkipResource(const WebURL&) = 0;
 
-    virtual WebFrameSerializerCacheControlPolicy CacheControlPolicy() = 0;
-
     virtual bool UseBinaryEncoding() = 0;
 
     virtual bool RemovePopupOverlay() = 0;

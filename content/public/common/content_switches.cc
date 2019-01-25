@@ -595,13 +595,6 @@ const char kMaxUntiledLayerWidth[]          = "max-untiled-layer-width";
 // Indicates the utility process should run with a message loop type of UI.
 const char kMessageLoopTypeUi[] = "message-loop-type-ui";
 
-// Sets options for MHTML generator to skip no-store resources:
-//   "skip-nostore-main" - fails to save a page if main frame is 'no-store'
-//   "skip-nostore-all" - also skips no-store subresources.
-const char kMHTMLGeneratorOption[]          = "mhtml-generator-option";
-const char kMHTMLSkipNostoreMain[]          = "skip-nostore-main";
-const char kMHTMLSkipNostoreAll[]           = "skip-nostore-all";
-
 // Use a Mojo-based LocalStorage implementation.
 const char kMojoLocalStorage[]              = "mojo-local-storage";
 

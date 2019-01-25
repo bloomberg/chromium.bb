@@ -2524,11 +2524,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "mhtml-generator-option",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "modal-permission-prompts",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
