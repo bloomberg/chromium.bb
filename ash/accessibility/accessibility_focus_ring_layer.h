@@ -9,6 +9,7 @@
 #include "ash/accessibility/focus_ring_layer.h"
 #include "ash/ash_export.h"
 #include "base/macros.h"
+#include "ui/compositor/paint_recorder.h"
 
 namespace ash {
 
@@ -23,12 +24,20 @@ class ASH_EXPORT AccessibilityFocusRingLayer : public FocusRingLayer {
   // Create the layer and update its bounds and position in the hierarchy.
   void Set(const AccessibilityFocusRing& ring);
 
+  void EnableDoubleFocusRing(SkColor secondary_color);
+  void DisableDoubleFocusRing();
+
  private:
   // ui::LayerDelegate overrides:
   void OnPaintLayer(const ui::PaintContext& context) override;
 
+  void DrawFocusRing(ui::PaintRecorder& recorder, cc::PaintFlags& flags);
+  void DrawDoubleFocusRing(ui::PaintRecorder& recorder, cc::PaintFlags& flags);
+
   // The outline of the current focus ring.
   AccessibilityFocusRing ring_;
+  // The secondary color, if there is a double focus ring.
+  base::Optional<SkColor> secondary_color_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityFocusRingLayer);
 };
