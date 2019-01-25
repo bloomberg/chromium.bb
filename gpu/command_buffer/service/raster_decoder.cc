@@ -1210,6 +1210,14 @@ error::Error RasterDecoderImpl::DoCommandsImpl(unsigned int num_commands,
       process_pos += size;
       cmd_data += size;
     }
+
+#if defined(OS_MACOSX)
+    if (!flush_workaround_disabled_for_test_) {
+      if (gr_context())
+        gr_context()->flush();
+      api()->glFlushFn();
+    }
+#endif
   }
 
   *entries_processed = process_pos;
