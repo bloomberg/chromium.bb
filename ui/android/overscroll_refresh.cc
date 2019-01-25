@@ -5,6 +5,7 @@
 #include "ui/android/overscroll_refresh.h"
 
 #include "base/logging.h"
+#include "cc/input/overscroll_behavior.h"
 #include "ui/android/overscroll_refresh_handler.h"
 
 namespace ui {
@@ -52,14 +53,38 @@ void OverscrollRefresh::OnScrollEnd(const gfx::Vector2dF& scroll_velocity) {
   Release(allow_activation);
 }
 
-void OverscrollRefresh::OnOverscrolled() {
+void OverscrollRefresh::OnOverscrolled(const cc::OverscrollBehavior& behavior) {
   if (scroll_consumption_state_ != AWAITING_SCROLL_UPDATE_ACK)
     return;
 
-  scroll_consumption_state_ =
-      handler_->PullStart(cumulative_scroll_.x(), cumulative_scroll_.y())
-          ? ENABLED
-          : DISABLED;
+  float ydelta = cumulative_scroll_.y();
+  float xdelta = cumulative_scroll_.x();
+  bool in_y_direction = std::abs(ydelta) > std::abs(xdelta);
+  OverscrollAction type = OverscrollAction::NONE;
+  bool navigate_forward = false;
+  if (ydelta > 0 && in_y_direction) {
+    // Pull-to-refresh. Check overscroll-behavior-y
+    if (behavior.y != cc::OverscrollBehavior::OverscrollBehaviorType::
+                          kOverscrollBehaviorTypeAuto) {
+      Reset();
+      return;
+    }
+    type = OverscrollAction::PULL_TO_REFRESH;
+  } else if (!in_y_direction) {
+    // Swipe-to-navigate. Check overscroll-behavior-x
+    if (behavior.x != cc::OverscrollBehavior::OverscrollBehaviorType::
+                          kOverscrollBehaviorTypeAuto) {
+      Reset();
+      return;
+    }
+    type = OverscrollAction::HISTORY_NAVIGATION;
+    navigate_forward = xdelta < 0;
+  }
+
+  if (type != OverscrollAction::NONE) {
+    scroll_consumption_state_ =
+        handler_->PullStart(type, navigate_forward) ? ENABLED : DISABLED;
+  }
 }
 
 bool OverscrollRefresh::WillHandleScrollUpdate(

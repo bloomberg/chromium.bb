@@ -6,6 +6,7 @@
 #define UI_ANDROID_OVERSCROLL_REFRESH_HANDLER_H_
 
 #include "base/android/scoped_java_ref.h"
+#include "ui/android/overscroll_refresh.h"
 #include "ui/android/ui_android_export.h"
 
 namespace ui {
@@ -23,7 +24,7 @@ class UI_ANDROID_EXPORT OverscrollRefreshHandler {
   // Signals the start of an overscrolling pull. Returns whether the handler
   // will consume the overscroll gesture, in which case it will receive the
   // remaining pull updates.
-  virtual bool PullStart(float x_delta, float y_delta);
+  virtual bool PullStart(OverscrollAction type, bool navigate_forward);
 
   // Signals a pull update, where |x_delta| and |y_delta| are in device pixels.
   virtual void PullUpdate(float x_delta, float y_delta);

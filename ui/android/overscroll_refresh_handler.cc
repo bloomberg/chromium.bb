@@ -19,9 +19,11 @@ OverscrollRefreshHandler::OverscrollRefreshHandler(
 
 OverscrollRefreshHandler::~OverscrollRefreshHandler() {}
 
-bool OverscrollRefreshHandler::PullStart(float x_delta, float y_delta) {
-  return Java_OverscrollRefreshHandler_start(
-      AttachCurrentThread(), j_overscroll_refresh_handler_, x_delta, y_delta);
+bool OverscrollRefreshHandler::PullStart(OverscrollAction type,
+                                         bool navigate_forward) {
+  return Java_OverscrollRefreshHandler_start(AttachCurrentThread(),
+                                             j_overscroll_refresh_handler_,
+                                             type, navigate_forward);
 }
 
 void OverscrollRefreshHandler::PullUpdate(float x_delta, float y_delta) {

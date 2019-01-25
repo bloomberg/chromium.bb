@@ -10,6 +10,14 @@
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.ui
+enum OverscrollAction { NONE = 0, PULL_TO_REFRESH = 1, HISTORY_NAVIGATION = 2 };
+
+namespace cc {
+struct OverscrollBehavior;
+}
+
 namespace ui {
 
 class OverscrollRefreshHandler;
@@ -42,7 +50,8 @@ class UI_ANDROID_EXPORT OverscrollRefresh {
   // is true which happens when the scroll update is not consumed and the
   // overscroll_behavior on y axis is 'auto'.
   // This method is made virtual for mocking.
-  virtual void OnOverscrolled();
+  virtual void OnOverscrolled(
+      const cc::OverscrollBehavior& overscroll_behavior);
 
   // Returns true if the effect has consumed the |scroll_delta|.
   bool WillHandleScrollUpdate(const gfx::Vector2dF& scroll_delta);

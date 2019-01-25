@@ -226,12 +226,7 @@ void OverscrollControllerAndroid::OnOverscrolled(
     return;
 
   if (refresh_effect_) {
-    if (params.overscroll_behavior.y !=
-        cc::OverscrollBehavior::OverscrollBehaviorType::
-            kOverscrollBehaviorTypeAuto)
-      refresh_effect_->Reset();
-    else
-      refresh_effect_->OnOverscrolled();
+    refresh_effect_->OnOverscrolled(params.overscroll_behavior);
 
     if (refresh_effect_->IsActive() ||
         refresh_effect_->IsAwaitingScrollUpdateAck()) {

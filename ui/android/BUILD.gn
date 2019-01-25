@@ -122,6 +122,7 @@ java_cpp_enum("java_enums_srcjar") {
     "../base/ui_base_types.h",
     "../events/android/gesture_event_type.h",
     "../gfx/android/java_bitmap.h",
+    "overscroll_refresh.h",
     "resources/resource_manager.h",
     "resources/system_ui_resource_type.h",
   ]
