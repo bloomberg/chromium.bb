@@ -38,9 +38,6 @@ const std::map<S2LatLng, std::string> GetData(int rank) {
   std::vector<std::string> lines = base::SplitString(
       data, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   for (size_t i = 0; i < lines.size(); ++i) {
-    // TODO(frechette) Remove once we ensured no empty line in data file.
-    if (lines[i].empty())
-      continue;
     std::vector<std::string> fields = base::SplitString(
         lines[i], ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     CHECK_EQ(3u, fields.size());
