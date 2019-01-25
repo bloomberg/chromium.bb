@@ -706,7 +706,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
         // that have permission to access each.
         for (Website site : sites) {
             for (ChosenObjectInfo info : site.getChosenObjectInfo()) {
-                if (mSearch.isEmpty() || info.getName().toLowerCase().contains(mSearch)) {
+                if (mSearch == null || mSearch.isEmpty()
+                        || info.getName().toLowerCase().contains(mSearch)) {
                     Pair<ArrayList<ChosenObjectInfo>, ArrayList<Website>> entry =
                             objects.get(info.getObject());
                     if (entry == null) {
