@@ -203,7 +203,7 @@ cca.App.prototype.onKeyPressed_ = function(event) {
 cca.App.instance_ = null;
 
 /**
- * Creates the Camera object and starts screen capturing.
+ * Creates the App object and starts camera stream.
  */
 document.addEventListener('DOMContentLoaded', () => {
   if (!cca.App.instance_) {
