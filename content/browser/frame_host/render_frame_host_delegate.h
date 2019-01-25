@@ -176,6 +176,14 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void DidReceiveFirstUserActivation(
       RenderFrameHost* render_frame_host) {}
 
+  // The display style of the frame has changed.
+  virtual void DidChangeDisplayState(RenderFrameHost* render_frame_host,
+                                     bool is_display_none) {}
+
+  // The size of the frame has changed.
+  virtual void FrameSizeChanged(RenderFrameHost* render_frame_host,
+                                const gfx::Size& frame_size) {}
+
   // The onload handler in the frame has completed. Only called for the top-
   // level frame.
   virtual void DocumentOnLoadCompleted(RenderFrameHost* render_frame_host) {}

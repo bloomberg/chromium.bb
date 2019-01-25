@@ -333,6 +333,13 @@ class PageLoadMetricsObserver {
   virtual void OnDidInternalNavigationAbort(
       content::NavigationHandle* navigation_handle) {}
 
+  // ReadyToCommitNextNavigation is triggered when a frame navigation is
+  // ready to commit, but has not yet been committed. This is only called by
+  // a PageLoadTracker for a committed load, meaning that this call signals we
+  // are ready to commit a navigation to a new page.
+  virtual void ReadyToCommitNextNavigation(
+      content::NavigationHandle* navigation_handle) {}
+
   // OnDidFinishSubFrameNavigation is triggered when a sub-frame of the
   // committed page has finished navigating. It has either committed, aborted,
   // was a same document navigation, or has been replaced. It is up to the
@@ -495,6 +502,15 @@ class PageLoadMetricsObserver {
 
   virtual void FrameReceivedFirstUserActivation(
       content::RenderFrameHost* render_frame_host) {}
+
+  // Called when the display property changes on the frame.
+  virtual void FrameDisplayStateChanged(
+      content::RenderFrameHost* render_frame_host,
+      bool is_display_none) {}
+
+  // Called when a frames size changes.
+  virtual void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
+                                const gfx::Size& frame_size) {}
 
   // Called when the event corresponding to |event_key| occurs in this page
   // load.

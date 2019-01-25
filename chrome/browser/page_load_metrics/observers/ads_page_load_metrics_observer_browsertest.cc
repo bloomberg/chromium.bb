@@ -50,6 +50,18 @@ const char kAdUserActivationHistogramId[] =
     "PageLoad.Clients.Ads.SubresourceFilter.FrameCounts.AdFrames.PerFrame."
     "UserActivation";
 
+const char kVisibilityHistogramId[] =
+    "PageLoad.Clients.Ads.FrameCounts.AdFrames.PerFrame."
+    "Visibility";
+
+const char kSqrtNumberOfPixelsHistogramId[] =
+    "PageLoad.Clients.Ads.FrameCounts.AdFrames.PerFrame."
+    "SqrtNumberOfPixels";
+
+const char kSmallestDimensionHistogramId[] =
+    "PageLoad.Clients.Ads.FrameCounts.AdFrames.PerFrame."
+    "SmallestDimension";
+
 enum class Origin {
   kNavigation,
   kAnchorAttribute,
@@ -323,6 +335,89 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
       "PageLoad.Clients.Ads.SubresourceFilter.FrameCounts.AnyParentFrame."
       "AdFrames",
       2, 1);
+}
+
+// Test that a frame without display:none is reported as visible.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
+                       VisibleAdframeRecorded) {
+  base::HistogramTester histogram_tester;
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL(
+                                   "/ads_observer/display_block_adframe.html"));
+  waiter->AddMinimumCompleteResourcesExpectation(4);
+  waiter->Wait();
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  histogram_tester.ExpectUniqueSample(
+      kVisibilityHistogramId,
+      AdsPageLoadMetricsObserver::AdFrameVisibility::kVisible, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
+                       DisplayNoneAdframeRecorded) {
+  base::HistogramTester histogram_tester;
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL(
+                                   "/ads_observer/display_none_adframe.html"));
+  waiter->AddMinimumCompleteResourcesExpectation(4);
+  waiter->Wait();
+  // Navigate away to force the histogram recording.
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  histogram_tester.ExpectUniqueSample(
+      kVisibilityHistogramId,
+      AdsPageLoadMetricsObserver::AdFrameVisibility::kDisplayNone, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest, FramePixelSize) {
+  base::HistogramTester histogram_tester;
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/ads_observer/blank_with_adiframe_writer.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Create a 100x100 iframe.
+  ASSERT_TRUE(ExecJs(
+      web_contents,
+      "let frame = createAdIframe(); frame.width=100; frame.height = 100; "
+      "frame.src = '/ads_observer/pixel.png';"));
+
+  // Create a 300x300 iframe with display none that should not be recorded.
+  ASSERT_TRUE(ExecJs(web_contents,
+                     "frame = createAdIframe(); frame.width=300; frame.src "
+                     "= '/ads_observer/pixel.png';"
+                     "frame.height = 300; frame.style.display= 'none';"));
+
+  // Create a 0x0 iframe.
+  ASSERT_TRUE(ExecJs(
+      web_contents,
+      "frame = createAdIframe(); frame.width=0; frame.height = 0; frame.src = "
+      "'/ads_observer/pixel.png';"));
+
+  // Create a 10 x 1000 iframe.
+  ASSERT_TRUE(
+      ExecJs(web_contents,
+             "frame = createAdIframe(); frame.width=10; frame.height = 1000; "
+             "frame.src = '/ads_observer/pixel.png';"));
+
+  // Wait for each frames resource to load so that they will have non-zero
+  // bytes.
+  waiter->AddMinimumCompleteResourcesExpectation(7);
+  waiter->Wait();
+
+  // Navigate away to force the histogram recording.
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  histogram_tester.ExpectBucketCount(kSqrtNumberOfPixelsHistogramId, 100, 2);
+  histogram_tester.ExpectBucketCount(kSqrtNumberOfPixelsHistogramId, 0, 1);
+  histogram_tester.ExpectBucketCount(kSmallestDimensionHistogramId, 0, 1);
+  histogram_tester.ExpectBucketCount(kSmallestDimensionHistogramId, 10, 1);
+  histogram_tester.ExpectBucketCount(kSmallestDimensionHistogramId, 100, 1);
+
+  // Verify the display: none frame is not recorded.
+  histogram_tester.ExpectBucketCount(kSqrtNumberOfPixelsHistogramId, 300, 0);
+  histogram_tester.ExpectBucketCount(kSmallestDimensionHistogramId, 300, 0);
 }
 
 class AdsPageLoadMetricsTestWaiter

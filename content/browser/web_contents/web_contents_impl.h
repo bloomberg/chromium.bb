@@ -514,6 +514,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                      const std::string& name) override;
   void DidReceiveFirstUserActivation(
       RenderFrameHost* render_frame_host) override;
+  void DidChangeDisplayState(RenderFrameHost* render_frame_host,
+                             bool is_display_none) override;
+  void FrameSizeChanged(RenderFrameHost* render_frame_host,
+                        const gfx::Size& frame_size) override;
   void DocumentOnLoadCompleted(RenderFrameHost* render_frame_host) override;
   void UpdateStateForFrame(RenderFrameHost* render_frame_host,
                            const PageState& page_state) override;

@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/page_visibility_state.h"
@@ -158,6 +159,13 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // quite possible for a frame to have no name, in which case GetFrameName will
   // return an empty string.
   virtual const std::string& GetFrameName() = 0;
+
+  // Returns true if the frame is display: none.
+  virtual bool IsFrameDisplayNone() = 0;
+
+  // Returns the size of the frame in the viewport. The frame may not be aware
+  // of its size.
+  virtual const base::Optional<gfx::Size>& GetFrameSize() = 0;
 
   // Returns true if the frame is out of process.
   virtual bool IsCrossProcessSubframe() = 0;

@@ -36,6 +36,15 @@ class AdsPageLoadMetricsObserver
     kMaxValue = kCross,
   };
 
+  // Whether or not the ad frame has a display: none styling. These values are
+  // persisted to logs. Entries should not be renumbered and numeric values
+  // should never be reused.
+  enum class AdFrameVisibility {
+    kDisplayNone = 0,
+    kVisible = 1,
+    kMaxValue = kVisible,
+  };
+
   // High level categories of mime types for resources loaded by the page.
   enum class ResourceMimeType {
     kJavascript = 0,
@@ -73,6 +82,8 @@ class AdsPageLoadMetricsObserver
                          bool is_adframe,
                          content::RenderFrameHost* ad_host,
                          bool frame_navigated);
+  void ReadyToCommitNextNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void OnDidFinishSubFrameNavigation(
       content::NavigationHandle* navigation_handle) override;
   void OnDidInternalNavigationAbort(
@@ -90,6 +101,10 @@ class AdsPageLoadMetricsObserver
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
   void FrameReceivedFirstUserActivation(content::RenderFrameHost* rfh) override;
+  void FrameDisplayStateChanged(content::RenderFrameHost* render_frame_host,
+                                bool is_display_none) override;
+  void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
+                        const gfx::Size& frame_size) override;
 
  private:
   struct AdFrameData {
@@ -103,7 +118,10 @@ class AdsPageLoadMetricsObserver
     const FrameTreeNodeId frame_tree_node_id;
     AdOriginStatus origin_status;
     bool frame_navigated;
+
     UserActivationStatus user_activation_status;
+    bool is_display_none;
+    gfx::Size frame_size;
   };
 
   // subresource_filter::SubresourceFilterObserver:
@@ -191,6 +209,11 @@ class AdsPageLoadMetricsObserver
   size_t page_ad_resource_bytes_ = 0u;
   size_t page_main_frame_ad_resource_bytes_ = 0u;
   uint32_t total_number_page_resources_ = 0;
+
+  // Flag denoting that this observer should no longer monitor changes in
+  // display state for frames. This prevents us from receiving the updates when
+  // the frame elements are being destroyed in the renderer.
+  bool process_display_state_updates_ = true;
 
   // Time the page was committed.
   base::Time time_commit_;

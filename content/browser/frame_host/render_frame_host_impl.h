@@ -211,6 +211,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   int GetFrameTreeNodeId() override;
   base::UnguessableToken GetDevToolsFrameToken() override;
   const std::string& GetFrameName() override;
+  bool IsFrameDisplayNone() override;
+  const base::Optional<gfx::Size>& GetFrameSize() override;
   bool IsCrossProcessSubframe() override;
   const GURL& GetLastCommittedURL() override;
   const url::Origin& GetLastCommittedOrigin() override;
