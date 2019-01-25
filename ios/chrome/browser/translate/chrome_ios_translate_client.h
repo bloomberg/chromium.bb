@@ -16,7 +16,7 @@
 #include "components/translate/core/common/translate_errors.h"
 #include "components/translate/ios/browser/ios_translate_driver.h"
 #include "ios/web/public/web_state/web_state_observer.h"
-#include "ios/web/public/web_state/web_state_user_data.h"
+#import "ios/web/public/web_state/web_state_user_data.h"
 
 class PrefService;
 
