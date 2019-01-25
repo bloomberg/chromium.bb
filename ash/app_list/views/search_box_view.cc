@@ -321,7 +321,7 @@ int SearchBoxView::GetSearchBoxBorderCornerRadiusForState(
 SkColor SearchBoxView::GetBackgroundColorForState(
     ash::AppListState state) const {
   if (state == ash::AppListState::kStateSearchResults)
-    return kCardBackgroundColor;
+    return AppListConfig::instance().card_background_color();
   return background_color();
 }
 

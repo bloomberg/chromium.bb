@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -134,7 +134,7 @@ class MixerTest : public testing::Test {
     for (size_t i = 0; i < providers_.size(); ++i)
       providers_[i]->Start(query);
 
-    mixer_->MixAndPublish(kMaxSearchResults);
+    mixer_->MixAndPublish(AppListConfig::instance().max_search_results());
   }
 
   std::string GetResults() const {

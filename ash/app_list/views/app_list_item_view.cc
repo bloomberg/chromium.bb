@@ -518,8 +518,9 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
   if (apps_grid_view_->IsSelectedView(this)) {
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
-    flags.setColor(apps_grid_view_->is_in_folder() ? kFolderGridSelectedColor
-                                                   : kGridSelectedColor);
+    flags.setColor(apps_grid_view_->is_in_folder()
+                       ? kFolderGridSelectedColor
+                       : AppListConfig::instance().grid_selected_color());
     flags.setStyle(cc::PaintFlags::kFill_Style);
     gfx::Rect selection_highlight_bounds = GetContentsBounds();
     AdaptBoundsForSelectionHighlight(&selection_highlight_bounds);

@@ -87,7 +87,8 @@ class BackgroundAnimation : public gfx::SlideAnimation,
                       : AppListConfig::instance().folder_bubble_color();
 
     SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
-    SetSlideDuration(kFolderTransitionInDurationMs);
+    SetSlideDuration(
+        AppListConfig::instance().folder_transition_in_duration_ms());
 
     folder_view_->UpdateBackgroundMask(
         from_radius_,
@@ -157,7 +158,8 @@ class FolderItemTitleAnimation : public gfx::SlideAnimation,
                       : AppListConfig::instance().grid_title_color();
 
     SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
-    SetSlideDuration(kFolderTransitionInDurationMs);
+    SetSlideDuration(
+        AppListConfig::instance().folder_transition_in_duration_ms());
   }
 
   ~FolderItemTitleAnimation() override = default;
@@ -318,8 +320,9 @@ class TopIconAnimation : public AppListFolderView::Animation,
   // to AppListFolderView.
   std::vector<gfx::Rect> GetFirstPageItemViewsBounds() {
     std::vector<gfx::Rect> items_bounds;
-    const size_t count = std::min(
-        kMaxFolderItemsPerPage, folder_view_->folder_item()->ChildItemCount());
+    const size_t count =
+        std::min(AppListConfig::instance().max_folder_items_per_page(),
+                 folder_view_->folder_item()->ChildItemCount());
     for (size_t i = 0; i < count; ++i) {
       const gfx::Rect rect =
           folder_view_->items_grid_view()->GetItemViewAt(i)->bounds();
@@ -380,8 +383,8 @@ class ContentsContainerAnimation : public AppListFolderView::Animation,
     ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
     animation.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
     animation.AddObserver(this);
-    animation.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kFolderTransitionInDurationMs));
+    animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+        AppListConfig::instance().folder_transition_in_duration_ms()));
     layer->SetTransform(show_ ? gfx::Transform() : transform);
     layer->SetOpacity(show_ ? 1.0f : 0.0f);
 
@@ -645,7 +648,8 @@ void AppListFolderView::RecordAnimationSmoothness() {
   if (end_frame_number > animation_start_frame_number_) {
     RecordFolderShowHideAnimationSmoothness(
         end_frame_number - animation_start_frame_number_,
-        kFolderTransitionInDurationMs, compositor->refresh_rate());
+        AppListConfig::instance().folder_transition_in_duration_ms(),
+        compositor->refresh_rate());
   }
 }
 

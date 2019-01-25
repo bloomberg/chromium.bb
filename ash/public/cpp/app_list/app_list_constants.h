@@ -18,61 +18,6 @@
 namespace app_list {
 
 // TODO(crbug.com/854836): Move everything here to app_list_config.h.
-ASH_PUBLIC_EXPORT extern const SkColor kContentsBackgroundColor;
-
-ASH_PUBLIC_EXPORT extern const SkColor kBottomSeparatorColor;
-ASH_PUBLIC_EXPORT extern const SkColor kDialogSeparatorColor;
-
-ASH_PUBLIC_EXPORT extern const SkColor kHighlightedColor;
-ASH_PUBLIC_EXPORT extern const SkColor kGridSelectedColor;
-ASH_PUBLIC_EXPORT extern const SkColor kAnswerCardSelectedColor;
-
-ASH_PUBLIC_EXPORT extern const SkColor kPagerHoverColor;
-ASH_PUBLIC_EXPORT extern const SkColor kPagerNormalColor;
-ASH_PUBLIC_EXPORT extern const SkColor kPagerSelectedColor;
-
-ASH_PUBLIC_EXPORT extern const int kHorizontalPagePreferredHeight;
-
-ASH_PUBLIC_EXPORT extern const SkColor kFolderTitleColor;
-ASH_PUBLIC_EXPORT extern const SkColor kFolderTitleHintTextColor;
-ASH_PUBLIC_EXPORT extern const SkColor kFolderShadowColor;
-ASH_PUBLIC_EXPORT extern const float kFolderBubbleOpacity;
-
-ASH_PUBLIC_EXPORT extern const SkColor kCardBackgroundColor;
-
-ASH_PUBLIC_EXPORT extern const int kPageTransitionDurationInMs;
-ASH_PUBLIC_EXPORT extern const int kPageTransitionDurationDampening;
-ASH_PUBLIC_EXPORT extern const int kOverscrollPageTransitionDurationMs;
-ASH_PUBLIC_EXPORT extern const int kFolderTransitionInDurationMs;
-ASH_PUBLIC_EXPORT extern const int kFolderTransitionOutDurationMs;
-ASH_PUBLIC_EXPORT extern const int kCustomPageCollapsedHeight;
-ASH_PUBLIC_EXPORT extern const gfx::Tween::Type kFolderFadeInTweenType;
-ASH_PUBLIC_EXPORT extern const gfx::Tween::Type kFolderFadeOutTweenType;
-
-ASH_PUBLIC_EXPORT extern const int kNumStartPageTiles;
-ASH_PUBLIC_EXPORT extern const size_t kMaxSearchResults;
-
-ASH_PUBLIC_EXPORT extern const int kReorderDroppingCircleRadius;
-
-ASH_PUBLIC_EXPORT extern const int kAppsGridPadding;
-ASH_PUBLIC_EXPORT extern const int kAppsGridLeftRightPadding;
-ASH_PUBLIC_EXPORT extern const int kBottomSeparatorLeftRightPadding;
-ASH_PUBLIC_EXPORT extern const int kBottomSeparatorBottomPadding;
-ASH_PUBLIC_EXPORT extern const int kSearchBoxPeekingBottomPadding;
-ASH_PUBLIC_EXPORT extern const int kSearchBoxBottomPadding;
-
-ASH_PUBLIC_EXPORT extern const size_t kMaxFolderPages;
-ASH_PUBLIC_EXPORT extern const size_t kMaxFolderItemsPerPage;
-ASH_PUBLIC_EXPORT extern const size_t kMaxFolderNameChars;
-
-ASH_PUBLIC_EXPORT extern const ui::ResourceBundle::FontStyle kItemTextFontStyle;
-
-ASH_PUBLIC_EXPORT extern const float kAllAppsOpacityStartPx;
-ASH_PUBLIC_EXPORT extern const float kAllAppsOpacityEndPx;
-
-ASH_PUBLIC_EXPORT extern const int kSearchResultTitleTextSizeDelta;
-ASH_PUBLIC_EXPORT extern const ui::ResourceBundle::FontStyle
-    kSearchResultTitleFontStyle;
 
 // The different ways that the app list can transition from PEEKING to
 // FULLSCREEN_ALL_APPS. These values are written to logs.  New enum

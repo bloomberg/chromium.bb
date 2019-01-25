@@ -17,7 +17,7 @@
 #include "ash/app_list/views/search_result_base_view.h"
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/app_list/views/search_result_tile_item_list_view.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -168,8 +168,8 @@ SearchResultPageView::SearchResultPageView() : contents_view_(new views::View) {
   // background border corner radius. All child views' background should be
   // set transparent so that the rounded corner is not overwritten.
   SetBackground(std::make_unique<SearchResultPageBackground>(
-      kCardBackgroundColor, search_box::kSearchBoxBorderCornerRadius,
-      border()->GetInsets().top()));
+      AppListConfig::instance().card_background_color(),
+      search_box::kSearchBoxBorderCornerRadius, border()->GetInsets().top()));
   views::ScrollView* const scroller = new views::ScrollView;
   // Leaves a placeholder area for the search box and the separator below it.
   scroller->SetBorder(views::CreateEmptyBorder(

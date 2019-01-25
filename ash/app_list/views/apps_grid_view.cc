@@ -86,6 +86,15 @@ constexpr int kFadeoutZoneHeight = 24;
 // Maximum vertical and horizontal spacing between tiles.
 constexpr int kMaximumTileSpacing = 96;
 
+// Animation curve used for fading in the target page when opening or closing
+// a folder.
+constexpr gfx::Tween::Type kFolderFadeInTweenType = gfx::Tween::EASE_IN_2;
+
+// Animation curve used for fading out the target page when opening or closing
+// a folder.
+constexpr gfx::Tween::Type kFolderFadeOutTweenType =
+    gfx::Tween::FAST_OUT_LINEAR_IN;
+
 // Returns the size of a tile view excluding its padding.
 gfx::Size GetTileViewSize() {
   return gfx::Size(AppListConfig::instance().grid_tile_width(),
@@ -304,8 +313,9 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
   if (!folder_delegate)
     SetBorder(views::CreateEmptyBorder(gfx::Insets(kFadeoutZoneHeight, 0)));
 
-  pagination_model_.SetTransitionDurations(kPageTransitionDurationInMs,
-                                           kOverscrollPageTransitionDurationMs);
+  pagination_model_.SetTransitionDurations(
+      AppListConfig::instance().page_transition_duration_ms(),
+      AppListConfig::instance().overscroll_page_transition_duration_ms());
 
   pagination_model_.AddObserver(this);
 
@@ -720,7 +730,8 @@ void AppsGridView::ScheduleShowHideAnimation(bool show) {
   animation.SetTweenType(show ? kFolderFadeInTweenType
                               : kFolderFadeOutTweenType);
   animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-      show ? kFolderTransitionInDurationMs : kFolderTransitionOutDurationMs));
+      show ? AppListConfig::instance().folder_transition_in_duration_ms()
+           : AppListConfig::instance().folder_transition_out_duration_ms()));
 
   layer()->SetOpacity(show ? 1.0f : 0.0f);
 }
@@ -994,7 +1005,7 @@ void AppsGridView::Update() {
 
 int AppsGridView::TilesPerPage(int page) const {
   if (folder_delegate_)
-    return kMaxFolderItemsPerPage;
+    return AppListConfig::instance().max_folder_items_per_page();
 
   return AppListConfig::instance().GetMaxNumOfItemsPerPage(page);
 }
@@ -1326,7 +1337,9 @@ bool AppsGridView::DropTargetIsValidFolder() {
   // Items can only be dropped into non-folders (which have no children) or
   // folders that have fewer than the max allowed items.
   // The OEM folder does not allow drag/drop of other items into it.
-  const size_t kMaxItemCount = kMaxFolderItemsPerPage * kMaxFolderPages;
+  const size_t kMaxItemCount =
+      AppListConfig::instance().max_folder_items_per_page() *
+      AppListConfig::instance().max_folder_pages();
   if (target_item->ChildItemCount() >= kMaxItemCount ||
       IsOEMFolderItem(target_item)) {
     return false;
@@ -1597,7 +1610,8 @@ void AppsGridView::UpdateColsAndRowsForFolder() {
 
   // Try to shape the apps grid into a square.
   int items_in_one_page =
-      std::min(kMaxFolderItemsPerPage, item_list_->item_count());
+      std::min(AppListConfig::instance().max_folder_items_per_page(),
+               item_list_->item_count());
   cols_ = std::sqrt(items_in_one_page - 1) + 1;
   rows_per_page_ = (items_in_one_page - 1) / cols_ + 1;
 }
@@ -1711,9 +1725,12 @@ void AppsGridView::UpdateOpacity() {
     views::View::ConvertRectToScreen(this, &view_bounds);
     centerline_above_work_area = std::max<float>(
         app_list_view->GetScreenBottom() - view_bounds.CenterPoint().y(), 0.f);
+    const float start_px =
+        AppListConfig::instance().all_apps_opacity_start_px();
     opacity = std::min(
-        std::max((centerline_above_work_area - kAllAppsOpacityStartPx) /
-                     (kAllAppsOpacityEndPx - kAllAppsOpacityStartPx),
+        std::max((centerline_above_work_area - start_px) /
+                     (AppListConfig::instance().all_apps_opacity_end_px() -
+                      start_px),
                  0.f),
         1.0f);
     opacity = should_restore_opacity ? 1.0f : opacity;
@@ -1743,15 +1760,18 @@ bool AppsGridView::HandleScrollFromAppListView(const gfx::Vector2d& offset,
 
 AppListItemView* AppsGridView::GetCurrentPageFirstItemViewInFolder() {
   DCHECK(folder_delegate_);
-  int first_index = pagination_model_.selected_page() * kMaxFolderItemsPerPage;
+  int first_index = pagination_model_.selected_page() *
+                    AppListConfig::instance().max_folder_items_per_page();
   return view_model_.view_at(first_index);
 }
 
 AppListItemView* AppsGridView::GetCurrentPageLastItemViewInFolder() {
   DCHECK(folder_delegate_);
-  int last_index = std::min(
-      (pagination_model_.selected_page() + 1) * kMaxFolderItemsPerPage - 1,
-      item_list_->item_count() - 1);
+  int last_index =
+      std::min((pagination_model_.selected_page() + 1) *
+                       AppListConfig::instance().max_folder_items_per_page() -
+                   1,
+               item_list_->item_count() - 1);
   return view_model_.view_at(last_index);
 }
 

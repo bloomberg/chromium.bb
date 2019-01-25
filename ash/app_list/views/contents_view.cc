@@ -57,8 +57,9 @@ void DoAnimation(base::TimeDelta animation_duration,
 
 ContentsView::ContentsView(AppListView* app_list_view)
     : app_list_view_(app_list_view) {
-  pagination_model_.SetTransitionDurations(kPageTransitionDurationInMs,
-                                           kOverscrollPageTransitionDurationMs);
+  pagination_model_.SetTransitionDurations(
+      AppListConfig::instance().page_transition_duration_ms(),
+      AppListConfig::instance().overscroll_page_transition_duration_ms());
   pagination_model_.AddObserver(this);
 }
 

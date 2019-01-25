@@ -55,6 +55,9 @@ constexpr SkColor kRowHighlightedColor = SkColorSetA(gfx::kGoogleGrey900, 0x14);
 // Search result border color.
 constexpr SkColor kResultBorderColor = SkColorSetARGB(0xFF, 0xE5, 0xE5, 0xE5);
 
+// Delta applied to font size of all AppListSearchResult titles.
+constexpr int kSearchResultTitleTextSizeDelta = 2;
+
 int GetIconViewWidth() {
   return AppListConfig::instance().search_list_icon_dimension() +
          2 * kIconLeftRightPadding;
@@ -142,7 +145,7 @@ void SearchResultView::CreateTitleRenderText() {
   render_text->SetText(result()->title());
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   render_text->SetFontList(
-      rb.GetFontList(kSearchResultTitleFontStyle)
+      rb.GetFontList(AppListConfig::instance().search_result_title_font_style())
           .DeriveWithSizeDelta(kSearchResultTitleTextSizeDelta));
   // When result is an omnibox non-url search, the matched tag indicates
   // proposed query. For all other cases, the matched tag indicates typed search
@@ -299,7 +302,8 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
 
   // Set solid color background to avoid broken text. See crbug.com/746563.
   // This should be drawn before selected color which is semi-transparent.
-  canvas->FillRect(text_bounds, kCardBackgroundColor);
+  canvas->FillRect(text_bounds,
+                   AppListConfig::instance().card_background_color());
 
   // Possibly call FillRect a second time (these colours are partially
   // transparent, so the previous FillRect is not redundant).

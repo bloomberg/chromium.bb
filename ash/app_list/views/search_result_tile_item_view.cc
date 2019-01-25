@@ -157,33 +157,36 @@ void SearchResultTileItemView::OnResultChanged() {
   } else {
     // Set solid color background to avoid broken text. See crbug.com/746563.
     if (rating_) {
-      rating_->SetBackground(
-          views::CreateSolidBackground(kCardBackgroundColor));
+      rating_->SetBackground(views::CreateSolidBackground(
+          AppListConfig::instance().card_background_color()));
       if (!IsSuggestedAppTile()) {
         // App search results use different fonts than AppList apps.
         rating_->SetFontList(
             ui::ResourceBundle::GetSharedInstance().GetFontList(
-                kSearchResultTitleFontStyle));
+                AppListConfig::instance().search_result_title_font_style()));
       } else {
         rating_->SetFontList(font);
       }
     }
     if (price_) {
-      price_->SetBackground(views::CreateSolidBackground(kCardBackgroundColor));
+      price_->SetBackground(views::CreateSolidBackground(
+          AppListConfig::instance().card_background_color()));
       if (!IsSuggestedAppTile()) {
         // App search results use different fonts than AppList apps.
         price_->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
-            kSearchResultTitleFontStyle));
+            AppListConfig::instance().search_result_title_font_style()));
       } else {
         price_->SetFontList(font);
       }
     }
-    title_->SetBackground(views::CreateSolidBackground(kCardBackgroundColor));
+    title_->SetBackground(views::CreateSolidBackground(
+        AppListConfig::instance().card_background_color()));
     if (!IsSuggestedAppTile()) {
       // App search results use different fonts than AppList apps.
       title_->SetFontList(
           ui::ResourceBundle::GetSharedInstance()
-              .GetFontList(kSearchResultTitleFontStyle)
+              .GetFontList(
+                  AppListConfig::instance().search_result_title_font_style())
               .DeriveWithSizeDelta(kSearchResultTileTitleTextSizeDelta));
     } else {
       title_->SetFontList(font);
@@ -303,7 +306,7 @@ void SearchResultTileItemView::PaintButtonContents(gfx::Canvas* canvas) {
   flags.setStyle(cc::PaintFlags::kFill_Style);
   if (IsSuggestedAppTileShownInAppPage()) {
     rect.ClampToCenteredSize(AppListConfig::instance().grid_focus_size());
-    flags.setColor(kGridSelectedColor);
+    flags.setColor(AppListConfig::instance().grid_selected_color());
     canvas->DrawRoundRect(gfx::RectF(rect),
                           AppListConfig::instance().grid_focus_corner_radius(),
                           flags);

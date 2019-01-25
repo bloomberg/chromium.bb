@@ -92,8 +92,8 @@ void TopIconAnimationView::TransformView() {
   ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
   settings.AddObserver(this);
   settings.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
-  settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kFolderTransitionInDurationMs));
+  settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+      AppListConfig::instance().folder_transition_in_duration_ms()));
   layer()->SetTransform(open_folder_ ? gfx::Transform() : transform);
   if (!item_in_folder_icon_)
     layer()->SetOpacity(open_folder_ ? 1.0f : 0.0f);
@@ -104,8 +104,8 @@ void TopIconAnimationView::TransformView() {
     ui::ScopedLayerAnimationSettings title_settings(
         title_->layer()->GetAnimator());
     title_settings.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
-    title_settings.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kFolderTransitionInDurationMs));
+    title_settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+        AppListConfig::instance().folder_transition_in_duration_ms()));
     title_->layer()->SetOpacity(open_folder_ ? 1.0f : 0.0f);
   }
 }
