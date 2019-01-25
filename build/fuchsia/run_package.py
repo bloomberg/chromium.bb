@@ -73,6 +73,10 @@ def _UnregisterAmberRepository(target):
   logging.debug('Unregistering Amber repository.')
   target.RunCommand(['amber_ctl', 'rm_src', '-n', _REPO_NAME])
 
+  # Re-enable 'devhost' repo if it's present. This is useful for devices that
+  # were booted with 'fx serve'.
+  target.RunCommand(['amber_ctl', 'enable_src', '-n', 'devhost'], silent=True)
+
 
 def _RegisterAmberRepository(target, tuf_repo, remote_port):
   """Configures a device to use a local TUF repository as an installation source
@@ -114,7 +118,7 @@ def _RegisterAmberRepository(target, tuf_repo, remote_port):
 
   # Register the repo.
   return_code = target.RunCommand(
-      ['amber_ctl', 'add_src', '-x', '-f',
+      ['amber_ctl', 'add_src', '-f',
        'http://127.0.0.1:%d/repo_config.json' % remote_port])
   if return_code != 0:
     raise Exception('Error code %d when running amber_ctl.' % return_code)
