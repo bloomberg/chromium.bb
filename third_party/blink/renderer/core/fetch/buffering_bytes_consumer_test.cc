@@ -8,15 +8,15 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/fetch/bytes_consumer_test_util.h"
+#include "third_party/blink/renderer/platform/loader/testing/bytes_consumer_test_reader.h"
+#include "third_party/blink/renderer/platform/loader/testing/replaying_bytes_consumer.h"
 
 namespace blink {
 namespace {
 
 class BufferingBytesConsumerTest : public testing::Test {
  public:
-  using ReplayingBytesConsumer = BytesConsumerTestUtil::ReplayingBytesConsumer;
-  using Command = BytesConsumerTestUtil::Command;
-  using TwoPhaseReader = BytesConsumerTestUtil::TwoPhaseReader;
+  using Command = ReplayingBytesConsumer::Command;
   using Result = BytesConsumer::Result;
   using PublicState = BytesConsumer::PublicState;
 
@@ -27,8 +27,8 @@ class BufferingBytesConsumerTest : public testing::Test {
 
 TEST_F(BufferingBytesConsumerTest, Read) {
   V8TestingScope scope;
-  auto* replaying_bytes_consumer =
-      MakeGarbageCollected<ReplayingBytesConsumer>(&scope.GetDocument());
+  auto* replaying_bytes_consumer = MakeGarbageCollected<ReplayingBytesConsumer>(
+      scope.GetDocument().GetTaskRunner(TaskType::kNetworking));
 
   replaying_bytes_consumer->Add(Command(Command::kWait));
   replaying_bytes_consumer->Add(Command(Command::kData, "1"));
@@ -44,7 +44,7 @@ TEST_F(BufferingBytesConsumerTest, Read) {
       MakeGarbageCollected<BufferingBytesConsumer>(replaying_bytes_consumer);
 
   EXPECT_EQ(PublicState::kReadableOrWaiting, bytes_consumer->GetPublicState());
-  auto* reader = MakeGarbageCollected<TwoPhaseReader>(bytes_consumer);
+  auto* reader = MakeGarbageCollected<BytesConsumerTestReader>(bytes_consumer);
   auto result = reader->Run();
 
   EXPECT_EQ(PublicState::kClosed, bytes_consumer->GetPublicState());

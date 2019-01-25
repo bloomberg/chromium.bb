@@ -5,13 +5,14 @@
 #include "third_party/blink/renderer/core/fetch/form_data_bytes_consumer.h"
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/blob_bytes_consumer.h"
-#include "third_party/blink/renderer/core/fetch/data_pipe_bytes_consumer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
+#include "third_party/blink/renderer/platform/loader/fetch/data_pipe_bytes_consumer.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/network/form_data_encoder.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -202,8 +203,8 @@ class DataPipeAndDataBytesConsumer final : public BytesConsumer {
         DataPipeBytesConsumer::CompletionNotifier* completion_notifier =
             nullptr;
         data_pipe_consumer_ = MakeGarbageCollected<DataPipeBytesConsumer>(
-            execution_context_, std::move(pipe_consumer_handle),
-            &completion_notifier);
+            execution_context_->GetTaskRunner(TaskType::kNetworking),
+            std::move(pipe_consumer_handle), &completion_notifier);
         completion_notifier_ = completion_notifier;
         if (client_)
           data_pipe_consumer_->SetClient(client_);

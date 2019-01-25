@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/loader/testing/bytes_consumer_test_reader.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -128,7 +129,7 @@ class FormDataBytesConsumerTest : public PageTestBase {
 
 TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromString) {
   auto result =
-      (MakeGarbageCollected<BytesConsumerTestUtil::TwoPhaseReader>(
+      (MakeGarbageCollected<BytesConsumerTestReader>(
            MakeGarbageCollected<FormDataBytesConsumer>("hello, world")))
           ->Run();
   EXPECT_EQ(Result::kDone, result.first);
@@ -138,7 +139,7 @@ TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromString) {
 
 TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromStringNonLatin) {
   constexpr UChar kCs[] = {0x3042, 0};
-  auto result = (MakeGarbageCollected<BytesConsumerTestUtil::TwoPhaseReader>(
+  auto result = (MakeGarbageCollected<BytesConsumerTestReader>(
                      MakeGarbageCollected<FormDataBytesConsumer>(String(kCs))))
                     ->Run();
   EXPECT_EQ(Result::kDone, result.first);
@@ -150,7 +151,7 @@ TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromArrayBuffer) {
   constexpr unsigned char kData[] = {0x21, 0xfe, 0x00, 0x00, 0xff, 0xa3,
                                      0x42, 0x30, 0x42, 0x99, 0x88};
   DOMArrayBuffer* buffer = DOMArrayBuffer::Create(kData, base::size(kData));
-  auto result = (MakeGarbageCollected<BytesConsumerTestUtil::TwoPhaseReader>(
+  auto result = (MakeGarbageCollected<BytesConsumerTestReader>(
                      MakeGarbageCollected<FormDataBytesConsumer>(buffer)))
                     ->Run();
   Vector<char> expected;
@@ -165,7 +166,7 @@ TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromArrayBufferView) {
                                      0x42, 0x30, 0x42, 0x99, 0x88};
   constexpr size_t kOffset = 1, kSize = 4;
   DOMArrayBuffer* buffer = DOMArrayBuffer::Create(kData, base::size(kData));
-  auto result = (MakeGarbageCollected<BytesConsumerTestUtil::TwoPhaseReader>(
+  auto result = (MakeGarbageCollected<BytesConsumerTestReader>(
                      MakeGarbageCollected<FormDataBytesConsumer>(
                          DOMUint8Array::Create(buffer, kOffset, kSize))))
                     ->Run();
@@ -182,7 +183,7 @@ TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromSimpleFormData) {
   data->AppendData("hoge", 4);
 
   auto result =
-      (MakeGarbageCollected<BytesConsumerTestUtil::TwoPhaseReader>(
+      (MakeGarbageCollected<BytesConsumerTestReader>(
            MakeGarbageCollected<FormDataBytesConsumer>(&GetDocument(), data)))
           ->Run();
   EXPECT_EQ(Result::kDone, result.first);
@@ -456,8 +457,7 @@ TEST_F(FormDataBytesConsumerTest, DataPipeFormData) {
   scoped_refptr<EncodedFormData> input_form_data = DataPipeFormData();
   auto* consumer = MakeGarbageCollected<FormDataBytesConsumer>(&GetDocument(),
                                                                input_form_data);
-  auto* reader =
-      MakeGarbageCollected<BytesConsumerTestUtil::TwoPhaseReader>(consumer);
+  auto* reader = MakeGarbageCollected<BytesConsumerTestReader>(consumer);
   std::pair<BytesConsumer::Result, Vector<char>> result = reader->Run();
   EXPECT_EQ(Result::kDone, result.first);
   EXPECT_EQ("foo hello world here's another data pipe bar baz",
@@ -498,8 +498,7 @@ TEST_F(FormDataBytesConsumerTest,
   EXPECT_EQ(BytesConsumer::Result::kOk, consumer->EndRead(available));
 
   // The consumer should still be readable. Finish reading.
-  auto* reader =
-      MakeGarbageCollected<BytesConsumerTestUtil::TwoPhaseReader>(consumer);
+  auto* reader = MakeGarbageCollected<BytesConsumerTestReader>(consumer);
   std::pair<BytesConsumer::Result, Vector<char>> result = reader->Run();
   EXPECT_EQ(Result::kDone, result.first);
   EXPECT_EQ(" hello world here's another data pipe bar baz",

@@ -1,23 +1,23 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/fetch/bytes_consumer.h"
+#include "third_party/blink/renderer/core/fetch/bytes_consumer_tee.h"
 
 #include "base/memory/scoped_refptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/fetch/bytes_consumer_test_util.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/loader/testing/bytes_consumer_test_reader.h"
+#include "third_party/blink/renderer/platform/loader/testing/replaying_bytes_consumer.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 
 namespace {
 
-using BytesConsumerCommand = BytesConsumerTestUtil::Command;
 using Result = BytesConsumer::Result;
-using ReplayingBytesConsumer = BytesConsumerTestUtil::ReplayingBytesConsumer;
 
 class BytesConsumerTestClient final
     : public GarbageCollectedFinalized<BytesConsumerTestClient>,
@@ -35,6 +35,7 @@ class BytesConsumerTestClient final
 
 class BytesConsumerTeeTest : public PageTestBase {
  public:
+  using Command = ReplayingBytesConsumer::Command;
   void SetUp() override { PageTestBase::SetUp(IntSize()); }
 };
 
@@ -83,21 +84,17 @@ class FakeBlobBytesConsumer : public BytesConsumer {
 };
 
 TEST_F(BytesConsumerTeeTest, CreateDone) {
-  ReplayingBytesConsumer* src =
-      MakeGarbageCollected<ReplayingBytesConsumer>(&GetDocument());
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kDone));
+  ReplayingBytesConsumer* src = MakeGarbageCollected<ReplayingBytesConsumer>(
+      GetDocument().GetTaskRunner(TaskType::kNetworking));
+  src->Add(Command(Command::kDone));
   EXPECT_FALSE(src->IsCancelled());
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::Tee(&GetDocument(), src, &dest1, &dest2);
+  BytesConsumerTee(&GetDocument(), src, &dest1, &dest2);
 
-  auto result1 =
-      (MakeGarbageCollected<BytesConsumerTestUtil::TwoPhaseReader>(dest1))
-          ->Run();
-  auto result2 =
-      (MakeGarbageCollected<BytesConsumerTestUtil::TwoPhaseReader>(dest2))
-          ->Run();
+  auto result1 = (MakeGarbageCollected<BytesConsumerTestReader>(dest1))->Run();
+  auto result2 = (MakeGarbageCollected<BytesConsumerTestReader>(dest2))->Run();
 
   EXPECT_EQ(Result::kDone, result1.first);
   EXPECT_TRUE(result1.second.IsEmpty());
@@ -116,32 +113,28 @@ TEST_F(BytesConsumerTeeTest, CreateDone) {
 }
 
 TEST_F(BytesConsumerTeeTest, TwoPhaseRead) {
-  ReplayingBytesConsumer* src =
-      MakeGarbageCollected<ReplayingBytesConsumer>(&GetDocument());
+  ReplayingBytesConsumer* src = MakeGarbageCollected<ReplayingBytesConsumer>(
+      GetDocument().GetTaskRunner(TaskType::kNetworking));
 
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello, "));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "world"));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kDone));
+  src->Add(Command(Command::kWait));
+  src->Add(Command(Command::kData, "hello, "));
+  src->Add(Command(Command::kWait));
+  src->Add(Command(Command::kData, "world"));
+  src->Add(Command(Command::kWait));
+  src->Add(Command(Command::kWait));
+  src->Add(Command(Command::kDone));
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::Tee(&GetDocument(), src, &dest1, &dest2);
+  BytesConsumerTee(&GetDocument(), src, &dest1, &dest2);
 
   EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
             dest1->GetPublicState());
   EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
             dest2->GetPublicState());
 
-  auto result1 =
-      (MakeGarbageCollected<BytesConsumerTestUtil::TwoPhaseReader>(dest1))
-          ->Run();
-  auto result2 =
-      (MakeGarbageCollected<BytesConsumerTestUtil::TwoPhaseReader>(dest2))
-          ->Run();
+  auto result1 = (MakeGarbageCollected<BytesConsumerTestReader>(dest1))->Run();
+  auto result2 = (MakeGarbageCollected<BytesConsumerTestReader>(dest2))->Run();
 
   EXPECT_EQ(Result::kDone, result1.first);
   EXPECT_EQ("hello, world",
@@ -155,29 +148,25 @@ TEST_F(BytesConsumerTeeTest, TwoPhaseRead) {
 }
 
 TEST_F(BytesConsumerTeeTest, TwoPhaseReadWithDataAndDone) {
-  ReplayingBytesConsumer* src =
-      MakeGarbageCollected<ReplayingBytesConsumer>(&GetDocument());
+  ReplayingBytesConsumer* src = MakeGarbageCollected<ReplayingBytesConsumer>(
+      GetDocument().GetTaskRunner(TaskType::kNetworking));
 
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello, "));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kDataAndDone, "world"));
+  src->Add(Command(Command::kWait));
+  src->Add(Command(Command::kData, "hello, "));
+  src->Add(Command(Command::kWait));
+  src->Add(Command(Command::kDataAndDone, "world"));
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::Tee(&GetDocument(), src, &dest1, &dest2);
+  BytesConsumerTee(&GetDocument(), src, &dest1, &dest2);
 
   EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
             dest1->GetPublicState());
   EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
             dest2->GetPublicState());
 
-  auto result1 =
-      (MakeGarbageCollected<BytesConsumerTestUtil::TwoPhaseReader>(dest1))
-          ->Run();
-  auto result2 =
-      (MakeGarbageCollected<BytesConsumerTestUtil::TwoPhaseReader>(dest2))
-          ->Run();
+  auto result1 = (MakeGarbageCollected<BytesConsumerTestReader>(dest1))->Run();
+  auto result2 = (MakeGarbageCollected<BytesConsumerTestReader>(dest2))->Run();
 
   EXPECT_EQ(Result::kDone, result1.first);
   EXPECT_EQ("hello, world",
@@ -191,26 +180,22 @@ TEST_F(BytesConsumerTeeTest, TwoPhaseReadWithDataAndDone) {
 }
 
 TEST_F(BytesConsumerTeeTest, Error) {
-  ReplayingBytesConsumer* src =
-      MakeGarbageCollected<ReplayingBytesConsumer>(&GetDocument());
+  ReplayingBytesConsumer* src = MakeGarbageCollected<ReplayingBytesConsumer>(
+      GetDocument().GetTaskRunner(TaskType::kNetworking));
 
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello, "));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "world"));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kError));
+  src->Add(Command(Command::kData, "hello, "));
+  src->Add(Command(Command::kData, "world"));
+  src->Add(Command(Command::kError));
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::Tee(&GetDocument(), src, &dest1, &dest2);
+  BytesConsumerTee(&GetDocument(), src, &dest1, &dest2);
 
   EXPECT_EQ(BytesConsumer::PublicState::kErrored, dest1->GetPublicState());
   EXPECT_EQ(BytesConsumer::PublicState::kErrored, dest2->GetPublicState());
 
-  auto result1 =
-      (MakeGarbageCollected<BytesConsumerTestUtil::TwoPhaseReader>(dest1))
-          ->Run();
-  auto result2 =
-      (MakeGarbageCollected<BytesConsumerTestUtil::TwoPhaseReader>(dest2))
-          ->Run();
+  auto result1 = (MakeGarbageCollected<BytesConsumerTestReader>(dest1))->Run();
+  auto result2 = (MakeGarbageCollected<BytesConsumerTestReader>(dest2))->Run();
 
   EXPECT_EQ(Result::kError, result1.first);
   EXPECT_TRUE(result1.second.IsEmpty());
@@ -229,15 +214,15 @@ TEST_F(BytesConsumerTeeTest, Error) {
 }
 
 TEST_F(BytesConsumerTeeTest, Cancel) {
-  ReplayingBytesConsumer* src =
-      MakeGarbageCollected<ReplayingBytesConsumer>(&GetDocument());
+  ReplayingBytesConsumer* src = MakeGarbageCollected<ReplayingBytesConsumer>(
+      GetDocument().GetTaskRunner(TaskType::kNetworking));
 
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello, "));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
+  src->Add(Command(Command::kData, "hello, "));
+  src->Add(Command(Command::kWait));
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::Tee(&GetDocument(), src, &dest1, &dest2);
+  BytesConsumerTee(&GetDocument(), src, &dest1, &dest2);
 
   EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
             dest1->GetPublicState());
@@ -257,17 +242,17 @@ TEST_F(BytesConsumerTeeTest, Cancel) {
 }
 
 TEST_F(BytesConsumerTeeTest, CancelShouldNotAffectTheOtherDestination) {
-  ReplayingBytesConsumer* src =
-      MakeGarbageCollected<ReplayingBytesConsumer>(&GetDocument());
+  ReplayingBytesConsumer* src = MakeGarbageCollected<ReplayingBytesConsumer>(
+      GetDocument().GetTaskRunner(TaskType::kNetworking));
 
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello, "));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "world"));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kDone));
+  src->Add(Command(Command::kData, "hello, "));
+  src->Add(Command(Command::kWait));
+  src->Add(Command(Command::kData, "world"));
+  src->Add(Command(Command::kDone));
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::Tee(&GetDocument(), src, &dest1, &dest2);
+  BytesConsumerTee(&GetDocument(), src, &dest1, &dest2);
 
   EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
             dest1->GetPublicState());
@@ -281,9 +266,7 @@ TEST_F(BytesConsumerTeeTest, CancelShouldNotAffectTheOtherDestination) {
             dest2->GetPublicState());
   EXPECT_FALSE(src->IsCancelled());
 
-  auto result2 =
-      (MakeGarbageCollected<BytesConsumerTestUtil::TwoPhaseReader>(dest2))
-          ->Run();
+  auto result2 = (MakeGarbageCollected<BytesConsumerTestReader>(dest2))->Run();
 
   EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest1->GetPublicState());
   EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest2->GetPublicState());
@@ -294,17 +277,17 @@ TEST_F(BytesConsumerTeeTest, CancelShouldNotAffectTheOtherDestination) {
 }
 
 TEST_F(BytesConsumerTeeTest, CancelShouldNotAffectTheOtherDestination2) {
-  ReplayingBytesConsumer* src =
-      MakeGarbageCollected<ReplayingBytesConsumer>(&GetDocument());
+  ReplayingBytesConsumer* src = MakeGarbageCollected<ReplayingBytesConsumer>(
+      GetDocument().GetTaskRunner(TaskType::kNetworking));
 
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello, "));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "world"));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kError));
+  src->Add(Command(Command::kData, "hello, "));
+  src->Add(Command(Command::kWait));
+  src->Add(Command(Command::kData, "world"));
+  src->Add(Command(Command::kError));
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::Tee(&GetDocument(), src, &dest1, &dest2);
+  BytesConsumerTee(&GetDocument(), src, &dest1, &dest2);
 
   EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
             dest1->GetPublicState());
@@ -318,9 +301,7 @@ TEST_F(BytesConsumerTeeTest, CancelShouldNotAffectTheOtherDestination2) {
             dest2->GetPublicState());
   EXPECT_FALSE(src->IsCancelled());
 
-  auto result2 =
-      (MakeGarbageCollected<BytesConsumerTestUtil::TwoPhaseReader>(dest2))
-          ->Run();
+  auto result2 = (MakeGarbageCollected<BytesConsumerTestReader>(dest2))->Run();
 
   EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest1->GetPublicState());
   EXPECT_EQ(BytesConsumer::PublicState::kErrored, dest2->GetPublicState());
@@ -336,7 +317,7 @@ TEST_F(BytesConsumerTeeTest, BlobHandle) {
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::Tee(&GetDocument(), src, &dest1, &dest2);
+  BytesConsumerTee(&GetDocument(), src, &dest1, &dest2);
 
   scoped_refptr<BlobDataHandle> dest_blob_data_handle1 =
       dest1->DrainAsBlobDataHandle(
@@ -358,7 +339,7 @@ TEST_F(BytesConsumerTeeTest, BlobHandleWithInvalidSize) {
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::Tee(&GetDocument(), src, &dest1, &dest2);
+  BytesConsumerTee(&GetDocument(), src, &dest1, &dest2);
 
   scoped_refptr<BlobDataHandle> dest_blob_data_handle1 =
       dest1->DrainAsBlobDataHandle(
@@ -372,15 +353,15 @@ TEST_F(BytesConsumerTeeTest, BlobHandleWithInvalidSize) {
 }
 
 TEST_F(BytesConsumerTeeTest, ConsumerCanBeErroredInTwoPhaseRead) {
-  ReplayingBytesConsumer* src =
-      MakeGarbageCollected<ReplayingBytesConsumer>(&GetDocument());
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "a"));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kError));
+  ReplayingBytesConsumer* src = MakeGarbageCollected<ReplayingBytesConsumer>(
+      GetDocument().GetTaskRunner(TaskType::kNetworking));
+  src->Add(Command(Command::kData, "a"));
+  src->Add(Command(Command::kWait));
+  src->Add(Command(Command::kError));
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::Tee(&GetDocument(), src, &dest1, &dest2);
+  BytesConsumerTee(&GetDocument(), src, &dest1, &dest2);
   BytesConsumerTestClient* client =
       MakeGarbageCollected<BytesConsumerTestClient>();
   dest1->SetClient(client);
@@ -393,10 +374,9 @@ TEST_F(BytesConsumerTeeTest, ConsumerCanBeErroredInTwoPhaseRead) {
   EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
             dest1->GetPublicState());
   int num_on_state_change_called = client->NumOnStateChangeCalled();
-  EXPECT_EQ(Result::kError,
-            (MakeGarbageCollected<BytesConsumerTestUtil::TwoPhaseReader>(dest2))
-                ->Run()
-                .first);
+  EXPECT_EQ(
+      Result::kError,
+      (MakeGarbageCollected<BytesConsumerTestReader>(dest2))->Run().first);
   EXPECT_EQ(BytesConsumer::PublicState::kErrored, dest1->GetPublicState());
   EXPECT_EQ(num_on_state_change_called + 1, client->NumOnStateChangeCalled());
   EXPECT_EQ('a', buffer[0]);
@@ -405,17 +385,17 @@ TEST_F(BytesConsumerTeeTest, ConsumerCanBeErroredInTwoPhaseRead) {
 
 TEST_F(BytesConsumerTeeTest,
        AsyncNotificationShouldBeDispatchedWhenAllDataIsConsumed) {
-  ReplayingBytesConsumer* src =
-      MakeGarbageCollected<ReplayingBytesConsumer>(&GetDocument());
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "a"));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kDone));
+  ReplayingBytesConsumer* src = MakeGarbageCollected<ReplayingBytesConsumer>(
+      GetDocument().GetTaskRunner(TaskType::kNetworking));
+  src->Add(Command(Command::kData, "a"));
+  src->Add(Command(Command::kWait));
+  src->Add(Command(Command::kDone));
   BytesConsumerTestClient* client =
       MakeGarbageCollected<BytesConsumerTestClient>();
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::Tee(&GetDocument(), src, &dest1, &dest2);
+  BytesConsumerTee(&GetDocument(), src, &dest1, &dest2);
 
   dest1->SetClient(client);
 
@@ -443,16 +423,16 @@ TEST_F(BytesConsumerTeeTest,
 
 TEST_F(BytesConsumerTeeTest,
        AsyncCloseNotificationShouldBeCancelledBySubsequentReadCall) {
-  ReplayingBytesConsumer* src =
-      MakeGarbageCollected<ReplayingBytesConsumer>(&GetDocument());
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "a"));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kDone));
+  ReplayingBytesConsumer* src = MakeGarbageCollected<ReplayingBytesConsumer>(
+      GetDocument().GetTaskRunner(TaskType::kNetworking));
+  src->Add(Command(Command::kData, "a"));
+  src->Add(Command(Command::kDone));
   BytesConsumerTestClient* client =
       MakeGarbageCollected<BytesConsumerTestClient>();
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::Tee(&GetDocument(), src, &dest1, &dest2);
+  BytesConsumerTee(&GetDocument(), src, &dest1, &dest2);
 
   dest1->SetClient(client);
 

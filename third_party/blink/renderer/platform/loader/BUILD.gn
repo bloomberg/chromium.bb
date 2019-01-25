@@ -22,6 +22,8 @@ blink_platform_sources("loader") {
     "cors/cors_error_string.h",
     "fetch/buffering_data_pipe_writer.cc",
     "fetch/buffering_data_pipe_writer.h",
+    "fetch/bytes_consumer.cc",
+    "fetch/bytes_consumer.h",
     "fetch/cached_metadata.cc",
     "fetch/cached_metadata.h",
     "fetch/cached_metadata_handler.cc",
@@ -29,6 +31,8 @@ blink_platform_sources("loader") {
     "fetch/client_hints_preferences.cc",
     "fetch/client_hints_preferences.h",
     "fetch/console_logger.h",
+    "fetch/data_pipe_bytes_consumer.cc",
+    "fetch/data_pipe_bytes_consumer.h",
     "fetch/fetch_client_settings_object.h",
     "fetch/fetch_client_settings_object_snapshot.cc",
     "fetch/fetch_client_settings_object_snapshot.h",
@@ -123,7 +127,9 @@ jumbo_source_set("unit_tests") {
   # Source files for blink_platform_unittests.
   sources = [
     "fetch/buffering_data_pipe_writer_test.cc",
+    "fetch/bytes_consumer_test.cc",
     "fetch/client_hints_preferences_test.cc",
+    "fetch/data_pipe_bytes_consumer_test.cc",
     "fetch/fetch_utils_test.cc",
     "fetch/memory_cache_correctness_test.cc",
     "fetch/memory_cache_test.cc",
@@ -160,6 +166,8 @@ jumbo_source_set("test_support") {
   # Source files that can be called from blink_platform_unittests and
   # webkit_unit_tests.
   sources = [
+    "testing/bytes_consumer_test_reader.cc",
+    "testing/bytes_consumer_test_reader.h",
     "testing/crypto_testing_platform_support.h",
     "testing/fetch_testing_platform_support.cc",
     "testing/fetch_testing_platform_support.h",
@@ -167,6 +175,8 @@ jumbo_source_set("test_support") {
     "testing/mock_resource.cc",
     "testing/mock_resource.h",
     "testing/mock_resource_client.h",
+    "testing/replaying_bytes_consumer.cc",
+    "testing/replaying_bytes_consumer.h",
     "testing/test_resource_fetcher_properties.cc",
     "testing/test_resource_fetcher_properties.h",
     "testing/web_url_loader_factory_with_mock.cc",

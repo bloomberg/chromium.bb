@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_BYTES_CONSUMER_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_BYTES_CONSUMER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_BYTES_CONSUMER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_BYTES_CONSUMER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/compiler.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -26,7 +26,7 @@ class ExecutionContext;
 // that the BytesConsumer is ready to read non-empty bytes synchronously.
 // A BytesConsumer should be retained by TraceWrapperMember, not Member, as
 // a subclass has a reference to a v8::Value.
-class CORE_EXPORT BytesConsumer
+class PLATFORM_EXPORT BytesConsumer
     : public GarbageCollectedFinalized<BytesConsumer> {
  public:
   enum class Result {
@@ -47,7 +47,7 @@ class CORE_EXPORT BytesConsumer
     // The returned blob can have an invalid size.
     kAllowBlobWithInvalidSize
   };
-  class CORE_EXPORT Error {
+  class PLATFORM_EXPORT Error {
    public:
     Error() {}
     explicit Error(const String& message) : message_(message) {}
@@ -58,7 +58,7 @@ class CORE_EXPORT BytesConsumer
     String message_;
   };
   // Client gets notification from the associated ByteConsumer.
-  class CORE_EXPORT Client : public GarbageCollectedMixin {
+  class PLATFORM_EXPORT Client : public GarbageCollectedMixin {
    public:
     virtual ~Client() {}
 
@@ -210,4 +210,4 @@ class CORE_EXPORT BytesConsumer
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_BYTES_CONSUMER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_BYTES_CONSUMER_H_

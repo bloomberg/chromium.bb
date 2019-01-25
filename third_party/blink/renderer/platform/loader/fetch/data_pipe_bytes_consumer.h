@@ -2,30 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_DATA_PIPE_BYTES_CONSUMER_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_DATA_PIPE_BYTES_CONSUMER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_DATA_PIPE_BYTES_CONSUMER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_DATA_PIPE_BYTES_CONSUMER_H_
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
-#include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/fetch/bytes_consumer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
-namespace blink {
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
 
-class ExecutionContext;
+namespace blink {
 
 // An adapter for mojo::DataPipe. As mojo::DataPipe lacks signals completion and
 // error signals, we define another interface, CompletionNotifier, for the
 // signals.
-class CORE_EXPORT DataPipeBytesConsumer final : public BytesConsumer {
+class PLATFORM_EXPORT DataPipeBytesConsumer final : public BytesConsumer {
   USING_PRE_FINALIZER(DataPipeBytesConsumer, Dispose);
 
  public:
-  class CORE_EXPORT CompletionNotifier final
+  class PLATFORM_EXPORT CompletionNotifier final
       : public GarbageCollected<CompletionNotifier> {
    public:
     explicit CompletionNotifier(DataPipeBytesConsumer* bytes_consumer)
@@ -43,7 +46,7 @@ class CORE_EXPORT DataPipeBytesConsumer final : public BytesConsumer {
     const WeakMember<DataPipeBytesConsumer> bytes_consumer_;
   };
 
-  DataPipeBytesConsumer(ExecutionContext*,
+  DataPipeBytesConsumer(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                         mojo::ScopedDataPipeConsumerHandle,
                         CompletionNotifier** notifier);
   ~DataPipeBytesConsumer() override;
@@ -74,7 +77,7 @@ class CORE_EXPORT DataPipeBytesConsumer final : public BytesConsumer {
   void SignalError(const Error& error);
   void Dispose();
 
-  Member<ExecutionContext> execution_context_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   mojo::ScopedDataPipeConsumerHandle data_pipe_;
   mojo::SimpleWatcher watcher_;
   Member<BytesConsumer::Client> client_;
@@ -89,4 +92,4 @@ class CORE_EXPORT DataPipeBytesConsumer final : public BytesConsumer {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_DATA_PIPE_BYTES_CONSUMER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_DATA_PIPE_BYTES_CONSUMER_H_
