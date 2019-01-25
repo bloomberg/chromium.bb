@@ -124,11 +124,11 @@ void TestSigninClient::RemoveContentSettingsObserver(
     content_settings::Observer* observer) {
 }
 
-void TestSigninClient::DelayNetworkCall(const base::Closure& callback) {
+void TestSigninClient::DelayNetworkCall(base::OnceClosure callback) {
   if (network_calls_delayed_) {
-    delayed_network_calls_.push_back(callback);
+    delayed_network_calls_.push_back(std::move(callback));
   } else {
-    callback.Run();
+    std::move(callback).Run();
   }
 }
 

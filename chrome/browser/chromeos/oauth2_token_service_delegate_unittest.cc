@@ -196,7 +196,7 @@ class CrOSOAuthDelegateTest : public testing::Test {
   std::unique_ptr<ChromeOSOAuth2TokenServiceDelegate> delegate_;
   AccountManager::DelayNetworkCallRunner immediate_callback_runner_ =
       base::BindRepeating(
-          [](const base::RepeatingClosure& closure) -> void { closure.Run(); });
+          [](base::OnceClosure closure) -> void { std::move(closure).Run(); });
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   std::unique_ptr<TestSigninClient> client_;
 

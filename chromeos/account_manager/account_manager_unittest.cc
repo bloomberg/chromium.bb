@@ -104,7 +104,7 @@ class AccountManagerTest : public testing::Test {
       account_manager::AccountType::ACCOUNT_TYPE_ACTIVE_DIRECTORY};
   AccountManager::DelayNetworkCallRunner immediate_callback_runner_ =
       base::BindRepeating(
-          [](const base::RepeatingClosure& closure) -> void { closure.Run(); });
+          [](base::OnceClosure closure) -> void { std::move(closure).Run(); });
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AccountManagerTest);

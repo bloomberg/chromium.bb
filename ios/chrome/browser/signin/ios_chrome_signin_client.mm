@@ -86,8 +86,8 @@ void IOSChromeSigninClient::RemoveContentSettingsObserver(
   host_content_settings_map_->RemoveObserver(observer);
 }
 
-void IOSChromeSigninClient::DelayNetworkCall(const base::Closure& callback) {
-  network_callback_helper_->HandleCallback(callback);
+void IOSChromeSigninClient::DelayNetworkCall(base::OnceClosure callback) {
+  network_callback_helper_->HandleCallback(std::move(callback));
 }
 
 std::unique_ptr<GaiaAuthFetcher> IOSChromeSigninClient::CreateGaiaAuthFetcher(

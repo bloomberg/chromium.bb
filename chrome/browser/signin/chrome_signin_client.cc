@@ -284,18 +284,18 @@ void ChromeSigninClient::OnConnectionChanged(
   if (type == network::mojom::ConnectionType::CONNECTION_NONE)
     return;
 
-  for (const base::Closure& callback : delayed_callbacks_)
-    callback.Run();
+  for (base::OnceClosure& callback : delayed_callbacks_)
+    std::move(callback).Run();
 
   delayed_callbacks_.clear();
 }
 #endif
 
-void ChromeSigninClient::DelayNetworkCall(const base::Closure& callback) {
+void ChromeSigninClient::DelayNetworkCall(base::OnceClosure callback) {
 #if defined(OS_CHROMEOS)
   chromeos::DelayNetworkCall(
       base::TimeDelta::FromMilliseconds(chromeos::kDefaultNetworkRetryDelayMS),
-      callback);
+      std::move(callback));
   return;
 #else
   // Don't bother if we don't have any kind of network connection.
@@ -305,9 +305,9 @@ void ChromeSigninClient::DelayNetworkCall(const base::Closure& callback) {
                             weak_ptr_factory_.GetWeakPtr()));
   if (!sync || type == network::mojom::ConnectionType::CONNECTION_NONE) {
     // Connection type cannot be retrieved synchronously so delay the callback.
-    delayed_callbacks_.push_back(callback);
+    delayed_callbacks_.push_back(std::move(callback));
   } else {
-    callback.Run();
+    std::move(callback).Run();
   }
 #endif
 }

@@ -35,7 +35,8 @@ class COMPONENT_EXPORT(CHROMEOS_TIMEZONE) TimeZoneResolver {
 
   // chromeos::DelayNetworkCall cannot be used directly due to link
   // restrictions.
-  using DelayNetworkCallClosure = base::Callback<void(const base::Closure&)>;
+  using DelayNetworkCallClosure =
+      base::RepeatingCallback<void(base::OnceClosure)>;
 
   class Delegate {
    public:

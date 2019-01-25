@@ -86,8 +86,8 @@ void IOSWebViewSigninClient::PreSignOut(
   [sync_controller_ didSignoutWithSourceMetric:signout_source_metric];
 }
 
-void IOSWebViewSigninClient::DelayNetworkCall(const base::Closure& callback) {
-  network_callback_helper_->HandleCallback(callback);
+void IOSWebViewSigninClient::DelayNetworkCall(base::OnceClosure callback) {
+  network_callback_helper_->HandleCallback(std::move(callback));
 }
 
 std::unique_ptr<GaiaAuthFetcher> IOSWebViewSigninClient::CreateGaiaAuthFetcher(
