@@ -54,6 +54,7 @@ template("trichrome_library_apk_tmpl") {
     app_as_shared_lib = true
     use_chromium_linker = false
     uncompress_shared_libraries = true
+    uncompress_dex = use_uncompressed_dex
     version_name = chrome_version_name
     version_code = trichrome_version_code
 
