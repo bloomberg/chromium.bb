@@ -5852,6 +5852,11 @@ crbug.com/v8/8319 external/wpt/wasm/jsapi/memory/grow.any.worker.html [ Pass Fai
 # Likely needs a rebaseline
 crbug.com/921242 [ Mac ] fast/overflow/clip-rects-fixed-ancestor.html [ Failure ]
 
+# Disable temporarily since a V8 side change requires the rebaseline of the test expectations.
+# TODO(tzik): Remove this once https://crrev.com/c/1425277 is in.
+crbug.com/v8/7804 http/tests/devtools/tracing/timeline-js/timeline-microtasks.js [ Pass Failure ]
+crbug.com/v8/7804 virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-microtasks.js [ Pass Failure ]
+
 # Sheriff 2019-01-24
 crbug.com/924954 http/tests/images/feature-policy-image-policies-with-border-radius.html [ Pass Failure ]
 
