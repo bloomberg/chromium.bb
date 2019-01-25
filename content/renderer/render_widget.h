@@ -419,7 +419,12 @@ class CONTENT_EXPORT RenderWidget
 
   void SetHandlingInputEvent(bool handling_input_event);
 
-  // Delivers |message| together with compositor state change updates.
+  // Queues the IPC |message| to be sent to the browser, delaying sending until
+  // the next compositor frame submission. At that time they will be sent before
+  // any message from the compositor as part of submitting its frame. This is
+  // used for messages that need synchronization with the compositor, but in
+  // general you should use Send().
+  //
   // This mechanism is not a drop-in replacement for IPC: messages sent this way
   // will not be automatically available to BrowserMessageFilter, for example.
   // FIFO ordering is preserved between messages enqueued.
