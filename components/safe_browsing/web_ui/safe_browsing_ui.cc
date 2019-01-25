@@ -1322,6 +1322,7 @@ CrSBLogMessage::CrSBLogMessage() {}
 
 CrSBLogMessage::~CrSBLogMessage() {
   WebUIInfoSingleton::GetInstance()->LogMessage(stream_.str());
+  DLOG(WARNING) << stream_.str();
 }
 
 }  // namespace safe_browsing

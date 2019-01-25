@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/safe_browsing/telemetry/telemetry_service.h"
 #include "components/download/public/common/download_item.h"
 #include "components/safe_browsing/proto/csd.pb.h"
@@ -59,10 +60,19 @@ class AndroidTelemetryService : public download::DownloadItem::Observer,
   void FillReferrerChain(content::WebContents* web_contents,
                          ClientSafeBrowsingReportRequest* report);
 
+  // If |safety_net_id_on_ui_thread_| isn't already set, post a task on the IO
+  // thread to get the safety net ID of the device and then store that value on
+  // the UI thread in |safety_net_id_on_ui_thread_|.
+  void MaybeCaptureSafetyNetId();
+
   // Sets the relevant fields in an instance of
   // |ClientSafeBrowsingReportRequest| and sends it to the Safe Browsing
   // backend. The report may not be sent if the proto fails to serialize.
   void MaybeSendApkDownloadReport(download::DownloadItem* item);
+
+  // Gets called on the UI thread when the |safety_net_id| of the device has
+  // been captured. Sets |safety_net_id_on_ui_thread_| to the captured value.
+  void SetSafetyNetIdOnUIThread(const std::string& safety_net_id);
 
   // Helper method to get prefs from |profile_|.
   const PrefService* GetPrefs();
@@ -77,6 +87,8 @@ class AndroidTelemetryService : public download::DownloadItem::Observer,
 
   // Unowned.
   SafeBrowsingService* sb_service_;
+
+  base::WeakPtrFactory<AndroidTelemetryService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidTelemetryService);
 };
