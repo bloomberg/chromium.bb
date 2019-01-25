@@ -298,6 +298,13 @@ class OverviewSessionTest : public AshTestBase {
     return gfx::Rect();
   }
 
+  views::Widget* GetShieldWidget(int index) {
+    if (overview_session())
+      return overview_session()->grid_list_[index]->shield_widget();
+
+    return nullptr;
+  }
+
   views::Widget* item_widget(OverviewItem* item) {
     return item->item_widget_.get();
   }
@@ -2522,6 +2529,30 @@ TEST_F(OverviewSessionTest, GridBounds) {
   ToggleOverview();
   EXPECT_EQ(gfx::Rect(0, 0, 544, 600), GetGridBounds());
   ToggleOverview();
+}
+
+TEST_F(OverviewSessionTest, GridShieldAnimation) {
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(200, 200)));
+
+  // Tests that if the window does not cover the workspace, the shield will not
+  // exist since it is created and animated in after position windows animations
+  // are finished.
+  ToggleOverview();
+  EXPECT_FALSE(GetShieldWidget(0));
+  ToggleOverview();
+
+  // Tests that if the window covers the workspace for example maximized, the
+  // shield will exist, and not be animated.
+  wm::GetWindowState(window.get())->Maximize();
+  ToggleOverview();
+  ASSERT_TRUE(GetShieldWidget(0));
+  EXPECT_FALSE(GetShieldWidget(0)
+                   ->GetNativeWindow()
+                   ->layer()
+                   ->GetAnimator()
+                   ->is_animating());
 }
 
 class SplitViewOverviewSessionTest : public OverviewSessionTest {
