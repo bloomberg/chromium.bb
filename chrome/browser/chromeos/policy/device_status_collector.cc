@@ -568,6 +568,10 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
             battery.values().charge_full_design() / 1000);
         battery_info->set_full_charge_capacity(battery.values().charge_full() /
                                                1000);
+        // uV to mV:
+        battery_info->set_design_min_voltage(
+            battery.values().voltage_min_design() / 1000);
+
         for (const std::unique_ptr<SampledData>& sample_data : samples) {
           auto it = sample_data->battery_samples.find(battery.name());
           if (it != sample_data->battery_samples.end())
@@ -1478,7 +1482,8 @@ void DeviceStatusCollector::SampleDischargeRate(
     SamplingCallback callback,
     const power_manager::PowerSupplyProperties& prop) {
   if (prop.has_battery_discharge_rate()) {
-    int discharge_rate_mW = (int)(prop.has_battery_discharge_rate() * 1000);
+    int discharge_rate_mW =
+        static_cast<int>(prop.battery_discharge_rate() * 1000);
     for (auto it = sample->battery_samples.begin();
          it != sample->battery_samples.end(); it++) {
       it->second.set_discharge_rate(discharge_rate_mW);
