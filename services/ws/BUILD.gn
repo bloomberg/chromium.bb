@@ -4,7 +4,6 @@
 
 import("//build/config/ui.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
@@ -162,7 +161,6 @@ static_library("test_support") {
 
   deps = [
     ":lib",
-    ":tests_catalog_source",
     "//base",
     "//base/test:test_support",
     "//components/viz/test:test_support",
@@ -173,6 +171,7 @@ static_library("test_support") {
     "//services/ws/public/cpp",
     "//services/ws/public/cpp/host",
     "//services/ws/public/mojom",
+    "//services/ws/test_ws:manifest",
     "//testing/gtest",
     "//ui/aura",
     "//ui/aura:test_support",
@@ -188,23 +187,6 @@ static_library("test_support") {
   data_deps = [
     "//services/ws/ime/test_ime_driver",
   ]
-}
-
-service_manifest("unittests_manifest") {
-  name = "ui_ws2_service_unittests"
-  source = "test_manifest.json"
-}
-
-catalog("tests_catalog") {
-  testonly = true
-  embedded_services = [ ":unittests_manifest" ]
-  standalone_services = [ "//services/ws/test_ws:manifest" ]
-}
-
-catalog_cpp_source("tests_catalog_source") {
-  testonly = true
-  catalog = ":tests_catalog"
-  generated_function_name = "ws::test::CreateTestCatalog"
 }
 
 source_set("tests") {

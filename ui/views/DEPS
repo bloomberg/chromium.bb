@@ -40,7 +40,6 @@ specific_include_rules = {
   ],
   "views_test_base\.cc": [
     "+mojo/core/embedder",
-    "+services/catalog",
     "+services/service_manager/background",
     "+services/service_manager/public",
     "+services/ws",
