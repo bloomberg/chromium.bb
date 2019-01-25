@@ -699,6 +699,21 @@ void RenderWidget::OnSynchronizeVisualProperties(
   TRACE_EVENT0("renderer", "RenderWidget::OnSynchronizeVisualProperties");
 
   VisualProperties params = original_params;
+
+  // Inform the rendering thread of the color space indicating the presence of
+  // HDR capabilities. The HDR bit happens to be globally true/false for all
+  // browser windows (on Windows OS) and thus would be the same for all
+  // RenderWidgets, so clobbering each other works out since only the HDR bit is
+  // used. See https://crbug.com/803451 and
+  // https://chromium-review.googlesource.com/c/chromium/src/+/852912/15#message-68bbd3e25c3b421a79cd028b2533629527d21fee
+  //
+  // The RenderThreadImpl can be null in tests.
+  {
+    RenderThreadImpl* render_thread = RenderThreadImpl::current();
+    if (render_thread)
+      render_thread->SetRenderingColorSpace(params.screen_info.color_space);
+  }
+
   if (delegate()) {
     if (size_ != params.new_size) {
       // Only hide popups when the size changes. Eg https://crbug.com/761908.
@@ -1425,11 +1440,6 @@ void RenderWidget::UpdateZoom(double zoom_level) {
 }
 
 void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
-  // Inform the rendering thread of the color space indicate the presence of HDR
-  // capabilities.
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  if (render_thread)
-    render_thread->SetRenderingColorSpace(params.screen_info.color_space);
 
   gfx::Size new_compositor_viewport_pixel_size =
       params.auto_resize_enabled
@@ -1444,8 +1454,6 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
   layer_tree_view_->SetBrowserControlsHeight(
       params.top_controls_height, params.bottom_controls_height,
       params.browser_controls_shrink_blink_size);
-  layer_tree_view_->SetRasterColorSpace(
-      screen_info_.color_space.GetRasterColorSpace());
 
   UpdateZoom(params.zoom_level);
 
@@ -1613,8 +1621,6 @@ LayerTreeView* RenderWidget::InitializeLayerTreeView() {
 
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
                              compositor_viewport_pixel_size_, screen_info_);
-  layer_tree_view_->SetRasterColorSpace(
-      screen_info_.color_space.GetRasterColorSpace());
   layer_tree_view_->SetContentSourceId(current_content_source_id_);
   // For background pages and certain tests, we don't want to trigger
   // LayerTreeFrameSink creation.
@@ -2061,6 +2067,8 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
       compositor_viewport_pixel_size_,
       GetOriginalScreenInfo().device_scale_factor,
       local_surface_id_allocation_from_parent_);
+  layer_tree_view_->SetRasterColorSpace(
+      screen_info_.color_space.GetRasterColorSpace());
 
   if (orientation_changed)
     OnOrientationChange();
@@ -3323,23 +3331,10 @@ void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
 
 void RenderWidget::SetDeviceColorSpaceForTesting(
     const gfx::ColorSpace& color_space) {
-  VisualProperties visual_properties;
-  visual_properties.screen_info = screen_info_;
-  visual_properties.screen_info.color_space = color_space;
-  visual_properties.new_size = size();
-  visual_properties.visible_viewport_size = visible_viewport_size_;
-  visual_properties.compositor_viewport_pixel_size =
-      compositor_viewport_pixel_size_;
-  visual_properties.browser_controls_shrink_blink_size = false;
-  visual_properties.top_controls_height = 0.f;
-  visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
-  visual_properties.display_mode = display_mode_;
-  visual_properties.local_surface_id_allocation =
-      local_surface_id_allocation_from_parent_;
-  // We are changing the device color space from the renderer, so allocate a
-  // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
-    layer_tree_view_->RequestNewLocalSurfaceId();
-  OnSynchronizeVisualProperties(visual_properties);
+  ScreenInfo info = screen_info_;
+  info.color_space = color_space;
+  UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
+                             compositor_viewport_pixel_size_, info);
 }
 
 void RenderWidget::SetWindowRectSynchronouslyForTesting(
