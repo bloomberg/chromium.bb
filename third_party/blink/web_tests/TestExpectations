@@ -4296,11 +4296,8 @@ crbug.com/652536 fast/events/mouse-cursor.html [ Pass Failure ]
 crbug.com/652536 virtual/mouseevent_fractional/fast/events/mouse-cursor.html [ Pass Failure ]
 crbug.com/663858 fast/text/emphasis-vertical.html [ Pass Failure ]
 crbug.com/664816 http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-reportonly-blocked.php [ Pass Failure ]
-crbug.com/664819 http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]
 crbug.com/664816 virtual/outofblink-cors/http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-reportonly-blocked.php [ Pass Failure ]
-crbug.com/664819 virtual/outofblink-cors/http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]
 crbug.com/664816 virtual/outofblink-cors-ns/http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-reportonly-blocked.php [ Pass Failure ]
-crbug.com/664819 virtual/outofblink-cors-ns/http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]
 
 crbug.com/702837 fast/text/aat-morx.html [ Skip ]
 

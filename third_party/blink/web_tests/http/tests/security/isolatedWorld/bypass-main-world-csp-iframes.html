@@ -34,6 +34,9 @@
                 setIframeSrc(false, tests);
                 break;
             case 5:
+                // Clear any existing isolated world CSP or security origin to
+                // prevent side-effects from other tests.
+                testRunner.setIsolatedWorldInfo(1, null, null);
                 testRunner.evaluateScriptInIsolatedWorld(1, String(eval("setIframeSrc")) + "\nsetIframeSrc(true, " + tests + ");");
                 break;
             case 4:
