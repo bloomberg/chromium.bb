@@ -144,7 +144,7 @@ TEST_F(ShillManagerClientTest, GetNetworksForGeolocation) {
   property_dict_writer.CloseContainer(&property_entry_writer);
   wap_list_writer.CloseContainer(&property_dict_writer);
   variant_writer.CloseContainer(&wap_list_writer);
-  type_entry_writer.CloseContainer(&wap_list_writer);
+  type_entry_writer.CloseContainer(&variant_writer);
   type_dict_writer.CloseContainer(&type_entry_writer);
   writer.CloseContainer(&type_dict_writer);
 
