@@ -88,13 +88,15 @@ class FactoryBranchBuilder(BuildSpecBuilder):
     """Run the stages."""
     super(FactoryBranchBuilder, self).RunStages()
 
+    assert len(self._run.config.boards) == 1
+    board = self._run.config.boards[0]
+
     self._RunStage(workspace_stages.WorkspaceInitSDKStage,
                    build_root=self._run.options.workspace)
 
     self._RunStage(workspace_stages.WorkspaceSyncChromeStage,
                    build_root=self._run.options.workspace)
 
-    for board in self._run.config.boards:
-      self._RunStage(workspace_stages.WorkspaceSetupBoardStage,
-                     build_root=self._run.options.workspace,
-                     board=board)
+    self._RunStage(workspace_stages.WorkspaceSetupBoardStage,
+                   build_root=self._run.options.workspace,
+                   board=board)
