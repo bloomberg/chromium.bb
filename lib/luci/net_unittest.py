@@ -26,7 +26,7 @@ class NetTest(test_case.TestCase):
   def setUp(self):
     super(NetTest, self).setUp()
 
-    def GetAccessToken(*_args):
+    def GetAccessToken(service_account_json): # pylint: disable=unused-argument
       return 'token'
 
     self.mock(auth, 'GetAccessToken', GetAccessToken)
