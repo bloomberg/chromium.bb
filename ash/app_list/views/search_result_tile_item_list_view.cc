@@ -76,6 +76,7 @@ SearchResultTileItemListView::SearchResultTileItemListView(
         AppListConfig::instance().card_background_color());
     tile_views_.push_back(tile_item);
     AddChildView(tile_item);
+    AddObservedResultView(tile_item);
   }
 }
 

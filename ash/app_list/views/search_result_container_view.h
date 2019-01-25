@@ -12,7 +12,9 @@
 #include "ash/app_list/model/search/search_model.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "ui/views/view.h"
+#include "ui/views/view_observer.h"
 
 namespace app_list {
 
@@ -24,11 +26,17 @@ class SearchResultBaseView;
 // selected at a time; moving off the end of one container view selects the
 // first element of the next container view, and vice versa
 class APP_LIST_EXPORT SearchResultContainerView : public views::View,
+                                                  public views::ViewObserver,
                                                   public ui::ListModelObserver {
  public:
   class Delegate {
    public:
+    // Called whenever results in the container change, i.e. during |Update()|
     virtual void OnSearchResultContainerResultsChanged() = 0;
+
+    // Called whenever a result within the container gains focus.
+    virtual void OnSearchResultContainerResultFocused(
+        SearchResultBaseView* focused_result_view) = 0;
   };
   SearchResultContainerView();
   ~SearchResultContainerView() override;
@@ -62,6 +70,13 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
   // Overridden from views::View:
   const char* GetClassName() const override;
 
+  // Overridden from views::ViewObserver:
+  void OnViewFocused(View* observed_view) override;
+
+  // Functions to allow derivative classes to add/remove observed result views.
+  void AddObservedResultView(SearchResultBaseView* result_view);
+  void RemoveObservedResultView(SearchResultBaseView* result_view);
+
   // Overridden from ui::ListModelObserver:
   void ListItemsAdded(size_t start, size_t count) override;
   void ListItemsRemoved(size_t start, size_t count) override;
@@ -87,6 +102,9 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
   double container_score_;
 
   SearchModel::SearchResults* results_ = nullptr;  // Owned by SearchModel.
+
+  ScopedObserver<SearchResultBaseView, ViewObserver> result_view_observer_{
+      this};
 
   // The factory that consolidates multiple Update calls into one.
   base::WeakPtrFactory<SearchResultContainerView> update_factory_{this};

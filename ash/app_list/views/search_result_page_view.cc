@@ -317,6 +317,19 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
   first_result_view_->SetBackgroundHighlighted(true);
 }
 
+void SearchResultPageView::OnSearchResultContainerResultFocused(
+    SearchResultBaseView* focused_result_view) {
+  views::Textfield* search_box =
+      AppListPage::contents_view()->GetSearchBoxView()->search_box();
+  if (focused_result_view->result()->result_type() ==
+          ash::SearchResultType::kOmnibox &&
+      !focused_result_view->result()->is_omnibox_search()) {
+    search_box->SetText(focused_result_view->result()->details());
+  } else {
+    search_box->SetText(focused_result_view->result()->title());
+  }
+}
+
 void SearchResultPageView::OnHidden() {
   // Hide the search results page when it is behind search box to avoid focus
   // being moved onto suggested apps when zero state is enabled.
