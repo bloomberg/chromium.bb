@@ -51,7 +51,6 @@
   X("cma")                                                               \
   X("compositor")                                                        \
   X("content")                                                           \
-  X("cpu_profiler")                                                      \
   X("devtools")                                                          \
   X("devtools.timeline")                                                 \
   X("devtools.timeline.async")                                           \
