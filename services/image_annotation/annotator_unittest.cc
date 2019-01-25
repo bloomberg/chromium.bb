@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/time/time.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/http/http_status_code.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
@@ -30,41 +31,97 @@ using testing::SizeIs;
 
 constexpr char kTestServerUrl[] = "https://test_ia_server.com/v1:ocr";
 
+// Example image URLs.
+
+constexpr char kImage1Url[] = "https://www.example.com/image1.jpg";
+constexpr char kImage2Url[] = "https://www.example.com/image2.jpg";
+constexpr char kImage3Url[] = "https://www.example.com/image3.jpg";
+
 // Example server requests / responses.
 
-constexpr char kRequestTemplate[] = R"(
+// Template for a request for a single image.
+constexpr char kTemplateRequest[] = R"(
 {
-  "image_requests": [
+  "imageRequests": [
     {
-      "image_id": "%s",
-      "image_bytes": "%s"
+      "imageId": "%s",
+      "imageBytes": "%s"
     }
   ],
 
-  "feature_request": {
-    "ocr_feature": {}
+  "featureRequest": {
+    "ocrFeature": {}
   }
 }
 )";
 
-constexpr char kSuccessResponseTemplate[] = R"(
+// Batch request for |kImage1Url|, |kImage2Url| and |kImage3Url|.
+constexpr char kBatchRequest[] = R"(
+{
+  "imageRequests": [
+    {
+      "imageId": "https://www.example.com/image1.jpg",
+      "imageBytes": "AQID"
+    },
+    {
+      "imageId": "https://www.example.com/image2.jpg",
+      "imageBytes": "BAUG"
+    },
+    {
+      "imageId": "https://www.example.com/image3.jpg",
+      "imageBytes": "BwgJ"
+    }
+  ],
+  "featureRequest": {
+    "ocrFeature": {}
+  }
+})";
+
+// Successful text extraction for |kImage1Url|.
+constexpr char kSuccessResponse[] = R"(
   {
     "results": [
       {
-        "image_id": "%s",
+        "imageId": "https://www.example.com/image1.jpg",
         "annotations": {
-          "ocr": [%s]
+          "ocrRegions": [
+            {
+              "words": [
+                 {
+                   "detectedText": "Region",
+                   "confidenceScore": 1.0
+                 },
+                 {
+                   "detectedText": "1",
+                   "confidenceScore": 1.0
+                 }
+              ]
+            },
+            {
+              "words": [
+                 {
+                   "detectedText": "Region",
+                   "confidenceScore": 1.0
+                 },
+                 {
+                   "detectedText": "2",
+                   "confidenceScore": 1.0
+                 }
+              ]
+            }
+          ]
         }
       }
     ]
   }
 )";
 
-constexpr char kErrorResponseTemplate[] = R"(
+// Failed text extraction for |kImage1Url|.
+constexpr char kErrorResponse[] = R"(
   {
     "results": [
       {
-        "image_id": "%s",
+        "imageId": "https://www.example.com/image1.jpg",
         "status": {
           "code": 8,
           "message": "Resource exhaused"
@@ -74,10 +131,52 @@ constexpr char kErrorResponseTemplate[] = R"(
   }
 )";
 
-// Example image URLs.
-
-constexpr char kImage1Url[] = "https://www.example.com/image1.jpg";
-constexpr char kImage2Url[] = "https://www.example.com/image2.jpg";
+// Batch response containing successful annotations for |kImage1Url| and
+// |kImage2Url|, and a failure for |kImage3Url|.
+//
+// The results also appear "out of order" (i.e. image 2 comes before image 1).
+constexpr char kBatchResponse[] = R"(
+{
+  "results": [
+    {
+      "imageId": "https://www.example.com/image2.jpg",
+      "annotations": {
+        "ocrRegions": [
+          {
+            "words": [
+               {
+                 "detectedText": "2",
+                 "confidenceScore": 1.0
+               }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "imageId": "https://www.example.com/image1.jpg",
+      "annotations": {
+        "ocrRegions": [
+          {
+            "words": [
+               {
+                 "detectedText": "1",
+                 "confidenceScore": 1.0
+               }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "imageId": "https://www.example.com/image3.jpg",
+      "status": {
+        "code": 8,
+        "message": "Resource exhaused"
+      }
+    }
+  ]
+})";
 
 // An image processor that holds and exposes the callbacks it is passed.
 class TestImageProcessor : public mojom::ImageProcessor {
@@ -115,6 +214,10 @@ class TestServerURLLoaderFactory {
         shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &loader_factory_)) {}
+
+  const std::vector<network::TestURLLoaderFactory::PendingRequest>& requests() {
+    return *loader_factory_.pending_requests();
+  }
 
   // Expects that the earliest received request has the given URL and body, and
   // replies with the given response.
@@ -196,7 +299,8 @@ void ReportResult(base::Optional<mojom::AnnotateImageError>* const error,
 
 // Test that OCR works for one client, and that the cache is populated.
 TEST(AnnotatorTest, SuccessAndCache) {
-  base::test::ScopedTaskEnvironment test_task_env;
+  base::test::ScopedTaskEnvironment test_task_env(
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
 
   Annotator annotator(GURL(kTestServerUrl),
@@ -220,25 +324,26 @@ TEST(AnnotatorTest, SuccessAndCache) {
     processor.callbacks().pop_back();
     test_task_env.RunUntilIdle();
 
+    // No request should be sent yet (because service is waiting to batch up
+    // multiple requests).
+    //
+    // TODO(crbug.com/916420): update this (and other similar uses in this file)
+    //                         to reflect throttle construction arg once
+    //                         Annotator accepts one.
+    EXPECT_THAT(test_url_factory.requests(), IsEmpty());
+    test_task_env.FastForwardBy(base::TimeDelta::FromSeconds(1));
+    test_task_env.RunUntilIdle();
+
     // HTTP request should have been made.
     test_url_factory.ExpectRequestAndSimulateResponse(
         "ocr",
-        ReformatJson(base::StringPrintf(kRequestTemplate, kImage1Url, "AQID")),
-        base::StringPrintf(kSuccessResponseTemplate, kImage1Url,
-                           R"({
-                                "detected_text": "Text 1",
-                                "confidence_score": 1.0
-                              },
-                              {
-                                "detected_text": "Text 2",
-                                "confidence_score": 1.0
-                              })"),
-        net::HTTP_OK);
+        ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
+        kSuccessResponse, net::HTTP_OK);
     test_task_env.RunUntilIdle();
 
     // HTTP response should have completed and callback should have been called.
     ASSERT_THAT(error, Eq(base::nullopt));
-    EXPECT_THAT(ocr_text, Eq("Text 1\nText 2"));
+    EXPECT_THAT(ocr_text, Eq("Region 1\nRegion 2"));
   }
 
   // Second call uses cached results.
@@ -255,13 +360,14 @@ TEST(AnnotatorTest, SuccessAndCache) {
 
     // Results should have been directly returned without any server call.
     ASSERT_THAT(error, Eq(base::nullopt));
-    EXPECT_THAT(ocr_text, Eq("Text 1\nText 2"));
+    EXPECT_THAT(ocr_text, Eq("Region 1\nRegion 2"));
   }
 }
 
 // Test that HTTP failure is gracefully handled.
 TEST(AnnotatorTest, HttpError) {
-  base::test::ScopedTaskEnvironment test_task_env;
+  base::test::ScopedTaskEnvironment test_task_env(
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
 
   Annotator annotator(GURL(kTestServerUrl),
@@ -283,10 +389,15 @@ TEST(AnnotatorTest, HttpError) {
   processor.callbacks().pop_back();
   test_task_env.RunUntilIdle();
 
+  // No request should be sent yet (because service is waiting to batch up
+  // multiple requests).
+  EXPECT_THAT(test_url_factory.requests(), IsEmpty());
+  test_task_env.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
   // HTTP request should have been made.
   test_url_factory.ExpectRequestAndSimulateResponse(
       "ocr",
-      ReformatJson(base::StringPrintf(kRequestTemplate, kImage1Url, "AQID")),
+      ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
       "", net::HTTP_INTERNAL_SERVER_ERROR);
   test_task_env.RunUntilIdle();
 
@@ -297,7 +408,8 @@ TEST(AnnotatorTest, HttpError) {
 
 // Test that backend failure is gracefully handled.
 TEST(AnnotatorTest, BackendError) {
-  base::test::ScopedTaskEnvironment test_task_env;
+  base::test::ScopedTaskEnvironment test_task_env(
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
 
   Annotator annotator(GURL(kTestServerUrl),
@@ -319,11 +431,16 @@ TEST(AnnotatorTest, BackendError) {
   processor.callbacks().pop_back();
   test_task_env.RunUntilIdle();
 
+  // No request should be sent yet (because service is waiting to batch up
+  // multiple requests).
+  EXPECT_THAT(test_url_factory.requests(), IsEmpty());
+  test_task_env.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
   // HTTP request should have been made.
   test_url_factory.ExpectRequestAndSimulateResponse(
       "ocr",
-      ReformatJson(base::StringPrintf(kRequestTemplate, kImage1Url, "AQID")),
-      base::StringPrintf(kErrorResponseTemplate, kImage1Url), net::HTTP_OK);
+      ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
+      kErrorResponse, net::HTTP_OK);
   test_task_env.RunUntilIdle();
 
   // HTTP response should have completed and callback should have been called
@@ -334,7 +451,8 @@ TEST(AnnotatorTest, BackendError) {
 
 // Test that server failure (i.e. nonsense response) is gracefully handled.
 TEST(AnnotatorTest, ServerError) {
-  base::test::ScopedTaskEnvironment test_task_env;
+  base::test::ScopedTaskEnvironment test_task_env(
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
 
   Annotator annotator(GURL(kTestServerUrl),
@@ -356,10 +474,15 @@ TEST(AnnotatorTest, ServerError) {
   processor.callbacks().pop_back();
   test_task_env.RunUntilIdle();
 
+  // No request should be sent yet (because service is waiting to batch up
+  // multiple requests).
+  EXPECT_THAT(test_url_factory.requests(), IsEmpty());
+  test_task_env.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
   // HTTP request should have been made; respond with nonsense string.
   test_url_factory.ExpectRequestAndSimulateResponse(
       "ocr",
-      ReformatJson(base::StringPrintf(kRequestTemplate, kImage1Url, "AQID")),
+      ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
       "Hello, world!", net::HTTP_OK);
   test_task_env.RunUntilIdle();
 
@@ -371,7 +494,8 @@ TEST(AnnotatorTest, ServerError) {
 
 // Test that work is reassigned if a processor fails.
 TEST(AnnotatorTest, ProcessorFails) {
-  base::test::ScopedTaskEnvironment test_task_env;
+  base::test::ScopedTaskEnvironment test_task_env(
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
 
   Annotator annotator(GURL(kTestServerUrl),
@@ -408,28 +532,30 @@ TEST(AnnotatorTest, ProcessorFails) {
   processor[1].callbacks().pop_back();
   test_task_env.RunUntilIdle();
 
+  // No request should be sent yet (because service is waiting to batch up
+  // multiple requests).
+  EXPECT_THAT(test_url_factory.requests(), IsEmpty());
+  test_task_env.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
   // HTTP request for image 1 should have been made.
   test_url_factory.ExpectRequestAndSimulateResponse(
       "ocr",
-      ReformatJson(base::StringPrintf(kRequestTemplate, kImage1Url, "AQID")),
-      base::StringPrintf(kSuccessResponseTemplate, kImage1Url,
-                         R"({
-                              "detected_text": "Some text",
-                              "confidence_score": 1.0
-                            })"),
-      net::HTTP_OK);
+      ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
+      kSuccessResponse, net::HTTP_OK);
   test_task_env.RunUntilIdle();
 
   // Annotator should have called all callbacks, but request 1 received an error
   // when we returned empty bytes.
   ASSERT_THAT(error, ElementsAre(mojom::AnnotateImageError::kFailure,
                                  base::nullopt, base::nullopt));
-  EXPECT_THAT(ocr_text, ElementsAre(base::nullopt, "Some text", "Some text"));
+  EXPECT_THAT(ocr_text, ElementsAre(base::nullopt, "Region 1\nRegion 2",
+                                    "Region 1\nRegion 2"));
 }
 
 // Test that work is reassigned if processor dies.
 TEST(AnnotatorTest, ProcessorDies) {
-  base::test::ScopedTaskEnvironment test_task_env;
+  base::test::ScopedTaskEnvironment test_task_env(
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
 
   Annotator annotator(GURL(kTestServerUrl),
@@ -465,88 +591,34 @@ TEST(AnnotatorTest, ProcessorDies) {
   processor[1].callbacks().pop_back();
   test_task_env.RunUntilIdle();
 
+  // No request should be sent yet (because service is waiting to batch up
+  // multiple requests).
+  EXPECT_THAT(test_url_factory.requests(), IsEmpty());
+  test_task_env.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
   // HTTP request for image 1 should have been made.
   test_url_factory.ExpectRequestAndSimulateResponse(
       "ocr",
-      ReformatJson(base::StringPrintf(kRequestTemplate, kImage1Url, "AQID")),
-      base::StringPrintf(kSuccessResponseTemplate, kImage1Url,
-                         R"({
-                              "detected_text": "Some text",
-                              "confidence_score": 1.0
-                            })"),
-      net::HTTP_OK);
+      ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
+      kSuccessResponse, net::HTTP_OK);
   test_task_env.RunUntilIdle();
 
   // Annotator should have called all callbacks, but request 1 was canceled when
   // we reset processor 1.
   ASSERT_THAT(error, ElementsAre(mojom::AnnotateImageError::kCanceled,
                                  base::nullopt, base::nullopt));
-  EXPECT_THAT(ocr_text, ElementsAre(base::nullopt, "Some text", "Some text"));
+  EXPECT_THAT(ocr_text, ElementsAre(base::nullopt, "Region 1\nRegion 2",
+                                    "Region 1\nRegion 2"));
 }
 
-// Test that multiple concurrent requests are handled.
-TEST(AnnotatorTest, Concurrent) {
-  base::test::ScopedTaskEnvironment test_task_env;
-  TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
+// Test that multiple concurrent requests are handled in the same batch.
+TEST(AnnotatorTest, ConcurrentSameBatch) {
+  // This test assumes that the Annotator batch size constant is >= 3.
+  // TODO(crbug.com/916420): guarantee this when the Annotator accepts the batch
+  //                         size as a construction arg.
 
-  Annotator annotator(GURL(kTestServerUrl),
-                      test_url_factory.AsSharedURLLoaderFactory());
-
-  TestImageProcessor processor[2];
-  base::Optional<mojom::AnnotateImageError> error[2];
-  base::Optional<std::string> ocr_text[2];
-
-  // Requests for images 1 and 2.
-  annotator.AnnotateImage(
-      kImage1Url, processor[0].GetPtr(),
-      base::BindOnce(&ReportResult, &error[0], &ocr_text[0]));
-  annotator.AnnotateImage(
-      kImage2Url, processor[1].GetPtr(),
-      base::BindOnce(&ReportResult, &error[1], &ocr_text[1]));
-  test_task_env.RunUntilIdle();
-
-  // Annotator should have asked processor 1 for image 1's pixels and processor
-  // 2 for image 2's pixels.
-  ASSERT_THAT(processor[0].callbacks(), SizeIs(1));
-  ASSERT_THAT(processor[1].callbacks(), SizeIs(1));
-
-  // Send back image data.
-  std::move(processor[0].callbacks()[0]).Run({1, 2, 3});
-  processor[0].callbacks().pop_back();
-  std::move(processor[1].callbacks()[0]).Run({4, 5, 6});
-  processor[1].callbacks().pop_back();
-  test_task_env.RunUntilIdle();
-
-  // HTTP request for image 1 should have been made first, then request for
-  // image 2.
-  test_url_factory.ExpectRequestAndSimulateResponse(
-      "ocr",
-      ReformatJson(base::StringPrintf(kRequestTemplate, kImage1Url, "AQID")),
-      base::StringPrintf(kSuccessResponseTemplate, kImage1Url,
-                         R"({
-                              "detected_text": "Text 1",
-                              "confidence_score": 1.0
-                            })"),
-      net::HTTP_OK);
-  test_url_factory.ExpectRequestAndSimulateResponse(
-      "ocr",
-      ReformatJson(base::StringPrintf(kRequestTemplate, kImage2Url, "BAUG")),
-      base::StringPrintf(kSuccessResponseTemplate, kImage1Url,
-                         R"({
-                              "detected_text": "Text 2",
-                              "confidence_score": 1.0
-                            })"),
-      net::HTTP_OK);
-  test_task_env.RunUntilIdle();
-
-  // Annotator should have called each callback with its corresponding text.
-  ASSERT_THAT(error, ElementsAre(base::nullopt, base::nullopt));
-  EXPECT_THAT(ocr_text, ElementsAre("Text 1", "Text 2"));
-}
-
-// Test that work is not duplicated if it is already ongoing.
-TEST(AnnotatorTest, DuplicateWork) {
-  base::test::ScopedTaskEnvironment test_task_env;
+  base::test::ScopedTaskEnvironment test_task_env(
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
 
   Annotator annotator(GURL(kTestServerUrl),
@@ -556,7 +628,64 @@ TEST(AnnotatorTest, DuplicateWork) {
   base::Optional<mojom::AnnotateImageError> error[3];
   base::Optional<std::string> ocr_text[3];
 
-  // First request annotation of image 1 with processor 1.
+  // Request OCR for images 1, 2 and 3.
+  annotator.AnnotateImage(
+      kImage1Url, processor[0].GetPtr(),
+      base::BindOnce(&ReportResult, &error[0], &ocr_text[0]));
+  annotator.AnnotateImage(
+      kImage2Url, processor[1].GetPtr(),
+      base::BindOnce(&ReportResult, &error[1], &ocr_text[1]));
+  annotator.AnnotateImage(
+      kImage3Url, processor[2].GetPtr(),
+      base::BindOnce(&ReportResult, &error[2], &ocr_text[2]));
+  test_task_env.RunUntilIdle();
+
+  // Annotator should have asked processor 1 for image 1's pixels, processor
+  // 2 for image 2's pixels and processor 3 for image 3's pixels.
+  ASSERT_THAT(processor[0].callbacks(), SizeIs(1));
+  ASSERT_THAT(processor[1].callbacks(), SizeIs(1));
+  ASSERT_THAT(processor[2].callbacks(), SizeIs(1));
+
+  // Send back image data.
+  std::move(processor[0].callbacks()[0]).Run({1, 2, 3});
+  processor[0].callbacks().pop_back();
+  std::move(processor[1].callbacks()[0]).Run({4, 5, 6});
+  processor[1].callbacks().pop_back();
+  std::move(processor[2].callbacks()[0]).Run({7, 8, 9});
+  processor[2].callbacks().pop_back();
+  test_task_env.RunUntilIdle();
+
+  // No request should be sent yet (because service is waiting to batch up
+  // multiple requests).
+  EXPECT_THAT(test_url_factory.requests(), IsEmpty());
+  test_task_env.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  // A single HTTP request for all images should have been sent.
+  test_url_factory.ExpectRequestAndSimulateResponse(
+      "ocr", ReformatJson(kBatchRequest), kBatchResponse, net::HTTP_OK);
+  test_task_env.RunUntilIdle();
+
+  // Annotator should have called each callback with its corresponding text or
+  // failure.
+  ASSERT_THAT(error, ElementsAre(base::nullopt, base::nullopt,
+                                 mojom::AnnotateImageError::kFailure));
+  EXPECT_THAT(ocr_text, ElementsAre("1", "2", base::nullopt));
+}
+
+// Test that multiple concurrent requests are handled in separate batches.
+TEST(AnnotatorTest, ConcurrentSeparateBatches) {
+  base::test::ScopedTaskEnvironment test_task_env(
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+  TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
+
+  Annotator annotator(GURL(kTestServerUrl),
+                      test_url_factory.AsSharedURLLoaderFactory());
+
+  TestImageProcessor processor[2];
+  base::Optional<mojom::AnnotateImageError> error[2];
+  base::Optional<std::string> ocr_text[2];
+
+  // Request OCR for image 1.
   annotator.AnnotateImage(
       kImage1Url, processor[0].GetPtr(),
       base::BindOnce(&ReportResult, &error[0], &ocr_text[0]));
@@ -565,53 +694,181 @@ TEST(AnnotatorTest, DuplicateWork) {
   // Annotator should have asked processor 1 for image 1's pixels.
   ASSERT_THAT(processor[0].callbacks(), SizeIs(1));
   ASSERT_THAT(processor[1].callbacks(), IsEmpty());
-  ASSERT_THAT(processor[2].callbacks(), IsEmpty());
 
-  // Now request annotation of image 1 with processor 2.
+  // Send back image 1 data.
+  std::move(processor[0].callbacks()[0]).Run({1, 2, 3});
+  processor[0].callbacks().pop_back();
+  test_task_env.RunUntilIdle();
+
+  // No request should be sent yet (because service is waiting to batch up
+  // multiple requests).
+  EXPECT_THAT(test_url_factory.requests(), IsEmpty());
+  test_task_env.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  // Request OCR for image 2.
+  annotator.AnnotateImage(
+      kImage2Url, processor[1].GetPtr(),
+      base::BindOnce(&ReportResult, &error[1], &ocr_text[1]));
+  test_task_env.RunUntilIdle();
+
+  // Annotator should have asked processor 2 for image 2's pixels.
+  ASSERT_THAT(processor[0].callbacks(), IsEmpty());
+  ASSERT_THAT(processor[1].callbacks(), SizeIs(1));
+
+  // Send back image 2 data.
+  std::move(processor[1].callbacks()[0]).Run({4, 5, 6});
+  processor[1].callbacks().pop_back();
+  test_task_env.RunUntilIdle();
+
+  // Only the HTTP request for image 1 should have been made (the service is
+  // still waiting to make the batch that will include the request for image
+  // 2).
+  test_url_factory.ExpectRequestAndSimulateResponse(
+      "ocr",
+      ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
+      R"({
+           "results": [
+             {
+               "imageId": "https://www.example.com/image1.jpg",
+               "annotations": {
+                 "ocrRegions": [
+                   {
+                     "words": [
+                        {
+                          "detectedText": "1",
+                          "confidenceScore": 1.0
+                        }
+                     ]
+                   }
+                 ]
+               }
+             }
+           ]
+         })",
+      net::HTTP_OK);
+  EXPECT_THAT(test_url_factory.requests(), IsEmpty());
+
+  test_task_env.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  // Now the HTTP request for image 2 should have been made.
+  test_url_factory.ExpectRequestAndSimulateResponse(
+      "ocr",
+      ReformatJson(base::StringPrintf(kTemplateRequest, kImage2Url, "BAUG")),
+      R"({
+           "results": [
+             {
+               "imageId": "https://www.example.com/image2.jpg",
+               "annotations": {
+                 "ocrRegions": [
+                   {
+                     "words": [
+                        {
+                          "detectedText": "2",
+                          "confidenceScore": 1.0
+                        }
+                     ]
+                   }
+                 ]
+               }
+             }
+           ]
+         })",
+      net::HTTP_OK);
+
+  test_task_env.RunUntilIdle();
+
+  // Annotator should have called each callback with its corresponding text.
+  ASSERT_THAT(error, ElementsAre(base::nullopt, base::nullopt));
+  EXPECT_THAT(ocr_text, ElementsAre("1", "2"));
+}
+
+// Test that work is not duplicated if it is already ongoing.
+TEST(AnnotatorTest, DuplicateWork) {
+  base::test::ScopedTaskEnvironment test_task_env(
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+  TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
+
+  Annotator annotator(GURL(kTestServerUrl),
+                      test_url_factory.AsSharedURLLoaderFactory());
+
+  TestImageProcessor processor[4];
+  base::Optional<mojom::AnnotateImageError> error[4];
+  base::Optional<std::string> ocr_text[4];
+
+  // First request annotation of the image with processor 1.
+  annotator.AnnotateImage(
+      kImage1Url, processor[0].GetPtr(),
+      base::BindOnce(&ReportResult, &error[0], &ocr_text[0]));
+  test_task_env.RunUntilIdle();
+
+  // Annotator should have asked processor 1 for the image's pixels.
+  ASSERT_THAT(processor[0].callbacks(), SizeIs(1));
+  ASSERT_THAT(processor[1].callbacks(), IsEmpty());
+  ASSERT_THAT(processor[2].callbacks(), IsEmpty());
+  ASSERT_THAT(processor[3].callbacks(), IsEmpty());
+
+  // Now request annotation of the image with processor 2.
   annotator.AnnotateImage(
       kImage1Url, processor[1].GetPtr(),
       base::BindOnce(&ReportResult, &error[1], &ocr_text[1]));
   test_task_env.RunUntilIdle();
 
-  // Annotator *should not* have asked processor 2 for image 1's pixels (since
+  // Annotator *should not* have asked processor 2 for the image's pixels (since
   // processor 1 is already handling that).
   ASSERT_THAT(processor[0].callbacks(), SizeIs(1));
   ASSERT_THAT(processor[1].callbacks(), IsEmpty());
   ASSERT_THAT(processor[2].callbacks(), IsEmpty());
+  ASSERT_THAT(processor[3].callbacks(), IsEmpty());
 
-  // Get processor 1 to reply with bytes for image 1.
+  // Get processor 1 to reply with bytes for the image.
   std::move(processor[0].callbacks()[0]).Run({1, 2, 3});
   processor[0].callbacks().pop_back();
   test_task_env.RunUntilIdle();
 
-  // Now request annotation of image 1 with processor 3.
+  // Now request annotation of the image with processor 3.
   annotator.AnnotateImage(
       kImage1Url, processor[2].GetPtr(),
       base::BindOnce(&ReportResult, &error[2], &ocr_text[2]));
   test_task_env.RunUntilIdle();
 
-  // Annotator *should not* have asked processor 3 for image 1's pixels (since
-  // it has already sent image 1's pixels to the server).
+  // Annotator *should not* have asked processor 3 for the image's pixels (since
+  // it has already has the pixels in the HTTP request queue).
   ASSERT_THAT(processor[0].callbacks(), IsEmpty());
   ASSERT_THAT(processor[1].callbacks(), IsEmpty());
   ASSERT_THAT(processor[2].callbacks(), IsEmpty());
+  ASSERT_THAT(processor[3].callbacks(), IsEmpty());
+  EXPECT_THAT(test_url_factory.requests(), IsEmpty());
 
-  // HTTP request for image 1 should have been made (with bytes obtained from
+  // Allow batch HTTP request to be sent off and then request annotation of the
+  // image with processor 4.
+  test_task_env.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_THAT(test_url_factory.requests(), SizeIs(1));
+  annotator.AnnotateImage(
+      kImage1Url, processor[3].GetPtr(),
+      base::BindOnce(&ReportResult, &error[3], &ocr_text[3]));
+  test_task_env.RunUntilIdle();
+
+  // Annotator *should not* have asked processor 4 for the image's pixels (since
+  // an HTTP request for the image is already in process).
+  ASSERT_THAT(processor[0].callbacks(), IsEmpty());
+  ASSERT_THAT(processor[1].callbacks(), IsEmpty());
+  ASSERT_THAT(processor[2].callbacks(), IsEmpty());
+  ASSERT_THAT(processor[3].callbacks(), IsEmpty());
+
+  // HTTP request for the image should have been made (with bytes obtained from
   // processor 1).
   test_url_factory.ExpectRequestAndSimulateResponse(
       "ocr",
-      ReformatJson(base::StringPrintf(kRequestTemplate, kImage1Url, "AQID")),
-      base::StringPrintf(kSuccessResponseTemplate, kImage1Url,
-                         R"({
-                              "detected_text": "Some text",
-                              "confidence_score": 1.0
-                            })"),
-      net::HTTP_OK);
+      ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
+      kSuccessResponse, net::HTTP_OK);
   test_task_env.RunUntilIdle();
 
   // Annotator should have called all callbacks with annotation results.
-  ASSERT_THAT(error, ElementsAre(base::nullopt, base::nullopt, base::nullopt));
-  EXPECT_THAT(ocr_text, ElementsAre("Some text", "Some text", "Some text"));
+  ASSERT_THAT(error, ElementsAre(base::nullopt, base::nullopt, base::nullopt,
+                                 base::nullopt));
+  EXPECT_THAT(ocr_text,
+              ElementsAre("Region 1\nRegion 2", "Region 1\nRegion 2",
+                          "Region 1\nRegion 2", "Region 1\nRegion 2"));
 }
 
 }  // namespace image_annotation

@@ -5,12 +5,17 @@
 #ifndef SERVICES_IMAGE_ANNOTATION_ANNOTATOR_H_
 #define SERVICES_IMAGE_ANNOTATION_ANNOTATOR_H_
 
+#include <deque>
 #include <list>
 #include <map>
 #include <memory>
+#include <set>
+#include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/timer/timer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -52,9 +57,25 @@ class Annotator : public mojom::Annotator {
   using RequestInfoList =
       std::list<std::pair<mojom::ImageProcessorPtr, AnnotateImageCallback>>;
 
-  // A map from source ID to URL loader.
-  using URLLoaderMap =
-      std::map<std::string, std::unique_ptr<network::SimpleURLLoader>>;
+  // List of URL loader objects.
+  using UrlLoaderList = std::list<std::unique_ptr<network::SimpleURLLoader>>;
+
+  // A queue of the data needed to make HTTP requests to the image annotation
+  // server. Each entry is a (source ID, image bytes) pair.
+  using HttpRequestQueue =
+      std::deque<std::pair<std::string, std::vector<uint8_t>>>;
+
+  // Constructs and returns a JSON object containing an OCR request for the
+  // given images.
+  static std::string FormatJsonOcrRequest(HttpRequestQueue::iterator begin_it,
+                                          HttpRequestQueue::iterator end_it);
+
+  // Creates a URL loader that calls the image annotation server with an OCR
+  // request for the given images.
+  static std::unique_ptr<network::SimpleURLLoader> MakeOcrRequestLoader(
+      const GURL& server_url,
+      HttpRequestQueue::iterator begin_it,
+      HttpRequestQueue::iterator end_it);
 
   // Removes the given request, reassigning local processing if its associated
   // image processor had some ongoing.
@@ -68,10 +89,14 @@ class Annotator : public mojom::Annotator {
                               RequestInfoList::iterator request_info_it,
                               const std::vector<uint8_t>& image_bytes);
 
+  // Called periodically to send the next batch of requests to the image
+  // annotation server.
+  void SendRequestBatchToServer();
+
   // Called when the image annotation server responds with annotations for the
-  // given source ID.
-  void OnServerResponseReceived(const std::string& source_id,
-                                URLLoaderMap::iterator url_loader_it,
+  // given source IDs.
+  void OnServerResponseReceived(const std::set<std::string>& source_ids,
+                                UrlLoaderList::iterator http_request_it,
                                 std::unique_ptr<std::string> json_response);
 
   // Maps from source ID to previously-obtained OCR result.
@@ -89,13 +114,22 @@ class Annotator : public mojom::Annotator {
   // given source.
   std::map<std::string, mojom::ImageProcessorPtr*> local_processors_;
 
-  // A map from source ID to the currently-ongoing HTTP request to the image
-  // annotation server (if any) for that source.
-  URLLoaderMap url_loaders_;
+  // A list of currently-ongoing HTTP requests to the image annotation server.
+  UrlLoaderList http_requests_;
+
+  // A queue of HTTP requests waiting to be made.
+  HttpRequestQueue http_request_queue_;
+
+  // The set of source IDs for which an HTTP request is either queued or
+  // currently ongoing.
+  std::set<std::string> pending_source_ids_;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   mojo::BindingSet<mojom::Annotator> bindings_;
+
+  // A timer used to throttle HTTP request frequency.
+  base::RepeatingTimer http_request_timer_;
 
   const GURL server_url_;
 
