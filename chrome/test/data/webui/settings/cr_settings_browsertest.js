@@ -1035,13 +1035,7 @@ CrSettingsPersonalizationOptionsTest.prototype = {
   ]),
 };
 
-// Fails in debug, see http://crbug.com/925177
-GEN('#if defined(NDEBUG)');
-GEN('#define MAYBE_AllBuilds AllBuilds');
-GEN('#else');
-GEN('#define MAYBE_AllBuilds DISABLED_AllBuilds');
-GEN('#endif');
-TEST_F('CrSettingsPersonalizationOptionsTest', 'MAYBE_AllBuilds', function() {
+TEST_F('CrSettingsPersonalizationOptionsTest', 'AllBuilds', function() {
   mocha.grep('PersonalizationOptionsTests_AllBuilds').run();
 });
 
