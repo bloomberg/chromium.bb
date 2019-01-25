@@ -12,8 +12,6 @@ import os
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import dev_server_wrapper
-from chromite.lib import image_lib
 from chromite.lib import osutils
 
 
@@ -28,20 +26,31 @@ def GenerateStatefulPayload(image_path, output_directory):
     output_directory: Path to the directory to leave the resulting output.
     logging: logging instance.
   """
-  logging.info('Generating stateful payload file from %s', image_path)
+  logging.info('Generating stateful update file.')
 
-  stateful_file = os.path.join(output_directory,
-                               dev_server_wrapper.STATEFUL_FILENAME)
+  output_gz = os.path.join(output_directory, _STATEFUL_FILE)
 
-  with osutils.TempDir() as temp_dir, \
-      image_lib.LoopbackPartitions(image_path, temp_dir) as image:
-    stateful_dir = image.Mount((constants.PART_STATE,))[0]
-    cros_build_lib.CreateTarball(
-        stateful_file, '.', sudo=True, compression=cros_build_lib.COMP_GZIP,
-        inputs=('dev_image', 'var_overlay'),
-        extra_args=['--directory=%s' % stateful_dir,
-                    '--hard-dereference',
-                    '--transform=s,^dev_image,dev_image_new,',
-                    '--transform=s,^var_overlay,var_new,'])
+  # Mount the image to pull out the important directories.
+  with osutils.TempDir() as stateful_mnt, \
+      osutils.MountImageContext(image_path, stateful_mnt,
+                                (constants.PART_STATE,)) as _:
+    stateful_dir = os.path.join(stateful_mnt, 'dir-%s' % constants.PART_STATE)
 
-  logging.info('Successfully generated stateful payload %s', stateful_file)
+    try:
+      logging.info('Tarring up /usr/local and /var!')
+      cros_build_lib.SudoRunCommand([
+          'tar',
+          '-czf',
+          output_gz,
+          '--directory=%s' % stateful_dir,
+          '--hard-dereference',
+          '--transform=s,^dev_image,dev_image_new,',
+          '--transform=s,^var_overlay,var_new,',
+          'dev_image',
+          'var_overlay',
+      ])
+    except:
+      logging.error('Failed to create stateful update file')
+      raise
+
+  logging.info('Successfully generated %s', output_gz)
