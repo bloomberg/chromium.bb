@@ -696,8 +696,6 @@ def _PackageApk(options, dep_subdirs, temp_dir, gen_dir, r_txt_path):
   else:
     unoptimized_apk_path = options.apk_path
   link_command = _CreateLinkApkArgs(options)
-  link_command += ['-o', unoptimized_apk_path]
-  link_command += ['--output-text-symbols', r_txt_path]
   # TODO(digit): Is this below actually required for R.txt generation?
   link_command += ['--java', gen_dir]
 
@@ -710,22 +708,28 @@ def _PackageApk(options, dep_subdirs, temp_dir, gen_dir, r_txt_path):
 
   # Creates a .zip with AndroidManifest.xml, resources.arsc, res/*
   # Also creates R.txt
-  build_utils.CheckOutput(
-      link_command, print_stdout=False, print_stderr=False)
+  with build_utils.AtomicOutput(unoptimized_apk_path) as unoptimized, \
+      build_utils.AtomicOutput(r_txt_path) as r_txt:
+    link_command += ['-o', unoptimized.name]
+    link_command += ['--output-text-symbols', r_txt.name]
+    build_utils.CheckOutput(
+        link_command, print_stdout=False, print_stderr=False)
 
-  if options.optimize_resources:
-    _OptimizeApk(options, temp_dir, unoptimized_apk_path, r_txt_path)
+    if options.optimize_resources:
+      with build_utils.AtomicOutput(options.apk_path) as optimized:
+        _OptimizeApk(optimized.name, options, temp_dir, unoptimized.name,
+                     r_txt.name)
 
   _CreateResourceInfoFile(
       renamed_paths, options.apk_info_path, options.dependencies_res_zips)
 
 
-def _OptimizeApk(options, temp_dir, unoptimized_apk_path, r_txt_path):
+def _OptimizeApk(output, options, temp_dir, unoptimized_apk_path, r_txt_path):
   """Optimize intermediate .ap_ file with aapt2.
 
   Args:
-    options: The command-line options tuple. E.g. the generated apk
-      will be written to |options.apk_path|.
+    output: Path to write to.
+    options: The command-line options.
     temp_dir: A temporary directory.
     unoptimized_apk_path: path of the apk to optimize.
     r_txt_path: path to the R.txt file of the unoptimized apk.
@@ -749,7 +753,7 @@ def _OptimizeApk(options, temp_dir, unoptimized_apk_path, r_txt_path):
       'optimize',
       '--enable-resource-obfuscation',
       '-o',
-      options.apk_path,
+      output,
       '--resources-config-path',
       gen_config_path,
       unoptimized_apk_path,
@@ -800,7 +804,17 @@ def _WriteFinalRTxtFile(options, aapt_r_txt_path):
   return r_txt_file
 
 
-def _OnStaleMd5(options, debug_temp_resources_dir):
+def main(args):
+  args = build_utils.ExpandFileArgs(args)
+  options = _ParseArgs(args)
+
+  debug_temp_resources_dir = os.environ.get(_ENV_DEBUG_VARIABLE)
+  if debug_temp_resources_dir:
+    debug_temp_resources_dir = os.path.join(debug_temp_resources_dir,
+                                            os.path.basename(options.apk_path))
+    build_utils.DeleteDirectory(debug_temp_resources_dir)
+    build_utils.MakeDirectory(debug_temp_resources_dir)
+
   with resource_utils.BuildContext(debug_temp_resources_dir) as build:
     dep_subdirs = resource_utils.ExtractDeps(options.dependencies_res_zips,
                                              build.deps_dir)
@@ -843,71 +857,12 @@ def _OnStaleMd5(options, debug_temp_resources_dir):
         raise Exception('Invalid package ID 0x%x (expected 0x%x)' %
                         (package_id, expected_id))
 
-
-def main(args):
-  args = build_utils.ExpandFileArgs(args)
-  options = _ParseArgs(args)
-
-  # Order of these must match order specified in GN so that the correct one
-  # appears first in the depfile.
-  possible_output_paths = [
-      options.apk_path,
-      options.apk_path + '.info',
-      options.r_text_out,
-      options.srcjar_out,
-      options.proguard_file,
-      options.proguard_file_main_dex,
-      options.unoptimized_resources_path,
-  ]
-  output_paths = [x for x in possible_output_paths if x]
-
-  # List python deps in input_strings rather than input_paths since the contents
-  # of them does not change what gets written to the depsfile.
-  input_strings = options.extra_res_packages + [
-      options.shared_resources,
-      options.resource_blacklist_regex,
-      options.resource_blacklist_exceptions,
-      str(options.debuggable),
-      str(options.png_to_webp),
-      str(options.support_zh_hk),
-      str(options.no_xml_namespaces),
-      str(options.optimize_resources),
-  ]
-
-  input_strings.extend(_CreateLinkApkArgs(options))
-
-  debug_temp_resources_dir = os.environ.get(_ENV_DEBUG_VARIABLE)
-  if debug_temp_resources_dir:
-    debug_temp_resources_dir = os.path.join(debug_temp_resources_dir,
-                                            os.path.basename(options.apk_path))
-    build_utils.DeleteDirectory(debug_temp_resources_dir)
-    build_utils.MakeDirectory(debug_temp_resources_dir)
-
-
-  possible_input_paths = [
-      options.aapt_path,
-      options.aapt2_path,
-      options.android_manifest,
-      options.shared_resources_whitelist,
-      options.resources_config_path,
-  ]
-  possible_input_paths += options.include_resources
-  input_paths = [x for x in possible_input_paths if x]
-  input_paths.extend(options.dependencies_res_zips)
-  input_paths.extend(options.extra_r_text_files)
-
-  if options.webp_binary:
-    input_paths.append(options.webp_binary)
-
-  build_utils.CallAndWriteDepfileIfStale(
-      lambda: _OnStaleMd5(options, debug_temp_resources_dir),
-      options,
-      input_paths=input_paths,
-      input_strings=input_strings,
-      output_paths=output_paths,
-      force=bool(debug_temp_resources_dir),
-      depfile_deps=options.dependencies_res_zips + options.extra_r_text_files,
-      add_pydeps=False)
+  if options.depfile:
+    build_utils.WriteDepfile(
+        options.depfile,
+        options.apk_path,
+        inputs=options.dependencies_res_zips + options.extra_r_text_files,
+        add_pydeps=False)
 
 
 if __name__ == '__main__':
