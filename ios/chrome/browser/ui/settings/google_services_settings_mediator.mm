@@ -57,6 +57,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   RestartAuthenticationFlowErrorItemType,
   ReauthDialogAsSyncIsInAuthErrorItemType,
   ShowPassphraseDialogErrorItemType,
+  SyncChromeDataItemType,
   ManageSyncItemType,
   // NonPersonalizedSectionIdentifier section.
   AutocompleteSearchesAndURLsItemType,
@@ -95,6 +96,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @property(nonatomic, assign) BOOL hasRecordedSigninImpression;
 // Sync error item (in the sync section).
 @property(nonatomic, strong) TableViewItem* syncErrorItem;
+// Sync your Chrome data switch item.
+@property(nonatomic, strong) SyncSwitchItem* syncChromeDataSwitchItem;
 // ** Non personalized section.
 // Preference value for the "Autocomplete searches and URLs" feature.
 @property(nonatomic, strong, readonly)
@@ -232,6 +235,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // Loads the sync section.
 - (void)loadSyncSection {
   self.syncErrorItem = nil;
+  self.syncChromeDataSwitchItem = nil;
   TableViewModel* model = self.consumer.tableViewModel;
   [model addSectionWithIdentifier:SyncSectionIdentifier];
   [self updateSyncSection:NO];
@@ -242,10 +246,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)updateSyncSection:(BOOL)notifyConsumer {
   BOOL needsAccountSigninItemUpdate = [self updateAccountSignInItem];
   BOOL needsSyncErrorItemsUpdate = [self updateSyncErrorItems];
+  BOOL needsSyncChromeDataItemUpdate = [self updateSyncChromeDataItem];
   BOOL needsManageSyncItemUpdate = [self updateManageSyncItem];
   if (notifyConsumer &&
       (needsAccountSigninItemUpdate || needsSyncErrorItemsUpdate ||
-       needsManageSyncItemUpdate)) {
+       needsSyncChromeDataItemUpdate || needsManageSyncItemUpdate)) {
     TableViewModel* model = self.consumer.tableViewModel;
     NSUInteger sectionIndex =
         [model sectionForSectionIdentifier:SyncSectionIdentifier];
@@ -363,6 +368,34 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return YES;
 }
 
+- (BOOL)updateSyncChromeDataItem {
+  TableViewModel* model = self.consumer.tableViewModel;
+  if (self.isAuthenticated) {
+    if (self.syncChromeDataSwitchItem) {
+      BOOL needsUpdate = self.syncChromeDataSwitchItem.on !=
+                         self.syncSetupService->IsSyncingAllDataTypes();
+      self.syncChromeDataSwitchItem.on =
+          self.syncSetupService->IsSyncingAllDataTypes();
+      return needsUpdate;
+    }
+    self.syncChromeDataSwitchItem = [self
+        switchItemWithItemType:SyncChromeDataItemType
+                  textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_CHROME_DATA
+                detailStringID:0
+                      dataType:0];
+    self.syncChromeDataSwitchItem.on = self.syncSetupService->IsSyncEnabled();
+    [model addItem:self.syncChromeDataSwitchItem
+        toSectionWithIdentifier:SyncSectionIdentifier];
+    return YES;
+  }
+  if (!self.syncChromeDataSwitchItem)
+    return NO;
+  self.syncChromeDataSwitchItem = nil;
+  [model removeItemWithType:SyncChromeDataItemType
+      fromSectionWithIdentifier:SyncSectionIdentifier];
+  return YES;
+}
+
 #pragma mark - Load non personalized section
 
 // Loads NonPersonalizedSectionIdentifier section.
@@ -400,6 +433,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       case RestartAuthenticationFlowErrorItemType:
       case ReauthDialogAsSyncIsInAuthErrorItemType:
       case ShowPassphraseDialogErrorItemType:
+      case SyncChromeDataItemType:
       case ManageSyncItemType:
         NOTREACHED();
         break;
@@ -505,6 +539,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)toggleSwitchItem:(SyncSwitchItem*)switchItem withValue:(BOOL)value {
   ItemType type = static_cast<ItemType>(switchItem.type);
+  switchItem.on = value;
   switch (type) {
     case AutocompleteSearchesAndURLsItemType:
       self.autocompleteSearchPreference.value = value;
@@ -525,6 +560,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
       break;
     case BetterSearchAndBrowsingItemType:
       self.anonymizedDataCollectionPreference.value = value;
+      break;
+    case SyncChromeDataItemType:
+      self.syncSetupService->SetSyncEnabled(value);
       break;
     case IdentityItemType:
     case SignInItemType:
@@ -562,6 +600,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     case PreloadPagesItemType:
     case ImproveChromeItemType:
     case BetterSearchAndBrowsingItemType:
+    case SyncChromeDataItemType:
       break;
   }
 }
