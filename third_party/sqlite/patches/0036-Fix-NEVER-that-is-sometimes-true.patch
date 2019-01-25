@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Victor Costan <pwnall@chromium.org>
 Date: Mon, 21 Jan 2019 14:26:47 -0800
-Subject: [PATCH 36/40] Fix NEVER that is sometimes true.
+Subject: [PATCH 36/45] Fix NEVER that is sometimes true.
 
 This backports https://sqlite.org/src/info/1201615cbbd30701
 

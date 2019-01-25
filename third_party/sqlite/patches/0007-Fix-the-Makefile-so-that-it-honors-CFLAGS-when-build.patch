@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Victor Costan <pwnall@chromium.org>
 Date: Wed, 19 Dec 2018 18:22:15 -0800
-Subject: [PATCH 07/40] Fix the Makefile so that it honors CFLAGS when building
+Subject: [PATCH 07/45] Fix the Makefile so that it honors CFLAGS when building
  sessionfuzz.
 
 This backports https://www.sqlite.org/src/info/54231ac4ca506e6c

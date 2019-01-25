@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Victor Costan <pwnall@chromium.org>
 Date: Fri, 11 Jan 2019 13:22:44 -0800
-Subject: [PATCH 17/40] Improved detection of cell corruption in
+Subject: [PATCH 17/45] Improved detection of cell corruption in
  sqlite3VdbeRecordCompareWithSkip().
 
 This backports https://www.sqlite.org/src/info/fa47f4c6589c431c

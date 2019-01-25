@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Victor Costan <pwnall@chromium.org>
 Date: Fri, 11 Jan 2019 04:18:45 -0800
-Subject: [PATCH 13/40] Fix for an assert() that could be false.
+Subject: [PATCH 13/45] Fix for an assert() that could be false.
 
 This backports https://www.sqlite.org/src/info/23b62fb160d86dc9 /
 https://www.sqlite.org/src/info/bc891ac6b62fe7d9

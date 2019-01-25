@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Victor Costan <pwnall@chromium.org>
 Date: Sat, 12 Jan 2019 12:36:35 -0800
-Subject: [PATCH 18/40] Fix a segfault in fts3 prompted by a corrupted
+Subject: [PATCH 18/45] Fix a segfault in fts3 prompted by a corrupted
  database.
 
 This backports https://www.sqlite.org/src/info/2d7b1d1d41ff69d5

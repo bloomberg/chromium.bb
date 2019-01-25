@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Victor Costan <pwnall@chromium.org>
 Date: Mon, 21 Jan 2019 16:37:48 -0800
-Subject: [PATCH 39/40] Fix overly large malloc on btree corruption.
+Subject: [PATCH 39/45] Fix overly large malloc on btree corruption.
 
 This backports https://www.sqlite.org/src/info/3ecaaee69f49e43d
 

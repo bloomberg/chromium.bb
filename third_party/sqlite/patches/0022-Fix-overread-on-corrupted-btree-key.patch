@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Victor Costan <pwnall@chromium.org>
 Date: Sun, 13 Jan 2019 13:36:26 -0800
-Subject: [PATCH 22/40] Fix overread on corrupted btree key.
+Subject: [PATCH 22/45] Fix overread on corrupted btree key.
 
 This backports https://sqlite.org/src/info/160b1e31c0f27257
 

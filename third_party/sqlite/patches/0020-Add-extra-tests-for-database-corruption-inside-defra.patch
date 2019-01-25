@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Victor Costan <pwnall@chromium.org>
 Date: Sat, 12 Jan 2019 17:56:03 -0800
-Subject: [PATCH 20/40] Add extra tests for database corruption inside
+Subject: [PATCH 20/45] Add extra tests for database corruption inside
  defragmentPage().
 
 This backports https://sqlite.org/src/info/997b65117f8c12db

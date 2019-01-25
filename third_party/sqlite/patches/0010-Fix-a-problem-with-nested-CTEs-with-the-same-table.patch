@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Victor Costan <pwnall@chromium.org>
 Date: Fri, 11 Jan 2019 02:30:28 -0800
-Subject: [PATCH 10/40] Fix a problem with nested CTEs with the same table.
+Subject: [PATCH 10/45] Fix a problem with nested CTEs with the same table.
 
 This backports https://www.sqlite.org/src/info/202dd033019dd274
 

@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Victor Costan <pwnall@chromium.org>
 Date: Sat, 12 Jan 2019 14:30:08 -0800
-Subject: [PATCH 19/40] Prevent integer overflow from leading to buffer
+Subject: [PATCH 19/45] Prevent integer overflow from leading to buffer
  overread inside of an assert().
 
 This backports https://www.sqlite.org/src/info/0f850a25d67a752f

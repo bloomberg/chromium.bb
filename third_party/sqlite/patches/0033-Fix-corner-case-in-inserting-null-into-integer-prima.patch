@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Victor Costan <pwnall@chromium.org>
 Date: Sat, 19 Jan 2019 14:27:29 -0800
-Subject: [PATCH 33/40] Fix corner case in inserting null into integer primary
+Subject: [PATCH 33/45] Fix corner case in inserting null into integer primary
  key.
 
 This backports https://www.sqlite.org/src/info/9a425051e7ba59e7
