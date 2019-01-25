@@ -44,6 +44,8 @@ class MEDIA_GPU_EXPORT ImageReaderGLOwner : public TextureOwner {
   std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
   GetAHardwareBuffer() override;
 
+  const AImageReader* image_reader_for_testing() const { return image_reader_; }
+
  protected:
   void OnTextureDestroyed(gpu::gles2::AbstractTexture*) override;
 
@@ -52,7 +54,8 @@ class MEDIA_GPU_EXPORT ImageReaderGLOwner : public TextureOwner {
 
   class ScopedHardwareBufferImpl;
 
-  ImageReaderGLOwner(std::unique_ptr<gpu::gles2::AbstractTexture> texture);
+  ImageReaderGLOwner(std::unique_ptr<gpu::gles2::AbstractTexture> texture,
+                     SecureMode secure_mode);
   ~ImageReaderGLOwner() override;
 
   // Deletes the current image if it has no pending refs. Returns false on

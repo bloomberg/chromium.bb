@@ -38,9 +38,7 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
       GetStubCb get_stub_cb);
   ~VideoFrameFactoryImpl() override;
 
-  void Initialize(bool wants_promotion_hint,
-                  bool use_texture_owner_as_overlays,
-                  InitCb init_cb) override;
+  void Initialize(OverlayMode overlay_mode, InitCb init_cb) override;
   void SetSurfaceBundle(
       scoped_refptr<AVDASurfaceBundle> surface_bundle) override;
   void CreateVideoFrame(
@@ -73,8 +71,7 @@ class GpuVideoFrameFactory
   ~GpuVideoFrameFactory() override;
 
   scoped_refptr<TextureOwner> Initialize(
-      bool wants_promotion_hint,
-      bool use_texture_owner_as_overlays,
+      VideoFrameFactory::OverlayMode overlay_mode,
       VideoFrameFactory::GetStubCb get_stub_cb);
 
   // Creates and returns a VideoFrame with its ReleaseMailboxCB.
@@ -111,16 +108,13 @@ class GpuVideoFrameFactory
   // Outstanding images that should be considered for early rendering.
   std::vector<CodecImage*> images_;
 
-  gpu::CommandBufferStub* stub_;
+  gpu::CommandBufferStub* stub_ = nullptr;
 
   // Callback to notify us that an image has been destroyed.
   CodecImage::DestructionCb destruction_cb_;
 
-  // Do we want promotion hints from the compositor?
-  bool wants_promotion_hint_ = false;
-
-  // Indicates whether texture owner can be promoted to an overlay.
-  bool use_texture_owner_as_overlays_ = false;
+  VideoFrameFactory::OverlayMode overlay_mode_ =
+      VideoFrameFactory::OverlayMode::kDontRequestPromotionHints;
 
   // A helper for creating textures. Only valid while |stub_| is valid.
   std::unique_ptr<GLES2DecoderHelper> decoder_helper_;

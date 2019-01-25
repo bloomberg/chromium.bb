@@ -70,6 +70,7 @@ bool AndroidImageReader::LoadFunctions() {
   LOAD_FUNCTION(libmediandk, AImageReader_newWithUsage);
   LOAD_FUNCTION(libmediandk, AImageReader_setImageListener);
   LOAD_FUNCTION(libmediandk, AImageReader_delete);
+  LOAD_FUNCTION(libmediandk, AImageReader_getFormat);
   LOAD_FUNCTION(libmediandk, AImageReader_getWindow);
   LOAD_FUNCTION(libmediandk, AImageReader_acquireLatestImageAsync);
 
@@ -127,6 +128,12 @@ media_status_t AndroidImageReader::AImageReader_setImageListener(
 
 void AndroidImageReader::AImageReader_delete(AImageReader* reader) {
   AImageReader_delete_(reader);
+}
+
+media_status_t AndroidImageReader::AImageReader_getFormat(
+    const AImageReader* reader,
+    int32_t* format) {
+  return AImageReader_getFormat_(reader, format);
 }
 
 media_status_t AndroidImageReader::AImageReader_getWindow(
