@@ -225,22 +225,16 @@ void ContentTranslateDriver::DidFinishNavigation(
       navigation_handle->GetReloadType() != content::ReloadType::NONE ||
       navigation_handle->IsSameDocument();
 
-  translate::TranslateLanguageList* language_list =
-      translate::TranslateDownloadManager::GetInstance()->language_list();
   const base::Optional<url::Origin>& initiator_origin =
       navigation_handle->GetInitiatorOrigin();
 
-  std::string href_translate;
-  if (language_list->IsSupportedLanguage(
-          navigation_handle->GetHrefTranslate()) &&
+  bool navigation_from_dse =
       initiator_origin.has_value() &&
-      IsDefaultSearchEngineOriginator(initiator_origin.value())) {
-    href_translate = navigation_handle->GetHrefTranslate();
-  }
+      IsDefaultSearchEngineOriginator(initiator_origin.value());
 
   translate_manager_->GetLanguageState().DidNavigate(
       navigation_handle->IsSameDocument(), navigation_handle->IsInMainFrame(),
-      reload, href_translate);
+      reload, navigation_handle->GetHrefTranslate(), navigation_from_dse);
 }
 
 void ContentTranslateDriver::OnPageAway(int page_seq_no) {
@@ -249,6 +243,10 @@ void ContentTranslateDriver::OnPageAway(int page_seq_no) {
 
 bool ContentTranslateDriver::IsDefaultSearchEngineOriginator(
     const url::Origin& originating_origin) const {
+  // This isn't always set in tests
+  if (!template_url_service_)
+    return false;
+
   const TemplateURL* default_provider =
       template_url_service_->GetDefaultSearchProvider();
 
