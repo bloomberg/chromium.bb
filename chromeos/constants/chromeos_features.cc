@@ -49,7 +49,7 @@ const base::Feature kEnableMessagesWebPush{"EnableMessagesWebPush",
 // If enabled, MyFiles will be a root/volume and user can create other
 // sub-folders and files in addition to the Downloads folder inside MyFiles.
 const base::Feature kMyFilesVolume{"MyFilesVolume",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, will display blocking screens during re-authentication after a
 // supervision transition occurred.
