@@ -138,7 +138,7 @@ PaintLayerType LayoutBox::LayerTypeRequired() const {
 void LayoutBox::WillBeDestroyed() {
   ClearOverrideSize();
   ClearOverrideContainingBlockContentSize();
-  ClearOverrideContainingBlockPercentageResolutionLogicalHeight();
+  ClearOverrideBlockPercentageResolutionSize();
 
   if (IsOutOfFlowPositioned())
     LayoutBlock::RemovePositionedObject(this);
@@ -1489,38 +1489,27 @@ void LayoutBox::ClearOverrideContainingBlockContentSize() {
       false;
 }
 
-LayoutUnit LayoutBox::OverrideContainingBlockPercentageResolutionLogicalHeight()
-    const {
-  DCHECK(HasOverrideContainingBlockPercentageResolutionLogicalHeight());
-  return rare_data_
-      ->override_containing_block_percentage_resolution_logical_height_;
+LayoutUnit LayoutBox::OverrideBlockPercentageResolutionSize() const {
+  DCHECK(HasOverrideBlockPercentageResolutionSize());
+  return rare_data_->override_block_percentage_resolution_size_;
 }
 
-bool LayoutBox::HasOverrideContainingBlockPercentageResolutionLogicalHeight()
-    const {
+bool LayoutBox::HasOverrideBlockPercentageResolutionSize() const {
   return rare_data_ &&
-         rare_data_
-             ->has_override_containing_block_percentage_resolution_logical_height_;
+         rare_data_->has_override_block_percentage_resolution_size_;
 }
 
-void LayoutBox::SetOverrideContainingBlockPercentageResolutionLogicalHeight(
+void LayoutBox::SetOverrideBlockPercentageResolutionSize(
     LayoutUnit logical_height) {
   DCHECK_GE(logical_height, LayoutUnit(-1));
-  EnsureRareData()
-      .override_containing_block_percentage_resolution_logical_height_ =
-      logical_height;
-  EnsureRareData()
-      .has_override_containing_block_percentage_resolution_logical_height_ =
-      true;
+  EnsureRareData().override_block_percentage_resolution_size_ = logical_height;
+  EnsureRareData().has_override_block_percentage_resolution_size_ = true;
 }
 
-void LayoutBox::
-    ClearOverrideContainingBlockPercentageResolutionLogicalHeight() {
+void LayoutBox::ClearOverrideBlockPercentageResolutionSize() {
   if (!rare_data_)
     return;
-  EnsureRareData()
-      .has_override_containing_block_percentage_resolution_logical_height_ =
-      false;
+  EnsureRareData().has_override_block_percentage_resolution_size_ = false;
 }
 
 LayoutUnit LayoutBox::AdjustBorderBoxLogicalWidthForBoxSizing(
@@ -3459,8 +3448,7 @@ bool LayoutBox::SkipContainingBlockForPercentHeightCalculation(
          !containing_block->IsOutOfFlowPositioned() &&
          !(containing_block->IsLayoutCustom() &&
            ToLayoutCustom(containing_block)->IsLoaded()) &&
-         !containing_block
-              ->HasOverrideContainingBlockPercentageResolutionLogicalHeight() &&
+         !containing_block->HasOverrideBlockPercentageResolutionSize() &&
          !containing_block->IsLayoutGrid() &&
          containing_block->StyleRef().LogicalHeight().IsAuto();
 }
@@ -3494,15 +3482,11 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPercentageResolution(
   }
 
   LayoutUnit available_height(-1);
-  if (containing_block_child
-          ->HasOverrideContainingBlockPercentageResolutionLogicalHeight()) {
+  if (containing_block_child->HasOverrideBlockPercentageResolutionSize()) {
     available_height =
-        containing_block_child
-            ->OverrideContainingBlockPercentageResolutionLogicalHeight();
-  } else if (
-      cb->HasOverrideContainingBlockPercentageResolutionLogicalHeight()) {
-    available_height =
-        cb->OverrideContainingBlockPercentageResolutionLogicalHeight();
+        containing_block_child->OverrideBlockPercentageResolutionSize();
+  } else if (cb->HasOverrideBlockPercentageResolutionSize()) {
+    available_height = cb->OverrideBlockPercentageResolutionSize();
   } else if (HasOverrideContainingBlockContentLogicalWidth() &&
              IsHorizontalWritingMode() != real_cb->IsHorizontalWritingMode()) {
     available_height = OverrideContainingBlockContentLogicalWidth();
@@ -3696,9 +3680,8 @@ bool LayoutBox::LogicalHeightComputesAsNone(SizeType size_type) const {
 
   // CustomLayout items can resolve their percentages against an available or
   // percentage size override.
-  if (IsCustomItem() &&
-      (HasOverrideContainingBlockContentLogicalHeight() ||
-       HasOverrideContainingBlockPercentageResolutionLogicalHeight()))
+  if (IsCustomItem() && (HasOverrideContainingBlockContentLogicalHeight() ||
+                         HasOverrideBlockPercentageResolutionSize()))
     return false;
 
   if (LayoutBlock* cb = ContainingBlockForAutoHeightDetection(logical_height))
@@ -3770,10 +3753,8 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalHeightUsing(
             ToLayoutBoxModelObject(cb));
       } else if (stretched_height != -1) {
         available_height = stretched_height;
-      } else if (
-          HasOverrideContainingBlockPercentageResolutionLogicalHeight()) {
-        available_height =
-            OverrideContainingBlockPercentageResolutionLogicalHeight();
+      } else if (HasOverrideBlockPercentageResolutionSize()) {
+        available_height = OverrideBlockPercentageResolutionSize();
       } else {
         available_height = has_perpendicular_containing_block
                                ? ContainingBlockLogicalWidthForContent()
