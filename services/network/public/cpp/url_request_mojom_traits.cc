@@ -4,7 +4,12 @@
 
 #include "services/network/public/cpp/url_request_mojom_traits.h"
 
+#include <vector>
+
 #include "base/logging.h"
+#include "mojo/public/cpp/base/file_mojom_traits.h"
+#include "mojo/public/cpp/base/file_path_mojom_traits.h"
+#include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
 #include "services/network/public/cpp/http_request_headers_mojom_traits.h"
 #include "services/network/public/cpp/network_ipc_param_traits.h"
@@ -219,6 +224,31 @@ bool StructTraits<network::mojom::URLRequestBodyDataView,
   body->set_identifier(data.identifier());
   body->set_contains_sensitive_info(data.contains_sensitive_info());
   *out = std::move(body);
+  return true;
+}
+
+bool StructTraits<network::mojom::DataElementDataView, network::DataElement>::
+    Read(network::mojom::DataElementDataView data, network::DataElement* out) {
+  if (!data.ReadPath(&out->path_) || !data.ReadFile(&out->file_) ||
+      !data.ReadBlobUuid(&out->blob_uuid_) ||
+      !data.ReadExpectedModificationTime(&out->expected_modification_time_)) {
+    return false;
+  }
+  // TODO(Richard): Fix this workaround once |buf_| becomes vector<uint8_t>
+  if (data.type() == network::mojom::DataElementType::kBytes) {
+    out->buf_.resize(data.length());
+    auto buf = base::make_span(reinterpret_cast<uint8_t*>(out->buf_.data()),
+                               out->buf_.size());
+    if (!data.ReadBuf(&buf))
+      return false;
+  }
+  out->type_ = data.type();
+  out->data_pipe_getter_ =
+      data.TakeDataPipeGetter<network::mojom::DataPipeGetterPtrInfo>();
+  out->chunked_data_pipe_getter_ = data.TakeChunkedDataPipeGetter<
+      network::mojom::ChunkedDataPipeGetterPtrInfo>();
+  out->offset_ = data.offset();
+  out->length_ = data.length();
   return true;
 }
 

@@ -5,13 +5,22 @@
 #ifndef SERVICES_NETWORK_PUBLIC_CPP_URL_REQUEST_MOJOM_TRAITS_H_
 #define SERVICES_NETWORK_PUBLIC_CPP_URL_REQUEST_MOJOM_TRAITS_H_
 
+#include <string>
+#include <utility>
+
 #include "base/component_export.h"
 #include "base/memory/scoped_refptr.h"
+#include "mojo/public/cpp/base/file_mojom_traits.h"
+#include "mojo/public/cpp/base/file_path_mojom_traits.h"
+#include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "net/base/request_priority.h"
+#include "services/network/public/cpp/data_element.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "services/network/public/mojom/chunked_data_pipe_getter.mojom-shared.h"
+#include "services/network/public/mojom/data_pipe_getter.mojom-shared.h"
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
 
 namespace mojo {
@@ -249,6 +258,59 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
 
   static bool Read(network::mojom::URLRequestBodyDataView data,
                    scoped_refptr<network::ResourceRequestBody>* out);
+};
+
+template <>
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    StructTraits<network::mojom::DataElementDataView, network::DataElement> {
+  static const network::mojom::DataElementType& type(
+      const network::DataElement& element) {
+    return element.type_;
+  }
+  static base::span<const uint8_t> buf(const network::DataElement& element) {
+    if (element.bytes_) {
+      return base::make_span(reinterpret_cast<const uint8_t*>(element.bytes_),
+                             element.length_);
+    }
+    return base::make_span(
+        reinterpret_cast<const uint8_t*>(element.buf_.data()),
+        element.buf_.size());
+  }
+  static const base::FilePath& path(const network::DataElement& element) {
+    return element.path_;
+  }
+  static base::File file(const network::DataElement& element) {
+    return std::move(const_cast<network::DataElement&>(element).file_);
+  }
+  static const std::string& blob_uuid(const network::DataElement& element) {
+    return element.blob_uuid_;
+  }
+  static network::mojom::DataPipeGetterPtrInfo data_pipe_getter(
+      const network::DataElement& element) {
+    if (element.type_ != network::mojom::DataElementType::kDataPipe)
+      return nullptr;
+    return element.CloneDataPipeGetter().PassInterface();
+  }
+  static network::mojom::ChunkedDataPipeGetterPtrInfo chunked_data_pipe_getter(
+      const network::DataElement& element) {
+    if (element.type_ != network::mojom::DataElementType::kChunkedDataPipe)
+      return nullptr;
+    return const_cast<network::DataElement&>(element)
+        .ReleaseChunkedDataPipeGetter();
+  }
+  static uint64_t offset(const network::DataElement& element) {
+    return element.offset_;
+  }
+  static uint64_t length(const network::DataElement& element) {
+    return element.length_;
+  }
+  static const base::Time& expected_modification_time(
+      const network::DataElement& element) {
+    return element.expected_modification_time_;
+  }
+
+  static bool Read(network::mojom::DataElementDataView data,
+                   network::DataElement* out);
 };
 
 }  // namespace mojo

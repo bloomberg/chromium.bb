@@ -5,6 +5,7 @@
 mojom = "//services/network/public/mojom/url_loader.mojom"
 public_headers = [
   "//base/memory/scoped_refptr.h",
+  "//services/network/public/cpp/data_element.h",
   "//services/network/public/cpp/resource_request.h",
   "//services/network/public/cpp/resource_request_body.h",
 ]

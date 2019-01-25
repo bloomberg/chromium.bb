@@ -20,6 +20,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "mojo/public/cpp/bindings/enum_traits.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/mojom/chunked_data_pipe_getter.mojom.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
@@ -171,9 +172,13 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
  private:
   FRIEND_TEST_ALL_PREFIXES(BlobAsyncTransportStrategyTest, TestInvalidParams);
   friend void PrintTo(const DataElement& x, ::std::ostream* os);
+  friend struct mojo::StructTraits<network::mojom::DataElementDataView,
+                                   network::DataElement>;
   mojom::DataElementType type_;
+  // TODO(Richard): Use uint8_t instead of char to align with mojom type
   // For TYPE_BYTES.
   std::vector<char> buf_;
+  // TODO(Richard): Use uint8_t instead of char to align with mojom type
   // For TYPE_BYTES.
   const char* bytes_;
   // For TYPE_FILE and TYPE_RAW_FILE.
