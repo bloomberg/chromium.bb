@@ -2179,7 +2179,8 @@ static void simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
 
   // Get a copy of the prediction output
   set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
-  av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, NULL, bsize);
+  av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize,
+                                AOM_PLANE_Y, AOM_PLANE_Y);
 
   aom_clear_system_state();
 
@@ -6827,7 +6828,8 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
                            xd->block_ref_scale_factors[ref], num_planes);
     }
 
-    av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, bsize);
+    av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize, 0,
+                                  av1_num_planes(cm) - 1);
     if (mbmi->motion_mode == OBMC_CAUSAL) {
       assert(cpi->oxcf.enable_obmc == 1);
       av1_build_obmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
