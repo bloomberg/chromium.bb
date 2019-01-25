@@ -1,8 +1,8 @@
 This is a testharness.js-based test.
-Found 654 tests; 627 PASS, 27 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 686 tests; 659 PASS, 27 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
-PASS Partial interface NavigatorID: original interface defined
+PASS Partial interface mixin NavigatorID: original interface mixin defined
 PASS Partial interface HTMLAnchorElement: original interface defined
 PASS Partial interface HTMLAreaElement: original interface defined
 PASS Partial interface HTMLBodyElement: original interface defined
@@ -146,6 +146,22 @@ PASS Window interface: attribute ontimeupdate
 PASS Window interface: attribute ontoggle
 PASS Window interface: attribute onvolumechange
 PASS Window interface: attribute onwaiting
+PASS Window interface: attribute onafterprint
+PASS Window interface: attribute onbeforeprint
+PASS Window interface: attribute onbeforeunload
+PASS Window interface: attribute onhashchange
+PASS Window interface: attribute onlanguagechange
+PASS Window interface: attribute onmessage
+PASS Window interface: attribute onmessageerror
+PASS Window interface: attribute onoffline
+PASS Window interface: attribute ononline
+PASS Window interface: attribute onpagehide
+PASS Window interface: attribute onpageshow
+PASS Window interface: attribute onpopstate
+PASS Window interface: attribute onrejectionhandled
+PASS Window interface: attribute onstorage
+PASS Window interface: attribute onunhandledrejection
+PASS Window interface: attribute onunload
 PASS Window interface: attribute origin
 PASS Window interface: operation btoa(DOMString)
 PASS Window interface: operation atob(DOMString)
@@ -275,6 +291,22 @@ PASS Window interface: window must inherit property "ontimeupdate" with the prop
 PASS Window interface: window must inherit property "ontoggle" with the proper type
 PASS Window interface: window must inherit property "onvolumechange" with the proper type
 PASS Window interface: window must inherit property "onwaiting" with the proper type
+PASS Window interface: window must inherit property "onafterprint" with the proper type
+PASS Window interface: window must inherit property "onbeforeprint" with the proper type
+PASS Window interface: window must inherit property "onbeforeunload" with the proper type
+PASS Window interface: window must inherit property "onhashchange" with the proper type
+PASS Window interface: window must inherit property "onlanguagechange" with the proper type
+PASS Window interface: window must inherit property "onmessage" with the proper type
+PASS Window interface: window must inherit property "onmessageerror" with the proper type
+PASS Window interface: window must inherit property "onoffline" with the proper type
+PASS Window interface: window must inherit property "ononline" with the proper type
+PASS Window interface: window must inherit property "onpagehide" with the proper type
+PASS Window interface: window must inherit property "onpageshow" with the proper type
+PASS Window interface: window must inherit property "onpopstate" with the proper type
+PASS Window interface: window must inherit property "onrejectionhandled" with the proper type
+PASS Window interface: window must inherit property "onstorage" with the proper type
+PASS Window interface: window must inherit property "onunhandledrejection" with the proper type
+PASS Window interface: window must inherit property "onunload" with the proper type
 PASS Window interface: window must inherit property "origin" with the proper type
 PASS Window interface: window must inherit property "btoa(DOMString)" with the proper type
 PASS Window interface: calling btoa(DOMString) on window with too few arguments must throw TypeError
