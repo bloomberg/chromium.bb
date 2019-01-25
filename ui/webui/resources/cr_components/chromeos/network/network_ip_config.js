@@ -238,7 +238,7 @@ Polymer({
 
   /**
    * Event triggered when the network property list changes.
-   * @param {!{detail: {field: string, value: string}}} event The
+   * @param {!CustomEvent<!{field: string, value: string}>} event The
    *     network-property-list change event.
    * @private
    */

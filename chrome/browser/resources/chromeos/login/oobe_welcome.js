@@ -298,7 +298,7 @@ Polymer({
   /**
    * Handle language selection.
    *
-   * @param {!{detail: {!OobeTypes.LanguageDsc}}} event
+   * @param {!CustomEvent<!OobeTypes.LanguageDsc>} event
    * @private
    */
   onLanguageSelected_: function(event) {
@@ -311,7 +311,7 @@ Polymer({
   /**
    * Handle keyboard layout selection.
    *
-   * @param {!{detail: {!OobeTypes.IMEDsc}}} event
+   * @param {!CustomEvent<!OobeTypes.IMEDsc>} event
    * @private
    */
   onKeyboardSelected_: function(event) {
@@ -394,7 +394,7 @@ Polymer({
   /**
    * Handle timezone selection.
    *
-   * @param {!{detail: {!OobeTypes.Timezone}}} event
+   * @param {!CustomEvent<!OobeTypes.Timezone>} event
    * @private
    */
   onTimezoneSelected_: function(event) {

@@ -87,7 +87,7 @@ Polymer({
   },
 
   /**
-   * @param {!{detail: {value: multidevice_setup.PageName}}} event
+   * @param {!CustomEvent<!{value: multidevice_setup.PageName}>} event
    * @private
    */
   onVisiblePageNameChanged_: function(event) {

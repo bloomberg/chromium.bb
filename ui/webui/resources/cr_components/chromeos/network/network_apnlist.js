@@ -202,7 +202,7 @@ Polymer({
 
   /**
    * Event triggered when any 'Other' APN network property changes.
-   * @param {!{detail: {field: string, value: string}}} event
+   * @param {!CustomEvent<!{field: string, value: string}>} event
    * @private
    */
   onOtherApnChange_: function(event) {
