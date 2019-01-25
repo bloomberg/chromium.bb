@@ -131,6 +131,7 @@ struct TestParams {
       : capabilities{"actions", "body", "body-hyperlinks", "body-images",
                      "body-markup"},
         server_name("NPBL_unittest"),
+        server_version("1.0"),
         expect_init_success(true),
         expect_shutdown(true),
         connect_signals(true) {}
@@ -142,6 +143,11 @@ struct TestParams {
 
   TestParams& SetServerName(const std::string& server_name) {
     this->server_name = server_name;
+    return *this;
+  }
+
+  TestParams& SetServerVersion(const std::string& server_version) {
+    this->server_version = server_version;
     return *this;
   }
 
@@ -162,6 +168,7 @@ struct TestParams {
 
   std::vector<std::string> capabilities;
   std::string server_name;
+  std::string server_version;
   bool expect_init_success;
   bool expect_shutdown;
   bool connect_signals;
@@ -237,13 +244,13 @@ std::unique_ptr<dbus::Response> GetIdResponse(uint32_t id) {
   return response;
 }
 
-ACTION_P(OnGetServerInformation, server_name) {
+ACTION_P2(OnGetServerInformation, server_name, server_version) {
   std::unique_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
   dbus::MessageWriter writer(response.get());
-  writer.AppendString(server_name);  // name
-  writer.AppendString("chromium");   // vendor
-  writer.AppendString("1.0");        // version
-  writer.AppendString("1.2");        // spec_version
+  writer.AppendString(server_name);     // name
+  writer.AppendString("chromium");      // vendor
+  writer.AppendString(server_version);  // version
+  writer.AppendString("1.2");           // spec_version
   return response;
 }
 
@@ -338,7 +345,8 @@ class NotificationPlatformBridgeLinuxTest : public BrowserWithTestWindowTest {
     if (test_params.expect_init_success) {
       EXPECT_CALL(*mock_notification_proxy_.get(),
                   CallMethodAndBlock(Calls("GetServerInformation"), _))
-          .WillOnce(OnGetServerInformation(test_params.server_name));
+          .WillOnce(OnGetServerInformation(test_params.server_name,
+                                           test_params.server_version));
     }
 
     if (test_params.connect_signals) {
@@ -694,12 +702,12 @@ TEST_F(NotificationPlatformBridgeLinuxTest, OriginUrlFormat) {
 }
 
 TEST_F(NotificationPlatformBridgeLinuxTest,
-       CinnamonNotificationsHaveClosebutton) {
+       OldCinnamonNotificationsHaveClosebutton) {
   EXPECT_CALL(*mock_notification_proxy_.get(),
               CallMethodAndBlock(Calls("Notify"), _))
       .WillOnce(OnNotify(
           [](const NotificationRequest& request) {
-            EXPECT_EQ(3UL, request.actions.size());
+            ASSERT_EQ(3UL, request.actions.size());
             EXPECT_EQ("default", request.actions[0].id);
             EXPECT_EQ("Activate", request.actions[0].label);
             EXPECT_EQ("settings", request.actions[1].id);
@@ -709,7 +717,29 @@ TEST_F(NotificationPlatformBridgeLinuxTest,
           },
           1));
 
-  CreateNotificationBridgeLinux(TestParams().SetServerName("cinnamon"));
+  CreateNotificationBridgeLinux(
+      TestParams().SetServerName("cinnamon").SetServerVersion("3.6.7"));
+  notification_bridge_linux_->Display(
+      NotificationHandler::Type::WEB_PERSISTENT, profile(),
+      NotificationBuilder("").GetResult(), nullptr);
+}
+
+TEST_F(NotificationPlatformBridgeLinuxTest,
+       NewCinnamonNotificationsDontHaveClosebutton) {
+  EXPECT_CALL(*mock_notification_proxy_.get(),
+              CallMethodAndBlock(Calls("Notify"), _))
+      .WillOnce(OnNotify(
+          [](const NotificationRequest& request) {
+            ASSERT_EQ(2UL, request.actions.size());
+            EXPECT_EQ("default", request.actions[0].id);
+            EXPECT_EQ("Activate", request.actions[0].label);
+            EXPECT_EQ("settings", request.actions[1].id);
+            EXPECT_EQ("Settings", request.actions[1].label);
+          },
+          1));
+
+  CreateNotificationBridgeLinux(
+      TestParams().SetServerName("cinnamon").SetServerVersion("3.8.0"));
   notification_bridge_linux_->Display(
       NotificationHandler::Type::WEB_PERSISTENT, profile(),
       NotificationBuilder("").GetResult(), nullptr);
