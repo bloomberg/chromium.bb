@@ -105,4 +105,34 @@ TEST_F(FocusControllerTest, SVGFocusableElementInForm) {
       << "SVG Element should be skipped even when focusable in form.";
 }
 
+TEST_F(FocusControllerTest, FindFocusableAfterElement) {
+  GetDocument().body()->SetInnerHTMLFromString(
+      "<input id='first'><div id='second'></div><input id='third'><div "
+      "id='fourth' tabindex='0'></div>");
+  Element* first = GetElementById("first");
+  Element* second = GetElementById("second");
+  Element* third = GetElementById("third");
+  Element* fourth = GetElementById("fourth");
+  EXPECT_EQ(third, GetFocusController().FindFocusableElementAfter(
+                       *first, kWebFocusTypeForward));
+  EXPECT_EQ(third, GetFocusController().FindFocusableElementAfter(
+                       *second, kWebFocusTypeForward));
+  EXPECT_EQ(fourth, GetFocusController().FindFocusableElementAfter(
+                        *third, kWebFocusTypeForward));
+  EXPECT_EQ(nullptr, GetFocusController().FindFocusableElementAfter(
+                         *fourth, kWebFocusTypeForward));
+
+  EXPECT_EQ(nullptr, GetFocusController().FindFocusableElementAfter(
+                         *first, kWebFocusTypeBackward));
+  EXPECT_EQ(first, GetFocusController().FindFocusableElementAfter(
+                       *second, kWebFocusTypeBackward));
+  EXPECT_EQ(first, GetFocusController().FindFocusableElementAfter(
+                       *third, kWebFocusTypeBackward));
+  EXPECT_EQ(third, GetFocusController().FindFocusableElementAfter(
+                       *fourth, kWebFocusTypeBackward));
+
+  EXPECT_EQ(nullptr, GetFocusController().FindFocusableElementAfter(
+                         *first, kWebFocusTypeNone));
+}
+
 }  // namespace blink

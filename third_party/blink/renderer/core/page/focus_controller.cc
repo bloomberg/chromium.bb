@@ -1188,6 +1188,16 @@ Element* FocusController::FindFocusableElementInShadowHost(
                                                owner_map);
 }
 
+Element* FocusController::FindFocusableElementAfter(Element& element,
+                                                    WebFocusType type) {
+  if (type != kWebFocusTypeForward && type != kWebFocusTypeBackward)
+    return nullptr;
+  element.GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  OwnerMap owner_map;
+  return FindFocusableElement(type, element, owner_map);
+}
+
 static bool RelinquishesEditingFocus(const Element& element) {
   DCHECK(HasEditableStyle(element));
   return element.GetDocument().GetFrame() && RootEditableElement(element);

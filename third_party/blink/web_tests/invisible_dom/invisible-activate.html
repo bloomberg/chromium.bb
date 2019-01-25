@@ -6,7 +6,7 @@
 
 <div id="outer">
   Outer
-  <div id="inner">
+  <div id="inner" tabIndex="0">
     Inner
     <div id="innermost">
       Innermost
@@ -18,6 +18,7 @@
     </div>
   </div>
 </div>
+<input type="text" id="randomFocusable">
 <a id="outerLink" href="#outer">Click</a>
 <a id="innerLink" href="#inner">Click</a>
 <a id="innermostLink" href ="#innermost">Click</a>
@@ -56,7 +57,99 @@ promise_test(() => {
       resolve();
     });
   });
-}, "Activating invisible element fires activateinvisible and removes invisible");
+}, "Activating invisible element through fragment nav fires activateinvisible and removes invisible");
+
+promise_test(() => {
+  setUp();
+  inner.invisible = "invisible";
+  inner.tabIndex = 0;
+  randomFocusable.focus();
+  return new Promise((resolve, reject) => {
+    const eventPromise = new Promise((resolve, reject) => {
+      inner.onactivateinvisible = (e) => {
+        assert_equals(e.target, inner);
+        assert_equals(e.activatedElement, inner);
+        resolve();
+      };
+      inner.focus();
+    });
+
+    eventPromise.then(() => {
+      assert_false(inner.hasAttribute("invisible"));
+      assert_equals(document.activeElement, inner);
+      resolve();
+    });
+  });
+}, "Activating invisible element through focus fires activateinvisible, focuses element");
+
+promise_test(() => {
+  setUp();
+  inner.invisible = "invisible";
+  inner.tabIndex = 0;
+  randomFocusable.focus();
+  return new Promise((resolve, reject) => {
+    const eventPromise = new Promise((resolve, reject) => {
+      inner.onactivateinvisible = (e) => {
+        assert_equals(e.target, inner);
+        assert_equals(e.activatedElement, inner);
+        e.preventDefault();
+        resolve();
+      };
+      inner.focus();
+    });
+    eventPromise.then(() => {
+      assert_true(inner.hasAttribute("invisible"));
+      assert_not_equals(document.activeElement, inner);
+      resolve();
+    });
+  });
+}, "Activating invisible element through focus and canceling the activateinvisible, stops focus on element");
+
+promise_test(() => {
+  setUp();
+  inner.invisible = "invisible";
+  inner.tabIndex = 0;
+  randomFocusable.focus();
+  return new Promise((resolve, reject) => {
+    const eventPromise = new Promise((resolve, reject) => {
+      inner.onactivateinvisible = (e) => {
+        assert_equals(e.target, inner);
+        assert_equals(e.activatedElement, inner);
+        e.preventDefault();
+        resolve();
+      };
+      eventSender.keyDown("Tab");
+    });
+    eventPromise.then(() => {
+      assert_true(inner.hasAttribute("invisible"));
+      assert_not_equals(document.activeElement, inner);
+      resolve();
+    });
+  });
+}, "Activating invisible element through tabindex navigation and canceling the activateinvisible, stops focus on element");
+
+promise_test(() => {
+  setUp();
+  inner.invisible = "invisible";
+  inner.tabIndex = 0;
+  randomFocusable.focus();
+  return new Promise((resolve, reject) => {
+    const eventPromise = new Promise((resolve, reject) => {
+      inner.onactivateinvisible = (e) => {
+        assert_equals(e.target, inner);
+        assert_equals(e.activatedElement, inner);
+        resolve();
+      };
+      eventSender.keyDown("Tab", ["shiftKey"]);
+    });
+
+    eventPromise.then(() => {
+      assert_false(inner.hasAttribute("invisible"));
+      assert_equals(document.activeElement, inner);
+      resolve();
+    });
+  });
+}, "Activating invisible element through tabindex navigation fires activateinvisible, focuses element");
 
 promise_test(() => {
   setUp();
