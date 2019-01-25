@@ -23,7 +23,7 @@
 #include "media/renderers/audio_renderer_impl.h"
 #include "media/renderers/renderer_impl.h"
 #include "media/test/fake_encrypted_media.h"
-#include "media/test/mock_media_source.h"
+#include "media/test/test_media_source.h"
 #include "third_party/libaom/av1_buildflags.h"
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
@@ -581,18 +581,18 @@ base::TimeDelta PipelineIntegrationTestBase::GetAudioTime() {
 }
 
 PipelineStatus PipelineIntegrationTestBase::StartPipelineWithMediaSource(
-    MockMediaSource* source) {
+    TestMediaSource* source) {
   return StartPipelineWithMediaSource(source, kNormal, nullptr);
 }
 
 PipelineStatus PipelineIntegrationTestBase::StartPipelineWithEncryptedMedia(
-    MockMediaSource* source,
+    TestMediaSource* source,
     FakeEncryptedMedia* encrypted_media) {
   return StartPipelineWithMediaSource(source, kNormal, encrypted_media);
 }
 
 PipelineStatus PipelineIntegrationTestBase::StartPipelineWithMediaSource(
-    MockMediaSource* source,
+    TestMediaSource* source,
     uint8_t test_type,
     FakeEncryptedMedia* encrypted_media) {
   ParseTestTypeFlags(test_type);

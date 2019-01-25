@@ -36,7 +36,7 @@ class RunLoop;
 namespace media {
 
 class FakeEncryptedMedia;
-class MockMediaSource;
+class TestMediaSource;
 
 // Empty MD5 hash string.  Used to verify empty video tracks.
 extern const char kNullVideoHash[];
@@ -196,12 +196,12 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
       CreateAudioDecodersCB prepend_audio_decoders_cb =
           CreateAudioDecodersCB());
 
-  PipelineStatus StartPipelineWithMediaSource(MockMediaSource* source);
+  PipelineStatus StartPipelineWithMediaSource(TestMediaSource* source);
   PipelineStatus StartPipelineWithEncryptedMedia(
-      MockMediaSource* source,
+      TestMediaSource* source,
       FakeEncryptedMedia* encrypted_media);
   PipelineStatus StartPipelineWithMediaSource(
-      MockMediaSource* source,
+      TestMediaSource* source,
       uint8_t test_type,
       FakeEncryptedMedia* encrypted_media);
 

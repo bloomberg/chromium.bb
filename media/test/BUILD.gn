@@ -31,10 +31,10 @@ source_set("pipeline_integration_test_base") {
     sources = [
       "fake_encrypted_media.cc",
       "fake_encrypted_media.h",
-      "mock_media_source.cc",
-      "mock_media_source.h",
       "pipeline_integration_test_base.cc",
       "pipeline_integration_test_base.h",
+      "test_media_source.cc",
+      "test_media_source.h",
     ]
 
     configs += [ "//media:media_config" ]
