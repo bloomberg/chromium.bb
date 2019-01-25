@@ -14,10 +14,4 @@
     : NSObject<NSMenuDelegate, NSSharingServiceDelegate>
 @end
 
-@interface ShareMenuController (ExposedForTesting)
-// Whether the menu should add a "More..." item that opens the
-// Sharing Extension pref pane.
-+ (BOOL)shouldShowMoreItem;
-@end
-
 #endif  // CHROME_BROWSER_UI_COCOA_SHARE_MENU_CONTROLLER_H_

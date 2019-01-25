@@ -60,11 +60,7 @@ NSString* const kRemindersSharingServiceName =
   base::scoped_nsobject<NSImage> snapshotForShare_;
   // The Reminders share extension reads title/URL from the currently active
   // activity.
-  base::scoped_nsobject<NSUserActivity> activity_ API_AVAILABLE(macos(10.10));
-}
-
-+ (BOOL)shouldShowMoreItem {
-  return base::mac::IsAtLeastOS10_10();
+  base::scoped_nsobject<NSUserActivity> activity_;
 }
 
 // NSMenuDelegate
@@ -106,9 +102,6 @@ NSString* const kRemindersSharingServiceName =
     NSMenuItem* item = [self menuItemForService:service];
     [item setEnabled:canShare];
     [menu addItem:item];
-  }
-  if (![[self class] shouldShowMoreItem]) {
-    return;
   }
   base::scoped_nsobject<NSMenuItem> moreItem([[NSMenuItem alloc]
       initWithTitle:l10n_util::GetNSString(IDS_SHARING_MORE_MAC)
@@ -182,10 +175,8 @@ NSString* const kRemindersSharingServiceName =
   windowForShare_ = nil;
   rectForShare_ = NSZeroRect;
   snapshotForShare_.reset();
-  if (@available(macOS 10.10, *)) {
-    [activity_ invalidate];
-    activity_.reset();
-  }
+  [activity_ invalidate];
+  activity_.reset();
 }
 
 // Performs the share action using the sharing service represented by |sender|.
@@ -212,24 +203,21 @@ NSString* const kRemindersSharingServiceName =
   } else {
     itemsToShare = @[ url ];
   }
-  if (@available(macOS 10.10, *)) {
-    if ([[service name] isEqual:kRemindersSharingServiceName]) {
-      activity_.reset([[NSUserActivity alloc]
-          initWithActivityType:NSUserActivityTypeBrowsingWeb]);
-      // webpageURL must be http or https or an exception is thrown.
-      if ([url.scheme hasPrefix:@"http"]) {
-        [activity_ setWebpageURL:url];
-      }
-      [activity_ setTitle:title];
-      [activity_ becomeCurrent];
+  if ([[service name] isEqual:kRemindersSharingServiceName]) {
+    activity_.reset([[NSUserActivity alloc]
+        initWithActivityType:NSUserActivityTypeBrowsingWeb]);
+    // webpageURL must be http or https or an exception is thrown.
+    if ([url.scheme hasPrefix:@"http"]) {
+      [activity_ setWebpageURL:url];
     }
+    [activity_ setTitle:title];
+    [activity_ becomeCurrent];
   }
   [service performWithItems:itemsToShare];
 }
 
 // Opens the "Sharing" subpane of the "Extensions" macOS preference pane.
 - (void)openSharingPrefs:(NSMenuItem*)sender {
-  DCHECK([[self class] shouldShowMoreItem]);
   NSURL* prefPaneURL =
       [NSURL fileURLWithPath:kExtensionPrefPanePath isDirectory:YES];
   NSDictionary* args = @{
