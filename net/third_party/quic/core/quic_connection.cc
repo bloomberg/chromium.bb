@@ -1182,12 +1182,12 @@ bool QuicConnection::OnPathChallengeFrame(const QuicPathChallengeFrame& frame) {
 }
 
 bool QuicConnection::OnPathResponseFrame(const QuicPathResponseFrame& frame) {
+  should_last_packet_instigate_acks_ = true;
   if (transmitted_connectivity_probe_payload_ != frame.data_buffer) {
     // Is not for the probe we sent, ignore it.
     return true;
   }
   UpdatePacketContent(FIRST_FRAME_IS_PING);
-  should_last_packet_instigate_acks_ = true;
   return true;
 }
 
