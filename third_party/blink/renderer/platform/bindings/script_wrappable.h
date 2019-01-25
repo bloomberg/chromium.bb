@@ -103,6 +103,7 @@ class PLATFORM_EXPORT ScriptWrappable
   // Returns true if the instance needs to be kept alive even when the
   // instance is unreachable from JavaScript.
   virtual bool HasPendingActivity() const { return false; }
+  virtual bool HasEventListeners() const { return false; }
 
   // Associates this instance with the given |wrapper| if this instance is not
   // yet associated with any wrapper.  Returns true if the given wrapper is

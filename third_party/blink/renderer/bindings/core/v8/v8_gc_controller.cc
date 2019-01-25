@@ -34,6 +34,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "base/feature_list.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
@@ -56,6 +57,11 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
+
+// When CollectLiveNonNodeWrappers is enabled, live non-Node wrappers that are
+// recreatable will get collected during scavenger GC.
+const base::Feature kCollectLiveNonNodeWrappers{
+    "CollectLiveNonNodeWrappers", base::FEATURE_DISABLED_BY_DEFAULT};
 
 Node* V8GCController::OpaqueRootForGC(v8::Isolate*, Node* node) {
   DCHECK(node);
@@ -98,9 +104,13 @@ class MinorGCUnmodifiedWrapperVisitor : public v8::PersistentHandleVisitor {
       return;
     }
 
+    const bool collect_non_node_wrappers =
+        base::FeatureList::IsEnabled(kCollectLiveNonNodeWrappers);
+
     // MinorGC does not collect objects because it may be expensive to
     // update references during minorGC
-    if (class_id == WrapperTypeInfo::kObjectClassId) {
+    if (!collect_non_node_wrappers &&
+        class_id == WrapperTypeInfo::kObjectClassId) {
       v8::Persistent<v8::Object>::Cast(*value).MarkActive();
       return;
     }
@@ -108,8 +118,14 @@ class MinorGCUnmodifiedWrapperVisitor : public v8::PersistentHandleVisitor {
     v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::New(
         isolate_, v8::Persistent<v8::Object>::Cast(*value));
     DCHECK(V8DOMWrapper::HasInternalFieldsSet(wrapper));
+
     if (ToWrapperTypeInfo(wrapper)->IsActiveScriptWrappable() &&
         ToScriptWrappable(wrapper)->HasPendingActivity()) {
+      v8::Persistent<v8::Object>::Cast(*value).MarkActive();
+      return;
+    }
+
+    if (ToScriptWrappable(wrapper)->HasEventListeners()) {
       v8::Persistent<v8::Object>::Cast(*value).MarkActive();
       return;
     }
@@ -117,10 +133,6 @@ class MinorGCUnmodifiedWrapperVisitor : public v8::PersistentHandleVisitor {
     if (class_id == WrapperTypeInfo::kNodeClassId) {
       DCHECK(V8Node::HasInstance(wrapper, isolate_));
       Node* node = V8Node::ToImpl(wrapper);
-      if (node->HasEventListeners()) {
-        v8::Persistent<v8::Object>::Cast(*value).MarkActive();
-        return;
-      }
       // FIXME: Remove the special handling for SVG elements.
       // We currently can't collect SVG Elements from minor gc, as we have
       // strong references from SVG property tear-offs keeping context SVG

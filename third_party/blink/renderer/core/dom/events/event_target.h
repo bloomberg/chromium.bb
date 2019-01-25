@@ -170,7 +170,7 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
                                  EventListener*);
   EventListener* GetAttributeEventListener(const AtomicString& event_type);
 
-  bool HasEventListeners() const;
+  bool HasEventListeners() const override;
   bool HasEventListeners(const AtomicString& event_type) const;
   bool HasCapturingEventListeners(const AtomicString& event_type);
   EventListenerVector* GetEventListeners(const AtomicString& event_type);
