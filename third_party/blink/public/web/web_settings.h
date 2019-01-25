@@ -98,7 +98,6 @@ class WebSettings {
   enum class AutoplayPolicy {
     kNoUserGestureRequired = 0,
     kUserGestureRequired,
-    kUserGestureRequiredForCrossOrigin,
     kDocumentUserActivationRequired,
   };
 

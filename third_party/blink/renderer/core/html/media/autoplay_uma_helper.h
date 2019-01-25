@@ -46,15 +46,6 @@ enum AutoplayBlockedReason {
   kAutoplayBlockedReasonMax = 3
 };
 
-enum class CrossOriginAutoplayResult {
-  kAutoplayAllowed = 0,
-  kAutoplayBlocked = 1,
-  kPlayedWithGesture = 2,
-  kUserPaused = 3,
-  // Keep at the end.
-  kNumberOfResults = 4,
-};
-
 class Document;
 class ElementVisibilityObserver;
 class HTMLMediaElement;
@@ -73,7 +64,6 @@ class CORE_EXPORT AutoplayUmaHelper : public NativeEventListener,
 
   void OnAutoplayInitiated(AutoplaySource);
 
-  void RecordCrossOriginAutoplayResult(CrossOriginAutoplayResult);
   void RecordAutoplayUnmuteStatus(AutoplayUnmuteActionStatus);
 
   void VideoWillBeDrawnToCanvas();
@@ -106,13 +96,10 @@ class CORE_EXPORT AutoplayUmaHelper : public NativeEventListener,
   void MaybeStartRecordingMutedVideoOffscreenDuration();
   void MaybeStopRecordingMutedVideoOffscreenDuration();
 
-  void MaybeRecordUserPausedAutoplayingCrossOriginVideo();
-
   void OnVisibilityChangedForMutedVideoOffscreenDuration(bool is_visibile);
   void OnVisibilityChangedForMutedVideoPlayMethodBecomeVisible(bool is_visible);
 
   bool ShouldListenToContextDestroyed() const;
-  bool ShouldRecordUserPausedAutoplayingCrossOriginVideo() const;
 
   // The autoplay sources.
   std::set<AutoplaySource> sources_;
@@ -140,8 +127,6 @@ class CORE_EXPORT AutoplayUmaHelper : public NativeEventListener,
 
   // Whether an autoplaying muted video is visible.
   bool is_visible_;
-
-  std::set<CrossOriginAutoplayResult> recorded_cross_origin_autoplay_results_;
 
   // The observer is used to observer an autoplaying muted video changing it's
   // visibility, which is used for offscreen duration UMA.  The UMA is pending

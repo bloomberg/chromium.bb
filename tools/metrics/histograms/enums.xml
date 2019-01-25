@@ -9605,6 +9605,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="CrossOriginAutoplayResult">
+  <obsolete>
+    Deprecated as January 2019. No longer needed.
+  </obsolete>
   <int value="0" label="Allowed"/>
   <int value="1" label="Blocked"/>
   <int value="2" label="PlayedWithGesture"/>
