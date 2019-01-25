@@ -10,27 +10,28 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/video/jpeg_decode_accelerator.h"
+#include "ui/gfx/geometry/size.h"
 
-// These data types are defined in va/va.h using typedef, reproduced here.
-typedef struct _VAImageFormat VAImageFormat;
-typedef unsigned int VASurfaceID;
+// This data type is defined in va/va.h using typedef, reproduced here.
+// TODO(andrescj): remove this once VaapiJpegDecoder is responsible for
+// obtaining the VAImage.
+using VASurfaceID = unsigned int;
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace media {
 
 class BitstreamBuffer;
-struct JpegParseResult;
 class UnalignedSharedMemory;
 class VaapiWrapper;
-class VaapiJpegDecodeAcceleratorTest;
-
-// Alternative notation for the VA_FOURCC_YUY2 format, <va/va.h> doesn't provide
-// this specific packing/ordering.
-constexpr uint32_t VA_FOURCC_YUYV = 0x56595559;
+class VideoFrame;
 
 // Class to provide JPEG decode acceleration for Intel systems with hardware
 // support for it, and on which libva is available.
@@ -54,8 +55,6 @@ class MEDIA_GPU_EXPORT VaapiJpegDecodeAccelerator
   bool IsSupported() override;
 
  private:
-  friend class VaapiJpegDecodeAcceleratorTest;
-
   // Notifies the client that an error has occurred and decoding cannot
   // continue. The client is notified on the |task_runner_|, i.e., the thread in
   // which |*this| was created.
@@ -77,16 +76,6 @@ class MEDIA_GPU_EXPORT VaapiJpegDecodeAccelerator
                      uint32_t va_surface_format,
                      int32_t input_buffer_id,
                      const scoped_refptr<VideoFrame>& video_frame);
-
-  // Decodes a JPEG picture. It will fill VA-API parameters and call
-  // corresponding VA-API methods according to the JPEG |parse_result|. Decoded
-  // data will be outputted to the given |va_surface|. Returns false on failure.
-  // |vaapi_wrapper| should be initialized in kDecode mode with
-  // VAProfileJPEGBaseline profile. |va_surface| should be created with size at
-  // least as large as the picture size.
-  static bool DoDecode(VaapiWrapper* vaapi_wrapper,
-                       const JpegParseResult& parse_result,
-                       VASurfaceID va_surface);
 
   // ChildThread's task runner.
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

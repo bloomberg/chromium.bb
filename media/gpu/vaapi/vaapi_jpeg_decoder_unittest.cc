@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
-#include <string.h>
+
+#include <memory>
+#include <string>
+#include <vector>
 
 #include <va/va.h>
 
@@ -11,21 +14,26 @@
 // See http://code.google.com/p/googletest/issues/detail?id=371
 #include "testing/gtest/include/gtest/gtest.h"
 
-#include "base/at_exit.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/md5.h"
-#include "base/path_service.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/string_piece.h"
+#include "base/synchronization/lock.h"
 #include "base/test/gtest_util.h"
+#include "base/thread_annotations.h"
 #include "media/base/test_data_util.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_types.h"
 #include "media/filters/jpeg_parser.h"
-#include "media/gpu/vaapi/vaapi_jpeg_decode_accelerator.h"
+#include "media/gpu/vaapi/vaapi_jpeg_decoder.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace media {
 namespace {
@@ -34,12 +42,17 @@ constexpr const char* kTestFilename = "pixel-1280x720.jpg";
 constexpr const char* kExpectedMd5SumI420 = "6e9e1716073c9a9a1282e3f0e0dab743";
 constexpr const char* kExpectedMd5SumYUYV = "ff313a6aedbc4e157561e5c2d5c2e079";
 
-constexpr VAImageFormat kImageFormatI420 = {.fourcc = VA_FOURCC_I420,
-                                            .byte_order = VA_LSB_FIRST,
-                                            .bits_per_pixel = 12};
-constexpr VAImageFormat kImageFormatYUYV = {.fourcc = VA_FOURCC_YUYV,
-                                            .byte_order = VA_LSB_FIRST,
-                                            .bits_per_pixel = 16};
+constexpr VAImageFormat kImageFormatI420 = {
+    .fourcc = VA_FOURCC_I420,
+    .byte_order = VA_LSB_FIRST,
+    .bits_per_pixel = 12,
+};
+
+constexpr VAImageFormat kImageFormatYUYV = {
+    .fourcc = VA_FOURCC('Y', 'U', 'Y', 'V'),
+    .byte_order = VA_LSB_FIRST,
+    .bits_per_pixel = 16,
+};
 
 void LogOnError() {
   LOG(FATAL) << "Oh noes! Decoder failed";
@@ -67,13 +80,12 @@ VAImageFormat GetVAImageFormat() {
 
 }  // namespace
 
-class VaapiJpegDecodeAcceleratorTest : public ::testing::Test {
+class VaapiJpegDecoderTest : public ::testing::Test {
  protected:
-  VaapiJpegDecodeAcceleratorTest() {
+  VaapiJpegDecoderTest() {
     const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-    if (cmd_line && cmd_line->HasSwitch("test_data_path")) {
+    if (cmd_line && cmd_line->HasSwitch("test_data_path"))
       test_data_path_ = cmd_line->GetSwitchValueASCII("test_data_path");
-    }
   }
 
   void SetUp() override {
@@ -118,7 +130,7 @@ class VaapiJpegDecodeAcceleratorTest : public ::testing::Test {
 // is not found, treat the file as being relative to the test file directory.
 // This is either a custom test data path provided by --test_data_path, or the
 // default test data path (//media/test/data).
-base::FilePath VaapiJpegDecodeAcceleratorTest::FindTestDataFilePath(
+base::FilePath VaapiJpegDecoderTest::FindTestDataFilePath(
     const std::string& file_name) {
   const base::FilePath file_path = base::FilePath(file_name);
   if (base::PathExists(file_path))
@@ -128,7 +140,7 @@ base::FilePath VaapiJpegDecodeAcceleratorTest::FindTestDataFilePath(
   return GetTestDataFilePath(file_name);
 }
 
-bool VaapiJpegDecodeAcceleratorTest::VerifyDecode(
+bool VaapiJpegDecoderTest::VerifyDecode(
     const JpegParseResult& parse_result) const {
   gfx::Size size(parse_result.frame_header.coded_width,
                  parse_result.frame_header.coded_height);
@@ -179,14 +191,13 @@ bool VaapiJpegDecodeAcceleratorTest::VerifyDecode(
   return true;
 }
 
-bool VaapiJpegDecodeAcceleratorTest::Decode(VaapiWrapper* vaapi_wrapper,
-                                            const JpegParseResult& parse_result,
-                                            VASurfaceID va_surface) const {
-  return VaapiJpegDecodeAccelerator::DoDecode(vaapi_wrapper, parse_result,
-                                              va_surface);
+bool VaapiJpegDecoderTest::Decode(VaapiWrapper* vaapi_wrapper,
+                                  const JpegParseResult& parse_result,
+                                  VASurfaceID va_surface) const {
+  return VaapiJpegDecoder::DoDecode(vaapi_wrapper, parse_result, va_surface);
 }
 
-TEST_F(VaapiJpegDecodeAcceleratorTest, DecodeSuccess) {
+TEST_F(VaapiJpegDecoderTest, DecodeSuccess) {
   JpegParseResult parse_result;
   ASSERT_TRUE(
       ParseJpegPicture(reinterpret_cast<const uint8_t*>(jpeg_data_.data()),
@@ -195,7 +206,7 @@ TEST_F(VaapiJpegDecodeAcceleratorTest, DecodeSuccess) {
   EXPECT_TRUE(VerifyDecode(parse_result));
 }
 
-TEST_F(VaapiJpegDecodeAcceleratorTest, DecodeFail) {
+TEST_F(VaapiJpegDecoderTest, DecodeFail) {
   JpegParseResult parse_result;
   ASSERT_TRUE(
       ParseJpegPicture(reinterpret_cast<const uint8_t*>(jpeg_data_.data()),
@@ -216,7 +227,7 @@ TEST_F(VaapiJpegDecodeAcceleratorTest, DecodeFail) {
 }
 
 // This test exercises the usual ScopedVAImage lifetime.
-TEST_F(VaapiJpegDecodeAcceleratorTest, ScopedVAImage) {
+TEST_F(VaapiJpegDecoderTest, ScopedVAImage) {
   std::vector<VASurfaceID> va_surfaces;
   const gfx::Size coded_size(64, 64);
   ASSERT_TRUE(wrapper_->CreateContextAndSurfaces(VA_RT_FORMAT_YUV420,
@@ -242,7 +253,7 @@ TEST_F(VaapiJpegDecodeAcceleratorTest, ScopedVAImage) {
 }
 
 // This test exercises creation of a ScopedVAImage with a bad VASurfaceID.
-TEST_F(VaapiJpegDecodeAcceleratorTest, BadScopedVAImage) {
+TEST_F(VaapiJpegDecoderTest, BadScopedVAImage) {
   const std::vector<VASurfaceID> va_surfaces = {VA_INVALID_ID};
   const gfx::Size coded_size(64, 64);
 
@@ -265,7 +276,7 @@ TEST_F(VaapiJpegDecodeAcceleratorTest, BadScopedVAImage) {
 }
 
 // This test exercises creation of a ScopedVABufferMapping with bad VABufferIDs.
-TEST_F(VaapiJpegDecodeAcceleratorTest, BadScopedVABufferMapping) {
+TEST_F(VaapiJpegDecoderTest, BadScopedVABufferMapping) {
   base::AutoLock auto_lock(*GetVaapiWrapperLock());
 
   // A ScopedVABufferMapping with a VA_INVALID_ID VABufferID is DCHECK()ed.

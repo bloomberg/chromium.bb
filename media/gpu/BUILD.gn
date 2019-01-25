@@ -564,7 +564,7 @@ if (is_chromeos || is_linux) {
       "//media/test/data/peach_pi-41x23.jpg",
     ]
     if (use_vaapi) {
-      deps += [ "//media/gpu/vaapi:jpeg_decode_accelerator_unit_test" ]
+      deps += [ "//media/gpu/vaapi:jpeg_decoder_unit_test" ]
       data += [ "//media/test/data/pixel-1280x720.jpg" ]
     }
     if (use_x11) {
