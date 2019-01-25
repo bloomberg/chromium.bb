@@ -321,7 +321,7 @@ body.record-mode #camera-mode {
   background-image: url(../images/camera_mode_recording.svg);
 }
 
-body.mode-switching:not(.capturing) #camera-mode {
+body.mode-switching:not(.streaming) #camera-mode {
   visibility: visible;
 }
 
@@ -490,7 +490,7 @@ body.shift-preview-left #preview-wrapper {
   position: relative;
 }
 
-body.capturing #preview-video {
+body.streaming #preview-video {
   pointer-events: auto;
 }
 
@@ -512,13 +512,13 @@ body.mirror #preview-focus {
   transform: translate(-50%, -50%);
 }
 
-body:not(.capturing) #preview-video {
+body:not(.streaming) #preview-video {
   filter: blur(10px);
   /* Scale up to hide blurred edges. */
   -webkit-transform: scale(1.03, 1.03);
 }
 
-body.mirror:not(.capturing) #preview-video {
+body.mirror:not(.streaming) #preview-video {
   -webkit-transform: scale(-1.03, 1.03);
 }
 
@@ -531,11 +531,11 @@ body.mirror:not(.capturing) #preview-video {
   opacity: 0.5;
 }
 
-body:not(.capturing) #preview-grid,
-body:not(.capturing) #preview-focus,
-body:not(.capturing) #open-settings,
-body:not(.capturing) #toggle-mic,
-body:not(.capturing) .options-group {
+body:not(.streaming) #preview-grid,
+body:not(.streaming) #preview-focus,
+body:not(.streaming) #open-settings,
+body:not(.streaming) #toggle-mic,
+body:not(.streaming) .options-group {
   visibility: hidden;
 }
 
@@ -1039,6 +1039,6 @@ body.dialog #dialog #dialog-popup {
   visibility: hidden;
 }
 
-body:not(.mode-switching):not(.capturing) #spinner {
+body:not(.mode-switching):not(.streaming) #spinner {
   visibility: visible;
 }

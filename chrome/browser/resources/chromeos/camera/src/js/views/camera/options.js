@@ -137,7 +137,7 @@ cca.views.camera.Options.Sound = Object.freeze({
 
 cca.views.camera.Options.prototype = {
   get newStreamRequestDisabled() {
-    return !document.body.classList.contains('capturing') ||
+    return !document.body.classList.contains('streaming') ||
         document.body.classList.contains('taking');
   },
 };

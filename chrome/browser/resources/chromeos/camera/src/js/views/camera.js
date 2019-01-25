@@ -148,8 +148,8 @@ cca.views.Camera.RECORD_MIMETYPE = 'video/x-matroska;codecs=avc1';
 
 cca.views.Camera.prototype = {
   __proto__: cca.views.View.prototype,
-  get capturing() {
-    return document.body.classList.contains('capturing');
+  get streaming() {
+    return document.body.classList.contains('streaming');
   },
   get taking() {
     return document.body.classList.contains('taking');
@@ -193,7 +193,7 @@ cca.views.Camera.prototype.focus = function() {
  * @private
  */
 cca.views.Camera.prototype.onShutterButtonClicked_ = function(event) {
-  if (!this.capturing) {
+  if (!this.streaming) {
     return;
   }
   if (this.taking) {
@@ -477,7 +477,6 @@ cca.views.Camera.prototype.stop_ = function() {
     this.mediaRecorder_ = null;
     this.imageCapture_ = null;
     this.photoCapabilities_ = null;
-    document.body.classList.remove('capturing');
     this.start_();
     return this.started_;
   });
@@ -499,7 +498,6 @@ cca.views.Camera.prototype.start_ = function() {
       return navigator.mediaDevices.getUserMedia(constraints).then(
           this.preview_.start.bind(this.preview_)).then(() => {
         this.options_.updateValues(constraints, this.preview_.stream);
-        document.body.classList.add('capturing');
         cca.nav.close('warning', 'no-camera');
       }).catch((error) => {
         console.error(error);
