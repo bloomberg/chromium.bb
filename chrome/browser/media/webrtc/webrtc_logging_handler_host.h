@@ -71,6 +71,7 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   enum UploadFailureReason {
     kInvalidState = 0,
     kStoredLogNotFound = 1,
+    kNetworkError = 2,
   };
 
   WebRtcLoggingHandlerHost(int render_process_id,
