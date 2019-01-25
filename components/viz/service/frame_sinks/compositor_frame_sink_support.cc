@@ -592,6 +592,7 @@ void CompositorFrameSinkSupport::OnBeginFrame(const BeginFrameArgs& args) {
     last_frame_time_ = args.frame_time;
     client_->OnBeginFrame(copy_args, std::move(presentation_feedbacks_));
     presentation_feedbacks_.clear();
+    UpdateNeedsBeginFramesInternal();
   }
 }
 

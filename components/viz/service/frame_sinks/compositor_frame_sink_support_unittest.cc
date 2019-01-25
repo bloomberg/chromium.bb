@@ -62,6 +62,12 @@ gpu::SyncToken GenTestSyncToken(int id) {
   return token;
 }
 
+bool BeginFrameArgsAreEquivalent(const BeginFrameArgs& first,
+                                 const BeginFrameArgs& second) {
+  return first.source_id == second.source_id &&
+         first.sequence_number == second.sequence_number;
+}
+
 }  // namespace
 
 class MockFrameSinkManagerClient : public mojom::FrameSinkManagerClient {
@@ -205,6 +211,20 @@ class CompositorFrameSinkSupportTest : public testing::Test {
     manager_.surface_manager()->ExpireOldTemporaryReferences();
     // Second call removes the temporary references marked as old.
     manager_.surface_manager()->ExpireOldTemporaryReferences();
+  }
+
+  const BeginFrameArgs& GetLastUsedBeginFrameArgs(
+      const CompositorFrameSinkSupport* support) const {
+    return support->LastUsedBeginFrameArgs();
+  }
+
+  void SendPresentationFeedback(CompositorFrameSinkSupport* support,
+                                uint32_t frame_token) {
+    support->DidPresentCompositorFrame(
+        frame_token,
+        gfx::PresentationFeedback(base::TimeTicks::Now(),
+                                  base::TimeDelta::FromMilliseconds(16),
+                                  /*flags=*/0));
   }
 
  protected:
@@ -963,6 +983,57 @@ TEST_F(CompositorFrameSinkSupportTest, PassesOnBeginFrameAcks) {
   EXPECT_EQ(ack2, surface_observer_.last_ack());
 
   support_->SetNeedsBeginFrame(false);
+}
+
+// Validates that if a client asked to stop receiving begin-frames, then it
+// stops receiving begin-frames after receiving the presentation-feedback from
+// the last submitted frame.
+TEST_F(CompositorFrameSinkSupportTest,
+       NeedsBeginFrameResetAfterPresentationFeedback) {
+  // Request BeginFrames.
+  support_->SetNeedsBeginFrame(true);
+
+  // Issue a BeginFrame. Validate that the client receives the begin-frame.
+  BeginFrameArgs args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
+  begin_frame_source_.TestOnBeginFrame(args);
+  BeginFrameArgs received_args = GetLastUsedBeginFrameArgs(support_.get());
+  EXPECT_TRUE(BeginFrameArgsAreEquivalent(args, received_args));
+  EXPECT_EQ(received_args.type, BeginFrameArgs::NORMAL);
+
+  // Client submits a compositor frame in response.
+  BeginFrameAck ack(args, true);
+  CompositorFrame frame = CompositorFrameBuilder()
+                              .AddDefaultRenderPass()
+                              .SetBeginFrameAck(ack)
+                              .Build();
+  auto token = frame.metadata.frame_token;
+  support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
+
+  // Client stops asking for begin-frames.
+  support_->SetNeedsBeginFrame(false);
+
+  // Issue a new BeginFrame. This time, the client should not receive it since
+  // it has stopped asking for begin-frames.
+  args = CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 1, 2);
+  begin_frame_source_.TestOnBeginFrame(args);
+  received_args = GetLastUsedBeginFrameArgs(support_.get());
+  EXPECT_FALSE(BeginFrameArgsAreEquivalent(args, received_args));
+
+  // The presentation-feedback from the last submitted frame arrives. This
+  // results in the client immediately receiving a MISSED begin-frame.
+  SendPresentationFeedback(support_.get(), token);
+  received_args = GetLastUsedBeginFrameArgs(support_.get());
+  EXPECT_TRUE(BeginFrameArgsAreEquivalent(args, received_args));
+  EXPECT_EQ(received_args.type, BeginFrameArgs::MISSED);
+
+  // Issue another begin-frame. This time, the client should not receive it
+  // anymore since it has stopped asking for begin-frames, and it has already
+  // received the last presentation-feedback.
+  args = CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 2, 3);
+  begin_frame_source_.TestOnBeginFrame(args);
+  received_args = GetLastUsedBeginFrameArgs(support_.get());
+  EXPECT_FALSE(BeginFrameArgsAreEquivalent(args, received_args));
 }
 
 TEST_F(CompositorFrameSinkSupportTest, FrameIndexCarriedOverToNewSurface) {

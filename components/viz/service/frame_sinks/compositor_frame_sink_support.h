@@ -181,6 +181,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   }
 
  private:
+  friend class CompositorFrameSinkSupportTest;
   friend class DisplayTest;
   friend class FrameSinkManagerTest;
 
