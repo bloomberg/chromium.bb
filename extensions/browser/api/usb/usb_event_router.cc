@@ -5,10 +5,13 @@
 #include "extensions/browser/api/usb/usb_event_router.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/lazy_instance.h"
 #include "device/base/device_client.h"
+#include "device/usb/mojo/type_converters.h"
+#include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/usb_device.h"
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/browser/api/usb/usb_guid_map.h"
@@ -46,10 +49,12 @@ bool WillDispatchDeviceEvent(scoped_refptr<UsbDevice> device,
   DevicePermissions* device_permissions =
       DevicePermissionsManager::Get(browser_context)
           ->GetForExtension(extension->id());
-  if (device_permissions->FindUsbDeviceEntry(device).get()) {
-    return true;
+  if (device) {
+    auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+    if (device_permissions->FindUsbDeviceEntry(*device_info).get()) {
+      return true;
+    }
   }
-
   return false;
 }
 
@@ -132,4 +137,4 @@ void BrowserContextKeyedAPIFactory<
   DependsOn(UsbGuidMap::GetFactoryInstance());
 }
 
-}  // extensions
+}  // namespace extensions

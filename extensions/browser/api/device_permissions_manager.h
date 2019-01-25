@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -20,6 +21,7 @@
 #include "base/threading/thread_checker.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/usb_service.h"
 #include "services/device/public/mojom/hid.mojom.h"
 
@@ -43,9 +45,9 @@ class DevicePermissionEntry : public base::RefCounted<DevicePermissionEntry> {
     HID,
   };
 
-  DevicePermissionEntry(scoped_refptr<device::UsbDevice> device);
+  explicit DevicePermissionEntry(const device::mojom::UsbDeviceInfo& device);
 
-  DevicePermissionEntry(const device::mojom::HidDeviceInfo& device);
+  explicit DevicePermissionEntry(const device::mojom::HidDeviceInfo& device);
   DevicePermissionEntry(Type type,
                         uint16_t vendor_id,
                         uint16_t product_id,
@@ -82,12 +84,8 @@ class DevicePermissionEntry : public base::RefCounted<DevicePermissionEntry> {
 
   void set_last_used(const base::Time& last_used) { last_used_ = last_used; }
 
-  // The USB device tracked by this entry. Will be nullptr if this entry was
-  // restored from ExtensionPrefs or type_ is not Type::USB.
-  scoped_refptr<device::UsbDevice> usb_device_;
-
-  // The device guid of hid device tracked by this entry.
-  std::string hid_device_guid_;
+  // The device guid of a hid/USB device tracked by this entry.
+  std::string device_guid_;
   // The type of device this entry represents.
   Type type_;
   // The vendor ID of this device.
@@ -112,6 +110,8 @@ class DevicePermissions {
   // Attempts to find a permission entry matching the given device.
   scoped_refptr<DevicePermissionEntry> FindUsbDeviceEntry(
       scoped_refptr<device::UsbDevice> device) const;
+  scoped_refptr<DevicePermissionEntry> FindUsbDeviceEntry(
+      const device::mojom::UsbDeviceInfo& device) const;
   scoped_refptr<DevicePermissionEntry> FindHidDeviceEntry(
       const device::mojom::HidDeviceInfo& device) const;
 
@@ -127,7 +127,7 @@ class DevicePermissions {
                     const std::string& extension_id);
 
   std::set<scoped_refptr<DevicePermissionEntry>> entries_;
-  std::map<device::UsbDevice*, scoped_refptr<DevicePermissionEntry>>
+  std::map<std::string, scoped_refptr<DevicePermissionEntry>>
       ephemeral_usb_devices_;
   std::map<std::string, scoped_refptr<DevicePermissionEntry>>
       ephemeral_hid_devices_;
@@ -179,11 +179,10 @@ class DevicePermissionsManager : public KeyedService,
   void Clear(const std::string& extension_id);
 
  private:
-
   friend class DevicePermissionsManagerFactory;
   FRIEND_TEST_ALL_PREFIXES(DevicePermissionsManagerTest, SuspendExtension);
 
-  DevicePermissionsManager(content::BrowserContext* context);
+  explicit DevicePermissionsManager(content::BrowserContext* context);
   ~DevicePermissionsManager() override;
 
   DevicePermissions* GetInternal(const std::string& extension_id) const;
