@@ -109,6 +109,20 @@ IdentityManagerFactory* IdentityManagerFactory::GetInstance() {
   return base::Singleton<IdentityManagerFactory>::get();
 }
 
+// static
+std::unique_ptr<KeyedService>
+IdentityManagerFactory::BuildAuthenticatedServiceInstanceForTesting(
+    const std::string& gaia_id,
+    const std::string& email,
+    const std::string& refresh_token,
+    content::BrowserContext* context) {
+  auto identity_manager = std::make_unique<IdentityManagerWrapper>(
+      Profile::FromBrowserContext(context));
+  identity_manager->SetPrimaryAccountSynchronouslyForTests(gaia_id, email,
+                                                           refresh_token);
+  return identity_manager;
+}
+
 KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new IdentityManagerWrapper(Profile::FromBrowserContext(context));

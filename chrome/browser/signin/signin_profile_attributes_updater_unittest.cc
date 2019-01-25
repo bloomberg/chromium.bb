@@ -9,38 +9,24 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
-#include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
-#include "chrome/browser/signin/fake_signin_manager_builder.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
+#include "chrome/browser/signin/signin_profile_attributes_updater_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/signin/test_signin_client_builder.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-#if defined(OS_CHROMEOS)
-// Returns a SigninManager that authenticated at creation.
-std::unique_ptr<KeyedService> BuildAuthenticatedSigninManager(
-    content::BrowserContext* context) {
-  std::unique_ptr<KeyedService> signin_manager =
-      BuildFakeSigninManagerForTesting(context);
-  static_cast<SigninManagerBase*>(signin_manager.get())
-      ->SetAuthenticatedAccountInfo("gaia", "example@email.com");
-  return signin_manager;
-}
-#endif
+const char kEmail[] = "example@email.com";
 
 }  // namespace
 
@@ -53,18 +39,17 @@ class SigninProfileAttributesUpdaterTest : public testing::Test {
     testing::Test::SetUp();
 
     ASSERT_TRUE(profile_manager_.SetUp());
-    TestingProfile::TestingFactories testing_factories;
+    TestingProfile::TestingFactories testing_factories(
+#if defined(OS_CHROMEOS)
+        IdentityTestEnvironmentProfileAdaptor::
+            GetIdentityTestEnvironmentFactoriesWithPrimaryAccountSet(kEmail));
+#else
+        IdentityTestEnvironmentProfileAdaptor::
+            GetIdentityTestEnvironmentFactories());
+#endif
     testing_factories.emplace_back(
         ChromeSigninClientFactory::GetInstance(),
         base::BindRepeating(&signin::BuildTestSigninClient));
-    testing_factories.emplace_back(
-        ProfileOAuth2TokenServiceFactory::GetInstance(),
-        base::BindRepeating(&BuildFakeProfileOAuth2TokenService));
-#if defined(OS_CHROMEOS)
-    testing_factories.emplace_back(
-        SigninManagerFactory::GetInstance(),
-        base::BindRepeating(BuildAuthenticatedSigninManager));
-#endif
     std::string name = "profile_name";
     profile_ = profile_manager_.CreateTestingProfile(
         name, /*prefs=*/nullptr, base::UTF8ToUTF16(name), 0, std::string(),
@@ -88,19 +73,14 @@ TEST_F(SigninProfileAttributesUpdaterTest, SigninSignout) {
   EXPECT_FALSE(entry->IsSigninRequired());
 
   // Signin.
-  AccountTrackerService* account_tracker =
-      AccountTrackerServiceFactory::GetForProfile(profile_);
-  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile_);
-  std::string account_id =
-      account_tracker->SeedAccountInfo("gaia", "example@email.com");
-  signin_manager->OnExternalSigninCompleted("example@email.com");
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
+  identity::MakePrimaryAccountAvailable(identity_manager, kEmail);
   EXPECT_TRUE(entry->IsAuthenticated());
-  EXPECT_EQ("gaia", entry->GetGAIAId());
-  EXPECT_EQ("example@email.com", base::UTF16ToUTF8(entry->GetUserName()));
+  EXPECT_EQ(identity::GetTestGaiaIdForEmail(kEmail), entry->GetGAIAId());
+  EXPECT_EQ(kEmail, base::UTF16ToUTF8(entry->GetUserName()));
 
   // Signout.
-  signin_manager->SignOut(signin_metrics::SIGNOUT_TEST,
-                          signin_metrics::SignoutDelete::IGNORE_METRIC);
+  identity::ClearPrimaryAccount(identity_manager);
   EXPECT_FALSE(entry->IsAuthenticated());
   EXPECT_FALSE(entry->IsSigninRequired());
 }
@@ -112,31 +92,26 @@ TEST_F(SigninProfileAttributesUpdaterTest, AuthError) {
   ASSERT_TRUE(profile_manager_.profile_attributes_storage()
                   ->GetProfileAttributesWithPath(profile_->GetPath(), &entry));
 
-  AccountTrackerService* account_tracker =
-      AccountTrackerServiceFactory::GetForProfile(profile_);
-  FakeProfileOAuth2TokenService* token_service =
-      static_cast<FakeProfileOAuth2TokenService*>(
-          ProfileOAuth2TokenServiceFactory::GetForProfile(profile_));
-  std::string account_id =
-      account_tracker->SeedAccountInfo("gaia", "example@email.com");
-  token_service->UpdateCredentials(account_id, "token");
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
 #if !defined(OS_CHROMEOS)
   // ChromeOS is signed in at creation.
-  SigninManagerFactory::GetForProfile(profile_)->OnExternalSigninCompleted(
-      "example@email.com");
+  identity::MakePrimaryAccountAvailable(identity_manager, kEmail);
 #endif
+
   EXPECT_TRUE(entry->IsAuthenticated());
   EXPECT_FALSE(entry->IsAuthError());
 
   // Set auth error.
-  token_service->UpdateAuthErrorForTesting(
-      account_id,
+  AccountInfo account_info = identity_manager->GetPrimaryAccountInfo();
+  identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+      identity_manager, account_info.account_id,
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
   EXPECT_TRUE(entry->IsAuthError());
 
   // Remove auth error.
-  token_service->UpdateAuthErrorForTesting(
-      account_id, GoogleServiceAuthError::AuthErrorNone());
+  identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+      identity_manager, account_info.account_id,
+      GoogleServiceAuthError::AuthErrorNone());
   EXPECT_FALSE(entry->IsAuthError());
 }
 
@@ -161,18 +136,15 @@ TEST_F(SigninProfileAttributesUpdaterWithForceSigninTest, IsSigninRequired) {
   EXPECT_FALSE(entry->IsAuthenticated());
   EXPECT_TRUE(entry->IsSigninRequired());
 
-  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile_);
-  AccountTrackerService* account_tracker =
-      AccountTrackerServiceFactory::GetForProfile(profile_);
-  std::string account_id =
-      account_tracker->SeedAccountInfo("gaia", "example@email.com");
-  signin_manager->OnExternalSigninCompleted("example@email.com");
-  EXPECT_TRUE(entry->IsAuthenticated());
-  EXPECT_EQ("gaia", entry->GetGAIAId());
-  EXPECT_EQ("example@email.com", base::UTF16ToUTF8(entry->GetUserName()));
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
+  AccountInfo account_info =
+      identity::MakePrimaryAccountAvailable(identity_manager, kEmail);
 
-  signin_manager->SignOut(signin_metrics::SIGNOUT_TEST,
-                          signin_metrics::SignoutDelete::IGNORE_METRIC);
+  EXPECT_TRUE(entry->IsAuthenticated());
+  EXPECT_EQ(identity::GetTestGaiaIdForEmail(kEmail), entry->GetGAIAId());
+  EXPECT_EQ(kEmail, base::UTF16ToUTF8(entry->GetUserName()));
+
+  identity::ClearPrimaryAccount(identity_manager);
   EXPECT_FALSE(entry->IsAuthenticated());
   EXPECT_TRUE(entry->IsSigninRequired());
 }
