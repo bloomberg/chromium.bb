@@ -18,6 +18,8 @@ std::vector<uint8_t> RemoteAccessibility::GetTokenForLocalElement(id element) {
 base::scoped_nsobject<NSAccessibilityRemoteUIElement>
 RemoteAccessibility::GetRemoteElementFromToken(
     const std::vector<uint8_t>& token) {
+  if (token.empty())
+    return base::scoped_nsobject<NSAccessibilityRemoteUIElement>();
   base::scoped_nsobject<NSData> data(
       [[NSData alloc] initWithBytes:token.data() length:token.size()]);
   return base::scoped_nsobject<NSAccessibilityRemoteUIElement>(

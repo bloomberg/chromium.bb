@@ -46,15 +46,12 @@ void WebContentsNSViewBridge::SetParentNSView(
   CHECK(parent_ns_view);
   [parent_ns_view addSubview:cocoa_view_];
 
-  parent_accessibility_element_ =
-      ui::RemoteAccessibility::GetRemoteElementFromToken(parent_token);
-  [cocoa_view_ setAccessibilityParentElement:parent_accessibility_element_];
+  // TODO(https://crbug.com/924955): Ignore the accessibility token because
+  // using it causes crashes.
 }
 
 void WebContentsNSViewBridge::ResetParentNSView() {
   [cocoa_view_ removeFromSuperview];
-  [cocoa_view_ setAccessibilityParentElement:nil];
-  parent_accessibility_element_.reset();
 }
 
 void WebContentsNSViewBridge::SetBounds(const gfx::Rect& bounds_in_window) {
