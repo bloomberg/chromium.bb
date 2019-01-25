@@ -165,6 +165,38 @@ class WebContentsLifetimeHelper
     if (navigations_.find(handle) != navigations_.end()) {
       navigations_.erase(handle);
     }
+
+    // If this navigation is committing here, it has passed the Navigation
+    // Throttle checks. Record time penalty UMA about the final state of the
+    // navigation.
+    PreviewsUITabHelper* ui_tab_helper =
+        PreviewsUITabHelper::FromWebContents(web_contents());
+    previews::PreviewsUserData* previews_data =
+        ui_tab_helper->GetPreviewsUserData(handle);
+    if (!handle->HasCommitted() || !previews_data ||
+        !previews_data->server_lite_page_info()) {
+      return;
+    }
+
+    previews::PreviewsUserData::ServerLitePageInfo* info =
+        previews_data->server_lite_page_info();
+
+    // Don't record this UMA for an unknown or control group status.
+    if (info->status == previews::ServerLitePageStatus::kUnknown ||
+        info->status == previews::ServerLitePageStatus::kControl) {
+      return;
+    }
+
+    base::TimeDelta penalty =
+        handle->NavigationStart() - info->original_navigation_start;
+
+    base::LinearHistogram::FactoryTimeGet(
+        base::StringPrintf(
+            "Previews.ServerLitePage.Penalty.%s",
+            previews::ServerLitePageStatusToString(info->status).c_str()),
+        base::TimeDelta(), base::TimeDelta::FromMinutes(3), 50,
+        base::HistogramBase::kUmaTargetedHistogramFlag)
+        ->Add(penalty.InMilliseconds());
   }
 
   // This method should be called after some delay to cancel an ongoing previews
@@ -566,9 +598,6 @@ PreviewsLitePageNavigationThrottle::WillRedirectRequest() {
     if (GURL(original_url) == navigation_handle()->GetURL()) {
       SetServerLitePageInfoStatus(previews::ServerLitePageStatus::kBypass);
       manager_->AddSingleBypass(navigation_handle()->GetURL().spec());
-      UMA_HISTOGRAM_MEDIUM_TIMES(
-          "Previews.ServerLitePage.HttpOnlyFallbackPenalty",
-          base::TimeTicks::Now() - navigation_handle()->NavigationStart());
       UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
                                 ServerResponse::kPreviewUnavailable);
 
@@ -662,11 +691,6 @@ PreviewsLitePageNavigationThrottle::WillProcessResponse() {
 
     return content::NavigationThrottle::PROCEED;
   }
-
-  const base::TimeDelta penalty =
-      base::TimeTicks::Now() - navigation_handle()->NavigationStart();
-  UMA_HISTOGRAM_MEDIUM_TIMES("Previews.ServerLitePage.HttpOnlyFallbackPenalty",
-                             penalty);
 
   if (response_code == net::HTTP_SERVICE_UNAVAILABLE) {
     std::string retry_after_header;
