@@ -481,7 +481,8 @@ def UpdateBinhostJson(buildroot):
 def Build(buildroot, board, build_autotest, usepkg,
           packages=(), skip_chroot_upgrade=True,
           extra_env=None, chrome_root=None, noretry=False,
-          chroot_args=None, event_file=None, run_goma=False):
+          chroot_args=None, event_file=None, run_goma=False,
+          build_all_with_goma=False):
   """Wrapper around build_packages.
 
   Args:
@@ -498,6 +499,7 @@ def Build(buildroot, board, build_autotest, usepkg,
     noretry: Do not retry package failures.
     chroot_args: The args to the chroot.
     event_file: File name that events will be logged to.
+    build_all_with_goma: Use goma to build all board packages.
     run_goma: Set ./build_package --run_goma option, which starts and stops
       goma server in chroot while building packages.
   """
@@ -518,6 +520,9 @@ def Build(buildroot, board, build_autotest, usepkg,
 
   if run_goma:
     cmd.append('--run_goma')
+
+  if build_all_with_goma:
+    cmd.append('--build_all_with_goma')
 
   if not chroot_args:
     chroot_args = []

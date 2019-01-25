@@ -621,11 +621,13 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       self.board_runattrs.SetParallel('packages_under_test', set(deps.keys()))
 
   def _ShouldEnableGoma(self):
-    # Enable goma if 1) chrome actually needs to be built, 2) not
-    # latest_toolchain (because toolchain prebuilt package may not be available
-    # for goma, crbug.com/728971) and 3) goma is available.
-    return (self._run.options.managed_chrome and not self._latest_toolchain and
-            self._run.options.goma_dir)
+    # Enable goma if 1) chrome actually needs to be built, or we want to use
+    # goma to build regular packages 2) not latest_toolchain (because toolchain
+    # prebuilt package may not be available for goma, crbug.com/728971) and
+    # 3) goma is available.
+    return ((self._run.options.managed_chrome or
+             self._run.config.build_all_with_goma) and
+            not self._latest_toolchain and self._run.options.goma_dir)
 
   def _SetupGomaIfNecessary(self):
     """Sets up goma envs if necessary.
@@ -698,7 +700,8 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
         chroot_args=chroot_args,
         extra_env=self._portage_extra_env,
         event_file=event_file_in_chroot,
-        run_goma=run_goma)
+        run_goma=run_goma,
+        build_all_with_goma=self._run.config.build_all_with_goma)
 
     if event_file and os.path.isfile(event_file):
       logging.info('Archive build-events.json file')

@@ -1073,6 +1073,9 @@ def DefaultSettings():
       # Which goma client to use.
       goma_client_type=None,
 
+      # Try to use goma to build all packages.
+      build_all_with_goma=False,
+
       # This is a LUCI Scheduler schedule string. Setting this will create
       # a LUCI Scheduler for this build on swarming (not buildbot).
       # See: https://goo.gl/VxSzFf
