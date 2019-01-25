@@ -6,9 +6,7 @@
 #define COMPONENTS_PDF_BROWSER_PDF_WEB_CONTENTS_HELPER_H_
 
 #include <memory>
-#include <string>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "components/pdf/common/pdf.mojom.h"
 #include "content/public/browser/touch_selection_controller_client_manager.h"
@@ -67,6 +65,7 @@ class PDFWebContentsHelper
 
  private:
   friend class content::WebContentsUserData<PDFWebContentsHelper>;
+
   PDFWebContentsHelper(content::WebContents* web_contents,
                        std::unique_ptr<PDFWebContentsHelperClient> client);
 

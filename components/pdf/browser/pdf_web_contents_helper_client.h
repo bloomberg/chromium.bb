@@ -5,10 +5,6 @@
 #ifndef COMPONENTS_PDF_BROWSER_PDF_WEB_CONTENTS_HELPER_CLIENT_H_
 #define COMPONENTS_PDF_BROWSER_PDF_WEB_CONTENTS_HELPER_CLIENT_H_
 
-#include "base/callback.h"
-#include "base/strings/string16.h"
-#include "ipc/ipc_message.h"
-
 namespace content {
 class WebContents;
 }
