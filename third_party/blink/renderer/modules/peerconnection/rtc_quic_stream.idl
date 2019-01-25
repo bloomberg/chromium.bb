@@ -17,18 +17,18 @@ enum RTCQuicStreamState {
    OriginTrialEnabled=RTCQuicTransport,
    SecureContext
 ] interface RTCQuicStream : EventTarget {
-    readonly attribute RTCQuicTransport transport;
-    readonly attribute RTCQuicStreamState state;
-    readonly attribute unsigned long readBufferedAmount;
-    readonly attribute unsigned long maxReadBufferedAmount;
-    readonly attribute unsigned long writeBufferedAmount;
-    readonly attribute unsigned long maxWriteBufferedAmount;
-    [RaisesException] RTCQuicStreamReadResult readInto(Uint8Array data);
-    [RaisesException] void write(RTCQuicStreamWriteParameters data);
-    void reset();
-    [CallWith=ScriptState, RaisesException]
+    [Measure] readonly attribute RTCQuicTransport transport;
+    [Measure] readonly attribute RTCQuicStreamState state;
+    [Measure] readonly attribute unsigned long readBufferedAmount;
+    [Measure] readonly attribute unsigned long maxReadBufferedAmount;
+    [Measure] readonly attribute unsigned long writeBufferedAmount;
+    [Measure] readonly attribute unsigned long maxWriteBufferedAmount;
+    [Measure, RaisesException] RTCQuicStreamReadResult readInto(Uint8Array data);
+    [Measure, RaisesException] void write(RTCQuicStreamWriteParameters data);
+    [Measure] void reset();
+    [CallWith=ScriptState, Measure, RaisesException]
     Promise<void> waitForWriteBufferedAmountBelow(unsigned long amount);
-    [CallWith=ScriptState, RaisesException]
+    [CallWith=ScriptState, Measure, RaisesException]
     Promise<void> waitForReadable(unsigned long amount);
     attribute EventHandler onstatechange;
     // TODO(crbug.com/868068): Implement remaining methods, attributes, and events.

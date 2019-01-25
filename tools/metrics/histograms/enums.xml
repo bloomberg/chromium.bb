@@ -21383,6 +21383,39 @@ Called by update_net_error_codes.py.-->
   <int value="2737" label="WebShareCanShare"/>
   <int value="2738" label="PriorityHints"/>
   <int value="2739" label="TextAutosizedCrossSiteIframe"/>
+  <int value="2740" label="V8RTCQuicTransport_Constructor"/>
+  <int value="2741" label="V8RTCQuicTransport_Transport_AttributeGetter"/>
+  <int value="2742" label="V8RTCQuicTransport_State_AttributeGetter"/>
+  <int value="2743" label="V8RTCQuicTransport_GetKey_Method"/>
+  <int value="2744" label="V8RTCQuicTransport_GetStats_Method"/>
+  <int value="2745" label="V8RTCQuicTransport_Connect_Method"/>
+  <int value="2746" label="V8RTCQuicTransport_Listen_Method"/>
+  <int value="2747" label="V8RTCQuicTransport_Stop_Method"/>
+  <int value="2748" label="V8RTCQuicTransport_CreateStream_Method"/>
+  <int value="2749" label="V8RTCIceTransport_Constructor"/>
+  <int value="2750" label="V8RTCIceTransport_Role_AttributeGetter"/>
+  <int value="2751" label="V8RTCIceTransport_State_AttributeGetter"/>
+  <int value="2752" label="V8RTCIceTransport_GatheringState_AttributeGetter"/>
+  <int value="2753" label="V8RTCIceTransport_GetLocalCandidates_Method"/>
+  <int value="2754" label="V8RTCIceTransport_GetRemoteCandidates_Method"/>
+  <int value="2755" label="V8RTCIceTransport_GetSelectedCandidatePair_Method"/>
+  <int value="2756" label="V8RTCIceTransport_GetLocalParameters_Method"/>
+  <int value="2757" label="V8RTCIceTransport_GetRemoteParameters_Method"/>
+  <int value="2758" label="V8RTCQuicStream_Transport_AttributeGetter"/>
+  <int value="2759" label="V8RTCQuicStream_State_AttributeGetter"/>
+  <int value="2760" label="V8RTCQuicStream_ReadBufferedAmount_AttributeGetter"/>
+  <int value="2761"
+      label="V8RTCQuicStream_MaxReadBufferedAmount_AttributeGetter"/>
+  <int value="2762"
+      label="V8RTCQuicStream_WriteBufferedAmount_AttributeGetter"/>
+  <int value="2763"
+      label="V8RTCQuicStream_MaxWriteBufferedAmount_AttributeGetter"/>
+  <int value="2764" label="V8RTCQuicStream_ReadInto_Method"/>
+  <int value="2765" label="V8RTCQuicStream_Write_Method"/>
+  <int value="2766" label="V8RTCQuicStream_Reset_Method"/>
+  <int value="2767"
+      label="V8RTCQuicStream_WaitForWriteBufferedAmountBelow_Method"/>
+  <int value="2768" label="V8RTCQuicStream_WaitForReadable_Method"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
@@ -46002,6 +46035,19 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Missing digitalSignature"/>
   <int value="6" label="Missing keyEncipherment"/>
   <int value="7" label="Error parsing certificate"/>
+</enum>
+
+<enum name="RTCQuicStreamReadIntoResult">
+  <int value="0" label="SomeDataWithFin"/>
+  <int value="1" label="SomeDataNoFin"/>
+  <int value="2" label="NoDataWithFin"/>
+  <int value="3" label="NoDataNoFin"/>
+</enum>
+
+<enum name="RTCQuicStreamWriteUsage">
+  <int value="0" label="SomeDataWithFin"/>
+  <int value="1" label="SomeDataNoFin"/>
+  <int value="2" label="NoDataWithFin"/>
 </enum>
 
 <enum name="RulesetVerificationStatus">
