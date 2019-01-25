@@ -489,7 +489,7 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   // Try to reuse line box fragments from cached fragments if possible.
   // When possible, this adds fragments to |container_builder_| and update
   // |previous_inflow_position| and |BreakToken()|.
-  scoped_refptr<const NGBreakToken> previous_inline_break_token;
+  scoped_refptr<const NGInlineBreakToken> previous_inline_break_token;
   NGBlockChildIterator child_iterator(Node().FirstChild(), BreakToken());
   for (auto entry = child_iterator.NextChild();
        NGLayoutInputNode child = entry.node;
@@ -724,7 +724,7 @@ const NGPaintFragment* NGBlockLayoutAlgorithm::ReusableLineBoxContainer(
   return paint_fragment;
 }
 
-const NGBreakToken* NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
+const NGInlineBreakToken* NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
     NGInlineNode inline_node,
     NGPreviousInflowPosition* previous_inflow_position,
     bool* aborted_out) {
@@ -798,7 +798,7 @@ const NGBreakToken* NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
   NGBreakToken* last_break_token = last_fragment.fragment.BreakToken();
   DCHECK(last_break_token);
   DCHECK(!last_break_token->IsFinished());
-  return last_break_token;
+  return ToNGInlineBreakToken(last_break_token);
 }
 
 void NGBlockLayoutAlgorithm::HandleOutOfFlowPositioned(
@@ -1187,7 +1187,7 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
     NGLayoutInputNode child,
     const NGBreakToken* child_break_token,
     NGPreviousInflowPosition* previous_inflow_position,
-    scoped_refptr<const NGBreakToken>* previous_inline_break_token) {
+    scoped_refptr<const NGInlineBreakToken>* previous_inline_break_token) {
   DCHECK(child);
   DCHECK(!child.IsFloating());
   DCHECK(!child.IsOutOfFlowPositioned());
@@ -1453,7 +1453,8 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
       empty_block_affected_by_clearance);
 
   *previous_inline_break_token =
-      child.IsInline() ? layout_result->PhysicalFragment()->BreakToken()
+      child.IsInline() ? ToNGInlineBreakToken(
+                             layout_result->PhysicalFragment()->BreakToken())
                        : nullptr;
 
   return true;
