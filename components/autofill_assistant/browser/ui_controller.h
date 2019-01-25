@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "components/autofill_assistant/browser/chip.h"
+#include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/payment_information.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/state.h"
@@ -18,23 +19,17 @@
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
 namespace autofill_assistant {
-class ShowDetailsProto;
 
 // Controller to control autofill assistant UI.
 class UiController {
  public:
-
   virtual ~UiController() = default;
 
   // Called when the controller has entered a new state.
   virtual void OnStateChanged(AutofillAssistantState new_state) = 0;
 
-  // Show status message on the bottom bar.
-  virtual void ShowStatusMessage(const std::string& message) = 0;
-
-  // Returns the current status message. The purpose of this call is to allow
-  // restoring a previous status message.
-  virtual std::string GetStatusMessage() = 0;
+  // Report that the status message has changed.
+  virtual void OnStatusMessageChanged(const std::string& message) = 0;
 
   // Shuts down Autofill Assistant: hide the UI and frees any associated state.
   //
@@ -58,25 +53,12 @@ class UiController {
       const std::string& title,
       const std::vector<std::string>& supported_basic_card_networks) = 0;
 
-  // Hide contextual information.
-  virtual void HideDetails() = 0;
+  // Called when details have changed. Details will be null if they have been
+  // cleared.
+  virtual void OnDetailsChanged(const Details* details) = 0;
 
-  // Show details with given |title|, |description|, |mid| and |date| (given in
-  // the RFC 3339 format).
-  virtual void ShowInitialDetails(const std::string& title,
-                                  const std::string& description,
-                                  const std::string& mid,
-                                  const std::string& date) = 0;
-
-  // Show contextual information. Returns false if the contextual information is
-  // not similar to the current one.
-  // TODO(806868): Pass details to the native side instead of comparing on the
-  // Java side.
-  virtual void ShowDetails(const ShowDetailsProto& details,
-                           base::OnceCallback<void(bool)> callback) = 0;
-
-  // Show the progress bar with |message| and set it at |progress|%.
-  virtual void ShowProgressBar(int progress, const std::string& message) = 0;
+  // Show the progress bar and set it at |progress|%.
+  virtual void ShowProgressBar(int progress) = 0;
 
   // Hide the progress bar.
   virtual void HideProgressBar() = 0;

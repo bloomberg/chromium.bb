@@ -117,6 +117,32 @@ void Controller::SetTouchableElementArea(const ElementAreaProto& area) {
   touchable_element_area_.SetFromProto(area);
 }
 
+void Controller::SetStatusMessage(const std::string& message) {
+  status_message_ = message;
+  GetUiController()->OnStatusMessageChanged(message);
+}
+
+std::string Controller::GetStatusMessage() const {
+  return status_message_;
+}
+
+void Controller::SetDetails(const Details& details) {
+  if (!details_) {
+    details_ = std::make_unique<Details>();
+  }
+  *details_ = details;
+  GetUiController()->OnDetailsChanged(details_.get());
+}
+
+void Controller::ClearDetails() {
+  details_.reset();
+  GetUiController()->OnDetailsChanged(nullptr);
+}
+
+const Details* Controller::GetDetails() const {
+  return details_.get();
+}
+
 void Controller::EnterState(AutofillAssistantState state) {
   if (state_ == state)
     return;
@@ -170,7 +196,7 @@ void Controller::OnPeriodicScriptCheck() {
   if (should_fail_after_checking_scripts_ &&
       ++total_script_check_count_ >= kAutostartCheckCountLimit) {
     should_fail_after_checking_scripts_ = false;
-    GetUiController()->ShowStatusMessage(
+    SetStatusMessage(
         l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR));
     EnterState(AutofillAssistantState::STOPPED);
     return;
@@ -230,7 +256,7 @@ void Controller::OnScriptExecuted(const std::string& script_path,
                                   const ScriptExecutor::Result& result) {
   if (!result.success) {
     LOG(ERROR) << "Failed to execute script " << script_path;
-    GetUiController()->ShowStatusMessage(
+    SetStatusMessage(
         l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR));
     EnterState(AutofillAssistantState::STOPPED);
     return;
@@ -279,8 +305,7 @@ void Controller::OnScriptExecuted(const std::string& script_path,
 }
 
 void Controller::GiveUp() {
-  GetUiController()->ShowStatusMessage(
-      l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP));
+  SetStatusMessage(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP));
   EnterState(AutofillAssistantState::STOPPED);
 }
 
@@ -347,11 +372,10 @@ void Controller::FinishStart(const GURL& initial_url) {
   GetOrCheckScripts(initial_url);
   if (allow_autostart_) {
     should_fail_after_checking_scripts_ = true;
-    MaybeShowInitialDetails();
-    GetUiController()->ShowProgressBar(
-        kAutostartInitialProgress,
-        l10n_util::GetStringFUTF8(IDS_AUTOFILL_ASSISTANT_LOADING,
-                                  base::UTF8ToUTF16(initial_url.host())));
+    MaybeSetInitialDetails();
+    SetStatusMessage(l10n_util::GetStringFUTF8(
+        IDS_AUTOFILL_ASSISTANT_LOADING, base::UTF8ToUTF16(initial_url.host())));
+    GetUiController()->ShowProgressBar(kAutostartInitialProgress);
   }
 
   touchable_element_area_.SetOnUpdate(base::BindRepeating(
@@ -361,43 +385,10 @@ void Controller::FinishStart(const GURL& initial_url) {
       base::Unretained(GetUiController())));
 }
 
-void Controller::MaybeShowInitialDetails() {
-  std::string title;
-  std::string description;
-  std::string mid;
-  std::string date;
-  bool empty = true;
-
-  for (const auto& iter : parameters_) {
-    std::string key = iter.first;
-    if (base::EndsWith(key, "E_NAME", base::CompareCase::SENSITIVE)) {
-      title = iter.second;
-      empty = false;
-      continue;
-    }
-
-    if (base::EndsWith(key, "R_NAME", base::CompareCase::SENSITIVE)) {
-      description = iter.second;
-      empty = false;
-      continue;
-    }
-
-    if (base::EndsWith(key, "MID", base::CompareCase::SENSITIVE)) {
-      mid = iter.second;
-      empty = false;
-      continue;
-    }
-
-    if (base::EndsWith(key, "DATETIME", base::CompareCase::SENSITIVE)) {
-      date = iter.second;
-      empty = false;
-      continue;
-    }
-  }
-
-  if (!empty) {
-    GetUiController()->ShowInitialDetails(title, description, mid, date);
-  }
+void Controller::MaybeSetInitialDetails() {
+  Details details;
+  if (details.UpdateFromParameters(parameters_))
+    SetDetails(details);
 }
 
 void Controller::Start(const GURL& initialUrl,
@@ -448,6 +439,7 @@ void Controller::OnUserInteractionInsideTouchableArea() {
 std::string Controller::GetDebugContext() {
   base::Value dict(base::Value::Type::DICTIONARY);
 
+  dict.SetKey("status", base::Value(status_message_));
   std::vector<base::Value> parameters_js;
   for (const auto& entry : parameters_) {
     base::Value parameter_js = base::Value(base::Value::Type::DICTIONARY);
@@ -456,6 +448,9 @@ std::string Controller::GetDebugContext() {
   }
   dict.SetKey("parameters", base::Value(parameters_js));
   dict.SetKey("scripts", script_tracker_->GetDebugContext());
+
+  if (details_)
+    dict.SetKey("details", details_->GetDebugContext());
 
   std::string output_js;
   base::JSONWriter::Write(dict, &output_js);
@@ -491,7 +486,7 @@ void Controller::OnRunnableScriptsChanged(
   for (const auto& script : runnable_scripts) {
     // runnable_scripts is ordered by priority.
     if (!script.initial_prompt.empty()) {
-      GetUiController()->ShowStatusMessage(script.initial_prompt);
+      SetStatusMessage(script.initial_prompt);
       break;
     }
   }

@@ -32,6 +32,12 @@ class UiDelegate {
   // when analyzing feedback forms and for debugging in general.
   virtual std::string GetDebugContext() = 0;
 
+  // Returns the current status message.
+  virtual std::string GetStatusMessage() const = 0;
+
+  // Returns the current contextual information. May be null if empty.
+  virtual const Details* GetDetails() const = 0;
+
  protected:
   UiDelegate() = default;
 };

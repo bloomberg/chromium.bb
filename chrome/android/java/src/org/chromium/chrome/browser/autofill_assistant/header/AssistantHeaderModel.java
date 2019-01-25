@@ -49,12 +49,6 @@ public class AssistantHeaderModel extends PropertyModel {
     }
 
     @CalledByNative
-    private String getStatusMessage() {
-        String statusMessage = get(STATUS_MESSAGE);
-        return statusMessage != null ? statusMessage : "";
-    }
-
-    @CalledByNative
     private void setProgress(int progress) {
         set(PROGRESS, progress);
     }

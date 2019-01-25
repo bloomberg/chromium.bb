@@ -48,7 +48,8 @@ class MockActionDelegate : public ActionDelegate {
                     const Selector&,
                     base::OnceCallback<void(ProcessedActionStatusProto)>&));
 
-  MOCK_METHOD1(ShowStatusMessage, void(const std::string& message));
+  MOCK_METHOD1(SetStatusMessage, void(const std::string& message));
+  MOCK_METHOD0(GetStatusMessage, std::string());
   MOCK_METHOD2(ClickOrTapElement,
                void(const Selector& selector,
                     base::OnceCallback<void(bool)> callback));
@@ -136,11 +137,9 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD0(GetPersonalDataManager, autofill::PersonalDataManager*());
   MOCK_METHOD0(GetWebContents, content::WebContents*());
   MOCK_METHOD1(StopCurrentScriptAndShutdown, void(const std::string& message));
-  MOCK_METHOD0(HideDetails, void());
-  MOCK_METHOD2(ShowDetails,
-               void(const ShowDetailsProto& details,
-                    base::OnceCallback<void(bool)> callback));
-  MOCK_METHOD2(ShowProgressBar, void(int progress, const std::string& message));
+  MOCK_METHOD1(SetDetails, void(const Details& details));
+  MOCK_METHOD0(ClearDetails, void());
+  MOCK_METHOD1(ShowProgressBar, void(int progress));
   MOCK_METHOD0(HideProgressBar, void());
 };
 

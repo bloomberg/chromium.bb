@@ -27,7 +27,7 @@ void FocusElementAction::InternalProcessAction(ActionDelegate* delegate,
   DCHECK_GT(focus_element.element().selectors_size(), 0);
 
   if (!focus_element.title().empty()) {
-    delegate->ShowStatusMessage(focus_element.title());
+    delegate->SetStatusMessage(focus_element.title());
   }
   delegate->ShortWaitForElementExist(
       Selector(focus_element.element()),

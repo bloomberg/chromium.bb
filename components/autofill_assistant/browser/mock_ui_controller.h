@@ -21,9 +21,8 @@ class MockUiController : public UiController {
   MockUiController();
   ~MockUiController() override;
 
+  MOCK_METHOD1(OnStatusMessageChanged, void(const std::string& message));
   MOCK_METHOD1(OnStateChanged, void(AutofillAssistantState));
-  MOCK_METHOD1(ShowStatusMessage, void(const std::string& message));
-  MOCK_METHOD0(GetStatusMessage, std::string());
   MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD0(Close, void());
   MOCK_METHOD1(SetChips, void(std::unique_ptr<std::vector<Chip>> chips));
@@ -35,16 +34,8 @@ class MockUiController : public UiController {
                callback,
            const std::string& title,
            const std::vector<std::string>& supported_basic_card_networks));
-  MOCK_METHOD0(HideDetails, void());
-  MOCK_METHOD4(ShowInitialDetails,
-               void(const std::string& title,
-                    const std::string& description,
-                    const std::string& mid,
-                    const std::string& date));
-  MOCK_METHOD2(ShowDetails,
-               void(const ShowDetailsProto& details,
-                    base::OnceCallback<void(bool)> callback));
-  MOCK_METHOD2(ShowProgressBar, void(int progress, const std::string& message));
+  MOCK_METHOD1(OnDetailsChanged, void(const Details* details));
+  MOCK_METHOD1(ShowProgressBar, void(int progress));
   MOCK_METHOD0(HideProgressBar, void());
   MOCK_METHOD2(UpdateTouchableArea,
                void(bool enabled, const std::vector<RectF>& areas));

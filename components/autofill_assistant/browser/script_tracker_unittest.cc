@@ -78,6 +78,15 @@ class ScriptTrackerTest : public testing::Test,
 
   void SetTouchableElementArea(const ElementAreaProto& element_area) override {}
 
+  void SetStatusMessage(const std::string& status_message) override {
+    status_message_ = status_message;
+  }
+  std::string GetStatusMessage() const { return status_message_; }
+
+  void SetDetails(const Details& details) override {}
+
+  void ClearDetails() override {}
+
   // Overrides ScriptTracker::Listener
   void OnRunnableScriptsChanged(
       const std::vector<ScriptHandle>& runnable_scripts) override {
@@ -150,6 +159,7 @@ class ScriptTrackerTest : public testing::Test,
   int runnable_scripts_changed_;
   std::vector<ScriptHandle> runnable_scripts_;
   ScriptTracker tracker_;
+  std::string status_message_;
 };
 
 TEST_F(ScriptTrackerTest, NoScripts) {
