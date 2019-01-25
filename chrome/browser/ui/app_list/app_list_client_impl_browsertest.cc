@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -11,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
@@ -200,6 +202,14 @@ using AppListClientSearchResultsBrowserTest = extensions::ExtensionBrowserTest;
 // Test showing search results, and uninstalling one of them while displayed.
 IN_PROC_BROWSER_TEST_F(AppListClientSearchResultsBrowserTest,
                        UninstallSearchResult) {
+  // Zero state changes UI behavior. This test case tests the expected UI
+  // behavior with zero state being disabled.
+  // TODO(jennyz): write new test case for zero state, crbug.com/925195.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      app_list_features::kEnableZeroStateSuggestions);
+  ASSERT_FALSE(app_list_features::IsZeroStateSuggestionsEnabled());
+
   base::FilePath test_extension_path;
   ASSERT_TRUE(
       base::PathService::Get(chrome::DIR_TEST_DATA, &test_extension_path));

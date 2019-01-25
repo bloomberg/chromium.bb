@@ -173,7 +173,12 @@ TEST_F(SearchBoxViewTest, CloseButtonVisibleAfterTyping) {
 // activated.
 TEST_F(SearchBoxViewTest, CloseButtonInvisibleAfterSearchBoxActived) {
   SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
-  EXPECT_FALSE(view()->close_button()->visible());
+
+  // UI behavior is different with Zero State enabled.
+  if (app_list_features::IsZeroStateSuggestionsEnabled())
+    EXPECT_TRUE(view()->close_button()->visible());
+  else
+    EXPECT_FALSE(view()->close_button()->visible());
 }
 
 // Tests that the close button becomes invisible after close button is clicked.
@@ -302,8 +307,12 @@ TEST_F(SearchBoxViewAssistantButtonTest, AssistantButtonVisibleByDefault) {
 // Tests that the assistant button is visible after the search box is activated.
 TEST_F(SearchBoxViewAssistantButtonTest,
        AssistantButtonVisibleAfterSearchBoxActived) {
-  SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
-  EXPECT_TRUE(view()->assistant_button()->visible());
+  // Assistant button is not showing up under zero state for now.
+  // TODO(jennyz): Make assistant button show up under zero state.
+  if (!app_list_features::IsZeroStateSuggestionsEnabled()) {
+    SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
+    EXPECT_TRUE(view()->assistant_button()->visible());
+  }
 }
 
 // Tests that the assistant button is invisible after typing in the search box,
@@ -313,8 +322,12 @@ TEST_F(SearchBoxViewAssistantButtonTest,
   KeyPress(ui::VKEY_A);
   EXPECT_FALSE(view()->assistant_button()->visible());
 
-  KeyPress(ui::VKEY_BACK);
-  EXPECT_TRUE(view()->assistant_button()->visible());
+  // Assistant button is not showing up under zero state for now.
+  // TODO(crbug.com/925455): Make assistant button show up under zero state.
+  if (!app_list_features::IsZeroStateSuggestionsEnabled()) {
+    KeyPress(ui::VKEY_BACK);
+    EXPECT_TRUE(view()->assistant_button()->visible());
+  }
 }
 
 class SearchBoxViewAutocompleteTest
