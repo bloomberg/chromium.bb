@@ -111,11 +111,10 @@ public class MainPreferences extends PreferenceFragment
             getPreferenceScreen().removePreference(findPreference(PREF_SYNC_AND_SERVICES));
         }
 
-        setManagedPreferenceDelegateForPreference(PREF_SEARCH_ENGINE);
-        setManagedPreferenceDelegateForPreference(PREF_SAVED_PASSWORDS);
-        setManagedPreferenceDelegateForPreference(PREF_DATA_REDUCTION);
-
         updatePasswordsPreference();
+
+        setManagedPreferenceDelegateForPreference(PREF_SEARCH_ENGINE);
+        setManagedPreferenceDelegateForPreference(PREF_DATA_REDUCTION);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // If we are on Android O+ the Notifications preference should lead to the Android
@@ -307,9 +306,6 @@ public class MainPreferences extends PreferenceFragment
         return new ManagedPreferenceDelegate() {
             @Override
             public boolean isPreferenceControlledByPolicy(Preference preference) {
-                if (PREF_SAVED_PASSWORDS.equals(preference.getKey())) {
-                    return PrefServiceBridge.getInstance().isRememberPasswordsManaged();
-                }
                 if (PREF_DATA_REDUCTION.equals(preference.getKey())) {
                     return DataReductionProxySettings.getInstance().isDataReductionProxyManaged();
                 }
@@ -321,11 +317,6 @@ public class MainPreferences extends PreferenceFragment
 
             @Override
             public boolean isPreferenceClickDisabledByPolicy(Preference preference) {
-                if (PREF_SAVED_PASSWORDS.equals(preference.getKey())) {
-                    PrefServiceBridge prefs = PrefServiceBridge.getInstance();
-                    return prefs.isRememberPasswordsManaged()
-                            && !prefs.isRememberPasswordsEnabled();
-                }
                 if (PREF_DATA_REDUCTION.equals(preference.getKey())) {
                     DataReductionProxySettings settings = DataReductionProxySettings.getInstance();
                     return settings.isDataReductionProxyManaged()

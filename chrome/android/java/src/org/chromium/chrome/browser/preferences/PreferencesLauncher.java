@@ -133,12 +133,13 @@ public class PreferencesLauncher {
             Activity activity, @ManagePasswordsReferrer int referrer) {
         RecordHistogram.recordEnumeratedHistogram("PasswordManager.ManagePasswordsReferrer",
                 referrer, ManagePasswordsReferrer.MAX_VALUE + 1);
-
         if (isSyncingPasswordsWithoutCustomPassphrase()) {
             RecordHistogram.recordEnumeratedHistogram(
                     "PasswordManager.ManagePasswordsReferrerSignedInAndSyncing", referrer,
                     ManagePasswordsReferrer.MAX_VALUE + 1);
-            if (tryShowingTheGooglePasswordManager(activity)) return;
+            if (!PrefServiceBridge.getInstance().isRememberPasswordsManaged()) {
+                if (tryShowingTheGooglePasswordManager(activity)) return;
+            }
         }
 
         launchSettingsPage(activity, SavePasswordsPreferences.class);

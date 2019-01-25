@@ -23,6 +23,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
@@ -409,7 +410,10 @@ public class SavePasswordsPreferences
         });
         mSavePasswordsSwitch.setManagedPreferenceDelegate(
                 preference -> PrefServiceBridge.getInstance().isRememberPasswordsManaged());
-        getPreferenceScreen().addPreference(mSavePasswordsSwitch);
+
+        try (StrictModeContext ctx = StrictModeContext.allowDiskReads()) {
+            getPreferenceScreen().addPreference(mSavePasswordsSwitch);
+        }
 
         // Note: setting the switch state before the preference is added to the screen results in
         // some odd behavior where the switch state doesn't always match the internal enabled state
