@@ -637,16 +637,15 @@ bool WebAppShortcutCreator::BuildShortcut(
          UpdateIcon(staging_path);
 }
 
-size_t WebAppShortcutCreator::CreateShortcutsAt(
+void WebAppShortcutCreator::CreateShortcutsAt(
     const std::vector<base::FilePath>& dst_app_paths,
     std::vector<base::FilePath>* updated_paths) const {
   DCHECK(updated_paths && updated_paths->empty());
   DCHECK(!dst_app_paths.empty());
-  size_t succeeded = 0;
 
   base::ScopedTempDir scoped_temp_dir;
   if (!scoped_temp_dir.CreateUniqueTempDir())
-    return 0;
+    return;
 
   // Create the bundle in |staging_path|. Note that the staging path will be
   // encoded in CFBundleName, and only .apps with that exact name will have
@@ -656,7 +655,7 @@ size_t WebAppShortcutCreator::CreateShortcutsAt(
   base::FilePath staging_path =
       scoped_temp_dir.GetPath().Append(dst_app_paths.front().BaseName());
   if (!BuildShortcut(staging_path))
-    return 0;
+    return;
 
   // Copy to each destination in |dst_app_paths|.
   for (const auto& dst_app_path : dst_app_paths) {
@@ -684,10 +683,7 @@ size_t WebAppShortcutCreator::CreateShortcutsAt(
                                              .Append("MacOS")
                                              .Append("app_mode_loader"));
     updated_paths->push_back(dst_app_path);
-    ++succeeded;
   }
-
-  return succeeded;
 }
 
 bool WebAppShortcutCreator::CreateShortcuts(
@@ -695,29 +691,11 @@ bool WebAppShortcutCreator::CreateShortcuts(
     ShortcutLocations creation_locations) {
   DCHECK_NE(creation_locations.applications_menu_location,
             APP_MENU_LOCATION_HIDDEN);
-  const base::FilePath applications_dir = GetApplicationsDirname();
-  if (applications_dir.empty() ||
-      !base::DirectoryExists(applications_dir.DirName())) {
-    LOG(ERROR) << "Couldn't find an Applications directory to copy app to.";
-    return false;
-  }
-
-  // Only set folder icons and a localized name once. This avoids concurrent
-  // calls to -[NSWorkspace setIcon:..], which is not reentrant.
-  static bool once = UpdateAppShortcutsSubdirLocalizedName(applications_dir);
-  if (!once)
-    LOG(ERROR) << "Failed to localize " << applications_dir.value();
-
-  std::vector<base::FilePath> app_paths;
-  app_paths.push_back(GetApplicationsShortcutPath(true /* avoid_conflicts */));
   std::vector<base::FilePath> updated_app_paths;
-  size_t success_count = CreateShortcutsAt(app_paths, &updated_app_paths);
-  if (success_count != app_paths.size())
+  if (!UpdateShortcuts(true /* create_if_needed */, &updated_app_paths))
     return false;
-
   if (creation_reason == SHORTCUT_CREATION_BY_USER)
     RevealAppShimInFinder();
-
   return true;
 }
 
@@ -744,14 +722,31 @@ bool WebAppShortcutCreator::UpdateShortcuts(
     std::vector<base::FilePath>* updated_paths) {
   DCHECK(updated_paths && updated_paths->empty());
 
-  // Never look in ~/Applications or search the system for a bundle ID in a test
-  // since that relies on global system state and potentially cruft that may be
-  // leftover from prior/crashed test runs.
-  // TODO(tapted): Remove this check when tests that arrive here via setting
-  // |g_app_shims_allow_update_and_launch_in_tests| can properly mock out all
-  // the calls below.
+  if (create_if_needed) {
+    const base::FilePath applications_dir = GetApplicationsDirname();
+    if (applications_dir.empty() ||
+        !base::DirectoryExists(applications_dir.DirName())) {
+      LOG(ERROR) << "Couldn't find an Applications directory to copy app to.";
+      return false;
+    }
+    // Only set folder icons and a localized name once. This avoids concurrent
+    // calls to -[NSWorkspace setIcon:..], which is not reentrant.
+    static bool once = UpdateAppShortcutsSubdirLocalizedName(applications_dir);
+    if (!once)
+      LOG(ERROR) << "Failed to localize " << applications_dir.value();
+  }
+
+  // Get the list of paths to (re)create.
   std::vector<base::FilePath> app_paths;
-  if (!g_app_shims_allow_update_and_launch_in_tests) {
+  if (g_app_shims_allow_update_and_launch_in_tests) {
+    // Never look in ~/Applications or search the system for a bundle ID in a
+    // test since that relies on global system state and potentially cruft that
+    // may be leftover from prior/crashed test runs.
+    // TODO(tapted): Remove this check when tests that arrive here via setting
+    // |g_app_shims_allow_update_and_launch_in_tests| can properly mock out all
+    // the calls below.
+    app_paths.push_back(app_data_dir_.Append(GetShortcutBasename()));
+  } else {
     // Update all copies located by bundle id (wherever it was moved or copied
     // by the user).
     app_paths = GetAppBundlesById();
@@ -764,18 +759,10 @@ bool WebAppShortcutCreator::UpdateShortcuts(
     }
     if (app_paths.empty())
       return false;
-  } else {
-    // If a test has set g_app_shims_allow_update_and_launch_in_tests, it means
-    // it relies on UpdateShortcuts() to create shortcuts. (Tests can't rely on
-    // install-triggered shortcut creation because they can't synchronize with
-    // the UI thread). So, allow shortcuts to be created for this case, even if
-    // none currently exist. TODO(tapted): Remove this when tests are properly
-    // mocked.
-    app_paths.push_back(app_data_dir_.Append(GetShortcutBasename()));
   }
 
-  size_t success_count = CreateShortcutsAt(app_paths, updated_paths);
-  return success_count == app_paths.size();
+  CreateShortcutsAt(app_paths, updated_paths);
+  return updated_paths->size() == app_paths.size();
 }
 
 base::FilePath WebAppShortcutCreator::GetApplicationsDirname() const {

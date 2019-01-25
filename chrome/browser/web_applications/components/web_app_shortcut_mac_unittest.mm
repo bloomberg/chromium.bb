@@ -333,36 +333,25 @@ TEST_F(WebAppShortcutCreatorTest, DeleteShortcuts) {
   EXPECT_CALL(shortcut_creator, GetApplicationsDirname())
       .WillRepeatedly(Return(destination_dir_));
 
+  // Create an extra shim in another folder. It should be deleted since its
+  // bundle id matches.
   std::string expected_bundle_id = kFakeChromeBundleId;
   expected_bundle_id += ".app.Profile-1-" + info_->extension_id;
   std::vector<base::FilePath> bundle_by_id_paths;
+  bundle_by_id_paths.push_back(shim_path_);
   bundle_by_id_paths.push_back(other_shim_path);
   EXPECT_CALL(shortcut_creator, GetAppBundlesByIdUnsorted())
-      .WillOnce(Return(bundle_by_id_paths));
-
+      .WillRepeatedly(Return(bundle_by_id_paths));
   EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED,
                                                web_app::ShortcutLocations()));
+
+  // Ensure the paths were created, and that they are destroyed.
   EXPECT_TRUE(base::PathExists(shim_path_));
-
-  // Create an extra shim in another folder. It should be deleted since its
-  // bundle id matches.
-  EXPECT_TRUE(shortcut_creator.BuildShortcut(other_shim_path));
   EXPECT_TRUE(base::PathExists(other_shim_path));
-
-  // Change the user_data_dir of the shim at shim_path_. It should not be
-  // deleted since its user_data_dir does not match.
-  NSString* plist_path = base::mac::FilePathToNSString(
-      shim_path_.Append("Contents").Append("Info.plist"));
-  NSMutableDictionary* plist =
-      [NSMutableDictionary dictionaryWithContentsOfFile:plist_path];
-  [plist setObject:@"fake_user_data_dir"
-            forKey:app_mode::kCrAppModeUserDataDirKey];
-  [plist writeToFile:plist_path atomically:YES];
-
   EXPECT_TRUE(
       base::PathService::Override(chrome::DIR_USER_DATA, app_data_dir_));
   shortcut_creator.DeleteShortcuts();
-  EXPECT_TRUE(base::PathExists(shim_path_));
+  EXPECT_FALSE(base::PathExists(shim_path_));
   EXPECT_FALSE(base::PathExists(other_shim_path));
 }
 
