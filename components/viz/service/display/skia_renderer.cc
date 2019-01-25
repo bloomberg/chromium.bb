@@ -53,18 +53,14 @@ struct SkiaRenderer::DrawRenderPassDrawQuadParams {
   // The "in" parameters that will be used when apply filters.
   const cc::FilterOperations* filters = nullptr;
 
-  // The "out" parameters returned by filters.
-  // A Skia image that should be sampled from instead of the original
-  // contents.
-  sk_sp<SkImage> filter_image;
-  // Non-null |color_filter| should be applied when |filter_image| is
-  // drawn. It is a portion of the image filter DAG that was separated out
-  // because direct color filter drawing is much faster than a
-  // colorFilterImageFilter drawing.
+  // The "out" parameters returned by CalculateRPDQParams.
+  // Root of the calculated image filter DAG to be applied to the render pass.
+  sk_sp<SkImageFilter> image_filter;
+  // Non-null |color_filter| should be applied when render pass is drawn. It is
+  // a portion of the image filter DAG that was separated out because direct
+  // color filter drawing is much faster than a colorFilterImageFilter drawing.
+  // TODO(skbug.com/8700): Delete this after Skia side implementation is done.
   sk_sp<SkColorFilter> color_filter;
-  gfx::Point src_offset;
-  gfx::RectF dst_rect;
-  gfx::RectF tex_coord_rect;
 };
 
 namespace {
@@ -930,7 +926,9 @@ bool SkiaRenderer::CalculateRPDQParams(sk_sp<SkImage> content,
   // If the first imageFilter is a colorFilterImageFilter, pull it off and store
   // it to be used later. Fall through to allow the remainder of the DAG (if
   // any) to be applied. Applying the colorFilter as part of the final draw is
-  // much more efficient than applying it as a colorFilterImageFilter.
+  // much more efficient than applying it as a colorFilterImageFilter. This
+  // optimization would be covered by skbug.com/8700. Delete color_filter
+  // related code after Skia side implementation is done.
   if (filter) {
     SkColorFilter* colorfilter_rawptr = nullptr;
     filter->asColorFilter(&colorfilter_rawptr);
@@ -942,7 +940,7 @@ bool SkiaRenderer::CalculateRPDQParams(sk_sp<SkImage> content,
     }
   }
 
-  // Apply filters to the content texture.
+  // If after applying the filter we would be clipped out, skip the draw.
   if (filter) {
     gfx::Rect clip_rect = quad->shared_quad_state->clip_rect;
     if (clip_rect.IsEmpty()) {
@@ -968,23 +966,7 @@ bool SkiaRenderer::CalculateRPDQParams(sk_sp<SkImage> content,
     if (dst_rect.IsEmpty())
       return false;
 
-    SkIPoint offset;
-    SkIRect subset;
-    gfx::RectF src_rect(quad->rect);
-    // TODO(xing.xu): Support flip_texture. (https://crbug.com/822859)
-    params->filter_image = SkiaHelper::ApplyImageFilter(
-        current_canvas_->getGrContext(), content, src_rect, dst_rect,
-        quad->filters_scale, std::move(filter), &offset, &subset,
-        quad->filters_origin, false);
-    if (!params->filter_image)
-      return false;
-    params->dst_rect =
-        gfx::RectF(src_rect.x() + offset.fX, src_rect.y() + offset.fY,
-                   subset.width(), subset.height());
-    params->src_offset.SetPoint(subset.x(), subset.y());
-    gfx::RectF tex_rect =
-        gfx::RectF(gfx::PointF(params->src_offset), params->dst_rect.size());
-    params->tex_coord_rect = tex_rect;
+    params->image_filter = filter;
   }
   return true;
 }
@@ -1052,17 +1034,12 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
   // Add color filter.
   if (params.color_filter)
     paint->setColorFilter(params.color_filter);
+  // Add image filter.
+  if (params.image_filter)
+    paint->setImageFilter(params.image_filter);
 
-  SkRect content_rect;
-  SkRect dest_visible_rect;
-  if (params.filter_image) {
-    content_rect = RectFToSkRect(params.tex_coord_rect);
-    dest_visible_rect = gfx::RectFToSkRect(params.dst_rect);
-    content_image = params.filter_image;
-  } else {
-    content_rect = RectFToSkRect(quad->tex_coord_rect);
-    dest_visible_rect = gfx::RectToSkRect(quad->visible_rect);
-  }
+  SkRect content_rect = RectFToSkRect(quad->tex_coord_rect);
+  SkRect dest_visible_rect = gfx::RectToSkRect(quad->visible_rect);
 
   // Prepare mask.
   ScopedSkImageBuilder mask_image_builder(this, quad->mask_resource_id());
@@ -1086,25 +1063,12 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
       BackgroundFiltersForPass(quad->render_pass_id);
   // Without backdrop effect.
   if (!ShouldApplyBackgroundFilters(quad, backdrop_filters)) {
-    if (!mask_filter) {
-      // Not mask, so we just draw the context_image directly.
-      current_canvas_->drawImageRect(content_image, content_rect,
-                                     dest_visible_rect, paint);
-      return;
-    }
+    if (mask_filter)
+      paint->setMaskFilter(mask_filter);
 
-    // With mask, we need convert the content_image to a shader, and use
-    // drawRect() with the shader and the mask.
-    paint->setMaskFilter(mask_filter);
-    // Convert the content_image to a shader, and use drawRect() with the
-    // shader.
-    SkMatrix content_to_dest_matrix;
-    content_to_dest_matrix.setRectToRect(content_rect,
-                                         gfx::RectToSkRect(quad->rect),
-                                         SkMatrix::kFill_ScaleToFit);
-    auto shader = content_image->makeShader(&content_to_dest_matrix);
-    paint->setShader(std::move(shader));
-    current_canvas_->drawRect(dest_visible_rect, *paint);
+    // Draw now that all the filters are set up correctly.
+    current_canvas_->drawImageRect(content_image, content_rect,
+                                   dest_visible_rect, paint);
     return;
   }
 
