@@ -683,6 +683,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
 
 INSTANTIATE_TEST_CASE_P(USS,
                         TwoClientWalletSyncTest,
-                        ::testing::Values(false, true));
+                        ::testing::Values(std::make_pair(false, false),
+                                          std::make_pair(true, false),
+                                          std::make_pair(true, true)));
 
 }  // namespace

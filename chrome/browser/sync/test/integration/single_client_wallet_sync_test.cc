@@ -1372,16 +1372,24 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletWithAccountStorageSyncTest,
 
 INSTANTIATE_TEST_CASE_P(USS,
                         SingleClientWalletSyncTestWithoutAccountStorage,
-                        ::testing::Values(false, true));
+                        ::testing::Values(std::make_pair(false, false),
+                                          std::make_pair(true, false),
+                                          std::make_pair(true, true)));
 
+// Depends on SyncUSSWalletData, cannot set the first param to false.
 INSTANTIATE_TEST_CASE_P(USS,
                         SingleClientWalletWithAccountStorageSyncTest,
-                        ::testing::Values(false, true));
+                        ::testing::Values(std::make_pair(true, false),
+                                          std::make_pair(true, true)));
 
 INSTANTIATE_TEST_CASE_P(USS,
                         SingleClientWalletSyncTestWithDefaultFeatures,
-                        ::testing::Values(false, true));
+                        ::testing::Values(std::make_pair(false, false),
+                                          std::make_pair(true, false),
+                                          std::make_pair(true, true)));
 
+// Depends on SyncUSSWalletData, cannot set the first param to false.
 INSTANTIATE_TEST_CASE_P(USS,
                         SingleClientWalletSecondaryAccountSyncTest,
-                        ::testing::Values(false, true));
+                        ::testing::Values(std::make_pair(true, false),
+                                          std::make_pair(true, true)));
