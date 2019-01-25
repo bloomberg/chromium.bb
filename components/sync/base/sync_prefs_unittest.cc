@@ -186,8 +186,14 @@ TEST_F(SyncPrefsTest, DeleteDirectivesAndProxyTabsMigration) {
                                          /*registered_types=*/registered_types,
                                          /*preferred_types=*/registered_types);
 
-  // Manually enable typed urls (to simulate the old world).
+  // Manually enable typed urls (to simulate the old world) and perform the
+  // migration to check it doesn't affect the proxy tab preference value.
   pref_service_.SetBoolean(prefs::kSyncTypedUrls, true);
+  // TODO(crbug.com/906611): now we make an extra assumption that the migration
+  // can be called a second time and it will do the real migration if during the
+  // first call this migration wasn't needed. Maybe consider splitting this
+  // test?
+  MigrateSessionsToProxyTabsPrefs(&pref_service_);
 
   // Proxy tabs should not be enabled (since sessions wasn't), but history
   // delete directives should (since typed urls was).
@@ -196,11 +202,13 @@ TEST_F(SyncPrefsTest, DeleteDirectivesAndProxyTabsMigration) {
   EXPECT_FALSE(preferred_types.Has(PROXY_TABS));
   EXPECT_TRUE(preferred_types.Has(HISTORY_DELETE_DIRECTIVES));
 
-  // Now manually enable sessions, which should result in proxy tabs also being
-  // enabled. Also, manually disable typed urls, which should mean that history
-  // delete directives are not enabled.
+  // Now manually enable sessions and perform the migration, which should result
+  // in proxy tabs also being enabled. Also, manually disable typed urls, which
+  // should mean that history delete directives are not enabled.
   pref_service_.SetBoolean(prefs::kSyncTypedUrls, false);
   pref_service_.SetBoolean(prefs::kSyncSessions, true);
+  MigrateSessionsToProxyTabsPrefs(&pref_service_);
+
   preferred_types = sync_prefs_->GetPreferredDataTypes(UserTypes());
   EXPECT_TRUE(preferred_types.Has(PROXY_TABS));
   EXPECT_FALSE(preferred_types.Has(HISTORY_DELETE_DIRECTIVES));
