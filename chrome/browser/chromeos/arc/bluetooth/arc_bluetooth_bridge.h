@@ -505,11 +505,6 @@ class ArcBluetoothBridge
 
   void SendDevice(const device::BluetoothDevice* device) const;
 
-  // Shows a pairing dialog to handle incoming pairing requests.
-  // Returns the pairing delegate of the dialog UI.
-  device::BluetoothDevice::PairingDelegate* ShowPairingDialog(
-      device::BluetoothDevice* device);
-
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
   scoped_refptr<bluez::BluetoothAdapterBlueZ> bluetooth_adapter_;
