@@ -68,9 +68,7 @@ void IdentityTestEnvironmentProfileAdaptor::
 // static
 TestingProfile::TestingFactories
 IdentityTestEnvironmentProfileAdaptor::GetIdentityTestEnvironmentFactories() {
-  return {{GaiaCookieManagerServiceFactory::GetInstance(),
-           base::BindRepeating(&BuildFakeGaiaCookieManagerService)},
-          {ProfileOAuth2TokenServiceFactory::GetInstance(),
+  return {{ProfileOAuth2TokenServiceFactory::GetInstance(),
            base::BindRepeating(&BuildFakeProfileOAuth2TokenService)},
           {SigninManagerFactory::GetInstance(),
            base::BindRepeating(&BuildFakeSigninManagerForTesting)}};
