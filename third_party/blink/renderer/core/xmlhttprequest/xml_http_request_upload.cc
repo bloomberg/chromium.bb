@@ -78,9 +78,6 @@ void XMLHttpRequestUpload::HandleRequestError(const AtomicString& type) {
                            last_bytes_sent_ <= last_total_bytes_to_be_sent_;
   probe::AsyncTask async_task(GetExecutionContext(), xml_http_request_, "error",
                               xml_http_request_->IsAsync());
-  DispatchEvent(*ProgressEvent::Create(event_type_names::kProgress,
-                                       length_computable, last_bytes_sent_,
-                                       last_total_bytes_to_be_sent_));
   DispatchEventAndLoadEnd(type, length_computable, last_bytes_sent_,
                           last_total_bytes_to_be_sent_);
 }

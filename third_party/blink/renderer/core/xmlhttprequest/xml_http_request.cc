@@ -1383,8 +1383,6 @@ void XMLHttpRequest::HandleRequestError(DOMExceptionCode exception_code,
   // false|, when |handleRequestError| is called after |internalAbort()|.  This
   // is safe, however, as |this| will be kept alive from a strong ref
   // |Event::m_target|.
-  DispatchProgressEvent(event_type_names::kProgress, received_length,
-                        expected_length);
   DispatchProgressEvent(type, received_length, expected_length);
   DispatchProgressEvent(event_type_names::kLoadend, received_length,
                         expected_length);
