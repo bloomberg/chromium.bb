@@ -4,12 +4,16 @@
 
 #include "services/image_annotation/annotator.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/location.h"
+#include "base/time/time.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
@@ -20,38 +24,204 @@ namespace {
 
 constexpr size_t kMaxResponseSize = 1024 * 1024;  // 1MB.
 
+// TODO(crbug.com/916420): move these values into feature params.
+
 // The minimum confidence value needed to return an OCR result.
-// TODO(crbug.com/916420): tune this value.
 constexpr double kMinOcrConfidence = 0.7;
 
-// Constructs and returns a JSON string representing an OCR request for the
-// given image bytes.
-std::string FormatJsonOcrRequest(const std::string& source_id,
-                                 const std::vector<uint8_t>& image_bytes) {
-  // Re-encode image bytes into base64, which can be represented in JSON.
-  std::string base64_data;
-  Base64Encode(
-      base::StringPiece(reinterpret_cast<const char*>(image_bytes.data()),
-                        image_bytes.size()),
-      &base64_data);
+// The number of image annotation requests that should be batched into one HTTP
+// request.
+constexpr int kHttpRequestBatchSize = 10;
 
-  base::Value image_request(base::Value::Type::DICTIONARY);
-  image_request.SetKey("image_id", base::Value(source_id));
-  image_request.SetKey("image_bytes", base::Value(std::move(base64_data)));
+// The amount of time to wait between spawning new HTTP requests.
+constexpr base::TimeDelta kHttpRequestThrottle =
+    base::TimeDelta::FromMilliseconds(300);
 
-  // TODO(crbug.com/916420): batch multiple images into one request.
+// The server returns separate OCR results for each region of the image; we
+// naively concatenate these into one response string.
+//
+// Returns nullopt if there is any unexpected structure to the annotations
+// message.
+base::Optional<std::string> ParseJsonOcrAnnotation(
+    const base::Value& annotations) {
+  const base::Value* const ocr_regions = annotations.FindKey("ocrRegions");
+  // No OCR regions is valid - it just means there is no text.
+  if (!ocr_regions)
+    return std::string();
+
+  if (!ocr_regions->is_list())
+    return base::nullopt;
+
+  std::string all_ocr_text;
+  for (const base::Value& ocr_region : ocr_regions->GetList()) {
+    if (!ocr_region.is_dict())
+      return base::nullopt;
+
+    const base::Value* const words = ocr_region.FindKey("words");
+    if (!words || !words->is_list())
+      return base::nullopt;
+
+    std::string region_ocr_text;
+    for (const base::Value& word : words->GetList()) {
+      if (!word.is_dict())
+        return base::nullopt;
+
+      const base::Value* const detected_text = word.FindKey("detectedText");
+      if (!detected_text || !detected_text->is_string())
+        return base::nullopt;
+
+      // A confidence value of 0 or 1 is interpreted as an int and not a double.
+      const base::Value* const confidence = word.FindKey("confidenceScore");
+      if (!confidence || (!confidence->is_double() && !confidence->is_int()) ||
+          confidence->GetDouble() < 0.0 || confidence->GetDouble() > 1.0)
+        return base::nullopt;
+
+      if (confidence->GetDouble() < kMinOcrConfidence)
+        continue;
+
+      const std::string& detected_text_str = detected_text->GetString();
+
+      if (!region_ocr_text.empty() && !detected_text_str.empty())
+        region_ocr_text += " ";
+      region_ocr_text += detected_text_str;
+    }
+
+    if (!all_ocr_text.empty() && !region_ocr_text.empty())
+      all_ocr_text += "\n";
+    all_ocr_text += region_ocr_text;
+  }
+
+  return all_ocr_text;
+}
+
+// Attempts to extract OCR results from the server response, returning a map
+// from each source ID to its OCR text (if successfully extracted).
+std::map<std::string, std::string> ParseJsonOcrResponse(
+    const std::string* const json_response) {
+  if (!json_response)
+    return {};
+
+  const std::unique_ptr<base::Value> response =
+      base::JSONReader::Read(*json_response);
+  if (!response || !response->is_dict())
+    return {};
+
+  const base::Value* const results = response->FindKey("results");
+  if (!results || !results->is_list())
+    return {};
+
+  std::map<std::string, std::string> out;
+  for (const base::Value& result : results->GetList()) {
+    if (!result.is_dict())
+      continue;
+
+    const base::Value* const image_id = result.FindKey("imageId");
+    if (!image_id || !image_id->is_string())
+      continue;
+
+    const base::Value* const annotations = result.FindKey("annotations");
+    if (!annotations || !annotations->is_dict())
+      continue;
+
+    const base::Optional<std::string> ocr_text =
+        ParseJsonOcrAnnotation(*annotations);
+    if (!ocr_text.has_value())
+      continue;
+
+    out[image_id->GetString()] = *ocr_text;
+  }
+
+  return out;
+}
+
+}  // namespace
+
+Annotator::Annotator(
+    GURL server_url,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    : url_loader_factory_(std::move(url_loader_factory)),
+      http_request_timer_(
+          FROM_HERE,
+          kHttpRequestThrottle,
+          base::BindRepeating(&Annotator::SendRequestBatchToServer,
+                              base::Unretained(this))),
+      server_url_(std::move(server_url)) {}
+
+Annotator::~Annotator() {}
+
+void Annotator::BindRequest(mojom::AnnotatorRequest request) {
+  bindings_.AddBinding(this, std::move(request));
+}
+
+void Annotator::AnnotateImage(const std::string& source_id,
+                              mojom::ImageProcessorPtr image_processor,
+                              AnnotateImageCallback callback) {
+  // Return cached results if they exist.
+  const auto cache_lookup = cached_results_.find(source_id);
+  if (cache_lookup != cached_results_.end()) {
+    std::move(callback).Run(
+        mojom::AnnotateImageResult::NewOcrText(cache_lookup->second));
+    return;
+  }
+
+  // Register the ImageProcessor and callback to be used for this request.
+  RequestInfoList& request_info_list = request_infos_[source_id];
+  request_info_list.push_back(
+      {std::move(image_processor), std::move(callback)});
+
+  // If the image processor dies: automatically delete the request info and
+  // reassign local processing (for other interested clients) if the dead image
+  // processor was responsible for some ongoing work.
+  request_info_list.back().first.set_connection_error_handler(base::BindOnce(
+      &Annotator::RemoveRequestInfo, base::Unretained(this), source_id,
+      --request_info_list.end(), mojom::AnnotateImageError::kCanceled));
+
+  // Don't start local work if it would duplicate some ongoing or already-
+  // completed work.
+  if (base::ContainsKey(local_processors_, source_id) ||
+      base::ContainsKey(pending_source_ids_, source_id))
+    return;
+
+  local_processors_.insert(
+      std::make_pair(source_id, &request_info_list.back().first));
+
+  // TODO(crbug.com/916420): first query the public result cache by URL to
+  // improve latency.
+
+  request_info_list.back().first->GetJpgImageData(
+      base::BindOnce(&Annotator::OnJpgImageDataReceived, base::Unretained(this),
+                     source_id, --request_info_list.end()));
+}
+
+// static
+std::string Annotator::FormatJsonOcrRequest(
+    const HttpRequestQueue::iterator begin_it,
+    const HttpRequestQueue::iterator end_it) {
   base::Value image_request_list(base::Value::Type::LIST);
-  image_request_list.GetList().push_back(std::move(image_request));
+  for (HttpRequestQueue::iterator it = begin_it; it != end_it; ++it) {
+    // Re-encode image bytes into base64, which can be represented in JSON.
+    std::string base64_data;
+    Base64Encode(
+        base::StringPiece(reinterpret_cast<const char*>(it->second.data()),
+                          it->second.size()),
+        &base64_data);
+
+    base::Value image_request(base::Value::Type::DICTIONARY);
+    image_request.SetKey("imageId", base::Value(it->first));
+    image_request.SetKey("imageBytes", base::Value(std::move(base64_data)));
+
+    image_request_list.GetList().push_back(std::move(image_request));
+  }
 
   // TODO(crbug.com/916420): accept and propagate page language info to improve
   //                         OCR accuracy.
   base::Value feature_request(base::Value::Type::DICTIONARY);
-  feature_request.SetKey("ocr_feature",
+  feature_request.SetKey("ocrFeature",
                          base::Value(base::Value::Type::DICTIONARY));
 
   base::Value request(base::Value::Type::DICTIONARY);
-  request.SetKey("image_requests", base::Value(std::move(image_request_list)));
-  request.SetKey("feature_request", std::move(feature_request));
+  request.SetKey("imageRequests", base::Value(std::move(image_request_list)));
+  request.SetKey("featureRequest", std::move(feature_request));
 
   std::string json_request;
   base::JSONWriter::Write(request, &json_request);
@@ -59,12 +229,11 @@ std::string FormatJsonOcrRequest(const std::string& source_id,
   return json_request;
 }
 
-// Creates a URL loader that calls the image annotation server with an OCR
-// request for the given image bytes.
-std::unique_ptr<network::SimpleURLLoader> MakeOcrRequestLoader(
+// static
+std::unique_ptr<network::SimpleURLLoader> Annotator::MakeOcrRequestLoader(
     const GURL& server_url,
-    const std::string& source_id,
-    const std::vector<uint8_t>& image_bytes) {
+    const HttpRequestQueue::iterator begin_it,
+    const HttpRequestQueue::iterator end_it) {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->method = "POST";
 
@@ -109,118 +278,10 @@ std::unique_ptr<network::SimpleURLLoader> MakeOcrRequestLoader(
   auto url_loader = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
 
-  url_loader->AttachStringForUpload(
-      FormatJsonOcrRequest(source_id, image_bytes), "application/json");
+  url_loader->AttachStringForUpload(FormatJsonOcrRequest(begin_it, end_it),
+                                    "application/json");
 
   return url_loader;
-}
-
-// Attempts to extract OCR results from the server response, returning true and
-// setting |out| to these results if successful.
-base::Optional<std::string> ParseJsonOcrResponse(
-    const std::string* const json_response) {
-  if (!json_response)
-    return base::nullopt;
-
-  const std::unique_ptr<base::Value> response =
-      base::JSONReader::Read(*json_response);
-  if (!response || !response->is_dict())
-    return base::nullopt;
-
-  const base::Value* const results = response->FindKey("results");
-  if (!results || !results->is_list() || results->GetList().size() != 1 ||
-      !results->GetList()[0].is_dict())
-    return base::nullopt;
-
-  const base::Value* const annotations =
-      results->GetList()[0].FindKey("annotations");
-  if (!annotations || !annotations->is_dict())
-    return base::nullopt;
-
-  const base::Value* const ocr_list = annotations->FindKey("ocr");
-  if (!ocr_list || !ocr_list->is_list())
-    return base::nullopt;
-
-  // The server returns separate OCR results for each region of the image; we
-  // naively concatenate these into one response string.
-  std::string out;
-  for (const base::Value& ocr : ocr_list->GetList()) {
-    if (!ocr.is_dict())
-      return base::nullopt;
-
-    const base::Value* const detected_text = ocr.FindKey("detected_text");
-    if (!detected_text || !detected_text->is_string())
-      return base::nullopt;
-
-    const base::Value* const confidence = ocr.FindKey("confidence_score");
-    if (!confidence || !confidence->is_double())
-      return base::nullopt;
-
-    if (confidence->GetDouble() < kMinOcrConfidence)
-      continue;
-
-    const std::string& detected_text_str = detected_text->GetString();
-
-    if (!out.empty() && !detected_text_str.empty())
-      out += "\n";
-    out += detected_text_str;
-  }
-
-  return out;
-}
-
-}  // namespace
-
-Annotator::Annotator(
-    GURL server_url,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : url_loader_factory_(std::move(url_loader_factory)),
-      server_url_(std::move(server_url)) {}
-
-Annotator::~Annotator() {}
-
-void Annotator::BindRequest(mojom::AnnotatorRequest request) {
-  bindings_.AddBinding(this, std::move(request));
-}
-
-void Annotator::AnnotateImage(const std::string& source_id,
-                              mojom::ImageProcessorPtr image_processor,
-                              AnnotateImageCallback callback) {
-  // Return cached results if they exist.
-  const auto cache_lookup = cached_results_.find(source_id);
-  if (cache_lookup != cached_results_.end()) {
-    std::move(callback).Run(
-        mojom::AnnotateImageResult::NewOcrText(cache_lookup->second));
-    return;
-  }
-
-  // Register the ImageProcessor and callback to be used for this request.
-  RequestInfoList& request_info_list = request_infos_[source_id];
-  request_info_list.push_back(
-      {std::move(image_processor), std::move(callback)});
-
-  // If the image processor dies: automatically delete the request info and
-  // reassign local processing (for other interested clients) if the dead image
-  // processor was responsible for some ongoing work.
-  request_info_list.back().first.set_connection_error_handler(base::BindOnce(
-      &Annotator::RemoveRequestInfo, base::Unretained(this), source_id,
-      --request_info_list.end(), mojom::AnnotateImageError::kCanceled));
-
-  // Don't start local work if it would duplicate some ongoing or already-
-  // completed work.
-  if (base::ContainsKey(local_processors_, source_id) ||
-      base::ContainsKey(url_loaders_, source_id))
-    return;
-
-  local_processors_.insert(
-      std::make_pair(source_id, &request_info_list.back().first));
-
-  // TODO(crbug.com/916420): first query the public result cache by URL to
-  // improve latency.
-
-  request_info_list.back().first->GetJpgImageData(
-      base::BindOnce(&Annotator::OnJpgImageDataReceived, base::Unretained(this),
-                     source_id, --request_info_list.end()));
 }
 
 void Annotator::OnJpgImageDataReceived(
@@ -238,47 +299,84 @@ void Annotator::OnJpgImageDataReceived(
   // Local processing is no longer ongoing.
   local_processors_.erase(source_id);
 
+  // Schedule an HTTP request for this image.
+  http_request_queue_.push_back({source_id, image_bytes});
+  pending_source_ids_.insert(source_id);
+
+  // Start sending batches to the server.
+  if (!http_request_timer_.IsRunning())
+    http_request_timer_.Reset();
+}
+
+void Annotator::SendRequestBatchToServer() {
+  if (http_request_queue_.empty()) {
+    http_request_timer_.Stop();
+    return;
+  }
+
+  // Take last n elements (or all elements if there are less than n).
+  const auto begin_it =
+      http_request_queue_.end() -
+      std::min<size_t>(http_request_queue_.size(), kHttpRequestBatchSize);
+  const auto end_it = http_request_queue_.end();
+
+  // The set of source IDs relevant for this request.
+  std::set<std::string> source_ids;
+  for (HttpRequestQueue::iterator it = begin_it; it != end_it; it++) {
+    source_ids.insert(it->first);
+  }
+
   // Kick off server communication.
-  // TODO(crbug.com/916420): add request to a queue here and batch them up
-  //                         to limit number of concurrent HTTP requests made.
-  std::unique_ptr<network::SimpleURLLoader> url_loader =
-      MakeOcrRequestLoader(server_url_, source_id, image_bytes);
-  const auto url_loader_it =
-      url_loaders_.insert({source_id, std::move(url_loader)}).first;
-  url_loader_it->second->DownloadToString(
+  http_requests_.push_back(MakeOcrRequestLoader(server_url_, begin_it, end_it));
+  http_requests_.back()->DownloadToString(
       url_loader_factory_.get(),
       base::BindOnce(&Annotator::OnServerResponseReceived,
-                     base::Unretained(this), source_id, url_loader_it),
+                     base::Unretained(this), source_ids,
+                     --http_requests_.end()),
       kMaxResponseSize);
+
+  http_request_queue_.erase(begin_it, end_it);
 }
 
 void Annotator::OnServerResponseReceived(
-    const std::string& source_id,
-    const URLLoaderMap::iterator url_loader_it,
+    const std::set<std::string>& source_ids,
+    const UrlLoaderList::iterator http_request_it,
     const std::unique_ptr<std::string> json_response) {
-  url_loaders_.erase(url_loader_it);
+  http_requests_.erase(http_request_it);
 
-  // Extract OCR results into a string.
-  const base::Optional<std::string> ocr_text =
+  // Extract OCR results for each source ID with valid results.
+  const std::map<std::string, std::string> ocr_results =
       ParseJsonOcrResponse(json_response.get());
 
-  if (ocr_text.has_value())
-    cached_results_.insert({source_id, *ocr_text});
+  // Process each source ID for which we expect to have results.
+  for (const std::string& source_id : source_ids) {
+    pending_source_ids_.erase(source_id);
 
-  const auto request_info_it = request_infos_.find(source_id);
-  if (request_info_it == request_infos_.end())
-    return;
+    // The lookup will be successful if there is a valid result (i.e. not an
+    // error and not a malformed result) for this source ID.
+    const auto result_lookup = ocr_results.find(source_id);
 
-  // Notify clients of success or failure.
-  // TODO(crbug.com/916420): explore server retry strategies.
-  for (auto& info : request_info_it->second) {
-    auto result = ocr_text.has_value()
-                      ? mojom::AnnotateImageResult::NewOcrText(*ocr_text)
-                      : mojom::AnnotateImageResult::NewErrorCode(
-                            mojom::AnnotateImageError::kFailure);
-    std::move(info.second).Run(std::move(result));
+    if (result_lookup != ocr_results.end())
+      cached_results_.insert({source_id, result_lookup->second});
+
+    // This should not happen, since only this method removes entries of
+    // |request_infos_|, and this method should only execute once per source ID.
+    const auto request_info_it = request_infos_.find(source_id);
+    if (request_info_it == request_infos_.end())
+      continue;
+
+    // Notify clients of success or failure.
+    // TODO(crbug.com/916420): explore server retry strategies.
+    const auto result =
+        result_lookup != ocr_results.end()
+            ? mojom::AnnotateImageResult::NewOcrText(result_lookup->second)
+            : mojom::AnnotateImageResult::NewErrorCode(
+                  mojom::AnnotateImageError::kFailure);
+    for (auto& info : request_info_it->second) {
+      std::move(info.second).Run(result.Clone());
+    }
+    request_infos_.erase(request_info_it);
   }
-  request_infos_.erase(request_info_it);
 }
 
 void Annotator::RemoveRequestInfo(
