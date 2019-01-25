@@ -194,10 +194,6 @@ cr.define('print_preview', function() {
           print_preview.PrinterType.LOCAL_PRINTER,
           print_preview.DestinationStorePrinterSearchStatus.START
         ],
-        [
-          print_preview.PrinterType.CLOUD_PRINTER,
-          print_preview.DestinationStorePrinterSearchStatus.START
-        ]
       ]);
 
       /**
@@ -273,8 +269,6 @@ cr.define('print_preview', function() {
        */
       this.useSystemDefaultAsDefault_ =
           loadTimeData.getBoolean('useSystemDefaultPrinter');
-
-      this.reset_();
 
       addListenerCallback('printers-added', this.onPrintersAdded_.bind(this));
       addListenerCallback(
@@ -370,6 +364,7 @@ cr.define('print_preview', function() {
             serializedDefaultDestinationSelectionRulesStr);
         if (destinationMatch) {
           this.fetchMatchingDestination_(destinationMatch);
+          this.startAutoSelectTimeout_();
           return;
         }
       }
@@ -418,6 +413,7 @@ cr.define('print_preview', function() {
       }
 
       if (foundDestination && !this.useSystemDefaultAsDefault_) {
+        this.startAutoSelectTimeout_();
         return;
       }
 
@@ -432,11 +428,13 @@ cr.define('print_preview', function() {
           print_preview.createRecentDestinationKey(serializedDestination));
       if (systemDefaultCandidate != undefined) {
         this.selectDestination(systemDefaultCandidate);
+        this.startAutoSelectTimeout_();
         return;
       }
 
       if (this.fetchPreselectedDestination_(
               serializedDestination, true /* autoSelect */)) {
+        this.startAutoSelectTimeout_();
         return;
       }
 
@@ -891,6 +889,10 @@ cr.define('print_preview', function() {
       // the handler instead of trying to directly communicate with the cloud
       // print server. See https://crbug.com/829414.
       if (loadTimeData.getBoolean('cloudPrinterHandlerEnabled')) {
+        // Add cloud printer to the map.
+        this.destinationSearchStatus_.set(
+            print_preview.PrinterType.CLOUD_PRINTER,
+            print_preview.DestinationStorePrinterSearchStatus.START);
         types.push(print_preview.PrinterType.CLOUD_PRINTER);
       } else {
         this.startLoadCloudDestinations();
@@ -1122,6 +1124,17 @@ cr.define('print_preview', function() {
     }
 
     /**
+     * Starts a timeout to select the default destination.
+     * @private
+     */
+    startAutoSelectTimeout_() {
+      clearTimeout(this.autoSelectTimeout_);
+      this.autoSelectTimeout_ = setTimeout(
+          this.selectDefaultDestination_.bind(this),
+          DestinationStore.AUTO_SELECT_TIMEOUT_);
+    }
+
+    /**
      * Resets the state of the destination store to its initial state.
      * @private
      */
@@ -1137,11 +1150,7 @@ cr.define('print_preview', function() {
               print_preview.DestinationStorePrinterSearchStatus.START);
         }
       }
-
-      clearTimeout(this.autoSelectTimeout_);
-      this.autoSelectTimeout_ = setTimeout(
-          this.selectDefaultDestination_.bind(this),
-          DestinationStore.AUTO_SELECT_TIMEOUT_);
+      this.startAutoSelectTimeout_();
       this.dispatchEvent(
           new CustomEvent(DestinationStore.EventType.DESTINATIONS_RESET));
     }
@@ -1265,7 +1274,13 @@ cr.define('print_preview', function() {
      * @private
      */
     sendNoPrinterEventIfNeeded_() {
-      if (this.isPrintDestinationSearchInProgress ||
+      const isLocalDestinationSearchNotStarted =
+          Array.from(this.destinationSearchStatus_.values())
+              .some(
+                  el => el ===
+                      print_preview.DestinationStorePrinterSearchStatus.START);
+      if (isLocalDestinationSearchNotStarted ||
+          this.isPrintDestinationSearchInProgress ||
           !this.selectFirstDestination_) {
         return;
       }
