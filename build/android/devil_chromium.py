@@ -13,6 +13,7 @@ if host_paths.DEVIL_PATH not in sys.path:
   sys.path.append(host_paths.DEVIL_PATH)
 
 from devil import devil_env
+from devil.android.ndk import abis
 
 _DEVIL_CONFIG = os.path.abspath(
     os.path.join(os.path.dirname(__file__), 'devil_chromium.json'))
@@ -28,12 +29,12 @@ _DEVIL_BUILD_PRODUCT_DEPS = {
   'forwarder_device': [
     {
       'platform': 'android',
-      'arch': 'armeabi-v7a',
+      'arch': abis.ARM,
       'path_components': ['forwarder_dist'],
     },
     {
       'platform': 'android',
-      'arch': 'arm64-v8a',
+      'arch': abis.ARM_64,
       'path_components': ['forwarder_dist'],
     },
     {
@@ -48,12 +49,12 @@ _DEVIL_BUILD_PRODUCT_DEPS = {
     },
     {
       'platform': 'android',
-      'arch': 'x86',
+      'arch': abis.X86,
       'path_components': ['forwarder_dist'],
     },
     {
       'platform': 'android',
-      'arch': 'x86_64',
+      'arch': abis.X86_64,
       'path_components': ['forwarder_dist'],
     },
   ],
@@ -67,12 +68,12 @@ _DEVIL_BUILD_PRODUCT_DEPS = {
   'md5sum_device': [
     {
       'platform': 'android',
-      'arch': 'armeabi-v7a',
+      'arch': abis.ARM,
       'path_components': ['md5sum_dist'],
     },
     {
       'platform': 'android',
-      'arch': 'arm64-v8a',
+      'arch': abis.ARM_64,
       'path_components': ['md5sum_dist'],
     },
     {
@@ -87,12 +88,12 @@ _DEVIL_BUILD_PRODUCT_DEPS = {
     },
     {
       'platform': 'android',
-      'arch': 'x86',
+      'arch': abis.X86,
       'path_components': ['md5sum_dist'],
     },
     {
       'platform': 'android',
-      'arch': 'x86_64',
+      'arch': abis.X86_64,
       'path_components': ['md5sum_dist'],
     },
   ],

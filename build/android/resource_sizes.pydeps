@@ -19,6 +19,8 @@
 ../../third_party/catapult/devil/devil/android/__init__.py
 ../../third_party/catapult/devil/devil/android/constants/__init__.py
 ../../third_party/catapult/devil/devil/android/constants/chrome.py
+../../third_party/catapult/devil/devil/android/ndk/__init__.py
+../../third_party/catapult/devil/devil/android/ndk/abis.py
 ../../third_party/catapult/devil/devil/android/sdk/__init__.py
 ../../third_party/catapult/devil/devil/android/sdk/build_tools.py
 ../../third_party/catapult/devil/devil/android/sdk/dexdump.py
