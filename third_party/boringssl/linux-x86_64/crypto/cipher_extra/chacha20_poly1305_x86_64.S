@@ -1343,7 +1343,7 @@ open_sse_main_loop:
 	leaq	128(%rdi),%rdi
 	jmp	open_sse_tail_64_dec_loop
 3:
-
+###############################################################################
 	movdqa	.chacha20_consts(%rip),%xmm0
 	movdqa	48(%rbp),%xmm4
 	movdqa	64(%rbp),%xmm8
@@ -1698,7 +1698,7 @@ open_sse_main_loop:
 	subq	$192,%rbx
 	leaq	192(%rsi),%rsi
 	leaq	192(%rdi),%rdi
-
+###############################################################################
 
 open_sse_tail_64_dec_loop:
 	cmpq	$16,%rbx
@@ -1868,7 +1868,7 @@ open_sse_finalize:
 .cfi_adjust_cfa_offset	-8
 	.byte	0xf3,0xc3
 .cfi_adjust_cfa_offset	(8 * 6) + 288 + 32
-
+###############################################################################
 open_sse_128:
 	movdqu	.chacha20_consts(%rip),%xmm0
 	movdqa	%xmm0,%xmm1
@@ -2102,8 +2102,8 @@ open_sse_128:
 .size	chacha20_poly1305_open, .-chacha20_poly1305_open
 .cfi_endproc	
 
-
-
+################################################################################
+################################################################################
 
 .globl	chacha20_poly1305_seal
 .hidden chacha20_poly1305_seal
@@ -2839,7 +2839,7 @@ chacha20_poly1305_seal:
 	movq	$6,%rcx
 	cmpq	$64,%rbx
 	jg	3f
-
+###############################################################################
 seal_sse_tail_64:
 	movdqa	.chacha20_consts(%rip),%xmm0
 	movdqa	48(%rbp),%xmm4
@@ -2991,7 +2991,7 @@ seal_sse_tail_64:
 3:
 	cmpq	$128,%rbx
 	jg	3f
-
+###############################################################################
 seal_sse_tail_128:
 	movdqa	.chacha20_consts(%rip),%xmm0
 	movdqa	48(%rbp),%xmm4
@@ -3208,7 +3208,7 @@ seal_sse_tail_128:
 	leaq	64(%rsi),%rsi
 	jmp	seal_sse_128_seal_hash
 3:
-
+###############################################################################
 seal_sse_tail_192:
 	movdqa	.chacha20_consts(%rip),%xmm0
 	movdqa	48(%rbp),%xmm4
@@ -3487,7 +3487,7 @@ seal_sse_tail_192:
 	movq	$128,%rcx
 	subq	$128,%rbx
 	leaq	128(%rsi),%rsi
-
+###############################################################################
 seal_sse_128_seal_hash:
 	cmpq	$16,%rcx
 	jb	seal_sse_128_seal
@@ -3632,7 +3632,7 @@ seal_sse_tail_16:
 
 
 
-
+#
 
 
 	movq	288+32(%rsp),%r9
@@ -3936,7 +3936,7 @@ do_length_block:
 .cfi_adjust_cfa_offset	-8
 	.byte	0xf3,0xc3
 .cfi_adjust_cfa_offset	(8 * 6) + 288 + 32
-
+################################################################################
 seal_sse_128:
 	movdqu	.chacha20_consts(%rip),%xmm0
 	movdqa	%xmm0,%xmm1
@@ -4107,7 +4107,7 @@ seal_sse_128:
 	jmp	seal_sse_128_seal
 .size	chacha20_poly1305_seal, .-chacha20_poly1305_seal
 
-
+###############################################################################
 .type	chacha20_poly1305_open_avx2,@function
 .align	64
 chacha20_poly1305_open_avx2:
@@ -5819,7 +5819,7 @@ open_avx2_tail:
 	vmovdqa	%xmm0,%xmm1
 	jb	1f
 	subq	$16,%rbx
-
+#load for decryption
 	vpxor	(%rsi),%xmm0,%xmm1
 	vmovdqu	%xmm1,(%rdi)
 	leaq	16(%rsi),%rsi
@@ -5829,7 +5829,7 @@ open_avx2_tail:
 1:
 	vzeroupper
 	jmp	open_sse_tail_16
-
+###############################################################################
 open_avx2_192:
 	vmovdqa	%ymm0,%ymm1
 	vmovdqa	%ymm0,%ymm2
@@ -6101,7 +6101,7 @@ open_avx2_short_tail_32:
 1:
 	vzeroupper
 	jmp	open_sse_tail_16
-
+###############################################################################
 open_avx2_320:
 	vmovdqa	%ymm0,%ymm1
 	vmovdqa	%ymm0,%ymm2
@@ -6264,8 +6264,8 @@ open_avx2_320:
 	vperm2i128	$0x13,%ymm10,%ymm14,%ymm6
 	jmp	open_avx2_short
 .size	chacha20_poly1305_open_avx2, .-chacha20_poly1305_open_avx2
-
-
+###############################################################################
+###############################################################################
 .type	chacha20_poly1305_seal_avx2,@function
 .align	64
 chacha20_poly1305_seal_avx2:
@@ -7335,7 +7335,7 @@ chacha20_poly1305_seal_avx2:
 	xorq	%r8,%r8
 	cmpq	$128,%rbx
 	ja	3f
-
+###############################################################################
 seal_avx2_tail_128:
 	vmovdqa	.chacha20_consts(%rip),%ymm0
 	vmovdqa	64(%rbp),%ymm4
@@ -7529,7 +7529,7 @@ seal_avx2_tail_128:
 3:
 	cmpq	$256,%rbx
 	ja	3f
-
+###############################################################################
 seal_avx2_tail_256:
 	vmovdqa	.chacha20_consts(%rip),%ymm0
 	vmovdqa	64(%rbp),%ymm4
@@ -7785,7 +7785,7 @@ seal_avx2_tail_256:
 3:
 	cmpq	$384,%rbx
 	ja	seal_avx2_tail_512
-
+###############################################################################
 seal_avx2_tail_384:
 	vmovdqa	.chacha20_consts(%rip),%ymm0
 	vmovdqa	64(%rbp),%ymm4
@@ -8097,7 +8097,7 @@ seal_avx2_tail_384:
 	leaq	256(%rsi),%rsi
 	subq	$256,%rbx
 	jmp	seal_avx2_hash
-
+###############################################################################
 seal_avx2_tail_512:
 	vmovdqa	.chacha20_consts(%rip),%ymm0
 	vmovdqa	64(%rbp),%ymm4
@@ -8499,7 +8499,7 @@ seal_avx2_tail_512:
 	leaq	384(%rsi),%rsi
 	subq	$384,%rbx
 	jmp	seal_avx2_hash
-
+################################################################################
 seal_avx2_320:
 	vmovdqa	%ymm0,%ymm1
 	vmovdqa	%ymm0,%ymm2
@@ -8661,7 +8661,7 @@ seal_avx2_320:
 	vperm2i128	$0x13,%ymm2,%ymm6,%ymm2
 	vperm2i128	$0x13,%ymm10,%ymm14,%ymm6
 	jmp	seal_avx2_short
-
+################################################################################
 seal_avx2_192:
 	vmovdqa	%ymm0,%ymm1
 	vmovdqa	%ymm0,%ymm2

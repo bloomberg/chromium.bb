@@ -19,6 +19,7 @@
 
 .p2align	6
 _bsaes_encrypt8:
+
 	leaq	L$BS0(%rip),%r11
 
 	movdqa	(%rax),%xmm8
@@ -218,7 +219,7 @@ L$enc_sbox:
 	pxor	%xmm13,%xmm8
 	pxor	%xmm14,%xmm7
 
-
+#Inv_GF16 	0, 	1, 	2, 	3, s0, s1, s2, s3
 
 
 
@@ -489,8 +490,10 @@ L$enc_done:
 
 
 
+
 .p2align	6
 _bsaes_decrypt8:
+
 	leaq	L$BS0(%rip),%r11
 
 	movdqa	(%rax),%xmm8
@@ -687,7 +690,7 @@ L$dec_sbox:
 	pxor	%xmm13,%xmm8
 	pxor	%xmm14,%xmm7
 
-
+#Inv_GF16 	0, 	1, 	2, 	3, s0, s1, s2, s3
 
 
 
@@ -994,8 +997,10 @@ L$dec_done:
 	.byte	0xf3,0xc3
 
 
+
 .p2align	4
 _bsaes_key_convert:
+
 	leaq	L$masks(%rip),%r11
 	movdqu	(%rcx),%xmm7
 	leaq	16(%rcx),%rcx
@@ -1072,8 +1077,9 @@ L$key_loop:
 	jnz	L$key_loop
 
 	movdqa	80(%r11),%xmm7
-
+#movdqa	%xmm6, (%rax)
 	.byte	0xf3,0xc3
+
 
 
 .globl	_bsaes_cbc_encrypt
@@ -1350,6 +1356,12 @@ L$cbc_dec_epilogue:
 .p2align	4
 _bsaes_ctr32_encrypt_blocks:
 
+#ifndef NDEBUG
+#ifndef BORINGSSL_FIPS
+
+	movb	$1,_BORINGSSL_function_hit+6(%rip)
+#endif
+#endif
 	movq	%rsp,%rax
 L$ctr_enc_prologue:
 	pushq	%rbp

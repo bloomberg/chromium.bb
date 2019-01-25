@@ -49,6 +49,7 @@ L$sixteen:
 
 .p2align	6
 _ChaCha20_ctr32:
+
 	cmpq	$0,%rdx
 	je	L$no_data
 	movq	_OPENSSL_ia32cap_P+4(%rip),%r10
@@ -56,21 +57,28 @@ _ChaCha20_ctr32:
 	jnz	L$ChaCha20_ssse3
 
 	pushq	%rbx
+
 	pushq	%rbp
+
 	pushq	%r12
+
 	pushq	%r13
+
 	pushq	%r14
+
 	pushq	%r15
+
 	subq	$64+24,%rsp
+
 L$ctr32_body:
 
-
+#movdqa	.Lsigma(%rip),%xmm0
 	movdqu	(%rcx),%xmm1
 	movdqu	16(%rcx),%xmm2
 	movdqu	(%r8),%xmm3
 	movdqa	L$one(%rip),%xmm4
 
-
+#movdqa	%xmm0,4*0(%rsp)
 	movdqa	%xmm1,16(%rsp)
 	movdqa	%xmm2,32(%rsp)
 	movdqa	%xmm3,48(%rsp)
@@ -302,20 +310,30 @@ L$oop_tail:
 L$done:
 	leaq	64+24+48(%rsp),%rsi
 	movq	-48(%rsi),%r15
+
 	movq	-40(%rsi),%r14
+
 	movq	-32(%rsi),%r13
+
 	movq	-24(%rsi),%r12
+
 	movq	-16(%rsi),%rbp
+
 	movq	-8(%rsi),%rbx
+
 	leaq	(%rsi),%rsp
+
 L$no_data:
 	.byte	0xf3,0xc3
+
 
 
 .p2align	5
 ChaCha20_ssse3:
 L$ChaCha20_ssse3:
+
 	movq	%rsp,%r9
+
 	cmpq	$128,%rdx
 	ja	L$ChaCha20_4x
 
@@ -441,14 +459,18 @@ L$oop_tail_ssse3:
 
 L$done_ssse3:
 	leaq	(%r9),%rsp
+
 L$ssse3_epilogue:
 	.byte	0xf3,0xc3
+
 
 
 .p2align	5
 ChaCha20_4x:
 L$ChaCha20_4x:
+
 	movq	%rsp,%r9
+
 	movq	%r10,%r11
 	shrq	$32,%r10
 	testq	$32,%r10
@@ -849,9 +871,9 @@ L$tail4x:
 	cmpq	$64,%rdx
 	jae	L$64_or_more4x
 
-
+#movdqa		0x00(%rsp),%xmm6
 	xorq	%r10,%r10
-
+#movdqa		%xmm6,0x00(%rsp)
 	movdqa	%xmm12,16(%rsp)
 	movdqa	%xmm4,32(%rsp)
 	movdqa	%xmm0,48(%rsp)
@@ -989,19 +1011,23 @@ L$oop_tail4x:
 
 L$done4x:
 	leaq	(%r9),%rsp
+
 L$4x_epilogue:
 	.byte	0xf3,0xc3
+
 
 
 .p2align	5
 ChaCha20_8x:
 L$ChaCha20_8x:
+
 	movq	%rsp,%r9
+
 	subq	$0x280+8,%rsp
 	andq	$-32,%rsp
 	vzeroupper
 
-
+###############
 
 
 
@@ -1591,7 +1617,9 @@ L$oop_tail8x:
 L$done8x:
 	vzeroall
 	leaq	(%r9),%rsp
+
 L$8x_epilogue:
 	.byte	0xf3,0xc3
+
 
 #endif

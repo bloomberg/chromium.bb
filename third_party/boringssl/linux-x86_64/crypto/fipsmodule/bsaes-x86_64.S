@@ -21,6 +21,7 @@
 .type	_bsaes_encrypt8,@function
 .align	64
 _bsaes_encrypt8:
+.cfi_startproc	
 	leaq	.LBS0(%rip),%r11
 
 	movdqa	(%rax),%xmm8
@@ -220,7 +221,7 @@ _bsaes_encrypt8_bitslice:
 	pxor	%xmm13,%xmm8
 	pxor	%xmm14,%xmm7
 
-
+#Inv_GF16 	0, 	1, 	2, 	3, s0, s1, s2, s3
 
 
 
@@ -488,11 +489,13 @@ _bsaes_encrypt8_bitslice:
 	pxor	%xmm7,%xmm15
 	pxor	%xmm7,%xmm0
 	.byte	0xf3,0xc3
+.cfi_endproc	
 .size	_bsaes_encrypt8,.-_bsaes_encrypt8
 
 .type	_bsaes_decrypt8,@function
 .align	64
 _bsaes_decrypt8:
+.cfi_startproc	
 	leaq	.LBS0(%rip),%r11
 
 	movdqa	(%rax),%xmm8
@@ -689,7 +692,7 @@ _bsaes_decrypt8:
 	pxor	%xmm13,%xmm8
 	pxor	%xmm14,%xmm7
 
-
+#Inv_GF16 	0, 	1, 	2, 	3, s0, s1, s2, s3
 
 
 
@@ -994,10 +997,12 @@ _bsaes_decrypt8:
 	pxor	%xmm7,%xmm15
 	pxor	%xmm7,%xmm0
 	.byte	0xf3,0xc3
+.cfi_endproc	
 .size	_bsaes_decrypt8,.-_bsaes_decrypt8
 .type	_bsaes_key_convert,@function
 .align	16
 _bsaes_key_convert:
+.cfi_startproc	
 	leaq	.Lmasks(%rip),%r11
 	movdqu	(%rcx),%xmm7
 	leaq	16(%rcx),%rcx
@@ -1074,8 +1079,9 @@ _bsaes_key_convert:
 	jnz	.Lkey_loop
 
 	movdqa	80(%r11),%xmm7
-
+#movdqa	%xmm6, (%rax)
 	.byte	0xf3,0xc3
+.cfi_endproc	
 .size	_bsaes_key_convert,.-_bsaes_key_convert
 .extern	aes_nohw_cbc_encrypt
 .hidden aes_nohw_cbc_encrypt
@@ -1359,6 +1365,13 @@ bsaes_cbc_encrypt:
 .align	16
 bsaes_ctr32_encrypt_blocks:
 .cfi_startproc	
+#ifndef NDEBUG
+#ifndef BORINGSSL_FIPS
+.extern	BORINGSSL_function_hit
+.hidden BORINGSSL_function_hit
+	movb	$1,BORINGSSL_function_hit+6(%rip)
+#endif
+#endif
 	movq	%rsp,%rax
 .Lctr_enc_prologue:
 	pushq	%rbp

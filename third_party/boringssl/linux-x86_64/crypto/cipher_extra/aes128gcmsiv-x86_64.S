@@ -213,7 +213,7 @@ aesgcmsiv_htable_polyval:
 	vpclmulqdq	$0x10,(%rdi),%xmm0,%xmm6
 	vpxor	%xmm6,%xmm5,%xmm5
 
-
+#########################################################
 	vmovdqu	96(%rsi),%xmm0
 	vpclmulqdq	$0x01,16(%rdi),%xmm0,%xmm6
 	vpxor	%xmm6,%xmm5,%xmm5
@@ -225,7 +225,7 @@ aesgcmsiv_htable_polyval:
 	vpxor	%xmm6,%xmm5,%xmm5
 
 
-
+#########################################################
 	vmovdqu	80(%rsi),%xmm0
 
 	vpclmulqdq	$0x10,poly(%rip),%xmm1,%xmm7
@@ -242,7 +242,7 @@ aesgcmsiv_htable_polyval:
 
 
 	vpxor	%xmm7,%xmm1,%xmm1
-
+#########################################################
 	vmovdqu	64(%rsi),%xmm0
 
 	vpclmulqdq	$0x01,48(%rdi),%xmm0,%xmm6
@@ -254,7 +254,7 @@ aesgcmsiv_htable_polyval:
 	vpclmulqdq	$0x10,48(%rdi),%xmm0,%xmm6
 	vpxor	%xmm6,%xmm5,%xmm5
 
-
+#########################################################
 	vmovdqu	48(%rsi),%xmm0
 
 	vpclmulqdq	$0x10,poly(%rip),%xmm1,%xmm7
@@ -271,7 +271,7 @@ aesgcmsiv_htable_polyval:
 
 
 	vpxor	%xmm7,%xmm1,%xmm1
-
+#########################################################
 	vmovdqu	32(%rsi),%xmm0
 
 	vpclmulqdq	$0x01,80(%rdi),%xmm0,%xmm6
@@ -285,7 +285,7 @@ aesgcmsiv_htable_polyval:
 
 
 	vpxor	%xmm9,%xmm1,%xmm1
-
+#########################################################
 	vmovdqu	16(%rsi),%xmm0
 
 	vpclmulqdq	$0x01,96(%rdi),%xmm0,%xmm6
@@ -297,7 +297,7 @@ aesgcmsiv_htable_polyval:
 	vpclmulqdq	$0x10,96(%rdi),%xmm0,%xmm6
 	vpxor	%xmm6,%xmm5,%xmm5
 
-
+#########################################################
 	vmovdqu	0(%rsi),%xmm0
 	vpxor	%xmm1,%xmm0,%xmm0
 
@@ -310,7 +310,7 @@ aesgcmsiv_htable_polyval:
 	vpclmulqdq	$0x10,112(%rdi),%xmm0,%xmm6
 	vpxor	%xmm6,%xmm5,%xmm5
 
-
+#########################################################
 	vpsrldq	$8,%xmm5,%xmm6
 	vpslldq	$8,%xmm5,%xmm5
 
@@ -320,7 +320,7 @@ aesgcmsiv_htable_polyval:
 	leaq	128(%rsi),%rsi
 	jmp	.Lhtable_polyval_main_loop
 
-
+#########################################################
 
 .Lhtable_polyval_out:
 	vpclmulqdq	$0x10,poly(%rip),%xmm1,%xmm6
@@ -488,10 +488,10 @@ aes128gcmsiv_aes_ks_enc_x1:
 	vmovdqa	con1(%rip),%xmm0
 	vmovdqa	mask(%rip),%xmm15
 
-	vpshufb	%xmm15,%xmm1,%xmm2
+	vpshufb	%xmm15,%xmm1,%xmm2#!!saving mov instruction to xmm2
 	vaesenclast	%xmm0,%xmm2,%xmm2
 	vpslld	$1,%xmm0,%xmm0
-	vpsllq	$32,%xmm1,%xmm3
+	vpsllq	$32,%xmm1,%xmm3#!!saving mov instruction to xmm3
 	vpxor	%xmm3,%xmm1,%xmm1
 	vpshufb	con3(%rip),%xmm1,%xmm3
 	vpxor	%xmm3,%xmm1,%xmm1
@@ -500,10 +500,10 @@ aes128gcmsiv_aes_ks_enc_x1:
 	vaesenc	%xmm1,%xmm4,%xmm4
 	vmovdqa	%xmm1,16(%rdx)
 
-	vpshufb	%xmm15,%xmm1,%xmm2
+	vpshufb	%xmm15,%xmm1,%xmm2#!!saving mov instruction to xmm2
 	vaesenclast	%xmm0,%xmm2,%xmm2
 	vpslld	$1,%xmm0,%xmm0
-	vpsllq	$32,%xmm1,%xmm3
+	vpsllq	$32,%xmm1,%xmm3#!!saving mov instruction to xmm3
 	vpxor	%xmm3,%xmm1,%xmm1
 	vpshufb	con3(%rip),%xmm1,%xmm3
 	vpxor	%xmm3,%xmm1,%xmm1
@@ -512,10 +512,10 @@ aes128gcmsiv_aes_ks_enc_x1:
 	vaesenc	%xmm1,%xmm4,%xmm4
 	vmovdqa	%xmm1,32(%rdx)
 
-	vpshufb	%xmm15,%xmm1,%xmm2
+	vpshufb	%xmm15,%xmm1,%xmm2#!!saving mov instruction to xmm2
 	vaesenclast	%xmm0,%xmm2,%xmm2
 	vpslld	$1,%xmm0,%xmm0
-	vpsllq	$32,%xmm1,%xmm3
+	vpsllq	$32,%xmm1,%xmm3#!!saving mov instruction to xmm3
 	vpxor	%xmm3,%xmm1,%xmm1
 	vpshufb	con3(%rip),%xmm1,%xmm3
 	vpxor	%xmm3,%xmm1,%xmm1
@@ -524,10 +524,10 @@ aes128gcmsiv_aes_ks_enc_x1:
 	vaesenc	%xmm1,%xmm4,%xmm4
 	vmovdqa	%xmm1,48(%rdx)
 
-	vpshufb	%xmm15,%xmm1,%xmm2
+	vpshufb	%xmm15,%xmm1,%xmm2#!!saving mov instruction to xmm2
 	vaesenclast	%xmm0,%xmm2,%xmm2
 	vpslld	$1,%xmm0,%xmm0
-	vpsllq	$32,%xmm1,%xmm3
+	vpsllq	$32,%xmm1,%xmm3#!!saving mov instruction to xmm3
 	vpxor	%xmm3,%xmm1,%xmm1
 	vpshufb	con3(%rip),%xmm1,%xmm3
 	vpxor	%xmm3,%xmm1,%xmm1
@@ -536,10 +536,10 @@ aes128gcmsiv_aes_ks_enc_x1:
 	vaesenc	%xmm1,%xmm4,%xmm4
 	vmovdqa	%xmm1,64(%rdx)
 
-	vpshufb	%xmm15,%xmm1,%xmm2
+	vpshufb	%xmm15,%xmm1,%xmm2#!!saving mov instruction to xmm2
 	vaesenclast	%xmm0,%xmm2,%xmm2
 	vpslld	$1,%xmm0,%xmm0
-	vpsllq	$32,%xmm1,%xmm3
+	vpsllq	$32,%xmm1,%xmm3#!!saving mov instruction to xmm3
 	vpxor	%xmm3,%xmm1,%xmm1
 	vpshufb	con3(%rip),%xmm1,%xmm3
 	vpxor	%xmm3,%xmm1,%xmm1
@@ -548,10 +548,10 @@ aes128gcmsiv_aes_ks_enc_x1:
 	vaesenc	%xmm1,%xmm4,%xmm4
 	vmovdqa	%xmm1,80(%rdx)
 
-	vpshufb	%xmm15,%xmm1,%xmm2
+	vpshufb	%xmm15,%xmm1,%xmm2#!!saving mov instruction to xmm2
 	vaesenclast	%xmm0,%xmm2,%xmm2
 	vpslld	$1,%xmm0,%xmm0
-	vpsllq	$32,%xmm1,%xmm3
+	vpsllq	$32,%xmm1,%xmm3#!!saving mov instruction to xmm3
 	vpxor	%xmm3,%xmm1,%xmm1
 	vpshufb	con3(%rip),%xmm1,%xmm3
 	vpxor	%xmm3,%xmm1,%xmm1
@@ -560,10 +560,10 @@ aes128gcmsiv_aes_ks_enc_x1:
 	vaesenc	%xmm1,%xmm4,%xmm4
 	vmovdqa	%xmm1,96(%rdx)
 
-	vpshufb	%xmm15,%xmm1,%xmm2
+	vpshufb	%xmm15,%xmm1,%xmm2#!!saving mov instruction to xmm2
 	vaesenclast	%xmm0,%xmm2,%xmm2
 	vpslld	$1,%xmm0,%xmm0
-	vpsllq	$32,%xmm1,%xmm3
+	vpsllq	$32,%xmm1,%xmm3#!!saving mov instruction to xmm3
 	vpxor	%xmm3,%xmm1,%xmm1
 	vpshufb	con3(%rip),%xmm1,%xmm3
 	vpxor	%xmm3,%xmm1,%xmm1
@@ -572,10 +572,10 @@ aes128gcmsiv_aes_ks_enc_x1:
 	vaesenc	%xmm1,%xmm4,%xmm4
 	vmovdqa	%xmm1,112(%rdx)
 
-	vpshufb	%xmm15,%xmm1,%xmm2
+	vpshufb	%xmm15,%xmm1,%xmm2#!!saving mov instruction to xmm2
 	vaesenclast	%xmm0,%xmm2,%xmm2
 	vpslld	$1,%xmm0,%xmm0
-	vpsllq	$32,%xmm1,%xmm3
+	vpsllq	$32,%xmm1,%xmm3#!!saving mov instruction to xmm3
 	vpxor	%xmm3,%xmm1,%xmm1
 	vpshufb	con3(%rip),%xmm1,%xmm3
 	vpxor	%xmm3,%xmm1,%xmm1
@@ -587,10 +587,10 @@ aes128gcmsiv_aes_ks_enc_x1:
 
 	vmovdqa	con2(%rip),%xmm0
 
-	vpshufb	%xmm15,%xmm1,%xmm2
+	vpshufb	%xmm15,%xmm1,%xmm2#!!saving mov instruction to xmm2
 	vaesenclast	%xmm0,%xmm2,%xmm2
 	vpslld	$1,%xmm0,%xmm0
-	vpsllq	$32,%xmm1,%xmm3
+	vpsllq	$32,%xmm1,%xmm3#!!saving mov instruction to xmm3
 	vpxor	%xmm3,%xmm1,%xmm1
 	vpshufb	con3(%rip),%xmm1,%xmm3
 	vpxor	%xmm3,%xmm1,%xmm1
@@ -599,9 +599,9 @@ aes128gcmsiv_aes_ks_enc_x1:
 	vaesenc	%xmm1,%xmm4,%xmm4
 	vmovdqa	%xmm1,144(%rdx)
 
-	vpshufb	%xmm15,%xmm1,%xmm2
+	vpshufb	%xmm15,%xmm1,%xmm2#!!saving mov instruction to xmm2
 	vaesenclast	%xmm0,%xmm2,%xmm2
-	vpsllq	$32,%xmm1,%xmm3
+	vpsllq	$32,%xmm1,%xmm3#!!saving mov instruction to xmm3
 	vpxor	%xmm3,%xmm1,%xmm1
 	vpshufb	con3(%rip),%xmm1,%xmm3
 	vpxor	%xmm3,%xmm1,%xmm1
@@ -733,7 +733,7 @@ aes128gcmsiv_enc_msg_x4:
 
 
 	vmovdqa	(%rdx),%xmm15
-	vpor	OR_MASK(%rip),%xmm15,%xmm15
+	vpor	OR_MASK(%rip),%xmm15,%xmm15#IV = [1]TAG[126...32][00..00]
 
 	vmovdqu	four(%rip),%xmm4
 	vmovdqa	%xmm15,%xmm0

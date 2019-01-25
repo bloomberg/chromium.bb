@@ -91,8 +91,8 @@ _x86_64_AES_encrypt:
 	movzbl	%bh,%edi
 	movzbl	%ch,%ebp
 	movzbl	2(%r14,%rsi,8),%r8d
-	movl	0(%r14,%rdi,8),%edi
-	movl	0(%r14,%rbp,8),%ebp
+	movl	0(%r14,%rdi,8),%edi#%r10d
+	movl	0(%r14,%rbp,8),%ebp#%r11d
 
 	andl	$0x0000ff00,%edi
 	andl	$0x0000ff00,%ebp
@@ -104,8 +104,8 @@ _x86_64_AES_encrypt:
 	movzbl	%dh,%esi
 	movzbl	%ah,%edi
 	shrl	$16,%edx
-	movl	0(%r14,%rsi,8),%esi
-	movl	0(%r14,%rdi,8),%edi
+	movl	0(%r14,%rsi,8),%esi#%r12d
+	movl	0(%r14,%rdi,8),%edi#%r8d
 
 	andl	$0x0000ff00,%esi
 	andl	$0x0000ff00,%edi
@@ -117,9 +117,9 @@ _x86_64_AES_encrypt:
 	movzbl	%cl,%esi
 	movzbl	%dl,%edi
 	movzbl	%al,%ebp
-	movl	0(%r14,%rsi,8),%esi
-	movl	0(%r14,%rdi,8),%edi
-	movl	0(%r14,%rbp,8),%ebp
+	movl	0(%r14,%rsi,8),%esi#%r10d
+	movl	0(%r14,%rdi,8),%edi#%r11d
+	movl	0(%r14,%rbp,8),%ebp#%r12d
 
 	andl	$0x00ff0000,%esi
 	andl	$0x00ff0000,%edi
@@ -132,9 +132,9 @@ _x86_64_AES_encrypt:
 	movzbl	%bl,%esi
 	movzbl	%dh,%edi
 	movzbl	%ah,%ebp
-	movl	0(%r14,%rsi,8),%esi
-	movl	2(%r14,%rdi,8),%edi
-	movl	2(%r14,%rbp,8),%ebp
+	movl	0(%r14,%rsi,8),%esi#%r8d
+	movl	2(%r14,%rdi,8),%edi#%r10d
+	movl	2(%r14,%rbp,8),%ebp#%r11d
 
 	andl	$0x00ff0000,%esi
 	andl	$0xff000000,%edi
@@ -147,8 +147,8 @@ _x86_64_AES_encrypt:
 	movzbl	%bh,%esi
 	movzbl	%ch,%edi
 	movl	16+12(%r15),%edx
-	movl	2(%r14,%rsi,8),%esi
-	movl	2(%r14,%rdi,8),%edi
+	movl	2(%r14,%rsi,8),%esi#%r12d
+	movl	2(%r14,%rdi,8),%edi#%r8d
 	movl	16+0(%r15),%eax
 
 	andl	$0xff000000,%esi
@@ -168,6 +168,7 @@ _x86_64_AES_encrypt:
 .type	_x86_64_AES_encrypt_compact,@function
 .align	16
 _x86_64_AES_encrypt_compact:
+.cfi_startproc	
 	leaq	128(%r14),%r8
 	movl	0-128(%r8),%edi
 	movl	32-128(%r8),%ebp
@@ -198,12 +199,12 @@ _x86_64_AES_encrypt_compact:
 	movzbl	(%r14,%r12,1),%r12d
 	movzbl	(%r14,%r8,1),%r8d
 
-	movzbl	(%r14,%rsi,1),%r9d
+	movzbl	(%r14,%rsi,1),%r9d#%r10d
 	movzbl	%ah,%esi
-	movzbl	(%r14,%rdi,1),%r13d
+	movzbl	(%r14,%rdi,1),%r13d#%r11d
 	movzbl	%cl,%edi
-	movzbl	(%r14,%rbp,1),%ebp
-	movzbl	(%r14,%rsi,1),%esi
+	movzbl	(%r14,%rbp,1),%ebp#%r12d
+	movzbl	(%r14,%rsi,1),%esi#%r8d
 
 	shll	$8,%r9d
 	shrl	$16,%edx
@@ -215,16 +216,16 @@ _x86_64_AES_encrypt_compact:
 	xorl	%r13d,%r11d
 	shll	$8,%ebp
 	movzbl	%al,%r13d
-	movzbl	(%r14,%rdi,1),%edi
+	movzbl	(%r14,%rdi,1),%edi#%r10d
 	xorl	%ebp,%r12d
 
 	shll	$8,%esi
 	movzbl	%bl,%ebp
 	shll	$16,%edi
 	xorl	%esi,%r8d
-	movzbl	(%r14,%r9,1),%r9d
+	movzbl	(%r14,%r9,1),%r9d#%r11d
 	movzbl	%dh,%esi
-	movzbl	(%r14,%r13,1),%r13d
+	movzbl	(%r14,%r13,1),%r13d#%r12d
 	xorl	%edi,%r10d
 
 	shrl	$8,%ecx
@@ -233,11 +234,11 @@ _x86_64_AES_encrypt_compact:
 	shrl	$8,%ebx
 	shll	$16,%r13d
 	xorl	%r9d,%r11d
-	movzbl	(%r14,%rbp,1),%ebp
-	movzbl	(%r14,%rsi,1),%esi
-	movzbl	(%r14,%rdi,1),%edi
-	movzbl	(%r14,%rcx,1),%edx
-	movzbl	(%r14,%rbx,1),%ecx
+	movzbl	(%r14,%rbp,1),%ebp#%r8d
+	movzbl	(%r14,%rsi,1),%esi#%r10d
+	movzbl	(%r14,%rdi,1),%edi#%r11d
+	movzbl	(%r14,%rcx,1),%edx#%r8d
+	movzbl	(%r14,%rbx,1),%ecx#%r12d
 
 	shll	$16,%ebp
 	xorl	%r13d,%r12d
@@ -337,6 +338,7 @@ _x86_64_AES_encrypt_compact:
 	xorl	8(%r15),%ecx
 	xorl	12(%r15),%edx
 .byte	0xf3,0xc3
+.cfi_endproc	
 .size	_x86_64_AES_encrypt_compact,.-_x86_64_AES_encrypt_compact
 .align	16
 .globl	aes_nohw_encrypt
@@ -502,8 +504,8 @@ _x86_64_AES_decrypt:
 	movzbl	%dh,%edi
 	movzbl	%ah,%ebp
 	movzbl	(%r14,%rsi,1),%r8d
-	movzbl	(%r14,%rdi,1),%edi
-	movzbl	(%r14,%rbp,1),%ebp
+	movzbl	(%r14,%rdi,1),%edi#%r10d
+	movzbl	(%r14,%rbp,1),%ebp#%r11d
 
 	shll	$8,%edi
 	shll	$8,%ebp
@@ -515,8 +517,8 @@ _x86_64_AES_decrypt:
 	movzbl	%bh,%esi
 	movzbl	%ch,%edi
 	shrl	$16,%eax
-	movzbl	(%r14,%rsi,1),%esi
-	movzbl	(%r14,%rdi,1),%edi
+	movzbl	(%r14,%rsi,1),%esi#%r12d
+	movzbl	(%r14,%rdi,1),%edi#%r8d
 
 	shll	$8,%esi
 	shll	$8,%edi
@@ -528,9 +530,9 @@ _x86_64_AES_decrypt:
 	movzbl	%cl,%esi
 	movzbl	%dl,%edi
 	movzbl	%al,%ebp
-	movzbl	(%r14,%rsi,1),%esi
-	movzbl	(%r14,%rdi,1),%edi
-	movzbl	(%r14,%rbp,1),%ebp
+	movzbl	(%r14,%rsi,1),%esi#%r10d
+	movzbl	(%r14,%rdi,1),%edi#%r11d
+	movzbl	(%r14,%rbp,1),%ebp#%r12d
 
 	shll	$16,%esi
 	shll	$16,%edi
@@ -543,9 +545,9 @@ _x86_64_AES_decrypt:
 	movzbl	%bl,%esi
 	movzbl	%bh,%edi
 	movzbl	%ch,%ebp
-	movzbl	(%r14,%rsi,1),%esi
-	movzbl	(%r14,%rdi,1),%edi
-	movzbl	(%r14,%rbp,1),%ebp
+	movzbl	(%r14,%rsi,1),%esi#%r8d
+	movzbl	(%r14,%rdi,1),%edi#%r10d
+	movzbl	(%r14,%rbp,1),%ebp#%r11d
 
 	shll	$16,%esi
 	shll	$24,%edi
@@ -558,8 +560,8 @@ _x86_64_AES_decrypt:
 	movzbl	%dh,%esi
 	movzbl	%ah,%edi
 	movl	16+12(%r15),%edx
-	movzbl	(%r14,%rsi,1),%esi
-	movzbl	(%r14,%rdi,1),%edi
+	movzbl	(%r14,%rsi,1),%esi#%r12d
+	movzbl	(%r14,%rdi,1),%edi#%r8d
 	movl	16+0(%r15),%eax
 
 	shll	$24,%esi
@@ -580,6 +582,7 @@ _x86_64_AES_decrypt:
 .type	_x86_64_AES_decrypt_compact,@function
 .align	16
 _x86_64_AES_decrypt_compact:
+.cfi_startproc	
 	leaq	128(%r14),%r8
 	movl	0-128(%r8),%edi
 	movl	32-128(%r8),%ebp
@@ -611,11 +614,11 @@ _x86_64_AES_decrypt_compact:
 	movzbl	(%r14,%r12,1),%r12d
 	movzbl	(%r14,%r8,1),%r8d
 
-	movzbl	(%r14,%rsi,1),%r9d
+	movzbl	(%r14,%rsi,1),%r9d#%r10d
 	movzbl	%ch,%esi
-	movzbl	(%r14,%rdi,1),%r13d
-	movzbl	(%r14,%rbp,1),%ebp
-	movzbl	(%r14,%rsi,1),%esi
+	movzbl	(%r14,%rdi,1),%r13d#%r11d
+	movzbl	(%r14,%rbp,1),%ebp#%r12d
+	movzbl	(%r14,%rsi,1),%esi#%r8d
 
 	shrl	$16,%ecx
 	shll	$8,%r13d
@@ -630,17 +633,17 @@ _x86_64_AES_decrypt_compact:
 	xorl	%r13d,%r11d
 	shll	$8,%esi
 	movzbl	%al,%r13d
-	movzbl	(%r14,%rdi,1),%edi
+	movzbl	(%r14,%rdi,1),%edi#%r10d
 	xorl	%ebp,%r12d
 	movzbl	%bl,%ebp
 
 	shll	$16,%edi
 	xorl	%esi,%r8d
-	movzbl	(%r14,%r9,1),%r9d
+	movzbl	(%r14,%r9,1),%r9d#%r11d
 	movzbl	%bh,%esi
-	movzbl	(%r14,%rbp,1),%ebp
+	movzbl	(%r14,%rbp,1),%ebp#%r8d
 	xorl	%edi,%r10d
-	movzbl	(%r14,%r13,1),%r13d
+	movzbl	(%r14,%r13,1),%r13d#%r12d
 	movzbl	%ch,%edi
 
 	shll	$16,%ebp
@@ -652,10 +655,10 @@ _x86_64_AES_decrypt_compact:
 	shrl	$8,%eax
 	xorl	%r13d,%r12d
 
-	movzbl	(%r14,%rsi,1),%esi
-	movzbl	(%r14,%rdi,1),%ebx
-	movzbl	(%r14,%rbp,1),%ecx
-	movzbl	(%r14,%rax,1),%edx
+	movzbl	(%r14,%rsi,1),%esi#%r10d
+	movzbl	(%r14,%rdi,1),%ebx#%r11d
+	movzbl	(%r14,%rbp,1),%ecx#%r12d
+	movzbl	(%r14,%rax,1),%edx#%r8d
 
 	movl	%r10d,%eax
 	shll	$24,%esi
@@ -801,6 +804,7 @@ _x86_64_AES_decrypt_compact:
 	xorl	8(%r15),%ecx
 	xorl	12(%r15),%edx
 .byte	0xf3,0xc3
+.cfi_endproc	
 .size	_x86_64_AES_decrypt_compact,.-_x86_64_AES_decrypt_compact
 .align	16
 .globl	aes_nohw_decrypt
@@ -932,6 +936,7 @@ aes_nohw_set_encrypt_key:
 .type	_x86_64_AES_set_encrypt_key,@function
 .align	16
 _x86_64_AES_set_encrypt_key:
+.cfi_startproc	
 	movl	%esi,%ecx
 	movq	%rdi,%rsi
 	movq	%rdx,%rdi
@@ -1167,6 +1172,7 @@ _x86_64_AES_set_encrypt_key:
 	movq	$-1,%rax
 .Lexit:
 .byte	0xf3,0xc3
+.cfi_endproc	
 .size	_x86_64_AES_set_encrypt_key,.-_x86_64_AES_set_encrypt_key
 .align	16
 .globl	aes_nohw_set_decrypt_key
@@ -1390,8 +1396,9 @@ aes_nohw_cbc_encrypt:
 	cmpq	$0,%rdx
 	je	.Lcbc_epilogue
 	pushfq
+
+
 .cfi_adjust_cfa_offset	8
-.cfi_offset	49,-16
 	pushq	%rbx
 .cfi_adjust_cfa_offset	8
 .cfi_offset	%rbx,-24
@@ -1420,6 +1427,7 @@ aes_nohw_cbc_encrypt:
 	cmpq	$0,%r9
 	cmoveq	%r10,%r14
 
+.cfi_remember_state	
 	leaq	OPENSSL_ia32cap_P(%rip),%r10
 	movl	(%r10),%r10d
 	cmpq	$512,%rdx
@@ -1456,7 +1464,7 @@ aes_nohw_cbc_encrypt:
 
 	xchgq	%rsp,%r15
 .cfi_def_cfa_register	%r15
-
+#add	$8,%rsp
 	movq	%r15,16(%rsp)
 .cfi_escape	0x0f,0x05,0x77,0x10,0x06,0x23,0x40
 .Lcbc_fast_body:
@@ -1507,7 +1515,7 @@ aes_nohw_cbc_encrypt:
 	cmpq	$0,%rbx
 	je	.LFAST_DECRYPT
 
-
+#----------------------------- ENCRYPT -----------------------------#
 	movl	0(%rbp),%eax
 	movl	4(%rbp),%ebx
 	movl	8(%rbp),%ecx
@@ -1545,7 +1553,7 @@ aes_nohw_cbc_encrypt:
 
 	jmp	.Lcbc_fast_cleanup
 
-
+#----------------------------- DECRYPT -----------------------------#
 .align	16
 .LFAST_DECRYPT:
 	cmpq	%r8,%r9
@@ -1653,9 +1661,10 @@ aes_nohw_cbc_encrypt:
 
 	jmp	.Lcbc_exit
 
-
+#--------------------------- SLOW ROUTINE ---------------------------#
 .align	16
 .Lcbc_slow_prologue:
+.cfi_restore_state	
 
 	leaq	-88(%rsp),%rbp
 	andq	$-64,%rbp
@@ -1667,13 +1676,15 @@ aes_nohw_cbc_encrypt:
 	subq	%r10,%rbp
 
 	xchgq	%rsp,%rbp
-
+.cfi_def_cfa_register	%rbp
+#add	$8,%rsp
 	movq	%rbp,16(%rsp)
+.cfi_escape	0x0f,0x05,0x77,0x10,0x06,0x23,0x40
 .Lcbc_slow_body:
-
-
-
-
+#mov	%rdi,24(%rsp)
+#mov	%rsi,32(%rsp)
+#mov	%rdx,40(%rsp)
+#mov	%rcx,48(%rsp)
 	movq	%r8,56(%rsp)
 	movq	%r8,%rbp
 	movq	%r9,%rbx
@@ -1698,7 +1709,7 @@ aes_nohw_cbc_encrypt:
 	cmpq	$0,%rbx
 	je	.LSLOW_DECRYPT
 
-
+#--------------------------- SLOW ENCRYPT ---------------------------#
 	testq	$-16,%r10
 	movl	0(%rbp),%eax
 	movl	4(%rbp),%ebx
@@ -1759,7 +1770,7 @@ aes_nohw_cbc_encrypt:
 	movq	%r11,%rax
 	movq	%r12,%rcx
 	jmp	.Lcbc_slow_enc_loop
-
+#--------------------------- SLOW DECRYPT ---------------------------#
 .align	16
 .LSLOW_DECRYPT:
 	shrq	$3,%rax
@@ -1857,8 +1868,9 @@ aes_nohw_cbc_encrypt:
 .cfi_def_cfa	%rsp,16
 .Lcbc_popfq:
 	popfq
+
+
 .cfi_adjust_cfa_offset	-8
-.cfi_restore	49
 .Lcbc_epilogue:
 	.byte	0xf3,0xc3
 .cfi_endproc	
