@@ -4857,6 +4857,28 @@
             ]
         }
     ],
+    "UnthrottleRequestsAfterLongQueuingDelay": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "UnthrottleRequestsAfterLongQueuingDelay",
+                    "params": {
+                        "http_rtt_multiplier": "30"
+                    },
+                    "enable_features": [
+                        "UnthrottleRequestsAfterLongQueuingDelay"
+                    ]
+                }
+            ]
+        }
+    ],
     "UpdateClientUseJSON": [
         {
             "platforms": [
