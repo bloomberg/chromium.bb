@@ -10,6 +10,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
@@ -297,6 +298,18 @@ void TabContentManager::RemoveTabThumbnail(JNIEnv* env,
   NativeRemoveTabThumbnail(tab_id);
 }
 
+void TabContentManager::GetTabThumbnailWithCallback(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint tab_id,
+    const base::android::JavaParamRef<jobject>& j_callback) {
+  thumbnail_cache_->DecompressThumbnailFromFile(
+      tab_id, base::BindRepeating(
+                  &TabContentManager::TabThumbnailAvailableFromDisk,
+                  weak_factory_.GetWeakPtr(),
+                  base::android::ScopedJavaGlobalRef<jobject>(j_callback)));
+}
+
 void TabContentManager::OnUIResourcesWereEvicted() {
   thumbnail_cache_->OnUIResourcesWereEvicted();
 }
@@ -318,6 +331,17 @@ void TabContentManager::PutThumbnailIntoCache(int tab_id,
 
   if (thumbnail_scale > 0 && !bitmap.empty())
     thumbnail_cache_->Put(tab_id, bitmap, thumbnail_scale);
+}
+
+void TabContentManager::TabThumbnailAvailableFromDisk(
+    base::android::ScopedJavaGlobalRef<jobject> j_callback,
+    bool result,
+    SkBitmap bitmap) {
+  ScopedJavaLocalRef<jobject> j_bitmap;
+  if (!bitmap.isNull() && result)
+    j_bitmap = gfx::ConvertToJavaBitmap(&bitmap);
+
+  RunObjectCallbackAndroid(j_callback, j_bitmap);
 }
 
 // ----------------------------------------------------------------------------
