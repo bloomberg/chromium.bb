@@ -5,24 +5,20 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_SITE_SETTINGS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_SITE_SETTINGS_HANDLER_H_
 
-#include <list>
 #include <map>
 #include <memory>
 #include <set>
 #include <string>
-#include <vector>
 
 #include "base/scoped_observer.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
-#include "chrome/browser/storage/storage_info_fetcher.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 class HostContentSettingsMap;
 class Profile;
@@ -233,8 +229,6 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   // Updates the block autoplay enabled pref when the UI is toggled.
   void HandleSetBlockAutoplayEnabled(const base::ListValue* args);
 
-  BrowsingDataLocalStorageHelper* GetLocalStorageHelper();
-
   // Clear web storage data and cookies from cookies tree model for an ETLD+1.
   void HandleClearEtldPlus1DataAndCookies(const base::ListValue* args);
 
@@ -266,8 +260,6 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
 
   // Change observer for prefs.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
-
-  scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_helper_;
 
   std::unique_ptr<CookiesTreeModel> cookies_tree_model_;
 
