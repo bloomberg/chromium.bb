@@ -1115,6 +1115,10 @@
     "label": "//fuchsia/http:http_service_tests",
     "type": "console_test_launcher",
   },
+  "http_structured_header_fuzzer": {
+    "label": "//content/test/fuzzer:http_structured_header_fuzzer",
+    "type": "fuzzer",
+  },
   "hunspell_fuzzer": {
     "label": "//third_party/hunspell:hunspell_fuzzer",
     "type": "fuzzer",
@@ -2216,10 +2220,6 @@
   },
   "signed_exchange_envelope_fuzzer": {
     "label": "//content/test/fuzzer:signed_exchange_envelope_fuzzer",
-    "type": "fuzzer",
-  },
-  "signed_exchange_signature_header_field_fuzzer": {
-    "label": "//content/test/fuzzer:signed_exchange_signature_header_field_fuzzer",
     "type": "fuzzer",
   },
   "skia_image_filter_proto_fuzzer": {

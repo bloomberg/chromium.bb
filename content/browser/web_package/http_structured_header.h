@@ -9,11 +9,12 @@
 #include <vector>
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
+#include "content/common/content_export.h"
 
 namespace content {
 namespace http_structured_header {
 
-struct ParameterisedIdentifier {
+struct CONTENT_EXPORT ParameterisedIdentifier {
   std::string identifier;
   std::map<std::string, std::string> params;
 
@@ -24,7 +25,7 @@ struct ParameterisedIdentifier {
 
 typedef std::vector<ParameterisedIdentifier> ParameterisedList;
 
-base::Optional<ParameterisedList> ParseParameterisedList(
+CONTENT_EXPORT base::Optional<ParameterisedList> ParseParameterisedList(
     const base::StringPiece& str);
 
 }  // namespace http_structured_header
