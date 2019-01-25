@@ -202,7 +202,8 @@ public class ExploreSitesSection {
             // A rotated in category is defined by having no interaction count
             // and having a shown count less than the MAX_TIMES_ROTATED.
             if (isPersonalized && category.getInteractionCount() == 0
-                    && category.getNtpShownCount() < MAX_TIMES_ROTATED) {
+                    && category.getNtpShownCount() < MAX_TIMES_ROTATED
+                    && !category.isPlaceholder()) {
                 ExploreSitesBridge.incrementNtpShownCount(mProfile, category.getId());
             }
             tileCount++;

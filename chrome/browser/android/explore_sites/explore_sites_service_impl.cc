@@ -70,7 +70,9 @@ ExploreSitesServiceImpl::~ExploreSitesServiceImpl() {}
 
 // static
 bool ExploreSitesServiceImpl::IsExploreSitesEnabled() {
-  return GetExploreSitesVariation() == ExploreSitesVariation::ENABLED;
+  ExploreSitesVariation variation = GetExploreSitesVariation();
+  return variation == ExploreSitesVariation::ENABLED ||
+         variation == ExploreSitesVariation::PERSONALIZED;
 }
 
 void ExploreSitesServiceImpl::GetCatalog(CatalogCallback callback) {
