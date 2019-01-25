@@ -130,7 +130,7 @@ Polymer({
       case 'carAudio':
         return 'settings:headset';
       case 'video':
-        return 'settings:videocam';
+        return 'cr:videocam';
       case 'joystick':
       case 'gamepad':
         return 'settings:gamepad';
