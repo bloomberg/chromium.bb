@@ -5,11 +5,8 @@
 #include "chrome/browser/ui/webui/settings/site_settings_handler.h"
 
 #include <algorithm>
-#include <map>
-#include <memory>
-#include <set>
-#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
@@ -50,7 +47,6 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/storage_usage_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/origin_util.h"
@@ -59,8 +55,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "storage/browser/quota/quota_manager.h"
-#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 
@@ -1484,12 +1478,6 @@ void SiteSettingsHandler::GetOriginCookies(
       }
     }
   }
-}
-
-BrowsingDataLocalStorageHelper* SiteSettingsHandler::GetLocalStorageHelper() {
-  if (!local_storage_helper_)
-    local_storage_helper_ = new BrowsingDataLocalStorageHelper(profile_);
-  return local_storage_helper_.get();
 }
 
 void SiteSettingsHandler::HandleClearEtldPlus1DataAndCookies(
