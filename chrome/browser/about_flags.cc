@@ -425,14 +425,6 @@ const FeatureEntry::FeatureVariation kCCTModuleCacheVariations[] = {
 
 #endif  // OS_ANDROID
 
-const FeatureEntry::Choice kMHTMLGeneratorOptionChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kMhtmlSkipNostoreMain, switches::kMHTMLGeneratorOption,
-     switches::kMHTMLSkipNostoreMain},
-    {flag_descriptions::kMhtmlSkipNostoreAll, switches::kMHTMLGeneratorOption,
-     switches::kMHTMLSkipNostoreAll},
-};
-
 const FeatureEntry::Choice kEnableGpuRasterizationChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flags_ui::kGenericExperimentChoiceEnabled,
@@ -1386,10 +1378,6 @@ const FeatureEntry kFeatureEntries[] = {
      "save-page-as-mhtml", flag_descriptions::kSavePageAsMhtmlName,
      flag_descriptions::kSavePageAsMhtmlDescription, kOsMac | kOsWin | kOsLinux,
      SINGLE_VALUE_TYPE(switches::kSavePageAsMHTML)},
-    {"mhtml-generator-option", flag_descriptions::kMhtmlGeneratorOptionName,
-     flag_descriptions::kMhtmlGeneratorOptionDescription,
-     kOsMac | kOsWin | kOsLinux,
-     MULTI_VALUE_TYPE(kMHTMLGeneratorOptionChoices)},
     {"enable-quic", flag_descriptions::kQuicName,
      flag_descriptions::kQuicDescription, kOsAll,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableQuic, switches::kDisableQuic)},

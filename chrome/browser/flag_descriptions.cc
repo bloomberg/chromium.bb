@@ -1248,12 +1248,6 @@ const char kMessageCenterNewStyleNotificationName[] = "New style notification";
 const char kMessageCenterNewStyleNotificationDescription[] =
     "Enables the experiment style of material-design notification";
 
-const char kMhtmlGeneratorOptionName[] = "MHTML Generation Option";
-const char kMhtmlGeneratorOptionDescription[] =
-    "Provides experimental options for MHTML file generator.";
-const char kMhtmlSkipNostoreMain[] = "Skips no-store main frame.";
-const char kMhtmlSkipNostoreAll[] = "Skips all no-store resources.";
-
 const char kNewAudioRenderingMixingStrategyName[] =
     "New audio rendering mixing strategy";
 const char kNewAudioRenderingMixingStrategyDescription[] =

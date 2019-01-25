@@ -757,11 +757,6 @@ extern const char kMemoryCoordinatorDescription[];
 extern const char kMessageCenterNewStyleNotificationName[];
 extern const char kMessageCenterNewStyleNotificationDescription[];
 
-extern const char kMhtmlGeneratorOptionName[];
-extern const char kMhtmlGeneratorOptionDescription[];
-extern const char kMhtmlSkipNostoreMain[];
-extern const char kMhtmlSkipNostoreAll[];
-
 extern const char kNewAudioRenderingMixingStrategyName[];
 extern const char kNewAudioRenderingMixingStrategyDescription[];
 

@@ -63,10 +63,6 @@ class SimpleMHTMLPartsGenerationDelegate
  private:
   bool ShouldSkipResource(const WebURL&) final { return false; }
 
-  WebFrameSerializerCacheControlPolicy CacheControlPolicy() final {
-    return WebFrameSerializerCacheControlPolicy::kNone;
-  }
-
   bool UseBinaryEncoding() final { return false; }
   bool RemovePopupOverlay() final { return remove_popup_overlay_; }
   bool UsePageProblemDetectors() final { return false; }

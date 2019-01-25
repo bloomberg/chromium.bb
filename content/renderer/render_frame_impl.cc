@@ -675,10 +675,6 @@ class MHTMLPartsGenerationDelegate
     return false;
   }
 
-  blink::WebFrameSerializerCacheControlPolicy CacheControlPolicy() override {
-    return params_.mhtml_cache_control_policy;
-  }
-
   bool UseBinaryEncoding() override { return params_.mhtml_binary_encoding; }
 
   bool RemovePopupOverlay() override {

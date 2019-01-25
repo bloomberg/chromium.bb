@@ -627,9 +627,6 @@ IPC_STRUCT_BEGIN(FrameMsg_SerializeAsMHTML_Params)
   // intended for sharing.
   IPC_STRUCT_MEMBER(bool, mhtml_binary_encoding)
 
-  IPC_STRUCT_MEMBER(blink::WebFrameSerializerCacheControlPolicy,
-                    mhtml_cache_control_policy)
-
   // Whether to remove popup overlay while serializing.
   IPC_STRUCT_MEMBER(bool, mhtml_popup_overlay_removal)
 

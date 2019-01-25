@@ -23,12 +23,6 @@ struct CONTENT_EXPORT MHTMLGenerationParams {
   // Content-Transfer-Encoding.
   bool use_binary_encoding = false;
 
-  // By default, MHTML includes all subresources.  This flag can be used to
-  // cause the generator to fail or silently ignore resources if the
-  // Cache-Control header is used.
-  blink::WebFrameSerializerCacheControlPolicy cache_control_policy =
-      blink::WebFrameSerializerCacheControlPolicy::kNone;
-
   // Removes popups that could obstruct the user's view of normal content.
   bool remove_popup_overlay = false;
 
