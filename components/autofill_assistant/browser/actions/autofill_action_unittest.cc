@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/guid.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -180,7 +181,12 @@ class AutofillActionTest : public testing::Test {
   std::unique_ptr<autofill::PersonalDataManager> personal_data_manager_;
 };
 
-TEST_F(AutofillActionTest, FillManually) {
+#if !defined(OS_ANDROID)
+#define MAYBE_FillManually FillManually
+#else
+#define MAYBE_FillManually DISABLED_FillManually
+#endif
+TEST_F(AutofillActionTest, MAYBE_FillManually) {
   InSequence seq;
 
   ActionProto action_proto = CreateUseAddressAction();
