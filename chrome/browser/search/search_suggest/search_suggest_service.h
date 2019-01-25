@@ -38,6 +38,10 @@ class SearchSuggestService : public KeyedService {
     return search_suggest_data_;
   }
 
+  const SearchSuggestLoader::Status& search_suggest_status() const {
+    return search_suggest_status_;
+  }
+
   // Determines if a request for search suggestions should be made. If a request
   // should not be made immediately call SearchSuggestDataLoaded with the
   // reason. Otherwise requests an asynchronous refresh from the network. After
@@ -122,6 +126,8 @@ class SearchSuggestService : public KeyedService {
   base::ObserverList<SearchSuggestServiceObserver, true>::Unchecked observers_;
 
   base::Optional<SearchSuggestData> search_suggest_data_;
+
+  SearchSuggestLoader::Status search_suggest_status_;
 };
 
 #endif  // CHROME_BROWSER_SEARCH_SEARCH_SUGGEST_SEARCH_SUGGEST_SERVICE_H_

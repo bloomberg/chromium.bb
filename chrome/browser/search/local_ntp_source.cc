@@ -141,6 +141,21 @@ const struct Resource{
      "image/jpg"},
 };
 
+// This enum must match the numbering for NTPSearchSuggestionsRequestStatus in
+// enums.xml. Do not reorder or remove items, and update kMaxValue when new
+// items are added.
+enum class SearchSuggestionsRequestStatus {
+  UNKNOWN_ERROR = 0,
+  SENT = 1,
+  SIGNED_OUT = 2,
+  OPTED_OUT = 3,
+  IMPRESSION_CAP = 4,
+  FROZEN = 5,
+  FATAL_ERROR = 6,
+
+  kMaxValue = FATAL_ERROR
+};
+
 // Strips any query parameters from the specified path.
 std::string StripParameters(const std::string& path) {
   return path.substr(0, path.find("?"));
@@ -1248,19 +1263,35 @@ void LocalNtpSource::OnPromoServiceShuttingDown() {
 void LocalNtpSource::OnSearchSuggestDataUpdated() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  bool result = search_suggest_service_->search_suggest_data().has_value();
+  SearchSuggestLoader::Status result =
+      search_suggest_service_->search_suggest_status();
   base::TimeTicks now = base::TimeTicks::Now();
   for (const auto& request : search_suggest_requests_) {
     base::TimeDelta delta = now - request.start_time;
     UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.SearchSuggestions.RequestLatency",
                                delta);
-    if (result) {
+    SearchSuggestionsRequestStatus request_status =
+        SearchSuggestionsRequestStatus::UNKNOWN_ERROR;
+
+    if (result == SearchSuggestLoader::Status::SIGNED_OUT) {
+      request_status = SearchSuggestionsRequestStatus::SIGNED_OUT;
+    } else if (result == SearchSuggestLoader::Status::OPTED_OUT) {
+      request_status = SearchSuggestionsRequestStatus::OPTED_OUT;
+    } else if (result == SearchSuggestLoader::Status::IMPRESSION_CAP) {
+      request_status = SearchSuggestionsRequestStatus::IMPRESSION_CAP;
+    } else if (result == SearchSuggestLoader::Status::REQUESTS_FROZEN) {
+      request_status = SearchSuggestionsRequestStatus::FROZEN;
+    } else if (result == SearchSuggestLoader::Status::OK) {
+      request_status = SearchSuggestionsRequestStatus::SENT;
       UMA_HISTOGRAM_MEDIUM_TIMES(
           "NewTabPage.SearchSuggestions.RequestLatency.Success", delta);
-    } else {
+    } else if (result == SearchSuggestLoader::Status::FATAL_ERROR) {
+      request_status = SearchSuggestionsRequestStatus::FATAL_ERROR;
       UMA_HISTOGRAM_MEDIUM_TIMES(
           "NewTabPage.SearchSuggestions.RequestLatency.Failure", delta);
     }
+    UMA_HISTOGRAM_ENUMERATION("NewTabPage.SearchSuggestions.RequestStatus",
+                              request_status);
   }
   search_suggest_requests_.clear();
 }
