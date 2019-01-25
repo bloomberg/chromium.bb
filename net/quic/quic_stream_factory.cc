@@ -1070,8 +1070,6 @@ QuicStreamFactory::QuicStreamFactory(
       ssl_config_service_(ssl_config_service),
       enable_socket_recv_optimization_(enable_socket_recv_optimization),
       weak_factory_(this) {
-  if (ssl_config_service_)
-    ssl_config_service_->AddObserver(this);
   DCHECK(transport_security_state_);
   DCHECK(http_server_properties_);
   crypto_config_.set_user_agent_id(user_agent_id);
@@ -1114,8 +1112,6 @@ QuicStreamFactory::~QuicStreamFactory() {
   active_jobs_.clear();
   while (!active_cert_verifier_jobs_.empty())
     active_cert_verifier_jobs_.erase(active_cert_verifier_jobs_.begin());
-  if (ssl_config_service_)
-    ssl_config_service_->RemoveObserver(this);
   if (close_sessions_on_ip_change_ || goaway_sessions_on_ip_change_) {
     NetworkChangeNotifier::RemoveIPAddressObserver(this);
   }
@@ -1610,10 +1606,6 @@ std::unique_ptr<DatagramClientSocket> QuicStreamFactory::CreateSocket(
   if (enable_socket_recv_optimization_)
     socket->EnableRecvOptimization();
   return socket;
-}
-
-void QuicStreamFactory::OnSSLConfigChanged() {
-  CloseAllSessions(ERR_CERT_DATABASE_CHANGED, quic::QUIC_CONNECTION_CANCELLED);
 }
 
 void QuicStreamFactory::OnCertDBChanged() {

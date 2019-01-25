@@ -191,7 +191,6 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
 class NET_EXPORT_PRIVATE QuicStreamFactory
     : public NetworkChangeNotifier::IPAddressObserver,
       public NetworkChangeNotifier::NetworkObserver,
-      public SSLConfigService::Observer,
       public CertDatabase::Observer {
  public:
   // This class encompasses |destination| and |server_id|.
@@ -349,11 +348,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       NetworkChangeNotifier::NetworkHandle network) override;
   void OnNetworkMadeDefault(
       NetworkChangeNotifier::NetworkHandle network) override;
-
-  // SSLConfigService::Observer methods:
-
-  // We perform the same flushing as described above when SSL settings change.
-  void OnSSLConfigChanged() override;
 
   // CertDatabase::Observer methods:
 
