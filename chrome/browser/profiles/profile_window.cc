@@ -29,7 +29,6 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -44,7 +43,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_reconcilor.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/buildflags/buildflags.h"
@@ -373,11 +371,10 @@ bool IsLockAvailable(Profile* profile) {
   // TODO(mlerman): After one release remove any hosted_domain reference to the
   // pref, since all users will have this in the AccountTrackerService.
   if (hosted_domain.empty()) {
-    AccountTrackerService* account_tracker =
-        AccountTrackerServiceFactory::GetForProfile(profile);
-    std::string account_id =
-        IdentityManagerFactory::GetForProfile(profile)->GetPrimaryAccountId();
-    hosted_domain = account_tracker->GetAccountInfo(account_id).hosted_domain;
+    auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+    if (identity_manager->HasPrimaryAccount()) {
+      hosted_domain = identity_manager->GetPrimaryAccountInfo().hosted_domain;
+    }
   }
   // TODO(mlerman): Prohibit only users who authenticate using SAML. Until then,
   // prohibited users who use hosted domains (aside from google.com).
