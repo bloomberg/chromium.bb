@@ -231,6 +231,11 @@ void ArcApps::Uninstall(const std::string& app_id) {
 void ArcApps::OpenNativeSettings(const std::string& app_id) {
   const std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
       prefs_->GetApp(app_id);
+  if (!app_info) {
+    LOG(ERROR) << "Cannot open native settings for " << app_id
+               << ". App is not found.";
+    return;
+  }
   arc::ShowPackageInfo(app_info->package_name,
                        arc::mojom::ShowPackageInfoPage::MAIN,
                        display::Screen::GetScreen()->GetPrimaryDisplay().id());
