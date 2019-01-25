@@ -218,7 +218,7 @@
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/foreign_session_handler.h"
-#include "chrome/browser/ui/webui/md_history_ui.h"
+#include "chrome/browser/ui/webui/history_ui.h"
 #include "chrome/browser/ui/webui/settings/md_settings_ui.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #endif  // defined(OS_ANDROID)
