@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_TEST_MOCK_MEDIA_SOURCE_H_
-#define MEDIA_TEST_MOCK_MEDIA_SOURCE_H_
+#ifndef MEDIA_TEST_TEST_MEDIA_SOURCE_H_
+#define MEDIA_TEST_TEST_MEDIA_SOURCE_H_
 
 #include <limits>
 
@@ -21,7 +21,7 @@ constexpr size_t kAppendWholeFile = std::numeric_limits<size_t>::max();
 
 // Helper class that emulates calls made on the ChunkDemuxer by the
 // Media Source API.
-class MockMediaSource {
+class TestMediaSource {
  public:
   enum class ExpectedAppendResult {
     kSuccess,
@@ -29,20 +29,20 @@ class MockMediaSource {
     kSuccessOrFailure,  // e.g., for fuzzing when parse may pass or fail
   };
 
-  MockMediaSource(const std::string& filename,
+  TestMediaSource(const std::string& filename,
                   const std::string& mimetype,
                   size_t initial_append_size,
                   bool initial_sequence_mode = false);
   // Same as the constructor above, but use GetMimeTypeForFile() to get the mime
   // type.
-  MockMediaSource(const std::string& filename,
+  TestMediaSource(const std::string& filename,
                   size_t initial_append_size,
                   bool initial_sequence_mode = false);
-  MockMediaSource(scoped_refptr<DecoderBuffer> data,
+  TestMediaSource(scoped_refptr<DecoderBuffer> data,
                   const std::string& mimetype,
                   size_t initial_append_size,
                   bool initial_sequence_mode = false);
-  ~MockMediaSource();
+  ~TestMediaSource();
 
   std::unique_ptr<Demuxer> GetDemuxer();
 
@@ -122,9 +122,9 @@ class MockMediaSource {
   bool do_eos_after_next_append_ = false;
   ExpectedAppendResult expected_append_result_ = ExpectedAppendResult::kSuccess;
 
-  DISALLOW_COPY_AND_ASSIGN(MockMediaSource);
+  DISALLOW_COPY_AND_ASSIGN(TestMediaSource);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_TEST_MOCK_MEDIA_SOURCE_H_
+#endif  // MEDIA_TEST_TEST_MEDIA_SOURCE_H_

@@ -32,8 +32,8 @@
 #include "media/media_buildflags.h"
 #include "media/renderers/renderer_impl.h"
 #include "media/test/fake_encrypted_media.h"
-#include "media/test/mock_media_source.h"
 #include "media/test/pipeline_integration_test_base.h"
+#include "media/test/test_media_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/libaom/av1_buildflags.h"
 #include "url/gurl.h"
@@ -465,7 +465,7 @@ class PipelineIntegrationTest : public testing::Test,
                           base::TimeDelta seek_time,
                           int seek_file_position,
                           int seek_append_size) {
-    MockMediaSource source(filename, initial_append_size);
+    TestMediaSource source(filename, initial_append_size);
 
     if (StartPipelineWithMediaSource(&source, kNoClockless, nullptr) !=
         PIPELINE_OK) {
@@ -537,7 +537,7 @@ class BasicMSEPlaybackTest
   void PlayToEnd() {
     MSEPlaybackTestData data = GetParam();
 
-    MockMediaSource source(data.filename, data.append_bytes);
+    TestMediaSource source(data.filename, data.append_bytes);
     ASSERT_EQ(PIPELINE_OK,
               StartPipelineWithMediaSource(&source, kNormal, nullptr));
     source.EndOfStream();
@@ -657,7 +657,7 @@ class MSEChangeTypeTest
     // TODO(wolenetz): Switch back to 'segments' mode once we have some
     // incubation of a way to flexibly allow playback through unbuffered
     // regions. Known test media requiring sequence mode: MP3-in-MP2T
-    MockMediaSource source(file_one.filename, file_one.append_bytes, true);
+    TestMediaSource source(file_one.filename, file_one.append_bytes, true);
     ASSERT_EQ(PIPELINE_OK,
               StartPipelineWithMediaSource(&source, kNormal, nullptr));
     source.EndOfStream();
@@ -1167,7 +1167,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackOpusMp4TrimmingHashed) {
 }
 
 TEST_P(MSEPipelineIntegrationTest, BasicPlaybackOpusWebmTrimmingHashed) {
-  MockMediaSource source("opus-trimming-test.webm", kAppendWholeFile);
+  TestMediaSource source("opus-trimming-test.webm", kAppendWholeFile);
   EXPECT_EQ(PIPELINE_OK,
             StartPipelineWithMediaSource(&source, kHashed, nullptr));
   source.EndOfStream();
@@ -1196,7 +1196,7 @@ TEST_P(MSEPipelineIntegrationTest, BasicPlaybackOpusWebmTrimmingHashed) {
 }
 
 TEST_P(MSEPipelineIntegrationTest, BasicPlaybackOpusMp4TrimmingHashed) {
-  MockMediaSource source("opus-trimming-test.mp4", kAppendWholeFile);
+  TestMediaSource source("opus-trimming-test.mp4", kAppendWholeFile);
 
   // TODO(dalecurtis): The test clip currently does not have the edit list
   // entries required to achieve correctness here, so we're manually specifying
@@ -1306,7 +1306,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackOpusMp4PrerollExceedsCodecDelay) {
 }
 
 TEST_P(MSEPipelineIntegrationTest, BasicPlaybackOpusPrerollExceedsCodecDelay) {
-  MockMediaSource source("bear-opus.webm", kAppendWholeFile);
+  TestMediaSource source("bear-opus.webm", kAppendWholeFile);
   EXPECT_EQ(PIPELINE_OK,
             StartPipelineWithMediaSource(&source, kHashed, nullptr));
   source.EndOfStream();
@@ -1335,7 +1335,7 @@ TEST_P(MSEPipelineIntegrationTest, BasicPlaybackOpusPrerollExceedsCodecDelay) {
 
 TEST_P(MSEPipelineIntegrationTest,
        BasicPlaybackOpusMp4PrerollExceedsCodecDelay) {
-  MockMediaSource source("bear-opus.mp4", kAppendWholeFile);
+  TestMediaSource source("bear-opus.mp4", kAppendWholeFile);
 
   // TODO(dalecurtis): The test clip currently does not have the edit list
   // entries required to achieve correctness here, so we're manually specifying
@@ -1429,7 +1429,7 @@ TEST_F(PipelineIntegrationTest, FlacPlaybackHashed) {
 }
 
 TEST_P(MSEPipelineIntegrationTest, BasicPlayback) {
-  MockMediaSource source("bear-320x240.webm", 219229);
+  TestMediaSource source("bear-320x240.webm", 219229);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
   source.EndOfStream();
 
@@ -1452,7 +1452,7 @@ TEST_P(MSEPipelineIntegrationTest, Eos_Before_Demuxer_Opened) {
   // stream should let the test complete with error indicating failure to open
   // demuxer. Here we append only the first 10 bytes of a test WebM, definitely
   // less than the ~4400 bytes needed to parse its full initialization segment.
-  MockMediaSource source("bear-320x240.webm", 10);
+  TestMediaSource source("bear-320x240.webm", 10);
   source.set_do_eos_after_next_append(true);
   EXPECT_EQ(
       DEMUXER_ERROR_COULD_NOT_OPEN,
@@ -1463,16 +1463,16 @@ TEST_P(MSEPipelineIntegrationTest, Corrupted_First_Media_Segment) {
   // After successful initialization segment append completing demuxer opening,
   // immediately append a corrupted media segment to trigger parse error while
   // pipeline is still completing renderer setup.
-  MockMediaSource source("bear-320x240_corrupted_after_init_segment.webm",
+  TestMediaSource source("bear-320x240_corrupted_after_init_segment.webm",
                          4380);
   source.set_expected_append_result(
-      MockMediaSource::ExpectedAppendResult::kFailure);
+      TestMediaSource::ExpectedAppendResult::kFailure);
   EXPECT_EQ(CHUNK_DEMUXER_ERROR_APPEND_FAILED,
             StartPipelineWithMediaSource(&source));
 }
 
 TEST_P(MSEPipelineIntegrationTest, BasicPlayback_Live) {
-  MockMediaSource source("bear-320x240-live.webm", 219221);
+  TestMediaSource source("bear-320x240-live.webm", 219221);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
   source.EndOfStream();
 
@@ -1492,7 +1492,7 @@ TEST_P(MSEPipelineIntegrationTest, BasicPlayback_Live) {
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
 TEST_P(MSEPipelineIntegrationTest, BasicPlayback_AV1_WebM) {
-  MockMediaSource source("bear-av1.webm", 18898);
+  TestMediaSource source("bear-av1.webm", 18898);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
   source.EndOfStream();
 
@@ -1509,7 +1509,7 @@ TEST_P(MSEPipelineIntegrationTest, BasicPlayback_AV1_WebM) {
 }
 
 TEST_P(MSEPipelineIntegrationTest, BasicPlayback_AV1_10bit_WebM) {
-  MockMediaSource source("bear-av1-320x180-10bit.webm", 19076);
+  TestMediaSource source("bear-av1-320x180-10bit.webm", 19076);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
   source.EndOfStream();
 
@@ -1529,7 +1529,7 @@ TEST_P(MSEPipelineIntegrationTest, BasicPlayback_AV1_10bit_WebM) {
 #endif
 
 TEST_P(MSEPipelineIntegrationTest, BasicPlayback_VP9_WebM) {
-  MockMediaSource source("bear-vp9.webm", 67504);
+  TestMediaSource source("bear-vp9.webm", 67504);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
   source.EndOfStream();
 
@@ -1546,7 +1546,7 @@ TEST_P(MSEPipelineIntegrationTest, BasicPlayback_VP9_WebM) {
 }
 
 TEST_P(MSEPipelineIntegrationTest, BasicPlayback_VP9_BlockGroup_WebM) {
-  MockMediaSource source("bear-vp9-blockgroup.webm", 67871);
+  TestMediaSource source("bear-vp9-blockgroup.webm", 67871);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
   source.EndOfStream();
 
@@ -1563,7 +1563,7 @@ TEST_P(MSEPipelineIntegrationTest, BasicPlayback_VP9_BlockGroup_WebM) {
 }
 
 TEST_P(MSEPipelineIntegrationTest, BasicPlayback_VP8A_WebM) {
-  MockMediaSource source("bear-vp8a.webm", kAppendWholeFile);
+  TestMediaSource source("bear-vp8a.webm", kAppendWholeFile);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
   source.EndOfStream();
 
@@ -1581,7 +1581,7 @@ TEST_P(MSEPipelineIntegrationTest, BasicPlayback_VP8A_WebM) {
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
 TEST_P(MSEPipelineIntegrationTest, ConfigChange_AV1_WebM) {
-  MockMediaSource source("bear-av1-480x360.webm", kAppendWholeFile);
+  TestMediaSource source("bear-av1-480x360.webm", kAppendWholeFile);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
 
   const gfx::Size kNewSize(640, 480);
@@ -1609,7 +1609,7 @@ TEST_P(MSEPipelineIntegrationTest, ConfigChange_AV1_WebM) {
 #endif  // BUILDFLAG(ENABLE_AV1_DECODER)
 
 TEST_P(MSEPipelineIntegrationTest, ConfigChange_WebM) {
-  MockMediaSource source("bear-320x240-16x9-aspect.webm", kAppendWholeFile);
+  TestMediaSource source("bear-320x240-16x9-aspect.webm", kAppendWholeFile);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
 
   const gfx::Size kNewSize(640, 360);
@@ -1636,7 +1636,7 @@ TEST_P(MSEPipelineIntegrationTest, ConfigChange_WebM) {
 }
 
 TEST_P(MSEPipelineIntegrationTest, AudioConfigChange_WebM) {
-  MockMediaSource source("bear-320x240-audio-only.webm", kAppendWholeFile);
+  TestMediaSource source("bear-320x240-audio-only.webm", kAppendWholeFile);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
 
   const int kNewSampleRate = 48000;
@@ -1670,7 +1670,7 @@ TEST_P(MSEPipelineIntegrationTest, AudioConfigChange_WebM) {
 }
 
 TEST_P(MSEPipelineIntegrationTest, Remove_Updates_BufferedRanges) {
-  MockMediaSource source("bear-320x240.webm", kAppendWholeFile);
+  TestMediaSource source("bear-320x240.webm", kAppendWholeFile);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
 
   auto buffered_ranges = pipeline_->GetBufferedTimeRanges();
@@ -1699,7 +1699,7 @@ TEST_P(MSEPipelineIntegrationTest, Remove_Updates_BufferedRanges) {
 // will no longer start at 0.
 TEST_P(MSEPipelineIntegrationTest, FillUp_Buffer) {
   const char* input_filename = "bear-320x240.webm";
-  MockMediaSource source(input_filename, kAppendWholeFile);
+  TestMediaSource source(input_filename, kAppendWholeFile);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
   source.SetMemoryLimits(1048576);
 
@@ -1728,7 +1728,7 @@ TEST_P(MSEPipelineIntegrationTest, FillUp_Buffer) {
 
 TEST_P(MSEPipelineIntegrationTest, GCWithDisabledVideoStream) {
   const char* input_filename = "bear-320x240.webm";
-  MockMediaSource source(input_filename, kAppendWholeFile);
+  TestMediaSource source(input_filename, kAppendWholeFile);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
   scoped_refptr<DecoderBuffer> file = ReadTestDataFile(input_filename);
   // The input file contains audio + video data. Assuming video data size is
@@ -1758,7 +1758,7 @@ TEST_P(MSEPipelineIntegrationTest, GCWithDisabledVideoStream) {
 
 MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
                  MAYBE_EME(ConfigChange_Encrypted_WebM)) {
-  MockMediaSource source("bear-320x240-16x9-aspect-av_enc-av.webm",
+  TestMediaSource source("bear-320x240-16x9-aspect-av_enc-av.webm",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -1790,7 +1790,7 @@ MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
 
 MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
                  MAYBE_EME(ConfigChange_ClearThenEncrypted_WebM)) {
-  MockMediaSource source("bear-320x240-16x9-aspect.webm", kAppendWholeFile);
+  TestMediaSource source("bear-320x240-16x9-aspect.webm", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
             StartPipelineWithEncryptedMedia(&source, &encrypted_media));
@@ -1823,7 +1823,7 @@ MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
 // supported by the Renderer.
 MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
                  MAYBE_EME(ConfigChange_EncryptedThenClear_WebM)) {
-  MockMediaSource source("bear-320x240-16x9-aspect-av_enc-av.webm",
+  TestMediaSource source("bear-320x240-16x9-aspect-av_enc-av.webm",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -1873,7 +1873,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHi12PVP9) {
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
 TEST_P(MSEPipelineIntegrationTest, BasicPlayback_AV1_MP4) {
-  MockMediaSource source("bear-av1.mp4", 24355);
+  TestMediaSource source("bear-av1.mp4", 24355);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
   source.EndOfStream();
 
@@ -1890,7 +1890,7 @@ TEST_P(MSEPipelineIntegrationTest, BasicPlayback_AV1_MP4) {
 }
 
 TEST_P(MSEPipelineIntegrationTest, BasicPlayback_AV1_10bit_MP4) {
-  MockMediaSource source("bear-av1-320x180-10bit.mp4", 19658);
+  TestMediaSource source("bear-av1-320x180-10bit.mp4", 19658);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
   source.EndOfStream();
 
@@ -1909,7 +1909,7 @@ TEST_P(MSEPipelineIntegrationTest, BasicPlayback_AV1_10bit_MP4) {
 #endif
 
 TEST_P(MSEPipelineIntegrationTest, FlacInMp4_Hashed) {
-  MockMediaSource source("sfx-flac_frag.mp4", kAppendWholeFile);
+  TestMediaSource source("sfx-flac_frag.mp4", kAppendWholeFile);
   EXPECT_EQ(PIPELINE_OK,
             StartPipelineWithMediaSource(&source, kHashed, nullptr));
   source.EndOfStream();
@@ -2019,7 +2019,7 @@ INSTANTIATE_TEST_CASE_P(
                                         "-0.22,0.80,1.19,0.73,-0.31,-1.12,")));
 
 TEST_P(MSEPipelineIntegrationTest, MP3) {
-  MockMediaSource source("sfx.mp3", kAppendWholeFile);
+  TestMediaSource source("sfx.mp3", kAppendWholeFile);
   EXPECT_EQ(PIPELINE_OK,
             StartPipelineWithMediaSource(&source, kHashed, nullptr));
   source.EndOfStream();
@@ -2037,7 +2037,7 @@ TEST_P(MSEPipelineIntegrationTest, MP3) {
 }
 
 TEST_P(MSEPipelineIntegrationTest, MP3_TimestampOffset) {
-  MockMediaSource source("sfx.mp3", kAppendWholeFile);
+  TestMediaSource source("sfx.mp3", kAppendWholeFile);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
   EXPECT_EQ(313, source.last_timestamp_offset().InMilliseconds());
 
@@ -2064,7 +2064,7 @@ TEST_P(MSEPipelineIntegrationTest, MP3_TimestampOffset) {
 }
 
 TEST_P(MSEPipelineIntegrationTest, MP3_Icecast) {
-  MockMediaSource source("icy_sfx.mp3", kAppendWholeFile);
+  TestMediaSource source("icy_sfx.mp3", kAppendWholeFile);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
   source.EndOfStream();
 
@@ -2076,7 +2076,7 @@ TEST_P(MSEPipelineIntegrationTest, MP3_Icecast) {
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 TEST_P(MSEPipelineIntegrationTest, ADTS) {
-  MockMediaSource source("sfx.adts", kAppendWholeFile);
+  TestMediaSource source("sfx.adts", kAppendWholeFile);
   EXPECT_EQ(PIPELINE_OK,
             StartPipelineWithMediaSource(&source, kHashed, nullptr));
   source.EndOfStream();
@@ -2094,7 +2094,7 @@ TEST_P(MSEPipelineIntegrationTest, ADTS) {
 }
 
 TEST_P(MSEPipelineIntegrationTest, ADTS_TimestampOffset) {
-  MockMediaSource source("sfx.adts", kAppendWholeFile);
+  TestMediaSource source("sfx.adts", kAppendWholeFile);
   EXPECT_EQ(PIPELINE_OK,
             StartPipelineWithMediaSource(&source, kHashed, nullptr));
   EXPECT_EQ(325, source.last_timestamp_offset().InMilliseconds());
@@ -2181,7 +2181,7 @@ TEST_F(PipelineIntegrationTest, BasicFallback) {
 };
 
 TEST_P(MSEPipelineIntegrationTest, ConfigChange_MP4) {
-  MockMediaSource source("bear-640x360-av_frag.mp4", kAppendWholeFile);
+  TestMediaSource source("bear-640x360-av_frag.mp4", kAppendWholeFile);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
 
   const gfx::Size kNewSize(1280, 720);
@@ -2214,7 +2214,7 @@ TEST_P(MSEPipelineIntegrationTest, ConfigChange_MP4) {
 
 MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
                  MAYBE_EME(ConfigChange_Encrypted_MP4_CENC_VideoOnly)) {
-  MockMediaSource source("bear-640x360-v_frag-cenc-mdat.mp4", kAppendWholeFile);
+  TestMediaSource source("bear-640x360-v_frag-cenc-mdat.mp4", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
             StartPipelineWithEncryptedMedia(&source, &encrypted_media));
@@ -2248,7 +2248,7 @@ MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
 MAYBE_EME_TEST_P(
     MSEPipelineIntegrationTest,
     MAYBE_EME(ConfigChange_Encrypted_MP4_CENC_KeyRotation_VideoOnly)) {
-  MockMediaSource source("bear-640x360-v_frag-cenc-key_rotation.mp4",
+  TestMediaSource source("bear-640x360-v_frag-cenc-key_rotation.mp4",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new RotatingKeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2278,7 +2278,7 @@ MAYBE_EME_TEST_P(
 
 TEST_P(MSEPipelineIntegrationTest,
        MAYBE_EME(ConfigChange_ClearThenEncrypted_MP4_CENC)) {
-  MockMediaSource source("bear-640x360-v_frag.mp4", kAppendWholeFile);
+  TestMediaSource source("bear-640x360-v_frag.mp4", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
             StartPipelineWithEncryptedMedia(&source, &encrypted_media));
@@ -2287,7 +2287,7 @@ TEST_P(MSEPipelineIntegrationTest,
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-1280x720-v_frag-cenc.mp4");
   source.set_expected_append_result(
-      MockMediaSource::ExpectedAppendResult::kFailure);
+      TestMediaSource::ExpectedAppendResult::kFailure);
   source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
                       second_file->data(), second_file->data_size());
 
@@ -2311,7 +2311,7 @@ TEST_P(MSEPipelineIntegrationTest,
 // Config changes from encrypted to clear are not currently supported.
 MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
                  MAYBE_EME(ConfigChange_EncryptedThenClear_MP4_CENC)) {
-  MockMediaSource source("bear-640x360-v_frag-cenc-mdat.mp4", kAppendWholeFile);
+  TestMediaSource source("bear-640x360-v_frag-cenc-mdat.mp4", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
             StartPipelineWithEncryptedMedia(&source, &encrypted_media));
@@ -2320,7 +2320,7 @@ MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
       ReadTestDataFile("bear-1280x720-av_frag.mp4");
 
   source.set_expected_append_result(
-      MockMediaSource::ExpectedAppendResult::kFailure);
+      TestMediaSource::ExpectedAppendResult::kFailure);
   source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
                       second_file->data(), second_file->data_size());
 
@@ -2363,7 +2363,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_16x9AspectRatio) {
 
 MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
                  MAYBE_EME(EncryptedPlayback_WebM)) {
-  MockMediaSource source("bear-320x240-av_enc-av.webm", 219816);
+  TestMediaSource source("bear-320x240-av_enc-av.webm", 219816);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
             StartPipelineWithEncryptedMedia(&source, &encrypted_media));
@@ -2380,7 +2380,7 @@ MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
 
 MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
                  MAYBE_EME(EncryptedPlayback_ClearStart_WebM)) {
-  MockMediaSource source("bear-320x240-av_enc-av_clear-1s.webm",
+  TestMediaSource source("bear-320x240-av_enc-av_clear-1s.webm",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2398,7 +2398,7 @@ MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
 
 MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
                  MAYBE_EME(EncryptedPlayback_NoEncryptedFrames_WebM)) {
-  MockMediaSource source("bear-320x240-av_enc-av_clear-all.webm",
+  TestMediaSource source("bear-320x240-av_enc-av_clear-all.webm",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new NoResponseApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2416,7 +2416,7 @@ MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
 
 MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
                  MAYBE_EME(EncryptedPlayback_MP4_VP9_CENC_VideoOnly)) {
-  MockMediaSource source("bear-320x240-v_frag-vp9-cenc.mp4", kAppendWholeFile);
+  TestMediaSource source("bear-320x240-v_frag-vp9-cenc.mp4", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
             StartPipelineWithEncryptedMedia(&source, &encrypted_media));
@@ -2431,7 +2431,7 @@ MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
 }
 
 TEST_P(MSEPipelineIntegrationTest, BasicPlayback_VideoOnly_MP4_VP9) {
-  MockMediaSource source("bear-320x240-v_frag-vp9.mp4", kAppendWholeFile);
+  TestMediaSource source("bear-320x240-v_frag-vp9.mp4", kAppendWholeFile);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
   source.EndOfStream();
   ASSERT_EQ(PIPELINE_OK, pipeline_status_);
@@ -2446,7 +2446,7 @@ TEST_P(MSEPipelineIntegrationTest, BasicPlayback_VideoOnly_MP4_VP9) {
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
                  MAYBE_EME(EncryptedPlayback_MP4_CENC_VideoOnly)) {
-  MockMediaSource source("bear-1280x720-v_frag-cenc.mp4", kAppendWholeFile);
+  TestMediaSource source("bear-1280x720-v_frag-cenc.mp4", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
             StartPipelineWithEncryptedMedia(&source, &encrypted_media));
@@ -2463,7 +2463,7 @@ MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
 
 MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
                  MAYBE_EME(EncryptedPlayback_MP4_CENC_AudioOnly)) {
-  MockMediaSource source("bear-1280x720-a_frag-cenc.mp4", kAppendWholeFile);
+  TestMediaSource source("bear-1280x720-a_frag-cenc.mp4", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
             StartPipelineWithEncryptedMedia(&source, &encrypted_media));
@@ -2481,7 +2481,7 @@ MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
 MAYBE_EME_TEST_P(
     MSEPipelineIntegrationTest,
     MAYBE_EME(EncryptedPlayback_NoEncryptedFrames_MP4_CENC_VideoOnly)) {
-  MockMediaSource source("bear-1280x720-v_frag-cenc_clear-all.mp4",
+  TestMediaSource source("bear-1280x720-v_frag-cenc_clear-all.mp4",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new NoResponseApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2497,7 +2497,7 @@ MAYBE_EME_TEST_P(
 }
 
 TEST_P(MSEPipelineIntegrationTest, Mp2ts_AAC_HE_SBR_Audio) {
-  MockMediaSource source("bear-1280x720-aac_he.ts", kAppendWholeFile);
+  TestMediaSource source("bear-1280x720-aac_he.ts", kAppendWholeFile);
 #if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
   source.EndOfStream();
@@ -2516,7 +2516,7 @@ TEST_P(MSEPipelineIntegrationTest, Mp2ts_AAC_HE_SBR_Audio) {
 }
 
 TEST_P(MSEPipelineIntegrationTest, Mpeg2ts_MP3Audio_Mp4a_6B) {
-  MockMediaSource source("bear-audio-mp4a.6B.ts",
+  TestMediaSource source("bear-audio-mp4a.6B.ts",
                          "video/mp2t; codecs=\"mp4a.6B\"", kAppendWholeFile);
 #if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
@@ -2530,7 +2530,7 @@ TEST_P(MSEPipelineIntegrationTest, Mpeg2ts_MP3Audio_Mp4a_6B) {
 }
 
 TEST_P(MSEPipelineIntegrationTest, Mpeg2ts_MP3Audio_Mp4a_69) {
-  MockMediaSource source("bear-audio-mp4a.69.ts",
+  TestMediaSource source("bear-audio-mp4a.69.ts",
                          "video/mp2t; codecs=\"mp4a.69\"", kAppendWholeFile);
 #if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
@@ -2546,7 +2546,7 @@ TEST_P(MSEPipelineIntegrationTest, Mpeg2ts_MP3Audio_Mp4a_69) {
 MAYBE_EME_TEST_P(
     MSEPipelineIntegrationTest,
     MAYBE_EME(EncryptedPlayback_NoEncryptedFrames_MP4_CENC_AudioOnly)) {
-  MockMediaSource source("bear-1280x720-a_frag-cenc_clear-all.mp4",
+  TestMediaSource source("bear-1280x720-a_frag-cenc_clear-all.mp4",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new NoResponseApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2565,7 +2565,7 @@ MAYBE_EME_TEST_P(
 // beginning of mdat box.
 MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
                  MAYBE_EME(EncryptedPlayback_MP4_CENC_MDAT_Video)) {
-  MockMediaSource source("bear-640x360-v_frag-cenc-mdat.mp4", kAppendWholeFile);
+  TestMediaSource source("bear-640x360-v_frag-cenc-mdat.mp4", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
             StartPipelineWithEncryptedMedia(&source, &encrypted_media));
@@ -2581,7 +2581,7 @@ MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
 
 MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
                  MAYBE_EME(EncryptedPlayback_MP4_CENC_SENC_Video)) {
-  MockMediaSource source("bear-640x360-v_frag-cenc-senc.mp4", kAppendWholeFile);
+  TestMediaSource source("bear-640x360-v_frag-cenc-senc.mp4", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
             StartPipelineWithEncryptedMedia(&source, &encrypted_media));
@@ -2603,7 +2603,7 @@ MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
 MAYBE_EME_TEST_P(
     MSEPipelineIntegrationTest,
     MAYBE_EME(EncryptedPlayback_MP4_CENC_SENC_NO_SAIZ_SAIO_Video)) {
-  MockMediaSource source("bear-640x360-v_frag-cenc-senc-no-saiz-saio.mp4",
+  TestMediaSource source("bear-640x360-v_frag-cenc-senc-no-saiz-saio.mp4",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2620,7 +2620,7 @@ MAYBE_EME_TEST_P(
 
 MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
                  MAYBE_EME(EncryptedPlayback_MP4_CENC_KeyRotation_Video)) {
-  MockMediaSource source("bear-1280x720-v_frag-cenc-key_rotation.mp4",
+  TestMediaSource source("bear-1280x720-v_frag-cenc-key_rotation.mp4",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new RotatingKeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2637,7 +2637,7 @@ MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
 
 MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
                  MAYBE_EME(EncryptedPlayback_MP4_CENC_KeyRotation_Audio)) {
-  MockMediaSource source("bear-1280x720-a_frag-cenc-key_rotation.mp4",
+  TestMediaSource source("bear-1280x720-a_frag-cenc-key_rotation.mp4",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new RotatingKeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2653,7 +2653,7 @@ MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
 }
 
 TEST_P(MSEPipelineIntegrationTest, BasicPlayback_VideoOnly_MP4_AVC3) {
-  MockMediaSource source("bear-1280x720-v_frag-avc3.mp4", kAppendWholeFile);
+  TestMediaSource source("bear-1280x720-v_frag-avc3.mp4", kAppendWholeFile);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
   source.EndOfStream();
 
@@ -2676,7 +2676,7 @@ TEST_P(MSEPipelineIntegrationTest, BasicPlayback_VideoOnly_MP4_HEVC) {
   // to actually demux and decode the stream. On platforms that support both
   // demuxing and decoding we'll get PIPELINE_OK.
   const char kMp4HevcVideoOnly[] = "video/mp4; codecs=\"hvc1.1.6.L93.B0\"";
-  MockMediaSource source("bear-320x240-v_frag-hevc.mp4", kMp4HevcVideoOnly,
+  TestMediaSource source("bear-320x240-v_frag-hevc.mp4", kMp4HevcVideoOnly,
                          kAppendWholeFile);
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
   PipelineStatus status = StartPipelineWithMediaSource(&source);
@@ -2691,7 +2691,7 @@ TEST_P(MSEPipelineIntegrationTest, BasicPlayback_VideoOnly_MP4_HEVC) {
 // Same test as above but using a different mime type.
 TEST_P(MSEPipelineIntegrationTest, BasicPlayback_VideoOnly_MP4_HEV1) {
   const char kMp4Hev1VideoOnly[] = "video/mp4; codecs=\"hev1.1.6.L93.B0\"";
-  MockMediaSource source("bear-320x240-v_frag-hevc.mp4", kMp4Hev1VideoOnly,
+  TestMediaSource source("bear-320x240-v_frag-hevc.mp4", kMp4Hev1VideoOnly,
                          kAppendWholeFile);
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
   PipelineStatus status = StartPipelineWithMediaSource(&source);
@@ -2979,7 +2979,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_Opus441kHz) {
 
 // Same as above but using MediaSource.
 TEST_P(MSEPipelineIntegrationTest, BasicPlayback_Opus441kHz) {
-  MockMediaSource source("sfx-opus-441.webm", kAppendWholeFile);
+  TestMediaSource source("sfx-opus-441.webm", kAppendWholeFile);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
   source.EndOfStream();
   Play();
