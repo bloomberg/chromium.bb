@@ -69,6 +69,9 @@ AX_EXPORT bool IsRowContainer(const ax::mojom::Role role);
 // can hold set_size values.
 AX_EXPORT bool IsSetLike(const ax::mojom::Role role);
 
+// Returns true if the provided role belongs to a non-interactive list.
+AX_EXPORT bool IsStaticList(const ax::mojom::Role role);
+
 // Returns true if the provided role belongs to a table header.
 AX_EXPORT bool IsTableHeader(ax::mojom::Role role);
 
@@ -90,8 +93,6 @@ AX_EXPORT bool SupportsToggle(const ax::mojom::Role role);
 // Returns true if the provided role is selectable from the standpoint of UI
 // Automation.
 AX_EXPORT bool IsUIASelectable(const ax::mojom::Role role);
-
-AX_EXPORT bool IsStaticList(const ax::mojom::Role role);
 
 }  // namespace ui
 
