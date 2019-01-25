@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_HELPER_H_
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_HELPER_H_
 
+#include <map>
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/process/kill.h"
@@ -14,7 +16,12 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "services/resource_coordinator/public/cpp/frame_resource_coordinator.h"
 #include "url/gurl.h"
+
+namespace service_manager {
+class Connector;
+}  // namespace service_manager
 
 namespace resource_coordinator {
 
@@ -33,7 +40,10 @@ class ResourceCoordinatorTabHelper
     return page_resource_coordinator_.get();
   }
 
-  // WebContentsObserver implementation.
+  // WebContentsObserver overrides.
+  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
+  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
+
   void DidStartLoading() override;
   void DidReceiveResponse() override;
   void DidStopLoading() override;
@@ -49,6 +59,10 @@ class ResourceCoordinatorTabHelper
   void TitleWasSet(content::NavigationEntry* entry) override;
   void DidUpdateFaviconURL(
       const std::vector<content::FaviconURL>& candidates) override;
+  void OnInterfaceRequestFromFrame(
+      content::RenderFrameHost* render_frame_host,
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle* interface_pipe) override;
 
   void UpdateUkmRecorder(int64_t navigation_id);
   ukm::SourceId ukm_source_id() const { return ukm_source_id_; }
@@ -70,6 +84,9 @@ class ResourceCoordinatorTabHelper
 
   friend class content::WebContentsUserData<ResourceCoordinatorTabHelper>;
 
+  // The service manager connector for this process, if any.
+  service_manager::Connector* connector_ = nullptr;
+
   std::unique_ptr<resource_coordinator::PageResourceCoordinator>
       page_resource_coordinator_;
   ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
@@ -85,6 +102,10 @@ class ResourceCoordinatorTabHelper
   // supposed to happen.
   bool first_time_favicon_set_ = false;
   bool first_time_title_set_ = false;
+
+  // Maps from RenderFrameHost to the associated RC node.
+  std::map<content::RenderFrameHost*, std::unique_ptr<FrameResourceCoordinator>>
+      frames_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

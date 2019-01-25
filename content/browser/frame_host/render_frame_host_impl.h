@@ -59,7 +59,6 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/http/http_response_headers.h"
 #include "services/device/public/mojom/wake_lock_context.mojom.h"
-#include "services/resource_coordinator/public/cpp/frame_resource_coordinator.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "services/viz/public/interfaces/hit_test/input_target_client.mojom.h"
@@ -707,9 +706,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Returns pointer to renderer side FindInPage associated with this frame.
   const blink::mojom::FindInPageAssociatedPtr& GetFindInPage();
-
-  resource_coordinator::FrameResourceCoordinator* GetFrameResourceCoordinator()
-      override;
 
   // Resets the loading state. Following this call, the RenderFrameHost will be
   // in a non-loading state.
@@ -1667,9 +1663,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Holder of Mojo connection with FindInPage service in Blink.
   blink::mojom::FindInPageAssociatedPtr find_in_page_;
-
-  // Holds the interface wrapper to the Global Resource Coordinator service.
-  resource_coordinator::FrameResourceCoordinator frame_resource_coordinator_;
 
   // Holds a NavigationRequest when it's about to commit, ie. after
   // OnCrossDocumentCommitProcessed has returned a positive answer for this

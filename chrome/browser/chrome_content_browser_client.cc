@@ -107,6 +107,7 @@
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
 #include "chrome/browser/resource_coordinator/chrome_browser_main_extra_parts_resource_coordinator.h"
+#include "chrome/browser/resource_coordinator/chrome_content_browser_client_resource_coordinator_part.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_factory.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
@@ -1068,6 +1069,8 @@ ChromeContentBrowserClient::ChromeContentBrowserClient(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extra_parts_.push_back(new ChromeContentBrowserClientExtensionsPart);
 #endif
+
+  extra_parts_.push_back(new ChromeContentBrowserClientResourceCoordinatorPart);
 
   gpu_binder_registry_.AddInterface(
       base::Bind(&metrics::CallStackProfileCollector::Create));
