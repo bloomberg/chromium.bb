@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/media_tracks.h"
@@ -125,6 +126,9 @@ PipelineIntegrationTestBase::PipelineIntegrationTestBase()
       webaudio_attached_(false),
       mono_output_(false),
       fuzzing_(false),
+#if defined(ADDRESS_SANITIZER)
+      disable_run_timeout_(base::TimeDelta()),
+#endif
       pipeline_(
           new PipelineImpl(scoped_task_environment_.GetMainThreadTaskRunner(),
                            scoped_task_environment_.GetMainThreadTaskRunner(),
