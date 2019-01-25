@@ -18,5 +18,4 @@ speaker
 sync-xhr
 usb
 vr
-wake-lock
 

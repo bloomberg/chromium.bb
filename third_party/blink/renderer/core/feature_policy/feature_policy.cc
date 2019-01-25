@@ -256,8 +256,6 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
     ASSERT_ORIGIN_TRIAL(WebVR);
     ASSERT_ORIGIN_TRIAL(WebXR);
     default_feature_name_map.Set("vr", mojom::FeaturePolicyFeature::kWebVr);
-    default_feature_name_map.Set("wake-lock",
-                                 mojom::FeaturePolicyFeature::kWakeLock);
     if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled()) {
       default_feature_name_map.Set(
           "layout-animations", mojom::FeaturePolicyFeature::kLayoutAnimations);
@@ -302,6 +300,10 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
                                    mojom::FeaturePolicyFeature::kGyroscope);
       default_feature_name_map.Set("magnetometer",
                                    mojom::FeaturePolicyFeature::kMagnetometer);
+    }
+    if (RuntimeEnabledFeatures::WakeLockEnabled()) {
+      default_feature_name_map.Set("wake-lock",
+                                   mojom::FeaturePolicyFeature::kWakeLock);
     }
     if (RuntimeEnabledFeatures::WebUSBEnabled()) {
       default_feature_name_map.Set("usb", mojom::FeaturePolicyFeature::kUsb);
