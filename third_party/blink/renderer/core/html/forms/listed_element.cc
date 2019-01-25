@@ -118,7 +118,7 @@ void ListedElement::InsertedInto(ContainerNode& insertion_point) {
   FieldSetAncestorsSetNeedsValidityCheck(&insertion_point);
   DisabledStateMightBeChanged();
 
-  if (IsFormControlElementWithState() && insertion_point.isConnected() &&
+  if (ClassSupportsStateRestore() && insertion_point.isConnected() &&
       !element->ContainingShadowRoot()) {
     element->GetDocument()
         .GetFormController()
@@ -153,7 +153,7 @@ void ListedElement::RemovedFrom(ContainerNode& insertion_point) {
 
   DisabledStateMightBeChanged();
 
-  if (IsFormControlElementWithState() && insertion_point.isConnected() &&
+  if (ClassSupportsStateRestore() && insertion_point.isConnected() &&
       !element->ContainingShadowRoot() &&
       !insertion_point.ContainingShadowRoot()) {
     element->GetDocument()
@@ -589,6 +589,10 @@ bool ListedElement::IsActuallyDisabled() const {
   return ancestor_disabled_state_ == AncestorDisabledState::kDisabled;
 }
 
+bool ListedElement::ClassSupportsStateRestore() const {
+  return false;
+}
+
 bool ListedElement::ShouldSaveAndRestoreFormControlState() const {
   return false;
 }
@@ -609,11 +613,11 @@ void ListedElement::NotifyFormStateChanged() {
 }
 
 void ListedElement::TakeStateAndRestore() {
-  if (IsFormControlElementWithState()) {
+  if (ClassSupportsStateRestore()) {
     ToHTMLElement(*this)
         .GetDocument()
         .GetFormController()
-        .RestoreControlStateFor(ToHTMLFormControlElementWithState(*this));
+        .RestoreControlStateFor(*this);
   }
 }
 
