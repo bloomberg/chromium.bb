@@ -124,10 +124,6 @@ class VideoFrameValidator : public VideoFrameProcessor {
   std::string ComputeMD5FromVideoFrame(
       scoped_refptr<VideoFrame> video_frame) const;
 
-  // Creates VideoFrame with I420 format from |src_frame|.
-  scoped_refptr<VideoFrame> CreateI420Frame(
-      const VideoFrame* const src_frame) const;
-
   // Helper function to save I420 yuv image.
   bool WriteI420ToFile(size_t frame_index,
                        const VideoFrame* const video_frame) const;

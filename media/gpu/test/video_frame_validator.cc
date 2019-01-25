@@ -4,15 +4,12 @@
 
 #include "media/gpu/test/video_frame_validator.h"
 
-#include <libyuv.h>
-
 #include "base/files/file.h"
 #include "base/md5.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "media/base/video_frame.h"
-#include "media/gpu/buildflags.h"
 #include "media/gpu/test/video_decode_accelerator_unittest_helpers.h"
 #include "media/gpu/test/video_frame_mapper.h"
 #include "media/gpu/test/video_frame_mapper_factory.h"
@@ -209,7 +206,7 @@ scoped_refptr<VideoFrame> VideoFrameValidator::CreateStandardizedFrame(
     return nullptr;
   }
 
-  return CreateI420Frame(mapped_frame.get());
+  return ConvertVideoFrame(mapped_frame.get(), PIXEL_FORMAT_I420);
 }
 
 std::string VideoFrameValidator::ComputeMD5FromVideoFrame(
@@ -221,47 +218,6 @@ std::string VideoFrameValidator::ComputeMD5FromVideoFrame(
   base::MD5Digest digest;
   base::MD5Final(&digest, &context);
   return MD5DigestToBase16(digest);
-}
-
-scoped_refptr<VideoFrame> VideoFrameValidator::CreateI420Frame(
-    const VideoFrame* const src_frame) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(validator_thread_sequence_checker_);
-  const auto& visible_rect = src_frame->visible_rect();
-  const int width = visible_rect.width();
-  const int height = visible_rect.height();
-  auto dst_frame = VideoFrame::CreateFrame(
-      PIXEL_FORMAT_I420, visible_rect.size(), visible_rect, visible_rect.size(),
-      base::TimeDelta());
-  uint8_t* const dst_y = dst_frame->data(VideoFrame::kYPlane);
-  uint8_t* const dst_u = dst_frame->data(VideoFrame::kUPlane);
-  uint8_t* const dst_v = dst_frame->data(VideoFrame::kVPlane);
-  const int dst_stride_y = dst_frame->stride(VideoFrame::kYPlane);
-  const int dst_stride_u = dst_frame->stride(VideoFrame::kUPlane);
-  const int dst_stride_v = dst_frame->stride(VideoFrame::kVPlane);
-  switch (src_frame->format()) {
-    case PIXEL_FORMAT_NV12:
-      libyuv::NV12ToI420(src_frame->data(VideoFrame::kYPlane),
-                         src_frame->stride(VideoFrame::kYPlane),
-                         src_frame->data(VideoFrame::kUVPlane),
-                         src_frame->stride(VideoFrame::kUVPlane), dst_y,
-                         dst_stride_y, dst_u, dst_stride_u, dst_v, dst_stride_v,
-                         width, height);
-      break;
-    case PIXEL_FORMAT_YV12:
-      libyuv::I420Copy(src_frame->data(VideoFrame::kYPlane),
-                       src_frame->stride(VideoFrame::kYPlane),
-                       src_frame->data(VideoFrame::kVPlane),
-                       src_frame->stride(VideoFrame::kVPlane),
-                       src_frame->data(VideoFrame::kUPlane),
-                       src_frame->stride(VideoFrame::kUPlane), dst_y,
-                       dst_stride_y, dst_u, dst_stride_u, dst_v, dst_stride_v,
-                       width, height);
-      break;
-    default:
-      LOG(FATAL) << "Unsupported format: " << src_frame->format();
-      return nullptr;
-  }
-  return dst_frame;
 }
 
 bool VideoFrameValidator::WriteI420ToFile(
