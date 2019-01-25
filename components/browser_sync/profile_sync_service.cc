@@ -558,6 +558,9 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
       sync_prefs_.GetEncryptionBootstrapToken();
   params.restored_keystore_key_for_bootstrapping =
       sync_prefs_.GetKeystoreEncryptionBootstrapToken();
+  params.cache_guid = sync_prefs_.GetCacheGuid();
+  params.birthday = sync_prefs_.GetBirthday();
+  params.bag_of_chips = sync_prefs_.GetBagOfChips();
   params.engine_components_factory =
       std::make_unique<EngineComponentsFactoryImpl>(
           EngineSwitchesFromCommandLine());

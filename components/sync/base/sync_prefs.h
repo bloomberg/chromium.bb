@@ -167,10 +167,11 @@ class SyncPrefs : public CryptoSyncPrefs,
   // most users have populated prefs and the Directory is about to be removed.
   // TODO(crbug.com/923287): Figure out if this is an appropriate place.
   void SetCacheGuid(const std::string& cache_guid);
+  std::string GetCacheGuid() const;
   void SetBirthday(const std::string& birthday);
+  std::string GetBirthday() const;
   void SetBagOfChips(const std::string& bag_of_chips);
-
-  std::string GetCacheGuidForTesting() const;
+  std::string GetBagOfChips() const;
 
   // Get/set/clear first sync time of current user. Used to roll back browsing
   // data later when user signs out.

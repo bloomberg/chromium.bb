@@ -515,18 +515,33 @@ void SyncPrefs::SetCacheGuid(const std::string& cache_guid) {
   pref_service_->SetString(prefs::kSyncCacheGuid, cache_guid);
 }
 
+std::string SyncPrefs::GetCacheGuid() const {
+  return pref_service_->GetString(prefs::kSyncCacheGuid);
+}
+
 void SyncPrefs::SetBirthday(const std::string& birthday) {
   pref_service_->SetString(prefs::kSyncBirthday, birthday);
 }
 
+std::string SyncPrefs::GetBirthday() const {
+  return pref_service_->GetString(prefs::kSyncBirthday);
+}
+
 void SyncPrefs::SetBagOfChips(const std::string& bag_of_chips) {
+  // |bag_of_chips| contains a serialized proto which is not utf-8, hence we use
+  // base64 encoding in prefs.
   std::string encoded;
   base::Base64Encode(bag_of_chips, &encoded);
   pref_service_->SetString(prefs::kSyncBagOfChips, encoded);
 }
 
-std::string SyncPrefs::GetCacheGuidForTesting() const {
-  return pref_service_->GetString(prefs::kSyncCacheGuid);
+std::string SyncPrefs::GetBagOfChips() const {
+  // |kSyncBagOfChips| gets stored in base64 because it represents a serialized
+  // proto which is not utf-8 encoding.
+  const std::string encoded = pref_service_->GetString(prefs::kSyncBagOfChips);
+  std::string decoded;
+  base::Base64Decode(encoded, &decoded);
+  return decoded;
 }
 
 base::Time SyncPrefs::GetFirstSyncTime() const {

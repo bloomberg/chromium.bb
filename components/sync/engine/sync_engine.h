@@ -79,6 +79,12 @@ class SyncEngine : public ModelTypeConfigurer {
     std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state;
     std::map<ModelType, int64_t> invalidation_versions;
 
+    // Non-authoritative values from prefs, to be compared with the Directory's
+    // counterparts.
+    std::string cache_guid;
+    std::string birthday;
+    std::string bag_of_chips;
+
     // Define the polling intervals. Must not be zero.
     base::TimeDelta short_poll_interval;
     base::TimeDelta long_poll_interval;
