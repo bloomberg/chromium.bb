@@ -20,8 +20,14 @@ class CONTROLLER_EXPORT MemoryUsageMonitorAndroid : public MemoryUsageMonitor {
                                         base::File status_file);
 
  private:
+  friend class CrashMemoryMetricsReporterImpl;
   void ResetFileDescriptors();
   void GetProcessMemoryUsage(MemoryUsage&) override;
+  static bool CalculateProcessMemoryFootprint(int statm_fd,
+                                              int status_fd,
+                                              uint64_t* private_footprint,
+                                              uint64_t* swap_footprint,
+                                              uint64_t* vm_size);
 
   bool file_descriptors_reset_ = false;
   // The file descriptor to current process proc files. The files are kept open

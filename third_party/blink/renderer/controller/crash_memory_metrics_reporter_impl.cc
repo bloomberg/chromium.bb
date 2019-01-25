@@ -13,6 +13,7 @@
 #include "base/process/memory.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/controller/memory_usage_monitor_android.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
@@ -20,54 +21,6 @@
 namespace blink {
 
 namespace {
-
-constexpr uint32_t kMaxLineSize = 4096;
-bool ReadFileContents(int fd, char contents[kMaxLineSize]) {
-  lseek(fd, 0, SEEK_SET);
-  int res = read(fd, contents, kMaxLineSize - 1);
-  if (res <= 0)
-    return false;
-  contents[res] = '\0';
-  return true;
-}
-
-// Since the measurement is done every second in background, optimizations are
-// in place to get just the metrics we need from the proc files. So, this
-// calculation exists here instead of using the cross-process memory-infra code.
-bool CalculateProcessMemoryFootprint(int statm_fd,
-                                     int status_fd,
-                                     uint64_t* private_footprint,
-                                     uint64_t* swap_footprint,
-                                     uint64_t* vm_size) {
-  // Get total resident and shared sizes from statm file.
-  static size_t page_size = getpagesize();
-  uint64_t resident_pages;
-  uint64_t shared_pages;
-  uint64_t vm_size_pages;
-  char line[kMaxLineSize];
-  if (!ReadFileContents(statm_fd, line))
-    return false;
-  int num_scanned = sscanf(line, "%" SCNu64 " %" SCNu64 " %" SCNu64,
-                           &vm_size_pages, &resident_pages, &shared_pages);
-  if (num_scanned != 3)
-    return false;
-
-  // Get swap size from status file. The format is: VmSwap :  10 kB.
-  if (!ReadFileContents(status_fd, line))
-    return false;
-  char* swap_line = strstr(line, "VmSwap");
-  if (!swap_line)
-    return false;
-  num_scanned = sscanf(swap_line, "VmSwap: %" SCNu64 " kB", swap_footprint);
-  if (num_scanned != 1)
-    return false;
-
-  *swap_footprint *= 1024;
-  *private_footprint =
-      (resident_pages - shared_pages) * page_size + *swap_footprint;
-  *vm_size = vm_size_pages * page_size;
-  return true;
-}
 
 // Roughly calculates amount of memory which is used to execute pages.
 uint64_t BlinkMemoryWorkloadCalculator() {
@@ -149,8 +102,9 @@ CrashMemoryMetricsReporterImpl::GetCurrentMemoryMetrics() {
   OomInterventionMetrics metrics = {};
   metrics.current_blink_usage_kb = BlinkMemoryWorkloadCalculator() / 1024;
   uint64_t private_footprint, swap, vm_size;
-  if (CalculateProcessMemoryFootprint(statm_fd_.get(), status_fd_.get(),
-                                      &private_footprint, &swap, &vm_size)) {
+  if (MemoryUsageMonitorAndroid::CalculateProcessMemoryFootprint(
+          statm_fd_.get(), status_fd_.get(), &private_footprint, &swap,
+          &vm_size)) {
     metrics.current_private_footprint_kb = private_footprint / 1024;
     metrics.current_swap_kb = swap / 1024;
     metrics.current_vm_size_kb = vm_size / 1024;
