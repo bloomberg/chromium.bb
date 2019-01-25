@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_MOCK_ACTION_DELEGATE_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_MOCK_ACTION_DELEGATE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -52,8 +53,8 @@ class MockActionDelegate : public ActionDelegate {
                void(const Selector& selector,
                     base::OnceCallback<void(bool)> callback));
 
-  MOCK_METHOD1(SetChips, void(std::unique_ptr<std::vector<Chip>> chips));
-  MOCK_METHOD0(ClearChips, void());
+  MOCK_METHOD1(Prompt, void(std::unique_ptr<std::vector<Chip>> chips));
+  MOCK_METHOD0(CancelPrompt, void());
 
   void FillAddressForm(const autofill::AutofillProfile* profile,
                        const Selector& selector,
@@ -99,6 +100,8 @@ class MockActionDelegate : public ActionDelegate {
            const std::string& title,
            const std::vector<std::string>& supported_basic_card_networks));
 
+  MOCK_METHOD1(GetFullCard, void(GetFullCardCallback callback));
+
   void SetFieldValue(const Selector& selector,
                      const std::string& value,
                      bool ignored_simulate_key_presses,
@@ -139,9 +142,6 @@ class MockActionDelegate : public ActionDelegate {
                     base::OnceCallback<void(bool)> callback));
   MOCK_METHOD2(ShowProgressBar, void(int progress, const std::string& message));
   MOCK_METHOD0(HideProgressBar, void());
-  MOCK_METHOD0(ShowOverlay, void());
-  MOCK_METHOD0(HideOverlay, void());
-  MOCK_METHOD1(AllowShowingSoftKeyboard, void(bool));
 };
 
 }  // namespace autofill_assistant

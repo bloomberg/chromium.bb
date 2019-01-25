@@ -11,87 +11,14 @@
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "components/autofill/content/browser/content_autofill_driver.h"
-#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
-#include "components/autofill/core/browser/field_types.h"
-#include "components/autofill/core/browser/payments/full_card_request.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/client_memory.h"
-#include "content/public/browser/web_contents.h"
 
 namespace autofill_assistant {
 
-namespace {
-// Self-deleting requester of full card details, including full PAN and the CVC
-// number.
-class SelfDeleteFullCardRequester
-    : public autofill::payments::FullCardRequest::ResultDelegate {
- public:
-  SelfDeleteFullCardRequester() : weak_ptr_factory_(this) {}
-
-  using GetFullCardCallback =
-      base::OnceCallback<void(std::unique_ptr<autofill::CreditCard>,
-                              const base::string16& cvc)>;
-  void GetFullCard(content::WebContents* web_contents,
-                   const autofill::CreditCard* card,
-                   GetFullCardCallback callback) {
-    DCHECK(card);
-    callback_ = std::move(callback);
-
-    autofill::ContentAutofillDriverFactory* factory =
-        autofill::ContentAutofillDriverFactory::FromWebContents(web_contents);
-    if (!factory) {
-      OnFullCardRequestFailed();
-      return;
-    }
-
-    autofill::ContentAutofillDriver* driver =
-        factory->DriverForFrame(web_contents->GetMainFrame());
-    if (!driver) {
-      OnFullCardRequestFailed();
-      return;
-    }
-
-    driver->autofill_manager()->GetOrCreateFullCardRequest()->GetFullCard(
-        *card, autofill::AutofillClient::UNMASK_FOR_AUTOFILL,
-        weak_ptr_factory_.GetWeakPtr(),
-        driver->autofill_manager()->GetAsFullCardRequestUIDelegate());
-  }
-
- private:
-  ~SelfDeleteFullCardRequester() override {}
-
-  // payments::FullCardRequest::ResultDelegate:
-  void OnFullCardRequestSucceeded(
-      const autofill::payments::FullCardRequest& /* full_card_request */,
-      const autofill::CreditCard& card,
-      const base::string16& cvc) override {
-    std::move(callback_).Run(std::make_unique<autofill::CreditCard>(card), cvc);
-    delete this;
-  }
-
-  // payments::FullCardRequest::ResultDelegate:
-  void OnFullCardRequestFailed() override {
-    // Failed might because of cancel, so return nullptr to notice caller.
-    //
-    // TODO(crbug.com/806868): Split the fail notification so that "cancel" and
-    // "wrong cvc" states can be handled differently. One should prompt a retry,
-    // the other a graceful shutdown - the current behavior.
-    std::move(callback_).Run(nullptr, base::string16());
-    delete this;
-  }
-
-  GetFullCardCallback callback_;
-
-  base::WeakPtrFactory<SelfDeleteFullCardRequester> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(SelfDeleteFullCardRequester);
-};
-
-}  // namespace
 
 AutofillAction::AutofillAction(const ActionProto& proto)
     : Action(proto), weak_ptr_factory_(this) {
@@ -104,7 +31,6 @@ AutofillAction::AutofillAction(const ActionProto& proto)
     check_form_message_ = proto.use_address().strings().check_form();
     required_fields_value_status_.resize(
         proto_.use_address().required_fields_size(), UNKNOWN);
-    show_overlay_ = proto.use_address().show_overlay();
   } else {
     DCHECK(proto.has_use_card());
     is_autofill_card_ = true;
@@ -113,7 +39,6 @@ AutofillAction::AutofillAction(const ActionProto& proto)
     selector_ = Selector(proto.use_card().form_field_element());
     fill_form_message_ = proto.use_card().strings().fill_form();
     check_form_message_ = proto.use_card().strings().check_form();
-    show_overlay_ = proto.use_card().show_overlay();
   }
   DCHECK(!selector_.empty());
 }
@@ -168,32 +93,24 @@ void AutofillAction::OnWaitForElement(ActionDelegate* delegate,
 
   DCHECK(!selector_.empty());
   if (is_autofill_card_) {
-    // TODO(crbug.com/806868): Consider refactoring SelfDeleteFullCardRequester
-    // so as to unit test it.
-    DCHECK(delegate->GetClientMemory()->selected_card());
-    // User might be asked to provide the cvc, enable the keyboard.
-    delegate->AllowShowingSoftKeyboard(true);
-    (new SelfDeleteFullCardRequester())
-        ->GetFullCard(delegate->GetWebContents(),
-                      delegate->GetClientMemory()->selected_card(),
-                      base::BindOnce(&AutofillAction::OnGetFullCard,
-                                     weak_ptr_factory_.GetWeakPtr(), delegate));
+    delegate->GetFullCard(base::BindOnce(&AutofillAction::OnGetFullCard,
+                                         weak_ptr_factory_.GetWeakPtr(),
+                                         base::Unretained(delegate)));
     return;
   }
 
   const autofill::AutofillProfile* profile =
       delegate->GetClientMemory()->selected_address(name_);
   DCHECK(profile);
-  delegate->FillAddressForm(
-      profile, selector_,
-      base::BindOnce(&AutofillAction::OnAddressFormFilled,
-                     weak_ptr_factory_.GetWeakPtr(), delegate));
+  delegate->FillAddressForm(profile, selector_,
+                            base::BindOnce(&AutofillAction::OnAddressFormFilled,
+                                           weak_ptr_factory_.GetWeakPtr(),
+                                           base::Unretained(delegate)));
 }
 
 void AutofillAction::OnGetFullCard(ActionDelegate* delegate,
                                    std::unique_ptr<autofill::CreditCard> card,
                                    const base::string16& cvc) {
-  delegate->AllowShowingSoftKeyboard(false);
   if (!card) {
     // Gracefully shutdown the script. The empty message forces the use of the
     // default message.

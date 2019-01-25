@@ -117,6 +117,14 @@ void Controller::SetTouchableElementArea(const ElementAreaProto& area) {
   touchable_element_area_.SetFromProto(area);
 }
 
+void Controller::EnterState(AutofillAssistantState state) {
+  if (state_ == state)
+    return;
+
+  state_ = state;
+  GetUiController()->OnStateChanged(state);
+}
+
 void Controller::GetOrCheckScripts(const GURL& url) {
   if (!started_ || script_tracker_->running()) {
     return;
@@ -162,10 +170,9 @@ void Controller::OnPeriodicScriptCheck() {
   if (should_fail_after_checking_scripts_ &&
       ++total_script_check_count_ >= kAutostartCheckCountLimit) {
     should_fail_after_checking_scripts_ = false;
-    GetUiController()->HideOverlay();
     GetUiController()->ShowStatusMessage(
         l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR));
-    GetUiController()->ShutdownGracefully();
+    EnterState(AutofillAssistantState::STOPPED);
     return;
   }
 
@@ -202,10 +209,9 @@ void Controller::OnGetScripts(const GURL& url,
 
 void Controller::ExecuteScript(const std::string& script_path) {
   DCHECK(!script_tracker_->running());
+  EnterState(AutofillAssistantState::RUNNING);
 
-  GetUiController()->ShowOverlay();
   touchable_element_area_.Clear();
-  GetUiController()->AllowShowingSoftKeyboard(false);
 
   StopPeriodicScriptChecks();
   // Runnable scripts will be checked and reported if necessary after executing
@@ -222,24 +228,21 @@ void Controller::ExecuteScript(const std::string& script_path) {
 
 void Controller::OnScriptExecuted(const std::string& script_path,
                                   const ScriptExecutor::Result& result) {
-  if (!allow_autostart_)
-    GetUiController()->HideOverlay();
-
-  // We expand the bottom sheet as the end of a script either means that user
-  // interaction is needed or a success/error message is shown.
-  GetUiController()->ExpandBottomSheet();
-
   if (!result.success) {
     LOG(ERROR) << "Failed to execute script " << script_path;
     GetUiController()->ShowStatusMessage(
         l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR));
-    GetUiController()->ShutdownGracefully();
+    EnterState(AutofillAssistantState::STOPPED);
     return;
   }
-  if (result.touchable_element_area)
+  if (result.touchable_element_area) {
     touchable_element_area_.SetFromProto(*result.touchable_element_area);
+  } else {
+    // For backward-compatibility, if no touchable elements are defined, the
+    // whole screen is available instead of nothing being available.
+    touchable_element_area_.CoverViewport();
+  }
 
-  GetUiController()->AllowShowingSoftKeyboard(true);
   switch (result.at_end) {
     case ScriptExecutor::SHUTDOWN:
     case ScriptExecutor::TERMINATE:
@@ -251,7 +254,7 @@ void Controller::OnScriptExecuted(const std::string& script_path,
 
     case ScriptExecutor::SHUTDOWN_GRACEFULLY:
       GetWebController()->ClearCookie();
-      GetUiController()->ShutdownGracefully();
+      EnterState(AutofillAssistantState::STOPPED);
       return;
 
     case ScriptExecutor::CLOSE_CUSTOM_TAB:
@@ -278,7 +281,7 @@ void Controller::OnScriptExecuted(const std::string& script_path,
 void Controller::GiveUp() {
   GetUiController()->ShowStatusMessage(
       l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP));
-  GetUiController()->ShutdownGracefully();
+  EnterState(AutofillAssistantState::STOPPED);
 }
 
 bool Controller::MaybeAutostartScript(
@@ -345,7 +348,6 @@ void Controller::FinishStart(const GURL& initial_url) {
   if (allow_autostart_) {
     should_fail_after_checking_scripts_ = true;
     MaybeShowInitialDetails();
-    GetUiController()->ShowOverlay();
     GetUiController()->ShowProgressBar(
         kAutostartInitialProgress,
         l10n_util::GetStringFUTF8(IDS_AUTOFILL_ASSISTANT_LOADING,
@@ -400,11 +402,11 @@ void Controller::MaybeShowInitialDetails() {
 
 void Controller::Start(const GURL& initialUrl,
                        const std::map<std::string, std::string>& parameters) {
-  if (started_) {
+  if (state_ != AutofillAssistantState::INACTIVE) {
     NOTREACHED();
     return;
   }
-
+  EnterState(AutofillAssistantState::STARTING);
   parameters_ = parameters;
   if (IsCookieExperimentEnabled()) {
     GetWebController()->HasCookie(
@@ -416,9 +418,8 @@ void Controller::Start(const GURL& initialUrl,
   }
 }
 
-void Controller::OnClickOverlay() {
-  GetUiController()->HideOverlay();
-  // TODO(crbug.com/806868): Stop executing scripts.
+AutofillAssistantState Controller::GetState() {
+  return state_;
 }
 
 bool Controller::Terminate() {
@@ -480,7 +481,6 @@ void Controller::OnRunnableScriptsChanged(
 
   if (!runnable_scripts.empty()) {
     should_fail_after_checking_scripts_ = false;
-    GetUiController()->HideOverlay();
   }
 
   if (MaybeAutostartScript(runnable_scripts)) {
@@ -520,6 +520,13 @@ void Controller::OnRunnableScriptsChanged(
     }
   }
 
+  if (state_ == AutofillAssistantState::STARTING) {
+    // If there's no script to autostart, allow access to the whole screen
+    // during the first prompt. In normal operations, touchable_element_area_ is
+    // set at the end of a successful script.
+    touchable_element_area_.CoverViewport();
+  }
+  EnterState(AutofillAssistantState::PROMPT);
   GetUiController()->SetChips(std::move(chips));
 }
 

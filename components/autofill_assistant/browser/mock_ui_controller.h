@@ -21,13 +21,10 @@ class MockUiController : public UiController {
   MockUiController();
   ~MockUiController() override;
 
+  MOCK_METHOD1(OnStateChanged, void(AutofillAssistantState));
   MOCK_METHOD1(ShowStatusMessage, void(const std::string& message));
   MOCK_METHOD0(GetStatusMessage, std::string());
-  MOCK_METHOD0(ShowOverlay, void());
-  MOCK_METHOD0(HideOverlay, void());
-  MOCK_METHOD1(AllowShowingSoftKeyboard, void(bool));
   MOCK_METHOD0(Shutdown, void());
-  MOCK_METHOD0(ShutdownGracefully, void());
   MOCK_METHOD0(Close, void());
   MOCK_METHOD1(SetChips, void(std::unique_ptr<std::vector<Chip>> chips));
   MOCK_METHOD0(ClearChips, void());

@@ -64,6 +64,8 @@ class ScriptTrackerTest : public testing::Test,
 
   ClientMemory* GetClientMemory() override { return &client_memory_; }
 
+  void EnterState(AutofillAssistantState state) override {}
+
   const std::map<std::string, std::string>& GetParameters() override {
     return parameters_;
   }
@@ -74,8 +76,7 @@ class ScriptTrackerTest : public testing::Test,
 
   content::WebContents* GetWebContents() override { return nullptr; }
 
-  virtual void SetTouchableElementArea(
-      const ElementAreaProto& element_area) override {}
+  void SetTouchableElementArea(const ElementAreaProto& element_area) override {}
 
   // Overrides ScriptTracker::Listener
   void OnRunnableScriptsChanged(

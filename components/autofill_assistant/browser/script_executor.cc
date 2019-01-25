@@ -16,6 +16,7 @@
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
+#include "components/autofill_assistant/browser/self_delete_full_card_requester.h"
 #include "components/autofill_assistant/browser/service.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
 #include "components/autofill_assistant/browser/web_controller.h"
@@ -121,20 +122,50 @@ void ScriptExecutor::GetPaymentInformation(
     base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
     const std::string& title,
     const std::vector<std::string>& supported_basic_card_networks) {
+  delegate_->EnterState(AutofillAssistantState::PROMPT);
   delegate_->GetUiController()->GetPaymentInformation(
-      std::move(payment_options), std::move(callback), title,
-      supported_basic_card_networks);
+      std::move(payment_options),
+      base::BindOnce(&ScriptExecutor::OnGetPaymentInformation,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
+      title, supported_basic_card_networks);
 }
 
-void ScriptExecutor::SetChips(std::unique_ptr<std::vector<Chip>> chips) {
+void ScriptExecutor::OnGetPaymentInformation(
+    base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
+    std::unique_ptr<PaymentInformation> result) {
+  delegate_->EnterState(AutofillAssistantState::RUNNING);
+  std::move(callback).Run(std::move(result));
+}
+
+void ScriptExecutor::GetFullCard(GetFullCardCallback callback) {
+  DCHECK(GetClientMemory()->selected_card());
+
+  // User might be asked to provide the cvc.
+  delegate_->EnterState(AutofillAssistantState::MODAL_DIALOG);
+
+  // TODO(crbug.com/806868): Consider refactoring SelfDeleteFullCardRequester
+  // so as to unit test it.
+  (new SelfDeleteFullCardRequester())
+      ->GetFullCard(
+          GetWebContents(), GetClientMemory()->selected_card(),
+          base::BindOnce(&ScriptExecutor::OnGetFullCard,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void ScriptExecutor::OnGetFullCard(GetFullCardCallback callback,
+                                   std::unique_ptr<autofill::CreditCard> card,
+                                   const base::string16& cvc) {
+  delegate_->EnterState(AutofillAssistantState::RUNNING);
+  std::move(callback).Run(std::move(card), cvc);
+}
+
+void ScriptExecutor::Prompt(std::unique_ptr<std::vector<Chip>> chips) {
   if (touchable_element_area_) {
     // SetChips reproduces the end-of-script appearance and behavior during
     // script execution. This includes allowing access to touchable elements,
     // set through a previous call to the focus action with touchable_elements
     // set.
     delegate_->SetTouchableElementArea(*touchable_element_area_);
-    delegate_->GetUiController()->HideOverlay();
-    AllowShowingSoftKeyboard(true);
 
     // The touchable_elements_ currently set in the script is reset, so that it
     // won't affect the real end of the script.
@@ -152,22 +183,22 @@ void ScriptExecutor::SetChips(std::unique_ptr<std::vector<Chip>> chips) {
                                    std::move(chip.callback));
   }
 
+  delegate_->EnterState(AutofillAssistantState::PROMPT);
   delegate_->GetUiController()->SetChips(std::move(chips));
 }
 
-void ScriptExecutor::ClearChips() {
+void ScriptExecutor::CancelPrompt() {
   delegate_->GetUiController()->ClearChips();
-  CleanUpAfterChipIsSelected();
+  CleanUpAfterPrompt();
 }
 
-void ScriptExecutor::CleanUpAfterChipIsSelected() {
-  delegate_->GetUiController()->ShowOverlay();
-  AllowShowingSoftKeyboard(false);
+void ScriptExecutor::CleanUpAfterPrompt() {
   delegate_->ClearTouchableElementArea();
+  delegate_->EnterState(AutofillAssistantState::RUNNING);
 }
 
 void ScriptExecutor::OnChosen(base::OnceClosure callback) {
-  CleanUpAfterChipIsSelected();
+  CleanUpAfterPrompt();
   std::move(callback).Run();
 }
 
@@ -217,18 +248,6 @@ void ScriptExecutor::ShowProgressBar(int progress, const std::string& message) {
 
 void ScriptExecutor::HideProgressBar() {
   delegate_->GetUiController()->HideProgressBar();
-}
-
-void ScriptExecutor::ShowOverlay() {
-  delegate_->GetUiController()->ShowOverlay();
-}
-
-void ScriptExecutor::HideOverlay() {
-  delegate_->GetUiController()->HideOverlay();
-}
-
-void ScriptExecutor::AllowShowingSoftKeyboard(bool enabled) {
-  delegate_->GetUiController()->AllowShowingSoftKeyboard(enabled);
 }
 
 void ScriptExecutor::SetFieldValue(const Selector& selector,

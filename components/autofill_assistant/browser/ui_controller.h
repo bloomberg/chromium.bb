@@ -13,6 +13,7 @@
 #include "components/autofill_assistant/browser/chip.h"
 #include "components/autofill_assistant/browser/payment_information.h"
 #include "components/autofill_assistant/browser/script.h"
+#include "components/autofill_assistant/browser/state.h"
 #include "components/autofill_assistant/browser/ui_delegate.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
@@ -25,6 +26,9 @@ class UiController {
 
   virtual ~UiController() = default;
 
+  // Called when the controller has entered a new state.
+  virtual void OnStateChanged(AutofillAssistantState new_state) = 0;
+
   // Show status message on the bottom bar.
   virtual void ShowStatusMessage(const std::string& message) = 0;
 
@@ -32,24 +36,10 @@ class UiController {
   // restoring a previous status message.
   virtual std::string GetStatusMessage() = 0;
 
-  // Show the overlay.
-  virtual void ShowOverlay() = 0;
-
-  // Hide the overlay.
-  virtual void HideOverlay() = 0;
-
-  // Allows disabling/enabling the soft keyboard.
-  virtual void AllowShowingSoftKeyboard(bool enabled) = 0;
-
   // Shuts down Autofill Assistant: hide the UI and frees any associated state.
   //
   // Warning: this indirectly deletes the caller.
   virtual void Shutdown() = 0;
-
-  // Shuts down Autofill Assistant after a small delay.
-  //
-  // Warning: this indirectly deletes the caller.
-  virtual void ShutdownGracefully() = 0;
 
   // Shuts down Autofill Assistant and closes Chrome.
   virtual void Close() = 0;
@@ -99,9 +89,6 @@ class UiController {
   // visible viewport, as a number between 0 and 1. It can be empty.
   virtual void UpdateTouchableArea(bool enabled,
                                    const std::vector<RectF>& areas) = 0;
-
-  // Force the bottom sheet to be in the expanded state.
-  virtual void ExpandBottomSheet() = 0;
 
  protected:
   UiController() = default;

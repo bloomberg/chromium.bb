@@ -66,19 +66,12 @@ class ScriptExecutorTest : public testing::Test,
     ON_CALL(mock_web_controller_, OnFocusElement(_, _))
         .WillByDefault(RunOnceCallback<1>(true));
     ON_CALL(mock_web_controller_, GetUrl()).WillByDefault(ReturnRef(url_));
-    ON_CALL(mock_ui_controller_, ShowOverlay()).WillByDefault(Invoke([this]() {
-      overlay_ = true;
-    }));
-    ON_CALL(mock_ui_controller_, HideOverlay()).WillByDefault(Invoke([this]() {
-      overlay_ = false;
-    }));
   }
 
  protected:
   ScriptExecutorTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
-        overlay_(false) {}
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
 
   // Implements ScriptExecutorDelegate
   Service* GetService() override { return &mock_service_; }
@@ -90,6 +83,8 @@ class ScriptExecutorTest : public testing::Test,
   ClientMemory* GetClientMemory() override { return &memory_; }
 
   void SetTouchableElementArea(const ElementAreaProto& area) {}
+
+  void EnterState(AutofillAssistantState state) {}
 
   const std::map<std::string, std::string>& GetParameters() override {
     return parameters_;
@@ -190,7 +185,6 @@ class ScriptExecutorTest : public testing::Test,
   StrictMock<base::MockCallback<ScriptExecutor::RunScriptCallback>>
       executor_callback_;
   GURL url_;
-  bool overlay_;
 };
 
 TEST_F(ScriptExecutorTest, GetActionsFails) {

@@ -25,6 +25,7 @@ using ::testing::Contains;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::InSequence;
+using ::testing::Invoke;
 using ::testing::NiceMock;
 using ::testing::Not;
 using ::testing::Pair;
@@ -89,6 +90,11 @@ class ControllerTest : public content::RenderViewHostTestHarness {
 
     // Make WebController::GetUrl accessible.
     ON_CALL(*mock_web_controller_, GetUrl()).WillByDefault(ReturnRef(url_));
+
+    ON_CALL(mock_ui_controller_, OnStateChanged(_))
+        .WillByDefault(Invoke([this](AutofillAssistantState state) {
+          states_.emplace_back(state);
+        }));
 
     tester_ = content::WebContentsTester::For(web_contents());
   }
@@ -165,6 +171,7 @@ class ControllerTest : public content::RenderViewHostTestHarness {
   UiDelegate* GetUiDelegate() { return controller_.get(); }
 
   GURL url_;
+  std::vector<AutofillAssistantState> states_;
   MockService* mock_service_;
   MockWebController* mock_web_controller_;
   FakeClient fake_client_;
@@ -472,5 +479,40 @@ TEST_F(ControllerTest, CookieExperimentEnabled) {
   // test when we pass the cookie data along in the initial request so that it
   // can be tested.
   EXPECT_TRUE(controller_->IsCookieExperimentEnabled());
+}
+
+TEST_F(ControllerTest, StateChanges) {
+  EXPECT_EQ(AutofillAssistantState::INACTIVE, GetUiDelegate()->GetState());
+  Start();
+  EXPECT_EQ(AutofillAssistantState::STARTING, GetUiDelegate()->GetState());
+
+  SupportsScriptResponseProto script_response;
+  auto* script1 = AddRunnableScript(&script_response, "script1");
+  RunOnce(script1);
+  auto* script2 = AddRunnableScript(&script_response, "script2");
+  RunOnce(script2);
+  SetNextScriptResponse(script_response);
+
+  SimulateNavigateToUrl(GURL("http://a.example.com/path"));
+
+  EXPECT_EQ(AutofillAssistantState::PROMPT, GetUiDelegate()->GetState());
+
+  // Run script1: State should become RUNNING, as there's another script, then
+  // go back to prompt to propose that script.
+  states_.clear();
+  ExecuteScript("script1");  // returns immediately
+
+  EXPECT_EQ(AutofillAssistantState::PROMPT, GetUiDelegate()->GetState());
+  EXPECT_THAT(states_, ElementsAre(AutofillAssistantState::RUNNING,
+                                   AutofillAssistantState::PROMPT));
+
+  // Run script2: State should become STOPPED, as there are no more runnable
+  // scripts.
+  states_.clear();
+  ExecuteScript("script2");
+
+  EXPECT_EQ(AutofillAssistantState::STOPPED, GetUiDelegate()->GetState());
+  EXPECT_THAT(states_, ElementsAre(AutofillAssistantState::RUNNING,
+                                   AutofillAssistantState::STOPPED));
 }
 }  // namespace autofill_assistant

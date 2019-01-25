@@ -52,8 +52,6 @@ void GetPaymentInformationAction::InternalProcessAction(
   payment_options->request_shipping =
       !get_payment_information.shipping_address_name().empty();
 
-  // During payment request user might need to modify the data. Enable keyboard.
-  delegate->AllowShowingSoftKeyboard(true);
   delegate->GetPaymentInformation(
       std::move(payment_options),
       base::BindOnce(&GetPaymentInformationAction::OnGetPaymentInformation,
@@ -70,7 +68,6 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
     const GetPaymentInformationProto& get_payment_information,
     ProcessActionCallback callback,
     std::unique_ptr<PaymentInformation> payment_information) {
-  delegate->AllowShowingSoftKeyboard(false);
   bool succeed = payment_information->succeed;
   if (succeed) {
     if (get_payment_information.ask_for_payment()) {

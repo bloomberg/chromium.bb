@@ -35,13 +35,10 @@ class UiControllerAndroid : public UiController {
                       const base::android::JavaParamRef<jobject>& on_accept);
 
   // Overrides UiController:
+  void OnStateChanged(AutofillAssistantState new_state) override;
   void ShowStatusMessage(const std::string& message) override;
   std::string GetStatusMessage() override;
-  void ShowOverlay() override;
-  void HideOverlay() override;
-  void AllowShowingSoftKeyboard(bool enabled) override;
   void Shutdown() override;
-  void ShutdownGracefully() override;
   void Close() override;
   void SetChips(std::unique_ptr<std::vector<Chip>> chips) override;
   void ClearChips() override;
@@ -61,7 +58,6 @@ class UiControllerAndroid : public UiController {
   void HideProgressBar() override;
   void UpdateTouchableArea(bool enabled,
                            const std::vector<RectF>& areas) override;
-  void ExpandBottomSheet() override;
 
   // Called by AssistantHeaderDelegate:
   void OnFeedbackButtonClicked();
@@ -103,7 +99,12 @@ class UiControllerAndroid : public UiController {
   base::android::ScopedJavaLocalRef<jobject> GetDetailsModel();
   base::android::ScopedJavaLocalRef<jobject> GetCarouselModel();
 
+  void ShowOverlay();
+  void HideOverlay();
+  void AllowShowingSoftKeyboard(bool enabled);
+  void ExpandBottomSheet();
   void SetProgressPulsingEnabled(bool enabled);
+  void ShutdownGracefully();
   void ShowDetails(const ShowDetailsProto& show_details,
                    bool user_approval_required,
                    bool highlight_title,

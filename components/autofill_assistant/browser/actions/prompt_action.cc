@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
@@ -56,7 +57,7 @@ void PromptAction::InternalProcessAction(ActionDelegate* delegate,
         base::BindOnce(&PromptAction::OnSuggestionChosen,
                        weak_ptr_factory_.GetWeakPtr(), server_payload);
   }
-  delegate->SetChips(std::move(chips));
+  delegate->Prompt(std::move(chips));
 
   batch_element_checker_ = delegate->CreateBatchElementChecker();
   for (const auto& choice_proto : proto_.prompt().choices()) {
@@ -92,7 +93,7 @@ void PromptAction::OnElementExist(const std::string& payload, bool exists) {
 
 void PromptAction::OnElementChecksDone(ActionDelegate* delegate) {
   if (!forced_payload_.empty()) {
-    delegate->ClearChips();
+    delegate->CancelPrompt();
     OnSuggestionChosen(forced_payload_);
   }
 }

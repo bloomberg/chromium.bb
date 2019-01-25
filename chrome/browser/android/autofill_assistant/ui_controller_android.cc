@@ -87,6 +87,55 @@ UiControllerAndroid::GetHeaderModel() {
   return Java_AssistantModel_getHeaderModel(AttachCurrentThread(), GetModel());
 }
 
+void UiControllerAndroid::OnStateChanged(AutofillAssistantState new_state) {
+  switch (new_state) {
+    case AutofillAssistantState::STARTING:
+      ShowOverlay();
+      AllowShowingSoftKeyboard(false);
+      SetProgressPulsingEnabled(false);
+      return;
+
+    case AutofillAssistantState::RUNNING:
+      ShowOverlay();
+      AllowShowingSoftKeyboard(false);
+      SetProgressPulsingEnabled(false);
+      return;
+
+    case AutofillAssistantState::PROMPT:
+      ShowOverlay();  // partial overlay
+      AllowShowingSoftKeyboard(true);
+      SetProgressPulsingEnabled(true);
+
+      // user interaction is needed.
+      ExpandBottomSheet();
+      return;
+
+    case AutofillAssistantState::MODAL_DIALOG:
+      ShowOverlay();
+      AllowShowingSoftKeyboard(true);
+      SetProgressPulsingEnabled(false);
+      return;
+
+    case AutofillAssistantState::STOPPED:
+      HideOverlay();
+      AllowShowingSoftKeyboard(true);
+      SetProgressPulsingEnabled(false);
+
+      // make sure user sees the error message.
+      ExpandBottomSheet();
+      ShutdownGracefully();
+      return;
+
+    case AutofillAssistantState::INACTIVE:
+      // TODO(crbug.com/806868): Add support for switching back to the inactive
+      // state, which is the initial state. We never enter it, so there should
+      // never be a call OnStateChanged(INACTIVE)
+      NOTREACHED() << "Switching to the inactive state is not supported.";
+      return;
+  }
+  NOTREACHED() << "Unknown state: " << static_cast<int>(new_state);
+}
+
 void UiControllerAndroid::ShowStatusMessage(const std::string& message) {
   if (!message.empty()) {
     JNIEnv* env = AttachCurrentThread();
@@ -117,6 +166,31 @@ void UiControllerAndroid::ShowProgressBar(int progress,
 
 void UiControllerAndroid::HideProgressBar() {
   // TODO(crbug.com/806868): Remove calls to this function.
+}
+
+void UiControllerAndroid::ShowOverlay() {
+  Java_AutofillAssistantUiController_onShowOverlay(
+      AttachCurrentThread(), java_autofill_assistant_ui_controller_);
+}
+
+void UiControllerAndroid::HideOverlay() {
+  Java_AutofillAssistantUiController_onHideOverlay(
+      AttachCurrentThread(), java_autofill_assistant_ui_controller_);
+}
+
+void UiControllerAndroid::AllowShowingSoftKeyboard(bool enabled) {
+  Java_AutofillAssistantUiController_onAllowShowingSoftKeyboard(
+      AttachCurrentThread(), java_autofill_assistant_ui_controller_, enabled);
+}
+
+void UiControllerAndroid::ExpandBottomSheet() {
+  Java_AutofillAssistantUiController_expandBottomSheet(
+      AttachCurrentThread(), java_autofill_assistant_ui_controller_);
+}
+
+void UiControllerAndroid::ShutdownGracefully() {
+  Java_AutofillAssistantUiController_onShutdownGracefully(
+      AttachCurrentThread(), java_autofill_assistant_ui_controller_);
 }
 
 void UiControllerAndroid::SetProgressPulsingEnabled(bool enabled) {
@@ -200,33 +274,8 @@ void UiControllerAndroid::ShowOnboarding(
       env, java_autofill_assistant_ui_controller_, on_accept);
 }
 
-void UiControllerAndroid::ShowOverlay() {
-  Java_AutofillAssistantUiController_onShowOverlay(
-      AttachCurrentThread(), java_autofill_assistant_ui_controller_);
-  SetProgressPulsingEnabled(false);
-}
-
-void UiControllerAndroid::HideOverlay() {
-  Java_AutofillAssistantUiController_onHideOverlay(
-      AttachCurrentThread(), java_autofill_assistant_ui_controller_);
-
-  // Hiding the overlay generally means that the user is expected to interact
-  // with the page, so we enable progress bar pulsing animation.
-  SetProgressPulsingEnabled(true);
-}
-
-void UiControllerAndroid::AllowShowingSoftKeyboard(bool enabled) {
-  Java_AutofillAssistantUiController_onAllowShowingSoftKeyboard(
-      AttachCurrentThread(), java_autofill_assistant_ui_controller_, enabled);
-}
-
 void UiControllerAndroid::Shutdown() {
   Java_AutofillAssistantUiController_onShutdown(
-      AttachCurrentThread(), java_autofill_assistant_ui_controller_);
-}
-
-void UiControllerAndroid::ShutdownGracefully() {
-  Java_AutofillAssistantUiController_onShutdownGracefully(
       AttachCurrentThread(), java_autofill_assistant_ui_controller_);
 }
 
@@ -258,7 +307,6 @@ void UiControllerAndroid::OnGetPaymentInformation(
     const JavaParamRef<jstring>& jpayer_email,
     jboolean jis_terms_and_services_accepted) {
   DCHECK(get_payment_information_callback_);
-  SetProgressPulsingEnabled(false);
 
   std::unique_ptr<PaymentInformation> payment_info =
       std::make_unique<PaymentInformation>();
@@ -312,7 +360,6 @@ void UiControllerAndroid::GetPaymentInformation(
   DCHECK(!get_payment_information_callback_);
   get_payment_information_callback_ = std::move(callback);
   JNIEnv* env = AttachCurrentThread();
-  SetProgressPulsingEnabled(true);
   Java_AutofillAssistantUiController_onRequestPaymentInformation(
       env, java_autofill_assistant_ui_controller_,
       base::android::ConvertUTF8ToJavaString(env,
@@ -366,7 +413,6 @@ void UiControllerAndroid::ShowDetails(const ShowDetailsProto& show_details,
   std::string previous_status_message = GetStatusMessage();
   ShowStatusMessage(
       l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DETAILS_DIFFER));
-  SetProgressPulsingEnabled(true);
 
   // Continue button.
   auto chips = std::make_unique<std::vector<Chip>>();
@@ -397,7 +443,6 @@ void UiControllerAndroid::OnUserApproval(
   if (success) {
     // Restore previous state.
     ShowStatusMessage(previous_status_message);
-    SetProgressPulsingEnabled(false);
 
     // Show details without highlighted fields.
     ShowDetails(show_details, /* user_approval_required= */ false,
@@ -452,11 +497,5 @@ void UiControllerAndroid::UpdateTouchableArea(bool enabled,
   Java_AutofillAssistantUiController_updateTouchableArea(
       env, java_autofill_assistant_ui_controller_, enabled,
       base::android::ToJavaFloatArray(env, flattened));
-  SetProgressPulsingEnabled(true);
-}
-
-void UiControllerAndroid::ExpandBottomSheet() {
-  Java_AutofillAssistantUiController_expandBottomSheet(
-      AttachCurrentThread(), java_autofill_assistant_ui_controller_);
 }
 }  // namespace autofill_assistant.

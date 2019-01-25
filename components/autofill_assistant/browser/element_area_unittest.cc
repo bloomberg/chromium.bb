@@ -80,6 +80,14 @@ TEST_F(ElementAreaTest, ElementNotFound) {
   EXPECT_THAT(highlighted_area_, IsEmpty());
 }
 
+TEST_F(ElementAreaTest, CoverViewport) {
+  element_area_.CoverViewport();
+  EXPECT_TRUE(element_area_.HasElements());
+  EXPECT_FALSE(element_area_.IsEmpty());
+  EXPECT_THAT(highlighted_area_,
+              ElementsAre(MatchingRectF(0.0f, 0.0f, 1.0f, 1.0f)));
+}
+
 TEST_F(ElementAreaTest, OneRectangle) {
   EXPECT_CALL(mock_web_controller_,
               OnGetElementPosition(Eq(Selector({"#found"})), _))

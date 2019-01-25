@@ -75,14 +75,14 @@ class ActionDelegate {
 
   // Ask user to select one of the given suggestions.
   //
-  // While SetChips is in progress, the UI looks the same as it does between
+  // While a prompt is in progress, the UI looks the same as it does between
   // scripts, even though we're in the middle of a script. This includes
   // allowing access to the touchable elements set previously, in the same
   // script.
-  virtual void SetChips(std::unique_ptr<std::vector<Chip>> chips) = 0;
+  virtual void Prompt(std::unique_ptr<std::vector<Chip>> chips) = 0;
 
   // Remove all chips from the UI.
-  virtual void ClearChips() = 0;
+  virtual void CancelPrompt() = 0;
 
   // Asks the user to provide the data used by UseAddressAction and
   // UseCreditCardAction.
@@ -91,6 +91,14 @@ class ActionDelegate {
       base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
       const std::string& title,
       const std::vector<std::string>& supported_basic_card_networks) = 0;
+
+  using GetFullCardCallback =
+      base::OnceCallback<void(std::unique_ptr<autofill::CreditCard> card,
+                              const base::string16& cvc)>;
+
+  // Asks for the full card information for the selected card. Might require the
+  // user entering CVC.
+  virtual void GetFullCard(GetFullCardCallback callback) = 0;
 
   // Fill the address form given by |selector| with the given address
   // |profile|. |profile| cannot be nullptr.
@@ -191,15 +199,6 @@ class ActionDelegate {
 
   // Hide the progress bar.
   virtual void HideProgressBar() = 0;
-
-  // Show the overlay.
-  virtual void ShowOverlay() = 0;
-
-  // Hide the overlay.
-  virtual void HideOverlay() = 0;
-
-  // Allows disabling/enabling the soft keyboard.
-  virtual void AllowShowingSoftKeyboard(bool enabled) = 0;
 
  protected:
   ActionDelegate() = default;

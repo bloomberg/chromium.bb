@@ -475,9 +475,6 @@ message UseAddressProto {
   // An optional list of fields that should be filled by this action.
   repeated RequiredField required_fields = 6;
 
-  // If set to false, clear the overlay for the duration of the action.
-  optional bool show_overlay = 7 [default = true];
-
   optional AutofillStrings strings = 8;
 }
 
@@ -489,9 +486,6 @@ message UseCreditCardProto {
 
   // A reference to the card number field in the form that should be filled.
   optional ElementReferenceProto form_field_element = 3;
-
-  // If set to false, clear the overlay for the duration of the action.
-  optional bool show_overlay = 5 [default = true];
 
   optional AutofillStrings strings = 8;
 }
