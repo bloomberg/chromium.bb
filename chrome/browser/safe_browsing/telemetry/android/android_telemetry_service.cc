@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
@@ -19,6 +20,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/ping_manager.h"
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
@@ -91,7 +93,10 @@ void RecordApkDownloadTelemetryIncompleteReason(
 AndroidTelemetryService::AndroidTelemetryService(
     SafeBrowsingService* sb_service,
     Profile* profile)
-    : TelemetryService(), profile_(profile), sb_service_(sb_service) {
+    : TelemetryService(),
+      profile_(profile),
+      sb_service_(sb_service),
+      weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
   DCHECK(sb_service_);
@@ -125,6 +130,10 @@ void AndroidTelemetryService::OnDownloadCreated(
   if (!CanSendPing(item)) {
     return;
   }
+
+  // The report can be sent. Try capturing the safety net ID. This should
+  // complete before the download completes, but is not guaranteed, That's OK.
+  MaybeCaptureSafetyNetId();
 
   item->AddObserver(this);
 }
@@ -225,6 +234,21 @@ void AndroidTelemetryService::FillReferrerChain(
       recent_navigations_to_collect, report->mutable_referrer_chain());
 }
 
+void AndroidTelemetryService::MaybeCaptureSafetyNetId() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(sb_service_->database_manager());
+  if (!safety_net_id_on_ui_thread_.empty()) {
+    return;
+  }
+
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {content::BrowserThread::IO},
+      base::BindOnce(&SafeBrowsingDatabaseManager::GetSafetyNetId,
+                     sb_service_->database_manager()),
+      base::BindOnce(&AndroidTelemetryService::SetSafetyNetIdOnUIThread,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
 void AndroidTelemetryService::MaybeSendApkDownloadReport(
     download::DownloadItem* item) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -249,7 +273,6 @@ void AndroidTelemetryService::MaybeSendApkDownloadReport(
   mutable_download_item_info->set_length(item->GetReceivedBytes());
   mutable_download_item_info->set_file_basename(
       item->GetTargetFilePath().BaseName().value());
-  // TODO(vakh): Capture |safety_net_id_on_ui_thread_|. It is unset currently.
   report->set_safety_net_id(safety_net_id_on_ui_thread_);
 
   std::string serialized;
@@ -268,6 +291,11 @@ void AndroidTelemetryService::MaybeSendApkDownloadReport(
                      std::move(report)));
 
   RecordApkDownloadTelemetryOutcome(ApkDownloadTelemetryOutcome::SENT);
+}
+
+void AndroidTelemetryService::SetSafetyNetIdOnUIThread(const std::string& sid) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  safety_net_id_on_ui_thread_ = sid;
 }
 
 }  // namespace safe_browsing
