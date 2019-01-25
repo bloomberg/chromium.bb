@@ -4,6 +4,14 @@
 
 module gfx.mojom;
 
+// gfx::FontRenderParams::Hinting
+enum Hinting {
+  kNone,
+  kSlight,
+  kMedium,
+  kFull,
+};
+
 // gfx::FontRenderParams::SubpixelRendering
 enum SubpixelRendering {
   kNone,

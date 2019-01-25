@@ -58,7 +58,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/origin_util.h"
-#include "content/public/common/renderer_preferences.h"
+#include "content/public/common/renderer_preferences.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
@@ -582,10 +582,11 @@ NavigationRequest::NavigationRequest(
       }
     }
 
-    RendererPreferences render_prefs = frame_tree_node_->render_manager()
-                                           ->current_host()
-                                           ->GetDelegate()
-                                           ->GetRendererPrefs(browser_context);
+    mojom::RendererPreferences render_prefs =
+        frame_tree_node_->render_manager()
+            ->current_host()
+            ->GetDelegate()
+            ->GetRendererPrefs(browser_context);
     if (render_prefs.enable_do_not_track)
       headers.SetHeader(kDoNotTrackHeader, "1");
   }

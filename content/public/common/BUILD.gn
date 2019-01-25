@@ -184,8 +184,6 @@ jumbo_source_set("common_sources") {
     "referrer.h",
     "referrer_type_converters.cc",
     "referrer_type_converters.h",
-    "renderer_preferences.cc",
-    "renderer_preferences.h",
     "renderer_preferences_util.cc",
     "renderer_preferences_util.h",
     "resource_request_body_android.cc",
@@ -372,6 +370,7 @@ mojom("interfaces") {
     "//services/network/public/mojom:websocket_mojom",
     "//third_party/blink/public:mojo_bindings",
     "//ui/accessibility:ax_enums_mojo",
+    "//ui/gfx/mojo",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]
@@ -382,6 +381,10 @@ mojom("interfaces") {
       "web_contents_ns_view_bridge.mojom",
     ]
     public_deps += [ "//ui/gfx/geometry/mojo" ]
+  }
+
+  if (is_linux || is_chromeos) {
+    enabled_features = [ "renderer_pref_system_font_family_name" ]
   }
 
   component_output_prefix = "content_public_common_mojo_bindings"

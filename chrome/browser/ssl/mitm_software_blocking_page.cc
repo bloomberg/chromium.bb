@@ -24,7 +24,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/renderer_preferences.h"
+#include "content/public/common/renderer_preferences.mojom.h"
 #include "net/base/net_errors.h"
 
 using content::InterstitialPageDelegate;
@@ -142,7 +142,7 @@ void MITMSoftwareBlockingPage::CommandReceived(const std::string& command) {
 }
 
 void MITMSoftwareBlockingPage::OverrideRendererPrefs(
-    content::RendererPreferences* prefs) {
+    content::mojom::RendererPreferences* prefs) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   renderer_preferences_util::UpdateFromSystemSettings(prefs, profile);

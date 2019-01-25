@@ -31,7 +31,7 @@
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/renderer_preferences.h"
+#include "content/public/common/renderer_preferences.mojom.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/loader_util.h"
@@ -184,7 +184,7 @@ void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
                                                network::kDefaultAcceptHeader);
 
   // Set the "DNT" header if necessary.
-  RendererPreferences renderer_preferences;
+  mojom::RendererPreferences renderer_preferences;
   GetContentClient()->browser()->UpdateRendererPreferencesForWorker(
       browser_context, &renderer_preferences);
   if (renderer_preferences.enable_do_not_track)

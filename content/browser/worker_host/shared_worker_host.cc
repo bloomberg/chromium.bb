@@ -193,10 +193,10 @@ void SharedWorkerHost::Start(
   devtools_handle_ = std::make_unique<ScopedDevToolsHandle>(
       this, &pause_on_start, &devtools_worker_token);
 
-  RendererPreferences renderer_preferences;
+  auto renderer_preferences = mojom::RendererPreferences::New();
   GetContentClient()->browser()->UpdateRendererPreferencesForWorker(
       RenderProcessHost::FromID(process_id_)->GetBrowserContext(),
-      &renderer_preferences);
+      renderer_preferences.get());
 
   // Create a RendererPreferenceWatcher to observe updates in the preferences.
   mojom::RendererPreferenceWatcherPtr watcher_ptr;
@@ -264,7 +264,7 @@ void SharedWorkerHost::Start(
   factory_ = std::move(factory);
   factory_->CreateSharedWorker(
       std::move(info), pause_on_start, devtools_worker_token,
-      renderer_preferences, std::move(preference_watcher_request),
+      std::move(renderer_preferences), std::move(preference_watcher_request),
       std::move(content_settings), std::move(service_worker_provider_info),
       appcache_handle_ ? appcache_handle_->appcache_host_id()
                        : blink::mojom::kAppCacheNoHostId,

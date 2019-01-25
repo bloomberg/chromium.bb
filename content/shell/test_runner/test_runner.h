@@ -285,7 +285,7 @@ class TestRunner : public WebTestRunner {
   void SetAllowFileAccessFromFileURLs(bool allow);
   void OverridePreference(gin::Arguments* arguments);
 
-  // Modify accept_languages in RendererPreferences.
+  // Modify accept_languages in mojom::RendererPreferences.
   void SetAcceptLanguages(const std::string& accept_languages);
 
   // Enable or disable plugins.

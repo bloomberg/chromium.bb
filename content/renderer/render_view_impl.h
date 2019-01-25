@@ -32,7 +32,7 @@
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/renderer_preference_watcher.mojom.h"
-#include "content/public/common/renderer_preferences.h"
+#include "content/public/common/renderer_preferences.mojom.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/renderer/render_view.h"
 #include "content/renderer/render_frame_impl.h"
@@ -149,7 +149,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
     return webkit_preferences_;
   }
 
-  const RendererPreferences& renderer_preferences() const {
+  const mojom::RendererPreferences& renderer_preferences() const {
     return renderer_preferences_;
   }
 
@@ -211,7 +211,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
 
   void DidCommitProvisionalHistoryLoad();
 
-  // Registers a watcher to observe changes in the RendererPreferences.
+  // Registers a watcher to observe changes in the mojom::RendererPreferences.
   void RegisterRendererPreferenceWatcherForWorker(
       mojom::RendererPreferenceWatcherPtr watcher);
 
@@ -456,7 +456,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void OnExitFullscreen();
   void OnSetHistoryOffsetAndLength(int history_offset, int history_length);
   void OnSetInitialFocus(bool reverse);
-  void OnSetRendererPrefs(const RendererPreferences& renderer_prefs);
+  void OnSetRendererPrefs(const mojom::RendererPreferences& renderer_prefs);
   void OnSetWebUIProperty(const std::string& name, const std::string& value);
   void OnSuppressDialogsUntilSwapOut();
   void OnUpdateTargetURLAck();
@@ -537,7 +537,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // Settings ------------------------------------------------------------------
 
   WebPreferences webkit_preferences_;
-  RendererPreferences renderer_preferences_;
+  mojom::RendererPreferences renderer_preferences_;
   // These are observing changes in |renderer_preferences_|. This is used for
   // keeping WorkerFetchContext in sync.
   mojo::InterfacePtrSet<mojom::RendererPreferenceWatcher>

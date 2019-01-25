@@ -136,7 +136,7 @@ void GetFontInfo(gfx::PlatformFontWin::SystemFont system_font,
 }
 #endif  // OS_WIN
 
-void GetPlatformSpecificPrefs(RendererPreferences* prefs) {
+void GetPlatformSpecificPrefs(mojom::RendererPreferences* prefs) {
 #if defined(OS_WIN)
   // Note that what is called "height" in this struct is actually the font size;
   // font "height" typically includes ascender, descender, and padding and is
@@ -338,8 +338,8 @@ bool RenderViewHostImpl::CreateRenderView(
 
   mojom::CreateViewParamsPtr params = mojom::CreateViewParams::New();
   params->renderer_preferences =
-      delegate_->GetRendererPrefs(GetProcess()->GetBrowserContext());
-  GetPlatformSpecificPrefs(&params->renderer_preferences);
+      delegate_->GetRendererPrefs(GetProcess()->GetBrowserContext()).Clone();
+  GetPlatformSpecificPrefs(params->renderer_preferences.get());
   params->web_preferences = GetWebkitPreferences();
   params->view_id = GetRoutingID();
   params->main_frame_routing_id = main_frame_routing_id_;
@@ -406,7 +406,7 @@ bool RenderViewHostImpl::IsRenderViewLive() const {
 }
 
 void RenderViewHostImpl::SyncRendererPrefs() {
-  RendererPreferences renderer_preferences =
+  mojom::RendererPreferences renderer_preferences =
       delegate_->GetRendererPrefs(GetProcess()->GetBrowserContext());
   GetPlatformSpecificPrefs(&renderer_preferences);
   Send(new ViewMsg_SetRendererPrefs(GetRoutingID(), renderer_preferences));

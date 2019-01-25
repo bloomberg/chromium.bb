@@ -282,11 +282,12 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
   devtools_proxy = std::make_unique<EmbeddedWorkerInstance::DevToolsProxy>(
       process_id, routing_id);
 
-  // TODO(crbug.com/862854): Support changes to RendererPreferences while the
-  // worker is running.
+  // TODO(crbug.com/862854): Support changes to mojom::RendererPreferences while
+  // the worker is running.
   DCHECK(process_manager->browser_context() || process_manager->IsShutdown());
+  params->renderer_preferences = mojom::RendererPreferences::New();
   GetContentClient()->browser()->UpdateRendererPreferencesForWorker(
-      process_manager->browser_context(), &params->renderer_preferences);
+      process_manager->browser_context(), params->renderer_preferences.get());
 
   // Create a RendererPreferenceWatcher to observe updates in the preferences.
   mojom::RendererPreferenceWatcherPtr watcher_ptr;

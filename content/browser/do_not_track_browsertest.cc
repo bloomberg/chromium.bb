@@ -6,7 +6,7 @@
 #include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/renderer_preferences.h"
+#include "content/public/common/renderer_preferences.mojom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -25,8 +25,9 @@ namespace {
 
 class MockContentBrowserClient final : public ContentBrowserClient {
  public:
-  void UpdateRendererPreferencesForWorker(BrowserContext*,
-                                          RendererPreferences* prefs) override {
+  void UpdateRendererPreferencesForWorker(
+      BrowserContext*,
+      mojom::RendererPreferences* prefs) override {
     if (do_not_track_enabled_) {
       prefs->enable_do_not_track = true;
       prefs->enable_referrers = true;
@@ -66,7 +67,7 @@ class DoNotTrackTest : public ContentBrowserTest {
     if (!original_client_)
       return false;
     client_.EnableDoNotTrack();
-    RendererPreferences* prefs =
+    mojom::RendererPreferences* prefs =
         shell()->web_contents()->GetMutableRendererPrefs();
     EXPECT_FALSE(prefs->enable_do_not_track);
     prefs->enable_do_not_track = true;

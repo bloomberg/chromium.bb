@@ -3881,7 +3881,7 @@ bool WebContentsImpl::WillNotifyDisconnection() {
   return notify_disconnection_;
 }
 
-RendererPreferences* WebContentsImpl::GetMutableRendererPrefs() {
+mojom::RendererPreferences* WebContentsImpl::GetMutableRendererPrefs() {
   return &renderer_preferences_;
 }
 
@@ -5470,7 +5470,7 @@ RenderViewHostDelegateView* WebContentsImpl::GetDelegateView() {
   return render_view_host_delegate_view_;
 }
 
-RendererPreferences WebContentsImpl::GetRendererPrefs(
+mojom::RendererPreferences WebContentsImpl::GetRendererPrefs(
     BrowserContext* browser_context) const {
   return renderer_preferences_;
 }

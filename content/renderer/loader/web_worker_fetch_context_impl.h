@@ -11,7 +11,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/renderer_preference_watcher.mojom.h"
-#include "content/public/common/renderer_preferences.h"
+#include "content/public/common/renderer_preferences.mojom.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -69,7 +69,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // chrome-extension://).
   static scoped_refptr<WebWorkerFetchContextImpl> Create(
       ServiceWorkerNetworkProvider* network_provider,
-      RendererPreferences renderer_preferences,
+      mojom::RendererPreferences renderer_preferences,
       mojom::RendererPreferenceWatcherRequest watcher_request,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
@@ -137,7 +137,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   //
   // Regarding the rest of params, see the comments on Create().
   WebWorkerFetchContextImpl(
-      RendererPreferences renderer_preferences,
+      mojom::RendererPreferences renderer_preferences,
       mojom::RendererPreferenceWatcherRequest watcher_request,
       blink::mojom::ServiceWorkerWorkerClientRequest
           service_worker_client_request,
@@ -166,7 +166,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   void ResetServiceWorkerURLLoaderFactory();
 
   // Implements mojom::RendererPreferenceWatcher.
-  void NotifyUpdate(const RendererPreferences& new_prefs) override;
+  void NotifyUpdate(mojom::RendererPreferencesPtr new_prefs) override;
 
   mojo::Binding<blink::mojom::ServiceWorkerWorkerClient> binding_;
   blink::mojom::ServiceWorkerWorkerClientRegistryPtr
@@ -237,7 +237,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   GURL origin_url_;
   int appcache_host_id_ = blink::mojom::kAppCacheNoHostId;
 
-  RendererPreferences renderer_preferences_;
+  mojom::RendererPreferences renderer_preferences_;
 
   // |watcher_binding_| and |child_preference_watchers_| are for keeping track
   // of updates in the renderer preferences.

@@ -87,7 +87,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       const GURL& service_worker_scope,
       const GURL& script_url,
       bool is_starting_installed_worker,
-      RendererPreferences renderer_preferences,
+      mojom::RendererPreferencesPtr renderer_preferences,
       blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
@@ -378,7 +378,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // startup time.
   const bool is_starting_installed_worker_;
 
-  RendererPreferences renderer_preferences_;
+  mojom::RendererPreferencesPtr renderer_preferences_;
   // Passed on creation of ServiceWorkerFetchContext.
   mojom::RendererPreferenceWatcherRequest preference_watcher_request_;
 

@@ -8,13 +8,15 @@
 class Profile;
 
 namespace content {
-struct RendererPreferences;
+namespace mojom {
+class RendererPreferences;
+}
 }
 
 namespace renderer_preferences_util {
 
 // Copies system configuration preferences into |prefs|.
-void UpdateFromSystemSettings(content::RendererPreferences* prefs,
+void UpdateFromSystemSettings(content::mojom::RendererPreferences* prefs,
                               Profile* profile);
 
 }  // namespace renderer_preferences_util

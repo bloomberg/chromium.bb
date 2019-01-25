@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/unguessable_token.h"
 #include "content/public/common/renderer_preference_watcher.mojom.h"
-#include "content/public/common/renderer_preferences.h"
+#include "content/public/common/renderer_preferences.mojom.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -62,7 +62,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       blink::mojom::SharedWorkerInfoPtr info,
       bool pause_on_start,
       const base::UnguessableToken& devtools_worker_token,
-      const RendererPreferences& renderer_preferences,
+      const mojom::RendererPreferences& renderer_preferences,
       mojom::RendererPreferenceWatcherRequest preference_watcher_request,
       blink::mojom::WorkerContentSettingsProxyPtr content_settings,
       blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
@@ -115,7 +115,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   const std::string name_;
   bool running_ = false;
   GURL url_;
-  RendererPreferences renderer_preferences_;
+  mojom::RendererPreferences renderer_preferences_;
   // Set on ctor and passed to the fetch context created when
   // CreateWorkerFetchContext() is called.
   mojom::RendererPreferenceWatcherRequest preference_watcher_request_;

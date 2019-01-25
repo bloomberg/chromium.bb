@@ -30,6 +30,10 @@ class Size;
 
 namespace content {
 
+namespace mojom {
+class RendererPreferences;
+}
+
 class BrowserContext;
 class FrameTree;
 class RenderFrameHost;
@@ -39,7 +43,6 @@ class RenderViewHostDelegateView;
 class SessionStorageNamespace;
 class SiteInstance;
 class WebContents;
-struct RendererPreferences;
 
 //
 // RenderViewHostDelegate
@@ -104,7 +107,7 @@ class CONTENT_EXPORT RenderViewHostDelegate {
 
   // Return a dummy RendererPreferences object that will be used by the renderer
   // associated with the owning RenderViewHost.
-  virtual RendererPreferences GetRendererPrefs(
+  virtual mojom::RendererPreferences GetRendererPrefs(
       BrowserContext* browser_context) const = 0;
 
   // Notification from the renderer host that blocked UI event occurred.

@@ -150,6 +150,10 @@ class FileSystemBackend;
 
 namespace content {
 
+namespace mojom {
+class RendererPreferences;
+}
+
 enum class PermissionType;
 class AuthenticatorRequestClientDelegate;
 class BrowserChildProcessHost;
@@ -187,7 +191,6 @@ enum class OriginPolicyErrorReason;
 struct MainFunctionParams;
 struct OpenURLParams;
 struct Referrer;
-struct RendererPreferences;
 struct WebPreferences;
 
 CONTENT_EXPORT void OverrideOnBindInterface(
@@ -548,7 +551,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // from their closest ancestor frame.
   virtual void UpdateRendererPreferencesForWorker(
       BrowserContext* browser_context,
-      RendererPreferences* out_prefs);
+      mojom::RendererPreferences* out_prefs);
 
   // DEPRECATED, Please use the NavigationHandle to modify headers.
   // See https://crbug.com/919432.

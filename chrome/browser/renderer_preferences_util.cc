@@ -13,7 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/common/renderer_preferences.h"
+#include "content/public/common/renderer_preferences.mojom.h"
 #include "content/public/common/renderer_preferences_util.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
 #include "media/media_buildflags.h"
@@ -76,7 +76,7 @@ void ParsePortRange(const std::string& range,
 
 namespace renderer_preferences_util {
 
-void UpdateFromSystemSettings(content::RendererPreferences* prefs,
+void UpdateFromSystemSettings(content::mojom::RendererPreferences* prefs,
                               Profile* profile) {
   const PrefService* pref_service = profile->GetPrefs();
   prefs->accept_languages = pref_service->GetString(prefs::kAcceptLanguages);

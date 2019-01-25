@@ -24,7 +24,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/renderer_preferences.h"
+#include "content/public/common/renderer_preferences.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -151,7 +151,7 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
   void RenderViewTerminated(RenderViewHost* render_view_host,
                             base::TerminationStatus status,
                             int error_code) override;
-  RendererPreferences GetRendererPrefs(
+  mojom::RendererPreferences GetRendererPrefs(
       BrowserContext* browser_context) const override;
   void CreateNewWidget(int32_t render_process_id,
                        int32_t route_id,
@@ -304,7 +304,7 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
   std::unique_ptr<InterstitialPageRVHDelegateView> rvh_delegate_view_;
 
   // Settings passed to the renderer.
-  mutable RendererPreferences renderer_preferences_;
+  mutable mojom::RendererPreferences renderer_preferences_;
 
   bool create_view_;
 

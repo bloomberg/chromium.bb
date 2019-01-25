@@ -516,7 +516,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     const GURL& service_worker_scope,
     const GURL& script_url,
     bool is_starting_installed_worker,
-    RendererPreferences renderer_preferences,
+    mojom::RendererPreferencesPtr renderer_preferences,
     blink::mojom::ServiceWorkerRequest service_worker_request,
     blink::mojom::ControllerServiceWorkerRequest controller_request,
     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
@@ -1220,7 +1220,7 @@ ServiceWorkerContextClient::CreateServiceWorkerFetchContext(
   }
 
   return base::MakeRefCounted<ServiceWorkerFetchContextImpl>(
-      renderer_preferences_, script_url_, url_loader_factory_bundle->Clone(),
+      *renderer_preferences_, script_url_, url_loader_factory_bundle->Clone(),
       std::move(script_loader_factory_info),
       service_worker_provider_info_->provider_id,
       GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
