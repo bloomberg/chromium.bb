@@ -6,7 +6,6 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//chromeos/assistant/assistant.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service_executable.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
@@ -1889,7 +1888,7 @@ test("ash_unittests") {
   deps = [
     ":ash",
     ":ash_service_resources",
-    ":ash_unittests_catalog_source",
+    ":manifest",
     ":test_support",
     "//ash/app_list:test_support",
     "//ash/app_list/presenter",
@@ -1898,6 +1897,8 @@ test("ash_unittests") {
     "//ash/assistant/util",
     "//ash/components/fast_ink",
     "//ash/components/fast_ink:unit_tests",
+    "//ash/components/quick_launch:manifest",
+    "//ash/components/quick_launch/public/mojom:constants",
     "//ash/components/quick_launch/public/mojom:constants",
     "//ash/components/shortcut_viewer:unit_tests",
     "//ash/components/tap_visualizer:unit_tests",
@@ -1940,7 +1941,6 @@ test("ash_unittests") {
     "//extensions/common:common_constants",
     "//mojo/core/embedder",
     "//net:net",
-    "//services/catalog:lib",
     "//services/media_session/public/cpp/test:test_support",
     "//services/media_session/public/mojom",
     "//services/ws:test_support",
@@ -2337,21 +2337,4 @@ repack("ash_service_resources_200") {
 service_manifest("ash_unittests_manifest") {
   name = "ash_unittests"
   source = "ash_unittests_manifest.json"
-}
-
-catalog("ash_unittests_catalog") {
-  testonly = true
-
-  embedded_services = [ ":ash_unittests_manifest" ]
-
-  standalone_services = [
-    ":manifest",
-    "//ash/components/quick_launch:manifest",
-  ]
-}
-
-catalog_cpp_source("ash_unittests_catalog_source") {
-  testonly = true
-  catalog = ":ash_unittests_catalog"
-  generated_function_name = "ash::CreateUnittestsCatalog"
 }

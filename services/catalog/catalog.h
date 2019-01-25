@@ -42,11 +42,6 @@ class COMPONENT_EXPORT(CATALOG) Catalog : public service_manager::Service {
 
   void BindServiceRequest(service_manager::mojom::ServiceRequest request);
 
-  // Allows an embedder to override the default static manifest contents for
-  // Catalog instances which are constructed with an empty set of manifests.
-  static void SetDefaultCatalogManifest(
-      const std::vector<service_manager::Manifest>& default_manifests);
-
   Instance* GetInstanceForGroup(const base::Token& instance_group);
 
  private:

@@ -25,7 +25,6 @@ include_rules = [
   "+gpu/config",
   "+media",
   "+mojo/public",
-  "+services/catalog/public",
   "+services/content/public",
   "+services/media_session/public",
   "+services/preferences/public",
@@ -103,6 +102,7 @@ include_rules = [
 
 specific_include_rules = {
   "app_launch_unittest.cc": [
+    "+ash/components/quick_launch/manifest.h",
     "+ash/components/quick_launch/public",
   ],
   "ash_service\.*": [

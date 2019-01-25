@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/components/quick_launch/manifest.h"
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
+#include "ash/manifest.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/cpp/test/test_service.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
 #include "services/ws/public/mojom/constants.mojom.h"
@@ -18,6 +21,8 @@
 
 namespace ash {
 
+const char kTestServiceName[] = "ash_unittests";
+
 void RunCallback(bool* success, base::RepeatingClosure callback, bool result) {
   *success = result;
   std::move(callback).Run();
@@ -26,8 +31,16 @@ void RunCallback(bool* success, base::RepeatingClosure callback, bool result) {
 class AppLaunchTest : public testing::Test {
  public:
   AppLaunchTest()
-      : test_service_(
-            test_service_manager_.RegisterTestInstance("ash_unittests")) {}
+      : test_service_manager_(
+            {GetManifest(), quick_launch_app::GetManifest(),
+             service_manager::ManifestBuilder()
+                 .WithServiceName(kTestServiceName)
+                 .RequireCapability(mojom::kServiceName, "")
+                 .RequireCapability(quick_launch::mojom::kServiceName, "")
+                 .RequireCapability(ws::mojom::kServiceName, "test")
+                 .Build()}),
+        test_service_(
+            test_service_manager_.RegisterTestInstance(kTestServiceName)) {}
   ~AppLaunchTest() override = default;
 
  protected:

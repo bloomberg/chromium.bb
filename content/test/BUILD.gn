@@ -14,7 +14,6 @@ import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//net/features.gni")
 import("//ppapi/buildflags/buildflags.gni")
-import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 import("//third_party/blink/public/public_features.gni")
@@ -1003,7 +1002,6 @@ test("content_browsertests") {
     "//net:test_support",
     "//ppapi/buildflags",
     "//services/audio/public/cpp",
-    "//services/catalog:lib",
     "//services/content/public/cpp",
     "//services/content/public/mojom",
     "//services/device/public/cpp:device_features",
@@ -1308,10 +1306,8 @@ static_library("run_all_unittests") {
     "run_all_unittests.cc",
   ]
   deps = [
-    ":content_unittests_catalog_source",
     ":test_support",
     "//base/test:test_support",
-    "//services/catalog:lib",
   ]
 }
 
@@ -2219,21 +2215,6 @@ if (enable_nocompile_tests) {
       "//testing/gtest",
     ]
   }
-}
-
-service_manifest("content_unittests_manifest") {
-  name = "content_unittests"
-  source = "unittests_manifest.json"
-  packaged_services = [ "//services/file:manifest" ]
-}
-
-catalog("content_unittests_catalog") {
-  embedded_services = [ ":content_unittests_manifest" ]
-}
-
-catalog_cpp_source("content_unittests_catalog_source") {
-  catalog = ":content_unittests_catalog"
-  generated_function_name = "content::CreateContentUnittestsCatalog"
 }
 
 test("content_perftests") {

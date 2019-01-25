@@ -18,7 +18,6 @@ include_rules = [
   "+device/gamepad/public/cpp",
   # For loading V8's initial snapshot from external files.
   "+gin/v8_initializer.h",
-  "+services/catalog",
   "+services/device/public/cpp/generic_sensor",
   "+services/network/public/cpp",
   "+services/network/public/mojom",
