@@ -4,6 +4,9 @@
 
 package org.chromium.components.module_installer;
 
+import android.content.SharedPreferences;
+import android.util.Pair;
+
 import com.google.android.play.core.splitinstall.SplitInstallManager;
 import com.google.android.play.core.splitinstall.SplitInstallManagerFactory;
 import com.google.android.play.core.splitinstall.SplitInstallRequest;
@@ -17,7 +20,12 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.components.module_installer.ModuleInstallerBackend.OnFinishedListener;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Backend that uses the Play Core SDK to download a module from Play and install it subsequently.
@@ -25,6 +33,9 @@ import java.util.List;
 /* package */ class PlayCoreModuleInstallerBackend
         extends ModuleInstallerBackend implements SplitInstallStateUpdatedListener {
     private static final String TAG = "PlayCoreModInBackend";
+    private static final String KEY_MODULES_REQUESTED_PREVIOUSLY =
+            "key_modules_requested_previously";
+    private final Map<String, Pair<Long, Boolean>> mInstallStartTimeMap = new HashMap<>();
     private final SplitInstallManager mManager;
     private boolean mIsClosed;
 
@@ -47,6 +58,25 @@ import java.util.List;
     @Override
     public void install(String moduleName) {
         assert !mIsClosed;
+
+        // Record start time in order to later report the install duration via UMA. We want to make
+        // a difference between modules that have been requested first before and after the last
+        // Chrome start. Modules that have been requested before may install quicker as they may be
+        // installed form cache. To do this, we use shared prefs to track modules previously
+        // requested.
+        assert !mInstallStartTimeMap.containsKey(moduleName);
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+        Set<String> modulesRequestedPreviously =
+                prefs.getStringSet(KEY_MODULES_REQUESTED_PREVIOUSLY, new HashSet<String>());
+        mInstallStartTimeMap.put(moduleName,
+                Pair.create(System.currentTimeMillis(),
+                        modulesRequestedPreviously.contains(moduleName)));
+        Set<String> newModulesRequestedPreviously = new HashSet<>(modulesRequestedPreviously);
+        newModulesRequestedPreviously.add(moduleName);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putStringSet(KEY_MODULES_REQUESTED_PREVIOUSLY, newModulesRequestedPreviously);
+        editor.apply();
+
         SplitInstallRequest request =
                 SplitInstallRequest.newBuilder().addModule(moduleName).build();
         mManager.startInstall(request).addOnFailureListener(errorCode -> {
@@ -93,6 +123,17 @@ import java.util.List;
         for (String name : moduleNames) {
             RecordHistogram.recordEnumeratedHistogram(
                     "Android.FeatureModules.InstallStatus." + name, eventId, INSTALL_STATUS_COUNT);
+
+            assert mInstallStartTimeMap.containsKey(name);
+            if (success) {
+                Pair<Long, Boolean> moduleInfo = mInstallStartTimeMap.get(name);
+                long installDurationMs = System.currentTimeMillis() - moduleInfo.first;
+                String histogramSubname =
+                        moduleInfo.second ? "CachedInstallDuration" : "UncachedInstallDuration";
+                RecordHistogram.recordLongTimesHistogram(
+                        "Android.FeatureModules." + histogramSubname + "." + name,
+                        installDurationMs, TimeUnit.MILLISECONDS);
+            }
         }
         onFinished(success, moduleNames);
     }
