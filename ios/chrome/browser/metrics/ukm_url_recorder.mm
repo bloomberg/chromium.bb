@@ -11,7 +11,7 @@
 #import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_state/web_state_observer.h"
-#include "ios/web/public/web_state/web_state_user_data.h"
+#import "ios/web/public/web_state/web_state_user_data.h"
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/gurl.h"

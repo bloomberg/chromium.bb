@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "ios/web/public/web_state/web_state_user_data.h"
+#import "ios/web/public/web_state/web_state_user_data.h"
 
 namespace security_state {
 struct SecurityInfo;
