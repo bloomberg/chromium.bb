@@ -607,18 +607,25 @@ class RangeSelectionAdjuster {
     DCHECK(visible_base.IsValid());
     DCHECK(visible_extent.IsValid());
 
-    RenderedPosition base = RenderedPosition::Create(visible_base);
-    RenderedPosition extent = RenderedPosition::Create(visible_extent);
-
     const SelectionInFlatTree& unchanged_selection =
         SelectionInFlatTree::Builder()
             .SetBaseAndExtent(visible_base.DeepEquivalent(),
                               visible_extent.DeepEquivalent())
             .Build();
 
+    if (RuntimeEnabledFeatures::BidiCaretAffinityEnabled()) {
+      if (NGInlineFormattingContextOf(visible_base.DeepEquivalent()) ||
+          NGInlineFormattingContextOf(visible_extent.DeepEquivalent()))
+        return unchanged_selection;
+    }
+
+    RenderedPosition base = RenderedPosition::Create(visible_base);
+    RenderedPosition extent = RenderedPosition::Create(visible_extent);
+
     if (base.IsNull() || extent.IsNull() || base == extent ||
-        (!base.AtBidiBoundary() && !extent.AtBidiBoundary()))
+        (!base.AtBidiBoundary() && !extent.AtBidiBoundary())) {
       return unchanged_selection;
+    }
 
     if (base.AtBidiBoundary()) {
       if (ShouldAdjustBaseAtBidiBoundary(base, extent)) {
@@ -718,6 +725,7 @@ class RangeSelectionAdjuster {
     static BidiBoundaryType GetPotentialBidiBoundaryType(
         const NGCaretPosition& caret_position) {
       DCHECK(!caret_position.IsNull());
+      DCHECK(!RuntimeEnabledFeatures::BidiCaretAffinityEnabled());
       if (!IsAtFragmentStart(caret_position) &&
           !IsAtFragmentEnd(caret_position))
         return BidiBoundaryType::kNotBoundary;
@@ -851,7 +859,6 @@ const InlineBox& InlineBoxTraversal::FindRightBoundaryOfEntireBidiRun(
 
 InlineBoxPosition BidiAdjustment::AdjustForCaretPositionResolution(
     const InlineBoxPosition& caret_position) {
-  DCHECK(!RuntimeEnabledFeatures::BidiCaretAffinityEnabled());
   const AbstractInlineBoxAndSideAffinity unadjusted(caret_position);
   const AbstractInlineBoxAndSideAffinity adjusted =
       unadjusted.AtLeftSide()
@@ -877,7 +884,6 @@ NGCaretPosition BidiAdjustment::AdjustForCaretPositionResolution(
 
 InlineBoxPosition BidiAdjustment::AdjustForHitTest(
     const InlineBoxPosition& caret_position) {
-  DCHECK(!RuntimeEnabledFeatures::BidiCaretAffinityEnabled());
   const AbstractInlineBoxAndSideAffinity unadjusted(caret_position);
   const AbstractInlineBoxAndSideAffinity adjusted =
       unadjusted.AtLeftSide()
@@ -900,7 +906,6 @@ NGCaretPosition BidiAdjustment::AdjustForHitTest(
 SelectionInFlatTree BidiAdjustment::AdjustForRangeSelection(
     const VisiblePositionInFlatTree& base,
     const VisiblePositionInFlatTree& extent) {
-  DCHECK(!RuntimeEnabledFeatures::BidiCaretAffinityEnabled());
   return RangeSelectionAdjuster::AdjustFor(base, extent);
 }
 
