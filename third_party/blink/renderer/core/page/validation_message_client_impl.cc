@@ -82,7 +82,8 @@ void ValidationMessageClientImpl::ShowValidationMessage(
 
   auto* target_frame = page_->MainFrame() && page_->MainFrame()->IsLocalFrame()
                            ? ToLocalFrame(page_->MainFrame())
-                           : anchor.GetDocument().GetFrame();
+                           : &anchor.GetDocument().GetFrame()->LocalFrameRoot();
+  allow_initial_empty_anchor_ = !target_frame->IsMainFrame();
   auto delegate = ValidationMessageOverlayDelegate::Create(
       *page_, anchor, message_, message_dir, sub_message, sub_message_dir);
   overlay_delegate_ = delegate.get();
@@ -168,8 +169,15 @@ void ValidationMessageClientImpl::CheckAnchorStatus(TimerBase*) {
   IntRect new_anchor_rect_in_viewport =
       current_anchor_->VisibleBoundsInVisualViewport();
   if (new_anchor_rect_in_viewport.IsEmpty()) {
-    HideValidationMessage(*current_anchor_);
-    return;
+    // In a remote frame, VisibleBoundsInVisualViewport() returns an empty
+    // rectangle for a while after initial load or scrolling.  So we don't
+    // hide the validation bubble until we see a non-empty rectable.
+    if (!allow_initial_empty_anchor_) {
+      HideValidationMessage(*current_anchor_);
+      return;
+    }
+  } else {
+    allow_initial_empty_anchor_ = false;
   }
 }
 
