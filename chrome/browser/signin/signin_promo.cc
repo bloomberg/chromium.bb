@@ -12,7 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/signin_promo_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -21,7 +20,6 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
@@ -202,16 +200,6 @@ GURL GetEmbeddedPromoURL(signin_metrics::AccessPoint access_point,
                                     "1");
   }
   return url;
-}
-
-GURL GetEmbeddedReauthURL(signin_metrics::AccessPoint access_point,
-                          signin_metrics::Reason reason,
-                          Profile* profile,
-                          const std::string& account_id) {
-  AccountInfo info =
-      AccountTrackerServiceFactory::GetForProfile(profile)->GetAccountInfo(
-          account_id);
-  return GetEmbeddedReauthURLInternal(access_point, reason, info.email);
 }
 
 GURL GetEmbeddedReauthURLWithEmail(signin_metrics::AccessPoint access_point,
