@@ -2924,10 +2924,10 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Try:
       </message>
       <message name="IDS_EXPLORE_SITES_LOADING_ERROR_NEXT_STEPS_RELOAD" desc="Text on an error screen indicating that reloading the page can fix this error.">
-        Reload this page
+        Reloading the page
       </message>
       <message name="IDS_EXPLORE_SITES_LOADING_ERROR_NEXT_STEPS_CHECK_CONNECTION" desc="Text on an error screen indicating that checking network connection can fix this error.">
-        Check your internet connection
+        Checking your internet connection
       </message>
 
       <!-- Contextual suggestions strings -->
