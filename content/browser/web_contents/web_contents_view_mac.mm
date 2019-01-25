@@ -30,7 +30,6 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/cocoa/ns_view_ids.h"
-#include "ui/base/cocoa/remote_accessibility_api.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
@@ -533,8 +532,12 @@ void WebContentsViewMac::PerformDragOperation(
 
 void WebContentsViewMac::ViewsHostableAttach(ViewsHostableView::Host* host) {
   views_host_ = host;
-  std::vector<uint8_t> token = ui::RemoteAccessibility::GetTokenForLocalElement(
-      views_host_->GetAccessibilityElement());
+  // TODO(https://crbug.com/924955): Using the remote accessibility to set
+  // the parent accessibility element here causes crashes, so just set it
+  // directly on the in-process WebContentsViewCocoa only.
+  std::vector<uint8_t> token;
+  [cocoa_view()
+      setAccessibilityParentElement:views_host_->GetAccessibilityElement()];
 
   // Create an NSView in the target process, if one exists.
   uint64_t factory_host_id = views_host_->GetViewsFactoryHostId();
@@ -578,6 +581,7 @@ void WebContentsViewMac::ViewsHostableDetach() {
     // Permit the in-process NSView to call back into |this| again.
     [cocoa_view() setClient:this];
   }
+  [cocoa_view() setAccessibilityParentElement:nil];
   ns_view_bridge_local_->SetVisible(false);
   ns_view_bridge_local_->ResetParentNSView();
   views_host_ = nullptr;

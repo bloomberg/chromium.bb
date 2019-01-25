@@ -14,7 +14,6 @@
 #include "content/common/content_export.h"
 #include "content/public/common/web_contents_ns_view_bridge.mojom.h"
 #include "ui/base/cocoa/ns_view_ids.h"
-#include "ui/base/cocoa/remote_accessibility_api.h"
 
 @class WebContentsViewCocoa;
 
@@ -51,8 +50,6 @@ class CONTENT_EXPORT WebContentsNSViewBridge
 
  private:
   base::scoped_nsobject<WebContentsViewCocoa> cocoa_view_;
-  base::scoped_nsobject<NSAccessibilityRemoteUIElement>
-      parent_accessibility_element_;
   mojom::WebContentsNSViewClientAssociatedPtr client_;
 
   std::unique_ptr<ui::ScopedNSViewIdMapping> view_id_;
