@@ -19,7 +19,7 @@ let fakeDeviceInitParams = { supportsImmersive:true };
 
 let requestSessionOptions = [
   { outputContext: getOutputContext() },
-  { immersive: true },
+  { mode: 'immersive-vr' },
 ];
 
 let testFunction = function(session, t, fakeDeviceController) {

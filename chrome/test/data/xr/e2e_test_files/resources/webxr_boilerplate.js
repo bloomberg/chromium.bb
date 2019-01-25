@@ -4,7 +4,6 @@
 
 // Add additional setup steps to the object from webvr_e2e.js if it exists.
 if (typeof initializationSteps !== 'undefined') {
-  initializationSteps['getXRDevice'] = false;
   initializationSteps['magicWindowStarted'] = false;
 } else {
   // Create here if it doesn't exist so we can access it later without checking
@@ -18,7 +17,6 @@ var glAttribs = {
   xrCompatible: true,
 };
 var gl = null;
-var xrDevice = null;
 var onMagicWindowXRFrameCallback = null;
 var onImmersiveXRFrameCallback = null;
 var onPoseCallback = null;
@@ -67,11 +65,10 @@ sessionInfos[sessionTypes.AR] = new SessionInfo();
 sessionInfos[sessionTypes.MAGIC_WINDOW] = new SessionInfo();
 
 function getSessionType(session) {
-  if (session.immersive) {
+  if (session.mode == 'immersive-vr') {
     return sessionTypes.IMMERSIVE;
-  } else if (sessionInfos[sessionTypes.AR].currentSession == session) {
-    // TODO(bsheedy): Replace this check if there's ever something like
-    // session.ar for checking if the session is AR-capable.
+  } else if (session.mode == 'immersive-ar' ||
+             session.mode == 'legacy-inline-ar') {
     return sessionTypes.AR;
   } else {
     return sessionTypes.MAGIC_WINDOW;
@@ -82,7 +79,7 @@ function onRequestSession() {
   switch (sessionTypeToRequest) {
     case sessionTypes.IMMERSIVE:
       console.info('Requesting immersive session');
-      xrDevice.requestSession({immersive: true}).then( (session) => {
+      navigator.xr.requestSession({mode: 'immersive-vr'}).then( (session) => {
         console.info('Immersive session request succeeded');
         sessionInfos[sessionTypes.IMMERSIVE].currentSession = session;
         onSessionStarted(session);
@@ -92,11 +89,7 @@ function onRequestSession() {
       break;
     case sessionTypes.AR:
       console.info('Requesting AR session');
-      let sessionOptions = {
-        environmentIntegration: true,
-        outputContext: webglCanvas.getContext('xrpresent'),
-      };
-      xrDevice.requestSession(sessionOptions).then((session) => {
+      navigator.xr.requestSession({mode: 'immersive-ar'}).then((session) => {
         console.info('AR session request succeeded');
         sessionInfos[sessionTypes.AR].currentSession = session;
         onSessionStarted(session);
@@ -180,37 +173,30 @@ function onXRFrame(t, frame) {
   hasPresentedFrame = true;
 }
 
-// Try to get an XRDevice and set up a non-immersive session with it
 if (navigator.xr) {
-  navigator.xr.requestDevice().then( (device) => {
-    xrDevice = device;
-    if (!device)
-      return;
 
-    // Set up the device to have a non-immersive session (magic window) drawing
-    // into the full screen canvas on the page
-    let ctx = webglCanvas.getContext('xrpresent');
-    // WebXR for VR tests want a non-immersive session to be automatically
-    // created on page load to reduce the amount of boilerplate code necessary.
-    // However, doing so during AR tests currently fails due to AR sessions
-    // always requiring a user gesture. So, allow a page to set a variable
-    // before loading this JavaScript file if they wish to skip the automatic
-    // non-immersive session creation.
-    if (typeof shouldAutoCreateNonImmersiveSession === 'undefined'
-        || shouldAutoCreateNonImmersiveSession === true) {
-      device.requestSession({outputContext: ctx}).then( (session) => {
-        onSessionStarted(session);
-      }).then( () => {
-        initializationSteps['magicWindowStarted'] = true;
-      });
-    } else {
-      initializationSteps['magicWindowStarted'] = true;
-    }
-  }).then( () => {
-    initializationSteps['getXRDevice'] = true;
-  });
+  // Set up an inline session (magic window) drawing into the full screen canvas
+  // on the page
+  let ctx = webglCanvas.getContext('xrpresent');
+  // WebXR for VR tests want an inline session to be automatically
+  // created on page load to reduce the amount of boilerplate code necessary.
+  // However, doing so during AR tests currently fails due to AR sessions
+  // always requiring a user gesture. So, allow a page to set a variable
+  // before loading this JavaScript file if they wish to skip the automatic
+  // inline session creation.
+  if (typeof shouldAutoCreateNonImmersiveSession === 'undefined'
+      || shouldAutoCreateNonImmersiveSession === true) {
+    navigator.xr.requestSession({outputContext: ctx})
+        .then((session) => {
+          onSessionStarted(session);
+        }).then( () => {
+          initializationSteps['magicWindowStarted'] = true;
+        });
+  } else {
+    initializationSteps['magicWindowStarted'] = true;
+  }
+
 } else {
-  initializationSteps['getXRDevice'] = true;
   initializationSteps['magicWindowStarted'] = true;
 }
 

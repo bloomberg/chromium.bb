@@ -9,5 +9,6 @@
     OriginTrialEnabled=WebXR
 ] interface XR : EventTarget {
   attribute EventHandler ondevicechange;
-  [CallWith=ScriptState, MeasureAs=XRRequestDevice] Promise<XRDevice?> requestDevice();
+  [CallWith=ScriptState, MeasureAs=XRSupportsSession] Promise<void> supportsSessionMode(XRSessionMode mode);
+  [CallWith=ScriptState, MeasureAs=XRRequestSession] Promise<XRSession> requestSession([PermissiveDictionaryConversion] optional XRSessionCreationOptions options);
 };

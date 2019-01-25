@@ -15,7 +15,7 @@ let testName =
 
 let fakeDeviceInitParams = { supportsImmersive: true };
 
-let requestSessionOptions =  [{ immersive: true }];
+let requestSessionOptions =  [{ mode: 'immersive-vr' }];
 
 // Very simple program setup with no error checking.
 function setupProgram(gl, vertexSrc, fragmentSrc) {

@@ -14,7 +14,7 @@ let testName = "XRSession requestAnimationFrame must fail if the session has "
 let fakeDeviceInitParams = { supportsImmersive:true };
 
 let requestSessionOptions = [
-  { immersive: true },
+  { mode: 'immersive-vr' },
   { outputContext: getOutputContext() }
 ];
 

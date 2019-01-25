@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 207 tests; 181 PASS, 26 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 207 tests; 188 PASS, 19 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Navigator: original interface defined
 PASS Partial dictionary WebGLContextAttributes: original dictionary defined
@@ -10,15 +10,15 @@ PASS XR interface object name
 PASS XR interface: existence and properties of interface prototype object
 PASS XR interface: existence and properties of interface prototype object's "constructor" property
 PASS XR interface: existence and properties of interface prototype object's @@unscopables property
-FAIL XR interface: operation supportsSessionMode(XRSessionMode) assert_own_property: interface prototype object missing non-static operation expected property "supportsSessionMode" missing
-FAIL XR interface: operation requestSession(XRSessionCreationOptions) assert_own_property: interface prototype object missing non-static operation expected property "requestSession" missing
+PASS XR interface: operation supportsSessionMode(XRSessionMode)
+PASS XR interface: operation requestSession(XRSessionCreationOptions)
 PASS XR interface: attribute ondevicechange
 PASS XR must be primary interface of navigator.xr
 PASS Stringification of navigator.xr
-FAIL XR interface: navigator.xr must inherit property "supportsSessionMode(XRSessionMode)" with the proper type assert_inherits: property "supportsSessionMode" not found in prototype chain
-FAIL XR interface: calling supportsSessionMode(XRSessionMode) on navigator.xr with too few arguments must throw TypeError assert_inherits: property "supportsSessionMode" not found in prototype chain
-FAIL XR interface: navigator.xr must inherit property "requestSession(XRSessionCreationOptions)" with the proper type assert_inherits: property "requestSession" not found in prototype chain
-FAIL XR interface: calling requestSession(XRSessionCreationOptions) on navigator.xr with too few arguments must throw TypeError assert_inherits: property "requestSession" not found in prototype chain
+PASS XR interface: navigator.xr must inherit property "supportsSessionMode(XRSessionMode)" with the proper type
+PASS XR interface: calling supportsSessionMode(XRSessionMode) on navigator.xr with too few arguments must throw TypeError
+PASS XR interface: navigator.xr must inherit property "requestSession(XRSessionCreationOptions)" with the proper type
+PASS XR interface: calling requestSession(XRSessionCreationOptions) on navigator.xr with too few arguments must throw TypeError
 PASS XR interface: navigator.xr must inherit property "ondevicechange" with the proper type
 PASS XRSession interface: existence and properties of interface object
 PASS XRSession interface object length
@@ -26,7 +26,7 @@ PASS XRSession interface object name
 PASS XRSession interface: existence and properties of interface prototype object
 PASS XRSession interface: existence and properties of interface prototype object's "constructor" property
 PASS XRSession interface: existence and properties of interface prototype object's @@unscopables property
-FAIL XRSession interface: attribute mode assert_true: The prototype object must have a property "mode" expected true got false
+PASS XRSession interface: attribute mode
 PASS XRSession interface: attribute outputContext
 PASS XRSession interface: attribute environmentBlendMode
 PASS XRSession interface: attribute depthNear

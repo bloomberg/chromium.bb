@@ -14,10 +14,9 @@
 promise_test( (t) => {
   webglCanvasSetup();
   return XRTest.simulateDeviceConnection({ supportsImmersive:true })
-    .then( (controller) => { return navigator.xr.requestDevice() })
-    .then( (device) => new Promise((resolve) => {
+    .then( (controller) => new Promise((resolve) => {
       runWithUserGesture( () => {
-        resolve(device.requestSession({ immersive: true })
+        resolve(navigator.xr.requestSession({ mode: 'immersive-vr' })
           .then( (session) => new Promise((resolve) => {
             try {
               let webglLayer = new XRWebGLLayer(session, gl);

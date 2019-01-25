@@ -43,6 +43,17 @@ class XRSession final : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(XRSession);
 
  public:
+  enum SessionMode {
+    kModeUnknown = 0,
+    kModeInline = 1,
+    kModeImmersiveVR = 2,
+    kModeImmersiveAR = 3,
+    kModeInlineAR = 4
+  };
+
+  static SessionMode stringToSessionMode(const String&);
+  static String sessionModeToString(SessionMode);
+
   enum EnvironmentBlendMode {
     kBlendModeOpaque = 1,
     kBlendModeAdditive = 2,
@@ -51,17 +62,18 @@ class XRSession final : public EventTargetWithInlineData,
 
   XRSession(XR*,
             device::mojom::blink::XRSessionClientRequest client_request,
-            bool immersive,
-            bool environment_integration,
+            SessionMode mode,
             XRPresentationContext* output_context,
             EnvironmentBlendMode environment_blend_mode);
   ~XRSession() override = default;
 
   XR* xr() const { return xr_; }
-  bool immersive() const { return immersive_; }
+  const String& mode() const { return mode_string_; }
   bool environmentIntegration() const { return environment_integration_; }
   XRPresentationContext* outputContext() const { return output_context_; }
   const String& environmentBlendMode() const { return blend_mode_string_; }
+
+  bool immersive() const;
 
   // Near and far depths are used when computing projection matrices for this
   // Session's views. Changes will propegate to the appropriate matrices on the
@@ -186,7 +198,8 @@ class XRSession final : public EventTargetWithInlineData,
           results);
 
   const Member<XR> xr_;
-  const bool immersive_;
+  const SessionMode mode_;
+  const String mode_string_;
   const bool environment_integration_;
   const Member<XRPresentationContext> output_context_;
   String blend_mode_string_;

@@ -16,7 +16,7 @@ let testName = "XRInputSources can be properly added and removed from the "
 
 let fakeDeviceInitParams = { supportsImmersive:true };
 
-let requestSessionOptions = [{ immersive: true }];
+let requestSessionOptions = [{ mode: 'immersive-vr' }];
 
 let testFunction = (session, t, fakeDeviceController) => new Promise((resolve) => {
     // Session must have a baseLayer or frame requests will be ignored.
