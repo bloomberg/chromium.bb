@@ -12,13 +12,13 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace chromeos {
 
 // Given GCMS and primary account id, this class verifies GAIA credentials
 // (APISID) and rebuild current session's cookie jar for the primary account.
-class OAuth2LoginVerifier : public GaiaCookieManagerService::Observer {
+class OAuth2LoginVerifier : public identity::IdentityManager::Observer {
  public:
   class Delegate {
    public:
@@ -40,6 +40,7 @@ class OAuth2LoginVerifier : public GaiaCookieManagerService::Observer {
 
   OAuth2LoginVerifier(OAuth2LoginVerifier::Delegate* delegate,
                       GaiaCookieManagerService* cookie_manager_service,
+                      identity::IdentityManager* identity_manager,
                       const std::string& primary_account_id,
                       const std::string& oauthlogin_access_token);
   ~OAuth2LoginVerifier() override;
@@ -52,17 +53,17 @@ class OAuth2LoginVerifier : public GaiaCookieManagerService::Observer {
   void VerifyProfileTokens();
 
  private:
-  // GaiaCookieManagerService::Observer
+  // IdentityManager::Observer
   void OnAddAccountToCookieCompleted(
       const std::string& account_id,
       const GoogleServiceAuthError& error) override;
-  void OnGaiaAccountsInCookieUpdated(
-      const std::vector<gaia::ListedAccount>& accounts,
-      const std::vector<gaia::ListedAccount>& signed_out_accounts,
+  void OnAccountsInCookieUpdated(
+      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
 
   OAuth2LoginVerifier::Delegate* delegate_;
   GaiaCookieManagerService* cookie_manager_service_;
+  identity::IdentityManager* identity_manager_;
   const std::string primary_account_id_;
   const std::string access_token_;
 

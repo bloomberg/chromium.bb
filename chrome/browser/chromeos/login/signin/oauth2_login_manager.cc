@@ -172,6 +172,7 @@ void OAuth2LoginManager::VerifySessionCookies() {
   DCHECK(!login_verifier_.get());
   login_verifier_.reset(new OAuth2LoginVerifier(
       this, GaiaCookieManagerServiceFactory::GetForProfile(user_profile_),
+      IdentityManagerFactory::GetForProfile(user_profile_),
       GetPrimaryAccountId(), oauthlogin_access_token_));
 
   if (restore_strategy_ == RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN) {
