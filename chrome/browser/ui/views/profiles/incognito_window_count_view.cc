@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/profiles/incognito_window_count_view.h"
 
+#include "base/bind_helpers.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser.h"

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_app_setup_controller.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"

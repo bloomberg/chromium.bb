@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 
 #include <memory>
+#include "base/bind_helpers.h"
 #include "cc/paint/paint_canvas.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"

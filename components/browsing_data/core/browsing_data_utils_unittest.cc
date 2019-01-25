@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind_helpers.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"

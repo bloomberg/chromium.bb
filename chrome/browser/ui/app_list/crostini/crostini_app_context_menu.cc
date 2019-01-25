@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/crostini/crostini_app_context_menu.h"
 
 #include "ash/public/cpp/app_menu_constants.h"
+#include "base/bind_helpers.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"

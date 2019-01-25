@@ -5,6 +5,7 @@
 #include "net/base/network_change_notifier_linux.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"

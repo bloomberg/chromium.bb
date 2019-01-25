@@ -8,6 +8,7 @@
 
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/ui/ash/ash_util.h"

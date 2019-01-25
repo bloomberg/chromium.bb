@@ -5,6 +5,7 @@
 #include "services/network/public/cpp/network_connection_tracker.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"

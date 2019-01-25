@@ -13,6 +13,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/insets.h"

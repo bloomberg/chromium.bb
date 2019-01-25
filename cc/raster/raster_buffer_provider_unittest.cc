@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/cancelable_callback.h"
 #include "base/location.h"
 #include "base/macros.h"

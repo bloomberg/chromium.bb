@@ -11,6 +11,7 @@
 #include "services/network/mdns_responder.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_piece.h"

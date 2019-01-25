@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/bind_helpers.h"
 #include "cc/layers/video_frame_provider_client_impl.h"
 #include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/layer_test_common.h"

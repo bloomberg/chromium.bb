@@ -5,6 +5,7 @@
 #include "content/browser/background_fetch/background_fetch_scheduler.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/stl_util.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"

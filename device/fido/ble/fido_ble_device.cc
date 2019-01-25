@@ -7,6 +7,7 @@
 #include <bitset>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/strings/string_piece.h"
 #include "components/apdu/apdu_response.h"
 #include "device/bluetooth/bluetooth_uuid.h"

@@ -5,6 +5,7 @@
 #include "chrome/browser/installable/installable_manager.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"

@@ -10,6 +10,7 @@
 #include <sys/sysctl.h>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/post_task.h"

@@ -5,6 +5,7 @@
 #include "services/content/public/cpp/test/fake_navigable_contents.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/unguessable_token.h"
 #include "services/content/public/cpp/navigable_contents_view.h"
 #include "services/content/public/cpp/test/fake_navigable_contents_factory.h"

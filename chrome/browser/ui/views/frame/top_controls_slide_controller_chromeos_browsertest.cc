@@ -13,6 +13,7 @@
 #include "ash/public/interfaces/cros_display_config.mojom-test-utils.h"
 #include "ash/public/interfaces/cros_display_config.mojom.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/strings/safe_sprintf.h"

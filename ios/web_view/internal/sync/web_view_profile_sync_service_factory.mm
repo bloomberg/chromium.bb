@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/no_destructor.h"
 #include "base/time/time.h"
 #include "components/browser_sync/profile_sync_service.h"

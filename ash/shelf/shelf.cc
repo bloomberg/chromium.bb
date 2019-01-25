@@ -19,6 +19,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"

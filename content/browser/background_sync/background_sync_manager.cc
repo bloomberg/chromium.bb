@@ -8,6 +8,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"

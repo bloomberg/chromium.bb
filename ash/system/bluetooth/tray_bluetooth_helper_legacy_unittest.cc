@@ -9,6 +9,7 @@
 
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
 #include "ash/test/ash_test_base.h"
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "dbus/object_path.h"

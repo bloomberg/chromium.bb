@@ -8,6 +8,7 @@
 #include "ash/ime/mode_indicator_observer.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "base/bind_helpers.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/display/manager/display_manager.h"

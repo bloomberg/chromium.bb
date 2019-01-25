@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/drive/write_on_cache_file.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/task/post_task.h"
 #include "components/drive/chromeos/file_system_interface.h"

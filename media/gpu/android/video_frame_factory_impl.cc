@@ -5,6 +5,7 @@
 #include "media/gpu/android/video_frame_factory_impl.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"

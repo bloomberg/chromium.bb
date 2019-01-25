@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/numerics/ranges.h"
 #include "base/posix/safe_strerror.h"
 #include "base/trace_event/trace_event.h"

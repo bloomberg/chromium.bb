@@ -25,6 +25,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shelf/shelf_application_menu_model.h"
 #include "ash/shelf/shelf_controller.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"

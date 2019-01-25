@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"

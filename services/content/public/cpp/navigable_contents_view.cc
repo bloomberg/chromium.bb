@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/no_destructor.h"
 #include "base/synchronization/atomic_flag.h"

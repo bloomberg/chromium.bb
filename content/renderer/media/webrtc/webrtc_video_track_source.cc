@@ -5,6 +5,7 @@
 #include "content/renderer/media/webrtc/webrtc_video_track_source.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/trace_event/trace_event.h"
 #include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
 #include "third_party/libyuv/include/libyuv/scale.h"

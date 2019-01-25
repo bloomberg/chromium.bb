@@ -6,6 +6,7 @@
 #include <utility>
 
 // This must be before Windows headers
+#include "base/bind_helpers.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/public/interfaces/assistant_controller.mojom.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_utils.h"

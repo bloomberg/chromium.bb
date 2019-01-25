@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"

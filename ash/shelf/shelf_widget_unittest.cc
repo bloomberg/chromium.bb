@@ -19,6 +19,7 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test_shell_delegate.h"
 #include "ash/wm/window_util.h"
+#include "base/bind_helpers.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/aura/window_event_dispatcher.h"

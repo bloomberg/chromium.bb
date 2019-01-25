@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/site_settings_helper.h"
 
+#include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"

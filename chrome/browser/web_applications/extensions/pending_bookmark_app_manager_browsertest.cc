@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/optional.h"
 #include "base/run_loop.h"

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/public/interfaces/constants.mojom.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"

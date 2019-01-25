@@ -9,6 +9,7 @@
 #include "ash/login/ui/login_test_utils.h"
 #include "ash/login/ui/public_account_warning_dialog.h"
 #include "ash/login/ui/views_utils.h"
+#include "base/bind_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/layout/box_layout.h"

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/public/browser/browser_task_traits.h"

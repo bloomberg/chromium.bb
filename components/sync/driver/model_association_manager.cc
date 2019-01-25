@@ -13,6 +13,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"

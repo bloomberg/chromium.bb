@@ -9,6 +9,7 @@
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_ui.h"

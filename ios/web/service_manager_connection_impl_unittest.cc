@@ -4,6 +4,7 @@
 
 #include "ios/web/service_manager_connection_impl.h"
 
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
