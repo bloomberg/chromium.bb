@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PROFILES_RENDERER_UPDATER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
@@ -15,6 +16,10 @@
 #include "components/prefs/pref_member.h"
 #include "components/variations/variations_http_header_provider.h"
 #include "services/identity/public/cpp/identity_manager.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
+#endif
 
 class Profile;
 
@@ -26,6 +31,9 @@ class RenderProcessHost;
 class RendererUpdater
     : public KeyedService,
       public identity::IdentityManager::Observer,
+#if defined(OS_CHROMEOS)
+      public chromeos::OAuth2LoginManager::Observer,
+#endif
       public variations::VariationsHttpHeaderProvider::Observer {
  public:
   explicit RendererUpdater(Profile* profile);
@@ -43,6 +51,13 @@ class RendererUpdater
 
   chrome::mojom::RendererConfigurationAssociatedPtr GetRendererConfiguration(
       content::RenderProcessHost* render_process_host);
+
+#if defined(OS_CHROMEOS)
+  // chromeos::OAuth2LoginManager::Observer:
+  void OnSessionRestoreStateChanged(
+      Profile* user_profile,
+      chromeos::OAuth2LoginManager::SessionRestoreState state) override;
+#endif
 
   // IdentityManager::Observer:
   void OnPrimaryAccountSet(const AccountInfo& account_info) override;
@@ -62,6 +77,11 @@ class RendererUpdater
 
   Profile* profile_;
   PrefChangeRegistrar pref_change_registrar_;
+#if defined(OS_CHROMEOS)
+  chromeos::OAuth2LoginManager* oauth2_login_manager_;
+  bool merge_session_running_;
+  std::vector<chrome::mojom::ChromeOSListenerPtr> chromeos_listeners_;
+#endif
   variations::VariationsHttpHeaderProvider* variations_http_header_provider_;
 
   // Prefs that we sync to the renderers.

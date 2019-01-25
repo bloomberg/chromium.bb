@@ -5,9 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SIGNIN_MERGE_SESSION_THROTTLING_UTILS_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SIGNIN_MERGE_SESSION_THROTTLING_UTILS_H_
 
-#include "base/atomic_ref_count.h"
-#include "net/base/completion_callback.h"
-
 class GURL;
 class Profile;
 
@@ -16,14 +13,10 @@ class WebContents;
 }
 
 // A set of helper functions used by the MergeSessionNavigationThrottle and the
-// MergeSessionResourceThrottle to determine if an interstitial page should be
+// RendererUpdater to determine if an interstitial page should be
 // shown for a request when the merge session process (cookie reconstruction
 // from OAuth2 refresh token in ChromeOS login) is still in progress.
 namespace merge_session_throttling_utils {
-
-// Passed a boolean indicating whether or not it is OK to proceed with the
-// page load.
-using CompletionCallback = base::Closure;
 
 // Policy for when it is valid to attach a MergeSessionNavigationThrottle.
 // Namely, this will be false for unit tests, where the UserManager is not
