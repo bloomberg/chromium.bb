@@ -2195,13 +2195,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // If there are any existing SadTabHelpers in |self.tabModel|, update the
   // helpers delegate with the new |_sadTabCoordinator|.
+  DCHECK(_sadTabCoordinator);
   for (NSUInteger i = 0; i < self.tabModel.count; i++) {
     SadTabTabHelper* sadTabHelper =
         SadTabTabHelper::FromWebState([self.tabModel tabAtIndex:i].webState);
-    DCHECK(sadTabHelper);
-    if (sadTabHelper) {
-      sadTabHelper->SetDelegate(_sadTabCoordinator);
-    }
+    sadTabHelper->SetDelegate(_sadTabCoordinator);
   }
 
   _paymentRequestManager = [[PaymentRequestManager alloc]
@@ -2697,10 +2695,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   tab.webController.nativeProvider = self;
   tab.webController.swipeRecognizerProvider = self.sideSwipeController;
   tab.webState->SetDelegate(_webStateDelegate.get());
-  // BrowserViewController owns the coordinator that displays the Sad Tab.
-  if (!SadTabTabHelper::FromWebState(tab.webState)) {
-    SadTabTabHelper::CreateForWebState(tab.webState, _sadTabCoordinator);
-  }
+  SadTabTabHelper::FromWebState(tab.webState)->SetDelegate(_sadTabCoordinator);
   NetExportTabHelper::CreateForWebState(tab.webState, self);
   CaptivePortalDetectorTabHelper::CreateForWebState(tab.webState, self);
 
