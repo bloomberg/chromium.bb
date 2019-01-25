@@ -40,6 +40,10 @@
       #avatar-grid .avatar.iron-selected {
         border: 2px solid var(--google-blue-500);
       }
+
+      :host-context([dark]) #avatar-grid .avatar.iron-selected {
+        border-color: var(--google-blue-refresh-300);
+      }
     </style>
     <cr-profile-avatar-selector-grid id="avatar-grid"
         ignore-modified-key-events="[[ignoreModifiedKeyEvents]]">
