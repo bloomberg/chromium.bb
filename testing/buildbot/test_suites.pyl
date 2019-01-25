@@ -3589,7 +3589,8 @@
         'test': 'browser_tests',
         'args': [
           '--enable-features=SingleProcessMash',
-          '--override-use-software-gl-for-tests'
+          '--override-use-software-gl-for-tests',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.chromeos.network_browser_tests.filter',
         ],
         'swarming': {
           'shards': 10,
@@ -3620,7 +3621,8 @@
       'single_process_mash_interactive_ui_tests': {
         'test': 'interactive_ui_tests',
         'args': [
-          '--enable-features=SingleProcessMash'
+          '--enable-features=SingleProcessMash',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.chromeos.network_interactive_ui_tests.filter',
         ],
         'swarming': {
           'shards': 3,
@@ -3862,6 +3864,53 @@
       },
     },
 
+    # This is a copy of non_android_chromium_gtests, but with test suites
+    # in network_service_chromeos_fyi_gtests removed. This should be removed
+    # once all tests are passing.
+    'network_service_chromeos_chromium_gtests': {
+      'accessibility_unittests': {},
+      'app_shell_unittests': {},
+      'blink_fuzzer_unittests': {},
+      'chrome_app_unittests': {},
+      'chromedriver_unittests': {},
+      'extensions_unittests': {},
+      'filesystem_service_unittests': {},  # https://crbug.com/862712
+      'leveldb_service_unittests': {},  # https://crbug.com/862709
+      'message_center_unittests': {},
+      'nacl_loader_unittests': {},
+      'native_theme_unittests': {},
+      'pdf_unittests': {},
+      'ppapi_unittests': {},
+      'printing_unittests': {},
+      'remoting_unittests': {},
+      'service_manager_unittests': {}, # https://crbug.com/843134
+      'snapshot_unittests': {},
+      'sync_integration_tests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.chromeos.network_sync_integration_tests.filter',
+        ],
+      },
+      'views_unittests': {},
+      'webui_polymer2_browser_tests': {
+        'args': [
+          '--disable-features=NetworkService',
+          '--enable-features=WebUIPolymer2',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter',
+        ],
+        'swarming': {
+          'shards': 4,
+        },
+        'test': 'browser_tests',
+      },
+      'webui_polymer2_interactive_ui_tests': {
+        'args': [
+          '--enable-features=WebUIPolymer2',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter',
+        ],
+        'test': 'interactive_ui_tests',
+      },
+    },
+
     'network_service_chromeos_fyi_gtests': {
       'network_service_browser_tests': {
         'args': [
@@ -4028,6 +4077,33 @@
 
     'non_linux_chromium_gtests': {
       'crashpad_tests': {},
+    },
+
+    'non_network_service_gtests': {
+      'non_network_service_browser_tests': {
+        'args': [
+          '--disable-features=NetworkService',
+        ],
+        'swarming': {
+          'shards': 10,
+        },
+        'test': 'browser_tests',
+      },
+      'non_network_service_extensions_browsertests': {
+        'args': [
+          '--disable-features=NetworkService',
+        ],
+        'test': 'extensions_browsertests',
+      },
+      'non_network_service_interactive_ui_tests': {
+        'args': [
+          '--disable-features=NetworkService'
+        ],
+        'swarming': {
+          'shards': 3,
+        },
+        'test': 'interactive_ui_tests',
+      },
     },
 
     'non_viz_fyi_chromium_gtests': {
@@ -4881,7 +4957,11 @@
       'chromium_gtests_for_win_and_linux_only',
       'linux_chromeos_specific_gtests',
       'linux_flavor_specific_chromium_gtests',
-      'non_android_chromium_gtests',
+      # TODO(rmcelrath): Replace these two with non_android_chromium_gtests
+      # once all ChromeOS NS tests are passing.
+      'network_service_chromeos_chromium_gtests',
+      # TODO(rmcelrath): Add network_service_chromeos_fyi_gtests
+      'non_network_service_gtests',
       'viz_chromeos_gtests',
       'viz_gtests',
     ],
