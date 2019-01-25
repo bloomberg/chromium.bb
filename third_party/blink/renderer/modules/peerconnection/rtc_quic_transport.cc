@@ -23,8 +23,6 @@ namespace blink {
 namespace {
 // QUIC requires 128 bits of entropy for the pre shared key.
 const size_t kPreSharedKeyLength = 128 / 8;
-// 24 MB allows a reasonable amount to buffer on the read and write side.
-const uint32_t kStreamBufferSize = 24 * 1024 * 1024;
 
 // This class wraps a P2PQuicTransportFactoryImpl but does not construct it
 // until CreateQuicTransport is called for the first time. This ensures that it
@@ -290,8 +288,8 @@ void RTCQuicTransport::StartConnection(
   IceTransportProxy* transport_proxy = transport_->ConnectConsumer(this);
   P2PQuicTransportConfig quic_transport_config(
       perspective, rtc_certificates,
-      /*stream_delegate_read_buffer_size_in=*/kStreamBufferSize,
-      /*stream_write_buffer_size_in=*/kStreamBufferSize);
+      /*stream_delegate_read_buffer_size_in=*/RTCQuicStream::kReadBufferSize,
+      /*stream_write_buffer_size_in=*/RTCQuicStream::kWriteBufferSize);
   proxy_.reset(new QuicTransportProxy(this, transport_proxy,
                                       std::move(p2p_quic_transport_factory_),
                                       quic_transport_config));
