@@ -57,7 +57,7 @@
   // Optional: Highlight current line at the left of the editor.
   // "editor.renderLineHighlight": "gutter",
   // Optional: Don't automatically add closing brackets. It gets in the way.
-  // "editor.autoClosingBrackets": false,
+  // "editor.autoClosingBrackets": "never",
   // Optional: Enable a tiny 30k feet view of your doc.
   // "editor.minimap.enabled": true,
   // "editor.minimap.maxColumn": 80,
@@ -70,4 +70,3 @@
   // Optional: Same for files opened from quick open (Ctrl+P).
   //"workbench.editor.enablePreviewFromQuickOpen": false,
 }
-
