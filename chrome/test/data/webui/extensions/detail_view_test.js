@@ -165,6 +165,24 @@ cr.define('extension_detail_view_tests', function() {
       Polymer.dom.flush();
       expectTrue(testIsVisible('.warning-icon'));
 
+      expectTrue(testIsVisible('#enable-toggle'));
+      expectFalse(testIsVisible('#terminated-reload-button'));
+      item.set('data.state', chrome.developerPrivate.ExtensionState.TERMINATED);
+      Polymer.dom.flush();
+      expectFalse(testIsVisible('#enable-toggle'));
+      expectTrue(testIsVisible('#terminated-reload-button'));
+
+      // Ensure that the runtime warning reload button is not visible if there
+      // are runtime warnings and the extension is terminated.
+      item.set('data.runtimeWarnings', ['Dummy warning']);
+      Polymer.dom.flush();
+      expectFalse(testIsVisible('#warnings-reload-button'));
+      item.set('data.runtimeWarnings', []);
+
+      // Reset item state back to DISABLED.
+      item.set('data.state', chrome.developerPrivate.ExtensionState.DISABLED);
+      Polymer.dom.flush();
+
       // Ensure that without runtimeHostPermissions data, the sections are
       // hidden.
       expectTrue(testIsVisible('#no-site-access'));
@@ -278,8 +296,15 @@ cr.define('extension_detail_view_tests', function() {
           item.$$('#load-path > a[is=\'action-link\']'), 'showInFolder',
           [extensionData.id]);
       mockDelegate.testClickingCalls(
-          item.$$('#reload-button'), 'reloadItem', [extensionData.id],
+          item.$$('#warnings-reload-button'), 'reloadItem', [extensionData.id],
           Promise.resolve());
+
+      // Terminate the extension so the reload button appears.
+      item.set('data.state', chrome.developerPrivate.ExtensionState.TERMINATED);
+      Polymer.dom.flush();
+      mockDelegate.testClickingCalls(
+          item.$$('#terminated-reload-button'), 'reloadItem',
+          [extensionData.id], Promise.resolve());
     });
 
     test(assert(TestNames.Indicator), function() {

@@ -189,6 +189,12 @@
                 icon-class="[[getIndicatorIcon_(data.controlledInfo.type)]]"
                 icon-aria-label="[[data.controlledInfo.type]]">
             </cr-tooltip-icon>
+            <template is="dom-if" if="[[isTerminated_(data.state)]]">
+              <paper-button id="terminated-reload-button" class="action-button"
+                  on-click="onReloadTap_">
+                $i18n{itemReload}
+              </paper-button>
+            </template>
             <cr-toggle id="enable-toggle"
                 aria-label$="[[appOrExtension(
                     data.type,
@@ -197,13 +203,13 @@
                 aria-describedby="name"
                 checked="[[isEnabled_(data.state)]]"
                 on-change="onEnableChange_"
-                disabled="[[!isEnableToggleEnabled_(data.*)]]">
+                disabled="[[!isEnableToggleEnabled_(data.*)]]"
+                hidden$="[[isTerminated_(data.state)]]">
             </cr-toggle>
           </div>
         </div>
         <div id="warnings" hidden$="[[!hasWarnings_(data.*)]]">
-          <div id="runtime-warnings" aria-describedby="a11yAssociation"
-              hidden$="[[!data.runtimeWarnings.length]]"
+          <div id="runtime-warnings" hidden$="[[!data.runtimeWarnings.length]]"
               class="section continuation warning control-line">
             <iron-icon class="warning-icon" icon="cr:error"></iron-icon>
             <span>
@@ -211,10 +217,12 @@
                 [[item]]
               </template>
             </span>
-            <paper-button id="reload-button" class="action-button"
-                on-click="onReloadTap_">
-              $i18n{itemReload}
-            </paper-button>
+            <template is="dom-if" if="[[!isTerminated_(data.state)]]">
+              <paper-button id="warnings-reload-button" class="action-button"
+                  on-click="onReloadTap_">
+                $i18n{itemReload}
+              </paper-button>
+            </template>
           </div>
           <div class="section continuation warning" id="suspicious-warning"
               hidden$="[[!data.disableReasons.suspiciousInstall]]">
