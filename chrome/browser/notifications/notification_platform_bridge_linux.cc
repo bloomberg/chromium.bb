@@ -26,6 +26,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/dbus/dbus_thread_linux.h"
@@ -171,13 +172,17 @@ gfx::Image ResizeImageToFdoMaxSize(const gfx::Image& image) {
           height)));
 }
 
-bool ShouldAddCloseButton(const std::string& server_name) {
+bool ShouldAddCloseButton(const std::string& server_name,
+                          const base::Version& server_version) {
   // Cinnamon doesn't add a close button on notifications.  With eg. calendar
   // notifications, which are stay-on-screen, this can lead to a situation where
   // the only way to dismiss a notification is to click on it, which would
   // create an unwanted web navigation.  For this reason, manually add a close
-  // button. (https://crbug.com/804637)
-  return server_name == "cinnamon";
+  // button (https://crbug.com/804637).  Cinnamon 3.8.0 adds a close button
+  // (https://github.com/linuxmint/Cinnamon/blob/8717fa/debian/changelog#L1075),
+  // so exclude versions that provide one already.
+  return server_name == "cinnamon" && server_version.IsValid() &&
+         server_version.CompareToWildcardString("3.8.0") < 0;
 }
 
 void ForwardNotificationOperationOnUiThread(
@@ -460,6 +465,10 @@ class NotificationPlatformBridgeLinuxImpl
     if (server_information_response) {
       dbus::MessageReader reader(server_information_response.get());
       reader.PopString(&server_name_);
+      std::string server_version;
+      reader.PopString(&server_version);  // Vendor
+      reader.PopString(&server_version);  // Server version
+      server_version_ = base::Version(server_version);
     }
 
     connected_signals_barrier_ = base::BarrierClosure(
@@ -627,7 +636,7 @@ class NotificationPlatformBridgeLinuxImpl
         actions.push_back(
             l10n_util::GetStringUTF8(IDS_NOTIFICATION_BUTTON_SETTINGS));
       }
-      if (ShouldAddCloseButton(server_name_)) {
+      if (ShouldAddCloseButton(server_name_, server_version_)) {
         actions.push_back(kCloseButtonId);
         actions.push_back(
             l10n_util::GetStringUTF8(IDS_NOTIFICATION_BUTTON_CLOSE));
@@ -969,6 +978,7 @@ class NotificationPlatformBridgeLinuxImpl
   std::unordered_set<std::string> capabilities_;
 
   std::string server_name_;
+  base::Version server_version_;
 
   base::Closure connected_signals_barrier_;
 
