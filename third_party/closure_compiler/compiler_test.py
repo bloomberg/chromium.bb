@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from ast import literal_eval
+import imp
 import os
 import tempfile
 import unittest
@@ -23,10 +23,10 @@ _CHROME_EXTERNS = os.path.join(_SRC_DIR, "third_party", "closure_compiler",
                                "externs", "chrome.js")
 _CHROME_SEND_EXTERNS = os.path.join(_SRC_DIR, "third_party", "closure_compiler",
                                     "externs", "chrome_send.js")
-_CLOSURE_ARGS_GYPI = os.path.join(_SCRIPT_DIR, "closure_args.gypi")
-_GYPI_DICT = literal_eval(open(_CLOSURE_ARGS_GYPI).read())
-_COMMON_CLOSURE_ARGS = _GYPI_DICT["default_closure_args"] + \
-                       _GYPI_DICT["default_disabled_closure_args"]
+_CLOSURE_ARGS_GNI = os.path.join(_SCRIPT_DIR, "closure_args.gni")
+_CLOSURE_ARGS = imp.load_source('closure_gni', _CLOSURE_ARGS_GNI)
+_COMMON_CLOSURE_ARGS = _CLOSURE_ARGS.default_closure_args + \
+                       _CLOSURE_ARGS.default_disabled_closure_args
 
 class CompilerTest(unittest.TestCase):
   _ASSERT_DEFINITION = Processor(_ASSERT_JS).contents
@@ -50,7 +50,7 @@ class CompilerTest(unittest.TestCase):
     FileCache._cache[file_path] = source_code
     out_file = self._createOutFiles()
     args = _COMMON_CLOSURE_ARGS + (closure_args or [])
-    if needs_output:
+    if needs_output and "checks_only" in args:
       args.remove("checks_only")
 
     sources = [file_path, _CHROME_EXTERNS, _CHROME_SEND_EXTERNS]
