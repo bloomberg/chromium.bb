@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/loader/testing/bytes_consumer_test_reader.h"
 #include "third_party/blink/renderer/platform/loader/testing/replaying_bytes_consumer.h"
+#include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
@@ -81,6 +82,45 @@ class FakeBlobBytesConsumer : public BytesConsumer {
  private:
   PublicState state_ = PublicState::kReadableOrWaiting;
   scoped_refptr<BlobDataHandle> blob_handle_;
+};
+
+class FakeFormDataBytesConsumer : public BytesConsumer {
+ public:
+  explicit FakeFormDataBytesConsumer(scoped_refptr<EncodedFormData> form_data)
+      : form_data_(std::move(form_data)) {}
+  ~FakeFormDataBytesConsumer() override {}
+
+  Result BeginRead(const char** buffer, size_t* available) override {
+    if (state_ == PublicState::kClosed)
+      return Result::kDone;
+    form_data_ = nullptr;
+    state_ = PublicState::kErrored;
+    return Result::kError;
+  }
+  Result EndRead(size_t read_size) override {
+    if (state_ == PublicState::kClosed)
+      return Result::kError;
+    form_data_ = nullptr;
+    state_ = PublicState::kErrored;
+    return Result::kError;
+  }
+  scoped_refptr<EncodedFormData> DrainAsFormData() override {
+    if (state_ != PublicState::kReadableOrWaiting)
+      return nullptr;
+    DCHECK(form_data_);
+    return std::move(form_data_);
+  }
+
+  void SetClient(Client*) override {}
+  void ClearClient() override {}
+  void Cancel() override {}
+  PublicState GetPublicState() const override { return state_; }
+  Error GetError() const override { return Error(); }
+  String DebugName() const override { return "FakeFormDataBytesConsumer"; }
+
+ private:
+  PublicState state_ = PublicState::kReadableOrWaiting;
+  scoped_refptr<EncodedFormData> form_data_;
 };
 
 TEST_F(BytesConsumerTeeTest, CreateDone) {
@@ -350,6 +390,21 @@ TEST_F(BytesConsumerTeeTest, BlobHandleWithInvalidSize) {
   ASSERT_TRUE(dest_blob_data_handle1);
   ASSERT_FALSE(dest_blob_data_handle2);
   EXPECT_EQ(UINT64_MAX, dest_blob_data_handle1->size());
+}
+
+TEST_F(BytesConsumerTeeTest, FormData) {
+  auto form_data = EncodedFormData::Create();
+
+  auto* src = MakeGarbageCollected<FakeFormDataBytesConsumer>(form_data);
+
+  BytesConsumer* dest1 = nullptr;
+  BytesConsumer* dest2 = nullptr;
+  BytesConsumerTee(&GetDocument(), src, &dest1, &dest2);
+
+  scoped_refptr<EncodedFormData> dest_form_data1 = dest1->DrainAsFormData();
+  scoped_refptr<EncodedFormData> dest_form_data2 = dest2->DrainAsFormData();
+  EXPECT_EQ(form_data, dest_form_data1);
+  EXPECT_EQ(form_data, dest_form_data2);
 }
 
 TEST_F(BytesConsumerTeeTest, ConsumerCanBeErroredInTwoPhaseRead) {
