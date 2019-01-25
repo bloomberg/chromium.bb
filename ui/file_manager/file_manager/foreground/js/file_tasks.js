@@ -823,6 +823,10 @@ FileTasks.prototype.executeDefaultInternal_ = function(opt_callback) {
         callback(true, this.entries_);
         break;
       case 'failed':
+        // Suppress the Unchecked runtime.lastError console message
+        if (chrome.runtime.lastError) {
+          console.debug(chrome.runtime.lastError.message);
+        }
         onViewFilesFailure();
         break;
     }
