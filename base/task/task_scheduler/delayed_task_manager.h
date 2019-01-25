@@ -6,6 +6,7 @@
 #define BASE_TASK_TASK_SCHEDULER_DELAYED_TASK_MANAGER_H_
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/base_export.h"
@@ -13,8 +14,10 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_piece.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/task/common/intrusive_heap.h"
+#include "base/task/common/intrusive_heap_lazy_staleness_policy.h"
 #include "base/task/task_scheduler/scheduler_lock.h"
 #include "base/task/task_scheduler/task.h"
 #include "base/time/default_tick_clock.h"
@@ -35,7 +38,8 @@ class BASE_EXPORT DelayedTaskManager {
   using PostTaskNowCallback = OnceCallback<void(Task task)>;
 
   // |tick_clock| can be specified for testing.
-  DelayedTaskManager(std::unique_ptr<const TickClock> tick_clock =
+  DelayedTaskManager(StringPiece histogram_label = "",
+                     std::unique_ptr<const TickClock> tick_clock =
                          std::make_unique<DefaultTickClock>());
   ~DelayedTaskManager();
 
@@ -48,6 +52,8 @@ class BASE_EXPORT DelayedTaskManager {
   // Schedules a call to |post_task_now_callback| with |task| as argument when
   // |task| is ripe for execution.
   void AddDelayedTask(Task task, PostTaskNowCallback post_task_now_callback);
+
+  void ReportHeartbeatMetrics() const;
 
  private:
   struct DelayedTask {
@@ -78,6 +84,9 @@ class BASE_EXPORT DelayedTaskManager {
     // Required by IntrusiveHeap.
     void ClearHeapHandle() {}
 
+    // Required by LazyStalenessPolicy.
+    bool IsStale() const;
+
    private:
     bool scheduled_ = false;
     DISALLOW_COPY_AND_ASSIGN(DelayedTask);
@@ -99,11 +108,15 @@ class BASE_EXPORT DelayedTaskManager {
 
   const RepeatingClosure process_ripe_tasks_closure_;
 
+  // Used to label histograms for this class.
+  const std::string histogram_label_;
+
   const std::unique_ptr<const TickClock> tick_clock_;
 
   scoped_refptr<TaskRunner> service_thread_task_runner_;
 
-  IntrusiveHeap<DelayedTask> delayed_task_queue_;
+  IntrusiveHeap<DelayedTask, LazyStalenessPolicy<DelayedTask>>
+      delayed_task_queue_;
 
   // Synchronizes access to |delayed_task_queue_| and the setting of
   // |service_thread_task_runner|. Once |service_thread_task_runner_| is set,

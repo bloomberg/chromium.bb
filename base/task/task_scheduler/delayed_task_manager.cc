@@ -8,12 +8,24 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_scheduler/task.h"
 #include "base/task_runner.h"
 
 namespace base {
 namespace internal {
+
+// The UMA histogram that logs a lower-bound number of cancelled tasks in the
+// manager.
+const char kNumCancelledDelayedTasksHistogram[] =
+    "TaskScheduler.NumCancelledDelayedTasks";
+
+// The UMA histogram that logs a lower-bound percentage of cancelled tasks in
+// the manager.
+const char kNumPercentCancelledDelayedTasksHistogram[] =
+    "TaskScheduler.PercentCancelledDelayedTasks";
 
 DelayedTaskManager::DelayedTask::DelayedTask() = default;
 
@@ -42,11 +54,17 @@ void DelayedTaskManager::DelayedTask::SetScheduled() {
   scheduled_ = true;
 }
 
+bool DelayedTaskManager::DelayedTask::IsStale() const {
+  return !task.task.MaybeValid();
+}
+
 DelayedTaskManager::DelayedTaskManager(
+    StringPiece histogram_label,
     std::unique_ptr<const TickClock> tick_clock)
     : process_ripe_tasks_closure_(
           BindRepeating(&DelayedTaskManager::ProcessRipeTasks,
                         Unretained(this))),
+      histogram_label_(histogram_label),
       tick_clock_(std::move(tick_clock)) {
   DCHECK(tick_clock_);
 }
@@ -87,6 +105,23 @@ void DelayedTaskManager::AddDelayedTask(
     process_ripe_tasks_time = GetTimeToScheduleProcessRipeTasksLockRequired();
   }
   ScheduleProcessRipeTasksOnServiceThread(process_ripe_tasks_time);
+}
+
+void DelayedTaskManager::ReportHeartbeatMetrics() const {
+  size_t num_cancelled_tasks = delayed_task_queue_.NumKnownStaleNodes();
+  size_t num_tasks = delayed_task_queue_.size();
+  int percent_cancelled_tasks =
+      (num_tasks == 0)
+          ? 0
+          : static_cast<int>((100 * num_cancelled_tasks) / num_tasks);
+
+  UmaHistogramCounts100(
+      JoinString({kNumCancelledDelayedTasksHistogram, histogram_label_}, "."),
+      static_cast<int>(num_cancelled_tasks));
+  UmaHistogramPercentage(
+      JoinString({kNumPercentCancelledDelayedTasksHistogram, histogram_label_},
+                 "."),
+      percent_cancelled_tasks);
 }
 
 void DelayedTaskManager::ProcessRipeTasks() {

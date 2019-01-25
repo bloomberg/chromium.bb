@@ -13,6 +13,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task/task_scheduler/task.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
@@ -49,6 +50,7 @@ class TaskSchedulerDelayedTaskManagerTest : public testing::Test {
  protected:
   TaskSchedulerDelayedTaskManagerTest()
       : delayed_task_manager_(
+            "Test",
             service_thread_task_runner_->DeprecatedGetMockTickClock()),
         task_(ConstructMockedTask(
             mock_task_,
@@ -211,6 +213,17 @@ TEST_F(TaskSchedulerDelayedTaskManagerTest, PostTaskDuringStart) {
   // Fast-forward time. Expect the task to be forwarded to RunTask().
   EXPECT_CALL(mock_task_, Run());
   service_thread_task_runner_->FastForwardBy(kLongDelay);
+}
+
+TEST_F(TaskSchedulerDelayedTaskManagerTest, ReportHeartbeatMetrics) {
+  HistogramTester tester;
+  delayed_task_manager_.ReportHeartbeatMetrics();
+  EXPECT_FALSE(
+      tester.GetAllSamples("TaskScheduler.NumCancelledDelayedTasks.Test")
+          .empty());
+  EXPECT_FALSE(
+      tester.GetAllSamples("TaskScheduler.PercentCancelledDelayedTasks.Test")
+          .empty());
 }
 
 }  // namespace internal
