@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 14
+// Next MinVersion: 15
 
 module arc.mojom;
+
+import "mojo/public/mojom/base/values.mojom";
 
 [Extensible]
 enum BluetoothAdapterState {
@@ -277,10 +279,8 @@ struct BluetoothSdpAttribute {
   // Explicitly specify the ordinal @3, because introducing this is a breaking
   // change. This field is introduced between version 7 and 8, though
   // MinVersion is not annotated because of breaking change, too.
-  // See details in the bug linked below.
-  // TODO(crbug.com/767313): Use mojo/public/mojom/base/values.mojom, when new
-  // libmojo (440057 or later) is rolled to ARC repository.
   string? json_value@3;
+  [MinVersion=14] mojo_base.mojom.Value? value;
 };
 
 struct BluetoothSdpRecord {
