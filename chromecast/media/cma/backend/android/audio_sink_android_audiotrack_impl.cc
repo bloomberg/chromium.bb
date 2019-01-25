@@ -360,7 +360,7 @@ void AudioSinkAndroidAudioTrackImpl::SetPaused(bool paused) {
     state_ = kStateNormalPlayback;
     Java_AudioSinkAudioTrackImpl_play(base::android::AttachCurrentThread(),
                                       j_audio_sink_audiotrack_impl_);
-    if (pending_data_bytes_already_fed_) {
+    if (pending_data_ && pending_data_bytes_already_fed_) {
       // The last data buffer was partially fed, complete it now.
       FeedDataContinue();
     }
