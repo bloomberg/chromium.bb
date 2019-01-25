@@ -200,9 +200,8 @@ class LoginHandler : public content::LoginDelegate,
                                base::string16* authority,
                                base::string16* explanation);
 
-  static void ShowLoginPrompt(const GURL& request_url,
-                              net::AuthChallengeInfo* auth_info,
-                              LoginHandler* handler);
+  void ShowLoginPrompt(const GURL& request_url,
+                       net::AuthChallengeInfo* auth_info);
 
   // This callback is run on the UI thread and creates a constrained window with
   // a LoginView to prompt the user. If the prompt is triggered because of a
@@ -211,12 +210,11 @@ class LoginHandler : public content::LoginDelegate,
   // created directly in this callback. In both cases, the response will be sent
   // to LoginHandler, which then routes it to the net::URLRequest on the I/O
   // thread.
-  static void LoginDialogCallback(
+  void LoginDialogCallback(
       const GURL& request_url,
       const content::GlobalRequestID& request_id,
       net::AuthChallengeInfo* auth_info,
       scoped_refptr<net::HttpResponseHeaders> response_headers,
-      LoginHandler* handler,
       bool is_main_frame);
 
   // Continuation from |LoginDialogCallback()| after any potential interception
@@ -224,10 +222,9 @@ class LoginHandler : public content::LoginDelegate,
   // request is cancelled. Otherwise |credentials| are used if supplied. Finally
   // if the request is NOT cancelled AND |credentials| is empty, then we'll
   // actually show a login prompt.
-  static void MaybeSetUpLoginPrompt(
+  void MaybeSetUpLoginPrompt(
       const GURL& request_url,
       net::AuthChallengeInfo* auth_info,
-      LoginHandler* handler,
       bool is_main_frame,
       const base::Optional<net::AuthCredentials>& credentials,
       bool should_cancel);
