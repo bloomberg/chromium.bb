@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_WALLET_HELPER_H_
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_WALLET_HELPER_H_
 
+#include <utility>
 #include <vector>
 
 #include "base/test/scoped_feature_list.h"
@@ -156,7 +157,8 @@ class AutofillWalletMetadataSizeChecker
 // base class of the test fixture.
 // TODO(jkrcal): When the new implementation fully launches, remove this class,
 // convert all tests from *_P back to *_F and remove the instance at the end.
-class UssWalletSwitchToggler : public testing::WithParamInterface<bool> {
+class UssWalletSwitchToggler
+    : public testing::WithParamInterface<std::pair<bool, bool>> {
  public:
   UssWalletSwitchToggler();
 

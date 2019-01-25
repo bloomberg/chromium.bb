@@ -566,7 +566,12 @@ void UssWalletSwitchToggler::InitWithDefaultFeatures() {
 void UssWalletSwitchToggler::InitWithFeatures(
     std::vector<base::Feature> enabled_features,
     std::vector<base::Feature> disabled_features) {
-  if (GetParam()) {
+  if (GetParam().first) {
+    enabled_features.push_back(switches::kSyncUSSAutofillWalletData);
+  } else {
+    disabled_features.push_back(switches::kSyncUSSAutofillWalletData);
+  }
+  if (GetParam().second) {
     enabled_features.push_back(switches::kSyncUSSAutofillWalletMetadata);
   } else {
     disabled_features.push_back(switches::kSyncUSSAutofillWalletMetadata);
