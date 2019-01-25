@@ -12,6 +12,8 @@
   <template>
     <style include="cr-shared-style">
       :host {
+        /* TODO(crbug/925209): GG 900 in light mode seems overly dark. */
+        --cr-search-field-border-color: var(--cr-primary-text-color);
         display: flex;
         user-select: none;
       }
@@ -39,7 +41,7 @@
         --cr-input-error-display: none;
         --cr-input-input: {
           height: 100%;
-          border-bottom: 1px solid var(--google-grey-900);
+          border-bottom: 1px solid var(--cr-search-field-border-color);
         }
         --cr-input-padding-end: 0;
         --cr-input-padding-start: 0;
@@ -49,6 +51,16 @@
         display: block;
         vertical-align: middle;
         width: 160px;  /* Special width for search input. */
+      }
+
+      :host-context([dark]) cr-input {
+        /* TODO(dbeam): needing to use inherit here seems silly. In light mode,
+         * the background color is just matched (i.e. the parent's background is
+         * white, but this element also explicitly sets its background and the
+         * background of the container cr-input to white). Can we just not set
+         * these rules? */
+        --cr-input-background-color: inherit;
+        --cr-search-field-border-color: var(--cr-secondary-text-color);
       }
 
       :host([has-search-text]) cr-input {
