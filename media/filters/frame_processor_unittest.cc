@@ -938,13 +938,10 @@ TEST_P(FrameProcessorTest,
   AddTestTracks(HAS_AUDIO);
 
   if (use_sequence_mode_) {
-    EXPECT_MEDIA_LOG(ParsedDTSGreaterThanPTS()).Times(2);
     frame_processor_->SetSequenceMode(true);
     EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(20)));
   } else {
-    EXPECT_MEDIA_LOG(ParsedDTSGreaterThanPTS());
     EXPECT_MEDIA_LOG(TruncatedFrame(-7000, 3000, "start", 0));
-    EXPECT_MEDIA_LOG(ParsedDTSGreaterThanPTS());
     EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(13)));
   }
 
@@ -1126,7 +1123,6 @@ TEST_P(FrameProcessorTest,
 
   CheckExpectedRangesByTimestamp(video_.get(), "{ [50,70) }");
 
-  EXPECT_MEDIA_LOG(ParsedDTSGreaterThanPTS());
   EXPECT_CALL(callbacks_,
               OnParseWarning(
                   SourceBufferParseWarning::kKeyframeTimeGreaterThanDependant));

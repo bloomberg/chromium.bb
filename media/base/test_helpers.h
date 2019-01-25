@@ -259,12 +259,6 @@ MATCHER(ParsedBuffersNotInDTSSequence, "") {
   return CONTAINS_STRING(arg, "Parsed buffers not in DTS sequence");
 }
 
-MATCHER(ParsedDTSGreaterThanPTS, "") {
-  return CONTAINS_STRING(arg, "Parsed ") &&
-         CONTAINS_STRING(arg, "frame has DTS ") &&
-         CONTAINS_STRING(arg, ", which is after the frame's PTS");
-}
-
 MATCHER_P2(CodecUnsupportedInContainer, codec, container, "") {
   return CONTAINS_STRING(arg, std::string(codec) + "' is not supported for '" +
                                   std::string(container));

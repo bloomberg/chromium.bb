@@ -16,7 +16,6 @@
 namespace media {
 
 const int kMaxDroppedPrerollWarnings = 10;
-const int kMaxDtsBeyondPtsWarnings = 10;
 const int kMaxAudioNonKeyframeWarnings = 10;
 const int kMaxNumKeyframeTimeGreaterThanDependantWarnings = 1;
 const int kMaxMuxedSequenceModeWarnings = 1;
@@ -701,20 +700,14 @@ bool FrameProcessor::ProcessFrame(scoped_refptr<StreamParserBuffer> frame,
                                    << " frame";
       return false;
     }
-    if (decode_timestamp.ToPresentationTime() > presentation_timestamp) {
-      // TODO(wolenetz): Determine whether DTS>PTS should really be allowed. See
-      // http://crbug.com/354518.
-      LIMITED_MEDIA_LOG(DEBUG, media_log_, num_dts_beyond_pts_warnings_,
-                        kMaxDtsBeyondPtsWarnings)
-          << "Parsed " << frame->GetTypeName() << " frame has DTS "
-          << decode_timestamp.InMicroseconds()
-          << "us, which is after the frame's PTS "
-          << presentation_timestamp.InMicroseconds() << "us";
-      DVLOG(2) << __func__ << ": WARNING: Frame DTS("
-               << decode_timestamp.InMicroseconds() << "us) > PTS("
-               << presentation_timestamp.InMicroseconds()
-               << "us), frame type=" << frame->GetTypeName();
-    }
+
+    // TODO(wolenetz): Determine whether any DTS>PTS logging is needed. See
+    // http://crbug.com/354518.
+    DVLOG_IF(2, decode_timestamp.ToPresentationTime() > presentation_timestamp)
+        << __func__ << ": WARNING: Frame DTS("
+        << decode_timestamp.InMicroseconds() << "us) > PTS("
+        << presentation_timestamp.InMicroseconds()
+        << "us), frame type=" << frame->GetTypeName();
 
     // All stream parsers must emit valid (non-negative) frame durations.
     // Note that duration of 0 can occur for at least WebM alt-ref frames.
