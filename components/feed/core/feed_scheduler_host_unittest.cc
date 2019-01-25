@@ -875,17 +875,16 @@ TEST_F(FeedSchedulerHostTest, OustandingRequest) {
                 /*has_content*/ false, /*content_creation_date_time*/ Time(),
                 /*has_outstanding_request*/ true));
 
-  test_clock()->Advance(TimeDelta::FromDays(7));
+  profile_prefs()->SetTime(prefs::kLastFetchAttemptTime, base::Time());
   scheduler()->OnForegrounded();
   EXPECT_EQ(1, refresh_call_count());
 
-  // Although this clears outstanding, it also updates last attempted time, so
-  // still expect no refresh.
-  scheduler()->OnRequestError(0);
+  test_clock()->Advance(
+      TimeDelta::FromSeconds(kTimeoutDurationSeconds.Get() - 1));
   scheduler()->OnForegrounded();
   EXPECT_EQ(1, refresh_call_count());
 
-  test_clock()->Advance(TimeDelta::FromDays(7));
+  test_clock()->Advance(TimeDelta::FromSeconds(2));
   scheduler()->OnForegrounded();
   EXPECT_EQ(2, refresh_call_count());
 
