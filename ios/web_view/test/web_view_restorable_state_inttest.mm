@@ -4,7 +4,6 @@
 
 #import <ChromeWebView/ChromeWebView.h>
 
-#import "base/test/ios/wait_util.h"
 #import "ios/web_view/test/web_view_inttest_base.h"
 #import "ios/web_view/test/web_view_test_util.h"
 #include "testing/gtest_mac.h"
@@ -12,9 +11,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-using base::test::ios::WaitUntilConditionOrTimeout;
-using base::test::ios::kWaitForPageLoadTimeout;
 
 namespace ios_web_view {
 
@@ -39,11 +35,6 @@ TEST_F(WebViewRestorableStateTest, EncodeDecode) {
   // Create second web view and restore its state from the first web view.
   CWVWebView* restored_web_view = test::CreateWebView();
   test::CopyWebViewState(web_view_, restored_web_view);
-
-  // Wait for restore to finish.
-  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-    return [restored_web_view canGoBack];
-  }));
 
   // Verify that the state has been restored correctly.
   EXPECT_NSEQ(@"about:blank",
