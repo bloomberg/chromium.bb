@@ -240,6 +240,12 @@ class NET_EXPORT NetworkQualityEstimatorParams {
   // quality estimate.
   bool use_end_to_end_rtt() const { return use_end_to_end_rtt_; }
 
+  // Return true if ECT value should be capped based on the current signal
+  // strength.
+  bool cap_ect_based_on_signal_strength() const {
+    return cap_ect_based_on_signal_strength_;
+  }
+
   // Sets the forced effective connection type as |type|.
   void SetForcedEffectiveConnectionTypeForTesting(EffectiveConnectionType type);
 
@@ -271,6 +277,7 @@ class NET_EXPORT NetworkQualityEstimatorParams {
   const bool add_default_platform_observations_;
   const base::TimeDelta socket_watchers_min_notification_interval_;
   const bool use_end_to_end_rtt_;
+  const bool cap_ect_based_on_signal_strength_;
 
   bool use_small_responses_;
 

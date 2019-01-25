@@ -500,6 +500,11 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
               "socket_watchers_min_notification_interval_msec",
               200))),
       use_end_to_end_rtt_(true),
+      cap_ect_based_on_signal_strength_(
+          GetStringValueForVariationParamWithDefaultValue(
+              params_,
+              "cap_ect_based_on_signal_strength",
+              "false") == "true"),
       use_small_responses_(false) {
   DCHECK(hanging_request_http_rtt_upper_bound_transport_rtt_multiplier_ == -1 ||
          hanging_request_http_rtt_upper_bound_transport_rtt_multiplier_ > 0);
