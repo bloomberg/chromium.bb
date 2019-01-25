@@ -81,7 +81,6 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
   bool SelectionStartHasMarkerFor(DocumentMarker::MarkerType,
                                   int from,
                                   int length) const;
-  void CancelCheck();
 
   // Exposed for testing and idle time spell checker
   SpellCheckRequester& GetSpellCheckRequester() const {
