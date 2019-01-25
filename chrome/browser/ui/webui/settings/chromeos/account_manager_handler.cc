@@ -247,14 +247,6 @@ void AccountManagerUIHandler::OnAccountUpdated(const AccountInfo& info) {
   RefreshUI();
 }
 
-void AccountManagerUIHandler::OnAccountUpdateFailed(
-    const std::string& account_id) {
-  // An account fetch failed for |account_id|, but we must display the account
-  // anyways (if it was not being displayed already) so that users do not think
-  // that their account has suddenly disappeared.
-  RefreshUI();
-}
-
 void AccountManagerUIHandler::OnAccountRemoved(const AccountInfo& account_key) {
 }
 
