@@ -2,11 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromecast_build.gni")
 import("//build/config/jumbo.gni")
 import("//media/media_options.gni")
-import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service_executable.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
 jumbo_component("services") {
@@ -147,14 +146,34 @@ jumbo_component("services") {
   }
 }
 
-service_manifest("cdm_manifest") {
-  name = "cdm"
-  source = "cdm_manifest.json"
+source_set("cdm_manifest") {
+  sources = [
+    "cdm_manifest.cc",
+    "cdm_manifest.h",
+  ]
+  deps = [
+    "//base",
+    "//media/mojo/interfaces",
+    "//media/mojo/interfaces:constants",
+    "//services/service_manager/public/cpp",
+  ]
 }
 
-service_manifest("media_manifest") {
-  name = "media"
-  source = "media_manifest.json"
+source_set("media_manifest") {
+  sources = [
+    "media_manifest.cc",
+    "media_manifest.h",
+  ]
+  deps = [
+    "//base",
+    "//media/mojo/interfaces",
+    "//media/mojo/interfaces:constants",
+    "//services/service_manager/public/cpp",
+  ]
+  if (is_chromecast) {
+    defines = [ "IS_CHROMECAST" ]
+    deps += [ "//chromecast/common/mojom" ]
+  }
 }
 
 # Unit Tests
@@ -236,7 +255,7 @@ test("media_service_unittests") {
   }
 
   deps = [
-    ":service_tests_catalog_source",
+    ":media_manifest",
     ":services",
     "//base",
     "//base/test:test_support",
@@ -247,6 +266,7 @@ test("media_service_unittests") {
     "//media/mojo/interfaces",
     "//media/mojo/interfaces:constants",
     "//mojo/core/test:run_all_unittests",
+    "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
@@ -255,23 +275,6 @@ test("media_service_unittests") {
   data_deps = [
     ":media",
   ]
-}
-
-service_manifest("media_service_unittest_manifest") {
-  name = "media_service_unittests"
-  source = "test_manifest.json"
-}
-
-catalog("service_tests_catalog") {
-  testonly = true
-  embedded_services = [ ":media_service_unittest_manifest" ]
-  standalone_services = [ ":media_manifest" ]
-}
-
-catalog_cpp_source("service_tests_catalog_source") {
-  testonly = true
-  catalog = ":service_tests_catalog"
-  generated_function_name = "media::test::CreateServiceTestCatalog"
 }
 
 # media_pipeline_integration_unittests is out of date and disabled by default.
@@ -286,20 +289,4 @@ test("media_pipeline_integration_unittests") {
   data_deps = [
     ":media",
   ]
-}
-
-service_manifest("pipeline_test_manifest") {
-  name = "media_pipeline_integration_unittests"
-  source = "pipeline_test_manifest.json"
-}
-
-catalog("media_pipeline_integration_unittests_catalog") {
-  embedded_services = [ ":pipeline_test_manifest" ]
-  standalone_services = [ ":media_manifest" ]
-}
-
-catalog_cpp_source("media_pipeline_integration_unittests_catalog_source") {
-  testonly = true
-  catalog = ":media_pipeline_integration_unittests_catalog"
-  generated_function_name = "media::test::CreatePipelineIntegrationTestCatalog"
 }
