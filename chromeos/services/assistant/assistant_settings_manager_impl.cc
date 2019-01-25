@@ -41,6 +41,15 @@ void AssistantSettingsManagerImpl::GetSettings(const std::string& selector,
          AssistantManagerService::State::RUNNING);
   DCHECK(service_->main_task_runner()->RunsTasksInCurrentSequence());
 
+  // TODO(xiaohuic): libassistant could be restarting for various reasons. In
+  // this case the remote side may not know or care and continues to send
+  // requests that would need libassistant. We need a better approach to handle
+  // this and ideally libassistant should not need to restart.
+  if (!assistant_manager_service_->assistant_manager_internal()) {
+    std::move(callback).Run(std::string());
+    return;
+  }
+
   // Wraps the callback into a repeating callback since the server side
   // interface requires the callback to be copyable.
   std::string serialized_proto = SerializeGetSettingsUiRequest(selector);
@@ -70,6 +79,12 @@ void AssistantSettingsManagerImpl::UpdateSettings(
   DCHECK(assistant_manager_service_->GetState() ==
          AssistantManagerService::State::RUNNING);
   DCHECK(service_->main_task_runner()->RunsTasksInCurrentSequence());
+
+  if (!assistant_manager_service_->assistant_manager_internal()) {
+    std::move(callback).Run(std::string());
+    return;
+  }
+
   // Wraps the callback into a repeating callback since the server side
   // interface requires the callback to be copyable.
   std::string serialized_proto = SerializeUpdateSettingsUiRequest(update);
@@ -100,6 +115,9 @@ void AssistantSettingsManagerImpl::StartSpeakerIdEnrollment(
          AssistantManagerService::State::RUNNING);
   DCHECK(service_->main_task_runner()->RunsTasksInCurrentSequence());
 
+  if (!assistant_manager_service_->assistant_manager_internal())
+    return;
+
   speaker_id_enrollment_client_ = std::move(client);
 
   assistant_client::SpeakerIdEnrollmentConfig client_config;
@@ -124,6 +142,12 @@ void AssistantSettingsManagerImpl::StopSpeakerIdEnrollment(
   DCHECK(assistant_manager_service_->GetState() ==
          AssistantManagerService::State::RUNNING);
   DCHECK(service_->main_task_runner()->RunsTasksInCurrentSequence());
+
+  if (!assistant_manager_service_->assistant_manager_internal()) {
+    std::move(callback).Run();
+    return;
+  }
+
   assistant_manager_service_->assistant_manager_internal()
       ->StopSpeakerIdEnrollment([repeating_callback =
                                      base::AdaptCallbackForRepeating(
@@ -143,6 +167,11 @@ void AssistantSettingsManagerImpl::RemoveSpeakerIdEnrollmentData(
   DCHECK(assistant_manager_service_->GetState() ==
          AssistantManagerService::State::RUNNING);
   DCHECK(service_->main_task_runner()->RunsTasksInCurrentSequence());
+
+  if (!assistant_manager_service_->assistant_manager_internal()) {
+    std::move(callback).Run();
+    return;
+  }
 
   const std::string device_id =
       assistant_manager_service_->assistant_manager()->GetDeviceId();
