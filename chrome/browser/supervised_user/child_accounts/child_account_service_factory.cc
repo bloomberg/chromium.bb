@@ -5,8 +5,7 @@
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -27,8 +26,7 @@ ChildAccountServiceFactory::ChildAccountServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "ChildAccountService",
         BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(AccountTrackerServiceFactory::GetInstance());
-  DependsOn(SigninManagerFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(SupervisedUserServiceFactory::GetInstance());
 }
 
