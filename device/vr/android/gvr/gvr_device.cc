@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/android/android_hardware_buffer_compat.h"
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"

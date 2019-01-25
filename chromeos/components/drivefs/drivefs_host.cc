@@ -8,6 +8,7 @@
 #include <set>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/strings/strcat.h"
 #include "base/unguessable_token.h"
 #include "chromeos/components/drivefs/drivefs_bootstrap.h"

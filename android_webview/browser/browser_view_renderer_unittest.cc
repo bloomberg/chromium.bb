@@ -12,6 +12,7 @@
 #include "android_webview/browser/compositor_frame_consumer.h"
 #include "android_webview/browser/render_thread_manager.h"
 #include "android_webview/browser/test/rendering_test.h"
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"

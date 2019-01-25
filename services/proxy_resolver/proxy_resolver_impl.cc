@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "net/base/net_errors.h"
 #include "net/proxy_resolution/pac_file_data.h"

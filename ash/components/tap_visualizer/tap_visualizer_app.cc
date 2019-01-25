@@ -8,6 +8,7 @@
 
 #include "ash/components/tap_visualizer/tap_renderer.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/ws/public/cpp/property_type_converters.h"

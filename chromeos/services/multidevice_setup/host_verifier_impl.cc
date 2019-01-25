@@ -4,6 +4,7 @@
 
 #include "chromeos/services/multidevice_setup/host_verifier_impl.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"

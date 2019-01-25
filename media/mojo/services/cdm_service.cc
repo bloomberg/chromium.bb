@@ -4,6 +4,7 @@
 
 #include "media/mojo/services/cdm_service.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "media/base/cdm_factory.h"
 #include "media/cdm/cdm_module.h"

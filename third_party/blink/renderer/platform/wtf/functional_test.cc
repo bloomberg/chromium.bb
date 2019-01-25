@@ -28,6 +28,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/test/gtest_util.h"
 #include "base/threading/thread.h"

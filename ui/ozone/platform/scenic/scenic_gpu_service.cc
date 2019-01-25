@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/scenic/scenic_gpu_service.h"
 
+#include "base/bind.h"
 #include "mojo/public/c/system/message_pipe.h"
 
 namespace ui {

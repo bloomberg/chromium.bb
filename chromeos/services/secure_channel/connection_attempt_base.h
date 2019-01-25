@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_SERVICES_SECURE_CHANNEL_CONNECTION_ATTEMPT_BASE_H_
 #define CHROMEOS_SERVICES_SECURE_CHANNEL_CONNECTION_ATTEMPT_BASE_H_
 
+#include "base/bind.h"
 #include "base/containers/flat_map.h"
 #include "base/logging.h"
 #include "base/macros.h"

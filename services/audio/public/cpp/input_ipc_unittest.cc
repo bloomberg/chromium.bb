@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/mojo/interfaces/audio_data_pipe.mojom.h"
 #include "mojo/public/cpp/system/buffer.h"

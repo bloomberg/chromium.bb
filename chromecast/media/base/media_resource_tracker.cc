@@ -4,6 +4,7 @@
 
 #include "chromecast/media/base/media_resource_tracker.h"
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "chromecast/base/bind_to_task_runner.h"

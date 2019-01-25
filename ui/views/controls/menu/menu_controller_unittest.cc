@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/menu/menu_controller.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"

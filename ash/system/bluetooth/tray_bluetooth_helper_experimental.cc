@@ -9,6 +9,7 @@
 
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"

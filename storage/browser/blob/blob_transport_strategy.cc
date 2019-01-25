@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "storage/browser/blob/blob_data_builder.h"

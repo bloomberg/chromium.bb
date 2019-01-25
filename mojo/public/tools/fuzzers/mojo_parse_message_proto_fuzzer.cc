@@ -5,6 +5,7 @@
 // Implementation of a proto version of mojo_parse_message_fuzzer that sends
 // multiple messages per run.
 
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/task/task_scheduler/task_scheduler.h"

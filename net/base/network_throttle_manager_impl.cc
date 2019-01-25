@@ -4,6 +4,7 @@
 
 #include "net/base/network_throttle_manager_impl.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"

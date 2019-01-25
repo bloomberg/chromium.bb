@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/serial/serial_device_enumerator.h"

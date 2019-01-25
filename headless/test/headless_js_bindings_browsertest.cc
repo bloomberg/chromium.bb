@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"

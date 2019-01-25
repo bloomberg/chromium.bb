@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "services/tracing/perfetto/json_trace_exporter.h"
 #include "services/tracing/perfetto/perfetto_service.h"

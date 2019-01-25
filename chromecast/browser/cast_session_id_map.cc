@@ -4,6 +4,7 @@
 
 #include "chromecast/browser/cast_session_id_map.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"

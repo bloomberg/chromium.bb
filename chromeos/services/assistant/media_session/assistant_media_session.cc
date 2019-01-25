@@ -4,6 +4,7 @@
 
 #include "chromeos/services/assistant/media_session/assistant_media_session.h"
 
+#include "base/bind.h"
 #include "services/media_session/public/cpp/features.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"

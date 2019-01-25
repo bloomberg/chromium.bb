@@ -15,6 +15,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "chromeos/audio/chromeos_sounds.h"
 #include "chromeos/audio/cras_audio_handler.h"

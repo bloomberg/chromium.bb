@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <string>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"

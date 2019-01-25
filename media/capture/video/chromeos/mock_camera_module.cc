@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "media/capture/video/chromeos/mock_camera_module.h"
+#include "base/bind.h"
 
 #include <memory>
 #include <utility>

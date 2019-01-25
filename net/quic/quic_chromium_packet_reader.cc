@@ -4,6 +4,7 @@
 
 #include "net/quic/quic_chromium_packet_reader.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"

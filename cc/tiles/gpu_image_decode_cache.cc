@@ -7,6 +7,7 @@
 #include <inttypes.h>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/debug/alias.h"
 #include "base/hash.h"
 #include "base/memory/discardable_memory_allocator.h"

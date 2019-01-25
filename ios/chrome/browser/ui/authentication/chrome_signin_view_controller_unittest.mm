@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/ui/authentication/chrome_signin_view_controller.h"
 
+#include "base/bind.h"
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #import "base/strings/sys_string_conversions.h"

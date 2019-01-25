@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"

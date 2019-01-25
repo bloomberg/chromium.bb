@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/optional.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"

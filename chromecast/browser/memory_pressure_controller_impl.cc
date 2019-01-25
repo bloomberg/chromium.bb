@@ -4,6 +4,7 @@
 
 #include "chromecast/browser/memory_pressure_controller_impl.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 
 namespace chromecast {

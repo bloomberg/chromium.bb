@@ -4,6 +4,7 @@
 
 #include "services/service_manager/public/cpp/connector.h"
 
+#include "base/bind.h"
 #include "services/service_manager/public/cpp/identity.h"
 
 namespace service_manager {

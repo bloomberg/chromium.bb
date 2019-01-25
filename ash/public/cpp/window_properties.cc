@@ -12,6 +12,7 @@
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/public/interfaces/window_properties.mojom.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
+#include "base/bind.h"
 #include "base/unguessable_token.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "ui/accessibility/platform/aura_window_properties.h"

@@ -24,6 +24,7 @@
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"

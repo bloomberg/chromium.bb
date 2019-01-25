@@ -4,6 +4,7 @@
 
 #include "ui/display/manager/update_display_configuration_task.h"
 
+#include "base/bind.h"
 #include "ui/display/manager/configure_displays_task.h"
 #include "ui/display/manager/display_layout_manager.h"
 #include "ui/display/manager/display_util.h"

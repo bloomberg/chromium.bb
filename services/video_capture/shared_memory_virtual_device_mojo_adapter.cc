@@ -4,6 +4,7 @@
 
 #include "services/video_capture/shared_memory_virtual_device_mojo_adapter.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/video/scoped_buffer_pool_reservation.h"

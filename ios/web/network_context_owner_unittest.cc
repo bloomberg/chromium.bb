@@ -4,6 +4,7 @@
 
 #include "ios/web/public/network_context_owner.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"

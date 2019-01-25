@@ -11,6 +11,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/constants/chromeos_switches.h"

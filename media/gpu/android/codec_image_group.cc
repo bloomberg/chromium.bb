@@ -4,6 +4,7 @@
 
 #include "media/gpu/android/codec_image_group.h"
 
+#include "base/bind.h"
 #include "base/sequenced_task_runner.h"
 #include "media/gpu/android/avda_surface_bundle.h"
 

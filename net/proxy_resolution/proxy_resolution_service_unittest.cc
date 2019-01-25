@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/macros.h"

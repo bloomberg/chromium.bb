@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/environment.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"

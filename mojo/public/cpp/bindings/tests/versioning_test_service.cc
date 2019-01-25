@@ -7,6 +7,7 @@
 #include <map>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/interfaces/bindings/tests/versioning_test_service.mojom.h"

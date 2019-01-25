@@ -4,6 +4,7 @@
 
 #include "services/preferences/public/cpp/persistent_pref_store_client.h"
 
+#include "base/bind.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"

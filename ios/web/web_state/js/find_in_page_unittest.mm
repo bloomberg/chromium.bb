@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/callback.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/web/public/test/web_test_with_web_state.h"

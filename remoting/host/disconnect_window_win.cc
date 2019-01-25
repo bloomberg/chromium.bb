@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"

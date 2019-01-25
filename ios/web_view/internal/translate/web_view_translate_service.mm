@@ -4,6 +4,7 @@
 
 #include "ios/web_view/internal/translate/web_view_translate_service.h"
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "components/translate/core/browser/translate_download_manager.h"

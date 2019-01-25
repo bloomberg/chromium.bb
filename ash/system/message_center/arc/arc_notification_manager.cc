@@ -13,6 +13,7 @@
 #include "ash/system/message_center/arc/arc_notification_item_impl.h"
 #include "ash/system/message_center/arc/arc_notification_manager_delegate.h"
 #include "ash/system/message_center/arc/arc_notification_view.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"

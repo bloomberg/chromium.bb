@@ -61,6 +61,7 @@
 #include <tuple>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"

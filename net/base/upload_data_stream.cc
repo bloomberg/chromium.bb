@@ -4,6 +4,7 @@
 
 #include "net/base/upload_data_stream.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "net/base/io_buffer.h"

@@ -16,6 +16,7 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_util.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "ui/base/emoji/emoji_panel_helper.h"

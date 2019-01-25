@@ -4,6 +4,7 @@
 
 #import <EarlGrey/EarlGrey.h>
 
+#include "base/bind.h"
 #import "base/test/ios/wait_util.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/grit/ios_strings.h"

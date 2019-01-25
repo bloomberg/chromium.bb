@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "device/vr/isolated_gamepad_data_fetcher.h"
+#include "base/bind.h"
 #include "device/vr/vr_device.h"
 
 namespace device {

@@ -4,6 +4,7 @@
 
 #include "media/gpu/android/avda_shared_state.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "media/gpu/android/avda_codec_image.h"

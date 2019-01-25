@@ -9,6 +9,7 @@
 #include "ash/accessibility/touch_accessibility_enabler.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/wm/container_finder.h"
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"

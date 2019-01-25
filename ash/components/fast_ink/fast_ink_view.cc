@@ -10,6 +10,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/math_util.h"
 #include "cc/trees/layer_tree_frame_sink.h"

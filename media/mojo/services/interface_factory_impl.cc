@@ -5,6 +5,7 @@
 #include "media/mojo/services/interface_factory_impl.h"
 
 #include <memory>
+#include "base/bind.h"
 #include "base/guid.h"
 
 #include "base/logging.h"

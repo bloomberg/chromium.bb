@@ -4,6 +4,7 @@
 
 #include "chromeos/network/dhcp_pac_file_fetcher_chromeos.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/task_runner_util.h"
 #include "chromeos/network/network_event_log.h"

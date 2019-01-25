@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "media/audio/mock_audio_debug_recording_manager.h"

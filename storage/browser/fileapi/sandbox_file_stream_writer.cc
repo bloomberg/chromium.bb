@@ -10,6 +10,7 @@
 #include <tuple>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/sequenced_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "net/base/io_buffer.h"

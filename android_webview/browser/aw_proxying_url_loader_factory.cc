@@ -16,6 +16,7 @@
 #include "android_webview/browser/renderer_host/auto_login_parser.h"
 #include "android_webview/common/url_constants.h"
 #include "base/android/build_info.h"
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"

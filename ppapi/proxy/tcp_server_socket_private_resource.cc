@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/tcp_server_socket_private_resource.h"
 
+#include "base/bind.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/tcp_socket_private_resource.h"
 

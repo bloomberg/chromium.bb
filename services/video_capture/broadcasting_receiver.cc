@@ -4,6 +4,7 @@
 
 #include "services/video_capture/broadcasting_receiver.h"
 
+#include "base/bind.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace video_capture {

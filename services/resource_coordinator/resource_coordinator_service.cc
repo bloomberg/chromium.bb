@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"

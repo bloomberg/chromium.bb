@@ -4,6 +4,7 @@
 
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 
+#include "base/bind.h"
 #include "base/no_destructor.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/machine_learning_client.h"

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/fido/ble/fido_ble_connection.h"
 #include "device/fido/fido_constants.h"

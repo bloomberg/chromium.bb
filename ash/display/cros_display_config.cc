@@ -14,6 +14,7 @@
 #include "ash/shell.h"
 #include "ash/touch/ash_touch_transform_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/bind.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/display/display.h"

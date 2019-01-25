@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"

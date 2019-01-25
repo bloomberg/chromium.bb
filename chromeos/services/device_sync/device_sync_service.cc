@@ -4,6 +4,7 @@
 
 #include "chromeos/services/device_sync/device_sync_service.h"
 
+#include "base/bind.h"
 #include "base/timer/timer.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/device_sync_base.h"

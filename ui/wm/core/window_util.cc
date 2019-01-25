@@ -4,6 +4,7 @@
 
 #include "ui/wm/core/window_util.h"
 
+#include "base/bind.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/dip_util.h"

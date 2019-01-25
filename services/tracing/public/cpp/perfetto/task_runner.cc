@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 
 namespace tracing {

@@ -7,6 +7,7 @@
 #include <memory>
 #include <tuple>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
 #include "base/logging.h"

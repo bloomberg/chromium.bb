@@ -14,6 +14,7 @@
 #include "ash/system/accessibility/autoclick_tray.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/root_window_finder.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/timer/timer.h"

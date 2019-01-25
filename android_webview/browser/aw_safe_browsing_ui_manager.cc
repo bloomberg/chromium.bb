@@ -8,6 +8,7 @@
 #include "android_webview/browser/aw_safe_browsing_blocking_page.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/common/aw_paths.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"

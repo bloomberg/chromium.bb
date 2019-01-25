@@ -8,6 +8,7 @@
 #include "android_webview/common/aw_resource.h"
 #include "android_webview/common/crash_reporter/crash_keys.h"
 #include "android_webview/common/url_constants.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/no_destructor.h"

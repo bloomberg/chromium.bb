@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/scoped_observer.h"
 #include "components/favicon/ios/web_favicon_driver.h"

@@ -4,6 +4,7 @@
 
 #include "services/device/generic_sensor/platform_sensor_win.h"
 
+#include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 
 namespace device {

@@ -4,6 +4,7 @@
 
 #include "chromeos/components/tether/connection_preserver_impl.h"
 
+#include "base/bind.h"
 #include "base/timer/timer.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"

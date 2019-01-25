@@ -10,6 +10,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"

@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <set>
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"

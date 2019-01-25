@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chromeos/services/assistant/platform/network_provider_impl.h"
+#include "base/bind.h"
 
 using assistant_client::NetworkProvider;
 using ConnectionStatus = assistant_client::NetworkProvider::ConnectionStatus;

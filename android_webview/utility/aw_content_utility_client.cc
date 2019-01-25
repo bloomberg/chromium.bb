@@ -4,6 +4,7 @@
 
 #include "android_webview/utility/aw_content_utility_client.h"
 
+#include "base/bind.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/services/heap_profiling/heap_profiling_service.h"
 #include "components/services/heap_profiling/public/mojom/constants.mojom.h"

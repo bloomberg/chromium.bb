@@ -4,6 +4,7 @@
 
 #include "chromeos/services/assistant/audio_decoder/assistant_audio_decoder_service.h"
 
+#include "base/bind.h"
 #include "chromeos/services/assistant/audio_decoder/assistant_audio_decoder_factory.h"
 #include "chromeos/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

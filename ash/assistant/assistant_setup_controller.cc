@@ -7,6 +7,7 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
+#include "base/bind.h"
 
 namespace ash {
 

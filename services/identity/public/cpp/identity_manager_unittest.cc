@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "services/identity/public/cpp/identity_manager.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"
 #include "base/message_loop/message_loop.h"

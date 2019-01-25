@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_ozone.h"
 
+#include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"

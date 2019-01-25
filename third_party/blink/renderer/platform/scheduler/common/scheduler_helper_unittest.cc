@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/scheduler/common/scheduler_helper.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"

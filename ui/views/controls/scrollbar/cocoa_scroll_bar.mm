@@ -4,6 +4,7 @@
 
 #import "ui/views/controls/scrollbar/cocoa_scroll_bar.h"
 
+#include "base/bind.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/stl_util.h"
 #include "cc/paint/paint_shader.h"

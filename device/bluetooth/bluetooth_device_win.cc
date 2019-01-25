@@ -7,6 +7,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"

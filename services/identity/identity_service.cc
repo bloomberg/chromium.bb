@@ -4,6 +4,7 @@
 
 #include "services/identity/identity_service.h"
 
+#include "base/bind.h"
 #include "services/identity/identity_manager_impl.h"
 
 namespace identity {

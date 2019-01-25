@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"

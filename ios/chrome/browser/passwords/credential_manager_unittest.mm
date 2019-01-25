@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/core/browser/password_manager.h"

@@ -6,6 +6,7 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
+#include "base/bind.h"
 #import "base/test/ios/wait_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"

@@ -5,6 +5,7 @@
 #include "media/gpu/android/texture_owner.h"
 
 #include "base/android/android_image_reader_compat.h"
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/service/abstract_texture.h"

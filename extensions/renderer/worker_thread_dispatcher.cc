@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/worker_thread_dispatcher.h"
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/threading/platform_thread.h"

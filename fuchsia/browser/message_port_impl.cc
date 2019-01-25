@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/macros.h"
 #include "fuchsia/common/mem_buffer_util.h"

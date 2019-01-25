@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"

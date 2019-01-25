@@ -10,6 +10,7 @@
 #include <memory>
 #include <queue>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/unguessable_token.h"
 #include "components/viz/host/host_frame_sink_manager.h"

@@ -7,6 +7,7 @@
 #include <map>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/accessibility/ax_action_data.h"

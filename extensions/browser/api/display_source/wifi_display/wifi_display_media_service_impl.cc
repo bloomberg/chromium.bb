@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/big_endian.h"
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"

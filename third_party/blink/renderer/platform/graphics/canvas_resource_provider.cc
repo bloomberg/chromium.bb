@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "cc/paint/decode_stashing_image_provider.h"

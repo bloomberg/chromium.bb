@@ -4,6 +4,7 @@
 
 #include "storage/browser/blob/blob_url_store_impl.h"
 
+#include "base/bind.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"

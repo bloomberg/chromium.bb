@@ -7,6 +7,7 @@
 #include <GLES3/gl3.h>
 #include <limits>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "cc/paint/paint_canvas.h"

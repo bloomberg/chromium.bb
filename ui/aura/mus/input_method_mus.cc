@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "services/ws/public/mojom/ime/ime.mojom.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"

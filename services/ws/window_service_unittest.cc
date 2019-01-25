@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"

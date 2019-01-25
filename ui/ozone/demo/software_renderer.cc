@@ -4,6 +4,7 @@
 
 #include "ui/ozone/demo/software_renderer.h"
 
+#include "base/bind.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"

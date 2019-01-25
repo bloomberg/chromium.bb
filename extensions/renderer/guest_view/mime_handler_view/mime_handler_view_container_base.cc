@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container_base.h"
 
+#include "base/bind.h"
 #include "base/guid.h"
 #include "base/lazy_instance.h"
 #include "base/memory/weak_ptr.h"

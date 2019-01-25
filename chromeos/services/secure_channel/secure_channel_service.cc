@@ -4,6 +4,7 @@
 
 #include "chromeos/services/secure_channel/secure_channel_service.h"
 
+#include "base/bind.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/secure_channel/secure_channel_initializer.h"
 

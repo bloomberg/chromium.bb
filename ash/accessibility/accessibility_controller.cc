@@ -29,6 +29,7 @@
 #include "ash/system/power/power_status.h"
 #include "ash/system/power/scoped_backlights_forced_off.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string16.h"

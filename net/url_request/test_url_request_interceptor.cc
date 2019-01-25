@@ -4,6 +4,7 @@
 
 #include "net/url_request/test_url_request_interceptor.h"
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/task_runner.h"

@@ -10,6 +10,7 @@
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"

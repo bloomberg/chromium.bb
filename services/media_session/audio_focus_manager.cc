@@ -7,6 +7,7 @@
 #include <iterator>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/containers/adapters.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/unguessable_token.h"

@@ -4,6 +4,7 @@
 
 #include "services/image_annotation/public/cpp/image_processor.h"
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "mojo/public/cpp/bindings/interface_request.h"

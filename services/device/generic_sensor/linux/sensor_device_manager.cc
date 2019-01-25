@@ -4,6 +4,7 @@
 
 #include "services/device/generic_sensor/linux/sensor_device_manager.h"
 
+#include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_task_runner_handle.h"

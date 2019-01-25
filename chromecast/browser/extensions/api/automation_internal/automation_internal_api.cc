@@ -12,6 +12,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"

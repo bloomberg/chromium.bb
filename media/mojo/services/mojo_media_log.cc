@@ -4,6 +4,7 @@
 
 #include "media/mojo/services/mojo_media_log.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 

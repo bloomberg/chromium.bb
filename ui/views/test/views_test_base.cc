@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"

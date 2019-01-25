@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_media_manager.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/task_runner_util.h"

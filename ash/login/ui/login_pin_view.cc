@@ -11,6 +11,7 @@
 #include "ash/public/cpp/login_constants.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"

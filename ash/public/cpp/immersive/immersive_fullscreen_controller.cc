@@ -10,6 +10,7 @@
 #include "ash/public/cpp/immersive/immersive_focus_watcher.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ash/public/cpp/window_properties.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"

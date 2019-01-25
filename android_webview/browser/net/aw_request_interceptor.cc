@@ -12,6 +12,7 @@
 #include "android_webview/browser/net/android_stream_reader_url_request_job.h"
 #include "android_webview/browser/net/aw_web_resource_request.h"
 #include "android_webview/browser/net/aw_web_resource_response.h"
+#include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/supports_user_data.h"

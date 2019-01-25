@@ -6,6 +6,7 @@
 
 #include <unistd.h>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "ui/ozone/platform/drm/gpu/drm_overlay_plane.h"
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"

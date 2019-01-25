@@ -4,6 +4,7 @@
 
 #include "cc/raster/playback_image_provider.h"
 
+#include "base/bind.h"
 #include "cc/tiles/image_decode_cache.h"
 
 namespace cc {

@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"

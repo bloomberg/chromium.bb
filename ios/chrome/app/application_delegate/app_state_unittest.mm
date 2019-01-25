@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/ios/block_types.h"
 #include "base/mac/scoped_block.h"
 #include "base/synchronization/lock.h"

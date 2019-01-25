@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/build_time.h"
 #include "base/containers/span.h"
 #include "base/json/json_writer.h"

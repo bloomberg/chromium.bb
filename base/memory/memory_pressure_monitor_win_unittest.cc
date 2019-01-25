@@ -4,6 +4,7 @@
 
 #include "base/memory/memory_pressure_monitor_win.h"
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/message_loop/message_loop.h"

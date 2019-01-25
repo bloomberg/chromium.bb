@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/no_destructor.h"
 #include "components/gcm_driver/gcm_profile_service.h"

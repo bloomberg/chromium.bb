@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_services_manager_client.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"

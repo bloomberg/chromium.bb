@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"

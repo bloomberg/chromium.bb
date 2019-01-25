@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/bind.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "chromecast/browser/accessibility/accessibility_manager.h"

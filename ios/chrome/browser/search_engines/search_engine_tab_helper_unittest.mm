@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/search_engines/search_engine_tab_helper.h"
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/favicon/ios/web_favicon_driver.h"

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/containers/span.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/cbor/reader.h"

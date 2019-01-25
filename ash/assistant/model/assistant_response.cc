@@ -5,6 +5,7 @@
 #include "ash/assistant/model/assistant_response.h"
 
 #include "ash/assistant/model/assistant_ui_element.h"
+#include "base/bind.h"
 
 namespace ash {
 

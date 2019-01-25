@@ -4,6 +4,7 @@
 
 #include "remoting/host/gcd_rest_client.h"
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"

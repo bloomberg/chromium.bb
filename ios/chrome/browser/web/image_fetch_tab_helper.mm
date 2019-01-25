@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/web/image_fetch_tab_helper.h"
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"

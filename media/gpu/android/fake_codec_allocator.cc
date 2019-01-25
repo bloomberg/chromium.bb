@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/android/mock_media_codec_bridge.h"
 #include "media/gpu/android/codec_allocator.h"

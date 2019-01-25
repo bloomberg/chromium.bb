@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/win/post_async_results.h"

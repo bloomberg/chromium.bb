@@ -4,6 +4,7 @@
 
 #include "services/device/wake_lock/wake_lock.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "services/device/device_service_test_base.h"

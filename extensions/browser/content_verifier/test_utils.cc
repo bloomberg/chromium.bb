@@ -4,6 +4,7 @@
 
 #include "extensions/browser/content_verifier/test_utils.h"
 
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"

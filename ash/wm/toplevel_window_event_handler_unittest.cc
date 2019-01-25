@@ -15,6 +15,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace_controller.h"
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"

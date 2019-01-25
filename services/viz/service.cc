@@ -4,6 +4,7 @@
 
 #include "services/viz/service.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "components/viz/service/main/viz_main_impl.h"
 #include "gpu/config/gpu_preferences.h"

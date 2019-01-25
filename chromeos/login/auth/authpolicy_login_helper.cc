@@ -4,6 +4,7 @@
 
 #include "chromeos/login/auth/authpolicy_login_helper.h"
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/strings/string_split.h"

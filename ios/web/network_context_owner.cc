@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"

@@ -12,6 +12,7 @@
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"

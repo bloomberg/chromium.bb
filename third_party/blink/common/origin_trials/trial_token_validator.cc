@@ -5,6 +5,7 @@
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 
 #include <memory>
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/time/time.h"

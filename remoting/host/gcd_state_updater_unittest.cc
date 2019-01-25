@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringize_macros.h"
 #include "base/test/bind_test_util.h"

@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #import "base/test/ios/wait_util.h"
 #include "base/threading/thread_task_runner_handle.h"

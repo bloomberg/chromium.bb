@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/bind_test_util.h"
 #include "base/time/time.h"

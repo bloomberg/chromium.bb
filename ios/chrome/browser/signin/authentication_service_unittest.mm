@@ -42,6 +42,7 @@
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #import "services/identity/public/cpp/identity_test_environment.h"
 
+#include "base/bind.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"

@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/scroll_view.h"
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"

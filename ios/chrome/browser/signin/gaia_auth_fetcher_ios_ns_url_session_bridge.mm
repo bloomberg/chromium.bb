@@ -6,6 +6,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/bind.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/signin/feature_flags.h"

@@ -4,6 +4,7 @@
 
 #include "storage/browser/blob/blob_url_store_impl.h"
 
+#include "base/bind.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/core/embedder/embedder.h"

@@ -4,6 +4,7 @@
 
 #include "services/resource_coordinator/public/cpp/frame_resource_coordinator.h"
 
+#include "base/bind.h"
 #include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
 
 namespace resource_coordinator {

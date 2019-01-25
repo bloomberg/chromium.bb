@@ -8,6 +8,7 @@
 
 #include "chromeos/services/device_sync/public/cpp/device_sync_client_impl.h"
 
+#include "base/bind.h"
 #include "base/no_destructor.h"
 #include "chromeos/components/multidevice/expiring_remote_device_cache.h"
 #include "chromeos/components/multidevice/logging/logging.h"

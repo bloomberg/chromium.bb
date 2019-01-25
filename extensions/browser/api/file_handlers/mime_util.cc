@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/file_handlers/mime_util.h"
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"

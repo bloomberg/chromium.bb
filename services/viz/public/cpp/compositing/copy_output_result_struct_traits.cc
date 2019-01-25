@@ -4,6 +4,7 @@
 
 #include "services/viz/public/cpp/compositing/copy_output_result_struct_traits.h"
 
+#include "base/bind.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace {

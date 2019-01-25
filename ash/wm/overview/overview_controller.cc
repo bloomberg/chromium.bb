@@ -27,6 +27,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "base/bind.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"

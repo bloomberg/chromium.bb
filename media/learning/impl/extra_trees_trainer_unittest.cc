@@ -4,6 +4,7 @@
 
 #include "media/learning/impl/extra_trees_trainer.h"
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/learning/impl/fisher_iris_dataset.h"

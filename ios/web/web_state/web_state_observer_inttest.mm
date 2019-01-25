@@ -6,6 +6,7 @@
 #include <string>
 
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/ios/ios_util.h"
 #include "base/path_service.h"

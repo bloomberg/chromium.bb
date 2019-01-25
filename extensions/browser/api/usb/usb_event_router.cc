@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "device/base/device_client.h"
 #include "device/usb/mojo/type_converters.h"

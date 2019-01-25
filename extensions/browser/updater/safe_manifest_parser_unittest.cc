@@ -4,6 +4,7 @@
 
 #include "extensions/browser/updater/safe_manifest_parser.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/updater/safe_manifest_parser.h"

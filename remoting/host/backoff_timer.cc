@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "remoting/host/backoff_timer.h"
+#include "base/bind.h"
 
 #include <utility>
 

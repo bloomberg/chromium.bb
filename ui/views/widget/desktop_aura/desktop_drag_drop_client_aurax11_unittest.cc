@@ -10,6 +10,7 @@
 // conflicts with the definition of None in gtest-type-util.h
 #include "ui/views/test/views_test_base.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"

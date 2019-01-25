@@ -4,6 +4,7 @@
 
 #include "chromeos/components/drivefs/drivefs_bootstrap.h"
 
+#include "base/bind.h"
 #include "chromeos/components/drivefs/pending_connection_manager.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/system/invitation.h"

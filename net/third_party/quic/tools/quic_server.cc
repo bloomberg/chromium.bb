@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "net/third_party/quic/core/crypto/crypto_handshake.h"
 #include "net/third_party/quic/core/crypto/quic_random.h"

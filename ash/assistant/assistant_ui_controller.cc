@@ -16,6 +16,7 @@
 #include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_manager.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
+#include "base/bind.h"
 #include "base/optional.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "ui/base/l10n/l10n_util.h"

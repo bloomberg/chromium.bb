@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/memory/shared_memory.h"
 #include "base/numerics/safe_conversions.h"
 #include "ppapi/c/pp_array_output.h"

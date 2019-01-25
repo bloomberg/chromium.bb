@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/bind.h"
 #include "base/no_destructor.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/accessibility/ax_action_data.h"

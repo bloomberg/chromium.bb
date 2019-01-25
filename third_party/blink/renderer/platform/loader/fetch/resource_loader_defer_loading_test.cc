@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader.h"
 
+#include "base/bind.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_url_loader.h"

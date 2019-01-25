@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "android_webview/browser/net/init_native_callback.h"
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_store_change_unittest.h"

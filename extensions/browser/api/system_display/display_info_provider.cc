@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/system_display/display_info_provider.h"
 
+#include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "extensions/browser/extensions_browser_client.h"

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 

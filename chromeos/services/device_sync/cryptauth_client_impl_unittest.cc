@@ -4,6 +4,7 @@
 
 #include "chromeos/services/device_sync/cryptauth_client_impl.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"

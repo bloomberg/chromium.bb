@@ -4,6 +4,7 @@
 
 #include "ui/views_bridge_mac/alert.h"
 
+#include "base/bind.h"
 #include "base/i18n/rtl.h"
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"

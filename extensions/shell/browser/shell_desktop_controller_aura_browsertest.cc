@@ -4,6 +4,7 @@
 
 #include "extensions/shell/browser/shell_desktop_controller_aura.h"
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"

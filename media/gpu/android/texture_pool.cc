@@ -4,6 +4,7 @@
 
 #include "media/gpu/android/texture_pool.h"
 
+#include "base/bind.h"
 #include "gpu/command_buffer/service/abstract_texture.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "media/gpu/command_buffer_helper.h"

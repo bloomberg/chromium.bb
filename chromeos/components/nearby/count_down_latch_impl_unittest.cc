@@ -4,6 +4,7 @@
 
 #include "chromeos/components/nearby/count_down_latch_impl.h"
 
+#include "base/bind.h"
 #include "base/containers/flat_map.h"
 #include "base/optional.h"
 #include "base/stl_util.h"

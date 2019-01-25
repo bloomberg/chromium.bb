@@ -4,6 +4,7 @@
 
 #include "ui/ozone/demo/gl_renderer.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"

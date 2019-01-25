@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "services/network/test/test_data_pipe_getter.h"
+#include "base/bind.h"
 
 #include <algorithm>
 #include <utility>

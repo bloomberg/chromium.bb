@@ -4,6 +4,7 @@
 
 #include "services/device/geolocation/public_ip_address_geolocator.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_task_environment.h"

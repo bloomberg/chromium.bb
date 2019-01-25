@@ -4,6 +4,7 @@
 
 #include "services/data_decoder/public/cpp/safe_xml_parser.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"

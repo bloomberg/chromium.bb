@@ -14,6 +14,7 @@
 #include "ash/public/interfaces/login_user_info.mojom.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
+#include "base/bind.h"
 #include "base/numerics/ranges.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"

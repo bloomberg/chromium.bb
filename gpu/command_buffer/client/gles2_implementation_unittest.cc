@@ -16,6 +16,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/stl_util.h"
 #include "gpu/command_buffer/client/client_test_helper.h"

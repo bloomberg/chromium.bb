@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/task/post_task.h"
 #include "components/guest_view/browser/guest_view_manager.h"

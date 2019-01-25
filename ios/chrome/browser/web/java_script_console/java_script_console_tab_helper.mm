@@ -6,6 +6,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/bind.h"
 #include "base/values.h"
 #include "ios/chrome/browser/web/java_script_console/java_script_console_message.h"
 #include "ios/web/public/web_state/web_frame.h"

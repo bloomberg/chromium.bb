@@ -5,6 +5,7 @@
 #include "ui/views/animation/ink_drop_impl.h"
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/timer/timer.h"
 #include "ui/compositor/layer.h"
 #include "ui/views/animation/ink_drop_highlight.h"

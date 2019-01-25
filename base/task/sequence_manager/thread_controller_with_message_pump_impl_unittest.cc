@@ -4,6 +4,7 @@
 
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"

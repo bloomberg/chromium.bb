@@ -4,6 +4,7 @@
 
 #include "services/network/cors/cors_url_loader.h"
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "net/base/load_flags.h"
 #include "services/network/cors/preflight_controller.h"

@@ -4,6 +4,7 @@
 
 #include "media/gpu/test/video_frame_validator.h"
 
+#include "base/bind.h"
 #include "base/files/file.h"
 #include "base/md5.h"
 #include "base/memory/ptr_util.h"

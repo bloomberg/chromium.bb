@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/no_destructor.h"
 #include "services/tracing/public/cpp/base_agent.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"

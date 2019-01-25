@@ -4,6 +4,7 @@
 
 #include "services/content/public/cpp/navigable_contents.h"
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "services/content/public/cpp/navigable_contents_view.h"
 

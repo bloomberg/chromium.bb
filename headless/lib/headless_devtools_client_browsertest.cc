@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"

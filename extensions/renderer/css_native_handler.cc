@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/css_native_handler.h"
 
+#include "base/bind.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/v8_helpers.h"
 #include "third_party/blink/public/platform/web_string.h"

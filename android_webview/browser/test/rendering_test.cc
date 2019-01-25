@@ -10,6 +10,7 @@
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/child_frame.h"
 #include "android_webview/browser/render_thread_manager.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"

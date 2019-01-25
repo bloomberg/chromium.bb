@@ -4,6 +4,7 @@
 
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"

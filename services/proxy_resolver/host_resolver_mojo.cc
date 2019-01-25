@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/address_list.h"

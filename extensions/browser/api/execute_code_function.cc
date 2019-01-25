@@ -7,6 +7,7 @@
 
 #include "extensions/browser/api/execute_code_function.h"
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "extensions/browser/component_extension_resource_manager.h"

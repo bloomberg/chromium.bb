@@ -7,6 +7,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/bind_internal.h"
 #include "base/compiler_specific.h"
 #include "build/build_config.h"

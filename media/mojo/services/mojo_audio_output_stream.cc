@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/sync_socket.h"

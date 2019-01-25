@@ -4,6 +4,7 @@
 
 #include "net/http/http_response_body_drainer.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"

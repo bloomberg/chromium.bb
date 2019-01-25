@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"

@@ -4,6 +4,7 @@
 
 #include "services/device/generic_sensor/platform_sensor_provider.h"
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/test/scoped_task_environment.h"

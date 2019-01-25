@@ -32,6 +32,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "cc/test/test_ukm_recorder_factory.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"

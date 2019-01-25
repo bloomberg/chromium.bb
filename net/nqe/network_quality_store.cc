@@ -4,6 +4,7 @@
 
 #include "net/nqe/network_quality_store.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/network_change_notifier.h"

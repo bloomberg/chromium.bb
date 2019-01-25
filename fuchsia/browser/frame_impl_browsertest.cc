@@ -4,6 +4,7 @@
 
 #include <lib/fidl/cpp/binding.h>
 
+#include "base/bind.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/macros.h"
 #include "base/test/test_timeouts.h"

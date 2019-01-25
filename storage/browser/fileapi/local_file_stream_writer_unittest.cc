@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"

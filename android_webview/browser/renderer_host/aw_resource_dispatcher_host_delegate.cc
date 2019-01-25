@@ -17,6 +17,7 @@
 #include "android_webview/browser/net_helpers.h"
 #include "android_webview/browser/renderer_host/auto_login_parser.h"
 #include "android_webview/common/url_constants.h"
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler.h"
 #include "components/safe_browsing/features.h"

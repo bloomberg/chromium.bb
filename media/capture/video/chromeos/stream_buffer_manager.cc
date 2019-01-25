@@ -7,6 +7,7 @@
 #include <sync/sync.h>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/posix/safe_strerror.h"
 #include "base/trace_event/trace_event.h"
 #include "media/capture/video/chromeos/camera_buffer_factory.h"

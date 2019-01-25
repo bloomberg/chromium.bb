@@ -4,6 +4,7 @@
 
 #include <lib/fidl/cpp/binding.h>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"

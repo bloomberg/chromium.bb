@@ -13,6 +13,7 @@
 #include <wrl.h>
 #include <wrl/client.h>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"

@@ -4,6 +4,7 @@
 
 #include "device/vr/windows/compositor_base.h"
 
+#include "base/bind.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/transform.h"
 

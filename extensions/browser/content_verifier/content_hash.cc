@@ -4,6 +4,7 @@
 
 #include "extensions/browser/content_verifier/content_hash.h"
 
+#include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"

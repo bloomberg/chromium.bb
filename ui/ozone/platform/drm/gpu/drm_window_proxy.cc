@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/presentation_feedback.h"

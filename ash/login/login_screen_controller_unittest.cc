@@ -16,6 +16,7 @@
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wallpaper/wallpaper_controller.h"
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "components/prefs/pref_service.h"
