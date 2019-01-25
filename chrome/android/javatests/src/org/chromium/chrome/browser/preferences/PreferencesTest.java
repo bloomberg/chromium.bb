@@ -4,6 +4,12 @@
 
 package org.chromium.chrome.browser.preferences;
 
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
+
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Context;
@@ -26,6 +32,7 @@ import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
@@ -364,6 +371,32 @@ public class PreferencesTest {
         userSetTextScale(accessibilityPref, textScalePref, fontSmallerThanThreshold);
         Assert.assertTrue(forceEnableZoomPref.isChecked());
         assertFontSizePrefs(true, fontSmallerThanThreshold);
+    }
+
+    @Test
+    @SmallTest
+    @Policies.Add({ @Policies.Item(key = "PasswordManagerEnabled", string = "false") })
+    public void testSavePasswordsPreferences_ManagedAndDisabled() throws ExecutionException {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            try {
+                ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
+            } catch (ProcessInitException e) {
+                Assert.fail("Unable to initialize process: " + e);
+            }
+        });
+
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return PrefServiceBridge.getInstance().isRememberPasswordsManaged();
+            }
+        });
+
+        PreferencesTest.startPreferences(
+                InstrumentationRegistry.getInstrumentation(), MainPreferences.class.getName());
+
+        onView(withText(R.string.prefs_saved_passwords_title)).perform(click());
+        onView(withText(R.string.prefs_saved_passwords)).check(matches(isDisplayed()));
     }
 
     private void assertFontSizePrefs(final boolean expectedForceEnableZoom,
