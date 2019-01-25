@@ -63,7 +63,7 @@ jinja_template("chrome_public_android_manifest") {
   output = chrome_public_android_manifest
   variables = chrome_public_jinja_variables
   variables += [
-    "min_sdk_version=16",
+    "min_sdk_version=19",
     "target_sdk_version=$android_sdk_version",
   ]
 }
@@ -1462,7 +1462,7 @@ template("chrome_public_apk_or_module_tmpl") {
       android_manifest = chrome_modern_public_android_manifest
       android_manifest_dep = ":chrome_modern_public_android_manifest"
     } else {
-      min_sdk_version = 16
+      min_sdk_version = 19
       android_manifest = chrome_public_android_manifest
       android_manifest_dep = ":chrome_public_android_manifest"
     }
@@ -1666,7 +1666,7 @@ jinja_template("chrome_public_test_apk_manifest") {
   variables = default_chrome_public_jinja_variables
   variables += [
     "manifest_package=$test_manifest_package",
-    "min_sdk_version=16",
+    "min_sdk_version=19",
     "target_sdk_version=$android_sdk_version",
   ]
 }
@@ -1677,7 +1677,7 @@ jinja_template("chrome_public_test_vr_apk_manifest") {
   output = chrome_public_test_vr_apk_manifest
   variables = chrome_public_jinja_variables
   variables += [
-    "min_sdk_version=16",
+    "min_sdk_version=19",
     "target_sdk_version=$android_sdk_version",
   ]
 }

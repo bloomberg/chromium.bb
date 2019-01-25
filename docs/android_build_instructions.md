@@ -162,7 +162,7 @@ the version of Android running on a device. Chrome uses this feature to target
 3 different versions using 3 different ninja targets:
 
 1. `chrome_public_apk` (ChromePublic.apk)
-   * `minSdkVersion=16` (Jelly Bean).
+   * `minSdkVersion=19` (KitKat).
    * Stores libchrome.so compressed within the APK.
    * Uses [Crazy Linker](https://cs.chromium.org/chromium/src/base/android/linker/BUILD.gn?rcl=6bb29391a86f2be58c626170156cbfaa2cbc5c91&l=9).
    * Shipped only for Android < 21, but still works fine on Android >= 21.
