@@ -14,6 +14,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
 #include "components/sync/base/model_type.h"
@@ -60,6 +61,10 @@ class LoopbackServer {
   // Sets a maximum batch size for GetUpdates requests.
   void SetMaxGetUpdatesBatchSize(int batch_size) {
     max_get_updates_batch_size_ = batch_size;
+  }
+
+  void SetBagOfChipsForTesting(const sync_pb::ChipBag& bag_of_chips) {
+    bag_of_chips_ = bag_of_chips;
   }
 
  private:
@@ -203,6 +208,8 @@ class LoopbackServer {
   int64_t version_;
 
   int64_t store_birthday_;
+
+  base::Optional<sync_pb::ChipBag> bag_of_chips_;
 
   int max_get_updates_batch_size_ = 1000000;
 
