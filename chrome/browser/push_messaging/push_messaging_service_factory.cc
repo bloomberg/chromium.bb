@@ -19,6 +19,11 @@
 #include "components/gcm_driver/instance_id/instance_id_profile_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
+#include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
+#endif
+
 // static
 PushMessagingServiceImpl* PushMessagingServiceFactory::GetForProfile(
     content::BrowserContext* context) {
@@ -52,6 +57,11 @@ PushMessagingServiceFactory::PushMessagingServiceFactory()
   DependsOn(HostContentSettingsMapFactory::GetInstance());
   DependsOn(PermissionManagerFactory::GetInstance());
   DependsOn(SiteEngagementServiceFactory::GetInstance());
+#if defined(OS_CHROMEOS)
+  DependsOn(chromeos::android_sms::AndroidSmsServiceFactory::GetInstance());
+  DependsOn(chromeos::multidevice_setup::MultiDeviceSetupClientFactory::
+                GetInstance());
+#endif
 }
 
 PushMessagingServiceFactory::~PushMessagingServiceFactory() {}

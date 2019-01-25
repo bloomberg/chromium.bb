@@ -47,6 +47,12 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
+#include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
+#include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
+#endif
+
 using content::BrowserThread;
 using content::NotificationDatabaseData;
 using content::PlatformNotificationContext;
@@ -99,6 +105,14 @@ void PushMessagingNotificationManager::EnforceUserVisibleOnlyRequirements(
     int64_t service_worker_registration_id,
     const base::Closure& message_handled_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+#if defined(OS_CHROMEOS)
+  if (ShouldSkipUserVisibleOnlyRequirements(origin)) {
+    message_handled_closure.Run();
+    return;
+  }
+#endif
+
   // TODO(johnme): Relax this heuristic slightly.
   scoped_refptr<PlatformNotificationContext> notification_context =
       GetStoragePartition(profile_, origin)->GetPlatformNotificationContext();
@@ -321,3 +335,62 @@ void PushMessagingNotificationManager::DidWriteNotificationData(
 
   message_handled_closure.Run();
 }
+
+#if defined(OS_CHROMEOS)
+bool PushMessagingNotificationManager::ShouldSkipUserVisibleOnlyRequirements(
+    const GURL& origin) {
+  // This is a short-term exception to user visible only enforcement added
+  // to support for "Messages for Web" integration on ChromeOS.
+
+  chromeos::multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client;
+  if (test_multidevice_setup_client_) {
+    multidevice_setup_client = test_multidevice_setup_client_;
+  } else {
+    multidevice_setup_client = chromeos::multidevice_setup::
+        MultiDeviceSetupClientFactory::GetForProfile(profile_);
+  }
+
+  if (!multidevice_setup_client)
+    return false;
+
+  // Check if messages feature is enabled
+  if (multidevice_setup_client->GetFeatureState(
+          chromeos::multidevice_setup::mojom::Feature::kMessages) !=
+      chromeos::multidevice_setup::mojom::FeatureState::kEnabledByUser) {
+    return false;
+  }
+
+  chromeos::android_sms::AndroidSmsAppManager* android_sms_app_manager;
+  if (test_android_sms_app_manager_) {
+    android_sms_app_manager = test_android_sms_app_manager_;
+  } else {
+    chromeos::android_sms::AndroidSmsService* android_sms_service =
+        chromeos::android_sms::AndroidSmsServiceFactory::GetForBrowserContext(
+            profile_);
+    if (!android_sms_service)
+      return false;
+    android_sms_app_manager = android_sms_service->android_sms_app_manager();
+  }
+
+  // Check if origin matches current messages url
+  base::Optional<GURL> app_url = android_sms_app_manager->GetInstalledAppUrl();
+  if (!app_url)
+    app_url = chromeos::android_sms::GetAndroidMessagesURL();
+
+  if (!origin.EqualsIgnoringRef(*app_url))
+    return false;
+
+  return true;
+}
+
+void PushMessagingNotificationManager::SetTestMultiDeviceSetupClient(
+    chromeos::multidevice_setup::MultiDeviceSetupClient*
+        multidevice_setup_client) {
+  test_multidevice_setup_client_ = multidevice_setup_client;
+}
+
+void PushMessagingNotificationManager::SetTestAndroidSmsAppManager(
+    chromeos::android_sms::AndroidSmsAppManager* android_sms_app_manager) {
+  test_android_sms_app_manager_ = android_sms_app_manager;
+}
+#endif
