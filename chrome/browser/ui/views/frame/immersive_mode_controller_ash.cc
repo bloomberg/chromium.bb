@@ -53,18 +53,24 @@ class LocatedEventRetargeter : public ui::EventRewriter {
   LocatedEventRetargeter() {}
   ~LocatedEventRetargeter() override {}
 
-  ui::EventDispatchDetails RewriteEvent(
+  ui::EventRewriteStatus RewriteEvent(
       const ui::Event& event,
-      const base::WeakPtr<Continuation> continuation) override {
+      std::unique_ptr<ui::Event>* rewritten_event) override {
     if (!event.IsLocatedEvent())
-      return SendEvent(continuation, &event);
+      return ui::EVENT_REWRITE_CONTINUE;
 
-    std::unique_ptr<ui::Event> replacement_event = ui::Event::Clone(event);
+    *rewritten_event = ui::Event::Clone(event);
     // Cloning strips the EventTarget. The only goal of this EventRewriter is to
     // null the target, so there's no need to do anything extra here.
-    DCHECK(!replacement_event->target());
+    DCHECK(!(*rewritten_event)->target());
 
-    return SendEventFinally(continuation, replacement_event.get());
+    return ui::EVENT_REWRITE_REWRITTEN;
+  }
+
+  ui::EventRewriteStatus NextDispatchEvent(
+      const ui::Event& last_event,
+      std::unique_ptr<ui::Event>* new_event) override {
+    return ui::EVENT_REWRITE_CONTINUE;
   }
 
  private:
@@ -112,7 +118,7 @@ ImmersiveModeControllerAsh::~ImmersiveModeControllerAsh() = default;
 void ImmersiveModeControllerAsh::Init(BrowserView* browser_view) {
   browser_view_ = browser_view;
   controller_->Init(this, browser_view_->frame(),
-                    browser_view_->top_container());
+      browser_view_->top_container());
 
   observed_windows_.Add(
       !features::IsUsingWindowService()
@@ -267,15 +273,15 @@ void ImmersiveModeControllerAsh::SetVisibleFraction(double visible_fraction) {
   browser_view_->frame()->GetFrameView()->UpdateClientArea();
 }
 
-std::vector<gfx::Rect> ImmersiveModeControllerAsh::GetVisibleBoundsInScreen()
-    const {
+std::vector<gfx::Rect>
+ImmersiveModeControllerAsh::GetVisibleBoundsInScreen() const {
   views::View* top_container_view = browser_view_->top_container();
   gfx::Rect top_container_view_bounds = top_container_view->GetVisibleBounds();
   // TODO(tdanderson): Implement View::ConvertRectToScreen().
   gfx::Point top_container_view_bounds_in_screen_origin(
       top_container_view_bounds.origin());
-  views::View::ConvertPointToScreen(
-      top_container_view, &top_container_view_bounds_in_screen_origin);
+  views::View::ConvertPointToScreen(top_container_view,
+      &top_container_view_bounds_in_screen_origin);
   gfx::Rect top_container_view_bounds_in_screen(
       top_container_view_bounds_in_screen_origin,
       top_container_view_bounds.size());
@@ -295,8 +301,8 @@ void ImmersiveModeControllerAsh::Observe(
     return;
 
   // Auto hide the shelf in immersive browser fullscreen.
-  bool in_tab_fullscreen = content::Source<FullscreenController>(source)
-                               ->IsWindowFullscreenForTabOrPending();
+  bool in_tab_fullscreen = content::Source<FullscreenController>(source)->
+      IsWindowFullscreenForTabOrPending();
   browser_view_->GetNativeWindow()->SetProperty(
       ash::kHideShelfWhenFullscreenKey, in_tab_fullscreen);
 }

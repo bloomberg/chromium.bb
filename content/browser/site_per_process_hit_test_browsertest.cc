@@ -705,11 +705,18 @@ class SystemEventRewriter : public ui::EventRewriter {
   ~SystemEventRewriter() override = default;
 
  private:
-  ui::EventDispatchDetails RewriteEvent(
+  ui::EventRewriteStatus RewriteEvent(
       const ui::Event& event,
-      const base::WeakPtr<Continuation> continuation) override {
-    return num_of_scoped_allows_ ? continuation->SendEvent(&event)
-                                 : continuation->DiscardEvent();
+      std::unique_ptr<ui::Event>* new_event) override {
+    return num_of_scoped_allows_ ? ui::EVENT_REWRITE_CONTINUE
+                                 : ui::EVENT_REWRITE_DISCARD;
+  }
+
+  ui::EventRewriteStatus NextDispatchEvent(
+      const ui::Event& event,
+      std::unique_ptr<ui::Event>* new_event) override {
+    NOTREACHED();
+    return ui::EVENT_REWRITE_CONTINUE;
   }
 
   // Count of ScopedAllow objects. When it is greater than 0, events are allowed

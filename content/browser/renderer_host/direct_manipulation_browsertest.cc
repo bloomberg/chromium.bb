@@ -119,7 +119,7 @@ IN_PROC_BROWSER_TEST_P(DirectManipulationBrowserTest, HWNDReparent) {
   shell2->Close();
 }
 
-// EventLogger is to observe the events sent from WindowEventTarget (the root
+// EventLogger is to obserser the events sent from WindowEventTarget (the root
 // window).
 class EventLogger : public ui::EventRewriter {
  public:
@@ -132,12 +132,19 @@ class EventLogger : public ui::EventRewriter {
 
  private:
   // ui::EventRewriter
-  ui::EventDispatchDetails RewriteEvent(
+  ui::EventRewriteStatus RewriteEvent(
       const ui::Event& event,
-      const base::WeakPtr<Continuation> continuation) override {
+      std::unique_ptr<ui::Event>* new_event) override {
     DCHECK(!last_event_);
     last_event_ = ui::Event::Clone(event);
-    return SendEvent(continuation, &event);
+    return ui::EVENT_REWRITE_CONTINUE;
+  }
+
+  // ui::EventRewriter
+  ui::EventRewriteStatus NextDispatchEvent(
+      const ui::Event& last_event,
+      std::unique_ptr<ui::Event>* new_event) override {
+    return ui::EVENT_REWRITE_CONTINUE;
   }
 
   std::unique_ptr<ui::Event> last_event_ = nullptr;
