@@ -84,10 +84,16 @@ class FindTaskController::IdleFindTask
         TimeDelta::FromMillisecondsD(deadline->timeRemaining());
     const TimeTicks start_time = CurrentTimeTicks();
 
-    PositionInFlatTree search_start = PositionInFlatTree::FirstPositionInNode(
-        *controller_->GetLocalFrame()->GetDocument());
-    PositionInFlatTree search_end = PositionInFlatTree::LastPositionInNode(
-        *controller_->GetLocalFrame()->GetDocument());
+    Document& document = *controller_->GetLocalFrame()->GetDocument();
+    PositionInFlatTree search_start =
+        PositionInFlatTree::FirstPositionInNode(document);
+    PositionInFlatTree search_end;
+    if (document.documentElement() && document.documentElement()->lastChild()) {
+      search_end = PositionInFlatTree::AfterNode(
+          *document.documentElement()->lastChild());
+    } else {
+      search_end = PositionInFlatTree::LastPositionInNode(document);
+    }
     DCHECK_EQ(search_start.GetDocument(), search_end.GetDocument());
 
     if (Range* resume_from_range = controller_->ResumeFindingFromRange()) {
@@ -109,7 +115,7 @@ class FindTaskController::IdleFindTask
     PositionInFlatTree next_task_start_position;
     do {
       // Find in the whole block.
-      FindBuffer buffer(search_start);
+      FindBuffer buffer(EphemeralRangeInFlatTree(search_start, search_end));
       std::unique_ptr<FindBuffer::Results> match_results =
           buffer.FindMatches(search_text_, *options_);
       for (FindBuffer::BufferMatchResult match : *match_results) {

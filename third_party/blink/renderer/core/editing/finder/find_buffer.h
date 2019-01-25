@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_FINDER_FIND_BUFFER_H_
 
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink.h"
-#include "third_party/blink/renderer/core/editing/finder/find_buffer.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_searcher_icu.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 
@@ -23,7 +22,7 @@ class CORE_EXPORT FindBuffer {
   STACK_ALLOCATED();
 
  public:
-  FindBuffer(const PositionInFlatTree& start_position);
+  FindBuffer(const EphemeralRangeInFlatTree& range);
 
   // A match result, containing the starting position of the match and
   // the length of the match.
@@ -95,12 +94,12 @@ class CORE_EXPORT FindBuffer {
   }
 
  private:
-  // Collects text for one LayoutBlockFlow located at or after |start_node|
-  // to |buffer_|, might be stopped without finishing one full LayoutBlockFlow
-  // if we encountered another LayoutBLockFlow. Saves the next starting node
-  // after the block (first node in another LayoutBlockFlow) to
-  // |node_after_block_|.
-  void CollectTextUntilBlockBoundary(Node& start_node);
+  // Collects text for one LayoutBlockFlow located within |range| to |buffer_|,
+  // might be stopped without finishing one full LayoutBlockFlow  if we
+  // encountered another LayoutBLockFlow, or if the end of |range| is
+  // surpassed. Saves the next starting node after the block (first node in
+  // another LayoutBlockFlow or after |end_position|) to |node_after_block_|.
+  void CollectTextUntilBlockBoundary(const EphemeralRangeInFlatTree& range);
 
   class CORE_EXPORT InvisibleLayoutScope {
     STACK_ALLOCATED();
@@ -153,7 +152,10 @@ class CORE_EXPORT FindBuffer {
 
   PositionInFlatTree PositionAtEndOfCharacterAtIndex(unsigned index) const;
 
-  void AddTextToBuffer(const Text& text_node, LayoutBlockFlow& block_flow);
+  // Adds text in |text_node| that are located within |range| to |buffer_|.
+  void AddTextToBuffer(const Text& text_node,
+                       LayoutBlockFlow& block_flow,
+                       const EphemeralRangeInFlatTree& range);
 
   InvisibleLayoutScope invisible_layout_scope_;
   Member<Node> node_after_block_;
