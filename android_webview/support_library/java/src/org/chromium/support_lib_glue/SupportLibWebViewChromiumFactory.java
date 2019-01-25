@@ -65,6 +65,7 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
                     Features.GET_WEB_VIEW_CLIENT,
                     Features.GET_WEB_CHROME_CLIENT,
                     Features.PROXY_OVERRIDE + Features.DEV_SUFFIX,
+                    Features.SUPPRESS_ERROR_PAGE + Features.DEV_SUFFIX,
                     Features.GET_WEB_VIEW_RENDERER,
                     Features.WEB_VIEW_RENDERER_TERMINATE,
                     Features.TRACING_CONTROLLER_BASIC_USAGE,

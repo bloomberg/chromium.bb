@@ -37,6 +37,8 @@ class AwContentRendererClient : public content::ContentRendererClient,
   void RenderFrameCreated(content::RenderFrame* render_frame) override;
   void RenderViewCreated(content::RenderView* render_view) override;
   bool HasErrorPage(int http_status_code) override;
+  bool ShouldSuppressErrorPage(content::RenderFrame* render_frame,
+                               const GURL& url) override;
   void PrepareErrorPage(content::RenderFrame* render_frame,
                         const blink::WebURLError& error,
                         const std::string& http_method,

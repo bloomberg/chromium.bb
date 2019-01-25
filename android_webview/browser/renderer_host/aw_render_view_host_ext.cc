@@ -21,8 +21,8 @@
 
 namespace android_webview {
 
-AwRenderViewHostExt::AwRenderViewHostExt(
-    AwRenderViewHostExtClient* client, content::WebContents* contents)
+AwRenderViewHostExt::AwRenderViewHostExt(AwRenderViewHostExtClient* client,
+                                         content::WebContents* contents)
     : content::WebContentsObserver(contents),
       client_(client),
       background_color_(SK_ColorWHITE),
@@ -117,6 +117,17 @@ void AwRenderViewHostExt::SetBackgroundColor(SkColor c) {
   }
 }
 
+void AwRenderViewHostExt::SetShouldSuppressErrorPage(bool suppress) {
+  // We need to store state on the browser-side, as state might need to be
+  // synchronized again later (see AwRenderViewHostExt::RenderFrameCreated)
+  if (should_suppress_error_page_ == suppress)
+    return;
+  should_suppress_error_page_ = suppress;
+
+  web_contents()->SendToAllFrames(new AwViewMsg_ShouldSuppressErrorPage(
+      MSG_ROUTING_NONE, should_suppress_error_page_));
+}
+
 void AwRenderViewHostExt::SetJsOnlineProperty(bool network_up) {
   web_contents()->GetRenderViewHost()->Send(
       new AwViewMsg_SetJsOnlineProperty(network_up));
@@ -153,6 +164,14 @@ void AwRenderViewHostExt::RenderFrameCreated(
     frame_host->Send(new AwViewMsg_SetBackgroundColor(
         frame_host->GetRoutingID(), background_color_));
   }
+
+  // Synchronizing error page suppression state down to the renderer cannot be
+  // done when RenderViewHostChanged is fired (similar to how other settings do
+  // it) because for cross-origin navigations in multi-process mode, the
+  // navigation will already have started then. Also, newly created subframes
+  // need to inherit the state.
+  frame_host->Send(new AwViewMsg_ShouldSuppressErrorPage(
+      frame_host->GetRoutingID(), should_suppress_error_page_));
 }
 
 void AwRenderViewHostExt::DidFinishNavigation(

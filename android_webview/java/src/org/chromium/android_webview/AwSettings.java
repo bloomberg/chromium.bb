@@ -114,6 +114,7 @@ public class AwSettings {
     private int mForceDarkMode = FORCE_DARK_AUTO;
     private boolean mCSSHexAlphaColorEnabled;
     private boolean mScrollTopLeftInteropEnabled;
+    private boolean mShouldSuppressErrorPage;
 
     private boolean mOffscreenPreRaster;
     private int mDisabledMenuItems = WebSettings.MENU_ITEM_NONE;
@@ -1258,6 +1259,35 @@ public class AwSettings {
     }
 
     @CalledByNative
+    private boolean getShouldSuppressErrorPageLocked() {
+        assert Thread.holdsLock(mAwSettingsLock);
+        return mShouldSuppressErrorPage;
+    }
+
+    public boolean getShouldSuppressErrorPage() {
+        synchronized (mAwSettingsLock) {
+            return getShouldSuppressErrorPageLocked();
+        }
+    }
+
+    public void setShouldSuppressErrorPage(boolean suppressed) {
+        synchronized (mAwSettingsLock) {
+            if (mShouldSuppressErrorPage == suppressed) return;
+
+            mShouldSuppressErrorPage = suppressed;
+            updateShouldSuppressErrorStateLocked();
+        }
+    }
+
+    private void updateShouldSuppressErrorStateLocked() {
+        mEventHandler.runOnUiThreadBlockingAndLocked(() -> {
+            assert Thread.holdsLock(mAwSettingsLock);
+            assert mNativeAwSettings != 0;
+            nativeUpdateShouldSuppressErrorStateLocked(mNativeAwSettings);
+        });
+    }
+
+    @CalledByNative
     private boolean getSupportLegacyQuirksLocked() {
         assert Thread.holdsLock(mAwSettingsLock);
         return mSupportLegacyQuirks;
@@ -1814,4 +1844,6 @@ public class AwSettings {
     private native void nativeUpdateRendererPreferencesLocked(long nativeAwSettings);
 
     private native void nativeUpdateOffscreenPreRasterLocked(long nativeAwSettings);
+
+    private native void nativeUpdateShouldSuppressErrorStateLocked(long nativeAwSettings);
 }

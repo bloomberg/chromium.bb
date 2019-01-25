@@ -11,6 +11,10 @@
 
 namespace android_webview {
 
+// NOTE: We should not add more things to RenderView and related classes.
+//       RenderView is deprecated in content, since it is not compatible
+//       with site isolation/out of process iframes.
+
 // Render process side of AwRenderViewHostExt, this provides cross-process
 // implementation of miscellaneous WebView functions that we need to poke
 // WebKit directly to implement (and that aren't needed in the chrome app).

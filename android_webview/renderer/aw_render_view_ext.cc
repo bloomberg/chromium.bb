@@ -12,7 +12,9 @@
 namespace android_webview {
 
 AwRenderViewExt::AwRenderViewExt(content::RenderView* render_view)
-    : content::RenderViewObserver(render_view) {}
+    : content::RenderViewObserver(render_view) {
+  DCHECK(render_view != nullptr);
+}
 
 AwRenderViewExt::~AwRenderViewExt() {}
 

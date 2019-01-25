@@ -4,10 +4,12 @@
 
 #include "android_webview/renderer/aw_render_frame_ext.h"
 
+#include <map>
 #include <memory>
 
 #include "android_webview/common/aw_hit_test_data.h"
 #include "android_webview/common/render_view_messages.h"
+#include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
@@ -141,6 +143,11 @@ void PopulateHitTestData(const GURL& absolute_link_url,
 
 }  // namespace
 
+// Registry for RenderFrame => AwRenderFrameExt lookups
+typedef std::map<content::RenderFrame*, AwRenderFrameExt*> FrameExtMap;
+base::LazyInstance<FrameExtMap>::Leaky render_frame_ext_map =
+    LAZY_INSTANCE_INITIALIZER;
+
 AwRenderFrameExt::AwRenderFrameExt(content::RenderFrame* render_frame)
     : content::RenderFrameObserver(render_frame) {
   // TODO(sgurun) do not create a password autofill agent (change
@@ -149,9 +156,37 @@ AwRenderFrameExt::AwRenderFrameExt(content::RenderFrame* render_frame)
       new autofill::PasswordAutofillAgent(render_frame, &registry_);
   new autofill::AutofillAgent(render_frame, password_autofill_agent, nullptr,
                               &registry_);
+
+  // Add myself to the RenderFrame => AwRenderFrameExt register.
+  render_frame_ext_map.Get().emplace(render_frame, this);
 }
 
 AwRenderFrameExt::~AwRenderFrameExt() {
+  // Remove myself from the RenderFrame => AwRenderFrameExt register. Ideally,
+  // we'd just use render_frame() and erase by key. However, by this time the
+  // render_frame has already been cleared so we have to iterate over all
+  // render_frames in the map and wipe the one(s) that point to this
+  // AwRenderFrameExt
+
+  auto& map = render_frame_ext_map.Get();
+  auto it = map.begin();
+  while (it != map.end()) {
+    if (it->second == this) {
+      it = map.erase(it);
+    } else {
+      ++it;
+    }
+  }
+}
+
+AwRenderFrameExt* AwRenderFrameExt::FromRenderFrame(
+    content::RenderFrame* render_frame) {
+  DCHECK(render_frame != nullptr);
+  auto iter = render_frame_ext_map.Get().find(render_frame);
+  DCHECK(render_frame_ext_map.Get().end() != iter)
+      << "Should always exist a render_frame_ext for a render_frame";
+  AwRenderFrameExt* render_frame_ext = iter->second;
+  return render_frame_ext;
 }
 
 bool AwRenderFrameExt::OnAssociatedInterfaceRequestForFrame(
@@ -195,6 +230,8 @@ bool AwRenderFrameExt::OnMessageReceived(const IPC::Message& message) {
                         OnResetScrollAndScaleState)
     IPC_MESSAGE_HANDLER(AwViewMsg_SetInitialPageScale, OnSetInitialPageScale)
     IPC_MESSAGE_HANDLER(AwViewMsg_SetBackgroundColor, OnSetBackgroundColor)
+    IPC_MESSAGE_HANDLER(AwViewMsg_ShouldSuppressErrorPage,
+                        OnSetShouldSuppressErrorPage)
     IPC_MESSAGE_HANDLER(AwViewMsg_SmoothScroll, OnSmoothScroll)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -308,6 +345,14 @@ void AwRenderFrameExt::OnSmoothScroll(int target_x,
     return;
 
   webview->SmoothScroll(target_x, target_y, static_cast<long>(duration_ms));
+}
+
+void AwRenderFrameExt::OnSetShouldSuppressErrorPage(bool suppress) {
+  this->should_suppress_error_page_ = suppress;
+}
+
+bool AwRenderFrameExt::GetShouldSuppressErrorPage() {
+  return this->should_suppress_error_page_;
 }
 
 blink::WebView* AwRenderFrameExt::GetWebView() {
