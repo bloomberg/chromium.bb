@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_SIGNIN_IDENTITY_MANAGER_FACTORY_H_
 #define CHROME_BROWSER_SIGNIN_IDENTITY_MANAGER_FACTORY_H_
 
+#include <memory>
+#include <string>
+
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
@@ -24,6 +27,15 @@ class IdentityManagerFactory : public BrowserContextKeyedServiceFactory {
 
   // Returns an instance of the IdentityManagerFactory singleton.
   static IdentityManagerFactory* GetInstance();
+
+  // Exposes BuildServiceInstanceFor() publicly for usage to unittests,
+  // returning an authenticated IdentityManager, useful specially in
+  // ChromeOS scenarios.
+  static std::unique_ptr<KeyedService>
+  BuildAuthenticatedServiceInstanceForTesting(const std::string& gaia_id,
+                                              const std::string& email,
+                                              const std::string& refresh_token,
+                                              content::BrowserContext* context);
 
  private:
   friend struct base::DefaultSingletonTraits<IdentityManagerFactory>;

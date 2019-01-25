@@ -39,6 +39,7 @@ class SharedURLLoaderFactory;
 
 // Necessary to declare these classes as friends.
 class ArcSupportHostTest;
+class IdentityManagerFactory;
 
 namespace identity {
 
@@ -410,6 +411,7 @@ class IdentityManager : public SigninManagerBase::Observer,
   friend arc::ArcTermsOfServiceDefaultNegotiatorTest;
   friend chromeos::ChromeSessionManager;
   friend chromeos::UserSessionManager;
+  friend IdentityManagerFactory;
 
   // Private getters used for testing only (i.e. see identity_test_utils.h).
   SigninManagerBase* GetSigninManager();

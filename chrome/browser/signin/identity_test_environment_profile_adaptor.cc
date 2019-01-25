@@ -74,6 +74,21 @@ IdentityTestEnvironmentProfileAdaptor::GetIdentityTestEnvironmentFactories() {
            base::BindRepeating(&BuildFakeSigninManagerForTesting)}};
 }
 
+// static
+TestingProfile::TestingFactories IdentityTestEnvironmentProfileAdaptor::
+    GetIdentityTestEnvironmentFactoriesWithPrimaryAccountSet(
+        const std::string& email) {
+  TestingProfile::TestingFactories testing_factories(
+      GetIdentityTestEnvironmentFactories());
+  testing_factories.emplace_back(
+      IdentityManagerFactory::GetInstance(),
+      base::BindRepeating(
+          IdentityManagerFactory::BuildAuthenticatedServiceInstanceForTesting,
+          identity::GetTestGaiaIdForEmail(email), email, "refresh_token"));
+
+  return testing_factories;
+}
+
 IdentityTestEnvironmentProfileAdaptor::IdentityTestEnvironmentProfileAdaptor(
     Profile* profile)
     : identity_test_env_(
