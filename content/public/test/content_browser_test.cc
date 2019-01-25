@@ -140,9 +140,16 @@ void ContentBrowserTest::PreRunTestOnMainThread() {
 #if defined(OS_MACOSX)
   pool_->Recycle();
 #endif
+
+  pre_run_test_executed_ = true;
 }
 
 void ContentBrowserTest::PostRunTestOnMainThread() {
+  // This code is failing when the test is overriding PreRunTestOnMainThread()
+  // without the required call to ContentBrowserTest::PreRunTestOnMainThread().
+  // This is a common error causing a crash on MAC.
+  DCHECK(pre_run_test_executed_);
+
 #if defined(OS_MACOSX)
   pool_->Recycle();
 #endif
