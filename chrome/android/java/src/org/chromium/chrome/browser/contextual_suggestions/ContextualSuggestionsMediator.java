@@ -15,7 +15,6 @@ import android.view.View;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -303,8 +302,6 @@ class ContextualSuggestionsMediator
                     view -> onToolbarButtonClicked(),
                     R.drawable.contextual_suggestions,
                     R.string.contextual_suggestions_button_description);
-            RecordHistogram.recordBooleanHistogram(
-                    "ContextualSuggestions.ResultsReturnedInOverviewMode", isOverviewModeVisible());
             reportToolbarButtonShown();
         });
     }
