@@ -16,4 +16,8 @@ interface DisplayLockContext {
   // necessary lifecycle phases.
   // Returns a promise that resolves when the commit is finished.
   [CallWith=ScriptState] Promise<any> commit();
+
+  // Causes co-operative updates to happen, followed by a commit.
+  // Returns a promise that resolves when the commit is finished.
+  [CallWith=ScriptState] Promise<any> updateAndCommit();
 };

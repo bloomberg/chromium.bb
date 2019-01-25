@@ -163,12 +163,9 @@ ScriptPromise DisplayLockContext::commit(ScriptState* script_state) {
   if (state_ == kUnlocked)
     return GetRejectedPromise(script_state);
 
-  // If we have a resolver, we must be committing already, just return the same
-  // promise.
-  if (commit_resolver_) {
-    DCHECK(state_ == kCommitting) << state_;
+  // If we're already committing then return the promise.
+  if (state_ == kCommitting)
     return commit_resolver_->Promise();
-  }
 
   // Now that we've explicitly been requested to commit, we have cancel the
   // timeout task.
@@ -179,10 +176,40 @@ ScriptPromise DisplayLockContext::commit(ScriptState* script_state) {
   // together will still wait until the lifecycle is clean before resolving any
   // of the promises.
   DCHECK_NE(state_, kCommitting);
-  commit_resolver_ = ScriptPromiseResolver::Create(script_state);
+  // We might already have a resolver if we called updateAndCommit() before
+  // this.
+  if (!commit_resolver_)
+    commit_resolver_ = ScriptPromiseResolver::Create(script_state);
   auto promise = commit_resolver_->Promise();
   StartCommit();
   return promise;
+}
+
+ScriptPromise DisplayLockContext::updateAndCommit(ScriptState* script_state) {
+  // Reject if we're unlocked.
+  if (state_ == kUnlocked)
+    return GetRejectedPromise(script_state);
+
+  // If we're in a state where a co-operative update doesn't make sense (e.g. we
+  // haven't acquired the lock, or we're already sync committing), then do
+  // whatever commit() would do.
+  if (state_ == kPendingAcquire || state_ == kCommitting ||
+      !element_->isConnected()) {
+    return commit(script_state);
+  }
+
+  // If we have a commit resolver already, return it.
+  if (commit_resolver_) {
+    // We must be in a second call to updateAndCommit(), meaning that we're in
+    // the kUpdating state with a commit_resolver_.
+    DCHECK_EQ(state_, kUpdating);
+    return commit_resolver_->Promise();
+  }
+
+  CancelTimeoutTask();
+  commit_resolver_ = ScriptPromiseResolver::Create(script_state);
+  StartUpdateIfNeeded();
+  return commit_resolver_->Promise();
 }
 
 void DisplayLockContext::FinishUpdateResolver(ResolverState state) {
@@ -240,10 +267,11 @@ void DisplayLockContext::DidStyle() {
   // unexpected behavior. By rejecting the promise, the behavior can be detected
   // by script.
   if (!ElementSupportsDisplayLocking()) {
+    bool should_stay_locked = state_ == kUpdating && !commit_resolver_;
     FinishUpdateResolver(kReject);
     FinishCommitResolver(kReject);
     FinishAcquireResolver(kReject);
-    state_ = state_ == kUpdating ? kLocked : kUnlocked;
+    state_ = should_stay_locked ? kLocked : kUnlocked;
     return;
   }
 
@@ -300,16 +328,17 @@ bool DisplayLockContext::IsSearchable() const {
 }
 
 void DisplayLockContext::DidAttachLayoutTree() {
-  if (state_ == kUnlocked)
+  if (state_ >= kUnlocked)
     return;
 
   // Note that although we checked at style recalc time that the element has
   // "contain: style layout", it might not actually apply the containment at the
   // layout object level. This confirms that containment should apply.
   if (!ElementSupportsDisplayLocking()) {
+    bool should_stay_locked = state_ == kUpdating && !commit_resolver_;
     FinishUpdateResolver(kReject);
     FinishCommitResolver(kReject);
-    state_ = state_ == kUpdating ? kLocked : kUnlocked;
+    state_ = should_stay_locked ? kLocked : kUnlocked;
   }
 }
 
@@ -546,7 +575,13 @@ void DisplayLockContext::DidFinishLifecycleUpdate() {
   if (!element_ || !element_->isConnected()) {
     FinishUpdateResolver(kReject);
     update_budget_.reset();
-    state_ = kLocked;
+
+    if (commit_resolver_) {
+      FinishCommitResolver(kReject);
+      state_ = kUnlocked;
+    } else {
+      state_ = kLocked;
+    }
     return;
   }
 
@@ -563,6 +598,17 @@ void DisplayLockContext::DidFinishLifecycleUpdate() {
   FinishUpdateResolver(kResolve);
   update_budget_.reset();
   state_ = kLocked;
+
+  if (commit_resolver_) {
+    // Schedule a commit to run. Note that we can't call StartCommit directly
+    // here, since we're in the lifecycle updates right now and the code that
+    // runs after may depend on having clean layout state, which StartCommit
+    // might dirty.
+    GetExecutionContext()
+        ->GetTaskRunner(TaskType::kMiscPlatformAPI)
+        ->PostTask(FROM_HERE, WTF::Bind(&DisplayLockContext::StartCommit,
+                                        WrapWeakPersistent(this)));
+  }
 }
 
 void DisplayLockContext::ScheduleAnimation() {
