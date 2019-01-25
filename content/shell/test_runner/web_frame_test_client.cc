@@ -421,12 +421,6 @@ void WebFrameTestClient::DidDispatchPingLoader(const blink::WebURL& url) {
 }
 
 void WebFrameTestClient::WillSendRequest(blink::WebURLRequest& request) {
-  // PlzNavigate
-  // Navigation requests initiated by the renderer will have been logged when
-  // the navigation was sent to the browser. Please see
-  // the RenderFrameImpl::BeginNavigation() function.
-  if (delegate_->IsNavigationInitiatedByRenderer(request))
-    return;
   // Need to use GURL for host() and SchemeIs()
   GURL url = request.Url();
   std::string request_url = url.possibly_invalid_spec();
@@ -551,8 +545,6 @@ void WebFrameTestClient::DidAddMessageToConsole(
 
 bool WebFrameTestClient::ShouldContinueNavigation(
     const blink::WebNavigationInfo& info) {
-  DCHECK(!delegate_->IsNavigationInitiatedByRenderer(info.url_request));
-
   if (test_runner()->shouldDumpNavigationPolicy()) {
     delegate_->PrintMessage(
         "Default policy for navigation to '" +

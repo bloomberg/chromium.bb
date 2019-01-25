@@ -127,8 +127,7 @@ class CONTENT_EXPORT ResourceDispatcher {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
       std::unique_ptr<NavigationResponseOverrideParameters>
-          response_override_params,
-      base::OnceClosure* continue_navigation_function);
+          response_override_params);
 
   // Removes a request from the |pending_requests_| list, returning true if the
   // request was found and removed.

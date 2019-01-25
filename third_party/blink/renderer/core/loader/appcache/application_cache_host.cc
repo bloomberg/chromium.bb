@@ -79,18 +79,8 @@ ApplicationCacheHost::~ApplicationCacheHost() {
 }
 
 void ApplicationCacheHost::WillStartLoading(ResourceRequest& request) {
-  if (!IsApplicationCacheEnabled())
+  if (!IsApplicationCacheEnabled() || !host_)
     return;
-
-  if (request.GetFrameType() ==
-          network::mojom::RequestContextFrameType::kTopLevel ||
-      request.GetFrameType() ==
-          network::mojom::RequestContextFrameType::kNested)
-    WillStartLoadingMainResource(request.Url(), request.HttpMethod());
-
-  if (!host_)
-    return;
-
   int host_id = host_->GetHostID();
   if (host_id != mojom::blink::kAppCacheNoHostId)
     request.SetAppCacheHostID(host_id);
@@ -98,11 +88,11 @@ void ApplicationCacheHost::WillStartLoading(ResourceRequest& request) {
 
 void ApplicationCacheHost::WillStartLoadingMainResource(const KURL& url,
                                                         const String& method) {
+  if (!IsApplicationCacheEnabled())
+    return;
   // We defer creating the outer host object to avoid spurious
   // creation/destruction around creating empty documents. At this point, we're
   // initiating a main resource load for the document, so its for real.
-
-  DCHECK(IsApplicationCacheEnabled());
 
   DCHECK(document_loader_->GetFrame());
   LocalFrame& frame = *document_loader_->GetFrame();

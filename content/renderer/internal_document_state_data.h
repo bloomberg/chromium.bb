@@ -87,6 +87,13 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
     previews_state_ = previews_state;
   }
 
+  // This is a fake navigation request id, which we send to the browser process
+  // together with metrics. Note that renderer does not actually issue a request
+  // for navigation (browser does it instead), but still reports metrics for it.
+  // See content::mojom::ResourceLoadInfo.
+  int request_id() const { return request_id_; }
+  void set_request_id(int request_id) { request_id_ = request_id; }
+
   NavigationState* navigation_state() { return navigation_state_.get(); }
   void set_navigation_state(std::unique_ptr<NavigationState> navigation_state);
 
@@ -99,6 +106,7 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
   net::EffectiveConnectionType effective_connection_type_ =
       net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
   PreviewsState previews_state_ = PREVIEWS_UNSPECIFIED;
+  int request_id_ = -1;
   std::unique_ptr<NavigationState> navigation_state_;
 
   DISALLOW_COPY_AND_ASSIGN(InternalDocumentStateData);

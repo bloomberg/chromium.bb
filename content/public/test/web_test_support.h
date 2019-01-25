@@ -22,7 +22,6 @@ class WebInputEvent;
 class WebLocalFrame;
 struct WebSize;
 class WebURL;
-class WebURLRequest;
 class WebView;
 }  // namespace blink
 
@@ -145,11 +144,6 @@ void SchedulerRunIdleTasks(base::OnceClosure callback);
 // Causes the RenderWidget corresponding to |render_frame| to update its
 // TextInputState.
 void ForceTextInputStateUpdateForRenderFrame(RenderFrame* render_frame);
-
-// PlzNavigate
-// Returns true if the navigation identified by the |request| was initiated by
-// the browser or renderer.
-bool IsNavigationInitiatedByRenderer(const blink::WebURLRequest& request);
 
 // RewriteURLFunction must be safe to call from any thread in the renderer
 // process.

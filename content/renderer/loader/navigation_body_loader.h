@@ -23,6 +23,10 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "third_party/blink/public/platform/web_navigation_body_loader.h"
 
+namespace blink {
+struct WebNavigationParams;
+}  // namespace blink
+
 namespace network {
 struct URLLoaderCompletionStatus;
 }  // namespace network
@@ -42,7 +46,9 @@ class CONTENT_EXPORT NavigationBodyLoader
     : public blink::WebNavigationBodyLoader,
       public network::mojom::URLLoaderClient {
  public:
-  NavigationBodyLoader(
+  // This method fills navigation params related to the navigation request,
+  // redirects and response, and also creates a body loader if needed.
+  static void FillNavigationParamsResponseAndBodyLoader(
       const CommonNavigationParams& common_params,
       const CommitNavigationParams& commit_params,
       int request_id,
@@ -50,7 +56,8 @@ class CONTENT_EXPORT NavigationBodyLoader
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       int render_frame_id,
-      bool is_main_frame);
+      bool is_main_frame,
+      blink::WebNavigationParams* navigation_params);
   ~NavigationBodyLoader() override;
 
  private:
@@ -75,6 +82,13 @@ class CONTENT_EXPORT NavigationBodyLoader
   //   notify client about data
   // NotifyCompletionIfAppropriate
   //   notify client about completion
+
+  NavigationBodyLoader(
+      const network::ResourceResponseHead& head,
+      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      int render_frame_id,
+      mojom::ResourceLoadInfoPtr resource_load_info);
 
   // blink::WebNavigationBodyLoader
   void SetDefersLoading(bool defers) override;

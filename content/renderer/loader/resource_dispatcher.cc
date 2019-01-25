@@ -504,8 +504,7 @@ int ResourceDispatcher::StartAsync(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
     std::unique_ptr<NavigationResponseOverrideParameters>
-        response_override_params,
-    base::OnceClosure* continue_navigation_function) {
+        response_override_params) {
   CheckSchemeForReferrerPolicy(*request);
 
 #if defined(OS_ANDROID)
@@ -538,23 +537,11 @@ int ResourceDispatcher::StartAsync(
         request_id, this, loading_task_runner,
         true /* bypass_redirect_checks */, request->url);
 
-    if (request->resource_type == RESOURCE_TYPE_SHARED_WORKER) {
-      // For shared workers, immediately post a task for continuing loading
-      // because shared workers don't have the concept of the navigation commit
-      // and |continue_navigation_function| is never called.
-      // TODO(nhiroki): Unify this case with the navigation case for code
-      // health.
-      loading_task_runner->PostTask(
-          FROM_HERE, base::BindOnce(&ResourceDispatcher::ContinueForNavigation,
-                                    weak_factory_.GetWeakPtr(), request_id));
-    } else {
-      // For navigations, |continue_navigation_function| is called after the
-      // navigation commit.
-      DCHECK(continue_navigation_function);
-      *continue_navigation_function =
-          base::BindOnce(&ResourceDispatcher::ContinueForNavigation,
-                         weak_factory_.GetWeakPtr(), request_id);
-    }
+    DCHECK_EQ(RESOURCE_TYPE_SHARED_WORKER, request->resource_type);
+    // TODO(nhiroki): it would be nice to get rid of response override.
+    loading_task_runner->PostTask(
+        FROM_HERE, base::BindOnce(&ResourceDispatcher::ContinueForNavigation,
+                                  weak_factory_.GetWeakPtr(), request_id));
     return request_id;
   }
 
@@ -631,6 +618,8 @@ void ResourceDispatcher::ToResourceResponseHead(
   RemoteToLocalTimeTicks(converter, &renderer_info->service_worker_ready_time);
 }
 
+// TODO(dgozman): this is not used for navigation anymore, only for worker
+// main script. Rename all related entities accordingly.
 void ResourceDispatcher::ContinueForNavigation(int request_id) {
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)

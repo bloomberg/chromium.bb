@@ -113,6 +113,7 @@ class CORE_EXPORT ApplicationCacheHost final
   // willStartLoadingMainResource if it's for frame resource or
   // willStartLoadingResource for subresource requests.
   void WillStartLoading(ResourceRequest&);
+  void WillStartLoadingMainResource(const KURL&, const String&);
 
   void DidReceiveResponseForMainResource(const ResourceResponse&);
   void MainResourceDataReceived(const char* data, size_t length);
@@ -141,8 +142,6 @@ class CORE_EXPORT ApplicationCacheHost final
   void Trace(blink::Visitor*);
 
  private:
-  void WillStartLoadingMainResource(const KURL&, const String&);
-
   // WebApplicationCacheHostClient implementation
   void DidChangeCacheAssociation() final;
   void NotifyEventListener(mojom::AppCacheEventID) final;

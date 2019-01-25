@@ -1237,10 +1237,12 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   // Load that same page inside an iframe.
   GURL data_url("data:text/html,<iframe src='" + url.spec() + "'></iframe>");
   NavigateToURL(shell(), data_url);
-  ASSERT_EQ(2U, observer.resource_load_infos().size());
-  EXPECT_EQ(url, observer.resource_load_infos()[0]->url);
-  EXPECT_FALSE(observer.resource_is_associated_with_main_frame()[0]);
+  ASSERT_EQ(3U, observer.resource_load_infos().size());
+  EXPECT_EQ(data_url, observer.resource_load_infos()[0]->url);
+  EXPECT_EQ(url, observer.resource_load_infos()[1]->url);
+  EXPECT_TRUE(observer.resource_is_associated_with_main_frame()[0]);
   EXPECT_FALSE(observer.resource_is_associated_with_main_frame()[1]);
+  EXPECT_FALSE(observer.resource_is_associated_with_main_frame()[2]);
 }
 
 struct LoadProgressDelegateAndObserver : public WebContentsDelegate,

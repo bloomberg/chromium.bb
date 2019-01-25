@@ -112,9 +112,10 @@ void LoadFrameDontWait(WebLocalFrame* frame, const WebURL& url) {
     impl->LoadJavaScriptURL(url);
   } else {
     auto params = std::make_unique<WebNavigationParams>();
-    params->request = WebURLRequest(url);
+    params->url = url;
     params->navigation_timings.navigation_start = base::TimeTicks::Now();
     params->navigation_timings.fetch_start = base::TimeTicks::Now();
+    FillNavigationParamsResponse(params.get());
     impl->CommitNavigation(std::move(params), nullptr /* extra_data */);
   }
 }
@@ -140,12 +141,12 @@ void LoadHistoryItem(WebLocalFrame* frame,
   WebLocalFrameImpl* impl = ToWebLocalFrameImpl(frame);
   HistoryItem* history_item = item;
   auto params = std::make_unique<WebNavigationParams>();
-  params->request =
-      WrappedResourceRequest(history_item->GenerateResourceRequest(cache_mode));
+  params->url = history_item->Url();
   params->frame_load_type = WebFrameLoadType::kBackForward;
   params->history_item = item;
   params->navigation_timings.navigation_start = base::TimeTicks::Now();
   params->navigation_timings.fetch_start = base::TimeTicks::Now();
+  FillNavigationParamsResponse(params.get());
   impl->CommitNavigation(std::move(params), nullptr /* extra_data */);
   PumpPendingRequestsForFrameToLoad(frame);
 }
@@ -166,6 +167,17 @@ void PumpPendingRequestsForFrameToLoad(WebLocalFrame* frame) {
   task_runner->PostTask(FROM_HERE,
                         WTF::Bind(&RunServeAsyncRequestsTask, task_runner));
   test::EnterRunLoop();
+}
+
+void FillNavigationParamsResponse(WebNavigationParams* params) {
+  KURL kurl(params->url);
+  // Empty documents, data urls and srcdoc will be handled by DocumentLoader.
+  if (DocumentLoader::WillLoadUrlAsEmpty(kurl) || kurl.ProtocolIsData() ||
+      kurl.IsAboutSrcdocURL()) {
+    return;
+  }
+  Platform::Current()->GetURLLoaderMockFactory()->FillNavigationParamsResponse(
+      params);
 }
 
 WebMouseEvent CreateMouseEvent(WebInputEvent::Type type,
@@ -532,6 +544,8 @@ void TestWebFrameClient::CommitNavigation(
   if (!frame_)
     return;
   auto params = WebNavigationParams::CreateFromInfo(*info);
+  if (info->archive_status != WebNavigationInfo::ArchiveStatus::Present)
+    FillNavigationParamsResponse(params.get());
   frame_->CommitNavigation(std::move(params), nullptr /* extra_data */);
 }
 

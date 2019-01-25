@@ -46,7 +46,6 @@ namespace blink {
 class WebDocumentSubresourceFilter;
 class WebServiceWorkerNetworkProvider;
 class WebURL;
-class WebURLRequest;
 class WebURLResponse;
 template <typename T>
 class WebVector;
@@ -88,12 +87,6 @@ class BLINK_EXPORT WebDocumentLoader {
 
   // Returns the referrer policy of the request corresponding to this load.
   virtual network::mojom::ReferrerPolicy GetReferrerPolicy() const = 0;
-
-  // Returns the request corresponding to this datasource.  It may
-  // include additional request headers added by WebKit that were not
-  // present in the original request.  This request may also correspond
-  // to a location specified by a redirect that was followed.
-  virtual const WebURLRequest& GetRequest() const = 0;
 
   // Returns the response associated with this datasource.
   virtual const WebURLResponse& GetResponse() const = 0;

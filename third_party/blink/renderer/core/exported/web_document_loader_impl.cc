@@ -58,32 +58,28 @@ WebURL WebDocumentLoaderImpl::OriginalUrl() const {
 }
 
 WebString WebDocumentLoaderImpl::OriginalReferrer() const {
-  return DocumentLoader::OriginalReferrer();
+  return DocumentLoader::OriginalReferrer().referrer;
 }
 
 WebURL WebDocumentLoaderImpl::GetUrl() const {
-  return request_wrapper_.Url();
+  return DocumentLoader::Url();
 }
 
 WebString WebDocumentLoaderImpl::HttpMethod() const {
-  return request_wrapper_.HttpMethod();
+  return DocumentLoader::HttpMethod();
 }
 
 mojom::FetchCacheMode WebDocumentLoaderImpl::GetCacheMode() const {
-  return request_wrapper_.GetCacheMode();
+  return DocumentLoader::CacheMode();
 }
 
 WebString WebDocumentLoaderImpl::Referrer() const {
-  return DocumentLoader::Referrer();
+  return DocumentLoader::GetReferrer().referrer;
 }
 
 network::mojom::ReferrerPolicy WebDocumentLoaderImpl::GetReferrerPolicy()
     const {
-  return request_wrapper_.GetReferrerPolicy();
-}
-
-const WebURLRequest& WebDocumentLoaderImpl::GetRequest() const {
-  return request_wrapper_;
+  return DocumentLoader::GetReferrer().referrer_policy;
 }
 
 const WebURLResponse& WebDocumentLoaderImpl::GetResponse() const {
@@ -132,7 +128,6 @@ WebDocumentLoaderImpl::WebDocumentLoaderImpl(
     WebNavigationType navigation_type,
     std::unique_ptr<WebNavigationParams> navigation_params)
     : DocumentLoader(frame, navigation_type, std::move(navigation_params)),
-      request_wrapper_(request_),
       response_wrapper_(DocumentLoader::GetResponse()) {}
 
 WebDocumentLoaderImpl::~WebDocumentLoaderImpl() {

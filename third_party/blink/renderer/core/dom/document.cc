@@ -5411,7 +5411,7 @@ void Document::setCookie(const String& value, ExceptionState& exception_state) {
 
 const AtomicString& Document::referrer() const {
   if (Loader())
-    return Loader()->Referrer();
+    return Loader()->GetReferrer().referrer;
   return g_null_atom;
 }
 

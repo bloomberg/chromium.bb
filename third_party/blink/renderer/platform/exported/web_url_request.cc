@@ -377,13 +377,6 @@ void WebURLRequest::SetPriority(WebURLRequest::Priority priority) {
   resource_request_->SetPriority(static_cast<ResourceLoadPriority>(priority));
 }
 
-bool WebURLRequest::WasDiscarded() const {
-  return resource_request_->WasDiscarded();
-}
-void WebURLRequest::SetWasDiscarded(bool was_discarded) {
-  resource_request_->SetWasDiscarded(was_discarded);
-}
-
 bool WebURLRequest::IsExternalRequest() const {
   return resource_request_->IsExternalRequest();
 }
@@ -423,14 +416,6 @@ bool WebURLRequest::IsRevalidating() const {
 const base::Optional<base::UnguessableToken>& WebURLRequest::GetDevToolsToken()
     const {
   return resource_request_->GetDevToolsToken();
-}
-
-const WebString WebURLRequest::GetOriginPolicy() const {
-  return resource_request_->GetOriginPolicy();
-}
-
-void WebURLRequest::SetOriginPolicy(const WebString& policy) {
-  resource_request_->SetOriginPolicy(policy);
 }
 
 const WebString WebURLRequest::GetRequestedWithHeader() const {

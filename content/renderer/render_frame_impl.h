@@ -1121,13 +1121,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OpenURL(std::unique_ptr<blink::WebNavigationInfo> info,
                bool is_history_navigation_in_new_child);
 
-  // Creates a WebURLRequest to use fo the commit of a navigation.
-  blink::WebURLRequest CreateURLRequestForCommit(
-      const CommonNavigationParams& common_params,
-      const CommitNavigationParams& commit_params,
-      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-      const network::ResourceResponseHead& head);
-
   // Returns a ChildURLLoaderFactoryBundle which can be used to request
   // subresources for this frame.
   // For frames with committed navigations, this bundle is created with the

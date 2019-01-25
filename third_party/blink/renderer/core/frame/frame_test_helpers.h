@@ -86,6 +86,7 @@ namespace blink {
 
 class WebFrame;
 class WebLocalFrameImpl;
+struct WebNavigationParams;
 class WebRemoteFrameImpl;
 class WebSettings;
 
@@ -113,6 +114,9 @@ void LoadHistoryItem(WebLocalFrame*,
 // Same as above, but for WebLocalFrame::Reload().
 void ReloadFrame(WebLocalFrame*);
 void ReloadFrameBypassingCache(WebLocalFrame*);
+
+// Fills navigation params if needed. Params should have the proper url set up.
+void FillNavigationParamsResponse(WebNavigationParams*);
 
 // Pumps pending resource requests while waiting for a frame to load. Consider
 // using one of the above helper methods whenever possible.

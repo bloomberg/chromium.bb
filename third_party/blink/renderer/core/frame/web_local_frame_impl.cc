@@ -2042,8 +2042,7 @@ void WebLocalFrameImpl::CommitNavigation(
     std::unique_ptr<WebNavigationParams> navigation_params,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   DCHECK(GetFrame());
-  DCHECK(!navigation_params->request.IsNull());
-  DCHECK(!navigation_params->request.Url().ProtocolIs("javascript"));
+  DCHECK(!navigation_params->url.ProtocolIs("javascript"));
   if (GetTextFinder())
     GetTextFinder()->ClearActiveFindMatch();
   GetFrame()->Loader().CommitNavigation(

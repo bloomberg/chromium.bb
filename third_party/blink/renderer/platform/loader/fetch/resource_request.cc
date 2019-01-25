@@ -77,7 +77,6 @@ ResourceRequest::ResourceRequest(const KURL& url)
       referrer_string_(Referrer::ClientReferrerString()),
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
       did_set_http_referrer_(false),
-      was_discarded_(false),
       is_external_request_(false),
       cors_preflight_policy_(
           network::mojom::CorsPreflightPolicy::kConsiderPreflight),
@@ -124,7 +123,6 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
 
   if (request->HttpMethod() == HttpMethod())
     request->SetHTTPBody(HttpBody());
-  request->SetWasDiscarded(WasDiscarded());
   request->SetCorsPreflightPolicy(CorsPreflightPolicy());
   if (IsAdResource())
     request->SetIsAdResource();
