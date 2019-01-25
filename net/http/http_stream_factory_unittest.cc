@@ -51,6 +51,7 @@
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
+#include "net/socket/socks_connect_job.h"
 #include "net/socket/transport_connect_job.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
@@ -447,8 +448,6 @@ typedef CapturePreconnectsSocketPool<TransportClientSocketPool>
     CapturePreconnectsTransportSocketPool;
 typedef CapturePreconnectsSocketPool<HttpProxyClientSocketPool>
     CapturePreconnectsHttpProxySocketPool;
-typedef CapturePreconnectsSocketPool<SOCKSClientSocketPool>
-    CapturePreconnectsSOCKSSocketPool;
 typedef CapturePreconnectsSocketPool<SSLClientSocketPool>
     CapturePreconnectsSSLSocketPool;
 
@@ -579,8 +578,8 @@ TEST_F(HttpStreamFactoryTest, PreconnectSocksProxy) {
     HttpNetworkSessionPeer peer(session.get());
     ProxyServer proxy_server(ProxyServer::SCHEME_SOCKS4,
                              HostPortPair("socks_proxy", 1080));
-    CapturePreconnectsSOCKSSocketPool* socks_proxy_pool =
-        new CapturePreconnectsSOCKSSocketPool(
+    CapturePreconnectsTransportSocketPool* socks_proxy_pool =
+        new CapturePreconnectsTransportSocketPool(
             session_deps.host_resolver.get(), session_deps.cert_verifier.get(),
             session_deps.transport_security_state.get(),
             session_deps.cert_transparency_verifier.get(),
@@ -592,7 +591,7 @@ TEST_F(HttpStreamFactoryTest, PreconnectSocksProxy) {
             session_deps.cert_transparency_verifier.get(),
             session_deps.ct_policy_enforcer.get());
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
-    mock_pool_manager->SetSocketPoolForSOCKSProxy(
+    mock_pool_manager->SetSocketPoolForProxy(
         proxy_server, base::WrapUnique(socks_proxy_pool));
     mock_pool_manager->SetSocketPoolForSSLWithProxy(
         proxy_server, base::WrapUnique(ssl_conn_pool));

@@ -40,7 +40,6 @@
 #include "net/socket/datagram_client_socket.h"
 #include "net/socket/socket_performance_watcher.h"
 #include "net/socket/socket_tag.h"
-#include "net/socket/socks_client_socket_pool.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/ssl_client_socket_pool.h"
 #include "net/socket/transport_client_socket.h"
@@ -1241,38 +1240,6 @@ class MockTransportClientSocketPool : public TransportClientSocketPool {
   int cancel_count_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTransportClientSocketPool);
-};
-
-class MockSOCKSClientSocketPool : public SOCKSClientSocketPool {
- public:
-  MockSOCKSClientSocketPool(int max_sockets,
-                            int max_sockets_per_group,
-                            TransportClientSocketPool* transport_pool);
-
-  ~MockSOCKSClientSocketPool() override;
-
-  // SOCKSClientSocketPool implementation.
-  int RequestSocket(const std::string& group_name,
-                    const void* socket_params,
-                    RequestPriority priority,
-                    const SocketTag& socket_tag,
-                    RespectLimits respect_limits,
-                    ClientSocketHandle* handle,
-                    CompletionOnceCallback callback,
-                    const NetLogWithSource& net_log) override;
-  void SetPriority(const std::string& group_name,
-                   ClientSocketHandle* handle,
-                   RequestPriority priority) override;
-  void CancelRequest(const std::string& group_name,
-                     ClientSocketHandle* handle) override;
-  void ReleaseSocket(const std::string& group_name,
-                     std::unique_ptr<StreamSocket> socket,
-                     int id) override;
-
- private:
-  TransportClientSocketPool* const transport_pool_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockSOCKSClientSocketPool);
 };
 
 // WrappedStreamSocket is a base class that wraps an existing StreamSocket,

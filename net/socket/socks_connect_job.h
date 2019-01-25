@@ -20,11 +20,8 @@
 
 namespace net {
 
-class ClientSocketHandle;
 class HostPortPair;
-class NetLog;
 class StreamSocket;
-class TransportClientSocketPool;
 class TransportSocketParams;
 
 class NET_EXPORT_PRIVATE SOCKSSocketParams
@@ -60,19 +57,15 @@ class NET_EXPORT_PRIVATE SOCKSSocketParams
   DISALLOW_COPY_AND_ASSIGN(SOCKSSocketParams);
 };
 
-// SOCKSConnectJob handles the handshake to a socks server after setting up
-// an underlying transport socket.
-class NET_EXPORT_PRIVATE SOCKSConnectJob : public ConnectJob {
+// SOCKSConnectJob handles establishing a connection to a SOCKS4 or SOCKS5 proxy
+// and then sending a handshake to establish a tunnel.
+class NET_EXPORT_PRIVATE SOCKSConnectJob : public ConnectJob,
+                                           public ConnectJob::Delegate {
  public:
-  SOCKSConnectJob(const std::string& group_name,
-                  RequestPriority priority,
-                  const SocketTag& socket_tag,
-                  bool respect_limits,
-                  const scoped_refptr<SOCKSSocketParams>& params,
-                  TransportClientSocketPool* transport_pool,
-                  HostResolver* host_resolver,
-                  Delegate* delegate,
-                  NetLog* net_log);
+  SOCKSConnectJob(RequestPriority priority,
+                  const CommonConnectJobParams& common_connect_job_params,
+                  const scoped_refptr<SOCKSSocketParams>& socks_params,
+                  ConnectJob::Delegate* delegate);
   ~SOCKSConnectJob() override;
 
   // ConnectJob methods.
@@ -92,6 +85,9 @@ class NET_EXPORT_PRIVATE SOCKSConnectJob : public ConnectJob {
 
   void OnIOComplete(int result);
 
+  // ConnectJob::Delegate methods.
+  void OnConnectJobComplete(int result, ConnectJob* job) override;
+
   // Runs the state transition loop.
   int DoLoop(int result);
 
@@ -108,11 +104,9 @@ class NET_EXPORT_PRIVATE SOCKSConnectJob : public ConnectJob {
   void ChangePriorityInternal(RequestPriority priority) override;
 
   scoped_refptr<SOCKSSocketParams> socks_params_;
-  TransportClientSocketPool* const transport_pool_;
-  HostResolver* const resolver_;
 
   State next_state_;
-  std::unique_ptr<ClientSocketHandle> transport_socket_handle_;
+  std::unique_ptr<ConnectJob> transport_connect_job_;
   std::unique_ptr<StreamSocket> socket_;
 
   DISALLOW_COPY_AND_ASSIGN(SOCKSConnectJob);

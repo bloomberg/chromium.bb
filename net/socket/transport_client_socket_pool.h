@@ -24,6 +24,7 @@ class HostResolver;
 class NetLog;
 class NetLogWithSource;
 class SocketPerformanceWatcherFactory;
+class SOCKSSocketParams;
 class TransportSocketParams;
 
 class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
@@ -56,6 +57,9 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
 
     static scoped_refptr<SocketParams> CreateFromTransportSocketParams(
         scoped_refptr<TransportSocketParams> transport_client_params);
+
+    static scoped_refptr<SocketParams> CreateFromSOCKSSocketParams(
+        scoped_refptr<SOCKSSocketParams> socks_socket_params);
 
    private:
     friend class base::RefCounted<SocketParams>;

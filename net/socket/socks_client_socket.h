@@ -25,14 +25,12 @@
 
 namespace net {
 
-class ClientSocketHandle;
-
 // The SOCKS client socket implementation
 class NET_EXPORT_PRIVATE SOCKSClientSocket : public StreamSocket {
  public:
   // |req_info| contains the hostname and port to which the socket above will
   // communicate to via the socks layer. For testing the referrer is optional.
-  SOCKSClientSocket(std::unique_ptr<ClientSocketHandle> transport_socket,
+  SOCKSClientSocket(std::unique_ptr<StreamSocket> transport_socket,
                     const HostResolver::RequestInfo& req_info,
                     RequestPriority priority,
                     HostResolver* host_resolver,
@@ -108,7 +106,7 @@ class NET_EXPORT_PRIVATE SOCKSClientSocket : public StreamSocket {
   const std::string BuildHandshakeWriteBuffer() const;
 
   // Stores the underlying socket.
-  std::unique_ptr<ClientSocketHandle> transport_;
+  std::unique_ptr<StreamSocket> transport_socket_;
 
   State next_state_;
 

@@ -23,6 +23,7 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
+#include "net/socket/socks_connect_job.h"
 #include "net/socket/stream_socket.h"
 #include "net/socket/transport_client_socket_pool_test_util.h"
 #include "net/socket/transport_connect_job.h"
@@ -45,6 +46,31 @@ namespace {
 const int kMaxSockets = 32;
 const int kMaxSocketsPerGroup = 6;
 const RequestPriority kDefaultPriority = LOW;
+
+class SOCKS5MockData {
+ public:
+  explicit SOCKS5MockData(IoMode mode) {
+    writes_.reset(new MockWrite[2]);
+    writes_[0] =
+        MockWrite(mode, kSOCKS5GreetRequest, kSOCKS5GreetRequestLength);
+    writes_[1] = MockWrite(mode, kSOCKS5OkRequest, kSOCKS5OkRequestLength);
+
+    reads_.reset(new MockRead[2]);
+    reads_[0] =
+        MockRead(mode, kSOCKS5GreetResponse, kSOCKS5GreetResponseLength);
+    reads_[1] = MockRead(mode, kSOCKS5OkResponse, kSOCKS5OkResponseLength);
+
+    data_.reset(new StaticSocketDataProvider(
+        base::make_span(reads_.get(), 2), base::make_span(writes_.get(), 2)));
+  }
+
+  SocketDataProvider* data_provider() { return data_.get(); }
+
+ private:
+  std::unique_ptr<StaticSocketDataProvider> data_;
+  std::unique_ptr<MockWrite[]> writes_;
+  std::unique_ptr<MockRead[]> reads_;
+};
 
 class TransportClientSocketPoolTest : public TestWithScopedTaskEnvironment {
  protected:
@@ -1042,6 +1068,38 @@ TEST_F(TransportClientSocketPoolTest, BackupSocketFailAfterDelay) {
   handle.Reset();
 }
 
+// Test the case that SOCKSSocketParams are provided.
+TEST_F(TransportClientSocketPoolTest, SOCKS) {
+  for (IoMode socket_io_mode : {SYNCHRONOUS, ASYNC}) {
+    MockTaggingClientSocketFactory socket_factory;
+    TransportClientSocketPool pool(
+        kMaxSockets, kMaxSocketsPerGroup, host_resolver_.get(), &socket_factory,
+        nullptr /* socket_performance_watcher_factory */, nullptr /* netlog */);
+
+    scoped_refptr<TransportSocketParams> tcp_params(new TransportSocketParams(
+        HostPortPair("proxy", 80), false, OnHostResolutionCallback()));
+    scoped_refptr<TransportClientSocketPool::SocketParams> socks_params(
+        TransportClientSocketPool::SocketParams::CreateFromSOCKSSocketParams(
+            base::MakeRefCounted<SOCKSSocketParams>(
+                tcp_params, true /* socks_v5 */, HostPortPair("host", 80),
+                TRAFFIC_ANNOTATION_FOR_TESTS)));
+
+    SOCKS5MockData data(socket_io_mode);
+    data.data_provider()->set_connect_data(MockConnect(socket_io_mode, OK));
+    socket_factory.AddSocketDataProvider(data.data_provider());
+    ClientSocketHandle handle;
+    TestCompletionCallback callback;
+    int rv = handle.Init("a", socks_params, LOW, SocketTag(),
+                         ClientSocketPool::RespectLimits::ENABLED,
+                         callback.callback(), &pool, NetLogWithSource());
+    EXPECT_THAT(callback.GetResult(rv), IsOk());
+    EXPECT_TRUE(handle.is_initialized());
+    EXPECT_TRUE(handle.socket());
+    EXPECT_TRUE(data.data_provider()->AllReadDataConsumed());
+    EXPECT_TRUE(data.data_provider()->AllWriteDataConsumed());
+  }
+}
+
 // Test that SocketTag passed into TransportClientSocketPool is applied to
 // returned sockets.
 #if defined(OS_ANDROID)
@@ -1165,6 +1223,81 @@ TEST_F(TransportClientSocketPoolTest, Tag) {
   EXPECT_EQ(static_cast<int>(strlen(kRequest)), callback.GetResult(rv));
   EXPECT_GT(GetTaggedBytes(tag_val1), old_traffic);
 }
+
+TEST_F(TransportClientSocketPoolTest, TagSOCKSProxy) {
+  host_resolver_->set_synchronous_mode(true);
+  MockTaggingClientSocketFactory socket_factory;
+  TransportClientSocketPool pool(
+      kMaxSockets, kMaxSocketsPerGroup, host_resolver_.get(), &socket_factory,
+      nullptr /* socket_performance_watcher_factory */, nullptr /* netlog */);
+
+  SocketTag tag1(SocketTag::UNSET_UID, 0x12345678);
+  SocketTag tag2(getuid(), 0x87654321);
+  scoped_refptr<TransportSocketParams> tcp_params(new TransportSocketParams(
+      HostPortPair("proxy", 80), false, OnHostResolutionCallback()));
+  scoped_refptr<TransportClientSocketPool::SocketParams> socks_params(
+      TransportClientSocketPool::SocketParams::CreateFromSOCKSSocketParams(
+          base::MakeRefCounted<SOCKSSocketParams>(
+              tcp_params, true /* socks_v5 */, HostPortPair("host", 80),
+              TRAFFIC_ANNOTATION_FOR_TESTS)));
+
+  // Test socket is tagged when created synchronously.
+  SOCKS5MockData data_sync(SYNCHRONOUS);
+  data_sync.data_provider()->set_connect_data(MockConnect(SYNCHRONOUS, OK));
+  socket_factory.AddSocketDataProvider(data_sync.data_provider());
+  ClientSocketHandle handle;
+  int rv = handle.Init("a", socks_params, LOW, tag1,
+                       ClientSocketPool::RespectLimits::ENABLED,
+                       CompletionOnceCallback(), &pool, NetLogWithSource());
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(handle.is_initialized());
+  EXPECT_TRUE(handle.socket());
+  EXPECT_EQ(socket_factory.GetLastProducedTCPSocket()->tag(), tag1);
+  EXPECT_TRUE(
+      socket_factory.GetLastProducedTCPSocket()->tagged_before_connected());
+
+  // Test socket is tagged when reused synchronously.
+  StreamSocket* socket = handle.socket();
+  handle.Reset();
+  rv = handle.Init("a", socks_params, LOW, tag2,
+                   ClientSocketPool::RespectLimits::ENABLED,
+                   CompletionOnceCallback(), &pool, NetLogWithSource());
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(handle.socket());
+  EXPECT_TRUE(handle.socket()->IsConnected());
+  EXPECT_EQ(handle.socket(), socket);
+  EXPECT_EQ(socket_factory.GetLastProducedTCPSocket()->tag(), tag2);
+  handle.socket()->Disconnect();
+  handle.Reset();
+
+  // Test socket is tagged when created asynchronously.
+  SOCKS5MockData data_async(ASYNC);
+  socket_factory.AddSocketDataProvider(data_async.data_provider());
+  TestCompletionCallback callback;
+  rv = handle.Init("a", socks_params, LOW, tag1,
+                   ClientSocketPool::RespectLimits::ENABLED,
+                   callback.callback(), &pool, NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+  EXPECT_TRUE(handle.is_initialized());
+  EXPECT_TRUE(handle.socket());
+  EXPECT_EQ(socket_factory.GetLastProducedTCPSocket()->tag(), tag1);
+  EXPECT_TRUE(
+      socket_factory.GetLastProducedTCPSocket()->tagged_before_connected());
+
+  // Test socket is tagged when reused after being created asynchronously.
+  socket = handle.socket();
+  handle.Reset();
+  rv = handle.Init("a", socks_params, LOW, tag2,
+                   ClientSocketPool::RespectLimits::ENABLED,
+                   CompletionOnceCallback(), &pool, NetLogWithSource());
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(handle.socket());
+  EXPECT_TRUE(handle.socket()->IsConnected());
+  EXPECT_EQ(handle.socket(), socket);
+  EXPECT_EQ(socket_factory.GetLastProducedTCPSocket()->tag(), tag2);
+}
+
 #endif
 
 }  // namespace

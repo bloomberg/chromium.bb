@@ -119,9 +119,7 @@ class SSLClientSocketPoolTest : public TestWithScopedTaskEnvironment {
                                   true,
                                   HostPortPair("sockshost", 443),
                                   TRAFFIC_ANNOTATION_FOR_TESTS)),
-        socks_socket_pool_(kMaxSockets,
-                           kMaxSocketsPerGroup,
-                           &transport_socket_pool_),
+        socks_socket_pool_(kMaxSockets, kMaxSocketsPerGroup, &socket_factory_),
         http_proxy_socket_params_(
             new HttpProxySocketParams(proxy_transport_socket_params_,
                                       NULL,
@@ -215,7 +213,7 @@ class SSLClientSocketPoolTest : public TestWithScopedTaskEnvironment {
   scoped_refptr<TransportSocketParams> proxy_transport_socket_params_;
 
   scoped_refptr<SOCKSSocketParams> socks_socket_params_;
-  MockSOCKSClientSocketPool socks_socket_pool_;
+  MockTransportClientSocketPool socks_socket_pool_;
 
   scoped_refptr<HttpProxySocketParams> http_proxy_socket_params_;
   HttpProxyClientSocketPool http_proxy_socket_pool_;
@@ -559,8 +557,8 @@ TEST_F(SSLClientSocketPoolTest, SetTransportPriorityOnInitSOCKS) {
             handle.Init(kGroupName, params, HIGHEST, SocketTag(),
                         ClientSocketPool::RespectLimits::ENABLED,
                         callback.callback(), pool_.get(), NetLogWithSource()));
-  EXPECT_EQ(HIGHEST, transport_socket_pool_.last_request_priority());
-  EXPECT_EQ(HIGHEST, transport_socket_pool_.requests()[0]->priority());
+  EXPECT_EQ(HIGHEST, socks_socket_pool_.last_request_priority());
+  EXPECT_EQ(HIGHEST, socks_socket_pool_.requests()[0]->priority());
 }
 
 // Test that the SSLConnectJob passes priority changes down to the transport
@@ -582,10 +580,10 @@ TEST_F(SSLClientSocketPoolTest, SetTransportPrioritySOCKS) {
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
-  EXPECT_EQ(MEDIUM, transport_socket_pool_.requests()[0]->priority());
+  EXPECT_EQ(MEDIUM, socks_socket_pool_.requests()[0]->priority());
 
   pool_->SetPriority(kGroupName, &handle, LOWEST);
-  EXPECT_EQ(LOWEST, transport_socket_pool_.requests()[0]->priority());
+  EXPECT_EQ(LOWEST, socks_socket_pool_.requests()[0]->priority());
 
   EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_TRUE(handle.is_initialized());

@@ -38,7 +38,6 @@ class NetworkQualityEstimator;
 class ProxyDelegate;
 class ProxyServer;
 class SocketPerformanceWatcherFactory;
-class SOCKSClientSocketPool;
 class SSLClientSocketPool;
 class SSLConfigService;
 class TransportClientSocketPool;
@@ -74,8 +73,8 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
 
   SSLClientSocketPool* GetSSLSocketPool() override;
 
-  SOCKSClientSocketPool* GetSocketPoolForSOCKSProxy(
-      const ProxyServer& socks_proxy) override;
+  TransportClientSocketPool* GetSocketPoolForSOCKSProxy(
+      const ProxyServer& proxy_server) override;
 
   HttpProxyClientSocketPool* GetSocketPoolForHTTPLikeProxy(
       const ProxyServer& http_proxy) override;
@@ -96,8 +95,6 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
  private:
   using TransportSocketPoolMap =
       std::map<ProxyServer, std::unique_ptr<TransportClientSocketPool>>;
-  using SOCKSSocketPoolMap =
-      std::map<ProxyServer, std::unique_ptr<SOCKSClientSocketPool>>;
   using HTTPProxySocketPoolMap =
       std::map<ProxyServer, std::unique_ptr<HttpProxyClientSocketPool>>;
   using SSLSocketPoolMap =
@@ -122,8 +119,13 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
 
   std::unique_ptr<TransportClientSocketPool> transport_socket_pool_;
   std::unique_ptr<SSLClientSocketPool> ssl_socket_pool_;
-  TransportSocketPoolMap transport_socket_pools_for_socks_proxies_;
-  SOCKSSocketPoolMap socks_socket_pools_;
+
+  // Currently only contains socket pools for SOCKS proxies (With SSL over SOCKS
+  // connections layered on top of it, and appearing in
+  // |ssl_socket_pools_for_proxies_|), but will eventually contain all pools for
+  // proxies that use TCP connections.
+  TransportSocketPoolMap proxy_socket_pools_;
+
   TransportSocketPoolMap transport_socket_pools_for_http_proxies_;
   TransportSocketPoolMap transport_socket_pools_for_https_proxies_;
   SSLSocketPoolMap ssl_socket_pools_for_https_proxies_;

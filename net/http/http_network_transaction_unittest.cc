@@ -84,6 +84,7 @@
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
+#include "net/socket/socks_connect_job.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
@@ -684,8 +685,6 @@ typedef CaptureGroupNameSocketPool<TransportClientSocketPool>
 CaptureGroupNameTransportSocketPool;
 typedef CaptureGroupNameSocketPool<HttpProxyClientSocketPool>
 CaptureGroupNameHttpProxySocketPool;
-typedef CaptureGroupNameSocketPool<SOCKSClientSocketPool>
-CaptureGroupNameSOCKSSocketPool;
 typedef CaptureGroupNameSocketPool<SSLClientSocketPool>
 CaptureGroupNameSSLSocketPool;
 
@@ -11198,13 +11197,13 @@ TEST_F(HttpNetworkTransactionTest, GroupNameForSOCKSConnections) {
     ProxyServer proxy_server(
         ProxyServer::FromURI(tests[i].proxy_server, ProxyServer::SCHEME_HTTP));
     ASSERT_TRUE(proxy_server.is_valid());
-    CaptureGroupNameSOCKSSocketPool* socks_conn_pool =
-        new CaptureGroupNameSOCKSSocketPool(NULL, NULL);
+    CaptureGroupNameTransportSocketPool* socks_conn_pool =
+        new CaptureGroupNameTransportSocketPool(NULL, NULL);
     CaptureGroupNameSSLSocketPool* ssl_conn_pool =
         new CaptureGroupNameSSLSocketPool(NULL, NULL);
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
-    mock_pool_manager->SetSocketPoolForSOCKSProxy(
-        proxy_server, base::WrapUnique(socks_conn_pool));
+    mock_pool_manager->SetSocketPoolForProxy(proxy_server,
+                                             base::WrapUnique(socks_conn_pool));
     mock_pool_manager->SetSocketPoolForSSLWithProxy(
         proxy_server, base::WrapUnique(ssl_conn_pool));
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));

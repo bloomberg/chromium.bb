@@ -13,7 +13,6 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socks5_client_socket.h"
 #include "net/socket/socks_client_socket.h"
-#include "net/socket/transport_client_socket_pool.h"
 #include "net/socket/transport_connect_job.h"
 
 namespace net {
@@ -35,39 +34,26 @@ SOCKSSocketParams::SOCKSSocketParams(
 SOCKSSocketParams::~SOCKSSocketParams() = default;
 
 SOCKSConnectJob::SOCKSConnectJob(
-    const std::string& group_name,
     RequestPriority priority,
-    const SocketTag& socket_tag,
-    bool respect_limits,
+    const CommonConnectJobParams& common_connect_job_params,
     const scoped_refptr<SOCKSSocketParams>& socks_params,
-    TransportClientSocketPool* transport_pool,
-    HostResolver* host_resolver,
-    Delegate* delegate,
-    NetLog* net_log)
-    : ConnectJob(
-          group_name,
-          ConnectionTimeout(),
-          priority,
-          socket_tag,
-          respect_limits,
-          delegate,
-          NetLogWithSource::Make(net_log, NetLogSourceType::SOCKS_CONNECT_JOB)),
-      socks_params_(socks_params),
-      transport_pool_(transport_pool),
-      resolver_(host_resolver) {}
+    ConnectJob::Delegate* delegate)
+    : ConnectJob(priority,
+                 ConnectionTimeout(),
+                 common_connect_job_params,
+                 delegate,
+                 NetLogWithSource::Make(common_connect_job_params.net_log,
+                                        NetLogSourceType::SOCKS_CONNECT_JOB)),
+      socks_params_(socks_params) {}
 
-SOCKSConnectJob::~SOCKSConnectJob() {
-  // We don't worry about cancelling the tcp socket since the destructor in
-  // std::unique_ptr<ClientSocketHandle> transport_socket_handle_ will take care
-  // of
-  // it.
-}
+SOCKSConnectJob::~SOCKSConnectJob() {}
 
 LoadState SOCKSConnectJob::GetLoadState() const {
   switch (next_state_) {
     case STATE_TRANSPORT_CONNECT:
+      return LOAD_STATE_IDLE;
     case STATE_TRANSPORT_CONNECT_COMPLETE:
-      return transport_socket_handle_->GetLoadState();
+      return transport_connect_job_->GetLoadState();
     case STATE_SOCKS_CONNECT:
     case STATE_SOCKS_CONNECT_COMPLETE:
       return LOAD_STATE_CONNECTING;
@@ -86,6 +72,12 @@ void SOCKSConnectJob::OnIOComplete(int result) {
   int rv = DoLoop(result);
   if (rv != ERR_IO_PENDING)
     NotifyDelegateOfCompletion(rv);  // Deletes |this|
+}
+
+void SOCKSConnectJob::OnConnectJobComplete(int result, ConnectJob* job) {
+  DCHECK(transport_connect_job_);
+  DCHECK_EQ(next_state_, STATE_TRANSPORT_CONNECT_COMPLETE);
+  OnIOComplete(result);
 }
 
 int SOCKSConnectJob::DoLoop(int result) {
@@ -121,16 +113,13 @@ int SOCKSConnectJob::DoLoop(int result) {
 }
 
 int SOCKSConnectJob::DoTransportConnect() {
+  DCHECK(!transport_connect_job_);
+
   next_state_ = STATE_TRANSPORT_CONNECT_COMPLETE;
-  transport_socket_handle_.reset(new ClientSocketHandle());
-  CompletionOnceCallback callback =
-      base::BindOnce(&SOCKSConnectJob::OnIOComplete, base::Unretained(this));
-  return transport_socket_handle_->Init(
-      group_name(),
-      TransportClientSocketPool::SocketParams::CreateFromTransportSocketParams(
-          socks_params_->transport_params()),
-      priority(), socket_tag(), respect_limits(), std::move(callback),
-      transport_pool_, net_log());
+  transport_connect_job_ = TransportConnectJob::CreateTransportConnectJob(
+      socks_params_->transport_params(), priority(),
+      common_connect_job_params(), this);
+  return transport_connect_job_->Connect();
 }
 
 int SOCKSConnectJob::DoTransportConnectComplete(int result) {
@@ -150,14 +139,15 @@ int SOCKSConnectJob::DoSOCKSConnect() {
 
   // Add a SOCKS connection on top of the tcp socket.
   if (socks_params_->is_socks_v5()) {
-    socket_.reset(new SOCKS5ClientSocket(std::move(transport_socket_handle_),
+    socket_.reset(new SOCKS5ClientSocket(transport_connect_job_->PassSocket(),
                                          socks_params_->destination(),
                                          socks_params_->traffic_annotation()));
   } else {
     socket_.reset(new SOCKSClientSocket(
-        std::move(transport_socket_handle_), socks_params_->destination(),
-        priority(), resolver_, socks_params_->traffic_annotation()));
+        transport_connect_job_->PassSocket(), socks_params_->destination(),
+        priority(), host_resolver(), socks_params_->traffic_annotation()));
   }
+  transport_connect_job_.reset();
   return socket_->Connect(
       base::BindOnce(&SOCKSConnectJob::OnIOComplete, base::Unretained(this)));
 }
@@ -179,8 +169,8 @@ int SOCKSConnectJob::ConnectInternal() {
 
 void SOCKSConnectJob::ChangePriorityInternal(RequestPriority priority) {
   // Currently doesn't change host resolution request priority for SOCKS4 case.
-  if (transport_socket_handle_)
-    transport_socket_handle_->SetPriority(priority);
+  if (transport_connect_job_)
+    transport_connect_job_->ChangePriority(priority);
 }
 
 }  // namespace net

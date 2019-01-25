@@ -17,7 +17,6 @@
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool.h"
-#include "net/socket/socks_client_socket_pool.h"
 #include "net/socket/socks_connect_job.h"
 #include "net/socket/ssl_client_socket_pool.h"
 #include "net/socket/transport_client_socket_pool.h"
@@ -234,17 +233,23 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
   }
 
   if (proxy_info.is_socks()) {
-    SOCKSClientSocketPool* pool = session->GetSocketPoolForSOCKSProxy(
+    TransportClientSocketPool* pool = session->GetSocketPoolForSOCKSProxy(
         socket_pool_type, proxy_info.proxy_server());
     if (num_preconnect_streams) {
-      RequestSocketsForPool(pool, connection_group, socks_params,
-                            num_preconnect_streams, net_log);
+      RequestSocketsForPool(
+          pool, connection_group,
+          TransportClientSocketPool::SocketParams::CreateFromSOCKSSocketParams(
+              socks_params),
+          num_preconnect_streams, net_log);
       return OK;
     }
 
-    return socket_handle->Init(connection_group, socks_params, request_priority,
-                               socket_tag, respect_limits, std::move(callback),
-                               pool, net_log);
+    return socket_handle->Init(
+        connection_group,
+        TransportClientSocketPool::SocketParams::CreateFromSOCKSSocketParams(
+            socks_params),
+        request_priority, socket_tag, respect_limits, std::move(callback), pool,
+        net_log);
   }
 
   DCHECK(proxy_info.is_direct());

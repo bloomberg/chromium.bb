@@ -26,8 +26,6 @@
 
 namespace net {
 
-class ClientSocketHandle;
-
 // This StreamSocket is used to setup a SOCKSv5 handshake with a socks proxy.
 // Currently no SOCKSv5 authentication is supported.
 class NET_EXPORT_PRIVATE SOCKS5ClientSocket : public StreamSocket {
@@ -38,7 +36,7 @@ class NET_EXPORT_PRIVATE SOCKS5ClientSocket : public StreamSocket {
   // Although SOCKS 5 supports 3 different modes of addressing, we will
   // always pass it a hostname. This means the DNS resolving is done
   // proxy side.
-  SOCKS5ClientSocket(std::unique_ptr<ClientSocketHandle> transport_socket,
+  SOCKS5ClientSocket(std::unique_ptr<StreamSocket> transport_socket,
                      const HostResolver::RequestInfo& req_info,
                      const NetworkTrafficAnnotationTag& traffic_annotation);
 
@@ -126,7 +124,7 @@ class NET_EXPORT_PRIVATE SOCKS5ClientSocket : public StreamSocket {
   CompletionRepeatingCallback io_callback_;
 
   // Stores the underlying socket.
-  std::unique_ptr<ClientSocketHandle> transport_;
+  std::unique_ptr<StreamSocket> transport_socket_;
 
   State next_state_;
 
