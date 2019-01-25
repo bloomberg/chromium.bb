@@ -59,6 +59,12 @@ bool IsRenderedIconSufficientlyVisible(const SkBitmap& bitmap,
 bool IsRenderedIconAtPathSufficientlyVisible(const base::FilePath& path,
                                              SkColor background_color);
 
+// Renders the icon bitmap onto another bitmap, combining it with the specified
+// background color. The output bitmap must be empty.
+void RenderIconForVisibilityAnalysis(const SkBitmap& icon,
+                                     SkColor background_color,
+                                     SkBitmap* rendered_icon);
+
 // Load a PNG image from a file into the destination bitmap.
 bool LoadPngFromFile(const base::FilePath& path, SkBitmap* dst);
 

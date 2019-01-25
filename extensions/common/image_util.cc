@@ -233,7 +233,7 @@ bool IsRenderedIconSufficientlyVisible(const SkBitmap& icon,
   constexpr unsigned int kThreshold = 7;
   // The minimum "percent" of pixels that must be visible for the icon to be
   // considered OK.
-  constexpr double kMinPercentVisiblePixels = 0.05;
+  constexpr double kMinPercentVisiblePixels = 0.03;
   const int total_pixels = icon.height() * icon.width();
   // Pre-calculate the minimum number of visible pixels so we can exit early.
   // Since we expect most icons to be visible, this will perform better for
@@ -246,11 +246,8 @@ bool IsRenderedIconSufficientlyVisible(const SkBitmap& icon,
   // values against the threshold. Any pixel with a value greater than the
   // threshold is considered visible.
   SkBitmap bitmap;
-  bitmap.allocN32Pixels(icon.width(), icon.height());
-  bitmap.eraseColor(background_color);
-  SkCanvas offscreen(bitmap);
-  offscreen.drawImage(SkImage::MakeFromBitmap(icon), 0, 0);
-  offscreen.drawColor(background_color, SkBlendMode::kDifference);
+  RenderIconForVisibilityAnalysis(icon, background_color, &bitmap);
+
   int visible_pixels = 0;
   for (int x = 0; x < icon.width(); ++x) {
     for (int y = 0; y < icon.height(); ++y) {
@@ -264,6 +261,18 @@ bool IsRenderedIconSufficientlyVisible(const SkBitmap& icon,
     }
   }
   return false;
+}
+
+void RenderIconForVisibilityAnalysis(const SkBitmap& icon,
+                                     SkColor background_color,
+                                     SkBitmap* rendered_icon) {
+  DCHECK(rendered_icon);
+  DCHECK(rendered_icon->empty());
+  rendered_icon->allocN32Pixels(icon.width(), icon.height());
+  rendered_icon->eraseColor(background_color);
+  SkCanvas offscreen(*rendered_icon);
+  offscreen.drawImage(SkImage::MakeFromBitmap(icon), 0, 0);
+  offscreen.drawColor(background_color, SkBlendMode::kDifference);
 }
 
 bool IsRenderedIconAtPathSufficientlyVisible(const base::FilePath& path,
