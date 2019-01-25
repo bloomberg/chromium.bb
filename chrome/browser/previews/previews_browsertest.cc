@@ -91,6 +91,10 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
         https_server_->GetURL("/noscript_test_with_no_transform_header.html");
     ASSERT_TRUE(https_no_transform_url_.SchemeIs(url::kHttpsScheme));
 
+    https_hint_setup_url_ = https_server_->GetURL("/hint_setup.html");
+    ASSERT_TRUE(https_hint_setup_url_.SchemeIs(url::kHttpsScheme));
+    ASSERT_EQ(https_hint_setup_url_.host(), https_url_.host());
+
     // Set up http server with resource monitor and redirect handler.
     http_server_.reset(
         new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTP));
@@ -106,6 +110,10 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
 
     redirect_url_ = http_server_->GetURL("/redirect.html");
     ASSERT_TRUE(redirect_url_.SchemeIs(url::kHttpScheme));
+
+    http_hint_setup_url_ = http_server_->GetURL("/hint_setup.html");
+    ASSERT_TRUE(http_hint_setup_url_.SchemeIs(url::kHttpScheme));
+    ASSERT_EQ(http_hint_setup_url_.host(), http_url_.host());
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
@@ -118,26 +126,10 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
 
   const GURL& https_url() const { return https_url_; }
   const GURL& https_no_transform_url() const { return https_no_transform_url_; }
+  const GURL& https_hint_setup_url() const { return https_hint_setup_url_; }
   const GURL& http_url() const { return http_url_; }
   const GURL& redirect_url() const { return redirect_url_; }
-
-  // Triggers a navigation to |url| to prime the OptimizationGuide hints for the
-  // url's host and ensure that they have been loaded from the store (via
-  // histogram) prior to the navigation that tests functionality.
-  void LoadUrlHints(const GURL& url) {
-    base::HistogramTester histogram_tester;
-
-    ui_test_utils::NavigateToURL(browser(), url);
-
-    RetryForHistogramUntilCountReached(
-        &histogram_tester,
-        previews::kPreviewsOptimizationGuideOnLoadedHintResultHistogramString,
-        1);
-
-    // Reset state for any subsequent test.
-    noscript_css_requested_ = false;
-    noscript_js_requested_ = false;
-  }
+  const GURL& http_hint_setup_url() const { return http_hint_setup_url_; }
 
   bool noscript_css_requested() const {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -194,8 +186,10 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
   GURL https_url_;
   GURL https_no_transform_url_;
+  GURL https_hint_setup_url_;
   GURL http_url_;
   GURL redirect_url_;
+  GURL http_hint_setup_url_;
 
   // Should be accessed only on UI thread.
   bool noscript_css_requested_ = false;
@@ -236,12 +230,14 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
     PreviewsBrowserTest::SetUp();
   }
 
-  void SetUpNoScriptWhitelist(
-      std::vector<std::string> whitelisted_noscript_sites) {
+  // Creates hint data for the |hint_setup_url|'s host and then performs a
+  // navigation to |hint_setup_url| to trigger the hints to be loaded into the
+  // hint cache so they will be available for a subsequent navigation to a test
+  // url to the same host.
+  void SetUpNoScriptWhitelist(const GURL& hint_setup_url) {
     const optimization_guide::HintsComponentInfo& component_info =
         test_hints_component_creator_.CreateHintsComponentInfoWithPageHints(
-            optimization_guide::proto::NOSCRIPT, whitelisted_noscript_sites,
-            {});
+            optimization_guide::proto::NOSCRIPT, {hint_setup_url.host()}, {});
 
     base::HistogramTester histogram_tester;
 
@@ -251,6 +247,16 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
     RetryForHistogramUntilCountReached(
         &histogram_tester,
         previews::kPreviewsOptimizationGuideUpdateHintsResultHistogramString,
+        1);
+
+    // Navigate to |hint_setup_url| to prime the OptimizationGuide hints for the
+    // url's host and ensure that they have been loaded from the store (via
+    // histogram) prior to the navigation that tests functionality.
+    ui_test_utils::NavigateToURL(browser(), hint_setup_url);
+
+    RetryForHistogramUntilCountReached(
+        &histogram_tester,
+        previews::kPreviewsOptimizationGuideOnLoadedHintResultHistogramString,
         1);
   }
 
@@ -280,10 +286,8 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                        MAYBE_NoScriptPreviewsEnabled) {
   GURL url = https_url();
 
-  // Whitelist test URL for NoScript.
-  SetUpNoScriptWhitelist({url.host()});
-
-  LoadUrlHints(url);
+  // Whitelist NoScript for https_hint_setup_url()'s' host.
+  SetUpNoScriptWhitelist(https_hint_setup_url());
 
   base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), url);
@@ -293,18 +297,16 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
   EXPECT_FALSE(noscript_js_requested());
 
   // Verify info bar presented via histogram check.
-  EXPECT_FALSE(histogram_tester.GetAllSamples("Previews.InfoBarAction.NoScript")
-                   .empty());
+  RetryForHistogramUntilCountReached(&histogram_tester,
+                                     "Previews.InfoBarAction.NoScript", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                        NoScriptPreviewsEnabledButHttpRequest) {
   GURL url = http_url();
 
-  // Whitelist test URL for NoScript.
-  SetUpNoScriptWhitelist({url.host()});
-
-  LoadUrlHints(url);
+  // Whitelist NoScript for http_hint_setup_url() host.
+  SetUpNoScriptWhitelist(http_hint_setup_url());
 
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -326,10 +328,8 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                        MAYBE_NoScriptPreviewsEnabledButNoTransformDirective) {
   GURL url = https_no_transform_url();
 
-  // Whitelist test URL for NoScript.
-  SetUpNoScriptWhitelist({url.host()});
-
-  LoadUrlHints(url);
+  // Whitelist NoScript for https_hint_setup_url()'s' host.
+  SetUpNoScriptWhitelist(https_hint_setup_url());
 
   base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), url);
@@ -346,10 +346,8 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                        MAYBE_NoScriptPreviewsEnabledHttpRedirectToHttps) {
   GURL url = redirect_url();
 
-  // Whitelist test URL for NoScript.
-  SetUpNoScriptWhitelist({url.host()});
-
-  LoadUrlHints(url);
+  // Whitelist NoScript for http_hint_setup_url() host.
+  SetUpNoScriptWhitelist(http_hint_setup_url());
 
   base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), url);
@@ -359,8 +357,8 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
   EXPECT_FALSE(noscript_js_requested());
 
   // Verify info bar presented via histogram check.
-  EXPECT_FALSE(histogram_tester.GetAllSamples("Previews.InfoBarAction.NoScript")
-                   .empty());
+  RetryForHistogramUntilCountReached(&histogram_tester,
+                                     "Previews.InfoBarAction.NoScript", 1);
 }
 
 // Flaky in all platforms except Android. See https://crbug.com/803626 for
@@ -375,10 +373,8 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                        MAYBE_NoScriptPreviewsRecordsOptOut) {
   GURL url = redirect_url();
 
-  // Whitelist test URL for NoScript.
-  SetUpNoScriptWhitelist({url.host()});
-
-  LoadUrlHints(url);
+  // Whitelist NoScript for http_hint_setup_url()'s' host.
+  SetUpNoScriptWhitelist(http_hint_setup_url());
 
   base::HistogramTester histogram_tester;
 
@@ -388,7 +384,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
   // Terminate the previous page (non-opt out) and pull up a new NoScript page.
   ui_test_utils::NavigateToURL(browser(), url);
   histogram_tester.ExpectUniqueSample("Previews.OptOut.UserOptedOut.NoScript",
-                                      0, 2);
+                                      0, 1);
 
   // Opt out of the NoScript Preview page.
   PreviewsUITabHelper::FromWebContents(
@@ -415,10 +411,8 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                        MAYBE_NoScriptPreviewsEnabledByWhitelist) {
   GURL url = https_url();
 
-  // Whitelist test URL for NoScript.
-  SetUpNoScriptWhitelist({url.host()});
-
-  LoadUrlHints(url);
+  // Whitelist NoScript for https_hint_setup_url()'s' host.
+  SetUpNoScriptWhitelist(https_hint_setup_url());
 
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -432,9 +426,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
   GURL url = https_url();
 
   // Whitelist random site for NoScript.
-  SetUpNoScriptWhitelist({"foo.com"});
-
-  LoadUrlHints(url);
+  SetUpNoScriptWhitelist(GURL("https://foo.com"));
 
   ui_test_utils::NavigateToURL(browser(), url);
 
