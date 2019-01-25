@@ -205,13 +205,6 @@ class TraceEventDataSource::ThreadLocalEventSink {
     // we're behind a flag) is to run the service on its own thread, the longer
     // term fix is most likely to not go via Mojo in that specific case.
 
-    // TODO(oysteine): Temporary workaround for a specific trace event
-    // which is added while a scheduler lock is held, and will deadlock
-    // if Perfetto does a PostTask to commit a finished chunk.
-    if (strcmp(trace_event->name(), "RealTimeDomain::DelayTillNextTask") == 0) {
-      return;
-    }
-
     if (handle && trace_event->phase() == TRACE_EVENT_PHASE_COMPLETE) {
       // 'X' phase events are added through a scoped object and
       // will have its duration updated when said object drops off
