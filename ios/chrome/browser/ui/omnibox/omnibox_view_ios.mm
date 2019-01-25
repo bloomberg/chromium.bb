@@ -392,15 +392,6 @@ gfx::NativeView OmniboxViewIOS::GetRelativeWindowForPopup() const {
   return nullptr;
 }
 
-int OmniboxViewIOS::GetTextWidth() const {
-  return 0;
-}
-
-// TODO(crbug.com/329527): [Merge r241107] implement OmniboxViewIOS::GetWidth().
-int OmniboxViewIOS::GetWidth() const {
-  return 0;
-}
-
 void OmniboxViewIOS::OnDidBeginEditing() {
   // Reset the changed flag.
   omnibox_interacted_while_focused_ = NO;

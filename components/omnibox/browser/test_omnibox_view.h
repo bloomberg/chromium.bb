@@ -62,8 +62,6 @@ class TestOmniboxView : public OmniboxView {
   bool OnAfterPossibleChange(bool allow_keyword_ui_change) override;
   gfx::NativeView GetNativeView() const override;
   gfx::NativeView GetRelativeWindowForPopup() const override;
-  int GetTextWidth() const override;
-  int GetWidth() const override;
   bool IsImeComposing() const override;
   int GetOmniboxTextLength() const override;
   void EmphasizeURLComponents() override {}

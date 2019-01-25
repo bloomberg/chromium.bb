@@ -91,8 +91,6 @@ class OmniboxViewIOS : public OmniboxView,
   void OnRevertTemporaryText() override {}
   gfx::NativeView GetNativeView() const override;
   gfx::NativeView GetRelativeWindowForPopup() const override;
-  int GetTextWidth() const override;
-  int GetWidth() const override;
 
   // AutocompleteTextFieldDelegate methods
   void OnDidBeginEditing();

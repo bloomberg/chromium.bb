@@ -79,14 +79,6 @@ gfx::NativeView TestOmniboxView::GetRelativeWindowForPopup() const {
   return nullptr;
 }
 
-int TestOmniboxView::GetTextWidth() const {
-  return 0;
-}
-
-int TestOmniboxView::GetWidth() const {
-  return 0;
-}
-
 bool TestOmniboxView::IsImeComposing() const {
   return false;
 }
