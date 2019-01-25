@@ -67,6 +67,7 @@ class AppServiceProxy : public KeyedService, public apps::mojom::Subscriber {
 #if defined(OS_CHROMEOS)
   BuiltInChromeOsApps built_in_chrome_os_apps_;
   ExtensionApps extension_apps_;
+  ExtensionApps extension_web_apps_;
 #endif  // OS_CHROMEOS
 
   DISALLOW_COPY_AND_ASSIGN(AppServiceProxy);

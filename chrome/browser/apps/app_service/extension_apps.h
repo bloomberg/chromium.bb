@@ -36,9 +36,14 @@ class ExtensionApps : public apps::mojom::Publisher,
   ~ExtensionApps() override;
 
   void Initialize(const apps::mojom::AppServicePtr& app_service,
-                  Profile* profile);
+                  Profile* profile,
+                  apps::mojom::AppType type);
 
  private:
+  // Determines whether the given extension should be treated as type app_type_,
+  // and should therefore by handled by this publisher.
+  bool Accepts(const extensions::Extension* extension);
+
   // apps::mojom::Publisher overrides.
   void Connect(apps::mojom::SubscriberPtr subscriber,
                apps::mojom::ConnectOptionsPtr opts) override;
@@ -89,6 +94,8 @@ class ExtensionApps : public apps::mojom::Publisher,
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
       observer_;
+
+  apps::mojom::AppType app_type_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionApps);
 };
