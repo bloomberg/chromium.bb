@@ -239,6 +239,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_TRY_AGAIN" desc="The label for a button allowing the user to try an action again. [CHAR-LIMIT=20]">
         Try again
       </message>
+      <message name="IDS_BACK" desc="Label for a back button to return to a previous UI state or screen. Used in multiple contexts. [CHAR-LIMIT=20]">
+        Back
+      </message>
 
       <!-- Main Preferences -->
       <message name="IDS_PREFERENCES" desc="Title for Chrome's Settings.">
@@ -384,6 +387,15 @@ CHAR-LIMIT guidelines:
       </message>
       <message name="IDS_USAGE_AND_CRASH_REPORTS_SUMMARY" desc="Description for 'Help improve Chrome's features and performance' preference.">
         Automatically sends usage statistics and crash reports to Google
+      </message>
+      <message name="IDS_CANCEL_SYNC_DIALOG_TITLE" desc="The title of a dialog that is shown when users tries closing 'Sync and Google services' preferences without confirming the changes.">
+        Cancel sync?
+      </message>
+      <message name="IDS_CANCEL_SYNC_DIALOG_MESSAGE" desc="The text of a dialog that is shown when users tries closing 'Sync and Google services' preferences without confirming the changes.">
+        You can turn on sync anytime in settings
+      </message>
+      <message name="IDS_CANCEL_SYNC_BUTTON" desc="The text of a button in a dialog that is shown when users tries closing 'Sync and Google services' preferences without confirming the changes.">
+        Cancel sync
       </message>
 
       <!-- Search engine preferences -->
