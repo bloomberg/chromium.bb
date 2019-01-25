@@ -142,6 +142,51 @@ TEST_F(NGLineBreakerTest, OverflowWord) {
   EXPECT_EQ("678", ToString(lines[1], node));
 }
 
+TEST_F(NGLineBreakerTest, OverflowTab) {
+  LoadAhem();
+  NGInlineNode node = CreateInlineNode(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    #container {
+      font: 10px/1 Ahem;
+      tab-size: 8;
+      white-space: pre-wrap;
+      width: 10ch;
+    }
+    </style>
+    <div id=container>12345&#9;&#9;678</div>
+  )HTML");
+
+  Vector<NGInlineItemResults> lines;
+  lines = BreakLines(node, LayoutUnit(100));
+  EXPECT_EQ(2u, lines.size());
+  EXPECT_EQ("12345\t\t", ToString(lines[0], node));
+  EXPECT_EQ("678", ToString(lines[1], node));
+}
+
+TEST_F(NGLineBreakerTest, OverflowTabBreakWord) {
+  LoadAhem();
+  NGInlineNode node = CreateInlineNode(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    #container {
+      font: 10px/1 Ahem;
+      tab-size: 8;
+      white-space: pre-wrap;
+      width: 10ch;
+      word-wrap: break-word;
+    }
+    </style>
+    <div id=container>12345&#9;&#9;678</div>
+  )HTML");
+
+  Vector<NGInlineItemResults> lines;
+  lines = BreakLines(node, LayoutUnit(100));
+  EXPECT_EQ(2u, lines.size());
+  EXPECT_EQ("12345\t\t", ToString(lines[0], node));
+  EXPECT_EQ("678", ToString(lines[1], node));
+}
+
 TEST_F(NGLineBreakerTest, OverflowAtomicInline) {
   LoadAhem();
   NGInlineNode node = CreateInlineNode(R"HTML(

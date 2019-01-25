@@ -102,11 +102,17 @@ class CORE_EXPORT NGLineBreaker {
   };
 
   void HandleText(const NGInlineItem&);
+  void HandleText(const NGInlineItem&, const ShapeResult& shape_result);
   void BreakText(NGInlineItemResult*,
                  const NGInlineItem&,
                  LayoutUnit available_width);
+  void BreakText(NGInlineItemResult*,
+                 const NGInlineItem&,
+                 const ShapeResult& shape_result,
+                 LayoutUnit available_width);
   bool HandleTextForFastMinContent(NGInlineItemResult* item_result,
-                                   const NGInlineItem& item);
+                                   const NGInlineItem& item,
+                                   const ShapeResult& shape_result);
 
   scoped_refptr<ShapeResultView> TruncateLineEndResult(
       const NGInlineItemResult& item_result,
@@ -116,7 +122,8 @@ class CORE_EXPORT NGLineBreaker {
                                        unsigned start,
                                        unsigned end);
 
-  void HandleTrailingSpaces(const NGInlineItem&);
+  void HandleTrailingSpaces(const NGInlineItem&,
+                            const ShapeResult& shape_result);
   void RemoveTrailingCollapsibleSpace();
   LayoutUnit TrailingCollapsibleSpaceWidth();
   void ComputeTrailingCollapsibleSpace();

@@ -226,20 +226,26 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::BoxInfo::
 // Append a string as a text item.
 template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendTextItem(
-    const String& string,
-    unsigned start,
-    unsigned end,
+    const StringView string,
     const ComputedStyle* style,
     LayoutText* layout_object) {
-  DCHECK_GT(end, start);
   DCHECK(style);
   DCHECK(layout_object);
-  unsigned length = end - start;
+  AppendTextItem(NGInlineItem::kText, string, style, layout_object);
+}
+
+template <typename OffsetMappingBuilder>
+void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendTextItem(
+    NGInlineItem::NGInlineItemType type,
+    const StringView string,
+    const ComputedStyle* style,
+    LayoutText* layout_object) {
+  DCHECK(style);
+  DCHECK(layout_object);
   unsigned start_offset = text_.length();
-  text_.Append(string, start, length);
-  mapping_builder_.AppendIdentityMapping(length);
-  AppendItem(items_, NGInlineItem::kText, start_offset, text_.length(), style,
-             layout_object);
+  text_.Append(string);
+  mapping_builder_.AppendIdentityMapping(string.length());
+  AppendItem(items_, type, start_offset, text_.length(), style, layout_object);
   DCHECK(!items_->back().IsEmptyItem());
   is_empty_inline_ = false;  // text item is not empty.
 }
@@ -620,25 +626,37 @@ void NGInlineItemsBuilderTemplate<
     do {
       ++start;
     } while (start < string.length() && string[start] == kSpaceCharacter);
-    AppendTextItem(string, 0, start, style, layout_object);
+    AppendTextItem(StringView(string, 0, start), style, layout_object);
     AppendGeneratedBreakOpportunity(style, layout_object);
   }
 
   for (; start < string.length();) {
     UChar c = string[start];
     if (IsControlItemCharacter(c)) {
-      if (c != kNewlineCharacter)
-        Append(NGInlineItem::kControl, c, style, layout_object);
-      else
+      if (c == kNewlineCharacter) {
         AppendForcedBreak(style, layout_object);
-      start++;
+        start++;
+      } else if (c == kTabulationCharacter) {
+        wtf_size_t end = string.Find(
+            [](UChar c) { return c != kTabulationCharacter; }, start + 1);
+        if (end == kNotFound)
+          end = string.length();
+        AppendTextItem(NGInlineItem::kControl,
+                       StringView(string, start, end - start), style,
+                       layout_object);
+        start = end;
+      } else {
+        Append(NGInlineItem::kControl, c, style, layout_object);
+        start++;
+      }
       continue;
     }
 
     wtf_size_t end = string.Find(IsControlItemCharacter, start + 1);
     if (end == kNotFound)
       end = string.length();
-    AppendTextItem(string, start, end, style, layout_object);
+    AppendTextItem(StringView(string, start, end - start), style,
+                   layout_object);
     start = end;
   }
 }

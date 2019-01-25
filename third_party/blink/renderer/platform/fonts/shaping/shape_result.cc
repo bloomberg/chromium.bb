@@ -1480,17 +1480,29 @@ scoped_refptr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
     const Font* font,
     const TextRun& text_run,
     float position_offset,
-    unsigned count) {
+    unsigned length) {
+  return CreateForTabulationCharacters(
+      font, text_run.Direction(), text_run.GetTabSize(),
+      text_run.XPos() + position_offset, 0, length);
+}
+
+scoped_refptr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
+    const Font* font,
+    TextDirection direction,
+    const TabSize& tab_size,
+    float position,
+    unsigned start_index,
+    unsigned length) {
   const SimpleFontData* font_data = font->PrimaryFont();
   // Tab characters are always LTR or RTL, not TTB, even when
   // isVerticalAnyUpright().
   scoped_refptr<ShapeResult::RunInfo> run = RunInfo::Create(
-      font_data, text_run.Rtl() ? HB_DIRECTION_RTL : HB_DIRECTION_LTR,
-      CanvasRotationInVertical::kRegular, HB_SCRIPT_COMMON, 0, count, count);
-  float position = text_run.XPos() + position_offset;
+      font_data, IsLtr(direction) ? HB_DIRECTION_LTR : HB_DIRECTION_RTL,
+      CanvasRotationInVertical::kRegular, HB_SCRIPT_COMMON, start_index, length,
+      length);
   float start_position = position;
-  for (unsigned i = 0; i < count; i++) {
-    float advance = font->TabWidth(font_data, text_run.GetTabSize(), position);
+  for (unsigned i = 0; i < length; i++) {
+    float advance = font->TabWidth(font_data, tab_size, position);
     HarfBuzzRunGlyphData& glyph_data = run->glyph_data_[i];
     glyph_data.SetGlyphAndPositions(font_data->SpaceGlyph(), i, advance,
                                     FloatSize(), true);
@@ -1500,10 +1512,10 @@ scoped_refptr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
   run->width_ = position - start_position;
 
   scoped_refptr<ShapeResult> result =
-      ShapeResult::Create(font, count, text_run.Direction());
+      ShapeResult::Create(font, length, direction);
   result->width_ = run->width_;
-  result->num_glyphs_ = count;
-  DCHECK_EQ(result->num_glyphs_, count);  // no overflow
+  result->num_glyphs_ = length;
+  DCHECK_EQ(result->num_glyphs_, length);  // no overflow
   result->has_vertical_offsets_ =
       font_data->PlatformData().IsVerticalAnyUpright();
   result->runs_.push_back(std::move(run));
