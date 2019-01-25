@@ -20,6 +20,7 @@
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/reload_type.h"
+#import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/context_menu_params.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/navigation_context.h"
@@ -660,6 +661,12 @@ static NSString* gUserAgentProduct = nil;
   [self updateVisibleSSLStatus];
   self.loading = NO;
   self.estimatedProgress = 0.0;
+
+  // TODO(crbug.com/873729): The session will not be restored until
+  // LoadIfNecessary call. Fix the bug and remove extra call.
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() && sessionStorage) {
+    _webState->GetNavigationManager()->LoadIfNecessary();
+  }
 }
 
 // Adds the web view provided by |_webState| as a subview unless it has already.
