@@ -951,6 +951,15 @@ int UDPSocketPosix::SetMulticastOptions() {
 #endif  //  !defined(OS_MACOSX)
         int rv = setsockopt(socket_, IPPROTO_IP, IP_MULTICAST_IF,
                             reinterpret_cast<const char*>(&mreq), sizeof(mreq));
+#if defined(OS_FUCHSIA)
+        // Remove this workaround once IP_MULTICAST_IF is implemented.
+        // See https://crbug.com/924792
+        if (rv && errno == EOPNOTSUPP) {
+          LOG(WARNING)
+              << "IP_MULTICAST_IF is not supported. Proceeding anyway.";
+          rv = 0;
+        }
+#endif  // !defined(OS_FUCHSIA)
         if (rv)
           return MapSystemError(errno);
         break;
