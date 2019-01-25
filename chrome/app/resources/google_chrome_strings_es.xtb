@@ -4,6 +4,7 @@
 <translation id="1001534784610492198">El archivo de instalación está dañado o no es válido. Vuelve a descargar Google Chrome.</translation>
 <translation id="102763973188675173">Personaliza y controla Google Chrome. Hay una actualización disponible.</translation>
 <translation id="1035334672863811645">iniciar sesión en Chrome</translation>
+<translation id="1051826050538111504">Se ha detectado software dañino en tu ordenador. Chrome puede eliminarlo, restaurar tu configuración y desactivar las extensiones para que el navegador vuelva a funcionar con normalidad.</translation>
 <translation id="1065672644894730302">No se pueden leer tus preferencias.
 
 Es posible que algunas funciones no estén disponibles y que no se guarden los cambios que hagas en las preferencias.</translation>
@@ -72,6 +73,7 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="2580411288591421699">No se puede instalar la misma versión de Google Chrome que se está ejecutando. Cierra el navegador y vuelve a intentarlo.</translation>
 <translation id="2586406160782125153">Se eliminarán tus datos de navegación de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logotipo de Chrome</translation>
+<translation id="2644798301485385923">Sistema Chrome OS</translation>
 <translation id="2652691236519827073">Abrir enlace en una pes&amp;taña nueva de Chrome</translation>
 <translation id="2665296953892887393">Ayudar a mejorar Google Chrome enviando informes sobre fallos y <ph name="UMA_LINK" /> a Google</translation>
 <translation id="2689103672227170538">Esta extensión ha cambiado la página que se muestra al iniciar Chrome.</translation>
@@ -103,6 +105,7 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="3451115285585441894">Añadiendo a Chrome...</translation>
 <translation id="345171907106878721">Añadirte a Chrome</translation>
 <translation id="3479552764303398839">Ahora no</translation>
+<translation id="34857402635545079">Borrar también los datos de Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome necesita acceder a tu ubicación para compartirla con este sitio web</translation>
 <translation id="3582972582564653026">Sincroniza y personaliza Chrome en todos tus dispositivos</translation>
 <translation id="3622797965165704966">Ahora es más fácil utilizar Chrome con tu cuenta de Google y en ordenadores compartidos.</translation>
@@ -170,6 +173,7 @@ Puede que algunas funciones no estén disponibles. Especifica otro directorio de
 
 Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome se volverá a iniciar ahora}=1{Chrome se volverá a iniciar en 1 segundo}other{Chrome se volverá a iniciar en # segundos}}</translation>
+<translation id="5505603430818498864">Google Chrome puede reconocer imágenes y texto en una imagen enviando imágenes de páginas a los servidores de Google, lo que te permitirá entender mejor el contenido de las páginas.</translation>
 <translation id="556024056938947818">Google Chrome está intentando mostrar contraseñas.</translation>
 <translation id="5566025111015594046">Google Chrome (tráfico mDNS entrante)</translation>
 <translation id="565744775970812598">Es posible que <ph name="FILE_NAME" /> sea peligroso, por lo que Chrome lo ha bloqueado.</translation>

@@ -4,6 +4,7 @@
 <translation id="1001534784610492198">Lưu trữ trình cài đặt bị lỗi hoặc không hợp lệ. Vui lòng tải xuống lại Google Chrome.</translation>
 <translation id="102763973188675173">Tùy chỉnh và kiểm soát Google Chrome. Đã có bản cập nhật.</translation>
 <translation id="1035334672863811645">đăng nhập vào Chrome</translation>
+<translation id="1051826050538111504">Máy tính của bạn có phần mềm độc hại. Chrome có thể xóa phần mềm này, khôi phục các tùy chọn cài đặt của bạn và tắt tiện ích để giúp trình duyệt hoạt động lại bình thường.</translation>
 <translation id="1065672644894730302">Không thể đọc tùy chọn của bạn. Một số tính năng có thể không khả dụng và các thay đổi đối với tùy chọn sẽ không được lưu.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> trước đó đã sử dụng Chrome</translation>
 <translation id="1104959162601287462">Giới thiệu về &amp;hệ điều hành Chrome</translation>
@@ -70,6 +71,7 @@
 <translation id="2580411288591421699">Không thể cài đặt phiên bản Google Chrome giống với phiên bản hiện đang chạy. Vui lòng đóng Google Chrome và thử lại.</translation>
 <translation id="2586406160782125153">Thao tác này sẽ xóa dữ liệu duyệt web của bạn khỏi thiết bị này. Để truy xuất dữ liệu của bạn sau, hãy đăng nhập vào Chrome dưới dạng <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Biểu trưng Chrome</translation>
+<translation id="2644798301485385923">Hệ thống Chrome OS</translation>
 <translation id="2652691236519827073">Mở liên kết trong &amp;tab mới của Chrome</translation>
 <translation id="2665296953892887393">Giúp cải thiện Google Chrome bằng cách gửi báo cáo sự cố và <ph name="UMA_LINK" /> tới Google</translation>
 <translation id="2689103672227170538">Tiện ích này đã thay đổi trang nào được hiển thị khi bạn khởi động Chrome.</translation>
@@ -101,6 +103,7 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để biết t
 <translation id="3451115285585441894">Đang thêm vào Chrome...</translation>
 <translation id="345171907106878721">Thêm chính bạn vào Chrome</translation>
 <translation id="3479552764303398839">Không phải bây giờ</translation>
+<translation id="34857402635545079">Đồng thời xóa dữ liệu khỏi Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome cần quyền truy cập vào vị trí của bạn để chia sẻ thông tin vị trí với trang web này</translation>
 <translation id="3582972582564653026">Đồng bộ hóa và cá nhân hóa Chrome trên các thiết bị của bạn</translation>
 <translation id="3622797965165704966">Giờ đây, việc sử dụng Chrome bằng tài khoản Google của bạn và trên máy tính được chia sẻ trở nên dễ dàng hơn.</translation>
@@ -167,6 +170,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="5386244825306882791">Tiện ích này cũng điều khiển trang nào được hiển thị khi bạn khởi động Chrome hoặc tìm kiếm từ Thanh địa chỉ.</translation>
 <translation id="5430073640787465221">Tệp tùy chọn của bạn bị hỏng hoặc không hợp lệ. Google Chrome không thể khôi phục cài đặt của bạn.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome sẽ chạy lại ngay bây giờ}=1{Chrome sẽ chạy lại sau 1 giây}other{Chrome sẽ chạy lại sau # giây}}</translation>
+<translation id="5505603430818498864">Google Chrome có thể nhận dạng hình ảnh và văn bản trên một hình ảnh bằng cách gửi hình ảnh trang tới máy chủ của Google. Nhờ vậy, bạn có thể hiểu rõ hơn nội dung trang.</translation>
 <translation id="556024056938947818">Google Chrome đang cố gắng hiển thị mật khẩu.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> có thể nguy hiểm, do đó Chrome đã chặn tệp.</translation>

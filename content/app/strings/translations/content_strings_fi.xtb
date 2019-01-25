@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">Tässä kuussa</translation>
 <translation id="1637811476055996098">Valitse tiedostot</translation>
 <translation id="1650423536718072820">erotettu lainaus</translation>
+<translation id="1727886345390570319">sulje tekstitysvalikko</translation>
 <translation id="1729654308190250600">Kirjoita ei-tyhjä sähköpostiosoite.</translation>
 <translation id="1758486001363313524">Muu...</translation>
 <translation id="1806710327868736751">ilmoitusvalintaikkuna</translation>
@@ -147,6 +148,7 @@
 <translation id="6213469881011901533">sanasto</translation>
 <translation id="6398862346408813489">Näytä kuukaudenvalintapaneeli</translation>
 <translation id="6404546809543547843">äänen ajan liukusäädin</translation>
+<translation id="6443871981718447451">näytä tekstitysvalikko</translation>
 <translation id="6453774872122745852">kiitokset</translation>
 <translation id="648732519525291180">ajan valitsin</translation>
 <translation id="6550675742724504774">Asetukset</translation>
@@ -162,7 +164,6 @@
 <translation id="6820355525329141109">Laajennuksen lataaminen epäonnistui.</translation>
 <translation id="6820615603175220800">lähdeluetteloviittaus</translation>
 <translation id="6843725295806269523">äänetön</translation>
-<translation id="6853785296079745596">piilota tekstitykset</translation>
 <translation id="6885760532393684712">hakemisto</translation>
 <translation id="689129560213475294">kolofoni</translation>
 <translation id="6934078000481955284">muotoiltu lainaus</translation>
@@ -171,7 +172,6 @@
 <translation id="6989848892321993519">Pidennä tämä teksti vähintään <ph name="MIN_CHARACTERS" /> merkkiin (tällä hetkellä käytössä 1 merkki).</translation>
 <translation id="709897737746224366">Käytä pyydettyä muotoilua.</translation>
 <translation id="7139483182332611405">johdanto</translation>
-<translation id="7223624360433298498">kulunut aika</translation>
 <translation id="7263440858009898357">Valitse kohde luettelosta.</translation>
 <translation id="727747134524199931">sarakkeen otsikko</translation>
 <translation id="7353453495576941748">tunnustus</translation>
@@ -186,7 +186,6 @@
 <translation id="7661956066982048809">grafiikkadokumentti</translation>
 <translation id="7673697353781729403">Tuntia</translation>
 <translation id="7681220483256441252">hakemisto</translation>
-<translation id="7720026100085573005">jäljellä oleva aika</translation>
 <translation id="7740050170769002709">HTML-sisältö</translation>
 <translation id="7750228210027921155">Kuva kuvassa</translation>
 <translation id="7789962463072032349">tauko</translation>
@@ -225,7 +224,6 @@
 <translation id="8987927404178983737">Kuukausi</translation>
 <translation id="901493112792887934">nykyinen toistoaika sekunteina</translation>
 <translation id="9048119486235211610">navigointi</translation>
-<translation id="9050748414552849310">näytä tekstitykset</translation>
 <translation id="9062295712474918030">dokumentti</translation>
 <translation id="9093215626363556771">sulje kuva kuvassa ‑tila</translation>
 <translation id="9108370397979208512">matematiikka</translation>

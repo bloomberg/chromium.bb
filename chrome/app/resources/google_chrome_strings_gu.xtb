@@ -4,6 +4,7 @@
 <translation id="1001534784610492198">ઇન્સ્ટૉલર આર્કાઇવ ખરાબ છે અથવા અમાન્ય છે. કૃપા કરીને Google Chrome ફરીથી ડાઉનલોડ કરો.</translation>
 <translation id="102763973188675173">Google Chromeને કસ્ટમાઇઝ અને નિયંત્રિત કરો. અપડેટ ઉપલબ્ધ છે.</translation>
 <translation id="1035334672863811645">Chrome માં સાઇન ઇન કરો</translation>
+<translation id="1051826050538111504">તમારા કમ્પ્યુટરમાં નુકસાનકારક સૉફ્ટવેર છે. Chrome તે કાઢી નાખી શકે છે, તમારી સેટિંગ પાછી મેળવી શકે છે અને એક્સ્ટેંશન બંધ કરી શકે છે જેથી તમારું બ્રાઉઝર ફરી સામાન્ય રીતે કામ કરી શકે.</translation>
 <translation id="1065672644894730302">તમારી પસંદગીઓને વાંચી શકાતી નથી.
 
 કેટલીક સુવિધાઓ ઉપલબ્ધ હોઈ શકે છે અને પસંદગીઓ પરના ફેરફારોને સાચવવામાં આવશે નહીં.</translation>
@@ -72,6 +73,7 @@
 <translation id="2580411288591421699">હાલમાં ચાલી રહ્યું છે તે જ Google Chrome વર્ઝનને ઇન્સ્ટૉલ કરી શકાતું નથી. કૃપા કરીને Google Chrome બંધ કરો અને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="2586406160782125153">આ, તમારા બ્રાઉઝિંગ ડેટાને આ ડિવાઇસમાંથી ડિલીટ કરશે. પછીથી તમારો ડેટા ફરીથી મેળવવા માટે, Chromeમાં <ph name="USER_EMAIL" /> તરીકે સાઇન ઇન કરો.</translation>
 <translation id="2588322182880276190">Chrome લૉગો</translation>
+<translation id="2644798301485385923">Chrome OS સિસ્ટમ</translation>
 <translation id="2652691236519827073">નવા Chrome &amp;ટૅબમાં લિંક ખોલો</translation>
 <translation id="2665296953892887393">ક્રૅશ રિપોર્ટ અને <ph name="UMA_LINK" /> Googleને મોકલીને Google Chromeને વધુ સારું બનાવવામાં મદદ કરો.</translation>
 <translation id="2689103672227170538">જ્યારે તમે Chrome શરૂ કરો છો ત્યારે જે પૃષ્ઠ દર્શાવવામાં આવે છે તે આ એક્સટેન્શને બદલ્યું છે.</translation>
@@ -103,6 +105,7 @@
 <translation id="3451115285585441894">Chrome માં ઉમેરી રહ્યું છે...</translation>
 <translation id="345171907106878721">સ્વયંને Chrome માં ઉમેરો</translation>
 <translation id="3479552764303398839">હમણાં નહીં</translation>
+<translation id="34857402635545079">Chromeમાંથી પણ ડેટા કાઢી નાખો (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chromeને આ સાઇટ સાથે તમારું સ્થાન શેર કરવા માટે તમારા સ્થાનના ઍક્સેસની જરૂર પડે છે</translation>
 <translation id="3582972582564653026">તમારા બધા ડિવાઇસ પર Chromeને સિંક કરો અને મનગમતું બનાવો</translation>
 <translation id="3622797965165704966">હવે તમારા Google એકાઉન્ટ સાથે અને શેર કરેલા કમ્પ્યુટર પર Chromeનો ઉપયોગ કરવો વધુ સરળ છે.</translation>
@@ -170,6 +173,7 @@
 
 Google Chrome તમારી સેટિંગ્સને પુનઃપ્રાપ્ત કરવામાં અક્ષમ છે.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome હમણાં ફરીથી લૉન્ચ થશે}=1{Chrome 1 સેકન્ડમાં ફરીથી લૉન્ચ થશે}one{Chrome # સેકન્ડમાં ફરીથી લૉન્ચ થશે}other{Chrome # સેકન્ડમાં ફરીથી લૉન્ચ થશે}}</translation>
+<translation id="5505603430818498864">પેજની છબીઓ Google સર્વર પર મોકલીને, Google Chrome છબીઓ અને છબીમાં રહેલી ટેક્સ્ટ ઓળખી શકે છે, અને આ રીતે પેજના કન્ટેન્ટને તમે વધુ સારી રીતે સમજી શકો છો.</translation>
 <translation id="556024056938947818">Google Chrome પાસવર્ડ્સ બતાવવાનો પ્રયાસ કરી રહ્યું છે.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> જોખમી હોઈ શકે છે, તેથી Chrome એ તેને અવરોધિત કરેલ છે.</translation>

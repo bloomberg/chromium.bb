@@ -4,6 +4,7 @@
 <translation id="1001534784610492198">‏أرشيف المثبت تالف أو غير صالح. يُرجى تنزيل Google Chrome مرة أخرى.</translation>
 <translation id="102763973188675173">‏تخصيص Google Chrome والتحكُّم فيه. هناك تحديث متوفر.</translation>
 <translation id="1035334672863811645">‏تسجيل الدخول إلى Chrome</translation>
+<translation id="1051826050538111504">‏هناك برنامج ضار على جهاز الكمبيوتر. ويمكن لمتصفِّح Chrome إزالته واستعادة إعداداتك وإيقاف الإضافات لكي يعمل متصفِّحك بشكلٍ طبيعي من جديد.</translation>
 <translation id="1065672644894730302">لا يمكن قراءة تفضيلاتك. قد تكون بعض الميزات غير متاحة، ولن يتم حفظ التغييرات في التفضيلات.</translation>
 <translation id="1088300314857992706">‏كان <ph name="USER_EMAIL_ADDRESS" /> يستخدم Chrome سابقًا</translation>
 <translation id="1104959162601287462">‏حول &amp;نظام التشغيل Google Chrome</translation>
@@ -70,6 +71,7 @@
 <translation id="2580411288591421699">‏لا يمكن تثبيت نفس الإصدار المثبت من Google Chrome والذي يتم تشغيله حاليًا. يُرجى إغلاق Google Chrome وإعادة المحاولة.</translation>
 <translation id="2586406160782125153">‏سيؤدي هذا إلى حذف بيانات التصفح من هذا الجهاز. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chrome كـ <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">‏شعار Chrome</translation>
+<translation id="2644798301485385923">‏نظام التشغيل Chrome</translation>
 <translation id="2652691236519827073">‏فتح الرابط في علامة تبويب جديدة في Chrome</translation>
 <translation id="2665296953892887393">‏يمكنك المساعدة في تحسين Google Chrome عن طريق إرسال تقارير الأعطال و<ph name="UMA_LINK" /> إلى Google</translation>
 <translation id="2689103672227170538">‏غيّرت هذه الإضافة الصفحة التي تظهر عند بدء تشغيل Chrome.</translation>
@@ -101,6 +103,7 @@
 <translation id="3451115285585441894">‏جارٍ الإضافة إلى Chrome...</translation>
 <translation id="345171907106878721">‏إضافة نفسك إلى Chrome</translation>
 <translation id="3479552764303398839">ليس الآن</translation>
+<translation id="34857402635545079">‏محو البيانات من Chrome أيضًا (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">‏يحتاج Chrome للوصول إلى موقعك الجغرافي لمشاركته مع موقع الويب هذا.</translation>
 <translation id="3582972582564653026">‏يمكنك مزامنة Chrome وتخصيصه على جميع أجهزتك.</translation>
 <translation id="3622797965165704966">‏الآن أصبح استخدام Chrome مع حسابك في Google وفي أجهزة الكمبيوتر المشتركة أكثر سهولة.</translation>
@@ -166,6 +169,7 @@
 <translation id="5386244825306882791">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chrome أو إجراء بحث من المربع متعدد الاستخدامات.</translation>
 <translation id="5430073640787465221">‏ملف التفضيلات تالف أو غير صالح. يتعذر على Google Chrome استرداد إعداداتك.</translation>
 <translation id="5483595757826856374">{0,plural, =0{‏ستتم إعادة تشغيل Chrome الآن}=1{‏ستتم إعادة تشغيل Chrome خلال ثانية واحدة}two{‏ستتم إعادة تشغيل Chrome خلال ثانيتين (#)}few{‏ستتم إعادة تشغيل Chrome خلال # ثوانٍ}many{‏ستتم إعادة تشغيل Chrome خلال # ثانيةً}other{‏ستتم إعادة تشغيل Chrome خلال # ثانية}}</translation>
+<translation id="5505603430818498864">‏يمكن لمتصفح Google Chrome التعرُّف على الصور والنص في صورة من خلال إرسال صور الصفحات إلى خوادم Google، ما يسمح لك بفهم محتوى الصفحة بشكلٍ أفضل.</translation>
 <translation id="556024056938947818">‏يحاول Google Chrome إظهار كلمات المرور.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">‏قد يكون ملف <ph name="FILE_NAME" /> ضارًا، لذلك فقد حظره Chrome.</translation>

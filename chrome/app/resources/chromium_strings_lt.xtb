@@ -78,6 +78,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="3479552764303398839">Ne dabar</translation>
 <translation id="3509308970982693815">Uždarykite visus „Chromium“ langus ir bandykite dar kartą.</translation>
 <translation id="352783484088404971">Pašalinti iš „Chromium“...</translation>
+<translation id="3575459661164320785">Kompiuteryje yra kenkėjiškos programinės įrangos. „Chromium“ gali ją pašalinti, atkurti nustatymus ir išjungti plėtinius, kad naršyklė vėl veiktų įprastai.</translation>
 <translation id="3582788516608077514">Atnaujinama „Chromium“...</translation>
 <translation id="358997566136285270">„Chromium“ logotipas</translation>
 <translation id="3639635944603682591">Šio asmens naršymo duomenys bus ištrinti iš šio įrenginio. Jei norite atkurti duomenis, prisijunkite prie „Chromium“ kaip <ph name="USER_EMAIL" />.</translation>
@@ -167,6 +168,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="6373523479360886564">Ar tikrai norite pašalinti „Chromium"?</translation>
 <translation id="6400072781405947421">„Chromium“ gali tinkamai neveikti, nes ji nebepalaikoma naudojant 10.9 versijos „Mac OS X“.</translation>
 <translation id="6403826409255603130">„Chromium“ – tai žiniatinklio naršyklė, kurią naudojant akimirksniu paleidžiami tinklalapiai ir programos. Ji greita, stabili ir lengvai naudojama. Saugiau naršykite žiniatinklį naudodami į „Chromium“ integruotą apsaugą nuo kenkėjiškų programų ir sukčiavimo.</translation>
+<translation id="6434250628340475518">„Chromium“ OS sistema</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{„Chromium“ bus paleista iš naujo po 1 sekundės}one{„Chromium“ bus paleista iš naujo po # sekundės}few{„Chromium“ bus paleista iš naujo po # sekundžių}many{„Chromium“ bus paleista iš naujo po # sekundės}other{„Chromium“ bus paleista iš naujo po # sekundžių}}</translation>
 <translation id="6475912303565314141">Ji taip pat kontroliuoja, koks puslapis rodomas, kai paleidžiate „Chromium“.</translation>
 <translation id="6485906693002546646">Sinchronizuoti „Chromium“ duomenims naudojate <ph name="PROFILE_EMAIL" />. Jei norite atnaujinti sinchronizavimo nuostatą arba naudoti „Chromium“ be „Google“ paskyros, apsilankykite <ph name="SETTINGS_LINK" /> skiltyje.</translation>
@@ -183,6 +185,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="6857782730669500492">„Chromium“ – „<ph name="PAGE_TITLE" />“</translation>
 <translation id="6863361426438995919">„Google Pay“ (nukopijuota į „Chromium“)</translation>
 <translation id="6893813176749746474">„Chromium“ atnaujinta, bet jos nenaudojote mažiausiai 30 dienų.</translation>
+<translation id="692832138936263906">„Chromium“ gali atpažinti vaizdus ir tekstą vaizde siųsdama puslapių vaizdus „Google“ serveriams, kad geriau suprastumėte puslapių turinį.</translation>
 <translation id="6964305034639999644">Atidaryti nuorodą „Chromium“ inko&amp;gnito lange</translation>
 <translation id="6970811910055250180">Įrenginys atnaujinamas...</translation>
 <translation id="6990124437352146030">„Chromium“ reikia leidimo, kad galėtų naudoti mikrofoną šioje svetainėje</translation>
@@ -213,6 +216,7 @@ Patikrinkite el. pašto adresu <ph name="ACCOUNT_EMAIL" /> išsiųstą laišką,
 <translation id="7471302858145901434">{0,plural, =1{„Chromium“ OS paleidimas iš naujo po dienos}one{„Chromium“ OS paleidimas iš naujo po # dienos}few{„Chromium“ OS paleidimas iš naujo po # dienų}many{„Chromium“ OS paleidimas iš naujo po # dienos}other{„Chromium“ OS paleidimas iš naujo po # dienų}}</translation>
 <translation id="7483335560992089831">Negalima įdiegti tos pačios „Chromium“ versijos, kuri šiuo metu paleista. Uždarykite „Chromium“ ir bandykite dar kartą.</translation>
 <translation id="7549178288319965365">Apie „Chromium“ OS</translation>
+<translation id="7561906087460245826">Taip pat išvalyti duomenis iš „Chromium“ (<ph name="URL" />)</translation>
 <translation id="761356813943268536">„Chromium“ naudoja jūsų fotoaparatą ir mikrofoną.</translation>
 <translation id="7617377681829253106">„Chromium“ dabar dar tobulesnė</translation>
 <translation id="7686590090926151193">„Chromium“ nėra numatytoji naršyklė</translation>

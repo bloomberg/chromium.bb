@@ -78,6 +78,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="3479552764303398839">Sio sasa</translation>
 <translation id="3509308970982693815">Tafadhali funga madirisha yote ya Chromium na ujaribu tena.</translation>
 <translation id="352783484088404971">Ondoa Kwenye Chromium...</translation>
+<translation id="3575459661164320785">Kuna programu hatari kwenye kompyuta yako. Chromium inaweza kuiondoa, kurejesha mipangilio yako na kuzima viendelezi ili kufanya kivinjari chako kifanye kazi tena kama kawaida.</translation>
 <translation id="3582788516608077514">Inasasisha Chromium...</translation>
 <translation id="358997566136285270">Nembo ya Chromium</translation>
 <translation id="3639635944603682591">Data ya kuvinjari ya mtu huyu itafutwa kwenye kifaa hiki. Ili kurejesha data, ingia katika Chromium ukitumia <ph name="USER_EMAIL" />.</translation>
@@ -167,6 +168,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="6373523479360886564">Je, una hakika unataka kusanidua Chromium?</translation>
 <translation id="6400072781405947421">Huenda Chromium isifanye kazi vizuri kwa sababu haitumiki tena kwenye Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium ni kivinjari cha wavuti kinachoendesha kurasa za wavuti na programu kwa kasi ya umeme. Ni ya haraka, imara, na rahisi kutumia. Vinjari wavuti kwa usalama zaidi dhidi ya hadaa na programu hasidi ukiwa na ulinzi uliojengwa ndani ya Chromium.</translation>
+<translation id="6434250628340475518">Mfumo wa Uendeshaji wa Chromium</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium itazimika na kuwaka tena baada ya sekunde 1}other{Chromium itazimika na kuwaka tena baada ya sekunde #}}</translation>
 <translation id="6475912303565314141">Pia inadhibiti ukurasa unaoonyeshwa unapoanzisha Chromium.</translation>
 <translation id="6485906693002546646">Unatumia <ph name="PROFILE_EMAIL" /> kusawazisha vitu vyako vya Chromium. Ili usasishe mapendeleo yako ya usawazishaji au utumie Chromium bila akaunti ya Google, tembelea <ph name="SETTINGS_LINK" />.</translation>
@@ -183,6 +185,7 @@ Baadhi ya vipengele huenda visipatikane. Tafadhali bainisha saraka tofauti ya wa
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (imenakiliwa kwenye Chromium)</translation>
 <translation id="6893813176749746474">Chromium imesasishwa, lakini hujaitumia angalau kwa siku 30.</translation>
+<translation id="692832138936263906">Chromium inaweza kutambua picha na matini katika picha kwa kutuma picha za kurasa kwenye seva za Google, hali inayokuruhusu kuelewa vyema zaidi maudhui ya kurasa.</translation>
 <translation id="6964305034639999644">Fungua kiungo katika dirisha fiche la Chromium</translation>
 <translation id="6970811910055250180">Inasasisha kifaa chako...</translation>
 <translation id="6990124437352146030">Chromium inahitaji ruhusa ya kufikia maikrofoni yako katika tovuti hii</translation>
@@ -212,6 +215,7 @@ Tafadhali angalia barua pepe yako katika <ph name="ACCOUNT_EMAIL" /> upate maagi
 <translation id="7471302858145901434">{0,plural, =1{Zima kisha uwashe mfumo wa uendeshaji wa Chromium ndani ya siku moja}other{Zima kisha uwashe mfumo wa uendeshaji wa Chromium ndani ya siku #}}</translation>
 <translation id="7483335560992089831">Haiwezi kusakinisha toleo sawia la Chromium ambalo linaendeshwa hivi sasa. Tafadhali funga Chromium na ujaribu tena.</translation>
 <translation id="7549178288319965365">Kuhusu Chromium OS</translation>
+<translation id="7561906087460245826">Futa pia data kwenye Chromium (<ph name="URL" />)</translation>
 <translation id="761356813943268536">Chromium inatumia kamera na maikrofoni yako.</translation>
 <translation id="7617377681829253106">Chromium imeboreshwa</translation>
 <translation id="7686590090926151193">Chromium si kivinjari chako chaguomsingi</translation>

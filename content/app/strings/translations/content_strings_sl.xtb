@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">Ta mesec</translation>
 <translation id="1637811476055996098">Izberi datoteke</translation>
 <translation id="1650423536718072820">pojavni citat</translation>
+<translation id="1727886345390570319">skrij meni s podnapisi</translation>
 <translation id="1729654308190250600">Vnesite e-poštni naslov (polje ne sme biti prazno).</translation>
 <translation id="1758486001363313524">Drugo ...</translation>
 <translation id="1806710327868736751">pogovorno okno z opozorilom</translation>
@@ -147,6 +148,7 @@
 <translation id="6213469881011901533">glosar</translation>
 <translation id="6398862346408813489">Prikaz podokna za izbiro meseca</translation>
 <translation id="6404546809543547843">časovni krmilnik za predvajanje zvoka</translation>
+<translation id="6443871981718447451">pokaži meni s podnapisi</translation>
 <translation id="6453774872122745852">zahvala</translation>
 <translation id="648732519525291180">izbirnik ure</translation>
 <translation id="6550675742724504774">Možnosti</translation>
@@ -162,7 +164,6 @@
 <translation id="6820355525329141109">Vtičnika ni bilo mogoče naložiti.</translation>
 <translation id="6820615603175220800">bibliografski viri</translation>
 <translation id="6843725295806269523">nemo</translation>
-<translation id="6853785296079745596">skrivanje podnapisov</translation>
 <translation id="6885760532393684712">imenik</translation>
 <translation id="689129560213475294">kolofon</translation>
 <translation id="6934078000481955284">daljši citat</translation>
@@ -171,7 +172,6 @@
 <translation id="6989848892321993519">Podaljšajte to besedilo na toliko znakov ali več: <ph name="MIN_CHARACTERS" /> (trenutno uporabljate en znak).</translation>
 <translation id="709897737746224366">Poskrbite za ujemanje z zahtevano obliko.</translation>
 <translation id="7139483182332611405">predgovor</translation>
-<translation id="7223624360433298498">pretečeni čas</translation>
 <translation id="7263440858009898357">Izberite element s seznama.</translation>
 <translation id="727747134524199931">glava stolpca</translation>
 <translation id="7353453495576941748">zasluga</translation>
@@ -186,7 +186,6 @@
 <translation id="7661956066982048809">grafični dokument</translation>
 <translation id="7673697353781729403">Ure</translation>
 <translation id="7681220483256441252">kazalo</translation>
-<translation id="7720026100085573005">preostali čas</translation>
 <translation id="7740050170769002709">Vsebina HTML</translation>
 <translation id="7750228210027921155">Slika v sliki</translation>
 <translation id="7789962463072032349">premor</translation>
@@ -225,7 +224,6 @@
 <translation id="8987927404178983737">Mesec</translation>
 <translation id="901493112792887934">trenutni čas v sekundah</translation>
 <translation id="9048119486235211610">krmarjenje</translation>
-<translation id="9050748414552849310">prikaz podnapisov</translation>
 <translation id="9062295712474918030">dokument</translation>
 <translation id="9093215626363556771">zapiranje načina slike v sliki</translation>
 <translation id="9108370397979208512">matematika</translation>

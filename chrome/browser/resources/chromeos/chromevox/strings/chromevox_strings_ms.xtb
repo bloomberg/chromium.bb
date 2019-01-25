@@ -494,6 +494,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="5020651427400641814">Dayakan pengelogan pertuturan</translation>
 <translation id="5041394372352067729">Alihkan paparan braille ke bahagian atas halaman</translation>
 <translation id="5042770794184672516">Tingkatkan kelantangan pertuturan</translation>
+<translation id="5042992464904238023">Kandungan Web</translation>
 <translation id="5050015258024679800">Tajuk tahap 4 sebelumnya</translation>
 <translation id="5054047268577924192">Item senarai sebelumnya</translation>
 <translation id="5075936896689244141">Peta kekunci Next</translation>
@@ -844,6 +845,89 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="8037651341025652929">Kesimpulan</translation>
 <translation id="8042761080832772327">Edit teks, masukan carian</translation>
 <translation id="8049189770492311300">Pemasa</translation>
+<translation id="8056782883599416672">{"ar": "Arab",
+        "as": "Assam",
+        "aw": "Awadhi",
+        "be": "Bengali",
+        "bg": "Bulgaria",
+        "bh": "Bihari",
+        "bo": "Tibet",
+        "br": "Braj",
+        "ca": "Catalonia",
+        "ckb": "Sorani",
+        "cs": "Czech",
+        "cy": "Wales",
+        "da": "Denmark",
+        "de": "Jerman",
+        "de_CH": "Jerman (Switzerland)",
+        "de_DE": "Jerman (Jerman)",
+        "dra": "Dravidia",
+        "el": "Greek",
+        "en": "Inggeris",
+        "en_CA": "Inggeris (Kanada)",
+        "en_GB": "Inggeris (United Kingdom)",
+        "en_US": "Inggeris (Amerika Syarikat)",
+        "eo": "Esperanto",
+        "es": "Sepanyol",
+        "et": "Estonia",
+        "fa": "Parsi",
+        "fr": "Perancis",
+        "fr_CA": "Perancis (Kanada)",
+        "fr_FR": "Perancis (Perancis)",
+        "fi": "Finland",
+        "ga": "Ireland",
+        "gd": "Gaelic",
+        "gon": "Gondi",
+        "gu": "Gujarati",
+        "he": "Ibrani",
+        "hi": "Hindi",
+        "hr": "Croatia",
+        "hu": "Hungary",
+        "hy": "Armenia",
+        "is": "Iceland",
+        "it": "Itali",
+        "iu": "Inuktitut",
+        "ka": "Kannada",
+        "kh": "Khasi",
+        "ko": "Korea",
+        "kok": "Konkani",
+        "kru": "Kurukh",
+        "ks": "Kashmir",
+        "lt": "Lithuania",
+        "lv": "Latvia",
+        "mao": "Maori",
+        "ml": "Malayalam",
+        "mt": "Malta",
+        "mwr": "Marwari",
+        "mn": "Mongolia",
+        "mun": "Munda",
+        "nb": "Bokmål Norway",
+        "ne": "Nepal",
+        "nl": "Belanda",
+        "no": "Norway",
+        "or": "Oriya",
+        "pi": "Pali",
+        "pl": "Poland",
+        "pt": "Portugis",
+        "pu": "Punjabi",
+        "ro": "Romania",
+        "ru": "Rusia",
+        "sa": "Sanskrit",
+        "si": "Sindhi",
+        "sin": "Sinhala",
+        "sk": "Slovak",
+        "sl": "Slovenia",
+        "sr": "Serbia",
+        "sv": "Sweden",
+        "ta": "Tamil",
+        "te": "Telugu",
+        "tr": "Turki",
+        "tsn": "Afrikaans",
+        "uk": "Ukraine",
+        "ur": "Urdu",
+        "vi": "Vietnam",
+        "zh": "Cina",
+        "zh_TW": "Cina (Han Tradisional)"}</translation>
 <translation id="8065607967589909823">Pilihannya ialah</translation>
 <translation id="8066678206530322333">Sepanduk</translation>
 <translation id="8076492880354921740">Tab</translation>
@@ -853,6 +937,7 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="8153880621934657047">Bukan dalam jadual.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{garis bawah}other{# garis bawah}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8183813379996435469">Kesan dan tukar bahasa ChromeVox secara automatik.</translation>
 <translation id="8184828902145951186">baris</translation>
 <translation id="8186185314313222077">togol skrin penuh</translation>
 <translation id="8199231515320852133">Umumkan pengepala sel semasa</translation>

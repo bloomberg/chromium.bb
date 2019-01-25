@@ -72,6 +72,7 @@
 <translation id="2068952045031577364">Past Week</translation>
 <translation id="2079545284768500474">Razveljavi</translation>
 <translation id="209018056901015185">Zahtevaj spletno mesto za nam. računalnik</translation>
+<translation id="2096012225669085171">Sinhronizacija in prilagajanje med napravami</translation>
 <translation id="2103075008456228677">Odpri history.google.com</translation>
 <translation id="2116625576999540962">Št. premaknjenih elementov: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="213900355088104901">Če želite zasebno brskati, odprite zavihek brez beleženja zgodovine</translation>
@@ -132,6 +133,7 @@
 <translation id="2989805286512600854">Odpri v novem zavihku</translation>
 <translation id="3024255823539804759">Past Day</translation>
 <translation id="3037605927509011580">Ti šment!</translation>
+<translation id="3059750684806925578">Išči kopirano sliko</translation>
 <translation id="3112556859945124369">Označi …</translation>
 <translation id="3157684681743766797">Označi vse …</translation>
 <translation id="3175081911749765310">Spletne storitve</translation>
@@ -250,7 +252,7 @@ Podatki so šifrirani z vašim geslom za sinhronizacijo. Vnesite ga, če želite
 <translation id="5059136629401106827">V redu</translation>
 <translation id="5062321486222145940">Namesti Google Drive</translation>
 <translation id="5083464117946352670">Velikost datoteke ni mogoče določiti.</translation>
-<translation id="5094827893301452931">Tweet je dokončan.</translation>
+<translation id="5094827893301452931">Tvit je dokončan.</translation>
 <translation id="5181140330217080051">Prenos</translation>
 <translation id="5186185447130319458">Zasebno</translation>
 <translation id="5190835502935405962">Vrstica z zaznamki</translation>
@@ -378,6 +380,7 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="7159472599653637159">Zahtevaj spletno mesto za mob. napravo</translation>
 <translation id="7167621057293532233">Vrste podatkov</translation>
 <translation id="7189598951263744875">Deli z drugimi</translation>
+<translation id="7192050974311852563">Začni pisanje dnevnika</translation>
 <translation id="7203585745079012652">Izgovorjava odgovorov</translation>
 <translation id="722055596168483966">Prilagajanje Googlovih storitev</translation>
 <translation id="7272437679830969316">Identitete ni mogoče preveriti. Geslo ni kopirano.</translation>
@@ -419,6 +422,7 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Izvozi gesla ...</translation>
 <translation id="7947953824732555851">Sprejem in prijava</translation>
+<translation id="794799177247607889">Ustavi pisanje dnevnika</translation>
 <translation id="7961015016161918242">Nikoli</translation>
 <translation id="7971521879845308059">Blokiraj pojavna okna</translation>
 <translation id="7981313251711023384">Vnaprejšnje nalaganje strani zaradi hitrejšega brskanja in iskanja</translation>

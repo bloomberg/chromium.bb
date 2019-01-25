@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">Tento měsíc</translation>
 <translation id="1637811476055996098">Zvolit soubory</translation>
 <translation id="1650423536718072820">citace</translation>
+<translation id="1727886345390570319">skrýt nabídku titulků</translation>
 <translation id="1729654308190250600">Vyplňte e-mailovou adresu.</translation>
 <translation id="1758486001363313524">Jiné…</translation>
 <translation id="1806710327868736751">dialog upozornění</translation>
@@ -147,6 +148,7 @@
 <translation id="6213469881011901533">glosář</translation>
 <translation id="6398862346408813489">Zobrazit panel pro výběr měsíců</translation>
 <translation id="6404546809543547843">posuvník času zvuku</translation>
+<translation id="6443871981718447451">zobrazit nabídku skrytých titulků</translation>
 <translation id="6453774872122745852">poděkování</translation>
 <translation id="648732519525291180">výběr času</translation>
 <translation id="6550675742724504774">Možnosti</translation>
@@ -162,7 +164,6 @@
 <translation id="6820355525329141109">Plugin se nepodařilo načíst.</translation>
 <translation id="6820615603175220800">bibliografický odkaz</translation>
 <translation id="6843725295806269523">ztlumit</translation>
-<translation id="6853785296079745596">skrýt titulky</translation>
 <translation id="6885760532393684712">adresář</translation>
 <translation id="689129560213475294">kolofon</translation>
 <translation id="6934078000481955284">bloková citace</translation>
@@ -171,7 +172,6 @@
 <translation id="6989848892321993519">Prodlužte prosím tento text na <ph name="MIN_CHARACTERS" /> či více znaků. (Aktuálně má 1 znak.)</translation>
 <translation id="709897737746224366">Zadejte hodnotu, která odpovídá požadovanému formátu.</translation>
 <translation id="7139483182332611405">předmluva</translation>
-<translation id="7223624360433298498">přehraný čas</translation>
 <translation id="7263440858009898357">Vyberte prosím v seznamu některou položku.</translation>
 <translation id="727747134524199931">záhlaví sloupce</translation>
 <translation id="7353453495576941748">poděkování</translation>
@@ -186,7 +186,6 @@
 <translation id="7661956066982048809">grafický dokument</translation>
 <translation id="7673697353781729403">Hodiny</translation>
 <translation id="7681220483256441252">rejstřík</translation>
-<translation id="7720026100085573005">zbývající čas</translation>
 <translation id="7740050170769002709">Obsah ve formátu HTML</translation>
 <translation id="7750228210027921155">Obraz v obraze</translation>
 <translation id="7789962463072032349">pozastavit</translation>
@@ -225,7 +224,6 @@
 <translation id="8987927404178983737">Měsíc</translation>
 <translation id="901493112792887934">aktuální čas v sekundách</translation>
 <translation id="9048119486235211610">navigace</translation>
-<translation id="9050748414552849310">zobrazit titulky</translation>
 <translation id="9062295712474918030">dokument</translation>
 <translation id="9093215626363556771">ukončit režim obrazu v obraze</translation>
 <translation id="9108370397979208512">matematika</translation>

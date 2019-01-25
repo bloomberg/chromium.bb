@@ -197,6 +197,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4072264167173457037">Señal media</translation>
 <translation id="4146833061457621061">Pon música</translation>
 <translation id="4181841719683918333">Idiomas</translation>
+<translation id="4195877955194704651">Botón de clics automáticos</translation>
 <translation id="4217571870635786043">Dictado</translation>
 <translation id="4261870227682513959">Muestra la configuración de notificaciones. Las notificaciones están desactivadas.</translation>
 <translation id="4269883910223712419">El administrador de este dispositivo puede hacer lo siguiente:</translation>
@@ -269,7 +270,6 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="5571066253365925590">Bluetooth habilitado</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Pulsa Ctrl + Alt + Z para inhabilitar los mensajes de voz.</translation>
-<translation id="5626283214046138476">Tu cuenta de usuario supervisada caduca pronto.</translation>
 <translation id="5648021990716966815">Clavija para micrófono</translation>
 <translation id="5669267381087807207">Activando</translation>
 <translation id="5673434351075758678">De "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />" después de sincronizar tu configuración.</translation>
@@ -373,6 +373,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="7348093485538360975">Teclado en pantalla</translation>
 <translation id="735745346212279324">VPN desconectada</translation>
 <translation id="7377169924702866686">El bloqueo de mayúsculas está activado.</translation>
+<translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> s</translation>
 <translation id="7398254312354928459">Se ha cambiado la conexión de red</translation>
 <translation id="742594950370306541">La cámara se está utilizando.</translation>
 <translation id="743058460480092004">La cámara y el micrófono se están utilizando.</translation>
@@ -464,7 +465,6 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="8734991477317290293">Es posible que esté intentando captar tus pulsaciones de teclas</translation>
 <translation id="8735953464173050365">Muestra la configuración de teclado. Actualmente está seleccionado <ph name="KEYBOARD_NAME" />.</translation>
 <translation id="875593634123171288">Mostrar configuración de VPN</translation>
-<translation id="8809737090443522491">Escribe el nombre de una aplicación o un documento</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825534185036233643">No se puede proyectar contenido en más de dos pantallas.</translation>
 <translation id="8828714802988429505">90°</translation>
@@ -474,6 +474,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="8874184842967597500">No conectado</translation>
 <translation id="8877788021141246043">Añadir un recordatorio</translation>
 <translation id="8878886163241303700">Ampliando pantalla</translation>
+<translation id="890616557918890486">Cambiar fuente</translation>
 <translation id="8921624153894383499">El Asistente de Google no habla este idioma.</translation>
 <translation id="8938800817013097409">Dispositivo USB tipo C (puerto derecho situado en la parte trasera)</translation>
 <translation id="8940956008527784070">Poca batería (<ph name="PERCENTAGE" />%)</translation>

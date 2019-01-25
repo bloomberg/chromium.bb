@@ -494,6 +494,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="5020651427400641814">Omogućite glasovnu prijavu</translation>
 <translation id="5041394372352067729">Premještanje brajičnog prikaza na vrh stranice</translation>
 <translation id="5042770794184672516">Pojačanje glasnoće govora</translation>
+<translation id="5042992464904238023">Web sadržaj</translation>
 <translation id="5050015258024679800">Prethodni naslov razine 4</translation>
 <translation id="5054047268577924192">Prethodna stavka popisa</translation>
 <translation id="5075936896689244141">Sljedeća karta tipkovnice</translation>
@@ -844,6 +845,89 @@ Za otvaranje izbornika preglednika Chrome pritisnite tipke Alt i F.</translation
 <translation id="8037651341025652929">Zaključak</translation>
 <translation id="8042761080832772327">Uređivanje teksta, unos pretraživanja</translation>
 <translation id="8049189770492311300">Brojač vremena</translation>
+<translation id="8056782883599416672">{"ar": "arapski",
+        "as": "asamski",
+        "aw": "awadhi",
+        "be": "bengalski",
+        "bg": "bugarski",
+        "bh": "biharski",
+        "bo": "tibetski",
+        "br": "braj",
+        "ca": "katalonski",
+        "ckb": "soranski",
+        "cs": "češki",
+        "cy": "velški",
+        "da": "danski",
+        "de": "njemački",
+        "de_CH": "njemački (Švicarska)",
+        "de_DE": "njemački (Njemačka)",
+        "dra": "dravidski",
+        "el": "grčki",
+        "en": "engleski",
+        "en_CA": "engleski (Kanada)",
+        "en_GB": "engleski (Ujedinjeno Kraljevstvo)",
+        "en_US": "engleski (Sjedinjene Američke Države)",
+        "eo": "esperanto",
+        "es": "španjolski",
+        "et": "estonski",
+        "fa": "perzijski",
+        "fr": "francuski",
+        "fr_CA": "francuski (Kanada)",
+        "fr_FR": "francuski (Francuska)",
+        "fi": "finski",
+        "ga": "irski",
+        "gd": "gaelski",
+        "gon": "gondi",
+        "gu": "gudžaratski",
+        "he": "hebrejski",
+        "hi": "hindski",
+        "hr": "hrvatski",
+        "hu": "mađarski",
+        "hy": "armenski",
+        "is": "islandski",
+        "it": "talijanski",
+        "iu": "inuitski",
+        "ka": "karnatački",
+        "kh": "khasi",
+        "ko": "korejski",
+        "kok": "konkanski",
+        "kru": "kuruški",
+        "ks": "kašmirski",
+        "lt": "litavski",
+        "lv": "latvijski",
+        "mao": "maorski",
+        "ml": "malajalamski",
+        "mt": "malteški",
+        "mwr": "marwari",
+        "mn": "mongolski",
+        "mun": "mundski",
+        "nb": "norveški bokmål",
+        "ne": "nepalski",
+        "nl": "nizozemski",
+        "no": "norveški",
+        "or": "orijski",
+        "pi": "pali",
+        "pl": "poljski",
+        "pt": "portugalski",
+        "pu": "pandžapski",
+        "ro": "rumunjski",
+        "ru": "ruski",
+        "sa": "sanskrt",
+        "si": "sindhski",
+        "sin": "singalski",
+        "sk": "slovački",
+        "sl": "slovenski",
+        "sr": "srpski",
+        "sv": "švedski",
+        "ta": "tamilski",
+        "te": "teluški",
+        "tr": "turski",
+        "tsn": "afrikaans",
+        "uk": "ukrajinski",
+        "ur": "urdski",
+        "vi": "vijetnamski",
+        "zh": "kineski",
+        "zh_TW": "kineski (tradicionalni han)"}</translation>
 <translation id="8065607967589909823">Odabir je</translation>
 <translation id="8066678206530322333">Natpis</translation>
 <translation id="8076492880354921740">Kartice</translation>
@@ -853,6 +937,7 @@ Za otvaranje izbornika preglednika Chrome pritisnite tipke Alt i F.</translation
 <translation id="8153880621934657047">Niste unutar tablice.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{donja crta}one{# donja crta}few{# donje crte}other{# donjih crta}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8183813379996435469">Automatski otkrij i prebaci jezik ChromeVoxa.</translation>
 <translation id="8184828902145951186">redak</translation>
 <translation id="8186185314313222077">prebacivanje na cijeli zaslon</translation>
 <translation id="8199231515320852133">Izgovaranje zaglavlja trenutačne ćelije</translation>

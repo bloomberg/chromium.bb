@@ -76,6 +76,7 @@
 <translation id="3479552764303398839">Ara no</translation>
 <translation id="3509308970982693815">Tanqueu totes les finestres de Chromium i torneu-ho a provar.</translation>
 <translation id="352783484088404971">Suprimeix de Chromium...</translation>
+<translation id="3575459661164320785">Hi ha programari nociu a l'ordinador. Chromium el pot suprimir, restaurar la configuració i desactivar les extensions perquè el navegador torni a funcionar amb normalitat.</translation>
 <translation id="3582788516608077514">S'està actualitzant Chromium...</translation>
 <translation id="358997566136285270">Logotip de Chromium</translation>
 <translation id="3639635944603682591">Les dades de navegació d'aquesta persona se suprimiran d'aquest dispositiu. Per recuperar-les, inicia la sessió a Chromium com a <ph name="USER_EMAIL" />.</translation>
@@ -165,6 +166,7 @@
 <translation id="6373523479360886564">Confirmeu que voleu desinstal·lar Chromium?</translation>
 <translation id="6400072781405947421">Pot ser que Chromium no funcioni correctament perquè ja no és compatible amb Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium és un navegador web que executa les pàgines web i les aplicacions a gran velocitat. És ràpid, estable i fàcil d'utilitzar. Navegueu per Internet amb més seguretat amb protecció inserida a Chromium contra el programari maliciós i contra la pesca de credencials.</translation>
+<translation id="6434250628340475518">Sistema Chromium OS</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium es reiniciarà d'aquí a 1 segon}other{Chromium es reiniciarà d'aquí a # segons}}</translation>
 <translation id="6475912303565314141">També controla la pàgina que es mostra quan inicieu Chromium.</translation>
 <translation id="6485906693002546646">Utilitzeu <ph name="PROFILE_EMAIL" /> per sincronitzar el contingut de Chromium. Per modificar la preferència de sincronització o per utilitzar Chromium sense cap compte de Google, dirigiu-vos a <ph name="SETTINGS_LINK" />.</translation>
@@ -181,6 +183,7 @@
 <translation id="6857782730669500492">Chromium: <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copiada a Chromium)</translation>
 <translation id="6893813176749746474">S'ha actualitzat Chromium, però fa almenys 30 dies que no l'heu utilitzat.</translation>
+<translation id="692832138936263906">Chromium pot reconèixer les imatges i el text d'una imatge perquè entenguis millor el contingut de la pàgina. Per fer-ho, ha d'enviar imatges de la pàgina als servidors de Google.</translation>
 <translation id="6964305034639999644">Obre l'enllaç en una finestra d'incò&amp;gnit a Chromium</translation>
 <translation id="6970811910055250180">S'està actualitzant el dispositiu...</translation>
 <translation id="6990124437352146030">Per visitar aquest lloc web, Chromium necessita permís per accedir al micròfon</translation>
@@ -211,6 +214,7 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="7471302858145901434">{0,plural, =1{Reinicia Chromium OS d'aquí a 1 dia}other{Reinicia Chromium OS d'aquí a # dies}}</translation>
 <translation id="7483335560992089831">No es pot instal·lar la mateixa versió de Chromium que s'està executant actualment. Tanqueu Chromium i torneu-ho a provar.</translation>
 <translation id="7549178288319965365">About Chromium OS</translation>
+<translation id="7561906087460245826">Esborra també les dades de Chromium (<ph name="URL" />)</translation>
 <translation id="761356813943268536">Chromium està utilitzant la càmera i el micròfon.</translation>
 <translation id="7617377681829253106">Chromium és millor que mai</translation>
 <translation id="7686590090926151193">Chromium no és el navegador predeterminat</translation>

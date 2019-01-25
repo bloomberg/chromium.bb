@@ -74,6 +74,7 @@
 <translation id="3479552764303398839">Не сега</translation>
 <translation id="3509308970982693815">Моля, затворете всички прозорци на Chromium и опитайте отново.</translation>
 <translation id="352783484088404971">Премахване от Chromium...</translation>
+<translation id="3575459661164320785">На компютъра ви има опасен софтуер. Chromium може да го премахне, да възстанови настройките ви и да деактивира разширенията, така че браузърът отново да заработи нормално.</translation>
 <translation id="3582788516608077514">Chromium се актуализира...</translation>
 <translation id="358997566136285270">Лого на Chromium</translation>
 <translation id="3639635944603682591">Данните за сърфирането на този човек ще бъдат изтрити от устройството. За да ги възстановите, влезте в Chromium като <ph name="USER_EMAIL" />.</translation>
@@ -163,6 +164,7 @@
 <translation id="6373523479360886564">Наистина ли искате да деинсталирате Chromium?</translation>
 <translation id="6400072781405947421">Chromium може да не функционира правилно, защото вече не се поддържа под Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium е уеб браузър, който зарежда уеб страници и изпълнява приложения със светкавична скорост. Той е бърз, стабилен и лесен за употреба. Сърфирайте в мрежата по-безопасно с вградената защита на Chromium срещу злонамерен софтуер и фишинг.</translation>
+<translation id="6434250628340475518">Система Chromium OS</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium ще се рестартира след 1 секунда}other{Chromium ще се рестартира след # секунди}}</translation>
 <translation id="6475912303565314141">То също контролира коя страница се показва при стартиране на Chromium.</translation>
 <translation id="6485906693002546646">Използвате <ph name="PROFILE_EMAIL" /> за синхронизиране на нещата си в Chromium. За да актуализирате съответното предпочитание или да ползвате браузъра без профил в Google, посетете <ph name="SETTINGS_LINK" />.</translation>
@@ -177,6 +179,7 @@
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (копирано в Chromium)</translation>
 <translation id="6893813176749746474">Chromium е актуализиран, но не сте го използвали от поне 30 дни.</translation>
+<translation id="692832138936263906">Chromium може да разпознае изображенията на дадена страница и текста в тях, като ги изпрати до сървърите на Google, и така да направи съдържанието й по-разбираемо за вас.</translation>
 <translation id="6964305034639999644">Отваряне на връзката в прозорец в режим „инко&amp;гнито“ на Chromium</translation>
 <translation id="6970811910055250180">Устройството ви се актуализира...</translation>
 <translation id="6990124437352146030">Chromium се нуждае от разрешение за достъп до микрофона ви за този сайт</translation>
@@ -205,6 +208,7 @@
 <translation id="7471302858145901434">{0,plural, =1{Рестартиране на Chromium OS след един ден}other{Рестартиране на Chromium OS след # дни}}</translation>
 <translation id="7483335560992089831">Не може да се инсталира същата версия на Chromium, която се използва понастоящем. Моля, затворете браузъра и опитайте отново.</translation>
 <translation id="7549178288319965365">Всичко за Chromium OS</translation>
+<translation id="7561906087460245826">Да се изчистят и данните от Chromium (<ph name="URL" />)</translation>
 <translation id="761356813943268536">Chromium използва камерата и микрофона ви.</translation>
 <translation id="7617377681829253106">Chromium се подобри</translation>
 <translation id="7686590090926151193">Chromium не е браузърът ви по подразбиране</translation>

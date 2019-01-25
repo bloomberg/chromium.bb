@@ -4,6 +4,7 @@
 <translation id="1001534784610492198">Installasjonsarkivet er ødelagt. Last ned Google Chrome på nytt.</translation>
 <translation id="102763973188675173">Tilpass og kontrollér Google Chrome. Oppdatering er tilgjengelig.</translation>
 <translation id="1035334672863811645">logg på Chrome</translation>
+<translation id="1051826050538111504">Det finnes skadelig programvare på datamaskinen din. Chrome kan fjerne den, gjenopprette innstillingene dine og deaktivere utvidelser for å få nettleseren til å fungere som normalt igjen.</translation>
 <translation id="1065672644894730302">Kan ikke lese innstillingene. Enkelte funksjoner kan være utilgjengelige, og endringer av innstillingene blir ikke lagret.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> brukte Chrome tidligere</translation>
 <translation id="1104959162601287462">Om &amp;Chrome OS</translation>
@@ -68,6 +69,7 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="2580411288591421699">Google Chrome-versjonen du prøver å installere, kjører allerede. Lukk Google Chrome og forsøk å installere på nytt.</translation>
 <translation id="2586406160782125153">Dette sletter nettlesingsdataene dine fra denne enheten. For å hente dataene igjen senere må du logge på Chrome som <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Chrome-logo</translation>
+<translation id="2644798301485385923">Chrome OS</translation>
 <translation id="2652691236519827073">Åpne linken i en ny &amp;fane i Chrome</translation>
 <translation id="2665296953892887393">Bidra til å gjøre Google Chrome bedre ved å sende programstopprapporter og <ph name="UMA_LINK" /> til Google</translation>
 <translation id="2689103672227170538">Denne utvidelsen har endret hvilken side som vises når du starter Chrome.</translation>
@@ -99,6 +101,7 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="3451115285585441894">Legger til i Chrome …</translation>
 <translation id="345171907106878721">Legg til deg selv i Chrome</translation>
 <translation id="3479552764303398839">Ikke nå</translation>
+<translation id="34857402635545079">Slett dataene fra Chrome også (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome trenger tilgang til posisjonen din for å kunne dele den med dette nettstedet</translation>
 <translation id="3582972582564653026">Synkroniser og gi Chrome et personlig preg på alle enhetene dine</translation>
 <translation id="3622797965165704966">Nå er det enklere å bruke Chrome med Google-kontoen din og på datamaskiner du deler med andre.</translation>
@@ -162,6 +165,7 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="5386244825306882791">Den styrer også hvilken side som vises når du starter Chrome eller søker fra multifunksjonsfeltet.</translation>
 <translation id="5430073640787465221">Innstillingsfilen er skadet eller ugyldig. Google Chrome kan ikke gjenopprette innstillingene dine.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome starter på nytt nå}=1{Chrome starter på nytt om 1 sekund}other{Chrome starter på nytt om # sekunder}}</translation>
+<translation id="5505603430818498864">Google Chrome kan gjenkjenne bilder og tekst i bilder ved å sende bildene på sider til Googles tjenere, slik at du kan få en bedre forståelse av innholdet på de aktuelle sidene.</translation>
 <translation id="556024056938947818">Google Chrome prøver å vise passord.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-Inn)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> kan være farlig, så Chrome har blokkert den.</translation>

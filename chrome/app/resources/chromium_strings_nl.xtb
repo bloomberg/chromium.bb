@@ -78,6 +78,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="3479552764303398839">Niet nu</translation>
 <translation id="3509308970982693815">Sluit alle Chromium-vensters en probeer het opnieuw.</translation>
 <translation id="352783484088404971">Verwijderen uit Chromium…</translation>
+<translation id="3575459661164320785">Er staat schadelijke software op je computer. Chromium kan deze verwijderen, je instellingen herstellen en extensies uitschakelen, zodat je browser weer normaal werkt.</translation>
 <translation id="3582788516608077514">Chromium bijwerken...</translation>
 <translation id="358997566136285270">Chromium-logo</translation>
 <translation id="3639635944603682591">De browsergegevens van deze persoon worden verwijderd van dit apparaat. Als je de gegevens wilt herstellen, log je in bij Chromium als <ph name="USER_EMAIL" />.</translation>
@@ -167,6 +168,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="6373523479360886564">Weet je zeker dat je Chromium wilt verwijderen?</translation>
 <translation id="6400072781405947421">Chromium werkt wellicht niet naar behoren omdat dit niet meer op Mac OS X 10.9 wordt ondersteund.</translation>
 <translation id="6403826409255603130">Chromium is een webbrowser die webpagina's en applicaties bliksemsnel uitvoert. Chromium is snel, stabiel en eenvoudig in gebruik. Surf veiliger op internet met de in Chromium ingebouwde beveiliging tegen malware en phishing.</translation>
+<translation id="6434250628340475518">Chromium OS-systeem</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium wordt over één seconde opnieuw gestart}other{Chromium wordt over # seconden opnieuw gestart}}</translation>
 <translation id="6475912303565314141">Hiermee wordt ook gecontroleerd welke pagina wordt weergegeven wanneer je Chromium start.</translation>
 <translation id="6485906693002546646">Je gebruikt <ph name="PROFILE_EMAIL" /> om je Chromium-bestanden te synchroniseren. Als je je synchronisatievoorkeur wilt bijwerken of Chromium zonder een Google-account wilt gebruiken, ga je naar '<ph name="SETTINGS_LINK" />'.</translation>
@@ -183,6 +185,7 @@ Sommige functies zijn mogelijk niet beschikbaar. Geef een andere profieldirector
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (gekopieerd naar Chromium)</translation>
 <translation id="6893813176749746474">Chromium is bijgewerkt, maar je hebt het programma minstens 30 dagen niet gebruikt.</translation>
+<translation id="692832138936263906">Chromium kan afbeeldingen en tekst in een afbeelding herkennen door pagina-afbeeldingen te verzenden naar servers van Google. Zo kun je de paginacontent beter begrijpen.</translation>
 <translation id="6964305034639999644">Link openen in een Chromium-inco&amp;gnitovenster</translation>
 <translation id="6970811910055250180">Je apparaat bijwerken...</translation>
 <translation id="6990124437352146030">Chromium heeft toegangsrechten voor je microfoon nodig voor deze site</translation>
@@ -213,6 +216,7 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor verdere instructies.</t
 <translation id="7471302858145901434">{0,plural, =1{Start Chromium OS binnen een dag opnieuw op}other{Start Chromium OS binnen # dagen opnieuw op}}</translation>
 <translation id="7483335560992089831">Kan niet dezelfde Chromium-versie installeren, omdat deze versie nu actief is. Sluit Chromium en probeer het opnieuw.</translation>
 <translation id="7549178288319965365">Over Chromium OS</translation>
+<translation id="7561906087460245826">Ook gegevens van Chromium wissen (<ph name="URL" />)</translation>
 <translation id="761356813943268536">Chromium gebruikt je camera en microfoon.</translation>
 <translation id="7617377681829253106">Chromium is nu nog beter</translation>
 <translation id="7686590090926151193">Chromium is niet je standaardbrowser</translation>

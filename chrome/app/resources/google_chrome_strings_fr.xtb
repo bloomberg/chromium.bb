@@ -4,6 +4,7 @@
 <translation id="1001534784610492198">L'archive du programme d'installation est corrompue ou incorrecte. Veuillez télécharger de nouveau Google Chrome.</translation>
 <translation id="102763973188675173">Personnalisez et contrôlez Google Chrome. Une mise à jour est disponible.</translation>
 <translation id="1035334672863811645">connectez-vous à Chrome</translation>
+<translation id="1051826050538111504">Un logiciel malveillant a été détecté sur votre ordinateur. Chrome peut le supprimer, restaurer vos paramètres et désactiver les extensions pour que votre navigateur fonctionne de nouveau normalement.</translation>
 <translation id="1065672644894730302">Impossible de lire vos préférences.
 Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifications apportées à vos préférences ne seront pas enregistrées.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> utilisait Chrome précédemment</translation>
@@ -71,6 +72,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="2580411288591421699">Impossible d'installer la version de Google Chrome qui est en cours d'exécution. Fermez Google Chrome et réessayez.</translation>
 <translation id="2586406160782125153">Cette action aura pour effet de supprimer vos données de navigation de cet appareil. Pour récupérer vos données ultérieurement, connectez-vous à Chrome en tant que <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logo Google Chrome</translation>
+<translation id="2644798301485385923">Système Chrome OS</translation>
 <translation id="2652691236519827073">Ouvrir le lien dans un nouvel ongle&amp;t Chrome</translation>
 <translation id="2665296953892887393">Aidez-nous à améliorer Google Chrome en nous envoyant des rapports d'erreur et des <ph name="UMA_LINK" />.</translation>
 <translation id="2689103672227170538">Cette extension a modifié la page qui s'affiche lorsque vous démarrez Chrome.</translation>
@@ -102,6 +104,7 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 <translation id="3451115285585441894">Ajout à Google Chrome en cours…</translation>
 <translation id="345171907106878721">Ajouter un utilisateur à Chrome</translation>
 <translation id="3479552764303398839">Pas maintenant</translation>
+<translation id="34857402635545079">Effacer également les données issues de Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome a besoin d'accéder à votre position pour la partager avec ce site</translation>
 <translation id="3582972582564653026">Synchroniser et personnaliser Chrome sur vos appareils</translation>
 <translation id="3622797965165704966">Il est désormais plus facile d'utiliser Chrome avec votre compte Google et sur des ordinateurs partagés.</translation>
@@ -170,6 +173,7 @@ Certaines fonctionnalités peuvent être indisponibles. Veuillez spécifier un r
 
 Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome va être relancé maintenant}=1{Chrome va être relancé dans 1 seconde}one{Chrome va être relancé dans # seconde}other{Chrome va être relancé dans # secondes}}</translation>
+<translation id="5505603430818498864">Google Chrome peut reconnaître des images et du texte dans une image en envoyant les images aux serveurs Google. Ce service vous permet de mieux comprendre le contenu d'une page.</translation>
 <translation id="556024056938947818">Tentative d'affichage des mots de passe dans Google Chrome</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Chrome a bloqué <ph name="FILE_NAME" />, car ce fichier peut être dangereux.</translation>

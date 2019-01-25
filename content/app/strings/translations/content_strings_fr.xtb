@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">Ce mois</translation>
 <translation id="1637811476055996098">Sélect. fichiers</translation>
 <translation id="1650423536718072820">témoignage</translation>
+<translation id="1727886345390570319">masquer le menu des sous-titres</translation>
 <translation id="1729654308190250600">Veuillez saisir une adresse e-mail dans le champ correspondant.</translation>
 <translation id="1758486001363313524">Autre…</translation>
 <translation id="1806710327868736751">alert_dialog</translation>
@@ -147,6 +148,7 @@
 <translation id="6213469881011901533">glossaire</translation>
 <translation id="6398862346408813489">Afficher le panneau de sélection du mois</translation>
 <translation id="6404546809543547843">curseur durée audio</translation>
+<translation id="6443871981718447451">afficher le menu des sous-titres</translation>
 <translation id="6453774872122745852">remerciements</translation>
 <translation id="648732519525291180">outil de sélection de l'heure</translation>
 <translation id="6550675742724504774">Options</translation>
@@ -162,7 +164,6 @@
 <translation id="6820355525329141109">Impossible de charger le plug-in.</translation>
 <translation id="6820615603175220800">référence bibliographique</translation>
 <translation id="6843725295806269523">muet</translation>
-<translation id="6853785296079745596">masquer les sous-titres</translation>
 <translation id="6885760532393684712">annuaire</translation>
 <translation id="689129560213475294">achevé d'imprimer</translation>
 <translation id="6934078000481955284">bloc de citation</translation>
@@ -171,7 +172,6 @@
 <translation id="6989848892321993519">Veuillez allonger ce texte pour qu'il comporte au moins <ph name="MIN_CHARACTERS" /> caractères. Il en compte actuellement un seul.</translation>
 <translation id="709897737746224366">Veuillez respecter le format requis.</translation>
 <translation id="7139483182332611405">préface</translation>
-<translation id="7223624360433298498">temps écoulé</translation>
 <translation id="7263440858009898357">Sélectionnez un élément dans la liste.</translation>
 <translation id="727747134524199931">en-tête de colonne</translation>
 <translation id="7353453495576941748">crédit</translation>
@@ -186,7 +186,6 @@
 <translation id="7661956066982048809">document graphique</translation>
 <translation id="7673697353781729403">Heures</translation>
 <translation id="7681220483256441252">index</translation>
-<translation id="7720026100085573005">temps restant</translation>
 <translation id="7740050170769002709">Contenu HTML</translation>
 <translation id="7750228210027921155">Mode PIP (Picture-in-Picture)</translation>
 <translation id="7789962463072032349">pause</translation>
@@ -225,7 +224,6 @@
 <translation id="8987927404178983737">Mois</translation>
 <translation id="901493112792887934">durée actuelle en secondes</translation>
 <translation id="9048119486235211610">navigation</translation>
-<translation id="9050748414552849310">afficher les sous-titres</translation>
 <translation id="9062295712474918030">document</translation>
 <translation id="9093215626363556771">quitter le mode PIP</translation>
 <translation id="9108370397979208512">math.</translation>

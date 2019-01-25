@@ -72,6 +72,7 @@
 <translation id="2068952045031577364">Senaste veckan</translation>
 <translation id="2079545284768500474">Ångra</translation>
 <translation id="209018056901015185">Använd skrivbordsversion</translation>
+<translation id="2096012225669085171">Synkronisera och anpassa på alla enheter</translation>
 <translation id="2103075008456228677">Öppna history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> objekt flyttades</translation>
 <translation id="213900355088104901">Öppna en inkognitoflik om du vill surfa privat</translation>
@@ -132,6 +133,7 @@
 <translation id="2989805286512600854">Öppna i ny flik</translation>
 <translation id="3024255823539804759">Senaste dagen</translation>
 <translation id="3037605927509011580">Oj, ett fel har uppstått!</translation>
+<translation id="3059750684806925578">Sök efter den kopierade bilden</translation>
 <translation id="3112556859945124369">Markera …</translation>
 <translation id="3157684681743766797">Markera alla …</translation>
 <translation id="3175081911749765310">Webbtjänster</translation>
@@ -380,6 +382,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="7159472599653637159">Använd mobilversion</translation>
 <translation id="7167621057293532233">Datatyper</translation>
 <translation id="7189598951263744875">Dela ...</translation>
+<translation id="7192050974311852563">Starta loggning</translation>
 <translation id="7203585745079012652">Läs upp svaren</translation>
 <translation id="722055596168483966">Anpassa Googles tjänster</translation>
 <translation id="7272437679830969316">Det gick inte att verifiera din identitet. Lösenordet har inte kopierats.</translation>
@@ -421,6 +424,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Exportera lösenord …</translation>
 <translation id="7947953824732555851">Godkänn och logga in</translation>
+<translation id="794799177247607889">Stoppa loggning</translation>
 <translation id="7961015016161918242">Aldrig</translation>
 <translation id="7971521879845308059">Blockera popup-fönster</translation>
 <translation id="7981313251711023384">Läs in sidor i förväg så att det går snabbare att surfa och söka</translation>

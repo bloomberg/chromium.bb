@@ -25,7 +25,7 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="154040539590487450">Spuštění služby pro vzdálený přístup se nezdařilo.</translation>
 <translation id="1546934824884762070">Došlo k neočekávané chybě. Nahlaste prosím tento problém vývojářům.</translation>
 <translation id="1624185583382384493">Vzdálená plocha Chrome je teď na webu. Vyzkoušejte naši <ph name="LINK_BEGIN" />webovou aplikaci<ph name="LINK_END" /> – je rychlá a zdarma a nabízí ještě více funkcí, včetně vylepšené podpory pro více monitorů.</translation>
-<translation id="1643640058022401035">Pokud opustíte tuto stránku, relace funkce Chromoting bude ukončena.</translation>
+<translation id="1643640058022401035">Pokud opustíte tuto stránku, návštěvy funkce Chromoting bude ukončena.</translation>
 <translation id="1654128982815600832">Povolování vzdálených připojení k tomuto počítači…</translation>
 <translation id="170207782578677537">Registrace tohoto počítače se nezdařila.</translation>
 <translation id="1727412735341161734">Vzdálená plocha Chrome</translation>
@@ -204,7 +204,7 @@ Chcete-li tuto funkci aktivovat, kliknutím na tlačítko <ph name="BUTTON_NAME"
 <translation id="518094545883702183">Tyto informace jsou využity pouze při diagnostikování problému, který jste nahlásili, jsou dostupné pouze osobě, která vaši zprávu prošetřuje, a nejsou uchovávány déle než 30 dní.</translation>
 <translation id="5204575267916639804">Časté dotazy</translation>
 <translation id="5222676887888702881">Odhlásit se</translation>
-<translation id="5254120496627797685">Pokud opustíte tuto stránku, relace Vzdálené plochy Chrome bude ukončena.</translation>
+<translation id="5254120496627797685">Pokud opustíte tuto stránku, návštěvy Vzdálené plochy Chrome bude ukončena.</translation>
 <translation id="5308380583665731573">Připojení</translation>
 <translation id="533625276787323658">Není k dispozici žádné zařízení, ke kterému by bylo možné se připojit.</translation>
 <translation id="5363265567587775042">Požádejte uživatele, k jehož počítači chcete získat přístup, aby kliknul na tlačítko <ph name="SHARE" /> a dal vám přístupový kód.</translation>
@@ -262,7 +262,7 @@ Chcete-li tuto funkci aktivovat, kliknutím na tlačítko <ph name="BUTTON_NAME"
 <translation id="6654753848497929428">Sdílet</translation>
 <translation id="6668065415969892472">Váš kód PIN byl aktualizován.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Všechna práva vyhrazena.</translation>
-<translation id="6705482892455291412">Po zadání kódu budete vyzváni k přijetí připojení a zahájení relace sdílení.</translation>
+<translation id="6705482892455291412">Po zadání kódu budete vyzváni k přijetí připojení a zahájení návštěvy sdílení.</translation>
 <translation id="6746493157771801606">Vymazat historii</translation>
 <translation id="6748108480210050150">Od</translation>
 <translation id="677755392401385740">Pro následujícího uživatele bylo zahájeno hostování: <ph name="HOST_USERNAME" />.</translation>
@@ -309,7 +309,7 @@ Chcete-li tuto funkci aktivovat, kliknutím na tlačítko <ph name="BUTTON_NAME"
 <translation id="7936528439960309876">Ukotvit vpravo</translation>
 <translation id="7948001860594368197">Možnosti obrazovky</translation>
 <translation id="7970576581263377361">Ověření selhalo. Přihlaste se do prohlížeče Chromium znovu.</translation>
-<translation id="7981525049612125370">Platnost vzdálené relace vypršela.</translation>
+<translation id="7981525049612125370">Platnost vzdálené návštěvy vypršela.</translation>
 <translation id="8041089156583427627">Odeslat svůj názor</translation>
 <translation id="8041721485428375115">Stažením instalačního programu hostitele Vzdálené plochy Chrome vyjadřujete souhlas se <ph name="LINK_BEGIN" />smluvními podmínkami<ph name="LINK_END" /> společnosti Google.</translation>
 <translation id="8060029310790625334">Centrum nápovědy</translation>
@@ -341,7 +341,7 @@ Chcete-li tuto funkci aktivovat, kliknutím na tlačítko <ph name="BUTTON_NAME"
 • Podpora změny rozlišení vzdálené obrazovky, aby odpovídala obrazovce zařízení Android.</translation>
 <translation id="8712909229180978490">Soubory uložené online na Disku Google se nezobrazují.</translation>
 <translation id="8743328882720071828">Chcete uživateli <ph name="CLIENT_USERNAME" /> povolit zobrazit a ovládat váš počítač?</translation>
-<translation id="8747048596626351634">Relace selhala, nebo se ji nepodařilo spustit. Je-li ve vzdáleném počítači k dispozici relace ~/.chrome-remote-desktop-session, zkontrolujte, zda spouští dlouho běžící proces na popředí, například počítačovou plochu nebo správce oken.</translation>
+<translation id="8747048596626351634">Relace selhala, nebo se ji nepodařilo spustit. Je-li ve vzdáleném počítači k dispozici návštěvy ~/.chrome-remote-desktop-session, zkontrolujte, zda spouští dlouho běžící proces na popředí, například počítačovou plochu nebo správce oken.</translation>
 <translation id="8759753423332885148">Další informace</translation>
 <translation id="8791202241915690908">Stažení instalačního programu hostitele funkce Chromoting</translation>
 <translation id="894763922177556086">Dobrá</translation>

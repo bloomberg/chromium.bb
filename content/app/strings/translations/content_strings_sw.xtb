@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">Mwezi huu</translation>
 <translation id="1637811476055996098">Chagua Faili</translation>
 <translation id="1650423536718072820">nukuu muhimu</translation>
+<translation id="1727886345390570319">kuficha menyu ya manukuu</translation>
 <translation id="1729654308190250600">Tafadhali jaza sehemu ya anwani ya barua pepe.</translation>
 <translation id="1758486001363313524">Nyingine...</translation>
 <translation id="1806710327868736751">kidirisha cha arifa</translation>
@@ -147,6 +148,7 @@
 <translation id="6213469881011901533">faharasa</translation>
 <translation id="6398862346408813489">Onyesha kisanduku cha uchaguzi wa mwezi</translation>
 <translation id="6404546809543547843">kitelezi cha muda cha sauti</translation>
+<translation id="6443871981718447451">kuonyesha menyu ya manukuu</translation>
 <translation id="6453774872122745852">shukrani</translation>
 <translation id="648732519525291180">Kiteua wakati</translation>
 <translation id="6550675742724504774">Chaguo</translation>
@@ -162,7 +164,6 @@
 <translation id="6820355525329141109">Haikuweza kupakia programu jalizi.</translation>
 <translation id="6820615603175220800">marejeleo ya bibliografia</translation>
 <translation id="6843725295806269523">nyamazisha</translation>
-<translation id="6853785296079745596">ficha manukuu yanayoweza kuonyeshwa</translation>
 <translation id="6885760532393684712">saraka</translation>
 <translation id="689129560213475294">kolofoni</translation>
 <translation id="6934078000481955284">nukuu la msingi</translation>
@@ -171,7 +172,6 @@
 <translation id="6989848892321993519">Tafadhali refusha maandishi haya hadi herufi <ph name="MIN_CHARACTERS" /> au zaidi (kwa sasa unatumia herufi 1).</translation>
 <translation id="709897737746224366">Tafadhali linganisha umbizo lililoombwa.</translation>
 <translation id="7139483182332611405">dibaji</translation>
-<translation id="7223624360433298498">muda uliokwisha</translation>
 <translation id="7263440858009898357">Tafadhali chagua kipengee katika orodha.</translation>
 <translation id="727747134524199931">kijajuu cha safu wima</translation>
 <translation id="7353453495576941748">aliyeshiriki</translation>
@@ -186,7 +186,6 @@
 <translation id="7661956066982048809">hati ya picha</translation>
 <translation id="7673697353781729403">Saa</translation>
 <translation id="7681220483256441252">faharasa</translation>
-<translation id="7720026100085573005">muda unaosalia</translation>
 <translation id="7740050170769002709">Maudhui ya HTML</translation>
 <translation id="7750228210027921155">Picha ndani ya picha</translation>
 <translation id="7789962463072032349">Sitisha</translation>
@@ -225,7 +224,6 @@
 <translation id="8987927404178983737">Mwezi</translation>
 <translation id="901493112792887934">muda wa sasa kwa sekunde</translation>
 <translation id="9048119486235211610">kuvinjari</translation>
-<translation id="9050748414552849310">onyesha manakuu yaliyofichwa</translation>
 <translation id="9062295712474918030">hati</translation>
 <translation id="9093215626363556771">funga hali ya picha ndani ya picha</translation>
 <translation id="9108370397979208512">hisabati</translation>

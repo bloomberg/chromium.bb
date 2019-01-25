@@ -494,6 +494,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="5020651427400641814">Įgalinti kalbos įrašymą į žurnalą</translation>
 <translation id="5041394372352067729">Perkelti Brailio rašmenų pateiktį į puslapio viršų</translation>
 <translation id="5042770794184672516">Didinti kalbos garsumą</translation>
+<translation id="5042992464904238023">Interneto turinys</translation>
 <translation id="5050015258024679800">Ankstesnė 4 lygio antraštė</translation>
 <translation id="5054047268577924192">Ankstesnis sąrašo elementas</translation>
 <translation id="5075936896689244141">Kitas klavišų žemėlapis</translation>
@@ -844,6 +845,89 @@ Jei norite atidaryti „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.
 <translation id="8037651341025652929">Išvada</translation>
 <translation id="8042761080832772327">Teksto redagavimas, paieškos įrašas</translation>
 <translation id="8049189770492311300">Laikmatis</translation>
+<translation id="8056782883599416672">{"ar": "Arabų",
+        "as": "Asamų",
+        "aw": "Avadhių",
+        "be": "Bengalų",
+        "bg": "Bulgarų",
+        "bh": "Biharų",
+        "bo": "Tibetiečių",
+        "br": "Brajų",
+        "ca": "Katalonų",
+        "ckb": "Soranių",
+        "cs": "Čekų",
+        "cy": "Velsų",
+        "da": "Danų",
+        "de": "Vokiečių",
+        "de_CH": "Vokiečių (Šveicarija)",
+        "de_DE": "Vokiečių (Vokietija)",
+        "dra": "Dravidian",
+        "el": "Graikų",
+        "en": "Anglų",
+        "en_CA": "Anglų (Kanada)",
+        "en_GB": "Anglų (Jungtinė Karalystė)",
+        "en_US": "Anglų (Jungtinės Amerikos Valstijos)",
+        "eo": "Esperanto",
+        "es": "Ispanų",
+        "et": "Estų",
+        "fa": "Persų",
+        "fr": "Prancūzų",
+        "fr_CA": "Prancūzų (Kanada)",
+        "fr_FR": "Prancūzų (Prancūzija)",
+        "fi": "Suomių",
+        "ga": "Airių",
+        "gd": "Gėlų",
+        "gon": "Gondi",
+        "gu": "Gudžarati",
+        "he": "Hebrajų",
+        "hi": "Hindi",
+        "hr": "Kroatų",
+        "hu": "Vengrų",
+        "hy": "Armėnų",
+        "is": "Islandų",
+        "it": "Italų",
+        "iu": "Eskimų",
+        "ka": "Kanadų",
+        "kh": "Kasi",
+        "ko": "Korėjiečių",
+        "kok": "Konkanių",
+        "kru": "Kuruk",
+        "ks": "Kašmyrų",
+        "lt": "Lietuvių",
+        "lv": "Latvių",
+        "mao": "Maorių",
+        "ml": "Malajalamų",
+        "mt": "Maltiečių",
+        "mwr": "Marvari",
+        "mn": "Mongolų",
+        "mun": "Mundžių",
+        "nb": "Norvegų bukmolas",
+        "ne": "Nepaliečių",
+        "nl": "Olandų",
+        "no": "Norvegų",
+        "or": "Orijų",
+        "pi": "Pali",
+        "pl": "Lenkų",
+        "pt": "Portugalų",
+        "pu": "Pendžabų",
+        "ro": "Rumunų",
+        "ru": "Rusų",
+        "sa": "Sanskritas",
+        "si": "Sindhų",
+        "sin": "Sinhalų",
+        "sk": "Slovakų",
+        "sl": "Slovėnų",
+        "sr": "Serbų",
+        "sv": "Švedų",
+        "ta": "Tamilų",
+        "te": "Telugų",
+        "tr": "Turkų",
+        "tsn": "Afrikanų",
+        "uk": "Ukrainiečių",
+        "ur": "Urdų",
+        "vi": "Vietnamiečių",
+        "zh": "Kinų",
+        "zh_TW": "Kinų (tradicinė hanių)"}</translation>
 <translation id="8065607967589909823">Pasirinkimas yra</translation>
 <translation id="8066678206530322333">Reklamjuostė</translation>
 <translation id="8076492880354921740">Skirtukai</translation>
@@ -853,6 +937,7 @@ Jei norite atidaryti „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.
 <translation id="8153880621934657047">Ne lentelės viduje.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{apatinis brūkšnys}one{# apatinis brūkšnys}few{# apatiniai brūkšniai}many{# underscores}other{# apatinių brūkšnių}}</translation>
 <translation id="8179976553408161302">Įvesti</translation>
+<translation id="8183813379996435469">Automatiškai aptikti ir perjungti „ChromeVox“ kalbą.</translation>
 <translation id="8184828902145951186">eil.</translation>
 <translation id="8186185314313222077">viso ekrano režimo perjungimas</translation>
 <translation id="8199231515320852133">Pranešti apie dabartinio langelio antraštes</translation>

@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">Šis mēnesis</translation>
 <translation id="1637811476055996098">Izvēlēties failus</translation>
 <translation id="1650423536718072820">izvilkuma citāts</translation>
+<translation id="1727886345390570319">paslēpt slēgto parakstu izvēlni</translation>
 <translation id="1729654308190250600">Lūdzu, ievadiet e-pasta adresi.</translation>
 <translation id="1758486001363313524">Cits...</translation>
 <translation id="1806710327868736751">brīdinājuma dialoglodziņš</translation>
@@ -147,6 +148,7 @@
 <translation id="6213469881011901533">glosārijs</translation>
 <translation id="6398862346408813489">Rādīt mēneša atlases paneli</translation>
 <translation id="6404546809543547843">audio laika skalas slīdnis</translation>
+<translation id="6443871981718447451">rādīt slēgto parakstu izvēlni</translation>
 <translation id="6453774872122745852">pateicības</translation>
 <translation id="648732519525291180">laika atlasītājs</translation>
 <translation id="6550675742724504774">Opcijas</translation>
@@ -162,7 +164,6 @@
 <translation id="6820355525329141109">Nevarēja ielādēt spraudni.</translation>
 <translation id="6820615603175220800">bibliogrāfiskā atsauce</translation>
 <translation id="6843725295806269523">izslēgt skaņu</translation>
-<translation id="6853785296079745596">slēpt slēgtos parakstus</translation>
 <translation id="6885760532393684712">katalogs</translation>
 <translation id="689129560213475294">izdošanas ziņas</translation>
 <translation id="6934078000481955284">citāta bloks</translation>
@@ -171,7 +172,6 @@
 <translation id="6989848892321993519">Lūdzu, papildiniet šo tekstu līdz vismaz <ph name="MIN_CHARACTERS" /> rakstzīmēm (pašlaik tas ietver 1 rakstzīmi).</translation>
 <translation id="709897737746224366">Pieskaņojiet vērtību prasītajam formātam.</translation>
 <translation id="7139483182332611405">ievadraksts</translation>
-<translation id="7223624360433298498">pagājušais laiks</translation>
 <translation id="7263440858009898357">Atlasiet vienumu sarakstā.</translation>
 <translation id="727747134524199931">slejas virsraksts</translation>
 <translation id="7353453495576941748">pateicība</translation>
@@ -186,7 +186,6 @@
 <translation id="7661956066982048809">grafikas dokuments</translation>
 <translation id="7673697353781729403">Stundas</translation>
 <translation id="7681220483256441252">rādītājs</translation>
-<translation id="7720026100085573005">atlikušais laiks</translation>
 <translation id="7740050170769002709">HTML saturs</translation>
 <translation id="7750228210027921155">Attēls attēlā</translation>
 <translation id="7789962463072032349">pauzēt</translation>
@@ -225,7 +224,6 @@
 <translation id="8987927404178983737">Mēnesis</translation>
 <translation id="901493112792887934">pašreizējais laiks sekundēs</translation>
 <translation id="9048119486235211610">navigācija</translation>
-<translation id="9050748414552849310">rādīt slēgtos parakstus</translation>
 <translation id="9062295712474918030">dokuments</translation>
 <translation id="9093215626363556771">aizvērt režīmu “attēls attēlā”</translation>
 <translation id="9108370397979208512">matemātiska izteiksme</translation>

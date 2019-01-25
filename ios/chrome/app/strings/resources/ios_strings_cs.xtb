@@ -72,6 +72,7 @@
 <translation id="2068952045031577364">Z uplynulého týdne</translation>
 <translation id="2079545284768500474">Vrátit zpět</translation>
 <translation id="209018056901015185">Verze webu pro PC</translation>
+<translation id="2096012225669085171">Synchronizovat a přizpůsobit na různých zařízeních</translation>
 <translation id="2103075008456228677">Otevřít history.google.com</translation>
 <translation id="2116625576999540962">Počet přesunutých položek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="213900355088104901">Procházejte internet v soukromí na anonymní kartě</translation>
@@ -132,6 +133,7 @@
 <translation id="2989805286512600854">Otevřít v nové kartě</translation>
 <translation id="3024255823539804759">Z uplynulého dne</translation>
 <translation id="3037605927509011580">Aj, chyba!</translation>
+<translation id="3059750684806925578">Vyhledat zkopírovaný obrázek</translation>
 <translation id="3112556859945124369">Označit…</translation>
 <translation id="3157684681743766797">Označit vše…</translation>
 <translation id="3175081911749765310">Webové služby</translation>
@@ -380,6 +382,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="7159472599653637159">Vyžádat web pro mobily</translation>
 <translation id="7167621057293532233">Typy dat</translation>
 <translation id="7189598951263744875">Sdílet...</translation>
+<translation id="7192050974311852563">Začít protokolovat</translation>
 <translation id="7203585745079012652">Vyslovovat odpovědi</translation>
 <translation id="722055596168483966">Přizpůsobení služeb Google</translation>
 <translation id="7272437679830969316">Vaši totožnost nelze ověřit. Heslo nebylo zkopírováno.</translation>
@@ -421,6 +424,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Exportovat hesla...</translation>
 <translation id="7947953824732555851">Přijmout a přihlásit</translation>
+<translation id="794799177247607889">Zastavit protokolování</translation>
 <translation id="7961015016161918242">Nikdy</translation>
 <translation id="7971521879845308059">Blokování oken</translation>
 <translation id="7981313251711023384">Předběžně načítat stránky pro rychlejší procházení a vyhledávání</translation>

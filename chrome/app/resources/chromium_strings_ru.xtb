@@ -74,6 +74,7 @@
 <translation id="3479552764303398839">Не сейчас</translation>
 <translation id="3509308970982693815">Закройте все окна Chromium и повторите попытку снова.</translation>
 <translation id="352783484088404971">Удалить из Chromium</translation>
+<translation id="3575459661164320785">На компьютере обнаружено вредоносное ПО. Chromium может удалить его, восстановить настройки и отключить расширения. Это вернет браузер в обычное состояние.</translation>
 <translation id="3582788516608077514">Выполняется обновление Chromium...</translation>
 <translation id="358997566136285270">Логотип Chromium</translation>
 <translation id="3639635944603682591">Данные о работе этого пользователя в браузере будут удалены с устройства. Чтобы восстановить их, войдите в Chromium как <ph name="USER_EMAIL" />.</translation>
@@ -163,6 +164,7 @@
 <translation id="6373523479360886564">Вы действительно хотите удалить Chromium?</translation>
 <translation id="6400072781405947421">В работе Chromium могут возникать сбои, так как браузер больше не поддерживает Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium – браузер, который открывает веб-страницы и приложения за секунды. Он быстр, стабилен в работе и прост в использовании. Встроенная в Chromium защита от мошенничества и вредоносного ПО обеспечивает максимально безопасную работу в Интернете.</translation>
+<translation id="6434250628340475518">Chromium OS</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium перезапустится через 1 секунду}one{Chromium перезапустится через # секунду}few{Chromium перезапустится через # секунды}many{Chromium перезапустится через # секунд}other{Chromium перезапустится через # секунды}}</translation>
 <translation id="6475912303565314141">Кроме того, расширение изменило стартовую страницу Chromium.</translation>
 <translation id="6485906693002546646">Для синхронизации данных Chromium используется аккаунт <ph name="PROFILE_EMAIL" />. Изменить параметры синхронизации или отключить аккаунт можно в <ph name="SETTINGS_LINK" />.</translation>
@@ -179,6 +181,7 @@
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (скопирована в Chromium)</translation>
 <translation id="6893813176749746474">Chromium был обновлен, однако вы не использовали его в течение последних 30 дней.</translation>
+<translation id="692832138936263906">Chromium может распознавать для вас картинки и текст на них. Чтобы получать метки, браузер отправляет изображения в Google.</translation>
 <translation id="6964305034639999644">Открыть ссылку в режиме инкогнито браузера Chromium</translation>
 <translation id="6970811910055250180">Обновление операционной системы…</translation>
 <translation id="6990124437352146030">Для этого сайта Chromium запрашивает доступ к микрофону.</translation>
@@ -207,6 +210,7 @@
 <translation id="7471302858145901434">{0,plural, =1{Перезапустите Chromium OS в течение 1 дня}one{Перезапустите Chromium OS в течение # дня}few{Перезапустите Chromium OS в течение # дней}many{Перезапустите Chromium OS в течение # дней}other{Перезапустите Chromium OS в течение # дня}}</translation>
 <translation id="7483335560992089831">Невозможно установить ту же версию Chromium, которая уже присутствует в системе. Закройте Chromium и повторите попытку.</translation>
 <translation id="7549178288319965365">О Chromium OS</translation>
+<translation id="7561906087460245826">Также удалить данные из Chromium (<ph name="URL" />)</translation>
 <translation id="761356813943268536">Chromium использует камеру и микрофон.</translation>
 <translation id="7617377681829253106">Chromium становится все лучше</translation>
 <translation id="7686590090926151193">Chromium не является браузером по умолчанию.</translation>

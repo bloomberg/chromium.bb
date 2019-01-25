@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">В этом месяце</translation>
 <translation id="1637811476055996098">Выбрать файлы</translation>
 <translation id="1650423536718072820">цитата в виде врезки</translation>
+<translation id="1727886345390570319">скрыть меню субтитров</translation>
 <translation id="1729654308190250600">Введите адрес электронной почты.</translation>
 <translation id="1758486001363313524">Другое…</translation>
 <translation id="1806710327868736751">диалоговое окно оповещения</translation>
@@ -147,6 +148,7 @@
 <translation id="6213469881011901533">словарь</translation>
 <translation id="6398862346408813489">Показать панель выбора месяца</translation>
 <translation id="6404546809543547843">полоса воспроизведения</translation>
+<translation id="6443871981718447451">показать меню субтитров</translation>
 <translation id="6453774872122745852">благодарности</translation>
 <translation id="648732519525291180">окно выбора даты</translation>
 <translation id="6550675742724504774">Параметры</translation>
@@ -162,7 +164,6 @@
 <translation id="6820355525329141109">Не удалось загрузить плагин</translation>
 <translation id="6820615603175220800">ссылка на библиографию</translation>
 <translation id="6843725295806269523">отключить звук</translation>
-<translation id="6853785296079745596">скрыть субтитры</translation>
 <translation id="6885760532393684712">каталог</translation>
 <translation id="689129560213475294">выпускные данные</translation>
 <translation id="6934078000481955284">цитата</translation>
@@ -171,7 +172,6 @@
 <translation id="6989848892321993519">Текст должен быть не короче <ph name="MIN_CHARACTERS" /> симв. Длина текста сейчас: 1 символ.</translation>
 <translation id="709897737746224366">Введите данные в указанном формате.</translation>
 <translation id="7139483182332611405">вступление</translation>
-<translation id="7223624360433298498">прошедшее время</translation>
 <translation id="7263440858009898357">Выберите один из пунктов списка.</translation>
 <translation id="727747134524199931">заголовок столбца</translation>
 <translation id="7353453495576941748">упоминание</translation>
@@ -186,7 +186,6 @@
 <translation id="7661956066982048809">графический документ</translation>
 <translation id="7673697353781729403">Часы</translation>
 <translation id="7681220483256441252">указатель</translation>
-<translation id="7720026100085573005">оставшееся время</translation>
 <translation id="7740050170769002709">HTML-содержание</translation>
 <translation id="7750228210027921155">Картинка в картинке</translation>
 <translation id="7789962463072032349">Пауза</translation>
@@ -225,7 +224,6 @@
 <translation id="8987927404178983737">Месяц</translation>
 <translation id="901493112792887934">текущее время в секундах</translation>
 <translation id="9048119486235211610">навигация</translation>
-<translation id="9050748414552849310">показать субтитры</translation>
 <translation id="9062295712474918030">документ</translation>
 <translation id="9093215626363556771">выйти из режима "Картинка в картинке"</translation>
 <translation id="9108370397979208512">math</translation>

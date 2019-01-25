@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">Tháng này</translation>
 <translation id="1637811476055996098">Chọn tệp</translation>
 <translation id="1650423536718072820">đoạn trích dẫn</translation>
+<translation id="1727886345390570319">ẩn menu phụ đề chi tiết</translation>
 <translation id="1729654308190250600">Vui lòng nhập địa chỉ email không trống.</translation>
 <translation id="1758486001363313524">Khác...</translation>
 <translation id="1806710327868736751">alert_dialog</translation>
@@ -147,6 +148,7 @@
 <translation id="6213469881011901533">bảng thuật ngữ</translation>
 <translation id="6398862346408813489">Hiển thị bảng lựa chọn tháng</translation>
 <translation id="6404546809543547843">trình kiểm soát thời gian âm thanh</translation>
+<translation id="6443871981718447451">hiển thị menu phụ đề chi tiết</translation>
 <translation id="6453774872122745852">lời cảm ơn</translation>
 <translation id="648732519525291180">bộ chọn giờ</translation>
 <translation id="6550675742724504774">Tùy chọn</translation>
@@ -162,7 +164,6 @@
 <translation id="6820355525329141109">Không thể tải plugin.</translation>
 <translation id="6820615603175220800">tham chiếu danh mục</translation>
 <translation id="6843725295806269523">tắt tiếng</translation>
-<translation id="6853785296079745596">ẩn phụ đề chi tiết</translation>
 <translation id="6885760532393684712">thư mục</translation>
 <translation id="689129560213475294">lời ghi cuối sách</translation>
 <translation id="6934078000481955284">khung trích dẫn</translation>
@@ -171,7 +172,6 @@
 <translation id="6989848892321993519">Vui lòng kéo dài văn bản này thành <ph name="MIN_CHARACTERS" /> ký tự trở lên (bạn hiện đang sử dụng 1 ký tự).</translation>
 <translation id="709897737746224366">Vui lòng khớp với định dạng được yêu cầu.</translation>
 <translation id="7139483182332611405">lời nói đầu</translation>
-<translation id="7223624360433298498">thời gian trôi qua</translation>
 <translation id="7263440858009898357">Vui lòng chọn một mục trong danh sách.</translation>
 <translation id="727747134524199931">tiêu đề cột</translation>
 <translation id="7353453495576941748">ghi nhận tác giả</translation>
@@ -186,7 +186,6 @@
 <translation id="7661956066982048809">tài liệu đồ họa</translation>
 <translation id="7673697353781729403">Giờ</translation>
 <translation id="7681220483256441252">chú dẫn</translation>
-<translation id="7720026100085573005">thời gian còn lại</translation>
 <translation id="7740050170769002709">Nội dung HTML</translation>
 <translation id="7750228210027921155">Hình trong hình</translation>
 <translation id="7789962463072032349">tạm dừng</translation>
@@ -225,7 +224,6 @@
 <translation id="8987927404178983737">Tháng</translation>
 <translation id="901493112792887934">thời gian hiện tại bằng giây</translation>
 <translation id="9048119486235211610">điều hướng</translation>
-<translation id="9050748414552849310">hiển thị phụ đề chi tiết</translation>
 <translation id="9062295712474918030">tài liệu</translation>
 <translation id="9093215626363556771">thoát chế độ hình trong hình</translation>
 <translation id="9108370397979208512">toán học</translation>

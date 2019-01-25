@@ -14,7 +14,7 @@
 <translation id="1165039591588034296">ข้อผิดพลาด</translation>
 <translation id="1172898394251786223">ช่องถัดไป</translation>
 <translation id="1176932207622159128">ไม่สามารถบันทึกภาพ</translation>
-<translation id="1181037720776840403">ลบ</translation>
+<translation id="1181037720776840403">นำออก</translation>
 <translation id="1201530049782216880">แท็บใหม่ที่ไม่ระบุตัวตน</translation>
 <translation id="1209206284964581585">ซ่อนไปก่อน</translation>
 <translation id="1219674500290482172">ไม่สามารถเชื่อมต่อกับอินเทอร์เน็ต</translation>
@@ -72,6 +72,7 @@
 <translation id="2068952045031577364">สัปดาห์ที่ผ่านมา</translation>
 <translation id="2079545284768500474">เลิกทำ</translation>
 <translation id="209018056901015185">ขอไซต์สำหรับเดสก์ท็อป</translation>
+<translation id="2096012225669085171">ซิงค์และปรับแต่งในอุปกรณ์ทุกเครื่อง</translation>
 <translation id="2103075008456228677">เปิด history.google.com</translation>
 <translation id="2116625576999540962">ย้ายแล้ว <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> รายการ</translation>
 <translation id="213900355088104901">หากต้องการท่องเว็บแบบส่วนตัว ให้เปิดแท็บไม่ระบุตัวตน</translation>
@@ -132,6 +133,7 @@
 <translation id="2989805286512600854">เปิดในแท็บใหม่</translation>
 <translation id="3024255823539804759">วันที่ผ่านมา</translation>
 <translation id="3037605927509011580">แย่จัง!</translation>
+<translation id="3059750684806925578">ค้นหารูปภาพที่คัดลอก</translation>
 <translation id="3112556859945124369">ทำเครื่องหมาย…</translation>
 <translation id="3157684681743766797">ทำเครื่องหมายทั้งหมด…</translation>
 <translation id="3175081911749765310">บริการทางเว็บ</translation>
@@ -380,6 +382,7 @@
 <translation id="7159472599653637159">ขอเว็บไซต์สำหรับมือถือ</translation>
 <translation id="7167621057293532233">ประเภทข้อมูล</translation>
 <translation id="7189598951263744875">แชร์...</translation>
+<translation id="7192050974311852563">เริ่มต้นการบันทึก</translation>
 <translation id="7203585745079012652">พูดคำตอบกลับ</translation>
 <translation id="722055596168483966">ปรับเปลี่ยนบริการ Google ในแบบของคุณ</translation>
 <translation id="7272437679830969316">ยืนยันตัวตนของคุณไม่ได้ คัดลอกรหัสผ่านไม่สำเร็จ</translation>
@@ -421,6 +424,7 @@
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">ส่งออกรหัสผ่าน...</translation>
 <translation id="7947953824732555851">ยอมรับและลงชื่อเข้าใช้</translation>
+<translation id="794799177247607889">หยุดการบันทึก</translation>
 <translation id="7961015016161918242">ไม่ต้องเลย</translation>
 <translation id="7971521879845308059">บล็อกป๊อปอัป</translation>
 <translation id="7981313251711023384">โหลดหน้าเว็บล่วงหน้าเพื่อให้เรียกดูและค้นหาได้เร็วขึ้น</translation>

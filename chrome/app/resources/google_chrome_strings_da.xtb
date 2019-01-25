@@ -4,6 +4,7 @@
 <translation id="1001534784610492198">Installationsarkivet er beskadiget eller ugyldigt. Download Google Chrome igen.</translation>
 <translation id="102763973188675173">Tilpas og administrer Google Chrome. Der er en tilgængelig opdatering.</translation>
 <translation id="1035334672863811645">log ind på Chrome</translation>
+<translation id="1051826050538111504">Der er skadelig software på din computer. Chrome kan fjerne den, gendanne dine indstillinger og deaktivere udgivelser, så din browser fungerer normalt igen.</translation>
 <translation id="1065672644894730302">Dine præferencer kan ikke læses. Visse funktioner er muligvis ikke tilgængelige, og ændringer af præferencer gemmes ikke.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> brugte tidligere Chrome</translation>
 <translation id="1104959162601287462">Om &amp;Chrome OS</translation>
@@ -68,6 +69,7 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="2580411288591421699">Det er ikke muligt at installere den samme version af Google Chrome, som allerede kører. Luk Google Chrome, og prøv igen.</translation>
 <translation id="2586406160782125153">Denne handling sletter dine browserdata på denne enhed. Hvis du senere vil hente dine data igen, skal du logge ind på Chrome som <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Chrome-logo</translation>
+<translation id="2644798301485385923">Chrome OS-system</translation>
 <translation id="2652691236519827073">Åbn linket i en ny Chrome-&amp;fane</translation>
 <translation id="2665296953892887393">Hjælp med at gøre Google Chrome bedre ved at sende fejlrapporter og <ph name="UMA_LINK" /> til Google</translation>
 <translation id="2689103672227170538">Denne udvidelse har ændret din startside i Chrome.</translation>
@@ -99,6 +101,7 @@ Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejlednin
 <translation id="3451115285585441894">Føjer til Chrome...</translation>
 <translation id="345171907106878721">Tilføj dig selv i Chrome</translation>
 <translation id="3479552764303398839">Ikke nu</translation>
+<translation id="34857402635545079">Ryd også data fra Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome skal have adgang til din placering for at dele din placering med dette website</translation>
 <translation id="3582972582564653026">Synkroniser og tilpas Chrome på alle dine enheder</translation>
 <translation id="3622797965165704966">Nu er det blevet nemmere at bruge Chrome med din Google-konto og på delte computere.</translation>
@@ -162,6 +165,7 @@ Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejlednin
 <translation id="5386244825306882791">Den styrer også, hvilken side der vises, når du åbner Chrome eller søger via omnifeltet.</translation>
 <translation id="5430073640787465221">Din præferencefil er beskadiget eller ugyldig. Google Chrome kan ikke gendanne dine præferencer.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome genstarter nu}=1{Chrome genstarter om 1 sekund}one{Chrome genstarter om # sekund}other{Chrome genstarter om # sekunder}}</translation>
+<translation id="5505603430818498864">Google Chrome kan genkende billeder og tekst på et billede ved at sende sidebilleder til Googles servere, så du får bedre indblik i sideindholdet.</translation>
 <translation id="556024056938947818">Google Chrome forsøger at vise adgangskoder.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> kan være skadelig, så Chrome har blokeret den.</translation>
@@ -245,7 +249,7 @@ Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejlednin
 <translation id="8077352834923175128">Din administrator anmoder om, at du genstarter Chrome OS for at anvende denne opdatering</translation>
 <translation id="8129812357326543296">Om &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Installer Chrome på din telefon. Vi sender en sms til din telefon.</translation>
-<translation id="8183957050892517584">Chrome gemmer dine personlige oplysninger på sikker vis, så du ikke behøver at angive dem igen.</translation>
+<translation id="8183957050892517584">Chrome gemmer din personlige info på sikker vis, så du ikke behøver at angive den igen.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS genstarter nu}=1{Chrome OS genstarter om 1 sekund}one{Chrome OS genstarter om # sekund}other{Chrome OS genstarter om # sekunder}}</translation>
 <translation id="825412236959742607">Denne side anvender for meget hukommelse, så Chrome har fjernet noget indhold.</translation>
 <translation id="8255190535488645436">Google Chrome bruger dit kamera og din mikrofon.</translation>

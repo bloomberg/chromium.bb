@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">Ebben a hónapban</translation>
 <translation id="1637811476055996098">Fájlok kiválasztása</translation>
 <translation id="1650423536718072820">kiemelt idézet</translation>
+<translation id="1727886345390570319">a feliratok menü elrejtése</translation>
 <translation id="1729654308190250600">Kérjük, ne hagyja üresen az e-mail-cím mezőjét.</translation>
 <translation id="1758486001363313524">Más...</translation>
 <translation id="1806710327868736751">értesítő párbeszédpanel</translation>
@@ -147,6 +148,7 @@
 <translation id="6213469881011901533">szószedet</translation>
 <translation id="6398862346408813489">A hónapválasztási panel megjelenítése</translation>
 <translation id="6404546809543547843">hang idővonalának vezérlője</translation>
+<translation id="6443871981718447451">a feliratok menü mutatása</translation>
 <translation id="6453774872122745852">köszönetnyilvánítás</translation>
 <translation id="648732519525291180">időválasztó</translation>
 <translation id="6550675742724504774">Beállítások</translation>
@@ -162,7 +164,6 @@
 <translation id="6820355525329141109">Nem sikerült betölteni a beépülő modult.</translation>
 <translation id="6820615603175220800">bibliográfiai hivatkozás</translation>
 <translation id="6843725295806269523">némítás</translation>
-<translation id="6853785296079745596">feliratok elrejtése</translation>
 <translation id="6885760532393684712">címtár</translation>
 <translation id="689129560213475294">kolofon</translation>
 <translation id="6934078000481955284">bekezdésszintű idézet</translation>
@@ -171,7 +172,6 @@
 <translation id="6989848892321993519">Legalább <ph name="MIN_CHARACTERS" /> karakter hosszú szöveget adjon meg (jelenleg 1 karaktert használ).</translation>
 <translation id="709897737746224366">Kérjük, tartsa magát a kívánt formátumhoz.</translation>
 <translation id="7139483182332611405">bevezető</translation>
-<translation id="7223624360433298498">eltelt idő</translation>
 <translation id="7263440858009898357">Kérjük, válasszon egyet a lista elemei közül.</translation>
 <translation id="727747134524199931">oszlopfejléc</translation>
 <translation id="7353453495576941748">elismerés</translation>
@@ -186,7 +186,6 @@
 <translation id="7661956066982048809">grafikus dokumentum</translation>
 <translation id="7673697353781729403">Óra</translation>
 <translation id="7681220483256441252">tárgymutató</translation>
-<translation id="7720026100085573005">hátralévő idő</translation>
 <translation id="7740050170769002709">HTML-tartalom</translation>
 <translation id="7750228210027921155">Kép a képben</translation>
 <translation id="7789962463072032349">szüneteltetés</translation>
@@ -225,7 +224,6 @@
 <translation id="8987927404178983737">hónap</translation>
 <translation id="901493112792887934">jelenlegi idő másodpercben</translation>
 <translation id="9048119486235211610">navigáció</translation>
-<translation id="9050748414552849310">feliratok megjelenítése</translation>
 <translation id="9062295712474918030">dokumentum</translation>
 <translation id="9093215626363556771">kilépés a kép a képben funkcióból</translation>
 <translation id="9108370397979208512">matematika</translation>

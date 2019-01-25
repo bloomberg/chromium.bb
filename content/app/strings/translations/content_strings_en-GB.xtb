@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">This month</translation>
 <translation id="1637811476055996098">Choose Files</translation>
 <translation id="1650423536718072820">pullquote</translation>
+<translation id="1727886345390570319">hide closed captions menu</translation>
 <translation id="1729654308190250600">Please enter a non-empty email address.</translation>
 <translation id="1758486001363313524">Other...</translation>
 <translation id="1806710327868736751">alert_dialogue</translation>
@@ -147,6 +148,7 @@
 <translation id="6213469881011901533">glossary</translation>
 <translation id="6398862346408813489">Show month selection panel</translation>
 <translation id="6404546809543547843">audio time scrubber</translation>
+<translation id="6443871981718447451">show closed captions menu</translation>
 <translation id="6453774872122745852">acknowledgements</translation>
 <translation id="648732519525291180">time picker</translation>
 <translation id="6550675742724504774">Options</translation>
@@ -162,7 +164,6 @@
 <translation id="6820355525329141109">Couldn't load plug-in.</translation>
 <translation id="6820615603175220800">bibliography reference</translation>
 <translation id="6843725295806269523">mute</translation>
-<translation id="6853785296079745596">hide closed captions</translation>
 <translation id="6885760532393684712">directory</translation>
 <translation id="689129560213475294">colophon</translation>
 <translation id="6934078000481955284">blockquote</translation>
@@ -171,7 +172,6 @@
 <translation id="6989848892321993519">Please lengthen this text to <ph name="MIN_CHARACTERS" /> characters or more (you are currently using 1 character).</translation>
 <translation id="709897737746224366">Please match the format requested.</translation>
 <translation id="7139483182332611405">preface</translation>
-<translation id="7223624360433298498">elapsed time</translation>
 <translation id="7263440858009898357">Please select an item in the list.</translation>
 <translation id="727747134524199931">column header</translation>
 <translation id="7353453495576941748">credit</translation>
@@ -186,7 +186,6 @@
 <translation id="7661956066982048809">graphics document</translation>
 <translation id="7673697353781729403">Hours</translation>
 <translation id="7681220483256441252">index</translation>
-<translation id="7720026100085573005">remaining time</translation>
 <translation id="7740050170769002709">HTML content</translation>
 <translation id="7750228210027921155">Picture-in-picture</translation>
 <translation id="7789962463072032349">pause</translation>
@@ -225,7 +224,6 @@
 <translation id="8987927404178983737">Month</translation>
 <translation id="901493112792887934">current time in seconds</translation>
 <translation id="9048119486235211610">navigation</translation>
-<translation id="9050748414552849310">show closed captions</translation>
 <translation id="9062295712474918030">document</translation>
 <translation id="9093215626363556771">exit picture-in-picture</translation>
 <translation id="9108370397979208512">math</translation>

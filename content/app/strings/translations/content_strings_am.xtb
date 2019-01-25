@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">በዚህ ወር</translation>
 <translation id="1637811476055996098">ፋይሎችን ይምረጡ</translation>
 <translation id="1650423536718072820">ጥቅስ</translation>
+<translation id="1727886345390570319">የተዘጉ የሥዕል መግለጫ ጽሑፎችን ምናሌ ደብቅ</translation>
 <translation id="1729654308190250600">እባክዎ ባዶ ያልሆነ የኢሜይል አድራሻ ያስገቡ።</translation>
 <translation id="1758486001363313524">ሌላ...</translation>
 <translation id="1806710327868736751">የማንቂያ_መገናኛ</translation>
@@ -147,6 +148,7 @@
 <translation id="6213469881011901533">ሙዳየ ቃላት</translation>
 <translation id="6398862346408813489">የወር መምረጫ ፓነል አሳይ</translation>
 <translation id="6404546809543547843">የኦዲዮ ሰዓት አንፏቃቂ</translation>
+<translation id="6443871981718447451">የተዘጉ የመግለጫ ጽሁፎችን ምናሌ አሳይ</translation>
 <translation id="6453774872122745852">ምስጋና</translation>
 <translation id="648732519525291180">ሰዓት መራጭ</translation>
 <translation id="6550675742724504774">አማራጮች</translation>
@@ -162,7 +164,6 @@
 <translation id="6820355525329141109">ተሰኪን መጫን አልተቻለም።</translation>
 <translation id="6820615603175220800">የዋቢ መጽሐፍት ማጣቀሻ</translation>
 <translation id="6843725295806269523">ድምጸ-ከል ያድርጉ</translation>
-<translation id="6853785296079745596">የተዘጉ የስዕል መግለጫዎችን ይደብቁ</translation>
 <translation id="6885760532393684712">ማውጫ</translation>
 <translation id="689129560213475294">ኮሎፎን</translation>
 <translation id="6934078000481955284">የጽሑፍ ጥቅስ</translation>
@@ -171,7 +172,6 @@
 <translation id="6989848892321993519">እባክዎ ይህን ጽሑፍ ወደ <ph name="MIN_CHARACTERS" /> ወይም ከዚያ በላይ ቁምፊዎች ያራዝሙት (አሁን እየተጠቀሙ ያሉት 1 ቁምፊ ነው)።</translation>
 <translation id="709897737746224366">እባክዎ የተጠየቀውን ቅርጸት ያዛምዱ።</translation>
 <translation id="7139483182332611405">መቅድም</translation>
-<translation id="7223624360433298498">ያለፈው ጊዜ</translation>
 <translation id="7263440858009898357">እባክዎ በዝርዝሩ ውስጥ አንድ ንጥል ይምረጡ።</translation>
 <translation id="727747134524199931">የአምድ ራስጌ</translation>
 <translation id="7353453495576941748">ክሬዲት</translation>
@@ -186,7 +186,6 @@
 <translation id="7661956066982048809">ግራፊካዊ ሰነድ</translation>
 <translation id="7673697353781729403">ሰዓቶች</translation>
 <translation id="7681220483256441252">መረጃ ጠቋሚ</translation>
-<translation id="7720026100085573005">ቀሪ ጊዜ</translation>
 <translation id="7740050170769002709">የኤች ቲ ኤም ኤል ይዘት</translation>
 <translation id="7750228210027921155">በሥዕል ውስጥ ሥዕል</translation>
 <translation id="7789962463072032349">ላፍታ አቁም</translation>
@@ -225,7 +224,6 @@
 <translation id="8987927404178983737">ወር</translation>
 <translation id="901493112792887934">የአሁኑ ጊዜ በሰከንዶች</translation>
 <translation id="9048119486235211610">አሰሳ</translation>
-<translation id="9050748414552849310">የተዘጉ የስዕል መግለጫዎችን አሳይ</translation>
 <translation id="9062295712474918030">ሰነድ</translation>
 <translation id="9093215626363556771">ከስዕል-ውስጥ-ስዕል ውጣ</translation>
 <translation id="9108370397979208512">ሒሳብ</translation>

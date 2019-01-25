@@ -3,6 +3,7 @@
 <translationbundle lang="hr">
 <translation id="1005145902654145231">Promjena naziva sesije nije uspjela.</translation>
 <translation id="1008557486741366299">Ne sada</translation>
+<translation id="1010200102790553230">Učitaj stranicu kasnije</translation>
 <translation id="1015730422737071372">Navedite dodatne pojedinosti</translation>
 <translation id="1021110881106174305">Prihvaćene kartice</translation>
 <translation id="1032854598605920125">Zakretanje u smjeru kazaljke na satu</translation>
@@ -47,6 +48,7 @@
 <translation id="1227633850867390598">Skrivanje vrijednosti</translation>
 <translation id="1228893227497259893">Pogrešan identifikator entiteta</translation>
 <translation id="1232569758102978740">Neimenovano</translation>
+<translation id="124116460088058876">Više jezika</translation>
 <translation id="1250759482327835220">Da biste sljedeći put platili brže, spremite karticu, ime i adresu za naplatu na svoj Google račun.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sinkronizirano)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Ako pokušate otvoriti web-lokaciju i ona se ne otvara, najprije pokušajte riješiti poteškoću prema ovim uputama:&lt;/p&gt;
@@ -81,12 +83,15 @@
 <translation id="1375198122581997741">O verziji</translation>
 <translation id="1376836354785490390">Manje</translation>
 <translation id="1377321085342047638">Broj kartice</translation>
+<translation id="138218114945450791">Svijetloplava</translation>
 <translation id="139305205187523129">Host <ph name="HOST_NAME" /> nije poslao nikakve podatke.</translation>
+<translation id="1405567553485452995">Svijetlozelena</translation>
 <translation id="1407135791313364759">Otvori sve</translation>
 <translation id="1413809658975081374">Pogreška privatnosti</translation>
 <translation id="14171126816530869">Identitet za <ph name="ORGANIZATION" />na <ph name="LOCALITY" /> ovjerio je <ph name="ISSUER" />.</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1430915738399379752">Ispis</translation>
+<translation id="1455413310270022028">Gumica</translation>
 <translation id="1484290072879560759">Odaberite adresu za dostavu</translation>
 <translation id="1501859676467574491">Prikaži kartice s Google računa</translation>
 <translation id="1506687042165942984">Prikaži spremljenu kopiju te stranice (tj., onu za koju se zna da je zastarjela).</translation>
@@ -111,8 +116,10 @@
 <translation id="1592005682883173041">Pristup lokalnim podacima</translation>
 <translation id="1594030484168838125">Odaberi</translation>
 <translation id="161042844686301425">Cijan</translation>
+<translation id="1618822247301510817">Slika koju ste kopirali</translation>
 <translation id="1620510694547887537">Fotoaparat</translation>
 <translation id="1623104350909869708">Spriječi da ova stranica stvori dodatne dijaloške okvire</translation>
+<translation id="1634051627998691300">Završi sesiju</translation>
 <translation id="1639239467298939599">Učitavanje</translation>
 <translation id="1640180200866533862">Korisnička pravila</translation>
 <translation id="1640244768702815859">Pokušajte <ph name="BEGIN_LINK" />otvoriti početnu stranicu web-lokacije<ph name="END_LINK" />.</translation>
@@ -122,11 +129,13 @@
 <translation id="1656489000284462475">Preuzimanje</translation>
 <translation id="1662550410081243962">Spremi i popuni načine plaćanja</translation>
 <translation id="1663943134801823270">Kartice i adrese dolaze iz Chromea. Njima možete upravljati u <ph name="BEGIN_LINK" />Postavkama<ph name="END_LINK" />.</translation>
+<translation id="1671391448414634642">Odsad će se <ph name="SOURCE_LANGUAGE" /> prevoditi na <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> obično upotrebljava enkripciju radi zaštite vaših podataka. Prilikom ovog pokušaja povezivanja Google Chromea s web-lokacijom <ph name="SITE" /> ta je web-lokacija vratila neuobičajene i netočne vjerodajnice. To može značiti da se neki napadač pokušava predstaviti kao <ph name="SITE" /> ili je zaslon za prijavu na Wi-Fi prekinuo vezu. Vaši su podaci još uvijek sigurni jer je Google Chrome zaustavio povezivanje prije razmjene podataka.</translation>
 <translation id="168841957122794586">Certifikat poslužitelja sadrži slab kriptografski ključ!</translation>
 <translation id="1697532407822776718">Potpuno ste spremni!</translation>
 <translation id="1706954506755087368">{1,plural, =1{Poslužitelj nije mogao dokazati da je to <ph name="DOMAIN" /> jer je sigurnosni certifikat navodno izdan sutra. Razlog može biti pogrešna konfiguracija ili napad na vašu vezu.}one{Poslužitelj nije mogao dokazati da je to <ph name="DOMAIN" /> jer je sigurnosni certifikat navodno izdan # dan u budućnosti. Razlog može biti pogrešna konfiguracija ili napad na vašu vezu.}few{Poslužitelj nije mogao dokazati da je to <ph name="DOMAIN" /> jer je sigurnosni certifikat navodno izdan # dana u budućnosti. Razlog može biti pogrešna konfiguracija ili napad na vašu vezu.}other{Poslužitelj nije mogao dokazati da je to <ph name="DOMAIN" /> jer je sigurnosni certifikat navodno izdan # dana u budućnosti. Razlog može biti pogrešna konfiguracija ili napad na vašu vezu.}}</translation>
 <translation id="1710259589646384581">OS</translation>
+<translation id="1718029547804390981">Dokument je prevelik za dodavanje bilješki</translation>
 <translation id="1721312023322545264"><ph name="NAME" /> mora dopustiti da posjetiš tu web-lokaciju</translation>
 <translation id="1721424275792716183">* Polje je obavezno</translation>
 <translation id="1727741090716970331">Dodajte važeći broj kartice</translation>
@@ -174,6 +183,7 @@
 <translation id="2025186561304664664">Proxy je postavljen na automatsko konfiguriranje.</translation>
 <translation id="2030481566774242610">Jeste li mislili <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />provjerite proxy i vatrozid<ph name="END_LINK" /></translation>
+<translation id="2053111141626950936">Neće se prevoditi <ph name="LANGUAGE" />.</translation>
 <translation id="2053553514270667976">ZIP kôd</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 prijedlog}one{# prijedlog}few{# prijedloga}other{# prijedloga}}</translation>
 <translation id="2068663545051464999">Preneseno je izvješće o padu programa s ID-jem <ph name="CRASH_ID" /> (lokalni kontekst: <ph name="CRASH_LOCAL_ID" />)</translation>
@@ -217,6 +227,7 @@
 <translation id="2317583587496011522">Prihvaćaju se debitne kartice.</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, istječe <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="2337852623177822836">Postavkom upravlja administrator</translation>
+<translation id="2349790679044093737">U tijeku je VR sesija</translation>
 <translation id="2354001756790975382">Druge oznake</translation>
 <translation id="2354430244986887761">Google sigurno pregledavanje nedavno je <ph name="BEGIN_LINK" />pronašlo štetne aplikacije<ph name="END_LINK" /> na web-lokaciji <ph name="SITE" />.</translation>
 <translation id="2355395290879513365">Napadači možda mogu vidjeti slike koje gledate na ovoj web-lokaciji i izmijeniti ih kako bi vas prevarili.</translation>
@@ -248,6 +259,7 @@
 <translation id="2501278716633472235">Natrag</translation>
 <translation id="2503184589641749290">Prihvaćene debitne i pretplatne kartice</translation>
 <translation id="2515629240566999685">provjerite jačinu signala na svom području</translation>
+<translation id="2516852381693169964">Pretraži sliku uz <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2523886232349826891">Sprema se samo na ovom uređaju</translation>
 <translation id="2524461107774643265">Dodajte još podataka</translation>
 <translation id="2536110899380797252">Dodaj adresu</translation>
@@ -301,6 +313,7 @@
 <translation id="2856444702002559011">Napadači možda pokušavaju ukrasti vaše podatke s web-lokacije <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (na primjer zaporke, poruke ili brojeve kreditnih kartica). <ph name="BEGIN_LEARN_MORE_LINK" />Saznajte više<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2881276955470682203">Želite li spremiti karticu?</translation>
 <translation id="2903493209154104877">Adrese</translation>
+<translation id="290376772003165898">Ovo nije <ph name="LANGUAGE" />?</translation>
 <translation id="2909946352844186028">Otkrivena je promjena mreže.</translation>
 <translation id="2916038427272391327">Zatvorite ostale programe</translation>
 <translation id="2922350208395188000">Certifikat poslužitelja nije moguće provjeriti.</translation>
@@ -364,6 +377,7 @@
 <translation id="3303855915957856445">Nisu pronađeni rezultati pretraživanja</translation>
 <translation id="3305707030755673451">Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. Unesite je da biste pokrenuli sinkronizaciju.</translation>
 <translation id="3320021301628644560">Dodajte adresu za naplatu</translation>
+<translation id="3324983252691184275">Grimizna</translation>
 <translation id="3338095232262050444">Sigurno</translation>
 <translation id="3345135638360864351">Slanje zahtjeva za pristup ovoj web-lokaciji korisniku <ph name="NAME" /> nije uspjelo. Pokušaj ponovo.</translation>
 <translation id="3355823806454867987">Promijeni proxy postavke...</translation>
@@ -392,8 +406,10 @@
 <translation id="3447661539832366887">Vlasnik tog uređaja isključio je igru s dinosaurima.</translation>
 <translation id="3447884698081792621">Prikaz certifikata (izdavač: <ph name="ISSUER" />)</translation>
 <translation id="3452404311384756672">Dohvati interval:</translation>
+<translation id="3461824795358126837">Alat za isticanje</translation>
 <translation id="3462200631372590220">Sakrij napredno</translation>
 <translation id="3467763166455606212">Potrebno je unijeti ime nositelja kartice</translation>
+<translation id="3468054117417088249"><ph name="TAB_SWITCH_SUFFIX" />, trenutačno otvoreno, pritisnite karticu pa Enter za prebacivanje na otvorenu karticu</translation>
 <translation id="3479539252931486093">Niste to očekivali? <ph name="BEGIN_LINK" />Javite nam<ph name="END_LINK" />.</translation>
 <translation id="3479552764303398839">Ne sada</translation>
 <translation id="3484560055331845446">Mogli biste izgubiti pristup svojem Google računu. Chrome preporučuje da odmah promijenite zaporku. Morat ćete se prijaviti.</translation>
@@ -401,6 +417,7 @@
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3498215018399854026">Nismo uspjeli stupiti u kontakt s tvojim roditeljem. Pokušaj ponovo.</translation>
 <translation id="3528171143076753409">Certifikat poslužitelja nije pouzdan.</translation>
+<translation id="3528485271872257980">Tamnosmeđa</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Najmanje 1 stavka na sinkroniziranim uređajima}=1{1 stavka (i više njih na sinkroniziranim uređajima)}one{# stavka (i više njih na sinkroniziranim uređajima)}few{# stavke (i više njih na sinkroniziranim uređajima)}other{# stavki (i više njih na sinkroniziranim uređajima)}}</translation>
 <translation id="3539171420378717834">Zadrži kopiju te kartice na uređaju</translation>
 <translation id="3556433843310711081">Voditelj je može deblokirati</translation>
@@ -413,6 +430,7 @@
 <translation id="3583757800736429874">&amp;Ponovi premještanje</translation>
 <translation id="3586931643579894722">Sakrij detalje</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3614103345592970299">Veličina 2</translation>
 <translation id="3615877443314183785">Unesite važeći datum isteka</translation>
 <translation id="36224234498066874">Obriši podatke o pregledavanju...</translation>
 <translation id="362276910939193118">Pokaži cijelu povijest</translation>
@@ -442,10 +460,13 @@
 <translation id="3748148204939282805">Napadači na web-lokaciji <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mogu vas na prijevaru pokušati navesti da napravite nešto opasno kao što je instaliranje softvera ili otkrivanje osobnih podataka (npr. zaporki, telefonskih brojeva ili brojeva kreditnih kartica). <ph name="BEGIN_LEARN_MORE_LINK" />Saznajte više<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Prijevod nije uspio zbog poslužiteljske pogreške.</translation>
 <translation id="3759461132968374835">Nemate nedavnih izvješća o padu. Ovdje se neće prikazati padovi do kojih je došlo kada je izvješćivanje o padovima onemogućeno.</translation>
+<translation id="3761718714832595332">Sakrij status</translation>
 <translation id="3765032636089507299">Stranica Sigurno pregledavanje trenutačno je u izradi.</translation>
 <translation id="3778403066972421603">Želite li spremiti ovu karticu na svoj Google račun i na ovaj uređaj?</translation>
+<translation id="3781428340399460090">Jarko ružičasta</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Istječe <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="3789155188480882154">Veličina 16</translation>
 <translation id="3807873520724684969">Blokiran je štetni sadržaj.</translation>
 <translation id="3810973564298564668">Upravljaj</translation>
 <translation id="382518646247711829">Ako upotrebljavate proxy poslužitelj...</translation>
@@ -488,6 +509,7 @@
 <translation id="413544239732274901">Saznajte više</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Upotrijebi globalnu zadanu postavku (Otkrij)</translation>
+<translation id="4159784952369912983">Ljubičasto</translation>
 <translation id="4165986682804962316">Postavke web-lokacije</translation>
 <translation id="4171400957073367226">Potpis za potvrdu nije ispravan.</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Još <ph name="ITEM_COUNT" /> stavka}one{Još <ph name="ITEM_COUNT" /> stavka}few{Još <ph name="ITEM_COUNT" /> stavke}other{Još <ph name="ITEM_COUNT" /> stavki}}</translation>
@@ -519,6 +541,7 @@
 <translation id="4250680216510889253">Ne</translation>
 <translation id="425582637250725228">Unesene promjene ne mogu se spremiti.</translation>
 <translation id="4258748452823770588">Potpis nije valjan</translation>
+<translation id="4261046003697461417">Dodavanje bilješke zaštićenim dokumentima nije moguće</translation>
 <translation id="4265872034478892965">Dopustio administrator</translation>
 <translation id="4275830172053184480">Ponovo pokrenite svoj uređaj</translation>
 <translation id="4277028893293644418">Poništi zaporku</translation>
@@ -544,6 +567,7 @@
 <translation id="4434045419905280838">Skočni prozori i preusmjeravanja</translation>
 <translation id="443673843213245140">Upotreba proxy poslužitelja onemogućena je, ali određena je izričita konfiguracija proxy poslužitelja.</translation>
 <translation id="445100540951337728">Prihvaćene debitne kartice</translation>
+<translation id="4482953324121162758">Ova web-lokacija neće biti prevedena.</translation>
 <translation id="4506176782989081258">Pogreška pri provjeri valjanosti: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4506599922270137252">kontaktirajte administratora sustava</translation>
 <translation id="450710068430902550">Dijeljenje s administratorom</translation>
@@ -557,6 +581,7 @@
 <translation id="4587425331216688090">Želite li s Chromea ukloniti adresu?</translation>
 <translation id="4592951414987517459">Vaša veza s domenom <ph name="DOMAIN" /> kriptirana je modernim kriptografskim paketom.</translation>
 <translation id="4594403342090139922">&amp;Poništi brisanje</translation>
+<translation id="4597348597567598915">Veličina 8</translation>
 <translation id="4646534391647090355">Otvori odmah</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat sadrži pogreške. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
@@ -604,6 +629,7 @@
 <translation id="4926159001844873046">Na web-lokaciji <ph name="SITE" /> navodi se sljedeće</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Nema rezultata</translation>
+<translation id="4950898438188848926">Gumb za promjenu kartice, pritisnite Enter za prebacivanje na otvorenu karticu, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Radnje</translation>
 <translation id="4958444002117714549">Proširi popis</translation>
 <translation id="4974590756084640048">Ponovo omogući upozorenja</translation>
@@ -629,7 +655,6 @@
 <translation id="5089810972385038852">Savezna država</translation>
 <translation id="5094747076828555589">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; Chromium smatra da njegov sigurnosni certifikat nije pouzdan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="5095208057601539847">Pokrajina</translation>
-<translation id="5098332213681597508">To je ime s vašeg Google računa.</translation>
 <translation id="5115563688576182185">(64-bitni)</translation>
 <translation id="5128122789703661928">Brisanje sesije nije uspjelo jer naziv sesije nije važeći.</translation>
 <translation id="5135404736266831032">Upravljajte adresama...</translation>
@@ -664,7 +689,6 @@
 <translation id="5344579389779391559">Ta će vam stranica možda pokušati nešto naplatiti</translation>
 <translation id="5355557959165512791">Trenutačno ne možete otvoriti web-lokaciju <ph name="SITE" /> jer je njezin certifikat opozvan. Mrežne pogreške i napadi uglavnom su privremeni i ta bi stranica kasnije trebala funkcionirati.</translation>
 <translation id="536296301121032821">Pohrana postavki pravila nije uspjela</translation>
-<translation id="5363056109122666249">Chrome vam nudi spremanje vaših kartica na vaš Google račun jer ste prijavljeni. To ponašanje možete promijeniti u postavkama.</translation>
 <translation id="5371425731340848620">Ažuriranje kartice</translation>
 <translation id="5377026284221673050">"Sat kasni" ili "Sat ide unaprijed" ili "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5384855140246857529">Da biste svoje kartice upotrebljavali na svim uređajima, prijavite se i uključite sinkronizaciju.</translation>
@@ -685,6 +709,7 @@
 <translation id="5492298309214877701">Web-lokacija na intranetu tvrtke, organizacije ili škole ima isti URL kao i vanjska web-lokacija.
     <ph name="LINE_BREAK" />
     Pokušajte se obratiti administratoru sustava.</translation>
+<translation id="549333378215107354">Veličina 3</translation>
 <translation id="5509780412636533143">Upravljane oznake</translation>
 <translation id="5510766032865166053">Datoteka je možda premještena ili izbrisana.</translation>
 <translation id="5523118979700054094">Naziv pravila</translation>
@@ -727,6 +752,7 @@
 <translation id="5765072501007116331">Odaberite adresu za prikaz načina dostave i zahtjeva za dostavu.</translation>
 <translation id="5770114862687765385">Čini se da je datoteka oštećena. Kliknite gumb "Poništi" da biste poništili sesiju.</translation>
 <translation id="5778550464785688721">Potpuni nadzor nad MIDI uređajima</translation>
+<translation id="578305955206182703">Jantarna</translation>
 <translation id="57838592816432529">Isključi zvuk</translation>
 <translation id="5784606427469807560">Pojavio se problem prilikom potvrđivanja kartice. Provjerite internetsku vezu i pokušajte ponovo.</translation>
 <translation id="5785756445106461925">Nadalje, ova stranica sadrži druge resurse koji nisu sigurni. Te resurse mogu vidjeti drugi tijekom prijenosa i napadač ih može izmijeniti kako bi promijenio izgled stranice.</translation>
@@ -754,6 +780,7 @@
 <translation id="5967592137238574583">Uredite podatke za kontakt</translation>
 <translation id="5967867314010545767">Ukloni iz povijesti</translation>
 <translation id="5975083100439434680">Smanji</translation>
+<translation id="5977976211062815271">Na ovom uređaju</translation>
 <translation id="598637245381783098">Aplikacija za plaćanje ne može se otvoriti</translation>
 <translation id="5989320800837274978">Nisu određeni fiksni proxy poslužitelji ni URL .pac skripte.</translation>
 <translation id="5990559369517809815">Zahtjevi poslužitelju blokirani su proširenjem.</translation>
@@ -764,8 +791,10 @@
 <translation id="6017850046339264347">Napadači na web-lokaciji <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mogli bi instalirati obmanjujuće aplikacije koje se pretvaraju da su nešto drugo ili prikupljaju podatke na temelju kojih vas je moguće pratiti. <ph name="BEGIN_LEARN_MORE_LINK" />Saznajte više<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (sinkronizirano)</translation>
 <translation id="6027201098523975773">Unesite ime</translation>
+<translation id="6034000775414344507">Svijetlosiva</translation>
 <translation id="6039846035001940113">Ako se problem nastavi, obratite se vlasniku web-lokacije.</translation>
 <translation id="6040143037577758943">Zatvori</translation>
+<translation id="6044573915096792553">Veličina 12</translation>
 <translation id="6047233362582046994">Ako ste svjesni sigurnosnih rizika, možete <ph name="BEGIN_LINK" />posjetiti ovu web-lokaciju<ph name="END_LINK" /> prije uklanjanja štetnih aplikacija.</translation>
 <translation id="6047927260846328439">Ovaj vas sadržaj može na prijevaru pokušati navesti da instalirate softver ili odate svoje osobne podatke. <ph name="BEGIN_LINK" />Ipak prikaži<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Trenutačno ne možete otvoriti <ph name="SITE" /> jer web-lokacija upotrebljava prikvačivanje certifikata. Mrežne pogreške i napadi obično su privremeni, tako da će stranica kasnije vjerojatno funkcionirati.</translation>
@@ -773,6 +802,7 @@
 <translation id="6059925163896151826">USB uređaji</translation>
 <translation id="6071091556643036997">Vrsta pravila nije važeća.</translation>
 <translation id="6080696365213338172">Pristupili ste sadržaju pomoću certifikata koji je izdao administrator. Administrator može presresti podatke koje dostavljate domeni <ph name="DOMAIN" />.</translation>
+<translation id="6094273045989040137">Dodaj bilješku</translation>
 <translation id="610911394827799129">Na vašem Google računu možda postoje drugi oblici povijesti pregledavanja na stranici <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Nijedna}=1{1 zaporka (sinkronizirana)}one{# zaporka (sinkronizirana)}few{# zaporke (sinkronizirane)}other{# zaporki (sinkroniziranih)}}</translation>
 <translation id="6146055958333702838">Provjerite kabele i ponovo pokrenite usmjerivače, modeme ili druge mrežne
@@ -793,11 +823,13 @@
 <translation id="6259156558325130047">&amp;Ponovi promjenu rasporeda</translation>
 <translation id="6263376278284652872">Oznake domene <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Natrag u sigurnost</translation>
+<translation id="6266934640124581640">Svijetlotirkiznoplava</translation>
 <translation id="6276112860590028508">Ovdje se prikazuju stranice s vašeg popisa za čitanje</translation>
 <translation id="627746635834430766">Da biste sljedeći put platili brže, karticu i adresu za naplatu spremite na svoj Google račun.</translation>
 <translation id="6280223929691119688">Dostava na tu adresu nije moguća. Odaberite drugu adresu.</translation>
 <translation id="6282194474023008486">Poštanski broj</translation>
 <translation id="6290238015253830360">Ovdje će se prikazivati predloženi članci</translation>
+<translation id="6302269476990306341">Zaustavljanje Google asistenta u Chromeu</translation>
 <translation id="6305205051461490394">Web-lokacija <ph name="URL" /> nije dostupna.</translation>
 <translation id="6321917430147971392">Provjerite postavke DNS-a</translation>
 <translation id="6328639280570009161">Pokušajte onemogućiti predviđanja mreže</translation>
@@ -829,6 +861,7 @@
 <translation id="6534179046333460208">Prijedlozi Fizičkog weba</translation>
 <translation id="6563469144985748109">Voditelj je još nije odobrio</translation>
 <translation id="6569060085658103619">Gledate stranicu proširenja</translation>
+<translation id="6579990219486187401">Svijetloružičasta</translation>
 <translation id="6596325263575161958">Opcije šifriranja</translation>
 <translation id="6604181099783169992">Senzori pokreta ili osvjetljenja</translation>
 <translation id="6624427990725312378">Podaci za kontakt</translation>
@@ -845,11 +878,13 @@
 <translation id="6710594484020273272">&lt;Upišite pojam za pretraživanje&gt;</translation>
 <translation id="671076103358959139">Oznaka za prijavu:</translation>
 <translation id="6711464428925977395">Nešto nije u redu s proxy poslužiteljem ili adresa nije točna.</translation>
+<translation id="6723740634201835758">Na vašem Google računu</translation>
 <translation id="674375294223700098">Nepoznata pogreška certifikata poslužitelja</translation>
 <translation id="6744009308914054259">Dok čekate vezu, možete otvoriti Preuzimanja i čitati offline članke.</translation>
 <translation id="6753269504797312559">Vrijednost pravila</translation>
 <translation id="6757797048963528358">Uređaj je u stanju mirovanja.</translation>
 <translation id="6778737459546443941">Roditelj je još nije odobrio</translation>
+<translation id="67862343314499040">Ljubičasta</translation>
 <translation id="679355240208270552">Zanemareno jer zadano pretraživanje nije omogućeno pravilom.</translation>
 <translation id="681021252041861472">Obavezno polje</translation>
 <translation id="6810899417690483278">ID prilagođavanja</translation>
@@ -861,6 +896,7 @@
 <translation id="6865412394715372076">Trenutačno nije moguće potvrditi karticu</translation>
 <translation id="6868206169573555318">Ponovo pokreni za ažuriranje</translation>
 <translation id="6874604403660855544">&amp;Ponovi dodavanje</translation>
+<translation id="6884662655240309489">Veličina 1</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Razina pravila nije podržana.</translation>
 <translation id="6895330447102777224">Kartica je potvrđena</translation>
@@ -883,12 +919,14 @@
 <translation id="6979440798594660689">Bez zvuka (zadano)</translation>
 <translation id="6984479912851154518">Napuštate privatni način rada da biste platili putem vanjske aplikacije. Želite li nastaviti?</translation>
 <translation id="6989763994942163495">Pokaži napredne postavke...</translation>
+<translation id="6996312675313362352">Uvijek prevodi <ph name="ORIGINAL_LANGUAGE" /></translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Ta terećenja mogu biti jednokratna ili ponavljajuća i možda nisu odmah vidljiva.</translation>
 <translation id="7029809446516969842">Zaporke</translation>
 <translation id="7050187094878475250">Pokušali ste pristupiti domeni <ph name="DOMAIN" />, ali je poslužitelj pružio certifikat koji nije pouzdan zbog predugog razdoblja valjanosti.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Ta se kartica trenutačno ne može spremiti}one{Te se kartice trenutačno ne mogu spremiti}few{Te se kartice trenutačno ne mogu spremiti}other{Te se kartice trenutačno ne mogu spremiti}}</translation>
 <translation id="7053983685419859001">Blokiraj</translation>
+<translation id="7062635574500127092">Tirkiznoplava</translation>
 <translation id="7064851114919012435">Podaci za kontakt</translation>
 <translation id="7079718277001814089">Ova web-lokacija sadrži zlonamjerni softver</translation>
 <translation id="7087282848513945231">Država</translation>
@@ -898,9 +936,11 @@
 <translation id="7111012039238467737">(Važeći)</translation>
 <translation id="7119414471315195487">Zatvorite ostale kartice ili programe</translation>
 <translation id="7129409597930077180">Dostava na tu adresu nije moguća. Odaberite drugu adresu.</translation>
+<translation id="7135130955892390533">Prikaži status</translation>
 <translation id="7138472120740807366">Način isporuke</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
+<translation id="7153618581592392745">Lavanda</translation>
 <translation id="7158980942472052083">URL nije važeći. Mora biti URL sa standardnom shemom.</translation>
 <translation id="717330890047184534">ID za GAIA-u:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
@@ -925,6 +965,8 @@ Dodatne pojedinosti:
 <translation id="7271803869921933038">Prihvaćene pretplatne kartice</translation>
 <translation id="7275334191706090484">Upravljane oznake</translation>
 <translation id="7298195798382681320">Preporučeno</translation>
+<translation id="7300012071106347854">Kobaltno plava</translation>
+<translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7309308571273880165">Izvješće o rušenju programa generirano <ph name="CRASH_TIME" /> (prijenos zatražio korisnik, još nije preneseno)</translation>
 <translation id="7320336641823683070">Pomoć za povezivanje</translation>
 <translation id="7334320624316649418">&amp;Ponovi promjenu rasporeda</translation>
@@ -953,6 +995,7 @@ Dodatne pojedinosti:
 <translation id="7437289804838430631">Dodajte podatke za kontakt</translation>
 <translation id="7440140511386898319">Istraživanje dok ste offline</translation>
 <translation id="7441627299479586546">Pogrešan predmet pravila</translation>
+<translation id="7442725080345379071">Svijetlonarančasta</translation>
 <translation id="7444046173054089907">Ova je web-lokacija blokirana</translation>
 <translation id="7445762425076701745">Identitet poslužitelja s kojim ste se povezali ne može se u potpunosti potvrditi. Povezali ste se s poslužiteljem upotrebom imena koje je valjano samo unutar vaše mreže, a za koje vanjsko tijelo za izdavanje certifikata nikako ne može potvrditi vlasništvo. Budući da postoje tijela za izdavanje certifikata koja će izdati certifikat za ta imena bez obzira na sve, nema načina da budete sigurni da ste povezani sa željenom web-lokacijom, a ne s napadačem.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /> o tom problemu.</translation>
@@ -962,6 +1005,7 @@ Dodatne pojedinosti:
 <translation id="7481312909269577407">Naprijed</translation>
 <translation id="7485870689360869515">Nema pronađenih podataka.</translation>
 <translation id="7508255263130623398">Vraćeni ID uređaja pravila prazan je ili ne odgovara trenutačnom ID-u uređaja</translation>
+<translation id="7508870219247277067">Zelenožuta</translation>
 <translation id="7511955381719512146">Za Wi-Fi koji upotrebljavate možda ćete morati posjetiti stranicu <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="7514365320538308">Preuzmi</translation>
 <translation id="7518003948725431193">Za web-adresu nije pronađena web-stranica:<ph name="URL" /></translation>
@@ -976,6 +1020,7 @@ Dodatne pojedinosti:
 <translation id="7552846755917812628">Pokušajte učiniti sljedeće:</translation>
 <translation id="7554791636758816595">Nova kartica</translation>
 <translation id="7564049878696755256">Mogli biste izgubiti pristup svojem <ph name="ORG_NAME" /> računu ili bi netko mogao ukrasti vaš identitet. Chrome preporučuje da odmah promijenite zaporku.</translation>
+<translation id="7566125604157659769">Tekst koji ste kopirali</translation>
 <translation id="7567204685887185387">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat možda je lažan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="7569952961197462199">Želite li s Chromea ukloniti kreditnu karticu?</translation>
 <translation id="7569983096843329377">Crna</translation>
@@ -988,6 +1033,7 @@ Dodatne pojedinosti:
 <translation id="7613889955535752492">Istječe: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Već imate podatke koji su kriptirani pomoću druge verzije zaporke vašeg Google računa. Unesite je u nastavku.</translation>
 <translation id="7637571805876720304">Želite li ukloniti kreditnu karticu iz Chromiuma?</translation>
+<translation id="7639968568612851608">Tamnosiva</translation>
 <translation id="765676359832457558">Skrivanje naprednih postavki...</translation>
 <translation id="7658239707568436148">Odustani</translation>
 <translation id="7662298039739062396">Postavkom upravlja proširenje</translation>
@@ -1033,6 +1079,7 @@ Dodatne pojedinosti:
 <translation id="7862185352068345852">Želite li napustiti web-lokaciju?</translation>
 <translation id="7878176543348854470">Prihvaćaju se debitne i pretplatne kartice.</translation>
 <translation id="7878562273885520351">Vaša je zaporka možda ugrožena</translation>
+<translation id="7882421473871500483">Smeđa</translation>
 <translation id="7887683347370398519">Provjerite CVC i pokušajte ponovo</translation>
 <translation id="7893255318348328562">Naziv sesije</translation>
 <translation id="79338296614623784">Unesite važeći telefonski broj</translation>
@@ -1044,23 +1091,26 @@ Dodatne pojedinosti:
 <translation id="7951415247503192394">(32-bitni)</translation>
 <translation id="7956713633345437162">Mobilne oznake</translation>
 <translation id="7961015016161918242">Nikad</translation>
-<translation id="7983301409776629893">Uvijek prevedi <ph name="ORIGINAL_LANGUAGE" /> na <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Nije navedeno</translation>
 <translation id="800218591365569300">Pokušajte zatvoriti ostale kartice ili programe da biste oslobodili memoriju.</translation>
 <translation id="8009225694047762179">Upravljanje zaporkama</translation>
 <translation id="8012647001091218357">Nismo uspjeli stupiti u kontakt s tvojim roditeljima. Pokušaj ponovo.</translation>
 <translation id="8025119109950072390">Napadači na ovoj web-lokaciji mogu vas na prijevaru pokušati navesti da napravite nešto opasno kao što je instaliranje softvera ili otkrivanje osobnih podataka (npr. zaporki, telefonskih brojeva ili kreditnih kartica).</translation>
 <translation id="8034522405403831421">Jezik ove stranice jest <ph name="SOURCE_LANGUAGE" />. Želite li je prevesti na <ph name="TARGET_LANGUAGE" />?</translation>
+<translation id="8035152190676905274">Pero</translation>
 <translation id="8037357227543935929">Pitaj (zadano)</translation>
 <translation id="803771048473350947">Datoteka</translation>
 <translation id="8041089156583427627">Slanje povratnih informacija</translation>
 <translation id="8041940743680923270">Upotrijebi globalnu zadanu vrijednost (pitaj)</translation>
 <translation id="8042918947222776840">Odaberite način preuzimanja</translation>
 <translation id="8057711352706143257">Softver "<ph name="SOFTWARE_NAME" />" nije ispravno konfiguriran. Taj se problem obično rješava deinstaliranjem softvera "<ph name="SOFTWARE_NAME" />". <ph name="FURTHER_EXPLANATION" /></translation>
+<translation id="8078141288243656252">Ne može dodati bilješku kada je dokument zakrenut</translation>
 <translation id="8079031581361219619">Želite li ponovo učitati web-lokaciju?</translation>
 <translation id="8088680233425245692">Prikaz članka nije uspio.</translation>
 <translation id="808894953321890993">Promjena zaporke</translation>
+<translation id="8090403583893450254">Veličina 20</translation>
 <translation id="8091372947890762290">Aktivacija je na čekanju na poslužitelju</translation>
+<translation id="8092774999298748321">Tamnoljubičasta</translation>
 <translation id="8094917007353911263">Za mrežu koju upotrebljavate možda ćete morati posjetiti stranicu <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8100588592594801589">Nevažeće su kartice uklonjene</translation>
 <translation id="8103161714697287722">Način plaćanja</translation>
@@ -1070,6 +1120,7 @@ Dodatne pojedinosti:
 <translation id="8131740175452115882">Potvrdi</translation>
 <translation id="8149426793427495338">Računalo je u stanju mirovanja.</translation>
 <translation id="8150722005171944719">Datoteka na adresi <ph name="URL" /> nije čitljiva. Možda je uklonjena ili premještena ili dozvole datoteka sprječavaju pristup.</translation>
+<translation id="8175796834047840627">Chrome vam nudi spremanje vaših kartica na vaš Google račun jer ste prijavljeni. To ponašanje možete promijeniti u postavkama.</translation>
 <translation id="8184538546369750125">Upotrijebi globalnu zadanu vrijednost (dopusti)</translation>
 <translation id="8194797478851900357">&amp;Poništi premještanje</translation>
 <translation id="8197543752516192074">Prevedi stranicu</translation>
@@ -1137,6 +1188,7 @@ Dodatne pojedinosti:
 </translation>
 <translation id="859285277496340001">Certifikat ne navodi mehanizam za provjeru svojeg opoziva.</translation>
 <translation id="860043288473659153">Ime vlasnika kartice</translation>
+<translation id="861775596732816396">Veličina 4</translation>
 <translation id="8620436878122366504">Roditelji je još nisu odobrili</translation>
 <translation id="8625384913736129811">Spremi tu karticu na ovaj uređaj</translation>
 <translation id="8663226718884576429">Sažetak narudžbe, <ph name="TOTAL_LABEL" />, više pojedinosti</translation>
@@ -1172,6 +1224,7 @@ Dodatne pojedinosti:
 <translation id="8932102934695377596">Sat kasni</translation>
 <translation id="893332455753468063">Dodajte ime</translation>
 <translation id="8938939909778640821">Prihvaćene kreditne i pretplatne kartice</translation>
+<translation id="8943282376843390568">Limeta</translation>
 <translation id="8957210676456822347">Autorizacija obaveznog portala za autentifikaciju</translation>
 <translation id="8968766641738584599">Spremanje kartice</translation>
 <translation id="8971063699422889582">Istekao je certifikat poslužitelja.</translation>
@@ -1219,6 +1272,7 @@ i netočne vjerodajnice. To može značiti da se neki napadač pokušava predsta
 <translation id="9170848237812810038">&amp;Poništi</translation>
 <translation id="9171296965991013597">Napustiti aplikaciju?</translation>
 <translation id="917450738466192189">Certifikat poslužitelja nije valjan.</translation>
+<translation id="9174917557437862841">Gumb za promjenu kartice, pritisnite Enter za prebacivanje na tu karticu</translation>
 <translation id="9183302530794969518">Google dokumenti</translation>
 <translation id="9183425211371246419">Host <ph name="HOST_NAME" /> upotrebljava nepodržane protokole.</translation>
 <translation id="9205078245616868884">Vaši su podaci šifrirani vašom šifrom za sinkronizaciju. Unesite je da biste pokrenuli sinkronizaciju.</translation>
@@ -1231,7 +1285,6 @@ i netočne vjerodajnice. To može značiti da se neki napadač pokušava predsta
 <translation id="939736085109172342">Nova mapa</translation>
 <translation id="945855313015696284">Pregledajte informacije u nastavku i izbrišite nevažeće kartice</translation>
 <translation id="951104842009476243">Prihvaćene debitne i pretplatne kartice</translation>
-<translation id="960701843220172709">{NUM_CARDS,plural, =1{Moći ćete plaćati njome kad ste prijavljeni. Ova kartica i njezina adresa za naplatu spremit će se na vaš Google račun.}one{Moći ćete plaćati njima kad ste prijavljeni. Ove kartice i njihove adrese za naplatu spremit će se na vaš Google račun.}few{Moći ćete plaćati njima kad ste prijavljeni. Ove kartice i njihove adrese za naplatu spremit će se na vaš Google račun.}other{Moći ćete plaćati njima kad ste prijavljeni. Ove kartice i njihove adrese za naplatu spremit će se na vaš Google račun.}}</translation>
 <translation id="962484866189421427">Ovaj sadržaj može pokušati instalirati obmanjujuće aplikacije koje se pretvaraju da su nešto drugo ili prikupljaju podatke na temelju kojih vas je moguće pratiti. <ph name="BEGIN_LINK" />Ipak prikaži<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Službeni sastavak</translation>
 <translation id="973773823069644502">Dodajte adresu za isporuku</translation>

@@ -78,6 +78,7 @@
 <translation id="3479552764303398839">હમણાં નહીં</translation>
 <translation id="3509308970982693815">કૃપા કરીને બધી Chromium વિંડોઝ બંધ કરો અને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="352783484088404971">Chromium માંથી દૂર કરો...</translation>
+<translation id="3575459661164320785">તમારા કમ્પ્યુટરમાં નુકસાનકારક સૉફ્ટવેર છે. Chromium તે કાઢી શકે છે, તમારું સેટિંગ પાછું મેળવી શકે છે અને એક્સ્ટેંશન બંધ કરી શકે છે જેથી તમારું બ્રાઉઝર ફરી સામાન્ય રીતે કામ કરી શકે.</translation>
 <translation id="3582788516608077514">Chromium ને અપડેટ કરી રહ્યું છે...</translation>
 <translation id="358997566136285270">Chromium લોગો</translation>
 <translation id="3639635944603682591">આ વ્યક્તિનો બ્રાઉઝિંગ ડેટા આ ડિવાઇસમાંથી ડિલીટ કરવામાં આવશે. આ ડેટા પાછો મેળવવા માટે, Chromiumમાં <ph name="USER_EMAIL" /> તરીકે સાઇન ઇન કરો.</translation>
@@ -167,6 +168,7 @@
 <translation id="6373523479360886564">શું તમે ખરેખર તમે Chromium ને અનઇન્સ્ટૉલ કરવા માંગો છો?</translation>
 <translation id="6400072781405947421">Chromium યોગ્ય રીતે કાર્ય ન કરે તેવું બની શકે, કારણ કે તે હવેથી Mac OS X 10.9 પર સપોર્ટ કરતું નથી.</translation>
 <translation id="6403826409255603130">Chromium એ એક એવું વેબ બ્રાઉઝર છે જે પ્રકાશની ગતિએ વેબપૃષ્ઠો અને એપ્લિકેશંસને ચલાવે છે. તે ઝડપી, સ્થિર અને ઉપયોગમાં સરળ છે. Google Chromium માં નિર્મિત મૉલવેર અને ફિશીંગ સુરક્ષા સાથે વેબને વધુ સુરક્ષિત રૂપે બ્રાઉઝ કરો.</translation>
+<translation id="6434250628340475518">Chromium OS સિસ્ટમ</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium 1 સેકન્ડમાં ફરી શરૂ થશે}one{Chromium # સેકન્ડમાં ફરી શરૂ થશે}other{Chromium # સેકન્ડમાં ફરી શરૂ થશે}}</translation>
 <translation id="6475912303565314141">જ્યારે તમે Chromium શરૂ કરો ત્યારે કયું પૃષ્ઠ બતાવવામાં આવે તે તેનું પણ નિયંત્રણ કરે છે.</translation>
 <translation id="6485906693002546646">તમે તમારી Chromium સામગ્રીનું સિંક કરવા માટે <ph name="PROFILE_EMAIL" /> નો ઉપયોગ કરી રહ્યાં છો. તમારી સિંક પસંદગીને અપડેટ કરવા માટે અથવા Chromium ને Google એકાઉન્ટ વગર ઉપયોગ કરવા માટે, <ph name="SETTINGS_LINK" /> ની મુલાકાત લો.</translation>
@@ -183,6 +185,7 @@
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium પર કૉપિ કરેલું છે)</translation>
 <translation id="6893813176749746474">Chromium અપડેટ કરવામાં આવ્યું હતું, પણ તમે તેનો 30 દિવસ સુધી ઉપયોગ કર્યો નથી.</translation>
+<translation id="692832138936263906">પેજની છબીઓ Google સર્વર પર મોકલીને, Chromium છબીઓ અને છબીમાં રહેલી ટેક્સ્ટ ઓળખી શકે છે, અને આ રીતે પેજના કન્ટેન્ટને તમે વધુ સારી રીતે સમજી શકો છો.</translation>
 <translation id="6964305034639999644">Chromium છુ&amp;પી વિંડોમાં લિંક ખોલો</translation>
 <translation id="6970811910055250180">તમારા ઉપકરણને અપડેટ કરી રહ્યાં છે...</translation>
 <translation id="6990124437352146030">Chromiumને આ સાઇટ માટે તમારા માઇક્રોફોનના ઍક્સેસની પરવાનગીની જરૂર પડે છે</translation>
@@ -213,6 +216,7 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="7471302858145901434">{0,plural, =1{એક દિવસની અંદર Chromium OS ફરી શરૂ કરો}one{# દિવસની અંદર Chromium OS ફરી શરૂ કરો}other{# દિવસની અંદર Chromium OS ફરી શરૂ કરો}}</translation>
 <translation id="7483335560992089831">હાલમાં ચાલી રહ્યું છે તેના જેવું સમાન Chromium વર્ઝન ઇન્સ્ટૉલ કરી શકાતું નથી. કૃપા કરીને Chromiumને બંધ કરો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="7549178288319965365">Chromium OS વિશે</translation>
+<translation id="7561906087460245826">Chromiumમાંથી પણ ડેટા કાઢી નાખો (<ph name="URL" />)</translation>
 <translation id="761356813943268536">Chromium તમારા કેમેરા અને માઇક્રોફોનનો ઉપયોગ કરી રહ્યું છે.</translation>
 <translation id="7617377681829253106">Chromium હવે પહેલાંથી બહેતર બન્યું છે</translation>
 <translation id="7686590090926151193">Chromium તમારું ડિફૉલ્ટ બ્રાઉઝર નથી</translation>

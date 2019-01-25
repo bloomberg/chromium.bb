@@ -72,6 +72,7 @@
 <translation id="2068952045031577364">Pastaroji savaitė</translation>
 <translation id="2079545284768500474">Anuliuoti</translation>
 <translation id="209018056901015185">Užkl. dėl svet. v. komp.</translation>
+<translation id="2096012225669085171">Sinchronizuoti ir suasmeninti įrenginiuose</translation>
 <translation id="2103075008456228677">Atidaryti history.google.com</translation>
 <translation id="2116625576999540962">Perkelta elementų: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="213900355088104901">Kad galėtumėte naršyti privačiai, atidarykite inkognito skirtuką</translation>
@@ -132,6 +133,7 @@
 <translation id="2989805286512600854">Atidaryti naujame skirtuke</translation>
 <translation id="3024255823539804759">Pastaroji diena</translation>
 <translation id="3037605927509011580">Oi!</translation>
+<translation id="3059750684806925578">Ieškoti nukopijuoto vaizdo</translation>
 <translation id="3112556859945124369">Pažymėti…</translation>
 <translation id="3157684681743766797">Pažymėti visus...</translation>
 <translation id="3175081911749765310">Žin. pasl.</translation>
@@ -176,7 +178,7 @@
 <translation id="3779810277399252432">Nėra interneto ryšio.</translation>
 <translation id="3783017676699494206">Išsaugoti vaizdą</translation>
 <translation id="3789841737615482174">Įdiegti</translation>
-<translation id="385051799172605136">Grįžti</translation>
+<translation id="385051799172605136">Atgal</translation>
 <translation id="3897092660631435901">Meniu</translation>
 <translation id="3915450441834151894">Svetainės informacija</translation>
 <translation id="3928666092801078803">Sujungti duomenis</translation>
@@ -380,6 +382,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="7159472599653637159">Užkl. dėl svet. v. mobil.</translation>
 <translation id="7167621057293532233">Duomenų tipai</translation>
 <translation id="7189598951263744875">Bendrinti...</translation>
+<translation id="7192050974311852563">Pradėti registravimą</translation>
 <translation id="7203585745079012652">Sakyti atsakymus</translation>
 <translation id="722055596168483966">„Google“ paslaugų suasmeninimas</translation>
 <translation id="7272437679830969316">Nepavyko patvirtinti tapatybės. Slaptažodis nenukopijuotas.</translation>
@@ -421,6 +424,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Eksportuoti slaptažodžius...</translation>
 <translation id="7947953824732555851">Sutikti ir prisij.</translation>
+<translation id="794799177247607889">Pradėti įrašyti į žurnalą</translation>
 <translation id="7961015016161918242">Niekada</translation>
 <translation id="7971521879845308059">Blok. iššok. l.</translation>
 <translation id="7981313251711023384">Iš anksto įkelti puslapius, kad naršymo ir paieškos procesai vyktų greičiau</translation>

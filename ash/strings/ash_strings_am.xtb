@@ -269,7 +269,6 @@
 <translation id="5571066253365925590">ብሉቱዝ ነቅቷል</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />፣ <ph name="DATE" /></translation>
 <translation id="5600837773213129531">የሚነገር ግብረመልስን ለማሰናከል Ctrl + Alt + Z ይጫኑ።</translation>
-<translation id="5626283214046138476">የእርስዎ ቁጥጥር የሚደረግበት ተጠቃሚ መለያ በቅርቡ የአገልግሎት ጊዜው ያበቃል።</translation>
 <translation id="5648021990716966815">የማይክሮፎን መሰኪያ</translation>
 <translation id="5669267381087807207">በማግበር ላይ</translation>
 <translation id="5673434351075758678">ከ«<ph name="FROM_LOCALE" />» ወደ «<ph name="TO_LOCALE" />» የእርስዎን ቅንብሮች ከማመሳሰል በኋላ።</translation>
@@ -306,7 +305,7 @@
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" />ን በመሙላት ላይ</translation>
 <translation id="615957422585914272">የማያ ገጽ ላይ ቁልፍ ሰሌዳ አሳይ</translation>
 <translation id="6164005077879661055">ይህ ክትትል የሚደረግበት ተጠቃሚ አንዴ ከተወገደ በኋላ ሁሉም ከዚህ ክትትል የሚደረግበት ተጠቃሚ ጋር የተጎዳኙ ፋይሎች እና አካባቢያዊ ውሂብ እስከመጨረሻው ይሰረዛሉ። አስተዳዳሪው የዚህ ክትትል የሚደረግበት ተጠቃሚ የጎበኛቸው ድር ጣቢያዎች እና ቅንብሮች <ph name="MANAGEMENT_URL" /> ላይ ሊያዩት ይችላሉ።</translation>
-<translation id="6165508094623778733">ተጨማሪ ለመረዳት</translation>
+<translation id="6165508094623778733">የበለጠ ለመረዳት</translation>
 <translation id="6254629735336163724">ወደ አግድም ተቆልፏል</translation>
 <translation id="6259254695169772643">ለመጠቀም የእርስዎን ስታይለስ ይጠቀሙ</translation>
 <translation id="6267036997247669271"><ph name="NAME" />፦ በማግበር ላይ...</translation>
@@ -465,7 +464,6 @@
 <translation id="8734991477317290293">የእርስዎን የቁልፍ ጭረቶች ለመስረቅ እየሞከረ ሊሆን ይችላል</translation>
 <translation id="8735953464173050365">የቁልፍ ሰሌዳ ቅንብሮችን አሳይ። <ph name="KEYBOARD_NAME" /> ተመርጧል</translation>
 <translation id="875593634123171288">የቪፒኤን ቅንብሮችን አሳይ</translation>
-<translation id="8809737090443522491">የአንድ መተግበሪያ ወይም ሰነድ ስም ይተይቡ</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825534185036233643">ከሁለት ማሳያዎች በላይ ማንጸባረቅ አይደገፍም።</translation>
 <translation id="8828714802988429505">90°</translation>

@@ -72,6 +72,7 @@
 <translation id="2068952045031577364">Ultima settimana</translation>
 <translation id="2079545284768500474">Annulla</translation>
 <translation id="209018056901015185">Richiedi sito desktop</translation>
+<translation id="2096012225669085171">Sincronizza e personalizza su tutti i dispositivi</translation>
 <translation id="2103075008456228677">Apri la pagina history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementi spostati</translation>
 <translation id="213900355088104901">Per navigare in privato, apri una scheda di navigazione in incognito</translation>
@@ -132,6 +133,7 @@
 <translation id="2989805286512600854">Apri in un'altra scheda</translation>
 <translation id="3024255823539804759">Ultimo giorno</translation>
 <translation id="3037605927509011580">Uffa!</translation>
+<translation id="3059750684806925578">Cerca immagine copiata</translation>
 <translation id="3112556859945124369">Segna come…</translation>
 <translation id="3157684681743766797">Segna tutti come...</translation>
 <translation id="3175081911749765310">Servizi web</translation>
@@ -380,6 +382,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="7159472599653637159">Richiedi sito per dispositivi mobili</translation>
 <translation id="7167621057293532233">Tipi di dati</translation>
 <translation id="7189598951263744875">Condividi...</translation>
+<translation id="7192050974311852563">Avvia logging</translation>
 <translation id="7203585745079012652">Pronuncia le risposte</translation>
 <translation id="722055596168483966">Personalizza i servizi Google</translation>
 <translation id="7272437679830969316">Impossibile verificare la tua identità. Password non copiata.</translation>
@@ -421,6 +424,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Esporta password...</translation>
 <translation id="7947953824732555851">Accetta e accedi</translation>
+<translation id="794799177247607889">Interrompi logging</translation>
 <translation id="7961015016161918242">Mai</translation>
 <translation id="7971521879845308059">Blocca popup</translation>
 <translation id="7981313251711023384">Le pagine vengono precaricate per velocizzare la navigazione e la ricerca</translation>

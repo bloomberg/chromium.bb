@@ -196,6 +196,7 @@
 <translation id="4072264167173457037">信号中等</translation>
 <translation id="4146833061457621061">播放音乐</translation>
 <translation id="4181841719683918333">语言</translation>
+<translation id="4195877955194704651">“自动点击”按钮</translation>
 <translation id="4217571870635786043">语音输入</translation>
 <translation id="4261870227682513959">显示通知设置。通知已关闭</translation>
 <translation id="4269883910223712419">此设备的管理员能够：</translation>
@@ -269,7 +270,6 @@
 <translation id="5571066253365925590">蓝牙已启用</translation>
 <translation id="5597451508971090205"><ph name="DATE" /><ph name="SHORT_WEEKDAY" /></translation>
 <translation id="5600837773213129531">按 Ctrl + Alt + Z 即可停用语音反馈。</translation>
-<translation id="5626283214046138476">您的受监管用户帐号即将过期。</translation>
 <translation id="5648021990716966815">麦克风耳机插孔</translation>
 <translation id="5669267381087807207">正在激活</translation>
 <translation id="5673434351075758678">当系统同步完您的设置后，“<ph name="FROM_LOCALE" />”即会改为“<ph name="TO_LOCALE" />”。</translation>
@@ -373,6 +373,7 @@
 <translation id="7348093485538360975">屏幕键盘</translation>
 <translation id="735745346212279324">VPN 连接已断开</translation>
 <translation id="7377169924702866686">大写锁定已打开。</translation>
+<translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" /> 分 <ph name="SECONDS_REMAINING" /> 秒</translation>
 <translation id="7398254312354928459">已切换网络连接</translation>
 <translation id="742594950370306541">摄像头处于使用状态。</translation>
 <translation id="743058460480092004">摄像头和麦克风处于使用状态。</translation>
@@ -464,7 +465,6 @@
 <translation id="8734991477317290293">当前连接的键盘可能会试图窃取您的击键操作</translation>
 <translation id="8735953464173050365">显示键盘设置。已选择<ph name="KEYBOARD_NAME" /></translation>
 <translation id="875593634123171288">显示 VPN 设置</translation>
-<translation id="8809737090443522491">输入应用或文档的名称</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825534185036233643">系统不支持镜像两个以上的显示屏。</translation>
 <translation id="8828714802988429505">90°</translation>
@@ -474,6 +474,7 @@
 <translation id="8874184842967597500">未连接</translation>
 <translation id="8877788021141246043">设置提醒</translation>
 <translation id="8878886163241303700">正在扩展屏幕</translation>
+<translation id="890616557918890486">更改来源</translation>
 <translation id="8921624153894383499">Google 助理不支持此语言。</translation>
 <translation id="8938800817013097409">USB-C 设备（背面右侧端口）</translation>
 <translation id="8940956008527784070">电池电量不足 (<ph name="PERCENTAGE" />%)</translation>

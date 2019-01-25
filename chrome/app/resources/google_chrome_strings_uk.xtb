@@ -4,6 +4,7 @@
 <translation id="1001534784610492198">Архів програми встановлення недійсний або пошкоджений. Завантажте Google Chrome знову.</translation>
 <translation id="102763973188675173">Налаштуйте й контролюйте Google Chrome. Доступне оновлення.</translation>
 <translation id="1035334672863811645">увійдіть в обліковий запис Chrome</translation>
+<translation id="1051826050538111504">Виявлено шкідливе програмне забезпечення на вашому комп’ютері. Chrome може видалити його, відновити налаштування та вимкнути розширення, щоб веб-переглядач знову працював належним чином.</translation>
 <translation id="1065672644894730302">Не вдається розпізнати налаштування. Деякі функції можуть бути не доступні, а зміни в налаштуваннях не зберігатимуться.</translation>
 <translation id="1088300314857992706">Раніше ви входили в обліковий запис <ph name="USER_EMAIL_ADDRESS" /> у Chrome</translation>
 <translation id="1104959162601287462">Про &amp;ОС Chrome</translation>
@@ -68,6 +69,7 @@
 <translation id="2580411288591421699">Поки Google Chrome працює, неможливо встановити версію, аналогічну поточній. Закрийте Google Chrome і повторіть спробу.</translation>
 <translation id="2586406160782125153">Дані веб-перегляду буде видалено з цього пристрою. Щоб відновити дані пізніше, увійдіть в обліковий запис Chrome як <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Логотип Chrome</translation>
+<translation id="2644798301485385923">ОС Chrome</translation>
 <translation id="2652691236519827073">Відкрити посилання в новій &amp;вкладці Chrome</translation>
 <translation id="2665296953892887393">Допоможіть покращити Google Chrome, надсилаючи звіти про аварійне завершення роботи та <ph name="UMA_LINK" /> в Google</translation>
 <translation id="2689103672227170538">Це розширення змінило сторінку, яка відкривається під час запуску Chrome.</translation>
@@ -99,6 +101,7 @@
 <translation id="3451115285585441894">Додавання в Chrome...</translation>
 <translation id="345171907106878721">Додати себе в Chrome</translation>
 <translation id="3479552764303398839">Не зараз</translation>
+<translation id="34857402635545079">Також очистити дані Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome потрібен доступ до геоданих, щоб повідомляти цьому сайту ваше місцезнаходження</translation>
 <translation id="3582972582564653026">Синхронізуйте та персоналізуйте роботу Chrome на всіх своїх пристроях</translation>
 <translation id="3622797965165704966">Користуватися Chrome у своєму обліковому записі Google на спільних комп’ютерах стало легше.</translation>
@@ -162,6 +165,7 @@
 <translation id="5386244825306882791">Розширення також змінило сторінку, яка відкривається під час запуску Chrome або пошуку в універсальному вікні пошуку.</translation>
 <translation id="5430073640787465221">Ваш файл налаштувань пошкоджений або недійсний. Google Chrome не може відновити ваші налаштування.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome перезапуститься зараз}=1{Chrome перезапуститься через 1 секунду}one{Chrome перезапуститься через # секунду}few{Chrome перезапуститься через # секунди}many{Chrome перезапуститься через # секунд}other{Chrome перезапуститься через # секунди}}</translation>
+<translation id="5505603430818498864">Google Chrome може розпізнавати зображення й текст на зображеннях, надсилаючи їх на сервери Google. Завдяки цьому вам буде легше зрозуміти вміст сторінки.</translation>
 <translation id="556024056938947818">Google Chrome намагається показати паролі.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Файл <ph name="FILE_NAME" /> може бути небезпечним, тому Chrome заблокував його.</translation>

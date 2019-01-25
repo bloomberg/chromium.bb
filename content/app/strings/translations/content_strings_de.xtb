@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">Aktueller Monat</translation>
 <translation id="1637811476055996098">Dateien auswählen</translation>
 <translation id="1650423536718072820">Textzitat</translation>
+<translation id="1727886345390570319">Untertitelmenü ausblenden</translation>
 <translation id="1729654308190250600">Geben Sie eine E-Mail-Adresse ein.</translation>
 <translation id="1758486001363313524">Andere...</translation>
 <translation id="1806710327868736751">alert_dialog</translation>
@@ -147,6 +148,7 @@
 <translation id="6213469881011901533">Glossar</translation>
 <translation id="6398862346408813489">Auswahlbereich für Monatsanzeige</translation>
 <translation id="6404546809543547843">Audio-Zeitachse</translation>
+<translation id="6443871981718447451">Untertitelmenü einblenden</translation>
 <translation id="6453774872122745852">Danksagung</translation>
 <translation id="648732519525291180">Uhrzeitauswahl</translation>
 <translation id="6550675742724504774">Optionen</translation>
@@ -162,7 +164,6 @@
 <translation id="6820355525329141109">Plug-in konnte nicht geladen werden.</translation>
 <translation id="6820615603175220800">Bibliografiereferenz</translation>
 <translation id="6843725295806269523">Stumm</translation>
-<translation id="6853785296079745596">Untertitel ausblenden</translation>
 <translation id="6885760532393684712">Verzeichnis</translation>
 <translation id="689129560213475294">Kolophon</translation>
 <translation id="6934078000481955284">blockquote</translation>
@@ -171,7 +172,6 @@
 <translation id="6989848892321993519">Verlängern Sie diesen Text auf mindestens <ph name="MIN_CHARACTERS" /> Zeichen. Derzeit verwenden Sie 1 Zeichen.</translation>
 <translation id="709897737746224366">Ihre Eingabe muss mit dem geforderten Format übereinstimmen.</translation>
 <translation id="7139483182332611405">Vorbemerkung</translation>
-<translation id="7223624360433298498">Vergangene Zeit</translation>
 <translation id="7263440858009898357">Wählen Sie ein Element in der Liste aus.</translation>
 <translation id="727747134524199931">Spaltenüberschrift</translation>
 <translation id="7353453495576941748">Danksagung</translation>
@@ -186,7 +186,6 @@
 <translation id="7661956066982048809">Grafikdokument</translation>
 <translation id="7673697353781729403">Stunden</translation>
 <translation id="7681220483256441252">Index</translation>
-<translation id="7720026100085573005">Verbleibende Zeit</translation>
 <translation id="7740050170769002709">HTML-Inhalte</translation>
 <translation id="7750228210027921155">Bild-in-Bild</translation>
 <translation id="7789962463072032349">Pausieren</translation>
@@ -225,7 +224,6 @@
 <translation id="8987927404178983737">Monat</translation>
 <translation id="901493112792887934">Aktuelle Dauer in Sekunden</translation>
 <translation id="9048119486235211610">Navigation</translation>
-<translation id="9050748414552849310">Untertitel anzeigen</translation>
 <translation id="9062295712474918030">Dokument</translation>
 <translation id="9093215626363556771">Bild-im-Bild-Modus beenden</translation>
 <translation id="9108370397979208512">math</translation>

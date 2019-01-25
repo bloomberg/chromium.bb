@@ -72,6 +72,7 @@
 <translation id="2068952045031577364">過去 1 週間</translation>
 <translation id="2079545284768500474">元に戻す</translation>
 <translation id="209018056901015185">PC版サイトをリクエスト</translation>
+<translation id="2096012225669085171">端末間の同期とカスタマイズ</translation>
 <translation id="2103075008456228677">history.google.com を開く</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />件の項目を移動しました</translation>
 <translation id="213900355088104901">シークレット モードで閲覧するにはシークレット タブを開きます</translation>
@@ -132,6 +133,7 @@
 <translation id="2989805286512600854">新しいタブで開く</translation>
 <translation id="3024255823539804759">過去 1 日</translation>
 <translation id="3037605927509011580">エラー</translation>
+<translation id="3059750684806925578">コピーした画像を検索</translation>
 <translation id="3112556859945124369">マーク...</translation>
 <translation id="3157684681743766797">すべてマーク...</translation>
 <translation id="3175081911749765310">ウェブサービス</translation>
@@ -380,6 +382,7 @@
 <translation id="7159472599653637159">モバイルサイトをリクエスト</translation>
 <translation id="7167621057293532233">データ タイプ</translation>
 <translation id="7189598951263744875">共有...</translation>
+<translation id="7192050974311852563">ログ記録を開始</translation>
 <translation id="7203585745079012652">回答を音声で聞く</translation>
 <translation id="722055596168483966">Google サービスのカスタマイズ</translation>
 <translation id="7272437679830969316">ユーザー認証に失敗しました。パスワードはコピーされませんでした。</translation>
@@ -421,6 +424,7 @@
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">パスワードをエクスポート...</translation>
 <translation id="7947953824732555851">同意してログイン</translation>
+<translation id="794799177247607889">ログ記録を停止</translation>
 <translation id="7961015016161918242">使用しない</translation>
 <translation id="7971521879845308059">ポップアップのブロック</translation>
 <translation id="7981313251711023384">ページをプリロードして閲覧と検索をすばやく行えるようにする</translation>

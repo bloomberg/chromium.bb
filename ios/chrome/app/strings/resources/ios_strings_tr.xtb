@@ -72,6 +72,7 @@
 <translation id="2068952045031577364">Geçen Hafta</translation>
 <translation id="2079545284768500474">Geri al</translation>
 <translation id="209018056901015185">Masaüstü Sitesi İste</translation>
+<translation id="2096012225669085171">Cihazlar arasında senkronizasyon ve kişiselleştirme</translation>
 <translation id="2103075008456228677">history.google.com'u aç</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> öğe taşındı</translation>
 <translation id="213900355088104901">Gizli olarak göz atmak için gizli sekme açın</translation>
@@ -132,6 +133,7 @@
 <translation id="2989805286512600854">Yeni Sekmede Aç</translation>
 <translation id="3024255823539804759">Son 1 Gün</translation>
 <translation id="3037605927509011580">Hay aksi!</translation>
+<translation id="3059750684806925578">Kopyalanan Resmi Ara</translation>
 <translation id="3112556859945124369">İşaretle…</translation>
 <translation id="3157684681743766797">Tümünü İşaretle…</translation>
 <translation id="3175081911749765310">Web Hizmetleri</translation>
@@ -380,6 +382,7 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="7159472599653637159">Mobil Site İste</translation>
 <translation id="7167621057293532233">Veri Tipleri</translation>
 <translation id="7189598951263744875">Paylaş...</translation>
+<translation id="7192050974311852563">Günlüğe Kaydetmeyi Başlat</translation>
 <translation id="7203585745079012652">Yanıtı Sesli Söyle</translation>
 <translation id="722055596168483966">Google hizmetlerini kişiselleştirme</translation>
 <translation id="7272437679830969316">Kimliğiniz doğrulanamıyor. Şifre kopyalanmadı.</translation>
@@ -421,6 +424,7 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Şifreleri Dışa Aktar...</translation>
 <translation id="7947953824732555851">Kabul et ve oturum aç</translation>
+<translation id="794799177247607889">Günlüğe Kaydetmeyi Durdur</translation>
 <translation id="7961015016161918242">Hiçbir Zaman</translation>
 <translation id="7971521879845308059">Pop-up'ları Engelle</translation>
 <translation id="7981313251711023384">Daha hızlı göz atmak ve arama yapmak için sayfaları önceden yükle</translation>

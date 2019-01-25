@@ -78,6 +78,7 @@
 <translation id="3479552764303398839">Не сада</translation>
 <translation id="3509308970982693815">Затворите све Chromium прозоре и покушајте поново.</translation>
 <translation id="352783484088404971">Уклони из Chromium-а...</translation>
+<translation id="3575459661164320785">На рачунару постоји штетан софтвер. Chromium може да га уклони, врати подешавања и онемогући додатке да би прегледач могао поново да ради уобичајено.</translation>
 <translation id="3582788516608077514">Ажурирање Chromium-а...</translation>
 <translation id="358997566136285270">Chromium логотип</translation>
 <translation id="3639635944603682591">Подаци прегледања ове особе ће бити избрисани са овог уређаја. Да бисте вратили податке, пријавите се у Chromium као <ph name="USER_EMAIL" />.</translation>
@@ -167,6 +168,7 @@
 <translation id="6373523479360886564">Јесте ли сигурни да желите да деинсталирате Chromium?</translation>
 <translation id="6400072781405947421">Chromium можда неће исправно функционисати зато што више није подржан на систему Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium је веб прегледач који покреће веб-странице и апликације муњевитом брзином. Брз је, стабилан и једноставан за коришћење. Прегледајте Веб безбедније са заштитом од малвера и „пецања“ која је уграђена у Chromium.</translation>
+<translation id="6434250628340475518">Систем Chromium ОС</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium ће се рестартовати за 1 секунду}one{Chromium ће се рестартовати за # секунду}few{Chromium ће се рестартовати за # секунде}other{Chromium ће се рестартовати за # секунди}}</translation>
 <translation id="6475912303565314141">Контролише и страницу која се приказује када покренете Chromium.</translation>
 <translation id="6485906693002546646">Користите <ph name="PROFILE_EMAIL" /> за синхронизацију Chromium садржаја. Да бисте ажурирали подешавање синхронизације или користили Chromium без Google налога, посетите <ph name="SETTINGS_LINK" />.</translation>
@@ -183,6 +185,7 @@
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (копирано у Chromium)</translation>
 <translation id="6893813176749746474">Chromium је ажуриран, али га нисте користили најмање 30 дана.</translation>
+<translation id="692832138936263906">Chromium може да препозна слике и текст на слици јер шаље слике Google серверима, што вам омогућава да лакше разумете садржај странице.</translation>
 <translation id="6964305034639999644">Отвори линк у Chromium прозору без архи&amp;вирања</translation>
 <translation id="6970811910055250180">Ажурирање уређаја...</translation>
 <translation id="6990124437352146030">Chromium тражи дозволу да приступи микрофону за овај сајт</translation>
@@ -213,6 +216,7 @@ Chromium не може да врати подешавања.</translation>
 <translation id="7471302858145901434">{0,plural, =1{Рестартујте Chromium ОС за један дан}one{Рестартујте Chromium ОС за # дан}few{Рестартујте Chromium ОС за # дана}other{Рестартујте Chromium ОС за # дана}}</translation>
 <translation id="7483335560992089831">Није могуће инсталирати исту верзију Chromium-а која се тренутно користи. Затворите Chromium и покушајте поново.</translation>
 <translation id="7549178288319965365">О Chromium ОС-у</translation>
+<translation id="7561906087460245826">Обриши податке и из Chromium-а (<ph name="URL" />)</translation>
 <translation id="761356813943268536">Chromium користи камеру и микрофон.</translation>
 <translation id="7617377681829253106">Управо смо побољшали Chromium</translation>
 <translation id="7686590090926151193">Chromium није подразумевани прегледач</translation>

@@ -72,6 +72,7 @@
 <translation id="2068952045031577364">La semana pasada</translation>
 <translation id="2079545284768500474">Deshacer</translation>
 <translation id="209018056901015185">Ver como ordenador</translation>
+<translation id="2096012225669085171">Sincroniza y personaliza todos tus dispositivos</translation>
 <translation id="2103075008456228677">Abrir history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos eliminados</translation>
 <translation id="213900355088104901">Para navegar en privado, abre una pestaña de incógnito</translation>
@@ -132,6 +133,7 @@
 <translation id="2989805286512600854">Abrir en una pestaña nueva</translation>
 <translation id="3024255823539804759">Ayer</translation>
 <translation id="3037605927509011580">¡Vaya!</translation>
+<translation id="3059750684806925578">Buscar imagen copiada</translation>
 <translation id="3112556859945124369">Marcar…</translation>
 <translation id="3157684681743766797">Marcar todas…</translation>
 <translation id="3175081911749765310">Servicios web</translation>
@@ -380,6 +382,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="7159472599653637159">Solicitar sitio web móvil</translation>
 <translation id="7167621057293532233">Tipos de datos</translation>
 <translation id="7189598951263744875">Compartir...</translation>
+<translation id="7192050974311852563">Iniciar registro</translation>
 <translation id="7203585745079012652">Decir las respuestas</translation>
 <translation id="722055596168483966">Personalizar los servicios de Google</translation>
 <translation id="7272437679830969316">No se puede verificar tu identidad. No se ha copiado la contraseña.</translation>
@@ -421,6 +424,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Exportar contraseñas...</translation>
 <translation id="7947953824732555851">Aceptar y acceder</translation>
+<translation id="794799177247607889">Detener registro</translation>
 <translation id="7961015016161918242">Nunca</translation>
 <translation id="7971521879845308059">Bloquear pop-ups</translation>
 <translation id="7981313251711023384">Cargar previamente las páginas para que la navegación y las búsquedas sean más rápidas</translation>

@@ -75,6 +75,7 @@
 <translation id="3479552764303398839">اکنون نه</translation>
 <translation id="3509308970982693815">‏لطفاً همه پنجره‌های Chromium را ببندید و دوباره سعی کنید.</translation>
 <translation id="352783484088404971">‏حذف از Chromium...</translation>
+<translation id="3575459661164320785">‏نرم‌افزار مضری در رایانه‌تان وجود دارد. Chromium می‌تواند آن را بردارد، تنظیمات را بازیابی کند و افزونه‌ها را غیرفعال کند تا عملکرد مرورگرتان دوباره عادی شود.</translation>
 <translation id="3582788516608077514">‏در حال به‌روزرسانی Chromium…</translation>
 <translation id="358997566136285270">‏نشان‌واره Chromium</translation>
 <translation id="3639635944603682591">‏داده‌های محصول مرور این کاربر از این دستگاه حذف می‌شود. برای بازیابی داده‌ها، با نام <ph name="USER_EMAIL" /> به سیستم Chromium وارد شوید.</translation>
@@ -164,6 +165,7 @@
 <translation id="6373523479360886564">‏آیا مطمئن هستید که می‌خواهید Chromium را حذف نصب کنید؟</translation>
 <translation id="6400072781405947421">‏Chromium ممکن است درست کار نکند، زیرا دیگر در Mac OS X نسخه ۱۰.۹ پشتیبانی نمی‌شود.</translation>
 <translation id="6403826409255603130">‏Chromium یک مرورگر وب است که صفحات وب و برنامه‌ها را با سرعت بسیار زیاد اجرا می‌کند. این مرورگر خیلی سریع، پایدار و دارای کاربرد آسان است. با محافظت در مقابل بدافزار و فیشینگ طراحی شده در داخل Chromium، با امنیت بیشتری وب را مرور کنید.</translation>
+<translation id="6434250628340475518">‏سیستم سیستم‌عامل Chromium</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{‏Chromium بعد از ۱ ثانیه بازراه‌اندازی می‌شود}one{‏Chromium بعد از # ثانیه بازراه‌اندازی می‌شود}other{‏Chromium بعد از # ثانیه بازراه‌اندازی می‌شود}}</translation>
 <translation id="6475912303565314141">‏این برنامه همچنین صفحه‌ای را که هنگام راه‌اندازی Chromium نشان داده می‌شود، کنترل می‌کند.</translation>
 <translation id="6485906693002546646">‏شما از <ph name="PROFILE_EMAIL" /> برای همگام‌سازی موارد Chromium خودتان استفاده می‌کنید. برای به‌روزرسانی تنظیمات ترجیحی همگام‌سازی‌تان یا استفاده از Chromium بدون حساب Google، به <ph name="SETTINGS_LINK" /> مراجعه کنید.</translation>
@@ -180,6 +182,7 @@
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">‏Google Pay (در Chromium کپی شد)</translation>
 <translation id="6893813176749746474">‏Chromium به‌روز شده است اما حداقل ۳۰ روز از آن استفاده نکرده‌اید.</translation>
+<translation id="692832138936263906">‏Chromium با ارسال تصاویر صفحه به سرورهای Google، می‌تواند تصاویر و نوشتار موجود در تصویری را تشخیص دهد تا به شما امکان دهد محتوای صفحه را بهتر درک کنید.</translation>
 <translation id="6964305034639999644">‏باز کردن پیوند در پنجره &amp;ناشناس Chromium</translation>
 <translation id="6970811910055250180">درحال به‌روزرسانی دستگاه شما…</translation>
 <translation id="6990124437352146030">‏Chromium برای این سایت به مجوز دسترسی به میکروفون نیاز دارد</translation>
@@ -209,6 +212,7 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="7471302858145901434">{0,plural, =1{‏سیستم‌عامل Chromium را ظرف یک روز بازراه‌اندازی کنید}one{‏سیستم‌عامل Chromium را ظرف # روز بازراه‌اندازی کنید}other{‏سیستم‌عامل Chromium را ظرف # روز بازراه‌اندازی کنید}}</translation>
 <translation id="7483335560992089831">‏نمی‌توانید Chromium دارای نسخه مشابه با نسخه در حال اجرا را نصب کنید. لطفاً Chromium را ببندید و دوباره سعی کنید.</translation>
 <translation id="7549178288319965365">‏درباره سیستم عامل Chromium </translation>
+<translation id="7561906087460245826">‏همچنین داده‌ها از Chromium پاک شود (<ph name="URL" />)</translation>
 <translation id="761356813943268536">‏Chromium درحال استفاده از دوربین و میکروفون شما است.</translation>
 <translation id="7617377681829253106">‏Chromium اکنون بهتر شده است</translation>
 <translation id="7686590090926151193">‏Chromium مرورگر پیش‌فرض شما نیست</translation>

@@ -76,6 +76,7 @@
 <translation id="3479552764303398839">Ne most</translation>
 <translation id="3509308970982693815">Zárjon be minden Chromium-ablakot, és próbálkozzon újra.</translation>
 <translation id="352783484088404971">Eltávolítás a Chromiumból…</translation>
+<translation id="3575459661164320785">A számítógépen kártékony szoftver található. A Chromium képes a kártékony szoftver eltávolítására, a beállítások visszaállítására és a bővítmények letiltására, hogy a böngésző újra a szokásos módon működhessen.</translation>
 <translation id="3582788516608077514">A Chromium frissítése...</translation>
 <translation id="358997566136285270">Chromium embléma</translation>
 <translation id="3639635944603682591">A személy böngészési adatai törlődnek az eszközről. Az adatok visszaállításához jelentkezzen be a Chromiumba a következő felhasználóként: <ph name="USER_EMAIL" />.</translation>
@@ -165,6 +166,7 @@
 <translation id="6373523479360886564">Biztos, hogy el szeretné távolítani a Chromiumot?</translation>
 <translation id="6400072781405947421">Előfordulhat, hogy a Chromium nem működik majd megfelelően, mert a továbbiakban nem támogatja a Mac OS X 10.9 rendszert.</translation>
 <translation id="6403826409255603130">A Chromium olyan böngésző, amely villámgyorsan futtatja a weboldalakat és az alkalmazásokat. Gyors, stabil és könnyen használható. A beépített, adathalászat és kártékony programok elleni védelemmel biztonságosabban böngészhet az interneten.</translation>
+<translation id="6434250628340475518">Chromium OS rendszer</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{A Chromium 1 másodpercen belül újraindul}other{A Chromium # másodpercen belül újraindul}}</translation>
 <translation id="6475912303565314141">Továbbá azt is szabályozza, hogy melyik oldal jelenik meg a Chromium indításakor.</translation>
 <translation id="6485906693002546646">Chromiumos dolgainak szinkronizálásához a(z) <ph name="PROFILE_EMAIL" /> fiókot használja. Szinkronizálási beállításainak frissítéséhez, illetve a Chromium Google-fiók nélküli használatához keresse fel a <ph name="SETTINGS_LINK" /> linket.</translation>
@@ -179,6 +181,7 @@
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (a Chromiumba másolva)</translation>
 <translation id="6893813176749746474">A Chromium frissítése megtörtént, de nem használta a böngészőt legalább 30 napja.</translation>
+<translation id="692832138936263906">Azáltal, hogy az oldal képeit elküldi a Google szervereinek, a Chromium fel tudja ismerni a képeket és a képeken található szövegeket, így Ön jobban megértheti az oldal tartalmát.</translation>
 <translation id="6964305034639999644">Link megnyitása Chromium-inko&amp;gnitóablakban</translation>
 <translation id="6970811910055250180">Az eszköz frissítése folyamatban van...</translation>
 <translation id="6990124437352146030">A Chromiumnak engedélyre van szüksége ahhoz, hogy hozzáférjen a mikrofonhoz ennél a webhelynél</translation>
@@ -209,6 +212,7 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="7471302858145901434">{0,plural, =1{A Chromium OS-t 1 napon belül újra kell indítani}other{A Chromium OS-t # napon belül újra kell indítani}}</translation>
 <translation id="7483335560992089831">Nem lehet ugyanazt a Chromium-verziót telepíteni, amely jelenleg is fut. Zárja be a Chromiumot, és próbálja újra.</translation>
 <translation id="7549178288319965365">A Chromium OS névjegye</translation>
+<translation id="7561906087460245826">Az adatokat is törölje a Chromiumból (<ph name="URL" />)</translation>
 <translation id="761356813943268536">A Chromium használja a kamerát és a mikrofont.</translation>
 <translation id="7617377681829253106">A Chromium még jobb lett</translation>
 <translation id="7686590090926151193">A Chromium nem az alapértelmezett böngésző</translation>

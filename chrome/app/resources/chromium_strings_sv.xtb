@@ -78,6 +78,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="3479552764303398839">Inte nu</translation>
 <translation id="3509308970982693815">Stäng alla Chromium-fönster och försök igen.</translation>
 <translation id="352783484088404971">Ta bort från Chromium …</translation>
+<translation id="3575459661164320785">Det finns skadlig programvara på datorn. Den skadliga programvaran kan tas bort, inställningarna återställas och tillägg inaktiveras så att webbläsaren fungerar som den ska igen.</translation>
 <translation id="3582788516608077514">Uppdaterar Chromium ...</translation>
 <translation id="358997566136285270">Chromium-logotyp</translation>
 <translation id="3639635944603682591">Den här personens webbläsardata tas bort från enheten. Logga in i Chromium som <ph name="USER_EMAIL" /> om du vill återställa data.</translation>
@@ -167,6 +168,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="6373523479360886564">Vill du avinstallera Chromium?</translation>
 <translation id="6400072781405947421">Chromium kanske inte fungerar ordentligt eftersom den inte längre stöds på Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium är en webbläsare som kör webbsidor och appar blixtsnabbt. Den är snabb, stabil och lätt att använda. Surfa säkrare med Chromiums skydd mot skadliga program och lösenordsfiske.</translation>
+<translation id="6434250628340475518">Chromium OS-system</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium startas om om en sekund}other{Chromium startas om om # sekunder}}</translation>
 <translation id="6475912303565314141">Det styr också vilken sida som visas när du startar Chromium.</translation>
 <translation id="6485906693002546646">Du synkroniserar dina grejer i Chromium med <ph name="PROFILE_EMAIL" />. Om du vill ändra synkroniseringsinställningen eller använda Chromium utan ett Google-konto besöker du <ph name="SETTINGS_LINK" />.</translation>
@@ -183,6 +185,7 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (har kopierats till Chromium)</translation>
 <translation id="6893813176749746474">Chromium har uppdaterats men du har inte använt det på över 30 dagar.</translation>
+<translation id="692832138936263906">Du kan få bilder och text i bilder identifierade genom att skicka bilder på sidan i Chromium till Googles servrar, så att du får en bättre uppfattning om vad som finns på sidan.</translation>
 <translation id="6964305034639999644">Öppna länken i ett inko&amp;gnitofönster i Chromium.</translation>
 <translation id="6970811910055250180">Enheten uppdateras ...</translation>
 <translation id="6990124437352146030">Du behöver ge Chromium behörighet att använda mikrofonen på webbplatsen</translation>
@@ -213,6 +216,7 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="7471302858145901434">{0,plural, =1{Starta om Chromium OS inom en dag}other{Starta om Chromium OS inom # dagar}}</translation>
 <translation id="7483335560992089831">Det går inte att installera samma version av Chromium som den som redan körs. Stäng Chromium och försök igen.</translation>
 <translation id="7549178288319965365">Om Chromium OS</translation>
+<translation id="7561906087460245826">Rensa även data från Chromium (<ph name="URL" />)</translation>
 <translation id="761356813943268536">Chromium använder din kamera och mikrofon.</translation>
 <translation id="7617377681829253106">Vi har förbättrat Chromium</translation>
 <translation id="7686590090926151193">Chromium är inte din standardwebbläsare</translation>

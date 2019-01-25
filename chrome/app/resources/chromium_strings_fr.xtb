@@ -77,6 +77,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="3479552764303398839">Pas maintenant</translation>
 <translation id="3509308970982693815">Veuillez fermer toutes les fenêtres de Chromium, puis réessayer.</translation>
 <translation id="352783484088404971">Supprimer de Chromium</translation>
+<translation id="3575459661164320785">Un logiciel malveillant a été détecté sur votre ordinateur. Chromium peut le supprimer, restaurer vos paramètres et désactiver les extensions pour que votre navigateur fonctionne de nouveau normalement.</translation>
 <translation id="3582788516608077514">Mise à jour de Chromium en cours…</translation>
 <translation id="358997566136285270">Logo Chromium</translation>
 <translation id="3639635944603682591">Les données de navigation de cet utilisateur vont être supprimées de cet appareil. Pour les récupérer, connectez-vous à Chromium en tant que <ph name="USER_EMAIL" />.</translation>
@@ -166,6 +167,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="6373523479360886564">Voulez-vous vraiment désinstaller Chromium ?</translation>
 <translation id="6400072781405947421">Chromium risque de ne pas fonctionner correctement, car la compatibilité n'est plus assurée sur Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium est un navigateur Web qui exécute les pages Web et les applications à une vitesse fulgurante. Il est rapide, stable et simple d'utilisation. Naviguez sur le Web en toute sécurité tout en bénéficiant de la protection offerte par Chromium contre les logiciels malveillants et de phishing.</translation>
+<translation id="6434250628340475518">Système Chromium OS</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium va redémarrer dans 1 seconde}one{Chromium va redémarrer dans # seconde}other{Chromium va redémarrer dans # secondes}}</translation>
 <translation id="6475912303565314141">Elle contrôle également la page qui s'affiche au démarrage de Chromium.</translation>
 <translation id="6485906693002546646">Vous utilisez le compte <ph name="PROFILE_EMAIL" /> pour synchroniser votre contenu dans Chromium. Pour mettre à jour vos préférences de synchronisation ou pour utiliser Chromium sans compte Google, accédez à la page <ph name="SETTINGS_LINK" />.</translation>
@@ -182,6 +184,7 @@ Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier 
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copiée dans Chromium)</translation>
 <translation id="6893813176749746474">Chromium a été mis à jour, mais vous ne l'avez pas utilisé pendant au moins 30 jours.</translation>
+<translation id="692832138936263906">Chromium peut reconnaître des images et du texte dans une image en envoyant les images aux serveurs Google. Ce service vous permet de mieux comprendre le contenu d'une page.</translation>
 <translation id="6964305034639999644">Ouvrir le lien dans la fenêtre de navi&amp;gation privée Chromium</translation>
 <translation id="6970811910055250180">Mise à jour de votre appareil en cours…</translation>
 <translation id="6990124437352146030">Chromium a besoin de votre autorisation pour accéder à votre micro pour ce site</translation>
@@ -212,6 +215,7 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 <translation id="7471302858145901434">{0,plural, =1{Redémarrer Chromium OS d'ici un jour}one{Redémarrer Chromium OS d'ici # jour}other{Redémarrer Chromium OS d'ici # jours}}</translation>
 <translation id="7483335560992089831">Impossible d'installer la même version de Chromium que celle qui est en cours d'exécution. Veuillez fermer Chromium, puis réessayer.</translation>
 <translation id="7549178288319965365">À propos de Chromium OS</translation>
+<translation id="7561906087460245826">Effacer également les données issues de Chromium (<ph name="URL" />)</translation>
 <translation id="761356813943268536">Votre webcam et votre micro sont en cours d'utilisation dans Chromium.</translation>
 <translation id="7617377681829253106">Chromium s'est amélioré</translation>
 <translation id="7686590090926151193">Chromium n'est pas votre navigateur par défaut</translation>

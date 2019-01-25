@@ -76,6 +76,7 @@
 <translation id="3479552764303398839">Nu acum</translation>
 <translation id="3509308970982693815">Închideți toate ferestrele Chromium și încercați din nou.</translation>
 <translation id="352783484088404971">Elimină din Chromium...</translation>
+<translation id="3575459661164320785">Ai software dăunător pe computer. Chromium poate să îl elimine, să restabilească setările și să dezactiveze extensiile pentru ca browserul să funcționeze normal din nou.</translation>
 <translation id="3582788516608077514">Se actualizează Chromium...</translation>
 <translation id="358997566136285270">Sigla Chromium</translation>
 <translation id="3639635944603682591">Datele de navigare ale acestei persoane vor fi șterse de pe dispozitiv. Pentru a recupera datele, conectează-te la Chromium ca <ph name="USER_EMAIL" />.</translation>
@@ -165,6 +166,7 @@
 <translation id="6373523479360886564">Sigur doriți să dezinstalați Chromium?</translation>
 <translation id="6400072781405947421">Este posibil ca Chromium să nu funcționeze corespunzător, deoarece nu mai este acceptat pe Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium este un browser web care rulează pagini web și aplicații cu viteza fulgerului. Este rapid, stabil și ușor de utilizat. Navigați pe web în condiții de mai multă siguranță, beneficiind de o protecție sporită, încorporată în Chromium, împotriva programelor malware și a tentativelor de phishing.</translation>
+<translation id="6434250628340475518">Sistemul de operare Chromium</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium va reporni într-o secundă}few{Chromium va reporni în # secunde}other{Chromium va reporni în # de secunde}}</translation>
 <translation id="6475912303565314141">Stabilește și ce pagină se afișează când porniți Chromium.</translation>
 <translation id="6485906693002546646">În prezent, folosiți <ph name="PROFILE_EMAIL" /> pentru a sincroniza datele Chromium. Pentru a actualiza preferințele de sincronizare sau pentru a folosi Chromium fără un Cont Google, accesați <ph name="SETTINGS_LINK" />.</translation>
@@ -181,6 +183,7 @@ Este posibil ca unele funcții să nu fie disponibile. Specificați un director 
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copiat în Chromium)</translation>
 <translation id="6893813176749746474">Chromium a fost actualizat, dar nu l-ați utilizat de cel puțin 30 de zile.</translation>
+<translation id="692832138936263906">Chromium poate recunoaște imaginile și textul dintr-o imagine trimițând imaginile paginii la serverele Google, pentru ca tu să înțelegi mai bine conținutul paginii.</translation>
 <translation id="6964305034639999644">Deschide linkul într-o fereastră Chromium inco&amp;gnito</translation>
 <translation id="6970811910055250180">Se actualizează dispozitivul...</translation>
 <translation id="6990124437352146030">Chromium are nevoie de permisiune ca să acceseze microfonul pentru acest site</translation>
@@ -211,6 +214,7 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="7471302858145901434">{0,plural, =1{Repornește sistemul de operare Chromium în cel mult o zi}few{Repornește sistemul de operare Chromium în cel mult # zile}other{Repornește sistemul de operare Chromium în cel mult # de zile}}</translation>
 <translation id="7483335560992089831">Nu se poate instala aceeași versiune de Chromium care rulează în prezent. Închideți Chromium și încercați din nou.</translation>
 <translation id="7549178288319965365">Despre sistemul de operare Chromium</translation>
+<translation id="7561906087460245826">Șterge și datele din Chromium (<ph name="URL" />)</translation>
 <translation id="761356813943268536">Chromium utilizează camera foto și microfonul.</translation>
 <translation id="7617377681829253106">Chromium a devenit și mai bun</translation>
 <translation id="7686590090926151193">Chromium nu este browserul prestabilit</translation>

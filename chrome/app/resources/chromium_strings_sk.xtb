@@ -78,6 +78,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="3479552764303398839">Teraz nie</translation>
 <translation id="3509308970982693815">Zatvorte všetky okná prehliadača Chromium a skúste to znova.</translation>
 <translation id="352783484088404971">Odstrániť z prehliadača Chromium...</translation>
+<translation id="3575459661164320785">V počítači máte škodlivý softvér. Chromium ho môže odstrániť, obnoviť nastavenia a deaktivovať rozšírenia, aby prehliadač znova normálne fungoval.</translation>
 <translation id="3582788516608077514">Prebieha aktualizácia prehliadača Chromium...</translation>
 <translation id="358997566136285270">Logo prehliadača Chromium</translation>
 <translation id="3639635944603682591">Dáta prehliadania tejto osoby sa odstránia z tohto zariadenia. Ak ich chcete obnoviť, prihláste sa do prehliadača Chromium ako <ph name="USER_EMAIL" />.</translation>
@@ -167,6 +168,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="6373523479360886564">Naozaj chcete Chromium odinštalovať?</translation>
 <translation id="6400072781405947421">Chromium nemusí fungovať správne, pretože v systéme Mac OS X 10.9 už nie je podporovaný.</translation>
 <translation id="6403826409255603130">Chromium je webový prehliadač, ktorý spúšťa webové stránky a aplikácie rýchlosťou svetla. Je rýchly, stabilný a ľahko sa používa. S ochranou proti škodlivému softvéru a phishingu, ktorá je zabudovaná do prehliadača Chromium, môžete prehliadať web bezpečnejšie.</translation>
+<translation id="6434250628340475518">Systém Chromium OS</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium sa reštartuje o 1 sekundu}few{Chromium sa reštartujte o # sekundy}many{Chromium sa reštartujte o # sekundy}other{Chromium sa reštartujte o # sekúnd}}</translation>
 <translation id="6475912303565314141">Tiež určuje, ktorá stránka sa zobrazí pri spustení prehliadača Chromium.</translation>
 <translation id="6485906693002546646">Na synchronizáciu prehliadača Chromium používate účet <ph name="PROFILE_EMAIL" />. Ak chcete upraviť predvoľby synchronizácie alebo používať prehliadač Chromium bez účtu Google, prejdite na <ph name="SETTINGS_LINK" />.</translation>
@@ -183,6 +185,7 @@ Niektoré funkcie nemusia byť k dispozícii. Zadajte iný adresár profilu aleb
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (skopírované do prehliadača Chromium)</translation>
 <translation id="6893813176749746474">Prehliadač Chromium bol aktualizovaný, ale najmenej 30 dní ste ho nepoužili.</translation>
+<translation id="692832138936263906">Chromium dokáže rozpoznať obrázky a text na obrázku odoslaním obrázkov na stránke na servery Googlu, čím vám pomôže lepšie pochopiť obsah stránky.</translation>
 <translation id="6964305034639999644">Otvoriť odkaz v okne inko&amp;gnito prehliadača Chromium</translation>
 <translation id="6970811910055250180">Prebieha aktualizácia zariadenia...</translation>
 <translation id="6990124437352146030">Chromium potrebuje povolenie pre tento web na prístup k mikrofónu</translation>
@@ -213,6 +216,7 @@ Ak chcete profilu <ph name="NEW_PROFILE_NAME" /> zabrániť pristupovať do vá�
 <translation id="7471302858145901434">{0,plural, =1{Reštartujte Chromium OS do jedného dňa}few{Reštartujte Chromium OS do # dní}many{Reštartujte Chromium OS do # dňa}other{Reštartujte Chromium OS do # dní}}</translation>
 <translation id="7483335560992089831">Nemôžete nainštalovať rovnakú verziu prehliadača Chromium ako je tá, ktorá je momentálne spustená. Zatvorte prehliadač Chromium a skúste to znova.</translation>
 <translation id="7549178288319965365">Informácie o systéme Chromium OS</translation>
+<translation id="7561906087460245826">Tiež vymazať údaje z prehliadača Chromium (<ph name="URL" />)</translation>
 <translation id="761356813943268536">Chromium používa vašu kameru a mikrofón.</translation>
 <translation id="7617377681829253106">Prehliadač Chromium bol práve vylepšený</translation>
 <translation id="7686590090926151193">Chromium nie je váš predvolený prehliadač</translation>

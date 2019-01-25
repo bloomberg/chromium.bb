@@ -76,6 +76,7 @@
 <translation id="3479552764303398839">Non adesso</translation>
 <translation id="3509308970982693815">Chiudi tutte le finestre di Chromium e riprova.</translation>
 <translation id="352783484088404971">Rimuovi da Chromium...</translation>
+<translation id="3575459661164320785">È stato rilevato software dannoso sul tuo computer. Chromium può rimuoverlo, ripristinare le tue impostazioni e disattivare le estensioni per ristabilire il normale funzionamento del browser.</translation>
 <translation id="3582788516608077514">Aggiornamento di Chromium in corso...</translation>
 <translation id="358997566136285270">Logo di Chromium</translation>
 <translation id="3639635944603682591">I dati di navigazione di questa persona verranno eliminati dal dispositivo. Per recuperare i dati, accedi a Chromium con il nome utente <ph name="USER_EMAIL" />.</translation>
@@ -165,6 +166,7 @@
 <translation id="6373523479360886564">Vuoi disinstallare Chromium?</translation>
 <translation id="6400072781405947421">Chromium potrebbe non funzionare correttamente perché non è più supportato su Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium è un browser web che esegue le pagine web e le applicazioni alla velocità della luce. È veloce, stabile e facile da utilizzare. Naviga su Internet in modo più sicuro grazie alla protezione da malware e phishing integrata in Chromium.</translation>
+<translation id="6434250628340475518">Sistema Chromium OS</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium si riavvierà tra 1 secondo}other{Chromium si riavvierà tra # secondi}}</translation>
 <translation id="6475912303565314141">Controlla anche la pagina visualizzata all'avvio di Chromium.</translation>
 <translation id="6485906693002546646">Stai utilizzando <ph name="PROFILE_EMAIL" /> per sincronizzare i tuoi contenuti di Chromium. Per aggiornare la tua preferenza di sincronizzazione o per utilizzare Chromium senza un account Google, accedi alla pagina <ph name="SETTINGS_LINK" />.</translation>
@@ -181,6 +183,7 @@ Alcune funzioni potrebbero non essere disponibili. Specifica un'altra directory 
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copiata in Chromium)</translation>
 <translation id="6893813176749746474">Chromium è stato aggiornato ma non lo utilizzi da almeno 30 giorni.</translation>
+<translation id="692832138936263906">Chromium è in grado di riconoscere le immagini e il testo presente in un'immagine inviando immagini delle pagine ai server di Google per permetterti di comprendere meglio i contenuti delle pagine.</translation>
 <translation id="6964305034639999644">Apri link in una finestra di navigazione in inco&amp;gnito di Chromium</translation>
 <translation id="6970811910055250180">Aggiornamento del dispositivo in corso...</translation>
 <translation id="6990124437352146030">Per questo sito Chromium ha bisogno dell'autorizzazione ad accedere al microfono</translation>
@@ -211,6 +214,7 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="7471302858145901434">{0,plural, =1{Riavvia Chromium OS entro un giorno}other{Riavvia Chromium OS entro # giorni}}</translation>
 <translation id="7483335560992089831">Impossibile installare una versione di Chromium uguale a quella in esecuzione. Chiudi Chromium e riprova.</translation>
 <translation id="7549178288319965365">Informazioni su Chromium OS</translation>
+<translation id="7561906087460245826">Cancella anche i dati di Chromium (<ph name="URL" />)</translation>
 <translation id="761356813943268536">Chromium sta utilizzando videocamera e microfono.</translation>
 <translation id="7617377681829253106">Da oggi Chromium è ancora meglio</translation>
 <translation id="7686590090926151193">Chromium non è il browser predefinito</translation>

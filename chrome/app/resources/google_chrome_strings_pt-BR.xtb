@@ -4,6 +4,7 @@
 <translation id="1001534784610492198">O arquivo do instalador está corrompido ou é inválido. Baixe o Google Chrome novamente.</translation>
 <translation id="102763973188675173">Personalize e controle o Google Chrome. Uma atualização está disponível.</translation>
 <translation id="1035334672863811645">fazer login no Chrome</translation>
+<translation id="1051826050538111504">Há um software nocivo no seu computador. O Chrome pode removê-lo, restaurar as configurações e desativar as extensões para que o navegador volte a funcionar normalmente.</translation>
 <translation id="1065672644894730302">Não foi possível ler suas preferências. Alguns recursos podem não estar disponíveis e as alterações nas preferências não serão salvas.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> estava usando o Chrome anteriormente</translation>
 <translation id="1104959162601287462">Sobre o Chrome OS</translation>
@@ -68,6 +69,7 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="2580411288591421699">Não é possível instalar a mesma versão do Google Chrome que está em execução. Feche o Google Chrome e tente novamente.</translation>
 <translation id="2586406160782125153">Essa ação excluirá seus dados de navegação desse dispositivo. Para recuperar seus dados mais tarde, faça login no Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logotipo do Google Chrome</translation>
+<translation id="2644798301485385923">Sistema Chrome OS</translation>
 <translation id="2652691236519827073">Abrir link em nova &amp;guia do Chrome</translation>
 <translation id="2665296953892887393">Ajude a melhorar o Google Chrome. Envie relatórios de erros e  <ph name="UMA_LINK" /> para o Google</translation>
 <translation id="2689103672227170538">Esta extensão alterou a página que é exibida quando você inicia o Chrome.</translation>
@@ -99,6 +101,7 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="3451115285585441894">Adicionando ao Google Chrome...</translation>
 <translation id="345171907106878721">Cadastrar-se no Chrome</translation>
 <translation id="3479552764303398839">Não agora</translation>
+<translation id="34857402635545079">Limpar também dados do Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">O Chrome precisa acessar seu local para compartilhá-lo com este site</translation>
 <translation id="3582972582564653026">Sincronize e personalize o Chrome em todos os seus dispositivos</translation>
 <translation id="3622797965165704966">Agora ficou mais fácil usar o Chrome com sua Conta do Google e em computadores compartilhados.</translation>
@@ -163,6 +166,7 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="5386244825306882791">Controla também qual página deve ser exibida quando você inicia o Chrome ou faz uma pesquisa na Omnibox.</translation>
 <translation id="5430073640787465221">Seu arquivo de preferências está corrompido ou é inválido. O Google Chrome não foi capaz de recuperar suas configurações.</translation>
 <translation id="5483595757826856374">{0,plural, =0{O Chrome será reiniciado agora}=1{O Chrome será reiniciado em 1 segundo}one{O Chrome será reiniciado em # segundo}other{O Chrome será reiniciado em # segundos}}</translation>
+<translation id="5505603430818498864">O Google Chrome pode reconhecer imagens e textos em imagens ao enviá-las das páginas para os servidores do Google, o que permite que você entenda melhor o conteúdo da página.</translation>
 <translation id="556024056938947818">O Google Chrome está tentando mostrar senhas.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">O arquivo <ph name="FILE_NAME" /> pode ser perigoso. Por isso, ele foi bloqueado pelo Chrome.</translation>
