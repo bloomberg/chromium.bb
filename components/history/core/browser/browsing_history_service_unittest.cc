@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/callback_forward.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"

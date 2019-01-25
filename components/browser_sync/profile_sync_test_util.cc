@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"

@@ -5,6 +5,7 @@
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "content/browser/devtools/devtools_renderer_channel.h"

@@ -4,6 +4,7 @@
 
 #include "content/common/service_manager/service_manager_connection_impl.h"
 
+#include "base/bind_helpers.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"

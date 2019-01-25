@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"

@@ -4,6 +4,7 @@
 
 #include "ui/android/delegated_frame_host_android.h"
 #include "base/android/build_info.h"
+#include "base/bind_helpers.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "cc/layers/layer.h"

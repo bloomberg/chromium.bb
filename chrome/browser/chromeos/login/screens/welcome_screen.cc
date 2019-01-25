@@ -8,6 +8,7 @@
 
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"

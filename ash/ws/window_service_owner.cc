@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/wm/non_client_frame_controller.h"
 #include "ash/ws/window_service_delegate_impl.h"
+#include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/unguessable_token.h"
 #include "services/content/public/cpp/buildflags.h"

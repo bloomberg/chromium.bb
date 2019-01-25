@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/debug/stack_trace.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"

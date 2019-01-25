@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "chrome/test/base/testing_profile.h"

@@ -8,6 +8,7 @@
 #include <tuple>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/aligned_memory.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"

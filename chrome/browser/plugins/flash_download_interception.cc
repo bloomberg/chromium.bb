@@ -5,6 +5,7 @@
 #include "chrome/browser/plugins/flash_download_interception.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"

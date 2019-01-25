@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/sha1.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"

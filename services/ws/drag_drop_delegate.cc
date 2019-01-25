@@ -5,6 +5,7 @@
 #include "services/ws/drag_drop_delegate.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/strings/string16.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ws/window_tree.h"

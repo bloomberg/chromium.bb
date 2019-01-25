@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"

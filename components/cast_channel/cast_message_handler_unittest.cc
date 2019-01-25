@@ -5,6 +5,7 @@
 #include "components/cast_channel/cast_message_handler.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"

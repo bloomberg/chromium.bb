@@ -6,6 +6,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "chrome/browser/android/customtabs/detached_resource_request.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"

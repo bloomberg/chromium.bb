@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/crostini/crostini_upgrade_container_view.h"
 
+#include "base/bind_helpers.h"
 #include "base/metrics/histogram_base.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"

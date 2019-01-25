@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/display/output_protection_delegate.h"
 
+#include "base/bind_helpers.h"
 #include "chrome/browser/chromeos/display/output_protection_controller_ash.h"
 #include "chrome/browser/chromeos/display/output_protection_controller_mus.h"
 #include "content/public/browser/browser_thread.h"

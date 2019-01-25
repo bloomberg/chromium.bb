@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/browser_sync/profile_sync_test_util.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"

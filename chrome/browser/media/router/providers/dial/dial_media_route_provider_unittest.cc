@@ -5,6 +5,7 @@
 #include "chrome/browser/media/router/providers/dial/dial_media_route_provider.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "chrome/browser/media/router/test/mock_mojo_media_router.h"
 
 #include "base/run_loop.h"

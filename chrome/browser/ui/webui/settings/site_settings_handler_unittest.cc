@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"

@@ -19,10 +19,11 @@
 #include "ash/public/interfaces/shelf_test_api.test-mojom.h"
 #include "ash/public/interfaces/shell_test_api.test-mojom-test-utils.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
-#include "ash/shell.h"                                   // mash-ok
-#include "ash/wm/overview/overview_controller.h"         // mash-ok
-#include "ash/wm/splitview/split_view_controller.h"      // mash-ok
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"   // mash-ok
+#include "ash/shell.h"                                  // mash-ok
+#include "ash/wm/overview/overview_controller.h"        // mash-ok
+#include "ash/wm/splitview/split_view_controller.h"     // mash-ok
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"  // mash-ok
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/test/metrics/histogram_tester.h"

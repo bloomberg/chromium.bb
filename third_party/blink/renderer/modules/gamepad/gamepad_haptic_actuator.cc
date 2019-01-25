@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/gamepad/gamepad_haptic_actuator.h"
 
+#include "base/bind_helpers.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/modules/gamepad/gamepad_dispatcher.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"

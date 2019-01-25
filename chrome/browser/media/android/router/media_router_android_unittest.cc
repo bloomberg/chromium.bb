@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "base/bind_helpers.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/media/android/router/media_router_android.h"
 #include "chrome/browser/media/android/router/media_router_android_bridge.h"

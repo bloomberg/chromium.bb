@@ -22,6 +22,7 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
 #include "ui/aura/client/window_types.h"

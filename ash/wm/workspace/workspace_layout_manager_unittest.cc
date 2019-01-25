@@ -41,6 +41,7 @@
 #include "ash/wm/workspace/backdrop_delegate.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "ash/wm/workspace_controller_test_api.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "chromeos/audio/chromeos_sounds.h"

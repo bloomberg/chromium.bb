@@ -7,6 +7,7 @@
 #include <memory>
 #include <set>
 
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/test/bind_test_util.h"

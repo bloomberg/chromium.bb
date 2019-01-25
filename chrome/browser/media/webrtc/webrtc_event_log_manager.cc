@@ -5,6 +5,7 @@
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"

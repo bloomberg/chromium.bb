@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #import "base/mac/mac_util.h"
 #include "base/macros.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
