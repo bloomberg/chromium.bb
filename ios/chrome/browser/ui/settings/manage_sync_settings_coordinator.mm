@@ -34,7 +34,7 @@
 
 #pragma mark - ManageSyncSettingsTableViewControllerPresentationDelegate
 
-- (void)manageSyncSettingsViewControllerWasPopped:
+- (void)manageSyncSettingsTableViewControllerWasPopped:
     (ManageSyncSettingsTableViewController*)controller {
   DCHECK_EQ(self.viewController, controller);
   [self.delegate manageSyncSettingsCoordinatorWasPopped:self];
