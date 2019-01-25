@@ -281,9 +281,6 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT Priority GetPriority() const;
   BLINK_PLATFORM_EXPORT void SetPriority(Priority);
 
-  BLINK_PLATFORM_EXPORT bool WasDiscarded() const;
-  BLINK_PLATFORM_EXPORT void SetWasDiscarded(bool);
-
   // https://wicg.github.io/cors-rfc1918/#external-request
   BLINK_PLATFORM_EXPORT bool IsExternalRequest() const;
 
@@ -314,10 +311,6 @@ class WebURLRequest {
   // Returns the DevTools ID to throttle the network request.
   BLINK_PLATFORM_EXPORT const base::Optional<base::UnguessableToken>&
   GetDevToolsToken() const;
-
-  // Set the applicable Origin Policy.
-  BLINK_PLATFORM_EXPORT const WebString GetOriginPolicy() const;
-  BLINK_PLATFORM_EXPORT void SetOriginPolicy(const WebString& policy);
 
   // Remembers 'X-Requested-With' header value. Blink should not set this header
   // value until CORS checks are done to avoid running checks even against

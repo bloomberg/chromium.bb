@@ -11,42 +11,87 @@
 #include "content/renderer/loader/url_response_body_consumer.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "third_party/blink/public/web/web_navigation_params.h"
 
 namespace content {
 
-NavigationBodyLoader::NavigationBodyLoader(
+// static
+void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
     const CommonNavigationParams& common_params,
     const CommitNavigationParams& commit_params,
     int request_id,
     const network::ResourceResponseHead& head,
-    network::mojom::URLLoaderClientEndpointsPtr endpoints,
+    network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     int render_frame_id,
-    bool is_main_frame)
-    : render_frame_id_(render_frame_id),
-      head_(head),
-      endpoints_(std::move(endpoints)),
-      task_runner_(task_runner),
-      url_loader_client_binding_(this),
-      handle_watcher_(FROM_HERE,
-                      mojo::SimpleWatcher::ArmingPolicy::MANUAL,
-                      task_runner),
-      weak_factory_(this) {
-  resource_load_info_ = NotifyResourceLoadInitiated(
-      render_frame_id_, request_id,
-      !commit_params.original_url.is_empty() ? commit_params.original_url
-                                             : common_params.url,
+    bool is_main_frame,
+    blink::WebNavigationParams* navigation_params) {
+  // Use the original navigation url to start with. We'll replay the redirects
+  // afterwards and will eventually arrive to the final url.
+  GURL url = !commit_params.original_url.is_empty() ? commit_params.original_url
+                                                    : common_params.url;
+  auto resource_load_info = NotifyResourceLoadInitiated(
+      render_frame_id, request_id, url,
       !commit_params.original_method.empty() ? commit_params.original_method
                                              : common_params.method,
       common_params.referrer.url,
       is_main_frame ? RESOURCE_TYPE_MAIN_FRAME : RESOURCE_TYPE_SUB_FRAME);
+
   size_t redirect_count = commit_params.redirect_response.size();
+  navigation_params->redirects.reserve(redirect_count);
+  navigation_params->redirects.resize(redirect_count);
   for (size_t i = 0; i < redirect_count; ++i) {
-    NotifyResourceRedirectReceived(render_frame_id_, resource_load_info_.get(),
-                                   commit_params.redirect_infos[i],
-                                   commit_params.redirect_response[i]);
+    blink::WebNavigationParams::RedirectInfo& redirect =
+        navigation_params->redirects[i];
+    auto& redirect_info = commit_params.redirect_infos[i];
+    auto& redirect_response = commit_params.redirect_response[i];
+    NotifyResourceRedirectReceived(render_frame_id, resource_load_info.get(),
+                                   redirect_info, redirect_response);
+    WebURLLoaderImpl::PopulateURLResponse(
+        url, redirect_response, &redirect.redirect_response,
+        false /* report_security_info */, request_id);
+    if (url.SchemeIs(url::kDataScheme))
+      redirect.redirect_response.SetHTTPStatusCode(200);
+    redirect.new_url = redirect_info.new_url;
+    redirect.new_referrer =
+        blink::WebString::FromUTF8(redirect_info.new_referrer);
+    redirect.new_referrer_policy =
+        Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
+            redirect_info.new_referrer_policy);
+    redirect.new_http_method =
+        blink::WebString::FromLatin1(redirect_info.new_method);
+    url = redirect_info.new_url;
+  }
+
+  WebURLLoaderImpl::PopulateURLResponse(url, head, &navigation_params->response,
+                                        false /* report_security_info */,
+                                        request_id);
+  if (url.SchemeIs(url::kDataScheme))
+    navigation_params->response.SetHTTPStatusCode(200);
+
+  if (url_loader_client_endpoints) {
+    navigation_params->body_loader.reset(new NavigationBodyLoader(
+        head, std::move(url_loader_client_endpoints), task_runner,
+        render_frame_id, std::move(resource_load_info)));
   }
 }
+
+NavigationBodyLoader::NavigationBodyLoader(
+    const network::ResourceResponseHead& head,
+    network::mojom::URLLoaderClientEndpointsPtr endpoints,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    int render_frame_id,
+    mojom::ResourceLoadInfoPtr resource_load_info)
+    : render_frame_id_(render_frame_id),
+      head_(head),
+      endpoints_(std::move(endpoints)),
+      task_runner_(std::move(task_runner)),
+      resource_load_info_(std::move(resource_load_info)),
+      url_loader_client_binding_(this),
+      handle_watcher_(FROM_HERE,
+                      mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+                      task_runner_),
+      weak_factory_(this) {}
 
 NavigationBodyLoader::~NavigationBodyLoader() {
   if (!has_received_completion_ || !has_seen_end_of_data_) {

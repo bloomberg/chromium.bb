@@ -58,6 +58,7 @@ void InternalDocumentStateData::CopyFrom(InternalDocumentStateData* other) {
   cache_policy_override_ = other->cache_policy_override_;
   effective_connection_type_ = other->effective_connection_type_;
   previews_state_ = other->previews_state_;
+  request_id_ = other->request_id_;
 }
 
 void InternalDocumentStateData::set_navigation_state(

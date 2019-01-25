@@ -55,6 +55,7 @@ class WebURLLoaderMockFactoryImpl : public WebURLLoaderMockFactory {
   void SetLoaderDelegate(WebURLLoaderTestDelegate* delegate) override {
     delegate_ = delegate;
   }
+  void FillNavigationParamsResponse(WebNavigationParams*) override;
 
   // Returns true if |url| was registered for being mocked.
   bool IsMockedURL(const WebURL& url);

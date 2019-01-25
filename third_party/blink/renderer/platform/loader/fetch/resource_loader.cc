@@ -1046,11 +1046,6 @@ void ResourceLoader::DidFail(const WebURLError& error,
   HandleError(error);
 }
 
-void ResourceLoader::SetContinueNavigationRequestCallback(
-    base::OnceClosure closure) {
-  resource_->SetContinueNavigationRequestCallback(std::move(closure));
-}
-
 void ResourceLoader::HandleError(const ResourceError& error) {
   if (is_cache_aware_loading_activated_ && error.IsCacheMiss() &&
       Context().ShouldLoadNewResource(resource_->GetType())) {

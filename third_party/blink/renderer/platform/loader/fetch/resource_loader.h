@@ -140,7 +140,6 @@ class PLATFORM_EXPORT ResourceLoader final
                int64_t encoded_data_length,
                int64_t encoded_body_length,
                int64_t decoded_body_length) override;
-  void SetContinueNavigationRequestCallback(base::OnceClosure) override;
 
   blink::mojom::CodeCacheType GetCodeCacheType() const;
   void SendCachedCodeToResource(const char* data, int size);

@@ -69,8 +69,7 @@ class URLLoaderClientImplTest : public ::testing::TestWithParam<bool>,
                                           &request_peer_context_),
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(this),
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),
-        nullptr /* navigation_response_override_params */,
-        nullptr /* continue_navigation_function */);
+        nullptr /* navigation_response_override_params */);
     request_peer_context_.request_id = request_id_;
 
     base::RunLoop().RunUntilIdle();

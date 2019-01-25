@@ -14,6 +14,7 @@
 
 namespace blink {
 
+struct WebNavigationParams;
 class WebURL;
 class WebURLLoader;
 class WebURLResponse;
@@ -76,6 +77,9 @@ class WebURLLoaderMockFactory {
   // Set a delegate that allows callbacks for all WebURLLoaderClients to be
   // intercepted.
   virtual void SetLoaderDelegate(WebURLLoaderTestDelegate*) = 0;
+
+  // Fills navigation params by loading a mocked response.
+  virtual void FillNavigationParamsResponse(WebNavigationParams*) = 0;
 };
 
 }  // namespace blink

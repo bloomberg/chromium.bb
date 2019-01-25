@@ -833,17 +833,11 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
 
   TRACE_EVENT_WITH_FLOW0("loading", "WebURLLoaderImpl::Context::Start", this,
                          TRACE_EVENT_FLAG_FLOW_OUT);
-  base::OnceClosure continue_navigation_function;
   request_id_ = resource_dispatcher_->StartAsync(
       std::move(resource_request), request.RequestorID(), task_runner_,
       GetTrafficAnnotationTag(request), false /* is_sync */,
       request.PassResponsePipeToClient(), std::move(peer), url_loader_factory_,
-      std::move(throttles), std::move(response_override),
-      &continue_navigation_function);
-  if (client_) {
-    client_->SetContinueNavigationRequestCallback(
-        std::move(continue_navigation_function));
-  }
+      std::move(throttles), std::move(response_override));
 
   if (defers_loading_ != NOT_DEFERRING)
     resource_dispatcher_->SetDefersLoading(request_id_, true);

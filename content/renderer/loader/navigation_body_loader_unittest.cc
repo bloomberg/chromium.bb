@@ -13,6 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_navigation_body_loader.h"
+#include "third_party/blink/public/web/web_navigation_params.h"
 
 namespace content {
 
@@ -39,11 +40,13 @@ class NavigationBodyLoaderTest : public ::testing::Test,
     writer_ = std::move(data_pipe_->producer_handle);
     auto endpoints = network::mojom::URLLoaderClientEndpoints::New();
     endpoints->url_loader_client = mojo::MakeRequest(&client_ptr_);
-    loader_ = std::make_unique<NavigationBodyLoader>(
+    blink::WebNavigationParams navigation_params;
+    NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
         CommonNavigationParams(), CommitNavigationParams(), 1 /* request_id */,
         network::ResourceResponseHead(), std::move(endpoints),
         blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
-        2 /* render_frame_id */, true /* is_main_frame */);
+        2 /* render_frame_id */, true /* is_main_frame */, &navigation_params);
+    loader_ = std::move(navigation_params.body_loader);
   }
 
   void StartLoading() {

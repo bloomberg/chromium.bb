@@ -840,7 +840,7 @@ void InspectorNetworkAgent::WillSendRequest(
     return;
 
   if (initiator_info.name == fetch_initiator_type_names::kDocument &&
-      loader->GetSubstituteData().IsValid())
+      loader->HasSubstituteData())
     return;
 
   if (!extra_request_headers_.IsEmpty()) {
@@ -919,7 +919,7 @@ void InspectorNetworkAgent::DidReceiveResourceResponse(
     type = saved_type;
   }
   if (type == InspectorPageAgent::kDocumentResource && loader &&
-      loader->GetSubstituteData().IsValid())
+      loader->HasSubstituteData())
     return;
 
   // Resources are added to NetworkResourcesData as a WeakMember here and

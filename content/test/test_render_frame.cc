@@ -270,7 +270,7 @@ void TestRenderFrame::BeginNavigation(
     // going through browser process in this case.
     GURL url = info->url_request.Url();
     auto navigation_params = std::make_unique<blink::WebNavigationParams>();
-    navigation_params->request = blink::WebURLRequest(url);
+    navigation_params->url = url;
     if (!url.IsAboutBlank() && url != content::kAboutSrcDocURL) {
       std::string mime_type, charset, data;
       bool success = net::DataURL::Parse(url, &mime_type, &charset, &data);

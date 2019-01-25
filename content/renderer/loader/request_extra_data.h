@@ -104,14 +104,6 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
     block_mixed_plugin_content_ = block_mixed_plugin_content;
   }
 
-  // Indicates whether a navigation was initiated by the browser or renderer.
-  bool navigation_initiated_by_renderer() const {
-    return navigation_initiated_by_renderer_;
-  }
-  void set_navigation_initiated_by_renderer(bool navigation_by_renderer) {
-    navigation_initiated_by_renderer_ = navigation_by_renderer;
-  }
-
   // Determines whether SameSite cookies will be attached to the request
   // even when the request looks cross-site.
   bool attach_same_site_cookies() const { return attach_same_site_cookies_; }
@@ -152,7 +144,6 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
   bool initiated_in_secure_context_ = false;
   bool is_for_no_state_prefetch_ = false;
   bool block_mixed_plugin_content_ = false;
-  bool navigation_initiated_by_renderer_ = false;
   bool attach_same_site_cookies_ = false;
   std::vector<std::unique_ptr<URLLoaderThrottle>> url_loader_throttles_;
   scoped_refptr<FrameRequestBlocker> frame_request_blocker_;

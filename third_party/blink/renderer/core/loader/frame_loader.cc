@@ -224,16 +224,8 @@ void FrameLoader::Trace(blink::Visitor* visitor) {
 void FrameLoader::Init() {
   ScriptForbiddenScope forbid_scripts;
 
-  ResourceRequest initial_request{KURL(g_empty_string)};
-  initial_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
-  initial_request.SetFrameType(
-      frame_->IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
-                            : network::mojom::RequestContextFrameType::kNested);
-  initial_request.SetHasUserGesture(
-      LocalFrame::HasTransientUserActivation(frame_));
-
   auto navigation_params = std::make_unique<WebNavigationParams>();
-  navigation_params->request = WrappedResourceRequest(initial_request);
+  navigation_params->url = KURL(g_empty_string);
   provisional_document_loader_ = CreateDocumentLoader(
       kWebNavigationTypeOther, std::move(navigation_params),
       nullptr /* extra_data */);
@@ -1005,19 +997,8 @@ void FrameLoader::CommitNavigation(
   if (HTMLFrameOwnerElement* element = frame_->DeprecatedLocalOwner())
     element->CancelPendingLazyLoad();
 
-  ResourceRequest& resource_request =
-      navigation_params->request.ToMutableResourceRequest();
-  resource_request.SetHasUserGesture(
-      LocalFrame::HasTransientUserActivation(frame_));
-  resource_request.SetFetchRequestMode(
-      network::mojom::FetchRequestMode::kNavigate);
-  resource_request.SetFetchCredentialsMode(
-      network::mojom::FetchCredentialsMode::kInclude);
-  resource_request.SetFetchRedirectMode(
-      network::mojom::FetchRedirectMode::kManual);
-
   navigation_params->frame_load_type = DetermineFrameLoadType(
-      resource_request.Url(), resource_request.HttpMethod(),
+      navigation_params->url, navigation_params->http_method,
       nullptr /* origin_document */, navigation_params->unreachable_url,
       navigation_params->frame_load_type);
 
@@ -1034,8 +1015,7 @@ void FrameLoader::CommitNavigation(
 
   if (!CancelProvisionalLoaderForNewNavigation(
           false /* cancel_scheduled_navigations */,
-          DocumentLoader::WillLoadUrlAsEmpty(
-              navigation_params->request.Url()))) {
+          DocumentLoader::WillLoadUrlAsEmpty(navigation_params->url))) {
     return;
   }
 
@@ -1043,15 +1023,8 @@ void FrameLoader::CommitNavigation(
   // It seems incorrect to pass |false| for |have_event| and then use
   // determined navigation type to update resource request.
   WebNavigationType navigation_type = DetermineNavigationType(
-      navigation_params->frame_load_type, resource_request.HttpBody(),
-      false /* have_event */);
-  // TODO(dgozman): should these fields be propagated from StartNavigation
-  // and/or set by the caller instead?
-  resource_request.SetRequestContext(
-      DetermineRequestContextFromNavigationType(navigation_type));
-  resource_request.SetFrameType(
-      frame_->IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
-                            : network::mojom::RequestContextFrameType::kNested);
+      navigation_params->frame_load_type,
+      !navigation_params->http_body.IsNull(), false /* have_event */);
 
   HistoryItem* history_item = nullptr;
   if (IsBackForwardLoadType(navigation_params->frame_load_type)) {
@@ -1135,7 +1108,7 @@ bool FrameLoader::CreatePlaceholderDocumentLoader(
   }
 
   auto navigation_params = std::make_unique<WebNavigationParams>();
-  navigation_params->request = info.url_request;
+  navigation_params->url = info.url_request.Url();
   navigation_params->frame_load_type = info.frame_load_type;
   navigation_params->is_client_redirect = info.is_client_redirect;
   navigation_params->navigation_timings.input_start = info.input_start;

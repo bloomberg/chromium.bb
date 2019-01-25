@@ -10,6 +10,7 @@
 
 namespace blink {
 
+struct WebNavigationParams;
 class WebURLResponse;
 class WebURLLoaderClient;
 struct WebURLError;
@@ -38,6 +39,14 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderTestDelegate {
                                 int64_t total_encoded_data_length,
                                 int64_t total_encoded_body_length,
                                 int64_t total_decoded_body_length);
+  // Default implementation will load mocked url and fill in redirects,
+  // response and body loader.
+  // To override default behavior, fill in response (always), redirects
+  // (if needed) and body loader (if not empty, see WebNavigationParams)
+  // and return true.
+  virtual bool FillNavigationParamsResponse(WebNavigationParams*) {
+    return false;
+  }
 };
 
 }  // namespace blink

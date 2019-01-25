@@ -90,8 +90,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
       std::unique_ptr<NavigationResponseOverrideParameters>
-          navigation_response_override_params,
-      base::OnceClosure* continue_navigation_function) override {
+          navigation_response_override_params) override {
     EXPECT_FALSE(peer_);
     if (sync_load_response_.info.encoded_body_length != -1)
       EXPECT_TRUE(is_sync);

@@ -125,14 +125,6 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
                        int64_t total_encoded_body_length,
                        int64_t total_decoded_body_length) {}
 
-  // This is a callback set for navigation requests, which should be called
-  // to continue the navigation after starting the main resource request.
-  // This is a workaround for using WebURLLoader machinery for navigation
-  // requests which did already happen in the browser process.
-  // TODO(dgozman): remove this once we no longer use WebURLLoader for
-  // the main resource and instead pass the data directly to CommitNavigation.
-  virtual void SetContinueNavigationRequestCallback(base::OnceClosure) {}
-
   // Value passed to DidFinishLoading when total encoded data length isn't
   // known.
   static const int64_t kUnknownEncodedDataLength = -1;

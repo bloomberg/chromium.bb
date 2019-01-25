@@ -65,7 +65,6 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
   mojom::FetchCacheMode GetCacheMode() const override;
   WebString Referrer() const override;
   network::mojom::ReferrerPolicy GetReferrerPolicy() const override;
-  const WebURLRequest& GetRequest() const override;
   const WebURLResponse& GetResponse() const override;
   bool HasUnreachableURL() const override;
   WebURL UnreachableURL() const override;
@@ -92,11 +91,9 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
  private:
   ~WebDocumentLoaderImpl() override;
   void DetachFromFrame(bool flush_microtask_queue) override;
-  String DebugName() const override { return "WebDocumentLoaderImpl"; }
 
   // Mutable because the const getters will magically sync these to the
   // latest version from WebKit.
-  mutable WrappedResourceRequest request_wrapper_;
   mutable WrappedResourceResponse response_wrapper_;
 
   std::unique_ptr<ExtraData> extra_data_;

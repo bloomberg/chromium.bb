@@ -162,8 +162,7 @@ class URLResponseBodyConsumerTest : public ::testing::Test {
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &factory_),
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),
-        nullptr /* navigation_response_override_params */,
-        nullptr /* continue_navigation_function */);
+        nullptr /* navigation_response_override_params */);
   }
 
   void Run(TestRequestPeer::Context* context) {

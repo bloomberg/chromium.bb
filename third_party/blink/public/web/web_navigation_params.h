@@ -12,16 +12,21 @@
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 #include "third_party/blink/public/platform/web_data.h"
+#include "third_party/blink/public/platform/web_http_body.h"
+#include "third_party/blink/public/platform/web_navigation_body_loader.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_source_location.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/web_form_element.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_history_item.h"
@@ -38,6 +43,7 @@ namespace blink {
 
 class KURL;
 class SharedBuffer;
+class WebDocumentLoader;
 
 // This structure holds all information collected by Blink when
 // navigation is being initiated.
@@ -141,6 +147,13 @@ struct BLINK_EXPORT WebNavigationParams {
       base::span<const char> html,
       const WebURL& base_url);
 
+  // Shortcut for loading an error page html.
+  static std::unique_ptr<WebNavigationParams> CreateForErrorPage(
+      WebDocumentLoader* failed_document_loader,
+      base::span<const char> html,
+      const WebURL& base_url,
+      const WebURL& unreachable_url);
+
 #if INSIDE_BLINK
   // Shortcut for loading html with "text/html" mime type and "UTF8" encoding.
   static std::unique_ptr<WebNavigationParams> CreateWithHTMLBuffer(
@@ -148,23 +161,85 @@ struct BLINK_EXPORT WebNavigationParams {
       const KURL& base_url);
 #endif
 
-  // The request to navigate to. Its URL indicates the security origin
-  // and will be used as a base URL to resolve links in the committed document.
-  // TODO(dgozman): do we actually need a request here? Maybe just a URL?
-  WebURLRequest request;
+  // This block defines the request used to load the main resource
+  // for this navigation.
+
+  // This URL indicates the security origin and will be used as a base URL
+  // to resolve links in the committed document.
+  WebURL url;
+  // The http method (if any) used to load the main resource.
+  WebString http_method;
+  // The cache mode used to load the main resource.
+  // TODO(dgozman): remove this, we are not really using it.
+  mojom::FetchCacheMode cache_mode = mojom::FetchCacheMode::kDefault;
+  // The referrer string and policy used to load the main resource.
+  WebString referrer;
+  network::mojom::ReferrerPolicy referrer_policy =
+      network::mojom::ReferrerPolicy::kDefault;
+  // The http body of the request used to load the main resource, if any.
+  WebHTTPBody http_body;
+  // The http content type of the request used to load the main resource, if
+  // any.
+  WebString http_content_type;
+  // The origin policy for this navigation.
+  WebString origin_policy;
+  // The origin of the request used to load the main resource, specified at
+  // https://fetch.spec.whatwg.org/#concept-request-origin. Can be null.
+  // TODO(dgozman,nasko): we shouldn't need both this and |origin_to_commit|.
+  WebSecurityOrigin requestor_origin;
+  // If non-null, used as a URL which we weren't able to load. For example,
+  // history item will contain this URL instead of request's URL.
+  // This URL can be retrieved through WebDocumentLoader::UnreachableURL.
+  WebURL unreachable_url;
+
+  // This block defines the document content. The alternatives in the order
+  // of precedence are:
+  // 1. If |data| is supplied, it is used as document content.
+  // 2. If url loads as an empty document (according to
+  //    WebDocumentLoader::WillLoadUrlAsEmpty), the document will be empty.
+  // 3. If loading an iframe of mhtml archive, the document will be
+  //    retrieved from the archive.
+  // 4. Otherwise, provided redirects and response are used to construct
+  //    the final response.
+  //   4a. If body loader is present, it will be used to fetch the content.
+  //   4b. If body loader is missing, but url is a data url, it will be
+  //       decoded and used as response and document content.
+  //   4c. If decoding data url fails, or url is not a data url, the
+  //       navigation will fail.
+
+  struct RedirectInfo {
+    // New base url after redirect.
+    WebURL new_url;
+    // Http method used for redirect.
+    WebString new_http_method;
+    // New referrer string and policy used for redirect.
+    WebString new_referrer;
+    network::mojom::ReferrerPolicy new_referrer_policy;
+    // Redirect response itself.
+    // TODO(dgozman): we only use this response for navigation timings.
+    // Perhaps, we can just get rid of it.
+    WebURLResponse redirect_response;
+  };
+  // Redirects which happened while fetching the main resource.
+  // TODO(dgozman): we are only interested in the final values instead of
+  // all information about redirects.
+  WebVector<RedirectInfo> redirects;
+  // The final response for the main resource. This will be used to determine
+  // the type of resulting document.
+  WebURLResponse response;
+  // The body loader which allows to retrieve the response body when available.
+  std::unique_ptr<WebNavigationBodyLoader> body_loader;
 
   // If the data is non null, it will be used as a main resource content
-  // instead of loading the request above.
+  // instead of redirects, response and body loader.
   WebData data;
   // Specifies the mime type of the raw data. Must be set together with the
   // data.
   WebString mime_type;
   // The encoding of the raw data. Must be set together with the data.
   WebString text_encoding;
-  // If non-null, used as a URL which we weren't able to load. For example,
-  // history item will contain this URL instead of request's URL.
-  // This URL can be retrieved through WebDocumentLoader::UnreachableURL.
-  WebURL unreachable_url;
+
+  // This block defines the type of the navigation.
 
   // The load type. See WebFrameLoadType for definition.
   WebFrameLoadType frame_load_type = WebFrameLoadType::kStandard;
@@ -173,20 +248,30 @@ struct BLINK_EXPORT WebNavigationParams {
   // Whether this navigation is a result of client redirect.
   bool is_client_redirect = false;
 
+  // Miscellaneous parameters.
+
   // The origin in which a navigation should commit. When provided, Blink
   // should use this origin directly and not compute locally the new document
   // origin.
   WebSecurityOrigin origin_to_commit;
-
   // The devtools token for this navigation. See DocumentLoader
   // for details.
   base::UnguessableToken devtools_navigation_token;
   // Known timings related to navigation. If the navigation has
   // started in another process, timings are propagated from there.
   WebNavigationTimings navigation_timings;
-  // Whether this navigation had a transient user activation.
+  // Indicates that the frame was previously discarded.
+  // was_discarded is exposed on Document after discard, see:
+  // https://github.com/WICG/web-lifecycle
+  bool was_discarded = false;
+  // Whether this navigation had a transient user activation
+  // when inititated.
+  bool had_transient_activation = false;
+  // Whether this navigation has a sticky user activation flag.
   bool is_user_activated = false;
-
+  // The previews state which should be used for this navigation.
+  WebURLRequest::PreviewsState previews_state =
+      WebURLRequest::kPreviewsUnspecified;
   // The service worker network provider to be used in the new
   // document.
   std::unique_ptr<blink::WebServiceWorkerNetworkProvider>

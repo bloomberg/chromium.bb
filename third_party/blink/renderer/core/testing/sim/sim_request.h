@@ -15,6 +15,7 @@
 namespace blink {
 
 class SimNetwork;
+class StaticDataNavigationBodyLoader;
 class WebURLLoaderClient;
 
 // Simulates a single request for a resource from the server. Requires a
@@ -49,6 +50,7 @@ class SimRequestBase {
   // Used by SimNetwork.
   void DidReceiveResponse(WebURLLoaderClient*, const WebURLResponse&);
   void DidFail(const WebURLError&);
+  void UsedForNavigation(StaticDataNavigationBodyLoader*);
 
   KURL url_;
   String mime_type_;
@@ -58,6 +60,7 @@ class SimRequestBase {
   base::Optional<WebURLError> error_;
   WebURLLoaderClient* client_;
   unsigned total_encoded_data_length_;
+  StaticDataNavigationBodyLoader* navigation_body_loader_ = nullptr;
 };
 
 // This request can be used as a main resource request for navigation.

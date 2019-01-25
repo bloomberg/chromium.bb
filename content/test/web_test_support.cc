@@ -560,10 +560,4 @@ void ForceTextInputStateUpdateForRenderFrame(RenderFrame* frame) {
   render_widget->ShowVirtualKeyboard();
 }
 
-bool IsNavigationInitiatedByRenderer(const blink::WebURLRequest& request) {
-  RequestExtraData* extra_data =
-      static_cast<RequestExtraData*>(request.GetExtraData());
-  return extra_data && extra_data->navigation_initiated_by_renderer();
-}
-
 }  // namespace content

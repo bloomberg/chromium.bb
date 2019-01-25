@@ -148,8 +148,7 @@ class ResourceDispatcherTest : public testing::TestWithParam<bool>,
         TRAFFIC_ANNOTATION_FOR_TESTS, false, false, std::move(peer),
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(this),
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),
-        nullptr /* navigation_response_override_params */,
-        nullptr /* continue_navigation_function */);
+        nullptr /* navigation_response_override_params */);
     peer_context->request_id = request_id;
     return request_id;
   }
