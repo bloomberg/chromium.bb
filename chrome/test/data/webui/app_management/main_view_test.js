@@ -51,11 +51,11 @@ suite('<app-management-main-view>', function() {
   test('simple app addition', async function() {
     // Ensure there is no apps initially
     expectEquals(
-        0, mainView.root.querySelectorAll('app-management-item').length);
+        0, mainView.root.querySelectorAll('app-management-app-item').length);
 
     let apps = createTestApps(1);
     await addApps(apps);
-    let appItems = mainView.root.querySelectorAll('app-management-item');
+    let appItems = mainView.root.querySelectorAll('app-management-app-item');
     expectEquals(1, appItems.length);
 
     expectEquals(appItems[0].app.id, apps[0].id);
@@ -65,13 +65,13 @@ suite('<app-management-main-view>', function() {
     // The more apps bar shouldn't appear when there are 4 apps.
     await addApps(createTestApps(4));
     expectEquals(
-        4, mainView.root.querySelectorAll('app-management-item').length);
+        4, mainView.root.querySelectorAll('app-management-app-item').length);
     expectTrue(mainView.$['expander-row'].hidden);
 
     // The more apps bar appears when there are 5 apps.
     await addApps(createTestApps(1));
     expectEquals(
-        5, mainView.root.querySelectorAll('app-management-item').length);
+        5, mainView.root.querySelectorAll('app-management-app-item').length);
     expectFalse(mainView.$['expander-row'].hidden);
   });
 

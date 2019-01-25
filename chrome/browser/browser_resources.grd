@@ -233,6 +233,8 @@
         <include name="IDR_APP_MANAGEMENT_API_LISTENER_JS" file="resources\app_management\api_listener.js" type="BINDATA"/>
         <include name="IDR_APP_MANAGEMENT_APP_HTML" file="resources\app_management\app.html" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_APP_JS" file="resources\app_management\app.js" type="BINDATA" />
+        <include name="IDR_APP_MANAGEMENT_APP_ITEM_HTML" file="resources\app_management\app_item.html" type="BINDATA" />
+        <include name="IDR_APP_MANAGEMENT_APP_ITEM_JS" file="resources\app_management\app_item.js" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_BROWSER_PROXY_HTML" file="resources\app_management\browser_proxy.html" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_BROWSER_PROXY_JS" file="resources\app_management\browser_proxy.js" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_CHROME_APP_PERMISSION_VIEW_HTML" file="resources\app_management\chrome_app_permission_view.html" type="BINDATA"/>
@@ -241,8 +243,6 @@
         <include name="IDR_APP_MANAGEMENT_CONSTANTS_JS" file="resources\app_management\constants.js" type="BINDATA"/>
         <include name="IDR_APP_MANAGEMENT_FAKE_PAGE_HANDLER_JS" file="resources\app_management\fake_page_handler.js" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_INDEX_HTML" file="resources\app_management\index.html" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_ITEM_HTML" file="resources\app_management\item.html" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_ITEM_JS" file="resources\app_management\item.js" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_MAIN_VIEW_HTML" file="resources\app_management\main_view.html" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_MAIN_VIEW_JS" file="resources\app_management\main_view.js" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_NOTIFICATIONS_VIEW_HTML" file="resources\app_management\notifications_view.html" type="BINDATA"/>

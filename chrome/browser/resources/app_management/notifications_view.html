@@ -1,6 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="item.html">
+<link rel="import" href="app_item.html">
 <link rel="import" href="shared_style.html">
 <link rel="import" href="store_client.html">
 <link rel="import" href="chrome://resources/html/icon.html">
@@ -43,16 +43,16 @@
 
     <div class="card-container">
       <template is="dom-repeat" items="[[displayedApps_]]">
-        <app-management-item app="[[item]]">
+        <app-management-app-item app="[[item]]">
           <cr-toggle slot="right-content"></cr-toggle>
-        </app-management-item>
+        </app-management-app-item>
       </template>
 
       <iron-collapse opened="[[listExpanded_]]">
         <template is="dom-repeat" items="[[collapsedApps_]]">
-          <app-management-item app="[[item]]">
+          <app-management-app-item app="[[item]]">
             <cr-toggle slot="right-content"></cr-toggle>
-          </app-management-item>
+          </app-management-app-item>
         </template>
       </iron-collapse>
 

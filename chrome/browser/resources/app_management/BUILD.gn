@@ -11,11 +11,11 @@ if (!is_android) {
       ":actions",
       ":api_listener",
       ":app",
+      ":app_item",
       ":browser_proxy",
       ":chrome_app_permission_view",
       ":constants",
       ":fake_page_handler",
-      ":item",
       ":main_view",
       ":metadata_view",
       ":notifications_view",
@@ -64,6 +64,14 @@ if (!is_android) {
     ]
   }
 
+  js_library("app_item") {
+    deps = [
+      ":actions",
+      ":store_client",
+      "//ui/webui/resources/js:load_time_data",
+    ]
+  }
+
   js_library("browser_proxy") {
     deps = [
       ":fake_page_handler",
@@ -94,19 +102,11 @@ if (!is_android) {
     ]
   }
 
-  js_library("item") {
-    deps = [
-      ":actions",
-      ":store_client",
-      "//ui/webui/resources/js:load_time_data",
-    ]
-  }
-
   js_library("main_view") {
     deps = [
+      ":app_item",
       ":browser_proxy",
       ":constants",
-      ":item",
       ":store_client",
       "//ui/webui/resources/js:load_time_data",
     ]
@@ -123,6 +123,7 @@ if (!is_android) {
 
   js_library("notifications_view") {
     deps = [
+      ":app_item",
       ":fake_page_handler",
     ]
   }
