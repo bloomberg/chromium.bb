@@ -1628,8 +1628,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 }
 
 - (BOOL)application:(NSApplication*)application
-    willContinueUserActivityWithType:(NSString*)userActivityType
-    API_AVAILABLE(macos(10.10)) {
+    willContinueUserActivityWithType:(NSString*)userActivityType {
   return [userActivityType isEqualToString:NSUserActivityTypeBrowsingWeb];
 }
 
@@ -1642,7 +1641,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
       restorationHandler:
           (void (^)(NSArray<id<NSUserActivityRestoring>>*))restorationHandler
 #endif
-    API_AVAILABLE(macos(10.10)) {
+{
   if (![userActivity.activityType
           isEqualToString:NSUserActivityTypeBrowsingWeb]) {
     return NO;
@@ -1678,14 +1677,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 }
 
 - (void)passURLToHandoffManager:(const GURL&)handoffURL {
-  if (@available(macOS 10.10, *)) {
-    [handoffManager_ updateActiveURL:handoffURL];
-  } else {
-    // Only ends up being called in 10.10+, i.e. if shouldUseHandoff returns
-    // true. Some tests override shouldUseHandoff to always return true, but
-    // then they also override this function to do something else.
-    NOTREACHED();
-  }
+  [handoffManager_ updateActiveURL:handoffURL];
 }
 
 - (void)updateHandoffManager:(content::WebContents*)webContents {

@@ -54,7 +54,7 @@ class SafeDMG {
   bool EnableSandbox();
 
   // Performs the actual DMG operation.
-  API_AVAILABLE(macos(10.10)) bool ParseDMG();
+  bool ParseDMG();
 
   base::File dmg_file_;
 

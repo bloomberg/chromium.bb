@@ -300,9 +300,7 @@ void BrowserFrameMac::PopulateCreateWindowParams(
   if (browser_view_->IsBrowserTypeNormal() ||
       browser_view_->IsBrowserTypeHostedApp()) {
     params->window_class = views_bridge_mac::mojom::WindowClass::kBrowser;
-
-    if (@available(macOS 10.10, *))
-      params->style_mask |= NSFullSizeContentViewWindowMask;
+    params->style_mask |= NSFullSizeContentViewWindowMask;
 
     // Ensure tabstrip/profile button are visible.
     params->titlebar_appears_transparent = true;
