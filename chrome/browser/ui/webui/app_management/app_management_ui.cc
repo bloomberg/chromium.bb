@@ -71,6 +71,8 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
                           IDR_APP_MANAGEMENT_API_LISTENER_JS);
   source->AddResourcePath("app.html", IDR_APP_MANAGEMENT_APP_HTML);
   source->AddResourcePath("app.js", IDR_APP_MANAGEMENT_APP_JS);
+  source->AddResourcePath("app_item.html", IDR_APP_MANAGEMENT_APP_ITEM_HTML);
+  source->AddResourcePath("app_item.js", IDR_APP_MANAGEMENT_APP_ITEM_JS);
   source->AddResourcePath("browser_proxy.html",
                           IDR_APP_MANAGEMENT_BROWSER_PROXY_HTML);
   source->AddResourcePath("browser_proxy.js",
@@ -83,8 +85,6 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
   source->AddResourcePath("constants.js", IDR_APP_MANAGEMENT_CONSTANTS_JS);
   source->AddResourcePath("fake_page_handler.js",
                           IDR_APP_MANAGEMENT_FAKE_PAGE_HANDLER_JS);
-  source->AddResourcePath("item.html", IDR_APP_MANAGEMENT_ITEM_HTML);
-  source->AddResourcePath("item.js", IDR_APP_MANAGEMENT_ITEM_JS);
   source->AddResourcePath("main_view.html", IDR_APP_MANAGEMENT_MAIN_VIEW_HTML);
   source->AddResourcePath("main_view.js", IDR_APP_MANAGEMENT_MAIN_VIEW_JS);
   source->AddResourcePath("notifications_view.html",
