@@ -11,6 +11,7 @@
 #import "base/mac/foundation_util.h"
 #include "chrome/common/extensions/command.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/media_keys_listener_manager.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event.h"
 #import "ui/events/keycodes/keyboard_code_conversion_mac.h"
@@ -34,9 +35,13 @@ GlobalShortcutListenerMac::GlobalShortcutListenerMac()
       event_handler_(NULL) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  media_keys_listener_ = ui::MediaKeysListener::Create(
-      this, ui::MediaKeysListener::Scope::kGlobal);
-  DCHECK(media_keys_listener_);
+  // If the MediaKeysListenerManager is not enabled, we need to create our own
+  // global MediaKeysListener to receive media keys.
+  if (!content::MediaKeysListenerManager::IsMediaKeysListenerManagerEnabled()) {
+    media_keys_listener_ = ui::MediaKeysListener::Create(
+        this, ui::MediaKeysListener::Scope::kGlobal);
+    DCHECK(media_keys_listener_);
+  }
 }
 
 GlobalShortcutListenerMac::~GlobalShortcutListenerMac() {
@@ -87,7 +92,23 @@ bool GlobalShortcutListenerMac::RegisterAcceleratorImpl(
   DCHECK(accelerator_ids_.find(accelerator) == accelerator_ids_.end());
 
   if (Command::IsMediaKey(accelerator)) {
-    media_keys_listener_->StartWatchingMediaKey(accelerator.key_code());
+    // We should listen for media key presses through a MediaKeysListener. If
+    // the MediaKeysListenerManager is enabled, we should listen through it,
+    // which will tell the manager to send us the media key presses and prevent
+    // the browser from using them.
+    if (content::MediaKeysListenerManager::
+            IsMediaKeysListenerManagerEnabled()) {
+      content::MediaKeysListenerManager* media_keys_listener_manager =
+          content::MediaKeysListenerManager::GetInstance();
+      DCHECK(media_keys_listener_manager);
+
+      if (!media_keys_listener_manager->StartWatchingMediaKey(
+              accelerator.key_code(), this)) {
+        return false;
+      }
+    } else {
+      media_keys_listener_->StartWatchingMediaKey(accelerator.key_code());
+    }
   } else {
     // Register hot_key if they are non-media keyboard shortcuts.
     if (!RegisterHotKey(accelerator, hot_key_id_))
@@ -120,7 +141,19 @@ void GlobalShortcutListenerMac::UnregisterAcceleratorImpl(
   accelerator_ids_.erase(accelerator);
 
   if (Command::IsMediaKey(accelerator)) {
-    media_keys_listener_->StopWatchingMediaKey(accelerator.key_code());
+    // If we're listening to media keys through the MediaKeysListenerManager,
+    // then inform the manager that we're no longer listening for the given key.
+    if (content::MediaKeysListenerManager::
+            IsMediaKeysListenerManagerEnabled()) {
+      content::MediaKeysListenerManager* media_keys_listener_manager =
+          content::MediaKeysListenerManager::GetInstance();
+      DCHECK(media_keys_listener_manager);
+
+      media_keys_listener_manager->StopWatchingMediaKey(accelerator.key_code(),
+                                                        this);
+    } else {
+      media_keys_listener_->StopWatchingMediaKey(accelerator.key_code());
+    }
   } else {
     // If we unregistered a hot key, and no more hot keys are registered, remove
     // the hot key handler.

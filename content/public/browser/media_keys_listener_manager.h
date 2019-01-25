@@ -22,6 +22,10 @@ class MediaKeysListenerManager {
   // Returns the singleton instance.
   CONTENT_EXPORT static MediaKeysListenerManager* GetInstance();
 
+  // Returns true if the MediaKeysListenerManager is enabled, taking OS and
+  // feature flags into account.
+  CONTENT_EXPORT static bool IsMediaKeysListenerManagerEnabled();
+
   // Start listening for a given media key. Returns true if the listener
   // successfully started listening for the key. This will prevent the
   // HardwareKeyMediaController from also handling the specified key.
