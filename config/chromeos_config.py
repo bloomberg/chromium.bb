@@ -1674,7 +1674,6 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
   # green.
   unstable_builders = frozenset([
       'lakitu',  # TODO: Re-enable after crbug.com/919630 resolved.
-      'sludge',  # TODO(tbegin): Enable when build is stable crbug.com/908425
   ])
 
   external_board_configs = CreateBoardConfigs(
@@ -1805,6 +1804,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'samus',
       'scarlet',
       'sentry',
+      'sludge',
       'stout',
       'tael',
       'tatl',
@@ -1867,7 +1867,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'moblab-generic-vm', # crbug.com/920855
       'octavius', # contact:dpjacques@
       'romer', # contact:michaelho@
-      'sludge', # contact:tbegin@
       'whirlwind', # contact:mxt@ (crbug.com/794242, crbug.com/819287)
       'wooten', # contact:icoolidge@
       'nyan_blaze', # contact: xixuan@

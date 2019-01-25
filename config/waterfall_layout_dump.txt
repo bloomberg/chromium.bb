@@ -227,7 +227,6 @@
     kevin64-full
     lakitu-full
     oak-full
-    sludge-full
     tael-full
     tatl-full
 
@@ -506,6 +505,7 @@
     scarlet-release
     sentry-release
     setzer-release
+    sludge-release
     snappy-release
     soraka-release
     squawks-release
@@ -2395,7 +2395,6 @@
     kevin64-full
     lakitu-full
     oak-full
-    sludge-full
     tael-full
     tatl-full
   master-incremental-tryjob
@@ -2750,6 +2749,7 @@
     scarlet-release
     sentry-release
     setzer-release
+    sludge-release
     snappy-release
     soraka-release
     squawks-release
