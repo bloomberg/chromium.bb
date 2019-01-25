@@ -365,9 +365,6 @@ without changes to the corresponding grd file. -->
                  compress="gzip" />
       <structure name="IDR_WEBUI_HTML_ICON"
                  file="html/icon.html" type="chrome_html" compress="gzip" />
-      <structure name="IDR_WEBUI_HTML_I18N_TEMPLATE"
-                 file="html/i18n_template.html" type="chrome_html"
-                 compress="gzip" />
       <structure name="IDR_WEBUI_HTML_LOAD_TIME_DATA"
                  file="html/load_time_data.html" type="chrome_html"
                  compress="gzip" />

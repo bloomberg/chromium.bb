@@ -97,7 +97,7 @@ Polymer({
   },
 
   attached: function() {
-    // isRTL() only works after i18n_template.js runs to set <html dir>.
+    // isRTL() only works after <html dir> is set.
     // Set the back button icon based on text direction.
     this.arrowDropIcon_ = isRTL() ? 'cr:arrow-forward' : 'cr:arrow-back';
   },
