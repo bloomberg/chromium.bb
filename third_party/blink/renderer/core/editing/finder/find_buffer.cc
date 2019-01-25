@@ -23,9 +23,9 @@
 
 namespace blink {
 
-FindBuffer::FindBuffer(const PositionInFlatTree& start_position) {
-  DCHECK(start_position.ComputeContainerNode());
-  CollectTextUntilBlockBoundary(*start_position.ComputeContainerNode());
+FindBuffer::FindBuffer(const EphemeralRangeInFlatTree& range) {
+  DCHECK(range.IsNotNull());
+  CollectTextUntilBlockBoundary(range);
 }
 
 FindBuffer::Results::Results() {
@@ -198,9 +198,11 @@ std::unique_ptr<FindBuffer::Results> FindBuffer::FindMatches(
 // Collects text until block boundary located at or after |start_node|
 // to |buffer_|. Saves the next starting node after the block to
 // |node_after_block_|.
-void FindBuffer::CollectTextUntilBlockBoundary(Node& start_node) {
-  // Get first visible text node from |start_node|.
-  Node* node = GetVisibleTextNode(start_node);
+void FindBuffer::CollectTextUntilBlockBoundary(
+    const EphemeralRangeInFlatTree& range) {
+  // Get first visible text node from |start_position|.
+  Node* node =
+      GetVisibleTextNode(*range.StartPosition().NodeAsRangeFirstNode());
   if (!node || !node->isConnected()) {
     node_after_block_ = nullptr;
     return;
@@ -221,8 +223,15 @@ void FindBuffer::CollectTextUntilBlockBoundary(Node& start_node) {
   // Will try to collect all text in outer div but will actually
   // stop when it encounters the inner div. So buffer will be "abc".
   Node* const first_traversed_node = node;
+  // We will also stop if we encountered/passed |end_node|.
+  Node* end_node = range.EndPosition().NodeAsRangeLastNode();
   while (node && node != just_after_block) {
     if (ShouldIgnoreContents(*node)) {
+      if (end_node && (end_node == node ||
+                       FlatTreeTraversal::IsDescendantOf(*end_node, *node))) {
+        node = nullptr;
+        break;
+      }
       // Move the node so we wouldn't encounter this node or its descendants
       // later.
       buffer_.push_back(kObjectReplacementCharacter);
@@ -247,6 +256,11 @@ void FindBuffer::CollectTextUntilBlockBoundary(Node& start_node) {
       // This element and its descendants are not visible, skip it.
       // We can safely just check the computed style of this node since
       // we guarantee |block_ancestor| is visible.
+      if (end_node && (end_node == node ||
+                       FlatTreeTraversal::IsDescendantOf(*end_node, *node))) {
+        node = nullptr;
+        break;
+      }
       node = FlatTreeTraversal::NextSkippingChildren(*node);
       if (node && !FlatTreeTraversal::IsDescendantOf(*node, block_ancestor))
         break;
@@ -272,7 +286,11 @@ void FindBuffer::CollectTextUntilBlockBoundary(Node& start_node) {
         DCHECK(!offset_mapping_storage_);
         last_block_flow = &block_flow;
       }
-      AddTextToBuffer(text_node, block_flow);
+      AddTextToBuffer(text_node, block_flow, range);
+    }
+    if (node == end_node) {
+      node = nullptr;
+      break;
     }
     node = FlatTreeTraversal::Next(*node);
   }
@@ -322,23 +340,28 @@ PositionInFlatTree FindBuffer::PositionAtEndOfCharacterAtIndex(
 }
 
 void FindBuffer::AddTextToBuffer(const Text& text_node,
-                                 LayoutBlockFlow& block_flow) {
+                                 LayoutBlockFlow& block_flow,
+                                 const EphemeralRangeInFlatTree& range) {
   if (!offset_mapping_ || mapping_needs_recalc_) {
     offset_mapping_ =
         NGInlineNode::GetOffsetMapping(&block_flow, &offset_mapping_storage_);
     mapping_needs_recalc_ = false;
   }
-  const String mapped_text = offset_mapping_->GetText();
-  const NGMappingUnitRange range =
-      offset_mapping_->GetMappingUnitsForNode(text_node);
+
+  Position node_start =
+      (&text_node == range.StartPosition().ComputeContainerNode())
+          ? ToPositionInDOMTree(range.StartPosition().ToOffsetInAnchor())
+          : Position::FirstPositionInNode(text_node);
+  Position node_end =
+      (&text_node == range.EndPosition().ComputeContainerNode())
+          ? ToPositionInDOMTree(range.EndPosition().ToOffsetInAnchor())
+          : Position::LastPositionInNode(text_node);
   unsigned last_unit_end = 0;
   bool first_unit = true;
-  for (const NGOffsetMappingUnit& unit : range) {
-    String text_for_unit =
-        mapped_text.Substring(unit.TextContentStart(),
-                              unit.TextContentEnd() - unit.TextContentStart());
-    text_for_unit.Ensure16Bit();
-    text_for_unit.Replace('\n', kObjectReplacementCharacter);
+  const String mapped_text = offset_mapping_->GetText();
+  for (const NGOffsetMappingUnit& unit :
+       offset_mapping_->GetMappingUnitsForDOMRange(
+           EphemeralRange(node_start, node_end))) {
     if (first_unit || last_unit_end != unit.TextContentStart()) {
       // This is the first unit, or the units are not consecutive, so we need to
       // insert a new BufferNodeMapping.
@@ -346,6 +369,11 @@ void FindBuffer::AddTextToBuffer(const Text& text_node,
           BufferNodeMapping({buffer_.size(), unit.TextContentStart()}));
       first_unit = false;
     }
+    String text_for_unit =
+        mapped_text.Substring(unit.TextContentStart(),
+                              unit.TextContentEnd() - unit.TextContentStart());
+    text_for_unit.Ensure16Bit();
+    text_for_unit.Replace('\n', kObjectReplacementCharacter);
     buffer_.Append(text_for_unit.Characters16(), text_for_unit.length());
     last_unit_end = unit.TextContentEnd();
   }
