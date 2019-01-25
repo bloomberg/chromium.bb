@@ -64,6 +64,10 @@ class PasswordSyncBridge : public syncer::ModelTypeSyncBridge {
   // Password store responsible for persistence.
   PasswordStoreSync* const password_store_sync_;
 
+  // True if processing remote sync changes is in progress. Used to ignore
+  // password store changes notifications while processing remote sync changes.
+  bool is_processing_remote_sync_changes_ = false;
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(PasswordSyncBridge);
