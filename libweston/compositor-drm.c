@@ -4127,7 +4127,7 @@ init_kms_caps(struct drm_backend *b)
 	 * to a fraction. For cursors, it's not so bad, so they are
 	 * enabled.
 	 */
-	if (!b->atomic_modeset)
+	if (!b->atomic_modeset || getenv("WESTON_FORCE_RENDERER"))
 		b->sprites_are_broken = 1;
 
 	ret = drmSetClientCap(b->drm.fd, DRM_CLIENT_CAP_ASPECT_RATIO, 1);
