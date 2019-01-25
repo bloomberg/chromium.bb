@@ -1257,6 +1257,8 @@ void NetworkStateHandler::UpdateNetworkStateProperties(
 
   UpdateGuid(network);
   UpdateCaptivePortalProvider(network);
+  if (network->Matches(NetworkTypePattern::Cellular()))
+    UpdateCellularStateFromDevice(network);
 
   network_list_sorted_ = false;
 
@@ -1632,6 +1634,13 @@ void NetworkStateHandler::UpdateCaptivePortalProvider(NetworkState* network) {
                  << network->guid() << " = " << portal_iter->second.id;
   network->SetCaptivePortalProvider(portal_iter->second.id,
                                     portal_iter->second.name);
+}
+
+void NetworkStateHandler::UpdateCellularStateFromDevice(NetworkState* network) {
+  const DeviceState* device = GetDeviceState(network->device_path());
+  if (!device)
+    return;
+  network->provider_requires_roaming_ = device->provider_requires_roaming();
 }
 
 std::unique_ptr<NetworkState>
