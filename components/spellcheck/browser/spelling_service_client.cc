@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"

@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"

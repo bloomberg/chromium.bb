@@ -13,6 +13,7 @@
 #include <portabledevice.h>
 #include <wrl/client.h>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/stl_util.h"

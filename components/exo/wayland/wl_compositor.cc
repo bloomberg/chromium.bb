@@ -6,6 +6,7 @@
 
 #include <wayland-server-protocol-core.h>
 
+#include "base/bind.h"
 #include "components/exo/buffer.h"
 #include "components/exo/display.h"
 #include "components/exo/surface.h"

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/post_task.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"

@@ -7,6 +7,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/window_positioning_utils.h"
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "components/exo/buffer.h"
 #include "components/exo/pointer_delegate.h"

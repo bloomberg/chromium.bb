@@ -4,6 +4,7 @@
 
 #include "components/invalidation/impl/fcm_invalidator.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"

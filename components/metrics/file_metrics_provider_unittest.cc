@@ -6,6 +6,7 @@
 
 #include <functional>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/files/scoped_temp_dir.h"

@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/bind.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "components/feed/core/proto/cached_image.pb.h"

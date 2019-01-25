@@ -4,6 +4,7 @@
 
 #include "components/invalidation/impl/fcm_invalidation_service.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/invalidation/impl/fcm_invalidator.h"

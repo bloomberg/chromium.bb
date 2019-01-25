@@ -4,6 +4,7 @@
 
 #include "components/exo/data_offer.h"
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/no_destructor.h"

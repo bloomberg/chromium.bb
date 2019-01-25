@@ -4,6 +4,7 @@
 
 #include "components/feed/core/feed_logging_metrics.h"
 
+#include "base/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"

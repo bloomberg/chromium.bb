@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/value_conversions.h"
 #include "components/prefs/pref_registry_simple.h"

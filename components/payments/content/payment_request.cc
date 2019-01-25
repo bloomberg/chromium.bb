@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/stl_util.h"
 #include "components/payments/content/can_make_payment_query_factory.h"

@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/single_thread_task_runner.h"

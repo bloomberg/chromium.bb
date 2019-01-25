@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/engine/net/http_post_provider_factory.h"

@@ -4,6 +4,7 @@
 
 #include "components/data_reduction_proxy/content/common/data_reduction_proxy_url_loader_throttle.h"
 
+#include "base/bind.h"
 #include "components/data_reduction_proxy/content/common/header_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_bypass_protocol.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"

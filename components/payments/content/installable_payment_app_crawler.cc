@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_context.h"

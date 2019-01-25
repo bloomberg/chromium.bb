@@ -4,6 +4,7 @@
 
 #include "components/services/heap_profiling/heap_profiling_service.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"

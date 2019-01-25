@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/nacl/loader/nacl_listener.h"
+#include "base/bind.h"
 
 #include <errno.h>
 #include <fcntl.h>

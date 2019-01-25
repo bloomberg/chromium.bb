@@ -4,6 +4,7 @@
 
 #include "components/drive/chromeos/start_page_token_loader.h"
 
+#include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/drive/job_scheduler.h"
 

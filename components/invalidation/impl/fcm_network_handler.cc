@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/base64url.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram_macros.h"

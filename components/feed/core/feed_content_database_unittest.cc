@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/feed/core/feed_content_mutation.h"

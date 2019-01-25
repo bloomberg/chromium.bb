@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"

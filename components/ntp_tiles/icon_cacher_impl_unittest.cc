@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"

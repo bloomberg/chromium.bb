@@ -6,6 +6,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/bind.h"
 #include "base/values.h"
 #include "components/autofill/ios/form_util/form_activity_observer.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"

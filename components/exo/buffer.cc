@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"

@@ -4,6 +4,7 @@
 
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"

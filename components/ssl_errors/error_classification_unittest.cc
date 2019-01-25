@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_split.h"
 #include "base/test/metrics/histogram_tester.h"

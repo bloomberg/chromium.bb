@@ -4,6 +4,7 @@
 
 #include "components/mirroring/browser/single_client_video_capture_host.h"
 
+#include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_contents_media_capture_id.h"
 #include "media/capture/video/video_capture_buffer_pool.h"

@@ -4,6 +4,7 @@
 
 #include "components/exo/data_source.h"
 
+#include "base/bind.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/task/post_task.h"
 #include "components/exo/data_source_delegate.h"

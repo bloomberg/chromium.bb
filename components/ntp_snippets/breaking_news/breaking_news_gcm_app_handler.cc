@@ -4,6 +4,7 @@
 
 #include "components/ntp_snippets/breaking_news/breaking_news_gcm_app_handler.h"
 
+#include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"

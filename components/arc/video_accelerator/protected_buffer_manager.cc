@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/bits.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"

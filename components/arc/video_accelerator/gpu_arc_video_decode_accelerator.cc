@@ -4,6 +4,7 @@
 
 #include "components/arc/video_accelerator/gpu_arc_video_decode_accelerator.h"
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 
 namespace viz {

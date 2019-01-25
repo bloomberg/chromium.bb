@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/json/json_reader.h"
 #include "base/optional.h"

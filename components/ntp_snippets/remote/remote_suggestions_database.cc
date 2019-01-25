@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"

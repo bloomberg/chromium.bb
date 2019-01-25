@@ -4,6 +4,7 @@
 
 #include "components/sync/driver/backend_migrator.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"

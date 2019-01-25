@@ -5,6 +5,7 @@
 #include "components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.h"
 
 #include "base/atomic_sequence_num.h"
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"

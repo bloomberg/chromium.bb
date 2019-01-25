@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/md5.h"

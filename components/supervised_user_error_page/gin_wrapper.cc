@@ -4,6 +4,7 @@
 
 #include "components/supervised_user_error_page/gin_wrapper.h"
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/renderer/render_frame.h"
 #include "gin/handle.h"

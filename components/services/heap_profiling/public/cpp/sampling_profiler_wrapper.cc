@@ -6,6 +6,7 @@
 
 #include "base/allocator/buildflags.h"
 #include "base/atomicops.h"
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/debug/debugging_buildflags.h"
 #include "base/debug/stack_trace.h"

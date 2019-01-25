@@ -9,6 +9,7 @@
 #include <ctime>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/i18n/char_iterator.h"

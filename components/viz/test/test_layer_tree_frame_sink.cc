@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"

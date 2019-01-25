@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_LEVELDB_PROTO_INTERNAL_PROTO_DATABASE_WRAPPER_H_
 #define COMPONENTS_LEVELDB_PROTO_INTERNAL_PROTO_DATABASE_WRAPPER_H_
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/sequenced_task_runner_handle.h"

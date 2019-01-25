@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"

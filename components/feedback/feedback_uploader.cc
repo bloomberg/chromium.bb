@@ -4,6 +4,7 @@
 
 #include "components/feedback/feedback_uploader.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"

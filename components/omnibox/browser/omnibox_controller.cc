@@ -4,6 +4,7 @@
 
 #include "components/omnibox/browser/omnibox_controller.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match.h"

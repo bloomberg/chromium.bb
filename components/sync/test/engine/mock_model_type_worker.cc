@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/syncable/syncable_util.h"

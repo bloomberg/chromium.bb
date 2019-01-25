@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/model/model_task_test_base.h"

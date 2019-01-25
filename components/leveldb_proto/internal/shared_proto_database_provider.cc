@@ -4,6 +4,7 @@
 
 #include "components/leveldb_proto/internal/shared_proto_database_provider.h"
 
+#include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"

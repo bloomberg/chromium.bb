@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/optional.h"
 #include "base/test/metrics/histogram_tester.h"

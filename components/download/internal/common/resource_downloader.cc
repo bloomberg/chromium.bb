@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "components/download/public/common/download_url_loader_factory_getter.h"
 #include "components/download/public/common/stream_handle_input_stream.h"
 #include "components/download/public/common/url_download_request_handle.h"

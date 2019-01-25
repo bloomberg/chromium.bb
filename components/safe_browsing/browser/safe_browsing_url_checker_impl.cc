@@ -4,6 +4,7 @@
 
 #include "components/safe_browsing/browser/safe_browsing_url_checker_impl.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"

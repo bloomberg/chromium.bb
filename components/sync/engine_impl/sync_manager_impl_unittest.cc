@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"

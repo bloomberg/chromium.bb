@@ -5,6 +5,7 @@
 #include "components/services/heap_profiling/public/cpp/client.h"
 
 #include "base/allocator/allocator_interception_mac.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/platform_file.h"
 #include "base/metrics/field_trial_params.h"

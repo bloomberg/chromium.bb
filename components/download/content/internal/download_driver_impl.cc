@@ -7,6 +7,7 @@
 #include <set>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/threading/thread_task_runner_handle.h"

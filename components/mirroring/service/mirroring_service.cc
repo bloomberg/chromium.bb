@@ -4,6 +4,7 @@
 
 #include "components/mirroring/service/mirroring_service.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "components/mirroring/service/session.h"
 #include "services/ws/public/cpp/gpu/gpu.h"

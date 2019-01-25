@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "components/safe_browsing/db/v4_get_hash_protocol_manager.h"

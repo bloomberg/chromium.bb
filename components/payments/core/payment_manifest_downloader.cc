@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/optional.h"
 #include "base/stl_util.h"

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"

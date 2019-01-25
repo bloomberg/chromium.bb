@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "components/offline_pages/core/model/model_task_test_base.h"
 #include "components/offline_pages/core/model/offline_page_item_generator.h"

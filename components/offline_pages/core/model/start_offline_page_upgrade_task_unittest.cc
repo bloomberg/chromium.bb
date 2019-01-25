@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "components/offline_pages/core/model/model_task_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

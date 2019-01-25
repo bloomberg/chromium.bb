@@ -4,6 +4,7 @@
 
 #include "components/viz/service/display_embedder/software_output_device_win.h"
 
+#include "base/bind.h"
 #include "base/memory/shared_memory.h"
 #include "base/threading/thread_checker.h"
 #include "base/win/windows_version.h"

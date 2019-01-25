@@ -4,6 +4,7 @@
 
 #include "components/browser_sync/profile_sync_service.h"
 
+#include "base/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/browser_sync/profile_sync_test_util.h"

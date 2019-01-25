@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/containers/flat_map.h"
 #include "base/test/scoped_feature_list.h"
 #include "cc/test/fake_output_surface_client.h"

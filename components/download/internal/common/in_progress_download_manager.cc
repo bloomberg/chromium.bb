@@ -4,6 +4,7 @@
 
 #include "components/download/public/common/in_progress_download_manager.h"
 
+#include "base/bind.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"

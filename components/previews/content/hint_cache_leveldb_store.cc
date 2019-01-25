@@ -4,6 +4,7 @@
 
 #include "components/previews/content/hint_cache_leveldb_store.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 

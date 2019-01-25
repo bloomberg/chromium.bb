@@ -24,6 +24,7 @@
 #include <string>
 #include <unordered_set>
 
+#include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/run_loop.h"

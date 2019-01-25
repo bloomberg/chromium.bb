@@ -6,6 +6,7 @@
 
 #include "components/ntp_snippets/contextual/contextual_suggestions_fetcher_impl.h"
 
+#include "base/bind.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace contextual_suggestions {

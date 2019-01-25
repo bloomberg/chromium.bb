@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_LEVELDB_PROTO_INTERNAL_SHARED_PROTO_DATABASE_CLIENT_H_
 #define COMPONENTS_LEVELDB_PROTO_INTERNAL_SHARED_PROTO_DATABASE_CLIENT_H_
 
+#include "base/bind.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/strcat.h"

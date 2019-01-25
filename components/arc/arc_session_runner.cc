@@ -4,6 +4,7 @@
 
 #include "components/arc/arc_session_runner.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"

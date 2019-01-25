@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/bind.h"
 #include "components/safe_browsing/browser/safe_browsing_url_checker_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"

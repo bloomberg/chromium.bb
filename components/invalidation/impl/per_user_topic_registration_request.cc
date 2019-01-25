@@ -4,6 +4,7 @@
 
 #include "components/invalidation/impl/per_user_topic_registration_request.h"
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"

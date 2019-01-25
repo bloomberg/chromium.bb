@@ -4,6 +4,7 @@
 
 #include "components/offline_pages/core/offline_page_archiver.h"
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"

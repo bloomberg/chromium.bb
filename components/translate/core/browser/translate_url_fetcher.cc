@@ -4,6 +4,7 @@
 
 #include "components/translate/core/browser/translate_url_fetcher.h"
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/translate/core/browser/translate_download_manager.h"

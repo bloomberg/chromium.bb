@@ -4,6 +4,7 @@
 
 #include "components/data_reduction_proxy/core/browser/warmup_url_fetcher.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/guid.h"
 #include "base/metrics/field_trial_params.h"

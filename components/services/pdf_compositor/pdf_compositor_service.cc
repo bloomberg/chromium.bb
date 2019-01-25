@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/memory/discardable_memory.h"
 #include "build/build_config.h"

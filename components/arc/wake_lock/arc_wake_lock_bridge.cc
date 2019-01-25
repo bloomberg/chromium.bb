@@ -5,6 +5,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"

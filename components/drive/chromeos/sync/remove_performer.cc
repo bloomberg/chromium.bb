@@ -4,6 +4,7 @@
 
 #include "components/drive/chromeos/sync/remove_performer.h"
 
+#include "base/bind.h"
 #include "base/sequenced_task_runner.h"
 #include "components/drive/chromeos/file_system/operation_delegate.h"
 #include "components/drive/chromeos/resource_metadata.h"

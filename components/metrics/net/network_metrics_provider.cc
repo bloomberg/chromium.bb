@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"

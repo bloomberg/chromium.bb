@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/containers/span.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"

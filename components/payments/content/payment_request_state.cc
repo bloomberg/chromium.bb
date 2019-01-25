@@ -8,6 +8,7 @@
 #include <set>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_country.h"

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "components/password_manager/core/browser/password_store.h"
 
 namespace browser_sync {

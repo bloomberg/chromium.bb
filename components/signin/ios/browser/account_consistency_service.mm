@@ -6,6 +6,7 @@
 
 #import <WebKit/WebKit.h>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #include "base/macros.h"

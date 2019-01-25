@@ -4,6 +4,7 @@
 
 #include "components/offline_pages/core/background/test_request_queue_store.h"
 
+#include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/background/request_queue_store.h"
 

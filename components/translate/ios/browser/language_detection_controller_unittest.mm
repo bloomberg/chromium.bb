@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/language/ios/browser/ios_language_detection_tab_helper.h"

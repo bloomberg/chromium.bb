@@ -17,6 +17,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"

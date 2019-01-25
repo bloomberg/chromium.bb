@@ -4,6 +4,7 @@
 
 #include <set>
 
+#include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"

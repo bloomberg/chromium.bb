@@ -4,6 +4,7 @@
 
 #include "components/safe_browsing/triggers/trigger_manager.h"
 
+#include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/base_ui_manager.h"

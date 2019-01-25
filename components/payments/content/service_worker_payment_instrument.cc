@@ -4,6 +4,7 @@
 
 #include "components/payments/content/service_worker_payment_instrument.h"
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"

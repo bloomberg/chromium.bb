@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/id_map.h"
 #include "base/files/scoped_temp_dir.h"

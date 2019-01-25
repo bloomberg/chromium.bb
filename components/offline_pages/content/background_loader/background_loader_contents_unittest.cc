@@ -4,6 +4,7 @@
 
 #include "components/offline_pages/content/background_loader/background_loader_contents.h"
 
+#include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"

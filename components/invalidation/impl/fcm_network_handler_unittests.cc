@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
