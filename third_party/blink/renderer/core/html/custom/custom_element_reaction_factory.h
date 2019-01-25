@@ -13,6 +13,7 @@ namespace blink {
 class CustomElementDefinition;
 class CustomElementReaction;
 class Document;
+class FileOrUSVString;
 class HTMLFormElement;
 class QualifiedName;
 
@@ -44,6 +45,9 @@ class CustomElementReactionFactory {
   static CustomElementReaction& CreateDisabledStateChanged(
       CustomElementDefinition& definition,
       bool is_disabled);
+  static CustomElementReaction& CreateRestoreValue(
+      CustomElementDefinition& definition,
+      const FileOrUSVString& value);
 };
 
 }  // namespace blink

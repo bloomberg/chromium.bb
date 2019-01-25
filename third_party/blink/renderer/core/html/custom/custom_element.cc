@@ -283,6 +283,15 @@ void CustomElement::EnqueueDisabledStateChangedCallback(Element& element,
   }
 }
 
+void CustomElement::EnqueueRestoreValueCallback(Element& element,
+                                                const FileOrUSVString& value) {
+  auto& definition = *DefinitionForElementWithoutCheck(element);
+  if (definition.HasRestoreValueCallback()) {
+    Enqueue(element, CustomElementReactionFactory::CreateRestoreValue(
+                         definition, value));
+  }
+}
+
 void CustomElement::TryToUpgrade(Element& element,
                                  bool upgrade_invisible_elements) {
   // Try to upgrade an element
