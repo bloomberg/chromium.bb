@@ -10,6 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "services/device/public/mojom/bluetooth_system.mojom.h"
 

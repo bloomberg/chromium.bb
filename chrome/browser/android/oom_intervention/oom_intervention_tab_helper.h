@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/android/oom_intervention/near_oom_monitor.h"
 #include "chrome/browser/ui/interventions/intervention_delegate.h"
 #include "components/crash/content/browser/crash_metrics_reporter_android.h"

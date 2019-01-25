@@ -24,6 +24,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
+#include "base/timer/timer.h"
 #include "storage/browser/quota/quota_callbacks.h"
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_database.h"

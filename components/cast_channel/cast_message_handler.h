@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/tick_clock.h"
+#include "base/timer/timer.h"
 #include "base/token.h"
 #include "base/values.h"
 #include "components/cast_channel/cast_message_util.h"

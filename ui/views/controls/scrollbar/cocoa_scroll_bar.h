@@ -7,6 +7,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/controls/scrollbar/base_scroll_bar.h"

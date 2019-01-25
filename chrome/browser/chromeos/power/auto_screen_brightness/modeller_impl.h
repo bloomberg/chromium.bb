@@ -16,6 +16,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/als_reader.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/als_samples.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/brightness_monitor.h"

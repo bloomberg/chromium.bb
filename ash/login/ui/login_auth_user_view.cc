@@ -27,6 +27,7 @@
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/timer/timer.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/user_manager/user.h"
 #include "ui/accessibility/ax_node_data.h"

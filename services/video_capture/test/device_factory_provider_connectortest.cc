@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/timer/timer.h"
 #include "media/base/media_switches.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"

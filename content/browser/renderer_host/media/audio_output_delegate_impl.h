@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "media/audio/audio_output_delegate.h"
 #include "media/mojo/interfaces/audio_logging.mojom.h"

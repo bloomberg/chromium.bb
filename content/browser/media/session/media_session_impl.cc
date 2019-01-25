@@ -11,6 +11,7 @@
 #include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/browser/media/session/audio_focus_delegate.h"

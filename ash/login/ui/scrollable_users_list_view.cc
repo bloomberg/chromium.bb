@@ -16,6 +16,7 @@
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "base/bind.h"
 #include "base/numerics/ranges.h"
+#include "base/timer/timer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"

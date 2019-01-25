@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SESSIONS_TAB_LOADER_TESTER_H_
 #define CHROME_BROWSER_SESSIONS_TAB_LOADER_TESTER_H_
 
+#include "base/timer/timer.h"
 #include "chrome/browser/sessions/tab_loader.h"
 
 // Wraps a TabLoader and exposes helper functions for testing. See tab_loader.h

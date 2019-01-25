@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/stream/aec_dump_message_filter.h"
 #include "media/audio/audio_processing.h"
