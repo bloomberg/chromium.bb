@@ -216,8 +216,8 @@ class Client(object):
       prpc_req = new_request(
           hostname=self._hostname,
           insecure=self._insecure,
-          service_name=str(self._full_service_name),
-          method_name=str(method_desc.name),
+          service_name=self._full_service_name,
+          method_name=method_desc.name,
           request_message=request,
           response_message=response_py_type(),
           metadata=metadata,
