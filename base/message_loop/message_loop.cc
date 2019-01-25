@@ -185,7 +185,7 @@ std::unique_ptr<MessageLoop> MessageLoop::CreateUnbound(
 }
 
 const Feature kMessageLoopUsesSequenceManager{"MessageLoopUsesSequenceManager",
-                                              FEATURE_DISABLED_BY_DEFAULT};
+                                              FEATURE_ENABLED_BY_DEFAULT};
 
 MessageLoop::MessageLoop(Type type, MessagePumpFactoryCallback pump_factory)
     : MessageLoop(type,
