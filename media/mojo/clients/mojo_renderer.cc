@@ -283,7 +283,7 @@ void MojoRenderer::OnDurationChange(base::TimeDelta duration) {
 }
 
 void MojoRenderer::OnRemotePlayStateChange(media::MediaStatus::State state) {
-  DVLOG(2) << __func__ << ": state" << (int)state;
+  DVLOG(2) << __func__ << ": state [" << static_cast<int>(state) << "]";
   client_->OnRemotePlayStateChange(state);
 }
 
