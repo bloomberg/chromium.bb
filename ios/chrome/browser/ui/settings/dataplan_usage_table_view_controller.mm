@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -53,7 +54,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
                      basePref:(const char*)basePreference
                      wifiPref:(const char*)wifiPreference
                         title:(NSString*)title {
-  self = [super initWithTableViewStyle:UITableViewStyleGrouped
+  UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
+                               ? UITableViewStylePlain
+                               : UITableViewStyleGrouped;
+  self = [super initWithTableViewStyle:style
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
     self.title = title;

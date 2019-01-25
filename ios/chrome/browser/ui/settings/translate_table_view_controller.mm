@@ -23,6 +23,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -68,7 +69,10 @@ NSString* const kTranslateSettingsCategory = @"ChromeTranslateSettings";
 
 - (instancetype)initWithPrefs:(PrefService*)prefs {
   DCHECK(prefs);
-  self = [super initWithTableViewStyle:UITableViewStyleGrouped
+  UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
+                               ? UITableViewStylePlain
+                               : UITableViewStyleGrouped;
+  self = [super initWithTableViewStyle:style
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
     _prefs = prefs;

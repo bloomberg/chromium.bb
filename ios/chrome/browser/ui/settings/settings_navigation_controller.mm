@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
 #import "ios/chrome/browser/ui/settings/sync_encryption_passphrase_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync_settings_collection_view_controller.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -245,6 +246,9 @@ initWithRootViewController:(UIViewController*)rootViewController
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+  if (base::FeatureList::IsEnabled(kSettingsRefresh)) {
+    self.navigationBar.backgroundColor = UIColor.whiteColor;
+  }
   self.navigationBar.prefersLargeTitles = YES;
   self.navigationBar.accessibilityIdentifier = @"SettingNavigationBar";
 }

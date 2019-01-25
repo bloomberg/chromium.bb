@@ -25,6 +25,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -76,7 +77,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
   DCHECK(browserState);
-  self = [super initWithTableViewStyle:UITableViewStyleGrouped
+  UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
+                               ? UITableViewStylePlain
+                               : UITableViewStyleGrouped;
+  self = [super initWithTableViewStyle:style
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
     self.title = l10n_util::GetNSString(IDS_AUTOFILL_ADDRESSES_SETTINGS_TITLE);

@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/translate_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/content_setting_backed_boolean.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/mailto/mailto_handler_provider.h"
@@ -77,7 +78,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
   DCHECK(browserState);
-  self = [super initWithTableViewStyle:UITableViewStyleGrouped
+  UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
+                               ? UITableViewStylePlain
+                               : UITableViewStyleGrouped;
+  self = [super initWithTableViewStyle:style
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
     browserState_ = browserState;

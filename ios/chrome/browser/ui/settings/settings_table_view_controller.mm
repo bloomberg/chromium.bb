@@ -63,6 +63,7 @@
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/browser/voice/speech_input_locale_config.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -273,7 +274,10 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                           dispatcher:(id<ApplicationCommands>)dispatcher {
   DCHECK(!browserState->IsOffTheRecord());
-  self = [super initWithTableViewStyle:UITableViewStyleGrouped
+  UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
+                               ? UITableViewStylePlain
+                               : UITableViewStyleGrouped;
+  self = [super initWithTableViewStyle:style
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
     _browserState = browserState;

@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/settings/cells/settings_multiline_detail_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -57,7 +58,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
                       isSignedIn:(BOOL)isSignedIn {
   DCHECK(fromEmail);
   DCHECK(toEmail);
-  self = [super initWithTableViewStyle:UITableViewStyleGrouped
+  UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
+                               ? UITableViewStylePlain
+                               : UITableViewStyleGrouped;
+  self = [super initWithTableViewStyle:style
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
     _delegate = delegate;

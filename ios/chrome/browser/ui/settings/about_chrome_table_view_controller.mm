@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -53,7 +54,10 @@ const CGFloat kDefaultHeight = 70;
 #pragma mark - Public
 
 - (instancetype)init {
-  self = [super initWithTableViewStyle:UITableViewStyleGrouped
+  UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
+                               ? UITableViewStylePlain
+                               : UITableViewStyleGrouped;
+  self = [super initWithTableViewStyle:style
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
     self.title = l10n_util::GetNSString(IDS_IOS_ABOUT_PRODUCT_NAME);
