@@ -2874,6 +2874,9 @@ test("unit_tests") {
       "../browser/ui/toolbar/app_menu_icon_controller_unittest.cc",
     ]
   }
+  if (is_chromeos) {
+    sources += [ "../renderer/chromeos_delayed_callback_group_unittest.cc" ]
+  }
 
   configs += [ "//build/config:precompiled_headers" ]
 

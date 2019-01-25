@@ -18,6 +18,11 @@
 #include "extensions/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/signin/merge_session_throttling_utils.h"
+#include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
+#endif
+
 namespace {
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -56,6 +61,13 @@ RendererUpdater::RendererUpdater(Profile* profile)
     : profile_(profile), identity_manager_observer_(this) {
   identity_manager_ = IdentityManagerFactory::GetForProfile(profile);
   identity_manager_observer_.Add(identity_manager_);
+#if defined(OS_CHROMEOS)
+  oauth2_login_manager_ =
+      chromeos::OAuth2LoginManagerFactory::GetForProfile(profile_);
+  oauth2_login_manager_->AddObserver(this);
+  merge_session_running_ =
+      merge_session_throttling_utils::ShouldDelayRequestForProfile(profile_);
+#endif
   variations_http_header_provider_ =
       variations::VariationsHttpHeaderProvider::GetInstance();
   variations_http_header_provider_->AddObserver(this);
@@ -88,9 +100,16 @@ RendererUpdater::RendererUpdater(Profile* profile)
 
 RendererUpdater::~RendererUpdater() {
   DCHECK(!identity_manager_);
+#if defined(OS_CHROMEOS)
+  DCHECK(!oauth2_login_manager_);
+#endif
 }
 
 void RendererUpdater::Shutdown() {
+#if defined(OS_CHROMEOS)
+  oauth2_login_manager_->RemoveObserver(this);
+  oauth2_login_manager_ = nullptr;
+#endif
   identity_manager_observer_.RemoveAll();
   identity_manager_ = nullptr;
   variations_http_header_provider_->RemoveObserver(this);
@@ -105,7 +124,17 @@ void RendererUpdater::InitializeRenderer(
       Profile::FromBrowserContext(render_process_host->GetBrowserContext());
   bool is_incognito_process = profile->IsOffTheRecord();
 
-  renderer_configuration->SetInitialConfiguration(is_incognito_process);
+  chrome::mojom::ChromeOSListenerRequest chromeos_listener_request;
+#if defined(OS_CHROMEOS)
+  if (merge_session_running_) {
+    chrome::mojom::ChromeOSListenerPtr chromeos_listener;
+    chromeos_listener_request = MakeRequest(&chromeos_listener);
+    chromeos_listeners_.push_back(std::move(chromeos_listener));
+  }
+#endif  // defined(OS_CHROMEOS)
+  renderer_configuration->SetInitialConfiguration(
+      is_incognito_process, std::move(chromeos_listener_request));
+
   UpdateRenderer(&renderer_configuration);
 
   RendererContentSettingRules rules;
@@ -152,6 +181,21 @@ RendererUpdater::GetRendererConfiguration(
   channel->GetRemoteAssociatedInterface(&renderer_configuration);
   return renderer_configuration;
 }
+
+#if defined(OS_CHROMEOS)
+void RendererUpdater::OnSessionRestoreStateChanged(
+    Profile* user_profile,
+    chromeos::OAuth2LoginManager::SessionRestoreState state) {
+  merge_session_running_ =
+      merge_session_throttling_utils::ShouldDelayRequestForProfile(profile_);
+  if (merge_session_running_)
+    return;
+
+  for (auto& chromeos_listener : chromeos_listeners_)
+    chromeos_listener->MergeSessionComplete();
+  chromeos_listeners_.clear();
+}
+#endif
 
 void RendererUpdater::OnPrimaryAccountSet(const AccountInfo& account_info) {
   UpdateAllRenderers();
