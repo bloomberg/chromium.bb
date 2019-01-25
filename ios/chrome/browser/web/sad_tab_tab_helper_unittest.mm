@@ -64,7 +64,8 @@ class SadTabTabHelperTest : public PlatformTest {
         sad_tab_delegate_([[SadTabTabHelperTestDelegate alloc] init]) {
     browser_state_ = TestChromeBrowserState::Builder().Build();
 
-    SadTabTabHelper::CreateForWebState(&web_state_, sad_tab_delegate_);
+    SadTabTabHelper::CreateForWebState(&web_state_);
+    tab_helper()->SetDelegate(sad_tab_delegate_);
     PagePlaceholderTabHelper::CreateForWebState(&web_state_);
     OCMStub([application_ sharedApplication]).andReturn(application_);
 
@@ -305,7 +306,8 @@ TEST_F(SadTabTabHelperTest, FailureInterval) {
       TestChromeBrowserState::Builder().Build();
   web::TestWebState web_state;
   web_state.SetBrowserState(browser_state.get());
-  SadTabTabHelper::CreateForWebState(&web_state, 0.0f, sad_tab_delegate_);
+  SadTabTabHelper::CreateForWebState(&web_state, 0.0f);
+  SadTabTabHelper::FromWebState(&web_state)->SetDelegate(sad_tab_delegate_);
   PagePlaceholderTabHelper::CreateForWebState(&web_state);
   web_state.WasShown();
 

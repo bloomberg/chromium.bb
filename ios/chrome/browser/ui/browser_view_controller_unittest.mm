@@ -238,7 +238,7 @@ class BrowserViewControllerTest : public BlockCleanupTest {
 
     SnapshotTabHelper::CreateForWebState(webStateImpl_.get(),
                                          [[NSUUID UUID] UUIDString]);
-    SadTabTabHelper::CreateForWebState(webStateImpl_.get(), nil);
+    SadTabTabHelper::CreateForWebState(webStateImpl_.get());
 
     // Load TemplateURLService.
     TemplateURLService* template_url_service =
