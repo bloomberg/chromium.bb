@@ -7,7 +7,9 @@
 #include <memory>
 #include "base/single_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/cssom/cross_thread_keyword_value.h"
 #include "third_party/blink/renderer/core/css/cssom/cross_thread_unsupported_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_keyword_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -40,6 +42,15 @@ class CrossThreadStyleValueTest : public testing::Test {
     thread_->InitializeOnThread();
 
     EXPECT_EQ(value->value_, "Unsupported");
+    waitable_event->Signal();
+  }
+
+  void CheckKeywordValue(WaitableEvent* waitable_event,
+                         std::unique_ptr<CrossThreadKeywordValue> value) {
+    DCHECK(!IsMainThread());
+    thread_->InitializeOnThread();
+
+    EXPECT_EQ(value->keyword_value_, "Keyword");
     waitable_event->Signal();
   }
 
@@ -78,6 +89,36 @@ TEST_F(CrossThreadStyleValueTest, CrossThreadUnsupportedValueToCSSStyleValue) {
   EXPECT_EQ(style_value->GetType(),
             CSSStyleValue::StyleValueType::kUnknownType);
   EXPECT_EQ(style_value->CSSText(), "Unsupported");
+}
+
+TEST_F(CrossThreadStyleValueTest, PassKeywordValueCrossThread) {
+  std::unique_ptr<CrossThreadKeywordValue> value =
+      std::make_unique<CrossThreadKeywordValue>("Keyword");
+  DCHECK(value);
+
+  // Use a WebThreadSupportingGC to emulate worklet thread.
+  thread_ = WebThreadSupportingGC::Create(
+      ThreadCreationParams(WebThreadType::kTestThread));
+  WaitableEvent waitable_event;
+  thread_->PostTask(
+      FROM_HERE, CrossThreadBind(&CrossThreadStyleValueTest::CheckKeywordValue,
+                                 CrossThreadUnretained(this),
+                                 CrossThreadUnretained(&waitable_event),
+                                 WTF::Passed(std::move(value))));
+  waitable_event.Wait();
+
+  ShutDownThread();
+}
+
+TEST_F(CrossThreadStyleValueTest, CrossThreadKeywordValueToCSSStyleValue) {
+  std::unique_ptr<CrossThreadKeywordValue> value =
+      std::make_unique<CrossThreadKeywordValue>("Keyword");
+  DCHECK(value);
+
+  CSSStyleValue* style_value = value->ToCSSStyleValue();
+  EXPECT_EQ(style_value->GetType(),
+            CSSStyleValue::StyleValueType::kKeywordType);
+  EXPECT_EQ(static_cast<CSSKeywordValue*>(style_value)->value(), "Keyword");
 }
 
 }  // namespace blink
