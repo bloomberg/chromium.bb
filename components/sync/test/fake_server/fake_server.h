@@ -173,6 +173,9 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   // Sets a maximum batch size for GetUpdates requests.
   void SetMaxGetUpdatesBatchSize(int batch_size);
 
+  // Sets the bag of chips returned by the server.
+  void SetBagOfChips(const sync_pb::ChipBag& bag_of_chips);
+
   // Implement LoopbackServer::ObserverForTests:
   void OnCommit(const std::string& committer_id,
                 syncer::ModelTypeSet committed_model_types) override;

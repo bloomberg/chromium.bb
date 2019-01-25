@@ -252,6 +252,10 @@ net::HttpStatusCode LoopbackServer::HandleCommand(const string& request,
 
   sync_pb::ClientToServerResponse response_proto;
 
+  if (bag_of_chips_.has_value()) {
+    *response_proto.mutable_new_bag_of_chips() = *bag_of_chips_;
+  }
+
   if (message.has_store_birthday() &&
       message.store_birthday() != GetStoreBirthday()) {
     response_proto.set_error_code(sync_pb::SyncEnums::NOT_MY_BIRTHDAY);

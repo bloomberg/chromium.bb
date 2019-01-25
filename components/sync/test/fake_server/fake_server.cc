@@ -453,6 +453,11 @@ void FakeServer::SetMaxGetUpdatesBatchSize(int batch_size) {
   loopback_server_->SetMaxGetUpdatesBatchSize(batch_size);
 }
 
+void FakeServer::SetBagOfChips(const sync_pb::ChipBag& bag_of_chips) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  loopback_server_->SetBagOfChipsForTesting(bag_of_chips);
+}
+
 const std::set<std::string>& FakeServer::GetCommittedHistoryURLs() const {
   return committed_history_urls_;
 }
