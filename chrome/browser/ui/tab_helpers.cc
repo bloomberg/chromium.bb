@@ -295,8 +295,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   LookalikeUrlNavigationObserver::CreateForWebContents(web_contents);
   ManagePasswordsUIController::CreateForWebContents(web_contents);
   pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
-      web_contents, std::unique_ptr<pdf::PDFWebContentsHelperClient>(
-                        new ChromePDFWebContentsHelperClient()));
+      web_contents, std::make_unique<ChromePDFWebContentsHelperClient>());
   PluginObserver::CreateForWebContents(web_contents);
   SadTabHelper::CreateForWebContents(web_contents);
   safe_browsing::SafeBrowsingTabObserver::CreateForWebContents(web_contents);

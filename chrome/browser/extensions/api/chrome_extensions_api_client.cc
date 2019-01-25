@@ -93,8 +93,7 @@ void ChromeExtensionsAPIClient::AttachWebContentsHelpers(
   printing::InitializePrinting(web_contents);
 #endif
   pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
-      web_contents, std::unique_ptr<pdf::PDFWebContentsHelperClient>(
-                        new ChromePDFWebContentsHelperClient()));
+      web_contents, std::make_unique<ChromePDFWebContentsHelperClient>());
 
   data_use_measurement::DataUseWebContentsObserver::CreateForWebContents(
       web_contents);
