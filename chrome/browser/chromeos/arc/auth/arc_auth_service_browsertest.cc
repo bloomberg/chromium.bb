@@ -293,8 +293,8 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
             &test_url_loader_factory_);
     account_manager->Initialize(
         profile()->GetPath(), test_shared_loader_factory_,
-        base::BindRepeating([](const base::RepeatingClosure& closure) -> void {
-          closure.Run();
+        base::BindRepeating([](base::OnceClosure closure) -> void {
+          std::move(closure).Run();
         }));
     auth_service_->SetURLLoaderFactoryForTesting(test_shared_loader_factory_);
     // It is non-trivial to navigate through the merge session in a testing

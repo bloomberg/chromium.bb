@@ -95,7 +95,7 @@ TEST_F(ChromeSigninClientTest, DelayNetworkCallRunsImmediatelyWithNetwork) {
   SetUpNetworkConnection(true, network::mojom::ConnectionType::CONNECTION_3G);
   CallbackTester tester;
   signin_client()->DelayNetworkCall(
-      base::Bind(&CallbackTester::Increment, base::Unretained(&tester)));
+      base::BindOnce(&CallbackTester::Increment, base::Unretained(&tester)));
   ASSERT_TRUE(tester.WasCalledExactlyOnce());
 }
 
@@ -105,8 +105,8 @@ TEST_F(ChromeSigninClientTest, DelayNetworkCallRunsAfterGetConnectionType) {
   base::RunLoop run_loop;
   CallbackTester tester;
   signin_client()->DelayNetworkCall(
-      base::Bind(&CallbackTester::IncrementAndUnblock,
-                 base::Unretained(&tester), &run_loop));
+      base::BindOnce(&CallbackTester::IncrementAndUnblock,
+                     base::Unretained(&tester), &run_loop));
   ASSERT_FALSE(tester.WasCalledExactlyOnce());
   run_loop.Run();  // Wait for IncrementAndUnblock().
   ASSERT_TRUE(tester.WasCalledExactlyOnce());
@@ -118,8 +118,8 @@ TEST_F(ChromeSigninClientTest, DelayNetworkCallRunsAfterNetworkChange) {
   base::RunLoop run_loop;
   CallbackTester tester;
   signin_client()->DelayNetworkCall(
-      base::Bind(&CallbackTester::IncrementAndUnblock,
-                 base::Unretained(&tester), &run_loop));
+      base::BindOnce(&CallbackTester::IncrementAndUnblock,
+                     base::Unretained(&tester), &run_loop));
 
   ASSERT_FALSE(tester.WasCalledExactlyOnce());
   SetConnectionType(network::mojom::ConnectionType::CONNECTION_3G);

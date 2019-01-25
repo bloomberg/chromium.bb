@@ -92,7 +92,7 @@ class SigninClient : public KeyedService {
       content_settings::Observer* observer) = 0;
 
   // Execute |callback| if and when there is a network connection.
-  virtual void DelayNetworkCall(const base::Closure& callback) = 0;
+  virtual void DelayNetworkCall(base::OnceClosure callback) = 0;
 
   // Creates a new platform-specific GaiaAuthFetcher.
   virtual std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(

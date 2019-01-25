@@ -123,9 +123,9 @@ class AccountManager::GaiaTokenRevocationRequest : public GaiaAuthConsumer {
     DCHECK(!refresh_token_.empty());
     gaia_auth_fetcher_ = std::make_unique<GaiaAuthFetcher>(
         this, gaia::GaiaSource::kChromeOS, url_loader_factory);
-    base::RepeatingClosure start_revoke_token = base::BindRepeating(
+    base::OnceClosure start_revoke_token = base::BindOnce(
         &GaiaTokenRevocationRequest::Start, weak_factory_.GetWeakPtr());
-    delay_network_call_runner.Run(start_revoke_token);
+    delay_network_call_runner.Run(std::move(start_revoke_token));
   }
 
   ~GaiaTokenRevocationRequest() override = default;

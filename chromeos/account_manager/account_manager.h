@@ -80,7 +80,7 @@ class CHROMEOS_EXPORT AccountManager {
   using AccountListCallback = base::OnceCallback<void(std::vector<AccountKey>)>;
 
   using DelayNetworkCallRunner =
-      base::RepeatingCallback<void(const base::RepeatingClosure&)>;
+      base::RepeatingCallback<void(base::OnceClosure)>;
 
   class Observer {
    public:
