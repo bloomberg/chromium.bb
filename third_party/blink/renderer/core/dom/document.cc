@@ -7871,6 +7871,18 @@ void Document::ProcessJavaScriptUrl(
   if (frame_->Loader().StateMachine()->IsDisplayingInitialEmptyDocument())
     load_event_progress_ = kLoadEventNotRun;
   frame_->Loader().Progress().ProgressStarted();
+  // Some sites appear to depend on javascript:'' synchronously populating an
+  // iframe, similar to about:blank. See https://crbug.com/923585
+  // TODO(japhet): The spec doesn't say anything about ever loading JS urls
+  // synchronously. It's unclear whether the problem is that JS url navigation
+  // has to be sync in certain situations, or if these are just legacy websites
+  // assuming non-spec-compliant behavior. Either way, this special case seems
+  // hacky.
+  if (frame_->Loader().StateMachine()->IsDisplayingInitialEmptyDocument() &&
+      (url == "javascript:''" || url == "javascript:\"\"")) {
+    ExecuteJavaScriptUrl(url, disposition);
+    return;
+  }
   javascript_url_task_handle_ = PostCancellableTask(
       *GetTaskRunner(TaskType::kNetworking), FROM_HERE,
       WTF::Bind(&Document::ExecuteJavaScriptUrl, WrapWeakPersistent(this), url,
