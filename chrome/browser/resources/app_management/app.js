@@ -39,10 +39,7 @@ Polymer({
     });
 
     this.watch('pwaPermissionViewSelected_', (state) => {
-      // TODO(rekanorman): Remove AppType.kExtension case once PWA's are sent
-      // thorough with the correct app type.
-      return this.appTypeSelected(state, AppType.kWeb) ||
-          this.appTypeSelected(state, AppType.kExtension);
+      return this.appTypeSelected(state, AppType.kWeb);
     });
 
     this.watch('chromeAppPermissionViewSelected_', (state) => {

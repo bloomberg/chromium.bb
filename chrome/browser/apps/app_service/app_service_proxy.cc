@@ -9,6 +9,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/services/app_service/public/mojom/constants.mojom.h"
+#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -35,7 +36,10 @@ AppServiceProxy::AppServiceProxy(Profile* profile) {
   // responsibility isn't intrinsically part of the AppServiceProxy, but doing
   // that here, for each such app type, is as good a place as any.
   built_in_chrome_os_apps_.Initialize(app_service_, profile);
-  extension_apps_.Initialize(app_service_, profile);
+  extension_apps_.Initialize(app_service_, profile,
+                             apps::mojom::AppType::kExtension);
+  extension_web_apps_.Initialize(app_service_, profile,
+                                 apps::mojom::AppType::kWeb);
 #endif  // OS_CHROMEOS
 }
 

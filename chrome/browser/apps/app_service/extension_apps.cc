@@ -76,20 +76,41 @@ ash::ShelfLaunchSource ConvertLaunchSource(
 namespace apps {
 
 ExtensionApps::ExtensionApps()
-    : binding_(this), profile_(nullptr), next_u_key_(1), observer_(this) {}
+    : binding_(this),
+      profile_(nullptr),
+      next_u_key_(1),
+      observer_(this),
+      app_type_(apps::mojom::AppType::kUnknown) {}
 
 ExtensionApps::~ExtensionApps() = default;
 
 void ExtensionApps::Initialize(const apps::mojom::AppServicePtr& app_service,
-                               Profile* profile) {
+                               Profile* profile,
+                               apps::mojom::AppType type) {
+  app_type_ = type;
   apps::mojom::PublisherPtr publisher;
   binding_.Bind(mojo::MakeRequest(&publisher));
-  app_service->RegisterPublisher(std::move(publisher),
-                                 apps::mojom::AppType::kExtension);
+  app_service->RegisterPublisher(std::move(publisher), app_type_);
 
   profile_ = profile;
   if (profile_) {
     observer_.Add(extensions::ExtensionRegistry::Get(profile_));
+  }
+}
+
+bool ExtensionApps::Accepts(const extensions::Extension* extension) {
+  if (!extension->is_app() || IsBlacklisted(extension->id())) {
+    return false;
+  }
+
+  switch (app_type_) {
+    case apps::mojom::AppType::kExtension:
+      return !extension->from_bookmark();
+    case apps::mojom::AppType::kWeb:
+      return extension->from_bookmark();
+    default:
+      NOTREACHED();
+      return false;
   }
 }
 
@@ -275,7 +296,8 @@ void ExtensionApps::OnExtensionInstalled(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     bool is_update) {
-  if (IsBlacklisted(extension->id())) {
+  // If the extension doesn't belong to this publisher, do nothing.
+  if (!Accepts(extension)) {
     return;
   }
 
@@ -294,14 +316,15 @@ void ExtensionApps::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     extensions::UninstallReason reason) {
-  if (IsBlacklisted(extension->id())) {
+  // If the extension doesn't belong to this publisher, do nothing.
+  if (!Accepts(extension)) {
     return;
   }
 
   // Construct an App with only the information required to identify an
   // uninstallation.
   apps::mojom::AppPtr app = apps::mojom::App::New();
-  app->app_type = apps::mojom::AppType::kExtension;
+  app->app_type = app_type_;
   app->app_id = extension->id();
   app->readiness = apps::mojom::Readiness::kUninstalledByUser;
 
@@ -339,7 +362,7 @@ apps::mojom::AppPtr ExtensionApps::Convert(
     apps::mojom::Readiness readiness) {
   apps::mojom::AppPtr app = apps::mojom::App::New();
 
-  app->app_type = apps::mojom::AppType::kExtension;
+  app->app_type = app_type_;
   app->app_id = extension->id();
   app->readiness = readiness;
   app->name = extension->name();
@@ -411,7 +434,7 @@ void ExtensionApps::ConvertVector(const extensions::ExtensionSet& extensions,
                                   apps::mojom::Readiness readiness,
                                   std::vector<apps::mojom::AppPtr>* apps_out) {
   for (const auto& extension : extensions) {
-    if (extension->is_app() && !IsBlacklisted(extension->id())) {
+    if (Accepts(extension.get())) {
       apps_out->push_back(Convert(extension.get(), readiness));
     }
   }
