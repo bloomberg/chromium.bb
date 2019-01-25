@@ -228,6 +228,13 @@ class TranslateManager {
                           TranslatePrefs* translate_prefs,
                           const std::string& page_language_code);
 
+  // Determines if either auto-translation or showing the UI is supported for
+  // the current navigation's hrefTranslate attribute. Writes the results to
+  // |decision|.
+  void FilterForHrefTranslate(TranslateTriggerDecision* decision,
+                              TranslatePrefs* translate_prefs,
+                              const std::string& page_language_code);
+
   // Enables or disables the translate omnibox icon depending on |decision|. The
   // icon is always shown if translate UI is shown, auto-translation happens, or
   // the UI is suppressed by ranker.
