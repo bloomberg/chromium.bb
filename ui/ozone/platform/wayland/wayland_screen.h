@@ -25,12 +25,11 @@ class WaylandScreen : public PlatformScreen {
   explicit WaylandScreen(WaylandConnection* connection);
   ~WaylandScreen() override;
 
-  void OnOutputAdded(uint32_t output_id, bool is_primary);
+  void OnOutputAdded(uint32_t output_id);
   void OnOutputRemoved(uint32_t output_id);
   void OnOutputMetricsChanged(uint32_t output_id,
                               const gfx::Rect& bounds,
-                              float device_pixel_ratio,
-                              bool is_primary);
+                              float device_pixel_ratio);
 
   base::WeakPtr<WaylandScreen> GetWeakPtr();
 

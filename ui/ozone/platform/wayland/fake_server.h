@@ -277,6 +277,11 @@ class Global {
 
   // Create a global object.
   bool Initialize(wl_display* display);
+
+  // Can be used by clients to explicitly destroy global objects and send
+  // global_remove event.
+  void DestroyGlobal();
+
   // Called from Bind() to send additional information to clients.
   virtual void OnBind() {}
 
@@ -453,10 +458,13 @@ class FakeServer : public base::Thread, base::MessagePumpLibevent::FdWatcher {
     return resource ? T::FromResource(resource) : nullptr;
   }
 
-  void CreateAndInitializeOutput() {
+  MockOutput* CreateAndInitializeOutput() {
     auto output = std::make_unique<MockOutput>();
     output->Initialize(display());
+
+    MockOutput* output_ptr = output.get();
     globals_.push_back(std::move(output));
+    return output_ptr;
   }
 
   MockDataDeviceManager* data_device_manager() { return &data_device_manager_; }

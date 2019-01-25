@@ -27,8 +27,9 @@ class WaylandOutputManager : public WaylandOutput::Delegate {
   WaylandOutputManager();
   ~WaylandOutputManager() override;
 
-  // The first output in the vector is always a primary output.
-  bool IsPrimaryOutputReady() const;
+  // Says if at least one output has already been announced by a Wayland
+  // compositor.
+  bool IsOutputReady() const;
 
   void AddWaylandOutput(const uint32_t output_id, wl_output* output);
   void RemoveWaylandOutput(const uint32_t output_id);
@@ -40,8 +41,6 @@ class WaylandOutputManager : public WaylandOutput::Delegate {
  private:
   void OnWaylandOutputAdded(uint32_t output_id);
   void OnWaylandOutputRemoved(uint32_t output_id);
-
-  bool IsPrimaryOutput(uint32_t output_id) const;
 
   // WaylandOutput::Delegate:
   void OnOutputHandleMetrics(uint32_t output_id,

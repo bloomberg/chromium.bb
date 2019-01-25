@@ -69,7 +69,7 @@ bool WaylandConnection::Initialize() {
 
   wl_registry_add_listener(registry_.get(), &registry_listener, this);
   while (!wayland_output_manager_ ||
-         !wayland_output_manager_->IsPrimaryOutputReady()) {
+         !wayland_output_manager_->IsOutputReady()) {
     wl_display_roundtrip(display_.get());
   }
 
