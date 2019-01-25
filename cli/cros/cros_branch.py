@@ -250,42 +250,105 @@ class Branch(object):
     self._repo = repo_util.Repository(constants.SOURCE_ROOT)
     self._manifest = self._repo.Manifest()
 
+  def _RunSync(self, extra_args):
+    """Runs repo_sync_manifest with a minimal set of arguments.
+
+    Also reads and caches the new full manifest.
+
+    Args:
+      extra_args: List of extra arguments to pass to repo_sync_manifest.
+    """
+    cros_build_lib.RunCommand(
+        [
+            os.path.join(constants.CHROMITE_DIR, 'scripts/repo_sync_manifest'),
+            '--repo-root', constants.SOURCE_ROOT
+        ] + extra_args,
+        quiet=True)
+    self._manifest = self._repo.Manifest()
+
   def _SyncToVersion(self, version):
-    """Sync current checkout to the given version and reread manifest.
+    """Sync current checkout to the given version.
 
     Args:
       version: Version string to sync to, e.g. '1234.0.0'.
     """
     logging.info('Syncing to manifest version %s', version)
-    cros_build_lib.RunCommand(
-        [
-            os.path.join(constants.CHROMITE_DIR, 'scripts/repo_sync_manifest'),
-            '--repo-root', constants.SOURCE_ROOT, '--manifest-versions-int',
-            AbsoluteProjectPath(
-                config_lib.GetSiteParams().INTERNAL_MANIFEST_VERSIONS_PATH),
-            '--version', version
-        ],
-        quiet=True)
-    self._manifest = self._repo.Manifest()
+    self._RunSync([
+        '--manifest-versions-int',
+        AbsoluteProjectPath(
+            config_lib.GetSiteParams().INTERNAL_MANIFEST_VERSIONS_PATH),
+        '--version', version])
 
-  def _ProjectBranchName(self, project, manifest):
+  def _SyncToBranch(self, branch):
+    """Sync current checkout to the given branch.
+
+    Args:
+      branch: Name of branch to sync to, e.g. 'factory-11521.B'.
+    """
+    logging.info('Syncing to branch %s', branch)
+    self._RunSync(['--branch', branch])
+
+  def _ProjectBranchName(self, project):
     """Determine's the git branch name for the project.
 
     Args:
       project: The repo_manfest.Project in question.
-      manifest: The corresponding repo_manifest.Manifest.
 
     Returns:
       The branch name for the project.
     """
     # If project has only one checkout, the base branch name is fine.
-    checkouts = sum(project.name == cand.name for cand in manifest.Projects())
+    checkouts = [p.name for p in self._manifest.Projects()].count(project.name)
     if checkouts == 1:
       return self._name
     # Otherwise, the project branch name needs a suffix. We append its
     # upstream or revision to distinguish it from other checkouts.
     suffix = git.StripRefs(project.upstream or project.Revision())
     return '%s-%s' % (self._name, suffix)
+
+  def _CreateProjectBranch(self, project):
+    """Create this branch for the given project.
+
+    Args:
+      project: The repo_manifest.Project to branch.
+
+    Returns:
+      Name of the new branch on the project.
+    """
+    branch = self._ProjectBranchName(project)
+    git.RunGit(
+        AbsoluteProjectPath(project.Path()),
+        ['checkout', '-B', branch, project.Revision()],
+        print_cmd=True)
+    return branch
+
+  def _RenameProjectBranch(self, project):
+    """Rename the current branch of the project checkout.
+
+    Args:
+      project: The repo_manifest.Project whose current branch will be renamed.
+
+    Returns:
+      Name of the new branch on the project.
+    """
+    branch = self._ProjectBranchName(project)
+    git.RunGit(
+        AbsoluteProjectPath(project.Path()),
+        ['branch', '-m', branch],
+        print_cmd=True)
+    return branch
+
+  def _MapBranchableProjects(self, transform):
+    """Apply the given operator to all branchable projects.
+
+    Args:
+      transform: Function mapping branchable repo_manifest.Project to new value.
+
+    Returns:
+      Dict mapping (unique) project path to transformation result.
+    """
+    return {project.Path(): transform(project) for project in
+            filter(CanBranchProject, self._manifest.Projects())}
 
   def _RepairManifestRepositories(self, branches):
     """Repair all manifests in all manifest repositories.
@@ -308,11 +371,11 @@ class Branch(object):
       which: Which version should be incremented. One of
           'chrome_branch', 'build', 'branch, 'patch'.
     """
+    message = 'Bump %s number after creating branch %s.' % (which, self._name)
+    logging.info(message)
     new_version = ReadVersionInfo(incr_type=which)
     new_version.IncrementVersion()
-    new_version.UpdateVersionFile(
-        'Bumping %s number after creating branch %s.' % (which, self._name),
-        dry_run=True)
+    new_version.UpdateVersionFile(message, dry_run=True)
 
   def GenerateName(self):
     """Returns a generated branch name. Overridden by subclasses."""
@@ -333,29 +396,25 @@ class Branch(object):
     """
     if push or force:
       raise NotImplementedError('--push and --force unavailable.')
-
-    # Sync to the manifest version.
     self._SyncToVersion(version)
-
-    # Create local git branches. If a local branch with the same name exists
-    # in any project, it is overwritten.
-    logging.info('Will create branch %s for all viable projects.', self._name)
-    branches = {}
-    for project in filter(CanBranchProject, self._manifest.Projects()):
-      path = project.Path()
-      branch = self._ProjectBranchName(project, self._manifest)
-      branches[path] = branch
-      git.CreateBranch(AbsoluteProjectPath(path), branch, project.Revision())
-
-    # Modify manifests so that all branchable projects point to new branch.
+    branches = self._MapBranchableProjects(self._CreateProjectBranch)
     self._RepairManifestRepositories(branches)
-
-    # Bump version on new branch.
     self._BumpVersion(WhichVersionShouldBump(version))
-
-    # Huzzah! The branch has been created. Now handle any reporting or cleanup.
-    # The meaning of "report" varies across branch types.
     self.ReportCreateSuccess()
+
+  def Rename(self, original, push=False, force=False):
+    """Rename this branch.
+
+    Args:
+      original: Original name for the branch.
+      push: Whether to push the new branch to remote.
+      force: Whether or not to overwrite an existing branch.
+    """
+    if push or force:
+      raise NotImplementedError('--push and --force unavailable.')
+    self._SyncToBranch(original)
+    branches = self._MapBranchableProjects(self._RenameProjectBranch)
+    self._RepairManifestRepositories(branches)
 
 
 class ReleaseBranch(Branch):
@@ -506,15 +565,18 @@ Delete Examples:
     delete_parser.add_argument('branch', help='Name of the branch to delete.')
 
   def Run(self):
+    # TODO(evanhernandez): If branch a operation is interrupted, some artifacts
+    # might be left over. We should check for this.
     if self.options.subcommand == 'create':
-      # TODO(evanhernandez): If branch creation is interrupted, some artifacts
-      # might be left over. We should check for this.
       self.options.cls(self.options.name).Create(
           version=self.options.version,
           push=self.options.push,
           force=self.options.force)
     elif self.options.subcommand == 'rename':
-      raise NotImplementedError('Branch renaming is not yet implemented.')
+      self.options.cls(self.options.new).Rename(
+          original=self.options.old,
+          push=self.options.push,
+          force=self.options.force)
     elif self.options.subcommand == 'delete':
       raise NotImplementedError('Branch deletion is not yet implemented.')
     else:

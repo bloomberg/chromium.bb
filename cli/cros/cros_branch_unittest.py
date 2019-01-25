@@ -129,6 +129,17 @@ class ManifestTestCase(cros_test_lib.MockTestCase):
     """
     return os.path.join(self.PATH, pid)
 
+  def PathListRegexFor(self, pid):
+    """Return the test project's path as a ListRegex.
+
+    Args:
+      pid: The test project ID (e.g. 'chromiumos-overlay').
+
+    Returns:
+      partial_mock.ListRegex for project path.
+    """
+    return partial_mock.ListRegex('.*/%s' % self.PathFor(pid))
+
   def RevisionFor(self, pid):
     """Return the test project's revision.
 
@@ -300,32 +311,49 @@ class BranchTest(ManifestTestCase):
   VERSION = '3.4.0'
   BRANCH_KIND = 'kind'
   BRANCH_NAME = 'branch'
+  ORIGINAL_BRANCH_NAME = 'original'
 
   def CreateInstance(self):
     return Branch(self.BRANCH_KIND, self.BRANCH_NAME)
 
-  def AssertSynced(self, version):
+  def AssertSynced(self, args):
     self.rc_mock.assertCommandContains(
-        [partial_mock.ListRegex('.*/repo_sync_manifest'), '--version', version])
+        [partial_mock.ListRegex('.*/repo_sync_manifest')] + args)
 
   def AssertProjectBranched(self, project, branch):
     self.rc_mock.assertCommandContains(
-        ['git', 'checkout', '-B', branch,
-         self.RevisionFor(project)],
-        cwd=partial_mock.ListRegex('.*/%s' % self.PathFor(project)))
+        ['git', 'checkout', '-B', branch, self.RevisionFor(project)],
+        cwd=self.PathListRegexFor(project))
+
+  def AssertProjectRenamed(self, project, branch):
+    self.rc_mock.assertCommandContains(
+        ['git', 'branch', '-m', branch],
+        cwd=self.PathListRegexFor(project))
 
   def AssertProjectNotBranched(self, project):
     self.rc_mock.assertCommandContains(
         ['git', 'checkout', '-B'],
-        cwd=partial_mock.ListRegex('.*/%s' % self.PathFor(project)),
+        cwd=self.PathListRegexFor(project),
         expected=False)
+
+  def AssertProjectNotRenamed(self, project):
+    self.rc_mock.assertCommandContains(
+        ['git', 'branch'],
+        cwd=self.PathListRegexFor(project),
+        expected=False)
+
+  def AssertManifestRepairsCommitted(self):
+    for manifest_project in ('manifest', 'manifest-internal'):
+      self.rc_mock.assertCommandContains(
+          ['git', 'commit', '-a'],
+          cwd=partial_mock.ListRegex('.*/%s' % manifest_project))
 
   def setUp(self):
     self.rc_mock = cros_test_lib.RunCommandMock()
     self.rc_mock.SetDefaultCmdResult()
     self.StartPatcher(self.rc_mock)
 
-    # ManifestRepository and VersionInfo tested separately, so mock it.
+    # ManifestRepository and VersionInfo tested separately, so mock them.
     self.PatchObject(ManifestRepository, 'RepairManifestsOnDisk')
     self.PatchObject(
         VersionInfo,
@@ -339,7 +367,7 @@ class BranchTest(ManifestTestCase):
 
   def testCreateSyncsLocalCheckout(self):
     self.inst.Create(self.VERSION)
-    self.AssertSynced(self.VERSION)
+    self.AssertSynced(['--version', self.VERSION])
 
   def testCreateBranchesCorrectProjects(self):
     self.inst.Create(self.VERSION)
@@ -352,11 +380,24 @@ class BranchTest(ManifestTestCase):
 
   def testCreateRepairsManifests(self):
     self.inst.Create(self.VERSION)
-    # Assuming ManifestRepo did its job, check that changes were committed.
-    for manifest_project in ('manifest', 'manifest-internal'):
-      self.rc_mock.assertCommandContains(
-          ['git', 'commit', '-a'],
-          cwd=partial_mock.ListRegex('.*/%s' % manifest_project))
+    self.AssertManifestRepairsCommitted()
+
+  def testRenameSyncsToBranch(self):
+    self.inst.Rename(self.ORIGINAL_BRANCH_NAME)
+    self.AssertSynced(['--branch', self.ORIGINAL_BRANCH_NAME])
+
+  def testRenameModifiesCorrectProjects(self):
+    self.inst.Rename(self.ORIGINAL_BRANCH_NAME)
+    for proj in self.SINGLE_CHECKOUT_PROJECTS:
+      self.AssertProjectRenamed(proj, self.BRANCH_NAME)
+    for proj in self.MULTI_CHECKOUT_PROJECTS:
+      self.AssertProjectRenamed(proj, '%s-%s' % (self.BRANCH_NAME, proj))
+    for proj in self.PINNED_PROJECTS + self.TOT_PROJECTS:
+      self.AssertProjectNotRenamed(proj)
+
+  def testRenameRepairsManifests(self):
+    self.inst.Rename(self.ORIGINAL_BRANCH_NAME)
+    self.AssertManifestRepairsCommitted()
 
 
 class ReleaseBranchTest(BranchTest):
