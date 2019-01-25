@@ -439,36 +439,20 @@ void NGInlineNode::ComputeOffsetMapping(LayoutBlockFlow* layout_block_flow,
   CollectInlinesInternal(layout_block_flow, &builder, nullptr, nullptr,
                          update_layout);
 
+  std::unique_ptr<NGCaretNavigator> caret_navigator;
+
   // For non-NG object, we need the text, and also the inline items to resolve
   // bidi levels. Otherwise |data| already has the text from the pre-layout
   // phase, check they match.
   if (data->text_content.IsNull()) {
     DCHECK(!layout_block_flow->IsLayoutNGMixin());
     data->text_content = builder.ToString();
-    if (RuntimeEnabledFeatures::BidiCaretAffinityEnabled()) {
-      // Set |is_bidi_enabled_| for all UTF-16 strings for now, because at this
-      // point the string may or may not contain RTL characters.
-      // |SegmentText()| will analyze the text and reset |is_bidi_enabled_| if
-      // it doesn't contain any RTL characters.
-      data->is_bidi_enabled_ = MayBeBidiEnabled(data->text_content, builder);
-      if (data->is_bidi_enabled_) {
-        // |builder| performs some validity checks with |items|, so we can't
-        // simply move them to |data|, but have to copy.
-        // TODO(xiaochengh): Change it into a move.
-        data->items = items;
-        SegmentBidiRunsInternal(data, layout_block_flow->StyleRef());
-      } else {
-        data->SetBaseDirection(TextDirection::kLtr);
-      }
-    }
   } else {
     DCHECK(layout_block_flow->IsLayoutNGMixin());
     DCHECK_EQ(data->text_content, builder.ToString());
+    if (RuntimeEnabledFeatures::BidiCaretAffinityEnabled())
+      caret_navigator = std::make_unique<NGCaretNavigator>(*data);
   }
-
-  std::unique_ptr<NGCaretNavigator> caret_navigator;
-  if (RuntimeEnabledFeatures::BidiCaretAffinityEnabled())
-    caret_navigator = std::make_unique<NGCaretNavigator>(*data);
 
   // TODO(xiaochengh): This doesn't compute offset mapping correctly when
   // text-transform CSS property changes text length.
@@ -626,6 +610,8 @@ void NGInlineNode::SegmentFontOrientation(NGInlineNodeData* data) {
 // static
 // Segment bidi runs by resolving bidi embedding levels.
 // http://unicode.org/reports/tr9/#Resolving_Embedding_Levels
+// TODO(xiaochengh): Merge it back into SegmentBidiRuns(), as we no longer have
+// any legacy callers.
 void NGInlineNode::SegmentBidiRunsInternal(NGInlineNodeData* data,
                                            const ComputedStyle& style) {
   if (!data->is_bidi_enabled_) {

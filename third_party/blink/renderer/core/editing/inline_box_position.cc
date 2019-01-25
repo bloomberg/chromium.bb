@@ -61,10 +61,8 @@ InlineTextBox* SearchAheadForBetterMatch(const LayoutText* layout_object) {
        next = next->NextInPreOrder(container)) {
     if (next->IsLayoutBlock())
       return nullptr;
-    if (next->IsBR()) {
-      if (!RuntimeEnabledFeatures::BidiCaretAffinityEnabled())
-        return nullptr;
-    }
+    if (next->IsBR())
+      return nullptr;
     if (IsNonTextLeafChild(next))
       return nullptr;
     if (next->IsText()) {
@@ -110,8 +108,6 @@ InlineBoxPosition AdjustInlineBoxPositionForTextDirection(InlineBox* inline_box,
                                                           int caret_offset) {
   DCHECK(caret_offset == inline_box->CaretLeftmostOffset() ||
          caret_offset == inline_box->CaretRightmostOffset());
-  if (RuntimeEnabledFeatures::BidiCaretAffinityEnabled())
-    return InlineBoxPosition(inline_box, caret_offset);
   return BidiAdjustment::AdjustForCaretPositionResolution(
       InlineBoxPosition(inline_box, caret_offset));
 }
@@ -127,8 +123,6 @@ bool IsCaretAtEdgeOfInlineTextBox(int caret_offset,
   DCHECK_EQ(caret_offset, box.CaretMaxOffset());
   if (affinity == TextAffinity::kUpstream)
     return true;
-  if (RuntimeEnabledFeatures::BidiCaretAffinityEnabled())
-    return false;
   return box.NextLeafChild() && box.NextLeafChild()->IsLineBreak();
 }
 
@@ -142,37 +136,13 @@ InlineBoxPosition ComputeInlineBoxPositionForTextNode(
   InlineBox* inline_box = nullptr;
   InlineTextBox* candidate = nullptr;
 
-  // Used only with bidi caret affinity enabled, in which case, we may receive
-  // positions like "foo |   CBA"/downstream, which should be resolved at "|CBA"
-  // instead of "foo |".
-  InlineTextBox* closest_out_of_range_box = nullptr;
-
   for (InlineTextBox* box : text_layout_object->TextBoxes()) {
     int caret_min_offset = box->CaretMinOffset();
     int caret_max_offset = box->CaretMaxOffset();
 
     if (caret_offset < caret_min_offset || caret_offset > caret_max_offset ||
         (caret_offset == caret_max_offset && box->IsLineBreak())) {
-      if (!RuntimeEnabledFeatures::BidiCaretAffinityEnabled())
         continue;
-      // For downstream, find the closest box starting after |caret_offset|.
-      if (affinity == TextAffinity::kDownstream) {
-        if (caret_offset >= caret_min_offset)
-          continue;
-        if (!closest_out_of_range_box ||
-            caret_min_offset < closest_out_of_range_box->CaretMinOffset()) {
-          closest_out_of_range_box = box;
-        }
-        continue;
-      }
-      // For upstream, find the closest box ending before |caret_offset|.
-      if (caret_offset <= caret_max_offset)
-        continue;
-      if (!closest_out_of_range_box ||
-          caret_max_offset > closest_out_of_range_box->CaretMaxOffset()) {
-        closest_out_of_range_box = box;
-      }
-      continue;
     }
 
     if (caret_offset > caret_min_offset && caret_offset < caret_max_offset)
@@ -184,23 +154,6 @@ InlineBoxPosition ComputeInlineBoxPositionForTextNode(
     }
 
     candidate = box;
-  }
-
-  if (!inline_box && closest_out_of_range_box) {
-    if (caret_offset < closest_out_of_range_box->CaretMinOffset()) {
-      DCHECK_EQ(affinity, TextAffinity::kDownstream);
-      return InlineBoxPosition(closest_out_of_range_box,
-                               closest_out_of_range_box->CaretMinOffset());
-    }
-    DCHECK_GT(caret_offset, closest_out_of_range_box->CaretMaxOffset());
-    // When the input is upstream after a line break, we should try to find a
-    // caret position in the next line instead of resolving here.
-    if (!closest_out_of_range_box->IsLineBreak()) {
-      DCHECK_EQ(affinity, TextAffinity::kUpstream);
-      return InlineBoxPosition(closest_out_of_range_box,
-                               closest_out_of_range_box->CaretMaxOffset());
-    }
-    // No proper out-of-range box to use. Fall through.
   }
 
   // TODO(editing-dev): The fixup below seems hacky. It may also be incorrect in

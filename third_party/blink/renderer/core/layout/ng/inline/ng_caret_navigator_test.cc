@@ -12,13 +12,9 @@
 namespace blink {
 
 class NGCaretNavigatorTest : public RenderingTest,
-                             public testing::WithParamInterface<bool>,
-                             private ScopedLayoutNGForTest,
                              private ScopedBidiCaretAffinityForTest {
  public:
-  NGCaretNavigatorTest()
-      : ScopedLayoutNGForTest(GetParam()),
-        ScopedBidiCaretAffinityForTest(true) {}
+  NGCaretNavigatorTest() : ScopedBidiCaretAffinityForTest(true) {}
 
   void SetupHtml(const char* id, String html) {
     SetBodyInnerHTML(html);
@@ -26,14 +22,12 @@ class NGCaretNavigatorTest : public RenderingTest,
     LayoutBlockFlow* layout_block_flow =
         ToLayoutBlockFlow(GetLayoutObjectByElementId(id));
     DCHECK(layout_block_flow);
+    DCHECK(layout_block_flow->IsLayoutNGBlockFlow());
     DCHECK(layout_block_flow->ChildrenInline());
-    DCHECK_EQ(layout_block_flow->IsLayoutNGMixin(), GetParam());
 
     const NGOffsetMapping* mapping =
-        NGInlineNode::GetOffsetMapping(layout_block_flow, &mapping_storage_);
+        NGInlineNode::GetOffsetMapping(layout_block_flow, nullptr);
     DCHECK(mapping);
-    DCHECK_EQ(!mapping_storage_,
-              GetParam());  // |storage| is used only for legacy.
 
     caret_navigator_ = mapping->GetCaretNavigator();
     DCHECK(caret_navigator_);
@@ -72,13 +66,10 @@ class NGCaretNavigatorTest : public RenderingTest,
   }
 
  protected:
-  std::unique_ptr<NGOffsetMapping> mapping_storage_;
   const NGCaretNavigator* caret_navigator_;
 };
 
-INSTANTIATE_TEST_CASE_P(All, NGCaretNavigatorTest, testing::Bool());
-
-TEST_P(NGCaretNavigatorTest, BidiLevelAtBasic) {
+TEST_F(NGCaretNavigatorTest, BidiLevelAtBasic) {
   SetupHtml("container",
             "<div id=container>abc&#x05D0;&#x05D1;&#x05D2;123</div>");
 
@@ -93,7 +84,7 @@ TEST_P(NGCaretNavigatorTest, BidiLevelAtBasic) {
   EXPECT_EQ(2u, BidiLevelAt(8));
 }
 
-TEST_P(NGCaretNavigatorTest, LeftCharacterOfBasic) {
+TEST_F(NGCaretNavigatorTest, LeftCharacterOfBasic) {
   SetupHtml("container",
             "<div id=container>abc&#x05D0;&#x05D1;&#x05D2;123</div>");
 
@@ -124,7 +115,7 @@ TEST_P(NGCaretNavigatorTest, LeftCharacterOfBasic) {
   EXPECT_EQ(7u, *LeftCharacterOf(8).index);
 }
 
-TEST_P(NGCaretNavigatorTest, RightCharacterOfBasic) {
+TEST_F(NGCaretNavigatorTest, RightCharacterOfBasic) {
   SetupHtml("container",
             "<div id=container>abc&#x05D0;&#x05D1;&#x05D2;123</div>");
 
@@ -155,7 +146,7 @@ TEST_P(NGCaretNavigatorTest, RightCharacterOfBasic) {
   EXPECT_EQ(5u, *RightCharacterOf(8).index);
 }
 
-TEST_P(NGCaretNavigatorTest, LeftPositionOfBasic) {
+TEST_F(NGCaretNavigatorTest, LeftPositionOfBasic) {
   SetupHtml("container",
             "<div id=container>abc&#x05D0;&#x05D1;&#x05D2;123</div>");
 
@@ -213,7 +204,7 @@ TEST_P(NGCaretNavigatorTest, LeftPositionOfBasic) {
   EXPECT_EQ(CaretBefore(8), *LeftPositionOf(CaretAfter(8)).position);
 }
 
-TEST_P(NGCaretNavigatorTest, RightPositionOfBasic) {
+TEST_F(NGCaretNavigatorTest, RightPositionOfBasic) {
   SetupHtml("container",
             "<div id=container>abc&#x05D0;&#x05D1;&#x05D2;123</div>");
 

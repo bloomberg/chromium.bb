@@ -31,7 +31,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
-#include "third_party/blink/renderer/core/editing/local_caret_rect.h"
+#include "third_party/blink/renderer/core/editing/ng_flat_tree_shorthands.h"
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
@@ -93,7 +93,8 @@ VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::Create(
   if (position_with_affinity.Affinity() == TextAffinity::kDownstream)
     return VisiblePositionTemplate<Strategy>(downstream_position);
 
-  if (RuntimeEnabledFeatures::BidiCaretAffinityEnabled()) {
+  if (RuntimeEnabledFeatures::BidiCaretAffinityEnabled() &&
+      NGInlineFormattingContextOf(deep_position)) {
     // When not at a line wrap or bidi boundary, make sure to end up with
     // |TextAffinity::Downstream| affinity.
     const PositionWithAffinityTemplate<Strategy> upstream_position(
@@ -118,12 +119,10 @@ VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::Create(
     LayoutBlockFlow* const context =
         NGOffsetMapping::GetInlineFormattingContextOf(*layout_object);
     DCHECK(context);
+    DCHECK(context->IsLayoutNGBlockFlow());
 
-    // TODO(xiaochengh): The double pointer pattern below is confusing and
-    // cumbersome, but necessary for now. Make it easier.
-    std::unique_ptr<NGOffsetMapping> mapping_storage;
     const NGOffsetMapping* mapping =
-        NGInlineNode::GetOffsetMapping(context, &mapping_storage);
+        NGInlineNode::GetOffsetMapping(context, nullptr);
     DCHECK(mapping);
 
     const base::Optional<unsigned> offset =
