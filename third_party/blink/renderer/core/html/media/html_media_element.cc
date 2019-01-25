@@ -2348,17 +2348,6 @@ WebMediaPlayer::Preload HTMLMediaElement::PreloadType() const {
     return WebMediaPlayer::kPreloadNone;
   }
 
-  // If the source scheme is requires network, force preload to 'none' for low
-  // end devices.
-  if (GetDocument().GetSettings() &&
-      GetDocument().GetSettings()->GetForcePreloadNoneForMediaElements() &&
-      (current_src_.Protocol() != "blob" && current_src_.Protocol() != "data" &&
-       current_src_.Protocol() != "file")) {
-    UseCounter::Count(GetDocument(),
-                      WebFeature::kHTMLMediaElementPreloadForcedNone);
-    return WebMediaPlayer::kPreloadNone;
-  }
-
   if (DeprecatedEqualIgnoringCase(preload, "metadata")) {
     UseCounter::Count(GetDocument(),
                       WebFeature::kHTMLMediaElementPreloadMetadata);

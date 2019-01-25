@@ -847,13 +847,6 @@
       type: "PassiveListenerDefault",
     },
 
-    // Some platforms have media subsystems which are too buggy to allow preloading
-    // of content by default. See http://crbug.com/612909 for details.
-    {
-      name: "forcePreloadNoneForMediaElements",
-      initial: false,
-    },
-
     {
       name: "hideScrollbars",
       initial: false,

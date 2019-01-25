@@ -639,7 +639,6 @@ enum WebFeature {
   kCSSAtRuleViewport = 977,
   kCSSAtRuleWebkitKeyframes = 978,
   kV8HTMLFieldSetElement_Elements_AttributeGetter = 979,
-  kHTMLMediaElementPreloadForcedNone = 980,
   kExternalAddSearchProvider = 981,
   kExternalIsSearchProviderInstalled = 982,
   kV8Permissions_RequestAll_Method = 983,
