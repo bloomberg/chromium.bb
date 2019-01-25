@@ -16,18 +16,20 @@ namespace chromeos {
 OAuth2LoginVerifier::OAuth2LoginVerifier(
     OAuth2LoginVerifier::Delegate* delegate,
     GaiaCookieManagerService* cookie_manager_service,
+    identity::IdentityManager* identity_manager,
     const std::string& primary_account_id,
     const std::string& oauthlogin_access_token)
     : delegate_(delegate),
       cookie_manager_service_(cookie_manager_service),
+      identity_manager_(identity_manager),
       primary_account_id_(primary_account_id),
       access_token_(oauthlogin_access_token) {
   DCHECK(delegate);
-  cookie_manager_service_->AddObserver(this);
+  identity_manager_->AddObserver(this);
 }
 
 OAuth2LoginVerifier::~OAuth2LoginVerifier() {
-  cookie_manager_service_->RemoveObserver(this);
+  identity_manager_->RemoveObserver(this);
 }
 
 void OAuth2LoginVerifier::VerifyUserCookies() {
@@ -35,9 +37,11 @@ void OAuth2LoginVerifier::VerifyUserCookies() {
 
   std::vector<gaia::ListedAccount> accounts;
   std::vector<gaia::ListedAccount> signed_out_accounts;
-  if (cookie_manager_service_->ListAccounts(&accounts, &signed_out_accounts)) {
-    OnGaiaAccountsInCookieUpdated(
-        accounts, signed_out_accounts,
+  identity::AccountsInCookieJarInfo accounts_in_cookie_jar_info =
+      identity_manager_->GetAccountsInCookieJar();
+  if (accounts_in_cookie_jar_info.accounts_are_fresh) {
+    OnAccountsInCookieUpdated(
+        accounts_in_cookie_jar_info,
         GoogleServiceAuthError(GoogleServiceAuthError::NONE));
   }
 }
@@ -71,13 +75,13 @@ void OAuth2LoginVerifier::OnAddAccountToCookieCompleted(
   delegate_->OnSessionMergeFailure(error.IsTransientError());
 }
 
-void OAuth2LoginVerifier::OnGaiaAccountsInCookieUpdated(
-    const std::vector<gaia::ListedAccount>& accounts,
-    const std::vector<gaia::ListedAccount>& signed_out_accounts,
+void OAuth2LoginVerifier::OnAccountsInCookieUpdated(
+    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
   if (error.state() == GoogleServiceAuthError::State::NONE) {
     VLOG(1) << "ListAccounts successful.";
-    delegate_->OnListAccountsSuccess(accounts);
+    delegate_->OnListAccountsSuccess(
+        accounts_in_cookie_jar_info.signed_in_accounts);
     return;
   }
 
