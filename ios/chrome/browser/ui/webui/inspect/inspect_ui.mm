@@ -186,6 +186,15 @@ void InspectDOMHandler::DidReceiveConsoleMessage(
     web::WebState* web_state,
     web::WebFrame* sender_frame,
     const JavaScriptConsoleMessage& message) {
+  web::WebFrame* inspect_ui_main_frame =
+      web::GetMainWebFrame(web_ui()->GetWebState());
+  if (!inspect_ui_main_frame) {
+    // Disable logging and drop this message because the main frame no longer
+    // exists.
+    SetLoggingEnabled(false);
+    return;
+  }
+
   std::vector<base::Value> params;
   web::WebFrame* main_web_frame = web::GetMainWebFrame(web_state);
   params.push_back(base::Value(main_web_frame->GetFrameId()));
@@ -194,8 +203,8 @@ void InspectDOMHandler::DidReceiveConsoleMessage(
   params.push_back(base::Value(message.level));
   params.push_back(message.message->Clone());
 
-  web::GetMainWebFrame(web_ui()->GetWebState())
-      ->CallJavaScriptFunction("inspectWebUI.logMessageReceived", params);
+  inspect_ui_main_frame->CallJavaScriptFunction(
+      "inspectWebUI.logMessageReceived", params);
 }
 
 void InspectDOMHandler::SetDelegateForWebStatesInTabModel(
