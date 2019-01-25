@@ -359,7 +359,7 @@ void NGInlineLayoutAlgorithm::PlaceControlItem(const NGInlineItem& item,
                                                NGInlineItemResult* item_result,
                                                NGInlineBoxState* box) {
   DCHECK_EQ(item.Type(), NGInlineItem::kControl);
-  DCHECK_EQ(item.Length(), 1u);
+  DCHECK_GE(item.Length(), 1u);
   DCHECK(!item.TextShapeResult());
   UChar character = line_info.ItemsData().text_content[item.StartOffset()];
   NGPhysicalTextFragment::NGTextType type;

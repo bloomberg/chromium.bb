@@ -120,7 +120,14 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
       const Font*,
       const TextRun&,
       float position_offset,
-      unsigned count);
+      unsigned length);
+  static scoped_refptr<ShapeResult> CreateForTabulationCharacters(
+      const Font* font,
+      TextDirection direction,
+      const TabSize& tab_size,
+      float position,
+      unsigned start_index,
+      unsigned length);
   ~ShapeResult();
 
   // Returns a mutable unique instance. If |this| has more than 1 ref count,

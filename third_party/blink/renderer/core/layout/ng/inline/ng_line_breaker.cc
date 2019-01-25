@@ -368,17 +368,26 @@ void NGLineBreaker::ComputeLineLocation() const {
 void NGLineBreaker::HandleText(const NGInlineItem& item) {
   DCHECK_EQ(item.Type(), NGInlineItem::kText);
   DCHECK(item.TextShapeResult());
+  HandleText(item, *item.TextShapeResult());
+}
+
+void NGLineBreaker::HandleText(const NGInlineItem& item,
+                               const ShapeResult& shape_result) {
+  DCHECK(item.Type() == NGInlineItem::kText ||
+         (item.Type() == NGInlineItem::kControl &&
+          Text()[item.StartOffset()] == kTabulationCharacter));
+  DCHECK(&shape_result);
 
   // If we're trailing, only trailing spaces can be included in this line.
   if (state_ == LineBreakState::kTrailing) {
     if (CanBreakAfterLast(*item_results_))
-      return HandleTrailingSpaces(item);
+      return HandleTrailingSpaces(item, shape_result);
     // When a run of preserved spaces are across items, |CanBreakAfterLast| is
     // false for between spaces. But we still need to handle them as trailing
     // spaces.
     const String& text = Text();
-    if (offset_ < text.length() && text[offset_] == kSpaceCharacter)
-      return HandleTrailingSpaces(item);
+    if (offset_ < text.length() && IsBreakableSpace(text[offset_]))
+      return HandleTrailingSpaces(item, shape_result);
   }
 
   // Skip leading collapsible spaces.
@@ -404,13 +413,13 @@ void NGLineBreaker::HandleText(const NGInlineItem& item) {
 
   if (auto_wrap_) {
     if (mode_ == NGLineBreakerMode::kMinContent &&
-        HandleTextForFastMinContent(item_result, item)) {
+        HandleTextForFastMinContent(item_result, item, shape_result)) {
       return;
     }
 
     // Try to break inside of this text item.
     LayoutUnit available_width = AvailableWidthToFit();
-    BreakText(item_result, item, available_width - position_);
+    BreakText(item_result, item, shape_result, available_width - position_);
 
     if (item.IsSymbolMarker()) {
       LayoutUnit symbol_width = LayoutListMarker::WidthOfSymbol(*item.Style());
@@ -430,7 +439,7 @@ void NGLineBreaker::HandleText(const NGInlineItem& item) {
       if (item_result->end_offset < item.EndOffset()) {
         // The break point found, and text follows. Break here, after trailing
         // spaces.
-        return HandleTrailingSpaces(item);
+        return HandleTrailingSpaces(item, shape_result);
       }
 
       // The break point found, but items that prohibit breaking before them may
@@ -444,7 +453,7 @@ void NGLineBreaker::HandleText(const NGInlineItem& item) {
   // Add the rest of the item if !auto_wrap.
   // Because the start position may need to reshape, run ShapingLineBreaker
   // with max available width.
-  BreakText(item_result, item, LayoutUnit::Max());
+  BreakText(item_result, item, shape_result, LayoutUnit::Max());
 
   if (item.IsSymbolMarker()) {
     LayoutUnit symbol_width = LayoutListMarker::WidthOfSymbol(*item.Style());
@@ -463,14 +472,26 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
                               const NGInlineItem& item,
                               LayoutUnit available_width) {
   DCHECK_EQ(item.Type(), NGInlineItem::kText);
+  DCHECK(item.TextShapeResult());
+  BreakText(item_result, item, *item.TextShapeResult(), available_width);
+}
+
+void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
+                              const NGInlineItem& item,
+                              const ShapeResult& item_shape_result,
+                              LayoutUnit available_width) {
+  DCHECK(item.Type() == NGInlineItem::kText ||
+         (item.Type() == NGInlineItem::kControl &&
+          Text()[item.StartOffset()] == kTabulationCharacter));
+  DCHECK(&item_shape_result);
   item.AssertOffset(item_result->start_offset);
 
   // TODO(kojii): We need to instantiate ShapingLineBreaker here because it
   // has item-specific info as context. Should they be part of ShapeLine() to
   // instantiate once, or is this just fine since instatiation is not
   // expensive?
-  DCHECK_EQ(item.TextShapeResult()->StartIndex(), item.StartOffset());
-  DCHECK_EQ(item.TextShapeResult()->EndIndex(), item.EndOffset());
+  DCHECK_EQ(item_shape_result.StartIndex(), item.StartOffset());
+  DCHECK_EQ(item_shape_result.EndIndex(), item.EndOffset());
   struct ShapeCallbackContext {
     STACK_ALLOCATED();
 
@@ -484,9 +505,8 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
             static_cast<ShapeCallbackContext*>(untyped_context);
         return context->line_breaker->ShapeText(context->item, start, end);
       };
-  ShapingLineBreaker breaker(item.TextShapeResult(), &break_iterator_,
-                             hyphenation_, shape_callback,
-                             &shape_callback_context);
+  ShapingLineBreaker breaker(&item_shape_result, &break_iterator_, hyphenation_,
+                             shape_callback, &shape_callback_context);
   if (!enable_soft_hyphen_)
     breaker.DisableSoftHyphen();
   available_width = std::max(LayoutUnit(0), available_width);
@@ -545,7 +565,7 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
                  LineBreakType::kBreakCharacter)) {
       trailing_whitespace_ = WhitespaceState::kUnknown;
     } else {
-      DCHECK_NE(Text()[item_result->end_offset - 1], kSpaceCharacter);
+      DCHECK(!IsBreakableSpace(Text()[item_result->end_offset - 1]));
       trailing_whitespace_ = WhitespaceState::kNone;
     }
   } else {
@@ -568,11 +588,16 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
 // The first word and the last word, "1" and "6" in the example above, are
 // handled in normal |HandleText()| because they may form a word with the
 // previous/next item.
-bool NGLineBreaker::HandleTextForFastMinContent(NGInlineItemResult* item_result,
-                                                const NGInlineItem& item) {
+bool NGLineBreaker::HandleTextForFastMinContent(
+    NGInlineItemResult* item_result,
+    const NGInlineItem& item,
+    const ShapeResult& shape_result) {
   DCHECK_EQ(mode_, NGLineBreakerMode::kMinContent);
   DCHECK(auto_wrap_);
-  DCHECK_EQ(item.Type(), NGInlineItem::kText);
+  DCHECK(item.Type() == NGInlineItem::kText ||
+         (item.Type() == NGInlineItem::kControl &&
+          Text()[item.StartOffset()] == kTabulationCharacter));
+  DCHECK(&shape_result);
 
   // If this is the first part of the text, it may form a word with the previous
   // item. Fallback to |HandleText()|.
@@ -597,8 +622,6 @@ bool NGLineBreaker::HandleTextForFastMinContent(NGInlineItemResult* item_result,
   }
 
   // Break the text at every break opportunity and measure each word.
-  DCHECK(item.TextShapeResult());
-  const ShapeResult& shape_result = *item.TextShapeResult();
   DCHECK_EQ(shape_result.StartIndex(), item.StartOffset());
   DCHECK_GE(start_offset, shape_result.StartIndex());
   shape_result.EnsurePositionData();
@@ -627,7 +650,7 @@ bool NGLineBreaker::HandleTextForFastMinContent(NGInlineItemResult* item_result,
     last_end_offset = end_offset;
     start_offset = end_offset;
     while (start_offset < item.EndOffset() &&
-           text[start_offset] == kSpaceCharacter) {
+           IsBreakableSpace(text[start_offset])) {
       ++start_offset;
     }
   }
@@ -661,13 +684,12 @@ scoped_refptr<ShapeResult> NGLineBreaker::ShapeText(const NGInlineItem& item,
   if (!items_data_.segments) {
     RunSegmenter::RunSegmenterRange segment_range =
         item.CreateRunSegmenterRange();
-    shape_result = shaper_.Shape(&item.Style()->GetFont(),
-                                 item.TextShapeResult()->Direction(), start,
-                                 end, &segment_range);
+    shape_result = shaper_.Shape(&item.Style()->GetFont(), item.Direction(),
+                                 start, end, &segment_range);
   } else {
     shape_result = items_data_.segments->ShapeText(
-        &shaper_, &item.Style()->GetFont(), item.TextShapeResult()->Direction(),
-        start, end, &item - items_data_.items.begin());
+        &shaper_, &item.Style()->GetFont(), item.Direction(), start, end,
+        &item - items_data_.items.begin());
   }
   if (UNLIKELY(spacing_.HasSpacing()))
     shape_result->ApplySpacing(spacing_);
@@ -719,8 +741,12 @@ void NGLineBreaker::UpdateShapeResult(NGInlineItemResult* item_result) {
   item_result->inline_size = item_result->shape_result->SnappedWidth();
 }
 
-void NGLineBreaker::HandleTrailingSpaces(const NGInlineItem& item) {
-  DCHECK_EQ(item.Type(), NGInlineItem::kText);
+void NGLineBreaker::HandleTrailingSpaces(const NGInlineItem& item,
+                                         const ShapeResult& shape_result) {
+  DCHECK(item.Type() == NGInlineItem::kText ||
+         (item.Type() == NGInlineItem::kControl &&
+          Text()[item.StartOffset()] == kTabulationCharacter));
+  DCHECK(&shape_result);
   DCHECK_LT(offset_, item.EndOffset());
   const String& text = Text();
   DCHECK(item.Style());
@@ -744,7 +770,7 @@ void NGLineBreaker::HandleTrailingSpaces(const NGInlineItem& item) {
     // Other white space characters (e.g., tab) are not included in this item.
     DCHECK(style.BreakOnlyAfterWhiteSpace());
     unsigned end = offset_;
-    while (end < item.EndOffset() && text[end] == kSpaceCharacter)
+    while (end < item.EndOffset() && IsBreakableSpace(text[end]))
       end++;
     if (end == offset_) {
       state_ = LineBreakState::kDone;
@@ -753,8 +779,7 @@ void NGLineBreaker::HandleTrailingSpaces(const NGInlineItem& item) {
 
     NGInlineItemResult* item_result = AddItem(item, end);
     item_result->has_only_trailing_spaces = true;
-    item_result->shape_result =
-        ShapeResultView::Create(item.TextShapeResult().get());
+    item_result->shape_result = ShapeResultView::Create(&shape_result);
     if (item_result->start_offset == item.StartOffset() &&
         item_result->end_offset == item.EndOffset())
       item_result->inline_size = item_result->shape_result->SnappedWidth();
@@ -843,7 +868,7 @@ void NGLineBreaker::ComputeTrailingCollapsibleSpace() {
     if (item.Type() == NGInlineItem::kText) {
       DCHECK_GT(item_result.end_offset, 0u);
       DCHECK(item.Style());
-      if (text[item_result.end_offset - 1] != kSpaceCharacter)
+      if (!IsBreakableSpace(text[item_result.end_offset - 1]))
         break;
       if (!item.Style()->CollapseWhiteSpace()) {
         trailing_whitespace_ = WhitespaceState::kPreserved;
@@ -898,8 +923,7 @@ void NGLineBreaker::AppendHyphen(const NGInlineItem& item) {
 // Measure control items; new lines and tab, that are similar to text, affect
 // layout, but do not need shaping/painting.
 void NGLineBreaker::HandleControlItem(const NGInlineItem& item) {
-  DCHECK_EQ(item.Length(), 1u);
-
+  DCHECK_GE(item.Length(), 1u);
   UChar character = Text()[item.StartOffset()];
   switch (character) {
     case kNewlineCharacter: {
@@ -912,17 +936,14 @@ void NGLineBreaker::HandleControlItem(const NGInlineItem& item) {
       break;
     }
     case kTabulationCharacter: {
-      NGInlineItemResult* item_result = AddItem(item);
-      item_result->should_create_line_box = true;
       DCHECK(item.Style());
       const ComputedStyle& style = *item.Style();
-      const Font& font = style.GetFont();
-      item_result->inline_size = font.TabWidth(style.GetTabSize(), position_);
-      position_ += item_result->inline_size;
-      item_result->has_only_trailing_spaces =
-          state_ == LineBreakState::kTrailing;
-      ComputeCanBreakAfter(item_result);
-      break;
+      scoped_refptr<const ShapeResult> shape_result =
+          ShapeResult::CreateForTabulationCharacters(
+              &style.GetFont(), item.Direction(), style.GetTabSize(), position_,
+              item.StartOffset(), item.Length());
+      HandleText(item, *shape_result);
+      return;
     }
     case kZeroWidthSpaceCharacter: {
       // <wbr> tag creates break opportunities regardless of auto_wrap.
