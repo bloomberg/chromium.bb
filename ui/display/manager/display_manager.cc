@@ -2198,6 +2198,12 @@ void DisplayManager::UpdateInfoForRestoringMirrorMode() {
   if (num_connected_displays_ <= 1)
     return;
 
+  // External displays mirrored because of forced tablet mode mirroring should
+  // not be considered candidates for restoring their mirrored state.
+  // https://crbug.com/919994.
+  if (layout_store_->forced_mirror_mode_for_tablet())
+    return;
+
   for (auto id : GetCurrentDisplayIdList()) {
     if (Display::IsInternalDisplayId(id))
       continue;
