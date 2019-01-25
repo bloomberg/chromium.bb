@@ -37,9 +37,10 @@ class CONTENT_EXPORT ImageCaptureFrameGrabber final
   ~ImageCaptureFrameGrabber() override;
 
   // blink::WebImageCaptureFrameGrabber implementation.
-  void GrabFrame(blink::WebMediaStreamTrack* track,
-                 std::unique_ptr<blink::WebImageCaptureGrabFrameCallbacks>
-                     callbacks) override;
+  void GrabFrame(
+      blink::WebMediaStreamTrack* track,
+      std::unique_ptr<blink::WebImageCaptureGrabFrameCallbacks> callbacks,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
 
  private:
   // Internal class to receive, convert and forward one frame.
