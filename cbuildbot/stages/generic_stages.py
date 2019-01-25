@@ -239,9 +239,8 @@ class BuilderStage(object):
           constants.BUILDER_COMPLETED_STATUSES
       elapsed_time_seconds: (optional) Elapsed time in stage, in seconds.
     """
-    _, db = self._run.GetCIDBHandle()
-    if self._build_stage_id is not None and db is not None:
-      db.FinishBuildStage(self._build_stage_id, status)
+    if self._build_stage_id is not None and self.buildstore.AreClientsReady():
+      self.buildstore.FinishBuildStage(self._build_stage_id, status)
 
     fields = {
         'status': status,
@@ -280,15 +279,13 @@ class BuilderStage(object):
 
   def _StartBuildStageInCIDB(self):
     """Mark the stage as inflight in cidb."""
-    _, db = self._run.GetCIDBHandle()
-    if self._build_stage_id is not None and db is not None:
-      db.StartBuildStage(self._build_stage_id)
+    if self._build_stage_id is not None and self.buildstore.AreClientsReady():
+      self.buildstore.StartBuildStage(self._build_stage_id)
 
   def _WaitBuildStageInCIDB(self):
     """Mark the stage as waiting in cidb."""
-    _, db = self._run.GetCIDBHandle()
-    if self._build_stage_id is not None and db is not None:
-      db.WaitBuildStage(self._build_stage_id)
+    if self._build_stage_id is not None and self.buildstore.AreClientsReady():
+      self.buildstore.WaitBuildStage(self._build_stage_id)
 
   def _TranslateResultToCIDBStatus(self, result):
     """Translates the different result_lib.Result results to builder statuses.

@@ -141,6 +141,45 @@ class TestBuildStore(cros_test_lib.MockTestCase):
         constants.BUILDER_STATUS_PLANNED)
     self.assertEqual(build_stage_id, constants.MOCK_STAGE_ID)
 
+  def testStartBuildStage(self):
+    """Tests the redirect for StartBuildStage function."""
+    self.PatchObject(BuildStore, 'InitializeClients',
+                     return_value=True)
+    bs = BuildStore()
+    bs.cidb_conn = mock.MagicMock()
+    stage_id = mock.Mock()
+    self.PatchObject(bs.cidb_conn, 'StartBuildStage', return_value=stage_id)
+    ret = bs.StartBuildStage(constants.MOCK_BUILD_ID)
+    bs.cidb_conn.StartBuildStage.assert_called_once_with(
+        constants.MOCK_BUILD_ID)
+    self.assertEqual(ret, stage_id)
+
+  def testWaitBuildStage(self):
+    """Tests the redirect for WaitBuildStage function."""
+    self.PatchObject(BuildStore, 'InitializeClients',
+                     return_value=True)
+    bs = BuildStore()
+    bs.cidb_conn = mock.MagicMock()
+    stage_id = mock.Mock()
+    self.PatchObject(bs.cidb_conn, 'WaitBuildStage', return_value=stage_id)
+    ret = bs.WaitBuildStage(constants.MOCK_BUILD_ID)
+    bs.cidb_conn.WaitBuildStage.assert_called_once_with(
+        constants.MOCK_BUILD_ID)
+    self.assertEqual(ret, stage_id)
+
+  def testFinishBuildStage(self):
+    """Tests the redirect for FinishBuildStage function."""
+    self.PatchObject(BuildStore, 'InitializeClients',
+                     return_value=True)
+    bs = BuildStore()
+    bs.cidb_conn = mock.MagicMock()
+    stage_id = mock.Mock()
+    self.PatchObject(bs.cidb_conn, 'FinishBuildStage', return_value=stage_id)
+    ret = bs.FinishBuildStage(constants.MOCK_BUILD_ID, 'status')
+    bs.cidb_conn.FinishBuildStage.assert_called_once_with(
+        constants.MOCK_BUILD_ID, 'status')
+    self.assertEqual(ret, stage_id)
+
   def testFinishBuild(self):
     """Tests the redirect for FinishBuild function."""
     self.PatchObject(BuildStore, 'InitializeClients',

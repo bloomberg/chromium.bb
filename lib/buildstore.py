@@ -241,6 +241,40 @@ class BuildStore(object):
     if self._write_to_cidb:
       self.cidb_conn.FinishChildConfig(build_id, child_config, status=status)
 
+  def StartBuildStage(self, build_stage_id):
+    """Marks a build stage as inflight, in the database.
+
+    Args:
+      build_stage_id: primary key of the build stage in buildStageTable.
+    """
+    if not self.InitializeClients():
+      return
+    if self._write_to_cidb:
+      return self.cidb_conn.StartBuildStage(build_stage_id)
+
+  def WaitBuildStage(self, build_stage_id):
+    """Marks a build stage as waiting, in the database.
+
+    Args:
+      build_stage_id: primary key of the build stage in buildStageTable.
+    """
+    if not self.InitializeClients():
+      return
+    if self._write_to_cidb:
+      return self.cidb_conn.WaitBuildStage(build_stage_id)
+
+  def FinishBuildStage(self, build_stage_id, status):
+    """Marks a build stage as finished, in the database.
+
+    Args:
+      build_stage_id: primary key of the build stage in buildStageTable.
+      status: one of constants.BUILDER_COMPLETED_STATUSES
+    """
+    if not self.InitializeClients():
+      return
+    if self._write_to_cidb:
+      return self.cidb_conn.FinishBuildStage(build_stage_id, status)
+
   def UpdateMetadata(self, build_id, metadata):
     """Update the given metadata row in database.
 
@@ -343,6 +377,17 @@ class FakeBuildStore(object):
   def FinishBuild(self, build_id, status=None, summary=None, metadata_url=None,
                   strict=True):
     return
+  #pylint: enable=unused-argument
+
+  def StartBuildStage(self, build_stage_id):
+    return build_stage_id
+
+  def WaitBuildStage(self, build_stage_id):
+    return build_stage_id
+
+  #pylint: disable=unused-argument
+  def FinishBuildStage(self, build_stage_id, status):
+    return build_stage_id
   #pylint: enable=unused-argument
 
   def UpdateMetadata(self, build_id, metadata): #pylint: disable=unused-argument

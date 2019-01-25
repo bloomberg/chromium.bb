@@ -309,6 +309,15 @@ class BuilderStageTest(AbstractStageTestCase):
     self.PatchObject(
         FakeBuildStore, 'InsertBuildStage',
         return_value=constants.MOCK_STAGE_ID)
+    self.PatchObject(
+        FakeBuildStore, 'StartBuildStage',
+        return_value=constants.MOCK_STAGE_ID)
+    self.PatchObject(
+        FakeBuildStore, 'WaitBuildStage',
+        return_value=constants.MOCK_STAGE_ID)
+    self.PatchObject(
+        FakeBuildStore, 'FinishBuildStage',
+        return_value=constants.MOCK_STAGE_ID)
     stage = stage_class(self._run, self.buildstore)
     self.buildstore.InsertBuildStage.assert_called_once_with(
         constants.MOCK_BUILD_ID, stage.name, None,
@@ -401,9 +410,9 @@ class BuilderStageTest(AbstractStageTestCase):
     results = results_lib.Results.Get()[0]
     self.assertTrue(isinstance(results.result, TestError))
     self.assertEqual(str(results.result), 'fail!')
-    self.mock_cidb.StartBuildStage.assert_called_once_with(
+    self.buildstore.StartBuildStage.assert_called_once_with(
         DEFAULT_BUILD_STAGE_ID)
-    self.mock_cidb.FinishBuildStage.assert_called_once_with(
+    self.buildstore.FinishBuildStage.assert_called_once_with(
         DEFAULT_BUILD_STAGE_ID,
         constants.BUILDER_STATUS_FAILED)
 
@@ -422,9 +431,9 @@ class BuilderStageTest(AbstractStageTestCase):
     results = results_lib.Results.Get()[0]
     self.assertTrue(isinstance(results.result, TestError))
     self.assertEqual(str(results.result), 'fail!')
-    self.mock_cidb.StartBuildStage.assert_called_once_with(
+    self.buildstore.StartBuildStage.assert_called_once_with(
         DEFAULT_BUILD_STAGE_ID)
-    self.mock_cidb.FinishBuildStage.assert_called_once_with(
+    self.buildstore.FinishBuildStage.assert_called_once_with(
         DEFAULT_BUILD_STAGE_ID,
         constants.BUILDER_STATUS_FAILED)
 
@@ -435,9 +444,9 @@ class BuilderStageTest(AbstractStageTestCase):
                      'WaitUntilReady',
                      return_value=False)
     stage.Run()
-    self.mock_cidb.WaitBuildStage.assert_called_once_with(
+    self.buildstore.WaitBuildStage.assert_called_once_with(
         DEFAULT_BUILD_STAGE_ID)
-    self.mock_cidb.FinishBuildStage.assert_called_once_with(
+    self.buildstore.FinishBuildStage.assert_called_once_with(
         DEFAULT_BUILD_STAGE_ID,
         constants.BUILDER_STATUS_SKIPPED)
     self.assertFalse(self.mock_cidb.StartBuildStage.called)
@@ -493,9 +502,9 @@ class BuilderStageTest(AbstractStageTestCase):
     self.assertEqual(stage.handled_exceptions, ['first fail'])
 
     # Verify the stage is still marked as failed in cidb.
-    self.mock_cidb.StartBuildStage.assert_called_once_with(
+    self.buildstore.StartBuildStage.assert_called_once_with(
         DEFAULT_BUILD_STAGE_ID)
-    self.mock_cidb.FinishBuildStage.assert_called_once_with(
+    self.buildstore.FinishBuildStage.assert_called_once_with(
         DEFAULT_BUILD_STAGE_ID,
         constants.BUILDER_STATUS_FAILED)
 
