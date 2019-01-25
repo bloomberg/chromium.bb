@@ -325,9 +325,14 @@ class BranchTest(ManifestTestCase):
         ['git', 'checkout', '-B', branch, self.RevisionFor(project)],
         cwd=self.PathListRegexFor(project))
 
-  def AssertProjectRenamed(self, project, branch):
+  def AssertBranchRenamed(self, project, branch):
     self.rc_mock.assertCommandContains(
         ['git', 'branch', '-m', branch],
+        cwd=self.PathListRegexFor(project))
+
+  def AssertBranchDeleted(self, project, branch):
+    self.rc_mock.assertCommandContains(
+        ['git', 'branch', '-D', branch],
         cwd=self.PathListRegexFor(project))
 
   def AssertProjectNotBranched(self, project):
@@ -336,7 +341,7 @@ class BranchTest(ManifestTestCase):
         cwd=self.PathListRegexFor(project),
         expected=False)
 
-  def AssertProjectNotRenamed(self, project):
+  def AssertBranchNotModified(self, project):
     self.rc_mock.assertCommandContains(
         ['git', 'branch'],
         cwd=self.PathListRegexFor(project),
@@ -347,6 +352,16 @@ class BranchTest(ManifestTestCase):
       self.rc_mock.assertCommandContains(
           ['git', 'commit', '-a'],
           cwd=partial_mock.ListRegex('.*/%s' % manifest_project))
+
+  def ForEachBranchableProject(self, assertion):
+    for proj in self.SINGLE_CHECKOUT_PROJECTS:
+      assertion(proj, self.BRANCH_NAME)
+    for proj in self.MULTI_CHECKOUT_PROJECTS:
+      assertion(proj, '%s-%s' % (self.BRANCH_NAME, proj))
+
+  def ForEachNonBranchableProject(self, assertion):
+    for proj in self.PINNED_PROJECTS + self.TOT_PROJECTS:
+      assertion(proj)
 
   def setUp(self):
     self.rc_mock = cros_test_lib.RunCommandMock()
@@ -371,12 +386,8 @@ class BranchTest(ManifestTestCase):
 
   def testCreateBranchesCorrectProjects(self):
     self.inst.Create(self.VERSION)
-    for proj in self.SINGLE_CHECKOUT_PROJECTS:
-      self.AssertProjectBranched(proj, self.BRANCH_NAME)
-    for proj in self.MULTI_CHECKOUT_PROJECTS:
-      self.AssertProjectBranched(proj, '%s-%s' % (self.BRANCH_NAME, proj))
-    for proj in self.PINNED_PROJECTS + self.TOT_PROJECTS:
-      self.AssertProjectNotBranched(proj)
+    self.ForEachBranchableProject(self.AssertProjectBranched)
+    self.ForEachNonBranchableProject(self.AssertProjectNotBranched)
 
   def testCreateRepairsManifests(self):
     self.inst.Create(self.VERSION)
@@ -388,16 +399,21 @@ class BranchTest(ManifestTestCase):
 
   def testRenameModifiesCorrectProjects(self):
     self.inst.Rename(self.ORIGINAL_BRANCH_NAME)
-    for proj in self.SINGLE_CHECKOUT_PROJECTS:
-      self.AssertProjectRenamed(proj, self.BRANCH_NAME)
-    for proj in self.MULTI_CHECKOUT_PROJECTS:
-      self.AssertProjectRenamed(proj, '%s-%s' % (self.BRANCH_NAME, proj))
-    for proj in self.PINNED_PROJECTS + self.TOT_PROJECTS:
-      self.AssertProjectNotRenamed(proj)
+    self.ForEachBranchableProject(self.AssertBranchRenamed)
+    self.ForEachNonBranchableProject(self.AssertBranchNotModified)
 
   def testRenameRepairsManifests(self):
     self.inst.Rename(self.ORIGINAL_BRANCH_NAME)
     self.AssertManifestRepairsCommitted()
+
+  def testDeleteSyncsToBranch(self):
+    self.inst.Delete()
+    self.AssertSynced(['--branch', self.BRANCH_NAME])
+
+  def testDeleteModifiesCorrectProjects(self):
+    self.inst.Delete()
+    self.ForEachBranchableProject(self.AssertBranchDeleted)
+    self.ForEachNonBranchableProject(self.AssertBranchNotModified)
 
 
 class ReleaseBranchTest(BranchTest):

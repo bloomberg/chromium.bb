@@ -338,6 +338,22 @@ class Branch(object):
         print_cmd=True)
     return branch
 
+  def _DeleteProjectBranch(self, project):
+    """Delete this branch for the given project.
+
+    Args:
+      project: The repo_manifest.Project whose current branch will be deleted.
+
+    Returns:
+      Name of the deleted branch on the project.
+    """
+    branch = self._ProjectBranchName(project)
+    git.RunGit(
+        AbsoluteProjectPath(project.Path()),
+        ['branch', '-D', branch],
+        print_cmd=True)
+    return branch
+
   def _MapBranchableProjects(self, transform):
     """Apply the given operator to all branchable projects.
 
@@ -415,6 +431,18 @@ class Branch(object):
     self._SyncToBranch(original)
     branches = self._MapBranchableProjects(self._RenameProjectBranch)
     self._RepairManifestRepositories(branches)
+
+  def Delete(self, push=False, force=False):
+    """Delete this branch.
+
+    Args:
+      push: Whether to push the deletion to remote.
+      force: Are you *really* sure you want to delete this branch on remote?
+    """
+    if push or force:
+      raise NotImplementedError('--push and --force unavailable.')
+    self._SyncToBranch(self._name)
+    self._MapBranchableProjects(self._DeleteProjectBranch)
 
 
 class ReleaseBranch(Branch):
@@ -578,6 +606,8 @@ Delete Examples:
           push=self.options.push,
           force=self.options.force)
     elif self.options.subcommand == 'delete':
-      raise NotImplementedError('Branch deletion is not yet implemented.')
+      self.options.cls(self.options.branch).Delete(
+          push=self.options.push,
+          force=self.options.force)
     else:
       raise BranchError('Unrecognized option.')
