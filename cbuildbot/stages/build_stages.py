@@ -457,7 +457,8 @@ class InitSDKStage(generic_stages.BuilderStage):
           use_sdk=use_sdk,
           chrome_root=self._run.options.chrome_root,
           extra_env=self._portage_extra_env,
-          use_image=self._run.config.chroot_use_image)
+          use_image=self._run.config.chroot_use_image,
+          cache_dir=self._run.options.cache_dir)
 
     post_ver = cros_sdk_lib.GetChrootVersion(chroot_path)
     if pre_ver is not None and pre_ver != post_ver:
@@ -479,10 +480,16 @@ class UpdateSDKStage(generic_stages.BuilderStage):
 
     usepkg_toolchain = (
         self._run.config.usepkg_toolchain and not self._latest_toolchain)
+
+    chroot_args = None
+    if self._run.options.cache_dir:
+      chroot_args = ['--cache-dir', self._run.options.cache_dir]
+
     commands.UpdateChroot(
         self._build_root,
         usepkg=usepkg_toolchain,
-        extra_env=self._portage_extra_env)
+        extra_env=self._portage_extra_env,
+        chroot_args=chroot_args)
 
 
 class SetupBoardStage(generic_stages.BoardSpecificBuilderStage, InitSDKStage):
@@ -492,6 +499,10 @@ class SetupBoardStage(generic_stages.BoardSpecificBuilderStage, InitSDKStage):
   category = constants.CI_INFRA_STAGE
 
   def PerformStage(self):
+    chroot_args = None
+    if self._run.options.cache_dir:
+      chroot_args = ['--cache-dir', self._run.options.cache_dir]
+
     # Ensure we don't run on SDK builder. https://crbug.com/225509
     if self._run.config.build_type != constants.CHROOT_BUILDER_TYPE:
       # Setup board's toolchain.
@@ -501,10 +512,12 @@ class SetupBoardStage(generic_stages.BoardSpecificBuilderStage, InitSDKStage):
           self._build_root,
           usepkg=usepkg_toolchain,
           targets='boards',
-          boards=self._current_board)
+          boards=self._current_board,
+          chroot_args=chroot_args)
 
     # Update the board.
     usepkg = self._run.config.usepkg_build_packages
+
     commands.SetupBoard(
         self._build_root,
         board=self._current_board,
@@ -512,7 +525,8 @@ class SetupBoardStage(generic_stages.BoardSpecificBuilderStage, InitSDKStage):
         force=self._run.config.board_replace,
         extra_env=self._portage_extra_env,
         chroot_upgrade=False,
-        profile=self._run.options.profile or self._run.config.profile)
+        profile=self._run.options.profile or self._run.config.profile,
+        chroot_args=chroot_args)
 
 
 class BuildSDKBoardStage(generic_stages.BoardSpecificBuilderStage,
@@ -524,11 +538,16 @@ class BuildSDKBoardStage(generic_stages.BoardSpecificBuilderStage,
 
   def PerformStage(self):
     # Build the SDK board.
+    chroot_args = None
+    if self._run.options.cache_dir:
+      chroot_args = ['--cache-dir', self._run.options.cache_dir]
+
     commands.BuildSDKBoard(
         self._build_root,
         self._current_board,
         force=self._run.config.board_replace,
-        extra_env=self._portage_extra_env)
+        extra_env=self._portage_extra_env,
+        chroot_args=chroot_args)
 
 
 class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
@@ -661,6 +680,10 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
 
     # Set up goma. Use goma iff chrome needs to be built.
     chroot_args = self._SetupGomaIfNecessary()
+    run_goma = bool(chroot_args)
+    if self._run.options.cache_dir:
+      chroot_args = chroot_args or []
+      chroot_args += ['--cache-dir', self._run.options.cache_dir]
 
     build_id, _ = self._run.GetCIDBHandle()
     commands.Build(
@@ -675,7 +698,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
         chroot_args=chroot_args,
         extra_env=self._portage_extra_env,
         event_file=event_file_in_chroot,
-        run_goma=bool(chroot_args))
+        run_goma=run_goma)
 
     if event_file and os.path.isfile(event_file):
       logging.info('Archive build-events.json file')
@@ -772,6 +795,11 @@ class BuildImageStage(BuildPackagesStage):
 
     rootfs_verification = self._run.config.rootfs_verification
     builder_path = '/'.join([self._bot_id, self.version])
+
+    chroot_args = None
+    if self._run.options.cache_dir:
+      chroot_args = ['--cache-dir', self._run.options.cache_dir]
+
     commands.BuildImage(
         self._build_root,
         self._current_board,
@@ -780,7 +808,8 @@ class BuildImageStage(BuildPackagesStage):
         version=version,
         builder_path=builder_path,
         disk_layout=disk_layout,
-        extra_env=self._portage_extra_env)
+        extra_env=self._portage_extra_env,
+        chroot_args=chroot_args)
 
     # Update link to latest image.
     latest_image = os.readlink(self.GetImageDirSymlink('latest'))

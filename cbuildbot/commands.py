@@ -192,7 +192,7 @@ def WipeOldOutput(buildroot):
 
 
 def MakeChroot(buildroot, replace, use_sdk, chrome_root=None, extra_env=None,
-               use_image=False):
+               use_image=False, cache_dir=None):
   """Wrapper around make_chroot."""
   cmd = ['cros_sdk', '--buildbot-log-version']
   if not use_image:
@@ -204,6 +204,9 @@ def MakeChroot(buildroot, replace, use_sdk, chrome_root=None, extra_env=None,
 
   if chrome_root:
     cmd.append('--chrome_root=%s' % chrome_root)
+
+  if cache_dir:
+    cmd += ['--cache-dir', cache_dir]
 
   RunBuildScript(buildroot, cmd, chromite_cmd=True, extra_env=extra_env)
 
@@ -241,7 +244,8 @@ def DeleteChrootSnapshot(buildroot, snapshot_name):
   return result.returncode == 0
 
 
-def UpdateChroot(buildroot, usepkg, toolchain_boards=None, extra_env=None):
+def UpdateChroot(buildroot, usepkg, toolchain_boards=None, extra_env=None,
+                 chroot_args=None):
   """Wrapper around update_chroot.
 
   Args:
@@ -249,6 +253,7 @@ def UpdateChroot(buildroot, usepkg, toolchain_boards=None, extra_env=None):
     usepkg: Whether to use binary packages when setting up the toolchain.
     toolchain_boards: List of boards to always include.
     extra_env: A dictionary of environmental variables to set during generation.
+    chroot_args: The args to the chroot.
   """
   cmd = ['./update_chroot']
 
@@ -266,7 +271,10 @@ def UpdateChroot(buildroot, usepkg, toolchain_boards=None, extra_env=None):
   extra_env_local.setdefault('FEATURES', '')
   extra_env_local['FEATURES'] += ' -separatedebug splitdebug'
 
-  RunBuildScript(buildroot, cmd, extra_env=extra_env_local, enter_chroot=True)
+  RunBuildScript(buildroot, cmd,
+                 enter_chroot=True,
+                 chroot_args=chroot_args,
+                 extra_env=extra_env_local)
 
 
 def SetupBoard(buildroot, board, usepkg,
@@ -695,7 +703,7 @@ def GetModels(buildroot, board, log_output=True):
 
 def BuildImage(buildroot, board, images_to_build, version=None,
                builder_path=None, rootfs_verification=True, extra_env=None,
-               disk_layout=None):
+               disk_layout=None, chroot_args=None):
   """Run the script which builds images.
 
   Args:
@@ -707,6 +715,7 @@ def BuildImage(buildroot, board, images_to_build, version=None,
     rootfs_verification: Whether to enable the rootfs verification.
     extra_env: A dictionary of environmental variables to set during generation.
     disk_layout: The disk layout.
+    chroot_args: The args to the chroot.
   """
 
   # Default to base if images_to_build is passed empty.
@@ -728,7 +737,10 @@ def BuildImage(buildroot, board, images_to_build, version=None,
 
   cmd += images_to_build
 
-  RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
+  RunBuildScript(buildroot, cmd,
+                 enter_chroot=True,
+                 extra_env=extra_env,
+                 chroot_args=chroot_args)
 
 
 def BuildVMImageForTesting(buildroot, board, extra_env=None,
