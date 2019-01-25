@@ -2228,7 +2228,15 @@ void WebMediaPlayerImpl::OnVideoDecoderChange(const std::string& name) {
 }
 
 void WebMediaPlayerImpl::OnRemotePlayStateChange(MediaStatus::State state) {
-  // TODO(tguilbert): request play/pause appropriately.
+  DCHECK(is_flinging_);
+
+  if (state == MediaStatus::State::PLAYING && Paused()) {
+    DVLOG(1) << __func__ << " requesting PLAY.";
+    client_->RequestPlay();
+  } else if (state == MediaStatus::State::PAUSED && !Paused()) {
+    DVLOG(1) << __func__ << " requesting PAUSE.";
+    client_->RequestPause();
+  }
 }
 
 void WebMediaPlayerImpl::OnFrameHidden() {

@@ -98,10 +98,13 @@ void FlingingRenderer::StartPlayingFrom(base::TimeDelta time) {
 
 void FlingingRenderer::SetPlaybackRate(double playback_rate) {
   DVLOG(2) << __func__;
-  if (playback_rate == 0)
+  if (playback_rate == 0) {
+    SetTargetPlayState(PlayState::PAUSED);
     controller_->GetMediaController()->Pause();
-  else
+  } else {
+    SetTargetPlayState(PlayState::PLAYING);
     controller_->GetMediaController()->Play();
+  }
 }
 
 void FlingingRenderer::SetVolume(float volume) {
@@ -113,8 +116,49 @@ base::TimeDelta FlingingRenderer::GetMediaTime() {
   return controller_->GetApproximateCurrentTime();
 }
 
+void FlingingRenderer::SetTargetPlayState(PlayState state) {
+  DVLOG(3) << __func__ << " : state " << static_cast<int>(state);
+  DCHECK(state == PlayState::PLAYING || state == PlayState::PAUSED);
+  reached_target_play_state_ = false;
+  target_play_state_ = state;
+}
+
 void FlingingRenderer::OnMediaStatusUpdated(const media::MediaStatus& status) {
-  // TODO(tguilbert): propagate important changes to RendererClient.
+  const auto& current_state = status.state;
+
+  if (current_state == target_play_state_)
+    reached_target_play_state_ = true;
+
+  // Because we can get a MediaStatus update at any time from the device, only
+  // handle state updates after we have reached the target state.
+  // If we do not, we can encounter the following scenario:
+  // - A user pauses the video.
+  // - While the PAUSE command is in flight, an unrelated MediaStatus with a
+  //   PLAYING state is sent from the cast device.
+  // - We call OnRemotePlaybackStateChange(PLAYING).
+  // - As the PAUSE command completes and we receive a PlayState::PAUSE, we
+  //   queue a new PLAYING.
+  // - The local device enters a tick/tock feedback loop of constantly
+  //   requesting the wrong state of PLAYING/PAUSED.
+  if (!reached_target_play_state_)
+    return;
+
+  // Ignore all non PLAYING/PAUSED states.
+  // UNKNOWN and BUFFERING states are uninteresting and can be safely ignored.
+  // STOPPED normally causes the session to teardown, and |this| is destroyed
+  // shortly after.
+  if (current_state != PlayState::PLAYING &&
+      current_state != PlayState::PAUSED) {
+    DVLOG(3) << __func__ << " : external state ignored: "
+             << static_cast<int>(current_state);
+    return;
+  }
+
+  // We previously reached a stable target PlayState, and the cast device has
+  // reached a new stable PlayState without WMPI having asked for it.
+  // Let WMPI know it should update itself.
+  if (current_state != target_play_state_)
+    client_->OnRemotePlayStateChange(current_state);
 }
 
 }  // namespace content
