@@ -8,6 +8,7 @@
 #include <wrl/client.h>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "url/gurl.h"
@@ -49,6 +50,6 @@ bool TrustedSourcesManagerWin::IsFromTrustedSource(const GURL& url) const {
 }  // namespace
 
 // static
-TrustedSourcesManager* TrustedSourcesManager::Create() {
-  return new TrustedSourcesManagerWin;
+std::unique_ptr<TrustedSourcesManager> TrustedSourcesManager::Create() {
+  return base::WrapUnique(new TrustedSourcesManagerWin);
 }
