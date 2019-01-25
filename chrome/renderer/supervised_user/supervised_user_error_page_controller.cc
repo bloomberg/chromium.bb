@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/supervised_user/supervised_user_error_page_controller.h"
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/renderer/supervised_user/supervised_user_error_page_controller_delegate.h"
 #include "content/public/renderer/render_frame.h"

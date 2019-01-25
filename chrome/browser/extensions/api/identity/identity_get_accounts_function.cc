@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/identity/identity_get_accounts_function.h"
 
+#include "base/bind.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/extensions/api/identity/identity_constants.h"
 #include "chrome/browser/profiles/profile.h"

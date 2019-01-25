@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/mojo_web_ui_browser_test.h"
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "chrome/browser/ui/browser.h"

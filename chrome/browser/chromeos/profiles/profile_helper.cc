@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 
 #include "base/barrier_closure.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/strings/string_util.h"

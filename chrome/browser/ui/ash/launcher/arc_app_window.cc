@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/launcher/arc_app_window.h"
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"

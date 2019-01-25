@@ -7,6 +7,7 @@
 
 #include "chrome/browser/offline_pages/offline_page_request_job.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/supports_user_data.h"

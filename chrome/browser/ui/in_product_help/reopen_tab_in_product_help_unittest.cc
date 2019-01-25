@@ -9,6 +9,7 @@
 
 #include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help.h"
 
+#include "base/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"

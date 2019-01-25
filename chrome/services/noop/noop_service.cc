@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/services/noop/noop_service.h"
+#include "base/bind.h"
 
 namespace chrome {
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browsing_data/navigation_entry_remover.h"
 
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"

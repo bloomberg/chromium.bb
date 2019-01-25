@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/location.h"

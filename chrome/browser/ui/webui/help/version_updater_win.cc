@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/help/version_updater_win.h"
 
+#include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/post_task.h"
 #include "base/win/win_util.h"

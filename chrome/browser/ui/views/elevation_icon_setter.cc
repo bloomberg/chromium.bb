@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/elevation_icon_setter.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"

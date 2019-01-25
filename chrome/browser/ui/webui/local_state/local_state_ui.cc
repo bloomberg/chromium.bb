@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"

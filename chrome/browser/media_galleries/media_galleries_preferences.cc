@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/base_paths_posix.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/i18n/time_formatting.h"
 #include "base/path_service.h"

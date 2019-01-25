@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_watcher_manager.h"
 
+#include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/task/post_task.h"

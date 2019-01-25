@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/toolbar/media_router_action_controller.h"
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"

@@ -12,6 +12,7 @@
 #include <memory>
 
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ssl/ssl_error_assistant.h"

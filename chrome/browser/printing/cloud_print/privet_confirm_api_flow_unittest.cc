@@ -7,6 +7,7 @@
 #include <memory>
 #include <set>
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/backdrop_wallpaper_handlers/backdrop_wallpaper_handlers.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"

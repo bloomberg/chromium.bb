@@ -11,6 +11,7 @@
 #include <stddef.h>
 #include <sys/socket.h>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
 #include "base/mac/scoped_cftyperef.h"

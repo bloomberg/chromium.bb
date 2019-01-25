@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
 
+#include "base/bind.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"

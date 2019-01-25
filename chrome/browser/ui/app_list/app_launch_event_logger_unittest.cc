@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/app_launch_event_logger.h"
 
+#include "base/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/arc/arc_prefs.h"

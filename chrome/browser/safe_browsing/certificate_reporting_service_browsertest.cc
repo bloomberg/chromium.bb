@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/certificate_reporting_service.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/macros.h"

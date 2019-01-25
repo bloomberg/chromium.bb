@@ -4,6 +4,7 @@
 
 #include "chrome/browser/history/android/android_provider_backend.h"
 
+#include "base/bind.h"
 #include "base/i18n/case_conversion.h"
 #include "chrome/browser/history/android/bookmark_model_sql_handler.h"
 #include "components/history/core/browser/android/android_time.h"
@@ -17,7 +18,6 @@
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/history/core/browser/thumbnail_database.h"
-
 
 namespace history {
 

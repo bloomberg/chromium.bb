@@ -4,6 +4,7 @@
 
 #include "chrome/services/cups_ipp_parser/cups_ipp_parser_service.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/services/cups_ipp_parser/ipp_parser.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

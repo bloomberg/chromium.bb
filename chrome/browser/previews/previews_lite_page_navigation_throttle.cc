@@ -9,6 +9,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"

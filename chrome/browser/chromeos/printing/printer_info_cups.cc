@@ -8,6 +8,7 @@
 #include <array>
 #include <string>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"

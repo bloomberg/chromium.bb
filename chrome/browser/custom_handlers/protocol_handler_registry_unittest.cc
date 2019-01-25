@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"

@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/platform_util.h"
 
+#include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"

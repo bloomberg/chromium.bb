@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browsing_data/counters/site_data_counter.h"
 
+#include "base/bind.h"
 #include "chrome/browser/browsing_data/counters/browsing_data_counter_utils.h"
 #include "chrome/browser/browsing_data/counters/site_data_counting_helper.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"

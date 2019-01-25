@@ -4,6 +4,7 @@
 
 #include "chrome/browser/content_settings/sound_content_setting_observer.h"
 
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"

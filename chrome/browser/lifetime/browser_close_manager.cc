@@ -7,6 +7,7 @@
 #include <iterator>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/background/background_mode_manager.h"

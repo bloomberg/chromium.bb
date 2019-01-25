@@ -5,6 +5,7 @@
 #include "chrome/browser/signin/chrome_signin_proxying_url_loader_factory.h"
 
 #include "base/barrier_closure.h"
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "build/buildflag.h"
 #include "chrome/browser/profiles/profile.h"

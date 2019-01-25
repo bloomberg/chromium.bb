@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"

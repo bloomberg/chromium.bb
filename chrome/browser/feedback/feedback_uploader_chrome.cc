@@ -4,6 +4,7 @@
 
 #include "chrome/browser/feedback/feedback_uploader_chrome.h"
 
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"

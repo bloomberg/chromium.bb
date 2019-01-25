@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/containers/adapters.h"
 #include "base/numerics/ranges.h"
 #include "base/time/time.h"

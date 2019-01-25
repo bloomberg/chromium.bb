@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/ui/preloaded_web_view.h"
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/chrome_notification_types.h"

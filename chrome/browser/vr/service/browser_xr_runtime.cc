@@ -4,6 +4,7 @@
 
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
 
+#include "base/bind.h"
 #include "chrome/browser/vr/service/xr_device_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/bookmark_apps/bookmark_app_install_manager.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"

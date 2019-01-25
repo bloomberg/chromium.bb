@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/eoc_internals/eoc_internals_ui.h"
 
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/ntp_snippets/contextual_content_suggestions_service_factory.h"
 #include "chrome/browser/profiles/profile.h"

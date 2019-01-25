@@ -4,6 +4,7 @@
 
 #include "chrome/browser/push_messaging/budget_database.h"
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"

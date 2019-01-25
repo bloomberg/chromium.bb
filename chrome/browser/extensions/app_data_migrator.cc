@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/app_data_migrator.h"
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"

@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"

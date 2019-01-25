@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/bookmarks/bookmarks_browsertest.h"
 
+#include "base/bind.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"

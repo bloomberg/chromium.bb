@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/identity/gaia_web_auth_flow.h"
 
+#include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"

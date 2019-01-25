@@ -5,6 +5,7 @@
 #include "chrome/renderer/net/available_offline_content_helper.h"
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_value_converter.h"
 #include "base/json/json_writer.h"

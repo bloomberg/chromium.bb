@@ -5,6 +5,7 @@
 #include <memory>
 #include <ostream>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"

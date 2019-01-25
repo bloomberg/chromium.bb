@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/snippets_internals/snippets_internals_ui.h"
 
+#include "base/bind.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/snippets_internals/snippets_internals_page_handler.h"

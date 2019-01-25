@@ -4,6 +4,7 @@
 
 #include "chrome/browser/renderer_host/pepper/device_id_fetcher.h"
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"

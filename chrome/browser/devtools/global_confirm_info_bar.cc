@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"

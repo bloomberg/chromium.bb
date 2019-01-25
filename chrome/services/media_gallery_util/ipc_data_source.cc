@@ -4,6 +4,7 @@
 
 #include "chrome/services/media_gallery_util/ipc_data_source.h"
 
+#include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/utility/utility_thread.h"
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/network_change_manager_client.h"
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/dbus/dbus_thread_manager.h"

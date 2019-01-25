@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/wm/window_state.h"
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"

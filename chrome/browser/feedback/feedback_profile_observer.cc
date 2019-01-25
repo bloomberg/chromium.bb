@@ -4,6 +4,7 @@
 
 #include "chrome/browser/feedback/feedback_profile_observer.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chrome_notification_types.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/android_sms/android_sms_app_setup_controller_impl.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"

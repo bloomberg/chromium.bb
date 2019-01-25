@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "components/arc/arc_service_manager.h"
 #include "content/public/browser/browser_task_traits.h"

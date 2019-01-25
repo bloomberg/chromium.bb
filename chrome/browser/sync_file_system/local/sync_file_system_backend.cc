@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chrome_notification_types.h"

@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_app_data_search_result.h"
 #include "components/arc/arc_bridge_service.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/android_sms/connection_establisher_impl.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"

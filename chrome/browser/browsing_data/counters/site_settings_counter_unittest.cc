@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browsing_data/counters/site_settings_counter.h"
 
+#include "base/bind.h"
 #include "base/test/simple_test_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"

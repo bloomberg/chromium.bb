@@ -4,6 +4,7 @@
 
 #include "chrome/services/noop/public/cpp/utils.h"
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "chrome/services/noop/public/mojom/noop.mojom.h"
 #include "content/public/common/service_manager_connection.h"

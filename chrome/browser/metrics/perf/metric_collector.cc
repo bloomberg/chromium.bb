@@ -4,6 +4,7 @@
 
 #include "chrome/browser/metrics/perf/metric_collector.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
 #include "base/system/sys_info.h"

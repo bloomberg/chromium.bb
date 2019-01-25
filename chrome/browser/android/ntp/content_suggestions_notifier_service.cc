@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/android/application_status_listener.h"
+#include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/android/ntp/content_suggestions_notifier.h"
 #include "chrome/browser/notifications/notification_handler.h"

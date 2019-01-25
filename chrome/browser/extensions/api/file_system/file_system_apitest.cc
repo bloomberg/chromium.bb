@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "apps/saved_files_service.h"
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/path_service.h"

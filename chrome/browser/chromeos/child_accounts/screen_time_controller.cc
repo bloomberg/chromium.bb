@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/public/interfaces/login_screen.mojom.h"
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/optional.h"
 #include "base/time/clock.h"

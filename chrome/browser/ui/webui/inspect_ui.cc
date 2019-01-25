@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/inspect_ui.h"
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/devtools/devtools_targets_ui.h"

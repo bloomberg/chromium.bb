@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/app_mode/startup_app_launcher_update_checker.h"
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/syslog_logging.h"
 #include "chrome/browser/chrome_notification_types.h"

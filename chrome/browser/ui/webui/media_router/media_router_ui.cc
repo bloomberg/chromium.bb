@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/guid.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/resource_coordinator/render_process_probe.h"
+#include "base/bind.h"
 #include "base/process/process.h"
 #include "base/process/process_metrics.h"
 #include "base/task/post_task.h"

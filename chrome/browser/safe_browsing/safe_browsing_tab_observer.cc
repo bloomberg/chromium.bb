@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
 
+#include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"

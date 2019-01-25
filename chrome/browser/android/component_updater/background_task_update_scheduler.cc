@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/component_updater/background_task_update_scheduler.h"
 
+#include "base/bind.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "jni/UpdateScheduler_jni.h"
 

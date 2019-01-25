@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "content/public/test/test_browser_thread_bundle.h"

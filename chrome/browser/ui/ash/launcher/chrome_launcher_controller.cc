@@ -15,6 +15,7 @@
 #include "ash/public/cpp/shelf_prefs.h"
 #include "ash/public/cpp/window_animation_types.h"
 #include "ash/public/interfaces/constants.mojom.h"
+#include "base/bind.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

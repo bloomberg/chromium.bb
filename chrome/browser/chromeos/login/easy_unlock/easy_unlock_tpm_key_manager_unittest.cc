@@ -5,6 +5,7 @@
 #include <cryptohi.h>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"

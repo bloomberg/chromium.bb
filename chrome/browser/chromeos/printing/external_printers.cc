@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/memory/weak_ptr.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/plugins/plugin_response_interceptor_url_loader_throttle.h"
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/guid.h"
 #include "base/task/post_task.h"

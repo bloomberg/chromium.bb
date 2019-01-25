@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ash/public/interfaces/constants.mojom.h"
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/time/clock.h"
 #include "content/public/common/service_manager_connection.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/pepper/pepper_flash_drm_renderer_host.h"
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/renderer_ppapi_host.h"

@@ -9,6 +9,7 @@
 #include <map>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/engagement/site_engagement_service.h"

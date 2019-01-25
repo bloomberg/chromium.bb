@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"

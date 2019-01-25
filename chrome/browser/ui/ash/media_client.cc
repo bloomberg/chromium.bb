@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/media_client.h"
 
 #include "ash/public/interfaces/constants.mojom.h"
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"

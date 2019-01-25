@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browser_switcher/browser_switcher_service.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"

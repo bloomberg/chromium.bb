@@ -6,6 +6,7 @@
 #include <list>
 #include <map>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/utf_string_conversions.h"

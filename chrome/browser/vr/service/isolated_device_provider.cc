@@ -4,6 +4,7 @@
 
 #include "chrome/browser/vr/service/isolated_device_provider.h"
 
+#include "base/bind.h"
 #include "chrome/browser/vr/service/vr_ui_host.h"
 #include "content/public/common/service_manager_connection.h"
 #include "device/vr/buildflags/buildflags.h"

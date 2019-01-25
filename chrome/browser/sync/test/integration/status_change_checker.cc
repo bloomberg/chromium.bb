@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/timer/timer.h"

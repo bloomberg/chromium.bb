@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 
 #include "ash/public/cpp/ash_pref_names.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/notifications/persistent_notification_handler.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chrome_browser_main_android.h"
 
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"

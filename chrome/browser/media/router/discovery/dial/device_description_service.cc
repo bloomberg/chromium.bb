@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/media/router/discovery/dial/device_description_service.h"
+#include "base/bind.h"
 
 #include <map>
 #include <utility>

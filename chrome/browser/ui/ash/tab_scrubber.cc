@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "ash/shell.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"

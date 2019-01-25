@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/i18n/icu_util.h"
 #include "base/numerics/ranges.h"
 #include "base/path_service.h"

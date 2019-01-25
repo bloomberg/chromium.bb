@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"

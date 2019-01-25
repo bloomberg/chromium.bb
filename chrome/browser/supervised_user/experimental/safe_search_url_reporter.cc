@@ -4,6 +4,7 @@
 
 #include "chrome/browser/supervised_user/experimental/safe_search_url_reporter.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"

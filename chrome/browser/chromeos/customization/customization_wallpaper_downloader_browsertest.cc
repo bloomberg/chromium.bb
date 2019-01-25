@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ash/public/interfaces/wallpaper.mojom.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"

@@ -6,6 +6,7 @@
 
 #include <unordered_set>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"

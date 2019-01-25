@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"

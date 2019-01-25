@@ -4,6 +4,7 @@
 
 #include "chrome/browser/net/trial_comparison_cert_verifier.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"

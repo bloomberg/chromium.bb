@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <array>
 
+#include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/devtools/device/devtools_android_bridge.h"
 #include "chrome/browser/devtools/device/tcp_device_provider.h"

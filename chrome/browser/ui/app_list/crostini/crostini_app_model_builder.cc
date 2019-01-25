@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/crostini/crostini_app_model_builder.h"
 
+#include "base/bind.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"

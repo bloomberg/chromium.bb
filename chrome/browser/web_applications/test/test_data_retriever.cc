@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/common/web_application_info.h"
 

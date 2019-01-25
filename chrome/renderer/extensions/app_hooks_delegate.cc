@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/extensions/app_hooks_delegate.h"
 
+#include "base/bind.h"
 #include "extensions/renderer/api_activity_logger.h"
 #include "extensions/renderer/bindings/api_request_handler.h"
 #include "extensions/renderer/bindings/api_signature.h"

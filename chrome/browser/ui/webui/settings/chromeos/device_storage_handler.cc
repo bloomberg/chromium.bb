@@ -9,6 +9,7 @@
 #include <numeric>
 #include <string>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"

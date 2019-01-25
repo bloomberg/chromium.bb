@@ -5,6 +5,7 @@
 #include "chrome/browser/task_manager/providers/crostini/crostini_process_task_provider.h"
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/process/process_iterator.h"
 #include "base/task/post_task.h"

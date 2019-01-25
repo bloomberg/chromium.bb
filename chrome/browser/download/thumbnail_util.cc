@@ -4,6 +4,7 @@
 
 #include "chrome/browser/download/thumbnail_util.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_thread.h"

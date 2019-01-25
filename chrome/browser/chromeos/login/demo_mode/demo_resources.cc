@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/demo_mode/demo_resources.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/path_service.h"

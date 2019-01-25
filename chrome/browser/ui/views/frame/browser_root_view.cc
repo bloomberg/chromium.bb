@@ -7,6 +7,7 @@
 #include <cmath>
 #include <string>
 
+#include "base/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"

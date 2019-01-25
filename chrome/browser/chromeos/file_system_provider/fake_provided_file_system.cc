@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "net/base/io_buffer.h"

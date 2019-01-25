@@ -5,6 +5,7 @@
 #include "chrome/browser/metrics/thread_watcher_android.h"
 
 #include "base/android/application_status_listener.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"

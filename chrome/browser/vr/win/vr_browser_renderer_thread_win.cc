@@ -4,6 +4,7 @@
 
 #include "chrome/browser/vr/win/vr_browser_renderer_thread_win.h"
 
+#include "base/bind.h"
 #include "chrome/browser/vr/audio_delegate.h"
 #include "chrome/browser/vr/browser_renderer.h"
 #include "chrome/browser/vr/content_input_delegate.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/values.h"

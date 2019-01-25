@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/hosted_app_origin_text.h"
 
+#include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"

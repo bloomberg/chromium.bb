@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_typography.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/ranges.h"
 #include "base/strings/string_util.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 
+#include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"

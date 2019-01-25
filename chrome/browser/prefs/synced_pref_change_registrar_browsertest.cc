@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"

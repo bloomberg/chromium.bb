@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chrome_service.h"
 
+#include "base/bind.h"
 #include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"

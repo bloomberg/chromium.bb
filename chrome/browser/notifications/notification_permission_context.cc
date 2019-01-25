@@ -4,6 +4,7 @@
 
 #include "chrome/browser/notifications/notification_permission_context.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/circular_deque.h"
 #include "base/location.h"

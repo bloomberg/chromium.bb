@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/optional.h"
 #include "base/path_service.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/renderer_host/pepper/pepper_flash_browser_host.h"
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"

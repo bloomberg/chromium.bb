@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/web_applications/web_app_metrics.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/ui/browser.h"

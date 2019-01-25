@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/fingerprint_setup_screen_handler.h"
 
+#include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/login/screens/fingerprint_setup_screen.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"

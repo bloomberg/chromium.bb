@@ -8,6 +8,7 @@
 
 #include <commdlg.h>
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"

@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "base/big_endian.h"
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/stl_util.h"

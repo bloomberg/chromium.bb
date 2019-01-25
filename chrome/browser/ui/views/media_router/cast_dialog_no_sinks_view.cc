@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/strings/string16.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"

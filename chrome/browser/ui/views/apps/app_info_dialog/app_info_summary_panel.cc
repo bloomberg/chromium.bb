@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"

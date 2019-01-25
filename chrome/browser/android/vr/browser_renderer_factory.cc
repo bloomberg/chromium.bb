@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/vr/cardboard_input_delegate.h"
 #include "chrome/browser/android/vr/gvr_input_delegate.h"

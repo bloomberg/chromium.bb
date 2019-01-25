@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/chromeos/arc/pip/arc_picture_in_picture_window_controller_impl.h"

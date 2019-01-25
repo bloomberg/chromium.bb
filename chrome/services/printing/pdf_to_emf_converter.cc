@@ -8,6 +8,7 @@
 #include <limits>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/containers/span.h"
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"

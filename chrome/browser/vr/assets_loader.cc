@@ -4,6 +4,7 @@
 
 #include "chrome/browser/vr/assets_loader.h"
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/memory/singleton.h"
 #include "base/single_thread_task_runner.h"

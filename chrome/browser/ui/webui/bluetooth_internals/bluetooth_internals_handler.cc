@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals_handler.h"
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"

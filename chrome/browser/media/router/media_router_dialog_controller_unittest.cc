@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/bind.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/media_router/media_route.h"
