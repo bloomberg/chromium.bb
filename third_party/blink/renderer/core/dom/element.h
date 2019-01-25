@@ -341,7 +341,8 @@ class CORE_EXPORT Element : public ContainerNode {
   bool HasInvisibleAttribute() const;
 
   void DispatchActivateInvisibleEventIfNeeded();
-  bool IsInsideInvisibleStaticSubtree();
+  bool IsInsideInvisibleSubtree() const;
+  bool IsInsideInvisibleStaticSubtree() const;
 
   void DefaultEventHandler(Event&) override;
 
