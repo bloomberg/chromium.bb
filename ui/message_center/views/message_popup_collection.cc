@@ -119,7 +119,13 @@ void MessagePopupCollection::NotifyPopupClosed(MessagePopupView* popup) {
 
 void MessagePopupCollection::OnNotificationAdded(
     const std::string& notification_id) {
-  Update();
+  // Should not call MessagePopupCollection::Update here. Because notification
+  // may be removed before animation which is triggered by the previous
+  // operation on MessagePopupCollection ends. As result, when a new
+  // notification with the same ID is created, calling
+  // MessagePopupCollection::Update will not update the popup's content. Then
+  // the new notification popup fails to show. (see https://crbug.com/921402)
+  OnNotificationUpdated(notification_id);
 }
 
 void MessagePopupCollection::OnNotificationRemoved(
