@@ -38,7 +38,7 @@ suite('SiteDetailsPermission', function() {
     // Set the camera icon on <site-details-permission> manually to avoid
     // failures on undefined icons during teardown in PolymerTest.testIronIcons.
     // In practice, this is done from the parent.
-    testElement.icon = 'settings:videocam';
+    testElement.icon = 'cr:videocam';
     document.body.appendChild(testElement);
   });
 
