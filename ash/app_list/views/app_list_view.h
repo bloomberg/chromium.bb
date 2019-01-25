@@ -131,6 +131,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   bool CanProcessEventsWithinSubtree() const override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   void Layout() override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // WidgetDelegate:
   ax::mojom::Role GetAccessibleWindowRole() const override;
@@ -403,15 +404,15 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   // True if the dragging started from PEEKING state.
   bool drag_started_from_peeking_ = false;
 
+  // Accessibility announcement dialogue.
+  base::string16 state_announcement_;
+
   // Metric reporter for state change animations.
   const std::unique_ptr<ui::AnimationMetricsReporter>
       state_animation_metrics_reporter_;
 
   // Whether the on-screen keyboard is shown.
   bool onscreen_keyboard_shown_ = false;
-
-  // View used to announce the state transition for peeking and fullscreen.
-  views::View* announcement_view_;  // Owned by AppListView.
 
   base::WeakPtrFactory<AppListView> weak_ptr_factory_;
 
