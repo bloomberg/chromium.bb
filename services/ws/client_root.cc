@@ -74,7 +74,7 @@ void ClientRoot::RegisterVizEmbeddingSupport() {
       frame_sink_id, this, viz::ReportFirstSurfaceActivation::kYes);
   window_->SetEmbedFrameSinkId(frame_sink_id);
 
-  UpdatePrimarySurfaceId();
+  UpdateLocalSurfaceIdAndClientSurfaceEmbedder();
 }
 
 bool ClientRoot::ShouldAssignLocalSurfaceId() {
@@ -103,6 +103,19 @@ void ClientRoot::UpdateLocalSurfaceIdIfNecessary() {
         window_->GetLocalSurfaceIdAllocation().local_surface_id());
     last_surface_size_in_pixels_ = size_in_pixels;
     last_device_scale_factor_ = window_->layer()->device_scale_factor();
+  }
+}
+
+void ClientRoot::UpdateLocalSurfaceIdAndClientSurfaceEmbedder() {
+  UpdateLocalSurfaceIdIfNecessary();
+  ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window_);
+  if (proxy_window->local_surface_id().has_value()) {
+    client_surface_embedder_->SetSurfaceId(viz::SurfaceId(
+        window_->GetFrameSinkId(), *proxy_window->local_surface_id()));
+    if (fallback_surface_info_) {
+      client_surface_embedder_->SetFallbackSurfaceInfo(*fallback_surface_info_);
+      fallback_surface_info_.reset();
+    }
   }
 }
 
@@ -165,19 +178,6 @@ void ClientRoot::UnattachChildFrameSinkIdRecursive(ProxyWindow* proxy_window) {
   }
 }
 
-void ClientRoot::UpdatePrimarySurfaceId() {
-  UpdateLocalSurfaceIdIfNecessary();
-  ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window_);
-  if (proxy_window->local_surface_id().has_value()) {
-    client_surface_embedder_->SetSurfaceId(viz::SurfaceId(
-        window_->GetFrameSinkId(), *proxy_window->local_surface_id()));
-    if (fallback_surface_info_) {
-      client_surface_embedder_->SetFallbackSurfaceInfo(*fallback_surface_info_);
-      fallback_surface_info_.reset();
-    }
-  }
-}
-
 void ClientRoot::CheckForScaleFactorChange() {
   if (!ShouldAssignLocalSurfaceId() ||
       last_device_scale_factor_ == window_->layer()->device_scale_factor()) {
@@ -189,7 +189,7 @@ void ClientRoot::CheckForScaleFactorChange() {
 }
 
 void ClientRoot::HandleBoundsOrScaleFactorChange(const gfx::Rect& old_bounds) {
-  UpdatePrimarySurfaceId();
+  UpdateLocalSurfaceIdAndClientSurfaceEmbedder();
   client_surface_embedder_->UpdateSizeAndGutters();
   // See comments in WindowTree::SetWindowBoundsImpl() for details on
   // why this always notifies the client.
@@ -304,7 +304,7 @@ void ClientRoot::OnFirstSurfaceActivation(
   if (proxy_window->local_surface_id().has_value()) {
     DCHECK(!fallback_surface_info_);
     if (!client_surface_embedder_->HasPrimarySurfaceId())
-      UpdatePrimarySurfaceId();
+      UpdateLocalSurfaceIdAndClientSurfaceEmbedder();
     client_surface_embedder_->SetFallbackSurfaceInfo(surface_info);
   } else {
     fallback_surface_info_ = std::make_unique<viz::SurfaceInfo>(surface_info);
