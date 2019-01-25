@@ -28,9 +28,10 @@
 #include "media/mojo/interfaces/media_service.mojom.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
 #include "media/mojo/services/media_interface_provider.h"
-#include "media/mojo/services/service_tests_catalog_source.h"
+#include "media/mojo/services/media_manifest.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/cpp/test/test_service.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -118,6 +119,8 @@ ACTION_P(QuitLoop, run_loop) {
   base::PostTask(FROM_HERE, run_loop->QuitClosure());
 }
 
+const char kTestServiceName[] = "media_service_unittests";
+
 // Tests MediaService built into a standalone mojo service binary (see
 // ServiceMain() in main.cc) where MediaService uses TestMojoMediaClient.
 // TestMojoMediaClient supports CDM creation using DefaultCdmFactory (only
@@ -126,9 +129,14 @@ ACTION_P(QuitLoop, run_loop) {
 class MediaServiceTest : public testing::Test {
  public:
   MediaServiceTest()
-      : test_service_manager_(test::CreateServiceTestCatalog()),
-        test_service_(test_service_manager_.RegisterTestInstance(
-            "media_service_unittests")),
+      : test_service_manager_(
+            {GetMediaManifest(),
+             service_manager::ManifestBuilder()
+                 .WithServiceName(kTestServiceName)
+                 .RequireCapability(mojom::kMediaServiceName, "media:media")
+                 .Build()}),
+        test_service_(
+            test_service_manager_.RegisterTestInstance(kTestServiceName)),
         cdm_proxy_client_binding_(&cdm_proxy_client_),
         renderer_client_binding_(&renderer_client_),
         video_stream_(DemuxerStream::VIDEO) {}

@@ -40,9 +40,11 @@
 
 #if defined(MOJO_RENDERER)
 #include "media/mojo/clients/mojo_renderer.h"
+#include "media/mojo/interfaces/constants.mojom.h"  // nogncheck
 #include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
-#include "media/mojo/services/media_pipeline_integration_unittests_catalog_source.h"  // nogncheck
+#include "media/mojo/services/media_manifest.h"                    // nogncheck
+#include "services/service_manager/public/cpp/manifest_builder.h"  // nogncheck
 #include "services/service_manager/public/cpp/test/test_service.h"  // nogncheck
 #include "services/service_manager/public/cpp/test/test_service_manager.h"  // nogncheck
 
@@ -411,13 +413,20 @@ class FailingVideoDecoder : public VideoDecoder {
 //               preferably by eliminating multiple inheritance here which is
 //               banned by Google C++ style.
 #if defined(MOJO_RENDERER) && defined(ENABLE_MOJO_PIPELINE_INTEGRATION_TEST)
+const char kTestServiceName[] = "media_pipeline_integration_unittests";
+
 class PipelineIntegrationTest : public testing::Testing,
                                 public PipelineIntegrationTestBase {
  public:
   PipelineIntegrationTest()
-      : test_service_manager_(test::CreatePipelineIntegrationTestCatalog()),
-        test_service_(test_service_manager_.RegisterTestInstance(
-            "media_pipeline_integration_shelltests")) {}
+      : test_service_manager_(
+            {GetMediaManifest(),
+             service_manager::ManifestBuilder()
+                 .WithServiceName(kTestServiceName)
+                 .RequireCapability(mojom::kMediaServiceName, "media:media")
+                 .Build()}),
+        test_service_(
+            test_service_manager_.RegisterTestInstance(kTestServiceName)) {}
 
   void SetUp() override {
     InitializeMediaLibrary();
@@ -427,7 +436,7 @@ class PipelineIntegrationTest : public testing::Testing,
   std::unique_ptr<Renderer> CreateRenderer(
       CreateVideoDecodersCB prepend_video_decoders_cb,
       CreateAudioDecodersCB prepend_audio_decoders_cb) override {
-    test_service_.connector()->BindInterface("media",
+    test_service_.connector()->BindInterface(mojom::kMediaServiceName,
                                              &media_interface_factory_);
 
     mojom::RendererPtr mojo_renderer;

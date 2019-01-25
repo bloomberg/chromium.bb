@@ -61,7 +61,7 @@ const service_manager::Manifest&
 GetCastContentPackagedServicesOverlayManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest {
     service_manager::ManifestBuilder()
-        .PackageService(::media::GetManifest())
+        .PackageService(::media::GetMediaManifest())
         .Build()
 #if defined(USE_INTERNAL_OVERLAY_MANIFESTS)
         .Amend(cast_content_packaged_services_internal_manifest_overlay::
