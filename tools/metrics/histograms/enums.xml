@@ -55192,6 +55192,7 @@ Full version information for the fingerprint enum values:
   </summary>
   <int value="0" label="Invalid state"/>
   <int value="1" label="Stored log not found"/>
+  <int value="2" label="Network error"/>
   <int value="100" label="100: Continue"/>
   <int value="101" label="101: Switching Protocols"/>
   <int value="102" label="102: Processing"/>
