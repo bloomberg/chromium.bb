@@ -240,7 +240,8 @@ class CookieStoreIOS : public net::CookieStore,
   // GetAllCookiesForURLAsync() completes. Updates the cookie cache and runs
   // callbacks if the cache changed.
   void GotCookieListFor(const std::pair<GURL, std::string> key,
-                        const net::CookieList& cookies);
+                        const net::CookieList& cookies,
+                        const net::CookieStatusList& excluded_cookies);
 
   // Fetches new values for all (url, name) pairs that have hooks registered,
   // asynchronously invoking callbacks if necessary.

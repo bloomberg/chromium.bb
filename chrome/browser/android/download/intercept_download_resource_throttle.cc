@@ -57,10 +57,9 @@ void InterceptDownloadResourceThrottle::WillProcessResponse(bool* defer) {
     net::CookieOptions options;
     options.set_include_httponly();
     cookie_store->GetCookieListWithOptionsAsync(
-        request_->url(),
-        options,
-        base::Bind(&InterceptDownloadResourceThrottle::CheckCookiePolicy,
-                   weak_factory_.GetWeakPtr()));
+        request_->url(), options,
+        base::BindOnce(&InterceptDownloadResourceThrottle::CheckCookiePolicy,
+                       weak_factory_.GetWeakPtr()));
   } else {
     // Can't get any cookies, start android download.
     StartDownload(DownloadInfo(request_));
@@ -72,7 +71,8 @@ const char* InterceptDownloadResourceThrottle::GetNameForLogging() const {
 }
 
 void InterceptDownloadResourceThrottle::CheckCookiePolicy(
-    const net::CookieList& cookie_list) {
+    const net::CookieList& cookie_list,
+    const net::CookieStatusList& excluded_cookies) {
   DownloadInfo info(request_);
   if (request_->context()->network_delegate()->CanGetCookies(
           *request_, cookie_list,

@@ -26,11 +26,12 @@ namespace {
 // callback.
 void CookieListCallbackWithMetricsLogging(
     CookieMonster::GetCookieListCallback callback,
-    const CookieList& cookies) {
+    const CookieList& cookies,
+    const CookieStatusList& excluded_cookies) {
   net::ReportGetCookiesForURLResult(SystemCookieStoreType::kCookieMonster,
                                     !cookies.empty());
   if (!callback.is_null()) {
-    std::move(callback).Run(cookies);
+    std::move(callback).Run(cookies, excluded_cookies);
   }
 }
 }  // namespace

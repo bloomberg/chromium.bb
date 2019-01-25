@@ -116,7 +116,8 @@ class CONTENT_EXPORT RenderFrameMessageFilter
                              const GURL& url,
                              const GURL& site_for_cookies,
                              GetCookiesCallback callback,
-                             const net::CookieList& cookie_list);
+                             const net::CookieList& cookie_list,
+                             const net::CookieStatusList& excluded_cookies);
 
   void OnDownloadUrl(const FrameHostMsg_DownloadUrl_Params& params);
 

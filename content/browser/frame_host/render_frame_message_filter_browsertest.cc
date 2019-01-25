@@ -320,7 +320,7 @@ class WaitingCookieStore : public net::CookieMonster {
     callback_ = std::move(callback);
   }
 
-  void Finish() { std::move(callback_).Run({}); }
+  void Finish() { std::move(callback_).Run({}, {}); }
 
  private:
   GetCookieListCallback callback_;

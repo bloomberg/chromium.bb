@@ -4808,7 +4808,8 @@ class ExtensionCookieCallback {
     result_ = result;
   }
 
-  void GetAllCookiesCallback(const net::CookieList& list) {
+  void GetAllCookiesCallback(const net::CookieList& list,
+                             const net::CookieStatusList& excluded_list) {
     list_ = list;
   }
   net::CookieList list_;

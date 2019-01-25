@@ -102,6 +102,31 @@ class AwCookieStoreWrapper : public net::CookieStore {
         std::move(callback));
   }
 
+  // These are the same as above, but specifically for GetCookieListCallback,
+  // which has two arguments
+  static void RunGetCookieListCallbackOnClientThread(
+      base::TaskRunner* task_runner,
+      base::WeakPtr<AwCookieStoreWrapper> weak_cookie_store,
+      net::CookieStore::GetCookieListCallback callback,
+      const net::CookieList& cookies,
+      const net::CookieStatusList& excluded_cookies) {
+    task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &AwCookieStoreWrapper::RunClosureCallback, weak_cookie_store,
+            base::BindOnce(std::move(callback), cookies, excluded_cookies)));
+  }
+
+  net::CookieStore::GetCookieListCallback CreateWrappedGetCookieListCallback(
+      net::CookieStore::GetCookieListCallback callback) {
+    if (callback.is_null())
+      return callback;
+    return base::BindOnce(
+        &AwCookieStoreWrapper::RunGetCookieListCallbackOnClientThread,
+        base::RetainedRef(client_task_runner_), weak_factory_.GetWeakPtr(),
+        std::move(callback));
+  }
+
   // Returns a base::OnceClosure that posts a task to the |client_task_runner_|
   // to invoke |callback|.
   base::OnceClosure CreateWrappedClosureCallback(base::OnceClosure callback);

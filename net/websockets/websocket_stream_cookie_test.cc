@@ -113,10 +113,12 @@ class WebSocketStreamServerSetCookieTest
     base::RunLoop().RunUntilIdle();
   }
 
-  static void GetCookieListHelperFunction(base::OnceClosure task,
-                                          base::WeakPtr<bool> weak_is_called,
-                                          base::WeakPtr<CookieList> weak_result,
-                                          const CookieList& cookie_list) {
+  static void GetCookieListHelperFunction(
+      base::OnceClosure task,
+      base::WeakPtr<bool> weak_is_called,
+      base::WeakPtr<CookieList> weak_result,
+      const CookieList& cookie_list,
+      const CookieStatusList& excluded_cookies) {
     *weak_is_called = true;
     *weak_result = cookie_list;
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(task));

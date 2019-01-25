@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
@@ -44,6 +45,19 @@ mojom::CookieChangeCause ChangeCauseTranslation(
   }
   NOTREACHED();
   return mojom::CookieChangeCause::EXPLICIT;
+}
+
+// Converts the one-argument callbacks to two-argument callback that ignores
+// the second arument for the cookie_store
+net::CookieStore::GetCookieListCallback IgnoreSecondArg(
+    base::OnceCallback<void(const net::CookieList&)> callback) {
+  return base::BindOnce(
+      [](base::OnceCallback<void(const net::CookieList&)> callback,
+         const net::CookieList& cookies,
+         const net::CookieStatusList& excluded_list) {
+        std::move(callback).Run(cookies);
+      },
+      std::move(callback));
 }
 
 }  // namespace
@@ -98,14 +112,14 @@ void CookieManager::AddRequest(mojom::CookieManagerRequest request) {
 }
 
 void CookieManager::GetAllCookies(GetAllCookiesCallback callback) {
-  cookie_store_->GetAllCookiesAsync(std::move(callback));
+  cookie_store_->GetAllCookiesAsync(IgnoreSecondArg(std::move(callback)));
 }
 
 void CookieManager::GetCookieList(const GURL& url,
                                   const net::CookieOptions& cookie_options,
                                   GetCookieListCallback callback) {
-  cookie_store_->GetCookieListWithOptionsAsync(url, cookie_options,
-                                               std::move(callback));
+  cookie_store_->GetCookieListWithOptionsAsync(
+      url, cookie_options, IgnoreSecondArg(std::move(callback)));
 }
 
 void CookieManager::SetCanonicalCookie(const net::CanonicalCookie& cookie,

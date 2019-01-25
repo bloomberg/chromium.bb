@@ -2008,7 +2008,8 @@ void SetCookieCallback(base::RunLoop* run_loop, bool* result_out, bool result) {
 
 void GetCookieListCallback(base::RunLoop* run_loop,
                            net::CookieList* result_out,
-                           const net::CookieList& result) {
+                           const net::CookieList& result,
+                           const net::CookieStatusList& excluded_cookies) {
   *result_out = result;
   run_loop->Quit();
 }

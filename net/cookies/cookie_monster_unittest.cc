@@ -1062,12 +1062,14 @@ TEST_F(DeferredCookieTaskTest, DeferredGetCookieList) {
 
   WaitForLoadCall();
 
-  EXPECT_CALL(get_cookie_list_callback, Run(MatchesCookieLine("X=1")))
+  EXPECT_CALL(get_cookie_list_callback,
+              Run(MatchesCookieLine("X=1"), testing::_))
       .WillOnce(GetCookieListForUrlWithOptionsAction(
           &cookie_monster(), http_www_foo_.url(), &get_cookie_list_callback));
 
   base::RunLoop loop;
-  EXPECT_CALL(get_cookie_list_callback, Run(MatchesCookieLine("X=1")))
+  EXPECT_CALL(get_cookie_list_callback,
+              Run(MatchesCookieLine("X=1"), testing::_))
       .WillOnce(QuitRunLoop(&loop));
 
   CompleteLoading();
@@ -1151,11 +1153,11 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllCookies) {
 
   WaitForLoadCall();
 
-  EXPECT_CALL(get_cookie_list_callback, Run(testing::_))
+  EXPECT_CALL(get_cookie_list_callback, Run(testing::_, testing::_))
       .WillOnce(
           GetAllCookiesAction(&cookie_monster(), &get_cookie_list_callback));
   base::RunLoop loop;
-  EXPECT_CALL(get_cookie_list_callback, Run(testing::_))
+  EXPECT_CALL(get_cookie_list_callback, Run(testing::_, testing::_))
       .WillOnce(QuitRunLoop(&loop));
 
   CompleteLoading();
@@ -1176,11 +1178,11 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlCookies) {
 
   WaitForLoadCall();
 
-  EXPECT_CALL(get_cookie_list_callback, Run(testing::_))
+  EXPECT_CALL(get_cookie_list_callback, Run(testing::_, testing::_))
       .WillOnce(GetAllCookiesForUrlAction(
           &cookie_monster(), http_www_foo_.url(), &get_cookie_list_callback));
   base::RunLoop loop;
-  EXPECT_CALL(get_cookie_list_callback, Run(testing::_))
+  EXPECT_CALL(get_cookie_list_callback, Run(testing::_, testing::_))
       .WillOnce(QuitRunLoop(&loop));
 
   CompleteLoading();
@@ -1201,11 +1203,11 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlWithOptionsCookies) {
 
   WaitForLoadCall();
 
-  EXPECT_CALL(get_cookie_list_callback, Run(testing::_))
+  EXPECT_CALL(get_cookie_list_callback, Run(testing::_, testing::_))
       .WillOnce(GetCookieListForUrlWithOptionsAction(
           &cookie_monster(), http_www_foo_.url(), &get_cookie_list_callback));
   base::RunLoop loop;
-  EXPECT_CALL(get_cookie_list_callback, Run(testing::_))
+  EXPECT_CALL(get_cookie_list_callback, Run(testing::_, testing::_))
       .WillOnce(QuitRunLoop(&loop));
 
   CompleteLoading();
@@ -1332,14 +1334,15 @@ TEST_F(DeferredCookieTaskTest, DeferredTaskOrder) {
   Begin();
 
   WaitForLoadCall();
-  EXPECT_CALL(get_cookie_list_callback, Run(MatchesCookieLine("X=1")))
+  EXPECT_CALL(get_cookie_list_callback,
+              Run(MatchesCookieLine("X=1"), testing::_))
       .WillOnce(GetCookieListForUrlWithOptionsAction(
           &cookie_monster(), http_www_foo_.url(),
           &get_cookie_list_callback_deferred));
   EXPECT_CALL(set_cookies_callback, Run(true));
   base::RunLoop loop;
   EXPECT_CALL(get_cookie_list_callback_deferred,
-              Run(MatchesCookieLine("A=B; X=1")))
+              Run(MatchesCookieLine("A=B; X=1"), testing::_))
       .WillOnce(QuitRunLoop(&loop));
 
   CompleteLoading();
@@ -2344,7 +2347,8 @@ TEST_F(CookieMonsterTest, WhileLoadingGetAllSetGetAll) {
 namespace {
 
 void RunClosureOnCookieListReceived(const base::Closure& closure,
-                                    const CookieList& cookie_list) {
+                                    const CookieList& cookie_list,
+                                    const CookieStatusList& excluded_cookies) {
   closure.Run();
 }
 

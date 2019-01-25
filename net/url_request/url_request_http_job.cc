@@ -740,7 +740,9 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
   }
 }
 
-void URLRequestHttpJob::SetCookieHeaderAndStart(const CookieList& cookie_list) {
+void URLRequestHttpJob::SetCookieHeaderAndStart(
+    const CookieList& cookie_list,
+    const CookieStatusList& excluded_list) {
   if (!cookie_list.empty() && CanGetCookies(cookie_list)) {
     LogCookieUMA(cookie_list, *request_, request_info_);
 

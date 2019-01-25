@@ -55,7 +55,8 @@ class ContextImplTest : public WebRunnerBrowserTest {
 
 void OnCookiesReceived(net::CookieList* output,
                        base::OnceClosure on_received_cb,
-                       const net::CookieList& cookies) {
+                       const net::CookieList& cookies,
+                       const net::CookieStatusList& excluded_cookies) {
   *output = cookies;
   std::move(on_received_cb).Run();
 }

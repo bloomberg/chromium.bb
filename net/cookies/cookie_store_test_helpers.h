@@ -103,7 +103,9 @@ class DelayedCookieMonster : public CookieStore {
   void SetCookiesInternalCallback(bool result);
 
   void GetCookiesWithOptionsInternalCallback(const std::string& cookie);
-  void GetCookieListWithOptionsInternalCallback(const CookieList& cookie);
+  void GetCookieListWithOptionsInternalCallback(
+      const CookieList& cookie,
+      const CookieStatusList& excluded_cookies);
 
   // Invoke the original callbacks.
 
