@@ -4,6 +4,7 @@
 
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "build/build_config.h"

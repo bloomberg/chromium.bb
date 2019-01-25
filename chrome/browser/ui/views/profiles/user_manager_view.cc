@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/profiles/user_manager_view.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"

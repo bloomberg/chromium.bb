@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/exclusive_access/keyboard_lock_controller.h"
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_tick_clock.h"

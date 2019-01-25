@@ -4,6 +4,7 @@
 
 #include "chrome/browser/storage/storage_info_fetcher.h"
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"

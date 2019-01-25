@@ -13,6 +13,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "components/autofill/core/browser/accessory_sheet_data.h"
 #include "jni/ManualFillingBridge_jni.h"

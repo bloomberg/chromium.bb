@@ -4,6 +4,7 @@
 
 #include "chrome/browser/offline_pages/prefetch/thumbnail_fetcher_impl.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/offline_pages/core/client_id.h"

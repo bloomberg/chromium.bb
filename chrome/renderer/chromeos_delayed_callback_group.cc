@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/task/post_task.h"
+#include "base/bind.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 

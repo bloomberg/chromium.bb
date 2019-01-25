@@ -9,6 +9,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"

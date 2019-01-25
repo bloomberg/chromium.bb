@@ -6,6 +6,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"

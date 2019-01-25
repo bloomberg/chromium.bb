@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "chrome/browser/download/image_thumbnail_request.h"

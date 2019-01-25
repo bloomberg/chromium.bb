@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/remote_commands/crd_host_delegate.h"
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/task/post_task.h"

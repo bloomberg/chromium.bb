@@ -5,6 +5,7 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/system_tray_test_api.test-mojom-test-utils.h"
 #include "ash/public/interfaces/system_tray_test_api.test-mojom.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"

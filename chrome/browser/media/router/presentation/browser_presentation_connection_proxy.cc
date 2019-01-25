@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/bind.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/route_message_util.h"
 

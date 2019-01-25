@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"

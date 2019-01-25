@@ -6,6 +6,7 @@
 
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"

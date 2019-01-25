@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_pref_names.h"
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/login/quick_unlock/auth_token.h"

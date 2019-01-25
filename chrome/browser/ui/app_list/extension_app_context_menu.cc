@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/extension_app_context_menu.h"
 
 #include "ash/public/cpp/app_menu_constants.h"
+#include "base/bind.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/menu_manager.h"

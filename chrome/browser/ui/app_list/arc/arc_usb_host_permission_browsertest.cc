@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/arc/arc_usb_host_permission_manager.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"

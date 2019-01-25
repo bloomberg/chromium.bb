@@ -4,6 +4,7 @@
 
 #include "chrome/browser/printing/print_view_manager_common.h"
 
+#include "base/bind.h"
 #include "content/public/browser/render_frame_host.h"
 #include "extensions/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"

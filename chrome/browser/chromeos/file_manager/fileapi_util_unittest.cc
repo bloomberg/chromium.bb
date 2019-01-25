@@ -5,6 +5,7 @@
 
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/file_manager/mount_test_util.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_extension_provider.h"

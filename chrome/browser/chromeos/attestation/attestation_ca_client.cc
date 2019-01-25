@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chromeos/constants/chromeos_switches.h"

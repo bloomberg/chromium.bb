@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/printing/external_printers.h"
 #include "chrome/browser/chromeos/printing/external_printers_factory.h"

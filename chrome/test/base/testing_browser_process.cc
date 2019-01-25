@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/testing_browser_process.h"
 
+#include "base/bind.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_clock.h"

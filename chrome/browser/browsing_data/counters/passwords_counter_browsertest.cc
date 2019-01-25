@@ -4,6 +4,7 @@
 
 #include "components/browsing_data/core/counters/passwords_counter.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"

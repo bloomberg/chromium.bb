@@ -4,6 +4,7 @@
 
 #include "chrome/browser/lifetime/termination_notification.h"
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"

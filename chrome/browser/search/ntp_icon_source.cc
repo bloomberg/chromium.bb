@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/sha1.h"

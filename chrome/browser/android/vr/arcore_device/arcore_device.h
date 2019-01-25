@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/android/jni_android.h"
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "device/vr/vr_device.h"

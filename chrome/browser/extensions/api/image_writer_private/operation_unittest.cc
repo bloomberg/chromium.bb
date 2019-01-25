@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/image_writer_private/operation.h"
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"

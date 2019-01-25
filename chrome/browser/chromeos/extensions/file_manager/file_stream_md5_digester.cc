@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/fileapi/file_stream_reader.h"

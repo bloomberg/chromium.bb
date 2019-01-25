@@ -4,6 +4,7 @@
 
 #include "chrome/browser/profiling_host/background_profiling_triggers.h"
 
+#include "base/bind.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"

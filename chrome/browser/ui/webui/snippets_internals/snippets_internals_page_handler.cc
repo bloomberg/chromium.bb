@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/snippets_internals/snippets_internals_page_handler.h"
 
+#include "base/bind.h"
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
 #include "base/i18n/time_formatting.h"

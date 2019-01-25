@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"

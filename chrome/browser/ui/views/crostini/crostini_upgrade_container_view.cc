@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/crostini/crostini_upgrade_container_view.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"

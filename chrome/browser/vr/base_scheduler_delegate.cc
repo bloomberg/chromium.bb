@@ -4,6 +4,7 @@
 
 #include "chrome/browser/vr/base_scheduler_delegate.h"
 
+#include "base/bind.h"
 #include "chrome/browser/vr/scheduler_ui_interface.h"
 
 namespace vr {

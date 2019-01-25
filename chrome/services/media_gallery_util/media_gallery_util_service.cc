@@ -4,6 +4,7 @@
 
 #include "chrome/services/media_gallery_util/media_gallery_util_service.h"
 
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "chrome/services/media_gallery_util/media_parser_factory.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

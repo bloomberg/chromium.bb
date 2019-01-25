@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/printing/printer_info.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
 

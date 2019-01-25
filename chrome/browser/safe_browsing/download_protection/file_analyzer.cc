@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/download_protection/file_analyzer.h"
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"

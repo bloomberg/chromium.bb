@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/hash.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browser_switcher/ieem_sitelist_parser.h"
 
+#include "base/bind.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/data_decoder/public/cpp/safe_xml_parser.h"

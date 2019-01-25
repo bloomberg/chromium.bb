@@ -8,6 +8,7 @@
 #include <cstring>
 #include <fstream>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/task/post_task.h"

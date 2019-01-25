@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/containers/stack.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/components/web_app_shortcut.h"
 
+#include "base/bind.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"

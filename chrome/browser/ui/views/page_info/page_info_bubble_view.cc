@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"

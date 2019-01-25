@@ -4,6 +4,7 @@
 
 #include "chrome/test/remoting/page_load_notification_observer.h"
 
+#include "base/bind.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"

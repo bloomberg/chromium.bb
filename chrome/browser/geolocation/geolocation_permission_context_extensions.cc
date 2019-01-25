@@ -4,6 +4,7 @@
 
 #include "chrome/browser/geolocation/geolocation_permission_context_extensions.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "extensions/buildflags/buildflags.h"
 

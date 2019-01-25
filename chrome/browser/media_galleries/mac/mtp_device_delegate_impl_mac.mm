@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/task/post_task.h"

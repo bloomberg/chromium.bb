@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/android_apps_handler.h"
 
+#include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"

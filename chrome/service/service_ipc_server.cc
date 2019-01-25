@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/metrics/histogram_delta_serialization.h"
 
 ServiceIPCServer::ServiceIPCServer(

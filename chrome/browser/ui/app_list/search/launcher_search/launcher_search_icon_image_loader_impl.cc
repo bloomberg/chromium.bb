@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "extensions/browser/image_loader.h"

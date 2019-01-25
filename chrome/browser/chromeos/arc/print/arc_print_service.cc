@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"

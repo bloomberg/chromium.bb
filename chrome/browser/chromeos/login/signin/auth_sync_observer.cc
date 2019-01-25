@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/signin/auth_sync_observer.h"
 
+#include "base/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"

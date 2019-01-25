@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/strings/sys_string_conversions.h"

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_storage_cryptohome.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/download/intercept_download_resource_throttle.h"
 
+#include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/android/download/download_controller_base.h"
 #include "net/cookies/canonical_cookie.h"

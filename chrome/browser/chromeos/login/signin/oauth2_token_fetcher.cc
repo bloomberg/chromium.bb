@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/signin/oauth2_token_fetcher.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"

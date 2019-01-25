@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browsing_data/counters/site_data_counting_helper.h"
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"

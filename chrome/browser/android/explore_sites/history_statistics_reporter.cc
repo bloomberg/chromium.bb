@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/pref_names.h"

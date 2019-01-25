@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"

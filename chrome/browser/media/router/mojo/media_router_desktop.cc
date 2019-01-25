@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/router/mojo/media_router_desktop.h"
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"

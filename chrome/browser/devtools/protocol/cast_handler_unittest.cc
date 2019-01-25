@@ -4,6 +4,7 @@
 
 #include "chrome/browser/devtools/protocol/cast_handler.h"
 
+#include "base/bind.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"

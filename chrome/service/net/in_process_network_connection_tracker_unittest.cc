@@ -4,6 +4,7 @@
 
 #include "chrome/service/net/in_process_network_connection_tracker.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "net/base/mock_network_change_notifier.h"

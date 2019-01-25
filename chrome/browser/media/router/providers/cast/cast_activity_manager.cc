@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
 
+#include "base/bind.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/common/media_router/discovery/media_sink_service_base.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"

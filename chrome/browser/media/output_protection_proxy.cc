@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/output_protection_proxy.h"
 
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "content/public/browser/render_frame_host.h"

@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/engagement/site_engagement_service.h"

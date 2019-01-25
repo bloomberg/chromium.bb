@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"

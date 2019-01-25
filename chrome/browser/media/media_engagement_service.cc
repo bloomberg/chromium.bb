@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/media_engagement_service.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/tpm_firmware_update_notification.h"
 
 #include "ash/public/cpp/notification_utils.h"
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string16.h"

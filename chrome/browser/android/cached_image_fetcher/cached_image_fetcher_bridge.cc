@@ -10,6 +10,7 @@
 
 #include "base/android/callback_android.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/cached_image_fetcher/cached_image_fetcher_service_factory.h"
 #include "chrome/browser/profiles/profile.h"

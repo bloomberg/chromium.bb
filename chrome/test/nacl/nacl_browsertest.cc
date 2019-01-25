@@ -11,6 +11,7 @@
 
 #define TELEMETRY 1
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/path_service.h"

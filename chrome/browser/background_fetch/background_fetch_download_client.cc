@@ -8,6 +8,7 @@
 #include <set>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_impl.h"

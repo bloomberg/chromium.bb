@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/media/webrtc/desktop_media_list_observer.h"
 #include "content/public/browser/browser_task_traits.h"

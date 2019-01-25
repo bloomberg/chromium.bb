@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/public/cpp/wallpaper_types.h"
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"

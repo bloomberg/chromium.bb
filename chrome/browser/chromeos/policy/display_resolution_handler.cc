@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/optional.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"

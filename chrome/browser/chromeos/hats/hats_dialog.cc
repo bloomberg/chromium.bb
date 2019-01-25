@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/hats/hats_dialog.h"
 
+#include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"

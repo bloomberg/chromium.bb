@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/user_manager.h"
 
+#include "base/bind.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 
 namespace {

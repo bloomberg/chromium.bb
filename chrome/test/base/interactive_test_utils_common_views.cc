@@ -6,6 +6,7 @@
 
 #include "chrome/test/base/interactive_test_utils.h"
 
+#include "base/bind.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/views/view.h"

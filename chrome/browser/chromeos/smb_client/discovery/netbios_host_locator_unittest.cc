@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/smb_client/discovery/netbios_host_locator.h"
 
+#include "base/bind.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "chrome/browser/chromeos/smb_client/discovery/fake_netbios_client.h"

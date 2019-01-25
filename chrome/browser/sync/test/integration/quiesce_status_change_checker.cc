@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string_number_conversions.h"

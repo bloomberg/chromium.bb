@@ -4,6 +4,7 @@
 
 #include "chrome/browser/autofill/captured_sites_test_utils.h"
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/explore_sites/blacklist_site_task.h"
 
+#include "base/bind.h"
 #include "chrome/browser/android/explore_sites/explore_sites_schema.h"
 #include "components/offline_pages/core/offline_clock.h"
 #include "sql/database.h"

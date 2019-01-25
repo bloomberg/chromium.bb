@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/power/auto_screen_brightness/als_reader_impl.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"

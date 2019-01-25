@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/optional.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/utf_string_conversions.h"

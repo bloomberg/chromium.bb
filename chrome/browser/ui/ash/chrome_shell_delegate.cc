@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/screenshot_delegate.h"
+#include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/profiles/profile.h"

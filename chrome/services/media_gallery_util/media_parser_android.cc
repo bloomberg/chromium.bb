@@ -4,6 +4,7 @@
 
 #include "chrome/services/media_gallery_util/media_parser_android.h"
 
+#include "base/bind.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"

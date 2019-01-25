@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "chrome/services/media_gallery_util/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"

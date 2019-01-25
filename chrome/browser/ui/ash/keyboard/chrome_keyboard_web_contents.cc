@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_web_contents.h"
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"

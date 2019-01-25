@@ -4,6 +4,7 @@
 
 #include "chrome/browser/task_manager/sampling/task_manager_io_thread_helper.h"
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/task_manager/sampling/task_manager_impl.h"

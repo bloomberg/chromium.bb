@@ -4,6 +4,7 @@
 
 #include "chrome/utility/importer/profile_import_service.h"
 
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "chrome/utility/importer/profile_import_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

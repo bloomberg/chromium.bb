@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/android/download/download_media_parser.h"
 #include "chrome/browser/download/thumbnail_util.h"

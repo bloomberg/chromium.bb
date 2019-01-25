@@ -12,6 +12,7 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/shell_test_api.test-mojom-test-utils.h"
 #include "ash/public/interfaces/shell_test_api.test-mojom.h"
+#include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"

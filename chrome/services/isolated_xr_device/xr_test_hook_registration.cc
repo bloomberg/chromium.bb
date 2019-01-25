@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/services/isolated_xr_device/xr_test_hook_registration.h"
+#include "base/bind.h"
 #include "chrome/services/isolated_xr_device/xr_test_hook_wrapper.h"
 #include "device/vr/openvr/openvr_api_wrapper.h"
 

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/common/media_router/discovery/media_sink_service_base.h"
+#include "base/bind.h"
 #include "chrome/common/media_router/media_route.h"
 
 #include <vector>

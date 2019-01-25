@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/file_manager/file_tasks.h"
 
+#include "base/bind.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_test_util.h"
 #include "chrome/browser/ui/browser.h"

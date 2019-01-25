@@ -7,6 +7,7 @@
 #include <set>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/lazy_instance.h"

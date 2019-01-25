@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/task/post_task.h"

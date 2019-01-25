@@ -4,6 +4,7 @@
 
 #include "chrome/browser/metrics/desktop_session_duration/chrome_visibility_observer.h"
 
+#include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"

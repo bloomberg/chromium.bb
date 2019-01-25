@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "chrome/browser/media/router/test/test_helper.h"
 #include "chrome/browser/ui/browser_commands.h"

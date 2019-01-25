@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_web_ui_override_registrar.h"
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/profiles/profile.h"

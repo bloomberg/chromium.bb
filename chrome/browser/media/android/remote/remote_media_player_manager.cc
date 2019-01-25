@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/android/remote/remote_media_player_manager.h"
 
+#include "base/bind.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "content/common/media/media_player_messages_android.h"

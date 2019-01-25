@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_android.h"

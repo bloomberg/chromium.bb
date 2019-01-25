@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/webrtc/fake_desktop_media_picker_factory.h"
 
+#include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/media/webrtc/fake_desktop_media_list.h"

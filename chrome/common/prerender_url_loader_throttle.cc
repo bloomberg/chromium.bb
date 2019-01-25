@@ -4,6 +4,7 @@
 
 #include "chrome/common/prerender_url_loader_throttle.h"
 
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "chrome/common/prerender_util.h"
 #include "content/public/common/content_constants.h"

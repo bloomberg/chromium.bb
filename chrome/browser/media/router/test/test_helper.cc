@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/router/test/test_helper.h"
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/common/media_router/media_source.h"

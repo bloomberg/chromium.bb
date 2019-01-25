@@ -4,6 +4,7 @@
 
 #include "chrome/browser/net/nss_context.h"
 
+#include "base/bind.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"

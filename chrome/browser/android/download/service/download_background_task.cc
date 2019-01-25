@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/android/callback_android.h"
+#include "base/bind.h"
 #include "base/callback_forward.h"
 #include "chrome/browser/android/download/download_manager_service.h"
 #include "chrome/browser/download/download_service_factory.h"

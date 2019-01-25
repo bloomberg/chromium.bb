@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/crostini_handler.h"
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_share_path.h"

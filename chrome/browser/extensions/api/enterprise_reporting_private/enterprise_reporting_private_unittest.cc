@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/enterprise_reporting_private/enterprise_reporting_private_api.h"
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"

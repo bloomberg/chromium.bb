@@ -6,6 +6,7 @@
 
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"

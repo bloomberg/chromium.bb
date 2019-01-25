@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/signin_partition_manager.h"
 
+#include "base/bind.h"
 #include "base/guid.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"

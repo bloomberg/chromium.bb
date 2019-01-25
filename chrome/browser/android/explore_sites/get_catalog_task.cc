@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/explore_sites/get_catalog_task.h"
 
+#include "base/bind.h"
 #include "chrome/browser/android/explore_sites/explore_sites_schema.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"

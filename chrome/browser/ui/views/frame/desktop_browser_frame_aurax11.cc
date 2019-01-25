@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/desktop_browser_frame_aurax11.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "chrome/browser/shell_integration_linux.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"

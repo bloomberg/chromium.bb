@@ -4,6 +4,7 @@
 
 #include "chrome/browser/offline_pages/downloads/resource_throttle.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/offline_pages/offline_page_utils.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/outdated_upgrade_bubble_view.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/task/post_task.h"

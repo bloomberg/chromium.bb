@@ -4,6 +4,7 @@
 
 #include "chrome/browser/previews/previews_lite_page_url_loader_interceptor.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/previews/core/previews_features.h"
 #include "content/public/browser/browser_thread.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/services/printing/printing_service.h"
 
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "chrome/services/printing/pdf_nup_converter.h"
 #include "chrome/services/printing/pdf_to_pwg_raster_converter.h"

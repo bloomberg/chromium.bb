@@ -4,6 +4,7 @@
 
 #include "chrome/browser/task_manager/providers/child_process_task_provider.h"
 
+#include "base/bind.h"
 #include "base/process/process.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/task_manager/providers/child_process_task.h"

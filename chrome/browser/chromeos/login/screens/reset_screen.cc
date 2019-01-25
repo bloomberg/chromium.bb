@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"

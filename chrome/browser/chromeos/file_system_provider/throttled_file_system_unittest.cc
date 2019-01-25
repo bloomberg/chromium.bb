@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/files/file.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/file_system_provider/abort_callback.h"

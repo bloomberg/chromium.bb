@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"

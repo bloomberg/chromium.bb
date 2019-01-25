@@ -4,6 +4,7 @@
 
 #include "chrome/browser/loader/data_reduction_proxy_resource_throttle_android.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
