@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/system/sys_info.h"
 #include "components/arc/video_accelerator/arc_video_accelerator_util.h"

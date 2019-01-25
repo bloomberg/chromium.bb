@@ -5,6 +5,7 @@
 #include "components/exo/seat.h"
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/data_source.h"
 #include "components/exo/seat_observer.h"

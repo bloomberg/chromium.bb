@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
+#include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/signin/core/browser/list_accounts_test_utils.h"

@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/time/time.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "components/sync_sessions/mock_sync_sessions_client.h"

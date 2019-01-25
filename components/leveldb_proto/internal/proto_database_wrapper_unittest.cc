@@ -4,6 +4,7 @@
 
 #include "components/leveldb_proto/internal/proto_database_wrapper.h"
 
+#include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"

@@ -13,6 +13,7 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "ash/wm/workspace_controller_test_api.h"
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/buffer.h"

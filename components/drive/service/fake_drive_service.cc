@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"

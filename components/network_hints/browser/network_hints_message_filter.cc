@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "components/network_hints/common/network_hints_common.h"

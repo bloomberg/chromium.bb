@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/drive/chromeos/drive_operation_queue.h"
+#include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/test_mock_time_task_runner.h"

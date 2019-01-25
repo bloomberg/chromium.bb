@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/sequenced_task_runner.h"
 #include "components/services/leveldb/env_mojo.h"
 #include "components/services/leveldb/leveldb_database_impl.h"

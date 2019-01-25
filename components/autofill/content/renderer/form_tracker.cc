@@ -4,6 +4,7 @@
 
 #include "components/autofill/content/renderer/form_tracker.h"
 
+#include "base/bind.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"

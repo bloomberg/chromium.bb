@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"

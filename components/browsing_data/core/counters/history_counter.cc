@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/timer/timer.h"
 #include "components/browsing_data/core/pref_names.h"
 

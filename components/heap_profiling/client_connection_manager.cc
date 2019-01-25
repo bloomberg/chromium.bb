@@ -4,6 +4,7 @@
 
 #include "components/heap_profiling/client_connection_manager.h"
 
+#include "base/bind.h"
 #include "base/rand_util.h"
 #include "base/task/post_task.h"
 #include "components/services/heap_profiling/public/cpp/controller.h"

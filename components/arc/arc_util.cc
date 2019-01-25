@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/public/cpp/app_types.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "chromeos/constants/chromeos_switches.h"

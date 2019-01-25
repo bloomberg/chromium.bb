@@ -4,6 +4,7 @@
 
 #include "components/invalidation/impl/per_user_topic_registration_manager.h"
 
+#include "base/bind.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"

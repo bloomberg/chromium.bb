@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_LEVELDB_PROTO_INTERNAL_UNIQUE_PROTO_DATABASE_H_
 #define COMPONENTS_LEVELDB_PROTO_INTERNAL_UNIQUE_PROTO_DATABASE_H_
 
+#include "base/bind.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "components/leveldb_proto/internal/leveldb_database.h"

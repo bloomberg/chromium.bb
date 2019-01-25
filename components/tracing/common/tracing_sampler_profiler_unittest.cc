@@ -5,6 +5,7 @@
 #include "components/tracing/common/tracing_sampler_profiler.h"
 
 #include "base/at_exit.h"
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/profiler/stack_sampling_profiler.h"

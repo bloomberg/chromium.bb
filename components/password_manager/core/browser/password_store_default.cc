@@ -8,6 +8,7 @@
 #include <set>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "components/password_manager/core/browser/password_store_change.h"

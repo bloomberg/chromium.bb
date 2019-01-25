@@ -4,6 +4,7 @@
 
 #include "components/mirroring/service/message_dispatcher.h"
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/rand_util.h"

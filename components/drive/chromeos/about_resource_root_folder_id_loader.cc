@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "components/drive/chromeos/about_resource_loader.h"
 #include "google_apis/drive/drive_api_parser.h"
 

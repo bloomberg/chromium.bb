@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "third_party/blink/public/web/web_view.h"
 

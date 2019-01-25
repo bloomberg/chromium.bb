@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/sequence_checker.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/policy/core/browser/url_util.h"

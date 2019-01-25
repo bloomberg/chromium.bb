@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "components/journey/proto/batch_get_switcher_journey_from_pageload_request.pb.h"

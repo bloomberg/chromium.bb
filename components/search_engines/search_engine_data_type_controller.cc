@@ -4,6 +4,7 @@
 
 #include "components/search_engines/search_engine_data_type_controller.h"
 
+#include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace browser_sync {

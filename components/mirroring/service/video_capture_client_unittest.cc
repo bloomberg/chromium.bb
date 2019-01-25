@@ -4,6 +4,7 @@
 
 #include "components/mirroring/service/video_capture_client.h"
 
+#include "base/bind.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"

@@ -7,6 +7,7 @@
 #include <set>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"

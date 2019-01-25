@@ -4,6 +4,7 @@
 
 #include "components/viz/host/gpu_client.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/checked_math.h"
 #include "components/viz/host/gpu_host_impl.h"

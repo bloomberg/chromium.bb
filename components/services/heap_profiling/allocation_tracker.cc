@@ -4,6 +4,7 @@
 
 #include "components/services/heap_profiling/allocation_tracker.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/json/string_escape.h"
 #include "base/threading/thread_task_runner_handle.h"

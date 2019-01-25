@@ -4,6 +4,7 @@
 
 #include "components/sync/driver/sync_stopped_reporter.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"

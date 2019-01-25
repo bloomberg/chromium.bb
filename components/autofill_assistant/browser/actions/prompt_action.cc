@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "url/gurl.h"

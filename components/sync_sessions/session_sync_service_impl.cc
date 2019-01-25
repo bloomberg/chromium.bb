@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"

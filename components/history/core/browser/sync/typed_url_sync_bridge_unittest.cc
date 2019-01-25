@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/big_endian.h"
+#include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"

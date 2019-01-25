@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_refptr.h"

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"

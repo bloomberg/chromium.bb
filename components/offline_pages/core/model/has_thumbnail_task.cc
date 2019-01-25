@@ -4,6 +4,7 @@
 
 #include "components/offline_pages/core/model/has_thumbnail_task.h"
 
+#include "base/bind.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "sql/database.h"
 #include "sql/statement.h"

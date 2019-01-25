@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/autofill_assistant.h"
 
+#include "base/bind.h"
 #include "base/containers/adapters.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/autofill_manager.h"

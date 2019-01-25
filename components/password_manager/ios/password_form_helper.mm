@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/core/common/form_data.h"

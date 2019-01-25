@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "base/bind.h"
 #include "components/exo/pointer_delegate.h"
 #include "components/exo/pointer_gesture_pinch_delegate.h"
 #include "components/exo/shell_surface_util.h"

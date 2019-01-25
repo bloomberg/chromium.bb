@@ -4,6 +4,7 @@
 
 #include "components/sync/engine/sync_backend_registrar.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"

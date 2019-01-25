@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"

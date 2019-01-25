@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/component_updater/timer_update_scheduler.h"
+#include "base/bind.h"
 
 namespace component_updater {
 

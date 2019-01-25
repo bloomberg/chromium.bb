@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"

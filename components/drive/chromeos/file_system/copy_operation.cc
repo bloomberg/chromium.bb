@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/task_runner_util.h"
 #include "components/drive/chromeos/file_cache.h"
 #include "components/drive/chromeos/file_system/create_file_operation.h"

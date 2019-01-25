@@ -5,6 +5,7 @@
 #include "components/metrics/net/net_metrics_log_uploader.h"
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"

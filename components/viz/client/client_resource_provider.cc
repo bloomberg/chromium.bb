@@ -4,6 +4,7 @@
 
 #include "components/viz/client/client_resource_provider.h"
 
+#include "base/bind.h"
 #include "base/bits.h"
 #include "base/debug/stack_trace.h"
 #include "base/threading/thread_task_runner_handle.h"

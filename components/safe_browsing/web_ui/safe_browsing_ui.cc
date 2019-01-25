@@ -12,6 +12,7 @@
 
 #include "base/base64.h"
 #include "base/base64url.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_string_value_serializer.h"

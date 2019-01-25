@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/guid.h"
 #include "base/logging.h"

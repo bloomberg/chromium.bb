@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/pixel_test_utils.h"

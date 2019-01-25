@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/test_autofill_client.h"

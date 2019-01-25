@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "components/sync/base/stop_source.h"

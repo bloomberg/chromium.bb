@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/new_password_form_manager.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"

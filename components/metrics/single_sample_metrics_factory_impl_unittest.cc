@@ -4,6 +4,7 @@
 
 #include "components/metrics/single_sample_metrics_factory_impl.h"
 
+#include "base/bind.h"
 #include "base/metrics/dummy_histogram.h"
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"

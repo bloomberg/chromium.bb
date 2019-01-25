@@ -4,6 +4,7 @@
 
 #include "components/journey/journey_info_fetcher.h"
 
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "components/journey/journey_info_json_request.h"

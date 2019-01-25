@@ -4,6 +4,7 @@
 
 #include "components/heap_profiling/supervisor.h"
 
+#include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"

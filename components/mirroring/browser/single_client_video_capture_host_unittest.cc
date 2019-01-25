@@ -4,6 +4,7 @@
 
 #include "components/mirroring/browser/single_client_video_capture_host.h"
 
+#include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"

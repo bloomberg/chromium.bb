@@ -4,6 +4,7 @@
 
 #import "components/storage_monitor/image_capture_device.h"
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"

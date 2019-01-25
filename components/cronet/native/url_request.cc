@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "components/cronet/cronet_upload_data_stream.h"

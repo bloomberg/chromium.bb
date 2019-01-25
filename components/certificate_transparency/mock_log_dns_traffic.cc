@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/big_endian.h"
+#include "base/bind.h"
 #include "base/containers/span.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"

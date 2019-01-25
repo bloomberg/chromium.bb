@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/debug/crash_logging.h"
 #include "base/format_macros.h"

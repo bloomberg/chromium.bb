@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/bind.h"
 #include "base/time/time.h"
 #include "components/cronet/android/test/cronet_test_util.h"
 #include "jni/ExperimentalOptionsTest_jni.h"

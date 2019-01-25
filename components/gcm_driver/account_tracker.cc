@@ -4,6 +4,7 @@
 
 #include "components/gcm_driver/account_tracker.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"

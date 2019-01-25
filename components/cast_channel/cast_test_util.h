@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/cast_channel/cast_message_handler.h"

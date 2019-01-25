@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 
 namespace offline_pages {

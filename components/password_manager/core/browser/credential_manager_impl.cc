@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "components/password_manager/core/browser/credential_manager_logger.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"

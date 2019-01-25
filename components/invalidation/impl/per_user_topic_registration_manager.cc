@@ -13,6 +13,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"

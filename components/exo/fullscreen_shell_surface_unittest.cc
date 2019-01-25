@@ -4,6 +4,7 @@
 
 #include "components/exo/fullscreen_shell_surface.h"
 
+#include "base/bind.h"
 #include "components/exo/buffer.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"

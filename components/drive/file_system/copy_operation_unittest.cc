@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/task_runner_util.h"
 #include "components/drive/chromeos/file_cache.h"

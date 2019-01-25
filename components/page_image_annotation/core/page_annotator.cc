@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/page_image_annotation/core/page_annotator.h"
+#include "base/bind.h"
 
 namespace page_image_annotation {
 

@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "components/ntp_snippets/content_suggestions_metrics.h"
 #include "components/ntp_snippets/features.h"

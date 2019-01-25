@@ -10,6 +10,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "components/autofill/core/common/password_form.h"

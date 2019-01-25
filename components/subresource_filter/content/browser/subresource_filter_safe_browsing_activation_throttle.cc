@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"

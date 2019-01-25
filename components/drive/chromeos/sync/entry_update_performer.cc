@@ -8,6 +8,7 @@
 
 #include <set>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "components/drive/chromeos/file_cache.h"

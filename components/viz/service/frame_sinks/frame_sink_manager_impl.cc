@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "components/viz/service/display/shared_bitmap_manager.h"

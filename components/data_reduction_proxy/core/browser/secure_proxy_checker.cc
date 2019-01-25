@@ -4,6 +4,7 @@
 
 #include "components/data_reduction_proxy/core/browser/secure_proxy_checker.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"

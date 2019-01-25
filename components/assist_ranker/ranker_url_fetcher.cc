@@ -4,6 +4,7 @@
 
 #include "components/assist_ranker/ranker_url_fetcher.h"
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/base/load_flags.h"

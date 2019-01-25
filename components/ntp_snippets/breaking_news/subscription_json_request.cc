@@ -4,6 +4,7 @@
 
 #include "components/ntp_snippets/breaking_news/subscription_json_request.h"
 
+#include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"

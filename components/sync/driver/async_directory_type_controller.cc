@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/bind_to_task_runner.h"

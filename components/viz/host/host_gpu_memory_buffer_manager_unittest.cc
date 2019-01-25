@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"

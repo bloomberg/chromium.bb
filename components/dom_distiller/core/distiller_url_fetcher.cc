@@ -4,6 +4,7 @@
 
 #include "components/dom_distiller/core/distiller_url_fetcher.h"
 
+#include "base/bind.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
