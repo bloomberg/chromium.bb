@@ -135,9 +135,7 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
     return {{SigninManagerFactory::GetInstance(),
              base::BindRepeating(&BuildFakeSigninManagerForTesting)},
             {ProfileOAuth2TokenServiceFactory::GetInstance(),
-             base::BindRepeating(&BuildFakeProfileOAuth2TokenService)},
-            {GaiaCookieManagerServiceFactory::GetInstance(),
-             base::BindRepeating(&BuildFakeGaiaCookieManagerService)}};
+             base::BindRepeating(&BuildFakeProfileOAuth2TokenService)}};
   }
 
   // BrowserWithTestWindowTest:
