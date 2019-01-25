@@ -3,7 +3,6 @@ include_rules = [
   "+cc/test",
   "+components/viz/test",
   "+mojo/core/embedder",
-  "+services/catalog/catalog.h",
 ]
 
 specific_include_rules = {

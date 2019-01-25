@@ -14,7 +14,6 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
-#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
@@ -29,15 +28,6 @@
 #include "services/catalog/instance.h"
 
 namespace catalog {
-
-namespace {
-
-std::vector<service_manager::Manifest>& GetDefaultManifests() {
-  static base::NoDestructor<std::vector<service_manager::Manifest>> manifests;
-  return *manifests;
-}
-
-}  // namespace
 
 // Wraps state needed for servicing directory requests on a separate thread.
 // filesystem::LockTable is not thread safe, so it's wrapped in
@@ -68,14 +58,8 @@ class Catalog::DirectoryThreadState
 };
 
 Catalog::Catalog(const std::vector<service_manager::Manifest>& manifests) {
-  if (!manifests.empty()) {
-    for (const auto& manifest : manifests)
-      system_cache_.AddRootEntryFromManifest(manifest);
-  } else {
-    for (const auto& manifest : GetDefaultManifests())
-      system_cache_.AddRootEntryFromManifest(manifest);
-  }
-
+  for (const auto& manifest : manifests)
+    system_cache_.AddRootEntryFromManifest(manifest);
   registry_.AddInterface<mojom::Catalog>(base::BindRepeating(
       &Catalog::BindCatalogRequest, base::Unretained(this)));
   registry_.AddInterface<filesystem::mojom::Directory>(base::BindRepeating(
@@ -87,12 +71,6 @@ Catalog::~Catalog() = default;
 void Catalog::BindServiceRequest(
     service_manager::mojom::ServiceRequest request) {
   service_binding_.Bind(std::move(request));
-}
-
-// static
-void Catalog::SetDefaultCatalogManifest(
-    const std::vector<service_manager::Manifest>& manifests) {
-  GetDefaultManifests() = manifests;
 }
 
 Instance* Catalog::GetInstanceForGroup(const base::Token& instance_group) {
