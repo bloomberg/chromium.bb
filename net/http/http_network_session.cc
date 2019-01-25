@@ -314,7 +314,7 @@ SSLClientSocketPool* HttpNetworkSession::GetSSLSocketPool(
   return GetSocketPoolManager(pool_type)->GetSSLSocketPool();
 }
 
-SOCKSClientSocketPool* HttpNetworkSession::GetSocketPoolForSOCKSProxy(
+TransportClientSocketPool* HttpNetworkSession::GetSocketPoolForSOCKSProxy(
     SocketPoolType pool_type,
     const ProxyServer& socks_proxy) {
   return GetSocketPoolManager(pool_type)->GetSocketPoolForSOCKSProxy(

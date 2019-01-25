@@ -2138,52 +2138,6 @@ void MockTransportClientSocketPool::ReleaseSocket(
   release_count_++;
 }
 
-MockSOCKSClientSocketPool::MockSOCKSClientSocketPool(
-    int max_sockets,
-    int max_sockets_per_group,
-    TransportClientSocketPool* transport_pool)
-    : SOCKSClientSocketPool(max_sockets,
-                            max_sockets_per_group,
-                            NULL,
-                            transport_pool,
-                            NULL,
-                            NULL),
-      transport_pool_(transport_pool) {}
-
-MockSOCKSClientSocketPool::~MockSOCKSClientSocketPool() = default;
-
-int MockSOCKSClientSocketPool::RequestSocket(const std::string& group_name,
-                                             const void* socket_params,
-                                             RequestPriority priority,
-                                             const SocketTag& socket_tag,
-                                             RespectLimits respect_limits,
-                                             ClientSocketHandle* handle,
-                                             CompletionOnceCallback callback,
-                                             const NetLogWithSource& net_log) {
-  return transport_pool_->RequestSocket(group_name, socket_params, priority,
-                                        socket_tag, respect_limits, handle,
-                                        std::move(callback), net_log);
-}
-
-void MockSOCKSClientSocketPool::SetPriority(const std::string& group_name,
-                                            ClientSocketHandle* handle,
-                                            RequestPriority priority) {
-  transport_pool_->SetPriority(group_name, handle, priority);
-}
-
-void MockSOCKSClientSocketPool::CancelRequest(
-    const std::string& group_name,
-    ClientSocketHandle* handle) {
-  return transport_pool_->CancelRequest(group_name, handle);
-}
-
-void MockSOCKSClientSocketPool::ReleaseSocket(
-    const std::string& group_name,
-    std::unique_ptr<StreamSocket> socket,
-    int id) {
-  return transport_pool_->ReleaseSocket(group_name, std::move(socket), id);
-}
-
 WrappedStreamSocket::WrappedStreamSocket(
     std::unique_ptr<StreamSocket> transport)
     : transport_(std::move(transport)) {}

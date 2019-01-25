@@ -6,7 +6,6 @@
 
 #include "base/values.h"
 #include "net/http/http_proxy_client_socket_pool.h"
-#include "net/socket/socks_client_socket_pool.h"
 #include "net/socket/ssl_client_socket_pool.h"
 #include "net/socket/transport_client_socket_pool.h"
 
@@ -25,10 +24,11 @@ void MockClientSocketPoolManager::SetSSLSocketPool(
   ssl_socket_pool_.reset(pool);
 }
 
-void MockClientSocketPoolManager::SetSocketPoolForSOCKSProxy(
-    const ProxyServer& socks_proxy,
-    std::unique_ptr<SOCKSClientSocketPool> pool) {
-  socks_socket_pools_[socks_proxy] = std::move(pool);
+void MockClientSocketPoolManager::SetSocketPoolForProxy(
+    const ProxyServer& proxy_server,
+    std::unique_ptr<TransportClientSocketPool> pool) {
+  DCHECK(proxy_server.is_socks());
+  proxy_socket_pools_[proxy_server] = std::move(pool);
 }
 
 void MockClientSocketPoolManager::SetSocketPoolForHTTPProxy(
@@ -60,10 +60,13 @@ SSLClientSocketPool* MockClientSocketPoolManager::GetSSLSocketPool() {
   return ssl_socket_pool_.get();
 }
 
-SOCKSClientSocketPool* MockClientSocketPoolManager::GetSocketPoolForSOCKSProxy(
-    const ProxyServer& socks_proxy) {
-  SOCKSSocketPoolMap::const_iterator it = socks_socket_pools_.find(socks_proxy);
-  if (it != socks_socket_pools_.end())
+TransportClientSocketPool*
+MockClientSocketPoolManager::GetSocketPoolForSOCKSProxy(
+    const ProxyServer& proxy_server) {
+  DCHECK(proxy_server.is_socks());
+  TransportClientSocketPoolMap::const_iterator it =
+      proxy_socket_pools_.find(proxy_server);
+  if (it != proxy_socket_pools_.end())
     return it->second.get();
   return nullptr;
 }

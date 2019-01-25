@@ -111,14 +111,12 @@ std::unique_ptr<SOCKS5ClientSocket> SOCKS5ClientSocketTest::BuildMockSocket(
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(tcp_sock_->IsConnected());
 
-  std::unique_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
-  // |connection| takes ownership of |tcp_sock_|, but keep a
+  // The SOCKS5ClientSocket takes ownership of |tcp_sock_|, but keep a
   // non-owning pointer to it.
-  connection->SetSocket(std::unique_ptr<StreamSocket>(tcp_sock_));
-  return std::unique_ptr<SOCKS5ClientSocket>(new SOCKS5ClientSocket(
-      std::move(connection),
+  return std::make_unique<SOCKS5ClientSocket>(
+      base::WrapUnique(tcp_sock_),
       HostResolver::RequestInfo(HostPortPair(hostname, port)),
-      TRAFFIC_ANNOTATION_FOR_TESTS));
+      TRAFFIC_ANNOTATION_FOR_TESTS);
 }
 
 // Tests a complete SOCKS5 handshake and the disconnection.
@@ -384,12 +382,10 @@ TEST_F(SOCKS5ClientSocketTest, Tag) {
       new MockTaggingStreamSocket(std::unique_ptr<StreamSocket>(
           new MockTCPClientSocket(address_list_, &log, &data)));
 
-  std::unique_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
-  // |connection| takes ownership of |tagging_sock|, but keep a
-  // non-owning pointer to it.
-  connection->SetSocket(std::unique_ptr<StreamSocket>(tagging_sock));
+  // |socket| takes ownership of |tagging_sock|, but keep a non-owning pointer
+  // to it.
   SOCKS5ClientSocket socket(
-      std::move(connection),
+      std::unique_ptr<StreamSocket>(tagging_sock),
       HostResolver::RequestInfo(HostPortPair("localhost", 80)),
       TRAFFIC_ANNOTATION_FOR_TESTS);
 

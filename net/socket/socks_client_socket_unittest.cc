@@ -92,13 +92,11 @@ std::unique_ptr<SOCKSClientSocket> SOCKSClientSocketTest::BuildMockSocket(
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(socket->IsConnected());
 
-  auto connection = std::make_unique<ClientSocketHandle>();
-  // |connection| takes ownership of |socket|, but |tcp_socket_| keeps a
+  // The SOCKSClientSocket takes ownership of |socket|, but |tcp_sock_| keeps a
   // non-owning pointer to it.
   tcp_sock_ = socket.get();
-  connection->SetSocket(std::move(socket));
   return std::make_unique<SOCKSClientSocket>(
-      std::move(connection),
+      std::move(socket),
       HostResolver::RequestInfo(HostPortPair(hostname, port)), DEFAULT_PRIORITY,
       host_resolver, TRAFFIC_ANNOTATION_FOR_TESTS);
 }
@@ -528,10 +526,9 @@ TEST_F(SOCKSClientSocketTest, Tag) {
   std::unique_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
   // |connection| takes ownership of |tagging_sock|, but keep a
   // non-owning pointer to it.
-  connection->SetSocket(std::unique_ptr<StreamSocket>(tagging_sock));
   MockHostResolver host_resolver;
   SOCKSClientSocket socket(
-      std::move(connection),
+      std::unique_ptr<StreamSocket>(tagging_sock),
       HostResolver::RequestInfo(HostPortPair("localhost", 80)),
       DEFAULT_PRIORITY, &host_resolver, TRAFFIC_ANNOTATION_FOR_TESTS);
 

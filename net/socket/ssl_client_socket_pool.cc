@@ -24,7 +24,6 @@
 #include "net/log/net_log_with_source.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
-#include "net/socket/socks_client_socket_pool.h"
 #include "net/socket/socks_connect_job.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/transport_client_socket_pool.h"
@@ -102,7 +101,7 @@ SSLConnectJob::SSLConnectJob(const std::string& group_name,
                              ClientSocketPool::RespectLimits respect_limits,
                              const scoped_refptr<SSLSocketParams>& params,
                              TransportClientSocketPool* transport_pool,
-                             SOCKSClientSocketPool* socks_pool,
+                             TransportClientSocketPool* socks_pool,
                              HttpProxyClientSocketPool* http_proxy_pool,
                              ClientSocketFactory* client_socket_factory,
                              const SSLClientSocketContext& context,
@@ -280,8 +279,11 @@ int SSLConnectJob::DoSOCKSConnect() {
   scoped_refptr<SOCKSSocketParams> socks_proxy_params =
       params_->GetSocksProxyConnectionParams();
   return transport_socket_handle_->Init(
-      group_name(), socks_proxy_params, priority(), socket_tag(),
-      respect_limits(), callback_, socks_pool_, net_log());
+      group_name(),
+      TransportClientSocketPool::SocketParams::CreateFromSOCKSSocketParams(
+          socks_proxy_params),
+      priority(), socket_tag(), respect_limits(), callback_, socks_pool_,
+      net_log());
 }
 
 int SSLConnectJob::DoSOCKSConnectComplete(int result) {
@@ -458,7 +460,7 @@ void SSLConnectJob::ChangePriorityInternal(RequestPriority priority) {
 
 SSLClientSocketPool::SSLConnectJobFactory::SSLConnectJobFactory(
     TransportClientSocketPool* transport_pool,
-    SOCKSClientSocketPool* socks_pool,
+    TransportClientSocketPool* socks_pool,
     HttpProxyClientSocketPool* http_proxy_pool,
     ClientSocketFactory* client_socket_factory,
     const SSLClientSocketContext& context,
@@ -485,7 +487,7 @@ SSLClientSocketPool::SSLClientSocketPool(
     const std::string& ssl_session_cache_shard,
     ClientSocketFactory* client_socket_factory,
     TransportClientSocketPool* transport_pool,
-    SOCKSClientSocketPool* socks_pool,
+    TransportClientSocketPool* socks_pool,
     HttpProxyClientSocketPool* http_proxy_pool,
     SSLConfigService* ssl_config_service,
     NetworkQualityEstimator* network_quality_estimator,

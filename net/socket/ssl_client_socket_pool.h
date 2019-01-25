@@ -33,7 +33,6 @@ class HostPortPair;
 class HttpProxyClientSocketPool;
 class HttpProxySocketParams;
 class NetworkQualityEstimator;
-class SOCKSClientSocketPool;
 class SOCKSSocketParams;
 class SSLClientSocket;
 class TransportClientSocketPool;
@@ -98,7 +97,7 @@ class SSLConnectJob : public ConnectJob {
                 ClientSocketPool::RespectLimits respect_limits,
                 const scoped_refptr<SSLSocketParams>& params,
                 TransportClientSocketPool* transport_pool,
-                SOCKSClientSocketPool* socks_pool,
+                TransportClientSocketPool* socks_pool,
                 HttpProxyClientSocketPool* http_proxy_pool,
                 ClientSocketFactory* client_socket_factory,
                 const SSLClientSocketContext& context,
@@ -158,7 +157,7 @@ class SSLConnectJob : public ConnectJob {
 
   scoped_refptr<SSLSocketParams> params_;
   TransportClientSocketPool* const transport_pool_;
-  SOCKSClientSocketPool* const socks_pool_;
+  TransportClientSocketPool* const socks_pool_;
   HttpProxyClientSocketPool* const http_proxy_pool_;
   ClientSocketFactory* const client_socket_factory_;
 
@@ -199,7 +198,7 @@ class NET_EXPORT_PRIVATE SSLClientSocketPool
                       const std::string& ssl_session_cache_shard,
                       ClientSocketFactory* client_socket_factory,
                       TransportClientSocketPool* transport_pool,
-                      SOCKSClientSocketPool* socks_pool,
+                      TransportClientSocketPool* socks_pool,
                       HttpProxyClientSocketPool* http_proxy_pool,
                       SSLConfigService* ssl_config_service,
                       NetworkQualityEstimator* network_quality_estimator,
@@ -278,7 +277,7 @@ class NET_EXPORT_PRIVATE SSLClientSocketPool
   class SSLConnectJobFactory : public PoolBase::ConnectJobFactory {
    public:
     SSLConnectJobFactory(TransportClientSocketPool* transport_pool,
-                         SOCKSClientSocketPool* socks_pool,
+                         TransportClientSocketPool* socks_pool,
                          HttpProxyClientSocketPool* http_proxy_pool,
                          ClientSocketFactory* client_socket_factory,
                          const SSLClientSocketContext& context,
@@ -295,7 +294,7 @@ class NET_EXPORT_PRIVATE SSLClientSocketPool
 
    private:
     TransportClientSocketPool* const transport_pool_;
-    SOCKSClientSocketPool* const socks_pool_;
+    TransportClientSocketPool* const socks_pool_;
     HttpProxyClientSocketPool* const http_proxy_pool_;
     ClientSocketFactory* const client_socket_factory_;
     const SSLClientSocketContext context_;
@@ -306,7 +305,7 @@ class NET_EXPORT_PRIVATE SSLClientSocketPool
   };
 
   TransportClientSocketPool* const transport_pool_;
-  SOCKSClientSocketPool* const socks_pool_;
+  TransportClientSocketPool* const socks_pool_;
   HttpProxyClientSocketPool* const http_proxy_pool_;
   PoolBase base_;
   SSLConfigService* const ssl_config_service_;

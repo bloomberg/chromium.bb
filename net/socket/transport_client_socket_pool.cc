@@ -20,10 +20,24 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool_base.h"
 #include "net/socket/socket_net_log_params.h"
+#include "net/socket/socks_connect_job.h"
 #include "net/socket/transport_connect_job.h"
 #include "net/socket/websocket_transport_connect_job.h"
 
 namespace net {
+
+namespace {
+
+std::unique_ptr<ConnectJob> CreateSOCKSConnectJob(
+    scoped_refptr<SOCKSSocketParams> socks_socket_params,
+    RequestPriority priority,
+    const CommonConnectJobParams& common_connect_job_params,
+    ConnectJob::Delegate* delegate) {
+  return std::make_unique<SOCKSConnectJob>(priority, common_connect_job_params,
+                                           socks_socket_params, delegate);
+}
+
+}  // namespace
 
 TransportClientSocketPool::SocketParams::SocketParams(
     const CreateConnectJobCallback& create_connect_job_callback)
@@ -35,6 +49,14 @@ TransportClientSocketPool::SocketParams::CreateFromTransportSocketParams(
   CreateConnectJobCallback callback =
       base::BindRepeating(&TransportConnectJob::CreateTransportConnectJob,
                           std::move(transport_client_params));
+  return base::MakeRefCounted<SocketParams>(callback);
+}
+
+scoped_refptr<TransportClientSocketPool::SocketParams>
+TransportClientSocketPool::SocketParams::CreateFromSOCKSSocketParams(
+    scoped_refptr<SOCKSSocketParams> socks_socket_params) {
+  CreateConnectJobCallback callback = base::BindRepeating(
+      &CreateSOCKSConnectJob, std::move(socks_socket_params));
   return base::MakeRefCounted<SocketParams>(callback);
 }
 

@@ -24,8 +24,9 @@ class MockClientSocketPoolManager : public ClientSocketPoolManager {
   // Sets "override" socket pools that get used instead.
   void SetTransportSocketPool(TransportClientSocketPool* pool);
   void SetSSLSocketPool(SSLClientSocketPool* pool);
-  void SetSocketPoolForSOCKSProxy(const ProxyServer& socks_proxy,
-                                  std::unique_ptr<SOCKSClientSocketPool> pool);
+  // Currently only works for SOCKS proxies.
+  void SetSocketPoolForProxy(const ProxyServer& proxy_server,
+                             std::unique_ptr<TransportClientSocketPool> pool);
   void SetSocketPoolForHTTPProxy(
       const ProxyServer& http_proxy,
       std::unique_ptr<HttpProxyClientSocketPool> pool);
@@ -37,7 +38,7 @@ class MockClientSocketPoolManager : public ClientSocketPoolManager {
   void CloseIdleSockets() override;
   TransportClientSocketPool* GetTransportSocketPool() override;
   SSLClientSocketPool* GetSSLSocketPool() override;
-  SOCKSClientSocketPool* GetSocketPoolForSOCKSProxy(
+  TransportClientSocketPool* GetSocketPoolForSOCKSProxy(
       const ProxyServer& socks_proxy) override;
   HttpProxyClientSocketPool* GetSocketPoolForHTTPLikeProxy(
       const ProxyServer& http_proxy) override;
@@ -49,8 +50,8 @@ class MockClientSocketPoolManager : public ClientSocketPoolManager {
       const std::string& parent_dump_absolute_name) const override;
 
  private:
-  using SOCKSSocketPoolMap =
-      std::map<ProxyServer, std::unique_ptr<SOCKSClientSocketPool>>;
+  using TransportClientSocketPoolMap =
+      std::map<ProxyServer, std::unique_ptr<TransportClientSocketPool>>;
   using HTTPProxySocketPoolMap =
       std::map<ProxyServer, std::unique_ptr<HttpProxyClientSocketPool>>;
   using SSLSocketPoolMap =
@@ -58,7 +59,7 @@ class MockClientSocketPoolManager : public ClientSocketPoolManager {
 
   std::unique_ptr<TransportClientSocketPool> transport_socket_pool_;
   std::unique_ptr<SSLClientSocketPool> ssl_socket_pool_;
-  SOCKSSocketPoolMap socks_socket_pools_;
+  TransportClientSocketPoolMap proxy_socket_pools_;
   HTTPProxySocketPoolMap http_proxy_socket_pools_;
   SSLSocketPoolMap ssl_socket_pools_for_proxies_;
 

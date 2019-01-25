@@ -12,9 +12,10 @@
 #include "net/base/proxy_server.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_proxy_client_socket_pool.h"
-#include "net/socket/socks_client_socket_pool.h"
+#include "net/socket/socks_connect_job.h"
 #include "net/socket/ssl_client_socket_pool.h"
 #include "net/socket/transport_client_socket_pool.h"
+#include "net/socket/transport_connect_job.h"
 #include "net/socket/websocket_transport_client_socket_pool.h"
 #include "net/ssl/ssl_config_service.h"
 
@@ -111,47 +112,29 @@ void ClientSocketPoolManagerImpl::FlushSocketPoolsWithError(int error) {
   // Flush the highest level pools first, since higher level pools may release
   // stuff to the lower level pools.
 
-  for (SSLSocketPoolMap::const_iterator it =
-       ssl_socket_pools_for_proxies_.begin();
-       it != ssl_socket_pools_for_proxies_.end();
-       ++it)
-    it->second->FlushWithError(error);
+  for (const auto& it : ssl_socket_pools_for_proxies_) {
+    it.second->FlushWithError(error);
+  }
 
-  for (HTTPProxySocketPoolMap::const_iterator it =
-       http_proxy_socket_pools_.begin();
-       it != http_proxy_socket_pools_.end();
-       ++it)
-    it->second->FlushWithError(error);
+  for (const auto& it : http_proxy_socket_pools_) {
+    it.second->FlushWithError(error);
+  }
 
-  for (SSLSocketPoolMap::const_iterator it =
-       ssl_socket_pools_for_https_proxies_.begin();
-       it != ssl_socket_pools_for_https_proxies_.end();
-       ++it)
-    it->second->FlushWithError(error);
+  for (const auto& it : ssl_socket_pools_for_https_proxies_) {
+    it.second->FlushWithError(error);
+  }
 
-  for (TransportSocketPoolMap::const_iterator it =
-       transport_socket_pools_for_https_proxies_.begin();
-       it != transport_socket_pools_for_https_proxies_.end();
-       ++it)
-    it->second->FlushWithError(error);
+  for (const auto& it : transport_socket_pools_for_https_proxies_) {
+    it.second->FlushWithError(error);
+  }
 
-  for (TransportSocketPoolMap::const_iterator it =
-       transport_socket_pools_for_http_proxies_.begin();
-       it != transport_socket_pools_for_http_proxies_.end();
-       ++it)
-    it->second->FlushWithError(error);
+  for (const auto& it : transport_socket_pools_for_http_proxies_) {
+    it.second->FlushWithError(error);
+  }
 
-  for (SOCKSSocketPoolMap::const_iterator it =
-       socks_socket_pools_.begin();
-       it != socks_socket_pools_.end();
-       ++it)
-    it->second->FlushWithError(error);
-
-  for (TransportSocketPoolMap::const_iterator it =
-       transport_socket_pools_for_socks_proxies_.begin();
-       it != transport_socket_pools_for_socks_proxies_.end();
-       ++it)
-    it->second->FlushWithError(error);
+  for (const auto& it : proxy_socket_pools_) {
+    it.second->FlushWithError(error);
+  }
 
   ssl_socket_pool_->FlushWithError(error);
   transport_socket_pool_->FlushWithError(error);
@@ -160,47 +143,29 @@ void ClientSocketPoolManagerImpl::FlushSocketPoolsWithError(int error) {
 void ClientSocketPoolManagerImpl::CloseIdleSockets() {
   // Close sockets in the highest level pools first, since higher level pools'
   // sockets may release stuff to the lower level pools.
-  for (SSLSocketPoolMap::const_iterator it =
-       ssl_socket_pools_for_proxies_.begin();
-       it != ssl_socket_pools_for_proxies_.end();
-       ++it)
-    it->second->CloseIdleSockets();
+  for (const auto& it : ssl_socket_pools_for_proxies_) {
+    it.second->CloseIdleSockets();
+  }
 
-  for (HTTPProxySocketPoolMap::const_iterator it =
-       http_proxy_socket_pools_.begin();
-       it != http_proxy_socket_pools_.end();
-       ++it)
-    it->second->CloseIdleSockets();
+  for (const auto& it : http_proxy_socket_pools_) {
+    it.second->CloseIdleSockets();
+  }
 
-  for (SSLSocketPoolMap::const_iterator it =
-       ssl_socket_pools_for_https_proxies_.begin();
-       it != ssl_socket_pools_for_https_proxies_.end();
-       ++it)
-    it->second->CloseIdleSockets();
+  for (const auto& it : ssl_socket_pools_for_https_proxies_) {
+    it.second->CloseIdleSockets();
+  }
 
-  for (TransportSocketPoolMap::const_iterator it =
-       transport_socket_pools_for_https_proxies_.begin();
-       it != transport_socket_pools_for_https_proxies_.end();
-       ++it)
-    it->second->CloseIdleSockets();
+  for (const auto& it : transport_socket_pools_for_https_proxies_) {
+    it.second->CloseIdleSockets();
+  }
 
-  for (TransportSocketPoolMap::const_iterator it =
-       transport_socket_pools_for_http_proxies_.begin();
-       it != transport_socket_pools_for_http_proxies_.end();
-       ++it)
-    it->second->CloseIdleSockets();
+  for (const auto& it : transport_socket_pools_for_http_proxies_) {
+    it.second->CloseIdleSockets();
+  }
 
-  for (SOCKSSocketPoolMap::const_iterator it =
-       socks_socket_pools_.begin();
-       it != socks_socket_pools_.end();
-       ++it)
-    it->second->CloseIdleSockets();
-
-  for (TransportSocketPoolMap::const_iterator it =
-       transport_socket_pools_for_socks_proxies_.begin();
-       it != transport_socket_pools_for_socks_proxies_.end();
-       ++it)
-    it->second->CloseIdleSockets();
+  for (const auto& it : proxy_socket_pools_) {
+    it.second->CloseIdleSockets();
+  }
 
   ssl_socket_pool_->CloseIdleSockets();
   transport_socket_pool_->CloseIdleSockets();
@@ -215,37 +180,27 @@ SSLClientSocketPool* ClientSocketPoolManagerImpl::GetSSLSocketPool() {
   return ssl_socket_pool_.get();
 }
 
-SOCKSClientSocketPool* ClientSocketPoolManagerImpl::GetSocketPoolForSOCKSProxy(
-    const ProxyServer& socks_proxy) {
-  DCHECK(socks_proxy.is_socks());
+TransportClientSocketPool*
+ClientSocketPoolManagerImpl::GetSocketPoolForSOCKSProxy(
+    const ProxyServer& proxy_server) {
+  DCHECK(proxy_server.is_socks());
 
-  SOCKSSocketPoolMap::const_iterator it = socks_socket_pools_.find(socks_proxy);
-  if (it != socks_socket_pools_.end()) {
-    DCHECK(base::ContainsKey(transport_socket_pools_for_socks_proxies_,
-                             socks_proxy));
+  TransportSocketPoolMap::const_iterator it =
+      proxy_socket_pools_.find(proxy_server);
+  if (it != proxy_socket_pools_.end())
     return it->second.get();
-  }
 
-  DCHECK(!base::ContainsKey(transport_socket_pools_for_socks_proxies_,
-                            socks_proxy));
   int sockets_per_proxy_server = max_sockets_per_proxy_server(pool_type_);
   int sockets_per_group = std::min(sockets_per_proxy_server,
                                    max_sockets_per_group(pool_type_));
 
-  std::pair<TransportSocketPoolMap::iterator, bool> tcp_ret =
-      transport_socket_pools_for_socks_proxies_.insert(std::make_pair(
-          socks_proxy,
+  std::pair<TransportSocketPoolMap::iterator, bool> ret =
+      proxy_socket_pools_.insert(std::make_pair(
+          proxy_server,
           std::make_unique<TransportClientSocketPool>(
               sockets_per_proxy_server, sockets_per_group, host_resolver_,
-              socket_factory_, nullptr, net_log_)));
-  DCHECK(tcp_ret.second);
-
-  std::pair<SOCKSSocketPoolMap::iterator, bool> ret =
-      socks_socket_pools_.insert(std::make_pair(
-          socks_proxy,
-          std::make_unique<SOCKSClientSocketPool>(
-              sockets_per_proxy_server, sockets_per_group, host_resolver_,
-              tcp_ret.first->second.get(), nullptr, net_log_)));
+              socket_factory_, nullptr /* socket_performance_watcher */,
+              net_log_)));
 
   return ret.first->second.get();
 }
@@ -360,7 +315,7 @@ ClientSocketPoolManagerImpl::SocketPoolInfoToValue() const {
                                                 false));
   AddSocketPoolsToList(list.get(), http_proxy_socket_pools_,
                        "http_proxy_socket_pool", true);
-  AddSocketPoolsToList(list.get(), socks_socket_pools_, "socks_socket_pool",
+  AddSocketPoolsToList(list.get(), proxy_socket_pools_, "proxy_socket_pools",
                        true);
 
   // Third parameter is false because |ssl_socket_pools_for_proxies_| use
