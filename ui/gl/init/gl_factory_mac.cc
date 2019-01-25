@@ -63,12 +63,12 @@ class NoOpGLSurface : public GLSurface {
 std::vector<GLImplementation> GetAllowedGLImplementations() {
   std::vector<GLImplementation> impls;
   impls.push_back(kGLImplementationDesktopGLCoreProfile);
+  impls.push_back(kGLImplementationDesktopGL);
+  impls.push_back(kGLImplementationAppleGL);
 #if BUILDFLAG(USE_EGL_ON_MAC)
   impls.push_back(kGLImplementationEGLGLES2);
   impls.push_back(kGLImplementationSwiftShaderGL);
 #endif  // BUILDFLAG(USE_EGL_ON_MAC)
-  impls.push_back(kGLImplementationDesktopGL);
-  impls.push_back(kGLImplementationAppleGL);
   return impls;
 }
 
