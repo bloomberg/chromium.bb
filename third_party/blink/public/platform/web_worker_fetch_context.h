@@ -1,4 +1,5 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
+
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,7 +57,8 @@ class WebWorkerFetchContext : public base::RefCounted<WebWorkerFetchContext> {
   virtual ~WebWorkerFetchContext() = default;
 
   // Used to copy a worker fetch context between worker threads.
-  virtual scoped_refptr<WebWorkerFetchContext> CloneForNestedWorker() {
+  virtual scoped_refptr<WebWorkerFetchContext> CloneForNestedWorker(
+      scoped_refptr<base::SingleThreadTaskRunner>) {
     return nullptr;
   }
 
@@ -133,9 +135,12 @@ class WebWorkerFetchContext : public base::RefCounted<WebWorkerFetchContext> {
     return nullptr;
   }
 
-  // Creates a WebSocketHandshakeThrottle on the worker thread.
+  // Creates a WebSocketHandshakeThrottle on the worker thread. |task_runner| is
+  // used for internal IPC handling of the throttle, and must be bound to the
+  // same sequence to the current one (which is the worker thread).
   virtual std::unique_ptr<blink::WebSocketHandshakeThrottle>
-  CreateWebSocketHandshakeThrottle() {
+  CreateWebSocketHandshakeThrottle(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     return nullptr;
   }
 

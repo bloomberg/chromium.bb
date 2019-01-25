@@ -53,7 +53,8 @@ class ServiceWorkerFetchContextImpl final
       const override;
   blink::WebURL SiteForCookies() const override;
   std::unique_ptr<blink::WebSocketHandshakeThrottle>
-  CreateWebSocketHandshakeThrottle() override;
+  CreateWebSocketHandshakeThrottle(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   blink::WebString GetAcceptLanguages() const override;
 
  private:

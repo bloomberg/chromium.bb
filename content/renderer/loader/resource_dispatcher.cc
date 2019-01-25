@@ -573,7 +573,8 @@ int ResourceDispatcher::StartAsync(
     // MIME sniffing should be disabled for a request initiated by fetch().
     options |= network::mojom::kURLLoadOptionSniffMimeType;
     if (blink::ServiceWorkerUtils::IsServicificationEnabled())
-      throttles.push_back(std::make_unique<MimeSniffingThrottle>());
+      throttles.push_back(
+          std::make_unique<MimeSniffingThrottle>(loading_task_runner));
   }
   if (is_sync) {
     options |= network::mojom::kURLLoadOptionSynchronous;

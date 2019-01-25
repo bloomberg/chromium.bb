@@ -410,7 +410,7 @@ DedicatedWorker::CreateGlobalScopeCreationParams(
     web_worker_fetch_context =
         static_cast<WorkerFetchContext&>(scope->Fetcher()->Context())
             .GetWebWorkerFetchContext()
-            ->CloneForNestedWorker();
+            ->CloneForNestedWorker(scope->GetTaskRunner(TaskType::kNetworking));
   }
 
   return std::make_unique<GlobalScopeCreationParams>(

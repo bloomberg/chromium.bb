@@ -832,7 +832,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       // Intercepted requests need MimeSniffingThrottle to do mime sniffing.
       // Non-intercepted requests usually go through the regular network
       // URLLoader, which does mime sniffing.
-      throttles.push_back(std::make_unique<MimeSniffingThrottle>());
+      throttles.push_back(std::make_unique<MimeSniffingThrottle>(
+          base::ThreadTaskRunnerHandle::Get()));
 
       default_loader_used_ = false;
       url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(

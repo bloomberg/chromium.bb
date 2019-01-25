@@ -67,14 +67,16 @@ class CONTENT_EXPORT MimeSniffingURLLoader
                     MimeSniffingURLLoader*>
   CreateLoader(base::WeakPtr<MimeSniffingThrottle> throttle,
                const GURL& response_url,
-               const network::ResourceResponseHead& response_head);
+               const network::ResourceResponseHead& response_head,
+               scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
  private:
   MimeSniffingURLLoader(
       base::WeakPtr<MimeSniffingThrottle> throttle,
       const GURL& response_url,
       const network::ResourceResponseHead& response_head,
-      network::mojom::URLLoaderClientPtr destination_url_loader_client);
+      network::mojom::URLLoaderClientPtr destination_url_loader_client,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // network::mojom::URLLoaderClient implementation (called from the source of
   // the response):
@@ -125,6 +127,8 @@ class CONTENT_EXPORT MimeSniffingURLLoader
   // Capture the response head to defer to send it to the destination until the
   // mime type is decided.
   network::ResourceResponseHead response_head_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   enum class State { kWaitForBody, kSniffing, kSending, kCompleted, kAborted };
   State state_ = State::kWaitForBody;

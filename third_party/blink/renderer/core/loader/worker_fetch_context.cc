@@ -115,7 +115,8 @@ bool WorkerFetchContext::ShouldBlockWebSocketByMixedContentCheck(
 
 std::unique_ptr<WebSocketHandshakeThrottle>
 WorkerFetchContext::CreateWebSocketHandshakeThrottle() {
-  return web_context_->CreateWebSocketHandshakeThrottle();
+  return web_context_->CreateWebSocketHandshakeThrottle(
+      global_scope_->GetTaskRunner(blink::TaskType::kNetworking));
 }
 
 bool WorkerFetchContext::ShouldBlockFetchByMixedContentCheck(

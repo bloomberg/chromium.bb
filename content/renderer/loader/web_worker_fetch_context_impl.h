@@ -76,7 +76,8 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
           fallback_factory_info);
 
   // blink::WebWorkerFetchContext implementation:
-  scoped_refptr<blink::WebWorkerFetchContext> CloneForNestedWorker() override;
+  scoped_refptr<blink::WebWorkerFetchContext> CloneForNestedWorker(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void SetTerminateSyncLoadEvent(base::WaitableEvent*) override;
   void InitializeOnWorkerThread(blink::AcceptLanguagesWatcher*) override;
   blink::WebURLLoaderFactory* GetURLLoaderFactory() override;
@@ -99,7 +100,8 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   std::unique_ptr<blink::WebDocumentSubresourceFilter> TakeSubresourceFilter()
       override;
   std::unique_ptr<blink::WebSocketHandshakeThrottle>
-  CreateWebSocketHandshakeThrottle() override;
+  CreateWebSocketHandshakeThrottle(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
 
   // blink::mojom::ServiceWorkerWorkerClient implementation:
   void OnControllerChanged(blink::mojom::ControllerServiceWorkerMode) override;
