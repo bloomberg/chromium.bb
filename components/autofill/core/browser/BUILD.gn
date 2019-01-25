@@ -368,6 +368,8 @@ jumbo_static_library("test_support") {
     "test_autofill_manager.h",
     "test_autofill_profile_validator.cc",
     "test_autofill_profile_validator.h",
+    "test_autofill_profile_validator_delayed.cc",
+    "test_autofill_profile_validator_delayed.h",
     "test_autofill_provider.cc",
     "test_autofill_provider.h",
     "test_credit_card_save_manager.cc",

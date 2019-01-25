@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_PERSONAL_DATA_MANAGER_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_PERSONAL_DATA_MANAGER_H_
 
+#include <deque>
 #include <list>
 #include <memory>
 #include <set>
@@ -255,10 +256,15 @@ class PersonalDataManager : public KeyedService,
   void UpdateProfilesServerValidityMapsIfNeeded(
       const std::vector<AutofillProfile*>& profiles);
 
-  // Updates the validity states of |profiles| according to client side
-  // validation API: |client_profile_validator_|.
+  // Requests an update for the validity states of the |profiles| according to
+  // client side validation API: |client_profile_validator_|.
   void UpdateClientValidityStates(
       const std::vector<AutofillProfile*>& profiles);
+
+  // Requests an update for the validity states of the |profile| according to
+  // the client side validation API: |client_profile_validator_|. Returns true
+  // if the validation was requested.
+  bool UpdateClientValidityStates(const AutofillProfile& profile);
 
   // Returns the profiles to suggest to the user, ordered by frecency.
   std::vector<AutofillProfile*> GetProfilesToSuggest() const;
@@ -388,6 +394,11 @@ class PersonalDataManager : public KeyedService,
   // Triggered when a profile is added/updated/removed on db.
   void OnAutofillProfileChanged(const AutofillProfileDeepChange& change);
 
+  void set_client_profile_validator_for_test(
+      AutofillProfileValidator* validator) {
+    client_profile_validator_ = validator;
+  }
+
  protected:
   // Only PersonalDataManagerFactory and certain tests can create instances of
   // PersonalDataManager.
@@ -467,9 +478,16 @@ class PersonalDataManager : public KeyedService,
                            ClearCreditCardNonSettingsOrigins);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            MoveJapanCityToStreetAddress);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest, RequestProfileValidity);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
+                           RequestProfileServerValidity);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            GetProfileSuggestions_InvalidDataBasedOnServer);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerMockTest,
+                           UpdateProfilesValidityStates_MoveToJapan);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerMockTest,
+                           UpdateProfilesValidityStates_AddUpdateSet);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerMockTest,
+                           UpdateProfilesValidityStates_Dedupe);
 
   friend class autofill::AutofillInteractiveTest;
   friend class autofill::PersonalDataManagerFactory;
@@ -477,6 +495,8 @@ class PersonalDataManager : public KeyedService,
   friend class FormDataImporterTest;
   friend class PersonalDataManagerTest;
   friend class PersonalDataManagerTestBase;
+  friend class PersonalDataManagerHelper;
+  friend class PersonalDataManagerMockTest;
   friend class SaveImportedProfileTest;
   friend class ProfileSyncServiceAutofillTest;
   friend class ::RemoveAutofillTester;
@@ -561,7 +581,8 @@ class PersonalDataManager : public KeyedService,
   // https://crbug.com/871301
   void MoveJapanCityToStreetAddress();
 
-  // Called when the |profile| is validated by the AutofillProfileValidator.
+  // Called when the |profile| is validated by the AutofillProfileValidator,
+  // updates the profiles on the |ongoing_profile_changes_| and the DB.
   virtual void OnValidated(const AutofillProfile* profile);
 
   // Get the profiles fields validity map by |guid|.
@@ -722,9 +743,11 @@ class PersonalDataManager : public KeyedService,
   // Resets |synced_profile_validity_|.
   void ResetProfileValidity();
 
-  // Add/Update/Remove profiles on DB.
+  // Add/Update/Remove |profile| on DB.
   void AddProfileToDB(const AutofillProfile& profile);
-  void UpdateProfileInDB(const AutofillProfile& profile);
+  // |enforced| is true when the update should happen regardless of an equal
+  // profile. (equal in the sense of AutofillProfile::EqualForUpdate)
+  void UpdateProfileInDB(const AutofillProfile& profile, bool enforced = false);
   void RemoveProfileFromDB(const std::string& guid);
 
   // Look at the next profile change for profile with guid = |guid|, and handle
@@ -764,11 +787,11 @@ class PersonalDataManager : public KeyedService,
 
   // Profiles validity read from the prefs. They are kept updated by
   // observing changes in pref_services. We need to set the
-  // |profile_validities_need_update| whenever this is changed.
+  // |profile_validities_need_update_| whenever this is changed.
   std::unique_ptr<UserProfileValidityMap> synced_profile_validity_;
 
   // A timely ordered list of on going changes for each profile.
-  std::unordered_map<std::string, std::queue<AutofillProfileDeepChange>>
+  std::unordered_map<std::string, std::deque<AutofillProfileDeepChange>>
       ongoing_profile_changes_;
 
   // The client side profile validator.
