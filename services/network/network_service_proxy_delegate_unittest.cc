@@ -336,6 +336,24 @@ TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxyNonIdempotentMethod) {
   EXPECT_FALSE(result.alternative_proxy().is_valid());
 }
 
+TEST_F(NetworkServiceProxyDelegateTest,
+       OnResolveProxyNonIdempotentMethodAllowed) {
+  auto config = mojom::CustomProxyConfig::New();
+  config->rules.ParseFromString("http=foo");
+  config->allow_non_idempotent_methods = true;
+  auto delegate = CreateDelegate(std::move(config));
+
+  net::ProxyInfo result;
+  result.UseDirect();
+  delegate->OnResolveProxy(GURL(kHttpUrl), "POST", net::ProxyRetryInfoMap(),
+                           &result);
+
+  net::ProxyList expected_proxy_list;
+  expected_proxy_list.AddProxyServer(
+      net::ProxyServer::FromPacString("PROXY foo"));
+  EXPECT_TRUE(result.proxy_list().Equals(expected_proxy_list));
+}
+
 TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxyWebsocketScheme) {
   auto config = mojom::CustomProxyConfig::New();
   config->rules.ParseFromString("http=foo");

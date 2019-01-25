@@ -51,6 +51,11 @@ struct CustomProxyConfig {
   // ResourceRequest::custom_proxy_use_alternate_proxy_list is set.
   ProxyList alternate_proxy_list;
 
+  // Whether the custom proxy config should apply to requests using
+  // non-idempotent methods. Can be true if the proxy is known to handle this
+  // case properly.
+  bool allow_non_idempotent_methods = false;
+
   // The custom proxy can set these headers in this config which will be added
   // to all requests using the proxy. This allows setting headers that may be
   // privacy/security sensitive which we don't want to send to the renderer.
