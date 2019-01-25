@@ -72,13 +72,13 @@ StatusUploader::~StatusUploader() {
   MediaCaptureDevicesDispatcher::GetInstance()->RemoveObserver(this);
 }
 
-void StatusUploader::ScheduleNextStatusUpload(bool immediately) {
+bool StatusUploader::ScheduleNextStatusUpload(bool immediately) {
   // Don't schedule a new status upload if there's a status upload in progress
   // (it will be scheduled once the current one completes).
   if (status_upload_in_progress_) {
     SYSLOG(INFO) << "In the middle of a status upload, not scheduling the next "
                  << "one until this one finishes.";
-    return;
+    return false;
   }
 
   // Calculate when to fire off the next update (if it should have already
@@ -93,6 +93,7 @@ void StatusUploader::ScheduleNextStatusUpload(bool immediately) {
   upload_callback_.Reset(base::Bind(&StatusUploader::UploadStatus,
                                     base::Unretained(this)));
   task_runner_->PostDelayedTask(FROM_HERE, upload_callback_.callback(), delay);
+  return true;
 }
 
 void StatusUploader::RefreshUploadFrequency() {
@@ -172,8 +173,8 @@ void StatusUploader::OnRequestUpdate(int render_process_id,
   }
 }
 
-void StatusUploader::ScheduleNextStatusUploadImmediately() {
-  ScheduleNextStatusUpload(true);
+bool StatusUploader::ScheduleNextStatusUploadImmediately() {
+  return ScheduleNextStatusUpload(true);
 }
 
 void StatusUploader::UploadStatus() {

@@ -55,7 +55,9 @@ class StatusUploader : public MediaCaptureDevicesDispatcher::Observer {
                        blink::MediaStreamType stream_type,
                        const content::MediaRequestState state) override;
 
-  void ScheduleNextStatusUploadImmediately();
+  // Returns true if the next status upload has been scheduled successfully.
+  // Returns false if there is already an ongoing status report.
+  bool ScheduleNextStatusUploadImmediately();
 
   const DeviceStatusCollector* device_status_collector() const {
     return collector_.get();
@@ -77,8 +79,9 @@ class StatusUploader : public MediaCaptureDevicesDispatcher::Observer {
   void OnUploadCompleted(bool success);
 
   // Helper method that figures out when the next status upload should
-  // be scheduled.
-  void ScheduleNextStatusUpload(bool immediately = false);
+  // be scheduled. Returns true if the next status upload has been scheduled
+  // successfully, returns false if there is already an ongoing status report.
+  bool ScheduleNextStatusUpload(bool immediately = false);
 
   // Updates the upload frequency from settings and schedules a new upload
   // if appropriate.
