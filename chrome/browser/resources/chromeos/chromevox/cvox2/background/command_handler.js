@@ -14,8 +14,9 @@ goog.require('LogStore');
 goog.require('Output');
 goog.require('TreeDumper');
 goog.require('cvox.ChromeVoxBackground');
-goog.require('cvox.ChromeVoxPrefs');
 goog.require('cvox.ChromeVoxKbHandler');
+goog.require('cvox.ChromeVoxPrefs');
+goog.require('cvox.CommandStore');
 
 goog.scope(function() {
 var AutomationEvent = chrome.automation.AutomationEvent;
@@ -25,12 +26,20 @@ var EventType = chrome.automation.EventType;
 var RoleType = chrome.automation.RoleType;
 var StateType = chrome.automation.StateType;
 
+/** @private {boolean} */
+CommandHandler.incognito_ = !!chrome.runtime.getManifest()['incognito'];
+
 /**
  * Handles ChromeVox Next commands.
  * @param {string} command
  * @return {boolean} True if the command should propagate.
  */
 CommandHandler.onCommand = function(command) {
+  // Check for a command disallowed in OOBE/login.
+  if (CommandHandler.incognito_ && cvox.CommandStore.CMD_WHITELIST[command] &&
+      cvox.CommandStore.CMD_WHITELIST[command].disallowOOBE)
+    return true;
+
   // Check for loss of focus which results in us invalidating our current
   // range. Note this call is synchronis.
   chrome.automation.getFocus(function(focusedNode) {
