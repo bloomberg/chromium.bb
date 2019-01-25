@@ -150,7 +150,7 @@ void VideoDecoderClient::ProvidePictureBuffers(
   // handles to the video frame's data to the decoder.
   for (const PictureBuffer& picture_buffer : picture_buffers) {
     scoped_refptr<VideoFrame> video_frame =
-        CreateVideoFrame(pixel_format, size);
+        CreatePlatformVideoFrame(pixel_format, size);
     LOG_ASSERT(video_frame) << "Failed to create video frame";
     video_frames_.emplace(picture_buffer.id(), video_frame);
     gfx::GpuMemoryBufferHandle handle =

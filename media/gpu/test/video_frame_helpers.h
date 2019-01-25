@@ -37,8 +37,21 @@ class VideoFrameProcessor {
                                  size_t frame_index) = 0;
 };
 
-// Create a video frame with specified |pixel_format| and |size|.
-scoped_refptr<VideoFrame> CreateVideoFrame(
+// Convert and copy the |src_frame| to the specified |dst_frame|. Supported
+// input formats are I420, NV12 and YV12. Supported output formats are I420 and
+// ARGB. All mappable output storages types are supported, but writing into
+// non-owned memory might produce unexpected side effects.
+bool ConvertVideoFrame(const VideoFrame* src_frame, VideoFrame* dst_frame);
+
+// Convert and copy the |src_frame| to a new video frame with specified format.
+// Supported input formats are I420, NV12 and YV12. Supported output formats are
+// I420 and ARGB.
+scoped_refptr<VideoFrame> ConvertVideoFrame(const VideoFrame* src_frame,
+                                            VideoPixelFormat dst_pixel_format);
+
+// Create a platform-specific DMA-buffer-backed video frame with specified
+// |pixel_format|, |size| and |buffer_usage|.
+scoped_refptr<VideoFrame> CreatePlatformVideoFrame(
     VideoPixelFormat pixel_format,
     const gfx::Size& size,
     gfx::BufferUsage buffer_usage = gfx::BufferUsage::SCANOUT_VDA_WRITE);

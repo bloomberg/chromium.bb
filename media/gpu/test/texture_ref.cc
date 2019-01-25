@@ -47,7 +47,8 @@ scoped_refptr<TextureRef> TextureRef::CreatePreallocated(
 #if defined(OS_CHROMEOS)
   texture_ref = TextureRef::Create(texture_id, std::move(no_longer_needed_cb));
   LOG_ASSERT(texture_ref);
-  texture_ref->frame_ = CreateVideoFrame(pixel_format, size, buffer_usage);
+  texture_ref->frame_ =
+      CreatePlatformVideoFrame(pixel_format, size, buffer_usage);
 #endif
   return texture_ref;
 }

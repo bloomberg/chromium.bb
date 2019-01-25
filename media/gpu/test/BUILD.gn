@@ -27,6 +27,7 @@ source_set("render_helpers") {
   ]
   deps = [
     "//media/gpu",
+    "//third_party/libyuv",
     "//ui/gl/init:init",
   ]
   if (use_ozone) {
@@ -72,7 +73,6 @@ source_set("frame_validator") {
     ":decode_helpers",
     ":helpers",
     "//media/gpu",
-    "//third_party/libyuv",
   ]
 }
 
