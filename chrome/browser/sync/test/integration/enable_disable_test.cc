@@ -395,10 +395,10 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, ClearsPrefsIfClearData) {
   SetupTest(/*all_types_enabled=*/true);
 
   SyncPrefs prefs(GetProfile(0)->GetPrefs());
-  ASSERT_NE("", prefs.GetCacheGuidForTesting());
+  ASSERT_NE("", prefs.GetCacheGuid());
 
   GetClient(0)->StopSyncServiceAndClearData();
-  EXPECT_EQ("", prefs.GetCacheGuidForTesting());
+  EXPECT_EQ("", prefs.GetCacheGuid());
 }
 
 IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
@@ -406,11 +406,11 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
   SetupTest(/*all_types_enabled=*/true);
 
   SyncPrefs prefs(GetProfile(0)->GetPrefs());
-  const std::string cache_guid = prefs.GetCacheGuidForTesting();
+  const std::string cache_guid = prefs.GetCacheGuid();
   ASSERT_NE("", cache_guid);
 
   GetClient(0)->StopSyncServiceWithoutClearingData();
-  EXPECT_EQ(cache_guid, prefs.GetCacheGuidForTesting());
+  EXPECT_EQ(cache_guid, prefs.GetCacheGuid());
 }
 
 class EnableDisableSingleClientWithStandaloneTransportTest

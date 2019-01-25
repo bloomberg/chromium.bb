@@ -50995,6 +50995,32 @@ would be helpful to identify which type is being sent.
   <int value="2" label="SECOND_TRY_FAILURE"/>
 </enum>
 
+<enum name="SyncDirectoryVsPrefsConsistency">
+  <summary>
+    Possible outcomes of comparing cache GUID and birthday fields across sync
+    directory and prefs.
+  </summary>
+  <int value="0" label="ALL_EQUAL"/>
+  <int value="1" label="CACHE_GUID_EQUAL__BIRTHDAY_EMPTY_IN_PREFS"/>
+  <int value="2" label="CACHE_GUID_EQUAL__BIRTHDAY_EMPTY_IN_DIRECTORY"/>
+  <int value="3" label="CACHE_GUID_EQUAL__BIRTHDAY_DIFFERENT"/>
+  <int value="4" label="CACHE_GUID_EMPTY_IN_PREFS__BIRTHDAY_EQUAL"/>
+  <int value="5" label="CACHE_GUID_EMPTY_IN_PREFS__BIRTHDAY_EMPTY_IN_PREFS"/>
+  <int value="6"
+      label="CACHE_GUID_EMPTY_IN_PREFS__BIRTHDAY_EMPTY_IN_DIRECTORY"/>
+  <int value="7" label="CACHE_GUID_EMPTY_IN_PREFS__BIRTHDAY_DIFFERENT"/>
+  <int value="8" label="CACHE_GUID_EMPTY_IN_DIRECTORY__BIRTHDAY_EQUAL"/>
+  <int value="9"
+      label="CACHE_GUID_EMPTY_IN_DIRECTORY__BIRTHDAY_EMPTY_IN_PREFS"/>
+  <int value="10"
+      label="CACHE_GUID_EMPTY_IN_DIRECTORY__BIRTHDAY_EMPTY_IN_DIRECTORY"/>
+  <int value="11" label="CACHE_GUID_EMPTY_IN_DIRECTORY__BIRTHDAY_DIFFERENT"/>
+  <int value="12" label="CACHE_GUID_DIFFERENT__BIRTHDAY_EQUAL"/>
+  <int value="13" label="CACHE_GUID_DIFFERENT__BIRTHDAY_EMPTY_IN_PREFS"/>
+  <int value="14" label="CACHE_GUID_DIFFERENT__BIRTHDAY_EMPTY_IN_DIRECTORY"/>
+  <int value="15" label="CACHE_GUID_DIFFERENT__BIRTHDAY_DIFFERENT"/>
+</enum>
+
 <enum name="SyncedNotificationActionType">
   <int value="0" label="Unknown"/>
   <int value="1" label="Notification clicked"/>
