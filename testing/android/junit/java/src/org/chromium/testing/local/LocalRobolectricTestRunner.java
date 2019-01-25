@@ -16,11 +16,14 @@ public class LocalRobolectricTestRunner extends RobolectricTestRunner {
     public static final int DEFAULT_SDK = 26;
     private static final String DEFAULT_PACKAGE_NAME = "org.robolectric.default";
 
-    public LocalRobolectricTestRunner(Class<?> testClass) throws InitializationError {
-        super(testClass);
+    static {
         // Setting robolectric.offline which tells Robolectric to look for runtime dependency
         // JARs from a local directory and to not download them from Maven.
         System.setProperty("robolectric.offline", "true");
+    }
+
+    public LocalRobolectricTestRunner(Class<?> testClass) throws InitializationError {
+        super(testClass);
     }
 
     @Override
