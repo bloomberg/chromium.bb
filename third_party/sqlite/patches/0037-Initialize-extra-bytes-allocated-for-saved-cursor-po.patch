@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Victor Costan <pwnall@chromium.org>
 Date: Mon, 21 Jan 2019 14:32:00 -0800
-Subject: [PATCH 37/40] Initialize extra bytes allocated for saved cursor
+Subject: [PATCH 37/45] Initialize extra bytes allocated for saved cursor
  position.
 
 This backports https://www.sqlite.org/src/info/2737564929e86ead

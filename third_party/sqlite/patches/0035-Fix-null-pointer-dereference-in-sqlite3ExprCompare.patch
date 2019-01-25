@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Victor Costan <pwnall@chromium.org>
 Date: Sat, 19 Jan 2019 15:48:54 -0800
-Subject: [PATCH 35/40] Fix null pointer dereference in sqlite3ExprCompare.
+Subject: [PATCH 35/45] Fix null pointer dereference in sqlite3ExprCompare.
 
 This backports https://www.sqlite.org/src/info/835e2cc55feea2f2
 

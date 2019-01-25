@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Victor Costan <pwnall@chromium.org>
 Date: Mon, 21 Jan 2019 14:57:17 -0800
-Subject: [PATCH 38/40] Fix leaks caused by circular references in vtable
+Subject: [PATCH 38/45] Fix leaks caused by circular references in vtable
  shadow tables.
 
 This backports https://sqlite.org/src/info/da587d18575ac06a

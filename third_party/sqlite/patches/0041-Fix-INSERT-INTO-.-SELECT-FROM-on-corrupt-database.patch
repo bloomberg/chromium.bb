@@ -1,0 +1,35 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Victor Costan <pwnall@chromium.org>
+Date: Fri, 25 Jan 2019 03:19:04 -0800
+Subject: [PATCH 41/45] Fix INSERT INTO ... SELECT * FROM on corrupt database.
+
+This backports https://sqlite.org/src/info/db4b4c2c1e9f1ada
+
+Bug: 924866
+---
+ third_party/sqlite/src/src/btree.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/third_party/sqlite/src/src/btree.c b/third_party/sqlite/src/src/btree.c
+index eaff20b24e2a..806ff751be4a 100644
+--- a/third_party/sqlite/src/src/btree.c
++++ b/third_party/sqlite/src/src/btree.c
+@@ -804,11 +804,12 @@ static int btreeMoveto(
+   UnpackedRecord *pIdxKey;   /* Unpacked index key */
+
+   if( pKey ){
++    KeyInfo *pKeyInfo = pCur->pKeyInfo;
+     assert( nKey==(i64)(int)nKey );
+-    pIdxKey = sqlite3VdbeAllocUnpackedRecord(pCur->pKeyInfo);
++    pIdxKey = sqlite3VdbeAllocUnpackedRecord(pKeyInfo);
+     if( pIdxKey==0 ) return SQLITE_NOMEM_BKPT;
+-    sqlite3VdbeRecordUnpack(pCur->pKeyInfo, (int)nKey, pKey, pIdxKey);
+-    if( pIdxKey->nField==0 ){
++    sqlite3VdbeRecordUnpack(pKeyInfo, (int)nKey, pKey, pIdxKey);
++    if( pIdxKey->nField==0 || pIdxKey->nField>pKeyInfo->nAllField ){
+       rc = SQLITE_CORRUPT_BKPT;
+       goto moveto_done;
+     }
+--
+2.18.0
+

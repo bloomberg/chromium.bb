@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Victor Costan <pwnall@chromium.org>
 Date: Fri, 11 Jan 2019 03:45:18 -0800
-Subject: [PATCH 11/40] Fix detection of self-referencing rows in foreign key
+Subject: [PATCH 11/45] Fix detection of self-referencing rows in foreign key
  processing.
 
 This backports https://www.sqlite.org/src/info/16fff05347f42fe9

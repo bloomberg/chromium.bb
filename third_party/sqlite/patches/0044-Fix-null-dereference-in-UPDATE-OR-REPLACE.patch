@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Victor Costan <pwnall@chromium.org>
+Date: Fri, 25 Jan 2019 03:57:33 -0800
+Subject: [PATCH 44/45] Fix null dereference in UPDATE OR REPLACE.
+
+This backports https://www.sqlite.org/src/info/e148cdad35520e66
+
+Bug: 923634
+---
+ third_party/sqlite/src/src/update.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/third_party/sqlite/src/src/update.c b/third_party/sqlite/src/src/update.c
+index b328d3b229bb..6e430e77fe18 100644
+--- a/third_party/sqlite/src/src/update.c
++++ b/third_party/sqlite/src/src/update.c
+@@ -354,6 +354,7 @@ void sqlite3Update(
+   ** being updated.  Fill in aRegIdx[] with a register number that will hold
+   ** the key for accessing each index.
+   */
++if( onError==OE_Replace ) bReplace = 1;
+   for(j=0, pIdx=pTab->pIndex; pIdx; pIdx=pIdx->pNext, j++){
+     int reg;
+     if( chngKey || hasFK>1 || pIdx==pPk
+@@ -367,9 +368,7 @@ void sqlite3Update(
+         if( indexColumnIsBeingUpdated(pIdx, i, aXRef, chngRowid) ){
+           reg = ++pParse->nMem;
+           pParse->nMem += pIdx->nColumn;
+-          if( (onError==OE_Replace)
+-           || (onError==OE_Default && pIdx->onError==OE_Replace)
+-          ){
++          if( onError==OE_Default && pIdx->onError==OE_Replace ){
+             bReplace = 1;
+           }
+           break;
+--
+2.18.0
+

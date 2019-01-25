@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Victor Costan <pwnall@chromium.org>
 Date: Wed, 16 Jan 2019 13:07:12 -0800
-Subject: [PATCH 30/40] Fix detection of orphaned and malformed autoindexes.
+Subject: [PATCH 30/45] Fix detection of orphaned and malformed autoindexes.
 
 This backports https://sqlite.org/src/info/10f9e39d6ed2413f
 

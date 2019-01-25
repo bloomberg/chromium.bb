@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Victor Costan <pwnall@chromium.org>
 Date: Fri, 11 Jan 2019 02:26:10 -0800
-Subject: [PATCH 09/40] Remove an ALWAYS() from a branch that is not always
+Subject: [PATCH 09/45] Remove an ALWAYS() from a branch that is not always
  taken.
 
 This backports https://www.sqlite.org/src/info/5c7dab

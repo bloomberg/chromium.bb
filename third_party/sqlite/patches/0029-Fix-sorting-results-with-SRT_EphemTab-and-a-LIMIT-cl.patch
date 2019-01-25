@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Victor Costan <pwnall@chromium.org>
 Date: Wed, 16 Jan 2019 12:46:56 -0800
-Subject: [PATCH 29/40] Fix sorting results with SRT_EphemTab and a LIMIT
+Subject: [PATCH 29/45] Fix sorting results with SRT_EphemTab and a LIMIT
  clause.
 
 This backports https://www.sqlite.org/src/info/49fcde2f1f981ac0

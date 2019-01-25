@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Victor Costan <pwnall@chromium.org>
 Date: Fri, 11 Jan 2019 12:15:27 -0800
-Subject: [PATCH 15/40] Report a new corruption case.
+Subject: [PATCH 15/45] Report a new corruption case.
 
 This backports https://sqlite.org/src/info/cc42dd15100db28a
 

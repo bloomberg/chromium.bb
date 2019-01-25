@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Matthew Denton <mpdenton@chromium.org>
 Date: Fri, 7 Dec 2018 14:49:36 -0700
-Subject: [PATCH 06/40] Fix dbfuzz2 for Clusterfuzz.
+Subject: [PATCH 06/45] Fix dbfuzz2 for Clusterfuzz.
 
 This backports https://www.sqlite.org/src/info/9ad796a8822f1b7e
 ---

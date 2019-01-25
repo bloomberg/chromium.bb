@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Victor Costan <pwnall@chromium.org>
+Date: Fri, 25 Jan 2019 03:49:46 -0800
+Subject: [PATCH 43/45] Fix memcpy with overlapping buffers in corrupted
+ database.
+
+This backports https://www.sqlite.org/src/info/65ad6c55f1ba9bc2
+
+Bug: 924539
+---
+ third_party/sqlite/src/src/btree.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/third_party/sqlite/src/src/btree.c b/third_party/sqlite/src/src/btree.c
+index 806ff751be4a..7ab155554f80 100644
+--- a/third_party/sqlite/src/src/btree.c
++++ b/third_party/sqlite/src/src/btree.c
+@@ -8249,7 +8249,11 @@ static int btreeOverwriteContent(
+     if( memcmp(pDest, ((u8*)pX->pData) + iOffset, iAmt)!=0 ){
+       int rc = sqlite3PagerWrite(pPage->pDbPage);
+       if( rc ) return rc;
+-      memcpy(pDest, ((u8*)pX->pData) + iOffset, iAmt);
++      /* In a corrupt database, it is possible for the source and destination
++      ** buffers to overlap.  This is harmless since the database is already
++      ** corrupt but it does cause valgrind and ASAN warnings.  So use
++      ** memmove(). */
++      memmove(pDest, ((u8*)pX->pData) + iOffset, iAmt);
+     }
+   }
+   return SQLITE_OK;
+--
+2.18.0
+

@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Victor Costan <pwnall@chromium.org>
 Date: Fri, 18 Jan 2019 23:20:17 -0800
-Subject: [PATCH 31/40] Fix potential buffer overread.
+Subject: [PATCH 31/45] Fix potential buffer overread.
 
 This backports https://sqlite.org/src/info/8ba3d9f38090c4bb
 

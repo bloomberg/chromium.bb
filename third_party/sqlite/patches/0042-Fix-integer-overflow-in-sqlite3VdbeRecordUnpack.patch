@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Victor Costan <pwnall@chromium.org>
+Date: Fri, 25 Jan 2019 03:26:13 -0800
+Subject: [PATCH 42/45] Fix integer overflow in sqlite3VdbeRecordUnpack
+
+This backports https://sqlite.org/src/info/1b536f6fd8d58800
+
+Bug: 924811
+---
+ third_party/sqlite/src/src/vdbeaux.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/third_party/sqlite/src/src/vdbeaux.c b/third_party/sqlite/src/src/vdbeaux.c
+index 13b2e1ef7280..368ba9b23388 100644
+--- a/third_party/sqlite/src/src/vdbeaux.c
++++ b/third_party/sqlite/src/src/vdbeaux.c
+@@ -3710,7 +3710,7 @@ void sqlite3VdbeRecordUnpack(
+   UnpackedRecord *p      /* Populate this structure before returning. */
+ ){
+   const unsigned char *aKey = (const unsigned char *)pKey;
+-  int d;
++  u32 d;
+   u32 idx;                        /* Offset in aKey[] to read from */
+   u16 u;                          /* Unsigned loop counter */
+   u32 szHdr;
+--
+2.18.0
+

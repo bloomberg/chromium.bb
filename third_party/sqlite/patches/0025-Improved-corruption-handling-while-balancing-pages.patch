@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Victor Costan <pwnall@chromium.org>
 Date: Sun, 13 Jan 2019 18:06:01 -0800
-Subject: [PATCH 25/40] Improved corruption handling while balancing pages.
+Subject: [PATCH 25/45] Improved corruption handling while balancing pages.
 
 This backports https://www.sqlite.org/src/info/35f04235c4775013
 
