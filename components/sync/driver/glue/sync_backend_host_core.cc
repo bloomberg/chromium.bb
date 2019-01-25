@@ -73,12 +73,12 @@ class EngineComponentsFactory;
 SyncBackendHostCore::SyncBackendHostCore(
     const std::string& name,
     const base::FilePath& sync_data_folder,
-    const base::WeakPtr<SyncBackendHostImpl>& backend)
+    const base::WeakPtr<SyncEngineImpl>& host)
     : name_(name),
       sync_data_folder_(sync_data_folder),
-      host_(backend),
+      host_(host),
       weak_ptr_factory_(this) {
-  DCHECK(backend);
+  DCHECK(host);
   // This is constructed on the UI thread but used from the sync thread.
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -100,8 +100,7 @@ bool SyncBackendHostCore::OnMemoryDump(
 void SyncBackendHostCore::OnSyncCycleCompleted(
     const SyncCycleSnapshot& snapshot) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  host_.Call(FROM_HERE,
-             &SyncBackendHostImpl::HandleSyncCycleCompletedOnFrontendLoop,
+  host_.Call(FROM_HERE, &SyncEngineImpl::HandleSyncCycleCompletedOnFrontendLoop,
              snapshot);
 }
 
@@ -120,7 +119,7 @@ void SyncBackendHostCore::OnInitializationComplete(
   if (!success) {
     DoDestroySyncManager();
     host_.Call(FROM_HERE,
-               &SyncBackendHostImpl::HandleInitializationFailureOnFrontendLoop);
+               &SyncEngineImpl::HandleInitializationFailureOnFrontendLoop);
     return;
   }
 
@@ -188,7 +187,7 @@ void SyncBackendHostCore::OnInitializationComplete(
 void SyncBackendHostCore::OnConnectionStatusChange(ConnectionStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   host_.Call(FROM_HERE,
-             &SyncBackendHostImpl::HandleConnectionStatusChangeOnFrontendLoop,
+             &SyncEngineImpl::HandleConnectionStatusChangeOnFrontendLoop,
              status);
 }
 
@@ -198,8 +197,8 @@ void SyncBackendHostCore::OnCommitCountersUpdated(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   host_.Call(
       FROM_HERE,
-      &SyncBackendHostImpl::HandleDirectoryCommitCountersUpdatedOnFrontendLoop,
-      type, counters);
+      &SyncEngineImpl::HandleDirectoryCommitCountersUpdatedOnFrontendLoop, type,
+      counters);
 }
 
 void SyncBackendHostCore::OnUpdateCountersUpdated(
@@ -208,8 +207,8 @@ void SyncBackendHostCore::OnUpdateCountersUpdated(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   host_.Call(
       FROM_HERE,
-      &SyncBackendHostImpl::HandleDirectoryUpdateCountersUpdatedOnFrontendLoop,
-      type, counters);
+      &SyncEngineImpl::HandleDirectoryUpdateCountersUpdatedOnFrontendLoop, type,
+      counters);
 }
 
 void SyncBackendHostCore::OnStatusCountersUpdated(
@@ -218,22 +217,21 @@ void SyncBackendHostCore::OnStatusCountersUpdated(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   host_.Call(
       FROM_HERE,
-      &SyncBackendHostImpl::HandleDirectoryStatusCountersUpdatedOnFrontendLoop,
-      type, counters);
+      &SyncEngineImpl::HandleDirectoryStatusCountersUpdatedOnFrontendLoop, type,
+      counters);
 }
 
 void SyncBackendHostCore::OnActionableError(
     const SyncProtocolError& sync_error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   host_.Call(FROM_HERE,
-             &SyncBackendHostImpl::HandleActionableErrorEventOnFrontendLoop,
+             &SyncEngineImpl::HandleActionableErrorEventOnFrontendLoop,
              sync_error);
 }
 
 void SyncBackendHostCore::OnMigrationRequested(ModelTypeSet types) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  host_.Call(FROM_HERE,
-             &SyncBackendHostImpl::HandleMigrationRequestedOnFrontendLoop,
+  host_.Call(FROM_HERE, &SyncEngineImpl::HandleMigrationRequestedOnFrontendLoop,
              types);
 }
 
@@ -241,8 +239,7 @@ void SyncBackendHostCore::OnProtocolEvent(const ProtocolEvent& event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (forward_protocol_events_) {
     std::unique_ptr<ProtocolEvent> event_clone(event.Clone());
-    host_.Call(FROM_HERE,
-               &SyncBackendHostImpl::HandleProtocolEventOnFrontendLoop,
+    host_.Call(FROM_HERE, &SyncEngineImpl::HandleProtocolEventOnFrontendLoop,
                base::Passed(std::move(event_clone)));
   }
 }
@@ -292,7 +289,7 @@ void SyncBackendHostCore::DoOnIncomingInvalidation(
     }
   }
 
-  host_.Call(FROM_HERE, &SyncBackendHostImpl::UpdateInvalidationVersions,
+  host_.Call(FROM_HERE, &SyncEngineImpl::UpdateInvalidationVersions,
              last_invalidation_versions_);
 }
 
@@ -409,26 +406,25 @@ void SyncBackendHostCore::DoInitialProcessControlTypes() {
   if (!user_share) {  // Null in some tests.
     DVLOG(1) << "Skipping initialization of DeviceInfo";
     host_.Call(FROM_HERE,
-               &SyncBackendHostImpl::HandleInitializationFailureOnFrontendLoop);
+               &SyncEngineImpl::HandleInitializationFailureOnFrontendLoop);
     return;
   }
 
   if (!sync_manager_->InitialSyncEndedTypes().HasAll(ControlTypes())) {
     LOG(ERROR) << "Failed to download control types";
     host_.Call(FROM_HERE,
-               &SyncBackendHostImpl::HandleInitializationFailureOnFrontendLoop);
+               &SyncEngineImpl::HandleInitializationFailureOnFrontendLoop);
     return;
   }
 
   DCHECK_EQ(user_share->directory->cache_guid(), sync_manager_->cache_guid());
-  host_.Call(FROM_HERE,
-             &SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop,
-             registrar_->GetLastConfiguredTypes(), js_backend_,
-             debug_info_listener_,
-             base::Passed(sync_manager_->GetModelTypeConnectorProxy()),
-             sync_manager_->cache_guid(), GetSessionNameBlocking(),
-             user_share->directory->store_birthday(),
-             user_share->directory->bag_of_chips());
+  host_.Call(
+      FROM_HERE, &SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop,
+      registrar_->GetLastConfiguredTypes(), js_backend_, debug_info_listener_,
+      base::Passed(sync_manager_->GetModelTypeConnectorProxy()),
+      sync_manager_->cache_guid(), GetSessionNameBlocking(),
+      user_share->directory->store_birthday(),
+      user_share->directory->bag_of_chips());
 
   js_backend_.Reset();
   debug_info_listener_.Reset();
@@ -533,8 +529,7 @@ void SyncBackendHostCore::DoFinishConfigureDataTypes(
       Difference(types_to_config, sync_manager_->InitialSyncEndedTypes());
   const ModelTypeSet succeeded_configuration_types =
       Difference(types_to_config, failed_configuration_types);
-  host_.Call(FROM_HERE,
-             &SyncBackendHostImpl::FinishConfigureDataTypesOnFrontendLoop,
+  host_.Call(FROM_HERE, &SyncEngineImpl::FinishConfigureDataTypesOnFrontendLoop,
              enabled_types, succeeded_configuration_types,
              failed_configuration_types, ready_task);
 }
@@ -551,8 +546,7 @@ void SyncBackendHostCore::SendBufferedProtocolEventsAndEnableForwarding() {
 
     // Send them all over the fence to the host.
     for (auto& event : buffered_events) {
-      host_.Call(FROM_HERE,
-                 &SyncBackendHostImpl::HandleProtocolEventOnFrontendLoop,
+      host_.Call(FROM_HERE, &SyncEngineImpl::HandleProtocolEventOnFrontendLoop,
                  base::Passed(std::move(event)));
     }
   }
@@ -616,8 +610,7 @@ void SyncBackendHostCore::DoOnCookieJarChanged(bool account_mismatch,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_manager_->OnCookieJarChanged(account_mismatch, empty_jar);
   if (!callback.is_null()) {
-    host_.Call(FROM_HERE,
-               &SyncBackendHostImpl::OnCookieJarChangedDoneOnFrontendLoop,
+    host_.Call(FROM_HERE, &SyncEngineImpl::OnCookieJarChangedDoneOnFrontendLoop,
                callback);
   }
 }
@@ -636,7 +629,7 @@ bool SyncBackendHostCore::HasUnsyncedItemsForTest() const {
 void SyncBackendHostCore::ClearServerDataDone(
     const base::Closure& frontend_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  host_.Call(FROM_HERE, &SyncBackendHostImpl::ClearServerDataDoneOnFrontendLoop,
+  host_.Call(FROM_HERE, &SyncEngineImpl::ClearServerDataDoneOnFrontendLoop,
              frontend_callback);
 }
 

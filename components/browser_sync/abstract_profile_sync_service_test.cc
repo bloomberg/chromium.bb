@@ -22,8 +22,8 @@
 #include "components/sync/syncable/test_user_share.h"
 #include "services/network/test/test_network_connection_tracker.h"
 
-using syncer::SyncBackendHostImpl;
 using syncer::ModelType;
+using syncer::SyncEngineImpl;
 using testing::_;
 using testing::ByMove;
 using testing::Return;
@@ -37,7 +37,7 @@ std::unique_ptr<syncer::HttpPostProviderFactory> GetHttpPostProviderFactory(
   return std::make_unique<TestHttpBridgeFactory>();
 }
 
-class SyncEngineForProfileSyncTest : public SyncBackendHostImpl {
+class SyncEngineForProfileSyncTest : public SyncEngineImpl {
  public:
   SyncEngineForProfileSyncTest(
       const base::FilePath& temp_dir,
@@ -66,7 +66,7 @@ SyncEngineForProfileSyncTest::SyncEngineForProfileSyncTest(
     invalidation::InvalidationService* invalidator,
     const base::WeakPtr<syncer::SyncPrefs>& sync_prefs,
     base::OnceClosure callback)
-    : SyncBackendHostImpl(
+    : SyncEngineImpl(
           "dummy_debug_name",
           sync_client,
           invalidator,
@@ -96,7 +96,7 @@ void SyncEngineForProfileSyncTest::Initialize(InitParams params) {
           factory_switches, syncer::EngineComponentsFactory::STORAGE_IN_MEMORY,
           nullptr);
 
-  SyncBackendHostImpl::Initialize(std::move(params));
+  SyncEngineImpl::Initialize(std::move(params));
 }
 
 void SyncEngineForProfileSyncTest::ConfigureDataTypes(ConfigureParams params) {

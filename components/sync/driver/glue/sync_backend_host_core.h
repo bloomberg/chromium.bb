@@ -21,7 +21,7 @@
 #include "components/invalidation/public/invalidation.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/base/system_encryptor.h"
-#include "components/sync/driver/glue/sync_backend_host_impl.h"
+#include "components/sync/driver/glue/sync_engine_impl.h"
 #include "components/sync/engine/cycle/type_debug_info_observer.h"
 #include "components/sync/engine/model_type_configurer.h"
 #include "components/sync/engine/shutdown_reason.h"
@@ -30,7 +30,7 @@
 
 namespace syncer {
 
-class SyncBackendHostImpl;
+class SyncEngineImpl;
 
 class SyncBackendHostCore
     : public base::RefCountedThreadSafe<SyncBackendHostCore>,
@@ -40,7 +40,7 @@ class SyncBackendHostCore
  public:
   SyncBackendHostCore(const std::string& name,
                       const base::FilePath& sync_data_folder,
-                      const base::WeakPtr<SyncBackendHostImpl>& backend);
+                      const base::WeakPtr<SyncEngineImpl>& host);
 
   // MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
@@ -77,7 +77,7 @@ class SyncBackendHostCore
 
   // Note:
   //
-  // The Do* methods are the various entry points from our SyncBackendHostImpl.
+  // The Do* methods are the various entry points from our SyncEngineImpl.
   // They are all called on the sync thread to actually perform synchronous (and
   // potentially blocking) syncapi operations.
   //
@@ -195,8 +195,8 @@ class SyncBackendHostCore
   // Path of the folder that stores the sync data files.
   const base::FilePath sync_data_folder_;
 
-  // Our parent SyncBackendHostImpl.
-  WeakHandle<SyncBackendHostImpl> host_;
+  // Our parent SyncEngineImpl.
+  WeakHandle<SyncEngineImpl> host_;
 
   // Non-null only between calls to DoInitialize() and DoShutdown().
   std::unique_ptr<SyncBackendRegistrar> registrar_;

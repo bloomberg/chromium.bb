@@ -38,9 +38,9 @@ class SyncBackendRegistrar : public SyncManager::ChangeDelegate {
   SyncBackendRegistrar(const std::string& name,
                        ModelSafeWorkerFactory worker_factory);
 
-  // A SyncBackendRegistrar is owned by a SyncBackendHostImpl. It is destroyed
-  // by SyncBackendHostImpl::Shutdown() which performs the following operations
-  // on the UI thread:
+  // A SyncBackendRegistrar is owned by a SyncEngineImpl. It is destroyed by
+  // SyncEngineImpl::Shutdown() which performs the following operations on the
+  // UI thread:
   //
   //   1) Call SyncBackendRegistrar::RequestWorkerStopOnUIThread().
   //   2) Post a SyncBackendHostCore::DoShutdown() task to the sync thread. This

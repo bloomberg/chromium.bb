@@ -34,7 +34,7 @@
 #include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/driver/async_directory_type_controller.h"
 #include "components/sync/driver/data_type_manager_impl.h"
-#include "components/sync/driver/glue/sync_backend_host_impl.h"
+#include "components/sync/driver/glue/sync_engine_impl.h"
 #include "components/sync/driver/model_type_controller.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -441,7 +441,7 @@ ProfileSyncComponentsFactoryImpl::CreateSyncEngine(
     invalidation::InvalidationService* invalidator,
     const base::WeakPtr<syncer::SyncPrefs>& sync_prefs,
     const base::FilePath& sync_data_folder) {
-  return std::make_unique<syncer::SyncBackendHostImpl>(
+  return std::make_unique<syncer::SyncEngineImpl>(
       name, sync_client_, invalidator, sync_prefs, sync_data_folder);
 }
 

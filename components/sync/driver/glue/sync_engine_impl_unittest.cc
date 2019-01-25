@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/driver/glue/sync_backend_host_impl.h"
+#include "components/sync/driver/glue/sync_engine_impl.h"
 
 #include <cstddef>
 #include <utility>
@@ -53,9 +53,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using ::testing::_;
 using ::testing::InvokeWithoutArgs;
 using ::testing::StrictMock;
-using ::testing::_;
 
 namespace syncer {
 
@@ -189,15 +189,15 @@ class MockInvalidationService : public invalidation::InvalidationService {
                           void(const base::DictionaryValue&)> post_caller));
 };
 
-class SyncEngineTest : public testing::Test {
+class SyncEngineImplTest : public testing::Test {
  protected:
-  SyncEngineTest()
+  SyncEngineImplTest()
       : sync_thread_("SyncThreadForTest"),
-        host_(base::Bind(&SyncEngineTest::SetEngineTypes,
+        host_(base::Bind(&SyncEngineImplTest::SetEngineTypes,
                          base::Unretained(this))),
         fake_manager_(nullptr) {}
 
-  ~SyncEngineTest() override {}
+  ~SyncEngineImplTest() override {}
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -209,7 +209,7 @@ class SyncEngineTest : public testing::Test {
     ON_CALL(invalidator_,
             UpdateRegisteredInvalidationIds(testing::_, testing::_))
         .WillByDefault(testing::Return(true));
-    backend_ = std::make_unique<SyncBackendHostImpl>(
+    backend_ = std::make_unique<SyncEngineImpl>(
         "dummyDebugName", &sync_client_, &invalidator_,
         sync_prefs_->AsWeakPtr(),
         temp_dir_.GetPath().Append(base::FilePath(kTestSyncDir)));
@@ -299,7 +299,7 @@ class SyncEngineTest : public testing::Test {
     }
     params.to_purge = Intersection(engine_types_, disabled_types);
     params.ready_task =
-        base::Bind(&SyncEngineTest::DownloadReady, base::Unretained(this));
+        base::Bind(&SyncEngineImplTest::DownloadReady, base::Unretained(this));
 
     ModelTypeSet ready_types =
         Difference(params.enabled_types, params.to_download);
@@ -338,7 +338,7 @@ class SyncEngineTest : public testing::Test {
   BackendSyncClient sync_client_;
   TestUnrecoverableErrorHandler test_unrecoverable_error_handler_;
   std::unique_ptr<SyncPrefs> sync_prefs_;
-  std::unique_ptr<SyncBackendHostImpl> backend_;
+  std::unique_ptr<SyncEngineImpl> backend_;
   std::unique_ptr<FakeSyncManagerFactory> fake_manager_factory_;
   FakeSyncManager* fake_manager_;
   ModelTypeSet engine_types_;
@@ -351,7 +351,7 @@ class SyncEngineTest : public testing::Test {
 
 // Test basic initialization with no initial types (first time initialization).
 // Only the nigori should be configured.
-TEST_F(SyncEngineTest, InitShutdown) {
+TEST_F(SyncEngineImplTest, InitShutdown) {
   InitializeBackend(true);
   EXPECT_EQ(ControlTypes(), fake_manager_->GetAndResetDownloadedTypes());
   EXPECT_EQ(ControlTypes(), fake_manager_->InitialSyncEndedTypes());
@@ -362,7 +362,7 @@ TEST_F(SyncEngineTest, InitShutdown) {
 
 // Test first time sync scenario. All types should be properly configured.
 
-TEST_F(SyncEngineTest, FirstTimeSync) {
+TEST_F(SyncEngineImplTest, FirstTimeSync) {
   InitializeBackend(true);
   EXPECT_EQ(ControlTypes(), fake_manager_->GetAndResetDownloadedTypes());
   EXPECT_EQ(ControlTypes(), fake_manager_->InitialSyncEndedTypes());
@@ -383,7 +383,7 @@ TEST_F(SyncEngineTest, FirstTimeSync) {
 
 // Test the restart after setting up sync scenario. No enabled types should be
 // downloaded or cleaned.
-TEST_F(SyncEngineTest, Restart) {
+TEST_F(SyncEngineImplTest, Restart) {
   sync_prefs_->SetFirstSetupComplete();
   fake_manager_factory_->set_progress_marker_types(enabled_types_);
   fake_manager_factory_->set_initial_sync_ended_types(enabled_types_);
@@ -411,7 +411,7 @@ TEST_F(SyncEngineTest, Restart) {
 
 // Test a sync restart scenario where some types had never finished configuring.
 // The partial types should be purged, then reconfigured properly.
-TEST_F(SyncEngineTest, PartialTypes) {
+TEST_F(SyncEngineImplTest, PartialTypes) {
   sync_prefs_->SetFirstSetupComplete();
   // Set sync manager behavior before passing it down. All types have progress
   // markers, but nigori and bookmarks are missing initial sync ended.
@@ -446,7 +446,7 @@ TEST_F(SyncEngineTest, PartialTypes) {
 
 // Test the behavior when we lose the sync db. Although we already have types
 // enabled, we should re-download all of them because we lost their data.
-TEST_F(SyncEngineTest, LostDB) {
+TEST_F(SyncEngineImplTest, LostDB) {
   sync_prefs_->SetFirstSetupComplete();
   // Initialization should fetch the Nigori node.  Everything else should be
   // left untouched.
@@ -478,7 +478,7 @@ TEST_F(SyncEngineTest, LostDB) {
           .Empty());
 }
 
-TEST_F(SyncEngineTest, DisableTypes) {
+TEST_F(SyncEngineImplTest, DisableTypes) {
   // Simulate first time sync.
   InitializeBackend(true);
   fake_manager_->GetAndResetPurgedTypes();
@@ -512,7 +512,7 @@ TEST_F(SyncEngineTest, DisableTypes) {
           .Empty());
 }
 
-TEST_F(SyncEngineTest, AddTypes) {
+TEST_F(SyncEngineImplTest, AddTypes) {
   // Simulate first time sync.
   InitializeBackend(true);
   fake_manager_->GetAndResetPurgedTypes();
@@ -548,7 +548,7 @@ TEST_F(SyncEngineTest, AddTypes) {
 }
 
 // And and disable in the same configuration.
-TEST_F(SyncEngineTest, AddDisableTypes) {
+TEST_F(SyncEngineImplTest, AddDisableTypes) {
   // Simulate first time sync.
   InitializeBackend(true);
   fake_manager_->GetAndResetPurgedTypes();
@@ -586,7 +586,7 @@ TEST_F(SyncEngineTest, AddDisableTypes) {
 
 // Test restarting the browser to newly supported datatypes. The new datatypes
 // should be downloaded on the configuration after backend initialization.
-TEST_F(SyncEngineTest, NewlySupportedTypes) {
+TEST_F(SyncEngineImplTest, NewlySupportedTypes) {
   sync_prefs_->SetFirstSetupComplete();
   // Set sync manager behavior before passing it down. All types have progress
   // markers and initial sync ended except the new types.
@@ -623,7 +623,7 @@ TEST_F(SyncEngineTest, NewlySupportedTypes) {
 // Test the newly supported types scenario, but with the presence of partial
 // types as well. Both partial and newly supported types should be downloaded
 // the configuration.
-TEST_F(SyncEngineTest, NewlySupportedTypesWithPartialTypes) {
+TEST_F(SyncEngineImplTest, NewlySupportedTypesWithPartialTypes) {
   sync_prefs_->SetFirstSetupComplete();
   // Set sync manager behavior before passing it down. All types have progress
   // markers and initial sync ended except the new types.
@@ -663,7 +663,7 @@ TEST_F(SyncEngineTest, NewlySupportedTypesWithPartialTypes) {
 
 // Verify that downloading control types only downloads those types that do
 // not have initial sync ended set.
-TEST_F(SyncEngineTest, DownloadControlTypes) {
+TEST_F(SyncEngineImplTest, DownloadControlTypes) {
   sync_prefs_->SetFirstSetupComplete();
   // Set sync manager behavior before passing it down. Experiments and device
   // info are new types without progress markers or initial sync ended, while
@@ -686,19 +686,19 @@ TEST_F(SyncEngineTest, DownloadControlTypes) {
 }
 
 // Fail to download control types.  It's believed that there is a server bug
-// which can allow this to happen (crbug.com/164288).  The sync backend host
-// should detect this condition and fail to initialize the backend.
+// which can allow this to happen (crbug.com/164288).  The sync engine should
+// detect this condition and fail to initialize the backend.
 //
 // The failure is "silent" in the sense that the GetUpdates request appears to
 // be successful, but it returned no results.  This means that the usual
 // download retry logic will not be invoked.
-TEST_F(SyncEngineTest, SilentlyFailToDownloadControlTypes) {
+TEST_F(SyncEngineImplTest, SilentlyFailToDownloadControlTypes) {
   fake_manager_factory_->set_configure_fail_types(ModelTypeSet::All());
   InitializeBackend(false);
 }
 
 // Test that local refresh requests are delivered to sync.
-TEST_F(SyncEngineTest, ForwardLocalRefreshRequest) {
+TEST_F(SyncEngineImplTest, ForwardLocalRefreshRequest) {
   InitializeBackend(true);
 
   ModelTypeSet set1 = ModelTypeSet::All();
@@ -713,14 +713,14 @@ TEST_F(SyncEngineTest, ForwardLocalRefreshRequest) {
 }
 
 // Test that configuration on signin sends the proper GU source.
-TEST_F(SyncEngineTest, DownloadControlTypesNewClient) {
+TEST_F(SyncEngineImplTest, DownloadControlTypesNewClient) {
   InitializeBackend(true);
   EXPECT_EQ(CONFIGURE_REASON_NEW_CLIENT,
             fake_manager_->GetAndResetConfigureReason());
 }
 
 // Test that configuration on restart sends the proper GU source.
-TEST_F(SyncEngineTest, DownloadControlTypesRestart) {
+TEST_F(SyncEngineImplTest, DownloadControlTypesRestart) {
   sync_prefs_->SetFirstSetupComplete();
   fake_manager_factory_->set_progress_marker_types(enabled_types_);
   fake_manager_factory_->set_initial_sync_ended_types(enabled_types_);
@@ -731,7 +731,7 @@ TEST_F(SyncEngineTest, DownloadControlTypesRestart) {
 
 // It is SyncBackendHostCore responsibility to cleanup Sync Data folder if sync
 // setup hasn't been completed. This test ensures that cleanup happens.
-TEST_F(SyncEngineTest, TestStartupWithOldSyncData) {
+TEST_F(SyncEngineImplTest, TestStartupWithOldSyncData) {
   const char* nonsense = "slon";
   base::FilePath temp_directory =
       temp_dir_.GetPath().Append(base::FilePath(kTestSyncDir));
@@ -748,7 +748,7 @@ TEST_F(SyncEngineTest, TestStartupWithOldSyncData) {
 // (such as when the type is unready), and then is explicitly disabled, the
 // SyncEngine needs to tell the manager to purge the type, even though
 // it's already disabled (crbug.com/386778).
-TEST_F(SyncEngineTest, DisableThenPurgeType) {
+TEST_F(SyncEngineImplTest, DisableThenPurgeType) {
   ModelTypeSet error_types(BOOKMARKS);
 
   InitializeBackend(true);
@@ -775,7 +775,7 @@ TEST_F(SyncEngineTest, DisableThenPurgeType) {
 
 // Test that a call to ClearServerData is forwarded to the underlying
 // SyncManager.
-TEST_F(SyncEngineTest, ClearServerDataCallsAreForwarded) {
+TEST_F(SyncEngineImplTest, ClearServerDataCallsAreForwarded) {
   InitializeBackend(true);
   CallbackCounter callback_counter;
   backend_->ClearServerData(base::Bind(&CallbackCounter::Callback,
@@ -786,7 +786,7 @@ TEST_F(SyncEngineTest, ClearServerDataCallsAreForwarded) {
 
 // Ensure that redundant invalidations are ignored and that the most recent
 // set of invalidation version is persisted across restarts.
-TEST_F(SyncEngineTest, IgnoreOldInvalidations) {
+TEST_F(SyncEngineImplTest, IgnoreOldInvalidations) {
   // Set up some old persisted invalidations.
   std::map<ModelType, int64_t> invalidation_versions;
   invalidation_versions[BOOKMARKS] = 20;
@@ -844,10 +844,10 @@ TEST_F(SyncEngineTest, IgnoreOldInvalidations) {
   }
 }
 
-// Tests that SyncBackendHostImpl retains ModelTypeConnector after call to
+// Tests that SyncEngineImpl retains ModelTypeConnector after call to
 // StopSyncingForShutdown. This is needed for datatype deactivation during
 // DataTypeManager shutdown.
-TEST_F(SyncEngineTest, ModelTypeConnectorValidDuringShutdown) {
+TEST_F(SyncEngineImplTest, ModelTypeConnectorValidDuringShutdown) {
   InitializeBackend(true);
   backend_->StopSyncingForShutdown();
   // Verify that call to DeactivateNonBlockingDataType doesn't assert.
@@ -856,7 +856,7 @@ TEST_F(SyncEngineTest, ModelTypeConnectorValidDuringShutdown) {
   backend_.reset();
 }
 
-TEST_F(SyncEngineTest, EnabledTypesStayUnchangedWhenFCMIsDisabled) {
+TEST_F(SyncEngineImplTest, EnabledTypesStayUnchangedWhenFCMIsDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(
       invalidation::switches::kFCMInvalidations);
@@ -879,7 +879,7 @@ TEST_F(SyncEngineTest, EnabledTypesStayUnchangedWhenFCMIsDisabled) {
 }
 
 TEST_F(
-    SyncEngineTest,
+    SyncEngineImplTest,
     NoisyDataTypesInvalidationAreDiscardedByDefaultOnAndroidWhenFCMIsEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
@@ -912,7 +912,7 @@ TEST_F(
               UpdateRegisteredInvalidationIds(backend_.get(), ObjectIdSet()));
 }
 
-TEST_F(SyncEngineTest, WhenEnabledTypesStayDisabledFCMIsEnabled) {
+TEST_F(SyncEngineImplTest, WhenEnabledTypesStayDisabledFCMIsEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       invalidation::switches::kFCMInvalidations);
@@ -934,7 +934,7 @@ TEST_F(SyncEngineTest, WhenEnabledTypesStayDisabledFCMIsEnabled) {
               UpdateRegisteredInvalidationIds(backend_.get(), ObjectIdSet()));
 }
 
-TEST_F(SyncEngineTest,
+TEST_F(SyncEngineImplTest,
        EnabledTypesChangesWhenSetInvalidationsForSessionsCalled) {
   base::test::ScopedFeatureList scoped_feature_list;
   // Making sure that the noisy types we're interested in are in the
