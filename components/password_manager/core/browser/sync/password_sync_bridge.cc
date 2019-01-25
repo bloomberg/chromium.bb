@@ -12,6 +12,7 @@
 #include "components/password_manager/core/browser/password_store_sync.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_type_change_processor.h"
+#include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/model_impl/in_memory_metadata_change_list.h"
 #include "components/sync/model_impl/sync_metadata_store_change_list.h"
 #include "net/base/escape.h"
@@ -280,7 +281,24 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
 
 void PasswordSyncBridge::GetData(StorageKeyList storage_keys,
                                  DataCallback callback) {
-  NOTIMPLEMENTED();
+  // This method is called only when there are uncommitted changes on startup.
+  // There are more efficient implementations, but since this method is rarely
+  // called, simplicity is preferred over efficiency.
+  PrimaryKeyToFormMap key_to_form_map;
+  if (!password_store_sync_->ReadAllLogins(&key_to_form_map)) {
+    change_processor()->ReportError(
+        {FROM_HERE, "Failed to load entries from table."});
+    return;
+  }
+
+  auto batch = std::make_unique<syncer::MutableDataBatch>();
+  for (const std::string& storage_key : storage_keys) {
+    int primary_key = ParsePrimaryKey(storage_key);
+    if (key_to_form_map.count(primary_key) != 0) {
+      batch->Put(storage_key, CreateEntityData(*key_to_form_map[primary_key]));
+    }
+  }
+  std::move(callback).Run(std::move(batch));
 }
 
 void PasswordSyncBridge::GetAllDataForDebugging(DataCallback callback) {

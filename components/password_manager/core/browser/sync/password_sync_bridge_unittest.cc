@@ -8,8 +8,11 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "components/password_manager/core/browser/password_store_sync.h"
+#include "components/sync/model/data_batch.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
@@ -25,6 +28,7 @@ namespace {
 using testing::_;
 using testing::Eq;
 using testing::Invoke;
+using testing::NotNull;
 using testing::Return;
 
 constexpr char kSignonRealm1[] = "abc";
@@ -238,6 +242,24 @@ class PasswordSyncBridgeTest : public testing::Test {
 
   ~PasswordSyncBridgeTest() override {}
 
+  base::Optional<sync_pb::PasswordSpecifics> GetDataFromBridge(
+      const std::string& storage_key) {
+    std::unique_ptr<syncer::DataBatch> batch;
+    bridge_.GetData({storage_key},
+                    base::BindLambdaForTesting(
+                        [&](std::unique_ptr<syncer::DataBatch> in_batch) {
+                          batch = std::move(in_batch);
+                        }));
+    EXPECT_THAT(batch, NotNull());
+    if (!batch || !batch->HasNext()) {
+      return base::nullopt;
+    }
+    const syncer::KeyAndData& data_pair = batch->Next();
+    EXPECT_THAT(data_pair.first, Eq(storage_key));
+    EXPECT_FALSE(batch->HasNext());
+    return data_pair.second->specifics.password();
+  }
+
   FakeDatabase* fake_db() { return &fake_db_; }
 
   PasswordSyncBridge* bridge() { return &bridge_; }
@@ -420,6 +442,38 @@ TEST_F(PasswordSyncBridgeTest, ShouldApplyRemoteDeletion) {
       bridge()->CreateMetadataChangeList(),
       {syncer::EntityChange::CreateDelete(kStorageKey)});
   EXPECT_FALSE(error);
+}
+
+TEST_F(PasswordSyncBridgeTest, ShouldGetDataForStorageKey) {
+  const int kPrimaryKey1 = 1000;
+  const int kPrimaryKey2 = 1001;
+  const std::string kPrimaryKeyStr1 = "1000";
+  const std::string kPrimaryKeyStr2 = "1001";
+  autofill::PasswordForm form1 = MakePasswordForm(kSignonRealm1);
+  autofill::PasswordForm form2 = MakePasswordForm(kSignonRealm2);
+
+  fake_db()->AddLoginForPrimaryKey(kPrimaryKey1, form1);
+  fake_db()->AddLoginForPrimaryKey(kPrimaryKey2, form2);
+
+  base::Optional<sync_pb::PasswordSpecifics> optional_specifics =
+      GetDataFromBridge(/*storage_key=*/kPrimaryKeyStr1);
+  ASSERT_TRUE(optional_specifics.has_value());
+  EXPECT_EQ(
+      kSignonRealm1,
+      optional_specifics.value().client_only_encrypted_data().signon_realm());
+
+  optional_specifics = GetDataFromBridge(/*storage_key=*/kPrimaryKeyStr2);
+  ASSERT_TRUE(optional_specifics.has_value());
+  EXPECT_EQ(kSignonRealm2,
+            optional_specifics->client_only_encrypted_data().signon_realm());
+}
+
+TEST_F(PasswordSyncBridgeTest, ShouldNotGetDataForNonExistingStorageKey) {
+  const std::string kPrimaryKeyStr = "1";
+
+  base::Optional<sync_pb::PasswordSpecifics> optional_specifics =
+      GetDataFromBridge(/*storage_key=*/kPrimaryKeyStr);
+  EXPECT_FALSE(optional_specifics.has_value());
 }
 
 }  // namespace password_manager
