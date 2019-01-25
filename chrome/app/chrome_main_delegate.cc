@@ -530,7 +530,10 @@ bool ChromeMainDelegate::ShouldCreateFeatureList() {
 
 void ChromeMainDelegate::PostFieldTrialInitialization() {
 #if defined(OS_WIN)
-  gwp_asan::EnableForMalloc();
+  version_info::Channel channel = chrome::GetChannel();
+  bool is_canary_dev = (channel == version_info::Channel::CANARY ||
+                        channel == version_info::Channel::DEV);
+  gwp_asan::EnableForMalloc(is_canary_dev);
 #endif
 }
 
