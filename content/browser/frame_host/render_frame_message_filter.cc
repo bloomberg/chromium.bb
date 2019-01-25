@@ -22,6 +22,7 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/frame_host/ipc_utils.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
@@ -518,14 +519,9 @@ void RenderFrameMessageFilter::CheckPolicyForCookies(
 
 void RenderFrameMessageFilter::OnDownloadUrl(
     const FrameHostMsg_DownloadUrl_Params& params) {
-  mojo::ScopedMessagePipeHandle blob_url_token_handle(params.blob_url_token);
-  blink::mojom::BlobURLTokenPtrInfo blob_url_token(
-      std::move(blob_url_token_handle), blink::mojom::BlobURLToken::Version_);
-  if (blob_url_token && !params.url.SchemeIsBlob()) {
-    bad_message::ReceivedBadMessage(
-        this, bad_message::RFMF_BLOB_URL_TOKEN_FOR_NON_BLOB_URL);
+  blink::mojom::BlobURLTokenPtrInfo blob_url_token;
+  if (!VerifyDownloadUrlParams(render_process_id_, params, &blob_url_token))
     return;
-  }
 
   DownloadUrl(params.render_view_id, params.render_frame_id, params.url,
               params.referrer, params.initiator_origin, params.suggested_name,

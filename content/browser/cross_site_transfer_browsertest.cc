@@ -418,7 +418,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest, MaliciousPostWithFileData) {
       "setTimeout(\n"
       "  function() { document.getElementById('file-form').submit(); },\n"
       "  0);"));
-  EXPECT_EQ(bad_message::RFPH_ILLEGAL_UPLOAD_PARAMS, kill_waiter.Wait());
+  EXPECT_EQ(bad_message::ILLEGAL_UPLOAD_PARAMS, kill_waiter.Wait());
 
   // The target frame should still be at the original location - the malicious
   // navigation should have been stopped.

@@ -3805,9 +3805,9 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="167" label="RWH_INVALID_FRAME_TOKEN"/>
   <int value="168" label="RWH_BAD_FRAME_SINK_REQUEST"/>
   <int value="169" label="RWH_SURFACE_INVARIANTS_VIOLATION"/>
-  <int value="170" label="RFH_ILLEGAL_UPLOAD_PARAMS"/>
+  <int value="170" label="ILLEGAL_UPLOAD_PARAMS"/>
   <int value="171" label="RFH_BASE_URL_FOR_DATA_URL_SPECIFIED"/>
-  <int value="172" label="RFPH_ILLEGAL_UPLOAD_PARAMS"/>
+  <int value="172" label="OBSOLETE_RFPH_ILLEGAL_UPLOAD_PARAMS"/>
   <int value="173" label="OBSOLETE_SWDH_PROVIDER_CREATED_ILLEGAL_TYPE"/>
   <int value="174"
       label="OBSOLETE_SWDH_PROVIDER_CREATED_ILLEGAL_TYPE_NOT_WINDOW"/>
@@ -3840,10 +3840,10 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="198" label="SYNC_COMPOSITOR_NO_FUTURE_FRAME"/>
   <int value="199" label="SYNC_COMPOSITOR_NO_BEGIN_FRAME"/>
   <int value="200" label="WEBUI_BAD_HOST_ACCESS"/>
-  <int value="201" label="RFMF_BLOB_URL_TOKEN_FOR_NON_BLOB_URL"/>
+  <int value="201" label="OBSOLETE_RFMF_BLOB_URL_TOKEN_FOR_NON_BLOB_URL"/>
   <int value="202" label="PERMISSION_SERVICE_BAD_PERMISSION_DESCRIPTOR"/>
-  <int value="203" label="RFH_BLOB_URL_TOKEN_FOR_NON_BLOB_URL"/>
-  <int value="204" label="RFPH_BLOB_URL_TOKEN_FOR_NON_BLOB_URL"/>
+  <int value="203" label="BLOB_URL_TOKEN_FOR_NON_BLOB_URL"/>
+  <int value="204" label="OBSOLETE_RFPH_BLOB_URL_TOKEN_FOR_NON_BLOB_URL"/>
   <int value="205" label="RFH_ERROR_PROCESS_NON_ERROR_COMMIT"/>
   <int value="206" label="RFH_ERROR_PROCESS_NON_UNIQUE_ORIGIN_COMMIT"/>
   <int value="207" label="RFH_CANNOT_RENDER_FALLBACK_CONTENT"/>
