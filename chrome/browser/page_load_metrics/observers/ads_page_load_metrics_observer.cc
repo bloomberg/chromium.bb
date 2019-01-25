@@ -80,7 +80,8 @@ AdsPageLoadMetricsObserver::AdFrameData::AdFrameData(
       frame_network_bytes(0u),
       frame_tree_node_id(frame_tree_node_id),
       origin_status(origin_status),
-      frame_navigated(frame_navigated) {}
+      frame_navigated(frame_navigated),
+      user_activation_status(UserActivationStatus::kNoActivation) {}
 
 // static
 std::unique_ptr<AdsPageLoadMetricsObserver>
@@ -235,6 +236,19 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
   RecordAdFrameData(frame_tree_node_id, is_adframe, ad_host,
                     /*frame_navigated=*/true);
   ProcessOngoingNavigationResource(frame_tree_node_id);
+}
+
+void AdsPageLoadMetricsObserver::FrameReceivedFirstUserActivation(
+    content::RenderFrameHost* render_frame_host) {
+  const auto& id_and_data =
+      ad_frames_data_.find(render_frame_host->GetFrameTreeNodeId());
+  if (id_and_data == ad_frames_data_.end())
+    return;
+  AdFrameData* ancestor_data = id_and_data->second;
+  if (ancestor_data) {
+    ancestor_data->user_activation_status =
+        UserActivationStatus::kReceivedActivation;
+  }
 }
 
 void AdsPageLoadMetricsObserver::OnDidInternalNavigationAbort(
@@ -589,6 +603,9 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForAdTagging() {
     ADS_HISTOGRAM(
         "SubresourceFilter.FrameCounts.AdFrames.PerFrame.OriginStatus",
         UMA_HISTOGRAM_ENUMERATION, ad_frame_data.origin_status);
+    ADS_HISTOGRAM(
+        "SubresourceFilter.FrameCounts.AdFrames.PerFrame.UserActivation",
+        UMA_HISTOGRAM_ENUMERATION, ad_frame_data.user_activation_status);
   }
 
   // TODO(ericrobinson): Consider renaming this to match

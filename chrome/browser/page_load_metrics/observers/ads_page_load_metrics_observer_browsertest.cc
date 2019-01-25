@@ -45,6 +45,10 @@ const char kCrossOriginHistogramId[] =
     "PageLoad.Clients.Ads.SubresourceFilter.FrameCounts.AdFrames.PerFrame."
     "OriginStatus";
 
+const char kAdUserActivationHistogramId[] =
+    "PageLoad.Clients.Ads.SubresourceFilter.FrameCounts.AdFrames.PerFrame."
+    "UserActivation";
+
 enum class Origin {
   kNavigation,
   kAnchorAttribute,
@@ -130,7 +134,8 @@ class AdsPageLoadMetricsObserverBrowserTest
   void SetUpOnMainThread() override {
     SubresourceFilterBrowserTest::SetUpOnMainThread();
     SetRulesetWithRules(
-        {subresource_filter::testing::CreateSuffixRule("ad_iframe_writer.js")});
+        {subresource_filter::testing::CreateSuffixRule("ad_iframe_writer.js"),
+         subresource_filter::testing::CreateSuffixRule("ad_script.js")});
   }
 
  private:
@@ -208,6 +213,42 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   histogram_tester.ExpectUniqueSample(
       kCrossOriginHistogramId,
       AdsPageLoadMetricsObserver::AdOriginStatus::kCross, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
+                       UserActivationSetOnFrame) {
+  base::HistogramTester histogram_tester;
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "foo.com", "/ad_tagging/frame_factory.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Create a second frame that will not receive activation.
+  EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(
+      web_contents, "createAdFrame('/ad_tagging/frame_factory.html', '');"));
+  EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(
+      web_contents, "createAdFrame('/ad_tagging/frame_factory.html', '');"));
+
+  // Wait for the frames resources to be loaded as we only log histograms for
+  // frames that have non-zero bytes. Four resources per frame and one favicon.
+  waiter->AddMinimumCompleteResourcesExpectation(13);
+  waiter->Wait();
+
+  // Activate one frame by executing a dummy script.
+  content::RenderFrameHost* ad_frame =
+      ChildFrameAt(web_contents->GetMainFrame(), 0);
+  const std::string no_op_script = "// No-op script";
+  EXPECT_TRUE(ExecuteScript(ad_frame, no_op_script));
+
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  histogram_tester.ExpectBucketCount(
+      kAdUserActivationHistogramId,
+      AdsPageLoadMetricsObserver::UserActivationStatus::kReceivedActivation, 1);
+  histogram_tester.ExpectBucketCount(
+      kAdUserActivationHistogramId,
+      AdsPageLoadMetricsObserver::UserActivationStatus::kNoActivation, 1);
 }
 
 // Test that a subframe that aborts (due to doc.write) doesn't cause a crash

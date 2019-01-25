@@ -812,6 +812,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Notifies the render frame about a user activation from the browser side.
   void NotifyUserActivation();
 
+  // Notifies the render frame that |frame_tree_node_| has had the sticky
+  // user activation bit set for the first time.
+  void DidReceiveFirstUserActivation();
+
   // Returns the current size for this frame.
   const base::Optional<gfx::Size>& frame_size() const { return frame_size_; }
 

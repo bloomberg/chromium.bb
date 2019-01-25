@@ -5812,6 +5812,12 @@ void WebContentsImpl::DidChangeName(RenderFrameHost* render_frame_host,
     observer.FrameNameChanged(render_frame_host, name);
 }
 
+void WebContentsImpl::DidReceiveFirstUserActivation(
+    RenderFrameHost* render_frame_host) {
+  for (auto& observer : observers_)
+    observer.FrameReceivedFirstUserActivation(render_frame_host);
+}
+
 void WebContentsImpl::DocumentOnLoadCompleted(
     RenderFrameHost* render_frame_host) {
   ShowInsecureLocalhostWarningIfNeeded();
