@@ -10,6 +10,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/blob_bytes_consumer.h"
+#include "third_party/blink/renderer/core/fetch/form_data_bytes_consumer.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -369,6 +370,17 @@ void BytesConsumer::Tee(ExecutionContext* execution_context,
     src->SetClient(new NoopClient);
     *dest1 = new BlobBytesConsumer(execution_context, blob_data_handle);
     *dest2 = new BlobBytesConsumer(execution_context, blob_data_handle);
+    return;
+  }
+
+  auto form_data = src->DrainAsFormData();
+  if (form_data) {
+    // Register a client in order to be consistent.
+    src->SetClient(MakeGarbageCollected<NoopClient>());
+    *dest1 = MakeGarbageCollected<FormDataBytesConsumer>(execution_context,
+                                                         form_data);
+    *dest2 = MakeGarbageCollected<FormDataBytesConsumer>(execution_context,
+                                                         form_data);
     return;
   }
 
