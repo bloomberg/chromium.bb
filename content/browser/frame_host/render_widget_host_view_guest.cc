@@ -272,8 +272,7 @@ bool RenderWidgetHostViewGuest::TransformPointToLocalCoordSpaceLegacy(
   if (original_surface == surface_id)
     return true;
 
-  *transformed_point =
-      gfx::ConvertPointToPixel(current_surface_scale_factor(), point);
+  *transformed_point = gfx::ConvertPointToPixel(GetDeviceScaleFactor(), point);
   viz::SurfaceHittest hittest(nullptr,
                               GetFrameSinkManager()->surface_manager());
   if (!hittest.TransformPointToTargetSurface(original_surface, surface_id,
@@ -281,8 +280,8 @@ bool RenderWidgetHostViewGuest::TransformPointToLocalCoordSpaceLegacy(
     return false;
   }
 
-  *transformed_point = gfx::ConvertPointToDIP(current_surface_scale_factor(),
-                                              *transformed_point);
+  *transformed_point =
+      gfx::ConvertPointToDIP(GetDeviceScaleFactor(), *transformed_point);
   return true;
 }
 
