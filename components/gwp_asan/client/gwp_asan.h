@@ -10,8 +10,9 @@
 namespace gwp_asan {
 
 // Enable GWP-ASan for the current process. This should only be called once per
-// process. This can not be disabled once it has been enabled.
-GWP_ASAN_EXPORT void EnableForMalloc();
+// process. This can not be disabled once it has been enabled. The caller should
+// indicate whether this build is a canary or dev build.
+GWP_ASAN_EXPORT void EnableForMalloc(bool is_canary_dev);
 
 }  // namespace gwp_asan
 
