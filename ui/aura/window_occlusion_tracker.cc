@@ -183,9 +183,15 @@ void WindowOcclusionTracker::MaybeComputeOcclusion() {
         found_dirty_root = true;
         root_window_pair.second.dirty = false;
         if (!exceeded_max_num_times_occlusion_recomputed) {
-          SkRegion occluded_region;
-          RecomputeOcclusionImpl(root_window_pair.first, gfx::Transform(),
-                                 nullptr, &occluded_region);
+          Window* root_window = root_window_pair.first;
+          if (root_window_pair.second.occlusion_state ==
+              Window::OcclusionState::OCCLUDED) {
+            SetWindowAndDescendantsAreOccluded(root_window, true);
+          } else {
+            SkRegion occluded_region;
+            RecomputeOcclusionImpl(root_window, gfx::Transform(), nullptr,
+                                   &occluded_region);
+          }
         }
       }
     }
@@ -716,6 +722,13 @@ void WindowOcclusionTracker::OnOcclusionStateChanged(
     WindowTreeHost* host,
     aura::Window::OcclusionState new_state) {
   UMA_HISTOGRAM_ENUMERATION("WindowOcclusionChanged", new_state);
+  Window* root_window = host->window();
+  auto root_window_state_it = root_windows_.find(root_window);
+  if (root_window_state_it != root_windows_.end())
+    root_window_state_it->second.occlusion_state = new_state;
+
+  MarkRootWindowAsDirty(root_window);
+  MaybeComputeOcclusion();
 }
 
 }  // namespace aura

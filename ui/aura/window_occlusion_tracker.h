@@ -121,6 +121,9 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
 
     // Whether the occlusion state of tracked Windows under this root is stale.
     bool dirty = false;
+
+    // The occlusion state of the root window's host.
+    Window::OcclusionState occlusion_state = Window::OcclusionState::UNKNOWN;
   };
 
   // Holds occlusion related information for tracked windows.

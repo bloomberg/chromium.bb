@@ -2151,4 +2151,23 @@ TEST_F(WindowOcclusionTrackerTest, ExcludeWindow) {
   EXPECT_FALSE(delegate_a->is_expecting_call());
 }
 
+// Test that calling OnOcclusionStateChanged on a root window causes children
+// of the root window to have their delegate notified that it is occluded or
+// visible, depending on whether the root window is occluded or not.
+TEST_F(WindowOcclusionTrackerTest, NativeWindowOcclusion) {
+  MockWindowDelegate* delegate_a = new MockWindowDelegate();
+  delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
+  CreateTrackedWindow(delegate_a, gfx::Rect(0, 0, 10, 10));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  delegate_a->set_expectation(Window::OcclusionState::OCCLUDED, SkRegion());
+  // Make the host call OnOcclusionStateChanged on the root window.
+  host()->SetNativeWindowOcclusionState(Window::OcclusionState::OCCLUDED);
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
+  host()->SetNativeWindowOcclusionState(Window::OcclusionState::VISIBLE);
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+}
+
 }  // namespace aura
