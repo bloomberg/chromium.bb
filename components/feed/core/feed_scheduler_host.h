@@ -176,13 +176,13 @@ class FeedSchedulerHost : web_resource::EulaAcceptedNotifier::Observer {
   // should cause a refresh to occur.
   base::Time suppress_refreshes_until_;
 
-  // Whether the scheduler is aware of an outstanding refresh or not. There are
-  // cases where a refresh may be occurring without the scheduler knowing about
-  // it, such as user interaction with UI on the NTP. If this field holds a
-  // value of true, it is expected that either OnReceiveNewContent or
-  // OnRequestError will be called eventually, somewhere on the order of seconds
-  // from now, assuming the browser does not shut down.
-  bool tracking_oustanding_request_ = false;
+  // The goal of this field is to not make multiple refresh request at the same
+  // time. When the scheduler starts or indicates the caller should start a
+  // request, this field is set. When that request finishes, this field is
+  // cleared. It is unclear if this field is always and correctly cleared out,
+  // so after the point in time held by this field, the scheduler is allowed to
+  // trigger another request.
+  base::Time outstanding_request_until_;
 
   // May hold a nullptr if the platform does not show the user a EULA. Will only
   // notify if IsEulaAccepted() is called and it returns false.
