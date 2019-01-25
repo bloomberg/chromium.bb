@@ -2396,15 +2396,18 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   bool IsInert() const;
 
-  void UpdateImage(StyleImage*, StyleImage*);
-
   void ScheduleRelayout();
 
+  void AddAsImageObserver(StyleImage*);
+  void RemoveAsImageObserver(StyleImage*);
+
+  void UpdateImage(StyleImage*, StyleImage*);
   void UpdateShapeImage(const ShapeValue*, const ShapeValue*);
   void UpdateFillImages(const FillLayer* old_layers,
                         const FillLayer* new_layers);
   void UpdateCursorImages(const CursorList* old_cursors,
                           const CursorList* new_cursors);
+
   void CheckCounterChanges(const ComputedStyle* old_style,
                            const ComputedStyle* new_style);
 
@@ -2425,9 +2428,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   const ComputedStyle* CachedFirstLineStyle() const;
   StyleDifference AdjustStyleDifference(StyleDifference) const;
-
-  void RemoveShapeImageClient(ShapeValue*);
-  void RemoveCursorImageClient(const CursorList*);
 
   // These are helper functions for AbsoluteBoudingBoxRectHandlingEmptyAnchor()
   // and AbsoluteBoundingBoxRectForScrollIntoView().
@@ -2484,6 +2484,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 #if DCHECK_IS_ON()
   unsigned has_ax_object_ : 1;
   unsigned set_needs_layout_forbidden_ : 1;
+  unsigned as_image_observer_count_ : 20;
 #endif
 
 #define ADD_BOOLEAN_BITFIELD(field_name_, MethodNameBase) \
