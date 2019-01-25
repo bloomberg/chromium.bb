@@ -24,6 +24,7 @@ import com.google.android.libraries.feed.api.stream.Stream;
 import com.google.android.libraries.feed.host.action.ActionApi;
 import com.google.android.libraries.feed.host.stream.CardConfiguration;
 import com.google.android.libraries.feed.host.stream.SnackbarApi;
+import com.google.android.libraries.feed.host.stream.SnackbarCallbackApi;
 import com.google.android.libraries.feed.host.stream.StreamConfiguration;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -91,6 +92,12 @@ public class FeedNewTabPage extends NewTabPage {
             mManager.showSnackbar(Snackbar.make(message,
                     new SnackbarManager.SnackbarController() {}, Snackbar.TYPE_ACTION,
                     Snackbar.UMA_FEED_NTP_STREAM));
+        }
+
+        @Override
+        public void show(String message, String action, SnackbarCallbackApi callback) {
+            // TODO(https://crbug.com/924742): Set action text and correctly invoke callback.
+            show(message);
         }
     }
 
