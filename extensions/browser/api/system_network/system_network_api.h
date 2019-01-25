@@ -30,7 +30,7 @@ class SystemNetworkGetNetworkInterfacesFunction
 
  private:
   void SendResponseOnUIThread(
-      std::unique_ptr<net::NetworkInterfaceList> interface_list);
+      const base::Optional<net::NetworkInterfaceList>& interface_list);
 };
 
 }  // namespace api
