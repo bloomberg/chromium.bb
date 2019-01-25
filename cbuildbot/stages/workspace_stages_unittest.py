@@ -397,6 +397,57 @@ class WorkspaceInitSDKStageTest(WorkspaceStageBase):
     )
 
 
+class WorkspaceUpdateSDKStageTest(WorkspaceStageBase):
+  """Test the WorkspaceUpdateSDKStage."""
+
+  def ConstructStage(self):
+    return workspace_stages.WorkspaceUpdateSDKStage(
+        self._run, self.buildstore, build_root=self.workspace)
+
+  def testUpdateSDK(self):
+    """Test UpdateSDK old workspace version."""
+    self._Prepare(
+        'test-firmwarebranch',
+        site_config=workspace_builders_unittest.CreateMockSiteConfig(),
+        extra_cmd_args=['--cache-dir', '/cache'])
+
+    self.RunStage()
+
+    self.assertEqual(self.rc.call_count, 1)
+    self.rc.assertCommandCalled(
+        ['./update_chroot',],
+        enter_chroot=True,
+        chroot_args=['--cache-dir', '/cache'],
+        extra_env={
+            'USE': '-cros-debug chrome_internal chromeless_tty',
+            'FEATURES': 'separatedebug -separatedebug splitdebug',
+        },
+        cwd=self.workspace,
+    )
+
+  def testUpdateSDKWithChrome(self):
+    """Test UpdateSDK old workspace version."""
+    self._Prepare(
+        'test-firmwarebranch',
+        site_config=workspace_builders_unittest.CreateMockSiteConfig(),
+        extra_cmd_args=['--cache-dir', '/cache', '--chrome_root', '/chrome'])
+
+    self.RunStage()
+
+    self.assertEqual(self.rc.call_count, 1)
+    self.rc.assertCommandCalled(
+        ['./update_chroot',],
+        enter_chroot=True,
+        chroot_args=['--cache-dir', '/cache'],
+        extra_env={
+            'USE': '-cros-debug chrome_internal chromeless_tty',
+            'FEATURES': 'separatedebug -separatedebug splitdebug',
+            'CHROME_ORIGIN': 'LOCAL_SOURCE',
+        },
+        cwd=self.workspace,
+    )
+
+
 class WorkspaceSetupBoardStageTest(WorkspaceStageBase):
   """Test the WorkspaceSetupBoardStage."""
 

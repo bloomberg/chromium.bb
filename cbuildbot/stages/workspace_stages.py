@@ -372,6 +372,7 @@ class WorkspaceScheduleChildrenStage(WorkspaceStageBase):
           result.build_config, result.buildbucket_id, result.created_ts)
       logging.PrintBuildbotLink(result.build_config, result.url)
 
+
 class WorkspaceInitSDKStage(WorkspaceStageBase):
   """Stage that is responsible for initializing the SDK."""
 
@@ -389,6 +390,24 @@ class WorkspaceInitSDKStage(WorkspaceStageBase):
 
     post_ver = cros_sdk_lib.GetChrootVersion(chroot_path)
     logging.PrintBuildbotStepText(post_ver)
+
+
+class WorkspaceUpdateSDKStage(generic_stages.BuilderStage):
+  """Stage that is responsible for updating the chroot."""
+
+  option_name = 'build'
+  category = constants.CI_INFRA_STAGE
+
+  def PerformStage(self):
+    """Do the work of updating the chroot."""
+    usepkg_toolchain = (
+        self._run.config.usepkg_toolchain and not self._latest_toolchain)
+
+    commands.UpdateChroot(
+        self._build_root,
+        usepkg=usepkg_toolchain,
+        extra_env=self._portage_extra_env,
+        chroot_args=['--cache-dir', self._run.options.cache_dir])
 
 
 class WorkspaceSetupBoardStage(generic_stages.BoardSpecificBuilderStage,
