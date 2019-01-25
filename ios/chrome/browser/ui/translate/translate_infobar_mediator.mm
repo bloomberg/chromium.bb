@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/translate/translate_popup_menu_mediator.h"
+#import "ios/chrome/browser/ui/translate/translate_infobar_mediator.h"
 
 #include <memory>
 
@@ -28,7 +28,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface TranslatePopupMenuMediator () <WebStateListObserving> {
+@interface TranslateInfobarMediator () <WebStateListObserving> {
   // WebStateList observers.
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserverBridge;
   std::unique_ptr<ScopedObserver<WebStateList, WebStateListObserver>>
@@ -46,7 +46,7 @@
 
 @end
 
-@implementation TranslatePopupMenuMediator
+@implementation TranslateInfobarMediator
 
 - (instancetype)
     initWithSelectionHandler:
