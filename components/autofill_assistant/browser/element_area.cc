@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/autofill_assistant/browser/script_executor_delegate.h"
 #include "components/autofill_assistant/browser/web_controller.h"
 
 namespace autofill_assistant {
@@ -21,11 +22,9 @@ static constexpr base::TimeDelta kCheckDelay =
     base::TimeDelta::FromMilliseconds(100);
 }  // namespace
 
-ElementArea::ElementArea(WebController* web_controller)
-    : web_controller_(web_controller),
-      scheduled_update_(false),
-      weak_ptr_factory_(this) {
-  DCHECK(web_controller_);
+ElementArea::ElementArea(ScriptExecutorDelegate* delegate)
+    : delegate_(delegate), scheduled_update_(false), weak_ptr_factory_(this) {
+  DCHECK(delegate_);
 }
 
 ElementArea::~ElementArea() = default;
@@ -82,7 +81,7 @@ void ElementArea::UpdatePositions() {
       position.pending_update = true;
     }
     for (auto& position : rectangle.positions) {
-      web_controller_->GetElementPosition(
+      delegate_->GetWebController()->GetElementPosition(
           position.selector,
           base::BindOnce(&ElementArea::OnGetElementPosition,
                          weak_ptr_factory_.GetWeakPtr(), position.selector));

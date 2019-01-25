@@ -43,10 +43,7 @@ class Controller : public ScriptExecutorDelegate,
  public:
   // |web_contents| and |client| must remain valid for the lifetime of the
   // instance.
-  Controller(content::WebContents* web_contents,
-             Client* client,
-             std::unique_ptr<WebController> web_controller,
-             std::unique_ptr<Service> service);
+  Controller(content::WebContents* web_contents, Client* client);
   ~Controller() override;
 
   // Called when autofill assistant can start executing scripts.
@@ -86,6 +83,10 @@ class Controller : public ScriptExecutorDelegate,
 
  private:
   friend ControllerTest;
+
+  void SetWebControllerAndServiceForTest(
+      std::unique_ptr<WebController> web_controller,
+      std::unique_ptr<Service> service);
 
   void GetOrCheckScripts(const GURL& url);
   void OnGetScripts(const GURL& url, bool result, const std::string& response);
@@ -146,10 +147,19 @@ class Controller : public ScriptExecutorDelegate,
   void LoadProgressChanged(content::WebContents* source,
                            double progress) override;
 
+  ElementArea* touchable_element_area();
+  ScriptTracker* script_tracker();
+
   Client* const client_;
+
+  // Lazily instantiate in GetWebController().
   std::unique_ptr<WebController> web_controller_;
+
+  // Lazily instantiate in GetService().
   std::unique_ptr<Service> service_;
   std::map<std::string, std::string> parameters_;
+
+  // Lazily instantiate in GetClientMemory().
   std::unique_ptr<ClientMemory> memory_;
 
   AutofillAssistantState state_ = AutofillAssistantState::INACTIVE;
@@ -175,7 +185,8 @@ class Controller : public ScriptExecutorDelegate,
 
   // Area of the screen that corresponds to the current set of touchable
   // elements.
-  ElementArea touchable_element_area_;
+  // Lazily instantiate in touchable_element_area().
+  std::unique_ptr<ElementArea> touchable_element_area_;
 
   // Current status message, may be empty.
   std::string status_message_;
@@ -189,6 +200,7 @@ class Controller : public ScriptExecutorDelegate,
   // Tracks scripts and script execution. It's kept at the end, as it tend to
   // depend on everything the controller support, through script and script
   // actions.
+  // Lazily instantiate in script_tracker().
   std::unique_ptr<ScriptTracker> script_tracker_;
 
   base::WeakPtrFactory<Controller> weak_ptr_factory_;

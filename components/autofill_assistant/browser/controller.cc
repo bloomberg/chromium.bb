@@ -56,18 +56,9 @@ static const char* const kTrueValue = "true";
 
 }  // namespace
 
-Controller::Controller(content::WebContents* web_contents,
-                       Client* client,
-                       std::unique_ptr<WebController> web_controller,
-                       std::unique_ptr<Service> service)
+Controller::Controller(content::WebContents* web_contents, Client* client)
     : content::WebContentsObserver(web_contents),
       client_(client),
-      web_controller_(std::move(web_controller)),
-      service_(std::move(service)),
-      memory_(std::make_unique<ClientMemory>()),
-      touchable_element_area_(web_controller_.get()),
-      script_tracker_(std::make_unique<ScriptTracker>(/* delegate= */ this,
-                                                      /* listener= */ this)),
       weak_ptr_factory_(this) {
   // Only set the controller as the delegate if web_contents does not yet have
   // one.
@@ -87,6 +78,9 @@ Controller::~Controller() {
 }
 
 Service* Controller::GetService() {
+  if (!service_) {
+    service_ = Service::Create(web_contents()->GetBrowserContext(), client_);
+  }
   return service_.get();
 }
 
@@ -95,10 +89,16 @@ UiController* Controller::GetUiController() {
 }
 
 WebController* Controller::GetWebController() {
+  if (!web_controller_) {
+    web_controller_ = WebController::CreateForWebContents(web_contents());
+  }
   return web_controller_.get();
 }
 
 ClientMemory* Controller::GetClientMemory() {
+  if (!memory_) {
+    memory_ = std::make_unique<ClientMemory>();
+  }
   return memory_.get();
 }
 
@@ -115,7 +115,7 @@ content::WebContents* Controller::GetWebContents() {
 }
 
 void Controller::SetTouchableElementArea(const ElementAreaProto& area) {
-  touchable_element_area_.SetFromProto(area);
+  touchable_element_area()->SetFromProto(area);
 }
 
 void Controller::SetStatusMessage(const std::string& message) {
@@ -152,19 +152,26 @@ void Controller::EnterState(AutofillAssistantState state) {
   GetUiController()->OnStateChanged(state);
 }
 
+void Controller::SetWebControllerAndServiceForTest(
+    std::unique_ptr<WebController> web_controller,
+    std::unique_ptr<Service> service) {
+  web_controller_ = std::move(web_controller);
+  service_ = std::move(service);
+}
+
 void Controller::GetOrCheckScripts(const GURL& url) {
-  if (!started_ || script_tracker_->running()) {
+  if (!started_ || script_tracker()->running()) {
     return;
   }
 
   if (script_domain_ != url.host()) {
     StopPeriodicScriptChecks();
     script_domain_ = url.host();
-    service_->GetScriptsForUrl(
+    GetService()->GetScriptsForUrl(
         url, parameters_,
         base::BindOnce(&Controller::OnGetScripts, base::Unretained(this), url));
   } else {
-    script_tracker_->CheckScripts(kPeriodicScriptCheckInterval);
+    script_tracker()->CheckScripts(kPeriodicScriptCheckInterval);
     StartPeriodicScriptChecks();
   }
 }
@@ -204,7 +211,7 @@ void Controller::OnPeriodicScriptCheck() {
   }
 
   periodic_script_check_count_--;
-  script_tracker_->CheckScripts(kPeriodicScriptCheckInterval);
+  script_tracker()->CheckScripts(kPeriodicScriptCheckInterval);
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&Controller::OnPeriodicScriptCheck,
@@ -229,25 +236,25 @@ void Controller::OnGetScripts(const GURL& url,
   std::vector<std::unique_ptr<Script>> scripts;
   bool parse_result = ProtocolUtils::ParseScripts(response, &scripts);
   DCHECK(parse_result);
-  script_tracker_->SetScripts(std::move(scripts));
-  script_tracker_->CheckScripts(kPeriodicScriptCheckInterval);
+  script_tracker()->SetScripts(std::move(scripts));
+  script_tracker()->CheckScripts(kPeriodicScriptCheckInterval);
   StartPeriodicScriptChecks();
 }
 
 void Controller::ExecuteScript(const std::string& script_path) {
-  DCHECK(!script_tracker_->running());
+  DCHECK(!script_tracker()->running());
   EnterState(AutofillAssistantState::RUNNING);
 
-  touchable_element_area_.Clear();
+  touchable_element_area()->Clear();
 
   StopPeriodicScriptChecks();
   // Runnable scripts will be checked and reported if necessary after executing
   // the script.
-  script_tracker_->ClearRunnableScripts();
+  script_tracker()->ClearRunnableScripts();
   GetUiController()->ClearChips();
   // TODO(crbug.com/806868): Consider making ClearRunnableScripts part of
   // ExecuteScripts to simplify the controller.
-  script_tracker_->ExecuteScript(
+  script_tracker()->ExecuteScript(
       script_path, base::BindOnce(&Controller::OnScriptExecuted,
                                   // script_tracker_ is owned by Controller.
                                   base::Unretained(this), script_path));
@@ -262,12 +269,13 @@ void Controller::OnScriptExecuted(const std::string& script_path,
     EnterState(AutofillAssistantState::STOPPED);
     return;
   }
+
   if (result.touchable_element_area) {
-    touchable_element_area_.SetFromProto(*result.touchable_element_area);
+    touchable_element_area()->SetFromProto(*result.touchable_element_area);
   } else {
     // For backward-compatibility, if no touchable elements are defined, the
     // whole screen is available instead of nothing being available.
-    touchable_element_area_.CoverViewport();
+    touchable_element_area()->CoverViewport();
   }
 
   switch (result.at_end) {
@@ -289,9 +297,8 @@ void Controller::OnScriptExecuted(const std::string& script_path,
       return;
 
     case ScriptExecutor::RESTART:
-      script_tracker_ = std::make_unique<ScriptTracker>(/* delegate= */ this,
-                                                        /* listener= */ this);
-      memory_ = std::make_unique<ClientMemory>();
+      script_tracker_.reset();
+      memory_.reset();
       script_domain_ = "";
       break;
 
@@ -378,12 +385,6 @@ void Controller::FinishStart(const GURL& initial_url) {
         IDS_AUTOFILL_ASSISTANT_LOADING, base::UTF8ToUTF16(initial_url.host())));
     GetUiController()->ShowProgressBar(kAutostartInitialProgress);
   }
-
-  touchable_element_area_.SetOnUpdate(base::BindRepeating(
-      &UiController::UpdateTouchableArea,
-      // Unretained is safe, since touchable_element_area_ is guaranteed to be
-      // deleted before the UI controller.
-      base::Unretained(GetUiController())));
 }
 
 void Controller::MaybeSetInitialDetails() {
@@ -416,7 +417,9 @@ AutofillAssistantState Controller::GetState() {
 
 bool Controller::Terminate() {
   StopPeriodicScriptChecks();
-  return script_tracker_->Terminate();
+  if (script_tracker_)
+    return script_tracker_->Terminate();
+  return true;
 }
 
 void Controller::OnScriptSelected(const std::string& script_path) {
@@ -429,11 +432,11 @@ void Controller::OnScriptSelected(const std::string& script_path) {
 }
 
 void Controller::UpdateTouchableArea() {
-  touchable_element_area_.UpdatePositions();
+  touchable_element_area()->UpdatePositions();
 }
 
 void Controller::OnUserInteractionInsideTouchableArea() {
-  script_tracker_->CheckScripts(kPeriodicScriptCheckInterval);
+  script_tracker()->CheckScripts(kPeriodicScriptCheckInterval);
   StartPeriodicScriptChecks();
 }
 
@@ -448,7 +451,7 @@ std::string Controller::GetDebugContext() {
     parameters_js.push_back(std::move(parameter_js));
   }
   dict.SetKey("parameters", base::Value(parameters_js));
-  dict.SetKey("scripts", script_tracker_->GetDebugContext());
+  dict.SetKey("scripts", script_tracker()->GetDebugContext());
 
   if (details_)
     dict.SetKey("details", details_->GetDebugContext());
@@ -459,7 +462,7 @@ std::string Controller::GetDebugContext() {
 }
 
 void Controller::OnNoRunnableScriptsAnymore() {
-  if (script_tracker_->running())
+  if (script_tracker()->running())
     return;
 
   // We're navigated to a page that has no scripts or the scripts have reached a
@@ -472,7 +475,7 @@ void Controller::OnRunnableScriptsChanged(
     const std::vector<ScriptHandle>& runnable_scripts) {
   // Script selection is disabled when a script is already running. We will
   // check again and maybe update when the current script has finished.
-  if (script_tracker_->running())
+  if (script_tracker()->running())
     return;
 
   if (!runnable_scripts.empty()) {
@@ -520,7 +523,7 @@ void Controller::OnRunnableScriptsChanged(
     // If there's no script to autostart, allow access to the whole screen
     // during the first prompt. In normal operations, touchable_element_area_ is
     // set at the end of a successful script.
-    touchable_element_area_.CoverViewport();
+    touchable_element_area()->CoverViewport();
   }
   EnterState(AutofillAssistantState::PROMPT);
   GetUiController()->SetChips(std::move(chips));
@@ -541,6 +544,9 @@ void Controller::DidFinishLoad(content::RenderFrameHost* render_frame_host,
 
 void Controller::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
+  if (!started_)
+    return;
+
   // The following types of navigations are allowed for the main frame:
   //  - first-time URL load
   //  - script-directed navigation, while a script is running unless
@@ -558,22 +564,12 @@ void Controller::DidStartNavigation(
   if (navigation_handle->IsInMainFrame() &&
       web_contents()->GetLastCommittedURL().is_valid() &&
       !navigation_handle->WasServerRedirect() &&
-      !navigation_handle->IsSameDocument()) {
-    if (!script_tracker_->running() &&
-        !navigation_handle->IsRendererInitiated()) {
+      !navigation_handle->IsSameDocument() &&
+      !navigation_handle->IsRendererInitiated()) {
+    // The action can define a touchable element area that prevents navigation.
+    if (!script_tracker_ || !script_tracker()->running() ||
+        touchable_element_area()->HasElements()) {
       GiveUp();
-      return;
-    }
-
-    // Special case: during a prompt, only forbid non-render-initiated
-    // navigation for the main frame, such as going back to the previous page or
-    // refreshing the page using the UI. This allows clicking on links and
-    // Javascript-initiated navigation; it's up to the action to define a
-    // touchable element area that prevents these from happening.
-    if (script_tracker_->running() && touchable_element_area_.HasElements() &&
-        !navigation_handle->IsRendererInitiated()) {
-      GiveUp();
-      return;
     }
   }
 }
@@ -606,6 +602,26 @@ void Controller::LoadProgressChanged(content::WebContents* source,
 bool Controller::IsCookieExperimentEnabled() const {
   auto iter = parameters_.find(kCookieExperimentName);
   return iter != parameters_.end() && iter->second == "1";
+}
+
+ElementArea* Controller::touchable_element_area() {
+  if (!touchable_element_area_) {
+    touchable_element_area_ = std::make_unique<ElementArea>(this);
+    touchable_element_area_->SetOnUpdate(base::BindRepeating(
+        &UiController::UpdateTouchableArea,
+        // Unretained is safe, since touchable_element_area_ is guaranteed to be
+        // deleted before the UI controller.
+        base::Unretained(GetUiController())));
+  }
+  return touchable_element_area_.get();
+}
+
+ScriptTracker* Controller::script_tracker() {
+  if (!script_tracker_) {
+    script_tracker_ = std::make_unique<ScriptTracker>(/* delegate= */ this,
+                                                      /* listener= */ this);
+  }
+  return script_tracker_.get();
 }
 
 }  // namespace autofill_assistant

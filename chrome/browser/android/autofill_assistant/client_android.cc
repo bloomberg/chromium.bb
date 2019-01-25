@@ -226,11 +226,7 @@ void ClientAndroid::CreateController() {
   if (controller_) {
     return;
   }
-  controller_ = std::make_unique<Controller>(
-      web_contents_,
-      /* client= */ this, WebController::CreateForWebContents(web_contents_),
-      Service::Create(web_contents_->GetBrowserContext(),
-                      /* client= */ this));
+  controller_ = std::make_unique<Controller>(web_contents_, /* client= */ this);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ClientAndroid);
