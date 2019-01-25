@@ -5,6 +5,7 @@ include_rules = [
 
   # Except for constants which it links in directly.
   "+chrome/common/chrome_constants.h",
+  "+chrome/common/chrome_version.h",
 
   "+chrome/test/chromedriver",
 
