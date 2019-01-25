@@ -56,6 +56,20 @@ void ClipboardURLProvider::Start(const AutocompleteInput& input,
     return;
   }
 
+  // Record the number of times the currently-offered URL has been suggested.
+  // This only works over this run of Chrome; if the URL was in the clipboard
+  // on a previous run, those offerings will not be counted.
+  if (optional_match.value().destination_url == current_url_suggested_) {
+    current_url_suggested_times_++;
+  } else {
+    current_url_suggested_ = optional_match.value().destination_url;
+    current_url_suggested_times_ = 1;
+  }
+
+  base::UmaHistogramSparse(
+      "Omnibox.ClipboardSuggestionShownNumTimes",
+      std::min(current_url_suggested_times_, static_cast<size_t>(20)));
+
   // If the omnibox is not empty, add a default match.
   // This match will be opened when the user presses "Enter".
   if (!input.text().empty()) {
@@ -82,8 +96,6 @@ base::Optional<AutocompleteMatch> ClipboardURLProvider::CreateURLMatch(
   base::Optional<GURL> optional_gurl =
       clipboard_content_->GetRecentURLFromClipboard();
   if (!optional_gurl) {
-    current_url_suggested_ = GURL();
-    current_url_suggested_times_ = 0;
     return base::nullopt;
   }
   GURL url = std::move(optional_gurl).value();
@@ -94,19 +106,6 @@ base::Optional<AutocompleteMatch> ClipboardURLProvider::CreateURLMatch(
     return base::nullopt;
 
   DCHECK(url.is_valid());
-
-  // Record the number of times the currently-offered URL has been suggested.
-  // This only works over this run of Chrome; if the URL was in the clipboard
-  // on a previous run, those offerings will not be counted.
-  if (url == current_url_suggested_) {
-    current_url_suggested_times_++;
-  } else {
-    current_url_suggested_ = url;
-    current_url_suggested_times_ = 1;
-  }
-  base::UmaHistogramSparse(
-      "Omnibox.ClipboardSuggestionShownNumTimes",
-      std::min(current_url_suggested_times_, static_cast<size_t>(20)));
 
   // Add the clipboard match. The relevance is 800 to beat ZeroSuggest results.
   AutocompleteMatch match(this, 800, false,
@@ -144,6 +143,11 @@ base::Optional<AutocompleteMatch> ClipboardURLProvider::CreateTextMatch(
   }
   base::string16 text = std::move(optional_text).value();
 
+  // The text in the clipboard is a url. We don't want to prompt the user to
+  // search for a url.
+  if (GURL(text).is_valid())
+    return base::nullopt;
+
   DCHECK(!text.empty());
 
   // Add the clipboard match. The relevance is 800 to beat ZeroSuggest results.
@@ -156,6 +160,7 @@ base::Optional<AutocompleteMatch> ClipboardURLProvider::CreateTextMatch(
   TemplateURLRef::SearchTermsArgs search_args(text);
   GURL result(default_url->url_ref().ReplaceSearchTerms(
       search_args, url_service->search_terms_data()));
+
   match.destination_url = result;
   match.contents.assign(l10n_util::GetStringFUTF16(
       IDS_COPIED_TEXT_FROM_CLIPBOARD, AutocompleteMatch::SanitizeString(text)));
