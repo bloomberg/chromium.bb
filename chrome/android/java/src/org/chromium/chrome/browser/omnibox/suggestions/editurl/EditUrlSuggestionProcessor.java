@@ -136,7 +136,7 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
     public boolean doesProcessSuggestion(OmniboxSuggestion suggestion) {
         Tab activeTab = mTabProvider != null ? mTabProvider.getActivityTab() : null;
         if (OmniboxSuggestionType.URL_WHAT_YOU_TYPED != suggestion.getType() || activeTab == null
-                || activeTab.isIncognito()) {
+                || activeTab.isIncognito() || activeTab.isNativePage()) {
             return false;
         }
         mLastProcessedSuggestion = suggestion;
