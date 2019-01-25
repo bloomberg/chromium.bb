@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
+#include "content/common/content_security_policy/csp_disposition_enum.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -91,6 +92,9 @@ class NavigationSimulatorImpl : public NavigationSimulator,
 
   // Additional utilites usable only inside content/.
   void SetLoadURLParams(NavigationController::LoadURLParams* load_url_params);
+  void set_should_check_main_world_csp(CSPDisposition disposition) {
+    should_check_main_world_csp_ = disposition;
+  }
 
  private:
   NavigationSimulatorImpl(const GURL& original_url,
@@ -206,6 +210,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   blink::mojom::DocumentInterfaceBrokerRequest
       document_interface_broker_blink_request_;
   std::string contents_mime_type_;
+  CSPDisposition should_check_main_world_csp_ = CSPDisposition::CHECK;
 
   // Generic params structure used for fully customized browser initiated
   // navigation requests. Only valid if explicitely provided.
