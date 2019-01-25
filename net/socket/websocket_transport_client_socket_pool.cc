@@ -179,7 +179,6 @@ void WebSocketTransportClientSocketPool::ReleaseSocket(
     const std::string& group_name,
     std::unique_ptr<StreamSocket> socket,
     int id) {
-  websocket_endpoint_lock_manager_->UnlockSocket(socket.get());
   CHECK_GT(handed_out_socket_count_, 0);
   --handed_out_socket_count_;
 
@@ -304,9 +303,9 @@ void WebSocketTransportClientSocketPool::OnConnectJobComplete(
 
   // See comment in FlushWithError.
   if (flushing_) {
+    // Just delete the socket.
     std::unique_ptr<StreamSocket> socket =
         connect_job_delegate->connect_job()->PassSocket();
-    websocket_endpoint_lock_manager_->UnlockSocket(socket.get());
     return;
   }
 
