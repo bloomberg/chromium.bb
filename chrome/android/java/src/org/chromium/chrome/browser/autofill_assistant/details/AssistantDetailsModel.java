@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.autofill_assistant.details;
 
-import android.support.annotation.Nullable;
-
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -35,11 +33,5 @@ public class AssistantDetailsModel extends PropertyModel {
     // TODO(crbug.com/806868): Make private once this is only called by native.
     public void clearDetails() {
         set(DETAILS, null);
-    }
-
-    @CalledByNative
-    @Nullable
-    private AssistantDetails getDetails() {
-        return get(DETAILS);
     }
 }

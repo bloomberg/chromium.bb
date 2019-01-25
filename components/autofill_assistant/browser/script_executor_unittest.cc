@@ -84,6 +84,16 @@ class ScriptExecutorTest : public testing::Test,
 
   void SetTouchableElementArea(const ElementAreaProto& area) {}
 
+  void SetStatusMessage(const std::string& status_message) {
+    status_message_ = status_message;
+  }
+
+  std::string GetStatusMessage() const override { return status_message_; }
+
+  void ClearDetails() override { cleared_details_ = true; }
+
+  void SetDetails(const Details& details) override {}
+
   void EnterState(AutofillAssistantState state) {}
 
   const std::map<std::string, std::string>& GetParameters() override {
@@ -185,6 +195,8 @@ class ScriptExecutorTest : public testing::Test,
   StrictMock<base::MockCallback<ScriptExecutor::RunScriptCallback>>
       executor_callback_;
   GURL url_;
+  std::string status_message_;
+  bool cleared_details_ = false;
 };
 
 TEST_F(ScriptExecutorTest, GetActionsFails) {
@@ -379,7 +391,7 @@ TEST_F(ScriptExecutorTest, RunDelayedAction) {
   EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
 }
 
-TEST_F(ScriptExecutorTest, HideDetailsWhenFinished) {
+TEST_F(ScriptExecutorTest, ClearDetailsWhenFinished) {
   ActionsResponseProto actions_response;
   ActionProto click_with_clean_contextual_ui;
   click_with_clean_contextual_ui.set_clean_contextual_ui(true);
@@ -393,11 +405,11 @@ TEST_F(ScriptExecutorTest, HideDetailsWhenFinished) {
       .WillOnce(RunOnceCallback<3>(true, ""));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
-  EXPECT_CALL(mock_ui_controller_, HideDetails());
   executor_->Run(executor_callback_.Get());
+  EXPECT_TRUE(cleared_details_);
 }
 
-TEST_F(ScriptExecutorTest, DontHideDetailsIfOtherActionsAreLeft) {
+TEST_F(ScriptExecutorTest, DontClearDetailsIfOtherActionsAreLeft) {
   ActionsResponseProto actions_response;
   ActionProto click_with_clean_contextual_ui;
   click_with_clean_contextual_ui.set_clean_contextual_ui(true);
@@ -412,12 +424,12 @@ TEST_F(ScriptExecutorTest, DontHideDetailsIfOtherActionsAreLeft) {
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
 
-  EXPECT_CALL(mock_ui_controller_, HideDetails()).Times(0);
-
   executor_->Run(executor_callback_.Get());
+
+  EXPECT_FALSE(cleared_details_);
 }
 
-TEST_F(ScriptExecutorTest, HideDetailsOnError) {
+TEST_F(ScriptExecutorTest, ClearDetailsOnError) {
   ActionsResponseProto actions_response;
   actions_response.add_actions()->mutable_tell()->set_message("Hello");
   EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
@@ -427,9 +439,8 @@ TEST_F(ScriptExecutorTest, HideDetailsOnError) {
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, false)));
 
-  EXPECT_CALL(mock_ui_controller_, HideDetails());
-
   executor_->Run(executor_callback_.Get());
+  EXPECT_TRUE(cleared_details_);
 }
 
 TEST_F(ScriptExecutorTest, UpdateScriptStateWhileRunning) {

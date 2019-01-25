@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_SHOW_DETAILS_ACTION_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_SHOW_DETAILS_ACTION_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/actions/action.h"
@@ -20,9 +22,12 @@ class ShowDetailsAction : public Action {
   // Overrides Action:
   void InternalProcessAction(ActionDelegate* delegate,
                              ProcessActionCallback callback) override;
-  void OnShowDetails(ProcessActionCallback callback,
-                     ActionDelegate* delegate,
-                     bool can_continue);
+  void OnUserResponse(ProcessActionCallback callback,
+                      ActionDelegate* delegate,
+                      const std::string& old_status_message,
+                      bool can_continue);
+  void OnActionProcessed(ProcessActionCallback callback,
+                         ProcessedActionStatusProto status);
 
   base::WeakPtrFactory<ShowDetailsAction> weak_ptr_factory_;
 

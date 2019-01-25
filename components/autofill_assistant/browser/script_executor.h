@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
+#include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
 #include "components/autofill_assistant/browser/service.pb.h"
@@ -105,7 +106,8 @@ class ScriptExecutor : public ActionDelegate {
       bool allow_interrupt,
       const Selector& selector,
       base::OnceCallback<void(ProcessedActionStatusProto)> callback) override;
-  void ShowStatusMessage(const std::string& message) override;
+  void SetStatusMessage(const std::string& message) override;
+  std::string GetStatusMessage() override;
   void ClickOrTapElement(const Selector& selector,
                          base::OnceCallback<void(bool)> callback) override;
   void GetPaymentInformation(
@@ -154,10 +156,9 @@ class ScriptExecutor : public ActionDelegate {
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   content::WebContents* GetWebContents() override;
   void StopCurrentScriptAndShutdown(const std::string& message) override;
-  void HideDetails() override;
-  void ShowDetails(const ShowDetailsProto& show_details,
-                   base::OnceCallback<void(bool)> callback) override;
-  void ShowProgressBar(int progress, const std::string& message) override;
+  void ClearDetails() override;
+  void SetDetails(const Details& details) override;
+  void ShowProgressBar(int progress) override;
   void HideProgressBar() override;
 
  private:

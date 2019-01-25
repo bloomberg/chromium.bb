@@ -106,8 +106,12 @@ void ScriptExecutor::WaitForElementVisible(
   wait_with_interrupts_->Run();
 }
 
-void ScriptExecutor::ShowStatusMessage(const std::string& message) {
-  delegate_->GetUiController()->ShowStatusMessage(message);
+void ScriptExecutor::SetStatusMessage(const std::string& message) {
+  delegate_->SetStatusMessage(message);
+}
+
+std::string ScriptExecutor::GetStatusMessage() {
+  return delegate_->GetStatusMessage();
 }
 
 void ScriptExecutor::ClickOrTapElement(
@@ -242,8 +246,8 @@ void ScriptExecutor::SetTouchableElementArea(
       std::make_unique<ElementAreaProto>(touchable_element_area);
 }
 
-void ScriptExecutor::ShowProgressBar(int progress, const std::string& message) {
-  delegate_->GetUiController()->ShowProgressBar(progress, message);
+void ScriptExecutor::ShowProgressBar(int progress) {
+  delegate_->GetUiController()->ShowProgressBar(progress);
 }
 
 void ScriptExecutor::HideProgressBar() {
@@ -313,7 +317,7 @@ void ScriptExecutor::Restart() {
 
 void ScriptExecutor::StopCurrentScriptAndShutdown(const std::string& message) {
   // Use a default message when |message| is empty.
-  delegate_->GetUiController()->ShowStatusMessage(
+  delegate_->SetStatusMessage(
       message.empty() ? l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP)
                       : message);
   at_end_ = SHUTDOWN_GRACEFULLY;
@@ -332,14 +336,12 @@ content::WebContents* ScriptExecutor::GetWebContents() {
   return delegate_->GetWebContents();
 }
 
-void ScriptExecutor::HideDetails() {
-  delegate_->GetUiController()->HideDetails();
+void ScriptExecutor::ClearDetails() {
+  delegate_->ClearDetails();
 }
 
-void ScriptExecutor::ShowDetails(const ShowDetailsProto& show_details,
-                                 base::OnceCallback<void(bool)> callback) {
-  return delegate_->GetUiController()->ShowDetails(show_details,
-                                                   std::move(callback));
+void ScriptExecutor::SetDetails(const Details& details) {
+  return delegate_->SetDetails(details);
 }
 
 void ScriptExecutor::OnGetActions(bool result, const std::string& response) {
@@ -404,7 +406,7 @@ void ScriptExecutor::ReportScriptsUpdateToListener(
 void ScriptExecutor::RunCallback(bool success) {
   DCHECK(callback_);
   if (should_clean_contextual_ui_on_finish_ || !success) {
-    HideDetails();
+    ClearDetails();
     should_clean_contextual_ui_on_finish_ = false;
   }
 
@@ -674,8 +676,7 @@ void ScriptExecutor::WaitWithInterrupts::SavePreInterruptState() {
   if (saved_pre_interrupt_state_)
     return;
 
-  pre_interrupt_status_ =
-      main_script_->delegate_->GetUiController()->GetStatusMessage();
+  pre_interrupt_status_ = main_script_->delegate_->GetStatusMessage();
   saved_pre_interrupt_state_ = true;
 }
 
@@ -683,8 +684,7 @@ void ScriptExecutor::WaitWithInterrupts::RestorePreInterruptUiState() {
   if (!saved_pre_interrupt_state_)
     return;
 
-  main_script_->delegate_->GetUiController()->ShowStatusMessage(
-      pre_interrupt_status_);
+  main_script_->delegate_->SetStatusMessage(pre_interrupt_status_);
 }
 
 void ScriptExecutor::WaitWithInterrupts::RestorePreInterruptScroll(

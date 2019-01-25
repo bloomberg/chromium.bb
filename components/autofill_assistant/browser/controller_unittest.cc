@@ -247,7 +247,7 @@ TEST_F(ControllerTest, ShowFirstInitialPrompt) {
   SetNextScriptResponse(script_response);
 
   // Script3, with higher priority (lower number), wins.
-  EXPECT_CALL(mock_ui_controller_, ShowStatusMessage("script3 prompt"));
+  EXPECT_CALL(mock_ui_controller_, OnStatusMessageChanged("script3 prompt"));
   EXPECT_CALL(mock_ui_controller_, SetChips(Pointee(SizeIs(4))));
 
   // Start the flow.

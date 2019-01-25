@@ -136,7 +136,7 @@ void UiControllerAndroid::OnStateChanged(AutofillAssistantState new_state) {
   NOTREACHED() << "Unknown state: " << static_cast<int>(new_state);
 }
 
-void UiControllerAndroid::ShowStatusMessage(const std::string& message) {
+void UiControllerAndroid::OnStatusMessageChanged(const std::string& message) {
   if (!message.empty()) {
     JNIEnv* env = AttachCurrentThread();
     Java_AssistantHeaderModel_setStatusMessage(
@@ -145,18 +145,7 @@ void UiControllerAndroid::ShowStatusMessage(const std::string& message) {
   }
 }
 
-std::string UiControllerAndroid::GetStatusMessage() {
-  JNIEnv* env = AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jstring> message =
-      Java_AssistantHeaderModel_getStatusMessage(env, GetHeaderModel());
-  std::string status;
-  base::android::ConvertJavaStringToUTF8(env, message.obj(), &status);
-  return status;
-}
-
-void UiControllerAndroid::ShowProgressBar(int progress,
-                                          const std::string& message) {
-  ShowStatusMessage(message);
+void UiControllerAndroid::ShowProgressBar(int progress) {
   // TODO(crbug.com/806868): Get progress first and call setProgress only if
   // progress > current_progress, and remove that logic from
   // AnimatedProgressBar.
@@ -200,13 +189,9 @@ void UiControllerAndroid::SetProgressPulsingEnabled(bool enabled) {
 
 void UiControllerAndroid::OnFeedbackButtonClicked() {
   JNIEnv* env = AttachCurrentThread();
-  auto jdetails = Java_AssistantDetailsModel_getDetails(env, GetDetailsModel());
-  auto jstatus_message =
-      Java_AssistantHeaderModel_getStatusMessage(env, GetHeaderModel());
   Java_AutofillAssistantUiController_showFeedback(
       env, java_autofill_assistant_ui_controller_,
-      base::android::ConvertUTF8ToJavaString(env, GetDebugContext()), jdetails,
-      jstatus_message);
+      base::android::ConvertUTF8ToJavaString(env, GetDebugContext()));
 }
 
 void UiControllerAndroid::OnCloseButtonClicked() {
@@ -242,7 +227,7 @@ void UiControllerAndroid::SetChips(std::unique_ptr<std::vector<Chip>> chips) {
     types[i++] = chip.type;
     texts.emplace_back(chip.text);
   }
-
+  SetProgressPulsingEnabled(true);
   JNIEnv* env = AttachCurrentThread();
   Java_AssistantCarouselModel_setChips(
       env, GetCarouselModel(),
@@ -253,6 +238,7 @@ void UiControllerAndroid::SetChips(std::unique_ptr<std::vector<Chip>> chips) {
 
 void UiControllerAndroid::ClearChips() {
   current_chips_.reset();
+  SetProgressPulsingEnabled(false);
   Java_AssistantCarouselModel_clearChips(AttachCurrentThread(),
                                          GetCarouselModel());
 }
@@ -261,6 +247,7 @@ void UiControllerAndroid::OnChipSelected(int index) {
   if (current_chips_ && index >= 0 && index < (int)current_chips_->size()) {
     auto callback = std::move((*current_chips_)[index].callback);
     current_chips_.reset();
+    SetProgressPulsingEnabled(false);
     std::move(callback).Run();
   }
 }
@@ -379,103 +366,28 @@ UiControllerAndroid::GetDetailsModel() {
   return Java_AssistantModel_getDetailsModel(AttachCurrentThread(), GetModel());
 }
 
-void UiControllerAndroid::HideDetails() {
-  Java_AssistantDetailsModel_clearDetails(AttachCurrentThread(),
-                                          GetDetailsModel());
-}
-
-void UiControllerAndroid::ShowInitialDetails(const std::string& title,
-                                             const std::string& description,
-                                             const std::string& mid,
-                                             const std::string& date) {
+void UiControllerAndroid::OnDetailsChanged(const Details* details) {
   JNIEnv* env = AttachCurrentThread();
-  auto jdetails = Java_AssistantDetails_createInitial(
-      env, base::android::ConvertUTF8ToJavaString(env, title),
-      base::android::ConvertUTF8ToJavaString(env, description),
-      base::android::ConvertUTF8ToJavaString(env, mid),
-      base::android::ConvertUTF8ToJavaString(env, date));
-  Java_AssistantDetailsModel_setDetails(env, GetDetailsModel(), jdetails);
-}
-
-void UiControllerAndroid::ShowDetails(const ShowDetailsProto& show_details,
-                                      base::OnceCallback<void(bool)> callback) {
-  show_details_callback_ = std::move(callback);
-  const DetailsChanges& change_flags = show_details.change_flags();
-  ShowDetails(show_details, change_flags.user_approval_required(),
-              change_flags.highlight_title(), change_flags.highlight_date());
-
-  if (!change_flags.user_approval_required()) {
-    std::move(show_details_callback_).Run(true);
+  auto jmodel = GetDetailsModel();
+  if (!details) {
+    Java_AssistantDetailsModel_clearDetails(env, jmodel);
     return;
   }
 
-  // Ask for user approval.
-  std::string previous_status_message = GetStatusMessage();
-  ShowStatusMessage(
-      l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DETAILS_DIFFER));
-
-  // Continue button.
-  auto chips = std::make_unique<std::vector<Chip>>();
-  chips->emplace_back();
-  chips->back().text =
-      l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_CONTINUE_BUTTON);
-  chips->back().type = Chip::Type::BUTTON_FILLED_BLUE;
-  chips->back().callback = base::BindOnce(
-      &UiControllerAndroid::OnUserApproval, weak_ptr_factory_.GetWeakPtr(),
-      show_details, previous_status_message, /* success= */ true);
-
-  // Go back button.
-  chips->emplace_back();
-  chips->back().text =
-      l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DETAILS_DIFFER_GO_BACK);
-  chips->back().type = Chip::Type::BUTTON_TEXT;
-  chips->back().callback = base::BindOnce(
-      &UiControllerAndroid::OnUserApproval, weak_ptr_factory_.GetWeakPtr(),
-      show_details, previous_status_message, /* success= */ false);
-
-  SetChips(std::move(chips));
-}
-
-void UiControllerAndroid::OnUserApproval(
-    const ShowDetailsProto& show_details,
-    const std::string& previous_status_message,
-    bool success) {
-  if (success) {
-    // Restore previous state.
-    ShowStatusMessage(previous_status_message);
-
-    // Show details without highlighted fields.
-    ShowDetails(show_details, /* user_approval_required= */ false,
-                /* highlight_title= */ false, /* highlight_date= */ false);
-  }
-
-  if (show_details_callback_) {
-    std::move(show_details_callback_).Run(success);
-  }
-}
-
-void UiControllerAndroid::ShowDetails(const ShowDetailsProto& show_details,
-                                      bool user_approval_required,
-                                      bool highlight_title,
-                                      bool highlight_date) {
-  const DetailsProto& details = show_details.details();
-  int year = details.datetime().date().year();
-  int month = details.datetime().date().month();
-  int day = details.datetime().date().day();
-  int hour = details.datetime().time().hour();
-  int minute = details.datetime().time().minute();
-  int second = details.datetime().time().second();
-
-  JNIEnv* env = AttachCurrentThread();
+  const DetailsProto& proto = details->proto;
   auto jdetails = Java_AssistantDetails_create(
-      env, base::android::ConvertUTF8ToJavaString(env, details.title()),
-      base::android::ConvertUTF8ToJavaString(env, details.url()),
-      base::android::ConvertUTF8ToJavaString(env, details.description()),
-      base::android::ConvertUTF8ToJavaString(env, details.m_id()),
-      base::android::ConvertUTF8ToJavaString(env, details.total_price()), year,
-      month, day, hour, minute, second, user_approval_required, highlight_title,
-      highlight_date);
-  Java_AssistantDetailsModel_setDetails(env, GetDetailsModel(), jdetails);
+      env, base::android::ConvertUTF8ToJavaString(env, proto.title()),
+      base::android::ConvertUTF8ToJavaString(env, proto.url()),
+      base::android::ConvertUTF8ToJavaString(env, proto.description()),
+      base::android::ConvertUTF8ToJavaString(env, proto.m_id()),
+      base::android::ConvertUTF8ToJavaString(env, proto.total_price()),
+      base::android::ConvertUTF8ToJavaString(env, details->datetime),
+      proto.datetime().date().year(), proto.datetime().date().month(),
+      proto.datetime().date().day(), proto.datetime().time().hour(),
+      proto.datetime().time().minute(), proto.datetime().time().second(),
+      details->changes.user_approval_required(),
+      details->changes.highlight_title(), details->changes.highlight_date());
+  Java_AssistantDetailsModel_setDetails(env, jmodel, jdetails);
 }
 
 void UiControllerAndroid::Stop(

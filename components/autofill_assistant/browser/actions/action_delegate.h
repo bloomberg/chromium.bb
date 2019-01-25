@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
+#include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/selector.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
@@ -29,7 +30,6 @@ class WebContents;
 
 namespace autofill_assistant {
 class ClientMemory;
-class ShowDetailsProto;
 struct PaymentInformation;
 
 // Action delegate called when processing actions.
@@ -38,7 +38,11 @@ class ActionDelegate {
   virtual ~ActionDelegate() = default;
 
   // Show status message on the bottom bar.
-  virtual void ShowStatusMessage(const std::string& message) = 0;
+  virtual void SetStatusMessage(const std::string& message) = 0;
+
+  // Returns the current status message. Usually used to restore a message after
+  // the action.
+  virtual std::string GetStatusMessage() = 0;
 
   // Create a helper for checking for multiple element existence or field
   // values.
@@ -187,15 +191,14 @@ class ActionDelegate {
   // Get associated web contents.
   virtual content::WebContents* GetWebContents() = 0;
 
-  // Hide contextual information.
-  virtual void HideDetails() = 0;
+  // Clears contextual information.
+  virtual void ClearDetails() = 0;
 
-  // Show contextual information.
-  virtual void ShowDetails(const ShowDetailsProto& details,
-                           base::OnceCallback<void(bool)> callback) = 0;
+  // Sets or updates contextual information.
+  virtual void SetDetails(const Details& details) = 0;
 
-  // Show the progress bar with |message| and set it at |progress|%.
-  virtual void ShowProgressBar(int progress, const std::string& message) = 0;
+  // Show the progress bar and set it at |progress|%.
+  virtual void ShowProgressBar(int progress) = 0;
 
   // Hide the progress bar.
   virtual void HideProgressBar() = 0;

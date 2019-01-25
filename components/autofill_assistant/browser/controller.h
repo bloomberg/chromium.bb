@@ -77,8 +77,11 @@ class Controller : public ScriptExecutorDelegate,
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   content::WebContents* GetWebContents() override;
   void SetTouchableElementArea(const ElementAreaProto& area) override;
+  void SetStatusMessage(const std::string& message) override;
+  std::string GetStatusMessage() const override;
+  void SetDetails(const Details& details) override;
+  void ClearDetails() override;
   void EnterState(AutofillAssistantState state) override;
-
   bool IsCookieExperimentEnabled() const;
 
  private:
@@ -113,7 +116,7 @@ class Controller : public ScriptExecutorDelegate,
   void OnGetCookie(const GURL& initial_url, bool has_cookie);
   void OnSetCookie(const GURL& initial_url, bool result);
   void FinishStart(const GURL& initial_url);
-  void MaybeShowInitialDetails();
+  void MaybeSetInitialDetails();
 
   // Called when a script is selected.
   void OnScriptSelected(const std::string& script_path);
@@ -122,6 +125,7 @@ class Controller : public ScriptExecutorDelegate,
   AutofillAssistantState GetState() override;
   void UpdateTouchableArea() override;
   void OnUserInteractionInsideTouchableArea() override;
+  const Details* GetDetails() const override;
   std::string GetDebugContext() override;
 
   // Overrides ScriptTracker::Listener:
@@ -172,6 +176,12 @@ class Controller : public ScriptExecutorDelegate,
   // Area of the screen that corresponds to the current set of touchable
   // elements.
   ElementArea touchable_element_area_;
+
+  // Current status message, may be empty.
+  std::string status_message_;
+
+  // Current details, may be null.
+  std::unique_ptr<Details> details_;
 
   // Flag indicates whether it is ready to fetch and execute scripts.
   bool started_ = false;

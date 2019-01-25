@@ -24,7 +24,7 @@ PromptAction::~PromptAction() {}
 
 void PromptAction::InternalProcessAction(ActionDelegate* delegate,
                                          ProcessActionCallback callback) {
-  delegate->ShowStatusMessage(proto_.prompt().message());
+  delegate->SetStatusMessage(proto_.prompt().message());
 
   callback_ = std::move(callback);
   auto chips = std::make_unique<std::vector<Chip>>();

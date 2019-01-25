@@ -14,6 +14,7 @@
 #include "chrome/browser/android/autofill_assistant/assistant_carousel_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_header_delegate.h"
 #include "components/autofill_assistant/browser/client.h"
+#include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
 
 namespace autofill_assistant {
@@ -36,8 +37,7 @@ class UiControllerAndroid : public UiController {
 
   // Overrides UiController:
   void OnStateChanged(AutofillAssistantState new_state) override;
-  void ShowStatusMessage(const std::string& message) override;
-  std::string GetStatusMessage() override;
+  void OnStatusMessageChanged(const std::string& message) override;
   void Shutdown() override;
   void Close() override;
   void SetChips(std::unique_ptr<std::vector<Chip>> chips) override;
@@ -47,14 +47,8 @@ class UiControllerAndroid : public UiController {
       base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
       const std::string& title,
       const std::vector<std::string>& supported_basic_card_networks) override;
-  void HideDetails() override;
-  void ShowInitialDetails(const std::string& title,
-                          const std::string& description,
-                          const std::string& mid,
-                          const std::string& date) override;
-  void ShowDetails(const ShowDetailsProto& show_details,
-                   base::OnceCallback<void(bool)> callback) override;
-  void ShowProgressBar(int progress, const std::string& message) override;
+  void OnDetailsChanged(const Details* details) override;
+  void ShowProgressBar(int progress) override;
   void HideProgressBar() override;
   void UpdateTouchableArea(bool enabled,
                            const std::vector<RectF>& areas) override;
@@ -87,7 +81,6 @@ class UiControllerAndroid : public UiController {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller);
 
- protected:
  private:
   Client* const client_;
   UiDelegate* const ui_delegate_;
@@ -103,15 +96,8 @@ class UiControllerAndroid : public UiController {
   void HideOverlay();
   void AllowShowingSoftKeyboard(bool enabled);
   void ExpandBottomSheet();
-  void SetProgressPulsingEnabled(bool enabled);
   void ShutdownGracefully();
-  void ShowDetails(const ShowDetailsProto& show_details,
-                   bool user_approval_required,
-                   bool highlight_title,
-                   bool highlight_date);
-  void OnUserApproval(const ShowDetailsProto& show_details,
-                      const std::string& previous_status_message,
-                      bool success);
+  void SetProgressPulsingEnabled(bool enabled);
   std::string GetDebugContext();
 
   // Java-side AutofillAssistantUiController object.
@@ -121,7 +107,6 @@ class UiControllerAndroid : public UiController {
   std::unique_ptr<std::vector<Chip>> current_chips_;
   base::OnceCallback<void(std::unique_ptr<PaymentInformation>)>
       get_payment_information_callback_;
-  base::OnceCallback<void(bool)> show_details_callback_;
 
   base::WeakPtrFactory<UiControllerAndroid> weak_ptr_factory_;
 

@@ -29,7 +29,8 @@ void ShowProgressBarAction::InternalProcessAction(
   } else {
     int progress =
         std::min(100, std::max(0, proto_.show_progress_bar().progress()));
-    delegate->ShowProgressBar(progress, proto_.show_progress_bar().message());
+    delegate->SetStatusMessage(proto_.show_progress_bar().message());
+    delegate->ShowProgressBar(progress);
   }
 
   UpdateProcessedAction(ACTION_APPLIED);
