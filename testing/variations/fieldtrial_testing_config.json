@@ -2676,28 +2676,6 @@
             ]
         }
     ],
-    "NTPUseGoogleLocalNtp": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "local_ntp_interactive_doodles": "false"
-                    },
-                    "enable_features": [
-                        "DoodlesOnLocalNtp",
-                        "UseGoogleLocalNtp"
-                    ]
-                }
-            ]
-        }
-    ],
     "NativeCrxBindings": [
         {
             "platforms": [
@@ -4910,6 +4888,26 @@
                     "params": {
                         "min_required_storage_for_update_mb": "500"
                     }
+                }
+            ]
+        }
+    ],
+    "UseGoogleLocalNtp": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "UseGoogleLocalNtp",
+                    "enable_features": [
+                        "DoodlesOnLocalNtp",
+                        "PromosOnLocalNtp",
+                        "UseGoogleLocalNtp"
+                    ]
                 }
             ]
         }
