@@ -27,6 +27,7 @@ class TestDisplayObserver : public display::DisplayObserver {
   ~TestDisplayObserver() override {}
 
   display::Display GetDisplay() { return std::move(display_); }
+  display::Display GetRemovedDisplay() { return std::move(removed_display_); }
   uint32_t GetAndClearChangedMetrics() {
     uint32_t changed_metrics = changed_metrics_;
     changed_metrics_ = 0;
@@ -39,7 +40,7 @@ class TestDisplayObserver : public display::DisplayObserver {
   }
 
   void OnDisplayRemoved(const display::Display& old_display) override {
-    display_ = old_display;
+    removed_display_ = old_display;
   }
 
   void OnDisplayMetricsChanged(const display::Display& display,
@@ -51,6 +52,7 @@ class TestDisplayObserver : public display::DisplayObserver {
  private:
   uint32_t changed_metrics_ = 0;
   display::Display display_;
+  display::Display removed_display_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDisplayObserver);
 };
@@ -71,7 +73,7 @@ class WaylandScreenTest : public WaylandTest {
     output_manager_ = connection_->wayland_output_manager();
     ASSERT_TRUE(output_manager_);
 
-    EXPECT_TRUE(output_manager_->IsPrimaryOutputReady());
+    EXPECT_TRUE(output_manager_->IsOutputReady());
     platform_screen_ = output_manager_->CreateWaylandScreen(connection_.get());
   }
 
@@ -88,6 +90,17 @@ class WaylandScreenTest : public WaylandTest {
     properties.parent_widget = parent_widget;
     EXPECT_TRUE(window->Initialize(std::move(properties)));
     return window;
+  }
+
+  void UpdateOutputGeometry(wl_resource* output_resource,
+                            const gfx::Rect& new_rect) {
+    wl_output_send_geometry(output_resource, new_rect.x(), new_rect.y(),
+                            0 /* physical_width */, 0 /* physical_height */,
+                            0 /* subpixel */, "unknown_make", "unknown_model",
+                            0 /* transform */);
+    wl_output_send_mode(output_resource, WL_OUTPUT_MODE_CURRENT,
+                        new_rect.width(), new_rect.height(), 0 /* refresh */);
+    wl_output_send_done(output_resource);
   }
 
   wl::MockOutput* output_ = nullptr;
@@ -118,8 +131,20 @@ TEST_P(WaylandScreenTest, MultipleOutputsAddedAndRemoved) {
   TestDisplayObserver observer;
   platform_screen_->AddObserver(&observer);
 
+  const int64_t old_primary_display_id =
+      platform_screen_->GetPrimaryDisplay().id();
+
   // Add a second display.
-  server_.CreateAndInitializeOutput();
+  wl::MockOutput* output2 = server_.CreateAndInitializeOutput();
+
+  Sync();
+
+  // Update rect of that display.
+  gfx::Rect output1_rect = server_.output()->GetRect();
+  gfx::Rect output2_rect(output1_rect.width(), 0, 800, 600);
+  // The second display is located to the right of first display like
+  // | || |.
+  UpdateOutputGeometry(output2->resource(), output2_rect);
 
   Sync();
 
@@ -127,17 +152,21 @@ TEST_P(WaylandScreenTest, MultipleOutputsAddedAndRemoved) {
   int64_t added_display_id = observer.GetDisplay().id();
   EXPECT_NE(platform_screen_->GetPrimaryDisplay().id(), added_display_id);
 
-  // Remove the second output.
-  output_manager_->RemoveWaylandOutput(added_display_id);
+  output2->DestroyGlobal();
 
   Sync();
 
   // Ensure that removed display has correct id.
-  int64_t removed_display_id = observer.GetDisplay().id();
+  int64_t removed_display_id = observer.GetRemovedDisplay().id();
   EXPECT_EQ(added_display_id, removed_display_id);
 
   // Create another display again.
-  server_.CreateAndInitializeOutput();
+  output2 = server_.CreateAndInitializeOutput();
+
+  Sync();
+
+  // Updates rect again.
+  UpdateOutputGeometry(output2->resource(), output2_rect);
 
   Sync();
 
@@ -145,16 +174,26 @@ TEST_P(WaylandScreenTest, MultipleOutputsAddedAndRemoved) {
   added_display_id = observer.GetDisplay().id();
   EXPECT_NE(platform_screen_->GetPrimaryDisplay().id(), added_display_id);
 
-  // Make sure the geometry changes are sent by syncing one more time again.
+  // Now, rearrange displays so that second display becomes a primary one.
+  output1_rect = gfx::Rect(1024, 0, 1024, 768);
+  output2_rect = gfx::Rect(0, 0, 1024, 768);
+  UpdateOutputGeometry(server_.output()->resource(), output1_rect);
+  UpdateOutputGeometry(output2->resource(), output2_rect);
+
   Sync();
 
-  int64_t old_primary_display_id = platform_screen_->GetPrimaryDisplay().id();
-  output_manager_->RemoveWaylandOutput(old_primary_display_id);
-
-  // Ensure that previously added display is now a primary one.
+  // Ensure that output2 is now the primary one.
   EXPECT_EQ(platform_screen_->GetPrimaryDisplay().id(), added_display_id);
+
+  // Remove the primary display now.
+  output2->DestroyGlobal();
+
+  Sync();
+
+  // Ensure that output1 is a primary display now.
+  EXPECT_EQ(platform_screen_->GetPrimaryDisplay().id(), old_primary_display_id);
   // Ensure that the removed display was the one, which was a primary display.
-  EXPECT_EQ(observer.GetDisplay().id(), old_primary_display_id);
+  EXPECT_EQ(observer.GetRemovedDisplay().id(), added_display_id);
 
   platform_screen_->RemoveObserver(&observer);
 }
@@ -164,13 +203,7 @@ TEST_P(WaylandScreenTest, OutputPropertyChanges) {
   platform_screen_->AddObserver(&observer);
 
   const gfx::Rect new_rect(0, 0, 800, 600);
-  wl_output_send_geometry(output_->resource(), new_rect.x(), new_rect.y(),
-                          0 /* physical_width */, 0 /* physical_height */,
-                          0 /* subpixel */, "unkown_make", "unknown_model",
-                          0 /* transform */);
-  wl_output_send_mode(output_->resource(), WL_OUTPUT_MODE_CURRENT,
-                      new_rect.width(), new_rect.height(), 0 /* refresh */);
-  wl_output_send_done(output_->resource());
+  UpdateOutputGeometry(output_->resource(), new_rect);
 
   Sync();
 

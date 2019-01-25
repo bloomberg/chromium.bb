@@ -13,13 +13,10 @@ WaylandOutputManager::WaylandOutputManager() = default;
 
 WaylandOutputManager::~WaylandOutputManager() = default;
 
-bool WaylandOutputManager::IsPrimaryOutputReady() const {
+bool WaylandOutputManager::IsOutputReady() const {
   if (output_list_.empty())
     return false;
-
-  // The very first output in the list is always treated as a primary output.
-  const auto& primary_output = output_list_.front();
-  return primary_output->is_ready();
+  return output_list_.front()->is_ready();
 }
 
 void WaylandOutputManager::AddWaylandOutput(const uint32_t output_id,
@@ -54,14 +51,7 @@ void WaylandOutputManager::RemoveWaylandOutput(const uint32_t output_id) {
   if (output_it == output_list_.end())
     return;
 
-  bool was_primary_output = IsPrimaryOutput(output_id);
   output_list_.erase(output_it);
-
-  // If it was a primary output removed, make sure the second output, which
-  // became a primary one, announces that to observers.
-  if (was_primary_output && !output_list_.empty())
-    output_list_.front()->TriggerDelegateNotification();
-
   OnWaylandOutputRemoved(output_id);
 }
 
@@ -90,7 +80,7 @@ std::unique_ptr<WaylandScreen> WaylandOutputManager::CreateWaylandScreen(
 
 void WaylandOutputManager::OnWaylandOutputAdded(uint32_t output_id) {
   if (wayland_screen_)
-    wayland_screen_->OnOutputAdded(output_id, IsPrimaryOutput(output_id));
+    wayland_screen_->OnOutputAdded(output_id);
 }
 
 void WaylandOutputManager::OnWaylandOutputRemoved(uint32_t output_id) {
@@ -98,21 +88,12 @@ void WaylandOutputManager::OnWaylandOutputRemoved(uint32_t output_id) {
     wayland_screen_->OnOutputRemoved(output_id);
 }
 
-bool WaylandOutputManager::IsPrimaryOutput(uint32_t output_id) const {
-  DCHECK(!output_list_.empty());
-  // The very first object in the |output_list_| is always treated as a primary
-  // output.
-  const auto& primary_output = output_list_.front();
-  return primary_output->output_id() == output_id;
-}
-
 void WaylandOutputManager::OnOutputHandleMetrics(uint32_t output_id,
                                                  const gfx::Rect& new_bounds,
                                                  int32_t scale_factor) {
-  if (wayland_screen_) {
-    wayland_screen_->OnOutputMetricsChanged(output_id, new_bounds, scale_factor,
-                                            IsPrimaryOutput(output_id));
-  }
+  if (wayland_screen_)
+    wayland_screen_->OnOutputMetricsChanged(output_id, new_bounds,
+                                            scale_factor);
 }
 
 }  // namespace ui

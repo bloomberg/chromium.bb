@@ -1041,6 +1041,10 @@ bool Global::Initialize(wl_display* display) {
   return global_ != nullptr;
 }
 
+void Global::DestroyGlobal() {
+  global_.reset();
+}
+
 // static
 void Global::Bind(wl_client* client,
                   void* data,
@@ -1083,19 +1087,22 @@ MockDataDeviceManager::MockDataDeviceManager()
 MockDataDeviceManager::~MockDataDeviceManager() {}
 
 MockOutput::MockOutput()
-    : Global(&wl_output_interface, nullptr, kOutputVersion),
-      rect_(gfx::Rect(0, 0, 800, 600)) {}
+    : Global(&wl_output_interface, nullptr, kOutputVersion) {}
 
 MockOutput::~MockOutput() {}
 
 // Notify clients of the change for output position.
 void MockOutput::OnBind() {
+  if (rect_.IsEmpty())
+    return;
+
   const char* kUnknownMake = "unknown";
   const char* kUnknownModel = "unknown";
   wl_output_send_geometry(resource(), rect_.x(), rect_.y(), 0, 0, 0,
                           kUnknownMake, kUnknownModel, 0);
   wl_output_send_mode(resource(), WL_OUTPUT_MODE_CURRENT, rect_.width(),
                       rect_.height(), 0);
+  wl_output_send_done(resource());
 }
 
 MockSeat::MockSeat() : Global(&wl_seat_interface, &seat_impl, kSeatVersion) {}
@@ -1147,6 +1154,10 @@ bool FakeServer::Start(uint32_t shell_version) {
     return false;
   base::ScopedFD server_fd(fd[0]);
   base::ScopedFD client_fd(fd[1]);
+
+  // If client has not specified rect before, user standard ones.
+  if (output_.GetRect().IsEmpty())
+    output_.SetRect(gfx::Rect(0, 0, 800, 600));
 
   if (wl_display_init_shm(display_.get()) < 0)
     return false;
