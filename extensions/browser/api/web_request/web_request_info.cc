@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/stl_util.h"
 #include "base/values.h"

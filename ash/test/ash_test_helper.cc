@@ -24,6 +24,7 @@
 #include "ash/test/ash_test_views_delegate.h"
 #include "ash/test_shell_delegate.h"
 #include "ash/ws/window_service_owner.h"
+#include "base/bind.h"
 #include "base/guid.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"

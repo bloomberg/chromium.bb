@@ -14,6 +14,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/stl_util.h"
 #include "cc/paint/raw_memory_transfer_cache_entry.h"

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"

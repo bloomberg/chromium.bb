@@ -5,6 +5,7 @@
 #include "net/tools/quic/synchronous_host_resolver.h"
 
 #include "base/at_exit.h"
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/optional.h"
 #include "base/threading/thread_restrictions.h"
 #include "media/audio/audio_output_device_thread_callback.h"

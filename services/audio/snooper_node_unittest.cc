@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/test/test_mock_time_task_runner.h"

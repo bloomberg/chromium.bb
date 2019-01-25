@@ -4,6 +4,7 @@
 
 #include "device/fido/ble/fido_ble_device.h"
 
+#include "base/bind.h"
 #include "base/optional.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"

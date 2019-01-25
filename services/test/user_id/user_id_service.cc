@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "services/test/user_id/user_id_service.h"
+#include "base/bind.h"
 
 namespace user_id {
 

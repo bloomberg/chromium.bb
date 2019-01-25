@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/barrier_closure.h"
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

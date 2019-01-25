@@ -7,6 +7,7 @@
 #include "android_webview/browser/aw_print_manager.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
+#include "base/bind.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/AwPdfExporter_jni.h"
 #include "printing/print_settings.h"

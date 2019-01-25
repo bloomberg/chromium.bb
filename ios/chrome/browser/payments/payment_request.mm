@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/containers/adapters.h"
 #include "base/feature_list.h"
 #include "base/logging.h"

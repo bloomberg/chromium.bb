@@ -6,6 +6,7 @@
 
 #include <zircon/syscalls.h>
 
+#include "base/bind.h"
 #include "base/fuchsia/component_context.h"
 #include "media/audio/fuchsia/audio_manager_fuchsia.h"
 #include "media/base/audio_sample_types.h"

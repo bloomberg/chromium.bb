@@ -4,6 +4,7 @@
 
 #include "net/socket/websocket_transport_connect_sub_job.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"

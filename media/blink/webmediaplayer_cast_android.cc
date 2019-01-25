@@ -4,6 +4,7 @@
 
 #include "media/blink/webmediaplayer_cast_android.h"
 
+#include "base/bind.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/sync_token.h"

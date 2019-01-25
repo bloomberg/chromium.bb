@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "net/quic/quic_chromium_alarm_factory.h"
 #include "net/quic/test_task_runner.h"
 #include "net/test/gtest_util.h"

@@ -4,6 +4,7 @@
 
 #include "device/vr/orientation/orientation_device_provider.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "device/vr/orientation/orientation_device.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"

@@ -4,6 +4,7 @@
 
 #include "device/gamepad/nintendo_controller.h"
 
+#include "base/bind.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
 
 namespace device {

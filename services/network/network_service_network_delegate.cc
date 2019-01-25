@@ -4,6 +4,7 @@
 
 #include "services/network/network_service_network_delegate.h"
 
+#include "base/bind.h"
 #include "services/network/cookie_manager.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"

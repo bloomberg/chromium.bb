@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/logging.h"
 #include "base/threading/thread_checker.h"

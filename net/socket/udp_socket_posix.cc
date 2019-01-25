@@ -11,6 +11,7 @@
 #include <netinet/in.h>
 #include <sys/ioctl.h>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/containers/stack_container.h"

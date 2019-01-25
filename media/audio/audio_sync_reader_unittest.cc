@@ -10,6 +10,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
 #include "base/test/scoped_task_environment.h"

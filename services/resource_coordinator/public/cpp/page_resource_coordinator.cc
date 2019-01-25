@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "services/resource_coordinator/public/cpp/page_resource_coordinator.h"
+#include "base/bind.h"
 
 namespace resource_coordinator {
 

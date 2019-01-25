@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "google_apis/gaia/gaia_urls.h"

@@ -7,6 +7,7 @@
 #include "ash/media/media_notification_constants.h"
 #include "ash/media/media_notification_view.h"
 #include "ash/public/cpp/notification_utils.h"
+#include "base/bind.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "services/media_session/public/mojom/constants.mojom.h"

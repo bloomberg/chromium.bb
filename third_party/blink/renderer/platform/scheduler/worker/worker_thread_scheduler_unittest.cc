@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"

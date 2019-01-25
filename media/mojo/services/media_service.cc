@@ -4,6 +4,7 @@
 
 #include "media/mojo/services/media_service.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/services/interface_factory_impl.h"

@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"

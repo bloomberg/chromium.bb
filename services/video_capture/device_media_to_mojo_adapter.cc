@@ -4,6 +4,7 @@
 
 #include "services/video_capture/device_media_to_mojo_adapter.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/video/scoped_video_capture_jpeg_decoder.h"

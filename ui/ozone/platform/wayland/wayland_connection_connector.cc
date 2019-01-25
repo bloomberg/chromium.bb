@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/wayland/wayland_connection_connector.h"
 
+#include "base/bind.h"
 #include "base/task_runner_util.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/public/interfaces/wayland/wayland_connection.mojom.h"

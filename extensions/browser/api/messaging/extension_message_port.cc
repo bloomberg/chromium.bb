@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/messaging/extension_message_port.h"
 
+#include "base/bind.h"
 #include "base/scoped_observer.h"
 #include "base/strings/strcat.h"
 #include "content/public/browser/browser_context.h"

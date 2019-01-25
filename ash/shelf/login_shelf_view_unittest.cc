@@ -28,6 +28,7 @@
 #include "ash/tray_action/test_tray_action_client.h"
 #include "ash/tray_action/tray_action.h"
 #include "ash/wm/lock_state_controller.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "chromeos/constants/chromeos_switches.h"

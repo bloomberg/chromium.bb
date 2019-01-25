@@ -4,6 +4,7 @@
 
 #include "extensions/browser/service_worker_task_queue.h"
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"

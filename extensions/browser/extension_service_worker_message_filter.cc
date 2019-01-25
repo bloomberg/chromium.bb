@@ -4,6 +4,7 @@
 
 #include "extensions/browser/extension_service_worker_message_filter.h"
 
+#include "base/bind.h"
 #include "content/public/browser/service_worker_context.h"
 #include "extensions/browser/bad_message.h"
 #include "extensions/browser/event_router.h"

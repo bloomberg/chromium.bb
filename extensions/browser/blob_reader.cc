@@ -7,6 +7,7 @@
 #include <limits>
 #include <utility>
 
+#include "base/bind.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 

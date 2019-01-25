@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/ui/webui/inspect/inspect_ui.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"

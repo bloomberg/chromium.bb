@@ -10,6 +10,7 @@
 #include <memory>
 #include <tuple>
 
+#include "base/bind.h"
 #include "base/containers/queue.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"

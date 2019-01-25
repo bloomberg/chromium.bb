@@ -7,6 +7,7 @@
 #include <limits>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"

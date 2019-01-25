@@ -5,6 +5,7 @@
 #include "base/android/task_scheduler/task_runner_android.h"
 
 #include "base/android/task_scheduler/post_task_android.h"
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"

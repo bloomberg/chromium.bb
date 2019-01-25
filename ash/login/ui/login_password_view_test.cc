@@ -6,6 +6,7 @@
 
 #include "ash/login/ui/login_test_base.h"
 #include "ash/shell.h"
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"

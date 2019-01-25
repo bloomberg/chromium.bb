@@ -4,6 +4,7 @@
 
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_attach_helper.h"
 
+#include "base/bind.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"

@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/system/sys_info.h"
 #include "base/values.h"

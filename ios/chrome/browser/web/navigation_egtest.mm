@@ -4,6 +4,7 @@
 
 #import <XCTest/XCTest.h>
 
+#include "base/bind.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"

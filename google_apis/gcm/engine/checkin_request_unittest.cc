@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "google_apis/gcm/engine/checkin_request.h"
 #include "google_apis/gcm/engine/gcm_request_test_base.h"
 #include "google_apis/gcm/monitoring/fake_gcm_stats_recorder.h"

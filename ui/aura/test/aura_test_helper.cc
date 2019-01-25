@@ -4,6 +4,7 @@
 
 #include "ui/aura/test/aura_test_helper.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/default_capture_client.h"

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/graphics/video_frame_submitter.h"
 
 #include <memory>
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"

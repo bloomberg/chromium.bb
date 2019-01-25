@@ -4,6 +4,7 @@
 
 #include "tools/android/forwarder2/host_controllers_manager.h"
 
+#include "base/bind.h"
 #include "base/process/launch.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"

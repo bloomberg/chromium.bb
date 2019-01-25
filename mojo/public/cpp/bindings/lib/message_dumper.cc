@@ -4,6 +4,7 @@
 
 #include "mojo/public/cpp/bindings/message_dumper.h"
 
+#include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"

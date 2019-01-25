@@ -4,6 +4,7 @@
 
 #include "services/ws/window_service_test_setup.h"
 
+#include "base/bind.h"
 #include "services/ws/embedding.h"
 #include "services/ws/event_queue.h"
 #include "services/ws/event_queue_test_helper.h"

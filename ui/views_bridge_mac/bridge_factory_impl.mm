@@ -4,6 +4,7 @@
 
 #include "ui/views_bridge_mac/bridge_factory_impl.h"
 
+#include "base/bind.h"
 #include "base/no_destructor.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/cocoa/remote_accessibility_api.h"

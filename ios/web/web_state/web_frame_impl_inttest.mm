@@ -4,6 +4,7 @@
 
 #include "ios/web/web_state/web_frame_impl.h"
 
+#include "base/bind.h"
 #include "base/ios/ios_util.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/web/public/test/fakes/test_web_client.h"

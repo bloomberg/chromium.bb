@@ -4,6 +4,7 @@
 
 #include "ui/aura/mus/mus_context_factory.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "cc/base/switches.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"

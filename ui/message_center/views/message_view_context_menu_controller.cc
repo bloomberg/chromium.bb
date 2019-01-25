@@ -4,6 +4,7 @@
 
 #include "ui/message_center/views/message_view_context_menu_controller.h"
 
+#include "base/bind.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_view.h"

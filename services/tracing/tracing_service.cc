@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/timer/timer.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
 #include "services/tracing/agent_registry.h"

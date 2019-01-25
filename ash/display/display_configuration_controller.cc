@@ -13,6 +13,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "base/bind.h"
 #include "base/time/time.h"
 #include "chromeos/system/devicemode.h"
 #include "ui/base/class_property.h"

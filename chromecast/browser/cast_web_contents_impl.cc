@@ -4,6 +4,7 @@
 
 #include "chromecast/browser/cast_web_contents_impl.h"
 
+#include "base/bind.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"

@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/passwords_table_view_controller.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"

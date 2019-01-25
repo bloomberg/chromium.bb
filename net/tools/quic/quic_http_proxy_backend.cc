@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"

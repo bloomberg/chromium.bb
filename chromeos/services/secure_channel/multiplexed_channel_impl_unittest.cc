@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/services/secure_channel/connection_details.h"

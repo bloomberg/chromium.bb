@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/trace_event/trace_event.h"
 #include "net/base/url_util.h"
 #include "storage/browser/quota/quota_manager.h"

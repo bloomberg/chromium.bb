@@ -5,6 +5,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
+#include "base/bind.h"
 #include "base/time/time.h"
 
 using device::mojom::BluetoothSystem;

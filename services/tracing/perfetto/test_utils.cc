@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 #include <utility>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "services/tracing/perfetto/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"

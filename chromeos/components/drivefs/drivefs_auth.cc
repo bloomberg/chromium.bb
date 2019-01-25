@@ -4,6 +4,7 @@
 
 #include "chromeos/components/drivefs/drivefs_auth.h"
 
+#include "base/bind.h"
 #include "components/account_id/account_id.h"
 #include "services/identity/public/mojom/constants.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"

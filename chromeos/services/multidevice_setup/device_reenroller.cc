@@ -4,6 +4,7 @@
 
 #include "chromeos/services/multidevice_setup/device_reenroller.h"
 
+#include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/no_destructor.h"
 #include "chromeos/components/multidevice/logging/logging.h"

@@ -4,6 +4,7 @@
 
 #include "services/identity/public/cpp/identity_test_environment.h"
 
+#include "base/bind.h"
 #include "build/build_config.h"
 
 #include "base/run_loop.h"

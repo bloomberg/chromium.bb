@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/history/history_tab_helper.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_interfaces.h"

@@ -13,6 +13,7 @@
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
 #include "ash/system/session/logout_confirmation_dialog.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/metrics/user_metrics.h"

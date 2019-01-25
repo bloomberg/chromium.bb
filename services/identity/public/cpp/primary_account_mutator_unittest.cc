@@ -4,6 +4,7 @@
 
 #include "services/identity/public/cpp/primary_account_mutator.h"
 
+#include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"

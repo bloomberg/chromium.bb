@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/combobox/combobox.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_action_data.h"

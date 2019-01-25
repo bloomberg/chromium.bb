@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/location.h"

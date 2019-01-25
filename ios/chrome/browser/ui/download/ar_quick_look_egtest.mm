@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/download/download_test_util.h"

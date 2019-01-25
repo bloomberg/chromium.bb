@@ -5,6 +5,7 @@
 #include "ash/wallpaper/wallpaper_utils/wallpaper_decoder.h"
 
 #include "ash/shell.h"
+#include "base/bind.h"
 #include "ipc/ipc_channel.h"
 
 namespace ash {

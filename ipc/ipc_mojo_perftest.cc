@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"

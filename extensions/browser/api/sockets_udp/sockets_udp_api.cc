@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/sockets_udp/sockets_udp_api.h"
 
+#include "base/bind.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/socket_permission_request.h"

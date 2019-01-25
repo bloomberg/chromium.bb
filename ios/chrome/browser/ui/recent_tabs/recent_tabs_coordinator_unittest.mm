@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/model/fake_model_type_controller_delegate.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"

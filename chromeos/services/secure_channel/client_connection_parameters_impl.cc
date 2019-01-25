@@ -4,6 +4,7 @@
 
 #include "chromeos/services/secure_channel/client_connection_parameters_impl.h"
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 

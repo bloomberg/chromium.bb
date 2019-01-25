@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
 

@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"

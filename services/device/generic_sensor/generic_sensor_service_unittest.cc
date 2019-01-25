@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/barrier_closure.h"
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

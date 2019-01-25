@@ -9,6 +9,7 @@
 #include <xf86drm.h>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"

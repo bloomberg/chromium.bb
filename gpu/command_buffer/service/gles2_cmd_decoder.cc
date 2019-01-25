@@ -19,6 +19,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/containers/flat_set.h"

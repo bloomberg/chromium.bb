@@ -6,6 +6,7 @@
 
 #include <Security/Security.h>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"

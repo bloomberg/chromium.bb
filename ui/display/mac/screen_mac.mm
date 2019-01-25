@@ -11,6 +11,7 @@
 #include <map>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"

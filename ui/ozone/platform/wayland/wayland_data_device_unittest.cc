@@ -4,6 +4,7 @@
 
 #include <wayland-server.h>
 
+#include "base/bind.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"

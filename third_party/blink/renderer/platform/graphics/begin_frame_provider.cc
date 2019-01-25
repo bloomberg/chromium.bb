@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/begin_frame_provider.h"
 
+#include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"

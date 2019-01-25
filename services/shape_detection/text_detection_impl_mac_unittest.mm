@@ -4,6 +4,7 @@
 
 #include "services/shape_detection/text_detection_impl_mac.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"

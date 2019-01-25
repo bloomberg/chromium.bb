@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "third_party/libyuv/include/libyuv/planar_functions.h"
 
 #include "base/bind_helpers.h"

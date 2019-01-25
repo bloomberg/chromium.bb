@@ -4,6 +4,7 @@
 
 #include "base/message_loop/message_pump_mac.h"
 
+#include "base/bind.h"
 #include "base/cancelable_callback.h"
 #include "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsobject.h"

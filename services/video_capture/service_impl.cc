@@ -4,6 +4,7 @@
 
 #include "services/video_capture/service_impl.h"
 
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/video_capture/device_factory_provider_impl.h"

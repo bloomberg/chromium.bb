@@ -19,6 +19,7 @@
 #include "net/dns/dns_config_service_posix.h"
 #include "net/dns/public/dns_protocol.h"
 
+#include "base/bind.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)

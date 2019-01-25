@@ -5,6 +5,7 @@
 #include "cc/trees/single_thread_proxy.h"
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/devtools_instrumentation.h"

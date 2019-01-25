@@ -4,6 +4,7 @@
 
 #include "net/tools/quic/quic_simple_server_packet_writer.h"
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"

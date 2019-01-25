@@ -8,6 +8,7 @@
 #include <limits>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/rand_util.h"

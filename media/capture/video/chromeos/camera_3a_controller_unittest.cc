@@ -4,6 +4,7 @@
 
 #include "media/capture/video/chromeos/camera_3a_controller.h"
 
+#include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "media/capture/video/chromeos/camera_metadata_utils.h"

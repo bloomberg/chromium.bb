@@ -4,6 +4,7 @@
 
 #include "services/network/net_log_exporter.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"

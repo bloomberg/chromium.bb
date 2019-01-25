@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/containers/queue.h"
 #include "base/location.h"
 #include "base/logging.h"

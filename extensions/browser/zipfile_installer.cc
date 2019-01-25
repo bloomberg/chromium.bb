@@ -4,6 +4,7 @@
 
 #include "extensions/browser/zipfile_installer.h"
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"

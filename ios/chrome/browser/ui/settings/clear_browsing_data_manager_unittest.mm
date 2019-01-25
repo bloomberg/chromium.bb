@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_manager.h"
 
+#include "base/bind.h"
 #include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"

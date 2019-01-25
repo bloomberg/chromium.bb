@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/threading/thread.h"
 #include "chromeos/services/assistant/audio_decoder/ipc_data_source.h"
 #include "media/base/audio_bus.h"

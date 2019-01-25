@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/timer/timer.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/protocol/cursor_shape_stub.h"

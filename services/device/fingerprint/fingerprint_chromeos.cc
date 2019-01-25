@@ -6,6 +6,7 @@
 
 #include <string.h>
 
+#include "base/bind.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/fingerprint/fingerprint.h"

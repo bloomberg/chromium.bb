@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/storage/storage_controller.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"

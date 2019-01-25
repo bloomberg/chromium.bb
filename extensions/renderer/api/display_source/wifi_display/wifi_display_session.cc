@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/timer/timer.h"
 #include "content/public/renderer/render_frame.h"

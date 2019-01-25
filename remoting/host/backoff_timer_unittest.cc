@@ -4,6 +4,7 @@
 
 #include "remoting/host/backoff_timer.h"
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/timer/mock_timer.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -4,6 +4,7 @@
 
 #include "remoting/host/dns_blackhole_checker.h"
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "remoting/base/logging.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"

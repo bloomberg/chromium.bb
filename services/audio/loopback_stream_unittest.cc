@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/scoped_task_environment.h"

@@ -4,6 +4,7 @@
 
 #include "chromecast/browser/metrics/cast_metrics_service_client.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/i18n/rtl.h"

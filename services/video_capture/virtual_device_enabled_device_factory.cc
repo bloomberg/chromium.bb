@@ -4,6 +4,7 @@
 
 #include "services/video_capture/virtual_device_enabled_device_factory.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "media/capture/video/video_capture_device_info.h"
 #include "services/video_capture/device_factory.h"

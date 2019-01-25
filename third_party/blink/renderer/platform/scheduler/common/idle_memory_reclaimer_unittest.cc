@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/scheduler/common/idle_memory_reclaimer.h"
 
+#include "base/bind.h"
 #include "base/task/sequence_manager/lazy_now.h"
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"

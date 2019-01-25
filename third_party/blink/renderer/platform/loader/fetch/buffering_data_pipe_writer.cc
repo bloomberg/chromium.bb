@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/buffering_data_pipe_writer.h"
 
+#include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 
 namespace blink {

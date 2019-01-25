@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/payments/ios_payment_instrument_finder.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/no_destructor.h"
 #include "components/history/core/browser/default_top_sites_provider.h"
 #include "components/history/core/browser/history_constants.h"

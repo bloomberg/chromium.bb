@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"

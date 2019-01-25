@@ -11,6 +11,7 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/util/deep_link_util.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "services/content/public/cpp/navigable_contents_view.h"
 #include "ui/aura/window.h"

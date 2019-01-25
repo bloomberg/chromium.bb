@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"

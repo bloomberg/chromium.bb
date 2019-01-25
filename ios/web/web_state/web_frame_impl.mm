@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"

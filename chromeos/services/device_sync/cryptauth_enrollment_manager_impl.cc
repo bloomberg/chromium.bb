@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/base64url.h"
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"

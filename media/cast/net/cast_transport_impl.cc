@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "media/cast/net/cast_transport_defines.h"

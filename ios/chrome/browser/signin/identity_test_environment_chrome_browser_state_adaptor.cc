@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/signin/identity_test_environment_chrome_browser_state_adaptor.h"
 
+#include "base/bind.h"
 #include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #include "ios/chrome/browser/signin/fake_gaia_cookie_manager_service_builder.h"
 #include "ios/chrome/browser/signin/fake_oauth2_token_service_builder.h"

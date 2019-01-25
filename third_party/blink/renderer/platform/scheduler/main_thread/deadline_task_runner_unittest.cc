@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/tick_clock.h"
 #include "testing/gmock/include/gmock/gmock.h"

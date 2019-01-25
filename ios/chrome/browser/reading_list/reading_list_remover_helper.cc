@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/reading_list/reading_list_remover_helper.h"
 
+#include "base/bind.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"

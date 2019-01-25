@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/bind.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/trees/layer_tree_frame_sink.h"

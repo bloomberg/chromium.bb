@@ -5,6 +5,7 @@
 #include "ash/public/cpp/default_scale_factor_retriever.h"
 
 #include "ash/public/interfaces/cros_display_config.mojom.h"
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding.h"

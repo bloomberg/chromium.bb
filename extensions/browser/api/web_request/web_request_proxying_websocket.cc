@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/web_request/web_request_proxying_websocket.h"
 
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_navigation_ui_data.h"

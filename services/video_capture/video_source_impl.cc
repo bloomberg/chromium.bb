@@ -4,6 +4,7 @@
 
 #include "services/video_capture/video_source_impl.h"
 
+#include "base/bind.h"
 #include "services/video_capture/push_video_stream_subscription_impl.h"
 
 namespace video_capture {

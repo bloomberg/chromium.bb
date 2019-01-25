@@ -13,6 +13,7 @@
 #include "ash/system/message_center/arc/mock_arc_notification_item.h"
 #include "ash/system/message_center/arc/mock_arc_notification_surface.h"
 #include "ash/test/ash_test_base.h"
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"

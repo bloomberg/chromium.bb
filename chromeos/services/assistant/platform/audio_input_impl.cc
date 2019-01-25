@@ -4,6 +4,7 @@
 
 #include "chromeos/services/assistant/platform/audio_input_impl.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "chromeos/services/assistant/public/features.h"

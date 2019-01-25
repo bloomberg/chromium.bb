@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"

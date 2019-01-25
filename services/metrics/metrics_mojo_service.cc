@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"

@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/optional.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/insets.h"

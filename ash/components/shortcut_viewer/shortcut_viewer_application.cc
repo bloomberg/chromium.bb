@@ -7,6 +7,7 @@
 #include "ash/components/shortcut_viewer/last_window_closed_observer.h"
 #include "ash/components/shortcut_viewer/views/keyboard_shortcut_view.h"
 #include "ash/public/cpp/ash_client.h"
+#include "base/bind.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "services/service_manager/public/cpp/connector.h"

@@ -6,6 +6,7 @@
 
 #include "android_webview/browser/input_stream.h"
 #include "android_webview/browser/net/input_stream_reader.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"

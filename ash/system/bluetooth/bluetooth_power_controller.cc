@@ -9,6 +9,7 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/prefs/pref_registry_simple.h"

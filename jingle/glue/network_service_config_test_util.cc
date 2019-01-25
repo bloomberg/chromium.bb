@@ -6,6 +6,7 @@
 
 #include "jingle/glue/network_service_config_test_util.h"
 
+#include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"

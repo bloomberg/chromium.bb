@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_media_pipeline.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/video_encode_accelerator.h"

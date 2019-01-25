@@ -8,6 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/i18n/message_formatter.h"

@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"

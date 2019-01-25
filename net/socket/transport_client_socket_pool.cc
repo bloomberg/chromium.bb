@@ -4,6 +4,7 @@
 
 #include "net/socket/transport_client_socket_pool.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"

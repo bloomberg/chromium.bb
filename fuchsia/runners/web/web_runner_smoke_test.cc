@@ -4,6 +4,7 @@
 
 #include <fuchsia/sys/cpp/fidl.h>
 
+#include "base/bind.h"
 #include "base/fuchsia/component_context.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"

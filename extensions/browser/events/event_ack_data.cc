@@ -4,6 +4,7 @@
 
 #include "extensions/browser/events/event_ack_data.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/guid.h"
 #include "base/task/post_task.h"

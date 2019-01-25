@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/shell.h"
+#include "base/bind.h"
 #include "ipc/ipc_channel.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
 

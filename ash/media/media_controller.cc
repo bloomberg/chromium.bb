@@ -4,6 +4,7 @@
 
 #include "ash/media/media_controller.h"
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "media/base/media_switches.h"
 #include "services/media_session/public/mojom/constants.mojom.h"

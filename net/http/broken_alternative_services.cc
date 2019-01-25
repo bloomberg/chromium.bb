@@ -4,6 +4,7 @@
 
 #include "net/http/broken_alternative_services.h"
 
+#include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"

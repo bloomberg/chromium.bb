@@ -7,6 +7,7 @@
 #include <string>
 
 #include "apps/browser_context_keyed_service_factories.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"

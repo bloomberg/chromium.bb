@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/ws/public/mojom/ime/ime.mojom.h"
 

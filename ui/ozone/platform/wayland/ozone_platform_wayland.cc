@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/wayland/ozone_platform_wayland.h"
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"

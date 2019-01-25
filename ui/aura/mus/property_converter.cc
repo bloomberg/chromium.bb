@@ -4,6 +4,7 @@
 
 #include "ui/aura/mus/property_converter.h"
 
+#include "base/bind.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/type_converter.h"

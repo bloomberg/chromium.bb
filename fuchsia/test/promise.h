@@ -5,6 +5,7 @@
 #ifndef FUCHSIA_TEST_PROMISE_H_
 #define FUCHSIA_TEST_PROMISE_H_
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/optional.h"
 

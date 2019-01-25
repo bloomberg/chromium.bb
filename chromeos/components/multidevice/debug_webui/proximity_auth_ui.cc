@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "chromeos/components/multidevice/debug_webui/proximity_auth_webui_handler.h"
 #include "chromeos/components/multidevice/debug_webui/url_constants.h"
 #include "chromeos/grit/chromeos_resources.h"

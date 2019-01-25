@@ -4,6 +4,7 @@
 
 #include "extensions/browser/image_sanitizer.h"
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/task_runner_util.h"
 #include "extensions/browser/extension_file_task_runner.h"

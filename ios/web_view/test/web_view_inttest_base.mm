@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #import "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #import "ios/web_view/test/web_view_test_util.h"

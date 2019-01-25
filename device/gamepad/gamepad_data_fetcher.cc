@@ -4,6 +4,7 @@
 
 #include "device/gamepad/gamepad_data_fetcher.h"
 
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"

@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/system/system_monitor.h"
 #include "device/udev_linux/udev.h"

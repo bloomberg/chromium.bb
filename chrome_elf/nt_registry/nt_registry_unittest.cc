@@ -8,6 +8,7 @@
 #include <rpc.h>
 #include <stddef.h>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/stl_util.h"
 #include "base/test/test_reg_util_win.h"

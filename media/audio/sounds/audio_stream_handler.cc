@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/cancelable_callback.h"
 #include "base/logging.h"
 #include "base/macros.h"

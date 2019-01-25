@@ -6,6 +6,7 @@
 
 #include "ash/media/media_notification_constants.h"
 #include "ash/media/media_notification_view.h"
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"

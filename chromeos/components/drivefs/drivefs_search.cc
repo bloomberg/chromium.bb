@@ -4,6 +4,7 @@
 
 #include "chromeos/components/drivefs/drivefs_search.h"
 
+#include "base/bind.h"
 #include "net/base/network_change_notifier.h"
 
 namespace drivefs {

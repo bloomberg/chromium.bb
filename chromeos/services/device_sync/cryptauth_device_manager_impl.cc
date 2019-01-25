@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "base/base64url.h"
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"

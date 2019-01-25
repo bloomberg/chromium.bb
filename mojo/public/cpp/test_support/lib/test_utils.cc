@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/wait.h"

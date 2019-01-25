@@ -8,6 +8,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"

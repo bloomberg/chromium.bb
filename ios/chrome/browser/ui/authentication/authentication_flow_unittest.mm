@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #import "base/mac/scoped_block.h"
 #include "base/memory/ptr_util.h"
 #import "base/test/ios/wait_util.h"

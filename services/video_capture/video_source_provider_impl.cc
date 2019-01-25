@@ -4,6 +4,7 @@
 
 #include "services/video_capture/video_source_provider_impl.h"
 
+#include "base/bind.h"
 #include "services/video_capture/video_source_impl.h"
 #include "services/video_capture/virtual_device_enabled_device_factory.h"
 

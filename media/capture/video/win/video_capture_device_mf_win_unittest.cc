@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <wincodec.h>
 
+#include "base/bind.h"
 #include "media/capture/video/win/sink_filter_win.h"
 #include "media/capture/video/win/video_capture_device_factory_win.h"
 #include "media/capture/video/win/video_capture_device_mf_win.h"

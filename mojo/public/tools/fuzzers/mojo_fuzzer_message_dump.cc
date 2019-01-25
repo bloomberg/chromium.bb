@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file.h"
 #include "base/message_loop/message_loop.h"

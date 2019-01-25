@@ -5,6 +5,7 @@
 #include "storage/browser/fileapi/file_writer_impl.h"
 
 #include <limits>
+#include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/test/bind_test_util.h"

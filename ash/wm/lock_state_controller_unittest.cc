@@ -21,6 +21,7 @@
 #include "ash/wm/lock_state_controller_test_api.h"
 #include "ash/wm/session_state_animator.h"
 #include "ash/wm/test_session_state_animator.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"

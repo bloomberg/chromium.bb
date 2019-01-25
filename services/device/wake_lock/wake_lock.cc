@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "services/device/wake_lock/wake_lock.h"
+#include "base/bind.h"
 
 #include <utility>
 

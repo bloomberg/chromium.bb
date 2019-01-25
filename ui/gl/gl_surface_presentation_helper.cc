@@ -4,6 +4,7 @@
 
 #include "ui/gl/gl_surface_presentation_helper.h"
 
+#include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "ui/gfx/vsync_provider.h"

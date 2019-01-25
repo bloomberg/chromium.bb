@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"

@@ -7,6 +7,7 @@
 
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client_impl.h"
 
+#include "base/bind.h"
 #include "base/no_destructor.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"

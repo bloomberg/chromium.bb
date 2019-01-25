@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/common/autofill_prefs.h"

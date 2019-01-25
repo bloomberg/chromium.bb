@@ -5,6 +5,7 @@
 #include "services/preferences/public/cpp/pref_service_factory.h"
 
 #include "base/barrier_closure.h"
+#include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"

@@ -4,6 +4,7 @@
 
 #include "android_webview/browser/aw_print_manager.h"
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/numerics/safe_conversions.h"

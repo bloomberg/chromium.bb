@@ -4,6 +4,7 @@
 
 #include "media/capture/video/video_frame_receiver_on_task_runner.h"
 
+#include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 
 namespace media {

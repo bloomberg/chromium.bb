@@ -12,6 +12,7 @@
 #include "ash/rotator/screen_rotation_animator_observer.h"
 #include "ash/shell.h"
 #include "ash/utility/transformer_util.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"

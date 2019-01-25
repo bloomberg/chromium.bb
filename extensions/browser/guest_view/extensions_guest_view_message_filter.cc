@@ -4,6 +4,7 @@
 
 #include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"
 
+#include "base/bind.h"
 #include "base/guid.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"

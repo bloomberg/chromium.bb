@@ -4,6 +4,7 @@
 
 #include "headless/lib/utility/headless_content_utility_client.h"
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "content/public/utility/utility_thread.h"
 #include "printing/buildflags/buildflags.h"

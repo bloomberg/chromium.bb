@@ -4,6 +4,7 @@
 
 #include "net/socket/connect_job.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"

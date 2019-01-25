@@ -4,6 +4,7 @@
 
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 
+#include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 

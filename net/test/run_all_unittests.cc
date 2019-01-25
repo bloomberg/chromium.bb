@@ -4,6 +4,7 @@
 
 #include <iostream>
 
+#include "base/bind.h"
 #include "base/build_time.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "build/build_config.h"

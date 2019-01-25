@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/file_handlers/app_file_handler_util.h"
 
+#include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"

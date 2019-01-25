@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "services/ws/window_service_test_setup.h"
 #include "services/ws/window_tree.h"
 #include "services/ws/window_tree_test_helper.h"

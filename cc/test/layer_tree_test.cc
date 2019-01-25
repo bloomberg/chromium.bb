@@ -4,6 +4,7 @@
 
 #include "cc/test/layer_tree_test.h"
 
+#include "base/bind.h"
 #include "base/cfi_buildflags.h"
 #include "base/command_line.h"
 #include "base/location.h"

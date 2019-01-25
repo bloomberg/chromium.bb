@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_cache_transaction.h"

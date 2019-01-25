@@ -4,6 +4,7 @@
 
 #include "extensions/test/extension_test_notification_observer.h"
 
+#include "base/bind.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"

@@ -8,6 +8,7 @@
 #include <tuple>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/run_loop.h"

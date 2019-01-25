@@ -18,6 +18,7 @@
 #import "remoting/ios/persistence/host_pairing_info.h"
 #import "remoting/ios/persistence/remoting_preferences.h"
 
+#include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
 #include "remoting/client/audio/audio_playback_stream.h"
 #include "remoting/client/chromoting_client_runtime.h"

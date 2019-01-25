@@ -4,6 +4,7 @@
 
 #include "remoting/host/file_transfer/buffered_file_writer.h"
 
+#include "base/bind.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "remoting/host/file_transfer/fake_file_operations.h"

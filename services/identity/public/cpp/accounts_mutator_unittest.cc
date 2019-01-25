@@ -4,6 +4,7 @@
 
 #include "services/identity/public/cpp/accounts_mutator_impl.h"
 
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/test/gtest_util.h"

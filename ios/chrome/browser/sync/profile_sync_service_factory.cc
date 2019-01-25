@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"

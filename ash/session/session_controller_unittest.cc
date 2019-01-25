@@ -18,6 +18,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/window_util.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/run_loop.h"

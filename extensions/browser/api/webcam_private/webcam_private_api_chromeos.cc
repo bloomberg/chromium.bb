@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/webcam_private/webcam_private_api.h"
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/media_device_id.h"

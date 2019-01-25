@@ -7,6 +7,7 @@
 #include <set>
 #include <string>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"

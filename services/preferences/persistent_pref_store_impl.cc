@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "components/prefs/persistent_pref_store.h"

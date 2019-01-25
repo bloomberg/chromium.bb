@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/wayland/gpu/wayland_connection_proxy.h"
 
+#include "base/bind.h"
 #include "base/process/process.h"
 #include "third_party/khronos/EGL/egl.h"
 #include "ui/ozone/common/linux/drm_util_linux.h"

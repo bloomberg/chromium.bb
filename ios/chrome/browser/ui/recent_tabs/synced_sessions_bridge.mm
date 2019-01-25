@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/recent_tabs/synced_sessions_bridge.h"
 
+#include "base/bind.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"

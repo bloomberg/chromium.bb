@@ -4,6 +4,7 @@
 
 #include "net/socket/udp_socket_posix.h"
 
+#include "base/bind.h"
 #include "net/base/completion_repeating_callback.h"
 #include "net/base/net_errors.h"
 #include "net/log/test_net_log.h"

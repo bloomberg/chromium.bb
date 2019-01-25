@@ -9,6 +9,7 @@
 #include <unordered_set>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
 #include "build/build_config.h"

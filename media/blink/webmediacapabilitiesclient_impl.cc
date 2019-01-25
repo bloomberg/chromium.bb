@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "media/base/audio_codecs.h"
 #include "media/base/key_system_names.h"

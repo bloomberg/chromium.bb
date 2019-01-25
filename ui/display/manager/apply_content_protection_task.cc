@@ -4,6 +4,7 @@
 
 #include "ui/display/manager/apply_content_protection_task.h"
 
+#include "base/bind.h"
 #include "ui/display/manager/display_layout_manager.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_delegate.h"

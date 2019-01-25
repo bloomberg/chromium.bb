@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "net/base/ip_endpoint.h"

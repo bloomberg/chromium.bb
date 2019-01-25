@@ -7,6 +7,7 @@
 #include <set>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/debug/leak_annotations.h"
 #include "base/macros.h"
 #include "base/stl_util.h"

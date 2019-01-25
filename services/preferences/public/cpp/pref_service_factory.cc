@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "components/prefs/overlay_user_pref_store.h"
 #include "components/prefs/persistent_pref_store.h"

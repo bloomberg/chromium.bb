@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <string>
 
+#include "base/bind.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/base/completion_event.h"

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "services/test/echo/echo_service.h"
+#include "base/bind.h"
 
 namespace echo {
 

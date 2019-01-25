@@ -6,6 +6,7 @@
 
 #include "base/android/android_hardware_buffer_compat.h"
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
+#include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gl/gl_fence_android_native_fence_sync.h"

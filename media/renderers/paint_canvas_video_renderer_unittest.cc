@@ -5,6 +5,7 @@
 #include <GLES3/gl3.h>
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/message_loop/message_loop.h"

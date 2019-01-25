@@ -4,6 +4,7 @@
 
 #include "storage/browser/blob/blob_url_loader_factory.h"
 
+#include "base/bind.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"

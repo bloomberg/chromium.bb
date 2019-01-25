@@ -4,6 +4,7 @@
 
 #include "media/blink/watch_time_reporter.h"
 
+#include "base/bind.h"
 #include "base/power_monitor/power_monitor.h"
 #include "media/base/watch_time_keys.h"
 

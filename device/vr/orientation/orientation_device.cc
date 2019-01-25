@@ -4,6 +4,7 @@
 
 #include <math.h>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/math_constants.h"
 #include "base/time/time.h"

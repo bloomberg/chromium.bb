@@ -4,6 +4,7 @@
 
 #include "media/capture/video/video_capture_jpeg_decoder_impl.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "media/base/media_switches.h"
 

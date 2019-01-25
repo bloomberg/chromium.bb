@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"

@@ -8,6 +8,7 @@
 #include <lib/fidl/cpp/binding_set.h>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file.h"
 #include "base/fuchsia/component_context.h"
 #include "base/fuchsia/file_utils.h"

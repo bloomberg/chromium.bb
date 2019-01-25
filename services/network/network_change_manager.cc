@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_change_notifier_chromeos.h"

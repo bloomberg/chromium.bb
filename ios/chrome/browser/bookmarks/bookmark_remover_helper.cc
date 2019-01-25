@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/bookmarks/bookmark_remover_helper.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/bookmarks/browser/bookmark_model.h"
