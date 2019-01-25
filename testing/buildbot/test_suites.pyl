@@ -2653,10 +2653,10 @@
       'components_perftests': {
         'merge': {
           'script': '//tools/perf/process_perf_results.py',
+          'args': [
+            '--smoke-test-mode',
+          ],
         },
-        'args': [
-          '--smoke-test-mode',
-        ],
       },
     },
 

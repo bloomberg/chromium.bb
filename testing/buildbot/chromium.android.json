@@ -23694,11 +23694,11 @@
     ],
     "isolated_scripts": [
       {
-        "args": [
-          "--smoke-test-mode"
-        ],
         "isolate_name": "components_perftests",
         "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "components_perftests",
