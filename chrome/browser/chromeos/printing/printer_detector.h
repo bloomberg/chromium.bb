@@ -34,7 +34,7 @@ class CHROMEOS_EXPORT PrinterDetector {
     Printer printer;
 
     // Additional metadata used to find a driver.
-    PpdProvider::PrinterSearchData ppd_search_data;
+    PrinterSearchData ppd_search_data;
   };
 
   class Observer {

@@ -392,13 +392,13 @@ TEST_F(PpdProviderTest, RepeatedMakeModel) {
   StartFakePpdServer();
   auto provider = CreateProvider("en", false);
 
-  PpdProvider::PrinterSearchData unrecognized_printer;
+  PrinterSearchData unrecognized_printer;
   unrecognized_printer.make_and_model = {"Printer Printer"};
 
-  PpdProvider::PrinterSearchData recognized_printer;
+  PrinterSearchData recognized_printer;
   recognized_printer.make_and_model = {"printer_a_ref"};
 
-  PpdProvider::PrinterSearchData mixed;
+  PrinterSearchData mixed;
   mixed.make_and_model = {"printer_a_ref", "Printer Printer"};
 
   // Resolve the same thing repeatedly.
@@ -432,7 +432,7 @@ TEST_F(PpdProviderTest, UsbResolution) {
   StartFakePpdServer();
   auto provider = CreateProvider("en", false);
 
-  PpdProvider::PrinterSearchData search_data;
+  PrinterSearchData search_data;
 
   // Should get back "Some canonical reference"
   search_data.usb_vendor_id = 0x031f;
@@ -728,7 +728,7 @@ TEST_F(PpdProviderTest, CaseInsensitiveMakeAndModel) {
   provider->ReverseLookup(ref,
                           base::BindOnce(&PpdProviderTest::CaptureReverseLookup,
                                          base::Unretained(this)));
-  PpdProvider::PrinterSearchData printer_info;
+  PrinterSearchData printer_info;
   printer_info.make_and_model = {ref};
   provider->ResolvePpdReference(
       printer_info, base::BindOnce(&PpdProviderTest::CaptureResolvePpdReference,

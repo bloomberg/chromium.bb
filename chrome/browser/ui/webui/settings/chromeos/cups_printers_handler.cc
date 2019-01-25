@@ -103,7 +103,7 @@ void QueryAutoconf(const std::string& printer_uri,
   // Behavior for querying a non-IPP uri is undefined and disallowed.
   if (!IsIppUri(printer_uri) || !optional.has_value()) {
     PRINTER_LOG(ERROR) << "Printer uri is invalid: " << printer_uri;
-    callback.Run(false, "", "", "", false);
+    callback.Run(false, "", "", "", {}, false);
     return;
   }
 
@@ -423,7 +423,7 @@ void CupsPrintersHandler::HandleGetPrinterInfo(const base::ListValue* args) {
 
   if (printer_address.empty()) {
     // Run the failure callback.
-    OnAutoconfQueried(callback_id, false, "", "", "", false);
+    OnAutoconfQueried(callback_id, false, "", "", "", {}, false);
     return;
   }
 
@@ -452,6 +452,7 @@ void CupsPrintersHandler::OnAutoconfQueriedDiscovered(
     const std::string& make,
     const std::string& model,
     const std::string& make_and_model,
+    const std::vector<std::string>& document_formats,
     bool ipp_everywhere) {
   RecordIppQuerySuccess(success);
 
@@ -488,12 +489,14 @@ void CupsPrintersHandler::OnAutoconfQueriedDiscovered(
   FireManuallyAddDiscoveredPrinter(*printer);
 }
 
-void CupsPrintersHandler::OnAutoconfQueried(const std::string& callback_id,
-                                            bool success,
-                                            const std::string& make,
-                                            const std::string& model,
-                                            const std::string& make_and_model,
-                                            bool ipp_everywhere) {
+void CupsPrintersHandler::OnAutoconfQueried(
+    const std::string& callback_id,
+    bool success,
+    const std::string& make,
+    const std::string& model,
+    const std::string& make_and_model,
+    const std::vector<std::string>& document_formats,
+    bool ipp_everywhere) {
   RecordIppQuerySuccess(success);
 
   if (!success) {
@@ -521,8 +524,11 @@ void CupsPrintersHandler::OnAutoconfQueried(const std::string& callback_id,
     return;
   }
 
-  PpdProvider::PrinterSearchData ppd_search_data;
+  PrinterSearchData ppd_search_data;
+  ppd_search_data.discovery_type =
+      PrinterSearchData::PrinterDiscoveryType::kManual;
   ppd_search_data.make_and_model.push_back(make_and_model);
+  ppd_search_data.supported_document_formats = document_formats;
 
   // Try to resolve the PPD matching.
   ppd_provider_->ResolvePpdReference(

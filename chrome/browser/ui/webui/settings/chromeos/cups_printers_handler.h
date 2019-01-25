@@ -68,15 +68,18 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
                          const std::string& make,
                          const std::string& model,
                          const std::string& make_and_model,
+                         const std::vector<std::string>& document_formats,
                          bool ipp_everywhere);
 
   // Handles the callback for HandleGetPrinterInfo for a discovered printer.
-  void OnAutoconfQueriedDiscovered(std::unique_ptr<Printer> printer,
-                                   bool success,
-                                   const std::string& make,
-                                   const std::string& model,
-                                   const std::string& make_and_model,
-                                   bool ipp_everywhere);
+  void OnAutoconfQueriedDiscovered(
+      std::unique_ptr<Printer> printer,
+      bool success,
+      const std::string& make,
+      const std::string& model,
+      const std::string& make_and_model,
+      const std::vector<std::string>& document_formats,
+      bool ipp_everywhere);
 
   // Callback for PPD matching attempts;
   void OnPpdResolved(const std::string& callback_id,
