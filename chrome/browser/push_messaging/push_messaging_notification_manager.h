@@ -14,6 +14,11 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/push_messaging/budget_database.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/android_sms/android_sms_app_manager.h"
+#include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
+#endif
+
 class GURL;
 class Profile;
 
@@ -54,6 +59,9 @@ class PushMessagingNotificationManager {
   FRIEND_TEST_ALL_PREFIXES(PushMessagingNotificationManagerTest, IsTabVisible);
   FRIEND_TEST_ALL_PREFIXES(PushMessagingNotificationManagerTest,
                            IsTabVisibleViewSource);
+  FRIEND_TEST_ALL_PREFIXES(
+      PushMessagingNotificationManagerTest,
+      SkipEnforceUserVisibleOnlyRequirementsForAndroidMessages);
 
   static void DidGetNotificationsFromDatabaseIOProxy(
       const base::WeakPtr<PushMessagingNotificationManager>& ui_weak_ptr,
@@ -97,10 +105,29 @@ class PushMessagingNotificationManager {
       bool success,
       const std::string& notification_id);
 
+#if defined(OS_CHROMEOS)
+  bool ShouldSkipUserVisibleOnlyRequirements(const GURL& origin);
+
+  void SetTestMultiDeviceSetupClient(
+      chromeos::multidevice_setup::MultiDeviceSetupClient*
+          multidevice_setup_client);
+
+  void SetTestAndroidSmsAppManager(
+      chromeos::android_sms::AndroidSmsAppManager* android_sms_app_manager);
+#endif
+
   // Weak. This manager is owned by a keyed service on this profile.
   Profile* profile_;
 
   BudgetDatabase budget_database_;
+
+#if defined(OS_CHROMEOS)
+  chromeos::multidevice_setup::MultiDeviceSetupClient*
+      test_multidevice_setup_client_ = nullptr;
+
+  chromeos::android_sms::AndroidSmsAppManager* test_android_sms_app_manager_ =
+      nullptr;
+#endif
 
   base::WeakPtrFactory<PushMessagingNotificationManager> weak_factory_;
 
