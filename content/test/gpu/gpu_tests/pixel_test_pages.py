@@ -857,14 +857,14 @@ def ExperimentalCanvasFeaturesPages(base_name):
       'pixel_canvas_low_latency_2d.html',
       base_name + '_CanvasLowLatency2D',
       test_rect=[0, 0, 100, 100],
-      revision=5,
+      revision=6,
       browser_args=browser_args),
 
     PixelTestPage(
       'pixel_canvas_low_latency_2d.html',
       base_name + '_CanvasUnacceleratedLowLatency2D',
       test_rect=[0, 0, 100, 100],
-      revision=2,
+      revision=3,
       browser_args=browser_args + unaccelerated_args),
 
     PixelTestPage(

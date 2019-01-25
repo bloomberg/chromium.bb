@@ -27,7 +27,8 @@ class PixelExpectations(GpuTestExpectations):
     self.Skip('Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker',
               ['android'])
     self.Skip('Pixel_CanvasDisplayLinearRGBUnaccelerated2D', ['android'])
-    self.Skip('Pixel_CanvasUnacceleratedLowLatency2D', ['android'])
+    # Disable temporarily to avoid a collision, https://crbug.com/922218
+    #self.Skip('Pixel_CanvasUnacceleratedLowLatency2D', ['android'])
     self.Skip('Pixel_RepeatedWebGLTo2D_SoftwareCompositing', ['android'])
 
     # Tests running with SwiftShader are skipped on platforms where SwiftShader
@@ -137,5 +138,5 @@ class PixelExpectations(GpuTestExpectations):
         ['mac', ('amd', 0x679e)], bug=911413)
 
     # TODO(mcasas): re-enable after rebaselining, https://crbug.com/922218
-    self.Fail('Pixel_CanvasLowLatency2D', ['mac'], bug=922218)
-    self.Fail('Pixel_CanvasUnacceleratedLowLatency2D', ['mac'], bug=922218)
+    self.Fail('Pixel_CanvasLowLatency2D', bug=922218)
+    self.Fail('Pixel_CanvasUnacceleratedLowLatency2D', bug=922218)
