@@ -452,6 +452,10 @@ void IdentityTestEnvironment::ReloadAccountsFromDisk() {
   token_service_->LoadCredentials("");
 }
 
+bool IdentityTestEnvironment::IsAccessTokenRequestPending() {
+  return token_service_->GetPendingRequests().size();
+}
+
 void IdentityTestEnvironment::SetFreshnessOfAccountsInGaiaCookie(
     bool accounts_are_fresh) {
   gaia_cookie_manager_service_->set_list_accounts_stale_for_testing(
