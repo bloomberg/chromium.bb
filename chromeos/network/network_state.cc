@@ -320,7 +320,7 @@ void NetworkState::GetStateProperties(base::Value* dictionary) const {
                        base::Value(network_technology()));
     dictionary->SetKey(shill::kActivationStateProperty,
                        base::Value(activation_state()));
-    dictionary->SetKey(shill::kRoamingStateProperty, base::Value(roaming_));
+    dictionary->SetKey(shill::kRoamingStateProperty, base::Value(roaming()));
     dictionary->SetKey(shill::kOutOfCreditsProperty,
                        base::Value(cellular_out_of_credits()));
   }
@@ -403,11 +403,6 @@ bool NetworkState::IsManagedByPolicy() const {
 bool NetworkState::IsUsingMobileData() const {
   return type() == shill::kTypeCellular || type() == chromeos::kTypeTether ||
          tethering_state() == shill::kTetheringConfirmedState;
-}
-
-bool NetworkState::IndicateRoaming() const {
-  return type() == shill::kTypeCellular &&
-         roaming_ == shill::kRoamingStateRoaming && !provider_requires_roaming_;
 }
 
 bool NetworkState::IsDynamicWep() const {

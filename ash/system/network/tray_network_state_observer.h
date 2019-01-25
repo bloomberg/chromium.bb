@@ -37,6 +37,7 @@ class TrayNetworkStateObserver
   void NetworkConnectionStateChanged(
       const chromeos::NetworkState* network) override;
   void NetworkPropertiesUpdated(const chromeos::NetworkState* network) override;
+  void DevicePropertiesUpdated(const chromeos::DeviceState* device) override;
 
   // NetworkPortalDetector::Observer
   void OnPortalDetectionCompleted(
