@@ -96,6 +96,7 @@ var CLASSES = {
   NON_GOOGLE_PAGE: 'non-google-page',
   NON_WHITE_BG: 'non-white-bg',
   RTL: 'rtl',  // Right-to-left language text.
+  SHOW_DOODLE: 'show-doodle',
 };
 
 
@@ -199,7 +200,9 @@ const MAX_NUM_TILES_CUSTOM_LINKS = 10;
 
 /**
  * Background colors considered "white". Used to determine if it is possible
- * to display a Google Doodle, or if the notifier should be used instead.
+ * to display a Google Doodle, or if the notifier should be used instead (Note:
+ * this only applies if a theme/custom background is set). Also used to
+ * determine if a colored or white logo should be used.
  * @type {Array<string>}
  * @const
  */
@@ -348,12 +351,17 @@ function renderTheme() {
   if (!info.customBackgroundConfigured) {
     document.body.style.background = background;
   }
+
   // Dark mode uses a white Google logo.
   const useWhiteLogo = info.alternateLogo ||
       (info.usingDefaultTheme && configData.isDarkModeEnabled);
   document.body.classList.toggle(CLASSES.ALTERNATE_LOGO, useWhiteLogo);
-  var isNonWhiteBackground = !WHITE_BACKGROUND_COLORS.includes(background);
+  const isNonWhiteBackground = !WHITE_BACKGROUND_COLORS.includes(background);
   document.body.classList.toggle(CLASSES.NON_WHITE_BG, isNonWhiteBackground);
+  // Show the doodle if this is the default NTP.
+  const showDoodle = info.usingDefaultTheme && !info.customBackgroundConfigured;
+  document.body.classList.toggle(CLASSES.SHOW_DOODLE, showDoodle);
+
   updateThemeAttribution(info.attributionUrl, info.imageHorizontalAlignment);
   setCustomThemeStyle(info);
 
