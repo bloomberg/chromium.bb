@@ -3089,6 +3089,43 @@ TEST_F(DisplayManagerTest, UnifiedDesktopTabletMode) {
   EXPECT_FALSE(app_list_controller->IsVisible());
 }
 
+TEST_F(DisplayManagerTest, DisplayPrefsAndForcedMirrorMode) {
+  UpdateDisplay("400x300,800x800");
+  base::RunLoop().RunUntilIdle();
+
+  // Set the first display as internal display so that the tablet mode can be
+  // enabled.
+  display::test::DisplayManagerTestApi(display_manager())
+      .SetFirstDisplayAsInternalDisplay();
+
+  // Initially we can save display prefs ...
+  EXPECT_TRUE(Shell::Get()->ShouldSaveDisplaySettings());
+  // ... and there are no external displays that are candidates for mirror
+  // restore.
+  EXPECT_TRUE(display_manager()->external_display_mirror_info().empty());
+
+  // Turn on tablet mode, and expect that it's not possible to persist the
+  // display prefs while forced mirror mode is active.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());
+  EXPECT_TRUE(
+      display_manager()->layout_store()->forced_mirror_mode_for_tablet());
+  EXPECT_FALSE(Shell::Get()->ShouldSaveDisplaySettings());
+  // Forced mirror mode does not add external displays as candidates for mirror
+  // restore.
+  EXPECT_TRUE(display_manager()->external_display_mirror_info().empty());
+
+  // Exit tablet mode and expect everything is back to normal.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(display_manager()->IsInSoftwareMirrorMode());
+  EXPECT_FALSE(
+      display_manager()->layout_store()->forced_mirror_mode_for_tablet());
+  EXPECT_TRUE(Shell::Get()->ShouldSaveDisplaySettings());
+  EXPECT_TRUE(display_manager()->external_display_mirror_info().empty());
+}
+
 TEST_F(DisplayManagerTest, DockMode) {
   const int64_t internal_id = 1;
   const int64_t external_id = 2;
