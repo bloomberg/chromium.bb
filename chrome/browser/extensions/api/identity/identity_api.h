@@ -131,12 +131,9 @@ class IdentityAPI : public BrowserContextKeyedAPI,
   // identity::IdentityManager::Observer:
   void OnRefreshTokenUpdatedForAccount(
       const AccountInfo& account_info) override;
-  // NOTE: This class listens for signout events via this callback (which itself
-  // is triggered by O2TS::OnRefreshTokenRevoked()) rather than directly via
-  // OnRefreshTokenRevoked() in order to obtain the Gaia ID of the signed-out
-  // account, which is needed to send as input to the
-  // chrome.identity.onSigninChanged event. That Gaia ID is not guaranteed to be
-  // available from O2TS::OnRefreshTokenRevoked().
+  // NOTE: This class must listen for this callback rather than
+  // OnRefreshTokenRemovedForAccount() to obtain the Gaia ID of the removed
+  // account.
   void OnAccountRemovedWithInfo(const AccountInfo& info) override;
 
   // Fires the chrome.identity.onSignInChanged event.
