@@ -81,9 +81,16 @@ std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create(
       return nullptr;
     }
   }
-  return base::WrapUnique(new VideoFrameValidator(
+
+  auto video_frame_validator = base::WrapUnique(new VideoFrameValidator(
       flags, prefix_output_yuv, std::move(md5_of_frames), std::move(md5_file),
       std::move(video_frame_mapper)));
+  if (!video_frame_validator->Initialize()) {
+    LOG(ERROR) << "Failed to initialize VideoFrameValidator.";
+    return nullptr;
+  }
+
+  return video_frame_validator;
 }
 
 VideoFrameValidator::VideoFrameValidator(
