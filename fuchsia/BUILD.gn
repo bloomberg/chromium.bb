@@ -336,7 +336,7 @@ action("license") {
     "license_file",
     rebase_path(_license_path, root_build_dir),
     "--gn-target",
-    "//fuchsia:webrunner_pkg",
+    "//fuchsia/runners:web_runner_pkg",
     "--gn-out-dir",
     ".",
   ]
