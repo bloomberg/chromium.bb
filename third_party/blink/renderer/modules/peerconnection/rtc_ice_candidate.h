@@ -59,8 +59,8 @@ class MODULES_EXPORT RTCIceCandidate final : public ScriptWrappable {
   void setCandidate(String);
   String sdpMid() const;
   void setSdpMid(String);
-  unsigned short sdpMLineIndex() const;
-  void setSdpMLineIndex(unsigned short);
+  uint16_t sdpMLineIndex() const;
+  void setSdpMLineIndex(uint16_t);
 
   ScriptValue toJSONForBinding(ScriptState*);
 

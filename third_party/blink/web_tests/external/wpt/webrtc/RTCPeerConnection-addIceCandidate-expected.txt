@@ -10,11 +10,11 @@ PASS addIceCandidate with second sdpMid and sdpMLineIndex should add candidate t
 PASS Add candidate for first media stream with null usernameFragment should add candidate to first media stream
 PASS Adding multiple candidates should add candidates to their corresponding media stream
 FAIL Add with empty candidate string (end of candidate) should succeed promise_test: Unhandled rejection with value: object "OperationError: Failed to execute 'addIceCandidate' on 'RTCPeerConnection': Error processing ICE candidate"
-FAIL Add candidate with both sdpMid and sdpMLineIndex manually set to null should reject with TypeError assert_throws: function "function() { throw e }" threw object "OperationError: Failed to execute 'addIceCandidate' on 'RTCPeerConnection': Error processing ICE candidate" ("OperationError") expected object "TypeError" ("TypeError")
+PASS Add candidate with both sdpMid and sdpMLineIndex manually set to null should reject with TypeError
 PASS Add candidate with only valid candidate string should reject with TypeError
-FAIL Add candidate with invalid candidate string and both sdpMid and sdpMLineIndex null should reject with TypeError assert_throws: function "function() { throw e }" threw object "OperationError: Failed to execute 'addIceCandidate' on 'RTCPeerConnection': Error processing ICE candidate" ("OperationError") expected object "TypeError" ("TypeError")
+PASS Add candidate with invalid candidate string and both sdpMid and sdpMLineIndex null should reject with TypeError
 PASS Add candidate with empty dict should reject with TypeError
-FAIL Add candidate with manually filled default values should reject with TypeError assert_throws: function "function() { throw e }" threw object "OperationError: Failed to execute 'addIceCandidate' on 'RTCPeerConnection': Error processing ICE candidate" ("OperationError") expected object "TypeError" ("TypeError")
+PASS Add candidate with manually filled default values should reject with TypeError
 PASS Add candidate with invalid sdpMid should reject with OperationError
 PASS Add candidate with invalid sdpMLineIndex should reject with OperationError
 FAIL Invalid sdpMLineIndex should be ignored if valid sdpMid is provided promise_test: Unhandled rejection with value: object "OperationError: Failed to execute 'addIceCandidate' on 'RTCPeerConnection': Error processing ICE candidate"
