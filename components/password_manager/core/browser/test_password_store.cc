@@ -232,6 +232,7 @@ PasswordStoreChangeList TestPasswordStore::RemoveLoginByPrimaryKeySync(
 }
 
 syncer::SyncMetadataStore* TestPasswordStore::GetMetadataStore() {
+  NOTIMPLEMENTED();
   return nullptr;
 }
 

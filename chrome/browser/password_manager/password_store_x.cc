@@ -545,3 +545,20 @@ void PasswordStoreX::ShutdownOnUIThread() {
   migration_step_pref_.Destroy();
   PasswordStoreDefault::ShutdownOnUIThread();
 }
+
+bool PasswordStoreX::ReadAllLogins(
+    password_manager::PrimaryKeyToFormMap* key_to_form_map) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+PasswordStoreChangeList PasswordStoreX::RemoveLoginByPrimaryKeySync(
+    int primary_key) {
+  NOTIMPLEMENTED();
+  return PasswordStoreChangeList();
+}
+
+syncer::SyncMetadataStore* PasswordStoreX::GetMetadataStore() {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
