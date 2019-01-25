@@ -223,7 +223,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
 
  private:
   friend class base::RefCountedThreadSafe<VaapiWrapper>;
-  friend class VaapiJpegDecodeAcceleratorTest;
+  friend class VaapiJpegDecoderTest;
 
   bool Initialize(CodecMode mode, VAProfile va_profile);
   void Deinitialize();
