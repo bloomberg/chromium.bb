@@ -2784,6 +2784,10 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
     cpi->tpl_stats[frame].mi_cols = cm->mi_cols;
   }
 
+#if CONFIG_COLLECT_PARTITION_STATS
+  av1_zero(cpi->partition_stats);
+#endif
+
 #define BFP(BT, SDF, SDAF, VF, SVF, SVAF, SDX4DF, JSDAF, JSVAF) \
   cpi->fn_ptr[BT].sdf = SDF;                                    \
   cpi->fn_ptr[BT].sdaf = SDAF;                                  \
@@ -3101,6 +3105,12 @@ void av1_remove_compressor(AV1_COMP *cpi) {
       fprintf(stdout, "tx_search_count = %d\n", cpi->tx_search_count);
     }
 #endif  // CONFIG_SPEED_STATS
+
+#if CONFIG_COLLECT_PARTITION_STATS
+    if (cpi->oxcf.pass != 1) {
+      av1_print_partition_stats(&cpi->partition_stats);
+    }
+#endif
   }
 
   for (int frame = 0; frame < MAX_LAG_BUFFERS; ++frame) {

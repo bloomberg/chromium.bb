@@ -599,6 +599,15 @@ typedef struct {
   YV12_BUFFER_CONFIG buf;
 } EncRefCntBuffer;
 
+#if CONFIG_COLLECT_PARTITION_STATS
+typedef struct PartitionStats {
+  int partition_decisions[6][EXT_PARTITION_TYPES];
+  int partition_attempts[6][EXT_PARTITION_TYPES];
+
+  int partition_redo;
+} PartitionStats;
+#endif
+
 typedef struct AV1_COMP {
   QUANTS quants;
   ThreadData td;
@@ -870,6 +879,9 @@ typedef struct AV1_COMP {
 #endif
   // Set if screen content is set or relevant tools are enabled
   int is_screen_content_type;
+#if CONFIG_COLLECT_PARTITION_STATS
+  PartitionStats partition_stats;
+#endif
 } AV1_COMP;
 
 typedef struct {
@@ -1118,6 +1130,52 @@ static INLINE int encode_show_existing_frame(const AV1_COMMON *cm) {
 // the obu_has_size_field bit is set, and the buffer contains the obu_size
 // field.
 aom_fixed_buf_t *av1_get_global_headers(AV1_COMP *cpi);
+
+#if CONFIG_COLLECT_PARTITION_STATS
+static INLINE void av1_print_partition_stats(PartitionStats *part_stats) {
+  FILE *f = fopen("partition_stats.csv", "w");
+  if (!f) {
+    return;
+  }
+
+  fprintf(f, "bsize,redo,");
+  for (int part = 0; part < EXT_PARTITION_TYPES; part++) {
+    fprintf(f, "decision_%d,", part);
+  }
+  for (int part = 0; part < EXT_PARTITION_TYPES; part++) {
+    fprintf(f, "attempt_%d,", part);
+  }
+  fprintf(f, "\n");
+
+  const int bsizes[6] = { 128, 64, 32, 16, 8, 4 };
+
+  for (int bsize_idx = 0; bsize_idx < 6; bsize_idx++) {
+    fprintf(f, "%d,%d,", bsizes[bsize_idx], part_stats->partition_redo);
+    for (int part = 0; part < EXT_PARTITION_TYPES; part++) {
+      fprintf(f, "%d,", part_stats->partition_decisions[bsize_idx][part]);
+    }
+    for (int part = 0; part < EXT_PARTITION_TYPES; part++) {
+      fprintf(f, "%d,", part_stats->partition_attempts[bsize_idx][part]);
+    }
+    fprintf(f, "\n");
+  }
+  fclose(f);
+}
+
+static INLINE int av1_get_bsize_idx_for_part_stats(BLOCK_SIZE bsize) {
+  assert(bsize == BLOCK_128X128 || bsize == BLOCK_64X64 ||
+         bsize == BLOCK_32X32 || bsize == BLOCK_16X16 || bsize == BLOCK_8X8);
+  switch (bsize) {
+    case BLOCK_128X128: return 0;
+    case BLOCK_64X64: return 1;
+    case BLOCK_32X32: return 2;
+    case BLOCK_16X16: return 3;
+    case BLOCK_8X8: return 4;
+    case BLOCK_4X4: return 5;
+    default: assert(0 && "Invalid bsize for partition_stats."); return -1;
+  }
+}
+#endif
 
 #ifdef __cplusplus
 }  // extern "C"
