@@ -5841,6 +5841,8 @@ crbug.com/923318 [ Win7 ] virtual/threaded/synthetic_gestures/synthetic-pinch-zo
 crbug.com/v8/8319 external/wpt/wasm/jsapi/memory/grow.any.html [ Pass Failure ]
 crbug.com/v8/8319 external/wpt/wasm/jsapi/memory/grow.any.worker.html [ Pass Failure ]
 
+crbug.com/910979 http/tests/html/validation-bubble-oopif-clip.html [ Failure Pass ]
+
 # Sheriff 2019-01-22
 # Likely needs a rebaseline
 crbug.com/921242 [ Mac ] fast/overflow/clip-rects-fixed-ancestor.html [ Failure ]
