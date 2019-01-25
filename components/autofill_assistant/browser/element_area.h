@@ -15,14 +15,14 @@
 #include "components/autofill_assistant/browser/selector.h"
 
 namespace autofill_assistant {
-class WebController;
+class ScriptExecutorDelegate;
 
 // A helper that keeps track of the area on the screen that correspond to an
 // changeable set of elements.
 class ElementArea {
  public:
-  // |web_controller| must remain valid for the lifetime of this instance.
-  explicit ElementArea(WebController* web_controller);
+  // |delegate| must remain valid for the lifetime of this instance.
+  explicit ElementArea(ScriptExecutorDelegate* delegate);
   ~ElementArea();
 
   // Clears the area. Stops scheduled updates.
@@ -107,7 +107,7 @@ class ElementArea {
                             const RectF& rect);
   void ReportUpdate();
 
-  WebController* const web_controller_;
+  ScriptExecutorDelegate* const delegate_;
   std::vector<Rectangle> rectangles_;
   bool cover_viewport_ = false;
 
