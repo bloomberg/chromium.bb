@@ -4,6 +4,7 @@
 
 #include "ash/app_list/views/search_result_container_view.h"
 
+#include "ash/app_list/views/search_result_base_view.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -53,6 +54,23 @@ bool SearchResultContainerView::UpdateScheduled() {
 
 const char* SearchResultContainerView::GetClassName() const {
   return "SearchResultContainerView";
+}
+
+void SearchResultContainerView::OnViewFocused(View* observed_view) {
+  if (delegate_) {
+    delegate_->OnSearchResultContainerResultFocused(
+        static_cast<SearchResultBaseView*>(observed_view));
+  }
+}
+
+void SearchResultContainerView::AddObservedResultView(
+    SearchResultBaseView* result_view) {
+  result_view_observer_.Add(result_view);
+}
+
+void SearchResultContainerView::RemoveObservedResultView(
+    SearchResultBaseView* result_view) {
+  result_view_observer_.Remove(result_view);
 }
 
 void SearchResultContainerView::ListItemsAdded(size_t /*start*/,

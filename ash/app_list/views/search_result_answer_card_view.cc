@@ -318,10 +318,11 @@ SearchResultAnswerCardView::SearchResultAnswerCardView(
     : search_answer_container_view_(
           new AnswerCardResultView(this, view_delegate)) {
   AddChildView(search_answer_container_view_);
+  AddObservedResultView(search_answer_container_view_);
   SetLayoutManager(std::make_unique<views::FillLayout>());
 }
 
-SearchResultAnswerCardView::~SearchResultAnswerCardView() {}
+SearchResultAnswerCardView::~SearchResultAnswerCardView() = default;
 
 const char* SearchResultAnswerCardView::GetClassName() const {
   return "SearchResultAnswerCardView";

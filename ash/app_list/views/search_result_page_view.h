@@ -51,6 +51,8 @@ class APP_LIST_EXPORT SearchResultPageView
 
   // Overridden from SearchResultContainerView::Delegate :
   void OnSearchResultContainerResultsChanged() override;
+  void OnSearchResultContainerResultFocused(
+      SearchResultBaseView* focused_result_view) override;
 
   views::View* contents_view() { return contents_view_; }
 

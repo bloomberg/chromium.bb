@@ -42,6 +42,7 @@ SearchResultListView::SearchResultListView(AppListMainView* main_view,
     search_result_views_.emplace_back(
         new SearchResultView(this, view_delegate_));
     results_container_->AddChildView(search_result_views_.back());
+    AddObservedResultView(search_result_views_.back());
   }
   AddChildView(results_container_);
 }

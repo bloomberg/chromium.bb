@@ -333,6 +333,7 @@ class AppListViewFocusTest : public views::ViewsTestBase,
             std::make_unique<TestSearchResult>();
         result->set_display_type(data.first);
         result->set_display_score(display_score);
+        result->set_title(base::ASCIIToUTF16("Test"));
         if (data.first == ash::SearchResultDisplayType::kCard) {
           const GURL kFakeCardUrl = GURL("https://www.google.com/coac?q=fake");
           result->set_query_url(kFakeCardUrl);
@@ -342,6 +343,21 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     }
 
     // Adding results will schedule Update().
+    RunPendingMessages();
+  }
+
+  void ClearSearchResults() {
+    delegate_->GetSearchModel()->results()->DeleteAll();
+  }
+
+  void AddSearchResultWithTitleAndScore(const base::StringPiece& title,
+                                        double score) {
+    std::unique_ptr<TestSearchResult> result =
+        std::make_unique<TestSearchResult>();
+    result->set_display_type(ash::SearchResultDisplayType::kList);
+    result->set_display_score(score);
+    result->set_title(ASCIIToUTF16(title));
+    delegate_->GetSearchModel()->results()->Add(std::move(result));
     RunPendingMessages();
   }
 
@@ -984,6 +1000,35 @@ TEST_F(AppListViewFocusTest, SearchBoxTextfieldHasNoSelectionWhenFocusLeaves) {
   SimulateKeyPress(ui::VKEY_TAB, false);
 
   EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
+}
+
+// Tests that focus changes update the search box text.
+TEST_F(AppListViewFocusTest, SearchBoxTextUpdatesOnResultFocus) {
+  Show();
+  views::Textfield* search_box = search_box_view()->search_box();
+  search_box->InsertText(base::ASCIIToUTF16("TestText"));
+
+  // Set up test results with unique titles
+  ClearSearchResults();
+  AddSearchResultWithTitleAndScore("TestResult1", 3);
+  AddSearchResultWithTitleAndScore("TestResult2", 2);
+  AddSearchResultWithTitleAndScore("TestResult3", 1);
+
+  // Change focus to the first result
+  SimulateKeyPress(ui::VKEY_TAB, false);
+  SimulateKeyPress(ui::VKEY_TAB, false);
+
+  EXPECT_EQ(search_box->text(), base::UTF8ToUTF16("TestResult1"));
+
+  // Change focus to the next result
+  SimulateKeyPress(ui::VKEY_TAB, false);
+
+  EXPECT_EQ(search_box->text(), base::UTF8ToUTF16("TestResult2"));
+
+  // Change focus to the final result
+  SimulateKeyPress(ui::VKEY_TAB, false);
+
+  EXPECT_EQ(search_box->text(), base::UTF8ToUTF16("TestResult3"));
 }
 
 // Tests that the search box selects the whole query when focus moves to the
