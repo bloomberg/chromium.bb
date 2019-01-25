@@ -12,6 +12,8 @@
 #include "base/md5.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/stl_util.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/local_discovery/service_discovery_device_lister.h"
@@ -178,6 +180,8 @@ bool ConvertToPrinter(const ServiceDescription& service_description,
       base::StringPiece(service_type).ends_with(",_print");
 
   // gather ppd identification candidates.
+  detected_printer->ppd_search_data.discovery_type =
+      PrinterSearchData::PrinterDiscoveryType::kZeroconf;
   if (!metadata.ty.empty()) {
     detected_printer->ppd_search_data.make_and_model.push_back(metadata.ty);
   }
@@ -189,6 +193,22 @@ bool ConvertToPrinter(const ServiceDescription& service_description,
     detected_printer->ppd_search_data.make_and_model.push_back(
         base::StringPrintf("%s %s", metadata.usb_MFG.c_str(),
                            metadata.usb_MDL.c_str()));
+  }
+  if (!metadata.pdl.empty()) {
+    // Per Bonjour Printer Spec v1.2 section 9.2.8, it is invalid for the pdl to
+    // end with a comma.
+    auto media_types = base::SplitString(
+        metadata.pdl, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    if (!media_types.empty() && !media_types.back().empty()) {
+      // Prune any empty splits.
+      base::EraseIf(media_types, [](base::StringPiece s) { return s.empty(); });
+
+      std::transform(
+          media_types.begin(), media_types.end(),
+          std::back_inserter(
+              detected_printer->ppd_search_data.supported_document_formats),
+          [](base::StringPiece s) { return base::ToLowerASCII(s); });
+    }
   }
   return true;
 }

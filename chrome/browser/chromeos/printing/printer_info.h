@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_PRINTING_PRINTER_INFO_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 
@@ -21,6 +22,7 @@ using PrinterInfoCallback =
                         const std::string& make,
                         const std::string& model,
                         const std::string& make_and_model,
+                        const std::vector<std::string>& document_formats,
                         bool autoconf)>;
 
 // Dispatch an IPP request to |host| on |port| for |path| to obtain

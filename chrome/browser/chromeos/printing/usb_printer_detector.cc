@@ -39,9 +39,11 @@ namespace {
 
 // Given a usb device, guesses the make and model for a driver lookup.
 //
-// TODO(justincarlson): Possibly go deeper and query the IEEE1284 fields
-// for make and model if we determine those are more likely to contain
+// TODO(https://crbug.com/895037): Possibly go deeper and query the IEEE1284
+// fields for make and model if we determine those are more likely to contain
 // what we want.  Strings currently come from udev.
+// TODO(https://crbug.com/895037): When above is added, parse out document
+// formats and add to DetectedPrinter
 std::string GuessEffectiveMakeAndModel(const device::UsbDevice& device) {
   return base::UTF16ToUTF8(device.manufacturer_string()) + " " +
          base::UTF16ToUTF8(device.product_string());
@@ -118,6 +120,9 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
     entry.ppd_search_data.usb_product_id = device->product_id();
     entry.ppd_search_data.make_and_model.push_back(
         GuessEffectiveMakeAndModel(*device));
+    entry.ppd_search_data.discovery_type =
+        PrinterSearchData::PrinterDiscoveryType::kUsb;
+    // TODO(https://crbug.com/895037): Add in command set from IEEE1284
 
     base::AutoLock auto_lock(printers_lock_);
     printers_[device->guid()] = entry;
