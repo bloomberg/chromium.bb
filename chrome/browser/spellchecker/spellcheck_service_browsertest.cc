@@ -38,6 +38,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 using content::BrowserContext;
 using content::RenderProcessHost;

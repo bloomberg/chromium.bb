@@ -169,7 +169,6 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/network_service.mojom.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -324,13 +323,6 @@ class RemoterFactoryImpl final : public media::mojom::RemoterFactory {
 };
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
 
-void CreateFrameResourceCoordinator(
-    RenderFrameHostImpl* render_frame_host,
-    resource_coordinator::mojom::FrameCoordinationUnitRequest request) {
-  render_frame_host->GetFrameResourceCoordinator()->AddBinding(
-      std::move(request));
-}
-
 using FrameNotifyCallback =
     base::RepeatingCallback<void(ResourceDispatcherHostImpl*,
                                  const GlobalFrameRoutingId&)>;
@@ -443,14 +435,6 @@ base::Optional<url::Origin> GetOriginForURLLoaderFactory(
   // (which should use an opaque origin for their subresource requests) and
   // blob: URLs (which embed their origin inside the |target_url|).
   return url::Origin::Create(target_url);
-}
-
-service_manager::Connector* MaybeGetFrameResourceCoordinator() {
-  auto* connection = ServiceManagerConnection::GetForProcess();
-  if (!connection)
-    return nullptr;
-
-  return connection->GetConnector();
 }
 
 std::unique_ptr<blink::URLLoaderFactoryBundleInfo> CloneFactoryBundle(
@@ -777,7 +761,6 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       accessibility_reset_count_(0),
       browser_plugin_embedder_ax_tree_id_(ui::AXTreeIDUnknown()),
       no_create_browser_accessibility_manager_for_testing_(false),
-      frame_resource_coordinator_(MaybeGetFrameResourceCoordinator()),
       web_ui_type_(WebUI::kNoWebUI),
       pending_web_ui_type_(WebUI::kNoWebUI),
       should_reuse_web_ui_(false),
@@ -879,15 +862,6 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
                                    : frame_tree_node_->opener();
   if (frame_owner)
     CSPContext::SetSelf(frame_owner->current_origin());
-
-  // Hook up the Resource Coordinator edges to the associated process and
-  // parent frame, if any.
-  frame_resource_coordinator_.SetProcess(
-      *GetProcess()->GetProcessResourceCoordinator());
-  if (parent_) {
-    parent_->GetFrameResourceCoordinator()->AddChildFrame(
-        frame_resource_coordinator_);
-  }
 }
 
 RenderFrameHostImpl::~RenderFrameHostImpl() {
@@ -4094,9 +4068,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::BindRepeating(&RenderFrameHostImpl::CreateAudioOutputStreamFactory,
                           base::Unretained(this)));
 
-  registry_->AddInterface(
-      base::Bind(&CreateFrameResourceCoordinator, base::Unretained(this)));
-
   // BrowserMainLoop::GetInstance() may be null on unit tests.
   if (BrowserMainLoop::GetInstance()) {
     // BrowserMainLoop, which owns MediaStreamManager, is alive for the lifetime
@@ -5021,9 +4992,6 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
   // Disconnect with ImageDownloader Mojo service in RenderFrame.
   mojo_image_downloader_.reset();
 
-  // Make sure the renderer cannot add new bindings.
-  frame_resource_coordinator_.reset();
-
   // The geolocation service and sensor provider proxy may attempt to cancel
   // permission requests so they must be reset before the routing_id mapping is
   // removed.
@@ -5149,11 +5117,6 @@ RenderFrameHostImpl::GetFindInPage() {
       find_in_page_.encountered_error())
     GetRemoteAssociatedInterfaces()->GetInterface(&find_in_page_);
   return find_in_page_;
-}
-
-resource_coordinator::FrameResourceCoordinator*
-RenderFrameHostImpl::GetFrameResourceCoordinator() {
-  return &frame_resource_coordinator_;
 }
 
 void RenderFrameHostImpl::ResetLoadingState() {

@@ -54,7 +54,6 @@
 #include "mojo/public/cpp/system/invitation.h"
 #include "services/network/public/mojom/mdns_responder.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojom.h"
@@ -221,8 +220,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void PurgeAndSuspend() override;
   void Resume() override;
   mojom::Renderer* GetRendererInterface() override;
-  resource_coordinator::ProcessResourceCoordinator*
-  GetProcessResourceCoordinator() override;
   void CreateURLLoaderFactory(
       const base::Optional<url::Origin>& origin,
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
@@ -895,9 +892,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Tracks active audio and video streams within the render process; used to
   // determine if if a process should be backgrounded.
   int media_stream_count_ = 0;
-
-  resource_coordinator::ProcessResourceCoordinator
-      process_resource_coordinator_;
 
   // A WeakPtrFactory which is reset every time Cleanup() runs. Used to vend
   // WeakPtrs which are invalidated any time the RPHI is recycled.

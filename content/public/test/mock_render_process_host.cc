@@ -396,21 +396,6 @@ mojom::Renderer* MockRenderProcessHost::GetRendererInterface() {
   return renderer_interface_->get();
 }
 
-resource_coordinator::ProcessResourceCoordinator*
-MockRenderProcessHost::GetProcessResourceCoordinator() {
-  if (!process_resource_coordinator_) {
-    content::ServiceManagerConnection* connection =
-        content::ServiceManagerConnection::GetForProcess();
-    // Tests may not set up a connection.
-    service_manager::Connector* connector =
-        connection ? connection->GetConnector() : nullptr;
-    process_resource_coordinator_ =
-        std::make_unique<resource_coordinator::ProcessResourceCoordinator>(
-            connector);
-  }
-  return process_resource_coordinator_.get();
-}
-
 void MockRenderProcessHost::CreateURLLoaderFactory(
     const base::Optional<url::Origin>& origin,
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,

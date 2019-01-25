@@ -791,13 +791,6 @@ class DefaultSubframeProcessHostHolder : public base::SupportsUserData::Data,
   RenderProcessHost* host_ = nullptr;
 };
 
-void CreateProcessResourceCoordinator(
-    RenderProcessHostImpl* render_process_host,
-    resource_coordinator::mojom::ProcessCoordinationUnitRequest request) {
-  render_process_host->GetProcessResourceCoordinator()->AddBinding(
-      std::move(request));
-}
-
 // Forwards service requests to Service Manager since the renderer cannot launch
 // out-of-process services on is own.
 template <typename Interface>
@@ -1321,14 +1314,6 @@ void AddCorbExceptionForPluginOnIOThread(int process_id) {
       base::BindOnce(&AddCorbExceptionForPluginOnUIThread, process_id));
 }
 
-service_manager::Connector* MaybeGetProcessResourceCoordinator() {
-  auto* connection = ServiceManagerConnection::GetForProcess();
-  if (!connection)
-    return nullptr;
-
-  return connection->GetConnector();
-}
-
 }  // namespace
 
 // Held by the RPH and used to control an (unowned) ConnectionFilterImpl from
@@ -1617,7 +1602,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       channel_connected_(false),
       sent_render_process_ready_(false),
       renderer_host_binding_(this),
-      process_resource_coordinator_(MaybeGetProcessResourceCoordinator()),
       instance_weak_factory_(
           new base::WeakPtrFactory<RenderProcessHostImpl>(this)),
       frame_sink_provider_(id_),
@@ -2180,10 +2164,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
           base::Unretained(this)));
 
   AddUIThreadInterface(registry.get(),
-                       base::BindRepeating(&CreateProcessResourceCoordinator,
-                                           base::Unretained(this)));
-
-  AddUIThreadInterface(registry.get(),
                        base::BindRepeating(&ClipboardHostImpl::Create));
 
   media::VideoDecodePerfHistory* video_perf_history =
@@ -2576,11 +2556,6 @@ void RenderProcessHostImpl::Resume() {}
 
 mojom::Renderer* RenderProcessHostImpl::GetRendererInterface() {
   return renderer_interface_.get();
-}
-
-resource_coordinator::ProcessResourceCoordinator*
-RenderProcessHostImpl::GetProcessResourceCoordinator() {
-  return &process_resource_coordinator_;
 }
 
 void RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess(
@@ -4251,8 +4226,6 @@ void RenderProcessHostImpl::ProcessDied(
   // it has died.
   ResetIPC();
 
-  process_resource_coordinator_.SetProcessExitStatus(info.exit_code);
-
   UpdateProcessPriority();
 
   within_process_died_observer_ = true;
@@ -4582,8 +4555,6 @@ void RenderProcessHostImpl::OnProcessLaunched() {
     for (auto& observer : observers_)
       observer.RenderProcessReady(this);
   }
-
-  GetProcessResourceCoordinator()->OnProcessLaunched(GetProcess());
 
   WebRTCInternals* webrtc_internals = WebRTCInternals::GetInstance();
   if (webrtc_internals->IsAudioDebugRecordingsEnabled()) {
