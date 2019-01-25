@@ -72,6 +72,7 @@
 <translation id="2068952045031577364">지난주</translation>
 <translation id="2079545284768500474">실행취소</translation>
 <translation id="209018056901015185">데스크톱 버전으로 보기</translation>
+<translation id="2096012225669085171">모든 기기 동기화 및 맞춤설정</translation>
 <translation id="2103075008456228677">history.google.com 열기</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />개 항목 이동함</translation>
 <translation id="213900355088104901">비공개로 탐색하려면 시크릿 탭을 여세요.</translation>
@@ -132,6 +133,7 @@
 <translation id="2989805286512600854">새 탭에서 열기</translation>
 <translation id="3024255823539804759">지난 1일</translation>
 <translation id="3037605927509011580">앗, 이런!</translation>
+<translation id="3059750684806925578">복사한 이미지 검색</translation>
 <translation id="3112556859945124369">표시…</translation>
 <translation id="3157684681743766797">모두 표시...</translation>
 <translation id="3175081911749765310">웹 서비스</translation>
@@ -380,6 +382,7 @@
 <translation id="7159472599653637159">모바일 사이트 요청</translation>
 <translation id="7167621057293532233">데이터 유형</translation>
 <translation id="7189598951263744875">공유...</translation>
+<translation id="7192050974311852563">로깅 시작</translation>
 <translation id="7203585745079012652">음성 응답</translation>
 <translation id="722055596168483966">Google 서비스 맞춤설정</translation>
 <translation id="7272437679830969316">신원을 인증할 수 없습니다. 비밀번호가 복사되지 않았습니다.</translation>
@@ -421,6 +424,7 @@
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">비밀번호 내보내기...</translation>
 <translation id="7947953824732555851">수락 및 로그인</translation>
+<translation id="794799177247607889">로깅 중지</translation>
 <translation id="7961015016161918242">사용하지 않음</translation>
 <translation id="7971521879845308059">팝업 차단</translation>
 <translation id="7981313251711023384">더 빠른 인터넷 사용과 검색을 위해 페이지 미리 로드</translation>

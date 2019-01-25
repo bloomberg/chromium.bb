@@ -3,6 +3,7 @@
 <translationbundle lang="es-419">
 <translation id="1005145902654145231">No se pudo cambiar el nombre de la sesión.</translation>
 <translation id="1008557486741366299">Ahora no</translation>
+<translation id="1010200102790553230">Cargar la página más tarde</translation>
 <translation id="1015730422737071372">Proporciona más detalles</translation>
 <translation id="1021110881106174305">Tarjetas aceptadas</translation>
 <translation id="1032854598605920125">Girar a la derecha</translation>
@@ -47,6 +48,7 @@
 <translation id="1227633850867390598">Ocultar valor</translation>
 <translation id="1228893227497259893">El identificador de la entidad es incorrecto.</translation>
 <translation id="1232569758102978740">Sin título</translation>
+<translation id="124116460088058876">Más idiomas</translation>
 <translation id="1250759482327835220">Para realizar pagos de forma más rápida la próxima vez, guarda tu tarjeta, nombre y dirección de facturación en tu cuenta de Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sincronizados)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Si intentas visitar un sitio web y no se abre, primero intenta corregir el error con estos pasos para solucionar problemas:&lt;/p&gt;
@@ -117,6 +119,7 @@
 <translation id="1618822247301510817">Se copió la imagen</translation>
 <translation id="1620510694547887537">Cámara</translation>
 <translation id="1623104350909869708">Evitar que esta página cree cuadros de diálogo adicionales</translation>
+<translation id="1634051627998691300">Finalizar sesión</translation>
 <translation id="1639239467298939599">Cargando</translation>
 <translation id="1640180200866533862">Políticas de usuario</translation>
 <translation id="1640244768702815859">Intenta <ph name="BEGIN_LINK" />visitar la página principal del sitio<ph name="END_LINK" />.</translation>
@@ -222,6 +225,7 @@
 <translation id="2317583587496011522">Se aceptan tarjetas de débito.</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, fecha de vencimiento: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="2337852623177822836">Configuración controlada por tu administrador</translation>
+<translation id="2349790679044093737">La sesión de RV está en curso</translation>
 <translation id="2354001756790975382">Otros favoritos</translation>
 <translation id="2354430244986887761">Navegación segura de Google recientemente <ph name="BEGIN_LINK" />encontró apps dañinas<ph name="END_LINK" /> en <ph name="SITE" />.</translation>
 <translation id="2355395290879513365">Es posible que los atacantes vean las imágenes que observas en este sitio y las modifiquen para engañarte.</translation>
@@ -307,6 +311,7 @@
 <translation id="2856444702002559011">Es posible que algunos atacantes intenten robar tu información de <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (p. ej., contraseñas, mensajes o tarjetas de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2881276955470682203">¿Quieres guardar la tarjeta?</translation>
 <translation id="2903493209154104877">Direcciones</translation>
+<translation id="290376772003165898">¿La página no está en <ph name="LANGUAGE" />?</translation>
 <translation id="2909946352844186028">Se detectó un cambio de red.</translation>
 <translation id="2916038427272391327">Cierra los demás programas.</translation>
 <translation id="2922350208395188000">No se puede comprobar el certificado del servidor.</translation>
@@ -403,7 +408,7 @@
 <translation id="3461824795358126837">Resaltador</translation>
 <translation id="3462200631372590220">Ocultar detalles avanzados</translation>
 <translation id="3467763166455606212">Se requiere el nombre del titular de la tarjeta</translation>
-<translation id="3468054117417088249"><ph name="TAB_SWITCH_SUFFIX" />; abierta actualmente; presiona la pestaña y, luego, Intro para cambiar a la pestaña abierta</translation>
+<translation id="3468054117417088249"><ph name="TAB_SWITCH_SUFFIX" />; abierta actualmente; presiona Tabulación y, luego, Intro para cambiar a la pestaña abierta</translation>
 <translation id="3479539252931486093">¿Ocurrió algo inesperado? <ph name="BEGIN_LINK" />Cuéntanos<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Ahora no</translation>
 <translation id="3484560055331845446">Podrías perder el acceso a tu Cuenta de Google. Chrome te recomienda cambiar la contraseña ahora. Deberás acceder a la cuenta.</translation>
@@ -455,7 +460,7 @@
 <translation id="3748148204939282805">Es posible que los atacantes en <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> intenten engañarte para que realices alguna acción peligrosa, como instalar software o revelar información personal (p. ej., contraseñas, números de teléfono o tarjetas de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Falló la traducción debido a un error de servidor.</translation>
 <translation id="3759461132968374835">No has notificado ningún bloqueo recientemente. Los bloqueos que se hayan producido mientras la función de notificación de bloqueos estaba desactivada no aparecerán en esta página.</translation>
-<translation id="3761718714832595332">Ocular estado</translation>
+<translation id="3761718714832595332">Ocultar estado</translation>
 <translation id="3765032636089507299">La página de Navegación segura está en construcción.</translation>
 <translation id="3778403066972421603">¿Deseas guardar esta tarjeta en tu cuenta de Google y en este dispositivo?</translation>
 <translation id="3781428340399460090">Fucsia</translation>
@@ -649,7 +654,6 @@
 <translation id="5089810972385038852">Estado</translation>
 <translation id="5094747076828555589">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; Chromium no confía en el certificado de seguridad. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
 <translation id="5095208057601539847">Provincia</translation>
-<translation id="5098332213681597508">Este nombre es de tu cuenta de Google.</translation>
 <translation id="5115563688576182185">(64 bits)</translation>
 <translation id="5128122789703661928">La sesión con este nombre no se puede borrar.</translation>
 <translation id="5135404736266831032">Administrar direcciones…</translation>
@@ -684,7 +688,6 @@
 <translation id="5344579389779391559">Es posible que esta página intente cobrarte dinero</translation>
 <translation id="5355557959165512791">No puedes visitar <ph name="SITE" /> ahora porque este certificado se revocó. Los ataques y errores de red suelen ser temporales, por lo que es posible que esta página funcione más tarde.</translation>
 <translation id="536296301121032821">Error al almacenar la configuración de la política</translation>
-<translation id="5363056109122666249">Como accediste a tu cuenta, Chrome te ofrece guardar tus tarjetas en tu Cuenta de Google. Puedes modificar este comportamiento en la configuración.</translation>
 <translation id="5371425731340848620">Actualizar tarjeta</translation>
 <translation id="5377026284221673050">"El reloj está atrasado", "El reloj está adelantado" o "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5384855140246857529">Para usar tus tarjetas en todos los dispositivos, accede a tu cuenta y activa la sincronización.</translation>
@@ -824,6 +827,7 @@
 <translation id="6280223929691119688">La dirección de envío no es válida. Selecciona una dirección diferente.</translation>
 <translation id="6282194474023008486">Código postal</translation>
 <translation id="6290238015253830360">Tus artículos sugeridos aparecen aquí</translation>
+<translation id="6302269476990306341">Se está deteniendo el Asistente de Google en Chrome</translation>
 <translation id="6305205051461490394">No se puede acceder a <ph name="URL" />.</translation>
 <translation id="6321917430147971392">Revisa la configuración de DNS.</translation>
 <translation id="6328639280570009161">Intenta inhabilitar la predicción de red.</translation>
@@ -1083,7 +1087,6 @@ Detalles adicionales:
 <translation id="7951415247503192394">(32 bits)</translation>
 <translation id="7956713633345437162">Favoritos del celular</translation>
 <translation id="7961015016161918242">Nunca</translation>
-<translation id="7983301409776629893">Siempre traducir del <ph name="ORIGINAL_LANGUAGE" /> al <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Sin especificar</translation>
 <translation id="800218591365569300">Prueba cerrar las demás pestañas o programas para liberar memoria.</translation>
 <translation id="8009225694047762179">Administrar contraseñas</translation>
@@ -1113,6 +1116,7 @@ Detalles adicionales:
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8149426793427495338">La computadora se suspendió.</translation>
 <translation id="8150722005171944719">El archivo de <ph name="URL" /> no se puede leer. Es posible que se haya eliminado o movido o que se impida el acceso a los permisos del archivo.</translation>
+<translation id="8175796834047840627">Como accediste a tu cuenta, Chrome te ofrece guardar tus tarjetas en tu Cuenta de Google. Puedes modificar este comportamiento en la configuración.</translation>
 <translation id="8184538546369750125">Usar configuración global predeterminada (Permitir)</translation>
 <translation id="8194797478851900357">&amp;Deshacer Mover</translation>
 <translation id="8197543752516192074">Traducir página</translation>
@@ -1276,7 +1280,6 @@ Detalles adicionales:
 <translation id="939736085109172342">Nueva carpeta</translation>
 <translation id="945855313015696284">Comprueba la información que se muestra a continuación y borra las tarjetas que no sean válidas</translation>
 <translation id="951104842009476243">Tarjetas de débito y prepago aceptadas</translation>
-<translation id="960701843220172709">{NUM_CARDS,plural, =1{Podrás usarla cuando accedas a tu cuenta. Esta tarjeta y su dirección de facturación se guardarán en tu Cuenta de Google.}other{Podrás usarlas cuando accedas a tu cuenta. Estas tarjetas y sus direcciones de facturación se guardarán en tu Cuenta de Google.}}</translation>
 <translation id="962484866189421427">Este contenido podría intentar instalar apps engañosas que se hagan pasar por otro tipo de contenido o que recopilen datos que se usen para rastrearte. <ph name="BEGIN_LINK" />Mostrar de todos modos<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Build oficial</translation>
 <translation id="973773823069644502">Agregar dirección de entrega</translation>

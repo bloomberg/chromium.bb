@@ -4,6 +4,7 @@
 <translation id="1001534784610492198">‏آرشیو نصب‌کننده خراب یا نامعتبر است. لطفاً دوباره Google Chrome را بارگیری کنید.</translation>
 <translation id="102763973188675173">‏سفارشی کردن و کنترل Google Chrome. به‌روزرسانی‌ در دسترس است.</translation>
 <translation id="1035334672863811645">‏ورود به سیستم Chrome</translation>
+<translation id="1051826050538111504">‏نرم‌افزار مضری در رایانه‌تان وجود دارد. Chrome می‌تواند آن را بردارد، تنظیمات را بازیابی کند و افزونه‌ها را غیرفعال کند تا عملکرد مرورگرتان دوباره عادی شود.</translation>
 <translation id="1065672644894730302">تنظیمات برگزیده شما را نمی‌توان خواند. بعضی ویژگی‌ها ممکن است در دسترس نباشند و تغییرات تنظیمات برگزیده ذخیره نخواهد شد.</translation>
 <translation id="1088300314857992706">‏<ph name="USER_EMAIL_ADDRESS" /> قبلاً از Chrome استفاده می‌کرد</translation>
 <translation id="1104959162601287462">‏درباره سیستم عامل &amp;Chrome</translation>
@@ -68,6 +69,7 @@
 <translation id="2580411288591421699">‏نمی‌توان همان نسخه Google Chrome را که اکنون در حال اجراست نصب کرد. لطفاً Google Chrome را ببندید و دوباره سعی کنید.</translation>
 <translation id="2586406160782125153">‏این کار داده‌های محصول مرورتان را برای همیشه از این دستگاه حذف می‌کند. برای بازیابی داده‌هایتان در فرصتی دیگر، با <ph name="USER_EMAIL" /> وارد سیستم Chrome شوید.</translation>
 <translation id="2588322182880276190">‏نشان‌واره Chrome</translation>
+<translation id="2644798301485385923">‏سیستم سیستم‌عامل Chrome</translation>
 <translation id="2652691236519827073">‏باز کردن پیوند در &amp;برگه جدید Chrome</translation>
 <translation id="2665296953892887393">‏با ارسال گزارش‌های خرابی و <ph name="UMA_LINK" /> به Google، به بهبود Google Chrome کمک کنید.</translation>
 <translation id="2689103672227170538">‏این افزونه، صفحه‌ای را تغییر داده است که هنگام راه‌اندازی Chrome نشان داده می‌شود.</translation>
@@ -99,6 +101,7 @@
 <translation id="3451115285585441894">‏افزودن به Chrome...</translation>
 <translation id="345171907106878721">‏افرودن خودتان به Chrome</translation>
 <translation id="3479552764303398839">اکنون نه</translation>
+<translation id="34857402635545079">‏همچنین داده‌ها از Chrome پاک شود (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">‏Chrome برای هم‌رسانی مکانتان با این سایت باید به مکان شما دسترسی داشته باشد</translation>
 <translation id="3582972582564653026">‏Chrome را در همه دستگاه‌هایتان همگام‌سازی و شخصی‌سازی کنید</translation>
 <translation id="3622797965165704966">‏اکنون استفاده از Chrome با حساب Google شما و در رایانه‌های مشترک آسان‌تر شده است.</translation>
@@ -163,6 +166,7 @@
 <translation id="5386244825306882791">‏این برنامه همچنین صفحه‌ای را که هنگام راه‌اندازی Chrome یا جستجو از Omnibox نشان داده می‌شود، کنترل می‌کند.</translation>
 <translation id="5430073640787465221">‏فایل تنظیمات برگزیده شما خراب یا نامعتبر است. Google Chrome نمی‌تواند تنظیمات شما را بازیابی کند.</translation>
 <translation id="5483595757826856374">{0,plural, =0{‏Chrome هم‌اکنون راه‌اندازی مجدد می‌شود}=1{‏Chrome ‏۱ ثانیه دیگر راه‌اندازی مجدد می‌شود}one{‏Chrome ‏# ثانیه دیگر راه‌اندازی مجدد می‌شود}other{‏Chrome ‏# ثانیه دیگر راه‌اندازی مجدد می‌شود}}</translation>
+<translation id="5505603430818498864">‏Google Chrome با ارسال تصاویر صفحه به سرورهای Google، می‌تواند تصاویر و نوشتار موجود در تصویری را تشخیص دهد تا به شما امکان دهد محتوا صفحه را بهتر درک کنید.</translation>
 <translation id="556024056938947818">‏Google Chrome می‌خواهد گذرواژه‌ها را نمایش دهد.</translation>
 <translation id="5566025111015594046">‏Google Chrome (ورودی mDNS)</translation>
 <translation id="565744775970812598">‏<ph name="FILE_NAME" /> ممکن است خطرناک باشد، بنابراین Chrome آن را مسدود کرده است.</translation>

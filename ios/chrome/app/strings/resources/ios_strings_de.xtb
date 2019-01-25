@@ -72,6 +72,7 @@
 <translation id="2068952045031577364">Für die letzte Woche</translation>
 <translation id="2079545284768500474">Rückgängig machen</translation>
 <translation id="209018056901015185">Desktop-Version</translation>
+<translation id="2096012225669085171">Geräteübergreifend synchronisieren und personalisieren</translation>
 <translation id="2103075008456228677">history.google.com öffnen</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> Lesezeichen verschoben</translation>
 <translation id="213900355088104901">Wenn Sie privat surfen möchten, öffnen Sie einen Inkognito-Tab</translation>
@@ -132,6 +133,7 @@
 <translation id="2989805286512600854">In neuem Tab öffnen</translation>
 <translation id="3024255823539804759">Für den letzten Tag</translation>
 <translation id="3037605927509011580">Oh nein!</translation>
+<translation id="3059750684806925578">Kopiertes Bild suchen</translation>
 <translation id="3112556859945124369">Markieren…</translation>
 <translation id="3157684681743766797">Alle markieren…</translation>
 <translation id="3175081911749765310">Webdienste</translation>
@@ -380,6 +382,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="7159472599653637159">Mobile Version anfordern</translation>
 <translation id="7167621057293532233">Datentypen</translation>
 <translation id="7189598951263744875">Teilen...</translation>
+<translation id="7192050974311852563">Protokollierung starten</translation>
 <translation id="7203585745079012652">Gesprochene Antworten</translation>
 <translation id="722055596168483966">Google-Dienste personalisieren</translation>
 <translation id="7272437679830969316">Ihre Identität konnte nicht bestätigt werden. Das Passwort wurde nicht kopiert.</translation>
@@ -421,6 +424,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Passwörter exportieren…</translation>
 <translation id="7947953824732555851">Akzeptieren und anmelden</translation>
+<translation id="794799177247607889">Protokollierung anhalten</translation>
 <translation id="7961015016161918242">Nie</translation>
 <translation id="7971521879845308059">Pop-ups blockieren</translation>
 <translation id="7981313251711023384">Seiten vorab laden, um das Surfen und die Suche zu beschleunigen</translation>

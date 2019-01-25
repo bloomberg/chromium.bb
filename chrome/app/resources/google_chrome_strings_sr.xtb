@@ -4,6 +4,7 @@
 <translation id="1001534784610492198">Архива програма за инсталацију је оштећена или неважећа. Преузмите Google Chrome поново.</translation>
 <translation id="102763973188675173">Прилагодите и контролишите Google Chrome. Доступно је ажурирање.</translation>
 <translation id="1035334672863811645">пријавите се у Chrome</translation>
+<translation id="1051826050538111504">На рачунару постоји штетан софтвер. Chrome може да га уклони, врати подешавања и онемогући додатке да би прегледач могао поново да ради уобичајено.</translation>
 <translation id="1065672644894730302">Подешавања не могу да се прочитају.
 
 Неке функције су можда недоступне и промене подешавања неће бити сачуване.</translation>
@@ -72,6 +73,7 @@
 <translation id="2580411288591421699">Није могуће инсталирати верзију Google Chrome прегледача која је иста као тренутно покренута верзија. Затворите Google Chrome и покушајте поново.</translation>
 <translation id="2586406160782125153">Овим ћете избрисати податке прегледања са уређаја. Да бисте касније вратили податке, пријавите се у Chrome као <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Chrome логотип</translation>
+<translation id="2644798301485385923">Систем Chrome ОС</translation>
 <translation id="2652691236519827073">Отвори линк у новој Chrome &amp;картици</translation>
 <translation id="2665296953892887393">Помозите нам да побољшамо Google Chrome тако што ћете Google-у слати извештаје о отказивању и <ph name="UMA_LINK" /></translation>
 <translation id="2689103672227170538">Овај додатак је променио страницу која се приказује када покренете Chrome.</translation>
@@ -103,6 +105,7 @@
 <translation id="3451115285585441894">Додавање у Chrome...</translation>
 <translation id="345171907106878721">Додајте себе у Chrome</translation>
 <translation id="3479552764303398839">Не сада</translation>
+<translation id="34857402635545079">Обриши податке и из Chrome-а (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome тражи приступ вашој локацији да бисте је делили са овим сајтом</translation>
 <translation id="3582972582564653026">Синхронизујте и персонализујте Chrome на свим уређајима</translation>
 <translation id="3622797965165704966">Сада можете лакше да користите Chrome са Google налогом и на дељеним рачунарима.</translation>
@@ -170,6 +173,7 @@
 
 Google Chrome не може да врати подешавања.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Поново ћемо покренути Chrome}=1{Поново ћемо покренути Chrome за 1 секунду}one{Поново ћемо покренути Chrome за # секунду}few{Поново ћемо покренути Chrome за # секунде}other{Поново ћемо покренути Chrome за # секунди}}</translation>
+<translation id="5505603430818498864">Google Chrome може да препозна слике и текст на слици јер шаље слике Google серверима, што вам омогућава да лакше разумете садржај странице.</translation>
 <translation id="556024056938947818">Google Chrome покушава да прикаже лозинке.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Датотека <ph name="FILE_NAME" /> је можда опасна, па ју је Chrome блокирао.</translation>

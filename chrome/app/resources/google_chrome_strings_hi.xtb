@@ -4,6 +4,7 @@
 <translation id="1001534784610492198">इंस्‍टॉलर संग्रह खराब या अमान्‍य है. कृपया Google Chrome फिर से डाउनलोड करें.</translation>
 <translation id="102763973188675173">Google Chrome को पसंद के मुताबिक बनाएं और नियंत्रित करें. अपडेट उपलब्ध है.</translation>
 <translation id="1035334672863811645">Chrome में साइन इन करें</translation>
+<translation id="1051826050538111504">आपके कंप्यूटर पर नुकसान पहुंचाने वाला सॉफ़्टवेयर है. Chrome उसे हटा सकता है, आपकी सेटिंग को बहाल कर सकता है, और एक्सटेंशन को बंद कर सकता है, ताकि आपका ब्राउज़र फिर सामान्य रूप से काम करने लगे.</translation>
 <translation id="1065672644894730302">आपकी प्राथमिकताओं को पढ़ा नहीं जा सकता| \\n\\nकुछ विशेषताएं अनुपलब्ध हो सकती हैं और प्राथमिकताओं में किए गए परिवर्तनों को सहेजा नहीं जाएगा.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> पहले Chrome का उपयोग कर रहा था</translation>
 <translation id="1104959162601287462">&amp;Chrome OS के बारे में</translation>
@@ -68,6 +69,7 @@
 <translation id="2580411288591421699">Google Chrome के उस वर्शन के समान वर्शन को इंस्‍टॉल नहीं कर सकता, जो वर्तमान में चल रहा है. कृपया Google Chrome बंद करें और फिर से प्रयास करें.</translation>
 <translation id="2586406160782125153">ऐसा करने से इस डिवाइस से आपका ब्राउज़िंग डेटा हट जाएगा. बाद में अपना डेटा पाने के लिए, Chrome में <ph name="USER_EMAIL" /> के रूप में साइन इन करें.</translation>
 <translation id="2588322182880276190">Chrome लोगो</translation>
+<translation id="2644798301485385923">Chrome OS सिस्टम</translation>
 <translation id="2652691236519827073">नए Chrome &amp;टैब में लिंक खोलें</translation>
 <translation id="2665296953892887393">Google को क्रैश रिपोर्ट और <ph name="UMA_LINK" /> भेजकर Google Chrome को बेहतर बनाने में सहायता करें</translation>
 <translation id="2689103672227170538">इस एक्सटेंशन ने यह बदल दिया है कि जब आप Chrome प्रारंभ करते हैं तब कौन सा पृष्‍ठ दिखाया जाए.</translation>
@@ -99,6 +101,7 @@
 <translation id="3451115285585441894">Chrome में जोड़ा जा रहा है...</translation>
 <translation id="345171907106878721">स्वयं को Chrome में जोड़ें</translation>
 <translation id="3479552764303398839">अभी नहीं</translation>
+<translation id="34857402635545079">साथ ही, Chrome (<ph name="URL" />) का डेटा साफ़ करें</translation>
 <translation id="3503306920980160878">Chrome को इस साइट के साथ आपके स्थान की जानकारी शेयर करने के लिए आपके स्थान का एक्सेस चाहिए</translation>
 <translation id="3582972582564653026">Chrome को अपने सभी डिवाइस पर सिंक करें और मनमुताबिक बनाएं</translation>
 <translation id="3622797965165704966">अब अपने Google खाते के साथ और शेयर किए गए कंप्यूटर पर Chrome का उपयोग करना आसान हो गया है.</translation>
@@ -166,6 +169,7 @@
 
 Google Chrome आपकी सेटिंग बहाल नहीं कर सकता.</translation>
 <translation id="5483595757826856374">{0,plural, =0{अब Chrome फिर से लॉन्च होगा}=1{Chrome एक सेकंड में फिर से लॉन्च होगा}one{Chrome # सेकंड में फिर से लॉन्च होगा}other{Chrome # सेकंड में फिर से लॉन्च होगा}}</translation>
+<translation id="5505603430818498864">Google Chrome, पेज पर मौजूद इमेज Google के सर्वर पर भेजकर, इमेज और इमेज में मौजूद लेख की पहचान कर सकता है. इसकी मदद से आप पेज की सामग्री बेहतर ढंग से समझ सकते हैं.</translation>
 <translation id="556024056938947818">Google Chrome पासवर्ड दिखाने का प्रयास कर रहा है.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> खरतरनाक हो सकता है, इसलिए Chrome ने उसे अवरोधित कर दिया है.</translation>

@@ -4,6 +4,7 @@
 <translation id="1001534784610492198">安装程序存档文件损坏或无效。请重新下载 Google Chrome。</translation>
 <translation id="102763973188675173">有可用的更新。欢迎自定义和控制 Google Chrome。</translation>
 <translation id="1035334672863811645">登录 Chrome</translation>
+<translation id="1051826050538111504">您的计算机上存在有害软件。Chrome 可以移除该软件、恢复您的设置并停用扩展程序，以确保您的浏览器能够重新正常运行。</translation>
 <translation id="1065672644894730302">系统无法读取您的偏好设置。某些功能可能无法使用，并且对偏好设置所做的更改不会保存。</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> 之前使用的是 Chrome</translation>
 <translation id="1104959162601287462">关于 Chrome 操作系统(&amp;C)</translation>
@@ -68,6 +69,7 @@
 <translation id="2580411288591421699">无法安装与当前运行版本相同的 Google Chrome 浏览器。请关闭 Google Chrome 浏览器，然后重试。</translation>
 <translation id="2586406160782125153">这会从这台设备上删除您的浏览数据。如果日后想要检索您的数据，届时请以 <ph name="USER_EMAIL" /> 的身份登录 Chrome。</translation>
 <translation id="2588322182880276190">Chrome 徽标</translation>
+<translation id="2644798301485385923">Chrome 操作系统</translation>
 <translation id="2652691236519827073">在 Chrome 新标签页中打开链接(&amp;T)</translation>
 <translation id="2665296953892887393">将崩溃报告和<ph name="UMA_LINK" />发送给Google，帮助我们完善Google Chrome。</translation>
 <translation id="2689103672227170538">此扩展程序更改了 Chrome 启动后系统显示的页面。</translation>
@@ -99,6 +101,7 @@
 <translation id="3451115285585441894">正在添加到 Chrome 浏览器...</translation>
 <translation id="345171907106878721">将您自己添加到Chrome</translation>
 <translation id="3479552764303398839">以后再说</translation>
+<translation id="34857402635545079">一并清除 Chrome (<ph name="URL" />) 中的数据</translation>
 <translation id="3503306920980160878">Chrome 需要获得位置权限，才能将您的位置信息共享给此网站</translation>
 <translation id="3582972582564653026">在您的所有设备上同步并个性化设置 Chrome</translation>
 <translation id="3622797965165704966">现在，无论是通过Google帐号还是在共用的计算机上，您都可以更轻松地使用Chrome。</translation>
@@ -163,6 +166,7 @@
 <translation id="5386244825306882791">它还能够控制您启动Chrome后或通过多功能框进行搜索时系统显示的页面。</translation>
 <translation id="5430073640787465221">您的偏好设置文件已损坏或无效。Google Chrome 浏览器无法恢复您的设置。</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome 将会立即重新启动}=1{Chrome 将会在 1 秒后重新启动}other{Chrome 将会在 # 秒后重新启动}}</translation>
+<translation id="5505603430818498864">Google Chrome 可通过向 Google 服务器发送网页图片来识别图片和图片中的文字，从而让您更好地了解网页内容。</translation>
 <translation id="556024056938947818">Google Chrome 正尝试显示密码。</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> 可能存在危险，因此 Chrome 已将其拦截。</translation>

@@ -3,6 +3,7 @@
 <translationbundle lang="fa">
 <translation id="1005145902654145231">تغییر نام این جلسه انجام نشد.</translation>
 <translation id="1008557486741366299">اکنون نه</translation>
+<translation id="1010200102790553230">بار کردن صفحه در فرصتی دیگر</translation>
 <translation id="1015730422737071372">جزئیات بیشتری ارائه دهید</translation>
 <translation id="1021110881106174305">کارت‌های قابل‌ قبول</translation>
 <translation id="1032854598605920125">چرخش در جهت عقربه‌های ساعت</translation>
@@ -47,6 +48,7 @@
 <translation id="1227633850867390598">پنهان کردن مقدار</translation>
 <translation id="1228893227497259893">‏شناسه entity نادرست</translation>
 <translation id="1232569758102978740">بدون عنوان</translation>
+<translation id="124116460088058876">زبان‌های بیشتر</translation>
 <translation id="1250759482327835220">‏برای اینکه دفعه بعد پرداخت سریع‌تری داشته باشید، اطلاعات کارت، نام و نشانی صورت‌حسابتان را در حساب Google خود ذخیره کنید.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />، <ph name="TYPE_2" /> (همگام‌سازی‌شده)</translation>
 <translation id="1256368399071562588">‏&lt;p&gt;اگر می‌خواهید از وب‌سایتی بازدید کنید و باز نمی‌شود، ابتدا سعی کنید با این مراحل عیب‌یابی خطا را برطرف کنید:&lt;/p&gt;
@@ -117,6 +119,7 @@
 <translation id="1618822247301510817">تصویری که کپی کرده‌اید</translation>
 <translation id="1620510694547887537">دوربین</translation>
 <translation id="1623104350909869708">جلوگیری از ایجاد پنجره‌های اضافی توسط این صفحه</translation>
+<translation id="1634051627998691300">پایان جلسه</translation>
 <translation id="1639239467298939599">بارگیری</translation>
 <translation id="1640180200866533862">خط‌مشی‌های کاربر</translation>
 <translation id="1640244768702815859">از<ph name="BEGIN_LINK" />صفحه اصلی سایت دیدن کنید<ph name="END_LINK" />.</translation>
@@ -222,6 +225,7 @@
 <translation id="2317583587496011522">کارت‌های نقدی پذیرفته می‌شوند.</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />، در <ph name="EXPIRATION_DATE_ABBR" /> منقضی می‌شود</translation>
 <translation id="2337852623177822836">تنظیم توسط سرپرست کنترل می‌شود</translation>
+<translation id="2349790679044093737">‏جلسه VR فعال است</translation>
 <translation id="2354001756790975382">نشانک‌های دیگر</translation>
 <translation id="2354430244986887761">‏مرور ایمن Google، اخیراً <ph name="BEGIN_LINK" />برنامه‌های خطرناکی<ph name="END_LINK" /> در <ph name="SITE" /> پیدا کرده است.</translation>
 <translation id="2355395290879513365">مهاجمین ممکن است بتوانند تصاویری را که در این سایت می‌بینید مشاهده کنند و با دست‌کاری آن‌ها شما را فریب دهند.</translation>
@@ -307,6 +311,7 @@
 <translation id="2856444702002559011">شاید مهاجم‌ها در تلاش باشند اطلاعات شما (مانند گذرواژه‌ها، پیام‌ها یا کارت‌های اعتباری) را از <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> سرقت کنند. <ph name="BEGIN_LEARN_MORE_LINK" />بیشتر بدانید<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2881276955470682203">کارت ذخیره شود؟</translation>
 <translation id="2903493209154104877">آدرس‌ها</translation>
+<translation id="290376772003165898">صفحه به زبان <ph name="LANGUAGE" /> وجود ندارد؟</translation>
 <translation id="2909946352844186028">تغییر شبکه تشخیص داده شد.</translation>
 <translation id="2916038427272391327">برنامه‌های دیگر را ببندید</translation>
 <translation id="2922350208395188000">گواهی سرور بررسی نمی‌شود.</translation>
@@ -648,7 +653,6 @@
 <translation id="5089810972385038852">ایالت</translation>
 <translation id="5094747076828555589">‏این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیت آن مورداعتماد Chromium نیست. علت این موضوع می‌توان پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
 <translation id="5095208057601539847">استان</translation>
-<translation id="5098332213681597508">‏این نام از حساب Google شما گرفته شده است.</translation>
 <translation id="5115563688576182185">(۶۴ بیت)</translation>
 <translation id="5128122789703661928">جلسه‌ای با این نام، برای حذف معتبر نیست.</translation>
 <translation id="5135404736266831032">مدیریت نشانی‌ها…</translation>
@@ -683,7 +687,6 @@
 <translation id="5344579389779391559">این صفحه ممکن است تلاش کند از شما پول دریافت کند</translation>
 <translation id="5355557959165512791">درحال‌حاضر نمی‌توانید از <ph name="SITE" /> دیدن کنید، زیرا گواهینامه آن لغو شده است. معمولاً خطاهای شبکه و حمله‌ها موقتی هستند، بنابراین احتمالاً این صفحه بعداً کار خواهد کرد.</translation>
 <translation id="536296301121032821">تنظیمات خط‌‌مشی ذخیره نشد</translation>
-<translation id="5363056109122666249">‏چون به سیستم وارد شده‌اید، Chrome پیشنهاد می‌کند کارت‌ها را در حساب Google ذخیره کنید. در تنظیمات می‌توانید این رفتار را تغییر دهید.</translation>
 <translation id="5371425731340848620">به‌روزرسانی کارت</translation>
 <translation id="5377026284221673050">‏«ساعتتان عقب است» یا «ساعتتان جلو است» یا «&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;»</translation>
 <translation id="5384855140246857529">برای اینکه از کارت‌هایتان در همه دستگاه‌ها استفاده کنید، به سیستم وارد شوید و همگام‌سازی را روشن کنید.</translation>
@@ -823,6 +826,7 @@
 <translation id="6280223929691119688">تحویل به این نشانی ممکن نیست. نشانی دیگری را انتخاب کنید.</translation>
 <translation id="6282194474023008486">کد پستی</translation>
 <translation id="6290238015253830360">مقاله‌های پیشنهادی شما در اینجا نشان داده می‌شوند</translation>
+<translation id="6302269476990306341">‏توقف «دستیار Google» در Chrome</translation>
 <translation id="6305205051461490394">دسترسی به <ph name="URL" /> امکان‌پذیر نیست.</translation>
 <translation id="6321917430147971392">‏تنظیمات DNS خودتان را بررسی کنید</translation>
 <translation id="6328639280570009161">غیرفعال کردن پیش‌بینی شبکه را امتحان کنید</translation>
@@ -1082,7 +1086,6 @@
 <translation id="7951415247503192394">(۳۲ بیت)</translation>
 <translation id="7956713633345437162">نشانک‌های تلفن‌ همراه</translation>
 <translation id="7961015016161918242">هرگز</translation>
-<translation id="7983301409776629893">همیشه <ph name="ORIGINAL_LANGUAGE" /> به <ph name="TARGET_LANGUAGE" /> ترجمه شود</translation>
 <translation id="7995512525968007366">تعیین نشده</translation>
 <translation id="800218591365569300">سعی کنید برگه‌ها یا برنامه‌های دیگر را ببندید تا حافظه آزاد شود.</translation>
 <translation id="8009225694047762179">مدیریت گذرواژه</translation>
@@ -1112,6 +1115,7 @@
 <translation id="8131740175452115882">تأیید</translation>
 <translation id="8149426793427495338">رایانه‌تان به خواب رفته است.</translation>
 <translation id="8150722005171944719">این فایل در <ph name="URL" /> قابل خواندن نیست. ممکن است حذف شده، جابجا شده باشد و یا مجوزهای فایل از دسترسی جلوگیری می‌کنند.</translation>
+<translation id="8175796834047840627">‏چون به سیستم وارد شده‌اید، Chrome پیشنهاد می‌کند کارت‌ها را در حساب Google ذخیره کنید. در تنظیمات می‌توانید این رفتار را تغییر دهید.</translation>
 <translation id="8184538546369750125">استفاده از پیش‌فرض جهانی (مجاز)</translation>
 <translation id="8194797478851900357">&amp;واگرد انتقال</translation>
 <translation id="8197543752516192074">ترجمه صفحه</translation>
@@ -1274,7 +1278,6 @@
 <translation id="939736085109172342">پوشهٔ جدید</translation>
 <translation id="945855313015696284">اطلاعات زیر را بررسی و کارت‌های نامعتبر را حذف کنید</translation>
 <translation id="951104842009476243">کارت‌های نقدی و پیش‌پرداخت قابل‌قبول</translation>
-<translation id="960701843220172709">{NUM_CARDS,plural, =1{‏به سیستم که وارد شوید، می‌توانید از آن استفاده کنید. این کارت و نشانی صورت‌حساب آن در حساب Google ذخیره می‌شوند.}one{‏به سیستم که وارد شوید، می‌توانید از آن‌ها استفاده کنید. این کارت‌ها و نشانی‌های صورت‌حسابشان در حساب Google ذخیره می‌شوند.}other{‏به سیستم که وارد شوید، می‌توانید از آن‌ها استفاده کنید. این کارت‌ها و نشانی‌های صورت‌حسابشان در حساب Google ذخیره می‌شوند.}}</translation>
 <translation id="962484866189421427">این محتوا ممکن است برنامه‌های فریب‌دهنده‌ای نصب کند که وانمود می‌کنند برنامه دیگری هستند یا اینکه داده‌هایی برای ردیابی شما جمع‌آوری می‌کنند. <ph name="BEGIN_LINK" />درهرصورت نشان داده شود<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">ساخت رسمی</translation>
 <translation id="973773823069644502">افزودن نشانی ارسال</translation>

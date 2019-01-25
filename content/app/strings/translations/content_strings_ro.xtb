@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">Luna aceasta</translation>
 <translation id="1637811476055996098">Alege fișierele</translation>
 <translation id="1650423536718072820">citat</translation>
+<translation id="1727886345390570319">ascunde meniul de subtitrări</translation>
 <translation id="1729654308190250600">Introduceți o adresă de e-mail concretă.</translation>
 <translation id="1758486001363313524">Altele...</translation>
 <translation id="1806710327868736751">dialog de alertă</translation>
@@ -147,6 +148,7 @@
 <translation id="6213469881011901533">glosar</translation>
 <translation id="6398862346408813489">Afișează panoul de selectare a lunii</translation>
 <translation id="6404546809543547843">glisor redare audio</translation>
+<translation id="6443871981718447451">afișează meniul de subtitrări</translation>
 <translation id="6453774872122745852">lista colaboratorilor</translation>
 <translation id="648732519525291180">selector oră</translation>
 <translation id="6550675742724504774">Opțiuni</translation>
@@ -162,7 +164,6 @@
 <translation id="6820355525329141109">Nu s-a putut încărca pluginul.</translation>
 <translation id="6820615603175220800">referință bibliografică</translation>
 <translation id="6843725295806269523">dezactivați sunetul</translation>
-<translation id="6853785296079745596">ascundeți subtitrările</translation>
 <translation id="6885760532393684712">director</translation>
 <translation id="689129560213475294">colofon</translation>
 <translation id="6934078000481955284">blockquote</translation>
@@ -171,7 +172,6 @@
 <translation id="6989848892321993519">Mărește acest text la cel puțin <ph name="MIN_CHARACTERS" /> caractere (în prezent folosești 1 caracter).</translation>
 <translation id="709897737746224366">Respectă formatul solicitat.</translation>
 <translation id="7139483182332611405">prefață</translation>
-<translation id="7223624360433298498">timp scurs</translation>
 <translation id="7263440858009898357">Selectează un articol din listă.</translation>
 <translation id="727747134524199931">antet coloană</translation>
 <translation id="7353453495576941748">mulțumire</translation>
@@ -186,7 +186,6 @@
 <translation id="7661956066982048809">document grafic</translation>
 <translation id="7673697353781729403">Ore</translation>
 <translation id="7681220483256441252">index</translation>
-<translation id="7720026100085573005">timp rămas</translation>
 <translation id="7740050170769002709">Conținut HTML</translation>
 <translation id="7750228210027921155">Picture-in-picture</translation>
 <translation id="7789962463072032349">întrerupe</translation>
@@ -225,7 +224,6 @@
 <translation id="8987927404178983737">Lună</translation>
 <translation id="901493112792887934">timp actual în secunde</translation>
 <translation id="9048119486235211610">navigare</translation>
-<translation id="9050748414552849310">afișați subtitrările</translation>
 <translation id="9062295712474918030">document</translation>
 <translation id="9093215626363556771">ieși din modul picture-in-picture</translation>
 <translation id="9108370397979208512">matematică</translation>

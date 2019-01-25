@@ -348,6 +348,10 @@
       Kui reeglis on määratud kehtiv URL, laadib <ph name="PRODUCT_NAME" /> URL-ilt saitide loendi alla ja rakendab reegli samamoodi kui reegliga <ph name="SITELIST_POLICY_NAME" /> seadistamise korral.
 
       Vaadake lisateavet Internet Exploreri reegli <ph name="IEEM_SITELIST_POLICY" /> kohta: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
+<translation id="1839060937202387559">Saatke salvestusseadmete riistvara statistikat ja identifikaatoreid.
+
+      Kui reegli väärtuseks on määratud Väär, siis statistikat ei saadeta.
+      Kui reegli väärtuseks on määratud Tõene või see on määramata, siis saadetakse statistikat.</translation>
 <translation id="1843117931376765605">Kasutajareegli värskendussagedus</translation>
 <translation id="1844620919405873871">Seadistab kiiravamisega seotud reeglid.</translation>
 <translation id="1847960418907100918">Täpsustab parameetri, mida kasutatakse POST-meetodiga Instant-otsingu tegemisel. See koosneb komaga eraldatud nime/väärtuse paaridest. Kui väärtus on malliparameeter, nt {searchTerms} ülalolevas näites, siis asendatakse see otsingutermini andmetega.
@@ -381,15 +385,6 @@
       Kui kasutaja teeb mõne toimingu, mille puhul avaneks failide valimise dialoogiaken (näiteks järjehoidjate importimine, failide üleslaadimine, linkide salvestamine jne), ja seade on keelatud, siis kuvatakse dialoogiakna asemel sõnum ja edasine töö toimub nii, nagu kasutaja oleks klõpsanud failide valimise dialoogiaknas käsul Tühista.
 
       Kui jätate seade määramata, siis saavad kasutajad failide avamise dialoogiaknad tavapärasel moel avada.</translation>
-<translation id="1879485426724769439">Määrab seadmes kasutatava ajavööndi. Kasutajad saavad määratud ajavööndi praeguse seansi jaoks alistada, ent pärast väljalogimist taastatakse määratud ajavöönd. Kui sisestatud väärtus on sobimatu, aktiveeritakse reegel ajavööndiga GMT. Kui string on tühi, eiratakse reeglit.
-
-      Kui reeglit ei kasutata, jätkatakse praegu aktiivse ajavööndi kasutamist, ent kasutajad saavad ajavööndit jäädavalt muuta. See tähendab, et ühe kasutaja tehtud muudatus mõjutab sisselogimisekraani ja kõiki teisi kasutajaid.
-
-      Uutes seadmetes on alguses valitud USA Vaikse ookeani ajavöönd.
-
-      Väärtuse vorming põhineb IANA ajavööndite andmebaasis olevatel nimedel (vt https://en.wikipedia.org/wiki/Tz_database). Täpsemalt tähendab see, et ajavööndite nimetused on kujul „manner/suurlinn” või „ookean/suurlinn”.
-
-      Reegli määramisel keelatakse ajavööndi automaatne lahendamine seadme asukoha alusel. Samuti alistab see reegli SystemTimezoneAutomaticDetection.</translation>
 <translation id="1885782360784839335">Kogu vahelehel kuvatava reklaamsisu lubamine</translation>
 <translation id="1888871729456797026">Pilvepõhise reegli registreerimismärk lauaarvutis</translation>
 <translation id="1897365952389968758">Luba kõikidel saitidel JavaScripti käitamine</translation>
@@ -769,7 +764,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
           See reegel kehtivad vaid juhul, kui reegel „DefaultSearchProviderEnabled” on lubatud.</translation>
 <translation id="268577405881275241">Andmete tihendamise puhverserveri funktsiooni lubamine</translation>
 <translation id="2693108589792503178">Parooli URL-i muutmise seadistamine.</translation>
-<translation id="2696531058295423290">Lubage seadmetel operatsioonisüsteemis <ph name="PRODUCT_OS_NAME" /> kasutada pistikprogrammi <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="2731627323327011390">Keela ARC-rakenduste jaoks operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> sertifikaatide kasutamine</translation>
 <translation id="2742843273354638707">Peitke Chrome'i veebipoe rakendus ja jaluse link uuel vahelehel ja operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> rakenduse käivitajas.
 
@@ -936,6 +930,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
           Pange tähele, et reegel oli seni Androidis ekslikult lubatud, ent seda funktsiooni ei ole Androidis kunagi täielikult toetatud.</translation>
 <translation id="3096595567015595053">Lubatud pistikprogrammide loend</translation>
 <translation id="3101501961102569744">Valimine, kuidas määrata puhverserveri seaded</translation>
+<translation id="3101709781009526431">Kuupäev ja kellaaeg</translation>
 <translation id="3117676313396757089">Hoiatus. DHE eemaldatakse teenusest <ph name="PRODUCT_NAME" /> pärast versiooni 57 täielikult (umbes 2017. aasta märtsis) ja edaspidi see reegel enam ei tööta.
 
       Kui reegel on määramata või selle väärtuseks on määratud Väär, ei ole DHE šifreerimiskomplektid TLS-is lubatud. Selle väärtuseks võib olla määratud ka Tõene, et lubada DHE šifreerimiskomplektid ja et säilitada ühilduvus aegunud serveriga. See on ajutine meede ja server tuleks ümber seadistada.
@@ -1061,11 +1056,13 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="3449886121729668969">Seadistab brauseri <ph name="PRODUCT_NAME" /> puhverserveri seaded. Need puhverserveri seaded on saadaval ka ARC-rakenduste jaoks.
 
       See reegel ei ole veel kasutamiseks valmis, ärge kasutage seda.</translation>
+<translation id="3459509316159669723">Printimine</translation>
 <translation id="3460784402832014830">Määrab URL-i, mida otsingumootor kasutab uue vahelehe loomiseks.
 
           See reegel on valikuline. Kui seda pole määratud, siis ei looda ühtegi uut vahelehte.
 
           Reeglit arvestatakse ainult juhul, kui on lubatud reegel „DefaultSearchProviderEnabled”.</translation>
+<translation id="3461279434465463233">Toite olekust teavitamine</translation>
 <translation id="346731943813722404">Määrab, kas toitehalduse viivituste ja seansi pikkuse limiidi aktiveerimine peaks toimuma pärast seda, kui seansi ajal on toimunud esmane kasutajatoiming.
 
           Kui reegel on määratud olekule Tõene, siis ei toimu toitehalduse viivituste ja seansi pikkuse limiidi aktiveerimine enne, kui seansi ajal on toimunud esimene kasutajatoiming.
@@ -1132,6 +1129,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="3711895659073496551">Peata</translation>
 <translation id="3715569262675717862">Kliendi sertifikaatidel põhinev autentimine</translation>
 <translation id="3736879847913515635">Kasutajahalduris inimese lisamise lubamine</translation>
+<translation id="3738723882663496016">See reegel määrab selle seadme jaoks pistikprogrammi <ph name="PLUGIN_VM_NAME" /> litsentsivõtme.</translation>
 <translation id="3748900290998155147">Määrab, kas äratuslukud on lubatud. Äratuslukke saavad taotleda laiendused toitehalduse laienduse API kaudu ja ARC-rakendused.
 
           Kui reegel on määramata või seatud väärtusele Tõene, järgitakse toitehalduse puhul äratuslukke.
@@ -1278,9 +1276,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 
           Kui reeglit pole määratud või reegli olekuks on määratud Väär, siis saavad kasutajad teisaldada faile teenusesse Google Drive.</translation>
 <translation id="3915395663995367577">Puhverserveri pac-faili URL</translation>
-<translation id="3925020515212192040">Määrab failide eelseadistatud võrgu-ühiskasutuse loendi.
-
-      Reegli iga loendiüksus on objekt, mis koosneb, kahest liikmest: „share_url” ja „mode”. Parameeter „share_url” peab olema hoidla URL ja „mode” peab olema „drop_down”, mis näitab, et „share_url” lisatakse ühiskasutuse sirvimise rippmenüüsse.</translation>
 <translation id="3925377537407648234">Ekraani eraldusvõime ja skaleerimisteguri määramine</translation>
 <translation id="3939893074578116847">Võrgupaketid saadetakse veebioleku jälgimiseks haldusserverisse, et
       server saaks tuvastada, kui seade pole võrguga ühendatud.
@@ -1347,6 +1342,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="4121350739760194865">Rakenduste reklaamide ilmumise takistamine uuel vahelehel</translation>
 <translation id="412697421478384751">Nõrkade lukustuskuva PIN-koodide määramise lubamine</translation>
 <translation id="4138655880188755661">Ajapiirang</translation>
+<translation id="4150201353443180367">Kuva</translation>
 <translation id="4157003184375321727">OS-ist ja püsivara versioonist teavitamine</translation>
 <translation id="4157594634940419685">CUPS-i omaprinteritele juurdepääsu lubamine</translation>
 <translation id="4183229833636799228">Pistikprogrammi <ph name="FLASH_PLUGIN_NAME" /> vaikeseade</translation>
@@ -1443,6 +1439,9 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="4432762137771104529">Ohutu sirvimise laiendatud aruandluse lubamine</translation>
 <translation id="443454694385851356">Pärandversioon (ebaturvaline)</translation>
 <translation id="443665821428652897">Kustuta saidi andmed brauseri sulgemisel (toetamine lõpetatud)</translation>
+<translation id="4439132805807595336">Lubage sellel seadmel käitada pistikprogrammi PluginVm.
+
+      Kui selle reegli väärtuseks on määratud Väär või see jäetakse määramata, ei ole pistikprogramm <ph name="PLUGIN_VM_NAME" /> selles seadmes lubatud. Kui väärtuseks on määratud Tõene, on pistikprogramm <ph name="PLUGIN_VM_NAME" /> seadmes lubatud, kui muud seaded seda samuti lubavad. Selleks et pistikprogrammi <ph name="PLUGIN_VM_NAME" /> saaks käitada, peab <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> olema Tõene ning <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> ja <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> peavad olema seadistatud.</translation>
 <translation id="4439336120285389675">Määrab loendi katkestatud toega veebiplatvormi funktsioonide kohta, mis tuleb ajutiselt uuesti lubada.
 
       See reegel võimaldab administraatoritel piiratud ajaks uuesti lubada katkestatud toega veebiplatvormide funktsioonid. Funktsioonid tuvastatakse stringimärgenditega ja märgenditele vastavad funktsioonid, mis on lisatud selle reegliga määratud loendisse, lubatakse uuesti.
@@ -1633,11 +1632,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 
       Kui selle reegli väärtuseks määratakse Väär, ei luba teenus <ph name="PRODUCT_NAME" /> kasutajahalduris uusi profiile luua.</translation>
 <translation id="4970855112942626932">Brauserisse sisselogimise keelamine</translation>
-<translation id="4971529314808359013">Võimaldab määrata URL-i mustrite loendi, mis täpsustab saidid, millele teenus <ph name="PRODUCT_NAME" /> peaks automaatselt valima kliendi sertifikaadi, kui sait sertifikaati taotleb.
-
-          Väärtus peab olema rida stringideks jaotatud JSON-i sõnastikke. Igas sõnastikus peab olema vorm { "pattern": "$URL_PATTERN", "filter" : $FILTER }, kus $URL_PATTERN on sisuseadete muster. $FILTER piirab seda, milliste kliendisertifikaatide hulgast brauser automaatselt valib. Olenemata filtrist, valitakse ainult sertifikaadid, mis ühtivad serveri sertifikaadi taotlusega. Kui $FILTER on vormis { "ISSUER": { "CN": "$ISSUER_CN" } }, valitakse lisaks ainult kliendisertifikaadid, mille on väljastanud sertifikaat mustriga CommonName $ISSUER_CN. Kui $FILTER on tühi sõnastik {}, ei ole kliendisertifikaatide valik täiendavalt piiratud.
-
-          Kui seda reeglit ei määrata, ei tehta ühegi saidi puhul automaatset valikut.</translation>
 <translation id="4978405676361550165">Kui reegel „OffHours” on määratud, siis eiratakse määratud ajavahemikes seadmereegleid (kasutage nende reeglite vaikeseadeid). Chrome rakendab seadmereegleid uuesti iga sündmuse puhul, kui ajavahemik „OffHours” algab või lõpeb. Kui ajavahemik „OffHours” lõpeb ja seadmereeglite seadeid muudetakse, teavitatakse sellest kasutajat ning ta logitakse välja (näiteks kui kasutaja pole sisse logitud lubatud kontoga).</translation>
 <translation id="4980635395568992380">Andmetüüp:</translation>
 <translation id="4983201894483989687">Luba vananenud pistikprogrammide käitamine</translation>
@@ -1835,6 +1829,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="5405289061476885481">Seadistab, millised klaviatuuripaigutused on operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> sisselogimisekraanil lubatud.
 
       Kui see reegel on määratud sisestusmeetodi identifikaatorite loendile, on antud sisestusmeetodid sisselogimisekraanil saadaval. Esimene antud sisestusmeetod on eelnevalt valitud. Kui kasutajate kogum on sisselogimisekraanil fokuseeritud, on lisaks reegliga määratud sisestusmeetoditele saadaval ka kasutaja kõige viimasena kasutatud sisestusmeetod. Kui see reegel on määramata, tuletatakse sisselogimisekraanil saadaolevad sisestusmeetodid lokaadist, milles sisselogimisekraan kuvatakse. Väärtusi, mis pole kehtivad sisestusmeetodi identifikaatorid, eiratakse.</translation>
+<translation id="5422643441807528365">Pistikprogrammi <ph name="PLUGIN_VM_NAME" /> litsentsivõti</translation>
 <translation id="5423001109873148185">Kui see reegel on lubatud, siis imporditakse otsingumootorid praegusest vaikebrauserist. Reegli lubamine mõjutab ka importimisdialoogi.
 
       Kui reegel on keelatud, siis vaikeotsingumootorit ei impordita.
@@ -1952,6 +1947,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
       Kui reegli väärtuseks määratakse Tõene, käituvad hallatud külastajaseansid hallatud seanssidena, mille puhul puuduvad paljud piirangud, mis kehtivad tavapäraste avalike seansside puhul.
 
       Kui reegel on määratud, ei saa kasutaja seda muuta ega alistada.</translation>
+<translation id="572155275267014074">Androidi seaded</translation>
 <translation id="5722934961007828462">Kui see seade on lubatud, siis teeb <ph name="PRODUCT_NAME" /> alati tühistamise kontrolli serveri sertifikaatide puhul, mis on valideeritud ja allkirjastatud kohalikult installitud CA-sertifikaatidega.
 
       Kui toode <ph name="PRODUCT_NAME" /> ei saa tühistamise oleku teavet hankida, siis käideldakse selliseid sertifikaate tühistatutena („hard-fail”).
@@ -2291,6 +2287,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
       Kui see seade on lubatud, usaldab ohutu sirvimise funktsioon neid domeene.
       Kui see seade on keelatud või seadistamata, siis rakendatakse ohutu sirvimise funktsiooni vaikekaitse kõikidele allikatele.
       Reegel on saadaval ainult Windowsi eksemplarides, mis on liidetud domeeniga <ph name="MS_AD_NAME" />, ja Windows 10 Pro või Enterprise'i eksemplaridega, mis on registreeritud seadmehalduse teenuses.</translation>
+<translation id="6515357889978918016">Pistikprogrammi <ph name="PLUGIN_VM_NAME" /> pilt</translation>
 <translation id="6520802717075138474">Impordi otsingumootorid vaikebrauserist esimesel käitamisel</translation>
 <translation id="6525955212636890608">Selle seade lubamisel käitatakse kogu Flash-sisu, mis on manustatud veebisaitidele, kus Flash on sisu seadetes lubatud – seda nii kasutaja kui ka ettevõtte reegliga (sh muu päritoluga või väikesemahuline sisu).
 
@@ -2331,6 +2328,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
 <translation id="6573305661369899995">URL-i piirangute välise allika seadistamine</translation>
 <translation id="6598235178374410284">Kasutaja avatarkujutis</translation>
 <translation id="6603004149426829878">Ajavööndi lahendamisel saada saadaolevad asukohasignaalid alati serverisse</translation>
+<translation id="6628120204569232711">Salvestusruumi oleku teavitamine</translation>
 <translation id="6628646143828354685">Võimaldab määrata, kas veebisaitidel on lubatud juurde pääseda läheduses asuvatele Bluetoothi seadmetele. Juurdepääsu saab täielikult blokeerida või kasutajalt võidakse iga kord küsida, kui veebisait soovib läheduses asuvatele Bluetoothi seadmetele juurde pääseda.
 
           Kui seda reeglit ei määrata, kasutatakse väärtust „3” ja kasutaja saab seda muuta.</translation>
@@ -2597,6 +2595,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
 
       Kui jätate eeskirja määramata, siis võib kasutaja käivitis kinnitatud rakenduste loendit muuta.</translation>
 <translation id="7132877481099023201">URL-id, millele antakse ilma küsimata juurdepääs videojäädvustusseadmetele</translation>
+<translation id="7138678301420049075">Muu</translation>
 <translation id="7158064522994309072">Reegel määrab, millist käsku kasutada alternatiivses brauseris URL-ide avamiseks.
 
       Kui reegel on määramata, kasutatakse platvormipõhist vaikeseadet: Windowsi puhul Internet Explorerit, Mac OS X-i puhul Safarit. Linuxi puhul nurjub alternatiivse brauseri käivitamine, kui reegel on määramata.
@@ -2861,9 +2860,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
       Pange tähele, et piirangud kehtivad nii kontekstimenüü valikuga „laadi link alla …” kui ka veebisisust käivitatud allalaadimiste puhul. Piirangud ei kehti praegu kuvatava lehe salvestamise/allalaadimise puhul ega printimisvalikutes PDF-failina salvestamisel.
 
       Vaadake ohutu sirvimise kohta lisateavet aadressilt https://developers.google.com/safe-browsing.</translation>
-<translation id="7642803091923523695">Lubage sellel seadmel käitada pistikprogrammi PluginVm.
-
-      Kui selle reegli väärtuseks on määratud Väär või see jäetakse määramata, ei ole pistikprogramm <ph name="PLUGIN_VM_NAME" /> selles seadmes lubatud. Kui väärtuseks on määratud Tõene, on pistikprogramm <ph name="PLUGIN_VM_NAME" /> seadmes lubatud, kui muud seaded seda samuti lubavad. Selleks et pistikprogrammi <ph name="PLUGIN_VM_NAME" /> saaks käitada, peab <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> olema Tõene ja <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> seadistatud.</translation>
 <translation id="7643883929273267746">Teenuses <ph name="PRODUCT_NAME" /> nähtavate kontode piiramine</translation>
 <translation id="7651739109954974365">Määrab, kas seadmes on andmeside rändlusteenus lubatud. Selle reegli aktiveerimisel on andmeside rändlusteenus lubatud. Kui jätate selle reegli seadistamata või keelate, siis ei ole andmeside rändlusteenus saadaval.</translation>
 <translation id="7673194325208122247">Ajavahemik (millisekundites)</translation>
@@ -2901,6 +2897,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
       Selle reegli eesmärk on anda ettevõtetele võimalus eemaldada olemasolevad serverid üksusest HTTP/0.9. See reegel eemaldatakse tulevikus.
 
       Kui see reegel on määramata, keelatakse HTTP/0.9 mittevaikeportides.</translation>
+<translation id="7747447585227954402">Seadmetel lubatakse operatsioonisüsteemis <ph name="PRODUCT_OS_NAME" /> kasutada pistikprogrammi <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="7749402620209366169">Lubab kaugjuurdepääsu hostide autentimiseks kasutaja määratud PIN-koodi asemel kahetasandilise autentimise.
 
           Kui seade on lubatud, siis peavad kasutajad hosti pääsemiseks esitama kehtiva kahetasandilise koodi.
@@ -3141,7 +3138,10 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="8274603902181597201">Kasutaja süsteemi eCryptfs juurkataloogi tühjendamine ja uue ext4-krüpteeringuga juurkataloogiga alustamine.</translation>
 <translation id="8285435910062771358">Täisekraani luup on lubatud</translation>
 <translation id="8288199156259560552">Androidi Google'i asukohateenuse lubamine</translation>
-<translation id="8290453559005611000">Üksuse PluginVm kujutis</translation>
+<translation id="8292322992383748446">Saatke SoC komponentide puhul riistvara statistikat.
+
+      Kui reegli väärtuseks on määratud Väär, siis statistikat ei saadeta.
+      Kui reegli väärtuseks on määratud Tõene või see on määramata, siis saadetakse statistikat.</translation>
 <translation id="8294750666104911727">Tavaliselt renderdatakse lehed, mille metasilt X-UA-Compatible on seatud väärtusele chrome=1 teenuses <ph name="PRODUCT_FRAME_NAME" />, olenemata reeglist „ChromeFrameRendererSettings”.
 
           Kui lubate selle seade, siis lehti metasiltide osas ei skannita.
@@ -3167,6 +3167,10 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="8367209241899435947">Chrome Cleanupi lubamine Windowsis</translation>
 <translation id="8369602308428138533">Ekraani väljalülitamise viiteaeg võrgutoite kasutamisel</translation>
 <translation id="8371178326720637170">Lubab hallatud laiendustel kasutada ettevõtte riistvara platvormi API-t</translation>
+<translation id="8374747520743832795">Saatke toitega seotud riistvara statistikat ja identifikaatoreid.
+
+      Kui reegli väärtuseks on määratud Väär, siis statistikat ei saadeta.
+      Kui reegli väärtuseks on määratud Tõene või see on määramata, siis saadetakse statistikat.</translation>
 <translation id="8377433219608936819">
       Kui selle reegli väärtuseks on määratud Tõene, alistavad pilvereeglid konflikti puhul seadmereeglid.
       Kui reegli väärtuseks on määratud Väär või see jäetakse määramata, alistavad seadmereeglid konflikti puhul pilvereeglid.
@@ -3191,6 +3195,7 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="841977920223099909">Paroolikaitse hoiatuse käivitaja</translation>
 <translation id="8424255554404582727">Määratakse ekraani vaikepöördenurk, mis rakendatakse uuesti igal taaskäivitamisel</translation>
 <translation id="8426231401662877819">Ekraani pööramine 90 kraadi päripäeva</translation>
+<translation id="8433186206711564395">Võrguseaded</translation>
 <translation id="8433423491036718210">Seadistage ettevõtte sisselogimis-URL-ide loend, kus paroolikaitseteenus peaks parooli sõrmejälje jäädvustama.</translation>
 <translation id="8451988835943702790">Kasuta avalehena Uut vahelehte</translation>
 <translation id="8459216513698220096">Määrab, kas ja kuidas töödeldakse arvuti GPO-st pärinevaid kasutajareegleid.
@@ -3311,6 +3316,7 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       Kui reegel on määramata, kasutatakse vaikeperioodi, mis on operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seadmete puhul 345 600 000 millisekundit (neli päeva) ja brauseri <ph name="PRODUCT_NAME" /> puhul 604 800 000 millisekundit (üks nädal).</translation>
 <translation id="8685024486845674965">Paroolikaitse hoiatuse käivitab parooli uuesti kasutamine</translation>
 <translation id="8693243869659262736">Kasuta sisseehitatud DNS-i klienti</translation>
+<translation id="8703488928438047864">Teavita paneeli olekust</translation>
 <translation id="8704831857353097849">Keelatud pistikprogrammide loend</translation>
 <translation id="8711086062295757690">Määrab märksõna, mis on otsetee, mida kasutatakse omnikastikeses otsingupakkuja käivitamiseks.
 
@@ -3571,10 +3577,5 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="944817693306670849">Ketta vahemälu mahu määramine</translation>
 <translation id="981346395360763138">Google'i asukohateenused on keelatud</translation>
 <translation id="982497069985795632">Õigekirjakontrolli lubamine</translation>
-<translation id="988537626274109600">See reegel juhib ajaperioode, mille jooksul ei tohi operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seade automaatselt värskendusi kontrollida.
-      Kui selle reegli väärtuseks on määratud mis tahes ajavahemikud, toimub järgmine.
-      Seadmed ei saa nendel konkreetsetel ajavahemikel automaatselt värskendusi kontrollida. Seadmeid, mis tuleb viia vanemale versioonile või mis kasutavad vanemat kui minimaalset nõutavat versiooni <ph name="PRODUCT_OS_NAME" />, see reegel võimalike turvaohtude tõttu ei mõjuta. Lisaks ei blokeeri see reegel kasutajate või administraatorite taotletud värskenduste kontrolle.
-      Kui see reegel on määramata või ei sisalda ajavahemikke, toimub järgmine.
-      See reegel automaatseid värskenduste kontrolle ei blokeeri, kuid muud reeglid võivad seda teha.</translation>
 <translation id="991560005425213776">Kasutajanime ja faili nime saatmine omaprinteritele</translation>
 </translationbundle>

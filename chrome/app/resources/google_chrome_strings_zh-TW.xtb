@@ -4,6 +4,7 @@
 <translation id="1001534784610492198">安裝程式封存檔案已經損壞或無效，請再次下載 Google Chrome。</translation>
 <translation id="102763973188675173">有可用的更新，歡迎自訂及控制 Google Chrome。</translation>
 <translation id="1035334672863811645">登入 Chrome</translation>
+<translation id="1051826050538111504">你的電腦安裝了有害軟體。Chrome 可以移除該軟體、復原設定及停用擴充功能，讓你的瀏覽器恢復正常運作。</translation>
 <translation id="1065672644894730302">系統無法讀取你的偏好設定。部分功能可能無法使用，且系統也不會儲存任何偏好設定的變更。</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> 先前使用的是 Chrome</translation>
 <translation id="1104959162601287462">關於 Chrome 作業系統(&amp;C)</translation>
@@ -68,6 +69,7 @@
 <translation id="2580411288591421699">你無法安裝這個版本的 Google Chrome，因為相同的版本目前正在執行中。請關閉 Google Chrome 然後再試一次。</translation>
 <translation id="2586406160782125153">登出後，系統會將你的瀏覽資料從這個裝置上刪除。日後如要重新取得你的資料，請以 <ph name="USER_EMAIL" /> 身分登入 Chrome。</translation>
 <translation id="2588322182880276190">Chrome 標誌</translation>
+<translation id="2644798301485385923">Chrome 作業系統</translation>
 <translation id="2652691236519827073">在新的 Chrome 分頁中開啟連結(&amp;T)</translation>
 <translation id="2665296953892887393">將當機報告和<ph name="UMA_LINK" />傳送給 Google，助我們一臂之力，讓 Google Chrome 更臻完美</translation>
 <translation id="2689103672227170538">這個擴充功能已變更 Chrome 啟動時所顯示的網頁。</translation>
@@ -99,6 +101,7 @@
 <translation id="3451115285585441894">正在新增至 Chrome...</translation>
 <translation id="345171907106878721">新增為 Chrome 使用者</translation>
 <translation id="3479552764303398839">現在不要</translation>
+<translation id="34857402635545079">一併清除 Chrome 的資料 (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome 需要位置資訊存取權，才能與這個網站分享你的位置資訊</translation>
 <translation id="3582972582564653026">進行同步處理即可在你的所有裝置上享有個人化的 Chrome 體驗</translation>
 <translation id="3622797965165704966">無論是登入 Google 帳戶使用 Chrome，還是以 Google 帳戶使用共用電腦，現在都變得更容易了。</translation>
@@ -164,6 +167,7 @@
 
 Google Chrome 無法復原你的設定。</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome 將立即重新啟動}=1{Chrome 將於 1 秒後重新啟動}other{Chrome 將於 # 秒後重新啟動}}</translation>
+<translation id="5505603430818498864">Google Chrome 可將網頁圖片傳送到 Google 伺服器，運用相關技術辨識圖片和圖片所含文字，讓你更瞭解網頁內容。</translation>
 <translation id="556024056938947818">Google Chrome 即將顯示密碼。</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> 可能不安全，因此遭到 Chrome 封鎖。</translation>

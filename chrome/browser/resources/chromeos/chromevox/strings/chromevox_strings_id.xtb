@@ -494,6 +494,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="5020651427400641814">Aktifkan penyimpanan log ucapan</translation>
 <translation id="5041394372352067729">Pindahkan layar braille ke bagian atas halaman</translation>
 <translation id="5042770794184672516">Meningkatkan volume ucapan</translation>
+<translation id="5042992464904238023">Konten Web</translation>
 <translation id="5050015258024679800">Judul tingkat 4 sebelumnya</translation>
 <translation id="5054047268577924192">Item daftar sebelumnya</translation>
 <translation id="5075936896689244141">Peta tombol berikutnya</translation>
@@ -844,6 +845,7 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="8037651341025652929">Kesimpulan</translation>
 <translation id="8042761080832772327">Mengedit teks, entri penelusuran</translation>
 <translation id="8049189770492311300">Timer</translation>
+<translation id="8056782883599416672">{"ar": "Arab", "as": "Assam", "aw": "Awadhi", "be": "Bengali", "bg": "Bulgaria", "bh": "Bihari", "bo": "Tibet", "br": "Braj", "ca": "Katala", "ckb": "Sorani", "cs": "Ceko", "cy": "Wales", "da": "Denmark", "de": "Jerman", "de_CH": "Jerman (Swiss)", "de_DE": "Jerman (Jerman)", "dra": "Dravida", "el": "Yunani", "en": "Inggris", "en_CA": "Inggris (Kanada)", "en_GB": "Inggris (Inggris Raya)", "en_US": "Inggris (Amerika Serikat)", "eo": "Esperanto", "es": "Spanyol", "et": "Estonia", "fa": "Persia", "fr": "Prancis", "fr_CA": "Prancis (Kanada)", "fr_FR": "Prancis (Prancis)", "fi": "Finlandia", "ga": "Irlandia", "gd": "Gaelik", "gon": "Gondi", "gu": "Gujarati", "he": "Ibrani", "hi": "Hindi", "hr": "Kroasia", "hu": "Hungaria", "hy": "Armenia", "is": "Islan", "it": "Italia", "iu": "Inuktitut", "ka": "Kannada", "kh": "Khasi", "ko": "Korea", "kok": "Konkani", "kru": "Kurukh", "ks": "Kashmiri", "lt": "Lituania", "lv": "Latvia", "mao": "Maori", "ml": "Malayalam", "mt": "Malta", "mwr": "Marwari", "mn": "Mongolia", "mun": "Munda", "nb": "Bokmål Norwegia", "ne": "Nepali", "nl": "Belanda", "no": "Norwegia", "or": "Oriya", "pi": "Pali", "pl": "Polandia", "pt": "Portugis", "pu": "Punjabi", "ro": "Rumania", "ru": "Rusia", "sa": "Sanskerta", "si": "Sindhi", "sin": "Sinhala", "sk": "Slowakia", "sl": "Slovenia", "sr": "Serbia", "sv": "Swedia", "ta": "Tamil", "te": "Telugu", "tr": "Turki", "tsn": "Afrikaans", "uk": "Ukraina", "ur": "Urdu", "vi": "Vietnam", "zh": "China", "zh_TW": "China (Aksara Han Tradisional)"}</translation>
 <translation id="8065607967589909823">Pemilihannya adalah</translation>
 <translation id="8066678206530322333">Spanduk</translation>
 <translation id="8076492880354921740">Tab</translation>
@@ -853,6 +855,7 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="8153880621934657047">Tidak ada di dalam tabel.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{garis bawah}other{# garis bawah}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8183813379996435469">Deteksi dan alihkan bahasa ChromeVox secara otomatis.</translation>
 <translation id="8184828902145951186">baris</translation>
 <translation id="8186185314313222077">beralih ke layar penuh</translation>
 <translation id="8199231515320852133">Mengumumkan judul sel saat ini</translation>

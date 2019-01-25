@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">เดือนนี้</translation>
 <translation id="1637811476055996098">เลือกไฟล์</translation>
 <translation id="1650423536718072820">การเน้นข้อความ</translation>
+<translation id="1727886345390570319">ซ่อนเมนูคำอธิบายภาพ</translation>
 <translation id="1729654308190250600">โปรดป้อนที่อยู่อีเมลที่ไม่ว่างเปล่า</translation>
 <translation id="1758486001363313524">อื่นๆ...</translation>
 <translation id="1806710327868736751">alert_dialog</translation>
@@ -147,6 +148,7 @@
 <translation id="6213469881011901533">อภิธานศัพท์</translation>
 <translation id="6398862346408813489">แสดงแผงการเลือกเดือน</translation>
 <translation id="6404546809543547843">ตัวควบคุมเวลาของเสียง</translation>
+<translation id="6443871981718447451">แสดงเมนูคำอธิบายภาพ</translation>
 <translation id="6453774872122745852">กิตติกรรมประกาศ</translation>
 <translation id="648732519525291180">เครื่องมือเลือกเวลา</translation>
 <translation id="6550675742724504774">ตัวเลือก</translation>
@@ -162,7 +164,6 @@
 <translation id="6820355525329141109">ไม่สามารถโหลดปลั๊กอิน</translation>
 <translation id="6820615603175220800">ข้อมูลอ้างอิงทางบรรณานุกรม</translation>
 <translation id="6843725295806269523">ปิดเสียง</translation>
-<translation id="6853785296079745596">ซ่อนคำอธิบายภาพ</translation>
 <translation id="6885760532393684712">ไดเรกทอรี</translation>
 <translation id="689129560213475294">ข้อมูลทางบรรณานุกรม</translation>
 <translation id="6934078000481955284">ข้อความที่ยกมา</translation>
@@ -171,7 +172,6 @@
 <translation id="6989848892321993519">โปรดกรอกข้อความนี้ให้มีอักขระอย่างน้อย <ph name="MIN_CHARACTERS" /> ตัว (ตอนนี้คุณมี 1 ตัว)</translation>
 <translation id="709897737746224366">โปรดจับคู่รูปแบบที่ร้องขอ</translation>
 <translation id="7139483182332611405">ส่วนนำ</translation>
-<translation id="7223624360433298498">เวลาที่ผ่านไป</translation>
 <translation id="7263440858009898357">โปรดเลือกรายการจากหน้ารายการ</translation>
 <translation id="727747134524199931">ส่วนหัวคอลัมน์</translation>
 <translation id="7353453495576941748">เครดิต</translation>
@@ -186,7 +186,6 @@
 <translation id="7661956066982048809">เอกสารกราฟิก</translation>
 <translation id="7673697353781729403">ชั่วโมง</translation>
 <translation id="7681220483256441252">ดัชนี</translation>
-<translation id="7720026100085573005">เวลาที่เหลือ</translation>
 <translation id="7740050170769002709">เนื้อหา HTML</translation>
 <translation id="7750228210027921155">การแสดงภาพซ้อนภาพ</translation>
 <translation id="7789962463072032349">หยุดชั่วคราว</translation>
@@ -225,7 +224,6 @@
 <translation id="8987927404178983737">เดือน</translation>
 <translation id="901493112792887934">เวลาปัจจุบันเป็นวินาที</translation>
 <translation id="9048119486235211610">การนำทาง</translation>
-<translation id="9050748414552849310">แสดงคำอธิบายภาพ</translation>
 <translation id="9062295712474918030">เอกสาร</translation>
 <translation id="9093215626363556771">ออกจากการแสดงภาพซ้อนภาพ</translation>
 <translation id="9108370397979208512">คณิตศาสตร์</translation>

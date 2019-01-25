@@ -494,6 +494,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="5020651427400641814">Ativar o registo de voz</translation>
 <translation id="5041394372352067729">Mover linha braille para o início da página</translation>
 <translation id="5042770794184672516">Aumentar o volume de voz</translation>
+<translation id="5042992464904238023">Conteúdo da Web</translation>
 <translation id="5050015258024679800">Título de nível 4 anterior</translation>
 <translation id="5054047268577924192">Item de lista anterior</translation>
 <translation id="5075936896689244141">Mapa de teclas do Next</translation>
@@ -844,6 +845,89 @@ Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="8037651341025652929">Conclusão</translation>
 <translation id="8042761080832772327">Editar texto, entrada de pesquisa</translation>
 <translation id="8049189770492311300">Temporizador</translation>
+<translation id="8056782883599416672">{"ar": "árabe",
+        "as": "assamês",
+        "aw": "awadhi",
+        "be": "bengali",
+        "bg": "búlgaro",
+        "bh": "bihari",
+        "bo": "tibetano",
+        "br": "braj",
+        "ca": "catalão",
+        "ckb": "sorani",
+        "cs": "checo",
+        "cy": "galês",
+        "da": "dinamarquês",
+        "de": "alemão",
+        "de_CH": "alemão (Suíça)",
+        "de_DE": "alemão (Alemanha)",
+        "dra": "dravidiano",
+        "el": "grego",
+        "en": "inglês",
+        "en_CA": "inglês (Canadá)",
+        "en_GB": "inglês (Reino Unido)",
+        "en_US": "inglês (Estados Unidos)",
+        "eo": "esperanto",
+        "es": "espanhol",
+        "et": "estónio",
+        "fa": "persa",
+        "fr": "francês",
+        "fr_CA": "francês (Canadá)",
+        "fr_FR": "francês (França)",
+        "fi": "finlandês",
+        "ga": "irlandês",
+        "gd": "gaélico",
+        "gon": "gondi",
+        "gu": "gujarati",
+        "he": "hebraico",
+        "hi": "hindi",
+        "hr": "croata",
+        "hu": "húngaro",
+        "hy": "arménio",
+        "is": "islandês",
+        "it": "italiano",
+        "iu": "inuktitut",
+        "ka": "canará",
+        "kh": "khasi",
+        "ko": "coreano",
+        "kok": "concani",
+        "kru": "kurux",
+        "ks": "caxemirense",
+        "lt": "lituano",
+        "lv": "letão",
+        "mao": "maori",
+        "ml": "malalaia",
+        "mt": "maltês",
+        "mwr": "marwari",
+        "mn": "mongol",
+        "mun": "mundari",
+        "nb": "bokmål norueguês",
+        "ne": "nepalês",
+        "nl": "neerlandês",
+        "no": "norueguês",
+        "or": "oriá",
+        "pi": "pali",
+        "pl": "polaco",
+        "pt": "português",
+        "pu": "punjabi",
+        "ro": "romeno",
+        "ru": "russo",
+        "sa": "sanscrito",
+        "si": "sindi",
+        "sin": "cingalês",
+        "sk": "eslovaco",
+        "sl": "esloveno",
+        "sr": "sérvio",
+        "sv": "sueco",
+        "ta": "tâmil",
+        "te": "telugu",
+        "tr": "turco",
+        "tsn": "africânder",
+        "uk": "ucraniano",
+        "ur": "urdu",
+        "vi": "vietnamita",
+        "zh": "chinês",
+        "zh_TW": "chinês (han tradicional)"}</translation>
 <translation id="8065607967589909823">A seleção é</translation>
 <translation id="8066678206530322333">Faixa</translation>
 <translation id="8076492880354921740">Separadores</translation>
@@ -853,6 +937,7 @@ Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="8153880621934657047">Não está dentro da tabela.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{sublinhado}other{# sublinhados}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8183813379996435469">Detetar e alterar automaticamente o idioma do ChromeVox.</translation>
 <translation id="8184828902145951186">linha</translation>
 <translation id="8186185314313222077">ativar/desativar ecrã inteiro</translation>
 <translation id="8199231515320852133">Anunciar os cabeçalhos da célula atual</translation>

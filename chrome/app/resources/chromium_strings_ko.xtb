@@ -78,6 +78,7 @@
 <translation id="3479552764303398839">나중에</translation>
 <translation id="3509308970982693815">Chromium 창을 모두 닫고 다시 시도해 보세요.</translation>
 <translation id="352783484088404971">Chromium에서 제거...</translation>
+<translation id="3575459661164320785">컴퓨터에 유해한 소프트웨어가 있습니다. Chromium에서 유해한 소프트웨어를 삭제하고, 설정을 복원하고, 확장 프로그램을 사용 중지하여 브라우저가 다시 정상적으로 작동하도록 할 수 있습니다.</translation>
 <translation id="3582788516608077514">Chromium 업데이트 중...</translation>
 <translation id="358997566136285270">Chromium 로고</translation>
 <translation id="3639635944603682591">선택한 사용자의 인터넷 사용 기록이 이 기기에서 삭제됩니다. 데이터를 복구하려면 <ph name="USER_EMAIL" />(으)로 Chromium에 로그인하세요.</translation>
@@ -167,6 +168,7 @@
 <translation id="6373523479360886564">Chromium을 제거하시겠습니까?</translation>
 <translation id="6400072781405947421">Mac OS X 10.9에서 더 이상 Chromium을 지원하지 않으므로 Chromium이 올바르게 작동하지 않을 수 있습니다.</translation>
 <translation id="6403826409255603130">Chromium은 빠른 속도로 웹페이지와 애플리케이션을 실행하는 웹 브라우저입니다. 빠르고 안정적이며 사용하기에 편리합니다. Chromium에 내장된 멀웨어 및 악성 코드 방지 기능을 사용하여 더욱 안전하게 웹을 검색하세요.</translation>
+<translation id="6434250628340475518">Chromium OS 시스템</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{1초 후에 Chromium이 다시 시작됩니다}other{#초 후에 Chromium이 다시 시작됩니다}}</translation>
 <translation id="6475912303565314141">또한 Chromium을 시작할 때 표시되는 페이지를 설정합니다.</translation>
 <translation id="6485906693002546646">Chromium 콘텐츠를 동기화하기 위해 <ph name="PROFILE_EMAIL" />을(를) 사용 중입니다. 동기화 환경설정을 업데이트하거나 Google 계정 없이 Chromium을 사용하려면 <ph name="SETTINGS_LINK" />(으)로 이동하세요.</translation>
@@ -183,6 +185,7 @@
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay(Chromium에 복사됨)</translation>
 <translation id="6893813176749746474">Chromium이 업데이트되었지만, 최소 30일 동안 사용하지 않았습니다.</translation>
+<translation id="692832138936263906">Chromium은 페이지 이미지를 Google 서버에 전송하여 이미지 및 이미지에 표시된 텍스트를 인식할 수 있습니다. 이는 사용자가 페이지 콘텐츠를 더욱 효과적으로 이해하는 데 도움이 됩니다.</translation>
 <translation id="6964305034639999644">Chromium 시크릿 창에서 링크 열기(&amp;G)</translation>
 <translation id="6970811910055250180">기기를 업데이트하는 중...</translation>
 <translation id="6990124437352146030">이 사이트에서 마이크에 액세스하려면 Chromium에 권한이 필요합니다</translation>
@@ -213,6 +216,7 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7471302858145901434">{0,plural, =1{하루 안에 Chromium OS 다시 시작}other{#일 안에 Chromium OS 다시 시작}}</translation>
 <translation id="7483335560992089831">이미 실행 중인 Chromium과 동일한 버전을 설치할 수 없습니다. Chromium을 종료한 뒤 다시 시도하세요.</translation>
 <translation id="7549178288319965365">Chromium OS 정보</translation>
+<translation id="7561906087460245826">Chromium(<ph name="URL" />)에서도 데이터 삭제</translation>
 <translation id="761356813943268536">Chromium이 카메라와 마이크를 사용 중입니다.</translation>
 <translation id="7617377681829253106">더욱 업그레이드된 Chromium</translation>
 <translation id="7686590090926151193">Chromium이 기본 브라우저로 설정되어 있지 않습니다</translation>

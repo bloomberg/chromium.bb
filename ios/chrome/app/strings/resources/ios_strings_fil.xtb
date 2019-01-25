@@ -72,6 +72,7 @@
 <translation id="2068952045031577364">Nakalipas na Linggo</translation>
 <translation id="2079545284768500474">I-undo</translation>
 <translation id="209018056901015185">Hilingin ang Site sa Desktop</translation>
+<translation id="2096012225669085171">Mag-sync at mag-personalize sa lahat ng device</translation>
 <translation id="2103075008456228677">Buksan ang history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> (na) item ang inilipat</translation>
 <translation id="213900355088104901">Upang mag-browse nang pribado, magbukas ng tab na incognito</translation>
@@ -132,6 +133,7 @@
 <translation id="2989805286512600854">Buksan sa Bagong Tab</translation>
 <translation id="3024255823539804759">Nakalipas na Araw</translation>
 <translation id="3037605927509011580">Ay, Naku!</translation>
+<translation id="3059750684806925578">Hanapin ang Kinopyang Larawan</translation>
 <translation id="3112556859945124369">Markahan…</translation>
 <translation id="3157684681743766797">Markahan Lahat...</translation>
 <translation id="3175081911749765310">Web Services</translation>
@@ -380,6 +382,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="7159472599653637159">Hilingin ang Pang-mobile na Site</translation>
 <translation id="7167621057293532233">Mga Uri ng Data</translation>
 <translation id="7189598951263744875">Ibahagi...</translation>
+<translation id="7192050974311852563">Simulan ang Pag-log</translation>
 <translation id="7203585745079012652">Bigkasin ang Mga Sagot</translation>
 <translation id="722055596168483966">I-personalize ang mga serbisyo ng Google</translation>
 <translation id="7272437679830969316">Hindi ma-verify ang iyong pagkakakilanlan. Hindi nakopya ang password.</translation>
@@ -421,6 +424,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">I-export Password...</translation>
 <translation id="7947953824732555851">I-accept, mag-sign in</translation>
+<translation id="794799177247607889">Ihinto ang Pag-log</translation>
 <translation id="7961015016161918242">Hindi Kailanman</translation>
 <translation id="7971521879845308059">I-block ang Mga Pop-up</translation>
 <translation id="7981313251711023384">I-preload ang mga page para sa mas mabilis na pag-browse at paghahanap</translation>

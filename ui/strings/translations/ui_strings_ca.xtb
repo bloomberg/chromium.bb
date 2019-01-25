@@ -64,6 +64,7 @@
 <translation id="3234408098842461169">Fletxa avall</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 dia}other{# dies}}</translation>
 <translation id="335581015389089642">Veu</translation>
+<translation id="3462241349431650993">Si amagues aquest suggeriment, no es tornarà a mostrar des del teu del compte en tots els dispositius.</translation>
 <translation id="3479552764303398839">Ara no</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 dia restant}other{# dies restants}}</translation>
 <translation id="3608915363409716668">Més de <ph name="MAXIMUM_VALUE" /></translation>
@@ -162,6 +163,7 @@
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{fa 1 hora}other{fa # hores}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 s restant}other{# s restants}}</translation>
+<translation id="8152264887680882389"><ph name="TEXT" />, compleció automàtica</translation>
 <translation id="815598010540052116">Desplaçament avall</translation>
 <translation id="8179976553408161302">Retorn</translation>
 <translation id="8210608804940886430">Av Pàg</translation>
@@ -173,6 +175,7 @@
 <translation id="838869780401515933">marca</translation>
 <translation id="8393700583063109961">Envia el missatge</translation>
 <translation id="8394908167088220973">Fitxer multimèdia: reprodueix/posa en pausa</translation>
+<translation id="8420205633584771378">Vols suprimir aquest suggeriment?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 a}other{# a}}</translation>
 <translation id="8602707065186045623">Fitxer <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>

@@ -345,6 +345,10 @@
       Se esta política estiver definida como um URL válido, o <ph name="PRODUCT_NAME" /> transfere a lista de sites desse URL e aplica as regras como se tivessem sido configuradas com a política <ph name="SITELIST_POLICY_NAME" />.
 
       Para mais informações sobre a política <ph name="IEEM_SITELIST_POLICY" /> do Internet Explorer, aceda a https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode.</translation>
+<translation id="1839060937202387559">Comunicar estatísticas e identificadores de hardware de dispositivos de armazenamento.
+
+      Se a política estiver definida como falsa, as estatísticas não são comunicadas.
+      Se estiver definida como verdadeira ou não estiver definida, as estatísticas são comunicadas.</translation>
 <translation id="1843117931376765605">Taxa de atualização para a política de utilizador</translation>
 <translation id="1844620919405873871">Configura políticas relacionadas com o desbloqueio rápido.</translation>
 <translation id="1847960418907100918">Especifica os parâmetros utilizados ao efetuar uma pesquisa instantânea com POST. Consiste em pares de nome/valor separados por vírgulas. Se um valor for o parâmetro de um modelo, como {searchTerms} no exemplo acima, será substituído por dados dos termos de pesquisa reais.
@@ -372,15 +376,6 @@
 <translation id="1865417998205858223">Autorizações principais</translation>
 <translation id="186719019195685253">Ação a executar quando o atraso de inatividade é atingido e estiver a ser utilizada a energia CA</translation>
 <translation id="187819629719252111">Permite aceder a ficheiros locais no computador, ao permitir que o <ph name="PRODUCT_NAME" /> apresente caixas de diálogo de seleção de ficheiros. Se ativar esta definição, os utilizadores poderão abrir caixas de diálogo de seleção de ficheiros normalmente. Se desativar esta definição, sempre que os utilizadores efetuarem uma ação que origine uma caixa de diálogo de seleção de ficheiros (como importar marcadores, carregar ficheiros, guardar links, etc.), aparecerá uma mensagem e assume-se que os utilizadores clicaram em Cancelar na caixa de diálogo. Se esta definição não for definida, os utilizadores poderão abrir as caixas de diálogo de seleção de ficheiros normalmente.</translation>
-<translation id="1879485426724769439">Especifica o fuso horário a utilizar para o dispositivo. Os utilizadores podem substituir o fuso horário especificado da sessão atual. Contudo, quando terminam sessão, este regressa ao fuso horário especificado. Se for fornecido um valor inválido, a política ainda é ativada com "GMT" como alternativa. Se for fornecida uma string vazia, a política é ignorada.
-
-      Se esta política não for utilizada, o fuso horário atualmente ativo permanece em utilização, apesar de os utilizadores poderem alterar o fuso horário e de a alteração ser permanente. Desta forma, uma alteração efetuada por um utilizador afeta o ecrã de início de sessão e todos os outros utilizadores.
-
-      Os novos dispositivos começam com o fuso horário definido como "EUA/Pacífico".
-
-      O formato do valor segue os nomes dos fusos horários na "Base de dados de fuso horário IANA" (consulte "https://en.wikipedia.org/wiki/Tz_database"). Em particular, a maioria dos fusos horários pode ser referida como "continente/grande_cidade" ou "oceano/grande_cidade".
-
-      A definição desta política desativa completamente a resolução automática do fuso horário através da localização do dispositivo. Além disso, substitui a política SystemTimezoneAutomaticDetection.</translation>
 <translation id="1885782360784839335">Ativar a apresentação de conteúdo promocional no separador inteiro</translation>
 <translation id="1888871729456797026">O símbolo de inscrição da política da nuvem no computador</translation>
 <translation id="1897365952389968758">Permitir que todos os sites executem JavaScript</translation>
@@ -751,7 +746,6 @@
 <translation id="267596348720209223">Especifica as codificações de caracteres suportadas pelo fornecedor de pesquisas. As codificações são nomes de páginas de códigos, como UTF-8, GB2312 e ISO-8859-1, e são selecionadas por esta ordem. Esta política é opcional. Se não for definida, a codificação predefinida será UTF-8. Esta política aplica-se apenas se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="268577405881275241">Ativar a funcionalidade proxy de compressão de dados</translation>
 <translation id="2693108589792503178">Configure o URL de alteração da palavra-passe.</translation>
-<translation id="2696531058295423290">Permitir que os dispositivos utilizem um <ph name="PLUGIN_VM_NAME" /> no <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="2731627323327011390">Desativar a utilização de certificados do <ph name="PRODUCT_OS_NAME" /> em aplicações ARC</translation>
 <translation id="2742843273354638707">Oculta a aplicação da Web Store do Chrome e o link do rodapé da página Novo separador e do iniciador de aplicações do <ph name="PRODUCT_OS_NAME" />.
 
@@ -797,6 +791,11 @@
           Se esta definição estiver desativada e as ligações UDP de saída forem filtradas pela firewall, esta máquina apenas permitirá ligações de máquinas cliente dentro da rede local.
 
           Se deixar esta política por definir, a definição será ativada.</translation>
+<translation id="2813281962735757923">Esta política controla os intervalos de tempo durante os quais o dispositivo <ph name="PRODUCT_OS_NAME" /> não está autorizado a realizar verificações automáticas de atualizações
+      Quando esta política estiver definida para uma lista não vazia de intervalos de tempo:
+      Os dispositivos não poderão realizar verificações automáticas de atualizações durante os intervalos de tempo especificados. Os dispositivos que requerem uma reversão ou que sejam anteriores à versão mínima do <ph name="PRODUCT_OS_NAME" /> não serão afetados por esta política devido a possíveis problemas de segurança. Além disso, esta política não bloqueia as verificações de atualizações solicitadas pelos utilizadores ou administradores.
+      Quando esta política não estiver definida ou não contiver quaisquer intervalos de tempo:
+      Esta política não bloqueará quaisquer verificações automáticas de atualizações, contudo, estas podem ser bloqueadas por outras políticas. Esta funcionalidade só está disponível em dispositivos Chrome configurados como quiosques de início automático. Os outros dispositivos não são restringidos por esta política.</translation>
 <translation id="2823870601012066791">Localização da base de dados de registo do Windows para os clientes <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Ativar o modo de navegação anónima</translation>
 <translation id="2838830882081735096">Não permitir a migração de dados nem ARC</translation>
@@ -915,6 +914,7 @@
           Tenha em atenção que, embora esta política tenha sido ativada por engano anteriormente no Android, a funcionalidade nunca foi totalmente suportada no Android.</translation>
 <translation id="3096595567015595053">Lista de plug-ins ativados</translation>
 <translation id="3101501961102569744">Escolher como indicar as definições do servidor proxy</translation>
+<translation id="3101709781009526431">Data e hora</translation>
 <translation id="3117676313396757089">Aviso: o DHE será completamente removido do <ph name="PRODUCT_NAME" /> após a versão 57 (por volta de março de 2017) e esta política deixa de funcionar nessa altura.
 
       Se a política não for definida ou for definida como falsa, os conjuntos de cifras DHE no TLS não estão ativados. Caso contrário, pode ser definida como verdadeira para ativar os conjuntos de cifras DHE e manter a compatibilidade com um servidor desatualizado. Esta é uma medida temporária e é necessário voltar a configurar o servidor.
@@ -1040,11 +1040,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3449886121729668969">Configura as definições de proxy para o <ph name="PRODUCT_NAME" />. Estas definições de proxy também estão disponíveis para aplicações ARC.
 
       Esta política ainda não está pronta para ser utilizada, por isso, não a utilize.</translation>
+<translation id="3459509316159669723">Impressão</translation>
 <translation id="3460784402832014830">Especifica o URL que um motor de pesquisa utiliza para fornecer uma página Novo separador.
 
           Esta política é opcional. Se não for definida, não será fornecida nenhuma página novo separador.
 
           Esta política é respeitada apenas se for ativada a política "DefaultSearchProviderEnabled".</translation>
+<translation id="3461279434465463233">Comunicar estado de energia</translation>
 <translation id="346731943813722404">Especifica se os atrasos de gestão de energia e o limite de duração da sessão devem apenas começar após ter sido observada a primeira atividade do utilizador numa sessão.
 
           Se esta política estiver definida como Verdadeira, os atrasos de gestão de energia e o limite de duração da sessão só começarão após ter sido observada a primeira atividade do utilizador numa sessão.
@@ -1085,6 +1087,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3547954654003013442">Definições de proxy</translation>
 <translation id="355118380775352753">Websites a abrir num navegador alternativo</translation>
 <translation id="3577251398714997599">Definição dos anúncios para sites com anúncios intrusivos</translation>
+<translation id="3591527072193107424">Ativar a funcionalidade Compatibilidade com o navegador antigo</translation>
 <translation id="3591584750136265240">Configurar o comportamento de autenticação de início de sessão</translation>
 <translation id="3624171042292187668">
       Recomendamos que consulte a definição da política IsolateOrigins para obter o melhor de dois mundos: isolamento e impacto limitado para os utilizadores, ao utilizar a IsolateOrigins com uma lista dos sites que pretende isolar. Esta definição, SitePerProcess, isola todos os sites.
@@ -1099,12 +1102,19 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3628480121685794414">Ativar impressão simples</translation>
 <translation id="3646859102161347133">Definir tipo de lupa</translation>
 <translation id="3653237928288822292">Ícone do fornecedor de pesquisas predefinido</translation>
+<translation id="3660510274595679517">
+        Se esta política estiver definida como verdadeira, a inscrição na gestão na nuvem é obrigatória e, se falhar, bloqueia o processo de iniciação do Chrome.
+
+        Se esta política estiver definida como falsa, a inscrição na gestão na nuvem é opcional e, se falhar, não bloqueia o processo de iniciação do Chrome.
+
+        Esta política é utilizada pela inscrição de políticas de nuvem num âmbito automático em computadores e pode ser definida pela Base de dados de registo ou GPO no Windows, pelo plist no Mac e pelo ficheiro da política JSON no Linux.</translation>
 <translation id="3660562134618097814">Transferir cookies SAML IdP durante o início de sessão</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (O campo de uma única linha foi descontinuado e será removido no futuro. Comece a utilizar a caixa de texto multilinha abaixo.)</translation>
 <translation id="3709266154059827597">Configurar lista negra de instalação de extensões</translation>
 <translation id="3711895659073496551">Suspenso</translation>
 <translation id="3715569262675717862">Autenticação baseada em certificados de cliente</translation>
 <translation id="3736879847913515635">Ativar a opção para adicionar uma pessoa no gestor de utilizadores</translation>
+<translation id="3738723882663496016">Esta política especifica a chave da licença de <ph name="PLUGIN_VM_NAME" /> para este dispositivo.</translation>
 <translation id="3748900290998155147">Especifica se são permitidos wake locks. Os wake locks podem ser solicitados por extensões através da API da extensão de gestão da alimentação e por aplicações ARC.
 
           Se esta política estiver definida como verdadeira ou não estiver definida, os wake locks serão cumpridos no que se refere à gestão da alimentação.
@@ -1249,9 +1259,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se não estiver definida ou estiver definida como falsa, os utilizadores poderão transferir ficheiros para o Google Drive.</translation>
 <translation id="3915395663995367577">URL para um ficheiro .pac de proxy</translation>
-<translation id="3925020515212192040">Especifica uma lista de partilhas de ficheiros de rede pré-configuradas.
-
-      Cada item de lista da política é um objeto com dois membros: "share_url" e "mode". "share_url" deve ser o URL da partilha e "mode" deve ser "drop_down", que indica que "share_url" é adicionado à lista pendente da deteção de partilhas.</translation>
 <translation id="3925377537407648234">Definir a resolução do ecrã e o fator de escala</translation>
 <translation id="3939893074578116847">Envie pacotes de rede para o servidor de gestão para monitorizar o estado online, de modo a permitir
       que o servidor detete se o dispositivo está offline.
@@ -1267,6 +1274,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3965339130942650562">Limite de tempo até ao encerramento da sessão do utilizador por inatividade</translation>
 <translation id="3973371701361892765">Nunca ocultar automaticamente a prateleira</translation>
 <translation id="3984028218719007910">Determina se o <ph name="PRODUCT_OS_NAME" /> mantém os dados de contas locais depois de terminar sessão. Se esta política estiver definida como verdadeira, o <ph name="PRODUCT_OS_NAME" /> não mantém contas persistentes e todos os dados da sessão do utilizador serão rejeitados depois de terminar sessão. Se estiver definida como falsa ou não estiver configurada, o dispositivo pode manter dados de utilizadores locais (encriptados).</translation>
+<translation id="398475542699441679">Esta política controla se a Compatibilidade com o navegador antigo é ativada ou não.
+
+      Quando esta política não está definida ou é definida como falsa, o Chrome não tenta iniciar os URLs designados num navegador alternativo.
+
+      Quando esta política está definida como verdadeira, o Chrome tenta iniciar alguns URLs num navegador alternativo (como o Internet Explorer). Esta funcionalidade é configurada através das políticas do grupo <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" />.
+
+      Esta funcionalidade substitui a extensão <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" />. A configuração permitida pela extensão será transferida para esta funcionalidade, mas recomendamos vivamente que utilize as políticas do Chrome. Assim, garante uma melhor compatibilidade no futuro.</translation>
 <translation id="3997519162482760140">URLs aos quais será concedido acesso a dispositivos de captura de vídeo nas páginas de início de sessão SAML</translation>
 <translation id="4001275826058808087">Os administradores de TI para dispositivos empresariais podem utilizar este sinalizador para permitir que os utilizadores resgatem ofertas através do Registo no Chrome OS.
 
@@ -1316,6 +1330,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="4121350739760194865">Impedir a apresentação de promoções de aplicações na página de novo separador</translation>
 <translation id="412697421478384751">Permitir aos utilizadores definirem PINs fracos para o PIN do ecrã de bloqueio</translation>
 <translation id="4138655880188755661">Limite de tempo</translation>
+<translation id="4150201353443180367">Visualização</translation>
 <translation id="4157003184375321727">Comunicar versão do SO e do firmware</translation>
 <translation id="4157594634940419685">Autorizar o acesso a impressoras CUPS nativas</translation>
 <translation id="4183229833636799228">Definição de <ph name="FLASH_PLUGIN_NAME" /> predefinida</translation>
@@ -1413,6 +1428,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="4432762137771104529">Ative os relatórios alargados da Navegação segura.</translation>
 <translation id="443454694385851356">Antigos (inseguros)</translation>
 <translation id="443665821428652897">Limpar dados do site ao encerrar o navegador (eliminado)</translation>
+<translation id="4439132805807595336">Ative este dispositivo para executar o PluginVm.
+
+      Se a política estiver definida como falsa ou não estiver definida, o <ph name="PLUGIN_VM_NAME" /> não é ativado para o dispositivo. Se estiver definida como verdadeira, o <ph name="PLUGIN_VM_NAME" /> é ativado para o dispositivo, desde que outras definições também o permitam. A <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> tem de ser verdadeira e a <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> e a <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> têm de estar definidas para que o <ph name="PLUGIN_VM_NAME" /> tenha autorização para ser executado.</translation>
 <translation id="4439336120285389675">Especifica uma lista de funcionalidades de plataformas Web descontinuadas a reativar temporariamente.
 
       Esta política concede aos administradores a capacidade de reativar funcionalidades de plataformas Web descontinuadas por um tempo limitado. As funcionalidades estão identificadas por uma etiqueta de string e as funcionalidades que correspondem às etiquetas incluídas na lista especificadas por esta política são reativadas.
@@ -1504,6 +1522,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Para obter exemplos de padrões, consulte https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Abrir uma lista de URLs</translation>
+<translation id="4674871290487541952">Permitir algoritmos inseguros nas verificações de integridade de instalações e atualizações de extensões</translation>
 <translation id="4680936297850947973">Foi descontinuada no M68. Em vez disso, utilize DefaultPopupsSetting.
 
       Para obter uma explicação completa, consulte https://www.chromestatus.com/features/5675755719622656.
@@ -1594,11 +1613,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se esta política estiver definida como falsa, o <ph name="PRODUCT_NAME" /> não permite a criação de novos perfis a partir do gestor de utilizadores.</translation>
 <translation id="4970855112942626932">Desativar o início de sessão no navegador</translation>
-<translation id="4971529314808359013">Permite-lhe especificar uma lista de padrões de URL que especifica sites para os quais o <ph name="PRODUCT_NAME" /> deve selecionar automaticamente um certificado de cliente, caso o site solicite um certificado.
-
-          O valor tem de ser uma matriz de dicionários JSON em forma de string. Cada dicionário tem de ter o formato { "padrão": "$URL_PATTERN", "filtro" : $FILTER }, no qual $URL_PATTERN é um padrão de definição de conteúdo. $FILTER restringe a partir de que certificados de cliente o navegador seleciona automaticamente. Independentemente do filtro, apenas são selecionados os certificados que correspondam ao pedido de certificado do servidor. Se $FILTER tiver o formato { "EMISSOR": { "CN": "$ISSUER_CN" } }, apenas são selecionados os certificados de cliente que são emitidos por um certificado com o CommonName $ISSUER_CN. Se $FILTER for o dicionário vazio {}, a seleção de certificados de cliente não é adicionalmente restrita.
-
-          Se esta política não for definida, não é efetuada qualquer seleção automática para qualquer site.</translation>
 <translation id="4978405676361550165">Se a política "OffHours" estiver definida, as políticas do dispositivo especificadas são ignoradas (utilize as predefinições destas políticas) durante os intervalos de tempo definidos. O Chrome volta a aplicar as políticas do dispositivo em todos os eventos em que começa ou termina o período "OffHours". O utilizador é notificado e obrigado a terminar sessão quando o período "OffHours" termina e as definições da política do dispositivo são alteradas (por exemplo, quando o utilizador tem sessão iniciada com uma conta não autorizada).</translation>
 <translation id="4980635395568992380">Tipo de dados:</translation>
 <translation id="4983201894483989687">Permitir a execução de plug-ins desatualizados</translation>
@@ -1780,6 +1794,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="5405289061476885481">Configura os esquemas de teclado que são autorizados no ecrã de início de sessão do <ph name="PRODUCT_OS_NAME" />.
 
       Se esta política estiver definida como uma lista de identificadores do método de introdução, os métodos de introdução fornecidos são disponibilizados no ecrã de início de sessão. O primeiro método de introdução fornecido é pré-selecionado. Quando um agrupamento de utilizadores está centrado no ecrã de início de sessão, é disponibilizado o método de introdução utilizado mais recentemente, para além dos métodos de introdução fornecidos por esta política. Se esta política não estiver definida, os métodos de introdução no ecrã de início de sessão serão provenientes do local no qual o ecrã de início de sessão é apresentado. Os valores que não forem identificadores de métodos de introdução válidos serão ignorados.</translation>
+<translation id="5422643441807528365">Chave da licença do <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="5423001109873148185">Se esta política estiver ativada, força a importação de motores de pesquisa a partir do navegador predefinido atual e também afeta a caixa de diálogo de importação. Se estiver desativada, o motor de pesquisa predefinido não é importado. Se não for definida, o utilizador poderá ser questionado se pretende importá-lo ou a importação poderá ocorrer automaticamente.</translation>
 <translation id="5423197884968724595">Nome da restrição WebView do Android:</translation>
 <translation id="5424147596523390018">Permitir todos os modos a cores</translation>
@@ -1889,6 +1904,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política estiver definida como verdadeira ou não for definida, a sessão de convidado gerida assume o comportamento "Sessão gerida" que levanta muitas das restrições em vigor aplicadas às "Sessões públicas" padrão.
 
       Se esta política estiver definida, o utilizador não a pode alterar nem substituir.</translation>
+<translation id="572155275267014074">Definições do Android</translation>
 <translation id="5722934961007828462">Com esta definição ativada, o <ph name="PRODUCT_NAME" /> executará sempre a verificação da revogação de certificados de servidor que validem com êxito e estejam assinados por certificados da AC instalados localmente.
 
       Se o <ph name="PRODUCT_NAME" /> não conseguir obter informações sobre o estado da revogação, tais certificados serão considerados revogados ("falha grave").
@@ -2216,6 +2232,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta definição estiver ativada, a Navegação segura irá confiar nestes domínios.
       Se esta definição estiver desativada ou não estiver configurada, é aplicada a proteção predefinida da Navegação segura a todos os recursos.
       Esta política está apenas disponível em instâncias do Windows associadas a um domínio do <ph name="MS_AD_NAME" /> ou em instâncias do Windows 10 Pro ou Enterprise inscritas para gestão de dispositivos.</translation>
+<translation id="6515357889978918016">Imagem do <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6520802717075138474">Importar motores de pesquisa a partir do navegador predefinido na primeira execução</translation>
 <translation id="6525955212636890608">Se ativar esta definição, será executado todo o conteúdo Flash incorporado em Websites aos quais foi permitida a execução do Flash nas definições de conteúdo pelo utilizador ou pela política empresarial, incluindo conteúdo de outras origens ou conteúdo de dimensões reduzidas.
 
@@ -2256,6 +2273,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="6573305661369899995">Definir uma fonte externa de restrições de URL</translation>
 <translation id="6598235178374410284">Imagem do avatar do utilizador</translation>
 <translation id="6603004149426829878">Enviar sempre quaisquer sinais de localização disponíveis para o servidor durante a resolução do fuso horário</translation>
+<translation id="6628120204569232711">Comunicar o estado do armazenamento</translation>
 <translation id="6628646143828354685">Permite definir se os Sites estão autorizados a obter acesso a dispositivos Bluetooth próximos. É possível bloquear completamente o acesso ou o utilizador pode ser consultado sempre que um Website pretenda obter acesso a dispositivos Bluetooth próximos.
 
           Se esta política não for definida, é utilizada a definição "3" e o utilizador pode alterá-la.</translation>
@@ -2499,6 +2517,12 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política estiver definida como falsa, o modo de segundo plano é desativado e não pode ser controlado pelo utilizador nas definições do navegador.
 
       Se esta política não for definida, o modo de segundo plano está inicialmente desativado e pode ser controlado pelo utilizador nas definições do navegador.</translation>
+<translation id="7123266440503901785">O <ph name="PRODUCT_NAME" /> trata de atualizar e instalar extensões com segurança. No entanto, o conteúdo de algumas extensões alojadas fora da Web Store do Chrome apenas pode ser protegido por assinaturas inseguras ou algoritmos de hash como o SHA1. Quando esta política está desativada, o Chrome não permite a nova instalação nem atualizações dessas extensões (até os programadores da extensão voltarem a compilar a extensão com algoritmos mais seguros). Quando esta política está ativada, é permitida a instalação e atualizações dessas extensões.
+
+          Quando a política não está definida, o comportamento predefinido é de ativação.
+          A partir do <ph name="PRODUCT_NAME" /> 75, o comportamento predefinido será a desativação quando a política não estiver definida.
+
+          A partir do <ph name="PRODUCT_NAME" /> 77, esta política será ignorada e tratada como desativada.</translation>
 <translation id="7126716959063786004">Ativar a conclusão de processos no Gestor de tarefas</translation>
 <translation id="7127892035367404455">Reverter para a versão de destino</translation>
 <translation id="7128918109610518786">Lista os identificadores das aplicações que o <ph name="PRODUCT_OS_NAME" /> mostra como aplicações fixadas na barra do iniciador.
@@ -2507,6 +2531,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se esta política não for configurada, o utilizador pode alterar a lista de aplicações fixadas no iniciador.</translation>
 <translation id="7132877481099023201">URLs aos quais será concedido acesso a dispositivos de captura de vídeo imediatamente</translation>
+<translation id="7138678301420049075">Outros</translation>
 <translation id="7158064522994309072">Esta política controla qual o comando a utilizar para abrir os URLs num navegador alternativo.
 
       Quando esta política não está definida, é utilizada uma predefinição específica da plataforma: o Internet Explorer para o Windows ou o Safari para o Mac OS X. No Linux, a inicialização de um navegador alternativo falha quando esta política não está definida.
@@ -2759,9 +2784,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Tenha em conta que estas restrições se aplicam a transferências acionadas a partir de conteúdos de páginas Web, bem como à opção do menu de contexto "Transferir link...". Estas restrições não se aplicam à opção de guardar/transferir a página que está a ser apresentada no momento nem à opção de guardar PDFs a partir das opções de impressão.
 
       Consulte https://developers.google.com/safe-browsing para obter mais informações sobre a Navegação segura.</translation>
-<translation id="7642803091923523695">Ative este dispositivo para executar o PluginVm.
-
-      Se a política estiver definida como falsa ou não estiver definida, o <ph name="PLUGIN_VM_NAME" /> não é ativado para o dispositivo. Se estiver definida como verdadeira, o <ph name="PLUGIN_VM_NAME" /> é ativado para o dispositivo, desde que outras definições também o permitam. A <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> tem de ser verdadeira e a <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> tem de estar definida para que o <ph name="PLUGIN_VM_NAME" /> tenha autorização para ser executado.</translation>
 <translation id="7643883929273267746">Restrinja as contas que estão visíveis no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7651739109954974365">Determina se o roaming de dados deve estar ativado para o aparelho. Se a política estiver definida como verdadeira, o roaming de dados é permitido. Se ficar por configurar ou for definida como falsa, o roaming de dados não estará disponível.</translation>
 <translation id="7673194325208122247">Período de tempo (milissegundos)</translation>
@@ -2799,6 +2821,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Esta política destina-se a permitir que as empresas possam migrar servidores existentes do protocolo HTTP/0.9 e será removida no futuro.
 
       Se esta política não for definida, o protocolo HTTP/0.9 é desativado nas portas não predefinidas.</translation>
+<translation id="7747447585227954402">Permitir que os dispositivos utilizem um <ph name="PLUGIN_VM_NAME" /> no <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Ativa a autenticação de dois fatores para anfitriões de acesso remoto, em vez de um PIN especificado pelo utilizador.
 
           Se esta definição estiver ativada, os utilizadores terão de fornecer um código de dois fatores válido ao aceder a um anfitrião.
@@ -3036,7 +3059,10 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="8274603902181597201">Limpe o diretório principal de ecryptfs do utilizador e comece com um diretório principal novo com encriptação ext4.</translation>
 <translation id="8285435910062771358">Lupa em ecrã inteiro ativada</translation>
 <translation id="8288199156259560552">Ativar os serviços de localização da Google para aplicações para Android</translation>
-<translation id="8290453559005611000">Imagem do PluginVm</translation>
+<translation id="8292322992383748446">Comunicar estatísticas de hardware de componentes SoC.
+
+      Se a política estiver definida como falsa, as estatísticas não são comunicadas.
+      Se estiver definida como verdadeira ou não estiver definida, as estatísticas são comunicadas.</translation>
 <translation id="8294750666104911727">Normalmente, as páginas com X-UA-Compatible definido como chrome=1 serão processadas em <ph name="PRODUCT_FRAME_NAME" />, independentemente da política "ChromeFrameRendererSettings".
 
           Se ativar esta definição, não serão procuradas metatags nas páginas.
@@ -3061,6 +3087,10 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="8367209241899435947">Ativar a Limpeza do Chrome no Windows</translation>
 <translation id="8369602308428138533">Atraso para desligar o ecrã quando o dispositivo está ligado à eletricidade</translation>
 <translation id="8371178326720637170">Permite que extensões geridas utilizem a API Enterprise Hardware Platform.</translation>
+<translation id="8374747520743832795">Comunicar estatísticas e identificadores de hardware relacionados com a energia.
+
+      Se a política estiver definida como falsa, as estatísticas não são comunicadas.
+      Se estiver definida como verdadeira ou não estiver definida, as estatísticas são comunicadas.</translation>
 <translation id="8377433219608936819">
       Se a política estiver definida como verdadeira, a política da nuvem tem prioridade em caso de conflito com a política do equipamento.
       Se a política estiver definida como falsa ou não estiver configurada, a política do equipamento tem prioridade em caso de conflito com a política da nuvem.
@@ -3085,6 +3115,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="841977920223099909">Acionador de aviso de proteção por palavra-passe.</translation>
 <translation id="8424255554404582727">Definir a rotação predefinida do ecrã, aplicada novamente em todos os reinícios</translation>
 <translation id="8426231401662877819">Rodar o ecrã 90 graus para a direita</translation>
+<translation id="8433186206711564395">Definições de rede</translation>
 <translation id="8433423491036718210">Configure a lista de URLs de início de sessão empresariais em que o serviço de proteção por palavra-passe deve capturar a impressão digital da palavra-passe.</translation>
 <translation id="8451988835943702790">Utilizar a página Novo separador como página inicial</translation>
 <translation id="8459216513698220096">Especifica se e como é processada a Política do Utilizador do GPO do computador.
@@ -3204,6 +3235,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
       Se não for definida, é utilizado o período predefinido de 345600000 milissegundos (quatro dias) para os dispositivos <ph name="PRODUCT_OS_NAME" /> e de 604800000 milissegundos (uma semana) para <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">O aviso de proteção por palavra-passe é acionado pela reutilização da palavra-passe.</translation>
 <translation id="8693243869659262736">Utilizar cliente DNS incorporado</translation>
+<translation id="8703488928438047864">Comunicar o estado da placa</translation>
 <translation id="8704831857353097849">Lista de plug-ins desativados</translation>
 <translation id="8711086062295757690">Especifica a palavra-chave a utilizar como atalho na caixa geral para acionar a pesquisa para este fornecedor. Esta política é opcional. Se não for definida, não será utilizada nenhuma palavra-chave para ativar o fornecedor. Esta política é apenas considerada se a política DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="8731693562790917685">As Definições de Conteúdo permitem-lhe especificar como são processados os conteúdos de um determinado tipo (por exemplo, cookies, imagens ou JavaScript).</translation>
@@ -3449,10 +3481,5 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="944817693306670849">Definir o tamanho da cache do disco</translation>
 <translation id="981346395360763138">Os serviços de localização da Google estão desativados.</translation>
 <translation id="982497069985795632">Ativar a verificação ortográfica</translation>
-<translation id="988537626274109600">Esta política controla os intervalos de tempo durante os quais o dispositivo <ph name="PRODUCT_OS_NAME" /> não está autorizado a realizar verificações automáticas de atualizações.
-      Quando esta política está definida para uma lista não vazia de intervalos de tempo:
-      Os dispositivos não poderão realizar verificações automáticas de atualizações durante os intervalos de tempo especificados. Os dispositivos que requerem uma reversão ou que sejam anteriores à versão mínima do <ph name="PRODUCT_OS_NAME" /> não serão afetados por esta política devido a possíveis problemas de segurança. Além disso, esta política não bloqueia as verificações de atualizações solicitadas pelos utilizadores ou administradores.
-      Quando esta política não está definida ou não contém quaisquer intervalos de tempo:
-      Esta política não bloqueará quaisquer verificações automáticas de atualizações, contudo, estas podem ser bloqueadas por outras políticas.</translation>
 <translation id="991560005425213776">Enviar o nome de utilizador e o nome de ficheiro para as impressoras nativas</translation>
 </translationbundle>

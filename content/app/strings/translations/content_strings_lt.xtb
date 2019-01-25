@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">Šis mėnuo</translation>
 <translation id="1637811476055996098">Pasirinkti failus</translation>
 <translation id="1650423536718072820">citata</translation>
+<translation id="1727886345390570319">slėpti subtitrų meniu</translation>
 <translation id="1729654308190250600">Įveskite el. pašto adresą (nepalikite lauko tuščio).</translation>
 <translation id="1758486001363313524">Kita...</translation>
 <translation id="1806710327868736751">alert_dialog</translation>
@@ -147,6 +148,7 @@
 <translation id="6213469881011901533">aiškinamasis terminų žodynas</translation>
 <translation id="6398862346408813489">Rodyti mėnesio pasirinkimo skydelį</translation>
 <translation id="6404546809543547843">garso laiko valdiklis</translation>
+<translation id="6443871981718447451">rodyti subtitrų meniu</translation>
 <translation id="6453774872122745852">padėka</translation>
 <translation id="648732519525291180">laiko rinkiklis</translation>
 <translation id="6550675742724504774">Parinktys</translation>
@@ -162,7 +164,6 @@
 <translation id="6820355525329141109">Nepavyko įkelti papildinio.</translation>
 <translation id="6820615603175220800">bibliografijos nuoroda</translation>
 <translation id="6843725295806269523">nutildyti</translation>
-<translation id="6853785296079745596">slėpti subtitrus</translation>
 <translation id="6885760532393684712">katalogas</translation>
 <translation id="689129560213475294">informacija apie leidimą</translation>
 <translation id="6934078000481955284">citata</translation>
@@ -171,7 +172,6 @@
 <translation id="6989848892321993519">Pailginkite šį tekstą iki <ph name="MIN_CHARACTERS" /> simb. ar daugiau (šiuo metu naudojate 1 simbolį).</translation>
 <translation id="709897737746224366">Priderinkite reikalaujamą formatą.</translation>
 <translation id="7139483182332611405">įvadas</translation>
-<translation id="7223624360433298498">praėjęs laikas</translation>
 <translation id="7263440858009898357">Pasirinkite sąraše pateiktą elementą.</translation>
 <translation id="727747134524199931">stulpelio antraštė</translation>
 <translation id="7353453495576941748">padėka</translation>
@@ -186,7 +186,6 @@
 <translation id="7661956066982048809">grafikos dokumentas</translation>
 <translation id="7673697353781729403">Valandos</translation>
 <translation id="7681220483256441252">rodyklė</translation>
-<translation id="7720026100085573005">likęs laikas</translation>
 <translation id="7740050170769002709">HTML turinys</translation>
 <translation id="7750228210027921155">Vaizdas vaizde</translation>
 <translation id="7789962463072032349">pristabdyti</translation>
@@ -225,7 +224,6 @@
 <translation id="8987927404178983737">Mėnuo</translation>
 <translation id="901493112792887934">dabartinis laikas sekundėmis</translation>
 <translation id="9048119486235211610">naršymas</translation>
-<translation id="9050748414552849310">rodyti subtitrus</translation>
 <translation id="9062295712474918030">dokumentas</translation>
 <translation id="9093215626363556771">išeiti iš vaizdo vaizde</translation>
 <translation id="9108370397979208512">matematika</translation>

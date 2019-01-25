@@ -494,6 +494,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="5020651427400641814">Włącz rejestrowanie mowy</translation>
 <translation id="5041394372352067729">Przenieś wyświetlacz brajlowski na górę strony</translation>
 <translation id="5042770794184672516">Zwiększ głośność mowy</translation>
+<translation id="5042992464904238023">Treść internetowa</translation>
 <translation id="5050015258024679800">Poprzedni nagłówek poziomu 4</translation>
 <translation id="5054047268577924192">Poprzedni element listy</translation>
 <translation id="5075936896689244141">Następna mapa klawiszy</translation>
@@ -844,6 +845,89 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="8037651341025652929">Podsumowanie</translation>
 <translation id="8042761080832772327">Edytowanie tekstu, wpisanie zapytania</translation>
 <translation id="8049189770492311300">Licznik czasu</translation>
+<translation id="8056782883599416672">{"ar": "arabski",
+        "as": "assamski",
+        "aw": "awadhi",
+        "be": "bengalski",
+        "bg": "bułgarski",
+        "bh": "bihari",
+        "bo": "tybetański",
+        "br": "braj",
+        "ca": "kataloński",
+        "ckb": "sorani",
+        "cs": "czeski",
+        "cy": "walijski",
+        "da": "duński",
+        "de": "niemiecki",
+        "de_CH": "niemiecki (Szwajcaria)",
+        "de_DE": "niemiecki (Niemcy)",
+        "dra": "drawidyjski",
+        "el": "grecki",
+        "en": "angielski",
+        "en_CA": "angielski (Kanada)",
+        "en_GB": "angielski (Wielka Brytania)",
+        "en_US": "angielski (Stany Zjednoczone)",
+        "eo": "esperanto",
+        "es": "hiszpański",
+        "et": "estoński",
+        "fa": "perski",
+        "fr": "francuski",
+        "fr_CA": "francuski (Kanada)",
+        "fr_FR": "francuski (Francja)",
+        "fi": "fiński",
+        "ga": "irlandzki",
+        "gd": "gaelicki",
+        "gon": "gondi",
+        "gu": "gudżarati",
+        "he": "hebrajski",
+        "hi": "hindi",
+        "hr": "chorwacki",
+        "hu": "węgierski",
+        "hy": "ormiański",
+        "is": "islandzki",
+        "it": "włoski",
+        "iu": "inuktitut",
+        "ka": "kannada",
+        "kh": "khasi",
+        "ko": "koreański",
+        "kok": "konkani",
+        "kru": "kurukh",
+        "ks": "kaszmirski",
+        "lt": "litewski",
+        "lv": "łotewski",
+        "mao": "maoryski",
+        "ml": "malajalam",
+        "mt": "maltański",
+        "mwr": "marwari",
+        "mn": "mongolski",
+        "mun": "munda",
+        "nb": "norweski Bokmål",
+        "ne": "nepalski",
+        "nl": "niderlandzki",
+        "no": "norweski",
+        "or": "orija",
+        "pi": "pali",
+        "pl": "polski",
+        "pt": "portugalski",
+        "pu": "pendżabski",
+        "ro": "rumuński",
+        "ru": "rosyjski",
+        "sa": "sanskryt",
+        "si": "Sindhi",
+        "sin": "syngaleski",
+        "sk": "słowacki",
+        "sl": "słoweński",
+        "sr": "serbski",
+        "sv": "szwedzki",
+        "ta": "tamilski",
+        "te": "telugu",
+        "tr": "turecki",
+        "tsn": "afrikaans",
+        "uk": "ukraiński",
+        "ur": "urdu",
+        "vi": "wietnamski",
+        "zh": "chiński",
+        "zh_TW": "chiński (tradycyjny Han)"}</translation>
 <translation id="8065607967589909823">Bieżący wybór to</translation>
 <translation id="8066678206530322333">Baner</translation>
 <translation id="8076492880354921740">Karty</translation>
@@ -853,6 +937,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="8153880621934657047">Poza tabelą.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{podkreślenie}few{# znaki podkreślenia}many{# znaków podkreślenia}other{# underscores}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8183813379996435469">Automatycznie wykrywaj i zmieniaj język ChromeVoxa.</translation>
 <translation id="8184828902145951186">wiersz</translation>
 <translation id="8186185314313222077">przełącz pełny ekran</translation>
 <translation id="8199231515320852133">Przeczytaj nagłówki bieżącej komórki</translation>

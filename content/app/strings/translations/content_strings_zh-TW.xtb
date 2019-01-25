@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">本月</translation>
 <translation id="1637811476055996098">選擇檔案</translation>
 <translation id="1650423536718072820">重要引述</translation>
+<translation id="1727886345390570319">不要顯示隱藏式輔助字幕選單</translation>
 <translation id="1729654308190250600">請輸入電子郵件地址。</translation>
 <translation id="1758486001363313524">其他...</translation>
 <translation id="1806710327868736751">警示對話方塊</translation>
@@ -147,6 +148,7 @@
 <translation id="6213469881011901533">詞彙解釋</translation>
 <translation id="6398862346408813489">顯示月份選取面板</translation>
 <translation id="6404546809543547843">音訊時間點拖曳工具</translation>
+<translation id="6443871981718447451">顯示隱藏式輔助字幕選單</translation>
 <translation id="6453774872122745852">鳴謝</translation>
 <translation id="648732519525291180">時間選擇器</translation>
 <translation id="6550675742724504774">選項</translation>
@@ -162,7 +164,6 @@
 <translation id="6820355525329141109">無法載入外掛程式。</translation>
 <translation id="6820615603175220800">參考書目資料</translation>
 <translation id="6843725295806269523">靜音</translation>
-<translation id="6853785296079745596">不顯示字幕</translation>
 <translation id="6885760532393684712">目錄</translation>
 <translation id="689129560213475294">版權頁標記</translation>
 <translation id="6934078000481955284">引用標記</translation>
@@ -171,7 +172,6 @@
 <translation id="6989848892321993519">請將這段文字加長到 <ph name="MIN_CHARACTERS" /> 個字元以上 (目前已有 1 個字元)。</translation>
 <translation id="709897737746224366">請符合要求的格式。</translation>
 <translation id="7139483182332611405">前言</translation>
-<translation id="7223624360433298498">已播放時間</translation>
 <translation id="7263440858009898357">請選取一個清單中的項目。</translation>
 <translation id="727747134524199931">欄標題</translation>
 <translation id="7353453495576941748">參與名單</translation>
@@ -186,7 +186,6 @@
 <translation id="7661956066982048809">圖形文件</translation>
 <translation id="7673697353781729403">小時</translation>
 <translation id="7681220483256441252">索引</translation>
-<translation id="7720026100085573005">剩餘時間</translation>
 <translation id="7740050170769002709">HTML 內容</translation>
 <translation id="7750228210027921155">子母畫面</translation>
 <translation id="7789962463072032349">暫停</translation>
@@ -225,7 +224,6 @@
 <translation id="8987927404178983737">月</translation>
 <translation id="901493112792887934">目前時間 (以秒為單位)</translation>
 <translation id="9048119486235211610">導覽</translation>
-<translation id="9050748414552849310">顯示字幕</translation>
 <translation id="9062295712474918030">文件</translation>
 <translation id="9093215626363556771">離開子母畫面</translation>
 <translation id="9108370397979208512">數學</translation>

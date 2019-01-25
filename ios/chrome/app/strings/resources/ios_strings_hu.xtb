@@ -72,6 +72,7 @@
 <translation id="2068952045031577364">Elmúlt hét</translation>
 <translation id="2079545284768500474">Visszavonás</translation>
 <translation id="209018056901015185">Asztali webhely kérése</translation>
+<translation id="2096012225669085171">Szinkronizálás és személyre szabás az eszközök között</translation>
 <translation id="2103075008456228677">A history.google.com megnyitása</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elem áthelyezve</translation>
 <translation id="213900355088104901">Privát böngészéshez nyisson inkognitólapot</translation>
@@ -132,6 +133,7 @@
 <translation id="2989805286512600854">Megnyitás új lapon</translation>
 <translation id="3024255823539804759">Elmúlt nap</translation>
 <translation id="3037605927509011580">A manóba!</translation>
+<translation id="3059750684806925578">Másolt kép keresése</translation>
 <translation id="3112556859945124369">Megjelölés…</translation>
 <translation id="3157684681743766797">Az összes megjelölése…</translation>
 <translation id="3175081911749765310">Webszolgáltató</translation>
@@ -380,6 +382,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="7159472599653637159">Mobilwebhely kérése</translation>
 <translation id="7167621057293532233">Adattípusok</translation>
 <translation id="7189598951263744875">Megosztás...</translation>
+<translation id="7192050974311852563">Naplózás indítása</translation>
 <translation id="7203585745079012652">Mondja ki a válaszokat</translation>
 <translation id="722055596168483966">A Google-szolgáltatások személyre szabása</translation>
 <translation id="7272437679830969316">Nem sikerült ellenőrizni a személyazonosságát. A jelszó nem lett másolva.</translation>
@@ -421,6 +424,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Jelszavak exportálása…</translation>
 <translation id="7947953824732555851">Elfogadás és bejelentkezés</translation>
+<translation id="794799177247607889">Naplózás leállítása</translation>
 <translation id="7961015016161918242">Soha</translation>
 <translation id="7971521879845308059">Pop-upok tiltása</translation>
 <translation id="7981313251711023384">Oldalak előtöltése a gyorsabb böngészés és keresés érdekében</translation>

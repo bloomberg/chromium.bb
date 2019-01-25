@@ -72,6 +72,7 @@
 <translation id="2068952045031577364">Seneste uge</translation>
 <translation id="2079545284768500474">Fortryd</translation>
 <translation id="209018056901015185">Vis computerversion</translation>
+<translation id="2096012225669085171">Synkroniser og tilpas på flere enheder</translation>
 <translation id="2103075008456228677">Åbn history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> bogmærker blev flyttet</translation>
 <translation id="213900355088104901">Hvis du vil bruge nettet privat, skal du åbne en inkognitofane</translation>
@@ -132,6 +133,7 @@
 <translation id="2989805286512600854">Åbn på ny fane</translation>
 <translation id="3024255823539804759">Seneste døgn</translation>
 <translation id="3037605927509011580">Øv, surt!</translation>
+<translation id="3059750684806925578">Søg på det kopierede billede</translation>
 <translation id="3112556859945124369">Markér…</translation>
 <translation id="3157684681743766797">Markér alle…</translation>
 <translation id="3175081911749765310">Webtjenester</translation>
@@ -380,6 +382,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="7159472599653637159">Anmod om mobilversion</translation>
 <translation id="7167621057293532233">Datatyper</translation>
 <translation id="7189598951263744875">Del...</translation>
+<translation id="7192050974311852563">Start logføring</translation>
 <translation id="7203585745079012652">Giv talte svar</translation>
 <translation id="722055596168483966">Tilpas Google-tjenester</translation>
 <translation id="7272437679830969316">Din identitet kunne ikke bekræftes. Adgangskoden blev ikke kopieret.</translation>
@@ -421,6 +424,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Eksportér adgangskoder…</translation>
 <translation id="7947953824732555851">Acceptér og log ind</translation>
+<translation id="794799177247607889">Stop logføring</translation>
 <translation id="7961015016161918242">Aldrig</translation>
 <translation id="7971521879845308059">Bloker pop op-vinduer</translation>
 <translation id="7981313251711023384">Forudindlæs sider, så du kan browse og søge hurtigere</translation>

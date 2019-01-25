@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">Bu ay</translation>
 <translation id="1637811476055996098">Dosyaları Seç</translation>
 <translation id="1650423536718072820">alıntı</translation>
+<translation id="1727886345390570319">altyazı menüsünü gizle</translation>
 <translation id="1729654308190250600">Lütfen e-posta adresini boş bırakmayın.</translation>
 <translation id="1758486001363313524">Diğer...</translation>
 <translation id="1806710327868736751">alert_dialog</translation>
@@ -147,6 +148,7 @@
 <translation id="6213469881011901533">terimler sözlüğü</translation>
 <translation id="6398862346408813489">Ay seçim panelini göster</translation>
 <translation id="6404546809543547843">ses zaman çizelgesi temizleyici</translation>
+<translation id="6443871981718447451">altyazı menüsünü göster</translation>
 <translation id="6453774872122745852">teşekkür</translation>
 <translation id="648732519525291180">zaman seçici</translation>
 <translation id="6550675742724504774">Seçenekler</translation>
@@ -162,7 +164,6 @@
 <translation id="6820355525329141109">Eklenti yüklenemedi.</translation>
 <translation id="6820615603175220800">kaynakça referansı</translation>
 <translation id="6843725295806269523">sesi kapat</translation>
-<translation id="6853785296079745596">alt yazıları gizle</translation>
 <translation id="6885760532393684712">dizin</translation>
 <translation id="689129560213475294">künye</translation>
 <translation id="6934078000481955284">blok alıntı</translation>
@@ -171,7 +172,6 @@
 <translation id="6989848892321993519">Lütfen bu metni <ph name="MIN_CHARACTERS" /> karakter veya daha fazla olacak şekilde uzatın (şu anda 1 karakter kullanıyorsunuz).</translation>
 <translation id="709897737746224366">Lütfen istenen biçimi eşleştirin.</translation>
 <translation id="7139483182332611405">önsöz</translation>
-<translation id="7223624360433298498">geçen süre</translation>
 <translation id="7263440858009898357">Lütfen listeden bir öğe seçin.</translation>
 <translation id="727747134524199931">sütun başlığı</translation>
 <translation id="7353453495576941748">katkıda bulunan</translation>
@@ -186,7 +186,6 @@
 <translation id="7661956066982048809">grafik dokümanı</translation>
 <translation id="7673697353781729403">Saat</translation>
 <translation id="7681220483256441252">dizin</translation>
-<translation id="7720026100085573005">kalan süre</translation>
 <translation id="7740050170769002709">HTML içeriği</translation>
 <translation id="7750228210027921155">Pencere içinde pencere</translation>
 <translation id="7789962463072032349">duraklat</translation>
@@ -225,7 +224,6 @@
 <translation id="8987927404178983737">Ay</translation>
 <translation id="901493112792887934">saniye olarak geçerli süre</translation>
 <translation id="9048119486235211610">gezinme</translation>
-<translation id="9050748414552849310">alt yazıları göster</translation>
 <translation id="9062295712474918030">doküman</translation>
 <translation id="9093215626363556771">pencere içinde pencere modundan çıkın</translation>
 <translation id="9108370397979208512">math</translation>

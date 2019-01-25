@@ -72,6 +72,7 @@
 <translation id="2068952045031577364">За прошлую неделю</translation>
 <translation id="2079545284768500474">Отмена</translation>
 <translation id="209018056901015185">Полная версия</translation>
+<translation id="2096012225669085171">Синхронизация и персонализация данных на всех устройствах.</translation>
 <translation id="2103075008456228677">Открыть history.google.com</translation>
 <translation id="2116625576999540962">Перемещено закладок: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="213900355088104901">Чтобы просматривать сайты анонимно, откройте вкладку в режиме инкогнито</translation>
@@ -132,6 +133,7 @@
 <translation id="2989805286512600854">Открыть в новой вкладке</translation>
 <translation id="3024255823539804759">За вчерашний день</translation>
 <translation id="3037605927509011580">Опаньки...</translation>
+<translation id="3059750684806925578">Искать скопированное изображение</translation>
 <translation id="3112556859945124369">Отметить…</translation>
 <translation id="3157684681743766797">Отметить все…</translation>
 <translation id="3175081911749765310">Веб-сервисы</translation>
@@ -304,7 +306,7 @@
 <translation id="6021332621416007159">Открыть в…</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
 <translation id="6040143037577758943">Закрыть</translation>
-<translation id="6042308850641462728">Подробнее...</translation>
+<translation id="6042308850641462728">Ещё</translation>
 <translation id="605721222689873409">ГГ</translation>
 <translation id="6066301408025741299">Нажмите, чтобы отменить загрузку</translation>
 <translation id="6122191549521593678">Онлайн</translation>
@@ -380,6 +382,7 @@
 <translation id="7159472599653637159">Мобильная версия</translation>
 <translation id="7167621057293532233">Типы данных</translation>
 <translation id="7189598951263744875">Поделиться…</translation>
+<translation id="7192050974311852563">Начать запись журнала</translation>
 <translation id="7203585745079012652">Озвучивать результаты поиска</translation>
 <translation id="722055596168483966">Персонализировать сервисы Google</translation>
 <translation id="7272437679830969316">Не удалось пройти проверку. Пароль не скопирован.</translation>
@@ -421,6 +424,7 @@
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Экспорт паролей...</translation>
 <translation id="7947953824732555851">Принять и войти</translation>
+<translation id="794799177247607889">Остановить запись журнала</translation>
 <translation id="7961015016161918242">Нет</translation>
 <translation id="7971521879845308059">Блок. вспл. окна</translation>
 <translation id="7981313251711023384">Разрешить предзагрузку страниц для повышения скорости работы браузера и поиска</translation>

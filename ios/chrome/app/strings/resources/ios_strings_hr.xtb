@@ -72,6 +72,7 @@
 <translation id="2068952045031577364">Od proteklog tjedna</translation>
 <translation id="2079545284768500474">Poništi</translation>
 <translation id="209018056901015185">Prikaži klasičnu stranicu</translation>
+<translation id="2096012225669085171">Sinkronizacija i prilagodba na svim uređajima</translation>
 <translation id="2103075008456228677">Otvori history.google.com</translation>
 <translation id="2116625576999540962">Broj premještenih stavki: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="213900355088104901">Da biste pregledavali privatno, otvorite anonimnu karticu</translation>
@@ -132,6 +133,7 @@
 <translation id="2989805286512600854">Otvori u novoj kartici</translation>
 <translation id="3024255823539804759">Od proteklog dana</translation>
 <translation id="3037605927509011580">O, ne!</translation>
+<translation id="3059750684806925578">Traži kopiranu sliku</translation>
 <translation id="3112556859945124369">Označi...</translation>
 <translation id="3157684681743766797">Označi sve...</translation>
 <translation id="3175081911749765310">Web-usluge</translation>
@@ -380,6 +382,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="7159472599653637159">Prikaži mob. str.</translation>
 <translation id="7167621057293532233">Vrste podataka</translation>
 <translation id="7189598951263744875">Dijeli...</translation>
+<translation id="7192050974311852563">Započni zapisivanje</translation>
 <translation id="7203585745079012652">Izgovaranje odgovora</translation>
 <translation id="722055596168483966">Prilagođavanje Googleovih usluga</translation>
 <translation id="7272437679830969316">Potvrda identiteta nije moguća. Zaporka nije kopirana.</translation>
@@ -421,6 +424,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Izvoz zaporki...</translation>
 <translation id="7947953824732555851">Prihv. i prijavi se</translation>
+<translation id="794799177247607889">Prestani zapisivati</translation>
 <translation id="7961015016161918242">Nikad</translation>
 <translation id="7971521879845308059">Blokiraj skočne</translation>
 <translation id="7981313251711023384">Prethodno učitaj stranice za brže pregledavanje i pretraživanje</translation>

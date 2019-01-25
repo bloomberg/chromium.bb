@@ -78,6 +78,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3479552764303398839">Not now</translation>
 <translation id="3509308970982693815">Please close all Chromium windows and try again.</translation>
 <translation id="352783484088404971">Remove From Chromium...</translation>
+<translation id="3575459661164320785">There's harmful software on your computer. Chromium can remove it, restore your settings and disable extensions to make your browser work normally again.</translation>
 <translation id="3582788516608077514">Updating Chromium ...</translation>
 <translation id="358997566136285270">Chromium logo</translation>
 <translation id="3639635944603682591">This person's browsing data will be deleted from this device. To recover the data, sign in to Chromium as <ph name="USER_EMAIL" />.</translation>
@@ -167,6 +168,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="6373523479360886564">Are you sure you want to uninstall Chromium?</translation>
 <translation id="6400072781405947421">Chromium may not function correctly because it is no longer supported on Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium is a web browser that runs webpages and applications with lightning speed. It's fast, stable, and easy to use. Browse the web more safely with malware and phishing protection built into Chromium.</translation>
+<translation id="6434250628340475518">Chromium OS System</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium will restart in 1 second}other{Chromium will restart in # seconds}}</translation>
 <translation id="6475912303565314141">It also controls what page is shown when you start Chromium.</translation>
 <translation id="6485906693002546646">You're using <ph name="PROFILE_EMAIL" /> to sync your Chromium stuff. To update your sync preference or to use Chromium without a Google account, visit <ph name="SETTINGS_LINK" />.</translation>
@@ -183,6 +185,7 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copied to Chromium)</translation>
 <translation id="6893813176749746474">Chromium has been updated, but you haven't used it for 30 days or more.</translation>
+<translation id="692832138936263906">Chromium can recognise images and text in an image by sending page images to Google servers, allowing you to better understand page content.</translation>
 <translation id="6964305034639999644">Open link in Chromium inco&amp;gnito window</translation>
 <translation id="6970811910055250180">Updating your device...</translation>
 <translation id="6990124437352146030">Chromium needs permission to access your microphone for this site</translation>
@@ -213,6 +216,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="7471302858145901434">{0,plural, =1{Restart Chromium OS within a day}other{Restart Chromium OS within # days}}</translation>
 <translation id="7483335560992089831">Can not install the same Chromium version that is currently running. Please close Chromium and try again.</translation>
 <translation id="7549178288319965365">About Chromium OS</translation>
+<translation id="7561906087460245826">Also clear data from Chromium (<ph name="URL" />)</translation>
 <translation id="761356813943268536">Chromium is using your camera and microphone.</translation>
 <translation id="7617377681829253106">Chromium just got better</translation>
 <translation id="7686590090926151193">Chromium isn't your default browser</translation>

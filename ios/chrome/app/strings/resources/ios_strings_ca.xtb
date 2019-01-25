@@ -72,6 +72,7 @@
 <translation id="2068952045031577364">La darrera setmana</translation>
 <translation id="2079545284768500474">Desfés</translation>
 <translation id="209018056901015185">Mostra com a ordinador</translation>
+<translation id="2096012225669085171">Sincronitza i personalitza el contingut en tots els dispositius</translation>
 <translation id="2103075008456228677">Obre history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elements desplaçats</translation>
 <translation id="213900355088104901">Per navegar de manera privada, obre una pestanya d'incògnit</translation>
@@ -132,6 +133,7 @@
 <translation id="2989805286512600854">Obre en una pestanya nova</translation>
 <translation id="3024255823539804759">Ahir</translation>
 <translation id="3037605927509011580">Vaja!</translation>
+<translation id="3059750684806925578">Cerca la imatge copiada</translation>
 <translation id="3112556859945124369">Marca com a…</translation>
 <translation id="3157684681743766797">Marca-ho tot com a…</translation>
 <translation id="3175081911749765310">Serveis web</translation>
@@ -380,6 +382,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="7159472599653637159">Sol·licita lloc per a mòbils</translation>
 <translation id="7167621057293532233">Tipus de dades</translation>
 <translation id="7189598951263744875">Comparteix...</translation>
+<translation id="7192050974311852563">Inicia el registre</translation>
 <translation id="7203585745079012652">Pronuncia les respostes</translation>
 <translation id="722055596168483966">Personalitzeu els serveis de Google</translation>
 <translation id="7272437679830969316">No es pot verificar la teva identitat. La contrasenya no s'ha copiat.</translation>
@@ -421,6 +424,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Exporta les contrasenyes</translation>
 <translation id="7947953824732555851">Acc. i inicia sessió</translation>
+<translation id="794799177247607889">Atura el registre</translation>
 <translation id="7961015016161918242">Mai</translation>
 <translation id="7971521879845308059">Bloqueig de finestres emerg.</translation>
 <translation id="7981313251711023384">Carrega les pàgines prèviament per poder-hi navegar i fer cerques més de pressa</translation>

@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
-<translation id="104962181688258143">ఫైల్స్ యాప్‌ని తెరవండి</translation>
+<translation id="104962181688258143">ఫైల్స్ యాప్‌ను తెరవండి</translation>
 <translation id="1122869341872663659"><ph name="QUERY" /> కోసం <ph name="N" /> ఫలితాలను చూపుతోంది</translation>
 <translation id="1195667586424773550">ట్యాబ్ చిరునామా బార్‌లోకి లింక్‌ను లాగండి</translation>
 <translation id="1204450209689312104">కొత్త విండోని అజ్ఞాత మోడ్‌లో తెరవండి</translation>
@@ -55,7 +55,7 @@
 <translation id="292495055542441795">పూర్తి స్క్రీన్‌ను టోగుల్ చేయండి</translation>
 <translation id="3020183492814296499">షార్ట్‌కట్‌లు</translation>
 <translation id="3084301071537457911">మీ అరలో ఉన్న తరువాత అంశాన్ని హైలైట్ చేయండి</translation>
-<translation id="309173601632226815">మీ అరలో లాంచర్ బటన్‌ని హైలైట్ చేయండి</translation>
+<translation id="309173601632226815">మీ అరలో లాంచర్ బటన్‌ను హైలైట్ చేయండి</translation>
 <translation id="3105917916468784889">స్క్రీన్‌షాట్‌ని తీయండి</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">ఫోకస్ చిరునామా బార్</translation>
@@ -85,7 +85,7 @@
 <translation id="4090342722461256974"><ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" />ని నొక్కి, పట్టుకుని, మీరు తెరవాలనుకుంటున్న విండో వచ్చే వరకు <ph name="TAB" />ని నొక్కండి, ఆపై వదిలివేయండి.</translation>
 <translation id="4092538597492297615">ఎంచుకున్న కంటెంట్‌ను క్లిప్‌బోర్డ్‌కు కాపీ చేయండి</translation>
 <translation id="4101772068965291327">హోమ్ పేజీని తెరువు</translation>
-<translation id="4123108089450197101">లింక్‌ను బుక్‌మార్క్ వలె సేవ్ చేయండి</translation>
+<translation id="4123108089450197101">లింక్‌ను బుక్‌మార్క్ లాగా సేవ్ చేయండి</translation>
 <translation id="4141203561740478845">చిరునామా బార్‌తో అడ్డు వరుసని హైలైట్ చేయండి</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> లేదా <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">స్థూలదృష్టి మోడ్</translation>
@@ -97,7 +97,7 @@
 <translation id="4698850295812410683">స్టైలస్ సాధనాలను చూపండి</translation>
 <translation id="4801989101741319327">తర్వాత పదం యొక్క ముగింపునకు వెళ్లండి</translation>
 <translation id="4916163929714267752">లింక్‌ను కొత్త విండోలో తెరవండి</translation>
-<translation id="5030659775136592441">బుక్‌మార్క్ మేనేజర్‌ని చూపండి</translation>
+<translation id="5030659775136592441">బుక్‌మార్క్ మేనేజర్‌ను చూపండి</translation>
 <translation id="5034421018520995080">పేజీ ఎగువకు వెళ్లండి</translation>
 <translation id="5042305953558921026">అవలోకనం మోడ్ కీ</translation>
 <translation id="5104462712192763270">మీ ప్రస్తుత పేజీని సేవ్ చేయండి</translation>
@@ -141,7 +141,7 @@
 <translation id="6671538777808758331">మీ శోధన కోసం తరువాత సరిపోలికకు వెళ్లండి</translation>
 <translation id="6681606577947445973"><ph name="REFRESH" /> లేదా <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="R" /></translation>
 <translation id="6690765639083431875">ఎడమ వైపున విండోని డాక్ చేయండి</translation>
-<translation id="6692847073476874842">ఫైల్స్ యాప్‌లో ఫైల్‌ని ప్రివ్యూ చేయండి</translation>
+<translation id="6692847073476874842">ఫైల్స్ యాప్‌లో ఫైల్‌ను ప్రివ్యూ చేయండి</translation>
 <translation id="671928215901716392">స్క్రీన్‌ను లాక్ చేయి</translation>
 <translation id="6727005317916125192">మునుపటి పేన్</translation>
 <translation id="6740781404993465795">తర్వాత పదం లేదా అక్షరాన్ని ఎంచుకోండి</translation>
@@ -157,8 +157,8 @@
 <translation id="7254764037241667478">పరికరాన్ని నిద్రావస్థలో ఉంచండి (తాత్కాలికంగా నిలిపివేయండి)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> లేదా <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7422707470576323858">తర్వాత అందుబాటులో ఉన్న ఇన్‌పుట్ విధానానికి మారండి</translation>
-<translation id="743754632698445141">యాప్‌ని అన్‌పిన్ చేయండి</translation>
-<translation id="7439718573248533901">తరువాత అక్షరాన్ని తొలగించండి (ముందుకు తొలగింపు)</translation>
+<translation id="743754632698445141">యాప్‌ను అన్‌పిన్ చేయండి</translation>
+<translation id="7439718573248533901">తర్వాతి అక్షరాన్ని తొలగించండి (ముందుకు తొలగింపు)</translation>
 <translation id="7611271430932669992">దృష్టిని పాప్అప్‌లు మరియు డైలాగ్‌లపైకి మార్చండి</translation>
 <translation id="766326951329901120">క్లిప్‌బోర్డ్ నుండి కంటెంట్‌ను సాదా వచనంగా అతికించండి</translation>
 <translation id="7724603315864178912">కత్తిరించు</translation>

@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">Овај месец</translation>
 <translation id="1637811476055996098">Избор датотека</translation>
 <translation id="1650423536718072820">кратки цитат</translation>
+<translation id="1727886345390570319">сакријте мени опционалног титла</translation>
 <translation id="1729654308190250600">Унесите имејл адресу која није празна.</translation>
 <translation id="1758486001363313524">Друго...</translation>
 <translation id="1806710327868736751">дијалог обавештења</translation>
@@ -147,6 +148,7 @@
 <translation id="6213469881011901533">речник термина</translation>
 <translation id="6398862346408813489">Прикажи таблу за избор месеца</translation>
 <translation id="6404546809543547843">клизач за трајање аудио-садржаја</translation>
+<translation id="6443871981718447451">прикажите мени опционалног титла</translation>
 <translation id="6453774872122745852">признања</translation>
 <translation id="648732519525291180">бирач времена</translation>
 <translation id="6550675742724504774">Опције</translation>
@@ -162,7 +164,6 @@
 <translation id="6820355525329141109">Учитавање додатне компоненте није успело.</translation>
 <translation id="6820615603175220800">референца библиографије</translation>
 <translation id="6843725295806269523">искључи звук</translation>
-<translation id="6853785296079745596">сакријте опционални титл</translation>
 <translation id="6885760532393684712">каталог</translation>
 <translation id="689129560213475294">знак издавача</translation>
 <translation id="6934078000481955284">издвојени цитат</translation>
@@ -171,7 +172,6 @@
 <translation id="6989848892321993519">Продужите овај текст на бар <ph name="MIN_CHARACTERS" /> знак(ов)а (тренутно користите 1 знак).</translation>
 <translation id="709897737746224366">Изаберите захтевани формат.</translation>
 <translation id="7139483182332611405">предговор</translation>
-<translation id="7223624360433298498">протекло време</translation>
 <translation id="7263440858009898357">Изаберите ставку са листе.</translation>
 <translation id="727747134524199931">заглавље колоне</translation>
 <translation id="7353453495576941748">заслуга</translation>
@@ -186,7 +186,6 @@
 <translation id="7661956066982048809">графички документ</translation>
 <translation id="7673697353781729403">Сати</translation>
 <translation id="7681220483256441252">индекс</translation>
-<translation id="7720026100085573005">преостало време</translation>
 <translation id="7740050170769002709">HTML садржај</translation>
 <translation id="7750228210027921155">Слика у слици</translation>
 <translation id="7789962463072032349">паузирај</translation>
@@ -225,7 +224,6 @@
 <translation id="8987927404178983737">Месец</translation>
 <translation id="901493112792887934">актуелно време у секундама</translation>
 <translation id="9048119486235211610">навигација</translation>
-<translation id="9050748414552849310">приказивање опционалног титла</translation>
 <translation id="9062295712474918030">документ</translation>
 <translation id="9093215626363556771">изађи из режима слике у слици</translation>
 <translation id="9108370397979208512">математички</translation>

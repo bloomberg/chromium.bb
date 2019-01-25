@@ -72,6 +72,7 @@
 <translation id="2068952045031577364">过去 1 周</translation>
 <translation id="2079545284768500474">撤消</translation>
 <translation id="209018056901015185">请求切换到桌面版网站</translation>
+<translation id="2096012225669085171">在所有设备上保持同步并进行个性化设置</translation>
 <translation id="2103075008456228677">打开 history.google.com</translation>
 <translation id="2116625576999540962">移动了<ph name="NUMBER_OF_SELECTED_BOOKMARKS" />项</translation>
 <translation id="213900355088104901">要想私密地浏览，请打开一个无痕式标签页</translation>
@@ -132,6 +133,7 @@
 <translation id="2989805286512600854">在新标签页中打开</translation>
 <translation id="3024255823539804759">过去 1 天</translation>
 <translation id="3037605927509011580">喔唷，崩溃啦！</translation>
+<translation id="3059750684806925578">搜索复制的图片</translation>
 <translation id="3112556859945124369">标为…</translation>
 <translation id="3157684681743766797">全部标为…</translation>
 <translation id="3175081911749765310">网络服务</translation>
@@ -380,6 +382,7 @@
 <translation id="7159472599653637159">请求移动版网站</translation>
 <translation id="7167621057293532233">数据类型</translation>
 <translation id="7189598951263744875">分享...</translation>
+<translation id="7192050974311852563">开始生成日志</translation>
 <translation id="7203585745079012652">说出答案</translation>
 <translation id="722055596168483966">对 Google 服务进行个性化设置</translation>
 <translation id="7272437679830969316">无法验证您的身份。未复制密码。</translation>
@@ -421,6 +424,7 @@
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">导出密码…</translation>
 <translation id="7947953824732555851">接受并登录</translation>
+<translation id="794799177247607889">停止生成日志</translation>
 <translation id="7961015016161918242">一律不</translation>
 <translation id="7971521879845308059">拦截弹出式窗口</translation>
 <translation id="7981313251711023384">预加载网页，以便实现更快速的浏览和搜索</translation>

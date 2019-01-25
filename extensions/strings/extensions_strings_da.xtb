@@ -64,7 +64,7 @@
 <translation id="8047248493720652249">Denne udvidelse har ikke navngivet downloaden "<ph name="ATTEMPTED_FILENAME" />", fordi en anden udvidelse (<ph name="EXTENSION_NAME" />) har fastlagt et andet filnavn "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> fra <ph name="VENDOR_NAME" /></translation>
 <translation id="8517576857589387417">Manifestfilen mangler eller kan ikke læses</translation>
-<translation id="8636666366616799973">Pakken er ugyldig. Oplysninger: "<ph name="ERROR_MESSAGE" />".</translation>
+<translation id="8636666366616799973">Pakken er ugyldig. Info: "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8761756413268424715">"<ph name="APP_NAME" />" anmoder om adgang til en af dine enheder:</translation>
 <translation id="8885905466771744233">Der findes allerede en personlig nøgle til den angivne udvidelse. Genbrug denne nøgle, eller slet den først.</translation>
 <translation id="907841381057066561">Den midlertidige zip-fil kunne ikke oprettes under pakning.</translation>

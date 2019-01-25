@@ -494,6 +494,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="5020651427400641814">Enable speech logging</translation>
 <translation id="5041394372352067729">Move braille display to top of page</translation>
 <translation id="5042770794184672516">Increase speech volume</translation>
+<translation id="5042992464904238023">Web Content</translation>
 <translation id="5050015258024679800">Previous level 4 heading</translation>
 <translation id="5054047268577924192">Previous list item</translation>
 <translation id="5075936896689244141">Next keymap</translation>
@@ -844,6 +845,89 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="8037651341025652929">Conclusion</translation>
 <translation id="8042761080832772327">Edit text, search entry</translation>
 <translation id="8049189770492311300">Timer</translation>
+<translation id="8056782883599416672">{"ar": "Arabic",
+        "as": "Assamese",
+        "aw": "Awadhi",
+        "be": "Bengali",
+        "bg": "Bulgarian",
+        "bh": "Bihari",
+        "bo": "Tibetan",
+        "br": "Braj",
+        "ca": "Catalan",
+        "ckb": "Sorani",
+        "cs": "Czech",
+        "cy": "Welsh",
+        "da": "Danish",
+        "de": "German",
+        "de_CH": "German (Switzerland)",
+        "de_DE": "German (Germany)",
+        "dra": "Dravidian",
+        "el": "Greek",
+        "en": "English",
+        "en_CA": "English (Canada)",
+        "en_GB": "English (United Kingdom)",
+        "en_US": "English (United States)",
+        "eo": "Esperanto",
+        "es": "Spanish",
+        "et": "Estonian",
+        "fa": "Persian",
+        "fr": "French",
+        "fr_CA": "French (Canada)",
+        "fr_FR": "French (France)",
+        "fi": "Finnish",
+        "ga": "Irish",
+        "gd": "Gaelic",
+        "gon": "Gondi",
+        "gu": "Gujarati",
+        "he": "Hebrew",
+        "hi": "Hindi",
+        "hr": "Croatian",
+        "hu": "Hungarian",
+        "hy": "Armenian",
+        "is": "Icelandic",
+        "it": "Italian",
+        "iu": "Inuktitut",
+        "ka": "Kannada",
+        "kh": "Khasi",
+        "ko": "Korean",
+        "kok": "Konkani",
+        "kru": "Kurukh",
+        "ks": "Kashmiri",
+        "lt": "Lithuanian",
+        "lv": "Latvian",
+        "mao": "Maori",
+        "ml": "Malayalam",
+        "mt": "Maltese",
+        "mwr": "Marwari",
+        "mn": "Mongolian",
+        "mun": "Munda",
+        "nb": "Norwegian Bokmål",
+        "ne": "Nepali",
+        "nl": "Dutch",
+        "no": "Norwegian",
+        "or": "Oriya",
+        "pi": "Pali",
+        "pl": "Polish",
+        "pt": "Portuguese",
+        "pu": "Punjabi",
+        "ro": "Romanian",
+        "ru": "Russian",
+        "sa": "Sanskrit",
+        "si": "Sindhi",
+        "sin": "Sinhala",
+        "sk": "Slovak",
+        "sl": "Slovenian",
+        "sr": "Serbian",
+        "sv": "Swedish",
+        "ta": "Tamil",
+        "te": "Telugu",
+        "tr": "Turkish",
+        "tsn": "Afrikaans",
+        "uk": "Ukrainian",
+        "ur": "Urdu",
+        "vi": "Vietnamese",
+        "zh": "Chinese",
+        "zh_TW": "Chinese (Traditional Han)"}</translation>
 <translation id="8065607967589909823">Selection is</translation>
 <translation id="8066678206530322333">Banner</translation>
 <translation id="8076492880354921740">Tabs</translation>
@@ -853,6 +937,7 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="8153880621934657047">Not inside table.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{underscore}other{# underscores}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8183813379996435469">Automatically detect and switch ChromeVox language.</translation>
 <translation id="8184828902145951186">row</translation>
 <translation id="8186185314313222077">toggle full screen</translation>
 <translation id="8199231515320852133">Announce the headers of the current cell</translation>

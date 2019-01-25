@@ -493,6 +493,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="5020651427400641814">Povoliť zapisovanie reči do denníka</translation>
 <translation id="5041394372352067729">Presunúť zobrazenie Braillovho písma do hornej časti stránky</translation>
 <translation id="5042770794184672516">Zvýšiť hlasitosť reči</translation>
+<translation id="5042992464904238023">Webový obsah</translation>
 <translation id="5050015258024679800">Predchádzajúci nadpis 4. úrovne</translation>
 <translation id="5054047268577924192">Predchádzajúca položka v zozname</translation>
 <translation id="5075936896689244141">Ďalšia mapa klávesov</translation>
@@ -843,6 +844,89 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="8037651341025652929">Záver</translation>
 <translation id="8042761080832772327">Upraviť text, vstup vyhľadávania</translation>
 <translation id="8049189770492311300">Časovač</translation>
+<translation id="8056782883599416672">{"ar": "arabčina",
+        "as": "asámčina",
+        "aw": "awadhčina",
+        "be": "bengálčina",
+        "bg": "bulharčina",
+        "bh": "bihárčina",
+        "bo": "tibetčina",
+        "br": "bradžčina",
+        "ca": "katalánčina",
+        "ckb": "sorání",
+        "cs": "čeština",
+        "cy": "waleština",
+        "da": "dánčina",
+        "de": "nemčina",
+        "de_CH": "nemčina (švajčiarska)",
+        "de_DE": "nemčina (nemecká)",
+        "dra": "drávidčina",
+        "el": "gréčtina",
+        "en": "angličtina",
+        "en_CA": "angličtina (kanadská)",
+        "en_GB": "angličtina (britská)",
+        "en_US": "angličtina (americká)",
+        "eo": "esperanto",
+        "es": "španielčina",
+        "et": "estónčina",
+        "fa": "perzština",
+        "fr": "francúzština",
+        "fr_CA": "francúzština (kanadská)",
+        "fr_FR": "francúzština (francúzska)",
+        "fi": "fínčina",
+        "ga": "írčina",
+        "gd": "škótska gaelčina",
+        "gon": "gondčina",
+        "gu": "gudžarátčina",
+        "he": "hebrejčina",
+        "hi": "hindčina",
+        "hr": "chorvátčina",
+        "hu": "maďarčina",
+        "hy": "arménčina",
+        "is": "islandčina",
+        "it": "taliančina",
+        "iu": "inuktitutčina",
+        "ka": "kannadčina",
+        "kh": "khasijčina",
+        "ko": "kórejčina",
+        "kok": "konkánčina",
+        "kru": "kurukhčina",
+        "ks": "kašmírčina",
+        "lt": "litovčina",
+        "lv": "lotyština",
+        "mao": "maorčina",
+        "ml": "malajálamčina",
+        "mt": "maltčina",
+        "mwr": "marwarčina",
+        "mn": "mongolčina",
+        "mun": "mundčina",
+        "nb": "nórčina (bokmal)",
+        "ne": "nepálčina",
+        "nl": "holandčina",
+        "no": "nórčina",
+        "or": "uríjčina",
+        "pi": "pálí",
+        "pl": "poľština",
+        "pt": "portugalčina",
+        "pu": "pandžábčina",
+        "ro": "rumunčina",
+        "ru": "ruština",
+        "sa": "sanskrit",
+        "si": "sindhčina",
+        "sin": "sinhalčina",
+        "sk": "slovenčina",
+        "sl": "slovinčina",
+        "sr": "srbčina",
+        "sv": "švédčina",
+        "ta": "tamilčina",
+        "te": "telugčina",
+        "tr": "turečtina",
+        "tsn": "afrikánčina",
+        "uk": "ukrajinčina",
+        "ur": "urdčina",
+        "vi": "vietnamčina",
+        "zh": "čínština",
+        "zh_TW": "čínština (tradičná chanská)"}</translation>
 <translation id="8065607967589909823">Výber je</translation>
 <translation id="8066678206530322333">Banner</translation>
 <translation id="8076492880354921740">Karty</translation>
@@ -852,6 +936,7 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="8153880621934657047">Mimo tabuľky</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{podčiarkovník}few{# podčiarkovníky}many{# underscores}other{# podčiarkovníkov}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8183813379996435469">Automaticky rozpoznávať a prepínať jazyk čítačky ChromeVox.</translation>
 <translation id="8184828902145951186">riadok</translation>
 <translation id="8186185314313222077">prepnutie na celú obrazovku</translation>
 <translation id="8199231515320852133">Oznámiť hlavičky aktuálnej bunky</translation>

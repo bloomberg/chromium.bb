@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">Denne måneden</translation>
 <translation id="1637811476055996098">Velg filer</translation>
 <translation id="1650423536718072820">sitat</translation>
+<translation id="1727886345390570319">skjul menyen for teksting for hørselshemmede</translation>
 <translation id="1729654308190250600">Skriv inn en ikke-tom e-postadresse.</translation>
 <translation id="1758486001363313524">Andre</translation>
 <translation id="1806710327868736751">varseldialog</translation>
@@ -147,6 +148,7 @@
 <translation id="6213469881011901533">ordliste</translation>
 <translation id="6398862346408813489">Se panelet for valg av måned</translation>
 <translation id="6404546809543547843">lydtidslinje</translation>
+<translation id="6443871981718447451">vis menyen for teksting for hørselshemmede</translation>
 <translation id="6453774872122745852">omtale</translation>
 <translation id="648732519525291180">klokkeslettvelger</translation>
 <translation id="6550675742724504774">Alternativer</translation>
@@ -162,7 +164,6 @@
 <translation id="6820355525329141109">Kunne ikke laste inn programtillegget.</translation>
 <translation id="6820615603175220800">bibliografireferanse</translation>
 <translation id="6843725295806269523">kutt lyd</translation>
-<translation id="6853785296079745596">skjul teksting</translation>
 <translation id="6885760532393684712">katalog</translation>
 <translation id="689129560213475294">kolofon</translation>
 <translation id="6934078000481955284">blokksitat</translation>
@@ -171,7 +172,6 @@
 <translation id="6989848892321993519">Øk lengden på denne teksten med minst <ph name="MIN_CHARACTERS" /> tegn (du bruker for øyeblikket 1 tegn).</translation>
 <translation id="709897737746224366">Sørg for samsvar med det forespurte formatet.</translation>
 <translation id="7139483182332611405">forord</translation>
-<translation id="7223624360433298498">brukt tid</translation>
 <translation id="7263440858009898357">Velg en artikkel i listen.</translation>
 <translation id="727747134524199931">kolonneoverskrift</translation>
 <translation id="7353453495576941748">anerkjennelse</translation>
@@ -186,7 +186,6 @@
 <translation id="7661956066982048809">grafikkdokument</translation>
 <translation id="7673697353781729403">Timer</translation>
 <translation id="7681220483256441252">stikkordregister</translation>
-<translation id="7720026100085573005">tid som gjenstår</translation>
 <translation id="7740050170769002709">HTML-innhold</translation>
 <translation id="7750228210027921155">Bilde i bilde</translation>
 <translation id="7789962463072032349">stans midlertidig</translation>
@@ -225,7 +224,6 @@
 <translation id="8987927404178983737">Måned</translation>
 <translation id="901493112792887934">gjeldende tid i sekunder</translation>
 <translation id="9048119486235211610">navigasjon</translation>
-<translation id="9050748414552849310">vis teksting</translation>
 <translation id="9062295712474918030">dokument</translation>
 <translation id="9093215626363556771">avslutt bilde-i-bilde</translation>
 <translation id="9108370397979208512">math</translation>

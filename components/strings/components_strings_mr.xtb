@@ -3,6 +3,7 @@
 <translationbundle lang="mr">
 <translation id="1005145902654145231">सेशनचे नाव बदलू शकलो नाही.</translation>
 <translation id="1008557486741366299">सध्या नाही</translation>
+<translation id="1010200102790553230">पेज नंतर लोड करा</translation>
 <translation id="1015730422737071372">अतिरिक्त तपशील प्रदान करा</translation>
 <translation id="1021110881106174305">स्वीकारलेली कार्ड</translation>
 <translation id="1032854598605920125">घड्याळाच्या दिशेने फिरवा</translation>
@@ -47,6 +48,7 @@
 <translation id="1227633850867390598">मूल्य लपवा</translation>
 <translation id="1228893227497259893">चुकीचा अस्तित्व ओळखकर्ता</translation>
 <translation id="1232569758102978740">अशीर्षकांकित</translation>
+<translation id="124116460088058876">आणखी भाषा...</translation>
 <translation id="1250759482327835220">पुढील वेळेस जलद पेमेंट करण्यासाठी, तुमच्या Google खात्यावर तुमचे कार्ड आणि बिलिंग पत्ता सेव्ह करा.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (सिंक केलेले)</translation>
 <translation id="1256368399071562588">&lt;p&gt;जर तुम्ही एखाद्या वेबसाइटला भेट देण्याचा प्रयत्न केला आणि ती उघडली नाही, तर सगळ्यात आधी ट्रबलशूटिंग पायऱ्यांद्वारे या एररवर उपाय काढण्याचा प्रयत्न करा:&lt;/p&gt;
@@ -117,6 +119,7 @@
 <translation id="1618822247301510817">तुम्ही कॉपी केलेली इमेज</translation>
 <translation id="1620510694547887537">कॅमेरा</translation>
 <translation id="1623104350909869708">या पृष्ठास अतिरिक्त संवाद तयार करण्यापासून प्रतिबंधित करा</translation>
+<translation id="1634051627998691300">सेशन समाप्त करा</translation>
 <translation id="1639239467298939599">लोड करीत आहे</translation>
 <translation id="1640180200866533862">वापरकर्ता धोरणे</translation>
 <translation id="1640244768702815859"><ph name="BEGIN_LINK" />साइटच्या मुख्यपृष्ठावर भेट देऊन<ph name="END_LINK" /> पहा.</translation>
@@ -222,6 +225,7 @@
 <translation id="2317583587496011522">डेबिट कार्डे स्वीकारली जातात.</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, <ph name="EXPIRATION_DATE_ABBR" /> रोजी एक्स्पायर होईल</translation>
 <translation id="2337852623177822836">सेटिंग तुमच्या प्रशासकाने नियंत्रित केलेली आहे</translation>
+<translation id="2349790679044093737">VR सेशन अ‍ॅक्टिव्ह आहे</translation>
 <translation id="2354001756790975382">इतर बुकमार्क</translation>
 <translation id="2354430244986887761">Google सुरक्षित ब्राउझिंगला अलीकडे <ph name="SITE" />मध्ये <ph name="BEGIN_LINK" />हानिकारक अॅप्स सापडले<ph name="END_LINK" />.</translation>
 <translation id="2355395290879513365">तुम्ही या साइटवर पाहत असलेल्या इमेज पाहण्यास आक्रमणकर्ते सक्षम असू शकतात आणि त्यात सुधारणा करून तुमची फसवणूक करू शकतात.</translation>
@@ -307,6 +311,7 @@
 <translation id="2856444702002559011">हल्लेखोर कदाचित तुमची माहिती (उदाहरणार्थ पासवर्ड, संदेश किंवा क्रेडिट कार्ड) <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> मधून चोरण्याचा प्रयत्न करत असतील. <ph name="BEGIN_LEARN_MORE_LINK" />आणखी जाणून घ्या<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2881276955470682203">कार्ड सेव्ह करायचे?</translation>
 <translation id="2903493209154104877">पत्ते</translation>
+<translation id="290376772003165898">पेज <ph name="LANGUAGE" />मध्ये नाही?</translation>
 <translation id="2909946352844186028">एक नेटवर्क बदल आढळला.</translation>
 <translation id="2916038427272391327">अन्य प्रोग्राम बंद करा</translation>
 <translation id="2922350208395188000">सर्व्हरचे सर्टिफिकेट तपासणे शक्य नाही.</translation>
@@ -647,7 +652,6 @@
 <translation id="5089810972385038852">राज्य</translation>
 <translation id="5094747076828555589">हा सर्व्हर हे <ph name="DOMAIN" /> असल्याचे सिद्ध करू शकला नाही; त्याचे सुरक्षितता सर्टिफिकेट Chromium द्वारे विश्वसनीय नाही. हे कदाचित एका चुकीच्या कॉंफिगरेशनमुळे किंवा हल्लेखोराने तुमचे कनेक्शन इंटरसेप्ट केल्यामुळे झाले असू शकते.</translation>
 <translation id="5095208057601539847">प्रांत</translation>
-<translation id="5098332213681597508">हे नाव तुमच्या Google खात्यावरून आहे.</translation>
 <translation id="5115563688576182185">(64-बिट)</translation>
 <translation id="5128122789703661928">हे नाव असलेले सेशन हटवण्यासाठी वैध नाही.</translation>
 <translation id="5135404736266831032">पत्ते व्यवस्थापित करा...</translation>
@@ -682,7 +686,6 @@
 <translation id="5344579389779391559">या पेजवर कदाचित तुमच्याकडून शुल्क आकारले जाऊ शकते</translation>
 <translation id="5355557959165512791">तुम्ही आत्ता <ph name="SITE" /> ला भेट देऊ शकत नाही कारण तिचे सर्टिफिकेट रिव्होक केले गेले आहे. नेटवर्क एरर आणि आक्रमणे शक्यतो तात्पुरती असतात, त्यामुळे हे पेज नंतर पाहता येईल.</translation>
 <translation id="536296301121032821">धोरण सेटिंग्ज संचयित करण्यात अयशस्वी</translation>
-<translation id="5363056109122666249">तुम्ही साइन इन केलेले असल्यामुळे Chrome तुमच्या Google खात्यामध्ये तुमची कार्डे सेव्ह करण्याची ऑफर देत आहे. तुम्‍ही हे वर्तन सेटिंग्‍जमध्‍ये बदलू शकता.</translation>
 <translation id="5371425731340848620">कार्ड अपडेट करा</translation>
 <translation id="5377026284221673050">"तुमचे क्लॉक मागे पडले आहे" किंवा "तुमचे क्लॉक वेळेपेक्षा पुढे आहे" किंवा "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5384855140246857529">तुमच्या सर्व डिव्हाइसवर तुमची कार्डे वापरण्यासाठी साइन इन करा आणि सिंक सुरू करा.</translation>
@@ -823,6 +826,7 @@
 <translation id="6280223929691119688">या पत्त्यावर देऊ शकत नाही. वेगळा पत्ता निवडा.</translation>
 <translation id="6282194474023008486">पोस्टल कोड</translation>
 <translation id="6290238015253830360">तुम्ही सुचविलेले लेख येथे दिसतील</translation>
+<translation id="6302269476990306341">Chrome मधील Google असिस्टंट थांबत आहे</translation>
 <translation id="6305205051461490394"><ph name="URL" /> आवाक्याबाहेर आहे.</translation>
 <translation id="6321917430147971392">आपल्या DNS सेटिंग्ज तपासा</translation>
 <translation id="6328639280570009161">नेटवर्क पूर्वानुमान अक्षम करून पहा</translation>
@@ -1082,7 +1086,6 @@
 <translation id="7951415247503192394">(32-बिट)</translation>
 <translation id="7956713633345437162">Mobile बुकमार्क</translation>
 <translation id="7961015016161918242">कधीही नाही</translation>
-<translation id="7983301409776629893"> नेहमी <ph name="ORIGINAL_LANGUAGE" /> मधून <ph name="TARGET_LANGUAGE" /> मध्ये भाषांतर करा</translation>
 <translation id="7995512525968007366">नमूद केलेले नाही</translation>
 <translation id="800218591365569300">मेमरी मोकळी करण्‍यासाठी अन्य टॅब किंवा प्रोग्राम बंद करून पहा.</translation>
 <translation id="8009225694047762179">पासवर्ड व्यवस्थापित करा</translation>
@@ -1112,6 +1115,7 @@
 <translation id="8131740175452115882">पुष्टी करा</translation>
 <translation id="8149426793427495338">तुमचा कॉंप्युटर निष्क्रीय झाला.</translation>
 <translation id="8150722005171944719"><ph name="URL" /> येथील फाइल वाचनीय नाही. ती काढून टाकलेली, हलविलेली असू शकते किंवा फाइल परवानग्या प्रवेश प्रतिबंधित करत असू शकतात.</translation>
+<translation id="8175796834047840627">तुम्ही साइन इन केले असल्यामुळे Chrome तुमच्या Google खात्यामध्ये तुमची कार्डे सेव्ह करत आहे. तुम्‍ही हे वर्तन सेटिंग्‍जमध्‍ये बदलू शकता.</translation>
 <translation id="8184538546369750125">सार्वत्रिक डीफॉल्‍ट वापरा (अनुमती द्या)</translation>
 <translation id="8194797478851900357">&amp;हलवा पूर्ववत करा</translation>
 <translation id="8197543752516192074">पेजचे भाषांतर करा</translation>
@@ -1274,7 +1278,6 @@
 <translation id="939736085109172342">नवीन फोल्‍डर</translation>
 <translation id="945855313015696284">खालील माहिती तपासा आणि कोणतीही चुकीची कार्डे हटवा</translation>
 <translation id="951104842009476243">स्वीकारली जाणारी डेबिट आणि प्रीपेड कार्डे</translation>
-<translation id="960701843220172709">{NUM_CARDS,plural, =1{तुम्ही साइन इन केलेले असतांना तुम्ही त्याचा वापर करू शकाल. हे कार्ड आणि त्याचा बिलिंग पत्ता तुमच्या Google खात्यामध्ये सेव्ह केला जाईल.}one{तुम्ही साइन इन केलेले असतांना तुम्ही त्याचा वापर करू शकाल. हे कार्ड आणि त्याचा बिलिंग पत्ता तुमच्या Google खात्यामध्ये सेव्ह केला जाईल.}other{तुम्ही साइन इन केलेले असतांना तुम्ही त्यांचा वापर करू शकाल. ही कार्डे आणि त्यांचे बिलिंग पत्ते तुमच्या Google खात्यामध्ये सेव्ह केले जातील.}}</translation>
 <translation id="962484866189421427">हा आशय काहीतरी दुसरे असण्याची बतावणी करणारी फसवी अॅप्स इंस्टॉल करण्याचा किंवा तुमचा माग ठेवण्यासाठी वापरला जाऊ शकणारा डेटा गोळा करण्याचा प्रयत्न करू शकतो. <ph name="BEGIN_LINK" />तरीही दाखवा<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">अधिकृत बिल्ड</translation>
 <translation id="973773823069644502">वितरणाचा पत्ता जोडा</translation>

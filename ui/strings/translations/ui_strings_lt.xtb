@@ -64,6 +64,7 @@
 <translation id="3234408098842461169">Rodyklė „Žemyn“</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 diena}one{# diena}few{# dienos}many{# dienos}other{# dienų}}</translation>
 <translation id="335581015389089642">Kalba</translation>
+<translation id="3462241349431650993">Paslėpus šį pasiūlymą jis nebebus rodomas jūsų paskyroje visuose įrenginiuose.</translation>
 <translation id="3479552764303398839">Ne dabar</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Liko 1 diena}one{Liko # diena}few{Liko # dienos}many{Liko # dienos}other{Liko # dienų}}</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" /> ir daugiau</translation>
@@ -73,7 +74,7 @@
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3842239759367498783">Toliau skaityti iš mobiliojo įrenginio „<ph name="TITLE" />“</translation>
-<translation id="385051799172605136">Grįžti</translation>
+<translation id="385051799172605136">Atgal</translation>
 <translation id="3889424535448813030">Rodyklė į dešinę</translation>
 <translation id="3892641579809465218">Vidinė pateiktis</translation>
 <translation id="3897092660631435901">Meniu</translation>
@@ -162,6 +163,7 @@
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + „<ph name="KEY_COMBO_NAME" />“</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Prieš 1 valandą}one{Prieš # valandą}few{Prieš # valandas}many{Prieš # valandos}other{Prieš # valandų}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Liko 1 sek.}one{Liko # sek.}few{Liko # sek.}many{Liko # sek.}other{Liko # sek.}}</translation>
+<translation id="8152264887680882389"><ph name="TEXT" />, automatinis užbaigimas</translation>
 <translation id="815598010540052116">Slinkti žemyn</translation>
 <translation id="8179976553408161302">Įvesti</translation>
 <translation id="8210608804940886430">Puslapį žemyn</translation>
@@ -173,6 +175,7 @@
 <translation id="838869780401515933">tikrinti</translation>
 <translation id="8393700583063109961">Siųsti pranešimą</translation>
 <translation id="8394908167088220973">Leisti / pristabdyti mediją</translation>
+<translation id="8420205633584771378">Pašalinti šį siūlymą?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 m.}one{# m.}few{# m.}many{# m.}other{# m.}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> failas (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB per sek.</translation>

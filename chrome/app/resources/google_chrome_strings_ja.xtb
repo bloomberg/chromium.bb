@@ -4,6 +4,7 @@
 <translation id="1001534784610492198">インストーラー アーカイブが壊れているか無効です。Google Chrome をダウンロードし直してください。</translation>
 <translation id="102763973188675173">Google Chrome をカスタマイズしてご活用ください。アップデートが利用可能です。</translation>
 <translation id="1035334672863811645">Chrome にログイン</translation>
+<translation id="1051826050538111504">お使いのパソコンに有害なソフトウェアが見つかりました。Chrome では、ブラウザを正常な動作に戻すためにこのソフトウェアを削除し、設定を復元して、拡張機能を無効化することができます。</translation>
 <translation id="1065672644894730302">ユーザー設定ファイルを読み込むことができません。一部の機能が利用できない可能性があります。また、設定への変更は保存されません。</translation>
 <translation id="1088300314857992706">Chrome の前回の使用者は <ph name="USER_EMAIL_ADDRESS" /> です</translation>
 <translation id="1104959162601287462">Chrome OS について(&amp;C)</translation>
@@ -68,6 +69,7 @@
 <translation id="2580411288591421699">実行中の Google Chrome と同じバージョンをインストールすることはできません。Google Chrome を閉じてからもう一度お試しください。</translation>
 <translation id="2586406160782125153">この端末から閲覧データを削除します。後でデータを取得するには、<ph name="USER_EMAIL" /> として Chrome にログインしてください。</translation>
 <translation id="2588322182880276190">Chrome ロゴ</translation>
+<translation id="2644798301485385923">Chrome OS システム</translation>
 <translation id="2652691236519827073">新しい Chrome タブでリンクを開く(&amp;T)</translation>
 <translation id="2665296953892887393">障害レポートと<ph name="UMA_LINK" />を Google に自動送信して Google Chrome の機能向上に役立てる</translation>
 <translation id="2689103672227170538">この拡張機能により、Chrome の起動時に表示されるページが変更されました。</translation>
@@ -99,6 +101,7 @@
 <translation id="3451115285585441894">Chrome に追加...</translation>
 <translation id="345171907106878721">Chrome に自分を追加</translation>
 <translation id="3479552764303398839">後で</translation>
+<translation id="34857402635545079">Chrome のデータ（<ph name="URL" />）も消去する</translation>
 <translation id="3503306920980160878">このサイトで現在地を共有するには、Chrome で位置情報の使用を許可する必要があります</translation>
 <translation id="3582972582564653026">同期してカスタマイズした Chrome をどの端末でも使用できます</translation>
 <translation id="3622797965165704966">共有パソコンの Chrome で Google アカウントが簡単に使用できるようになりました。</translation>
@@ -162,6 +165,7 @@
 <translation id="5386244825306882791">この拡張機能では、Chrome の起動時、またはアドレスバーからの検索時に表示されるページも制御されます。</translation>
 <translation id="5430073640787465221">ユーザー設定ファイルが壊れているか無効です。設定を復元できません。</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome は今すぐ再起動されます}=1{Chrome は 1 秒後に再起動されます}other{Chrome は # 秒後に再起動されます}}</translation>
+<translation id="5505603430818498864">Google Chrome では、ページの画像を Google のサーバーに送信することで、画像内に含まれる画像とテキストを認識できるようになり、これによって、ユーザーはページのコンテンツをより理解できるようになります。</translation>
 <translation id="556024056938947818">Google Chrome はパスワードを表示しようとしています。</translation>
 <translation id="5566025111015594046">Google Chrome（mDNS インバウンド）</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> は危険なファイルの可能性があるため、Chrome でブロックしました。</translation>

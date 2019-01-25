@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">هذا الشهر</translation>
 <translation id="1637811476055996098">اختيار الملفات</translation>
 <translation id="1650423536718072820">اقتباس مستمد</translation>
+<translation id="1727886345390570319">إخفاء قائمة مقاطع الترجمة والشرح</translation>
 <translation id="1729654308190250600">يُرجى إدخال عنوان البريد الإلكتروني وعدم ترك الحق فارغًا.</translation>
 <translation id="1758486001363313524">آخر...</translation>
 <translation id="1806710327868736751">مربع حوار_للتنبيه</translation>
@@ -147,6 +148,7 @@
 <translation id="6213469881011901533">مسرد مصطلحات</translation>
 <translation id="6398862346408813489">عرض لوحة تحديد الشهر</translation>
 <translation id="6404546809543547843">شريط تمرير وقت الصوت</translation>
+<translation id="6443871981718447451">عرض قائمة مقاطع الترجمة والشرح</translation>
 <translation id="6453774872122745852">شكر وتقدير</translation>
 <translation id="648732519525291180">منتقي الوقت</translation>
 <translation id="6550675742724504774">خيارات</translation>
@@ -162,7 +164,6 @@
 <translation id="6820355525329141109">تعذر تحميل المكوّن الإضافي.</translation>
 <translation id="6820615603175220800">مرجع قائمة مراجع</translation>
 <translation id="6843725295806269523">كتم الصوت</translation>
-<translation id="6853785296079745596">إخفاء الترجمة والشرح</translation>
 <translation id="6885760532393684712">الدليل</translation>
 <translation id="689129560213475294">إشارة ناشر</translation>
 <translation id="6934078000481955284">علامة اقتباس فقرة</translation>
@@ -171,7 +172,6 @@
 <translation id="6989848892321993519">يُرجى إطالة هذا النص إلى <ph name="MIN_CHARACTERS" /> من الحروف أو أكثر (أنت الآن تستخدم حرفًا واحدًا).</translation>
 <translation id="709897737746224366">يُرجى مطابقة التنسيق المطلوب.</translation>
 <translation id="7139483182332611405">تمهيد</translation>
-<translation id="7223624360433298498">المدة المنقضية</translation>
 <translation id="7263440858009898357">يُرجى تحديد عنصر من القائمة.</translation>
 <translation id="727747134524199931">عنوان العمود</translation>
 <translation id="7353453495576941748">إسهام</translation>
@@ -186,7 +186,6 @@
 <translation id="7661956066982048809">مستند رسومي</translation>
 <translation id="7673697353781729403">ساعات</translation>
 <translation id="7681220483256441252">فهرس</translation>
-<translation id="7720026100085573005">المدة المتبقية</translation>
 <translation id="7740050170769002709">‏محتوى HTML</translation>
 <translation id="7750228210027921155">نافذة ضمن النافذة</translation>
 <translation id="7789962463072032349">إيقاف مؤقت</translation>
@@ -225,7 +224,6 @@
 <translation id="8987927404178983737">شهر</translation>
 <translation id="901493112792887934">المدة الحالية بالثواني</translation>
 <translation id="9048119486235211610">تنقل</translation>
-<translation id="9050748414552849310">عرض الترجمة والشرح</translation>
 <translation id="9062295712474918030">المستند</translation>
 <translation id="9093215626363556771">الخروج من وضع "نافذة ضمن نافذة"</translation>
 <translation id="9108370397979208512">math</translation>

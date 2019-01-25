@@ -72,6 +72,7 @@
 <translation id="2068952045031577364">Posledný týždeň</translation>
 <translation id="2079545284768500474">Späť</translation>
 <translation id="209018056901015185">Vyžiadať stránky pre počítač</translation>
+<translation id="2096012225669085171">Synchronizovať a prispôsobiť v rôznych zariadeniach</translation>
 <translation id="2103075008456228677">Otvoriť history.google.com</translation>
 <translation id="2116625576999540962">Počet presunutých položiek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="213900355088104901">Ak chcete prehliadať v súkromí, otvorte kartu inkognito</translation>
@@ -132,6 +133,7 @@
 <translation id="2989805286512600854">Otvoriť na novej karte</translation>
 <translation id="3024255823539804759">Posledný deň</translation>
 <translation id="3037605927509011580">Aj, chyba!</translation>
+<translation id="3059750684806925578">Vyhľadať skopírovaný obrázok</translation>
 <translation id="3112556859945124369">Označiť…</translation>
 <translation id="3157684681743766797">Označiť všetko…</translation>
 <translation id="3175081911749765310">Web. služ.</translation>
@@ -380,6 +382,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="7159472599653637159">Vyžiadať stránky pre mobil</translation>
 <translation id="7167621057293532233">Typy údajov</translation>
 <translation id="7189598951263744875">Zdieľať...</translation>
+<translation id="7192050974311852563">Spustiť zapisovanie do denníka</translation>
 <translation id="7203585745079012652">Vysloviť odpovede</translation>
 <translation id="722055596168483966">Prispôsobenie služieb Google</translation>
 <translation id="7272437679830969316">Vašu totožnosť nie je možné overiť. Heslo sa neskopírovalo.</translation>
@@ -421,6 +424,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Exportovať heslá...</translation>
 <translation id="7947953824732555851">Prijať a prihl. sa</translation>
+<translation id="794799177247607889">Zastaviť zapisovanie do denníka</translation>
 <translation id="7961015016161918242">Nikdy</translation>
 <translation id="7971521879845308059">Blokov. okien</translation>
 <translation id="7981313251711023384">Vopred načítavať stránky na zrýchlenie prehliadania a vyhľadávania</translation>

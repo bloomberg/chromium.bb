@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">Bulan ini</translation>
 <translation id="1637811476055996098">Pilih File</translation>
 <translation id="1650423536718072820">pullquote</translation>
+<translation id="1727886345390570319">sembunyikan menu subtitel</translation>
 <translation id="1729654308190250600">Jangan mengosongkan bidang alamat email.</translation>
 <translation id="1758486001363313524">Lainnya...</translation>
 <translation id="1806710327868736751">alert_dialog</translation>
@@ -147,6 +148,7 @@
 <translation id="6213469881011901533">glosarium</translation>
 <translation id="6398862346408813489">Tampilkan panel pilihan bulan</translation>
 <translation id="6404546809543547843">scrubber waktu audio</translation>
+<translation id="6443871981718447451">tampilkan menu subtitel</translation>
 <translation id="6453774872122745852">ucapan terima kasih</translation>
 <translation id="648732519525291180">pemilih waktu</translation>
 <translation id="6550675742724504774">Opsi</translation>
@@ -162,7 +164,6 @@
 <translation id="6820355525329141109">Tidak dapat memuat plugin.</translation>
 <translation id="6820615603175220800">referensi bibliografi</translation>
 <translation id="6843725295806269523">bisukan</translation>
-<translation id="6853785296079745596">sembunyikan teks</translation>
 <translation id="6885760532393684712">direktori</translation>
 <translation id="689129560213475294">kolofon</translation>
 <translation id="6934078000481955284">blockquote</translation>
@@ -171,7 +172,6 @@
 <translation id="6989848892321993519">Perpanjang teks ini menjadi <ph name="MIN_CHARACTERS" /> karakter atau lebih (saat ini Anda menggunakan 1 karakter).</translation>
 <translation id="709897737746224366">Sesuaikan dengan format yang diminta.</translation>
 <translation id="7139483182332611405">kata pengantar</translation>
-<translation id="7223624360433298498">waktu berlalu</translation>
 <translation id="7263440858009898357">Pilih item pada daftar.</translation>
 <translation id="727747134524199931">judul kolom</translation>
 <translation id="7353453495576941748">daftar penghargaan</translation>
@@ -186,7 +186,6 @@
 <translation id="7661956066982048809">dokumen grafis</translation>
 <translation id="7673697353781729403">Jam</translation>
 <translation id="7681220483256441252">indeks</translation>
-<translation id="7720026100085573005">sisa waktu</translation>
 <translation id="7740050170769002709">Konten HTML</translation>
 <translation id="7750228210027921155">Picture-in-picture</translation>
 <translation id="7789962463072032349">jeda</translation>
@@ -225,7 +224,6 @@
 <translation id="8987927404178983737">Bulan</translation>
 <translation id="901493112792887934">waktu saat ini dalam detik</translation>
 <translation id="9048119486235211610">navigasi</translation>
-<translation id="9050748414552849310">tampilkan teks</translation>
 <translation id="9062295712474918030">dokumen</translation>
 <translation id="9093215626363556771">keluar dari mode picture-in-picture</translation>
 <translation id="9108370397979208512">math</translation>

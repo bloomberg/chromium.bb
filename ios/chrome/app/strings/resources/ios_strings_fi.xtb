@@ -72,6 +72,7 @@
 <translation id="2068952045031577364">Viimeisen viikon ajalta</translation>
 <translation id="2079545284768500474">Kumoa</translation>
 <translation id="209018056901015185">Käytä tietokoneversiota</translation>
+<translation id="2096012225669085171">Synkronoi ja yksilöi kaikilla laitteilla</translation>
 <translation id="2103075008456228677">Avaa history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> kohdetta siirretty</translation>
 <translation id="213900355088104901">Voit selata verkkoa yksityisesti avaamalla incognito-välilehden.</translation>
@@ -132,6 +133,7 @@
 <translation id="2989805286512600854">Avaa uudessa välilehdessä</translation>
 <translation id="3024255823539804759">Viimeisen päivän ajalta</translation>
 <translation id="3037605927509011580">Voi räkä!</translation>
+<translation id="3059750684806925578">Hae kopioitua kuvaa</translation>
 <translation id="3112556859945124369">Merkitse…</translation>
 <translation id="3157684681743766797">Merkitse kaikki…</translation>
 <translation id="3175081911749765310">Verkkopalvelut</translation>
@@ -380,6 +382,7 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="7159472599653637159">Mobiiliversioon</translation>
 <translation id="7167621057293532233">Tietotyypit</translation>
 <translation id="7189598951263744875">Jaa...</translation>
+<translation id="7192050974311852563">Aloita kirjaus</translation>
 <translation id="7203585745079012652">Puhu vastaukset</translation>
 <translation id="722055596168483966">Muokkaa Google-palveluita</translation>
 <translation id="7272437679830969316">Henkilöllisyytesi vahvistaminen ei onnistunut. Salasanaa ei kopioitu.</translation>
@@ -421,6 +424,7 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Vie salasanat…</translation>
 <translation id="7947953824732555851">Hyväksy ja kirjaudu sisään</translation>
+<translation id="794799177247607889">Lopeta kirjaus</translation>
 <translation id="7961015016161918242">Ei koskaan</translation>
 <translation id="7971521879845308059">Estä ponn.ikk.</translation>
 <translation id="7981313251711023384">Esilataa sivuja nopeuttaaksesi lataamista ja hakemista</translation>

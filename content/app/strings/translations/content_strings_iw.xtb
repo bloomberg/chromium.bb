@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">החודש</translation>
 <translation id="1637811476055996098">בחר קבצים</translation>
 <translation id="1650423536718072820">ציטוט</translation>
+<translation id="1727886345390570319">הסתרה של תפריט הכתוביות</translation>
 <translation id="1729654308190250600">הזן ערך נדרש בשדה של כתובת האימייל.</translation>
 <translation id="1758486001363313524">אחר...</translation>
 <translation id="1806710327868736751">alert_dialog</translation>
@@ -147,6 +148,7 @@
 <translation id="6213469881011901533">מילון מונחים</translation>
 <translation id="6398862346408813489">הצג חלונית לבחירת חודש</translation>
 <translation id="6404546809543547843">מסתיר משך אודיו</translation>
+<translation id="6443871981718447451">הצגת תפריט כתוביות</translation>
 <translation id="6453774872122745852">תודות</translation>
 <translation id="648732519525291180">בוחר שעות</translation>
 <translation id="6550675742724504774">אפשרויות</translation>
@@ -162,7 +164,6 @@
 <translation id="6820355525329141109">לא ניתן היה לטעון את הפלאגין.</translation>
 <translation id="6820615603175220800">הפניה לביבליוגרפיה</translation>
 <translation id="6843725295806269523">השתקה</translation>
-<translation id="6853785296079745596">הסתר כתוביות סגורות</translation>
 <translation id="6885760532393684712">ספריה</translation>
 <translation id="689129560213475294">קולופון</translation>
 <translation id="6934078000481955284">‏רכיב blockquote</translation>
@@ -171,7 +172,6 @@
 <translation id="6989848892321993519">עליך להאריך את הטקסט ל-<ph name="MIN_CHARACTERS" /> תווים או יותר (אתה משתמש כרגע בתו אחד).</translation>
 <translation id="709897737746224366">התאם את הפורמט המבוקש.</translation>
 <translation id="7139483182332611405">הקדמה</translation>
-<translation id="7223624360433298498">זמן שחלף</translation>
 <translation id="7263440858009898357">בחר פריט מהרשימה.</translation>
 <translation id="727747134524199931">כותרת עמודה</translation>
 <translation id="7353453495576941748">קרדיט</translation>
@@ -186,7 +186,6 @@
 <translation id="7661956066982048809">מסמך גרפי</translation>
 <translation id="7673697353781729403">שעות</translation>
 <translation id="7681220483256441252">אינדקס</translation>
-<translation id="7720026100085573005">זמן שנותר</translation>
 <translation id="7740050170769002709">‏תוכן HTML</translation>
 <translation id="7750228210027921155">תמונה בתוך תמונה</translation>
 <translation id="7789962463072032349">השהה</translation>
@@ -225,7 +224,6 @@
 <translation id="8987927404178983737">חודש</translation>
 <translation id="901493112792887934">זמן נוכחי בשניות</translation>
 <translation id="9048119486235211610">ניווט</translation>
-<translation id="9050748414552849310">הצג כתוביות סגורות</translation>
 <translation id="9062295712474918030">מסמך</translation>
 <translation id="9093215626363556771">יציאה ממצב 'תמונה בתוך תמונה'</translation>
 <translation id="9108370397979208512">math</translation>

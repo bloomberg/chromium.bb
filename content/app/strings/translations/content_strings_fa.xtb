@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">این ماه</translation>
 <translation id="1637811476055996098">انتخاب فایل‌ها</translation>
 <translation id="1650423536718072820">نقل‌قول</translation>
+<translation id="1727886345390570319">پنهان کردن منوی زیرنویس ناشنوایان</translation>
 <translation id="1729654308190250600">لطفاً یک نشانی ایمیل غیرخالی وارد کنید.</translation>
 <translation id="1758486001363313524">موارد دیگر...</translation>
 <translation id="1806710327868736751">alert_dialog</translation>
@@ -147,6 +148,7 @@
 <translation id="6213469881011901533">واژه‌نامه</translation>
 <translation id="6398862346408813489">نمایش پانل انتخاب ماه</translation>
 <translation id="6404546809543547843">انتخابگر زمان صدا</translation>
+<translation id="6443871981718447451">نمایش منوی زیرنویس ناشنوایان</translation>
 <translation id="6453774872122745852">قدردانی</translation>
 <translation id="648732519525291180">انتخابگر زمان</translation>
 <translation id="6550675742724504774">گزینه‌ها</translation>
@@ -162,7 +164,6 @@
 <translation id="6820355525329141109">افزایه بارگیری نشد.</translation>
 <translation id="6820615603175220800">مرجع فهرست منابع</translation>
 <translation id="6843725295806269523">بیصداکردن</translation>
-<translation id="6853785296079745596">پنهان کردن زیرنویس ناشنوایان</translation>
 <translation id="6885760532393684712">فهرست راهنما</translation>
 <translation id="689129560213475294">انجامه</translation>
 <translation id="6934078000481955284">نقل‌قول</translation>
@@ -171,7 +172,6 @@
 <translation id="6989848892321993519">لطفاً این نوشتار را به <ph name="MIN_CHARACTERS" /> نویسه یا بیشتر افزایش دهید (درحال‌حاضر از ۱ نویسه استفاده می‌کنید).</translation>
 <translation id="709897737746224366">لطفاً با قالب درخواستی مطابقت دهید.</translation>
 <translation id="7139483182332611405">پیش‌گفتار</translation>
-<translation id="7223624360433298498">مدت سپری شده</translation>
 <translation id="7263440858009898357">لطفاً یک مورد را در فهرست انتخاب کنید.</translation>
 <translation id="727747134524199931">عنوان ستون</translation>
 <translation id="7353453495576941748">تأیید اعتبار</translation>
@@ -186,7 +186,6 @@
 <translation id="7661956066982048809">سند گرافیکی</translation>
 <translation id="7673697353781729403">ساعت</translation>
 <translation id="7681220483256441252">فهرست موضوعی</translation>
-<translation id="7720026100085573005">زمان باقی‌مانده</translation>
 <translation id="7740050170769002709">‏محتوای HTML</translation>
 <translation id="7750228210027921155">تصویردرتصویر</translation>
 <translation id="7789962463072032349">مکث</translation>
@@ -225,7 +224,6 @@
 <translation id="8987927404178983737">ماه</translation>
 <translation id="901493112792887934">زمان کنونی به ثانیه</translation>
 <translation id="9048119486235211610">پیمایش</translation>
-<translation id="9050748414552849310">نمایش زیرنویس ناشنوایان</translation>
 <translation id="9062295712474918030">سند</translation>
 <translation id="9093215626363556771">خروج از تصویر در تصویر</translation>
 <translation id="9108370397979208512">حساب</translation>

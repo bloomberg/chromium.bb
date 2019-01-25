@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">이번 달</translation>
 <translation id="1637811476055996098">파일 선택</translation>
 <translation id="1650423536718072820">인용문</translation>
+<translation id="1727886345390570319">자막 메뉴 숨기기</translation>
 <translation id="1729654308190250600">비어 있지 않은 이메일 주소를 입력해 주세요.</translation>
 <translation id="1758486001363313524">다른 일자...</translation>
 <translation id="1806710327868736751">알림 대화상자</translation>
@@ -147,6 +148,7 @@
 <translation id="6213469881011901533">용어설명</translation>
 <translation id="6398862346408813489">월 선택 패널 표시</translation>
 <translation id="6404546809543547843">오디오 시간 스크러버</translation>
+<translation id="6443871981718447451">자막 메뉴 표시</translation>
 <translation id="6453774872122745852">감사의 말</translation>
 <translation id="648732519525291180">시간 선택기</translation>
 <translation id="6550675742724504774">옵션</translation>
@@ -162,7 +164,6 @@
 <translation id="6820355525329141109">플러그인을 로드할 수 없습니다.</translation>
 <translation id="6820615603175220800">참고문헌 참조</translation>
 <translation id="6843725295806269523">음소거</translation>
-<translation id="6853785296079745596">캡션 숨기기</translation>
 <translation id="6885760532393684712">디렉토리</translation>
 <translation id="689129560213475294">출판사 이름</translation>
 <translation id="6934078000481955284">인용구</translation>
@@ -171,7 +172,6 @@
 <translation id="6989848892321993519">이 텍스트를 <ph name="MIN_CHARACTERS" />자 이상으로 늘리세요(현재 1자 사용 중).</translation>
 <translation id="709897737746224366">요청한 형식과 일치시키세요.</translation>
 <translation id="7139483182332611405">머리말</translation>
-<translation id="7223624360433298498">경과 시간</translation>
 <translation id="7263440858009898357">목록에서 항목을 선택하세요.</translation>
 <translation id="727747134524199931">열 헤더</translation>
 <translation id="7353453495576941748">크레딧</translation>
@@ -186,7 +186,6 @@
 <translation id="7661956066982048809">그래픽 문서</translation>
 <translation id="7673697353781729403">시간</translation>
 <translation id="7681220483256441252">색인</translation>
-<translation id="7720026100085573005">남은 시간</translation>
 <translation id="7740050170769002709">HTML 콘텐츠</translation>
 <translation id="7750228210027921155">PIP 모드</translation>
 <translation id="7789962463072032349">일시중지</translation>
@@ -225,7 +224,6 @@
 <translation id="8987927404178983737">월</translation>
 <translation id="901493112792887934">현재 시간(초)</translation>
 <translation id="9048119486235211610">탐색</translation>
-<translation id="9050748414552849310">캡션 표시</translation>
 <translation id="9062295712474918030">문서</translation>
 <translation id="9093215626363556771">PIP 모드 종료</translation>
 <translation id="9108370397979208512">math</translation>

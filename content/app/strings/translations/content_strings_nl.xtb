@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">Deze maand</translation>
 <translation id="1637811476055996098">Bestanden kiezen</translation>
 <translation id="1650423536718072820">pullquote</translation>
+<translation id="1727886345390570319">ondertitelingsmenu verbergen</translation>
 <translation id="1729654308190250600">Geef een e-mailadres op.</translation>
 <translation id="1758486001363313524">Anders...</translation>
 <translation id="1806710327868736751">dialoogvenster voor meldingen</translation>
@@ -147,6 +148,7 @@
 <translation id="6213469881011901533">woordenlijst</translation>
 <translation id="6398862346408813489">Deelvenster voor maandselectie weergeven</translation>
 <translation id="6404546809543547843">scrollbar met audiotijd</translation>
+<translation id="6443871981718447451">ondertitelingsmenu weergeven</translation>
 <translation id="6453774872122745852">dankwoord</translation>
 <translation id="648732519525291180">tijdkiezer</translation>
 <translation id="6550675742724504774">Opties</translation>
@@ -162,7 +164,6 @@
 <translation id="6820355525329141109">Kan plug-in niet laden.</translation>
 <translation id="6820615603175220800">bibliografiereferentie</translation>
 <translation id="6843725295806269523">dempen</translation>
-<translation id="6853785296079745596">ondertiteling verbergen</translation>
 <translation id="6885760532393684712">directory</translation>
 <translation id="689129560213475294">colofon</translation>
 <translation id="6934078000481955284">blok met geciteerde tekst</translation>
@@ -171,7 +172,6 @@
 <translation id="6989848892321993519">Breid deze tekst uit tot <ph name="MIN_CHARACTERS" /> tekens of meer (je gebruikt momenteel één teken).</translation>
 <translation id="709897737746224366">Zorg dat de indeling voldoet aan de gevraagde indeling.</translation>
 <translation id="7139483182332611405">voorwoord</translation>
-<translation id="7223624360433298498">verstreken tijd</translation>
 <translation id="7263440858009898357">Selecteer een item in de lijst.</translation>
 <translation id="727747134524199931">kolomkop</translation>
 <translation id="7353453495576941748">bronvermelding</translation>
@@ -186,7 +186,6 @@
 <translation id="7661956066982048809">grafisch document</translation>
 <translation id="7673697353781729403">Uur</translation>
 <translation id="7681220483256441252">index</translation>
-<translation id="7720026100085573005">resterende tijd</translation>
 <translation id="7740050170769002709">HTML-content</translation>
 <translation id="7750228210027921155">Scherm-in-scherm</translation>
 <translation id="7789962463072032349">onderbreken</translation>
@@ -225,7 +224,6 @@
 <translation id="8987927404178983737">Maand</translation>
 <translation id="901493112792887934">huidige tijd in seconden</translation>
 <translation id="9048119486235211610">navigatie</translation>
-<translation id="9050748414552849310">ondertiteling weergeven</translation>
 <translation id="9062295712474918030">document</translation>
 <translation id="9093215626363556771">scherm-in-scherm afsluiten</translation>
 <translation id="9108370397979208512">wiskunde</translation>

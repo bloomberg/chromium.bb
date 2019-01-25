@@ -4,6 +4,7 @@
 <translation id="1001534784610492198">설치 프로그램 보관 파일이 손상되었거나 올바르지 않습니다. Chrome을 다시 다운로드하세요.</translation>
 <translation id="102763973188675173">Chrome을 맞춤설정하고 제어하세요. 업데이트가 출시되었습니다.</translation>
 <translation id="1035334672863811645">Chrome에 로그인</translation>
+<translation id="1051826050538111504">컴퓨터에 유해한 소프트웨어가 있습니다. Chrome에서 유해한 소프트웨어를 삭제하고, 설정을 복원하고, 확장 프로그램을 사용 중지하여 브라우저가 다시 정상적으로 작동하도록 할 수 있습니다.</translation>
 <translation id="1065672644894730302">환경설정을 읽을 수 없습니다.
 
 일부 기능을 사용할 수 없으며 환경설정의 변경사항이 저장되지 않습니다.</translation>
@@ -72,6 +73,7 @@
 <translation id="2580411288591421699">현재 실행 중인 Chrome과 동일한 버전은 설치할 수 없습니다. Chrome을 닫고 다시 시도하세요.</translation>
 <translation id="2586406160782125153">인터넷 사용 기록이 기기에서 삭제됩니다. 나중에 데이터를 가져오려면 Chrome에 <ph name="USER_EMAIL" />(으)로 로그인하세요.</translation>
 <translation id="2588322182880276190">Chrome 로고</translation>
+<translation id="2644798301485385923">Chrome OS 시스템</translation>
 <translation id="2652691236519827073">새 Chrome 탭에서 링크 열기(&amp;T)</translation>
 <translation id="2665296953892887393">비정상 종료 보고서와 <ph name="UMA_LINK" />을(를) Google로 전송하여 Chrome 개선에 참여합니다.</translation>
 <translation id="2689103672227170538">Chrome을 시작하면 표시되는 페이지가 이 확장 프로그램으로 인해 변경되었습니다.</translation>
@@ -103,6 +105,7 @@
 <translation id="3451115285585441894">Chrome에 추가하는 중...</translation>
 <translation id="345171907106878721">Chrome에 본인 추가</translation>
 <translation id="3479552764303398839">나중에</translation>
+<translation id="34857402635545079">Chrome(<ph name="URL" />)에서도 데이터 삭제</translation>
 <translation id="3503306920980160878">이 사이트와 위치를 공유하려면 Chrome에 내 위치 액세스 권한이 있어야 합니다</translation>
 <translation id="3582972582564653026">모든 기기에서 Chrome을 동기화하고 맞춤설정하세요.</translation>
 <translation id="3622797965165704966">이제 Google 계정으로 공유 컴퓨터에서 Chrome을 손쉽게 사용할 수 있습니다.</translation>
@@ -170,6 +173,7 @@
 
 Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="5483595757826856374">{0,plural, =0{곧 Chrome 다시 시작}=1{1초 후에 Chrome 다시 시작}other{#초 후에 Chrome 다시 시작}}</translation>
+<translation id="5505603430818498864">Chrome은 페이지 이미지를 Google 서버에 전송하여 이미지 및 이미지에 표시된 텍스트를 인식할 수 있습니다. 이는 사용자가 페이지 콘텐츠를 더욱 효과적으로 이해하는 데 도움이 됩니다.</translation>
 <translation id="556024056938947818">Chrome에서 비밀번호를 표시하려고 합니다.</translation>
 <translation id="5566025111015594046">Chrome(mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" />은(는) 위험할 수 있으므로 Chrome에서 차단했습니다.</translation>

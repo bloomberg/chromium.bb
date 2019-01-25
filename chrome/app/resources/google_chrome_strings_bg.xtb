@@ -4,6 +4,7 @@
 <translation id="1001534784610492198">Архивът на инсталационната програма е повреден или невалиден. Моля, изтеглете Google Chrome отново.</translation>
 <translation id="102763973188675173">Персонализиране и управление на Google Chrome. Налице е актуализация.</translation>
 <translation id="1035334672863811645">Влезте в Chrome</translation>
+<translation id="1051826050538111504">На компютъра ви има опасен софтуер. Chrome може да го премахне, да възстанови настройките ви и да деактивира разширенията, така че браузърът отново да заработи нормално.</translation>
 <translation id="1065672644894730302">Предпочитанията ви не могат да бъдат прочетени. Възможно е да няма достъп до някои функции и промените в предпочитанията няма да бъдат запазени.</translation>
 <translation id="1088300314857992706">По-рано <ph name="USER_EMAIL_ADDRESS" /> използва Chrome</translation>
 <translation id="1104959162601287462">Всичко за &amp;Chrome OS</translation>
@@ -70,6 +71,7 @@
 <translation id="2580411288591421699">Не може да се инсталира същата версия на Google Chrome, която се използва понастоящем. Моля, затворете браузъра и опитайте отново.</translation>
 <translation id="2586406160782125153">Данните за сърфирането ви ще се изтрият от това устройство. За да ги извлечете по-късно, влезте в Chrome като <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Лого на Chrome</translation>
+<translation id="2644798301485385923">Система Chrome OS</translation>
 <translation id="2652691236519827073">Отваряне на връзката в нов &amp;раздел на Chrome</translation>
 <translation id="2665296953892887393">Помогнете ни да подобрим Google Chrome, като ни изпращате <ph name="UMA_LINK" /> му и сигнали за сривове</translation>
 <translation id="2689103672227170538">Това разширение промени страницата, която се показва при стартиране на Chrome.</translation>
@@ -101,6 +103,7 @@
 <translation id="3451115285585441894">Добавя се към Chrome...</translation>
 <translation id="345171907106878721">Добавяне на вас към Chrome</translation>
 <translation id="3479552764303398839">Не сега</translation>
+<translation id="34857402635545079">Да се изчистят и данните от Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome се нуждае от достъп до данните за местоположението ви, за да ги сподели с този сайт</translation>
 <translation id="3582972582564653026">Синхронизирайте и персонализирайте Chrome на всичките си устройства</translation>
 <translation id="3622797965165704966">Вече е по-лесно да използвате Chrome с профила си в Google и на споделени компютри.</translation>
@@ -164,6 +167,7 @@
 <translation id="5386244825306882791">То също контролира коя страница се показва при стартиране на Chrome или при търсене от полето за всичко.</translation>
 <translation id="5430073640787465221">Файлът с предпочитанията ви е повреден или невалиден. Google Chrome не може да възстанови настройките ви.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome ще се стартира отново сега}=1{Chrome ще се стартира отново след 1 секунда}other{Chrome ще се стартира отново след # секунди}}</translation>
+<translation id="5505603430818498864">Chrome може да разпознае изображенията на дадена страница и текста в тях, като ги изпрати до сървърите на Google, и така да направи съдържанието й по-разбираемо за вас.</translation>
 <translation id="556024056938947818">Google Chrome опитва да покаже паролите.</translation>
 <translation id="5566025111015594046">Google Chrome (входящ трафик за mDNS)</translation>
 <translation id="565744775970812598">Chrome блокира „<ph name="FILE_NAME" />“, тъй като файлът може да е опасен.</translation>

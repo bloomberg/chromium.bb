@@ -72,6 +72,7 @@
 <translation id="2068952045031577364">Semaine dernière</translation>
 <translation id="2079545284768500474">Annuler</translation>
 <translation id="209018056901015185">Voir version ordinateur</translation>
+<translation id="2096012225669085171">Synchroniser et personnaliser les données sur tous les appareils</translation>
 <translation id="2103075008456228677">Ouvrir history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> éléments déplacés.</translation>
 <translation id="213900355088104901">Pour parcourir le Web en mode privé, ouvrez un onglet de navigation privée</translation>
@@ -132,6 +133,7 @@
 <translation id="2989805286512600854">Ouvrir dans un nouvel onglet</translation>
 <translation id="3024255823539804759">Dernières 24 heures</translation>
 <translation id="3037605927509011580">Aïe aïe aïe</translation>
+<translation id="3059750684806925578">Rechercher à l'aide de l'image copiée</translation>
 <translation id="3112556859945124369">Marquer…</translation>
 <translation id="3157684681743766797">Tout marquer…</translation>
 <translation id="3175081911749765310">Services Web</translation>
@@ -380,6 +382,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7159472599653637159">Voir version mobile</translation>
 <translation id="7167621057293532233">Types de données</translation>
 <translation id="7189598951263744875">Partager…</translation>
+<translation id="7192050974311852563">Démarrer la journalisation</translation>
 <translation id="7203585745079012652">Énoncer les réponses</translation>
 <translation id="722055596168483966">Personnaliser les services Google</translation>
 <translation id="7272437679830969316">Impossible de confirmer votre identité. Mot de passe non copié.</translation>
@@ -421,6 +424,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Export mots de passe…</translation>
 <translation id="7947953824732555851">Accepter/Se connecter</translation>
+<translation id="794799177247607889">Arrêter la journalisation</translation>
 <translation id="7961015016161918242">Jamais</translation>
 <translation id="7971521879845308059">Bloquer les pop-ups</translation>
 <translation id="7981313251711023384">Précharger les pages pour accélérer la navigation et la recherche</translation>
