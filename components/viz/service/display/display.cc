@@ -427,13 +427,11 @@ bool Display::DrawAndSwap() {
     TRACE_EVENT_ASYNC_STEP_INTO0("viz,benchmark",
                                  "Graphics.Pipeline.DrawAndSwap",
                                  swapped_trace_id_, "Draw");
-    if (settings_.enable_draw_occlusion) {
-      base::ElapsedTimer draw_occlusion_timer;
-      RemoveOverdrawQuads(&frame);
-      UMA_HISTOGRAM_COUNTS_1000(
-          "Compositing.Display.Draw.Occlusion.Calculation.Time",
-          draw_occlusion_timer.Elapsed().InMicroseconds());
-    }
+    base::ElapsedTimer draw_occlusion_timer;
+    RemoveOverdrawQuads(&frame);
+    UMA_HISTOGRAM_COUNTS_1000(
+        "Compositing.Display.Draw.Occlusion.Calculation.Time",
+        draw_occlusion_timer.Elapsed().InMicroseconds());
 
     bool disable_image_filtering =
         frame.metadata.is_resourceless_software_draw_with_scroll_or_animation;
