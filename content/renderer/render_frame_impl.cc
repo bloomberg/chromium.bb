@@ -2978,7 +2978,7 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
   bool pepper_plugin_was_registered = false;
   scoped_refptr<PluginModule> pepper_module(PluginModule::Create(
       this, info, origin_lock, &pepper_plugin_was_registered,
-      GetTaskRunner(blink::TaskType::kInternalDefault)));
+      GetTaskRunner(blink::TaskType::kNetworking)));
   if (pepper_plugin_was_registered) {
     if (pepper_module.get()) {
       return new PepperWebPluginImpl(
@@ -7305,7 +7305,8 @@ RenderFrameImpl::CreateWebSocketHandshakeThrottle() {
   }
 
   return websocket_handshake_throttle_provider_->CreateThrottle(
-      render_frame_id);
+      render_frame_id,
+      render_frame->GetTaskRunner(blink::TaskType::kInternalDefault));
 }
 
 bool RenderFrameImpl::ShouldThrottleDownload() {

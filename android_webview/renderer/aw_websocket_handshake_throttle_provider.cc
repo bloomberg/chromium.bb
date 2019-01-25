@@ -39,20 +39,23 @@ AwWebSocketHandshakeThrottleProvider::AwWebSocketHandshakeThrottleProvider(
 }
 
 std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
-AwWebSocketHandshakeThrottleProvider::Clone() {
+AwWebSocketHandshakeThrottleProvider::Clone(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (safe_browsing_info_)
-    safe_browsing_.Bind(std::move(safe_browsing_info_));
+    safe_browsing_.Bind(std::move(safe_browsing_info_), std::move(task_runner));
   return base::WrapUnique(new AwWebSocketHandshakeThrottleProvider(*this));
 }
 
 std::unique_ptr<blink::WebSocketHandshakeThrottle>
-AwWebSocketHandshakeThrottleProvider::CreateThrottle(int render_frame_id) {
+AwWebSocketHandshakeThrottleProvider::CreateThrottle(
+    int render_frame_id,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     return nullptr;
   if (safe_browsing_info_)
-    safe_browsing_.Bind(std::move(safe_browsing_info_));
+    safe_browsing_.Bind(std::move(safe_browsing_info_), std::move(task_runner));
   return std::make_unique<safe_browsing::WebSocketSBHandshakeThrottle>(
       safe_browsing_.get(), render_frame_id);
 }

@@ -245,7 +245,8 @@ void WebWorkerFetchContextImpl::SetTerminateSyncLoadEvent(
 }
 
 scoped_refptr<blink::WebWorkerFetchContext>
-WebWorkerFetchContextImpl::CloneForNestedWorker() {
+WebWorkerFetchContextImpl::CloneForNestedWorker(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   blink::mojom::ServiceWorkerWorkerClientRequest service_worker_client_request;
   blink::mojom::ServiceWorkerWorkerClientPtr service_worker_client_ptr;
   service_worker_client_request = mojo::MakeRequest(&service_worker_client_ptr);
@@ -272,7 +273,8 @@ WebWorkerFetchContextImpl::CloneForNestedWorker() {
       fallback_factory_->Clone(),
       throttle_provider_ ? throttle_provider_->Clone() : nullptr,
       websocket_handshake_throttle_provider_
-          ? websocket_handshake_throttle_provider_->Clone()
+          ? websocket_handshake_throttle_provider_->Clone(
+                std::move(task_runner))
           : nullptr,
       thread_safe_sender_.get(), service_manager_connection_->Clone()));
   new_context->service_worker_provider_id_ = service_worker_provider_id_;
@@ -433,11 +435,12 @@ WebWorkerFetchContextImpl::TakeSubresourceFilter() {
 }
 
 std::unique_ptr<blink::WebSocketHandshakeThrottle>
-WebWorkerFetchContextImpl::CreateWebSocketHandshakeThrottle() {
+WebWorkerFetchContextImpl::CreateWebSocketHandshakeThrottle(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   if (!websocket_handshake_throttle_provider_)
     return nullptr;
   return websocket_handshake_throttle_provider_->CreateThrottle(
-      ancestor_frame_id_);
+      ancestor_frame_id_, std::move(task_runner));
 }
 
 void WebWorkerFetchContextImpl::set_service_worker_provider_id(int id) {

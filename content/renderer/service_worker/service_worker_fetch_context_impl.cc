@@ -5,6 +5,7 @@
 #include "content/renderer/service_worker/service_worker_fetch_context_impl.h"
 
 #include "base/feature_list.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/common/content_constants_internal.h"
 #include "content/public/common/content_features.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
@@ -129,11 +130,12 @@ blink::WebURL ServiceWorkerFetchContextImpl::SiteForCookies() const {
 }
 
 std::unique_ptr<blink::WebSocketHandshakeThrottle>
-ServiceWorkerFetchContextImpl::CreateWebSocketHandshakeThrottle() {
+ServiceWorkerFetchContextImpl::CreateWebSocketHandshakeThrottle(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   if (!websocket_handshake_throttle_provider_)
     return nullptr;
   return websocket_handshake_throttle_provider_->CreateThrottle(
-      MSG_ROUTING_NONE);
+      MSG_ROUTING_NONE, std::move(task_runner));
 }
 
 void ServiceWorkerFetchContextImpl::NotifyUpdate(

@@ -6,10 +6,12 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "content/public/renderer/render_frame.h"
 #include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "url/gurl.h"
@@ -53,6 +55,11 @@ base::TimeDelta ExtractDelayFromUrl(const GURL& url) {
 class TestWebSocketHandshakeThrottle
     : public blink::WebSocketHandshakeThrottle {
  public:
+  explicit TestWebSocketHandshakeThrottle(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    timer_.SetTaskRunner(std::move(task_runner));
+  }
+
   ~TestWebSocketHandshakeThrottle() override = default;
 
   void ThrottleHandshake(const blink::WebURL& url,
@@ -74,13 +81,17 @@ class TestWebSocketHandshakeThrottle
 }  // namespace
 
 std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
-TestWebSocketHandshakeThrottleProvider::Clone() {
+TestWebSocketHandshakeThrottleProvider::Clone(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   return std::make_unique<TestWebSocketHandshakeThrottleProvider>();
 }
 
 std::unique_ptr<blink::WebSocketHandshakeThrottle>
-TestWebSocketHandshakeThrottleProvider::CreateThrottle(int render_frame_id) {
-  return std::make_unique<TestWebSocketHandshakeThrottle>();
+TestWebSocketHandshakeThrottleProvider::CreateThrottle(
+    int render_frame_id,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  return std::make_unique<TestWebSocketHandshakeThrottle>(
+      std::move(task_runner));
 }
 
 }  // namespace content
