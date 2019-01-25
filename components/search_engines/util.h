@@ -127,6 +127,9 @@ bool DeDupeEncodings(std::vector<std::string>* encodings);
 // Sync GUID of each item removed from the DB will be added to it. This is a
 // helper used by GetSearchProvidersUsingKeywordResult(), but is declared here
 // so it's accessible by unittests.
+// The order of template_urls is preserved (except for duplicates) because it
+// affects order of presentation in settings web-ui.
+// See https://crbug.com/924268 for details.
 void RemoveDuplicatePrepopulateIDs(
     KeywordWebDataService* service,
     const std::vector<std::unique_ptr<TemplateURLData>>& prepopulated_urls,
