@@ -6,7 +6,7 @@
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/common/content_security_policy/csp_context.h"
 #include "content/public/browser/navigation_throttle.h"
-#include "content/public/test/navigation_simulator.h"
+#include "content/test/navigation_simulator_impl.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
 
@@ -37,13 +37,12 @@ TEST_F(FormSubmissionTest, ContentSecurityPolicyFormActionNoCSP) {
 
   // Try to submit a form.
   auto form_submission =
-      NavigationSimulator::CreateRendererInitiated(kFormUrl, main_rfh());
+      NavigationSimulatorImpl::CreateRendererInitiated(kFormUrl, main_rfh());
   form_submission->SetIsFormSubmission(true);
+  form_submission->set_should_check_main_world_csp(CSPDisposition::CHECK);
   form_submission->Start();
   EXPECT_EQ(NavigationThrottle::PROCEED,
             form_submission->GetLastThrottleCheckResult());
-  static_cast<NavigationHandleImpl*>(form_submission->GetNavigationHandle())
-      ->set_should_check_main_world_csp_for_testing(CSPDisposition::CHECK);
   form_submission->Redirect(kRedirectUrl);
   EXPECT_EQ(NavigationThrottle::PROCEED,
             form_submission->GetLastThrottleCheckResult());
@@ -62,16 +61,15 @@ TEST_F(FormSubmissionTest, ContentSecurityPolicyFormActionNone) {
 
   // Try to submit a form.
   auto form_submission =
-      NavigationSimulator::CreateRendererInitiated(kFormUrl, main_rfh());
+      NavigationSimulatorImpl::CreateRendererInitiated(kFormUrl, main_rfh());
   form_submission->SetIsFormSubmission(true);
+  form_submission->set_should_check_main_world_csp(CSPDisposition::CHECK);
 
   // Browser side checks have been disabled on the initial load. Only the
   // renderer side checks occurs. Related issue: https://crbug.com/798698.
   form_submission->Start();
   EXPECT_EQ(NavigationThrottle::PROCEED,
             form_submission->GetLastThrottleCheckResult());
-  static_cast<NavigationHandleImpl*>(form_submission->GetNavigationHandle())
-      ->set_should_check_main_world_csp_for_testing(CSPDisposition::CHECK);
 
   form_submission->Redirect(kRedirectUrl);
   EXPECT_EQ(NavigationThrottle::CANCEL,
@@ -92,15 +90,14 @@ TEST_F(FormSubmissionTest, ContentSecurityPolicyFormActionBypassCSP) {
 
   // Try to submit a form.
   auto form_submission =
-      NavigationSimulator::CreateRendererInitiated(kFormUrl, main_rfh());
+      NavigationSimulatorImpl::CreateRendererInitiated(kFormUrl, main_rfh());
   form_submission->SetIsFormSubmission(true);
+  form_submission->set_should_check_main_world_csp(
+      CSPDisposition::DO_NOT_CHECK);
   form_submission->Start();
   EXPECT_EQ(NavigationThrottle::PROCEED,
             form_submission->GetLastThrottleCheckResult());
 
-  static_cast<NavigationHandleImpl*>(form_submission->GetNavigationHandle())
-      ->set_should_check_main_world_csp_for_testing(
-          CSPDisposition::DO_NOT_CHECK);
   form_submission->Redirect(kRedirectUrl);
   EXPECT_EQ(NavigationThrottle::PROCEED,
             form_submission->GetLastThrottleCheckResult());

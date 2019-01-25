@@ -243,7 +243,6 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
             false,  // is_same_document
             base::TimeTicks::Now(), 0,
             false,                  // started_from_context_menu
-            CSPDisposition::CHECK,  // should_check_main_world_csp
             false,                  // is_form_submission
             nullptr,                // navigation_ui_data
             "GET", net::HttpRequestHeaders(),
@@ -252,8 +251,6 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
             false,  // has_user_gesture
             ui::PAGE_TRANSITION_LINK,
             false,  // is_external_protocol
-            blink::mojom::RequestContextType::LOCATION,
-            blink::WebMixedContentContextType::kBlockable,
             std::string(),        // href_translate
             base::TimeTicks()));  // input_start
   }

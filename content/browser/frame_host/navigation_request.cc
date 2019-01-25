@@ -773,17 +773,13 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
               common_params_.navigation_type),
           common_params_.navigation_start, nav_entry_id_,
           common_params_.started_from_context_menu,
-          is_for_commit
-              ? CSPDisposition::CHECK
-              : common_params_.initiator_csp_info.should_check_main_world_csp,
           begin_params_->is_form_submission, std::move(navigation_ui_data_),
           common_params_.method, std::move(headers), common_params_.post_data,
           Referrer::SanitizeForRequest(common_params_.url,
                                        common_params_.referrer),
           common_params_.has_user_gesture, common_params_.transition,
-          is_external_protocol, begin_params_->request_context_type,
-          begin_params_->mixed_content_context_type,
-          common_params_.href_translate, common_params_.input_start));
+          is_external_protocol, common_params_.href_translate,
+          common_params_.input_start));
 
   if (!frame_tree_node->navigation_request() && !is_for_commit) {
     // A callback could have cancelled this request synchronously in which case
@@ -798,11 +794,6 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
         begin_params_->searchable_form_url);
     navigation_handle_->set_searchable_form_encoding(
         begin_params_->searchable_form_encoding);
-  }
-
-  if (common_params_.source_location) {
-    navigation_handle_->set_source_location(
-        common_params_.source_location.value());
   }
 }
 

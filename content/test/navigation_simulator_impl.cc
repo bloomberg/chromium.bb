@@ -979,6 +979,9 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
           ? FrameMsg_Navigate_Type::RELOAD
           : FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
   common_params.has_user_gesture = has_user_gesture_;
+  common_params.initiator_csp_info =
+      InitiatorCSPInfo(should_check_main_world_csp_,
+                       std::vector<ContentSecurityPolicy>(), base::nullopt);
 
   if (IsPerNavigationMojoInterfaceEnabled()) {
     mojom::NavigationClientAssociatedPtr navigation_client_ptr;

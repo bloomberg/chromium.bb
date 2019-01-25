@@ -172,12 +172,12 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
 
   blink::mojom::RequestContextType request_context_type() const {
     DCHECK_GE(state_, PROCESSING_WILL_START_REQUEST);
-    return request_context_type_;
+    return navigation_request_->begin_params()->request_context_type;
   }
 
   blink::WebMixedContentContextType mixed_content_context_type() const {
     DCHECK_GE(state_, PROCESSING_WILL_START_REQUEST);
-    return mixed_content_context_type_;
+    return navigation_request_->begin_params()->mixed_content_context_type;
   }
 
   // Get the unique id from the NavigationEntry associated with this
@@ -333,15 +333,12 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   }
 
   CSPDisposition should_check_main_world_csp() const {
-    return should_check_main_world_csp_;
-  }
-  void set_should_check_main_world_csp_for_testing(CSPDisposition disposition) {
-    should_check_main_world_csp_ = disposition;
+    return navigation_request_->common_params()
+        .initiator_csp_info.should_check_main_world_csp;
   }
 
-  const SourceLocation& source_location() const { return source_location_; }
-  void set_source_location(const SourceLocation& source_location) {
-    source_location_ = source_location;
+  const base::Optional<SourceLocation>& source_location() const {
+    return navigation_request_->common_params().source_location;
   }
 
   void set_proxy_server(const net::ProxyServer& proxy_server) {
@@ -395,7 +392,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
       base::TimeTicks navigation_start,
       int pending_nav_entry_id,
       bool started_from_context_menu,
-      CSPDisposition should_check_main_world_csp,
       bool is_form_submission,
       std::unique_ptr<NavigationUIData> navigation_ui_data,
       const std::string& method,
@@ -405,8 +401,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
       bool has_user_gesture,
       ui::PageTransition transition,
       bool is_external_protocol,
-      blink::mojom::RequestContextType request_context_type,
-      blink::WebMixedContentContextType mixed_content_context_type,
       const std::string& href_translate,
       base::TimeTicks input_start);
 
@@ -536,12 +530,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   // The unique id of the corresponding NavigationEntry.
   int pending_nav_entry_id_;
 
-  // The fetch request context type.
-  blink::mojom::RequestContextType request_context_type_;
-
-  // The mixed content context type for potential mixed content checks.
-  blink::WebMixedContentContextType mixed_content_context_type_;
-
   // This callback will be run when all throttle checks have been performed. Be
   // careful about relying on it as the member may be removed as part of the
   // PlzNavigate refactoring.
@@ -590,15 +578,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   GURL base_url_for_data_url_;
   net::HostPortPair socket_address_;
   NavigationType navigation_type_;
-
-  // Whether or not the CSP of the main world should apply. When the navigation
-  // is initiated from a content script in an isolated world, the CSP defined
-  // in the main world should not apply.
-  CSPDisposition should_check_main_world_csp_;
-
-  // Information about the JavaScript that started the navigation. For
-  // navigations initiated by Javascript.
-  SourceLocation source_location_;
 
   // Used to inform a RenderProcessHost that we expect this navigation to commit
   // in it.
