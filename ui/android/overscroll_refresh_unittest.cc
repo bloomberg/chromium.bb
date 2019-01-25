@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/android/overscroll_refresh.h"
 #include "base/android/scoped_java_ref.h"
+#include "cc/input/overscroll_behavior.h"
 #include "cc/layers/layer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/android/overscroll_refresh.h"
 #include "ui/android/overscroll_refresh_handler.h"
 
 namespace ui {
@@ -16,7 +17,7 @@ class OverscrollRefreshTest : public OverscrollRefreshHandler,
   OverscrollRefreshTest() : OverscrollRefreshHandler(nullptr) {}
 
   // OverscrollRefreshHandler implementation.
-  bool PullStart(float, float) override {
+  bool PullStart(OverscrollAction type, bool navigateForward) override {
     started_ = true;
     return true;
   }
@@ -60,6 +61,19 @@ class OverscrollRefreshTest : public OverscrollRefreshHandler,
     return result;
   }
 
+  void TestOverscrollBehavior(const cc::OverscrollBehavior& ob,
+                              const gfx::Vector2dF& scroll_delta,
+                              bool started) {
+    OverscrollRefresh effect(this);
+    effect.OnScrollBegin();
+    EXPECT_FALSE(effect.WillHandleScrollUpdate(scroll_delta));
+    EXPECT_FALSE(effect.IsActive());
+    EXPECT_TRUE(effect.IsAwaitingScrollUpdateAck());
+    effect.OnOverscrolled(ob);
+    EXPECT_EQ(started, GetAndResetPullStarted());
+    EXPECT_EQ(!started, GetAndResetPullReset());
+  }
+
  private:
   float delta_ = 0;
   bool started_ = false;
@@ -86,7 +100,7 @@ TEST_F(OverscrollRefreshTest, Basic) {
   EXPECT_TRUE(effect.IsAwaitingScrollUpdateAck());
 
   // The unconsumed, overscrolling scroll will trigger the effect.
-  effect.OnOverscrolled();
+  effect.OnOverscrolled(cc::OverscrollBehavior());
   EXPECT_TRUE(effect.IsActive());
   EXPECT_FALSE(effect.IsAwaitingScrollUpdateAck());
   EXPECT_TRUE(GetAndResetPullStarted());
@@ -124,7 +138,7 @@ TEST_F(OverscrollRefreshTest, NotTriggeredIfInitialYOffsetIsNotZero) {
   ASSERT_FALSE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 10)));
   EXPECT_FALSE(effect.IsActive());
   EXPECT_FALSE(effect.IsAwaitingScrollUpdateAck());
-  effect.OnOverscrolled();
+  effect.OnOverscrolled(cc::OverscrollBehavior());
   EXPECT_FALSE(effect.IsActive());
   EXPECT_FALSE(effect.IsAwaitingScrollUpdateAck());
   EXPECT_FALSE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 500)));
@@ -145,7 +159,7 @@ TEST_F(OverscrollRefreshTest, NotTriggeredIfOverflowYHidden) {
   ASSERT_FALSE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 10)));
   EXPECT_FALSE(effect.IsActive());
   EXPECT_FALSE(effect.IsAwaitingScrollUpdateAck());
-  effect.OnOverscrolled();
+  effect.OnOverscrolled(cc::OverscrollBehavior());
   EXPECT_FALSE(effect.IsActive());
   EXPECT_FALSE(effect.IsAwaitingScrollUpdateAck());
   EXPECT_FALSE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 500)));
@@ -164,7 +178,7 @@ TEST_F(OverscrollRefreshTest, NotTriggeredIfInitialScrollDownward) {
   EXPECT_FALSE(effect.IsActive());
   EXPECT_FALSE(effect.IsAwaitingScrollUpdateAck());
 
-  effect.OnOverscrolled();
+  effect.OnOverscrolled(cc::OverscrollBehavior());
   EXPECT_FALSE(effect.IsActive());
   EXPECT_FALSE(effect.IsAwaitingScrollUpdateAck());
   EXPECT_FALSE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 500)));
@@ -181,11 +195,11 @@ TEST_F(OverscrollRefreshTest, NotTriggeredIfInitialScrollOrTouchConsumed) {
   // Consumption of the initial touchmove or scroll should prevent future
   // activation.
   effect.Reset();
-  effect.OnOverscrolled();
+  effect.OnOverscrolled(cc::OverscrollBehavior());
   EXPECT_FALSE(effect.IsActive());
   EXPECT_FALSE(effect.IsAwaitingScrollUpdateAck());
   EXPECT_FALSE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 500)));
-  effect.OnOverscrolled();
+  effect.OnOverscrolled(cc::OverscrollBehavior());
   EXPECT_FALSE(effect.IsActive());
   EXPECT_FALSE(effect.IsAwaitingScrollUpdateAck());
   EXPECT_FALSE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 500)));
@@ -199,7 +213,7 @@ TEST_F(OverscrollRefreshTest, NotTriggeredIfFlungDownward) {
   effect.OnScrollBegin();
   ASSERT_FALSE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 10)));
   ASSERT_TRUE(effect.IsAwaitingScrollUpdateAck());
-  effect.OnOverscrolled();
+  effect.OnOverscrolled(cc::OverscrollBehavior());
   ASSERT_TRUE(effect.IsActive());
   EXPECT_TRUE(GetAndResetPullStarted());
 
@@ -214,7 +228,7 @@ TEST_F(OverscrollRefreshTest, NotTriggeredIfReleasedWithoutActivation) {
   effect.OnScrollBegin();
   ASSERT_FALSE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 10)));
   ASSERT_TRUE(effect.IsAwaitingScrollUpdateAck());
-  effect.OnOverscrolled();
+  effect.OnOverscrolled(cc::OverscrollBehavior());
   ASSERT_TRUE(effect.IsActive());
   EXPECT_TRUE(GetAndResetPullStarted());
 
@@ -230,7 +244,7 @@ TEST_F(OverscrollRefreshTest, NotTriggeredIfReset) {
   effect.OnScrollBegin();
   ASSERT_FALSE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 10)));
   ASSERT_TRUE(effect.IsAwaitingScrollUpdateAck());
-  effect.OnOverscrolled();
+  effect.OnOverscrolled(cc::OverscrollBehavior());
   ASSERT_TRUE(effect.IsActive());
   EXPECT_TRUE(GetAndResetPullStarted());
 
@@ -239,6 +253,42 @@ TEST_F(OverscrollRefreshTest, NotTriggeredIfReset) {
   EXPECT_TRUE(GetAndResetPullReset());
   effect.OnScrollEnd(gfx::Vector2dF());
   EXPECT_FALSE(GetAndResetPullReleased());
+}
+
+TEST_F(OverscrollRefreshTest, OverscrollBehaviorYAutoTriggersStart) {
+  TestOverscrollBehavior(cc::OverscrollBehavior(), gfx::Vector2dF(0, 10), true);
+}
+
+TEST_F(OverscrollRefreshTest, OverscrollBehaviorYContainPreventsTriggerStart) {
+  auto ob = cc::OverscrollBehavior();
+  ob.y = cc::OverscrollBehavior::OverscrollBehaviorType::
+      kOverscrollBehaviorTypeContain;
+  TestOverscrollBehavior(ob, gfx::Vector2dF(0, 10), false);
+}
+
+TEST_F(OverscrollRefreshTest, OverscrollBehaviorYNonePreventsTriggerStart) {
+  auto ob = cc::OverscrollBehavior();
+  ob.y = cc::OverscrollBehavior::OverscrollBehaviorType::
+      kOverscrollBehaviorTypeNone;
+  TestOverscrollBehavior(ob, gfx::Vector2dF(0, 10), false);
+}
+
+TEST_F(OverscrollRefreshTest, OverscrollBehaviorXAutoTriggersStart) {
+  TestOverscrollBehavior(cc::OverscrollBehavior(), gfx::Vector2dF(10, 0), true);
+}
+
+TEST_F(OverscrollRefreshTest, OverscrollBehaviorXContainPreventsTriggerStart) {
+  auto ob = cc::OverscrollBehavior();
+  ob.x = cc::OverscrollBehavior::OverscrollBehaviorType::
+      kOverscrollBehaviorTypeContain;
+  TestOverscrollBehavior(ob, gfx::Vector2dF(10, 0), false);
+}
+
+TEST_F(OverscrollRefreshTest, OverscrollBehaviorXNonePreventsTriggerStart) {
+  auto ob = cc::OverscrollBehavior();
+  ob.x = cc::OverscrollBehavior::OverscrollBehaviorType::
+      kOverscrollBehaviorTypeNone;
+  TestOverscrollBehavior(ob, gfx::Vector2dF(10, 0), false);
 }
 
 }  // namespace ui
