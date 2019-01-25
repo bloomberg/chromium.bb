@@ -59,11 +59,12 @@ public class FeedLoggingBridge implements BasicLoggingApi {
     }
 
     @Override
-    public void onContentDismissed(ContentLoggingData data) {
+    public void onContentDismissed(ContentLoggingData data, boolean wasCommitted) {
         // Bridge could have been destroyed for policy when this is called.
         // See https://crbug.com/901414.
         if (mNativeFeedLoggingBridge == 0) return;
 
+        // TODO(https://crbug.com/924739): Emit wasCommitted as well.
         nativeOnContentDismissed(
                 mNativeFeedLoggingBridge, data.getPositionInStream(), data.getRepresentationUri());
     }
@@ -123,6 +124,42 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         if (mNativeFeedLoggingBridge == 0) return;
 
         nativeOnMoreButtonClicked(mNativeFeedLoggingBridge, position);
+    }
+
+    @Override
+    public void onNotInterestedInSource(ContentLoggingData data, boolean wasCommitted) {
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mNativeFeedLoggingBridge == 0) return;
+
+        // TODO(https://crbug.com/924739): Implementation.
+    }
+
+    @Override
+    public void onNotInterestedInTopic(ContentLoggingData data, boolean wasCommitted) {
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mNativeFeedLoggingBridge == 0) return;
+
+        // TODO(https://crbug.com/924739): Implementation.
+    }
+
+    @Override
+    public void onInterestHeaderView(ContentLoggingData data) {
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mNativeFeedLoggingBridge == 0) return;
+
+        // TODO(https://crbug.com/924739): Implementation.
+    }
+
+    @Override
+    public void onInterestHeaderClicked(ContentLoggingData data) {
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mNativeFeedLoggingBridge == 0) return;
+
+        // TODO(https://crbug.com/924739): Implementation.
     }
 
     @Override

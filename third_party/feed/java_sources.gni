@@ -182,6 +182,7 @@ feed_lib_java_sources = [
   "src/src/main/java/com/google/android/libraries/feed/host/storage/JournalStorageDirect.java",
   "src/src/main/java/com/google/android/libraries/feed/host/stream/CardConfiguration.java",
   "src/src/main/java/com/google/android/libraries/feed/host/stream/SnackbarApi.java",
+  "src/src/main/java/com/google/android/libraries/feed/host/stream/SnackbarCallbackApi.java",
   "src/src/main/java/com/google/android/libraries/feed/host/stream/StreamConfiguration.java",
   "src/src/main/java/com/google/android/libraries/feed/hostimpl/logging/LoggingApiImpl.java",
   "src/src/main/java/com/google/android/libraries/feed/hostimpl/network/NetworkClientWrapper.java",
