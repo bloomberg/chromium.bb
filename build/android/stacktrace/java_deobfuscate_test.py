@@ -26,7 +26,10 @@ LINE_PREFIXES = [
 
 TEST_MAP = """\
 this.was.Deobfuscated -> FOO:
-    int[] FontFamily -> a
+    int[] mFontFamily -> a
+    1:3:void someMethod(int,android.os.Bundle):65:67 -> bar
+never.Deobfuscated -> NOTFOO:
+    int[] mFontFamily -> a
     1:3:void someMethod(int,android.os.Bundle):65:67 -> bar
 """
 
@@ -45,6 +48,7 @@ TEST_DATA = [
     "END FOO#bar",
     "new-instance 3810 (LSome/Framework/Class;) in LFOO;",
     "FOO: Error message",
+    "Caused by: FOO: Error message",
     "\tat FOO.bar(PG:1)",
     "\t at\t FOO.bar\t (\t PG:\t 1\t )",
     ("Unable to start activity ComponentInfo{garbage.in/here.test}:"
@@ -53,6 +57,9 @@ TEST_DATA = [
     ("Caused by: java.lang.NullPointerException: Attempt to read from field"
      " 'int[] FOO.a' on a null object reference"),
     "java.lang.VerifyError: FOO",
+    ('java.lang.NoSuchFieldError: No instance field a of type '
+     'Ljava/lang/Class; in class LFOO;'),
+    "NOTFOO: Object of type FOO was not destroyed...",
 ]
 
 EXPECTED_OUTPUT = [
@@ -70,6 +77,7 @@ EXPECTED_OUTPUT = [
     "END this.was.Deobfuscated#someMethod",
     "new-instance 3810 (LSome/Framework/Class;) in Lthis/was/Deobfuscated;",
     "this.was.Deobfuscated: Error message",
+    "Caused by: this.was.Deobfuscated: Error message",
     "\tat this.was.Deobfuscated.someMethod(Deobfuscated.java:65)",
     ("\t at\t this.was.Deobfuscated.someMethod\t "
      "(\t Deobfuscated.java:\t 65\t )"),
@@ -78,8 +86,11 @@ EXPECTED_OUTPUT = [
      " 'void this.was.Deobfuscated.someMethod(int,android.os.Bundle)' on a null"
      " object reference"),
     ("Caused by: java.lang.NullPointerException: Attempt to read from field"
-     " 'int[] this.was.Deobfuscated.FontFamily' on a null object reference"),
-    "java.lang.VerifyError: this.was.Deobfuscated",
+     " 'int[] this.was.Deobfuscated.mFontFamily' on a null object reference"),
+    'java.lang.VerifyError: this.was.Deobfuscated',
+    ('java.lang.NoSuchFieldError: No instance field mFontFamily of type '
+     'Ljava/lang/Class; in class Lthis/was/Deobfuscated;'),
+    "NOTFOO: Object of type this.was.Deobfuscated was not destroyed...",
 ]
 TEST_DATA = [s + "\n" for s in TEST_DATA]
 EXPECTED_OUTPUT = [s + "\n" for s in EXPECTED_OUTPUT]
