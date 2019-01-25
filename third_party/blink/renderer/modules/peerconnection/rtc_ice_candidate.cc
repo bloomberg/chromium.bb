@@ -30,6 +30,8 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_candidate.h"
 
+#include <utility>
+
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -44,6 +46,11 @@ RTCIceCandidate* RTCIceCandidate::Create(
     ExecutionContext* context,
     const RTCIceCandidateInit* candidate_init,
     ExceptionState& exception_state) {
+  if (!candidate_init->hasSdpMid() && !candidate_init->hasSdpMLineIndex()) {
+    exception_state.ThrowTypeError("sdpMid and sdpMLineIndex are both null.");
+    return nullptr;
+  }
+
   if (!candidate_init->hasCandidate() ||
       !candidate_init->candidate().length()) {
     exception_state.ThrowDOMException(
@@ -58,7 +65,7 @@ RTCIceCandidate* RTCIceCandidate::Create(
     sdp_mid = candidate_init->sdpMid();
 
   // TODO(guidou): Change default value to -1. crbug.com/614958.
-  unsigned short sdp_m_line_index = 0;
+  uint16_t sdp_m_line_index = 0;
   if (candidate_init->hasSdpMLineIndex()) {
     sdp_m_line_index = candidate_init->sdpMLineIndex();
   } else {
@@ -87,7 +94,7 @@ String RTCIceCandidate::sdpMid() const {
   return web_candidate_->SdpMid();
 }
 
-unsigned short RTCIceCandidate::sdpMLineIndex() const {
+uint16_t RTCIceCandidate::sdpMLineIndex() const {
   return web_candidate_->SdpMLineIndex();
 }
 
@@ -103,7 +110,7 @@ void RTCIceCandidate::setSdpMid(String sdp_mid) {
   web_candidate_->SetSdpMid(sdp_mid);
 }
 
-void RTCIceCandidate::setSdpMLineIndex(unsigned short sdp_m_line_index) {
+void RTCIceCandidate::setSdpMLineIndex(uint16_t sdp_m_line_index) {
   web_candidate_->SetSdpMLineIndex(sdp_m_line_index);
 }
 

@@ -56,6 +56,7 @@ RTCIceCandidate* RTCIceCandidateFromString(V8TestingScope& scope,
                                            const String& candidate_str) {
   RTCIceCandidateInit* init = RTCIceCandidateInit::Create();
   init->setCandidate(candidate_str);
+  init->setSdpMid(String(""));
   return RTCIceCandidate::Create(scope.GetExecutionContext(), init,
                                  ASSERT_NO_EXCEPTION);
 }
