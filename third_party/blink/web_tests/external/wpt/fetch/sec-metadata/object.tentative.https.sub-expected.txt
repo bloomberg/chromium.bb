@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL Same-Origin object assert_equals: dest expected "object" but got "nested-document"
-FAIL Same-Site object assert_equals: dest expected "object" but got "nested-document"
-FAIL Cross-Site object assert_equals: dest expected "object" but got "nested-document"
-Harness: the test ran to completion.
-
