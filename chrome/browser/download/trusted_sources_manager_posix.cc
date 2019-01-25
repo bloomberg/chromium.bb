@@ -4,7 +4,9 @@
 
 #include "chrome/browser/download/trusted_sources_manager.h"
 
+#include "base/memory/ptr_util.h"
+
 // static
-TrustedSourcesManager* TrustedSourcesManager::Create() {
-  return new TrustedSourcesManager;
+std::unique_ptr<TrustedSourcesManager> TrustedSourcesManager::Create() {
+  return base::WrapUnique(new TrustedSourcesManager);
 }

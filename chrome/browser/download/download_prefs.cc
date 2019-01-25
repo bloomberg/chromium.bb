@@ -305,7 +305,7 @@ DownloadPrefs* DownloadPrefs::FromBrowserContext(
 
 bool DownloadPrefs::IsFromTrustedSource(const download::DownloadItem& item) {
   if (!trusted_sources_manager_)
-    trusted_sources_manager_.reset(TrustedSourcesManager::Create());
+    trusted_sources_manager_ = TrustedSourcesManager::Create();
   return trusted_sources_manager_->IsFromTrustedSource(item.GetURL());
 }
 
