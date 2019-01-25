@@ -122,7 +122,8 @@ AudioContext::AudioContext(Document& document,
     case AutoplayPolicy::Type::kNoUserGestureRequired:
       break;
     case AutoplayPolicy::Type::kUserGestureRequired:
-    case AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin:
+      // kUserGestureRequire policy only applies to cross-origin iframes for Web
+      // Audio.
       if (document.GetFrame() &&
           document.GetFrame()->IsCrossOriginSubframe()) {
         autoplay_status_ = AutoplayStatus::kAutoplayStatusFailed;
@@ -397,7 +398,6 @@ bool AudioContext::AreAutoplayRequirementsFulfilled() const {
     case AutoplayPolicy::Type::kNoUserGestureRequired:
       return true;
     case AutoplayPolicy::Type::kUserGestureRequired:
-    case AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin:
       return LocalFrame::HasTransientUserActivation(GetDocument()->GetFrame());
     case AutoplayPolicy::Type::kDocumentUserActivationRequired:
       return AutoplayPolicy::IsDocumentAllowedToPlay(*GetDocument());
@@ -433,7 +433,6 @@ bool AudioContext::IsAllowedToStart() const {
       NOTREACHED();
       break;
     case AutoplayPolicy::Type::kUserGestureRequired:
-    case AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin:
       DCHECK(document->GetFrame() &&
              document->GetFrame()->IsCrossOriginSubframe());
       document->AddConsoleMessage(ConsoleMessage::Create(
