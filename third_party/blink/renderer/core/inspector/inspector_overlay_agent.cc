@@ -480,13 +480,6 @@ Response InspectorOverlayAgent::setInspectMode(
     return Response::Error(
         String("Unknown mode \"" + mode + "\" was provided."));
   }
-
-  if (mode != protocol::Overlay::InspectModeEnum::None) {
-    Response response = dom_agent_->PushDocumentUponHandlelessOperation();
-    if (!response.isSuccess())
-      return response;
-  }
-
   return SetSearchingForNode(mode, std::move(highlight_config));
 }
 
@@ -1335,7 +1328,8 @@ void InspectorOverlayAgent::NodeHighlightRequested(Node* node) {
     return;
 
   int node_id = dom_agent_->PushNodePathToFrontend(node);
-  GetFrontend()->nodeHighlightRequested(node_id);
+  if (node_id)
+    GetFrontend()->nodeHighlightRequested(node_id);
 }
 
 Response InspectorOverlayAgent::SetSearchingForNode(

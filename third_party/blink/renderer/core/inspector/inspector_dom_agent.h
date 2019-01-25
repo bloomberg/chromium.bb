@@ -251,7 +251,6 @@ class CORE_EXPORT InspectorDOMAgent final
   int BoundNodeId(Node*);
   void SetDOMListener(DOMListener*);
   int PushNodePathToFrontend(Node*);
-  protocol::Response PushDocumentUponHandlelessOperation();
   protocol::Response NodeForRemoteObjectId(const String& remote_object_id,
                                            Node*&);
 

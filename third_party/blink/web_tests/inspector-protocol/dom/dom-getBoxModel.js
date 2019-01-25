@@ -32,6 +32,7 @@
   const bn3 = (await dp.DOM.getNodeForLocation({x: 500, y: 500})).result.backendNodeId;
 
   await dp.DOM.enable();
+  await dp.DOM.getDocument();
   await nodeTracker.nodeForBackendId(bn1);
   await nodeTracker.nodeForBackendId(bn2);
   await nodeTracker.nodeForBackendId(bn3);

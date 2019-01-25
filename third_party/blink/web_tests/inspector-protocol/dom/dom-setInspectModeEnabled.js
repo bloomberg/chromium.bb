@@ -6,6 +6,7 @@
   var nodeTracker = new NodeTracker(dp);
   dp.DOM.enable();
   dp.Overlay.enable();
+  await dp.DOM.getDocument();
   var message = await dp.Overlay.setInspectMode({ mode: 'searchForNode', highlightConfig: {} });
   if (message.error) {
     testRunner.die(message.error.message);
