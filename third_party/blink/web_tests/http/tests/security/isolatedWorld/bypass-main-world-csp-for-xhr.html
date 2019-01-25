@@ -18,6 +18,8 @@ var tests = [
     },
     function() {
         debug('XHR from isolated world with unchanged CSP');
+        // Clear any existing isolated world CSP or security origin.
+        testRunner.setIsolatedWorldInfo(1, null, null);
         runTestInWorld(1, 'xhr', 'true');
     },
     function() {
@@ -86,20 +88,32 @@ function xhr(shouldBlock)
             '*');
     }
 
+    function signalComplete() {
+        window.postMessage(JSON.stringify({'type': 'test-done'}), '*');
+    }
+
     var xhr = new XMLHttpRequest();
     try {
         xhr.open('GET', 'http://localhost:8000/security/isolatedWorld/resources/cross-origin-xhr.txt', true);
-        if (shouldBlock)
-            debug('FAIL: XHR.open should have thrown an exception.');
-        else
-            debug('PASS: XHR.open did not throw an exception.');
+        xhr.onload = function(response) {
+            if (shouldBlock)
+                debug('FAIL: The request should have been disallowed');
+            else
+                debug('PASS: The request succeeded');
+            signalComplete();
+        };
+        xhr.onerror = function() {
+            if (shouldBlock)
+                debug('PASS: The request was disallowed');
+            else
+                debug('FAIL: The request should have been allowed');
+            signalComplete();
+        }
+
+        xhr.send();
     } catch (e) {
-        if (shouldBlock)
-            debug('PASS: XHR.open threw an exception.');
-        else
-            debug('FAIL: XHR.open should not have thrown an exception.');
-    } finally {
-        window.postMessage(JSON.stringify({'type': 'test-done'}), '*');
+        debug('FAIL: XHR.open/send should not have thrown an exception');
+        signalComplete();
     }
 }
 
