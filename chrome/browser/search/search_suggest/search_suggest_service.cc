@@ -137,6 +137,7 @@ void SearchSuggestService::SearchSuggestDataLoaded(
   // notify observers of the finished load (attempt).
   if (status != SearchSuggestLoader::Status::TRANSIENT_ERROR) {
     search_suggest_data_ = data;
+    search_suggest_status_ = status;
 
     DictionaryPrefUpdate update(pref_service_,
                                 prefs::kNtpSearchSuggestionsImpressions);

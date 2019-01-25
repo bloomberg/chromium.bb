@@ -38496,6 +38496,16 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Interactive request - quota exceeded"/>
 </enum>
 
+<enum name="NTPSearchSuggestionsRequestStatus">
+  <int value="0" label="Unknown Error"/>
+  <int value="1" label="Sent"/>
+  <int value="2" label="SignedOut"/>
+  <int value="3" label="OptedOut"/>
+  <int value="4" label="ImpressionCap"/>
+  <int value="5" label="Frozen"/>
+  <int value="6" label="FatalError"/>
+</enum>
+
 <enum name="NTPShortcutCustomizationAvailability">
   <int value="0" label="Shortcut customization available"/>
   <int value="1" label="Shortcut customization feature unavailable"/>
