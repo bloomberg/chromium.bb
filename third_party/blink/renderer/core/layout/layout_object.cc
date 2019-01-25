@@ -179,7 +179,7 @@ struct SameSizeAsLayoutObject : DisplayItemClient {
   void* pointers[5];
   Member<void*> members[1];
 #if DCHECK_IS_ON()
-  unsigned debug_bitfields_ : 2;
+  unsigned debug_bitfields_;
 #endif
   unsigned bitfields_;
   unsigned bitfields2_;
@@ -293,6 +293,7 @@ LayoutObject::LayoutObject(Node* node)
 #if DCHECK_IS_ON()
       has_ax_object_(false),
       set_needs_layout_forbidden_(false),
+      as_image_observer_count_(0),
 #endif
       bitfields_(node) {
   InstanceCounters::IncrementCounter(InstanceCounters::kLayoutObjectCounter);
@@ -2508,25 +2509,40 @@ void LayoutObject::SetStyleWithWritingModeOfParent(
   SetStyleWithWritingModeOf(std::move(style), Parent());
 }
 
+void LayoutObject::AddAsImageObserver(StyleImage* image) {
+  if (!image)
+    return;
+#if DCHECK_IS_ON()
+  ++as_image_observer_count_;
+#endif
+  image->AddClient(this);
+}
+
+void LayoutObject::RemoveAsImageObserver(StyleImage* image) {
+  if (!image)
+    return;
+#if DCHECK_IS_ON()
+  SECURITY_DCHECK(as_image_observer_count_ > 0u);
+  --as_image_observer_count_;
+#endif
+  image->RemoveClient(this);
+}
+
 void LayoutObject::UpdateFillImages(const FillLayer* old_layers,
                                     const FillLayer* new_layers) {
   // Optimize the common case
   if (FillLayer::ImagesIdentical(old_layers, new_layers))
     return;
 
-  // Go through the new layers and addClients first, to avoid removing all
-  // clients of an image.
+  // Go through the new layers and AddAsImageObserver() first, to avoid removing
+  // all clients of an image.
   for (const FillLayer* curr_new = new_layers; curr_new;
-       curr_new = curr_new->Next()) {
-    if (curr_new->GetImage())
-      curr_new->GetImage()->AddClient(this);
-  }
+       curr_new = curr_new->Next())
+    AddAsImageObserver(curr_new->GetImage());
 
   for (const FillLayer* curr_old = old_layers; curr_old;
-       curr_old = curr_old->Next()) {
-    if (curr_old->GetImage())
-      curr_old->GetImage()->RemoveClient(this);
-  }
+       curr_old = curr_old->Next())
+    RemoveAsImageObserver(curr_old->GetImage());
 }
 
 void LayoutObject::UpdateCursorImages(const CursorList* old_cursors,
@@ -2535,20 +2551,20 @@ void LayoutObject::UpdateCursorImages(const CursorList* old_cursors,
     return;
 
   if (new_cursors) {
-    for (const CursorData& cursor_new : *new_cursors) {
-      if (cursor_new.GetImage())
-        cursor_new.GetImage()->AddClient(this);
-    }
+    for (const auto& cursor : *new_cursors)
+      AddAsImageObserver(cursor.GetImage());
   }
-  RemoveCursorImageClient(old_cursors);
+  if (old_cursors) {
+    for (const auto& cursor : *old_cursors)
+      RemoveAsImageObserver(cursor.GetImage());
+  }
 }
 
 void LayoutObject::UpdateImage(StyleImage* old_image, StyleImage* new_image) {
   if (old_image != new_image) {
-    if (old_image)
-      old_image->RemoveClient(this);
-    if (new_image)
-      new_image->AddClient(this);
+    // AddAsImageObserver first, to avoid removing all clients of an image.
+    AddAsImageObserver(new_image);
+    RemoveAsImageObserver(old_image);
   }
 }
 
@@ -3207,6 +3223,11 @@ void LayoutObject::WillBeDestroyed() {
   if (style_ && !IsText())
     UpdateImageObservers(style_.get(), nullptr);
 
+#if DCHECK_IS_ON()
+  // We must have removed all image observers.
+  SECURITY_DCHECK(as_image_observer_count_ == 0u);
+#endif
+
   if (GetFrameView())
     SetIsBackgroundAttachmentFixedObject(false);
 }
@@ -3425,23 +3446,6 @@ void LayoutObject::DestroyAndCleanupAnonymousWrappers() {
 void LayoutObject::Destroy() {
   WillBeDestroyed();
   delete this;
-}
-
-DISABLE_CFI_PERF
-void LayoutObject::RemoveShapeImageClient(ShapeValue* shape_value) {
-  if (!shape_value)
-    return;
-  if (StyleImage* shape_image = shape_value->GetImage())
-    shape_image->RemoveClient(this);
-}
-
-void LayoutObject::RemoveCursorImageClient(const CursorList* cursor_list) {
-  if (!cursor_list)
-    return;
-  for (const CursorData& cursor : *cursor_list) {
-    if (cursor.GetImage())
-      cursor.GetImage()->RemoveClient(this);
-  }
 }
 
 PositionWithAffinity LayoutObject::PositionForPoint(const LayoutPoint&) const {

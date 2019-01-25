@@ -1028,4 +1028,21 @@ TEST_F(LayoutObjectTest, FirstLineBackgroundImageNestedCrash) {
   UpdateAllLifecyclePhasesForTest();
 }
 
+TEST_F(LayoutObjectTest, FirstLineBackgroundImageAddBlockBackgroundImageCrash) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #target::first-line { background-image: linear-gradient(red, blue); }
+    </style>
+    <div id="target"></div>
+  )HTML");
+
+  // The following code should not crash due to incorrectly paired
+  // StyleImage::AddClient() and RemoveClient().
+  GetDocument().getElementById("target")->setAttribute(
+      html_names::kStyleAttr,
+      "background-image: url(data:image/gif;base64,"
+      "R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==)");
+  UpdateAllLifecyclePhasesForTest();
+}
+
 }  // namespace blink
