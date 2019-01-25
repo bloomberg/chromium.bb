@@ -58,8 +58,8 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
   service_manager::mojom::InterfaceProviderPtrInfo interface_provider =
       std::move(params->provider_info->interface_provider);
   blink::PrivacyPreferences privacy_preferences(
-      params->renderer_preferences.enable_do_not_track,
-      params->renderer_preferences.enable_referrers);
+      params->renderer_preferences->enable_do_not_track,
+      params->renderer_preferences->enable_referrers);
 
   auto client = std::make_unique<ServiceWorkerContextClient>(
       params->embedded_worker_id, params->service_worker_version_id,

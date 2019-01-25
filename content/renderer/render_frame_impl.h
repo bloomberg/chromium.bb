@@ -44,7 +44,7 @@
 #include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/renderer_preferences.h"
+#include "content/public/common/renderer_preferences.mojom.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/widget_type.h"
@@ -880,7 +880,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSetPepperVolume(int32_t pp_instance, double volume);
 #endif  // ENABLE_PLUGINS
 
-  const RendererPreferences& GetRendererPreferences() const;
+  const mojom::RendererPreferences& GetRendererPreferences() const;
 
 #if defined(OS_MACOSX)
   void OnCopyToFindPboard();

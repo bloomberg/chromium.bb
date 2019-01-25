@@ -49,7 +49,7 @@
 #include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/page_importance_signals.h"
-#include "content/public/common/renderer_preferences.h"
+#include "content/public/common/renderer_preferences.mojom.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/three_d_api_types.h"
 #include "net/base/load_states.h"
@@ -421,7 +421,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                      base::OnceCallback<void(int64_t)> callback) override;
   const std::string& GetContentsMimeType() override;
   bool WillNotifyDisconnection() override;
-  RendererPreferences* GetMutableRendererPrefs() override;
+  mojom::RendererPreferences* GetMutableRendererPrefs() override;
   void Close() override;
   void SystemDragEnded(RenderWidgetHost* source_rwh) override;
   void NavigatedByUser() override;
@@ -627,7 +627,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                               const base::string16& message,
                               int32_t line_no,
                               const base::string16& source_id) override;
-  RendererPreferences GetRendererPrefs(
+  mojom::RendererPreferences GetRendererPrefs(
       BrowserContext* browser_context) const override;
   void DidReceiveInputEvent(RenderWidgetHostImpl* render_widget_host,
                             const blink::WebInputEvent::Type type) override;
@@ -1618,7 +1618,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool is_showing_before_unload_dialog_;
 
   // Settings that get passed to the renderer process.
-  RendererPreferences renderer_preferences_;
+  mojom::RendererPreferences renderer_preferences_;
 
   // The time that this WebContents was last made active. The initial value is
   // the WebContents creation time.

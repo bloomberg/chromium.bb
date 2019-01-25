@@ -199,7 +199,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool IsDataSaverEnabled(content::BrowserContext* context) override;
   void UpdateRendererPreferencesForWorker(
       content::BrowserContext* browser_context,
-      content::RendererPreferences* out_prefs) override;
+      content::mojom::RendererPreferences* out_prefs) override;
   void NavigationRequestStarted(int frame_tree_node_id,
                                 const GURL& url,
                                 net::HttpRequestHeaders* extra_headers,

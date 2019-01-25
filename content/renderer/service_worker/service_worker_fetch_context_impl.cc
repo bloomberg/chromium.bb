@@ -19,7 +19,7 @@
 namespace content {
 
 ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
-    RendererPreferences renderer_preferences,
+    const mojom::RendererPreferences& renderer_preferences,
     const GURL& worker_script_url,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         url_loader_factory_info,
@@ -30,7 +30,7 @@ ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
     std::unique_ptr<WebSocketHandshakeThrottleProvider>
         websocket_handshake_throttle_provider,
     mojom::RendererPreferenceWatcherRequest preference_watcher_request)
-    : renderer_preferences_(std::move(renderer_preferences)),
+    : renderer_preferences_(renderer_preferences),
       worker_script_url_(worker_script_url),
       url_loader_factory_info_(std::move(url_loader_factory_info)),
       script_loader_factory_info_(std::move(script_loader_factory_info)),
@@ -137,11 +137,11 @@ ServiceWorkerFetchContextImpl::CreateWebSocketHandshakeThrottle() {
 }
 
 void ServiceWorkerFetchContextImpl::NotifyUpdate(
-    const RendererPreferences& new_prefs) {
+    mojom::RendererPreferencesPtr new_prefs) {
   DCHECK(accept_languages_watcher_);
-  if (renderer_preferences_.accept_languages != new_prefs.accept_languages)
+  if (renderer_preferences_.accept_languages != new_prefs->accept_languages)
     accept_languages_watcher_->NotifyUpdate();
-  renderer_preferences_ = new_prefs;
+  renderer_preferences_ = *new_prefs;
 }
 
 blink::WebString ServiceWorkerFetchContextImpl::GetAcceptLanguages() const {

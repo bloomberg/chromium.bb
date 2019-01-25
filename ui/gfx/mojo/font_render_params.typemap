@@ -8,5 +8,7 @@ traits_headers = [ "//ui/gfx/mojo/font_render_params_struct_traits.h" ]
 public_deps = [
   "//ui/gfx",
 ]
-type_mappings =
-    [ "gfx.mojom.SubpixelRendering=gfx::FontRenderParams::SubpixelRendering" ]
+type_mappings = [
+  "gfx.mojom.Hinting=gfx::FontRenderParams::Hinting",
+  "gfx.mojom.SubpixelRendering=gfx::FontRenderParams::SubpixelRendering",
+]

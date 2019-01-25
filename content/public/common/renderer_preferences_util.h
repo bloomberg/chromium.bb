@@ -9,11 +9,13 @@
 
 namespace content {
 
-struct RendererPreferences;
+namespace mojom {
+class RendererPreferences;
+}
 
 // Updates |prefs| from system settings.
 CONTENT_EXPORT void UpdateFontRendererPreferencesFromSystemSettings(
-    RendererPreferences* prefs);
+    mojom::RendererPreferences* prefs);
 
 }  // namespace content
 

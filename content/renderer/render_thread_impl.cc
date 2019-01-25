@@ -68,7 +68,6 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/gpu_stream_constants.h"
-#include "content/public/common/renderer_preferences.h"
 #include "content/public/common/resource_usage_reporter.mojom.h"
 #include "content/public/common/resource_usage_reporter_type_converters.h"
 #include "content/public/common/service_manager_connection.h"

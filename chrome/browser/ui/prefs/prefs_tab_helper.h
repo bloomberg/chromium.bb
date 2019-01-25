@@ -51,7 +51,7 @@ class PrefsTabHelper : public content::NotificationObserver,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // Update the WebContents's RendererPreferences.
+  // Update the WebContents's mojom::RendererPreferences.
   void UpdateRendererPreferences();
 
   void OnFontFamilyPrefChanged(const std::string& pref_name);

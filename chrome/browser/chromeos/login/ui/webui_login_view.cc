@@ -51,7 +51,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/common/renderer_preferences.h"
+#include "content/public/common/renderer_preferences.mojom.h"
 #include "extensions/browser/view_type_utils.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/gfx/geometry/rect.h"
@@ -219,7 +219,8 @@ void WebUILoginView::InitializeWebView(views::WebView* web_view,
   extensions::SetViewType(web_contents, extensions::VIEW_TYPE_COMPONENT);
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);
-  content::RendererPreferences* prefs = web_contents->GetMutableRendererPrefs();
+  content::mojom::RendererPreferences* prefs =
+      web_contents->GetMutableRendererPrefs();
   renderer_preferences_util::UpdateFromSystemSettings(
       prefs, ProfileHelper::GetSigninProfile());
 }

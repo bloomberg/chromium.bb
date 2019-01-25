@@ -61,7 +61,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
-#include "content/public/common/renderer_preferences.h"
+#include "content/public/common/renderer_preferences.mojom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -166,12 +166,14 @@ void NavigateAndCheckForToolbar(Browser* browser,
 }
 
 void CheckWebContentsHasAppPrefs(content::WebContents* web_contents) {
-  content::RendererPreferences* prefs = web_contents->GetMutableRendererPrefs();
+  content::mojom::RendererPreferences* prefs =
+      web_contents->GetMutableRendererPrefs();
   EXPECT_FALSE(prefs->can_accept_load_drops);
 }
 
 void CheckWebContentsDoesNotHaveAppPrefs(content::WebContents* web_contents) {
-  content::RendererPreferences* prefs = web_contents->GetMutableRendererPrefs();
+  content::mojom::RendererPreferences* prefs =
+      web_contents->GetMutableRendererPrefs();
   EXPECT_TRUE(prefs->can_accept_load_drops);
 }
 

@@ -12,7 +12,7 @@
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/renderer_preferences.h"
+#include "content/public/common/renderer_preferences.mojom.h"
 #include "ipc/ipc_message.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
@@ -42,7 +42,7 @@ ConstrainedWebDialogDelegateBase::ConstrainedWebDialogDelegateBase(
   } else {
     web_contents_->SetDelegate(this);
   }
-  content::RendererPreferences* prefs =
+  content::mojom::RendererPreferences* prefs =
       web_contents_->GetMutableRendererPrefs();
   renderer_preferences_util::UpdateFromSystemSettings(
       prefs, Profile::FromBrowserContext(browser_context));

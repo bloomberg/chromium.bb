@@ -11,8 +11,11 @@
 
 namespace content {
 
+namespace mojom {
+class RendererPreferences;
+}
+
 class NavigationEntry;
-struct RendererPreferences;
 
 // Controls and provides the html for an interstitial page. The delegate is
 // owned by the InterstitialPage.
@@ -44,7 +47,7 @@ class CONTENT_EXPORT InterstitialPageDelegate {
 
   // Allows the delegate to override the renderer preferences structure that's
   // sent to the new RenderViewHost.
-  virtual void OverrideRendererPrefs(content::RendererPreferences* prefs) {}
+  virtual void OverrideRendererPrefs(mojom::RendererPreferences* prefs) {}
 
   // Return the interstitial type for testing.
   virtual TypeID GetTypeForTesting() const;

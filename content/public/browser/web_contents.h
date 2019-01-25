@@ -68,6 +68,10 @@ class InterfaceProvider;
 
 namespace content {
 
+namespace mojom {
+class RendererPreferences;
+}
+
 class BrowserContext;
 class BrowserPluginGuestDelegate;
 class InterstitialPage;
@@ -80,7 +84,6 @@ struct CustomContextMenuContext;
 struct DropData;
 struct MHTMLGenerationParams;
 struct PageImportanceSignals;
-struct RendererPreferences;
 
 // WebContents is the core class in content/. A WebContents renders web content
 // (usually HTML) in a rectangular area.
@@ -733,7 +736,7 @@ class WebContents : public PageNavigator,
   virtual bool WillNotifyDisconnection() = 0;
 
   // Returns the settings which get passed to the renderer.
-  virtual content::RendererPreferences* GetMutableRendererPrefs() = 0;
+  virtual mojom::RendererPreferences* GetMutableRendererPrefs() = 0;
 
   // Tells the tab to close now. The tab will take care not to close until it's
   // out of nested run loops.

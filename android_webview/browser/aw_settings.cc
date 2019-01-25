@@ -21,7 +21,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/renderer_preferences.h"
+#include "content/public/common/renderer_preferences.mojom.h"
 #include "content/public/common/renderer_preferences_util.h"
 #include "content/public/common/web_preferences.h"
 #include "jni/AwSettings_jni.h"
@@ -32,7 +32,6 @@ using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
-using content::RendererPreferences;
 using content::WebPreferences;
 
 namespace android_webview {
@@ -217,7 +216,8 @@ void AwSettings::UpdateRendererPreferencesLocked(
     return;
 
   bool update_prefs = false;
-  RendererPreferences* prefs = web_contents()->GetMutableRendererPrefs();
+  content::mojom::RendererPreferences* prefs =
+      web_contents()->GetMutableRendererPrefs();
 
   if (!renderer_prefs_initialized_) {
     content::UpdateFontRendererPreferencesFromSystemSettings(prefs);

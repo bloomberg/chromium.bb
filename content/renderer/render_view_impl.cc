@@ -555,7 +555,7 @@ void RenderViewImpl::Initialize(
     webview()->SetOpenedByDOM();
 
   GetWidget()->UpdateWebViewWithDeviceScaleFactor();
-  OnSetRendererPrefs(params->renderer_preferences);
+  OnSetRendererPrefs(*params->renderer_preferences);
   GetWidget()->OnSynchronizeVisualProperties(params->visual_properties);
 
   GetContentClient()->renderer()->RenderViewCreated(this);
@@ -1397,7 +1397,7 @@ WebView* RenderViewImpl::CreateView(
   DCHECK_EQ(GetRoutingID(), creator_frame->render_view()->GetRoutingID());
 
   view_params->window_was_created_with_opener = true;
-  view_params->renderer_preferences = renderer_preferences_;
+  view_params->renderer_preferences = renderer_preferences_.Clone();
   view_params->web_preferences = webkit_preferences_;
   view_params->view_id = reply->route_id;
   view_params->main_frame_routing_id = reply->main_frame_route_id;
@@ -1914,19 +1914,23 @@ void RenderViewImpl::OnEnablePreferredSizeChangedMode() {
 }
 
 void RenderViewImpl::OnSetRendererPrefs(
-    const RendererPreferences& renderer_prefs) {
+    const mojom::RendererPreferences& renderer_prefs) {
   std::string old_accept_languages = renderer_preferences_.accept_languages;
 
   renderer_preferences_ = renderer_prefs;
 
   renderer_preference_watchers_.ForAllPtrs(
       [&renderer_prefs](mojom::RendererPreferenceWatcher* watcher) {
-        watcher->NotifyUpdate(renderer_prefs);
+        watcher->NotifyUpdate(renderer_prefs.Clone());
       });
 
   UpdateFontRenderingFromRendererPrefs();
   UpdateThemePrefs();
-  blink::SetCaretBlinkInterval(renderer_prefs.caret_blink_interval);
+  blink::SetCaretBlinkInterval(
+      renderer_prefs.caret_blink_interval.has_value()
+          ? renderer_prefs.caret_blink_interval.value()
+          : base::TimeDelta::FromMilliseconds(
+                content::mojom::kDefaultCaretBlinkIntervalInMilliseconds));
 
 #if BUILDFLAG(USE_DEFAULT_RENDER_THEME)
   if (renderer_prefs.use_custom_colors) {

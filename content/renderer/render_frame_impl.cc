@@ -2919,7 +2919,8 @@ const WebPreferences& RenderFrameImpl::GetWebkitPreferences() {
   return render_view_->GetWebkitPreferences();
 }
 
-const RendererPreferences& RenderFrameImpl::GetRendererPreferences() const {
+const mojom::RendererPreferences& RenderFrameImpl::GetRendererPreferences()
+    const {
   return render_view_->renderer_preferences();
 }
 

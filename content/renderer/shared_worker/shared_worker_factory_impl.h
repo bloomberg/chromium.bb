@@ -28,7 +28,7 @@ class SharedWorkerFactoryImpl : public mojom::SharedWorkerFactory {
       blink::mojom::SharedWorkerInfoPtr info,
       bool pause_on_start,
       const base::UnguessableToken& devtools_worker_token,
-      const RendererPreferences& renderer_preferences,
+      mojom::RendererPreferencesPtr renderer_preferences,
       mojom::RendererPreferenceWatcherRequest preference_watcher_request,
       blink::mojom::WorkerContentSettingsProxyPtr content_settings,
       blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
