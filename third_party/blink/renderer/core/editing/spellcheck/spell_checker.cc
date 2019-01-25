@@ -595,10 +595,6 @@ void SpellChecker::RemoveMarkers(const EphemeralRange& range,
   GetFrame().GetDocument()->Markers().RemoveMarkersInRange(range, marker_types);
 }
 
-void SpellChecker::CancelCheck() {
-  spell_check_requester_->CancelCheck();
-}
-
 void SpellChecker::DidAttachDocument(Document* document) {
   idle_spell_check_controller_->DidAttachDocument(document);
 }
