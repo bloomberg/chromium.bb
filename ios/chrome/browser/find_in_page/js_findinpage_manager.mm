@@ -169,11 +169,12 @@ const FindInPageEntry kFindInPageEntryZero = {{0.0, 0.0}, 0};
 #pragma mark FindInPageEntry
 
 - (BOOL)processFindInPageResult:(id)result scrollPosition:(CGPoint*)point {
-  if (!result)
+  NSString* result_str = base::mac::ObjCCastStrict<NSString>(result);
+  if (!result_str)
     return NO;
 
   // Parse JSONs.
-  std::string json = base::SysNSStringToUTF8(result);
+  std::string json = base::SysNSStringToUTF8(result_str);
   std::unique_ptr<base::Value> root(base::JSONReader::Read(json, false));
   if (!root.get())
     return YES;
