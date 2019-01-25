@@ -632,11 +632,8 @@ void PersonalDataManager::RecordUseOf(const AutofillDataModel& data_model) {
   AutofillProfile* profile = GetProfileByGUID(data_model.guid());
   if (profile) {
     if (profile->record_type() == AutofillProfile::LOCAL_PROFILE) {
-      // We can't make the change directly on the web_profiles_, the update
-      // should happen in the database first.
-      AutofillProfile updated_profile(*profile);
-      updated_profile.RecordAndLogUse();
-      UpdateProfileInDB(updated_profile);
+      profile->RecordAndLogUse();
+      UpdateProfileInDB(*profile, /*enforced=*/true);
     } else if (profile->record_type() == AutofillProfile::SERVER_PROFILE) {
       profile->RecordAndLogUse();
       // TODO(crbug.com/864519): Update this once addresses support account
@@ -1009,15 +1006,36 @@ void PersonalDataManager::UpdateClientValidityStates(
       CHROME_VERSION_MAJOR;
   for (const auto* profile : profiles) {
     if (!profile->is_client_validity_states_updated() || update_validation) {
+      profile->set_is_client_validity_states_updated(false);
+      ongoing_profile_changes_[profile->guid()].push_back(
+          AutofillProfileDeepChange(AutofillProfileChange::UPDATE, *profile));
+      ongoing_profile_changes_[profile->guid()].back().set_enforce_update();
       client_profile_validator_->StartProfileValidation(
           profile, base::BindOnce(&PersonalDataManager::OnValidated,
                                   weak_factory_.GetWeakPtr()));
     }
   }
+
   // Set the pref to the current major version if already not set.
   if (update_validation)
     pref_service_->SetInteger(prefs::kAutofillLastVersionValidated,
                               CHROME_VERSION_MAJOR);
+}
+
+bool PersonalDataManager::UpdateClientValidityStates(
+    const AutofillProfile& profile) {
+  if (!base::FeatureList::IsEnabled(
+          autofill::features::kAutofillProfileClientValidation) ||
+      !client_profile_validator_ ||
+      profile.is_client_validity_states_updated()) {
+    OnValidated(&profile);
+    return false;
+  }
+
+  client_profile_validator_->StartProfileValidation(
+      &profile, base::BindOnce(&PersonalDataManager::OnValidated,
+                               weak_factory_.GetWeakPtr()));
+  return true;
 }
 
 std::vector<AutofillProfile*> PersonalDataManager::GetServerProfiles() const {
@@ -1343,7 +1361,7 @@ void PersonalDataManager::ClearProfileNonSettingsOrigins() {
   for (AutofillProfile* profile : GetProfiles()) {
     if (profile->origin() != kSettingsOrigin && !profile->origin().empty()) {
       profile->set_origin(std::string());
-      UpdateProfileInDB(*profile);
+      UpdateProfileInDB(*profile, /*enforced=*/true);
     }
   }
 
@@ -1387,9 +1405,7 @@ void PersonalDataManager::MoveJapanCityToStreetAddress() {
                            : street_address + line_separator + city;
       profile->SetRawInfo(ADDRESS_HOME_STREET_ADDRESS, street_address);
       profile->SetRawInfo(ADDRESS_HOME_CITY, base::string16());
-
-      // Make the update.
-      UpdateProfileInDB(*profile);
+      UpdateProfileInDB(*profile, /*enforced=*/true);
     }
   }
 
@@ -1398,17 +1414,36 @@ void PersonalDataManager::MoveJapanCityToStreetAddress() {
 }
 
 void PersonalDataManager::OnValidated(const AutofillProfile* profile) {
-  // We always set a value for country validity state.
-  DCHECK(profile->GetValidityState(ServerFieldType::ADDRESS_HOME_COUNTRY,
-                                   AutofillProfile::CLIENT) !=
-         AutofillProfile::UNVALIDATED);
+  if (!profile)
+    return;
+
+  if (!ProfileChangesAreOnGoing(profile->guid()))
+    return;
 
   // Set the validity states updated, only when the validation has occurred. If
   // the rules were not loaded for any reason, don't set the flag.
-  if (profile->GetValidityState(ServerFieldType::ADDRESS_HOME_COUNTRY,
-                                AutofillProfile::CLIENT) !=
-      AutofillProfile::UNVALIDATED)
-    profile->set_is_client_validity_states_updated(true);
+  bool validity_updated =
+      (profile->GetValidityState(ServerFieldType::ADDRESS_HOME_COUNTRY,
+                                 AutofillProfile::CLIENT) !=
+       AutofillProfile::UNVALIDATED);
+
+  // For every relevant profile change on the ongoing_profile_changes_, mark the
+  // change to show that the validation is done, and set the validity of the
+  // profile if the validity was updated.
+  for (const auto& change : ongoing_profile_changes_[profile->guid()]) {
+    if (!profile->EqualsForClientValidationPurpose(*(change.profile())))
+      continue;
+
+    change.validation_effort_made();
+
+    if (validity_updated) {
+      change.profile()->set_is_client_validity_states_updated(true);
+      change.profile()->SetClientValidityFromBitfieldValue(
+          profile->GetClientValidityBitfieldValue());
+    }
+  }
+
+  HandleNextProfileChange(profile->guid());
 }
 
 const ProfileValidityMap& PersonalDataManager::GetProfileValidityByGUID(
@@ -1955,10 +1990,8 @@ void PersonalDataManager::OnAutofillProfileChanged(
     const AutofillProfileDeepChange& change) {
   const auto& guid = change.key();
   const auto& change_type = change.type();
-  const auto& profile = change.profile();
-
+  const auto& profile = *(change.profile());
   DCHECK(guid == profile.guid());
-
   // Happens only in tests.
   if (!ProfileChangesAreOnGoing(guid)) {
     DVLOG(1) << "Received an unexpected response from database.";
@@ -1977,7 +2010,8 @@ void PersonalDataManager::OnAutofillProfileChanged(
     case AutofillProfileChange::UPDATE:
       profiles_server_validities_need_update_ = true;
       if (profile_exists &&
-          !existing_profile->EqualsForUpdatePurposes(profile)) {
+          (change.enforce_update() ||
+           !existing_profile->EqualsForUpdatePurposes(profile))) {
         web_profiles_.erase(
             FindElementByGUID<AutofillProfile>(web_profiles_, guid));
         web_profiles_.push_back(std::make_unique<AutofillProfile>(profile));
@@ -2580,7 +2614,6 @@ void PersonalDataManager::ResetProfileValidity() {
 }
 
 void PersonalDataManager::AddProfileToDB(const AutofillProfile& profile) {
-  // Add the new profile to the web database.
   if (profile.IsEmpty(app_locale_)) {
     NotifyPersonalDataChanged();
     return;
@@ -2592,26 +2625,30 @@ void PersonalDataManager::AddProfileToDB(const AutofillProfile& profile) {
       NotifyPersonalDataChanged();
       return;
     }
-    database_helper_->GetLocalDatabase()->AddAutofillProfile(profile);
   }
-  ongoing_profile_changes_[profile.guid()].push(
+  ongoing_profile_changes_[profile.guid()].push_back(
       AutofillProfileDeepChange(AutofillProfileChange::ADD, profile));
+  UpdateClientValidityStates(profile);
 }
 
-void PersonalDataManager::UpdateProfileInDB(const AutofillProfile& profile) {
-  if (!ProfileChangesAreOnGoing(profile.guid())) {
+void PersonalDataManager::UpdateProfileInDB(const AutofillProfile& profile,
+                                            bool enforced) {
+  // if the update is enforced, don't check if a similar profile already exists
+  // or not. Otherwise, check if updating the profile makes sense.
+  if (!enforced && !ProfileChangesAreOnGoing(profile.guid())) {
     const auto* existing_profile = GetProfileByGUID(profile.guid());
     bool profile_exists = (existing_profile != nullptr);
-    if (profile_exists && !existing_profile->EqualsForUpdatePurposes(profile)) {
-      database_helper_->GetLocalDatabase()->UpdateAutofillProfile(profile);
-    } else {
+    if (!profile_exists || existing_profile->EqualsForUpdatePurposes(profile)) {
       NotifyPersonalDataChanged();
       return;
     }
   }
 
-  ongoing_profile_changes_[profile.guid()].push(
+  ongoing_profile_changes_[profile.guid()].push_back(
       AutofillProfileDeepChange(AutofillProfileChange::UPDATE, profile));
+  if (enforced)
+    ongoing_profile_changes_[profile.guid()].back().set_enforce_update();
+  UpdateClientValidityStates(profile);
 }
 
 void PersonalDataManager::RemoveProfileFromDB(const std::string& guid) {
@@ -2620,11 +2657,12 @@ void PersonalDataManager::RemoveProfileFromDB(const std::string& guid) {
     NotifyPersonalDataChanged();
     return;
   }
-
-  if (!ProfileChangesAreOnGoing(guid))
+  AutofillProfileDeepChange change(AutofillProfileChange::REMOVE, guid);
+  if (!ProfileChangesAreOnGoing(guid)) {
     database_helper_->GetLocalDatabase()->RemoveAutofillProfile(guid);
-  ongoing_profile_changes_[guid].push(
-      AutofillProfileDeepChange(AutofillProfileChange::REMOVE, guid));
+    change.set_is_ongoing_on_background();
+  }
+  ongoing_profile_changes_[guid].push_back(std::move(change));
 }
 
 void PersonalDataManager::HandleNextProfileChange(const std::string& guid) {
@@ -2632,10 +2670,13 @@ void PersonalDataManager::HandleNextProfileChange(const std::string& guid) {
     return;
 
   const auto& change = ongoing_profile_changes_[guid].front();
+  if (change.is_ongoing_on_background())
+    return;
+
   const auto& change_type = change.type();
   const auto* existing_profile = GetProfileByGUID(guid);
   const bool profile_exists = (existing_profile != nullptr);
-  const auto& profile = ongoing_profile_changes_[guid].front().profile();
+  const auto& profile = *(ongoing_profile_changes_[guid].front().profile());
 
   DCHECK(guid == profile.guid());
 
@@ -2645,8 +2686,12 @@ void PersonalDataManager::HandleNextProfileChange(const std::string& guid) {
       return;
     }
     database_helper_->GetLocalDatabase()->RemoveAutofillProfile(guid);
+    change.set_is_ongoing_on_background();
     return;
   }
+
+  if (!change.has_validation_effort_made())
+    return;
 
   if (change_type == AutofillProfileChange::ADD) {
     if (profile_exists || FindByContents(web_profiles_, profile)) {
@@ -2654,14 +2699,17 @@ void PersonalDataManager::HandleNextProfileChange(const std::string& guid) {
       return;
     }
     database_helper_->GetLocalDatabase()->AddAutofillProfile(profile);
+    change.set_is_ongoing_on_background();
     return;
   }
 
-  if (!profile_exists || existing_profile->EqualsForUpdatePurposes(profile)) {
+  if (profile_exists && (change.enforce_update() ||
+                         !existing_profile->EqualsForUpdatePurposes(profile))) {
+    database_helper_->GetLocalDatabase()->UpdateAutofillProfile(profile);
+    change.set_is_ongoing_on_background();
+  } else {
     OnProfileChangeDone(guid);
-    return;
   }
-  database_helper_->GetLocalDatabase()->UpdateAutofillProfile(profile);
 }
 
 bool PersonalDataManager::ProfileChangesAreOnGoing(const std::string& guid) {
@@ -2680,7 +2728,7 @@ bool PersonalDataManager::ProfileChangesAreOnGoing() {
 }
 
 void PersonalDataManager::OnProfileChangeDone(const std::string& guid) {
-  ongoing_profile_changes_[guid].pop();
+  ongoing_profile_changes_[guid].pop_front();
 
   if (!ProfileChangesAreOnGoing()) {
     Refresh();

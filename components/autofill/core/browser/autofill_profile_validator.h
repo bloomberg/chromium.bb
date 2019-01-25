@@ -14,13 +14,12 @@
 
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
+#include "components/autofill/core/browser/autofill_profile.h"
 #include "third_party/libaddressinput/chromium/chrome_address_validator.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/storage.h"
 
 namespace autofill {
-
-class AutofillProfile;
 
 using AutofillProfileValidatorCallback =
     base::OnceCallback<void(const AutofillProfile*)>;
@@ -45,6 +44,13 @@ class AutofillProfileValidator : public autofill::LoadRulesListener {
   void StartProfileValidation(const AutofillProfile* profile,
                               AutofillProfileValidatorCallback cb);
 
+ protected:
+  // Starts loading the rules for the specified |region_code|.
+  virtual void LoadRulesForRegion(const std::string& region_code);
+
+  // The address validator used to load rules.
+  AddressValidator address_validator_;
+
  private:
   // ValidationRequest loads Rules from the server and validates various fields
   // in an autofill profile.
@@ -60,7 +66,7 @@ class AutofillProfileValidator : public autofill::LoadRulesListener {
     void OnRulesLoaded();
 
    private:
-    base::WeakPtr<const AutofillProfile> profile_;
+    AutofillProfile profile_;
 
     // Not owned. Outlives this object.
     AddressValidator* validator_;
@@ -78,9 +84,6 @@ class AutofillProfileValidator : public autofill::LoadRulesListener {
   // Returns whether the rules for the specified |region_code| is loaded.
   bool AreRulesLoadedForRegion(const std::string& region_code);
 
-  // Starts loading the rules for the specified |region_code|.
-  void LoadRulesForRegion(const std::string& region_code);
-
   // Implementation of the LoadRulesListener interface. Called when the address
   // rules for the |region_code| have finished loading.
   void OnAddressValidationRulesLoaded(const std::string& region_code,
@@ -89,9 +92,6 @@ class AutofillProfileValidator : public autofill::LoadRulesListener {
   // A map of the region code and the pending requests for that region code.
   std::map<std::string, std::vector<std::unique_ptr<ValidationRequest>>>
       pending_requests_;
-
-  // The address validator used to load rules.
-  AddressValidator address_validator_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillProfileValidator);
 };
