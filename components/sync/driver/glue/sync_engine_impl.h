@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_HOST_IMPL_H_
-#define COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_HOST_IMPL_H_
+#ifndef COMPONENTS_SYNC_DRIVER_GLUE_SYNC_ENGINE_IMPL_H_
+#define COMPONENTS_SYNC_DRIVER_GLUE_SYNC_ENGINE_IMPL_H_
 
 #include <stdint.h>
 
@@ -45,16 +45,16 @@ class SyncPrefs;
 
 // The only real implementation of the SyncEngine. See that interface's
 // definition for documentation of public methods.
-class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
+class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
  public:
   using Status = SyncStatus;
 
-  SyncBackendHostImpl(const std::string& name,
-                      SyncClient* sync_client,
-                      invalidation::InvalidationService* invalidator,
-                      const base::WeakPtr<SyncPrefs>& sync_prefs,
-                      const base::FilePath& sync_data_folder);
-  ~SyncBackendHostImpl() override;
+  SyncEngineImpl(const std::string& name,
+                 SyncClient* sync_client,
+                 invalidation::InvalidationService* invalidator,
+                 const base::WeakPtr<SyncPrefs>& sync_prefs,
+                 const base::FilePath& sync_data_folder);
+  ~SyncEngineImpl() override;
 
   // SyncEngine implementation.
   void Initialize(InitParams params) override;
@@ -232,11 +232,11 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
   // Checks that we're on the same thread this was constructed on (UI thread).
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<SyncBackendHostImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<SyncEngineImpl> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(SyncBackendHostImpl);
+  DISALLOW_COPY_AND_ASSIGN(SyncEngineImpl);
 };
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_HOST_IMPL_H_
+#endif  // COMPONENTS_SYNC_DRIVER_GLUE_SYNC_ENGINE_IMPL_H_

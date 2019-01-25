@@ -175,8 +175,8 @@ HandlerOwnerType OwnerNameToHandlerType(const std::string& owner_name) {
     return HandlerOwnerType::kNotificationPrinter;
   if (owner_name == "InvalidatorShim")
     return HandlerOwnerType::kInvalidatorShim;
-  if (owner_name == "SyncBackendHostImpl")
-    return HandlerOwnerType::kSyncBackendHostImpl;
+  if (owner_name == "SyncEngineImpl")
+    return HandlerOwnerType::kSyncEngineImpl;
   return HandlerOwnerType::kUnknown;
 }
 
