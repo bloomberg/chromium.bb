@@ -4,10 +4,12 @@
 
 #include "content/browser/frame_host/webui_navigation_throttle.h"
 
+#include "base/command_line.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 
 namespace content {
@@ -35,7 +37,13 @@ const char* WebUINavigationThrottle::GetNameForLogging() {
 std::unique_ptr<NavigationThrottle>
 WebUINavigationThrottle::CreateThrottleForNavigation(
     NavigationHandle* navigation_handle) {
-  // Create the throttle only for subframe navigations.
+  // The WebUI security model (which keeps renderes with WebUI bindings separate
+  // from untrusted renderers) only makes sense in multi-process mode.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSingleProcess))
+    return nullptr;
+
+  // Only throttle subframe navigations.
   if (navigation_handle->IsInMainFrame())
     return nullptr;
 
@@ -45,8 +53,8 @@ WebUINavigationThrottle::CreateThrottleForNavigation(
           ->parent()
           ->current_frame_host();
 
-  // Create a throttle only for navigations where the parent frame is either
-  // at a chrome:// URL or is in a process with WebUI bindings.
+  // Throttle if the renderer process has WebUI bindings, or if the parent frame
+  // is on a WebUI page.
   if (ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
           parent->GetProcess()->GetID()) ||
       parent->GetLastCommittedURL().SchemeIs(kChromeUIScheme)) {
