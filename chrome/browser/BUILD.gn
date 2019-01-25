@@ -5199,7 +5199,7 @@ grit("resources") {
     deps += [
       "//chrome/browser/resources/bookmarks:build",
       "//chrome/browser/resources/downloads:build",
-      "//chrome/browser/resources/md_history:build",
+      "//chrome/browser/resources/history:build",
     ]
     if (is_chromeos) {
       deps += [
