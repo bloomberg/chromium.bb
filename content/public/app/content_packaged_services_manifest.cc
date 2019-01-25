@@ -10,7 +10,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "media/mojo/services/cdm_manifest.h"
 #include "media/mojo/services/media_manifest.h"
-#include "services/audio/manifest.h"
+#include "services/audio/public/cpp/manifest.h"
 #include "services/data_decoder/manifest.h"
 #include "services/device/manifest.h"
 #include "services/media_session/manifest.h"

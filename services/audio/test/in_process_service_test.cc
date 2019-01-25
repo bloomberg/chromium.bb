@@ -11,14 +11,16 @@
 #include "services/audio/in_process_audio_manager_accessor.h"
 #include "services/audio/public/cpp/audio_system_to_service_adapter.h"
 #include "services/audio/public/cpp/fake_system_info.h"
+#include "services/audio/public/cpp/manifest.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/service.h"
 #include "services/audio/test/service_lifetime_test_template.h"
-#include "services/audio/tests_catalog_source.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
+#include "services/service_manager/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -128,6 +130,8 @@ class ServiceTestHelper : public service_manager::Service,
   DISALLOW_COPY_AND_ASSIGN(ServiceTestHelper);
 };
 
+const char kTestServiceName[] = "audio_unittests";
+
 // if |use_audio_thread| is true, AudioManager has a dedicated audio thread and
 // Audio service lives on it; otherwise audio thread is the main thread of the
 // test fixture, and that's where Service lives. So in the former case the
@@ -138,13 +142,24 @@ template <bool use_audio_thread>
 class InProcessServiceTest : public testing::Test {
  public:
   explicit InProcessServiceTest(base::TimeDelta service_quit_timeout)
-      : test_service_manager_(CreateUnittestCatalog()),
+      : test_service_manager_(
+            {service_manager::ManifestBuilder()
+                 .WithServiceName(kTestServiceName)
+                 .ExposeCapability(
+                     "service_manager:service_factory",
+                     service_manager::Manifest::InterfaceList<
+                         service_manager::mojom::ServiceFactory>())
+                 .RequireCapability(mojom::kServiceName, "info")
+                 .RequireCapability(service_manager::mojom::kServiceName,
+                                    "service_manager:service_manager")
+                 .PackageService(GetManifest())
+                 .Build()}),
         audio_manager_(
             std::make_unique<media::TestAudioThread>(use_audio_thread)),
         helper_(std::make_unique<ServiceTestHelper>(
             &audio_manager_,
             service_quit_timeout,
-            test_service_manager_.RegisterTestInstance("audio_unittests"))),
+            test_service_manager_.RegisterTestInstance(kTestServiceName))),
         audio_system_(std::make_unique<AudioSystemToServiceAdapter>(
             connector()->Clone())) {}
 

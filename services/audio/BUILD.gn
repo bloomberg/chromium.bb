@@ -4,9 +4,7 @@
 
 import("//build/config/chromecast_build.gni")
 import("//media/webrtc/audio_processing.gni")
-import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service_executable.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
 # Currently standalone service binaries are not supported on Android or iOS.
@@ -22,11 +20,6 @@ service_executable("audio") {
     "//services/audio/public/cpp",
     "//services/audio/public/mojom",
   ]
-}
-
-service_manifest("manifest") {
-  name = "audio"
-  source = "manifest.json"
 }
 
 source_set("lib") {
@@ -177,62 +170,25 @@ source_set("tests") {
   deps = [
     ":audio",
     ":lib",
-    ":tests_catalog_source",
     "//base/test:test_support",
     "//media:test_support",
     "//mojo/core/embedder",
     "//services/audio/public/cpp",
+    "//services/audio/public/cpp:manifest",
     "//services/audio/public/cpp:test_support",
     "//services/audio/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
+    "//services/service_manager/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
   ]
 
   if (standalone_supported) {
     sources += [ "test/standalone_service_test.cc" ]
-    deps += [ ":standalone_unittest_catalog_source" ]
   }
 
   data_deps = [
     ":audio",
   ]
-}
-
-# Embedded tests support.
-service_manifest("unittest_manifest") {
-  name = "audio_unittests"
-  source = "test/service_unittest_manifest.json"
-  packaged_services = [ ":manifest" ]
-}
-
-catalog("tests_catalog") {
-  testonly = true
-  embedded_services = [ ":unittest_manifest" ]
-}
-
-catalog_cpp_source("tests_catalog_source") {
-  testonly = true
-  catalog = ":tests_catalog"
-  generated_function_name = "audio::CreateUnittestCatalog"
-}
-
-# Standalone tests support.
-if (standalone_supported) {
-  service_manifest("standalone_unittest_manifest") {
-    name = "audio_unittests"
-    source = "test/service_unittest_manifest.json"
-    generated_namespace = "standalone_audio_unittest"
-  }
-
-  catalog("standalone_unittest_catalog") {
-    embedded_services = [ ":standalone_unittest_manifest" ]
-    standalone_services = [ ":manifest" ]
-  }
-
-  catalog_cpp_source("standalone_unittest_catalog_source") {
-    catalog = ":standalone_unittest_catalog"
-    generated_function_name = "audio::CreateStandaloneUnittestCatalog"
-  }
 }
