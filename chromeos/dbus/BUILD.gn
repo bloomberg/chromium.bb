@@ -362,7 +362,6 @@ proto_library("concierge_proto") {
 
 proto_library("cryptohome_proto") {
   sources = [
-    "//third_party/cros_system_api/dbus/cryptohome/install_attributes.proto",
     "//third_party/cros_system_api/dbus/cryptohome/key.proto",
     "//third_party/cros_system_api/dbus/cryptohome/rpc.proto",
   ]

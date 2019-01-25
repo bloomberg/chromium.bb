@@ -23,7 +23,10 @@ proto_library("proto_internal") {
   ]
 
   if (is_chromeos) {
-    sources += [ "chrome_device_policy.proto" ]
+    sources += [
+      "chrome_device_policy.proto",
+      "install_attributes.proto",
+    ]
   }
 
   if (!is_android && !is_ios) {

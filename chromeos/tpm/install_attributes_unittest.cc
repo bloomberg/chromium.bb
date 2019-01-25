@@ -15,11 +15,11 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
-#include "chromeos/dbus/cryptohome/install_attributes.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/util/tpm_util.h"
+#include "components/policy/proto/install_attributes.pb.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -288,8 +288,6 @@ TEST_F(InstallAttributesTest, Init) {
                "true");
   SetAttribute(&install_attrs_proto, InstallAttributes::kAttrEnterpriseUser,
                kTestUserDeprecated);
-  // Set default version (note that version is required).
-  install_attrs_proto.set_version(install_attrs_proto.version());
   const std::string blob(install_attrs_proto.SerializeAsString());
   ASSERT_EQ(static_cast<int>(blob.size()),
             base::WriteFile(GetTempPath(), blob.c_str(), blob.size()));
@@ -304,8 +302,6 @@ TEST_F(InstallAttributesTest, InitForConsumerKiosk) {
   cryptohome::SerializedInstallAttributes install_attrs_proto;
   SetAttribute(&install_attrs_proto,
                InstallAttributes::kAttrConsumerKioskEnabled, "true");
-  // Set default version (note that version is required).
-  install_attrs_proto.set_version(install_attrs_proto.version());
   const std::string blob(install_attrs_proto.SerializeAsString());
   ASSERT_EQ(static_cast<int>(blob.size()),
             base::WriteFile(GetTempPath(), blob.c_str(), blob.size()));
