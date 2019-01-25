@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/custom/custom_element_reaction_factory.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/file_or_usv_string.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_reaction.h"
@@ -204,6 +205,32 @@ class CustomElementDisabledStateChangedCallbackReaction final
 
 // ----------------------------------------------------------------
 
+class CustomElementRestoreValueCallbackReaction final
+    : public CustomElementReaction {
+ public:
+  CustomElementRestoreValueCallbackReaction(CustomElementDefinition& definition,
+                                            const FileOrUSVString& value)
+      : CustomElementReaction(definition), value_(value) {
+    DCHECK(definition.HasRestoreValueCallback());
+  }
+
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(value_);
+    CustomElementReaction::Trace(visitor);
+  }
+
+ private:
+  void Invoke(Element& element) override {
+    definition_->RunRestoreValueCallback(element, value_);
+  }
+
+  FileOrUSVString value_;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomElementRestoreValueCallbackReaction);
+};
+
+// ----------------------------------------------------------------
+
 CustomElementReaction& CustomElementReactionFactory::CreateUpgrade(
     CustomElementDefinition& definition,
     bool upgrade_invisible_elements) {
@@ -259,6 +286,13 @@ CustomElementReaction& CustomElementReactionFactory::CreateDisabledStateChanged(
   return *MakeGarbageCollected<
       CustomElementDisabledStateChangedCallbackReaction>(definition,
                                                          is_disabled);
+}
+
+CustomElementReaction& CustomElementReactionFactory::CreateRestoreValue(
+    CustomElementDefinition& definition,
+    const FileOrUSVString& value) {
+  return *MakeGarbageCollected<CustomElementRestoreValueCallbackReaction>(
+      definition, value);
 }
 
 }  // namespace blink

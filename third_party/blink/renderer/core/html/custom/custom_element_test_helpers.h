@@ -80,6 +80,7 @@ class TestCustomElementDefinition : public CustomElementDefinition {
   bool HasFormAssociatedCallback() const override { return false; }
   bool HasFormResetCallback() const override { return false; }
   bool HasDisabledStateChangedCallback() const override { return false; }
+  bool HasRestoreValueCallback() const override { return false; }
 
   void RunConnectedCallback(Element&) override {
     NOTREACHED() << "definition does not have connected callback";
@@ -113,6 +114,11 @@ class TestCustomElementDefinition : public CustomElementDefinition {
   void RunDisabledStateChangedCallback(Element& element,
                                        bool is_disabled) override {
     NOTREACHED() << "definition does not have disabledStateChangedCallback";
+  }
+
+  void RunRestoreValueCallback(Element& element,
+                               const FileOrUSVString& value) override {
+    NOTREACHED() << "definition does not have restoreValueCallback";
   }
 
   DISALLOW_COPY_AND_ASSIGN(TestCustomElementDefinition);
