@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/md5.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/audio/clockless_audio_sink.h"
@@ -158,6 +159,10 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   bool webaudio_attached_;
   bool mono_output_;
   bool fuzzing_;
+#if defined(ADDRESS_SANITIZER)
+  // TODO(https://crbug.com/924030): ASAN causes Run() timeouts to be reached.
+  base::RunLoop::ScopedRunTimeoutForTest disable_run_timeout_;
+#endif
   std::unique_ptr<Demuxer> demuxer_;
   std::unique_ptr<DataSource> data_source_;
   std::unique_ptr<PipelineImpl> pipeline_;
