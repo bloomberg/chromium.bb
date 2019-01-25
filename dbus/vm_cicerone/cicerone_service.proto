@@ -21,6 +21,10 @@ message NotifyVmStartedRequest {
 
   // The virtual socket context id assigned to the VM.
   uint32 cid = 3;
+
+  // The token to identify the VM, only used with plugin VMs that don't have
+  // containers.
+  string vm_token = 4;
 }
 
 // Message sent to cicerone when a VM stopped or failed to complete startup.
@@ -734,8 +738,8 @@ message AppSearchRequest {
 // Response sent back by vm_concierge when it receives a AppSearchRequest D-Bus
 // message.
 message AppSearchResponse {
-  message AppSearchResult { 
-    string package_name = 1; 
+  message AppSearchResult {
+    string package_name = 1;
   }
   // List of valid packages matching the search query.
   repeated AppSearchResult packages = 1;
