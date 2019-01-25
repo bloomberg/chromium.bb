@@ -41,12 +41,17 @@ class SearchResultTileItemListViewTest
   void CreateSearchResultTileItemListView() {
     // Enable fullscreen app list for parameterized Play Store app search
     // feature.
+    // Zero State affects the UI behavior significantly. This test tests the
+    // UI behavior with zero state being disable.
+    // TODO(crbug.com/925195): Write new test cases for zero state.
     if (IsPlayStoreAppSearchEnabled()) {
       scoped_feature_list_.InitWithFeatures(
-          {app_list_features::kEnablePlayStoreAppSearch}, {});
+          {app_list_features::kEnablePlayStoreAppSearch},
+          {app_list_features::kEnableZeroStateSuggestions});
     } else {
       scoped_feature_list_.InitWithFeatures(
-          {}, {app_list_features::kEnablePlayStoreAppSearch});
+          {}, {app_list_features::kEnablePlayStoreAppSearch,
+               app_list_features::kEnableZeroStateSuggestions});
     }
     ASSERT_EQ(IsPlayStoreAppSearchEnabled(),
               app_list_features::IsPlayStoreAppSearchEnabled());

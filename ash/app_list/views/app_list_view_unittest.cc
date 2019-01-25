@@ -38,6 +38,7 @@
 #include "ash/app_list/views/test/apps_grid_view_test_api.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -543,13 +544,14 @@ class AppListViewFocusTest : public views::ViewsTestBase,
 
  protected:
   bool is_rtl_ = false;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
   AppListView* view_ = nullptr;  // Owned by native widget.
   SearchResultContainerView* suggestions_container_ =
       nullptr;                                    // Owned by view hierarchy.
   ExpandArrowView* expand_arrow_view_ = nullptr;  // Owned by view hierarchy.
-  base::test::ScopedFeatureList scoped_feature_list_;
+
   std::unique_ptr<AppListTestViewDelegate> delegate_;
   std::unique_ptr<AppsGridViewTestApi> test_api_;
   // Restores the locale to default when destructor is called.
@@ -957,6 +959,14 @@ TEST_F(AppListViewFocusTest, FocusResetAfterStateTransition) {
 // Tests that key event which is not handled by focused view will be redirected
 // to search box.
 TEST_F(AppListViewFocusTest, RedirectFocusToSearchBox) {
+  // UI behavior is different with Zero State enabled. This test is
+  // the expected UI behavior with zero state feature being disabled.
+  // TODO(jennyz): Add new test case for UI behavior for zero state.
+  // crbug.com/925195.
+  scoped_feature_list_.InitAndDisableFeature(
+      app_list_features::kEnableZeroStateSuggestions);
+  EXPECT_FALSE(app_list_features::IsZeroStateSuggestionsEnabled());
+
   Show();
 
   // Set focus to first suggestion app and type a character.
@@ -966,6 +976,7 @@ TEST_F(AppListViewFocusTest, RedirectFocusToSearchBox) {
   EXPECT_EQ(search_box_view()->search_box()->text(), base::UTF8ToUTF16(" "));
   EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
 
+  // UI and Focus behavior is different with Zero State enabled.
   // Set focus to expand arrow and type a character.
   expand_arrow_view()->RequestFocus();
   SimulateKeyPress(ui::VKEY_A, false);
