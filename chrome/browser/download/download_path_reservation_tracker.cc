@@ -26,7 +26,6 @@
 #include "base/task_runner_util.h"
 #include "base/third_party/icu/icu_utf.h"
 #include "base/time/time.h"
-#include "base/time/time_to_iso8601.h"
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_paths.h"
@@ -140,8 +139,14 @@ bool CreateUniqueFilename(int max_path_component_length,
     // After we've tried all the unique numeric indices, make one attempt using
     // the timestamp.
     if (uniquifier > DownloadPathReservationTracker::kMaxUniqueFiles) {
+      // Generate an ISO8601 compliant local timestamp suffix that avoids
+      // reserved characters that are forbidden on some OSes like Windows.
+      base::Time::Exploded exploded;
+      download_start_time.LocalExplode(&exploded);
       suffix = base::StringPrintf(
-          " - %s", base::TimeToISO8601(download_start_time).c_str());
+          " - %04d-%02d-%02dT%02d%02d%02d.%03d", exploded.year, exploded.month,
+          exploded.day_of_month, exploded.hour, exploded.minute,
+          exploded.second, exploded.millisecond);
     }
 
     base::FilePath path_to_check(*path);
