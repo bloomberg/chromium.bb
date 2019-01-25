@@ -25,7 +25,8 @@
 #pragma mark - SettingsControllerProtocol
 
 - (void)viewControllerWasPopped {
-  [self.presentationDelegate manageSyncSettingsViewControllerWasPopped:self];
+  [self.presentationDelegate
+      manageSyncSettingsTableViewControllerWasPopped:self];
 }
 
 @end

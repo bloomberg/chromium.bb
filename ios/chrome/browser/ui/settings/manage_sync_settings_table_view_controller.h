@@ -14,7 +14,7 @@
 @protocol ManageSyncSettingsTableViewControllerPresentationDelegate <NSObject>
 
 // Called when the view controller is removed from its parent.
-- (void)manageSyncSettingsViewControllerWasPopped:
+- (void)manageSyncSettingsTableViewControllerWasPopped:
     (ManageSyncSettingsTableViewController*)controller;
 
 @end
