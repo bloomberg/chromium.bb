@@ -12,6 +12,9 @@
 
 namespace app_list {
 
+// Dampening value for PaginationModel's SlideAnimation.
+constexpr int kPageTransitionDurationDampening = 3;
+
 PaginationModel::PaginationModel()
     : total_pages_(-1),
       selected_page_(-1),

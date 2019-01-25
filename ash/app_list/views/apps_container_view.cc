@@ -175,11 +175,13 @@ void AppsContainerView::UpdateYPositionAndOpacity() {
   gfx::Rect switcher_bounds = page_switcher_->GetBoundsInScreen();
   float centerline_above_work_area =
       std::max<float>(screen_bottom - switcher_bounds.CenterPoint().y(), 0.f);
-  float opacity =
-      std::min(std::max((centerline_above_work_area - kAllAppsOpacityStartPx) /
-                            (kAllAppsOpacityEndPx - kAllAppsOpacityStartPx),
-                        0.f),
-               1.0f);
+  const float start_px = AppListConfig::instance().all_apps_opacity_start_px();
+  float opacity = std::min(
+      std::max(
+          (centerline_above_work_area - start_px) /
+              (AppListConfig::instance().all_apps_opacity_end_px() - start_px),
+          0.f),
+      1.0f);
   page_switcher_->layer()->SetOpacity(should_restore_opacity ? 1.0f : opacity);
 
   const float progress =

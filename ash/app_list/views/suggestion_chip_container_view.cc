@@ -44,7 +44,9 @@ SuggestionChipContainerView::SuggestionChipContainerView(
   layout_manager->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::MAIN_AXIS_ALIGNMENT_CENTER);
 
-  for (size_t i = 0; i < static_cast<size_t>(kNumStartPageTiles); ++i) {
+  for (size_t i = 0; i < static_cast<size_t>(
+                             AppListConfig::instance().num_start_page_tiles());
+       ++i) {
     SearchResultSuggestionChipView* chip =
         new SearchResultSuggestionChipView(view_delegate_);
     chip->SetVisible(false);
@@ -63,17 +65,20 @@ int SuggestionChipContainerView::DoUpdate() {
   std::vector<SearchResult*> display_results =
       SearchModel::FilterSearchResultsByDisplayType(
           results(), ash::SearchResultDisplayType::kRecommendation,
-          /*excludes=*/{}, kNumStartPageTiles);
+          /*excludes=*/{}, AppListConfig::instance().num_start_page_tiles());
 
   // Update search results here, but wait until layout to add them as child
   // views when we know this view's bounds.
-  for (size_t i = 0; i < static_cast<size_t>(kNumStartPageTiles); ++i) {
+  for (size_t i = 0; i < static_cast<size_t>(
+                             AppListConfig::instance().num_start_page_tiles());
+       ++i) {
     suggestion_chip_views_[i]->SetResult(
         i < display_results.size() ? display_results[i] : nullptr);
   }
 
   Layout();
-  return std::min(kNumStartPageTiles, static_cast<int>(display_results.size()));
+  return std::min(AppListConfig::instance().num_start_page_tiles(),
+                  display_results.size());
 }
 
 const char* SuggestionChipContainerView::GetClassName() const {

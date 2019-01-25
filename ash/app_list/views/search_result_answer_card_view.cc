@@ -42,6 +42,10 @@ constexpr char kSearchAnswerHasResult[] = "SearchAnswer-HasResult";
 constexpr char kSearchAnswerIssuedQuery[] = "SearchAnswer-IssuedQuery";
 constexpr char kSearchAnswerTitle[] = "SearchAnswer-Title";
 
+// Selection color for answer card (3% black).
+constexpr SkColor kAnswerCardSelectedColor =
+    SkColorSetARGB(0x08, 0x00, 0x00, 0x00);
+
 // Exclude the card native view from event handling.
 void ExcludeCardFromEventHandling(gfx::NativeView card_native_view) {
   // |card_native_view| could be null in tests.

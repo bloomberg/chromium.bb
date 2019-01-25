@@ -91,6 +91,35 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   }
   int shelf_height() const { return shelf_height_; }
   int blur_radius() const { return blur_radius_; }
+  SkColor contents_background_color() const {
+    return contents_background_color_;
+  }
+  SkColor grid_selected_color() const { return grid_selected_color_; }
+  SkColor card_background_color() const { return card_background_color_; }
+  int page_transition_duration_ms() const {
+    return page_transition_duration_ms_;
+  }
+  int overscroll_page_transition_duration_ms() const {
+    return overscroll_page_transition_duration_ms_;
+  }
+  int folder_transition_in_duration_ms() const {
+    return folder_transition_in_duration_ms_;
+  }
+  int folder_transition_out_duration_ms() const {
+    return folder_transition_out_duration_ms_;
+  }
+  size_t num_start_page_tiles() const { return num_start_page_tiles_; }
+  size_t max_search_results() const { return max_search_results_; }
+  size_t max_folder_pages() const { return max_folder_pages_; }
+  size_t max_folder_items_per_page() const {
+    return max_folder_items_per_page_;
+  }
+  size_t max_folder_name_chars() const { return max_folder_name_chars_; }
+  float all_apps_opacity_start_px() const { return all_apps_opacity_start_px_; }
+  float all_apps_opacity_end_px() const { return all_apps_opacity_end_px_; }
+  ui::ResourceBundle::FontStyle search_result_title_font_style() const {
+    return search_result_title_font_style_;
+  }
 
   gfx::Size grid_icon_size() const {
     return gfx::Size(grid_icon_dimension_, grid_icon_dimension_);
@@ -260,7 +289,57 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   const int shelf_height_;
 
   // The blur radius used in the app list.
-  const int blur_radius_ = 30;
+  const int blur_radius_;
+
+  // The background color of app list overlay.
+  const SkColor contents_background_color_;
+
+  // The keyboard select color for grid views, which are on top of a black
+  // shield view for new design (12% white).
+  const SkColor grid_selected_color_;
+
+  // The background color for views in search results page.
+  const SkColor card_background_color_;
+
+  // Duration in milliseconds for page transition.
+  const int page_transition_duration_ms_;
+
+  // Duration in milliseconds for over scroll page transition.
+  const int overscroll_page_transition_duration_ms_;
+
+  // Duration in milliseconds for fading in the target page when opening
+  // or closing a folder, and the duration for the top folder icon animation
+  // for flying in or out the folder.
+  const int folder_transition_in_duration_ms_;
+
+  // Duration in milliseconds for fading out the old page when opening or
+  // closing a folder.
+  const int folder_transition_out_duration_ms_;
+
+  // The number of apps shown in the start page app grid.
+  const size_t num_start_page_tiles_;
+
+  // Maximum number of results to show in the launcher Search UI.
+  const size_t max_search_results_;
+
+  // Max pages allowed in a folder.
+  const size_t max_folder_pages_;
+
+  // Max items per page allowed in a folder.
+  const size_t max_folder_items_per_page_;
+
+  // Maximum length of the folder name in chars.
+  const size_t max_folder_name_chars_;
+
+  // Range of the height of centerline above screen bottom that all apps should
+  // change opacity. NOTE: this is used to change page switcher's opacity as
+  // well.
+  const float all_apps_opacity_start_px_ = 8.0f;
+  const float all_apps_opacity_end_px_ = 144.0f;
+
+  // Font style for AppListSearchResultTileItemViews that are not suggested
+  // apps.
+  const ui::ResourceBundle::FontStyle search_result_title_font_style_;
 };
 
 }  // namespace app_list

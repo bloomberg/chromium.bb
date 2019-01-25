@@ -14,6 +14,7 @@
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/test/app_list_test_model.h"
 #include "ash/app_list/views/folder_header_view_delegate.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -157,8 +158,10 @@ TEST_F(FolderHeaderViewTest, MaxFoldernNameLength) {
   // If folder name is set beyond the maximum char limit, it should revert to
   // the previous valid folder name.
   std::string max_len_name;
-  for (size_t i = 0; i < kMaxFolderNameChars; ++i)
+  for (size_t i = 0; i < AppListConfig::instance().max_folder_name_chars();
+       ++i) {
     max_len_name += "a";
+  }
   std::string too_long_name = max_len_name + "a";
   UpdatePreviousCursorPosition(0);
   UpdatePreviousFolderName(base::string16());

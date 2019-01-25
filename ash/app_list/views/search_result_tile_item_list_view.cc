@@ -13,6 +13,7 @@
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/app_list/views/search_result_tile_item_view.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
@@ -71,7 +72,8 @@ SearchResultTileItemListView::SearchResultTileItemListView(
     SearchResultTileItemView* tile_item = new SearchResultTileItemView(
         view_delegate, nullptr /* pagination model */,
         false /* show_in_apps_page */);
-    tile_item->SetParentBackgroundColor(kCardBackgroundColor);
+    tile_item->SetParentBackgroundColor(
+        AppListConfig::instance().card_background_color());
     tile_views_.push_back(tile_item);
     AddChildView(tile_item);
   }

@@ -57,7 +57,22 @@ AppListConfig::AppListConfig()
       // TODO(manucornet): Share the value with ShelfConstants and use
       // 48 when the new shelf UI is turned off.
       shelf_height_(56),
-      blur_radius_(30) {}
+      blur_radius_(30),
+      contents_background_color_(SkColorSetRGB(0xF2, 0xF2, 0xF2)),
+      grid_selected_color_(SkColorSetARGB(0x1F, 0xFF, 0xFF, 0xFF)),
+      card_background_color_(SK_ColorWHITE),
+      page_transition_duration_ms_(250),
+      overscroll_page_transition_duration_ms_(50),
+      folder_transition_in_duration_ms_(250),
+      folder_transition_out_duration_ms_(30),
+      num_start_page_tiles_(5),
+      max_search_results_(6),
+      max_folder_pages_(3),
+      max_folder_items_per_page_(16),
+      max_folder_name_chars_(28),
+      all_apps_opacity_start_px_(8.0f),
+      all_apps_opacity_end_px_(144.0f),
+      search_result_title_font_style_(ui::ResourceBundle::BaseFont) {}
 
 AppListConfig::~AppListConfig() = default;
 
