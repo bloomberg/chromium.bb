@@ -29,6 +29,5 @@ package: chromium/fuchsia/castrunner-${targetarch}
 description: Prebuilt Cast application Runner binaries for Fuchsia.
 root: ${outdir}/fuchsia_artifacts
 data:
-  - file: application_config_manager.far
   - file: cast_runner.far
   - file: LICENSE
