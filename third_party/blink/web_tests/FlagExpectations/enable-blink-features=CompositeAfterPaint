@@ -10,7 +10,6 @@ Bug(none) scrollingcoordinator/ [ Skip ]
 Bug(none) transforms/ [ Skip ]
 
 Bug(none) virtual/android/ [ Skip ]
-Bug(none) virtual/bidi-caret-affinity/ [ Skip ]
 Bug(none) virtual/exotic-color-space/ [ Skip ]
 Bug(none) virtual/gpu/ [ Skip ]
 Bug(none) virtual/gpu-rasterization/ [ Skip ]
