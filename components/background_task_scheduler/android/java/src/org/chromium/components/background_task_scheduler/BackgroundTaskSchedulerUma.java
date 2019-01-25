@@ -157,6 +157,23 @@ class BackgroundTaskSchedulerUma {
                 toUmaEnumValueFromTaskId(taskId));
     }
 
+    /**
+     * Report metrics for starting a NativeBackgroundTask. This does not consider tasks that are
+     * short-circuited before any work is done.
+     */
+    public void reportNativeTaskStarted(int taskId) {
+        cacheEvent("Android.NativeBackgroundTask.TaskStarted", toUmaEnumValueFromTaskId(taskId));
+    }
+
+    /**
+     * Reports metrics that a NativeBackgroundTask has been finished cleanly (i.e., no unexpected
+     * exits because of chrome crash or OOM). This includes tasks that have been stopped due to
+     * timeout.
+     */
+    public void reportNativeTaskFinished(int taskId) {
+        cacheEvent("Android.NativeBackgroundTask.TaskFinished", toUmaEnumValueFromTaskId(taskId));
+    }
+
     /** Method that actually invokes histogram recording. Extracted for testing. */
     @VisibleForTesting
     void recordEnumeratedHistogram(String histogram, int value, int maxCount) {

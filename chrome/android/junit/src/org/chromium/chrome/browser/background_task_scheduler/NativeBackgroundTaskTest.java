@@ -369,6 +369,7 @@ public class NativeBackgroundTaskTest {
     @Feature("BackgroundTaskScheduler")
     public void testOnStopTask_BeforeNativeLoaded_NeedsRescheduling() {
         mBrowserStartupController.setIsStartupSuccessfullyCompleted(false);
+        mTask.onStartTask(RuntimeEnvironment.application, getTaskParameters(), mCallback);
         mTask.setNeedsReschedulingAfterStop(true);
 
         assertTrue(mTask.onStopTask(RuntimeEnvironment.application, getTaskParameters()));
@@ -380,6 +381,7 @@ public class NativeBackgroundTaskTest {
     @Feature("BackgroundTaskScheduler")
     public void testOnStopTask_BeforeNativeLoaded_DoesntNeedRescheduling() {
         mBrowserStartupController.setIsStartupSuccessfullyCompleted(false);
+        mTask.onStartTask(RuntimeEnvironment.application, getTaskParameters(), mCallback);
         mTask.setNeedsReschedulingAfterStop(false);
 
         assertFalse(mTask.onStopTask(RuntimeEnvironment.application, getTaskParameters()));
@@ -391,7 +393,7 @@ public class NativeBackgroundTaskTest {
     @Feature("BackgroundTaskScheduler")
     public void testOnStopTask_NativeLoaded_NeedsRescheduling() {
         mBrowserStartupController.setIsStartupSuccessfullyCompleted(true);
-        ;
+        mTask.onStartTask(RuntimeEnvironment.application, getTaskParameters(), mCallback);
         mTask.setNeedsReschedulingAfterStop(true);
 
         assertTrue(mTask.onStopTask(RuntimeEnvironment.application, getTaskParameters()));
@@ -403,6 +405,7 @@ public class NativeBackgroundTaskTest {
     @Feature("BackgroundTaskScheduler")
     public void testOnStopTask_NativeLoaded_DoesntNeedRescheduling() {
         mBrowserStartupController.setIsStartupSuccessfullyCompleted(true);
+        mTask.onStartTask(RuntimeEnvironment.application, getTaskParameters(), mCallback);
         mTask.setNeedsReschedulingAfterStop(false);
 
         assertFalse(mTask.onStopTask(RuntimeEnvironment.application, getTaskParameters()));

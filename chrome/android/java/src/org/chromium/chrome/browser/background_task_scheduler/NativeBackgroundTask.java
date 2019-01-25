@@ -57,19 +57,35 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
         ThreadUtils.assertOnUiThread();
         mTaskId = taskParameters.getTaskId();
 
+        TaskFinishedCallback wrappedCallback = needsReschedule -> {
+            BackgroundTaskSchedulerExternalUma.reportNativeTaskFinished(mTaskId);
+            callback.taskFinished(needsReschedule);
+        };
+
+        // WrappedCallback will only be called when the work is done or in onStopTask. If the task
+        // is short-circuited early (by returning DONE or RESCHEDULE as a StartBeforeNativeResult),
+        // the wrappedCallback is not called. Thus task-finished metrics are only recorded if
+        // task-started metrics are.
         @StartBeforeNativeResult
-        int beforeNativeResult = onStartTaskBeforeNativeLoaded(context, taskParameters, callback);
+        int beforeNativeResult =
+                onStartTaskBeforeNativeLoaded(context, taskParameters, wrappedCallback);
 
         if (beforeNativeResult == StartBeforeNativeResult.DONE) return false;
 
         if (beforeNativeResult == StartBeforeNativeResult.RESCHEDULE) {
+            // Do not pass in wrappedCallback because this is a short-circuit reschedule. For UMA
+            // purposes, tasks are started when runWithNative is called and does not consider
+            // short-circuit reschedules such as this.
             ThreadUtils.postOnUiThread(buildRescheduleRunnable(callback));
             return true;
         }
 
+        BackgroundTaskSchedulerExternalUma.reportNativeTaskStarted(mTaskId);
+
         assert beforeNativeResult == StartBeforeNativeResult.LOAD_NATIVE;
-        runWithNative(context, buildStartWithNativeRunnable(context, taskParameters, callback),
-                buildRescheduleRunnable(callback));
+        runWithNative(context,
+                buildStartWithNativeRunnable(context, taskParameters, wrappedCallback),
+                buildRescheduleRunnable(wrappedCallback));
         return true;
     }
 
@@ -77,6 +93,7 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
     public final boolean onStopTask(Context context, TaskParameters taskParameters) {
         ThreadUtils.assertOnUiThread();
         mTaskStopped = true;
+        BackgroundTaskSchedulerExternalUma.reportNativeTaskFinished(mTaskId);
         if (isNativeLoaded()) {
             return onStopTaskWithNative(context, taskParameters);
         } else {
