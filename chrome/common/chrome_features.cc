@@ -14,12 +14,6 @@ namespace features {
 
 // All features in alphabetical order.
 
-#if defined(OS_ANDROID)
-const base::Feature kAllowAutoplayUnmutedInWebappManifestScope{
-    "AllowAutoplayUnmutedInWebappManifestScope",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(OS_ANDROID)
-
 #if defined(OS_MACOSX)
 // Enables the menu item for Javascript execution via AppleScript.
 const base::Feature kAppleScriptExecuteJavaScriptMenuItem{

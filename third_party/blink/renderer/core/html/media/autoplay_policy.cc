@@ -44,13 +44,12 @@ const char kErrorAutoplayFuncMobile[] =
 bool IsDocumentWhitelisted(const Document& document) {
   DCHECK(document.GetSettings());
 
-  const String& whitelist_scope =
-      document.GetSettings()->GetMediaPlaybackGestureWhitelistScope();
-  if (whitelist_scope.IsNull() || whitelist_scope.IsEmpty())
+  const String& web_app_scope = document.GetSettings()->GetWebAppScope();
+  if (web_app_scope.IsNull() || web_app_scope.IsEmpty())
     return false;
 
-  DCHECK_EQ(KURL(whitelist_scope).GetString(), whitelist_scope);
-  return document.Url().GetString().StartsWith(whitelist_scope);
+  DCHECK_EQ(KURL(web_app_scope).GetString(), web_app_scope);
+  return document.Url().GetString().StartsWith(web_app_scope);
 }
 
 // Return true if and only if the document settings specifies media playback

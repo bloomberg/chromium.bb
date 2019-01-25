@@ -225,7 +225,7 @@
     },
 
     {
-      name: "mediaPlaybackGestureWhitelistScope",
+      name: "webAppScope",
       type: "String",
     },
 
