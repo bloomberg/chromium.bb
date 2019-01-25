@@ -227,7 +227,7 @@ source_set("content_packaged_services_manifest") {
     "//content/public/common:service_names",
     "//media/mojo/services:cdm_manifest",
     "//media/mojo/services:media_manifest",
-    "//services/audio:manifest",
+    "//services/audio/public/cpp:manifest",
     "//services/data_decoder:manifest",
     "//services/device:manifest",
     "//services/media_session:manifest",
