@@ -24,6 +24,6 @@
     // These attributes are needed to test [PutForwards] in TestObject.idl.
     attribute DOMString href;
     [RaisesException=Setter] attribute DOMString hrefThrows;
-    [SetterCallWith=(ExecutionContext,CurrentWindow,EnteredWindow)] attribute DOMString hrefCallWith;
+    [SetterCallWith=(ExecutionContext,ScriptState)] attribute DOMString hrefCallWith;
     attribute ByteString hrefByteString;
 };

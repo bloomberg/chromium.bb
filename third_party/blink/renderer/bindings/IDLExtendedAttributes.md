@@ -616,9 +616,7 @@ Summary: `[CallWith]` indicates that the bindings code calls the Blink implement
 
 Each value changes the signature of the Blink methods by adding an additional parameter to the head of the parameter list, such as `ScriptState*` for `[CallWith=ScriptState]`.
 
-There are also three rarely used values: `CurrentWindow`, `EnteredWindow`, `ThisValue`.
-
-`[SetterCallWith]` applies to attributes, and only affects the signature of the setter; this is only used in Location.idl, with `CurrentWindow&EnteredWindow`.
+`[SetterCallWith]` applies to attributes, and only affects the signature of the setter.
 
 #### [CallWith=ScriptState] _(m, a*)_
 
@@ -673,10 +671,6 @@ String Example::func(ExecutionContext* context, bool a, bool b);
 ```
 
 _(rare CallWith values)_
-
-#### [CallWith=CurrentWindow&EnteredWindow] _(m, a)_
-
-`EnteredWindow` is the `Window` object that corresponds to the responsible document of the entry settings object.
 
 #### [CallWith=ThisValue] _(m)_
 
