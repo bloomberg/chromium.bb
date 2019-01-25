@@ -15,7 +15,8 @@ namespace web {
 // Indicates what action the FindinPageManager should take.
 enum class FindInPageOptions {
   // Search for a string. Highlight and scroll to the first result if
-  // string is found.
+  // string is found. TODO(crbug.com/925149): Does not support strings with
+  // non-ascii.
   FindInPageSearch = 1,
   // Highlight and scroll to the next result if there is one. Otherwise, nothing
   // will change. Loop back to the first result if currently on last result. If
@@ -32,7 +33,8 @@ class FindInPageManager : public web::WebStateUserData<FindInPageManager> {
  public:
   // Searches for string |query|. Executes new search or traverses results based
   // on |options|. |query| must not be null if |options| is |FindInPageSearch|.
-  // |query| is ignored if |options| is not |FindInPageSearch|.
+  // |query| is ignored if |options| is not |FindInPageSearch|. If new search is
+  // started before previous search finishes, old request will be discarded.
   virtual void Find(NSString* query, FindInPageOptions options) = 0;
 
   // Removes any highlighting. Does nothing if Find() with

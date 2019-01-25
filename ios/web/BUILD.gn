@@ -441,6 +441,7 @@ source_set("ios_web_web_state_js_unittests") {
     "//ios/web/test:test_constants",
     "//ios/web/test:test_support",
     "//ios/web/web_state:context_menu",
+    "//ios/web/web_state:find_in_page",
     "//ios/web/web_state:navigation_context",
     "//ios/web/web_state/js",
     "//ios/web/web_state/js:script_util",

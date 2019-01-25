@@ -9,6 +9,7 @@
 #import "ios/web/public/web_state/web_frame.h"
 #import "ios/web/public/web_state/web_frame_util.h"
 #import "ios/web/public/web_state/web_frames_manager.h"
+#import "ios/web/web_state/find_in_page/find_in_page_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -18,9 +19,6 @@ using base::test::ios::kWaitForJSCompletionTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace {
-
-// Name of JavaScript handler invoked.
-const char kFindInPageFindString[] = "findInPage.findString";
 
 // Find strings.
 const char kFindStringFoo[] = "foo";
@@ -60,7 +58,7 @@ TEST_F(FindInPageWebJsTest, FindText) {
   params.push_back(base::Value(kFindStringFoo));
   params.push_back(base::Value(kPumpSearchTimeout));
   main_web_frame()->CallJavaScriptFunction(
-      kFindInPageFindString, params, base::BindOnce(^(const base::Value* res) {
+      kFindInPageSearch, params, base::BindOnce(^(const base::Value* res) {
         ASSERT_TRUE(res);
         ASSERT_TRUE(res->is_double());
         int count = static_cast<int>(res->GetDouble());
@@ -86,7 +84,7 @@ TEST_F(FindInPageWebJsTest, FindTextNoResults) {
   params.push_back(base::Value(kFindStringFoo));
   params.push_back(base::Value(kPumpSearchTimeout));
   main_web_frame()->CallJavaScriptFunction(
-      kFindInPageFindString, params, base::BindOnce(^(const base::Value* res) {
+      kFindInPageSearch, params, base::BindOnce(^(const base::Value* res) {
         ASSERT_TRUE(res);
         ASSERT_TRUE(res->is_double());
         int count = static_cast<int>(res->GetDouble());
@@ -125,8 +123,7 @@ TEST_F(FindInPageWebJsTest, FindIFrameText) {
     params.push_back(base::Value(kFindStringFoo));
     params.push_back(base::Value(kPumpSearchTimeout));
     child_frame->CallJavaScriptFunction(
-        kFindInPageFindString, params,
-        base::BindOnce(^(const base::Value* res) {
+        kFindInPageSearch, params, base::BindOnce(^(const base::Value* res) {
           ASSERT_TRUE(res);
           ASSERT_TRUE(res->is_double());
           int count = static_cast<int>(res->GetDouble());
@@ -151,7 +148,7 @@ TEST_F(FindInPageWebJsTest, FindWhiteSpace) {
   params.push_back(base::Value(" "));
   params.push_back(base::Value(kPumpSearchTimeout));
   main_web_frame()->CallJavaScriptFunction(
-      kFindInPageFindString, params, base::BindOnce(^(const base::Value* res) {
+      kFindInPageSearch, params, base::BindOnce(^(const base::Value* res) {
         ASSERT_TRUE(res);
         ASSERT_TRUE(res->is_double());
         int count = static_cast<int>(res->GetDouble());
@@ -176,7 +173,7 @@ TEST_F(FindInPageWebJsTest, FindAcrossMultipleNodes) {
   params.push_back(base::Value(kFindString12345));
   params.push_back(base::Value(kPumpSearchTimeout));
   main_web_frame()->CallJavaScriptFunction(
-      kFindInPageFindString, params, base::BindOnce(^(const base::Value* res) {
+      kFindInPageSearch, params, base::BindOnce(^(const base::Value* res) {
         ASSERT_TRUE(res);
         ASSERT_TRUE(res->is_double());
         int count = static_cast<int>(res->GetDouble());

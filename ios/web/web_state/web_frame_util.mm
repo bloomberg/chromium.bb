@@ -40,4 +40,9 @@ std::string GetWebFrameId(WebFrame* frame) {
   return frame ? frame->GetFrameId() : std::string();
 }
 
+std::set<WebFrame*> GetAllWebFrames(WebState* web_state) {
+  WebFramesManager* manager = WebFramesManager::FromWebState(web_state);
+  return manager->GetAllWebFrames();
+}
+
 }  // namespace web
