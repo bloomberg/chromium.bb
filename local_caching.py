@@ -808,31 +808,34 @@ class NamedCache(Cache):
     with self._lock:
       return set(self._lru)
 
-  def install(self, path, name):
-    """Moves the directory for the specified named cache to |path|.
+  def install(self, dst, name):
+    """Creates the directory |dst| and moves a previous named cache |name| if it
+    was in the local named caches cache.
 
-    path must be absolute, unicode and must not exist.
+    dst must be absolute, unicode and must not exist.
 
     Raises NamedCacheError if cannot install the cache.
     """
-    logging.info('NamedCache.install(%r, %r)', path, name)
+    logging.info('NamedCache.install(%r, %r)', dst, name)
     with self._lock:
       try:
-        if os.path.isdir(path):
+        if os.path.isdir(dst):
           raise NamedCacheError(
-              'installation directory %r already exists' % path)
+              'installation directory %r already exists' % dst)
 
-        link_name = os.path.join(self.cache_dir, name)
+        # Removed the named symlink if it exists.
+        link_name = os.path.join(self.cache_dir, 'named', name)
         if fs.exists(link_name):
-          fs.rmtree(link_name)
+          # Remove the symlink itself, not its destination.
+          fs.remove(link_name)
 
         if name in self._lru:
           rel_cache, size = self._lru.get(name)
           abs_cache = os.path.join(self.cache_dir, rel_cache)
           if os.path.isdir(abs_cache):
             logging.info('- reusing %r; size was %d', rel_cache, size)
-            file_path.ensure_tree(os.path.dirname(path))
-            fs.rename(abs_cache, path)
+            file_path.ensure_tree(os.path.dirname(dst))
+            fs.rename(abs_cache, dst)
             self._remove(name)
             return
 
@@ -843,7 +846,7 @@ class NamedCache(Cache):
         # uninstalling, we will move it back to the cache and create an an
         # entry.
         logging.info('- creating new directory')
-        file_path.ensure_tree(path)
+        file_path.ensure_tree(dst)
       except (IOError, OSError) as ex:
         raise NamedCacheError(
             'cannot install cache named %r at %r: %s' % (
@@ -851,20 +854,24 @@ class NamedCache(Cache):
       finally:
         self._save()
 
-  def uninstall(self, path, name):
-    """Moves the cache directory back. Opposite to install().
+  def uninstall(self, src, name):
+    """Moves the cache directory back into the named cache hive for an eventual
+    reuse.
 
-    path must be absolute and unicode.
+    The opposite of install().
+
+    src must be absolute and unicode. Its content is moved back into the local
+    named caches cache.
 
     Raises NamedCacheError if cannot uninstall the cache.
     """
-    logging.info('NamedCache.uninstall(%r, %r)', path, name)
+    logging.info('NamedCache.uninstall(%r, %r)', src, name)
     with self._lock:
       try:
-        if not os.path.isdir(path):
+        if not os.path.isdir(src):
           logging.warning(
               'NamedCache: Directory %r does not exist anymore. Cache lost.',
-              path)
+              src)
           return
 
         if name in self._lru:
@@ -878,7 +885,7 @@ class NamedCache(Cache):
         abs_cache = os.path.join(self.cache_dir, rel_cache)
         logging.info('- Moving to %r', rel_cache)
         file_path.ensure_tree(os.path.dirname(abs_cache))
-        fs.rename(path, abs_cache)
+        fs.rename(src, abs_cache)
 
         # That succeeded, calculate its new size.
         size = _get_recursive_size(abs_cache)
@@ -908,8 +915,7 @@ class NamedCache(Cache):
             raise
       except (IOError, OSError) as ex:
         raise NamedCacheError(
-            'cannot uninstall cache named %r at %r: %s' % (
-              name, path, ex))
+            'cannot uninstall cache named %r at %r: %s' % (name, src, ex))
       finally:
         # Call save() at every uninstall. The assumptions are:
         # - The total the number of named caches is low, so the state.json file
