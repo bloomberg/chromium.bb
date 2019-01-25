@@ -103,6 +103,7 @@ void IdleSpellCheckController::Deactivate() {
     cold_mode_timer_.Stop();
   cold_mode_requester_->ClearProgress();
   DisposeIdleCallback();
+  GetSpellCheckRequester().Deactivate();
 }
 
 void IdleSpellCheckController::SetNeedsInvocation() {

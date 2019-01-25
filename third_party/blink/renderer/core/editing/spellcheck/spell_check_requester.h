@@ -99,9 +99,9 @@ class CORE_EXPORT SpellCheckRequester final
 
   int LastProcessedSequence() const { return last_processed_sequence_; }
 
-  // Exposed for leak detector only, see comment for corresponding
-  // SpellChecker method.
-  void PrepareForLeakDetection();
+  // Called to clean up pending requests when no more checking is needed. For
+  // example, when document is closed.
+  void Deactivate();
 
  private:
   friend class SpellCheckRequest;

@@ -227,16 +227,14 @@ void SpellCheckRequester::CancelCheck() {
     processing_request_->DidCancel();
 }
 
-void SpellCheckRequester::PrepareForLeakDetection() {
+void SpellCheckRequester::Deactivate() {
   timer_to_process_queued_request_.Stop();
-  // Empty the queue of pending requests to prevent it being a leak source.
-  // Pending spell checker requests are cancellable requests not representing
-  // leaks, just async work items waiting to be processed.
-  //
-  // Rather than somehow wait for this async queue to drain before running
-  // the leak detector, they're all cancelled to prevent flaky leaks being
-  // reported.
+  // Empty all pending requests to prevent them from being a leak source, as the
+  // requests may hold reference to a closed document.
   request_queue_.clear();
+  // Must be called after clearing the queue. Otherwise, another request from
+  // the queue will be invoked.
+  CancelCheck();
 }
 
 void SpellCheckRequester::InvokeRequest(SpellCheckRequest* request) {
