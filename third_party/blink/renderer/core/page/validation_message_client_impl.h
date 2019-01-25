@@ -85,6 +85,7 @@ class ValidationMessageClientImpl final
   std::unique_ptr<FrameOverlay> overlay_;
   // Raw pointer. This pointer is valid unless overlay_ is nullptr.
   ValidationMessageOverlayDelegate* overlay_delegate_ = nullptr;
+  bool allow_initial_empty_anchor_ = false;
 };
 
 }  // namespace blink
