@@ -60,6 +60,9 @@ function test() {
             break;
         case 3:
             console.log("Injecting into isolated world without bypass: this should fail.");
+            // Clear any existing csp or security origin as a side effect of
+            // another test.
+            testRunner.setIsolatedWorldInfo(1, null, null);
             testRunner.evaluateScriptInIsolatedWorld(1, String(eval("injectInlineStyle")) + "\ninjectInlineStyle(false," + tests + ");");
             testRunner.evaluateScriptInIsolatedWorld(1, String(eval("injectInlineStyleAttribute")) + "\ninjectInlineStyleAttribute(false," + tests + ");");
             break;
