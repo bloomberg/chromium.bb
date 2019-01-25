@@ -604,9 +604,8 @@ void WebSettingsImpl::SetDataSaverHoldbackWebApi(bool enabled) {
   settings_->SetDataSaverHoldbackWebApi(enabled);
 }
 
-void WebSettingsImpl::SetMediaPlaybackGestureWhitelistScope(
-    const WebString& scope) {
-  settings_->SetMediaPlaybackGestureWhitelistScope(scope);
+void WebSettingsImpl::SetWebAppScope(const WebString& scope) {
+  settings_->SetWebAppScope(scope);
 }
 
 void WebSettingsImpl::SetPresentationRequiresUserGesture(bool required) {
