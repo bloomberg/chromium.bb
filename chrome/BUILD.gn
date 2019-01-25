@@ -302,9 +302,6 @@ if (!is_android && !is_mac) {
             "//build/config/linux:xext",
           ]
         }
-        if (enable_mus) {
-          deps += [ "//mash/common" ]
-        }
       }
 
       if (is_chromeos || is_win) {

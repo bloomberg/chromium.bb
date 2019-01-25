@@ -30,7 +30,6 @@ include_rules = [
   "+content/public/browser/browser_main_runner.h",
   "+extensions/common/constants.h",
   "+headless/public",
-  "+mash/common",
   "+native_client/src/trusted/service_runtime/osx",
   "+pdf/pdf_ppapi.h",
   "+remoting/client/plugin",
