@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.preferences;
 
 import android.accounts.Account;
+import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -19,6 +20,7 @@ import android.preference.PreferenceGroup;
 import android.provider.Settings;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -57,12 +59,13 @@ import java.lang.annotation.RetentionPolicy;
  */
 public class SyncAndServicesPreferences extends PreferenceFragment
         implements PassphraseDialogFragment.Listener, Preference.OnPreferenceChangeListener,
-                   ProfileSyncService.SyncStateChangedListener {
+                   ProfileSyncService.SyncStateChangedListener, Preferences.OnBackPressedListener {
     private static final String IS_FROM_SIGNIN_SCREEN =
             "SyncAndServicesPreferences.isFromSigninScreen";
 
     @VisibleForTesting
     public static final String FRAGMENT_ENTER_PASSPHRASE = "enter_password";
+    private static final String FRAGMENT_CANCEL_SYNC = "cancel_sync_dialog";
 
     private static final String PREF_SIGNIN = "sign_in";
 
@@ -229,7 +232,11 @@ public class SyncAndServicesPreferences extends PreferenceFragment
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.menu_id_targeted_help) {
+        if (item.getItemId() == android.R.id.home) {
+            if (!mIsFromSigninScreen) return false; // Let Preferences activity handle it.
+            showCancelSyncDialog();
+            return true;
+        } else if (item.getItemId() == R.id.menu_id_targeted_help) {
             HelpAndFeedback.getInstance(getActivity())
                     .show(getActivity(), getString(R.string.help_context_sync_and_services),
                             Profile.getLastUsedProfile(), null);
@@ -243,6 +250,11 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         super.onStart();
         mProfileSyncService.addSyncStateChangedListener(this);
         mSigninPreference.registerForUpdates();
+
+        if (!ChromeSigninController.get().isSignedIn()) {
+            // Don't show CancelSyncDialog.
+            mIsFromSigninScreen = false;
+        }
     }
 
     @Override
@@ -528,5 +540,49 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             }
             return false;
         };
+    }
+
+    @Override
+    public boolean onBackPressed() {
+        if (!mIsFromSigninScreen) return false; // Let parent activity handle it.
+        showCancelSyncDialog();
+        return true;
+    }
+
+    private void showCancelSyncDialog() {
+        CancelSyncDialog dialog = new CancelSyncDialog();
+        dialog.setTargetFragment(this, 0);
+        dialog.show(getFragmentManager(), FRAGMENT_CANCEL_SYNC);
+    }
+
+    private void cancelSync() {
+        SigninManager.get().signOut(SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS, null, null);
+        getActivity().finish();
+    }
+
+    /**
+     * The dialog that offers the user to cancel sync. Only shown when
+     * {@link SyncAndServicesPreferences} is opened from the sign-in screen. Shown when the user
+     * tries to close the settings page without confirming settings.
+     */
+    public static class CancelSyncDialog extends DialogFragment {
+        public CancelSyncDialog() {
+            // Fragment must have an empty public constructor
+        }
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            return new AlertDialog.Builder(getActivity(), R.style.SigninAlertDialogTheme)
+                    .setTitle(R.string.cancel_sync_dialog_title)
+                    .setMessage(R.string.cancel_sync_dialog_message)
+                    .setNegativeButton(R.string.back, (dialog, which) -> dialog.cancel())
+                    .setPositiveButton(R.string.cancel_sync_button, (dialog, which) -> cancelSync())
+                    .create();
+        }
+
+        public void cancelSync() {
+            SyncAndServicesPreferences fragment = (SyncAndServicesPreferences) getTargetFragment();
+            fragment.cancelSync();
+        }
     }
 }
