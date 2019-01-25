@@ -72,14 +72,7 @@ class NoBestEffortTasksTest : public InProcessBrowserTest {
 
 // Verify that it is possible to load and paint the initial about:blank page
 // without running BEST_EFFORT tasks.
-//
-// TODO(fdoray) https://crbug.com/833989: Times out on Win and ChromeOS ASAN.
-#if defined(ADDRESS_SANITIZER) && (defined(OS_CHROMEOS) || defined(OS_WIN))
-#define MAYBE_LoadAndPaintAboutBlank DISABLED_LoadAndPaintAboutBlank
-#else
-#define MAYBE_LoadAndPaintAboutBlank LoadAndPaintAboutBlank
-#endif
-IN_PROC_BROWSER_TEST_F(NoBestEffortTasksTest, MAYBE_LoadAndPaintAboutBlank) {
+IN_PROC_BROWSER_TEST_F(NoBestEffortTasksTest, LoadAndPaintAboutBlank) {
   content::WebContents* const web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(web_contents->GetLastCommittedURL().IsAboutBlank());
