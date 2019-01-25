@@ -506,27 +506,27 @@
       'telemetry_perf_unittests': {
         'args': [
           '--browser=cros-chrome',
+          # The magic hostname that resolves to a CrOS device in the test lab.
           '--remote=variable_chromeos_device_hostname',
           '--xvfb',
         ],
         'swarming': {
-          'hard_timeout': 960,
           'idempotent': False,  # https://crbug.com/549140
-          'shards': 12,
+          'shards': 6,
         },
       },
       'telemetry_unittests': {
         'args': [
           '--browser=cros-chrome',
+          # The magic hostname that resolves to a CrOS device in the test lab.
           '--remote=variable_chromeos_device_hostname',
           '--jobs=1',
-          # Disable GPU compositing, telemetry_unittests runs on VMs.
-          # https://crbug.com/871955
-          '--extra-browser-args=--disable-gpu',
+          # TODO(crbug.com/866062): Use the default retry limit.
+          '--retry-limit=1',
         ],
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
-          'shards': 4,
+          'shards': 12,
         },
       },
     },

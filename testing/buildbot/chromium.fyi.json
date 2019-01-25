@@ -3937,6 +3937,57 @@
           "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
         }
       }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--browser=cros-chrome",
+          "--remote=variable_chromeos_device_hostname",
+          "--xvfb"
+        ],
+        "isolate_name": "telemetry_perf_unittests",
+        "name": "telemetry_perf_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "kevin",
+              "os": "ChromeOS",
+              "pool": "chrome-cros-dut"
+            }
+          ],
+          "idempotent": false,
+          "shards": 6
+        },
+        "trigger_script": {
+          "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
+        }
+      },
+      {
+        "args": [
+          "--browser=cros-chrome",
+          "--remote=variable_chromeos_device_hostname",
+          "--jobs=1",
+          "--retry-limit=1"
+        ],
+        "isolate_name": "telemetry_unittests",
+        "name": "telemetry_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "kevin",
+              "os": "ChromeOS",
+              "pool": "chrome-cros-dut"
+            }
+          ],
+          "idempotent": false,
+          "shards": 12
+        },
+        "trigger_script": {
+          "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
+        }
+      }
     ]
   },
   "fuchsia-fyi-arm64-rel": {

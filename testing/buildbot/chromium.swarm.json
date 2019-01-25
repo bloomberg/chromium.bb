@@ -683,55 +683,6 @@
       }
     ]
   },
-  "ChromeOS Swarm": {
-    "additional_compile_targets": [
-      "chromiumos_preflight"
-    ],
-    "isolated_scripts": [
-      {
-        "args": [
-          "--browser=cros-chrome",
-          "--remote=variable_chromeos_device_hostname",
-          "--xvfb"
-        ],
-        "isolate_name": "telemetry_perf_unittests",
-        "name": "telemetry_perf_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_type": "kevin-signed-mpkeys",
-              "os": "ChromeOS"
-            }
-          ],
-          "hard_timeout": 960,
-          "idempotent": false,
-          "shards": 12
-        }
-      },
-      {
-        "args": [
-          "--browser=cros-chrome",
-          "--remote=variable_chromeos_device_hostname",
-          "--jobs=1",
-          "--extra-browser-args=--disable-gpu"
-        ],
-        "isolate_name": "telemetry_unittests",
-        "name": "telemetry_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_type": "kevin-signed-mpkeys",
-              "os": "ChromeOS"
-            }
-          ],
-          "idempotent": false,
-          "shards": 4
-        }
-      }
-    ]
-  },
   "Linux Swarm": {
     "gtest_tests": [
       {

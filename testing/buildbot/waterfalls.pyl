@@ -1419,6 +1419,7 @@
         },
         'test_suites': {
           'gtest_tests': 'chromeos_device_kevin_tests',
+          'isolated_scripts': 'chromeos_remote_device_isolated_tests',
         },
         'os_type': 'chromeos',
       },
@@ -3293,22 +3294,6 @@
           'expiration': 10800,
         },
         'os_type': 'android',
-      },
-      'ChromeOS Swarm': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'chromeos_remote_device_isolated_tests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_type': 'kevin-signed-mpkeys',
-              'os': 'ChromeOS',
-            }
-          ],
-        },
       },
       'Linux Swarm': {
         'test_suites': {
