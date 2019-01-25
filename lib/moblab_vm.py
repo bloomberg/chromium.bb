@@ -40,9 +40,6 @@ _CONFIG_RELATIVE_PATH_KEYS = (
     _CONFIG_MOBLAB_DISK,
 )
 
-_CONFIG_MOBLAB_KVM_PID = 'kvm_pid_moblab'
-_CONFIG_DUT_KVM_PID = 'kvm_pid_dut'
-
 _CONFIG_MOBLAB_SSH_PORT = 'ssh_port_moblab'
 _CONFIG_DUT_SSH_PORT = 'ssh_port_dut'
 _CONFIG_NETWORK_BRIDGE = 'network_bridge'
@@ -98,12 +95,12 @@ class MoblabVm(object):
   def running(self):
     """Is this MoblabVm running? Returns bool."""
     return (bool(self._config[_CONFIG_STARTED]) and
-            bool(self._config[_CONFIG_MOBLAB_KVM_PID]))
+            bool(self._config[_CONFIG_MOBLAB_SSH_PORT]))
 
   @property
   def moblab_ssh_port(self):
     """The (str) SSH port to connect to the moblab VM."""
-    return self._config[_CONFIG_MOBLAB_SSH_PORT]
+    return str(self._config[_CONFIG_MOBLAB_SSH_PORT])
 
   @property
   def moblab_internal_mac(self):
@@ -120,12 +117,12 @@ class MoblabVm(object):
     A moblabvm may be launched without any sub-DUTs.
     """
     return (bool(self._config[_CONFIG_STARTED]) and
-            bool(self._config[_CONFIG_DUT_KVM_PID]))
+            bool(self._config[_CONFIG_DUT_SSH_PORT]))
 
   @property
   def dut_ssh_port(self):
     """The (str) SSH port to connect to the sub-DUT VM."""
-    return self._config[_CONFIG_DUT_SSH_PORT]
+    return str(self._config[_CONFIG_DUT_SSH_PORT])
 
   @property
   def dut_internal_mac(self):
@@ -216,12 +213,12 @@ class MoblabVm(object):
     # These should strictly be in LIFO order of setup done in Start.
     # Moreover, it should be able to cleanup after Start fails after partial
     # setup.
-    if self._config[_CONFIG_DUT_KVM_PID]:
-      _StopKvmIgnoringErrors(self._config[_CONFIG_DUT_KVM_PID])
-      del self._config[_CONFIG_DUT_KVM_PID]
-    if self._config[_CONFIG_MOBLAB_KVM_PID]:
-      _StopKvmIgnoringErrors(self._config[_CONFIG_MOBLAB_KVM_PID])
-      del self._config[_CONFIG_MOBLAB_KVM_PID]
+    if self._config[_CONFIG_DUT_SSH_PORT]:
+      _StopVM(self._config[_CONFIG_DUT_SSH_PORT])
+      del self._config[_CONFIG_DUT_SSH_PORT]
+    if self._config[_CONFIG_MOBLAB_SSH_PORT]:
+      _StopVM(self._config[_CONFIG_MOBLAB_SSH_PORT])
+      del self._config[_CONFIG_MOBLAB_SSH_PORT]
     if self._config[_CONFIG_DUT_TAP_DEV]:
       _RemoveTapDeviceIgnoringErrors(self._config[_CONFIG_DUT_TAP_DEV])
       del self._config[_CONFIG_DUT_TAP_DEV]
@@ -320,7 +317,7 @@ class MoblabVm(object):
     # step our other moblabvms' toes.
     for _ in xrange(5):
       try:
-        next_num, bridge_name = _TryCreateBridgeDevice()
+        port, bridge_name = _TryCreateBridgeDevice()
         break
       except RetriableError:
         pass
@@ -329,19 +326,21 @@ class MoblabVm(object):
                        'You seem to have many moblabvms running in parallel.')
 
     self._config[_CONFIG_NETWORK_BRIDGE] = bridge_name
-    self._config[_CONFIG_MOBLAB_TAP_DEV] = _CreateTapDevice(next_num)
-    next_num += 1
-    self._config[_CONFIG_DUT_TAP_DEV] = _CreateTapDevice(next_num)
-    next_num += 1
+    self._config[_CONFIG_MOBLAB_TAP_DEV] = _CreateTapDevice(port)
+    self._config[_CONFIG_DUT_TAP_DEV] = _CreateTapDevice(port + 1)
     _ConnectDeviceToBridge(self._config[_CONFIG_MOBLAB_TAP_DEV],
                            self._config[_CONFIG_NETWORK_BRIDGE])
     _ConnectDeviceToBridge(self._config[_CONFIG_DUT_TAP_DEV],
                            self._config[_CONFIG_NETWORK_BRIDGE])
     _DeviceUp(self._config[_CONFIG_NETWORK_BRIDGE])
 
-    next_num = self._StartMoblabVm(next_num)
+    moblab_ssh_port = port + 2
+    # moblab grabs 3 extra consecutive ports for forwarding AFE and devserver to
+    # the host.
+    dut_ssh_port = moblab_ssh_port + 4
+    self._StartMoblabVM(moblab_ssh_port, dut_ssh_port)
     if self._config[_CONFIG_DUT_IMAGE]:
-      next_num = self._StartDutVm(next_num)
+      self._StartDutVM(dut_ssh_port)
 
   def _CopyVMImage(self, source_dir, target_dir):
     """Converts or copies VM images from source_dir to target_dir."""
@@ -353,75 +352,52 @@ class MoblabVm(object):
     shutil.copyfile(source_path, target_path)
     return target_path
 
-  def _StartMoblabVm(self, next_num):
+  def _StartMoblabVM(self, ssh_port, max_port):
     """Starts a VM running moblab.
 
     Args:
-      next_num: A counter used to generate names without conflict.
-
-    Returns:
-      updated next_num.
+      ssh_port: (int) VM SSH port to use.
+      max_port: (int) ports upto this are available.
     """
-    ssh_port = str(next_num)
-    next_num += 1
     # We want a unicast, locally configured address with an obviously bogus
     # organisation id.
     tap_mac_addr = '02:00:00:99:99:01'
     self._WriteToMoblabDiskImage('private-network-macaddr.conf', [tap_mac_addr])
-    disk_path = self._config[_CONFIG_MOBLAB_DISK]
-    # Create a dedicated scsi controller for the external disk, and attach the
-    # disk to that bus. This separates us from any scsi controllers that may be
-    # created for the boot disk.
-    qemu_args = ['-drive', 'id=moblabdisk,if=none,file=%s' % disk_path,
-                 '-device', 'virtio-scsi-pci,id=scsiext',
-                 '-device', 'scsi-hd,bus=scsiext.0,drive=moblabdisk']
-    # moblab grabs some extra consecutive ports for forwarding AFE and devserver
-    # to the host.
-    next_num += 10
-    kvm_pid = _StartKvm(
-        os.path.join(self.workspace, _WORKSPACE_MOBLAB_DIR),
+    _StartVM(
         self._config[_CONFIG_MOBLAB_IMAGE],
         ssh_port,
+        max_port,
         self._config[_CONFIG_MOBLAB_TAP_DEV],
         tap_mac_addr,
         is_moblab=True,
-        qemu_args=qemu_args,
+        disk_path=self._config[_CONFIG_MOBLAB_DISK],
     )
     # Update config _after_ we've successfully launched the VM so that we don't
     # _Persist incorrect information.
-    self._config[_CONFIG_MOBLAB_KVM_PID] = kvm_pid
     self._config[_CONFIG_MOBLAB_SSH_PORT] = ssh_port
     self._config[_CONFIG_MOBLAB_TAP_MAC] = tap_mac_addr
-    return next_num
 
-  def _StartDutVm(self, next_num):
+  def _StartDutVM(self, ssh_port):
     """Starts a VM running the sub-DUT image.
 
     Args:
-      next_num: A counter used to generate names without conflict.
-
-    Returns:
-      updated next_num.
+      ssh_port: VM SSH port to use.
     """
-    ssh_port = str(next_num)
-    next_num += 1
     # We want a unicast, locally configured address with an obviously bogus
     # organisation id.
     tap_mac_addr = '02:00:00:99:99:51'
-    kvm_pid = _StartKvm(
-        os.path.join(self.workspace, _WORKSPACE_DUT_DIR),
+    _StartVM(
         self._config[_CONFIG_DUT_IMAGE],
         ssh_port,
+        ssh_port + 1,
         self._config[_CONFIG_DUT_TAP_DEV],
         tap_mac_addr,
         is_moblab=False,
     )
     # Update config _after_ we've successfully launched the VM so that we don't
     # _Persist incorrect information.
-    self._config[_CONFIG_DUT_KVM_PID] = kvm_pid
     self._config[_CONFIG_DUT_SSH_PORT] = ssh_port
     self._config[_CONFIG_DUT_TAP_MAC] = tap_mac_addr
-    return next_num
 
   def _WriteToMoblabDiskImage(self, target_path, lines):
     """Write a file in the moblab external disk.
@@ -547,41 +523,46 @@ def _DeviceUp(device):
   cros_build_lib.SudoRunCommand(['ip', 'link', 'set', 'dev', device, 'up'])
 
 
-def _StartKvm(workdir, image_path, ssh_port, tap_dev, tap_mac_addr, is_moblab,
-              qemu_args=()):
-  """Starts a KVM instance.
+def _StartVM(image_path, ssh_port, max_port, tap_dev, tap_mac_addr, is_moblab,
+             disk_path=None):
+  """Starts a VM instance.
 
   Args:
-    workdir: A directory to drop temporary files in.
     image_path: Path to the OS image to use.
-    ssh_port: (str) port to use for SSH.
+    ssh_port: (int) port to use for SSH.
+    max_port: (int) ports upto this are available.
     tap_dev: Name of the tap device to use for secondary network.
     tap_mac_addr: The MAC address of the secondary network device.
     is_moblab: Whether we're starting a moblab VM.
-    qemu_args: A list of args to be passed through to qemu.
-
-  Returns:
-    The path to the pidfile for launch KVM instance.
+    disk_path: Moblab disk.
   """
-  kvm_pid = os.path.join(workdir, 'kvm_pid')
   cmd = [
-      os.path.join(constants.CROSUTILS_DIR, 'bin', 'cros_start_vm'),
-      '--image_path', image_path,
-      '--kvm_pid', kvm_pid,
-      '--ssh_port', ssh_port,
-      '--scsi',
+      './cros_vm', '--start', '--image-path=%s' % image_path,
+      '--ssh-port=%d' % ssh_port,
+      '--qemu-args', '-net nic,macaddr=%s' % tap_mac_addr,
+      '--qemu-args', '-net tap,ifname=%s' % tap_dev
   ]
   if is_moblab:
-    cmd.append('--moblab')
-
-  extra_args = list(qemu_args)
-  extra_args += [
-      '-net', 'nic,macaddr=%s' % tap_mac_addr,
-      '-net', 'tap,ifname=%s' % tap_dev,
-  ]
-  cmd = cmd + ['--'] + extra_args
-  cros_build_lib.RunCommand(cmd)
-  return kvm_pid
+    moblab_monitoring_port = ssh_port + 1
+    afe_port = ssh_port + 2
+    dev_server_port = ssh_port + 3
+    assert dev_server_port < max_port, 'Exceeded maximum available ports.'
+    cmd += [
+        # Moblab monitoring port.
+        '--qemu-hostfwd', 'tcp:127.0.0.1:%d-:9991' % moblab_monitoring_port,
+        # AFE port.
+        '--qemu-hostfwd', 'tcp:127.0.0.1:%d-:80' % afe_port,
+        # DevServer port.
+        '--qemu-hostfwd', 'tcp:127.0.0.1:%d-:8080' % dev_server_port,
+        # Create a dedicated scsi controller for the external disk, and attach
+        # the disk to that bus. This separates us from any scsi controllers that
+        # may be created for the boot disk.
+        '--qemu-args',
+        '-drive id=moblabdisk,if=none,file=%s,format=raw' % disk_path,
+        '--qemu-args', '-device virtio-scsi-pci,id=scsiext',
+        '--qemu-args', '-device scsi-hd,bus=scsiext.0,drive=moblabdisk',
+    ]
+  cros_build_lib.SudoRunCommand(cmd, cwd=constants.CHROMITE_BIN_DIR)
 
 
 def _RemoveNetworkBridgeIgnoringErrors(name):
@@ -594,13 +575,15 @@ def _RemoveTapDeviceIgnoringErrors(name):
   _RunIgnoringErrors(['ip', 'tuntap', 'del', 'mode', 'tap', name])
 
 
-def _StopKvmIgnoringErrors(kvm_pid):
-  """Stops a running KVM instance. Ignores errors."""
-  logging.notice('Stopping KVM. This may take a minute.')
-  _RunIgnoringErrors([
-      os.path.join(constants.CROSUTILS_DIR, 'bin', 'cros_stop_vm'),
-      '--kvm_pid', kvm_pid,
-  ])
+def _StopVM(ssh_port):
+  """Stops a running VM instance.
+
+  Args:
+    ssh_port: (int) port to use for ssh.
+  """
+  logging.notice('Stopping the VM. This may take a minute.')
+  _RunIgnoringErrors(['%s/cros_vm' % constants.CHROMITE_BIN_DIR,
+                      '--stop', '--ssh-port=%d' % ssh_port])
 
 
 def _RunIgnoringErrors(cmd):
