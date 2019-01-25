@@ -10,11 +10,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTY_H_
 
 #include "third_party/blink/renderer/core/css/css_property_name.h"
-#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/properties/css_unresolved_property.h"
+#include "third_party/blink/renderer/core/css/cssom/cross_thread_keyword_value.h"
 #include "third_party/blink/renderer/core/css/cssom/cross_thread_style_value.h"
 #include "third_party/blink/renderer/core/css/cssom/cross_thread_unsupported_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_keyword_value.h"
+#include "third_party/blink/renderer/core/css/cssom/style_value_factory.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
@@ -111,9 +113,19 @@ class CSSProperty : public CSSUnresolvedProperty {
       computed_style, layout_object, node, allow_visited_style);
     if (!css_value)
       return std::make_unique<CrossThreadUnsupportedValue>("");
-    // Make an isolated copy to ensure that it is safe to pass cross thread.
-    return std::make_unique<CrossThreadUnsupportedValue>(
-        css_value->CssText().IsolatedCopy());
+    CSSStyleValue* style_value = StyleValueFactory::CssValueToStyleValue(
+      GetCSSPropertyName(), *css_value);
+    if (!style_value)
+      return std::make_unique<CrossThreadUnsupportedValue>("");
+    switch (style_value->GetType()) {
+      case CSSStyleValue::StyleValueType::kKeywordType:
+        return std::make_unique<CrossThreadKeywordValue>(
+            static_cast<CSSKeywordValue*>(style_value)->value().IsolatedCopy());
+      default:
+        // Make an isolated copy to ensure that it is safe to pass cross thread.
+        return std::make_unique<CrossThreadUnsupportedValue>(
+            css_value->CssText().IsolatedCopy());
+    }
   }
   virtual const CSSProperty& ResolveDirectionAwareProperty(
       TextDirection,
