@@ -358,6 +358,8 @@ typedef struct AV1EncoderConfig {
   unsigned int chroma_subsampling_x;
   unsigned int chroma_subsampling_y;
   int reduced_tx_type_set;
+  int use_intra_dct_only;
+  int use_inter_dct_only;
   int quant_b_adapt;
   int border_in_pixels;
 } AV1EncoderConfig;

@@ -532,6 +532,10 @@ static const arg_def_t qm_max = ARG_DEF(
     NULL, "qm-max", 1, "Max quant matrix flatness (0..15), default is 15");
 static const arg_def_t reduced_tx_type_set = ARG_DEF(
     NULL, "reduced-tx-type-set", 1, "Use reduced set of transform types");
+static const arg_def_t use_intra_dct_only =
+    ARG_DEF(NULL, "use-intra-dct-only", 1, "Use DCT only for INTRA modes");
+static const arg_def_t use_inter_dct_only =
+    ARG_DEF(NULL, "use-inter-dct-only", 1, "Use DCT only for INTER modes");
 static const arg_def_t quant_b_adapt =
     ARG_DEF(NULL, "quant-b-adapt", 1, "Use adaptive quantize_b");
 #if CONFIG_DIST_8X8
@@ -757,6 +761,8 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &qm_min,
                                        &qm_max,
                                        &reduced_tx_type_set,
+                                       &use_intra_dct_only,
+                                       &use_inter_dct_only,
                                        &quant_b_adapt,
 #if CONFIG_DIST_8X8
                                        &enable_dist_8x8,
@@ -841,6 +847,8 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_QM_MIN,
                                         AV1E_SET_QM_MAX,
                                         AV1E_SET_REDUCED_TX_TYPE_SET,
+                                        AV1E_SET_INTRA_DCT_ONLY,
+                                        AV1E_SET_INTER_DCT_ONLY,
                                         AV1E_SET_QUANT_B_ADAPT,
 #if CONFIG_DIST_8X8
                                         AV1E_SET_ENABLE_DIST_8X8,
