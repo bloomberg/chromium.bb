@@ -3360,15 +3360,22 @@
   samus-factory-samus-6658.B-factorybranch-tryjob
   samus-factory-tryjob
   samus-full-tryjob
+  samus-kernelnext-chrome-pfq-tryjob
   samus-kernelnext-chromium-pfq-tryjob
   samus-kernelnext-compile-only-pre-cq
+  samus-kernelnext-factory-tryjob
   samus-kernelnext-full-tryjob
   samus-kernelnext-llvm-next-toolchain-tryjob
   samus-kernelnext-llvm-toolchain-tryjob
   samus-kernelnext-no-vmtest-pre-cq
   samus-kernelnext-paladin-tryjob
+  samus-kernelnext-payloads-tryjob
   samus-kernelnext-pre-cq
+  samus-kernelnext-release-afdo-generate-tryjob
+  samus-kernelnext-release-afdo-tryjob
+  samus-kernelnext-release-afdo-use-tryjob
   samus-kernelnext-release-tryjob
+  samus-kernelnext-tot-chrome-pfq-informational-tryjob
   samus-kernelnext-tot-chromium-pfq-informational-tryjob
   samus-kernelnext-unittest-stress
   samus-llvm-next-toolchain-tryjob
