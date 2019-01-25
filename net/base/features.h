@@ -33,6 +33,9 @@ NET_EXPORT extern const base::Feature kSplitCacheByTopFrameOrigin;
 // servers.
 NET_EXPORT extern const base::Feature kTLS13KeyUpdate;
 
+// Enables CECPQ2, a post-quantum key-agreement, in TLS 1.3 connections.
+NET_EXPORT extern const base::Feature kPostQuantumCECPQ2;
+
 }  // namespace features
 }  // namespace net
 
