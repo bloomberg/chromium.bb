@@ -86,40 +86,39 @@ const uint64_t kOtherEventsKeywordBit = 1ULL << 61;
 const uint64_t kDisabledOtherEventsKeywordBit = 1ULL << 62;
 const size_t kNumberOfCategories = ARRAYSIZE(kFilteredEventGroupNames) + 2U;
 
+static void __stdcall EtwEnableCallback(LPCGUID SourceId,
+                                        ULONG ControlCode,
+                                        UCHAR Level,
+                                        ULONGLONG MatchAnyKeyword,
+                                        ULONGLONG MatchAllKeyword,
+                                        PEVENT_FILTER_DESCRIPTOR FilterData,
+                                        PVOID CallbackContext) {
+  // Invoke the default callback, which updates the information inside
+  // CHROME_Context.
+  McGenControlCallbackV2(SourceId, ControlCode, Level, MatchAnyKeyword,
+                         MatchAllKeyword, FilterData, CallbackContext);
+
+  base::trace_event::TraceEventETWExport::OnETWEnableUpdate();
+}
+
 }  // namespace
 
 namespace base {
 namespace trace_event {
 
-// This object will be created by each process. It's a background (low-priority)
-// thread that will monitor the ETW keyword for any changes.
-class TraceEventETWExport::ETWKeywordUpdateThread
-    : public PlatformThread::Delegate {
- public:
-  ETWKeywordUpdateThread() {}
-  ~ETWKeywordUpdateThread() override {}
+bool TraceEventETWExport::is_registration_complete_ = false;
 
-  // Implementation of PlatformThread::Delegate:
-  void ThreadMain() override {
-    PlatformThread::SetName("ETW Keyword Update Thread");
-    TimeDelta sleep_time = TimeDelta::FromMilliseconds(kUpdateTimerDelayMs);
-    while (1) {
-      PlatformThread::Sleep(sleep_time);
-      trace_event::TraceEventETWExport::UpdateETWKeyword();
-    }
-  }
-
- private:
-  // Time between checks for ETW keyword changes (in milliseconds).
-  unsigned int kUpdateTimerDelayMs = 1000;
-};
-
-
-TraceEventETWExport::TraceEventETWExport()
-    : etw_export_enabled_(false), etw_match_any_keyword_(0ULL) {
+TraceEventETWExport::TraceEventETWExport() : etw_match_any_keyword_(0ULL) {
   // Register the ETW provider. If registration fails then the event logging
-  // calls will fail.
-  EventRegisterChrome();
+  // calls will fail. We're essentially doing the same operation as
+  // EventRegisterChrome (which was auto generated for our provider by the
+  // ETW manifest compiler), but instead we're passing our own callback.
+  // This allows us to detect changes to enable/disable/keyword changes.
+  // ChromeHandle and the other parameters to EventRegister are all generated
+  // globals from chrome_events_win.h
+  DCHECK(!ChromeHandle);
+  EventRegister(&CHROME, &EtwEnableCallback, &CHROME_Context, &ChromeHandle);
+  TraceEventETWExport::is_registration_complete_ = true;
 
   // Make sure to initialize the map with all the group names. Subsequent
   // modifications will be made by the background thread and only affect the
@@ -134,37 +133,18 @@ TraceEventETWExport::TraceEventETWExport()
 
 TraceEventETWExport::~TraceEventETWExport() {
   EventUnregisterChrome();
+  is_registration_complete_ = false;
 }
 
 // static
 void TraceEventETWExport::EnableETWExport() {
   auto* instance = GetInstance();
-  if (instance && !instance->etw_export_enabled_) {
-    instance->etw_export_enabled_ = true;
+  if (instance) {
     // Sync the enabled categories with ETW by calling UpdateEnabledCategories()
-    // that checks the keyword. Then create a thread that will call that same
-    // function periodically, to make sure we stay in sync.
+    // that checks the keyword. We'll stay in sync via the EtwEnableCallback
+    // we register in TraceEventETWExport's constructor.
     instance->UpdateEnabledCategories();
-    if (instance->keyword_update_thread_handle_.is_null()) {
-      instance->keyword_update_thread_.reset(new ETWKeywordUpdateThread);
-      PlatformThread::CreateWithPriority(
-          0, instance->keyword_update_thread_.get(),
-          &instance->keyword_update_thread_handle_, ThreadPriority::BACKGROUND);
-    }
   }
-}
-
-// static
-void TraceEventETWExport::DisableETWExport() {
-  auto* instance = GetInstance();
-  if (instance && instance->etw_export_enabled_)
-    instance->etw_export_enabled_ = false;
-}
-
-// static
-bool TraceEventETWExport::IsETWExportEnabled() {
-  auto* instance = GetInstanceIfExists();
-  return (instance && instance->etw_export_enabled_);
 }
 
 // static
@@ -175,7 +155,7 @@ void TraceEventETWExport::AddEvent(char phase,
                                    const TraceArguments* args) {
   // We bail early in case exporting is disabled or no consumer is listening.
   auto* instance = GetInstance();
-  if (!instance || !instance->etw_export_enabled_ || !EventEnabledChromeEvent())
+  if (!instance || !EventEnabledChromeEvent())
     return;
 
   const char* phase_string = nullptr;
@@ -271,7 +251,7 @@ void TraceEventETWExport::AddEvent(char phase,
 // static
 void TraceEventETWExport::AddCompleteEndEvent(const char* name) {
   auto* instance = GetInstance();
-  if (!instance || !instance->etw_export_enabled_ || !EventEnabledChromeEvent())
+  if (!instance || !EventEnabledChromeEvent())
     return;
 
   EventWriteChromeEvent(name, "Complete End", "", "", "", "", "", "");
@@ -285,7 +265,7 @@ bool TraceEventETWExport::IsCategoryGroupEnabled(
   if (instance == nullptr)
     return false;
 
-  if (!instance->IsETWExportEnabled())
+  if (!EventEnabledChromeEvent())
     return false;
 
   CStringTokenizer category_group_tokens(category_group_name.begin(),
@@ -357,12 +337,16 @@ bool TraceEventETWExport::IsCategoryEnabled(StringPiece category_name) const {
 }
 
 // static
-void TraceEventETWExport::UpdateETWKeyword() {
-  if (!IsETWExportEnabled())
-    return;
-  auto* instance = GetInstance();
-  DCHECK(instance);
-  instance->UpdateEnabledCategories();
+void TraceEventETWExport::OnETWEnableUpdate() {
+  // During construction, if tracing is already enabled, we'll get
+  // a callback synchronously on the same thread. Calling GetInstance
+  // in that case will hang since we're in the process of creating the
+  // singleton.
+  if (is_registration_complete_) {
+    auto* instance = GetInstance();
+    if (instance)
+      instance->UpdateEnabledCategories();
+  }
 }
 
 // static
