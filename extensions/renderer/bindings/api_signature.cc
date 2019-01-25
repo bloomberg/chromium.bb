@@ -407,8 +407,14 @@ bool APISignature::ConvertArgumentsIgnoringSchema(
   for (size_t i = 0; i < size; ++i) {
     std::unique_ptr<base::Value> converted =
         converter->FromV8Value(arguments[i], context);
-    if (!converted)
-      return false;
+    if (!converted) {
+      // JSON.stringify inserts non-serializable values as "null" when
+      // handling arrays, and this behavior is emulated in V8ValueConverter for
+      // array values. Since JS bindings parsed arguments from a single array,
+      // it accepted unserializable argument entries (which were converted to
+      // null). Duplicate that behavior here.
+      converted = std::make_unique<base::Value>();
+    }
     json->Append(std::move(converted));
   }
 

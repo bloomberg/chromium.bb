@@ -515,6 +515,21 @@ TEST_F(APISignatureTest, ParseIgnoringSchema) {
     EXPECT_EQ(R"([{"other":"bar","prop1":"foo"}])", ValueToString(*parsed));
     EXPECT_TRUE(callback.IsEmpty());
   }
+
+  {
+    // Unserializable arguments are inserted as "null" in the argument list in
+    // order to match existing JS bindings behavior.
+    // See https://crbug.com/924045.
+    auto signature = OneString();
+    std::vector<v8::Local<v8::Value>> v8_args =
+        StringToV8Vector(context, "[1, undefined, 1/0]");
+    v8::Local<v8::Function> callback;
+    std::unique_ptr<base::ListValue> parsed;
+    EXPECT_TRUE(signature->ConvertArgumentsIgnoringSchema(context, v8_args,
+                                                          &parsed, &callback));
+    ASSERT_TRUE(parsed);
+    EXPECT_EQ("[1,null,null]", ValueToString(*parsed));
+  }
 }
 
 TEST_F(APISignatureTest, ParseArgumentsToV8) {
