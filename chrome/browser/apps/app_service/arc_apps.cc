@@ -20,9 +20,12 @@
 #include "chrome/grit/component_extension_resources.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/common/app.mojom.h"
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace {
@@ -226,7 +229,11 @@ void ArcApps::Uninstall(const std::string& app_id) {
 }
 
 void ArcApps::OpenNativeSettings(const std::string& app_id) {
-  NOTIMPLEMENTED();
+  const std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      prefs_->GetApp(app_id);
+  arc::ShowPackageInfo(app_info->package_name,
+                       arc::mojom::ShowPackageInfoPage::MAIN,
+                       display::Screen::GetScreen()->GetPrimaryDisplay().id());
 }
 
 void ArcApps::OnConnectionReady() {
