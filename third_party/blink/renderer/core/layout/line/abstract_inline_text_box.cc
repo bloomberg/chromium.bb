@@ -44,6 +44,22 @@ AbstractInlineTextBox::~AbstractInlineTextBox() {
   DCHECK(!line_layout_item_);
 }
 
+LayoutText* AbstractInlineTextBox::GetFirstLetterPseudoLayoutText() const {
+  // We only want to apply the first letter to the first inline text box
+  // for a LayoutObject.
+  if (!IsFirst())
+    return nullptr;
+
+  Node* node = GetLineLayoutItem().GetNode();
+  if (!node)
+    return nullptr;
+
+  LayoutObject* layout_object = node->GetLayoutObject();
+  if (!layout_object || !layout_object->IsText())
+    return nullptr;
+  return ToLayoutText(layout_object)->GetFirstLetterPart();
+}
+
 // ----
 
 LegacyAbstractInlineTextBox::InlineToLegacyAbstractInlineTextBoxHashMap*
@@ -186,29 +202,29 @@ String LegacyAbstractInlineTextBox::GetText() const {
   if (!inline_text_box_ || !GetLineLayoutItem())
     return String();
 
-  unsigned start = inline_text_box_->Start();
-  unsigned len = inline_text_box_->Len();
-  if (Node* node = GetLineLayoutItem().GetNode()) {
-    if (node->IsTextNode()) {
-      return PlainText(
-          EphemeralRange(Position(node, start), Position(node, start + len)),
-          TextIteratorBehavior::IgnoresStyleVisibilityBehavior());
-    }
-    return PlainText(
-        EphemeralRange(Position(node, PositionAnchorType::kBeforeAnchor),
-                       Position(node, PositionAnchorType::kAfterAnchor)),
-        TextIteratorBehavior::IgnoresStyleVisibilityBehavior());
+  String result = inline_text_box_->GetText();
+
+  // Simplify all whitespace to just a space character, except for
+  // actual line breaks.
+  if (!inline_text_box_->IsLineBreak())
+    result = result.SimplifyWhiteSpace(WTF::kDoNotStripWhiteSpace);
+
+  // When the CSS first-letter pseudoselector is used, the LayoutText for the
+  // first letter is excluded from the accessibility tree, so we need to prepend
+  // its text here.
+  if (LayoutText* first_letter = GetFirstLetterPseudoLayoutText()) {
+    result = first_letter->GetText().SimplifyWhiteSpace() + result;
   }
 
-  String result = GetLineLayoutItem()
-                      .GetText()
-                      .Substring(start, len)
-                      .SimplifyWhiteSpace(WTF::kDoNotStripWhiteSpace);
-  if (inline_text_box_->NextForSameLayoutObject() &&
-      inline_text_box_->NextForSameLayoutObject()->Start() >
-          inline_text_box_->end() &&
-      result.length() && !result.Right(1).ContainsOnlyWhitespaceOrEmpty())
-    return result + " ";
+  // Insert a space at the end of this if necessary.
+  if (InlineTextBox* next = inline_text_box_->NextForSameLayoutObject()) {
+    if (next->Start() > inline_text_box_->Start() + inline_text_box_->Len() &&
+        result.length() && !result.Right(1).ContainsOnlyWhitespaceOrEmpty() &&
+        next->GetText().length() &&
+        !next->GetText().Left(1).ContainsOnlyWhitespaceOrEmpty())
+      return result + " ";
+  }
+
   return result;
 }
 
