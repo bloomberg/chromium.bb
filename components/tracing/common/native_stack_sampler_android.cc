@@ -25,7 +25,8 @@ NativeStackSamplerAndroid::RecordStackFrames(
   if (!unwinder_.is_initialized()) {
     // May block on disk access. This function is executed on the profiler
     // thread, so this will only block profiling execution.
-    TRACE_EVENT0("cpu_profiler", "StackUnwinderAndroid::Initialize");
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
+                 "StackUnwinderAndroid::Initialize");
     unwinder_.Initialize();
   }
   const void* pcs[kMaxFrameDepth];
