@@ -136,9 +136,10 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // function adds part of cached fragments to |container_builder_|, update
   // |break_token_| to continue layout from the last reused fragment, and
   // returns |true|. Otherwise returns |false|.
-  const NGBreakToken* TryReuseFragmentsFromCache(NGInlineNode child,
-                                                 NGPreviousInflowPosition*,
-                                                 bool* abort_out);
+  const NGInlineBreakToken* TryReuseFragmentsFromCache(
+      NGInlineNode child,
+      NGPreviousInflowPosition*,
+      bool* abort_out);
 
   void HandleOutOfFlowPositioned(const NGPreviousInflowPosition&, NGBlockNode);
   void HandleFloat(const NGPreviousInflowPosition&,
@@ -182,7 +183,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       NGLayoutInputNode child,
       const NGBreakToken* child_break_token,
       NGPreviousInflowPosition*,
-      scoped_refptr<const NGBreakToken>* previous_inline_break_token);
+      scoped_refptr<const NGInlineBreakToken>* previous_inline_break_token);
 
   // Return the amount of block space available in the current fragmentainer
   // for the node being laid out by this algorithm.
