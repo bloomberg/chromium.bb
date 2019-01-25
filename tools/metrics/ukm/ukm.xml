@@ -1711,6 +1711,20 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="PageForegroundSession">
+  <owner>sullivan@chromium.org</owner>
+  <summary>
+    Total time in foreground in milliseconds, recorded each time the page is
+    backgrounded. May be recorded multiple times for a single page visit.
+  </summary>
+  <metric name="ForegroundDuration">
+    <summary>
+      Total time in foreground in milliseconds, recorded each time the page is
+      backgrounded.
+    </summary>
+  </metric>
+</event>
+
 <event name="Intervention.DocumentWrite.ScriptBlock" singular="True">
   <owner>bmcquade@chromium.org</owner>
   <summary>

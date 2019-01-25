@@ -727,6 +727,7 @@ test("browser_tests") {
       "../browser/page_load_metrics/observers/ads_page_load_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/data_saver_site_breakdown_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/data_use_metrics_observer_browsertest.cc",
+      "../browser/page_load_metrics/observers/foreground_duration_ukm_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/https_engagement_metrics/https_engagement_page_load_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/live_tab_count_page_load_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/multi_tab_loading_page_load_metrics_observer_browsertest.cc",
