@@ -1363,10 +1363,6 @@
     "label": "//components/password_manager/core/browser:lookup_affiliation_response_parser_fuzzer",
     "type": "fuzzer",
   },
-  "mash:all": {
-    "label": "//mash:all",
-    "type": "additional_compile_target",
-  },
   "mdns_parser_fuzzer": {
     "label": "//third_party/webrtc/test/fuzzers:mdns_parser_fuzzer",
     "type": "fuzzer",

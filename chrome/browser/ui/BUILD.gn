@@ -3354,10 +3354,7 @@ jumbo_split_static_library("ui") {
         "views/plugin_vm/plugin_vm_launcher_view.cc",
         "views/plugin_vm/plugin_vm_launcher_view.h",
       ]
-      deps += [
-        "//chrome/services/app_service/public/cpp:app_update",
-        "//mash/common",
-      ]
+      deps += [ "//chrome/services/app_service/public/cpp:app_update" ]
     }
   }
 

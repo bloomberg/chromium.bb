@@ -384,7 +384,6 @@ static_library("test_support") {
   if (enable_mus) {
     deps += [
       "//ash/components/quick_launch/public/mojom:constants",
-      "//mash/common",
       "//services/ws/public/mojom:constants",
     ]
   }

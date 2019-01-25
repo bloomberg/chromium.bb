@@ -1208,9 +1208,6 @@
         },
       },
       'Mojo ChromiumOS': {
-        'additional_compile_targets': [
-          'mash:all',
-        ],
         'test_suites': {
           'gtest_tests': 'mojo_chromiumos_fyi_gtests',
         },
@@ -1229,9 +1226,6 @@
         },
       },
       'Mojo Windows': {
-        'additional_compile_targets': [
-          'mash:all',
-        ],
         'test_suites': {
           'gtest_tests': 'mojo_windows_gtests',
           'isolated_scripts': 'mojo_network_isolated_scripts',

@@ -649,7 +649,6 @@ group("gn_all") {
 
   if (is_win || is_linux) {
     deps += [
-      "//mash:all",
       "//media/mojo/services:media_service_unittests",
       "//mojo",
     ]

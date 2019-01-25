@@ -1878,9 +1878,6 @@
     ]
   },
   "Mojo ChromiumOS": {
-    "additional_compile_targets": [
-      "mash:all"
-    ],
     "gtest_tests": [
       {
         "swarming": {
@@ -2153,9 +2150,6 @@
     ]
   },
   "Mojo Windows": {
-    "additional_compile_targets": [
-      "mash:all"
-    ],
     "gtest_tests": [
       {
         "args": [
