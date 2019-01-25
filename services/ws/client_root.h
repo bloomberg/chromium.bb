@@ -80,14 +80,18 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
  private:
   friend class ClientRootTestHelper;
 
-  void UpdatePrimarySurfaceId();
-
   // Returns true if the WindowService should assign the LocalSurfaceId. A value
   // of false means the client is expected to providate the LocalSurfaceId.
   bool ShouldAssignLocalSurfaceId();
 
-  // If necessary, this updates the LocalSurfaceId.
+  // If necessary, this updates the LocalSurfaceId. Generally you should call
+  // UpdateLocalSurfaceIdAndClientSurfaceEmbedder(), not this. If you call this,
+  // you need to ensure the ClientSurfaceEmbedder is updated at a later time.
   void UpdateLocalSurfaceIdIfNecessary();
+
+  // Calls UpdateLocalSurfaceIdIfNecessary() and if the current LocalSurfaceId
+  // is valid, updates ClientSurfaceEmbedder.
+  void UpdateLocalSurfaceIdAndClientSurfaceEmbedder();
 
   // Calls HandleBoundsOrScaleFactorChange() it the scale factor has changed.
   void CheckForScaleFactorChange();
