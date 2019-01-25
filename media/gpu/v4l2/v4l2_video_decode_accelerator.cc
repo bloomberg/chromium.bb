@@ -527,6 +527,16 @@ void V4L2VideoDecodeAccelerator::AssignEGLImage(size_t buffer_index,
   DCHECK(!output_record.egl_fence);
 
   output_record.egl_image = egl_image;
+
+  // Make ourselves available if CreateEGLImageFor has been called from
+  // ImportBufferForPictureTask.
+  if (!image_processor_) {
+    output_wait_map_.erase(picture_buffer_id);
+    if (decoder_state_ != kChangingResolution) {
+      Enqueue();
+      ScheduleDecodeBufferTaskIfNeeded();
+    }
+  }
 }
 
 void V4L2VideoDecodeAccelerator::ImportBufferForPicture(
@@ -668,13 +678,13 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
                          base::Passed(&dmabuf_fds), iter->texture_id,
                          egl_image_size_, egl_image_format_fourcc_));
     }
-  }
-
-  // The buffer can now be used for decoding
-  output_wait_map_.erase(picture_buffer_id);
-  if (decoder_state_ != kChangingResolution) {
-    Enqueue();
-    ScheduleDecodeBufferTaskIfNeeded();
+  } else {
+    // The buffer can now be used for decoding
+    output_wait_map_.erase(picture_buffer_id);
+    if (decoder_state_ != kChangingResolution) {
+      Enqueue();
+      ScheduleDecodeBufferTaskIfNeeded();
+    }
   }
 }
 
