@@ -974,7 +974,9 @@ class SymbolGroup(BaseSymbol):
       diff_status = None
       if symbol.IsDelta():
         diff_status = symbol.diff_status
-      return (symbol.object_path, name, diff_status)
+      if symbol.object_path or symbol.full_name.startswith('**'):
+        return (symbol.object_path, name, diff_status)
+      return (symbol.address, name, diff_status)
 
     # Use a custom factory to fill in name & template_name.
     def group_factory(token, symbols):
