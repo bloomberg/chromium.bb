@@ -246,6 +246,13 @@ class CORE_EXPORT InvalidationSet
     bool IsEmpty(const Flags&) const;
     bool IsHashSet(const Flags& flags) const { return flags.bits_ & GetMask(); }
 
+    StringImpl* GetStringImpl(const Flags& flags) const {
+      return IsHashSet(flags) ? nullptr : string_impl_;
+    }
+    const HashSet<AtomicString>* GetHashSet(const Flags& flags) const {
+      return IsHashSet(flags) ? hash_set_ : nullptr;
+    }
+
     // A simple forward iterator, which can either "iterate" over a single
     // StringImpl, or act as a wrapper for HashSet<AtomicString>::iterator.
     class Iterator {
@@ -356,6 +363,11 @@ class CORE_EXPORT InvalidationSet
   Backing<BackingType::kAttributes>::Range Attributes() const {
     return attributes_.Items(backing_flags_);
   }
+
+  // Look for any class name on Element that is contained in |classes_|.
+  StringImpl* FindAnyClass(Element&) const;
+  // Look for any attribute on Element that is contained in |attributes_|.
+  StringImpl* FindAnyAttribute(Element&) const;
 
   Backing<BackingType::kClasses> classes_;
   Backing<BackingType::kIds> ids_;
