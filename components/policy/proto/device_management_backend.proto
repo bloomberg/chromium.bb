@@ -821,6 +821,8 @@ message BatteryInfo {
   optional int32 cycle_count = 6;
   // Last sampling data.
   repeated BatterySample sample = 7;
+  // Designed minimum output voltage (mV)
+  optional int32 design_min_voltage = 9;
 }
 
 // Status of the power subsystem
