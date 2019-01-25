@@ -609,11 +609,6 @@ void SpellChecker::Trace(blink::Visitor* visitor) {
   visitor->Trace(idle_spell_check_controller_);
 }
 
-void SpellChecker::PrepareForLeakDetection() {
-  spell_check_requester_->PrepareForLeakDetection();
-  idle_spell_check_controller_->Deactivate();
-}
-
 Vector<TextCheckingResult> SpellChecker::FindMisspellings(const String& text) {
   Vector<UChar> characters;
   text.AppendTo(characters);

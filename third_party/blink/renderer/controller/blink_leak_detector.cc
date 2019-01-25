@@ -54,23 +54,6 @@ void BlinkLeakDetector::PerformLeakDetection(
   WorkerThread::TerminateAllWorkersForTesting();
   GetMemoryCache()->EvictResources();
 
-  // If the spellchecker is allowed to continue issuing requests while the
-  // leak detector runs, leaks may flakily be reported as the requests keep
-  // their associated element (and document) alive.
-  //
-  // Stop the spellchecker to prevent this.
-  // Currently PrepareForLeakDetection takes frame to get the spellchecker,
-  // but in the future when leak detection runs with multiple frames,
-  // this code must be refactored so that it iterates thru all the frames.
-  for (Page* page : Page::OrdinaryPages()) {
-    for (Frame* frame = page->MainFrame(); frame;
-         frame = frame->Tree().TraverseNext()) {
-      if (!frame->IsLocalFrame())
-        continue;
-      ToLocalFrame(frame)->GetSpellChecker().PrepareForLeakDetection();
-    }
-  }
-
   // FIXME: HTML5 Notification should be closed because notification affects
   // the result of number of DOM objects.
   V8PerIsolateData::From(isolate)->ClearScriptRegexpContext();
