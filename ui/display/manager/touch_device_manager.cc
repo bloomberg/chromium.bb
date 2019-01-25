@@ -35,10 +35,17 @@ bool IsDeviceConnectedViaUsb(const base::FilePath& path) {
 
   for (const auto& component : components) {
     if (base::StartsWith(component, "usb",
-                         base::CompareCase::INSENSITIVE_ASCII))
+                         base::CompareCase::INSENSITIVE_ASCII)) {
+      return true;
+    }
+
+    // TODO(malaykeshav): When evdi starts registering with the usb subsystem
+    // in the kernel, this would no longer be needed. All evdi displays are USB
+    // right now. This might change in the future however.
+    // See https://crbug.com/923165 for more info.
+    if (base::StartsWith(component, "evdi", base::CompareCase::SENSITIVE))
       return true;
   }
-
   return false;
 }
 
