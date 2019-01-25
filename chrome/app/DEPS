@@ -34,6 +34,7 @@ include_rules = [
   "+pdf/pdf_ppapi.h",
   "+remoting/client/plugin",
   "+sandbox",
+  "+services/preferences/public",
   "+services/service_manager/public",
   "+services/ws/public",
   "+third_party/breakpad/breakpad",
@@ -59,7 +60,6 @@ specific_include_rules = {
     "+extensions/buildflags",
     "+extensions/common",
     "+services/identity",
-    "+services/preferences",
     "+services/resource_coordinator/public",
     "+services/ws/common",
   ],
@@ -102,7 +102,6 @@ specific_include_rules = {
     "+extensions/buildflags",
     "+mash/public",
     "+services/content/simple_browser",
-    "+services/preferences",
     "+services/proxy_resolver",
   ],
   "chrome_renderer_manifest\.cc": [

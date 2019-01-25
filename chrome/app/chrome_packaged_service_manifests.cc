@@ -17,7 +17,7 @@
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
-#include "services/preferences/local_state_manifest.h"
+#include "services/preferences/public/cpp/local_state_manifest.h"
 #include "services/proxy_resolver/proxy_resolver_manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
@@ -137,7 +137,7 @@ GetChromePackagedServiceManifests() {
       unzip_service::GetManifest(),
       file_util::GetManifest(),
       proxy_resolver::GetManifest(),
-      local_state::GetManifest(),
+      prefs::GetLocalStateManifest(),
       noop::GetManifest(),
 #if BUILDFLAG(ENABLE_EXTENSIONS)
       removable_storage_writer::GetManifest(),

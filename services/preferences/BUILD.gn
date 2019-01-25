@@ -2,19 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/catalog/public/tools/catalog.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
-
-service_manifest("manifest") {
-  name = "preferences"
-  source = "manifest.json"
-}
-
-service_manifest("local_state_manifest") {
-  name = "local_state"
-  source = "local_state_manifest.json"
-}
 
 source_set("preferences") {
   visibility = [
@@ -70,33 +58,9 @@ source_set("tests") {
   if (!is_ios) {
     sources += [ "pref_service_factory_unittest.cc" ]
     deps += [
-      ":tests_catalog_source",
+      "//services/preferences/public/cpp:manifest",
       "//services/service_manager/public/cpp/test:test_support",
+      "//services/service_manager/public/mojom",
     ]
   }
-}
-
-service_manifest("unittest_manifest") {
-  name = "prefs_unittests"
-  source = "unittest_manifest.json"
-  packaged_services = [
-    ":manifest",
-    ":unittest_helper_manifest",
-  ]
-}
-
-service_manifest("unittest_helper_manifest") {
-  name = "prefs_unittest_helper"
-  source = "unittest_helper_manifest.json"
-}
-
-catalog("tests_catalog") {
-  testonly = true
-  embedded_services = [ ":unittest_manifest" ]
-}
-
-catalog_cpp_source("tests_catalog_source") {
-  testonly = true
-  catalog = ":tests_catalog"
-  generated_function_name = "prefs::CreateServiceTestCatalog"
 }
