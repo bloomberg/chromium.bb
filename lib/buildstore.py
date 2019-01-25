@@ -74,7 +74,7 @@ class BuildStore(object):
       self.cidb_conn if initialized.
     """
     if not self.InitializeClients():
-      return
+      raise BuildStoreException('BuildStore clients could not be initialized.')
 
     if self.cidb_conn:
       return self.cidb_conn
@@ -138,7 +138,7 @@ class BuildStore(object):
       build_id: incremental primary ID of the build in CIDB.
     """
     if not self.InitializeClients():
-      return
+      raise BuildStoreException('BuildStore clients could not be initialized.')
     build_id = 0
     if self._write_to_cidb:
       build_id = self.cidb_conn.InsertBuild(
@@ -165,7 +165,7 @@ class BuildStore(object):
       message_subtype, message_value, timestamp, board.
     """
     if not self.InitializeClients():
-      return
+      raise BuildStoreException('BuildStore clients could not be initialized.')
     if not self._read_from_bb:
       return self.cidb_conn.GetBuildMessages(build_id, message_type,
                                              message_subtype)
@@ -188,7 +188,7 @@ class BuildStore(object):
       Integer primary key of inserted stage, i.e. build_stage_id
     """
     if not self.InitializeClients():
-      return
+      raise BuildStoreException('BuildStore clients could not be initialized.')
     if self._write_to_cidb:
       return self.cidb_conn.InsertBuildStage(build_id, name, board, status)
 
@@ -217,7 +217,7 @@ class BuildStore(object):
       The number of rows that were updated.
     """
     if not self.InitializeClients():
-      return
+      raise BuildStoreException('BuildStore clients could not be initialized.')
     if self._write_to_cidb:
       return self.cidb_conn.FinishBuild(
           build_id, status=status, summary=summary, metadata_url=metadata_url,
@@ -237,7 +237,7 @@ class BuildStore(object):
               for default "inflight".
     """
     if not self.InitializeClients():
-      return
+      raise BuildStoreException('BuildStore clients could not be initialized.')
     if self._write_to_cidb:
       self.cidb_conn.FinishChildConfig(build_id, child_config, status=status)
 
@@ -248,7 +248,7 @@ class BuildStore(object):
       build_stage_id: primary key of the build stage in buildStageTable.
     """
     if not self.InitializeClients():
-      return
+      raise BuildStoreException('BuildStore clients could not be initialized.')
     if self._write_to_cidb:
       return self.cidb_conn.StartBuildStage(build_stage_id)
 
@@ -259,7 +259,7 @@ class BuildStore(object):
       build_stage_id: primary key of the build stage in buildStageTable.
     """
     if not self.InitializeClients():
-      return
+      raise BuildStoreException('BuildStore clients could not be initialized.')
     if self._write_to_cidb:
       return self.cidb_conn.WaitBuildStage(build_stage_id)
 
@@ -271,7 +271,7 @@ class BuildStore(object):
       status: one of constants.BUILDER_COMPLETED_STATUSES
     """
     if not self.InitializeClients():
-      return
+      raise BuildStoreException('BuildStore clients could not be initialized.')
     if self._write_to_cidb:
       return self.cidb_conn.FinishBuildStage(build_stage_id, status)
 
@@ -283,7 +283,7 @@ class BuildStore(object):
       metadata: CBuildbotMetadata instance to update with.
     """
     if not self.InitializeClients():
-      return
+      raise BuildStoreException('BuildStore clients could not be initialized.')
     if self._write_to_cidb:
       return self.cidb_conn.UpdateMetadata(build_id, metadata)
 
@@ -295,7 +295,7 @@ class BuildStore(object):
       timeout: new timeout value.
     """
     if not self.InitializeClients():
-      return
+      raise BuildStoreException('BuildStore clients could not be initialized.')
     if self._write_to_cidb:
       return self.cidb_conn.ExtendDeadline(build_id, timeout)
 
@@ -312,7 +312,7 @@ class BuildStore(object):
       milestone_version, important).
     """
     if not self.InitializeClients():
-      return
+      raise BuildStoreException('BuildStore clients could not be initialized.')
     if not self._read_from_bb:
       if buildbucket_ids:
         return self.cidb_conn.GetBuildStatusesWithBuildbucketIds(

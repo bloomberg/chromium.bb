@@ -128,8 +128,8 @@ class TestBuildStore(cros_test_lib.MockTestCase):
 
   def testInsertBuildStage(self):
     """Tests the redirect for InsertBuildStage function."""
-    self.PatchObject(BuildStore, 'InitializeClients',
-                     return_value=True)
+    init = self.PatchObject(BuildStore, 'InitializeClients',
+                            return_value=True)
     bs = BuildStore()
     bs.cidb_conn = mock.MagicMock()
     self.PatchObject(bs.cidb_conn, 'InsertBuildStage',
@@ -140,11 +140,14 @@ class TestBuildStore(cros_test_lib.MockTestCase):
         constants.MOCK_BUILD_ID, 'stage_name', None,
         constants.BUILDER_STATUS_PLANNED)
     self.assertEqual(build_stage_id, constants.MOCK_STAGE_ID)
+    init.return_value = False
+    with self.assertRaises(buildstore.BuildStoreException):
+      bs.InsertBuildStage(constants.MOCK_BUILD_ID, 'stage_name')
 
   def testStartBuildStage(self):
     """Tests the redirect for StartBuildStage function."""
-    self.PatchObject(BuildStore, 'InitializeClients',
-                     return_value=True)
+    init = self.PatchObject(BuildStore, 'InitializeClients',
+                            return_value=True)
     bs = BuildStore()
     bs.cidb_conn = mock.MagicMock()
     stage_id = mock.Mock()
@@ -153,11 +156,14 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     bs.cidb_conn.StartBuildStage.assert_called_once_with(
         constants.MOCK_BUILD_ID)
     self.assertEqual(ret, stage_id)
+    init.return_value = False
+    with self.assertRaises(buildstore.BuildStoreException):
+      bs.StartBuildStage(constants.MOCK_BUILD_ID)
 
   def testWaitBuildStage(self):
     """Tests the redirect for WaitBuildStage function."""
-    self.PatchObject(BuildStore, 'InitializeClients',
-                     return_value=True)
+    init = self.PatchObject(BuildStore, 'InitializeClients',
+                            return_value=True)
     bs = BuildStore()
     bs.cidb_conn = mock.MagicMock()
     stage_id = mock.Mock()
@@ -166,11 +172,14 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     bs.cidb_conn.WaitBuildStage.assert_called_once_with(
         constants.MOCK_BUILD_ID)
     self.assertEqual(ret, stage_id)
+    init.return_value = False
+    with self.assertRaises(buildstore.BuildStoreException):
+      bs.WaitBuildStage(constants.MOCK_BUILD_ID)
 
   def testFinishBuildStage(self):
     """Tests the redirect for FinishBuildStage function."""
-    self.PatchObject(BuildStore, 'InitializeClients',
-                     return_value=True)
+    init = self.PatchObject(BuildStore, 'InitializeClients',
+                            return_value=True)
     bs = BuildStore()
     bs.cidb_conn = mock.MagicMock()
     stage_id = mock.Mock()
@@ -179,11 +188,14 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     bs.cidb_conn.FinishBuildStage.assert_called_once_with(
         constants.MOCK_BUILD_ID, 'status')
     self.assertEqual(ret, stage_id)
+    init.return_value = False
+    with self.assertRaises(buildstore.BuildStoreException):
+      bs.FinishBuildStage(constants.MOCK_BUILD_ID, 'status')
 
   def testFinishBuild(self):
     """Tests the redirect for FinishBuild function."""
-    self.PatchObject(BuildStore, 'InitializeClients',
-                     return_value=True)
+    init = self.PatchObject(BuildStore, 'InitializeClients',
+                            return_value=True)
     bs = BuildStore()
     bs.cidb_conn = mock.MagicMock()
     status = mock.Mock()
@@ -196,11 +208,15 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     bs.cidb_conn.FinishBuild.assert_called_once_with(
         constants.MOCK_BUILD_ID, status=status, summary=summary,
         metadata_url=metadata_url, strict=strict)
+    init.return_value = False
+    with self.assertRaises(buildstore.BuildStoreException):
+      bs.FinishBuild(constants.MOCK_BUILD_ID, status=status, summary=summary,
+                     metadata_url=metadata_url, strict=strict)
 
   def testFinishChildConfig(self):
     """Tests the redirect for FinishChildConfig function."""
-    self.PatchObject(BuildStore, 'InitializeClients',
-                     return_value=True)
+    init = self.PatchObject(BuildStore, 'InitializeClients',
+                            return_value=True)
     bs = BuildStore()
     bs.cidb_conn = mock.MagicMock()
     child_config = mock.Mock()
@@ -209,11 +225,14 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     bs.FinishChildConfig(constants.MOCK_BUILD_ID, child_config, status=status)
     bs.cidb_conn.FinishChildConfig.assert_called_once_with(
         constants.MOCK_BUILD_ID, child_config, status=status)
+    init.return_value = False
+    with self.assertRaises(buildstore.BuildStoreException):
+      bs.FinishChildConfig(constants.MOCK_BUILD_ID, child_config, status=status)
 
   def testUpdateMetadata(self):
     """Tests the redirect for UpdateMetadata function."""
-    self.PatchObject(BuildStore, 'InitializeClients',
-                     return_value=True)
+    init = self.PatchObject(BuildStore, 'InitializeClients',
+                            return_value=True)
     bs = BuildStore()
     bs.cidb_conn = mock.MagicMock()
     fake_metadata = {}
@@ -221,11 +240,14 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     bs.UpdateMetadata(constants.MOCK_BUILD_ID, fake_metadata)
     bs.cidb_conn.UpdateMetadata.assert_called_once_with(
         constants.MOCK_BUILD_ID, fake_metadata)
+    init.return_value = False
+    with self.assertRaises(buildstore.BuildStoreException):
+      bs.UpdateMetadata(constants.MOCK_BUILD_ID, fake_metadata)
 
   def testExtendDeadline(self):
     """Tests the redirect for ExtendDeadline function."""
-    self.PatchObject(BuildStore, 'InitializeClients',
-                     return_value=True)
+    init = self.PatchObject(BuildStore, 'InitializeClients',
+                            return_value=True)
     bs = BuildStore()
     bs.cidb_conn = mock.MagicMock()
     mock_timeout = mock.Mock()
@@ -233,3 +255,6 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     bs.ExtendDeadline(constants.MOCK_BUILD_ID, mock_timeout)
     bs.cidb_conn.ExtendDeadline.assert_called_once_with(
         constants.MOCK_BUILD_ID, mock_timeout)
+    init.return_value = False
+    with self.assertRaises(buildstore.BuildStoreException):
+      bs.ExtendDeadline(constants.MOCK_BUILD_ID, mock_timeout)
