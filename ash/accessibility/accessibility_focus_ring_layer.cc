@@ -10,7 +10,6 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"
 
 namespace ash {
@@ -20,10 +19,8 @@ namespace {
 // The number of pixels in the color gradient that fades to transparent.
 const int kGradientWidth = 6;
 
-// The color of the focus ring. In the future this might be a parameter.
-const int kFocusRingColorRed = 247;
-const int kFocusRingColorGreen = 152;
-const int kFocusRingColorBlue = 58;
+// The default color of the focus ring.
+const SkColor kDefaultFocusRingColor = SkColorSetARGB(255, 247, 152, 58);
 
 int sign(int x) {
   return ((x > 0) ? 1 : (x == 0) ? 0 : -1);
@@ -106,6 +103,15 @@ void AccessibilityFocusRingLayer::Set(const AccessibilityFocusRing& ring) {
   CreateOrUpdateLayer(root_window, "AccessibilityFocusRing", bounds);
 }
 
+void AccessibilityFocusRingLayer::EnableDoubleFocusRing(
+    SkColor secondary_color) {
+  secondary_color_ = secondary_color;
+}
+
+void AccessibilityFocusRingLayer::DisableDoubleFocusRing() {
+  secondary_color_.reset();
+}
+
 void AccessibilityFocusRingLayer::OnPaintLayer(
     const ui::PaintContext& context) {
   ui::PaintRecorder recorder(context, layer()->size());
@@ -115,11 +121,33 @@ void AccessibilityFocusRingLayer::OnPaintLayer(
   flags.setStyle(cc::PaintFlags::kStroke_Style);
   flags.setStrokeWidth(2);
 
+  if (secondary_color_)
+    DrawDoubleFocusRing(recorder, flags);
+  else
+    DrawFocusRing(recorder, flags);
+}
+
+void AccessibilityFocusRingLayer::DrawDoubleFocusRing(
+    ui::PaintRecorder& recorder,
+    cc::PaintFlags& flags) {
   SkColor base_color =
-      has_custom_color()
-          ? custom_color()
-          : SkColorSetARGB(255, kFocusRingColorRed, kFocusRingColorGreen,
-                           kFocusRingColorBlue);
+      has_custom_color() ? custom_color() : kDefaultFocusRingColor;
+
+  SkPath path;
+  gfx::Vector2d offset = layer()->bounds().OffsetFromOrigin();
+  flags.setColor(base_color);
+  path = MakePath(ring_, 0, offset);
+  recorder.canvas()->DrawPath(path, flags);
+
+  flags.setColor(*(secondary_color_));
+  path = MakePath(ring_, 2, offset);
+  recorder.canvas()->DrawPath(path, flags);
+}
+
+void AccessibilityFocusRingLayer::DrawFocusRing(ui::PaintRecorder& recorder,
+                                                cc::PaintFlags& flags) {
+  SkColor base_color =
+      has_custom_color() ? custom_color() : kDefaultFocusRingColor;
 
   SkPath path;
   gfx::Vector2d offset = layer()->bounds().OffsetFromOrigin();
