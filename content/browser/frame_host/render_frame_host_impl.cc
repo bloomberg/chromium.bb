@@ -47,6 +47,7 @@
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/input/input_injector_impl.h"
+#include "content/browser/frame_host/ipc_utils.h"
 #include "content/browser/frame_host/keep_alive_handle_factory.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
@@ -2061,29 +2062,11 @@ void RenderFrameHostImpl::OnFrameFocused() {
 }
 
 void RenderFrameHostImpl::OnOpenURL(const FrameHostMsg_OpenURL_Params& params) {
-  GURL validated_url(params.url);
-  GetProcess()->FilterURL(false, &validated_url);
-
-  mojo::ScopedMessagePipeHandle blob_url_token_handle(params.blob_url_token);
-  blink::mojom::BlobURLTokenPtr blob_url_token(
-      blink::mojom::BlobURLTokenPtrInfo(std::move(blob_url_token_handle),
-                                        blink::mojom::BlobURLToken::Version_));
+  // Verify and unpack IPC payload.
+  GURL validated_url;
   scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;
-  if (blob_url_token) {
-    if (!params.url.SchemeIsBlob()) {
-      bad_message::ReceivedBadMessage(
-          GetProcess(), bad_message::RFH_BLOB_URL_TOKEN_FOR_NON_BLOB_URL);
-      return;
-    }
-    blob_url_loader_factory =
-        ChromeBlobStorageContext::URLLoaderFactoryForToken(
-            GetSiteInstance()->GetBrowserContext(), std::move(blob_url_token));
-  }
-
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanReadRequestBody(
-          GetSiteInstance(), params.resource_request_body)) {
-    bad_message::ReceivedBadMessage(GetProcess(),
-                                    bad_message::RFH_ILLEGAL_UPLOAD_PARAMS);
+  if (!VerifyOpenURLParams(GetSiteInstance(), params, &validated_url,
+                           &blob_url_loader_factory)) {
     return;
   }
 
@@ -3910,7 +3893,7 @@ void RenderFrameHostImpl::BeginNavigation(
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanReadRequestBody(
           GetSiteInstance(), validated_params.post_data)) {
     bad_message::ReceivedBadMessage(GetProcess(),
-                                    bad_message::RFH_ILLEGAL_UPLOAD_PARAMS);
+                                    bad_message::ILLEGAL_UPLOAD_PARAMS);
     return;
   }
 

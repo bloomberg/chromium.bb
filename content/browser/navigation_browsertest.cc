@@ -565,7 +565,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, PostUploadIllegalFilePath) {
       "document.getElementById('file-form').submit();",
       &result));
   EXPECT_TRUE(result);
-  EXPECT_EQ(bad_message::RFH_ILLEGAL_UPLOAD_PARAMS, process_kill_waiter.Wait());
+  EXPECT_EQ(bad_message::ILLEGAL_UPLOAD_PARAMS, process_kill_waiter.Wait());
 }
 
 // Test case to verify that redirects to data: URLs are properly disallowed,
