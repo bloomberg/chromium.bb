@@ -1090,6 +1090,11 @@
           'can_use_on_swarming_builders': False,
         },
       },
+      'http_structured_header_fuzzer': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
       'hunspell_fuzzer': {
         'swarming': {
           'can_use_on_swarming_builders': False,
@@ -1876,11 +1881,6 @@
         },
       },
       'signed_exchange_envelope_fuzzer': {
-        'swarming': {
-          'can_use_on_swarming_builders': False,
-        },
-      },
-      'signed_exchange_signature_header_field_fuzzer': {
         'swarming': {
           'can_use_on_swarming_builders': False,
         },

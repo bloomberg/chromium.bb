@@ -110,15 +110,14 @@ fuzzer_test("signed_exchange_envelope_fuzzer") {
   seed_corpus = "//content/test/data/sxg/"
 }
 
-fuzzer_test("signed_exchange_signature_header_field_fuzzer") {
+fuzzer_test("http_structured_header_fuzzer") {
   sources = [
-    "signed_exchange_signature_header_field_fuzzer.cc",
+    "http_structured_header_fuzzer.cc",
   ]
   deps = [
-    "//base:i18n",
     "//content/test:test_support",
   ]
-  seed_corpus = "//content/test/data/fuzzer_corpus/signed_exchange_signature_header_field_data/"
+  seed_corpus = "//content/test/data/fuzzer_corpus/http_structured_header_data/"
 }
 
 fuzzer_test("signed_exchange_certificate_chain_fuzzer") {
