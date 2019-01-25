@@ -107,7 +107,7 @@ input:focus:after {
 
 .buttons button:active,
 .buttons input:active {
-  -webkit-transform: scale(1.07);
+  transform: scale(1.07);
 }
 
 .buttons button,
@@ -155,7 +155,7 @@ input:focus:after {
 .top-stripe {
   position: absolute;
   top: 48px;
-  -webkit-transform: translateY(-50%);
+  transform: translateY(-50%);
 }
 
 body.shift-top-stripe .top-stripe {
@@ -166,7 +166,7 @@ body.shift-top-stripe .top-stripe {
 body:not(.tablet-landscape) .actions-group {
   position: absolute;
   bottom: 56px;
-  -webkit-transform: translateY(50%);
+  transform: translateY(50%);
 }
 
 body.tablet-landscape .bottom-stripe {
@@ -181,7 +181,7 @@ body.shift-bottom-stripe:not(.tablet-landscape) .actions-group {
 .left-stripe {
   position: absolute;
   left: 48px;
-  -webkit-transform: translateX(-50%);
+  transform: translateX(-50%);
 }
 
 body.shift-left-stripe .left-stripe {
@@ -192,7 +192,7 @@ body.shift-left-stripe .left-stripe {
 body.tablet-landscape .actions-group {
   position: absolute;
   right: 56px;
-  -webkit-transform: translateX(50%);
+  transform: translateX(50%);
 }
 
 body:not(.tablet-landscape) .right-stripe {
@@ -205,19 +205,19 @@ body.shift-right-stripe.tablet-landscape .actions-group {
 }
 
 .top-stripe.right-stripe {
-  -webkit-transform: translate(50%, -50%);
+  transform: translate(50%, -50%);
 }
 
 .top-stripe.left-stripe {
-  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
 }
 
 .bottom-stripe.right-stripe {
-  -webkit-transform: translate(50%, 50%);
+  transform: translate(50%, 50%);
 }
 
 .bottom-stripe.left-stripe {
-  -webkit-transform: translate(-50%, 50%);
+  transform: translate(-50%, 50%);
 }
 
 .actions-group button {
@@ -288,19 +288,19 @@ body.record-mode.taking #shutter:hover {
 }
 
 body.record-mode #switch-recordvideo {
-  -webkit-transform: translateX(-160px);
+  transform: translateX(-160px);
 }
 
 body.tablet-landscape.record-mode #switch-recordvideo {
-  -webkit-transform: translateY(160px);
+  transform: translateY(160px);
 }
 
 body:not(.record-mode) #switch-takephoto {
-  -webkit-transform: translateX(160px);
+  transform: translateX(160px);
 }
 
 body.tablet-landscape:not(.record-mode) #switch-takephoto {
-  -webkit-transform: translateY(-160px);
+  transform: translateY(-160px);
 }
 
 body.record-mode #switch-recordvideo,
@@ -370,7 +370,7 @@ body.mode-switching:not(.streaming) #camera-mode {
   position: absolute;
   left: 50%;
   top: 50%;
-  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
 }
 
 .options-group {
@@ -496,7 +496,7 @@ body.streaming #preview-video {
 
 body.mirror #preview-video,
 body.mirror #preview-focus {
-  -webkit-transform: scaleX(-1);
+  transform: scaleX(-1);
 }
 
 #preview-focus {
@@ -515,11 +515,11 @@ body.mirror #preview-focus {
 body:not(.streaming) #preview-video {
   filter: blur(10px);
   /* Scale up to hide blurred edges. */
-  -webkit-transform: scale(1.03, 1.03);
+  transform: scale(1.03, 1.03);
 }
 
 body.mirror:not(.streaming) #preview-video {
-  -webkit-transform: scale(-1.03, 1.03);
+  transform: scale(-1.03, 1.03);
 }
 
 #preview-grid {
@@ -547,7 +547,7 @@ body:not(.streaming) .options-group {
   right: 0;
   top: 50%;
   height: 100%;
-  -webkit-transform: translateY(-50%);
+  transform: translateY(-50%);
 }
 
 body._4x4 #preview-grid-horizontal:before {
@@ -585,7 +585,7 @@ body.gridsettings._4x4 #preview-grid-horizontal:before {
   top: 0;
   left: 50%;
   width: 100%;
-  -webkit-transform: translateX(-50%);
+  transform: translateX(-50%);
 }
 
 body._4x4 #preview-grid-vertical:before {
@@ -963,17 +963,17 @@ body._10sec .description span[i18n-content=labelTimer10s] {
 }
 
 #dialog-popup {
-  -webkit-transform: translateY(20px);
+  transform: translateY(20px);
   background: white;
   display: flex;
   flex-direction: column;
   padding: 20px;
   border-radius: 4px;
-  transition: -webkit-transform 200ms;
+  transition: transform 200ms;
 }
 
 body.dialog #dialog #dialog-popup {
-  -webkit-transform: translateY(0);
+  transform: translateY(0);
 }
 
 #dialog #dialog-msg {
