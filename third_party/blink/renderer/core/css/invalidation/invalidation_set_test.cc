@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/css/invalidation/invalidation_set.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -230,6 +232,78 @@ TEST(InvalidationSetTest, Backing_Iterator) {
     ASSERT_TRUE(strings.Contains("test2"));
     ASSERT_TRUE(strings.Contains("test3"));
   }
+}
+
+TEST(InvalidationSetTest, Backing_GetStringImpl) {
+  BackingFlags flags;
+  Backing<BackingType::kClasses> backing;
+  EXPECT_FALSE(backing.GetStringImpl(flags));
+  backing.Add(flags, "a");
+  EXPECT_EQ("a", AtomicString(backing.GetStringImpl(flags)));
+  backing.Add(flags, "b");
+  EXPECT_FALSE(backing.GetStringImpl(flags));
+}
+
+TEST(InvalidationSetTest, Backing_GetHashSet) {
+  BackingFlags flags;
+  Backing<BackingType::kClasses> backing;
+  EXPECT_FALSE(backing.GetHashSet(flags));
+  backing.Add(flags, "a");
+  EXPECT_FALSE(backing.GetHashSet(flags));
+  backing.Add(flags, "b");
+  EXPECT_TRUE(backing.GetHashSet(flags));
+}
+
+TEST(InvalidationSetTest, ClassInvalidatesElement) {
+  auto dummy_page_holder = DummyPageHolder::Create(IntSize(800, 600));
+  auto& document = dummy_page_holder->GetDocument();
+  document.body()->SetInnerHTMLFromString("<div id=test class='a b'>");
+  document.View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  Element* element = document.getElementById("test");
+  ASSERT_TRUE(element);
+
+  scoped_refptr<InvalidationSet> set = DescendantInvalidationSet::Create();
+  EXPECT_FALSE(set->InvalidatesElement(*element));
+  // Adding one string sets the string_impl_ of the classes_ Backing.
+  set->AddClass("a");
+  EXPECT_TRUE(set->InvalidatesElement(*element));
+  // Adding another upgrades to a HashSet.
+  set->AddClass("c");
+  EXPECT_TRUE(set->InvalidatesElement(*element));
+
+  // These sets should not cause invalidation.
+  set = DescendantInvalidationSet::Create();
+  set->AddClass("c");
+  EXPECT_FALSE(set->InvalidatesElement(*element));
+  set->AddClass("d");
+  EXPECT_FALSE(set->InvalidatesElement(*element));
+}
+
+TEST(InvalidationSetTest, AttributeInvalidatesElement) {
+  auto dummy_page_holder = DummyPageHolder::Create(IntSize(800, 600));
+  auto& document = dummy_page_holder->GetDocument();
+  document.body()->SetInnerHTMLFromString("<div id=test a b>");
+  document.View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  Element* element = document.getElementById("test");
+  ASSERT_TRUE(element);
+
+  scoped_refptr<InvalidationSet> set = DescendantInvalidationSet::Create();
+  EXPECT_FALSE(set->InvalidatesElement(*element));
+  // Adding one string sets the string_impl_ of the classes_ Backing.
+  set->AddAttribute("a");
+  EXPECT_TRUE(set->InvalidatesElement(*element));
+  // Adding another upgrades to a HashSet.
+  set->AddAttribute("c");
+  EXPECT_TRUE(set->InvalidatesElement(*element));
+
+  // These sets should not cause invalidation.
+  set = DescendantInvalidationSet::Create();
+  set->AddAttribute("c");
+  EXPECT_FALSE(set->InvalidatesElement(*element));
+  set->AddAttribute("d");
+  EXPECT_FALSE(set->InvalidatesElement(*element));
 }
 
 // Once we setWholeSubtreeInvalid, we should not keep the HashSets.
