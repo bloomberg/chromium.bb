@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -351,15 +352,17 @@ class MenuControllerTest : public ViewsTestBase {
   }
 
   gfx::Rect CalculateMenuBounds(const MenuBoundsOptions& options) {
-    menu_controller_->state_.anchor = options.menu_anchor;
-    menu_controller_->state_.initial_bounds = options.anchor_bounds;
-    menu_controller_->state_.monitor_bounds = options.monitor_bounds;
-    menu_item_->SetActualMenuPosition(options.menu_position);
-    menu_item_->GetSubmenu()->GetScrollViewContainer()->SetPreferredSize(
-        options.menu_size);
-    bool resulting_direction;
+    SetUpMenuControllerForCalculateBounds(options);
+    bool is_leading;
     return menu_controller_->CalculateMenuBounds(menu_item_.get(), true,
-                                                 &resulting_direction);
+                                                 &is_leading);
+  }
+
+  gfx::Rect CalculateBubbleMenuBounds(const MenuBoundsOptions& options) {
+    SetUpMenuControllerForCalculateBounds(options);
+    bool is_leading;
+    return menu_controller_->CalculateBubbleMenuBounds(menu_item_.get(), true,
+                                                       &is_leading);
   }
 
 #if defined(USE_AURA)
@@ -419,6 +422,102 @@ class MenuControllerTest : public ViewsTestBase {
     test_views_delegate_->set_release_ref_callback(base::Bind(
         &MenuControllerTest::DestroyMenuController, base::Unretained(this)));
     menu_controller_->ExitMenu();
+  }
+
+  void TestMenuFitsOnScreen(MenuAnchorPosition menu_anchor_position) {
+    SCOPED_TRACE(
+        base::StringPrintf("MenuAnchorPosition: %d\n", menu_anchor_position));
+    MenuBoundsOptions options;
+    options.menu_anchor = menu_anchor_position;
+    const int display_size = 500;
+    options.monitor_bounds = gfx::Rect(0, 0, display_size, display_size);
+
+    // Simulate a bottom shelf with a tall menu.
+    const int button_size = 50;
+    options.anchor_bounds = gfx::Rect(
+        display_size / 2, display_size - button_size, button_size, button_size);
+    gfx::Rect final_bounds = CalculateBubbleMenuBounds(options);
+
+    // Adjust the final bounds to not include the shadow and border.
+    const gfx::Insets border_and_shadow_insets =
+        BubbleBorder::GetBorderAndShadowInsets(
+            MenuConfig::instance().touchable_menu_shadow_elevation);
+    final_bounds.Inset(border_and_shadow_insets);
+
+    // Test that the menu will show on screen.
+    EXPECT_TRUE(options.monitor_bounds.Contains(final_bounds));
+
+    // Simulate a left shelf with a tall menu.
+    options.anchor_bounds =
+        gfx::Rect(0, display_size / 2, button_size, button_size);
+    final_bounds = CalculateBubbleMenuBounds(options);
+
+    // Adjust the final bounds to not include the shadow and border.
+    final_bounds.Inset(border_and_shadow_insets);
+
+    // Test that the menu will show on screen.
+    EXPECT_TRUE(options.monitor_bounds.Contains(final_bounds));
+
+    // Simulate right shelf with a tall menu.
+    options.anchor_bounds = gfx::Rect(
+        display_size - button_size, display_size / 2, button_size, button_size);
+    final_bounds = CalculateBubbleMenuBounds(options);
+
+    // Adjust the final bounds to not include the shadow and border.
+    final_bounds.Inset(border_and_shadow_insets);
+
+    // Test that the menu will show on screen.
+    EXPECT_TRUE(options.monitor_bounds.Contains(final_bounds));
+  }
+
+  void TestMenuFitsOnScreenSmallAnchor(
+      MenuAnchorPosition menu_anchor_position) {
+    SCOPED_TRACE(
+        base::StringPrintf("MenuAnchorPosition: %d\n", menu_anchor_position));
+    MenuBoundsOptions options;
+    options.menu_anchor = menu_anchor_position;
+    const int display_size = 500;
+    options.monitor_bounds = gfx::Rect(0, 0, display_size, display_size);
+
+    // Simulate a click on the top left corner.
+    options.anchor_bounds = gfx::Rect(0, 0, 0, 0);
+    gfx::Rect final_bounds = CalculateBubbleMenuBounds(options);
+
+    // Adjust the final bounds to not include the shadow and border.
+    const gfx::Insets border_and_shadow_insets =
+        BubbleBorder::GetBorderAndShadowInsets(
+            MenuConfig::instance().touchable_menu_shadow_elevation);
+    final_bounds.Inset(border_and_shadow_insets);
+
+    // Test that the menu is within the monitor bounds.
+    EXPECT_TRUE(options.monitor_bounds.Contains(final_bounds));
+
+    // Simulate a click on the bottom left corner.
+    options.anchor_bounds = gfx::Rect(0, display_size, 0, 0);
+    final_bounds = CalculateBubbleMenuBounds(options);
+    // Adjust the final bounds to not include the shadow and border.
+    final_bounds.Inset(border_and_shadow_insets);
+
+    // Test that the menu is within the monitor bounds.
+    EXPECT_TRUE(options.monitor_bounds.Contains(final_bounds));
+
+    // Simulate a click on the top right corner.
+    options.anchor_bounds = gfx::Rect(display_size, 0, 0, 0);
+    final_bounds = CalculateBubbleMenuBounds(options);
+    // Adjust the final bounds to not include the shadow and border.
+    final_bounds.Inset(border_and_shadow_insets);
+
+    // Test that the menu is within the monitor bounds.
+    EXPECT_TRUE(options.monitor_bounds.Contains(final_bounds));
+
+    // Simulate a click on the bottom right corner.
+    options.anchor_bounds = gfx::Rect(display_size, display_size, 0, 0);
+    final_bounds = CalculateBubbleMenuBounds(options);
+    // Adjust the final bounds to not include the shadow and border.
+    final_bounds.Inset(border_and_shadow_insets);
+
+    // Test that the menu is within the monitor bounds.
+    EXPECT_TRUE(options.monitor_bounds.Contains(final_bounds));
   }
 
  protected:
@@ -541,6 +640,15 @@ class MenuControllerTest : public ViewsTestBase {
     menu_controller_->state_.item = menu_item()->GetSubmenu()->GetMenuItemAt(0);
     menu_controller_->StartDrag(
         menu_item()->GetSubmenu()->GetMenuItemAt(0)->CreateSubmenu(), location);
+  }
+
+  void SetUpMenuControllerForCalculateBounds(const MenuBoundsOptions& options) {
+    menu_controller_->state_.anchor = options.menu_anchor;
+    menu_controller_->state_.initial_bounds = options.anchor_bounds;
+    menu_controller_->state_.monitor_bounds = options.monitor_bounds;
+    menu_item_->SetActualMenuPosition(options.menu_position);
+    menu_item_->GetSubmenu()->GetScrollViewContainer()->SetPreferredSize(
+        options.menu_size);
   }
 
   GestureTestWidget* owner() { return owner_.get(); }
@@ -1678,6 +1786,20 @@ TEST_F(MenuControllerTest, CalculateMenuBoundsMonitorFitTest) {
       options.anchor_bounds.x(), options.anchor_bounds.bottom(),
       options.monitor_bounds.width(), options.monitor_bounds.height());
   EXPECT_EQ(expected, CalculateMenuBounds(options));
+}
+
+// Test that menus show up on screen with non-zero sized anchors.
+TEST_F(MenuControllerTest, TestMenuFitsOnScreen) {
+  TestMenuFitsOnScreen(MENU_ANCHOR_BUBBLE_TOUCHABLE_ABOVE);
+  TestMenuFitsOnScreen(MENU_ANCHOR_BUBBLE_TOUCHABLE_LEFT);
+  TestMenuFitsOnScreen(MENU_ANCHOR_BUBBLE_TOUCHABLE_RIGHT);
+}
+
+// Test that menus show up on screen with zero sized anchors.
+TEST_F(MenuControllerTest, TestMenuFitsOnScreenSmallAnchor) {
+  TestMenuFitsOnScreenSmallAnchor(MENU_ANCHOR_BUBBLE_TOUCHABLE_ABOVE);
+  TestMenuFitsOnScreenSmallAnchor(MENU_ANCHOR_BUBBLE_TOUCHABLE_LEFT);
+  TestMenuFitsOnScreenSmallAnchor(MENU_ANCHOR_BUBBLE_TOUCHABLE_RIGHT);
 }
 
 // Test that a menu that was originally drawn below the anchor does not get
