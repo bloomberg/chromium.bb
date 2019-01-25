@@ -4,6 +4,7 @@
 
 #include "content/public/browser/frame_service_base.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"

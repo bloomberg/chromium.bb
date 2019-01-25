@@ -4,6 +4,7 @@
 
 #include "content/browser/network_service_client.h"
 
+#include "base/bind.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/unguessable_token.h"

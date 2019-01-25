@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_object_host.h"
 
+#include "base/bind.h"
 #include "content/browser/service_worker/service_worker_client_utils.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"

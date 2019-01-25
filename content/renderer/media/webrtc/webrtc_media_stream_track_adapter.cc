@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter.h"
 
+#include "base/bind.h"
 #include "content/renderer/media/stream/media_stream_audio_track.h"
 #include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "content/renderer/media/webrtc/media_stream_video_webrtc_sink.h"

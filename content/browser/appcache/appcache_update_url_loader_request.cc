@@ -4,6 +4,7 @@
 
 #include "content/browser/appcache/appcache_update_url_loader_request.h"
 
+#include "base/bind.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_update_url_fetcher.h"
 #include "net/http/http_response_info.h"

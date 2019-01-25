@@ -6,6 +6,7 @@
 
 #include <cinttypes>
 
+#include "base/bind.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"

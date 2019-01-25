@@ -4,6 +4,7 @@
 
 #include "content/browser/gpu_interface_provider.h"
 
+#include "base/bind.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/post_task.h"

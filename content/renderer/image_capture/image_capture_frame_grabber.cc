@@ -4,6 +4,7 @@
 
 #include "content/renderer/image_capture/image_capture_frame_grabber.h"
 
+#include "base/bind.h"
 #include "cc/paint/paint_canvas.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"

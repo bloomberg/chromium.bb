@@ -4,6 +4,7 @@
 
 #include "content/browser/loader/resource_message_filter.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "content/browser/appcache/chrome_appcache_service.h"

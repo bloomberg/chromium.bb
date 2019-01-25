@@ -4,6 +4,7 @@
 
 #include "content/browser/android/background_sync_network_observer_android.h"
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "jni/BackgroundSyncNetworkObserver_jni.h"

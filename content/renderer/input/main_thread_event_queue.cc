@@ -4,6 +4,7 @@
 
 #include "content/renderer/input/main_thread_event_queue.h"
 
+#include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/metrics/histogram_macros.h"
 #include "content/common/input/event_with_latency_info.h"

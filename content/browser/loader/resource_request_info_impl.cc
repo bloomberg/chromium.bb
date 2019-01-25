@@ -4,6 +4,7 @@
 
 #include "content/browser/loader/resource_request_info_impl.h"
 
+#include "base/bind.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"

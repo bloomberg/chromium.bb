@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/task/post_task.h"
 #include "content/browser/android/scoped_surface_request_manager.h"

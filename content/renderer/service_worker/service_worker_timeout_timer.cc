@@ -5,6 +5,7 @@
 #include "content/renderer/service_worker/service_worker_timeout_timer.h"
 
 #include "base/atomic_sequence_num.h"
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"

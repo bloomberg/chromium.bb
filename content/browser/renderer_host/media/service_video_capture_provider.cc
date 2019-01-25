@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/media/service_video_capture_provider.h"
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "content/browser/renderer_host/media/service_video_capture_device_launcher.h"
 #include "content/browser/renderer_host/media/virtual_video_capture_devices_changed_observer.h"

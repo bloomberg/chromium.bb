@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/webrtc/rtc_rtp_receiver.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "content/renderer/media/webrtc/rtc_rtp_source.h"
 #include "content/renderer/media/webrtc/rtc_stats.h"

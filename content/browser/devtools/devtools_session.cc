@@ -4,6 +4,7 @@
 
 #include "content/browser/devtools/devtools_session.h"
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/devtools/devtools_manager.h"

@@ -12,6 +12,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {

@@ -9,6 +9,7 @@
 #include <list>
 #include <string>
 
+#include "base/bind.h"
 #include "base/containers/queue.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"

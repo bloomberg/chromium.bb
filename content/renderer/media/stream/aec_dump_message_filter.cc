@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/stream/aec_dump_message_filter.h"
 
+#include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/media/aec_dump_messages.h"
 #include "content/renderer/media/webrtc_logging.h"

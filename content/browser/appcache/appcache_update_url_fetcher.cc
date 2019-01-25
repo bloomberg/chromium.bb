@@ -4,6 +4,7 @@
 
 #include "content/browser/appcache/appcache_update_url_fetcher.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/network_session_configurator/common/network_switches.h"

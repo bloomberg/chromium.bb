@@ -4,6 +4,7 @@
 
 #include "content/browser/frame_host/navigation_throttle_runner.h"
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "content/public/browser/navigation_throttle.h"

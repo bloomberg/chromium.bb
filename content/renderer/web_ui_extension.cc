@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/values.h"
 #include "content/common/frame_messages.h"
 #include "content/public/common/bindings_policy.h"

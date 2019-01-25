@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_data_pipe_reader.h"
 
+#include "base/bind.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/browser/service_worker/service_worker_version.h"

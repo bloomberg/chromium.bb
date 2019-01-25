@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/android/media_player_renderer_client.h"
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 
 namespace content {

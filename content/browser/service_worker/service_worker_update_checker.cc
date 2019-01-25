@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_update_checker.h"
 
+#include "base/bind.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"

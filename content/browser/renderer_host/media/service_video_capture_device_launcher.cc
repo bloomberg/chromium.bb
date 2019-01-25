@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/media/service_video_capture_device_launcher.h"
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "content/browser/renderer_host/media/service_launched_video_capture_device.h"
 #include "content/public/browser/browser_task_traits.h"

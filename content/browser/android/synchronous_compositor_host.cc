@@ -7,6 +7,7 @@
 #include <atomic>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"

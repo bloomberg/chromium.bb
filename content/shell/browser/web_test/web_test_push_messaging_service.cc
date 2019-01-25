@@ -4,6 +4,7 @@
 
 #include "content/shell/browser/web_test/web_test_push_messaging_service.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/stl_util.h"

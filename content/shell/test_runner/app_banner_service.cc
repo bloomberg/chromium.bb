@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/shell/test_runner/app_banner_service.h"
+#include "base/bind.h"
 
 namespace test_runner {
 

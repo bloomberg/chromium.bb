@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_single_script_update_checker.h"
 
+#include "base/bind.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/public/common/resource_type.h"

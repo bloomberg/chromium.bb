@@ -4,6 +4,7 @@
 
 #include "content/browser/devtools/devtools_url_request_interceptor.h"
 
+#include "base/bind.h"
 #include "base/strings/pattern.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"

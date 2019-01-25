@@ -4,6 +4,7 @@
 
 #include "content/browser/browser_process_sub_thread.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/metrics/histogram_macros.h"

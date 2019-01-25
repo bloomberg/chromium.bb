@@ -4,6 +4,7 @@
 
 #include "content/browser/appcache/appcache_url_loader_job.h"
 
+#include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/appcache/appcache_histograms.h"
 #include "content/browser/appcache/appcache_request_handler.h"

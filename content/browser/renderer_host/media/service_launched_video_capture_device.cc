@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/renderer_host/media/service_launched_video_capture_device.h"
+#include "base/bind.h"
 
 namespace content {
 

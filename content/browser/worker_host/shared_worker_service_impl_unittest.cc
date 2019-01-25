@@ -9,6 +9,7 @@
 #include <set>
 #include <string>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "content/browser/site_instance_impl.h"

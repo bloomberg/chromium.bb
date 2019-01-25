@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/system/sys_info.h"

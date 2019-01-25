@@ -4,6 +4,7 @@
 
 #include "content/browser/dom_storage/test/storage_area_test_util.h"
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"

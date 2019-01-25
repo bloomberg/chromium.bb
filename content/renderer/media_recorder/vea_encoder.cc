@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/containers/queue.h"
 #include "base/metrics/histogram_macros.h"
 #include "content/renderer/media/gpu/gpu_video_accelerator_factories_impl.h"

@@ -4,6 +4,7 @@
 
 #include "content/browser/web_package/signed_exchange_cert_fetcher.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"

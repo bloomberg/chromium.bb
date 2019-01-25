@@ -4,6 +4,7 @@
 
 #include "content/renderer/media_capture_from_element/html_audio_element_capturer_source.h"
 
+#include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_renderer_sink.h"

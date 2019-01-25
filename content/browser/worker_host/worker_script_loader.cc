@@ -4,6 +4,7 @@
 
 #include "content/browser/worker_host/worker_script_loader.h"
 
+#include "base/bind.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"

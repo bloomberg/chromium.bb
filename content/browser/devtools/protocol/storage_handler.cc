@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"

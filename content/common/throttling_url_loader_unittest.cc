@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/common/throttling_url_loader.h"
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"

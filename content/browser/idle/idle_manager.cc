@@ -4,6 +4,7 @@
 
 #include "content/browser/idle/idle_manager.h"
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"

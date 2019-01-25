@@ -4,6 +4,7 @@
 
 #include "content/browser/web_package/signed_exchange_url_loader_factory_for_non_network_service.h"
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "content/browser/loader/resource_requester_info.h"
 #include "content/browser/loader/url_loader_factory_impl.h"

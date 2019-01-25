@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner.h"

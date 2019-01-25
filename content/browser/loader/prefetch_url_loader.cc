@@ -4,6 +4,7 @@
 
 #include "content/browser/loader/prefetch_url_loader.h"
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "content/browser/web_package/signed_exchange_prefetch_handler.h"
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"

@@ -5,6 +5,7 @@
 #include "content/browser/indexed_db/scopes/disjoint_range_lock_manager.h"
 
 #include "base/barrier_closure.h"
+#include "base/bind.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 
 namespace content {

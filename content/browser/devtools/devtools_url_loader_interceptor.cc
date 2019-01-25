@@ -5,6 +5,7 @@
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "base/barrier_closure.h"
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"

@@ -4,6 +4,7 @@
 
 #include "content/browser/web_package/mock_signed_exchange_handler.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/web_package/signed_exchange_cert_fetcher_factory.h"

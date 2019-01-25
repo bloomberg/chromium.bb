@@ -4,6 +4,7 @@
 
 #include "content/browser/idle/idle_manager.h"
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"

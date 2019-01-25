@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/media/in_process_launched_video_capture_device.h"
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "content/public/browser/browser_thread.h"

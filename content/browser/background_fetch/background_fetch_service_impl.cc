@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/guid.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"

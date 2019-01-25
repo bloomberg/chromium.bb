@@ -5,6 +5,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 
 #include "base/atomicops.h"
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"

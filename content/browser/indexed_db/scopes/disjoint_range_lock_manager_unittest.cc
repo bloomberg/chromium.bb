@@ -5,6 +5,7 @@
 #include "content/browser/indexed_db/scopes/disjoint_range_lock_manager.h"
 
 #include "base/barrier_closure.h"
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"

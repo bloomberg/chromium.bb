@@ -4,6 +4,7 @@
 
 #include "content/browser/geolocation/geolocation_service_impl.h"
 
+#include "base/bind.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"

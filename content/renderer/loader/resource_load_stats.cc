@@ -4,6 +4,7 @@
 
 #include "content/renderer/loader/resource_load_stats.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "content/common/net/record_load_histograms.h"
 #include "content/public/common/resource_load_info.mojom.h"

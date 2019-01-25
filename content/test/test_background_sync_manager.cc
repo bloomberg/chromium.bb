@@ -4,6 +4,7 @@
 
 #include "content/test/test_background_sync_manager.h"
 
+#include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
