@@ -116,6 +116,16 @@ cr.define('extensions', function() {
     },
 
     /**
+     * Returns true if the extension is in the terminated state.
+     * @return {boolean}
+     * @private
+     */
+    isTerminated_: function() {
+      return this.data.state ==
+          chrome.developerPrivate.ExtensionState.TERMINATED;
+    },
+
+    /**
      * @return {boolean}
      * @private
      */
