@@ -1,8 +1,8 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/fetch/bytes_consumer.h"
+#include "third_party/blink/renderer/core/fetch/bytes_consumer_tee.h"
 
 #include <string.h>
 #include <algorithm>
@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "v8/include/v8.h"
@@ -315,62 +316,14 @@ class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
   Member<Destination> destination2_;
 };
 
-class ErroredBytesConsumer final : public BytesConsumer {
- public:
-  explicit ErroredBytesConsumer(const Error& error) : error_(error) {}
-
-  Result BeginRead(const char** buffer, size_t* available) override {
-    *buffer = nullptr;
-    *available = 0;
-    return Result::kError;
-  }
-  Result EndRead(size_t read_size) override {
-    NOTREACHED();
-    return Result::kError;
-  }
-  void SetClient(BytesConsumer::Client*) override {}
-  void ClearClient() override {}
-
-  void Cancel() override {}
-  PublicState GetPublicState() const override { return PublicState::kErrored; }
-  Error GetError() const override { return error_; }
-  String DebugName() const override { return "ErroredBytesConsumer"; }
-
- private:
-  const Error error_;
-};
-
-class ClosedBytesConsumer final : public BytesConsumer {
- public:
-  Result BeginRead(const char** buffer, size_t* available) override {
-    *buffer = nullptr;
-    *available = 0;
-    return Result::kDone;
-  }
-  Result EndRead(size_t read_size) override {
-    NOTREACHED();
-    return Result::kError;
-  }
-  void SetClient(BytesConsumer::Client*) override {}
-  void ClearClient() override {}
-
-  void Cancel() override {}
-  PublicState GetPublicState() const override { return PublicState::kClosed; }
-  Error GetError() const override {
-    NOTREACHED();
-    return Error();
-  }
-  String DebugName() const override { return "ClosedBytesConsumer"; }
-};
-
 }  // namespace
 
-void BytesConsumer::Tee(ExecutionContext* execution_context,
-                        BytesConsumer* src,
-                        BytesConsumer** dest1,
-                        BytesConsumer** dest2) {
-  scoped_refptr<BlobDataHandle> blob_data_handle =
-      src->DrainAsBlobDataHandle(BlobSizePolicy::kAllowBlobWithInvalidSize);
+void BytesConsumerTee(ExecutionContext* execution_context,
+                      BytesConsumer* src,
+                      BytesConsumer** dest1,
+                      BytesConsumer** dest2) {
+  scoped_refptr<BlobDataHandle> blob_data_handle = src->DrainAsBlobDataHandle(
+      BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize);
   if (blob_data_handle) {
     // Register a client in order to be consistent.
     src->SetClient(MakeGarbageCollected<NoopClient>());
@@ -384,14 +337,6 @@ void BytesConsumer::Tee(ExecutionContext* execution_context,
   TeeHelper* tee = MakeGarbageCollected<TeeHelper>(execution_context, src);
   *dest1 = tee->Destination1();
   *dest2 = tee->Destination2();
-}
-
-BytesConsumer* BytesConsumer::CreateErrored(const BytesConsumer::Error& error) {
-  return MakeGarbageCollected<ErroredBytesConsumer>(error);
-}
-
-BytesConsumer* BytesConsumer::CreateClosed() {
-  return MakeGarbageCollected<ClosedBytesConsumer>();
 }
 
 }  // namespace blink

@@ -2,18 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/fetch/data_pipe_bytes_consumer.h"
+#include "third_party/blink/renderer/platform/loader/fetch/data_pipe_bytes_consumer.h"
 
+#include "base/single_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/core/fetch/bytes_consumer_test_util.h"
-#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/loader/testing/bytes_consumer_test_reader.h"
+#include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
 
 namespace blink {
-class DataPipeBytesConsumerTest : public PageTestBase {
+class DataPipeBytesConsumerTest : public testing::Test {
  public:
   using PublicState = BytesConsumer::PublicState;
   using Result = BytesConsumer::Result;
-  void SetUp() override { PageTestBase::SetUp(IntSize()); }
+
+  DataPipeBytesConsumerTest()
+      : task_runner_(base::MakeRefCounted<scheduler::FakeTaskRunner>()) {}
+
+  const scoped_refptr<scheduler::FakeTaskRunner> task_runner_;
 };
 
 TEST_F(DataPipeBytesConsumerTest, TwoPhaseRead) {
@@ -34,15 +39,13 @@ TEST_F(DataPipeBytesConsumerTest, TwoPhaseRead) {
 
   DataPipeBytesConsumer::CompletionNotifier* notifier = nullptr;
   DataPipeBytesConsumer* consumer = MakeGarbageCollected<DataPipeBytesConsumer>(
-      &GetDocument(), std::move(pipe.consumer_handle), &notifier);
+      task_runner_, std::move(pipe.consumer_handle), &notifier);
   notifier->SignalComplete();
-  auto result =
-      (MakeGarbageCollected<BytesConsumerTestUtil::TwoPhaseReader>(consumer))
-          ->Run();
+  auto result = MakeGarbageCollected<BytesConsumerTestReader>(consumer)->Run(
+      task_runner_.get());
   EXPECT_EQ(Result::kDone, result.first);
-  EXPECT_EQ(
-      kData,
-      BytesConsumerTestUtil::CharVectorToString(result.second).Utf8().data());
+  EXPECT_EQ(kData,
+            String(result.second.data(), result.second.size()).Utf8().data());
 }
 
 TEST_F(DataPipeBytesConsumerTest, TwoPhaseRead_SignalError) {
@@ -61,15 +64,14 @@ TEST_F(DataPipeBytesConsumerTest, TwoPhaseRead_SignalError) {
 
   DataPipeBytesConsumer::CompletionNotifier* notifier = nullptr;
   DataPipeBytesConsumer* consumer = MakeGarbageCollected<DataPipeBytesConsumer>(
-      &GetDocument(), std::move(pipe.consumer_handle), &notifier);
+      task_runner_, std::move(pipe.consumer_handle), &notifier);
 
   // Then explicitly signal an error.  This should override the pipe completion
   // and result in kError.
   notifier->SignalError(BytesConsumer::Error());
 
-  auto result =
-      (MakeGarbageCollected<BytesConsumerTestUtil::TwoPhaseReader>(consumer))
-          ->Run();
+  auto result = MakeGarbageCollected<BytesConsumerTestReader>(consumer)->Run(
+      task_runner_.get());
   EXPECT_EQ(Result::kError, result.first);
   EXPECT_TRUE(result.second.IsEmpty());
 }
@@ -83,7 +85,7 @@ TEST_F(DataPipeBytesConsumerTest, EndOfPipeBeforeComplete) {
 
   DataPipeBytesConsumer::CompletionNotifier* notifier = nullptr;
   DataPipeBytesConsumer* consumer = MakeGarbageCollected<DataPipeBytesConsumer>(
-      &GetDocument(), std::move(pipe.consumer_handle), &notifier);
+      task_runner_, std::move(pipe.consumer_handle), &notifier);
 
   EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
 
@@ -111,7 +113,7 @@ TEST_F(DataPipeBytesConsumerTest, CompleteBeforeEndOfPipe) {
 
   DataPipeBytesConsumer::CompletionNotifier* notifier = nullptr;
   DataPipeBytesConsumer* consumer = MakeGarbageCollected<DataPipeBytesConsumer>(
-      &GetDocument(), std::move(pipe.consumer_handle), &notifier);
+      task_runner_, std::move(pipe.consumer_handle), &notifier);
 
   EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
 
@@ -142,7 +144,7 @@ TEST_F(DataPipeBytesConsumerTest, EndOfPipeBeforeError) {
 
   DataPipeBytesConsumer::CompletionNotifier* notifier = nullptr;
   DataPipeBytesConsumer* consumer = MakeGarbageCollected<DataPipeBytesConsumer>(
-      &GetDocument(), std::move(pipe.consumer_handle), &notifier);
+      task_runner_, std::move(pipe.consumer_handle), &notifier);
 
   EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
 
@@ -170,7 +172,7 @@ TEST_F(DataPipeBytesConsumerTest, ErrorBeforeEndOfPipe) {
 
   DataPipeBytesConsumer::CompletionNotifier* notifier = nullptr;
   DataPipeBytesConsumer* consumer = MakeGarbageCollected<DataPipeBytesConsumer>(
-      &GetDocument(), std::move(pipe.consumer_handle), &notifier);
+      task_runner_, std::move(pipe.consumer_handle), &notifier);
 
   EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
 
@@ -200,7 +202,7 @@ TEST_F(DataPipeBytesConsumerTest, DrainPipeBeforeComplete) {
 
   DataPipeBytesConsumer::CompletionNotifier* notifier = nullptr;
   DataPipeBytesConsumer* consumer = MakeGarbageCollected<DataPipeBytesConsumer>(
-      &GetDocument(), std::move(pipe.consumer_handle), &notifier);
+      task_runner_, std::move(pipe.consumer_handle), &notifier);
 
   EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
 
@@ -230,7 +232,7 @@ TEST_F(DataPipeBytesConsumerTest, CompleteBeforeDrainPipe) {
 
   DataPipeBytesConsumer::CompletionNotifier* notifier = nullptr;
   DataPipeBytesConsumer* consumer = MakeGarbageCollected<DataPipeBytesConsumer>(
-      &GetDocument(), std::move(pipe.consumer_handle), &notifier);
+      task_runner_, std::move(pipe.consumer_handle), &notifier);
 
   EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
 

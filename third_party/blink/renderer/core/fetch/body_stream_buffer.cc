@@ -8,6 +8,7 @@
 #include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/body.h"
+#include "third_party/blink/renderer/core/fetch/bytes_consumer_tee.h"
 #include "third_party/blink/renderer/core/fetch/readable_stream_bytes_consumer.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_controller_wrapper.h"
@@ -240,8 +241,8 @@ void BodyStreamBuffer::Tee(BodyStreamBuffer** branch1,
     stream_broken_ = true;
     return;
   }
-  BytesConsumer::Tee(ExecutionContext::From(script_state_), handle, &dest1,
-                     &dest2);
+  BytesConsumerTee(ExecutionContext::From(script_state_), handle, &dest1,
+                   &dest2);
   *branch1 =
       MakeGarbageCollected<BodyStreamBuffer>(script_state_, dest1, signal_);
   *branch2 =

@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/fetch/blob_bytes_consumer.h"
-#include "third_party/blink/renderer/core/fetch/bytes_consumer.h"
 #include "third_party/blink/renderer/core/fetch/bytes_consumer_test_util.h"
 #include "third_party/blink/renderer/core/fetch/form_data_bytes_consumer.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
@@ -23,6 +22,8 @@
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/blob/blob_url.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer.h"
+#include "third_party/blink/renderer/platform/loader/testing/replaying_bytes_consumer.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
@@ -35,13 +36,12 @@ using testing::Return;
 using testing::_;
 using testing::SaveArg;
 using Checkpoint = testing::StrictMock<testing::MockFunction<void(int)>>;
-using BytesConsumerCommand = BytesConsumerTestUtil::Command;
-using ReplayingBytesConsumer = BytesConsumerTestUtil::ReplayingBytesConsumer;
 using MockFetchDataLoaderClient =
     BytesConsumerTestUtil::MockFetchDataLoaderClient;
 
 class BodyStreamBufferTest : public testing::Test {
  protected:
+  using Command = ReplayingBytesConsumer::Command;
   ScriptValue Eval(ScriptState* script_state, const char* s) {
     v8::Local<v8::String> source;
     v8::Local<v8::Script> script;
@@ -107,11 +107,11 @@ TEST_F(BodyStreamBufferTest, Tee) {
   EXPECT_CALL(checkpoint, Call(3));
   EXPECT_CALL(checkpoint, Call(4));
 
-  ReplayingBytesConsumer* src =
-      MakeGarbageCollected<ReplayingBytesConsumer>(&scope.GetDocument());
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello, "));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "world"));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kDone));
+  ReplayingBytesConsumer* src = MakeGarbageCollected<ReplayingBytesConsumer>(
+      scope.GetDocument().GetTaskRunner(TaskType::kNetworking));
+  src->Add(Command(Command::kData, "hello, "));
+  src->Add(Command(Command::kData, "world"));
+  src->Add(Command(Command::kDone));
   BodyStreamBuffer* buffer = MakeGarbageCollected<BodyStreamBuffer>(
       scope.GetScriptState(), src, nullptr);
 
@@ -236,8 +236,8 @@ TEST_F(BodyStreamBufferTest, DrainAsBlobDataHandle) {
 TEST_F(BodyStreamBufferTest, DrainAsBlobDataHandleReturnsNull) {
   V8TestingScope scope;
   // This BytesConsumer is not drainable.
-  BytesConsumer* src =
-      MakeGarbageCollected<ReplayingBytesConsumer>(&scope.GetDocument());
+  BytesConsumer* src = MakeGarbageCollected<ReplayingBytesConsumer>(
+      scope.GetDocument().GetTaskRunner(TaskType::kNetworking));
   BodyStreamBuffer* buffer = MakeGarbageCollected<BodyStreamBuffer>(
       scope.GetScriptState(), src, nullptr);
 
@@ -309,8 +309,8 @@ TEST_F(BodyStreamBufferTest, DrainAsFormData) {
 TEST_F(BodyStreamBufferTest, DrainAsFormDataReturnsNull) {
   V8TestingScope scope;
   // This BytesConsumer is not drainable.
-  BytesConsumer* src =
-      MakeGarbageCollected<ReplayingBytesConsumer>(&scope.GetDocument());
+  BytesConsumer* src = MakeGarbageCollected<ReplayingBytesConsumer>(
+      scope.GetDocument().GetTaskRunner(TaskType::kNetworking));
   BodyStreamBuffer* buffer = MakeGarbageCollected<BodyStreamBuffer>(
       scope.GetScriptState(), src, nullptr);
 
@@ -359,11 +359,11 @@ TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsArrayBuffer) {
       .WillOnce(SaveArg<0>(&array_buffer));
   EXPECT_CALL(checkpoint, Call(2));
 
-  ReplayingBytesConsumer* src =
-      MakeGarbageCollected<ReplayingBytesConsumer>(&scope.GetDocument());
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello"));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kDone));
+  ReplayingBytesConsumer* src = MakeGarbageCollected<ReplayingBytesConsumer>(
+      scope.GetDocument().GetTaskRunner(TaskType::kNetworking));
+  src->Add(Command(Command::kWait));
+  src->Add(Command(Command::kData, "hello"));
+  src->Add(Command(Command::kDone));
   BodyStreamBuffer* buffer = MakeGarbageCollected<BodyStreamBuffer>(
       scope.GetScriptState(), src, nullptr);
   buffer->StartLoading(FetchDataLoader::CreateLoaderAsArrayBuffer(), client,
@@ -397,11 +397,11 @@ TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsBlob) {
       .WillOnce(SaveArg<0>(&blob_data_handle));
   EXPECT_CALL(checkpoint, Call(2));
 
-  ReplayingBytesConsumer* src =
-      MakeGarbageCollected<ReplayingBytesConsumer>(&scope.GetDocument());
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello"));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kDone));
+  ReplayingBytesConsumer* src = MakeGarbageCollected<ReplayingBytesConsumer>(
+      scope.GetDocument().GetTaskRunner(TaskType::kNetworking));
+  src->Add(Command(Command::kWait));
+  src->Add(Command(Command::kData, "hello"));
+  src->Add(Command(Command::kDone));
   BodyStreamBuffer* buffer = MakeGarbageCollected<BodyStreamBuffer>(
       scope.GetScriptState(), src, nullptr);
   buffer->StartLoading(FetchDataLoader::CreateLoaderAsBlobHandle("text/plain"),
@@ -431,11 +431,11 @@ TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsString) {
   EXPECT_CALL(*client, DidFetchDataLoadedString(String("hello")));
   EXPECT_CALL(checkpoint, Call(2));
 
-  ReplayingBytesConsumer* src =
-      MakeGarbageCollected<ReplayingBytesConsumer>(&scope.GetDocument());
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello"));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kDone));
+  ReplayingBytesConsumer* src = MakeGarbageCollected<ReplayingBytesConsumer>(
+      scope.GetDocument().GetTaskRunner(TaskType::kNetworking));
+  src->Add(Command(Command::kWait));
+  src->Add(Command(Command::kData, "hello"));
+  src->Add(Command(Command::kDone));
   BodyStreamBuffer* buffer = MakeGarbageCollected<BodyStreamBuffer>(
       scope.GetScriptState(), src, nullptr);
   buffer->StartLoading(FetchDataLoader::CreateLoaderAsString(), client,
@@ -523,11 +523,11 @@ TEST_F(BodyStreamBufferTest, LoaderShouldBeKeptAliveByBodyStreamBuffer) {
   EXPECT_CALL(*client, DidFetchDataLoadedString(String("hello")));
   EXPECT_CALL(checkpoint, Call(2));
 
-  ReplayingBytesConsumer* src =
-      MakeGarbageCollected<ReplayingBytesConsumer>(&scope.GetDocument());
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello"));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kDone));
+  ReplayingBytesConsumer* src = MakeGarbageCollected<ReplayingBytesConsumer>(
+      scope.GetDocument().GetTaskRunner(TaskType::kNetworking));
+  src->Add(Command(Command::kWait));
+  src->Add(Command(Command::kData, "hello"));
+  src->Add(Command(Command::kDone));
   Persistent<BodyStreamBuffer> buffer = MakeGarbageCollected<BodyStreamBuffer>(
       scope.GetScriptState(), src, nullptr);
   buffer->StartLoading(FetchDataLoader::CreateLoaderAsString(), client,
@@ -542,8 +542,8 @@ TEST_F(BodyStreamBufferTest, LoaderShouldBeKeptAliveByBodyStreamBuffer) {
 TEST_F(BodyStreamBufferTest, SourceShouldBeCanceledWhenCanceled) {
   V8TestingScope scope;
   ReplayingBytesConsumer* consumer =
-      MakeGarbageCollected<BytesConsumerTestUtil::ReplayingBytesConsumer>(
-          scope.GetExecutionContext());
+      MakeGarbageCollected<ReplayingBytesConsumer>(
+          scope.GetDocument().GetTaskRunner(TaskType::kNetworking));
 
   BodyStreamBuffer* buffer = MakeGarbageCollected<BodyStreamBuffer>(
       scope.GetScriptState(), consumer, nullptr);
@@ -556,11 +556,11 @@ TEST_F(BodyStreamBufferTest, SourceShouldBeCanceledWhenCanceled) {
 
 TEST_F(BodyStreamBufferTest, NestedPull) {
   V8TestingScope scope;
-  ReplayingBytesConsumer* src =
-      MakeGarbageCollected<ReplayingBytesConsumer>(&scope.GetDocument());
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello"));
-  src->Add(BytesConsumerCommand(BytesConsumerCommand::kError));
+  ReplayingBytesConsumer* src = MakeGarbageCollected<ReplayingBytesConsumer>(
+      scope.GetDocument().GetTaskRunner(TaskType::kNetworking));
+  src->Add(Command(Command::kWait));
+  src->Add(Command(Command::kData, "hello"));
+  src->Add(Command(Command::kError));
   Persistent<BodyStreamBuffer> buffer = MakeGarbageCollected<BodyStreamBuffer>(
       scope.GetScriptState(), src, nullptr);
 
@@ -587,8 +587,8 @@ TEST_F(BodyStreamBufferTest, NestedPull) {
 TEST_F(BodyStreamBufferTest, NullAbortSignalIsNotAborted) {
   V8TestingScope scope;
   // This BytesConsumer is not drainable.
-  BytesConsumer* src =
-      MakeGarbageCollected<ReplayingBytesConsumer>(&scope.GetDocument());
+  BytesConsumer* src = MakeGarbageCollected<ReplayingBytesConsumer>(
+      scope.GetDocument().GetTaskRunner(TaskType::kNetworking));
   BodyStreamBuffer* buffer = MakeGarbageCollected<BodyStreamBuffer>(
       scope.GetScriptState(), src, nullptr);
 
@@ -598,8 +598,8 @@ TEST_F(BodyStreamBufferTest, NullAbortSignalIsNotAborted) {
 TEST_F(BodyStreamBufferTest, AbortSignalMakesAborted) {
   V8TestingScope scope;
   // This BytesConsumer is not drainable.
-  BytesConsumer* src =
-      MakeGarbageCollected<ReplayingBytesConsumer>(&scope.GetDocument());
+  BytesConsumer* src = MakeGarbageCollected<ReplayingBytesConsumer>(
+      scope.GetDocument().GetTaskRunner(TaskType::kNetworking));
   auto* signal = MakeGarbageCollected<AbortSignal>(scope.GetExecutionContext());
   BodyStreamBuffer* buffer = MakeGarbageCollected<BodyStreamBuffer>(
       scope.GetScriptState(), src, signal);

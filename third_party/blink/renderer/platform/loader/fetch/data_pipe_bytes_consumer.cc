@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/fetch/data_pipe_bytes_consumer.h"
+#include "third_party/blink/renderer/platform/loader/fetch/data_pipe_bytes_consumer.h"
 
 #include <algorithm>
 
 #include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -31,14 +31,14 @@ void DataPipeBytesConsumer::CompletionNotifier::Trace(Visitor* visitor) {
 }
 
 DataPipeBytesConsumer::DataPipeBytesConsumer(
-    ExecutionContext* execution_context,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     mojo::ScopedDataPipeConsumerHandle data_pipe,
     CompletionNotifier** notifier)
-    : execution_context_(execution_context),
+    : task_runner_(std::move(task_runner)),
       data_pipe_(std::move(data_pipe)),
       watcher_(FROM_HERE,
                mojo::SimpleWatcher::ArmingPolicy::MANUAL,
-               execution_context->GetTaskRunner(TaskType::kNetworking)) {
+               task_runner_) {
   DCHECK(data_pipe_.is_valid());
   *notifier = MakeGarbageCollected<CompletionNotifier>(this);
   watcher_.Watch(
@@ -114,9 +114,9 @@ BytesConsumer::Result DataPipeBytesConsumer::EndRead(size_t read) {
   }
   if (has_pending_notification_) {
     has_pending_notification_ = false;
-    execution_context_->GetTaskRunner(TaskType::kNetworking)
-        ->PostTask(FROM_HERE, WTF::Bind(&DataPipeBytesConsumer::Notify,
-                                        WrapPersistent(this), MOJO_RESULT_OK));
+    task_runner_->PostTask(FROM_HERE,
+                           WTF::Bind(&DataPipeBytesConsumer::Notify,
+                                     WrapPersistent(this), MOJO_RESULT_OK));
   }
   return Result::kOk;
 }
@@ -154,7 +154,6 @@ BytesConsumer::PublicState DataPipeBytesConsumer::GetPublicState() const {
 }
 
 void DataPipeBytesConsumer::Trace(blink::Visitor* visitor) {
-  visitor->Trace(execution_context_);
   visitor->Trace(client_);
   BytesConsumer::Trace(visitor);
 }
