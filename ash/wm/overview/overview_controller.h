@@ -92,6 +92,10 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
     occlusion_pause_duration_for_end_ms_ = duration;
   }
 
+  // Returns wallpaper blur status for testing.
+  bool HasBlurForTest() const;
+  bool HasBlurAnimationForTest() const;
+
  private:
   class OverviewBlurController;
   friend class OverviewSessionTest;

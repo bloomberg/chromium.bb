@@ -62,6 +62,9 @@ class ASH_EXPORT WallpaperWidgetController {
   // Blur pixels of the wallpaper layer by 3 * the given amount.
   void SetWallpaperBlur(float blur_sigma);
 
+  // Returns the blur sigma applied on the wallpaper layer.
+  float GetWallpaperBlur() const;
+
   // Reset, and closes both |active_widget_| and |animating_widget_|. Can be
   // used in tests to reset the wallpaper widget controller state.
   void ResetWidgetsForTesting();

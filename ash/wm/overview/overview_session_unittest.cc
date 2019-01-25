@@ -2238,6 +2238,26 @@ TEST_F(OverviewSessionTest, RoundedEdgeMaskVisibility) {
   ToggleOverview();
 }
 
+TEST_F(OverviewSessionTest, NoRoundedEdgeMaskFor11Windows) {
+  std::vector<std::unique_ptr<aura::Window>> windows;
+  for (int i = 0; i < 11; i++)
+    windows.push_back(CreateTestWindow());
+  EnterTabletMode();
+  ToggleOverview();
+  base::RunLoop().RunUntilIdle();
+  for (auto& window : windows) {
+    OverviewItem* item = GetWindowItemForWindow(0, window.get());
+    EXPECT_FALSE(HasMaskForItem(item));
+  }
+  // Remove 1 window and windows will have rounded corners.
+  windows.pop_back();
+  ASSERT_EQ(10u, windows.size());
+  for (auto& window : windows) {
+    OverviewItem* item = GetWindowItemForWindow(0, window.get());
+    EXPECT_TRUE(HasMaskForItem(item));
+  }
+}
+
 // Tests that the shadows in overview mode are placed correctly.
 TEST_F(OverviewSessionTest, ShadowBounds) {
   // Helper function to check if the bounds of a shadow owned by |shadow_parent|

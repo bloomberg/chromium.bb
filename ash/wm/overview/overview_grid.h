@@ -148,6 +148,13 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
                                    mojom::WindowStateType old_type) override;
 
+  // Called when overview starting animation completes.
+  void OnStartingAnimationComplete();
+
+  // Checks if the grid needs to have the wallpaper animated. Returns false if
+  // one of the grids windows covers the the entire workspace, true otherwise.
+  bool ShouldAnimateWallpaper() const;
+
   bool IsNoItemsIndicatorLabelVisibleForTesting();
 
   gfx::Rect GetNoItemsIndicatorLabelBoundsForTesting() const;
@@ -243,7 +250,7 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   };
 
   // Initializes the screen shield widget.
-  void InitShieldWidget();
+  void InitShieldWidget(bool animate);
 
   // Internal function to initialize the selection widget.
   void InitSelectionWidget(OverviewSession::Direction direction);

@@ -102,9 +102,18 @@ class OverviewController::OverviewBlurController
       root->RemoveObserver(this);
   }
 
-  void Blur() { OnBlurChange(WallpaperAnimationState::kAddingBlur); }
+  void Blur(bool animate_only) {
+    OnBlurChange(WallpaperAnimationState::kAddingBlur, animate_only);
+  }
 
-  void Unblur() { OnBlurChange(WallpaperAnimationState::kRemovingBlur); }
+  void Unblur() {
+    OnBlurChange(WallpaperAnimationState::kRemovingBlur,
+                 /*animate_only=*/false);
+  }
+
+  bool has_blur() const { return state_ != WallpaperAnimationState::kNormal; }
+
+  bool has_blur_animation() const { return !!compositor_; }
 
  private:
   enum class WallpaperAnimationState {
@@ -175,7 +184,9 @@ class OverviewController::OverviewBlurController
   // windows should have their wallpaper blurs animated and fills
   // |roots_to_animate_| accordingly. Applys blur or unblur immediately if
   // the wallpaper does not need blur animation.
-  void OnBlurChange(WallpaperAnimationState state) {
+  // When |animate_only| is true, it'll apply blur only to the root windows that
+  // requires animation.
+  void OnBlurChange(WallpaperAnimationState state, bool animate_only) {
     Stop();
     for (aura::Window* root : roots_to_animate_)
       root->RemoveObserver(this);
@@ -183,6 +194,9 @@ class OverviewController::OverviewBlurController
 
     state_ = state;
     const bool should_blur = state_ == WallpaperAnimationState::kAddingBlur;
+    if (animate_only)
+      DCHECK(should_blur);
+
     const float value =
         should_blur ? kWallpaperBlurSigma : kWallpaperClearBlurSigma;
 
@@ -193,13 +207,22 @@ class OverviewController::OverviewBlurController
       // after overview animations are finished.
       if (should_blur) {
         DCHECK(overview_session);
-        if (overview_session->ShouldAnimateWallpaper(root)) {
+        OverviewGrid* grid = overview_session->GetGridWithRootWindow(root);
+        bool should_animate = grid && grid->ShouldAnimateWallpaper();
+        float blur_sigma = RootWindowController::ForWindow(root)
+                               ->wallpaper_widget_controller()
+                               ->GetWallpaperBlur();
+        if (should_animate && animate_only &&
+            blur_sigma != kWallpaperBlurSigma) {
           root->AddObserver(this);
           roots_to_animate_.push_back(root);
           continue;
         }
+        if (should_animate == animate_only)
+          ApplyBlur(root, value);
+      } else {
+        ApplyBlur(root, value);
       }
-      ApplyBlur(root, value);
     }
 
     // Run the animation if one of the roots needs to be animated.
@@ -343,7 +366,7 @@ bool OverviewController::ToggleOverview(
     Shell::Get()->NotifyOverviewModeStarting();
     overview_session_->Init(windows, hide_windows);
     if (IsBlurAllowed())
-      overview_blur_controller_->Blur();
+      overview_blur_controller_->Blur(/*animate_only=*/false);
     if (start_animations_.empty())
       OnStartingAnimationComplete(/*canceled=*/false);
     OnSelectionStarted();
@@ -352,6 +375,9 @@ bool OverviewController::ToggleOverview(
 }
 
 void OverviewController::OnStartingAnimationComplete(bool canceled) {
+  if (IsBlurAllowed())
+    overview_blur_controller_->Blur(/*animate_only=*/true);
+
   Shell::Get()->NotifyOverviewModeStartingAnimationComplete(canceled);
   if (overview_session_)
     overview_session_->OnStartingAnimationComplete(canceled);
@@ -363,6 +389,12 @@ void OverviewController::OnStartingAnimationComplete(bool canceled) {
 }
 
 void OverviewController::OnEndingAnimationComplete(bool canceled) {
+  // Unblur when animation is completed (or right away if there was no
+  // delayed animation) unless it's canceled, in which case, we should keep
+  // the blur.
+  if (IsBlurAllowed() && !canceled)
+    overview_blur_controller_->Unblur();
+
   Shell::Get()->NotifyOverviewModeEndingAnimationComplete(canceled);
   reset_pauser_task_.Reset(base::BindOnce(&OverviewController::ResetPauser,
                                           weak_ptr_factory_.GetWeakPtr()));
@@ -530,13 +562,8 @@ void OverviewController::OnSelectionEnded() {
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, overview_session);
   last_selection_time_ = base::Time::Now();
   Shell::Get()->NotifyOverviewModeEnded();
-
-  // There may be no delayed animations in tests, so unblur right away.
-  if (delayed_animations_.empty()) {
-    if (IsBlurAllowed())
-      overview_blur_controller_->Unblur();
+  if (delayed_animations_.empty())
     OnEndingAnimationComplete(/*canceled=*/false);
-  }
 }
 
 void OverviewController::AddDelayedAnimationObserver(
@@ -555,12 +582,8 @@ void OverviewController::RemoveAndDestroyAnimationObserver(
   // wallpaper and let observers know. This function may be called while still
   // in overview (ie. splitview restores one window but leaves overview active)
   // so check that |overview_session_| is null before notifying.
-  if (!overview_session_ && !previous_empty && delayed_animations_.empty()) {
-    if (IsBlurAllowed())
-      overview_blur_controller_->Unblur();
-
+  if (!overview_session_ && !previous_empty && delayed_animations_.empty())
     OnEndingAnimationComplete(/*canceled=*/false);
-  }
 }
 
 void OverviewController::OnWindowActivating(ActivationReason reason,
@@ -578,6 +601,14 @@ void OverviewController::OnAttemptToReactivateWindow(
         ::wm::ActivationChangeObserver::ActivationReason::ACTIVATION_CLIENT,
         request_active, actual_active);
   }
+}
+
+bool OverviewController::HasBlurForTest() const {
+  return overview_blur_controller_->has_blur();
+}
+
+bool OverviewController::HasBlurAnimationForTest() const {
+  return overview_blur_controller_->has_blur_animation();
 }
 
 void OverviewController::AddStartAnimationObserver(
