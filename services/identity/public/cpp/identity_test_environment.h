@@ -242,6 +242,9 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // Simulates the reloading of the accounts from disk.
   void ReloadAccountsFromDisk();
 
+  // Returns whether there is a access token request pending.
+  bool IsAccessTokenRequestPending();
+
   // Sets whether the list of accounts in Gaia cookie jar is fresh and does not
   // need to be updated.
   void SetFreshnessOfAccountsInGaiaCookie(bool accounts_are_fresh);

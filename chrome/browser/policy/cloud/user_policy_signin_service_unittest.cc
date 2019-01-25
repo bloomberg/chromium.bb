@@ -23,9 +23,7 @@
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/fake_account_fetcher_service_builder.h"
-#include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/signin/test_signin_client_builder.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -41,7 +39,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_details.h"
@@ -232,14 +229,8 @@ class UserPolicySigninServiceTest : public testing::Test {
         content::NotificationService::NoDetails());
   }
 
-  FakeProfileOAuth2TokenService* GetTokenService() {
-    ProfileOAuth2TokenService* service =
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
-    return static_cast<FakeProfileOAuth2TokenService*>(service);
-  }
-
   bool IsRequestActive() {
-    if (!GetTokenService()->GetPendingRequests().empty())
+    if (identity_test_env()->IsAccessTokenRequestPending())
       return true;
     return test_url_loader_factory_.NumPending() > 0;
   }
@@ -262,7 +253,7 @@ class UserPolicySigninServiceTest : public testing::Test {
 
   void MakeOAuthTokenFetchFail() {
 #if defined(OS_ANDROID)
-    ASSERT_TRUE(!GetTokenService()->GetPendingRequests().empty());
+    ASSERT_TRUE(identity_test_env()->IsAccessTokenRequestPending());
     identity_test_env()
         ->WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
             GoogleServiceAuthError::FromServiceError("fail"));
