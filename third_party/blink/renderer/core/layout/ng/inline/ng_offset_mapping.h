@@ -153,9 +153,11 @@ class CORE_EXPORT NGOffsetMapping {
   const NGOffsetMappingUnit* GetMappingUnitForPosition(const Position&) const;
 
   // Returns all NGOffsetMappingUnits whose DOM ranges has non-empty (but
-  // possibly collapsed) intersections with the passed in DOM range. This API
-  // only accepts ranges whose start and end have the same anchor node.
-  NGMappingUnitRange GetMappingUnitsForDOMRange(const EphemeralRange&) const;
+  // possibly collapsed) intersections with the passed in DOM range. If a unit
+  // partially intersects the range, it is clamped with only the part within the
+  // range returned. This API only accepts ranges whose start and end have the
+  // same anchor node.
+  UnitVector GetMappingUnitsForDOMRange(const EphemeralRange&) const;
 
   // Returns all NGOffsetMappingUnits associated to |node|. Note: |node| should
   // have associated mapping.
