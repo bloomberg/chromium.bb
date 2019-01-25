@@ -14,7 +14,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/sync/sync_ui_util.h"
@@ -59,8 +58,7 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
 #endif  // !defined(OS_CHROMEOS)
       browser_list_observer_(this),
       profile_observer_(this),
-      identity_manager_observer_(this),
-      account_tracker_service_observer_(this) {
+      identity_manager_observer_(this) {
 
   if (IsIncognitoCounterActive())
     browser_list_observer_.Add(BrowserList::GetInstance());
@@ -71,8 +69,6 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
   if (!IsIncognito() && !profile_->IsGuestSession()) {
     identity_manager_observer_.Add(
         IdentityManagerFactory::GetForProfile(profile_));
-    account_tracker_service_observer_.Add(
-        AccountTrackerServiceFactory::GetForProfile(profile_));
   }
 
   SetInsets();
@@ -226,7 +222,7 @@ void AvatarToolbarButton::OnAccountUpdated(const AccountInfo& info) {
   UpdateIcon();
 }
 
-void AvatarToolbarButton::OnAccountRemoved(const AccountInfo& info) {
+void AvatarToolbarButton::OnAccountRemovedWithInfo(const AccountInfo& info) {
   UpdateIcon();
 }
 
