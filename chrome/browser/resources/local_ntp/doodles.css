@@ -76,11 +76,11 @@ body.alternate-logo #logo-non-white {
 }
 
 #logo-default,
-.non-white-bg #logo-non-white {
+.non-white-bg:not(.show-doodle) #logo-non-white {
   display: block;
 }
 #logo-non-white,
-.non-white-bg #logo-default {
+.non-white-bg:not(.show-doodle) #logo-default {
   display: none;
 }
 
@@ -95,8 +95,8 @@ body.alternate-logo #logo-non-white {
   text-align: text-center;
 }
 
-.non-white-bg #logo-doodle-container,
-.non-white-bg #logo-doodle-iframe {
+.non-white-bg:not(.show-doodle) #logo-doodle-container,
+.non-white-bg:not(.show-doodle) #logo-doodle-iframe {
   display: none;
 }
 
@@ -113,7 +113,7 @@ body.alternate-logo #logo-non-white {
 #logo-doodle-notifier {
   display: none;
 }
-.non-white-bg #logo-doodle-notifier {
+.non-white-bg:not(.show-doodle) #logo-doodle-notifier {
   background: transparent;
   border: 0;
   cursor: pointer;
@@ -133,7 +133,7 @@ body.alternate-logo #logo-non-white {
   0% { z-index: 100; }
   100% { z-index: 1; }
 }
-.non-white-bg #logo-doodle-notifier .outer {
+.non-white-bg:not(.show-doodle) #logo-doodle-notifier .outer {
   animation: anim-z-order 3520ms linear infinite;
   height: 37.5%;
   left: 50%;
@@ -143,7 +143,7 @@ body.alternate-logo #logo-non-white {
   top: 50%;
   width: 37.5%;
 }
-.non-white-bg #logo-doodle-notifier .inner {
+.non-white-bg:not(.show-doodle) #logo-doodle-notifier .inner {
   animation: anim-pos 880ms cubic-bezier(0.445, 0.05, 0.55, 0.95)
       infinite alternate;
   border-radius: 50%;
@@ -152,34 +152,34 @@ body.alternate-logo #logo-non-white {
   transform: rotate(90deg);
   width: 100%;
 }
-.non-white-bg #logo-doodle-notifier .ball0 {
+.non-white-bg:not(.show-doodle) #logo-doodle-notifier .ball0 {
   animation-delay: 2640ms;
   transform: rotate(45deg);
 }
-.non-white-bg #logo-doodle-notifier .ball1 {
+.non-white-bg:not(.show-doodle) #logo-doodle-notifier .ball1 {
   animation-delay: 1760ms;
   transform: rotate(135deg);
 }
-.non-white-bg #logo-doodle-notifier .ball2 {
+.non-white-bg:not(.show-doodle) #logo-doodle-notifier .ball2 {
   transform: rotate(225deg);
 }
-.non-white-bg #logo-doodle-notifier .ball3 {
+.non-white-bg:not(.show-doodle) #logo-doodle-notifier .ball3 {
   animation-delay: 880ms;
   transform: rotate(315deg);
 }
-.non-white-bg #logo-doodle-notifier .ball0 .inner {
+.non-white-bg:not(.show-doodle) #logo-doodle-notifier .ball0 .inner {
   background: linear-gradient(
       315deg, rgb(0, 85, 221), rgb(0, 119, 255), rgb(0, 119, 255));
 }
-.non-white-bg #logo-doodle-notifier .ball1 .inner {
+.non-white-bg:not(.show-doodle) #logo-doodle-notifier .ball1 .inner {
   background: linear-gradient(
       225deg, rgb(221, 0, 0), rgb(238, 51, 51), rgb(255, 119, 85));
 }
-.non-white-bg #logo-doodle-notifier .ball2 .inner {
+.non-white-bg:not(.show-doodle) #logo-doodle-notifier .ball2 .inner {
   background: linear-gradient(
       90deg, rgb(0, 119, 68), rgb(0, 153, 68), rgb(85, 187, 85));
 }
-.non-white-bg #logo-doodle-notifier .ball3 .inner {
+.non-white-bg:not(.show-doodle) #logo-doodle-notifier .ball3 .inner {
   background: linear-gradient(
       0deg, rgb(255, 170, 51), rgb(255, 204, 0), rgb(255, 221, 102));
 }
