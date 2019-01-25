@@ -558,7 +558,6 @@ dictionary Preferences {
   boolean cellularDisabled;
   boolean searchSuggestEnabled;
   boolean use24hourClock;
-  boolean allowRedeemOffers;
   DOMString timezone;
 };
 

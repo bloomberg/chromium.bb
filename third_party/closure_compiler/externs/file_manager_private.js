@@ -393,7 +393,6 @@ chrome.fileManagerPrivate.FileWatchEvent;
  *   cellularDisabled: boolean,
  *   searchSuggestEnabled: boolean,
  *   use24hourClock: boolean,
- *   allowRedeemOffers: boolean,
  *   timezone: string
  * }}
  */
