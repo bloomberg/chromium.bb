@@ -8,12 +8,15 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/threading/simple_thread.h"
-#include "services/catalog/catalog.h"
 #include "services/service_manager/background/background_service_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
+#include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
+#include "services/ws/ime/test_ime_driver/manifest.h"
+#include "services/ws/public/mojom/constants.mojom.h"
+#include "services/ws/test_ws/manifest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/test/env_test_helper.h"
@@ -23,7 +26,6 @@
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/test/views_test_helper_aura.h"
 #include "ui/views/views_delegate.h"
-#include "ui/views/views_unittests_catalog_source.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/native_widget_aura.h"
 
@@ -110,7 +112,27 @@ class PlatformTestHelperMus::ServiceManagerConnection {
   void SetUpConnectionsOnBackgroundThread(base::WaitableEvent* wait) {
     background_service_manager_ =
         std::make_unique<service_manager::BackgroundServiceManager>(
-            nullptr, CreateViewsUnittestsCatalog());
+            nullptr, std::vector<service_manager::Manifest>{
+                         test_ws::GetManifest(), test_ime_driver::GetManifest(),
+
+                         // The manifest used for the test service instance when
+                         // running as a "views_unitttests" executable.
+                         service_manager::ManifestBuilder()
+                             .WithServiceName("views_unittests")
+                             .RequireCapability("*", "app")
+                             .RequireCapability("*", "test")
+                             .Build(),
+
+                         // The manifest used for the test service instance when
+                         // running as a "views_unitttests" executable.
+                         service_manager::ManifestBuilder()
+                             .WithServiceName("interactive_ui_tests")
+                             .RequireCapability("*", "app")
+                             .RequireCapability("*", "test")
+                             .RequireCapability(ws::mojom::kServiceName,
+                                                "window_manager")
+                             .Build()});
+
     service_manager::mojom::ServicePtr service;
     default_service_binding_.Bind(mojo::MakeRequest(&service));
     background_service_manager_->RegisterService(

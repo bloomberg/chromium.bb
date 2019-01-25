@@ -4,8 +4,9 @@ include_rules = [
 
 specific_include_rules = {
   "platform_test_helper_mus.cc": [
-    "+services/catalog/catalog.h",
     "+services/service_manager/background/background_service_manager.h",
     "+services/service_manager/public",
+    "+services/ws/ime/test_ime_driver/manifest.h",
+    "+services/ws/test_ws/manifest.h",
   ]
 }

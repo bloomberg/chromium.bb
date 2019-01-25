@@ -7,7 +7,6 @@ import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//components/vector_icons/vector_icons.gni")
-import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 import("//ui/base/ui_features.gni")
@@ -915,12 +914,13 @@ jumbo_source_set("test_support") {
     ]
 
     deps += [
-      ":views_unittests_catalog_source",
-      "//services/catalog:lib",
       "//services/service_manager/background:lib",
       "//services/service_manager/public/cpp",
       "//services/service_manager/public/mojom",
       "//services/ws/common",
+      "//services/ws/ime/test_ime_driver:manifest",
+      "//services/ws/public/mojom",
+      "//services/ws/test_ws:manifest",
       "//testing/gtest",
       "//ui/compositor:test_support",
       "//ui/gl:test_support",
@@ -929,7 +929,6 @@ jumbo_source_set("test_support") {
     ]
 
     data_deps = [
-      ":views_unittests_catalog",
       "//services/ws/ime/test_ime_driver",
       "//ui/resources:ui_test_pak_data",
     ]
@@ -1342,36 +1341,4 @@ test("views_perftests") {
     "//ui/resources:ui_test_pak_data",
     "//testing:run_perf_test",
   ]
-}
-
-if (enable_mus) {
-  service_manifest("unittests_manifest") {
-    name = "views_unittests"
-    source = "unittests_manifest.json"
-  }
-
-  service_manifest("interactive_ui_tests_manifest") {
-    name = "interactive_ui_tests"
-    source = "interactive_ui_tests_manifest.json"
-  }
-
-  catalog("views_unittests_catalog") {
-    testonly = true
-
-    embedded_services = [
-      ":unittests_manifest",
-      ":interactive_ui_tests_manifest",
-    ]
-
-    standalone_services = [
-      "//services/ws/test_ws:manifest",
-      "//services/ws/ime/test_ime_driver:manifest",
-    ]
-  }
-
-  catalog_cpp_source("views_unittests_catalog_source") {
-    testonly = true
-    catalog = ":views_unittests_catalog"
-    generated_function_name = "views::CreateViewsUnittestsCatalog"
-  }
 }

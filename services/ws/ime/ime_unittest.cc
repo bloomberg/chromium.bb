@@ -9,13 +9,15 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
+#include "services/ws/ime/test_ime_driver/manifest.h"
 #include "services/ws/ime/test_ime_driver/public/mojom/constants.mojom.h"
-#include "services/ws/ime/tests_catalog_source.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "services/ws/public/mojom/ime/ime.mojom.h"
+#include "services/ws/test_ws/manifest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -59,13 +61,21 @@ class TestTextInputClient : public ws::mojom::TextInputClient {
   DISALLOW_COPY_AND_ASSIGN(TestTextInputClient);
 };
 
+const char kTestServiceName[] = "ime_unittests";
+
 class IMEAppTest : public testing::Test {
  public:
   IMEAppTest()
-      : test_service_manager_(ws::test::CreateImeTestCatalog()),
+      : test_service_manager_(
+            {test_ws::GetManifest(), test_ime_driver::GetManifest(),
+             service_manager::ManifestBuilder()
+                 .WithServiceName(kTestServiceName)
+                 .RequireCapability(ws::mojom::kServiceName, "app")
+                 .RequireCapability(test_ime_driver::mojom::kServiceName, "")
+                 .Build()}),
         test_service_binding_(
             &test_service_,
-            test_service_manager_.RegisterTestInstance("ime_unittests")) {
+            test_service_manager_.RegisterTestInstance(kTestServiceName)) {
     // test_ime_driver will register itself as the current IMEDriver.
     // TODO(https://crbug.com/904148): This should not use |WarmService()|.
     connector()->WarmService(service_manager::ServiceFilter::ByName(
