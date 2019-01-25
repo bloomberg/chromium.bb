@@ -2731,10 +2731,10 @@
     Off
   </message>
   <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_VOICE_SETTINGS" desc="Title for the Assistant voice settings.">
-    Voice model
+    Voice match
   </message>
   <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_VOICE_SETTINGS_DESCRIPTION" desc="Sub label for the Assistant voice settings.">
-    "Ok Google" voice model
+    Teach your Assistant to recognize your voice
   </message>
   <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_VOICE_SETTINGS_RETRAIN" desc="Button label for retrain voice model.">
     Retrain
