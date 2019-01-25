@@ -13,7 +13,8 @@ using learning::LabelledExample;
 using learning::LearningTask;
 using learning::TargetValue;
 
-const char* kDroppedFrameRatioTaskName = "DroppedFrameRatioTask";
+const char* kDroppedFrameRatioTreeTaskName = "DroppedFrameRatioTreeTask";
+const char* kDroppedFrameRatioTableTaskName = "DroppedFrameRatioTableTask";
 
 LearningHelper::LearningHelper() {
   // Register a few learning tasks.
@@ -21,7 +22,7 @@ LearningHelper::LearningHelper() {
   // We only do this here since we own the session.  Normally, whatever creates
   // the session would register all the learning tasks.
   LearningTask dropped_frame_task(
-      kDroppedFrameRatioTaskName, LearningTask::Model::kExtraTrees,
+      kDroppedFrameRatioTreeTaskName, LearningTask::Model::kExtraTrees,
       {
           {"codec_profile",
            ::media::learning::LearningTask::Ordering::kUnordered},
@@ -34,6 +35,13 @@ LearningHelper::LearningHelper() {
   // Enable hacky reporting of accuracy.
   dropped_frame_task.uma_hacky_confusion_matrix =
       "Media.Learning.MediaCapabilities.DroppedFrameRatioTask.BaseTree";
+  learning_session_.RegisterTask(dropped_frame_task);
+
+  // Modify the task to use a table-based learner.
+  dropped_frame_task.name = kDroppedFrameRatioTableTaskName;
+  dropped_frame_task.model = LearningTask::Model::kLookupTable;
+  dropped_frame_task.uma_hacky_confusion_matrix =
+      "Media.Learning.MediaCapabilities.DroppedFrameRatioTask.BaseTable";
   learning_session_.RegisterTask(dropped_frame_task);
 }
 
@@ -72,7 +80,10 @@ void LearningHelper::AppendStats(
   example.target_value = TargetValue(
       static_cast<double>(new_stats.frames_dropped) / new_stats.frames_decoded);
   example.weight = new_stats.frames_decoded;
-  learning_session_.AddExample(kDroppedFrameRatioTaskName, example);
+
+  // Add this example to both tasks.
+  learning_session_.AddExample(kDroppedFrameRatioTreeTaskName, example);
+  learning_session_.AddExample(kDroppedFrameRatioTableTaskName, example);
 }
 
 }  // namespace media

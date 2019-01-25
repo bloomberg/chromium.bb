@@ -10,13 +10,16 @@
 namespace media {
 namespace learning {
 
-// Low order bit is "observed", second bit is "predicted".
+// Low order bit is "observed", second bit is "predicted", third bit is "could
+// not make a prediction".
 enum class ConfusionMatrix {
-  TrueNegative = 0,   // predicted == observed == false
-  FalseNegative = 1,  // predicted == false, observed == true
-  FalsePositive = 2,  // predicted == true, observed == false
-  TruePositive = 3,   // predicted == observed == true
-  kMaxValue = TruePositive
+  TrueNegative = 0,     // predicted == observed == false
+  FalseNegative = 1,    // predicted == false, observed == true
+  FalsePositive = 2,    // predicted == true, observed == false
+  TruePositive = 3,     // predicted == observed == true
+  SkippedNegative = 4,  // predicted == N/A, observed == false
+  SkippedPositive = 5,  // predicted == N/A, observed == true
+  kMaxValue = SkippedPositive
 };
 
 // TODO(liberato): Currently, this implementation is a hack to collect some
@@ -38,15 +41,26 @@ class RegressionReporter : public DistributionReporter {
     // As a complete hack, record accuracy with a fixed threshold.  The average
     // is the observed / predicted percentage of dropped frames.
     bool observed_smooth = observed.Average() <= task().smoothness_threshold;
-    bool predicted_smooth = predicted.Average() <= task().smoothness_threshold;
-    DVLOG(2) << "Learning: " << task().name
-             << ": predicted: " << predicted_smooth << " ("
-             << predicted.Average() << ") observed: " << observed_smooth << " ("
-             << observed.Average() << ")";
+
+    // See if we made a prediction.
+    int predicted_bits = 4;  // N/A
+    if (predicted.total_counts() != 0) {
+      bool predicted_smooth =
+          predicted.Average() <= task().smoothness_threshold;
+      DVLOG(2) << "Learning: " << task().name
+               << ": predicted: " << predicted_smooth << " ("
+               << predicted.Average() << ") observed: " << observed_smooth
+               << " (" << observed.Average() << ")";
+      predicted_bits = predicted_smooth ? 2 : 0;
+    } else {
+      DVLOG(2) << "Learning: " << task().name
+               << ": predicted: N/A observed: " << observed_smooth << " ("
+               << observed.Average() << ")";
+    }
 
     // Convert to a bucket from which we can get the confusion matrix.
     ConfusionMatrix uma_bucket = static_cast<ConfusionMatrix>(
-        (observed_smooth ? 1 : 0) | (predicted_smooth ? 2 : 0));
+        (observed_smooth ? 1 : 0) | predicted_bits);
     base::UmaHistogramEnumeration(task().uma_hacky_confusion_matrix,
                                   uma_bucket);
   }
