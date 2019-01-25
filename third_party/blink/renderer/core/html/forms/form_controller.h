@@ -35,8 +35,8 @@ namespace blink {
 
 class Document;
 class FormKeyGenerator;
-class HTMLFormControlElementWithState;
 class HTMLFormElement;
+class ListedElement;
 class SavedFormState;
 
 class FormControlState {
@@ -88,8 +88,7 @@ class CORE_EXPORT DocumentState final
 
  private:
   Member<Document> document_;
-  using FormElementList =
-      HeapVector<Member<HTMLFormControlElementWithState>, 64>;
+  using FormElementList = HeapVector<Member<ListedElement>, 64>;
   FormElementList form_controls_;
   bool form_controls_dirty_ = true;
 };
@@ -110,15 +109,14 @@ class CORE_EXPORT FormController final
   // which are not consumed yet.
   bool HasFormStates() const;
   void WillDeleteForm(HTMLFormElement*);
-  void RestoreControlStateFor(HTMLFormControlElementWithState&);
+  void RestoreControlStateFor(ListedElement&);
   void RestoreControlStateIn(HTMLFormElement&);
 
   static Vector<String> GetReferencedFilePaths(
       const Vector<String>& state_vector);
 
  private:
-  FormControlState TakeStateForFormElement(
-      const HTMLFormControlElementWithState&);
+  FormControlState TakeStateForFormElement(const ListedElement&);
   static void FormStatesFromStateVector(const Vector<String>&,
                                         SavedFormStateMap&);
 

@@ -265,6 +265,10 @@ void HTMLFormControlElementWithState::setIDLExposedAutofillValue(
   setAttribute(html_names::kAutocompleteAttr, AtomicString(autocomplete_value));
 }
 
+bool HTMLFormControlElementWithState::ClassSupportsStateRestore() const {
+  return true;
+}
+
 bool HTMLFormControlElementWithState::ShouldSaveAndRestoreFormControlState()
     const {
   // We don't save/restore control state in a form with autocomplete=off.

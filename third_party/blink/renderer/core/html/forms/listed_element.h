@@ -147,6 +147,12 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
   // https://html.spec.whatwg.org/multipage/semantics-other.html#concept-element-disabled
   bool IsActuallyDisabled() const;
 
+  // Returns a static value of class-level support of the state restore
+  // feature.  If a sub-class of ListedElement supports the state restore
+  // feature, this function should return true.
+  virtual bool ClassSupportsStateRestore() const;
+  // Returns a flag to represent support of the state restore feature per
+  // instances.
   virtual bool ShouldSaveAndRestoreFormControlState() const;
   virtual FormControlState SaveFormControlState() const;
   // The specified FormControlState must have at least one string value.
