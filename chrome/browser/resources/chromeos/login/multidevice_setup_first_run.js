@@ -121,7 +121,7 @@ cr.define('multidevice_setup', function() {
     },
 
     /**
-     * @param {!{detail:{didUserCompleteSetup: boolean}}} event
+     * @param {!CustomEvent<!{didUserCompleteSetup: boolean}>} event
      * @private
      */
     onExitRequested_: function(event) {
@@ -152,7 +152,7 @@ cr.define('multidevice_setup', function() {
     },
 
     /**
-     * @param {!{detail: string}} event
+     * @param {!CustomEvent<string>} event
      * @private
      */
     onOpenLearnMoreWebviewRequested_: function(event) {

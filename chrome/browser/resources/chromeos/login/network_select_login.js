@@ -196,7 +196,7 @@ Polymer({
 
   /**
    * Event triggered when the default network state may have changed.
-   * @param {!{detail: ?CrOnc.NetworkStateProperties}} event
+   * @param {!CustomEvent<?CrOnc.NetworkStateProperties>} event
    * @private
    */
   onDefaultNetworkChanged_: function(event) {
@@ -210,7 +210,7 @@ Polymer({
 
   /**
    * Event triggered when a cr-network-list-item connection state changes.
-   * @param {!{detail: !CrOnc.NetworkStateProperties}} event
+   * @param {!CustomEvent<!CrOnc.NetworkStateProperties>} event
    * @private
    */
   onNetworkConnectChanged_: function(event) {
@@ -223,7 +223,7 @@ Polymer({
 
   /**
    * Event triggered when a list of networks get changed.
-   * @param {!{detail: !Array<!CrOnc.NetworkStateProperties>}} event
+   * @param {!CustomEvent<!Array<!CrOnc.NetworkStateProperties>>} event
    * @private
    */
   onNetworkListChanged_: function(event) {
@@ -270,7 +270,7 @@ Polymer({
   /**
    * This is called when user taps on network entry in networks list.
    *
-   * @param {!{detail: !CrOnc.NetworkStateProperties}} event
+   * @param {!CustomEvent<!CrOnc.NetworkStateProperties>} event
    * @private
    */
   onNetworkListNetworkItemSelected_: function(event) {

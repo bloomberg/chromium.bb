@@ -189,7 +189,7 @@ Polymer({
 
   /**
    * Handler for when accessibility-specific keys are pressed.
-   * @param {!{detail: !{key: string, keyboardEvent: Object}}} e
+   * @param {!CustomEvent<!{key: string, keyboardEvent: Object}>} e
    */
   onKeysPressed_: function(e) {
     if (!this.selectedItem) {

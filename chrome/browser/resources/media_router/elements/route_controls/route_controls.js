@@ -435,7 +435,7 @@ Polymer({
   },
 
   /**
-   * @param {!{detail: {value: boolean}}} e
+   * @param {!CustomEvent<{value: boolean}>} e
    * @private
    */
   onSeekingChanged_: function(e) {
@@ -474,7 +474,7 @@ Polymer({
   },
 
   /**
-   * @param {!{detail: {value: boolean}}} e
+   * @param {!CustomEvent<{value: boolean}>} e
    * @private
    */
   onVolumeDraggingChanged_: function(e) {
