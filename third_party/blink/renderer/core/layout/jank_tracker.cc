@@ -126,6 +126,11 @@ void JankTracker::AccumulateJank(const LayoutObject& source,
   if (source.IsFixedPositioned() || source.IsStickyPositioned())
     return;
 
+  // SVG elements don't participate in the normal layout algorithms and are
+  // more likely to be used for animations.
+  if (source.IsSVG())
+    return;
+
   const auto* local_xform = TransformNodeFor(painting_layer.GetLayoutObject());
   const auto* root_xform = TransformNodeFor(*source.View());
 
