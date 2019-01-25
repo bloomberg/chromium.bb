@@ -516,6 +516,11 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // observations.
   bool ShouldSocketWatcherNotifyRTT(base::TimeTicks now);
 
+  // Caps and returns the current value of effective connection type based on
+  // the current signal strength. If the signal strength is reported as low, a
+  // value lower than |effective_connection_type_| may be returned.
+  EffectiveConnectionType GetCappedECTBasedOnSignalStrength() const;
+
   // Determines if the requests to local host can be used in estimating the
   // network quality. Set to true only for tests.
   bool use_localhost_requests_;

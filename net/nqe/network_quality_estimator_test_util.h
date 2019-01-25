@@ -213,6 +213,8 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
     transport_rtt_observation_count_last_ect_computation_ = count;
   }
 
+  void SetCurrentSignalStrength(int32_t signal_strength);
+
   // Returns count of ping RTTs received from H2/spdy connections.
   size_t ping_rtt_received_count() const { return ping_rtt_received_count_; }
 
@@ -278,6 +280,8 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
 
   // If set, GetRTTEstimateInternal() would return the set value.
   base::Optional<base::TimeDelta> start_time_null_end_to_end_rtt_;
+
+  int32_t current_cellular_signal_strength_ = INT32_MIN;
 
   LocalHttpTestServer embedded_test_server_;
 

@@ -727,6 +727,27 @@ void NetworkQualityEstimator::ComputeEffectiveConnectionType() {
 
   network_quality_ = nqe::internal::NetworkQuality(http_rtt, transport_rtt,
                                                    downstream_throughput_kbps);
+  net::EffectiveConnectionType signal_strength_capped_ect =
+      GetCappedECTBasedOnSignalStrength();
+
+  if (signal_strength_capped_ect != effective_connection_type_) {
+    DCHECK_LE(signal_strength_capped_ect, effective_connection_type_);
+    UMA_HISTOGRAM_EXACT_LINEAR(
+        "NQE.CellularSignalStrength.ECTReduction",
+        effective_connection_type_ - signal_strength_capped_ect,
+        static_cast<int>(EFFECTIVE_CONNECTION_TYPE_LAST));
+
+    effective_connection_type_ = signal_strength_capped_ect;
+
+    // Reset |network_quality_| based on the updated effective connection type.
+    network_quality_ = nqe::internal::NetworkQuality(
+        params_->TypicalNetworkQuality(effective_connection_type_).http_rtt(),
+        params_->TypicalNetworkQuality(effective_connection_type_)
+            .transport_rtt(),
+        params_->TypicalNetworkQuality(effective_connection_type_)
+            .downstream_throughput_kbps());
+  }
+
   UMA_HISTOGRAM_ENUMERATION("NQE.EffectiveConnectionType.OnECTComputation",
                             effective_connection_type_,
                             EFFECTIVE_CONNECTION_TYPE_LAST);
@@ -769,6 +790,86 @@ void NetworkQualityEstimator::ComputeEffectiveConnectionType() {
       http_downstream_throughput_kbps_observations_.Size();
   new_rtt_observations_since_last_ect_computation_ = 0;
   new_throughput_observations_since_last_ect_computation_ = 0;
+}
+
+EffectiveConnectionType
+NetworkQualityEstimator::GetCappedECTBasedOnSignalStrength() const {
+  if (!params_->cap_ect_based_on_signal_strength())
+    return effective_connection_type_;
+
+  // Check if signal strength is available.
+  if (current_network_id_.signal_strength == INT32_MIN)
+    return effective_connection_type_;
+
+  if (effective_connection_type_ == EFFECTIVE_CONNECTION_TYPE_UNKNOWN ||
+      effective_connection_type_ == EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
+    return effective_connection_type_;
+  }
+
+  // The maximum signal strength level is 4.
+  UMA_HISTOGRAM_EXACT_LINEAR("NQE.CellularSignalStrength.AtECTComputation",
+                             current_network_id_.signal_strength, 4);
+
+  // Do not cap ECT if the signal strength is high.
+  if (current_network_id_.signal_strength > 2)
+    return effective_connection_type_;
+
+  DCHECK_LE(0, current_network_id_.signal_strength);
+
+  DCHECK_LE(NetworkChangeNotifier::CONNECTION_2G, current_network_id_.type);
+  DCHECK_GE(NetworkChangeNotifier::CONNECTION_4G, current_network_id_.type);
+
+  // When signal strength is 0, the device is almost offline.
+  if (current_network_id_.signal_strength == 0) {
+    switch (current_network_id_.type) {
+      case NetworkChangeNotifier::CONNECTION_2G:
+      case NetworkChangeNotifier::CONNECTION_3G:
+        return std::min(effective_connection_type_,
+                        EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+      case NetworkChangeNotifier::CONNECTION_4G:
+        return std::min(effective_connection_type_,
+                        EFFECTIVE_CONNECTION_TYPE_2G);
+      default:
+        NOTREACHED();
+        return effective_connection_type_;
+    }
+  }
+
+  if (current_network_id_.signal_strength == 1) {
+    switch (current_network_id_.type) {
+      case NetworkChangeNotifier::CONNECTION_2G:
+        return std::min(effective_connection_type_,
+                        EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+      case NetworkChangeNotifier::CONNECTION_3G:
+        return std::min(effective_connection_type_,
+                        EFFECTIVE_CONNECTION_TYPE_2G);
+      case NetworkChangeNotifier::CONNECTION_4G:
+        return std::min(effective_connection_type_,
+                        EFFECTIVE_CONNECTION_TYPE_3G);
+      default:
+        NOTREACHED();
+        return effective_connection_type_;
+    }
+  }
+
+  if (current_network_id_.signal_strength == 2) {
+    switch (current_network_id_.type) {
+      case NetworkChangeNotifier::CONNECTION_2G:
+        return std::min(effective_connection_type_,
+                        EFFECTIVE_CONNECTION_TYPE_2G);
+      case NetworkChangeNotifier::CONNECTION_3G:
+        return std::min(effective_connection_type_,
+                        EFFECTIVE_CONNECTION_TYPE_3G);
+      case NetworkChangeNotifier::CONNECTION_4G:
+        return std::min(effective_connection_type_,
+                        EFFECTIVE_CONNECTION_TYPE_4G);
+      default:
+        NOTREACHED();
+        return effective_connection_type_;
+    }
+  }
+  NOTREACHED();
+  return effective_connection_type_;
 }
 
 EffectiveConnectionType NetworkQualityEstimator::GetEffectiveConnectionType()

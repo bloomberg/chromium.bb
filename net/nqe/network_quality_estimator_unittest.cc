@@ -942,7 +942,7 @@ TEST_F(NetworkQualityEstimatorTest, ObtainThresholdsOnlyRTT) {
 
   const struct {
     int32_t rtt_msec;
-    EffectiveConnectionType expected_conn_type;
+    EffectiveConnectionType expected_ect;
   } tests[] = {
       {5000, EFFECTIVE_CONNECTION_TYPE_OFFLINE},
       {4000, EFFECTIVE_CONNECTION_TYPE_OFFLINE},
@@ -966,7 +966,7 @@ TEST_F(NetworkQualityEstimatorTest, ObtainThresholdsOnlyRTT) {
     estimator.set_recent_downlink_throughput_kbps(INT32_MAX);
     estimator.SetStartTimeNullHttpRtt(
         base::TimeDelta::FromMilliseconds(test.rtt_msec));
-    EXPECT_EQ(test.expected_conn_type, estimator.GetEffectiveConnectionType());
+    EXPECT_EQ(test.expected_ect, estimator.GetEffectiveConnectionType());
   }
 }
 
@@ -976,7 +976,7 @@ TEST_F(NetworkQualityEstimatorTest, DefaultHttpRTTBasedThresholds) {
   const struct {
     bool override_defaults_using_variation_params;
     int32_t http_rtt_msec;
-    EffectiveConnectionType expected_conn_type;
+    EffectiveConnectionType expected_ect;
   } tests[] = {
       // When the variation params do not override connection thresholds,
       // default values should be used.
@@ -1019,7 +1019,74 @@ TEST_F(NetworkQualityEstimatorTest, DefaultHttpRTTBasedThresholds) {
         base::TimeDelta::FromMilliseconds(test.http_rtt_msec));
     estimator.set_start_time_null_downlink_throughput_kbps(INT32_MAX);
     estimator.set_recent_downlink_throughput_kbps(INT32_MAX);
-    EXPECT_EQ(test.expected_conn_type, estimator.GetEffectiveConnectionType());
+    EXPECT_EQ(test.expected_ect, estimator.GetEffectiveConnectionType());
+  }
+}
+
+// Tests that the ECT and other network quality metrics are capped based on
+// signal strength.
+TEST_F(NetworkQualityEstimatorTest, SignalStrengthBasedCapping) {
+  const struct {
+    bool enable_signal_strength_capping_experiment;
+    int32_t signal_strength_level;
+    int32_t http_rtt_msec;
+    EffectiveConnectionType expected_ect;
+    bool expected_http_rtt_overridden;
+  } tests[] = {
+      // Signal strength is unavailable.
+      {true, INT32_MIN, 20, EFFECTIVE_CONNECTION_TYPE_4G, false},
+
+      // Signal strength is too low. Even though RTT is reported as low,
+      // ECT is expected to be capped to 2G.
+      {true, 0, 20, EFFECTIVE_CONNECTION_TYPE_2G, true},
+
+      // When the signal strength based capping experiment is not enabled,
+      // ECT should be computed only on the based of |http_rtt_msec|.
+      {false, INT32_MIN, 20, EFFECTIVE_CONNECTION_TYPE_4G, false},
+      {false, 0, 20, EFFECTIVE_CONNECTION_TYPE_4G, false},
+  };
+
+  for (const auto& test : tests) {
+    base::HistogramTester histogram_tester;
+    std::map<std::string, std::string> variation_params;
+    variation_params["cap_ect_based_on_signal_strength"] =
+        test.enable_signal_strength_capping_experiment ? "true" : "false";
+
+    TestNetworkQualityEstimator estimator(variation_params);
+
+    // Simulate the connection type so that GetEffectiveConnectionType
+    // does not return Offline if the device is offline.
+    estimator.SetCurrentSignalStrength(test.signal_strength_level);
+
+    estimator.SimulateNetworkChange(NetworkChangeNotifier::CONNECTION_4G,
+                                    "test");
+
+    estimator.SetStartTimeNullHttpRtt(
+        base::TimeDelta::FromMilliseconds(test.http_rtt_msec));
+    estimator.set_recent_http_rtt(
+        base::TimeDelta::FromMilliseconds(test.http_rtt_msec));
+    estimator.set_start_time_null_downlink_throughput_kbps(INT32_MAX);
+    estimator.set_recent_downlink_throughput_kbps(INT32_MAX);
+    estimator.RunOneRequest();
+    EXPECT_EQ(test.expected_ect, estimator.GetEffectiveConnectionType());
+
+    if (!test.expected_http_rtt_overridden) {
+      EXPECT_EQ(base::TimeDelta::FromMilliseconds(test.http_rtt_msec),
+                estimator.GetHttpRTT());
+    } else {
+      EXPECT_EQ(estimator.params()
+                    ->TypicalNetworkQuality(EFFECTIVE_CONNECTION_TYPE_2G)
+                    .http_rtt(),
+                estimator.GetHttpRTT());
+    }
+
+    if (!test.expected_http_rtt_overridden) {
+      histogram_tester.ExpectTotalCount(
+          "NQE.CellularSignalStrength.ECTReduction", 0);
+    } else {
+      ExpectBucketCountAtLeast(&histogram_tester,
+                               "NQE.CellularSignalStrength.ECTReduction", 2, 1);
+    }
   }
 }
 
@@ -1049,7 +1116,7 @@ TEST_F(NetworkQualityEstimatorTest, ObtainThresholdsHttpRTTandThroughput) {
   const struct {
     int32_t rtt_msec;
     int32_t downlink_throughput_kbps;
-    EffectiveConnectionType expected_conn_type;
+    EffectiveConnectionType expected_ect;
   } tests[] = {
       // Set RTT to a very low value to observe the effect of throughput.
       // Throughput is the bottleneck.
@@ -1082,7 +1149,7 @@ TEST_F(NetworkQualityEstimatorTest, ObtainThresholdsHttpRTTandThroughput) {
     // Run one main frame request to force recomputation of effective connection
     // type.
     estimator.RunOneRequest();
-    EXPECT_EQ(test.expected_conn_type, estimator.GetEffectiveConnectionType());
+    EXPECT_EQ(test.expected_ect, estimator.GetEffectiveConnectionType());
   }
 }
 
