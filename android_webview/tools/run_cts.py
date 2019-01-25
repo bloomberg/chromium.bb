@@ -18,7 +18,8 @@ import zipfile
 
 sys.path.append(os.path.join(
     os.path.dirname(__file__), os.pardir, os.pardir, 'build', 'android'))
-import devil_chromium  # pylint: disable=import-error
+import devil_chromium  # pylint: disable=import-error, unused-import
+from devil.android.ndk import abis  # pylint: disable=import-error
 from devil.android.sdk import version_codes  # pylint: disable=import-error
 from devil.android.tools import script_common  # pylint: disable=import-error
 from devil.utils import cmd_helper  # pylint: disable=import-error
@@ -49,9 +50,9 @@ _SDK_PLATFORM_DICT = {
 
 # TODO(aluo): support 'x86' and 'x86_64'
 _SUPPORTED_ARCH_DICT = {
-    'arm64-v8a': 'arm64',
+    abis.ARM_64: 'arm64',
     # The test apks under 'arm64' support both arm and arm64 devices.
-    'armeabi-v7a': 'arm64',
+    abis.ARM: 'arm64',
 }
 
 
