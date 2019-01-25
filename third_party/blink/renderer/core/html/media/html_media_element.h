@@ -329,6 +329,10 @@ class CORE_EXPORT HTMLMediaElement
 
   bool HasMediaSource() const { return media_source_; }
 
+  // Return true if element is paused and won't resume automatically if it
+  // becomes visible again.
+  bool PausedWhenVisible() const;
+
  protected:
   HTMLMediaElement(const QualifiedName&, Document&);
   ~HTMLMediaElement() override;

@@ -1070,6 +1070,10 @@ bool WebMediaPlayerImpl::Paused() const {
   return pipeline_controller_.GetPlaybackRate() == 0.0f;
 }
 
+bool WebMediaPlayerImpl::PausedWhenHidden() const {
+  return paused_when_hidden_;
+}
+
 bool WebMediaPlayerImpl::Seeking() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 

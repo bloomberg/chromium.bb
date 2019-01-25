@@ -2308,6 +2308,36 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(in_picture_in_picture);
 }
 
+// Check that video with no audio that is paused when hidden is still eligible
+// to enter Auto Picture-in-Picture and resumes playback.
+IN_PROC_BROWSER_TEST_F(
+    WebAppPictureInPictureWindowControllerBrowserTest,
+    AutoPictureInPictureTriggeredOnPageHiddenIfVideoPausedWhenHidden) {
+  InstallAndLaunchPWA();
+
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents(), "changeVideoSrcToNoAudioTrackVideo();", &result));
+  EXPECT_TRUE(result);
+  ASSERT_TRUE(content::ExecuteScript(web_contents(),
+                                     "video.autoPictureInPicture = true;"));
+
+  // Hide page and check that video entered Picture-in-Picture automatically
+  // and is playing.
+  web_contents()->WasHidden();
+  base::string16 expected_title =
+      base::ASCIIToUTF16("video.enterpictureinpicture");
+  EXPECT_EQ(
+      expected_title,
+      content::TitleWatcher(web_contents(), expected_title).WaitAndGetTitle());
+
+  // Check that video playback is still playing.
+  bool is_paused = false;
+  EXPECT_TRUE(
+      ExecuteScriptAndExtractBool(web_contents(), "isPaused();", &is_paused));
+  EXPECT_FALSE(is_paused);
+}
+
 // Check that video with no audio that is paused when hidden resumes playback
 // when it enters Picture-in-Picture.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,

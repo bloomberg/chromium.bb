@@ -1406,6 +1406,11 @@ WebMediaPlayer::LoadType HTMLMediaElement::GetLoadType() const {
   return WebMediaPlayer::kLoadTypeURL;
 }
 
+bool HTMLMediaElement::PausedWhenVisible() const {
+  return paused_ && GetWebMediaPlayer() &&
+         !GetWebMediaPlayer()->PausedWhenHidden();
+}
+
 bool HTMLMediaElement::TextTracksAreReady() const {
   // 4.8.12.11.1 Text track model
   // ...

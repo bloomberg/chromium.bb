@@ -264,7 +264,7 @@ void PictureInPictureControllerImpl::PageVisibilityChanged() {
   // element is allowed to, enter Picture-in-Picture.
   if (GetSupplementable()->hidden() && !picture_in_picture_element_ &&
       AutoPictureInPictureElement() &&
-      !AutoPictureInPictureElement()->paused() &&
+      !AutoPictureInPictureElement()->PausedWhenVisible() &&
       IsElementAllowed(*AutoPictureInPictureElement()) == Status::kEnabled) {
     EnterPictureInPicture(AutoPictureInPictureElement(), nullptr);
   }
