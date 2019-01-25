@@ -221,6 +221,7 @@
 == full ==
   master-full
     amd64-generic-full
+    amd64-generic-goma-full
     arm-generic-full
     daisy-full
     kevin-full
@@ -573,6 +574,7 @@
   amd64-generic-full-tryjob
   amd64-generic-fuzzer-tryjob
   amd64-generic-goma-canary-chromium-pfq-informational-tryjob
+  amd64-generic-goma-full-tryjob
   amd64-generic-incremental-tryjob
   amd64-generic-llvm-next-toolchain-tryjob
   amd64-generic-llvm-toolchain-tryjob
@@ -2394,6 +2396,7 @@
     veyron_rialto-chrome-pfq
   master-full-tryjob
     amd64-generic-full
+    amd64-generic-goma-full
     arm-generic-full
     daisy-full
     kevin-full

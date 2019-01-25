@@ -1720,6 +1720,20 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
       )
   )
 
+  master_config.AddSlave(
+      site_config.Add(
+          'amd64-generic-goma-full',
+          site_config.templates.full,
+          site_config.templates.build_external_chrome,
+          boards=['amd64-generic'],
+          internal=True,
+          manifest_repo_url=config_lib.GetSiteParams().MANIFEST_URL,
+          overlays=constants.PUBLIC_OVERLAYS,
+          prebuilts=False,
+          build_all_with_goma=True,
+          important=False,
+      ))
+
 
 def CqBuilders(site_config, boards_dict, ge_build_config):
   """Create all CQ build configs.
@@ -1961,7 +1975,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # here in the configuration, rather than GetSlavesForMaster().
   # Something like the following:
   # master_paladin = site_config.AddConfig(internal_paladin, ...)
-   # master_paladin.AddSlave(site_config.AddConfig(internal_paladin, ...))
+  # master_paladin.AddSlave(site_config.AddConfig(internal_paladin, ...))
 
   for board in _paladin_boards:
     assert board in board_configs, '%s not in board_configs' % board
@@ -3342,11 +3356,11 @@ def ApplyCustomOverrides(site_config):
       },
 
       'whirlwind-release': {
-          'dev_installer_prebuilts':True,
+          'dev_installer_prebuilts': True,
       },
 
       'gale-release': {
-          'dev_installer_prebuilts':True,
+          'dev_installer_prebuilts': True,
       },
 
       'lakitu-release': config_lib.BuildConfig().apply(
@@ -3384,9 +3398,9 @@ def ApplyCustomOverrides(site_config):
       # TODO(yshaul): find out if hwqual needs to go as well
       # TODO(yshaul): fix apply method to merge base and test
       'guado_labstation-release': {
-          'hwqual':False,
-          'images':['base', 'test'],
-          'paygen':False,
+          'hwqual': False,
+          'images': ['base', 'test'],
+          'paygen': False,
       },
 
       'peach_pit-release': {
