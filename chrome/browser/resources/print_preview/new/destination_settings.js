@@ -107,12 +107,6 @@ Polymer({
 
     const recentDestinations = [];
     let update = false;
-    let filterAccount = this.activeUser;
-    // Fallback to the account for the current destination, in case activeUser
-    // is not known yet from cloudprint.
-    if (!filterAccount) {
-      filterAccount = this.destination ? this.destination.account : '';
-    }
     const existingKeys = this.recentDestinationList_ ?
         this.recentDestinationList_.map(listItem => listItem.key) :
         [];
@@ -120,7 +114,7 @@ Polymer({
       const key = print_preview.createRecentDestinationKey(recentDestination);
       const destination = this.destinationStore.getDestinationByKey(key);
       if (destination && !this.destinationIsDriveOrPdf_(recentDestination) &&
-          (!destination.account || destination.account == filterAccount)) {
+          (!destination.account || destination.account == this.activeUser)) {
         recentDestinations.push(destination);
         update = update || !existingKeys.includes(key);
       }
