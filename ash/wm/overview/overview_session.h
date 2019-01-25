@@ -181,11 +181,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Positions all of the windows in the overview, except |ignored_item|.
   void PositionWindows(bool animate, OverviewItem* ignored_item = nullptr);
 
-  // Checks if the grid associated with a given |root_window| needs to have the
-  // wallpaper animated. Returns false if one of the grids windows covers the
-  // the entire workspace, true otherwise.
-  bool ShouldAnimateWallpaper(aura::Window* root_window);
-
   // Returns true if |window| is currently showing in overview.
   bool IsWindowInOverview(const aura::Window* window);
 

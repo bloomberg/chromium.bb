@@ -538,21 +538,6 @@ void OverviewSession::PositionWindows(bool animate,
     grid->PositionWindows(animate, ignored_item);
 }
 
-bool OverviewSession::ShouldAnimateWallpaper(aura::Window* root_window) {
-  // Find the grid associated with |root_window|.
-  OverviewGrid* grid = GetGridWithRootWindow(root_window);
-  if (!grid)
-    return false;
-
-  // If one of the windows covers the workspace, we do not need to animate.
-  for (const auto& selector_item : grid->window_list()) {
-    if (CanCoverAvailableWorkspace(selector_item->GetWindow()))
-      return false;
-  }
-
-  return true;
-}
-
 bool OverviewSession::IsWindowInOverview(const aura::Window* window) {
   for (const std::unique_ptr<OverviewGrid>& grid : grid_list_) {
     if (grid->GetOverviewItemContaining(window))
@@ -583,6 +568,12 @@ void OverviewSession::UpdateGridAtLocationYPositionAndOpacity(
 
 void OverviewSession::UpdateMaskAndShadow(bool show) {
   for (auto& grid : grid_list_) {
+    // Don't apply rounded corner mask if the grid has move than 10 windows
+    // because it can push the compositor memory usage to the limit.
+    // TODO(osima): Remove this once new rounded corner impl is available.
+    // (crbug.com/903486)
+    if (show && grid->window_list().size() > 10)
+      continue;
     for (auto& window : grid->window_list())
       window->UpdateMaskAndShadow(show);
   }
@@ -593,10 +584,8 @@ void OverviewSession::OnStartingAnimationComplete(bool canceled) {
     UpdateMaskAndShadow(!canceled);
     if (overview_focus_widget_)
       overview_focus_widget_->Show();
-    for (auto& grid : grid_list_) {
-      for (auto& window : grid->window_list())
-        window->OnStartingAnimationComplete();
-    }
+    for (auto& grid : grid_list_)
+      grid->OnStartingAnimationComplete();
   }
 }
 

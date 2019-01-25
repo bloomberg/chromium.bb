@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_resizer.h"
@@ -159,17 +160,25 @@ TEST_F(OverviewControllerTest, AnimationCallbacks) {
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   TestShellObserver observer(/*should_monitor_animation_state = */ true);
   // Enter without windows.
-  Shell::Get()->overview_controller()->ToggleOverview();
-  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+  auto* shell = Shell::Get();
+  shell->overview_controller()->ToggleOverview();
+  EXPECT_TRUE(shell->overview_controller()->IsSelecting());
   EXPECT_EQ(TestShellObserver::COMPLETED, observer.starting_animation_state());
+  auto* overview_controller = shell->overview_controller();
+  EXPECT_TRUE(overview_controller->HasBlurForTest());
+  EXPECT_TRUE(overview_controller->HasBlurAnimationForTest());
 
-  // Exit winhtout windows still creates an animation.
-  Shell::Get()->overview_controller()->ToggleOverview();
-  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
+  // Exit without windows still creates an animation.
+  shell->overview_controller()->ToggleOverview();
+  EXPECT_FALSE(shell->overview_controller()->IsSelecting());
   EXPECT_EQ(TestShellObserver::UNKNOWN, observer.ending_animation_state());
+  EXPECT_TRUE(overview_controller->HasBlurForTest());
+  EXPECT_TRUE(overview_controller->HasBlurAnimationForTest());
 
   observer.WaitForEndingAnimationComplete();
   EXPECT_EQ(TestShellObserver::COMPLETED, observer.ending_animation_state());
+  EXPECT_FALSE(overview_controller->HasBlurForTest());
+  EXPECT_FALSE(overview_controller->HasBlurAnimationForTest());
 
   gfx::Rect bounds(0, 0, 100, 100);
   std::unique_ptr<aura::Window> window1(
@@ -182,28 +191,41 @@ TEST_F(OverviewControllerTest, AnimationCallbacks) {
   ASSERT_EQ(TestShellObserver::UNKNOWN, observer.ending_animation_state());
 
   // Enter with windows.
-  Shell::Get()->overview_controller()->ToggleOverview();
-  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+  shell->overview_controller()->ToggleOverview();
+  EXPECT_TRUE(shell->overview_controller()->IsSelecting());
   EXPECT_EQ(TestShellObserver::UNKNOWN, observer.starting_animation_state());
+  EXPECT_EQ(TestShellObserver::UNKNOWN, observer.ending_animation_state());
+  EXPECT_FALSE(overview_controller->HasBlurForTest());
+  EXPECT_FALSE(overview_controller->HasBlurAnimationForTest());
 
   // Exit with windows before starting animation ends.
-  Shell::Get()->overview_controller()->ToggleOverview();
-  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
+  shell->overview_controller()->ToggleOverview();
+  EXPECT_FALSE(shell->overview_controller()->IsSelecting());
   EXPECT_EQ(TestShellObserver::CANCELED, observer.starting_animation_state());
-  EXPECT_EQ(TestShellObserver::UNKNOWN, observer.ending_animation_state());
+  // No shield so ending animation ends immediately.
+  EXPECT_EQ(TestShellObserver::COMPLETED, observer.ending_animation_state());
+  // Blur animation never started.
+  EXPECT_FALSE(overview_controller->HasBlurForTest());
+  EXPECT_FALSE(overview_controller->HasBlurAnimationForTest());
 
   observer.Reset();
 
   // Enter again before exit animation ends.
-  Shell::Get()->overview_controller()->ToggleOverview();
-  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
-  EXPECT_EQ(TestShellObserver::CANCELED, observer.ending_animation_state());
+  shell->overview_controller()->ToggleOverview();
+  EXPECT_TRUE(shell->overview_controller()->IsSelecting());
+  EXPECT_EQ(TestShellObserver::UNKNOWN, observer.ending_animation_state());
   EXPECT_EQ(TestShellObserver::UNKNOWN, observer.starting_animation_state());
+  // Blur animation will start when animation is completed.
+  EXPECT_FALSE(overview_controller->HasBlurForTest());
+  EXPECT_FALSE(overview_controller->HasBlurAnimationForTest());
 
   // Activating window while entering animation should cancel the overview.
   wm::ActivateWindow(window1.get());
-  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
+  EXPECT_FALSE(shell->overview_controller()->IsSelecting());
   EXPECT_EQ(TestShellObserver::CANCELED, observer.starting_animation_state());
+  // Blur animation never started.
+  EXPECT_FALSE(overview_controller->HasBlurForTest());
+  EXPECT_FALSE(overview_controller->HasBlurAnimationForTest());
 }
 
 // Tests the slide animation for overview is never used in clamshell.

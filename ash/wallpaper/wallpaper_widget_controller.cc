@@ -105,6 +105,8 @@ class WallpaperWidgetController::WidgetHandler
     return true;
   }
 
+  float blur_sigma() const { return widget_->GetLayer()->layer_blur(); }
+
   void SetBlur(float blur_sigma) {
     widget_->GetLayer()->SetLayerBlur(blur_sigma);
 
@@ -220,6 +222,10 @@ void WallpaperWidgetController::SetWallpaperBlur(float blur_sigma) {
     animating_widget_->SetBlur(blur_sigma);
   if (active_widget_)
     active_widget_->SetBlur(blur_sigma);
+}
+
+float WallpaperWidgetController::GetWallpaperBlur() const {
+  return active_widget_ ? active_widget_->blur_sigma() : 0.f;
 }
 
 void WallpaperWidgetController::ResetWidgetsForTesting() {

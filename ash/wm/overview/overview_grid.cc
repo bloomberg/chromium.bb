@@ -420,7 +420,9 @@ void OverviewGrid::Shutdown() {
 }
 
 void OverviewGrid::PrepareForOverview() {
-  InitShieldWidget();
+  if (!ShouldAnimateWallpaper())
+    InitShieldWidget(/*animate=*/false);
+
   for (const auto& window : window_list_)
     window->PrepareForOverview();
   prepared_for_overview_ = true;
@@ -434,14 +436,14 @@ void OverviewGrid::PositionWindows(
     return;
 
   DCHECK_NE(transition, OverviewSession::OverviewTransition::kExit);
-  DCHECK(shield_widget_.get());
   // Keep the background shield widget covering the whole screen. A grid without
   // any windows still needs the shield widget bounds updated.
-  aura::Window* widget_window = shield_widget_->GetNativeWindow();
-  const gfx::Rect bounds = widget_window->parent()->bounds();
-  widget_window->SetBounds(bounds);
-
-  ShowNoRecentsWindowMessage(window_list_.empty());
+  if (shield_widget_) {
+    aura::Window* widget_window = shield_widget_->GetNativeWindow();
+    const gfx::Rect bounds = widget_window->parent()->bounds();
+    widget_window->SetBounds(bounds);
+    ShowNoRecentsWindowMessage(window_list_.empty());
+  }
 
   if (window_list_.empty())
     return;
@@ -895,6 +897,26 @@ void OverviewGrid::OnPostWindowStateTypeChange(
   }
 }
 
+void OverviewGrid::OnStartingAnimationComplete() {
+  if (!shield_widget_) {
+    InitShieldWidget(/*animate=*/true);
+    ShowNoRecentsWindowMessage(window_list_.empty());
+  }
+
+  for (auto& window : window_list())
+    window->OnStartingAnimationComplete();
+}
+
+bool OverviewGrid::ShouldAnimateWallpaper() const {
+  // If one of the windows covers the workspace, we do not need to animate.
+  for (const auto& selector_item : window_list_) {
+    if (CanCoverAvailableWorkspace(selector_item->GetWindow()))
+      return false;
+  }
+
+  return true;
+}
+
 bool OverviewGrid::IsNoItemsIndicatorLabelVisibleForTesting() {
   return shield_view_ && shield_view_->IsLabelVisible();
 }
@@ -1169,7 +1191,7 @@ aura::Window* OverviewGrid::GetTargetWindowOnLocation(
   return (iter != window_list_.end()) ? (*iter)->GetWindow() : nullptr;
 }
 
-void OverviewGrid::InitShieldWidget() {
+void OverviewGrid::InitShieldWidget(bool animate) {
   // TODO(varkha): The code assumes that SHELF_BACKGROUND_MAXIMIZED is
   // synonymous with a black shelf background. Update this code if that
   // assumption is no longer valid.
@@ -1194,15 +1216,20 @@ void OverviewGrid::InitShieldWidget() {
   shield_view_->SetBackgroundColor(GetShieldColor());
   shield_view_->SetGridBounds(bounds_);
   shield_widget_->SetContentsView(shield_view_);
-  shield_widget_->SetOpacity(initial_opacity);
-  ui::ScopedLayerAnimationSettings animation_settings(
-      widget_window->layer()->GetAnimator());
-  animation_settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-      kOverviewSelectorTransitionMilliseconds));
-  animation_settings.SetTweenType(gfx::Tween::EASE_OUT);
-  animation_settings.SetPreemptionStrategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  shield_widget_->SetOpacity(1.f);
+
+  if (animate) {
+    shield_widget_->SetOpacity(initial_opacity);
+    ui::ScopedLayerAnimationSettings animation_settings(
+        widget_window->layer()->GetAnimator());
+    animation_settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+        kOverviewSelectorTransitionMilliseconds));
+    animation_settings.SetTweenType(gfx::Tween::EASE_OUT);
+    animation_settings.SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    shield_widget_->SetOpacity(1.f);
+  } else {
+    shield_widget_->SetOpacity(1.f);
+  }
 }
 
 void OverviewGrid::InitSelectionWidget(OverviewSession::Direction direction) {
