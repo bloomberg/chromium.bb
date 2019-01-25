@@ -196,6 +196,8 @@ static const MimeInfo kSecondaryMappings[] = {
     {"application/x-tar", "tar"},
     {"application/zip", "zip"},
     {"audio/mpeg", "mp3"},
+    // This is the platform mapping on recent versions of Windows 10.
+    {"audio/webm", "weba"},
     {"image/bmp", "bmp"},
     {"image/jpeg", "jfif,pjpeg,pjp"},
     {"image/svg+xml", "svg,svgz"},

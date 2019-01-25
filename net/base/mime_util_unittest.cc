@@ -32,6 +32,7 @@ TEST(MimeUtilTest, ExtensionTest) {
     {FILE_PATH_LITERAL("json"), "application/json", true},
     {FILE_PATH_LITERAL("js"), "text/javascript", true},
     {FILE_PATH_LITERAL("webm"), "video/webm", true},
+    {FILE_PATH_LITERAL("weba"), "audio/webm", true},
 #if defined(OS_CHROMEOS)
     // These are test cases for testing platform mime types on Chrome OS.
     {FILE_PATH_LITERAL("epub"), "application/epub+zip", true},
@@ -70,7 +71,6 @@ TEST(MimeUtilTest, GetPreferredExtensionForMimeType) {
       {"application/wasm", FILE_PATH_LITERAL("wasm")},      // Primary
       {"application/javascript", FILE_PATH_LITERAL("js")},  // Secondary
       {"text/javascript", FILE_PATH_LITERAL("js")},         // Primary
-      {"audio/webm", FILE_PATH_LITERAL("webm")},            // Primary
       {"video/webm", FILE_PATH_LITERAL("webm")},            // Primary
   };
 
