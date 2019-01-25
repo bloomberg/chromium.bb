@@ -718,7 +718,7 @@ bool LayoutBoxModelObject::HasAutoHeightOrContainingBlockWithAutoHeight(
     return false;
   if (this_box && this_box->IsCustomItem() &&
       (this_box->HasOverrideContainingBlockContentLogicalHeight() ||
-       this_box->HasOverrideContainingBlockPercentageResolutionLogicalHeight()))
+       this_box->HasOverrideBlockPercentageResolutionSize()))
     return false;
 
   if (logical_height_length.IsAuto() &&
