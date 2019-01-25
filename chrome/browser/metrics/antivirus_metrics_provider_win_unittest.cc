@@ -29,16 +29,26 @@ struct Testcase {
 
 void VerifySystemProfileData(const metrics::SystemProfileProto& system_profile,
                              bool expect_unhashed_value) {
-  const char kWindowsDefender[] = "Windows Defender";
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return;
+
+  // The name of Windows Defender changed sometime in Windows 10, so any of the following is
+  // possible.
+  constexpr char kWindowsDefender[] = "Windows Defender";
+  constexpr char kWindowsDefenderAntivirus[] = "Windows Defender Antivirus";
 
   if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
     bool defender_found = false;
     for (const auto& av : system_profile.antivirus_product()) {
-      if (av.product_name_hash() == variations::HashName(kWindowsDefender)) {
+      if (av.product_name_hash() ==
+          variations::HashName(kWindowsDefender) ||
+          av.product_name_hash() ==
+          variations::HashName(kWindowsDefenderAntivirus)) {
         defender_found = true;
         if (expect_unhashed_value) {
           EXPECT_TRUE(av.has_product_name());
-          EXPECT_EQ(kWindowsDefender, av.product_name());
+          EXPECT_TRUE(av.product_name() == kWindowsDefender ||
+                      av.product_name() == kWindowsDefenderAntivirus);
         } else {
           EXPECT_FALSE(av.has_product_name());
         }
@@ -103,8 +113,7 @@ class AntiVirusMetricsProviderTest : public ::testing::TestWithParam<bool> {
   DISALLOW_COPY_AND_ASSIGN(AntiVirusMetricsProviderTest);
 };
 
-// TODO(crbug.com/682286): Flaky on windows 10.
-TEST_P(AntiVirusMetricsProviderTest, DISABLED_GetMetricsFullName) {
+TEST_P(AntiVirusMetricsProviderTest, GetMetricsFullName) {
   ASSERT_TRUE(thread_checker_.CalledOnValidThread());
   base::HistogramTester histograms;
   SetFullNamesFeatureEnabled(expect_unhashed_value_);
