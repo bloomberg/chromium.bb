@@ -138,6 +138,16 @@ bool LoadInfoIsMoreInteresting(const mojom::LoadInfo& a,
   return a.load_state > b.load_state;
 }
 
+void OnGetNetworkList(std::unique_ptr<net::NetworkInterfaceList> networks,
+                      mojom::NetworkService::GetNetworkListCallback callback,
+                      bool success) {
+  if (success) {
+    std::move(callback).Run(*networks);
+  } else {
+    std::move(callback).Run(base::nullopt);
+  }
+}
+
 #if defined(OS_ANDROID) && BUILDFLAG(USE_KERBEROS)
 // Used for Negotiate authentication on Android, which needs to generate tokens
 // in the browser process.
@@ -557,12 +567,14 @@ void NetworkService::GetTotalNetworkUsages(
 void NetworkService::GetNetworkList(
     uint32_t policy,
     mojom::NetworkService::GetNetworkListCallback callback) {
-  net::NetworkInterfaceList networks;
-  if (net::GetNetworkList(&networks, policy)) {
-    std::move(callback).Run(networks);
-  } else {
-    std::move(callback).Run(base::nullopt);
-  }
+  auto networks = std::make_unique<net::NetworkInterfaceList>();
+  auto* raw_networks = networks.get();
+  // net::GetNetworkList may block depending on platform.
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&net::GetNetworkList, raw_networks, policy),
+      base::BindOnce(&OnGetNetworkList, std::move(networks),
+                     std::move(callback)));
 }
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
