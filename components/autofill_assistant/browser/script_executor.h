@@ -113,8 +113,9 @@ class ScriptExecutor : public ActionDelegate {
       base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
       const std::string& title,
       const std::vector<std::string>& supported_basic_card_networks) override;
-  void SetChips(std::unique_ptr<std::vector<Chip>> chips) override;
-  void ClearChips() override;
+  void GetFullCard(GetFullCardCallback callback) override;
+  void Prompt(std::unique_ptr<std::vector<Chip>> chips) override;
+  void CancelPrompt() override;
   void FillAddressForm(const autofill::AutofillProfile* profile,
                        const Selector& selector,
                        base::OnceCallback<void(bool)> callback) override;
@@ -158,9 +159,6 @@ class ScriptExecutor : public ActionDelegate {
                    base::OnceCallback<void(bool)> callback) override;
   void ShowProgressBar(int progress, const std::string& message) override;
   void HideProgressBar() override;
-  void ShowOverlay() override;
-  void HideOverlay() override;
-  void AllowShowingSoftKeyboard(bool enabled) override;
 
  private:
   // Helper for WaitForElementVisible that keeps track of the state required to
@@ -273,7 +271,13 @@ class ScriptExecutor : public ActionDelegate {
   void OnWaitForElementVisibleNoInterrupts(
       base::OnceCallback<void(ProcessedActionStatusProto)> callback,
       bool element_found);
-  void CleanUpAfterChipIsSelected();
+  void OnGetPaymentInformation(
+      base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
+      std::unique_ptr<PaymentInformation> result);
+  void OnGetFullCard(GetFullCardCallback callback,
+                     std::unique_ptr<autofill::CreditCard> card,
+                     const base::string16& cvc);
+  void CleanUpAfterPrompt();
   void OnChosen(base::OnceClosure callback);
 
   std::string script_path_;

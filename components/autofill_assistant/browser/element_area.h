@@ -28,6 +28,10 @@ class ElementArea {
   // Clears the area. Stops scheduled updates.
   void Clear();
 
+  // Defines the area as covering the whole viewport. This is equivalent to
+  // defining an area that corresponds to the document body.
+  void CoverViewport();
+
   // Updates the area and keep checking for the element position and reporting
   // it until the area is cleared.
   //
@@ -48,7 +52,7 @@ class ElementArea {
   bool IsEmpty() const;
 
   // Returns true if there are elements to check.
-  bool HasElements() const { return !rectangles_.empty(); }
+  bool HasElements() const { return cover_viewport_ || !rectangles_.empty(); }
 
   // Defines a callback that'll be run every time the set of element coordinates
   // changes.
@@ -105,6 +109,7 @@ class ElementArea {
 
   WebController* const web_controller_;
   std::vector<Rectangle> rectangles_;
+  bool cover_viewport_ = false;
 
   // If true, regular updates are currently scheduled.
   bool scheduled_update_;

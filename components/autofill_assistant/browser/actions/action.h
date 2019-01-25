@@ -46,7 +46,6 @@ class Action {
   void UpdateProcessedAction(ProcessedActionStatusProto status);
 
   const ActionProto proto_;
-  bool show_overlay_;
 
   // Accumulate any result of this action during ProcessAction. Is only valid
   // during a run of ProcessAction.

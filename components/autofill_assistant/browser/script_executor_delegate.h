@@ -8,6 +8,8 @@
 #include <map>
 #include <string>
 
+#include "components/autofill_assistant/browser/state.h"
+
 namespace autofill {
 class PersonalDataManager;
 }  // namespace autofill
@@ -38,6 +40,8 @@ class ScriptExecutorDelegate {
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
 
   virtual content::WebContents* GetWebContents() = 0;
+
+  virtual void EnterState(AutofillAssistantState state) = 0;
 
   // Make the area of the screen that correspond to the given elements
   // touchable.

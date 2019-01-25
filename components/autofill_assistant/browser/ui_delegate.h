@@ -7,14 +7,17 @@
 
 #include <string>
 
+#include "components/autofill_assistant/browser/state.h"
+
 namespace autofill_assistant {
+
 // UI delegate called for script executions.
 class UiDelegate {
  public:
   virtual ~UiDelegate() = default;
 
-  // Called when the overlay has been clicked.
-  virtual void OnClickOverlay() = 0;
+  // Returns the current state of the controller.
+  virtual AutofillAssistantState GetState() = 0;
 
   // Asks for updated coordinates for the touchable area. This is called to
   // speed up update of the touchable areas when there are good reasons to think

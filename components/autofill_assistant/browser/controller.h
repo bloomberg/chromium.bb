@@ -18,6 +18,7 @@
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
 #include "components/autofill_assistant/browser/script_tracker.h"
 #include "components/autofill_assistant/browser/service.h"
+#include "components/autofill_assistant/browser/state.h"
 #include "components/autofill_assistant/browser/ui_delegate.h"
 #include "components/autofill_assistant/browser/web_controller.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -76,6 +77,7 @@ class Controller : public ScriptExecutorDelegate,
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   content::WebContents* GetWebContents() override;
   void SetTouchableElementArea(const ElementAreaProto& area) override;
+  void EnterState(AutofillAssistantState state) override;
 
   bool IsCookieExperimentEnabled() const;
 
@@ -117,7 +119,7 @@ class Controller : public ScriptExecutorDelegate,
   void OnScriptSelected(const std::string& script_path);
 
   // Overrides autofill_assistant::UiDelegate:
-  void OnClickOverlay() override;
+  AutofillAssistantState GetState() override;
   void UpdateTouchableArea() override;
   void OnUserInteractionInsideTouchableArea() override;
   std::string GetDebugContext() override;
@@ -145,6 +147,8 @@ class Controller : public ScriptExecutorDelegate,
   std::unique_ptr<Service> service_;
   std::map<std::string, std::string> parameters_;
   std::unique_ptr<ClientMemory> memory_;
+
+  AutofillAssistantState state_ = AutofillAssistantState::INACTIVE;
 
   // Domain of the last URL the controller requested scripts from.
   std::string script_domain_;
