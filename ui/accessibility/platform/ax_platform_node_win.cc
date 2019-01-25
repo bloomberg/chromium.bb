@@ -951,6 +951,8 @@ IFACEMETHODIMP AXPlatformNodeWin::get_accValue(VARIANT var_id, BSTR* value) {
 IFACEMETHODIMP AXPlatformNodeWin::put_accValue(VARIANT var_id, BSTR new_value) {
   AXPlatformNodeWin* target;
   COM_OBJECT_VALIDATE_VAR_ID_AND_GET_TARGET(var_id, target);
+  if (!new_value)
+    return E_INVALIDARG;
 
   AXActionData data;
   data.action = ax::mojom::Action::kSetValue;
@@ -1078,6 +1080,8 @@ IFACEMETHODIMP AXPlatformNodeWin::get_relationTargetsOfType(BSTR type_bstr,
                                                             IUnknown*** targets,
                                                             LONG* n_targets) {
   COM_OBJECT_VALIDATE_2_ARGS(targets, n_targets);
+  if (!type_bstr)
+    return E_INVALIDARG;
 
   *n_targets = 0;
   *targets = nullptr;
