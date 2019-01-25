@@ -39,6 +39,13 @@
       window.domAutomationController.send(document.pictureInPictureElement == video);
     }
 
+    function changeVideoSrcToNoAudioTrackVideo() {
+      video.src = '/media/engagement/engagement_no_audio_track.webm';
+      video.play()
+      .then(_ => { window.domAutomationController.send(true); })
+      .catch(e => { window.domAutomationController.send(false); });
+    }
+
     function isPaused() {
       window.domAutomationController.send(video.paused);
     }

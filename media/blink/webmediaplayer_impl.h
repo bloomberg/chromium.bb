@@ -172,6 +172,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   virtual double timelineOffset() const;
   double CurrentTime() const override;
 
+  bool PausedWhenHidden() const override;
+
   // Internal states of loading and network.
   // TODO(hclam): Ask the pipeline about the state rather than having reading
   // them from members which would cause race conditions.
