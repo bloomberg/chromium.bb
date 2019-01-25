@@ -162,11 +162,9 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   //
   // Returns false if we need to abort layout, because a previously unknown BFC
   // block offset has now been resolved.
-  bool HandleNewFormattingContext(
-      NGLayoutInputNode child,
-      const NGBreakToken* child_break_token,
-      NGPreviousInflowPosition*,
-      scoped_refptr<const NGBreakToken>* previous_inline_break_token);
+  bool HandleNewFormattingContext(NGLayoutInputNode child,
+                                  const NGBreakToken* child_break_token,
+                                  NGPreviousInflowPosition*);
 
   // Performs the actual layout of a new formatting context. This may be called
   // multiple times from HandleNewFormattingContext.

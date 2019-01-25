@@ -514,16 +514,18 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
       if (!child.IsInline())
         container_builder_.SetInitialBreakBefore(child.Style().BreakBefore());
 
-      bool success =
-          child.CreatesNewFormattingContext()
-              ? HandleNewFormattingContext(child, child_break_token,
-                                           &previous_inflow_position,
-                                           &previous_inline_break_token)
-              : HandleInflow(child, child_break_token,
-                             &previous_inflow_position,
-                             &previous_inline_break_token);
+      bool abort;
+      if (child.CreatesNewFormattingContext()) {
+        abort = !HandleNewFormattingContext(child, child_break_token,
+                                            &previous_inflow_position);
+        previous_inline_break_token = nullptr;
+      } else {
+        abort =
+            !HandleInflow(child, child_break_token, &previous_inflow_position,
+                          &previous_inline_break_token);
+      }
 
-      if (!success) {
+      if (abort) {
         // We need to abort the layout, as our BFC block offset was resolved.
         return container_builder_.Abort(
             NGLayoutResult::kBfcBlockOffsetResolved);
@@ -863,8 +865,7 @@ void NGBlockLayoutAlgorithm::HandleFloat(
 bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
     NGLayoutInputNode child,
     const NGBreakToken* child_break_token,
-    NGPreviousInflowPosition* previous_inflow_position,
-    scoped_refptr<const NGBreakToken>* previous_inline_break_token) {
+    NGPreviousInflowPosition* previous_inflow_position) {
   DCHECK(child);
   DCHECK(!child.IsFloating());
   DCHECK(!child.IsOutOfFlowPositioned());
@@ -1080,7 +1081,6 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
       *previous_inflow_position, child, child_data,
       child_bfc_offset.block_offset, logical_offset, *layout_result, fragment,
       /* empty_block_affected_by_clearance */ false);
-  *previous_inline_break_token = nullptr;
 
   return true;
 }
