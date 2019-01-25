@@ -299,6 +299,7 @@
       'Chromium Mac Goma Staging': 'release_bot',
       'CrWinGomaStaging': 'release_bot_x86_minimal_symbols',
       'Chromium Linux Goma RBE ToT': 'release_bot',
+      'Chromium Linux Goma RBE ToT (ATS)': 'release_bot',
       'Chromium Linux Goma RBE Staging (clobber)': 'release_bot',
       'Chromium Linux Goma RBE Staging': 'release_bot',
       'Chromium Linux Goma RBE Staging (dbg) (clobber)': 'debug_bot',
