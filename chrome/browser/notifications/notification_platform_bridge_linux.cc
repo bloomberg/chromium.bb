@@ -808,6 +808,9 @@ class NotificationPlatformBridgeLinuxImpl
           FROM_HERE, data, NotificationCommon::OPERATION_SETTINGS,
           base::nullopt /* action_index */, base::nullopt /* by_user */);
     } else if (action == kCloseButtonId) {
+      ForwardNotificationOperation(
+          FROM_HERE, data, NotificationCommon::OPERATION_CLOSE,
+          base::nullopt /* action_index */, true /* by_user */);
       CloseOnTaskRunner(data->profile_id, data->notification_id);
     } else {
       size_t id;
