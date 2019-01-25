@@ -677,14 +677,18 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
                          weak_this_, index, picture_buffer_id,
                          base::Passed(&dmabuf_fds), iter->texture_id,
                          egl_image_size_, egl_image_format_fourcc_));
+
+      // Early return, AssignEGLImage will make the buffer available for
+      // decoding once the EGL image is created.
+      return;
     }
-  } else {
-    // The buffer can now be used for decoding
-    output_wait_map_.erase(picture_buffer_id);
-    if (decoder_state_ != kChangingResolution) {
-      Enqueue();
-      ScheduleDecodeBufferTaskIfNeeded();
-    }
+  }
+
+  // The buffer can now be used for decoding
+  output_wait_map_.erase(picture_buffer_id);
+  if (decoder_state_ != kChangingResolution) {
+    Enqueue();
+    ScheduleDecodeBufferTaskIfNeeded();
   }
 }
 
