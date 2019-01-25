@@ -263,7 +263,7 @@ int BeepingSource::OnMoreData(base::TimeDelta /* delay */,
   // Accumulate the time from the last beep.
   interval_from_last_beep_ += base::TimeTicks::Now() - last_callback_time_;
 
-  memset(buffer_.get(), 0, buffer_size_);
+  memset(buffer_.get(), 128, buffer_size_);
   bool should_beep = false;
   BeepContext* beep_context = GetBeepContext();
   if (beep_context->automatic_beep()) {
@@ -291,7 +291,7 @@ int BeepingSource::OnMoreData(base::TimeDelta /* delay */,
     int position = 0;
     while (position + high_bytes <= buffer_size_) {
       // Write high values first.
-      memset(buffer_.get() + position, 128, high_bytes);
+      memset(buffer_.get() + position, 255, high_bytes);
       // Then leave low values in the buffer with |high_bytes|.
       position += high_bytes * 2;
     }
