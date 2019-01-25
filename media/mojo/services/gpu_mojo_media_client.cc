@@ -114,20 +114,16 @@ std::unique_ptr<AudioDecoder> GpuMojoMediaClient::CreateAudioDecoder(
 
 std::vector<SupportedVideoDecoderConfig>
 GpuMojoMediaClient::GetSupportedVideoDecoderConfigs() {
-  // TODO(liberato): Implement for D3D11VideoDecoder and MediaCodecVideoDecoder.
-  VideoDecodeAccelerator::Capabilities capabilities =
-      GpuVideoAcceleratorUtil::ConvertGpuToMediaDecodeCapabilities(
-          GpuVideoDecodeAcceleratorFactory::GetDecoderCapabilities(
-              gpu_preferences_, gpu_workarounds_));
-  bool allow_encrypted =
-      capabilities.flags &
-      VideoDecodeAccelerator::Capabilities::SUPPORTS_ENCRYPTED_STREAMS;
-
+#if defined(OS_ANDROID)
+  static std::vector<SupportedVideoDecoderConfig> supported_configs =
+      MediaCodecVideoDecoder::GetSupportedConfigs();
+  return supported_configs;
+#else
   std::vector<SupportedVideoDecoderConfig> supported_configs;
 
-#if defined(OS_ANDROID)
-  // TODO(liberato): Add MCVD.
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
+  // Start with the configurations supported by D3D11VideoDecoder.
+  // VdaVideoDecoder is still used as a fallback.
   if (!d3d11_supported_configs_) {
     d3d11_supported_configs_ =
         D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
@@ -136,7 +132,16 @@ GpuMojoMediaClient::GetSupportedVideoDecoderConfigs() {
   supported_configs = *d3d11_supported_configs_;
 #endif
 
-  // Merge the VDA supported profiles.
+  // VdaVideoDecoder will be used to wrap a VDA. Add the configs supported
+  // by the VDA implementation.
+  // TODO(sandersd): Move conversion code into VdaVideoDecoder.
+  VideoDecodeAccelerator::Capabilities capabilities =
+      GpuVideoAcceleratorUtil::ConvertGpuToMediaDecodeCapabilities(
+          GpuVideoDecodeAcceleratorFactory::GetDecoderCapabilities(
+              gpu_preferences_, gpu_workarounds_));
+  bool allow_encrypted =
+      capabilities.flags &
+      VideoDecodeAccelerator::Capabilities::SUPPORTS_ENCRYPTED_STREAMS;
   for (const auto& supported_profile : capabilities.supported_profiles) {
     supported_configs.push_back(SupportedVideoDecoderConfig(
         supported_profile.profile,           // profile_min
@@ -146,7 +151,9 @@ GpuMojoMediaClient::GetSupportedVideoDecoderConfigs() {
         allow_encrypted,                     // allow_encrypted
         supported_profile.encrypted_only));  // require_encrypted
   }
+
   return supported_configs;
+#endif  // defined(OS_ANDROID)
 }
 
 std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
