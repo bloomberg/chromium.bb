@@ -292,6 +292,7 @@ PageLoadTracker* MetricsWebContentsObserver::GetTrackerOrNullForRequest(
   }
   return nullptr;
 }
+
 void MetricsWebContentsObserver::ResourceLoadComplete(
     content::RenderFrameHost* render_frame_host,
     const content::GlobalRequestID& request_id,
@@ -336,6 +337,21 @@ void MetricsWebContentsObserver::FrameReceivedFirstUserActivation(
     committed_load_->FrameReceivedFirstUserActivation(render_frame_host);
 }
 
+void MetricsWebContentsObserver::FrameDisplayStateChanged(
+    content::RenderFrameHost* render_frame_host,
+    bool is_display_none) {
+  if (committed_load_)
+    committed_load_->FrameDisplayStateChanged(render_frame_host,
+                                              is_display_none);
+}
+
+void MetricsWebContentsObserver::FrameSizeChanged(
+    content::RenderFrameHost* render_frame_host,
+    const gfx::Size& frame_size) {
+  if (committed_load_)
+    committed_load_->FrameSizeChanged(render_frame_host, frame_size);
+}
+
 void MetricsWebContentsObserver::OnRequestComplete(
     const GURL& url,
     const net::HostPortPair& host_port_pair,
@@ -373,6 +389,12 @@ const PageLoadExtraInfo
 MetricsWebContentsObserver::GetPageLoadExtraInfoForCommittedLoad() {
   DCHECK(committed_load_);
   return committed_load_->ComputePageLoadExtraInfo();
+}
+
+void MetricsWebContentsObserver::ReadyToCommitNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (committed_load_)
+    committed_load_->ReadyToCommitNavigation(navigation_handle);
 }
 
 void MetricsWebContentsObserver::DidFinishNavigation(

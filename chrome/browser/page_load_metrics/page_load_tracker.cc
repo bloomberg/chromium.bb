@@ -360,6 +360,13 @@ void PageLoadTracker::DidInternalNavigationAbort(
   }
 }
 
+void PageLoadTracker::ReadyToCommitNavigation(
+    content::NavigationHandle* navigation_handle) {
+  for (const auto& observer : observers_) {
+    observer->ReadyToCommitNextNavigation(navigation_handle);
+  }
+}
+
 void PageLoadTracker::DidFinishSubFrameNavigation(
     content::NavigationHandle* navigation_handle) {
   for (const auto& observer : observers_) {
@@ -428,6 +435,22 @@ void PageLoadTracker::FrameReceivedFirstUserActivation(
     content::RenderFrameHost* rfh) {
   for (const auto& observer : observers_) {
     observer->FrameReceivedFirstUserActivation(rfh);
+  }
+}
+
+void PageLoadTracker::FrameDisplayStateChanged(
+    content::RenderFrameHost* render_frame_host,
+    bool is_display_none) {
+  for (const auto& observer : observers_) {
+    observer->FrameDisplayStateChanged(render_frame_host, is_display_none);
+  }
+}
+
+void PageLoadTracker::FrameSizeChanged(
+    content::RenderFrameHost* render_frame_host,
+    const gfx::Size& frame_size) {
+  for (const auto& observer : observers_) {
+    observer->FrameSizeChanged(render_frame_host, frame_size);
   }
 }
 

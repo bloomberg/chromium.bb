@@ -192,6 +192,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client {
   void DidCommitSameDocumentNavigation(
       content::NavigationHandle* navigation_handle);
   void DidInternalNavigationAbort(content::NavigationHandle* navigation_handle);
+  void ReadyToCommitNavigation(content::NavigationHandle* navigation_handle);
   void DidFinishSubFrameNavigation(
       content::NavigationHandle* navigation_handle);
   void FailedProvisionalLoad(content::NavigationHandle* navigation_handle,
@@ -213,6 +214,10 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client {
       const ExtraRequestCompleteInfo& extra_request_complete_info);
 
   void FrameReceivedFirstUserActivation(content::RenderFrameHost* rfh);
+  void FrameDisplayStateChanged(content::RenderFrameHost* render_frame_host,
+                                bool is_display_none);
+  void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
+                        const gfx::Size& frame_size);
 
   // Signals that we should stop tracking metrics for the associated page load.
   // We may stop tracking a page load if it doesn't meet the criteria for

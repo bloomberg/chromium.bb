@@ -1104,6 +1104,14 @@ const std::string& RenderFrameHostImpl::GetFrameName() {
   return frame_tree_node_->frame_name();
 }
 
+bool RenderFrameHostImpl::IsFrameDisplayNone() {
+  return frame_tree_node()->frame_owner_properties().is_display_none;
+}
+
+const base::Optional<gfx::Size>& RenderFrameHostImpl::GetFrameSize() {
+  return frame_size_;
+}
+
 bool RenderFrameHostImpl::IsCrossProcessSubframe() {
   if (!parent_)
     return false;
@@ -3097,9 +3105,18 @@ void RenderFrameHostImpl::OnDidChangeFrameOwnerProperties(
   if (!child)
     return;
 
+  bool has_display_none_property_changed =
+      properties.is_display_none !=
+      child->frame_owner_properties().is_display_none;
+
   child->set_frame_owner_properties(properties);
 
   child->render_manager()->OnDidUpdateFrameOwnerProperties(properties);
+  if (has_display_none_property_changed) {
+    delegate_->DidChangeDisplayState(
+        child->current_frame_host(),
+        properties.is_display_none /* is_display_none */);
+  }
 }
 
 void RenderFrameHostImpl::OnUpdateTitle(
@@ -3126,6 +3143,7 @@ void RenderFrameHostImpl::UpdateEncoding(const std::string& encoding_name) {
 
 void RenderFrameHostImpl::FrameSizeChanged(const gfx::Size& frame_size) {
   frame_size_ = frame_size;
+  delegate_->FrameSizeChanged(this, frame_size);
 }
 
 void RenderFrameHostImpl::FullscreenStateChanged(bool is_fullscreen) {

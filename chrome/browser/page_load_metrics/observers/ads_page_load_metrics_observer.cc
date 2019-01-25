@@ -4,6 +4,7 @@
 
 #include "chrome/browser/page_load_metrics/observers/ads_page_load_metrics_observer.h"
 
+#include <algorithm>
 #include <string>
 #include <utility>
 
@@ -81,7 +82,9 @@ AdsPageLoadMetricsObserver::AdFrameData::AdFrameData(
       frame_tree_node_id(frame_tree_node_id),
       origin_status(origin_status),
       frame_navigated(frame_navigated),
-      user_activation_status(UserActivationStatus::kNoActivation) {}
+      user_activation_status(UserActivationStatus::kNoActivation),
+      is_display_none(false),
+      frame_size(gfx::Size()) {}
 
 // static
 std::unique_ptr<AdsPageLoadMetricsObserver>
@@ -167,6 +170,7 @@ void AdsPageLoadMetricsObserver::RecordAdFrameData(
                           ? AdOriginStatus::kSame
                           : AdOriginStatus::kCross;
     }
+
     // If data existed already, update it and exit, otherwise, add it.
     if (previous_data) {
       previous_data->origin_status = origin_status;
@@ -175,11 +179,27 @@ void AdsPageLoadMetricsObserver::RecordAdFrameData(
     }
     ad_frames_data_storage_.emplace_back(ad_id, origin_status, frame_navigated);
     ad_data = &ad_frames_data_storage_.back();
-  }
 
+    if (ad_host) {
+      ad_data->is_display_none = ad_host->IsFrameDisplayNone();
+      if (ad_host->GetFrameSize())
+        ad_data->frame_size = *(ad_host->GetFrameSize());
+    }
+  }
   // If there was previous data, then we don't want to overwrite this frame.
   if (!previous_data)
     ad_frames_data_[ad_id] = ad_data;
+}
+
+void AdsPageLoadMetricsObserver::ReadyToCommitNextNavigation(
+    content::NavigationHandle* navigation_handle) {
+  // When the renderer receives a CommitNavigation message for the main frame,
+  // all subframes detach and become display : none. Since this is not user
+  // visible, and not reflective of the frames state during the page lifetime,
+  // ignore any such messages when a navigation is about to commit.
+  if (!navigation_handle->IsInMainFrame())
+    return;
+  process_display_state_updates_ = false;
 }
 
 // Determine if the frame is part of an existing ad, the root of a new ad, or a
@@ -329,6 +349,36 @@ void AdsPageLoadMetricsObserver::OnPageInteractive(
   if (timing.interactive_timing->interactive) {
     time_interactive_ =
         timing.navigation_start + *timing.interactive_timing->interactive;
+  }
+}
+
+void AdsPageLoadMetricsObserver::FrameDisplayStateChanged(
+    content::RenderFrameHost* render_frame_host,
+    bool is_display_none) {
+  if (!process_display_state_updates_)
+    return;
+  const auto& id_and_data =
+      ad_frames_data_.find(render_frame_host->GetFrameTreeNodeId());
+  if (id_and_data == ad_frames_data_.end())
+    return;
+  AdFrameData* ancestor_data = id_and_data->second;
+  if (ancestor_data && render_frame_host->GetFrameTreeNodeId() ==
+                           ancestor_data->frame_tree_node_id) {
+    ancestor_data->is_display_none = is_display_none;
+  }
+}
+
+void AdsPageLoadMetricsObserver::FrameSizeChanged(
+    content::RenderFrameHost* render_frame_host,
+    const gfx::Size& frame_size) {
+  const auto& id_and_data =
+      ad_frames_data_.find(render_frame_host->GetFrameTreeNodeId());
+  if (id_and_data == ad_frames_data_.end())
+    return;
+  AdFrameData* ancestor_data = id_and_data->second;
+  if (ancestor_data && render_frame_host->GetFrameTreeNodeId() ==
+                           ancestor_data->frame_tree_node_id) {
+    ancestor_data->frame_size = frame_size;
   }
 }
 
@@ -588,6 +638,23 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForAdTagging() {
   for (const AdFrameData& ad_frame_data : ad_frames_data_storage_) {
     if (ad_frame_data.frame_bytes == 0)
       continue;
+    AdFrameVisibility visibility = ad_frame_data.is_display_none
+                                       ? AdFrameVisibility::kDisplayNone
+                                       : AdFrameVisibility::kVisible;
+    ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.Visibility",
+                  UMA_HISTOGRAM_ENUMERATION, visibility);
+
+    // Record pixel metrics only for adframes that are displayed.
+    if (!ad_frame_data.is_display_none) {
+      ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.SqrtNumberOfPixels",
+                    UMA_HISTOGRAM_COUNTS_10000,
+                    std::sqrt(ad_frame_data.frame_size.width() *
+                              ad_frame_data.frame_size.height()));
+      ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.SmallestDimension",
+                    UMA_HISTOGRAM_COUNTS_10000,
+                    std::min(ad_frame_data.frame_size.width(),
+                             ad_frame_data.frame_size.height()));
+    }
 
     non_zero_ad_frames += 1;
     total_ad_frame_bytes += ad_frame_data.frame_bytes;
@@ -628,7 +695,7 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForAdTagging() {
     ADS_HISTOGRAM("Bytes.FullPage.Total.PercentAds", UMA_HISTOGRAM_PERCENTAGE,
                   total_ad_frame_bytes * 100 / page_bytes_);
   }
-  if (page_network_bytes_ > 0) {
+  if (page_network_bytes_) {
     ADS_HISTOGRAM("Bytes.FullPage.Network.PercentAds", UMA_HISTOGRAM_PERCENTAGE,
                   ad_frame_network_bytes * 100 / page_network_bytes_);
   }

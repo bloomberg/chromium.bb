@@ -360,6 +360,14 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   virtual void FrameReceivedFirstUserActivation(
       RenderFrameHost* render_frame_host) {}
 
+  // Invoked when the display state of the frame changes.
+  virtual void FrameDisplayStateChanged(RenderFrameHost* render_frame_host,
+                                        bool is_display_none) {}
+
+  // Invoked when a frame changes size.
+  virtual void FrameSizeChanged(RenderFrameHost* render_frame_host,
+                                const gfx::Size& frame_size) {}
+
   // This method is invoked when the title of the WebContents is set. Note that
   // |entry| may be null if the web page whose title changed has not yet had a
   // NavigationEntry assigned to it.

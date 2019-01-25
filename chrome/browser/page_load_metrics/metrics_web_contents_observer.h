@@ -89,6 +89,8 @@ class MetricsWebContentsObserver
   void WebContentsWillSoonBeDestroyed();
 
   // content::WebContentsObserver implementation:
+  void ReadyToCommitNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidRedirectNavigation(
@@ -109,6 +111,10 @@ class MetricsWebContentsObserver
       const content::mojom::ResourceLoadInfo& resource_load_info) override;
   void FrameReceivedFirstUserActivation(
       content::RenderFrameHost* render_frame_host) override;
+  void FrameDisplayStateChanged(content::RenderFrameHost* render_frame_host,
+                                bool is_display_none) override;
+  void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
+                        const gfx::Size& frame_size) override;
 
   // These methods are forwarded from the MetricsNavigationThrottle.
   void WillStartNavigationRequest(content::NavigationHandle* navigation_handle);

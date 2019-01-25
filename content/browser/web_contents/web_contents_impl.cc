@@ -5819,6 +5819,18 @@ void WebContentsImpl::DidReceiveFirstUserActivation(
     observer.FrameReceivedFirstUserActivation(render_frame_host);
 }
 
+void WebContentsImpl::DidChangeDisplayState(RenderFrameHost* render_frame_host,
+                                            bool is_display_none) {
+  for (auto& observer : observers_)
+    observer.FrameDisplayStateChanged(render_frame_host, is_display_none);
+}
+
+void WebContentsImpl::FrameSizeChanged(RenderFrameHost* render_frame_host,
+                                       const gfx::Size& frame_size) {
+  for (auto& observer : observers_)
+    observer.FrameSizeChanged(render_frame_host, frame_size);
+}
+
 void WebContentsImpl::DocumentOnLoadCompleted(
     RenderFrameHost* render_frame_host) {
   ShowInsecureLocalhostWarningIfNeeded();
