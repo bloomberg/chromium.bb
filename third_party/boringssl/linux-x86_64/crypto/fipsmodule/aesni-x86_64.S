@@ -19,6 +19,14 @@
 .type	aes_hw_encrypt,@function
 .align	16
 aes_hw_encrypt:
+.cfi_startproc	
+#ifndef NDEBUG
+#ifndef BORINGSSL_FIPS
+.extern	BORINGSSL_function_hit
+.hidden BORINGSSL_function_hit
+	movb	$1,BORINGSSL_function_hit+1(%rip)
+#endif
+#endif
 	movups	(%rdi),%xmm2
 	movl	240(%rdx),%eax
 	movups	(%rdx),%xmm0
@@ -37,6 +45,7 @@ aes_hw_encrypt:
 	movups	%xmm2,(%rsi)
 	pxor	%xmm2,%xmm2
 	.byte	0xf3,0xc3
+.cfi_endproc	
 .size	aes_hw_encrypt,.-aes_hw_encrypt
 
 .globl	aes_hw_decrypt
@@ -44,6 +53,7 @@ aes_hw_encrypt:
 .type	aes_hw_decrypt,@function
 .align	16
 aes_hw_decrypt:
+.cfi_startproc	
 	movups	(%rdi),%xmm2
 	movl	240(%rdx),%eax
 	movups	(%rdx),%xmm0
@@ -62,10 +72,12 @@ aes_hw_decrypt:
 	movups	%xmm2,(%rsi)
 	pxor	%xmm2,%xmm2
 	.byte	0xf3,0xc3
+.cfi_endproc	
 .size	aes_hw_decrypt, .-aes_hw_decrypt
 .type	_aesni_encrypt2,@function
 .align	16
 _aesni_encrypt2:
+.cfi_startproc	
 	movups	(%rcx),%xmm0
 	shll	$4,%eax
 	movups	16(%rcx),%xmm1
@@ -91,10 +103,12 @@ _aesni_encrypt2:
 .byte	102,15,56,221,208
 .byte	102,15,56,221,216
 	.byte	0xf3,0xc3
+.cfi_endproc	
 .size	_aesni_encrypt2,.-_aesni_encrypt2
 .type	_aesni_decrypt2,@function
 .align	16
 _aesni_decrypt2:
+.cfi_startproc	
 	movups	(%rcx),%xmm0
 	shll	$4,%eax
 	movups	16(%rcx),%xmm1
@@ -120,10 +134,12 @@ _aesni_decrypt2:
 .byte	102,15,56,223,208
 .byte	102,15,56,223,216
 	.byte	0xf3,0xc3
+.cfi_endproc	
 .size	_aesni_decrypt2,.-_aesni_decrypt2
 .type	_aesni_encrypt3,@function
 .align	16
 _aesni_encrypt3:
+.cfi_startproc	
 	movups	(%rcx),%xmm0
 	shll	$4,%eax
 	movups	16(%rcx),%xmm1
@@ -154,10 +170,12 @@ _aesni_encrypt3:
 .byte	102,15,56,221,216
 .byte	102,15,56,221,224
 	.byte	0xf3,0xc3
+.cfi_endproc	
 .size	_aesni_encrypt3,.-_aesni_encrypt3
 .type	_aesni_decrypt3,@function
 .align	16
 _aesni_decrypt3:
+.cfi_startproc	
 	movups	(%rcx),%xmm0
 	shll	$4,%eax
 	movups	16(%rcx),%xmm1
@@ -188,10 +206,12 @@ _aesni_decrypt3:
 .byte	102,15,56,223,216
 .byte	102,15,56,223,224
 	.byte	0xf3,0xc3
+.cfi_endproc	
 .size	_aesni_decrypt3,.-_aesni_decrypt3
 .type	_aesni_encrypt4,@function
 .align	16
 _aesni_encrypt4:
+.cfi_startproc	
 	movups	(%rcx),%xmm0
 	shll	$4,%eax
 	movups	16(%rcx),%xmm1
@@ -228,10 +248,12 @@ _aesni_encrypt4:
 .byte	102,15,56,221,224
 .byte	102,15,56,221,232
 	.byte	0xf3,0xc3
+.cfi_endproc	
 .size	_aesni_encrypt4,.-_aesni_encrypt4
 .type	_aesni_decrypt4,@function
 .align	16
 _aesni_decrypt4:
+.cfi_startproc	
 	movups	(%rcx),%xmm0
 	shll	$4,%eax
 	movups	16(%rcx),%xmm1
@@ -268,10 +290,12 @@ _aesni_decrypt4:
 .byte	102,15,56,223,224
 .byte	102,15,56,223,232
 	.byte	0xf3,0xc3
+.cfi_endproc	
 .size	_aesni_decrypt4,.-_aesni_decrypt4
 .type	_aesni_encrypt6,@function
 .align	16
 _aesni_encrypt6:
+.cfi_startproc	
 	movups	(%rcx),%xmm0
 	shll	$4,%eax
 	movups	16(%rcx),%xmm1
@@ -322,10 +346,12 @@ _aesni_encrypt6:
 .byte	102,15,56,221,240
 .byte	102,15,56,221,248
 	.byte	0xf3,0xc3
+.cfi_endproc	
 .size	_aesni_encrypt6,.-_aesni_encrypt6
 .type	_aesni_decrypt6,@function
 .align	16
 _aesni_decrypt6:
+.cfi_startproc	
 	movups	(%rcx),%xmm0
 	shll	$4,%eax
 	movups	16(%rcx),%xmm1
@@ -376,10 +402,12 @@ _aesni_decrypt6:
 .byte	102,15,56,223,240
 .byte	102,15,56,223,248
 	.byte	0xf3,0xc3
+.cfi_endproc	
 .size	_aesni_decrypt6,.-_aesni_decrypt6
 .type	_aesni_encrypt8,@function
 .align	16
 _aesni_encrypt8:
+.cfi_startproc	
 	movups	(%rcx),%xmm0
 	shll	$4,%eax
 	movups	16(%rcx),%xmm1
@@ -440,10 +468,12 @@ _aesni_encrypt8:
 .byte	102,68,15,56,221,192
 .byte	102,68,15,56,221,200
 	.byte	0xf3,0xc3
+.cfi_endproc	
 .size	_aesni_encrypt8,.-_aesni_encrypt8
 .type	_aesni_decrypt8,@function
 .align	16
 _aesni_decrypt8:
+.cfi_startproc	
 	movups	(%rcx),%xmm0
 	shll	$4,%eax
 	movups	16(%rcx),%xmm1
@@ -504,12 +534,14 @@ _aesni_decrypt8:
 .byte	102,68,15,56,223,192
 .byte	102,68,15,56,223,200
 	.byte	0xf3,0xc3
+.cfi_endproc	
 .size	_aesni_decrypt8,.-_aesni_decrypt8
 .globl	aes_hw_ecb_encrypt
 .hidden aes_hw_ecb_encrypt
 .type	aes_hw_ecb_encrypt,@function
 .align	16
 aes_hw_ecb_encrypt:
+.cfi_startproc	
 	andq	$-16,%rdx
 	jz	.Lecb_ret
 
@@ -519,7 +551,7 @@ aes_hw_ecb_encrypt:
 	movl	%eax,%r10d
 	testl	%r8d,%r8d
 	jz	.Lecb_decrypt
-
+#--------------------------- ECB ENCRYPT ------------------------------#
 	cmpq	$0x80,%rdx
 	jb	.Lecb_enc_tail
 
@@ -660,7 +692,7 @@ aes_hw_ecb_encrypt:
 	movups	%xmm6,64(%rsi)
 	movups	%xmm7,80(%rsi)
 	jmp	.Lecb_ret
-
+#--------------------------- ECB DECRYPT ------------------------------#
 .align	16
 .Lecb_decrypt:
 	cmpq	$0x80,%rdx
@@ -847,6 +879,7 @@ aes_hw_ecb_encrypt:
 	xorps	%xmm0,%xmm0
 	pxor	%xmm1,%xmm1
 	.byte	0xf3,0xc3
+.cfi_endproc	
 .size	aes_hw_ecb_encrypt,.-aes_hw_ecb_encrypt
 .globl	aes_hw_ccm64_encrypt_blocks
 .hidden aes_hw_ccm64_encrypt_blocks
@@ -987,7 +1020,7 @@ aes_hw_ccm64_decrypt_blocks:
 
 .align	16
 .Lccm64_dec_break:
-
+#xorps	%xmm8,%xmm3
 	movl	240(%r11),%eax
 	movups	(%r11),%xmm0
 	movups	16(%r11),%xmm1
@@ -1016,6 +1049,11 @@ aes_hw_ccm64_decrypt_blocks:
 .align	16
 aes_hw_ctr32_encrypt_blocks:
 .cfi_startproc	
+#ifndef NDEBUG
+#ifndef BORINGSSL_FIPS
+	movb	$1,BORINGSSL_function_hit(%rip)
+#endif
+#endif
 	cmpq	$1,%rdx
 	jne	.Lctr32_bulk
 
@@ -1418,7 +1456,7 @@ aes_hw_ctr32_encrypt_blocks:
 	movdqa	64(%rsp),%xmm15
 .byte	102,68,15,56,221,193
 	movdqa	80(%rsp),%xmm0
-	movups	16-128(%rcx),%xmm1
+	movups	16-128(%rcx),%xmm1#real 1st-round key
 .byte	102,69,15,56,221,202
 
 	movups	%xmm2,(%rsi)
@@ -3436,7 +3474,7 @@ aes_hw_cbc_encrypt:
 	movq	%rcx,%r11
 	testl	%r9d,%r9d
 	jz	.Lcbc_decrypt
-
+#--------------------------- CBC ENCRYPT ------------------------------#
 	movups	(%r8),%xmm2
 	movl	%r10d,%eax
 	cmpq	$16,%rdx
@@ -3447,7 +3485,7 @@ aes_hw_cbc_encrypt:
 .Lcbc_enc_loop:
 	movups	(%rdi),%xmm3
 	leaq	16(%rdi),%rdi
-
+#xorps	%xmm3,%xmm2
 	movups	(%rcx),%xmm0
 	movups	16(%rcx),%xmm1
 	xorps	%xmm0,%xmm3
@@ -3489,7 +3527,7 @@ aes_hw_cbc_encrypt:
 	movq	%r11,%rcx
 	xorq	%rdx,%rdx
 	jmp	.Lcbc_enc_loop
-
+#--------------------------- CBC DECRYPT ------------------------------#
 .align	16
 .Lcbc_decrypt:
 	cmpq	$16,%rdx
@@ -4068,6 +4106,11 @@ aes_hw_set_decrypt_key:
 aes_hw_set_encrypt_key:
 __aesni_set_encrypt_key:
 .cfi_startproc	
+#ifndef NDEBUG
+#ifndef BORINGSSL_FIPS
+	movb	$1,BORINGSSL_function_hit+3(%rip)
+#endif
+#endif
 .byte	0x48,0x83,0xEC,0x08
 .cfi_adjust_cfa_offset	8
 	movq	$-1,%rax

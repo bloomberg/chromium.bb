@@ -18,10 +18,13 @@ section	.text code align=64
 
 
 
+
+
 global	abi_test_trampoline
 ALIGN	16
 abi_test_trampoline:
 $L$abi_test_trampoline_begin:
+
 
 
 
@@ -117,25 +120,26 @@ $L$abi_test_trampoline_prolog_end:
 	mov	r10,r8
 	mov	r11,r9
 	dec	r11
-	js	NEAR $L$call
+	js	NEAR $L$args_done
 	mov	rcx,QWORD[r10]
 	add	r10,8
 	dec	r11
-	js	NEAR $L$call
+	js	NEAR $L$args_done
 	mov	rdx,QWORD[r10]
 	add	r10,8
 	dec	r11
-	js	NEAR $L$call
+	js	NEAR $L$args_done
 	mov	r8,QWORD[r10]
 	add	r10,8
 	dec	r11
-	js	NEAR $L$call
+	js	NEAR $L$args_done
 	mov	r9,QWORD[r10]
 	add	r10,8
 	lea	rax,[32+rsp]
 $L$args_loop:
 	dec	r11
-	js	NEAR $L$call
+	js	NEAR $L$args_done
+
 
 
 
@@ -150,10 +154,42 @@ $L$args_loop:
 	add	rax,8
 	jmp	NEAR $L$args_loop
 
-$L$call:
+$L$args_done:
 	mov	rax,QWORD[88+rsp]
+	mov	r10,QWORD[384+rsp]
+	test	r10,r10
+	jz	NEAR $L$no_unwind
+
+
+	pushfq
+	or	QWORD[rsp],0x100
+	popfq
+
+
+
+	nop
+global	abi_test_unwind_start
+abi_test_unwind_start:
+
+	call	rax
+global	abi_test_unwind_return
+abi_test_unwind_return:
+
+
+
+
+	pushfq
+	and	QWORD[rsp],-0x101
+	popfq
+global	abi_test_unwind_stop
+abi_test_unwind_stop:
+
+	jmp	NEAR $L$call_done
+
+$L$no_unwind:
 	call	rax
 
+$L$call_done:
 
 	mov	rdx,QWORD[96+rsp]
 	mov	QWORD[rdx],rbx
@@ -433,6 +469,69 @@ global	abi_test_clobber_xmm15
 ALIGN	16
 abi_test_clobber_xmm15:
 	pxor	xmm15,xmm15
+	DB	0F3h,0C3h		;repret
+
+
+
+
+
+global	abi_test_bad_unwind_wrong_register
+ALIGN	16
+abi_test_bad_unwind_wrong_register:
+
+	push	r12
+
+	pop	r12
+
+	DB	0F3h,0C3h		;repret
+
+
+
+
+
+
+
+global	abi_test_bad_unwind_temporary
+ALIGN	16
+abi_test_bad_unwind_temporary:
+
+	push	r12
+
+
+	inc	r12
+	mov	QWORD[rsp],r12
+
+
+	dec	r12
+	mov	QWORD[rsp],r12
+
+
+	pop	r12
+
+	DB	0F3h,0C3h		;repret
+
+
+
+
+
+
+
+global	abi_test_get_and_clear_direction_flag
+abi_test_get_and_clear_direction_flag:
+	pushfq
+	pop	rax
+	and	rax,0x400
+	shl	rax,10
+	cld
+	DB	0F3h,0C3h		;repret
+
+
+
+
+
+global	abi_test_set_direction_flag
+abi_test_set_direction_flag:
+	std
 	DB	0F3h,0C3h		;repret
 
 section	.pdata rdata align=4

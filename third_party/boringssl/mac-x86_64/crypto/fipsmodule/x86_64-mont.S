@@ -58,7 +58,7 @@ L$mul_enter:
 	andq	$-1024,%r10
 
 
-
+#
 
 
 
@@ -733,11 +733,11 @@ L$sqr8x_prologue:
 	shlq	$3+2,%r10
 	negq	%r9
 
+##############################################################
 
 
 
-
-
+#
 	leaq	-64(%rsp,%r9,2),%r11
 	movq	%rsp,%rbp
 	movq	(%r8),%r8
@@ -940,6 +940,7 @@ L$mulx4x_page_walk:
 L$mulx4x_page_walk_done:
 
 	leaq	(%rdx,%r9,1),%r10
+##############################################################
 
 
 
@@ -950,8 +951,7 @@ L$mulx4x_page_walk_done:
 
 
 
-
-
+#
 	movq	%r9,0(%rsp)
 	shrq	$5,%r9
 	movq	%r10,16(%rsp)

@@ -19,6 +19,8 @@
 
 
 
+
+
 .globl	_abi_test_trampoline
 .private_extern _abi_test_trampoline
 .p2align	4
@@ -33,9 +35,11 @@ L$abi_test_trampoline_begin:
 
 
 
+
 	subq	$120,%rsp
 
 L$abi_test_trampoline_prolog_alloc:
+	movq	%r8,48(%rsp)
 	movq	%rbx,64(%rsp)
 
 L$abi_test_trampoline_prolog_rbx:
@@ -62,8 +66,8 @@ L$abi_test_trampoline_prolog_end:
 	movq	32(%rsi),%r14
 	movq	40(%rsi),%r15
 
-	movq	%rdi,40(%rsp)
-	movq	%rsi,48(%rsp)
+	movq	%rdi,32(%rsp)
+	movq	%rsi,40(%rsp)
 
 
 
@@ -71,33 +75,34 @@ L$abi_test_trampoline_prolog_end:
 	movq	%rdx,%r10
 	movq	%rcx,%r11
 	decq	%r11
-	js	L$call
+	js	L$args_done
 	movq	(%r10),%rdi
 	addq	$8,%r10
 	decq	%r11
-	js	L$call
+	js	L$args_done
 	movq	(%r10),%rsi
 	addq	$8,%r10
 	decq	%r11
-	js	L$call
+	js	L$args_done
 	movq	(%r10),%rdx
 	addq	$8,%r10
 	decq	%r11
-	js	L$call
+	js	L$args_done
 	movq	(%r10),%rcx
 	addq	$8,%r10
 	decq	%r11
-	js	L$call
+	js	L$args_done
 	movq	(%r10),%r8
 	addq	$8,%r10
 	decq	%r11
-	js	L$call
+	js	L$args_done
 	movq	(%r10),%r9
 	addq	$8,%r10
 	leaq	0(%rsp),%rax
 L$args_loop:
 	decq	%r11
-	js	L$call
+	js	L$args_done
+
 
 
 
@@ -112,12 +117,47 @@ L$args_loop:
 	addq	$8,%rax
 	jmp	L$args_loop
 
-L$call:
-	movq	40(%rsp),%rax
+L$args_done:
+	movq	32(%rsp),%rax
+	movq	48(%rsp),%r10
+	testq	%r10,%r10
+	jz	L$no_unwind
+
+
+	pushfq
+	orq	$0x100,0(%rsp)
+	popfq
+
+
+
+	nop
+.globl	_abi_test_unwind_start
+.private_extern _abi_test_unwind_start
+_abi_test_unwind_start:
+
+	call	*%rax
+.globl	_abi_test_unwind_return
+.private_extern _abi_test_unwind_return
+_abi_test_unwind_return:
+
+
+
+
+	pushfq
+	andq	$-0x101,0(%rsp)
+	popfq
+.globl	_abi_test_unwind_stop
+.private_extern _abi_test_unwind_stop
+_abi_test_unwind_stop:
+
+	jmp	L$call_done
+
+L$no_unwind:
 	call	*%rax
 
+L$call_done:
 
-	movq	48(%rsp),%rsi
+	movq	40(%rsp),%rsi
 	movq	%rbx,0(%rsi)
 	movq	%rbp,8(%rsi)
 	movq	%r12,16(%rsi)
@@ -390,6 +430,73 @@ _abi_test_clobber_xmm14:
 .p2align	4
 _abi_test_clobber_xmm15:
 	pxor	%xmm15,%xmm15
+	.byte	0xf3,0xc3
+
+
+
+
+
+.globl	_abi_test_bad_unwind_wrong_register
+.private_extern _abi_test_bad_unwind_wrong_register
+.p2align	4
+_abi_test_bad_unwind_wrong_register:
+
+	pushq	%r12
+
+	popq	%r12
+
+	.byte	0xf3,0xc3
+
+
+
+
+
+
+
+.globl	_abi_test_bad_unwind_temporary
+.private_extern _abi_test_bad_unwind_temporary
+.p2align	4
+_abi_test_bad_unwind_temporary:
+
+	pushq	%r12
+
+
+	incq	%r12
+	movq	%r12,(%rsp)
+
+
+	decq	%r12
+	movq	%r12,(%rsp)
+
+
+	popq	%r12
+
+	.byte	0xf3,0xc3
+
+
+
+
+
+
+
+.globl	_abi_test_get_and_clear_direction_flag
+.private_extern _abi_test_get_and_clear_direction_flag
+_abi_test_get_and_clear_direction_flag:
+	pushfq
+	popq	%rax
+	andq	$0x400,%rax
+	shlq	$10,%rax
+	cld
+	.byte	0xf3,0xc3
+
+
+
+
+
+.globl	_abi_test_set_direction_flag
+.private_extern _abi_test_set_direction_flag
+_abi_test_set_direction_flag:
+	std
 	.byte	0xf3,0xc3
 
 #endif
