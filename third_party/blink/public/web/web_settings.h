@@ -162,7 +162,6 @@ class WebSettings {
                                   UScriptCode = USCRIPT_COMMON) = 0;
   virtual void SetNetworkQuietTimeout(double timeout) = 0;
   virtual void SetForceMainWorldInitialization(bool) = 0;
-  virtual void SetForcePreloadNoneForMediaElements(bool) = 0;
   virtual void SetForceZeroLayoutHeight(bool) = 0;
   virtual void SetFullscreenSupported(bool) = 0;
   virtual void SetHideDownloadUI(bool) = 0;

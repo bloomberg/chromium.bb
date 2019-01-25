@@ -10,7 +10,6 @@ var tests = [
     conditions: {
       dataSaver: false,
       cellular: false,
-      lowEndDevice: false,
     },
     expectations: {
       autoplay: true
@@ -21,7 +20,6 @@ var tests = [
     conditions: {
       dataSaver: false,
       cellular: true,
-      lowEndDevice: false,
     },
     expectations: {
       autoplay: true
@@ -32,7 +30,6 @@ var tests = [
     conditions: {
       dataSaver: true,
       cellular: true,
-      lowEndDevice: false,
     },
     expectations: {
       autoplay: true
@@ -43,21 +40,9 @@ var tests = [
     conditions: {
       dataSaver: true,
       cellular: false,
-      lowEndDevice: false,
     },
     expectations: {
       autoplay: true
-    }
-  },
-  {
-    name: 'low end device',
-    conditions: {
-      dataSaver: false,
-      cellular: false,
-      lowEndDevice: true,
-    },
-    expectations: {
-      autoplay: false
     }
   },
 ];
@@ -79,14 +64,12 @@ function runTest(t, test) {
   // Sanity checks for 'conditions'.
   assert_true('dataSaver' in test.conditions);
   assert_true('cellular' in test.conditions);
-  assert_true('lowEndDevice' in test.conditions);
 
   internals.setSaveDataEnabled(test.conditions.dataSaver);
   if (test.conditions.cellular)
     internals.setNetworkConnectionInfoOverride(true, 'cellular3g', '4g', 100, 2.0);
   else
     internals.setNetworkConnectionInfoOverride(true, 'wifi', '4g', 100, 2.0);
-  internals.settings.setForcePreloadNoneForMediaElements(test.conditions.lowEndDevice);
 
   // Generic required settings.
   internals.settings.setAutoplayPolicy('user-gesture-required');
@@ -95,7 +78,6 @@ function runTest(t, test) {
   t.add_cleanup(() => {
     internals.setSaveDataEnabled(false);
     internals.clearNetworkConnectionInfoOverride();
-    internals.settings.setForcePreloadNoneForMediaElements(false);
     internals.settings.setAutoplayPolicy('no-user-gesture-required');
     internals.runtimeFlags.autoplayMutedVideosEnabled = false;
   });

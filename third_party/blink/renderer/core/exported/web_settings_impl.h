@@ -92,7 +92,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
                           UScriptCode = USCRIPT_COMMON) override;
   void SetNetworkQuietTimeout(double timeout) override;
   void SetForceMainWorldInitialization(bool) override;
-  void SetForcePreloadNoneForMediaElements(bool) override;
   void SetForceZeroLayoutHeight(bool) override;
   void SetFullscreenSupported(bool) override;
   void SetHideDownloadUI(bool) override;

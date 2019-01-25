@@ -9,7 +9,6 @@ var tests = [
     conditions: {
       dataSaver: false,
       cellular: false,
-      lowEndDevice: false,
     },
     expectations: {
       default: 'metadata',
@@ -21,7 +20,6 @@ var tests = [
     conditions: {
       dataSaver: false,
       cellular: true,
-      lowEndDevice: false,
     },
     expectations: {
       default: 'metadata',
@@ -33,7 +31,6 @@ var tests = [
     conditions: {
       dataSaver: true,
       cellular: true,
-      lowEndDevice: false,
     },
     expectations: {
       default: 'metadata',
@@ -45,23 +42,10 @@ var tests = [
     conditions: {
       dataSaver: true,
       cellular: false,
-      lowEndDevice: false,
     },
     expectations: {
       default: 'metadata',
       allowed: [ 'none', 'metadata', 'auto' ]
-    }
-  },
-  {
-    name: 'low end device',
-    conditions: {
-      dataSaver: false,
-      cellular: false,
-      lowEndDevice: true,
-    },
-    expectations: {
-      default: 'none',
-      allowed: [ 'none' ]
     }
   },
 ];
@@ -97,19 +81,16 @@ function runTest(t, test) {
   // Sanity checks for 'conditions'.
   assert_true('dataSaver' in test.conditions);
   assert_true('cellular' in test.conditions);
-  assert_true('lowEndDevice' in test.conditions);
 
   internals.setSaveDataEnabled(test.conditions.dataSaver);
   if (test.conditions.cellular)
     internals.setNetworkConnectionInfoOverride(true, 'cellular3g', '4g', 100, 2.0);
   else
     internals.setNetworkConnectionInfoOverride(true, 'wifi', '4g', 100, 2.0);
-  internals.settings.setForcePreloadNoneForMediaElements(test.conditions.lowEndDevice);
 
   t.add_cleanup(() => {
     internals.setSaveDataEnabled(false);
     internals.clearNetworkConnectionInfoOverride();
-    internals.settings.setForcePreloadNoneForMediaElements(false);
   });
 
   var media = document.createElement('video');

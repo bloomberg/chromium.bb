@@ -326,14 +326,9 @@ bool AutoplayPolicy::IsGestureNeededForPlayback() const {
 
   // We want to allow muted video to autoplay if:
   // - the flag is enabled;
-  // - Preload was not disabled (low end devices);
   // - Autoplay is enabled in settings;
   if (element_->IsHTMLVideoElement() && element_->muted() &&
       DocumentShouldAutoplayMutedVideos(element_->GetDocument()) &&
-      !(element_->GetDocument().GetSettings() &&
-        element_->GetDocument()
-            .GetSettings()
-            ->GetForcePreloadNoneForMediaElements()) &&
       IsAutoplayAllowedPerSettings()) {
     return false;
   }

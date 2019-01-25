@@ -76,10 +76,6 @@ void WebSettingsImpl::SetForceMainWorldInitialization(bool enabled) {
   settings_->SetForceMainWorldInitialization(enabled);
 }
 
-void WebSettingsImpl::SetForcePreloadNoneForMediaElements(bool enabled) {
-  settings_->SetForcePreloadNoneForMediaElements(enabled);
-}
-
 void WebSettingsImpl::SetForceZeroLayoutHeight(bool enabled) {
   settings_->SetForceZeroLayoutHeight(enabled);
 }
