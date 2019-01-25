@@ -7800,6 +7800,8 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="False Negative"/>
   <int value="2" label="False Positive"/>
   <int value="3" label="True Positive"/>
+  <int value="4" label="No-prediction Negative"/>
+  <int value="5" label="No-prediction Positive"/>
 </enum>
 
 <enum name="ConnectionDiagnosticsIssue">

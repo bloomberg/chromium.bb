@@ -28,6 +28,7 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) LearningTask {
   // combination of orderings and types.
   enum class Model {
     kExtraTrees,
+    kLookupTable,
   };
 
   enum class Ordering {

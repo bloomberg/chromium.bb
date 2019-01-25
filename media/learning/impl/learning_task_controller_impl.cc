@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "media/learning/impl/extra_trees_trainer.h"
-#include "media/learning/impl/random_tree_trainer.h"
+#include "media/learning/impl/lookup_table_trainer.h"
 
 namespace media {
 namespace learning {
@@ -22,6 +22,9 @@ LearningTaskControllerImpl::LearningTaskControllerImpl(
   switch (task_.model) {
     case LearningTask::Model::kExtraTrees:
       trainer_ = std::make_unique<ExtraTreesTrainer>();
+      break;
+    case LearningTask::Model::kLookupTable:
+      trainer_ = std::make_unique<LookupTableTrainer>();
       break;
   }
 }
