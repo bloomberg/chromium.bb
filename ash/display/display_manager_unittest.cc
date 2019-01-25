@@ -1891,6 +1891,41 @@ TEST_F(DisplayManagerTest, ResolutionFallback) {
   }
 }
 
+TEST_F(DisplayManagerTest, DisplayRemovedOnlyOnceWhenEnteringDockedMode) {
+  // Create two displays, one internal, and one external, such that the full ID
+  // of the internal display is *greater* than the full ID of the external
+  // display, but the port-index part (least significant 8-bit) of the ID of the
+  // internal display is *less* than the port-index part of the external
+  // display.
+  constexpr int64_t kInternalDisplayId = 0x4D10DBEBF24802LL;
+  constexpr int64_t kExternalDisplayId = 0x4CABEF61B95735LL;
+  const auto internal_info = display::ManagedDisplayInfo::CreateFromSpecWithID(
+      "0+0-400x400", kInternalDisplayId);
+  const auto external_info = display::ManagedDisplayInfo::CreateFromSpecWithID(
+      "401+0-600x600", kExternalDisplayId);
+  vector<display::ManagedDisplayInfo> display_info_list{internal_info,
+                                                        external_info};
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  display::test::DisplayManagerTestApi(display_manager())
+      .SetFirstDisplayAsInternalDisplay();
+
+  // Switching to docked mode in this configuration should result in only a
+  // single display removal, and no new display additions.
+  // https://crbug.com/921275.
+  reset();
+  display_info_list.clear();
+  display_info_list.emplace_back(external_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+
+  // There should only be 1 display change, 0 adds, and 1 removal.
+  EXPECT_EQ("1 0 1 1 1", GetCountSummary());
+  const unsigned int expected_changed_metrics =
+      display::DisplayObserver::DISPLAY_METRIC_BOUNDS |
+      display::DisplayObserver::DISPLAY_METRIC_WORK_AREA |
+      display::DisplayObserver::DISPLAY_METRIC_PRIMARY;
+  EXPECT_EQ(expected_changed_metrics, changed_metrics());
+}
+
 TEST_F(DisplayManagerTest, Rotate) {
   UpdateDisplay("100x200/r,300x400/l");
   EXPECT_EQ("1,1 100x200", GetDisplayInfoAt(0).bounds_in_native().ToString());

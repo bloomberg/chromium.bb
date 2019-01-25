@@ -1003,7 +1003,7 @@ void DisplayManager::UpdateDisplaysWith(
       new_displays.push_back(new_display);
       ++curr_iter;
       ++new_info_iter;
-    } else if (curr_iter->id() < new_info_iter->id()) {
+    } else if (CompareDisplayIds(curr_iter->id(), new_info_iter->id())) {
       // more displays in current list between ids, which means it is deleted.
       removed_displays.push_back(*curr_iter);
       ++curr_iter;
