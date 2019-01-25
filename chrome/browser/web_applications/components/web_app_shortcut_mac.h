@@ -99,7 +99,8 @@ class WebAppShortcutCreator {
   // Recreate the shortcuts where they are found on disk and in the profile
   // path. If |create_if_needed| is true, then create the shortcuts if no
   // matching shortcuts are found on disk. Populate |updated_paths| with the
-  // paths that were updated.
+  // paths that were updated. Return false if no paths were updated or if there
+  // exist paths that failed to update.
   bool UpdateShortcuts(bool create_if_needed,
                        std::vector<base::FilePath>* updated_paths);
 
@@ -126,11 +127,10 @@ class WebAppShortcutCreator {
   // relevant information.
   bool BuildShortcut(const base::FilePath& staging_path) const;
 
-  // Builds a shortcut and copies it to the specified app paths. Returns with
-  // the number of successful copies created. If non-nullptr, populates
+  // Builds a shortcut and copies it to the specified app paths. Populates
   // |updated_paths| with the paths that were successfully updated.
-  size_t CreateShortcutsAt(const std::vector<base::FilePath>& app_paths,
-                           std::vector<base::FilePath>* updated_paths) const;
+  void CreateShortcutsAt(const std::vector<base::FilePath>& app_paths,
+                         std::vector<base::FilePath>* updated_paths) const;
 
   // Updates the InfoPlist.string inside |app_path| with the display name for
   // the app.
