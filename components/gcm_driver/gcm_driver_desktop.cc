@@ -473,8 +473,12 @@ void GCMDriverDesktop::IOWorker::WakeFromSuspendForHeartbeat(bool wake) {
 
   std::unique_ptr<base::RetainingOneShotTimer> timer;
   if (wake)
-    timer = std::make_unique<timers::SimpleAlarmTimer>();
-  else
+    timer = timers::SimpleAlarmTimer::Create();
+
+  // If not |wake|, or SimpleAlarmTimer is not supported on the running
+  // platform (please see SimpleAlarmTimer for the details), fall back to
+  // RetainingOneShotTimer.
+  if (!timer)
     timer = std::make_unique<base::RetainingOneShotTimer>();
 
   gcm_client_->UpdateHeartbeatTimer(std::move(timer));

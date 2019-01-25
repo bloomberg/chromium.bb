@@ -15,14 +15,40 @@
 #include "base/debug/task_annotator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/pending_task.h"
 #include "base/trace_event/trace_event.h"
 
 namespace timers {
 
-SimpleAlarmTimer::SimpleAlarmTimer()
-    : alarm_fd_(timerfd_create(CLOCK_REALTIME_ALARM, TFD_CLOEXEC)),
-      weak_factory_(this) {}
+// static
+std::unique_ptr<SimpleAlarmTimer> SimpleAlarmTimer::Create() {
+  return CreateInternal(CLOCK_REALTIME_ALARM);
+}
+
+// static
+std::unique_ptr<SimpleAlarmTimer> SimpleAlarmTimer::CreateForTesting() {
+  // For unittest, use CLOCK_REALTIME in order to run the tests without
+  // CAP_WAKE_ALARM.
+  return CreateInternal(CLOCK_REALTIME);
+}
+
+// static
+std::unique_ptr<SimpleAlarmTimer> SimpleAlarmTimer::CreateInternal(
+    int clockid) {
+  base::ScopedFD alarm_fd(timerfd_create(clockid, TFD_CLOEXEC));
+  if (!alarm_fd.is_valid()) {
+    PLOG(ERROR) << "Failed to create timer fd";
+    return nullptr;
+  }
+
+  // Note: std::make_unique<> cannot be used because the constructor is
+  // private.
+  return base::WrapUnique(new SimpleAlarmTimer(std::move(alarm_fd)));
+}
+
+SimpleAlarmTimer::SimpleAlarmTimer(base::ScopedFD alarm_fd)
+    : alarm_fd_(std::move(alarm_fd)), weak_factory_(this) {}
 
 SimpleAlarmTimer::~SimpleAlarmTimer() {
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
@@ -35,11 +61,6 @@ void SimpleAlarmTimer::Stop() {
   if (!IsRunning())
     return;
 
-  if (!CanWakeFromSuspend()) {
-    base::RetainingOneShotTimer::Stop();
-    return;
-  }
-
   // Cancel any previous callbacks.
   weak_factory_.InvalidateWeakPtrs();
 
@@ -51,11 +72,6 @@ void SimpleAlarmTimer::Stop() {
 void SimpleAlarmTimer::Reset() {
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!base::RetainingOneShotTimer::user_task().is_null());
-
-  if (!CanWakeFromSuspend()) {
-    base::RetainingOneShotTimer::Reset();
-    return;
-  }
 
   // Cancel any previous callbacks and stop watching |alarm_fd_|.
   weak_factory_.InvalidateWeakPtrs();
@@ -81,7 +97,7 @@ void SimpleAlarmTimer::Reset() {
   alarm_time.it_value.tv_nsec =
       (delay.InMicroseconds() % base::Time::kMicrosecondsPerSecond) *
       base::Time::kNanosecondsPerMicrosecond;
-  if (timerfd_settime(alarm_fd_, 0, &alarm_time, NULL) < 0)
+  if (timerfd_settime(alarm_fd_.get(), 0, &alarm_time, NULL) < 0)
     PLOG(ERROR) << "Error while setting alarm time.  Timer will not fire";
 
   // The timer is running.
@@ -98,7 +114,7 @@ void SimpleAlarmTimer::Reset() {
     base::debug::TaskAnnotator().WillQueueTask("SimpleAlarmTimer::Reset",
                                                pending_task_.get());
     alarm_fd_watcher_ = base::FileDescriptorWatcher::WatchReadable(
-        alarm_fd_,
+        alarm_fd_.get(),
         base::BindRepeating(&SimpleAlarmTimer::OnAlarmFdReadableWithoutBlocking,
                             weak_factory_.GetWeakPtr()));
   }
@@ -110,7 +126,7 @@ void SimpleAlarmTimer::OnAlarmFdReadableWithoutBlocking() {
 
   // Read from |alarm_fd_| to ack the event.
   char val[sizeof(uint64_t)];
-  if (!base::ReadFromFD(alarm_fd_, val, sizeof(uint64_t)))
+  if (!base::ReadFromFD(alarm_fd_.get(), val, sizeof(uint64_t)))
     PLOG(DFATAL) << "Unable to read from timer file descriptor.";
 
   OnTimerFired();
@@ -135,10 +151,6 @@ void SimpleAlarmTimer::OnTimerFired() {
   // If the timer wasn't deleted, stopped or reset by the callback, stop it.
   if (weak_ptr)
     Stop();
-}
-
-bool SimpleAlarmTimer::CanWakeFromSuspend() const {
-  return alarm_fd_ != -1;
 }
 
 }  // namespace timers
