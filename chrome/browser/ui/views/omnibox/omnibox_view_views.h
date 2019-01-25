@@ -96,6 +96,13 @@ class OmniboxViewViews : public OmniboxView,
   bool SelectionAtBeginning() const;
   bool SelectionAtEnd() const;
 
+  // Returns the width in pixels needed to display the current text. The
+  // returned value includes margins.
+  int GetTextWidth() const;
+
+  // Returns the omnibox's width in pixels.
+  int GetWidth() const;
+
   // OmniboxView:
   void EmphasizeURLComponents() override;
   void Update() override;
@@ -114,7 +121,6 @@ class OmniboxViewViews : public OmniboxView,
   void SelectAll(bool reversed) override;
   void RevertAll() override;
   void SetFocus() override;
-  int GetTextWidth() const override;
   bool IsImeComposing() const override;
 
   // views::Textfield:
@@ -211,7 +217,6 @@ class OmniboxViewViews : public OmniboxView,
   bool OnAfterPossibleChange(bool allow_keyword_ui_change) override;
   gfx::NativeView GetNativeView() const override;
   gfx::NativeView GetRelativeWindowForPopup() const override;
-  int GetWidth() const override;
   bool IsImeShowingPopup() const override;
   void ShowVirtualKeyboardIfEnabled() override;
   void HideImeIfNeeded() override;
