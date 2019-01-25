@@ -28,6 +28,7 @@
 #include "media/gpu/android/android_video_surface_chooser.h"
 #include "media/gpu/android/codec_allocator.h"
 #include "media/media_buildflags.h"
+#include "media/video/supported_video_decoder_config.h"
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 #include "media/base/android/extract_sps_and_pps.h"
@@ -119,6 +120,69 @@ PendingDecode::PendingDecode(scoped_refptr<DecoderBuffer> buffer,
     : buffer(std::move(buffer)), decode_cb(std::move(decode_cb)) {}
 PendingDecode::PendingDecode(PendingDecode&& other) = default;
 PendingDecode::~PendingDecode() = default;
+
+// static
+std::vector<SupportedVideoDecoderConfig>
+MediaCodecVideoDecoder::GetSupportedConfigs() {
+  std::vector<SupportedVideoDecoderConfig> supported_configs;
+
+  if (MediaCodecUtil::IsVp8DecoderAvailable()) {
+    // For unencrypted content, require that the size is at least 360p and that
+    // the MediaCodec implementation is hardware; otherwise fall back to libvpx.
+    if (!MediaCodecUtil::IsKnownUnaccelerated(kCodecVP8,
+                                              MediaCodecDirection::DECODER)) {
+      supported_configs.emplace_back(VP8PROFILE_ANY, VP8PROFILE_ANY,
+                                     gfx::Size(480, 360), gfx::Size(3840, 2160),
+                                     false,   // allow_encrypted
+                                     false);  // require_encrypted
+    }
+
+    // Encrypted content must be decoded by MediaCodec.
+    supported_configs.emplace_back(VP8PROFILE_ANY, VP8PROFILE_ANY,
+                                   gfx::Size(0, 0), gfx::Size(3840, 2160),
+                                   true,   // allow_encrypted
+                                   true);  // require_encrypted
+  }
+
+  if (MediaCodecUtil::IsVp9DecoderAvailable()) {
+    // For unencrypted content, require that the size is at least 360p and that
+    // the MediaCodec implementation is hardware; otherwise fall back to libvpx.
+    if (!MediaCodecUtil::IsKnownUnaccelerated(kCodecVP9,
+                                              MediaCodecDirection::DECODER)) {
+      supported_configs.emplace_back(VP9PROFILE_PROFILE0, VP9PROFILE_PROFILE3,
+                                     gfx::Size(480, 360), gfx::Size(3840, 2160),
+                                     false,   // allow_encrypted
+                                     false);  // require_encrypted
+    }
+
+    // Encrypted content must be decoded by MediaCodec.
+    supported_configs.emplace_back(VP9PROFILE_PROFILE0, VP9PROFILE_PROFILE3,
+                                   gfx::Size(0, 0), gfx::Size(3840, 2160),
+                                   true,   // allow_encrypted
+                                   true);  // require_encrypted
+  }
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+  // MediaCodec is only guaranteed to support baseline, but some devices may
+  // support others. Advertise support for all H.264 profiles and let the
+  // MediaCodec fail when decoding if it's not actually supported. It's assumed
+  // that there is not software fallback for H.264 on Android.
+  supported_configs.emplace_back(H264PROFILE_BASELINE,
+                                 H264PROFILE_MULTIVIEWHIGH, gfx::Size(0, 0),
+                                 gfx::Size(3840, 2160),
+                                 true,    // allow_encrypted
+                                 false);  // require_encrypted
+
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+  supported_configs.emplace_back(HEVCPROFILE_MAIN, HEVCPROFILE_MAIN10,
+                                 gfx::Size(0, 0), gfx::Size(3840, 2160),
+                                 true,    // allow_encrypted
+                                 false);  // require_encrypted
+#endif
+#endif
+
+  return supported_configs;
+}
 
 MediaCodecVideoDecoder::MediaCodecVideoDecoder(
     const gpu::GpuPreferences& gpu_preferences,
