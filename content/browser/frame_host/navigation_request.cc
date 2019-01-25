@@ -222,9 +222,26 @@ void AddAdditionalRequestHeaders(
         site_value = "same-site";
       }
     }
-    headers->SetHeaderIfMissing("Sec-Fetch-Dest", frame_tree_node->IsMainFrame()
-                                                      ? "document"
-                                                      : "nested-document");
+    std::string destination;
+    switch (frame_tree_node->frame_owner_element_type()) {
+      case blink::FrameOwnerElementType::kNone:
+        destination = "document";
+        break;
+      case blink::FrameOwnerElementType::kObject:
+        destination = "object";
+        break;
+      case blink::FrameOwnerElementType::kEmbed:
+        destination = "embed";
+        break;
+      case blink::FrameOwnerElementType::kIframe:
+      case blink::FrameOwnerElementType::kFrame:
+      case blink::FrameOwnerElementType::kPortal:
+        // TODO(mkwst): "Portal"'s destination isn't actually defined at the
+        // moment. Let's assume it'll be similar to a frame until we decide
+        // otherwise.
+        destination = "nested-document";
+    }
+    headers->SetHeaderIfMissing("Sec-Fetch-Dest", destination.c_str());
     headers->SetHeaderIfMissing("Sec-Fetch-Site", site_value.c_str());
     headers->SetHeaderIfMissing("Sec-Fetch-User",
                                 has_user_gesture ? "?T" : "?F");
