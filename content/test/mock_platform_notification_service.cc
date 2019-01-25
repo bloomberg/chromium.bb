@@ -4,6 +4,7 @@
 
 #include "content/test/mock_platform_notification_service.h"
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/strings/nullable_string16.h"

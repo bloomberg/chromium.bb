@@ -7,6 +7,7 @@
 #include <list>
 #include <string>
 
+#include "base/bind.h"
 #include "base/containers/adapters.h"
 #include "base/task/post_task.h"
 #include "base/values.h"

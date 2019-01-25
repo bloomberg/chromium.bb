@@ -4,6 +4,7 @@
 
 #include "content/browser/gpu/video_capture_dependencies.h"
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/browser_task_traits.h"

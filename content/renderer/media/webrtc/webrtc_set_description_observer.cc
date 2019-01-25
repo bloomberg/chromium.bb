@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/webrtc/webrtc_set_description_observer.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 
 namespace content {

@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/numerics/safe_conversions.h"

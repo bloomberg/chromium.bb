@@ -4,6 +4,7 @@
 
 #include "content/browser/cookie_store/cookie_store_context.h"
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_task_traits.h"

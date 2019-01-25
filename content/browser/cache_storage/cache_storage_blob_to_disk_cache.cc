@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request_context.h"

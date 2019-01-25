@@ -4,6 +4,7 @@
 
 #include "content/public/test/test_browser_thread_bundle.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"

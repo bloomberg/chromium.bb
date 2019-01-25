@@ -4,6 +4,7 @@
 
 #include "content/browser/background_sync/background_sync_network_observer.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "services/network/test/test_network_connection_tracker.h"

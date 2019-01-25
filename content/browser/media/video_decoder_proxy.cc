@@ -4,6 +4,7 @@
 
 #include "content/browser/media/video_decoder_proxy.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "content/public/common/service_manager_connection.h"
 #include "media/mojo/interfaces/constants.mojom.h"

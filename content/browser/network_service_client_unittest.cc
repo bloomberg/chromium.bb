@@ -4,6 +4,7 @@
 
 #include "content/browser/network_service_client.h"
 
+#include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"

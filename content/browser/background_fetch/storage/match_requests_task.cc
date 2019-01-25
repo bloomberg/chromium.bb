@@ -5,6 +5,7 @@
 #include "content/browser/background_fetch/storage/match_requests_task.h"
 
 #include "base/barrier_closure.h"
+#include "base/bind.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"

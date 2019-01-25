@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/media/peer_connection_tracker_host.h"
 
+#include "base/bind.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/task/post_task.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"

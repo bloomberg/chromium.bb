@@ -5,6 +5,7 @@
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 
 #include "base/barrier_closure.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"

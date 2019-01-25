@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/frame_host/navigation_handle_impl.h"
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "content/browser/frame_host/navigation_request.h"

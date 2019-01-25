@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/stream/mock_media_stream_video_sink.h"
 
+#include "base/bind.h"
 #include "media/base/bind_to_current_loop.h"
 
 namespace content {

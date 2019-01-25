@@ -4,6 +4,7 @@
 
 #include "content/browser/webrtc/webrtc_internals_message_handler.h"
 
+#include "base/bind.h"
 #include "content/browser/webrtc/webrtc_internals.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/public/browser/browser_thread.h"

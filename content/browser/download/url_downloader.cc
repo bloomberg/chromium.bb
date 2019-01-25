@@ -4,6 +4,7 @@
 
 #include "content/browser/download/url_downloader.h"
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"

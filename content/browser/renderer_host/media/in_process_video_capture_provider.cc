@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/media/in_process_video_capture_provider.h"
 
+#include "base/bind.h"
 #include "content/browser/renderer_host/media/in_process_video_capture_device_launcher.h"
 
 namespace content {

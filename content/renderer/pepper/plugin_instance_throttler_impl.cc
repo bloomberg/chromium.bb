@@ -4,6 +4,7 @@
 
 #include "content/renderer/pepper/plugin_instance_throttler_impl.h"
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"

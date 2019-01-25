@@ -4,6 +4,7 @@
 
 #include "content/browser/scheduler/responsiveness/watcher.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/pending_task.h"
 #include "base/run_loop.h"

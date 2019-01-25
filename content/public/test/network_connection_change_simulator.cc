@@ -4,6 +4,7 @@
 
 #include "content/public/test/network_connection_change_simulator.h"
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/run_loop.h"
 #include "content/public/browser/network_service_instance.h"

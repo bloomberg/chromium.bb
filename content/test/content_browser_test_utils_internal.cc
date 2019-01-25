@@ -12,6 +12,7 @@
 #include <set>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/containers/stack.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"

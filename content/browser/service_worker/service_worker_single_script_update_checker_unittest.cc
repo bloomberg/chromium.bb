@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_single_script_update_checker.h"
 
 #include <vector>
+#include "base/bind.h"
 #include "base/containers/queue.h"
 #include "base/run_loop.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"

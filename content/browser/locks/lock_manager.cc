@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/guid.h"
 #include "base/stl_util.h"
 #include "content/public/browser/browser_thread.h"

@@ -4,6 +4,7 @@
 
 #include "content/common/mime_sniffing_url_loader.h"
 
+#include "base/bind.h"
 #include "content/common/mime_sniffing_throttle.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/mime_sniffer.h"

@@ -4,6 +4,7 @@
 
 #include "content/browser/browsing_data/storage_partition_http_cache_data_remover.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/single_thread_task_runner.h"

@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/stream/media_stream_video_renderer_sink.h"
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"

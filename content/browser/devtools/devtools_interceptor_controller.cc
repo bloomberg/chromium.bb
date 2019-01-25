@@ -4,6 +4,7 @@
 
 #include "content/browser/devtools/devtools_interceptor_controller.h"
 
+#include "base/bind.h"
 #include "base/supports_user_data.h"
 #include "base/task/post_task.h"
 #include "content/browser/frame_host/frame_tree_node.h"

@@ -4,6 +4,7 @@
 
 #include "content/browser/gpu/viz_devtools_connector.h"
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "components/ui_devtools/devtools_server.h"
 #include "components/viz/common/switches.h"

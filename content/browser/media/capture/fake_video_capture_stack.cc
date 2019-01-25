@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "content/browser/media/capture/frame_test_util.h"
 #include "media/base/video_frame.h"

@@ -6,6 +6,7 @@
 
 #include "content/renderer/dom_storage/mock_leveldb_wrapper.h"
 
+#include "base/bind.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 
 namespace content {

@@ -5,6 +5,7 @@
 #include "base/android/application_status_listener.h"
 #include "base/android/build_info.h"
 #include "base/base_switches.h"
+#include "base/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/viz/common/features.h"
 #include "content/browser/browser_main_loop.h"

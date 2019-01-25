@@ -4,6 +4,7 @@
 
 #include "content/browser/loader/prefetch_url_loader_service.h"
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/time/default_tick_clock.h"
 #include "content/browser/loader/prefetch_url_loader.h"

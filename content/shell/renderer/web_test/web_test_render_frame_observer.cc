@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/renderer/web_test/web_test_render_thread_observer.h"

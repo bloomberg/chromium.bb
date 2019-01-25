@@ -5,6 +5,7 @@
 #include "content/renderer/android/synchronous_compositor_proxy.h"
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/shared_memory.h"
 #include "content/common/android/sync_compositor_statics.h"

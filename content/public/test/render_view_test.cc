@@ -8,6 +8,7 @@
 
 #include <cctype>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"

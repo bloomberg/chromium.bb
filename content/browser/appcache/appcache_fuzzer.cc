@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/at_exit.h"
+#include "base/bind.h"
 #include "base/i18n/icu_util.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"

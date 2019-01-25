@@ -4,6 +4,7 @@
 
 #include "content/common/throttling_url_loader.h"
 
+#include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"

@@ -4,6 +4,7 @@
 
 #include "content/browser/notifications/platform_notification_context_impl.h"
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"

@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/media/service_video_capture_provider.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/threading/thread.h"

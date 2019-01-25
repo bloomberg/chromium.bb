@@ -5,6 +5,7 @@
 #include "content/browser/background_fetch/storage/get_initialization_data_task.h"
 
 #include "base/barrier_closure.h"
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"

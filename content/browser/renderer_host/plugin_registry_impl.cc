@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/plugin_registry_impl.h"
 
+#include "base/bind.h"
 #include "base/no_destructor.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/public/browser/plugin_service_filter.h"

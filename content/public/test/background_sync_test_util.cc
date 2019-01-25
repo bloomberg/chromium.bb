@@ -4,6 +4,7 @@
 
 #include "content/public/test/background_sync_test_util.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"

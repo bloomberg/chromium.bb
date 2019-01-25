@@ -5,6 +5,7 @@
 #include "content/browser/payments/payment_app_provider_impl.h"
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "content/browser/payments/payment_app_context_impl.h"

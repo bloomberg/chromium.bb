@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/task/post_task.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"

@@ -4,6 +4,7 @@
 
 #include "content/shell/browser/web_test/web_test_background_fetch_delegate.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"

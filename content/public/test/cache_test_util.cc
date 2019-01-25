@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/public/test/cache_test_util.h"
+#include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"

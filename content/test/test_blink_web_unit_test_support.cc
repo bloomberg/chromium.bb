@@ -4,6 +4,7 @@
 
 #include "content/test/test_blink_web_unit_test_support.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"

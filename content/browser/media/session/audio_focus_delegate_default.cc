@@ -4,6 +4,7 @@
 
 #include "content/browser/media/session/audio_focus_delegate.h"
 
+#include "base/bind.h"
 #include "base/no_destructor.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"

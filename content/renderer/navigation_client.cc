@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/renderer/navigation_client.h"
+#include "base/bind.h"
 #include "content/renderer/render_frame_impl.h"
 #include "third_party/blink/public/platform/task_type.h"
 

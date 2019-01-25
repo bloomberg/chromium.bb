@@ -5,6 +5,7 @@
 #include "content/browser/loader/intercepting_resource_handler.h"
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"

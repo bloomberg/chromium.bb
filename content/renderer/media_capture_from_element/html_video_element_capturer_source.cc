@@ -4,6 +4,7 @@
 
 #include "content/renderer/media_capture_from_element/html_video_element_capturer_source.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"

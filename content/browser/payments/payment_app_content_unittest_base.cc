@@ -9,6 +9,7 @@
 #include <set>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"

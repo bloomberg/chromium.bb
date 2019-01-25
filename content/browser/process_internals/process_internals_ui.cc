@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "content/grit/content_resources.h"
 #include "content/public/browser/render_process_host.h"

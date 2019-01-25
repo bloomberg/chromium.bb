@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"

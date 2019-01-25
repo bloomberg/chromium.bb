@@ -4,6 +4,7 @@
 
 #include "content/browser/background_fetch/storage/start_next_pending_request_task.h"
 
+#include "base/bind.h"
 #include "base/guid.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"

@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/barrier_closure.h"
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/guid.h"

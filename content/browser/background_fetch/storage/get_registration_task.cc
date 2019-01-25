@@ -4,6 +4,7 @@
 
 #include "content/browser/background_fetch/storage/get_registration_task.h"
 
+#include "base/bind.h"
 #include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/background_fetch/storage/get_metadata_task.h"

@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"

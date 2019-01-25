@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/code_cache/generated_code_cache.h"
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "content/public/common/url_constants.h"

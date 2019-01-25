@@ -4,6 +4,7 @@
 
 #include "content/browser/devtools/worker_devtools_agent_host.h"
 
+#include "base/bind.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/protocol/target_handler.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"

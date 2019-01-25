@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/task/post_task.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"

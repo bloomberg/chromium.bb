@@ -9,6 +9,7 @@
 #include <tuple>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"

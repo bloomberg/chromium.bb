@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_new_script_loader.h"
 
 #include <memory>
+#include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/appcache/appcache_response.h"

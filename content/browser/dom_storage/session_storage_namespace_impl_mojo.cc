@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "components/services/leveldb/public/cpp/util.h"
 #include "content/public/browser/child_process_security_policy.h"
 

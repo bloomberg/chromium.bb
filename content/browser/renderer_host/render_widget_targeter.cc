@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/render_widget_targeter.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"

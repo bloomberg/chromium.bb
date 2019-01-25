@@ -6,6 +6,7 @@
 
 #include <atomic>
 
+#include "base/bind.h"
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/no_destructor.h"
 #include "content/browser/browser_thread_impl.h"

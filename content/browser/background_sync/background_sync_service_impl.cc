@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "content/browser/background_sync/background_sync_context.h"

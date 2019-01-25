@@ -4,6 +4,7 @@
 
 #include "content/browser/frame_host/input/input_injector_impl.h"
 
+#include "base/bind.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 

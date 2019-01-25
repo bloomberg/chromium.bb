@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "base/strings/pattern.h"

@@ -4,6 +4,7 @@
 
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"

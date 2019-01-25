@@ -6,6 +6,7 @@
 
 #include <Cocoa/Cocoa.h>
 
+#include "base/bind.h"
 #include "base/mac/mac_util.h"
 #include "base/task/post_task.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"

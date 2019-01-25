@@ -5,6 +5,7 @@
 #include <limits>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"

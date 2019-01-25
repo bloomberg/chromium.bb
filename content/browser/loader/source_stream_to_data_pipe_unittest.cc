@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/loader/source_stream_to_data_pipe.h"
+#include "base/bind.h"
 #include "base/optional.h"
 #include "base/test/scoped_task_environment.h"
 #include "net/filter/mock_source_stream.h"

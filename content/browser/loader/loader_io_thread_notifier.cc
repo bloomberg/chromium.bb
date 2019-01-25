@@ -4,6 +4,7 @@
 
 #include "content/browser/loader/loader_io_thread_notifier.h"
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"

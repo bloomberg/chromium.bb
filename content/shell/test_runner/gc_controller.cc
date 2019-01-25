@@ -4,6 +4,7 @@
 
 #include "content/shell/test_runner/gc_controller.h"
 
+#include "base/bind.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/web_test_delegate.h"
 #include "gin/arguments.h"

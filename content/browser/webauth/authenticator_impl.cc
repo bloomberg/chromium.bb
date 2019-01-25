@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/base64url.h"
+#include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
