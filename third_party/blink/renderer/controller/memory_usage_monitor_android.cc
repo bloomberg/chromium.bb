@@ -14,7 +14,6 @@ namespace blink {
 
 namespace {
 
-constexpr uint32_t kMaxLineSize = 4096;
 bool ReadFileContents(int fd, base::span<char> contents) {
   lseek(fd, 0, SEEK_SET);
   int res = read(fd, contents.data(), contents.size() - 1);
@@ -24,19 +23,29 @@ bool ReadFileContents(int fd, base::span<char> contents) {
   return true;
 }
 
+}  // namespace
+
+// static
+MemoryUsageMonitor& MemoryUsageMonitor::Instance() {
+  DEFINE_STATIC_LOCAL(MemoryUsageMonitorAndroid, monitor, ());
+  return monitor;
+}
+
 // Since the measurement is done every second in background, optimizations are
 // in place to get just the metrics we need from the proc files. So, this
 // calculation exists here instead of using the cross-process memory-infra code.
-bool CalculateProcessMemoryFootprint(int statm_fd,
-                                     int status_fd,
-                                     uint64_t* private_footprint,
-                                     uint64_t* swap_footprint,
-                                     uint64_t* vm_size) {
+bool MemoryUsageMonitorAndroid::CalculateProcessMemoryFootprint(
+    int statm_fd,
+    int status_fd,
+    uint64_t* private_footprint,
+    uint64_t* swap_footprint,
+    uint64_t* vm_size) {
   // Get total resident and shared sizes from statm file.
   static size_t page_size = getpagesize();
   uint64_t resident_pages;
   uint64_t shared_pages;
   uint64_t vm_size_pages;
+  constexpr uint32_t kMaxLineSize = 4096;
   char line[kMaxLineSize];
   if (!ReadFileContents(statm_fd, line))
     return false;
@@ -60,14 +69,6 @@ bool CalculateProcessMemoryFootprint(int statm_fd,
       (resident_pages - shared_pages) * page_size + *swap_footprint;
   *vm_size = vm_size_pages * page_size;
   return true;
-}
-
-}  // namespace
-
-// static
-MemoryUsageMonitor& MemoryUsageMonitor::Instance() {
-  DEFINE_STATIC_LOCAL(MemoryUsageMonitorAndroid, monitor, ());
-  return monitor;
 }
 
 void MemoryUsageMonitorAndroid::GetProcessMemoryUsage(MemoryUsage& usage) {

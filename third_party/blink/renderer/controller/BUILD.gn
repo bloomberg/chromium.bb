@@ -45,14 +45,14 @@ component("controller") {
     "dev_tools_frontend_impl.h",
     "memory_usage_monitor.cc",
     "memory_usage_monitor.h",
-    "memory_usage_monitor_android.cc",
-    "memory_usage_monitor_android.h",
   ]
 
   if (is_android) {
     sources += [
       "crash_memory_metrics_reporter_impl.cc",
       "crash_memory_metrics_reporter_impl.h",
+      "memory_usage_monitor_android.cc",
+      "memory_usage_monitor_android.h",
       "oom_intervention_impl.cc",
       "oom_intervention_impl.h",
     ]
