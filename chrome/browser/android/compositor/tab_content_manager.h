@@ -11,6 +11,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -96,6 +97,11 @@ class TabContentManager : public ThumbnailCacheObserver {
                           const base::android::JavaParamRef<jobject>& obj,
                           jint tab_id);
   void OnUIResourcesWereEvicted();
+  void GetTabThumbnailWithCallback(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint tab_id,
+      const base::android::JavaParamRef<jobject>& j_callback);
 
   // ThumbnailCacheObserver implementation;
   void OnFinishedThumbnailRead(TabId tab_id) override;
@@ -112,6 +118,11 @@ class TabContentManager : public ThumbnailCacheObserver {
   void PutThumbnailIntoCache(int tab_id,
                              float thumbnail_scale,
                              const SkBitmap& bitmap);
+
+  void TabThumbnailAvailableFromDisk(
+      base::android::ScopedJavaGlobalRef<jobject> j_callback,
+      bool result,
+      SkBitmap bitmap);
 
   std::unique_ptr<ThumbnailCache> thumbnail_cache_;
   ThumbnailLayerMap static_layer_cache_;

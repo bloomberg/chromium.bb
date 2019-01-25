@@ -10,6 +10,7 @@ import android.graphics.Canvas;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
 
+import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -213,6 +214,23 @@ public class TabContentManager {
     }
 
     /**
+     * Call to get a thumbnail for a given tab ID from disk through a {@link Callback}. If there is
+     * no up to date thumbnail on the cache for the given tab, callback returns a null result.
+     * Currently this read a compressed file from disk and sends the Bitmap over the
+     * JNI boundary after decompressing. In its current form, should be used for experimental
+     * purposes only.
+     * TODO(yusufo): Change the plumbing so that at the least a {@link android.net.Uri} is send
+     * over JNI of an uncompressed file on disk.
+     * @param tabID The ID of the tab.
+     * @param callback The callback to send the {@link Bitmap} with.
+     */
+    public void getTabThumbnailWithCallback(int tabID, Callback<Bitmap> callback) {
+        if (mNativeTabContentManager == 0 || !mSnapshotsEnabled) return;
+
+        nativeGetTabThumbnailWithCallback(mNativeTabContentManager, tabID, callback);
+    }
+
+    /**
      * Cache the content of a tab as a thumbnail.
      * @param tab The tab whose content we will cache.
      */
@@ -302,5 +320,7 @@ public class TabContentManager {
     private native void nativeUpdateVisibleIds(
             long nativeTabContentManager, int[] priority, int primaryTabId);
     private native void nativeRemoveTabThumbnail(long nativeTabContentManager, int tabId);
+    private native void nativeGetTabThumbnailWithCallback(
+            long nativeTabContentManager, int tabId, Callback<Bitmap> callback);
     private static native void nativeDestroy(long nativeTabContentManager);
 }
