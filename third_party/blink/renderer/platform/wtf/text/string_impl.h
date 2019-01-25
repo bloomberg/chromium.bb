@@ -29,6 +29,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/numerics/checked_math.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -440,10 +441,19 @@ class WTF_EXPORT StringImpl {
  private:
   template <typename CharType>
   static size_t AllocationSize(wtf_size_t length) {
-    CHECK_LE(length,
-             ((std::numeric_limits<wtf_size_t>::max() - sizeof(StringImpl)) /
-              sizeof(CharType)));
-    return sizeof(StringImpl) + length * sizeof(CharType);
+    static_assert(
+        sizeof(CharType) > 1,
+        "Don't use this template with 1-byte chars; use a template "
+        "specialization to save time and code-size by avoiding a CheckMul.");
+    return base::CheckAdd(sizeof(StringImpl),
+                          base::CheckMul(length, sizeof(CharType)))
+        .ValueOrDie();
+  }
+
+  template <>
+  size_t AllocationSize<LChar>(wtf_size_t length) {
+    static_assert(sizeof(LChar) == 1, "sizeof(LChar) should be 1.");
+    return base::CheckAdd(sizeof(StringImpl), length).ValueOrDie();
   }
 
   scoped_refptr<StringImpl> Replace(UChar pattern,
