@@ -606,10 +606,17 @@ Status ExecuteSwitchToFrame(Session* session,
     std::string id_string;
     int id_int;
     if (id->GetAsString(&id_string)) {
-      xpath += base::StringPrintf(
+      if (session->w3c_compliant)
+        return Status(kInvalidArgument, "'id' can not be string");
+      else
+        xpath += base::StringPrintf(
           "[@name=\"%s\" or @id=\"%s\"]", id_string.c_str(), id_string.c_str());
     } else if (id->GetAsInteger(&id_int)) {
-      xpath += base::StringPrintf("[%d]", id_int + 1);
+      const int max_range = 65535; // 2^16 - 1
+      if (id_int < 0 || id_int > max_range)
+        return Status(kInvalidArgument, "'id' out of range");
+      else
+        xpath += base::StringPrintf("[%d]", id_int + 1);
     } else {
       return Status(kInvalidArgument, "invalid 'id'");
     }
