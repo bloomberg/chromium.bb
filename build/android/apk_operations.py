@@ -61,6 +61,8 @@ _DALVIK_IGNORE_PATTERN = re.compile('|'.join([
     r'^WAIT_',
     ]))
 
+BASE_MODULE = 'base'
+
 
 def _Colorize(text, style=''):
   return (style
@@ -115,22 +117,107 @@ def _GenerateBundleApks(info, universal=False):
   return info.bundle_apks_path
 
 
-def _InstallBundle(devices, bundle_apks, modules):
-  def install(device):
+def _InstallBundle(devices, bundle_apks, package_name, command_line_flags_file,
+                   modules, fake_modules):
+  # Path to push fake modules for Chrome to pick up.
+  MODULES_SRC_DIRECTORY_PATH = '/data/local/tmp/modules'
+  # Path Chrome creates after validating fake modules. This needs to be cleared
+  # for pushed fake modules to be picked up.
+  SPLITCOMPAT_PATH = '/data/data/' + package_name + '/files/splitcompat'
+  # Chrome command line flag needed for fake modules to work.
+  FAKE_FEATURE_MODULE_INSTALL = '--fake-feature-module-install'
+
+  def ShouldWarnFakeFeatureModuleInstallFlag(device):
+    if command_line_flags_file:
+      changer = flag_changer.FlagChanger(device, command_line_flags_file)
+      return FAKE_FEATURE_MODULE_INSTALL not in changer.GetCurrentFlags()
+    return False
+
+  def ClearFakeModules(device):
+    for path in [SPLITCOMPAT_PATH, MODULES_SRC_DIRECTORY_PATH]:
+      if device.PathExists(path, as_root=True):
+        device.RemovePath(path, force=True, recursive=True, as_root=True)
+        logging.info('Removed %s', path)
+      else:
+        logging.info('Skipped removing nonexistent %s', path)
+
+  def InstallFakeModules(device):
+    try:
+      temp_path = tempfile.mkdtemp()
+
+      # Device-spec JSON is needed, so create that first.
+      device_spec_filename = os.path.join(temp_path, 'device_spec.json')
+      get_device_spec_cmd_args = [
+          'get-device-spec', '--adb=' + adb_wrapper.AdbWrapper.GetAdbPath(),
+          '--device-id=' + device.serial, '--output=' + device_spec_filename
+      ]
+      bundletool.RunBundleTool(get_device_spec_cmd_args)
+
+      # Extract fake modules to temp directory. For now, installation requires
+      # running 'bundletool extract-apks'. Unfortunately, this leads to unneeded
+      # compression of module files.
+      extract_apks_cmd_args = [
+          'extract-apks', '--apks=' + bundle_apks,
+          '--device-spec=' + device_spec_filename,
+          '--modules=' + ','.join(fake_modules), '--output-dir=' + temp_path
+      ]
+      bundletool.RunBundleTool(extract_apks_cmd_args)
+
+      # Push fake modules, with renames.
+      for fake_module in fake_modules:
+        remote = posixpath.join(MODULES_SRC_DIRECTORY_PATH,
+                                '%s.apk' % fake_module)
+        # Try |local| filename alternatives, and ensure there's exactly one.
+        # TODO(huangs): Handle fake packages with different languages: See
+        #     http://crbug.com/925358.
+        local_choices = []
+        for suffix in ['-master.apk', '-master_2.apk']:
+          local = os.path.join(temp_path, fake_module + suffix)
+          if os.path.isfile(local):
+            local_choices.append(local)
+        if len(local_choices) != 1:
+          raise Exception('Expect 1 matching local file for %s' % fake_module)
+        device.adb.Push(local_choices[0], remote)
+    finally:
+      shutil.rmtree(temp_path, ignore_errors=True)
+
+  def Install(device):
+    ClearFakeModules(device)
+    if fake_modules:
+      # Print warning if command line is not set up for fake modules.
+      if ShouldWarnFakeFeatureModuleInstallFlag(device):
+        msg = ('Command line has no %s: Fake modules will be ignored.' %
+               FAKE_FEATURE_MODULE_INSTALL)
+        print _Colorize(msg, colorama.Fore.YELLOW + colorama.Style.BRIGHT)
+      InstallFakeModules(device)
+
     # NOTE: For now, installation requires running 'bundletool install-apks'.
     # TODO(digit): Add proper support for bundles to devil instead, then use it.
-    cmd_args = [
-        'install-apks',
-        '--apks=' + bundle_apks,
+    install_cmd_args = [
+        'install-apks', '--apks=' + bundle_apks,
         '--adb=' + adb_wrapper.AdbWrapper.GetAdbPath(),
         '--device-id=' + device.serial
     ]
     if modules:
-      cmd_args += ['--modules=' + ','.join(modules)]
-    bundletool.RunBundleTool(cmd_args)
+      install_cmd_args += ['--modules=' + ','.join(modules)]
+    bundletool.RunBundleTool(install_cmd_args)
+
+  # Basic checks for |modules| and |fake_modules|.
+  # * |fake_modules| cannot include 'base'.
+  # * If |fake_modules| is given, ensure |modules| includes 'base'.
+  # * They must be disjoint.
+  modules_set = set(modules) if modules else set()
+  fake_modules_set = set(fake_modules) if fake_modules else set()
+  if BASE_MODULE in fake_modules_set:
+    raise Exception('\'-f {}\' is disallowed.'.format(BASE_MODULE))
+  if fake_modules_set and BASE_MODULE not in modules_set:
+    raise Exception(
+        '\'-f FAKE\' must be accompanied by \'-m {}\''.format(BASE_MODULE))
+  if fake_modules_set.intersection(modules_set):
+    raise Exception('\'-m\' and \'-f\' entries must be disjoint.')
 
   logging.info('Installing bundle.')
-  device_utils.DeviceUtils.parallel(devices).pMap(install)
+  device_utils.DeviceUtils.parallel(devices).pMap(Install)
 
 
 def _UninstallApk(devices, install_dict, package_name):
@@ -999,14 +1086,26 @@ class _InstallCommand(_Command):
 
   def _RegisterExtraArgs(self, group):
     if self.is_bundle:
-      group.add_argument('-m', '--module', action='append',
-                         help='Module to install. Can be specified multiple '
-                              'times. One of them has to be \'base\'')
+      group.add_argument(
+          '-m',
+          '--module',
+          action='append',
+          help='Module to install. Can be specified multiple times. ' +
+          'One of them has to be \'{}\''.format(BASE_MODULE))
+      group.add_argument(
+          '-f',
+          '--fake',
+          action='append',
+          help='Fake bundle module install. Can be specified multiple times. '
+          'Requires \'-m {0}\' to be given, and \'-f {0}\' is illegal.'.format(
+              BASE_MODULE))
 
   def Run(self):
     if self.is_bundle:
       bundle_apks_path = _GenerateBundleApks(self.bundle_generation_info)
-      _InstallBundle(self.devices, bundle_apks_path, self.args.module)
+      _InstallBundle(self.devices, bundle_apks_path, self.args.package_name,
+                     self.args.command_line_flags_file, self.args.module,
+                     self.args.fake)
     else:
       _InstallApk(self.devices, self.apk_helper, self.install_dict)
 
