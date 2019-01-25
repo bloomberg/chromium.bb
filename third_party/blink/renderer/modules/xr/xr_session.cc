@@ -94,16 +94,52 @@ class XRSession::XRSessionResizeObserverDelegate final
   Member<XRSession> session_;
 };
 
+XRSession::SessionMode XRSession::stringToSessionMode(
+    const String& mode_string) {
+  if (mode_string == "inline") {
+    return kModeInline;
+  }
+  if (mode_string == "legacy-inline-ar") {
+    return kModeInlineAR;
+  }
+  if (mode_string == "immersive-vr") {
+    return kModeImmersiveVR;
+  }
+  if (mode_string == "immersive-ar") {
+    return kModeImmersiveAR;
+  }
+
+  return kModeUnknown;
+}
+
+String XRSession::sessionModeToString(XRSession::SessionMode mode) {
+  if (mode == kModeInline) {
+    return "inline";
+  }
+  if (mode == kModeInlineAR) {
+    return "legacy-inline-ar";
+  }
+  if (mode == kModeImmersiveVR) {
+    return "immersive-vr";
+  }
+  if (mode == kModeImmersiveAR) {
+    return "immersive-ar";
+  }
+
+  return "";
+}
+
 XRSession::XRSession(
     XR* xr,
     device::mojom::blink::XRSessionClientRequest client_request,
-    bool immersive,
-    bool environment_integration,
+    XRSession::SessionMode mode,
     XRPresentationContext* output_context,
     EnvironmentBlendMode environment_blend_mode)
     : xr_(xr),
-      immersive_(immersive),
-      environment_integration_(environment_integration),
+      mode_(mode),
+      mode_string_(sessionModeToString(mode)),
+      environment_integration_(mode == kModeInlineAR ||
+                               mode == kModeImmersiveAR),
       output_context_(output_context),
       client_binding_(this, std::move(client_request)),
       callback_collection_(
@@ -121,7 +157,7 @@ XRSession::XRSession(
       resize_observer_->observe(canvas);
 
       // Begin processing input events on the output context's canvas.
-      if (!immersive_) {
+      if (!immersive()) {
         canvas_input_provider_ =
             MakeGarbageCollected<XRCanvasInputProvider>(this, canvas);
       }
@@ -145,6 +181,10 @@ XRSession::XRSession(
       NOTREACHED() << "Unknown environment blend mode: "
                    << environment_blend_mode;
   }
+}
+
+bool XRSession::immersive() const {
+  return mode_ == kModeImmersiveVR || mode_ == kModeImmersiveAR;
 }
 
 void XRSession::setDepthNear(double value) {

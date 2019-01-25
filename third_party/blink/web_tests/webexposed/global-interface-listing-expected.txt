@@ -10349,17 +10349,13 @@ interface XR : EventTarget
     attribute @@toStringTag
     getter ondevicechange
     method constructor
-    method requestDevice
+    method requestSession
+    method supportsSessionMode
     setter ondevicechange
 interface XRBoundedReferenceSpace : XRReferenceSpace
     attribute @@toStringTag
     getter boundsGeometry
     method constructor
-interface XRDevice
-    attribute @@toStringTag
-    method constructor
-    method requestSession
-    method supportsSession
 interface XRFrame
     attribute @@toStringTag
     getter session
@@ -10416,7 +10412,7 @@ interface XRSession : EventTarget
     getter depthFar
     getter depthNear
     getter environmentBlendMode
-    getter immersive
+    getter mode
     getter onblur
     getter onend
     getter onfocus

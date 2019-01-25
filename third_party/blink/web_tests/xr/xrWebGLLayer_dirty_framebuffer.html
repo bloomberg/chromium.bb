@@ -16,7 +16,7 @@ let testName = "A frame should be submitted if the base layer was written to "
 
 let fakeDeviceInitParams = { supportsImmersive: true };
 
-let requestSessionOptions =  [{ immersive: true }];
+let requestSessionOptions =  [{ mode: 'immersive-vr' }];
 
 let testFunction =
   (session, t, fakeDeviceController) => new Promise((resolve, reject) => {

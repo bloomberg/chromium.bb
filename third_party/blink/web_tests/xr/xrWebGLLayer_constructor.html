@@ -14,7 +14,7 @@ let testName =
 
 let fakeDeviceInitParams = { supportsImmersive: true };
 
-let requestSessionOptions =  [{ immersive: true }];
+let requestSessionOptions =  [{ mode: 'immersive-vr' }];
 
 let testFunction =
   (session, t, fakeDeviceController) => new Promise((resolve, reject) => {

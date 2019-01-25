@@ -13,70 +13,66 @@ function xr_session_promise_test(
     return XRTest.simulateDeviceConnection(deviceOptions)
         .then((controller) => {
           fakeDeviceController = controller;
-          return navigator.xr.requestDevice();
-        })
-        .then((device) => {
           if (gl) {
-            return gl.makeXRCompatible(device).then(
-                () => Promise.resolve(device));
+            return gl.makeXRCompatible().then(
+                () => Promise.resolve());
           } else {
-            return Promise.resolve(device);
+            return Promise.resolve();
           }
         })
-        .then(
-            (device) => new Promise((resolve, reject) => {
-              // Run the test with each set of sessionOptions from the array one
-              // at a time.
-              function nextSessionTest(i) {
-                // Check if it's time to break the loop.
-                if (i == sessionOptions.length) {
-                  if (sessionOptions.length == 0) {
-                    reject('No option for the session. Test Did not run.');
-                  } else {
-                    resolve();
-                  }
-                  return;
-                }
-
-                // Perform the session request in a user gesture.
-                runWithUserGesture(() => {
-                  let nextOptions = sessionOptions[i];
-                  let testSession = null;
-                  device.requestSession(nextOptions)
-                      .then((session) => {
-                        testSession = session;
-                        return func(session, t, fakeDeviceController);
-                      })
-                      .then(() => {
-                        // End the session. Silence any errors generated if the
-                        // session was already ended.
-                        // TODO(bajones): Throwing an error when a session is
-                        // already ended is not defined by the spec. This
-                        // should be defined or removed.
-                        testSession.end().catch(() => {});
-                        fakeDeviceController.setXRPresentationFrameData(null);
-                      })
-                      .then(() => nextSessionTest(++i))
-                      .catch((err) => {
-                        let optionsString = '{';
-                        let firstOption = true;
-                        for (let option in nextOptions) {
-                          if (!firstOption) {
-                            optionsString += ',';
-                          }
-                          optionsString += ` ${option}: ${nextOptions[option]}`;
-                          firstOption = false;
-                        }
-                        optionsString += ' }';
-                        reject(
-                            `Test failed while running with the following options:
-                            ${optionsString} ${err}`);
-                      });
-                });
+        .then(() => new Promise((resolve, reject) => {
+          // Run the test with each set of sessionOptions from the array one
+          // at a time.
+          function nextSessionTest(i) {
+            // Check if it's time to break the loop.
+            if (i == sessionOptions.length) {
+              if (sessionOptions.length == 0) {
+                reject('No option for the session. Test Did not run.');
+              } else {
+                resolve();
               }
+              return;
+            }
 
-              nextSessionTest(0);
-            }));
+            // Perform the session request in a user gesture.
+            runWithUserGesture(() => {
+              let nextOptions = sessionOptions[i];
+              let testSession = null;
+              navigator.xr.requestSession(nextOptions)
+                  .then((session) => {
+                    testSession = session;
+                    return func(session, t, fakeDeviceController);
+                  })
+                  .then(() => {
+                    // End the session. Silence any errors generated if the
+                    // session was already ended.
+                    // TODO(bajones): Throwing an error when a session is
+                    // already ended is not defined by the spec. This
+                    // should be defined or removed.
+                    testSession.end().catch(() => {});
+                    fakeDeviceController.setXRPresentationFrameData(null);
+                  })
+                  .then(() => nextSessionTest(++i))
+                  .catch((err) => {
+                    let optionsString = '{';
+                    let firstOption = true;
+                    for (let option in nextOptions) {
+                      if (!firstOption) {
+                        optionsString += ',';
+                      }
+                      optionsString += ` ${option}: ${nextOptions[option]}`;
+                      firstOption = false;
+                    }
+                    optionsString += ' }';
+                    reject(
+                        `Test failed while running with the following options:
+                        ${optionsString} ${err}`);
+                  });
+            });
+          }
+
+          nextSessionTest(0);
+        }));
   }, name, properties);
 }
 

@@ -3,6 +3,13 @@
 // found in the LICENSE file.
 
 // https://immersive-web.github.io/webxr/#xrsession-interface
+enum XRSessionMode {
+  "inline",
+  "legacy-inline-ar",
+  "immersive-vr",
+  "immersive-ar",
+};
+
 enum XREnvironmentBlendMode {
   "opaque",
   "additive",
@@ -15,7 +22,7 @@ enum XREnvironmentBlendMode {
     Exposed=Window,
     OriginTrialEnabled=WebXR
 ] interface XRSession : EventTarget {
-  readonly attribute boolean immersive;
+  readonly attribute XRSessionMode mode;
   readonly attribute XRPresentationContext outputContext;
   readonly attribute XREnvironmentBlendMode environmentBlendMode;
 

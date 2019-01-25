@@ -14,7 +14,7 @@ let testName = "XRFrame contains the expected views";
 
 let fakeDeviceInitParams = { supportsImmersive:true };
 
-let requestSessionOptions = [{ immersive: true }];
+let requestSessionOptions = [{ mode: 'immersive-vr' }];
 
 let testFunction = function(session, t, fakeDeviceController) {
   // Session must have a baseLayer or frame requests will be ignored.
