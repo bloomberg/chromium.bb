@@ -32,7 +32,7 @@ const char kSetUpLxdContainerUserMethod[] = "SetUpLxdContainerUser";
 const char kInstallLinuxPackageFromAptMethod[] = "InstallLinuxPackageFromApt";
 const char kAppSearchMethod[] = "AppSearch";
 const char kGetLinuxPackageInfoFromAptMethod[] =
-    "GetLinuxPackageInfoFromAptMethod";
+    "GetLinuxPackageInfoFromApt";
 const char kExportLxdContainerMethod[] = "ExportLxdContainer";
 const char kImportLxdContainerMethod[] = "ImportLxdContainer";
 
