@@ -353,6 +353,13 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   virtual void FrameNameChanged(RenderFrameHost* render_frame_host,
                                 const std::string& name) {}
 
+  // Called when the sticky user activation bit has been set on the frame.
+  // This will not be called for new RenderFrameHosts whose underlying
+  // FrameTreeNode was already activated. This should not be used to determine a
+  // RenderFrameHost's user activation state.
+  virtual void FrameReceivedFirstUserActivation(
+      RenderFrameHost* render_frame_host) {}
+
   // This method is invoked when the title of the WebContents is set. Note that
   // |entry| may be null if the web page whose title changed has not yet had a
   // NavigationEntry assigned to it.

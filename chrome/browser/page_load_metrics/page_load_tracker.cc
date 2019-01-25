@@ -424,6 +424,13 @@ void PageLoadTracker::OnLoadedResource(
   }
 }
 
+void PageLoadTracker::FrameReceivedFirstUserActivation(
+    content::RenderFrameHost* rfh) {
+  for (const auto& observer : observers_) {
+    observer->FrameReceivedFirstUserActivation(rfh);
+  }
+}
+
 void PageLoadTracker::StopTracking() {
   did_stop_tracking_ = true;
   observers_.clear();

@@ -597,6 +597,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="Insecure non-ad request"/>
 </enum>
 
+<enum name="AdUserActivationStatus">
+  <int value="0" label="No activation"/>
+  <int value="1" label="Received activation"/>
+</enum>
+
 <enum name="AffiliationFetchResult">
   <int value="0" label="Success"/>
   <int value="1" label="Network/server error"/>

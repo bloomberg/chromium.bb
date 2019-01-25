@@ -170,6 +170,12 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void DidChangeName(RenderFrameHost* render_frame_host,
                              const std::string& name) {}
 
+  // The sticky user activation bit has been set on the frame. This will not be
+  // called for new RenderFrameHosts whose underlying FrameTreeNode was already
+  // activated.
+  virtual void DidReceiveFirstUserActivation(
+      RenderFrameHost* render_frame_host) {}
+
   // The onload handler in the frame has completed. Only called for the top-
   // level frame.
   virtual void DocumentOnLoadCompleted(RenderFrameHost* render_frame_host) {}

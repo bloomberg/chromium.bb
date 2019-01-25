@@ -493,6 +493,9 @@ class PageLoadMetricsObserver {
   virtual void OnLoadedResource(
       const ExtraRequestCompleteInfo& extra_request_complete_info) {}
 
+  virtual void FrameReceivedFirstUserActivation(
+      content::RenderFrameHost* render_frame_host) {}
+
   // Called when the event corresponding to |event_key| occurs in this page
   // load.
   virtual void OnEventOccurred(const void* const event_key) {}

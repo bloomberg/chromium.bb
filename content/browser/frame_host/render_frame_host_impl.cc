@@ -3539,6 +3539,10 @@ void RenderFrameHostImpl::NotifyUserActivation() {
   Send(new FrameMsg_NotifyUserActivation(routing_id_));
 }
 
+void RenderFrameHostImpl::DidReceiveFirstUserActivation() {
+  delegate_->DidReceiveFirstUserActivation(this);
+}
+
 void RenderFrameHostImpl::OnUpdateUserActivationState(
     blink::UserActivationUpdateType update_type) {
   if (!is_active())

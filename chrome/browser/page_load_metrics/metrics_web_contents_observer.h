@@ -107,6 +107,8 @@ class MetricsWebContentsObserver
       content::RenderFrameHost* render_frame_host,
       const content::GlobalRequestID& request_id,
       const content::mojom::ResourceLoadInfo& resource_load_info) override;
+  void FrameReceivedFirstUserActivation(
+      content::RenderFrameHost* render_frame_host) override;
 
   // These methods are forwarded from the MetricsNavigationThrottle.
   void WillStartNavigationRequest(content::NavigationHandle* navigation_handle);

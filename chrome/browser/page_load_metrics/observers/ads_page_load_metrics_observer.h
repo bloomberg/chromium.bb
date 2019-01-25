@@ -47,6 +47,15 @@ class AdsPageLoadMetricsObserver
     kMaxValue = kOther,
   };
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused. For any additions, also update the
+  // corresponding PageEndReason enum in enums.xml.
+  enum class UserActivationStatus {
+    kNoActivation = 0,
+    kReceivedActivation = 1,
+    kMaxValue = kReceivedActivation
+  };
+
   // Returns a new AdsPageLoadMetricObserver. If the feature is disabled it
   // returns nullptr.
   static std::unique_ptr<AdsPageLoadMetricsObserver> CreateIfNeeded();
@@ -80,6 +89,7 @@ class AdsPageLoadMetricsObserver
   void OnPageInteractive(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+  void FrameReceivedFirstUserActivation(content::RenderFrameHost* rfh) override;
 
  private:
   struct AdFrameData {
@@ -93,6 +103,7 @@ class AdsPageLoadMetricsObserver
     const FrameTreeNodeId frame_tree_node_id;
     AdOriginStatus origin_status;
     bool frame_navigated;
+    UserActivationStatus user_activation_status;
   };
 
   // subresource_filter::SubresourceFilterObserver:

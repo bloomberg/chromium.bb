@@ -212,6 +212,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client {
   void OnLoadedResource(
       const ExtraRequestCompleteInfo& extra_request_complete_info);
 
+  void FrameReceivedFirstUserActivation(content::RenderFrameHost* rfh);
+
   // Signals that we should stop tracking metrics for the associated page load.
   // We may stop tracking a page load if it doesn't meet the criteria for
   // tracking metrics in DidFinishNavigation.
