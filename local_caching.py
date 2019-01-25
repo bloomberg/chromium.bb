@@ -790,7 +790,7 @@ class NamedCache(Cache):
     self._lru = lru.LRUDict()
     if not fs.isdir(self.cache_dir):
       fs.makedirs(self.cache_dir)
-    elif os.path.isfile(self.state_file):
+    elif fs.isfile(self.state_file):
       try:
         self._lru = lru.LRUDict.load(self.state_file)
       except ValueError:
@@ -814,17 +814,19 @@ class NamedCache(Cache):
 
     dst must be absolute, unicode and must not exist.
 
+    Returns the reused named cache size in bytes, or 0 if none was present.
+
     Raises NamedCacheError if cannot install the cache.
     """
     logging.info('NamedCache.install(%r, %r)', dst, name)
     with self._lock:
       try:
-        if os.path.isdir(dst):
+        if fs.isdir(dst):
           raise NamedCacheError(
               'installation directory %r already exists' % dst)
 
-        # Removed the named symlink if it exists.
-        link_name = os.path.join(self.cache_dir, 'named', name)
+        # Remove the named symlink if it exists.
+        link_name = self._get_named_path(name)
         if fs.exists(link_name):
           # Remove the symlink itself, not its destination.
           fs.remove(link_name)
@@ -832,12 +834,12 @@ class NamedCache(Cache):
         if name in self._lru:
           rel_cache, size = self._lru.get(name)
           abs_cache = os.path.join(self.cache_dir, rel_cache)
-          if os.path.isdir(abs_cache):
+          if fs.isdir(abs_cache):
             logging.info('- reusing %r; size was %d', rel_cache, size)
             file_path.ensure_tree(os.path.dirname(dst))
             fs.rename(abs_cache, dst)
             self._remove(name)
-            return
+            return size
 
           logging.warning('- expected directory %r, does not exist', rel_cache)
           self._remove(name)
@@ -847,10 +849,10 @@ class NamedCache(Cache):
         # entry.
         logging.info('- creating new directory')
         file_path.ensure_tree(dst)
+        return 0
       except (IOError, OSError) as ex:
         raise NamedCacheError(
-            'cannot install cache named %r at %r: %s' % (
-              name, path, ex))
+            'cannot install cache named %r at %r: %s' % (name, dst, ex))
       finally:
         self._save()
 
@@ -863,12 +865,14 @@ class NamedCache(Cache):
     src must be absolute and unicode. Its content is moved back into the local
     named caches cache.
 
+    Returns the named cache size in bytes.
+
     Raises NamedCacheError if cannot uninstall the cache.
     """
     logging.info('NamedCache.uninstall(%r, %r)', src, name)
     with self._lock:
       try:
-        if not os.path.isdir(src):
+        if not fs.isdir(src):
           logging.warning(
               'NamedCache: Directory %r does not exist anymore. Cache lost.',
               src)
@@ -879,33 +883,36 @@ class NamedCache(Cache):
           # on.
           logging.error('- overwriting existing cache!')
           self._remove(name)
-        rel_cache = self._allocate_dir()
+
+        # Calculate the size of the named cache to keep. It's important because
+        # if size is zero (it's empty), we do not want to add it back to the
+        # named caches cache.
+        size = _get_recursive_size(src)
+        logging.info('- Size is %d', size)
+        if not size:
+          # Do not save empty named cache.
+          return size
 
         # Move the dir and create an entry for the named cache.
+        rel_cache = self._allocate_dir()
         abs_cache = os.path.join(self.cache_dir, rel_cache)
         logging.info('- Moving to %r', rel_cache)
         file_path.ensure_tree(os.path.dirname(abs_cache))
         fs.rename(src, abs_cache)
 
-        # That succeeded, calculate its new size.
-        size = _get_recursive_size(abs_cache)
-        if not size:
-          # Do not save empty named cache.
-          return
-        logging.info('- Size is %d', size)
         self._lru.add(name, (rel_cache, size))
         self._added.append(size)
 
         # Create symlink <cache_dir>/<named>/<name> -> <cache_dir>/<short name>
         # for user convenience.
         named_path = self._get_named_path(name)
-        if os.path.exists(named_path):
+        if fs.exists(named_path):
           file_path.remove(named_path)
         else:
           file_path.ensure_tree(os.path.dirname(named_path))
 
         try:
-          fs.symlink(abs_cache, named_path)
+          fs.symlink(os.path.join(u'..', rel_cache), named_path)
           logging.info(
               'NamedCache: Created symlink %r to %r', named_path, abs_cache)
         except OSError:
@@ -913,6 +920,7 @@ class NamedCache(Cache):
           # UAC is enabled and the user is a filtered administrator account.
           if sys.platform != 'win32':
             raise
+        return size
       except (IOError, OSError) as ex:
         raise NamedCacheError(
             'cannot uninstall cache named %r at %r: %s' % (name, src, ex))
@@ -967,7 +975,7 @@ class NamedCache(Cache):
   def trim(self):
     evicted = []
     with self._lock:
-      if not os.path.isdir(self.cache_dir):
+      if not fs.isdir(self.cache_dir):
         return evicted
 
       # Trim according to maximum number of items.
@@ -1054,13 +1062,13 @@ class NamedCache(Cache):
 
         # Second, fix named cache links.
         named = os.path.join(self.cache_dir, self.NAMED_DIR)
-        if os.path.isdir(named):
+        if fs.isdir(named):
           actual = set(fs.listdir(named))
           expected = set(self._lru)
           # Confirm entries. Do not add missing ones for now.
           for name in expected.intersection(actual):
             p = os.path.join(self.cache_dir, self.NAMED_DIR, name)
-            expected_link = os.path.join(self.cache_dir, self._lru[name][0])
+            expected_link = os.path.join(u'..', self._lru[name][0])
             if fs.islink(p):
               if sys.platform == 'win32':
                 # TODO(maruel): Implement readlink() on Windows in fs.py, then
@@ -1121,7 +1129,10 @@ class NamedCache(Cache):
     return name, size
 
   def _allocate_dir(self):
-    """Creates and returns relative path of a new cache directory."""
+    """Creates and returns relative path of a new cache directory.
+
+    In practice, it is a 2-letter string.
+    """
     # We randomly generate directory names that have two lower/upper case
     # letters or digits. Total number of possibilities is (26*2 + 10)^2 = 3844.
     abc_len = len(self._DIR_ALPHABET)
@@ -1157,7 +1168,7 @@ class NamedCache(Cache):
       return
     rel_path, _size = self._lru.get(name)
     abs_path = os.path.join(self.cache_dir, rel_path)
-    if os.path.isdir(abs_path):
+    if fs.isdir(abs_path):
       file_path.rmtree(abs_path)
     self._lru.pop(name)
 
