@@ -32,7 +32,6 @@ chrome.fileManagerPrivate = {
   currentId_: 'test@example.com',
   displayedId_: 'test@example.com',
   preferences_: {
-    allowRedeemOffers: true,
     cellularDisabled: true,
     driveEnabled: true,
     searchSuggestEnabled: true,

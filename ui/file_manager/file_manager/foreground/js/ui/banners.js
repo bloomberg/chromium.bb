@@ -18,7 +18,6 @@ function Banners(
   this.directoryModel_ = directoryModel;
   this.volumeManager_ = volumeManager;
   this.document_ = assert(document);
-  this.showOffers_ = false;
   this.showWelcome_ = showWelcome;
   this.driveEnabled_ = false;
 
@@ -42,46 +41,35 @@ function Banners(
   this.warningDismissedCounter_ = 0;
   this.downloadsWarningDismissedTime_ = 0;
 
-  this.ready_ = Promise.all([
-    new Promise(function(resolve, reject) {
-      chrome.storage.local.get(
-          [
-            WELCOME_HEADER_COUNTER_KEY,
-            DRIVE_WARNING_DISMISSED_KEY,
-            DOWNLOADS_WARNING_DISMISSED_KEY
-          ],
-          function(values) {
-            if (chrome.runtime.lastError) {
-              reject('Failed to load banner data from chrome.storage: ' +
-                  chrome.runtime.lastError.message);
-              return;
-            }
-            this.welcomeHeaderCounter_ =
-                parseInt(values[WELCOME_HEADER_COUNTER_KEY], 10) || 0;
-            this.warningDismissedCounter_ =
-                parseInt(values[DRIVE_WARNING_DISMISSED_KEY], 10) || 0;
-            this.downloadsWarningDismissedTime_ =
-                parseInt(values[DOWNLOADS_WARNING_DISMISSED_KEY], 10) || 0;
+  this.ready_ = new Promise(function(resolve, reject) {
+    chrome.storage.local.get(
+        [
+          WELCOME_HEADER_COUNTER_KEY, DRIVE_WARNING_DISMISSED_KEY,
+          DOWNLOADS_WARNING_DISMISSED_KEY
+        ],
+        function(values) {
+          if (chrome.runtime.lastError) {
+            reject(
+                'Failed to load banner data from chrome.storage: ' +
+                chrome.runtime.lastError.message);
+            return;
+          }
+          this.welcomeHeaderCounter_ =
+              parseInt(values[WELCOME_HEADER_COUNTER_KEY], 10) || 0;
+          this.warningDismissedCounter_ =
+              parseInt(values[DRIVE_WARNING_DISMISSED_KEY], 10) || 0;
+          this.downloadsWarningDismissedTime_ =
+              parseInt(values[DOWNLOADS_WARNING_DISMISSED_KEY], 10) || 0;
 
-            // If it's in test, override the counter to show the header by
-            // force.
-            if (chrome.test) {
-              this.welcomeHeaderCounter_ = 0;
-              this.warningDismissedCounter_ = 0;
-            }
-            resolve();
-          }.bind(this));
-    }.bind(this)),
-    new Promise(function(resolve) {
-      // Get the 'allowRedeemOffers' preference for banners.
-      chrome.fileManagerPrivate.getPreferences(function(pref) {
-        this.showOffers_ = pref.allowRedeemOffers;
-        resolve();
-      }.bind(this));
-    }.bind(this))
-  ]).catch(function(error) {
-    console.error(error);
-  });
+          // If it's in test, override the counter to show the header by
+          // force.
+          if (chrome.test) {
+            this.welcomeHeaderCounter_ = 0;
+            this.warningDismissedCounter_ = 0;
+          }
+          resolve();
+        }.bind(this));
+  }.bind(this));
 
   // Authentication failed banner.
   this.authFailedBanner_ =

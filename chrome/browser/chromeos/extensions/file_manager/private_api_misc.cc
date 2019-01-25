@@ -218,12 +218,6 @@ FileManagerPrivateGetPreferencesFunction::Run() {
   result.search_suggest_enabled =
       service->GetBoolean(prefs::kSearchSuggestEnabled);
   result.use24hour_clock = service->GetBoolean(prefs::kUse24HourClock);
-  result.allow_redeem_offers = true;
-  if (!chromeos::CrosSettings::Get()->GetBoolean(
-          chromeos::kAllowRedeemChromeOsRegistrationOffers,
-          &result.allow_redeem_offers)) {
-    result.allow_redeem_offers = true;
-  }
   result.timezone =
       base::UTF16ToUTF8(chromeos::system::TimezoneSettings::GetInstance()
                             ->GetCurrentTimezoneID());
