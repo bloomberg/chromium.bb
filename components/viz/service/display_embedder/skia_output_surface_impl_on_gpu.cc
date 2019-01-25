@@ -306,8 +306,12 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
     gpu::SwapBuffersCompleteParams params;
     params.swap_response.swap_start = base::TimeTicks::Now();
     params.swap_response.result = vulkan_surface_->SwapBuffers();
-    params.swap_response.swap_end = base::TimeTicks::Now();
+    auto now = base::TimeTicks::Now();
+    params.swap_response.swap_end = now;
     DidSwapBuffersComplete(params);
+
+    buffer_presented_callback_.Run(
+        gfx::PresentationFeedback(now, base::TimeDelta(), 0 /* flag */));
 
     CreateSkSurfaceForVulkan();
     swap_end = base::TimeTicks::Now();
