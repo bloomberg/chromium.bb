@@ -14,18 +14,19 @@
 #include "chrome/browser/chromeos/account_mapper_util.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/account_manager/account_manager.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "services/identity/public/cpp/identity_manager.h"
+
+class AccountTrackerService;
 
 namespace chromeos {
 namespace settings {
 
 class AccountManagerUIHandler : public ::settings::SettingsPageUIHandler,
                                 public AccountManager::Observer,
-                                public AccountTrackerService::Observer {
+                                public identity::IdentityManager::Observer {
  public:
-  // Accepts non-owning pointers to |AccountManager| and
-  // |AccountTrackerService|. Both of these must outlive |this| instance.
+  // Accepts non-owning pointers to |AccountManager|, |AccountTrackerService|
+  // and |IdentityManager|. Both of these must outlive |this| instance.
   AccountManagerUIHandler(AccountManager* account_manager,
                           AccountTrackerService* account_tracker_service,
                           identity::IdentityManager* identity_manager);
@@ -42,9 +43,9 @@ class AccountManagerUIHandler : public ::settings::SettingsPageUIHandler,
   void OnTokenUpserted(const AccountManager::AccountKey& account_key) override;
   void OnAccountRemoved(const AccountManager::AccountKey& account_key) override;
 
-  // |AccountTrackerService::Observer| overrides.
+  // |identity::IdentityManager::Observer| overrides.
   void OnAccountUpdated(const AccountInfo& info) override;
-  void OnAccountRemoved(const AccountInfo& account_key) override;
+  void OnAccountRemovedWithInfo(const AccountInfo& account_key) override;
 
  private:
   // WebUI "getAccounts" message callback.
@@ -73,9 +74,6 @@ class AccountManagerUIHandler : public ::settings::SettingsPageUIHandler,
   // A non-owning pointer to |AccountManager|.
   AccountManager* const account_manager_;
 
-  // A non-owning pointer to |AccountTrackerService|.
-  AccountTrackerService* const account_tracker_service_;
-
   // A non-owning pointer to |IdentityManager|.
   identity::IdentityManager* const identity_manager_;
 
@@ -86,10 +84,10 @@ class AccountManagerUIHandler : public ::settings::SettingsPageUIHandler,
   ScopedObserver<AccountManager, AccountManager::Observer>
       account_manager_observer_;
 
-  // An observer for |AccountTrackerService|. Automatically deregisters when
+  // An observer for |identity::IdentityManager|. Automatically deregisters when
   // |this| is destructed.
-  ScopedObserver<AccountTrackerService, AccountTrackerService::Observer>
-      account_tracker_service_observer_;
+  ScopedObserver<identity::IdentityManager, identity::IdentityManager::Observer>
+      identity_manager_observer_;
 
   base::WeakPtrFactory<AccountManagerUIHandler> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(AccountManagerUIHandler);

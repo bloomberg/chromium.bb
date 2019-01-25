@@ -59,14 +59,13 @@ AccountManagerUIHandler::AccountManagerUIHandler(
     AccountTrackerService* account_tracker_service,
     identity::IdentityManager* identity_manager)
     : account_manager_(account_manager),
-      account_tracker_service_(account_tracker_service),
       identity_manager_(identity_manager),
-      account_mapper_util_(account_tracker_service_),
+      account_mapper_util_(account_tracker_service),
       account_manager_observer_(this),
-      account_tracker_service_observer_(this),
+      identity_manager_observer_(this),
       weak_factory_(this) {
   DCHECK(account_manager_);
-  DCHECK(account_tracker_service_);
+  DCHECK(identity_manager_);
 }
 
 AccountManagerUIHandler::~AccountManagerUIHandler() = default;
@@ -123,9 +122,6 @@ void AccountManagerUIHandler::GetAccountsCallbackHandler(
         account_manager::AccountType::ACCOUNT_TYPE_GAIA) {
       continue;
     }
-    AccountInfo account_info =
-        account_tracker_service_->FindAccountInfoByGaiaId(account_key.id);
-    DCHECK(!account_info.IsEmpty());
 
     base::DictionaryValue account;
     account.SetString("id", account_key.id);
@@ -140,11 +136,18 @@ void AccountManagerUIHandler::GetAccountsCallbackHandler(
             !identity_manager_
                  ->HasAccountWithRefreshTokenInPersistentErrorState(
                      oauth_account_id));
-    account.SetString("fullName", account_info.full_name);
-    account.SetString("email", account_info.email);
-    if (!account_info.account_image.IsEmpty()) {
-      account.SetString("pic", webui::GetBitmapDataUrl(
-                                   account_info.account_image.AsBitmap()));
+
+    base::Optional<AccountInfo> maybe_account_info =
+        identity_manager_->FindAccountInfoForAccountWithRefreshTokenByGaiaId(
+            account_key.id);
+    DCHECK(maybe_account_info.has_value());
+
+    account.SetString("fullName", maybe_account_info->full_name);
+    account.SetString("email", maybe_account_info->email);
+    if (!maybe_account_info->account_image.IsEmpty()) {
+      account.SetString("pic",
+                        webui::GetBitmapDataUrl(
+                            maybe_account_info->account_image.AsBitmap()));
     } else {
       gfx::ImageSkia default_icon =
           *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
@@ -214,19 +217,19 @@ void AccountManagerUIHandler::HandleShowWelcomeDialogIfRequired(
 
 void AccountManagerUIHandler::OnJavascriptAllowed() {
   account_manager_observer_.Add(account_manager_);
-  account_tracker_service_observer_.Add(account_tracker_service_);
+  identity_manager_observer_.Add(identity_manager_);
 }
 
 void AccountManagerUIHandler::OnJavascriptDisallowed() {
   account_manager_observer_.RemoveAll();
-  account_tracker_service_observer_.RemoveAll();
+  identity_manager_observer_.RemoveAll();
 }
 
-// |AccountManager::Observer| overrides.
-// Note: We need to listen on |AccountManager| in addition to
-// |AccountTrackerService| because there is no guarantee that |AccountManager|
-// (our source of truth) will have a newly added account by the time
-// |AccountTrackerService| has it.
+// |AccountManager::Observer| overrides. Note: We need to listen on
+// |AccountManager| in addition to |IdentityManager| because there is no
+// guarantee that |AccountManager| (our source of truth) will have a newly added
+// account by the time the underlying |AccountTrackerService| managed by the
+// |IdentityManager| has it.
 void AccountManagerUIHandler::OnTokenUpserted(
     const AccountManager::AccountKey& account_key) {
   RefreshUI();
@@ -237,18 +240,18 @@ void AccountManagerUIHandler::OnAccountRemoved(
   RefreshUI();
 }
 
-// |AccountTrackerService::Observer| overrides.
-// For newly added accounts, |AccountTrackerService| may take some time to
-// fetch user's full name and account image. Whenever that is completed, we
-// may need to update the UI with this new set of information.
-// Note that we may be listening to |AccountTrackerService| but we still
-// consider |AccountManager| to be the source of truth for account list.
+// |identity::IdentityManager::Observer| overrides. For newly added accounts,
+// |identity::IdentityManager| may take some time to fetch user's full name and
+// account image. Whenever that is completed, we may need to update the UI with
+// this new set of information. Note that we may be listening to
+// |identity::IdentityManager| but we still consider |AccountManager| to be the
+// source of truth for account list.
 void AccountManagerUIHandler::OnAccountUpdated(const AccountInfo& info) {
   RefreshUI();
 }
 
-void AccountManagerUIHandler::OnAccountRemoved(const AccountInfo& account_key) {
-}
+void AccountManagerUIHandler::OnAccountRemovedWithInfo(
+    const AccountInfo& account_key) {}
 
 void AccountManagerUIHandler::RefreshUI() {
   FireWebUIListener("accounts-changed");
