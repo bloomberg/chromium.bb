@@ -5,6 +5,7 @@
 #ifndef IOS_WEB_PUBLIC_WEB_STATE_WEB_FRAME_UTIL_H_
 #define IOS_WEB_PUBLIC_WEB_STATE_WEB_FRAME_UTIL_H_
 
+#include <set>
 #include <string>
 
 namespace web {
@@ -25,6 +26,9 @@ WebFrame* GetWebFrameWithId(WebState* web_state, const std::string& frame_id);
 
 // Returns the ID of |frame|. Returns std::string() if |frame| is nullptr.
 std::string GetWebFrameId(WebFrame* frame);
+
+// Returns all web frames in |web_state|.
+std::set<WebFrame*> GetAllWebFrames(WebState* web_state);
 
 }  // namespace web
 
