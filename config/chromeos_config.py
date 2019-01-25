@@ -1452,12 +1452,12 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       schedule='with 1440m interval',
   )
 
-  _vmpi_no_hwtest_boards = frozenset([])
-  _vmpi_no_hwtest_experimental_boards = frozenset([])
-  _vmpi_hwtest_boards = frozenset([])
-  _vmpi_hwtest_experimental_boards = frozenset([
+  _vmpi_no_hwtest_boards = frozenset([
       'eve-arcvm',
   ])
+  _vmpi_no_hwtest_experimental_boards = frozenset([])
+  _vmpi_hwtest_boards = frozenset([])
+  _vmpi_hwtest_experimental_boards = frozenset([])
   _vmpi_vmtest_boards = frozenset([])
   _vmpi_vmtest_experimental_boards = frozenset([])
 
