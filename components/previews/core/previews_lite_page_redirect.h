@@ -41,6 +41,9 @@ enum class ServerLitePageStatus {
   kControl = 5,
 };
 
+// Returns the string representation of |status|.
+std::string ServerLitePageStatusToString(ServerLitePageStatus status);
+
 // Returns true if the given |url| has the same domain as the lite page previews
 // server.
 bool IsLitePageRedirectPreviewDomain(const GURL& url);
