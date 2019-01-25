@@ -1191,9 +1191,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, SSLConfig) {
   EXPECT_EQ(net::ERR_SSL_VERSION_OR_CIPHER_MISMATCH, simple_loader->NetError());
 }
 
-// Flaky on several platforms: https://crbug.com/922876
-IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
-                       DISABLED_ProxyConfig) {
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, ProxyConfig) {
   if (IsRestartStateWithInProcessNetworkService())
     return;
   SetProxyPref(embedded_test_server()->host_port_pair());
@@ -1576,9 +1574,8 @@ class NetworkContextConfigurationProxyOnStartBrowserTest
 
 // Test that when there's a proxy configuration at startup, the initial requests
 // use that configuration.
-// Flaky on several platforms: https://crbug.com/922876
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationProxyOnStartBrowserTest,
-                       DISABLED_TestInitialProxyConfig) {
+                       TestInitialProxyConfig) {
   if (IsRestartStateWithInProcessNetworkService())
     return;
   TestProxyConfigured(/*expect_success=*/true);
