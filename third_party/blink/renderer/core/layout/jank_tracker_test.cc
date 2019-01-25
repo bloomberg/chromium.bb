@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/jank_tracker.h"
 
 #include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 
 namespace blink {
@@ -229,6 +230,19 @@ TEST_F(JankTrackerTest, IgnoreFixedAndSticky) {
   )HTML");
 
   GetDocument().scrollingElement()->setScrollTop(50);
+  UpdateAllLifecyclePhases();
+  EXPECT_FLOAT_EQ(0, GetJankTracker().Score());
+}
+
+TEST_F(JankTrackerTest, IgnoreSVG) {
+  SetBodyInnerHTML(R"HTML(
+    <svg>
+      <circle cx="50" cy="50" r="40"
+              stroke="black" stroke-width="3" fill="red" />
+    </svg>
+  )HTML");
+  GetDocument().QuerySelector("circle")->setAttribute(svg_names::kCxAttr,
+                                                      AtomicString("100"));
   UpdateAllLifecyclePhases();
   EXPECT_FLOAT_EQ(0, GetJankTracker().Score());
 }
