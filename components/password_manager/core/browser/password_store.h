@@ -592,18 +592,6 @@ class PasswordStore : protected PasswordStoreSync,
       const base::Callback<bool(const GURL&)>& origin_filter,
       const base::Closure& completion);
 
-  // Overwrites |forms| with all stored non-blacklisted credentials. Returns
-  // true on success.
-  virtual bool FillAutofillableLogins(
-      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms)
-      WARN_UNUSED_RESULT = 0;
-
-  // Overwrites |forms| with all stored blacklisted credentials. Returns true on
-  // success.
-  virtual bool FillBlacklistLogins(
-      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms)
-      WARN_UNUSED_RESULT = 0;
-
   // Finds all logins organization-name-matching |signon_realm| and notifies the
   // consumer.
   void GetLoginsForSameOrganizationNameImpl(
