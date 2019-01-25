@@ -72,6 +72,8 @@ std::string CreateLibAssistantConfig(bool disable_hotword) {
   dict.SetKey("disable_hotword", Value(disable_hotword));
   sources.GetList().push_back(std::move(dict));
   audio_input.SetKey("sources", std::move(sources));
+  // Skip sending speaker ID selection info to disable user verification.
+  audio_input.SetKey("should_send_speaker_id_selection_info", Value(false));
   config.SetKey("audio_input", std::move(audio_input));
 
   std::string json;
