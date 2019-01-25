@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 
+#include <algorithm>
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
@@ -258,7 +259,7 @@ const NGOffsetMappingUnit* NGOffsetMapping::GetMappingUnitForPosition(
   return unit;
 }
 
-NGMappingUnitRange NGOffsetMapping::GetMappingUnitsForDOMRange(
+NGOffsetMapping::UnitVector NGOffsetMapping::GetMappingUnitsForDOMRange(
     const EphemeralRange& range) const {
   DCHECK(NGOffsetMapping::AcceptsPosition(range.StartPosition()));
   DCHECK(NGOffsetMapping::AcceptsPosition(range.EndPosition()));
@@ -273,13 +274,17 @@ NGMappingUnitRange NGOffsetMapping::GetMappingUnitsForDOMRange(
 
   if (IsNonAtomicInline(node)) {
     if (start_offset == end_offset)
-      return {};
-    return {units_.begin() + range_start, units_.begin() + range_end};
+      return UnitVector();
+
+    UnitVector result;
+    result.AppendRange(units_.begin() + range_start,
+                       units_.begin() + range_end);
+    return result;
   }
 
   if (range_start == range_end || units_[range_start].DOMStart() > end_offset ||
       units_[range_end - 1].DOMEnd() < start_offset)
-    return {};
+    return UnitVector();
 
   // Find the first unit where unit.dom_end >= start_offset
   const NGOffsetMappingUnit* result_begin = std::lower_bound(
@@ -295,7 +300,22 @@ NGMappingUnitRange NGOffsetMapping::GetMappingUnitsForDOMRange(
                          return offset < unit.DOMStart();
                        });
 
-  return {result_begin, result_end};
+  UnitVector result;
+  for (const auto& unit : NGMappingUnitRange({result_begin, result_end})) {
+    // If the unit isn't fully within the range, create a new unit that's
+    // within the range.
+    const unsigned clamped_start = std::max(unit.DOMStart(), start_offset);
+    const unsigned clamped_end = std::min(unit.DOMEnd(), end_offset);
+    DCHECK_LE(clamped_start, clamped_end);
+    const unsigned clamped_text_content_start =
+        unit.ConvertDOMOffsetToTextContent(clamped_start);
+    const unsigned clamped_text_content_end =
+        unit.ConvertDOMOffsetToTextContent(clamped_end);
+    result.emplace_back(unit.GetType(), unit.GetOwner(), clamped_start,
+                        clamped_end, clamped_text_content_start,
+                        clamped_text_content_end);
+  }
+  return result;
 }
 
 NGMappingUnitRange NGOffsetMapping::GetMappingUnitsForNode(

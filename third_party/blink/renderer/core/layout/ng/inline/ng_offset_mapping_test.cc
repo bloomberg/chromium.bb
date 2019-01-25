@@ -950,8 +950,7 @@ TEST_F(NGOffsetMappingTest, OneContainerWithLeadingAndTrailingSpaces) {
 
   auto unit_range = result.GetMappingUnitsForDOMRange(
       EphemeralRange(Position::BeforeNode(*span), Position::AfterNode(*span)));
-  EXPECT_EQ(result.GetUnits().begin(), unit_range.begin());
-  EXPECT_EQ(result.GetUnits().end(), unit_range.end());
+  EXPECT_EQ(result.GetUnits().size(), unit_range.size());
 
   EXPECT_EQ(0u, *GetTextContentOffset(Position::BeforeNode(*span)));
   EXPECT_EQ(3u, *GetTextContentOffset(Position::AfterNode(*span)));
@@ -971,8 +970,7 @@ TEST_F(NGOffsetMappingTest, ContainerWithGeneratedContent) {
 
   auto unit_range = result.GetMappingUnitsForDOMRange(
       EphemeralRange(Position::BeforeNode(*span), Position::AfterNode(*span)));
-  EXPECT_EQ(result.GetUnits().begin(), unit_range.begin());
-  EXPECT_EQ(result.GetUnits().end(), unit_range.end());
+  EXPECT_EQ(result.GetUnits().size(), unit_range.size());
 
   // Offset mapping for inline containers skips generated content.
   EXPECT_EQ(3u, *GetTextContentOffset(Position::BeforeNode(*span)));
