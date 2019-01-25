@@ -37,7 +37,7 @@
 #include "components/translate/content/common/translate.mojom.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/identity/manifest.h"
-#include "services/preferences/manifest.h"
+#include "services/preferences/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "third_party/blink/public/platform/input_host.mojom.h"
 #include "third_party/blink/public/platform/media_download_in_product_help.mojom.h"
@@ -238,7 +238,7 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                     snippets_internals::mojom::PageHandlerFactory,
                     web_ui_test::mojom::TestRunner>())
             .PackageService(identity::GetManifest())
-            .PackageService(preferences::GetManifest())
+            .PackageService(prefs::GetManifest())
 #if defined(OS_CHROMEOS)
             .PackageService(device_sync::GetManifest())
             .PackageService(multidevice_setup::GetManifest())
