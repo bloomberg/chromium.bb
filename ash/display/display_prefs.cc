@@ -654,6 +654,8 @@ void StoreDisplayTouchAssociations(PrefService* pref_service) {
 
   DictionaryPrefUpdate update(pref_service, prefs::kDisplayTouchAssociations);
   base::DictionaryValue* pref_data = update.Get();
+  pref_data->Clear();
+
   const display::TouchDeviceManager::TouchAssociationMap& touch_associations =
       touch_device_manager->touch_associations();
 
@@ -703,6 +705,8 @@ void StoreDisplayTouchAssociations(PrefService* pref_service) {
   DictionaryPrefUpdate update_port(pref_service,
                                    prefs::kDisplayTouchPortAssociations);
   pref_data = update_port.Get();
+  update_port->Clear();
+
   const display::TouchDeviceManager::PortAssociationMap& port_associations =
       touch_device_manager->port_associations();
 
