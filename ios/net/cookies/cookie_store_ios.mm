@@ -700,8 +700,10 @@ void CookieStoreIOS::RunCallbacksForCookies(
   }
 }
 
-void CookieStoreIOS::GotCookieListFor(const std::pair<GURL, std::string> key,
-                                      const net::CookieList& cookies) {
+void CookieStoreIOS::GotCookieListFor(
+    const std::pair<GURL, std::string> key,
+    const net::CookieList& cookies,
+    const net::CookieStatusList& excluded_cookies) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   net::CookieList filtered;
@@ -766,7 +768,9 @@ void CookieStoreIOS::RunGetCookieListCallbackOnSystemCookies(
     CookieStoreIOS::GetCookieListCallback callback,
     NSArray<NSHTTPCookie*>* cookies) {
   if (!callback.is_null()) {
-    std::move(callback).Run(CanonicalCookieListFromSystemCookies(cookies));
+    net::CookieStatusList excluded_cookies;
+    std::move(callback).Run(CanonicalCookieListFromSystemCookies(cookies),
+                            excluded_cookies);
   }
 }
 

@@ -189,7 +189,8 @@ class CookieRetriever : public base::RefCountedThreadSafe<CookieRetriever> {
  protected:
   virtual ~CookieRetriever() {}
 
-  void GotCookies(const net::CookieList& cookie_list) {
+  void GotCookies(const net::CookieList& cookie_list,
+                  const net::CookieStatusList& excluded_cookies) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     for (const net::CanonicalCookie& cookie : cookie_list) {
       std::string key = base::StringPrintf(
@@ -332,7 +333,8 @@ void DeleteSelectedCookiesOnIO(net::URLRequestContextGetter* context_getter,
                                const std::string& normalized_domain,
                                const std::string& path,
                                base::OnceClosure callback,
-                               const net::CookieList& cookie_list) {
+                               const net::CookieList& cookie_list,
+                               const net::CookieStatusList& excluded_cookies) {
   DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
 
   net::URLRequestContext* request_context =

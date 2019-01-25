@@ -42,7 +42,8 @@ class CookieChangeDispatcher;
 class NET_EXPORT CookieStore {
  public:
   // Callback definitions.
-  typedef base::OnceCallback<void(const CookieList& cookies)>
+  typedef base::OnceCallback<void(const CookieList& cookies,
+                                  const CookieStatusList& excluded_list)>
       GetCookieListCallback;
   typedef base::OnceCallback<void(bool success)> SetCookiesCallback;
   typedef base::OnceCallback<void(uint32_t num_deleted)> DeleteCallback;

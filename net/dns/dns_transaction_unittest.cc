@@ -1708,7 +1708,8 @@ class CookieCallback {
     loop_to_quit_->Quit();
   }
 
-  void GetAllCookiesCallback(const net::CookieList& list) {
+  void GetAllCookiesCallback(const net::CookieList& list,
+                             const net::CookieStatusList& excluded_cookies) {
     list_ = list;
     loop_to_quit_->Quit();
   }

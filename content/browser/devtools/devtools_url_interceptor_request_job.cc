@@ -582,7 +582,7 @@ void DevToolsURLInterceptorRequestJob::Start() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   auto* store = request_details_.url_request_context->cookie_store();
   if (!store || (request()->load_flags() & net::LOAD_DO_NOT_SEND_COOKIES)) {
-    StartWithCookies(net::CookieList());
+    StartWithCookies(net::CookieList(), net::CookieStatusList());
     return;
   }
 
@@ -636,7 +636,8 @@ void DevToolsURLInterceptorRequestJob::Start() {
 }
 
 void DevToolsURLInterceptorRequestJob::StartWithCookies(
-    const net::CookieList& cookie_list) {
+    const net::CookieList& cookie_list,
+    const net::CookieStatusList& excluded_cookies) {
   request_details_.cookie_line =
       net::CanonicalCookie::BuildCookieLine(cookie_list);
 

@@ -497,7 +497,8 @@ void RenderFrameMessageFilter::CheckPolicyForCookies(
     const GURL& url,
     const GURL& site_for_cookies,
     GetCookiesCallback callback,
-    const net::CookieList& cookie_list) {
+    const net::CookieList& cookie_list,
+    const net::CookieStatusList& excluded_cookies) {
   if (!resource_context_) {
     std::move(callback).Run(std::string());
     return;
@@ -686,12 +687,19 @@ void RenderFrameMessageFilter::GetCookies(int render_frame_id,
     return;
   }
 
+  auto bound_callback = base::BindOnce(
+      &RenderFrameMessageFilter::CheckPolicyForCookies, this, render_frame_id,
+      url, site_for_cookies, std::move(callback));
+
+  auto wrapped_callback = base::BindOnce(
+      [](net::CookieStore::GetCookieListCallback callback,
+         const net::CookieList& cookies) {
+        std::move(callback).Run(cookies, net::CookieStatusList());
+      },
+      std::move(bound_callback));
+
   (*GetCookieManager())
-      ->GetCookieList(
-          url, options,
-          base::BindOnce(&RenderFrameMessageFilter::CheckPolicyForCookies, this,
-                         render_frame_id, url, site_for_cookies,
-                         std::move(callback)));
+      ->GetCookieList(url, options, std::move(wrapped_callback));
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)

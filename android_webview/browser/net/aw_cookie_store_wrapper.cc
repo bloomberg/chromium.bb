@@ -121,16 +121,16 @@ void AwCookieStoreWrapper::GetCookieListWithOptionsAsync(
     const net::CookieOptions& options,
     GetCookieListCallback callback) {
   DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
-  PostTaskToCookieStoreTaskRunner(base::BindOnce(
-      &GetCookieListWithOptionsAsyncOnCookieThread, url, options,
-      CreateWrappedCallback<const net::CookieList&>(std::move(callback))));
+  PostTaskToCookieStoreTaskRunner(
+      base::BindOnce(&GetCookieListWithOptionsAsyncOnCookieThread, url, options,
+                     CreateWrappedGetCookieListCallback(std::move(callback))));
 }
 
 void AwCookieStoreWrapper::GetAllCookiesAsync(GetCookieListCallback callback) {
   DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
-  PostTaskToCookieStoreTaskRunner(base::BindOnce(
-      &GetAllCookiesAsyncOnCookieThread,
-      CreateWrappedCallback<const net::CookieList&>(std::move(callback))));
+  PostTaskToCookieStoreTaskRunner(
+      base::BindOnce(&GetAllCookiesAsyncOnCookieThread,
+                     CreateWrappedGetCookieListCallback(std::move(callback))));
 }
 
 void AwCookieStoreWrapper::DeleteCookieAsync(const GURL& url,

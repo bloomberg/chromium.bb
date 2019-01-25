@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_change_dispatcher.h"
+#include "net/cookies/cookie_store.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -62,7 +63,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
       const GURL& site_for_cookies,
       mojom::CookieManagerGetOptionsPtr options,
       GetAllForUrlCallback callback,
-      const net::CookieList& cookie_list);
+      const net::CookieList& cookie_list,
+      const net::CookieStatusList& excluded_cookies);
 
   // Called when the Mojo pipe associated with a listener is closed.
   void RemoveChangeListener(Listener* listener);

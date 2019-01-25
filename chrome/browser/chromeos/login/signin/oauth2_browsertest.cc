@@ -487,7 +487,9 @@ class CookieReader : public base::RefCountedThreadSafe<CookieReader> {
         base::BindOnce(&CookieReader::OnGetAllCookiesOnUIThread, this));
   }
 
-  void OnGetAllCookiesOnUIThread(const net::CookieList& cookies) {
+  void OnGetAllCookiesOnUIThread(
+      const net::CookieList& cookies,
+      const net::CookieStatusList& excluded_cookies) {
     cookie_list_ = cookies;
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},

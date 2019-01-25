@@ -95,7 +95,8 @@ class GetAllCookiesCallback {
   // Returns the parameter of the callback.
   const net::CookieList& cookie_list() { return cookie_list_; }
 
-  void Run(const net::CookieList& cookie_list) {
+  void Run(const net::CookieList& cookie_list,
+           const net::CookieStatusList& excluded_cookies) {
     ASSERT_FALSE(did_run_);
     did_run_ = true;
     cookie_list_ = cookie_list;
@@ -109,7 +110,8 @@ class GetAllCookiesCallback {
 void IgnoreBoolean(bool ignored) {
 }
 
-void IgnoreList(const net::CookieList& ignored) {}
+void IgnoreList(const net::CookieList& ignored,
+                const net::CookieStatusList& excluded_cookies) {}
 
 }  // namespace
 

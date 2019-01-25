@@ -248,6 +248,15 @@ class NET_EXPORT CanonicalCookie {
 
 typedef std::vector<CanonicalCookie> CookieList;
 
+// These enable us to pass along a list of excluded cookie with the reason they
+// were excluded
+struct CookieWithStatus {
+  CanonicalCookie cookie;
+  CanonicalCookie::CookieInclusionStatus status;
+};
+
+typedef std::vector<CookieWithStatus> CookieStatusList;
+
 }  // namespace net
 
 #endif  // NET_COOKIES_CANONICAL_COOKIE_H_

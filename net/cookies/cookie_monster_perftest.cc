@@ -86,7 +86,8 @@ class GetCookieListCallback : public CookieTestCallback {
   }
 
  private:
-  void Run(const CookieList& cookie_list) {
+  void Run(const CookieList& cookie_list,
+           const CookieStatusList& excluded_cookies) {
     cookie_list_ = cookie_list;
     CookieTestCallback::Run();
   }
@@ -104,7 +105,8 @@ class GetAllCookiesCallback : public CookieTestCallback {
   }
 
  private:
-  void Run(const CookieList& cookies) {
+  void Run(const CookieList& cookies,
+           const CookieStatusList& excluded_cookies) {
     cookies_ = cookies;
     CookieTestCallback::Run();
   }

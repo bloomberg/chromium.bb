@@ -155,7 +155,8 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
     const GURL& site_for_cookies,
     mojom::CookieManagerGetOptionsPtr options,
     GetAllForUrlCallback callback,
-    const net::CookieList& cookie_list) {
+    const net::CookieList& cookie_list,
+    const net::CookieStatusList& excluded_cookies) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // TODO(pwnall): Call NetworkDelegate::CanGetCookies() on a NetworkDelegate

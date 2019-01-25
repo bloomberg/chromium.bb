@@ -122,6 +122,15 @@ void MaybeRunCookieCallback(base::OnceCallback<void(const T&)> callback,
     std::move(callback).Run(result);
 }
 
+template <typename T, typename U>
+void MaybeRunCookieCallback(
+    base::OnceCallback<void(const T&, const U&)> callback,
+    const T& first,
+    const U& second) {
+  if (callback)
+    std::move(callback).Run(first, second);
+}
+
 template <typename T>
 void MaybeRunCookieCallback(base::OnceCallback<void(T)> callback,
                             const T& result) {
@@ -653,7 +662,7 @@ void CookieMonster::GetAllCookies(GetCookieListCallback callback) {
   for (auto* cookie_ptr : cookie_ptrs)
     cookie_list.push_back(*cookie_ptr);
 
-  MaybeRunCookieCallback(std::move(callback), cookie_list);
+  MaybeRunCookieCallback(std::move(callback), cookie_list, CookieStatusList());
 }
 
 void CookieMonster::GetCookieListWithOptions(const GURL& url,
@@ -662,6 +671,7 @@ void CookieMonster::GetCookieListWithOptions(const GURL& url,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   CookieList cookies;
+  CookieStatusList excluded_cookies;
   if (HasCookieableScheme(url)) {
     std::vector<CanonicalCookie*> cookie_ptrs;
     FindCookiesForHostAndDomain(url, options, &cookie_ptrs);
@@ -672,7 +682,7 @@ void CookieMonster::GetCookieListWithOptions(const GURL& url,
          it != cookie_ptrs.end(); it++)
       cookies.push_back(**it);
   }
-  MaybeRunCookieCallback(std::move(callback), cookies);
+  MaybeRunCookieCallback(std::move(callback), cookies, excluded_cookies);
 }
 
 void CookieMonster::DeleteAllCreatedInTimeRange(const TimeRange& creation_range,
