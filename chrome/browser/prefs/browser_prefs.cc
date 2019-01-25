@@ -903,4 +903,5 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 1/2019.
   profile_prefs->ClearPref(kLastUpdateCheck);
   profile_prefs->ClearPref(kNextUpdateCheck);
+  syncer::MigrateSessionsToProxyTabsPrefs(profile_prefs);
 }

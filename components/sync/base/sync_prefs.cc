@@ -477,14 +477,6 @@ bool SyncPrefs::GetDataTypePreferred(ModelType type) const {
   if (AlwaysPreferredUserTypes().Has(type))
     return true;
 
-  if (type == PROXY_TABS &&
-      pref_service_->GetUserPrefValue(pref_name) == nullptr &&
-      pref_service_->IsUserModifiablePreference(pref_name)) {
-    // If there is no tab sync preference yet (i.e. newly enabled type),
-    // default to the session sync preference value.
-    pref_name = GetPrefNameForDataType(SESSIONS);
-  }
-
   return pref_service_->GetBoolean(pref_name);
 }
 
@@ -650,6 +642,17 @@ void SyncPrefs::GetNigoriSpecificsForPassphraseTransition(
 
 bool SyncPrefs::IsLocalSyncEnabled() const {
   return local_sync_enabled_;
+}
+
+void MigrateSessionsToProxyTabsPrefs(PrefService* pref_service) {
+  if (pref_service->GetUserPrefValue(prefs::kSyncTabs) == nullptr &&
+      pref_service->GetUserPrefValue(prefs::kSyncSessions) != nullptr &&
+      pref_service->IsUserModifiablePreference(prefs::kSyncTabs)) {
+    // If there is no tab sync preference yet (i.e. newly enabled type),
+    // default to the session sync preference value.
+    bool sessions_pref_value = pref_service->GetBoolean(prefs::kSyncSessions);
+    pref_service->SetBoolean(prefs::kSyncTabs, sessions_pref_value);
+  }
 }
 
 }  // namespace syncer

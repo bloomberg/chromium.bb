@@ -262,6 +262,8 @@ class SyncPrefs : public CryptoSyncPrefs,
   DISALLOW_COPY_AND_ASSIGN(SyncPrefs);
 };
 
+void MigrateSessionsToProxyTabsPrefs(PrefService* pref_service);
+
 }  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_BASE_SYNC_PREFS_H_
