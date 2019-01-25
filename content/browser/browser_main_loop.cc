@@ -120,7 +120,6 @@
 #include "media/audio/audio_system.h"
 #include "media/audio/audio_thread_impl.h"
 #include "media/base/media.h"
-#include "media/base/media_switches.h"
 #include "media/base/user_input_monitor.h"
 #include "media/media_buildflags.h"
 #include "media/midi/midi_service.h"
@@ -1454,13 +1453,11 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   }
 #endif
 
-#if !defined(OS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(media::kHardwareMediaKeyHandling)) {
+  if (MediaKeysListenerManager::IsMediaKeysListenerManagerEnabled()) {
     media_keys_listener_manager_ =
         std::make_unique<MediaKeysListenerManagerImpl>(
             content::ServiceManagerConnection::GetForProcess()->GetConnector());
   }
-#endif
 
 #if defined(OS_MACOSX)
   ThemeHelperMac::GetInstance();

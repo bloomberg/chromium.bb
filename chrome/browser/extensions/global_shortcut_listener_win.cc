@@ -6,12 +6,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/feature_list.h"
 #include "base/win/win_util.h"
 #include "chrome/common/extensions/command.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_keys_listener_manager.h"
-#include "media/base/media_switches.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_code_conversion_win.h"
@@ -21,14 +19,6 @@
 using content::BrowserThread;
 
 namespace extensions {
-
-namespace {
-
-bool ShouldUseMediaKeysListenerManager() {
-  return base::FeatureList::IsEnabled(media::kHardwareMediaKeyHandling);
-}
-
-}  // namespace
 
 // static
 GlobalShortcutListener* GlobalShortcutListener::GetInstance() {
@@ -85,7 +75,8 @@ bool GlobalShortcutListenerWin::RegisterAcceleratorImpl(
   // If we want to listen for media keys, we should do that through the
   // MediaKeysListenerManager, which will tell the manager to send us media keys
   // and prevent the HardwareKeyMediaController from receiving the keys.
-  if (ShouldUseMediaKeysListenerManager() && Command::IsMediaKey(accelerator)) {
+  if (content::MediaKeysListenerManager::IsMediaKeysListenerManagerEnabled() &&
+      Command::IsMediaKey(accelerator)) {
     content::MediaKeysListenerManager* media_keys_listener_manager =
         content::MediaKeysListenerManager::GetInstance();
     DCHECK(media_keys_listener_manager);
@@ -125,7 +116,8 @@ void GlobalShortcutListenerWin::UnregisterAcceleratorImpl(
 
   // If we're routing media keys through the MediaKeysListenerManager, then
   // inform the manager that we're no longer listening to the given key.
-  if (ShouldUseMediaKeysListenerManager() && Command::IsMediaKey(accelerator)) {
+  if (content::MediaKeysListenerManager::IsMediaKeysListenerManagerEnabled() &&
+      Command::IsMediaKey(accelerator)) {
     content::MediaKeysListenerManager* media_keys_listener_manager =
         content::MediaKeysListenerManager::GetInstance();
     DCHECK(media_keys_listener_manager);

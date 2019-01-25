@@ -19,19 +19,7 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_constants.h"
 
-#if !defined(OS_CHROMEOS)
-#include "media/base/media_switches.h"
-#endif
-
 namespace {
-
-bool ShouldUseMediaKeysListenerManager() {
-#if defined(OS_CHROMEOS)
-  return false;
-#else
-  return base::FeatureList::IsEnabled(media::kHardwareMediaKeyHandling);
-#endif
-}
 
 const char kOnCommandEventName[] = "commands.onCommand";
 
@@ -107,7 +95,8 @@ void ExtensionKeybindingRegistry::RemoveExtensionKeybinding(
 
   // If we're no longer listening to any media keys, tell the browser that
   // it can start handling media keys.
-  if (any_media_keys_removed && ShouldUseMediaKeysListenerManager() &&
+  if (any_media_keys_removed &&
+      content::MediaKeysListenerManager::IsMediaKeysListenerManagerEnabled() &&
       !IsListeningToAnyMediaKeys()) {
     content::MediaKeysListenerManager* media_keys_listener_manager =
         content::MediaKeysListenerManager::GetInstance();
@@ -188,7 +177,8 @@ void ExtensionKeybindingRegistry::AddEventTarget(
 
     // Tell the browser that it should not handle media keys, since we're going
     // to handle them.
-    if (ShouldUseMediaKeysListenerManager()) {
+    if (content::MediaKeysListenerManager::
+            IsMediaKeysListenerManagerEnabled()) {
       content::MediaKeysListenerManager* media_keys_listener_manager =
           content::MediaKeysListenerManager::GetInstance();
       DCHECK(media_keys_listener_manager);
