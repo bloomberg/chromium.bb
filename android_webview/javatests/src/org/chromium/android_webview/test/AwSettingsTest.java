@@ -47,6 +47,7 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.HistoryUtils;
 import org.chromium.content_public.common.ContentSwitches;
@@ -1463,6 +1464,91 @@ public class AwSettingsTest {
         }
     }
 
+    class AwSettingsShouldSuppressErrorPageTestHelper extends AwSettingsTestHelper<Boolean> {
+        private static final String BAD_SCHEME_URL = "htt://nonsense";
+        private static final String PREV_TITLE = "cuencpobgjhfdmdovhmfdkjf";
+        private static final int MAX_TIME_LOADING_ERROR_PAGE = 1000;
+        private final AwContents mAwContents;
+
+        AwSettingsShouldSuppressErrorPageTestHelper(AwTestContainerView containerView,
+                TestAwContentsClient contentViewClient) throws Throwable {
+            super(containerView, contentViewClient, true);
+            mAwContents = containerView.getAwContents();
+        }
+
+        @Override
+        protected Boolean getAlteredValue() {
+            return ENABLED;
+        }
+
+        @Override
+        protected Boolean getInitialValue() {
+            return DISABLED;
+        }
+
+        @Override
+        protected Boolean getCurrentValue() {
+            return mAwSettings.getShouldSuppressErrorPage();
+        }
+
+        @Override
+        protected void setCurrentValue(Boolean value) {
+            mAwSettings.setShouldSuppressErrorPage(value);
+        }
+
+        @Override
+        protected void doEnsureSettingHasValue(Boolean value) throws Throwable {
+            // Load a known state
+            loadDataSync(getData());
+
+            final WebContents webContents = mAwContents.getWebContents();
+            final CallbackHelper onTitleUpdatedHelper = new CallbackHelper();
+            final WebContentsObserver observer =
+                    ThreadUtils.runOnUiThreadBlocking(() -> new WebContentsObserver(webContents) {
+                        @Override
+                        public void titleWasSet(String title) {
+                            onTitleUpdatedHelper.notifyCalled();
+                        }
+                    });
+            int callCount = onTitleUpdatedHelper.getCallCount();
+
+            loadUrlSync(BAD_SCHEME_URL);
+
+            // Verify the state in settings reflect what we expect
+            AwSettings settings = mActivityTestRule.getAwSettingsOnUiThread(mAwContents);
+            Assert.assertEquals(value, settings.getShouldSuppressErrorPage());
+
+            // Verify the error page is shown / suppressed
+            if (value == DISABLED) {
+                // Showing an error page should change the page title.
+                onTitleUpdatedHelper.waitForCallback(
+                        "Showing an error page should change the page title, "
+                                + "but no change happened",
+                        callCount);
+                Assert.assertNotEquals("Showing an error page should change the page title, "
+                                + "but no change happened",
+                        PREV_TITLE, getTitleOnUiThread());
+            } else {
+                // Suppressing the error page should mean nothing changes (no callbacks). However,
+                // verifying that the error page actually never loads isn't straight-forward,
+                // as it happens asynchronously.
+                // In fact, there doesn't seem to be any direct, non-flaky way of detecting this.
+                Thread.sleep(MAX_TIME_LOADING_ERROR_PAGE);
+                Assert.assertEquals(
+                        "Suppressing an error page should leave the page title unchanged, "
+                                + "but a change still happened",
+                        PREV_TITLE, getTitleOnUiThread());
+            }
+
+            ThreadUtils.runOnUiThreadBlocking(() -> webContents.removeObserver(observer));
+        }
+
+        private String getData() {
+            return "<html><head><title>" + PREV_TITLE
+                    + "</title></head><body>Page Text</body></html>";
+        }
+    }
+
     public static int calcDisplayWidthDp(Context context) {
         return ThreadUtils.runOnUiThreadBlockingNoException(() -> {
             DisplayAndroid displayAndroid = DisplayAndroid.getNonMultiDisplay(context);
@@ -1634,6 +1720,17 @@ public class AwSettingsTest {
             Assert.assertEquals(Build.VERSION.RELEASE, patternMatcher.group(2));
         }
         Assert.assertEquals(Build.ID, patternMatcher.group(7));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testShouldSuppressErrorPage() throws Throwable {
+        ViewPair views = createViews();
+        runPerViewSettingsTest(new AwSettingsShouldSuppressErrorPageTestHelper(
+                                       views.getContainer0(), views.getClient0()),
+                new AwSettingsShouldSuppressErrorPageTestHelper(
+                        views.getContainer1(), views.getClient1()));
     }
 
     @Test

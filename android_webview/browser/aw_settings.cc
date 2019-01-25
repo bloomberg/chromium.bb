@@ -142,6 +142,7 @@ void AwSettings::UpdateEverythingLocked(JNIEnv* env,
   UpdateFormDataPreferencesLocked(env, obj);
   UpdateRendererPreferencesLocked(env, obj);
   UpdateOffscreenPreRasterLocked(env, obj);
+  UpdateShouldSuppressErrorStateLocked(env, obj);
 }
 
 void AwSettings::UpdateUserAgentLocked(JNIEnv* env,
@@ -195,6 +196,17 @@ void AwSettings::UpdateInitialPageScaleLocked(
         static_cast<float>(Java_AwSettings_getDIPScaleLocked(env, obj));
     rvhe->SetInitialPageScale(initial_page_scale_percent / dip_scale / 100.0f);
   }
+}
+
+void AwSettings::UpdateShouldSuppressErrorStateLocked(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  AwRenderViewHostExt* rvhe = GetAwRenderViewHostExt();
+  if (!rvhe)
+    return;
+
+  bool suppress = Java_AwSettings_getShouldSuppressErrorPageLocked(env, obj);
+  rvhe->SetShouldSuppressErrorPage(suppress);
 }
 
 void AwSettings::UpdateFormDataPreferencesLocked(

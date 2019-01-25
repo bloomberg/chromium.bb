@@ -87,6 +87,11 @@ IPC_MESSAGE_ROUTED3(AwViewMsg_SmoothScroll,
                     int /* target_y */,
                     int /* duration_ms */)
 
+// Sent to inform renderers whether the internal error page should be shown or
+// not.
+IPC_MESSAGE_ROUTED1(AwViewMsg_ShouldSuppressErrorPage,
+                    bool /* should_suppress_error_page */)
+
 //-----------------------------------------------------------------------------
 // RenderView messages
 // These are messages sent from the renderer to the browser process.

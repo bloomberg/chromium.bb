@@ -44,6 +44,9 @@ class AwSettings : public content::WebContentsObserver {
   void UpdateInitialPageScaleLocked(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
+  void UpdateShouldSuppressErrorStateLocked(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
   void UpdateUserAgentLocked(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj);
   void UpdateWebkitPreferencesLocked(

@@ -132,6 +132,10 @@ public class Features {
     // ProxyController.clearProxyOverride
     public static final String PROXY_OVERRIDE = "PROXY_OVERRIDE:3";
 
+    // WebSettingsCompat.setShouldSuppressErrorPage
+    // WebSettingsCompat.getShouldSuppressErrorPage
+    public static final String SUPPRESS_ERROR_PAGE = "SUPPRESS_ERROR_PAGE";
+
     // WebViewCompat.getWebViewRenderer
     public static final String GET_WEB_VIEW_RENDERER = "GET_WEB_VIEW_RENDERER";
 
