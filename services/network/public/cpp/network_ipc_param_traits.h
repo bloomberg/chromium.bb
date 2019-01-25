@@ -63,6 +63,8 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static void Log(const param_type& p, std::string* l);
 };
 
+// TODO(Richard): Remove this traits after usage of FrameHostMsg_OpenURL_Params
+// disappears.
 template <>
 struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<network::DataElement> {
   typedef network::DataElement param_type;
@@ -73,6 +75,8 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<network::DataElement> {
   static void Log(const param_type& p, std::string* l);
 };
 
+// TODO(Richard): Remove this traits after usage of FrameHostMsg_OpenURL_Params
+// disappears.
 template <>
 struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
     ParamTraits<scoped_refptr<network::ResourceRequestBody>> {

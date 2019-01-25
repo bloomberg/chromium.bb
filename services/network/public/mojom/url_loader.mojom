@@ -4,31 +4,19 @@
 
 module network.mojom;
 
+import "mojo/public/mojom/base/file.mojom";
+import "mojo/public/mojom/base/file_path.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/cors.mojom";
+import "services/network/public/mojom/chunked_data_pipe_getter.mojom";
+import "services/network/public/mojom/data_pipe_getter.mojom";
 import "services/network/public/mojom/fetch_api.mojom";
 import "services/network/public/mojom/http_request_headers.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/request_context_frame_type.mojom";
-import "url/mojom/url.mojom";
 import "url/mojom/origin.mojom";
-
-// Typemapped to network::ResourceRequestBody
-struct URLRequestBody {
-  // Store upload bodies
-  array<DataElement> elements;
-
-  // Identifies a particular upload instance, which is used by the cache to
-  // formulate a cache key.
-  uint64 identifier;
-
-  // Indicates whether the post data contains sensitive information like
-  // passwords.
-  bool contains_sensitive_info;
-};
-
-[Native]
-struct DataElement;
+import "url/mojom/url.mojom";
 
 [Native]
 struct URLResponseHead;
@@ -322,6 +310,46 @@ struct URLRequest {
   // goes through a service worker, the id is
   // ServiceWorkerProviderHost::fetch_request_window_id.
   mojo_base.mojom.UnguessableToken? fetch_window_id;
+};
+
+// URLRequestBody represents body (i.e. upload data) of a HTTP request.
+// Typemapped to network::ResourceRequestBody
+struct URLRequestBody {
+  // Store upload bodies
+  array<DataElement> elements;
+
+  // Identifies a particular upload instance, which is used by the cache to
+  // formulate a cache key.
+  uint64 identifier;
+
+  // Indicates whether the post data contains sensitive information like
+  // passwords.
+  bool contains_sensitive_info;
+};
+
+// Represents part of an upload body. This could be either one of bytes, file or
+// a data pipe.
+// Typemapped to network::DataElement
+struct DataElement {
+  DataElementType type;
+
+  // For kBytes.
+  array<uint8> buf;
+  // For kFile and kRawFile
+  mojo_base.mojom.FilePath path;
+  // For kRawFile
+  mojo_base.mojom.File? file;
+  // For kBlob
+  // TODO(Richard): Deprecate this once NetworkService is fully shipped.
+  string blob_uuid;
+  // For kDataPipe
+  network.mojom.DataPipeGetter? data_pipe_getter;
+  // For kChunkedDataPipe
+  network.mojom.ChunkedDataPipeGetter? chunked_data_pipe_getter;
+
+  uint64 offset;
+  uint64 length;
+  mojo_base.mojom.Time expected_modification_time;
 };
 
 // Destroying a URLLoader will cancel the associated request.
