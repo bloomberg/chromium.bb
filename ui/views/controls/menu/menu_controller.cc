@@ -2249,7 +2249,7 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
 
   if (!item->GetParentMenuItem()) {
     // This is a top-level menu, position it relative to the anchor bounds.
-    const gfx::Rect& anchor_bounds = pending_state_.initial_bounds;
+    const gfx::Rect& anchor_bounds = state_.initial_bounds;
 
     // First the size gets reduced to the possible space.
     if (!monitor_bounds.IsEmpty()) {
@@ -2269,6 +2269,14 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
       } else if (state_.anchor == MENU_ANCHOR_BUBBLE_BELOW) {
         max_height = monitor_bounds.bottom() - anchor_bounds.bottom() +
                      kBubbleTipSizeTopBottom;
+      } else if (state_.anchor == MENU_ANCHOR_BUBBLE_TOUCHABLE_ABOVE) {
+        // Don't consider |border_and_shadow_insets| because when the max size
+        // is enforced, the scroll view is shown and the md shadows are not
+        // applied.
+        max_height =
+            std::max(anchor_bounds.y() - monitor_bounds.y(),
+                     monitor_bounds.bottom() - anchor_bounds.bottom()) -
+            menu_config.touchable_anchor_offset;
       }
       // The menu should always have a non-empty available area.
       DCHECK_GE(max_width, kBubbleTipSizeLeftRight);
@@ -2308,11 +2316,13 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
     } else if (state_.anchor == MENU_ANCHOR_BUBBLE_TOUCHABLE_ABOVE) {
       // Align the left edges of the menu and anchor, and the bottom of the menu
       // with the top of the anchor.
-      x = anchor_bounds.x() - border_and_shadow_insets.left();
+      x = std::max(monitor_bounds.x(),
+                   anchor_bounds.x() - border_and_shadow_insets.left());
       y = anchor_bounds.y() - menu_size.height() +
           border_and_shadow_insets.bottom() -
           menu_config.touchable_anchor_offset;
-      // Align the right of the container with the right of the anchor.
+
+      // Align the right of the menu with the right of the anchor.
       if (x + menu_size.width() > monitor_bounds.width()) {
         x = anchor_bounds.right() - menu_size.width() +
             border_and_shadow_insets.right();
@@ -2334,10 +2344,13 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
         x = anchor_bounds.right() - border_and_shadow_insets.left() +
             menu_config.touchable_anchor_offset;
       }
-      // Align the bottom of the menu to the bottom of the anchor.
-      if (y + menu_size.height() > monitor_bounds.height()) {
+      // Prefer aligning the bottom of the menu to the bottom of the anchor.
+      if (y + menu_size.height() > monitor_bounds.bottom()) {
         y = anchor_bounds.bottom() - menu_size.height() +
             border_and_shadow_insets.bottom();
+        // For some very tall menus, this may still be off screen.
+        if (y < monitor_bounds.y())
+          y = monitor_bounds.y();
       }
     } else if (state_.anchor == MENU_ANCHOR_BUBBLE_TOUCHABLE_RIGHT) {
       // Align the left of the menu with the right of the anchor, and the top of
@@ -2351,7 +2364,7 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
             border_and_shadow_insets.right() -
             menu_config.touchable_anchor_offset;
       }
-      if (y + menu_size.height() > monitor_bounds.height()) {
+      if (y + menu_size.height() > monitor_bounds.bottom()) {
         // Align the bottom of the menu with the bottom of the anchor.
         y = anchor_bounds.bottom() - menu_size.height() +
             border_and_shadow_insets.bottom();
