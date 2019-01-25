@@ -3829,17 +3829,17 @@ def BranchScheduleConfig():
   # The three active release branches.
   # (<branch>, [<android PFQs>], <chrome PFQ>)
   RELEASES = [
+      ('release-R73-11647.B',
+       ['reef-android-nyc-pre-flight-branch',
+        'grunt-android-pi-pre-flight-branch'],
+       'samus-chrome-pre-flight-branch'),
+
       ('release-R72-11316.B',
        ['reef-android-nyc-pre-flight-branch',
         'grunt-android-pi-pre-flight-branch'],
        'samus-chrome-pre-flight-branch'),
 
       ('release-R71-11151.B',
-       ['reef-android-nyc-pre-flight-branch',
-        'grunt-android-pi-pre-flight-branch'],
-       'samus-chrome-pre-flight-branch'),
-
-      ('release-R70-11021.B',
        ['reef-android-nyc-pre-flight-branch',
         'grunt-android-pi-pre-flight-branch'],
        'samus-chrome-pre-flight-branch'),
