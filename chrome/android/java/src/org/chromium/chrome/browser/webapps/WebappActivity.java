@@ -767,7 +767,7 @@ public class WebappActivity extends SingleTabActivity {
         int statusBarColor = Color.BLACK;
         if (mBrandColor != null && mWebappInfo.displayMode() != WebDisplayMode.FULLSCREEN) {
             taskDescriptionColor = mBrandColor;
-            statusBarColor = ColorUtils.getDarkenedColorForStatusBar(mBrandColor);
+            statusBarColor = mBrandColor;
             if (getToolbarManager() != null) {
                 getToolbarManager().onThemeColorChanged(mBrandColor, false);
             }
@@ -775,17 +775,21 @@ public class WebappActivity extends SingleTabActivity {
 
         ApiCompatibilityUtils.setTaskDescription(this, title, icon,
                 ColorUtils.getOpaqueColor(taskDescriptionColor));
-        ApiCompatibilityUtils.setStatusBarColor(getWindow(), statusBarColor);
+        setStatusBarColor(statusBarColor, statusBarColor != Color.BLACK);
     }
 
     @Override
     protected void setStatusBarColor(Tab tab, int color) {
-        // Intentionally do nothing as WebappActivity explicitly sets status bar color.
+        // Ignore any color that is not the brand color.
+        super.setStatusBarColor(
+                mBrandColor == null ? Color.BLACK : mBrandColor, mBrandColor == null);
     }
 
     @Override
     protected void setStatusBarColor(int color, boolean isDefaultThemeColor) {
-        // Intentionally do nothing as WebappActivity explicitly sets status bar color.
+        // Ignore any color that is not the brand color.
+        super.setStatusBarColor(
+                mBrandColor == null ? Color.BLACK : mBrandColor, mBrandColor == null);
     }
 
     @Override
