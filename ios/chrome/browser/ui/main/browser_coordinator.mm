@@ -39,7 +39,7 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
 #import "ios/chrome/browser/ui/translate/language_selection_coordinator.h"
-#import "ios/chrome/browser/ui/translate/translate_popup_menu_coordinator.h"
+#import "ios/chrome/browser/ui/translate/translate_infobar_coordinator.h"
 #import "ios/chrome/browser/web/print_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper_delegate.h"
@@ -115,7 +115,7 @@
 // Coordinator for the translate infobar's language selection and translate
 // option popup menus.
 @property(nonatomic, strong)
-    TranslatePopupMenuCoordinator* translatePopupMenuCoordinator;
+    TranslateInfobarCoordinator* translateInfobarCoordinator;
 
 @end
 
@@ -256,11 +256,11 @@
   }
 
   if (base::FeatureList::IsEnabled(translate::kCompactTranslateInfobarIOS)) {
-    self.translatePopupMenuCoordinator = [[TranslatePopupMenuCoordinator alloc]
+    self.translateInfobarCoordinator = [[TranslateInfobarCoordinator alloc]
         initWithBaseViewController:self.viewController
                       browserState:self.browserState
                       webStateList:self.tabModel.webStateList];
-    [self.translatePopupMenuCoordinator start];
+    [self.translateInfobarCoordinator start];
   } else {
     self.languageSelectionCoordinator = [[LanguageSelectionCoordinator alloc]
         initWithBaseViewController:self.viewController
@@ -342,8 +342,8 @@
   [self.storeKitCoordinator stop];
   self.storeKitCoordinator = nil;
 
-  [self.translatePopupMenuCoordinator stop];
-  self.translatePopupMenuCoordinator = nil;
+  [self.translateInfobarCoordinator stop];
+  self.translateInfobarCoordinator = nil;
 }
 
 #pragma mark - BrowserCoordinatorCommands

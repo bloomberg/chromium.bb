@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_TRANSLATE_TRANSLATE_POPUP_MENU_COORDINATOR_H_
-#define IOS_CHROME_BROWSER_UI_TRANSLATE_TRANSLATE_POPUP_MENU_COORDINATOR_H_
+#ifndef IOS_CHROME_BROWSER_UI_TRANSLATE_TRANSLATE_INFOBAR_COORDINATOR_H_
+#define IOS_CHROME_BROWSER_UI_TRANSLATE_TRANSLATE_INFOBAR_COORDINATOR_H_
 
 #import <UIKit/UIKit.h>
 
@@ -11,9 +11,10 @@
 
 class WebStateList;
 
-// Coordinator for the translate infobar's language selection and translate
-// option popup menus.
-@interface TranslatePopupMenuCoordinator : ChromeCoordinator
+// Coordinator responsible for presenting and dismissing the translate infobar's
+// language selection popup menu, translate options popup menu, and translate
+// options notifications.
+@interface TranslateInfobarCoordinator : ChromeCoordinator
 
 // Creates a coordinator that uses |viewController|, |browserState|, and
 // |webStateList|.
@@ -30,4 +31,4 @@ class WebStateList;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_TRANSLATE_TRANSLATE_POPUP_MENU_COORDINATOR_H_
+#endif  // IOS_CHROME_BROWSER_UI_TRANSLATE_TRANSLATE_INFOBAR_COORDINATOR_H_

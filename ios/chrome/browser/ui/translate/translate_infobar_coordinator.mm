@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/translate/translate_popup_menu_coordinator.h"
+#import "ios/chrome/browser/ui/translate/translate_infobar_coordinator.h"
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
@@ -19,26 +19,25 @@
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_table_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_ui_constants.h"
 #import "ios/chrome/browser/ui/translate/cells/select_language_popup_menu_item.h"
+#import "ios/chrome/browser/ui/translate/translate_infobar_mediator.h"
 #import "ios/chrome/browser/ui/translate/translate_notification_presenter.h"
-#import "ios/chrome/browser/ui/translate/translate_popup_menu_mediator.h"
 #import "ios/chrome/browser/ui/util/layout_guide_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface TranslatePopupMenuCoordinator () <
-    LanguageSelectionHandler,
-    PopupMenuPresenterDelegate,
-    PopupMenuTableViewControllerDelegate,
-    TranslateOptionSelectionHandler>
+@interface TranslateInfobarCoordinator () <LanguageSelectionHandler,
+                                           PopupMenuPresenterDelegate,
+                                           PopupMenuTableViewControllerDelegate,
+                                           TranslateOptionSelectionHandler>
 
 // The WebStateList this coordinator observes.
 @property(nonatomic, assign) WebStateList* webStateList;
 // Presenter for the popup menu, managing the animations.
 @property(nonatomic, strong) PopupMenuPresenter* popupMenuPresenter;
 // Mediator for the popup menu.
-@property(nonatomic, strong) TranslatePopupMenuMediator* mediator;
+@property(nonatomic, strong) TranslateInfobarMediator* mediator;
 // Presenter for the translate notifications.
 @property(nonatomic, strong)
     TranslateNotificationPresenter* notificationPresenter;
@@ -55,7 +54,7 @@
 
 @end
 
-@implementation TranslatePopupMenuCoordinator
+@implementation TranslateInfobarCoordinator
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                               browserState:
@@ -78,7 +77,7 @@
 
   self.notificationPresenter = [[TranslateNotificationPresenter alloc] init];
 
-  self.mediator = [[TranslatePopupMenuMediator alloc]
+  self.mediator = [[TranslateInfobarMediator alloc]
       initWithSelectionHandler:self
            notificationHandler:self.notificationPresenter];
   self.mediator.webStateList = self.webStateList;
