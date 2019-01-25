@@ -166,6 +166,9 @@ void NGAbstractInlineTextBox::CharacterWidths(Vector<float>& widths) const {
 String NGAbstractInlineTextBox::GetText() const {
   if (!fragment_ || !GetLineLayoutItem())
     return String();
+
+  String result = PhysicalTextFragment().Text().ToString();
+
   // For compatibility with |InlineTextBox|, we should have a space character
   // for soft line break.
   // Following tests require this:
@@ -173,8 +176,15 @@ String NGAbstractInlineTextBox::GetText() const {
   //  - accessibility/inline-text-changes.html
   //  - accessibility/inline-text-word-boundaries.html
   if (NeedsTrailingSpace())
-    return PhysicalTextFragment().Text().ToString() + " ";
-  return PhysicalTextFragment().Text().ToString();
+    result = result + " ";
+
+  // When the CSS first-letter pseudoselector is used, the LayoutText for the
+  // first letter is excluded from the accessibility tree, so we need to prepend
+  // its text here.
+  if (LayoutText* first_letter = GetFirstLetterPseudoLayoutText())
+    result = first_letter->GetText().SimplifyWhiteSpace() + result;
+
+  return result;
 }
 
 bool NGAbstractInlineTextBox::IsFirst() const {

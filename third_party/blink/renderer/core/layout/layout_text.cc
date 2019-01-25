@@ -2428,9 +2428,7 @@ void LayoutText::MomentarilyRevealLastTypedCharacter(
 
 scoped_refptr<AbstractInlineTextBox> LayoutText::FirstAbstractInlineTextBox() {
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    LayoutObject* const first_letter_part = GetFirstLetterPart();
-    auto fragments = NGPaintFragment::InlineFragmentsFor(
-        first_letter_part ? first_letter_part : this);
+    auto fragments = NGPaintFragment::InlineFragmentsFor(this);
     if (!fragments.IsEmpty() &&
         fragments.IsInLayoutNGInlineFormattingContext()) {
       has_abstract_inline_text_box_ = true;
