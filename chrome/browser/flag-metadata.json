@@ -154,13 +154,9 @@
   {
     "name": "ash-debug-shortcuts",
     "owners": [ "//ash/OWNERS" ],
-    // Used by developers for debugging.
+    // Used by developers for debugging and to dump extra information to logs
+    // in official builds.
     "expiry_milestone": -1
-  },
-  {
-    "name": "ash-disable-login-dim-and-blur",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
   },
   {
     "name": "ash-enable-docked-magnifier",
@@ -189,8 +185,10 @@
   },
   {
     "name": "ash-enable-unified-desktop",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "//ash/OWNERS" ],
+    // Unified desktop can be enabled by enterprise policy. The switch exists in
+    // about:flags so QA can more easily test the feature.
+    "expiry_milestone": -1
   },
   {
     "name": "ash-shelf-color",
