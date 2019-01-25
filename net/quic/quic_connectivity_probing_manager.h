@@ -6,6 +6,7 @@
 #define NET_QUIC_QUIC_CONNECTIVITY_PROBING_MANAGER_H_
 
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "net/base/net_export.h"
 #include "net/log/net_log_with_source.h"
 #include "net/quic/quic_chromium_packet_reader.h"

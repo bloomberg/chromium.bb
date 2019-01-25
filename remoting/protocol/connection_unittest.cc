@@ -13,6 +13,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
+#include "base/timer/timer.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/audio.pb.h"
 #include "remoting/protocol/audio_source.h"

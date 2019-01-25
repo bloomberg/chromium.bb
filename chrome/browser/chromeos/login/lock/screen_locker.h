@@ -17,6 +17,7 @@
 #include "base/optional.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chromeos/login/auth/auth_status_consumer.h"

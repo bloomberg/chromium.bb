@@ -7,6 +7,7 @@
 
 #include "content/public/browser/overlay_window.h"
 
+#include "base/timer/timer.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/widget/widget.h"

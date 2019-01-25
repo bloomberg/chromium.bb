@@ -13,6 +13,7 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
+#include "base/timer/timer.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
 #include "net/base/net_errors.h"

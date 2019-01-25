@@ -8,6 +8,7 @@
 #include "ash/system/network/network_row_title_view.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
+#include "base/timer/timer.h"
 #include "chromeos/network/network_state_handler.h"
 #include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/layout/fill_layout.h"

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ui/webui/snippets_internals/snippets_internals.mojom.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider.h"

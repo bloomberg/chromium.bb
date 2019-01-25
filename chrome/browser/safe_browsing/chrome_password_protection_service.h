@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/observer_list.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "components/safe_browsing/password_protection/password_protection_service.h"
 #include "components/safe_browsing/triggers/trigger_manager.h"

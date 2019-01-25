@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/timer/timer.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "ui/base/ime/input_method.h"

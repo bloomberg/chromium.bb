@@ -8,6 +8,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/feature_list.h"
 #include "base/supports_user_data.h"
+#include "base/timer/timer.h"
 #include "components/safe_browsing/browser/referrer_chain_provider.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "components/sessions/core/session_id.h"

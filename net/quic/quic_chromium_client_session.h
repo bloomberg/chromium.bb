@@ -21,6 +21,7 @@
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_error_details.h"

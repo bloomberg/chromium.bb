@@ -9,6 +9,7 @@
 #include "ash/system/audio/unified_volume_slider_controller.h"
 #include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/unified/unified_system_tray_model.h"
+#include "base/timer/timer.h"
 #include "chromeos/audio/cras_audio_handler.h"
 
 namespace ash {

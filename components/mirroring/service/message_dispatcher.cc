@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "base/timer/timer.h"
 
 namespace mirroring {
 

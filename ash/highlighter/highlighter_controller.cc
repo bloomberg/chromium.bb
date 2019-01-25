@@ -17,6 +17,7 @@
 #include "ash/system/palette/palette_utils.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/timer/timer.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
