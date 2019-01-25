@@ -209,8 +209,6 @@ CALL_WITH_ARGUMENTS = {
     'Isolate': 'info.GetIsolate()',
     'ScriptState': 'script_state',
     'ExecutionContext': 'execution_context',
-    'CurrentWindow': 'CurrentDOMWindow(info.GetIsolate())',
-    'EnteredWindow': 'EnteredDOMWindow(info.GetIsolate())',
     'Document': 'document',
     'ThisValue': 'ScriptValue(script_state, info.Holder())',
 }
@@ -219,8 +217,6 @@ CALL_WITH_VALUES = [
     'Isolate',
     'ScriptState',
     'ExecutionContext',
-    'CurrentWindow',
-    'EnteredWindow',
     'Document',
     'ThisValue',
 ]

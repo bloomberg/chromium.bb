@@ -143,7 +143,9 @@ static void HrefCallWithAttributeSetter(
 
   ExecutionContext* execution_context = ExecutionContext::ForRelevantRealm(info);
 
-  impl->setHrefCallWith(execution_context, CurrentDOMWindow(info.GetIsolate()), EnteredDOMWindow(info.GetIsolate()), cpp_value);
+  ScriptState* script_state = ScriptState::ForRelevantRealm(info);
+
+  impl->setHrefCallWith(script_state, execution_context, cpp_value);
 }
 
 static void HrefByteStringAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
