@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/sync/password_sync_bridge.h"
 
+#include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -11,6 +12,7 @@
 #include "components/password_manager/core/browser/password_store_sync.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_type_change_processor.h"
+#include "components/sync/model_impl/in_memory_metadata_change_list.h"
 #include "components/sync/model_impl/sync_metadata_store_change_list.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"
@@ -52,6 +54,43 @@ sync_pb::PasswordSpecifics SpecificsFromPassword(
   return specifics;
 }
 
+autofill::PasswordForm PasswordFromEntityChange(
+    const syncer::EntityChange& entity_change,
+    base::Time sync_time) {
+  DCHECK(entity_change.data().specifics.has_password());
+  const sync_pb::PasswordSpecificsData& password_data =
+      entity_change.data().specifics.password().client_only_encrypted_data();
+
+  autofill::PasswordForm password;
+  password.scheme =
+      static_cast<autofill::PasswordForm::Scheme>(password_data.scheme());
+  password.signon_realm = password_data.signon_realm();
+  password.origin = GURL(password_data.origin());
+  password.action = GURL(password_data.action());
+  password.username_element =
+      base::UTF8ToUTF16(password_data.username_element());
+  password.password_element =
+      base::UTF8ToUTF16(password_data.password_element());
+  password.username_value = base::UTF8ToUTF16(password_data.username_value());
+  password.password_value = base::UTF8ToUTF16(password_data.password_value());
+  password.preferred = password_data.preferred();
+  password.date_created = base::Time::FromDeltaSinceWindowsEpoch(
+      // Use FromDeltaSinceWindowsEpoch because create_time_us has
+      // always used the Windows epoch.
+      base::TimeDelta::FromMicroseconds(password_data.date_created()));
+  password.blacklisted_by_user = password_data.blacklisted();
+  password.type =
+      static_cast<autofill::PasswordForm::Type>(password_data.type());
+  password.times_used = password_data.times_used();
+  password.display_name = base::UTF8ToUTF16(password_data.display_name());
+  password.icon_url = GURL(password_data.avatar_url());
+  password.federation_origin =
+      url::Origin::Create(GURL(password_data.federation_url()));
+  password.date_synced = sync_time;
+
+  return password;
+}
+
 std::unique_ptr<syncer::EntityData> CreateEntityData(
     const autofill::PasswordForm& form) {
   auto entity_data = std::make_unique<syncer::EntityData>();
@@ -59,6 +98,30 @@ std::unique_ptr<syncer::EntityData> CreateEntityData(
   entity_data->non_unique_name = form.signon_realm;
   return entity_data;
 }
+
+int ParsePrimaryKey(const std::string& storage_key) {
+  int primary_key = 0;
+  bool success = base::StringToInt(storage_key, &primary_key);
+  DCHECK(success)
+      << "Invalid storage key. Failed to convert the storage key to "
+         "an integer";
+  return primary_key;
+}
+
+// A simple class for scoping a password store sync transaction. This does not
+// support rollback since the password store sync doesn't either.
+class ScopedStoreTransaction {
+ public:
+  explicit ScopedStoreTransaction(PasswordStoreSync* store) : store_(store) {
+    store_->BeginTransaction();
+  }
+  ~ScopedStoreTransaction() { store_->CommitTransaction(); }
+
+ private:
+  PasswordStoreSync* store_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedStoreTransaction);
+};
 
 }  // namespace
 
@@ -86,8 +149,11 @@ void PasswordSyncBridge::ActOnPasswordStoreChanges(
     return;  // Sync processor not yet ready, don't sync.
   }
 
-  // TODO(mamir):ActOnPasswordStoreChanges() can be called from
-  // ApplySyncChanges(). Do nothing in this case.
+  // ActOnPasswordStoreChanges() can be called from ApplySyncChanges(). Do
+  // nothing in this case.
+  if (is_processing_remote_sync_changes_) {
+    return;
+  }
 
   syncer::SyncMetadataStoreChangeList metadata_change_list(
       password_store_sync_->GetMetadataStore(), syncer::PASSWORDS);
@@ -116,8 +182,7 @@ void PasswordSyncBridge::OnSyncStarting(
 
 std::unique_ptr<syncer::MetadataChangeList>
 PasswordSyncBridge::CreateMetadataChangeList() {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return std::make_unique<syncer::InMemoryMetadataChangeList>();
 }
 
 base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncData(
@@ -130,8 +195,87 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncData(
 base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_changes) {
-  NOTIMPLEMENTED();
-  return base::nullopt;
+  base::AutoReset<bool> processing_changes(&is_processing_remote_sync_changes_,
+                                           true);
+
+  const base::Time time_now = base::Time::Now();
+
+  // This is used to keep track of all the changes applied to the password store
+  // to notify other observers of the password store.
+  PasswordStoreChangeList password_store_changes;
+  base::Optional<syncer::ModelError> error;
+  {
+    ScopedStoreTransaction transaction(password_store_sync_);
+
+    for (const syncer::EntityChange& entity_change : entity_changes) {
+      PasswordStoreChangeList changes;
+      switch (entity_change.type()) {
+        case syncer::EntityChange::ACTION_ADD:
+          changes = password_store_sync_->AddLoginSync(
+              PasswordFromEntityChange(entity_change, /*sync_time=*/time_now));
+          // If the addition has been successful, inform the processor about the
+          // assigned storage key. AddLoginSync() might return multiple changes
+          // and the last one should be the one representing the actual addition
+          // in the DB.
+          if (changes.empty()) {
+            return syncer::ModelError(
+                FROM_HERE, "Failed to add an entry to the password store.");
+          }
+          DCHECK_EQ(1U, changes.size());
+          DCHECK_EQ(PasswordStoreChange::ADD, changes[0].type());
+          change_processor()->UpdateStorageKey(
+              entity_change.data(),
+              /*storage_key=*/
+              base::NumberToString(changes[0].primary_key()),
+              metadata_change_list.get());
+          break;
+        case syncer::EntityChange::ACTION_UPDATE:
+          changes = password_store_sync_->UpdateLoginSync(
+              PasswordFromEntityChange(entity_change, /*sync_time=*/time_now));
+          if (changes.empty()) {
+            return syncer::ModelError(
+                FROM_HERE, "Failed to update an entry in the password store.");
+          }
+          DCHECK_EQ(1U, changes.size());
+          DCHECK(changes[0].primary_key() ==
+                 ParsePrimaryKey(entity_change.storage_key()));
+          break;
+        case syncer::EntityChange::ACTION_DELETE: {
+          int primary_key = ParsePrimaryKey(entity_change.storage_key());
+          changes =
+              password_store_sync_->RemoveLoginByPrimaryKeySync(primary_key);
+          if (changes.empty()) {
+            return syncer::ModelError(
+                FROM_HERE,
+                "Failed to delete an entry from the password store.");
+          }
+          DCHECK_EQ(1U, changes.size());
+          DCHECK_EQ(changes[0].primary_key(), primary_key);
+          break;
+        }
+      }
+      password_store_changes.insert(password_store_changes.end(),
+                                    changes.begin(), changes.end());
+    }
+
+    // Persist the metadata changes.
+    // TODO(mamir): add some test coverage for the metadata persistence.
+    syncer::SyncMetadataStoreChangeList sync_metadata_store_change_list(
+        password_store_sync_->GetMetadataStore(), syncer::PASSWORDS);
+    // |metadata_change_list| must have been created via
+    // CreateMetadataChangeList() so downcasting is safe.
+    static_cast<syncer::InMemoryMetadataChangeList*>(metadata_change_list.get())
+        ->TransferChangesTo(&sync_metadata_store_change_list);
+    error = sync_metadata_store_change_list.TakeError();
+  }  // End of scoped transaction.
+
+  if (!password_store_changes.empty()) {
+    // It could be the case that there are no password store changes, and all
+    // changes are only metadata changes. In such case, no need to notify
+    // observers since they aren't interested in changes to sync metadata.
+    password_store_sync_->NotifyLoginsChanged(password_store_changes);
+  }
+  return error;
 }
 
 void PasswordSyncBridge::GetData(StorageKeyList storage_keys,
