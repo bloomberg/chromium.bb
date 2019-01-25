@@ -220,6 +220,29 @@ TEST_F(APIBindingJSUtilUnittest, TestSendRequestWithOptions) {
                                                 "callbackCalled"));
 }
 
+// Tests that arguments passed to sendRequest that won't serialize are
+// replaced with null. Regression test for https://crbug.com/924045.
+TEST_F(APIBindingJSUtilUnittest, TestSendRequestSerializationFailure) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  gin::Handle<APIBindingJSUtil> util = CreateUtil();
+  v8::Local<v8::Object> v8_util = util.ToV8().As<v8::Object>();
+
+  // Note: `undefined` and `1/0` fail to serialize with V8ValueConverter; they
+  // should instead be serialized to null values.
+  const char kSendRequest[] =
+      R"(obj.sendRequest('alpha.functionWithCallback',
+                         [undefined, 1/0, function() {}],
+                         undefined, undefined);)";
+  CallFunctionOnObject(context, v8_util, kSendRequest);
+  ASSERT_TRUE(last_request());
+  EXPECT_EQ("alpha.functionWithCallback", last_request()->method_name);
+  EXPECT_EQ("[null,null]", ValueToString(*last_request()->arguments));
+  EXPECT_EQ(binding::RequestThread::UI, last_request()->thread);
+  reset_last_request();
+}
+
 TEST_F(APIBindingJSUtilUnittest, TestCallHandleException) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
