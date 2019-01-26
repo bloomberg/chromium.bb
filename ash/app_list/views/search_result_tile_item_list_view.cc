@@ -14,7 +14,6 @@
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/app_list/views/search_result_tile_item_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "base/i18n/rtl.h"
@@ -62,7 +61,8 @@ SearchResultTileItemListView::SearchResultTileItemListView(
       separator->SetVisible(false);
       separator->SetBorder(views::CreateEmptyBorder(
           kSeparatorTopPadding, kSeparatorLeftRightPadding,
-          kSearchTileHeight - kSeparatorHeight, kSeparatorLeftRightPadding));
+          AppListConfig::instance().search_tile_height() - kSeparatorHeight,
+          kSeparatorLeftRightPadding));
       separator->SetColor(kSeparatorColor);
 
       separator_views_.push_back(separator);

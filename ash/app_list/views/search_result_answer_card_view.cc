@@ -12,7 +12,6 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/search_result_base_view.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"

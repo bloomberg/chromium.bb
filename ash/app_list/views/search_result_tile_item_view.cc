@@ -14,7 +14,6 @@
 #include "ash/app_list/pagination_model.h"
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "base/bind.h"
@@ -567,7 +566,8 @@ gfx::Size SearchResultTileItemView::CalculatePreferredSize() const {
                      AppListConfig::instance().grid_tile_height());
   }
 
-  return gfx::Size(kSearchTileWidth, kSearchTileHeight);
+  return gfx::Size(kSearchTileWidth,
+                   AppListConfig::instance().search_tile_height());
 }
 
 bool SearchResultTileItemView::GetTooltipText(const gfx::Point& p,

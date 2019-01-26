@@ -72,7 +72,8 @@ AppListConfig::AppListConfig()
       max_folder_name_chars_(28),
       all_apps_opacity_start_px_(8.0f),
       all_apps_opacity_end_px_(144.0f),
-      search_result_title_font_style_(ui::ResourceBundle::BaseFont) {}
+      search_result_title_font_style_(ui::ResourceBundle::BaseFont),
+      search_tile_height_(90) {}
 
 AppListConfig::~AppListConfig() = default;
 

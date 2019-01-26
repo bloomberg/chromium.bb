@@ -4,8 +4,8 @@
 
 #include "ash/app_list/pagination_controller.h"
 
+#include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/pagination_model.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/rect.h"

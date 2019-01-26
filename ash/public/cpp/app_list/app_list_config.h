@@ -120,6 +120,7 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   ui::ResourceBundle::FontStyle search_result_title_font_style() const {
     return search_result_title_font_style_;
   }
+  int search_tile_height() const { return search_tile_height_; }
 
   gfx::Size grid_icon_size() const {
     return gfx::Size(grid_icon_dimension_, grid_icon_dimension_);
@@ -340,6 +341,9 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   // Font style for AppListSearchResultTileItemViews that are not suggested
   // apps.
   const ui::ResourceBundle::FontStyle search_result_title_font_style_;
+
+  // The height of tiles in search result.
+  const int search_tile_height_ = 90;
 };
 
 }  // namespace app_list

@@ -15,7 +15,6 @@
 #include "ash/app_list/test/app_list_test_model.h"
 #include "ash/app_list/views/folder_header_view_delegate.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
