@@ -78,18 +78,6 @@ using {{enum|get_name_for_kind(flatten_nested_kind=True)}}_Data =
 {%-   endif %}
 {%- endfor %}
 
-{#--- Interface parameter definitions #}
-{%- for interface in interfaces %}
-{%-   for method in interface.methods %}
-{%-     set struct = method.param_struct %}
-{%      include "struct_declaration.tmpl" %}
-{%-     if method.response_parameters != None %}
-{%-       set struct = method.response_param_struct %}
-{%        include "struct_declaration.tmpl" %}
-{%-     endif %}
-{%-   endfor %}
-{%- endfor %}
-
 #pragma pack(pop)
 
 }  // namespace internal

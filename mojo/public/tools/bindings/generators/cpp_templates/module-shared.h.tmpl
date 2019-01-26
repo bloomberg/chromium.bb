@@ -140,18 +140,6 @@ using {{interface.name}}AssociatedRequestDataView =
 {%-   endif %}
 {%- endfor %}
 
-{#--- Interface parameter definitions #}
-{%- for interface in interfaces %}
-{%-   for method in interface.methods %}
-{%-     set struct = method.param_struct %}
-{%      include "struct_data_view_declaration.tmpl" %}
-{%-     if method.response_parameters != None %}
-{%-       set struct = method.response_param_struct %}
-{%        include "struct_data_view_declaration.tmpl" %}
-{%-     endif %}
-{%-   endfor %}
-{%- endfor %}
-
 {#--- Unions #}
 {%- for union in unions %}
 {%    include "union_data_view_declaration.tmpl" %}
@@ -201,17 +189,6 @@ namespace mojo {
 {%-   if not struct|is_native_only_kind %}
 {%      include "struct_data_view_definition.tmpl" %}
 {%-   endif %}
-{%- endfor %}
-
-{%- for interface in interfaces %}
-{%-   for method in interface.methods %}
-{%-     set struct = method.param_struct %}
-{%      include "struct_data_view_definition.tmpl" %}
-{%-     if method.response_parameters != None %}
-{%-       set struct = method.response_param_struct %}
-{%        include "struct_data_view_definition.tmpl" %}
-{%-     endif %}
-{%-   endfor %}
 {%- endfor %}
 
 {%- for union in unions %}
