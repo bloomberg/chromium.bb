@@ -404,6 +404,10 @@ class Generator(generator.Generator):
   def _GenerateModuleTestUtilsSource(self):
     return self._GetJinjaExports()
 
+  @UseJinja("module-params-data.h.tmpl")
+  def _GenerateModuleParamsDataHeader(self):
+    return self._GetJinjaExports()
+
   def GenerateFiles(self, args):
     self.module.Stylize(generator.Stylizer())
 
@@ -418,6 +422,8 @@ class Generator(generator.Generator):
                    "%s-shared-internal.h" % self.module.path)
         self.Write(self._GenerateModuleSharedSource(),
                    "%s-shared.cc" % self.module.path)
+        self.Write(self._GenerateModuleParamsDataHeader(),
+                   "%s-params-data.h" % self.module.path)
     else:
       suffix = "-%s" % self.variant if self.variant else ""
       self.Write(self._GenerateModuleHeader(),

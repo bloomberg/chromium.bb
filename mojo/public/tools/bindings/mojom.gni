@@ -617,6 +617,7 @@ template("mojom") {
     }
 
     generator_shared_cpp_outputs = [
+      "{{source_gen_dir}}/{{source_file_part}}-params-data.h",
       "{{source_gen_dir}}/{{source_file_part}}-shared-internal.h",
       "{{source_gen_dir}}/{{source_file_part}}-shared.cc",
       "{{source_gen_dir}}/{{source_file_part}}-shared.h",
@@ -638,6 +639,7 @@ template("mojom") {
       foreach(source, invoker.sources) {
         filelist += [ rebase_path("$source", root_build_dir) ]
         outputs += [
+          "$target_gen_dir/$source-params-data.h",
           "$target_gen_dir/$source-shared-internal.h",
           "$target_gen_dir/$source-shared.cc",
           "$target_gen_dir/$source-shared.h",
