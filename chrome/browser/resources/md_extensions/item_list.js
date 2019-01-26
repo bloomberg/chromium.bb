@@ -52,7 +52,8 @@ cr.define('extensions', function() {
      * @return {?Element}
      */
     getDetailsButton: function(id) {
-      return this.$$(`#${id}`).getDetailsButton();
+      const item = this.$$(`#${id}`);
+      return item && item.getDetailsButton();
     },
 
     /**
@@ -60,7 +61,8 @@ cr.define('extensions', function() {
      * @return {?Element}
      */
     getErrorsButton: function(id) {
-      return this.$$(`#${id}`).getErrorsButton();
+      const item = this.$$(`#${id}`);
+      return item && item.getErrorsButton();
     },
 
     /**
