@@ -729,3 +729,31 @@ class SymlinkTest(image_test_lib.ImageTestCase):
     for (source, target) in failures:
       logging.error('Insecure symlink: %s -> %s', source, target)
     self.assertEqual(0, len(failures))
+
+
+class PermissionTest(image_test_lib.ImageTestCase):
+  """Verify file permissions."""
+
+  def TestNoExecutableInFirmwareFolder(self):
+    """Ensure all files in ROOT-A/lib/firmware are not executable.
+
+    Files under ROOT-A/lib/firmware will be whitelisted in
+    "TestImportedSymbolsAreAvailable".
+    """
+    firmware_path = os.path.join(image_test_lib.ROOT_A, 'lib', 'firmware')
+
+    success = True
+    for root, _, filenames in os.walk(firmware_path):
+      for filename in filenames:
+        full_name = os.path.join(root, filename)
+        # We check symlinks in SymlinkTest, so no need to recheck here.
+        if os.path.islink(full_name) or not os.path.isfile(full_name):
+          continue
+
+        st = os.stat(full_name)
+        if st.st_mode & 0o111:
+          success = False
+          logging.error('Executable file not allowed in /lib/firmware: %s.',
+                        filename)
+
+    self.assertTrue(success)
