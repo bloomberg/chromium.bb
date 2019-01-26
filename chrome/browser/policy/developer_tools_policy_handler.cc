@@ -218,6 +218,12 @@ DeveloperToolsPolicyHandler::GetDevToolsAvailability(
 }
 
 // static
+bool DeveloperToolsPolicyHandler::IsDevToolsAvailabilitySetByPolicy(
+    const PrefService* pref_service) {
+  return pref_service->IsManagedPreference(prefs::kDevToolsAvailability);
+}
+
+// static
 DeveloperToolsPolicyHandler::Availability
 DeveloperToolsPolicyHandler::GetMostRestrictiveAvailability(
     Availability availability_1,
