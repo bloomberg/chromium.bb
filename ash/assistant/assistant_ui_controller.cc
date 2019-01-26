@@ -11,6 +11,8 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/assistant/util/histogram_util.h"
+#include "ash/multi_user/multi_user_window_manager.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/toast/toast_data.h"
@@ -277,6 +279,20 @@ void AssistantUiController::OnUiVisibilityChanged(
           container_view_->GetWidget()->GetNativeWindow()->GetRootWindow();
       event_monitor_ = views::EventMonitor::CreateWindowMonitor(
           this, root_window, {ui::ET_MOUSE_PRESSED, ui::ET_TOUCH_PRESSED});
+
+      // We also want to associate the window for Assistant UI with the active
+      // user so that we don't leak across user sessions.
+      auto* window_manager = MultiUserWindowManager::Get();
+      if (window_manager) {
+        const mojom::UserSession* user_session =
+            Shell::Get()->session_controller()->GetUserSession(0);
+        if (user_session) {
+          window_manager->SetWindowOwner(
+              container_view_->GetWidget()->GetNativeWindow(),
+              user_session->user_info->account_id,
+              /*show_for_current_user=*/true);
+        }
+      }
 
       // Only record the entry point when Assistant UI becomes visible.
       assistant::util::RecordAssistantEntryPoint(entry_point.value());
