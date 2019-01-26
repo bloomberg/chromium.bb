@@ -325,8 +325,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
                 "Mock device", media::AudioParameters::kAudioCDSampleRate,
                 media::CHANNEL_LAYOUT_STEREO,
                 media::AudioParameters::kAudioCDSampleRate / 100),
-            false /* hotword_enabled */, false /* disable_local_echo */,
-            AudioProcessingProperties(),
+            false /* disable_local_echo */, AudioProcessingProperties(),
             base::Bind(&RTCPeerConnectionHandlerTest::OnAudioSourceStarted),
             mock_dependency_factory_.get());
     audio_source->SetAllowInvalidRenderFrameIdForTesting(true);

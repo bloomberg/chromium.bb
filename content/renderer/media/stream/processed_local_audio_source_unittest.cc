@@ -105,8 +105,7 @@ class ProcessedLocalAudioSourceTest : public testing::Test {
                                      "mock_audio_device_id",
                                      "Mock audio device", kSampleRate,
                                      kChannelLayout, kRequestedBufferSize),
-            false /* hotword_enabled */, false /* disable_local_echo */,
-            properties,
+            false /* disable_local_echo */, properties,
             base::Bind(&ProcessedLocalAudioSourceTest::OnAudioSourceStarted,
                        base::Unretained(this)),
             &mock_dependency_factory_);

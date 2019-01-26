@@ -157,7 +157,6 @@ class CONTENT_EXPORT VideoCaptureSettings {
 //     getSettings() for device-related properties such as sampleRate and
 //     channelCount.
 // The following fields are used to control various audio features:
-//   * hotword_enabled
 //   * disable_local_echo
 //   * render_to_associated_sink
 // The audio_properties field is used to control the audio-processing module,
@@ -190,7 +189,6 @@ class CONTENT_EXPORT AudioCaptureSettings {
   // Creates an object with the given values.
   explicit AudioCaptureSettings(
       std::string device_id,
-      bool enable_hotword,
       bool disable_local_echo,
       bool enable_automatic_output_device_selection,
       const AudioProcessingProperties& audio_processing_properties);
@@ -206,10 +204,6 @@ class CONTENT_EXPORT AudioCaptureSettings {
   const std::string& device_id() const {
     DCHECK(HasValue());
     return device_id_;
-  }
-  bool hotword_enabled() const {
-    DCHECK(HasValue());
-    return hotword_enabled_;
   }
   bool disable_local_echo() const {
     DCHECK(HasValue());
@@ -227,7 +221,6 @@ class CONTENT_EXPORT AudioCaptureSettings {
  private:
   const char* failed_constraint_name_;
   std::string device_id_;
-  bool hotword_enabled_;
   bool disable_local_echo_;
   bool render_to_associated_sink_;
   AudioProcessingProperties audio_processing_properties_;

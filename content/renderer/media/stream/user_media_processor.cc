@@ -554,8 +554,6 @@ void UserMediaProcessor::SelectAudioSettings(
       settings.device_id();
   current_request_info_->stream_controls()->disable_local_echo =
       settings.disable_local_echo();
-  current_request_info_->stream_controls()->hotword_enabled =
-      settings.hotword_enabled();
   current_request_info_->SetAudioCaptureSettings(
       settings,
       !IsDeviceMediaType(
@@ -1008,14 +1006,14 @@ std::unique_ptr<MediaStreamAudioSource> UserMediaProcessor::CreateAudioSource(
       !MediaStreamAudioProcessor::WouldModifyAudio(
           audio_processing_properties)) {
     return std::make_unique<LocalMediaStreamAudioSource>(
-        render_frame_->GetRoutingID(), device, stream_controls->hotword_enabled,
+        render_frame_->GetRoutingID(), device,
         stream_controls->disable_local_echo, source_ready);
   }
 
   // The audio device is not associated with screen capture and also requires
   // processing.
   return std::make_unique<ProcessedLocalAudioSource>(
-      render_frame_->GetRoutingID(), device, stream_controls->hotword_enabled,
+      render_frame_->GetRoutingID(), device,
       stream_controls->disable_local_echo, audio_processing_properties,
       source_ready, dependency_factory_);
 }

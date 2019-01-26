@@ -88,7 +88,6 @@ class CONTENT_EXPORT MediaStreamAudioSource
  public:
   explicit MediaStreamAudioSource(bool is_local_source);
   MediaStreamAudioSource(bool is_local_source,
-                         bool hotword_enabled,
                          bool disable_local_echo);
   ~MediaStreamAudioSource() override;
 
@@ -120,7 +119,6 @@ class CONTENT_EXPORT MediaStreamAudioSource
   media::AudioParameters GetAudioParameters() const;
 
   // These accessors return properties that are controlled via constraints.
-  bool hotword_enabled() const { return hotword_enabled_; }
   bool disable_local_echo() const { return disable_local_echo_; }
   bool RenderToAssociatedSinkEnabled() const;
 
@@ -193,7 +191,6 @@ class CONTENT_EXPORT MediaStreamAudioSource
   const bool is_local_source_;
 
   // Properties controlled by audio constraints.
-  const bool hotword_enabled_;
   const bool disable_local_echo_;
 
   // Set to true once this source has been permanently stopped.

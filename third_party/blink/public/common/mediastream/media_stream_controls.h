@@ -50,7 +50,7 @@ struct BLINK_COMMON_EXPORT StreamControls {
   TrackControls audio;
   TrackControls video;
   // Hotword functionality (chromeos only)
-  // See crbug.com/564574 for discussion on possibly #ifdef'ing this out.
+  // TODO(crbug.com/577627): this is now never set and needs to be removed.
   bool hotword_enabled = false;
   bool disable_local_echo = false;
 };

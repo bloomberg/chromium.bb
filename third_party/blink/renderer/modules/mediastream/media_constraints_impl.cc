@@ -81,7 +81,6 @@ const char kMediaStreamRenderToAssociatedSink[] =
     "chromeRenderToAssociatedSink";
 // RenderToAssociatedSink will be going away some time.
 const char kMediaStreamAudioHotword[] = "googHotword";
-// TODO(hta): googHotword should go away. https://crbug.com/577627
 const char kEchoCancellation[] = "echoCancellation";
 const char kDisableLocalEcho[] = "disableLocalEcho";
 const char kGoogEchoCancellation[] = "googEchoCancellation";
@@ -308,8 +307,6 @@ static void ParseOldStyleNames(
       // Should give TypeError when it's not parseable.
       // https://crbug.com/576582
       result.render_to_associated_sink.SetExact(ToBoolean(constraint.value_));
-    } else if (constraint.name_.Equals(kMediaStreamAudioHotword)) {
-      result.hotword_enabled.SetExact(ToBoolean(constraint.value_));
     } else if (constraint.name_.Equals(kGoogEchoCancellation)) {
       result.goog_echo_cancellation.SetExact(ToBoolean(constraint.value_));
     } else if (constraint.name_.Equals(kGoogExperimentalEchoCancellation)) {
@@ -416,7 +413,8 @@ static void ParseOldStyleNames(
     } else if (constraint.name_.Equals(kGoogLeakyBucket) ||
                constraint.name_.Equals(kGoogBeamforming) ||
                constraint.name_.Equals(kGoogArrayGeometry) ||
-               constraint.name_.Equals(kPowerLineFrequency)) {
+               constraint.name_.Equals(kPowerLineFrequency) ||
+               constraint.name_.Equals(kMediaStreamAudioHotword)) {
       // TODO(crbug.com/856176): Remove the kGoogBeamforming and
       // kGoogArrayGeometry special cases.
       context->AddConsoleMessage(ConsoleMessage::Create(

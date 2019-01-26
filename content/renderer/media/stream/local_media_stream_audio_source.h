@@ -26,7 +26,6 @@ class CONTENT_EXPORT LocalMediaStreamAudioSource
   // ID are read from |device_info|.
   LocalMediaStreamAudioSource(int consumer_render_frame_id,
                               const blink::MediaStreamDevice& device,
-                              bool hotword_enabled,
                               bool disable_local_echo,
                               const ConstraintsCallback& started_callback);
 

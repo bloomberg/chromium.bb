@@ -164,10 +164,6 @@ void CountAudioConstraintUses(ExecutionContext* context,
     counter.Count(WebFeature::kMediaStreamConstraintsRenderToAssociatedSink);
   }
   if (RequestUsesDiscreteConstraint(
-          constraints, &WebMediaTrackConstraintSet::hotword_enabled)) {
-    counter.Count(WebFeature::kMediaStreamConstraintsHotwordEnabled);
-  }
-  if (RequestUsesDiscreteConstraint(
           constraints, &WebMediaTrackConstraintSet::goog_echo_cancellation)) {
     counter.Count(WebFeature::kMediaStreamConstraintsGoogEchoCancellation);
   }
