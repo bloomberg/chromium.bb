@@ -467,8 +467,12 @@ FlagSearch.prototype = {
   }
 };
 
-// Get and display the data upon loading.
-document.addEventListener('DOMContentLoaded', requestExperimentalFeaturesData);
+document.addEventListener('DOMContentLoaded', function() {
+  // Get and display the data upon loading.
+  requestExperimentalFeaturesData();
+
+  cr.ui.FocusOutlineManager.forDocument(document);
+});
 
 // Update the highlighted flag when the hash changes.
 window.addEventListener('hashchange', highlightReferencedFlag);
