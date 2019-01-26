@@ -211,7 +211,9 @@ HostResolver::RequestInfoToResolveHostParameters(
       AddressFamilyToDnsQueryType(request_info.address_family());
   parameters.initial_priority = priority;
   parameters.source = FlagsToSource(request_info.host_resolver_flags());
-  parameters.allow_cached_response = request_info.allow_cached_response();
+  parameters.cache_usage = request_info.allow_cached_response()
+                               ? ResolveHostParameters::CacheUsage::ALLOWED
+                               : ResolveHostParameters::CacheUsage::DISALLOWED;
   parameters.include_canonical_name =
       request_info.host_resolver_flags() & HOST_RESOLVER_CANONNAME;
   parameters.loopback_only =

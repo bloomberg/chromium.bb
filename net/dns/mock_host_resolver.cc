@@ -128,7 +128,15 @@ class MockHostResolverBase::RequestImpl
     return *nullopt_result;
   }
 
-  void set_address_results(const AddressList& address_results) {
+  const base::Optional<HostCache::EntryStaleness>& GetStaleInfo()
+      const override {
+    DCHECK(complete_);
+    return staleness_;
+  }
+
+  void set_address_results(
+      const AddressList& address_results,
+      base::Optional<HostCache::EntryStaleness> staleness) {
     // Should only be called at most once and before request is marked
     // completed.
     DCHECK(!complete_);
@@ -136,6 +144,7 @@ class MockHostResolverBase::RequestImpl
     DCHECK(!parameters_.is_speculative);
 
     address_results_ = address_results;
+    staleness_ = std::move(staleness);
   }
 
   void OnAsyncCompleted(size_t id, int error) {
@@ -177,6 +186,7 @@ class MockHostResolverBase::RequestImpl
   int host_resolver_flags_;
 
   base::Optional<AddressList> address_results_;
+  base::Optional<HostCache::EntryStaleness> staleness_;
 
   // Used while stored with the resolver for async resolution.  Otherwise 0.
   size_t id_;
@@ -357,10 +367,14 @@ int MockHostResolverBase::ResolveFromCache(const RequestInfo& info,
   num_resolve_from_cache_++;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   next_request_id_++;
+  base::Optional<HostCache::EntryStaleness> stale_info;
   int rv = ResolveFromIPLiteralOrCache(
       info.host_port_pair(), AddressFamilyToDnsQueryType(info.address_family()),
       info.host_resolver_flags(), HostResolverSource::ANY,
-      info.allow_cached_response(), addresses);
+      info.allow_cached_response()
+          ? HostResolver::ResolveHostParameters::CacheUsage::ALLOWED
+          : HostResolver::ResolveHostParameters::CacheUsage::DISALLOWED,
+      addresses, &stale_info);
   return rv;
 }
 
@@ -373,15 +387,21 @@ MockHostResolverBase::CreateMdnsListener(const HostPortPair& host,
 int MockHostResolverBase::ResolveStaleFromCache(
     const RequestInfo& info,
     AddressList* addresses,
-    HostCache::EntryStaleness* stale_info,
+    HostCache::EntryStaleness* out_stale_info,
     const NetLogWithSource& net_log) {
   num_resolve_from_cache_++;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   next_request_id_++;
+  base::Optional<HostCache::EntryStaleness> stale_info;
   int rv = ResolveFromIPLiteralOrCache(
       info.host_port_pair(), AddressFamilyToDnsQueryType(info.address_family()),
       info.host_resolver_flags(), HostResolverSource::ANY,
-      info.allow_cached_response(), addresses, stale_info);
+      info.allow_cached_response()
+          ? HostResolver::ResolveHostParameters::CacheUsage::STALE_ALLOWED
+          : HostResolver::ResolveHostParameters::CacheUsage::DISALLOWED,
+      addresses, &stale_info);
+  if (rv == OK)
+    *out_stale_info = std::move(stale_info).value_or(HostCache::kNotStale);
   return rv;
 }
 
@@ -423,7 +443,7 @@ void MockHostResolverBase::ResolveNow(size_t id) {
       DnsQueryTypeToAddressFamily(req->parameters().dns_query_type),
       req->host_resolver_flags(), req->parameters().source, &addresses);
   if (error == OK && !req->parameters().is_speculative)
-    req->set_address_results(addresses);
+    req->set_address_results(addresses, base::nullopt);
   req->OnAsyncCompleted(id, error);
 }
 
@@ -513,12 +533,13 @@ int MockHostResolverBase::Resolve(RequestImpl* request) {
   last_request_priority_ = request->parameters().initial_priority;
   num_resolve_++;
   AddressList addresses;
+  base::Optional<HostCache::EntryStaleness> stale_info;
   int rv = ResolveFromIPLiteralOrCache(
       request->request_host(), request->parameters().dns_query_type,
       request->host_resolver_flags(), request->parameters().source,
-      request->parameters().allow_cached_response, &addresses);
+      request->parameters().cache_usage, &addresses, &stale_info);
   if (rv == OK && !request->parameters().is_speculative)
-    request->set_address_results(addresses);
+    request->set_address_results(addresses, std::move(stale_info));
   if (rv != ERR_DNS_CACHE_MISS)
     return rv;
 
@@ -534,7 +555,7 @@ int MockHostResolverBase::Resolve(RequestImpl* request) {
         request->host_resolver_flags(), request->parameters().source,
         &addresses);
     if (rv == OK && !request->parameters().is_speculative)
-      request->set_address_results(addresses);
+      request->set_address_results(addresses, base::nullopt);
     return rv;
   }
 
@@ -557,9 +578,13 @@ int MockHostResolverBase::ResolveFromIPLiteralOrCache(
     DnsQueryType dns_query_type,
     HostResolverFlags flags,
     HostResolverSource source,
-    bool allow_cache,
+    HostResolver::ResolveHostParameters::CacheUsage cache_usage,
     AddressList* addresses,
-    HostCache::EntryStaleness* stale_info) {
+    base::Optional<HostCache::EntryStaleness>* out_stale_info) {
+  DCHECK(addresses);
+  DCHECK(out_stale_info);
+  *out_stale_info = base::nullopt;
+
   IPAddress ip_address;
   if (ip_address.AssignFromIPLiteral(host.host())) {
     // This matches the behavior HostResolverImpl.
@@ -575,18 +600,27 @@ int MockHostResolverBase::ResolveFromIPLiteralOrCache(
     return OK;
   }
   int rv = ERR_DNS_CACHE_MISS;
-  if (cache_.get() && allow_cache) {
+  bool cache_allowed =
+      cache_usage == HostResolver::ResolveHostParameters::CacheUsage::ALLOWED ||
+      cache_usage ==
+          HostResolver::ResolveHostParameters::CacheUsage::STALE_ALLOWED;
+  if (cache_.get() && cache_allowed) {
     HostCache::Key key(host.host(), dns_query_type, flags, source);
     const HostCache::Entry* entry;
-    if (stale_info)
-      entry = cache_->LookupStale(key, tick_clock_->NowTicks(), stale_info);
-    else
+    HostCache::EntryStaleness stale_info = HostCache::kNotStale;
+    if (cache_usage ==
+        HostResolver::ResolveHostParameters::CacheUsage::STALE_ALLOWED) {
+      entry = cache_->LookupStale(key, tick_clock_->NowTicks(), &stale_info);
+    } else {
       entry = cache_->Lookup(key, tick_clock_->NowTicks());
+    }
     if (entry) {
       rv = entry->error();
-      if (rv == OK)
+      if (rv == OK) {
         *addresses =
             AddressList::CopyWithPort(entry->addresses().value(), host.port());
+        *out_stale_info = std::move(stale_info);
+      }
     }
   }
   return rv;
@@ -885,6 +919,11 @@ class HangingHostResolver::RequestImpl
   }
 
   const base::Optional<std::vector<HostPortPair>>& GetHostnameResults()
+      const override {
+    IMMEDIATE_CRASH();
+  }
+
+  const base::Optional<HostCache::EntryStaleness>& GetStaleInfo()
       const override {
     IMMEDIATE_CRASH();
   }

@@ -162,7 +162,10 @@ class DnsRequest {
     }
 #endif  // !BUILDFLAG(ENABLE_MDNS)
 
-    parameters.allow_cached_response = data_provider_->ConsumeBool();
+    parameters.cache_usage =
+        data_provider_->ConsumeBool()
+            ? net::HostResolver::ResolveHostParameters::CacheUsage::ALLOWED
+            : net::HostResolver::ResolveHostParameters::CacheUsage::DISALLOWED;
     parameters.include_canonical_name = data_provider_->ConsumeBool();
 
     const char* hostname = data_provider_->PickValueInArray(kHostNames);

@@ -350,6 +350,10 @@ base::DictionaryValue HostCache::Entry::GetAsValue(
   return entry_dict;
 }
 
+// static
+const HostCache::EntryStaleness HostCache::kNotStale = {
+    base::TimeDelta::FromSeconds(-1), 0, 0};
+
 HostCache::HostCache(size_t max_entries)
     : max_entries_(max_entries),
       network_changes_(0),

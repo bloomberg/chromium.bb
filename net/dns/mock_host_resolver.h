@@ -217,9 +217,9 @@ class MockHostResolverBase
       DnsQueryType dns_query_type,
       HostResolverFlags flags,
       HostResolverSource source,
-      bool allow_cache,
+      HostResolver::ResolveHostParameters::CacheUsage cache_usage,
       AddressList* addresses,
-      HostCache::EntryStaleness* stale_info = nullptr);
+      base::Optional<HostCache::EntryStaleness>* stale_info);
   // Resolve via |proc_|.
   int ResolveProc(const HostPortPair& host,
                   AddressFamily requested_address_family,

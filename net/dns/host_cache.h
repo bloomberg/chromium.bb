@@ -238,6 +238,9 @@ class NET_EXPORT HostCache {
 
   using EntryMap = std::map<Key, Entry>;
 
+  // A HostCache::EntryStaleness representing a non-stale (fresh) cache entry.
+  static const HostCache::EntryStaleness kNotStale;
+
   // Constructs a HostCache that stores up to |max_entries|.
   explicit HostCache(size_t max_entries);
 

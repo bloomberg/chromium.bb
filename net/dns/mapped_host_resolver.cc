@@ -40,6 +40,13 @@ class MappedHostResolver::AlwaysErrorRequestImpl
     return *nullopt_result;
   }
 
+  const base::Optional<HostCache::EntryStaleness>& GetStaleInfo()
+      const override {
+    static const base::NoDestructor<base::Optional<HostCache::EntryStaleness>>
+        nullopt_result;
+    return *nullopt_result;
+  }
+
  private:
   const int error_;
 };

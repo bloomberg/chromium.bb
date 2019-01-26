@@ -251,23 +251,23 @@ class NET_EXPORT HostResolverImpl
   // sources.
   //
   // On ERR_DNS_CACHE_MISS and OK, the cache key for the request is written to
-  // |key|. On other errors, it may not be.
+  // |out_key|. On other errors, it may not be.
   //
-  // If |allow_stale| is true, then stale cache entries can be returned.
-  // |stale_info| must be non-null, and will be filled in with details of the
-  // entry's staleness (if an entry is returned).
+  // If results are returned from the host cache, |out_stale_info| will be
+  // filled in with information on how stale or fresh the result is. Otherwise,
+  // |out_stale_info| will be set to |base::nullopt|.
   //
-  // If |allow_stale| is false, then stale cache entries will not be returned,
-  // and |stale_info| must be null.
-  HostCache::Entry ResolveLocally(const std::string& hostname,
-                                  DnsQueryType requested_address_family,
-                                  HostResolverSource source,
-                                  HostResolverFlags flags,
-                                  bool allow_cache,
-                                  bool allow_stale,
-                                  HostCache::EntryStaleness* stale_info,
-                                  const NetLogWithSource& request_net_log,
-                                  Key* out_key);
+  // If |cache_usage == ResolveHostParameters::CacheUsage::STALE_ALLOWED|, then
+  // stale cache entries can be returned.
+  HostCache::Entry ResolveLocally(
+      const std::string& hostname,
+      DnsQueryType requested_address_family,
+      HostResolverSource source,
+      HostResolverFlags flags,
+      ResolveHostParameters::CacheUsage cache_usage,
+      const NetLogWithSource& request_net_log,
+      Key* out_key,
+      base::Optional<HostCache::EntryStaleness>* out_stale_info);
 
   // Attempts to create and start a Job to asynchronously attempt to resolve
   // |key|. On success, returns ERR_IO_PENDING and attaches the Job to
@@ -280,17 +280,15 @@ class NET_EXPORT HostResolverImpl
                                                const IPAddress* ip_address);
 
   // Returns the result iff a positive match is found for |key| in the cache.
+  // |out_stale_info| must be non-null, and will be filled in with details of
+  // the entry's staleness if an entry is returned, otherwise it will be set to
+  // |base::nullopt|.
   //
   // If |allow_stale| is true, then stale cache entries can be returned.
-  // |stale_info| must be non-null, and will be filled in with details of the
-  // entry's staleness (if an entry is returned).
-  //
-  // If |allow_stale| is false, then stale cache entries will not be returned,
-  // and |stale_info| must be null.
   base::Optional<HostCache::Entry> ServeFromCache(
       const Key& key,
       bool allow_stale,
-      HostCache::EntryStaleness* stale_info);
+      base::Optional<HostCache::EntryStaleness>* out_stale_info);
 
   // Iff we have a DnsClient with a valid DnsConfig, and |key| can be resolved
   // from the HOSTS file, return the results.

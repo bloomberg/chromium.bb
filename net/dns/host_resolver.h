@@ -109,6 +109,15 @@ class NET_EXPORT HostResolver {
     // |ERR_IO_PENDING|.
     virtual const base::Optional<std::vector<HostPortPair>>&
     GetHostnameResults() const = 0;
+
+    // Information about the result's staleness in the host cache. Only
+    // available if results were received from the host cache.
+    //
+    // Should only be called after Start() signals completion, either by
+    // invoking the callback or by returning a result other than
+    // |ERR_IO_PENDING|.
+    virtual const base::Optional<HostCache::EntryStaleness>& GetStaleInfo()
+        const = 0;
   };
 
   // |max_concurrent_resolves| is how many resolve requests will be allowed to
@@ -222,8 +231,18 @@ class NET_EXPORT HostResolver {
     // IP literals, etc.
     HostResolverSource source = HostResolverSource::ANY;
 
-    // If |false|, results will not come from the host cache.
-    bool allow_cached_response = true;
+    enum class CacheUsage {
+      // Results may come from the host cache if non-stale.
+      ALLOWED,
+
+      // Results may come from the host cache even if stale (by expiration or
+      // network changes).
+      STALE_ALLOWED,
+
+      // Results will not come from the host cache.
+      DISALLOWED,
+    };
+    CacheUsage cache_usage = CacheUsage::ALLOWED;
 
     // If |true|, requests that the resolver include AddressList::canonical_name
     // in the results. If the resolver can do so without significant
@@ -335,7 +354,7 @@ class NET_EXPORT HostResolver {
   // Profiling information for the request is saved to |net_log| if non-NULL.
   //
   // TODO(crbug.com/821021): Delete this method once all usage has been
-  // converted to ResolveHost().
+  // converted to CreateRequest().
   virtual int Resolve(const RequestInfo& info,
                       RequestPriority priority,
                       AddressList* addresses,
@@ -343,17 +362,36 @@ class NET_EXPORT HostResolver {
                       std::unique_ptr<Request>* out_req,
                       const NetLogWithSource& net_log) = 0;
 
+  // DEPRECATION NOTE: This method is being replaced by CreateRequest(). New
+  // callers should prefer CreateRequest() if it works for their needs. Calling
+  // CreateRequest() with
+  // |parameters.source = HostResolverSource::LOCAL_ONLY| should provide
+  // capabilities equivalent to ResolveFromCache().
+  //
   // Resolves the given hostname (or IP address literal) out of cache or HOSTS
   // file (if enabled) only. This is guaranteed to complete synchronously.
   // This acts like |Resolve()| if the hostname is IP literal, or cached value
   // or HOSTS entry exists. Otherwise, ERR_DNS_CACHE_MISS is returned.
+  //
+  // TODO(crbug.com/821021): Delete this method once all usage has been
+  // converted to CreateRequest().
   virtual int ResolveFromCache(const RequestInfo& info,
                                AddressList* addresses,
                                const NetLogWithSource& net_log) = 0;
 
+  // DEPRECATION NOTE: This method is being replaced by CreateRequest(). New
+  // callers should prefer CreateRequest() if it works for their needs. Calling
+  // CreateRequest() with
+  // |parameters.source = HostResolverSource::LOCAL_ONLY| and
+  // |parameters.cache_usage = ResolveHostParameters::CacheUsage::STALE_ALLOWED|
+  // should provide capabilities equivalent to ResolveStaleFromCache()
+  //
   // Like |ResolveFromCache()|, but can return a stale result if the
   // implementation supports it. Fills in |*stale_info| if a response is
   // returned to indicate how stale (or not) it is.
+  //
+  // TODO(crbug.com/821021): Delete this method once all usage has been
+  // converted to CreateRequest().
   virtual int ResolveStaleFromCache(const RequestInfo& info,
                                     AddressList* addresses,
                                     HostCache::EntryStaleness* stale_info,

@@ -34,7 +34,10 @@ ConvertOptionalParameters(
   parameters.dns_query_type = mojo_parameters->dns_query_type;
   parameters.initial_priority = mojo_parameters->initial_priority;
   parameters.source = mojo_parameters->source;
-  parameters.allow_cached_response = mojo_parameters->allow_cached_response;
+  parameters.cache_usage =
+      mojo_parameters->allow_cached_response
+          ? net::HostResolver::ResolveHostParameters::CacheUsage::ALLOWED
+          : net::HostResolver::ResolveHostParameters::CacheUsage::DISALLOWED;
   parameters.include_canonical_name = mojo_parameters->include_canonical_name;
   parameters.loopback_only = mojo_parameters->loopback_only;
   parameters.is_speculative = mojo_parameters->is_speculative;
