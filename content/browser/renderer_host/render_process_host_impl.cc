@@ -232,6 +232,11 @@
 #include "content/browser/compositor/image_transport_factory.h"
 #endif
 
+#if defined(OS_LINUX)
+#include <sys/resource.h>
+#include <sys/time.h>
+#endif
+
 #if defined(OS_MACOSX)
 #include "content/browser/mach_broker_mac.h"
 #endif
@@ -1314,6 +1319,29 @@ void AddCorbExceptionForPluginOnIOThread(int process_id) {
       base::BindOnce(&AddCorbExceptionForPluginOnUIThread, process_id));
 }
 
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+static constexpr size_t kUnknownPlatformProcessLimit = 0;
+
+// Returns the process limit from the system. Use |kUnknownPlatformProcessLimit|
+// to indicate failure and std::numeric_limits<size_t>::max() to indicate
+// unlimited.
+size_t GetPlatformProcessLimit() {
+#if defined(OS_LINUX)
+  struct rlimit limit;
+  static_assert(sizeof(size_t) >= sizeof(limit.rlim_cur),
+                "rlim_t does not fit in size_t");
+
+  if (getrlimit(RLIMIT_NPROC, &limit) != 0)
+    return kUnknownPlatformProcessLimit;
+  return limit.rlim_cur != RLIM_INFINITY ? limit.rlim_cur
+                                         : std::numeric_limits<size_t>::max();
+#else
+  // TODO(https://crbug.com/104689): Implement on other platforms.
+  return kUnknownPlatformProcessLimit;
+#endif  // defined(OS_LINUX)
+}
+#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+
 }  // namespace
 
 // Held by the RPH and used to control an (unowned) ConnectionFilterImpl from
@@ -1419,8 +1447,15 @@ RenderProcessHostImpl::GetInProcessRendererThreadTaskRunnerForTesting() {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 // static
 size_t RenderProcessHostImpl::GetPlatformMaxRendererProcessCount() {
-  static constexpr size_t kMaxRendererProcessCount = 82;
-  return kMaxRendererProcessCount;
+  // Set the limit to half of the system limit to leave room for other programs.
+  size_t limit = GetPlatformProcessLimit() / 2;
+
+  // If the system limit is unavailable, use a fallback value instead.
+  if (limit == kUnknownPlatformProcessLimit) {
+    static constexpr size_t kMaxRendererProcessCount = 82;
+    limit = kMaxRendererProcessCount;
+  }
+  return limit;
 }
 #endif
 
@@ -1475,9 +1510,12 @@ size_t RenderProcessHost::GetMaxRendererProcessCount() {
     max_count /= kEstimatedWebContentsMemoryUsage;
 
     static constexpr size_t kMinRendererProcessCount = 3;
-    max_count = base::ClampToRange(
-        max_count, kMinRendererProcessCount,
-        RenderProcessHostImpl::GetPlatformMaxRendererProcessCount());
+    static const size_t kMaxRendererProcessCount =
+        RenderProcessHostImpl::GetPlatformMaxRendererProcessCount();
+    DCHECK_LE(kMinRendererProcessCount, kMaxRendererProcessCount);
+
+    max_count = base::ClampToRange(max_count, kMinRendererProcessCount,
+                                   kMaxRendererProcessCount);
   }
   return max_count;
 #endif
