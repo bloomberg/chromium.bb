@@ -26,6 +26,11 @@ class FakeConnectionEstablisher : public ConnectionEstablisher {
     return establish_connection_calls_;
   }
 
+  const std::vector<std::tuple<GURL, content::ServiceWorkerContext*>>&
+  tear_down_connection_calls() const {
+    return tear_down_connection_calls_;
+  }
+
  private:
   // ConnectionEstablisher:
   void EstablishConnection(
@@ -33,8 +38,14 @@ class FakeConnectionEstablisher : public ConnectionEstablisher {
       ConnectionMode connection_mode,
       content::ServiceWorkerContext* service_worker_context) override;
 
+  void TearDownConnection(
+      const GURL& url,
+      content::ServiceWorkerContext* service_worker_context) override;
+
   std::vector<std::tuple<GURL, ConnectionMode, content::ServiceWorkerContext*>>
       establish_connection_calls_;
+  std::vector<std::tuple<GURL, content::ServiceWorkerContext*>>
+      tear_down_connection_calls_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeConnectionEstablisher);
 };

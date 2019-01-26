@@ -118,6 +118,29 @@ class ConnectionManagerTest : public testing::Test {
     }
   }
 
+  void VerifyTearDownConnectionCalls(
+      size_t expected_count,
+      bool is_last_call_expected_to_be_new_url = true) {
+    const auto& tear_down_connection_calls =
+        fake_connection_establisher_->tear_down_connection_calls();
+    EXPECT_EQ(expected_count, tear_down_connection_calls.size());
+
+    if (expected_count == 0u)
+      return;
+
+    if (is_last_call_expected_to_be_new_url) {
+      EXPECT_EQ(GetAndroidMessagesURL(),
+                std::get<0>(tear_down_connection_calls.back()));
+      EXPECT_EQ(fake_new_service_worker_context_.get(),
+                std::get<1>(tear_down_connection_calls.back()));
+    } else {
+      EXPECT_EQ(GetAndroidMessagesURLOld(),
+                std::get<0>(tear_down_connection_calls.back()));
+      EXPECT_EQ(fake_old_service_worker_context_.get(),
+                std::get<1>(tear_down_connection_calls.back()));
+    }
+  }
+
   void SetPwaState(PwaState pwa_state) {
     if (pwa_state == PwaState::kDisabled) {
       fake_android_sms_app_manager_->SetInstalledAppUrl(base::nullopt);
@@ -267,10 +290,7 @@ TEST_F(ConnectionManagerTest, FeatureStateChange) {
   // Verify that disabling feature stops the service worker.
   SetPwaState(PwaState::kDisabled);
   VerifyEstablishConnectionCalls(2u /* expected_count */);
-  const auto& stop_calls = fake_new_service_worker_context()
-                               ->stop_all_service_workers_for_origin_calls();
-  ASSERT_EQ(1u, stop_calls.size());
-  EXPECT_EQ(GetAndroidMessagesURL(), stop_calls[0]);
+  VerifyTearDownConnectionCalls(1u /* expected_count */);
 
   // Verify that subsequent service worker events do not trigger connection.
   fake_new_service_worker_context()->NotifyObserversOnNoControllees(
@@ -293,11 +313,8 @@ TEST_F(ConnectionManagerTest, AppUrlMigration) {
   SetPwaState(PwaState::kEnabledWithNewUrl);
 
   // The ServiceWorker for the old URL should have stopped.
-  const auto& stop_old_calls =
-      fake_old_service_worker_context()
-          ->stop_all_service_workers_for_origin_calls();
-  ASSERT_EQ(1u, stop_old_calls.size());
-  EXPECT_EQ(GetAndroidMessagesURLOld(), stop_old_calls[0]);
+  VerifyTearDownConnectionCalls(
+      1u /* expected_count*/, false /* is_last_call_expected_to_be_new_url */);
 
   // A connection to the new URL should have occurred.
   VerifyEstablishConnectionCalls(

@@ -135,8 +135,8 @@ void ConnectionManager::UpdateConnectionStatus() {
   if (enabled_pwa_url_) {
     PA_LOG(INFO) << "ConnectionManager::UpdateConnectionStatus(): Stopping "
                  << "connection to PWA at " << *enabled_pwa_url_ << ".";
-    GetCurrentServiceWorkerContext()->StopAllServiceWorkersForOrigin(
-        *enabled_pwa_url_);
+    connection_establisher_->TearDownConnection(
+        *enabled_pwa_url_, GetCurrentServiceWorkerContext());
     GetCurrentServiceWorkerContext()->RemoveObserver(this);
   }
 

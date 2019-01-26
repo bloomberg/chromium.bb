@@ -26,6 +26,10 @@ class ConnectionEstablisher {
       ConnectionMode connection_mode,
       content::ServiceWorkerContext* service_worker_context) = 0;
 
+  virtual void TearDownConnection(
+      const GURL& url,
+      content::ServiceWorkerContext* service_worker_context) = 0;
+
  protected:
   ConnectionEstablisher() = default;
 

@@ -87,8 +87,10 @@ void FakeServiceWorkerContext::StartServiceWorkerAndDispatchMessage(
     const GURL& scope,
     blink::TransferableMessage message,
     ResultCallback result_callback) {
-  NOTREACHED();
+  start_service_worker_and_dispatch_message_calls_.push_back(
+      std::make_tuple(scope, std::move(message), std::move(result_callback)));
 }
+
 void FakeServiceWorkerContext::StartServiceWorkerAndDispatchLongRunningMessage(
     const GURL& scope,
     blink::TransferableMessage message,
