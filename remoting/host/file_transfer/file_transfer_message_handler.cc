@@ -82,9 +82,10 @@ void FileTransferMessageHandler::OnIncomingMessage(
       Close();
       break;
     case protocol::FileTransfer::kError:
-      LOG(ERROR) << "File transfer error from client: " << message.error();
-      FALLTHROUGH;
-    case protocol::FileTransfer::kCancel:
+      if (message.error().type() !=
+          protocol::FileTransfer_Error_Type_CANCELED) {
+        LOG(ERROR) << "File transfer error from client: " << message.error();
+      }
       Cancel();
       break;
     default:
