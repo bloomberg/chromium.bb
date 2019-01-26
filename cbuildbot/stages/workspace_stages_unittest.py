@@ -340,8 +340,67 @@ class WorkspaceSyncStageTest(WorkspaceStageBase):
 # TODO(dgarret): Test WorkspaceUprevAndPublishStage
 # TODO(dgarret): Test WorkspacePublishBuildspecStage
 # TODO(dgarret): Test WorkspaceScheduleChildrenStage
-# TODO(dgarret): Test WorkspaceInitSDKStage
-# TODO(dgarret): Test WorkspaceSetupBoardStage
+
+class WorkspaceInitSDKStageTest(WorkspaceStageBase):
+  """Test the WorkspaceInitSDKStage."""
+
+  def ConstructStage(self):
+    return workspace_stages.WorkspaceInitSDKStage(
+        self._run, self.buildstore, build_root=self.workspace)
+
+  def testInitSDK(self):
+    """Test InitSDK old workspace version."""
+    self._Prepare(
+        'test-firmwarebranch',
+        site_config=workspace_builders_unittest.CreateMockSiteConfig(),
+        extra_cmd_args=['--cache-dir', '/cache'])
+
+    self.RunStage()
+
+    self.assertEqual(self.rc.call_count, 1)
+    self.rc.assertCommandCalled(
+        [
+            os.path.join(self.workspace, 'chromite', 'bin', 'cros_sdk'),
+            '--create',
+            '--cache-dir', '/cache',
+        ],
+        cwd=self.workspace,
+    )
+
+
+class WorkspaceSetupBoardStageTest(WorkspaceStageBase):
+  """Test the WorkspaceSetupBoardStage."""
+
+  def ConstructStage(self):
+    return workspace_stages.WorkspaceSetupBoardStage(
+        self._run, self.buildstore, build_root=self.workspace, board='board')
+
+  def testSetupBoard(self):
+    """Test setup_board old workspace version."""
+    self._Prepare(
+        'test-firmwarebranch',
+        site_config=workspace_builders_unittest.CreateMockSiteConfig(),
+        extra_cmd_args=['--cache-dir', '/cache'])
+
+    self.RunStage()
+
+    self.assertEqual(self.rc.call_count, 1)
+    self.rc.assertCommandCalled(
+        [
+            './setup_board',
+            '--board=board',
+            '--accept_licenses=@CHROMEOS',
+            '--nousepkg',
+            '--reuse_pkgs_from_local_boards',
+        ],
+        enter_chroot=True,
+        extra_env={
+            'USE': '-cros-debug chrome_internal chromeless_tty',
+            'FEATURES': 'separatedebug',
+        },
+        chroot_args=['--cache-dir', '/cache'],
+        cwd=self.workspace,
+    )
 
 
 class WorkspaceBuildPackagesStageTest(WorkspaceStageBase):
