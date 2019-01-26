@@ -580,23 +580,5 @@ cr.define('settings_people_page', function() {
 
       assertEquals(settings.getCurrentRoute(), settings.routes.SYNC);
     });
-
-    if (!cr.isChromeOS) {
-      test('CancelSyncSetupOnSyncControlsPage', function() {
-        settings.navigateTo(settings.routes.SYNC);
-        settings.navigateTo(settings.routes.SYNC_ADVANCED);
-        peoplePage.syncStatus = {setupInProgress: true};
-        Polymer.dom.flush();
-
-        peoplePage.$$('settings-sync-controls')
-            .$.toast.querySelector('paper-button')
-            .click();
-
-        return browserProxy.whenCalled('didNavigateAwayFromSyncPage')
-            .then(abort => {
-              assertTrue(abort);
-            });
-      });
-    }
   });
 });

@@ -677,6 +677,7 @@ CrSettingsPeoplePageSyncPageTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
+    'sync_test_util.js',
     'test_sync_browser_proxy.js',
     'test_util.js',
     'people_page_sync_page_test.js',

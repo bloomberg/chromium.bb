@@ -490,14 +490,92 @@ cr.define('settings_people_page_sync_page', function() {
     });
 
     if (!cr.isChromeOS) {
-      test('FirstTimeSetupNotification', function() {
-        assertTrue(!!syncPage.$.toast);
-        assertFalse(syncPage.$.toast.open);
+      test('SyncSetupCancel_UnifiedConsentDisabled', function() {
+        syncPage.unifiedConsentEnabled = false;
+        Polymer.dom.flush();
+
+        const toast = syncPage.$$('cr-toast');
+        assertTrue(!!toast);
+        assertFalse(toast.open);
         syncPage.syncStatus = {setupInProgress: true};
         Polymer.dom.flush();
-        assertTrue(syncPage.$.toast.open);
+        assertTrue(toast.open);
 
-        syncPage.$.toast.querySelector('paper-button').click();
+        toast.querySelector('paper-button').click();
+
+        return browserProxy.whenCalled('didNavigateAwayFromSyncPage')
+            .then(abort => {
+              assertTrue(abort);
+            });
+      });
+
+      test('SyncSetupLeavePage UnifiedConsentDisabled', function() {
+        syncPage.unifiedConsentEnabled = false;
+        Polymer.dom.flush();
+
+        settings.navigateTo(settings.routes.BASIC);
+
+        return browserProxy.whenCalled('didNavigateAwayFromSyncPage')
+            .then(abort => {
+              assertFalse(abort);
+            });
+      });
+
+      test('SyncSetupCancel UnifiedConsentEnabled', function() {
+        syncPage.diceEnabled = true;
+        syncPage.unifiedConsentEnabled = true;
+        syncPage.syncStatus = {
+          signinAllowed: true,
+          syncSystemEnabled: true,
+          setupInProgress: true,
+          signedIn: true
+        };
+        Polymer.dom.flush();
+        sync_test_util.simulateStoredAccounts([{email: 'foo@foo.com'}]);
+
+        const cancelButton =
+            syncPage.$$('settings-sync-account-control')
+                .shadowRoot.querySelector('#setup-buttons .secondary-button');
+
+        assertTrue(!!cancelButton);
+        cancelButton.click();
+
+        return browserProxy.whenCalled('didNavigateAwayFromSyncPage')
+            .then(abort => {
+              assertTrue(abort);
+            });
+      });
+
+      test('SyncSetupConfirm UnifiedConsentEnabled', function() {
+        syncPage.diceEnabled = true;
+        syncPage.unifiedConsentEnabled = true;
+        syncPage.syncStatus = {
+          signinAllowed: true,
+          syncSystemEnabled: true,
+          setupInProgress: true,
+          signedIn: true
+        };
+        Polymer.dom.flush();
+        sync_test_util.simulateStoredAccounts([{email: 'foo@foo.com'}]);
+
+        const confirmButton =
+            syncPage.$$('settings-sync-account-control')
+                .shadowRoot.querySelector('#setup-buttons .action-button');
+
+        assertTrue(!!confirmButton);
+        confirmButton.click();
+
+        return browserProxy.whenCalled('didNavigateAwayFromSyncPage')
+            .then(abort => {
+              assertFalse(abort);
+            });
+      });
+
+      test('SyncSetupLeavePage UnifiedConsentEnabled', function() {
+        syncPage.unifiedConsentEnabled = true;
+        Polymer.dom.flush();
+
+        settings.navigateTo(settings.routes.BASIC);
 
         return browserProxy.whenCalled('didNavigateAwayFromSyncPage')
             .then(abort => {

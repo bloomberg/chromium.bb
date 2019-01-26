@@ -331,8 +331,7 @@
         <template is="dom-if" route-path="/syncSetup/advanced" no-search>
           <settings-subpage page-title="$i18n{syncAdvancedPageTitle}"
               learn-more-url="$i18n{syncAndGoogleServicesLearnMoreURL}">
-            <settings-sync-controls sync-status="[[syncStatus]]"
-                on-sync-setup-cancel="cancelSyncSetup_">
+            <settings-sync-controls sync-status="[[syncStatus]]">
             </settings-sync-controls>
           </settings-subpage>
         </template>

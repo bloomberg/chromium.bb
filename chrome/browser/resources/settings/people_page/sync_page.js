@@ -137,7 +137,10 @@ Polymer({
     diceEnabled: Boolean,
     // </if>
 
-    unifiedConsentEnabled: Boolean,
+    unifiedConsentEnabled: {
+      type: Boolean,
+      observer: 'initializeDidAbort_',
+    },
   },
 
   /** @private {?settings.SyncBrowserProxy} */
@@ -148,8 +151,8 @@ Polymer({
    * if the user has closed the tab with the sync settings. This property is
    * non-null if the user is currently navigated on the sync settings route.
    *
-   * TODO(scottchen): We had to change from unload to beforeunload due to
-   *     crbug.com/501292. Change back to unload once it's fixed.
+   * TODO(crbug.com/862983): When unified consent is rolled out to 100% this
+   * should be removed.
    *
    * @private {?Function}
    */
@@ -163,7 +166,8 @@ Polymer({
   collapsibleSectionsInitialized_: false,
 
   /**
-   * Whether the user decided to abort sync.
+   * Whether the user decided to abort sync. When unified consent is enabled,
+   * this is initialized to true.
    * @private {boolean}
    */
   didAbort_: false,
@@ -183,14 +187,6 @@ Polymer({
     if (settings.getCurrentRoute() == settings.routes.SYNC) {
       this.onNavigateToPage_();
     }
-  },
-  /**
-   * Can be called from subpages to notify this page (=main sync page) that sync
-   * setup was cancelled.
-   */
-  cancelSyncSetup: function() {
-    this.didAbort_ = true;
-    settings.navigateTo(settings.routes.BASIC);
   },
 
   /** @override */
@@ -281,7 +277,7 @@ Polymer({
     this.pageStatus_ = settings.PageStatus.CONFIGURE;
 
     this.browserProxy_.didNavigateAwayFromSyncPage(this.didAbort_);
-    this.didAbort_ = false;
+    this.initializeDidAbort_();
 
     window.removeEventListener('beforeunload', this.beforeunloadCallback_);
     this.beforeunloadCallback_ = null;
@@ -542,6 +538,29 @@ Polymer({
   shouldShowDriveSuggest_: function() {
     return loadTimeData.getBoolean('driveSuggestAvailable') &&
         !this.unifiedConsentEnabled;
+  },
+
+  /** @private */
+  onSyncSetupCancel_: function() {
+    this.didAbort_ = true;
+    settings.navigateTo(settings.routes.BASIC);
+  },
+
+  /** @private */
+  initializeDidAbort_: function() {
+    this.didAbort_ = !!this.unifiedConsentEnabled;
+  },
+
+  /**
+   * @param {!CustomEvent<boolean>} e The event passed from
+   *     settings-sync-account-control.
+   * @private
+   */
+  onSyncSetupDone_: function(e) {
+    if (e.detail) {
+      this.didAbort_ = false;
+    }
+    settings.navigateTo(settings.routes.BASIC);
   },
 });
 

@@ -105,7 +105,8 @@
           promo-label-with-account=
               "$i18n{peopleSignInPromptSecondaryWithAccount}"
           promo-label-with-no-account=
-              "$i18n{peopleSignInPromptSecondaryWithNoAccount}">
+              "$i18n{peopleSignInPromptSecondaryWithNoAccount}"
+          on-sync-setup-done="onSyncSetupDone_">
       </settings-sync-account-control>
     </template>
 </if>
@@ -332,12 +333,14 @@
     </template>
 
 <if expr="not chromeos">
-    <cr-toast id="toast" open="[[syncStatus.setupInProgress]]">
-      <div>$i18n{syncWillStart}</div>
-      <paper-button on-click="cancelSyncSetup">
-        $i18n{cancelSync}
-      </paper-button>
-    </cr-toast>
+    <template is="dom-if" if="[[!unifiedConsentEnabled]]">
+      <cr-toast id="toast" open="[[syncStatus.setupInProgress]]">
+        <div>$i18n{syncWillStart}</div>
+        <paper-button on-click="onSyncSetupCancel_">
+          $i18n{cancelSync}
+        </paper-button>
+      </cr-toast>
+    </template>
 </if>
   </template>
   <script src="sync_page.js"></script>
