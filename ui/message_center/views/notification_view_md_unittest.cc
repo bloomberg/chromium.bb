@@ -4,6 +4,8 @@
 
 #include "ui/message_center/views/notification_view_md.h"
 
+#include <memory>
+
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -14,6 +16,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/bounded_label.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
@@ -102,7 +105,8 @@ class DummyEvent : public ui::Event {
 class NotificationViewMDTest
     : public views::ViewsTestBase,
       public views::ViewObserver,
-      public message_center::MessageView::SlideObserver {
+      public message_center::MessageView::SlideObserver,
+      public message_center::MessageCenterObserver {
  public:
   NotificationViewMDTest();
   ~NotificationViewMDTest() override;
@@ -125,9 +129,17 @@ class NotificationViewMDTest
   // Overridden from message_center::MessageView::Observer:
   void OnSlideChanged(const std::string& notification_id) override {}
 
+  // Overridden from message_center::MessageCenterObserver:
+  void OnNotificationRemoved(const std::string& notification_id,
+                             bool by_user) override;
+
   void set_delete_on_preferred_size_changed(
       bool delete_on_preferred_size_changed) {
     delete_on_preferred_size_changed_ = delete_on_preferred_size_changed;
+  }
+
+  void set_delete_on_notification_removed(bool delete_on_notification_removed) {
+    delete_on_notification_removed_ = delete_on_notification_removed;
   }
 
  protected:
@@ -150,6 +162,7 @@ class NotificationViewMDTest
   views::View* GetCloseButton();
 
   bool delete_on_preferred_size_changed_ = false;
+  bool delete_on_notification_removed_ = false;
   std::set<std::string> removed_ids_;
   scoped_refptr<NotificationTestDelegate> delegate_;
   std::unique_ptr<NotificationViewMD> notification_view_;
@@ -188,10 +201,15 @@ void NotificationViewMDTest::SetUp() {
 
   std::unique_ptr<Notification> notification = CreateSimpleNotification();
   UpdateNotificationViews(*notification);
+
+  MessageCenter::Get()->AddObserver(this);
 }
 
 void NotificationViewMDTest::TearDown() {
-  DCHECK(notification_view_ || delete_on_preferred_size_changed_);
+  MessageCenter::Get()->RemoveObserver(this);
+
+  DCHECK(notification_view_ || delete_on_preferred_size_changed_ ||
+         delete_on_notification_removed_);
   if (notification_view_) {
     notification_view_->SetInkDropMode(MessageView::InkDropMode::OFF);
     notification_view_->RemoveObserver(this);
@@ -211,6 +229,16 @@ void NotificationViewMDTest::OnViewPreferredSizeChanged(
     return;
   }
   widget()->SetSize(notification_view()->GetPreferredSize());
+}
+
+void NotificationViewMDTest::OnNotificationRemoved(
+    const std::string& notification_id,
+    bool by_user) {
+  if (delete_on_notification_removed_) {
+    widget()->CloseNow();
+    notification_view_.reset();
+    return;
+  }
 }
 
 const gfx::Image NotificationViewMDTest::CreateTestImage(int width,
@@ -1112,6 +1140,21 @@ TEST_F(NotificationViewMDTest, TestDeleteOnToggleExpanded) {
   // The view can be deleted by PreferredSizeChanged(). https://crbug.com/918933
   set_delete_on_preferred_size_changed(true);
   notification_view()->ButtonPressed(notification_view()->header_row_,
+                                     DummyEvent());
+}
+
+TEST_F(NotificationViewMDTest, TestDeleteOnDisableNotification) {
+  std::unique_ptr<Notification> notification = CreateSimpleNotification();
+  notification->set_type(NOTIFICATION_TYPE_SIMPLE);
+  UpdateNotificationViews(*notification);
+
+  notification_view()->OnSettingsButtonPressed(DummyEvent());
+  notification_view()->block_all_button_->NotifyClick(DummyEvent());
+
+  // After DisableNotification() is called, |notification_view| can be deleted.
+  // https://crbug.com/924922
+  set_delete_on_notification_removed(true);
+  notification_view()->ButtonPressed(notification_view()->settings_done_button_,
                                      DummyEvent());
 }
 
