@@ -19,6 +19,12 @@ void FakeConnectionEstablisher::EstablishConnection(
                                            service_worker_context_);
 }
 
+void FakeConnectionEstablisher::TearDownConnection(
+    const GURL& url,
+    content::ServiceWorkerContext* service_worker_context_) {
+  tear_down_connection_calls_.emplace_back(url, service_worker_context_);
+}
+
 }  // namespace android_sms
 
 }  // namespace chromeos

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/android_sms/connection_establisher_impl.h"
+#include "chrome/browser/chromeos/android_sms/streaming_connection_establisher.h"
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
@@ -18,29 +18,36 @@ namespace chromeos {
 
 namespace android_sms {
 
-const char ConnectionEstablisherImpl::kStartStreamingMessage[] =
+const char StreamingConnectionEstablisher::kStartStreamingMessage[] =
     "start_streaming_connection";
 
-const char ConnectionEstablisherImpl::kResumeStreamingMessage[] =
+const char StreamingConnectionEstablisher::kResumeStreamingMessage[] =
     "resume_streaming_connection";
 
-ConnectionEstablisherImpl::ConnectionEstablisherImpl(base::Clock* clock)
+StreamingConnectionEstablisher::StreamingConnectionEstablisher(
+    base::Clock* clock)
     : clock_(clock) {}
-ConnectionEstablisherImpl::~ConnectionEstablisherImpl() = default;
+StreamingConnectionEstablisher::~StreamingConnectionEstablisher() = default;
 
-void ConnectionEstablisherImpl::EstablishConnection(
+void StreamingConnectionEstablisher::EstablishConnection(
     const GURL& url,
     ConnectionMode connection_mode,
     content::ServiceWorkerContext* service_worker_context) {
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(
-          &ConnectionEstablisherImpl::SendStartStreamingMessageIfNotConnected,
-          base::Unretained(this), url, connection_mode,
-          service_worker_context));
+      base::BindOnce(&StreamingConnectionEstablisher::
+                         SendStartStreamingMessageIfNotConnected,
+                     base::Unretained(this), url, connection_mode,
+                     service_worker_context));
 }
 
-void ConnectionEstablisherImpl::SendStartStreamingMessageIfNotConnected(
+void StreamingConnectionEstablisher::TearDownConnection(
+    const GURL& url,
+    content::ServiceWorkerContext* service_worker_context) {
+  service_worker_context->StopAllServiceWorkersForOrigin(url);
+}
+
+void StreamingConnectionEstablisher::SendStartStreamingMessageIfNotConnected(
     const GURL& url,
     ConnectionMode connection_mode,
     content::ServiceWorkerContext* service_worker_context) {
@@ -69,11 +76,11 @@ void ConnectionEstablisherImpl::SendStartStreamingMessageIfNotConnected(
   start_connection_message_time_ = clock_->Now();
   service_worker_context->StartServiceWorkerAndDispatchLongRunningMessage(
       url, std::move(msg),
-      base::BindOnce(&ConnectionEstablisherImpl::OnMessageDispatchResult,
+      base::BindOnce(&StreamingConnectionEstablisher::OnMessageDispatchResult,
                      base::Unretained(this)));
 }
 
-void ConnectionEstablisherImpl::OnMessageDispatchResult(bool status) {
+void StreamingConnectionEstablisher::OnMessageDispatchResult(bool status) {
   // When message dispatch result callback is called, it means that the service
   // worker resolved it's message handler promise and is not holding a
   // background connection.

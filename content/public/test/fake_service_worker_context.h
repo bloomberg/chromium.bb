@@ -24,7 +24,7 @@ class ServiceWorkerContextObserver;
 // what you need.
 class FakeServiceWorkerContext : public ServiceWorkerContext {
  public:
-  using StartServiceWorkerAndDispatchLongRunningMessageArgs =
+  using StartServiceWorkerAndDispatchMessageArgs =
       std::tuple<GURL, blink::TransferableMessage, ResultCallback>;
 
   FakeServiceWorkerContext();
@@ -79,7 +79,12 @@ class FakeServiceWorkerContext : public ServiceWorkerContext {
     return start_service_worker_for_navigation_hint_called_;
   }
 
-  std::vector<StartServiceWorkerAndDispatchLongRunningMessageArgs>&
+  std::vector<StartServiceWorkerAndDispatchMessageArgs>&
+  start_service_worker_and_dispatch_message_calls() {
+    return start_service_worker_and_dispatch_message_calls_;
+  };
+
+  std::vector<StartServiceWorkerAndDispatchMessageArgs>&
   start_service_worker_and_dispatch_long_running_message_calls() {
     return start_service_worker_and_dispatch_long_running_message_calls_;
   };
@@ -91,7 +96,10 @@ class FakeServiceWorkerContext : public ServiceWorkerContext {
  private:
   bool start_service_worker_for_navigation_hint_called_ = false;
 
-  std::vector<StartServiceWorkerAndDispatchLongRunningMessageArgs>
+  std::vector<StartServiceWorkerAndDispatchMessageArgs>
+      start_service_worker_and_dispatch_message_calls_;
+
+  std::vector<StartServiceWorkerAndDispatchMessageArgs>
       start_service_worker_and_dispatch_long_running_message_calls_;
 
   std::vector<GURL> stop_all_service_workers_for_origin_calls_;

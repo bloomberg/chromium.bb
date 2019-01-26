@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/android_sms/connection_establisher_impl.h"
+#include "chrome/browser/chromeos/android_sms/streaming_connection_establisher.h"
 
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,22 +18,22 @@ namespace chromeos {
 
 namespace android_sms {
 
-class ConnectionEstablisherImplTest : public testing::Test {
+class StreamingConnectionEstablisherTest : public testing::Test {
  protected:
-  ConnectionEstablisherImplTest()
+  StreamingConnectionEstablisherTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
-  ~ConnectionEstablisherImplTest() override = default;
+  ~StreamingConnectionEstablisherTest() override = default;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
-  DISALLOW_COPY_AND_ASSIGN(ConnectionEstablisherImplTest);
+  DISALLOW_COPY_AND_ASSIGN(StreamingConnectionEstablisherTest);
 };
 
-TEST_F(ConnectionEstablisherImplTest, EstablishConnection) {
+TEST_F(StreamingConnectionEstablisherTest, EstablishConnection) {
   base::HistogramTester histogram_tester;
   content::FakeServiceWorkerContext fake_service_worker_context;
   base::SimpleTestClock test_clock;
-  ConnectionEstablisherImpl connection_establisher(&test_clock);
+  StreamingConnectionEstablisher connection_establisher(&test_clock);
   auto& message_dispatch_calls =
       fake_service_worker_context
           .start_service_worker_and_dispatch_long_running_message_calls();
@@ -52,7 +52,7 @@ TEST_F(ConnectionEstablisherImplTest, EstablishConnection) {
           .owned_encoded_message,
       &message_string);
   EXPECT_EQ(
-      base::UTF8ToUTF16(ConnectionEstablisherImpl::kStartStreamingMessage),
+      base::UTF8ToUTF16(StreamingConnectionEstablisher::kStartStreamingMessage),
       message_string);
 
   // Verify that message is not dispatched again if previous result callback has
@@ -100,9 +100,23 @@ TEST_F(ConnectionEstablisherImplTest, EstablishConnection) {
       std::get<blink::TransferableMessage>(message_dispatch_calls[2])
           .owned_encoded_message,
       &resume_message_string);
-  EXPECT_EQ(
-      base::UTF8ToUTF16(ConnectionEstablisherImpl::kResumeStreamingMessage),
-      resume_message_string);
+  EXPECT_EQ(base::UTF8ToUTF16(
+                StreamingConnectionEstablisher::kResumeStreamingMessage),
+            resume_message_string);
+}
+
+TEST_F(StreamingConnectionEstablisherTest, TearDownConnection) {
+  content::FakeServiceWorkerContext fake_service_worker_context;
+  base::SimpleTestClock test_clock;
+  StreamingConnectionEstablisher connection_establisher(&test_clock);
+
+  // Verify that tear down stops all service worker.
+  connection_establisher.TearDownConnection(GetAndroidMessagesURL(),
+                                            &fake_service_worker_context);
+  const auto& stop_calls =
+      fake_service_worker_context.stop_all_service_workers_for_origin_calls();
+  ASSERT_EQ(1u, stop_calls.size());
+  EXPECT_EQ(GetAndroidMessagesURL(), stop_calls[0]);
 }
 
 }  // namespace android_sms
