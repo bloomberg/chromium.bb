@@ -412,18 +412,10 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
       "http://site1.com", "http://www.site2.com", "http://sité3.com",
       "http://www.sité4.com"};
 
-  // Set high engagement scores in the main profile and low engagement scores
-  // in incognito. Main profile should record metrics, incognito shouldn't.
-  Browser* incognito = CreateIncognitoBrowser();
-  LookalikeUrlService::Get(incognito->profile())
-      ->SetClockForTesting(test_clock());
-
   for (const char* const kSite : kEngagedSites) {
     SetEngagementScore(browser(), GURL(kSite), kHighEngagement);
-    SetEngagementScore(incognito, GURL(kSite), kLowEngagement);
   }
 
-  // Main profile should record metrics because there are engaged sites.
   std::vector<GURL> ukm_urls;
   for (const auto& test_case : kSiteEngagementTestCases) {
     base::HistogramTester histograms;
@@ -445,11 +437,43 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
     CheckUkm(ukm_urls,
              LookalikeUrlNavigationObserver::MatchType::kSiteEngagement);
   }
+}
+
+// Similar to Idn_SiteEngagement_Match, but tests a single domain. Also checks
+// that the list of engaged sites in incognito and the main profile don't affect
+// each other.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
+                       Idn_SiteEngagement_Match_Incognito) {
+  const GURL kNavigatedUrl = GetURL("sité1.com");
+  const GURL kEngagedUrl = GetURL("site1.com");
+
+  // Set high engagement scores in the main profile and low engagement scores
+  // in incognito. Main profile should record metrics, incognito shouldn't.
+  Browser* incognito = CreateIncognitoBrowser();
+  LookalikeUrlService::Get(incognito->profile())
+      ->SetClockForTesting(test_clock());
+  SetEngagementScore(browser(), kEngagedUrl, kHighEngagement);
+  SetEngagementScore(incognito, kEngagedUrl, kLowEngagement);
+
+  std::vector<GURL> ukm_urls;
+  // Main profile should record metrics because there are engaged sites.
+  {
+    base::HistogramTester histograms;
+    // Advance the clock to force LookalikeUrlService to fetch a new engaged
+    // site list.
+    test_clock()->Advance(base::TimeDelta::FromHours(1));
+    TestHistogramEventsRecordedAndInfobarVisibility(
+        browser(), &histograms, kNavigatedUrl, kEngagedUrl,
+        NavigationSuggestionEvent::kMatchSiteEngagement);
+
+    ukm_urls.push_back(kNavigatedUrl);
+    CheckUkm(ukm_urls,
+             LookalikeUrlNavigationObserver::MatchType::kSiteEngagement);
+  }
 
   // Incognito shouldn't record metrics because there are no engaged sites.
-  for (const auto& test_case : kSiteEngagementTestCases) {
+  {
     base::HistogramTester histograms;
-    const GURL kNavigatedUrl = GetURL(test_case.navigated);
     test_clock()->Advance(base::TimeDelta::FromHours(1));
     TestInfobarNotShown(incognito, kNavigatedUrl);
     histograms.ExpectTotalCount(LookalikeUrlNavigationObserver::kHistogramName,
@@ -458,35 +482,25 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
 
   // Now reverse the scores: Set low engagement in the main profile and high
   // engagement in incognito.
-  for (const char* const kSite : kEngagedSites) {
-    SetEngagementScore(browser(), GURL(kSite), kLowEngagement);
-    SetEngagementScore(incognito, GURL(kSite), kHighEngagement);
-  }
+  SetEngagementScore(browser(), kEngagedUrl, kLowEngagement);
+  SetEngagementScore(incognito, kEngagedUrl, kHighEngagement);
 
   // Incognito should start recording metrics and main profile should stop.
-  for (const auto& test_case : kSiteEngagementTestCases) {
+  {
     base::HistogramTester histograms;
-    const GURL kNavigatedUrl = GetURL(test_case.navigated);
-    const GURL kExpectedSuggestedUrl = GetURL(test_case.suggested);
-
-    // Even if the navigated site has a low engagement score, it should be
-    // considered for lookalike suggestions.
-    SetEngagementScore(incognito, kNavigatedUrl, kLowEngagement);
-    // Advance the clock to force LookalikeUrlService to fetch a new engaged
-    // site list.
     test_clock()->Advance(base::TimeDelta::FromHours(1));
 
     TestHistogramEventsRecordedAndInfobarVisibility(
-        incognito, &histograms, kNavigatedUrl, kExpectedSuggestedUrl,
+        incognito, &histograms, kNavigatedUrl, kEngagedUrl,
         NavigationSuggestionEvent::kMatchSiteEngagement);
     ukm_urls.push_back(kNavigatedUrl);
     CheckUkm(ukm_urls,
              LookalikeUrlNavigationObserver::MatchType::kSiteEngagement);
   }
+
   // Main profile shouldn't record metrics because there are no engaged sites.
-  for (const auto& test_case : kSiteEngagementTestCases) {
+  {
     base::HistogramTester histograms;
-    const GURL kNavigatedUrl = GetURL(test_case.navigated);
     test_clock()->Advance(base::TimeDelta::FromHours(1));
     TestInfobarNotShown(browser(), kNavigatedUrl);
     histograms.ExpectTotalCount(LookalikeUrlNavigationObserver::kHistogramName,
