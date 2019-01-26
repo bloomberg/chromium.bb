@@ -169,7 +169,10 @@ bool ChromeDevToolsManagerDelegate::AllowInspection(
           profile->GetPrefs());
 #if defined(OS_CHROMEOS)
   // Do not create DevTools if it's disabled for primary profile.
-  if (Profile* primary_profile = ProfileManager::GetPrimaryUserProfile()) {
+  Profile* primary_profile = ProfileManager::GetPrimaryUserProfile();
+  if (primary_profile &&
+      policy::DeveloperToolsPolicyHandler::IsDevToolsAvailabilitySetByPolicy(
+          primary_profile->GetPrefs())) {
     availability =
         policy::DeveloperToolsPolicyHandler::GetMostRestrictiveAvailability(
             availability,
