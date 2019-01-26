@@ -10,7 +10,6 @@
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/views/app_list_folder_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/macros.h"

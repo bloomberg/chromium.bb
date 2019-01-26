@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "ash/app_list/app_list_export.h"
+#include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_view_state.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "build/build_config.h"

@@ -20,7 +20,6 @@
 #include "ash/app_list/views/search_result_base_view.h"
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"

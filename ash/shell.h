@@ -11,7 +11,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/session/session_observer.h"
 #include "ash/wm/system_modal_container_event_filter_delegate.h"
@@ -49,7 +48,7 @@ class FileHelper;
 namespace gfx {
 class Insets;
 class Point;
-}
+}  // namespace gfx
 
 namespace keyboard {
 class KeyboardUIFactory;

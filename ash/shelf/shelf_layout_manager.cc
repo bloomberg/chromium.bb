@@ -10,10 +10,10 @@
 
 #include "ash/animation/animation_change_type.h"
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/home_launcher_gesture_handler.h"
 #include "ash/app_list/model/app_list_view_state.h"
 #include "ash/app_list/views/app_list_view.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"

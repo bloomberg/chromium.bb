@@ -21,7 +21,6 @@
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/app_list/views/search_result_tile_item_list_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/logging.h"

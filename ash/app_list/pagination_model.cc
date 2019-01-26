@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "ash/app_list/pagination_model_observer.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ui/gfx/animation/slide_animation.h"
 
 namespace app_list {

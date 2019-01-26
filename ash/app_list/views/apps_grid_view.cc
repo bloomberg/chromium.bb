@@ -27,7 +27,6 @@
 #include "ash/app_list/views/search_result_tile_item_view.h"
 #include "ash/app_list/views/top_icon_animation_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/guid.h"

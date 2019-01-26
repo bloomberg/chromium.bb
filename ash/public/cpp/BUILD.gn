@@ -11,8 +11,6 @@ component("cpp") {
     "accelerators.h",
     "app_list/app_list_config.cc",
     "app_list/app_list_config.h",
-    "app_list/app_list_constants.cc",
-    "app_list/app_list_constants.h",
     "app_list/app_list_features.cc",
     "app_list/app_list_features.h",
     "app_list/app_list_switches.cc",

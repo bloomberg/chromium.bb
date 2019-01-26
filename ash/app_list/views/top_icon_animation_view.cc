@@ -6,7 +6,6 @@
 
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/image/image_skia_operations.h"

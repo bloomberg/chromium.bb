@@ -11,7 +11,6 @@
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"

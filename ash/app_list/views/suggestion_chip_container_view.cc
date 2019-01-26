@@ -12,7 +12,6 @@
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_suggestion_chip_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/textfield/textfield.h"

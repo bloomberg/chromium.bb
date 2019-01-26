@@ -30,7 +30,6 @@
 #include "ash/app_list/views/suggestion_chip_container_view.h"
 #include "ash/app_list/views/test/apps_grid_view_test_api.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/command_line.h"

@@ -29,7 +29,6 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/new_window_controller.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/interfaces/accessibility_controller.mojom.h"
