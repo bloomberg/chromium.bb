@@ -130,7 +130,6 @@ const char* XR::checkSessionSupport(
 
 ScriptPromise XR::supportsSessionMode(ScriptState* script_state,
                                       const String& mode) {
-  LOG(ERROR) << __FUNCTION__;
   LocalFrame* frame = GetFrame();
   if (!frame) {
     // Reject if the frame is inaccessible.
@@ -161,7 +160,6 @@ ScriptPromise XR::supportsSessionMode(ScriptState* script_state,
         resolver, XRSession::stringToSessionMode(mode));
 
     if (!device_) {
-      LOG(ERROR) << "!device";
       pending_mode_queries_.push_back(query);
 
       // The pending queries will be resolved once the device is returned.
@@ -171,13 +169,10 @@ ScriptPromise XR::supportsSessionMode(ScriptState* script_state,
     }
   }
 
-  LOG(ERROR) << "/" << __FUNCTION__;
-
   return promise;
 }
 
 void XR::DispatchSupportsSessionMode(PendingSessionQuery* query) {
-  LOG(ERROR) << __FUNCTION__;
   if (!device_) {
     // If we don't have a device by the time we reach this call it indicates
     // that there's no WebXR hardware. Reject as not supported.
@@ -193,7 +188,6 @@ void XR::DispatchSupportsSessionMode(PendingSessionQuery* query) {
       std::move(session_options),
       WTF::Bind(&XR::OnSupportsSessionReturned, WrapPersistent(this),
                 WrapPersistent(query)));
-  LOG(ERROR) << "/" << __FUNCTION__;
 }
 
 ScriptPromise XR::requestSession(ScriptState* script_state,
@@ -320,7 +314,6 @@ void XR::DispatchRequestSession(PendingSessionQuery* query) {
 }
 
 void XR::EnsureDevice() {
-  LOG(ERROR) << __FUNCTION__;
   // Exit if we have a device or are waiting for a device.
   if (device_ || pending_device_) {
     return;
@@ -329,7 +322,6 @@ void XR::EnsureDevice() {
   service_->RequestDevice(
       WTF::Bind(&XR::OnRequestDeviceReturned, WrapPersistent(this)));
   pending_device_ = true;
-  LOG(ERROR) << "/" << __FUNCTION__;
 }
 
 // This will be called when the XR hardware or capabilities have potentially
@@ -340,15 +332,12 @@ void XR::OnDeviceChanged() {
 }
 
 void XR::OnRequestDeviceReturned(device::mojom::blink::XRDevicePtr device) {
-  LOG(ERROR) << __FUNCTION__;
   pending_device_ = false;
   if (device) {
-    LOG(ERROR) << "Got device";
     device_ = std::move(device);
 
     // Log metrics
     if (!did_log_returned_device_ || !did_log_supports_immersive_) {
-      LOG(ERROR) << "Doing Logging";
       Document* doc = GetFrame() ? GetFrame()->GetDocument() : nullptr;
       if (doc) {
         ukm::builders::XR_WebXR ukm_builder(ukm_source_id_);
@@ -371,11 +360,9 @@ void XR::OnRequestDeviceReturned(device::mojom::blink::XRDevicePtr device) {
   }
 
   DispatchPendingSessionCalls();
-  LOG(ERROR) << "/" << __FUNCTION__;
 }
 
 void XR::DispatchPendingSessionCalls() {
-  LOG(ERROR) << __FUNCTION__;
   // Process any calls that were waiting for the device query to be returned.
   for (auto& query : pending_mode_queries_) {
     DispatchSupportsSessionMode(query);
@@ -386,17 +373,14 @@ void XR::DispatchPendingSessionCalls() {
     DispatchRequestSession(query);
   }
   pending_session_requests_.clear();
-  LOG(ERROR) << "/" << __FUNCTION__;
 }
 
 void XR::OnSupportsSessionReturned(PendingSessionQuery* query,
                                    bool supports_session) {
-  LOG(ERROR) << __FUNCTION__;
   supports_session
       ? query->resolver->Resolve()
       : query->resolver->Reject(DOMException::Create(
             DOMExceptionCode::kNotSupportedError, kSessionNotSupported));
-  LOG(ERROR) << "/" << __FUNCTION__;
 }
 
 void XR::OnRequestSessionReturned(
@@ -449,7 +433,6 @@ void XR::OnRequestSessionReturned(
 }
 
 void XR::ReportImmersiveSupported(bool supported) {
-  LOG(ERROR) << __FUNCTION__;
   Document* doc = GetFrame() ? GetFrame()->GetDocument() : nullptr;
   if (doc && !did_log_supports_immersive_ && supported) {
     ukm::builders::XR_WebXR ukm_builder(ukm_source_id_);
@@ -457,7 +440,6 @@ void XR::ReportImmersiveSupported(bool supported) {
     ukm_builder.Record(doc->UkmRecorder());
     did_log_supports_immersive_ = true;
   }
-  LOG(ERROR) << "/" << __FUNCTION__;
 }
 
 void XR::AddedEventListener(const AtomicString& event_type,
