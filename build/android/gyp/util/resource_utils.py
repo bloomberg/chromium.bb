@@ -40,6 +40,7 @@ _ANDROID_TO_CHROMIUM_LANGUAGE_MAP = {
     'iw': 'he',
     'in': 'id',
     'ji': 'yi',
+    'no': 'nb',  # 'no' is not a real language. http://crbug.com/920960
 }
 
 

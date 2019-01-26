@@ -25,6 +25,7 @@ _RES_STRINGS_1 = {
     'copy_to_clipboard_failure_message': 'Lõikelauale kopeerimine ebaõnnestus'
 }
 
+# pylint: disable=line-too-long
 _EXPECTED_XML_1 = '''<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 <string name="copy_to_clipboard_failure_message">"Lõikelauale kopeerimine ebaõnnestus"</string>
@@ -32,6 +33,7 @@ _EXPECTED_XML_1 = '''<?xml version="1.0" encoding="utf-8"?>
 <string name="opening_file_error">"Valit. faili avamine ebaõnnestus"</string>
 </resources>
 '''
+# pylint: enable=line-too-long
 
 _XML_RESOURCES_PREFIX = r'''<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
@@ -148,6 +150,7 @@ class ResourceUtilsTest(unittest.TestCase):
         'he-IL': 'iw-rIL',
         'id': 'in',
         'id-BAR': 'in-rBAR',
+        'nb': 'nb',
         'yi': 'ji'
     }
     for chromium_locale, android_locale in \
@@ -178,6 +181,8 @@ class ResourceUtilsTest(unittest.TestCase):
         'in': 'id',
         'in-rBAR': 'id-BAR',
         'id-rBAR': 'id-BAR',
+        'nb': 'nb',
+        'no': 'nb',  # http://crbug.com/920960
     }
     for android_locale, chromium_locale in \
         _TEST_ANDROID_TO_CHROMIUM_LOCALE_MAP.iteritems():
