@@ -295,6 +295,16 @@ void FrameImpl::LoadUrl(std::string url,
 
   content::NavigationController::LoadURLParams params_converted(validated_url);
 
+  if (params && !params->headers.empty()) {
+    std::vector<base::StringPiece> extra_headers;
+    extra_headers.reserve(params->headers.size());
+    for (const auto& header : params->headers) {
+      extra_headers.push_back(base::StringPiece(
+          reinterpret_cast<const char*>(header.data()), header.size()));
+    }
+    params_converted.extra_headers = base::JoinString(extra_headers, "\n");
+  }
+
   if (validated_url.scheme() == url::kDataScheme)
     params_converted.load_type = content::NavigationController::LOAD_TYPE_DATA;
 
