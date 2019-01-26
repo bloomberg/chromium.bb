@@ -11,9 +11,7 @@
 enum MediaControlElementType {
   kMediaSlider,
   kMediaSliderThumb,
-  kMediaTextTrackList,
   kMediaTimelineContainer,
-  kMediaTrackSelectionCheckmark,
   kMediaControlsPanel,
   kMediaCastOffButton,
   kMediaCastOnButton,

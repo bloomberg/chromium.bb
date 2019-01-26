@@ -62,9 +62,7 @@ AXObject* AccessibilityMediaControl::Create(
       return AXMediaControlsContainer::Create(layout_object, ax_object_cache);
 
     case kMediaSliderThumb:
-    case kMediaTextTrackList:
     case kMediaTimelineContainer:
-    case kMediaTrackSelectionCheckmark:
     case kMediaCastOffButton:
     case kMediaCastOnButton:
     case kMediaOverlayCastOffButton:
@@ -123,9 +121,7 @@ String AccessibilityMediaControl::TextAlternative(
     case kMediaOverflowButton:
       return QueryString(WebLocalizedString::kAXMediaOverflowButton);
     case kMediaSliderThumb:
-    case kMediaTextTrackList:
     case kMediaTimelineContainer:
-    case kMediaTrackSelectionCheckmark:
     case kMediaControlsPanel:
     case kMediaOverflowList:
     case kMediaScrubbingMessage:
@@ -162,9 +158,7 @@ String AccessibilityMediaControl::Description(
     case kMediaOverlayCastOnButton:
       return "";
     case kMediaSliderThumb:
-    case kMediaTextTrackList:
     case kMediaTimelineContainer:
-    case kMediaTrackSelectionCheckmark:
     case kMediaControlsPanel:
     case kMediaOverflowList:
     case kMediaScrubbingMessage:
@@ -202,13 +196,11 @@ ax::mojom::Role AccessibilityMediaControl::RoleValue() const {
       return ax::mojom::Role::kButton;
 
     case kMediaTimelineContainer:
-    case kMediaTextTrackList:
     case kMediaOverflowList:
       return ax::mojom::Role::kGroup;
 
     case kMediaControlsPanel:
     case kMediaSliderThumb:
-    case kMediaTrackSelectionCheckmark:
     case kMediaScrubbingMessage:
     case kMediaAnimatedArrowContainer:
       return ax::mojom::Role::kUnknown;
