@@ -503,17 +503,15 @@ class CONTENT_EXPORT RenderWidget
   }
 
   // MainThreadEventQueueClient overrides.
-
-  // Requests a BeginMainFrame callback from the compositor.
+  bool HandleInputEvent(const blink::WebCoalescedInputEvent& input_event,
+                        const ui::LatencyInfo& latency_info,
+                        HandledEventCallback callback) override;
   void SetNeedsMainFrame() override;
 
   viz::FrameSinkId GetFrameSinkIdAtPoint(const gfx::PointF& point,
                                          gfx::PointF* local_point);
 
-  void HandleInputEvent(const blink::WebCoalescedInputEvent& input_event,
-                        const ui::LatencyInfo& latency_info,
-                        HandledEventCallback callback) override;
-
+  // Widget mojom overrides.
   void SetupWidgetInputHandler(mojom::WidgetInputHandlerRequest request,
                                mojom::WidgetInputHandlerHostPtr host) override;
 
